@@ -22,7 +22,7 @@ An old-school vertical shoot 'em up with modern 3D graphics, running entirely in
 
 ```sh
 make install   # npm ci + git hooks + Playwright Chromium
-make dev       # http://localhost:5173
+make dev       # http://localhost:5173 (player ship viewer: http://localhost:5173/player_ship/)
 ```
 
 ## Make targets

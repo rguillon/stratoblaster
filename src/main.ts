@@ -1,5 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { startApp } from './app/start-app';
+import { resolveRoute } from './app/route';
+import { startShipViewer } from './app/start-ship-viewer';
 import { ENGINE_CONFIG } from './config/engine';
 import { hasWebGL2 } from './platform/webgl-support';
 import { GAME } from './game/index';
@@ -14,7 +16,6 @@ function showFatal(message: string): void {
 }
 
 function boot(): void {
-  document.title = GAME.title;
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('#game-canvas not found');
 
@@ -34,7 +35,15 @@ function boot(): void {
     engine.resize();
   });
 
-  startApp(engine, GAME);
+  if (resolveRoute(window.location.pathname) === 'player-ship-viewer') {
+    startShipViewer(engine, GAME, {
+      environment: true,
+      captions: { doc: document, parent: document.body },
+    });
+  } else {
+    document.title = GAME.title;
+    startApp(engine, GAME);
+  }
 }
 
 boot();

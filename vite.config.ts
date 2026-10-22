@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
@@ -31,5 +32,12 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'e2e',
     // Babylon alone exceeds Vite's 500 kB default; the real budget is ENG-107 (1.5 MB gzip).
     chunkSizeWarningLimit: 1500,
+    // Multi-page: the game, and the player ship viewer at `player_ship/` (phase 02).
+    rolldownOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        playerShip: fileURLToPath(new URL('./player_ship/index.html', import.meta.url)),
+      },
+    },
   },
 }));
