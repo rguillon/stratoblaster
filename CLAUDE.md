@@ -55,3 +55,4 @@ Set the phase to `✅ Validated` in `PROGRESS.md` with the date, merge/push per 
 - Never edit the requirement sections of spec files. Only the agent-owned sections.
 - Never bypass git hooks (`--no-verify`) or weaken lint/coverage config to get a green gate (ENG-64).
 - Respect the layering in `01-engineering.md` §2: `core/` stays pure (no Babylon, no DOM).
+- Respect the engine / game split in `01-engineering.md` §2.3: code outside `src/game/` stays game-agnostic (abstractions only). Concrete content (bosses, enemies, levels, game tunables) goes in `src/game/`.

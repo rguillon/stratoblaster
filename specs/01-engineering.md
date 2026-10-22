@@ -19,6 +19,7 @@
 
   Three.js would need several third-party libraries to reach the same feature set.
 - **Layers:** a pure, deterministic simulation (`core/`) runs at a fixed timestep. Presentation layers (`render/`, `fx/`, `audio/`, `ui/`) only *read* simulation state and react to simulation *events*.
+- **Engine / game split** (§2.3): everything outside `src/game/` is a **game-agnostic engine** (abstract `Boss`, `Enemy`, `Weapon`, systems, rendering plumbing...). This game's actual content (the concrete bosses, enemies, weapons, levels, visuals, sounds and their tunables) lives in `src/game/`. Replacing `src/game/` is enough to build a different shoot 'em up on the same engine.
 
 ---
 
@@ -53,11 +54,12 @@
 ├── src/
 │   ├── main.ts              # bootstrap only: create engine, start app
 │   ├── app/                 # game state machine (boot, title, play, pause, game over), wiring of layers
-│   ├── core/                # PURE simulation, no Babylon / DOM imports
-│   │   ├── entities/        # player, enemies, bullets, pickups (plain data + behaviour)
+│   ├── core/                # PURE, GAME-AGNOSTIC simulation, no Babylon / DOM imports
+│   │   ├── entities/        # abstract bases & interfaces: Entity, Player, Enemy, Boss, Bullet, Pickup, Weapon
 │   │   ├── systems/         # movement, weapons, collision, spawning, scoring, damage
 │   │   ├── events/          # typed event bus (EnemyDestroyed, PlayerHit, ...)
 │   │   ├── math/            # vectors, seeded RNG, easing
+│   │   ├── content/         # GameDefinition contract + registries that game/ fills
 │   │   └── world.ts         # world state + fixed-step update(dt)
 │   ├── render/              # Babylon scene, camera, lights, shadows, materials, post-processing, mesh sync
 │   ├── fx/                  # particles, explosions, smoke, fire, trails, screen shake, hit flash
@@ -67,9 +69,15 @@
 │   ├── assets/              # asset manifest, loaders, loading screen progress
 │   ├── config/              # all tunables (gameplay values, quality presets)
 │   ├── platform/            # browser wrappers: storage, visibility, capabilities detection
-│   └── debug/               # inspector toggle, FPS/stats overlay, hitbox view (dev/e2e builds only)
+│   ├── debug/               # inspector toggle, FPS/stats overlay, hitbox view (dev/e2e builds only)
+│   └── game/                # THIS game's content, built on the engine above (§2.3)
+│       ├── index.ts         # exports the single GameDefinition used by main.ts
+│       ├── sim/             # PURE: concrete bosses, enemies, weapons, pickups, levels (extend core/)
+│       ├── view/            # mesh / material / effect / sound definitions for the concrete content
+│       └── config/          # game-specific tunables (enemy HP, boss patterns, scoring...)
 ├── tests/
 │   ├── unit/                # mirrors src/ (tests/unit/core/systems/collision.test.ts)
+│   ├── fixtures/            # minimal "sample game" used to test the engine without src/game/ (ENG-145)
 │   ├── e2e/                 # Playwright specs
 │   └── helpers/
 ├── docs/
@@ -87,9 +95,25 @@
 | ENG-14 | MUST | Type checking: `tsc --noEmit` passes with zero errors. No `any` (lint error), no `@ts-ignore` (`@ts-expect-error` allowed only with a comment). |
 | ENG-15 | MUST | Naming: files `kebab-case.ts`; classes/types `PascalCase`; functions/variables `camelCase`; constants `UPPER_SNAKE_CASE`. One main export per file. Named exports only (no `default`). |
 | ENG-16 | SHOULD | Functions ≤ 50 lines, files ≤ 300 lines, cyclomatic complexity ≤ 10 (ESLint `max-lines-per-function`, `max-lines`, `complexity` as warnings → errors via `--max-warnings 0`). |
-| ENG-17 | MUST | No magic numbers in gameplay code: tunables live in `src/config/`. |
+| ENG-17 | MUST | No magic numbers in gameplay code: engine tunables (timestep, quality presets...) live in `src/config/`; game-specific tunables live in `src/game/config/` (ENG-143). |
 | ENG-18 | MUST | Simulation determinism: `core/` uses a seeded RNG and receives `dt` from the loop. No `Math.random()` and no `Date.now()` in `core/` (lint rule). |
 | ENG-19 | SHOULD | Hot paths (per-frame update of bullets, particles, enemies) use object pools and avoid allocations. |
+
+### 2.3 Engine / game separation
+
+Goal: the engine (everything outside `src/game/`) can be reused as a template for another game by replacing `src/game/` only.
+
+| ID | Priority | Requirement |
+|----|----------|-------------|
+| ENG-140 | MUST | **Engine is game-agnostic.** Code outside `src/game/` contains no content specific to this game: no concrete boss, enemy, weapon, pickup or level; no game-specific names, assets, numbers or texts. It provides abstractions (abstract classes / interfaces such as `Entity`, `Enemy`, `Boss`, `Weapon`, `Pickup`, `Level`), generic systems, and generic presentation plumbing. |
+| ENG-141 | MUST | **Content lives in `src/game/`.** Concrete classes (e.g. `class SerpentBoss extends Boss`) and level/wave definitions live in `src/game/sim/`; their visuals and sounds in `src/game/view/`. |
+| ENG-142 | MUST | **Dependency direction**, enforced by lint (same mechanism as ENG-11):<br>• No file outside `src/game/` imports from `src/game/`, except `src/main.ts`, which imports only `src/game/index.ts`.<br>• `src/game/sim/` follows the same purity rules as `core/` (ENG-11, ENG-18) and imports only `core/`, `config/` and `game/sim/`, `game/config/`.<br>• `src/game/view/` may import `render/`, `fx/`, `audio/`, `ui/`, `assets/`, `core/` and `game/sim/`, `game/config/`. |
+| ENG-143 | MUST | Game-specific tunables live in `src/game/config/`; game-specific assets are declared in a game manifest under `src/game/` that the engine's typed manifest (ENG-123) loads without knowing its contents. |
+| ENG-144 | MUST | **Single entry point.** `src/game/index.ts` exports one `GameDefinition` object (type defined in `core/content/`) that registers all concrete content: entity factories, levels, view bindings, asset manifest, title and texts. `main.ts` passes it to `app/`. The engine discovers content only through this object (registries / factories), never by hard-coded imports. |
+| ENG-145 | MUST | **Engine tested on its own.** Engine unit tests use a minimal sample game in `tests/fixtures/` (not `src/game/`), which proves the engine works with another game. Concrete content in `src/game/` has its own tests in `tests/unit/game/`. |
+| ENG-146 | MUST | Coverage: `src/game/sim/**` uses the same thresholds as `src/core/**` (ENG-43). |
+| ENG-147 | MUST | `docs/architecture.md` has a section "Making a new game from this template" that lists the steps (replace `src/game/`, implement `GameDefinition`, add assets) and is kept accurate. |
+| ENG-148 | SHOULD | Abstract engine classes expose behaviour through overridable hooks (e.g. `Boss.onPhaseChange()`, `Boss.updatePattern(dt)`) and documented contracts (TSDoc, ENG-132), so new content needs no engine changes. When a phase needs an engine change to support new content, the change stays generic. |
 
 ## 3. Makefile
 
@@ -148,7 +172,7 @@ The Makefile is the single entry point for humans, git hooks and CI. CI calls **
 |----|----------|-------------|
 | ENG-60 | MUST | Hooks managed by **Husky**, installed automatically by `make install` (`prepare` script). |
 | ENG-61 | MUST | `pre-commit`: **lint-staged** → Prettier + ESLint `--fix` on staged files, then `make typecheck`. |
-| ENG-62 | MUST | `commit-msg`: **commitlint** with the Conventional Commits config. |
+| ENG-62 | — | *Removed (2026-10-22): no commit-msg hook. Commit messages still follow ENG-90, without automated enforcement.* |
 | ENG-63 | MUST | `pre-push`: `make check-fast`. |
 | ENG-64 | MUST | The agent never bypasses hooks (`--no-verify` is forbidden). If a hook fails, fix the cause. |
 | ENG-65 | SHOULD | Hooks finish in under 15 s on a typical commit. |

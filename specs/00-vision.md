@@ -1,42 +1,39 @@
 # 00 — Vision
 
-> Fill in every `<!-- TODO -->`. Delete guidance comments when done.
-> Keep this short: one page. Details go into the other spec files.
 
 ## Elevator pitch
 <!-- TODO: 1–3 sentences. e.g. "A vertical-scrolling neon shoot 'em up in the browser, playable in 5-minute runs." -->
+An old school shoot them up with modern graphics.
+
 
 ## Genre & references
-- Sub-genre: <!-- TODO: vertical scroller / horizontal scroller / arena / bullet hell / ... -->
-- Inspirations: <!-- TODO: games, with what you like about each -->
+- Sub-genre: Vertical scroller.
+- Inspirations: Call of the Shadows for the gameplay but with 3D graphics.
 
 ## Target audience & platform
-- Players: <!-- TODO: casual / hardcore / kids ... -->
-- Devices: <!-- TODO: desktop browser only? mobile touch? gamepad? -->
-- Session length: <!-- TODO -->
+- Players: Casual players, the game shall be acessible to kids
+- Devices: Desktop browser at first, but it will be ported to mobile browser later, so keep it in mind when making technical choices.
+- Session length: The first levels shall be doable under 3minutes, 5minutes for the later levels.
 
 ## Core loop
-<!-- TODO: describe in 3–5 steps what the player does again and again.
-1. ...
-2. ...
--->
+
+1. Avoid enemy bullets/laser/missiles
+2. Shoot and destroy enemies.
+3. Pick up bonuses
+
 
 ## Pillars (what must feel right)
-<!-- TODO: 2–4 non-negotiable qualities, e.g. "Responsive controls (< 1 frame input lag)", "Readable bullets" -->
-1.
-2.
+
+1. Responsive controls
+2. 60fps on a modest computer.
 
 ## Non-goals (explicitly out of scope)
-<!-- TODO: e.g. "No multiplayer", "No backend/server", "No user accounts" -->
--
+
+- No multiplayer
+- No backend/server
+- No user accounts, any percistance shall be handled by cookies.
 
 ## Definition of "done" for the whole project
-<!-- TODO: what the final release looks like. e.g. "3 levels + boss each, high score table, deployed on GitHub Pages" -->
 
-## Phase roadmap (overview)
-<!-- One line per phase. Details live in specs/phases/. -->
-| Phase | Title | Goal (one line) |
-|-------|-------|-----------------|
-| 1 | <!-- e.g. Skeleton --> | <!-- e.g. Empty canvas deployed with CI green --> |
-| 2 | | |
-| 3 | | |
+The first release consists of 5 worlds of 5 levels each. 
+
