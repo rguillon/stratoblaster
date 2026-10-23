@@ -229,3 +229,27 @@
 - **Alternatives considered:** Staying on ESLint 9 until `eslint-plugin-import` supports 10 (no release in over a year).
 - **Consequences:** ENG-12 names `eslint-plugin-import`; the human owner is to update it to `eslint-plugin-import-x`. Lint, test and Actions updates are grouped in Dependabot so peer-linked packages move together.
 - **Status:** Accepted
+
+### D-020 — Generated levels: data-driven terrain, tilted playfield camera, `level_zero/` page
+- **Date:** 2026-10-23
+- **Phase:** 4
+- **Context:** Phase 4 asks for the tools that generate the real levels: a sculpted heightmap with textures blended by slope and altitude, an optional sea, optional cloud layers, props on flat ground, a camera tilted 35°, and a level of about 3 minutes. Gameplay does not exist yet. The reviewer accepted the 11 proposed defaults of the phase report ("defaults OK").
+- **Decision:**
+  - Units: one world unit is one logical pixel. X runs across the level (0 under the middle of the playfield), Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is a plane at the flight altitude (320).
+  - `core/scenery/` (pure, seeded): a `SceneryLevel` is a list of sections, each `seconds` long at the level's scroll speed, so the duration is simply the sum of the sections. Each section is a fractal relief (smooth or ridged, with a soft cap that keeps peaks under the flight plane) plus optional sculpt operations: `flatten` (plateau), `channel` (canyon along a winding line) and `shore` (coast). Neighbouring sections blend over a transition length. `PropPlacer` decides each grid cell from a hash of its coordinates, so terrain chunks can be placed in any order. `ScrollTrack` converts time to distance and handles the end of the level.
+  - Camera (P04-R05): perspective, tilted 35° from straight down towards +Z, with a 40° vertical FOV. It is placed so that the bottom and top of the screen pass through the bottom and top edges of the 480×640 playfield (`render/scenery/playfield-framing.ts`).
+  - Terrain: chunks of 320 × ~1100 units on an 8-unit grid, kept only around the camera; their meshes are reused (ENG-19). Normals come from one extra ring of height samples, so chunk seams do not show.
+  - Look (`*.visual.ts`, not unit-tested): four ground textures and a noise texture generated in code at load time. A `StandardMaterial` plugin blends them by altitude and slope, using triplanar sampling and noise-jittered borders, and adds a surf band at the sea level, so standard lighting, shadows and fog still apply. The sea is a PBR plane with a drifting generated normal map (sky reflection and sun glint, no mirror reflection). Each cloud layer is a small shader over equalised noise, so coverage maps directly to the share of sky covered. The sun casts PCF shadows from the terrain and the props. A plain `SceneryKit` (flat `StandardMaterial`s) stands in for the real one in `NullEngine` unit tests.
+  - Props (P04-R04): each model is pure vertex-coloured, flat-shaded geometry built with `render/geometry/solids.ts`. Each kind is drawn as one thin-instanced mesh, plus one for its self-lit accents (ENG-104). The glow layer only draws those accent meshes, so neon rings are open bands with no end caps (caps hidden inside a building would glow through it).
+  - Content contract: `GameDefinition.sceneryLevels` (data) and `GameView.scenery` (camera, one look per level, one model per prop kind). Level Zero lives in `src/game/` and is not listed in level select. `src/game/config/` may import only `core/`, so the look is plain data there and typed in `game/view/scenery-bindings.ts`.
+  - Debug page `level_zero/`: a fourth Vite entry, route `scenery-viewer`. It shows the first ship parked on the playfield, plus controls for pause, ×4, restart, seek, new seed, sea, playfield outline, and each cloud layer's on/off, intensity and opacity.
+- **Alternatives considered:**
+  - Babylon `WaterMaterial`: it renders reflection and refraction targets every frame, which is too costly for ENG-101.
+  - A full `ShaderMaterial` for the terrain: it would need its own shadow and fog code.
+  - One mesh per prop: too many draw calls.
+  - An in-browser level editor that saves levels: rejected in the phase questions (Q2).
+- **Consequences:**
+  - With a perspective camera, the playfield seen on screen is a trapezoid. About 293 of the 480 logical pixels are visible across the bottom edge and about 493 across the top edge. The gameplay phase has to decide how ships map to the screen.
+  - Quality presets (ENG-102) do not exist yet, so the shadow map size and the terrain grid are fixed.
+  - New levels are data plus a look; new prop kinds are a geometry function plus a rule entry.
+- **Status:** Accepted

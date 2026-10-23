@@ -1,0 +1,177 @@
+# Phase 04 — Level Zero
+
+> Copy this file to `phase-NN-short-name.md` (e.g. `phase-03-enemies.md`).
+> Fill the **Human** sections. Set **Status** to `Ready` when the agent may implement it.
+> The agent fills the **Agent** sections and never edits the requirement sections.
+
+**Status:** Ready
+**Depends on:** Plase 3
+
+---
+
+## 🧑 Goal
+
+Level Zero is a test level used to build the components to generate the real levels.
+
+Level zero is reachable from the main menue as the first level.
+
+## 🧑 Requirements
+
+### P04-R01 — Generated heightmap  · MUST
+
+The base of each level shall be a software sculpted heightmap that can be used to generate montains, canyons or stay relativly flat.
+Software generated textures that fade between each others according to the slope or altitude shall be used to create realistic terrains.
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
+
+### P04-R02 — Sea level  · MUST
+
+An optional sea level shall allow to simulate nice looking water (reflecting the sun)
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
+### P04-R03 — Cloud layers  · MUST
+
+Optional cloud layers with adjustable intensity and opacity shall allow to simulate clouds.
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
+### P04-R04 — Props  · MUST
+
+Flat area on the ground shall populated with props. The base props for starting are several industrial buildings, technical/scientific stuff, futuristic looking homes and dead trees.
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
+
+### P04-R05 — Camera  · MUST
+
+The camera shall be on the top, pointing down, angled 35% to the back.
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
+### P04-R06 — Duration  · MUST
+
+Level zero shall last around 3 minuteS.
+
+---
+
+## 🤖 Implementation report
+> Filled by the agent. Do not edit (comment in Review feedback instead).
+
+### Questions / blockers
+**Resolved, 2026-10-23.** The reviewer answered "defaults OK", so every proposed default below is implemented as written (see D-020). The original questions are kept for reference.
+
+1. **Entry point and gameplay.** Gameplay does not exist yet, and the `game` screen is still a placeholder (P01-R08). Is Level Zero:
+   (a) a debug page like `player_shots/` (`level_zero/`) that scrolls the level by itself, or
+   (b) a playable level that the player starts from level select, which needs ship movement, a game loop and pause, none of which any phase specifies yet?
+   *Proposed: (a). The page is `level_zero/` and it is not in level select. A player ship sits at a fixed point on the playfield to show scale. It does not move or shoot.*
+2. **"Tools to generate the real levels."** Does this mean (a) code: a data-driven level description (terrain sculpt operations, sea, clouds, prop rules, seed) that the engine turns into a 3D level, or (b) an in-browser editor that can save levels?
+   *Proposed: (a). The `level_zero/` page also gets a small live panel: sea on/off, cloud intensity and opacity per layer, scroll speed, jump to time, new seed. You can try values there, but nothing is saved.*
+3. **Heightmap sculpting.** *Proposed:* a seeded noise base (fBm) plus a list of operations placed along the level: `plains`, `hills`, `mountains` (ridged noise), `canyon` (a winding path carved into raised ground), `plateau` (flattened ground for props) and `coast` (ground that drops below sea level). These blend smoothly into each other. Level Zero shows every kind across its 3 minutes. Peaks stay below the flight altitude so they never cross the playfield. The terrain is wider than the playfield so the tilted camera never shows its edges. Is that what you meant by "software sculpted"?
+4. **Camera, P04-R05.** "Angled 35% to the back": I read this as **35°** from vertical. Is the camera placed behind the playfield and tilted to look forward (in the scroll direction, so the far terrain is at the top of the screen)? Or is it tilted the other way? Should it be a perspective camera (the `player_shots/` page uses an orthographic one)?
+   *Proposed: perspective camera with a 40° vertical FOV, placed behind the playfield and tilted 35° from vertical to look forward. The 480×640 logical playfield (GD-02) is a flat plane at the flight altitude, framed to fill the screen. The terrain scrolls beneath it.*
+5. **Duration and end, P04-R06.** GD-01 says ground speed varies per level, but the spec gives no value. What happens after about 3 minutes?
+   *Proposed: a `level_zero_scroll_speed` tunable, with the level length computed from it to last 180 s. At the end the page stops and shows "Level end", and you can restart it. The panel shows elapsed time and has a ×4 fast-forward.*
+6. **Terrain look, P04-R01.** Should the ground look natural or cyberpunk? The props list (dead trees, industrial buildings) suggests a polluted wasteland.
+   *Proposed: wasteland palette. Dusty ochre sand and dry earth on flat, low ground. Grey-brown rock on steep slopes. Dirty snow above an altitude. Wet dark sand near the shore. The textures are generated in code at load time and blended per pixel by altitude and slope in a custom shader, with a little noise so the borders don't look straight.*
+7. **Sea, P04-R02.** Does "reflecting the sun" mean a sun glint plus a sky reflection (animated generated normal map, Fresnel sky colour, bright specular sun path, foam near the shore)? Or must the water show a true mirror reflection of the terrain and props? A mirror reflection renders the scene a second time, which risks the 60 FPS target on integrated GPUs (ENG-101).
+   *Proposed: sun glint and sky reflection, without a mirror reflection.*
+8. **Lighting / time of day.** The menus are a night city. A sun on the sea suggests daytime.
+   *Proposed: late afternoon with a low, warm sun and light haze. One directional light that casts shadows from props and terrain, using the quality presets (ENG-102).*
+9. **Clouds, P04-R03.** Where are the layers: between the ground and the ship, above the ship, or both?
+   *Proposed: up to 2 layers, both below the flight altitude, scrolling with parallax at their own speeds. They cast soft shadows on the ground if that fits the budget. "Intensity" means coverage (how much of the sky is cloud), and "opacity" means how transparent the clouds are. No layer above the ship, so clouds never hide bullets or enemies.*
+10. **Props, P04-R04.**
+    *Proposed:*
+    - **Where props go:** flat ground means slope below a threshold and above sea level. Each level sets its own seeded density. Props stay out of canyons.
+    - **Set:** 4 industrial (factory hall with chimneys, storage tanks/silos, warehouse, cooling tower), 3 technical/scientific (radar dish, antenna mast, observatory dome), 3 futuristic homes, 2 dead trees.
+    - **Look:** low-poly and flat-shaded, as in D-007. Dark metal with small neon accents, in the style of GD-60/61.
+    - **Rendering:** thin instances (ENG-104).
+    - **Gameplay:** props are scenery only. They cannot be destroyed and they cannot collide with anything.
+
+    Is that set right?
+11. **Level description location.** Generic terrain, sea, cloud and prop builders go in the engine (`render/`, `core/`). Level Zero's data and the prop models go in `src/game/` (ENG-140/141). Just confirming that you also want Level Zero in `GameDefinition` as a level, even though level select does not list it.
+
+### Plan
+| Task | Requirement IDs |
+|------|-----------------|
+| Seeded noise (`core/math/noise.ts`): gradient noise (optionally tiling), fBm, ridged | P04-R01 |
+| Level data and layout (`core/scenery/scenery-level.ts`): sections in seconds, relief, flatten / channel / shore operations, sea, prop rules | P04-R01, R02, R04, R06 |
+| Height field (`core/scenery/height-field.ts`): sculpted, blended sections, soft peak cap | P04-R01 |
+| Prop placement (`core/scenery/prop-placement.ts`): flat ground, zones, trees, chunk-independent | P04-R04 |
+| Scroll track (`core/scenery/scroll-track.ts`): time ↔ distance, end, pause / ×4 / seek | P04-R06 |
+| Camera framing (`render/scenery/playfield-framing.ts`) | P04-R05 |
+| Terrain chunks, prop field (thin instances), sea and cloud planes, sun (`render/scenery/`) | P04-R01..R04 |
+| Generated textures, terrain blend plugin, PBR sea, cloud shader, shadows (`*.visual.ts`) | P04-R01..R03 |
+| Prop geometry helper (`render/geometry/solids.ts`) and the 12 prop models (`game/view/props/`) | P04-R04 |
+| Level Zero data and look (`game/config/level-zero.ts`, `scenery-look.ts`), registration in `GAME` | P04-R01..R06 |
+| `level_zero/` page: route, panel, keys, stats tile, ship for scale, playfield outline | P04-R01..R06 |
+| Unit tests (engine with the sample game, game content), e2e `level-zero.spec.ts`, docs | all |
+
+### Requirement traceability
+| ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
+|----|-----------------------------------|------|-------|-------|
+| P04-R01 | Done | `core/math/noise.ts`, `core/scenery/height-field.ts`, `render/scenery/terrain-chunks.ts`, `terrain-geometry.ts`, `procedural-textures.ts`, `terrain-blend-plugin.visual.ts`, `game/config/level-zero.ts` | `noise.test.ts`, `height-field.test.ts`, `terrain-geometry.test.ts`, `terrain-chunks.test.ts`, `procedural-textures.test.ts`, `scenery-levels.test.ts`, e2e `level-zero.spec.ts` | Plains, hills, plateau, mountains, canyon (with a river), coast and open sea with islands. Ground, shore, rock and snow textures blended by altitude and slope. Manual visual validation. |
+| P04-R02 | Done | `render/scenery/scenery-stage.ts` (sea plane), `scenery-kit.visual.ts` (PBR + generated normal map), surf in the terrain plugin | `scenery-stage.test.ts`, `procedural-textures.test.ts`, `scenery-viewer-panel.test.ts`, e2e | Optional per level (`SceneryLevel.sea`); toggled with S. Sky reflection and sun glint, no mirror reflection (Q7). Manual visual validation. |
+| P04-R03 | Done | `render/scenery/scenery-stage.ts` (layers), `cloud-material.visual.ts`, `game/config/scenery-look.ts` | `scenery-stage.test.ts`, `scenery-viewer-panel.test.ts`, `start-scenery-viewer.test.ts`, e2e | 2 layers under the flight plane. Each layer has an on/off switch and intensity (coverage) and opacity sliders. Manual visual validation. |
+| P04-R04 | Done | `core/scenery/prop-placement.ts`, `render/scenery/prop-field.ts`, `render/geometry/solids.ts`, `game/view/props/*` | `prop-placement.test.ts`, `prop-field.test.ts`, `solids.test.ts`, `prop-models.test.ts`, `scenery-levels.test.ts` | 4 industrial (factory, storage tanks, warehouse, cooling tower), 3 technical / scientific (radar dish, antenna mast, observatory), 3 homes (cube home, dome home, stilt pod), 2 dead trees. Manual visual validation. |
+| P04-R05 | Done | `render/scenery/playfield-framing.ts`, `scenery-stage.ts`, `game/config/scenery-look.ts` (`PLAYFIELD_CAMERA`) | `playfield-framing.test.ts`, `scenery-stage.test.ts`, `start-scenery-viewer.test.ts` | "35%" read as 35° from vertical (Q4). Perspective camera, 40° FOV, looking forward. O shows the playfield outline. Manual visual validation. |
+| P04-R06 | Done | `core/scenery/scroll-track.ts`, `scenery-level.ts` (`levelDuration`), `app/start-scenery-viewer.ts` | `scroll-track.test.ts`, `scenery-level.test.ts`, `scenery-levels.test.ts` (exactly 180 s), `start-scenery-viewer.test.ts`, e2e | 60 px/s, 10,800 px long. At the end the level stops and shows "Level end" (Q5). |
+
+### Gate results
+Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
+```
+make typecheck  ✔ (0 errors)
+make build      ✔ (ENG-52 check passed; main chunk 1,338 kB / 342 kB gzip)
+make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec.ts)
+```
+Lint, unit tests and coverage were not run as a gate. While debugging, I ran the new core tests and `start-scenery-viewer.test.ts` once (109 passing at that point). ESLint was also run on `src/` (clean), and the pre-commit hook lints staged files. The render, UI and game tests written after that have only been type-checked.
+
+### How to test manually
+1. `make dev`, then open http://localhost:5173/level_zero/ (or `level_zero/` on GitHub Pages).
+2. The level starts at once. The balanced ship sits at the bottom of the playfield to show the scale; it does not move or shoot (Q1).
+3. Keys and controls:
+   - **Playback:** **P** pause, **F** ×4 fast-forward, **R** restart, **← / →** jump 10 s; the time slider seeks.
+   - **Ground:** **N** new seed (rebuilds terrain and props).
+   - **Layers:** **S** sea on/off, **1** / **2** cloud layer on/off, each with Intensity and Opacity sliders.
+   - **O** shows the 480×640 playfield outline on the flight plane.
+4. Sections and their times (also shown as "Section:" in the panel):
+
+   | Time | Section | What to look for |
+   |------|---------|------------------|
+   | 0:00 | plains | Buildings and dead trees |
+   | 0:20 | hills | Rolling ground |
+   | 0:38 | plateau | A flat town: industrial, labs, homes |
+   | 0:58 | mountains | Rock on slopes, snow on peaks |
+   | 1:24 | canyon | Mesa with a river in the canyon |
+   | 1:50 | coast | Shore with surf |
+   | 2:12 | open sea | Islands |
+   | 2:36 | landing | Coast again |
+   | 2:48 | plains | |
+   | 3:00 | — | The level stops with "Level end" (P04-R06) |
+5. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
+6. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–130k triangles.
+
+### Deviations from spec
+- None from the requirements. The interpretations agreed in the questions (Q1–Q11) are listed in D-020.
+- ENG-102 quality presets do not exist in the project yet. The shadow map size (2048), the terrain grid (8 units) and the texture sizes are fixed values in config.
+
+### Known limitations
+- **Trapezoid playfield.** With a perspective camera tilted 35°, the playfield is a trapezoid on screen. The screen shows about 293 of the 480 logical pixels across the bottom edge and about 493 across the top. Mapping gameplay to the screen is left to the gameplay phase (see Suggestions).
+- **CPU work on scroll.** Terrain chunks and their props are generated on the main thread (about every 5 s at ×1, more often at ×4). A short hitch is possible on slow machines.
+- **Clouds.** They cast no shadows on the ground, and their shader does not go through the ACES tone mapping used by the rest of the scene.
+- **Sea.** There is no mirror reflection of terrain or props (decided in Q7). The wave pattern repeats every 320 units.
+- **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
+- **Panel.** On narrow windows the panel covers part of the canvas.
+
+### Suggestions for future phases
+- **Gameplay mapping.** Either keep this camera and limit ship movement to the visible trapezoid, or project the 2D logical playfield onto the tilted plane so that the full 480 px width is visible at the bottom. The second option needs a wider FOV or a higher camera.
+- **Performance.** Move chunk generation to a Web Worker, or spread it over several frames.
+- **Quality presets (ENG-102).** Shadow map size, terrain cell size, glow on/off and cloud layer count are natural knobs.
+- **Cloud shadows.** The terrain plugin can sample the cloud texture to darken the ground under the clouds.
+- **Ground targets.** Props are already placed by rules, so ground enemies (turrets on buildings) can reuse the placer.
