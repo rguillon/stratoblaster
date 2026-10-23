@@ -1,15 +1,13 @@
 import type { PropGeometry, PropModelFactory } from '../../../render/scenery/scenery-look';
 import {
-  CITY_PODIUMS,
   CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
   PART_FAMILIES,
-  podiumId,
   variantId,
   type PartFamily,
 } from '../../config/building-families';
 import { PROP_IDS } from '../../config/level-zero';
-import { buildCityBuilding, buildCityPodium } from './city-parts';
+import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
 import {
@@ -72,7 +70,4 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...partModels('city-building', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-tower', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-block', CITY_VARIANTS, buildCityBuilding),
-  ...Object.fromEntries(
-    Array.from({ length: CITY_PODIUMS }, (_, i) => [podiumId(i + 1), () => buildCityPodium(i + 1)]),
-  ),
 };

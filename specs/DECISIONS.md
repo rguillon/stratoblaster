@@ -361,3 +361,15 @@
 - **Review follow-up:** the city now uses an irregular grid (rows 45–95, columns 50–110, 70 % of links) and podiums 3–18 high. Blocks are cut into parts of about 30 (up to 3 × 3) for 2–9 towers, each shifted within its part.
 - **Consequences:** The city reads as one continuous built mass, dark with lit bands. Podium window bands are stretched with the block, so they sit 0.002 units (scaled) off the walls.
 - **Status:** Accepted
+
+### D-027 — City buildings made of lots, along the factory streets
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** Even with an irregular grid, podiums stretched over whole blocks still read as a series of squares.
+- **Decision:**
+  - The city centre uses the same street maze as the industrial zone and gets its buildings along the streets, without `blocks`. The city podium models are removed; the `blocks` option stays in the engine (D-026).
+  - A city building is split into 1–4 unequal lots, each with its own facade and one of five volumes: stepped tower, round tower, slab, courtyard or L-shaped block (`city-lots.ts`).
+  - Towers stand on a low base covering their lot.
+- **Alternatives considered:** Keeping podiums with non-rectangular cut-outs: more geometry code, and it still reads as one mass per block.
+- **Consequences:** The centres of deep blocks may show some ground, as in the industrial zone. The city draws about 0.95 M triangles at its densest (it was about 0.33 M), which still needs a check on real hardware against 60 FPS (ENG-101).
+- **Status:** Accepted

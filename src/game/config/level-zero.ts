@@ -5,11 +5,9 @@ import type {
   TerrainSection,
 } from '../../core/scenery/scenery-level';
 import {
-  CITY_PODIUMS,
   CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
   familyRules,
-  podiumId,
   type PartFamily,
 } from './building-families';
 
@@ -303,22 +301,17 @@ const SECTIONS: readonly TerrainSection[] = [
     groups: [GROUP_IDS.heavyIndustry],
   },
   {
-    // Phase 4 review: the city centre, an irregular grid of straight streets, podiums and towers.
+    // Phase 4 review: the city centre, the same maze of straight streets as the industrial zone,
+    // packed with buildings made of varied lots (towers, slabs, courtyards, L-shaped blocks).
     name: 'city centre',
     seconds: 22,
     relief: smooth(32, 2, 600, 2),
     buildingDensity: 1,
     treeDensity: 0.1,
     surface: { paved: 1 },
-    streets: { rows: [45, 95], columns: [50, 110], links: 0.7 },
+    streets: { rows: [45, 90], columns: [50, 110], links: 0.6 },
     trees: [PROP_IDS.broadleaf],
     groups: [GROUP_IDS.city],
-    // Review: every block is covered by a podium with towers on it, no bare ground left.
-    blocks: {
-      podiums: Array.from({ length: CITY_PODIUMS }, (_, i) => podiumId(i + 1)),
-      podiumHeight: [3, 18],
-      towers: [2, 9],
-    },
   },
 ];
 

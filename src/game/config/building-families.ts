@@ -17,10 +17,6 @@ export type PartFamily = keyof typeof PART_FAMILIES;
 /** Id of variant `n` (1-based) of a building assembled from parts. */
 export const variantId = (kind: PartFamily, n: number): string => `${kind}-${String(n)}`;
 
-/** Podiums that cover whole city blocks (stretched to each block), and their ids (review). */
-export const CITY_PODIUMS = 4;
-export const podiumId = (n: number): string => `city-podium-${String(n)}`;
-
 /**
  * One rule per variant of a family of buildings assembled from parts, each with the `weight`
  * given: a square plan of the family's half side (`frontage`), and the footprint circle around it
