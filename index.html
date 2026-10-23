@@ -293,7 +293,8 @@
         margin: 40px 0 0;
         padding: 6px 24px;
         clip-path: var(--chamfer);
-        /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen. */
+        /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen; shrinkToFit()
+           lowers it when the system falls back to a wider font. */
         font-size: 46px;
         font-weight: 900;
         font-style: italic;
