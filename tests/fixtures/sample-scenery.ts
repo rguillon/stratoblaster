@@ -128,7 +128,14 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
       shade: [0.8, 0.8, 0.8],
     },
   ],
-  roads: { main: [0.2, 0.2, 0.2], cross: [0.5, 0.4, 0.3], lift: 0.5 },
+  roads: {
+    main: [0.2, 0.2, 0.2],
+    cross: [0.5, 0.4, 0.3],
+    opacity: { main: 1, cross: 0.5 },
+    shoulder: 1,
+    wear: 0,
+    lift: 0.5,
+  },
   props: { specular: 0, lightIntensity: 1 },
   glow: { intensity: 0.2, blurKernelSize: 8 },
 };

@@ -70,6 +70,7 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Make the roads blend better with the ground. *Fixed: each ribbon now has soft shoulders (2.5 units) on both sides that fade to transparent, so the road melts into the ground. Its surface is slightly see-through (main roads 85 %, paths 60 %), so the ground texture shows through. Colour and opacity vary along the road (30 % wear). The ribbons are drawn blended without writing depth, so crossings mix instead of hiding each other.*
 - [x] The clouds can pass through the heightmap, it looks bad: make sure the clouds stay on top. *Fixed: the height field now has a ceiling, a height its ground never exceeds whatever the seed (top of each section's relief or peak cap, flattened band or sea bed). The stage lifts any cloud layer to at least 15 units above that ceiling. Level Zero's layers moved from 170 / 250 to 265 / 295, above the peaks (≤ 250) and under the ships (320) (D-022).*
 - [x] Add (in the code and in the specs) randomly generated roads or paths on the maps and only place the building props along those roads. *Fixed: requirement P04-R07 added at the reviewer's request. Two winding main roads run along the level, with paths branching off them every 260–560 units. All are generated from the seed and break where they would run into the sea or up steep slopes. Buildings now stand only in slots along roads and paths, set back from the edge and facing the road; trees keep off them (D-021).*
 - [x] Reduce the scale of the props, make them look like the plane is further away. *Fixed: buildings are drawn at ×0.5–0.65 (was ×1.1–1.4) and dead trees at ×0.45–0.75 (was ×0.9–1.5). Footprints shrink to match: the model radius at its largest scale, now checked by a test. The candidate grid goes from 80 to 50 units so the ground keeps its density. The plains now hold about 700 props and the scene draws about 190k triangles (was about 130k).*
@@ -137,7 +138,7 @@ Randomly generated roads or paths shall run across the maps. The building props 
 | P04-R03 | Done | `render/scenery/scenery-stage.ts` (layers), `cloud-material.visual.ts`, `game/config/scenery-look.ts` | `scenery-stage.test.ts`, `scenery-viewer-panel.test.ts`, `start-scenery-viewer.test.ts`, e2e | 2 layers between the highest peaks and the flight plane (review: never through the terrain). Each layer has an on/off switch and intensity (coverage) and opacity sliders. Manual visual validation. |
 | P04-R04 | Done (review: smaller props) | `core/scenery/prop-placement.ts`, `render/scenery/prop-field.ts`, `render/geometry/solids.ts`, `game/view/props/*` | `prop-placement.test.ts`, `prop-field.test.ts`, `solids.test.ts`, `prop-models.test.ts`, `scenery-levels.test.ts` | 4 industrial (factory, storage tanks, warehouse, cooling tower), 3 technical / scientific (radar dish, antenna mast, observatory), 3 homes (cube home, dome home, stilt pod), 2 dead trees. Manual visual validation. |
 | P04-R05 | Done | `render/scenery/playfield-framing.ts`, `scenery-stage.ts`, `game/config/scenery-look.ts` (`PLAYFIELD_CAMERA`) | `playfield-framing.test.ts`, `scenery-stage.test.ts`, `start-scenery-viewer.test.ts` | "35%" read as 35° from vertical (Q4). Perspective camera, 40° FOV, looking forward. O shows the playfield outline. Manual visual validation. |
-| P04-R07 | Done (added in review) | `core/scenery/road-network.ts`, `prop-placement.ts` (buildings from road slots), `render/scenery/road-geometry.ts`, `road-field.ts`, `game/config/level-zero.ts` (`ROAD_RULES`), `scenery-look.ts` (`roads`) | `road-network.test.ts`, `prop-placement.test.ts`, `road-geometry.test.ts`, `scenery-stage.test.ts`, `scenery-levels.test.ts` | Main roads are dark asphalt, 6 wide; paths are packed dust, 4 wide. Manual visual validation. |
+| P04-R07 | Done (added in review) | `core/scenery/road-network.ts`, `prop-placement.ts` (buildings from road slots), `render/scenery/road-geometry.ts`, `road-field.ts`, `game/config/level-zero.ts` (`ROAD_RULES`), `scenery-look.ts` (`roads`) | `road-network.test.ts`, `prop-placement.test.ts`, `road-geometry.test.ts`, `scenery-stage.test.ts`, `scenery-levels.test.ts` | Main roads are worn asphalt, 6 wide; paths are packed dust, 4 wide. Both have soft, see-through edges that blend into the ground (review). Manual visual validation. |
 | P04-R06 | Done | `core/scenery/scroll-track.ts`, `scenery-level.ts` (`levelDuration`), `app/start-scenery-viewer.ts` | `scroll-track.test.ts`, `scenery-level.test.ts`, `scenery-levels.test.ts` (exactly 180 s), `start-scenery-viewer.test.ts`, e2e | 60 px/s, 10,800 px long. At the end the level stops and shows "Level end" (Q5). |
 
 ### Gate results
@@ -149,6 +150,11 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (roads blend with the ground): typecheck ✔, build ✔, e2e 32 passed twice in a row.
+The first runs failed one phase 1 menu test each (gamepad, then AZERTY). Each failure was the
+30 s timeout, with the page simply too slow, and each test passed alone. Cause: the 5 heavy
+level_zero/ tests ran in parallel and starved the other specs of CPU. level-zero.spec.ts now
+runs its tests one after another in one worker (`mode: 'default'`); no timeout was changed.
 Review fix (clouds above the terrain): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (roads, P04-R07): typecheck ✔, build ✔, e2e 32 passed. In an earlier run of this fix,
 menu-gamepad.spec.ts (phase 1, not touched here) went over its 30 s timeout under the full
@@ -194,7 +200,7 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
 - **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
 - **Panel.** On narrow windows the panel covers part of the canvas.
 - **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two roads cross, the ribbons simply overlap. Paths end abruptly where they stop.
-- **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` test runs close to its 30 s timeout when the whole suite runs in parallel, and it failed that way twice during this phase's review fixes. It passes when run alone.
+- **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` takes close to its 30 s timeout under full parallel load. The heavy `level_zero/` tests now run one at a time, which removed the timeouts seen during the review fixes.
 
 ### Suggestions for future phases
 - **Gameplay mapping.** Either keep this camera and limit ship movement to the visible trapezoid, or project the 2D logical playfield onto the tilted plane so that the full 480 px width is visible at the bottom. The second option needs a wider FOV or a higher camera.

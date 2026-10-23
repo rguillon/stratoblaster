@@ -137,8 +137,18 @@ export const LEVEL_ZERO_LOOK = {
       shade: [0.8, 0.78, 0.8],
     },
   ],
-  /** P04-R07: dark worn asphalt for the roads, packed dust for the paths. */
-  roads: { main: [0.34, 0.32, 0.3], cross: [0.68, 0.6, 0.46], lift: 0.6 },
+  /**
+   * P04-R07: worn dusty asphalt for the roads, packed dust for the paths, both slightly
+   * see-through with soft edges, so they blend with the ground (phase 4 review).
+   */
+  roads: {
+    main: [0.36, 0.33, 0.3],
+    cross: [0.66, 0.57, 0.43],
+    opacity: { main: 0.85, cross: 0.6 },
+    shoulder: 2.5,
+    wear: 0.3,
+    lift: 0.6,
+  },
   props: { specular: 0.08, lightIntensity: 1 },
   glow: { intensity: 0.5, blurKernelSize: 16 },
 } as const;

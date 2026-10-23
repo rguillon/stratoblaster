@@ -1,6 +1,10 @@
 import { test, expect, waitForFrames } from './fixtures';
 
 test.describe('P04: level_zero/ page', () => {
+  // Each test software-renders a heavy scene: run them one after another in one worker, so they
+  // do not starve the other specs running in parallel (menu tests timed out under that load).
+  test.describe.configure({ mode: 'default' });
+
   test.beforeEach(async ({ page }) => {
     await page.goto('./level_zero/');
     await expect(page.locator('#game-canvas')).toBeVisible();

@@ -88,8 +88,8 @@ export function createPropMaterials(scene: Scene, look: SceneryLook): PropMateri
 }
 
 /**
- * Vertex-coloured, lit material of the road ribbons, pulled towards the camera in depth so the
- * ribbons never flicker against the terrain under them.
+ * Vertex-coloured, lit, see-through material of the road ribbons (their vertex alpha fades the
+ * edges), pulled towards the camera in depth so they never flicker against the terrain.
  */
 export function createRoadMaterial(scene: Scene): StandardMaterial {
   const roads = new StandardMaterial('roads', scene);
@@ -97,6 +97,8 @@ export function createRoadMaterial(scene: Scene): StandardMaterial {
   roads.specularColor = Color3.Black();
   roads.backFaceCulling = false;
   roads.zOffset = -2;
+  // Blended over the ground: overlapping ribbons (crossings) must not hide each other.
+  roads.disableDepthWrite = true;
   return roads;
 }
 

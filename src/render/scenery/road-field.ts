@@ -37,6 +37,10 @@ export class RoadField {
     mesh.material = this.material;
     mesh.isPickable = false;
     mesh.receiveShadows = true;
+    // The roads fade into the ground with their vertex alpha; drawn first of the see-through
+    // meshes, before the sea and the clouds.
+    mesh.hasVertexAlpha = true;
+    mesh.alphaIndex = -1;
     this.#meshes.set(index, mesh);
   }
 

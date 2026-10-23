@@ -39,3 +39,4 @@
 - 2026-10-23 — 4 — Review fix: smaller props (buildings ×0.5–0.65, trees ×0.45–0.75, 50-unit grid) so the ground reads as far below the ship; light verification green (typecheck, build, 32 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: P04-R07 added to the spec at the reviewer's request; randomly generated roads and paths, buildings only along them (D-021); light verification green (typecheck, build, 32 e2e; the phase 1 gamepad test once went over its 30 s timeout under load); still awaiting review.
 - 2026-10-23 — 4 — Review fix: clouds always above the terrain (height field ceiling, layers at 265 / 295; D-022); light verification green (typecheck, build, 32 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: roads blend with the ground (soft see-through edges, worn surface); level_zero/ e2e tests run one at a time so they no longer starve the menu tests; light verification green (typecheck, build, 32 e2e twice); still awaiting review.
