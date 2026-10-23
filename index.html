@@ -5,14 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Pewet</title>
     <style>
+      /*
+       * Cyberpunk HUD look (GD-60, P01-R13, review feedback D-013, D-014): acid yellow, cyan
+       * and alarm red on black, chamfered panels, scanlines, monospace readouts. The selected
+       * entry is a solid yellow block, with its markers. System fonts only: works offline.
+       */
+      :root {
+        --yellow: #fcee0a;
+        --cyan: #00f0ff;
+        --red: #ff2a55;
+        --black: #050508;
+        --paper: #f2f2f7;
+        --dim: #8a8aa0;
+        --glass: rgba(6, 8, 18, 0.78);
+        --letterbox: #020204;
+        --font:
+          'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
+          sans-serif;
+        --font-tech: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
+        --cut: 14px;
+        /* Panel with its top-left and bottom-right corners cut off. */
+        --chamfer: polygon(
+          var(--cut) 0,
+          100% 0,
+          100% calc(100% - var(--cut)),
+          calc(100% - var(--cut)) 100%,
+          0 100%,
+          0 var(--cut)
+        );
+      }
       html,
       body {
         margin: 0;
         height: 100%;
         overflow: hidden;
-        background: #0d0519;
-        color: #f0e6ff;
-        font-family: system-ui, sans-serif;
+        background: var(--letterbox);
+        color: var(--paper);
+        font-family: var(--font);
+      }
+      #stage {
+        position: fixed;
+        overflow: hidden;
+        background: var(--black);
+      }
+      /* CRT scanlines and vignette over the whole stage; clicks go through. */
+      #stage::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.14) 2px 3px),
+          radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.5) 100%);
       }
       #game-canvas {
         display: block;
@@ -20,23 +64,414 @@
         height: 100%;
         touch-action: none;
       }
+      #menu {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform-origin: 0 0;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
       #fatal {
         position: fixed;
         inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        padding: 24px;
         text-align: center;
-        background: #0d0519;
+        font-size: 22px;
+        line-height: 1.5;
+        background: var(--letterbox);
       }
       #fatal[hidden] {
         display: none;
       }
+
+      .menu-screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 24px 16px;
+        text-align: center;
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      /* HUD frame: yellow and cyan corner brackets around the screen. */
+      .menu-screen::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        pointer-events: none;
+        --size: 22px;
+        background:
+          linear-gradient(var(--yellow), var(--yellow)) top left / var(--size) 3px no-repeat,
+          linear-gradient(var(--yellow), var(--yellow)) top left / 3px var(--size) no-repeat,
+          linear-gradient(var(--cyan), var(--cyan)) top right / var(--size) 2px no-repeat,
+          linear-gradient(var(--cyan), var(--cyan)) top right / 2px var(--size) no-repeat,
+          linear-gradient(var(--cyan), var(--cyan)) bottom left / var(--size) 2px no-repeat,
+          linear-gradient(var(--cyan), var(--cyan)) bottom left / 2px var(--size) no-repeat,
+          linear-gradient(var(--yellow), var(--yellow)) bottom right / var(--size) 3px no-repeat,
+          linear-gradient(var(--yellow), var(--yellow)) bottom right / 3px var(--size) no-repeat;
+      }
+      /* Decorative status tag in the top right corner. */
+      .menu-screen::after {
+        content: 'NET//LINK OK';
+        position: absolute;
+        top: 16px;
+        right: 22px;
+        pointer-events: none;
+        font-family: var(--font-tech);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        color: var(--cyan);
+        opacity: 0.75;
+      }
+      .menu-enter {
+        animation-name: menu-fade;
+        animation-timing-function: ease-out;
+      }
+      @keyframes menu-fade {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+          filter: brightness(2.5);
+        }
+      }
+      .menu-entry {
+        cursor: pointer;
+        box-sizing: border-box;
+        min-width: 44px;
+        min-height: 44px;
+        border: 2px solid rgba(0, 240, 255, 0.45);
+        background:
+          linear-gradient(-45deg, var(--cyan) 0 7px, transparent 7px) bottom right / 16px 16px
+            no-repeat,
+          var(--glass);
+      }
+      /* Selected entry: solid yellow block with black text, plus its markers, so it shows
+         without colour too (much lighter than the dark panels in greyscale). */
+      .menu-entry.selected {
+        border-color: var(--paper);
+        color: var(--black);
+        text-shadow: none;
+        background:
+          linear-gradient(-45deg, var(--black) 0 7px, transparent 7px) bottom right / 16px 16px
+            no-repeat,
+          var(--yellow);
+        box-shadow: 0 0 18px rgba(252, 238, 10, 0.55);
+      }
+      .menu-heading {
+        margin: 68px 0 0;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-shadow:
+          -2px 0 var(--red),
+          2px 0 var(--cyan),
+          0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      .menu-heading::before {
+        content: '// ';
+        color: var(--yellow);
+      }
+      .menu-hint {
+        font-family: var(--font-tech);
+        font-size: 15px;
+        color: var(--cyan);
+      }
+      .menu-hint::before {
+        content: '> ';
+        color: var(--yellow);
+      }
+      .menu-hint::after {
+        content: '_';
+        animation: cursor-blink 1s steps(1) infinite;
+      }
+      @keyframes cursor-blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .menu-back {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        /* ≥ 44 CSS px even on a 390 px wide phone (scale 0.81). */
+        min-width: 96px;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 0 12px;
+        border: 2px solid var(--cyan);
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        color: var(--cyan);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .shake {
+        animation: menu-shake 0.3s linear;
+      }
+      @keyframes menu-shake {
+        20%,
+        60% {
+          translate: -6px 0;
+        }
+        40%,
+        80% {
+          translate: 6px 0;
+        }
+      }
+
+      .loading-screen {
+        justify-content: center;
+        gap: 16px;
+        background:
+          linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 32px 32px,
+          var(--black);
+      }
+      .loading-text {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--yellow);
+        text-shadow:
+          -2px 0 var(--red),
+          2px 0 var(--cyan);
+      }
+      .loading-bar {
+        width: 320px;
+        height: 24px;
+        box-sizing: border-box;
+        padding: 3px;
+        border: 2px solid var(--yellow);
+        overflow: hidden;
+        background: var(--glass);
+      }
+      /* Segmented fill, like a power gauge. */
+      .loading-fill {
+        height: 100%;
+        background:
+          repeating-linear-gradient(90deg, transparent 0 10px, var(--black) 10px 13px),
+          var(--yellow);
+      }
+      .loading-percent {
+        font-family: var(--font-tech);
+        font-size: 18px;
+        color: var(--cyan);
+      }
+
+      .title-score-label {
+        font-family: var(--font-tech);
+        font-size: 15px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .title-high-score {
+        font-family: var(--font-tech);
+        font-size: 32px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--yellow);
+      }
+      /* Logo: black letters on a chamfered yellow plate, with a red / cyan glitch split. */
+      .title-name {
+        margin: 40px 0 0;
+        padding: 4px 36px;
+        clip-path: var(--chamfer);
+        font-size: 68px;
+        font-weight: 900;
+        font-style: italic;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--black);
+        background:
+          repeating-linear-gradient(rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 4px), var(--yellow);
+        text-shadow:
+          -3px 0 var(--red),
+          3px 0 var(--cyan);
+        animation: title-glitch 4s steps(1) infinite;
+      }
+      @keyframes title-glitch {
+        92% {
+          text-shadow:
+            -7px 0 var(--red),
+            6px 0 var(--cyan);
+          translate: 3px 0;
+        }
+        94% {
+          text-shadow:
+            -3px 0 var(--red),
+            3px 0 var(--cyan);
+          translate: 0 0;
+        }
+      }
+      .title-start {
+        margin-top: 56px;
+        padding: 10px 28px;
+        clip-path: var(--chamfer);
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .title-start.selected::before {
+        content: '▶ ';
+      }
+      .title-start.selected::after {
+        content: ' ◀';
+      }
+      .title-hint {
+        margin-top: auto;
+        margin-bottom: 28px;
+      }
+      .title-version {
+        position: absolute;
+        right: 16px;
+        bottom: 14px;
+        font-family: var(--font-tech);
+        font-size: 11px;
+        text-align: right;
+        color: var(--cyan);
+        opacity: 0.85;
+      }
+
+      .ship-cards {
+        display: flex;
+        margin-top: auto;
+      }
+      .ship-card {
+        flex: 1;
+        margin: 0 3px;
+        padding: 6px 2px 8px;
+        clip-path: var(--chamfer);
+        font-size: 12px;
+        line-height: 1.5;
+        opacity: 0.6;
+      }
+      .ship-card::before {
+        content: '▲';
+        display: block;
+        font-size: 16px;
+        line-height: 1;
+        visibility: hidden;
+      }
+      .ship-card.selected::before {
+        visibility: visible;
+      }
+      .ship-card.selected {
+        opacity: 1;
+      }
+      .ship-card-name {
+        white-space: nowrap;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .ship-select-screen .menu-hint {
+        margin: 12px 0 8px;
+      }
+
+      .level-grid {
+        display: grid;
+        gap: 10px;
+        margin-top: 40px;
+      }
+      /* No clip-path here: it would hide the dashed outline of the selected cell. */
+      .level-cell {
+        position: relative;
+        width: 68px;
+        height: 68px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-tech);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .level-cell:not(.locked) {
+        border-color: var(--cyan);
+      }
+      .level-cell.selected:not(.locked) {
+        border-color: var(--paper);
+      }
+      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the yellow block. */
+      .level-cell.locked {
+        color: var(--dim);
+        border-color: rgba(138, 138, 160, 0.3);
+        background:
+          repeating-linear-gradient(-45deg, rgba(138, 138, 160, 0.1) 0 6px, transparent 6px 12px),
+          rgba(14, 14, 22, 0.85);
+        text-shadow: none;
+        box-shadow: none;
+      }
+      .level-cell.locked.selected {
+        color: var(--red);
+        border-color: var(--red);
+      }
+      .level-cell.selected {
+        outline: 3px dashed var(--paper);
+        outline-offset: 3px;
+      }
+      .padlock {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+      }
+      .menu-status {
+        min-height: 32px;
+        margin-top: 16px;
+        font-family: var(--font-tech);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--red);
+      }
+
+      .game-screen {
+        justify-content: center;
+        gap: 24px;
+      }
+      .game-message {
+        padding: 16px 24px;
+        clip-path: var(--chamfer);
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.4;
+        border: 2px solid var(--yellow);
+        background: var(--glass);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .title-name,
+        .menu-hint::after {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body>
-    <canvas id="game-canvas"></canvas>
+    <div id="stage">
+      <canvas id="game-canvas"></canvas>
+      <div id="menu"></div>
+    </div>
     <div id="fatal" role="alert" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

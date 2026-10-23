@@ -28,8 +28,8 @@ When the user says **"Implement phase N"**:
    - The phase file has status `Ready`. If it is `Draft`, stop and ask.
    - If any requirement is ambiguous, contradictory, or conflicts with an earlier spec, **list the questions and stop** before writing code. Do not guess on MUST requirements.
 3. **Plan**: write a short plan (tasks mapped to requirement IDs) in the phase file's "Implementation report" section.
-4. **Implement** with tests first (TDD) where the engineering spec requires it. Every requirement ID must be traceable to code and/or tests (mention the ID in test names or comments, e.g. `it("P3-R02: enemy dies after 3 hits")`).
-5. **Verify**: run `make check` (or whatever full-gate target `01-engineering.md` defines). All gates must pass: lint, type-check, unit tests, coverage threshold, build. Never lower thresholds or skip tests to make the gate pass.
+4. **Implement**, writing the unit tests alongside the code as the engineering spec requires. Every requirement ID must be traceable to code and/or tests (mention the ID in test names or comments, e.g. `it("P3-R02: enemy dies after 3 hits")`).
+5. **Verify (light)**: run `make typecheck build e2e` only. Do **not** run lint (`make lint`), unit tests (`make test`) or coverage (`make coverage`) during implementation: they run once, in the full gate of `/validate-phase` (see "Phase N validated"). Never lower thresholds or skip tests.
 6. **Report**: fill the phase file "Implementation report" (what was done per requirement, deviations, how to test manually, known limitations). Append any non-trivial technical choice to `DECISIONS.md`.
 7. **Update** `PROGRESS.md`: set phase to `🟡 Awaiting review`.
 8. **Commit** on a branch `phase-NN` following the commit conventions in `01-engineering.md`. Do not merge or push unless the engineering spec says so.
@@ -41,11 +41,13 @@ When the user says **"Fix phase N"** (or adds items under "Review feedback" in t
 
 1. Read the "Review feedback" section of the phase file.
 2. Address each unchecked item, tick it, and note the fix in the report.
-3. Re-run the full gate, update the report, keep status `🟡 Awaiting review`.
+3. Re-run the light verification (`make typecheck build e2e`; no lint, unit tests or coverage), update the report, keep status `🟡 Awaiting review`.
 
 ## Command: "Phase N validated"
 
-Set the phase to `✅ Validated` in `PROGRESS.md` with the date, merge/push per `01-engineering.md`.
+1. Run the **full gate**: `make check` (lint, type-check, unit tests, coverage thresholds, build, e2e). This is the only place where lint, unit tests and coverage run.
+2. If anything fails, fix the cause on the phase branch (never lower thresholds, skip tests or weaken lint config), commit, and re-run `make check` until it passes. Record the final gate results in the phase report.
+3. Set the phase to `✅ Validated` in `PROGRESS.md` with the date and coverage, then merge/push per `01-engineering.md`.
 
 ## Rules
 

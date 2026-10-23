@@ -1,4 +1,12 @@
 import type { PlayerShipRoster } from '../entities/player-ship';
+import type { LevelCatalog } from './level-catalog';
+import type { MenuTexts } from './menu-texts';
+
+/** Logical resolution the game is laid out on, scaled to fit the window (GD-02). */
+export interface LogicalScreen {
+  readonly width: number;
+  readonly height: number;
+}
 
 /**
  * Contract between the engine and a game built on it (ENG-144).
@@ -14,8 +22,14 @@ export interface GameDefinition<TView = unknown> {
   readonly id: string;
   /** Human-readable title shown by the engine. */
   readonly title: string;
-  /** The ships the player can fly (data only). */
+  /** Logical resolution of the screens (GD-02). */
+  readonly screen: LogicalScreen;
+  /** The ships the player can fly (data only). The first one is selected by default. */
   readonly playerShips: PlayerShipRoster;
+  /** The levels shown on the level select screen, and which ones can be played. */
+  readonly levels: LevelCatalog;
+  /** Texts of the menu screens. */
+  readonly texts: MenuTexts;
   /** Presentation bindings for the content above. */
   readonly view: TView;
 }

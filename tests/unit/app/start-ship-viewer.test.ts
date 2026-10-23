@@ -71,7 +71,7 @@ describe('startShipViewer', () => {
   });
 
   it('fails clearly when a ship has no model', () => {
-    const game = { ...SAMPLE_GAME, view: { playerShipModels: {} } };
+    const game = { ...SAMPLE_GAME, view: { ...SAMPLE_GAME.view, playerShipModels: {} } };
     expect(() => startShipViewer(new NullEngine(), game, { environment: false })).toThrow(
       /no model for player ship "cube"/i,
     );

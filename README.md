@@ -6,12 +6,24 @@ An old-school vertical shoot 'em up with modern 3D graphics, running entirely in
 
 ## Controls
 
+### Menus
+
+| Action         | Keyboard                       | Gamepad           | Touch / mouse             |
+| -------------- | ------------------------------ | ----------------- | ------------------------- |
+| Move selection | Arrows / WASD (Z Q S D AZERTY) | Left stick, D-pad | Tap an entry              |
+| Confirm        | Enter, Space                   | A                 | Tap the selected entry    |
+| Back           | Esc, Backspace                 | B                 | On-screen **Back** button |
+
+### In game
+
 | Action         | Keyboard      |
 | -------------- | ------------- |
 | Move           | Arrows / WASD |
 | Shoot          | Space         |
 | Special / bomb | E             |
 | Pause          | Esc / P       |
+
+The high score and the last chosen ship are kept in cookies (`pewet_high_score`, `pewet_last_ship`).
 
 ## Requirements
 

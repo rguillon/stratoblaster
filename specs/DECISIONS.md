@@ -102,3 +102,79 @@
 - **Alternatives considered:** smooth low-tessellation meshes (look blobby rather than faceted); a per-ship opt-in (inconsistent style across the roster).
 - **Consequences:** Balanced 1,150, heavy 1,086, light 1,722 triangles, down from 15k to 19k. New parts should use the faceted helpers.
 - **Status:** Accepted
+
+### D-008 — Menu architecture (phase 01)
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** Phase 01 adds the menu flow, three input devices, an HTML overlay and 3D scenes behind it, while keeping the engine game-agnostic (ENG-140) and the flow logic pure (P01-R01).
+- **Decision:**
+  - The screen state machine (`MenuFlow`) lives in `app/` as the phase asks, but is pure (no Babylon/DOM); the screen ids and transition table are in `core/menu/` so `render/` (backdrop) can use them, since nothing may import `app/` (D-003).
+  - `MenuAction` (`up/down/left/right/confirm/back`) is defined in `input/`. Tapping a non-selected entry produces a seventh command, `{ select: index }`, because none of the six actions means "select entry N"; tapping the selected entry produces `confirm` (P01-R12).
+  - The first ship of `PlayerShipRoster` is the default selection (Balanced in this game), rather than a new `defaultShipId` field.
+  - `GameDefinition` gains `screen` (logical resolution, GD-02), `levels` (`LevelCatalog`), `texts` (`MenuTexts`: every menu string, ENG-140) and `view.menuBackdrop` (the 3D scene behind the menus, built by the game). The level grid helper `buildLevelGrid` is generic (`core/content/`); the 5 × 5 data and the unlocked list are in `src/game/`.
+  - Two Babylon scenes: the game's backdrop is rendered on every menu screen; the engine's ship select stage is rendered over it (`autoClear = false`) on the ship select screen only. The backdrop hides its own ship there (`MenuBackdrop.showScreen`). Both scenes are built and their shaders compiled behind the loading screen, in 4 steps that drive the progress bar (ENG-108).
+  - The highlighted ship is scaled up, sits on a glowing neon ring and is the only mesh lit by a key light (`includedOnlyMeshes`), so the others look dimmed; their HTML cards are faded too.
+  - The canvas and the overlay share a `#stage` box fitted to the window with the 3:4 ratio (letterboxed). The overlay is laid out at 480 × 640 CSS px and scaled with a CSS transform.
+  - Input is ignored during a screen transition (P01-R15) by a timer inside `MenuFlow`, so the test API obeys the same rule as the devices.
+  - Menu entries are `div role="button"`, not `<button>`, so a focused button never turns Space/Enter into a second confirm.
+- **Alternatives considered:** one scene with two cameras and layer masks (glow layer and clear handling get tricky); a canvas sized to the whole window with only the overlay letterboxed (ships would not line up with their cards on wide windows); jsdom-free UI tests with the existing fake DOM (too much fake API for event handling, see D-009).
+- **Consequences:** Gameplay phases add a `play` screen to the flow (the `game` placeholder goes away) and reuse `MenuInput` / `HoldRepeater` for pause menus.
+- **Status:** Accepted
+
+### D-009 — `happy-dom` for UI unit tests
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** The menu overlay uses clicks, `classList`, `querySelector` and SVG elements. The fake DOM of D-004 would need to reimplement much of that.
+- **Decision:** Add `happy-dom` (MIT, dev dependency only, not shipped) and opt in per test file with `// @vitest-environment happy-dom`. Other tests stay in the `node` environment.
+- **Alternatives considered:** jsdom (heavier and slower); extending `tests/helpers/fake-dom.ts`.
+- **Consequences:** No runtime dependency added (ENG-05 does not apply).
+- **Status:** Accepted
+
+### D-010 — Persistence in cookies, despite ENG-07's `localStorage`
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** ENG-07 says persistence uses `localStorage`, but the vision ("any persistence shall be handled by cookies"), GD-51 and P01-R04/R14 ask for cookies.
+- **Decision:** Follow the vision, GD-51 and the phase: `platform/cookie-storage.ts` (`max-age` = `cookie_max_age`, `SameSite=Lax`, default path) behind the `KeyValueStorage` interface. Keys are prefixed with the game id: `pewet_high_score`, `pewet_last_ship`. A missing, undecodable or non-integer value reads as 0 / none.
+- **Alternatives considered:** `localStorage` (contradicts three other specs).
+- **Consequences:** Switching to `localStorage` later is one new `KeyValueStorage` class. ENG-07 could be updated to say "cookies".
+- **Status:** Accepted
+
+### D-011 — ENG-52 check in `make build`
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** `__GAME_TEST__` must be absent from the production bundle (ENG-52), and an e2e or build test must check it.
+- **Decision:** `main.ts` installs the test API under `if (__E2E__)`; `__E2E__` is a build-time constant, so the production build drops the branch and the `debug/test-api.ts` module. `make build` then greps `dist/` and fails if `__GAME_TEST__` is found. The API provides `getState()` and `sendAction()` for now; `setSeed`, `step` and `pause` come with gameplay.
+- **Alternatives considered:** a Playwright test reading `dist/` (depends on `make build` running first, which `make e2e` does not do).
+- **Consequences:** CI runs this check through `make build`.
+- **Status:** Accepted
+
+### D-012 — Dark menu background, despite GD-61's pastel background
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** Review feedback on phase 1 asked to make the background dark on all menu screens. GD-61 and P01-R05 ask for a pastel background.
+- **Decision:** Follow the review feedback. `TITLE_LOOK` uses a dark night palette: sky from near-black blue (top) to dark plum (horizon), the fog/clear colour equal to the horizon, a near-black purple floor. The sun and the neon grid keep their bright colours for the synthwave contrast. The CSS behind the canvas and the loading screen gradient are dark too.
+- **Alternatives considered:** only darkening the canvas clear colour (hidden by the sky, no visible change).
+- **Consequences:** GD-61 / P01-R05 could be reworded to "dark background". A unit test checks the backdrop colours stay dark and the sun/grid stay bright.
+- **Status:** Accepted
+
+### D-013 — Cyberpunk HUD style for the menus, in CSS only
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** Review feedback on phase 1 asked for a more technological / cyberpunk UI.
+- **Decision:** Restyle the overlay in `index.html` only, with no markup change: dark glass panels with neon corner brackets (drawn as background layers, so the `::before` / `::after` selection markers stay free), a HUD frame with corner brackets around each screen, CRT scanlines and a vignette over the stage (`pointer-events: none`), uppercase headings with a cyan/pink chromatic split, a skewed and briefly glitching title, monospace system fonts for readouts (hint with a `>` prompt and blinking cursor, score, percent, level numbers, version), a segmented loading bar and hazard stripes on locked levels. Animations stop under `prefers-reduced-motion`. Large sans-serif text stays for entries and names, for kids.
+- **Alternatives considered:** a bundled techno font (adds an asset and a licence to check; system monospace is enough); `clip-path` cut corners (they clip the glow of the selected entry).
+- **Consequences:** The selection is still shown by the white frame, ▶ ◀ / ▲ markers and the dashed outline (P01-R13 greyscale criterion). Ship card stat lines may wrap instead of overflowing on narrow cards.
+- **Status:** Accepted
+
+### D-014 — Cyberpunk, not synthwave: generated night city and yellow / cyan / red HUD
+- **Date:** 2026-10-23
+- **Phase:** 1
+- **Context:** Review feedback asked to remove the pastel background requirement and to make the UI look cyberpunk rather than synthwave. The striped sun and the pink neon grid were the most synthwave part.
+- **Decision:**
+  - Specs: the reviewer asked for the pastel requirement to go, so it was removed from GD-61, P01-R05, P01-R13 and the phase notes, and the phase text now says "cyberpunk, not synthwave". The `title_grid_scroll_speed` tunable became `title_city_scroll_speed`. GD-60 ("cyberpunk/synthwave") was left as is: it covers the whole game, not only the menus.
+  - Backdrop: `game/view/city-geometry.ts` (pure, no Babylon) generates a street of dark towers in two rows, lit windows on the street side, neon roof trims and blade signs with bars as "text", dashed lane lines, a flat distant skyline and rain streaks, from a seeded mulberry32 generator (`core/math/rng.ts`, seed 2077), so the city is the same on every run. Each piece is two merged vertex-coloured meshes (dark structure excluded from glow, neon lights glowing). Two copies of a 200-unit chunk scroll towards the camera and wrap; the rain mesh holds its pattern twice and wraps the same way. Neon meshes use a 0.45 emissive scale: at full brightness the glow layer and ACES tone mapping turned the signs into white blobs.
+  - Overlay: acid yellow `#fcee0a`, cyan `#00f0ff` and red `#ff2a55` on black; chamfered panels (`clip-path`) except on level cells, where it would hide the dashed outline of the selected cell; the selected entry is a solid yellow block with black text (also obvious in greyscale) plus its markers; logo in black on a yellow plate with a red / cyan glitch; `//` heading tags, a decorative `NET//LINK OK` tag, red locked state and "Locked!" status; a condensed system font stack (Bahnschrift, DIN, Roboto Condensed, Arial Narrow) before the previous fallbacks. The ship select ring is yellow (`config/menu.ts`).
+  - `buildStripedDisc` and `render/geometry/floor-grid.ts` were removed with their tests (no other user).
+- **Alternatives considered:** keeping the sun and grid and only recolouring them (still reads as synthwave); a `DynamicTexture` for windows (needs a canvas, does not work in the `NullEngine` unit tests); instanced boxes (more draw calls than two merged meshes per chunk).
+- **Consequences:** About 4 draw calls for the city plus skyline and rain; 60 FPS still to be checked manually. The city's look is tuned in `game/config/title-look.ts`.
+- **Status:** Accepted

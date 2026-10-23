@@ -16,6 +16,8 @@ test('P02-R01..R03: player_ship/ shows the 3 player ships with their stats', asy
   for (let i = 0; i < 3; i++) await expect(captions.nth(i)).toContainText(/\d polygons/);
   // Let a few frames render so WebGL errors (shaders, textures) surface in the console.
   await page.waitForTimeout(1000);
+  // The viewer page has no menu.
+  await expect(page.locator('.menu-screen')).toHaveCount(0);
 });
 
 test('the game page does not start the ship viewer', async ({ page }) => {

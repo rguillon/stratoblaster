@@ -14,7 +14,7 @@
 
 ## 🧑 Requirements
 
-> ID format `PNN-Rxx`. Priority: **MUST** / **SHOULD** / **MAY**.
+> ID format `PNN-Rxx`. Every requirement is **MUST** (no SHOULD / MAY).
 > Write each requirement so it is testable. Add acceptance criteria when "done" isn't obvious.
 
 ### PNN-R01 — <short title>  · MUST
@@ -24,14 +24,11 @@
 - [ ] Given <context>, when <action>, then <result>.
 - [ ] 
 
-### PNN-R02 — <short title>  · SHOULD
+### PNN-R02 — <short title>  · MUST
 <!-- Description -->
 
 **Acceptance criteria**
 - [ ] 
-
-### PNN-R03 — <short title>  · MAY
-<!-- Description -->
 
 ## 🧑 Tunable values
 <!-- Numbers you want to be able to tweak later. The agent puts them in config. -->

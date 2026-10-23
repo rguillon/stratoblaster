@@ -15,9 +15,12 @@ export interface ShowcaseEnvironmentOptions {
 
 /**
  * Gives a scene image-based lighting from a procedural sky gradient (no asset download),
- * ACES tone mapping and a glow layer for emissive parts (ENG-103).
+ * ACES tone mapping and a glow layer for emissive parts (ENG-103). Returns the glow layer.
  */
-export function applyShowcaseEnvironment(scene: Scene, options: ShowcaseEnvironmentOptions): void {
+export function applyShowcaseEnvironment(
+  scene: Scene,
+  options: ShowcaseEnvironmentOptions,
+): GlowLayer {
   const faces = buildGradientCubeFaces(options.cubeSize, options.stops);
   scene.environmentTexture = new RawCubeTexture(
     scene,
@@ -33,4 +36,5 @@ export function applyShowcaseEnvironment(scene: Scene, options: ShowcaseEnvironm
     ImageProcessingConfiguration.TONEMAPPING_ACES;
   const glow = new GlowLayer('glow', scene, { blurKernelSize: options.glow.blurKernelSize });
   glow.intensity = options.glow.intensity;
+  return glow;
 }
