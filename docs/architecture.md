@@ -36,13 +36,14 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 ## Pages and routes
 
-The build has three HTML entries sharing one bundle (`src/main.ts`):
+The build has four HTML entries sharing one bundle (`src/main.ts`):
 
-| Page                      | Route (`app/route.ts`) | Started by                 |
-| ------------------------- | ---------------------- | -------------------------- |
-| `index.html`              | `game`                 | `app/start-app.ts`         |
-| `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts` |
-| `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts` |
+| Page                      | Route (`app/route.ts`) | Started by                    |
+| ------------------------- | ---------------------- | ----------------------------- |
+| `index.html`              | `game`                 | `app/start-app.ts`            |
+| `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts`    |
+| `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts`    |
+| `level_zero/index.html`   | `scenery-viewer`       | `app/start-scenery-viewer.ts` |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a
@@ -53,6 +54,54 @@ playfield (orthographic camera, one world unit per logical pixel, Y up). One shi
 selected weapon at the selected level at dummy targets (`app/dummy-targets.ts`); the panel
 (`ui/shot-viewer-panel.ts`) and keys 1-9 / W / S / G / T switch level, weapon, ship, stream
 guides and targets. A tile (`ui/stats-tile.ts`) shows the FPS and the triangles drawn per frame.
+
+The generated level viewer (phase 04, `level_zero/`) flies the game's first scenery level
+(`GameDefinition.sceneryLevels`) under the tilted playfield camera for its whole duration. The
+panel (`ui/scenery-viewer-panel.ts`) and keys P / F / R / N / S / O / 1-9 / ← → pause,
+fast-forward, restart, change the seed, switch the sea, the playfield outline and the cloud
+layers, and seek.
+
+## Generated levels (phase 04)
+
+```
+core/scenery/  SceneryLevel (data) ─▶ HeightField ─▶ PropPlacer      ScrollTrack (time ↔ distance)
+                                          │              │
+render/scenery/  TerrainChunks ◀──────────┘   PropField ◀┘   (thin instances)
+                 SceneryStage: camera, sun, sea, cloud layers, chunks + props around the camera
+                 SceneryKit: materials / textures / shadows (plain, or *.visual.ts for WebGL)
+```
+
+- `core/scenery/scenery-level.ts`: a level is a list of sections, each `seconds` long at the
+  level's scroll speed (so the duration is the sum of the seconds). A section is a fractal relief
+  (`smooth` or `ridged`, with an optional soft height cap) plus optional operations: `flatten`
+  (a plateau band), `channel` (a canyon along a winding line) and `shore` (ground dropping under
+  the sea on one side). Optional sea level; prop rules.
+- `core/scenery/height-field.ts`: pure, seeded height function of a level; sections blend over
+  `transition`. `core/math/noise.ts`: seeded gradient noise (optionally tiling), fBm, ridged noise.
+- `core/scenery/road-network.ts`: seeded winding main roads along the level and paths branching
+  off them. No road starts or ends on screen: before the sea or steep ground a main road turns
+  off the screen sideways, and paths run from their road to beyond the screen edge, widening at
+  the junction. Building slots line both sides of the roads.
+- `core/scenery/prop-placement.ts`: buildings stand only in the road slots (set back from the
+  edge, facing the road), on flat ground above `minHeight`; a low-frequency zone noise picks the
+  building group per area (clusters). Dead trees grow on a grid of cells, away from the roads.
+  Every slot and cell is decided from a hash, so chunks can be placed independently.
+- `render/scenery/road-geometry.ts` / `road-field.ts`: draped, soft-edged ribbon meshes per
+  terrain chunk, in two layers (paths drawn before roads, so roads stay on top).
+- `render/scenery/playfield-framing.ts`: the camera is tilted `tiltDeg` from straight down and
+  placed so the bottom and top of the screen pass through the bottom and top of the logical
+  playfield, a plane at `flightAltitude`. One world unit is one logical pixel; X across (0 under
+  the playfield middle), Z along the level, Y up.
+- `render/scenery/scenery-stage.ts` keeps terrain chunks (`terrain-chunks.ts`, pooled meshes) and
+  their props (`prop-field.ts`, one thin-instanced mesh per prop kind plus one for its self-lit
+  accents) around the camera, and moves the sea and cloud planes with it.
+- `render/scenery/scenery-kit.visual.ts` (needs WebGL, not unit-tested): generated textures
+  (`procedural-textures.ts`, pure and tested) blended by altitude and slope in a
+  `StandardMaterial` plugin (`terrain-blend-plugin.visual.ts`); a PBR sea with a drifting
+  generated normal map; cloud layers as a small shader (`cloud-material.visual.ts`); PCF sun
+  shadows. `createPlainSceneryKit` stands in for it in unit tests.
+- Props are geometry, not meshes: `PropModelFactory` returns vertex-coloured, flat-shaded
+  `ColoredGeometry` built with `render/geometry/solids.ts` (boxes, bodies of revolution, rings).
 
 ## Shots (phase 03)
 
@@ -125,4 +174,7 @@ input, update the overlay, and animate and render the menu scenes (frame time ca
    Declare the player weapons in `GameDefinition.playerWeapons`, one shot renderer per weapon id
    in `GameDefinition.view.playerShotRenderers`, and the ships' size on the playfield in
    `GameDefinition.view.playerShipScale` (logical pixels per model unit).
+   Declare the levels with generated ground in `GameDefinition.sceneryLevels` (`SceneryLevel`
+   data), and in `GameDefinition.view.scenery` the playfield camera, one `SceneryLook` per
+   scenery level id and one `PropModelFactory` per prop kind id.
 5. Run `make check`.

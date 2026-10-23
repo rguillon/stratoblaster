@@ -229,3 +229,194 @@
 - **Alternatives considered:** Staying on ESLint 9 until `eslint-plugin-import` supports 10 (no release in over a year).
 - **Consequences:** ENG-12 names `eslint-plugin-import`; the human owner is to update it to `eslint-plugin-import-x`. Lint, test and Actions updates are grouped in Dependabot so peer-linked packages move together.
 - **Status:** Accepted
+
+### D-020 — Generated levels: data-driven terrain, tilted playfield camera, `level_zero/` page
+- **Date:** 2026-10-23
+- **Phase:** 4
+- **Context:** Phase 4 asks for the tools that generate the real levels: a sculpted heightmap with textures blended by slope and altitude, an optional sea, optional cloud layers, props on flat ground, a camera tilted 35°, and a level of about 3 minutes. Gameplay does not exist yet. The reviewer accepted the 11 proposed defaults of the phase report ("defaults OK").
+- **Decision:**
+  - Units: one world unit is one logical pixel. X runs across the level (0 under the middle of the playfield), Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is a plane at the flight altitude (320).
+  - `core/scenery/` (pure, seeded): a `SceneryLevel` is a list of sections, each `seconds` long at the level's scroll speed, so the duration is simply the sum of the sections. Each section is a fractal relief (smooth or ridged, with a soft cap that keeps peaks under the flight plane) plus optional sculpt operations: `flatten` (plateau), `channel` (canyon along a winding line) and `shore` (coast). Neighbouring sections blend over a transition length. `PropPlacer` decides each grid cell from a hash of its coordinates, so terrain chunks can be placed in any order. `ScrollTrack` converts time to distance and handles the end of the level.
+  - Camera (P04-R05): perspective, tilted 35° from straight down towards +Z, with a 40° vertical FOV. It is placed so that the bottom and top of the screen pass through the bottom and top edges of the 480×640 playfield (`render/scenery/playfield-framing.ts`).
+  - Terrain: chunks of 320 × ~1100 units on an 8-unit grid, kept only around the camera; their meshes are reused (ENG-19). Normals come from one extra ring of height samples, so chunk seams do not show.
+  - Look (`*.visual.ts`, not unit-tested): four ground textures and a noise texture generated in code at load time. A `StandardMaterial` plugin blends them by altitude and slope, using triplanar sampling and noise-jittered borders, and adds a surf band at the sea level, so standard lighting, shadows and fog still apply. The sea is a PBR plane with a drifting generated normal map (sky reflection and sun glint, no mirror reflection). Each cloud layer is a small shader over equalised noise, so coverage maps directly to the share of sky covered. The sun casts PCF shadows from the terrain and the props. A plain `SceneryKit` (flat `StandardMaterial`s) stands in for the real one in `NullEngine` unit tests.
+  - Props (P04-R04): each model is pure vertex-coloured, flat-shaded geometry built with `render/geometry/solids.ts`. Each kind is drawn as one thin-instanced mesh, plus one for its self-lit accents (ENG-104). The glow layer only draws those accent meshes, so neon rings are open bands with no end caps (caps hidden inside a building would glow through it).
+  - Content contract: `GameDefinition.sceneryLevels` (data) and `GameView.scenery` (camera, one look per level, one model per prop kind). Level Zero lives in `src/game/` and is not listed in level select. `src/game/config/` may import only `core/`, so the look is plain data there and typed in `game/view/scenery-bindings.ts`.
+  - Debug page `level_zero/`: a fourth Vite entry, route `scenery-viewer`. It shows the first ship parked on the playfield, plus controls for pause, ×4, restart, seek, new seed, sea, playfield outline, and each cloud layer's on/off, intensity and opacity.
+- **Alternatives considered:**
+  - Babylon `WaterMaterial`: it renders reflection and refraction targets every frame, which is too costly for ENG-101.
+  - A full `ShaderMaterial` for the terrain: it would need its own shadow and fog code.
+  - One mesh per prop: too many draw calls.
+  - An in-browser level editor that saves levels: rejected in the phase questions (Q2).
+- **Consequences:**
+  - With a perspective camera, the playfield seen on screen is a trapezoid. About 293 of the 480 logical pixels are visible across the bottom edge and about 493 across the top edge. The gameplay phase has to decide how ships map to the screen.
+  - Quality presets (ENG-102) do not exist yet, so the shadow map size and the terrain grid are fixed.
+  - New levels are data plus a look; new prop kinds are a geometry function plus a rule entry.
+- **Status:** Accepted
+
+### D-021 — Roads and paths, with buildings only along them
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer asked for randomly generated roads or paths on the maps, with building props only along them, in the code and in the specs. The spec now has P04-R07.
+- **Decision:**
+  - `core/scenery/road-network.ts` (pure, seeded): `mainRoads` winding roads run along the whole level and a little beyond both ends (a sine meander plus noise wobble). Paths branch off a random main road every `crossSpacing`, going left or right with a gentle bend. Centre lines are sampled every `step`. Points under `minHeight` (the sea) or steeper than `maxSlope` are invalid, and valid pieces shorter than `minRun` points are dropped. Segments are indexed in 64-unit buckets for edge-distance queries.
+  - Placement: buildings come only from slots every `slotSpacing` along the valid roads, on both sides. A building is set back `setback` from the road edge, faces the road, and must stay clear of the other roads. Buildings along paths also keep clear of the building rows of the roads they meet, so corners do not collide. Trees stay on their grid but keep `treeClearance` from road edges.
+  - Ends off screen (review): no road starts or ends where the camera can see it (|X| < `offscreenX` = 420 in Level Zero; the camera sees up to about ±390). Each buildable run of a main road gets an exit turn at each end that is on screen. The turn runs towards the nearest side, then the other side, at `turnRate`, and is tried earlier and earlier along the run (4 points at a time, 40 tries) until it stays on buildable ground; otherwise the run is dropped. Paths start on a main road piece that passes there and run to beyond the screen edge. They try both directions and 3 bends, and are dropped if no try stays on buildable ground. Every road point is now buildable, so `RoadPoint.valid` is gone; points carry a width instead.
+  - Junctions (review): a path widens to `junction.width` at its main road and narrows back to `crossWidth` over `junction.length` (smoothstep). Paths and roads are separate mesh layers, with paths at `alphaIndex` -2 and roads at -1, so roads are always drawn on top.
+  - Look (review): every ribbon has 4 vertex rows. The outer shoulders fade to alpha 0 and the surface is slightly see-through and worn (hashed colour and opacity variation), so the road blends into the ground texture. Ribbons are blended without depth writes and drawn before the sea and clouds (`alphaIndex` -1).
+  - Rendering: each terrain chunk gets one vertex-coloured ribbon mesh with the segments that start in it, draped on the height field, lifted 0.6 and pulled forward in depth (`zOffset`) so it never flickers against the terrain. It receives shadows.
+  - Data: `SceneryLevel.roads` (`RoadRules`) and `SceneryLook.roads` (colours, lift). Level Zero has 2 main roads 6 units wide and paths 4 units wide.
+- **Alternatives considered:**
+  - Painting roads in the terrain shader: road data would have to go to the GPU, which is harder to keep chunk-local.
+  - Flattening the terrain under the roads: changes the height field for little visible gain from this camera height.
+  - A graph-based road planner (A* over slope): too much for a test level.
+- **Consequences:** Sections with no usable road (open sea, steep mountains) get no buildings. A new seed (N) also changes the road network.
+- **Status:** Accepted
+
+### D-022 — Cloud layers always above the terrain
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** Cloud layers at fixed altitudes (170 and 250) cut through mountains and canyon walls, which looked bad. The reviewer asked for the clouds to stay on top.
+- **Decision:** `terrainCeiling(level)` (`core/scenery/height-field.ts`) gives a height the ground never exceeds, whatever the seed. It takes, for each section, the highest of: the top of its relief (or its peak cap), its flattened band, and its sea bed. Carving only lowers the ground, and blending stays between neighbouring heights, so nothing else can raise it. `SceneryStage` places each layer at `max(look altitude, ceiling + cloudClearance)` (15 units). Level Zero's layers are now at 265 and 295: above the peaks (≤ 250) and under the ships (320).
+- **Alternatives considered:**
+  - Drawing the clouds without depth testing: they would also cover the ships.
+  - Fading the clouds near the ground in the shader: it needs the scene depth, and the clouds would still look sliced.
+- **Consequences:** A level whose ground rises close to the flight altitude leaves little room for clouds. The ceiling is a bound, not the real highest point, so it can sit a little above the actual peaks.
+- **Status:** Accepted
+
+### D-023 — Section ground cover, street grids, and dense, overlap-free buildings
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer asked for three sections at the end of Level Zero: green ground with grass and trees, an industrial zone with a dense road maze packed with buildings, and a city centre.
+- **Decision:**
+  - `TerrainSection` gets four optional fields: `surface` (`lush` / `paved` shares), `trees` and `groups` (which tree kinds and building groups the section allows), and `streets` (a `StreetGrid`). `HeightField.surface(z)` blends the cover across transitions like the height.
+  - Ground cover goes to the GPU in the terrain's vertex colours (red = 1 − lush/2, blue = 1 − paved/2), because Babylon already passes vertex colours to the standard material. The terrain plugin decodes it and mixes in two more generated textures (grass, concrete) through a noise threshold, so the cover comes in patches. The plain test material only shows a light tint.
+  - Street grids (`core/scenery/street-grid.ts`):
+    - A district is a run of consecutive sections with streets.
+    - Each section adds streets across, from screen edge to screen edge, every `across` units; a street is kept only if it is all on buildable ground.
+    - Each district adds `along` streets for its whole length. Like main roads, they turn off the screen at their ends, or run on past the ends of the level.
+    - Streets across are drawn as paths (under the roads) and streets along as main roads.
+  - Buildings are placed once per seed for the whole level, main-road slots first, with a bucket grid of placed footprints, so no two buildings overlap (gap = `setback`). This replaces the earlier rule that kept path buildings away from road building rows. `place(area)` returns the buildings whose centre is in the area, so chunks stay independent. Trees also avoid buildings.
+  - New models: 3 living trees, 2 industrial buildings and 4 city buildings. City window bands are flat quads in dimmed colours (`windowDim`, `cyanDim`).
+  - Level Zero: the sections were shortened (plains 14, hills 12, plateau 14, mountains 18, canyon 18, coast 14, open sea 14, landing 10) to make room for meadows, industrial zone and city centre (22 s each), still 180 s.
+- **Alternatives considered:**
+  - A per-section terrain material: hard seams at the section boundaries.
+  - A custom vertex attribute: needs extra vertex shader code in the plugin.
+  - Placing buildings per chunk with a neighbour check: the result would depend on the order chunks are built in.
+- **Consequences:**
+  - Placement now builds every building of the level up front, about 100 ms on a desktop and again after a new seed.
+  - The city centre is the heaviest part of the level, at about 370k triangles.
+- **Status:** Accepted
+
+### D-024 — Straight street networks, buildings made of parts, stable shadows
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** In the industrial zone and the city centre, the reviewer wanted only straight road segments that merge into each other, with no winding roads or paths. They also asked for more diverse buildings, and for buildings that stop "blinking" as the ship advances.
+- **Decision:**
+  - `StreetGrid` is now `rows`, `columns` and `links`. `core/scenery/street-grid.ts` builds a rectilinear graph per district:
+    - Each section has its own random columns (from past one screen edge to past the other) and rows.
+    - The first and last rows of each section are always built, so the columns of two sections meet them at T-junctions.
+    - Each other link is built with the chance `links`, if its ground is buildable.
+    - A pass then removes dead ends on screen: it extends a street straight on, or cuts it back, until each one ends at another street or off the screen.
+    - Built links are merged into maximal straight runs, which become roads of a new kind, `street`.
+  - Winding roads and paths treat the districts as not buildable, so they turn off the screen before them, and paths no longer start there.
+  - Street ribbons are opaque and unworn, and drawn in the road layer: crossings merge without seams.
+  - Buildings made of parts (`game/view/props/industrial-parts.ts`, `city-parts.ts`): seeded generators register 8 variants each as their own prop kinds (`industrial-complex-N`, `city-building-N`), so they stay thin-instanced. Every part stays inside a fixed square (±12 and ±9 units), so one footprint per family holds; a test checks every variant.
+  - Blinking: three causes and three fixes.
+    - Shadows: the directional shadow frustum re-fitted to all casters every frame, so its texels swam as the view scrolled. The frustum is now fixed (`sun.shadow.frustum`, 1600 units, `autoUpdateExtends = false`), and `snappedLightPosition` moves the sun by whole texels across the light.
+    - Specular: highlights on the flat-shaded facets changed with the view, so specular is now 0 on props and terrain.
+    - Small lights: thin window bands smaller than a pixel aliased. Bands are now fewer and thicker, and the glow is down from 0.5 to 0.3.
+- **Alternatives considered:**
+  - Cascaded shadow maps: more passes, and they still need stabilising.
+  - Snapping the camera instead: that makes the scrolling jerky.
+- **Consequences:**
+  - Shadows cover a fixed 1600-unit square around the view; beyond it there are none (it covers what the camera sees).
+  - Model count is now 37: 21 hand-made and 16 made of parts.
+- **Status:** Accepted
+
+### D-025 — Bigger district buildings, square plans and fallback kinds
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer found the blocks of the industrial zone and the city centre empty.
+- **Decision:**
+  - The generators made of parts take a half-side (`buildIndustrialComplex(seed, half)`, `buildCityBuilding(seed, half)`). `game/config/building-families.ts` lists 6 families of 8 variants: industrial complexes (half-side 12), works (18) and plants (30); city buildings (9), towers (14) and blocks (24, a wide podium with towers on it).
+  - The industrial zone uses a `heavy-industry` group, mostly plants and works. The city group is mostly blocks and towers.
+  - `PropKindRule.frontage` gives a square plan. Such a building stands right at the street setback, keeps that distance from other roads, and takes the box around its turned square for overlap tests. Other kinds still take the box around their footprint circle.
+  - When a slot's drawn kind does not fit, it tries up to 3 smaller kinds of its group, from the largest down.
+  - Slots are every 24 units instead of 34; the wasteland building densities were scaled by 0.7.
+- **Alternatives considered:** Filling the inside of the blocks with yards or parking lots; that was not asked for, and might suit a later level.
+- **Consequences:** The industrial zone draws about 550k triangles, the heaviest part of the level, to be checked against ENG-101 on real hardware. Quality presets could lower the density there.
+- **Status:** Accepted
+
+### D-026 — City blocks filled by podiums
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer wanted bigger skyscraper bases, packed so that no bare ground shows in the city.
+- **Decision:**
+  - The street grid returns its blocks. A block is the cell between four grid lines, inset by half a street plus a 0.5 kerb on each side with a built street, and not inset on a side without one, so neighbouring blocks meet across a missing street.
+  - A section with `blocks` (`BlockFill`) gets one podium per block: a unit-square model, stretched by a per-axis `PropPlacement.size` (thin-instance matrices support non-uniform scale) to the block and a random height.
+  - 2–4 towers stand on each podium, one per part of the block (2 × 2 when it is wider than 40). Each is chosen among the section's kinds that fit the part, preferring the largest (within 75 %).
+  - Street-front slots are skipped in those sections.
+- **Alternatives considered:** Packing street-front buildings tighter still: this cannot guarantee full coverage of irregular blocks.
+- **Review follow-up:** the city now uses an irregular grid (rows 45–95, columns 50–110, 70 % of links) and podiums 3–18 high. Blocks are cut into parts of about 30 (up to 3 × 3) for 2–9 towers, each shifted within its part.
+- **Consequences:** The city reads as one continuous built mass, dark with lit bands. Podium window bands are stretched with the block, so they sit 0.002 units (scaled) off the walls.
+- **Status:** Accepted
+
+### D-027 — City buildings made of lots, along the factory streets
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** Even with an irregular grid, podiums stretched over whole blocks still read as a series of squares.
+- **Decision:**
+  - The city centre uses the same street maze as the industrial zone and gets its buildings along the streets, without `blocks`. The city podium models are removed; the `blocks` option stays in the engine (D-026).
+  - A city building is split into 1–4 unequal lots, each with its own facade and one of five volumes: stepped tower, round tower, slab, courtyard or L-shaped block (`city-lots.ts`).
+  - Towers stand on a low base covering their lot.
+- **Alternatives considered:** Keeping podiums with non-rectangular cut-outs: more geometry code, and it still reads as one mass per block.
+- **Review follow-up:** to hide the ground, the city fills its blocks again, with `blocks` and no podiums. Buildings stand on the ground, one per part of about 30 (up to 4 × 4 parts), with no street-front slots. The city then draws about 1.04 M triangles at its densest.
+- **Consequences:** The centres of deep blocks may show some ground, as in the industrial zone. The city draws about 0.95 M triangles at its densest (it was about 0.33 M), which still needs a check on real hardware against 60 FPS (ENG-101).
+- **Status:** Accepted
+
+### D-028 — Street corners, centre lines and cars
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** Street corners showed notches and dark patches where soft edges overlapped. The review asked for a yellow centre line and cars.
+- **Decision:**
+  - Streets are drawn half their width past both ends, with a narrow soft edge (`streetShoulder`).
+  - Centre lines are optional in `RoadLook` (`centreLine`), painted into the road mesh after the ribbons: solid on streets, broken where another street crosses (`inCrossing`), and dashed on main roads.
+  - Cars are an optional `PropRules.cars` rule: one hashed draw per point of the streets and main roads, in a lane each way, and none in crossings. They are drawn as ordinary props (thin instances).
+- **Alternatives considered:** Moving cars: they would need a traffic simulation and an update per frame (done later, see D-030).
+- **Consequences:** Cars were static at first (superseded by D-030). A crossing test runs against every street for each line piece and car, which is cheap at this level's street counts.
+- **Status:** Accepted
+
+### D-029 — 2×2 roads
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for bigger roads, with two lanes each way.
+- **Decision:**
+  - `RoadRules.dual` sets the 2×2 roads: the first `mainRoads` main roads, and a share `avenues` of the street-grid lines. Each line is decided by a hash of its coordinate, so all its runs and the blocks beside it agree.
+  - `Road.lanes` (1 or 2 each way) drives the markings (`road-lines.ts`) and the car lanes.
+- **Alternatives considered:** Drawing a 2×2 road as two parallel roads with a median: this doubles the road geometry and complicates junctions and building slots.
+- **Consequences:** Building slots, setbacks and block insets follow the wider roads, so the layouts of the industrial zone and the city change.
+- **Status:** Accepted
+
+### D-030 — Moving cars
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for the cars to move.
+- **Decision:**
+  - Each car follows its road at a constant speed, without a simulation. Its distance along the road is `start ± speed · time`, wrapped to the road length, so a car's position at any time is a closed form.
+  - All the cars of a lane share one speed, so they keep their spacing and never overlap. Cars are hidden near road ends, so the wrap is not seen.
+  - The cars in view are uploaded every frame into their own thin-instance meshes, so the static props are never re-uploaded.
+- **Alternatives considered:** Turning at crossings, or cars that follow each other with braking. These need a real traffic simulation with state, more than a test level needs.
+- **Consequences:** Cars pass through each other at crossings, and vanish and reappear at street ends. Per frame, placing about 570 cars takes about 1.3 ms in Node, plus their matrix upload.
+- **Status:** Accepted
+
+### D-031 — Props drawn only near the view
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for fewer polygons. Thin instances of one kind share one mesh, so frustum culling works per kind, not per instance. Every prop of the loaded terrain chunks was drawn, up to about 400 past the view.
+- **Decision:**
+  - `PropField.setWindow` filters placements by Z to the ground in view, plus `propReach` (40 before, 120 past, for tall towers).
+  - The filtered range is `propStep` (40) wider each way, so instances are uploaded again only every 40 or so of scrolling, not every frame.
+- **Alternatives considered:** One mesh per kind and per chunk, so frustum culling works. This multiplies the draw calls by the number of chunks (about 130 kinds × 6 chunks).
+- **Consequences:** A prop taller than about 80 standing past the window could pop in at the top edge. The tallest props are about 60 high.
+- **Status:** Accepted
