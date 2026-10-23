@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 /** ENG-53: every e2e test fails on a console error or an uncaught exception. */
 export const test = base.extend<{ consoleErrors: string[] }>({
@@ -15,5 +15,21 @@ export const test = base.extend<{ consoleErrors: string[] }>({
     { auto: true },
   ],
 });
+
+/** Resolves after `count` animation frames, so the render loop has drawn that many frames. */
+export async function waitForFrames(page: Page, count = 10): Promise<void> {
+  await page.evaluate(
+    (n) =>
+      new Promise<void>((resolve) => {
+        let left = n;
+        const tick = () => {
+          if (--left <= 0) resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
+    count,
+  );
+}
 
 export { expect };

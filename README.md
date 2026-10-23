@@ -2,7 +2,9 @@
 
 An old-school vertical shoot 'em up with modern 3D graphics, running entirely in the browser.
 
-**Play:** _link added once GitHub Pages is enabled_
+**Play:** <https://rguillon.github.io/stratoblaster/>
+
+**Source:** <https://github.com/rguillon/stratoblaster>
 
 ## Controls
 
