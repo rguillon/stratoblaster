@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GAME } from '../../../src/game/index';
 import { HeightField } from '../../../src/core/scenery/height-field';
 import { PropPlacer } from '../../../src/core/scenery/prop-placement';
+import { meetingWidth, streetLines } from '../../../src/core/scenery/road-traffic';
 import { levelRoads } from '../../../src/core/scenery/road-network';
 import { levelDuration } from '../../../src/core/scenery/scenery-level';
 import { LEVEL_ZERO, SCENERY_LEVELS } from '../../../src/game/sim/scenery-levels';
@@ -49,15 +50,20 @@ describe('Level Zero', () => {
     const framing = framePlayfield(GAME_CONFIG.screen, PLAYFIELD_CAMERA);
     const cameraY = PLAYFIELD_CAMERA.flightAltitude + framing.height;
     const seen = visibleGround(framing, width / height, cameraY, LEVEL_ZERO.sea?.level ?? 0, 0);
-    const { offscreenX, mainWidth, junction } = LEVEL_ZERO.roads;
+    const { offscreenX, mainWidth, junction, dual } = LEVEL_ZERO.roads;
     const shoulder = LEVEL_ZERO_LOOK.roads.shoulder;
     expect(offscreenX).toBeGreaterThan(
-      seen.halfWidth + Math.max(mainWidth, junction.width) / 2 + shoulder,
+      seen.halfWidth + Math.max(mainWidth, dual.width, junction.width) / 2 + shoulder,
     );
-    for (const road of levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed).roads) {
+    const { roads } = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
+    const lines = streetLines(roads);
+    for (const road of roads) {
       const last = road.points.at(-1);
       const onLevel = last && last.z > 0 && last.z < field.length;
-      if (onLevel) expect(Math.abs(last.x)).toBeGreaterThanOrEqual(offscreenX);
+      if (!onLevel) continue;
+      // A street may also end in the street it meets (review).
+      const meets = road.kind === 'street' && meetingWidth(lines, road.index, last.x, last.z);
+      if (!meets) expect(Math.abs(last.x)).toBeGreaterThanOrEqual(offscreenX);
     }
   });
 
@@ -118,14 +124,18 @@ describe('Level Zero', () => {
     const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
     const props = placer.place({ xMin: -500, xMax: 500, zMin: 0, zMax: field.length });
     const kinds = new Set(props.map((p) => p.kind));
-    expect([...kinds].sort()).toEqual(Object.keys(PROP_MODELS).sort());
+    // Every model but the cars, which drive (see `Traffic`) instead of standing.
+    const cars = new Set<string>(LEVEL_ZERO.props.cars?.kinds ?? []);
+    const standing = Object.keys(PROP_MODELS).filter((id) => !cars.has(id));
+    expect([...kinds].sort()).toEqual(standing.sort());
     for (const p of props) expect(p.y).toBeGreaterThanOrEqual(LEVEL_ZERO.props.minHeight);
   });
 
   it('P04-R07: has roads and paths over the level, with buildings only along them', () => {
     const roads = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
     expect(roads.roads.filter((r) => r.kind === 'main').length).toBeGreaterThanOrEqual(2);
-    expect(roads.roads.filter((r) => r.kind === 'cross').length).toBeGreaterThan(20);
+    // Fewer since the districts (no paths there) and the 2×2 highway (review).
+    expect(roads.roads.filter((r) => r.kind === 'cross').length).toBeGreaterThan(15);
     const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
     const trees = new Set(LEVEL_ZERO.props.trees.map((t) => t.id));
     const buildings = placer

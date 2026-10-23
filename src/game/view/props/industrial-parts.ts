@@ -44,8 +44,9 @@ function roof(s: SolidBuilder, hall: Hall, random: Random): void {
     // Pitched: two slopes meeting along X.
     s.box([w + 1, 0.6, d / 2 + 1], C.rust, { at: [x, h + 0.6, z + d / 4], pitch: 0.4 });
     s.box([w + 1, 0.6, d / 2 + 1], C.rust, { at: [x, h + 0.6, z - d / 4], pitch: -0.4 });
-  } else if (style === 3) {
-    // Barrel vault: a cylinder lying along X, its lower half inside the hall.
+  } else if (style === 3 && d * 0.7 <= h) {
+    // Barrel vault: a cylinder lying along X, its lower part inside the hall (on halls tall
+    // enough for it not to come out under the ground).
     const r = d / 2;
     s.cylinder(r, w, 8, C.metal, { at: [x - w / 2, h - r * 0.4, z], roll: -Math.PI / 2 });
   } else {
@@ -161,5 +162,7 @@ export function buildIndustrialComplex(seed: number, half = INDUSTRIAL_HALF): Pr
   };
   const size = 2 * half;
   pick(random, LAYOUTS)(kit, [0, 0, size, size], half);
-  return { structure: kit.s.geometry, lights: kit.l.geometry };
+  const lights = kit.l.geometry;
+  // A tank farm may have no lights at all.
+  return { structure: kit.s.geometry, ...(lights.indices.length > 0 ? { lights } : {}) };
 }

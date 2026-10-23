@@ -9,7 +9,6 @@ export const PART_FAMILIES = {
   'industrial-complex': 12,
   'industrial-works': 18,
   'industrial-plant': 30,
-  'city-building': 9,
   'city-tower': 14,
   'city-block': 24,
 } as const;
@@ -20,7 +19,7 @@ export const variantId = (kind: PartFamily, n: number): string => `${kind}-${Str
 /**
  * One rule per variant of a family of buildings assembled from parts, each with the `weight`
  * given: a square plan of the family's half side (`frontage`), and the footprint circle around it
- * at the largest scale.
+ * (and 1 more, for overhangs) at the largest scale.
  */
 export function familyRules(
   family: PartFamily,
@@ -32,7 +31,8 @@ export function familyRules(
   return Array.from({ length: count }, (_, i) => ({
     id: variantId(family, i + 1),
     weight,
-    footprint: Math.ceil(half * Math.SQRT2 * scale[1] * 10) / 10,
+    // Parts may stand out by up to 1 past the square (overhanging roofs, lit doors).
+    footprint: Math.ceil((half + 1) * Math.SQRT2 * scale[1] * 10) / 10,
     frontage: half,
     scale,
   }));

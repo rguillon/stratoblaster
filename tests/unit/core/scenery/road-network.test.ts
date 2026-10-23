@@ -13,6 +13,14 @@ const RULES: RoadRules = {
   crossBend: 20,
 };
 const RANGE = { zMin: 0, zMax: 1000 };
+/** The sample level without its cliff: the low ground all along. */
+const FLAT: SceneryLevel = {
+  ...SAMPLE_SCENERY_LEVEL,
+  sections: SAMPLE_SCENERY_LEVEL.sections.map((s) => ({
+    ...s,
+    relief: SAMPLE_SCENERY_LEVEL.sections[0]?.relief ?? s.relief,
+  })),
+};
 
 function network(level: SceneryLevel = SAMPLE_SCENERY_LEVEL, rules = RULES, seed = 3): RoadNetwork {
   return new RoadNetwork(new HeightField(level), rules, seed, RANGE);
@@ -198,7 +206,8 @@ describe('RoadNetwork', () => {
   });
 
   it('P04-R07: slots line both sides of the roads, every slotSpacing', () => {
-    const straight = network(SAMPLE_SCENERY_LEVEL, SAMPLE_SCENERY_LEVEL.roads);
+    // On flat ground: the sample level's cliff would turn the road off the screen (review).
+    const straight = network(FLAT, SAMPLE_SCENERY_LEVEL.roads);
     const main = straight.roads[0];
     const slots = straight.slots.filter((s) => s.road === main);
     expect(slots.length).toBeGreaterThan(40);

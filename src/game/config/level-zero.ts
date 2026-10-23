@@ -39,10 +39,6 @@ export const PROP_IDS = {
   forkedTree: 'forked-tree',
   containerYard: 'container-yard',
   refinery: 'refinery',
-  glassTower: 'glass-tower',
-  officeBlock: 'office-block',
-  apartmentBlock: 'apartment-block',
-  steppedTower: 'stepped-tower',
   conifer: 'conifer',
   broadleaf: 'broadleaf-tree',
   bush: 'bush',
@@ -99,6 +95,10 @@ const PROP_RULES: PropRules = {
         ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1),
         { id: PROP_IDS.containerYard, weight: 0.5, footprint: 8.5, scale: BUILDING_SCALE },
         { id: PROP_IDS.refinery, weight: 0.5, footprint: 7.5, scale: BUILDING_SCALE },
+        // The widest hand-made ones rarely find flat enough ground in the wasteland (review).
+        { id: PROP_IDS.factory, weight: 0.5, footprint: 15, scale: BUILDING_SCALE },
+        { id: PROP_IDS.warehouse, weight: 0.5, footprint: 15.5, scale: BUILDING_SCALE },
+        { id: PROP_IDS.coolingTower, weight: 0.5, footprint: 9.5, scale: BUILDING_SCALE },
       ],
     },
     {
@@ -127,11 +127,6 @@ const PROP_RULES: PropRules = {
         // Mostly large blocks that fill the city's blocks (review).
         ...variants('city-block', CITY_VARIANTS, 6),
         ...variants('city-tower', CITY_VARIANTS, 3),
-        ...variants('city-building', CITY_VARIANTS, 1),
-        { id: PROP_IDS.glassTower, weight: 2, footprint: 7, scale: BUILDING_SCALE },
-        { id: PROP_IDS.officeBlock, weight: 2, footprint: 9, scale: BUILDING_SCALE },
-        { id: PROP_IDS.apartmentBlock, weight: 2, footprint: 10, scale: BUILDING_SCALE },
-        { id: PROP_IDS.steppedTower, weight: 2, footprint: 8.5, scale: BUILDING_SCALE },
       ],
     },
   ],

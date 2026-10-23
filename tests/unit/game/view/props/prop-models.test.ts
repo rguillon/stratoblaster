@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import {
+  CITY_VARIANTS,
+  INDUSTRIAL_VARIANTS,
+  variantId,
+  type PartFamily,
+} from '../../../../../src/game/config/building-families';
 import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { LEVEL_ZERO } from '../../../../../src/game/sim/scenery-levels';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
@@ -23,10 +29,12 @@ const PROP_GROUPS = {
   ],
   science: ['radar-dish', 'antenna-mast', 'observatory'],
   homes: ['cube-home', 'dome-home', 'stilt-pod'],
-  city: ['glass-tower', 'office-block', 'apartment-block', 'stepped-tower'],
 };
 
-const variants = (kind: string) => Array.from({ length: 8 }, (_, i) => `${kind}-${String(i + 1)}`);
+const variants = (kind: string) =>
+  Array.from({ length: kind.startsWith('city') ? CITY_VARIANTS : INDUSTRIAL_VARIANTS }, (_, i) =>
+    variantId(kind as PartFamily, i + 1),
+  );
 
 describe('prop models', () => {
   it('P04-R04 + review: industrial, technical / scientific, homes, city buildings and trees', () => {
@@ -45,11 +53,7 @@ describe('prop models', () => {
       ]),
     );
     expect(ids('city')).toEqual(
-      expect.arrayContaining([
-        ...variants('city-block'),
-        ...variants('city-tower'),
-        ...variants('city-building'),
-      ]),
+      expect.arrayContaining([...variants('city-block'), ...variants('city-tower')]),
     );
     expect(LEVEL_ZERO.props.trees.map((t) => t.id)).toEqual([
       'dead-tree',
@@ -58,8 +62,8 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 21 hand-made models, 6 families of 16 buildings made of parts, and 6 cars.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 16 + 6);
+    // 17 hand-made models, 5 families of 16 buildings made of parts, and 6 cars.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 5 * 16 + 6);
   });
 
   it('P04 review: buildings with a square plan fit in it', () => {
@@ -103,7 +107,6 @@ describe('prop models', () => {
       'industrial-complex',
       'industrial-works',
       'industrial-plant',
-      'city-building',
       'city-tower',
       'city-block',
     ]) {
@@ -112,7 +115,7 @@ describe('prop models', () => {
           JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
         ),
       );
-      expect(shapes.size).toBe(16);
+      expect(shapes.size, kind).toBe(variants(kind).length);
     }
   });
 

@@ -249,7 +249,33 @@ Review fix (clouds above the terrain): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (roads, P04-R07): typecheck ✔, build ✔, e2e 32 passed. In an earlier run of this fix,
 menu-gamepad.spec.ts (phase 1, not touched here) went over its 30 s timeout under the full
 parallel load (32.4 s); it passed alone and in the final full run.
+
+Full gate, /validate-phase 4 (2026-10-23): make check ✔ after fixes (first run: lint ✔, 25 unit tests failed)
+  lint ✔ (ESLint 0 warnings, Prettier)
+  typecheck ✔
+  unit tests ✔ 545 passed in 83 files
+  coverage ✔ 98.46% statements / 89.94% branches / 98.38% functions / 99.35% lines
+            (core/scenery: 98.34% statements / 90.75% branches / 100% functions / 99.5% lines)
+  build ✔ (ENG-52 leak check ✔)
+  e2e ✔ 35 passed
 ```
+
+Fixes made during validation (the unit tests of this phase ran for the first time):
+- Barrel-vault roofs only on halls tall enough for them: on low, deep halls the lying cylinder came out under the ground.
+- An industrial complex with no lights (a tank farm) now has no lights mesh, instead of an empty one.
+- Footprints of buildings made of parts allow 1 unit of overhang (roofs, lit doors), as the square-plan check already did.
+- A street-front building is now checked against its own road too: where that road curves back, it stood 0.05 too close.
+- Block buildings without a podium stand on the lowest ground under their own plan, not at the block's lowest corner: they floated by up to 0.2 where the ground dips.
+- The factory, the warehouse and the cooling tower now also stand in the industrial zone: their wide footprints never found flat enough ground in the wasteland, so they were never placed.
+- The small city family (`city-building`) and the four hand-made city buildings are removed: block filling always picks the largest kind that fits, so they were never placed. `city-props.ts` keeps only `windowBands`.
+- Tests updated for later review changes:
+  - the slot test runs on flat ground (main roads now turn off screen at the sample level's cliff);
+  - streets may end in the street they meet;
+  - cars are traffic, not placed props;
+  - there are fewer paths since the districts and the 2×2 highway (more than 15, was 20);
+  - variants per family come from the config (16);
+  - a block's towers are checked only on blocks wide enough and wholly in the area.
+
 Lint, unit tests and coverage were not run as a gate. While debugging, I ran the new core tests and `start-scenery-viewer.test.ts` once (109 passing at that point). ESLint was also run on `src/` (clean), and the pre-commit hook lints staged files. The render, UI and game tests written after that have only been type-checked.
 
 ### How to test manually

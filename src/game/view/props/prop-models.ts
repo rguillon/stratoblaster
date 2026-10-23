@@ -21,12 +21,6 @@ import {
   buildStorageTanks,
   buildWarehouse,
 } from './industrial-props';
-import {
-  buildApartmentBlock,
-  buildGlassTower,
-  buildOfficeBlock,
-  buildSteppedTower,
-} from './city-props';
 import { buildBroadleafTree, buildBush, buildConifer } from './green-tree-props';
 import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
@@ -59,10 +53,6 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [PROP_IDS.forkedTree]: buildForkedTree,
   [PROP_IDS.containerYard]: buildContainerYard,
   [PROP_IDS.refinery]: buildRefinery,
-  [PROP_IDS.glassTower]: buildGlassTower,
-  [PROP_IDS.officeBlock]: buildOfficeBlock,
-  [PROP_IDS.apartmentBlock]: buildApartmentBlock,
-  [PROP_IDS.steppedTower]: buildSteppedTower,
   [PROP_IDS.conifer]: buildConifer,
   [PROP_IDS.broadleaf]: buildBroadleafTree,
   [PROP_IDS.bush]: buildBush,
@@ -70,7 +60,6 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...partModels('industrial-complex', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
   ...partModels('industrial-works', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
   ...partModels('industrial-plant', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
-  ...partModels('city-building', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-tower', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-block', CITY_VARIANTS, buildCityBuilding),
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),

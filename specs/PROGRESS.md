@@ -8,7 +8,7 @@
 | 1 | `phases/phase-01-main-menu.md` | ✅ Validated | `phase-01` | 99.61% lines | 2026-10-23 |
 | 2 | `phases/phase-02-player-ships.md` | ✅ Validated | `phase-02` | 99.51% lines | 2026-10-22 |
 | 3 | `phases/phase-03-player-shots.md` | ✅ Validated | `phase-03` | 99.45% lines | 2026-10-23 |
-| 4 | `phases/phase-04-level-zero.md` | 🟡 Awaiting review | `phase-04` | — | — |
+| 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -58,3 +58,4 @@
 - 2026-10-23 — 4 — Review fix: city plazas and parking garages no longer flicker with the ground; light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: the glow of the car lights no longer shows over the ship; light verification green (typecheck, build, 35 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: no more green roofs in the industrial zone; light verification green (typecheck, build, 35 e2e); still awaiting review.
+- 2026-10-23 — 4 — Validated: full gate green after fixes (545 unit tests, 99.35% lines, 89.94% branches, 35 e2e); squash-merged into `main`, tagged `v0.04.0`.

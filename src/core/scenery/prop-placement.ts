@@ -198,13 +198,17 @@ export class PropPlacer {
       .sort((a, b) => a.order - b.order)
       .slice(0, towers)
       .forEach(({ part }, k) => {
-        const tower = this.#tower(part, groups, roof, r(20 + k));
-        if (tower) this.#occupy(tower);
+        const tower = this.#tower(part, groups, roof ?? 0, r(20 + k));
+        if (!tower) return;
+        // Without a podium, on the lowest ground under its own plan, so it never floats.
+        const { placement, halfX } = tower;
+        const y = roof ?? this.#lowest(placement.x, placement.z, halfX);
+        this.#occupy({ ...tower, placement: { ...placement, y } });
       });
   }
 
-  /** Places the podium of a block, if its section has podiums; the height its towers stand at. */
-  #podium(block: Block, fill: BlockFill, r: (draw: number) => number): number {
+  /** Places the podium of a block, if its section has podiums; the height of its roof. */
+  #podium(block: Block, fill: BlockFill, r: (draw: number) => number): number | undefined {
     const [w, d] = [block.xMax - block.xMin, block.zMax - block.zMin];
     const [cx, cz] = [(block.xMin + block.xMax) / 2, (block.zMin + block.zMax) / 2];
     const corners = [
@@ -217,7 +221,7 @@ export class PropPlacer {
     const ground = Math.min(...heights);
     const height = between(fill.podiumHeight, r(0)) + Math.max(...heights) - ground;
     const podium = fill.podiums[Math.floor(r(1) * fill.podiums.length)];
-    if (!podium) return ground;
+    if (!podium) return undefined;
     this.#occupy({
       placement: {
         kind: podium,
@@ -302,7 +306,8 @@ export class PropPlacer {
     const offset = slot.road.width / 2 + this.roads.setback + reach;
     const x = slot.x + slot.nx * offset;
     const z = slot.z + slot.nz * offset;
-    if (this.roads.edgeDistance(x, z, slot.road) < reach + this.roads.setback) return undefined;
+    // Clear of every road, its own too where it curves back towards the building.
+    if (this.roads.edgeDistance(x, z) < reach + this.roads.setback - 1e-6) return undefined;
     const y = this.#standingHeight(x, z, kind.footprint, this.rules.maxSlope);
     if (y === undefined) return undefined;
     // The model's front (-Z) faces the road.
@@ -353,6 +358,15 @@ export class PropPlacer {
    * Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or undefined
    * when the ground there is too steep or too low.
    */
+  /** The lowest ground under a square of half side `half` around (x, z). */
+  #lowest(x: number, z: number, half: number): number {
+    const corners = [-half, half].flatMap((dx) => [-half, half].map((dz) => [x + dx, z + dz]));
+    return Math.min(
+      this.field.height(x, z),
+      ...corners.map(([cx = x, cz = z]) => this.field.height(cx, cz)),
+    );
+  }
+
   #standingHeight(x: number, z: number, radius: number, maxSlope: number): number | undefined {
     const heights = [
       this.field.height(x, z),

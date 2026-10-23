@@ -1,9 +1,6 @@
-import { SolidBuilder } from '../../../render/geometry/solids';
-import type { PropGeometry } from '../../../render/scenery/scenery-look';
-import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
+import type { SolidBuilder } from '../../../render/geometry/solids';
 
-// Phase 4 review: buildings of the city centre. Sizes in world units, standing on Y = 0; the
-// front faces -Z. Lit windows and neon trims are self-lit accents.
+// Phase 4 review: rows of lit windows for the buildings of the city centre (see `city-lots.ts`).
 
 type Rgb = readonly [number, number, number];
 
@@ -46,64 +43,4 @@ export function windowBands(
       );
     }
   }
-}
-
-/** A slim glass tower with cyan window bands and an antenna. */
-export function buildGlassTower(): PropGeometry {
-  const s = new SolidBuilder({ openBottoms: true });
-  const l = new SolidBuilder({ openBottoms: true });
-  s.box([14, 78, 14], C.glassBlue, {}, C.metalDark);
-  s.box([10, 4, 10], C.metal, { at: [0, 78, 0] });
-  s.cylinder(0.5, 14, 4, C.metal, { at: [0, 82, 0] });
-  windowBands(l, [14, 14], [6, 76], 8, 2, L.cyanDim);
-  l.box([1.2, 1.2, 1.2], L.red, { at: [0, 96, 0] });
-  return { structure: s.geometry, lights: l.geometry };
-}
-
-/** A broad concrete office block with warm window rows and roof units. */
-export function buildOfficeBlock(): PropGeometry {
-  const s = new SolidBuilder({ openBottoms: true });
-  const l = new SolidBuilder({ openBottoms: true });
-  s.box([22, 32, 16], C.concrete, {}, C.roof);
-  s.box([6, 3, 5], C.metalDark, { at: [-5, 32, 2] });
-  s.box([4, 2, 4], C.metal, { at: [6, 32, -3] });
-  windowBands(l, [22, 16], [4, 30], 6, 2, L.windowDim);
-  return { structure: s.geometry, lights: l.geometry };
-}
-
-/** An L-shaped brick apartment block with lit windows and a pink neon sign on the roof. */
-export function buildApartmentBlock(): PropGeometry {
-  const s = new SolidBuilder({ openBottoms: true });
-  const l = new SolidBuilder({ openBottoms: true });
-  s.box([20, 24, 8], C.brick, { at: [0, 0, -3] }, C.roof);
-  s.box([8, 24, 14], C.brick, { at: [6, 0, 4] }, C.roof);
-  windowBands(l, [20, 8], [3, 23], 6, 2, L.windowDim, [0, -3]);
-  l.box([10, 3, 0.4], L.pink, { at: [-3, 24.5, -6.6] });
-  return { structure: s.geometry, lights: l.geometry };
-}
-
-/** A stepped tower in three tiers under a spire, with cyan trims at each step. */
-export function buildSteppedTower(): PropGeometry {
-  const s = new SolidBuilder({ openBottoms: true });
-  const l = new SolidBuilder({ openBottoms: true });
-  const tiers = [
-    [18, 0, 22],
-    [13, 22, 20],
-    [8, 42, 18],
-  ] as const;
-  for (const [size, y, height] of tiers) {
-    s.box([size, height, size], C.concreteDark, { at: [0, y, 0] }, C.roof);
-    l.box([size + 0.4, 0.6, size + 0.4], L.cyanDim, { at: [0, y + height - 0.6, 0] });
-    windowBands(l, [size, size], [y + 3, y + height - 2], 6, 1.8, L.windowDim);
-  }
-  s.lathe(
-    [
-      [2.5, 60],
-      [0, 72],
-    ],
-    4,
-    C.metal,
-  );
-  l.box([1, 1, 1], L.red, { at: [0, 72, 0] });
-  return { structure: s.geometry, lights: l.geometry };
 }
