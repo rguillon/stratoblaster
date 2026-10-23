@@ -31,6 +31,7 @@ export const SAMPLE_SCENERY_LEVEL: SceneryLevel = {
     crossBend: 0,
     mainWidth: 6,
     crossWidth: 4,
+    dual: { width: 12, mainRoads: 0, avenues: 0 },
     junction: { width: 8, length: 10 },
     offscreenX: 100,
     turnRate: 0.1,

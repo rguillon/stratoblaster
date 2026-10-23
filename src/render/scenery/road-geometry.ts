@@ -1,4 +1,5 @@
 import { hash2D } from '../../core/math/noise';
+import { meetingWidth, streetLines, type StreetLine } from '../../core/scenery/road-traffic';
 import type { Road, RoadPoint } from '../../core/scenery/road-network';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import { paintCentreLines, type CentreLineLook } from './road-lines';
@@ -61,15 +62,16 @@ function across(run: readonly RoadPoint[], i: number): [number, number] {
 }
 
 /**
- * The points of a road; a street goes on by half its width past both ends, under the street it
- * meets, so two streets meeting at a corner leave no notch (phase 4 review).
+ * The points of a road; a street goes on past both ends by half the width of the street it meets
+ * there (its own if none), under it, so two streets meeting at a corner leave no notch and an
+ * avenue does not stick out past a narrower street (phase 4 review).
  */
-function ribbonPoints(road: Road): readonly RoadPoint[] {
+function ribbonPoints(road: Road, lines: readonly StreetLine[]): readonly RoadPoint[] {
   const [a, b, y, z] = [road.points[0], road.points[1], road.points.at(-2), road.points.at(-1)];
   if (road.kind !== 'street' || !a || !b || !y || !z) return road.points;
   const past = (end: RoadPoint, next: RoadPoint): RoadPoint => {
     const length = Math.hypot(end.x - next.x, end.z - next.z) || 1;
-    const k = road.width / 2 / length;
+    const k = (meetingWidth(lines, road.index, end.x, end.z) ?? road.width) / 2 / length;
     return { ...end, x: end.x + (end.x - next.x) * k, z: end.z + (end.z - next.z) * k };
   };
   return [past(a, b), ...road.points, past(z, y)];
@@ -103,9 +105,10 @@ export function buildRoadGeometry(
 ): ColoredGeometry {
   const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
   const rows = ROWS.length;
+  const lines = streetLines(roads);
   for (const road of roads) {
     const shoulder = road.kind === 'street' ? look.streetShoulder : look.shoulder;
-    for (const run of runs(ribbonPoints(road), zMin, zMax)) {
+    for (const run of runs(ribbonPoints(road, lines), zMin, zMax)) {
       const base = geo.positions.length / 3;
       run.forEach((p, i) => {
         const [nx, nz] = across(run, i);

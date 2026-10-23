@@ -50,3 +50,4 @@
 - 2026-10-23 — 4 — Review fix: building lights no longer glow through the clouds; light verification green (typecheck, build, 33 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: city blocks packed with buildings on the ground, no bare ground; light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: square street corners, yellow centre lines, cars on streets and main roads (D-028); light verification green (typecheck, build, 34 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: 2×2 highway and avenues with lane markings and cars in both lanes (D-029); light verification green (typecheck, build, 34 e2e); still awaiting review.

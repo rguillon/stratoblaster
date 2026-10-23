@@ -1,4 +1,5 @@
 import { randomIn, type Random } from '../math/rng';
+import { streetWidth } from './lanes';
 import type { PlacedSection, RoadRules, StreetGrid } from './scenery-level';
 
 /** A run of consecutive sections with street grids (phase 4 review). */
@@ -90,7 +91,8 @@ export function streetRuns(
 ): { runs: { x: number; z: number }[][]; blocks: Block[] } {
   const { links, layouts } = gridLinks(district, rules, random, buildable);
   removeDeadEnds(links, outOfView);
-  const blocks = gridBlocks(layouts, links, rules.mainWidth / 2 + BLOCK_KERB).filter((b) =>
+  const inset = (coord: number): number => streetWidth(rules, coord) / 2 + BLOCK_KERB;
+  const blocks = gridBlocks(layouts, links, inset).filter((b) =>
     buildable((b.xMin + b.xMax) / 2, (b.zMin + b.zMax) / 2),
   );
   return { runs: straightRuns(links, rules.step), blocks };
@@ -129,7 +131,11 @@ function cellBounds(
   return [xs[c] ?? 0, xs[c + 1] ?? 0, zs[r] ?? 0, zs[r + 1] ?? 0];
 }
 
-function gridBlocks(layouts: readonly Layout[], links: readonly Link[], inset: number): Block[] {
+function gridBlocks(
+  layouts: readonly Layout[],
+  links: readonly Link[],
+  inset: (coord: number) => number,
+): Block[] {
   const built = new Set(links.filter((l) => l.built).map((l) => linkKey(l.a, l.b)));
   const has = (a: Node, b: Node): boolean => built.has(linkKey(a, b));
   const blocks: Block[] = [];
@@ -142,12 +148,13 @@ function gridBlocks(layouts: readonly Layout[], links: readonly Link[], inset: n
         const top = has({ x: x0, z: z1 }, { x: x1, z: z1 });
         const left = has({ x: x0, z: z0 }, { x: x0, z: z1 });
         const right = has({ x: x1, z: z0 }, { x: x1, z: z1 });
-        const cut = (side: boolean): number => (side ? inset : 0);
+        // Up to the edge of the street along each side (avenues are wider).
+        const cut = (side: boolean, coord: number): number => (side ? inset(coord) : 0);
         const block = {
-          xMin: x0 + cut(left),
-          xMax: x1 - cut(right),
-          zMin: z0 + cut(bottom),
-          zMax: z1 - cut(top),
+          xMin: x0 + cut(left, x0),
+          xMax: x1 - cut(right, x1),
+          zMin: z0 + cut(bottom, z0),
+          zMax: z1 - cut(top, z1),
         };
         if (block.xMax > block.xMin && block.zMax > block.zMin) blocks.push(block);
       }

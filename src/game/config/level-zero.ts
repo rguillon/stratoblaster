@@ -159,6 +159,8 @@ const ROAD_RULES: RoadRules = {
   crossBend: 40,
   mainWidth: 6,
   crossWidth: 4,
+  // Review: a 2×2 highway, and 2×2 avenues on a quarter of the street lines.
+  dual: { width: 12, mainRoads: 1, avenues: 0.25 },
   junction: { width: 14, length: 28 },
   offscreenX: 420,
   turnRate: 0.05,

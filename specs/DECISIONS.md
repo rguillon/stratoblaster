@@ -386,3 +386,14 @@
 - **Alternatives considered:** Moving cars: they would need a traffic simulation and an update per frame, which this test level does not need.
 - **Consequences:** Cars are static. A crossing test runs against every street for each line piece and car, which is cheap at this level's street counts.
 - **Status:** Accepted
+
+### D-029 — 2×2 roads
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for bigger roads, with two lanes each way.
+- **Decision:**
+  - `RoadRules.dual` sets the 2×2 roads: the first `mainRoads` main roads, and a share `avenues` of the street-grid lines. Each line is decided by a hash of its coordinate, so all its runs and the blocks beside it agree.
+  - `Road.lanes` (1 or 2 each way) drives the markings (`road-lines.ts`) and the car lanes.
+- **Alternatives considered:** Drawing a 2×2 road as two parallel roads with a median: this doubles the road geometry and complicates junctions and building slots.
+- **Consequences:** Building slots, setbacks and block insets follow the wider roads, so the layouts of the industrial zone and the city change.
+- **Status:** Accepted

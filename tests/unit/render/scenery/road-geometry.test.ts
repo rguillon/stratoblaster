@@ -17,6 +17,7 @@ const ROAD: Road = {
   index: 0,
   kind: 'main',
   width: 4,
+  lanes: 1,
   // Wider at its start, like a path at its junction.
   points: [point(0, 0, 8), point(0, 10), point(0, 20), point(0, 30), point(0, 40)],
 };
@@ -87,6 +88,7 @@ describe('buildRoadGeometry', () => {
       index: 1,
       kind: 'street',
       width: 6,
+      lanes: 1,
       points: [point(0, 0, 6), point(0, 10, 6)],
     };
     const geo = buildRoadGeometry([street], { height: () => 0 }, -100, 100, LOOK);
@@ -101,7 +103,7 @@ describe('buildRoadGeometry', () => {
 describe('centre lines', () => {
   const LINED = {
     ...LOOK,
-    centreLine: { color: [1, 1, 0], width: 0.5, dash: 4, lift: 0.05 },
+    centreLine: { color: [1, 1, 0], laneColor: [1, 1, 1], width: 0.5, dash: 4, lift: 0.05 },
   } as const;
   const yellow = (colors: readonly number[]) =>
     colors.filter((_, i) => i % 4 === 0).filter((_, k) => colors[k * 4 + 2] === 0).length;
@@ -111,12 +113,14 @@ describe('centre lines', () => {
       index: 1,
       kind: 'street',
       width: 6,
+      lanes: 1,
       points: [point(-40, 20, 6), point(40, 20, 6)],
     };
     const along: Road = {
       index: 2,
       kind: 'street',
       width: 6,
+      lanes: 1,
       points: [point(0, 0, 6), point(0, 40, 6)],
     };
     const geo = buildRoadGeometry([along, across], { height: () => 0 }, -100, 100, LINED);
@@ -146,5 +150,26 @@ describe('centre lines', () => {
       LINED,
     );
     expect(path.indices).toHaveLength(4 * 3 * 6);
+  });
+
+  it('P04 review: 2×2 roads get a double yellow line and white dashed lines between lanes', () => {
+    const dual: Road = {
+      ...ROAD,
+      width: 12,
+      lanes: 2,
+      points: ROAD.points.map((p) => ({ ...p, width: 12 })),
+    };
+    const geo = buildRoadGeometry([dual], { height: () => 0 }, 0, 100, LINED);
+    const plain = buildRoadGeometry([dual], { height: () => 0 }, 0, 100, LOOK);
+    const marks = geo.positions.length / 3 - plain.positions.length / 3;
+    const xs = Array.from(
+      { length: marks },
+      (_, k) => geo.positions[(plain.positions.length / 3 + k) * 3] ?? 0,
+    );
+    // Centre lines around ±0.5, lane lines around ±3.
+    expect(xs.some((x) => Math.abs(Math.abs(x) - 0.5) <= 0.25)).toBe(true);
+    expect(xs.some((x) => Math.abs(Math.abs(x) - 3) <= 0.25)).toBe(true);
+    const white = geo.colors.filter((_, i) => i % 4 === 2).filter((b) => b === 1).length;
+    expect(white).toBeGreaterThan(0);
   });
 });

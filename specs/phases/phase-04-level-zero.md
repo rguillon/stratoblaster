@@ -70,6 +70,9 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Add bigger roads too, 2×2. *Fixed (D-029):*
+  - *The first main road is a 2×2 highway, 12 wide; the other one keeps one lane each way. In the industrial zone and the city, a quarter of the street lines (rows and columns, by a hash of the line) are 2×2 avenues, 12 wide; blocks stop at their wider edges.*
+  - *2×2 roads get a double yellow centre line and white dashed lines between the lanes, and cars use both lanes each way. Where an avenue ends on a narrower street, it goes on only by that street's half width, so it does not stick out.*
 - [x] Improve the roads (the corners look bad), add a central yellow line and some cars. *Fixed (D-028):*
   - *Corners: each street goes on by half its width past both ends, under the street it meets, so corners are square with no notch. Streets get a narrow soft edge (0.4 instead of 2.5), so the edges of crossing streets no longer pile up into dark patches.*
   - *Yellow centre line: solid along the streets, stopping where another street crosses; dashed (4 on, 4 off) along the main roads; none on the paths. It is painted in pieces of 2 just above the road surface, so it follows the ground.*
@@ -204,6 +207,7 @@ Review fix (city with factory streets and buildings made of lots): typecheck ✔
 Review fix (glow under the clouds): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (city blocks packed with buildings): typecheck ✔, build ✔. In the first e2e run, 1 of 33 tests failed under load (output lost); the next two full runs passed 33/33. After splitting the district test: e2e 34 passed.
 Review fix (square street corners, centre lines, cars): typecheck ✔, build ✔, e2e 34 passed.
+Review fix (2×2 roads): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.

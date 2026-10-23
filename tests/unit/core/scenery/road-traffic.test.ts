@@ -6,7 +6,6 @@ import type { CarRules } from '../../../../src/core/scenery/scenery-level';
 const RULES: CarRules = {
   kinds: ['car'],
   density: 1,
-  laneOffset: 1.5,
   lift: 0.5,
   scale: 1,
   length: 2,
@@ -23,6 +22,7 @@ const line = (
     index,
     kind,
     width: 6,
+    lanes: 1,
     points: Array.from({ length: steps + 1 }, (_, i) => ({
       x: ax + ((bx - ax) * i) / steps,
       z: az + ((bz - az) * i) / steps,
@@ -67,5 +67,11 @@ describe('road traffic', () => {
     expect(half.length).toBeLessThan(all.length);
     expect(half.every((c) => c.z >= 0)).toBe(true);
     expect(placeCars([along], () => 0, { ...RULES, density: 0 }, 1, AREA)).toEqual([]);
+  });
+
+  it('P04 review: on 2×2 roads, cars use both lanes each way', () => {
+    const dual: Road = { ...line(0, 'main', [0, -96], [0, 96]), width: 12, lanes: 2 };
+    const offsets = new Set(placeCars([dual], () => 0, RULES, 3, AREA).map((c) => Math.abs(c.x)));
+    expect([...offsets].sort()).toEqual([1.5, 4.5]);
   });
 });

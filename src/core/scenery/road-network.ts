@@ -1,6 +1,7 @@
 import { createNoise2D, smoothstep } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
+import { lanesOf, mainRoadWidth, runWidth, withWidth } from './lanes';
 import type { RoadRules } from './scenery-level';
 import { findDistricts, streetRuns, type Block, type District } from './street-grid';
 
@@ -22,6 +23,8 @@ export interface Road {
   readonly kind: 'main' | 'cross' | 'street';
   /** Nominal width (paths are wider near their junction, see `RoadPoint.width`). */
   readonly width: number;
+  /** Lanes each way: 2 on 2×2 roads (phase 4 review). */
+  readonly lanes: 1 | 2;
   readonly points: readonly RoadPoint[];
 }
 
@@ -120,10 +123,7 @@ export class RoadNetwork {
     const random = createRng(seed + 4);
     for (let i = 0; i < rules.mainRoads; i++) {
       for (const piece of this.#mainPieces(this.#mainLine(random))) {
-        this.#addRoad(
-          'main',
-          piece.map((p) => ({ ...p, width: rules.mainWidth })),
-        );
+        this.#addRoad('main', withWidth(piece, mainRoadWidth(rules, i)));
       }
     }
     const mains = [...this.roads];
@@ -297,7 +297,7 @@ export class RoadNetwork {
 
   /**
    * The straight streets of the districts (phase 4 review, see `streetRuns`), as `street`
-   * roads of the main road width.
+   * roads of the main road width, or 2×2 avenues.
    */
   #addStreets(random: Random): void {
     for (const district of this.#districts) {
@@ -310,10 +310,7 @@ export class RoadNetwork {
       );
       this.blocks.push(...blocks);
       for (const run of runs) {
-        this.#addRoad(
-          'street',
-          run.map((p) => ({ ...p, width: this.rules.mainWidth })),
-        );
+        this.#addRoad('street', withWidth(run, runWidth(this.rules, run)));
       }
     }
   }
@@ -331,8 +328,9 @@ export class RoadNetwork {
   }
 
   #addRoad(kind: Road['kind'], points: readonly RoadPoint[]): void {
-    const width = kind === 'cross' ? this.rules.crossWidth : this.rules.mainWidth;
-    this.roads.push({ index: this.roads.length, kind, width, points });
+    const width = kind === 'cross' ? this.rules.crossWidth : (points[0]?.width ?? 0);
+    const lanes = lanesOf(this.rules, width);
+    this.roads.push({ index: this.roads.length, kind, width, lanes, points });
   }
 
   #index(road: Road): void {

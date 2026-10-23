@@ -170,7 +170,13 @@ export const LEVEL_ZERO_LOOK = {
     streetShoulder: 0.4,
     wear: 0.3,
     lift: 0.6,
-    centreLine: { color: [0.7, 0.56, 0.12], width: 0.35, dash: 4, lift: 0.05 },
+    centreLine: {
+      color: [0.7, 0.56, 0.12],
+      laneColor: [0.7, 0.7, 0.66],
+      width: 0.35,
+      dash: 4,
+      lift: 0.05,
+    },
   },
   /** Matte props: specular highlights on their facets flickered as the view scrolled (review). */
   props: { specular: 0, lightIntensity: 1 },

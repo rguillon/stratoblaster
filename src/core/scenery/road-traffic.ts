@@ -45,6 +45,19 @@ export function inCrossing(
   return lines.some((l) => l.road !== road && distance(l, x, z) < l.width / 2 + margin);
 }
 
+/** Width of the widest other street that (x, z) of street `road` lies on, if any. */
+export function meetingWidth(
+  lines: readonly StreetLine[],
+  road: number,
+  x: number,
+  z: number,
+): number | undefined {
+  const widths = lines
+    .filter((l) => l.road !== road && distance(l, x, z) < 0.5)
+    .map((l) => l.width);
+  return widths.length > 0 ? Math.max(...widths) : undefined;
+}
+
 /** Unit direction of a road at its point `i`. */
 export function roadDirection(points: readonly RoadPoint[], i: number): [number, number] {
   const a = points[Math.max(0, i - 1)];
@@ -67,12 +80,15 @@ function carAt(
   const [dx, dz] = roadDirection(road.points, i);
   // Right-hand traffic: a car on the right of the road's direction drives along it.
   const side = r(1) < 0.5 ? 1 : -1;
+  // In the middle of one of its lanes (two each way on 2×2 roads).
+  const laneWidth = road.width / (2 * road.lanes);
+  const offset = laneWidth * (Math.floor(r(3) * road.lanes) + 0.5);
   const kind = rules.kinds[Math.floor(r(2) * rules.kinds.length)];
   if (kind === undefined) return undefined;
   return {
     kind,
-    x: p.x + dz * side * rules.laneOffset,
-    z: p.z - dx * side * rules.laneOffset,
+    x: p.x + dz * side * offset,
+    z: p.z - dx * side * offset,
     rotation: Math.atan2(dx, dz) + (side > 0 ? 0 : Math.PI),
     scale: rules.scale,
   };

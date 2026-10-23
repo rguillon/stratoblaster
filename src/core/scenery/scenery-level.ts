@@ -176,8 +176,6 @@ export interface CarRules {
   readonly kinds: readonly string[];
   /** Chance that a point of a street or main road has a car. */
   readonly density: number;
-  /** Cars keep this far from the centre line, on either side (one lane each way). */
-  readonly laneOffset: number;
   /** Cars stand on the road surface, this high above the ground. */
   readonly lift: number;
   readonly scale: number;
@@ -202,6 +200,11 @@ export interface RoadRules {
   readonly crossBend: number;
   readonly mainWidth: number;
   readonly crossWidth: number;
+  /**
+   * 2×2 roads (phase 4 review): the first `mainRoads` main roads, and a share `avenues` of the
+   * lines of the street grids, are `width` wide with two lanes each way.
+   */
+  readonly dual: { readonly width: number; readonly mainRoads: number; readonly avenues: number };
   /**
    * Where a path meets a road it widens to `width`, narrowing back to `crossWidth` over
    * `length`, so it merges into the road.
