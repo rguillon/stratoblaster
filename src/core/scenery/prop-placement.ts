@@ -1,7 +1,8 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import type { HeightField } from './height-field';
+import { placeCars } from './road-traffic';
 import type { RoadNetwork, RoadSlot } from './road-network';
-import type { Block } from './street-grid';
+import { blockParts, type Block } from './street-grid';
 import type { BlockFill, PropGroupRule, PropKindRule, PropRules } from './scenery-level';
 
 /** One prop standing on the ground. */
@@ -80,21 +81,6 @@ function between([min, max]: readonly [number, number], r: number): number {
   return min + (max - min) * r;
 }
 
-/** `block` cut into `nx × nz` equal parts. */
-function blockParts(block: Block, nx: number, nz: number): Block[] {
-  const w = (block.xMax - block.xMin) / nx;
-  const d = (block.zMax - block.zMin) / nz;
-  const parts: Block[] = [];
-  for (let i = 0; i < nx; i++) {
-    for (let j = 0; j < nz; j++) {
-      const xMin = block.xMin + i * w;
-      const zMin = block.zMin + j * d;
-      parts.push({ xMin, xMax: xMin + w, zMin, zMax: zMin + d });
-    }
-  }
-  return parts;
-}
-
 /** Smaller kinds a building slot tries when its first choice does not fit. */
 const FALLBACKS = 3;
 
@@ -158,6 +144,9 @@ export class PropPlacer {
     for (let j = j0; j < j1; j++) {
       for (let i = i0; i < i1; i++) placements.push(...this.#trees(i, j));
     }
+    const { cars } = this.rules;
+    const height = (x: number, z: number): number => this.field.height(x, z);
+    if (cars) placements.push(...placeCars(this.roads.roads, height, cars, this.seed, area));
     return placements;
   }
 

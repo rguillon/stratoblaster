@@ -137,6 +137,7 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
     cross: [0.5, 0.4, 0.3],
     opacity: { main: 1, cross: 0.5 },
     shoulder: 1,
+    streetShoulder: 0.5,
     wear: 0,
     lift: 0.5,
   },

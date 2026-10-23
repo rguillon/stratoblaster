@@ -167,6 +167,22 @@ export interface PropRules {
   readonly trees: readonly PropKindRule[];
   /** Most trees in one empty cell. */
   readonly treesPerCell: number;
+  /** Cars on the streets and main roads (phase 4 review). */
+  readonly cars?: CarRules;
+}
+
+/** Cars parked or driving on the streets and main roads, one chance per road point. */
+export interface CarRules {
+  readonly kinds: readonly string[];
+  /** Chance that a point of a street or main road has a car. */
+  readonly density: number;
+  /** Cars keep this far from the centre line, on either side (one lane each way). */
+  readonly laneOffset: number;
+  /** Cars stand on the road surface, this high above the ground. */
+  readonly lift: number;
+  readonly scale: number;
+  /** About the length of a car: none stands closer than this to a crossing street. */
+  readonly length: number;
 }
 
 type Range = readonly [number, number];

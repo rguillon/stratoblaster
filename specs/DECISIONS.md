@@ -374,3 +374,15 @@
 - **Review follow-up:** to hide the ground, the city fills its blocks again, with `blocks` and no podiums. Buildings stand on the ground, one per part of about 30 (up to 4 × 4 parts), with no street-front slots. The city then draws about 1.04 M triangles at its densest.
 - **Consequences:** The centres of deep blocks may show some ground, as in the industrial zone. The city draws about 0.95 M triangles at its densest (it was about 0.33 M), which still needs a check on real hardware against 60 FPS (ENG-101).
 - **Status:** Accepted
+
+### D-028 — Street corners, centre lines and cars
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** Street corners showed notches and dark patches where soft edges overlapped. The review asked for a yellow centre line and cars.
+- **Decision:**
+  - Streets are drawn half their width past both ends, with a narrow soft edge (`streetShoulder`).
+  - Centre lines are optional in `RoadLook` (`centreLine`), painted into the road mesh after the ribbons: solid on streets, broken where another street crosses (`inCrossing`), and dashed on main roads.
+  - Cars are an optional `PropRules.cars` rule: one hashed draw per point of the streets and main roads, in a lane each way, and none in crossings. They are drawn as ordinary props (thin instances).
+- **Alternatives considered:** Moving cars: they would need a traffic simulation and an update per frame, which this test level does not need.
+- **Consequences:** Cars are static. A crossing test runs against every street for each line piece and car, which is cheap at this level's street counts.
+- **Status:** Accepted

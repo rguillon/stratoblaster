@@ -46,6 +46,7 @@ export function checkPropModels(
   const ids = [
     ...level.props.groups.flatMap((g) => g.kinds.map((k) => k.id)),
     ...level.props.trees.map((t) => t.id),
+    ...(level.props.cars?.kinds ?? []),
     ...level.sections.flatMap((s) => s.blocks?.podiums ?? []),
   ];
   for (const id of ids) {

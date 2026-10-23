@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { LEVEL_ZERO } from '../../../../../src/game/sim/scenery-levels';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
@@ -57,8 +58,8 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 21 hand-made models, plus 6 families of 8 buildings made of parts.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8);
+    // 21 hand-made models, 6 families of 8 buildings made of parts, and 6 cars.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8 + 6);
   });
 
   it('P04 review: buildings with a square plan fit in it', () => {
@@ -78,7 +79,9 @@ describe('prop models', () => {
       // A leaning trunk may sink a little into the ground, never float above it.
       expect(bottom).toBeLessThanOrEqual(1e-9);
       expect(bottom).toBeGreaterThan(-0.5);
-      expect(top, id).toBeGreaterThan(3);
+      // Cars are smaller than the buildings and trees.
+      const car = (Object.values(CAR_IDS) as string[]).includes(id);
+      expect(top, id).toBeGreaterThan(car ? 2 : 3);
       expect(structure.indices.length / 3).toBeLessThan(600);
       expect((lights?.indices.length ?? 0) / 3).toBeLessThan(600);
       expect(structure.colors).toHaveLength((structure.positions.length / 3) * 4);

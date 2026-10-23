@@ -10,6 +10,7 @@ import {
   familyRules,
   type PartFamily,
 } from './building-families';
+import { CAR_RULES } from './cars';
 
 /*
  * Level Zero (P04): a test level that shows every terrain tool. Heights in world units
@@ -142,6 +143,7 @@ const PROP_RULES: PropRules = {
     { id: PROP_IDS.bush, weight: 2, footprint: 3.5, scale: TREE_SCALE },
   ],
   treesPerCell: 4,
+  cars: CAR_RULES,
 };
 
 /**

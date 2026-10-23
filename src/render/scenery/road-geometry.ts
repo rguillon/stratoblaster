@@ -1,6 +1,7 @@
 import { hash2D } from '../../core/math/noise';
 import type { Road, RoadPoint } from '../../core/scenery/road-network';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
+import { paintCentreLines, type CentreLineLook } from './road-lines';
 import type { HeightSource } from './terrain-geometry';
 
 type Rgb = readonly [number, number, number];
@@ -14,6 +15,10 @@ export interface RoadLook {
   readonly opacity: { readonly main: number; readonly cross: number };
   /** Width of the soft edge on each side, where the road fades into the ground. */
   readonly shoulder: number;
+  /** Narrower soft edge of the streets, so their crossings and corners stay clean. */
+  readonly streetShoulder: number;
+  /** The yellow line along the streets and main roads, if any (phase 4 review). */
+  readonly centreLine?: CentreLineLook;
   /** How much (0..1) colour and opacity vary along a road, so it looks worn. */
   readonly wear: number;
   /** Height of the road surface above the ground, so it does not sink into the terrain mesh. */
@@ -55,6 +60,21 @@ function across(run: readonly RoadPoint[], i: number): [number, number] {
   return [(b.z - a.z) / length, -(b.x - a.x) / length];
 }
 
+/**
+ * The points of a road; a street goes on by half its width past both ends, under the street it
+ * meets, so two streets meeting at a corner leave no notch (phase 4 review).
+ */
+function ribbonPoints(road: Road): readonly RoadPoint[] {
+  const [a, b, y, z] = [road.points[0], road.points[1], road.points.at(-2), road.points.at(-1)];
+  if (road.kind !== 'street' || !a || !b || !y || !z) return road.points;
+  const past = (end: RoadPoint, next: RoadPoint): RoadPoint => {
+    const length = Math.hypot(end.x - next.x, end.z - next.z) || 1;
+    const k = road.width / 2 / length;
+    return { ...end, x: end.x + (end.x - next.x) * k, z: end.z + (end.z - next.z) * k };
+  };
+  return [past(a, b), ...road.points, past(z, y)];
+}
+
 /** Colour and opacity of a point of a road, worn by a hash of its position (not streets). */
 function worn(road: Road, p: RoadPoint, look: RoadLook): [number, number, number, number] {
   // Streets are opaque and even, so where they cross or meet they merge without a seam.
@@ -71,7 +91,8 @@ function worn(road: Road, p: RoadPoint, look: RoadLook): [number, number, number
  * (P04-R07), so neighbouring terrain chunks draw each segment once. The ribbon follows the
  * width of each point (paths widen at their junction). Each ribbon
  * has a slightly see-through, worn surface and soft shoulders that fade to nothing on both
- * sides, so the road blends into the ground (phase 4 review).
+ * sides, so the road blends into the ground (phase 4 review). Streets and main roads get a
+ * yellow centre line.
  */
 export function buildRoadGeometry(
   roads: readonly Road[],
@@ -83,13 +104,14 @@ export function buildRoadGeometry(
   const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
   const rows = ROWS.length;
   for (const road of roads) {
-    for (const run of runs(road.points, zMin, zMax)) {
+    const shoulder = road.kind === 'street' ? look.streetShoulder : look.shoulder;
+    for (const run of runs(ribbonPoints(road), zMin, zMax)) {
       const base = geo.positions.length / 3;
       run.forEach((p, i) => {
         const [nx, nz] = across(run, i);
         const [r, g, b, a] = worn(road, p, look);
         for (const row of ROWS) {
-          const offset = (row.across * p.width) / 2 + row.shoulder * look.shoulder;
+          const offset = (row.across * p.width) / 2 + row.shoulder * shoulder;
           const x = p.x + nx * offset;
           const z = p.z + nz * offset;
           geo.positions.push(x, ground.height(x, z) + look.lift, z);
@@ -104,6 +126,15 @@ export function buildRoadGeometry(
         }
       });
     }
+  }
+  // Painted after the ribbons, so they draw over them.
+  if (look.centreLine) {
+    paintCentreLines(
+      { geo, ground, look: look.centreLine, roadLift: look.lift },
+      roads,
+      zMin,
+      zMax,
+    );
   }
   return geo;
 }

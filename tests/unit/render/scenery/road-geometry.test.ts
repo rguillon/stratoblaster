@@ -7,6 +7,7 @@ const LOOK = {
   cross: [0.5, 0.4, 0.3],
   opacity: { main: 0.8, cross: 0.6 },
   shoulder: 1,
+  streetShoulder: 0.5,
   wear: 0,
   lift: 0.5,
 } as const;
@@ -79,5 +80,71 @@ describe('buildRoadGeometry', () => {
         LOOK,
       ).colors.slice(4, 8),
     ).toEqual([0.5, 0.4, 0.3, 0.6]);
+  });
+
+  it('P04 review: a street goes on past its ends by half its width, with a narrow shoulder', () => {
+    const street: Road = {
+      index: 1,
+      kind: 'street',
+      width: 6,
+      points: [point(0, 0, 6), point(0, 10, 6)],
+    };
+    const geo = buildRoadGeometry([street], { height: () => 0 }, -100, 100, LOOK);
+    const zs = geo.positions.filter((_, i) => i % 3 === 2);
+    expect(Math.min(...zs)).toBeCloseTo(-3);
+    expect(Math.max(...zs)).toBeCloseTo(13);
+    const xs = geo.positions.filter((_, i) => i % 3 === 0);
+    expect(Math.max(...xs)).toBeCloseTo(3.5);
+  });
+});
+
+describe('centre lines', () => {
+  const LINED = {
+    ...LOOK,
+    centreLine: { color: [1, 1, 0], width: 0.5, dash: 4, lift: 0.05 },
+  } as const;
+  const yellow = (colors: readonly number[]) =>
+    colors.filter((_, i) => i % 4 === 0).filter((_, k) => colors[k * 4 + 2] === 0).length;
+
+  it('P04 review: streets get a solid yellow line that stops where another street crosses', () => {
+    const across: Road = {
+      index: 1,
+      kind: 'street',
+      width: 6,
+      points: [point(-40, 20, 6), point(40, 20, 6)],
+    };
+    const along: Road = {
+      index: 2,
+      kind: 'street',
+      width: 6,
+      points: [point(0, 0, 6), point(0, 40, 6)],
+    };
+    const geo = buildRoadGeometry([along, across], { height: () => 0 }, -100, 100, LINED);
+    const lineZs = geo.positions
+      .filter((_, i) => i % 3 === 2)
+      .filter((_, v) => geo.colors[v * 4 + 2] === 0 && Math.abs(geo.positions[v * 3] ?? 9) < 1);
+    expect(lineZs.length).toBeGreaterThan(0);
+    // Nothing of the line of `along` within the crossing street (Z 17..23).
+    expect(lineZs.every((z) => z <= 17 || z >= 23)).toBe(true);
+    // Painted above the road surface.
+    const ys = geo.positions.filter((_, i) => i % 3 === 1);
+    expect(Math.max(...ys)).toBeCloseTo(LOOK.lift + 0.05);
+  });
+
+  it('P04 review: main roads get a dashed line, paths none', () => {
+    const lined = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, LINED);
+    const plain = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, LOOK);
+    const quads = (lined.indices.length - plain.indices.length) / 6;
+    // 40 long in pieces of 2: half of them in dashes of 4.
+    expect(quads).toBe(10);
+    expect(yellow(lined.colors)).toBeGreaterThan(0);
+    const path = buildRoadGeometry(
+      [{ ...ROAD, kind: 'cross' }],
+      { height: () => 0 },
+      0,
+      100,
+      LINED,
+    );
+    expect(path.indices).toHaveLength(4 * 3 * 6);
   });
 });

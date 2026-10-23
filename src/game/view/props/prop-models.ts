@@ -6,7 +6,10 @@ import {
   variantId,
   type PartFamily,
 } from '../../config/building-families';
+import { CAR_IDS } from '../../config/cars';
 import { PROP_IDS } from '../../config/level-zero';
+import { PROP_COLORS as C } from '../../config/prop-look';
+import { buildCar } from './car-props';
 import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
@@ -70,4 +73,10 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...partModels('city-building', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-tower', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-block', CITY_VARIANTS, buildCityBuilding),
+  [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
+  [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
+  [CAR_IDS.white]: () => buildCar('sedan', C.white),
+  [CAR_IDS.grey]: () => buildCar('sedan', C.metal),
+  [CAR_IDS.van]: () => buildCar('van', C.white),
+  [CAR_IDS.truck]: () => buildCar('truck', C.containerGreen),
 };

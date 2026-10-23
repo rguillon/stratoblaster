@@ -288,3 +288,18 @@ function resample(run: readonly Node[], step: number): { x: number; z: number }[
     z: first.z + ((last.z - first.z) * i) / count,
   }));
 }
+
+/** `block` cut into `nx × nz` equal parts. */
+export function blockParts(block: Block, nx: number, nz: number): Block[] {
+  const w = (block.xMax - block.xMin) / nx;
+  const d = (block.zMax - block.zMin) / nz;
+  const parts: Block[] = [];
+  for (let i = 0; i < nx; i++) {
+    for (let j = 0; j < nz; j++) {
+      const xMin = block.xMin + i * w;
+      const zMin = block.zMin + j * d;
+      parts.push({ xMin, xMax: xMin + w, zMin, zMax: zMin + d });
+    }
+  }
+  return parts;
+}
