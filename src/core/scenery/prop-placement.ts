@@ -66,8 +66,10 @@ interface Building {
   readonly halfZ: number;
 }
 
-/** A block wider or deeper than this gets 2 towers across that way. */
-const PART_SPLIT = 40;
+/** Blocks are cut into parts of about this size, one tower each at most… */
+const PART_SIZE = 30;
+/** …and at most this many parts across either way. */
+const MAX_PARTS = 3;
 /** Gap between a tower and the edge of its part of the podium roof. */
 const TOWER_MARGIN = 1;
 /** Towers are drawn among the kinds at least this share of the largest one that fits. */
@@ -191,7 +193,7 @@ export class PropPlacer {
 
   /**
    * Fills a block of a section with `blocks` (phase 4 review): a podium over the whole block,
-   * and towers on its roof, one per part of the block (up to 2 × 2 parts), the largest kind of
+   * and towers on its roof, one per part of the block (parts of about 30, up to 3 × 3), a large kind of
    * the section's groups that fits each part.
    */
   #fillBlock(block: Block, index: number): void {
@@ -227,7 +229,9 @@ export class PropPlacer {
       halfZ: d / 2,
     });
     const groups = allowed(this.rules.groups, section.groups);
-    const parts = blockParts(block, w > PART_SPLIT ? 2 : 1, d > PART_SPLIT ? 2 : 1);
+    const across = (size: number): number =>
+      Math.min(MAX_PARTS, Math.max(1, Math.round(size / PART_SIZE)));
+    const parts = blockParts(block, across(w), across(d));
     const towers = Math.round(between(fill.towers, r(2)));
     parts
       .map((part, k) => ({ part, order: r(10 + k) }))
@@ -262,11 +266,15 @@ export class PropPlacer {
     );
     const choice = choices[Math.floor(r * choices.length)];
     if (!choice) return undefined;
+    // Shifted within the room its part leaves around it, so towers do not line up (review).
+    const size = (choice.kind.frontage ?? choice.kind.footprint) * choice.scale;
+    const shift = (min: number, max: number, t: number): number =>
+      (min + max) / 2 + (t - 0.5) * Math.max(0, max - min - 2 * (size + TOWER_MARGIN));
     return {
       kind: choice.kind.id,
-      x: (part.xMin + part.xMax) / 2,
+      x: shift(part.xMin, part.xMax, (r * 31) % 1),
       y,
-      z: (part.zMin + part.zMax) / 2,
+      z: shift(part.zMin, part.zMax, (r * 57) % 1),
       rotation: (Math.floor(r * 4 * 7919) % 4) * (Math.PI / 2),
       scale: choice.scale,
     };

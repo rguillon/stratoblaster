@@ -70,6 +70,10 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] The city is too much a series of squares: make it more diverse, like the factory. *Fixed:*
+  - *The city's street grid is now irregular like the industrial zone's: rows 45–95 apart, columns 50–110 apart, 70 % of links built, so blocks vary in size and merge where a street is missing.*
+  - *Podium heights vary more, from 3 to 18.*
+  - *Each block is cut into parts of about 30 units (up to 3 × 3), with 2–9 towers on each podium. Each tower is shifted within the room its part leaves, so towers do not line up.*
 - [x] Make the skyscraper bases bigger and pack them more: no grey ground visible in the city. *Fixed (D-026):*
   - *The street grid now also gives its blocks: the ground between the streets of each cell, up to 0.5 from the street edge, or to the middle of a street that was not built.*
   - *In the city centre (`blocks` section option), each block gets a podium stretched to cover it, 5–12 high. A podium is a unit-square model with window rows and a lit band; there are 4 variants, and thin instances now take a per-axis size.*
@@ -182,6 +186,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (irregular city): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.

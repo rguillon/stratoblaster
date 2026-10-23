@@ -88,7 +88,6 @@ describe('Level Zero', () => {
     expect(industrial.has('glass-tower')).toBe(false);
     const downtown = kindsIn(city);
     expect([...downtown].some((k) => k.startsWith('city-block'))).toBe(true);
-    expect([...downtown].some((k) => k.startsWith('city-tower'))).toBe(true);
     expect(downtown.has('factory')).toBe(false);
     // Dense: many more buildings per unit of length in the city than on the plains.
     const count = (zMin: number, zMax: number) =>

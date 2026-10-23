@@ -45,3 +45,4 @@
 - 2026-10-23 — 4 — Review fix: straight merging streets in the industrial zone and city centre (winding roads and paths kept out), 16 buildings assembled from parts, matte props and texel-snapped shadows against blinking (D-024); light verification green (typecheck, build, 32 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: bigger buildings made of parts (works, plants, towers, blocks) packed edge to edge in the industrial zone and city centre (D-025); light verification green (typecheck, build, 33 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: city blocks covered by stretched podiums with towers on top, no bare ground left (D-026); light verification green (typecheck, build, 33 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: irregular city grid, varied podium heights, more and shifted towers; light verification green (typecheck, build, 33 e2e); still awaiting review.

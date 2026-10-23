@@ -358,5 +358,6 @@
   - 2–4 towers stand on each podium, one per part of the block (2 × 2 when it is wider than 40). Each is chosen among the section's kinds that fit the part, preferring the largest (within 75 %).
   - Street-front slots are skipped in those sections.
 - **Alternatives considered:** Packing street-front buildings tighter still: this cannot guarantee full coverage of irregular blocks.
+- **Review follow-up:** the city now uses an irregular grid (rows 45–95, columns 50–110, 70 % of links) and podiums 3–18 high. Blocks are cut into parts of about 30 (up to 3 × 3) for 2–9 towers, each shifted within its part.
 - **Consequences:** The city reads as one continuous built mass, dark with lit bands. Podium window bands are stretched with the block, so they sit 0.002 units (scaled) off the walls.
 - **Status:** Accepted
