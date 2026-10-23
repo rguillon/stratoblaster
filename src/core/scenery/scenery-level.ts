@@ -120,7 +120,7 @@ type Range = readonly [number, number];
 
 /**
  * Randomly generated roads and paths (P04-R07): `mainRoads` roads wind along the whole level,
- * and paths branch off them across it. Buildings stand only along them.
+ * and paths branch off them across it to past the screen edges. Buildings stand only along them.
  */
 export interface RoadRules {
   readonly mainRoads: number;
@@ -129,12 +129,23 @@ export interface RoadRules {
   readonly meander: { readonly amplitude: Range; readonly wavelength: Range };
   /** Distance along Z between two paths. */
   readonly crossSpacing: Range;
-  readonly crossLength: Range;
   /** Largest sideways bend of a path. */
   readonly crossBend: number;
   readonly mainWidth: number;
   readonly crossWidth: number;
-  /** Roads break where the ground is lower than this (the sea) or steeper than `maxSlope`. */
+  /**
+   * Where a path meets a road it widens to `width`, narrowing back to `crossWidth` over
+   * `length`, so it merges into the road.
+   */
+  readonly junction: { readonly width: number; readonly length: number };
+  /**
+   * Roads only start and end beyond X = ±offscreenX, outside the screen: a road that must stop
+   * turns off the screen first, and paths run from their road to past the screen edge.
+   */
+  readonly offscreenX: number;
+  /** Sharpest turn of a road leaving the screen, in radians per `step`. */
+  readonly turnRate: number;
+  /** No road on ground lower than this (the sea) or steeper than `maxSlope`. */
   readonly minHeight: number;
   readonly maxSlope: number;
   /** Pieces of road shorter than this many points are dropped. */

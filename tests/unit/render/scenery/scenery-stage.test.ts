@@ -54,7 +54,14 @@ describe('SceneryStage', () => {
     expect(props).toBeGreaterThan(0);
     // P04-R07: road ribbons on the chunks.
     expect(roads).toBeGreaterThan(0);
-    expect(scene?.meshes.some((m) => m.name.startsWith('roads-'))).toBe(true);
+    const roadMeshes = scene?.meshes.filter((m) => m.name.startsWith('roads-')) ?? [];
+    const pathMeshes = scene?.meshes.filter((m) => m.name.startsWith('paths-')) ?? [];
+    expect(roadMeshes.length).toBeGreaterThan(0);
+    expect(pathMeshes.length).toBeGreaterThan(0);
+    // P04 review: paths are drawn first, so the roads stay on top where they meet.
+    for (const path of pathMeshes) {
+      for (const road of roadMeshes) expect(path.alphaIndex).toBeLessThan(road.alphaIndex);
+    }
     s.update(5000, 1 / 60);
     expect(s.camera.position.z).toBeGreaterThan(4000);
     const meshes =

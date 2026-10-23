@@ -70,6 +70,13 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Make sure the roads start and end off screen, not in the middle of the screen; work on the merging between a path and a road: the road stays on top, the path widens at the junction. *Fixed:*
+  - *Roads only start and end beyond X = ±420, past the widest ground the camera sees (about ±390, checked by a test against the camera framing).*
+  - *Where a main road cannot go on (sea, steep slope), it now turns off the screen before the obstacle and comes back from the side after it, trying earlier points until the turn is on buildable ground.*
+  - *Paths run from a main road to past the screen edge. Each tries both directions and three bends, and is dropped if none stays on buildable ground. They now start only on road pieces that pass there (29 paths in Level Zero, was 12).*
+  - *Paths widen from 4 to 14 at their junction, narrowing back over 28 units.*
+  - *Paths are drawn in their own mesh layer before the roads, so the roads stay on top.*
+  - *The road slope limit went from 0.35 to 0.5, so dirt paths can cross rolling ground (D-021).*
 - [x] Make the roads blend better with the ground. *Fixed: each ribbon now has soft shoulders (2.5 units) on both sides that fade to transparent, so the road melts into the ground. Its surface is slightly see-through (main roads 85 %, paths 60 %), so the ground texture shows through. Colour and opacity vary along the road (30 % wear). The ribbons are drawn blended without writing depth, so crossings mix instead of hiding each other.*
 - [x] The clouds can pass through the heightmap, it looks bad: make sure the clouds stay on top. *Fixed: the height field now has a ceiling, a height its ground never exceeds whatever the seed (top of each section's relief or peak cap, flattened band or sea bed). The stage lifts any cloud layer to at least 15 units above that ceiling. Level Zero's layers moved from 170 / 250 to 265 / 295, above the peaks (≤ 250) and under the ships (320) (D-022).*
 - [x] Add (in the code and in the specs) randomly generated roads or paths on the maps and only place the building props along those roads. *Fixed: requirement P04-R07 added at the reviewer's request. Two winding main roads run along the level, with paths branching off them every 260–560 units. All are generated from the seed and break where they would run into the sea or up steep slopes. Buildings now stand only in slots along roads and paths, set back from the edge and facing the road; trees keep off them (D-021).*
@@ -150,6 +157,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (roads off screen, junctions): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (roads blend with the ground): typecheck ✔, build ✔, e2e 32 passed twice in a row.
 The first runs failed one phase 1 menu test each (gamepad, then AZERTY). Each failure was the
 30 s timeout, with the page simply too slow, and each test passed alone. Cause: the 5 heavy
@@ -199,7 +207,7 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
 - **Sea.** There is no mirror reflection of terrain or props (decided in Q7). The wave pattern repeats every 320 units.
 - **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
 - **Panel.** On narrow windows the panel covers part of the canvas.
-- **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two roads cross, the ribbons simply overlap. Paths end abruptly where they stop.
+- **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two main roads cross, their ribbons simply overlap. In the sections a road has to avoid (mountains, coast, open sea), there are no roads, and so no buildings.
 - **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` takes close to its 30 s timeout under full parallel load. The heavy `level_zero/` tests now run one at a time, which removed the timeouts seen during the review fixes.
 
 ### Suggestions for future phases

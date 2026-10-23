@@ -84,20 +84,23 @@ const PROP_RULES: PropRules = {
 };
 
 /**
- * P04-R07: two winding roads along the level, and paths branching off them every 260-560 units.
- * Buildings stand only along them, every 34 units on both sides.
+ * P04-R07: two winding roads along the level, and paths branching off them every 260-560 units
+ * out to the screen edge. Buildings stand only along them, every 34 units on both sides. Roads
+ * start and end beyond X = ±420: the camera sees about ±390 at most (phase 4 review).
  */
 const ROAD_RULES: RoadRules = {
   mainRoads: 2,
   spread: 220,
   meander: { amplitude: [80, 180], wavelength: [1300, 2600] },
   crossSpacing: [260, 560],
-  crossLength: [160, 420],
   crossBend: 40,
   mainWidth: 6,
   crossWidth: 4,
+  junction: { width: 14, length: 28 },
+  offscreenX: 420,
+  turnRate: 0.05,
   minHeight: 3,
-  maxSlope: 0.35,
+  maxSlope: 0.5,
   minRun: 6,
   step: 8,
   slotSpacing: 34,

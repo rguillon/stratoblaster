@@ -6,6 +6,8 @@ import { levelRoads } from '../../../src/core/scenery/road-network';
 import { levelDuration } from '../../../src/core/scenery/scenery-level';
 import { LEVEL_ZERO, SCENERY_LEVELS } from '../../../src/game/sim/scenery-levels';
 import { LEVEL_ZERO_LOOK, PLAYFIELD_CAMERA } from '../../../src/game/config/scenery-look';
+import { framePlayfield, visibleGround } from '../../../src/render/scenery/playfield-framing';
+import { GAME_CONFIG } from '../../../src/game/config/game';
 import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
 
 describe('Level Zero', () => {
@@ -42,6 +44,23 @@ describe('Level Zero', () => {
     }
   });
 
+  it('P04 review: roads start and end beyond what the camera can see', () => {
+    const { width, height } = GAME_CONFIG.screen;
+    const framing = framePlayfield(GAME_CONFIG.screen, PLAYFIELD_CAMERA);
+    const cameraY = PLAYFIELD_CAMERA.flightAltitude + framing.height;
+    const seen = visibleGround(framing, width / height, cameraY, LEVEL_ZERO.sea?.level ?? 0, 0);
+    const { offscreenX, mainWidth, junction } = LEVEL_ZERO.roads;
+    const shoulder = LEVEL_ZERO_LOOK.roads.shoulder;
+    expect(offscreenX).toBeGreaterThan(
+      seen.halfWidth + Math.max(mainWidth, junction.width) / 2 + shoulder,
+    );
+    for (const road of levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed).roads) {
+      const last = road.points.at(-1);
+      const onLevel = last && last.z > 0 && last.z < field.length;
+      if (onLevel) expect(Math.abs(last.x)).toBeGreaterThanOrEqual(offscreenX);
+    }
+  });
+
   it('P04-R02: has a sea, with ground under it in the coast and open sea sections', () => {
     expect(LEVEL_ZERO.sea?.level).toBe(0);
     const sea = field.sections.find((p) => p.section.name === 'open sea');
@@ -62,7 +81,7 @@ describe('Level Zero', () => {
 
   it('P04-R07: has roads and paths over the level, with buildings only along them', () => {
     const roads = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
-    expect(roads.roads.filter((r) => r.kind === 'main')).toHaveLength(2);
+    expect(roads.roads.filter((r) => r.kind === 'main').length).toBeGreaterThanOrEqual(2);
     expect(roads.roads.filter((r) => r.kind === 'cross').length).toBeGreaterThan(20);
     const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
     const trees = new Set(LEVEL_ZERO.props.trees.map((t) => t.id));

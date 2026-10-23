@@ -10,20 +10,14 @@ const LOOK = {
   wear: 0,
   lift: 0.5,
 } as const;
-const point = (x: number, z: number, valid = true) => ({ x, z, valid });
+const point = (x: number, z: number, width = 4) => ({ x, z, width });
 
 const ROAD: Road = {
   index: 0,
   kind: 'main',
   width: 4,
-  points: [
-    point(0, 0),
-    point(0, 10),
-    point(0, 20),
-    point(0, 30, false),
-    point(0, 40),
-    point(0, 50),
-  ],
+  // Wider at its start, like a path at its junction.
+  points: [point(0, 0, 8), point(0, 10), point(0, 20), point(0, 30), point(0, 40)],
 };
 
 /** X and Z of vertex `i`. */
@@ -46,15 +40,16 @@ function upwardY(positions: readonly number[], indices: readonly number[]): numb
 describe('buildRoadGeometry', () => {
   it('P04-R07: drapes a ribbon of the road width on the ground, facing up', () => {
     const geo = buildRoadGeometry([ROAD], { height: (x) => x }, 0, 100, LOOK);
-    // Runs 0-10-20 and 40-50: 3 + 2 points, 4 vertices each (2 shoulders, 2 road edges), and 3
-    // quads per segment.
+    // 5 points, 4 vertices each (2 shoulders, 2 road edges), and 3 quads per segment.
     expect(geo.positions.length / 3).toBe(20);
-    expect(geo.indices).toHaveLength((2 + 1) * 3 * 6);
-    const xs = [0, 1, 2, 3].map((k) => geo.positions[k * 3]);
-    expect(xs).toEqual([-3, -2, 2, 3]);
+    expect(geo.indices).toHaveLength(4 * 3 * 6);
+    const xs = (point: number) => [0, 1, 2, 3].map((k) => geo.positions[(point * 4 + k) * 3]);
+    // The first point is 8 wide, the others 4, with a shoulder of 1 on each side.
+    expect(xs(0)).toEqual([-5, -4, 4, 5]);
+    expect(xs(1)).toEqual([-3, -2, 2, 3]);
     // Height of the ground (here = x) plus the lift.
     const ys = [0, 1, 2, 3].map((k) => geo.positions[k * 3 + 1]);
-    expect(ys).toEqual([-2.5, -1.5, 2.5, 3.5]);
+    expect(ys).toEqual([-4.5, -3.5, 4.5, 5.5]);
     expect(upwardY(geo.positions, geo.indices)).toBeGreaterThan(0);
   });
 
@@ -74,7 +69,7 @@ describe('buildRoadGeometry', () => {
   it('P04-R07: draws only the segments that start in the chunk, so chunks share none', () => {
     const first = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 15, LOOK);
     const second = buildRoadGeometry([ROAD], { height: () => 0 }, 15, 100, LOOK);
-    expect(first.indices.length + second.indices.length).toBe(3 * 3 * 6);
+    expect(first.indices.length + second.indices.length).toBe(4 * 3 * 6);
     expect(
       buildRoadGeometry(
         [{ ...ROAD, kind: 'cross' }],

@@ -13,7 +13,7 @@ const flat = (name: string, seconds: number, base: number): TerrainSection => ({
 
 /**
  * A tiny scenery level: two flat sections of 10 s at 20 units/s, a sea, one straight road along
- * X = 0 with a straight path every 100 units, and two prop kinds.
+ * X = 0 with a straight path every 100 units out to X = ±100 (off screen), and two prop kinds.
  */
 export const SAMPLE_SCENERY_LEVEL: SceneryLevel = {
   id: 'sample-ground',
@@ -28,10 +28,12 @@ export const SAMPLE_SCENERY_LEVEL: SceneryLevel = {
     spread: 0,
     meander: { amplitude: [0, 0], wavelength: [100, 100] },
     crossSpacing: [100, 100],
-    crossLength: [80, 80],
     crossBend: 0,
     mainWidth: 6,
     crossWidth: 4,
+    junction: { width: 8, length: 10 },
+    offscreenX: 100,
+    turnRate: 0.1,
     minHeight: 1,
     maxSlope: 0.5,
     minRun: 3,

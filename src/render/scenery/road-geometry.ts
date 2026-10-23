@@ -28,14 +28,13 @@ const ROWS = [
   { across: 1, shoulder: 1, opacity: 0 },
 ] as const;
 
-/** Runs of consecutive valid points whose segments start inside [zMin, zMax). */
+/** Runs of consecutive points whose segments start inside [zMin, zMax). */
 function runs(points: readonly RoadPoint[], zMin: number, zMax: number): RoadPoint[][] {
   const out: RoadPoint[][] = [];
   let run: RoadPoint[] = [];
   points.forEach((a, i) => {
     const b = points[i + 1];
-    const keep = b !== undefined && a.valid && b.valid && a.z >= zMin && a.z < zMax;
-    if (keep) {
+    if (b !== undefined && a.z >= zMin && a.z < zMax) {
       if (run.length === 0) run.push(a);
       run.push(b);
     } else if (run.length > 0) {
@@ -66,8 +65,9 @@ function worn(road: Road, p: RoadPoint, look: RoadLook): [number, number, number
 }
 
 /**
- * Ribbons draped on the ground along the valid pieces of `roads` whose segments start in
- * [zMin, zMax) (P04-R07), so neighbouring terrain chunks draw each segment once. Each ribbon
+ * Ribbons draped on the ground along the segments of `roads` that start in [zMin, zMax)
+ * (P04-R07), so neighbouring terrain chunks draw each segment once. The ribbon follows the
+ * width of each point (paths widen at their junction). Each ribbon
  * has a slightly see-through, worn surface and soft shoulders that fade to nothing on both
  * sides, so the road blends into the ground (phase 4 review).
  */
@@ -87,7 +87,7 @@ export function buildRoadGeometry(
         const [nx, nz] = across(run, i);
         const [r, g, b, a] = worn(road, p, look);
         for (const row of ROWS) {
-          const offset = (row.across * road.width) / 2 + row.shoulder * look.shoulder;
+          const offset = (row.across * p.width) / 2 + row.shoulder * look.shoulder;
           const x = p.x + nx * offset;
           const z = p.z + nz * offset;
           geo.positions.push(x, ground.height(x, z) + look.lift, z);

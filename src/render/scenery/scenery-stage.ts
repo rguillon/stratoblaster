@@ -25,8 +25,7 @@ import type {
 } from './scenery-look';
 import { lightScenery } from './scenery-lighting';
 import { TerrainChunks } from './terrain-chunks';
-import { RoadField } from './road-field';
-import { buildRoadGeometry } from './road-geometry';
+import { RoadLayers } from './road-field';
 
 /** Engine settings of a {@link SceneryStage}. */
 export interface SceneryStageConfig {
@@ -91,7 +90,7 @@ export class SceneryStage {
   #seed: number;
   readonly #chunks: TerrainChunks;
   readonly #props: PropField;
-  readonly #roads: RoadField;
+  readonly #roads: RoadLayers;
   readonly #sea: Mesh | undefined;
   readonly #cloudLayers: CloudLayer[];
   readonly #ground: GroundWindow;
@@ -131,7 +130,7 @@ export class SceneryStage {
       seed: level.seed,
     });
     this.#chunks = this.#buildChunks();
-    this.#roads = new RoadField(scene, this.kit.roads);
+    this.#roads = new RoadLayers(scene, this.kit.roads);
     this.#props = new PropField(scene, options.propModels, this.kit.props, (mesh) => {
       this.kit.addShadowCaster(mesh);
     });
@@ -237,14 +236,13 @@ export class SceneryStage {
 
   #placeChunk(index: number): void {
     const span = this.#chunks.span(index);
-    const roads = buildRoadGeometry(
+    this.#roads.setChunk(
+      index,
       this.#placer.roads.roads,
       this.#field,
-      span.zMin,
-      span.zMax,
+      span,
       this.options.look.roads,
     );
-    this.#roads.setChunk(index, roads);
     this.#props.setChunk(
       index,
       this.#placer.place({
