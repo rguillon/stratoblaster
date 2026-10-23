@@ -23,7 +23,7 @@ import type {
   PropModelFactory,
   SceneryLook,
 } from './scenery-look';
-import { lightScenery } from './scenery-lighting';
+import { lightScenery, snappedLightPosition } from './scenery-lighting';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
 
@@ -222,8 +222,12 @@ export class SceneryStage {
       this.#sea.position.z = Math.round(middle / tile) * tile;
     }
     for (const layer of this.#cloudLayers) this.#updateCloud(layer);
-    this.sun.position = new Vector3(0, 0, middle).subtract(
-      this.sun.direction.scale(this.options.config.sunDistance),
+    const { mapSize, frustum } = this.options.look.sun.shadow;
+    this.sun.position = snappedLightPosition(
+      this.sun.direction,
+      new Vector3(0, 0, middle),
+      this.options.config.sunDistance,
+      frustum / mapSize,
     );
     this.kit.update({ time: this.#time, cameraPosition: camera, seaEnabled: this.#seaEnabled });
   }

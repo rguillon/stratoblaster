@@ -46,7 +46,7 @@ export const LEVEL_ZERO_LOOK = {
     azimuthDeg: 25,
     color: [1, 0.84, 0.64],
     intensity: 1.6,
-    shadow: { mapSize: 2048, bias: 0.0008, normalBias: 0.6, darkness: 0.35 },
+    shadow: { mapSize: 2048, frustum: 1600, bias: 0.0008, normalBias: 0.6, darkness: 0.35 },
   },
   ambient: { sky: [0.62, 0.68, 0.8], ground: [0.36, 0.3, 0.24], intensity: 0.6 },
   terrain: {
@@ -123,7 +123,7 @@ export const LEVEL_ZERO_LOOK = {
     ],
     tintTileSize: 1600,
     foam: { color: [0.9, 0.92, 0.9], width: 2.5 },
-    specular: 0.04,
+    specular: 0,
   },
   sea: {
     color: [0.03, 0.17, 0.2],
@@ -169,6 +169,7 @@ export const LEVEL_ZERO_LOOK = {
     wear: 0.3,
     lift: 0.6,
   },
-  props: { specular: 0.08, lightIntensity: 1 },
-  glow: { intensity: 0.5, blurKernelSize: 16 },
+  /** Matte props: specular highlights on their facets flickered as the view scrolled (review). */
+  props: { specular: 0, lightIntensity: 1 },
+  glow: { intensity: 0.3, blurKernelSize: 16 },
 } as const;

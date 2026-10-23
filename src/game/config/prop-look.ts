@@ -34,4 +34,5 @@ export const PROP_LIGHTS = {
   /** Dimmer window and trim colours for the city, where hundreds of them glow at once. */
   windowDim: [0.5, 0.36, 0.2],
   cyanDim: [0, 0.42, 0.48],
+  pinkDim: [0.5, 0.1, 0.3],
 } as const;

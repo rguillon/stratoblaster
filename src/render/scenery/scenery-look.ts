@@ -109,6 +109,11 @@ export interface SceneryLook {
     readonly intensity: number;
     readonly shadow: {
       readonly mapSize: number;
+      /**
+       * Size of the square of ground the shadow map covers, centred on the view. Fixed, and moved
+       * by whole shadow texels, so shadows do not shimmer as the view scrolls.
+       */
+      readonly frustum: number;
       readonly bias: number;
       readonly normalBias: number;
       /** 0 = black shadows, 1 = no shadows. */

@@ -92,16 +92,17 @@ export class RoadLayers {
     span: { readonly zMin: number; readonly zMax: number },
     look: RoadLook,
   ): void {
-    const ribbons = (kind: Road['kind']): ColoredGeometry =>
+    const ribbons = (paths: boolean): ColoredGeometry =>
       buildRoadGeometry(
-        roads.filter((r) => r.kind === kind),
+        roads.filter((r) => (r.kind === 'cross') === paths),
         ground,
         span.zMin,
         span.zMax,
         look,
       );
-    this.#paths.setChunk(index, ribbons('cross'));
-    this.#roads.setChunk(index, ribbons('main'));
+    this.#paths.setChunk(index, ribbons(true));
+    // Main roads and streets.
+    this.#roads.setChunk(index, ribbons(false));
   }
 
   removeChunk(index: number): void {

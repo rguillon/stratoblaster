@@ -48,7 +48,9 @@ describe('PropPlacer', () => {
     if (!flat) throw new Error('no section');
     const dense: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,
-      sections: [{ ...flat, seconds: 20, streets: { across: [20, 25], along: 3, wobble: 5 } }],
+      sections: [
+        { ...flat, seconds: 20, streets: { rows: [20, 25], columns: [20, 30], links: 0.8 } },
+      ],
     };
     const buildings = placer(dense)
       .place(AREA)

@@ -55,8 +55,10 @@ function across(run: readonly RoadPoint[], i: number): [number, number] {
   return [(b.z - a.z) / length, -(b.x - a.x) / length];
 }
 
-/** Colour and opacity of point `i` of a road, worn by a hash of its position. */
+/** Colour and opacity of a point of a road, worn by a hash of its position (not streets). */
 function worn(road: Road, p: RoadPoint, look: RoadLook): [number, number, number, number] {
+  // Streets are opaque and even, so where they cross or meet they merge without a seam.
+  if (road.kind === 'street') return [...look.main, 1];
   const [r, g, b] = road.kind === 'main' ? look.main : look.cross;
   const opacity = road.kind === 'main' ? look.opacity.main : look.opacity.cross;
   const shade = 1 + (hash2D(Math.round(p.x), Math.round(p.z), road.index) - 0.5) * look.wear;

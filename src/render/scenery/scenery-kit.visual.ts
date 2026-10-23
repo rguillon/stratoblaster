@@ -113,6 +113,10 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
   shadows.bias = look.sun.shadow.bias;
   shadows.normalBias = look.sun.shadow.normalBias;
   shadows.setDarkness(look.sun.shadow.darkness);
+  // A fixed shadow frustum: re-fitting it to the scene every frame made the shadows shimmer
+  // (the stage moves the sun by whole texels, phase 4 review).
+  sun.autoUpdateExtends = false;
+  sun.shadowFrustumSize = look.sun.shadow.frustum;
   let camera = Vector3.Zero();
   const fog = { color: look.sky.haze, start: look.fog.start, end: look.fog.end };
   return {

@@ -70,6 +70,13 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] In the factory area, remove the vertical roads and horizontal paths: only straight road segments that merge into each other, same for the city. Create more diverse factory and building parts. Make the buildings less shiny, they look like they are blinking when the ship advances. *Fixed (D-024):*
+  - *The winding roads and the paths now stay out of the industrial zone and the city centre: they turn off the screen before them.*
+  - *The districts get a network of straight streets on a rectilinear grid. Rows are 45–90 apart and columns 50–110 apart in the industrial zone (60 % of links built: a maze); in the city they are a regular 62–66 × 72–76 grid (92 % built). The first and last rows of a section are full streets.*
+  - *No street ends on screen: a street that stops at a crossing goes on straight, or is cut back, until it ends at another street or off the screen.*
+  - *Streets are opaque and evenly coloured, so crossings and T-junctions merge without seams. Buildings line them, aligned with the grid.*
+  - *New buildings assembled from parts. Eight industrial complexes: a hall with one of four roofs (flat with units, sawtooth, pitched, barrel), 0–3 chimneys, a side strip with tanks, an annex or a pipe rack, and lit doors. Eight city buildings: 1–3 tiers stepping back, five facade and three window colours, five crowns (spire, antenna, pyramid, helipad, roof units), and sometimes a neon sign.*
+  - *Blinking. The shadow map no longer re-fits itself to the scene every frame: it has a fixed 1600-unit frustum and the sun moves by whole shadow texels, so shadows stop swimming. Props and terrain are matte (no specular). Window bands are fewer and thicker, and the glow is softer (0.5 → 0.3).*
 - [x] Add a section at the end of Level Zero with more green ground, grass and trees; then an industrial section, a dense road maze packed with various buildings; then a final city centre section. *Fixed (D-023):*
   - *Three sections now end the level: **meadows** (1:54), **industrial zone** (2:16) and **city centre** (2:38). The other sections were shortened so the level still lasts exactly 3:00 (P04-R06), and the final plains section was removed.*
   - *Sections can cover their ground with grass ("lush") or concrete ("paved"). Both are new generated textures, blended in the terrain shader in noisy patches, and fade over the section transitions.*
@@ -164,6 +171,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (meadows, industrial zone, city centre): typecheck ✔, build ✔, e2e 32 passed (the section e2e test now also visits the 3 new sections).
 Review fix (roads off screen, junctions): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (roads blend with the ground): typecheck ✔, build ✔, e2e 32 passed twice in a row.
@@ -199,8 +207,8 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
    | 1:30 | open sea | Islands |
    | 1:44 | landing | Coast again, first grass and bushes |
    | 1:54 | meadows | Green grass, conifers, broadleaf trees and bushes (review) |
-   | 2:16 | industrial zone | Dense street maze packed with industrial buildings on concrete (review) |
-   | 2:38 | city centre | Regular street grid, towers, offices and apartment blocks (review) |
+   | 2:16 | industrial zone | Maze of straight streets packed with varied industrial buildings on concrete (review) |
+   | 2:38 | city centre | Regular grid of straight streets, varied towers, offices and apartment blocks (review) |
    | 3:00 | — | The level stops with "Level end" (P04-R06) |
 5. P04-R07: roads (dark) and paths (light dust) wind across the map, and every building stands along one, facing it. No road starts or ends on screen. Paths flare where they meet a road. N gives another road network.
 6. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
@@ -218,7 +226,7 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
 - **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
 - **Panel.** On narrow windows the panel covers part of the canvas.
 - **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two main roads cross, their ribbons simply overlap. In the sections a road has to avoid (mountains, coast, open sea), there are no roads, and so no buildings.
-- **Dense districts.** The city centre draws about 370k triangles (half of them window bands), the heaviest part of the level: to be checked on real hardware (ENG-101). The city's glowing windows and trims still bloom a little; the glow strength is `glow.intensity` in `scenery-look.ts`. City buildings face whichever street their slot is on, so the blocks look a little jumbled.
+- **Dense districts.** The city centre draws about 370k triangles (half of them window bands), the heaviest part of the level: to be checked on real hardware (ENG-101). The city's glowing windows and trims still bloom a little; the glow strength is `glow.intensity` in `scenery-look.ts`. The streets of the districts follow the ground but do not flatten it.
 - **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` takes close to its 30 s timeout under full parallel load. The heavy `level_zero/` tests now run one at a time, which removed the timeouts seen during the review fixes.
 
 ### Suggestions for future phases

@@ -2,7 +2,7 @@ import { createNoise2D, smoothstep } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
 import type { RoadRules } from './scenery-level';
-import { acrossStreet, alongStreet, findDistricts } from './street-grid';
+import { findDistricts, streetRuns, type District } from './street-grid';
 
 /** One point of a road's centre line. */
 export interface RoadPoint {
@@ -13,12 +13,13 @@ export interface RoadPoint {
 }
 
 /**
- * A piece of road (`main`, along the level) or a path (`cross`, branching off a main road). Every
- * point of it is on buildable ground, and it starts and ends off the screen.
+ * A piece of winding road (`main`, along the level), a path (`cross`, branching off a main road)
+ * or a straight street of a district (`street`). Every point of it is on buildable ground, and it
+ * starts and ends off the screen or at another road.
  */
 export interface Road {
   readonly index: number;
-  readonly kind: 'main' | 'cross';
+  readonly kind: 'main' | 'cross' | 'street';
   /** Nominal width (paths are wider near their junction, see `RoadPoint.width`). */
   readonly width: number;
   readonly points: readonly RoadPoint[];
@@ -102,6 +103,8 @@ export class RoadNetwork {
   /** Gap between road edges and building footprints. */
   readonly setback: number;
   readonly #buckets = new Map<string, Segment[]>();
+  /** Sections with street grids, kept clear of the winding roads and the paths. */
+  readonly #districts: District[];
 
   constructor(
     private readonly field: HeightField,
@@ -111,6 +114,7 @@ export class RoadNetwork {
     private readonly range: { readonly zMin: number; readonly zMax: number },
   ) {
     this.setback = rules.setback;
+    this.#districts = findDistricts(field.sections, range);
     const random = createRng(seed + 4);
     for (let i = 0; i < rules.mainRoads; i++) {
       for (const piece of this.#mainPieces(this.#mainLine(random))) {
@@ -190,7 +194,7 @@ export class RoadNetwork {
       run = [];
     };
     for (const p of line) {
-      if (this.buildable(p.x, p.z)) run.push(p);
+      if (this.#open(p.x, p.z)) run.push(p);
       else close();
     }
     close();
@@ -239,7 +243,7 @@ export class RoadNetwork {
       h += Math.max(-turnRate, Math.min(turnRate, target - h));
       x += Math.sin(h) * step;
       z += Math.cos(h) * step;
-      if (!this.buildable(x, z)) return undefined;
+      if (!this.#open(x, z)) return undefined;
       points.push({ x, z });
       if (side * x >= offscreenX) return points;
     }
@@ -271,7 +275,7 @@ export class RoadNetwork {
       const bend = randomIn(random, [-crossBend, crossBend]);
       if (!start) continue;
       const path = PATH_TRIES.map(([d, b]) => this.#pathLine(start, d * direction, b * bend)).find(
-        (line) => line.slice(1).every((p) => this.buildable(p.x, p.z)),
+        (line) => line.slice(1).every((p) => this.#open(p.x, p.z)),
       );
       if (path) paths.push(path);
     }
@@ -290,37 +294,30 @@ export class RoadNetwork {
   }
 
   /**
-   * The street grids (P04 review): in each section with `streets`, streets across every
-   * `across`, from screen edge to screen edge, kept only when all on buildable ground; and over
-   * each district (run of consecutive sections with streets), `along` streets its whole length
-   * (the most any of its sections asks for), which turn off the screen at both ends or run on
-   * past the level ends.
+   * The straight streets of the districts (phase 4 review, see `streetRuns`), as `street`
+   * roads of the main road width.
    */
   #addStreets(random: Random): void {
-    for (const district of findDistricts(this.field.sections, this.range)) {
-      for (const { grid, zMin, zMax } of district.parts) {
-        for (
-          let z = zMin + randomIn(random, grid.across);
-          z < zMax;
-          z += randomIn(random, grid.across)
-        ) {
-          const line = acrossStreet(z, this.rules);
-          if (line.every((p) => this.buildable(p.x, p.z))) this.#addRoad('cross', line);
-        }
-      }
-      const along = Math.max(...district.parts.map((part) => part.grid.along));
-      const wobble = Math.max(...district.parts.map((part) => part.grid.wobble));
-      for (let k = 0; k < along; k++) {
-        const phase = random() * Math.PI * 2;
-        const line = alongStreet(k, along, wobble, district, phase, this.rules);
-        for (const piece of this.#mainPieces(line)) {
-          this.#addRoad(
-            'main',
-            piece.map((p) => ({ ...p, width: this.rules.mainWidth })),
-          );
-        }
+    for (const district of this.#districts) {
+      const runs = streetRuns(
+        district,
+        this.rules,
+        random,
+        (x, z) => this.buildable(x, z),
+        (p) => this.#offscreen(p),
+      );
+      for (const run of runs) {
+        this.#addRoad(
+          'street',
+          run.map((p) => ({ ...p, width: this.rules.mainWidth })),
+        );
       }
     }
+  }
+
+  /** Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts. */
+  #open(x: number, z: number): boolean {
+    return !this.#districts.some((d) => z >= d.zMin && z <= d.zMax) && this.buildable(x, z);
   }
 
   /** Width of a path `distance` from its junction: wide at the road, narrowing smoothly. */
@@ -331,7 +328,7 @@ export class RoadNetwork {
   }
 
   #addRoad(kind: Road['kind'], points: readonly RoadPoint[]): void {
-    const width = kind === 'main' ? this.rules.mainWidth : this.rules.crossWidth;
+    const width = kind === 'cross' ? this.rules.crossWidth : this.rules.mainWidth;
     this.roads.push({ index: this.roads.length, kind, width, points });
   }
 

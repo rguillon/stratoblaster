@@ -8,10 +8,11 @@ import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
 type Rgb = readonly [number, number, number];
 
 /**
- * Rows of lit windows on the 4 faces of a `w × d` block, from `y0` to `y1`, every `gap`, each
+ * Rows of lit windows on the 4 faces (few and thick: thin bands under a pixel shimmered as the
+ * view scrolled) of a `w × d` block, from `y0` to `y1`, every `gap`, each
  * row `band` high: one flat quad per face and row, just off the walls (2 triangles each).
  */
-function windowBands(
+export function windowBands(
   l: SolidBuilder,
   [w, d]: readonly [number, number],
   [y0, y1]: readonly [number, number],
@@ -52,7 +53,7 @@ export function buildGlassTower(): PropGeometry {
   s.box([14, 78, 14], C.glassBlue, {}, C.metalDark);
   s.box([10, 4, 10], C.metal, { at: [0, 78, 0] });
   s.cylinder(0.5, 14, 4, C.metal, { at: [0, 82, 0] });
-  windowBands(l, [14, 14], [6, 76], 7, 1.2, L.cyanDim);
+  windowBands(l, [14, 14], [6, 76], 8, 2, L.cyanDim);
   l.box([1.2, 1.2, 1.2], L.red, { at: [0, 96, 0] });
   return { structure: s.geometry, lights: l.geometry };
 }
@@ -64,7 +65,7 @@ export function buildOfficeBlock(): PropGeometry {
   s.box([22, 32, 16], C.concrete, {}, C.roof);
   s.box([6, 3, 5], C.metalDark, { at: [-5, 32, 2] });
   s.box([4, 2, 4], C.metal, { at: [6, 32, -3] });
-  windowBands(l, [22, 16], [4, 30], 4.5, 1.4, L.windowDim);
+  windowBands(l, [22, 16], [4, 30], 6, 2, L.windowDim);
   return { structure: s.geometry, lights: l.geometry };
 }
 
@@ -74,7 +75,7 @@ export function buildApartmentBlock(): PropGeometry {
   const l = new SolidBuilder();
   s.box([20, 24, 8], C.brick, { at: [0, 0, -3] }, C.roof);
   s.box([8, 24, 14], C.brick, { at: [6, 0, 4] }, C.roof);
-  windowBands(l, [20, 8], [3, 23], 4, 1.2, L.windowDim, [0, -3]);
+  windowBands(l, [20, 8], [3, 23], 6, 2, L.windowDim, [0, -3]);
   l.box([10, 3, 0.4], L.pink, { at: [-3, 24.5, -6.6] });
   return { structure: s.geometry, lights: l.geometry };
 }
@@ -91,7 +92,7 @@ export function buildSteppedTower(): PropGeometry {
   for (const [size, y, height] of tiers) {
     s.box([size, height, size], C.concreteDark, { at: [0, y, 0] }, C.roof);
     l.box([size + 0.4, 0.6, size + 0.4], L.cyanDim, { at: [0, y + height - 0.6, 0] });
-    windowBands(l, [size, size], [y + 3, y + height - 2], 5, 1, L.windowDim);
+    windowBands(l, [size, size], [y + 3, y + height - 2], 6, 1.8, L.windowDim);
   }
   s.lathe(
     [

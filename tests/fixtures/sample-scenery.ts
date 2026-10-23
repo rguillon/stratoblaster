@@ -85,7 +85,7 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
     azimuthDeg: 0,
     color: [1, 1, 1],
     intensity: 1,
-    shadow: { mapSize: 256, bias: 0.001, normalBias: 0, darkness: 0.5 },
+    shadow: { mapSize: 256, frustum: 512, bias: 0.001, normalBias: 0, darkness: 0.5 },
   },
   ambient: { sky: [1, 1, 1], ground: [0.2, 0.2, 0.2], intensity: 0.5 },
   terrain: {

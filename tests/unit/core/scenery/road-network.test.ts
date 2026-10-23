@@ -40,6 +40,24 @@ const RIDGE: SceneryLevel = {
   ] as SceneryLevel['sections'],
 };
 
+/**
+ * A street is straight (across or along the level), inside its district's Z range, and each end
+ * is off the screen or on another road.
+ */
+function checkStreet(n: RoadNetwork, street: Road, [zMin, zMax]: readonly [number, number]): void {
+  const xs = new Set(street.points.map((p) => p.x.toFixed(6)));
+  const zs = new Set(street.points.map((p) => p.z.toFixed(6)));
+  expect(xs.size === 1 || zs.size === 1).toBe(true);
+  const z = street.points.map((p) => p.z);
+  expect(Math.min(...z)).toBeGreaterThanOrEqual(zMin - 1e-6);
+  expect(Math.max(...z)).toBeLessThanOrEqual(zMax + 1e-6);
+  for (const end of [street.points[0], street.points.at(-1)]) {
+    if (end && !offscreen(RULES, end)) {
+      expect(n.edgeDistance(end.x, end.z, street)).toBeLessThanOrEqual(0);
+    }
+  }
+}
+
 describe('RoadNetwork', () => {
   it('P04-R07: generates winding main roads over the range and paths branching off them', () => {
     const roads = network().roads;
@@ -102,36 +120,38 @@ describe('RoadNetwork', () => {
     }
   });
 
-  it('P04 review: a section with a street grid gets streets across and along it', () => {
+  it('P04 review: a district gets straight streets that only end at another street or off screen', () => {
     const [flat] = SAMPLE_SCENERY_LEVEL.sections;
     if (!flat) throw new Error('no section');
     const district: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,
       sections: [
         { ...flat, name: 'open', seconds: 20 },
-        { ...flat, name: 'town', seconds: 15, streets: { across: [30, 30], along: 3, wobble: 0 } },
+        {
+          ...flat,
+          name: 'town',
+          seconds: 15,
+          streets: { rows: [30, 40], columns: [25, 35], links: 0.6 },
+        },
         { ...flat, name: 'open again', seconds: 15 },
       ],
     };
-    const quiet = { ...RULES, mainRoads: 0 };
-    const n = network(district, quiet);
-    const across = n.roads.filter((r) => r.kind === 'cross');
-    const along = n.roads.filter((r) => r.kind === 'main');
-    // Town from Z = 400 to 700: a street across every 30 units.
-    expect(across.length).toBeGreaterThanOrEqual(9);
-    for (const street of across) {
-      const z = street.points[0]?.z ?? 0;
-      expect(z).toBeGreaterThan(400);
-      expect(z).toBeLessThan(700);
-      expect(street.points[0]?.x).toBeLessThan(-RULES.offscreenX);
-      expect(street.points.at(-1)?.x).toBeGreaterThan(RULES.offscreenX);
+    const n = network(district);
+    const streets = n.roads.filter((r) => r.kind === 'street');
+    expect(streets.length).toBeGreaterThan(5);
+    for (const street of streets) checkStreet(n, street, [400, 700]);
+    // The town's first and last rows are full streets.
+    for (const z of [400, 700]) {
+      const row = streets.filter((r) => r.points.every((p) => Math.abs(p.z - z) < 1e-6));
+      const xs = row.flatMap((r) => r.points.map((p) => p.x));
+      expect(Math.min(...xs)).toBeLessThan(-RULES.offscreenX);
+      expect(Math.max(...xs)).toBeGreaterThan(RULES.offscreenX);
     }
-    // 3 streets along the town, each turning off the screen at both ends.
-    expect(along).toHaveLength(3);
-    for (const street of along) {
-      expect(offscreen(RULES, street.points[0])).toBe(true);
-      expect(offscreen(RULES, street.points.at(-1))).toBe(true);
+    // The winding roads and the paths stay out of the town.
+    for (const road of n.roads.filter((r) => r.kind !== 'street')) {
+      for (const p of road.points) expect(p.z < 400 || p.z > 700).toBe(true);
     }
+    expect(n.slots.some((slot) => slot.road.kind === 'street')).toBe(true);
   });
 
   it('P04-R07: no road where the ground is under the sea', () => {

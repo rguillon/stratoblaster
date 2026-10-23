@@ -25,11 +25,17 @@ const PROP_GROUPS = {
   city: ['glass-tower', 'office-block', 'apartment-block', 'stepped-tower'],
 };
 
+const variants = (kind: string) => Array.from({ length: 8 }, (_, i) => `${kind}-${String(i + 1)}`);
+
 describe('prop models', () => {
   it('P04-R04 + review: industrial, technical / scientific, homes, city buildings and trees', () => {
     for (const [group, kinds] of Object.entries(PROP_GROUPS)) {
       const rule = LEVEL_ZERO.props.groups.find((g) => g.id === group);
-      expect(rule?.kinds.map((k) => k.id)).toEqual(kinds);
+      const extra: Partial<Record<string, string[]>> = {
+        industrial: variants('industrial-complex'),
+        city: variants('city-building'),
+      };
+      expect(rule?.kinds.map((k) => k.id)).toEqual([...kinds, ...(extra[group] ?? [])]);
     }
     expect(LEVEL_ZERO.props.trees.map((t) => t.id)).toEqual([
       'dead-tree',
@@ -38,7 +44,8 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    expect(Object.keys(PROP_MODELS)).toHaveLength(21);
+    // 21 hand-made models, plus 8 industrial complexes and 8 city buildings made of parts.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(37);
   });
 
   it.each(Object.entries(PROP_MODELS))(
@@ -63,6 +70,17 @@ describe('prop models', () => {
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
       expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint);
+    }
+  });
+
+  it('P04 review: buildings made of parts differ from one variant to the next', () => {
+    for (const kind of ['industrial-complex', 'city-building']) {
+      const shapes = new Set(
+        variants(kind).map((id) =>
+          JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
+        ),
+      );
+      expect(shapes.size).toBe(8);
     }
   });
 });

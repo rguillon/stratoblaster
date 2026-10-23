@@ -72,17 +72,18 @@ export interface Surface {
 }
 
 /**
- * A dense grid of streets over a section (a district): streets across the level every `across`
- * units, from screen edge to screen edge, and `along` streets running the length of the district
- * (of consecutive sections with streets), which turn off the screen at both ends.
+ * A dense network of straight streets over a section (phase 4 review): streets across the level
+ * (rows) every `rows` units and streets along it (columns) every `columns` units, of which each
+ * stretch between two crossings is built with the chance `links`. Streets meet at crossings and
+ * T-junctions; none ends on screen. The winding roads and the paths stay out of these sections.
  */
 export interface StreetGrid {
-  /** Distance along Z between two streets across. */
-  readonly across: readonly [number, number];
-  /** Number of streets along the district, spread evenly across the screen. */
-  readonly along: number;
-  /** Largest sideways wobble of the streets along (0 = straight). */
-  readonly wobble: number;
+  /** Distance along Z between two rows. */
+  readonly rows: readonly [number, number];
+  /** Distance along X between two columns. */
+  readonly columns: readonly [number, number];
+  /** Chance (0..1) that a stretch of street between two crossings is built. */
+  readonly links: number;
 }
 
 /** One stretch of a level, sculpted from a relief and optional operations. */
@@ -105,7 +106,7 @@ export interface TerrainSection {
   readonly trees?: readonly string[];
   /** Ids of the building groups that stand here (default: all of them). */
   readonly groups?: readonly string[];
-  /** A dense street grid over this section. */
+  /** A network of straight streets over this section, instead of roads and paths. */
   readonly streets?: StreetGrid;
 }
 

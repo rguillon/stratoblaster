@@ -307,3 +307,29 @@
   - Placement now builds every building of the level up front, about 100 ms on a desktop and again after a new seed.
   - The city centre is the heaviest part of the level, at about 370k triangles.
 - **Status:** Accepted
+
+### D-024 — Straight street networks, buildings made of parts, stable shadows
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** In the industrial zone and the city centre, the reviewer wanted only straight road segments that merge into each other, with no winding roads or paths. They also asked for more diverse buildings, and for buildings that stop "blinking" as the ship advances.
+- **Decision:**
+  - `StreetGrid` is now `rows`, `columns` and `links`. `core/scenery/street-grid.ts` builds a rectilinear graph per district:
+    - Each section has its own random columns (from past one screen edge to past the other) and rows.
+    - The first and last rows of each section are always built, so the columns of two sections meet them at T-junctions.
+    - Each other link is built with the chance `links`, if its ground is buildable.
+    - A pass then removes dead ends on screen: it extends a street straight on, or cuts it back, until each one ends at another street or off the screen.
+    - Built links are merged into maximal straight runs, which become roads of a new kind, `street`.
+  - Winding roads and paths treat the districts as not buildable, so they turn off the screen before them, and paths no longer start there.
+  - Street ribbons are opaque and unworn, and drawn in the road layer: crossings merge without seams.
+  - Buildings made of parts (`game/view/props/industrial-parts.ts`, `city-parts.ts`): seeded generators register 8 variants each as their own prop kinds (`industrial-complex-N`, `city-building-N`), so they stay thin-instanced. Every part stays inside a fixed square (±12 and ±9 units), so one footprint per family holds; a test checks every variant.
+  - Blinking: three causes and three fixes.
+    - Shadows: the directional shadow frustum re-fitted to all casters every frame, so its texels swam as the view scrolled. The frustum is now fixed (`sun.shadow.frustum`, 1600 units, `autoUpdateExtends = false`), and `snappedLightPosition` moves the sun by whole texels across the light.
+    - Specular: highlights on the flat-shaded facets changed with the view, so specular is now 0 on props and terrain.
+    - Small lights: thin window bands smaller than a pixel aliased. Bands are now fewer and thicker, and the glow is down from 0.5 to 0.3.
+- **Alternatives considered:**
+  - Cascaded shadow maps: more passes, and they still need stabilising.
+  - Snapping the camera instead: that makes the scrolling jerky.
+- **Consequences:**
+  - Shadows cover a fixed 1600-unit square around the view; beyond it there are none (it covers what the camera sees).
+  - Model count is now 37: 21 hand-made and 16 made of parts.
+- **Status:** Accepted

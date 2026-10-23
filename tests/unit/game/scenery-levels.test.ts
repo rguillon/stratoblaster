@@ -101,6 +101,12 @@ describe('Level Zero', () => {
     expect(count(middle(city) - 300, middle(city) + 300)).toBeGreaterThan(3 * count(200, 800));
   });
 
+  it('P04 review: matte props and fixed, texel-snapped shadows (no blinking while scrolling)', () => {
+    expect(LEVEL_ZERO_LOOK.props.specular).toBe(0);
+    expect(LEVEL_ZERO_LOOK.terrain.specular).toBe(0);
+    expect(LEVEL_ZERO_LOOK.sun.shadow.frustum).toBeGreaterThan(1000);
+  });
+
   it('P04-R02: has a sea, with ground under it in the coast and open sea sections', () => {
     expect(LEVEL_ZERO.sea?.level).toBe(0);
     const sea = field.sections.find((p) => p.section.name === 'open sea');

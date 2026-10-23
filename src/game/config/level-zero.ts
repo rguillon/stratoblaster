@@ -41,6 +41,13 @@ export const PROP_IDS = {
   bush: 'bush',
 } as const;
 
+/** Variants of the industrial complexes and city buildings assembled from parts (review). */
+export const INDUSTRIAL_VARIANTS = 8;
+export const CITY_VARIANTS = 8;
+/** Id of variant `n` (1-based) of a building assembled from parts. */
+export const variantId = (kind: 'industrial-complex' | 'city-building', n: number): string =>
+  `${kind}-${String(n)}`;
+
 /** Building groups of the wasteland sections, and of the city centre. */
 const GROUP_IDS = {
   industrial: 'industrial',
@@ -55,6 +62,16 @@ const GROUP_IDS = {
  */
 const BUILDING_SCALE = [0.5, 0.65] as const;
 const TREE_SCALE = [0.45, 0.75] as const;
+
+/** One rule per variant of a building assembled from parts, all with the same footprint. */
+function variants(kind: 'industrial-complex' | 'city-building', count: number, footprint: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: variantId(kind, i + 1),
+    weight: 1.5,
+    footprint,
+    scale: BUILDING_SCALE,
+  }));
+}
 
 const PROP_RULES: PropRules = {
   cellSize: 50,
@@ -74,6 +91,7 @@ const PROP_RULES: PropRules = {
         { id: PROP_IDS.coolingTower, weight: 1, footprint: 9.5, scale: BUILDING_SCALE },
         { id: PROP_IDS.containerYard, weight: 2, footprint: 8.5, scale: BUILDING_SCALE },
         { id: PROP_IDS.refinery, weight: 2, footprint: 7.5, scale: BUILDING_SCALE },
+        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 12),
       ],
     },
     {
@@ -103,6 +121,7 @@ const PROP_RULES: PropRules = {
         { id: PROP_IDS.officeBlock, weight: 3, footprint: 9, scale: BUILDING_SCALE },
         { id: PROP_IDS.apartmentBlock, weight: 3, footprint: 10, scale: BUILDING_SCALE },
         { id: PROP_IDS.steppedTower, weight: 2, footprint: 8.5, scale: BUILDING_SCALE },
+        ...variants('city-building', CITY_VARIANTS, 8.5),
       ],
     },
   ],
@@ -261,26 +280,26 @@ const SECTIONS: readonly TerrainSection[] = [
     groups: [GROUP_IDS.homes, GROUP_IDS.science],
   },
   {
-    // Phase 4 review: a dense maze of streets packed with industrial buildings.
+    // Phase 4 review: a maze of straight streets packed with industrial buildings.
     name: 'industrial zone',
     seconds: 22,
     relief: smooth(32, 4, 600, 3),
     buildingDensity: 1,
     treeDensity: 0.05,
     surface: { paved: 0.7 },
-    streets: { across: [50, 95], along: 4, wobble: 30 },
+    streets: { rows: [45, 90], columns: [50, 110], links: 0.6 },
     trees: [PROP_IDS.deadTree],
     groups: [GROUP_IDS.industrial],
   },
   {
-    // Phase 4 review: the city centre, a regular grid of blocks with towers.
+    // Phase 4 review: the city centre, a regular grid of straight streets and towers.
     name: 'city centre',
     seconds: 22,
     relief: smooth(32, 2, 600, 2),
     buildingDensity: 1,
     treeDensity: 0.1,
     surface: { paved: 1 },
-    streets: { across: [62, 66], along: 5, wobble: 0 },
+    streets: { rows: [62, 66], columns: [72, 76], links: 0.92 },
     trees: [PROP_IDS.broadleaf],
     groups: [GROUP_IDS.city],
   },

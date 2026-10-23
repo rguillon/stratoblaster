@@ -38,3 +38,26 @@ export function lightScenery(scene: Scene, look: SceneryLook): DirectionalLight 
   sun.intensity = s.intensity;
   return sun;
 }
+
+/**
+ * Where to put a directional light of direction `direction` that looks at `target` from
+ * `distance` away, with `target` moved to the nearest whole shadow texel (`texel` world units)
+ * across the light: the shadow map then slides by whole texels as the view scrolls, and the
+ * shadows stay still instead of shimmering (phase 4 review).
+ */
+export function snappedLightPosition(
+  direction: Vector3,
+  target: Vector3,
+  distance: number,
+  texel: number,
+): Vector3 {
+  const forward = direction.normalizeToNew();
+  const right = Vector3.Cross(Vector3.Up(), forward).normalize();
+  const up = Vector3.Cross(forward, right);
+  const snap = (axis: Vector3): Vector3 => {
+    const along = Vector3.Dot(target, axis);
+    return axis.scale(Math.round(along / texel) * texel - along);
+  };
+  const snapped = target.add(snap(right)).add(snap(up));
+  return snapped.subtract(forward.scale(distance));
+}

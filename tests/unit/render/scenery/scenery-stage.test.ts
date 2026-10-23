@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { createPlainSceneryKit } from '../../../../src/render/scenery/scenery-kit';
-import { sunDirection } from '../../../../src/render/scenery/scenery-lighting';
+import {
+  snappedLightPosition,
+  sunDirection,
+} from '../../../../src/render/scenery/scenery-lighting';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import {
   SceneryStage,
   type SceneryStageOptions,
@@ -139,6 +143,25 @@ describe('SceneryStage', () => {
 
   it('refuses a level whose props have no model', () => {
     expect(() => stage({ propModels: {} })).toThrow(/block/);
+  });
+
+  it('P04 review: the sun moves by whole shadow texels, so shadows do not shimmer', () => {
+    const direction = sunDirection(40, 25);
+    const texel = 0.8;
+    const at = (z: number) => snappedLightPosition(direction, new Vector3(0, 0, z), 1000, texel);
+    // Seen across the light, two positions differ by a whole number of texels.
+    const forward = direction.normalizeToNew();
+    const right = Vector3.Cross(Vector3.Up(), forward).normalize();
+    const up = Vector3.Cross(forward, right);
+    for (const z of [3.7, 120.2, 999.9]) {
+      const delta = at(z).subtract(at(0));
+      for (const axis of [right, up]) {
+        const texels = Vector3.Dot(delta, axis) / texel;
+        expect(Math.abs(texels - Math.round(texels))).toBeLessThan(1e-6);
+      }
+    }
+    // And the light stays `distance` behind (about) the target.
+    expect(Vector3.Distance(at(500), new Vector3(0, 0, 500))).toBeGreaterThan(995);
   });
 
   it('the sun shines from its elevation and azimuth', () => {

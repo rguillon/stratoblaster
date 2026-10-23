@@ -1,5 +1,7 @@
 import type { PropModelFactory } from '../../../render/scenery/scenery-look';
-import { PROP_IDS } from '../../config/level-zero';
+import { CITY_VARIANTS, INDUSTRIAL_VARIANTS, PROP_IDS, variantId } from '../../config/level-zero';
+import { buildCityBuilding } from './city-parts';
+import { buildIndustrialComplex } from './industrial-parts';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
 import {
   buildContainerYard,
@@ -42,4 +44,17 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [PROP_IDS.conifer]: buildConifer,
   [PROP_IDS.broadleaf]: buildBroadleafTree,
   [PROP_IDS.bush]: buildBush,
+  // Phase 4 review: buildings assembled from parts, one model per variant.
+  ...Object.fromEntries(
+    Array.from({ length: INDUSTRIAL_VARIANTS }, (_, i) => [
+      variantId('industrial-complex', i + 1),
+      () => buildIndustrialComplex(i + 1),
+    ]),
+  ),
+  ...Object.fromEntries(
+    Array.from({ length: CITY_VARIANTS }, (_, i) => [
+      variantId('city-building', i + 1),
+      () => buildCityBuilding(i + 1),
+    ]),
+  ),
 };
