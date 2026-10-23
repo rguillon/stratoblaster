@@ -23,10 +23,12 @@ describe('CookieStorage', () => {
   it('GD-51: reads and writes cookies that last cookie_max_age days', () => {
     const jar = new FakeCookieJar();
     const storage = new CookieStorage(jar, 365);
-    expect(storage.get('pewet_high_score')).toBeNull();
-    storage.set('pewet_last_ship', 'light ship');
-    expect(jar.writes[0]).toBe('pewet_last_ship=light%20ship; max-age=31536000; SameSite=Lax');
-    expect(storage.get('pewet_last_ship')).toBe('light ship');
+    expect(storage.get('stratoblaster_high_score')).toBeNull();
+    storage.set('stratoblaster_last_ship', 'light ship');
+    expect(jar.writes[0]).toBe(
+      'stratoblaster_last_ship=light%20ship; max-age=31536000; SameSite=Lax',
+    );
+    expect(storage.get('stratoblaster_last_ship')).toBe('light ship');
   });
 
   it('finds a cookie among others and ignores names that only share a prefix', () => {
@@ -36,8 +38,8 @@ describe('CookieStorage', () => {
   });
 
   it('P01-R04: returns null for a cookie that cannot be decoded', () => {
-    const storage = new CookieStorage({ cookie: 'pewet_high_score=%E0%A4%A' }, 1);
-    expect(storage.get('pewet_high_score')).toBeNull();
+    const storage = new CookieStorage({ cookie: 'stratoblaster_high_score=%E0%A4%A' }, 1);
+    expect(storage.get('stratoblaster_high_score')).toBeNull();
   });
 });
 
