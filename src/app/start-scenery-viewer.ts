@@ -14,7 +14,7 @@ import { stepModelAnimations } from '../render/model-animation';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
 import type { SceneryLook } from '../render/scenery/scenery-look';
-import { SceneryStage } from '../render/scenery/scenery-stage';
+import { BELOW_CLOUDS_GROUP, SceneryStage } from '../render/scenery/scenery-stage';
 import { SceneryViewerPanel, type SceneryViewerSettings } from '../ui/scenery-viewer-panel';
 import { StatsTile } from '../ui/stats-tile';
 import { SCENERY_VIEWER_CONFIG as CFG } from '../config/scenery-viewer';
@@ -99,6 +99,8 @@ class SceneryViewer {
       config: CFG.stage,
     });
     for (const mesh of this.stage.glowingMeshes) glow?.addIncludedOnlyMesh(mesh);
+    // The glow is composed before the clouds are drawn, so it does not shine through them.
+    if (glow) glow.renderingGroupId = BELOW_CLOUDS_GROUP;
     this.track = new ScrollTrack(level.scrollSpeed, levelLength(level));
     this.#ship = this.#buildShip();
     this.#frame = this.#buildFrame();

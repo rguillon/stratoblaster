@@ -70,6 +70,7 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] The building lights look bad under the clouds: the clouds make them brighter. *Fixed:* the glow layer was composed after every mesh, so the glow of the lights was added on top of the clouds. The clouds now draw in the next rendering group (keeping its depth), and the glow is composed right after the group below them, so the clouds cover the glow like the rest of the ground.
 - [x] The city is still a bunch of squares: make it more diverse, with the same road pattern as the factory. *Fixed (D-027):*
   - *The city centre now uses the industrial zone's street maze (rows 45–90 apart, columns 50–110 apart, 60 % of links) and, like it, gets its buildings along the streets. Block podiums are gone from the city (D-026 superseded); the block fill stays as an engine option.*
   - *City buildings are assembled from lots: small ones fill one lot; medium ones are split into 2 or 3 unequal lots, and the largest into 4. Each lot has its own facade and is one of: a stepped tower (1–3 tiers on a plan as long as its lot), a round octagonal tower with lit rings, a low slab with roof units and a neon sign, a courtyard block, or an L-shaped block with a taller corner wing. Towers stand on a low base covering their lot, so little ground shows.*
@@ -191,6 +192,7 @@ menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed 
 and the next full run passed 32/32.
 Review fix (irregular city): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (city with factory streets and buildings made of lots): typecheck ✔, build ✔, e2e 33 passed.
+Review fix (glow under the clouds): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.

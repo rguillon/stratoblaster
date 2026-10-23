@@ -52,6 +52,9 @@ export interface SceneryStageOptions {
   readonly config: SceneryStageConfig;
 }
 
+/** Group of all but the clouds, drawn next: a glow composed after it stays under them. */
+export const BELOW_CLOUDS_GROUP = 0;
+
 /** A cloud layer's live settings (P04-R03). */
 export interface CloudLayerState {
   enabled: boolean;
@@ -136,6 +139,7 @@ export class SceneryStage {
     });
     this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
     this.#seaEnabled = this.#sea !== undefined;
+    scene.setRenderingAutoClearDepthStencil(BELOW_CLOUDS_GROUP + 1, false, false);
     this.#cloudLayers = look.clouds.map((cloud, i) => this.#buildCloudLayer(cloud, i));
     this.clouds = this.#cloudLayers.map((c) => c.state);
   }
@@ -186,11 +190,8 @@ export class SceneryStage {
 
   /** World position of a playfield point (logical pixels, origin at its bottom left). */
   playfieldPoint(x: number, y: number, distance: number): Vector3 {
-    return new Vector3(
-      x - this.options.screen.width / 2,
-      this.options.camera.flightAltitude,
-      distance + y,
-    );
+    const { screen, camera } = this.options;
+    return new Vector3(x - screen.width / 2, camera.flightAltitude, distance + y);
   }
 
   /** Moves the camera, the terrain, the sea and the clouds to `distance` along the level. */
@@ -326,6 +327,7 @@ export class SceneryStage {
     const material = this.kit.cloud(look);
     mesh.material = material.material;
     mesh.isPickable = false;
+    mesh.renderingGroupId = BELOW_CLOUDS_GROUP + 1;
     // Lower layers are drawn first, after the sea.
     mesh.alphaIndex = index + 1;
     return {
