@@ -1,6 +1,6 @@
 /** Variants of the industrial complexes and city buildings assembled from parts (review). */
-export const INDUSTRIAL_VARIANTS = 8;
-export const CITY_VARIANTS = 8;
+export const INDUSTRIAL_VARIANTS = 16;
+export const CITY_VARIANTS = 16;
 /**
  * Families of buildings assembled from parts, with the half side of the square their models fit
  * in. The large ones fill the blocks of the industrial zone and the city centre (review).

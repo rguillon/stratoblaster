@@ -58,8 +58,8 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 21 hand-made models, 6 families of 8 buildings made of parts, and 6 cars.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8 + 6);
+    // 21 hand-made models, 6 families of 16 buildings made of parts, and 6 cars.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 16 + 6);
   });
 
   it('P04 review: buildings with a square plan fit in it', () => {
@@ -112,7 +112,7 @@ describe('prop models', () => {
           JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
         ),
       );
-      expect(shapes.size).toBe(8);
+      expect(shapes.size).toBe(16);
     }
   });
 

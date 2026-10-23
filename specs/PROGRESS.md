@@ -52,3 +52,4 @@
 - 2026-10-23 — 4 — Review fix: square street corners, yellow centre lines, cars on streets and main roads (D-028); light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: 2×2 highway and avenues with lane markings and cars in both lanes (D-029); light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: moving cars with headlight beams and tail lights (D-030); light verification green (typecheck, build, 34 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: more varied industrial complexes (5 layouts, 9 kinds of equipment) and 16 variants per building family; light verification green (typecheck, build, 34 e2e); still awaiting review.

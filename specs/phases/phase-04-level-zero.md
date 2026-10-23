@@ -70,6 +70,10 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Create more variety, there is too much repetition. *Fixed:*
+  - *Industrial complexes are now laid out in one of five ways: a hall with equipment beside it, two halls, a tank farm of four plots, a hall behind a yard, or a long works hall with equipment at both ends.*
+  - *Plots of equipment are one of nine kinds: tank rows, silos with a walkway, a gas sphere on legs, container stacks, a pipe rack, an annex with a lit door, a flare stack with a pump house, a conveyor up to a tower, or a gantry crane over containers (`industrial-yard.ts`). Hall roofs now take one of five colours.*
+  - *Each family of buildings made of parts has 16 variants instead of 8, for both the industrial zone and the city. The model seed now includes the family's size, so a small and a large variant of the same number no longer share a layout. Equipment counts are capped, so every model stays under 600 triangles (largest: 578).*
 - [x] Add lights to the cars and make them move. *Fixed (D-030):*
   - *Cars drive along the streets and main roads (`core/scenery/traffic.ts`), right-hand traffic, in their lane (both lanes each way on 2×2 roads), at 12–30 units/s. All the cars of one lane share a speed, so they never catch up with each other. Near the ends of its road a car is hidden (it turns into the crossing street, or leaves the screen) and comes back from the other end.*
   - *The cars in view are placed again every frame, as thin instances of their own meshes (`render/scenery/traffic-layer.ts`), apart from the props that stay put. Only roads near the view are looked at: about 570 cars in view take about 1.3 ms to place, measured in Node on the real level (4,236 cars).*
@@ -213,6 +217,7 @@ Review fix (city blocks packed with buildings): typecheck ✔, build ✔. In the
 Review fix (square street corners, centre lines, cars): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (2×2 roads): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (moving cars with lights): typecheck ✔, build ✔, e2e 34 passed.
+Review fix (more industrial variety): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.
