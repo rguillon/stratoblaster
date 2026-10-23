@@ -2,6 +2,7 @@ import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
+import type { SceneryLevel } from '../scenery/scenery-level';
 
 /** Logical resolution the game is laid out on, scaled to fit the window (GD-02). */
 export interface LogicalScreen {
@@ -31,6 +32,11 @@ export interface GameDefinition<TView = unknown> {
   readonly playerWeapons: readonly WeaponDefinition[];
   /** The levels shown on the level select screen, and which ones can be played. */
   readonly levels: LevelCatalog;
+  /**
+   * Levels with generated ground (terrain, sea, props), first one first. Level select does not
+   * list them yet; the `level_zero/` debug page shows them (P04).
+   */
+  readonly sceneryLevels: readonly SceneryLevel[];
   /** Texts of the menu screens. */
   readonly texts: MenuTexts;
   /** Presentation bindings for the content above. */

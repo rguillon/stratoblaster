@@ -37,6 +37,7 @@ The high score and the last chosen ship are kept in cookies (`stratoblaster_high
 ```sh
 make install   # npm ci + git hooks + Playwright Chromium
 make dev       # http://localhost:5173 (player ship viewer: http://localhost:5173/player_ship/)
+# Debug pages: /player_ship/ (ships), /player_shots/ (shots), /level_zero/ (generated level)
 ```
 
 ## Make targets

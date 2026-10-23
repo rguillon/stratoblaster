@@ -5,6 +5,7 @@ import type { MenuScreen } from '../core/menu/menu-screen';
 import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
 import type { ShotImpact } from '../core/systems/shot-world';
+import type { PlayfieldCameraLook, PropModelFactory, SceneryLook } from './scenery/scenery-look';
 
 /**
  * Builds a model in the scene and returns its root node. Models face +Z (nose),
@@ -59,4 +60,15 @@ export interface GameView {
   readonly playerShotRenderers: Readonly<Record<string, ShotRendererFactory>>;
   /** 3D scene behind the menu screens (P01-R05). */
   readonly menuBackdrop: MenuBackdropFactory;
+  /** How the generated levels look (P04). */
+  readonly scenery: SceneryBindings;
+}
+
+/** Presentation of the levels with generated ground (`GameDefinition.sceneryLevels`). */
+export interface SceneryBindings {
+  readonly camera: PlayfieldCameraLook;
+  /** One look per scenery level, keyed by `SceneryLevel.id`. */
+  readonly looks: Readonly<Record<string, SceneryLook>>;
+  /** One model per prop kind, keyed by `PropKindRule.id`. */
+  readonly propModels: Readonly<Record<string, PropModelFactory>>;
 }
