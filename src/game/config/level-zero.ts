@@ -312,6 +312,8 @@ const SECTIONS: readonly TerrainSection[] = [
     streets: { rows: [45, 90], columns: [50, 110], links: 0.6 },
     trees: [PROP_IDS.broadleaf],
     groups: [GROUP_IDS.city],
+    // Review: every part of every block gets a building, side by side, so no ground shows.
+    blocks: { podiums: [], podiumHeight: [0, 0], towers: [16, 16] },
   },
 ];
 

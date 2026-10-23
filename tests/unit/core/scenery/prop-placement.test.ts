@@ -154,6 +154,34 @@ describe('PropPlacer', () => {
     expect(props.filter((q) => q.kind === 'block').length).toBeLessThanOrEqual(4 * podiums.length);
   });
 
+  it('P04 review: without podiums, buildings stand on the ground in every part of a block', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const level: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [
+        {
+          ...flat,
+          seconds: 20,
+          trees: [],
+          streets: { rows: [50, 60], columns: [50, 60], links: 1 },
+          blocks: { podiums: [], podiumHeight: [0, 0], towers: [16, 16] },
+        },
+      ],
+    };
+    const p = placer(level);
+    const props = p.place(AREA);
+    const buildings = props.filter((q) => q.kind === 'block');
+    expect(buildings.length).toBeGreaterThan(5);
+    // On the lowest corner of their block, not on a podium.
+    const field = new HeightField(level, level.seed);
+    for (const b of buildings) {
+      expect(b.y).toBeLessThanOrEqual(field.height(b.x, b.z) + 1e-6);
+      expect(b.y).toBeGreaterThan(field.height(b.x, b.z) - 5);
+    }
+    expect(props.some((q) => q.size !== undefined)).toBe(false);
+  });
+
   it('P04 review: a section may allow only some building groups and tree kinds', () => {
     const level: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,

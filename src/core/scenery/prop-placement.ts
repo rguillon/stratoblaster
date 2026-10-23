@@ -2,7 +2,7 @@ import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
 import type { Block } from './street-grid';
-import type { PropGroupRule, PropKindRule, PropRules } from './scenery-level';
+import type { BlockFill, PropGroupRule, PropKindRule, PropRules } from './scenery-level';
 
 /** One prop standing on the ground. */
 export interface PropPlacement {
@@ -69,7 +69,7 @@ interface Building {
 /** Blocks are cut into parts of about this size, one tower each at most… */
 const PART_SIZE = 30;
 /** …and at most this many parts across either way. */
-const MAX_PARTS = 3;
+const MAX_PARTS = 4;
 /** Gap between a tower and the edge of its part of the podium roof. */
 const TOWER_MARGIN = 1;
 /** Towers are drawn among the kinds at least this share of the largest one that fits. */
@@ -192,18 +192,36 @@ export class PropPlacer {
   }
 
   /**
-   * Fills a block of a section with `blocks` (phase 4 review): a podium over the whole block,
-   * and towers on its roof, one per part of the block (parts of about 30, up to 3 × 3), a large kind of
-   * the section's groups that fits each part.
+   * Fills a block of a section with `blocks` (phase 4 review): a podium over the whole block, if
+   * the section has podiums, and buildings on its roof (or on the ground), one per part of the
+   * block (parts of about 30, up to 4 × 4), a large kind of the section's groups that fits each part.
    */
   #fillBlock(block: Block, index: number): void {
-    const cz = (block.zMin + block.zMax) / 2;
-    const { section } = this.field.sectionAt(cz);
+    const { section } = this.field.sectionAt((block.zMin + block.zMax) / 2);
     const fill = section.blocks;
     if (!fill) return;
     const r = (draw: number): number => hash2D(index, draw, this.seed * 37 + 11);
     const [w, d] = [block.xMax - block.xMin, block.zMax - block.zMin];
-    const cx = (block.xMin + block.xMax) / 2;
+    const roof = this.#podium(block, fill, r);
+    const groups = allowed(this.rules.groups, section.groups);
+    const across = (size: number): number =>
+      Math.min(MAX_PARTS, Math.max(1, Math.round(size / PART_SIZE)));
+    const parts = blockParts(block, across(w), across(d));
+    const towers = Math.round(between(fill.towers, r(2)));
+    parts
+      .map((part, k) => ({ part, order: r(10 + k) }))
+      .sort((a, b) => a.order - b.order)
+      .slice(0, towers)
+      .forEach(({ part }, k) => {
+        const tower = this.#tower(part, groups, roof, r(20 + k));
+        if (tower) this.#occupy(tower);
+      });
+  }
+
+  /** Places the podium of a block, if its section has podiums; the height its towers stand at. */
+  #podium(block: Block, fill: BlockFill, r: (draw: number) => number): number {
+    const [w, d] = [block.xMax - block.xMin, block.zMax - block.zMin];
+    const [cx, cz] = [(block.xMin + block.xMax) / 2, (block.zMin + block.zMax) / 2];
     const corners = [
       [block.xMin, block.zMin],
       [block.xMax, block.zMin],
@@ -214,7 +232,7 @@ export class PropPlacer {
     const ground = Math.min(...heights);
     const height = between(fill.podiumHeight, r(0)) + Math.max(...heights) - ground;
     const podium = fill.podiums[Math.floor(r(1) * fill.podiums.length)];
-    if (!podium) return;
+    if (!podium) return ground;
     this.#occupy({
       placement: {
         kind: podium,
@@ -228,28 +246,16 @@ export class PropPlacer {
       halfX: w / 2,
       halfZ: d / 2,
     });
-    const groups = allowed(this.rules.groups, section.groups);
-    const across = (size: number): number =>
-      Math.min(MAX_PARTS, Math.max(1, Math.round(size / PART_SIZE)));
-    const parts = blockParts(block, across(w), across(d));
-    const towers = Math.round(between(fill.towers, r(2)));
-    parts
-      .map((part, k) => ({ part, order: r(10 + k) }))
-      .sort((a, b) => a.order - b.order)
-      .slice(0, towers)
-      .forEach(({ part }, k) => {
-        const tower = this.#tower(part, groups, ground + height, r(20 + k));
-        if (tower) this.#buildings.push({ placement: tower, halfX: 0, halfZ: 0 });
-      });
+    return ground + height;
   }
 
-  /** The largest kind of `groups` that fits `part`, standing on its roof at `y`. */
+  /** The largest kind of `groups` that fits `part`, standing at `y`, with the ground it takes. */
   #tower(
     part: Block,
     groups: readonly PropGroupRule[],
     y: number,
     r: number,
-  ): PropPlacement | undefined {
+  ): Building | undefined {
     const half = Math.min(part.xMax - part.xMin, part.zMax - part.zMin) / 2 - TOWER_MARGIN;
     const fitting = groups
       .flatMap((g) => g.kinds)
@@ -270,7 +276,7 @@ export class PropPlacer {
     const size = (choice.kind.frontage ?? choice.kind.footprint) * choice.scale;
     const shift = (min: number, max: number, t: number): number =>
       (min + max) / 2 + (t - 0.5) * Math.max(0, max - min - 2 * (size + TOWER_MARGIN));
-    return {
+    const placement = {
       kind: choice.kind.id,
       x: shift(part.xMin, part.xMax, (r * 31) % 1),
       y,
@@ -278,6 +284,7 @@ export class PropPlacer {
       rotation: (Math.floor(r * 4 * 7919) % 4) * (Math.PI / 2),
       scale: choice.scale,
     };
+    return { placement, halfX: size, halfZ: size };
   }
 
   /**

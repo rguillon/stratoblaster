@@ -62,14 +62,15 @@ test.describe('P04: level_zero/ page', () => {
     await waitForFrames(page, 3);
   });
 
-  test('P04 review: the meadows, the industrial zone and the city centre render', async ({
-    page,
-  }) => {
+  test('P04 review: the meadows and the industrial zone render', async ({ page }) => {
     await visit(page, [
       ['122', 'meadows'],
       ['144', 'industrial zone'],
-      ['166', 'city centre'],
     ]);
+  });
+
+  test('P04 review: the city centre renders', async ({ page }) => {
+    await visit(page, [['166', 'city centre']]);
   });
 
   test('P04-R03: cloud layers switch off and change intensity and opacity', async ({ page }) => {

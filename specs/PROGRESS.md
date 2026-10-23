@@ -48,3 +48,4 @@
 - 2026-10-23 — 4 — Review fix: irregular city grid, varied podium heights, more and shifted towers; light verification green (typecheck, build, 33 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: city on the industrial zone's street maze, buildings made of varied lots (D-027); light verification green (typecheck, build, 33 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: building lights no longer glow through the clouds; light verification green (typecheck, build, 33 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: city blocks packed with buildings on the ground, no bare ground; light verification green (typecheck, build, 34 e2e); still awaiting review.
