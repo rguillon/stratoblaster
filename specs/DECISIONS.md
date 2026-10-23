@@ -383,8 +383,8 @@
   - Streets are drawn half their width past both ends, with a narrow soft edge (`streetShoulder`).
   - Centre lines are optional in `RoadLook` (`centreLine`), painted into the road mesh after the ribbons: solid on streets, broken where another street crosses (`inCrossing`), and dashed on main roads.
   - Cars are an optional `PropRules.cars` rule: one hashed draw per point of the streets and main roads, in a lane each way, and none in crossings. They are drawn as ordinary props (thin instances).
-- **Alternatives considered:** Moving cars: they would need a traffic simulation and an update per frame, which this test level does not need.
-- **Consequences:** Cars are static. A crossing test runs against every street for each line piece and car, which is cheap at this level's street counts.
+- **Alternatives considered:** Moving cars: they would need a traffic simulation and an update per frame (done later, see D-030).
+- **Consequences:** Cars were static at first (superseded by D-030). A crossing test runs against every street for each line piece and car, which is cheap at this level's street counts.
 - **Status:** Accepted
 
 ### D-029 — 2×2 roads
@@ -396,4 +396,16 @@
   - `Road.lanes` (1 or 2 each way) drives the markings (`road-lines.ts`) and the car lanes.
 - **Alternatives considered:** Drawing a 2×2 road as two parallel roads with a median: this doubles the road geometry and complicates junctions and building slots.
 - **Consequences:** Building slots, setbacks and block insets follow the wider roads, so the layouts of the industrial zone and the city change.
+- **Status:** Accepted
+
+### D-030 — Moving cars
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for the cars to move.
+- **Decision:**
+  - Each car follows its road at a constant speed, without a simulation. Its distance along the road is `start ± speed · time`, wrapped to the road length, so a car's position at any time is a closed form.
+  - All the cars of a lane share one speed, so they keep their spacing and never overlap. Cars are hidden near road ends, so the wrap is not seen.
+  - The cars in view are uploaded every frame into their own thin-instance meshes, so the static props are never re-uploaded.
+- **Alternatives considered:** Turning at crossings, or cars that follow each other with braking. These need a real traffic simulation with state, more than a test level needs.
+- **Consequences:** Cars pass through each other at crossings, and vanish and reappear at street ends. Per frame, placing about 570 cars takes about 1.3 ms in Node, plus their matrix upload.
 - **Status:** Accepted

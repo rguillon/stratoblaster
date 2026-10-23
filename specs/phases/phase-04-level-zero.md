@@ -70,6 +70,10 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Add lights to the cars and make them move. *Fixed (D-030):*
+  - *Cars drive along the streets and main roads (`core/scenery/traffic.ts`), right-hand traffic, in their lane (both lanes each way on 2×2 roads), at 12–30 units/s. All the cars of one lane share a speed, so they never catch up with each other. Near the ends of its road a car is hidden (it turns into the crossing street, or leaves the screen) and comes back from the other end.*
+  - *The cars in view are placed again every frame, as thin instances of their own meshes (`render/scenery/traffic-layer.ts`), apart from the props that stay put. Only roads near the view are looked at: about 570 cars in view take about 1.3 ms to place, measured in Node on the real level (4,236 cars).*
+  - *Lights: brighter headlights and tail lights, a warm beam on the road ahead and a red glow behind; all of them are part of the glow layer.*
 - [x] Add bigger roads too, 2×2. *Fixed (D-029):*
   - *The first main road is a 2×2 highway, 12 wide; the other one keeps one lane each way. In the industrial zone and the city, a quarter of the street lines (rows and columns, by a hash of the line) are 2×2 avenues, 12 wide; blocks stop at their wider edges.*
   - *2×2 roads get a double yellow centre line and white dashed lines between the lanes, and cars use both lanes each way. Where an avenue ends on a narrower street, it goes on only by that street's half width, so it does not stick out.*
@@ -208,6 +212,7 @@ Review fix (glow under the clouds): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (city blocks packed with buildings): typecheck ✔, build ✔. In the first e2e run, 1 of 33 tests failed under load (output lost); the next two full runs passed 33/33. After splitting the district test: e2e 34 passed.
 Review fix (square street corners, centre lines, cars): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (2×2 roads): typecheck ✔, build ✔, e2e 34 passed.
+Review fix (moving cars with lights): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.

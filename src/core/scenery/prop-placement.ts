@@ -1,6 +1,5 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import type { HeightField } from './height-field';
-import { placeCars } from './road-traffic';
 import type { RoadNetwork, RoadSlot } from './road-network';
 import { blockParts, type Block } from './street-grid';
 import type { BlockFill, PropGroupRule, PropKindRule, PropRules } from './scenery-level';
@@ -144,9 +143,6 @@ export class PropPlacer {
     for (let j = j0; j < j1; j++) {
       for (let i = i0; i < i1; i++) placements.push(...this.#trees(i, j));
     }
-    const { cars } = this.rules;
-    const height = (x: number, z: number): number => this.field.height(x, z);
-    if (cars) placements.push(...placeCars(this.roads.roads, height, cars, this.seed, area));
     return placements;
   }
 

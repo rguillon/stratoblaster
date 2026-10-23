@@ -7,6 +7,10 @@ import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
 
 type Rgb = readonly [number, number, number];
 
+/** Length of the headlight beams on the road, and their colour (dim, as the glow adds to it). */
+const BEAM = 6;
+const BEAM_LIGHT: Rgb = [0.4, 0.33, 0.18];
+
 /** Kinds of cars: body length, width, height, cabin length and where it starts from the back. */
 const SHAPES = {
   sedan: { length: 7, width: 3.2, height: 1.3, cabin: 3.4, back: 1.6 },
@@ -15,7 +19,7 @@ const SHAPES = {
 } as const;
 export type CarShape = keyof typeof SHAPES;
 
-/** A low-poly car: wheels, a body, a glass cabin, headlights and red tail lights. */
+/** A low-poly car: wheels, a body, a glass cabin, headlights with beams, and tail lights. */
 export function buildCar(shape: CarShape, paint: Rgb): PropGeometry {
   const s = new SolidBuilder();
   const l = new SolidBuilder();
@@ -27,8 +31,11 @@ export function buildCar(shape: CarShape, paint: Rgb): PropGeometry {
     s.box([width + 0.2, 0.9, 1.2], C.metalDark, { at: [0, 0, z] });
   }
   for (const x of [-width * 0.3, width * 0.3]) {
-    l.box([0.7, 0.4, 0.2], L.windowDim, { at: [x, 0.9, length / 2 + 0.1] });
-    l.box([0.7, 0.4, 0.2], L.red, { at: [x, 0.9, z0 - 0.1] });
+    l.box([0.8, 0.5, 0.2], L.window, { at: [x, 0.9, length / 2 + 0.1] });
+    l.box([0.8, 0.5, 0.2], L.red, { at: [x, 0.9, z0 - 0.1] });
   }
+  // The headlight beams on the road ahead, and a red glow behind.
+  l.box([width * 0.9, 0.05, BEAM], BEAM_LIGHT, { at: [0, 0.05, length / 2 + BEAM / 2 + 0.3] });
+  l.box([width * 0.7, 0.05, 1], L.pinkDim, { at: [0, 0.05, z0 - 0.8] });
   return { structure: s.geometry, lights: l.geometry };
 }

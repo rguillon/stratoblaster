@@ -16,6 +16,7 @@ import {
   type PlayfieldFraming,
 } from './playfield-framing';
 import { checkPropModels, PropField } from './prop-field';
+import { TrafficLayer } from './traffic-layer';
 import type { CloudMaterial, SceneryKit, SceneryKitFactory } from './scenery-kit';
 import type {
   CloudLayerLook,
@@ -93,6 +94,7 @@ export class SceneryStage {
   #seed: number;
   readonly #chunks: TerrainChunks;
   readonly #props: PropField;
+  readonly #traffic: TrafficLayer;
   readonly #roads: RoadLayers;
   readonly #sea: Mesh | undefined;
   readonly #cloudLayers: CloudLayer[];
@@ -137,6 +139,8 @@ export class SceneryStage {
     this.#props = new PropField(scene, options.propModels, this.kit.props, (mesh) => {
       this.kit.addShadowCaster(mesh);
     });
+    const { propModels } = options;
+    this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
     this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
     this.#seaEnabled = this.#sea !== undefined;
     scene.setRenderingAutoClearDepthStencil(BELOW_CLOUDS_GROUP + 1, false, false);
@@ -168,7 +172,7 @@ export class SceneryStage {
 
   /** Meshes of the props' self-lit accents (for a glow layer). */
   get glowingMeshes(): Mesh[] {
-    return this.#props.lightMeshes;
+    return [...this.#props.lightMeshes, ...this.#traffic.lightMeshes];
   }
 
   /** Regenerates the terrain and the props from another seed. */
@@ -206,16 +210,24 @@ export class SceneryStage {
     );
     const [dy, dz] = this.framing.direction;
     this.camera.setTarget(new Vector3(0, camera.y + dy, camera.z + dz));
-    const changes = this.#chunks.cover(
+    const [zMin, zMax] = [
       camera.z + this.#ground.zNear - margin,
       camera.z + this.#ground.zFar + margin,
-    );
+    ];
+    const changes = this.#chunks.cover(zMin, zMax);
     for (const index of changes.removed) {
       this.#props.removeChunk(index);
       this.#roads.removeChunk(index);
     }
     for (const span of changes.added) this.#placeChunk(span.index);
     this.#props.sync();
+    const height = (x: number, z: number): number => this.#field.height(x, z);
+    const traffic = { roads: this.#placer.roads.roads, height, seed: this.#seed };
+    this.#traffic.update(
+      this.#time,
+      { xMin: -this.#xHalf, xMax: this.#xHalf, zMin, zMax },
+      traffic,
+    );
     const middle = camera.z + (this.#ground.zNear + this.#ground.zFar) / 2;
     if (this.#sea) {
       const tile = this.options.look.sea.tileSize;
@@ -241,22 +253,10 @@ export class SceneryStage {
 
   #placeChunk(index: number): void {
     const span = this.#chunks.span(index);
-    this.#roads.setChunk(
-      index,
-      this.#placer.roads.roads,
-      this.#field,
-      span,
-      this.options.look.roads,
-    );
-    this.#props.setChunk(
-      index,
-      this.#placer.place({
-        xMin: -this.#xHalf,
-        xMax: this.#xHalf,
-        zMin: span.zMin,
-        zMax: span.zMax,
-      }),
-    );
+    const { roads } = this.#placer.roads;
+    this.#roads.setChunk(index, roads, this.#field, span, this.options.look.roads);
+    const area = { xMin: -this.#xHalf, xMax: this.#xHalf, zMin: span.zMin, zMax: span.zMax };
+    this.#props.setChunk(index, this.#placer.place(area));
   }
 
   #buildChunks(): TerrainChunks {
