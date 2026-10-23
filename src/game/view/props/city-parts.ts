@@ -2,7 +2,8 @@ import { createRng, pick, randomIn, type Random } from '../../../core/math/rng';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { PropGeometry } from '../../../render/scenery/scenery-look';
 import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
-import { buildLot, type Lot } from './city-lots';
+import { LANDMARK_LOTS, WIDE_LANDMARKS } from './city-landmarks';
+import { LOTS, WIDE_LOTS, type Lot, type LotKit } from './city-lots';
 
 // Phase 4 review: city buildings assembled from lots (a stepped tower, a round tower, a slab, a
 // courtyard or an L-shaped block, each with its own facade), so the city centre shows buildings
@@ -16,8 +17,29 @@ const LOT_GAP = 1.5;
 
 type Rgb = readonly [number, number, number];
 
-const FACADES: readonly Rgb[] = [C.glassBlue, C.concrete, C.concreteDark, C.brick, C.white];
-const WINDOWS: readonly Rgb[] = [L.windowDim, L.cyanDim, L.pinkDim];
+const FACADES: readonly Rgb[] = [
+  C.glassBlue,
+  C.concrete,
+  C.concreteDark,
+  C.brick,
+  C.white,
+  C.sand,
+  C.glassGreen,
+  C.glassDark,
+];
+const WINDOWS: readonly Rgb[] = [L.windowDim, L.cyanDim, L.pinkDim, L.whiteDim, L.yellowDim];
+const ROOFS: readonly Rgb[] = [C.roof, C.concreteDark, C.metal, C.metalDark];
+/** Kinds of lots, and those that need a lot at least {@link WIDE} across. */
+const KINDS = [...LOTS, ...LANDMARK_LOTS];
+const WIDE_KINDS = new Set([...WIDE_LOTS, ...WIDE_LANDMARKS]);
+const WIDE = 14;
+
+/** Draws one of the kinds of lots, picked at random among those that fit `lot`. */
+function buildLot(kit: LotKit, lot: Lot): void {
+  const [, , w, d] = lot;
+  const kinds = Math.min(w, d) < WIDE ? KINDS.filter((k) => !WIDE_KINDS.has(k)) : KINDS;
+  pick(kit.random, kinds)(kit, lot);
+}
 
 /** Cuts `[-half, half]` in one or two spans at a random point. */
 function spans(half: number, split: boolean, random: Random): (readonly [number, number])[] {
@@ -49,7 +71,8 @@ export function buildCityBuilding(seed: number, half = CITY_HALF): PropGeometry 
   const l = new SolidBuilder();
   const windows = pick(random, WINDOWS);
   for (const lot of lots(half, random)) {
-    buildLot({ s, l, facade: pick(random, FACADES), windows, random }, lot);
+    const facade = pick(random, FACADES);
+    buildLot({ s, l, facade, windows, roof: pick(random, ROOFS), random }, lot);
   }
   return { structure: s.geometry, lights: l.geometry };
 }

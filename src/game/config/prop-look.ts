@@ -22,6 +22,10 @@ export const PROP_COLORS = {
   containerBlue: [0.14, 0.27, 0.45],
   containerGreen: [0.2, 0.36, 0.24],
   containerRed: [0.5, 0.17, 0.14],
+  /** More city facades (phase 4 review). */
+  sand: [0.55, 0.48, 0.38],
+  glassGreen: [0.09, 0.2, 0.19],
+  glassDark: [0.05, 0.06, 0.09],
 } as const;
 
 /** Self-lit accents. */
@@ -35,4 +39,6 @@ export const PROP_LIGHTS = {
   windowDim: [0.5, 0.36, 0.2],
   cyanDim: [0, 0.42, 0.48],
   pinkDim: [0.5, 0.1, 0.3],
+  whiteDim: [0.42, 0.42, 0.4],
+  yellowDim: [0.45, 0.38, 0.08],
 } as const;

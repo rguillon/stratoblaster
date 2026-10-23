@@ -4,8 +4,8 @@ import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
 import { windowBands } from './city-props';
 
 // Phase 4 review: the lots a city building is made of, each one a different kind of volume (a
-// stepped tower, a round tower, a low slab, a courtyard block or an L-shaped block), so the city
-// centre reads as varied as the industrial zone instead of a series of squares.
+// stepped tower, a round tower, a low slab, a courtyard block or an L-shaped block; more in
+// `city-landmarks.ts`), so the city centre reads as varied as the industrial zone.
 
 type Rgb = readonly [number, number, number];
 
@@ -18,17 +18,29 @@ export interface LotKit {
   readonly l: SolidBuilder;
   readonly facade: Rgb;
   readonly windows: Rgb;
+  /** Colour of the flat roofs. */
+  readonly roof: Rgb;
   readonly random: Random;
 }
 
 /** A box with rows of lit windows, from `y` up to `y + h`. */
-function volume(kit: LotKit, [x, z, w, d]: Lot, y: number, h: number, facade = kit.facade): void {
-  kit.s.box([w, h, d], facade, { at: [x, y, z] }, C.roof);
+export function volume(
+  kit: LotKit,
+  [x, z, w, d]: Lot,
+  y: number,
+  h: number,
+  facade = kit.facade,
+): void {
+  kit.s.box([w, h, d], facade, { at: [x, y, z] }, kit.roof);
   windowBands(kit.l, [w, d], [y + 3, y + h - 2], 7, 2, kit.windows, [x, z]);
 }
 
 /** Something on top of a tower at (x, y, z): a spire, a mast, a pyramid or roof units. */
-function crown(kit: LotKit, [x, y, z]: readonly [number, number, number], size: number): void {
+export function crown(
+  kit: LotKit,
+  [x, y, z]: readonly [number, number, number],
+  size: number,
+): void {
   const { s, l, random } = kit;
   const style = Math.floor(random() * 4);
   if (style === 0) {
@@ -62,13 +74,13 @@ function crown(kit: LotKit, [x, y, z]: readonly [number, number, number], size: 
 }
 
 /** A low base covering the whole lot, so no bare ground shows around a tower; its height. */
-function plinth(kit: LotKit, [x, z, w, d]: Lot): number {
+export function plinth(kit: LotKit, [x, z, w, d]: Lot): number {
   const h = randomIn(kit.random, [2, 6]);
   kit.s.box(
     [w, h, d],
     pick(kit.random, [C.concreteDark, C.brick, C.concrete]),
     { at: [x, 0, z] },
-    C.roof,
+    kit.roof,
   );
   return h;
 }
@@ -134,12 +146,6 @@ function lBlock(kit: LotKit, [x, z, w, d]: Lot): void {
   volume(kit, [x - w / 2 + t / 2, z + d / 2 - t / 2, t, t], h, randomIn(random, [10, 30]));
 }
 
-const LOTS = [steppedTower, roundTower, slab, courtyard, lBlock] as const;
-
-/** Draws one of the kinds of lots, picked at random among those that fit `lot`. */
-export function buildLot(kit: LotKit, lot: Lot): void {
-  const [, , w, d] = lot;
-  // A courtyard or an L needs room for its wings.
-  const kinds = Math.min(w, d) < 14 ? LOTS.slice(0, 3) : LOTS;
-  pick(kit.random, kinds)(kit, lot);
-}
+/** The plain kinds of lots; courtyards and L-shaped blocks need room for their wings. */
+export const LOTS = [steppedTower, roundTower, slab, courtyard, lBlock] as const;
+export const WIDE_LOTS: readonly ((kit: LotKit, lot: Lot) => void)[] = [courtyard, lBlock];

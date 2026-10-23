@@ -70,6 +70,10 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Same for the city: create more diversity. *Fixed:*
+  - *Nine more kinds of city lots (`city-landmarks.ts`): twin towers with a lit skybridge, a drum under a glass dome, an open plaza with trees and a lit fountain, a parking garage with cars on its top deck, a tower with a slanted glass top, a tower with a lit helipad, a mid-rise with a roof garden, a tapering hexagonal tower, and a stack of twisted blocks. With the five earlier kinds, that makes 14.*
+  - *Three more facade colours (sand, green glass, dark glass), two more window colours (white, yellow), and four roof colours instead of one. Green is kept to the roof gardens, so the city does not read as green ground.*
+  - *Every city model stays under 600 triangles (largest: 426). The city now draws about 1.26 M triangles at its densest (it was about 1.04 M).*
 - [x] Create more variety, there is too much repetition. *Fixed:*
   - *Industrial complexes are now laid out in one of five ways: a hall with equipment beside it, two halls, a tank farm of four plots, a hall behind a yard, or a long works hall with equipment at both ends.*
   - *Plots of equipment are one of nine kinds: tank rows, silos with a walkway, a gas sphere on legs, container stacks, a pipe rack, an annex with a lit door, a flare stack with a pump house, a conveyor up to a tower, or a gantry crane over containers (`industrial-yard.ts`). Hall roofs now take one of five colours.*
@@ -218,6 +222,7 @@ Review fix (square street corners, centre lines, cars): typecheck ✔, build ✔
 Review fix (2×2 roads): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (moving cars with lights): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (more industrial variety): typecheck ✔, build ✔, e2e 34 passed.
+Review fix (more city variety): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.
