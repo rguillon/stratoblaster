@@ -17,6 +17,10 @@ export const SCENERY_VIEWER_CONFIG = {
     cloudClearance: 15,
     sunDistance: 2500,
     farClip: 4000,
+    // Review: props are drawn only near the ground in view. The tallest stand about 60 high, and
+    // the camera looks down at about 35° at the top edge: they show from about 90 past it.
+    propReach: [40, 120],
+    propStep: 40,
   },
   /** Height of the ship's centre on the playfield, in logical pixels from its bottom. */
   shipY: 80,

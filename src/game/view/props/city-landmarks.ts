@@ -37,19 +37,19 @@ function dome(kit: LotKit, lot: Lot): void {
   const base = plinth(kit, lot);
   const r = (Math.min(w, d) / 2) * 0.85;
   const drum = randomIn(random, [4, 10]);
-  s.cylinder(r, drum, 10, kit.facade, { at: [x, base, z] });
+  s.cylinder(r, drum, 8, kit.facade, { at: [x, base, z] });
   const top = base + drum;
   const ring = (k: number): [number, number] => [
     r * Math.cos((Math.PI * k) / 8),
     top + r * 0.8 * Math.sin((Math.PI * k) / 8),
   ];
   s.lathe(
-    [ring(0), ring(1), ring(2), ring(3), [0, top + r * 0.8]],
-    10,
+    [ring(0), ring(2), [0, top + r * 0.8]],
+    8,
     pick(random, [C.glassBlue, C.glass, C.metal]),
     { at: [x, 0, z] },
   );
-  l.ring(r * 1.02, 0.8, 10, kit.windows, { at: [x, top - 1.2, z] });
+  l.ring(r * 1.02, 0.8, 8, kit.windows, { at: [x, top - 1.2, z] });
 }
 
 /** An open plaza: paving, trees, benches and a lit fountain, with a kiosk. */
@@ -165,7 +165,7 @@ function hexTower(kit: LotKit, lot: Lot): void {
   const h = randomIn(random, [35, 70]);
   const top = r * randomIn(random, [0.45, 0.75]);
   s.cylinder(r, h, 6, kit.facade, { at: [x, base, z] }, top);
-  for (let y = 5; y + 2 < h - 4; y += 10) {
+  for (let y = 5; y + 2 < h - 4; y += 14) {
     l.ring(r - ((r - top) * y) / h + 0.15, 1.5, 6, kit.windows, { at: [x, base + y, z] });
   }
   crown(kit, [x, base + h, z], top * 2);

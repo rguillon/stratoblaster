@@ -32,7 +32,8 @@ export function volume(
   facade = kit.facade,
 ): void {
   kit.s.box([w, h, d], facade, { at: [x, y, z] }, kit.roof);
-  windowBands(kit.l, [w, d], [y + 3, y + h - 2], 7, 2, kit.windows, [x, z]);
+  // Few rows, and none on low volumes, to keep the triangle count down (review).
+  if (h >= 8) windowBands(kit.l, [w, d], [y + 3, y + h - 2], 10, 2, kit.windows, [x, z]);
 }
 
 /** Something on top of a tower at (x, y, z): a spire, a mast, a pyramid or roof units. */
@@ -109,9 +110,9 @@ function roundTower(kit: LotKit, lot: Lot): void {
   const r = (Math.min(w, d) / 2) * randomIn(random, [0.6, 0.85]);
   const base = plinth(kit, lot);
   const h = base + randomIn(random, [25, 60]);
-  s.cylinder(r, h - base, 8, kit.facade, { at: [x, base, z] }, r * randomIn(random, [0.7, 1]));
-  for (let y = base + 4; y + 2 < h - 4; y += 9) {
-    l.ring(r * 1.02, 2, 8, kit.windows, { at: [x, y, z] });
+  s.cylinder(r, h - base, 6, kit.facade, { at: [x, base, z] }, r * randomIn(random, [0.7, 1]));
+  for (let y = base + 4; y + 2 < h - 4; y += 12) {
+    l.ring(r * 1.02, 2, 6, kit.windows, { at: [x, y, z] });
   }
   crown(kit, [x, h, z], r);
 }

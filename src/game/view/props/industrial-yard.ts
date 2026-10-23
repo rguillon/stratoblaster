@@ -99,16 +99,14 @@ function sphere({ s, l }: YardKit, [x, z, w, d]: Plot): void {
 
 /** Stacks of shipping containers in rows. */
 function containers({ s, random }: YardKit, [x, z, w, d]: Plot): void {
-  // At most 3 rows of 3 stacks of up to 3, shorter in narrow plots.
+  // At most 3 rows of 3 stacks of up to 3, shorter in narrow plots; a stack is one box.
   const rows = Math.min(3, Math.max(1, Math.floor(d / 3.4)));
   const cols = Math.min(3, Math.max(1, Math.floor(w / 7)));
   const length = Math.min(6, w / cols - 0.5);
   for (const cz of spread(z, d, rows)) {
     for (const cx of spread(x, w, cols)) {
       const high = 1 + Math.floor(random() * 3);
-      for (let k = 0; k < high; k++) {
-        s.box([length, 2.4, 2.8], pick(random, CONTAINERS), { at: [cx, k * 2.4, cz] });
-      }
+      s.box([length, high * 2.4, 2.8], pick(random, CONTAINERS), { at: [cx, 0, cz] });
     }
   }
 }

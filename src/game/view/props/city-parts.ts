@@ -67,8 +67,8 @@ function lots(half: number, random: Random): Lot[] {
 /** One of the city buildings, decided by `seed`, fitting in a square of half side `half`. */
 export function buildCityBuilding(seed: number, half = CITY_HALF): PropGeometry {
   const random = createRng(seed * 104729 + half * 31 + 7);
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   const windows = pick(random, WINDOWS);
   for (const lot of lots(half, random)) {
     const facade = pick(random, FACADES);

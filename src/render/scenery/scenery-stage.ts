@@ -17,7 +17,14 @@ import {
 } from './playfield-framing';
 import { checkPropModels, PropField } from './prop-field';
 import { TrafficLayer } from './traffic-layer';
-import type { CloudMaterial, SceneryKit, SceneryKitFactory } from './scenery-kit';
+import type { SceneryKit, SceneryKitFactory } from './scenery-kit';
+import {
+  BELOW_CLOUDS_GROUP,
+  buildCloudLayer,
+  updateCloudLayer,
+  type CloudLayer,
+  type CloudLayerState,
+} from './cloud-layers';
 import type {
   CloudLayerLook,
   PlayfieldCameraLook,
@@ -41,6 +48,12 @@ export interface SceneryStageConfig {
   readonly sunDistance: number;
   /** Far clipping distance of the camera. */
   readonly farClip: number;
+  /**
+   * How far before and past the ground in view props are drawn (tall ones show from further),
+   * and by how much the drawn range is widened, so it is uploaded again only now and then.
+   */
+  readonly propReach: readonly [near: number, far: number];
+  readonly propStep: number;
 }
 
 export interface SceneryStageOptions {
@@ -53,24 +66,7 @@ export interface SceneryStageOptions {
   readonly config: SceneryStageConfig;
 }
 
-/** Group of all but the clouds, drawn next: a glow composed after it stays under them. */
-export const BELOW_CLOUDS_GROUP = 0;
-
-/** A cloud layer's live settings (P04-R03). */
-export interface CloudLayerState {
-  enabled: boolean;
-  coverage: number;
-  opacity: number;
-}
-
-interface CloudLayer {
-  readonly look: CloudLayerLook;
-  /** Z of the middle of what the camera sees at the layer's altitude, relative to the camera. */
-  readonly middle: number;
-  readonly mesh: Mesh;
-  readonly material: CloudMaterial;
-  readonly state: CloudLayerState;
-}
+export { BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 
 /** Lowest ground of a level: its sea, or the lowest relief. */
 function lowestGround(level: SceneryLevel): number {
@@ -220,6 +216,12 @@ export class SceneryStage {
       this.#roads.removeChunk(index);
     }
     for (const span of changes.added) this.#placeChunk(span.index);
+    const [near, far] = this.options.config.propReach;
+    const [zNear, zFar] = [
+      camera.z + this.#ground.zNear - near,
+      camera.z + this.#ground.zFar + far,
+    ];
+    this.#props.setWindow(zNear, zFar, this.options.config.propStep);
     this.#props.sync();
     const height = (x: number, z: number): number => this.#field.height(x, z);
     const traffic = { roads: this.#placer.roads.roads, height, seed: this.#seed };
@@ -234,7 +236,7 @@ export class SceneryStage {
       // Whole tiles only, so the waves stay put on the ground while the plane follows the camera.
       this.#sea.position.z = Math.round(middle / tile) * tile;
     }
-    for (const layer of this.#cloudLayers) this.#updateCloud(layer);
+    for (const layer of this.#cloudLayers) updateCloudLayer(layer, camera.z, this.#time);
     const { mapSize, frustum } = this.options.look.sun.shadow;
     this.sun.position = snappedLightPosition(
       this.sun.direction,
@@ -304,51 +306,12 @@ export class SceneryStage {
   }
 
   #buildCloudLayer(look: CloudLayerLook, index: number): CloudLayer {
-    const cameraY = this.options.camera.flightAltitude + this.framing.height;
     const altitude = this.cloudAltitude(look);
-    const seen = visibleGround(
-      this.framing,
-      this.options.screen.width / this.options.screen.height,
-      cameraY,
-      altitude,
-      altitude,
-    );
-    const { margin } = this.options.config;
-    const mesh = CreateGround(
-      `cloud-layer-${String(index)}`,
-      {
-        width: 2 * (seen.halfWidth + margin),
-        height: seen.zFar - seen.zNear + 2 * margin,
-        subdivisions: 1,
-      },
-      this.scene,
-    );
-    mesh.position.y = altitude;
+    const { screen, camera, config } = this.options;
+    const cameraY = camera.flightAltitude + this.framing.height;
+    const aspect = screen.width / screen.height;
+    const seen = visibleGround(this.framing, aspect, cameraY, altitude, altitude);
     const material = this.kit.cloud(look);
-    mesh.material = material.material;
-    mesh.isPickable = false;
-    mesh.renderingGroupId = BELOW_CLOUDS_GROUP + 1;
-    // Lower layers are drawn first, after the sea.
-    mesh.alphaIndex = index + 1;
-    return {
-      look,
-      middle: (seen.zNear + seen.zFar) / 2,
-      mesh,
-      material,
-      state: { enabled: true, coverage: look.coverage, opacity: look.opacity },
-    };
-  }
-
-  #updateCloud(layer: CloudLayer): void {
-    const { look, mesh, material, state } = layer;
-    mesh.position.z = this.camera.position.z + layer.middle;
-    const visible = state.enabled && state.coverage > 0 && state.opacity > 0;
-    mesh.setEnabled(visible);
-    material.set({
-      coverage: state.coverage,
-      opacity: state.opacity,
-      offsetX: look.drift[0] * this.#time,
-      offsetZ: look.drift[1] * this.#time,
-    });
+    return buildCloudLayer(this.scene, look, material, index, [seen, altitude, config.margin]);
   }
 }

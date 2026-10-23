@@ -19,23 +19,35 @@ const SHAPES = {
 } as const;
 export type CarShape = keyof typeof SHAPES;
 
+/** A flat quad facing up just above the road, `w × d`, centred at Z = `z`. */
+function ground(l: SolidBuilder, [w, d]: readonly [number, number], z: number, color: Rgb): void {
+  const [x0, x1, z0, z1, y] = [-w / 2, w / 2, z - d / 2, z + d / 2, 0.1];
+  l.face(
+    [
+      [x0, y, z0],
+      [x0, y, z1],
+      [x1, y, z1],
+      [x1, y, z0],
+    ],
+    color,
+  );
+}
+
 /** A low-poly car: wheels, a body, a glass cabin, headlights with beams, and tail lights. */
 export function buildCar(shape: CarShape, paint: Rgb): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   const { length, width, height, cabin, back } = SHAPES[shape];
   const z0 = -length / 2;
   s.box([width, height, length], paint, { at: [0, 0.4, 0] }, paint);
   s.box([width * 0.86, 1.1, cabin], C.glass, { at: [0, 0.4 + height, z0 + back + cabin / 2] });
-  for (const z of [z0 + 1.4, length / 2 - 1.4]) {
-    s.box([width + 0.2, 0.9, 1.2], C.metalDark, { at: [0, 0, z] });
-  }
-  for (const x of [-width * 0.3, width * 0.3]) {
-    l.box([0.8, 0.5, 0.2], L.window, { at: [x, 0.9, length / 2 + 0.1] });
-    l.box([0.8, 0.5, 0.2], L.red, { at: [x, 0.9, z0 - 0.1] });
-  }
-  // The headlight beams on the road ahead, and a red glow behind.
-  l.box([width * 0.9, 0.05, BEAM], BEAM_LIGHT, { at: [0, 0.05, length / 2 + BEAM / 2 + 0.3] });
-  l.box([width * 0.7, 0.05, 1], L.pinkDim, { at: [0, 0.05, z0 - 0.8] });
+  // Few triangles (hundreds of cars are in view): one block for the wheels, one strip for the
+  // headlights and one for the tail lights.
+  s.box([width + 0.2, 0.9, length - 1.6], C.metalDark);
+  l.box([width * 0.8, 0.5, 0.2], L.window, { at: [0, 0.9, length / 2 + 0.1] });
+  l.box([width * 0.8, 0.5, 0.2], L.red, { at: [0, 0.9, z0 - 0.1] });
+  // The headlight beam on the road ahead, and a red glow behind: flat quads facing up.
+  ground(l, [width * 0.9, BEAM], length / 2 + BEAM / 2 + 0.3, BEAM_LIGHT);
+  ground(l, [width * 0.7, 1], z0 - 0.8, L.pinkDim);
   return { structure: s.geometry, lights: l.geometry };
 }

@@ -50,8 +50,8 @@ export function windowBands(
 
 /** A slim glass tower with cyan window bands and an antenna. */
 export function buildGlassTower(): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   s.box([14, 78, 14], C.glassBlue, {}, C.metalDark);
   s.box([10, 4, 10], C.metal, { at: [0, 78, 0] });
   s.cylinder(0.5, 14, 4, C.metal, { at: [0, 82, 0] });
@@ -62,8 +62,8 @@ export function buildGlassTower(): PropGeometry {
 
 /** A broad concrete office block with warm window rows and roof units. */
 export function buildOfficeBlock(): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   s.box([22, 32, 16], C.concrete, {}, C.roof);
   s.box([6, 3, 5], C.metalDark, { at: [-5, 32, 2] });
   s.box([4, 2, 4], C.metal, { at: [6, 32, -3] });
@@ -73,8 +73,8 @@ export function buildOfficeBlock(): PropGeometry {
 
 /** An L-shaped brick apartment block with lit windows and a pink neon sign on the roof. */
 export function buildApartmentBlock(): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   s.box([20, 24, 8], C.brick, { at: [0, 0, -3] }, C.roof);
   s.box([8, 24, 14], C.brick, { at: [6, 0, 4] }, C.roof);
   windowBands(l, [20, 8], [3, 23], 6, 2, L.windowDim, [0, -3]);
@@ -84,8 +84,8 @@ export function buildApartmentBlock(): PropGeometry {
 
 /** A stepped tower in three tiers under a spire, with cyan trims at each step. */
 export function buildSteppedTower(): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
+  const s = new SolidBuilder({ openBottoms: true });
+  const l = new SolidBuilder({ openBottoms: true });
   const tiers = [
     [18, 0, 22],
     [13, 22, 20],

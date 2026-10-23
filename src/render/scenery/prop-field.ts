@@ -63,6 +63,8 @@ export class PropField {
   readonly #meshes = new Map<string, PropMeshes>();
   readonly #chunks = new Map<number, readonly PropPlacement[]>();
   #dirty = false;
+  /** Only the props whose Z is in this range are drawn, if set (see {@link setWindow}). */
+  #window: { readonly zMin: number; readonly zMax: number } | undefined;
 
   constructor(
     scene: Scene,
@@ -117,18 +119,24 @@ export class PropField {
     this.#dirty = true;
   }
 
-  /** Uploads the instance matrices if the placements changed since the last call. */
+  /**
+   * Draws only the props whose Z is in [zMin, zMax] (phase 4 review): the terrain chunks reach
+   * well past the view, and their props would be drawn for nothing. The instances are uploaded
+   * again only when the window leaves the range drawn, which is `step` wider on both sides.
+   */
+  setWindow(zMin: number, zMax: number, step: number): void {
+    const drawn = this.#window;
+    if (drawn && zMin >= drawn.zMin && zMax <= drawn.zMax) return;
+    // A step wider than asked, so the view can move by a step before the next upload.
+    this.#window = { zMin: zMin - step, zMax: zMax + step };
+    this.#dirty = true;
+  }
+
+  /** Uploads the instance matrices if the placements or the window changed since the last call. */
   sync(): void {
     if (!this.#dirty) return;
     this.#dirty = false;
-    const byKind = new Map<string, PropPlacement[]>();
-    for (const placements of this.#chunks.values()) {
-      for (const p of placements) {
-        const list = byKind.get(p.kind);
-        if (list) list.push(p);
-        else byKind.set(p.kind, [p]);
-      }
-    }
+    const byKind = this.#byKind();
     for (const [kind, meshes] of this.#meshes) {
       const matrices = instanceMatrices(byKind.get(kind) ?? []);
       for (const mesh of [meshes.structure, meshes.lights]) {
@@ -139,6 +147,21 @@ export class PropField {
         mesh.thinInstanceRefreshBoundingInfo(false);
       }
     }
+  }
+
+  /** The placements to draw (in the window, if any), by kind. */
+  #byKind(): Map<string, PropPlacement[]> {
+    const window = this.#window;
+    const byKind = new Map<string, PropPlacement[]>();
+    for (const placements of this.#chunks.values()) {
+      for (const p of placements) {
+        if (window && (p.z < window.zMin || p.z > window.zMax)) continue;
+        const list = byKind.get(p.kind);
+        if (list) list.push(p);
+        else byKind.set(p.kind, [p]);
+      }
+    }
+    return byKind;
   }
 }
 

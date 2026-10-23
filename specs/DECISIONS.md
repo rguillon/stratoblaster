@@ -409,3 +409,14 @@
 - **Alternatives considered:** Turning at crossings, or cars that follow each other with braking. These need a real traffic simulation with state, more than a test level needs.
 - **Consequences:** Cars pass through each other at crossings, and vanish and reappear at street ends. Per frame, placing about 570 cars takes about 1.3 ms in Node, plus their matrix upload.
 - **Status:** Accepted
+
+### D-031 — Props drawn only near the view
+
+- **Date:** 2026-10-23 (phase 4 review)
+- **Context:** The review asked for fewer polygons. Thin instances of one kind share one mesh, so frustum culling works per kind, not per instance. Every prop of the loaded terrain chunks was drawn, up to about 400 past the view.
+- **Decision:**
+  - `PropField.setWindow` filters placements by Z to the ground in view, plus `propReach` (40 before, 120 past, for tall towers).
+  - The filtered range is `propStep` (40) wider each way, so instances are uploaded again only every 40 or so of scrolling, not every frame.
+- **Alternatives considered:** One mesh per kind and per chunk, so frustum culling works. This multiplies the draw calls by the number of chunks (about 130 kinds × 6 chunks).
+- **Consequences:** A prop taller than about 80 standing past the window could pop in at the top edge. The tallest props are about 60 high.
+- **Status:** Accepted

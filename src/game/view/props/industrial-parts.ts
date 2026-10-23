@@ -34,7 +34,7 @@ function roof(s: SolidBuilder, hall: Hall, random: Random): void {
   const style = Math.floor(random() * 4);
   if (style === 1) {
     // Sawtooth: slanted strips across the hall.
-    const strips = Math.max(2, Math.round(d / 4));
+    const strips = Math.min(4, Math.max(2, Math.round(d / 5)));
     for (let i = 0; i < strips; i++) {
       const sz = z - d / 2 + (d * (i + 0.5)) / strips;
       s.box([w, 0.6, d / strips + 0.6], C.metal, { at: [x, h + 1, sz], pitch: -0.45 });
@@ -153,7 +153,11 @@ const LAYOUTS = [
  */
 export function buildIndustrialComplex(seed: number, half = INDUSTRIAL_HALF): PropGeometry {
   const random = createRng(seed * 7919 + half * 131 + 13);
-  const kit: YardKit = { s: new SolidBuilder(), l: new SolidBuilder(), random };
+  const kit: YardKit = {
+    s: new SolidBuilder({ openBottoms: true }),
+    l: new SolidBuilder({ openBottoms: true }),
+    random,
+  };
   const size = 2 * half;
   pick(random, LAYOUTS)(kit, [0, 0, size, size], half);
   return { structure: kit.s.geometry, lights: kit.l.geometry };

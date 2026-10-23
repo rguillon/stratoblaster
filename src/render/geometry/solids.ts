@@ -39,6 +39,17 @@ function sideFace(a0: Vec3, a1: Vec3, b1: Vec3, b0: Vec3, rA: number, rB: number
 export class SolidBuilder {
   readonly geometry: ColoredGeometry = { positions: [], indices: [], colors: [] };
 
+  /**
+   * With `openBottoms`, upright boxes and bodies of revolution get no bottom face: for buildings
+   * seen from above, standing on the ground or on another solid, it would never show.
+   */
+  constructor(private readonly options: { readonly openBottoms?: boolean } = {}) {}
+
+  /** Whether the bottom face of a solid placed by `place` is left out. */
+  #openBottom(place: Placement): boolean {
+    return this.options.openBottoms === true && !place.pitch && !place.roll;
+  }
+
   #point(p: Vec3, place: Placement): Vec3 {
     const [x, y, z] = rotate(p, place);
     const [ax, ay, az] = place.at ?? [0, 0, 0];
@@ -68,7 +79,7 @@ export class SolidBuilder {
       [profile.at(-1), true],
     ];
     for (const [end, up] of ends) {
-      if (!end || end[0] <= 0) continue;
+      if (!end || end[0] <= 0 || (!up && this.#openBottom(place))) continue;
       const [r, y] = end;
       const corners = Array.from({ length: sides }, (_, i): Vec3 => {
         const a = ((up ? sides - i : i) / sides) * Math.PI * 2;
@@ -83,7 +94,9 @@ export class SolidBuilder {
     const [x0, x1, z0, z1] = [-w / 2, w / 2, -d / 2, d / 2];
     const c = (x: number, y: number, z: number): Vec3 => [x, y, z];
     this.face([c(x0, h, z0), c(x0, h, z1), c(x1, h, z1), c(x1, h, z0)], top, place);
-    this.face([c(x0, 0, z0), c(x1, 0, z0), c(x1, 0, z1), c(x0, 0, z1)], color, place);
+    if (!this.#openBottom(place)) {
+      this.face([c(x0, 0, z0), c(x1, 0, z0), c(x1, 0, z1), c(x0, 0, z1)], color, place);
+    }
     this.face([c(x0, 0, z0), c(x0, h, z0), c(x1, h, z0), c(x1, 0, z0)], color, place);
     this.face([c(x1, 0, z1), c(x1, h, z1), c(x0, h, z1), c(x0, 0, z1)], color, place);
     this.face([c(x0, 0, z1), c(x0, h, z1), c(x0, h, z0), c(x0, 0, z0)], color, place);

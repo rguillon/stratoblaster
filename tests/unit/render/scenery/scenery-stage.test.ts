@@ -24,6 +24,8 @@ const CONFIG = {
   cloudClearance: 10,
   sunDistance: 500,
   farClip: 2000,
+  propReach: [40, 120] as const,
+  propStep: 40,
 };
 
 function options(overrides: Partial<SceneryStageOptions> = {}): SceneryStageOptions {

@@ -52,6 +52,29 @@ describe('PropField', () => {
     expect(block?.isEnabled()).toBe(false);
   });
 
+  it('P04 review: draws only the props near the view, uploading again when it moves away', () => {
+    const props = field();
+    const at = (z: number): PropPlacement => ({ ...place('block', 0), z });
+    props.setChunk(0, [at(0), at(100), at(200), at(300)]);
+    props.setWindow(90, 110, 50);
+    props.sync();
+    // The window is drawn 50 wider each way: Z 40..160.
+    const block = props.structureOf('block');
+    expect(block?.thinInstanceCount).toBe(1);
+    expect(props.count).toBe(4);
+    props.setWindow(120, 140, 50);
+    props.sync();
+    expect(block?.thinInstanceCount).toBe(1);
+    // Past the range drawn: the window moves on, and the props are uploaded again.
+    props.setWindow(190, 210, 50);
+    props.sync();
+    expect(block?.thinInstanceCount).toBe(1);
+    // Z 140..260 drawn; a wider window gets 80..330.
+    props.setWindow(130, 280, 50);
+    props.sync();
+    expect(block?.thinInstanceCount).toBe(3);
+  });
+
   it('P04-R04: props cast shadows, and unknown kinds are refused', () => {
     let casters = 0;
     const props = field(() => {
