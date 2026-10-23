@@ -13,6 +13,8 @@ export const SCENERY_VIEWER_CONFIG = {
     cell: 8,
     /** Extra ground generated around what the camera sees. */
     margin: 80,
+    /** Cloud layers stay at least this high above the highest ground. */
+    cloudClearance: 15,
     sunDistance: 2500,
     farClip: 4000,
   },

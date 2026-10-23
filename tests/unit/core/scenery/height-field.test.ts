@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HeightField, softCap } from '../../../../src/core/scenery/height-field';
+import { HeightField, softCap, terrainCeiling } from '../../../../src/core/scenery/height-field';
 import type { SceneryLevel, TerrainSection } from '../../../../src/core/scenery/scenery-level';
 import { SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 
@@ -115,6 +115,28 @@ describe('HeightField', () => {
     expect(field.sectionAt(150).section).toBe(high);
     expect(field.sectionAt(-5).section).toBe(low);
     expect(field.sectionIndexAt(999)).toBe(1);
+  });
+
+  it('P04-R03 (review): the ground never rises above its ceiling, whatever the seed', () => {
+    const relief = {
+      base: 0,
+      amplitude: 400,
+      frequency: 1 / 300,
+      octaves: 5,
+      style: 'ridged',
+      maxHeight: 250,
+    } as const;
+    const flatten = { path: STRAIGHT, halfWidth: 50, edge: 20, height: 300, roughness: 2 };
+    const lvl = level([section(), section({ relief }), section({ flatten })], 30);
+    expect(terrainCeiling(lvl)).toBe(302);
+    for (const seed of [1, 2, 3]) {
+      const field = new HeightField(lvl, seed);
+      expect(field.ceiling).toBe(302);
+      expect(Math.max(...grid(field, [-600, 600], [0, 300]))).toBeLessThanOrEqual(field.ceiling);
+    }
+    expect(terrainCeiling(level([section()]))).toBe(70);
+    const shore = { path: STRAIGHT, landSide: 1, width: 10, seabed: 90 } as const;
+    expect(terrainCeiling(level([section({ shore })]))).toBe(90);
   });
 
   it('a meander line winds around its x', () => {

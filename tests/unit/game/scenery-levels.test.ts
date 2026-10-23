@@ -5,7 +5,7 @@ import { PropPlacer } from '../../../src/core/scenery/prop-placement';
 import { levelRoads } from '../../../src/core/scenery/road-network';
 import { levelDuration } from '../../../src/core/scenery/scenery-level';
 import { LEVEL_ZERO, SCENERY_LEVELS } from '../../../src/game/sim/scenery-levels';
-import { PLAYFIELD_CAMERA } from '../../../src/game/config/scenery-look';
+import { LEVEL_ZERO_LOOK, PLAYFIELD_CAMERA } from '../../../src/game/config/scenery-look';
 import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
 
 describe('Level Zero', () => {
@@ -32,6 +32,14 @@ describe('Level Zero', () => {
     }
     expect(highest).toBeLessThan(PLAYFIELD_CAMERA.flightAltitude - 50);
     expect(highest).toBeGreaterThan(150);
+  });
+
+  it('P04-R03 (review): the cloud layers fly above every peak and under the ships', () => {
+    expect(LEVEL_ZERO_LOOK.clouds.length).toBeGreaterThan(0);
+    for (const cloud of LEVEL_ZERO_LOOK.clouds) {
+      expect(cloud.altitude).toBeGreaterThan(field.ceiling);
+      expect(cloud.altitude).toBeLessThan(PLAYFIELD_CAMERA.flightAltitude);
+    }
   });
 
   it('P04-R02: has a sea, with ground under it in the coast and open sea sections', () => {

@@ -35,6 +35,8 @@ export interface SceneryStageConfig {
   readonly cell: number;
   /** Extra ground generated around what the camera sees. */
   readonly margin: number;
+  /** Smallest gap between the highest ground and a cloud layer. */
+  readonly cloudClearance: number;
   /** How far behind the scene the sun is placed, for its shadows. */
   readonly sunDistance: number;
   /** Far clipping distance of the camera. */
@@ -290,14 +292,23 @@ export class SceneryStage {
     return sea;
   }
 
+  /**
+   * Height of a cloud layer: its look's altitude, raised if needed to stay `cloudClearance` above
+   * the highest ground, so clouds never pass through the terrain (phase 4 review).
+   */
+  cloudAltitude(look: CloudLayerLook): number {
+    return Math.max(look.altitude, this.#field.ceiling + this.options.config.cloudClearance);
+  }
+
   #buildCloudLayer(look: CloudLayerLook, index: number): CloudLayer {
     const cameraY = this.options.camera.flightAltitude + this.framing.height;
+    const altitude = this.cloudAltitude(look);
     const seen = visibleGround(
       this.framing,
       this.options.screen.width / this.options.screen.height,
       cameraY,
-      look.altitude,
-      look.altitude,
+      altitude,
+      altitude,
     );
     const { margin } = this.options.config;
     const mesh = CreateGround(
@@ -309,7 +320,7 @@ export class SceneryStage {
       },
       this.scene,
     );
-    mesh.position.y = look.altitude;
+    mesh.position.y = altitude;
     const material = this.kit.cloud(look);
     mesh.material = material.material;
     mesh.isPickable = false;

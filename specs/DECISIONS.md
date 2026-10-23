@@ -269,3 +269,14 @@
   - A graph-based road planner (A* over slope): too much for a test level.
 - **Consequences:** Sections with no usable road (open sea, steep mountains) get no buildings. A new seed (N) also changes the road network.
 - **Status:** Accepted
+
+### D-022 — Cloud layers always above the terrain
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** Cloud layers at fixed altitudes (170 and 250) cut through mountains and canyon walls, which looked bad. The reviewer asked for the clouds to stay on top.
+- **Decision:** `terrainCeiling(level)` (`core/scenery/height-field.ts`) gives a height the ground never exceeds, whatever the seed. It takes, for each section, the highest of: the top of its relief (or its peak cap), its flattened band, and its sea bed. Carving only lowers the ground, and blending stays between neighbouring heights, so nothing else can raise it. `SceneryStage` places each layer at `max(look altitude, ceiling + cloudClearance)` (15 units). Level Zero's layers are now at 265 and 295: above the peaks (≤ 250) and under the ships (320).
+- **Alternatives considered:**
+  - Drawing the clouds without depth testing: they would also cover the ships.
+  - Fading the clouds near the ground in the shader: it needs the scene depth, and the clouds would still look sliced.
+- **Consequences:** A level whose ground rises close to the flight altitude leaves little room for clouds. The ceiling is a bound, not the real highest point, so it can sit a little above the actual peaks.
+- **Status:** Accepted

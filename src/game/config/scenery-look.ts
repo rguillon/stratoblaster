@@ -114,9 +114,10 @@ export const LEVEL_ZERO_LOOK = {
     tileSize: 320,
     drift: [3, 7],
   },
+  /** Both layers fly above the highest peaks (250) and under the ships (320). */
   clouds: [
     {
-      altitude: 170,
+      altitude: 265,
       coverage: 0.3,
       opacity: 0.75,
       tileSize: 1100,
@@ -126,7 +127,7 @@ export const LEVEL_ZERO_LOOK = {
       shade: [0.72, 0.7, 0.72],
     },
     {
-      altitude: 250,
+      altitude: 295,
       coverage: 0.2,
       opacity: 0.5,
       tileSize: 1600,

@@ -13,7 +13,14 @@ import {
   SAMPLE_SCENERY_LOOK,
 } from '../../../fixtures/sample-scenery';
 
-const CONFIG = { chunkLength: 100, cell: 10, margin: 20, sunDistance: 500, farClip: 2000 };
+const CONFIG = {
+  chunkLength: 100,
+  cell: 10,
+  margin: 20,
+  cloudClearance: 10,
+  sunDistance: 500,
+  farClip: 2000,
+};
 
 function options(overrides: Partial<SceneryStageOptions> = {}): SceneryStageOptions {
   return {
@@ -99,6 +106,17 @@ describe('SceneryStage', () => {
     state.enabled = false;
     s.update(0, 0);
     expect(layer?.isEnabled()).toBe(false);
+  });
+
+  it('P04-R03 (review): a cloud layer below the highest ground is lifted above it', () => {
+    const [cloud] = SAMPLE_SCENERY_LOOK.clouds;
+    if (!cloud) throw new Error('no cloud layer');
+    const low = { ...cloud, altitude: 5 };
+    const s = stage({ look: { ...SAMPLE_SCENERY_LOOK, clouds: [low] } });
+    const ceiling = s.field.ceiling;
+    expect(s.cloudAltitude(low)).toBe(ceiling + CONFIG.cloudClearance);
+    expect(scene?.getMeshByName('cloud-layer-0')?.position.y).toBe(ceiling + CONFIG.cloudClearance);
+    expect(s.cloudAltitude({ ...cloud, altitude: 500 })).toBe(500);
   });
 
   it('P04-R01: a new seed rebuilds the ground and the props', () => {

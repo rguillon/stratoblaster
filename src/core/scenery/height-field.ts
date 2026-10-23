@@ -28,6 +28,24 @@ export function softCap(h: number, max: number): number {
 }
 
 /**
+ * A height the ground of `level` never exceeds, whatever the seed: the top of each section's
+ * relief (or its peak cap), of its flattened band and of its sea bed. Carving only lowers the
+ * ground, and blending stays between the heights of the blended sections.
+ */
+export function terrainCeiling(level: SceneryLevel): number {
+  return Math.max(
+    ...level.sections.map(({ relief, flatten, shore }) => {
+      const top = relief.base + Math.abs(relief.amplitude);
+      return Math.max(
+        relief.maxHeight === undefined ? top : Math.min(top, relief.maxHeight),
+        flatten ? flatten.height + Math.abs(flatten.roughness) : -Infinity,
+        shore ? shore.seabed : -Infinity,
+      );
+    }),
+  );
+}
+
+/**
  * The sculpted ground of a level (P04-R01): every section is a fractal relief, optionally
  * flattened (plateau), carved (canyon) or dropped under the sea (coast), and neighbouring
  * sections blend smoothly over `level.transition`. Before Z = 0 and after the end, the ground
@@ -37,6 +55,8 @@ export class HeightField {
   readonly sections: readonly PlacedSection[];
   /** Length of the level along Z. */
   readonly length: number;
+  /** The ground never rises above this height ({@link terrainCeiling}). */
+  readonly ceiling: number;
   readonly #relief: Noise2D;
   readonly #detail: Noise2D;
   readonly #wobble: Noise2D;
@@ -45,6 +65,7 @@ export class HeightField {
   constructor(level: SceneryLevel, seed = level.seed) {
     this.sections = layoutSections(level);
     this.length = this.sections.at(-1)?.end ?? 0;
+    this.ceiling = terrainCeiling(level);
     this.#relief = createNoise2D(seed);
     this.#detail = createNoise2D(seed + 1);
     this.#wobble = createNoise2D(seed + 2);
