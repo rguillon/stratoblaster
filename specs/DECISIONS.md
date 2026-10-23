@@ -199,3 +199,24 @@
 - **Decision:** Every reference was replaced (`package.json` name, game id and title, page titles, README, specs, tests). The game id is the cookie prefix, so the cookies become `stratoblaster_high_score` and `stratoblaster_last_ship`. The title logo went from 68 px to 46 px (with less letter spacing) so the 13-letter name fits the 480 px screen; an e2e check now fails if the logo is wider than the screen.
 - **Consequences:** A high score or last ship saved under the old cookie prefix is not read any more (no migration: nothing has been released). Git history, existing tags and the local folder name keep the old name.
 - **Status:** Accepted
+
+### D-017 — Title logo shrinks to fit the screen
+- **Date:** 2026-10-23
+- **Phase:** — (CI fix, between phases 3 and 4)
+- **Context:** The menu uses system fonts only (P01-R05). On the Ubuntu CI runner none of the condensed fonts in the stack exist, so the logo falls back to DejaVu Sans and comes out 511 px wide on the 480 px screen; the D-016 e2e check fails.
+- **Decision:** After a screen is mounted, `shrinkToFit()` (`src/ui/shrink-to-fit.ts`) lowers the logo's font size 1 px at a time until it fits its parent. The CSS size (46 px) stays the target on systems that have a condensed font.
+- **Alternatives considered:** A smaller fixed size (shrinks the logo everywhere, and still depends on the widest fallback); bundling a font file (larger download, changes the system-fonts choice).
+- **Consequences:** The logo can be a few pixels smaller on systems without condensed fonts.
+- **Status:** Accepted
+
+### D-018 — Faster CI
+- **Date:** 2026-10-23
+- **Phase:** — (direct request, between phases 3 and 4)
+- **Context:** CI took about 3.7 min, almost all in the `e2e` job (about 3 min of tests at 2 workers, with software WebGL, plus 35 s of install). `check` (about 1.2 min) runs in parallel and was not the bottleneck.
+- **Decision:**
+  - `e2e` runs as a 3-shard matrix (`make e2e E2E_ARGS=--shard=N/3`), each shard on its own runner with the Playwright browser cache (ENG-72). `fullyParallel` is on, so shards are balanced per test rather than per file; the tests share no state.
+  - `check` runs `make install SKIP_BROWSER=1`: unit tests run in Node, so Chromium and its system libraries are not installed there (ENG-71 still goes through `make install`).
+  - The two fixed 1 s waits in the viewer e2e tests became `waitForFrames()` (10 animation frames).
+- **Alternatives considered:** Running `e2e` in the `mcr.microsoft.com/playwright` image to skip `--with-deps`: the image has no `make`, so `apt-get install make` plus the image pull (about 2 GB) costs as much as it saves, and the image tag must be kept in sync with `@playwright/test` by hand. More workers on one runner: software rendering is CPU-bound and the runner has 4 vCPUs.
+- **Consequences:** CI uses about 3× the e2e runner minutes (free for a public repository). Each failed shard uploads its own `playwright-report-N` artefact.
+- **Status:** Accepted

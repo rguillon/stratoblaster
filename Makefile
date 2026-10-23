@@ -6,13 +6,17 @@
 NPX := npx --no-install
 # CI also needs the system libraries for Chromium (requires sudo).
 PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
+# `make install SKIP_BROWSER=1` skips Chromium: jobs without e2e, or the Playwright image that has it.
+SKIP_BROWSER ?=
+# Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--shard=1/3`.
+E2E_ARGS ?=
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 install: ## Install dependencies, git hooks and Playwright Chromium
 	npm ci
-	$(NPX) playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium
+	$(if $(SKIP_BROWSER),,$(NPX) playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium)
 
 dev: ## Start the Vite dev server with HMR on port 5173
 	$(NPX) vite
@@ -47,7 +51,7 @@ e2e-build:
 	$(NPX) vite build --mode e2e
 
 e2e: e2e-build ## Build in e2e mode, serve it and run Playwright
-	$(NPX) playwright test
+	$(NPX) playwright test $(E2E_ARGS)
 
 e2e-ui: e2e-build ## Playwright UI mode
 	$(NPX) playwright test --ui
