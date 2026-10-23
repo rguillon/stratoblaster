@@ -14,6 +14,8 @@ export const INDUSTRIAL_HALF = 12;
 type Rgb = readonly [number, number, number];
 
 interface Hall {
+  /** Half the side of the square the whole complex fits in. */
+  readonly half: number;
   readonly x: number;
   readonly z: number;
   readonly w: number;
@@ -70,13 +72,14 @@ function chimneys(s: SolidBuilder, l: SolidBuilder, hall: Hall, random: Random):
 /** Tanks, an annex or a pipe rack in the strip left beside the hall. */
 function sideStrip(s: SolidBuilder, l: SolidBuilder, hall: Hall, random: Random): void {
   const x0 = hall.x + hall.w / 2 + 1;
-  const width = INDUSTRIAL_HALF - x0;
+  const { half } = hall;
+  const width = half - x0;
   if (width < 2.5) return;
   const kind = Math.floor(random() * 3);
   const xc = x0 + width / 2;
   if (kind === 0) {
-    const r = Math.min(width / 2, 3.5);
-    for (let zc = -INDUSTRIAL_HALF + r; zc + r <= INDUSTRIAL_HALF; zc += 2 * r + 0.8) {
+    const r = Math.min(width / 2, (3.5 * half) / INDUSTRIAL_HALF);
+    for (let zc = -half + r; zc + r <= half; zc += 2 * r + 0.8) {
       s.lathe(
         [
           [r, 0],
@@ -97,28 +100,35 @@ function sideStrip(s: SolidBuilder, l: SolidBuilder, hall: Hall, random: Random)
       C.roof,
     );
     l.box([0.3, 1, hall.d * 0.5], pick(random, DOOR_LIGHTS), {
-      at: [INDUSTRIAL_HALF + 0.05, 2, hall.z],
+      at: [half + 0.05, 2, hall.z],
     });
   } else {
-    for (const zc of [-8, 0, 8]) s.box([0.6, 7, 0.6], C.metalDark, { at: [xc, 0, zc] });
-    for (const y of [6, 7.2])
-      s.box([0.8, 0.8, 18], pick(random, [C.rust, C.metal]), { at: [xc, y, 0] });
+    for (const zc of [-0.66, 0, 0.66]) {
+      s.box([0.6, 7, 0.6], C.metalDark, { at: [xc, 0, zc * half] });
+    }
+    for (const y of [6, 7.2]) {
+      s.box([0.8, 0.8, 1.5 * half], pick(random, [C.rust, C.metal]), { at: [xc, y, 0] });
+    }
   }
 }
 
-/** One of the industrial complexes, decided by `seed`. */
-export function buildIndustrialComplex(seed: number): PropGeometry {
+/**
+ * One of the industrial complexes, decided by `seed`, fitting in a square of half side `half`
+ * (bigger complexes for the industrial zone's blocks, phase 4 review).
+ */
+export function buildIndustrialComplex(seed: number, half = INDUSTRIAL_HALF): PropGeometry {
   const random = createRng(seed * 7919 + 13);
   const s = new SolidBuilder();
   const l = new SolidBuilder();
-  const w = randomIn(random, [12, 20]);
-  const d = randomIn(random, [10, 2 * INDUSTRIAL_HALF - 2]);
+  const w = randomIn(random, [half, 1.7 * half]);
+  const d = randomIn(random, [0.8 * half, 2 * half - 2]);
   const hall: Hall = {
-    x: -INDUSTRIAL_HALF + w / 2,
-    z: randomIn(random, [-INDUSTRIAL_HALF + d / 2, INDUSTRIAL_HALF - d / 2]),
+    half,
+    x: -half + w / 2,
+    z: randomIn(random, [-half + d / 2, half - d / 2]),
     w,
     d,
-    h: randomIn(random, [6, 12]),
+    h: randomIn(random, [6, 6 + half / 2]),
   };
   s.box([hall.w, hall.h, hall.d], pick(random, WALLS), { at: [hall.x, 0, hall.z] }, C.roof);
   roof(s, hall, random);

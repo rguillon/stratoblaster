@@ -57,23 +57,29 @@ function crown(s: SolidBuilder, l: SolidBuilder, top: Top, random: Random): void
   }
 }
 
-/** One of the city buildings, decided by `seed`. */
-export function buildCityBuilding(seed: number): PropGeometry {
+/**
+ * One of the city buildings, decided by `seed`, fitting in a square of half side `half`. Bigger
+ * ones (phase 4 review) stand on a low, wide podium that fills their block, with towers on it.
+ */
+export function buildCityBuilding(seed: number, half = CITY_HALF): PropGeometry {
   const random = createRng(seed * 104729 + 7);
   const s = new SolidBuilder();
   const l = new SolidBuilder();
   const facade = pick(random, FACADES);
   const windows = pick(random, WINDOWS);
-  const tiers = 1 + Math.floor(random() * 3);
-  const base = randomIn(random, [11, 2 * CITY_HALF]);
+  const large = half > CITY_HALF;
+  const tiers = large ? 2 + Math.floor(random() * 2) : 1 + Math.floor(random() * 3);
+  const base = randomIn(random, [1.2 * half, 2 * half]);
   let size = base;
   let y = 0;
   for (let t = 0; t < tiers; t++) {
-    const height = randomIn(random, [12, 30]);
-    s.box([size, height, size * 0.85], facade, { at: [0, y, 0] }, C.roof);
+    const podium = large && t === 0;
+    const height = podium ? randomIn(random, [8, 14]) : randomIn(random, [12, 30]);
+    s.box([size, height, size * 0.85], podium ? C.concreteDark : facade, { at: [0, y, 0] }, C.roof);
     windowBands(l, [size, size * 0.85], [y + 3, y + height - 2], 6, 2, windows);
     y += height;
-    if (t < tiers - 1) size *= randomIn(random, [0.6, 0.8]);
+    if (t < tiers - 1)
+      size *= podium ? randomIn(random, [0.35, 0.6]) : randomIn(random, [0.6, 0.8]);
   }
   // Now and then a neon sign over the entrance.
   if (random() < 0.5) {

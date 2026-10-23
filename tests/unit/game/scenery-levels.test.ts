@@ -83,14 +83,12 @@ describe('Level Zero', () => {
     expect(['conifer', 'broadleaf-tree', 'bush'].every((k) => green.has(k))).toBe(true);
     expect(green.has('dead-tree')).toBe(false);
     const industrial = kindsIn(industry);
-    expect(industrial.has('container-yard') && industrial.has('refinery')).toBe(true);
+    expect(industrial.has('industrial-plant-1') || industrial.has('industrial-plant-2')).toBe(true);
+    expect([...industrial].some((k) => k.startsWith('industrial-works'))).toBe(true);
     expect(industrial.has('glass-tower')).toBe(false);
     const downtown = kindsIn(city);
-    expect(
-      ['glass-tower', 'office-block', 'apartment-block', 'stepped-tower'].every((k) =>
-        downtown.has(k),
-      ),
-    ).toBe(true);
+    expect([...downtown].some((k) => k.startsWith('city-block'))).toBe(true);
+    expect([...downtown].some((k) => k.startsWith('city-tower'))).toBe(true);
     expect(downtown.has('factory')).toBe(false);
     // Dense: many more buildings per unit of length in the city than on the plains.
     const count = (zMin: number, zMax: number) =>

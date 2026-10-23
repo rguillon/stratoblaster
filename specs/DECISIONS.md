@@ -333,3 +333,17 @@
   - Shadows cover a fixed 1600-unit square around the view; beyond it there are none (it covers what the camera sees).
   - Model count is now 37: 21 hand-made and 16 made of parts.
 - **Status:** Accepted
+
+### D-025 — Bigger district buildings, square plans and fallback kinds
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer found the blocks of the industrial zone and the city centre empty.
+- **Decision:**
+  - The generators made of parts take a half-side (`buildIndustrialComplex(seed, half)`, `buildCityBuilding(seed, half)`). `game/config/building-families.ts` lists 6 families of 8 variants: industrial complexes (half-side 12), works (18) and plants (30); city buildings (9), towers (14) and blocks (24, a wide podium with towers on it).
+  - The industrial zone uses a `heavy-industry` group, mostly plants and works. The city group is mostly blocks and towers.
+  - `PropKindRule.frontage` gives a square plan. Such a building stands right at the street setback, keeps that distance from other roads, and takes the box around its turned square for overlap tests. Other kinds still take the box around their footprint circle.
+  - When a slot's drawn kind does not fit, it tries up to 3 smaller kinds of its group, from the largest down.
+  - Slots are every 24 units instead of 34; the wasteland building densities were scaled by 0.7.
+- **Alternatives considered:** Filling the inside of the blocks with yards or parking lots; that was not asked for, and might suit a later level.
+- **Consequences:** The industrial zone draws about 550k triangles, the heaviest part of the level, to be checked against ENG-101 on real hardware. Quality presets could lower the density there.
+- **Status:** Accepted

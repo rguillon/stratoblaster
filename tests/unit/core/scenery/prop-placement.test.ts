@@ -64,6 +64,50 @@ describe('PropPlacer', () => {
     });
   });
 
+  it('P04 review: square-plan buildings stand at the setback and pack without overlapping', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const square = { id: 'block', weight: 1, footprint: 8, frontage: 5, scale: [1, 1] } as const;
+    const level: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [
+        { ...flat, seconds: 20, streets: { rows: [30, 40], columns: [30, 40], links: 1 } },
+      ],
+      props: { ...SAMPLE_SCENERY_LEVEL.props, groups: [{ id: 'g', weight: 1, kinds: [square] }] },
+    };
+    const p = placer(level);
+    const blocks = p.place(AREA).filter((b) => b.kind === 'block');
+    expect(blocks.length).toBeGreaterThan(20);
+    for (const b of blocks) {
+      // The front of the square is at the setback from its street's edge.
+      expect(p.roads.edgeDistance(b.x, b.z)).toBeCloseTo(5 + p.roads.setback, 5);
+    }
+    blocks.forEach((a, i) => {
+      for (const b of blocks.slice(i + 1)) {
+        const apart = Math.max(Math.abs(a.x - b.x), Math.abs(a.z - b.z));
+        expect(apart).toBeGreaterThanOrEqual(10 - 1e-6);
+      }
+    });
+  });
+
+  it('P04 review: a slot whose building does not fit tries a smaller kind of the group', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const huge = { id: 'block', weight: 1, footprint: 400, scale: [1, 1] } as const;
+    const small = { id: 'stick', weight: 0, footprint: 4, scale: [1, 1] } as const;
+    const level: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [{ ...flat, seconds: 20, trees: [] }],
+      props: {
+        ...SAMPLE_SCENERY_LEVEL.props,
+        groups: [{ id: 'g', weight: 1, kinds: [huge, small] }],
+      },
+    };
+    const props = placer(level).place(AREA);
+    expect(props.length).toBeGreaterThan(0);
+    expect(props.every((p) => p.kind === 'stick')).toBe(true);
+  });
+
   it('P04 review: a section may allow only some building groups and tree kinds', () => {
     const level: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,

@@ -29,14 +29,27 @@ const variants = (kind: string) => Array.from({ length: 8 }, (_, i) => `${kind}-
 
 describe('prop models', () => {
   it('P04-R04 + review: industrial, technical / scientific, homes, city buildings and trees', () => {
+    const ids = (group: string) =>
+      LEVEL_ZERO.props.groups.find((g) => g.id === group)?.kinds.map((k) => k.id) ?? [];
     for (const [group, kinds] of Object.entries(PROP_GROUPS)) {
-      const rule = LEVEL_ZERO.props.groups.find((g) => g.id === group);
-      const extra: Partial<Record<string, string[]>> = {
-        industrial: variants('industrial-complex'),
-        city: variants('city-building'),
-      };
-      expect(rule?.kinds.map((k) => k.id)).toEqual([...kinds, ...(extra[group] ?? [])]);
+      expect(ids(group)).toEqual(expect.arrayContaining(kinds));
     }
+    expect(ids('industrial')).toEqual(expect.arrayContaining(variants('industrial-complex')));
+    // Review: the industrial zone and the city centre are filled by large buildings made of parts.
+    expect(ids('heavy-industry')).toEqual(
+      expect.arrayContaining([
+        ...variants('industrial-plant'),
+        ...variants('industrial-works'),
+        ...variants('industrial-complex'),
+      ]),
+    );
+    expect(ids('city')).toEqual(
+      expect.arrayContaining([
+        ...variants('city-block'),
+        ...variants('city-tower'),
+        ...variants('city-building'),
+      ]),
+    );
     expect(LEVEL_ZERO.props.trees.map((t) => t.id)).toEqual([
       'dead-tree',
       'forked-tree',
@@ -44,8 +57,17 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 21 hand-made models, plus 8 industrial complexes and 8 city buildings made of parts.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(37);
+    // 21 hand-made models, plus 6 families of 8 buildings made of parts.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8);
+  });
+
+  it('P04 review: buildings with a square plan fit in it', () => {
+    for (const kind of LEVEL_ZERO.props.groups.flatMap((g) => g.kinds)) {
+      if (kind.frontage === undefined) continue;
+      const positions = PROP_MODELS[kind.id]?.().structure.positions ?? [];
+      const across = positions.filter((_, i) => i % 3 !== 1).map(Math.abs);
+      expect(Math.max(...across), kind.id).toBeLessThanOrEqual(kind.frontage + 1);
+    }
   });
 
   it.each(Object.entries(PROP_MODELS))(
@@ -74,7 +96,14 @@ describe('prop models', () => {
   });
 
   it('P04 review: buildings made of parts differ from one variant to the next', () => {
-    for (const kind of ['industrial-complex', 'city-building']) {
+    for (const kind of [
+      'industrial-complex',
+      'industrial-works',
+      'industrial-plant',
+      'city-building',
+      'city-tower',
+      'city-block',
+    ]) {
       const shapes = new Set(
         variants(kind).map((id) =>
           JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),

@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect, waitForFrames } from './fixtures';
 
 test.describe('P04: level_zero/ page', () => {
@@ -35,26 +36,40 @@ test.describe('P04: level_zero/ page', () => {
     await expect(page.locator('.scenery-end')).toBeHidden();
   });
 
-  test('P04-R01, P04-R02 + review: every section renders, with and without the sea', async ({
-    page,
-  }) => {
+  /** Seeks to each `[time, name]` and checks the section shown, letting a few frames render. */
+  async function visit(
+    page: Page,
+    sections: readonly (readonly [string, string])[],
+  ): Promise<void> {
     await page.keyboard.press('p');
-    const sections = [
-      ['47', 'mountains'],
-      ['65', 'canyon'],
-      ['95', 'open sea'],
-      ['122', 'meadows'],
-      ['144', 'industrial zone'],
-      ['166', 'city centre'],
-    ] as const;
     for (const [time, name] of sections) {
       await page.locator('.scenery-time-slider').fill(time);
       await expect(page.locator('.scenery-section')).toHaveText(`Section: ${name}`);
       await waitForFrames(page, 3);
     }
+  }
+
+  test('P04-R01, P04-R02: the wasteland sections render, with and without the sea', async ({
+    page,
+  }) => {
+    await visit(page, [
+      ['47', 'mountains'],
+      ['65', 'canyon'],
+      ['95', 'open sea'],
+    ]);
     await page.keyboard.press('s');
     await expect(page.locator('.scenery-sea')).toHaveAttribute('aria-pressed', 'false');
     await waitForFrames(page, 3);
+  });
+
+  test('P04 review: the meadows, the industrial zone and the city centre render', async ({
+    page,
+  }) => {
+    await visit(page, [
+      ['122', 'meadows'],
+      ['144', 'industrial zone'],
+      ['166', 'city centre'],
+    ]);
   });
 
   test('P04-R03: cloud layers switch off and change intensity and opacity', async ({ page }) => {

@@ -56,10 +56,15 @@ function inside(area: GroundArea, x: number, z: number): boolean {
 }
 
 /** A building with the radius of ground it takes. */
+/** A building with the half-extents (X, Z) of the box of ground it takes. */
 interface Building {
   readonly placement: PropPlacement;
-  readonly footprint: number;
+  readonly halfX: number;
+  readonly halfZ: number;
 }
+
+/** Smaller kinds a building slot tries when its first choice does not fit. */
+const FALLBACKS = 3;
 
 /** Bucket size of the index of placed buildings. */
 const BUILDING_BUCKET = 32;
@@ -99,10 +104,10 @@ export class PropPlacer {
       (a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'),
     );
     for (const slot of mainFirst) {
-      const building = this.#building(slot);
-      if (building && this.#free(building.placement.x, building.placement.z, building.footprint)) {
-        this.#occupy(building);
-      }
+      const building = this.#candidates(slot)
+        .map((kind) => this.#fit(slot, kind))
+        .find((b) => b !== undefined && this.#free(b));
+      if (building) this.#occupy(building);
     }
   }
 
@@ -124,15 +129,18 @@ export class PropPlacer {
     return hash2D(i, j, this.seed * 31 + draw);
   }
 
-  /** Whether a circle of radius `radius` at (`x`, `z`) keeps clear of the placed buildings. */
-  #free(x: number, z: number, radius: number): boolean {
+  /** Whether the ground box of `area` keeps `setback` clear of the placed buildings. */
+  #free(area: { placement: { x: number; z: number }; halfX: number; halfZ: number }): boolean {
+    const { x, z } = area.placement;
+    const gap = this.roads.setback;
     const bx = Math.floor(x / BUILDING_BUCKET);
     const bz = Math.floor(z / BUILDING_BUCKET);
     for (let i = bx - 2; i <= bx + 2; i++) {
       for (let j = bz - 2; j <= bz + 2; j++) {
         for (const b of this.#occupied.get(`${String(i)},${String(j)}`) ?? []) {
-          const gap = Math.hypot(b.placement.x - x, b.placement.z - z) - b.footprint - radius;
-          if (gap < this.roads.setback) return false;
+          const apartX = Math.abs(b.placement.x - x) >= b.halfX + area.halfX + gap;
+          const apartZ = Math.abs(b.placement.z - z) >= b.halfZ + area.halfZ + gap;
+          if (!apartX && !apartZ) return false;
         }
       }
     }
@@ -147,27 +155,45 @@ export class PropPlacer {
     else this.#occupied.set(key, [building]);
   }
 
-  #building(slot: RoadSlot): Building | undefined {
+  /**
+   * The kinds a slot tries in turn: none when the density draw says no building; else the kind
+   * drawn in the area's group, then the smaller kinds of that group from the largest down
+   * (at most {@link FALLBACKS}), so gaps too small for the first choice still get a building.
+   */
+  #candidates(slot: RoadSlot): PropKindRule[] {
     const r = (draw: number): number => this.#random(slot.road.index, slot.index, draw);
     const { section } = this.field.sectionAt(slot.z);
-    if (r(Draw.Building) >= section.buildingDensity) return undefined;
+    if (r(Draw.Building) >= section.buildingDensity) return [];
     const f = this.rules.zoneFrequency;
     const zone = (this.#zones(slot.x * f, slot.z * f) + 1) / 2;
     const groups = allowed(this.rules.groups, section.groups);
     const group = weighted(groups, Math.min(0.999999, Math.max(0, zone)));
     const kind = group && weighted(group.kinds, r(Draw.Kind));
-    if (!kind) return undefined;
-    const offset = slot.road.width / 2 + this.roads.setback + kind.footprint;
+    if (!group || !kind) return [];
+    const smaller = group.kinds
+      .filter((k) => k.footprint < kind.footprint)
+      .sort((a, b) => b.footprint - a.footprint)
+      .slice(0, FALLBACKS);
+    return [kind, ...smaller];
+  }
+
+  /** `kind` standing by `slot`, or undefined when the roads or the ground do not allow it. */
+  #fit(slot: RoadSlot, kind: PropKindRule): Building | undefined {
+    const scale = this.#scale(kind, this.#random(slot.road.index, slot.index, Draw.Scale));
+    // A square plan stands at the setback; anything else keeps its footprint circle clear.
+    const reach = kind.frontage === undefined ? kind.footprint : kind.frontage * scale;
+    const offset = slot.road.width / 2 + this.roads.setback + reach;
     const x = slot.x + slot.nx * offset;
     const z = slot.z + slot.nz * offset;
-    const clearance = kind.footprint + this.roads.setback;
-    if (this.roads.edgeDistance(x, z, slot.road) < clearance) return undefined;
+    if (this.roads.edgeDistance(x, z, slot.road) < reach + this.roads.setback) return undefined;
     const y = this.#standingHeight(x, z, kind.footprint, this.rules.maxSlope);
     if (y === undefined) return undefined;
     // The model's front (-Z) faces the road.
     const rotation = Math.atan2(slot.nx, slot.nz);
-    const placement = { kind: kind.id, x, y, z, rotation, scale: this.#scale(kind, r(Draw.Scale)) };
-    return { placement, footprint: kind.footprint };
+    // Box of ground taken: the turned square, or the box around the footprint circle.
+    const turned = Math.abs(Math.cos(rotation)) + Math.abs(Math.sin(rotation));
+    const half = kind.frontage === undefined ? kind.footprint : kind.frontage * scale * turned;
+    return { placement: { kind: kind.id, x, y, z, rotation, scale }, halfX: half, halfZ: half };
   }
 
   #trees(i: number, j: number): PropPlacement[] {
@@ -184,7 +210,8 @@ export class PropPlacer {
       const z = (j + r(1)) * cellSize;
       const kind = weighted(trees, r(2));
       if (!kind || this.roads.edgeDistance(x, z) < treeClearance + kind.footprint) continue;
-      if (!this.#free(x, z, kind.footprint)) continue;
+      const ground = kind.footprint;
+      if (!this.#free({ placement: { x, z }, halfX: ground, halfZ: ground })) continue;
       const y = this.#standingHeight(x, z, kind.footprint, this.rules.treeMaxSlope);
       if (y !== undefined) {
         placements.push({

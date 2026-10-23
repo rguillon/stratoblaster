@@ -70,6 +70,12 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Create bigger props for the factories and the city, the blocks look empty. *Fixed (D-025):*
+  - *The generators made of parts now take a size. They add two families for each district: industrial works (half-side 18) and plants (30), and city towers (14) and blocks (24, a wide podium with towers on it). That makes 69 models.*
+  - *The industrial zone has its own building group, made mostly of plants and works. The city's group is made mostly of blocks and towers.*
+  - *Buildings with a square plan (`frontage`) stand right at the street setback and pack edge to edge, using a box overlap test instead of a circle around their diagonal.*
+  - *A slot whose building does not fit tries up to 3 smaller kinds of its group.*
+  - *Slots are every 24 units instead of 34; the wasteland densities were scaled by 0.7 to keep their look.*
 - [x] In the factory area, remove the vertical roads and horizontal paths: only straight road segments that merge into each other, same for the city. Create more diverse factory and building parts. Make the buildings less shiny, they look like they are blinking when the ship advances. *Fixed (D-024):*
   - *The winding roads and the paths now stay out of the industrial zone and the city centre: they turn off the screen before them.*
   - *The districts get a network of straight streets on a rectilinear grid. Rows are 45–90 apart and columns 50–110 apart in the industrial zone (60 % of links built: a maze); in the city they are a regular 62–66 × 72–76 grid (92 % built). The first and last rows of a section are full streets.*
@@ -171,6 +177,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (meadows, industrial zone, city centre): typecheck ✔, build ✔, e2e 32 passed (the section e2e test now also visits the 3 new sections).
 Review fix (roads off screen, junctions): typecheck ✔, build ✔, e2e 32 passed.
@@ -212,7 +219,7 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
    | 3:00 | — | The level stops with "Level end" (P04-R06) |
 5. P04-R07: roads (dark) and paths (light dust) wind across the map, and every building stands along one, facing it. No road starts or ends on screen. Paths flare where they meet a road. N gives another road network.
 6. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
-7. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles in most sections, about 300k in the industrial zone and about 370k in the city centre (dense buildings with window bands, all thin-instanced).
+7. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles in most sections, about 550k in the industrial zone and about 390k in the city centre (dense buildings made of parts, all thin-instanced). This is the main thing to check against 60 FPS on real hardware.
 
 ### Deviations from spec
 - None from the requirements. The interpretations agreed in the questions (Q1–Q11) are listed in D-020.

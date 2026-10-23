@@ -115,10 +115,16 @@ export interface PropKindRule {
   /** Key of the prop's model in the game's view. */
   readonly id: string;
   readonly weight: number;
-  /** Radius of ground the prop stands on; it must be about flat. */
+  /** Radius of ground the prop stands on (at its largest scale); it must be about flat. */
   readonly footprint: number;
   /** Random scale range. */
   readonly scale: readonly [number, number];
+  /**
+   * Half the side of the square the model fits in, at scale 1, for buildings with a square
+   * plan: they then stand right at the street setback and pack against their neighbours, instead
+   * of keeping the whole `footprint` circle clear (phase 4 review).
+   */
+  readonly frontage?: number;
 }
 
 /** Buildings of a group cluster together: a low-frequency noise picks the group of each area. */

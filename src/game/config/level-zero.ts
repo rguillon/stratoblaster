@@ -4,6 +4,13 @@ import type {
   SceneryLevel,
   TerrainSection,
 } from '../../core/scenery/scenery-level';
+import {
+  CITY_VARIANTS,
+  INDUSTRIAL_VARIANTS,
+  PART_FAMILIES,
+  variantId,
+  type PartFamily,
+} from './building-families';
 
 /*
  * Level Zero (P04): a test level that shows every terrain tool. Heights in world units
@@ -41,16 +48,10 @@ export const PROP_IDS = {
   bush: 'bush',
 } as const;
 
-/** Variants of the industrial complexes and city buildings assembled from parts (review). */
-export const INDUSTRIAL_VARIANTS = 8;
-export const CITY_VARIANTS = 8;
-/** Id of variant `n` (1-based) of a building assembled from parts. */
-export const variantId = (kind: 'industrial-complex' | 'city-building', n: number): string =>
-  `${kind}-${String(n)}`;
-
 /** Building groups of the wasteland sections, and of the city centre. */
 const GROUP_IDS = {
   industrial: 'industrial',
+  heavyIndustry: 'heavy-industry',
   science: 'science',
   homes: 'homes',
   city: 'city',
@@ -63,12 +64,18 @@ const GROUP_IDS = {
 const BUILDING_SCALE = [0.5, 0.65] as const;
 const TREE_SCALE = [0.45, 0.75] as const;
 
-/** One rule per variant of a building assembled from parts, all with the same footprint. */
-function variants(kind: 'industrial-complex' | 'city-building', count: number, footprint: number) {
+/**
+ * One rule per variant of a family of buildings assembled from parts, each with the `weight`
+ * given: a square plan of the family's half side (`frontage`), and the footprint circle around it
+ * at the largest scale.
+ */
+function variants(family: PartFamily, count: number, weight: number) {
+  const half = PART_FAMILIES[family];
   return Array.from({ length: count }, (_, i) => ({
-    id: variantId(kind, i + 1),
-    weight: 1.5,
-    footprint,
+    id: variantId(family, i + 1),
+    weight,
+    footprint: Math.ceil(half * Math.SQRT2 * BUILDING_SCALE[1] * 10) / 10,
+    frontage: half,
     scale: BUILDING_SCALE,
   }));
 }
@@ -91,7 +98,19 @@ const PROP_RULES: PropRules = {
         { id: PROP_IDS.coolingTower, weight: 1, footprint: 9.5, scale: BUILDING_SCALE },
         { id: PROP_IDS.containerYard, weight: 2, footprint: 8.5, scale: BUILDING_SCALE },
         { id: PROP_IDS.refinery, weight: 2, footprint: 7.5, scale: BUILDING_SCALE },
-        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 12),
+        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1.5),
+      ],
+    },
+    {
+      // Only in the industrial zone: mostly large plants that fill its blocks (review).
+      id: GROUP_IDS.heavyIndustry,
+      weight: 1,
+      kinds: [
+        ...variants('industrial-plant', INDUSTRIAL_VARIANTS, 6),
+        ...variants('industrial-works', INDUSTRIAL_VARIANTS, 3),
+        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1),
+        { id: PROP_IDS.containerYard, weight: 0.5, footprint: 8.5, scale: BUILDING_SCALE },
+        { id: PROP_IDS.refinery, weight: 0.5, footprint: 7.5, scale: BUILDING_SCALE },
       ],
     },
     {
@@ -117,11 +136,14 @@ const PROP_RULES: PropRules = {
       id: GROUP_IDS.city,
       weight: 1,
       kinds: [
+        // Mostly large blocks that fill the city's blocks (review).
+        ...variants('city-block', CITY_VARIANTS, 6),
+        ...variants('city-tower', CITY_VARIANTS, 3),
+        ...variants('city-building', CITY_VARIANTS, 1),
         { id: PROP_IDS.glassTower, weight: 2, footprint: 7, scale: BUILDING_SCALE },
-        { id: PROP_IDS.officeBlock, weight: 3, footprint: 9, scale: BUILDING_SCALE },
-        { id: PROP_IDS.apartmentBlock, weight: 3, footprint: 10, scale: BUILDING_SCALE },
+        { id: PROP_IDS.officeBlock, weight: 2, footprint: 9, scale: BUILDING_SCALE },
+        { id: PROP_IDS.apartmentBlock, weight: 2, footprint: 10, scale: BUILDING_SCALE },
         { id: PROP_IDS.steppedTower, weight: 2, footprint: 8.5, scale: BUILDING_SCALE },
-        ...variants('city-building', CITY_VARIANTS, 8.5),
       ],
     },
   ],
@@ -137,7 +159,7 @@ const PROP_RULES: PropRules = {
 
 /**
  * P04-R07: two winding roads along the level, and paths branching off them every 260-560 units
- * out to the screen edge. Buildings stand only along them, every 34 units on both sides. Roads
+ * out to the screen edge. Buildings stand only along them, in slots every 24 units on both sides. Roads
  * start and end beyond X = ±420: the camera sees about ±390 at most (phase 4 review).
  */
 const ROAD_RULES: RoadRules = {
@@ -155,7 +177,7 @@ const ROAD_RULES: RoadRules = {
   maxSlope: 0.5,
   minRun: 6,
   step: 8,
-  slotSpacing: 34,
+  slotSpacing: 24,
   setback: 2,
 };
 
@@ -174,7 +196,7 @@ const SECTIONS: readonly TerrainSection[] = [
     name: 'plains',
     seconds: 14,
     relief: smooth(22, 14, 520, 4),
-    buildingDensity: 0.4,
+    buildingDensity: 0.28,
     treeDensity: 0.6,
     ...WASTELAND,
   },
@@ -182,7 +204,7 @@ const SECTIONS: readonly TerrainSection[] = [
     name: 'hills',
     seconds: 12,
     relief: smooth(40, 55, 420, 5),
-    buildingDensity: 0.15,
+    buildingDensity: 0.105,
     treeDensity: 0.8,
     ...WASTELAND,
   },
@@ -197,7 +219,7 @@ const SECTIONS: readonly TerrainSection[] = [
       height: 60,
       roughness: 1.5,
     },
-    buildingDensity: 0.6,
+    buildingDensity: 0.42,
     treeDensity: 0.3,
     ...WASTELAND,
   },
@@ -212,7 +234,7 @@ const SECTIONS: readonly TerrainSection[] = [
       style: 'ridged',
       maxHeight: LEVEL_ZERO_MAX_HEIGHT,
     },
-    buildingDensity: 0.05,
+    buildingDensity: 0.035,
     treeDensity: 0.25,
     ...WASTELAND,
   },
@@ -226,7 +248,7 @@ const SECTIONS: readonly TerrainSection[] = [
       wall: 120,
       floor: -12,
     },
-    buildingDensity: 0.15,
+    buildingDensity: 0.105,
     treeDensity: 0.3,
     ...WASTELAND,
   },
@@ -240,7 +262,7 @@ const SECTIONS: readonly TerrainSection[] = [
       width: 240,
       seabed: -55,
     },
-    buildingDensity: 0.4,
+    buildingDensity: 0.28,
     treeDensity: 0.4,
     ...WASTELAND,
   },
@@ -248,7 +270,7 @@ const SECTIONS: readonly TerrainSection[] = [
     name: 'open sea',
     seconds: 14,
     relief: smooth(-28, 75, 520, 5),
-    buildingDensity: 0.25,
+    buildingDensity: 0.175,
     treeDensity: 0.5,
     ...WASTELAND,
   },
@@ -262,7 +284,7 @@ const SECTIONS: readonly TerrainSection[] = [
       width: 240,
       seabed: -55,
     },
-    buildingDensity: 0.4,
+    buildingDensity: 0.28,
     treeDensity: 0.4,
     surface: { lush: 0.5 },
     trees: [PROP_IDS.deadTree, PROP_IDS.bush],
@@ -273,7 +295,7 @@ const SECTIONS: readonly TerrainSection[] = [
     name: 'meadows',
     seconds: 22,
     relief: smooth(30, 25, 450, 4),
-    buildingDensity: 0.3,
+    buildingDensity: 0.21,
     treeDensity: 1,
     surface: { lush: 1 },
     trees: [PROP_IDS.conifer, PROP_IDS.broadleaf, PROP_IDS.bush],
@@ -289,7 +311,7 @@ const SECTIONS: readonly TerrainSection[] = [
     surface: { paved: 0.7 },
     streets: { rows: [45, 90], columns: [50, 110], links: 0.6 },
     trees: [PROP_IDS.deadTree],
-    groups: [GROUP_IDS.industrial],
+    groups: [GROUP_IDS.heavyIndustry],
   },
   {
     // Phase 4 review: the city centre, a regular grid of straight streets and towers.
