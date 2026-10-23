@@ -7,6 +7,11 @@ import type { CloudLayerLook } from './scenery-look';
 
 /** Group of all but the clouds, drawn next: a glow composed after it stays under them. */
 export const BELOW_CLOUDS_GROUP = 0;
+/**
+ * Group of what flies above the clouds (the ships), drawn last and keeping the depth: neither the
+ * clouds nor a glow composed after the ground draw over it (phase 4 review).
+ */
+export const ABOVE_CLOUDS_GROUP = BELOW_CLOUDS_GROUP + 2;
 
 /** A cloud layer's live settings (P04-R03). */
 export interface CloudLayerState {

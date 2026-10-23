@@ -49,14 +49,15 @@ test.describe('P04: level_zero/ page', () => {
     }
   }
 
-  test('P04-R01, P04-R02: the wasteland sections render, with and without the sea', async ({
-    page,
-  }) => {
+  test('P04-R01: the mountains and the canyon render', async ({ page }) => {
     await visit(page, [
       ['47', 'mountains'],
       ['65', 'canyon'],
-      ['95', 'open sea'],
     ]);
+  });
+
+  test('P04-R02: the open sea renders, with and without the sea', async ({ page }) => {
+    await visit(page, [['95', 'open sea']]);
     await page.keyboard.press('s');
     await expect(page.locator('.scenery-sea')).toHaveAttribute('aria-pressed', 'false');
     await waitForFrames(page, 3);

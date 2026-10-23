@@ -14,7 +14,11 @@ import { stepModelAnimations } from '../render/model-animation';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
 import type { SceneryLook } from '../render/scenery/scenery-look';
-import { BELOW_CLOUDS_GROUP, SceneryStage } from '../render/scenery/scenery-stage';
+import {
+  ABOVE_CLOUDS_GROUP,
+  BELOW_CLOUDS_GROUP,
+  SceneryStage,
+} from '../render/scenery/scenery-stage';
 import { SceneryViewerPanel, type SceneryViewerSettings } from '../ui/scenery-viewer-panel';
 import { StatsTile } from '../ui/stats-tile';
 import { SCENERY_VIEWER_CONFIG as CFG } from '../config/scenery-viewer';
@@ -234,6 +238,8 @@ class SceneryViewer {
       holder.parent = ship;
       ship.scaling.setAll(this.game.view.playerShipScale);
     }
+    // Drawn after the ground's glow and the clouds, which it flies above.
+    for (const mesh of ship.getChildMeshes()) mesh.renderingGroupId = ABOVE_CLOUDS_GROUP;
     return ship;
   }
 

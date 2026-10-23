@@ -70,6 +70,7 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] The car lights appear on top of the ship. *Fixed:* the glow of the lights is composed after the ground's rendering group, and the ship was in that group, so the glow was added over it. Ships now draw in their own last group (`ABOVE_CLOUDS_GROUP`, keeping the depth), after the glow and the clouds they fly above. A game view that adds ships over a scenery must put them in that group too.
 - [x] Most white-topped square buildings in the city flicker: two surfaces fight at the same height. *Fixed:* these were the plazas (white paving 0.4 thick) and the ground deck of the parking garages (0.6). Under a block the ground is uneven by about 0.6 over 30, so it came through their tops. Plazas and parking garages now stand on a solid base 3 high, and tower bases are at least 3 high (was 2).
 - [x] Reduce the polygon count on the city and the factory. *Fixed (D-031):* in view, the industrial zone (2:26) went from about 984k to 663k triangles (−33 %) and the city centre (2:48) from about 1.26 M to 827k (−34 %).
   - *Props are drawn only near the ground in view: 40 before it and 120 past it, since tall towers show from further. The terrain chunks reached up to about 400 past the view, and every prop in them was drawn. The instances are uploaded again only when the view leaves the range drawn, which is 40 wider each way.*
@@ -231,6 +232,7 @@ Review fix (more industrial variety): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (more city variety): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (fewer polygons): typecheck ✔, build ✔, e2e 34 passed.
 Review fix (plaza and parking flicker): typecheck ✔, build ✔, e2e 34 passed.
+Review fix (glow over the ship): typecheck ✔, build ✔. In the first e2e run, the wasteland sections test went over its timeout (35.4 s); it passed on the next run (35.3 s). It was split in two (mountains and canyon; open sea with and without the sea), with no timeout changed: e2e 35 passed.
 Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.

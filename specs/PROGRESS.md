@@ -56,3 +56,4 @@
 - 2026-10-23 — 4 — Review fix: more varied city (14 kinds of lots, more facade, window and roof colours); light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: about a third fewer polygons in the industrial zone and the city (D-031); light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: city plazas and parking garages no longer flicker with the ground; light verification green (typecheck, build, 34 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: the glow of the car lights no longer shows over the ship; light verification green (typecheck, build, 35 e2e); still awaiting review.

@@ -19,6 +19,7 @@ import { checkPropModels, PropField } from './prop-field';
 import { TrafficLayer } from './traffic-layer';
 import type { SceneryKit, SceneryKitFactory } from './scenery-kit';
 import {
+  ABOVE_CLOUDS_GROUP,
   BELOW_CLOUDS_GROUP,
   buildCloudLayer,
   updateCloudLayer,
@@ -66,7 +67,7 @@ export interface SceneryStageOptions {
   readonly config: SceneryStageConfig;
 }
 
-export { BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
+export { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 
 /** Lowest ground of a level: its sea, or the lowest relief. */
 function lowestGround(level: SceneryLevel): number {
@@ -139,7 +140,9 @@ export class SceneryStage {
     this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
     this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
     this.#seaEnabled = this.#sea !== undefined;
-    scene.setRenderingAutoClearDepthStencil(BELOW_CLOUDS_GROUP + 1, false, false);
+    for (const group of [BELOW_CLOUDS_GROUP + 1, ABOVE_CLOUDS_GROUP]) {
+      scene.setRenderingAutoClearDepthStencil(group, false, false);
+    }
     this.#cloudLayers = look.clouds.map((cloud, i) => this.#buildCloudLayer(cloud, i));
     this.clouds = this.#cloudLayers.map((c) => c.state);
   }
