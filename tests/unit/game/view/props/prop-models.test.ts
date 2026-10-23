@@ -42,11 +42,12 @@ describe('prop models', () => {
     },
   );
 
-  it('P04-R04: each building fits in its footprint, so neighbours do not overlap', () => {
+  it('P04-R04: each building fits in its footprint at its largest scale, so neighbours do not overlap', () => {
     for (const kind of LEVEL_ZERO.props.groups.flatMap((g) => g.kinds)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
-      expect(extent(model().structure).radius, kind.id).toBeLessThanOrEqual(kind.footprint);
+      const largest = extent(model().structure).radius * kind.scale[1];
+      expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint);
     }
   });
 });

@@ -36,3 +36,4 @@
 - 2026-10-23 — 3 — Validated: full gate green (314 unit tests, 99.45% lines, 90.8% branches, 27 e2e); squash-merged into `main`, tagged `v0.03.0`.
 - 2026-10-23 — 4 — Blocked before implementation: 11 questions with proposed defaults in the phase report (entry point, camera angle, tools, duration end, look of terrain/sea/clouds/props).
 - 2026-10-23 — 4 — Implemented with the accepted defaults (D-020): generated terrain, sea, clouds and props, the 35° playfield camera and a 3:00 Level Zero on the `level_zero/` page; light verification green (typecheck, build, 32 e2e); awaiting review.
+- 2026-10-23 — 4 — Review fix: smaller props (buildings ×0.5–0.65, trees ×0.45–0.75, 50-unit grid) so the ground reads as far below the ship; light verification green (typecheck, build, 32 e2e); still awaiting review.

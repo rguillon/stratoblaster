@@ -27,11 +27,16 @@ export const PROP_IDS = {
   forkedTree: 'forked-tree',
 } as const;
 
-const BUILDING_SCALE = [1.1, 1.4] as const;
+/**
+ * Props are drawn small next to the ships so the ground reads as far below the playfield
+ * (phase 4 review). Footprints are the model radius at the largest scale.
+ */
+const BUILDING_SCALE = [0.5, 0.65] as const;
+const TREE_SCALE = [0.45, 0.75] as const;
 
 const PROP_RULES: PropRules = {
-  cellSize: 80,
-  jitter: 0.35,
+  cellSize: 50,
+  jitter: 0.4,
   maxSlope: 0.12,
   treeMaxSlope: 0.45,
   minHeight: 4,
@@ -41,34 +46,34 @@ const PROP_RULES: PropRules = {
       id: 'industrial',
       weight: 4,
       kinds: [
-        { id: PROP_IDS.factory, weight: 3, footprint: 30, scale: BUILDING_SCALE },
-        { id: PROP_IDS.tanks, weight: 2, footprint: 22, scale: BUILDING_SCALE },
-        { id: PROP_IDS.warehouse, weight: 3, footprint: 30, scale: BUILDING_SCALE },
-        { id: PROP_IDS.coolingTower, weight: 1, footprint: 20, scale: BUILDING_SCALE },
+        { id: PROP_IDS.factory, weight: 3, footprint: 15, scale: BUILDING_SCALE },
+        { id: PROP_IDS.tanks, weight: 2, footprint: 10, scale: BUILDING_SCALE },
+        { id: PROP_IDS.warehouse, weight: 3, footprint: 15.5, scale: BUILDING_SCALE },
+        { id: PROP_IDS.coolingTower, weight: 1, footprint: 9.5, scale: BUILDING_SCALE },
       ],
     },
     {
       id: 'science',
       weight: 2,
       kinds: [
-        { id: PROP_IDS.radar, weight: 2, footprint: 12, scale: BUILDING_SCALE },
-        { id: PROP_IDS.antenna, weight: 1, footprint: 9, scale: BUILDING_SCALE },
-        { id: PROP_IDS.observatory, weight: 2, footprint: 15, scale: BUILDING_SCALE },
+        { id: PROP_IDS.radar, weight: 2, footprint: 7, scale: BUILDING_SCALE },
+        { id: PROP_IDS.antenna, weight: 1, footprint: 6, scale: BUILDING_SCALE },
+        { id: PROP_IDS.observatory, weight: 2, footprint: 7, scale: BUILDING_SCALE },
       ],
     },
     {
       id: 'homes',
       weight: 3,
       kinds: [
-        { id: PROP_IDS.cubeHome, weight: 2, footprint: 13, scale: BUILDING_SCALE },
-        { id: PROP_IDS.domeHome, weight: 2, footprint: 13, scale: BUILDING_SCALE },
-        { id: PROP_IDS.stiltPod, weight: 1, footprint: 11, scale: BUILDING_SCALE },
+        { id: PROP_IDS.cubeHome, weight: 2, footprint: 7.5, scale: BUILDING_SCALE },
+        { id: PROP_IDS.domeHome, weight: 2, footprint: 7, scale: BUILDING_SCALE },
+        { id: PROP_IDS.stiltPod, weight: 1, footprint: 5, scale: BUILDING_SCALE },
       ],
     },
   ],
   trees: [
-    { id: PROP_IDS.deadTree, weight: 2, footprint: 3, scale: [0.9, 1.5] },
-    { id: PROP_IDS.forkedTree, weight: 1, footprint: 3, scale: [0.9, 1.5] },
+    { id: PROP_IDS.deadTree, weight: 2, footprint: 1.5, scale: TREE_SCALE },
+    { id: PROP_IDS.forkedTree, weight: 1, footprint: 1.5, scale: TREE_SCALE },
   ],
   treesPerCell: 4,
 };
