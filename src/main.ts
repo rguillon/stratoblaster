@@ -2,6 +2,7 @@ import { Engine } from '@babylonjs/core/Engines/engine';
 import { startApp } from './app/start-app';
 import { resolveRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
+import { startShotViewer } from './app/start-shot-viewer';
 import { ENGINE_CONFIG } from './config/engine';
 import { MENU_CONFIG } from './config/menu';
 import { hasWebGL2 } from './platform/webgl-support';
@@ -63,6 +64,30 @@ function startGame(engine: Engine): void {
   }
 }
 
+function startShots(engine: Engine): void {
+  const stage = element('stage');
+  const fit = (): void => {
+    const { left, top, width, height } = fitStage(innerWidth, innerHeight, GAME.screen);
+    Object.assign(stage.style, {
+      left: `${String(left)}px`,
+      top: `${String(top)}px`,
+      width: `${String(width)}px`,
+      height: `${String(height)}px`,
+    });
+    engine.resize();
+  };
+  window.addEventListener('resize', fit);
+  fit();
+  startShotViewer(engine, GAME, {
+    environment: true,
+    doc: document,
+    panelParent: element('panel'),
+    statsParent: document.body,
+    keyboardTarget: window,
+    renderLoop: true,
+  });
+}
+
 function boot(): void {
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('#game-canvas not found');
@@ -80,7 +105,8 @@ function boot(): void {
     showFatal('The graphics context was lost. Please reload the page.');
   });
 
-  if (resolveRoute(window.location.pathname) === 'player-ship-viewer') {
+  const route = resolveRoute(window.location.pathname);
+  if (route === 'player-ship-viewer') {
     window.addEventListener('resize', () => {
       engine.resize();
     });
@@ -88,6 +114,8 @@ function boot(): void {
       environment: true,
       captions: { doc: document, parent: document.body },
     });
+  } else if (route === 'player-shots-viewer') {
+    startShots(engine);
   } else {
     document.title = GAME.title;
     startGame(engine);

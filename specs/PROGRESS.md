@@ -7,7 +7,7 @@
 | ------- | ------ | -------- | -------- | ---------- | -------------- |
 | 1 | `phases/phase-01-main-menu.md` | ✅ Validated | `phase-01` | 99.61% lines | 2026-10-23 |
 | 2 | `phases/phase-02-player-ships.md` | ✅ Validated | `phase-02` | 99.51% lines | 2026-10-22 |
-| 3 | `phases/phase-03-<name>.md` | ⚪ Not started | | | |
+| 3 | `phases/phase-03-player-shots.md` | ✅ Validated | `phase-03` | 99.45% lines | 2026-10-23 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -21,3 +21,15 @@
 - 2026-10-23 — 1 — Review fix: cyberpunk HUD style for the menus (D-013); light verification green (typecheck, build, 23 e2e); still awaiting review.
 - 2026-10-23 — 1 — Review fix: pastel requirement removed from the specs; cyberpunk night city backdrop and yellow / cyan / red HUD (D-014); light verification green (typecheck, build, 23 e2e); still awaiting review.
 - 2026-10-23 — 1 — Validated: full gate green (228 unit tests, 99.61% lines, 96.53% branches, 23 e2e); squash-merged into `main`, tagged `v0.01.0`.
+- 2026-10-23 — 3 — Implemented player shots (bullet, laser, missile, 5 levels each) and the `player_shots/` debug page; unspecified values use agent defaults (D-015); light verification green (typecheck, build, 27 e2e); awaiting review.
+- 2026-10-23 — 3 — Review fix: glow at the base of the laser; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: missile diagonal streams widened to ±25° / ±45°; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: missiles launch from the ship centre and are drawn under the ship; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: bullet hits throw sparkling metal sparks instead of a green glow; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: smaller bullets (visual radius 7 → 4.5 px); light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: FPS / polygons debug tile on `player_shots/`; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: brighter bullet core; light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: bullets and laser start at each ship's nose tip (measured on the model); light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: bullets 40 triangles (was 98), hit sparks 12 (was 40); light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Review fix: round, smooth laser base glow (24 sides, 6 rings); light verification green (typecheck, build, 27 e2e); still awaiting review.
+- 2026-10-23 — 3 — Validated: full gate green (314 unit tests, 99.45% lines, 90.8% branches, 27 e2e); squash-merged into `main`, tagged `v0.03.0`.

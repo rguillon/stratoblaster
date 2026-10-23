@@ -36,16 +36,38 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 ## Pages and routes
 
-The build has two HTML entries sharing one bundle (`src/main.ts`):
+The build has three HTML entries sharing one bundle (`src/main.ts`):
 
-| Page                     | Route (`app/route.ts`) | Started by                 |
-| ------------------------ | ---------------------- | -------------------------- |
-| `index.html`             | `game`                 | `app/start-app.ts`         |
-| `player_ship/index.html` | `player-ship-viewer`   | `app/start-ship-viewer.ts` |
+| Page                      | Route (`app/route.ts`) | Started by                 |
+| ------------------------- | ---------------------- | -------------------------- |
+| `index.html`              | `game`                 | `app/start-app.ts`         |
+| `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts` |
+| `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts` |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a
 procedural sky cube map (`render/environment/`), so it downloads no asset.
+
+The player shots viewer (phase 03) looks straight down on a `GameDefinition.screen`-sized
+playfield (orthographic camera, one world unit per logical pixel, Y up). One ship fires the
+selected weapon at the selected level at dummy targets (`app/dummy-targets.ts`); the panel
+(`ui/shot-viewer-panel.ts`) and keys 1-9 / W / S / G / T switch level, weapon, ship, stream
+guides and targets. A tile (`ui/stats-tile.ts`) shows the FPS and the triangles drawn per frame.
+
+## Shots (phase 03)
+
+- `core/entities/weapon.ts`: data-only `WeaponDefinition`s. A projectile weapon fires streams
+  (offset + angle) per level from the ship's muzzle or centre, with a fire rate, launch speed, constant acceleration up to a cap,
+  optional homing on the closest target, and direct or area damage. A beam weapon has a damage
+  per second and width per level; above level 1 it goes through a target and continues one
+  level lower.
+- `core/systems/shot-world.ts`: pure, fixed-step simulation of one ship's shots against
+  `ShotTarget`s (circles with health): fires volleys, moves projectiles
+  (`projectile-motion.ts`), traces beams (`beam.ts`), applies damage and reports impacts.
+  Projectiles are pooled.
+- `render/game-view.ts`: `ShotRenderer`s draw one weapon's shots per frame from a `ShotFrame`
+  (its projectiles, beam segments and impacts). `render/node-pool.ts` reuses nodes;
+  `render/shot-playfield.ts` draws the grid, stream guides and target markers.
 
 ## Menus (phase 01)
 
@@ -76,7 +98,8 @@ taps     ─┘   (pointerCommand)            │
 
 `GameDefinition<TView>` (`core/content/`) carries simulation data (e.g. `playerShips`, a
 `PlayerShipRoster` from `core/entities/player-ship.ts`, whose first ship is the default choice;
-`levels`, a `LevelCatalog`), the logical `screen` size, the menu `texts`, and a `view` slot. The view slot's type
+`levels`, a `LevelCatalog`; `playerWeapons`, the `WeaponDefinition`s every ship can fire), the
+logical `screen` size, the menu `texts`, and a `view` slot. The view slot's type
 is defined by the presentation layers (`render/game-view.ts` → `GameView`) so `core/` never sees
 Babylon types. Models are `ModelFactory` functions: `(scene) => TransformNode`, nose towards +Z,
 +Y up. Generic geometry helpers live in `render/geometry/` (planform prisms with ear-clipping
@@ -99,4 +122,7 @@ input, update the overlay, and animate and render the menu scenes (frame time ca
    `GameDefinition.view.playerShipModels`, the levels in `GameDefinition.levels` (e.g. with
    `buildLevelGrid`), the menu texts in `GameDefinition.texts`, the logical resolution in
    `GameDefinition.screen`, and the 3D scene behind the menus in `GameDefinition.view.menuBackdrop`.
+   Declare the player weapons in `GameDefinition.playerWeapons`, one shot renderer per weapon id
+   in `GameDefinition.view.playerShotRenderers`, and the ships' size on the playfield in
+   `GameDefinition.view.playerShipScale` (logical pixels per model unit).
 5. Run `make check`.

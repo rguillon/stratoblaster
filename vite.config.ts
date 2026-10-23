@@ -32,11 +32,13 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'e2e',
     // Babylon alone exceeds Vite's 500 kB default; the real budget is ENG-107 (1.5 MB gzip).
     chunkSizeWarningLimit: 1500,
-    // Multi-page: the game, and the player ship viewer at `player_ship/` (phase 02).
+    // Multi-page: the game, the player ship viewer at `player_ship/` (phase 02) and the
+    // player shots viewer at `player_shots/` (phase 03).
     rolldownOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         playerShip: fileURLToPath(new URL('./player_ship/index.html', import.meta.url)),
+        playerShots: fileURLToPath(new URL('./player_shots/index.html', import.meta.url)),
       },
     },
   },

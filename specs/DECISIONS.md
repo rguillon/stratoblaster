@@ -178,3 +178,16 @@
 - **Alternatives considered:** keeping the sun and grid and only recolouring them (still reads as synthwave); a `DynamicTexture` for windows (needs a canvas, does not work in the `NullEngine` unit tests); instanced boxes (more draw calls than two merged meshes per chunk).
 - **Consequences:** About 4 draw calls for the city plus skyline and rain; 60 FPS still to be checked manually. The city's look is tuned in `game/config/title-look.ts`.
 - **Status:** Accepted
+
+### D-015 — Player shots: data-driven weapons, pure `ShotWorld`, defaults for unspecified values
+- **Date:** 2026-10-23
+- **Phase:** 3
+- **Context:** Phase 3 asks for three weapons (bullet, laser, missile) with five levels and a `player_shots/` debug page. There is no gameplay or enemies yet, and the spec leaves speeds, fire rates, laser damage, missile motion and stream spacing open. The reviewer said the page is only for visual validation and may be built without gameplay.
+- **Decision:**
+  - Engine (`core/`): weapons are data (`WeaponDefinition`: projectile streams per level, or beam levels), registered through `GameDefinition.playerWeapons`. `ShotWorld` is a pure fixed-step simulation (fire volleys, constant velocity or constant acceleration up to a cap, homing on the closest living target re-chosen every step, direct or area damage, beam tracing with piercing that drops one level per target, pooled projectiles) against `ShotTarget` circles. Angles are in degrees from forward (+Y), positive to the right; playfield coordinates are logical pixels with Y up.
+  - Presentation: `GameView.playerShotRenderers` maps weapon ids to `ShotRenderer`s fed a `ShotFrame` per frame; `GameView.playerShipScale` sizes ship models on the playfield. Shots are additive, vertex-coloured meshes (black is transparent), so soft edges need no texture and work in `NullEngine` tests. Nodes are reused through `NodePool`.
+  - Unspecified values (bullet speed 600 px/s, 8 shots/s, 12 px dual spacing; laser 40/60/85/115/150 damage/s and 4-12 px widths; missile 150 → 700 px/s at 600 px/s², 180°/s homing, flat area damage; symmetric diagonals) are defaults in `game/config/player-weapons.ts`, listed in the phase report for review.
+  - Debug page: orthographic top-down view of the 480×640 playfield, one ship at a time, dummy targets (a column for laser piercing, two side targets for homing), stream guides, controls and keys.
+- **Alternatives considered:** Babylon `ParticleSystem` for laser particles (needs a texture; a small seeded particle stepper is enough and testable); class hierarchy per weapon (data plus two kinds covers the three weapons); showing all three ships at once (too cluttered on a 480 px wide playfield).
+- **Consequences:** Gameplay phases can reuse `ShotWorld` per ship with enemy hitboxes as targets. Changing the numbers needs no code change.
+- **Status:** Accepted

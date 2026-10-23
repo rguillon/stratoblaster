@@ -1,4 +1,5 @@
 import type { PlayerShipRoster } from '../entities/player-ship';
+import type { WeaponDefinition } from '../entities/weapon';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
 
@@ -26,6 +27,8 @@ export interface GameDefinition<TView = unknown> {
   readonly screen: LogicalScreen;
   /** The ships the player can fly (data only). The first one is selected by default. */
   readonly playerShips: PlayerShipRoster;
+  /** The weapons every player ship can fire (data only). */
+  readonly playerWeapons: readonly WeaponDefinition[];
   /** The levels shown on the level select screen, and which ones can be played. */
   readonly levels: LevelCatalog;
   /** Texts of the menu screens. */

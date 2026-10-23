@@ -5,7 +5,7 @@ import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { GameDefinition } from '../../src/core/content/game-definition';
 import type { MenuScreen } from '../../src/core/menu/menu-screen';
-import type { GameView, MenuBackdrop } from '../../src/render/game-view';
+import type { GameView, MenuBackdrop, ShotFrame, ShotRenderer } from '../../src/render/game-view';
 
 const box = (scene: Scene) => CreateBox('sample-ship', { size: 1 }, scene);
 
@@ -35,6 +35,34 @@ function sampleBackdrop(scene: Scene): SampleBackdrop {
   return backdrop;
 }
 
+/** A shot renderer that records the frames it is given. */
+export interface SampleShotRenderer extends ShotRenderer {
+  readonly weaponId: string;
+  readonly frames: ShotFrame[];
+  disposed: boolean;
+}
+
+/** Shot renderers built by the sample game, most recent last. */
+export const SAMPLE_SHOT_RENDERERS: SampleShotRenderer[] = [];
+
+function sampleShotRenderer(weaponId: string) {
+  return (): SampleShotRenderer => {
+    const renderer: SampleShotRenderer = {
+      weaponId,
+      frames: [],
+      disposed: false,
+      sync: (frame) => {
+        renderer.frames.push(frame);
+      },
+      dispose: () => {
+        renderer.disposed = true;
+      },
+    };
+    SAMPLE_SHOT_RENDERERS.push(renderer);
+    return renderer;
+  };
+}
+
 /** Minimal game used to test the engine independently of `src/game/` (ENG-145). */
 export const SAMPLE_GAME: GameDefinition<GameView> = {
   id: 'sample',
@@ -47,6 +75,38 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
       { id: 'brick', name: 'Brick', maxSpeedFactor: 0.5, maxHealth: 6 },
     ],
   },
+  playerWeapons: [
+    {
+      kind: 'projectile',
+      id: 'pea',
+      name: 'Pea',
+      launchPoint: 'muzzle',
+      shotsPerSecond: 2,
+      launchSpeed: 100,
+      acceleration: 0,
+      maxSpeed: 100,
+      homingTurnRateDeg: 0,
+      radius: 2,
+      damage: 1,
+      blastRadius: 0,
+      levels: [
+        [{ offsetX: 0, angleDeg: 0 }],
+        [
+          { offsetX: -5, angleDeg: 0 },
+          { offsetX: 5, angleDeg: 0 },
+        ],
+      ],
+    },
+    {
+      kind: 'beam',
+      id: 'ray',
+      name: 'Ray',
+      levels: [
+        { damagePerSecond: 2, width: 2 },
+        { damagePerSecond: 4, width: 4 },
+      ],
+    },
+  ],
   levels: {
     columns: 2,
     levels: [
@@ -70,5 +130,10 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     gameHint: 'Esc',
     unsupported: 'No WebGL2',
   },
-  view: { playerShipModels: { cube: box, brick: box }, menuBackdrop: sampleBackdrop },
+  view: {
+    playerShipModels: { cube: box, brick: box },
+    playerShipScale: 10,
+    playerShotRenderers: { pea: sampleShotRenderer('pea'), ray: sampleShotRenderer('ray') },
+    menuBackdrop: sampleBackdrop,
+  },
 };

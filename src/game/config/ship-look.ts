@@ -1,3 +1,6 @@
+/** Logical pixels per model unit when the player ships are drawn on the playfield. */
+export const PLAYER_SHIP_SCALE = 7;
+
 /** Player ship look (GD-61: shiny grey/blue, blue light behind each reactor). Linear RGB, 0..1. */
 export const SHIP_LOOK = {
   hull: { albedo: [0.56, 0.63, 0.74], metallic: 0.9, roughness: 0.25 },
