@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Pewet</title>
+    <title>Stratoblaster</title>
     <style>
       /*
        * Cyberpunk HUD look (GD-60, P01-R13, review feedback D-013, D-014): acid yellow, cyan
@@ -291,12 +291,14 @@
       /* Logo: black letters on a chamfered yellow plate, with a red / cyan glitch split. */
       .title-name {
         margin: 40px 0 0;
-        padding: 4px 36px;
+        padding: 6px 24px;
         clip-path: var(--chamfer);
-        font-size: 68px;
+        /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen. */
+        font-size: 46px;
         font-weight: 900;
         font-style: italic;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
         text-transform: uppercase;
         color: var(--black);
         background:
