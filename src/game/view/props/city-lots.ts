@@ -76,7 +76,8 @@ export function crown(
 
 /** A low base covering the whole lot, so no bare ground shows around a tower; its height. */
 export function plinth(kit: LotKit, [x, z, w, d]: Lot): number {
-  const h = randomIn(kit.random, [2, 6]);
+  // At least 3 high, so the uneven ground of a block never shows through it (review).
+  const h = randomIn(kit.random, [3, 6]);
   kit.s.box(
     [w, h, d],
     pick(kit.random, [C.concreteDark, C.brick, C.concrete]),

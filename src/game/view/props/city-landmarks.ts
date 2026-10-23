@@ -7,6 +7,12 @@ import { crown, plinth, volume, type Lot, type LotKit } from './city-lots';
 // tower with a slanted top, a tower with a helipad, a roof garden block, a hexagonal tower and a
 // stack of twisted blocks.
 
+/**
+ * Height of the solid base under plazas and parking garages: the ground of a block is uneven by
+ * a few units, and a thinner base would show the ground through it.
+ */
+const BASE = 3;
+
 /** Two slim towers joined by a lit skybridge. */
 function twinTowers(kit: LotKit, lot: Lot): void {
   const { random } = kit;
@@ -55,15 +61,17 @@ function dome(kit: LotKit, lot: Lot): void {
 /** An open plaza: paving, trees, benches and a lit fountain, with a kiosk. */
 function plaza(kit: LotKit, [x, z, w, d]: Lot): void {
   const { s, l, random } = kit;
-  s.box([w, 0.4, d], pick(random, [C.concrete, C.white, C.brick]), { at: [x, 0, z] });
+  // Raised on a solid base: a thin paving would fight with the uneven ground under it (review).
+  const y = BASE;
+  s.box([w, y, d], C.concreteDark, { at: [x, 0, z] }, pick(random, [C.concrete, C.white, C.brick]));
   const r = Math.min(w, d) * 0.15;
-  s.cylinder(r, 0.8, 8, C.concreteDark, { at: [x, 0.4, z] });
-  l.ring(r * 0.8, 0.5, 8, L.cyanDim, { at: [x, 0.8, z] });
+  s.cylinder(r, 0.8, 8, C.concreteDark, { at: [x, y, z] });
+  l.ring(r * 0.8, 0.5, 8, L.cyanDim, { at: [x, y + 0.4, z] });
   for (const [tx, tz] of [
     [-1, -1],
     [1, 1],
   ] as const) {
-    const at = [x + tx * w * 0.32, 0.4, z + tz * d * 0.32] as const;
+    const at = [x + tx * w * 0.32, y, z + tz * d * 0.32] as const;
     s.cylinder(0.3, 1.5, 4, C.bark, { at });
     s.lathe(
       [
@@ -75,15 +83,17 @@ function plaza(kit: LotKit, [x, z, w, d]: Lot): void {
       { at },
     );
   }
-  s.box([3, 3, 3], kit.facade, { at: [x + w * 0.3, 0.4, z] }, kit.roof);
+  s.box([3, 3, 3], kit.facade, { at: [x + w * 0.3, y, z] }, kit.roof);
 }
 
 /** A parking garage: open decks on posts, with cars on the top deck. */
 function parking(kit: LotKit, [x, z, w, d]: Lot): void {
   const { s, random } = kit;
   const decks = 2 + Math.floor(random() * 2);
+  // A solid ground floor, so no thin deck lies on the uneven ground (review).
+  s.box([w * 0.95, BASE, d * 0.95], C.concreteDark, { at: [x, 0, z] });
   for (let k = 0; k < decks; k++) {
-    s.box([w * 0.95, 0.6, d * 0.95], C.concrete, { at: [x, k * 3.2, z] });
+    s.box([w * 0.95, 0.6, d * 0.95], C.concrete, { at: [x, BASE + k * 3.2, z] });
     if (k > 0) {
       for (const [px, pz] of [
         [-1, -1],
@@ -92,12 +102,12 @@ function parking(kit: LotKit, [x, z, w, d]: Lot): void {
         [1, 1],
       ] as const) {
         s.box([0.6, 2.6, 0.6], C.concreteDark, {
-          at: [x + px * w * 0.44, (k - 1) * 3.2 + 0.6, z + pz * d * 0.44],
+          at: [x + px * w * 0.44, BASE + (k - 1) * 3.2 + 0.6, z + pz * d * 0.44],
         });
       }
     }
   }
-  const top = (decks - 1) * 3.2 + 0.6;
+  const top = BASE + (decks - 1) * 3.2 + 0.6;
   for (let k = 0; k < 3; k++) {
     const at = [
       x + randomIn(random, [-0.35, 0.35]) * w,

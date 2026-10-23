@@ -55,3 +55,4 @@
 - 2026-10-23 — 4 — Review fix: more varied industrial complexes (5 layouts, 9 kinds of equipment) and 16 variants per building family; light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: more varied city (14 kinds of lots, more facade, window and roof colours); light verification green (typecheck, build, 34 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: about a third fewer polygons in the industrial zone and the city (D-031); light verification green (typecheck, build, 34 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: city plazas and parking garages no longer flicker with the ground; light verification green (typecheck, build, 34 e2e); still awaiting review.
