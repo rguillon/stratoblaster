@@ -220,3 +220,12 @@
 - **Alternatives considered:** Running `e2e` in the `mcr.microsoft.com/playwright` image to skip `--with-deps`: the image has no `make`, so `apt-get install make` plus the image pull (about 2 GB) costs as much as it saves, and the image tag must be kept in sync with `@playwright/test` by hand. More workers on one runner: software rendering is CPU-bound and the runner has 4 vCPUs.
 - **Consequences:** CI uses about 3× the e2e runner minutes (free for a public repository). Each failed shard uploads its own `playwright-report-N` artefact.
 - **Status:** Accepted
+
+### D-019 — ESLint 10 with eslint-plugin-import-x
+- **Date:** 2026-10-23
+- **Phase:** — (direct request, between phases 3 and 4)
+- **Context:** Supersedes the ESLint part of D-002. `eslint-plugin-import` (last release 2.32.0, June 2025) still supports ESLint ≤ 9, which blocked Dependabot's ESLint and `@eslint/js` updates.
+- **Decision:** Replace `eslint-plugin-import` with its maintained fork `eslint-plugin-import-x` (4.17) and upgrade `eslint` and `@eslint/js` to 10. Rules keep the same names under the `import-x/` prefix (`no-restricted-paths`, `no-default-export`); resolution uses `import-x/resolver-next` with the TypeScript and Node resolvers. TypeScript stays at `~6.0.3`: `typescript-eslint` 8.x still requires TypeScript < 6.1, so Dependabot ignores `typescript` ≥ 6.1.
+- **Alternatives considered:** Staying on ESLint 9 until `eslint-plugin-import` supports 10 (no release in over a year).
+- **Consequences:** ENG-12 names `eslint-plugin-import`; the human owner is to update it to `eslint-plugin-import-x`. Lint, test and Actions updates are grouped in Dependabot so peer-linked packages move together.
+- **Status:** Accepted
