@@ -3,6 +3,7 @@ import type { MenuCommand } from '../input/menu-action';
 import type { MenuView } from './menu-view';
 import type { MenuDocument } from './screens/elements';
 import type { ScreenHandlers } from './screens/screen-handlers';
+import { shrinkToFit } from './shrink-to-fit';
 import { renderLoadingScreen } from './screens/loading-screen';
 import { renderTitleScreen } from './screens/title-screen';
 import { renderShipSelectScreen } from './screens/ship-select-screen';
@@ -75,6 +76,8 @@ export class MenuOverlay {
     this.#current?.remove();
     this.root.append(screen);
     this.#current = screen;
+    const logo = screen.querySelector<HTMLElement>('.title-name');
+    if (logo) shrinkToFit(logo);
   }
 
   /** "Locked" feedback (P01-R07): shakes the selected entry and shows `text`. */
