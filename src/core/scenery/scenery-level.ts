@@ -1,0 +1,162 @@
+/*
+ * Data that describes the ground of a scrolling level (P04-R01, P04-R04, P04-R06). World units
+ * are logical pixels: X across the level (0 under the middle of the playfield), Z along it
+ * (the level scrolls towards +Z), Y up. Heights are absolute; the sea, when there is one,
+ * sits at `sea.level`.
+ */
+
+/** Fractal relief added to a section's base height. */
+export interface Relief {
+  /** Height of the ground where the relief is zero. */
+  readonly base: number;
+  /** Largest height the relief adds (or removes, for smooth relief). */
+  readonly amplitude: number;
+  /** Cycles per world unit of the first octave. */
+  readonly frequency: number;
+  readonly octaves: number;
+  /**
+   * `smooth`: rolling ground from `base - amplitude` to `base + amplitude`.
+   * `ridged`: sharp crests from `base` up to `base + amplitude` (mountain ranges).
+   */
+  readonly style: 'smooth' | 'ridged';
+  /** Heights above this are softly squashed, so peaks stay under the flight altitude. */
+  readonly maxHeight?: number;
+}
+
+/** A winding line across Z: `x + amplitude * sin(2π z / wavelength + phase)`. */
+export interface Meander {
+  readonly x: number;
+  readonly amplitude: number;
+  readonly wavelength: number;
+}
+
+/** Flattens a band of ground around a meander line (room for buildings). */
+export interface Flatten {
+  readonly path: Meander;
+  readonly halfWidth: number;
+  /** Width of the slope from the flat band back to the relief. */
+  readonly edge: number;
+  readonly height: number;
+  /** Small relief left on the flat band. */
+  readonly roughness: number;
+}
+
+/** Carves a canyon along a meander line. */
+export interface Channel {
+  readonly path: Meander;
+  /** Half-width of the canyon floor. */
+  readonly halfWidth: number;
+  /** Width of each wall, from the floor to the rim. */
+  readonly wall: number;
+  /** Height of the canyon floor (below the sea level, it holds a river). */
+  readonly floor: number;
+}
+
+/** Drops the ground under the sea on one side of a meander line. */
+export interface Shore {
+  readonly path: Meander;
+  /** The land is at X greater than the shore line (`1`) or smaller (`-1`). */
+  readonly landSide: 1 | -1;
+  /** Width of the slope from the land down to the sea bed. */
+  readonly width: number;
+  readonly seabed: number;
+}
+
+/** One stretch of a level, sculpted from a relief and optional operations. */
+export interface TerrainSection {
+  /** Shown by debug tools, e.g. `canyon`. */
+  readonly name: string;
+  /** How long the section takes to fly over, at the level's scroll speed. */
+  readonly seconds: number;
+  readonly relief: Relief;
+  readonly flatten?: Flatten;
+  readonly channel?: Channel;
+  readonly shore?: Shore;
+  /** Chance (0..1) that a candidate spot of this section gets a building. */
+  readonly buildingDensity: number;
+  /** Chance (0..1) that an empty candidate spot of this section gets trees. */
+  readonly treeDensity: number;
+}
+
+/** A kind of prop the placement can choose, with its relative weight. */
+export interface PropKindRule {
+  /** Key of the prop's model in the game's view. */
+  readonly id: string;
+  readonly weight: number;
+  /** Radius of ground the prop stands on; it must be about flat. */
+  readonly footprint: number;
+  /** Random scale range. */
+  readonly scale: readonly [number, number];
+}
+
+/** Buildings of a group cluster together: a low-frequency noise picks the group of each area. */
+export interface PropGroupRule {
+  readonly id: string;
+  readonly weight: number;
+  readonly kinds: readonly PropKindRule[];
+}
+
+/** Where and which props stand on the ground (P04-R04). */
+export interface PropRules {
+  /** Candidate spots sit on a jittered grid of this cell size. */
+  readonly cellSize: number;
+  /** 0 = grid centres, 1 = anywhere in the cell. */
+  readonly jitter: number;
+  /** Steepest ground (height difference over the footprint radius) a building stands on. */
+  readonly maxSlope: number;
+  /** Trees stand on steeper ground than buildings. */
+  readonly treeMaxSlope: number;
+  /** No prop stands below this height (e.g. just above the sea). */
+  readonly minHeight: number;
+  /** Cycles per world unit of the noise that picks a building group per area. */
+  readonly zoneFrequency: number;
+  readonly groups: readonly PropGroupRule[];
+  readonly trees: readonly PropKindRule[];
+  /** Most trees in one empty cell. */
+  readonly treesPerCell: number;
+}
+
+/** The ground of a scrolling level: terrain, optional sea and props. */
+export interface SceneryLevel {
+  readonly id: string;
+  readonly name: string;
+  readonly seed: number;
+  /** Ground speed under the playfield, in world units per second (GD-01). */
+  readonly scrollSpeed: number;
+  /** Width of ground (in Z) over which two sections blend into each other. */
+  readonly transition: number;
+  readonly sections: readonly TerrainSection[];
+  readonly sea?: { readonly level: number };
+  readonly props: PropRules;
+}
+
+/** A section with its place along the level. */
+export interface PlacedSection {
+  readonly section: TerrainSection;
+  readonly start: number;
+  readonly end: number;
+}
+
+/** Places the sections end to end from Z = 0, each `seconds × scrollSpeed` long. */
+export function layoutSections(level: SceneryLevel): PlacedSection[] {
+  if (level.sections.length === 0) throw new RangeError(`Level "${level.id}" has no section`);
+  if (!(level.scrollSpeed > 0)) throw new RangeError('The scroll speed must be positive');
+  let start = 0;
+  return level.sections.map((section) => {
+    if (!(section.seconds > 0)) throw new RangeError(`Section "${section.name}" has no length`);
+    const end = start + section.seconds * level.scrollSpeed;
+    const placed = { section, start, end };
+    start = end;
+    return placed;
+  });
+}
+
+/** How long the level lasts, in seconds (P04-R06). */
+export function levelDuration(level: SceneryLevel): number {
+  return level.sections.reduce((sum, s) => sum + s.seconds, 0);
+}
+
+/** Length of the level along Z, in world units. */
+export function levelLength(level: SceneryLevel): number {
+  return levelDuration(level) * level.scrollSpeed;
+}
