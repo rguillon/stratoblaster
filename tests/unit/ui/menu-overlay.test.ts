@@ -6,7 +6,7 @@ import type { MenuView } from '../../../src/ui/menu-view';
 
 const TITLE: MenuView = {
   kind: 'title',
-  title: 'Pewet',
+  title: 'Stratoblaster',
   highScoreLabel: 'High score',
   highScore: 12345,
   start: 'Start',
@@ -68,7 +68,7 @@ describe('MenuOverlay', () => {
   it('P01-R04: the title screen shows the title, the high score, Start (selected), hint and version', () => {
     const { overlay, $ } = setup();
     overlay.show(TITLE);
-    expect($('.title-name')?.textContent).toBe('Pewet');
+    expect($('.title-name')?.textContent).toBe('Stratoblaster');
     expect($('.title-high-score')?.textContent).toBe('12345');
     expect($('.title-start')?.textContent).toBe('Start');
     expect($('.title-start')?.classList.contains('selected')).toBe(true);

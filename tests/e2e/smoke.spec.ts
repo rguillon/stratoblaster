@@ -12,7 +12,7 @@ test('ENG-54: loading → title → ship select → level select → game → ba
   page,
 }) => {
   await page.goto('./');
-  await expect(page).toHaveTitle('Pewet');
+  await expect(page).toHaveTitle('Stratoblaster');
   await expect(page.locator('#game-canvas')).toBeVisible();
   await expect(page.locator('#fatal')).toBeHidden();
   await expect(page.locator('.title-screen')).toBeVisible({ timeout: LOAD_TIMEOUT });
@@ -65,7 +65,13 @@ test.describe('P01-R04: title screen', () => {
     page,
   }) => {
     await openGame(page);
-    await expect(page.locator('.title-name')).toHaveText('Pewet');
+    await expect(page.locator('.title-name')).toHaveText('Stratoblaster');
+    // The title logo fits the screen width (no clipped letters).
+    const { logo, screen } = await page.locator('.title-name').evaluate((el) => ({
+      logo: el.scrollWidth,
+      screen: el.parentElement?.clientWidth ?? 0,
+    }));
+    expect(logo).toBeLessThanOrEqual(screen);
     await expect(page.locator('.title-start.selected')).toHaveText('Start');
     await expect(page.locator('.title-high-score')).toHaveText('0');
     await expect(page.locator('.title-hint')).toContainText('Space / Enter');
@@ -78,7 +84,7 @@ test.describe('P01-R04: title screen', () => {
     ['not-a-score', '0'],
   ] as const) {
     test(`a high-score cookie of "${value}" shows ${shown}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: 'pewet_high_score', value, url: baseURL ?? '' }]);
+      await context.addCookies([{ name: 'stratoblaster_high_score', value, url: baseURL ?? '' }]);
       await openGame(page);
       await expect(page.locator('.title-high-score')).toHaveText(shown);
     });

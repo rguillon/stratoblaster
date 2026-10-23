@@ -6,8 +6,8 @@ import { PLAYER_WEAPONS } from '../../../src/game/config/player-weapons';
 
 describe('GAME', () => {
   it('ENG-144: exports a GameDefinition for this game', () => {
-    expect(GAME.id).toBe('pewet');
-    expect(GAME.title).toBe('Pewet');
+    expect(GAME.id).toBe('stratoblaster');
+    expect(GAME.title).toBe('Stratoblaster');
   });
 
   it('GD-02: lays the screens out at 480×640', () => {

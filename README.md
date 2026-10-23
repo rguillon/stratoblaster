@@ -1,4 +1,4 @@
-# Pewet
+# Stratoblaster
 
 An old-school vertical shoot 'em up with modern 3D graphics, running entirely in the browser.
 
@@ -23,7 +23,7 @@ An old-school vertical shoot 'em up with modern 3D graphics, running entirely in
 | Special / bomb | E             |
 | Pause          | Esc / P       |
 
-The high score and the last chosen ship are kept in cookies (`pewet_high_score`, `pewet_last_ship`).
+The high score and the last chosen ship are kept in cookies (`stratoblaster_high_score`, `stratoblaster_last_ship`).
 
 ## Requirements
 

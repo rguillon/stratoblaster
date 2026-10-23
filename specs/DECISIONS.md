@@ -134,7 +134,7 @@
 - **Date:** 2026-10-23
 - **Phase:** 1
 - **Context:** ENG-07 says persistence uses `localStorage`, but the vision ("any persistence shall be handled by cookies"), GD-51 and P01-R04/R14 ask for cookies.
-- **Decision:** Follow the vision, GD-51 and the phase: `platform/cookie-storage.ts` (`max-age` = `cookie_max_age`, `SameSite=Lax`, default path) behind the `KeyValueStorage` interface. Keys are prefixed with the game id: `pewet_high_score`, `pewet_last_ship`. A missing, undecodable or non-integer value reads as 0 / none.
+- **Decision:** Follow the vision, GD-51 and the phase: `platform/cookie-storage.ts` (`max-age` = `cookie_max_age`, `SameSite=Lax`, default path) behind the `KeyValueStorage` interface. Keys are prefixed with the game id: `stratoblaster_high_score`, `stratoblaster_last_ship`. A missing, undecodable or non-integer value reads as 0 / none.
 - **Alternatives considered:** `localStorage` (contradicts three other specs).
 - **Consequences:** Switching to `localStorage` later is one new `KeyValueStorage` class. ENG-07 could be updated to say "cookies".
 - **Status:** Accepted
@@ -190,4 +190,12 @@
   - Debug page: orthographic top-down view of the 480×640 playfield, one ship at a time, dummy targets (a column for laser piercing, two side targets for homing), stream guides, controls and keys.
 - **Alternatives considered:** Babylon `ParticleSystem` for laser particles (needs a texture; a small seeded particle stepper is enough and testable); class hierarchy per weapon (data plus two kinds covers the three weapons); showing all three ships at once (too cluttered on a 480 px wide playfield).
 - **Consequences:** Gameplay phases can reuse `ShotWorld` per ship with enemy hitboxes as targets. Changing the numbers needs no code change.
+- **Status:** Accepted
+
+### D-016 — Game renamed Stratoblaster
+- **Date:** 2026-10-23
+- **Phase:** — (direct request, between phases 3 and 4)
+- **Context:** The game is named Stratoblaster; the project used a working name until now.
+- **Decision:** Every reference was replaced (`package.json` name, game id and title, page titles, README, specs, tests). The game id is the cookie prefix, so the cookies become `stratoblaster_high_score` and `stratoblaster_last_ship`. The title logo went from 68 px to 46 px (with less letter spacing) so the 13-letter name fits the 480 px screen; an e2e check now fails if the logo is wider than the screen.
+- **Consequences:** A high score or last ship saved under the old cookie prefix is not read any more (no migration: nothing has been released). Git history, existing tags and the local folder name keep the old name.
 - **Status:** Accepted

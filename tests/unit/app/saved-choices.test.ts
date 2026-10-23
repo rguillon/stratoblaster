@@ -9,7 +9,7 @@ import { MemoryStorage } from '../../../src/platform/key-value-storage';
 
 describe('saved choices', () => {
   it('P01-R04: the high score is 0 when there is no cookie yet', () => {
-    expect(loadSavedChoices(new MemoryStorage(), 'pewet')).toEqual({
+    expect(loadSavedChoices(new MemoryStorage(), 'stratoblaster')).toEqual({
       highScore: 0,
       lastShipId: null,
     });
@@ -17,8 +17,8 @@ describe('saved choices', () => {
 
   it('P01-R04: reads a high score of 12345 from the cookie', () => {
     const storage = new MemoryStorage();
-    storage.set('pewet_high_score', '12345');
-    expect(loadSavedChoices(storage, 'pewet').highScore).toBe(12345);
+    storage.set('stratoblaster_high_score', '12345');
+    expect(loadSavedChoices(storage, 'stratoblaster').highScore).toBe(12345);
   });
 
   it('P01-R04: a corrupted value reads as 0 without throwing', () => {
@@ -31,9 +31,9 @@ describe('saved choices', () => {
 
   it('P01-R14: saves and reads the last chosen ship', () => {
     const storage = new MemoryStorage();
-    saveLastShip(storage, 'pewet', 'light');
-    expect(storage.get('pewet_last_ship')).toBe('light');
-    expect(loadSavedChoices(storage, 'pewet').lastShipId).toBe('light');
+    saveLastShip(storage, 'stratoblaster', 'light');
+    expect(storage.get('stratoblaster_last_ship')).toBe('light');
+    expect(loadSavedChoices(storage, 'stratoblaster').lastShipId).toBe('light');
   });
 
   it('prefixes the keys with the game id', () => {

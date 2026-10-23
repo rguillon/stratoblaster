@@ -263,7 +263,7 @@ None blocking. One conflict was settled by the specs themselves: ENG-07 says `lo
 | P01-R01 | Done | `src/app/menu-flow.ts`, `src/core/menu/menu-screen.ts` | `tests/unit/app/menu-flow.test.ts`, `tests/unit/core/menu/menu-screen.test.ts`, e2e `smoke.spec.ts` | Pure: no Babylon/DOM imports |
 | P01-R02 | Done | `src/assets/loading-tasks.ts`, `src/app/menu-scenes.ts`, `src/ui/screens/loading-screen.ts` | `loading-tasks.test.ts`, `start-app.test.ts`, `menu-overlay.test.ts`, e2e `smoke.spec.ts` | 4 real steps: backdrop, ships, compile each scene's shaders |
 | P01-R03 | Done | `src/main.ts`, `src/platform/webgl-support.ts`, `MENU_TEXTS.unsupported` | e2e `smoke.spec.ts` (WebGL2 disabled by an init script) | |
-| P01-R04 | Done | `src/ui/screens/title-screen.ts`, `src/app/saved-choices.ts`, `src/platform/cookie-storage.ts` | `saved-choices.test.ts`, `cookie-storage.test.ts`, `menu-overlay.test.ts`, e2e `smoke.spec.ts` (0, 12345, corrupted, version) | Cookie `pewet_high_score` |
+| P01-R04 | Done | `src/ui/screens/title-screen.ts`, `src/app/saved-choices.ts`, `src/platform/cookie-storage.ts` | `saved-choices.test.ts`, `cookie-storage.test.ts`, `menu-overlay.test.ts`, e2e `smoke.spec.ts` (0, 12345, corrupted, version) | Cookie `stratoblaster_high_score` |
 | P01-R05 | Done | `src/game/view/title-backdrop.ts`, `src/game/view/city-geometry.ts`, `src/game/config/title-look.ts`, `src/core/math/rng.ts`, `src/render/geometry/gradient-shapes.ts` | `title-backdrop.test.ts`, `city-geometry.test.ts`, `rng.test.ts`, `gradient-shapes.test.ts` | 60 FPS to be checked manually (no F3 overlay yet). Cyberpunk night city after review (D-012, D-014) |
 | P01-R06 | Done | `src/render/ship-select-stage.ts`, `src/ui/screens/ship-select-screen.ts` | `ship-select-stage.test.ts`, `menu-flow.test.ts`, `menu-overlay.test.ts`, e2e | Reuses `ModelShowcase` and `shipCaption` |
 | P01-R07 | Done | `src/core/content/level-catalog.ts`, `src/game/sim/levels.ts`, `src/game/config/levels.ts`, `src/ui/screens/level-select-screen.ts` | `level-catalog.test.ts`, `levels.test.ts`, `menu-flow.test.ts`, `menu-controller.test.ts`, e2e `menu-pointer.spec.ts` | Locked feedback: shake + "Locked!" |
@@ -273,7 +273,7 @@ None blocking. One conflict was settled by the specs themselves: ENG-07 says `lo
 | P01-R11 | Done | `src/ui/screens/elements.ts`, `src/input/pointer-menu-input.ts` | `menu-overlay.test.ts`, e2e `menu-pointer.spec.ts` (mouse, touch), `menu-layout.spec.ts` (≥ 44 px) | |
 | P01-R12 | Done | `src/input/menu-action.ts`, `menu-input.ts`, `src/config/menu-input.ts` | `menu-input.test.ts` (Enter, Space, A, tap → confirm) | |
 | P01-R13 | Done | `src/ui/stage-fit.ts`, `index.html` styles (cyberpunk HUD after review, D-013) | `stage-fit.test.ts`, e2e `menu-layout.spec.ts` (3 sizes, resize, markers), `smoke.spec.ts` (same-origin only) | Greyscale: ▶ ◀ / ▲ markers, white frame, dashed outline |
-| P01-R14 | Done (MAY) | `src/app/saved-choices.ts`, `src/app/menu-controller.ts` | `saved-choices.test.ts`, `menu-controller.test.ts`, `menu-flow.test.ts`, e2e `menu-pointer.spec.ts` | Cookie `pewet_last_ship` |
+| P01-R14 | Done (MAY) | `src/app/saved-choices.ts`, `src/app/menu-controller.ts` | `saved-choices.test.ts`, `menu-controller.test.ts`, `menu-flow.test.ts`, e2e `menu-pointer.spec.ts` | Cookie `stratoblaster_last_ship` |
 | P01-R15 | Done (MAY) | `MenuFlow` transition timer, `.menu-enter` fade in `ui/menu-overlay.ts` | `menu-flow.test.ts`, `menu-overlay.test.ts` | 250 ms fade-in |
 | ENG-52 | Partial | `src/debug/test-api.ts`, `src/main.ts`, `Makefile` (`build`) | `test-api.test.ts`; leak check in `make build` | `getState`, `sendAction` only (as asked); `setSeed/step/pause` come with gameplay |
 | ENG-54 | Partial | — | e2e `smoke.spec.ts` | Loading → title → ship → level → game → title; gameplay part comes later |
@@ -298,11 +298,11 @@ Deferred to /validate-phase: lint, unit tests, coverage (not run during implemen
 ### How to test manually
 1. `make dev` and open http://localhost:5173/ (or `make preview` for the production build).
 2. A loading bar fills up, then the title screen appears by itself: title, **▶ START ◀**, high score `0`, the hint, and `v0.0.0` + commit hash bottom right, over a cyberpunk night city (dark towers with lit windows and neon signs scrolling by, haze, rain, the balanced ship floating and turning). The logo is black on a yellow plate; the selected entry is a solid yellow block.
-3. High score cookie: in dev tools (Application → Cookies), add `pewet_high_score` = `12345` and reload; try `abc` too (shows `0`).
+3. High score cookie: in dev tools (Application → Cookies), add `stratoblaster_high_score` = `12345` and reload; try `abc` too (shows `0`).
 4. Keyboard: Enter/Space to confirm, arrows or WASD to move, Esc/Backspace to go back. On AZERTY, Z/Q/S/D move. Hold an arrow on the level grid to see the repeat.
 5. Gamepad: A confirm, B back, left stick or D-pad to move. A slight stick tilt does nothing.
 6. Mouse/touch (or dev tools phone emulation): tap an entry to select it, tap it again to confirm; **◀ Back** at the top left.
-7. Ship select: the 3 ships rotate; the selected one is bigger, lit, on a pink ring, and its card has a white frame and a ▲ marker. Choose Light, reload, go to ship select: Light is pre-selected (cookie `pewet_last_ship`).
+7. Ship select: the 3 ships rotate; the selected one is bigger, lit, on a pink ring, and its card has a white frame and a ▲ marker. Choose Light, reload, go to ship select: Light is pre-selected (cookie `stratoblaster_last_ship`).
 8. Level select: 25 levels, only 1-1 can be played; a locked level shakes and shows "Locked!".
 9. Resize the window or try a portrait phone size: the 3:4 stage stays fully visible, letterboxed.
 10. http://localhost:5173/player_ship/ still shows the phase 2 viewer.
