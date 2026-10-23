@@ -1,0 +1,27 @@
+import type { PropModelFactory } from '../../../render/scenery/scenery-look';
+import { PROP_IDS } from '../../config/level-zero';
+import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
+import {
+  buildCoolingTower,
+  buildFactory,
+  buildStorageTanks,
+  buildWarehouse,
+} from './industrial-props';
+import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
+import { buildDeadTree, buildForkedTree } from './tree-props';
+
+/** One model per prop kind of this game, keyed by its id (P04-R04). */
+export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
+  [PROP_IDS.factory]: buildFactory,
+  [PROP_IDS.tanks]: buildStorageTanks,
+  [PROP_IDS.warehouse]: buildWarehouse,
+  [PROP_IDS.coolingTower]: buildCoolingTower,
+  [PROP_IDS.radar]: buildRadarDish,
+  [PROP_IDS.antenna]: buildAntennaMast,
+  [PROP_IDS.observatory]: buildObservatory,
+  [PROP_IDS.cubeHome]: buildCubeHome,
+  [PROP_IDS.domeHome]: buildDomeHome,
+  [PROP_IDS.stiltPod]: buildStiltPod,
+  [PROP_IDS.deadTree]: buildDeadTree,
+  [PROP_IDS.forkedTree]: buildForkedTree,
+};

@@ -3,6 +3,7 @@ import { startApp } from './app/start-app';
 import { resolveRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
+import { startSceneryViewer } from './app/start-scenery-viewer';
 import { ENGINE_CONFIG } from './config/engine';
 import { MENU_CONFIG } from './config/menu';
 import { hasWebGL2 } from './platform/webgl-support';
@@ -64,7 +65,8 @@ function startGame(engine: Engine): void {
   }
 }
 
-function startShots(engine: Engine): void {
+/** Keeps the canvas box at the game's aspect ratio, centred in the window. */
+function fitCanvasStage(engine: Engine): void {
   const stage = element('stage');
   const fit = (): void => {
     const { left, top, width, height } = fitStage(innerWidth, innerHeight, GAME.screen);
@@ -78,7 +80,23 @@ function startShots(engine: Engine): void {
   };
   window.addEventListener('resize', fit);
   fit();
+}
+
+function startShots(engine: Engine): void {
+  fitCanvasStage(engine);
   startShotViewer(engine, GAME, {
+    environment: true,
+    doc: document,
+    panelParent: element('panel'),
+    statsParent: document.body,
+    keyboardTarget: window,
+    renderLoop: true,
+  });
+}
+
+function startScenery(engine: Engine): void {
+  fitCanvasStage(engine);
+  startSceneryViewer(engine, GAME, {
     environment: true,
     doc: document,
     panelParent: element('panel'),
@@ -116,6 +134,8 @@ function boot(): void {
     });
   } else if (route === 'player-shots-viewer') {
     startShots(engine);
+  } else if (route === 'scenery-viewer') {
+    startScenery(engine);
   } else {
     document.title = GAME.title;
     startGame(engine);
