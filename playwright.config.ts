@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 // ENG-50, ENG-51, ENG-57: runs against the e2e build served by `vite preview`.
 export default defineConfig({
   testDir: 'tests/e2e',
+  // Tests share no state: run them in parallel within a file, and shard them one by one in CI.
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : [['list']],

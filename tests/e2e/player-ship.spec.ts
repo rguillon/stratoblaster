@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import { test, expect, waitForFrames } from './fixtures';
 
 test('P02-R01..R03: player_ship/ shows the 3 player ships with their stats', async ({ page }) => {
   await page.goto('./player_ship/');
@@ -15,7 +15,7 @@ test('P02-R01..R03: player_ship/ shows the 3 player ships with their stats', asy
   await expect(captions.nth(2)).toContainText('HP 80');
   for (let i = 0; i < 3; i++) await expect(captions.nth(i)).toContainText(/\d polygons/);
   // Let a few frames render so WebGL errors (shaders, textures) surface in the console.
-  await page.waitForTimeout(1000);
+  await waitForFrames(page);
   // The viewer page has no menu.
   await expect(page.locator('.menu-screen')).toHaveCount(0);
 });

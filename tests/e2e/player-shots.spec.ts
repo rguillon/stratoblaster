@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import { test, expect, waitForFrames } from './fixtures';
 
 test.describe('P03-R10: player_shots/ debug page', () => {
   test.beforeEach(async ({ page }) => {
@@ -54,6 +54,6 @@ test.describe('P03-R10: player_shots/ debug page', () => {
     await expect(page.locator('.shot-summary')).toContainText('8 damage within 10 px');
     await expect(page.locator('.shot-shots')).not.toHaveText('Shots in flight: 0');
     // Let a few frames render so WebGL errors surface in the console.
-    await page.waitForTimeout(1000);
+    await waitForFrames(page);
   });
 });
