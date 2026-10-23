@@ -24,7 +24,8 @@ interface Hall {
   readonly h: number;
 }
 
-const ROOFS: readonly Rgb[] = [C.roof, C.rust, C.metal, C.concreteDark, C.containerGreen];
+// Weathered greys and rust only: green roofs stood out from the rest of the zone (review).
+const ROOFS: readonly Rgb[] = [C.roof, C.rust, C.metal, C.concreteDark, C.metalDark];
 /** Space left between the parts of a complex. */
 const GAP = 1.5;
 const DOOR_LIGHTS: readonly Rgb[] = [L.yellow, L.cyan, L.pink];

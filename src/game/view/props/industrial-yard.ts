@@ -120,7 +120,7 @@ function pipeRack({ s, random }: YardKit, [x, z, w, d]: Plot): void {
   }
   for (const y of [6, 7.2]) {
     const size = long ? ([length, 0.8, 0.8] as const) : ([0.8, 0.8, length] as const);
-    s.box(size, pick(random, [C.rust, C.metal, C.containerGreen]), { at: [x, y, z] });
+    s.box(size, pick(random, [C.rust, C.metal, C.metalDark]), { at: [x, y, z] });
   }
 }
 
