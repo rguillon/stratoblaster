@@ -10,7 +10,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { createCloudMaterial } from './cloud-material.visual';
 import { buildGroundTexture, buildNoiseTexture, buildWaterNormalMap } from './procedural-textures';
-import { createPropMaterials, type SceneryKitFactory } from './scenery-kit';
+import { createPropMaterials, createRoadMaterial, type SceneryKitFactory } from './scenery-kit';
 import type { SceneryLook } from './scenery-look';
 import { TerrainBlendPlugin, type TerrainBlendState } from './terrain-blend-plugin.visual';
 
@@ -117,6 +117,7 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
     terrain: terrainMaterial(scene, look, state, seed),
     sea,
     props: createPropMaterials(scene, look),
+    roads: createRoadMaterial(scene),
     cloud: (cloud) => createCloudMaterial(scene, cloud, cloudTexture, fog, () => camera),
     addShadowCaster: (mesh) => {
       shadows.addShadowCaster(mesh, false);

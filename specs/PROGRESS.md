@@ -37,3 +37,4 @@
 - 2026-10-23 — 4 — Blocked before implementation: 11 questions with proposed defaults in the phase report (entry point, camera angle, tools, duration end, look of terrain/sea/clouds/props).
 - 2026-10-23 — 4 — Implemented with the accepted defaults (D-020): generated terrain, sea, clouds and props, the 35° playfield camera and a 3:00 Level Zero on the `level_zero/` page; light verification green (typecheck, build, 32 e2e); awaiting review.
 - 2026-10-23 — 4 — Review fix: smaller props (buildings ×0.5–0.65, trees ×0.45–0.75, 50-unit grid) so the ground reads as far below the ship; light verification green (typecheck, build, 32 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: P04-R07 added to the spec at the reviewer's request; randomly generated roads and paths, buildings only along them (D-021); light verification green (typecheck, build, 32 e2e; the phase 1 gamepad test once went over its 30 s timeout under load); still awaiting review.

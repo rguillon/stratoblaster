@@ -11,7 +11,10 @@ const flat = (name: string, seconds: number, base: number): TerrainSection => ({
   treeDensity: 1,
 });
 
-/** A tiny scenery level: two flat sections of 10 s at 20 units/s, a sea and two prop kinds. */
+/**
+ * A tiny scenery level: two flat sections of 10 s at 20 units/s, a sea, one straight road along
+ * X = 0 with a straight path every 100 units, and two prop kinds.
+ */
 export const SAMPLE_SCENERY_LEVEL: SceneryLevel = {
   id: 'sample-ground',
   name: 'Sample ground',
@@ -20,9 +23,25 @@ export const SAMPLE_SCENERY_LEVEL: SceneryLevel = {
   transition: 40,
   sections: [flat('low', 10, 10), flat('high', 10, 30)],
   sea: { level: 0 },
+  roads: {
+    mainRoads: 1,
+    spread: 0,
+    meander: { amplitude: [0, 0], wavelength: [100, 100] },
+    crossSpacing: [100, 100],
+    crossLength: [80, 80],
+    crossBend: 0,
+    mainWidth: 6,
+    crossWidth: 4,
+    minHeight: 1,
+    maxSlope: 0.5,
+    minRun: 3,
+    step: 5,
+    slotSpacing: 20,
+    setback: 1,
+  },
   props: {
     cellSize: 40,
-    jitter: 0.5,
+    treeClearance: 1,
     maxSlope: 0.5,
     treeMaxSlope: 1,
     minHeight: 1,
@@ -109,6 +128,7 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
       shade: [0.8, 0.8, 0.8],
     },
   ],
+  roads: { main: [0.2, 0.2, 0.2], cross: [0.5, 0.4, 0.3], lift: 0.5 },
   props: { specular: 0, lightIntensity: 1 },
   glow: { intensity: 0.2, blurKernelSize: 8 },
 };

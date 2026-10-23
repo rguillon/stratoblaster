@@ -1,5 +1,6 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import type { HeightField } from './height-field';
+import type { RoadNetwork, RoadSlot } from './road-network';
 import type { PropKindRule, PropRules } from './scenery-level';
 
 /** One prop standing on the ground. */
@@ -23,16 +24,8 @@ export interface GroundArea {
   readonly zMax: number;
 }
 
-/** Hash streams of one cell; each draw of a cell uses its own stream so they stay independent. */
-const Draw = {
-  Building: 0,
-  BuildingX: 1,
-  BuildingZ: 2,
-  Kind: 3,
-  Turn: 4,
-  Scale: 5,
-  Trees: 6,
-} as const;
+/** Hash streams of a slot or a cell; each draw uses its own stream so they stay independent. */
+const Draw = { Building: 0, Kind: 1, Scale: 2, Trees: 3 } as const;
 
 /** Draws per tree: position X, position Z, kind, scale, turn. */
 const TREE_DRAWS = 5;
@@ -50,40 +43,53 @@ function weighted<T extends { readonly weight: number }>(
   return items.at(-1);
 }
 
+function inside(area: GroundArea, x: number, z: number): boolean {
+  return x >= area.xMin && x < area.xMax && z >= area.zMin && z < area.zMax;
+}
+
 /**
- * Places props on the flat ground of a level (P04-R04). Candidate spots sit on a jittered grid;
- * a spot gets a building with the section's building density, if the ground under its footprint
- * is flat enough and above `minHeight`. A low-frequency zone noise picks the building group of
- * each area, so industrial buildings, labs and homes gather in clusters. Cells without a
- * building may get a few dead trees on rougher ground.
+ * Places props on a level (P04-R04, P04-R07). Buildings stand only along the roads: each slot of
+ * the road network gets a building with the section's building density, set back from the road
+ * edge and facing it, if the ground under its footprint is flat enough, above `minHeight`, and
+ * clear of the other roads. Buildings along paths also keep clear of the building rows of the
+ * roads they meet. A low-frequency zone noise picks the building group of each area, so
+ * industrial buildings, labs and homes gather in clusters. Dead trees grow on a grid of cells,
+ * away from the roads, on rougher ground too.
  *
- * Every cell is decided from a hash of its coordinates, so the same cell always gives the same
- * props whatever area is asked for: areas that touch can be placed separately (terrain chunks).
- * A cell belongs to the area that contains its grid corner.
+ * Every slot and cell is decided from a hash, so the same place always gives the same props
+ * whatever area is asked for: areas that touch can be placed separately (terrain chunks). A
+ * slot belongs to the area that contains its point on the road; a cell to the area that
+ * contains its corner.
  */
 export class PropPlacer {
   readonly #zones: Noise2D;
+  /** Depth of a row of buildings along a road, from the road edge. */
+  readonly #rowDepth: number;
 
   constructor(
     private readonly field: HeightField,
     private readonly rules: PropRules,
     private readonly seed: number,
+    readonly roads: RoadNetwork,
   ) {
     this.#zones = createNoise2D(seed + 3);
+    const footprints = rules.groups.flatMap((g) => g.kinds.map((k) => k.footprint));
+    this.#rowDepth = roads.setback + 2 * Math.max(0, ...footprints);
   }
 
-  /** Props of every cell whose corner lies in `area`. */
+  /** Buildings of the road slots and trees of the cells that lie in `area`. */
   place(area: GroundArea): PropPlacement[] {
-    const { cellSize } = this.rules;
     const placements: PropPlacement[] = [];
+    for (const slot of this.roads.slots) {
+      if (!inside(area, slot.x, slot.z)) continue;
+      const building = this.#building(slot);
+      if (building) placements.push(building);
+    }
+    const { cellSize } = this.rules;
     const [i0, i1] = [Math.ceil(area.xMin / cellSize), Math.ceil(area.xMax / cellSize)];
     const [j0, j1] = [Math.ceil(area.zMin / cellSize), Math.ceil(area.zMax / cellSize)];
     for (let j = j0; j < j1; j++) {
-      for (let i = i0; i < i1; i++) {
-        const building = this.#building(i, j);
-        if (building) placements.push(building);
-        else placements.push(...this.#trees(i, j));
-      }
+      for (let i = i0; i < i1; i++) placements.push(...this.#trees(i, j));
     }
     return placements;
   }
@@ -92,32 +98,30 @@ export class PropPlacer {
     return hash2D(i, j, this.seed * 31 + draw);
   }
 
-  #building(i: number, j: number): PropPlacement | undefined {
-    const { cellSize, jitter } = this.rules;
-    const x = (i + 0.5 + (this.#random(i, j, Draw.BuildingX) - 0.5) * jitter) * cellSize;
-    const z = (j + 0.5 + (this.#random(i, j, Draw.BuildingZ) - 0.5) * jitter) * cellSize;
-    const density = this.field.sectionAt(z).section.buildingDensity;
-    if (this.#random(i, j, Draw.Building) >= density) return undefined;
-    const zone = (this.#zones(x * this.rules.zoneFrequency, z * this.rules.zoneFrequency) + 1) / 2;
+  #building(slot: RoadSlot): PropPlacement | undefined {
+    const r = (draw: number): number => this.#random(slot.road.index, slot.index, draw);
+    if (r(Draw.Building) >= this.field.sectionAt(slot.z).section.buildingDensity) return undefined;
+    const f = this.rules.zoneFrequency;
+    const zone = (this.#zones(slot.x * f, slot.z * f) + 1) / 2;
     const group = weighted(this.rules.groups, Math.min(0.999999, Math.max(0, zone)));
-    const kind = group && weighted(group.kinds, this.#random(i, j, Draw.Kind));
+    const kind = group && weighted(group.kinds, r(Draw.Kind));
     if (!kind) return undefined;
+    const offset = slot.road.width / 2 + this.roads.setback + kind.footprint;
+    const x = slot.x + slot.nx * offset;
+    const z = slot.z + slot.nz * offset;
+    // Paths give way to the building rows of the roads they meet.
+    const clearance =
+      kind.footprint + this.roads.setback + (slot.road.kind === 'cross' ? this.#rowDepth : 0);
+    if (this.roads.edgeDistance(x, z, slot.road) < clearance) return undefined;
     const y = this.#standingHeight(x, z, kind.footprint, this.rules.maxSlope);
     if (y === undefined) return undefined;
-    // Buildings of an area share a street grid: a quarter turn, plus the zone's own angle.
-    const quarter = Math.floor(this.#random(i, j, Draw.Turn) * 4);
-    return {
-      kind: kind.id,
-      x,
-      y,
-      z,
-      rotation: (quarter * Math.PI) / 2 + zone * Math.PI,
-      scale: this.#scale(kind, this.#random(i, j, Draw.Scale)),
-    };
+    // The model's front (-Z) faces the road.
+    const rotation = Math.atan2(slot.nx, slot.nz);
+    return { kind: kind.id, x, y, z, rotation, scale: this.#scale(kind, r(Draw.Scale)) };
   }
 
   #trees(i: number, j: number): PropPlacement[] {
-    const { cellSize, trees, treesPerCell } = this.rules;
+    const { cellSize, trees, treesPerCell, treeClearance } = this.rules;
     const density = this.field.sectionAt((j + 0.5) * cellSize).section.treeDensity;
     const count = Math.floor(this.#random(i, j, Draw.Trees) * (treesPerCell + 1) * density);
     const placements: PropPlacement[] = [];
@@ -126,8 +130,9 @@ export class PropPlacer {
       const x = (i + r(0)) * cellSize;
       const z = (j + r(1)) * cellSize;
       const kind = weighted(trees, r(2));
-      const y = kind && this.#standingHeight(x, z, kind.footprint, this.rules.treeMaxSlope);
-      if (kind && y !== undefined) {
+      if (!kind || this.roads.edgeDistance(x, z) < treeClearance + kind.footprint) continue;
+      const y = this.#standingHeight(x, z, kind.footprint, this.rules.treeMaxSlope);
+      if (y !== undefined) {
         placements.push({
           kind: kind.id,
           x,
@@ -140,7 +145,6 @@ export class PropPlacer {
     }
     return placements;
   }
-
   #scale(kind: PropKindRule, r: number): number {
     const [min, max] = kind.scale;
     return min + (max - min) * r;

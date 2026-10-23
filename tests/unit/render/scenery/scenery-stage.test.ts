@@ -42,9 +42,12 @@ describe('SceneryStage', () => {
   it('P04-R01, P04-R04: builds terrain chunks and props around the camera, and follows it', () => {
     const s = stage();
     s.update(0, 1 / 60);
-    const { chunks, props } = s.stats;
+    const { chunks, props, roads } = s.stats;
     expect(chunks).toBeGreaterThan(1);
     expect(props).toBeGreaterThan(0);
+    // P04-R07: road ribbons on the chunks.
+    expect(roads).toBeGreaterThan(0);
+    expect(scene?.meshes.some((m) => m.name.startsWith('roads-'))).toBe(true);
     s.update(5000, 1 / 60);
     expect(s.camera.position.z).toBeGreaterThan(4000);
     const meshes =

@@ -59,10 +59,18 @@ The camera shall be on the top, pointing down, angled 35% to the back.
 
 Level zero shall last around 3 minuteS.
 
+### P04-R07 — Roads  · MUST
+
+Randomly generated roads or paths shall run across the maps. The building props shall only be placed along those roads.
+
+**Acceptance criteria**
+- [ ] Manual visual validation
+
 ---
 
 ## 🧑 Review feedback
 
+- [x] Add (in the code and in the specs) randomly generated roads or paths on the maps and only place the building props along those roads. *Fixed: requirement P04-R07 added at the reviewer's request. Two winding main roads run along the level, with paths branching off them every 260–560 units. All are generated from the seed and break where they would run into the sea or up steep slopes. Buildings now stand only in slots along roads and paths, set back from the edge and facing the road; trees keep off them (D-021).*
 - [x] Reduce the scale of the props, make them look like the plane is further away. *Fixed: buildings are drawn at ×0.5–0.65 (was ×1.1–1.4) and dead trees at ×0.45–0.75 (was ×0.9–1.5). Footprints shrink to match: the model radius at its largest scale, now checked by a test. The candidate grid goes from 80 to 50 units so the ground keeps its density. The plains now hold about 700 props and the scene draws about 190k triangles (was about 130k).*
 
 ---
@@ -118,6 +126,7 @@ Level zero shall last around 3 minuteS.
 | Level Zero data and look (`game/config/level-zero.ts`, `scenery-look.ts`), registration in `GAME` | P04-R01..R06 |
 | `level_zero/` page: route, panel, keys, stats tile, ship for scale, playfield outline | P04-R01..R06 |
 | Unit tests (engine with the sample game, game content), e2e `level-zero.spec.ts`, docs | all |
+| Review: road network (main roads + paths), building slots along roads, road ribbons per chunk | P04-R07 |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
@@ -127,6 +136,7 @@ Level zero shall last around 3 minuteS.
 | P04-R03 | Done | `render/scenery/scenery-stage.ts` (layers), `cloud-material.visual.ts`, `game/config/scenery-look.ts` | `scenery-stage.test.ts`, `scenery-viewer-panel.test.ts`, `start-scenery-viewer.test.ts`, e2e | 2 layers under the flight plane. Each layer has an on/off switch and intensity (coverage) and opacity sliders. Manual visual validation. |
 | P04-R04 | Done (review: smaller props) | `core/scenery/prop-placement.ts`, `render/scenery/prop-field.ts`, `render/geometry/solids.ts`, `game/view/props/*` | `prop-placement.test.ts`, `prop-field.test.ts`, `solids.test.ts`, `prop-models.test.ts`, `scenery-levels.test.ts` | 4 industrial (factory, storage tanks, warehouse, cooling tower), 3 technical / scientific (radar dish, antenna mast, observatory), 3 homes (cube home, dome home, stilt pod), 2 dead trees. Manual visual validation. |
 | P04-R05 | Done | `render/scenery/playfield-framing.ts`, `scenery-stage.ts`, `game/config/scenery-look.ts` (`PLAYFIELD_CAMERA`) | `playfield-framing.test.ts`, `scenery-stage.test.ts`, `start-scenery-viewer.test.ts` | "35%" read as 35° from vertical (Q4). Perspective camera, 40° FOV, looking forward. O shows the playfield outline. Manual visual validation. |
+| P04-R07 | Done (added in review) | `core/scenery/road-network.ts`, `prop-placement.ts` (buildings from road slots), `render/scenery/road-geometry.ts`, `road-field.ts`, `game/config/level-zero.ts` (`ROAD_RULES`), `scenery-look.ts` (`roads`) | `road-network.test.ts`, `prop-placement.test.ts`, `road-geometry.test.ts`, `scenery-stage.test.ts`, `scenery-levels.test.ts` | Main roads are dark asphalt, 6 wide; paths are packed dust, 4 wide. Manual visual validation. |
 | P04-R06 | Done | `core/scenery/scroll-track.ts`, `scenery-level.ts` (`levelDuration`), `app/start-scenery-viewer.ts` | `scroll-track.test.ts`, `scenery-level.test.ts`, `scenery-levels.test.ts` (exactly 180 s), `start-scenery-viewer.test.ts`, e2e | 60 px/s, 10,800 px long. At the end the level stops and shows "Level end" (Q5). |
 
 ### Gate results
@@ -138,6 +148,9 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (roads, P04-R07): typecheck ✔, build ✔, e2e 32 passed. In an earlier run of this fix,
+menu-gamepad.spec.ts (phase 1, not touched here) went over its 30 s timeout under the full
+parallel load (32.4 s); it passed alone and in the final full run.
 ```
 Lint, unit tests and coverage were not run as a gate. While debugging, I ran the new core tests and `start-scenery-viewer.test.ts` once (109 passing at that point). ESLint was also run on `src/` (clean), and the pre-commit hook lints staged files. The render, UI and game tests written after that have only been type-checked.
 
@@ -163,8 +176,9 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
    | 2:36 | landing | Coast again |
    | 2:48 | plains | |
    | 3:00 | — | The level stops with "Level end" (P04-R06) |
-5. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
-6. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles; the busiest sections are the plains, full of small props.
+5. P04-R07: roads (dark) and paths (light dust) wind across the map, and every building stands along one, facing it. Roads stop at the sea and on steep mountain slopes. N gives another road network.
+6. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
+7. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles; the busiest sections are the plains, full of small props.
 
 ### Deviations from spec
 - None from the requirements. The interpretations agreed in the questions (Q1–Q11) are listed in D-020.
@@ -177,6 +191,8 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
 - **Sea.** There is no mirror reflection of terrain or props (decided in Q7). The wave pattern repeats every 320 units.
 - **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
 - **Panel.** On narrow windows the panel covers part of the canvas.
+- **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two roads cross, the ribbons simply overlap. Paths end abruptly where they stop.
+- **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` test runs close to its 30 s timeout when the whole suite runs in parallel, and it failed that way twice during this phase's review fixes. It passes when run alone.
 
 ### Suggestions for future phases
 - **Gameplay mapping.** Either keep this camera and limit ship movement to the visible trapezoid, or project the 2D logical playfield onto the tilted plane so that the full 480 px width is visible at the bottom. The second option needs a wider FOV or a higher camera.

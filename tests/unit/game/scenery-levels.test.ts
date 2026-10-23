@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GAME } from '../../../src/game/index';
 import { HeightField } from '../../../src/core/scenery/height-field';
 import { PropPlacer } from '../../../src/core/scenery/prop-placement';
+import { levelRoads } from '../../../src/core/scenery/road-network';
 import { levelDuration } from '../../../src/core/scenery/scenery-level';
 import { LEVEL_ZERO, SCENERY_LEVELS } from '../../../src/game/sim/scenery-levels';
 import { PLAYFIELD_CAMERA } from '../../../src/game/config/scenery-look';
@@ -43,11 +44,32 @@ describe('Level Zero', () => {
   });
 
   it('P04-R04: places every kind of prop over the level, on flat ground above the sea', () => {
-    const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed);
+    const roads = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
+    const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
     const props = placer.place({ xMin: -500, xMax: 500, zMin: 0, zMax: field.length });
     const kinds = new Set(props.map((p) => p.kind));
     expect([...kinds].sort()).toEqual(Object.keys(PROP_MODELS).sort());
     for (const p of props) expect(p.y).toBeGreaterThanOrEqual(LEVEL_ZERO.props.minHeight);
+  });
+
+  it('P04-R07: has roads and paths over the level, with buildings only along them', () => {
+    const roads = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
+    expect(roads.roads.filter((r) => r.kind === 'main')).toHaveLength(2);
+    expect(roads.roads.filter((r) => r.kind === 'cross').length).toBeGreaterThan(20);
+    const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
+    const trees = new Set(LEVEL_ZERO.props.trees.map((t) => t.id));
+    const buildings = placer
+      .place({ xMin: -500, xMax: 500, zMin: 0, zMax: 3000 })
+      .filter((p) => !trees.has(p.kind));
+    expect(buildings.length).toBeGreaterThan(50);
+    const widest = Math.max(
+      ...LEVEL_ZERO.props.groups.flatMap((g) => g.kinds.map((k) => k.footprint)),
+    );
+    for (const b of buildings) {
+      expect(roads.edgeDistance(b.x, b.z)).toBeLessThanOrEqual(
+        widest + LEVEL_ZERO.roads.setback + 1,
+      );
+    }
   });
 
   it('P04: is registered in the game with a look and a model per prop', () => {

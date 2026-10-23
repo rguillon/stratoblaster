@@ -72,7 +72,7 @@ export interface TerrainSection {
   readonly flatten?: Flatten;
   readonly channel?: Channel;
   readonly shore?: Shore;
-  /** Chance (0..1) that a candidate spot of this section gets a building. */
+  /** Chance (0..1) that a building slot along a road of this section gets a building. */
   readonly buildingDensity: number;
   /** Chance (0..1) that an empty candidate spot of this section gets trees. */
   readonly treeDensity: number;
@@ -96,12 +96,12 @@ export interface PropGroupRule {
   readonly kinds: readonly PropKindRule[];
 }
 
-/** Where and which props stand on the ground (P04-R04). */
+/** Where and which props stand on the ground (P04-R04). Buildings follow the roads (R07). */
 export interface PropRules {
-  /** Candidate spots sit on a jittered grid of this cell size. */
+  /** Trees grow in the cells of a grid of this size. */
   readonly cellSize: number;
-  /** 0 = grid centres, 1 = anywhere in the cell. */
-  readonly jitter: number;
+  /** Trees keep this far from the road edges. */
+  readonly treeClearance: number;
   /** Steepest ground (height difference over the footprint radius) a building stands on. */
   readonly maxSlope: number;
   /** Trees stand on steeper ground than buildings. */
@@ -116,7 +116,38 @@ export interface PropRules {
   readonly treesPerCell: number;
 }
 
-/** The ground of a scrolling level: terrain, optional sea and props. */
+type Range = readonly [number, number];
+
+/**
+ * Randomly generated roads and paths (P04-R07): `mainRoads` roads wind along the whole level,
+ * and paths branch off them across it. Buildings stand only along them.
+ */
+export interface RoadRules {
+  readonly mainRoads: number;
+  /** Main roads are centred somewhere within X ∈ [-spread, spread]. */
+  readonly spread: number;
+  readonly meander: { readonly amplitude: Range; readonly wavelength: Range };
+  /** Distance along Z between two paths. */
+  readonly crossSpacing: Range;
+  readonly crossLength: Range;
+  /** Largest sideways bend of a path. */
+  readonly crossBend: number;
+  readonly mainWidth: number;
+  readonly crossWidth: number;
+  /** Roads break where the ground is lower than this (the sea) or steeper than `maxSlope`. */
+  readonly minHeight: number;
+  readonly maxSlope: number;
+  /** Pieces of road shorter than this many points are dropped. */
+  readonly minRun: number;
+  /** Distance between two points of a road's centre line. */
+  readonly step: number;
+  /** Distance between two building slots along a road. */
+  readonly slotSpacing: number;
+  /** Gap between the road edge and a building's footprint. */
+  readonly setback: number;
+}
+
+/** The ground of a scrolling level: terrain, optional sea, roads and props. */
 export interface SceneryLevel {
   readonly id: string;
   readonly name: string;
@@ -127,6 +158,7 @@ export interface SceneryLevel {
   readonly transition: number;
   readonly sections: readonly TerrainSection[];
   readonly sea?: { readonly level: number };
+  readonly roads: RoadRules;
   readonly props: PropRules;
 }
 

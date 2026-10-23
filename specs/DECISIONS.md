@@ -253,3 +253,19 @@
   - Quality presets (ENG-102) do not exist yet, so the shadow map size and the terrain grid are fixed.
   - New levels are data plus a look; new prop kinds are a geometry function plus a rule entry.
 - **Status:** Accepted
+
+### D-021 — Roads and paths, with buildings only along them
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer asked for randomly generated roads or paths on the maps, with building props only along them, in the code and in the specs. The spec now has P04-R07.
+- **Decision:**
+  - `core/scenery/road-network.ts` (pure, seeded): `mainRoads` winding roads run along the whole level and a little beyond both ends (a sine meander plus noise wobble). Paths branch off a random main road every `crossSpacing`, going left or right with a gentle bend. Centre lines are sampled every `step`. Points under `minHeight` (the sea) or steeper than `maxSlope` are invalid, and valid pieces shorter than `minRun` points are dropped. Segments are indexed in 64-unit buckets for edge-distance queries.
+  - Placement: buildings come only from slots every `slotSpacing` along the valid roads, on both sides. A building is set back `setback` from the road edge, faces the road, and must stay clear of the other roads. Buildings along paths also keep clear of the building rows of the roads they meet, so corners do not collide. Trees stay on their grid but keep `treeClearance` from road edges.
+  - Rendering: each terrain chunk gets one vertex-coloured ribbon mesh with the segments that start in it, draped on the height field, lifted 0.6 and pulled forward in depth (`zOffset`) so it never flickers against the terrain. It receives shadows.
+  - Data: `SceneryLevel.roads` (`RoadRules`) and `SceneryLook.roads` (colours, lift). Level Zero has 2 main roads 6 units wide and paths 4 units wide.
+- **Alternatives considered:**
+  - Painting roads in the terrain shader: road data would have to go to the GPU, which is harder to keep chunk-local.
+  - Flattening the terrain under the roads: changes the height field for little visible gain from this camera height.
+  - A graph-based road planner (A* over slope): too much for a test level.
+- **Consequences:** Sections with no usable road (open sea, steep mountains) get no buildings. A new seed (N) also changes the road network.
+- **Status:** Accepted

@@ -136,6 +136,8 @@ export const LEVEL_ZERO_LOOK = {
       shade: [0.8, 0.78, 0.8],
     },
   ],
+  /** P04-R07: dark worn asphalt for the roads, packed dust for the paths. */
+  roads: { main: [0.34, 0.32, 0.3], cross: [0.68, 0.6, 0.46], lift: 0.6 },
   props: { specular: 0.08, lightIntensity: 1 },
   glow: { intensity: 0.5, blurKernelSize: 16 },
 } as const;

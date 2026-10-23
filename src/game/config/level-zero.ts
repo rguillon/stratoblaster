@@ -1,4 +1,9 @@
-import type { PropRules, SceneryLevel, TerrainSection } from '../../core/scenery/scenery-level';
+import type {
+  PropRules,
+  RoadRules,
+  SceneryLevel,
+  TerrainSection,
+} from '../../core/scenery/scenery-level';
 
 /*
  * Level Zero (P04): a test level that shows every terrain tool. Heights in world units
@@ -36,7 +41,7 @@ const TREE_SCALE = [0.45, 0.75] as const;
 
 const PROP_RULES: PropRules = {
   cellSize: 50,
-  jitter: 0.4,
+  treeClearance: 3,
   maxSlope: 0.12,
   treeMaxSlope: 0.45,
   minHeight: 4,
@@ -76,6 +81,27 @@ const PROP_RULES: PropRules = {
     { id: PROP_IDS.forkedTree, weight: 1, footprint: 1.5, scale: TREE_SCALE },
   ],
   treesPerCell: 4,
+};
+
+/**
+ * P04-R07: two winding roads along the level, and paths branching off them every 260-560 units.
+ * Buildings stand only along them, every 34 units on both sides.
+ */
+const ROAD_RULES: RoadRules = {
+  mainRoads: 2,
+  spread: 220,
+  meander: { amplitude: [80, 180], wavelength: [1300, 2600] },
+  crossSpacing: [260, 560],
+  crossLength: [160, 420],
+  crossBend: 40,
+  mainWidth: 6,
+  crossWidth: 4,
+  minHeight: 3,
+  maxSlope: 0.35,
+  minRun: 6,
+  step: 8,
+  slotSpacing: 34,
+  setback: 2,
 };
 
 const smooth = (base: number, amplitude: number, wavelength: number, octaves: number) =>
@@ -189,5 +215,6 @@ export const LEVEL_ZERO_CONFIG: SceneryLevel = {
   transition: 420,
   sections: SECTIONS,
   sea: { level: 0 },
+  roads: ROAD_RULES,
   props: PROP_RULES,
 };

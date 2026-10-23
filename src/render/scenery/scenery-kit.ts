@@ -40,6 +40,7 @@ export interface SceneryKit {
   readonly terrain: Material;
   readonly sea: Material;
   readonly props: PropMaterials;
+  readonly roads: Material;
   cloud(look: CloudLayerLook): CloudMaterial;
   addShadowCaster(mesh: AbstractMesh): void;
   update(frame: SceneryKitFrame): void;
@@ -86,6 +87,19 @@ export function createPropMaterials(scene: Scene, look: SceneryLook): PropMateri
   return { structure, lights };
 }
 
+/**
+ * Vertex-coloured, lit material of the road ribbons, pulled towards the camera in depth so the
+ * ribbons never flicker against the terrain under them.
+ */
+export function createRoadMaterial(scene: Scene): StandardMaterial {
+  const roads = new StandardMaterial('roads', scene);
+  roads.diffuseColor = Color3.White();
+  roads.specularColor = Color3.Black();
+  roads.backFaceCulling = false;
+  roads.zOffset = -2;
+  return roads;
+}
+
 /** Flat-coloured stand-ins for every material, with no texture and no shadow. */
 export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
   const sea = plain('sea', look.sea.color, scene);
@@ -94,6 +108,7 @@ export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
     terrain: plain('terrain', look.terrain.ground.colors[1], scene),
     sea,
     props: createPropMaterials(scene, look),
+    roads: createRoadMaterial(scene),
     cloud: (cloud) => {
       const material = plain(`cloud-${String(cloud.altitude)}`, cloud.color, scene);
       return {

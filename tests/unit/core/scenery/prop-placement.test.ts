@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { HeightField } from '../../../../src/core/scenery/height-field';
 import { PropPlacer } from '../../../../src/core/scenery/prop-placement';
+import { levelRoads } from '../../../../src/core/scenery/road-network';
 import type { SceneryLevel } from '../../../../src/core/scenery/scenery-level';
 import { SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 
 const AREA = { xMin: -200, xMax: 200, zMin: 0, zMax: 400 };
 
 function placer(level: SceneryLevel = SAMPLE_SCENERY_LEVEL, seed = level.seed): PropPlacer {
-  return new PropPlacer(new HeightField(level, seed), level.props, seed);
+  const field = new HeightField(level, seed);
+  return new PropPlacer(field, level.props, seed, levelRoads(field, level.roads, seed));
 }
 
 describe('PropPlacer', () => {
@@ -17,12 +19,37 @@ describe('PropPlacer', () => {
     expect(placer().place(AREA)).toEqual(props);
     expect(new Set(props.map((p) => p.kind))).toEqual(new Set(['block', 'stick']));
     const field = new HeightField(SAMPLE_SCENERY_LEVEL);
-    for (const p of props) {
-      expect(p.y).toBeLessThanOrEqual(field.height(p.x, p.z) + 1e-9);
-      expect(p.x).toBeGreaterThanOrEqual(AREA.xMin);
-      expect(p.x).toBeLessThan(AREA.xMax + SAMPLE_SCENERY_LEVEL.props.cellSize);
-    }
+    for (const p of props) expect(p.y).toBeLessThanOrEqual(field.height(p.x, p.z) + 1e-9);
     expect(placer(SAMPLE_SCENERY_LEVEL, 99).place(AREA)).not.toEqual(props);
+  });
+
+  it('P04-R07: buildings stand only along the roads, set back from the edge, facing the road', () => {
+    const p = placer();
+    const { roads, setback } = p.roads;
+    const buildings = p.place(AREA).filter((b) => b.kind === 'block');
+    expect(buildings.length).toBeGreaterThan(5);
+    const footprint = 5;
+    for (const b of buildings) {
+      const edge = p.roads.edgeDistance(b.x, b.z);
+      expect(edge).toBeGreaterThanOrEqual(footprint + setback - 1e-6);
+      expect(edge).toBeLessThan(footprint + setback + 1);
+      // The model's front (-Z), turned by the rotation, points at the nearest road.
+      const [fx, fz] = [-Math.sin(b.rotation), -Math.cos(b.rotation)];
+      const ahead = p.roads.edgeDistance(b.x + fx * 3, b.z + fz * 3);
+      expect(ahead).toBeLessThan(edge);
+    }
+    expect(roads.some((r) => r.kind === 'main') && roads.some((r) => r.kind === 'cross')).toBe(
+      true,
+    );
+  });
+
+  it('P04-R07: trees keep off the roads', () => {
+    const p = placer();
+    for (const tree of p.place(AREA).filter((t) => t.kind === 'stick')) {
+      expect(p.roads.edgeDistance(tree.x, tree.z)).toBeGreaterThanOrEqual(
+        SAMPLE_SCENERY_LEVEL.props.treeClearance,
+      );
+    }
   });
 
   it('P04-R04: neighbouring areas give the same props as the whole area (terrain chunks)', () => {
@@ -33,7 +60,7 @@ describe('PropPlacer', () => {
     expect(split.map(key).sort()).toEqual(whole.map(key).sort());
   });
 
-  it('P04-R04: only flat ground gets buildings, and nothing stands below minHeight', () => {
+  it('P04-R04: only flat ground gets props, and nothing stands below minHeight', () => {
     const steep: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,
       sections: SAMPLE_SCENERY_LEVEL.sections.map((s) => ({
@@ -60,17 +87,5 @@ describe('PropPlacer', () => {
       })),
     };
     expect(placer(empty).place(AREA)).toEqual([]);
-  });
-
-  it('P04-R04: buildings of an area share a street grid (quarter turns plus a zone angle)', () => {
-    const buildings = placer()
-      .place(AREA)
-      .filter((p) => p.kind === 'block');
-    expect(buildings.length).toBeGreaterThan(3);
-    for (const b of buildings) {
-      expect(b.scale).toBe(1);
-      expect(b.rotation).toBeGreaterThanOrEqual(0);
-      expect(b.rotation).toBeLessThan(2 * Math.PI + Math.PI);
-    }
   });
 });

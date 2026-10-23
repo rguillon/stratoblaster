@@ -6,6 +6,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { PropPlacement } from '../../core/scenery/prop-placement';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
+import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import type { PropModelFactory } from './scenery-look';
 
 /** Materials of the props: the lit structure, and the self-lit accents. */
@@ -35,6 +36,17 @@ function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: S
   mesh.isPickable = false;
   mesh.setEnabled(false);
   return mesh;
+}
+
+/** Throws if a prop kind of `level` has no model. */
+export function checkPropModels(
+  level: SceneryLevel,
+  models: Readonly<Record<string, PropModelFactory>>,
+): void {
+  const kinds = [...level.props.groups.flatMap((g) => g.kinds), ...level.props.trees];
+  for (const kind of kinds) {
+    if (!(kind.id in models)) throw new Error(`No model for prop "${kind.id}"`);
+  }
 }
 
 /**

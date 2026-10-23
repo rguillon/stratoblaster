@@ -78,10 +78,15 @@ render/scenery/  TerrainChunks ◀──────────┘   PropField 
   the sea on one side). Optional sea level; prop rules.
 - `core/scenery/height-field.ts`: pure, seeded height function of a level; sections blend over
   `transition`. `core/math/noise.ts`: seeded gradient noise (optionally tiling), fBm, ridged noise.
-- `core/scenery/prop-placement.ts`: a jittered grid of candidate spots; buildings need flat ground
-  above `minHeight`, a low-frequency zone noise picks the building group per area (clusters), empty
-  cells may get trees. Each cell is decided from a hash of its coordinates, so chunks can be placed
-  independently.
+- `core/scenery/road-network.ts`: seeded winding main roads along the level and paths branching
+  off them; they break under the sea and on steep ground. Building slots line both sides of the
+  roads.
+- `core/scenery/prop-placement.ts`: buildings stand only in the road slots (set back from the
+  edge, facing the road), on flat ground above `minHeight`; a low-frequency zone noise picks the
+  building group per area (clusters). Dead trees grow on a grid of cells, away from the roads.
+  Every slot and cell is decided from a hash, so chunks can be placed independently.
+- `render/scenery/road-geometry.ts` / `road-field.ts`: one draped ribbon mesh of roads per
+  terrain chunk.
 - `render/scenery/playfield-framing.ts`: the camera is tilted `tiltDeg` from straight down and
   placed so the bottom and top of the screen pass through the bottom and top of the logical
   playfield, a plane at `flightAltitude`. One world unit is one logical pixel; X across (0 under

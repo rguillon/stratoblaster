@@ -1,5 +1,6 @@
 import type { GradientStop } from '../environment/gradient-cube';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
+import type { RoadLook } from './road-geometry';
 
 type Rgb = readonly [number, number, number];
 
@@ -115,6 +116,8 @@ export interface SceneryLook {
   readonly terrain: TerrainLook;
   readonly sea: SeaLook;
   readonly clouds: readonly CloudLayerLook[];
+  /** Colours of the roads and paths (P04-R07). */
+  readonly roads: RoadLook;
   readonly props: {
     readonly specular: number;
     /** Brightness of the self-lit accents (neon, windows). */

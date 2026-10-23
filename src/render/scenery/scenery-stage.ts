@@ -7,6 +7,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LogicalScreen } from '../../core/content/game-definition';
 import { HeightField } from '../../core/scenery/height-field';
 import { PropPlacer } from '../../core/scenery/prop-placement';
+import { levelRoads } from '../../core/scenery/road-network';
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import {
   framePlayfield,
@@ -14,7 +15,7 @@ import {
   type GroundWindow,
   type PlayfieldFraming,
 } from './playfield-framing';
-import { PropField } from './prop-field';
+import { checkPropModels, PropField } from './prop-field';
 import type { CloudMaterial, SceneryKit, SceneryKitFactory } from './scenery-kit';
 import type {
   CloudLayerLook,
@@ -24,6 +25,8 @@ import type {
 } from './scenery-look';
 import { lightScenery } from './scenery-lighting';
 import { TerrainChunks } from './terrain-chunks';
+import { RoadField } from './road-field';
+import { buildRoadGeometry } from './road-geometry';
 
 /** Engine settings of a {@link SceneryStage}. */
 export interface SceneryStageConfig {
@@ -70,16 +73,6 @@ function lowestGround(level: SceneryLevel): number {
   return level.sea ? level.sea.level : Math.min(...lows);
 }
 
-function checkModels(
-  level: SceneryLevel,
-  models: Readonly<Record<string, PropModelFactory>>,
-): void {
-  const kinds = [...level.props.groups.flatMap((g) => g.kinds), ...level.props.trees];
-  for (const kind of kinds) {
-    if (!(kind.id in models)) throw new Error(`No model for prop "${kind.id}"`);
-  }
-}
-
 /**
  * The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain
  * in chunks, an optional sea, cloud layers and props, lit by a low sun. {@link update} moves
@@ -96,6 +89,7 @@ export class SceneryStage {
   #seed: number;
   readonly #chunks: TerrainChunks;
   readonly #props: PropField;
+  readonly #roads: RoadField;
   readonly #sea: Mesh | undefined;
   readonly #cloudLayers: CloudLayer[];
   readonly #ground: GroundWindow;
@@ -108,10 +102,10 @@ export class SceneryStage {
     private readonly options: SceneryStageOptions,
   ) {
     const { level, look, config } = options;
-    checkModels(level, options.propModels);
+    checkPropModels(level, options.propModels);
     this.#seed = level.seed;
     this.#field = new HeightField(level, this.#seed);
-    this.#placer = new PropPlacer(this.#field, level.props, this.#seed);
+    this.#placer = this.#newPlacer();
     this.framing = framePlayfield(options.screen, options.camera);
     const cameraY = options.camera.flightAltitude + this.framing.height;
     this.#ground = visibleGround(
@@ -135,6 +129,7 @@ export class SceneryStage {
       seed: level.seed,
     });
     this.#chunks = this.#buildChunks();
+    this.#roads = new RoadField(scene, this.kit.roads);
     this.#props = new PropField(scene, options.propModels, this.kit.props, (mesh) => {
       this.kit.addShadowCaster(mesh);
     });
@@ -162,8 +157,8 @@ export class SceneryStage {
   }
 
   /** Number of props and terrain chunks in the scene. */
-  get stats(): { readonly props: number; readonly chunks: number } {
-    return { props: this.#props.count, chunks: this.#chunks.count };
+  get stats(): { readonly props: number; readonly chunks: number; readonly roads: number } {
+    return { props: this.#props.count, chunks: this.#chunks.count, roads: this.#roads.count };
   }
 
   /** Meshes of the props' self-lit accents (for a glow layer). */
@@ -175,9 +170,10 @@ export class SceneryStage {
   setSeed(seed: number): void {
     this.#seed = seed;
     this.#field = new HeightField(this.options.level, seed);
-    this.#placer = new PropPlacer(this.#field, this.options.level.props, seed);
+    this.#placer = this.#newPlacer();
     this.#chunks.rebuild(this.#field);
     this.#props.clear();
+    this.#roads.clear();
     for (const index of this.#chunks.meshes.keys()) this.#placeChunk(index);
   }
 
@@ -212,7 +208,10 @@ export class SceneryStage {
       camera.z + this.#ground.zNear - margin,
       camera.z + this.#ground.zFar + margin,
     );
-    for (const index of changes.removed) this.#props.removeChunk(index);
+    for (const index of changes.removed) {
+      this.#props.removeChunk(index);
+      this.#roads.removeChunk(index);
+    }
     for (const span of changes.added) this.#placeChunk(span.index);
     this.#props.sync();
     const middle = camera.z + (this.#ground.zNear + this.#ground.zFar) / 2;
@@ -228,8 +227,22 @@ export class SceneryStage {
     this.kit.update({ time: this.#time, cameraPosition: camera, seaEnabled: this.#seaEnabled });
   }
 
+  #newPlacer(): PropPlacer {
+    const { level } = this.options;
+    const roads = levelRoads(this.#field, level.roads, this.#seed);
+    return new PropPlacer(this.#field, level.props, this.#seed, roads);
+  }
+
   #placeChunk(index: number): void {
     const span = this.#chunks.span(index);
+    const roads = buildRoadGeometry(
+      this.#placer.roads.roads,
+      this.#field,
+      span.zMin,
+      span.zMax,
+      this.options.look.roads,
+    );
+    this.#roads.setChunk(index, roads);
     this.#props.setChunk(
       index,
       this.#placer.place({
