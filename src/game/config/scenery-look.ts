@@ -91,6 +91,26 @@ export const LEVEL_ZERO_LOOK = {
       8,
       { octaves: 3 },
     ),
+    /** Phase 4 review: grass of the meadows, with a few dry yellow tufts. */
+    lush: texture(
+      [
+        [0.2, 0.3, 0.11],
+        [0.28, 0.4, 0.15],
+        [0.37, 0.49, 0.2],
+      ],
+      14,
+      { speckle: 0.04, speckleColor: [0.55, 0.52, 0.26] },
+    ),
+    /** Phase 4 review: worn concrete of the industrial zone and the city centre. */
+    paved: texture(
+      [
+        [0.33, 0.33, 0.34],
+        [0.41, 0.41, 0.42],
+        [0.49, 0.49, 0.5],
+      ],
+      10,
+      { speckle: 0.03, speckleColor: [0.22, 0.22, 0.23] },
+    ),
     lowHeight: 7,
     highHeight: 205,
     heightBlend: 12,

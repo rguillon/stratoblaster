@@ -55,6 +55,8 @@ function terrainMaterial(
       ground: ground(t.ground, 2),
       steep: ground(t.steep, 3),
       high: ground(t.high, 4),
+      lush: ground(t.lush, 8),
+      paved: ground(t.paved, 9),
       noise: rawTexture(
         scene,
         buildNoiseTexture(t.textureSize, NOISE_FREQUENCY, seed + 5),

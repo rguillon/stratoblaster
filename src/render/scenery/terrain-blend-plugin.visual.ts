@@ -4,6 +4,7 @@ import type { MaterialDefines } from '@babylonjs/core/Materials/materialDefines'
 import { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase';
 import type { UniformBuffer } from '@babylonjs/core/Materials/uniformBuffer';
 import type { TerrainLook } from './scenery-look';
+import { SURFACE_SCALE } from './terrain-geometry';
 
 /** Textures the terrain blends between, plus a noise texture (R fine, G coarse). */
 export interface TerrainTextures {
@@ -11,6 +12,8 @@ export interface TerrainTextures {
   readonly ground: BaseTexture;
   readonly steep: BaseTexture;
   readonly high: BaseTexture;
+  readonly lush: BaseTexture;
+  readonly paved: BaseTexture;
   readonly noise: BaseTexture;
 }
 
@@ -26,6 +29,8 @@ const SAMPLERS = [
   'terrainGround',
   'terrainSteep',
   'terrainHigh',
+  'terrainLush',
+  'terrainPaved',
   'terrainNoise',
 ] as const;
 
@@ -45,6 +50,8 @@ uniform sampler2D terrainLow;
 uniform sampler2D terrainGround;
 uniform sampler2D terrainSteep;
 uniform sampler2D terrainHigh;
+uniform sampler2D terrainLush;
+uniform sampler2D terrainPaved;
 uniform sampler2D terrainNoise;
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
@@ -64,6 +71,15 @@ vec3 terrainColor(vec3 p, vec3 n) {
   float slope = 1.0 - clamp(n.y, 0.0, 1.0) + jitter * terrainSlope.w;
   float tint = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainScale.z).g);
   vec3 ground = terrainTriplanar(terrainGround, p, w) * mix(terrainTintA, terrainTintB, tint);
+#ifdef VERTEXCOLOR
+  // Ground cover of the section, from the vertex colour (see terrain-geometry.ts).
+  float lush = clamp((1.0 - vColor.r) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  float paved = clamp((1.0 - vColor.b) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  // Cover fades in with noise, in patches rather than as a flat gradient.
+  float patchy = clamp(noise.g * 0.6 + 0.2, 0.0, 1.0);
+  ground = mix(ground, terrainTriplanar(terrainLush, p, w), smoothstep(patchy - 0.25, patchy + 0.25, lush));
+  ground = mix(ground, terrainTriplanar(terrainPaved, p, w), smoothstep(patchy - 0.25, patchy + 0.25, paved));
+#endif
   float blend = terrainHeights.z;
   vec3 color = mix(terrainTriplanar(terrainLow, p, w), ground,
     smoothstep(terrainHeights.x - blend, terrainHeights.x + blend, h));
@@ -150,6 +166,8 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     ubo.setTexture('terrainGround', textures.ground);
     ubo.setTexture('terrainSteep', textures.steep);
     ubo.setTexture('terrainHigh', textures.high);
+    ubo.setTexture('terrainLush', textures.lush);
+    ubo.setTexture('terrainPaved', textures.paved);
     ubo.setTexture('terrainNoise', textures.noise);
   }
 

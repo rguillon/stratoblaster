@@ -102,6 +102,38 @@ describe('RoadNetwork', () => {
     }
   });
 
+  it('P04 review: a section with a street grid gets streets across and along it', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const district: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [
+        { ...flat, name: 'open', seconds: 20 },
+        { ...flat, name: 'town', seconds: 15, streets: { across: [30, 30], along: 3, wobble: 0 } },
+        { ...flat, name: 'open again', seconds: 15 },
+      ],
+    };
+    const quiet = { ...RULES, mainRoads: 0 };
+    const n = network(district, quiet);
+    const across = n.roads.filter((r) => r.kind === 'cross');
+    const along = n.roads.filter((r) => r.kind === 'main');
+    // Town from Z = 400 to 700: a street across every 30 units.
+    expect(across.length).toBeGreaterThanOrEqual(9);
+    for (const street of across) {
+      const z = street.points[0]?.z ?? 0;
+      expect(z).toBeGreaterThan(400);
+      expect(z).toBeLessThan(700);
+      expect(street.points[0]?.x).toBeLessThan(-RULES.offscreenX);
+      expect(street.points.at(-1)?.x).toBeGreaterThan(RULES.offscreenX);
+    }
+    // 3 streets along the town, each turning off the screen at both ends.
+    expect(along).toHaveLength(3);
+    for (const street of along) {
+      expect(offscreen(RULES, street.points[0])).toBe(true);
+      expect(offscreen(RULES, street.points.at(-1))).toBe(true);
+    }
+  });
+
   it('P04-R07: no road where the ground is under the sea', () => {
     const sunk: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,

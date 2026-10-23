@@ -13,6 +13,15 @@ export const PROP_COLORS = {
   glass: [0.07, 0.1, 0.14],
   wood: [0.3, 0.25, 0.2],
   woodDark: [0.21, 0.17, 0.14],
+  bark: [0.27, 0.2, 0.14],
+  leaf: [0.22, 0.4, 0.15],
+  leafDark: [0.13, 0.27, 0.12],
+  leafLight: [0.36, 0.52, 0.2],
+  glassBlue: [0.1, 0.17, 0.26],
+  brick: [0.42, 0.26, 0.2],
+  containerBlue: [0.14, 0.27, 0.45],
+  containerGreen: [0.2, 0.36, 0.24],
+  containerRed: [0.5, 0.17, 0.14],
 } as const;
 
 /** Self-lit accents. */
@@ -22,4 +31,7 @@ export const PROP_LIGHTS = {
   yellow: [0.99, 0.85, 0.1],
   red: [1, 0.12, 0.1],
   window: [1, 0.72, 0.38],
+  /** Dimmer window and trim colours for the city, where hundreds of them glow at once. */
+  windowDim: [0.5, 0.36, 0.2],
+  cyanDim: [0, 0.42, 0.48],
 } as const;

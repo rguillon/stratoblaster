@@ -95,6 +95,8 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
     ground: texture,
     steep: texture,
     high: texture,
+    lush: texture,
+    paved: texture,
     lowHeight: 5,
     highHeight: 100,
     heightBlend: 2,

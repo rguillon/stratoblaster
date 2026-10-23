@@ -87,3 +87,48 @@ export function buildCoolingTower(): PropGeometry {
   }
   return { structure: s.geometry, lights: l.geometry };
 }
+
+/** Phase 4 review: stacks of shipping containers in rows, with a yellow gantry light. */
+export function buildContainerYard(): PropGeometry {
+  const s = new SolidBuilder();
+  const l = new SolidBuilder();
+  const colors = [C.containerBlue, C.containerRed, C.containerGreen, C.rust, C.white] as const;
+  let n = 0;
+  for (const z of [-5, -1.5, 2, 5.5]) {
+    for (const x of [-6.5, 0, 6.5]) {
+      const stack = 1 + (n % 3);
+      for (let level = 0; level < stack; level++) {
+        s.box([6, 2.6, 3], colors[(n + level) % colors.length] ?? C.rust, {
+          at: [x, level * 2.6, z],
+        });
+      }
+      n++;
+    }
+  }
+  s.box([20, 0.8, 0.8], C.metalDark, { at: [0, 9, -7] });
+  s.box([0.8, 9, 0.8], C.metalDark, { at: [-9.6, 0, -7] });
+  s.box([0.8, 9, 0.8], C.metalDark, { at: [9.6, 0, -7] });
+  l.box([2, 0.6, 1], L.yellow, { at: [0, 8.4, -7] });
+  return { structure: s.geometry, lights: l.geometry };
+}
+
+/** Phase 4 review: a refinery: three columns joined by pipes, and a flare stack. */
+export function buildRefinery(): PropGeometry {
+  const s = new SolidBuilder();
+  const l = new SolidBuilder();
+  const columns = [
+    [-5, -2, 2.4, 26],
+    [1, -3, 1.8, 20],
+    [5, 3, 2, 30],
+  ] as const;
+  for (const [x, z, radius, height] of columns) {
+    s.cylinder(radius, height, 6, C.metal, { at: [x, 0, z] });
+    l.ring(radius + 0.1, 0.6, 6, L.yellow, { at: [x, height * 0.6, z] });
+  }
+  s.box([11, 1, 1], C.rust, { at: [0, 8, -2.5] });
+  s.box([1, 1, 7], C.rust, { at: [3, 12, 0] });
+  s.box([12, 3, 6], C.concreteDark, { at: [0, 0, 5] }, C.roof);
+  s.cylinder(0.6, 34, 4, C.metalDark, { at: [-6, 0, 6] }, 0.4);
+  l.box([1.2, 1.6, 1.2], L.red, { at: [-6, 34, 6] });
+  return { structure: s.geometry, lights: l.geometry };
+}

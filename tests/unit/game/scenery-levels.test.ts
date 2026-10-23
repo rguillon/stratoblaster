@@ -61,6 +61,46 @@ describe('Level Zero', () => {
     }
   });
 
+  it('P04 review: ends with green meadows, an industrial zone and a city centre', () => {
+    const names = LEVEL_ZERO.sections.map((s) => s.name);
+    expect(names.slice(-3)).toEqual(['meadows', 'industrial zone', 'city centre']);
+    const [meadows, industry, city] = field.sections.slice(-3);
+    if (!meadows || !industry || !city) throw new Error('missing sections');
+    const middle = (p: { start: number; end: number }) => (p.start + p.end) / 2;
+    expect(field.surface(middle(meadows)).lush).toBe(1);
+    expect(field.surface(middle(city)).paved).toBe(1);
+    expect(industry.section.streets).toBeDefined();
+    expect(city.section.streets).toBeDefined();
+    const roads = levelRoads(field, LEVEL_ZERO.roads, LEVEL_ZERO.seed);
+    const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
+    const kindsIn = (p: { start: number; end: number }) =>
+      new Set(
+        placer
+          .place({ xMin: -500, xMax: 500, zMin: p.start + 300, zMax: p.end - 300 })
+          .map((q) => q.kind),
+      );
+    const green = kindsIn(meadows);
+    expect(['conifer', 'broadleaf-tree', 'bush'].every((k) => green.has(k))).toBe(true);
+    expect(green.has('dead-tree')).toBe(false);
+    const industrial = kindsIn(industry);
+    expect(industrial.has('container-yard') && industrial.has('refinery')).toBe(true);
+    expect(industrial.has('glass-tower')).toBe(false);
+    const downtown = kindsIn(city);
+    expect(
+      ['glass-tower', 'office-block', 'apartment-block', 'stepped-tower'].every((k) =>
+        downtown.has(k),
+      ),
+    ).toBe(true);
+    expect(downtown.has('factory')).toBe(false);
+    // Dense: many more buildings per unit of length in the city than on the plains.
+    const count = (zMin: number, zMax: number) =>
+      placer
+        .place({ xMin: -400, xMax: 400, zMin, zMax })
+        .filter((q) => !q.kind.includes('tree') && q.kind !== 'bush' && q.kind !== 'conifer')
+        .length;
+    expect(count(middle(city) - 300, middle(city) + 300)).toBeGreaterThan(3 * count(200, 800));
+  });
+
   it('P04-R02: has a sea, with ground under it in the coast and open sea sections', () => {
     expect(LEVEL_ZERO.sea?.level).toBe(0);
     const sea = field.sections.find((p) => p.section.name === 'open sea');

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildGridIndices,
   buildTerrainGeometry,
+  SURFACE_SCALE,
 } from '../../../../src/render/scenery/terrain-geometry';
 
 const GRID = { xMin: -10, zMin: 100, columns: 4, rows: 2, cell: 5 };
@@ -22,6 +23,21 @@ describe('buildTerrainGeometry', () => {
     expect(nx).toBeCloseTo(-Math.SQRT1_2);
     expect(ny).toBeCloseTo(Math.SQRT1_2);
     expect(nz).toBeCloseTo(0);
+  });
+});
+
+describe('terrain ground cover', () => {
+  it("P04 review: stores each row's ground cover in the vertex colours", () => {
+    const source = {
+      height: () => 0,
+      surface: (z: number) => ({ lush: z > 100 ? 1 : 0, paved: 0.5 }),
+    };
+    const { colors } = buildTerrainGeometry(source, GRID);
+    // Row 0 (Z = 100): no grass; row 2 (Z = 110): grass.
+    expect([...colors.slice(0, 4)]).toEqual([1, 1, 1 - 0.5 * SURFACE_SCALE, 1]);
+    expect([...colors.slice(-4)]).toEqual([1 - SURFACE_SCALE, 1, 1 - 0.5 * SURFACE_SCALE, 1]);
+    const bare = buildTerrainGeometry({ height: () => 0 }, GRID).colors;
+    expect(bare.every((c) => c === 1)).toBe(true);
   });
 });
 

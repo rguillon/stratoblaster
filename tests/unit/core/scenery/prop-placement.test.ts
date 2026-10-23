@@ -43,6 +43,40 @@ describe('PropPlacer', () => {
     );
   });
 
+  it('P04 review: buildings never overlap, even packed along a dense street grid', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const dense: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [{ ...flat, seconds: 20, streets: { across: [20, 25], along: 3, wobble: 5 } }],
+    };
+    const buildings = placer(dense)
+      .place(AREA)
+      .filter((b) => b.kind === 'block');
+    expect(buildings.length).toBeGreaterThan(20);
+    const footprint = 5;
+    buildings.forEach((a, i) => {
+      for (const b of buildings.slice(i + 1)) {
+        expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThanOrEqual(2 * footprint);
+      }
+    });
+  });
+
+  it('P04 review: a section may allow only some building groups and tree kinds', () => {
+    const level: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: SAMPLE_SCENERY_LEVEL.sections.map((s) => ({ ...s, groups: [], trees: [] })),
+    };
+    expect(placer(level).place(AREA)).toEqual([]);
+    const treesOnly: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: SAMPLE_SCENERY_LEVEL.sections.map((s) => ({ ...s, groups: [], trees: ['stick'] })),
+    };
+    const props = placer(treesOnly).place(AREA);
+    expect(props.length).toBeGreaterThan(0);
+    expect(props.every((p) => p.kind === 'stick')).toBe(true);
+  });
+
   it('P04-R07: trees keep off the roads', () => {
     const p = placer();
     for (const tree of p.place(AREA).filter((t) => t.kind === 'stick')) {

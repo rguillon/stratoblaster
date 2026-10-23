@@ -283,3 +283,27 @@
   - Fading the clouds near the ground in the shader: it needs the scene depth, and the clouds would still look sliced.
 - **Consequences:** A level whose ground rises close to the flight altitude leaves little room for clouds. The ceiling is a bound, not the real highest point, so it can sit a little above the actual peaks.
 - **Status:** Accepted
+
+### D-023 — Section ground cover, street grids, and dense, overlap-free buildings
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer asked for three sections at the end of Level Zero: green ground with grass and trees, an industrial zone with a dense road maze packed with buildings, and a city centre.
+- **Decision:**
+  - `TerrainSection` gets four optional fields: `surface` (`lush` / `paved` shares), `trees` and `groups` (which tree kinds and building groups the section allows), and `streets` (a `StreetGrid`). `HeightField.surface(z)` blends the cover across transitions like the height.
+  - Ground cover goes to the GPU in the terrain's vertex colours (red = 1 − lush/2, blue = 1 − paved/2), because Babylon already passes vertex colours to the standard material. The terrain plugin decodes it and mixes in two more generated textures (grass, concrete) through a noise threshold, so the cover comes in patches. The plain test material only shows a light tint.
+  - Street grids (`core/scenery/street-grid.ts`):
+    - A district is a run of consecutive sections with streets.
+    - Each section adds streets across, from screen edge to screen edge, every `across` units; a street is kept only if it is all on buildable ground.
+    - Each district adds `along` streets for its whole length. Like main roads, they turn off the screen at their ends, or run on past the ends of the level.
+    - Streets across are drawn as paths (under the roads) and streets along as main roads.
+  - Buildings are placed once per seed for the whole level, main-road slots first, with a bucket grid of placed footprints, so no two buildings overlap (gap = `setback`). This replaces the earlier rule that kept path buildings away from road building rows. `place(area)` returns the buildings whose centre is in the area, so chunks stay independent. Trees also avoid buildings.
+  - New models: 3 living trees, 2 industrial buildings and 4 city buildings. City window bands are flat quads in dimmed colours (`windowDim`, `cyanDim`).
+  - Level Zero: the sections were shortened (plains 14, hills 12, plateau 14, mountains 18, canyon 18, coast 14, open sea 14, landing 10) to make room for meadows, industrial zone and city centre (22 s each), still 180 s.
+- **Alternatives considered:**
+  - A per-section terrain material: hard seams at the section boundaries.
+  - A custom vertex attribute: needs extra vertex shader code in the plugin.
+  - Placing buildings per chunk with a neighbour check: the result would depend on the order chunks are built in.
+- **Consequences:**
+  - Placement now builds every building of the level up front, about 100 ms on a desktop and again after a new seed.
+  - The city centre is the heaviest part of the level, at about 370k triangles.
+- **Status:** Accepted

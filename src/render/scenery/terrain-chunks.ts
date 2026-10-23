@@ -103,10 +103,11 @@ export class TerrainChunks {
 
   #newMesh(): Mesh {
     const mesh = new Mesh(`terrain-chunk-${String(this.#created++)}`, this.scene);
-    const { positions, normals } = buildTerrainGeometry(this.source, this.#grid(0));
+    const { positions, normals, colors } = buildTerrainGeometry(this.source, this.#grid(0));
     const data = new VertexData();
     data.positions = positions;
     data.normals = normals;
+    data.colors = colors;
     data.indices = this.#indices;
     data.applyToMesh(mesh, true);
     mesh.material = this.material;
@@ -117,9 +118,10 @@ export class TerrainChunks {
   }
 
   #fill(mesh: Mesh, index: number): Mesh {
-    const { positions, normals } = buildTerrainGeometry(this.source, this.#grid(index));
+    const { positions, normals, colors } = buildTerrainGeometry(this.source, this.#grid(index));
     mesh.updateVerticesData(VertexBuffer.PositionKind, positions);
     mesh.updateVerticesData(VertexBuffer.NormalKind, normals);
+    mesh.updateVerticesData(VertexBuffer.ColorKind, colors);
     mesh.refreshBoundingInfo();
     mesh.setEnabled(true);
     return mesh;

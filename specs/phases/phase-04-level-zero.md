@@ -70,6 +70,13 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Add a section at the end of Level Zero with more green ground, grass and trees; then an industrial section, a dense road maze packed with various buildings; then a final city centre section. *Fixed (D-023):*
+  - *Three sections now end the level: **meadows** (1:54), **industrial zone** (2:16) and **city centre** (2:38). The other sections were shortened so the level still lasts exactly 3:00 (P04-R06), and the final plains section was removed.*
+  - *Sections can cover their ground with grass ("lush") or concrete ("paved"). Both are new generated textures, blended in the terrain shader in noisy patches, and fade over the section transitions.*
+  - *Sections can choose their tree kinds and building groups. Three new living trees (conifer, broadleaf, bush) grow in the meadows. Two new industrial buildings (container yard, refinery) join the industrial group. A new city group (glass tower, office block, apartment block, stepped tower) appears only in the city centre.*
+  - *Sections can have a street grid. Streets across run every 50–95 units (industrial, a maze) or every 62–66 units (city, regular blocks), from screen edge to screen edge. Streets along the district (4 wobbling, then 5 straight) turn off the screen at both ends, or run on past the end of the level.*
+  - *Buildings are now decided once for the whole level, main roads first, and none may overlap another. That allows dense packing (building density 1 in the new districts). Trees keep clear of buildings too.*
+  - *City windows are flat quads (2 triangles a face) in dimmer colours, so hundreds of them neither bloom into white blobs nor cost a million triangles.*
 - [x] Make sure the roads start and end off screen, not in the middle of the screen; work on the merging between a path and a road: the road stays on top, the path widens at the junction. *Fixed:*
   - *Roads only start and end beyond X = ±420, past the widest ground the camera sees (about ±390, checked by a test against the camera framing).*
   - *Where a main road cannot go on (sea, steep slope), it now turns off the screen before the obstacle and comes back from the side after it, trying earlier points until the turn is on buildable ground.*
@@ -143,10 +150,10 @@ Randomly generated roads or paths shall run across the maps. The building props 
 | P04-R01 | Done | `core/math/noise.ts`, `core/scenery/height-field.ts`, `render/scenery/terrain-chunks.ts`, `terrain-geometry.ts`, `procedural-textures.ts`, `terrain-blend-plugin.visual.ts`, `game/config/level-zero.ts` | `noise.test.ts`, `height-field.test.ts`, `terrain-geometry.test.ts`, `terrain-chunks.test.ts`, `procedural-textures.test.ts`, `scenery-levels.test.ts`, e2e `level-zero.spec.ts` | Plains, hills, plateau, mountains, canyon (with a river), coast and open sea with islands. Ground, shore, rock and snow textures blended by altitude and slope. Manual visual validation. |
 | P04-R02 | Done | `render/scenery/scenery-stage.ts` (sea plane), `scenery-kit.visual.ts` (PBR + generated normal map), surf in the terrain plugin | `scenery-stage.test.ts`, `procedural-textures.test.ts`, `scenery-viewer-panel.test.ts`, e2e | Optional per level (`SceneryLevel.sea`); toggled with S. Sky reflection and sun glint, no mirror reflection (Q7). Manual visual validation. |
 | P04-R03 | Done | `render/scenery/scenery-stage.ts` (layers), `cloud-material.visual.ts`, `game/config/scenery-look.ts` | `scenery-stage.test.ts`, `scenery-viewer-panel.test.ts`, `start-scenery-viewer.test.ts`, e2e | 2 layers between the highest peaks and the flight plane (review: never through the terrain). Each layer has an on/off switch and intensity (coverage) and opacity sliders. Manual visual validation. |
-| P04-R04 | Done (review: smaller props) | `core/scenery/prop-placement.ts`, `render/scenery/prop-field.ts`, `render/geometry/solids.ts`, `game/view/props/*` | `prop-placement.test.ts`, `prop-field.test.ts`, `solids.test.ts`, `prop-models.test.ts`, `scenery-levels.test.ts` | 4 industrial (factory, storage tanks, warehouse, cooling tower), 3 technical / scientific (radar dish, antenna mast, observatory), 3 homes (cube home, dome home, stilt pod), 2 dead trees. Manual visual validation. |
+| P04-R04 | Done (review: smaller props; 21 models with living trees, industrial and city buildings) | `core/scenery/prop-placement.ts`, `render/scenery/prop-field.ts`, `render/geometry/solids.ts`, `game/view/props/*` | `prop-placement.test.ts`, `prop-field.test.ts`, `solids.test.ts`, `prop-models.test.ts`, `scenery-levels.test.ts` | 4 industrial (factory, storage tanks, warehouse, cooling tower), 3 technical / scientific (radar dish, antenna mast, observatory), 3 homes (cube home, dome home, stilt pod), 2 dead trees. Manual visual validation. |
 | P04-R05 | Done | `render/scenery/playfield-framing.ts`, `scenery-stage.ts`, `game/config/scenery-look.ts` (`PLAYFIELD_CAMERA`) | `playfield-framing.test.ts`, `scenery-stage.test.ts`, `start-scenery-viewer.test.ts` | "35%" read as 35° from vertical (Q4). Perspective camera, 40° FOV, looking forward. O shows the playfield outline. Manual visual validation. |
 | P04-R07 | Done (added in review) | `core/scenery/road-network.ts`, `prop-placement.ts` (buildings from road slots), `render/scenery/road-geometry.ts`, `road-field.ts`, `game/config/level-zero.ts` (`ROAD_RULES`), `scenery-look.ts` (`roads`) | `road-network.test.ts`, `prop-placement.test.ts`, `road-geometry.test.ts`, `scenery-stage.test.ts`, `scenery-levels.test.ts` | Main roads are worn asphalt, 6 wide; paths are packed dust, 4 wide. Both have soft, see-through edges that blend into the ground (review). Manual visual validation. |
-| P04-R06 | Done | `core/scenery/scroll-track.ts`, `scenery-level.ts` (`levelDuration`), `app/start-scenery-viewer.ts` | `scroll-track.test.ts`, `scenery-level.test.ts`, `scenery-levels.test.ts` (exactly 180 s), `start-scenery-viewer.test.ts`, e2e | 60 px/s, 10,800 px long. At the end the level stops and shows "Level end" (Q5). |
+| P04-R06 | Done (still 180 s with the 3 new sections) | `core/scenery/scroll-track.ts`, `scenery-level.ts` (`levelDuration`), `app/start-scenery-viewer.ts` | `scroll-track.test.ts`, `scenery-level.test.ts`, `scenery-levels.test.ts` (exactly 180 s), `start-scenery-viewer.test.ts`, e2e | 60 px/s, 10,800 px long. At the end the level stops and shows "Level end" (Q5). |
 
 ### Gate results
 Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
@@ -157,6 +164,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (meadows, industrial zone, city centre): typecheck ✔, build ✔, e2e 32 passed (the section e2e test now also visits the 3 new sections).
 Review fix (roads off screen, junctions): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (roads blend with the ground): typecheck ✔, build ✔, e2e 32 passed twice in a row.
 The first runs failed one phase 1 menu test each (gamepad, then AZERTY). Each failure was the
@@ -183,18 +191,20 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
    | Time | Section | What to look for |
    |------|---------|------------------|
    | 0:00 | plains | Buildings and dead trees |
-   | 0:20 | hills | Rolling ground |
-   | 0:38 | plateau | A flat town: industrial, labs, homes |
-   | 0:58 | mountains | Rock on slopes, snow on peaks |
-   | 1:24 | canyon | Mesa with a river in the canyon |
-   | 1:50 | coast | Shore with surf |
-   | 2:12 | open sea | Islands |
-   | 2:36 | landing | Coast again |
-   | 2:48 | plains | |
+   | 0:14 | hills | Rolling ground |
+   | 0:26 | plateau | A flat town: industrial, labs, homes |
+   | 0:40 | mountains | Rock on slopes, snow on peaks; roads turn off the screen |
+   | 0:58 | canyon | Mesa with a river in the canyon |
+   | 1:16 | coast | Shore with surf |
+   | 1:30 | open sea | Islands |
+   | 1:44 | landing | Coast again, first grass and bushes |
+   | 1:54 | meadows | Green grass, conifers, broadleaf trees and bushes (review) |
+   | 2:16 | industrial zone | Dense street maze packed with industrial buildings on concrete (review) |
+   | 2:38 | city centre | Regular street grid, towers, offices and apartment blocks (review) |
    | 3:00 | — | The level stops with "Level end" (P04-R06) |
-5. P04-R07: roads (dark) and paths (light dust) wind across the map, and every building stands along one, facing it. Roads stop at the sea and on steep mountain slopes. N gives another road network.
+5. P04-R07: roads (dark) and paths (light dust) wind across the map, and every building stands along one, facing it. No road starts or ends on screen. Paths flare where they meet a road. N gives another road network.
 6. To check: the textures change with altitude and slope (P04-R01); the sea catches the sun (R02); the clouds react to their sliders (R03); props stand only on flat ground (R04); the camera looks down at 35° towards the top of the screen (R05); the level lasts 3:00 (R06).
-7. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles; the busiest sections are the plains, full of small props.
+7. The FPS / polygons tile is at the top right. 60 FPS on an integrated GPU (ENG-101) still has to be checked on real hardware: headless SwiftShader only gives 10–40 FPS. The scene draws about 100–190k triangles in most sections, about 300k in the industrial zone and about 370k in the city centre (dense buildings with window bands, all thin-instanced).
 
 ### Deviations from spec
 - None from the requirements. The interpretations agreed in the questions (Q1–Q11) are listed in D-020.
@@ -208,6 +218,7 @@ Lint, unit tests and coverage were not run as a gate. While debugging, I ran the
 - **Props.** They are scenery only: they cannot be destroyed and nothing collides with them.
 - **Panel.** On narrow windows the panel covers part of the canvas.
 - **Roads.** Roads are drawn on the terrain without flattening it, and they follow the ground's ups and downs. Where two main roads cross, their ribbons simply overlap. In the sections a road has to avoid (mountains, coast, open sea), there are no roads, and so no buildings.
+- **Dense districts.** The city centre draws about 370k triangles (half of them window bands), the heaviest part of the level: to be checked on real hardware (ENG-101). The city's glowing windows and trims still bloom a little; the glow strength is `glow.intensity` in `scenery-look.ts`. City buildings face whichever street their slot is on, so the blocks look a little jumbled.
 - **Gamepad e2e test.** The phase 1 `menu-gamepad.spec.ts` takes close to its 30 s timeout under full parallel load. The heavy `level_zero/` tests now run one at a time, which removed the timeouts seen during the review fixes.
 
 ### Suggestions for future phases

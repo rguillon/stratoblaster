@@ -62,6 +62,29 @@ export interface Shore {
   readonly seabed: number;
 }
 
+/**
+ * What covers the ground of a section, as shares (0..1) of alternative ground textures over the
+ * default one: `lush` (grass) and `paved` (concrete, asphalt).
+ */
+export interface Surface {
+  readonly lush: number;
+  readonly paved: number;
+}
+
+/**
+ * A dense grid of streets over a section (a district): streets across the level every `across`
+ * units, from screen edge to screen edge, and `along` streets running the length of the district
+ * (of consecutive sections with streets), which turn off the screen at both ends.
+ */
+export interface StreetGrid {
+  /** Distance along Z between two streets across. */
+  readonly across: readonly [number, number];
+  /** Number of streets along the district, spread evenly across the screen. */
+  readonly along: number;
+  /** Largest sideways wobble of the streets along (0 = straight). */
+  readonly wobble: number;
+}
+
 /** One stretch of a level, sculpted from a relief and optional operations. */
 export interface TerrainSection {
   /** Shown by debug tools, e.g. `canyon`. */
@@ -76,6 +99,14 @@ export interface TerrainSection {
   readonly buildingDensity: number;
   /** Chance (0..1) that an empty candidate spot of this section gets trees. */
   readonly treeDensity: number;
+  /** Ground cover (default: none, the level's default ground). */
+  readonly surface?: Partial<Surface>;
+  /** Ids of the tree kinds that grow here (default: all of them). */
+  readonly trees?: readonly string[];
+  /** Ids of the building groups that stand here (default: all of them). */
+  readonly groups?: readonly string[];
+  /** A dense street grid over this section. */
+  readonly streets?: StreetGrid;
 }
 
 /** A kind of prop the placement can choose, with its relative weight. */

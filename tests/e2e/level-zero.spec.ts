@@ -35,12 +35,17 @@ test.describe('P04: level_zero/ page', () => {
     await expect(page.locator('.scenery-end')).toBeHidden();
   });
 
-  test('P04-R01, P04-R02: every section renders, with and without the sea', async ({ page }) => {
+  test('P04-R01, P04-R02 + review: every section renders, with and without the sea', async ({
+    page,
+  }) => {
     await page.keyboard.press('p');
     const sections = [
-      ['70', 'mountains'],
-      ['96', 'canyon'],
-      ['140', 'open sea'],
+      ['47', 'mountains'],
+      ['65', 'canyon'],
+      ['95', 'open sea'],
+      ['122', 'meadows'],
+      ['144', 'industrial zone'],
+      ['166', 'city centre'],
     ] as const;
     for (const [time, name] of sections) {
       await page.locator('.scenery-time-slider').fill(time);

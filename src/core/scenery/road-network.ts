@@ -2,6 +2,7 @@ import { createNoise2D, smoothstep } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
 import type { RoadRules } from './scenery-level';
+import { acrossStreet, alongStreet, findDistricts } from './street-grid';
 
 /** One point of a road's centre line. */
 export interface RoadPoint {
@@ -121,6 +122,7 @@ export class RoadNetwork {
     }
     const mains = [...this.roads];
     for (const path of this.#paths(random, mains)) this.#addRoad('cross', path);
+    this.#addStreets(createRng(seed + 5));
     for (const road of this.roads) this.#index(road);
     for (const road of this.roads) this.#addSlots(road);
   }
@@ -285,6 +287,40 @@ export class RoadNetwork {
       z: start.z + bend * Math.sin((Math.PI * i) / (2 * count)),
       width: this.#pathWidth(i * step),
     }));
+  }
+
+  /**
+   * The street grids (P04 review): in each section with `streets`, streets across every
+   * `across`, from screen edge to screen edge, kept only when all on buildable ground; and over
+   * each district (run of consecutive sections with streets), `along` streets its whole length
+   * (the most any of its sections asks for), which turn off the screen at both ends or run on
+   * past the level ends.
+   */
+  #addStreets(random: Random): void {
+    for (const district of findDistricts(this.field.sections, this.range)) {
+      for (const { grid, zMin, zMax } of district.parts) {
+        for (
+          let z = zMin + randomIn(random, grid.across);
+          z < zMax;
+          z += randomIn(random, grid.across)
+        ) {
+          const line = acrossStreet(z, this.rules);
+          if (line.every((p) => this.buildable(p.x, p.z))) this.#addRoad('cross', line);
+        }
+      }
+      const along = Math.max(...district.parts.map((part) => part.grid.along));
+      const wobble = Math.max(...district.parts.map((part) => part.grid.wobble));
+      for (let k = 0; k < along; k++) {
+        const phase = random() * Math.PI * 2;
+        const line = alongStreet(k, along, wobble, district, phase, this.rules);
+        for (const piece of this.#mainPieces(line)) {
+          this.#addRoad(
+            'main',
+            piece.map((p) => ({ ...p, width: this.rules.mainWidth })),
+          );
+        }
+      }
+    }
   }
 
   /** Width of a path `distance` from its junction: wide at the road, narrowing smoothly. */

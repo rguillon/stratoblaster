@@ -4,6 +4,7 @@ import {
   type Meander,
   type PlacedSection,
   type SceneryLevel,
+  type Surface,
   type TerrainSection,
 } from './scenery-level';
 
@@ -87,18 +88,31 @@ export class HeightField {
 
   /** Ground height at (`x`, `z`). */
   height(x: number, z: number): number {
+    return this.#blend(z, (i) => this.#sectionHeight(i, x, z));
+  }
+
+  /** Ground cover at `z`, blended between sections like the height. */
+  surface(z: number): Surface {
+    const of = (i: number, key: keyof Surface): number =>
+      this.sections[i]?.section.surface?.[key] ?? 0;
+    return {
+      lush: this.#blend(z, (i) => of(i, 'lush')),
+      paved: this.#blend(z, (i) => of(i, 'paved')),
+    };
+  }
+
+  /** `value` of the section under `z`, blended with its neighbour near their boundary. */
+  #blend(z: number, value: (index: number) => number): number {
     const i = this.sectionIndexAt(z);
-    const here = this.#sectionHeight(i, x, z);
+    const here = value(i);
     const half = this.#transition / 2;
     const placed = this.sections[i];
     if (!placed || half === 0) return here;
     if (i < this.sections.length - 1 && z > placed.end - half) {
-      const t = smoothstep(placed.end - half, placed.end + half, z);
-      return lerp(here, this.#sectionHeight(i + 1, x, z), t);
+      return lerp(here, value(i + 1), smoothstep(placed.end - half, placed.end + half, z));
     }
     if (i > 0 && z < placed.start + half) {
-      const t = smoothstep(placed.start - half, placed.start + half, z);
-      return lerp(this.#sectionHeight(i - 1, x, z), here, t);
+      return lerp(value(i - 1), here, smoothstep(placed.start - half, placed.start + half, z));
     }
     return here;
   }

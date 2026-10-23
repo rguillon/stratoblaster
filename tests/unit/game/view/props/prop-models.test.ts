@@ -12,19 +12,33 @@ function extent(geo: ColoredGeometry) {
 }
 
 const PROP_GROUPS = {
-  industrial: ['factory', 'storage-tanks', 'warehouse', 'cooling-tower'],
+  industrial: [
+    'factory',
+    'storage-tanks',
+    'warehouse',
+    'cooling-tower',
+    'container-yard',
+    'refinery',
+  ],
   science: ['radar-dish', 'antenna-mast', 'observatory'],
   homes: ['cube-home', 'dome-home', 'stilt-pod'],
+  city: ['glass-tower', 'office-block', 'apartment-block', 'stepped-tower'],
 };
 
 describe('prop models', () => {
-  it('P04-R04: industrial buildings, technical / scientific installations, homes and dead trees', () => {
+  it('P04-R04 + review: industrial, technical / scientific, homes, city buildings and trees', () => {
     for (const [group, kinds] of Object.entries(PROP_GROUPS)) {
       const rule = LEVEL_ZERO.props.groups.find((g) => g.id === group);
       expect(rule?.kinds.map((k) => k.id)).toEqual(kinds);
     }
-    expect(LEVEL_ZERO.props.trees.map((t) => t.id)).toEqual(['dead-tree', 'forked-tree']);
-    expect(Object.keys(PROP_MODELS)).toHaveLength(12);
+    expect(LEVEL_ZERO.props.trees.map((t) => t.id)).toEqual([
+      'dead-tree',
+      'forked-tree',
+      'conifer',
+      'broadleaf-tree',
+      'bush',
+    ]);
+    expect(Object.keys(PROP_MODELS)).toHaveLength(21);
   });
 
   it.each(Object.entries(PROP_MODELS))(
@@ -35,8 +49,9 @@ describe('prop models', () => {
       // A leaning trunk may sink a little into the ground, never float above it.
       expect(bottom).toBeLessThanOrEqual(1e-9);
       expect(bottom).toBeGreaterThan(-0.5);
-      expect(top).toBeGreaterThan(5);
+      expect(top).toBeGreaterThan(3);
       expect(structure.indices.length / 3).toBeLessThan(600);
+      expect((lights?.indices.length ?? 0) / 3).toBeLessThan(600);
       expect(structure.colors).toHaveLength((structure.positions.length / 3) * 4);
       if (lights) expect(lights.indices.length).toBeGreaterThan(0);
     },

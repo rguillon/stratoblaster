@@ -139,6 +139,17 @@ describe('HeightField', () => {
     expect(terrainCeiling(level([section({ shore })]))).toBe(90);
   });
 
+  it('P04 review: the ground cover of each section blends into the next one', () => {
+    const grass = section({ surface: { lush: 1 } });
+    const town = section({ surface: { paved: 1 } });
+    const field = new HeightField(level([section(), grass, town], 40));
+    expect(field.surface(50)).toEqual({ lush: 0, paved: 0 });
+    expect(field.surface(150)).toEqual({ lush: 1, paved: 0 });
+    expect(field.surface(200).lush).toBeCloseTo(0.5);
+    expect(field.surface(200).paved).toBeCloseTo(0.5);
+    expect(field.surface(260)).toEqual({ lush: 0, paved: 1 });
+  });
+
   it('a meander line winds around its x', () => {
     const field = new HeightField(level([section()]));
     const path = { x: 30, amplitude: 50, wavelength: 400 };

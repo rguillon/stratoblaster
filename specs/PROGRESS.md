@@ -41,3 +41,4 @@
 - 2026-10-23 — 4 — Review fix: clouds always above the terrain (height field ceiling, layers at 265 / 295; D-022); light verification green (typecheck, build, 32 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: roads blend with the ground (soft see-through edges, worn surface); level_zero/ e2e tests run one at a time so they no longer starve the menu tests; light verification green (typecheck, build, 32 e2e twice); still awaiting review.
 - 2026-10-23 — 4 — Review fix: roads start and end off screen (main roads turn off before obstacles, paths run to the screen edge); paths widen at junctions and are drawn under the roads; light verification green (typecheck, build, 32 e2e); still awaiting review.
+- 2026-10-23 — 4 — Review fix: Level Zero ends with meadows (grass, living trees), an industrial zone (dense street maze) and a city centre (street grid, towers); still 3:00 (D-023); light verification green (typecheck, build, 32 e2e); still awaiting review.
