@@ -87,10 +87,73 @@ export function streetRuns(
   random: Random,
   buildable: (x: number, z: number) => boolean,
   outOfView: (node: Node) => boolean,
-): { x: number; z: number }[][] {
-  const links = gridLinks(district, rules, random, buildable);
+): { runs: { x: number; z: number }[][]; blocks: Block[] } {
+  const { links, layouts } = gridLinks(district, rules, random, buildable);
   removeDeadEnds(links, outOfView);
-  return straightRuns(links, rules.step);
+  const blocks = gridBlocks(layouts, links, rules.mainWidth / 2 + BLOCK_KERB).filter((b) =>
+    buildable((b.xMin + b.xMax) / 2, (b.zMin + b.zMax) / 2),
+  );
+  return { runs: straightRuns(links, rules.step), blocks };
+}
+
+/**
+ * A city block: the ground between the streets around one cell of a district's grid, up to
+ * `BLOCK_KERB` from the street edges. On a side without a street, it goes to the middle of the
+ * missing street, so it meets the next block (phase 4 review).
+ */
+export interface Block {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly zMin: number;
+  readonly zMax: number;
+}
+
+/** Gap between a street's edge and the block beside it. */
+const BLOCK_KERB = 0.5;
+
+/** Columns and rows of one section of a district. */
+interface Layout {
+  readonly xs: readonly number[];
+  readonly zs: readonly number[];
+}
+
+const linkKey = (a: Node, b: Node): string => `${key(a)}>${key(b)}`;
+
+/** X and Z bounds of cell (`c`, `r`) of a layout. */
+function cellBounds(
+  xs: readonly number[],
+  zs: readonly number[],
+  c: number,
+  r: number,
+): [number, number, number, number] {
+  return [xs[c] ?? 0, xs[c + 1] ?? 0, zs[r] ?? 0, zs[r + 1] ?? 0];
+}
+
+function gridBlocks(layouts: readonly Layout[], links: readonly Link[], inset: number): Block[] {
+  const built = new Set(links.filter((l) => l.built).map((l) => linkKey(l.a, l.b)));
+  const has = (a: Node, b: Node): boolean => built.has(linkKey(a, b));
+  const blocks: Block[] = [];
+  layouts.forEach(({ xs, zs }, p) => {
+    for (let r = 0; r + 1 < zs.length; r++) {
+      for (let c = 0; c + 1 < xs.length; c++) {
+        const [x0, x1, z0, z1] = cellBounds(xs, zs, c, r);
+        // The first row of a later section was laid on the merged columns: it is a full street.
+        const bottom = (r === 0 && p > 0) || has({ x: x0, z: z0 }, { x: x1, z: z0 });
+        const top = has({ x: x0, z: z1 }, { x: x1, z: z1 });
+        const left = has({ x: x0, z: z0 }, { x: x0, z: z1 });
+        const right = has({ x: x1, z: z0 }, { x: x1, z: z1 });
+        const cut = (side: boolean): number => (side ? inset : 0);
+        const block = {
+          xMin: x0 + cut(left),
+          xMax: x1 - cut(right),
+          zMin: z0 + cut(bottom),
+          zMax: z1 - cut(top),
+        };
+        if (block.xMax > block.xMin && block.zMax > block.zMin) blocks.push(block);
+      }
+    }
+  });
+  return blocks;
 }
 
 function gridLinks(
@@ -98,7 +161,7 @@ function gridLinks(
   rules: RoadRules,
   random: Random,
   buildable: (x: number, z: number) => boolean,
-): Link[] {
+): { links: Link[]; layouts: Layout[] } {
   const edge = rules.offscreenX + rules.step;
   const links: Link[] = [];
   const add = (a: Node, b: Node, across: boolean, required: boolean): void => {
@@ -109,11 +172,13 @@ function gridLinks(
   };
   let chance = 0;
   const columnsOf: number[][] = [];
+  const layouts: Layout[] = [];
   district.parts.forEach((part, p) => {
     chance = part.grid.links;
     const xs = spaced(-edge, edge, part.grid.columns, random);
     columnsOf.push(xs);
     const zs = spaced(part.zMin, part.zMax, part.grid.rows, random);
+    layouts.push({ xs, zs });
     zs.forEach((z, r) => {
       const boundary = r === 0 || r === zs.length - 1;
       // A boundary row shared with the previous section was already laid with its columns.
@@ -128,7 +193,7 @@ function gridLinks(
       });
     }
   });
-  return dedupe(links);
+  return { links: dedupe(links), layouts };
 }
 
 function mergeColumns(a: readonly number[], b: readonly number[]): number[] {

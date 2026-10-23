@@ -43,9 +43,13 @@ export function checkPropModels(
   level: SceneryLevel,
   models: Readonly<Record<string, PropModelFactory>>,
 ): void {
-  const kinds = [...level.props.groups.flatMap((g) => g.kinds), ...level.props.trees];
-  for (const kind of kinds) {
-    if (!(kind.id in models)) throw new Error(`No model for prop "${kind.id}"`);
+  const ids = [
+    ...level.props.groups.flatMap((g) => g.kinds.map((k) => k.id)),
+    ...level.props.trees.map((t) => t.id),
+    ...level.sections.flatMap((s) => s.blocks?.podiums ?? []),
+  ];
+  for (const id of ids) {
+    if (!(id in models)) throw new Error(`No model for prop "${id}"`);
   }
 }
 
@@ -137,7 +141,10 @@ export class PropField {
   }
 }
 
-/** One world matrix per placement (scale, turn around Y, position), packed for thin instances. */
+/**
+ * One world matrix per placement (scale, or per-axis size, then turn around Y and position),
+ * packed for thin instances.
+ */
 export function instanceMatrices(placements: readonly PropPlacement[]): Float32Array {
   const buffer = new Float32Array(placements.length * MATRIX_FLOATS);
   const scale = new Vector3();
@@ -145,7 +152,8 @@ export function instanceMatrices(placements: readonly PropPlacement[]): Float32A
   const turn = new Quaternion();
   const matrix = new Matrix();
   placements.forEach((p, i) => {
-    scale.setAll(p.scale);
+    if (p.size) scale.set(...p.size);
+    else scale.setAll(p.scale);
     position.set(p.x, p.y, p.z);
     Quaternion.RotationYawPitchRollToRef(p.rotation, 0, 0, turn);
     Matrix.ComposeToRef(scale, turn, position, matrix);

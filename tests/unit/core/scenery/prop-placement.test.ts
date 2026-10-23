@@ -108,6 +108,52 @@ describe('PropPlacer', () => {
     expect(props.every((p) => p.kind === 'stick')).toBe(true);
   });
 
+  it('P04 review: blocks get a podium covering them, with towers on its roof', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const level: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [
+        {
+          ...flat,
+          seconds: 20,
+          trees: [],
+          streets: { rows: [50, 60], columns: [50, 60], links: 1 },
+          blocks: { podiums: ['pod'], podiumHeight: [5, 5], towers: [4, 4] },
+        },
+      ],
+    };
+    const p = placer(level);
+    const props = p.place(AREA);
+    const podiums = props.filter((q) => q.kind === 'pod');
+    expect(podiums.length).toBeGreaterThan(5);
+    for (const podium of podiums) {
+      const [w, h, d] = podium.size ?? [0, 0, 0];
+      const block = p.roads.blocks.find(
+        (b) =>
+          Math.abs((b.xMin + b.xMax) / 2 - podium.x) < 1e-6 &&
+          Math.abs((b.zMin + b.zMax) / 2 - podium.z) < 1e-6,
+      );
+      if (!block) throw new Error('podium off its block');
+      expect(w).toBeCloseTo(block.xMax - block.xMin);
+      expect(d).toBeCloseTo(block.zMax - block.zMin);
+      expect(h).toBeGreaterThanOrEqual(5);
+      // Towers stand on the roof, inside the block.
+      const towers = props.filter(
+        (q) =>
+          q.kind === 'block' &&
+          q.x > block.xMin &&
+          q.x < block.xMax &&
+          q.z > block.zMin &&
+          q.z < block.zMax,
+      );
+      expect(towers.length).toBeGreaterThan(0);
+      for (const tower of towers) expect(tower.y).toBeCloseTo(podium.y + h);
+    }
+    // No street-front buildings in a section whose blocks are filled.
+    expect(props.filter((q) => q.kind === 'block').length).toBeLessThanOrEqual(4 * podiums.length);
+  });
+
   it('P04 review: a section may allow only some building groups and tree kinds', () => {
     const level: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,

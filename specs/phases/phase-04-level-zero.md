@@ -70,6 +70,11 @@ Randomly generated roads or paths shall run across the maps. The building props 
 
 ## 🧑 Review feedback
 
+- [x] Make the skyscraper bases bigger and pack them more: no grey ground visible in the city. *Fixed (D-026):*
+  - *The street grid now also gives its blocks: the ground between the streets of each cell, up to 0.5 from the street edge, or to the middle of a street that was not built.*
+  - *In the city centre (`blocks` section option), each block gets a podium stretched to cover it, 5–12 high. A podium is a unit-square model with window rows and a lit band; there are 4 variants, and thin instances now take a per-axis size.*
+  - *2–4 towers stand on each podium, one per quarter of the block, chosen among the city kinds that fit there. Street-front slots are skipped in those sections.*
+  - *A unit test checks that every point of a filled district is on a street or in a block.*
 - [x] Create bigger props for the factories and the city, the blocks look empty. *Fixed (D-025):*
   - *The generators made of parts now take a size. They add two families for each district: industrial works (half-side 18) and plants (30), and city towers (14) and blocks (24, a wide podium with towers on it). That makes 69 models.*
   - *The industrial zone has its own building group, made mostly of plants and works. The city's group is made mostly of blocks and towers.*
@@ -177,6 +182,7 @@ make e2e        ✔ 32 passed (27 from earlier phases + 5 new in level-zero.spec
 Review fix (smaller props): typecheck ✔, build ✔, e2e 32 passed. In the first full run,
 menu-gamepad.spec.ts (phase 1) went over its 30 s timeout under load; it passed alone in 14 s,
 and the next full run passed 32/32.
+Review fix (city blocks filled by podiums): typecheck ✔, build ✔, e2e 33 passed.
 Review fix (bigger, packed district buildings): typecheck ✔, build ✔, e2e 33 passed. The section e2e test went over its 30 s timeout under SwiftShader with the heavier districts, so it was split in two (wasteland sections; meadows, industrial zone and city centre). No timeout was changed.
 Review fix (straight streets, building parts, no blinking): typecheck ✔, build ✔, e2e 32 passed.
 Review fix (meadows, industrial zone, city centre): typecheck ✔, build ✔, e2e 32 passed (the section e2e test now also visits the 3 new sections).

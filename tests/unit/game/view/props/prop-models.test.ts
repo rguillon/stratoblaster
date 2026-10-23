@@ -58,7 +58,8 @@ describe('prop models', () => {
       'bush',
     ]);
     // 21 hand-made models, plus 6 families of 8 buildings made of parts.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8);
+    // …and 4 podiums that cover city blocks.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(21 + 6 * 8 + 4);
   });
 
   it('P04 review: buildings with a square plan fit in it', () => {
@@ -72,13 +73,14 @@ describe('prop models', () => {
 
   it.each(Object.entries(PROP_MODELS))(
     'P04-R04: %s is low-poly and stands on the ground',
-    (_, build) => {
+    (id, build) => {
       const { structure, lights } = build();
       const { bottom, top } = extent(structure);
       // A leaning trunk may sink a little into the ground, never float above it.
       expect(bottom).toBeLessThanOrEqual(1e-9);
       expect(bottom).toBeGreaterThan(-0.5);
-      expect(top).toBeGreaterThan(3);
+      // Podiums are 1 high and stretched to their block; everything else stands taller.
+      expect(top).toBeGreaterThan(id.startsWith('city-podium') ? 0.9 : 3);
       expect(structure.indices.length / 3).toBeLessThan(600);
       expect((lights?.indices.length ?? 0) / 3).toBeLessThan(600);
       expect(structure.colors).toHaveLength((structure.positions.length / 3) * 4);
@@ -110,6 +112,17 @@ describe('prop models', () => {
         ),
       );
       expect(shapes.size).toBe(8);
+    }
+  });
+
+  it('P04 review: podiums have a unit square plan, 1 high, to be stretched to their block', () => {
+    for (const id of LEVEL_ZERO.sections.flatMap((s) => s.blocks?.podiums ?? [])) {
+      const positions = PROP_MODELS[id]?.().structure.positions ?? [];
+      const across = positions.filter((_, i) => i % 3 !== 1).map(Math.abs);
+      const ys = positions.filter((_, i) => i % 3 === 1);
+      expect(Math.max(...across), id).toBeLessThanOrEqual(0.5 + 1e-9);
+      expect(Math.min(...ys)).toBe(0);
+      expect(Math.max(...ys)).toBeLessThan(1.1);
     }
   });
 });

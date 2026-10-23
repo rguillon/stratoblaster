@@ -89,3 +89,31 @@ export function buildCityBuilding(seed: number, half = CITY_HALF): PropGeometry 
   crown(s, l, { y, size }, random);
   return { structure: s.geometry, lights: l.geometry };
 }
+
+/**
+ * Phase 4 review: a podium that covers a whole city block. Its plan is a unit square
+ * (X, Z ∈ [-0.5, 0.5]) and it is 1 high: the placement stretches it to its block and height.
+ * Rows of windows and a lit band run around it, and a few low roof units sit on top.
+ */
+export function buildCityPodium(seed: number): PropGeometry {
+  const random = createRng(seed * 15485863 + 3);
+  const s = new SolidBuilder();
+  const l = new SolidBuilder();
+  s.box([1, 1, 1], pick(random, [C.concreteDark, C.concrete, C.glassBlue, C.brick]), {}, C.roof);
+  const windows = pick(random, WINDOWS);
+  for (const y of [0.3, 0.62]) {
+    // Barely off the walls: the podium is stretched to its block (tens of units).
+    windowBands(l, [1, 1], [y, y + 0.12], 1, 0.12, windows, [0, 0], 0.002);
+  }
+  const units = 2 + Math.floor(random() * 3);
+  for (let i = 0; i < units; i++) {
+    const at = [randomIn(random, [-0.35, 0.35]), 1, randomIn(random, [-0.35, 0.35])] as const;
+    s.box([randomIn(random, [0.08, 0.2]), 0.06, randomIn(random, [0.08, 0.2])], C.metalDark, {
+      at,
+    });
+  }
+  // A lit band around the top of the walls.
+  const trim = pick(random, [L.cyanDim, L.pinkDim]);
+  windowBands(l, [1, 1], [0.93, 0.97], 1, 0.04, trim, [0, 0], 0.002);
+  return { structure: s.geometry, lights: l.geometry };
+}

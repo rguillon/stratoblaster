@@ -16,3 +16,28 @@ export const PART_FAMILIES = {
 export type PartFamily = keyof typeof PART_FAMILIES;
 /** Id of variant `n` (1-based) of a building assembled from parts. */
 export const variantId = (kind: PartFamily, n: number): string => `${kind}-${String(n)}`;
+
+/** Podiums that cover whole city blocks (stretched to each block), and their ids (review). */
+export const CITY_PODIUMS = 4;
+export const podiumId = (n: number): string => `city-podium-${String(n)}`;
+
+/**
+ * One rule per variant of a family of buildings assembled from parts, each with the `weight`
+ * given: a square plan of the family's half side (`frontage`), and the footprint circle around it
+ * at the largest scale.
+ */
+export function familyRules(
+  family: PartFamily,
+  count: number,
+  weight: number,
+  scale: readonly [number, number],
+) {
+  const half = PART_FAMILIES[family];
+  return Array.from({ length: count }, (_, i) => ({
+    id: variantId(family, i + 1),
+    weight,
+    footprint: Math.ceil(half * Math.SQRT2 * scale[1] * 10) / 10,
+    frontage: half,
+    scale,
+  }));
+}

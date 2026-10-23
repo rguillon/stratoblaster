@@ -2,7 +2,7 @@ import { createNoise2D, smoothstep } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
 import type { RoadRules } from './scenery-level';
-import { findDistricts, streetRuns, type District } from './street-grid';
+import { findDistricts, streetRuns, type Block, type District } from './street-grid';
 
 /** One point of a road's centre line. */
 export interface RoadPoint {
@@ -100,6 +100,8 @@ function heading(points: readonly Point[], i: number): number {
 export class RoadNetwork {
   readonly roads: Road[] = [];
   readonly slots: RoadSlot[] = [];
+  /** The blocks between the streets of the districts (phase 4 review). */
+  readonly blocks: Block[] = [];
   /** Gap between road edges and building footprints. */
   readonly setback: number;
   readonly #buckets = new Map<string, Segment[]>();
@@ -299,13 +301,14 @@ export class RoadNetwork {
    */
   #addStreets(random: Random): void {
     for (const district of this.#districts) {
-      const runs = streetRuns(
+      const { runs, blocks } = streetRuns(
         district,
         this.rules,
         random,
         (x, z) => this.buildable(x, z),
         (p) => this.#offscreen(p),
       );
+      this.blocks.push(...blocks);
       for (const run of runs) {
         this.#addRoad(
           'street',

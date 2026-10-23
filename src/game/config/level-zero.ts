@@ -5,10 +5,11 @@ import type {
   TerrainSection,
 } from '../../core/scenery/scenery-level';
 import {
+  CITY_PODIUMS,
   CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
-  PART_FAMILIES,
-  variantId,
+  familyRules,
+  podiumId,
   type PartFamily,
 } from './building-families';
 
@@ -64,21 +65,9 @@ const GROUP_IDS = {
 const BUILDING_SCALE = [0.5, 0.65] as const;
 const TREE_SCALE = [0.45, 0.75] as const;
 
-/**
- * One rule per variant of a family of buildings assembled from parts, each with the `weight`
- * given: a square plan of the family's half side (`frontage`), and the footprint circle around it
- * at the largest scale.
- */
-function variants(family: PartFamily, count: number, weight: number) {
-  const half = PART_FAMILIES[family];
-  return Array.from({ length: count }, (_, i) => ({
-    id: variantId(family, i + 1),
-    weight,
-    footprint: Math.ceil(half * Math.SQRT2 * BUILDING_SCALE[1] * 10) / 10,
-    frontage: half,
-    scale: BUILDING_SCALE,
-  }));
-}
+/** One rule per variant of a family of buildings made of parts, at the building scale. */
+const variants = (family: PartFamily, count: number, weight: number) =>
+  familyRules(family, count, weight, BUILDING_SCALE);
 
 const PROP_RULES: PropRules = {
   cellSize: 50,
@@ -324,6 +313,12 @@ const SECTIONS: readonly TerrainSection[] = [
     streets: { rows: [62, 66], columns: [72, 76], links: 0.92 },
     trees: [PROP_IDS.broadleaf],
     groups: [GROUP_IDS.city],
+    // Review: every block is covered by a podium with towers on it, no bare ground left.
+    blocks: {
+      podiums: Array.from({ length: CITY_PODIUMS }, (_, i) => podiumId(i + 1)),
+      podiumHeight: [5, 12],
+      towers: [2, 4],
+    },
   },
 ];
 

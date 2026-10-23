@@ -347,3 +347,16 @@
 - **Alternatives considered:** Filling the inside of the blocks with yards or parking lots; that was not asked for, and might suit a later level.
 - **Consequences:** The industrial zone draws about 550k triangles, the heaviest part of the level, to be checked against ENG-101 on real hardware. Quality presets could lower the density there.
 - **Status:** Accepted
+
+### D-026 — City blocks filled by podiums
+- **Date:** 2026-10-23
+- **Phase:** 4 (review)
+- **Context:** The reviewer wanted bigger skyscraper bases, packed so that no bare ground shows in the city.
+- **Decision:**
+  - The street grid returns its blocks. A block is the cell between four grid lines, inset by half a street plus a 0.5 kerb on each side with a built street, and not inset on a side without one, so neighbouring blocks meet across a missing street.
+  - A section with `blocks` (`BlockFill`) gets one podium per block: a unit-square model, stretched by a per-axis `PropPlacement.size` (thin-instance matrices support non-uniform scale) to the block and a random height.
+  - 2–4 towers stand on each podium, one per part of the block (2 × 2 when it is wider than 40). Each is chosen among the section's kinds that fit the part, preferring the largest (within 75 %).
+  - Street-front slots are skipped in those sections.
+- **Alternatives considered:** Packing street-front buildings tighter still: this cannot guarantee full coverage of irregular blocks.
+- **Consequences:** The city reads as one continuous built mass, dark with lit bands. Podium window bands are stretched with the block, so they sit 0.002 units (scaled) off the walls.
+- **Status:** Accepted

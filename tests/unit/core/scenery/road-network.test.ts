@@ -154,6 +154,37 @@ describe('RoadNetwork', () => {
     expect(n.slots.some((slot) => slot.road.kind === 'street')).toBe(true);
   });
 
+  it('P04 review: the blocks between the streets leave no bare ground', () => {
+    const [flat] = SAMPLE_SCENERY_LEVEL.sections;
+    if (!flat) throw new Error('no section');
+    const district: SceneryLevel = {
+      ...SAMPLE_SCENERY_LEVEL,
+      sections: [
+        { ...flat, name: 'open', seconds: 20 },
+        {
+          ...flat,
+          name: 'town',
+          seconds: 15,
+          streets: { rows: [30, 40], columns: [25, 35], links: 0.7 },
+        },
+        { ...flat, name: 'open again', seconds: 15 },
+      ],
+    };
+    const n = network(district);
+    expect(n.blocks.length).toBeGreaterThan(20);
+    const inBlock = (x: number, z: number) =>
+      n.blocks.some((b) => x >= b.xMin && x <= b.xMax && z >= b.zMin && z <= b.zMax);
+    for (let x = -RULES.offscreenX + 5; x < RULES.offscreenX - 5; x += 3.3) {
+      for (let z = 410; z < 690; z += 3.7) {
+        // Every point is on a street (or its kerb), or in a block.
+        expect(
+          inBlock(x, z) || n.edgeDistance(x, z) <= 0.5 + 1e-6,
+          `${String(x)}, ${String(z)}`,
+        ).toBe(true);
+      }
+    }
+  });
+
   it('P04-R07: no road where the ground is under the sea', () => {
     const sunk: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,

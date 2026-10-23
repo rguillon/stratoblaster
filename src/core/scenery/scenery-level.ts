@@ -108,6 +108,20 @@ export interface TerrainSection {
   readonly groups?: readonly string[];
   /** A network of straight streets over this section, instead of roads and paths. */
   readonly streets?: StreetGrid;
+  /** Fill each block of the street grid with a podium and towers, instead of street fronts. */
+  readonly blocks?: BlockFill;
+}
+
+/**
+ * How the blocks of a section's street grid are filled (phase 4 review): a podium covering the
+ * whole block, of a random height, with towers of the section's building groups on its roof.
+ */
+export interface BlockFill {
+  /** Ids of podium models: a unit square plan, 1 high, stretched to each block. */
+  readonly podiums: readonly string[];
+  readonly podiumHeight: readonly [number, number];
+  /** How many towers stand on a podium. */
+  readonly towers: readonly [number, number];
 }
 
 /** A kind of prop the placement can choose, with its relative weight. */
