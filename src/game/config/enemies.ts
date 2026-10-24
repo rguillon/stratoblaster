@@ -42,9 +42,10 @@ export const ENEMY_CONFIG = {
     entrySpeed: 220,
     /** Height where it stops before diving. */
     stopFraction: 0.72,
+    /** Deceleration into the stop: about 0.45 s and 55 px of braking from the entry speed. */
+    entryBrake: 440,
     pause: 0.5,
-    diveSpeed: 160,
-    diveAcceleration: 700,
+    diveAcceleration: 1000,
     diveMaxSpeed: 620,
     /** Range of X where it appears, as fractions of the width. */
     xRange: [0.15, 0.85],
@@ -170,8 +171,7 @@ export const ENEMY_CONFIG = {
     stats: { model: 'splitter-pod', radius: radius(0.4), health: 10, points: 50 },
     size: 0.4,
     pause: 0.35,
-    diveSpeed: 140,
-    diveAcceleration: 650,
+    diveAcceleration: 950,
     diveMaxSpeed: 560,
   },
 } as const;

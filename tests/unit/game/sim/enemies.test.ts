@@ -90,6 +90,25 @@ describe('P05-R02: Hornet', () => {
     expect(travelled(0.1)).toBeLessThan(travelled(0.1));
     expect(ctx.shots).toHaveLength(0);
   });
+
+  it('P05-R02, phase 5 review: brakes into the stop and dives from rest, without a jolt', () => {
+    const ctx = new RecordingContext();
+    const h = hornet();
+    const dt = 1 / 60;
+    let speed: number = C.hornet.entrySpeed;
+    let jolt = 0;
+    for (let t = 0; t < 2.4; t += dt) {
+      const [x, y] = [h.x, h.y];
+      run(h, ctx, dt);
+      const now = Math.hypot(h.x - x, h.y - y) / dt;
+      jolt = Math.max(jolt, Math.abs(now - speed));
+      speed = now;
+    }
+    expect(h.state).toBe('dive');
+    // The speed changes by no more than the braking or the dive acceleration allows in a step.
+    const limit = Math.max(C.hornet.entryBrake, C.hornet.diveAcceleration) * dt;
+    expect(jolt).toBeLessThan(limit * 1.5);
+  });
 });
 
 describe('P05-R03: Scout', () => {

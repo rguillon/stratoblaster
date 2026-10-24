@@ -70,3 +70,4 @@
 - 2026-10-24 — 5 — Review fix: more aggressive enemy ships (fangs, horns, claws, saw teeth, slanted neon eyes; about 19 % more polygons); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: spikes removed, ship parts integrated (painted canopies on one fuselage, faired pods, one-piece armour, wedge pods); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: the Gnat reworked as an unmanned tri-rotor drone (ducted fans, spinning rotors); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: smooth Hornet movement (brakes into its stop, eased turn, dives from rest); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
