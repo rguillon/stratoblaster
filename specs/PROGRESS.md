@@ -72,3 +72,4 @@
 - 2026-10-24 — 5 — Review fix: the Gnat reworked as an unmanned tri-rotor drone (ducted fans, spinning rotors); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: smooth Hornet movement (brakes into its stop, eased turn, dives from rest); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
 - 2026-10-24 — 5 — Review fix: new enemy P05-R12 Carrier (slow, fat, launches Gnats from its side vents), added to the spec at the reviewer's request; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: Carrier reworked (no landing deck; two glowing launch ports on each side, each launching a Gnat); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.

@@ -1,16 +1,20 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { OutlinePoint } from '../../../render/geometry/outline';
+import type { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
+import { ENEMY_CONFIG } from '../../config/enemies';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { buildEnemyModel } from './enemy-mesh';
-import { decal, flipX, HULL_SECTION, SIDES } from './enemy-shapes';
+import { CANOPY_SECTION, flipX, HULL_SECTION, sideStripe, SIDES } from './enemy-shapes';
 
 // P05-R12: the Carrier. Logical pixels, nose +Z, Y up (towards the camera).
 const H = ENEMY_LOOK.hull;
 const N = ENEMY_LOOK.neon;
 const WHITE = [1, 1, 1] as const;
 
-/** P05-R12: the Carrier's fat hull (loft stations), its flight deck and its island. */
+type Vec3 = [number, number, number];
+
+/** P05-R12: the Carrier's fat hull (loft stations) and the spine along its back. */
 const CARRIER_HULL = [
   [-28, 12, -3, 4.5],
   [-18, 17, -4, 7.5],
@@ -19,74 +23,82 @@ const CARRIER_HULL = [
   [25, 8, -3, 4.5],
   [30, 0, -1.5, 1.5],
 ] as const;
-const CARRIER_DECK = [
-  [-6, 20],
-  [6, 24],
-  [10, 12],
-  [10, -24],
-  [-10, -24],
-  [-10, 10],
+const CARRIER_SPINE = [
+  [-25, 3, 4, 7],
+  [-12, 6, 7, 11],
+  [8, 5, 7.5, 10.5],
+  [20, 0, 5.5, 6],
 ] as const;
-const CARRIER_ISLAND = [
-  [3.5, 4],
-  [8.5, 2],
-  [8.5, -10],
-  [3.5, -12],
-] as const;
-/** The right sponson along the hull's side, its top sloping out to the hangar vents. */
+/**
+ * The right sponson along the hull's side. Its outer wall slopes from `SPONSON_EDGE` at the waist
+ * up to its top, inset `SPONSON_SLOPE`, so the launch ports in it face out and up, to the camera.
+ */
 const CARRIER_SPONSON = [
-  [12, 15],
-  [20, 11],
-  [23.5, 4],
-  [23.5, -10],
-  [20, -16],
-  [12, -20],
+  [12, 16],
+  [21, 12],
+  [24, 6],
+  [24, -14],
+  [21, -19],
+  [12, -22],
 ] as const;
-/** A vent on the right sponson, glowing as the next launch comes, and its louvres. */
-const CARRIER_VENT = [
-  [16.5, 6],
-  [20.5, 4],
-  [20.5, -10],
-  [16.5, -12],
-] as const;
-const VENT_LOUVRES = [-9, -5.5, -2, 1.5] as const;
-/** A runway light, and the island's bridge window along its front. */
-const DASH = [
-  [-0.6, -1.6],
-  [0.6, -1.6],
-  [0.6, 1.6],
-  [-0.6, 1.6],
-] as const;
-const ISLAND_WINDOW = [
-  [4.8, 2.4],
-  [7.2, 1.4],
-  [7.2, 0.6],
-  [4.8, 1.6],
-] as const;
+const SPONSON_EDGE = 24;
+const SPONSON_SLOPE = [5.5, 5] as const;
+/** A port's frame and its glowing mouth: across the slope and along the side. */
+const PORT_FRAME = [5.2, 7] as const;
+const PORT_MOUTH = [3.4, 5.2] as const;
 
-/** P05-R12: a fat flying carrier with a flight deck, an island and glowing hangar vents. */
+/**
+ * A quad `[across, along]` big on the right sponson's sloped wall, centred on the port at
+ * `z`, `lift` off the wall; `side` -1 mirrors it to the left.
+ */
+function portQuad(
+  side: number,
+  z: number,
+  [across, along]: readonly [number, number],
+  lift: number,
+): Vec3[] {
+  const [inset, rise] = SPONSON_SLOPE;
+  const len = Math.hypot(inset, rise);
+  // The wall's outward normal (n) and the direction down it (d), on the right side.
+  const [nx, ny] = [rise / len, inset / len];
+  const [dx, dy] = [ny, -nx];
+  const [cx, cy] = [SPONSON_EDGE - inset / 2 + nx * lift, rise / 2 + ny * lift];
+  const corner = (u: number, v: number): Vec3 => [side * (cx + dx * u), cy + dy * u, z + v];
+  const [u, v] = [across / 2, along / 2];
+  const quad = [corner(-u, -v), corner(-u, v), corner(u, v), corner(u, -v)];
+  // Mirrored, the corners turn the other way round: keep the face towards the outside.
+  return side > 0 ? quad : quad.reverse();
+}
+
+/** A launch port: a dark frame on the sponson's wall and a mouth glowing as a launch comes. */
+function port(hull: SolidBuilder, charge: SolidBuilder, side: number, z: number): void {
+  hull.face(portQuad(side, z, PORT_FRAME, 0.08), H.dark);
+  charge.face(portQuad(side, z, PORT_MOUTH, 0.16), WHITE);
+}
+
+/** P05-R12: a fat flying carrier with a spine along its back and two launch ports a side. */
 export function buildCarrier(scene: Scene): EnemyModel {
   return buildEnemyModel('carrier', scene, N.carrier, ({ hull, neon, charge, reactor }) => {
     hull.loft(HULL_SECTION, CARRIER_HULL, H.base);
-    hull.bevelSlab(CARRIER_DECK, [4.5, 7.6, 8.9], [0, 0.6], H.dark, {}, H.panel);
-    // Runway lights along the deck's centre line.
-    for (let z = -20; z <= 16; z += 7.2) {
-      decal(
-        neon,
-        DASH.map(([x, dz]): OutlinePoint => [x, z + dz]),
-        8.95,
-        N.carrier,
-      );
+    hull.loft(CANOPY_SECTION, CARRIER_SPINE, H.panel, {}, { open: true });
+    // Amber stripes along both flanks of the spine.
+    for (const side of [0, 3]) {
+      const stripe = sideStripe(CANOPY_SECTION, side, [0.35, 0.75]);
+      neon.loft(stripe, CARRIER_SPINE.slice(1, 3), N.carrier, {}, { open: true });
     }
-    hull.bevelSlab(CARRIER_ISLAND, [8, 8.5, 12.5], [0, 1], H.panel, {}, H.base);
-    decal(neon, ISLAND_WINDOW, 12.55, N.carrier);
     for (const s of SIDES) {
       const side = (o: readonly OutlinePoint[]): readonly OutlinePoint[] => (s > 0 ? o : flipX(o));
-      hull.bevelSlab(side(CARRIER_SPONSON), [-3, 0, 4.5], [1, 2.5], H.base, {}, H.panel);
-      decal(charge, side(CARRIER_VENT), 4.55, WHITE);
-      for (const z of VENT_LOUVRES) {
-        hull.box([4.6, 0.6, 0.8], H.dark, { at: [s * 18.5, 4.6, z] });
-      }
+      const [inset] = SPONSON_SLOPE;
+      hull.bevelSlab(
+        side(CARRIER_SPONSON),
+        [-3, 0, SPONSON_SLOPE[1]],
+        [1, inset],
+        H.base,
+        {},
+        H.panel,
+      );
+      // Model Z is down the screen's Y: a port `py` up the screen sits at Z = -py.
+      for (const [, py] of ENEMY_CONFIG.carrier.ports) port(hull, charge, s, -py);
       reactor([s * 7, 0.5, -28.5], 2.4);
     }
   });

@@ -170,16 +170,21 @@ export const ENEMY_CONFIG = {
     stats: { model: 'carrier', radius: radius(1.8) * 0.8, health: 300, points: 600 },
     size: 1.8,
     speed: 30,
-    /** A pair of Gnats from each side vent every `launchInterval`, the first after `firstLaunch`. */
+    /** A Gnat from each side port every `launchInterval`, the first after `firstLaunch`. */
     launchInterval: 3,
     firstLaunch: 1.2,
-    gnatsPerVent: 2,
-    /** Distance of each side vent from the centre. */
-    ventOffset: 0.53 * ENEMY_UNIT,
+    /**
+     * The launch ports on its right side (mirrored on the left), from its centre: out to the side
+     * and up the screen, in px. The model puts its ports there.
+     */
+    ports: [
+      [21, 9],
+      [21, -1],
+    ],
     /** It stops launching below this height, too close to the player. */
     lastLaunchFraction: 0.3,
     /**
-     * The launched Gnats' path from the vent, in px, for the right vent (mirrored for the left):
+     * The launched Gnats' path from a port, in px, for the right side (mirrored for the left):
      * out sideways, then down past the bottom of the screen.
      */
     launchPath: [

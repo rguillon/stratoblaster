@@ -137,12 +137,12 @@ The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kind
 
 Added at the reviewer's request during the phase 5 review (2026-10-24).
 
-**Shape:** a fat flying carrier (1.8 L): a wide, rounded hull with a flight deck and a command island on top, and a hangar vent on each side, with amber neon lights.
+**Shape:** a fat flying carrier (1.8 L): a wide, rounded hull with a spine along its back, and two launch ports on each side, visible from above, with amber neon lights. Nothing on its back looks like a landing deck (review, 2026-10-24).
 
-**Behavior:** enters from the top and slowly flies straight down the screen, then leaves at the bottom. It does not shoot. Every 3 s, a pair of Gnats (P05-R01) comes out of each side vent; they fly out sideways, then down the screen. It stops launching in the lower part of the screen. It is listed on the `enemies/` page (P05-R11) like the other kinds.
+**Behavior:** enters from the top and slowly flies straight down the screen, then leaves at the bottom. It does not shoot. Every 3 s, a Gnat (P05-R01) comes out of each side port; they fly out sideways, then down the screen. It stops launching in the lower part of the screen. It is listed on the `enemies/` page (P05-R11) like the other kinds.
 
 **Acceptance criteria**
-- [ ] Given a Carrier is over the playfield, when its launch timer runs out, then Gnats appear at both side vents and fly away from it, out sideways then down.
+- [ ] Given a Carrier is over the playfield, when its launch timer runs out, then Gnats appear at its side ports and fly away from it, out sideways then down.
 - [ ] Given a Carrier, then it never shoots.
 - [ ] Manual visual validation
 
@@ -174,7 +174,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 | splitter_fire_interval | 2.5 s | |
 | carrier_hp / points | 300 / 600 | P05-R12 |
 | carrier_speed | 30 px/s | P05-R12 |
-| carrier_launch_interval | 3 s, 2 Gnats a vent | P05-R12; none below 30 % height |
+| carrier_launch_interval | 3 s, 1 Gnat a port (2 a side) | P05-R12; none below 30 % height |
 
 ## 🧑 Out of scope for this phase
 - Spawning enemies in Level Zero or in any real level (waves by distance, GD-40).
@@ -213,6 +213,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [x] Rework the Gnat model, make it look like an unmanned drone (2026-10-24). Fixed: a tri-rotor drone, three ducted fans with spinning blades, a sensor turret, an antenna, no cockpit.
 - [x] Improve the Hornet's movement: the pause between the flight and the dive was bad, make a smooth transition (2026-10-24). Fixed: it brakes into its stop, its nose eases round to the player, and the dive starts from rest.
 - [x] Create a new kind of ship: a fat flying carrier that slowly flies down without shooting, with vents on its sides that spawn Gnats (2026-10-24; P05-R12 added to the spec at the reviewer's request). Fixed: the Carrier, its model, its behaviour and its entry on `enemies/`.
+- [x] Rework the Carrier's design: remove the landing stuff on its back, add visible ports on the sides for the Gnats (2026-10-24; P05-R12's shape and behaviour updated to match). Fixed: flight deck, runway lights and island gone, a spine along its back instead; two glowing launch ports in the sloped outer wall of each side sponson, and each Gnat now comes out of one of them.
 
 ---
 
@@ -263,6 +264,7 @@ Review fix (integrated parts): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (Gnat drone): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (Hornet movement): typecheck ✔, build ✔, e2e 39 passed + 1 failed on the first run (the P05-R11 model view test, the known shader-compile stall on the first close-up draw, unrelated to the Hornet), passed on its own rerun.
 Review fix (Carrier, P05-R12): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (Carrier rework): typecheck ✔, build ✔, e2e 39 passed + 1 failed on the first run (the P05-R11 model view test, the known stall on the first close-up draw: still "Enemies: 5" after 5 s), passed on its own rerun.
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
@@ -286,6 +288,7 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Gnat drone (review): an unmanned tri-rotor drone: the small flat disc body with the neon ring around its rim, three short arms at 120° (the spec's fins) out to ducted fans, a dark sensor turret under the nose with a neon lens, a short antenna, the reactor at the back; no canopy, no eyes. `EnemyParts.rotor(at, radius)` adds a rotor: blades and a hub on their own node, spun by a model animation (`ENEMY_LOOK.rotor`: 2 blades, 30 rad/s). Polygons in the close-up view: 932 (444 before), the most detailed small enemy; ducts and hubs are kept to 8 and 4 sides.
 - Hornet movement (review): it used to halt at once from 220 px/s, sit still, then jump to 160 px/s. Now it flies down at full speed until its braking distance, then decelerates at a constant `entryBrake` (440 px/s², about 0.45 s and 55 px) to rest at the stop height; its nose starts coming round to the player as it brakes and eases in on it (turn rate proportional to the angle left, capped at half a turn per pause); after the 0.5 s pause it dives from rest at `diveAcceleration` 1000 px/s² (700 from 160 px/s before), up to the same 620 px/s. The `diveSpeed` option is gone. Splitter pods share the code: they dive from rest at 950 px/s². New test: the speed never changes by more than the braking or dive acceleration allows in one step.
 - Carrier (review, new requirement P05-R12): a fat carrier, 1.8 L, 300 HP, 600 points. It flies straight down at 30 px/s and never shoots; every 3 s (the first 1.2 s after it is over the playfield) a pair of Gnats comes out of each side vent, 18 px from its centre, through `EnemyContext.spawn` like the Splitter's pods. They are ordinary Gnats (same model, points and speed) on a path from the vent: out sideways, then down past the bottom of the screen, the second of each pair 0.3 s behind. It stops launching below 30 % of the screen height, too close to the player. Its `charge` lights the vents as the next launch comes. Model (`carrier-model.ts`): a lofted hull (the hull section, the widest of all), a dark flight deck with amber runway lights, a command island with a bridge window, a sponson along each side whose top holds a glowing vent with dark louvres across it, and 2 reactors. Polygons in the close-up view: 756. Tunables in `ENEMY_CONFIG.carrier` and `ENEMY_LOOK.neon.carrier`.
+- Carrier rework (review): no landing deck any more: the flight deck, its runway lights and the island are gone; a raised spine runs along the back with an amber stripe on each flank. Each side sponson's outer wall now slopes out at about 48°, so it faces the camera, and holds two launch ports: a dark frame with a mouth that glows as the next launch comes (the vent and louvres on top are gone). The ports' positions are in `ENEMY_CONFIG.carrier.ports` (21 px to each side; 9 px up and 1 px down the screen from the centre) and the model and the simulation both read them: every 3 s each port launches one Gnat (the rear one 0.3 s after the front one), from where the port is. Polygons in the close-up view: 512 (756 before).
 
 ### Deviations from spec
 - P05-R12 (review): the Carrier was added at the reviewer's request, so `enemies/` now lists 11 kinds; P05-R11 and the manual validation checklist still say 10 (human sections, not edited).

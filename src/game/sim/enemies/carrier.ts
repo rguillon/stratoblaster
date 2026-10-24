@@ -8,10 +8,10 @@ const CFG = ENEMY_CONFIG.carrier;
 const GROUP_DELAY = ENEMY_CONFIG.gnat.groupDelay;
 
 /**
- * P05-R12: a fat flying carrier. It descends slowly and never shoots; every 3 s a pair of
- * Gnats comes out of each of its side vents, flying out sideways and then down the screen. It
- * stops launching in the lower part of the screen. Its `charge` is how close the next launch is
- * (the vents glow).
+ * P05-R12: a fat flying carrier. It descends slowly and never shoots; every 3 s a Gnat comes out
+ * of each of its side ports (two a side), flying out sideways and then down the screen. It stops
+ * launching in the lower part of the screen. Its `charge` is how close the next launch is (the
+ * ports glow).
  */
 export class Carrier extends Enemy {
   readonly #launcher = new Cadence(CFG.launchInterval, CFG.firstLaunch);
@@ -33,9 +33,11 @@ export class Carrier extends Enemy {
 
   #launch(ctx: EnemyContext): void {
     for (const side of [-1, 1]) {
-      const [vx, vy] = [this.x + side * CFG.ventOffset, this.y];
-      const path = new Path(CFG.launchPath.map(([x, y]): PathPoint => [vx + side * x, vy + y]));
-      for (let i = 0; i < CFG.gnatsPerVent; i++) ctx.spawn(new Gnat(path, i * GROUP_DELAY));
+      CFG.ports.forEach(([px, py], i) => {
+        const [x0, y0] = [this.x + side * px, this.y + py];
+        const path = new Path(CFG.launchPath.map(([x, y]): PathPoint => [x0 + side * x, y0 + y]));
+        ctx.spawn(new Gnat(path, i * GROUP_DELAY));
+      });
     }
   }
 }
