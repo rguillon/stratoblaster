@@ -7,6 +7,7 @@ import {
 } from '../../../../../src/game/config/building-families';
 import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { LEVEL_ZERO } from '../../../../../src/game/sim/scenery-levels';
+import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/world-1/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
 
@@ -62,8 +63,31 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 17 hand-made models, 5 families of 16 buildings made of parts, and 6 cars.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 5 * 16 + 6);
+    // 17 hand-made models, 9 more for World 1 (phase 6), 5 families of 16 buildings made of
+    // parts, and 6 cars.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 5 * 16 + 6);
+  });
+
+  it('P06-R06: desert homes, outposts and plants, as light as the Level Zero props (D-031)', () => {
+    const triangles = (id: string) => {
+      const model = PROP_MODELS[id]?.();
+      return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
+    };
+    const handMade = PROP_GROUPS.industrial.concat(PROP_GROUPS.science, PROP_GROUPS.homes);
+    const heaviest = Math.max(...handMade.map(triangles));
+    for (const id of Object.values(WORLD_1_PROP_IDS)) {
+      expect(PROP_MODELS[id], id).toBeDefined();
+      expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
+    }
+    const desert = WORLD_1_PROPS.groups
+      .find((g) => g.id === 'desert-homes')
+      ?.kinds.map((k) => k.id);
+    expect(desert).toEqual(expect.arrayContaining(['desert-home', 'windcatcher-home']));
+    const outposts = WORLD_1_PROPS.groups.find((g) => g.id === 'outposts')?.kinds.map((k) => k.id);
+    expect(outposts).toEqual(expect.arrayContaining(['water-tower', 'solar-farm', 'antenna-mast']));
+    expect(WORLD_1_PROPS.trees.map((t) => t.id)).toEqual(
+      expect.arrayContaining(['dry-bush', 'palm-tree', 'cactus', 'dead-tree']),
+    );
   });
 
   it('P04 review: buildings with a square plan fit in it', () => {
@@ -93,8 +117,9 @@ describe('prop models', () => {
     },
   );
 
-  it('P04-R04: each building fits in its footprint at its largest scale, so neighbours do not overlap', () => {
-    for (const kind of LEVEL_ZERO.props.groups.flatMap((g) => g.kinds)) {
+  it('P04-R04, P06-R06: each building fits in its footprint at its largest scale, so neighbours do not overlap', () => {
+    const groups = [...LEVEL_ZERO.props.groups, ...WORLD_1_PROPS.groups];
+    for (const kind of groups.flatMap((g) => g.kinds)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];

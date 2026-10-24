@@ -43,6 +43,14 @@ export function onPlayfield(enemy: Enemy, ctx: EnemyContext): boolean {
   return enemy.x >= 0 && enemy.x <= ctx.width && enemy.y >= 0 && enemy.y <= ctx.height;
 }
 
+/** Entries keep enemies this far (a fraction of the edge) from the corners. */
+const ENTRY_INSET = 0.08;
+
+/** A wave's entry position, kept away from the corners of the playfield. */
+export function clampEntry(position: number): number {
+  return Math.min(1 - ENTRY_INSET, Math.max(ENTRY_INSET, position));
+}
+
 /** A random X within `range` (fractions of `width`). */
 export function pickX(random: Random, range: readonly [number, number], width: number): number {
   return randomIn(random, range) * width;

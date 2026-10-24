@@ -22,6 +22,32 @@ class Watcher extends Enemy {
 }
 
 describe('EnemyWorld', () => {
+  it('P06-R08: scales the bullet speed and gives the fire rate factor to the enemies', () => {
+    const w = new EnemyWorld(OPTIONS, createRng(1), { bulletSpeed: 1.5, fireRate: 0.8 });
+    let rate = 0;
+    const shooter = new Watcher((ctx) => {
+      rate = ctx.fireRate;
+      if (w.shots.bullets.length === 0)
+        ctx.fireBullet(150, 200, Math.PI, { speed: 100, radius: 2, style: 's' });
+    });
+    w.add(shooter);
+    w.step(0.1);
+    expect(rate).toBe(0.8);
+    expect(w.shots.bullets[0]?.speed).toBe(150);
+    expect(world().shots.bullets).toHaveLength(0);
+  });
+
+  it('P06-R03, P06-R08: counts the enemies added and their health, and those on screen', () => {
+    const w = world();
+    w.add(new Dropper(100, 300), new Dropper(100, 480), new Twin(200, 100));
+    expect(w.spawned).toBe(3);
+    expect(w.spawnedHealth).toBe(15);
+    expect(w.onScreen).toBe(2);
+    w.clear();
+    expect(w.spawned).toBe(3);
+    expect(w.onScreen).toBe(0);
+  });
+
   it('P05: numbers the enemies it is given and updates them every step', () => {
     const w = world();
     const a = new Dropper(100, 300);

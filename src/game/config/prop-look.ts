@@ -26,6 +26,17 @@ export const PROP_COLORS = {
   sand: [0.55, 0.48, 0.38],
   glassGreen: [0.09, 0.2, 0.19],
   glassDark: [0.05, 0.06, 0.09],
+  /** Desert homes and plants (phase 6): rammed earth, solar panels, dry and green leaves. */
+  adobe: [0.74, 0.62, 0.47],
+  adobeDark: [0.56, 0.45, 0.33],
+  adobeRoof: [0.64, 0.55, 0.43],
+  solar: [0.07, 0.11, 0.24],
+  thatch: [0.52, 0.42, 0.26],
+  palmLeaf: [0.27, 0.44, 0.16],
+  palmTrunk: [0.42, 0.33, 0.22],
+  cactus: [0.27, 0.4, 0.24],
+  dryLeaf: [0.46, 0.43, 0.25],
+  dryLeafDark: [0.33, 0.3, 0.18],
 } as const;
 
 /** Self-lit accents. */

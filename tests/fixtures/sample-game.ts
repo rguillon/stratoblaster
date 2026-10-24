@@ -118,6 +118,23 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
       { id: 'c', label: 'C', world: 2, level: 1, unlocked: true },
     ],
   },
+  gameLevels: [
+    {
+      id: 'a',
+      scenery: SAMPLE_SCENERY_LEVEL,
+      waves: [
+        { at: 0, kind: 'dropper', count: 1, interval: 0, entry: { side: 'top', position: 0.5 } },
+        { at: 100, kind: 'pair', count: 2, interval: 1, entry: { side: 'top', position: 0.5 } },
+      ],
+      difficulty: { bulletSpeed: 1, fireRate: 1 },
+    },
+    {
+      id: 'c',
+      scenery: SAMPLE_SCENERY_LEVEL,
+      waves: [],
+      difficulty: { bulletSpeed: 1.5, fireRate: 2 },
+    },
+  ],
   sceneryLevels: [SAMPLE_SCENERY_LEVEL],
   enemyKinds: SAMPLE_ENEMY_KINDS,
   texts: {
@@ -131,8 +148,14 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     chooseLevelHint: 'Pick a level',
     back: 'Back',
     locked: 'Nope',
-    gamePlaceholder: (ship, level) => `${ship} @ ${level}`,
-    gameHint: 'Esc',
+    gameLevel: (level) => `L${level}`,
+    fire: 'Pew',
+    levelComplete: 'Done',
+    enemiesDestroyed: (destroyed, spawned) => `${String(destroyed)}/${String(spawned)}`,
+    continueHint: 'Go on',
+    hudHealth: 'Life',
+    hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
+    hudDestroyed: (count) => `x${String(count)}`,
     unsupported: 'No WebGL2',
   },
   view: {

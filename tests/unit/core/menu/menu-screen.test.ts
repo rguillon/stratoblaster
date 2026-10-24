@@ -12,11 +12,14 @@ describe('menu screen transitions', () => {
     expect(canTransition('game', 'title')).toBe(true);
   });
 
+  it('P06-R03: a completed level goes back to the level select screen', () => {
+    expect(canTransition('game', 'level-select')).toBe(true);
+  });
+
   it('P01-R01: rejects transitions outside the flow', () => {
     expect(canTransition('title', 'game')).toBe(false);
     expect(canTransition('title', 'loading')).toBe(false);
     expect(canTransition('loading', 'game')).toBe(false);
-    expect(canTransition('game', 'level-select')).toBe(false);
     expect(canTransition('title', 'title')).toBe(false);
   });
 

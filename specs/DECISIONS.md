@@ -460,3 +460,70 @@
 - **Alternatives considered:** A depth-aware sea shader (reading the depth buffer, or the height field as vertex alpha on a subdivided sea plane): the true water depth on the water itself, but a depth pass or a much denser sea mesh, costly on the software GPU of the tests.
 - **Consequences:** No extra pass or mesh. The underwater ground is lit and shaded like land, so seabed relief shows faintly through the water. With the sea switched off, the ground has no water tint.
 - **Status:** Accepted
+
+### D-036 — Playable levels: `GameLevel`, distance-triggered wave runner, pure `LevelRun`
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** Phase 6 turns the placeholder game screen into real levels: scenery, wave scripts by distance (GD-40), a level end, difficulty per level, and debug shortcuts. The engine must stay game-agnostic (§2.3).
+- **Decision:**
+  - Content: `GameDefinition.gameLevels` lists `GameLevel`s (`core/content/game-level.ts`): a `SceneryLevel`, a `WaveScript` and an `EnemyDifficulty`; the id is the level select entry's. World 1 is data in `src/game/config/world-1/` (sections, props, looks, waves, difficulty) assembled in `src/game/sim/world-1.ts`. Wave beats are written in seconds for readability and turned into distances at the level's ground speed.
+  - `core/systems/wave-runner.ts`: a wave is `{ at, kind, count, interval, entry, spread? }`; groups are queued by time once the distance is passed, so waves overlap. The runner only knows kind ids; `EnemySpawnArea.entry` (side + position) tells the kind where to come in, and kinds that cannot follow it (path kinds) mirror their path towards it.
+  - Difficulty: `EnemyWorld` takes `{ bulletSpeed, fireRate }`; bullet speeds are multiplied when fired, and `EnemyContext.fireRate` is applied by each enemy to its attack timer (`tick(dt * ctx.fireRate)`). Carrier launches and Lancer lasers are not "fire rate" and stay as tuned.
+  - `core/systems/level-run.ts` (pure): scroll, waves, `EnemyWorld`, `ShotWorld` (first weapon, level 1), `PlayerFlight` (top speed reached in 0.08 s, GD-10; bounds from the tilted camera). Phases `playing → clearing → complete`; `clearing` ends when no enemy is left or after `endWait` (10 s). `seek()` clears the screen and skips the waves before that point.
+  - `app/game-play.ts` runs a `LevelRun` at 60 Hz over `app/level-scene.ts` (scenery + playfield layer, now shared with the enemies page); `app/game-session.ts` starts and ends it with the game screen. `MenuFlow.completeLevel()` shows the overlay; input is ignored for 1 s so a held fire key does not skip it; Confirm goes to level select on the next unlocked level (or the same one).
+- **Alternatives considered:** waves triggered by time (the spec asks for distance); a data-only enemy spawn description (kinds already have their own spawn code, P05); running the level inside `MenuFlow` (it would mix menus and gameplay state).
+- **Consequences:** a level is data plus a look; the player cannot be hit yet (out of scope), so the "Level complete" counts only enemies.
+- **Status:** Accepted
+
+### D-037 — Desert ground: a `sandy` ground cover and dunes in the height field
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R06 asks for a sand texture that fades into rock with slope and altitude, and dunes made with the heightmap tools.
+- **Decision:** `Surface` gets `sandy`, stored in the free green channel of the terrain's vertex colours and mixed by the terrain shader like `lush` and `paved` (a new `TerrainLook.sand` texture; it only replaces the `ground` layer, so slopes still turn to rock). The desert looks also use sand for their `ground` and `low` layers and a red layered rock for `steep`, with a higher slope threshold so only cliffs are rock. `TerrainSection.dunes` adds crests every `wavelength` with a long windward slope and a short lee slope (78 % / 22 %), crest lines bent and heights varied by noise; `terrainCeiling` includes them. Desert levels have a lower side sun so the dunes cast shading.
+- **Alternatives considered:** a separate desert terrain material (seams between sections); dunes as a sculpt operation along a path like `channel` (dunes cover whole sections).
+- **Consequences:** no extra texture fetch outside sandy sections' blend; the sampler is named `terrainSandy` because `terrainSand` was already the shore's uniform.
+- **Status:** Accepted
+
+### D-038 — World 1 balance measured by a play-through without shooting
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R08 asks for enemy count, total HP and the peak on screen to go up strictly, and ~60/~80/~100/~120/~140 enemies with peaks 6/8/10/12/15. "On screen" depends on how well the player shoots.
+- **Decision:** the unit test plays each level through with a ship that never fires (`tests/unit/game/sim/world-1.test.ts`), counting every enemy added (Carrier launches included), their health, and the most enemy centres over the playfield at once. Results: 66 / 82 / 124 / 156 / 184 enemies, 1320 / 1910 / 3310 / 4770 / 6940 HP, peaks 6 / 8 / 11 / 12 / 17; the second half always has more HP. Factors 0.8 / 0.85 / 0.9 / 1.0 / 1.1 for bullet speed and fire rate.
+- **Alternatives considered:** counting from the scripts alone (misses Carrier launches and how long kinds stay on screen); a simulated player that shoots (results would depend on its aim).
+- **Consequences:** counts in 1-3 to 1-5 are above the "~" tunables, mostly because each Carrier launches about 20 Gnats; the order is kept, as the tunables allow. A calm stretch around 1:50–2:10 in each level is left for a future mini boss / checkpoint (spec note).
+- **Status:** Accepted
+
+### D-039 — Game screen controls and debug options
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R02 asks for the GD §2 controls (keys, gamepad, touch drag and button); P06-R09 for URL debug options with the Level Zero playback keys, ignored without them.
+- **Decision:** `input/game-controls.ts` merges held keys (arrows / WASD by position, Space), the left stick, D-pad and A / right trigger, and a touch drag (the ship covers the dragged distance at most at its top speed) with an on-screen fire button shown on coarse pointers only. The menu input keeps handling Esc (Back) and Confirm. `?level=…&t=…&ship=…` work in every build (so a reviewer can use them on GitHub Pages); with them, F toggles ×4 and ← / → jump 10 s, and those two arrows then do not move the ship (A / D still do). The FPS / polygons tile shows only in debug mode.
+- **Alternatives considered:** debug options only in dev / e2e builds (ENG-111 style): the spec asks for them to check the levels by hand, including on the deployed game.
+- **Consequences:** in debug mode, ← / → are taken by the playback keys.
+- **Status:** Accepted
+
+### D-040 — CRT scanline overlay removed
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The CRT scanlines and vignette over the stage (D-013) drew visible horizontal lines across the playfield once the game screen showed real levels. The reviewer asked for the overlay to be removed.
+- **Decision:** `#stage::after` (scanlines + vignette) is gone from `index.html`. The rest of the cyberpunk HUD (corner brackets, chamfered panels, colours) stays.
+- **Consequences:** The menus lose their faint scanlines; the levels show without any overlay.
+- **Status:** Accepted (partly supersedes D-013)
+
+### D-041 — In-game HUD, no Back button over the playfield
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked to remove the Back button from the in-game view and to add a basic HUD (health, weapon level, etc.).
+- **Decision:** `ui/game-hud.ts` (`GameHud`), owned by the running level (`GamePlay`) and drawn in the menu overlay at the logical resolution: the ship's name and health bar, the weapon and its level, a bar of the level's progress, and the enemies destroyed. It updates every frame but only touches the page when a shown value changes, and never takes pointer input. Its texts come from `MenuTexts` (`hudHealth`, `hudWeapon`, `hudDestroyed`). The game screen view has no Back button; Esc / Backspace / gamepad B still leave (P06-R02).
+- **Alternatives considered:** the HUD inside the game screen's `MenuView` (the overlay would re-render every frame); a Babylon GUI layer (a new package, and the menus are already HTML).
+- **Consequences:** health shows full until the player can be hit (GD-20, a later phase); no score (GD-50, out of scope). On touch screens, leaving a level early waits for pause.
+- **Status:** Accepted
+
+### D-042 — Only enemies on screen can be shot
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer saw explosion lights in the wrong place. Player bullets fly on until 80 px past the playfield, and enemies are targets as soon as they spawn, just above the top edge; the tilted camera also shows less than the playfield's width at the bottom. A play-through of 1-1 to 1-3 found 7–42 % of the explosions (5 to 29 per level) out of view, mostly just above the top edge, where only their glow showed.
+- **Decision:** `LevelRunOptions.inView` decides which targets the player's shots can hit: only enemies and missiles whose centre is on screen. `GamePlay` gives it the camera's visible area (`visibleHalfWidth`); the default is the playfield rectangle. The same play-through now finds no explosion out of view.
+- **Alternatives considered:** removing player shots at the top edge (shots near the edge would vanish before reaching an enemy just coming in); hiding blasts out of view (enemies would still die unseen).
+- **Consequences:** enemies take no damage until they come into view. The `enemies/` debug page (phase 5) is unchanged.
+- **Status:** Accepted

@@ -45,14 +45,24 @@ export interface LevelSelectView extends BackView {
   readonly lockedText: string;
 }
 
-/** Placeholder game screen (P01-R08). */
-export interface GamePlaceholderView {
-  readonly kind: 'game';
-  readonly message: string;
+/** The "Level complete" overlay (P06-R03). */
+export interface LevelCompleteView {
+  readonly heading: string;
+  /** The level's label, e.g. `1-2`. */
+  readonly level: string;
+  /** How many enemies were destroyed out of how many came. */
+  readonly enemies: string;
   readonly hint: string;
-  readonly back: string;
+}
+
+/** Game screen (P06-R02): what the overlay shows over the level being played. */
+export interface GameScreenView {
+  readonly kind: 'game';
+  readonly level: string;
+  /** Label of the on-screen fire button. */
+  readonly fire: string;
+  readonly complete: LevelCompleteView | null;
 }
 
 /** Everything the menu overlay can show. */
-export type MenuView =
-  LoadingView | TitleView | ShipSelectView | LevelSelectView | GamePlaceholderView;
+export type MenuView = LoadingView | TitleView | ShipSelectView | LevelSelectView | GameScreenView;

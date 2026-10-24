@@ -69,7 +69,7 @@ describe('MenuController', () => {
     press('confirm', 'right');
     expect(display.last).toMatchObject({ kind: 'ship-select', selected: 1 });
     press('confirm', 'confirm');
-    expect(display.last).toMatchObject({ kind: 'game', message: 'Brick @ A' });
+    expect(display.last).toMatchObject({ kind: 'game', level: 'LA' });
   });
 
   it('P01-R07: gives the "locked" feedback on a locked level', () => {
@@ -96,6 +96,16 @@ describe('MenuController', () => {
     second.controller.tick(1);
     second.press('confirm');
     expect(second.display.last).toMatchObject({ kind: 'ship-select', selected: 1 });
+  });
+
+  it('P06-R03, P06-R09: starts a level straight away and shows its result', () => {
+    const { controller, display, changes } = setup();
+    controller.finishLoading();
+    expect(controller.playDirect('brick', 'c')).toBe(true);
+    expect(display.last).toMatchObject({ kind: 'game', level: 'LC', complete: null });
+    controller.completeLevel({ levelId: 'c', destroyed: 1, spawned: 2 });
+    expect(display.last).toMatchObject({ kind: 'game', complete: { enemies: '1/2' } });
+    expect(changes.at(-1)?.levelResult).toEqual({ levelId: 'c', destroyed: 1, spawned: 2 });
   });
 
   it('only redraws and notifies when something changed', () => {

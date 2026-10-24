@@ -30,9 +30,13 @@ export interface TerrainLook {
   readonly ground: TextureLook;
   readonly steep: TextureLook;
   readonly high: TextureLook;
-  /** Ground of the sections covered with grass and with pavement (`TerrainSection.surface`). */
+  /**
+   * Ground of the sections covered with grass, pavement and sand (`TerrainSection.surface`).
+   * The cover replaces the `ground` layer only, so it still gives way to rock on slopes.
+   */
   readonly lush: TextureLook;
   readonly paved: TextureLook;
+  readonly sand: TextureLook;
   readonly lowHeight: number;
   readonly highHeight: number;
   /** Half-width (in height) of the fade between two altitude layers. */

@@ -13,10 +13,18 @@ export interface MenuTexts {
   readonly back: string;
   /** Feedback shown when a locked level is confirmed. */
   readonly locked: string;
-  /** Placeholder game screen text for the chosen ship name and level label. */
-  readonly gamePlaceholder: (shipName: string, levelLabel: string) => string;
-  /** How to go back to the title screen from the placeholder game screen. */
-  readonly gameHint: string;
+  /** Game screen (P06-R02): the level shown in a corner, for its label. */
+  readonly gameLevel: (levelLabel: string) => string;
+  /** Label of the on-screen fire button (touch screens). */
+  readonly fire: string;
+  /** "Level complete" overlay (P06-R03): heading, enemy count and how to go on. */
+  readonly levelComplete: string;
+  readonly enemiesDestroyed: (destroyed: number, spawned: number) => string;
+  readonly continueHint: string;
+  /** In-game HUD: the health bar's label, the weapon and its level, enemies destroyed. */
+  readonly hudHealth: string;
+  readonly hudWeapon: (weaponName: string, level: number, levels: number) => string;
+  readonly hudDestroyed: (count: number) => string;
   /** Shown instead of the menu when the browser cannot run the game (ENG-06). */
   readonly unsupported: string;
 }

@@ -64,11 +64,28 @@ export interface Shore {
 
 /**
  * What covers the ground of a section, as shares (0..1) of alternative ground textures over the
- * default one: `lush` (grass) and `paved` (concrete, asphalt).
+ * default one: `lush` (grass), `paved` (concrete, asphalt) and `sandy` (desert sand, P06-R06).
  */
 export interface Surface {
   readonly lush: number;
   readonly paved: number;
+  readonly sandy: number;
+}
+
+/**
+ * Sand dunes (P06-R06): parallel crests every `wavelength`, each with a long gentle windward
+ * slope and a short steep lee slope, whose lines wander with noise and whose heights vary,
+ * added on top of the section's relief.
+ */
+export interface Dunes {
+  /** Height of the highest crests above the relief. */
+  readonly height: number;
+  /** Distance between two crests. */
+  readonly wavelength: number;
+  /** Direction the crests face, in degrees from +Z (the wind blows that way). */
+  readonly angleDeg: number;
+  /** How far the crest lines wander, in wavelengths. */
+  readonly warp: number;
 }
 
 /**
@@ -96,6 +113,7 @@ export interface TerrainSection {
   readonly flatten?: Flatten;
   readonly channel?: Channel;
   readonly shore?: Shore;
+  readonly dunes?: Dunes;
   /** Chance (0..1) that a building slot along a road of this section gets a building. */
   readonly buildingDensity: number;
   /** Chance (0..1) that an empty candidate spot of this section gets trees. */

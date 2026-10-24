@@ -23,7 +23,8 @@ test('ENG-54: loading → title → ship select → level select → game → ba
   await expectState(page, { screen: 'level-select', selectedId: '1-1', chosenShipId: 'balanced' });
   await sendAction(page, 'confirm');
   await expectState(page, { screen: 'game', chosenLevelId: '1-1' });
-  await expect(page.locator('.game-message')).toHaveText(/Balanced ship — Level 1-1/);
+  await expect(page.locator('.game-level')).toHaveText('Level 1-1');
+  await expect.poll(async () => (await gameState(page)).game?.levelId).toBe('1-1');
   await sendAction(page, 'back');
   await expectState(page, { screen: 'title' });
 });

@@ -23,6 +23,7 @@ export class RecordingContext implements EnemyContext {
   playerX = 240;
   playerY = 90;
   readonly random = createRng(1);
+  fireRate = 1;
   readonly shots: FiredShot[] = [];
   readonly lasers: { owner: Enemy; spec: EnemyLaserSpec }[] = [];
   readonly spawned: Enemy[] = [];

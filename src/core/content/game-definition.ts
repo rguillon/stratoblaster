@@ -1,6 +1,7 @@
 import type { EnemyKindDefinition } from '../entities/enemy';
 import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
+import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
 import type { SceneryLevel } from '../scenery/scenery-level';
@@ -34,14 +35,16 @@ export interface GameDefinition<TView = unknown> {
   /** The levels shown on the level select screen, and which ones can be played. */
   readonly levels: LevelCatalog;
   /**
-   * Levels with generated ground (terrain, sea, props), first one first. Level select does not
-   * list them yet; the `level_zero/` debug page shows them (P04).
+   * The levels that can be played (P06): ground, waves and difficulty, keyed by the id of
+   * their entry in {@link levels}.
+   */
+  readonly gameLevels: readonly GameLevel[];
+  /**
+   * Test levels with generated ground (terrain, sea, props), first one first, not listed on the
+   * level select screen: the `level_zero/` and `enemies/` debug pages show the first one (P04).
    */
   readonly sceneryLevels: readonly SceneryLevel[];
-  /**
-   * The kinds of enemies (P05). Levels do not spawn them yet; the `enemies/` debug page shows
-   * them one kind at a time.
-   */
+  /** The kinds of enemies (P05), which the levels' waves bring in by id. */
   readonly enemyKinds: readonly EnemyKindDefinition[];
   /** Texts of the menu screens. */
   readonly texts: MenuTexts;

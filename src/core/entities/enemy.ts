@@ -45,6 +45,11 @@ export interface EnemyContext {
   readonly playerX: number;
   readonly playerY: number;
   readonly random: Random;
+  /**
+   * How fast attacks come, as a factor on each kind's own timing (1 = as tuned). Enemies run
+   * their attack timers this much faster (a level's difficulty, P06-R08).
+   */
+  readonly fireRate: number;
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void;
   fireMissile(x: number, y: number, heading: number, spec: EnemyMissileSpec): void;
   /** Fires a laser from `owner`'s emitter ({@link Enemy.emitter}), which it follows. */
@@ -112,11 +117,28 @@ export abstract class Enemy implements ShotTarget {
   onDestroyed?(ctx: EnemyContext): void;
 }
 
+/** An edge of the playfield enemies come in from. */
+export type EnemySide = 'top' | 'left' | 'right';
+
+/**
+ * Where a group comes in (P06-R07): an edge, and a position along it as a fraction (0..1) of
+ * that edge, from the left for the top edge and from the bottom for the side edges.
+ */
+export interface EnemyEntry {
+  readonly side: EnemySide;
+  readonly position: number;
+}
+
 /** Where a group of enemies may appear. */
 export interface EnemySpawnArea {
   readonly width: number;
   readonly height: number;
   readonly random: Random;
+  /**
+   * Where the group should come in (a wave script's choice). Kinds follow it as far as their
+   * movement allows; without it they pick at random.
+   */
+  readonly entry?: EnemyEntry;
 }
 
 /** A kind of enemy a game offers: a name, and how one group of it appears (P05). */

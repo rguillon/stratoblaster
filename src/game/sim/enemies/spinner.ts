@@ -52,7 +52,7 @@ export class Spinner extends Enemy {
   #fire(ctx: EnemyContext, dt: number): void {
     this.#firedFor += dt;
     this.charge = 1;
-    for (let i = this.#guns.tick(dt); i > 0; i--) {
+    for (let i = this.#guns.tick(dt * ctx.fireRate); i > 0; i--) {
       for (const pod of this.pods()) ctx.fireBullet(pod.x, pod.y, pod.heading, CFG.bullet);
     }
     if (this.#firedFor >= CFG.fireDuration) {

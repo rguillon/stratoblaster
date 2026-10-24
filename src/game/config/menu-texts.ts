@@ -12,8 +12,15 @@ export const MENU_TEXTS: MenuTexts = {
   chooseLevelHint: 'Arrows to pick · Enter or tap again to go',
   back: 'Back',
   locked: 'Locked!',
-  gamePlaceholder: (ship, level) => `${ship} ship — Level ${level} — Gameplay coming soon`,
-  gameHint: 'Press Esc or tap Back to go to the title screen',
+  gameLevel: (level) => `Level ${level}`,
+  fire: 'Fire',
+  levelComplete: 'Level complete!',
+  enemiesDestroyed: (destroyed, spawned) =>
+    `Enemies destroyed: ${String(destroyed)} / ${String(spawned)}`,
+  continueHint: 'Press Space / Enter or tap to go on',
+  hudHealth: 'HP',
+  hudWeapon: (weapon, level, levels) => `${weapon} · Lv ${String(level)}/${String(levels)}`,
+  hudDestroyed: (count) => `Destroyed: ${String(count)}`,
   unsupported:
     'Sorry! This game cannot run in this browser or on this device. ' +
     'Please try a recent version of Chrome, Edge, Firefox or Safari on a computer.',

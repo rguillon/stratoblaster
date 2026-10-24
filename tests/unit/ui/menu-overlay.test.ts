@@ -46,12 +46,20 @@ const LEVELS: MenuView = {
 function setup() {
   const root = document.createElement('div');
   const commands: MenuCommand[] = [];
-  const overlay = new MenuOverlay(document, root, (c) => commands.push(c), {
-    transitionSeconds: 0.25,
-  });
+  const touch = { fire: [] as boolean[], drags: [] as [number, number][] };
+  const overlay = new MenuOverlay(
+    document,
+    root,
+    (c) => commands.push(c),
+    { transitionSeconds: 0.25 },
+    {
+      fire: (held) => touch.fire.push(held),
+      drag: (dx, dy) => touch.drags.push([dx, dy]),
+    },
+  );
   const $ = (selector: string) => root.querySelector<HTMLElement>(selector);
   const $$ = (selector: string) => [...root.querySelectorAll<HTMLElement>(selector)];
-  return { root, overlay, commands, $, $$ };
+  return { root, overlay, commands, touch, $, $$ };
 }
 
 describe('MenuOverlay', () => {
@@ -127,13 +135,51 @@ describe('MenuOverlay', () => {
     expect($('.level-cell.selected')?.classList.contains('shake')).toBe(true);
   });
 
-  it('P01-R08: the placeholder game screen shows the message, the hint and a Back button', () => {
+  const GAME: MenuView = {
+    kind: 'game',
+    level: 'Level 1-1',
+    fire: 'Fire',
+    complete: null,
+  };
+
+  it('P06-R02: the game screen shows the level and the touch fire button, and no Back button', () => {
+    const { overlay, touch, $ } = setup();
+    overlay.show(GAME);
+    expect($('.game-level')?.textContent).toBe('Level 1-1');
+    // Phase 6 review: no Back button over the playfield (Esc / gamepad B still leave).
+    expect($('.menu-back')).toBeNull();
+    const fire = $('.game-fire');
+    expect(fire?.textContent).toBe('Fire');
+    fire?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    fire?.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    expect(touch.fire).toEqual([true, false]);
+    expect(touch.drags).toEqual([]);
+  });
+
+  it('P06-R02: dragging over the game screen flies the ship (logical pixels, Y up)', () => {
+    const { overlay, touch, $ } = setup();
+    overlay.show(GAME);
+    const screen = $('.game-screen');
+    screen?.dispatchEvent(new PointerEvent('pointermove', { clientX: 5, clientY: 5 }));
+    screen?.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 20 }));
+    screen?.dispatchEvent(new PointerEvent('pointermove', { clientX: 14, clientY: 17 }));
+    screen?.dispatchEvent(new PointerEvent('pointerup', {}));
+    screen?.dispatchEvent(new PointerEvent('pointermove', { clientX: 30, clientY: 30 }));
+    expect(touch.drags).toEqual([[4, 3]]);
+  });
+
+  it('P06-R03: the "Level complete" panel shows the level and the counts; a tap goes on', () => {
     const { overlay, commands, $ } = setup();
-    overlay.show({ kind: 'game', message: 'Heavy ship — Level 1-1', hint: 'Esc', back: 'Back' });
-    expect($('.game-message')?.textContent).toBe('Heavy ship — Level 1-1');
-    expect($('.menu-back')?.textContent).toContain('Back');
-    $('.menu-back')?.click();
-    expect(commands).toEqual(['back']);
+    overlay.show({
+      ...GAME,
+      complete: { heading: 'Level complete!', level: '1-2', enemies: '5 / 9', hint: 'Go on' },
+    });
+    expect($('.level-complete-heading')?.textContent).toBe('Level complete!');
+    expect($('.level-complete-level')?.textContent).toBe('1-2');
+    expect($('.level-complete-enemies')?.textContent).toBe('5 / 9');
+    expect($('.game-fire')).toBeNull();
+    $('.level-complete')?.click();
+    expect(commands).toEqual(['confirm']);
   });
 
   it('P01-R15: a new screen fades in; a refresh of the same screen does not', () => {

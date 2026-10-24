@@ -20,6 +20,7 @@ const STATE: MenuState = {
   chosenShipId: null,
   chosenLevelId: null,
   transitioning: false,
+  levelResult: null,
 };
 
 describe('buildMenuView', () => {
@@ -67,7 +68,7 @@ describe('buildMenuView', () => {
     });
   });
 
-  it('P01-R08: the placeholder shows the chosen ship and level', () => {
+  it('P06-R02: the game screen shows the level played and the touch fire button', () => {
     const state: MenuState = {
       ...STATE,
       screen: 'game',
@@ -76,14 +77,26 @@ describe('buildMenuView', () => {
     };
     expect(buildMenuView(state, CTX)).toEqual({
       kind: 'game',
-      message: 'Brick @ C',
-      hint: 'Esc',
-      back: 'Back',
+      level: 'LC',
+      fire: 'Pew',
+      complete: null,
     });
   });
 
-  it('falls back to the highlighted ship and an unknown level label', () => {
+  it('P06-R03: after the level, the overlay shows the level and the destroyed / spawned counts', () => {
+    const state: MenuState = {
+      ...STATE,
+      screen: 'game',
+      chosenLevelId: 'c',
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9 },
+    };
+    expect(buildMenuView(state, CTX)).toMatchObject({
+      complete: { heading: 'Done', level: 'C', enemies: '7/9', hint: 'Go on' },
+    });
+  });
+
+  it('shows an unknown level label as "?"', () => {
     const view = buildMenuView({ ...STATE, screen: 'game' }, CTX);
-    expect(view).toMatchObject({ message: 'Cube @ ?' });
+    expect(view).toMatchObject({ level: 'L?' });
   });
 });
