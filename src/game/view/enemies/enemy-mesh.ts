@@ -6,6 +6,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import '@babylonjs/core/Rendering/outlineRenderer';
 import type { Enemy } from '../../../core/entities/enemy';
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
@@ -38,14 +39,39 @@ function unlit(name: string, scene: Scene): StandardMaterial {
 export function enemyMaterials(scene: Scene): EnemyMaterials {
   let mats = CACHE.get(scene);
   if (!mats) {
-    const hull = new PBRMaterial('enemy-hull', scene);
-    hull.albedoColor = Color3.White();
-    hull.metallic = ENEMY_LOOK.hull.metallic;
-    hull.roughness = ENEMY_LOOK.hull.roughness;
-    mats = { hull, neon: unlit('enemy-neon', scene) };
+    mats = { hull: metal('enemy-hull', Color3.White(), scene), neon: unlit('enemy-neon', scene) };
     CACHE.set(scene, mats);
   }
   return mats;
+}
+
+function metal(name: string, albedo: Color3, scene: Scene): PBRMaterial {
+  const hull = new PBRMaterial(name, scene);
+  hull.albedoColor = albedo;
+  hull.metallic = ENEMY_LOOK.hull.metallic;
+  hull.roughness = ENEMY_LOOK.hull.roughness;
+  return hull;
+}
+
+const TINTED_CACHE = new WeakMap<Scene, Map<string, PBRMaterial>>();
+
+/**
+ * The dark metal of an enemy whose neon is `neon` (phase 5 review: enemies easier to see on the
+ * ground): tinted towards its neon colour, and faintly lit by it.
+ */
+function tintedHull(scene: Scene, neon: Rgb): PBRMaterial {
+  const look = ENEMY_LOOK.hull;
+  const byColor = TINTED_CACHE.get(scene) ?? new Map<string, PBRMaterial>();
+  TINTED_CACHE.set(scene, byColor);
+  const key = neon.join(',');
+  let mat = byColor.get(key);
+  if (!mat) {
+    const [r, g, b] = neon.map((c) => 1 + (c - 1) * look.tint);
+    mat = metal('enemy-hull', new Color3(r, g, b), scene);
+    mat.emissiveColor = new Color3(...neon).scale(look.selfLight);
+    byColor.set(key, mat);
+  }
+  return mat;
 }
 
 /** A flat-shaded, vertex-coloured mesh. */
@@ -197,9 +223,17 @@ function addReactors(
   });
 }
 
+/** A thin neon line around the hull's silhouette (phase 5 review: enemies easier to see). */
+function outline(mesh: Mesh, color: Rgb): void {
+  mesh.renderOutline = true;
+  mesh.outlineColor = new Color3(...color);
+  mesh.outlineWidth = ENEMY_LOOK.hull.outline;
+}
+
 /**
  * Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
- * charge lights get their own material, brightened to `chargeColor` by the enemy's charge.
+ * charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
+ * hull is tinted towards `chargeColor`, the enemy's neon colour.
  */
 export function buildEnemyModel(
   name: string,
@@ -217,16 +251,19 @@ export function buildEnemyModel(
     rotor: (at, radius) => rotors.push({ at, radius }),
   };
   build(parts);
-  const mats = enemyMaterials(scene);
+  const neon = enemyMaterials(scene).neon;
+  const hull = tintedHull(scene, chargeColor);
   const root = new TransformNode(name, scene);
   addReactors(name, reactors, parts, root);
-  addRotors(name, rotors, mats.hull, root);
+  addRotors(name, rotors, hull, root);
   for (const [part, material] of [
-    [parts.hull, mats.hull],
-    [parts.neon, mats.neon],
+    [parts.hull, hull],
+    [parts.neon, neon],
   ] as const) {
     if (part.geometry.positions.length > 0) {
-      meshOf(`${name}-${material.name}`, part.geometry, material, scene).parent = root;
+      const mesh = meshOf(`${name}-${material.name}`, part.geometry, material, scene);
+      mesh.parent = root;
+      if (material === hull) outline(mesh, chargeColor);
     }
   }
   const chargeMat = unlit(`${name}-charge`, scene);

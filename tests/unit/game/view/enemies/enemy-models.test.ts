@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
+import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ENEMY_CONFIG, ENEMY_UNIT } from '../../../../../src/game/config/enemies';
 import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
@@ -69,6 +71,21 @@ describe('ENEMY_MODELS', () => {
       expect(names, key).toContain('enemy-neon');
     }
     expect(Math.max(...ENEMY_LOOK.hull.base)).toBeLessThan(0.2);
+  });
+
+  it('phase 5 review: hulls tinted by and outlined in their neon colour, to stand out', () => {
+    const hullOf = (key: string): Mesh | undefined =>
+      extent(key)
+        .model.root.getChildMeshes<Mesh>()
+        .find((m) => m.name === `${key}-enemy-hull`);
+    const hornet = hullOf('hornet');
+    const gnat = hullOf('gnat');
+    const tint = (hornet?.material as PBRMaterial | undefined)?.albedoColor;
+    // Red neon: the Hornet's metal turns red, not the Gnat's cyan.
+    expect(tint?.r).toBeGreaterThan((tint?.b ?? 1) + 0.3);
+    expect(gnat?.material).not.toBe(hornet?.material);
+    expect(hornet?.renderOutline).toBe(true);
+    expect(hornet?.outlineColor.asArray()).toEqual([...ENEMY_LOOK.neon.hornet]);
   });
 
   it('P05-R07, P05-R08: charging lights brighten with the enemy charge', () => {

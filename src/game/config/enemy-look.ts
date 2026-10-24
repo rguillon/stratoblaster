@@ -10,13 +10,21 @@ type Rgb = readonly [number, number, number];
 const glow = (core: Rgb, mid: Rgb, rim: Rgb): readonly Rgb[] => [core, mid, rim, [0, 0, 0]];
 
 export const ENEMY_LOOK = {
-  /** Hull shades, multiplied into a dark PBR metal. */
+  /**
+   * Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white to
+   * the enemy's neon colour, and glows `selfLight` of it (phase 5 review: enemies easier to tell
+   * from the ground and its shadows).
+   */
   hull: {
     base: [0.1, 0.105, 0.12],
     panel: [0.16, 0.16, 0.19],
     dark: [0.045, 0.045, 0.055],
     metallic: 0.85,
     roughness: 0.38,
+    tint: 0.6,
+    selfLight: 0.04,
+    /** Width of the neon line around the hull's silhouette, in logical pixels. */
+    outline: 0.9,
   },
   /** Neon colours of each enemy (P05-R01..R10, P05-R12). */
   neon: {
