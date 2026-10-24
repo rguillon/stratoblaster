@@ -86,6 +86,22 @@ describe('startEnemyViewer', () => {
     expect(viewer.enemies.enemies).toHaveLength(1);
   });
 
+  it('P05-R11, phase 5 review: the wireframe view is the model view drawn as lines', () => {
+    viewer = start();
+    viewer.key('v', 'KeyV', true);
+    expect(viewer.panel.selection.view).toBe('wireframe');
+    expect(viewer.enemies.enemies).toHaveLength(0);
+    expect(viewer.closeUp.scene.forceWireframe).toBe(true);
+    viewer.key('ArrowRight', 'ArrowRight', true);
+    expect(viewer.panel.selection.kind).toBe(1);
+    viewer.key('m', 'KeyM', true);
+    expect(viewer.closeUp.scene.forceWireframe).toBe(false);
+    viewer.key('v', 'KeyV', true);
+    viewer.key('v', 'KeyV', true);
+    expect(viewer.panel.selection.view).toBe('behaviour');
+    expect(viewer.enemies.enemies.length).toBeGreaterThan(0);
+  });
+
   it('P05-R11: in the model view, ← / → switch the enemy instead of moving the ship', () => {
     viewer = start();
     viewer.key('m', 'KeyM', true);

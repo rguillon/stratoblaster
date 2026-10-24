@@ -2,7 +2,7 @@
 export interface EnemyViewerSelection {
   readonly kind: number;
   /** `behaviour`: the enemy flies and attacks; `model`: its model alone, turning. */
-  readonly view: 'behaviour' | 'model';
+  readonly view: 'behaviour' | 'model' | 'wireframe';
   readonly weapon: number;
   /** 1-based. */
   readonly level: number;
@@ -31,12 +31,12 @@ export interface EnemyViewerPanelOptions {
   readonly onChange: (selection: EnemyViewerSelection) => void;
 }
 
-const VIEWS = ['behaviour', 'model'] as const;
+const VIEWS = ['behaviour', 'model', 'wireframe'] as const;
 
 /**
- * Controls of the enemies page: a button per enemy kind, the view (behaviour or model), the
- * player's weapon and level, fire and pause toggles, and readouts. {@link update} changes the
- * selection from code (keyboard shortcuts).
+ * Controls of the enemies page: a button per enemy kind, the view (behaviour, model or
+ * wireframe), the player's weapon and level, fire and pause toggles, and readouts. {@link update}
+ * changes the selection from code (keyboard shortcuts).
  */
 export class EnemyViewerPanel {
   readonly root: HTMLElement;
@@ -123,7 +123,7 @@ export class EnemyViewerPanel {
       (_, i) => `L${String(i + 1)}`,
     );
     this.#fill('kind', this.options.kinds, (i) => i === s.kind);
-    this.#fill('view', ['Behaviour', 'Model (M)'], (i) => VIEWS[i] === s.view);
+    this.#fill('view', ['Behaviour', 'Model (M)', 'Wireframe (V)'], (i) => VIEWS[i] === s.view);
     this.#fill('weapon', this.options.weapons, (i) => i === s.weapon);
     this.#fill('level', levels, (i) => i + 1 === s.level);
     this.#fill('toggles', ['Fire (F)', 'Pause (P)'], (i) => (i === 0 ? s.fire : s.paused));

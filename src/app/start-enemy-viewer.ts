@@ -16,6 +16,7 @@ import { EnemyViewerPanel, type EnemyViewerSelection } from '../ui/enemy-viewer-
 import { StatsTile } from '../ui/stats-tile';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../config/enemy-viewer';
 import { EnemyCloseUp } from './enemy-close-up';
+import { HELP, shortcut, SWITCH_KEYS } from './enemy-viewer-keys';
 import { buildEnemyViewerScene, type EnemyViewerScene } from './enemy-viewer-scene';
 import { EnemyViewerShots } from './enemy-viewer-shots';
 import { RateMeter } from './rate-meter';
@@ -53,32 +54,6 @@ export interface RunningEnemyViewer {
   key(key: string, code: string, down: boolean): void;
   dispose(): void;
 }
-
-/** Keyboard shortcuts: N / B next / previous enemy, M model view, X weapon, 1-9 level, F, P. */
-function shortcut(
-  key: string,
-  s: EnemyViewerSelection,
-  counts: { kinds: number; weapons: number },
-) {
-  const k = key.toLowerCase();
-  const wrap = (i: number, n: number): number => (i + n) % Math.max(1, n);
-  if (/^[1-9]$/.test(k)) return { level: Number(k) };
-  const changes: Readonly<Record<string, Partial<EnemyViewerSelection>>> = {
-    n: { kind: wrap(s.kind + 1, counts.kinds) },
-    b: { kind: wrap(s.kind - 1, counts.kinds) },
-    m: { view: s.view === 'model' ? 'behaviour' : 'model' },
-    x: { weapon: wrap(s.weapon + 1, counts.weapons), level: 1 },
-    f: { fire: !s.fire },
-    p: { paused: !s.paused },
-  };
-  return changes[k];
-}
-
-/** In the model view, ← / → (by key position) show the previous / next enemy. */
-const SWITCH_KEYS: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 1 };
-
-const HELP =
-  'Move: arrows / WASD · N / B: next / previous enemy · M: model (← / →: switch enemy) · X: weapon · 1-5: level · F: fire · P: pause';
 
 function weaponAt(game: GameDefinition, index: number): WeaponDefinition {
   const weapon = game.playerWeapons[index];
@@ -166,7 +141,9 @@ class EnemyViewer {
   #apply(s: EnemyViewerSelection): void {
     this.shots.select(weaponAt(this.game, s.weapon), s.level);
     this.shots.firing = s.fire;
-    const modelView = s.view === 'model';
+    // The wireframe view is the model view drawn as lines (phase 5 review: to see the polygons).
+    const modelView = s.view !== 'behaviour';
+    this.closeUp.scene.forceWireframe = s.view === 'wireframe';
     if (s.kind !== this.#kind || modelView !== this.#modelView) {
       this.#kind = s.kind;
       this.#modelView = modelView;

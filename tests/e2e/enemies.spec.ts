@@ -105,6 +105,11 @@ test.describe('P05: enemies/ page', () => {
       'true',
     );
     await waitForFrames(page, 5);
+    await page.keyboard.press('v');
+    await expect(page.locator('.enemy-view button').nth(2)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.enemy-enemies')).toHaveText('Enemies: 0');
+    await waitForFrames(page, 5);
+    await page.keyboard.press('m');
     await page.keyboard.press('m');
     await expect(page.locator('.enemy-enemies')).not.toHaveText('Enemies: 0');
   });

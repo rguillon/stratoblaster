@@ -52,6 +52,8 @@ describe('EnemyViewerPanel', () => {
     expect(p.selection.kind).toBe(2);
     buttons('view')[1]?.click();
     expect(p.selection.view).toBe('model');
+    buttons('view')[2]?.click();
+    expect(p.selection.view).toBe('wireframe');
     buttons('weapon')[1]?.click();
     expect(buttons('level')).toHaveLength(3);
     buttons('level')[2]?.click();
