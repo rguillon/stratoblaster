@@ -570,3 +570,12 @@
 - **Alternatives considered:** making it the engine default (it would rewrite Level Zero, phase 4, validated); keeping the main roads in separate bands across the screen (much smaller meanders); 4-way crossings kept in the city grids (the request had no exception for them).
 - **Consequences:** World 1 roads and buildings change (other layouts from the same seeds). Level Zero is unchanged; to get the same there, set the three rules in `level-zero.ts`. `RoadNetwork` indexes each road as it is laid, and exposes `offscreenX`; paths are laid by `road-paths.ts`, lone buildings and hamlets by `away-placement.ts` (files kept under the lint size limits). A first version counted built links to find crossings; where two sections meet, overlapping links made it loop, and 1-5's roads took 44 s to generate (e2e timeouts) — counting sides fixed it (about 0.2 s, as before).
 - **Status:** Accepted
+
+### D-047 — Player base speed raised again, to 225 px/s
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for the ships' base speed to go up by 50 % again, after D-044 (100 → 150 px/s).
+- **Decision:** `PLAYER_SHIPS.baseSpeedPxPerSec` 150 → 225: balanced 225, heavy 180, light 315 px/s. The ships' speed factors, the acceleration time (0.18 s to full speed, D-045) and the roll (scaled to each ship's top speed) are unchanged.
+- **Alternatives considered:** raising the speed factors instead (the base speed is the one value the request names).
+- **Consequences:** the light ship crosses the 480 px playfield in about 1.5 s. Enemy density and waves are unchanged. `phase-02-player-ships.md` still says 100 px/s (see D-044).
+- **Status:** Accepted

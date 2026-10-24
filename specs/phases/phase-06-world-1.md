@@ -184,6 +184,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
 - [x] (reviewer, in chat, 2026-10-24) Avoid roads crossing each other (only a path joining a road is allowed); add a few props not connected to roads; allow places where a bunch of buildings stand close together, spawned from time to time. — Done for World 1 (D-046): main roads never cross (the second follows the first at a distance), paths start on a main road and end off screen or on another main road or street, the street grids have T-junctions only; a few lone buildings and hamlets of 5–9 buildings stand away from the roads (`noCrossings`, `loners`, `hamlets` rules; `road-network.test.ts`, `prop-placement.test.ts`). Crossings on screen went from up to 266 per level to 0. Level Zero (phase 4) keeps its roads.
 - [x] (reviewer, in chat, 2026-10-24) Make the player ship roll when moving left / right, and add a little more acceleration to its movements. — Done: the ship banks up to 35° with its sideways speed, easing in and out; full speed is reached in 0.18 s instead of 0.08 s (D-045).
+- [x] (reviewer, in chat, 2026-10-24) Increase the ships' base speed by 50 % again. — Done: base speed 225 px/s (balanced 225, heavy 180, light 315); acceleration time unchanged (0.18 s to full speed), so the ships also pick up speed faster (D-047).
 - [x] (reviewer, in chat, 2026-10-24) Increase the player base speed by 50 %, and increase the enemy density. — Done: base speed 150 px/s (balanced 150, heavy 120, light 210); every wave brings 50 % more groups (D-044). `phase-02-player-ships.md` still says 100 px/s: to be updated by the reviewer.
 - [x] (reviewer, in chat, 2026-10-24) Add a button to switch between weapons: the E key (AZERTY). — Done: E (by key position, so the same key on AZERTY and QWERTY) cycles bullet → laser → missile, each at level 1, once per press; the HUD shows the weapon (D-043).
 - [x] (reviewer, in chat, 2026-10-24) Sometimes the light of an explosion appears at the wrong place. — Fixed: enemies could be shot (and blew up) before coming into view, just above the top edge or beside the narrower bottom of the view; only enemies on screen can be hit now (D-042, `level-run.test.ts`).
@@ -238,6 +239,7 @@ make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed (the enemies/ page 
 After the stray explosion glow fix: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 After no road crossings, lone buildings and hamlets: make typecheck ✔ / make build ✔ / make e2e ✔
 50 passed (1-4 and 1-5 load as fast as before, about 13 s per test)
+After the base speed raised to 225 px/s: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
@@ -253,7 +255,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 
 ### Deviations from spec
 - Enemy counts and peaks are above the tunables: after the reviewer's +50 % density (D-044), 119 / 143 / 213 / 270 / 321 enemies (tunables ~60 … ~140; Carriers' Gnats included) and peaks 11 / 14 / 16 / 18 / 22 on screen (6 … 15), measured without the player shooting. The strict order of P06-R08 holds.
-- Player base speed is 150 px/s (reviewer's request, D-044), not the 100 px/s of P02.
+- Player base speed is 225 px/s (two reviewer's requests, D-044 then D-047), not the 100 px/s of P02.
 - Lone huts and masts on the 1-1 islands are scattered like plants (no road reaches an island, and buildings only stand along roads, P04-R07).
 - The debug URL options work in production builds too, and in debug mode ← / → are the playback keys rather than steering (D-039).
 - At the reviewer's request during implementation, the CRT scanline / vignette overlay of the stage is removed: it drew lines across the levels (D-040).
