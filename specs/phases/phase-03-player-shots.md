@@ -19,7 +19,7 @@ The different kinds of shots the player ships can have.
 
 ### P03-R01 — Bullet · MUST
 
-A neon green blob with fading edges that moves at constant velocity.
+A minigun tracer that moves at constant velocity: a thin streak, white-hot at its head, cooling to orange then red along its tail and fading out (phase 5 review, 2026-10-24; was a neon green blob).
 
 At level 1, a single forward stream
 At level 2, a dual forward stream
@@ -40,7 +40,7 @@ After level1, when the laser hits a ship, the beam goes trough the ship but cont
 
 ### P03-R03 — Missile  · MUST
 
-A small missile, it has a reactir flame effect. The missile has a constant acceleration. The missiles target the closest enemy.
+A small missile, it has a reactir flame effect. The missile has a constant acceleration. The missiles target the closest enemy within about half the screen height (320 px); enemies further away are not pursued (phase 5 review, 2026-10-24).
 On impact, missiles cause a base damage of 8 points for a 10 pixels radius.
 A missile stream consists of 4 missiles par seconds.
 
@@ -165,9 +165,9 @@ Deferred to /validate-phase: lint, unit tests, coverage (not run during implemen
 1. `make dev` and open http://localhost:5173/player_shots/ (or `make preview` and `/player_shots/`).
 2. The playfield (480×640, faint 40 px grid) shows the Balanced ship at the bottom, firing level-1 bullets at six dummy targets. The targets are red rings with green health bars: a column of four above the ship and one on each side, all swaying together. A destroyed target turns grey and comes back after 1 s.
 3. Controls (top left) or keys: **1-5** level, **W** next weapon, **S** next ship, **G** stream guides (yellow lines along each stream's angle), **T** targets on or off. The panel shows a one-line summary of the weapon level, the shots in flight, the damage per second over the last second, and the targets destroyed.
-4. Bullet (P03-R01): press G, then step through L1-L5 and check the streams against the guides: L1 1 forward, L2 2 forward 12 px apart, L3 forward ±10°, L4 dual ±10°, L5 forward ±10° ±20°. The blobs are green with soft edges, at a constant speed. Each hit throws a burst of sparkling white-gold metal sparks.
+4. Bullet (P03-R01): press G, then step through L1-L5 and check the streams against the guides: L1 1 forward, L2 2 forward 12 px apart, L3 forward ±10°, L4 dual ±10°, L5 forward ±10° ±20°. The bullets are orange-white tracers, at a constant speed. Each hit throws a burst of sparkling white-gold metal sparks.
 5. Laser (P03-R02): at L1 the beam stops at the first ship of the column. At L2-L5 it goes through 1-4 ships, getting thinner at each ship, with a glow at each contact and a pulsing glow at its base, bigger at higher levels. Particles flow up the beam. Damage/s rises with the level.
-6. Missile (P03-R03): small grey missiles with a red nose and a blue reactor flame, coming out from under the centre of the ship. They start slow, accelerate and curve towards the nearest target. Each impact makes an orange explosion. Press T to remove the targets: missiles then fly straight along their streams (check them with G): L1 forward, L2 ±25°, L3 forward ±25°, L4 ±25° ±45°, L5 all five.
+6. Missile (P03-R03): small grey missiles with a red nose and a blue reactor flame, coming out from under the centre of the ship. They start slow, accelerate and curve towards the nearest target within 320 px. Each impact makes an orange explosion. Press T to remove the targets: missiles then fly straight along their streams (check them with G): L1 forward, L2 ±25°, L3 forward ±25°, L4 ±25° ±45°, L5 all five.
 7. Press S to check each ship (Balanced, Heavy, Light) with the shots.
 8. The tile in the top right shows the FPS and the polygons drawn per frame. Check 60 FPS on your machine; the headless test browser renders in software and shows far less.
 
@@ -175,12 +175,12 @@ Deferred to /validate-phase: lint, unit tests, coverage (not run during implemen
 Values the spec did not give. All of them are agent defaults in `src/game/config/player-weapons.ts` (D-015):
 | Value | Default |
 |-------|---------|
-| Bullet speed / fire rate / hit radius | 600 px/s / 8 shots/s per stream / 4 px (visual blob 4.5 px after review) |
+| Bullet speed / fire rate / hit radius | 600 px/s / 8 shots/s per stream / 4 px (visual blob 4.5 px after review; a 3.4 × 34 px tracer since the phase 5 review) |
 | Dual stream spacing (bullets) | 12 px |
 | Laser damage per second, L1-L5 | 40 / 60 / 85 / 115 / 150 |
 | Laser hit width, L1-L5 | 4 / 6 / 8 / 10 / 12 px (drawn 1.8× wider for the glow) |
 | Missile launch speed / acceleration / max speed | 150 px/s / 600 px/s² / 700 px/s |
-| Missile homing | 180°/s towards the target closest to the missile, re-chosen every step; straight when there is none |
+| Missile homing | 180°/s towards the target closest to the missile within 320 px (phase 5 review), re-chosen every step; straight when there is none |
 | Missile area damage | 8 flat inside the radius (target hitbox within 10 px of the impact), the same at every level |
 | Diagonal streams | symmetric (−a and +a) |
 | Missile diagonal angles | ±25° and ±45°, not the spec's ±10° and ±20° (phase 3 review feedback) |

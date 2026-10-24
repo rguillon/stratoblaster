@@ -17,7 +17,7 @@ The game has its first 10 kinds of enemies, each with its own code-generated shi
 
 ### P05-R01 — Gnat (swarm drone)  · MUST
 
-**Shape:** a small flat disc (0.5 L) with three short fins at 120° and a neon ring around its rim.
+**Shape:** an unmanned drone: a small flat disc (0.5 L) with three short arms at 120° carrying ducted fans, and a neon ring around its rim (review, 2026-10-24; were three short fins).
 
 **Behavior:** comes in groups of 5, one after the other, following the same predefined S-shaped path from the top of the screen to the bottom. It does not shoot. Killed by a single level 1 bullet.
 
@@ -119,10 +119,11 @@ The game has its first 10 kinds of enemies, each with its own code-generated shi
 
 ### P05-R11 — Debug page `enemies/`  · MUST
 
-The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kinds for visual validation, over the Level Zero scenery with the playfield camera.
+The game shall provide an `enemies/` debug endpoint that shows the 11 enemy kinds (P05-R01 to P05-R10, and P05-R12) for visual validation, over the Level Zero scenery with the playfield camera.
 
 - A list lets the user pick one enemy kind; the page then spawns that kind (a whole group for the Gnat) and spawns it again when it has left the screen or was destroyed.
 - A "model" view shows the picked enemy alone, like the `player_ship/` page: close up on the enemy, rotating slowly, on a dark background (no scenery). In this view, the left / right arrow keys switch to the previous / next enemy.
+- A "wireframe" view is the model view with every triangle's edges drawn and the enemy's hit circle shown (review, 2026-10-24).
 - A player ship is present and can be moved and can shoot (any weapon and level from phase 3), so the attacks aimed at the player and the destruction of the enemies can be checked. The player cannot die on this page.
 - Hits on enemies emit particles and destroyed enemies explode (GD-62).
 - The page shows the FPS / polygons debug tile, like `player_shots/`.
@@ -184,12 +185,12 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - Sound effects.
 
 ## 🧑 Engineering additions for this phase
-- Enemy behaviors (movement, fire timing, aiming) are pure logic in `core/` and unit tested; the 10 kinds and their tunables live in `src/game/`.
+- Enemy behaviors (movement, fire timing, aiming) are pure logic in `core/` and unit tested; the 11 kinds and their tunables live in `src/game/`.
 - An e2e smoke test opens `enemies/` and picks every enemy kind.
 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] Each of the 10 enemies looks like its description and is readable at game scale
+- [ ] Each of the 11 enemies looks like its description and is readable at game scale
 - [ ] Each enemy moves and attacks as described
 - [ ] Enemies can be shot and explode; Rocketeer missiles can be shot down
 - [ ] 60 fps on `enemies/` with the busiest enemy (Spinner, Bulwark)
@@ -225,6 +226,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [x] Work on the sea/land junction effect, it looks bad (2026-10-24). Fixed: a sand beach, turquoise shallows darkening with depth, a broken foam line and surf bands rolling in, under a more see-through sea.
 - [x] Make the player missiles see only up to about half the screen; they don't pursue enemies that are further away (2026-10-24). Fixed: `MISSILE.homingRange` 320 px.
 - [x] Replace the player bullet green blob with a minigun tracer bullet effect (2026-10-24). Fixed: a thin streak, white-hot at the head, cooling to orange and red along its tail, flickering.
+- [x] Correct the specs (2026-10-24). Done at the reviewer's request: P03-R01 (tracer), P03-R03 (320 px homing range) and their phase 3 checklist and defaults, P04-R02 (shore), P05-R01 (Gnat drone arms and fans), P05-R11 (11 kinds, wireframe view) and the phase 5 engineering additions and checklist (11 enemies).
 
 ---
 
@@ -319,15 +321,15 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Model view warm-up: the e2e test "the model view shows the picked enemy close up" failed now and then (2 runs in 8 under load), the page stalling for seconds when entering the model view: the close-up scene's shaders were compiled on its first draw, which is slow on a software GPU. `EnemyCloseUp.show` now starts compiling them in the background (`scene.whenReadyAsync()`) the first time a model is shown, before the view is entered. It passed 8 runs in 8 under the same load. Committed at the reviewer's request.
 - Enemy colours (review): on the desert the grey-black hulls looked like the trees, roads and shadows, and only the small neon parts told the enemies apart. Each enemy now has its own hull material (still named `enemy-hull`, cached per scene and colour): the PBR metal's albedo is `hull.tint` (0.6) of the way from white to the enemy's neon colour, so its reflections take that hue, and it glows `hull.selfLight` (0.04) of it so shaded faces don't go black. A neon outline around each hull (Babylon's `renderOutline`) was tried and removed at the reviewer's request (it looked ugly). The vertex shades are unchanged (`hull.base` 0.1), so the hulls stay dark metal (GD-61). Warm colours (Carrier amber, Spinner orange) contrast less with this level's desert than cool ones. The enemy missiles keep the plain grey metal.
 - Explosions (review): the blast was one orange disc and a few sparks. It is now six layers (`BlastParticles`, tunables in `ENEMY_LOOK.blasts`), each sized from the hit radius of what blew up (missiles × 0.6): a white flash; a thin shock ring racing out to 6.5 radii; 2 to 14 fireballs, the first at the centre at once and the others around it within 0.4 s, swelling as they cool along white, yellow, orange, deep red and brown; dark smoke left behind each fireball, lit orange at first, lingering up to about 3 s; 4 to 36 burning debris pieces flung out and slowing down, each dropping an ember every 25 ms and a smoke wisp every 90 ms until it burns out; and embers spat out by the blast. Fire and smoke are laid over the ground (alpha blended) rather than added on: added on, overlapping fireballs went flat white over the bright desert. Each layer is one mesh of thin instances with a colour per instance, so a big blast or many at once cost six draw calls; each layer is capped at 1200 particles. The `enemies/` page's glow layer now leaves out see-through meshes with vertex alpha (the fire and smoke), which it drew white without their tints. A first version blew small ships up as if their hit radius were at least 12; at the reviewer's request (too big for the tiny ships) that floor is gone, the minimum counts are lower, and debris, embers and smoke wisps shrink below `fullRadius` (16: the Bulwark and Carrier and up are unchanged). A Gnat (hit radius about 7) now pops with 2 fireballs, 6 pieces and small embers.
-- Sea/land junction (review): the shore was a uniform white band of foam on the land, and the near-opaque sea (alpha 0.82) cut the ground with a hard line. The terrain shader now paints the shore (`terrainShore`, tunables in `LEVEL_ZERO_LOOK.terrain.shore`, replacing `foam`): a sand beach up to 4 above the sea level on gentle slopes, darker where the swash wets it; the ground under the water tinted from turquoise shallows to the deep sea colour over 30 of depth; a thin, broken foam line swashing up and down the waterline; and bands of foam rolling in towards the beach from 7 deep. The sea plane is now mostly see-through (alpha 0.4) and adds the waves' reflections and the sun's glints, so the water's colour comes from its depth and there is no hard line where it meets the land. The canyon's river gets the same shallows. This changes Level Zero's look (phase 4); the requirement text is unchanged.
+- Sea/land junction (review): the shore was a uniform white band of foam on the land, and the near-opaque sea (alpha 0.82) cut the ground with a hard line. The terrain shader now paints the shore (`terrainShore`, tunables in `LEVEL_ZERO_LOOK.terrain.shore`, replacing `foam`): a sand beach up to 4 above the sea level on gentle slopes, darker where the swash wets it; the ground under the water tinted from turquoise shallows to the deep sea colour over 30 of depth; a thin, broken foam line swashing up and down the waterline; and bands of foam rolling in towards the beach from 7 deep. The sea plane is now mostly see-through (alpha 0.4) and adds the waves' reflections and the sun's glints, so the water's colour comes from its depth and there is no hard line where it meets the land. The canyon's river gets the same shallows. This changes Level Zero's look (phase 4); the reviewer then had P04-R02 corrected.
 - Missile homing range (review): a player missile homed on the closest living target anywhere, so it chased enemies at the far end of the screen. Projectile weapons now have a `homingRange` (engine, `ProjectileWeaponDefinition`); `closestTarget` takes an optional range, and a homing shot only turns towards targets within it of itself, re-chosen every step as before; with none in range it flies straight on. `MISSILE.homingRange` is 320 px, half the 640 px screen height; the bullet's is 0 (it does not home).
 - Tracer bullets (review): the player's bullets were neon green blobs (P03-R01). Each is now a minigun tracer: a streak 3.4 px wide and 34 px long behind the bullet, white-hot on its centre line at the head, cooling to orange then deep red along the tail and fading out, with a short rounded tip ahead of the bullet (`buildTracer` in `shot-geometry.ts`: colours across, a tint per row along; 48 triangles, 40 for the blob). A new tracer grows out of the muzzle to its full length as it flies, and its width flickers (±18 %). Added on like before; the hit sparks are unchanged. Tunables in `SHOT_LOOK.bullet`. This also changes the `player_shots/` page (phase 3).
 
 ### Deviations from spec
-- P03-R01 (review): the bullet is now a minigun tracer instead of a neon green blob, at the reviewer's request; the requirement text was not changed.
-- P05-R11 (review): the page has a third view, the wireframe view, at the reviewer's request; the requirement text (behaviour and model views) was not changed.
-- P05-R12 (review): the Carrier was added at the reviewer's request, so `enemies/` now lists 11 kinds; P05-R11 and the manual validation checklist still say 10 (human sections, not edited).
-- P05-R01 (review): the Gnat's three short fins are now arms carrying ducted fans, at the reviewer's request to make it look like an unmanned drone; the disc, the 120° spacing and the rim's neon ring are kept. The requirement text was not changed.
+- P03-R01 (review): the bullet is now a minigun tracer instead of a neon green blob, at the reviewer's request; the reviewer then had the requirement text corrected.
+- P05-R11 (review): the page has a third view, the wireframe view, at the reviewer's request; the reviewer then had the requirement text corrected.
+- P05-R12 (review): the Carrier was added at the reviewer's request, so `enemies/` now lists 11 kinds; the reviewer then had P05-R11, the engineering additions and the manual validation checklist corrected to 11.
+- P05-R01 (review): the Gnat's three short fins are now arms carrying ducted fans, at the reviewer's request to make it look like an unmanned drone; the disc, the 120° spacing and the rim's neon ring are kept. The reviewer then had the requirement text corrected.
 - "Hits on enemies emit particles" reuses the phase 3 hit effects (bullet sparks, missile flashes, laser contact glow and particles); no new hit effect was added.
 - During implementation, a few unit test files were run directly with Vitest (a probe to debug the page's drawing, and the first two new test files) before I stopped: the procedure keeps unit tests for `/validate-phase`. The full unit suite has not been run.
 - `make build`'s ENG-52 check was extended to the new e2e handle `__ENEMIES_TEST__` (Makefile).
