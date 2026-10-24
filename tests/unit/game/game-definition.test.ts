@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GAME } from '../../../src/game/index';
 import { LEVELS } from '../../../src/game/sim/levels';
+import { ENEMY_KINDS } from '../../../src/game/sim/enemy-kinds';
+import { ENEMY_BINDINGS } from '../../../src/game/view/enemies/enemy-bindings';
 import { MENU_TEXTS } from '../../../src/game/config/menu-texts';
 import { PLAYER_WEAPONS } from '../../../src/game/config/player-weapons';
 
@@ -33,5 +35,11 @@ describe('GAME', () => {
     expect(MENU_TEXTS.gamePlaceholder('Balanced', '1-1')).toBe(
       'Balanced ship — Level 1-1 — Gameplay coming soon',
     );
+  });
+
+  it('P05-R01..R10: registers the 10 enemy kinds with their look', () => {
+    expect(GAME.enemyKinds).toBe(ENEMY_KINDS);
+    expect(GAME.enemyKinds).toHaveLength(10);
+    expect(GAME.view.enemies).toBe(ENEMY_BINDINGS);
   });
 });

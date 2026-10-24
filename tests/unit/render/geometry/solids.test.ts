@@ -91,4 +91,30 @@ describe('SolidBuilder', () => {
     const centre: V = [Math.sin(1) * Math.sin(0.5), Math.cos(0.5), Math.cos(1) * Math.sin(0.5)];
     expect(facesOutward(turned, centre)).toBe(true);
   });
+
+  it('P05: a slab extrudes an outline of either winding, faces pointing outward', () => {
+    const square = [
+      [-2, -3],
+      [2, -3],
+      [2, 3],
+      [-2, 3],
+    ] as const;
+    for (const outline of [square, [...square].reverse()]) {
+      const geo = new SolidBuilder().slab(outline, [-1, 1], [1, 1, 1], {}, [0, 0, 1]).geometry;
+      // Top and bottom of 2 triangles each, and 4 sides of 2 triangles.
+      expect(geo.indices.length / 3).toBe(12);
+      expect(facesOutward(geo, [0, 0, 0])).toBe(true);
+      const ys = geo.positions.filter((_, i) => i % 3 === 1);
+      expect([Math.min(...ys), Math.max(...ys)]).toEqual([-1, 1]);
+    }
+    // A concave outline (an arrow head) is triangulated: 4 corners, 2 triangles a side.
+    const arrow = [
+      [0, 4],
+      [3, -3],
+      [0, -1],
+      [-3, -3],
+    ] as const;
+    const geo = new SolidBuilder().slab(arrow, [0, 1], [1, 1, 1]).geometry;
+    expect(geo.indices.length / 3).toBe(2 * 2 + 4 * 2);
+  });
 });

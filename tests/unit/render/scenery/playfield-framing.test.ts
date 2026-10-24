@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { framePlayfield, visibleGround } from '../../../../src/render/scenery/playfield-framing';
+import {
+  framePlayfield,
+  screenCentreY,
+  visibleGround,
+  visibleHalfWidth,
+} from '../../../../src/render/scenery/playfield-framing';
 
 const SCREEN = { width: 480, height: 640 };
 const LOOK = { tiltDeg: 35, fovDeg: 40, flightAltitude: 320 };
@@ -43,5 +48,26 @@ describe('visibleGround', () => {
     expect(visibleGround(framing, 0.75, cameraY, -100, 0).zFar).toBeGreaterThan(flat.zFar);
     expect(flat.halfWidth).toBeGreaterThan(SCREEN.width / 2);
     expect(visibleGround(framing, 1.5, cameraY, 0, 0).halfWidth).toBeCloseTo(flat.halfWidth * 2);
+  });
+});
+
+describe('visibleHalfWidth', () => {
+  it('P05-R11: less of the playfield is seen across at the bottom than at the top', () => {
+    const framing = framePlayfield(SCREEN, LOOK);
+    const aspect = SCREEN.width / SCREEN.height;
+    const bottom = visibleHalfWidth(framing, aspect, 0);
+    const top = visibleHalfWidth(framing, aspect, SCREEN.height);
+    // About 293 of the 480 logical pixels at the bottom edge and 493 at the top (D-020).
+    expect(bottom * 2).toBeCloseTo(293, -1);
+    expect(top * 2).toBeCloseTo(493, -1);
+  });
+});
+
+describe('screenCentreY', () => {
+  it('P05-R11: is where the camera axis meets the flight plane, above the middle of the playfield', () => {
+    const framing = framePlayfield(SCREEN, LOOK);
+    const y = screenCentreY(framing);
+    expect(y).toBeGreaterThan(SCREEN.height / 2);
+    expect(y).toBeLessThan(SCREEN.height);
   });
 });

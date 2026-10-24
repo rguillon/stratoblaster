@@ -1,4 +1,6 @@
 import type { ColoredGeometry } from './gradient-shapes';
+import { ringAt, type OutlinePoint } from './outline';
+import { triangulatePolygon } from './triangulate';
 
 type Rgb = readonly [number, number, number];
 type Vec3 = readonly [number, number, number];
@@ -23,6 +25,14 @@ function rotate([x, y, z]: Vec3, { yaw = 0, pitch = 0, roll = 0 }: Placement): V
   const x3 = x2 * Math.cos(yaw) + z1 * Math.sin(yaw);
   const z3 = -x2 * Math.sin(yaw) + z1 * Math.cos(yaw);
   return [x3, y2, z3];
+}
+
+/** Twice the signed area of an outline in the XZ plane: positive when counter-clockwise. */
+function doubleArea(outline: readonly OutlinePoint[]): number {
+  return outline.reduce((sum, [x1, z1], i) => {
+    const [x2, z2] = ringAt(outline, i + 1);
+    return sum + x1 * z2 - x2 * z1;
+  }, 0);
 }
 
 /** A side facet of a body of revolution, a triangle where a ring closes to a point. */
@@ -173,5 +183,31 @@ export class SolidBuilder {
       color,
       place,
     );
+  }
+
+  /**
+   * A flat slab: a simple polygon outline in the XZ plane (concave is fine, either winding),
+   * extruded from height `y0` up to `y1`, e.g. a wing seen from above.
+   */
+  slab(
+    outline: readonly OutlinePoint[],
+    [y0, y1]: readonly [number, number],
+    color: Rgb,
+    place: Placement = {},
+    top: Rgb = color,
+  ): this {
+    const ring = doubleArea(outline) > 0 ? [...outline] : [...outline].reverse();
+    const at = ([x, z]: OutlinePoint, y: number): Vec3 => [x, y, z];
+    for (const [a, b, c] of triangulatePolygon(ring)) {
+      const [pa, pb, pc] = [ringAt(ring, a), ringAt(ring, b), ringAt(ring, c)];
+      // Counter-clockwise in (x, z) faces down; reversed, it faces up.
+      this.face([at(pa, y1), at(pc, y1), at(pb, y1)], top, place);
+      this.face([at(pa, y0), at(pb, y0), at(pc, y0)], color, place);
+    }
+    ring.forEach((p, i) => {
+      const q = ringAt(ring, i + 1);
+      this.face([at(p, y0), at(p, y1), at(q, y1), at(q, y0)], color, place);
+    });
+    return this;
   }
 }

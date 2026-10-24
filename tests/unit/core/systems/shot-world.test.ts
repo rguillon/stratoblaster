@@ -137,4 +137,21 @@ describe('ShotWorld', () => {
     expect(w.beam).toEqual([]);
     expect(w.weapon.id).toBe('gun');
   });
+
+  it('P05-R11: holds fire when told to, while shots in flight keep flying', () => {
+    const w = world();
+    w.step(0.01);
+    const shot = w.projectiles[0];
+    const y = shot?.y ?? 0;
+    w.firing = false;
+    w.step(0.5);
+    expect(w.activeCount).toBe(1);
+    expect(shot?.y).toBeGreaterThan(y);
+    w.select(testBeam(), 1);
+    w.step(0.01);
+    expect(w.beam).toEqual([]);
+    w.firing = true;
+    w.step(0.01);
+    expect(w.beam).toHaveLength(1);
+  });
 });

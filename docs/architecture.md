@@ -36,7 +36,7 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 ## Pages and routes
 
-The build has four HTML entries sharing one bundle (`src/main.ts`):
+The build has five HTML entries sharing one bundle (`src/main.ts`):
 
 | Page                      | Route (`app/route.ts`) | Started by                    |
 | ------------------------- | ---------------------- | ----------------------------- |
@@ -44,6 +44,7 @@ The build has four HTML entries sharing one bundle (`src/main.ts`):
 | `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts`    |
 | `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts`    |
 | `level_zero/index.html`   | `scenery-viewer`       | `app/start-scenery-viewer.ts` |
+| `enemies/index.html`      | `enemy-viewer`         | `app/start-enemy-viewer.ts`   |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a
@@ -60,6 +61,33 @@ The generated level viewer (phase 04, `level_zero/`) flies the game's first scen
 panel (`ui/scenery-viewer-panel.ts`) and keys P / F / R / N / S / O / 1-9 / ← → pause,
 fast-forward, restart, change the seed, switch the sea, the playfield outline and the cloud
 layers, and seek.
+
+The enemies viewer (phase 05, `enemies/`) shows one kind of `GameDefinition.enemyKinds` at a
+time over the first scenery level, under the same tilted camera. The kind spawns again once its
+group has gone; the game's first ship flies with arrows / WASD and shoots with any weapon and
+level, and cannot be hit. A model view shows the kind's model alone, turning. The panel
+(`ui/enemy-viewer-panel.ts`) and keys N / B / M / X / 1-9 / F / P pick the kind, the view, the
+weapon and level, fire and pause. e2e builds expose `window.__ENEMIES_TEST__`
+(`debug/enemy-viewer-test-api.ts`: state and frame stepping).
+
+## Enemies (phase 05)
+
+- `core/entities/enemy.ts`: the abstract `Enemy` (a `ShotTarget` with a model key, points, a
+  heading and a `charge` for the visuals) with an `update(ctx, dt)` hook and an optional
+  `onDestroyed(ctx)` hook; `EnemyContext` lets it see the player and fire bullets, homing
+  missiles and lasers, or spawn other enemies. `EnemyKindDefinition` spawns one group of a kind.
+- `core/systems/enemy-motion.ts`: predefined paths (Catmull-Rom, followed by distance), fans of
+  headings. `core/systems/enemy-shots.ts`: pooled bullets and missiles (missiles are shot
+  targets) and lasers (warning, then firing, following their owner's emitter).
+  `core/systems/enemy-world.ts`: steps enemies and shots, scores and removes destroyed enemies
+  (with their `onDestroyed` spawns), removes the ones that left, and lists the targets of the
+  player's shots (enemies and missiles).
+- Presentation: `GameView.enemies` gives an `EnemyModel` factory per model key (nose +Z, in
+  logical pixels), an enemy shot renderer and a blast renderer, all drawn in playfield space
+  (`ShotFrame` space). `render/enemy-layer.ts` places and reuses the models.
+  `render/node-adopter.ts` moves what drawing code creates into another space and rendering
+  group: the enemies page uses it to draw the playfield (ships, shots, explosions) on the tilted
+  level view, above the clouds, with its own glow layer.
 
 ## Generated levels (phase 04)
 
@@ -177,4 +205,7 @@ input, update the overlay, and animate and render the menu scenes (frame time ca
    Declare the levels with generated ground in `GameDefinition.sceneryLevels` (`SceneryLevel`
    data), and in `GameDefinition.view.scenery` the playfield camera, one `SceneryLook` per
    scenery level id and one `PropModelFactory` per prop kind id.
+   Declare the enemies in `GameDefinition.enemyKinds` (classes extending `Enemy`), and in
+   `GameDefinition.view.enemies` one `EnemyModelFactory` per model key, the enemy shot and
+   blast renderers, the playfield glow and the model view scale.
 5. Run `make check`.

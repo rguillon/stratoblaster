@@ -7,6 +7,7 @@ import type { GameDefinition } from '../../src/core/content/game-definition';
 import type { MenuScreen } from '../../src/core/menu/menu-screen';
 import type { GameView, MenuBackdrop, ShotFrame, ShotRenderer } from '../../src/render/game-view';
 import { SAMPLE_SCENERY, SAMPLE_SCENERY_LEVEL } from './sample-scenery';
+import { SAMPLE_ENEMIES, SAMPLE_ENEMY_KINDS } from './sample-enemies';
 
 const box = (scene: Scene) => CreateBox('sample-ship', { size: 1 }, scene);
 
@@ -117,6 +118,7 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     ],
   },
   sceneryLevels: [SAMPLE_SCENERY_LEVEL],
+  enemyKinds: SAMPLE_ENEMY_KINDS,
   texts: {
     loading: 'Wait',
     highScore: 'Best',
@@ -138,5 +140,6 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     playerShotRenderers: { pea: sampleShotRenderer('pea'), ray: sampleShotRenderer('ray') },
     menuBackdrop: sampleBackdrop,
     scenery: SAMPLE_SCENERY,
+    enemies: SAMPLE_ENEMIES,
   },
 };

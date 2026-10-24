@@ -1,3 +1,4 @@
+import type { EnemyKindDefinition } from '../entities/enemy';
 import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { LevelCatalog } from './level-catalog';
@@ -37,6 +38,11 @@ export interface GameDefinition<TView = unknown> {
    * list them yet; the `level_zero/` debug page shows them (P04).
    */
   readonly sceneryLevels: readonly SceneryLevel[];
+  /**
+   * The kinds of enemies (P05). Levels do not spawn them yet; the `enemies/` debug page shows
+   * them one kind at a time.
+   */
+  readonly enemyKinds: readonly EnemyKindDefinition[];
   /** Texts of the menu screens. */
   readonly texts: MenuTexts;
   /** Presentation bindings for the content above. */

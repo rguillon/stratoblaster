@@ -1,0 +1,254 @@
+# Phase 05 — First Enemies
+
+**Status:** Ready  <!-- Draft | Ready -->
+**Depends on:** Phase 4
+
+---
+
+## 🧑 Goal
+The game has its first 10 kinds of enemies, each with its own code-generated ship model, movement and attack. They can all be watched and shot on an `enemies/` debug page.
+
+## 🧑 Requirements
+
+> ID format `P05-Rxx`. Every requirement is **MUST** (no SHOULD / MAY).
+> Write each requirement so it is testable. Add acceptance criteria when "done" isn't obvious.
+> All enemies follow GD-43 to GD-45 (attacks and movement) and GD-61 (dark metallic hull with neon lights). Sizes are given relative to the medium player ship length (`L`).
+> HP, speeds, fire rates and points are listed in **Tunable values**.
+
+### P05-R01 — Gnat (swarm drone)  · MUST
+
+**Shape:** a small flat disc (0.5 L) with three short fins at 120° and a neon ring around its rim.
+
+**Behavior:** comes in groups of 5, one after the other, following the same predefined S-shaped path from the top of the screen to the bottom. It does not shoot. Killed by a single level 1 bullet.
+
+**Acceptance criteria**
+- [ ] Given a Gnat group spawns, then the 5 Gnats follow the same path with a fixed delay between them.
+- [ ] Manual visual validation
+
+### P05-R02 — Hornet (diver)  · MUST
+
+**Shape:** an arrow head (0.7 L) with sharply swept wings and a single red neon eye at the nose.
+
+**Behavior:** enters from the top, stops for 0.5 s while turning its nose to the player, then dives in a straight line toward where the player was, accelerating, and leaves the screen. It does not shoot.
+
+**Acceptance criteria**
+- [ ] Given a Hornet has finished its pause, then it dives toward the player position recorded at the end of the pause.
+- [ ] Manual visual validation
+
+### P05-R03 — Scout (aimed shooter)  · MUST
+
+**Shape:** a small delta wing (0.8 L) with twin tail booms and a cyan neon strip along each boom.
+
+**Behavior:** flies straight down at a slow speed and fires one bullet aimed at the player every 1.5 s.
+
+**Acceptance criteria**
+- [ ] Given a Scout is on screen, then each of its bullets moves along the line from the Scout to the player at the moment it was fired.
+- [ ] Manual visual validation
+
+### P05-R04 — Strafer (fan shooter)  · MUST
+
+**Shape:** a wide, flat flying wing (1.2 L wide) with a row of magenta neon lights along the leading edge.
+
+**Behavior:** enters from the left or right side in the top third of the screen, crosses horizontally and leaves on the other side. Every second it fires a fan of 3 bullets straight down (preset directions: −15°, 0°, +15°).
+
+**Acceptance criteria**
+- [ ] Given a Strafer fires, then its 3 bullets leave at −15°, 0° and +15° from straight down, whatever the player position.
+- [ ] Manual visual validation
+
+### P05-R05 — Weaver (sine flyer)  · MUST
+
+**Shape:** a twin-hull catamaran (0.9 L) with the two hulls joined by a glowing green neon bar.
+
+**Behavior:** moves down along a sine wave (left–right sway). Every 2 s it fires a pair of bullets aimed at the player, one from each hull.
+
+**Acceptance criteria**
+- [ ] Given a Weaver moves, then its horizontal position follows a sine of its vertical progress.
+- [ ] Manual visual validation
+
+### P05-R06 — Spinner (spiral turret)  · MUST
+
+**Shape:** a ring (1 L) with four spokes and a pod at the end of each spoke, an orange neon core in the centre.
+
+**Behavior:** descends to a point in the upper half of the screen and stops. It then spins for 3 s while firing a spiral of bullets from its four pods, then leaves upward.
+
+**Acceptance criteria**
+- [ ] Given a Spinner is in its firing state, then bullets leave from its 4 pods in directions that rotate with the ring.
+- [ ] Given 3 s of firing have passed, then the Spinner stops firing and leaves upward.
+- [ ] Manual visual validation
+
+### P05-R07 — Lancer (laser)  · MUST
+
+**Shape:** a long needle hull (1.3 L) with a glowing emitter at the nose and two small side fins.
+
+**Behavior:** moves to a fixed point in the top part of the screen and stops. A thin warning line is shown straight down from its emitter for 1 s, then it fires a laser along that line for 1.5 s, then it moves away. It does not move while the warning line or the laser is shown.
+
+**Acceptance criteria**
+- [ ] Given a Lancer starts its attack, then a warning line is shown for 1 s before the laser appears on the same line (GD-43).
+- [ ] Manual visual validation
+
+### P05-R08 — Rocketeer (missile carrier)  · MUST
+
+**Shape:** a bulky hull (1.3 L) with a missile pod on each side; the missile tips glow red when loaded.
+
+**Behavior:** descends slowly. Every 3 s it launches one missile from each pod. The missiles turn toward the player with a limited turn rate. Missiles can be shot down by the player (GD-43).
+
+**Acceptance criteria**
+- [ ] Given a Rocketeer missile is in flight, then it turns toward the player no faster than its turn rate.
+- [ ] Given a player shot hits a missile, then the missile is destroyed with a small explosion.
+- [ ] Manual visual validation
+
+### P05-R09 — Bulwark (heavy gunship)  · MUST
+
+**Shape:** a heavy, wide hull (1.6 L) covered with front armour plates and a blue neon visor slit.
+
+**Behavior:** enters from the top, slowly moves down to the upper third of the screen, drifts left and right for 8 s, then leaves downward. Every 2 s it fires a spread of 5 bullets centred on the player (aimed fan, 10° apart).
+
+**Acceptance criteria**
+- [ ] Given a Bulwark fires, then the middle bullet of the spread is aimed at the player.
+- [ ] Manual visual validation
+
+### P05-R10 — Splitter (splits on death)  · MUST
+
+**Shape:** a hexagonal core (1 L) with three small pods attached around it, purple neon seams between the core and the pods.
+
+**Behavior:** flies down a predefined curved path and fires one aimed bullet every 2.5 s. When it is destroyed, its three pods break off and each pod dives at the player like a Hornet (P05-R02), at a smaller size.
+
+**Acceptance criteria**
+- [ ] Given a Splitter is destroyed, then 3 pods appear at its position and dive toward the player.
+- [ ] Manual visual validation
+
+### P05-R11 — Debug page `enemies/`  · MUST
+
+The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kinds for visual validation, over the Level Zero scenery with the playfield camera.
+
+- A list lets the user pick one enemy kind; the page then spawns that kind (a whole group for the Gnat) and spawns it again when it has left the screen or was destroyed.
+- A "model" view shows the picked enemy alone, rotating slowly in the centre of the screen.
+- A player ship is present and can be moved and can shoot (any weapon and level from phase 3), so the attacks aimed at the player and the destruction of the enemies can be checked. The player cannot die on this page.
+- Hits on enemies emit particles and destroyed enemies explode (GD-62).
+- The page shows the FPS / polygons debug tile, like `player_shots/`.
+
+**Acceptance criteria**
+- [ ] Given the user opens `enemies/`, then the page loads without console errors and every enemy kind can be picked.
+- [ ] Given an enemy kind is picked, then that enemy spawns and performs its behavior.
+- [ ] Manual visual validation
+
+## 🧑 Tunable values
+| Name | Value | Notes |
+|------|-------|-------|
+| gnat_hp / points | 10 / 50 | |
+| gnat_group_size / delay | 5 / 0.3 s | |
+| hornet_hp / points | 20 / 100 | |
+| hornet_pause | 0.5 s | |
+| scout_hp / points | 30 / 100 | |
+| scout_fire_interval | 1.5 s | |
+| strafer_hp / points | 40 / 150 | |
+| strafer_fire_interval / fan | 1 s / ±15° | |
+| weaver_hp / points | 30 / 120 | |
+| weaver_fire_interval | 2 s | |
+| spinner_hp / points | 60 / 200 | |
+| spinner_fire_duration | 3 s | |
+| lancer_hp / points | 80 / 250 | |
+| lancer_warning / laser | 1 s / 1.5 s | |
+| rocketeer_hp / points | 100 / 300 | |
+| rocketeer_fire_interval | 3 s | |
+| enemy_missile_hp | 10 | One level 1 bullet |
+| bulwark_hp / points | 200 / 500 | |
+| bulwark_fire_interval / spread | 2 s / 5 × 10° | |
+| bulwark_stay | 8 s | |
+| splitter_hp / points | 50 / 200 | |
+| splitter_pod_hp / points | 10 / 50 | |
+| splitter_fire_interval | 2.5 s | |
+
+## 🧑 Out of scope for this phase
+- Spawning enemies in Level Zero or in any real level (waves by distance, GD-40).
+- Damage to the player, health bar, lives and game over.
+- Bonuses dropped by enemies, scoring display and high score.
+- Mini bosses and final bosses.
+- Sound effects.
+
+## 🧑 Engineering additions for this phase
+- Enemy behaviors (movement, fire timing, aiming) are pure logic in `core/` and unit tested; the 10 kinds and their tunables live in `src/game/`.
+- An e2e smoke test opens `enemies/` and picks every enemy kind.
+
+## 🧑 Manual validation checklist
+- [ ] Runs on GitHub Pages / `make dev` without console errors
+- [ ] Each of the 10 enemies looks like its description and is readable at game scale
+- [ ] Each enemy moves and attacks as described
+- [ ] Enemies can be shot and explode; Rocketeer missiles can be shot down
+- [ ] 60 fps on `enemies/` with the busiest enemy (Spinner, Bulwark)
+
+## 🧑 Notes, references, sketches
+<!-- Links, images, pseudo-code, example level layouts... -->
+
+---
+
+## 🧑 Review feedback
+> After the agent reports, write corrections here, then say **"Fix phase 05"**.
+> The agent ticks each item when fixed.
+
+- [ ] 
+
+---
+
+## 🤖 Implementation report
+> Filled by the agent. Do not edit (comment in Review feedback instead).
+
+### Questions / blockers
+None. The requirements were drafted by the agent at the reviewer's request (2026-10-24), and the reviewer chose "set Ready and implement" without changes. Values the spec leaves open use the agent's defaults below (D-032); they are all in `src/game/config/enemies.ts` and `enemy-look.ts`.
+
+### Plan
+| Task | Requirement IDs |
+|------|-----------------|
+| Engine: abstract `Enemy` + `EnemyContext` + `EnemyKindDefinition`, paths and fans, `EnemyShots` (bullets, homing missiles that can be shot down, lasers with a warning), `EnemyWorld` (step, score, blasts, spawns on death, removal), `GameDefinition.enemyKinds` | P05-R01..R10 |
+| Game sim: the 10 enemy classes + the Splitter pod, kind registry, tunables | P05-R01..R10 |
+| View: 10 + 1 code-generated models (dark PBR metal + neon, charging lights), enemy shot renderer, explosions, `GameView.enemies` | P05-R01..R10, GD-61, GD-62 |
+| `enemies/` page: Level Zero view + playfield layer, player ship (move + shoot, cannot die), respawn, model view, panel, keys, stats tile, e2e test API | P05-R11 |
+| Unit tests (engine with the sample game, content with `src/game/`) and e2e | all |
+
+### Requirement traceability
+| ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
+|----|-----------------------------------|------|-------|-------|
+| P05-R01 | Done | `game/sim/enemies/gnat.ts`, `game/view/enemies/small-enemy-models.ts` | `game/sim/enemies.test.ts`, `enemy-kinds.test.ts`, `enemy-models.test.ts`, e2e | Group of 5, 0.3 s apart, one S-shaped path (mirrored at random) |
+| P05-R02 | Done | `hornet.ts` | `enemies.test.ts`, e2e | Stops at 72 % height; dive heading fixed at the end of the pause |
+| P05-R03 | Done | `scout.ts` | `enemies.test.ts`, e2e | Shoots only over the playfield |
+| P05-R04 | Done | `strafer.ts` | `enemies.test.ts`, e2e | Pass at 80 % height (top third) |
+| P05-R05 | Done | `weaver.ts` | `enemies.test.ts`, e2e | X = centre + 90 sin(2π·down / 280) |
+| P05-R06 | Done | `spinner.ts`, `heavy-enemy-models.ts` | `enemies.test.ts`, e2e | Bullets leave each pod outwards; ring turns 110°/s while firing |
+| P05-R07 | Done | `lancer.ts`, `core/systems/enemy-shots.ts` | `enemies.test.ts`, `enemy-shots.test.ts`, `enemy-renderers.test.ts`, e2e | Emitter glows through the warning |
+| P05-R08 | Done | `rocketeer.ts`, `enemy-shots.ts` | `enemies.test.ts`, `enemy-shots.test.ts`, `enemy-world.test.ts`, e2e | Missiles home 3.5 s at 90°/s, 10 HP, explode when shot down |
+| P05-R09 | Done | `bulwark.ts` | `enemies.test.ts`, e2e | Fires on entry, drift and exit |
+| P05-R10 | Done | `splitter.ts` (pods are `Hornet`s) | `enemies.test.ts`, `enemy-world.test.ts`, e2e | Pods pause 0.35 s, then dive |
+| P05-R11 | Done | `app/start-enemy-viewer.ts`, `enemy-viewer-scene.ts`, `enemy-viewer-shots.ts`, `ui/enemy-viewer-panel.ts`, `render/enemy-layer.ts`, `render/node-adopter.ts`, `enemies/index.html` | `start-enemy-viewer.test.ts`, `enemy-viewer-panel.test.ts`, `node-adopter.test.ts`, `enemy-layer.test.ts`, `tests/e2e/enemies.spec.ts` | See "How to test manually" |
+
+### Gate results
+Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
+```
+make typecheck  ✔ (0 errors)
+make build      ✔ (ENG-52 check now covers __GAME_TEST__ and __ENEMIES_TEST__; main chunk 1,416 kB / 368 kB gzip)
+make e2e        ✔ 40 passed (35 from earlier phases + 5 new in enemies.spec.ts)
+```
+Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
+
+### How to test manually
+1. `make dev`, open http://localhost:5173/enemies/ (or `enemies/` on GitHub Pages).
+2. Pick an enemy with its button, or N / B (next / previous). It appears over Level Zero and comes back about 1 s after its group has gone.
+3. Fly the ship with the arrows or WASD (by key position, so ZQSD on AZERTY). It fires all the time; F stops and starts the fire. X switches the weapon (bullet, laser, missile), 1-5 sets the level. The ship cannot be hit.
+4. M (or "Model") shows the picked enemy alone, three times bigger, turning in the middle of the screen; M again goes back.
+5. P pauses. The panel shows the enemies on screen, enemy shots, enemies destroyed and the score. The FPS / polygons tile is at the top right.
+6. Things to look at: Lancer warning line (1 s, blinking) then red beam; Rocketeer missiles (shoot them down: small explosion); Splitter breaking into 3 pods; Spinner spiral; Bulwark spread aimed at the ship (move the ship to see it follow).
+
+### Deviations from spec
+- "Hits on enemies emit particles" reuses the phase 3 hit effects (bullet sparks, missile flashes, laser contact glow and particles); no new hit effect was added.
+- During implementation, a few unit test files were run directly with Vitest (a probe to debug the page's drawing, and the first two new test files) before I stopped: the procedure keeps unit tests for `/validate-phase`. The full unit suite has not been run.
+- `make build`'s ENG-52 check was extended to the new e2e handle `__ENEMIES_TEST__` (Makefile).
+
+### Known limitations
+- With the tilted camera (D-020), the top of the playfield is squeezed on screen: enemies that stop in the "top third" or "top part" (Strafer, Lancer, Bulwark) are close to the top edge of the screen.
+- Enemy shots go through the player ship (player damage is out of scope).
+- Under SwiftShader (e2e, headless) the page runs at about 10-12 FPS; the e2e tests step the simulation through `__ENEMIES_TEST__` instead of waiting.
+- The neon glow of the enemies uses a second glow layer above the clouds; on very slow GPUs it costs a little.
+
+### Suggestions for future phases
+- A wave spawner driven by the distance flown (GD-40) can use `EnemyKindDefinition.spawn` as is.
+- A hit flash on enemies, and health bars / hitboxes on the debug page (ENG-111 overlay).
+- Player hitbox and damage from enemy shots and collisions (GD-21, GD-22).
