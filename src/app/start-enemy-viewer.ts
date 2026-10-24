@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { Scene } from '@babylonjs/core/scene';
 import type { GameDefinition } from '../core/content/game-definition';
-import { validateEnemyKinds, type Enemy } from '../core/entities/enemy';
+import { validateEnemyKinds } from '../core/entities/enemy';
 import { shipMaxSpeedPxPerSec } from '../core/entities/player-ship';
 import { validateWeapons, type WeaponDefinition } from '../core/entities/weapon';
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
@@ -10,12 +10,13 @@ import { EnemyWorld, type EnemyBlast } from '../core/systems/enemy-world';
 import { ShotWorld, type ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { GameView } from '../render/game-view';
-import { screenCentreY, visibleHalfWidth } from '../render/scenery/playfield-framing';
+import { visibleHalfWidth } from '../render/scenery/playfield-framing';
 import { HeldDirections } from '../input/held-directions';
 import { EnemyViewerPanel, type EnemyViewerSelection } from '../ui/enemy-viewer-panel';
 import { StatsTile } from '../ui/stats-tile';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../config/enemy-viewer';
-import { buildEnemyViewerScene, ModelShowcase, type EnemyViewerScene } from './enemy-viewer-scene';
+import { EnemyCloseUp } from './enemy-close-up';
+import { buildEnemyViewerScene, type EnemyViewerScene } from './enemy-viewer-scene';
 import { EnemyViewerShots } from './enemy-viewer-shots';
 import { RateMeter } from './rate-meter';
 import { PlayfieldShip } from './shot-viewer-scene';
@@ -43,6 +44,8 @@ export interface RunningEnemyViewer {
   readonly enemies: EnemyWorld;
   readonly shots: ShotWorld;
   readonly panel: EnemyViewerPanel;
+  /** The model view's own scene. */
+  readonly closeUp: EnemyCloseUp;
   readonly player: { readonly x: number; readonly y: number };
   /** Advances and draws one frame of `dt` seconds. */
   frame(dt: number): void;
@@ -71,8 +74,11 @@ function shortcut(
   return changes[k];
 }
 
+/** In the model view, ← / → (by key position) show the previous / next enemy. */
+const SWITCH_KEYS: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 1 };
+
 const HELP =
-  'Move: arrows / WASD · N / B: next / previous enemy · M: model · X: weapon · 1-5: level · F: fire · P: pause';
+  'Move: arrows / WASD · N / B: next / previous enemy · M: model (← / →: switch enemy) · X: weapon · 1-5: level · F: fire · P: pause';
 
 function weaponAt(game: GameDefinition, index: number): WeaponDefinition {
   const weapon = game.playerWeapons[index];
@@ -86,6 +92,7 @@ class EnemyViewer {
   readonly enemies: EnemyWorld;
   readonly shots: ShotWorld;
   readonly panel: EnemyViewerPanel;
+  readonly closeUp: EnemyCloseUp;
   readonly player: { x: number; y: number } = { ...CFG.shipStart };
   readonly held = new HeldDirections();
   readonly #random = createRng(CFG.seed);
@@ -93,7 +100,6 @@ class EnemyViewer {
   readonly #layer: EnemyLayer;
   readonly #drawn: EnemyViewerShots;
   readonly #ship: PlayfieldShip;
-  readonly #showcase: ModelShowcase;
   readonly #speed: number;
   readonly #stats: StatsTile | undefined;
   readonly #fps = new RateMeter(CFG.stats.fpsWindow);
@@ -101,7 +107,6 @@ class EnemyViewer {
   #noseOffset = 0;
   #previous = 0;
   #respawnIn = 0;
-  #showcased: Enemy | undefined;
   /** The kind and view shown, to restart only when they change. */
   #kind = -1;
   #modelView = false;
@@ -127,8 +132,7 @@ class EnemyViewer {
     this.#drawn = new EnemyViewerShots(game, pf);
     this.#ship = this.#buildShip();
     this.#speed = shipMaxSpeedPxPerSec(game.playerShips, game.playerShips.ships[0]?.id ?? '');
-    const centre = { x: width / 2, y: screenCentreY(this.view.stage.framing) };
-    this.#showcase = new ModelShowcase(pf, centre, game.view.enemies.showcaseScale);
+    this.closeUp = new EnemyCloseUp(engine, options.environment, game.view.enemies.glow);
     this.#stats = options.statsParent
       ? new StatsTile(options.doc, options.statsParent, CFG.stats.refresh)
       : undefined;
@@ -169,7 +173,6 @@ class EnemyViewer {
       this.#restart();
     }
     this.#ship.pivot.setEnabled(!modelView);
-    this.#showcase.setEnabled(modelView);
   }
 
   /** Starts the picked kind again: a new group, or its model in the model view. */
@@ -181,9 +184,8 @@ class EnemyViewer {
     const kind = this.game.enemyKinds[this.panel.selection.kind];
     if (!kind) return;
     const [first] = kind.spawn(this.#area());
-    this.#showcased = first;
     const build = first ? this.game.view.enemies.models[first.model] : undefined;
-    if (first && build) this.#showcase.show(build, first);
+    if (first && build) this.closeUp.show(build, first);
     if (!this.#modelView) this.#spawn();
   }
 
@@ -252,7 +254,7 @@ class EnemyViewer {
       this.#layer.sync(this.enemies.enemies, dt);
     });
     this.#drawn.sync({ enemies: this.enemies, shots: this.shots, blasts, impacts, dt });
-    this.#showcase.update(dt, this.#showcased);
+    this.closeUp.update(dt);
     this.panel.showReadout({
       enemies: this.enemies.enemies.length,
       shots: this.enemies.shots.count,
@@ -260,11 +262,21 @@ class EnemyViewer {
       score: this.enemies.score,
     });
     this.#fps.add(dt, ++this.#frames);
-    const scene = this.view.scene;
+    const scene = this.activeScene;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons: scene.getActiveIndices() / 3 });
   }
 
+  /** The scene to draw: the close-up in the model view, the level otherwise. */
+  get activeScene(): Scene {
+    return this.#modelView ? this.closeUp.scene : this.view.scene;
+  }
+
   key(key: string, code: string, down: boolean): void {
+    if (this.#modelView && down && SWITCH_KEYS[code] !== undefined) {
+      const n = this.game.enemyKinds.length;
+      this.panel.update({ kind: (this.panel.selection.kind + (SWITCH_KEYS[code] ?? 0) + n) % n });
+      return;
+    }
     if (this.held.key(code, down) || !down) return;
     const counts = { kinds: this.game.enemyKinds.length, weapons: this.game.playerWeapons.length };
     const change = shortcut(key, this.panel.selection, counts);
@@ -276,6 +288,7 @@ class EnemyViewer {
     this.#drawn.dispose();
     this.panel.root.remove();
     this.#stats?.root.remove();
+    this.closeUp.dispose();
     this.view.scene.dispose();
   }
 }
@@ -305,7 +318,7 @@ export function startEnemyViewer(
   if (options.renderLoop) {
     engine.runRenderLoop(() => {
       viewer.frame(Math.min(frameSeconds(), CFG.maxFrameSeconds));
-      viewer.view.scene.render();
+      viewer.activeScene.render();
     });
   }
   return {
@@ -313,6 +326,7 @@ export function startEnemyViewer(
     enemies: viewer.enemies,
     shots: viewer.shots,
     panel: viewer.panel,
+    closeUp: viewer.closeUp,
     player: viewer.player,
     frame: (dt) => {
       viewer.frame(dt);

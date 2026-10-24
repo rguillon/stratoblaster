@@ -113,8 +113,6 @@ export interface EnemyBindings {
   readonly blasts: (scene: Scene) => BlastRenderer;
   /** Glow of the self-lit parts drawn on the playfield (neon, shots). */
   readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
-  /** How many times bigger a model is drawn in a model view. */
-  readonly showcaseScale: number;
 }
 
 /** Presentation of the levels with generated ground (`GameDefinition.sceneryLevels`). */

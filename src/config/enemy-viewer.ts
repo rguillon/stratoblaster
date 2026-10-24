@@ -25,8 +25,19 @@ export const ENEMY_VIEWER_CONFIG = {
   /** A new group appears this long after the last one has gone. */
   respawnDelay: 1,
   seed: 505,
-  /** Model view: turns per second around the model's vertical axis. */
-  showcaseSpinRadPerSec: 0.6,
+  /**
+   * Model view (phase 5 review: like `player_ship/`, close up, dark background): turns per
+   * second, share of the screen width the model fills, how far the wheel zooms in and out, and
+   * the camera angles: from -Z (behind the model), 45° above it, as the enemies are flat ships
+   * mostly seen from above.
+   */
+  closeUp: {
+    spinRadPerSec: 0.6,
+    fill: 0.6,
+    zoom: [0.4, 3],
+    alpha: -Math.PI / 2,
+    beta: Math.PI / 4,
+  },
   /** Debug tile: FPS averaged over `fpsWindow` s, text refreshed every `refresh` s. */
   stats: { fpsWindow: 0.5, refresh: 0.25 },
 } as const;

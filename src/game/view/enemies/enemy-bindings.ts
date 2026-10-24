@@ -10,5 +10,4 @@ export const ENEMY_BINDINGS: EnemyBindings = {
   shots: createEnemyShotRenderer,
   blasts: createBlastRenderer,
   glow: ENEMY_LOOK.glow,
-  showcaseScale: ENEMY_LOOK.showcaseScale,
 };

@@ -81,12 +81,21 @@ test.describe('P05: enemies/ page', () => {
     await waitForFrames(page, 3);
   });
 
-  test('P05-R11: the model view shows the picked enemy alone', async ({ page }) => {
+  test('P05-R11: the model view shows the picked enemy close up; ← / → switch it', async ({
+    page,
+  }) => {
     await page.keyboard.press('n');
     await expect(page.locator('.enemy-kind button').nth(1)).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('m');
     await expect(page.locator('.enemy-view button').nth(1)).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.enemy-enemies')).toHaveText('Enemies: 0');
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.enemy-kind button').nth(2)).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('.enemy-kind button').nth(0)).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('.enemy-kind button').nth(9)).toHaveAttribute('aria-pressed', 'true');
     await waitForFrames(page, 5);
     await page.keyboard.press('m');
     await expect(page.locator('.enemy-enemies')).not.toHaveText('Enemies: 0');

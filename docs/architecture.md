@@ -65,7 +65,9 @@ layers, and seek.
 The enemies viewer (phase 05, `enemies/`) shows one kind of `GameDefinition.enemyKinds` at a
 time over the first scenery level, under the same tilted camera. The kind spawns again once its
 group has gone; the game's first ship flies with arrows / WASD and shoots with any weapon and
-level, and cannot be hit. A model view shows the kind's model alone, turning. The panel
+level, and cannot be hit. The model view switches to a close-up scene like `player_ship/`
+(`app/enemy-close-up.ts`: dark background, orbit camera framed on the model), where ← / → switch
+the kind. The panel
 (`ui/enemy-viewer-panel.ts`) and keys N / B / M / X / 1-9 / F / P pick the kind, the view, the
 weapon and level, fire and pause. e2e builds expose `window.__ENEMIES_TEST__`
 (`debug/enemy-viewer-test-api.ts`: state and frame stepping).
@@ -207,5 +209,5 @@ input, update the overlay, and animate and render the menu scenes (frame time ca
    scenery level id and one `PropModelFactory` per prop kind id.
    Declare the enemies in `GameDefinition.enemyKinds` (classes extending `Enemy`), and in
    `GameDefinition.view.enemies` one `EnemyModelFactory` per model key, the enemy shot and
-   blast renderers, the playfield glow and the model view scale.
+   blast renderers and the playfield glow.
 5. Run `make check`.

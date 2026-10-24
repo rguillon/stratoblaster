@@ -122,7 +122,7 @@ The game has its first 10 kinds of enemies, each with its own code-generated shi
 The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kinds for visual validation, over the Level Zero scenery with the playfield camera.
 
 - A list lets the user pick one enemy kind; the page then spawns that kind (a whole group for the Gnat) and spawns it again when it has left the screen or was destroyed.
-- A "model" view shows the picked enemy alone, rotating slowly in the centre of the screen.
+- A "model" view shows the picked enemy alone, like the `player_ship/` page: close up on the enemy, rotating slowly, on a dark background (no scenery). In this view, the left / right arrow keys switch to the previous / next enemy.
 - A player ship is present and can be moved and can shoot (any weapon and level from phase 3), so the attacks aimed at the player and the destruction of the enemies can be checked. The player cannot die on this page.
 - Hits on enemies emit particles and destroyed enemies explode (GD-62).
 - The page shows the FPS / polygons debug tile, like `player_shots/`.
@@ -130,6 +130,7 @@ The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kind
 **Acceptance criteria**
 - [ ] Given the user opens `enemies/`, then the page loads without console errors and every enemy kind can be picked.
 - [ ] Given an enemy kind is picked, then that enemy spawns and performs its behavior.
+- [ ] Given the model view, when the user presses the right (left) arrow, then the next (previous) enemy is shown close up.
 - [ ] Manual visual validation
 
 ## 🧑 Tunable values
@@ -186,7 +187,7 @@ The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kind
 > After the agent reports, write corrections here, then say **"Fix phase 05"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] Model view like the player ship view: close up on the enemy, left / right arrows to switch enemy, dark background (2026-10-24; P05-R11 updated in the spec at the reviewer's request). Fixed: the model view now has its own scene (`app/enemy-close-up.ts`).
 
 ---
 
@@ -218,7 +219,7 @@ None. The requirements were drafted by the agent at the reviewer's request (2026
 | P05-R08 | Done | `rocketeer.ts`, `enemy-shots.ts` | `enemies.test.ts`, `enemy-shots.test.ts`, `enemy-world.test.ts`, e2e | Missiles home 3.5 s at 90°/s, 10 HP, explode when shot down |
 | P05-R09 | Done | `bulwark.ts` | `enemies.test.ts`, e2e | Fires on entry, drift and exit |
 | P05-R10 | Done | `splitter.ts` (pods are `Hornet`s) | `enemies.test.ts`, `enemy-world.test.ts`, e2e | Pods pause 0.35 s, then dive |
-| P05-R11 | Done | `app/start-enemy-viewer.ts`, `enemy-viewer-scene.ts`, `enemy-viewer-shots.ts`, `ui/enemy-viewer-panel.ts`, `render/enemy-layer.ts`, `render/node-adopter.ts`, `enemies/index.html` | `start-enemy-viewer.test.ts`, `enemy-viewer-panel.test.ts`, `node-adopter.test.ts`, `enemy-layer.test.ts`, `tests/e2e/enemies.spec.ts` | See "How to test manually" |
+| P05-R11 | Done | `app/start-enemy-viewer.ts`, `enemy-viewer-scene.ts`, `enemy-close-up.ts`, `enemy-viewer-shots.ts`, `ui/enemy-viewer-panel.ts`, `render/enemy-layer.ts`, `render/node-adopter.ts`, `enemies/index.html` | `start-enemy-viewer.test.ts`, `enemy-viewer-panel.test.ts`, `node-adopter.test.ts`, `enemy-layer.test.ts`, `tests/e2e/enemies.spec.ts` | See "How to test manually" |
 
 ### Gate results
 Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
@@ -227,15 +228,19 @@ make typecheck  ✔ (0 errors)
 make build      ✔ (ENG-52 check now covers __GAME_TEST__ and __ENEMIES_TEST__; main chunk 1,416 kB / 368 kB gzip)
 make e2e        ✔ 40 passed (35 from earlier phases + 5 new in enemies.spec.ts)
 ```
+Review fix (close-up model view): typecheck ✔, build ✔, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
 ### How to test manually
 1. `make dev`, open http://localhost:5173/enemies/ (or `enemies/` on GitHub Pages).
 2. Pick an enemy with its button, or N / B (next / previous). It appears over Level Zero and comes back about 1 s after its group has gone.
 3. Fly the ship with the arrows or WASD (by key position, so ZQSD on AZERTY). It fires all the time; F stops and starts the fire. X switches the weapon (bullet, laser, missile), 1-5 sets the level. The ship cannot be hit.
-4. M (or "Model") shows the picked enemy alone, three times bigger, turning in the middle of the screen; M again goes back.
+4. M (or "Model") shows the picked enemy alone, close up on a dark background, turning (as on `player_ship/`). ← / → switch to the previous / next enemy; drag to orbit, wheel to zoom. M again goes back to the level.
 5. P pauses. The panel shows the enemies on screen, enemy shots, enemies destroyed and the score. The FPS / polygons tile is at the top right.
 6. Things to look at: Lancer warning line (1 s, blinking) then red beam; Rocketeer missiles (shoot them down: small explosion); Splitter breaking into 3 pods; Spinner spiral; Bulwark spread aimed at the ship (move the ship to see it follow).
+
+### Review fixes
+- Model view (review, P05-R11 updated): instead of a bigger model over Level Zero, the model view switches to its own scene (`app/enemy-close-up.ts`): dark background and lights of `player_ship/`, an orbit camera framed so the enemy fills about 60 % of the width, 45° above it, turning at 0.6 rad/s. ← / → switch the enemy there (in the level view the arrows still fly the ship); the camera's own arrow-key input is removed. Drag orbits, the wheel zooms. The FPS / polygons tile shows the scene on screen. The old in-level showcase, `EnemyBindings.showcaseScale` and `screenCentreY` were removed.
 
 ### Deviations from spec
 - "Hits on enemies emit particles" reuses the phase 3 hit effects (bullet sparks, missile flashes, laser contact glow and particles); no new hit effect was added.

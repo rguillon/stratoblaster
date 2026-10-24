@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   framePlayfield,
-  screenCentreY,
   visibleGround,
   visibleHalfWidth,
 } from '../../../../src/render/scenery/playfield-framing';
@@ -60,14 +59,5 @@ describe('visibleHalfWidth', () => {
     // About 293 of the 480 logical pixels at the bottom edge and 493 at the top (D-020).
     expect(bottom * 2).toBeCloseTo(293, -1);
     expect(top * 2).toBeCloseTo(493, -1);
-  });
-});
-
-describe('screenCentreY', () => {
-  it('P05-R11: is where the camera axis meets the flight plane, above the middle of the playfield', () => {
-    const framing = framePlayfield(SCREEN, LOOK);
-    const y = screenCentreY(framing);
-    expect(y).toBeGreaterThan(SCREEN.height / 2);
-    expect(y).toBeLessThan(SCREEN.height);
   });
 });

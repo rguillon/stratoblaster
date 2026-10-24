@@ -88,5 +88,4 @@ export const SAMPLE_ENEMIES: EnemyBindings = {
   shots: shotRenderer,
   blasts: blastRenderer,
   glow: { intensity: 0.5, blurKernelSize: 8 },
-  showcaseScale: 2,
 };

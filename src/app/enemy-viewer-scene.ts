@@ -5,10 +5,9 @@ import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { GameDefinition } from '../core/content/game-definition';
-import type { Enemy } from '../core/entities/enemy';
 import { levelLength, type SceneryLevel } from '../core/scenery/scenery-level';
 import { ScrollTrack } from '../core/scenery/scroll-track';
-import type { EnemyModel, GameView } from '../render/game-view';
+import type { GameView } from '../render/game-view';
 import { applyShowcaseEnvironment } from '../render/environment/showcase-environment.visual';
 import { NodeAdopter } from '../render/node-adopter';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
@@ -104,49 +103,4 @@ export function buildEnemyViewerScene(
       root.position = stage.playfieldPoint(0, 0, distance);
     },
   };
-}
-
-/** The model view (P05-R11): one enemy model alone, bigger, turning in the playfield's centre. */
-export class ModelShowcase {
-  readonly pivot: TransformNode;
-  readonly #spin: TransformNode;
-  #model: EnemyModel | undefined;
-
-  constructor(
-    private readonly playfield: NodeAdopter,
-    center: { readonly x: number; readonly y: number },
-    scale: number,
-  ) {
-    const scene = playfield.root.getScene();
-    [this.pivot, this.#spin] = playfield.run(() => {
-      const pivot = new TransformNode('showcase', scene);
-      pivot.position.set(center.x, center.y, 0);
-      pivot.scaling.setAll(scale);
-      // Nose to +Y, top to -Z (the camera), like the enemies on the playfield.
-      const holder = new TransformNode('showcase-holder', scene);
-      holder.parent = pivot;
-      holder.rotation.x = -Math.PI / 2;
-      const spin = new TransformNode('showcase-spin', scene);
-      spin.parent = holder;
-      return [pivot, spin];
-    });
-  }
-
-  /** Replaces the model with one of `enemy`'s, its lights fully charged. */
-  show(build: (scene: Scene) => EnemyModel, enemy: Enemy): void {
-    this.#model?.root.dispose();
-    this.#model = this.playfield.run(() => build(this.pivot.getScene()));
-    this.#model.root.parent = this.#spin;
-    enemy.charge = 1;
-    this.#model.sync(enemy, 0);
-  }
-
-  update(dt: number, enemy: Enemy | undefined): void {
-    this.#spin.rotation.y += CFG.showcaseSpinRadPerSec * dt;
-    if (enemy) this.#model?.sync(enemy, dt);
-  }
-
-  setEnabled(enabled: boolean): void {
-    this.pivot.setEnabled(enabled);
-  }
 }

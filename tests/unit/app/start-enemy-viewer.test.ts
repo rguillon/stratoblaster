@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { startEnemyViewer, type RunningEnemyViewer } from '../../../src/app/start-enemy-viewer';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../../../src/config/enemy-viewer';
 import { ABOVE_CLOUDS_GROUP } from '../../../src/render/scenery/scenery-stage';
@@ -68,26 +67,39 @@ describe('startEnemyViewer', () => {
     expect(viewer.enemies.enemies[0]).toBeInstanceOf(Twin);
   });
 
-  it('P05-R11: the model view shows the enemy model alone, turning; behaviour comes back after', () => {
+  it('P05-R11: the model view shows the enemy close up on its own dark scene, turning', () => {
     viewer = start();
-    const scene = viewer.scene;
-    const node = (name: string): TransformNode => {
-      const found = scene.getTransformNodeByName(name);
-      if (!found) throw new Error(`No node "${name}"`);
-      return found;
-    };
     viewer.key('m', 'KeyM', true);
     expect(viewer.panel.selection.view).toBe('model');
     expect(viewer.enemies.enemies).toHaveLength(0);
-    expect(node('showcase').isEnabled()).toBe(true);
-    expect(node('playfield-ship').isEnabled()).toBe(false);
-    const turn = node('showcase-spin').rotation.y;
+    const { closeUp } = viewer;
+    expect(closeUp.scene).not.toBe(viewer.scene);
+    expect(Math.max(closeUp.scene.clearColor.r, closeUp.scene.clearColor.g)).toBeLessThan(0.1);
+    expect(closeUp.pivot.getChildMeshes().length).toBeGreaterThan(0);
+    // Close up: the camera is a few model sizes away (the sample model is 10 wide).
+    expect(closeUp.camera.radius).toBeLessThan(60);
+    const turn = closeUp.pivot.rotation.y;
     frames(viewer, 1);
-    expect(node('showcase-spin').rotation.y).toBeGreaterThan(turn);
+    expect(closeUp.pivot.rotation.y).toBeGreaterThan(turn);
     expect(viewer.enemies.enemies).toHaveLength(0);
     viewer.key('m', 'KeyM', true);
     expect(viewer.enemies.enemies).toHaveLength(1);
-    expect(node('showcase').isEnabled()).toBe(false);
+  });
+
+  it('P05-R11: in the model view, ← / → switch the enemy instead of moving the ship', () => {
+    viewer = start();
+    viewer.key('m', 'KeyM', true);
+    const { x } = viewer.player;
+    viewer.key('ArrowRight', 'ArrowRight', true);
+    expect(viewer.panel.selection.kind).toBe(1);
+    viewer.key('ArrowRight', 'ArrowRight', true);
+    expect(viewer.panel.selection.kind).toBe(0);
+    viewer.key('ArrowLeft', 'ArrowLeft', true);
+    expect(viewer.panel.selection.kind).toBe(1);
+    viewer.key('ArrowLeft', 'ArrowLeft', false);
+    expect(viewer.panel.selection.view).toBe('model');
+    frames(viewer, 0.5);
+    expect(viewer.player.x).toBe(x);
   });
 
   it('P05-R11: the player ship flies with arrows / WASD, within what the camera shows', () => {

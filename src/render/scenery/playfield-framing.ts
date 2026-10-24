@@ -81,8 +81,3 @@ export function visibleHalfWidth(framing: PlayfieldFraming, aspect: number, y: n
   const depth = -framing.height * dy + (y - framing.back) * dz;
   return depth * Math.tan(framing.halfFov) * aspect;
 }
-
-/** Height on the playfield (from its bottom edge) seen in the middle of the screen. */
-export function screenCentreY(framing: PlayfieldFraming): number {
-  return framing.back + framing.height * Math.tan(framing.tilt);
-}

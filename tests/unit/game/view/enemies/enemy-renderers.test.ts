@@ -82,10 +82,9 @@ describe('createBlastRenderer', () => {
 });
 
 describe('ENEMY_BINDINGS', () => {
-  it('P05: binds the models, the shot and blast renderers, the glow and the model view scale', () => {
+  it('P05: binds the models, the shot and blast renderers, and the glow', () => {
     expect(ENEMY_BINDINGS.shots).toBe(createEnemyShotRenderer);
     expect(ENEMY_BINDINGS.blasts).toBe(createBlastRenderer);
-    expect(ENEMY_BINDINGS.showcaseScale).toBeGreaterThan(1);
     expect(ENEMY_BINDINGS.glow.intensity).toBeGreaterThan(0);
   });
 });

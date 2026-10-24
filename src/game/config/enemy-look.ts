@@ -35,8 +35,6 @@ export const ENEMY_LOOK = {
   chargeIdle: 0.18,
   /** Glow layer over the playfield (enemies' neon, shots). */
   glow: { intensity: 0.6, blurKernelSize: 24 },
-  /** The `enemies/` model view (P05-R11) draws the model this many times bigger. */
-  showcaseScale: 3,
   bullets: {
     /** Visual radius relative to the hit radius. */
     scale: 1.6,
