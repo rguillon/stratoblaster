@@ -9,6 +9,7 @@
 | 2 | `phases/phase-02-player-ships.md` | ✅ Validated | `phase-02` | 99.51% lines | 2026-10-22 |
 | 3 | `phases/phase-03-player-shots.md` | ✅ Validated | `phase-03` | 99.45% lines | 2026-10-23 |
 | 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
+| 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -59,3 +60,31 @@
 - 2026-10-23 — 4 — Review fix: the glow of the car lights no longer shows over the ship; light verification green (typecheck, build, 35 e2e); still awaiting review.
 - 2026-10-23 — 4 — Review fix: no more green roofs in the industrial zone; light verification green (typecheck, build, 35 e2e); still awaiting review.
 - 2026-10-23 — 4 — Validated: full gate green after fixes (545 unit tests, 99.35% lines, 89.94% branches, 35 e2e); squash-merged into `main`, tagged `v0.04.0`.
+- 2026-10-24 — 5 — Requirements drafted by the agent at the reviewer's request; set Ready by the reviewer.
+- 2026-10-24 — 5 — Implemented 10 enemy kinds (engine `Enemy` / `EnemyWorld`, code-generated models, shots, explosions) and the `enemies/` debug page over Level Zero (D-032); light verification green (typecheck, build, 40 e2e); awaiting review.
+- 2026-10-24 — 5 — Review fix: model view like player_ship/ (close up, dark background, ← / → switch the enemy), P05-R11 updated at the reviewer's request; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: reactor flames on the enemies (1 to 4 each, in their neon colour; none on the Spinner); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: lighter enemy reactors (about 40 triangles each instead of 150); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: every enemy reactor in the same light blue; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: less boxy enemy ships (lofted fuselages, bevelled wings and plates, about 19 % more polygons); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: more aggressive enemy ships (fangs, horns, claws, saw teeth, slanted neon eyes; about 19 % more polygons); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: spikes removed, ship parts integrated (painted canopies on one fuselage, faired pods, one-piece armour, wedge pods); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: the Gnat reworked as an unmanned tri-rotor drone (ducted fans, spinning rotors); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: smooth Hornet movement (brakes into its stop, eased turn, dives from rest); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
+- 2026-10-24 — 5 — Review fix: new enemy P05-R12 Carrier (slow, fat, launches Gnats from its side vents), added to the spec at the reviewer's request; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: Carrier reworked (no landing deck; two glowing launch ports on each side, each launching a Gnat); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
+- 2026-10-24 — 5 — Review fix: wireframe view on `enemies/` (V), the model view drawn as lines; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: dark grey background for the model and wireframe views; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: readable wireframe (light hull lines) and the hit circle shown in the wireframe view; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: details only visible from below removed (Gnat turret, lens and arms; Scout, Weaver and Bulwark under-hull guns); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
+- 2026-10-24 — 5 — Fix: the model view's shaders compiled in the background before it is first shown (the flaky model view e2e test); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: enemy hulls tinted towards and outlined in their neon colour, to stand out on the ground; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: the neon outline around the enemy hulls removed (the tinted metal stays); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: bigger, more realistic explosions (flash, shock ring, fireball cluster, lingering smoke, burning debris trailing embers and smoke); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: smaller explosions for the tiny ships (big ones unchanged); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: the sea/land junction reworked (sand beach, shallows tinted by depth, broken foam and rolling surf, see-through sea); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: player missiles only home on enemies within 320 px (half the screen); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: the player's bullets are now minigun tracers instead of green blobs; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — At the reviewer's request, the specs corrected to match the review fixes (P03-R01, P03-R03, P04-R02, P05-R01, P05-R11); still awaiting review.
+- 2026-10-24 — 5 — Review fix: player missiles more visible (bigger, lighter, with a motor flare and an exhaust trail); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Validated: full gate green after fixes (668 unit tests, 99.27% lines, 88.83% branches, 40 e2e); squash-merged into `main`, tagged `v0.05.0`.

@@ -30,6 +30,8 @@ Software generated textures that fade between each others according to the slope
 
 An optional sea level shall allow to simulate nice looking water (reflecting the sun)
 
+Where the water meets the land, the shore shall look natural: a sand beach, shallows whose colour darkens with depth, and broken surf rolling in, with no hard line between water and ground (phase 5 review, 2026-10-24).
+
 **Acceptance criteria**
 - [ ] Manual visual validation
 

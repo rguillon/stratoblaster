@@ -28,6 +28,8 @@ export interface ProjectileWeaponDefinition {
   readonly maxSpeed: number;
   /** Turn rate towards the closest target, degrees per second (0: flies straight). */
   readonly homingTurnRateDeg: number;
+  /** A homing shot only sees targets within this distance of it, px (phase 5 review). */
+  readonly homingRange: number;
   /** Hit radius of a shot. */
   readonly radius: number;
   readonly damage: number;
@@ -62,7 +64,7 @@ function validateProjectile(weapon: ProjectileWeaponDefinition): void {
   for (const key of positive) {
     if (!(weapon[key] > 0)) throw new Error(`Weapon "${weapon.id}": ${key} must be positive`);
   }
-  const nonNegative = ['acceleration', 'homingTurnRateDeg', 'blastRadius'] as const;
+  const nonNegative = ['acceleration', 'homingTurnRateDeg', 'homingRange', 'blastRadius'] as const;
   for (const key of nonNegative) {
     if (!(weapon[key] >= 0)) throw new Error(`Weapon "${weapon.id}": ${key} must be >= 0`);
   }

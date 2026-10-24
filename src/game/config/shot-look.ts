@@ -3,26 +3,35 @@
  * noted; durations in seconds. Shots are drawn with additive blending: black is transparent.
  */
 export const SHOT_LOOK = {
+  /**
+   * Minigun tracer (phase 5 review, was a green blob): a long thin streak, white-hot at its head,
+   * cooling to orange then red along its tail.
+   */
   bullet: {
-    /** Visual radius of the blob (the hit radius is in `player-weapons.ts`). */
-    radius: 4.5,
-    /**
-     * Sides of the blob. A disc of `segments` sides and `colors.length - 1` rings has
-     * segments × (2 × rings − 1) triangles: 8 × 5 = 40 (98 before the phase 3 review).
-     */
-    segments: 8,
-    /**
-     * Centre to edge: white-hot core (brighter after phase 3 review), neon green, black edge for
-     * the fade.
-     */
+    width: 3.4,
+    /** Length of the streak behind the bullet; a new one grows to it from the muzzle. */
+    length: 34,
+    /** Across the streak, centre line to edge. */
     colors: [
-      [0.95, 1, 0.9],
-      [0.35, 1, 0.3],
-      [0.04, 0.4, 0.08],
+      [1, 0.96, 0.82],
+      [1, 0.62, 0.2],
+      [0.45, 0.1, 0.02],
       [0, 0, 0],
     ],
-    /** The blob is stretched along its direction of travel by this factor. */
-    stretch: 1.35,
+    /**
+     * Along the streak, from its rounded tip (0.08 ahead of the bullet) back to the tail end
+     * (-1): how far back, and what the colours are multiplied by there.
+     */
+    rows: [
+      { at: 0.08, tint: [0, 0, 0] },
+      { at: 0, tint: [1, 1, 1] },
+      { at: -0.2, tint: [1, 0.85, 0.6] },
+      { at: -0.6, tint: [0.75, 0.35, 0.12] },
+      { at: -1, tint: [0, 0, 0] },
+    ],
+    /** Width flicker of each tracer (± fraction) and its rate, rad/s. */
+    flicker: 0.18,
+    flickerRate: 90,
   },
   laser: {
     /** Visual width relative to the beam's hit width (the glow spills around the core). */
@@ -89,12 +98,44 @@ export const SHOT_LOOK = {
   },
   missile: {
     /** Model units (scaled by the player ship scale): body length and radius. */
-    length: 1.7,
-    radius: 0.16,
-    finSpan: 0.32,
-    body: [0.55, 0.58, 0.64],
-    tip: [0.9, 0.15, 0.2],
-    flame: { length: 1.1, diameter: 0.28, puffDiameter: 0.22, sides: 6 },
+    /** Phase 5 review: about 30 % bigger (1.7 / 0.16 / 0.32 before), with a lighter body. */
+    length: 2.2,
+    radius: 0.2,
+    finSpan: 0.4,
+    body: [0.78, 0.8, 0.85],
+    tip: [1, 0.2, 0.25],
+    flame: { length: 1.6, diameter: 0.36, puffDiameter: 0.28, sides: 6 },
+    /**
+     * Phase 5 review, to stand out on any ground: a bright motor flare at the nozzle (radius
+     * in px, ± flicker at `flickerRate` rad/s) and a glowing exhaust trail behind it (px),
+     * growing from the launch like a tracer.
+     */
+    flare: {
+      radius: 7,
+      flicker: 0.25,
+      flickerRate: 70,
+      colors: [
+        [1, 1, 1],
+        [0.6, 0.85, 1],
+        [0.15, 0.35, 0.8],
+        [0, 0, 0],
+      ],
+      segments: 10,
+    },
+    trail: {
+      width: 4,
+      length: 46,
+      colors: [
+        [0.85, 0.95, 1],
+        [0.35, 0.6, 1],
+        [0, 0, 0],
+      ],
+      rows: [
+        { at: 0, tint: [1, 1, 1] },
+        { at: -0.3, tint: [0.6, 0.6, 0.7] },
+        { at: -1, tint: [0, 0, 0] },
+      ],
+    },
     /**
      * Distance behind the playfield plane (away from the camera), so the ship (at Z = 0) is
      * drawn over missiles leaving its centre (phase 3 review).

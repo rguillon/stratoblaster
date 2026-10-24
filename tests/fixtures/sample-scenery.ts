@@ -109,7 +109,14 @@ export const SAMPLE_SCENERY_LOOK: SceneryLook = {
       [0.9, 0.9, 0.9],
     ],
     tintTileSize: 500,
-    foam: { color: [1, 1, 1], width: 1 },
+    shore: {
+      sand: [0.8, 0.7, 0.5],
+      beach: 2,
+      shallow: [0, 0.5, 0.5],
+      deep: [0, 0.2, 0.4],
+      depth: 10,
+      foam: { color: [1, 1, 1], width: 1, spacing: 2, speed: 0.5, reach: 4 },
+    },
     specular: 0,
   },
   sea: {

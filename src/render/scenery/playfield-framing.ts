@@ -69,3 +69,15 @@ export function visibleGround(
     halfWidth: depth * Math.tan(framing.halfFov) * aspect,
   };
 }
+
+/**
+ * Half of the playfield width seen on screen at height `y` of the playfield (logical pixels
+ * from its bottom edge), for a screen of the given aspect ratio (width / height). With the tilted
+ * camera, less of the playfield is seen at the bottom than at the top.
+ */
+export function visibleHalfWidth(framing: PlayfieldFraming, aspect: number, y: number): number {
+  const [dy, dz] = framing.direction;
+  // Depth of the point (0, flight plane, y) along the view axis, from the camera.
+  const depth = -framing.height * dy + (y - framing.back) * dz;
+  return depth * Math.tan(framing.halfFov) * aspect;
+}

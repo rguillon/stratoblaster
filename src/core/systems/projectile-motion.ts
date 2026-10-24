@@ -34,7 +34,8 @@ export function turnTowards(heading: number, desired: number, maxTurn: number): 
 }
 
 /**
- * Advances a projectile by `dt` (P03-R01, P03-R03): homes on the living target closest to it
+ * Advances a projectile by `dt` (P03-R01, P03-R03): homes on the living target closest to it,
+ * within its weapon's homing range
  * (re-chosen every step) if its weapon homes, accelerates up to the speed cap, then moves
  * along its heading.
  */
@@ -45,7 +46,7 @@ export function advanceProjectile(
 ): void {
   const { weapon } = shot;
   if (weapon.homingTurnRateDeg > 0) {
-    const target = closestTarget(targets, shot.x, shot.y);
+    const target = closestTarget(targets, shot.x, shot.y, weapon.homingRange);
     if (target) {
       const desired = headingTo(shot.x, shot.y, target.x, target.y);
       shot.heading = turnTowards(shot.heading, desired, weapon.homingTurnRateDeg * DEG * dt);

@@ -46,9 +46,34 @@ export interface TerrainLook {
   /** Large patches of the ground layer are tinted between these two colours. */
   readonly tints: readonly [Rgb, Rgb];
   readonly tintTileSize: number;
-  /** Surf on the shore line: colour and half-height of the band around the sea level. */
-  readonly foam: { readonly color: Rgb; readonly width: number };
+  /** Where the ground meets the sea (phase 5 review): beach, shallows and surf. */
+  readonly shore: ShoreLook;
   readonly specular: number;
+}
+
+/**
+ * The shore, painted on the terrain around the sea level (phase 5 review): a sand beach up to
+ * `beach` above the water, ground under the water tinted from `shallow` to `deep` over `depth`,
+ * and surf: a broken foam line at the water's edge and bands of foam rolling in.
+ */
+export interface ShoreLook {
+  readonly sand: Rgb;
+  /** Height above the sea level where the beach gives way to the ground. */
+  readonly beach: number;
+  readonly shallow: Rgb;
+  readonly deep: Rgb;
+  /** Depth where the water reaches its `deep` colour. */
+  readonly depth: number;
+  readonly foam: {
+    readonly color: Rgb;
+    /** Half-height of the foam line at the water's edge. */
+    readonly width: number;
+    /** Depth between two bands of rolling foam, how fast they roll in (bands per second)
+     * and the depth they start at. */
+    readonly spacing: number;
+    readonly speed: number;
+    readonly reach: number;
+  };
 }
 
 /** Water with a generated, drifting normal map that catches the sun (P04-R02). */

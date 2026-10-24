@@ -19,6 +19,10 @@ describe('resolveRoute', () => {
     ['/level_zero', 'scenery-viewer'],
     ['/stratoblaster/level_zero/index.html', 'scenery-viewer'],
     ['/level_zero/other', 'game'],
+    ['/enemies/', 'enemy-viewer'],
+    ['/enemies', 'enemy-viewer'],
+    ['/stratoblaster/enemies/index.html', 'enemy-viewer'],
+    ['/enemies/other', 'game'],
   ] as const)('maps %s to %s', (pathname, route) => {
     expect(resolveRoute(pathname)).toBe(route);
   });

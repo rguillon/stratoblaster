@@ -43,6 +43,7 @@ export const BULLET = {
   acceleration: 0,
   maxSpeed: 600,
   homingTurnRateDeg: 0,
+  homingRange: 0,
   /** Default. */
   radius: 4,
   damage: 10,
@@ -92,6 +93,8 @@ export const MISSILE = {
   maxSpeed: 700,
   /** Default. */
   homingTurnRateDeg: 180,
+  /** Phase 5 review: about half the screen's height; farther enemies are not pursued. */
+  homingRange: 320,
   /** Default. */
   radius: 3,
   damage: 8,

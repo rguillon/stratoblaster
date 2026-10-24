@@ -5,8 +5,10 @@ import { MENU_TEXTS } from './config/menu-texts';
 import { PLAYER_SHIPS } from './config/player-ships';
 import { PLAYER_WEAPONS } from './config/player-weapons';
 import { PLAYER_SHIP_SCALE } from './config/ship-look';
+import { ENEMY_KINDS } from './sim/enemy-kinds';
 import { LEVELS } from './sim/levels';
 import { SCENERY_LEVELS } from './sim/scenery-levels';
+import { ENEMY_BINDINGS } from './view/enemies/enemy-bindings';
 import { PLAYER_SHIP_MODELS } from './view/player-ship-models';
 import { PLAYER_SHOT_RENDERERS } from './view/shots/player-shot-renderers';
 import { SCENERY_BINDINGS } from './view/scenery-bindings';
@@ -21,6 +23,7 @@ export const GAME: GameDefinition<GameView> = {
   playerWeapons: PLAYER_WEAPONS,
   levels: LEVELS,
   sceneryLevels: SCENERY_LEVELS,
+  enemyKinds: ENEMY_KINDS,
   texts: MENU_TEXTS,
   view: {
     playerShipModels: PLAYER_SHIP_MODELS,
@@ -28,5 +31,6 @@ export const GAME: GameDefinition<GameView> = {
     playerShotRenderers: PLAYER_SHOT_RENDERERS,
     menuBackdrop: buildTitleBackdrop,
     scenery: SCENERY_BINDINGS,
+    enemies: ENEMY_BINDINGS,
   },
 };
