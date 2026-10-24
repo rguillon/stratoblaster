@@ -6,7 +6,6 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import '@babylonjs/core/Rendering/outlineRenderer';
 import type { Enemy } from '../../../core/entities/enemy';
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
@@ -223,13 +222,6 @@ function addReactors(
   });
 }
 
-/** A thin neon line around the hull's silhouette (phase 5 review: enemies easier to see). */
-function outline(mesh: Mesh, color: Rgb): void {
-  mesh.renderOutline = true;
-  mesh.outlineColor = new Color3(...color);
-  mesh.outlineWidth = ENEMY_LOOK.hull.outline;
-}
-
 /**
  * Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
  * charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
@@ -261,9 +253,7 @@ export function buildEnemyModel(
     [parts.neon, neon],
   ] as const) {
     if (part.geometry.positions.length > 0) {
-      const mesh = meshOf(`${name}-${material.name}`, part.geometry, material, scene);
-      mesh.parent = root;
-      if (material === hull) outline(mesh, chargeColor);
+      meshOf(`${name}-${material.name}`, part.geometry, material, scene).parent = root;
     }
   }
   const chargeMat = unlit(`${name}-charge`, scene);

@@ -73,7 +73,7 @@ describe('ENEMY_MODELS', () => {
     expect(Math.max(...ENEMY_LOOK.hull.base)).toBeLessThan(0.2);
   });
 
-  it('phase 5 review: hulls tinted by and outlined in their neon colour, to stand out', () => {
+  it('phase 5 review: hulls tinted by their neon colour, to stand out', () => {
     const hullOf = (key: string): Mesh | undefined =>
       extent(key)
         .model.root.getChildMeshes<Mesh>()
@@ -84,8 +84,6 @@ describe('ENEMY_MODELS', () => {
     // Red neon: the Hornet's metal turns red, not the Gnat's cyan.
     expect(tint?.r).toBeGreaterThan((tint?.b ?? 1) + 0.3);
     expect(gnat?.material).not.toBe(hornet?.material);
-    expect(hornet?.renderOutline).toBe(true);
-    expect(hornet?.outlineColor.asArray()).toEqual([...ENEMY_LOOK.neon.hornet]);
   });
 
   it('P05-R07, P05-R08: charging lights brighten with the enemy charge', () => {

@@ -23,8 +23,6 @@ export const ENEMY_LOOK = {
     roughness: 0.38,
     tint: 0.6,
     selfLight: 0.04,
-    /** Width of the neon line around the hull's silhouette, in logical pixels. */
-    outline: 0.9,
   },
   /** Neon colours of each enemy (P05-R01..R10, P05-R12). */
   neon: {

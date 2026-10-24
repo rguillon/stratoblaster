@@ -79,3 +79,4 @@
 - 2026-10-24 — 5 — Review fix: details only visible from below removed (Gnat turret, lens and arms; Scout, Weaver and Bulwark under-hull guns); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
 - 2026-10-24 — 5 — Fix: the model view's shaders compiled in the background before it is first shown (the flaky model view e2e test); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: enemy hulls tinted towards and outlined in their neon colour, to stand out on the ground; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: the neon outline around the enemy hulls removed (the tinted metal stays); light verification green (typecheck, build, 40 e2e); still awaiting review.

@@ -122,7 +122,6 @@ export class EnemyCloseUp {
       if (mesh.material?.name !== 'enemy-hull') continue;
       mesh.material = this.#wire;
       mesh.useVertexColors = false;
-      mesh.renderOutline = false;
       this.#glow?.addExcludedMesh(mesh);
     }
     const n = CFG.hitboxSegments;
