@@ -134,6 +134,54 @@ describe('LevelRun', () => {
     expect(areas.map((a) => a.topRange)).toEqual([[60, 240]]);
   });
 
+  it('phase 6 review: a bonus picked up raises the weapon in use, which keeps its level', () => {
+    const [pea, ray] = SAMPLE_GAME.playerWeapons;
+    if (!pea || !ray) throw new Error('two weapons expected');
+    const bonuses = { chance: { perHealth: 0, min: 1, max: 1 }, fallSpeed: 100, pickupRadius: 15 };
+    const run = newRun([], 10, undefined, [pea, ray], { weaponLevel: 1, bonuses });
+    const dropOnShip = () => {
+      const { x, y } = run.ship;
+      run.bonuses?.drop([{ id: 1, x, y: y + 20, radius: 5, health: 0, maxHealth: 10 }]);
+      play(run, 1);
+    };
+    dropOnShip();
+    expect(run.shots.level).toBe(2);
+    expect(run.bonuses?.collected).toBe(1);
+    // No further than the weapon's last level.
+    dropOnShip();
+    expect(run.shots.level).toBe(pea.levels.length);
+    // The ray starts at the starting level; the pea gets its level back.
+    play(run, 0.1, { ...STILL, switchWeapon: true });
+    expect([run.shots.weapon, run.shots.level]).toEqual([ray, 1]);
+    play(run, 0.1, { ...STILL, switchWeapon: true });
+    expect([run.shots.weapon, run.shots.level]).toEqual([pea, pea.levels.length]);
+    // Without bonus rules, none.
+    expect(newRun([]).bonuses).toBeUndefined();
+  });
+
+  it('phase 6 review: destroyed enemies drop bonuses', () => {
+    const always = { chance: { perHealth: 0, min: 1, max: 1 }, fallSpeed: 0, pickupRadius: 1 };
+    const fragile: EnemyKindDefinition = {
+      id: 'fragile',
+      name: 'Fragile',
+      spawn: (area) => {
+        const enemy = new Hover(area.width / 2, area.height - 50);
+        enemy.health = 0.5;
+        return [enemy];
+      },
+    };
+    const waves = [{ at: 0, kind: 'fragile', count: 1, interval: 0, entry: top }] as const;
+    const run = newRun(waves, 10, undefined, undefined, {
+      kinds: [...KINDS, fragile],
+      bonuses: always,
+    });
+    // Shots fly at 100 px/s, the enemy is 300 px up.
+    play(run, 5, { move: { x: 0, y: 0 }, fire: true });
+    expect(run.enemies.kills).toBe(1);
+    expect(run.bonuses?.dropped).toBe(1);
+    expect(run.bonuses?.bonuses[0]?.x).toBeCloseTo(150);
+  });
+
   it('phase 6 review: switching cycles through the weapons, each at the starting level', () => {
     const [pea, ray] = SAMPLE_GAME.playerWeapons;
     if (!pea || !ray) throw new Error('missing weapons');

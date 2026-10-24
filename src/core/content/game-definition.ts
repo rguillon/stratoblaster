@@ -1,6 +1,7 @@
 import type { EnemyKindDefinition } from '../entities/enemy';
 import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
+import type { BonusRules } from '../systems/bonus-world';
 import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
@@ -46,6 +47,8 @@ export interface GameDefinition<TView = unknown> {
   readonly sceneryLevels: readonly SceneryLevel[];
   /** The kinds of enemies (P05), which the levels' waves bring in by id. */
   readonly enemyKinds: readonly EnemyKindDefinition[];
+  /** Weapon bonuses dropped by destroyed enemies (phase 6 review). */
+  readonly bonuses: BonusRules;
   /** Texts of the menu screens. */
   readonly texts: MenuTexts;
   /** Presentation bindings for the content above. */

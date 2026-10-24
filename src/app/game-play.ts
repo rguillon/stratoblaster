@@ -3,12 +3,13 @@ import type { GameDefinition } from '../core/content/game-definition';
 import { findGameLevel, type GameLevel } from '../core/content/game-level';
 import { findPlayerShip, shipMaxSpeedPxPerSec } from '../core/entities/player-ship';
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
+import type { Bonus } from '../core/systems/bonus-world';
 import type { EnemyBlast } from '../core/systems/enemy-world';
 import { LevelRun, type LevelPhase, type LevelResult } from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
-import type { GameView } from '../render/game-view';
+import type { BonusRenderer, GameView } from '../render/game-view';
 import { visibleHalfWidth } from '../render/scenery/playfield-framing';
 import type { GameControls } from '../input/game-controls';
 import { GameHud } from '../ui/game-hud';
@@ -59,6 +60,17 @@ export interface GamePlayState {
   readonly player: { readonly x: number; readonly y: number };
   readonly firing: boolean;
   readonly shots: number;
+  /** Level of the weapon in use, and weapon bonuses falling / dropped (phase 6 review). */
+  readonly weaponLevel: number;
+  readonly bonuses: number;
+  readonly bonusesDropped: number;
+}
+
+/** What happened during the steps of one frame, to draw. */
+interface FrameEvents {
+  readonly blasts: EnemyBlast[];
+  readonly impacts: ShotImpact[];
+  readonly picked: Bonus[];
 }
 
 function levelOf(game: GameDefinition, id: string): GameLevel {
@@ -79,6 +91,7 @@ export class GamePlay {
   readonly #ship: PlayfieldShip;
   readonly #enemies: EnemyLayer;
   readonly #shots: EnemyViewerShots;
+  readonly #bonuses: BonusRenderer;
   readonly #speed: number;
   readonly #stats: StatsTile | undefined;
   readonly #hud: GameHud | undefined;
@@ -123,6 +136,7 @@ export class GamePlay {
     this.run = this.#newRun(level, Math.max(0, nose - CFG.muzzleInset));
     this.#enemies = pf.run(() => new EnemyLayer(this.view.scene, game.view.enemies.models));
     this.#shots = new EnemyViewerShots(game, pf);
+    this.#bonuses = pf.run(() => game.view.bonuses(this.view.scene));
     this.#stats =
       options.debug && options.statsParent
         ? new StatsTile(options.doc, options.statsParent, CFG.stats.refresh)
@@ -155,6 +169,7 @@ export class GamePlay {
       endWait: CFG.endWait,
       seed: CFG.seed,
       inView: this.#inView(),
+      bonuses: this.game.bonuses,
     });
   }
 
@@ -196,32 +211,34 @@ export class GamePlay {
   /** Advances and draws one frame of `dt` real seconds. */
   frame(dt: number): void {
     const { steps, alpha } = this.#clock.advance(dt * this.#timeScale);
-    const blasts: EnemyBlast[] = [];
-    const impacts: ShotImpact[] = [];
+    const events: FrameEvents = { blasts: [], impacts: [], picked: [] };
     const step = this.#clock.stepSeconds;
     for (let i = 0; i < steps; i++) {
       this.#previous = this.run.track.distance;
       this.run.step(step, this.controls.read(step, this.#speed));
-      blasts.push(...this.run.blasts);
-      impacts.push(...this.run.impacts);
+      events.blasts.push(...this.run.blasts);
+      events.impacts.push(...this.run.impacts);
+      events.picked.push(...(this.run.bonuses?.picked ?? []));
     }
     const track = this.run.track;
     const distance = this.#previous + (track.distance - this.#previous) * alpha;
     this.view.update(distance, dt);
-    this.#draw(dt, blasts, impacts);
+    this.#draw(dt, events);
     if (this.run.phase === 'complete' && !this.#completed) {
       this.#completed = true;
       this.options.onComplete(this.run.result);
     }
   }
 
-  #draw(dt: number, blasts: readonly EnemyBlast[], impacts: readonly ShotImpact[]): void {
+  #draw(dt: number, { blasts, impacts, picked }: FrameEvents): void {
     const { ship, enemies, shots } = this.run;
     this.#ship.pivot.position.set(ship.x, ship.y, 0);
     this.#ship.pivot.rotation.y = this.#bank(ship.vx, dt);
     this.#ship.update(dt);
     this.view.playfield.run(() => {
       this.#enemies.sync(enemies.enemies, dt);
+      const bonuses = this.run.bonuses?.bonuses ?? [];
+      this.#bonuses.sync({ bonuses, picked, dtSeconds: dt });
     });
     this.#shots.sync({ enemies, shots, blasts, impacts, dt });
     this.#hud?.update({
@@ -290,12 +307,16 @@ export class GamePlay {
       player: { x: ship.x, y: ship.y },
       firing: shots.firing,
       shots: shots.activeCount,
+      weaponLevel: shots.level,
+      bonuses: this.run.bonuses?.bonuses.length ?? 0,
+      bonusesDropped: this.run.bonuses?.dropped ?? 0,
     };
   }
 
   dispose(): void {
     this.#enemies.dispose();
     this.#shots.dispose();
+    this.#bonuses.dispose();
     this.#stats?.root.remove();
     this.#hud?.dispose();
     this.view.scene.dispose();

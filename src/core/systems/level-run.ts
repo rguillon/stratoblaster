@@ -6,6 +6,7 @@ import type { WeaponDefinition } from '../entities/weapon';
 import { createRng } from '../math/rng';
 import { levelLength } from '../scenery/scenery-level';
 import { ScrollTrack } from '../scenery/scroll-track';
+import { BonusWorld, type BonusRules } from './bonus-world';
 import { EnemyWorld, type EnemyBlast } from './enemy-world';
 import { PlayerFlight, type FlightBounds, type FlightInput } from './player-flight';
 import { ShotWorld, type ShotImpact } from './shot-world';
@@ -47,7 +48,7 @@ export interface LevelRunOptions {
   readonly weaponLevel: number;
   /**
    * The weapons the player can switch between, in order (`LevelControls.switchWeapon`), each
-   * at `weaponLevel`. Only `weapon` when omitted.
+   * starting at `weaponLevel` and keeping its own level. Only `weapon` when omitted.
    */
   readonly weapons?: readonly WeaponDefinition[];
   readonly ship: RunShip;
@@ -64,6 +65,11 @@ export interface LevelRunOptions {
    * playfield's rectangle.
    */
   readonly inView?: (x: number, y: number) => boolean;
+  /**
+   * Weapon bonuses (phase 6 review): some destroyed enemies drop one, and picking it up raises
+   * the weapon in use by a level. None when omitted.
+   */
+  readonly bonuses?: BonusRules;
 }
 
 /**
@@ -78,6 +84,7 @@ export class LevelRun {
   readonly shots: ShotWorld;
   readonly ship: PlayerFlight;
   readonly waves: WaveRunner;
+  readonly bonuses: BonusWorld | undefined;
   /** Explosions and shot impacts of the last step. */
   blasts: readonly EnemyBlast[] = [];
   impacts: readonly ShotImpact[] = [];
@@ -85,6 +92,10 @@ export class LevelRun {
   #clearingFor = 0;
   /** What the player's shots can hit: the enemies and missiles on screen. */
   readonly #targets: ShotTarget[] = [];
+  /** The level of each weapon used so far (phase 6 review: each keeps its own). */
+  readonly #levels = new Map<WeaponDefinition, number>();
+  /** Where the ship can reach at the bottom of the screen. */
+  readonly #reach: readonly [number, number];
 
   constructor(private readonly options: LevelRunOptions) {
     const { screen, level, kinds, cullMargin, maxEnemyAge } = options;
@@ -99,6 +110,12 @@ export class LevelRun {
     this.shots = new ShotWorld(area, options.weapon);
     this.shots.select(options.weapon, options.weaponLevel);
     this.shots.targets = this.#targets;
+    const { bounds } = options;
+    const reach = bounds.halfWidthAt(bounds.minY);
+    this.#reach = [bounds.centerX - reach, bounds.centerX + reach];
+    this.bonuses =
+      options.bonuses &&
+      new BonusWorld(options.bonuses, createRng(options.seed + 1), this.#reach, cullMargin);
     this.ship = new PlayerFlight(
       options.ship.start,
       options.ship.maxSpeed,
@@ -146,6 +163,7 @@ export class LevelRun {
     this.shots.step(dt);
     this.blasts = this.enemies.blasts;
     this.impacts = this.shots.impacts;
+    this.#stepBonuses(dt);
     if (this.#phase === 'clearing') this.#clear(dt);
   }
 
@@ -156,18 +174,31 @@ export class LevelRun {
   seek(time: number): void {
     this.track.seek(time);
     this.enemies.clear();
+    this.bonuses?.clear();
     for (const shot of this.shots.projectiles) shot.alive = false;
     this.waves.skipTo(this.track.distance);
     this.#phase = 'playing';
     this.#clearingFor = 0;
   }
 
-  /** The next weapon of the list, at the starting level; shots in flight keep flying. */
+  /** The next weapon of the list, at its own level; shots in flight keep flying. */
   #switchWeapon(): void {
     const weapons = this.options.weapons ?? [this.options.weapon];
     const index = weapons.indexOf(this.shots.weapon);
     const next = weapons[(index + 1) % weapons.length] ?? this.options.weapon;
-    this.shots.select(next, this.options.weaponLevel);
+    this.#levels.set(this.shots.weapon, this.shots.level);
+    this.shots.select(next, this.#levels.get(next) ?? this.options.weaponLevel);
+  }
+
+  /** Drops bonuses where enemies blew up, moves them, and levels up for each one picked up. */
+  #stepBonuses(dt: number): void {
+    const bonuses = this.bonuses;
+    if (!bonuses) return;
+    bonuses.drop(this.enemies.destroyed);
+    bonuses.step(dt, this.ship);
+    // A level per bonus, up to the weapon's last; the new level fires at once.
+    const up = bonuses.picked.length;
+    if (up > 0) this.shots.select(this.shots.weapon, this.shots.level + up);
   }
 
   /** Only what is on screen can be hit (see `LevelRunOptions.inView`). */
@@ -194,10 +225,7 @@ export class LevelRun {
     if (!kind) return;
     const { width, height } = this.options.screen;
     // Phase 6 review: from the top, only where the ship can reach at the bottom of the screen.
-    const { bounds } = this.options;
-    const reach = bounds.halfWidthAt(bounds.minY);
-    const topRange = [bounds.centerX - reach, bounds.centerX + reach] as const;
-    this.enemies.add(...kind.spawn({ width, height, random, entry, topRange }));
+    this.enemies.add(...kind.spawn({ width, height, random, entry, topRange: this.#reach }));
   }
 
   /** Shots leave from the ship's nose (muzzle) and centre. */

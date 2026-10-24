@@ -589,3 +589,17 @@
 - **Alternatives considered:** the bottom edge of the screen (±146 px, a little wider than the ship can go); squeezing only the spawn X and not the paths (Gnats and Splitters would still sweep out to the corners).
 - **Consequences:** waves are a little narrower; a Weaver's sway can still take it slightly past the range.
 - **Status:** Accepted
+
+### D-049 — Weapon bonuses dropped by destroyed enemies
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for bonuses dropped by some destroyed enemies that level the weapons up (GD-31). Phase 6 had them out of scope; asked, the reviewer moved weapon bonuses into phase 6 (bombs and extra lives stay out), chose that each weapon keeps its own level, and a drop chance by toughness.
+- **Decision:**
+  - Core: `BonusWorld` (`core/systems/bonus-world.ts`, pure). A destroyed enemy (`EnemyWorld.destroyed`, new) drops a bonus with the chance `perHealth × maxHealth` kept within [`min`, `max`], drawn from its own seeded random source (the enemies play the same with or without bonuses). The bonus drops within the ship's reach at the bottom of the screen (as D-048), falls at `fallSpeed`, and is picked up when the ship's centre comes within `pickupRadius`; missed ones go past the bottom edge. `LevelRun` raises the weapon in use by a level per bonus picked up (up to its last level; the shot cooldown restarts, so the new level fires at once), and keeps a level per weapon, so switching (E) gets each weapon back at its level. `LevelRunOptions.bonuses` is optional (none without it).
+  - Content: `GameDefinition.bonuses` (`game/config/bonuses.ts`: `perHealth` 0.0015, `min` 0.06, `max` 0.2, fall 45 px/s, pickup 22 px); `GameView.bonuses` renderer (`game/view/bonuses/`, look in `config/bonus-look.ts`).
+  - Look: a hexagon badge (radius 11 px) with an acid-yellow frame, a dark face and two cyan chevrons pointing up, swinging ±50° from side to side (a whole spin showed it edge on half the time) over a small pulsing yellow halo, in front of the ships and explosions; it glows with the playfield's neon. Picking one up flashes a cyan ring out. The HUD's weapon line shows the new level.
+  - Test API: `weaponLevel`, `bonuses`, `bonusesDropped` in the game state.
+- **Measured** (simulated play-through firing all the time and flying to the bonuses, seed 606): 8 / 13 / 12 / 16 / 23 bonuses dropped and picked up in 1-1 … 1-5, the first after 40–90 s; the weapon in use reaches level 5 in every level (after about 3 minutes in 1-1).
+- **Alternatives considered:** one level shared by every weapon, or the switched-to weapon back at level 1 (asked; the reviewer chose per-weapon levels); bonuses marked in the wave scripts (asked; chance by toughness chosen); drifting the bonus sideways towards the ship (picking up stays a matter of flying over it).
+- **Consequences:** levels start again at weapon level 1 (nothing carries over between levels yet). A bonus picked up at the last level is lost. Bombs and extra lives (GD-20, GD-32) are still to come.
+- **Status:** Accepted

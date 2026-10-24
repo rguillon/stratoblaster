@@ -17,6 +17,10 @@ export interface GameTestLevelState {
   readonly player: { readonly x: number; readonly y: number };
   readonly firing: boolean;
   readonly shots: number;
+  /** Level of the weapon in use, and weapon bonuses falling / dropped (phase 6 review). */
+  readonly weaponLevel: number;
+  readonly bonuses: number;
+  readonly bonusesDropped: number;
 }
 
 /** What `window.__GAME_TEST__.getState()` returns. */

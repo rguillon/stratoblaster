@@ -5,7 +5,7 @@ import { GamePlay, type GamePlayOptions } from '../../../src/app/game-play';
 import type { LevelResult } from '../../../src/core/systems/level-run';
 import { GameControls } from '../../../src/input/game-controls';
 import { GAME_CONTROLS_CONFIG } from '../../../src/config/game-controls';
-import { SAMPLE_GAME } from '../../fixtures/sample-game';
+import { bonusFrames, SAMPLE_GAME } from '../../fixtures/sample-game';
 
 let play: GamePlay | undefined;
 afterEach(() => {
@@ -13,10 +13,10 @@ afterEach(() => {
   play = undefined;
 });
 
-function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a') {
+function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a', definition = SAMPLE_GAME) {
   const controls = new GameControls(GAME_CONTROLS_CONFIG);
   const results: LevelResult[] = [];
-  const game = new GamePlay(new NullEngine(), SAMPLE_GAME, { shipId: 'cube', levelId }, controls, {
+  const game = new GamePlay(new NullEngine(), definition, { shipId: 'cube', levelId }, controls, {
     environment: false,
     debug: false,
     startTime: 0,
@@ -46,6 +46,20 @@ describe('GamePlay', () => {
     expect(game.state.firing).toBe(true);
     expect(game.state.shots).toBeGreaterThan(0);
     expect(game.view.stage.camera.position.z).toBeGreaterThan(game.view.stage.framing.back);
+  });
+
+  it('phase 6 review: weapon bonuses are drawn, and picking one up raises the weapon level', () => {
+    const bonuses = { chance: { perHealth: 0, min: 1, max: 1 }, fallSpeed: 100, pickupRadius: 15 };
+    const { game } = start({}, 'a', { ...SAMPLE_GAME, bonuses });
+    expect(game.state).toMatchObject({ weaponLevel: 1, bonuses: 0, bonusesDropped: 0 });
+    const { x, y } = game.run.ship;
+    game.run.bonuses?.drop([{ id: 1, x, y: y + 60, radius: 5, health: 0, maxHealth: 10 }]);
+    game.frame(0.1);
+    expect(game.state).toMatchObject({ bonuses: 1, bonusesDropped: 1 });
+    expect(bonusFrames.at(-1)?.bonuses).toHaveLength(1);
+    frames(game, 1);
+    expect(game.state).toMatchObject({ weaponLevel: 2, bonuses: 0 });
+    expect(bonusFrames.some((f) => f.picked.length === 1)).toBe(true);
   });
 
   it('phase 6 review: the ship banks into sideways moves and levels out when let go', () => {

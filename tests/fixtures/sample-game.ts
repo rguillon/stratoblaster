@@ -5,11 +5,31 @@ import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { GameDefinition } from '../../src/core/content/game-definition';
 import type { MenuScreen } from '../../src/core/menu/menu-screen';
-import type { GameView, MenuBackdrop, ShotFrame, ShotRenderer } from '../../src/render/game-view';
+import type {
+  BonusFrame,
+  BonusRenderer,
+  GameView,
+  MenuBackdrop,
+  ShotFrame,
+  ShotRenderer,
+} from '../../src/render/game-view';
 import { SAMPLE_SCENERY, SAMPLE_SCENERY_LEVEL } from './sample-scenery';
 import { SAMPLE_ENEMIES, SAMPLE_ENEMY_KINDS } from './sample-enemies';
 
 const box = (scene: Scene) => CreateBox('sample-ship', { size: 1 }, scene);
+
+/** The frames the sample bonus renderer was given, most recent last. */
+export const bonusFrames: BonusFrame[] = [];
+
+/** A bonus renderer that records its frames. */
+function sampleBonusRenderer(): BonusRenderer {
+  return {
+    sync: (frame) => {
+      bonusFrames.push(frame);
+    },
+    dispose: () => undefined,
+  };
+}
 
 /** A backdrop that records what the engine asks of it. */
 export interface SampleBackdrop extends MenuBackdrop {
@@ -137,6 +157,8 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
   ],
   sceneryLevels: [SAMPLE_SCENERY_LEVEL],
   enemyKinds: SAMPLE_ENEMY_KINDS,
+  // No drops unless a test asks for them.
+  bonuses: { chance: { perHealth: 0, min: 0, max: 0 }, fallSpeed: 20, pickupRadius: 15 },
   texts: {
     loading: 'Wait',
     highScore: 'Best',
@@ -165,5 +187,6 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     menuBackdrop: sampleBackdrop,
     scenery: SAMPLE_SCENERY,
     enemies: SAMPLE_ENEMIES,
+    bonuses: sampleBonusRenderer,
   },
 };

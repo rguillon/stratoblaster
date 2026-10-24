@@ -45,6 +45,8 @@ export class EnemyWorld {
   readonly targets: ShotTarget[] = [];
   /** Blasts of the last step. */
   blasts: EnemyBlast[] = [];
+  /** Enemies the player's shots destroyed during the last step (e.g. to drop bonuses). */
+  destroyed: Enemy[] = [];
   /** Enemies destroyed and points scored since the world was created. */
   kills = 0;
   score = 0;
@@ -109,12 +111,14 @@ export class EnemyWorld {
     this.enemies.length = 0;
     this.shots.clear();
     this.blasts = [];
+    this.destroyed = [];
     this.#rebuildTargets();
   }
 
   /** Advances everything by `dt` seconds. */
   step(dt: number): void {
     this.blasts = [];
+    this.destroyed = [];
     this.#context.playerX = this.playerX;
     this.#context.playerY = this.playerY;
     this.#collectDestroyed();
@@ -142,6 +146,7 @@ export class EnemyWorld {
       this.kills++;
       this.score += enemy.points;
       this.blasts.push({ kind: 'enemy', x: enemy.x, y: enemy.y, radius: enemy.radius });
+      this.destroyed.push(enemy);
       enemy.onDestroyed?.(this.#context);
     }
   }
