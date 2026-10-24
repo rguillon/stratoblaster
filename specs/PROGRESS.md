@@ -86,3 +86,4 @@
 - 2026-10-24 — 5 — Review fix: player missiles only home on enemies within 320 px (half the screen); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: the player's bullets are now minigun tracers instead of green blobs; light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — At the reviewer's request, the specs corrected to match the review fixes (P03-R01, P03-R03, P04-R02, P05-R01, P05-R11); still awaiting review.
+- 2026-10-24 — 5 — Review fix: player missiles more visible (bigger, lighter, with a motor flare and an exhaust trail); light verification green (typecheck, build, 40 e2e); still awaiting review.

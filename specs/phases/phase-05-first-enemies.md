@@ -227,6 +227,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [x] Make the player missiles see only up to about half the screen; they don't pursue enemies that are further away (2026-10-24). Fixed: `MISSILE.homingRange` 320 px.
 - [x] Replace the player bullet green blob with a minigun tracer bullet effect (2026-10-24). Fixed: a thin streak, white-hot at the head, cooling to orange and red along its tail, flickering.
 - [x] Correct the specs (2026-10-24). Done at the reviewer's request: P03-R01 (tracer), P03-R03 (320 px homing range) and their phase 3 checklist and defaults, P04-R02 (shore), P05-R01 (Gnat drone arms and fans), P05-R11 (11 kinds, wireframe view) and the phase 5 engineering additions and checklist (11 enemies).
+- [x] Make the player missiles more visible (2026-10-24). Fixed: bigger, lighter missiles with a bigger flame, a bright motor flare and a glowing exhaust trail.
 
 ---
 
@@ -290,6 +291,7 @@ Review fix (smaller booms for tiny ships): typecheck ✔, build ✔, e2e 40 pass
 Review fix (sea/land junction): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (missile homing range): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (tracer bullets): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (visible missiles): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
@@ -324,6 +326,7 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Sea/land junction (review): the shore was a uniform white band of foam on the land, and the near-opaque sea (alpha 0.82) cut the ground with a hard line. The terrain shader now paints the shore (`terrainShore`, tunables in `LEVEL_ZERO_LOOK.terrain.shore`, replacing `foam`): a sand beach up to 4 above the sea level on gentle slopes, darker where the swash wets it; the ground under the water tinted from turquoise shallows to the deep sea colour over 30 of depth; a thin, broken foam line swashing up and down the waterline; and bands of foam rolling in towards the beach from 7 deep. The sea plane is now mostly see-through (alpha 0.4) and adds the waves' reflections and the sun's glints, so the water's colour comes from its depth and there is no hard line where it meets the land. The canyon's river gets the same shallows. This changes Level Zero's look (phase 4); the reviewer then had P04-R02 corrected.
 - Missile homing range (review): a player missile homed on the closest living target anywhere, so it chased enemies at the far end of the screen. Projectile weapons now have a `homingRange` (engine, `ProjectileWeaponDefinition`); `closestTarget` takes an optional range, and a homing shot only turns towards targets within it of itself, re-chosen every step as before; with none in range it flies straight on. `MISSILE.homingRange` is 320 px, half the 640 px screen height; the bullet's is 0 (it does not home).
 - Tracer bullets (review): the player's bullets were neon green blobs (P03-R01). Each is now a minigun tracer: a streak 3.4 px wide and 34 px long behind the bullet, white-hot on its centre line at the head, cooling to orange then deep red along the tail and fading out, with a short rounded tip ahead of the bullet (`buildTracer` in `shot-geometry.ts`: colours across, a tint per row along; 48 triangles, 40 for the blob). A new tracer grows out of the muzzle to its full length as it flies, and its width flickers (±18 %). Added on like before; the hit sparks are unchanged. Tunables in `SHOT_LOOK.bullet`. This also changes the `player_shots/` page (phase 3).
+- Visible missiles (review): the player's missiles were small grey bodies with a small blue flame, lost on the desert. They are now about 30 % bigger (2.2 model units long, 15 px on screen) with a lighter body, a brighter red nose and a bigger flame, and each has a bright blue-white motor flare at its nozzle (7 px, flickering ±25 %) and a glowing blue exhaust trail behind it (4 × 46 px, the tracer geometry, growing from the launch point). Both are added on, drawn behind the ship like the missiles, from two pools in `missile-renderer.ts`. Tunables in `SHOT_LOOK.missile` (`flare`, `trail`). The phase 3 manual check step now mentions them.
 
 ### Deviations from spec
 - P03-R01 (review): the bullet is now a minigun tracer instead of a neon green blob, at the reviewer's request; the reviewer then had the requirement text corrected.

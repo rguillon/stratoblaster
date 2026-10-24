@@ -98,12 +98,44 @@ export const SHOT_LOOK = {
   },
   missile: {
     /** Model units (scaled by the player ship scale): body length and radius. */
-    length: 1.7,
-    radius: 0.16,
-    finSpan: 0.32,
-    body: [0.55, 0.58, 0.64],
-    tip: [0.9, 0.15, 0.2],
-    flame: { length: 1.1, diameter: 0.28, puffDiameter: 0.22, sides: 6 },
+    /** Phase 5 review: about 30 % bigger (1.7 / 0.16 / 0.32 before), with a lighter body. */
+    length: 2.2,
+    radius: 0.2,
+    finSpan: 0.4,
+    body: [0.78, 0.8, 0.85],
+    tip: [1, 0.2, 0.25],
+    flame: { length: 1.6, diameter: 0.36, puffDiameter: 0.28, sides: 6 },
+    /**
+     * Phase 5 review, to stand out on any ground: a bright motor flare at the nozzle (radius
+     * in px, ± flicker at `flickerRate` rad/s) and a glowing exhaust trail behind it (px),
+     * growing from the launch like a tracer.
+     */
+    flare: {
+      radius: 7,
+      flicker: 0.25,
+      flickerRate: 70,
+      colors: [
+        [1, 1, 1],
+        [0.6, 0.85, 1],
+        [0.15, 0.35, 0.8],
+        [0, 0, 0],
+      ],
+      segments: 10,
+    },
+    trail: {
+      width: 4,
+      length: 46,
+      colors: [
+        [0.85, 0.95, 1],
+        [0.35, 0.6, 1],
+        [0, 0, 0],
+      ],
+      rows: [
+        { at: 0, tint: [1, 1, 1] },
+        { at: -0.3, tint: [0.6, 0.6, 0.7] },
+        { at: -1, tint: [0, 0, 0] },
+      ],
+    },
     /**
      * Distance behind the playfield plane (away from the camera), so the ship (at Z = 0) is
      * drawn over missiles leaving its centre (phase 3 review).

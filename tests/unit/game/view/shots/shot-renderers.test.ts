@@ -119,6 +119,24 @@ describe('player shot renderers', () => {
     renderer.dispose();
   });
 
+  it('phase 5 review: a motor flare and an exhaust trail behind each missile, at its nozzle', () => {
+    const s = newScene();
+    const renderer = createMissileRenderer(s);
+    const missile: Projectile = { ...bullet(10, 20, 0.5), weapon: MISSILE, age: 1 };
+    renderer.sync(frame({ projectiles: [missile] }));
+    const flare = s.getMeshByName('missile-flare-0');
+    const trail = s.getMeshByName('missile-trail-0');
+    expect(flare?.isEnabled()).toBe(true);
+    expect(trail?.isEnabled()).toBe(true);
+    expect(flare?.position.x).toBeLessThan(missile.x);
+    expect(flare?.position.y).toBeLessThan(missile.y);
+    expect(trail?.position.asArray()).toEqual(flare?.position.asArray());
+    expect(trail?.rotation.z).toBeCloseTo(-0.5);
+    expect(trail?.scaling.y).toBe(SHOT_LOOK.missile.trail.length);
+    renderer.dispose();
+    expect(s.meshes.some((m) => m.name.startsWith('missile-trail'))).toBe(false);
+  });
+
   it('P03-R03: a missile points to +Y when its heading is 0, its top facing the camera', () => {
     const s = newScene();
     const pivot = buildMissile('m', s);
