@@ -5,7 +5,7 @@ import { findPlayerShip, shipMaxSpeedPxPerSec } from '../core/entities/player-sh
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
 import type { Bonus } from '../core/systems/bonus-world';
 import type { EnemyBlast } from '../core/systems/enemy-world';
-import { LevelRun, type LevelPhase, type LevelResult } from '../core/systems/level-run';
+import { LevelRun, type LandedHit, type LevelResult } from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
@@ -18,6 +18,7 @@ import { StatsTile } from '../ui/stats-tile';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
+import { levelState, type GamePlayState } from './game-play-state';
 import { buildLevelScene, type LevelScene } from './level-scene';
 import { RateMeter } from './rate-meter';
 import { PlayfieldShip } from './shot-viewer-scene';
@@ -41,29 +42,8 @@ export interface GamePlayOptions {
   readonly statsParent?: HTMLElement;
   /** Where the HUD goes (the overlay, at the logical resolution). No HUD when omitted. */
   readonly hudParent?: HTMLElement;
-  /** Called once, when the level is complete (P06-R03). */
+  /** Called once, when the level is complete (P06-R03) or the game is over (GD-20). */
   readonly onComplete: (result: LevelResult) => void;
-}
-
-/** A snapshot of a running level, for the test API. */
-export interface GamePlayState {
-  readonly levelId: string;
-  readonly phase: LevelPhase;
-  /** Seconds since the start of the level, and its whole duration. */
-  readonly time: number;
-  readonly duration: number;
-  readonly timeScale: number;
-  readonly enemies: number;
-  readonly destroyed: number;
-  readonly spawned: number;
-  readonly wavesTriggered: number;
-  readonly player: { readonly x: number; readonly y: number };
-  readonly firing: boolean;
-  readonly shots: number;
-  /** Level of the weapon in use, and weapon bonuses falling / dropped (phase 6 review). */
-  readonly weaponLevel: number;
-  readonly bonuses: number;
-  readonly bonusesDropped: number;
 }
 
 /** What happened during the steps of one frame, to draw. */
@@ -71,6 +51,19 @@ interface FrameEvents {
   readonly blasts: EnemyBlast[];
   readonly impacts: ShotImpact[];
   readonly picked: Bonus[];
+}
+
+/** A spark where a hit landed; a blast at the ship when it cost a life (phase 6 review). */
+function hitBlasts(
+  hits: readonly LandedHit[],
+  ship: { readonly x: number; readonly y: number },
+): EnemyBlast[] {
+  const { hitSpark, shipBlast } = CFG.damage;
+  return hits.map((hit) =>
+    hit.event === 'hit'
+      ? { kind: 'missile', x: hit.x, y: hit.y, radius: hitSpark }
+      : { kind: 'enemy', x: ship.x, y: ship.y, radius: shipBlast },
+  );
 }
 
 function levelOf(game: GameDefinition, id: string): GameLevel {
@@ -95,7 +88,6 @@ export class GamePlay {
   readonly #speed: number;
   readonly #stats: StatsTile | undefined;
   readonly #hud: GameHud | undefined;
-  /** The ship's health: always full until the player can be hit (a later phase). */
   readonly #maxHealth: number;
   readonly #fps = new RateMeter(CFG.stats.fpsWindow);
   #frames = 0;
@@ -104,6 +96,8 @@ export class GamePlay {
   /** How far the ship is banked, in radians (visual only). */
   #roll = 0;
   #completed = false;
+  /** Seconds since the last life was lost (the "Game over" overlay waits a little). */
+  #overFor = 0;
 
   constructor(
     engine: AbstractEngine,
@@ -162,6 +156,7 @@ export class GamePlay {
         maxSpeed: this.#speed,
         accelerationSeconds: GAME_CONTROLS_CONFIG.accelerationSeconds,
         muzzleOffset,
+        maxHealth: this.#maxHealth,
       },
       bounds: this.#bounds(),
       cullMargin: CFG.cullMargin,
@@ -170,6 +165,7 @@ export class GamePlay {
       seed: CFG.seed,
       inView: this.#inView(),
       bonuses: this.game.bonuses,
+      hull: this.game.hull,
     });
   }
 
@@ -187,7 +183,12 @@ export class GamePlay {
     const { texts } = this.game;
     return new GameHud(this.options.doc, parent, {
       ship,
-      texts: { health: texts.hudHealth, weapon: texts.hudWeapon, destroyed: texts.hudDestroyed },
+      texts: {
+        health: texts.hudHealth,
+        weapon: texts.hudWeapon,
+        destroyed: texts.hudDestroyed,
+        lives: texts.hudLives,
+      },
     });
   }
 
@@ -219,12 +220,15 @@ export class GamePlay {
       events.blasts.push(...this.run.blasts);
       events.impacts.push(...this.run.impacts);
       events.picked.push(...(this.run.bonuses?.picked ?? []));
+      events.blasts.push(...hitBlasts(this.run.hits, this.run.ship));
     }
     const track = this.run.track;
     const distance = this.#previous + (track.distance - this.#previous) * alpha;
     this.view.update(distance, dt);
     this.#draw(dt, events);
-    if (this.run.phase === 'complete' && !this.#completed) {
+    if (this.run.phase === 'over') this.#overFor += dt * this.#timeScale;
+    const over = this.#overFor >= CFG.damage.gameOverDelay;
+    if ((this.run.phase === 'complete' || over) && !this.#completed) {
       this.#completed = true;
       this.options.onComplete(this.run.result);
     }
@@ -233,6 +237,7 @@ export class GamePlay {
   #draw(dt: number, { blasts, impacts, picked }: FrameEvents): void {
     const { ship, enemies, shots } = this.run;
     this.#ship.pivot.position.set(ship.x, ship.y, 0);
+    this.#ship.pivot.setEnabled(this.#shipShown());
     this.#ship.pivot.rotation.y = this.#bank(ship.vx, dt);
     this.#ship.update(dt);
     this.view.playfield.run(() => {
@@ -242,8 +247,9 @@ export class GamePlay {
     });
     this.#shots.sync({ enemies, shots, blasts, impacts, dt });
     this.#hud?.update({
-      health: this.#maxHealth,
+      health: this.run.hull?.health ?? this.#maxHealth,
       maxHealth: this.#maxHealth,
+      lives: this.run.hull?.lives ?? 0,
       weapon: shots.weapon.name,
       weaponLevel: shots.level,
       weaponLevels: shots.weapon.levels.length,
@@ -253,6 +259,14 @@ export class GamePlay {
     this.#fps.add(dt, ++this.#frames);
     const polygons = this.view.scene.getActiveIndices() / 3;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons });
+  }
+
+  /** Whether the ship shows: not once the game is over, blinking while invincible (GD-22). */
+  #shipShown(): boolean {
+    const hull = this.run.hull;
+    if (this.run.phase === 'over') return false;
+    if (!hull || hull.invincible <= 0) return true;
+    return Math.floor(hull.invincible * CFG.damage.blinkHz * 2) % 2 === 0;
   }
 
   /**
@@ -293,24 +307,7 @@ export class GamePlay {
   }
 
   get state(): GamePlayState {
-    const { track, enemies, shots, ship, waves } = this.run;
-    return {
-      levelId: this.run.result.levelId,
-      phase: this.run.phase,
-      time: track.time,
-      duration: track.duration,
-      timeScale: this.#timeScale,
-      enemies: enemies.enemies.length,
-      destroyed: enemies.kills,
-      spawned: enemies.spawned,
-      wavesTriggered: waves.triggered,
-      player: { x: ship.x, y: ship.y },
-      firing: shots.firing,
-      shots: shots.activeCount,
-      weaponLevel: shots.level,
-      bonuses: this.run.bonuses?.bonuses.length ?? 0,
-      bonusesDropped: this.run.bonuses?.dropped ?? 0,
-    };
+    return levelState(this.run, this.#timeScale, this.#maxHealth);
   }
 
   dispose(): void {

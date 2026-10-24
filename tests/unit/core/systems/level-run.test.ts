@@ -182,6 +182,52 @@ describe('LevelRun', () => {
     expect(run.bonuses?.bonuses[0]?.x).toBeCloseTo(150);
   });
 
+  it('GD-20..GD-22: enemy shots hurt the ship, which blinks invincible; out of lives, game over', () => {
+    const hull = {
+      lives: 2,
+      invincibleSeconds: 1,
+      hitRadius: 5,
+      damage: { bullet: 60, missile: 60, laser: 60, collision: 60 },
+      ramDamage: 10,
+    };
+    const ship = { start: { x: 150, y: 50 }, maxSpeed: 100, accelerationSeconds: 0.05 };
+    const run = newRun([], 10, undefined, undefined, {
+      hull,
+      ship: { ...ship, muzzleOffset: 10, maxHealth: 100 },
+    });
+    const shoot = () => {
+      run.enemies.shots.fireBullet(run.ship.x, run.ship.y, 0, { speed: 0, radius: 2, style: 's' });
+    };
+    shoot();
+    play(run, 1 / 60);
+    expect(run.hits).toEqual([{ kind: 'bullet', x: 150, y: 50, event: 'hit' }]);
+    expect([run.hull?.health, run.hull?.lives]).toEqual([40, 2]);
+    // Invincible: another bullet goes through, harmless, until the second is over.
+    shoot();
+    play(run, 0.5);
+    expect(run.hull?.health).toBe(40);
+    play(run, 0.6);
+    expect([run.hull?.health, run.hull?.lives]).toEqual([100, 1]);
+    expect(run.phase).toBe('playing');
+    // The last life: two more hits.
+    for (const event of ['hit', 'gameOver']) {
+      play(run, 1.1);
+      shoot();
+      play(run, 1 / 60);
+      expect(run.hits.map((h) => h.event)).toEqual([event]);
+    }
+    expect(run.phase).toBe('over');
+    expect(run.result.outcome).toBe('over');
+    // The ship is gone: it neither moves nor shoots; seeking does nothing.
+    play(run, 1, { move: { x: 1, y: 0 }, fire: true });
+    expect(run.ship.x).toBe(150);
+    expect(run.shots.firing).toBe(false);
+    run.seek(5);
+    expect(run.phase).toBe('over');
+    // Without hull rules, nothing hurts.
+    expect(newRun([]).hull).toBeUndefined();
+  });
+
   it('phase 6 review: switching cycles through the weapons, each at the starting level', () => {
     const [pea, ray] = SAMPLE_GAME.playerWeapons;
     if (!pea || !ray) throw new Error('missing weapons');
@@ -224,7 +270,7 @@ describe('LevelRun', () => {
     expect(run.enemies.spawned).toBe(3);
     expect(run.phase).toBe('complete');
     expect(run.track.time).toBe(20);
-    expect(run.result).toEqual({ levelId: 'a', destroyed: 0, spawned: 3 });
+    expect(run.result).toEqual({ levelId: 'a', destroyed: 0, spawned: 3, outcome: 'complete' });
   });
 
   it('P06-R03: the level completes at most `endWait` seconds after the end of the scroll', () => {

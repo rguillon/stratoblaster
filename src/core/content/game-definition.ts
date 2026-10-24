@@ -2,6 +2,7 @@ import type { EnemyKindDefinition } from '../entities/enemy';
 import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { BonusRules } from '../systems/bonus-world';
+import type { HullRules } from '../systems/player-hull';
 import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
@@ -49,6 +50,8 @@ export interface GameDefinition<TView = unknown> {
   readonly enemyKinds: readonly EnemyKindDefinition[];
   /** Weapon bonuses dropped by destroyed enemies (phase 6 review). */
   readonly bonuses: BonusRules;
+  /** What hurts the player, and its lives (GD-20..GD-22, phase 6 review). */
+  readonly hull: HullRules;
   /** Texts of the menu screens. */
   readonly texts: MenuTexts;
   /** Presentation bindings for the content above. */

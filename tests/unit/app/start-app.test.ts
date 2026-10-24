@@ -166,7 +166,12 @@ describe('startApp', () => {
       app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));
       await toGame(app, 2);
       for (let i = 0; i < 25 * 10 && !app.menu.flow.state.levelResult; i++) app.tick(0.1);
-      expect(app.menu.flow.state.levelResult).toEqual({ levelId: 'c', destroyed: 0, spawned: 0 });
+      expect(app.menu.flow.state.levelResult).toEqual({
+        levelId: 'c',
+        destroyed: 0,
+        spawned: 0,
+        outcome: 'complete',
+      });
       expect(overlay.querySelector('.level-complete-level')?.textContent).toBe('C');
       settle(app);
       settle(app);

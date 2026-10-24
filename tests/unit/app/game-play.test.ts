@@ -62,6 +62,43 @@ describe('GamePlay', () => {
     expect(bonusFrames.some((f) => f.picked.length === 1)).toBe(true);
   });
 
+  it('GD-20..GD-22: a hit takes health and the ship blinks; out of lives, "Game over" comes', () => {
+    const hud = document.createElement('div');
+    // Level c has no waves: only the bullets fired here hit the ship.
+    const { game, results } = start({ hudParent: hud }, 'c');
+    const pivot = game.view.scene.getTransformNodeByName('playfield-ship');
+    const shoot = () => {
+      const { x, y } = game.run.ship;
+      game.run.enemies.shots.fireBullet(x, y, 0, { speed: 0, radius: 2, style: 's' });
+    };
+    expect(game.state).toMatchObject({ health: 3, lives: 2, invincible: 0 });
+    shoot();
+    game.frame(0.1);
+    expect(game.state).toMatchObject({ health: 2, lives: 2 });
+    expect(hud.querySelector('.hud-health-text')?.textContent).toBe('Life 2 / 3');
+    expect(hud.querySelector('.hud-lives')?.textContent).toBe('L2');
+    // Blinking while invincible (1 s in the sample game).
+    const shown = Array.from({ length: 8 }, () => {
+      game.frame(0.05);
+      return pivot?.isEnabled(false);
+    });
+    expect(shown).toContain(true);
+    expect(shown).toContain(false);
+    frames(game, 1);
+    expect(pivot?.isEnabled(false)).toBe(true);
+    // Five more hits (3 health per life, 2 lives), one a second.
+    for (let i = 0; i < 5; i++) {
+      shoot();
+      frames(game, 1.2);
+    }
+    expect(game.state.phase).toBe('over');
+    expect(game.state.lives).toBe(0);
+    expect(pivot?.isEnabled(false)).toBe(false);
+    expect(results).toEqual([]);
+    frames(game, 2.1);
+    expect(results).toEqual([{ levelId: 'c', destroyed: 0, spawned: 0, outcome: 'over' }]);
+  });
+
   it('phase 6 review: the ship banks into sideways moves and levels out when let go', () => {
     const { game, controls } = start();
     expect(game.roll).toBe(0);
@@ -96,7 +133,7 @@ describe('GamePlay', () => {
     const { game, results } = start();
     frames(game, 35);
     expect(game.state.phase).toBe('complete');
-    expect(results).toEqual([{ levelId: 'a', destroyed: 0, spawned: 5 }]);
+    expect(results).toEqual([{ levelId: 'a', destroyed: 0, spawned: 5, outcome: 'complete' }]);
     frames(game, 1);
     expect(results).toHaveLength(1);
   });

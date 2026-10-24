@@ -25,6 +25,12 @@ export const GAME_PLAY_CONFIG = {
    * easing to its target at `easePerSec` (share of the gap closed per second).
    */
   roll: { maxDeg: 35, easePerSec: 8 },
+  /**
+   * Hits on the player (phase 6 review): the ship blinks `blinkHz` times a second while
+   * invincible (GD-22); a hit makes a spark of radius `hitSpark`, a lost life a blast of radius
+   * `shipBlast`; the "Game over" overlay shows `gameOverDelay` after the last life is lost.
+   */
+  damage: { blinkHz: 10, hitSpark: 6, shipBlast: 16, gameOverDelay: 2 },
   /** Player shots leave this far below the tip of the ship's nose. */
   muzzleInset: 3,
   /** Shots and enemies this far outside the playfield are removed. */

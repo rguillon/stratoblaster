@@ -5,6 +5,7 @@ import { GameHud, type HudFrame } from '../../../src/ui/game-hud';
 const FRAME: HudFrame = {
   health: 100,
   maxHealth: 100,
+  lives: 3,
   weapon: 'Bullet',
   weaponLevel: 1,
   weaponLevels: 5,
@@ -20,6 +21,7 @@ function setup() {
       health: 'HP',
       weapon: (name, level, levels) => `${name} · Lv ${String(level)}/${String(levels)}`,
       destroyed: (count) => `Destroyed: ${String(count)}`,
+      lives: (count) => `Lives ${String(count)}`,
     },
   });
   const $ = (selector: string) => parent.querySelector<HTMLElement>(selector);
@@ -53,6 +55,17 @@ describe('GameHud', () => {
     const text = $('.hud-destroyed');
     hud.update({ ...FRAME, health: 39.2, weaponLevel: 3, progress: 1.4, destroyed: 4 });
     expect($('.hud-destroyed')).toBe(text);
+  });
+
+  it('phase 6 review: shows the lives left, and the health bar turns red when low (GD-20)', () => {
+    const { hud, $ } = setup();
+    hud.update(FRAME);
+    expect($('.hud-lives')?.textContent).toBe('Lives 3');
+    expect($('.hud-bar-fill')?.classList.contains('low')).toBe(false);
+    hud.update({ ...FRAME, health: 20, lives: 1 });
+    expect($('.hud-lives')?.textContent).toBe('Lives 1');
+    expect($('.hud-bar-fill')?.classList.contains('low')).toBe(true);
+    expect($('.hud-health-text')?.textContent).toBe('HP 20 / 100');
   });
 
   it('is removed on dispose', () => {

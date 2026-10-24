@@ -6,7 +6,7 @@ import { isMenuAction, type MenuAction } from '../input/menu-action';
 /** The level being played (P06), as the game screen reports it. */
 export interface GameTestLevelState {
   readonly levelId: string;
-  readonly phase: 'playing' | 'clearing' | 'complete';
+  readonly phase: 'playing' | 'clearing' | 'complete' | 'over';
   readonly time: number;
   readonly duration: number;
   readonly timeScale: number;
@@ -21,6 +21,10 @@ export interface GameTestLevelState {
   readonly weaponLevel: number;
   readonly bonuses: number;
   readonly bonusesDropped: number;
+  /** The ship's health, lives left and seconds of invincibility left (GD-20, GD-22). */
+  readonly health: number;
+  readonly lives: number;
+  readonly invincible: number;
 }
 
 /** What `window.__GAME_TEST__.getState()` returns. */

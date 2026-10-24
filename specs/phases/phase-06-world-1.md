@@ -144,7 +144,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 | sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 % / 0 % / 0 % | P06-R05 |
 
 ## 🧑 Out of scope for this phase
-- Damage to the player, health bar, lives, invincibility, game over (GD-20, GD-22). The player cannot die yet; enemy shots and collisions go through the ship.
+- (Moved into this phase by the reviewer, D-050: damage to the player, health bar, lives, invincibility and game over, GD-20..GD-22.)
 - Bombs (GD-32) and the other bonuses (extra lives, GD-20). Weapon bonuses (GD-31) were moved into this phase by the reviewer (review feedback, D-049).
 - Score display, points and high score (GD-50, GD-51). The overlay only counts enemies.
 - Mini bosses, final bosses and checkpoints (GD-41, GD-42, GD-46).
@@ -184,6 +184,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
 - [x] (reviewer, in chat, 2026-10-24) Avoid roads crossing each other (only a path joining a road is allowed); add a few props not connected to roads; allow places where a bunch of buildings stand close together, spawned from time to time. — Done for World 1 (D-046): main roads never cross (the second follows the first at a distance), paths start on a main road and end off screen or on another main road or street, the street grids have T-junctions only; a few lone buildings and hamlets of 5–9 buildings stand away from the roads (`noCrossings`, `loners`, `hamlets` rules; `road-network.test.ts`, `prop-placement.test.ts`). Crossings on screen went from up to 266 per level to 0. Level Zero (phase 4) keeps its roads.
 - [x] (reviewer, in chat, 2026-10-24) Make the player ship roll when moving left / right, and add a little more acceleration to its movements. — Done: the ship banks up to 35° with its sideways speed, easing in and out; full speed is reached in 0.18 s instead of 0.08 s (D-045).
+- [x] (reviewer, in chat, 2026-10-24) Implement player damage for bullet hits and ship collisions. Scope (asked): full GD-20/21/22; all enemy shots and ramming; "Game over" panel, then level select. — Done: a 5 px hitbox (GD-21); bullets take 10, missiles 20, a laser beam 25 (once per beam), ramming 30 (the rammed enemy takes 40); 2 s of invincibility after a hit, the ship blinking (GD-22); 3 lives, each a full health bar; out of lives the ship blows up and a red "Game over" panel shows after 2 s, Confirm goes back to level select on the same level. The HUD shows the real health (red when low) and the lives (D-050; `player-hull.test.ts`, `player-hits.test.ts`, `level-run.test.ts`, `game-play.test.ts`, `game-hud.test.ts`, `menu-flow.test.ts`, `menu-view-builder.test.ts`, `menu-overlay.test.ts`).
 - [x] (reviewer, in chat, 2026-10-24) Create bonuses dropped by some exploded enemies: weapons level up. Scope (asked): in phase 6, bombs and extra lives still out; each weapon keeps its own level; drop chance by toughness. — Done: a destroyed enemy drops a weapon bonus with a chance growing with its health (6 % for the small ones to 20 % for a Bulwark or Carrier); it falls down the screen (within the ship's reach) and flying over it raises the weapon in use by a level, up to 5; E switches weapons, each keeping its level. The bonus is a yellow hexagon badge with cyan chevrons, swinging over a pulsing halo, with a ring flash on pickup; the HUD shows the new level (D-049; `bonus-world.test.ts`, `level-run.test.ts`, `game-play.test.ts`, `bonus-renderer.test.ts`).
 - [x] (reviewer, in chat, 2026-10-24) Enemies spawning from the top must stay in the horizontal range of the bottom of the screen: with the camera angle, the player cannot shoot at ships too far in the upper corners. — Done: the kinds coming in from the top, and the Gnat and Splitter paths, keep to the ship's reach at the bottom of the screen (x 107–373 of 480) (D-048, `enemy-kinds.test.ts`, `level-run.test.ts`).
 - [x] (reviewer, in chat, 2026-10-24) Increase the ships' base speed by 50 % again. — Done: base speed 225 px/s (balanced 225, heavy 180, light 315); acceleration time unchanged (0.18 s to full speed), so the ships also pick up speed faster (D-047).
@@ -244,6 +245,7 @@ After no road crossings, lone buildings and hamlets: make typecheck ✔ / make b
 After the base speed raised to 225 px/s: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 After enemies from the top kept within the ship's reach: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 After weapon bonuses: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
+After player damage, lives and game over: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
@@ -251,8 +253,9 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - `make dev`, open http://localhost:5173/ → Start → pick a ship → the World 1 row shows `1-1` … `1-5`, all unlocked; worlds 2–5 are padlocked.
 - In a level: arrows / WASD (or left stick / D-pad) to fly, Space (or gamepad A / right trigger) to shoot; on a touch screen, drag anywhere to fly and hold the yellow Fire button. Esc (or gamepad B) returns to the title.
 - Weapons: E switches to the next weapon (bullet → laser → missile → bullet), each keeping its own level (level 1 at first); the HUD's top right shows it.
+- Damage: let enemy bullets hit the ship: the HP bar drops and the ship blinks for 2 s (no damage meanwhile); ram an enemy: −30 HP, and small enemies blow up. At 0 HP a life goes (`♥ 2`), the ship blows up and comes back full. Out of lives: the ship blows up, and after 2 s a red "Game over" panel shows; Enter goes back to level select on the same level. Staying still in the middle of `?level=1-1` gets there in about 80 s.
 - Weapon bonuses: some destroyed enemies drop a swinging yellow hexagon badge with cyan chevrons; fly over it and the weapon in use goes up a level (HUD `Lv 2/5`…, a cyan ring flashes). `?level=1-5&t=30` and shooting gets the first ones within about a minute.
-- HUD: top left the ship and its health bar (always full: the player cannot be hit yet), top right the weapon and its level (`Bullet · Lv 1/5`), under the level label a bar of the level's progress, bottom left the enemies destroyed.
+- HUD: top left the ship, its lives (`♥ 3`) and health bar (red under 30 %), top right the weapon and its level (`Bullet · Lv 1/5`), under the level label a bar of the level's progress, bottom left the enemies destroyed.
 - Debug URL options: `?level=1-3` starts 1-3 straight away with the balanced ship, `&t=120` starts at 2:00 (waves before it skipped), `&ship=heavy` (or `light`) picks the ship. With them, F toggles ×4 fast forward, ← / → jump 10 s back / on (A / D still steer), and the FPS / polygons tile shows top right. Without them, F, ← and → do nothing to the time.
 - Level end: `?level=1-1&t=235` → after the scroll ends and the last enemies leave (≤ 10 s), "Level complete!" shows `1-1` and "Enemies destroyed: N / M"; Enter / Space / tap → level select on `1-2`.
 - Scenery: `?level=1-1&t=0`, `1-1&t=210` (first coast), `1-2&t=0` (coast), `1-2&t=200` (sand and rock), `1-3&t=30` (dunes), `1-3&t=145` (canyon), `1-4&t=200` (industrial zone), `1-5&t=140` (city centre). Each level begins on the ground the previous one ended on.
@@ -267,7 +270,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - At the reviewer's request, the game screen has no on-screen Back button (Esc / Backspace / gamepad B still go back, as P06-R02 asks), and shows a HUD (D-041). On a touch screen without a keyboard, a level can then only be left at its end, until pause comes.
 
 ### Known limitations
-- The player cannot be hit (out of scope): enemy shots and rams go through the ship.
+- Lives and health start again full in every level; there is no checkpoint (mini bosses, GD-42, are out of scope).
 - No score, bosses, bombs, extra lives, pause, music or sound (out of scope). Weapon bonuses only raise the weapon level within a level: every level starts again at level 1.
 - Starting a level builds its scenery synchronously: a short freeze after Confirm (longer for 1-5's city).
 - 60 FPS in the busiest part of 1-5 (city centre, about 0.8 M triangles drawn) is not verified on real hardware here: the e2e browser renders in software (about 10–15 FPS there for every level).

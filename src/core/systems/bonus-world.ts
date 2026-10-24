@@ -65,8 +65,8 @@ export class BonusWorld {
     }
   }
 
-  /** Moves the bonuses by `dt` seconds; the ship at `ship` picks up those it touches. */
-  step(dt: number, ship: { readonly x: number; readonly y: number }): void {
+  /** Moves the bonuses by `dt` seconds; the ship at `ship` (if any) picks up those it touches. */
+  step(dt: number, ship?: { readonly x: number; readonly y: number }): void {
     const { fallSpeed, pickupRadius } = this.rules;
     this.picked = [];
     for (let i = this.bonuses.length - 1; i >= 0; i--) {
@@ -74,7 +74,8 @@ export class BonusWorld {
       if (!bonus) continue;
       bonus.y -= fallSpeed * dt;
       bonus.age += dt;
-      const touched = Math.hypot(bonus.x - ship.x, bonus.y - ship.y) <= pickupRadius;
+      const touched =
+        ship !== undefined && Math.hypot(bonus.x - ship.x, bonus.y - ship.y) <= pickupRadius;
       if (touched) this.picked.push(bonus);
       if (touched || bonus.y < -this.cullMargin) this.bonuses.splice(i, 1);
     }

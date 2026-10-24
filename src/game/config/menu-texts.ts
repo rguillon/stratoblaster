@@ -15,10 +15,12 @@ export const MENU_TEXTS: MenuTexts = {
   gameLevel: (level) => `Level ${level}`,
   fire: 'Fire',
   levelComplete: 'Level complete!',
+  gameOver: 'Game over',
   enemiesDestroyed: (destroyed, spawned) =>
     `Enemies destroyed: ${String(destroyed)} / ${String(spawned)}`,
   continueHint: 'Press Space / Enter or tap to go on',
   hudHealth: 'HP',
+  hudLives: (lives) => `♥ ${String(lives)}`,
   hudWeapon: (weapon, level, levels) => `${weapon} · Lv ${String(level)}/${String(levels)}`,
   hudDestroyed: (count) => `Destroyed: ${String(count)}`,
   unsupported:

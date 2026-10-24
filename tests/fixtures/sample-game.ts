@@ -159,6 +159,13 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
   enemyKinds: SAMPLE_ENEMY_KINDS,
   // No drops unless a test asks for them.
   bonuses: { chance: { perHealth: 0, min: 0, max: 0 }, fallSpeed: 20, pickupRadius: 15 },
+  hull: {
+    lives: 2,
+    invincibleSeconds: 1,
+    hitRadius: 4,
+    damage: { bullet: 1, missile: 2, laser: 2, collision: 3 },
+    ramDamage: 10,
+  },
   texts: {
     loading: 'Wait',
     highScore: 'Best',
@@ -173,9 +180,11 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     gameLevel: (level) => `L${level}`,
     fire: 'Pew',
     levelComplete: 'Done',
+    gameOver: 'Lost',
     enemiesDestroyed: (destroyed, spawned) => `${String(destroyed)}/${String(spawned)}`,
     continueHint: 'Go on',
     hudHealth: 'Life',
+    hudLives: (lives) => `L${String(lives)}`,
     hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
     hudDestroyed: (count) => `x${String(count)}`,
     unsupported: 'No WebGL2',

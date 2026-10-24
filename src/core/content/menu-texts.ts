@@ -19,10 +19,13 @@ export interface MenuTexts {
   readonly fire: string;
   /** "Level complete" overlay (P06-R03): heading, enemy count and how to go on. */
   readonly levelComplete: string;
+  /** Heading of the same overlay when every life is lost (GD-20). */
+  readonly gameOver: string;
   readonly enemiesDestroyed: (destroyed: number, spawned: number) => string;
   readonly continueHint: string;
-  /** In-game HUD: the health bar's label, the weapon and its level, enemies destroyed. */
+  /** In-game HUD: the health bar's label, lives, the weapon and its level, enemies destroyed. */
   readonly hudHealth: string;
+  readonly hudLives: (lives: number) => string;
   readonly hudWeapon: (weaponName: string, level: number, levels: number) => string;
   readonly hudDestroyed: (count: number) => string;
   /** Shown instead of the menu when the browser cannot run the game (ENG-06). */

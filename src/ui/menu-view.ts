@@ -45,9 +45,11 @@ export interface LevelSelectView extends BackView {
   readonly lockedText: string;
 }
 
-/** The "Level complete" overlay (P06-R03). */
+/** The "Level complete" overlay (P06-R03), or "Game over" when every life is lost (GD-20). */
 export interface LevelCompleteView {
   readonly heading: string;
+  /** Whether the game is over (the panel shows as a loss). */
+  readonly over: boolean;
   /** The level's label, e.g. `1-2`. */
   readonly level: string;
   /** How many enemies were destroyed out of how many came. */

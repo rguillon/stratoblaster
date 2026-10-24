@@ -88,11 +88,16 @@ describe('buildMenuView', () => {
       ...STATE,
       screen: 'game',
       chosenLevelId: 'c',
-      levelResult: { levelId: 'c', destroyed: 7, spawned: 9 },
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'complete' },
     };
     expect(buildMenuView(state, CTX)).toMatchObject({
-      complete: { heading: 'Done', level: 'C', enemies: '7/9', hint: 'Go on' },
+      complete: { heading: 'Done', over: false, level: 'C', enemies: '7/9', hint: 'Go on' },
     });
+    const over: MenuState = {
+      ...state,
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over' },
+    };
+    expect(buildMenuView(over, CTX)).toMatchObject({ complete: { heading: 'Lost', over: true } });
   });
 
   it('shows an unknown level label as "?"', () => {

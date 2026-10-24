@@ -2,13 +2,14 @@ import type { GameScreenView } from '../menu-view';
 import { element, type MenuDocument } from './elements';
 import type { ScreenHandlers } from './screen-handlers';
 
-/** The "Level complete" panel (P06-R03); tapping it goes on, like Confirm. */
+/** The "Level complete" (or "Game over") panel (P06-R03); tapping it goes on, like Confirm. */
 function levelComplete(
   doc: MenuDocument,
   complete: NonNullable<GameScreenView['complete']>,
   handlers: ScreenHandlers,
 ): HTMLElement {
-  const panel = element(doc, 'div', 'menu-entry selected level-complete');
+  const over = complete.over ? ' game-over' : '';
+  const panel = element(doc, 'div', `menu-entry selected level-complete${over}`);
   panel.setAttribute('role', 'button');
   panel.dataset.index = '0';
   panel.append(

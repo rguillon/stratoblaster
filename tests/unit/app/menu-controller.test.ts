@@ -103,9 +103,14 @@ describe('MenuController', () => {
     controller.finishLoading();
     expect(controller.playDirect('brick', 'c')).toBe(true);
     expect(display.last).toMatchObject({ kind: 'game', level: 'LC', complete: null });
-    controller.completeLevel({ levelId: 'c', destroyed: 1, spawned: 2 });
+    controller.completeLevel({ levelId: 'c', destroyed: 1, spawned: 2, outcome: 'complete' });
     expect(display.last).toMatchObject({ kind: 'game', complete: { enemies: '1/2' } });
-    expect(changes.at(-1)?.levelResult).toEqual({ levelId: 'c', destroyed: 1, spawned: 2 });
+    expect(changes.at(-1)?.levelResult).toEqual({
+      levelId: 'c',
+      destroyed: 1,
+      spawned: 2,
+      outcome: 'complete',
+    });
   });
 
   it('only redraws and notifies when something changed', () => {

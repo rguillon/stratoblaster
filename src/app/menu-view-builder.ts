@@ -24,7 +24,8 @@ function gameView(state: MenuState, ctx: MenuViewContext): MenuView {
     level: texts.gameLevel(label(state.chosenLevelId)),
     fire: texts.fire,
     complete: result && {
-      heading: texts.levelComplete,
+      heading: result.outcome === 'over' ? texts.gameOver : texts.levelComplete,
+      over: result.outcome === 'over',
       level: label(result.levelId),
       enemies: texts.enemiesDestroyed(result.destroyed, result.spawned),
       hint: texts.continueHint,

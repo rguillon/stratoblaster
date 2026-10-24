@@ -496,6 +496,20 @@
         background: var(--cyan);
         box-shadow: 0 0 6px var(--cyan);
       }
+      .hud-bar-fill.low {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+      }
+      .hud-name {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+      }
+      .hud-lives {
+        color: var(--cyan);
+        white-space: nowrap;
+      }
       .hud-health-text {
         font-size: 11px;
       }
@@ -585,6 +599,12 @@
       }
       .level-complete-enemies {
         font-size: 22px;
+      }
+      .level-complete.game-over {
+        border-color: var(--red);
+      }
+      .game-over .level-complete-heading {
+        color: var(--red);
       }
 
       /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */

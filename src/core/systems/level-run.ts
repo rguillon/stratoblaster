@@ -9,17 +9,30 @@ import { ScrollTrack } from '../scenery/scroll-track';
 import { BonusWorld, type BonusRules } from './bonus-world';
 import { EnemyWorld, type EnemyBlast } from './enemy-world';
 import { PlayerFlight, type FlightBounds, type FlightInput } from './player-flight';
+import { findPlayerHits, type PlayerHitKind } from './player-hits';
+import { PlayerHull, type HullEvent, type HullRules } from './player-hull';
+import type { EnemyLaser } from './enemy-shots';
 import { ShotWorld, type ShotImpact } from './shot-world';
 import { validateWaveScript, WaveRunner } from './wave-runner';
 
-/** Where a level stands (P06-R03). */
-export type LevelPhase = 'playing' | 'clearing' | 'complete';
+/** Where a level stands (P06-R03); `over` once the player has lost every life (GD-20). */
+export type LevelPhase = 'playing' | 'clearing' | 'complete' | 'over';
 
-/** What the "Level complete" overlay shows (P06-R03). */
+/** What the "Level complete" (or "Game over") overlay shows (P06-R03). */
 export interface LevelResult {
   readonly levelId: string;
   readonly destroyed: number;
   readonly spawned: number;
+  /** Whether the level was completed, or the game is over (phase 6 review). */
+  readonly outcome: 'complete' | 'over';
+}
+
+/** A hit that landed on the player during a step, and what it did. */
+export interface LandedHit {
+  readonly kind: PlayerHitKind;
+  readonly x: number;
+  readonly y: number;
+  readonly event: HullEvent;
 }
 
 /** The player's controls for one step. */
@@ -37,6 +50,8 @@ export interface RunShip {
   readonly accelerationSeconds: number;
   /** Shots leave this far above the ship's centre (its nose). */
   readonly muzzleOffset: number;
+  /** Its health (GD-20); 100 when omitted. */
+  readonly maxHealth?: number;
 }
 
 export interface LevelRunOptions {
@@ -70,6 +85,11 @@ export interface LevelRunOptions {
    * the weapon in use by a level. None when omitted.
    */
   readonly bonuses?: BonusRules;
+  /**
+   * What hurts the player, and its lives (GD-20..GD-22, phase 6 review). The player cannot be
+   * hurt when omitted.
+   */
+  readonly hull?: HullRules;
 }
 
 /**
@@ -85,9 +105,11 @@ export class LevelRun {
   readonly ship: PlayerFlight;
   readonly waves: WaveRunner;
   readonly bonuses: BonusWorld | undefined;
-  /** Explosions and shot impacts of the last step. */
+  readonly hull: PlayerHull | undefined;
+  /** Explosions, shot impacts and hits on the player of the last step. */
   blasts: readonly EnemyBlast[] = [];
   impacts: readonly ShotImpact[] = [];
+  hits: readonly LandedHit[] = [];
   #phase: LevelPhase = 'playing';
   #clearingFor = 0;
   /** What the player's shots can hit: the enemies and missiles on screen. */
@@ -96,6 +118,8 @@ export class LevelRun {
   readonly #levels = new Map<WeaponDefinition, number>();
   /** Where the ship can reach at the bottom of the screen. */
   readonly #reach: readonly [number, number];
+  /** Laser beams that already hit the player (a beam hits once). */
+  readonly #lasersHit = new WeakSet<EnemyLaser>();
 
   constructor(private readonly options: LevelRunOptions) {
     const { screen, level, kinds, cullMargin, maxEnemyAge } = options;
@@ -116,6 +140,7 @@ export class LevelRun {
     this.bonuses =
       options.bonuses &&
       new BonusWorld(options.bonuses, createRng(options.seed + 1), this.#reach, cullMargin);
+    this.hull = options.hull && new PlayerHull(options.hull, options.ship.maxHealth ?? 100);
     this.ship = new PlayerFlight(
       options.ship.start,
       options.ship.maxSpeed,
@@ -136,6 +161,7 @@ export class LevelRun {
       levelId: this.options.level.id,
       destroyed: this.enemies.kills,
       spawned: this.enemies.spawned,
+      outcome: this.#phase === 'over' ? 'over' : 'complete',
     };
   }
 
@@ -143,11 +169,14 @@ export class LevelRun {
   step(dt: number, controls: LevelControls): void {
     this.blasts = [];
     this.impacts = [];
+    this.hits = [];
     if (this.#phase === 'complete') return;
-    if (controls.switchWeapon) this.#switchWeapon();
-    this.ship.step(dt, controls.move, this.options.bounds);
+    // Once the game is over the ship is gone; the enemies go on until the overlay shows.
+    const flying = this.#phase !== 'over';
+    if (flying && controls.switchWeapon) this.#switchWeapon();
+    if (flying) this.ship.step(dt, controls.move, this.options.bounds);
     this.#aimShots();
-    this.shots.firing = controls.fire;
+    this.shots.firing = flying && controls.fire;
     this.track.step(dt);
     if (this.#phase === 'playing') {
       this.waves.step(dt, this.track.distance);
@@ -163,6 +192,7 @@ export class LevelRun {
     this.shots.step(dt);
     this.blasts = this.enemies.blasts;
     this.impacts = this.shots.impacts;
+    this.#stepHull(dt);
     this.#stepBonuses(dt);
     if (this.#phase === 'clearing') this.#clear(dt);
   }
@@ -172,6 +202,7 @@ export class LevelRun {
    * go, the waves before that point are skipped and the later ones come as usual.
    */
   seek(time: number): void {
+    if (this.#phase === 'over') return;
     this.track.seek(time);
     this.enemies.clear();
     this.bonuses?.clear();
@@ -190,12 +221,32 @@ export class LevelRun {
     this.shots.select(next, this.#levels.get(next) ?? this.options.weaponLevel);
   }
 
+  /**
+   * The most damaging enemy shot or enemy touching the ship lands, unless the ship is
+   * invincible (GD-21, GD-22); with no life left the game is over (GD-20).
+   */
+  #stepHull(dt: number): void {
+    const { hull } = this;
+    const rules = this.options.hull;
+    if (!hull || !rules || this.#phase === 'over') return;
+    hull.step(dt);
+    if (hull.invincible > 0) return;
+    const [hit] = findPlayerHits(this.ship, rules, this.enemies, this.#lasersHit);
+    if (!hit) return;
+    hit.land();
+    const event = hull.hit(hit.damage);
+    this.hits = [{ kind: hit.kind, x: hit.x, y: hit.y, event }];
+    if (event !== 'gameOver') return;
+    this.#phase = 'over';
+    this.waves.stop();
+  }
+
   /** Drops bonuses where enemies blew up, moves them, and levels up for each one picked up. */
   #stepBonuses(dt: number): void {
     const bonuses = this.bonuses;
     if (!bonuses) return;
     bonuses.drop(this.enemies.destroyed);
-    bonuses.step(dt, this.ship);
+    bonuses.step(dt, this.#phase === 'over' ? undefined : this.ship);
     // A level per bonus, up to the weapon's last; the new level fires at once.
     const up = bonuses.picked.length;
     if (up > 0) this.shots.select(this.shots.weapon, this.shots.level + up);

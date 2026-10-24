@@ -172,14 +172,26 @@ describe('MenuOverlay', () => {
     const { overlay, commands, $ } = setup();
     overlay.show({
       ...GAME,
-      complete: { heading: 'Level complete!', level: '1-2', enemies: '5 / 9', hint: 'Go on' },
+      complete: {
+        heading: 'Level complete!',
+        over: false,
+        level: '1-2',
+        enemies: '5 / 9',
+        hint: 'Go on',
+      },
     });
     expect($('.level-complete-heading')?.textContent).toBe('Level complete!');
+    expect($('.level-complete')?.classList.contains('game-over')).toBe(false);
     expect($('.level-complete-level')?.textContent).toBe('1-2');
     expect($('.level-complete-enemies')?.textContent).toBe('5 / 9');
     expect($('.game-fire')).toBeNull();
     $('.level-complete')?.click();
     expect(commands).toEqual(['confirm']);
+    overlay.show({
+      ...GAME,
+      complete: { heading: 'Game over', over: true, level: '1-2', enemies: '5 / 9', hint: 'Go on' },
+    });
+    expect($('.level-complete')?.classList.contains('game-over')).toBe(true);
   });
 
   it('P01-R15: a new screen fades in; a refresh of the same screen does not', () => {

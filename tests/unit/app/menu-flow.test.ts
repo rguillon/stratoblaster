@@ -159,7 +159,12 @@ describe('MenuFlow', () => {
   describe('World 1 (P06)', () => {
     const WORLD_1 = ['1-1', '1-2', '1-3', '1-4', '1-5'];
     const world1 = () => atTitle({ levels: buildLevelGrid(5, 5, WORLD_1), resultDelaySeconds: 1 });
-    const result = (levelId: string) => ({ levelId, destroyed: 3, spawned: 5 });
+    const result = (levelId: string) => ({
+      levelId,
+      destroyed: 3,
+      spawned: 5,
+      outcome: 'complete' as const,
+    });
 
     it('P06-R01: any World 1 level can be started straight away, 1-5 included', () => {
       const flow = world1();
@@ -192,6 +197,15 @@ describe('MenuFlow', () => {
         selectedId: '1-3',
         levelResult: null,
       });
+    });
+
+    it('GD-20: after "Game over" in 1-2, Confirm goes to level-select on 1-2 again', () => {
+      const flow = world1();
+      expect(flow.playDirect('heavy', '1-2')).toBe(true);
+      flow.completeLevel({ ...result('1-2'), outcome: 'over' });
+      flow.update(1);
+      expect(flow.dispatch('confirm')).toBe('screen');
+      expect(flow.state).toMatchObject({ screen: 'level-select', selectedId: '1-2' });
     });
 
     it('P06-R03: after 1-5, level-select highlights 1-5 again', () => {

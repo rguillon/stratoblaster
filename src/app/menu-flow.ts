@@ -96,8 +96,8 @@ export class MenuFlow {
   }
 
   /**
-   * Shows the "Level complete" overlay on the game screen (P06-R03); Confirm then goes to the
-   * level select screen. Ignored on other screens.
+   * Shows the "Level complete" (or "Game over") overlay on the game screen (P06-R03); Confirm
+   * then goes to the level select screen. Ignored on other screens.
    */
   completeLevel(result: LevelResult): void {
     if (this.#screen !== 'game' || this.#result) return;
@@ -227,12 +227,16 @@ export class MenuFlow {
     }
   }
 
-  /** From the "Level complete" overlay to the level select screen, on the next level. */
+  /**
+   * From the "Level complete" overlay to the level select screen, on the next level; from the
+   * "Game over" overlay, on the level played (GD-20).
+   */
   #leaveCompletedLevel(): MenuFeedback {
     if (!this.#result) return 'none';
     const { levels } = this.options.levels;
     const played = levels.findIndex((l) => l.id === this.#chosenLevelId);
-    const next = levels[played + 1]?.unlocked ? played + 1 : played;
+    const won = this.#result.outcome === 'complete';
+    const next = won && levels[played + 1]?.unlocked ? played + 1 : played;
     if (!this.goTo('level-select')) return 'none';
     this.#levelIndex = Math.max(0, next);
     return 'screen';
