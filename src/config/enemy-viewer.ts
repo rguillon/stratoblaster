@@ -26,12 +26,14 @@ export const ENEMY_VIEWER_CONFIG = {
   respawnDelay: 1,
   seed: 505,
   /**
-   * Model view (phase 5 review: like `player_ship/`, close up, dark background): turns per
+   * Model and wireframe views (phase 5 review: like `player_ship/`, close up): the dark grey
+   * background (lighter than `player_ship/`'s, for the dark hulls to stand out), turns per
    * second, share of the screen width the model fills, how far the wheel zooms in and out, and
    * the camera angles: from -Z (behind the model), 45° above it, as the enemies are flat ships
    * mostly seen from above.
    */
   closeUp: {
+    clearColor: [0.2, 0.2, 0.21, 1],
     spinRadPerSec: 0.6,
     fill: 0.6,
     zoom: [0.4, 3],

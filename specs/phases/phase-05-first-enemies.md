@@ -215,6 +215,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [x] Create a new kind of ship: a fat flying carrier that slowly flies down without shooting, with vents on its sides that spawn Gnats (2026-10-24; P05-R12 added to the spec at the reviewer's request). Fixed: the Carrier, its model, its behaviour and its entry on `enemies/`.
 - [x] Rework the Carrier's design: remove the landing stuff on its back, add visible ports on the sides for the Gnats (2026-10-24; P05-R12's shape and behaviour updated to match). Fixed: flight deck, runway lights and island gone, a spine along its back instead; two glowing launch ports in the sloped outer wall of each side sponson, and each Gnat now comes out of one of them.
 - [x] Add a wireframe view like the model view, to see the models' polygons (2026-10-24). Fixed: a "Wireframe (V)" view on `enemies/`: the model view's close-up drawn as lines.
+- [x] Pick a colour for the model and wireframe views so the models can be seen better: dark grey (2026-10-24). Fixed: both views now have a neutral dark grey background instead of the near-black purple of `player_ship/`.
 
 ---
 
@@ -267,6 +268,7 @@ Review fix (Hornet movement): typecheck ✔, build ✔, e2e 39 passed + 1 failed
 Review fix (Carrier, P05-R12): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (Carrier rework): typecheck ✔, build ✔, e2e 39 passed + 1 failed on the first run (the P05-R11 model view test, the known stall on the first close-up draw: still "Enemies: 5" after 5 s), passed on its own rerun.
 Review fix (wireframe view): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (dark grey background): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
@@ -292,6 +294,7 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Carrier (review, new requirement P05-R12): a fat carrier, 1.8 L, 300 HP, 600 points. It flies straight down at 30 px/s and never shoots; every 3 s (the first 1.2 s after it is over the playfield) a pair of Gnats comes out of each side vent, 18 px from its centre, through `EnemyContext.spawn` like the Splitter's pods. They are ordinary Gnats (same model, points and speed) on a path from the vent: out sideways, then down past the bottom of the screen, the second of each pair 0.3 s behind. It stops launching below 30 % of the screen height, too close to the player. Its `charge` lights the vents as the next launch comes. Model (`carrier-model.ts`): a lofted hull (the hull section, the widest of all), a dark flight deck with amber runway lights, a command island with a bridge window, a sponson along each side whose top holds a glowing vent with dark louvres across it, and 2 reactors. Polygons in the close-up view: 756. Tunables in `ENEMY_CONFIG.carrier` and `ENEMY_LOOK.neon.carrier`.
 - Carrier rework (review): no landing deck any more: the flight deck, its runway lights and the island are gone; a raised spine runs along the back with an amber stripe on each flank. Each side sponson's outer wall now slopes out at about 48°, so it faces the camera, and holds two launch ports: a dark frame with a mouth that glows as the next launch comes (the vent and louvres on top are gone). The ports' positions are in `ENEMY_CONFIG.carrier.ports` (21 px to each side; 9 px up and 1 px down the screen from the centre) and the model and the simulation both read them: every 3 s each port launches one Gnat (the rear one 0.3 s after the front one), from where the port is. Polygons in the close-up view: 512 (756 before).
 - Wireframe view (review): a third view on `enemies/`, "Wireframe (V)" (button or V key; V again goes back to the behaviour view). It is the model view (same close-up scene, turning model, orbit and zoom, ← / → to switch the enemy) with the close-up scene's `forceWireframe` on, so every triangle's edges are drawn; the stats tile still counts the polygons. The dark hulls give dim lines and the neon parts bright ones.
+- Dark grey background (review): the model and wireframe views clear to a neutral dark grey (`ENEMY_VIEWER_CONFIG.closeUp.clearColor`, 0.2, 0.2, 0.21) instead of `player_ship/`'s near-black purple, which they shared; the dark metal hulls now stand out against it. In the wireframe view the hull lines are near-black on the grey and the neon lines bright. `player_ship/` keeps its background.
 
 ### Deviations from spec
 - P05-R11 (review): the page has a third view, the wireframe view, at the reviewer's request; the requirement text (behaviour and model views) was not changed.

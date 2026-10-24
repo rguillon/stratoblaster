@@ -74,7 +74,11 @@ describe('startEnemyViewer', () => {
     expect(viewer.enemies.enemies).toHaveLength(0);
     const { closeUp } = viewer;
     expect(closeUp.scene).not.toBe(viewer.scene);
-    expect(Math.max(closeUp.scene.clearColor.r, closeUp.scene.clearColor.g)).toBeLessThan(0.1);
+    // A dark grey (phase 5 review): neutral, and lighter than the dark hulls.
+    const { r, g, b } = closeUp.scene.clearColor;
+    expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThan(0.05);
+    expect(r).toBeGreaterThan(0.1);
+    expect(r).toBeLessThan(0.35);
     expect(closeUp.pivot.getChildMeshes().length).toBeGreaterThan(0);
     // Close up: the camera is a few model sizes away (the sample model is 10 wide).
     expect(closeUp.camera.radius).toBeLessThan(60);

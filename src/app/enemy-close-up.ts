@@ -35,7 +35,7 @@ export class EnemyCloseUp {
   ) {
     const look = SHIP_VIEWER_CONFIG;
     this.scene = new Scene(engine);
-    this.scene.clearColor = new Color4(...look.clearColor);
+    this.scene.clearColor = new Color4(...CFG.clearColor);
     const { horizontalFov } = look.camera;
     this.camera = new ArcRotateCamera(
       'close-up-camera',
