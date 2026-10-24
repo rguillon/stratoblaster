@@ -186,6 +186,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - [x] (reviewer, in chat, 2026-10-24) Increase the player base speed by 50 %, and increase the enemy density. — Done: base speed 150 px/s (balanced 150, heavy 120, light 210); every wave brings 50 % more groups (D-044). `phase-02-player-ships.md` still says 100 px/s: to be updated by the reviewer.
 - [x] (reviewer, in chat, 2026-10-24) Add a button to switch between weapons: the E key (AZERTY). — Done: E (by key position, so the same key on AZERTY and QWERTY) cycles bullet → laser → missile, each at level 1, once per press; the HUD shows the weapon (D-043).
 - [x] (reviewer, in chat, 2026-10-24) Sometimes the light of an explosion appears at the wrong place. — Fixed: enemies could be shot (and blew up) before coming into view, just above the top edge or beside the narrower bottom of the view; only enemies on screen can be hit now (D-042, `level-run.test.ts`).
+- [x] (reviewer, in chat, 2026-10-24) Still a misplaced white halo when an enemy explodes (screenshots: a soft glow away from the blast, for one frame). — Fixed: the explosion layers set their new instance count after uploading the positions, and Babylon uploads only `thinInstanceCount` of them, so in the frame a blast began its new particles were drawn, in their new colours, where older particles had been. The count is now set first (`blast-renderer.ts`, `enemy-renderers.test.ts`). Reproduced before the fix with frame-by-frame captures around kills; D-042 stays (it fixed blasts out of view).
 - [x] (reviewer, in chat, 2026-10-24) Remove the Back button from the in-game view, and add a basic HUD: health, weapon level, etc. — Done: no Back button in game (Esc / gamepad B still go back to the title, P06-R02); `ui/game-hud.ts` shows the ship and its health bar, the weapon and its level, the level's progress and the enemies destroyed (D-041).
 
 ---
@@ -233,6 +234,7 @@ its timeout is 90 s, it ran 29–36 s against the 30 s default)
 After E weapon switch, speed / density +50 %, ship roll and slower acceleration:
 make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed (the enemies/ page test also got a
 90 s timeout: it ran 29–35 s)
+After the stray explosion glow fix: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
