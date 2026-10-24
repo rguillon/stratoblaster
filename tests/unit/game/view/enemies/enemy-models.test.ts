@@ -91,7 +91,7 @@ describe('ENEMY_MODELS', () => {
     expect(lancer.length / 2).toBeGreaterThanOrEqual(ENEMY_CONFIG.lancer.emitterOffset);
   });
 
-  it('phase 5 review: reactors with animated flames, in the enemy neon colour', () => {
+  it('phase 5 review: reactors with animated flames, the same light blue on every enemy', () => {
     const counts: Readonly<Record<string, number>> = {
       gnat: 1,
       hornet: 1,
@@ -110,10 +110,16 @@ describe('ENEMY_MODELS', () => {
       const reactors = model.root.getChildren((n) => n.name.startsWith(`${key}-reactor-`), true);
       expect(reactors, key).toHaveLength(count);
     }
+    const exhaust = (key: string): StandardMaterial | undefined =>
+      extent(key)
+        .model.root.getChildMeshes()
+        .find((m) => m.name.endsWith('reactor-0-exhaust'))?.material as
+        StandardMaterial | undefined;
+    for (const key of ['gnat', 'rocketeer', 'bulwark', 'splitter']) {
+      expect(exhaust(key)?.emissiveColor.asArray(), key).toEqual([...ENEMY_LOOK.reactor.color]);
+    }
     const { model } = extent('bulwark');
     const flame = model.root.getChildMeshes().find((m) => m.name.endsWith('reactor-0-exhaust'));
-    const mat = flame?.material as StandardMaterial | undefined;
-    expect(mat?.emissiveColor.b).toBeCloseTo(ENEMY_LOOK.neon.bulwark[2]);
     const pivot = flame?.parent as TransformNode | undefined;
     const before = pivot?.scaling.z;
     model.sync(new Dropper(0, 0), 0.13);

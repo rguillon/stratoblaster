@@ -74,7 +74,7 @@ export interface EnemyParts {
   readonly charge: SolidBuilder;
   /**
    * Adds a reactor whose nozzle opens at `at`, thrusting towards -Z (phase 5 review): a dark
-   * nozzle, a neon core and an animated flame in the model's neon colour.
+   * nozzle, a glowing core and an animated flame, light blue on every enemy.
    */
   readonly reactor: (at: Vec3, radius: number) => void;
 }
@@ -120,10 +120,10 @@ function addReactors(
   name: string,
   reactors: readonly Reactor[],
   parts: EnemyParts,
-  color: Rgb,
   root: TransformNode,
 ): void {
   const look = ENEMY_LOOK.reactor;
+  const { color } = look;
   const behind = -Math.PI / 2;
   reactors.forEach(({ at: [x, y, z], radius }, i) => {
     const depth = radius * look.depth;
@@ -176,7 +176,7 @@ export function buildEnemyModel(
   build(parts);
   const mats = enemyMaterials(scene);
   const root = new TransformNode(name, scene);
-  addReactors(name, reactors, parts, chargeColor, root);
+  addReactors(name, reactors, parts, root);
   for (const [part, material] of [
     [parts.hull, mats.hull],
     [parts.neon, mats.neon],
