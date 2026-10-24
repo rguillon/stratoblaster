@@ -72,6 +72,44 @@ export function waveScript(
   });
 }
 
+/** Light groups that fill a level's lulls (phase 6 review: the levels felt empty). */
+export interface Filler {
+  /** Kinds taken in turn, each group from the top. */
+  readonly kinds: readonly Kind[];
+  /**
+   * Longest stretch, in seconds, without a group coming in: `start` at the first beat, going
+   * down to `end` at the last one, so the level fills up as it goes.
+   */
+  readonly maxGap: readonly [start: number, end: number];
+}
+
+/** Where the filler groups come in from the top, in turn. */
+const FILL_POSITIONS = [0.3, 0.7, 0.5, 0.2, 0.8];
+
+/**
+ * `beats` with filler groups in their lulls (phase 6 review): after each beat, a group of the
+ * filler's kinds in turn every `maxGap` seconds, as long as the next beat is more than one and
+ * a half gaps away.
+ */
+export function fill(beats: readonly Beat[], filler: Filler): Beat[] {
+  const sorted = [...beats].sort((a, b) => a[0] - b[0]);
+  const [first, last] = [sorted[0]?.[0] ?? 0, sorted.at(-1)?.[0] ?? 0];
+  const [start, end] = filler.maxGap;
+  const gapAt = (t: number): number => start + ((end - start) * (t - first)) / (last - first || 1);
+  const out: Beat[] = [];
+  let n = 0;
+  sorted.forEach((beat, i) => {
+    out.push(beat);
+    const next = sorted[i + 1]?.[0] ?? beat[0];
+    for (let t = beat[0] + gapAt(beat[0]); next - t > gapAt(t) / 2; t += gapAt(t), n++) {
+      const kind = filler.kinds[n % filler.kinds.length];
+      const position = FILL_POSITIONS[n % FILL_POSITIONS.length] ?? 0.5;
+      if (kind) out.push([t, kind, 1, 0, 'top', position]);
+    }
+  });
+  return out;
+}
+
 /** 1-1: Gnats, Hornets, Scouts and Strafers, a few at a time (easy, even for a kid). */
 export const WAVES_1_1: readonly Beat[] = [
   [4, 'scout', 1, 0, 'top', 0.5],
@@ -231,3 +269,16 @@ export const WAVES_1_5: readonly Beat[] = [
   [222, 'rocketeer', 2, 1.5, 'top', 0.3, 0.4],
   [226, 'bulwark', 1, 0, 'top', 0.5],
 ];
+
+/**
+ * The filler of each level (phase 6 review: the levels felt empty), in level order. 1-1 gets
+ * only Hornets and Gnats, which do not shoot, so it stays easy; later levels fill up sooner and
+ * tighter (D-051).
+ */
+export const WORLD_1_FILLERS: Readonly<Record<string, Filler>> = {
+  '1-1': { kinds: ['hornet', 'hornet', 'gnat', 'hornet'], maxGap: [4.5, 3] },
+  '1-2': { kinds: ['hornet', 'gnat', 'weaver', 'scout'], maxGap: [3.5, 2.4] },
+  '1-3': { kinds: ['hornet', 'gnat', 'weaver', 'scout'], maxGap: [3.3, 2.2] },
+  '1-4': { kinds: ['gnat', 'weaver', 'hornet', 'scout', 'splitter'], maxGap: [3.2, 2] },
+  '1-5': { kinds: ['gnat', 'weaver', 'hornet', 'scout', 'splitter', 'spinner'], maxGap: [3, 1.6] },
+};

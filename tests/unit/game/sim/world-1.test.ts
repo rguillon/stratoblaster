@@ -7,7 +7,7 @@ import { levelLength } from '../../../../src/core/scenery/scenery-level';
 import { LevelRun } from '../../../../src/core/systems/level-run';
 import { WORLD_1_PROPS } from '../../../../src/game/config/world-1/props';
 import { PLAYER_WEAPONS } from '../../../../src/game/config/player-weapons';
-import { WAVES_1_1, waveScript } from '../../../../src/game/config/world-1/waves';
+import { WAVES_1_1, WORLD_1_FILLERS, waveScript } from '../../../../src/game/config/world-1/waves';
 import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_1 } from '../../../../src/game/sim/world-1';
@@ -198,11 +198,28 @@ describe('World 1', () => {
     expect(increasing(METRICS.map((m) => m.spawned))).toBe(true);
     expect(increasing(METRICS.map((m) => m.health))).toBe(true);
     expect(increasing(METRICS.map((m) => m.peak))).toBe(true);
-    // Tunable values, with the density raised by 50 % in review (D-044): about 90 enemies in
-    // 1-1, the fewest at once; at least 15 at once in 1-5.
-    expect(METRICS[0]?.spawned).toBeLessThanOrEqual(1.5 * 60 * 1.4);
-    expect(METRICS[0]?.peak).toBeLessThanOrEqual(12);
+    // Tunable values, with the density raised by 50 % (D-044) and the lulls filled (D-051) in
+    // review: about 280 enemies in 1-1, the fewest at once; at least 15 at once in 1-5.
+    expect(METRICS[0]?.spawned).toBeLessThanOrEqual(300);
+    expect(METRICS[0]?.peak).toBeLessThanOrEqual(18);
     expect(METRICS[4]?.peak).toBeGreaterThanOrEqual(15);
+  });
+
+  it('phase 6 review: filler groups leave no long lull, and 1-1 gets only kinds that do not shoot', () => {
+    for (const game of WORLD_1) {
+      const times = [...game.waves]
+        .map((w) => w.at / game.scenery.scrollSpeed)
+        .sort((a, b) => a - b);
+      const lulls = times.slice(1).map((t, i) => t - (times[i] ?? 0));
+      const filler = WORLD_1_FILLERS[game.id];
+      expect(Math.max(...lulls), game.id).toBeLessThanOrEqual(
+        (filler?.maxGap[0] ?? 0) * 1.5 + 1e-9,
+      );
+    }
+    const written = new Set(WAVES_1_1.map((beat) => beat[0]));
+    const fillers = level('1-1').waves.filter((w) => !written.has(w.at / 70));
+    expect(fillers.length).toBeGreaterThan(20);
+    expect(new Set(fillers.map((w) => w.kind))).toEqual(new Set(['hornet', 'gnat']));
   });
 
   it('phase 6 review: the waves bring 50 % more groups than written, never on top of each other', () => {

@@ -9,6 +9,8 @@ import {
   WAVES_1_3,
   WAVES_1_4,
   WAVES_1_5,
+  WORLD_1_FILLERS,
+  fill,
   waveScript,
 } from '../config/world-1/waves';
 
@@ -18,8 +20,10 @@ function level(
   beats: Parameters<typeof waveScript>[1],
 ): GameLevel {
   const difficulty = WORLD_1_DIFFICULTY[id];
-  if (!difficulty) throw new Error(`No difficulty for level "${id}"`);
-  return { id, scenery, waves: waveScript(scenery.scrollSpeed, beats), difficulty };
+  const filler = WORLD_1_FILLERS[id];
+  if (!difficulty || !filler) throw new Error(`No difficulty or filler for level "${id}"`);
+  // The written beats, with light groups filling their lulls (phase 6 review).
+  return { id, scenery, waves: waveScript(scenery.scrollSpeed, fill(beats, filler)), difficulty };
 }
 
 /** World 1 (P06): five levels of about 4 minutes, from the open sea to a desert city. */
