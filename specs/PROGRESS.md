@@ -83,3 +83,4 @@
 - 2026-10-24 — 5 — Review fix: bigger, more realistic explosions (flash, shock ring, fireball cluster, lingering smoke, burning debris trailing embers and smoke); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: smaller explosions for the tiny ships (big ones unchanged); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: the sea/land junction reworked (sand beach, shallows tinted by depth, broken foam and rolling surf, see-through sea); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: player missiles only home on enemies within 320 px (half the screen); light verification green (typecheck, build, 40 e2e); still awaiting review.

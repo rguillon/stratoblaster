@@ -72,6 +72,17 @@ describe('advanceProjectile', () => {
     expect(s.heading).toBeCloseTo(45 * DEG);
   });
 
+  it('phase 5 review: ignores targets beyond its homing range', () => {
+    const weapon = testGun({ homingTurnRateDeg: 90, homingRange: 50 });
+    const far: ShotTarget = { id: 1, x: 100, y: 0, radius: 5, health: 1, maxHealth: 1 };
+    const s = shot({ weapon });
+    advanceProjectile(s, [far], 0.5);
+    expect(s.heading).toBe(0);
+    far.x = 40;
+    advanceProjectile(s, [far], 0.5);
+    expect(s.heading).toBeGreaterThan(0);
+  });
+
   it('P03-R03: flies straight when there is no target', () => {
     const s = shot({ weapon: testGun({ homingTurnRateDeg: 90 }), heading: 0.2 });
     advanceProjectile(s, [], 1);

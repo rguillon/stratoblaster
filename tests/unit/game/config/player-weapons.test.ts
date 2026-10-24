@@ -39,6 +39,8 @@ describe('player weapons', () => {
   it('P03-R03: missiles accelerate, home, and deal 8 damage within 10 px, 4 per second', () => {
     expect(MISSILE.acceleration).toBeGreaterThan(0);
     expect(MISSILE.homingTurnRateDeg).toBeGreaterThan(0);
+    // Phase 5 review: they only see enemies within about half the screen (640 px high).
+    expect(MISSILE.homingRange).toBe(320);
     expect(MISSILE.damage).toBe(8);
     expect(MISSILE.blastRadius).toBe(10);
     expect(MISSILE.shotsPerSecond).toBe(4);

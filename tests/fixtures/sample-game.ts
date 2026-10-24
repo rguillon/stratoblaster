@@ -88,6 +88,7 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
       acceleration: 0,
       maxSpeed: 100,
       homingTurnRateDeg: 0,
+      homingRange: 0,
       radius: 2,
       damage: 1,
       blastRadius: 0,
