@@ -67,3 +67,4 @@
 - 2026-10-24 — 5 — Review fix: lighter enemy reactors (about 40 triangles each instead of 150); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: every enemy reactor in the same light blue; light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: less boxy enemy ships (lofted fuselages, bevelled wings and plates, about 19 % more polygons); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: more aggressive enemy ships (fangs, horns, claws, saw teeth, slanted neon eyes; about 19 % more polygons); light verification green (typecheck, build, 40 e2e); still awaiting review.

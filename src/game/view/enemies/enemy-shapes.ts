@@ -1,5 +1,5 @@
 import type { OutlinePoint } from '../../../render/geometry/outline';
-import type { SectionPoint } from '../../../render/geometry/solids';
+import type { SectionPoint, SolidBuilder } from '../../../render/geometry/solids';
 
 type Vec3 = [number, number, number];
 
@@ -57,3 +57,49 @@ export const CANOPY_SECTION: readonly SectionPoint[] = [
   [-0.7, 0.6],
   [-1, 0],
 ];
+
+/** A spike: a triangle `width` wide at `base`, pointed at `tip` (a fang, a claw, a horn). */
+export function spike(base: OutlinePoint, tip: OutlinePoint, width: number): OutlinePoint[] {
+  const [dx, dz] = [tip[0] - base[0], tip[1] - base[1]];
+  const k = width / 2 / Math.hypot(dx, dz);
+  return [[base[0] - dz * k, base[1] + dx * k], tip, [base[0] + dz * k, base[1] - dx * k]];
+}
+
+/**
+ * Two eye slits on either side of `center`, `gap` apart, each `length` long and `width` deep,
+ * their outer ends swept back by `slant` radians: a frown seen from above.
+ */
+export function angryEyes(
+  [cx, cz]: OutlinePoint,
+  gap: number,
+  [length, width]: readonly [number, number],
+  slant: number,
+): OutlinePoint[][] {
+  return SIDES.map((s) => {
+    const inner: OutlinePoint = [cx + (s * gap) / 2, cz];
+    const outer: OutlinePoint = [
+      inner[0] + s * length * Math.cos(slant),
+      cz - length * Math.sin(slant),
+    ];
+    return [inner, outer, [outer[0], outer[1] - width], [inner[0], inner[1] - width]];
+  });
+}
+
+/** A flat convex outline at height `y`, facing up: a light painted on a hull (2 triangles a quad). */
+export function decal(
+  builder: SolidBuilder,
+  outline: readonly OutlinePoint[],
+  y: number,
+  color: readonly [number, number, number],
+): void {
+  const area = outline.reduce((sum, [x1, z1], i) => {
+    const [x2, z2] = outline[(i + 1) % outline.length] ?? [x1, z1];
+    return sum + x1 * z2 - x2 * z1;
+  }, 0);
+  // Facing up (+Y) takes clockwise corners in (x, z).
+  const corners = area > 0 ? [...outline].reverse() : outline;
+  builder.face(
+    corners.map(([x, z]): Vec3 => [x, y, z]),
+    color,
+  );
+}
