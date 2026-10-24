@@ -34,6 +34,10 @@ export const ENEMY_VIEWER_CONFIG = {
    */
   closeUp: {
     clearColor: [0.2, 0.2, 0.21, 1],
+    /** Wireframe view: the hull's line colour, and the hit circle's colour and segments. */
+    wireColor: [0.75, 0.8, 0.85],
+    hitboxColor: [1, 0.2, 0.2],
+    hitboxSegments: 48,
     spinRadPerSec: 0.6,
     fill: 0.6,
     zoom: [0.4, 3],

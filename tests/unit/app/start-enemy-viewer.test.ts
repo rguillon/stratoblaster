@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { startEnemyViewer, type RunningEnemyViewer } from '../../../src/app/start-enemy-viewer';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../../../src/config/enemy-viewer';
 import { ABOVE_CLOUDS_GROUP } from '../../../src/render/scenery/scenery-stage';
@@ -98,8 +99,16 @@ describe('startEnemyViewer', () => {
     expect(viewer.closeUp.scene.forceWireframe).toBe(true);
     viewer.key('ArrowRight', 'ArrowRight', true);
     expect(viewer.panel.selection.kind).toBe(1);
+    // The hit circle, as big as the enemy's hit radius, around the model.
+    const hitbox = (): AbstractMesh | undefined =>
+      viewer?.closeUp.pivot.getChildMeshes().find((m) => m.name === 'close-up-hitbox');
+    const circle = hitbox();
+    const { radius } = new Twin(0, 0);
+    const box = circle?.getBoundingInfo().boundingBox;
+    expect((box?.maximum.x ?? 0) - (box?.minimum.x ?? 0)).toBeCloseTo(2 * radius, 1);
     viewer.key('m', 'KeyM', true);
     expect(viewer.closeUp.scene.forceWireframe).toBe(false);
+    expect(hitbox()).toBeUndefined();
     viewer.key('v', 'KeyV', true);
     viewer.key('v', 'KeyV', true);
     expect(viewer.panel.selection.view).toBe('behaviour');

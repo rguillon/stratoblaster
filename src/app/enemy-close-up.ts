@@ -5,7 +5,11 @@ import { Camera } from '@babylonjs/core/Cameras/camera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { Color4 } from '@babylonjs/core/Maths/math.color';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Enemy } from '../core/entities/enemy';
 import type { EnemyModel, EnemyModelFactory } from '../render/game-view';
@@ -18,7 +22,9 @@ const CFG = ENEMY_VIEWER_CONFIG.closeUp;
 /**
  * The model view of the enemies page (P05-R11, phase 5 review): like `player_ship/`, one enemy
  * model alone on a dark background, turning, with the camera close up on it. Drag to orbit,
- * wheel to zoom; the arrow keys are left to the page (they switch the enemy).
+ * wheel to zoom; the arrow keys are left to the page (they switch the enemy). In the wireframe
+ * view (phase 5 review) it draws the model's edges, the hull's in a light unlit colour so they
+ * show, and the enemy's hit circle.
  */
 export class EnemyCloseUp {
   readonly scene: Scene;
@@ -27,6 +33,11 @@ export class EnemyCloseUp {
   readonly pivot: TransformNode;
   #model: EnemyModel | undefined;
   #enemy: Enemy | undefined;
+  #build: EnemyModelFactory | undefined;
+  #wireframe = false;
+  readonly #glow: GlowLayer | undefined;
+  /** The hull's wireframe colour: light and unlit, as the dark lit metal is hard to see. */
+  readonly #wire: StandardMaterial;
 
   constructor(
     engine: AbstractEngine,
@@ -64,20 +75,56 @@ export class EnemyCloseUp {
       this.scene,
     );
     rim.intensity = lights.rimIntensity;
-    if (environment) applyShowcaseEnvironment(this.scene, { ...look.environment, glow });
+    if (environment)
+      this.#glow = applyShowcaseEnvironment(this.scene, { ...look.environment, glow });
     this.pivot = new TransformNode('close-up-pivot', this.scene);
+    this.#wire = new StandardMaterial('close-up-wire', this.scene);
+    this.#wire.emissiveColor = new Color3(...CFG.wireColor);
+    this.#wire.disableLighting = true;
+  }
+
+  get wireframe(): boolean {
+    return this.#wireframe;
+  }
+
+  /** Switches the wireframe view on or off, building the model again for it. */
+  set wireframe(on: boolean) {
+    if (on === this.#wireframe) return;
+    this.#wireframe = on;
+    this.scene.forceWireframe = on;
+    if (this.#build && this.#enemy) this.show(this.#build, this.#enemy);
   }
 
   /** Replaces the model with `build`'s, its lights fully charged, and frames it. */
   show(build: EnemyModelFactory, enemy: Enemy): void {
     this.#model?.root.dispose();
     this.#model = build(this.scene);
+    this.#build = build;
+    if (this.#wireframe) this.#showWires(this.#model.root, enemy.radius);
     // Measured before it joins the turning pivot, in its own axes.
     this.#frame(this.#model.root);
     this.#model.root.parent = this.pivot;
     this.#enemy = enemy;
     enemy.charge = 1;
     this.#model.sync(enemy, 0);
+  }
+
+  /** Hull edges in the light wire colour, without glow, and the hit circle around the model. */
+  #showWires(root: TransformNode, radius: number): void {
+    for (const mesh of root.getChildMeshes<Mesh>()) {
+      if (mesh.material?.name !== 'enemy-hull') continue;
+      mesh.material = this.#wire;
+      mesh.useVertexColors = false;
+      this.#glow?.addExcludedMesh(mesh);
+    }
+    const n = CFG.hitboxSegments;
+    const points = Array.from({ length: n + 1 }, (_, i) => {
+      const a = (2 * Math.PI * i) / n;
+      return new Vector3(Math.sin(a) * radius, 0, Math.cos(a) * radius);
+    });
+    const hitbox = CreateLines('close-up-hitbox', { points }, this.scene);
+    hitbox.color = new Color3(...CFG.hitboxColor);
+    hitbox.parent = root;
   }
 
   /** Puts the camera at the distance where the model fills `CFG.fill` of the screen width. */

@@ -143,7 +143,7 @@ class EnemyViewer {
     this.shots.firing = s.fire;
     // The wireframe view is the model view drawn as lines (phase 5 review: to see the polygons).
     const modelView = s.view !== 'behaviour';
-    this.closeUp.scene.forceWireframe = s.view === 'wireframe';
+    this.closeUp.wireframe = s.view === 'wireframe';
     if (s.kind !== this.#kind || modelView !== this.#modelView) {
       this.#kind = s.kind;
       this.#modelView = modelView;
