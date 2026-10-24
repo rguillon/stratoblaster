@@ -126,8 +126,11 @@ export const ENEMY_LOOK = {
     seed: 11,
     /** Missiles blow up smaller, with fewer particles. */
     missileScale: 0.6,
-    /** Small enemies blow up as if they were this big (a hit radius, logical pixels). */
-    minRadius: 12,
+    /**
+     * Debris, embers and smoke wisps are full size for blasts this big (a hit radius, logical
+     * pixels) and up, smaller for smaller ones (phase 5 review: small booms for tiny ships).
+     */
+    fullRadius: 16,
     /** Fire cools along these colours, white hot to out (black, as fire is added on). */
     heat: [
       [1, 0.97, 0.88],
@@ -156,7 +159,7 @@ export const ENEMY_LOOK = {
       opaque: 0.45,
       alpha: 0.95,
       perRadius: 0.3,
-      count: [5, 14] as const,
+      count: [2, 14] as const,
       spread: 1.3,
       delay: 0.4,
       size: [1.4, 2.6] as const,
@@ -182,7 +185,7 @@ export const ENEMY_LOOK = {
     /** Burning pieces thrown out, slowing down, trailing embers and smoke as they burn out. */
     debris: {
       perRadius: 0.9,
-      min: 10,
+      min: 4,
       max: 36,
       speed: [120, 420] as const,
       size: [2.6, 5] as const,
@@ -197,7 +200,7 @@ export const ENEMY_LOOK = {
     },
     /** Embers left behind by the debris and spat out by the blast, cooling fast. */
     embers: {
-      count: [14, 40] as const,
+      count: [5, 40] as const,
       speed: [60, 220] as const,
       size: [1, 2] as const,
       life: [0.25, 0.55] as const,

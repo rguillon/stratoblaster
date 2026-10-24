@@ -31,9 +31,10 @@ interface Particle {
   /** Size at the end of its life, relative to `size`. */
   readonly growth: number;
   readonly drag: number;
-  /** Debris only: time to the next ember and smoke wisp. */
+  /** Debris only: time to the next ember and smoke wisp, and their size factor. */
   ember: number;
   wisp: number;
+  readonly small: number;
 }
 
 /** A disc to draw: centre, radius, and the colour it is tinted with (alpha for smoke). */
@@ -124,7 +125,9 @@ export class BlastParticles {
 
   emit(blast: EnemyBlast): void {
     const scale = blast.kind === 'missile' ? LOOK.missileScale : 1;
-    const radius = Math.max(blast.radius, LOOK.minRadius) * scale;
+    const radius = blast.radius * scale;
+    // Pieces, embers and wisps shrink with blasts smaller than `fullRadius`.
+    const small = Math.min(1, radius / LOOK.fullRadius);
     const at = { x: blast.x, y: blast.y };
     this.#add('flashes', { ...at, size: radius * LOOK.flash.size, life: LOOK.flash.life });
     this.#add('rings', { ...at, size: radius * LOOK.ring.size, life: LOOK.ring.life });
@@ -147,11 +150,11 @@ export class BlastParticles {
     const pieces = this.#count(radius * d.perRadius, [d.min, d.max], scale);
     const fling = 0.5 + radius / 40;
     for (let i = 0; i < pieces; i++) {
-      this.#fling('debris', at, d, fling, LOOK.debris.drag);
+      this.#fling('debris', at, d, fling, LOOK.debris.drag, small);
     }
     const e = LOOK.embers;
     const embers = this.#count(radius, e.count, scale);
-    for (let i = 0; i < embers; i++) this.#fling('embers', at, e, fling, e.drag);
+    for (let i = 0; i < embers; i++) this.#fling('embers', at, e, fling, e.drag, small);
   }
 
   /** Ages everything by `dt`, drops what is over, and returns where to draw. */
@@ -188,11 +191,12 @@ export class BlastParticles {
       const at = { x: p.x, y: p.y };
       if (p.ember <= 0) {
         p.ember += d.emberEvery;
-        this.#fling('embers', at, { ...LOOK.embers, speed: [5, 30] }, 1, LOOK.embers.drag);
+        const trail = { ...LOOK.embers, speed: [5, 30] as const };
+        this.#fling('embers', at, trail, 1, LOOK.embers.drag, p.small);
       }
       if (p.wisp <= 0) {
         p.wisp += d.smokeEvery;
-        const size = randomIn(this.random, d.smokeSize);
+        const size = randomIn(this.random, d.smokeSize) * p.small;
         const life = randomIn(this.random, LOOK.smoke.life) * 0.6;
         this.#add('smoke', { ...at, size, life, growth: LOOK.smoke.growth });
       }
@@ -228,15 +232,17 @@ export class BlastParticles {
     look: { speed: Range; size: Range; life: Range },
     fling: number,
     drag: number,
+    small: number,
   ): void {
     const [vx, vy] = this.#direction(randomIn(this.random, look.speed) * fling);
     this.#add(layer, {
       ...at,
       vx,
       vy,
-      size: randomIn(this.random, look.size),
+      size: randomIn(this.random, look.size) * small,
       life: randomIn(this.random, look.life),
       drag,
+      small,
       ember: this.random() * LOOK.debris.emberEvery,
       wisp: this.random() * LOOK.debris.smokeEvery,
     });
@@ -257,6 +263,7 @@ export class BlastParticles {
       drag: 0,
       ember: 0,
       wisp: 0,
+      small: 1,
       ...p,
       age: -(p.delay ?? 0),
     });

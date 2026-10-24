@@ -77,8 +77,22 @@ describe('BlastParticles', () => {
     };
     expect(count('enemy', 25)).toBeGreaterThan(count('enemy', 14));
     expect(count('missile', 25)).toBeLessThan(count('enemy', 25));
-    // Below `minRadius`, a blast is as big as one of that radius.
-    expect(count('enemy', 3)).toBe(count('enemy', LOOK.minRadius));
+  });
+
+  it('phase 5 review: tiny ships blow up small; big ones keep their full-size pieces', () => {
+    const blast = (radius: number) => {
+      const blasts = new BlastParticles(createRng(7));
+      blasts.emit({ kind: 'enemy', x: 0, y: 0, radius });
+      return blasts.step(0.01);
+    };
+    const tiny = blast(6);
+    const big = blast(20);
+    expect(tiny.fireballs[0]?.radius ?? 0).toBeLessThan((big.fireballs[0]?.radius ?? 0) / 2);
+    expect(tiny.debris.length).toBeLessThan(big.debris.length / 2);
+    const largest = (spots: readonly { radius: number }[]) =>
+      Math.max(...spots.map((s) => s.radius));
+    expect(largest(tiny.debris)).toBeLessThanOrEqual(LOOK.debris.size[1] * (6 / LOOK.fullRadius));
+    expect(largest(big.debris)).toBeGreaterThan(LOOK.debris.size[0]);
   });
 
   it('GD-62: the debris flies out from the blast', () => {
