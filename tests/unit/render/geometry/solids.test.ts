@@ -117,4 +117,61 @@ describe('SolidBuilder', () => {
     const geo = new SolidBuilder().slab(arrow, [0, 1], [1, 1, 1]).geometry;
     expect(geo.indices.length / 3).toBe(2 * 2 + 4 * 2);
   });
+
+  it('phase 5 review: a bevelled slab narrows from its waist to its top and bottom faces', () => {
+    const square = [
+      [-4, -4],
+      [4, -4],
+      [4, 4],
+      [-4, 4],
+    ] as const;
+    for (const outline of [square, [...square].reverse()]) {
+      const geo = new SolidBuilder().bevelSlab(outline, [-1, 0, 2], [1, 2], [1, 1, 1]).geometry;
+      // Top and bottom of 2 triangles, and two sloped bands of 4 quads.
+      expect(geo.indices.length / 3).toBe(2 * 2 + 2 * 4 * 2);
+      expect(facesOutward(geo, [0, 0.5, 0])).toBe(true);
+      const top = [...Array(geo.positions.length / 3).keys()]
+        .map((i) => vertex(geo, i))
+        .filter(([, y]) => y === 2);
+      expect(Math.max(...top.map(([x]) => x))).toBeCloseTo(2);
+    }
+    // With the waist at the bottom, there is no lower band.
+    const plate = new SolidBuilder().bevelSlab(square, [0, 0, 1], [0, 1], [1, 1, 1]).geometry;
+    expect(plate.indices.length / 3).toBe(2 * 2 + 4 * 2);
+  });
+
+  it('phase 5 review: a loft stretches its section along Z, closed to a point or capped', () => {
+    const diamond = [
+      [0, 0],
+      [1, 0.5],
+      [0, 1],
+      [-1, 0.5],
+    ] as const;
+    const nose = new SolidBuilder().loft(
+      diamond,
+      [
+        [-5, 2, -1, 1],
+        [0, 2, -1, 1],
+        [5, 0, 0, 0],
+      ],
+      [1, 1, 1],
+    ).geometry;
+    // 4 quads, 4 triangles to the nose, and the tail cap (2 triangles).
+    expect(nose.indices.length / 3).toBe(4 * 2 + 4 + 2);
+    expect(facesOutward(nose, [0, 0, 0])).toBe(true);
+    const zs = nose.positions.filter((_, i) => i % 3 === 2);
+    expect([Math.min(...zs), Math.max(...zs)]).toEqual([-5, 5]);
+    // Open: the closing side and the caps are left out (a canopy sitting on a hull).
+    const canopy = new SolidBuilder().loft(
+      diamond,
+      [
+        [-5, 2, 0, 1],
+        [5, 2, 0, 1],
+      ],
+      [1, 1, 1],
+      {},
+      true,
+    ).geometry;
+    expect(canopy.indices.length / 3).toBe(3 * 2);
+  });
 });

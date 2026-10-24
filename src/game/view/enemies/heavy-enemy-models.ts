@@ -4,9 +4,10 @@ import type { SolidBuilder } from '../../../render/geometry/solids';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { buildEnemyModel } from './enemy-mesh';
-import { around, radial, SIDES } from './enemy-shapes';
+import { around, CANOPY_SECTION, HULL_SECTION, POD_SECTION, radial, SIDES } from './enemy-shapes';
 
 // P05-R06..R10: the bigger enemies. Logical pixels, nose +Z, Y up (towards the camera).
+// Fuselages are lofts, plates and wings bevelled slabs (phase 5 review: no more stacked boxes).
 const H = ENEMY_LOOK.hull;
 const N = ENEMY_LOOK.neon;
 const WHITE = [1, 1, 1] as const;
@@ -17,15 +18,22 @@ export function buildSpinner(scene: Scene): EnemyModel {
   const podRadius = ENEMY_CONFIG.spinner.podRadius;
   return buildEnemyModel('spinner', scene, N.spinner, ({ hull, neon, charge }) => {
     const ring = [
-      [10, -1.6],
-      [12.5, -1.6],
-      [12.5, 1.6],
-      [10, 1.6],
-      [10, -1.6],
+      [10.2, -1.2],
+      [11.8, -1.6],
+      [12.6, 0],
+      [11.8, 1.6],
+      [10.2, 1.2],
+      [10.2, -1.2],
     ] as const;
-    hull.lathe(ring, 16, H.base, {}, false);
+    hull.lathe(ring, 12, H.base, {}, false);
+    const spoke = [
+      [-1.3, -4],
+      [1.3, -4],
+      [0.7, 4.5],
+      [-0.7, 4.5],
+    ] as const;
     for (const a of around(4)) {
-      hull.box([1.8, 1.6, 8], H.panel, { at: radial(a, 6.5, -0.8), yaw: a });
+      hull.bevelSlab(spoke, [-0.8, 0, 0.8], [0.3, 0.5], H.panel, { at: radial(a, 6.5, 0), yaw: a });
       const pod = [
         [0, -2],
         [2.8, -1.2],
@@ -50,25 +58,30 @@ export function buildSpinner(scene: Scene): EnemyModel {
 export function buildLancer(scene: Scene): EnemyModel {
   const nose = ENEMY_CONFIG.lancer.emitterOffset;
   return buildEnemyModel('lancer', scene, N.lancer, ({ hull, neon, charge, reactor }) => {
-    const needle = [
-      [0, nose - 1],
-      [2.6, 6],
-      [3.2, -6],
-      [2.2, -21],
-      [-2.2, -21],
-      [-3.2, -6],
-      [-2.6, 6],
-    ] as const;
-    hull.slab(needle, [-1.4, 1.4], H.base, {}, H.panel);
+    hull.loft(
+      HULL_SECTION,
+      [
+        [-21, 2.3, -1.3, 1.2],
+        [-6, 3.2, -1.5, 1.5],
+        [6, 2.6, -1.3, 1.3],
+        [nose - 4, 1.2, -0.6, 0.6],
+        [nose - 1, 0, 0, 0],
+      ],
+      H.base,
+    );
     reactor([0, 0, -21], 1.6);
-    const spine = [
-      [0, 12],
-      [1, 4],
-      [1, -16],
-      [-1, -16],
-      [-1, 4],
-    ] as const;
-    hull.slab(spine, [1.4, 2.4], H.dark);
+    hull.loft(
+      CANOPY_SECTION,
+      [
+        [-17, 0, 1.2, 1.2],
+        [-12, 1, 1.4, 2.4],
+        [4, 1, 1.3, 2.3],
+        [13, 0, 0.8, 0.8],
+      ],
+      H.dark,
+      {},
+      true,
+    );
     for (const s of SIDES) {
       const fin = [
         [s * 3, -5],
@@ -76,8 +89,8 @@ export function buildLancer(scene: Scene): EnemyModel {
         [s * 9.5, -20],
         [s * 2.5, -15],
       ] as const;
-      hull.slab(fin, [-0.5, 0.5], H.base, {}, H.panel);
-      neon.box([0.5, 0.4, 18], N.lancer, { at: [s * 1.4, 1.4, -4] });
+      hull.bevelSlab(fin, [-0.5, 0, 0.5], [0.3, 0.5], H.base, {}, H.panel);
+      neon.box([0.5, 0.4, 16], N.lancer, { at: [s * 1.8, 1.25, -4] });
       reactor([s * 6.5, 0, -17.8], 0.9);
     }
     const emitter = [
@@ -105,7 +118,7 @@ export function buildRocketeer(scene: Scene): EnemyModel {
       [-9, 0],
       [-7, 10],
     ] as const;
-    hull.slab(body, [-2.2, 2.4], H.base, {}, H.panel);
+    hull.bevelSlab(body, [-2.2, 0, 2.4], [1.4, 2], H.base, {}, H.panel);
     const armour = [
       [0, 9],
       [4.5, 5],
@@ -113,16 +126,52 @@ export function buildRocketeer(scene: Scene): EnemyModel {
       [-4.5, -8],
       [-4.5, 5],
     ] as const;
-    hull.slab(armour, [2.4, 3.6], H.dark);
+    hull.bevelSlab(armour, [2.4, 2.4, 3.6], [0, 1], H.dark);
+    const pylon = [
+      [-3.5, 3],
+      [3.5, 1.5],
+      [3.5, -3],
+      [-3.5, -3],
+    ] as const;
+    const missile = [
+      [2.6, 0],
+      [4, 2.5],
+      [4, 18.5],
+      [3.3, 22],
+    ] as const;
     for (const s of SIDES) {
-      hull.box([7, 1.2, 6], H.dark, { at: [s * 12, -0.6, 0] });
-      hull.cylinder(4, 22, 8, H.panel, { at: [s * pod, 0, -11], pitch: QUARTER });
+      hull.bevelSlab(pylon, [-0.6, -0.2, 0.6], [0.3, 0.5], H.dark, { at: [s * 12, 0, 0] });
+      hull.lathe(missile, 8, H.panel, { at: [s * pod, 0, -11], pitch: QUARTER });
       neon.box([1, 0.4, 12], N.rocketeer, { at: [s * pod, 3.9, -3] });
       charge.cylinder(2.6, 3.5, 8, WHITE, { at: [s * pod, 0, 11], pitch: QUARTER }, 0);
       reactor([s * 2.4, 0, -15], 1.6);
     }
   });
 }
+
+/** P05-R09: the Bulwark's front armour plates, its tower and its visor slit. */
+const BULWARK_PLATE = [
+  [-4.75, -3.5],
+  [4.75, -3.5],
+  [4.75, 3.5],
+  [-4.75, 3.5],
+] as const;
+const BULWARK_TOWER = [
+  [0, 4],
+  [9, 0],
+  [9, -12],
+  [-9, -12],
+  [-9, 0],
+] as const;
+/** Follows the tower's sloped front, just below its top. */
+const BULWARK_VISOR = [
+  [-7, 0.2],
+  [0, 3.3],
+  [7, 0.2],
+  [7, -0.6],
+  [0, 2.5],
+  [-7, -0.6],
+] as const;
 
 /** P05-R09: a heavy, wide hull covered with front armour plates and a blue neon visor slit. */
 export function buildBulwark(scene: Scene): EnemyModel {
@@ -138,22 +187,32 @@ export function buildBulwark(scene: Scene): EnemyModel {
       [-27, 2],
       [-14, 13],
     ] as const;
-    hull.slab(body, [-3, 2.5], H.base, {}, H.panel);
+    hull.bevelSlab(body, [-3, -0.6, 2.5], [2, 2.5], H.base, {}, H.panel);
     for (let k = -2; k <= 2; k++) {
-      const at = [k * 10, 2.5, 8 - Math.abs(k) * 2.5] as [number, number, number];
-      hull.box([9.5, 1.6, 7], H.panel, { at, yaw: -k * 0.12 }, H.base);
+      const at = [k * 10, 0, 8 - Math.abs(k) * 2.5] as [number, number, number];
+      // Sloped armour: the plates' tops lean back from their edges.
+      hull.bevelSlab(
+        BULWARK_PLATE,
+        [2.5, 2.5, 4.1],
+        [0, 1.4],
+        H.panel,
+        { at, yaw: -k * 0.12 },
+        H.base,
+      );
     }
-    const tower = [
-      [0, 4],
-      [9, 0],
-      [9, -12],
-      [-9, -12],
-      [-9, 0],
-    ] as const;
-    hull.slab(tower, [2.5, 5.5], H.dark, {}, H.base);
-    neon.box([16, 0.8, 1.4], N.bulwark, { at: [0, 5.5, 1.2] });
+    hull.bevelSlab(BULWARK_TOWER, [2.5, 2.5, 5.5], [0, 1.6], H.dark, {}, H.base);
+    neon.slab(BULWARK_VISOR, [3.9, 5], N.bulwark);
     for (const s of SIDES) {
-      hull.box([7, 3, 4], H.dark, { at: [s * 12, -1.5, -18] });
+      hull.loft(
+        POD_SECTION,
+        [
+          [-20, 3, -1.7, 1.7],
+          [-16, 3.4, -2, 2],
+          [-11, 2, -1.2, 1.2],
+        ],
+        H.dark,
+        { at: [s * 12, 0, 0] },
+      );
       reactor([s * 12, 0, -20], 1.3);
     }
     charge.box([3, 1, 2.4], WHITE, { at: [0, 2.5, 15.5] });

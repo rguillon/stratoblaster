@@ -1,5 +1,5 @@
 import type { ColoredGeometry } from './gradient-shapes';
-import { ringAt, type OutlinePoint } from './outline';
+import { insetOutline, ringAt, type OutlinePoint } from './outline';
 import { triangulatePolygon } from './triangulate';
 
 type Rgb = readonly [number, number, number];
@@ -15,6 +15,17 @@ export interface Placement {
 
 /** A profile point of a body of revolution: radius at a height. */
 export type ProfilePoint = readonly [radius: number, y: number];
+
+/** A point of a loft cross-section: `u` across (-1 to 1, +X), `v` up (0 to 1, +Y). */
+export type SectionPoint = readonly [u: number, v: number];
+
+/** A loft station: where along Z, its half width, and the heights of its bottom and top. */
+export type LoftStation = readonly [z: number, halfWidth: number, bottom: number, top: number];
+
+/** A loft station of no width and no height: the body closes to a point there. */
+function isPoint([, halfWidth, bottom, top]: LoftStation): boolean {
+  return halfWidth === 0 && bottom === top;
+}
 
 function rotate([x, y, z]: Vec3, { yaw = 0, pitch = 0, roll = 0 }: Placement): Vec3 {
   // Pitch (around X), then roll (around Z), then yaw (around Y).
@@ -209,5 +220,81 @@ export class SolidBuilder {
       this.face([at(p, y0), at(p, y1), at(q, y1), at(q, y0)], color, place);
     });
     return this;
+  }
+
+  /**
+   * A slab with bevelled edges: the outline at height `waist`, narrowing by `inset` (bottom, top)
+   * to a smaller bottom face at `y0` and top face at `y1`. Sloped sides instead of walls (a knife
+   * edge for wings, a chamfered plate for hulls) for two triangles more per outline side.
+   */
+  bevelSlab(
+    outline: readonly OutlinePoint[],
+    [y0, waist, y1]: readonly [number, number, number],
+    [insetBottom, insetTop]: readonly [number, number],
+    color: Rgb,
+    place: Placement = {},
+    top: Rgb = color,
+  ): this {
+    const ring = doubleArea(outline) > 0 ? [...outline] : [...outline].reverse();
+    const bottom = insetOutline(ring, insetBottom);
+    const upper = insetOutline(ring, insetTop);
+    const at = ([x, z]: OutlinePoint, y: number): Vec3 => [x, y, z];
+    for (const [a, b, c] of triangulatePolygon(ring)) {
+      const [ua, ub, uc] = [ringAt(upper, a), ringAt(upper, b), ringAt(upper, c)];
+      const [da, db, dc] = [ringAt(bottom, a), ringAt(bottom, b), ringAt(bottom, c)];
+      this.face([at(ua, y1), at(uc, y1), at(ub, y1)], top, place);
+      this.face([at(da, y0), at(db, y0), at(dc, y0)], color, place);
+    }
+    ring.forEach((p, i) => {
+      const q = ringAt(ring, i + 1);
+      const [pd, qd] = [ringAt(bottom, i), ringAt(bottom, i + 1)];
+      const [pu, qu] = [ringAt(upper, i), ringAt(upper, i + 1)];
+      if (y0 < waist) this.face([at(pd, y0), at(p, waist), at(q, waist), at(qd, y0)], color, place);
+      this.face([at(p, waist), at(pu, y1), at(qu, y1), at(q, waist)], color, place);
+    });
+    return this;
+  }
+
+  /**
+   * A fuselage along Z: the `section` (counter-clockwise seen from the nose) stretched to each
+   * station, from tail to nose. A station of no width and no height closes the body to a point;
+   * other ends are capped, unless `open` (then the section's closing side is left out too, e.g.
+   * a canopy sitting on a hull).
+   */
+  loft(
+    section: readonly SectionPoint[],
+    stations: readonly LoftStation[],
+    color: Rgb,
+    place: Placement = {},
+    open = false,
+  ): this {
+    const ring = (st: LoftStation): Vec3[] =>
+      section.map(([u, v]): Vec3 => [u * st[1], st[2] + v * (st[3] - st[2]), st[0]]);
+    const sides = open ? section.length - 1 : section.length;
+    stations.slice(1).forEach((sb, k) => {
+      const sa = stations[k];
+      if (sa) this.#loftBand(ring(sa), ring(sb), [isPoint(sa), isPoint(sb)], sides, color, place);
+    });
+    const [first, last] = [stations[0], stations.at(-1)];
+    if (!open && first && !isPoint(first)) this.face(ring(first).reverse(), color, place);
+    if (!open && last && !isPoint(last)) this.face(ring(last), color, place);
+    return this;
+  }
+
+  /** The faces between two loft rings, triangles where one of them is a point. */
+  #loftBand(
+    a: readonly Vec3[],
+    b: readonly Vec3[],
+    [aPoint, bPoint]: readonly [boolean, boolean],
+    sides: number,
+    color: Rgb,
+    place: Placement,
+  ): void {
+    for (let i = 0; i < sides; i++) {
+      const [a0, a1, b0, b1] = [ringAt(a, i), ringAt(a, i + 1), ringAt(b, i), ringAt(b, i + 1)];
+      if (aPoint) this.face([a0, b1, b0], color, place);
+      else if (bPoint) this.face([a0, a1, b1], color, place);
+      else this.face([a0, a1, b1, b0], color, place);
+    }
   }
 }

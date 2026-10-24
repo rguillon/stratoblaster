@@ -1,4 +1,5 @@
 import type { OutlinePoint } from '../../../render/geometry/outline';
+import type { SectionPoint } from '../../../render/geometry/solids';
 
 type Vec3 = [number, number, number];
 
@@ -24,3 +25,35 @@ export function flipX(outline: readonly OutlinePoint[]): OutlinePoint[] {
 
 /** Both sides: -1 (left) and 1 (right). */
 export const SIDES = [-1, 1] as const;
+
+/**
+ * Loft cross-sections (`SolidBuilder.loft`), counter-clockwise seen from the nose. A hull: flat
+ * belly and back, its widest point a chine low on the sides.
+ */
+export const HULL_SECTION: readonly SectionPoint[] = [
+  [0.55, 0],
+  [1, 0.4],
+  [0.6, 1],
+  [-0.6, 1],
+  [-1, 0.4],
+  [-0.55, 0],
+];
+
+/** A round-ish pod or boom: a hexagon. */
+export const POD_SECTION: readonly SectionPoint[] = [
+  [0.5, 0],
+  [1, 0.5],
+  [0.5, 1],
+  [-0.5, 1],
+  [-1, 0.5],
+  [-0.5, 0],
+];
+
+/** A canopy or dorsal ridge sitting on a hull: open at the bottom (loft it with `open`). */
+export const CANOPY_SECTION: readonly SectionPoint[] = [
+  [1, 0],
+  [0.7, 0.6],
+  [0, 1],
+  [-0.7, 0.6],
+  [-1, 0],
+];

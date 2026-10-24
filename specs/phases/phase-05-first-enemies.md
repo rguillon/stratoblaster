@@ -191,6 +191,7 @@ The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kind
 - [x] Add reactor effects to the enemy ships, some may have several (2026-10-24). Fixed: animated reactor flames in each enemy's neon colour.
 - [x] Reduce the polygon count of the reactor effect (2026-10-24). Fixed: about 40 triangles a reactor instead of about 150.
 - [x] All the reactor effects the same light blue colour (2026-10-24). Fixed: the core and flame of every enemy reactor use one light blue, the player ships' flame colour.
+- [x] Most ships looked like a bunch of cubes put together: better geometry without raising the polygon count too much (2026-10-24). Fixed: tapered fuselages, knife-edged wings and sloped armour (`SolidBuilder.loft` and `bevelSlab`), about 19 % more polygons over the 10 models.
 
 ---
 
@@ -235,6 +236,7 @@ Review fix (close-up model view): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (reactors): typecheck ✔, build ✔. In the first full e2e run, the model view test failed under the parallel load: its keys were pressed before the page drew its first frames (the readout still showed the previous kind). The enemies tests now wait for the FPS tile first (no timeout changed); the spec alone and the next full run passed, e2e 40 passed.
 Review fix (lighter reactors): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (light blue reactors): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (less boxy ships): typecheck ✔, build ✔, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
 ### How to test manually
@@ -251,6 +253,7 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Reactors (review): every enemy but the Spinner (it spins on itself) has 1 to 4 reactors at the back: a dark nozzle, a neon core and the player ships' animated flame (exhaust cone, hot inner cone, plasma puffs, flicker), in the enemy's neon colour with a whiter inner flame. Gnat 1, Hornet 1, Scout 2 (booms), Strafer 4 (trailing edge), Weaver 2 (hulls), Lancer 3 (main + fins), Rocketeer 2, Bulwark 3 (main + engine pods, replacing the two neon strips), Splitter 1, Splitter pod 1. `buildReactorFlame` now takes optional materials (blue by default, unchanged for the player ships); `EnemyParts.reactor(at, radius)` adds one; enemy models step their animations in `sync`. Sizes in `ENEMY_LOOK.reactor`.
 - Lighter reactors (review): an enemy reactor went from about 150 to about 40 triangles. The nozzle is an open 6-sided band (no caps) and the core a flat hexagon across its mouth; the flame cones have 4 sides and no caps (their base is hidden by the nozzle); 2 tetrahedron puffs (4 triangles) instead of 3 icosahedra (20). `FlameSize.light` turns this on; the player ships' flames are unchanged. The Rocketeer close-up went from 952 to 520 triangles in all.
 - Light blue reactors (review): every enemy reactor (glowing core, exhaust, inner flame, puffs) now uses the same light blue, `ENEMY_LOOK.reactor.color` = [0.55, 0.85, 1], the player ships' flame colour, instead of the enemy's neon colour. The neon lights and charge lights keep each enemy's colour.
+- Less boxy ships (review): two new `SolidBuilder` primitives (engine, game-agnostic): `loft` stretches a cross-section along Z through stations (half width, bottom, top), closing to a point at a nose or tail, or left open at the bottom for a canopy; `bevelSlab` is a slab whose sides slope from a waist to inset top and bottom faces (`insetOutline` in `render/geometry/outline.ts`), giving knife-edged wings and chamfered plates. Section presets (hull, pod, canopy) are in `enemy-shapes.ts`. Fuselages, booms, canopies, nacelles and gun pods are now lofts; wings, fins, spokes, struts and armour bevelled slabs; the Strafer's leading-edge lights follow the edge; the Bulwark's visor follows the tower front; the Gnat's fins are swept blades; the Rocketeer's missile pods taper at both ends. Sizes are unchanged (same outlines). Polygons in the close-up view (model and reactors), before → after: Gnat 328 → 364, Hornet 208 → 292, Scout 344 → 448, Strafer 648 → 680, Weaver 400 → 552, Spinner 704 → 752, Lancer 440 → 516, Rocketeer 520 → 716, Bulwark 552 → 684, Splitter 416 (unchanged, already round); 4,560 → 5,420 in all (+19 %).
 
 ### Deviations from spec
 - "Hits on enemies emit particles" reuses the phase 3 hit effects (bullet sparks, missile flashes, laser contact glow and particles); no new hit effect was added.
