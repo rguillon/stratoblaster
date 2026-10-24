@@ -37,9 +37,9 @@ describe('GAME', () => {
     );
   });
 
-  it('P05-R01..R10: registers the 10 enemy kinds with their look', () => {
+  it('P05-R01..R10, P05-R12: registers the 11 enemy kinds with their look', () => {
     expect(GAME.enemyKinds).toBe(ENEMY_KINDS);
-    expect(GAME.enemyKinds).toHaveLength(10);
+    expect(GAME.enemyKinds).toHaveLength(11);
     expect(GAME.view.enemies).toBe(ENEMY_BINDINGS);
   });
 });

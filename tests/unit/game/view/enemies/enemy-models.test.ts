@@ -41,6 +41,7 @@ const SIZES: Readonly<Record<string, number>> = {
   bulwark: ENEMY_CONFIG.bulwark.size,
   splitter: ENEMY_CONFIG.splitter.size,
   'splitter-pod': ENEMY_CONFIG.splitterPod.size,
+  carrier: ENEMY_CONFIG.carrier.size,
 };
 
 describe('ENEMY_MODELS', () => {
@@ -49,7 +50,7 @@ describe('ENEMY_MODELS', () => {
     expect(Object.keys(ENEMY_MODELS).sort()).toEqual([...keys].sort());
   });
 
-  it('P05-R01..R10: each model is as big as the spec says (L = the medium player ship)', () => {
+  it('P05-R01..R10, P05-R12: each model is as big as the spec says (L = the medium player ship)', () => {
     for (const [key, size] of Object.entries(SIZES)) {
       const { width, length, height } = extent(key);
       const measured = Math.max(width, length) / ENEMY_UNIT;
@@ -104,6 +105,7 @@ describe('ENEMY_MODELS', () => {
       bulwark: 3,
       splitter: 1,
       'splitter-pod': 1,
+      carrier: 2,
     };
     for (const [key, count] of Object.entries(counts)) {
       const { model } = extent(key);

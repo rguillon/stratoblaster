@@ -8,7 +8,7 @@ import { ENEMY_MODELS } from '../../../../src/game/view/enemies/enemy-models';
 const AREA = { width: 480, height: 640 };
 
 describe('ENEMY_KINDS', () => {
-  it('P05-R01..R10: are the 10 enemies of the spec, in its order', () => {
+  it('P05-R01..R10, P05-R12: are the 11 enemies of the spec, in its order', () => {
     expect(() => {
       validateEnemyKinds(ENEMY_KINDS);
     }).not.toThrow();
@@ -23,6 +23,7 @@ describe('ENEMY_KINDS', () => {
       'Rocketeer',
       'Bulwark',
       'Splitter',
+      'Carrier',
     ]);
   });
 

@@ -166,6 +166,32 @@ export const ENEMY_CONFIG = {
     /** Distance of the three pods from the centre. */
     podOffset: 0.38 * ENEMY_UNIT,
   },
+  carrier: {
+    stats: { model: 'carrier', radius: radius(1.8) * 0.8, health: 300, points: 600 },
+    size: 1.8,
+    speed: 30,
+    /** A pair of Gnats from each side vent every `launchInterval`, the first after `firstLaunch`. */
+    launchInterval: 3,
+    firstLaunch: 1.2,
+    gnatsPerVent: 2,
+    /** Distance of each side vent from the centre. */
+    ventOffset: 0.53 * ENEMY_UNIT,
+    /** It stops launching below this height, too close to the player. */
+    lastLaunchFraction: 0.3,
+    /**
+     * The launched Gnats' path from the vent, in px, for the right vent (mirrored for the left):
+     * out sideways, then down past the bottom of the screen.
+     */
+    launchPath: [
+      [0, 0],
+      [28, -4],
+      [55, -30],
+      [64, -110],
+      [40, -260],
+      [20, -800],
+    ],
+    xRange: [0.3, 0.7],
+  },
   /** The pods a destroyed Splitter breaks into: small Hornets (P05-R10). */
   splitterPod: {
     stats: { model: 'splitter-pod', radius: radius(0.4), health: 10, points: 50 },

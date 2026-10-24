@@ -1,4 +1,5 @@
 import type { EnemyModelFactory } from '../../../render/game-view';
+import { buildCarrier } from './carrier-model';
 import {
   buildBulwark,
   buildLancer,
@@ -15,7 +16,7 @@ import {
   buildWeaver,
 } from './small-enemy-models';
 
-/** One model per enemy model key (`EnemyStats.model`, P05-R01..R10). */
+/** One model per enemy model key (`EnemyStats.model`, P05-R01..R10, P05-R12). */
 export const ENEMY_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
   gnat: buildGnat,
   hornet: buildHornet,
@@ -28,4 +29,5 @@ export const ENEMY_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
   bulwark: buildBulwark,
   splitter: buildSplitter,
   'splitter-pod': buildSplitterPod,
+  carrier: buildCarrier,
 };

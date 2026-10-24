@@ -2,6 +2,7 @@ import type { EnemyKindDefinition, EnemySpawnArea } from '../../core/entities/en
 import { randomIn } from '../../core/math/rng';
 import { ENEMY_CONFIG as C, ENEMY_SPAWN_MARGIN as MARGIN } from '../config/enemies';
 import { Bulwark } from './enemies/bulwark';
+import { Carrier } from './enemies/carrier';
 import { playfieldPath, pickX } from './enemies/enemy-helpers';
 import { Gnat } from './enemies/gnat';
 import { Hornet } from './enemies/hornet';
@@ -17,7 +18,7 @@ import { Weaver } from './enemies/weaver';
 const top = (area: EnemySpawnArea): number => area.height + MARGIN;
 const coin = (area: EnemySpawnArea): boolean => area.random() < 0.5;
 
-/** The 10 enemy kinds of P05, in the order of the spec. */
+/** The 11 enemy kinds of P05, in the order of the spec. */
 export const ENEMY_KINDS: readonly EnemyKindDefinition[] = [
   {
     id: 'gnat',
@@ -92,5 +93,10 @@ export const ENEMY_KINDS: readonly EnemyKindDefinition[] = [
     id: 'splitter',
     name: 'Splitter',
     spawn: (area) => [new Splitter(playfieldPath(C.splitter.path, area, coin(area)))],
+  },
+  {
+    id: 'carrier',
+    name: 'Carrier',
+    spawn: (area) => [new Carrier(pickX(area.random, C.carrier.xRange, area.width), top(area))],
   },
 ];

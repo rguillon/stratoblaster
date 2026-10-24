@@ -18,7 +18,7 @@ export const ENEMY_LOOK = {
     metallic: 0.85,
     roughness: 0.38,
   },
-  /** Neon colours of each enemy (P05-R01..R10). */
+  /** Neon colours of each enemy (P05-R01..R10, P05-R12). */
   neon: {
     gnat: [0.1, 0.95, 1],
     hornet: [1, 0.08, 0.1],
@@ -30,6 +30,7 @@ export const ENEMY_LOOK = {
     rocketeer: [1, 0.12, 0.08],
     bulwark: [0.15, 0.4, 1],
     splitter: [0.65, 0.2, 1],
+    carrier: [1, 0.7, 0.1],
   },
   /**
    * Reactors (phase 5 review): a dark nozzle with a glowing core, and the player ships' animated

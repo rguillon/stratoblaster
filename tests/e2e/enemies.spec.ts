@@ -24,6 +24,7 @@ const KINDS = [
   'Rocketeer',
   'Bulwark',
   'Splitter',
+  'Carrier',
 ];
 
 test.describe('P05: enemies/ page', () => {
@@ -40,7 +41,7 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
   });
 
-  test('P05-R11: loads without errors, with the 10 enemy kinds and the debug tile', async ({
+  test('P05-R11: loads without errors, with the 11 enemy kinds and the debug tile', async ({
     page,
   }) => {
     await expect(page.locator('.enemy-kind button')).toHaveText(KINDS);
@@ -48,9 +49,7 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
   });
 
-  test('P05-R01..R10, P05-R11: every enemy kind can be picked, spawns and attacks', async ({
-    page,
-  }) => {
+  test('P05-R01..R12: every enemy kind can be picked, spawns and attacks', async ({ page }) => {
     test.setTimeout(90_000);
     await page.keyboard.press('f');
     for (const [i, name] of KINDS.entries()) {
@@ -60,13 +59,16 @@ test.describe('P05: enemies/ page', () => {
         'true',
       );
       await expect(page.locator('.enemy-enemies'), name).not.toHaveText('Enemies: 0');
-      // Every kind but the Gnat and the Hornet shoots within 6 s.
-      let shots = 0;
+      // Every kind but the Gnat, the Hornet and the Carrier shoots within 6 s; the Carrier
+      // launches Gnats instead.
+      let [shots, enemies] = [0, 0];
       for (let s = 0; s < 6; s++) {
         const state = await step(page, 60);
         shots = Math.max(shots, state.bullets + state.missiles + state.lasers.length);
+        enemies = Math.max(enemies, state.enemies.length);
       }
-      if (i > 1) expect(shots, name).toBeGreaterThan(0);
+      if (name === 'Carrier') expect(enemies, name).toBeGreaterThan(1);
+      else if (i > 1) expect(shots, name).toBeGreaterThan(0);
       await waitForFrames(page, 3);
     }
   });
@@ -98,7 +100,10 @@ test.describe('P05: enemies/ page', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(page.locator('.enemy-kind button').nth(0)).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('ArrowLeft');
-    await expect(page.locator('.enemy-kind button').nth(9)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.enemy-kind button').nth(KINDS.length - 1)).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await waitForFrames(page, 5);
     await page.keyboard.press('m');
     await expect(page.locator('.enemy-enemies')).not.toHaveText('Enemies: 0');
