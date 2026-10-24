@@ -4,10 +4,8 @@ import type { EnemyModel } from '../../../render/game-view';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { buildEnemyModel } from './enemy-mesh';
 import {
-  angryEyes,
   around,
   canopyPaint,
-  decal,
   FIGHTER_SECTION,
   flipX,
   POD_SECTION,
@@ -22,35 +20,65 @@ const H = ENEMY_LOOK.hull;
 const N = ENEMY_LOOK.neon;
 const WHITE = [1, 1, 1] as const;
 
-/** P05-R01: a Gnat's fin, its tip hooked sideways. */
-const GNAT_CLAW = [
-  [-1.4, -2.8],
-  [1.4, -2.8],
-  [1.6, -0.6],
-  [-0.8, 1.8],
-  [0, -0.8],
+/** P05-R01: the Gnat's body, a flat disc (lathe profile), and a duct around each fan. */
+const GNAT_BODY = [
+  [0, -1.2],
+  [3.4, -1],
+  [4.4, -0.1],
+  [3.9, 0.8],
+  [2.2, 1.5],
+  [0, 1.8],
+] as const;
+const GNAT_DUCT = [
+  [2.3, -0.6],
+  [3, 0],
+  [2.3, 0.6],
+  [2.3, -0.6],
+] as const;
+/** An arm from the body out to a duct, along +Z. */
+const GNAT_ARM = [
+  [-1, -3],
+  [1, -3],
+  [0.6, 0],
+  [-0.6, 0],
+] as const;
+/** The sensor turret under the nose. */
+const GNAT_TURRET = [
+  [0, -1.3],
+  [1.1, -1],
+  [1.3, -0.3],
+  [1, 0],
 ] as const;
 
-/** P05-R01: a small flat disc with three short fins at 120° and a neon ring around its rim. */
+/**
+ * P05-R01: an unmanned swarm drone (phase 5 review): a small flat disc with three short arms at
+ * 120° carrying ducted fans, a neon ring around its rim, a sensor turret under the nose and an
+ * antenna on its back. No cockpit, no canopy.
+ */
 export function buildGnat(scene: Scene): EnemyModel {
-  return buildEnemyModel('gnat', scene, N.gnat, ({ hull, neon, reactor }) => {
-    const profile = [
-      [0, -1.4],
-      [5.5, -1.1],
-      [6.5, 0],
-      [5.2, 1.2],
-      [2.4, 2],
-      [0, 2.6],
-    ] as const;
-    hull.lathe(profile, 10, H.base);
-    // Fins hooked the same way round, as if the disc spun, their roots inside the rim.
+  return buildEnemyModel('gnat', scene, N.gnat, ({ hull, neon, reactor, rotor }) => {
+    hull.lathe(GNAT_BODY, 8, H.base);
+    neon.ring(4.5, 0.6, 8, N.gnat, { at: [0, -0.3, 0] });
     for (const a of around(3)) {
-      const fin = { at: radial(a, 7, 0), yaw: a };
-      hull.bevelSlab(GNAT_CLAW, [-0.6, 0, 0.6], [0.2, 0.3], H.panel, fin);
+      const duct = radial(a, 6, 0);
+      // Under the blades, from inside the body to the fan's hub.
+      hull.slab(GNAT_ARM, [-0.8, -0.3], H.panel, { at: duct, yaw: a });
+      hull.lathe(GNAT_DUCT, 8, H.panel, { at: duct }, false);
+      rotor([duct[0], 0, duct[2]], 2.1);
     }
-    neon.ring(6.7, 0.7, 10, N.gnat, { at: [0, -0.35, 0] });
-    for (const eye of angryEyes([0, 3], 0.8, [1.8, 0.5], 0.45)) decal(neon, eye, 2.6, N.gnat);
-    reactor([0, 0, -6.5], 1.1);
+    hull.lathe(GNAT_TURRET, 6, H.dark, { at: [0, 0, 3.3] });
+    neon.lathe(
+      [
+        [0, -0.35],
+        [0.45, 0],
+        [0, 0.35],
+      ],
+      6,
+      N.gnat,
+      { at: [0, -1.05, 4.3], pitch: Math.PI / 2 },
+    );
+    hull.box([0.25, 2.2, 0.25], H.panel, { at: [-1.2, 1.2, -2.2] });
+    reactor([0, 0, -4.4], 0.9);
   });
 }
 

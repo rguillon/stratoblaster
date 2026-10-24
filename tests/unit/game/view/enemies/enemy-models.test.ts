@@ -126,6 +126,16 @@ describe('ENEMY_MODELS', () => {
     expect(pivot?.scaling.z).not.toBe(before);
   });
 
+  it('P05-R01, phase 5 review: the Gnat is a drone with three ducted fans that spin', () => {
+    const { model } = extent('gnat');
+    const rotors = model.root.getChildren((n) => n.name.startsWith('gnat-rotor-'), false);
+    expect(rotors).toHaveLength(3);
+    const rotor = rotors[0] as TransformNode | undefined;
+    const before = rotor?.rotation.y ?? 0;
+    model.sync(new Dropper(0, 0), 0.1);
+    expect(rotor?.rotation.y).toBeCloseTo(before + ENEMY_LOOK.rotor.spinRadPerSec * 0.1);
+  });
+
   it('phase 5 review: a reactor costs about 40 triangles', () => {
     const s = scene();
     const withReactors = ENEMY_MODELS.bulwark?.(s);

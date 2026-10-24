@@ -53,6 +53,12 @@ export const ENEMY_LOOK = {
     plasmaAlpha: 0.6,
     whiten: 0.55,
   },
+  /** Rotors (the Gnat's ducted fans): blades, hub radius relative to the blades, spin. */
+  rotor: {
+    blades: 2,
+    hub: 0.22,
+    spinRadPerSec: 30,
+  },
   /** A charging light (`Enemy.charge`) goes from `idle` to full brightness. */
   chargeIdle: 0.18,
   /** Glow layer over the playfield (enemies' neon, shots). */

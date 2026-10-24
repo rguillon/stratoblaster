@@ -10,7 +10,7 @@ import type { Enemy } from '../../../core/entities/enemy';
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
-import { stepModelAnimations } from '../../../render/model-animation';
+import { addModelAnimation, stepModelAnimations } from '../../../render/model-animation';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { buildReactorFlame, type FlameMaterials } from '../reactor-flame';
 
@@ -77,6 +77,11 @@ export interface EnemyParts {
    * nozzle, a glowing core and an animated flame, light blue on every enemy.
    */
   readonly reactor: (at: Vec3, radius: number) => void;
+  /**
+   * Adds a rotor turning around +Y at `at` (phase 5 review: the Gnat's ducted fans): blades
+   * `radius` long around a hub, on their own node so they spin.
+   */
+  readonly rotor: (at: Vec3, radius: number) => void;
 }
 
 type Vec3 = readonly [number, number, number];
@@ -113,6 +118,42 @@ function flameMaterials(scene: Scene, color: Rgb): FlameMaterials {
     byColor.set(key, mats);
   }
   return mats;
+}
+
+/** The rotors' blades and hubs, each on a node spun by a model animation. */
+function addRotors(
+  name: string,
+  rotors: readonly Reactor[],
+  material: Material,
+  root: TransformNode,
+): void {
+  const look = ENEMY_LOOK.rotor;
+  const scene = root.getScene();
+  rotors.forEach(({ at: [x, y, z], radius }, i) => {
+    const parts = new SolidBuilder();
+    const blade = [
+      [-0.12, 0.3],
+      [0.12, 0.3],
+      [0.22, 0.92],
+      [-0.08, 0.95],
+    ] as const;
+    for (let k = 0; k < look.blades; k++) {
+      const outline = blade.map(([u, v]) => [u * radius, v * radius] as const);
+      parts.slab(outline, [-0.08, 0.08], ENEMY_LOOK.hull.panel, {
+        yaw: (2 * Math.PI * k) / look.blades,
+      });
+    }
+    parts.cylinder(radius * look.hub, radius * 0.3, 4, ENEMY_LOOK.hull.dark, {
+      at: [0, -radius * 0.15, 0],
+    });
+    const node = new TransformNode(`${name}-rotor-${String(i)}`, scene);
+    node.position.set(x, y, z);
+    node.parent = root;
+    meshOf(`${node.name}-blades`, parts.geometry, material, scene).parent = node;
+    addModelAnimation(node, (dt) => {
+      node.rotation.y += look.spinRadPerSec * dt;
+    });
+  });
 }
 
 /** Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`. */
@@ -167,16 +208,19 @@ export function buildEnemyModel(
   build: (parts: EnemyParts) => void,
 ): EnemyModel {
   const reactors: Reactor[] = [];
+  const rotors: Reactor[] = [];
   const parts: EnemyParts = {
     hull: new SolidBuilder(),
     neon: new SolidBuilder(),
     charge: new SolidBuilder(),
     reactor: (at, radius) => reactors.push({ at, radius }),
+    rotor: (at, radius) => rotors.push({ at, radius }),
   };
   build(parts);
   const mats = enemyMaterials(scene);
   const root = new TransformNode(name, scene);
   addReactors(name, reactors, parts, root);
+  addRotors(name, rotors, mats.hull, root);
   for (const [part, material] of [
     [parts.hull, mats.hull],
     [parts.neon, mats.neon],
