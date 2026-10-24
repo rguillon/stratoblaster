@@ -39,6 +39,33 @@ export const HULL_SECTION: readonly SectionPoint[] = [
   [-0.55, 0],
 ];
 
+/**
+ * A fighter's fuselage: chines low on the sides, then shoulders and a ridge on its back where a
+ * canopy is painted ({@link canopyPaint}) instead of stuck on as another solid.
+ */
+export const FIGHTER_SECTION: readonly SectionPoint[] = [
+  [0.5, 0],
+  [1, 0.3],
+  [0.6, 0.6],
+  [0.3, 0.85],
+  [0, 1],
+  [-0.3, 0.85],
+  [-0.6, 0.6],
+  [-1, 0.3],
+  [-0.5, 0],
+];
+
+/** The sides of {@link FIGHTER_SECTION} on its back, from shoulder to shoulder. */
+const CANOPY_SIDES = new Set([2, 3, 4, 5]);
+
+/** Paints the back of a {@link FIGHTER_SECTION} loft `color` between the given stations. */
+export function canopyPaint(
+  bands: readonly number[],
+  color: readonly [number, number, number],
+): (side: number, band: number) => readonly [number, number, number] | undefined {
+  return (side, band) => (CANOPY_SIDES.has(side) && bands.includes(band) ? color : undefined);
+}
+
 /** A round-ish pod or boom: a hexagon. */
 export const POD_SECTION: readonly SectionPoint[] = [
   [0.5, 0],
@@ -57,13 +84,6 @@ export const CANOPY_SECTION: readonly SectionPoint[] = [
   [-0.7, 0.6],
   [-1, 0],
 ];
-
-/** A spike: a triangle `width` wide at `base`, pointed at `tip` (a fang, a claw, a horn). */
-export function spike(base: OutlinePoint, tip: OutlinePoint, width: number): OutlinePoint[] {
-  const [dx, dz] = [tip[0] - base[0], tip[1] - base[1]];
-  const k = width / 2 / Math.hypot(dx, dz);
-  return [[base[0] - dz * k, base[1] + dx * k], tip, [base[0] + dz * k, base[1] - dx * k]];
-}
 
 /**
  * Two eye slits on either side of `center`, `gap` apart, each `length` long and `width` deep,
@@ -102,4 +122,20 @@ export function decal(
     corners.map(([x, z]): Vec3 => [x, y, z]),
     color,
   );
+}
+
+/**
+ * A two-point section on side `side` of `section`, from `t0` to `t1` of its length, lifted
+ * `lift` times off the axis: lofted with `open`, a stripe painted along that side of a hull.
+ */
+export function sideStripe(
+  section: readonly SectionPoint[],
+  side: number,
+  [t0, t1]: readonly [number, number],
+  lift = 1.04,
+): SectionPoint[] {
+  const [ua, va] = section[side] ?? [0, 0];
+  const [ub, vb] = section[(side + 1) % section.length] ?? [0, 0];
+  const at = (t: number): SectionPoint => [(ua + (ub - ua) * t) * lift, va + (vb - va) * t];
+  return [at(t0), at(t1)];
 }

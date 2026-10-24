@@ -22,6 +22,16 @@ export type SectionPoint = readonly [u: number, v: number];
 /** A loft station: where along Z, its half width, and the heights of its bottom and top. */
 export type LoftStation = readonly [z: number, halfWidth: number, bottom: number, top: number];
 
+export interface LoftOptions {
+  /** Leaves the section's closing side and the end caps out, e.g. a canopy sitting on a hull. */
+  readonly open?: boolean;
+  /**
+   * Another colour for some faces: side `side` of the section (from point `side` to the next)
+   * between stations `band` and `band + 1`, e.g. a canopy painted on a fuselage's back.
+   */
+  readonly paint?: (side: number, band: number) => Rgb | undefined;
+}
+
 /** A loft station of no width and no height: the body closes to a point there. */
 function isPoint([, halfWidth, bottom, top]: LoftStation): boolean {
   return halfWidth === 0 && bottom === top;
@@ -258,27 +268,33 @@ export class SolidBuilder {
   /**
    * A fuselage along Z: the `section` (counter-clockwise seen from the nose) stretched to each
    * station, from tail to nose. A station of no width and no height closes the body to a point;
-   * other ends are capped, unless `open` (then the section's closing side is left out too, e.g.
-   * a canopy sitting on a hull).
+   * other ends are capped, unless `open` (see {@link LoftOptions}).
    */
   loft(
     section: readonly SectionPoint[],
     stations: readonly LoftStation[],
     color: Rgb,
     place: Placement = {},
-    open = false,
+    { open = false, paint }: LoftOptions = {},
   ): this {
     const ring = (st: LoftStation): Vec3[] =>
       section.map(([u, v]): Vec3 => [u * st[1], st[2] + v * (st[3] - st[2]), st[0]]);
     const sides = open ? section.length - 1 : section.length;
     stations.slice(1).forEach((sb, k) => {
       const sa = stations[k];
-      if (sa) this.#loftBand(ring(sa), ring(sb), [isPoint(sa), isPoint(sb)], sides, color, place);
+      if (!sa) return;
+      const colorOf = (side: number): Rgb => paint?.(side, k) ?? color;
+      this.#loftBand(ring(sa), ring(sb), [isPoint(sa), isPoint(sb)], sides, colorOf, place);
     });
-    const [first, last] = [stations[0], stations.at(-1)];
-    if (!open && first && !isPoint(first)) this.face(ring(first).reverse(), color, place);
-    if (!open && last && !isPoint(last)) this.face(ring(last), color, place);
+    if (!open) this.#loftCaps(stations.map(ring), stations.map(isPoint), color, place);
     return this;
+  }
+
+  /** Caps on the ends of a loft (its first and last rings) that are not closed to a point. */
+  #loftCaps(rings: Vec3[][], points: readonly boolean[], color: Rgb, place: Placement): void {
+    const [first, last] = [rings[0], rings.at(-1)];
+    if (first && !points[0]) this.face([...first].reverse(), color, place);
+    if (last && !points.at(-1)) this.face(last, color, place);
   }
 
   /** The faces between two loft rings, triangles where one of them is a point. */
@@ -287,11 +303,12 @@ export class SolidBuilder {
     b: readonly Vec3[],
     [aPoint, bPoint]: readonly [boolean, boolean],
     sides: number,
-    color: Rgb,
+    colorOf: (side: number) => Rgb,
     place: Placement,
   ): void {
     for (let i = 0; i < sides; i++) {
       const [a0, a1, b0, b1] = [ringAt(a, i), ringAt(a, i + 1), ringAt(b, i), ringAt(b, i + 1)];
+      const color = colorOf(i);
       if (aPoint) this.face([a0, b1, b0], color, place);
       else if (bPoint) this.face([a0, a1, b1], color, place);
       else this.face([a0, a1, b1, b0], color, place);

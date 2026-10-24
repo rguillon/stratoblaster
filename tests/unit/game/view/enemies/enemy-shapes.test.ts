@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SolidBuilder } from '../../../../../src/render/geometry/solids';
-import { angryEyes, decal, spike } from '../../../../../src/game/view/enemies/enemy-shapes';
+import { angryEyes, canopyPaint, decal } from '../../../../../src/game/view/enemies/enemy-shapes';
 
 /** Y of Babylon's front-face normal of the first triangle, (c - a) × (b - a). */
 function upward(positions: readonly number[], indices: readonly number[]): number {
@@ -13,12 +13,13 @@ function upward(positions: readonly number[], indices: readonly number[]): numbe
 }
 
 describe('enemy shapes', () => {
-  it('phase 5 review: a spike is a triangle `width` wide at its base, pointed at its tip', () => {
-    const [left, tip, right] = spike([0, 0], [0, 10], 4);
-    expect(tip).toEqual([0, 10]);
-    expect(left?.[0]).toBeCloseTo(-2);
-    expect(right?.[0]).toBeCloseTo(2);
-    expect(left?.[1]).toBeCloseTo(0);
+  it('phase 5 review: a canopy is painted on the back of a fighter fuselage', () => {
+    const paint = canopyPaint([1, 2], [0, 0, 0]);
+    expect(paint(3, 1)).toEqual([0, 0, 0]);
+    // Not on the sides or the belly, nor outside the given stations.
+    expect(paint(1, 1)).toBeUndefined();
+    expect(paint(8, 2)).toBeUndefined();
+    expect(paint(3, 0)).toBeUndefined();
   });
 
   it('phase 5 review: angry eyes slant back from the centre on both sides', () => {

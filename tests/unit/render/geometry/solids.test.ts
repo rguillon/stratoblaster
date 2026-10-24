@@ -170,8 +170,23 @@ describe('SolidBuilder', () => {
       ],
       [1, 1, 1],
       {},
-      true,
+      { open: true },
     ).geometry;
     expect(canopy.indices.length / 3).toBe(3 * 2);
+    // Painted faces: the top sides (1 and 2) of the diamond in another colour.
+    const dark = [0, 0, 0] as const;
+    const painted = new SolidBuilder().loft(
+      diamond,
+      [
+        [-5, 2, 0, 1],
+        [5, 2, 0, 1],
+      ],
+      [1, 1, 1],
+      {},
+      { paint: (side, band) => (band === 0 && (side === 1 || side === 2) ? dark : undefined) },
+    ).geometry;
+    const reds = painted.colors.filter((_, i) => i % 4 === 0);
+    // 4 sides of 4 vertices and 2 caps of 4: the 2 painted sides have 8 black vertices.
+    expect(reds.filter((r) => r === 0)).toHaveLength(8);
   });
 });
