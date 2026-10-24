@@ -14,18 +14,18 @@ export interface HudTexts {
 export interface HudFrame {
   readonly health: number;
   readonly maxHealth: number;
+  /** The weapon fired (it can be switched) and its level, out of `weaponLevels`. */
+  readonly weapon: string;
   readonly weaponLevel: number;
+  readonly weaponLevels: number;
   /** Share of the level flown, 0..1. */
   readonly progress: number;
   readonly destroyed: number;
 }
 
-/** The fixed parts of a HUD: the ship, the weapon and the texts. */
+/** The fixed parts of a HUD: the ship and the texts. */
 export interface HudSetup {
   readonly ship: string;
-  readonly weapon: string;
-  /** Number of levels of the weapon. */
-  readonly weaponLevels: number;
   readonly texts: HudTexts;
 }
 
@@ -70,12 +70,12 @@ export class GameHud {
 
   /** Shows `frame`, touching the page only when something visible changed. */
   update(frame: HudFrame): void {
-    const { texts, weapon, weaponLevels } = this.setup;
+    const { texts } = this.setup;
     const health = `${texts.health} ${String(Math.ceil(frame.health))} / ${String(frame.maxHealth)}`;
     const shown = [
       health,
       percent(frame.health / frame.maxHealth),
-      texts.weapon(weapon, frame.weaponLevel, weaponLevels),
+      texts.weapon(frame.weapon, frame.weaponLevel, frame.weaponLevels),
       percent(frame.progress),
       texts.destroyed(frame.destroyed),
     ];

@@ -5,6 +5,7 @@ import { HeldDirections } from './held-directions';
 /** Which inputs shoot and move the ship (see `config/game-controls.ts`). */
 export interface GameControlBindings {
   readonly fireKeys: readonly string[];
+  readonly switchKeys: readonly string[];
   readonly fireButtons: readonly number[];
   readonly dpad: {
     readonly up: number;
@@ -19,6 +20,8 @@ export interface GameControlBindings {
 export interface ControlState {
   readonly move: FlightInput;
   readonly fire: boolean;
+  /** Switch to the next weapon (once per press). */
+  readonly switchWeapon: boolean;
 }
 
 /**
@@ -30,6 +33,8 @@ export interface ControlState {
 export class GameControls {
   readonly keys = new HeldDirections();
   readonly #fireKeys = new Set<string>();
+  readonly #switchKeys = new Set<string>();
+  #switches = 0;
   #touchFire = false;
   /** Drag distance not flown yet, in logical pixels. */
   #dragX = 0;
@@ -43,6 +48,13 @@ export class GameControls {
   /** A key going down or up (`code` is `KeyboardEvent.code`); returns whether it is a control. */
   key(code: string, down: boolean): boolean {
     if (this.keys.key(code, down)) return true;
+    if (this.bindings.switchKeys.includes(code)) {
+      // Once per press: held keys repeat their key-downs.
+      if (down && !this.#switchKeys.has(code)) this.#switches++;
+      if (down) this.#switchKeys.add(code);
+      else this.#switchKeys.delete(code);
+      return true;
+    }
     if (!this.bindings.fireKeys.includes(code)) return false;
     if (down) this.#fireKeys.add(code);
     else this.#fireKeys.delete(code);
@@ -64,6 +76,8 @@ export class GameControls {
   clear(): void {
     this.keys.clear();
     this.#fireKeys.clear();
+    this.#switchKeys.clear();
+    this.#switches = 0;
     this.#touchFire = false;
     this.#dragX = this.#dragY = 0;
   }
@@ -84,7 +98,10 @@ export class GameControls {
       this.#dragX -= this.#dragX * share;
       this.#dragY -= this.#dragY * share;
     }
-    return { move, fire: this.#fireKeys.size > 0 || this.#touchFire || pad.fire };
+    const switchWeapon = this.#switches > 0;
+    if (switchWeapon) this.#switches--;
+    const fire = this.#fireKeys.size > 0 || this.#touchFire || pad.fire;
+    return { move, fire, switchWeapon };
   }
 
   #readGamepads(): { x: number; y: number; fire: boolean } {

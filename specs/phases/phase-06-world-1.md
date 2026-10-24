@@ -182,6 +182,9 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 > The agent ticks each item when fixed.
 
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
+- [x] (reviewer, in chat, 2026-10-24) Make the player ship roll when moving left / right, and add a little more acceleration to its movements. — Done: the ship banks up to 35° with its sideways speed, easing in and out; full speed is reached in 0.18 s instead of 0.08 s (D-045).
+- [x] (reviewer, in chat, 2026-10-24) Increase the player base speed by 50 %, and increase the enemy density. — Done: base speed 150 px/s (balanced 150, heavy 120, light 210); every wave brings 50 % more groups (D-044). `phase-02-player-ships.md` still says 100 px/s: to be updated by the reviewer.
+- [x] (reviewer, in chat, 2026-10-24) Add a button to switch between weapons: the E key (AZERTY). — Done: E (by key position, so the same key on AZERTY and QWERTY) cycles bullet → laser → missile, each at level 1, once per press; the HUD shows the weapon (D-043).
 - [x] (reviewer, in chat, 2026-10-24) Sometimes the light of an explosion appears at the wrong place. — Fixed: enemies could be shot (and blew up) before coming into view, just above the top edge or beside the narrower bottom of the view; only enemies on screen can be hit now (D-042, `level-run.test.ts`).
 - [x] (reviewer, in chat, 2026-10-24) Remove the Back button from the in-game view, and add a basic HUD: health, weapon level, etc. — Done: no Back button in game (Esc / gamepad B still go back to the title, P06-R02); `ui/game-hud.ts` shows the ship and its health bar, the weapon and its level, the level's progress and the enemies destroyed (D-041).
 
@@ -227,12 +230,16 @@ Light verification (2026-10-24): make typecheck ✔ / make build ✔ (ENG-52 lea
 After the in-chat review items (CRT overlay, HUD, no Back button, explosions out of view):
 make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed (the gamepad menu flow now enters a level:
 its timeout is 90 s, it ran 29–36 s against the 30 s default)
+After E weapon switch, speed / density +50 %, ship roll and slower acceleration:
+make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed (the enemies/ page test also got a
+90 s timeout: it ran 29–35 s)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
 ### How to test manually
 - `make dev`, open http://localhost:5173/ → Start → pick a ship → the World 1 row shows `1-1` … `1-5`, all unlocked; worlds 2–5 are padlocked.
 - In a level: arrows / WASD (or left stick / D-pad) to fly, Space (or gamepad A / right trigger) to shoot; on a touch screen, drag anywhere to fly and hold the yellow Fire button. Esc (or gamepad B) returns to the title.
+- Weapons: E switches to the next weapon (bullet → laser → missile → bullet), each at level 1; the HUD's top right shows it.
 - HUD: top left the ship and its health bar (always full: the player cannot be hit yet), top right the weapon and its level (`Bullet · Lv 1/5`), under the level label a bar of the level's progress, bottom left the enemies destroyed.
 - Debug URL options: `?level=1-3` starts 1-3 straight away with the balanced ship, `&t=120` starts at 2:00 (waves before it skipped), `&ship=heavy` (or `light`) picks the ship. With them, F toggles ×4 fast forward, ← / → jump 10 s back / on (A / D still steer), and the FPS / polygons tile shows top right. Without them, F, ← and → do nothing to the time.
 - Level end: `?level=1-1&t=235` → after the scroll ends and the last enemies leave (≤ 10 s), "Level complete!" shows `1-1` and "Enemies destroyed: N / M"; Enter / Space / tap → level select on `1-2`.
@@ -240,7 +247,8 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - 60 FPS check: `?level=1-5&t=225` (most enemies on screen over the city centre), FPS on the debug tile.
 
 ### Deviations from spec
-- Enemy counts are above the "~" tunables for 1-3 to 1-5 (124 / 156 / 184 vs ~100 / ~120 / ~140) because Carriers launch Gnats; the strict order holds (allowed by the tunables' note; D-038). Peaks are 6 / 8 / 11 / 12 / 17 (targets 6 / 8 / 10 / 12 / 15), measured without the player shooting.
+- Enemy counts and peaks are above the tunables: after the reviewer's +50 % density (D-044), 119 / 143 / 213 / 270 / 321 enemies (tunables ~60 … ~140; Carriers' Gnats included) and peaks 11 / 14 / 16 / 18 / 22 on screen (6 … 15), measured without the player shooting. The strict order of P06-R08 holds.
+- Player base speed is 150 px/s (reviewer's request, D-044), not the 100 px/s of P02.
 - Lone huts and masts on the 1-1 islands are scattered like plants (no road reaches an island, and buildings only stand along roads, P04-R07).
 - The debug URL options work in production builds too, and in debug mode ← / → are the playback keys rather than steering (D-039).
 - At the reviewer's request during implementation, the CRT scanline / vignette overlay of the stage is removed: it drew lines across the levels (D-040).

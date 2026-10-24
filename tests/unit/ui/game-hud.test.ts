@@ -5,7 +5,9 @@ import { GameHud, type HudFrame } from '../../../src/ui/game-hud';
 const FRAME: HudFrame = {
   health: 100,
   maxHealth: 100,
+  weapon: 'Bullet',
   weaponLevel: 1,
+  weaponLevels: 5,
   progress: 0.25,
   destroyed: 3,
 };
@@ -14,8 +16,6 @@ function setup() {
   const parent = document.createElement('div');
   const hud = new GameHud(document, parent, {
     ship: 'Heavy',
-    weapon: 'Bullet',
-    weaponLevels: 5,
     texts: {
       health: 'HP',
       weapon: (name, level, levels) => `${name} · Lv ${String(level)}/${String(levels)}`,
@@ -46,6 +46,9 @@ describe('GameHud', () => {
     expect($('.hud-health-text')?.textContent).toBe('HP 40 / 100');
     expect($('.hud-bar-fill')?.style.width).toBe('39.2%');
     expect($('.hud-weapon')?.textContent).toBe('Bullet · Lv 3/5');
+    hud.update({ ...FRAME, weapon: 'Laser', weaponLevels: 4 });
+    expect($('.hud-weapon')?.textContent).toBe('Laser · Lv 1/4');
+    hud.update({ ...FRAME, health: 39.2, weaponLevel: 3, progress: 1.4, destroyed: 4 });
     expect($('.hud-progress-fill')?.style.width).toBe('100%');
     const text = $('.hud-destroyed');
     hud.update({ ...FRAME, health: 39.2, weaponLevel: 3, progress: 1.4, destroyed: 4 });

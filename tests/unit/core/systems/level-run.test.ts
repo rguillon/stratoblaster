@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { GameLevel } from '../../../../src/core/content/game-level';
 import { Enemy, type EnemyKindDefinition } from '../../../../src/core/entities/enemy';
-import { LevelRun, type LevelControls } from '../../../../src/core/systems/level-run';
+import {
+  LevelRun,
+  type LevelControls,
+  type LevelRunOptions,
+} from '../../../../src/core/systems/level-run';
 import type { Wave } from '../../../../src/core/systems/wave-runner';
 import { SAMPLE_GAME } from '../../../fixtures/sample-game';
 import { SAMPLE_ENEMY_KINDS } from '../../../fixtures/sample-enemies';
@@ -39,6 +43,7 @@ function newRun(
   waves: readonly Wave[],
   endWait = 10,
   inView?: (x: number, y: number) => boolean,
+  weapons?: LevelRunOptions['weapons'],
 ): LevelRun {
   const [weapon] = SAMPLE_GAME.playerWeapons;
   if (!weapon) throw new Error('no weapon');
@@ -55,6 +60,7 @@ function newRun(
     endWait,
     seed: 3,
     ...(inView ? { inView } : {}),
+    ...(weapons ? { weapons } : {}),
   });
 }
 
@@ -100,6 +106,27 @@ describe('LevelRun', () => {
     play(hidden, 6, { move: { x: 0, y: 0 }, fire: true });
     expect(hidden.enemies.enemies[0]?.health).toBe(1000);
     expect(hidden.shots.totalDamage).toBe(0);
+  });
+
+  it('phase 6 review: switching cycles through the weapons, each at the starting level', () => {
+    const [pea, ray] = SAMPLE_GAME.playerWeapons;
+    if (!pea || !ray) throw new Error('missing weapons');
+    const fire = (switchWeapon: boolean) => ({ move: { x: 0, y: 0 }, fire: true, switchWeapon });
+    // Without a list, the starting weapon is the only one.
+    const single = newRun([]);
+    single.step(1 / 60, fire(true));
+    expect(single.shots.weapon).toBe(pea);
+    const both = newRun([], 10, undefined, [pea, ray]);
+    both.step(1 / 60, fire(false));
+    expect(both.shots.activeCount).toBeGreaterThan(0);
+    both.step(1 / 60, fire(true));
+    expect(both.shots.weapon).toBe(ray);
+    expect(both.shots.level).toBe(2);
+    expect(both.shots.beam.length).toBeGreaterThan(0);
+    // Shots already in flight keep flying.
+    expect(both.shots.activeCount).toBeGreaterThan(0);
+    both.step(1 / 60, fire(true));
+    expect(both.shots.weapon).toBe(pea);
   });
 
   it('P06-R07: the waves come as the level scrolls past their distance', () => {

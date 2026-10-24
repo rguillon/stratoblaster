@@ -88,6 +88,8 @@ export class GamePlay {
   #frames = 0;
   #previous = 0;
   #timeScale = 1;
+  /** How far the ship is banked, in radians (visual only). */
+  #roll = 0;
   #completed = false;
 
   constructor(
@@ -140,6 +142,7 @@ export class GamePlay {
       kinds: this.game.enemyKinds,
       weapon,
       weaponLevel: 1,
+      weapons: this.game.playerWeapons,
       ship: {
         start: { x: width / 2, y: CFG.shipStartY },
         maxSpeed: this.#speed,
@@ -166,12 +169,9 @@ export class GamePlay {
   }
 
   #newHud(parent: HTMLElement, ship: string): GameHud {
-    const { weapon } = this.run.shots;
     const { texts } = this.game;
     return new GameHud(this.options.doc, parent, {
       ship,
-      weapon: weapon.name,
-      weaponLevels: weapon.levels.length,
       texts: { health: texts.hudHealth, weapon: texts.hudWeapon, destroyed: texts.hudDestroyed },
     });
   }
@@ -218,6 +218,7 @@ export class GamePlay {
   #draw(dt: number, blasts: readonly EnemyBlast[], impacts: readonly ShotImpact[]): void {
     const { ship, enemies, shots } = this.run;
     this.#ship.pivot.position.set(ship.x, ship.y, 0);
+    this.#ship.pivot.rotation.y = this.#bank(ship.vx, dt);
     this.#ship.update(dt);
     this.view.playfield.run(() => {
       this.#enemies.sync(enemies.enemies, dt);
@@ -226,13 +227,32 @@ export class GamePlay {
     this.#hud?.update({
       health: this.#maxHealth,
       maxHealth: this.#maxHealth,
+      weapon: shots.weapon.name,
       weaponLevel: shots.level,
+      weaponLevels: shots.weapon.levels.length,
       progress: this.run.track.time / this.run.track.duration,
       destroyed: enemies.kills,
     });
     this.#fps.add(dt, ++this.#frames);
     const polygons = this.view.scene.getActiveIndices() / 3;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons });
+  }
+
+  /**
+   * The ship's bank for a sideways speed `vx` (phase 6 review): the wing on the side it flies
+   * to dips, more the faster it goes, easing in and out. Around the nose (the playfield's Y),
+   * negative turns +X away from the camera.
+   */
+  #bank(vx: number, dt: number): number {
+    const { maxDeg, easePerSec } = CFG.roll;
+    const target = -(vx / this.#speed) * ((maxDeg * Math.PI) / 180);
+    this.#roll += (target - this.#roll) * Math.min(1, easePerSec * dt);
+    return this.#roll;
+  }
+
+  /** The ship's bank, in radians: negative when flying right. */
+  get roll(): number {
+    return this.#roll;
   }
 
   /**

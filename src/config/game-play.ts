@@ -20,6 +20,11 @@ export const GAME_PLAY_CONFIG = {
    * what the camera shows it may fly. */
   shipStartY: 90,
   shipMargin: { side: 18, bottom: 30, top: 200 },
+  /**
+   * The ship banks as it moves sideways (phase 6 review): up to `maxDeg` at full sideways speed,
+   * easing to its target at `easePerSec` (share of the gap closed per second).
+   */
+  roll: { maxDeg: 35, easePerSec: 8 },
   /** Player shots leave this far below the tip of the ship's nose. */
   muzzleInset: 3,
   /** Shots and enemies this far outside the playfield are removed. */

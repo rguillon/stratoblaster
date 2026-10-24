@@ -36,11 +36,33 @@ describe('GameControls', () => {
     expect(state.move.y).toBeCloseTo(0.5);
     pads = [pad([7, 14], [0.1, 0.1])];
     state = controls.read(1 / 60, 100);
-    expect(state).toEqual({ move: { x: -1, y: 0 }, fire: true });
+    expect(state).toEqual({ move: { x: -1, y: 0 }, fire: true, switchWeapon: false });
     pads = [pad([], [1, -1])];
     state = controls.read(1 / 60, 100);
     expect(Math.hypot(state.move.x, state.move.y)).toBeCloseTo(1);
     expect(state.fire).toBe(false);
+  });
+
+  it('phase 6 review: E (by position, also on AZERTY) switches weapon once per press', () => {
+    const controls = new GameControls(GAME_CONTROLS_CONFIG);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(false);
+    expect(controls.key('KeyE', true)).toBe(true);
+    // Auto-repeated key-downs while held do not switch again.
+    controls.key('KeyE', true);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(true);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(false);
+    // Two quick presses switch twice, one step after the other.
+    controls.key('KeyE', false);
+    controls.key('KeyE', true);
+    controls.key('KeyE', false);
+    controls.key('KeyE', true);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(true);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(true);
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(false);
+    controls.key('KeyE', false);
+    controls.key('KeyE', true);
+    controls.clear();
+    expect(controls.read(1 / 60, 100).switchWeapon).toBe(false);
   });
 
   it('P06-R02: the stronger of the keys and the gamepad wins', () => {

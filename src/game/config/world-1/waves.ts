@@ -32,16 +32,44 @@ type Beat = readonly [
   spread?: number,
 ];
 
-/** The beats as a wave script, at `speed` world units per second. */
-export function waveScript(speed: number, beats: readonly Beat[]): WaveScript {
-  return beats.map(([seconds, kind, count, interval, side, position, spread]) => ({
-    at: seconds * speed,
-    kind,
-    count,
-    interval,
-    entry: { side, position },
-    ...(spread === undefined ? {} : { spread }),
-  }));
+/**
+ * Enemy density (phase 6 review: +50 %): each beat brings this many times its groups, rounded.
+ * A beat of one group gets its extra groups `DENSITY_GAP` seconds apart and, from the top,
+ * `DENSITY_SPREAD` across the screen, so they do not come in on top of each other.
+ */
+export const WAVE_DENSITY = 1.5;
+const DENSITY_GAP = 1.5;
+const DENSITY_SPREAD = 0.3;
+
+/** A beat with `density` times its groups (see {@link WAVE_DENSITY}). */
+function denser(beat: Beat, density: number): Beat {
+  const [seconds, kind, count, interval, side, position, spread] = beat;
+  const more = Math.max(1, Math.round(count * density));
+  if (more === count || count > 1) {
+    const head = [seconds, kind, more, interval, side, position] as const;
+    return spread === undefined ? head : [...head, spread];
+  }
+  const across = side === 'top' ? DENSITY_SPREAD : -DENSITY_SPREAD / 2;
+  return [seconds, kind, more, DENSITY_GAP, side, position, spread ?? across];
+}
+
+/** The beats as a wave script, at `speed` world units per second and `density` (×1: as written). */
+export function waveScript(
+  speed: number,
+  beats: readonly Beat[],
+  density = WAVE_DENSITY,
+): WaveScript {
+  return beats.map((beat) => {
+    const [seconds, kind, count, interval, side, position, spread] = denser(beat, density);
+    return {
+      at: seconds * speed,
+      kind,
+      count,
+      interval,
+      entry: { side, position },
+      ...(spread === undefined ? {} : { spread }),
+    };
+  });
 }
 
 /** 1-1: Gnats, Hornets, Scouts and Strafers, a few at a time (easy, even for a kid). */

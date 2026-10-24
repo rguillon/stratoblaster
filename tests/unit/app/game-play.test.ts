@@ -48,6 +48,23 @@ describe('GamePlay', () => {
     expect(game.view.stage.camera.position.z).toBeGreaterThan(game.view.stage.framing.back);
   });
 
+  it('phase 6 review: the ship banks into sideways moves and levels out when let go', () => {
+    const { game, controls } = start();
+    expect(game.roll).toBe(0);
+    controls.key('ArrowRight', true);
+    frames(game, 1);
+    // Right wing down, away from the camera: up to 35° at full sideways speed.
+    expect(game.roll).toBeLessThan(-0.4);
+    expect(game.roll).toBeGreaterThanOrEqual(-(35 * Math.PI) / 180 - 1e-9);
+    controls.key('ArrowRight', false);
+    controls.key('ArrowLeft', true);
+    frames(game, 1);
+    expect(game.roll).toBeGreaterThan(0.4);
+    controls.key('ArrowLeft', false);
+    frames(game, 2);
+    expect(Math.abs(game.roll)).toBeLessThan(0.01);
+  });
+
   it('P06-R02: starts every level with the first weapon at level 1', () => {
     const { game } = start();
     expect(game.run.shots.weapon.id).toBe(SAMPLE_GAME.playerWeapons[0]?.id);
@@ -107,7 +124,7 @@ describe('GamePlay', () => {
 
   it('phase 6 review: shows a HUD with the health, the weapon level, the progress and the kills', () => {
     const hudParent = document.createElement('div');
-    const { game } = start({ hudParent });
+    const { game, controls } = start({ hudParent });
     frames(game, 5);
     expect(hudParent.querySelector('.hud-ship')?.textContent).toBe('Cube');
     expect(hudParent.querySelector('.hud-health-text')?.textContent).toBe('Life 3 / 3');
@@ -116,6 +133,11 @@ describe('GamePlay', () => {
       /^(24\.\d|25)%$/,
     );
     expect(hudParent.querySelector('.hud-destroyed')?.textContent).toBe('x0');
+    // Phase 6 review: E switches to the next weapon, and the HUD follows.
+    controls.key('KeyE', true);
+    frames(game, 0.1);
+    expect(game.run.shots.weapon.id).toBe('ray');
+    expect(hudParent.querySelector('.hud-weapon')?.textContent).toBe('Ray 1/2');
     game.dispose();
     play = undefined;
     expect(hudParent.querySelector('.game-hud')).toBeNull();

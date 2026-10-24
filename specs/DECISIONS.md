@@ -527,3 +527,32 @@
 - **Alternatives considered:** removing player shots at the top edge (shots near the edge would vanish before reaching an enemy just coming in); hiding blasts out of view (enemies would still die unseen).
 - **Consequences:** enemies take no damage until they come into view. The `enemies/` debug page (phase 5) is unchanged.
 - **Status:** Accepted
+
+### D-043 — E switches weapon in game
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for a key to switch between weapons in game: E on an AZERTY keyboard. Phase 6 starts every level with the guns at level 1 (P06-R02); weapon pick-ups and upgrades come later (GD-31).
+- **Decision:** `GAME_CONTROLS_CONFIG.switchKeys` (`KeyE`, a key position, so the same key on AZERTY and QWERTY) makes `GameControls` report one `switchWeapon` per press (key-down repeats ignored). `LevelRun` cycles through `LevelRunOptions.weapons` (the game's player weapons) at the starting level; shots in flight keep flying. The HUD shows the weapon fired. The ship still starts each level with the first weapon.
+- **Alternatives considered:** a debug-only key (the reviewer wants it in the game); one key per weapon (1-3 are free, but one key was asked for).
+- **Consequences:** GD §2 gives E to Special / bomb: bombs will need another key when they come. No gamepad or touch binding yet.
+- **Status:** Accepted
+
+### D-044 — Faster ships (+50 %) and denser waves (+50 %)
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked to raise the player's base speed by 50 % and to increase the enemy density.
+- **Decision:**
+  - `PLAYER_SHIPS.baseSpeedPxPerSec` goes from 100 to 150 px/s: balanced 150, heavy 120, light 210 px/s. The ships' factors (P02-R01..R03) are unchanged. `specs/phases/phase-02-player-ships.md` still says 100 px/s: its requirement text is the reviewer's to update.
+  - `WAVE_DENSITY` (1.5, `game/config/world-1/waves.ts`) multiplies the groups of every beat, rounded. A one-group beat gets its extra groups 1.5 s apart and 0.3 across the screen (from the top) or a little lower (from the sides), so they do not come in on top of each other. The beats stay written as before; `waveScript(speed, beats, 1)` gives the old scripts.
+  - Measured as in D-038 (no shooting): 119 / 143 / 213 / 270 / 321 enemies, 2270 / 3180 / 5620 / 8130 / 11860 HP, peaks 11 / 14 / 16 / 18 / 22 on screen; each level's second half still has more HP. The strict order of P06-R08 holds.
+- **Consequences:** the counts and peaks are now well above the spec's tunable values (~60 … ~140 enemies, peaks 6 … 15); 1-1 is busier than "easy for a kid" may allow, to be judged in the manual check. Supersedes the numbers of D-038.
+- **Status:** Accepted
+
+### D-045 — Ship banks when moving sideways; a felt acceleration
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for the player ship to roll when moving left / right, and for a little more acceleration in its movements.
+- **Decision:** `GamePlay` banks the ship model around its nose by up to 35° at full sideways speed (the wing on the side it flies to dips), easing towards that at 8 per second, so it rolls in and levels out smoothly; it is visual only (`config/game-play.ts`, `roll`). The time from rest to full speed (`GAME_CONTROLS_CONFIG.accelerationSeconds`) goes from 0.08 s to 0.18 s, so starts and stops are felt (GD-10 still holds: top speed in under a fifth of a second).
+- **Alternatives considered:** banking from the input instead of the speed (it would snap with the keys); a stronger acceleration (shorter time) — "more acceleration" was read as a more noticeable speed-up, a one-value change either way.
+- **Consequences:** none on the simulation besides the longer speed-up.
+- **Status:** Accepted

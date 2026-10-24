@@ -25,6 +25,8 @@ export interface LevelResult {
 export interface LevelControls {
   readonly move: FlightInput;
   readonly fire: boolean;
+  /** Switch to the next weapon of `LevelRunOptions.weapons` (phase 6 review). */
+  readonly switchWeapon?: boolean;
 }
 
 /** The player ship of a run. */
@@ -43,6 +45,11 @@ export interface LevelRunOptions {
   /** The weapon and its level the ship starts with. */
   readonly weapon: WeaponDefinition;
   readonly weaponLevel: number;
+  /**
+   * The weapons the player can switch between, in order (`LevelControls.switchWeapon`), each
+   * at `weaponLevel`. Only `weapon` when omitted.
+   */
+  readonly weapons?: readonly WeaponDefinition[];
   readonly ship: RunShip;
   readonly bounds: FlightBounds;
   /** Enemies and shots this far outside the playfield are removed. */
@@ -120,6 +127,7 @@ export class LevelRun {
     this.blasts = [];
     this.impacts = [];
     if (this.#phase === 'complete') return;
+    if (controls.switchWeapon) this.#switchWeapon();
     this.ship.step(dt, controls.move, this.options.bounds);
     this.#aimShots();
     this.shots.firing = controls.fire;
@@ -152,6 +160,14 @@ export class LevelRun {
     this.waves.skipTo(this.track.distance);
     this.#phase = 'playing';
     this.#clearingFor = 0;
+  }
+
+  /** The next weapon of the list, at the starting level; shots in flight keep flying. */
+  #switchWeapon(): void {
+    const weapons = this.options.weapons ?? [this.options.weapon];
+    const index = weapons.indexOf(this.shots.weapon);
+    const next = weapons[(index + 1) % weapons.length] ?? this.options.weapon;
+    this.shots.select(next, this.options.weaponLevel);
   }
 
   /** Only what is on screen can be hit (see `LevelRunOptions.inView`). */

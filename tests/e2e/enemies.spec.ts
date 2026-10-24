@@ -30,6 +30,8 @@ const KINDS = [
 test.describe('P05: enemies/ page', () => {
   // Heavy software-rendered scene (Level Zero): one test after another, as for level_zero/.
   test.describe.configure({ mode: 'default' });
+  // Next to the World 1 specs (phase 6) they take about 30 s under software WebGL.
+  test.setTimeout(90_000);
 
   test.beforeEach(async ({ page }) => {
     await page.goto('./enemies/');

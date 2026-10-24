@@ -7,11 +7,11 @@ test('P02-R01..R03: player_ship/ shows the 3 player ships with their stats', asy
   const titles = page.locator('.caption-title');
   await expect(titles).toHaveText(['Balanced', 'Heavy', 'Light']);
   const captions = page.locator('.caption');
-  await expect(captions.nth(0)).toContainText('Speed ×1 (100 px/s)');
+  await expect(captions.nth(0)).toContainText('Speed ×1 (150 px/s)');
   await expect(captions.nth(0)).toContainText('HP 100');
-  await expect(captions.nth(1)).toContainText('Speed ×0.8 (80 px/s)');
+  await expect(captions.nth(1)).toContainText('Speed ×0.8 (120 px/s)');
   await expect(captions.nth(1)).toContainText('HP 140');
-  await expect(captions.nth(2)).toContainText('Speed ×1.4 (140 px/s)');
+  await expect(captions.nth(2)).toContainText('Speed ×1.4 (210 px/s)');
   await expect(captions.nth(2)).toContainText('HP 80');
   for (let i = 0; i < 3; i++) await expect(captions.nth(i)).toContainText(/\d polygons/);
   // Let a few frames render so WebGL errors (shaders, textures) surface in the console.

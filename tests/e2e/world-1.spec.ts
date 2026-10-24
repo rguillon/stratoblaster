@@ -92,6 +92,11 @@ test.describe('P06: World 1', () => {
     await expect.poll(async () => (await level(page)).player.y).toBeGreaterThan(start.y + 20);
     await expect.poll(async () => (await level(page)).shots).toBeGreaterThan(0);
     expect((await level(page)).firing).toBe(true);
+    // Phase 6 review: E (by position) switches to the next weapon.
+    await page.keyboard.press('KeyE');
+    await expect(page.locator('.hud-weapon')).toHaveText('Laser · Lv 1/5');
+    await page.keyboard.press('KeyE');
+    await expect(page.locator('.hud-weapon')).toHaveText('Missile · Lv 1/5');
     await page.keyboard.up('Space');
     await page.keyboard.up('ArrowUp');
     // Pushed against the left edge for a while, it stops there, inside the playfield.

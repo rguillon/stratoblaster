@@ -190,7 +190,7 @@ describe('World 1', () => {
   it('P06-R07: waves are triggered by distance, the same every time', () => {
     const speed = level('1-1').scenery.scrollSpeed;
     expect(level('1-1').waves).toEqual(waveScript(speed, WAVES_1_1));
-    expect(level('1-1').waves[0]?.at).toBe((WAVES_1_1[0]?.[0] ?? 0) * speed);
+    expect(level('1-1').waves[0]?.at).toBe(at(WAVES_1_1, 0)[0] * speed);
     expect(measure(level('1-2'))).toEqual(METRICS[1]);
   });
 
@@ -198,10 +198,22 @@ describe('World 1', () => {
     expect(increasing(METRICS.map((m) => m.spawned))).toBe(true);
     expect(increasing(METRICS.map((m) => m.health))).toBe(true);
     expect(increasing(METRICS.map((m) => m.peak))).toBe(true);
-    // Tunable values: about 60 enemies and 6 at once in 1-1 (easy), at least 15 at once in 1-5.
-    expect(METRICS[0]?.spawned).toBeLessThanOrEqual(70);
-    expect(METRICS[0]?.peak).toBeLessThanOrEqual(6);
+    // Tunable values, with the density raised by 50 % in review (D-044): about 90 enemies in
+    // 1-1, the fewest at once; at least 15 at once in 1-5.
+    expect(METRICS[0]?.spawned).toBeLessThanOrEqual(1.5 * 60 * 1.4);
+    expect(METRICS[0]?.peak).toBeLessThanOrEqual(12);
     expect(METRICS[4]?.peak).toBeGreaterThanOrEqual(15);
+  });
+
+  it('phase 6 review: the waves bring 50 % more groups than written, never on top of each other', () => {
+    const written = waveScript(70, WAVES_1_1, 1);
+    const denser = level('1-1').waves;
+    const groups = (script: typeof written) => script.reduce((n, w) => n + w.count, 0);
+    expect(groups(denser)).toBeGreaterThanOrEqual(Math.floor(groups(written) * 1.5));
+    for (const wave of denser) {
+      if (wave.count > 1)
+        expect(wave.interval > 0 || (wave.spread ?? 0) !== 0, wave.kind).toBe(true);
+    }
   });
 
   it('P06-R08: the bullet speed and fire rate factors never go down from 1-1 to 1-5', () => {
