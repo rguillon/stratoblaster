@@ -27,8 +27,12 @@ export function insetOutline(
   return outline.map((p, i): OutlinePoint => {
     const [ax, az] = normal(ringAt(outline, i - 1), p);
     const [bx, bz] = normal(p, ringAt(outline, i + 1));
-    const k = Math.min(1 / Math.max(1 + ax * bx + az * bz, 1e-6), (maxMiter * maxMiter) / 2);
-    // (a + b) / (1 + a·b) is `distance` away from both edges; |a + b|² = 2 (1 + a·b).
-    return [p[0] + (ax + bx) * k * distance, p[1] + (az + bz) * k * distance];
+    // (a + b) / (1 + a·b) is `distance` away from both edges; |a + b|² = 2 (1 + a·b), so the
+    // corner moves sqrt(2 / (1 + a·b)) times `distance`, capped at `maxMiter`.
+    const [sx, sz] = [ax + bx, az + bz];
+    const along = Math.hypot(sx, sz);
+    if (along < 1e-9) return [p[0], p[1]];
+    const miter = Math.min(along / (1 + ax * bx + az * bz), maxMiter);
+    return [p[0] + (sx / along) * miter * distance, p[1] + (sz / along) * miter * distance];
   });
 }

@@ -78,7 +78,9 @@ describe('advanceProjectile', () => {
     const s = shot({ weapon });
     advanceProjectile(s, [far], 0.5);
     expect(s.heading).toBe(0);
-    far.x = 40;
+    // In range: 40 px to the side of where the shot now is.
+    far.x = s.x + 40;
+    far.y = s.y;
     advanceProjectile(s, [far], 0.5);
     expect(s.heading).toBeGreaterThan(0);
   });

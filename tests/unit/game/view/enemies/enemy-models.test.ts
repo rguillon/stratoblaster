@@ -145,7 +145,7 @@ describe('ENEMY_MODELS', () => {
 
   it('P05-R01, phase 5 review: the Gnat is a drone with three ducted fans that spin', () => {
     const { model } = extent('gnat');
-    const rotors = model.root.getChildren((n) => n.name.startsWith('gnat-rotor-'), false);
+    const rotors = model.root.getChildren((n) => /^gnat-rotor-\d+$/.test(n.name), false);
     expect(rotors).toHaveLength(3);
     const rotor = rotors[0] as TransformNode | undefined;
     const before = rotor?.rotation.y ?? 0;

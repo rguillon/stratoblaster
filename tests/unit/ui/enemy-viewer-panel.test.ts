@@ -61,9 +61,10 @@ describe('EnemyViewerPanel', () => {
     buttons('toggles')[0]?.click();
     buttons('toggles')[1]?.click();
     expect(selected('toggles')).toEqual(['Pause (P)']);
-    expect(changes).toHaveLength(6);
+    // One per click: kind, two views, weapon, level and two toggles.
+    expect(changes).toHaveLength(7);
     p.root.querySelector<HTMLElement>('.enemy-kind')?.click();
-    expect(changes).toHaveLength(6);
+    expect(changes).toHaveLength(7);
   });
 
   it('keeps indices and levels in range', () => {

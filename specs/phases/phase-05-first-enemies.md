@@ -295,6 +295,24 @@ Review fix (visible missiles): typecheck ✔, build ✔, e2e 40 passed (a first 
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
+**Final gate (`/validate-phase 5`, 2026-10-24): `make check` green.**
+```
+make lint       ✔ (ESLint, 0 warnings; Prettier)
+make typecheck  ✔
+make coverage   ✔ 668 tests in 100 files; 99.27 % lines, 88.83 % branches, 98.21 % functions, 98.22 % statements (thresholds met)
+make build      ✔
+make e2e        ✔ 40 passed
+```
+The first unit run had 7 failures, fixed on `phase-05`:
+- `insetOutline` (`render/geometry/outline.ts`): the miter cap was wrong. At a sharp tip it shrank the move to almost nothing instead of capping it at `maxMiter` times the distance. Now the corner moves along its bisector by sqrt(2 / (1 + a·b)) times the distance, at most `maxMiter`. The enemy models' bevelled slabs have no tips that sharp, and their close-ups look the same before and after.
+- Tests that had gone stale or were imprecise:
+  - The homing-range test moved its target in range of where the shot had been, not where it was.
+  - The Spinner's heading was compared without wrapping by 2π.
+  - The Rocketeer's pod offsets were compared exactly as floats.
+  - The Gnat rotor count also counted the blade meshes under each rotor.
+  - The `enemies/` panel's change count missed the wireframe button.
+  - The viewer respawn test checked at 6 s, after the Dropper had already come back; it now waits until the group is gone, then checks the respawn delay.
+
 ### How to test manually
 1. `make dev`, open http://localhost:5173/enemies/ (or `enemies/` on GitHub Pages).
 2. Pick an enemy with its button, or N / B (next / previous). It appears over Level Zero and comes back about 1 s after its group has gone.

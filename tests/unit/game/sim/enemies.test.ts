@@ -203,7 +203,7 @@ describe('P05-R06: Spinner', () => {
     for (const shot of ctx.shots.slice(0, 4)) {
       expect(Math.hypot(shot.x - 240, shot.y - 480)).toBeCloseTo(C.spinner.podRadius);
       // Outwards: along the line from the centre through the pod.
-      expect(shot.heading).toBeCloseTo(headingTo(240, 480, shot.x, shot.y));
+      expect(angleDiff(shot.heading, headingTo(240, 480, shot.x, shot.y))).toBeCloseTo(0);
     }
   });
 
@@ -247,10 +247,9 @@ describe('P05-R08: Rocketeer', () => {
     const ctx = new RecordingContext();
     const rocketeer = new Rocketeer(240, 600);
     run(rocketeer, ctx, C.rocketeer.firstShot + 0.01);
-    expect(ctx.shots.map((s) => [s.kind, s.x - 240])).toEqual([
-      ['missile', -C.rocketeer.podOffset],
-      ['missile', C.rocketeer.podOffset],
-    ]);
+    expect(ctx.shots.map((s) => s.kind)).toEqual(['missile', 'missile']);
+    expect(ctx.shots[0]?.x).toBeCloseTo(240 - C.rocketeer.podOffset);
+    expect(ctx.shots[1]?.x).toBeCloseTo(240 + C.rocketeer.podOffset);
     expect(rocketeer.charge).toBeLessThan(0.1);
     run(rocketeer, ctx, C.rocketeer.fireInterval);
     expect(ctx.shots).toHaveLength(4);

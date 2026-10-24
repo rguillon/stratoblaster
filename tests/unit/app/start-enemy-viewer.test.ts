@@ -54,9 +54,12 @@ describe('startEnemyViewer', () => {
     viewer = start();
     viewer.panel.update({ fire: false });
     const [first] = viewer.enemies.enemies;
-    frames(viewer, 6);
+    // The Dropper flies down and off the screen.
+    for (let i = 0; i < 600 && viewer.enemies.enemies.length > 0; i++) viewer.frame(1 / 60);
     expect(viewer.enemies.enemies).toHaveLength(0);
-    frames(viewer, CFG.respawnDelay + 0.1);
+    frames(viewer, CFG.respawnDelay - 0.1);
+    expect(viewer.enemies.enemies).toHaveLength(0);
+    frames(viewer, 0.2);
     expect(viewer.enemies.enemies).toHaveLength(1);
     expect(viewer.enemies.enemies[0]).not.toBe(first);
   });
