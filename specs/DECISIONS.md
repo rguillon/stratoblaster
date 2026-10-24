@@ -451,3 +451,12 @@
 - **Alternatives considered:** Keep the node pool: up to about a thousand draw calls during a busy fight, and no colour per particle without a material each. Babylon's `ParticleSystem`: GPU-friendly, but it emits in world space with its own emitters and textures, and would not stay deterministic and unit-testable like the pure `BlastParticles` simulation.
 - **Consequences:** An explosion, or many at once, costs six draw calls. Each layer is capped at 1200 particles. Any later effect drawn the same way must stay out of the glow layer or be additive.
 - **Status:** Accepted
+
+### D-035 — Water colour painted on the terrain, by depth
+- **Date:** 2026-10-24
+- **Phase:** 5 (review)
+- **Context:** The reviewer found the sea/land junction ugly: the near-opaque sea plane cut the ground with a hard line, with a uniform band of foam on the land, and no shallows.
+- **Decision:** The terrain shader colours the ground under the sea level by its depth (turquoise shallows to the deep sea colour) and paints the beach and the surf; the sea plane becomes mostly see-through (alpha 0.4) and only adds reflections and glints.
+- **Alternatives considered:** A depth-aware sea shader (reading the depth buffer, or the height field as vertex alpha on a subdivided sea plane): the true water depth on the water itself, but a depth pass or a much denser sea mesh, costly on the software GPU of the tests.
+- **Consequences:** No extra pass or mesh. The underwater ground is lit and shaded like land, so seabed relief shows faintly through the water. With the sea switched off, the ground has no water tint.
+- **Status:** Accepted

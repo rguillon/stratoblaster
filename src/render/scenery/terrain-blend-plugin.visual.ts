@@ -41,7 +41,11 @@ const UNIFORMS = [
   { name: 'terrainTintA', size: 3, type: 'vec3' },
   { name: 'terrainTintB', size: 3, type: 'vec3' },
   { name: 'terrainSea', size: 4, type: 'vec4' },
+  { name: 'terrainSand', size: 4, type: 'vec4' },
+  { name: 'terrainShallow', size: 4, type: 'vec4' },
+  { name: 'terrainDeep', size: 3, type: 'vec3' },
   { name: 'terrainFoam', size: 4, type: 'vec4' },
+  { name: 'terrainSurf', size: 4, type: 'vec4' },
 ] as const;
 
 const FRAGMENT_DEFINITIONS = /* glsl */ `
@@ -60,6 +64,34 @@ vec3 terrainTriplanar(sampler2D tex, vec3 p, vec3 w) {
   float s = terrainScale.x;
   return texture2D(tex, p.zy * s).rgb * w.x + texture2D(tex, p.xz * s).rgb * w.y
     + texture2D(tex, p.xy * s).rgb * w.z;
+}
+
+// Where the ground meets the sea: a sand beach above the water, the ground under it tinted by
+// the water from turquoise shallows to the deep, and surf (phase 5 review). The sea plane over
+// it is mostly see-through, so it only adds the waves' glints: no hard line where they meet.
+vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
+  float time = terrainSea.z;
+  float fine = texture2D(terrainNoise, p.xz * terrainScale.y * 7.0).r;
+  float depth = terrainSea.x - p.y + (noise.r - 0.5) * 0.8;
+  float gentle = 1.0 - smoothstep(terrainSlope.x, terrainSlope.y, slope);
+  // Beach: dry sand fading into the ground, darker where the swash wets it.
+  vec3 sand = terrainSand.rgb * (0.9 + 0.2 * fine);
+  float beach = 1.0 - smoothstep(terrainSand.w * 0.4, terrainSand.w, -depth + (noise.g - 0.5) * 3.0);
+  color = mix(color, sand, beach * gentle);
+  color *= 1.0 - 0.3 * (1.0 - smoothstep(-1.2, 0.0, -depth)) * gentle;
+  // Water: the deeper, the darker, up to the colour of the open sea.
+  float deep = smoothstep(0.0, terrainShallow.w, depth);
+  vec3 water = mix(terrainShallow.rgb, terrainDeep, sqrt(deep));
+  color = mix(color, water, smoothstep(0.0, 1.2, depth) * mix(0.55, 1.0, deep));
+  // Surf: a broken line of foam swashing up and down the beach, and bands rolling in.
+  float swash = sin(time * 0.9 + noise.g * 14.0) * terrainFoam.w;
+  float edge = 1.0 - smoothstep(0.0, terrainFoam.w, abs(depth - swash));
+  edge *= smoothstep(0.25, 0.55, fine + noise.r * 0.3);
+  float roll = fract(depth / terrainSurf.x + time * terrainSurf.y + noise.g * 1.5);
+  float band = smoothstep(0.82, 0.95, roll) * (1.0 - smoothstep(0.92, 1.0, roll) * 0.6);
+  band *= smoothstep(0.0, 0.8, depth) * (1.0 - smoothstep(0.0, terrainSurf.z, depth));
+  band *= smoothstep(0.4, 0.7, fine);
+  return mix(color, terrainFoam.rgb, clamp(edge * 0.9 + band * 0.7, 0.0, 1.0));
 }
 
 vec3 terrainColor(vec3 p, vec3 n) {
@@ -87,13 +119,7 @@ vec3 terrainColor(vec3 p, vec3 n) {
     smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h));
   color = mix(color, terrainTriplanar(terrainSteep, p, w),
     smoothstep(terrainSlope.x, terrainSlope.y, slope));
-  if (terrainSea.y > 0.5) {
-    // Surf: a band around the sea level that swells and breaks with time.
-    float swell = sin(terrainSea.z * 1.7 + noise.g * 18.0) * 0.5 + 0.5;
-    float d = abs(p.y - terrainSea.x - swell * terrainFoam.w * 0.5);
-    float foam = (1.0 - smoothstep(0.0, terrainFoam.w, d)) * smoothstep(0.35, 0.65, noise.r + swell * 0.3);
-    color = mix(color, terrainFoam.rgb, foam * 0.8);
-  }
+  if (terrainSea.y > 0.5) color = terrainShore(color, p, noise, slope);
   return color;
 }
 #endif
@@ -108,7 +134,7 @@ const UPDATE_DIFFUSE = /* glsl */ `
 /**
  * Turns a `StandardMaterial` into a terrain material (P04-R01): the colour comes from four
  * generated textures blended by altitude and slope, with noise so the borders wander, large
- * tinted patches, and surf where the ground meets the sea. Lighting, shadows and fog stay the
+ * tinted patches, and a beach, shallows and surf where the ground meets the sea. Lighting, shadows and fog stay the
  * standard material's.
  */
 export class TerrainBlendPlugin extends MaterialPluginBase {
@@ -161,7 +187,13 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     ubo.updateFloat3('terrainTintA', ...look.tints[0]);
     ubo.updateFloat3('terrainTintB', ...look.tints[1]);
     ubo.updateFloat4('terrainSea', state.seaLevel, state.seaEnabled ? 1 : 0, state.time, 0);
-    ubo.updateFloat4('terrainFoam', ...look.foam.color, look.foam.width);
+    const { shore } = look;
+    ubo.updateFloat4('terrainSand', ...shore.sand, shore.beach);
+    ubo.updateFloat4('terrainShallow', ...shore.shallow, shore.depth);
+    ubo.updateFloat3('terrainDeep', ...shore.deep);
+    ubo.updateFloat4('terrainFoam', ...shore.foam.color, shore.foam.width);
+    const { spacing, speed, reach } = shore.foam;
+    ubo.updateFloat4('terrainSurf', spacing, speed, reach, 0);
     ubo.setTexture('terrainLow', textures.low);
     ubo.setTexture('terrainGround', textures.ground);
     ubo.setTexture('terrainSteep', textures.steep);
