@@ -159,6 +159,9 @@ export const WORLD_1_PROPS: PropRules = {
   ],
   treesPerCell: 4,
   cars: CAR_RULES,
+  // Phase 6 review: a few buildings away from the roads, and hamlets from time to time.
+  loners: { cell: 150, chance: 0.15, clearance: 18 },
+  hamlets: { spacing: [700, 1400], buildings: [5, 9], radius: 32, gap: 2, clearance: 18 },
 };
 
 /** Plants of the sections, and the lone huts of the islands. */
@@ -173,7 +176,8 @@ export const PLANTS = {
 
 /**
  * Roads of World 1 (P04-R07): one winding 2×2 highway and a second road, paths every 260-560
- * units, starting and ending off screen, as in Level Zero.
+ * units, starting and ending off screen, as in Level Zero; unlike there, no road crosses
+ * another (phase 6 review).
  */
 export const WORLD_1_ROADS: RoadRules = {
   mainRoads: 2,
@@ -193,4 +197,6 @@ export const WORLD_1_ROADS: RoadRules = {
   step: 8,
   slotSpacing: 24,
   setback: 2,
+  // Phase 6 review: roads never cross; paths only join roads.
+  noCrossings: { gap: 30 },
 };

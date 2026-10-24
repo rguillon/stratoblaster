@@ -80,7 +80,10 @@ const key = (n: Node): string => `${n.x.toFixed(3)},${n.z.toFixed(3)}`;
  *   meet them at T-junctions;
  * - each other link is built with the chance `links`, if its ground is buildable;
  * - then dead ends on screen are removed: a street that stops at a crossing goes on straight, or
- *   is cut back, until every street ends at a crossing, a junction, or off the screen.
+ *   is cut back, until every street ends at a crossing, a junction, or off the screen;
+ * - without crossings (`rules.noCrossings`, phase 6 review), every crossing then becomes a
+ *   T-junction: one of its two stretches along the level goes, and the dead ends that leaves are
+ *   removed again, without making new crossings.
  */
 export function streetRuns(
   district: District,
@@ -90,7 +93,9 @@ export function streetRuns(
   outOfView: (node: Node) => boolean,
 ): { runs: { x: number; z: number }[][]; blocks: Block[] } {
   const { links, layouts } = gridLinks(district, rules, random, buildable);
-  removeDeadEnds(links, outOfView);
+  const at = linksByNode(links);
+  removeDeadEnds(at, outOfView, false);
+  if (rules.noCrossings) removeCrossings(at, outOfView, random);
   const inset = (coord: number): number => streetWidth(rules, coord) / 2 + BLOCK_KERB;
   const blocks = gridBlocks(layouts, links, inset).filter((b) =>
     buildable((b.xMin + b.xMax) / 2, (b.zMin + b.zMax) / 2),
@@ -231,31 +236,76 @@ function linksByNode(links: readonly Link[]): Map<string, Link[]> {
   return at;
 }
 
+/** The side of the node `k` that `link` leaves it by. */
+function sideOf(k: string, link: Link): 'left' | 'right' | 'down' | 'up' {
+  const [self, other] = key(link.a) === k ? [link.a, link.b] : [link.b, link.a];
+  if (link.across) return other.x < self.x ? 'left' : 'right';
+  return other.z < self.z ? 'down' : 'up';
+}
+
+/** Whether built streets (and `extra`, if given) leave the node `k` on all four sides. */
+function isCrossing(k: string, around: readonly Link[] | undefined, extra?: Link): boolean {
+  const sides = new Set(
+    (around ?? []).filter((l) => l.built || l === extra).map((l) => sideOf(k, l)),
+  );
+  return sides.size === 4;
+}
+
+/** Whether building `link`, from the node `k`, would make a crossing at its far end. */
+function makesCrossing(link: Link, k: string, at: ReadonlyMap<string, readonly Link[]>): boolean {
+  const far = key(key(link.a) === k ? link.b : link.a);
+  return isCrossing(far, at.get(far), link);
+}
+
 /**
  * Fixes the node `k` if a single built street ends there on screen: the street goes on straight
- * when the next link's ground allows it, else it is cut back. Returns whether anything changed.
+ * when the next link's ground allows it (and, with `tees`, its far end is no T-junction it would
+ * turn into a crossing), else it is cut back. Returns whether anything changed.
  */
 function fixDeadEnd(
   k: string,
-  around: readonly Link[],
+  at: ReadonlyMap<string, readonly Link[]>,
   outOfView: (node: Node) => boolean,
+  tees: boolean,
 ): boolean {
+  const around = at.get(k) ?? [];
   const built = around.filter((l) => l.built);
   const only = built[0];
   if (built.length !== 1 || !only || outOfView(key(only.a) === k ? only.a : only.b)) return false;
   const ahead = around.find((l) => l !== only && l.across === only.across);
-  if (ahead?.ground) ahead.built = true;
+  if (ahead?.ground && !(tees && makesCrossing(ahead, k, at))) ahead.built = true;
   else only.built = false;
   return true;
 }
 
-function removeDeadEnds(links: Link[], outOfView: (node: Node) => boolean): void {
-  const at = linksByNode(links);
+function removeDeadEnds(
+  at: ReadonlyMap<string, readonly Link[]>,
+  outOfView: (node: Node) => boolean,
+  tees: boolean,
+): void {
   for (let pass = 0; pass < MAX_PASSES; pass++) {
     let changed = false;
-    for (const [k, around] of at) changed = fixDeadEnd(k, around, outOfView) || changed;
+    for (const k of at.keys()) changed = fixDeadEnd(k, at, outOfView, tees) || changed;
     if (!changed) return;
   }
+}
+
+/**
+ * Turns every crossing into a T-junction (see {@link streetRuns}): the streets leaving it up or
+ * down the level go. Cutting makes no crossing, nor does fixing the dead ends that leaves with
+ * `tees`, so one pass is enough.
+ */
+function removeCrossings(
+  at: ReadonlyMap<string, readonly Link[]>,
+  outOfView: (node: Node) => boolean,
+  random: Random,
+): void {
+  for (const [k, around] of at) {
+    if (!isCrossing(k, around)) continue;
+    const side = random() < 0.5 ? 'down' : 'up';
+    for (const l of around) if (l.built && sideOf(k, l) === side) l.built = false;
+  }
+  removeDeadEnds(at, outOfView, true);
 }
 
 /** Maximal straight runs of built links, as points every `step`. */
