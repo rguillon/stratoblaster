@@ -4,6 +4,7 @@ import { resolveRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
 import { startSceneryViewer } from './app/start-scenery-viewer';
+import { startEnemyViewer } from './app/start-enemy-viewer';
 import { ENGINE_CONFIG } from './config/engine';
 import { MENU_CONFIG } from './config/menu';
 import { hasWebGL2 } from './platform/webgl-support';
@@ -11,6 +12,7 @@ import { CookieStorage } from './platform/cookie-storage';
 import { browserGamepads } from './input/gamepad-menu-input';
 import { applyStageFit, fitStage } from './ui/stage-fit';
 import { installTestApi } from './debug/test-api';
+import { installEnemyViewerTestApi } from './debug/enemy-viewer-test-api';
 import { GAME } from './game/index';
 
 // Bootstrap only: create the engine and start the app (ENG-10).
@@ -106,6 +108,37 @@ function startScenery(engine: Engine): void {
   });
 }
 
+function startEnemies(engine: Engine): void {
+  fitCanvasStage(engine);
+  const viewer = startEnemyViewer(engine, GAME, {
+    environment: true,
+    doc: document,
+    panelParent: element('panel'),
+    statsParent: document.body,
+    keyboardTarget: window,
+    renderLoop: true,
+  });
+  if (__E2E__) {
+    installEnemyViewerTestApi(window, {
+      state: () => {
+        const { enemies, player } = viewer;
+        return {
+          enemies: enemies.enemies.map(({ model, x, y, health }) => ({ model, x, y, health })),
+          bullets: enemies.shots.bullets.filter((b) => b.alive).length,
+          missiles: enemies.shots.missiles.filter((m) => m.alive).length,
+          lasers: enemies.shots.lasers.map((l) => l.phase),
+          kills: enemies.kills,
+          score: enemies.score,
+          player: { x: player.x, y: player.y },
+        };
+      },
+      frame: (dt) => {
+        viewer.frame(dt);
+      },
+    });
+  }
+}
+
 function boot(): void {
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('#game-canvas not found');
@@ -136,6 +169,8 @@ function boot(): void {
     startShots(engine);
   } else if (route === 'scenery-viewer') {
     startScenery(engine);
+  } else if (route === 'enemy-viewer') {
+    startEnemies(engine);
   } else {
     document.title = GAME.title;
     startGame(engine);

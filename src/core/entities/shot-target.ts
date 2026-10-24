@@ -20,14 +20,15 @@ export function damageTarget(target: ShotTarget, amount: number): number {
   return dealt;
 }
 
-/** The living target closest to (x, y), or undefined if none is alive. */
+/** The living target closest to (x, y) and within `range`, or undefined if there is none. */
 export function closestTarget(
   targets: readonly ShotTarget[],
   x: number,
   y: number,
+  range = Infinity,
 ): ShotTarget | undefined {
   let best: ShotTarget | undefined;
-  let bestDistance = Infinity;
+  let bestDistance = range ** 2;
   for (const target of targets) {
     if (!isAlive(target)) continue;
     const distance = (target.x - x) ** 2 + (target.y - y) ** 2;

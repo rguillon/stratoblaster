@@ -420,3 +420,43 @@
 - **Alternatives considered:** One mesh per kind and per chunk, so frustum culling works. This multiplies the draw calls by the number of chunks (about 130 kinds × 6 chunks).
 - **Consequences:** A prop taller than about 80 standing past the window could pop in at the top edge. The tallest props are about 60 high.
 - **Status:** Accepted
+
+### D-032 — First enemies: abstract `Enemy` with hooks, `EnemyWorld`, `enemies/` page over Level Zero
+- **Date:** 2026-10-24
+- **Phase:** 5
+- **Context:** Phase 5 asks for 10 enemy kinds (shape and behaviour) and an `enemies/` debug page. There is no gameplay loop yet, and the spec leaves speeds, paths, bullet speeds and looks open.
+- **Decision:**
+  - Engine (`core/`): `Enemy` is an abstract class (a `ShotTarget`) with an `update(ctx, dt)` hook and an optional `onDestroyed(ctx)` hook (ENG-148). `EnemyContext` gives the player position and lets an enemy fire bullets, homing missiles and lasers, or spawn enemies. `EnemyKindDefinition.spawn` creates one group of a kind. `EnemyWorld` steps enemies and their shots (`EnemyShots`), scores and blows up destroyed enemies, removes enemies once they have been on the playfield and left it (or after 40 s), and lists enemies and missiles as targets for the player's `ShotWorld`. Shot looks are style keys the game's renderers know.
+  - Content (`src/game/`): one class per enemy (state machines), tunables in `game/config/enemies.ts`. Sizes use L = 34 px (the balanced ship: 4.8 model units × 7). Hit radius = 85 % of half the model size, smaller for the wide or long ones (Strafer, Lancer, Rocketeer, Bulwark). Enemies only shoot while their centre is over the playfield. Unspecified values (speeds, paths, bullet speeds, missile homing 3.5 s at 90°/s, Lancer laser 10 px wide) are agent defaults listed in the phase report.
+  - Models: vertex-coloured, flat-shaded `SolidBuilder` geometry (new `slab` extrusion), one dark PBR metal mesh and one unlit neon mesh per model, plus "charge" lights whose brightness follows `Enemy.charge` (gun ready, Lancer warning, Rocketeer reload, Spinner firing).
+  - Page: the Level Zero scenery and tilted camera of `level_zero/`, with a "playfield" layer node that turns the XY playfield space of the shot renderers onto the flight plane. `render/node-adopter.ts` parents everything the drawing code creates to that layer and puts it in the above-the-clouds rendering group; new nodes are found by Babylon's increasing `uniqueId` (the scene's "new mesh" observable fires asynchronously, so it misses them). A second glow layer, above the clouds, makes the neon glow; additive shots are left out of it. The ship is held inside what the camera shows (`visibleHalfWidth`). The model view is a separate close-up scene like `player_ship/` (phase 5 review: dark background, camera framed on the model, ← / → switch the enemy); the page renders either scene. `ShotWorld.firing` lets the page hold fire. e2e builds expose `window.__ENEMIES_TEST__` (state, frame stepping) and `make build` checks it is absent from production.
+- **Alternatives considered:** data-only enemy definitions (movement + attack enums): too rigid for state machines like the Spinner or the Splitter. An orthographic top-down page like `player_shots/`: the spec asks for the Level Zero scenery and the playfield camera. Changing every shot renderer to take a parent node: the adopter keeps the phase 3 renderers unchanged.
+- **Consequences:** New enemies are a class plus a model. The gameplay phase can reuse `EnemyWorld`, `EnemyLayer` and the playfield layer as is; it still has to decide player damage and wave spawning.
+- **Status:** Accepted
+
+### D-033 — Low-poly shaping primitives: `SolidBuilder.loft` and `bevelSlab`
+- **Date:** 2026-10-24
+- **Phase:** 5 (review)
+- **Context:** The reviewer found most enemy ships looked like cubes put together (boxes and straight extrusions), and asked for better geometry without raising the polygon count much.
+- **Decision:** Two engine primitives in `render/geometry/solids.ts`, flat-shaded like the others. `loft(section, stations)`: a convex cross-section (u across, v up) stretched through Z stations of half width, bottom and top; a zero-size station closes it to a point, `open` leaves the bottom side and caps out (canopies). `bevelSlab(outline, [y0, waist, y1], [insetBottom, insetTop])`: a slab whose sides slope from the outline at the waist to faces inset by a miter offset (`insetOutline`, tips clamped at 3× the distance). They cost about 2 triangles more per outline side or section side than a slab or box. Enemy models use them for fuselages, wings and plates.
+- **Alternatives considered:** More sides on lathes and boxes: more polygons without changing the silhouettes. Smooth-shaded Babylon builders (`ExtrudeShape`, `CreateTube`): not vertex-coloured per face, and off the flat-shaded look of D-007.
+- **Consequences:** About 19 % more polygons over the 10 enemy models in the close-up view. The player ships and props are unchanged; they can use the primitives later. Later in the same review, `loft` gained `paint` (some faces in another colour), so canopies are painted on one fuselage instead of being separate solids.
+- **Status:** Accepted
+
+### D-034 — Explosion particles as thin instances, one mesh per layer
+- **Date:** 2026-10-24
+- **Phase:** 5 (review)
+- **Context:** The reviewer asked for bigger, more realistic explosions with burning debris. That means hundreds of particles per blast (fireballs, smoke, debris, trailing embers and smoke wisps), each with its own colour as it cools. The blast renderer drew each particle as a cloned mesh from a pool (one draw call each), coloured only by its vertex colours.
+- **Decision:** `createBlastRenderer` draws each layer (smoke, shock rings, fireballs, debris, embers, flashes) as one disc mesh of thin instances, with a matrix and a colour per instance (`thinInstanceSetBuffer('color')`, multiplied into the vertex colours). The buffers grow by powers of two and are refilled every frame; `thinInstanceCount` shows the live part. Fire and smoke are alpha blended (vertex alpha, a soft disc); flashes, rings, debris and embers are added on. The meshes are never culled, and `alphaIndex` keeps smoke under fire. The `enemies/` page's glow layer leaves out vertex-alpha meshes, because the glow layer ignores instance colours and drew them white.
+- **Alternatives considered:** Keep the node pool: up to about a thousand draw calls during a busy fight, and no colour per particle without a material each. Babylon's `ParticleSystem`: GPU-friendly, but it emits in world space with its own emitters and textures, and would not stay deterministic and unit-testable like the pure `BlastParticles` simulation.
+- **Consequences:** An explosion, or many at once, costs six draw calls. Each layer is capped at 1200 particles. Any later effect drawn the same way must stay out of the glow layer or be additive.
+- **Status:** Accepted
+
+### D-035 — Water colour painted on the terrain, by depth
+- **Date:** 2026-10-24
+- **Phase:** 5 (review)
+- **Context:** The reviewer found the sea/land junction ugly: the near-opaque sea plane cut the ground with a hard line, with a uniform band of foam on the land, and no shallows.
+- **Decision:** The terrain shader colours the ground under the sea level by its depth (turquoise shallows to the deep sea colour) and paints the beach and the surf; the sea plane becomes mostly see-through (alpha 0.4) and only adds reflections and glints.
+- **Alternatives considered:** A depth-aware sea shader (reading the depth buffer, or the height field as vertex alpha on a subdivided sea plane): the true water depth on the water itself, but a depth pass or a much denser sea mesh, costly on the software GPU of the tests.
+- **Consequences:** No extra pass or mesh. The underwater ground is lit and shaded like land, so seabed relief shows faintly through the water. With the sea switched off, the ground has no water tint.
+- **Status:** Accepted

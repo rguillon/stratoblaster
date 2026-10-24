@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildGlowBar, buildGlowDisc } from '../../../../src/game/view/shot-geometry';
+import { buildGlowBar, buildGlowDisc, buildTracer } from '../../../../src/game/view/shot-geometry';
 
 const WHITE = [1, 1, 1] as const;
 const BLACK = [0, 0, 0] as const;
@@ -39,5 +39,26 @@ describe('buildGlowBar', () => {
     expect(reds).toEqual([0, 0, 1, 1, 0, 0]);
     expect(geo.indices).toHaveLength(2 * 6);
     expect(() => buildGlowBar([WHITE])).toThrow(RangeError);
+  });
+});
+
+describe('buildTracer', () => {
+  it('phase 5 review: a streak bright on its centre line, tinted row by row along it', () => {
+    const geo = buildTracer(
+      [WHITE, BLACK],
+      [
+        { at: 0, tint: [1, 0.5, 0] },
+        { at: -1, tint: BLACK },
+      ],
+    );
+    const ys = geo.positions.filter((_, i) => i % 3 === 1);
+    expect(ys).toEqual([0, 0, 0, -1, -1, -1]);
+    // The head's centre is the white tinted orange; the edges and the tail are black.
+    expect(geo.colors.slice(4, 8)).toEqual([1, 0.5, 0, 1]);
+    const greens = geo.colors.filter((_, i) => i % 4 === 1);
+    expect(greens).toEqual([0, 0.5, 0, 0, 0, 0]);
+    expect(geo.indices).toHaveLength(2 * 6);
+    expect(Math.max(...geo.indices)).toBe(5);
+    expect(() => buildTracer([WHITE], [])).toThrow(RangeError);
   });
 });

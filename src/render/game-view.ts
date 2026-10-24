@@ -1,7 +1,10 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { Enemy } from '../core/entities/enemy';
 import type { MenuScreen } from '../core/menu/menu-screen';
+import type { EnemyBullet, EnemyLaser, EnemyMissile } from '../core/systems/enemy-shots';
+import type { EnemyBlast } from '../core/systems/enemy-world';
 import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
 import type { ShotImpact } from '../core/systems/shot-world';
@@ -62,6 +65,54 @@ export interface GameView {
   readonly menuBackdrop: MenuBackdropFactory;
   /** How the generated levels look (P04). */
   readonly scenery: SceneryBindings;
+  /** How the enemies, their shots and their explosions look (P05). */
+  readonly enemies: EnemyBindings;
+}
+
+/**
+ * The model of one enemy. It is built facing +Z with +Y up, centred on the origin, in logical
+ * pixels; the engine turns it onto the playfield and along the enemy's heading.
+ */
+export interface EnemyModel {
+  readonly root: TransformNode;
+  /** Shows the enemy's state (e.g. `charge`) and steps the model's animations. */
+  sync(enemy: Enemy, dtSeconds: number): void;
+}
+
+/** Builds one enemy model in `scene`. */
+export type EnemyModelFactory = (scene: Scene) => EnemyModel;
+
+/** What the enemy shot renderer draws on one frame, in playfield space (see {@link ShotFrame}). */
+export interface EnemyShotFrame {
+  /** Bullets and missiles in flight. */
+  readonly bullets: readonly EnemyBullet[];
+  readonly missiles: readonly EnemyMissile[];
+  /** Lasers, in their warning or firing phase. */
+  readonly lasers: readonly EnemyLaser[];
+  readonly dtSeconds: number;
+}
+
+/** Draws the enemies' shots, frame after frame. */
+export interface EnemyShotRenderer {
+  sync(frame: EnemyShotFrame): void;
+  dispose(): void;
+}
+
+/** Draws explosions where enemies and missiles were destroyed (GD-62), frame after frame. */
+export interface BlastRenderer {
+  /** `blasts` are the new ones since the previous frame. */
+  sync(blasts: readonly EnemyBlast[], dtSeconds: number): void;
+  dispose(): void;
+}
+
+/** Presentation of the enemies (`GameDefinition.enemyKinds`). */
+export interface EnemyBindings {
+  /** One model per `EnemyStats.model` key. */
+  readonly models: Readonly<Record<string, EnemyModelFactory>>;
+  readonly shots: (scene: Scene) => EnemyShotRenderer;
+  readonly blasts: (scene: Scene) => BlastRenderer;
+  /** Glow of the self-lit parts drawn on the playfield (neon, shots). */
+  readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
 }
 
 /** Presentation of the levels with generated ground (`GameDefinition.sceneryLevels`). */

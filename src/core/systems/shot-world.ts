@@ -46,6 +46,8 @@ export class ShotWorld {
   impacts: ShotImpact[] = [];
   /** Total damage dealt since the world was created. */
   totalDamage = 0;
+  /** Whether the weapon fires; shots already in flight keep flying either way. */
+  firing = true;
   #weapon: WeaponDefinition;
   #level = 1;
   /** Seconds until the next volley. */
@@ -85,7 +87,10 @@ export class ShotWorld {
       if (shot.alive) this.#move(shot, dt);
     }
     const weapon = this.#weapon;
-    if (weapon.kind === 'projectile') {
+    if (!this.firing) {
+      this.beam = [];
+      this.#cooldown = 0;
+    } else if (weapon.kind === 'projectile') {
       this.beam = [];
       this.#fire(weapon, dt);
     } else {

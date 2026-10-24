@@ -27,5 +27,6 @@ describe('shot targets', () => {
     const mid = target(3, 0, 6);
     expect(closestTarget([near, far, mid], 0, 0)).toBe(mid);
     expect(closestTarget([near], 0, 0)).toBeUndefined();
+    expect(closestTarget([near, far, mid], 0, 0, 1)).toBeUndefined();
   });
 });

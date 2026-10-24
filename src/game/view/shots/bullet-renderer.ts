@@ -3,17 +3,18 @@ import { createRng } from '../../../core/math/rng';
 import { NodePool } from '../../../render/node-pool';
 import type { ShotRenderer } from '../../../render/game-view';
 import { SHOT_LOOK } from '../../config/shot-look';
-import { buildGlowDisc } from '../shot-geometry';
+import { buildGlowDisc, buildTracer } from '../shot-geometry';
 import { additiveTemplate } from './shot-meshes';
 import { SparkBursts } from './spark-bursts';
 
 /**
- * P03-R01: neon green blobs with fading edges, stretched along their direction of travel, and a
- * burst of sparkling metal sparks where they hit (phase 3 review).
+ * P03-R01: minigun tracers (phase 5 review, were green blobs): white-hot streaks cooling to red
+ * along their tail, flickering, and a burst of sparkling metal sparks where they hit (phase 3
+ * review).
  */
 export function createBulletRenderer(scene: Scene): ShotRenderer {
   const look = SHOT_LOOK.bullet;
-  const template = additiveTemplate('bullet', buildGlowDisc(look.segments, look.colors), scene);
+  const template = additiveTemplate('bullet', buildTracer(look.colors, look.rows), scene);
   const pool = new NodePool((i) => template.clone(`bullet-${String(i)}`));
   const sparkLook = SHOT_LOOK.impact.bullet;
   const sparkTemplate = additiveTemplate(
@@ -30,7 +31,10 @@ export function createBulletRenderer(scene: Scene): ShotRenderer {
         if (!shot) return;
         mesh.position.set(shot.x, shot.y, 0);
         mesh.rotation.z = -shot.heading;
-        mesh.scaling.set(look.radius, look.radius * look.stretch, 1);
+        // Grows out of the muzzle, then keeps its length; its width flickers.
+        const length = Math.min(look.length, shot.age * shot.speed + look.width);
+        const flicker = 1 + look.flicker * Math.sin(shot.age * look.flickerRate + shot.x);
+        mesh.scaling.set(look.width * flicker, length, 1);
       });
       for (const impact of frame.impacts) sparks.emit(impact.x, impact.y);
       const spots = sparks.step(frame.dtSeconds);

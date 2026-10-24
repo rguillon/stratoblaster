@@ -17,6 +17,7 @@ export function testGun(
     acceleration: 0,
     maxSpeed: 100,
     homingTurnRateDeg: 0,
+    homingRange: Infinity,
     radius: 2,
     damage: 5,
     blastRadius: 0,
