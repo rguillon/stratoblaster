@@ -35,6 +35,9 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('#game-canvas')).toBeVisible();
     await expect(page.locator('#fatal')).toBeHidden();
     await expect(page.locator('.enemy-title')).toHaveText('Enemies');
+    // Frames are being drawn: the first ones (shader compilation) are slow under SwiftShader,
+    // and keys pressed before them would be checked against a page that has not moved yet.
+    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
   });
 
   test('P05-R11: loads without errors, with the 10 enemy kinds and the debug tile', async ({

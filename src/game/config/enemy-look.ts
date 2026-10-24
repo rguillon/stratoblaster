@@ -31,6 +31,23 @@ export const ENEMY_LOOK = {
     bulwark: [0.15, 0.4, 1],
     splitter: [0.65, 0.2, 1],
   },
+  /**
+   * Reactors (phase 5 review): a dark nozzle with a neon core, and the player ships' animated
+   * flame in the enemy's neon colour. Sizes relative to the nozzle radius; the inner flame is
+   * `whiten` of the way from the neon colour to white.
+   */
+  reactor: {
+    depth: 1.2,
+    core: 0.75,
+    flameLength: 5,
+    flameWidth: 1.5,
+    puffSize: 1.1,
+    sides: 6,
+    exhaustAlpha: 0.45,
+    flameAlpha: 0.75,
+    plasmaAlpha: 0.6,
+    whiten: 0.55,
+  },
   /** A charging light (`Enemy.charge`) goes from `idle` to full brightness. */
   chargeIdle: 0.18,
   /** Glow layer over the playfield (enemies' neon, shots). */

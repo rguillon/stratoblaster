@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ENEMY_CONFIG, ENEMY_UNIT } from '../../../../../src/game/config/enemies';
 import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
 import { ENEMY_MODELS } from '../../../../../src/game/view/enemies/enemy-models';
@@ -9,13 +10,22 @@ import { Dropper } from '../../../../fixtures/sample-enemies';
 
 const scene = (): Scene => new Scene(new NullEngine());
 
-/** Width across X and length along Z of a model, from its meshes. */
+/** Width across X and length along Z of a model's body (its meshes, reactor flames left out). */
 function extent(key: string) {
   const model = ENEMY_MODELS[key]?.(scene());
   if (!model) throw new Error(key);
   model.root.computeWorldMatrix(true);
-  const { min, max } = model.root.getHierarchyBoundingVectors(true);
-  return { width: max.x - min.x, length: max.z - min.z, height: max.y - min.y, model };
+  const body = model.root
+    .getChildMeshes()
+    .filter((m) => !m.name.includes('-reactor-'))
+    .map((m) => {
+      m.computeWorldMatrix(true);
+      return m.getBoundingInfo().boundingBox;
+    });
+  const span = (axis: 'x' | 'y' | 'z'): number =>
+    Math.max(...body.map((b) => b.maximumWorld[axis])) -
+    Math.min(...body.map((b) => b.minimumWorld[axis]));
+  return { width: span('x'), length: span('z'), height: span('y'), model };
 }
 
 /** The spec size (in L) of each model, across its biggest side seen from above. */
@@ -77,9 +87,36 @@ describe('ENEMY_MODELS', () => {
   it('P05-R06, P05-R10: the pods sit where the simulation fires from or splits them', () => {
     const spinner = extent('spinner');
     expect(spinner.width / 2).toBeGreaterThan(ENEMY_CONFIG.spinner.podRadius);
-    const lancer = extent('lancer').model;
-    lancer.root.computeWorldMatrix(true);
-    const { max } = lancer.root.getHierarchyBoundingVectors(true);
-    expect(max.z).toBeGreaterThanOrEqual(ENEMY_CONFIG.lancer.emitterOffset);
+    const lancer = extent('lancer');
+    expect(lancer.length / 2).toBeGreaterThanOrEqual(ENEMY_CONFIG.lancer.emitterOffset);
+  });
+
+  it('phase 5 review: reactors with animated flames, in the enemy neon colour', () => {
+    const counts: Readonly<Record<string, number>> = {
+      gnat: 1,
+      hornet: 1,
+      scout: 2,
+      strafer: 4,
+      weaver: 2,
+      spinner: 0,
+      lancer: 3,
+      rocketeer: 2,
+      bulwark: 3,
+      splitter: 1,
+      'splitter-pod': 1,
+    };
+    for (const [key, count] of Object.entries(counts)) {
+      const { model } = extent(key);
+      const reactors = model.root.getChildren((n) => n.name.startsWith(`${key}-reactor-`), true);
+      expect(reactors, key).toHaveLength(count);
+    }
+    const { model } = extent('bulwark');
+    const flame = model.root.getChildMeshes().find((m) => m.name.endsWith('reactor-0-exhaust'));
+    const mat = flame?.material as StandardMaterial | undefined;
+    expect(mat?.emissiveColor.b).toBeCloseTo(ENEMY_LOOK.neon.bulwark[2]);
+    const pivot = flame?.parent as TransformNode | undefined;
+    const before = pivot?.scaling.z;
+    model.sync(new Dropper(0, 0), 0.13);
+    expect(pivot?.scaling.z).not.toBe(before);
   });
 });

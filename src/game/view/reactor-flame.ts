@@ -101,10 +101,21 @@ export interface FlameSize {
   readonly sides: number;
 }
 
+/** Materials of a flame: the outer exhaust cone, the hot inner cone and the plasma puffs. */
+export interface FlameMaterials {
+  readonly exhaust: Material;
+  readonly flame: Material;
+  readonly plasma: Material;
+}
+
 /** Plasma puffs of a flame; the animation places them along the exhaust. */
-function buildPuffs(name: string, diameter: number, parent: TransformNode): Mesh[] {
+function buildPuffs(
+  name: string,
+  diameter: number,
+  material: Material,
+  parent: TransformNode,
+): Mesh[] {
   const scene = parent.getScene();
-  const material = getShipMaterials(scene).reactorPlasma;
   return Array.from({ length: FLAME.puffCount }, (_, i) => {
     // An icosahedron (20 triangles): small, translucent and moving, it reads as a blob.
     const puff = CreatePolyhedron(
@@ -119,12 +130,24 @@ function buildPuffs(name: string, diameter: number, parent: TransformNode): Mesh
   });
 }
 
-/** Builds an animated reactor flame (GD-61) under `parent`, named after `name`. */
-export function buildReactorFlame(name: string, size: FlameSize, parent: TransformNode): void {
-  const scene = parent.getScene();
-  const mats = getShipMaterials(scene);
+/** The player ships' blue flame materials (GD-61). */
+function playerFlame(parent: TransformNode): FlameMaterials {
+  const mats = getShipMaterials(parent.getScene());
+  return { exhaust: mats.reactorExhaust, flame: mats.reactorFlame, plasma: mats.reactorPlasma };
+}
+
+/**
+ * Builds an animated reactor flame (GD-61) under `parent`, named after `name`, blue like the
+ * player ships' unless other `materials` are given (enemies, phase 5 review).
+ */
+export function buildReactorFlame(
+  name: string,
+  size: FlameSize,
+  parent: TransformNode,
+  materials: FlameMaterials = playerFlame(parent),
+): void {
   const { sides } = size;
-  const outer = cone(`${name}-exhaust`, size, mats.reactorExhaust, parent);
+  const outer = cone(`${name}-exhaust`, size, materials.exhaust, parent);
   const inner = cone(
     `${name}-flame`,
     {
@@ -132,12 +155,12 @@ export function buildReactorFlame(name: string, size: FlameSize, parent: Transfo
       diameter: size.diameter * FLAME.coreWidth,
       sides,
     },
-    mats.reactorFlame,
+    materials.flame,
     parent,
   );
   for (const { pivot } of [outer, inner]) pivot.position.z = size.nozzleZ;
 
-  const puffs = buildPuffs(name, size.puffDiameter, parent);
+  const puffs = buildPuffs(name, size.puffDiameter, materials.plasma, parent);
 
   const phase = reactorPhase(name);
   const hz = FLAME.flickerHz;

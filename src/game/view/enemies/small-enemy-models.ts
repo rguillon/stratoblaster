@@ -11,7 +11,7 @@ const WHITE = [1, 1, 1] as const;
 
 /** P05-R01: a small flat disc with three short fins at 120° and a neon ring around its rim. */
 export function buildGnat(scene: Scene): EnemyModel {
-  return buildEnemyModel('gnat', scene, N.gnat, ({ hull, neon }) => {
+  return buildEnemyModel('gnat', scene, N.gnat, ({ hull, neon, reactor }) => {
     const profile = [
       [0, -1.5],
       [5.5, -1.2],
@@ -25,12 +25,13 @@ export function buildGnat(scene: Scene): EnemyModel {
       hull.box([1.6, 1.2, 3.4], H.panel, { at: radial(a, 7, -0.6), yaw: a });
     }
     neon.ring(6.7, 0.7, 12, N.gnat, { at: [0, -0.35, 0] });
+    reactor([0, 0, -6.5], 1.1);
   });
 }
 
 /** P05-R02: an arrow head with sharply swept wings and a single red neon eye at the nose. */
 export function buildHornet(scene: Scene): EnemyModel {
-  return buildEnemyModel('hornet', scene, N.hornet, ({ hull, neon }) => {
+  return buildEnemyModel('hornet', scene, N.hornet, ({ hull, neon, reactor }) => {
     const body = [
       [0, 12],
       [2.6, 1],
@@ -54,6 +55,7 @@ export function buildHornet(scene: Scene): EnemyModel {
       [-1.2, 2],
     ] as const;
     hull.slab(ridge, [1.6, 2.4], H.dark);
+    reactor([0, 0.2, -9], 1.4);
     neon.lathe(
       [
         [0, -0.9],
@@ -69,7 +71,7 @@ export function buildHornet(scene: Scene): EnemyModel {
 
 /** P05-R03: a small delta wing with twin tail booms and a cyan neon strip along each boom. */
 export function buildScout(scene: Scene): EnemyModel {
-  return buildEnemyModel('scout', scene, N.scout, ({ hull, neon, charge }) => {
+  return buildEnemyModel('scout', scene, N.scout, ({ hull, neon, charge, reactor }) => {
     const delta = [
       [0, 12],
       [13, -8],
@@ -89,6 +91,7 @@ export function buildScout(scene: Scene): EnemyModel {
     for (const s of SIDES) {
       hull.box([2.4, 2.6, 13], H.base, { at: [s * 7, -1, -8.5] }, H.panel);
       neon.box([0.8, 0.5, 10], N.scout, { at: [s * 7, 1.6, -8.5] });
+      reactor([s * 7, 0.3, -15], 1.1);
     }
     // Its gun, under the nose, glows as the next shot comes.
     charge.box([1.2, 1, 1.6], WHITE, { at: [0, -0.5, 11.5] });
@@ -97,7 +100,7 @@ export function buildScout(scene: Scene): EnemyModel {
 
 /** P05-R04: a wide, flat flying wing with a row of magenta neon lights along the leading edge. */
 export function buildStrafer(scene: Scene): EnemyModel {
-  return buildEnemyModel('strafer', scene, N.strafer, ({ hull, neon }) => {
+  return buildEnemyModel('strafer', scene, N.strafer, ({ hull, neon, reactor }) => {
     const wing = [
       [0, 8],
       [20.5, -1.5],
@@ -117,6 +120,7 @@ export function buildStrafer(scene: Scene): EnemyModel {
       [-4, 0],
     ] as const;
     hull.slab(hump, [1, 2.6], H.dark);
+    for (const x of [-12, -4, 4, 12]) reactor([x, 0, Math.abs(x) === 4 ? -4.3 : -4.1], 1);
     for (const s of SIDES) {
       for (let k = 1; k <= 5; k++) {
         const t = k / 6;
@@ -128,7 +132,7 @@ export function buildStrafer(scene: Scene): EnemyModel {
 
 /** P05-R05: a twin-hull catamaran, the two hulls joined by a glowing green neon bar. */
 export function buildWeaver(scene: Scene): EnemyModel {
-  return buildEnemyModel('weaver', scene, N.weaver, ({ hull, neon, charge }) => {
+  return buildEnemyModel('weaver', scene, N.weaver, ({ hull, neon, charge, reactor }) => {
     const hullOutline = [
       [0, 15.5],
       [2.6, 9],
@@ -148,6 +152,7 @@ export function buildWeaver(scene: Scene): EnemyModel {
       hull.slab(shiftX(hullOutline, s * 10), [-1.5, 1.5], H.base, {}, H.panel);
       hull.slab(shiftX(canopy, s * 10), [1.5, 2.5], H.dark);
       charge.box([1, 1, 1.6], WHITE, { at: [s * 10, -0.5, 15] });
+      reactor([s * 10, 0, -13.5], 1.5);
     }
     hull.box([16, 1.4, 4], H.dark, { at: [0, -0.7, -1] });
     neon.box([15, 0.9, 2.2], N.weaver, { at: [0, 0.7, -1] });

@@ -188,6 +188,7 @@ The game shall provide an `enemies/` debug endpoint that shows the 10 enemy kind
 > The agent ticks each item when fixed.
 
 - [x] Model view like the player ship view: close up on the enemy, left / right arrows to switch enemy, dark background (2026-10-24; P05-R11 updated in the spec at the reviewer's request). Fixed: the model view now has its own scene (`app/enemy-close-up.ts`).
+- [x] Add reactor effects to the enemy ships, some may have several (2026-10-24). Fixed: animated reactor flames in each enemy's neon colour.
 
 ---
 
@@ -229,6 +230,7 @@ make build      ✔ (ENG-52 check now covers __GAME_TEST__ and __ENEMIES_TEST__;
 make e2e        ✔ 40 passed (35 from earlier phases + 5 new in enemies.spec.ts)
 ```
 Review fix (close-up model view): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (reactors): typecheck ✔, build ✔. In the first full e2e run, the model view test failed under the parallel load: its keys were pressed before the page drew its first frames (the readout still showed the previous kind). The enemies tests now wait for the FPS tile first (no timeout changed); the spec alone and the next full run passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
 ### How to test manually
@@ -241,6 +243,8 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 
 ### Review fixes
 - Model view (review, P05-R11 updated): instead of a bigger model over Level Zero, the model view switches to its own scene (`app/enemy-close-up.ts`): dark background and lights of `player_ship/`, an orbit camera framed so the enemy fills about 60 % of the width, 45° above it, turning at 0.6 rad/s. ← / → switch the enemy there (in the level view the arrows still fly the ship); the camera's own arrow-key input is removed. Drag orbits, the wheel zooms. The FPS / polygons tile shows the scene on screen. The old in-level showcase, `EnemyBindings.showcaseScale` and `screenCentreY` were removed.
+
+- Reactors (review): every enemy but the Spinner (it spins on itself) has 1 to 4 reactors at the back: a dark nozzle, a neon core and the player ships' animated flame (exhaust cone, hot inner cone, plasma puffs, flicker), in the enemy's neon colour with a whiter inner flame. Gnat 1, Hornet 1, Scout 2 (booms), Strafer 4 (trailing edge), Weaver 2 (hulls), Lancer 3 (main + fins), Rocketeer 2, Bulwark 3 (main + engine pods, replacing the two neon strips), Splitter 1, Splitter pod 1. `buildReactorFlame` now takes optional materials (blue by default, unchanged for the player ships); `EnemyParts.reactor(at, radius)` adds one; enemy models step their animations in `sync`. Sizes in `ENEMY_LOOK.reactor`.
 
 ### Deviations from spec
 - "Hits on enemies emit particles" reuses the phase 3 hit effects (bullet sparks, missile flashes, laser contact glow and particles); no new hit effect was added.

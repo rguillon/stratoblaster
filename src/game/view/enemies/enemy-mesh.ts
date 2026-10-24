@@ -10,7 +10,9 @@ import type { Enemy } from '../../../core/entities/enemy';
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
+import { stepModelAnimations } from '../../../render/model-animation';
 import { ENEMY_LOOK } from '../../config/enemy-look';
+import { buildReactorFlame, type FlameMaterials } from '../reactor-flame';
 
 type Rgb = readonly [number, number, number];
 
@@ -70,6 +72,86 @@ export interface EnemyParts {
   readonly neon: SolidBuilder;
   /** Lights that brighten as the next attack charges (`Enemy.charge`); white, tinted by `charge`. */
   readonly charge: SolidBuilder;
+  /**
+   * Adds a reactor whose nozzle opens at `at`, thrusting towards -Z (phase 5 review): a dark
+   * nozzle, a neon core and an animated flame in the model's neon colour.
+   */
+  readonly reactor: (at: Vec3, radius: number) => void;
+}
+
+type Vec3 = readonly [number, number, number];
+
+interface Reactor {
+  readonly at: Vec3;
+  readonly radius: number;
+}
+
+const FLAME_CACHE = new WeakMap<Scene, Map<string, FlameMaterials>>();
+
+function glowing(name: string, color: Rgb, alpha: number, scene: Scene): StandardMaterial {
+  const mat = unlit(name, scene);
+  mat.emissiveColor = new Color3(...color);
+  mat.alpha = alpha;
+  mat.backFaceCulling = false;
+  return mat;
+}
+
+/** Flame materials in `color`, shared by the scene's reactors of that colour. */
+function flameMaterials(scene: Scene, color: Rgb): FlameMaterials {
+  const look = ENEMY_LOOK.reactor;
+  const byColor = FLAME_CACHE.get(scene) ?? new Map<string, FlameMaterials>();
+  FLAME_CACHE.set(scene, byColor);
+  const key = color.join(',');
+  let mats = byColor.get(key);
+  if (!mats) {
+    const hot = color.map((c) => c + (1 - c) * look.whiten) as unknown as Rgb;
+    mats = {
+      exhaust: glowing(`enemy-exhaust-${key}`, color, look.exhaustAlpha, scene),
+      flame: glowing(`enemy-flame-${key}`, hot, look.flameAlpha, scene),
+      plasma: glowing(`enemy-plasma-${key}`, color, look.plasmaAlpha, scene),
+    };
+    byColor.set(key, mats);
+  }
+  return mats;
+}
+
+/** Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`. */
+function addReactors(
+  name: string,
+  reactors: readonly Reactor[],
+  parts: EnemyParts,
+  color: Rgb,
+  root: TransformNode,
+): void {
+  const look = ENEMY_LOOK.reactor;
+  const behind = -Math.PI / 2;
+  reactors.forEach(({ at: [x, y, z], radius }, i) => {
+    const depth = radius * look.depth;
+    // Pitched back, a cylinder standing on `at` runs towards -Z.
+    parts.hull.cylinder(radius, depth, look.sides, ENEMY_LOOK.hull.dark, {
+      at: [x, y, z + depth],
+      pitch: behind,
+    });
+    parts.neon.cylinder(radius * look.core, 0.2, look.sides, color, {
+      at: [x, y, z + 0.1],
+      pitch: behind,
+    });
+    const node = new TransformNode(`${name}-reactor-${String(i)}`, root.getScene());
+    node.position.set(x, y, 0);
+    node.parent = root;
+    buildReactorFlame(
+      node.name,
+      {
+        nozzleZ: z - 0.05,
+        length: radius * look.flameLength,
+        diameter: radius * 2 * look.core * look.flameWidth,
+        puffDiameter: radius * look.puffSize,
+        sides: look.sides,
+      },
+      node,
+      flameMaterials(root.getScene(), color),
+    );
+  });
 }
 
 /**
@@ -82,14 +164,17 @@ export function buildEnemyModel(
   chargeColor: Rgb,
   build: (parts: EnemyParts) => void,
 ): EnemyModel {
+  const reactors: Reactor[] = [];
   const parts: EnemyParts = {
     hull: new SolidBuilder(),
     neon: new SolidBuilder(),
     charge: new SolidBuilder(),
+    reactor: (at, radius) => reactors.push({ at, radius }),
   };
   build(parts);
   const mats = enemyMaterials(scene);
   const root = new TransformNode(name, scene);
+  addReactors(name, reactors, parts, chargeColor, root);
   for (const [part, material] of [
     [parts.hull, mats.hull],
     [parts.neon, mats.neon],
@@ -104,7 +189,8 @@ export function buildEnemyModel(
   }
   return {
     root,
-    sync: (enemy: Enemy) => {
+    sync: (enemy: Enemy, dt: number) => {
+      stepModelAnimations(root, dt);
       const k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * enemy.charge;
       chargeMat.emissiveColor.set(chargeColor[0] * k, chargeColor[1] * k, chargeColor[2] * k);
     },
