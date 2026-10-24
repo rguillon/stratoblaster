@@ -291,7 +291,7 @@ Review fix (smaller booms for tiny ships): typecheck ✔, build ✔, e2e 40 pass
 Review fix (sea/land junction): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (missile homing range): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (tracer bullets): typecheck ✔, build ✔, e2e 40 passed.
-Review fix (visible missiles): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (visible missiles): typecheck ✔, build ✔, e2e 40 passed (a first run had 1 failure: the menu key-repeat timing test under load, P01-R09; it passed 3 runs in 3 alone, then the full suite passed).
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
