@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Scene } from '@babylonjs/core/scene';
 import { EnemyShots } from '../../../../../src/core/systems/enemy-shots';
 import { createBlastRenderer } from '../../../../../src/game/view/enemies/blast-renderer';
@@ -71,13 +72,25 @@ describe('createEnemyShotRenderer', () => {
 });
 
 describe('createBlastRenderer', () => {
-  it('GD-62: draws a fireball and debris for each blast', () => {
+  it('GD-62, phase 5 review: draws each layer of a blast as one mesh of thin instances', () => {
     const scene = new Scene(new NullEngine());
     const renderer = createBlastRenderer(scene);
+    const layer = (name: string): Mesh | undefined =>
+      (scene.getMeshByName(`blast-${name}`) as Mesh | null) ?? undefined;
+    expect(layer('fireballs')?.isEnabled()).toBe(false);
     renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.05);
-    expect(enabled(scene, 'blast-fireball-')).toHaveLength(1);
-    expect(enabled(scene, 'blast-debris-').length).toBeGreaterThan(0);
+    for (const name of ['fireballs', 'debris', 'embers', 'flashes', 'rings']) {
+      expect(layer(name)?.isEnabled(), name).toBe(true);
+      expect(layer(name)?.thinInstanceCount, name).toBeGreaterThan(0);
+    }
+    // Two blasts: more instances, not more meshes.
+    const meshes = scene.meshes.length;
+    const debris = layer('debris')?.thinInstanceCount ?? 0;
+    renderer.sync([{ kind: 'enemy', x: 200, y: 20, radius: 15 }], 0.01);
+    expect(scene.meshes).toHaveLength(meshes);
+    expect(layer('debris')?.thinInstanceCount).toBeGreaterThan(debris);
     renderer.dispose();
+    expect(layer('debris')).toBeUndefined();
   });
 });
 

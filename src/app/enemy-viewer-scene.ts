@@ -88,10 +88,12 @@ export function buildEnemyViewerScene(
   const root = new TransformNode('playfield', scene);
   // The playfield's XY plane onto the flight plane: Y along the level (+Z), -Z up (+Y).
   root.rotation.x = Math.PI / 2;
-  // Shots are additive and bright enough already: only the ships' neon lights glow.
+  // Shots are additive and bright enough already: only the ships' neon lights glow. Nor do soft,
+  // see-through particles (vertex alpha: the blasts' fire and smoke), which the glow layer would
+  // draw white, without their tints.
   const playfield = new NodeAdopter(scene, root, ABOVE_CLOUDS_GROUP, (mesh) => {
     const additive = mesh.material?.alphaMode === Constants.ALPHA_ADD;
-    if (mesh instanceof Mesh && !additive) glow?.addIncludedOnlyMesh(mesh);
+    if (mesh instanceof Mesh && !additive && !mesh.hasVertexAlpha) glow?.addIncludedOnlyMesh(mesh);
   });
   return {
     scene,

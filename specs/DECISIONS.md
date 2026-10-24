@@ -442,3 +442,12 @@
 - **Alternatives considered:** More sides on lathes and boxes: more polygons without changing the silhouettes. Smooth-shaded Babylon builders (`ExtrudeShape`, `CreateTube`): not vertex-coloured per face, and off the flat-shaded look of D-007.
 - **Consequences:** About 19 % more polygons over the 10 enemy models in the close-up view. The player ships and props are unchanged; they can use the primitives later. Later in the same review, `loft` gained `paint` (some faces in another colour), so canopies are painted on one fuselage instead of being separate solids.
 - **Status:** Accepted
+
+### D-034 — Explosion particles as thin instances, one mesh per layer
+- **Date:** 2026-10-24
+- **Phase:** 5 (review)
+- **Context:** The reviewer asked for bigger, more realistic explosions with burning debris. That means hundreds of particles per blast (fireballs, smoke, debris, trailing embers and smoke wisps), each with its own colour as it cools. The blast renderer drew each particle as a cloned mesh from a pool (one draw call each), coloured only by its vertex colours.
+- **Decision:** `createBlastRenderer` draws each layer (smoke, shock rings, fireballs, debris, embers, flashes) as one disc mesh of thin instances, with a matrix and a colour per instance (`thinInstanceSetBuffer('color')`, multiplied into the vertex colours). The buffers grow by powers of two and are refilled every frame; `thinInstanceCount` shows the live part. Fire and smoke are alpha blended (vertex alpha, a soft disc); flashes, rings, debris and embers are added on. The meshes are never culled, and `alphaIndex` keeps smoke under fire. The `enemies/` page's glow layer leaves out vertex-alpha meshes, because the glow layer ignores instance colours and drew them white.
+- **Alternatives considered:** Keep the node pool: up to about a thousand draw calls during a busy fight, and no colour per particle without a material each. Babylon's `ParticleSystem`: GPU-friendly, but it emits in world space with its own emitters and textures, and would not stay deterministic and unit-testable like the pure `BlastParticles` simulation.
+- **Consequences:** An explosion, or many at once, costs six draw calls. Each layer is capped at 1200 particles. Any later effect drawn the same way must stay out of the glow layer or be additive.
+- **Status:** Accepted

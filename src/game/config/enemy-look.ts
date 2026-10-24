@@ -117,28 +117,93 @@ export const ENEMY_LOOK = {
     emitter: glow([1, 0.95, 0.95], [1, 0.3, 0.4], [0.3, 0, 0.05]),
     emitterRadius: 9,
   },
+  /**
+   * Explosions (GD-62; phase 5 review: bigger, with burning debris). Sizes are relative to the
+   * hit radius of what blew up, `[min, max)` ranges are picked at random per particle, `life`
+   * and `delay` in seconds, speeds in logical pixels a second, `drag` per second.
+   */
   blasts: {
     seed: 11,
-    /** Fireball: grows to `radiusFactor` times the enemy radius over `duration`. */
-    fireball: {
-      colors: glow([1, 0.95, 0.75], [1, 0.5, 0.1], [0.45, 0.08, 0]),
-      segments: 16,
-      radiusFactor: 2.2,
-      duration: 0.45,
-    },
-    /** Hot debris flying out, slowing down, fading. */
-    debris: {
-      colors: glow([1, 0.9, 0.6], [1, 0.45, 0.1], [0.3, 0.05, 0]),
-      segments: 6,
-      perRadius: 0.8,
-      min: 6,
-      max: 26,
-      speed: [60, 220],
-      size: [1.5, 3.5],
-      life: [0.35, 0.8],
-      drag: 3,
-    },
-    /** Missiles blow up smaller. */
+    /** Missiles blow up smaller, with fewer particles. */
     missileScale: 0.6,
+    /** Small enemies blow up as if they were this big (a hit radius, logical pixels). */
+    minRadius: 12,
+    /** Fire cools along these colours, white hot to out (black, as fire is added on). */
+    heat: [
+      [1, 0.97, 0.88],
+      [1, 0.8, 0.4],
+      [1, 0.45, 0.1],
+      [0.65, 0.14, 0.03],
+      [0, 0, 0],
+    ] as readonly Rgb[],
+    /** A white flash, at once. */
+    flash: { size: 3.6, life: 0.16, brightness: 0.9, segments: 16 },
+    /** A thin shock ring that races out and fades. */
+    ring: { size: 6.5, life: 0.45, segments: 32, color: [1, 0.75, 0.45] as Rgb },
+    /**
+     * Fireballs around the centre, one after the other, swelling as they cool. Laid over what is
+     * behind them (not added on, which turns to flat white over a bright ground), along `colors`,
+     * opaque for `opaque` of their life, then fading out.
+     */
+    fireball: {
+      colors: [
+        [1, 0.96, 0.75],
+        [1, 0.72, 0.22],
+        [0.95, 0.38, 0.06],
+        [0.55, 0.12, 0.03],
+        [0.18, 0.07, 0.05],
+      ] as readonly Rgb[],
+      opaque: 0.45,
+      alpha: 0.95,
+      perRadius: 0.3,
+      count: [5, 14] as const,
+      spread: 1.3,
+      delay: 0.4,
+      size: [1.4, 2.6] as const,
+      growth: 1.8,
+      life: [0.65, 1.1] as const,
+      drift: 40,
+      segments: 16,
+    },
+    /** Dark smoke left by the fireballs and the burning debris, lingering. */
+    smoke: {
+      size: [1.5, 2.6] as const,
+      growth: 2.2,
+      life: [1.3, 2.3] as const,
+      drift: 14,
+      alpha: 0.55,
+      /** Lit by the fire at first, then grey. */
+      colors: [
+        [0.4, 0.22, 0.1],
+        [0.13, 0.12, 0.12],
+      ] as readonly Rgb[],
+      segments: 12,
+    },
+    /** Burning pieces thrown out, slowing down, trailing embers and smoke as they burn out. */
+    debris: {
+      perRadius: 0.9,
+      min: 10,
+      max: 36,
+      speed: [120, 420] as const,
+      size: [2.6, 5] as const,
+      life: [0.8, 1.6] as const,
+      drag: 1.8,
+      /** One ember every `emberEvery` seconds and one smoke wisp every `smokeEvery`, while hot. */
+      emberEvery: 0.025,
+      smokeEvery: 0.09,
+      /** Size of a smoke wisp, in logical pixels. */
+      smokeSize: [4, 8] as const,
+      segments: 8,
+    },
+    /** Embers left behind by the debris and spat out by the blast, cooling fast. */
+    embers: {
+      count: [14, 40] as const,
+      speed: [60, 220] as const,
+      size: [1, 2] as const,
+      life: [0.25, 0.55] as const,
+      drag: 4,
+    },
+    /** At most this many particles in each layer; new ones are dropped beyond. */
+    cap: 1200,
   },
 } as const;
