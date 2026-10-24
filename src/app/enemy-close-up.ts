@@ -33,6 +33,7 @@ export class EnemyCloseUp {
   readonly pivot: TransformNode;
   #model: EnemyModel | undefined;
   #enemy: Enemy | undefined;
+  #warmed = false;
   #build: EnemyModelFactory | undefined;
   #wireframe = false;
   readonly #glow: GlowLayer | undefined;
@@ -107,6 +108,12 @@ export class EnemyCloseUp {
     this.#enemy = enemy;
     enemy.charge = 1;
     this.#model.sync(enemy, 0);
+    if (!this.#warmed) {
+      this.#warmed = true;
+      // Compiles the scene's shaders in the background, before it is first drawn: entering the
+      // model view would otherwise stall for as long as they take (seconds on a software GPU).
+      void this.scene.whenReadyAsync();
+    }
   }
 
   /** Hull edges in the light wire colour, without glow, and the hit circle around the model. */
