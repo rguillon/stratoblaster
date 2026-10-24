@@ -3,26 +3,35 @@
  * noted; durations in seconds. Shots are drawn with additive blending: black is transparent.
  */
 export const SHOT_LOOK = {
+  /**
+   * Minigun tracer (phase 5 review, was a green blob): a long thin streak, white-hot at its head,
+   * cooling to orange then red along its tail.
+   */
   bullet: {
-    /** Visual radius of the blob (the hit radius is in `player-weapons.ts`). */
-    radius: 4.5,
-    /**
-     * Sides of the blob. A disc of `segments` sides and `colors.length - 1` rings has
-     * segments × (2 × rings − 1) triangles: 8 × 5 = 40 (98 before the phase 3 review).
-     */
-    segments: 8,
-    /**
-     * Centre to edge: white-hot core (brighter after phase 3 review), neon green, black edge for
-     * the fade.
-     */
+    width: 3.4,
+    /** Length of the streak behind the bullet; a new one grows to it from the muzzle. */
+    length: 34,
+    /** Across the streak, centre line to edge. */
     colors: [
-      [0.95, 1, 0.9],
-      [0.35, 1, 0.3],
-      [0.04, 0.4, 0.08],
+      [1, 0.96, 0.82],
+      [1, 0.62, 0.2],
+      [0.45, 0.1, 0.02],
       [0, 0, 0],
     ],
-    /** The blob is stretched along its direction of travel by this factor. */
-    stretch: 1.35,
+    /**
+     * Along the streak, from its rounded tip (0.08 ahead of the bullet) back to the tail end
+     * (-1): how far back, and what the colours are multiplied by there.
+     */
+    rows: [
+      { at: 0.08, tint: [0, 0, 0] },
+      { at: 0, tint: [1, 1, 1] },
+      { at: -0.2, tint: [1, 0.85, 0.6] },
+      { at: -0.6, tint: [0.75, 0.35, 0.12] },
+      { at: -1, tint: [0, 0, 0] },
+    ],
+    /** Width flicker of each tracer (± fraction) and its rate, rad/s. */
+    flicker: 0.18,
+    flickerRate: 90,
   },
   laser: {
     /** Visual width relative to the beam's hit width (the glow spills around the core). */

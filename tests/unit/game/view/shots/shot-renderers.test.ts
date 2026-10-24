@@ -15,7 +15,7 @@ import { createLaserRenderer } from '../../../../../src/game/view/shots/laser-re
 import { createMissileRenderer } from '../../../../../src/game/view/shots/missile-renderer';
 import { buildMissile } from '../../../../../src/game/view/shots/missile-model';
 import { flashScale } from '../../../../../src/game/view/shots/impact-flashes';
-import { buildGlowDisc } from '../../../../../src/game/view/shot-geometry';
+import { buildGlowDisc, buildTracer } from '../../../../../src/game/view/shot-geometry';
 
 function frame(overrides: Partial<ShotFrame> = {}): ShotFrame {
   return { projectiles: [], beam: [], impacts: [], dtSeconds: 1 / 60, ...overrides };
@@ -41,7 +41,7 @@ describe('player shot renderers', () => {
     expect(Object.keys(PLAYER_SHOT_RENDERERS).sort()).toEqual(['bullet', 'laser', 'missile']);
   });
 
-  it('P03-R01: draws one additive green blob per bullet, stretched along its heading', () => {
+  it('P03-R01, phase 5 review: draws one additive tracer per bullet, along its heading', () => {
     const s = newScene();
     const renderer = createBulletRenderer(s);
     renderer.sync(frame({ projectiles: [bullet(10, 20), bullet(30, 40, 0.3)] }));
@@ -50,7 +50,11 @@ describe('player shot renderers', () => {
     const [a, b] = blobs;
     expect(a?.position.asArray()).toEqual([10, 20, 0]);
     expect(b?.rotation.z).toBeCloseTo(-0.3);
-    expect(b?.scaling.y).toBeCloseTo(SHOT_LOOK.bullet.radius * SHOT_LOOK.bullet.stretch);
+    // Just fired (age 0): a short streak, growing to its full length from the muzzle.
+    expect(b?.scaling.y).toBeCloseTo(SHOT_LOOK.bullet.width);
+    renderer.sync(frame({ projectiles: [{ ...bullet(0, 0), age: 1 }] }));
+    const tracer = s.meshes.find((m) => /^bullet-\d+$/.test(m.name) && m.isEnabled());
+    expect(tracer?.scaling.y).toBe(SHOT_LOOK.bullet.length);
     expect((a?.material as StandardMaterial).alphaMode).toBe(Constants.ALPHA_ADD);
     renderer.sync(frame({ projectiles: [bullet(1, 1)] }));
     expect(s.meshes.filter((m) => /^bullet-\d+$/.test(m.name) && m.isEnabled())).toHaveLength(1);
@@ -136,12 +140,12 @@ describe('player shot renderers', () => {
     expect(top.normalize().z).toBeCloseTo(-1);
   });
 
-  it('P03 review: a bullet is 40 triangles and a spark 12', () => {
-    const triangles = (look: { segments: number; colors: readonly (readonly number[])[] }) =>
-      buildGlowDisc(look.segments, look.colors as readonly [number, number, number][]).indices
-        .length / 3;
-    expect(triangles(SHOT_LOOK.bullet)).toBe(40);
-    expect(triangles(SHOT_LOOK.impact.bullet)).toBe(12);
+  it('P03 review, phase 5 review: a tracer is 48 triangles and a spark 12', () => {
+    const { colors, rows } = SHOT_LOOK.bullet;
+    // 7 columns across (3 colours each side of the centre line) by 5 rows along: 6 × 4 quads.
+    expect(buildTracer(colors, rows).indices.length / 3).toBe(48);
+    const spark = SHOT_LOOK.impact.bullet;
+    expect(buildGlowDisc(spark.segments, spark.colors).indices.length / 3).toBe(12);
   });
 
   it('P03 review: the glow at the base of the laser is round and smooth (24 sides, 6 rings)', () => {

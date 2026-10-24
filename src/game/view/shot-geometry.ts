@@ -38,6 +38,34 @@ export function buildGlowDisc(segments: number, colors: readonly Rgb[]): Colored
 }
 
 /**
+ * A streak along Y, X in [-0.5, 0.5]: across its width `colors` go from the centre line to both
+ * edges (like {@link buildGlowBar}); along it, each row at Y = `at` multiplies them by `tint`.
+ * With additive blending, a black row fades the streak out there.
+ */
+export function buildTracer(
+  colors: readonly Rgb[],
+  rows: readonly { readonly at: number; readonly tint: Rgb }[],
+): ColoredGeometry {
+  if (colors.length < 2 || rows.length < 2) throw new RangeError('Need 2 colours and 2 rows');
+  const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
+  const steps = colors.length - 1;
+  const columns = [...colors.keys()].reverse().concat([...colors.keys()].slice(1));
+  rows.forEach(({ at, tint }, row) => {
+    columns.forEach((c, col) => {
+      const rgb = colors[c] ?? [0, 0, 0];
+      geo.positions.push(col / (2 * steps) - 0.5, at, 0);
+      geo.colors.push(rgb[0] * tint[0], rgb[1] * tint[1], rgb[2] * tint[2], 1);
+      if (row > 0 && col > 0) {
+        const a = (row - 1) * columns.length + col - 1;
+        const b = a + columns.length;
+        geo.indices.push(a, b, b + 1, a, b + 1, a + 1);
+      }
+    });
+  });
+  return geo;
+}
+
+/**
  * A bar from Y = 0 to Y = 1, X in [-0.5, 0.5], coloured across its width: `colors[0]` on the
  * centre line out to the last colour on both edges. Scaled in X and Y, it draws a beam.
  */
