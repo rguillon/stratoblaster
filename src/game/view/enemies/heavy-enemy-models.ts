@@ -226,7 +226,7 @@ const BULWARK_NACELLE = [
 
 /** P05-R09: a heavy, wide hull covered with front armour plates and a blue neon visor slit. */
 export function buildBulwark(scene: Scene): EnemyModel {
-  return buildEnemyModel('bulwark', scene, N.bulwark, ({ hull, neon, charge, reactor }) => {
+  return buildEnemyModel('bulwark', scene, N.bulwark, ({ hull, neon, reactor }) => {
     hull.bevelSlab(BULWARK_BODY, [-3, -0.6, 2.5], [2, 2.5], H.base, {}, H.panel);
     hull.bevelSlab(BULWARK_ARMOUR, [2.5, 2.5, 3.9], [0, 1.1], H.panel, {}, H.base);
     hull.bevelSlab(BULWARK_TOWER, [2.5, 2.5, 5.5], [0, 1.6], H.dark, {}, H.base);
@@ -235,12 +235,6 @@ export function buildBulwark(scene: Scene): EnemyModel {
       hull.loft(POD_SECTION, BULWARK_NACELLE, H.dark, { at: [s * 12, 0, 0] });
       reactor([s * 12, -0.5, -20.5], 1.3);
     }
-    // Its chin gun, glowing as the next volley comes.
-    const gun = [
-      [12, 1.6, -0.5, 1.5],
-      [17, 0, 0.4, 0.4],
-    ] as const;
-    charge.loft(POD_SECTION, gun, WHITE);
     reactor([0, 0, -17], 2.2);
   });
 }

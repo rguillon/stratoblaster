@@ -18,7 +18,6 @@ import {
 // basic solids stuck together), bevelled wings whose roots sit inside it.
 const H = ENEMY_LOOK.hull;
 const N = ENEMY_LOOK.neon;
-const WHITE = [1, 1, 1] as const;
 
 /** P05-R01: the Gnat's body, a flat disc (lathe profile), and a duct around each fan. */
 const GNAT_BODY = [
@@ -35,25 +34,11 @@ const GNAT_DUCT = [
   [2.3, 0.6],
   [2.3, -0.6],
 ] as const;
-/** An arm from the body out to a duct, along +Z. */
-const GNAT_ARM = [
-  [-1, -3],
-  [1, -3],
-  [0.6, 0],
-  [-0.6, 0],
-] as const;
-/** The sensor turret under the nose. */
-const GNAT_TURRET = [
-  [0, -1.3],
-  [1.1, -1],
-  [1.3, -0.3],
-  [1, 0],
-] as const;
 
 /**
- * P05-R01: an unmanned swarm drone (phase 5 review): a small flat disc with three short arms at
- * 120° carrying ducted fans, a neon ring around its rim, a sensor turret under the nose and an
- * antenna on its back. No cockpit, no canopy.
+ * P05-R01: an unmanned swarm drone (phase 5 review): a small flat disc with three ducted fans at
+ * 120° set into its rim, a neon ring around it and an antenna on its back. No cockpit, no canopy,
+ * and nothing underneath (phase 5 review: it is seen from above).
  */
 export function buildGnat(scene: Scene): EnemyModel {
   return buildEnemyModel('gnat', scene, N.gnat, ({ hull, neon, reactor, rotor }) => {
@@ -61,22 +46,9 @@ export function buildGnat(scene: Scene): EnemyModel {
     neon.ring(4.5, 0.6, 8, N.gnat, { at: [0, -0.3, 0] });
     for (const a of around(3)) {
       const duct = radial(a, 6, 0);
-      // Under the blades, from inside the body to the fan's hub.
-      hull.slab(GNAT_ARM, [-0.8, -0.3], H.panel, { at: duct, yaw: a });
       hull.lathe(GNAT_DUCT, 8, H.panel, { at: duct }, false);
       rotor([duct[0], 0, duct[2]], 2.1);
     }
-    hull.lathe(GNAT_TURRET, 6, H.dark, { at: [0, 0, 3.3] });
-    neon.lathe(
-      [
-        [0, -0.35],
-        [0.45, 0],
-        [0, 0.35],
-      ],
-      6,
-      N.gnat,
-      { at: [0, -1.05, 4.3], pitch: Math.PI / 2 },
-    );
     hull.box([0.25, 2.2, 0.25], H.panel, { at: [-1.2, 1.2, -2.2] });
     reactor([0, 0, -4.4], 0.9);
   });
@@ -142,7 +114,7 @@ const SCOUT_STRIP = [
 
 /** P05-R03: a small delta wing with twin tail booms and a cyan neon strip along each boom. */
 export function buildScout(scene: Scene): EnemyModel {
-  return buildEnemyModel('scout', scene, N.scout, ({ hull, neon, charge, reactor }) => {
+  return buildEnemyModel('scout', scene, N.scout, ({ hull, neon, reactor }) => {
     const delta = [
       [0, 11],
       [13, -8],
@@ -161,15 +133,6 @@ export function buildScout(scene: Scene): EnemyModel {
       neon.slab(SCOUT_STRIP, [1.6, 2], N.scout, { at: [s * 7, 0.1, 0] });
       reactor([s * 7, 0.3, -15], 1.1);
     }
-    // Its gun, under the nose, glows as the next shot comes.
-    charge.loft(
-      POD_SECTION,
-      [
-        [8, 0.7, -1.2, -0.2],
-        [12, 0, -0.6, -0.6],
-      ],
-      WHITE,
-    );
   });
 }
 
@@ -249,17 +212,12 @@ const WEAVER_STRUT = [
 
 /** P05-R05: a twin-hull catamaran, the two hulls joined by a glowing green neon bar. */
 export function buildWeaver(scene: Scene): EnemyModel {
-  return buildEnemyModel('weaver', scene, N.weaver, ({ hull, neon, charge, reactor }) => {
+  return buildEnemyModel('weaver', scene, N.weaver, ({ hull, neon, reactor }) => {
     hull.bevelSlab(WEAVER_STRUT, [-1, -0.4, 0.2], [0.3, 0.6], H.dark);
     const paint = canopyPaint([2, 3], H.dark);
     for (const s of SIDES) {
       const at = { at: [s * 10, 0, 0] as [number, number, number] };
       hull.loft(FIGHTER_SECTION, WEAVER_HULL, H.base, at, { paint });
-      const gun = [
-        [12.5, 0.6, -1.3, -0.4],
-        [16, 0, -0.7, -0.7],
-      ] as const;
-      charge.loft(POD_SECTION, gun, WHITE, at);
       reactor([s * 10, 0, -15], 1.5);
     }
     neon.slab(

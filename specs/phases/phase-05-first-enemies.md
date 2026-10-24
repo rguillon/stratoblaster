@@ -217,6 +217,7 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [x] Add a wireframe view like the model view, to see the models' polygons (2026-10-24). Fixed: a "Wireframe (V)" view on `enemies/`: the model view's close-up drawn as lines.
 - [x] Pick a colour for the model and wireframe views so the models can be seen better: dark grey (2026-10-24). Fixed: both views now have a neutral dark grey background instead of the near-black purple of `player_ship/`.
 - [x] The wires were still hard to see; improve that, and show the hitbox in the wireframe view (2026-10-24). Fixed: the hull's edges are drawn in a light unlit grey without glow, and a red circle shows the enemy's hit radius.
+- [x] Some models (like the Gnat's little shiny diamond) have details only visible from the bottom: remove them (2026-10-24). Fixed: removed the Gnat's sensor turret, lens and arms, the Scout's gun under its nose, the Weaver's guns under its bows and the Bulwark's chin gun.
 
 ---
 
@@ -271,6 +272,7 @@ Review fix (Carrier rework): typecheck ✔, build ✔, e2e 39 passed + 1 failed 
 Review fix (wireframe view): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (dark grey background): typecheck ✔, build ✔, e2e 40 passed.
 Review fix (readable wireframe, hitbox): typecheck ✔, build ✔, e2e 40 passed.
+Review fix (nothing underneath): typecheck ✔, build ✔, e2e 39 passed + 1 failed on the first run (the P05-R11 model view test, the known stall on the first close-up draw: still "Enemies: 5" after 5 s), passed on its own rerun.
 Review fix (aggressive look): typecheck ✔, build ✔. The first full e2e run had 2 failures under load (38 passed); the rerun passed, e2e 40 passed.
 Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/validate-phase 5`.
 
@@ -298,6 +300,7 @@ Coverage before this phase: 99.35 % lines (phase 4). New numbers come with `/val
 - Wireframe view (review): a third view on `enemies/`, "Wireframe (V)" (button or V key; V again goes back to the behaviour view). It is the model view (same close-up scene, turning model, orbit and zoom, ← / → to switch the enemy) with the close-up scene's `forceWireframe` on, so every triangle's edges are drawn; the stats tile still counts the polygons. The dark hulls give dim lines and the neon parts bright ones.
 - Dark grey background (review): the model and wireframe views clear to a neutral dark grey (`ENEMY_VIEWER_CONFIG.closeUp.clearColor`, 0.2, 0.2, 0.21) instead of `player_ship/`'s near-black purple, which they shared; the dark metal hulls now stand out against it. In the wireframe view the hull lines are near-black on the grey and the neon lines bright. `player_ship/` keeps its background.
 - Readable wireframe and hitbox (review): in the wireframe view the close-up builds the model again with its hull meshes on a light unlit material (`closeUp.wireColor`, no vertex colours, left out of the glow layer), so the dark metal's edges show as crisp light grey lines; the neon parts keep their colours. A red line circle (`closeUp.hitboxColor`, 48 segments) of the enemy's hit radius lies in the model's plane, turning with it: the hit test is that circle in the playfield (GD-21). Back in the model view the model is built again, solid. `EnemyCloseUp.wireframe` switches it.
+- Nothing underneath (review): the enemies are seen from above, so parts only visible from below are gone, found by orbiting under each model in the close-up. Gnat: the sensor turret, its neon lens (the shiny diamond) and the three arms under the fans (the fans' ducts overlap the body's rim, so they stay attached); 768 polygons in the close-up (932). Scout: the gun under its nose (572, was 592). Weaver: the guns under its bows (616, was 656). Bulwark: the chin gun, buried in the hull but for its tip (612, was 632). Those three guns were the Scout's, Weaver's and Bulwark's charge lights, so these three no longer glow before they fire; the Spinner's muzzles, the Lancer's emitter, the Rocketeer's missile tips and the Splitter's eye still do.
 
 ### Deviations from spec
 - P05-R11 (review): the page has a third view, the wireframe view, at the reviewer's request; the requirement text (behaviour and model views) was not changed.

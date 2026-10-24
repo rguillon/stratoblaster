@@ -76,3 +76,4 @@
 - 2026-10-24 — 5 — Review fix: wireframe view on `enemies/` (V), the model view drawn as lines; light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: dark grey background for the model and wireframe views; light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: readable wireframe (light hull lines) and the hit circle shown in the wireframe view; light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: details only visible from below removed (Gnat turret, lens and arms; Scout, Weaver and Bulwark under-hull guns); light verification green (typecheck, build, 40 e2e, the known model view flake passing on rerun); still awaiting review.
