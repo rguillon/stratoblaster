@@ -1,5 +1,5 @@
 import type { Material } from '@babylonjs/core/Materials/material';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreatePolyhedron } from '@babylonjs/core/Meshes/Builders/polyhedronBuilder';
@@ -14,6 +14,9 @@ import { getShipMaterials } from './ship-materials';
 const TAU = Math.PI * 2;
 /** Puffs fade in over this first fraction of their travel, then fade out. */
 const PUFF_FADE_IN = 0.15;
+/** `CreatePolyhedron` types. */
+const TETRAHEDRON = 0;
+const ICOSAHEDRON = 3;
 /** Size of a puff at the end of its travel, relative to its size at the nozzle. */
 const PUFF_END_SCALE = 0.3;
 
@@ -64,7 +67,12 @@ interface Cone {
 
 function cone(
   name: string,
-  size: { readonly length: number; readonly diameter: number; readonly sides: number },
+  size: {
+    readonly length: number;
+    readonly diameter: number;
+    readonly sides: number;
+    readonly caps?: boolean;
+  },
   material: Material,
   parent: TransformNode,
 ): Cone {
@@ -78,6 +86,7 @@ function cone(
       diameterTop: 0,
       diameterBottom: size.diameter,
       tessellation: size.sides,
+      ...(size.caps === false ? { cap: Mesh.NO_CAP } : {}),
     },
     scene,
   );
@@ -99,6 +108,12 @@ export interface FlameSize {
   readonly puffDiameter: number;
   /** Number of sides of the flame cones (matches the polygonal nozzle). */
   readonly sides: number;
+  /**
+   * Lighter flames (enemies, phase 5 review): no caps on the cones (the base is hidden by the
+   * nozzle, the tip is a point), this many puffs, and tetrahedra instead of icosahedra.
+   * Player ships keep the defaults.
+   */
+  readonly light?: { readonly puffs: number };
 }
 
 /** Materials of a flame: the outer exhaust cone, the hot inner cone and the plasma puffs. */
@@ -114,13 +129,15 @@ function buildPuffs(
   diameter: number,
   material: Material,
   parent: TransformNode,
+  light?: { readonly puffs: number },
 ): Mesh[] {
   const scene = parent.getScene();
-  return Array.from({ length: FLAME.puffCount }, (_, i) => {
-    // An icosahedron (20 triangles): small, translucent and moving, it reads as a blob.
+  return Array.from({ length: light ? light.puffs : FLAME.puffCount }, (_, i) => {
+    // An icosahedron (20 triangles): small, translucent and moving, it reads as a blob. Light
+    // flames use a tetrahedron (4 triangles).
     const puff = CreatePolyhedron(
       `${name}-puff-${String(i)}`,
-      { type: 3, size: diameter / 2 },
+      { type: light ? TETRAHEDRON : ICOSAHEDRON, size: diameter / 2 },
       scene,
     );
     puff.material = material;
@@ -147,20 +164,22 @@ export function buildReactorFlame(
   materials: FlameMaterials = playerFlame(parent),
 ): void {
   const { sides } = size;
-  const outer = cone(`${name}-exhaust`, size, materials.exhaust, parent);
+  const caps = !size.light;
+  const outer = cone(`${name}-exhaust`, { ...size, caps }, materials.exhaust, parent);
   const inner = cone(
     `${name}-flame`,
     {
       length: size.length * FLAME.coreLength,
       diameter: size.diameter * FLAME.coreWidth,
       sides,
+      caps,
     },
     materials.flame,
     parent,
   );
   for (const { pivot } of [outer, inner]) pivot.position.z = size.nozzleZ;
 
-  const puffs = buildPuffs(name, size.puffDiameter, materials.plasma, parent);
+  const puffs = buildPuffs(name, size.puffDiameter, materials.plasma, parent, size.light);
 
   const phase = reactorPhase(name);
   const hz = FLAME.flickerHz;

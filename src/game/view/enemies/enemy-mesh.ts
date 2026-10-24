@@ -127,15 +127,16 @@ function addReactors(
   const behind = -Math.PI / 2;
   reactors.forEach(({ at: [x, y, z], radius }, i) => {
     const depth = radius * look.depth;
-    // Pitched back, a cylinder standing on `at` runs towards -Z.
-    parts.hull.cylinder(radius, depth, look.sides, ENEMY_LOOK.hull.dark, {
-      at: [x, y, z + depth],
-      pitch: behind,
+    // Pitched back, a band standing on `at` runs towards -Z: an open nozzle (no caps), with a
+    // flat neon core across its mouth, facing back.
+    const place = { at: [x, y, z + depth] as Vec3, pitch: behind };
+    parts.hull.ring(radius, depth, look.sides, ENEMY_LOOK.hull.dark, place);
+    const core = Array.from({ length: look.sides }, (_, k): Vec3 => {
+      // Counter-clockwise seen from behind (-Z), so the face points back, out of the nozzle.
+      const a = (-2 * Math.PI * k) / look.sides;
+      return [x + Math.cos(a) * radius * look.core, y + Math.sin(a) * radius * look.core, z];
     });
-    parts.neon.cylinder(radius * look.core, 0.2, look.sides, color, {
-      at: [x, y, z + 0.1],
-      pitch: behind,
-    });
+    parts.neon.face(core, color);
     const node = new TransformNode(`${name}-reactor-${String(i)}`, root.getScene());
     node.position.set(x, y, 0);
     node.parent = root;
@@ -146,7 +147,8 @@ function addReactors(
         length: radius * look.flameLength,
         diameter: radius * 2 * look.core * look.flameWidth,
         puffDiameter: radius * look.puffSize,
-        sides: look.sides,
+        sides: look.flameSides,
+        light: { puffs: look.puffs },
       },
       node,
       flameMaterials(root.getScene(), color),

@@ -64,3 +64,4 @@
 - 2026-10-24 — 5 — Implemented 10 enemy kinds (engine `Enemy` / `EnemyWorld`, code-generated models, shots, explosions) and the `enemies/` debug page over Level Zero (D-032); light verification green (typecheck, build, 40 e2e); awaiting review.
 - 2026-10-24 — 5 — Review fix: model view like player_ship/ (close up, dark background, ← / → switch the enemy), P05-R11 updated at the reviewer's request; light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Review fix: reactor flames on the enemies (1 to 4 each, in their neon colour; none on the Spinner); light verification green (typecheck, build, 40 e2e); still awaiting review.
+- 2026-10-24 — 5 — Review fix: lighter enemy reactors (about 40 triangles each instead of 150); light verification green (typecheck, build, 40 e2e); still awaiting review.

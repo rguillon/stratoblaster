@@ -119,4 +119,14 @@ describe('ENEMY_MODELS', () => {
     model.sync(new Dropper(0, 0), 0.13);
     expect(pivot?.scaling.z).not.toBe(before);
   });
+
+  it('phase 5 review: a reactor costs about 40 triangles', () => {
+    const s = scene();
+    const withReactors = ENEMY_MODELS.bulwark?.(s);
+    const flames = withReactors?.root.getChildMeshes().filter((m) => m.name.includes('-reactor-'));
+    const triangles = (flames ?? []).reduce((n, m) => n + m.getTotalIndices() / 3, 0);
+    // 3 reactors: 2 capless 4-sided cones and 2 tetrahedra each (the nozzle and core are in
+    // the hull and neon meshes: a 6-sided band and a hexagon, 16 triangles).
+    expect(triangles / 3).toBeLessThanOrEqual(24);
+  });
 });

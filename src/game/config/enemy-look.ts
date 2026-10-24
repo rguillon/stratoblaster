@@ -34,9 +34,13 @@ export const ENEMY_LOOK = {
   /**
    * Reactors (phase 5 review): a dark nozzle with a neon core, and the player ships' animated
    * flame in the enemy's neon colour. Sizes relative to the nozzle radius; the inner flame is
-   * `whiten` of the way from the neon colour to white.
+   * `whiten` of the way from the neon colour to white. Kept light (phase 5 review): an open
+   * nozzle, a flat core, 4-sided flame cones without caps and 2 tetrahedron puffs, about 40
+   * triangles a reactor (about 150 before).
    */
   reactor: {
+    flameSides: 4,
+    puffs: 2,
     depth: 1.2,
     core: 0.75,
     flameLength: 5,
