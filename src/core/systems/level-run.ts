@@ -193,7 +193,11 @@ export class LevelRun {
     const kind = this.options.kinds.find((k) => k.id === kindId);
     if (!kind) return;
     const { width, height } = this.options.screen;
-    this.enemies.add(...kind.spawn({ width, height, random, entry }));
+    // Phase 6 review: from the top, only where the ship can reach at the bottom of the screen.
+    const { bounds } = this.options;
+    const reach = bounds.halfWidthAt(bounds.minY);
+    const topRange = [bounds.centerX - reach, bounds.centerX + reach] as const;
+    this.enemies.add(...kind.spawn({ width, height, random, entry, topRange }));
   }
 
   /** Shots leave from the ship's nose (muzzle) and centre. */

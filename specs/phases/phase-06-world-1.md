@@ -184,6 +184,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
 - [x] (reviewer, in chat, 2026-10-24) Avoid roads crossing each other (only a path joining a road is allowed); add a few props not connected to roads; allow places where a bunch of buildings stand close together, spawned from time to time. — Done for World 1 (D-046): main roads never cross (the second follows the first at a distance), paths start on a main road and end off screen or on another main road or street, the street grids have T-junctions only; a few lone buildings and hamlets of 5–9 buildings stand away from the roads (`noCrossings`, `loners`, `hamlets` rules; `road-network.test.ts`, `prop-placement.test.ts`). Crossings on screen went from up to 266 per level to 0. Level Zero (phase 4) keeps its roads.
 - [x] (reviewer, in chat, 2026-10-24) Make the player ship roll when moving left / right, and add a little more acceleration to its movements. — Done: the ship banks up to 35° with its sideways speed, easing in and out; full speed is reached in 0.18 s instead of 0.08 s (D-045).
+- [x] (reviewer, in chat, 2026-10-24) Enemies spawning from the top must stay in the horizontal range of the bottom of the screen: with the camera angle, the player cannot shoot at ships too far in the upper corners. — Done: the kinds coming in from the top, and the Gnat and Splitter paths, keep to the ship's reach at the bottom of the screen (x 107–373 of 480) (D-048, `enemy-kinds.test.ts`, `level-run.test.ts`).
 - [x] (reviewer, in chat, 2026-10-24) Increase the ships' base speed by 50 % again. — Done: base speed 225 px/s (balanced 225, heavy 180, light 315); acceleration time unchanged (0.18 s to full speed), so the ships also pick up speed faster (D-047).
 - [x] (reviewer, in chat, 2026-10-24) Increase the player base speed by 50 %, and increase the enemy density. — Done: base speed 150 px/s (balanced 150, heavy 120, light 210); every wave brings 50 % more groups (D-044). `phase-02-player-ships.md` still says 100 px/s: to be updated by the reviewer.
 - [x] (reviewer, in chat, 2026-10-24) Add a button to switch between weapons: the E key (AZERTY). — Done: E (by key position, so the same key on AZERTY and QWERTY) cycles bullet → laser → missile, each at level 1, once per press; the HUD shows the weapon (D-043).
@@ -240,6 +241,7 @@ After the stray explosion glow fix: make typecheck ✔ / make build ✔ / make e
 After no road crossings, lone buildings and hamlets: make typecheck ✔ / make build ✔ / make e2e ✔
 50 passed (1-4 and 1-5 load as fast as before, about 13 s per test)
 After the base speed raised to 225 px/s: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
+After enemies from the top kept within the ship's reach: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 

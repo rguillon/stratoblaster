@@ -579,3 +579,13 @@
 - **Alternatives considered:** raising the speed factors instead (the base speed is the one value the request names).
 - **Consequences:** the light ship crosses the 480 px playfield in about 1.5 s. Enemy density and waves are unchanged. `phase-02-player-ships.md` still says 100 px/s (see D-044).
 - **Status:** Accepted
+
+### D-048 — Enemies from the top come in where the ship can reach
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** With the tilted camera the screen shows more of the playfield at the top (±247 px around the middle) than at the bottom (±146 px), and the ship's reach at the bottom is ±133 px. Enemies coming in from the top across 15–85 % of the width (up to ±168 px) could stay in an upper corner the player cannot shoot at.
+- **Decision:** `EnemySpawnArea.topRange` (optional, default the whole width) is the X range the kinds coming in from the top keep to: their entry position, their random X range and the X of the paths that come in from the top (Gnat, Splitter) are fractions across it instead of across the width. `LevelRun` sets it to the ship's reach at the bottom of its flight area (`bounds.centerX ± bounds.halfWidthAt(bounds.minY)`: 107–373 px in the game). Side passes (Strafer) still cross the whole width. The `enemies/` page (phase 5) does not use `LevelRun` and is unchanged.
+- **Measured** (no shooting, seed 606): enemies coming in from the top start between x 128 and 367; counts and HP unchanged; peaks on screen 11 / 14 / 15 / 18 / 20 (were 11 / 14 / 16 / 18 / 22), still strictly going up.
+- **Alternatives considered:** the bottom edge of the screen (±146 px, a little wider than the ship can go); squeezing only the spawn X and not the paths (Gnats and Splitters would still sweep out to the corners).
+- **Consequences:** waves are a little narrower; a Weaver's sway can still take it slightly past the range.
+- **Status:** Accepted

@@ -139,6 +139,12 @@ export interface EnemySpawnArea {
    * movement allows; without it they pick at random.
    */
   readonly entry?: EnemyEntry;
+  /**
+   * X range (logical pixels) that enemies coming in from the top keep to (phase 6 review): what
+   * the player can reach at the bottom of a tilted view, so none comes too far in an upper
+   * corner to be shot. Default: the whole width.
+   */
+  readonly topRange?: readonly [number, number];
 }
 
 /** A kind of enemy a game offers: a name, and how one group of it appears (P05). */

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { GameLevel } from '../../../../src/core/content/game-level';
-import { Enemy, type EnemyKindDefinition } from '../../../../src/core/entities/enemy';
+import {
+  Enemy,
+  type EnemyKindDefinition,
+  type EnemySpawnArea,
+} from '../../../../src/core/entities/enemy';
 import {
   LevelRun,
   type LevelControls,
@@ -44,6 +48,7 @@ function newRun(
   endWait = 10,
   inView?: (x: number, y: number) => boolean,
   weapons?: LevelRunOptions['weapons'],
+  overrides: Partial<LevelRunOptions> = {},
 ): LevelRun {
   const [weapon] = SAMPLE_GAME.playerWeapons;
   if (!weapon) throw new Error('no weapon');
@@ -61,6 +66,7 @@ function newRun(
     seed: 3,
     ...(inView ? { inView } : {}),
     ...(weapons ? { weapons } : {}),
+    ...overrides,
   });
 }
 
@@ -106,6 +112,26 @@ describe('LevelRun', () => {
     play(hidden, 6, { move: { x: 0, y: 0 }, fire: true });
     expect(hidden.enemies.enemies[0]?.health).toBe(1000);
     expect(hidden.shots.totalDamage).toBe(0);
+  });
+
+  it('phase 6 review: enemies come in from the top only where the ship can reach at the bottom', () => {
+    const areas: EnemySpawnArea[] = [];
+    const probe: EnemyKindDefinition = {
+      id: 'probe',
+      name: 'Probe',
+      spawn: (area) => {
+        areas.push(area);
+        return [];
+      },
+    };
+    const waves = [{ at: 0, kind: 'probe', count: 1, interval: 0, entry: top }] as const;
+    const run = newRun(waves, 10, undefined, undefined, {
+      kinds: [...KINDS, probe],
+      // Narrower at the bottom, as with a tilted camera.
+      bounds: { minY: 20, maxY: 300, centerX: 150, halfWidthAt: (y) => (y < 100 ? 90 : 140) },
+    });
+    play(run, 1);
+    expect(areas.map((a) => a.topRange)).toEqual([[60, 240]]);
   });
 
   it('phase 6 review: switching cycles through the weapons, each at the starting level', () => {

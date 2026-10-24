@@ -97,6 +97,38 @@ describe('ENEMY_KINDS', () => {
     }
   });
 
+  it("phase 6 review: the kinds coming in from the top keep to the area's topRange", () => {
+    const topRange = [140, 340] as const;
+    const ids = ['hornet', 'scout', 'weaver', 'spinner', 'lancer', 'rocketeer', 'bulwark'];
+    // At random, and at entries on both edges.
+    const areas = [
+      ...[1, 2, 3].map((seed) => ({ ...AREA, random: createRng(seed), topRange })),
+      ...[0, 1].map((position) => ({
+        ...AREA,
+        random: createRng(4),
+        topRange,
+        entry: { side: 'top', position } as const,
+      })),
+    ];
+    for (const id of [...ids, 'carrier', 'gnat', 'splitter']) {
+      const kind = ENEMY_KINDS.find((k) => k.id === id);
+      const xs = areas.flatMap((area) => kind?.spawn(area).map((e) => e.x) ?? []);
+      expect(xs.length, id).toBeGreaterThan(0);
+      expect(Math.min(...xs), id).toBeGreaterThanOrEqual(topRange[0]);
+      expect(Math.max(...xs), id).toBeLessThanOrEqual(topRange[1]);
+    }
+    // An entry at a quarter is a quarter across the range.
+    const scout = ENEMY_KINDS.find((k) => k.id === 'scout');
+    const entry = { side: 'top', position: 0.25 } as const;
+    expect(scout?.spawn({ ...AREA, random: createRng(1), topRange, entry })[0]?.x).toBe(190);
+    // Side passes still cross the whole width.
+    const strafer = ENEMY_KINDS.find((k) => k.id === 'strafer');
+    const side = { side: 'left', position: 0.5 } as const;
+    expect(
+      strafer?.spawn({ ...AREA, random: createRng(1), topRange, entry: side })[0]?.x,
+    ).toBeLessThan(0);
+  });
+
   it('GD-50: tougher enemies score more points', () => {
     const stats = Object.values(ENEMY_CONFIG).map((c) => c.stats);
     for (const a of stats) {

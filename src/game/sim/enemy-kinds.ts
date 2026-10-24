@@ -3,7 +3,7 @@ import { randomIn } from '../../core/math/rng';
 import { ENEMY_CONFIG as C, ENEMY_SPAWN_MARGIN as MARGIN } from '../config/enemies';
 import { Bulwark } from './enemies/bulwark';
 import { Carrier } from './enemies/carrier';
-import { clampEntry, playfieldPath, pickX } from './enemies/enemy-helpers';
+import { clampEntry, playfieldPath, pickX, topX } from './enemies/enemy-helpers';
 import { Gnat } from './enemies/gnat';
 import { Hornet } from './enemies/hornet';
 import { Lancer } from './enemies/lancer';
@@ -18,11 +18,14 @@ import { Weaver } from './enemies/weaver';
 const top = (area: EnemySpawnArea): number => area.height + MARGIN;
 const coin = (area: EnemySpawnArea): boolean => area.random() < 0.5;
 
-/** X where a kind comes in from the top: the wave's entry (P06-R07), or random in `range`. */
+/**
+ * X where a kind comes in from the top: the wave's entry (P06-R07), or random in `range`, both
+ * taken across the area's `topRange` (phase 6 review).
+ */
 const entryX = (area: EnemySpawnArea, range: readonly [number, number]): number =>
   area.entry?.side === 'top'
-    ? clampEntry(area.entry.position) * area.width
-    : pickX(area.random, range, area.width);
+    ? topX(area, clampEntry(area.entry.position))
+    : pickX(area.random, range, area);
 
 /**
  * Whether to mirror a path that starts at `startX` (a fraction of the width): towards the wave's
