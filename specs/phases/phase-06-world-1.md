@@ -256,6 +256,15 @@ After the CI e2e timeouts: the 3 shards as on CI (4 cores, 2 workers, CI=1) ✔ 
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
+**Final gate (`/validate-phase 6`, 2026-10-25, on `main` after the squash merge #16): `make check` green at the first run.**
+```
+make lint       ✔ (ESLint, 0 warnings; Prettier)
+make typecheck  ✔
+make coverage   ✔ 789 tests in 114 files; 99.33 % lines, 89.5 % branches, 98.3 % functions, 98.34 % statements (thresholds met)
+make build      ✔
+make e2e        ✔ 50 passed
+```
+
 ### How to test manually
 - `make dev`, open http://localhost:5173/ → Start → pick a ship → the World 1 row shows `1-1` … `1-5`, all unlocked; worlds 2–5 are padlocked.
 - In a level: arrows / WASD (or left stick / D-pad) to fly, Space (or gamepad A / right trigger) to shoot; on a touch screen, drag anywhere to fly and hold the yellow Fire button. Esc (or gamepad B) returns to the title.
