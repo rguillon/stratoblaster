@@ -236,6 +236,15 @@ export class GamePlay {
     return this.#timeScale;
   }
 
+  /**
+   * Runs `seconds` of real time at once, one simulation step a frame, without rendering: the
+   * e2e tests' clock (ENG-52), so they do not wait on frames that software WebGL draws slowly.
+   */
+  advance(seconds: number): void {
+    const step = this.#clock.stepSeconds;
+    for (let t = 0; t < seconds; t += step) this.frame(step);
+  }
+
   /** Advances and draws one frame of `dt` real seconds. */
   frame(dt: number): void {
     const { steps, alpha } = this.#clock.advance(dt * this.#timeScale);

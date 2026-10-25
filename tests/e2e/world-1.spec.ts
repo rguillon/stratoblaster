@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, sendAction, LOAD_TIMEOUT } from './menu-helpers';
+import {
+  expectState,
+  gameState,
+  openGame,
+  sendAction,
+  waitForLevelTime,
+  LOAD_TIMEOUT,
+} from './menu-helpers';
 
 const WORLD_1 = ['1-1', '1-2', '1-3', '1-4', '1-5'];
 
@@ -20,13 +27,6 @@ async function playLevel(page: Page, index: number, ship = 0): Promise<void> {
   await sendAction(page, 'confirm');
   await expectState(page, { screen: 'game', chosenLevelId: id });
   await waitForLevelTime(page, 0.2);
-}
-
-/** Waits until the level being played has run for `seconds`. */
-async function waitForLevelTime(page: Page, seconds: number): Promise<void> {
-  await expect
-    .poll(async () => (await gameState(page)).game?.time ?? -1, { timeout: LEVEL_TIMEOUT })
-    .toBeGreaterThan(seconds);
 }
 
 /** The level being played; fails the test when there is none. */

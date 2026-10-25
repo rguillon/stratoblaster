@@ -165,6 +165,15 @@ describe('GamePlay', () => {
     expect(results).toHaveLength(1);
   });
 
+  it('ENG-52: advance runs that much of the level at once, as frames would', () => {
+    const { game } = start();
+    const { game: framed } = start();
+    game.advance(2);
+    frames(framed, 2);
+    expect(game.state.time).toBeCloseTo(framed.state.time, 1);
+    expect(game.state.spawned).toBe(framed.state.spawned);
+  });
+
   it('P06-R09: without debug mode, F, ← and → do nothing to the time', () => {
     const { game } = start();
     expect(game.debugKey('KeyF', true)).toBe(false);

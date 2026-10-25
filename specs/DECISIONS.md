@@ -836,3 +836,12 @@
 - **Alternatives considered:** a noise shader on a quad (truer plasma, but a custom material outside the vertex-colour look of the other shots, and not checkable under `NullEngine`); keeping cloned meshes (up to 5 draw calls per bullet).
 - **Consequences:** bullet layers are drawn under the other transparent meshes (`alphaIndex`), as one block per layer; a bullet no longer has a node of its own.
 - **Status:** Accepted
+
+### D-075 — e2e tests drive the level clock, and e2e builds draw fewer pixels
+- **Date:** 2026-10-25
+- **Phase:** 8 (validation)
+- **Context:** e2e tests failed on CI and locally under load: a level's clock gains at most `maxFrameSeconds` (0.1 s) a frame, and under software WebGL a level frame can take seconds, so "wait 4 s of level time" took over a minute on a CI runner (about 0.04× real time). Entering a level also blocks the page for more than the 5 s `expectState` polled, and clicks (Playwright waits for a stable element over animation frames) crawled on the `enemies/` page.
+- **Decision:** `__GAME_TEST__.advance(seconds)` (e2e builds only, ENG-52) runs the level being played at once, one fixed step a frame, without rendering (`GamePlay.advance`); the e2e helper `waitForLevelTime` loads the level, then advances it instead of waiting for frames. `expectState` gives the `game` screen the loading timeout. e2e builds render at half resolution across and without multisampling (`ENGINE_CONFIG.e2e`): tests read the game's state, not its pixels.
+- **Alternatives considered:** longer timeouts (slower tests, and still at the mercy of the runner's speed); fewer e2e workers (slower overall); GPU rendering on CI (not available on the hosted runners).
+- **Consequences:** the World specs and the menu, gamepad and `enemies/` specs pass at 6× CPU throttling in Chromium. Production builds are unchanged. A level advanced through the test API still runs every step of the game's logic, with the keys held at the time.
+- **Status:** Accepted

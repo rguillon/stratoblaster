@@ -1,18 +1,18 @@
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, sendAction, LOAD_TIMEOUT } from './menu-helpers';
+import {
+  expectState,
+  gameState,
+  openGame,
+  sendAction,
+  waitForLevelTime,
+  LOAD_TIMEOUT,
+} from './menu-helpers';
 
 const WORLD_2 = ['2-1', '2-2', '2-3', '2-4', '2-5'];
 
 /** A level's scene is generated when it starts; under software WebGL that takes a while. */
 const LEVEL_TIMEOUT = 60_000;
-
-/** Waits until the level being played has run for `seconds`. */
-async function waitForLevelTime(page: Page, seconds: number): Promise<void> {
-  await expect
-    .poll(async () => (await gameState(page)).game?.time ?? -1, { timeout: LEVEL_TIMEOUT })
-    .toBeGreaterThan(seconds);
-}
 
 /** Opens the game with debug options (P06-R09, P08-R12) and waits for the level to run. */
 async function openDebug(page: Page, query: string): Promise<void> {

@@ -76,6 +76,8 @@ export interface GameTestApi {
   getState(): GameTestState;
   /** Sends a menu action as an input device would (P01-R12). */
   sendAction(action: MenuAction): void;
+  /** Runs the level being played for `seconds` at once, without rendering; no level, no-op. */
+  advance(seconds: number): void;
 }
 
 /** What the test API reads from and sends to the running app. */
@@ -84,6 +86,7 @@ export interface GameTestHooks {
   readonly loadingProgress: () => readonly number[];
   readonly game: () => GameTestLevelState | undefined;
   readonly send: (action: MenuAction) => void;
+  readonly advance: (seconds: number) => void;
 }
 
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
@@ -97,6 +100,10 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
     sendAction: (action) => {
       if (!isMenuAction(action)) throw new TypeError(`Unknown menu action "${String(action)}"`);
       hooks.send(action);
+    },
+    advance: (seconds) => {
+      if (!(seconds >= 0)) throw new RangeError(`Cannot advance by ${String(seconds)} s`);
+      hooks.advance(seconds);
     },
   };
   Object.defineProperty(target, '__GAME_TEST__', { value: api, configurable: true });
