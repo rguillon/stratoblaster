@@ -75,6 +75,12 @@ export interface BossVolley {
    * it turns the way its next volley goes (see {@link BossPattern.turnTurrets}).
    */
   readonly turret?: boolean;
+  /**
+   * Fires only while the part with this id stands (e.g. a radar that aims the guns), or only
+   * once it is destroyed (`after`); always when omitted.
+   */
+  readonly needs?: string;
+  readonly after?: string;
   /** Seconds between two volleys. */
   readonly every: number;
   /** Seconds before the first one, from the start of the stage; `every` when omitted. */
@@ -108,10 +114,19 @@ export function patternSignature(
   intact: (from: string) => boolean,
 ): string {
   return pattern
-    .filter((volley) => intact(volley.from))
+    .filter((volley) => live(volley, intact))
     .map((volley) => JSON.stringify({ ...volley, shape: { ...volley.shape, launch: undefined } }))
     .sort()
     .join('|');
+}
+
+/** Whether `volley` fires when only the pieces for which `intact` is true remain. */
+function live(volley: BossVolley, intact: (from: string) => boolean): boolean {
+  return (
+    intact(volley.from) &&
+    (volley.needs === undefined || intact(volley.needs)) &&
+    (volley.after === undefined || !intact(volley.after))
+  );
 }
 
 interface VolleyState {
@@ -163,7 +178,7 @@ export class BossPattern {
     this.volleys.forEach((volley, i) => {
       const state = this.#states[i];
       const source = sources(volley.from);
-      if (!state || !source) return;
+      if (!state || !source || !live(volley, (from) => sources(from) !== undefined)) return;
       state.left -= time;
       while (state.left <= 0) {
         state.left += volley.every;
@@ -183,7 +198,7 @@ export class BossPattern {
       const source = sources(from);
       const turret = source?.turret;
       if (!source || !turret) continue;
-      const aim = this.#aimOf(ctx, volleys, source, turret);
+      const aim = this.#aimOf(ctx, volleys, [source, turret], sources);
       turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
     }
   }
@@ -192,10 +207,14 @@ export class BossPattern {
   #aimOf(
     ctx: EnemyContext,
     volleys: readonly number[],
-    source: VolleySource,
-    turret: BossTurret,
+    [source, turret]: readonly [VolleySource, BossTurret],
+    sources: VolleySources,
   ): number {
-    const left = (i: number) => this.#states[i]?.left ?? Infinity;
+    const on = (i: number) => {
+      const volley = this.volleys[i];
+      return volley !== undefined && live(volley, (from) => sources(from) !== undefined);
+    };
+    const left = (i: number) => (on(i) ? (this.#states[i]?.left ?? Infinity) : Infinity);
     const next =
       volleys.find((i) => (this.#states[i]?.burst ?? 0) > 0) ??
       volleys.reduce((best, i) => (left(i) < left(best) ? i : best));

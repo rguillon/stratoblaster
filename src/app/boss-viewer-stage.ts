@@ -26,6 +26,20 @@ export function levelOfBoss(
   return game.gameLevels.find((level) => level.bosses?.some((b) => b.kind === kind.id));
 }
 
+/**
+ * Headings of the boss buttons (P08-R12): a world's bosses come after the ones before, under
+ * `World N`, from the level each boss is fought in (its id's first part).
+ */
+export function bossGroups(game: GameDefinition<GameView>): { label: string; from: number }[] {
+  const groups: { label: string; from: number }[] = [];
+  game.bossKinds.forEach((kind, i) => {
+    const world = levelOfBoss(game, kind)?.id.split('-')[0];
+    const label = world === undefined ? 'Other' : `World ${world}`;
+    if (groups.at(-1)?.label !== label) groups.push({ label, from: i });
+  });
+  return groups;
+}
+
 /** The scenery a boss is fought over: its level's (and its extra ground), or the first test level. */
 function sceneryOf(game: GameDefinition<GameView>, level: GameLevel | undefined): SceneryLevel {
   if (level) return withRunout(level.scenery, level.runout ?? 0);

@@ -1,3 +1,5 @@
+import type { TimeOfDay } from '../core/scenery/atmosphere';
+import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { BossRank } from '../core/systems/boss-fights';
 import type { GameDefinition } from '../core/content/game-definition';
@@ -23,6 +25,19 @@ export interface GameDebugOptions {
   readonly shipId: string | null;
   /** Starts at the arrival of the level's mini or final boss instead (P07-R09). */
   readonly boss: BossRank | null;
+  /** `weather=0`: no weather (P08-R12); the level's own weather otherwise. */
+  readonly weather?: boolean;
+  /** `look=<time of day>`: the level at that time of day (P08-R12). */
+  readonly timeOfDay?: TimeOfDay | null;
+}
+
+/** The debug choices on the level's look (P08-R12): none without debug options. */
+function atmosphereOf(debug: GameDebugOptions | undefined): AtmosphereOptions {
+  if (!debug) return {};
+  return {
+    ...(debug.weather === false ? { weather: false } : {}),
+    ...(debug.timeOfDay ? { timeOfDay: debug.timeOfDay } : {}),
+  };
 }
 
 /** What a {@link GameSession} needs from the app's options. */
@@ -122,6 +137,7 @@ export class GameSession {
         debug: this.options.debug !== undefined,
         startTime: this.#startTime,
         startBoss: this.#startBoss,
+        atmosphere: atmosphereOf(this.options.debug),
         ...(state.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),

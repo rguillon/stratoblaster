@@ -81,6 +81,35 @@ it has blown up. K destroys its next part; the panel shows its stage. The wirefr
 the hit circles of its core and of each part (the ones that shield the core in yellow). e2e
 builds expose `window.__BOSSES_TEST__` (`debug/boss-viewer-test-api.ts`).
 
+## Time of day, clouds and weather (phase 08)
+
+```
+SceneryLook.atmosphere (SkyScript: SkyLook + changes, game data)
+        │ resolveSky (core/scenery/sky-look.ts, presets in config/time-of-day.ts, config/weather.ts)
+        ▼
+AtmosphereTrack (core/scenery/atmosphere.ts) ── at(distance) ──▶ Atmosphere (plain numbers)
+        │                                                          │
+render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
+        ├─ cloud layers (cover, colours, haze), WeatherLayer (GPU particles), AuroraLayer
+        └─ SceneryKit.update (shadow darkness, ground lights); level-scene: sky environment
+```
+
+- A level's look has a fixed part (`SceneryLook`: ground textures, sea, roads, shadows) and,
+  optionally, an `atmosphere`: a time of day (`dawn` … `night`), the cover of both cloud layers,
+  a storm greyness, a weather (`{ kind, strength }`) and an aurora, with changes over stretches
+  of the level (seconds of scroll). A look without one keeps its fixed sky (Level Zero, World 1).
+- `AtmosphereTrack.at(distance)` blends every number smoothly between looks, following the ground
+  distance, so a debug jump shows the right look. Nothing in `core/systems` reads it: weather and
+  light are only a look (P08-R05).
+- Weather kinds are data (`config/weather.ts`): particle count at strength 1, fall, wind, streak,
+  size, colour, fog at strength 1. `WeatherLayer` draws one mesh of quads per kind, moved on the
+  GPU (`weather-material.visual.ts`), and only the first `strength × max` of them.
+- Debug options: `weather=0` and `look=<time of day>` (`AtmosphereOptions`).
+- Scenery tools added for the frozen lands: frozen lakes and crevasses in the height field
+  (`core/scenery/ice-sculpt.ts`), props floating on the sea and lines of props such as a
+  pipeline (`core/scenery/float-placement.ts`), drifting props (`PropField.drift`), crack lines
+  in generated textures.
+
 ## Bosses (phase 07)
 
 ```

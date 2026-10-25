@@ -27,9 +27,23 @@ export interface TestState {
     firing: boolean;
     shots: number;
     /** The boss being fought (P07). */
-    boss: { name: string; rank: string; state: string; stage: number; partsLeft: number } | null;
+    boss: {
+      name: string;
+      rank: string;
+      state: string;
+      stage: number;
+      partsLeft: number;
+      parts: number;
+    } | null;
     bossesDefeated: number;
     groundSpeed: number;
+    sky?: {
+      weatherParticles: number;
+      aurora: number;
+      groundLights: number;
+      sunIntensity: number;
+      fogEnd: number;
+    };
   } | null;
 }
 

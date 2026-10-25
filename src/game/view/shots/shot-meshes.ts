@@ -32,3 +32,40 @@ export function additiveTemplate(name: string, geo: ColoredGeometry, scene: Scen
   mesh.setEnabled(false);
   return mesh;
 }
+
+/**
+ * A disabled template mesh darkening what is behind it (phase 8): a disc of radius 1 in `color`,
+ * `alpha` opaque at its centre and fading out to its edge, blended, without writing depth.
+ */
+export function shadeTemplate(
+  name: string,
+  [segments, color, alpha]: readonly [number, readonly [number, number, number], number],
+  scene: Scene,
+): Mesh {
+  const positions = [0, 0, 0];
+  const colors = [...color, alpha];
+  const indices: number[] = [];
+  for (let i = 0; i < segments; i++) {
+    const angle = (2 * Math.PI * i) / segments;
+    positions.push(Math.cos(angle), Math.sin(angle), 0);
+    colors.push(...color, 0);
+    indices.push(0, 1 + i, 1 + ((i + 1) % segments));
+  }
+  const mesh = new Mesh(name, scene);
+  const data = new VertexData();
+  data.positions = positions;
+  data.indices = indices;
+  data.colors = colors;
+  data.applyToMesh(mesh);
+  mesh.hasVertexAlpha = true;
+  const material = new StandardMaterial(name, scene);
+  material.emissiveColor = Color3.White();
+  material.diffuseColor = Color3.Black();
+  material.specularColor = Color3.Black();
+  material.disableLighting = true;
+  material.backFaceCulling = false;
+  material.disableDepthWrite = true;
+  mesh.material = material;
+  mesh.isPickable = false;
+  return mesh;
+}

@@ -19,6 +19,9 @@ export interface EnemyBullet {
   speed: number;
   radius: number;
   style: string;
+  /** Seconds since it was fired, and what it bursts into (`EnemyBulletSpec.burst`). */
+  age: number;
+  burst: EnemyBulletSpec['burst'];
 }
 
 /** An enemy missile in flight: it homes on the player for a while, and can be shot down. */
@@ -75,6 +78,16 @@ export interface EnemyShotsOptions {
   readonly eye?: PlayfieldEye | undefined;
 }
 
+/**
+ * How far a sweeping laser is turned from its owner's heading (radians): `-sweepDeg` until it
+ * fires, then across to `+sweepDeg` at an even pace while it fires (phase 8).
+ */
+function sweepOf({ spec, age }: { spec: EnemyLaserSpec; age: number }): number {
+  const sweep = (spec.sweepDeg ?? 0) * DEG;
+  const t = Math.min(1, Math.max(0, (age - spec.warningSeconds) / spec.firingSeconds));
+  return sweep * (2 * t - 1);
+}
+
 /** Length of a ray from (x, y) along `heading` to the edge of the playfield grown by `margin`. */
 export function rayToEdge(
   x: number,
@@ -112,10 +125,20 @@ export class EnemyShots {
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void {
     let bullet = this.bullets.find((b) => !b.alive);
     if (!bullet) {
-      bullet = { alive: true, x, y, heading, speed: 0, radius: 0, style: '' };
+      bullet = {
+        alive: true,
+        x,
+        y,
+        heading,
+        speed: 0,
+        radius: 0,
+        style: '',
+        age: 0,
+        burst: undefined,
+      };
       this.bullets.push(bullet);
     }
-    Object.assign(bullet, { alive: true, x, y, heading, ...spec });
+    Object.assign(bullet, { alive: true, x, y, heading, ...spec, age: 0, burst: spec.burst });
   }
 
   fireMissile(x: number, y: number, heading: number, spec: EnemyMissileSpec): void {
@@ -175,18 +198,37 @@ export class EnemyShots {
 
   /** Moves the shots by `dt`; missiles home on (playerX, playerY). */
   step(dt: number, playerX: number, playerY: number): void {
-    for (const b of this.bullets) {
-      if (!b.alive) continue;
-      b.x += Math.sin(b.heading) * b.speed * dt;
-      b.y += Math.cos(b.heading) * b.speed * dt;
-      if (this.#isOut(b.x, b.y)) b.alive = false;
-    }
+    this.#moveBullets(dt);
     for (const m of this.missiles) {
       if (m.alive) this.#moveMissile(m, dt, playerX, playerY);
     }
     for (let i = this.#lasers.length - 1; i >= 0; i--) {
       const laser = this.#lasers[i];
       if (laser && !this.#stepLaser(laser, dt)) this.#lasers.splice(i, 1);
+    }
+  }
+
+  /** Moves the bullets straight on; those due to burst do, once all have moved. */
+  #moveBullets(dt: number): void {
+    const bursting: EnemyBullet[] = [];
+    for (const b of this.bullets) {
+      if (!b.alive) continue;
+      b.x += Math.sin(b.heading) * b.speed * dt;
+      b.y += Math.cos(b.heading) * b.speed * dt;
+      b.age += dt;
+      if (this.#isOut(b.x, b.y)) b.alive = false;
+      else if (b.burst && b.age >= b.burst.after) bursting.push(b);
+    }
+    for (const b of bursting) this.#burst(b);
+  }
+
+  /** A bursting bullet is gone, and its ring of bullets leaves from where it was. */
+  #burst(b: EnemyBullet): void {
+    const burst = b.burst;
+    b.alive = false;
+    if (!burst) return;
+    for (let k = 0; k < burst.count; k++) {
+      this.fireBullet(b.x, b.y, b.heading + (2 * Math.PI * k) / burst.count, burst.bullet);
     }
   }
 
@@ -224,7 +266,7 @@ export class EnemyShots {
     const { x, y } = seenOnPlayfield(this.options.eye, { x: ex, y: ey, height });
     laser.x = x;
     laser.y = y;
-    laser.heading = laser.owner.heading;
+    laser.heading = laser.owner.heading + sweepOf(laser);
     laser.length = rayToEdge(x, y, laser.heading, this.options, this.options.cullMargin);
   }
 

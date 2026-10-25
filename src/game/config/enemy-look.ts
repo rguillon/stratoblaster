@@ -73,6 +73,12 @@ export const ENEMY_LOOK = {
   bullets: {
     /** Visual radius relative to the hit radius. */
     scale: 1.6,
+    /**
+     * A soft dark disc under each bullet (phase 8, P08-R04): the bullets are added onto the
+     * ground, so over bright snow they would wash out to white without it. Its size relative to
+     * the bullet's, and its opacity at the centre.
+     */
+    backing: { color: [0.02, 0.02, 0.06] as Rgb, alpha: 0.6, scale: 1.25 },
     segments: 10,
     styles: {
       red: glow([1, 0.9, 0.85], [1, 0.15, 0.1], [0.4, 0, 0]),

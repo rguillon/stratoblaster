@@ -14,9 +14,22 @@ import {
   SCORPION,
   SENTINEL,
 } from '../config/bosses/mini-bosses';
+import { FLOE_BREAKER } from '../config/bosses/world-2/floe-breaker';
+import { NARWHAL } from '../config/bosses/world-2/narwhal';
+import { FJORD_LYNX } from '../config/bosses/world-2/fjord-lynx';
+import { HARBOUR_KRAKEN } from '../config/bosses/world-2/harbour-kraken';
+import { SNOW_OWL } from '../config/bosses/world-2/snow-owl';
+import { AURORA_STATION } from '../config/bosses/world-2/aurora-station';
+import { AVALANCHE } from '../config/bosses/world-2/avalanche';
+import { GLACIER_COLOSSUS } from '../config/bosses/world-2/glacier-colossus';
+import { ICE_QUEEN } from '../config/bosses/world-2/ice-queen';
+import { BOREAL_CITADEL } from '../config/bosses/world-2/boreal-citadel';
 import { WorldBoss } from './bosses/world-boss';
 
-/** The ten World 1 boss designs, mini and final boss of 1-1, then of 1-2… (P07-R05). */
+/**
+ * The boss designs, mini and final boss of 1-1, then of 1-2… (P07-R05), then the ten of World 2
+ * in the same order (P08-R10).
+ */
 export const BOSS_DESIGNS: readonly BossDesign[] = [
   REEF_WARDEN,
   STORM_PETREL,
@@ -28,6 +41,16 @@ export const BOSS_DESIGNS: readonly BossDesign[] = [
   REFINERY_TITAN,
   SENTINEL,
   OVERLORD,
+  FLOE_BREAKER,
+  NARWHAL,
+  FJORD_LYNX,
+  HARBOUR_KRAKEN,
+  SNOW_OWL,
+  AURORA_STATION,
+  AVALANCHE,
+  GLACIER_COLOSSUS,
+  ICE_QUEEN,
+  BOREAL_CITADEL,
 ];
 
 /** One boss kind per design. */

@@ -17,6 +17,7 @@ import type { FlightBounds } from '../core/systems/player-flight';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { BonusRenderer, GameView } from '../render/game-view';
+import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-framing';
 import type { GameControls } from '../input/game-controls';
 import { GameHud } from '../ui/game-hud';
@@ -49,6 +50,8 @@ export interface GamePlayOptions {
   readonly startBoss?: BossRank | null;
   /** Starts again from this checkpoint (P07-R08). */
   readonly resume?: LevelCheckpoint;
+  /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
+  readonly atmosphere?: AtmosphereOptions;
   readonly doc: MenuDocument;
   /** Where the debug tile goes. No tile when omitted. */
   readonly statsParent?: HTMLElement;
@@ -126,6 +129,7 @@ export class GamePlay {
       glow: game.view.enemies.glow,
       environmentCubeSize: CFG.environmentCubeSize,
       stage: CFG.stage,
+      ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
     });
     this.#speed = shipMaxSpeedPxPerSec(game.playerShips, choice.shipId);
     const shipDef = findPlayerShip(game.playerShips, choice.shipId);
@@ -320,7 +324,16 @@ export class GamePlay {
   }
 
   get state(): GamePlayState {
-    return levelState(this.run, this.#timeScale, this.#maxHealth);
+    const { stage } = this.view;
+    const { aurora, groundLights, sun, fog } = stage.atmosphere;
+    const sky = {
+      weatherParticles: stage.weatherParticles,
+      aurora,
+      groundLights,
+      sunIntensity: sun.intensity,
+      fogEnd: fog.end,
+    };
+    return { ...levelState(this.run, this.#timeScale, this.#maxHealth), sky };
   }
 
   dispose(): void {

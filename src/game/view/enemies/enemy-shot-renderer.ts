@@ -8,7 +8,7 @@ import { NodePool } from '../../../render/node-pool';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { flicker } from '../reactor-flame';
 import { buildGlowBar, buildGlowDisc } from '../shot-geometry';
-import { additiveTemplate } from '../shots/shot-meshes';
+import { additiveTemplate, shadeTemplate } from '../shots/shot-meshes';
 import { enemyMaterials, meshOf } from './enemy-mesh';
 
 const LOOK = ENEMY_LOOK;
@@ -27,6 +27,12 @@ function bulletPools(scene: Scene): { pools: Map<string, NodePool<Mesh>>; templa
   for (const style of STYLES) {
     const disc = buildGlowDisc(LOOK.bullets.segments, LOOK.bullets.styles[style]);
     const template = additiveTemplate(`enemy-bullet-${style}`, disc, scene);
+    // A dark disc behind it, so it stays readable over snow (phase 8); its clones get one too.
+    const { color, alpha, scale } = LOOK.bullets.backing;
+    const backing = shadeTemplate(`enemy-bullet-${style}-backing`, [12, color, alpha], scene);
+    backing.parent = template;
+    backing.position.z = 0.3;
+    backing.scaling.setAll(scale);
     templates.push(template);
     pools.set(style, glowPool(`enemy-bullet-${style}`, template));
   }

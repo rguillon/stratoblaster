@@ -8,6 +8,8 @@ describe('parseDebugOptions', () => {
       time: 120,
       shipId: null,
       boss: null,
+      weather: true,
+      timeOfDay: null,
     });
   });
 
@@ -17,6 +19,8 @@ describe('parseDebugOptions', () => {
       time: 0,
       shipId: 'heavy',
       boss: null,
+      weather: true,
+      timeOfDay: null,
     });
     expect(parseDebugOptions('?level=1-2&t=oops')?.time).toBe(0);
     expect(parseDebugOptions('?level=1-2&t=-5')?.time).toBe(0);
@@ -26,6 +30,13 @@ describe('parseDebugOptions', () => {
     expect(parseDebugOptions('?level=1-3&boss=final')?.boss).toBe('final');
     expect(parseDebugOptions('?level=1-3&boss=mini')?.boss).toBe('mini');
     expect(parseDebugOptions('?level=1-3&boss=giant')?.boss).toBeNull();
+  });
+
+  it('P08-R12: weather=0 turns the weather off; look= forces a time of day', () => {
+    expect(parseDebugOptions('?level=2-3&weather=0')?.weather).toBe(false);
+    expect(parseDebugOptions('?level=2-3&weather=1')?.weather).toBe(true);
+    expect(parseDebugOptions('?level=2-5&look=night')?.timeOfDay).toBe('night');
+    expect(parseDebugOptions('?level=2-5&look=noon')?.timeOfDay).toBeNull();
   });
 
   it('P06-R09: without level=, there is no debug mode', () => {

@@ -40,6 +40,14 @@ export interface GameTestLevelState {
   readonly groundSpeed: number;
   /** Whether the mini boss's checkpoint is saved (P07-R08). */
   readonly checkpoint: boolean;
+  /** How the level looks where the view is (P08-R04, R05). */
+  readonly sky?: {
+    readonly weatherParticles: number;
+    readonly aurora: number;
+    readonly groundLights: number;
+    readonly sunIntensity: number;
+    readonly fogEnd: number;
+  };
 }
 
 /** What `window.__GAME_TEST__.getState()` returns. */

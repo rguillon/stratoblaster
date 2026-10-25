@@ -12,7 +12,7 @@
 | 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
 | 6 | `phases/phase-06-world-1.md` | ✅ Validated | `phase-06` | 99.33% lines | 2026-10-25 |
 | 7 | `phases/phase-07-bosses.md` | ✅ Validated | `phase-07` | 99.34% lines | 2026-10-25 |
-| 8 | `phases/phase-08-world-2.md` | ⚪ Not started | `phase-08` | | |
+| 8 | `phases/phase-08-world-2.md` | 🟡 Awaiting review | `phase-08` | | |
 | 9 | `phases/phase-09-world-3.md` | ⚪ Not started | `phase-09` | | |
 | 10 | `phases/phase-10-world-4.md` | ⚪ Not started | `phase-10` | | |
 
@@ -113,3 +113,4 @@
 - 2026-10-25 — 8 — Spec file created; requirements drafted by the agent at the reviewer's request (World 2, the Frozen North; level looks, time of day, clouds and snow) (Draft).
 - 2026-10-25 — 9 — Spec file created; requirements drafted by the agent at the reviewer's request (World 3, the Jungle; rain and lightning) (Draft).
 - 2026-10-25 — 10 — Spec file created; requirements drafted by the agent at the reviewer's request (World 4, the Volcanic Lands; lava, falling ash and embers) (Draft).
+- 2026-10-25 — 8 — Implemented World 2 (five levels, time of day / clouds / weather engine, snow, aurora, frozen ground and props, ten bosses); light verification run; awaiting review.

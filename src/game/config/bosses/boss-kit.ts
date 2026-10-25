@@ -172,13 +172,28 @@ export const MISSILE: EnemyMissileSpec = {
   style: 'rocketeer',
 };
 
-/** Boss lasers: the Lancer's, with its 1 s warning line (GD-43). */
-export const laserOf = (firingSeconds: number, width = 12): EnemyLaserSpec => ({
+/**
+ * Boss lasers: the Lancer's, with its 1 s warning line (GD-43); a sweeping one (phase 8) turns
+ * from `sweepDeg` on one side to as far on the other while it fires.
+ */
+export const laserOf = (firingSeconds: number, width = 12, sweepDeg?: number): EnemyLaserSpec => ({
   warningSeconds: 1,
   firingSeconds,
   width,
   style: 'lancer',
+  ...(sweepDeg === undefined ? {} : { sweepDeg }),
 });
+
+/**
+ * A slow, big bullet of `style` that bursts into a ring of `count` small ones `after` seconds
+ * from its firing (phase 8: the Aurora Station's cryo cannons).
+ */
+export const bursting = (
+  style: string,
+  speed: number,
+  radius: number,
+  [after, count, small]: readonly [after: number, count: number, small: EnemyBulletSpec],
+): EnemyBulletSpec => ({ speed, radius, style, burst: { after, count, bullet: small } });
 
 /** A part. */
 export function part(
@@ -243,6 +258,19 @@ export function stages(
 ): BossPatternSpec[] {
   return core.map((own) => [...parts, ...own]);
 }
+
+/**
+ * `volley` fired only while the part `part` stands (`needs`), or only once it is destroyed
+ * (`after`): phase 8, the Fjord Lynx's radar mast.
+ */
+export const onlyWhile = (volley: BossVolley, part: string): BossVolley => ({
+  ...volley,
+  needs: part,
+});
+export const onlyAfter = (volley: BossVolley, part: string): BossVolley => ({
+  ...volley,
+  after: part,
+});
 
 /** Volleys, `from` a part id or `core`. `first` defaults to `every`. */
 export const volley = {
@@ -311,10 +339,16 @@ export const volley = {
     ...(first === undefined ? {} : { first }),
     shape: { kind: 'missiles', count, spacingDeg, missile: MISSILE },
   }),
-  laser: (from: string, every: number, firingSeconds: number, first?: number): BossVolley => ({
+  laser: (
+    from: string,
+    every: number,
+    firingSeconds: number,
+    first?: number,
+    sweepDeg?: number,
+  ): BossVolley => ({
     from,
     every,
     ...(first === undefined ? {} : { first }),
-    shape: { kind: 'laser', laser: laserOf(firingSeconds) },
+    shape: { kind: 'laser', laser: laserOf(firingSeconds, 12, sweepDeg) },
   }),
 };

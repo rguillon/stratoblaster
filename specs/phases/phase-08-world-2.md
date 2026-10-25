@@ -261,31 +261,79 @@ As in P07-R10:
 > Filled by the agent. Do not edit (comment in Review feedback instead).
 
 ### Questions / blockers
-<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+None. The spec was implemented as written; the few interpretations are listed under Deviations.
 
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Engine atmosphere: time-of-day presets, cloud cover, haze, ground lights, look changes along the distance (`core/scenery/atmosphere.ts`, `sky-look.ts`, `config/time-of-day.ts`, `render/scenery/sky-layers.ts`) | P08-R04 |
+| Engine weather as data (`config/weather.ts`), GPU snow particles, aurora sheet | P08-R05, R06 |
+| Frozen ground tools: lakes, crevasses, floating ice with drift, prop lines, cracked textures | P08-R03, R07 |
+| World 2 props (22 hand-made models, 3 families of 8) | P08-R07 |
+| World 2 scenery, looks, waves, difficulty, level assembly and registration | P08-R01..R03, R06, R08, R09 |
+| Boss engine additions (`needs` / `after` volleys, sweeping lasers, bursting bullets); ten bosses (designs + models) and their tuning | P08-R10, R11 |
+| Debug options `weather=0`, `look=`; bosses page grouped by world | P08-R12 |
+| Readability: dark backing under enemy bullets; screenshots of every level under software WebGL | P08-R04, R05 |
+| Unit and e2e tests, docs, decisions | all |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P08-R01 | | | | |
+| P08-R01 | Done | `game/sim/world-2.ts`, `game/sim/levels.ts` (`GAME_LEVELS`) | `world-2.test.ts`, `game-definition.test.ts`, e2e `world-2.spec.ts` | 1-5 → 2-1 and 2-5 → 2-5 follow from the level grid order |
+| P08-R02 | Done | `game/config/world-2/scenery-*.ts` (300 s each) | `world-2.test.ts`, e2e | speeds 70 / 65 / 60 / 55 / 60 |
+| P08-R03 | Done | `scenery-coast.ts`, `scenery-inland.ts`, `core/scenery/ice-sculpt.ts`, `float-placement.ts` | `world-2.test.ts`, `ice-sculpt.test.ts` | sea share 0.90 / 0.17 / 0 / 0 / 0; buildings 69 / 610 / 2 566 / 3 942 / 11 670 (seed of each level; 2-3 counts its pipeline pieces) |
+| P08-R04 | Done | `core/scenery/atmosphere.ts`, `sky-look.ts`, `config/time-of-day.ts`, `render/scenery/sky-layers.ts`, `atmosphere-of.ts` | `atmosphere.test.ts`, `sky-look.test.ts`, `sky-layers.test.ts`, e2e | D-064 |
+| P08-R05 | Done | `config/weather.ts`, `render/scenery/weather-layer.ts`, `weather-material.visual.ts` | `sky-look.test.ts`, `sky-layers.test.ts`, `game-play.test.ts` (weather not an input), e2e | D-065; 60 FPS: manual |
+| P08-R06 | Done | `game/config/world-2/looks.ts`, `render/scenery/aurora-*.ts` | `world-2.test.ts` | table followed; 2-4's blizzard is full from 2:30 (see Deviations) |
+| P08-R07 | Done | `game/view/props/polar-*.ts`, `world-2/props.ts`, `world-2/looks.ts` | `prop-models.test.ts` | D-066; hand-made ≤ 336 triangles (the heaviest phase 4 prop) |
+| P08-R08 | Done | `game/config/world-2/waves.ts` | `world-2.test.ts` | D-067 |
+| P08-R09 | Done | `waves.ts`, `world-2/difficulty.ts` | `world-2.test.ts` | numbers below |
+| P08-R10 | Done | `game/config/bosses/world-2/*`, `game/view/bosses/world-2/*`, `core/systems/boss-pattern.ts`, `enemy-shots.ts` | `bosses-world-2.test.ts`, `muzzles.test.ts`, `boss-models.test.ts`, e2e | D-068; patterns below |
+| P08-R11 | Done | the ten designs' health | `bosses-world-2.test.ts` | fight times below |
+| P08-R12 | Done | `app/debug-options.ts`, `game-session.ts`, `start-boss-viewer.ts`, `ui/enemy-viewer-panel.ts` | `debug-options.test.ts`, `sky-layers.test.ts`, e2e `world-2.spec.ts`, `bosses.spec.ts` | D-070 |
+
+**Balance (P08-R09)**, measured without shooting (seed 606), per minute of scroll: enemies 116.8 / 120.4 / 121.4 / 172.0 / 233.4, HP 2 466 / 3 384 / 3 666 / 6 016 / 7 360, peak on screen 22 / 23 / 36 / 37 / 51 for 2-1 … 2-5 (World 1 now: 1-3 104.8 enemies and 2 235 HP a minute, 1-5 130.3 and 4 150). Every second half carries more HP. As in World 1 (D-051), the peaks are far above the tunable 10 … 17, in the same order.
+
+**Bosses (P08-R10, R11).** Fight times with the D-055 bot (guns level 3, always on target), mini / final: 2-1 32.8 / 66.7 s, 2-2 40.3 / 86.7 s, 2-3 41.1 / 97.0 s, 2-4 45.4 / 108.0 s, 2-5 51.3 / 113.6 s. Full health: mini 2 720 / 2 880 / 3 550 / 3 800 / 4 200, final 6 500 / 7 000 / 8 600 / 13 000 / 17 500 (World 1: 2 200 … 3 910 and 5 770 … 15 780). Models: 2 244–4 172 triangles, within 7 % of their sizes. Stage patterns (parts fire the same in every stage; the core changes each stage, its last stage a new ring or spiral):
+- **Floe Breaker** (2-1 mini, ×0.5): two harpoon turrets fire 3-shot bursts; core fan 3 → aimed spread 3 → ring of 10 + fan 5. Angry: curtain.
+- **Narwhal** (2-1 final, ×1.5 chase): horn lance laser, two torpedo tubes (2 homing missiles), two ballast pods (fans crossing, they shield the core); core aimed 1 → aimed 3 → burst 4 → fan 5 → fan 7 + aimed → two counter-turning spirals. Angry: vortex.
+- **Fjord Lynx** (2-2 mini, ×0.6): while its radar mast stands, the paw turrets fire aimed spreads and the core aimed shots (1 → spread 3 → burst 4); once the mast is gone, they all fire preset fans instead (paws ±18°, core 3 → 5); last stage fan 7 + spiral 12. Angry: vortex.
+- **Harbour Kraken** (2-2 final, ×0): four crane arms swinging at shoulder and elbow, each with a grab cannon firing aimed bursts; a container bay launching 3 Gnats every 7 s; core laser → laser + aimed → laser + fan 5 → sweeping laser + spread 3 → sweeping laser + fan 7 → sweeping laser + spiral 14. Angry: vortex.
+- **Snow Owl** (2-3 mini, ×0.5): two wing radar pods (fans crossing), a sensor eye (laser); core aimed 1 → spread 3 → burst 4 → ring 12 + aimed. Angry: flower.
+- **Aurora Station** (2-3 final, ×0.4): two dish emitters (lasers sweeping ±30°), two cryo cannon turrets (slow shells bursting into rings of 8), a drone hangar launching Hornets; core aimed 1 → spread 3 → burst 4 → fan 5 → fan 7 + aimed → two spirals. Angry: spirals.
+- **Avalanche** (2-4 mini, ×1.4 chase): two drill arms on joints (bursts), a rock hopper dropping lines of big slow rocks; core fan 3 → 5 → 7 → spiral 12 + fan 5. Angry: spirals.
+- **Glacier Colossus** (2-4 final, ×0.3): two cutter lasers (sweeping ±18°), two ore cannons (fans of big shells), a missile pod, a heat sink; core aimed 1 → spread 3 → burst 4 → ring 8 → fan 7 + burst → spiral 10 + aimed → two spirals. Angry: flower.
+- **Ice Queen** (2-5 mini, ×0.6): three crystal shards on a turning ring firing spirals; core bursts 3 → 4 → 5 + spread → spiral 14 + burst. Angry: flower.
+- **Boreal Citadel** (2-5 final, ×0.25): two aurora cannons (sweeping lasers), two missile batteries, two dome generators shielding the core; core aimed spread → fan 5 → burst 4 → missiles + aimed → laser + fan 7 → ring 10 + burst → spiral 16 + sweeping laser + missiles + fan 5 (every attack kind). Angry: curtain + spirals.
 
 ### Gate results
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e ✔ (65 tests: a full run gave 62 passed / 3 failed — two phase 1 / 6 tests still expecting World 2 locked, and the new 2-4 test waiting on a time held by the mini boss, both fixed; the touch flow timed out under load — the menu-pointer, world-2 and bosses specs then re-run: 19 / 19 passed)
+Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `make dev`, then Start → a ship → the level select: the World 2 row (`2-1` … `2-5`) is unlocked, worlds 3 to 5 stay locked. After 1-5's "Level complete", `2-1` is highlighted.
+- Each level: `?level=2-1` … `?level=2-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 2-1 dawn over a dark sea with ice floes and icebergs, rocky islets, a harbour coast at the end; 2-2 morning fjords, light snow in the second half; 2-3 overcast tundra, snow falling, frozen lakes with cracks, a pipeline on stilts, radar domes and turbines; 2-4 afternoon glacier with crevasses and dark rock sides, mining outposts then a mining complex, the blizzard from 2:30 (`?level=2-4&t=150`), clearing near the end; 2-5 dusk turning to night over the first 100 s, the aurora's green and violet curtains at the top of the screen, the lit polar city.
+- Debug: `&weather=0` (no snow, e.g. `?level=2-3&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night` (e.g. `?level=2-5&t=200&look=midday`), `&boss=mini|final` (K destroys the next part).
+- Bosses: `bosses/` lists World 1 then World 2 under "World 1" / "World 2" headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe.
+- Readability: enemy bullets now have a faint dark rim; check them over snow (2-3, 2-4 blizzard) and at night (2-5).
+- 60 FPS: the 2-4 blizzard with the most enemies (`?level=2-4&t=230`) and the 2-5 final fight (`?level=2-5&boss=final`), with the F3 / debug FPS tile.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- P08-R06, 2-4: "snow 0.5, growing to a blizzard in the second half": the blizzard grows over 2:05–2:30 so that the level is in a full blizzard from the middle on (P08-R12's acceptance test: `?level=2-4&t=150` starts in the blizzard); it clears to 0.3 over 4:30–4:52, before the final boss.
+- P08-R05: flakes fill the air from the ground up to just under the flight altitude, so some are between the camera and the clouds (drawn over them); they are never drawn over the ships, shots or bonuses.
+- P08-R10, Harbour Kraken: "the ground stops over the harbour": the final fight is at 2-2's end, which is inland (2-2 must end where 2-3 begins); the harbour is at 2-2's start.
+- P08-R09 tunable `peak_on_screen` (10 … 17): measured 22 … 51, order kept (as World 1, D-051).
+- The enemy bullets' dark backing (D-069) also shows in World 1.
+- Balance and fight-time numbers were measured with throw-away simulation scripts (not the unit test runner), as the implement procedure forbids running unit tests before validation.
 
 ### Known limitations
--
+- 60 FPS (ENG-101) could not be measured here: only software WebGL is available (it shows 10–27 FPS for every level, World 1 included). The polar city centre draws about 0.95 M triangles at its densest, like 1-5's city (D-027).
+- Lint, unit tests and coverage have not been run (deferred to `/validate-phase`).
+- Ice floes of one kind drift together (one mesh per kind). The weather buoy's light does not blink.
+- The night look keeps the ships readable through a lit reflection gradient and a moon of 0.6; this is to be judged by eye.
 
 ### Suggestions for future phases
--
+- Rain (World 3) and ash (World 4) are new entries in `config/weather.ts`; streaks along the fall direction for rain may want a `slant` parameter.
+- A per-world bullet backing strength could tune readability (dark rims are less needed over dark ground).

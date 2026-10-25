@@ -1,4 +1,5 @@
 import { createNoise2D, fbm, ridged, smoothstep, type Noise2D } from '../math/noise';
+import { crevasseDepth, withLakes } from './ice-sculpt';
 import {
   layoutSections,
   type Meander,
@@ -41,12 +42,14 @@ export function softCap(h: number, max: number): number {
  */
 export function terrainCeiling(level: SceneryLevel): number {
   return Math.max(
-    ...level.sections.map(({ relief, flatten, shore, dunes }) => {
+    ...level.sections.map(({ relief, flatten, shore, dunes, lakes }) => {
       const top = relief.base + Math.abs(relief.amplitude) + (dunes ? Math.abs(dunes.height) : 0);
       return Math.max(
         relief.maxHeight === undefined ? top : Math.min(top, relief.maxHeight),
         flatten ? flatten.height + Math.abs(flatten.roughness) : -Infinity,
         shore ? shore.seabed : -Infinity,
+        // A lake may raise ground lower than its level up to it (crevasses only cut).
+        lakes ? lakes.level : -Infinity,
       );
     }),
   );
@@ -68,6 +71,8 @@ export class HeightField {
   readonly #detail: Noise2D;
   readonly #wobble: Noise2D;
   readonly #dunes: Noise2D;
+  readonly #ice: Noise2D;
+  readonly #seed: number;
   readonly #transition: number;
 
   constructor(level: SceneryLevel, seed = level.seed) {
@@ -78,6 +83,8 @@ export class HeightField {
     this.#detail = createNoise2D(seed + 1);
     this.#wobble = createNoise2D(seed + 2);
     this.#dunes = createNoise2D(seed + 3);
+    this.#ice = createNoise2D(seed + 4);
+    this.#seed = seed;
     this.#transition = Math.max(0, level.transition);
   }
 
@@ -144,6 +151,8 @@ export class HeightField {
     const section = this.sections[index]?.section;
     if (!section) return 0;
     let h = this.#reliefHeight(section, x, z) + this.#duneHeight(section, x, z);
+    if (section.crevasses) h -= crevasseDepth(section.crevasses, this.#ice, x, z);
+    if (section.lakes) h = withLakes(section.lakes, this.#seed, x, z, h);
     h = this.#flatten(section, x, z, h);
     h = this.#carve(section, x, z, h);
     return this.#shore(section, x, z, h);

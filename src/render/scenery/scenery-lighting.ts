@@ -3,7 +3,7 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { SceneryLook } from './scenery-look';
+import type { Atmosphere } from '../../core/scenery/atmosphere';
 
 const DEG = Math.PI / 180;
 
@@ -14,29 +14,44 @@ export function sunDirection(elevationDeg: number, azimuthDeg: number): Vector3 
   return new Vector3(-Math.cos(el) * Math.sin(az), -Math.sin(el), -Math.cos(el) * Math.cos(az));
 }
 
-/** Haze (clear colour and linear fog), sky / ground ambient light and the sun. Returns the sun. */
-export function lightScenery(scene: Scene, look: SceneryLook): DirectionalLight {
-  const [r, g, b] = look.sky.haze;
-  scene.clearColor = new Color4(r, g, b, 1);
+/** The lights of a scenery scene: the sun (or the moon) and the sky's ambient light. */
+export interface SceneryLights {
+  readonly sun: DirectionalLight;
+  readonly ambient: HemisphericLight;
+}
+
+/** Creates the sun and the ambient light, then lights the scene as `atmosphere` says. */
+export function lightScenery(scene: Scene, atmosphere: Atmosphere): SceneryLights {
   scene.fogMode = Scene.FOGMODE_LINEAR;
-  scene.fogColor = new Color3(r, g, b);
-  scene.fogStart = look.fog.start;
-  scene.fogEnd = look.fog.end;
+  scene.clearColor = new Color4(0, 0, 0, 1);
+  scene.fogColor = new Color3();
   const ambient = new HemisphericLight('scenery-ambient', Vector3.Up(), scene);
-  ambient.diffuse = new Color3(...look.ambient.sky);
-  ambient.groundColor = new Color3(...look.ambient.ground);
   ambient.specular = Color3.Black();
-  ambient.intensity = look.ambient.intensity;
-  const { sun: s } = look;
-  const sun = new DirectionalLight(
-    'scenery-sun',
-    sunDirection(s.elevationDeg, s.azimuthDeg),
-    scene,
-  );
-  sun.diffuse = new Color3(...s.color);
-  sun.specular = new Color3(...s.color);
+  const sun = new DirectionalLight('scenery-sun', Vector3.Down(), scene);
+  const lights = { sun, ambient };
+  applyAtmosphere(scene, lights, atmosphere);
+  return lights;
+}
+
+/**
+ * Lights the scene as `atmosphere` says (P08-R04): haze (clear colour and linear fog), sky and
+ * ground ambient light, and the sun's direction, colour and strength. Called every frame.
+ */
+export function applyAtmosphere(scene: Scene, lights: SceneryLights, atmosphere: Atmosphere): void {
+  const [r, g, b] = atmosphere.sky.haze;
+  scene.clearColor.set(r, g, b, 1);
+  scene.fogColor.set(r, g, b);
+  scene.fogStart = atmosphere.fog.start;
+  scene.fogEnd = atmosphere.fog.end;
+  const { ambient, sun } = lights;
+  ambient.diffuse.set(...atmosphere.ambient.sky);
+  ambient.groundColor.set(...atmosphere.ambient.ground);
+  ambient.intensity = atmosphere.ambient.intensity;
+  const s = atmosphere.sun;
+  sun.direction = sunDirection(s.elevationDeg, s.azimuthDeg);
+  sun.diffuse.set(...s.color);
+  sun.specular.set(...s.color);
   sun.intensity = s.intensity;
-  return sun;
 }
 
 /**
