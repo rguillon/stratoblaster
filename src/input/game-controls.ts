@@ -89,7 +89,8 @@ export class GameControls {
   read(dt: number, maxSpeed: number): ControlState {
     const pad = this.#readGamepads();
     const keys = this.keys.direction;
-    let move = Math.hypot(pad.x, pad.y) > Math.hypot(keys.x, keys.y) ? pad : keys;
+    let move: FlightInput =
+      Math.hypot(pad.x, pad.y) > Math.hypot(keys.x, keys.y) ? { x: pad.x, y: pad.y } : keys;
     const reach = maxSpeed * dt;
     const dragged = Math.hypot(this.#dragX, this.#dragY);
     if (dragged > 0 && reach > 0) {

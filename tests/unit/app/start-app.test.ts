@@ -173,6 +173,8 @@ describe('startApp', () => {
         outcome: 'complete',
       });
       expect(overlay.querySelector('.level-complete-level')?.textContent).toBe('C');
+      // Past the overlay's input delay (1 s): ten ticks of 0.1 s fall just short of it.
+      settle(app);
       settle(app);
       settle(app);
       app.command('confirm');

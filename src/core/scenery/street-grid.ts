@@ -25,6 +25,11 @@ interface Link {
   /** Whether a street can be built on the ground there. */
   readonly ground: boolean;
   built: boolean;
+  /**
+   * Cut back while removing dead ends: with `tees`, never built again, so a street cannot keep
+   * going on and being cut back.
+   */
+  cut: boolean;
 }
 
 /** Most passes of the dead-end removal (each pass can extend or cut every dead end by a link). */
@@ -180,7 +185,7 @@ function gridLinks(
     const mid = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
     const ground = [a, mid, b].every((p) => buildable(p.x, p.z));
     const built = ground && (required || random() < chance);
-    links.push({ a, b, across, required, ground, built });
+    links.push({ a, b, across, required, ground, built, cut: false });
   };
   let chance = 0;
   const columnsOf: number[][] = [];
@@ -260,7 +265,8 @@ function makesCrossing(link: Link, k: string, at: ReadonlyMap<string, readonly L
 /**
  * Fixes the node `k` if a single built street ends there on screen: the street goes on straight
  * when the next link's ground allows it (and, with `tees`, its far end is no T-junction it would
- * turn into a crossing), else it is cut back. Returns whether anything changed.
+ * turn into a crossing, nor was cut back before), else it is cut back. Returns whether anything
+ * changed.
  */
 function fixDeadEnd(
   k: string,
@@ -273,9 +279,23 @@ function fixDeadEnd(
   const only = built[0];
   if (built.length !== 1 || !only || outOfView(key(only.a) === k ? only.a : only.b)) return false;
   const ahead = around.find((l) => l !== only && l.across === only.across);
-  if (ahead?.ground && !(tees && makesCrossing(ahead, k, at))) ahead.built = true;
-  else only.built = false;
+  if (ahead && mayGoOn(ahead, k, at, tees)) {
+    ahead.built = true;
+  } else {
+    only.built = false;
+    only.cut = true;
+  }
   return true;
+}
+
+/** Whether a dead end at the node `k` may go on through `ahead` (see {@link fixDeadEnd}). */
+function mayGoOn(
+  ahead: Link,
+  k: string,
+  at: ReadonlyMap<string, readonly Link[]>,
+  tees: boolean,
+): boolean {
+  return ahead.ground && !(tees && (ahead.cut || makesCrossing(ahead, k, at)));
 }
 
 function removeDeadEnds(

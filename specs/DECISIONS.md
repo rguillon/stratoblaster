@@ -626,3 +626,12 @@
 - **Alternatives considered:** a higher `WAVE_DENSITY` (more groups at the same moments: the lulls stay); writing the extra beats by hand (about a hundred beats; the filler is tunable with two numbers per level); fixed gaps (tried: 1-1, with the longest lulls, got more filler than 1-2 and its first half got heavier than its second).
 - **Consequences:** about twice as many enemies; the counts and peaks are now far above the spec's tunables (~60 … ~140 enemies, peaks 6 … 15; see D-044), and the unit test's caps for 1-1 are raised to 300 enemies and a peak of 18. More enemy models at once: the 60 FPS check of 1-5 (manual) matters more.
 - **Status:** Accepted
+
+### D-052 — Dead-end removal and path starts without crossings
+- **Date:** 2026-10-25
+- **Phase:** 6 (review)
+- **Context:** The unit tests found two defects of the no-crossings road layout (D-046). Removing the dead ends with T-junctions only could go round: a street went on to the next crossing, was cut back there because going on would make a crossing, which left the street behind it a dead end that went on again, and so on; it stopped at the 500-pass limit with dead ends on screen. And a path could start on the first on-screen point of a main road piece coming in from the side of the screen (as the main roads do around a district), run on top of it and cross it.
+- **Decision:** with `tees`, a link cut back while removing dead ends is never built again (`Link.cut`), so the removal ends (each pass either builds a link that was never cut or cuts one for good). Without crossings, a path only starts where its main road runs more along the level than across it (`runsAlong`). Both apply only without crossings, so Level Zero (P04) lays out as before.
+- **Alternatives considered:** a lower pass limit (leaves the dead ends); dropping every path that has not left its own road after a few points (more random draws change, and the start choice is the cause).
+- **Consequences:** the World 1 street grids and paths change a little (other seeds' layouts); the street grids are laid faster (no more 500 passes).
+- **Status:** Accepted

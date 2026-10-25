@@ -7,7 +7,12 @@ import { levelLength } from '../../../../src/core/scenery/scenery-level';
 import { LevelRun } from '../../../../src/core/systems/level-run';
 import { WORLD_1_PROPS } from '../../../../src/game/config/world-1/props';
 import { PLAYER_WEAPONS } from '../../../../src/game/config/player-weapons';
-import { WAVES_1_1, WORLD_1_FILLERS, waveScript } from '../../../../src/game/config/world-1/waves';
+import {
+  WAVES_1_1,
+  WORLD_1_FILLERS,
+  fill,
+  waveScript,
+} from '../../../../src/game/config/world-1/waves';
 import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_1 } from '../../../../src/game/sim/world-1';
@@ -189,7 +194,9 @@ describe('World 1', () => {
 
   it('P06-R07: waves are triggered by distance, the same every time', () => {
     const speed = level('1-1').scenery.scrollSpeed;
-    expect(level('1-1').waves).toEqual(waveScript(speed, WAVES_1_1));
+    const filler = WORLD_1_FILLERS['1-1'];
+    if (!filler) throw new Error('no filler for 1-1');
+    expect(level('1-1').waves).toEqual(waveScript(speed, fill(WAVES_1_1, filler)));
     expect(level('1-1').waves[0]?.at).toBe(at(WAVES_1_1, 0)[0] * speed);
     expect(measure(level('1-2'))).toEqual(METRICS[1]);
   });

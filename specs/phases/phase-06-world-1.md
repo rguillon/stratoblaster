@@ -181,6 +181,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 > After the agent reports, write corrections here, then say **"Fix phase 06"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-25) The unit tests fail. — Fixed (9 failures): two real bugs, (1) without crossings, removing dead ends could go round for ever (a street went on, was cut back because it would make a crossing, then the street behind it went on again…) and stopped after 500 passes with dead ends left; a street cut back is no longer built again (`street-grid.ts`), and (2) a path could start where a main road piece comes in from the side and run on top of it before crossing it; without crossings paths start only where their main road runs along the level (`road-paths.ts`) (D-052); also the gamepad's `fire` flag leaked into the `move` direction (`game-controls.ts`). The other tests were out of date with the review changes: the Level Zero props test now leaves out the World 1 models (P06-R06), the World 1 wave script test includes the fillers (D-051), the game-play completion and HUD tests use a hull that takes no damage (the sample enemies now hit the still ship, D-050), the weapon-level test switches weapon once per step instead of an even number of times, and the app overlay test waits past the 1 s input delay (ten 0.1 s ticks left 1e-16 s of it).
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
 - [x] (reviewer, in chat, 2026-10-24) Avoid roads crossing each other (only a path joining a road is allowed); add a few props not connected to roads; allow places where a bunch of buildings stand close together, spawned from time to time. — Done for World 1 (D-046): main roads never cross (the second follows the first at a distance), paths start on a main road and end off screen or on another main road or street, the street grids have T-junctions only; a few lone buildings and hamlets of 5–9 buildings stand away from the roads (`noCrossings`, `loners`, `hamlets` rules; `road-network.test.ts`, `prop-placement.test.ts`). Crossings on screen went from up to 266 per level to 0. Level Zero (phase 4) keeps its roads.
 - [x] (reviewer, in chat, 2026-10-24) Make the player ship roll when moving left / right, and add a little more acceleration to its movements. — Done: the ship banks up to 35° with its sideways speed, easing in and out; full speed is reached in 0.18 s instead of 0.08 s (D-045).
@@ -248,6 +249,8 @@ After enemies from the top kept within the ship's reach: make typecheck ✔ / ma
 After weapon bonuses: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 After player damage, lives and game over: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
 After the filler waves: make typecheck ✔ / make build ✔ / make e2e ✔ 50 passed
+After the unit test fixes: vitest 789 passed (run on request) / make typecheck ✔ / make build ✔ /
+make e2e ✔ 50 passed
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 

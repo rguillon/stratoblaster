@@ -46,11 +46,15 @@ export function layPaths(ground: PathGround, random: Random, mains: readonly Roa
     z < zMax;
     z += randomIn(random, crossSpacing)
   ) {
-    // A point on screen near `z` of each main road piece that passes there.
+    // A point on screen near `z` of each main road piece that passes there; without crossings,
+    // where it runs along the level (where a piece comes in from the side, a path would run on
+    // top of it).
     const near = step * PATH_START_SLACK;
     const starts = mains.flatMap((main) => {
-      const p = main.points.find((q) => q.z >= z && Math.abs(q.x) < offscreenX);
-      return p && p.z - z <= near ? [{ main, p }] : [];
+      const i = main.points.findIndex((q) => q.z >= z && Math.abs(q.x) < offscreenX);
+      const p = main.points[i];
+      const along = !ground.rules.noCrossings || runsAlong(main, i);
+      return p && p.z - z <= near && along ? [{ main, p }] : [];
     });
     const start = starts[Math.floor(random() * starts.length)];
     const direction = random() < 0.5 ? -1 : 1;
@@ -61,6 +65,13 @@ export function layPaths(ground: PathGround, random: Random, mains: readonly Roa
     ).find((line) => line !== undefined);
     if (path) ground.lay(path);
   }
+}
+
+/** Whether `road` runs more along the level than across it at its point `i`. */
+function runsAlong(road: Road, i: number): boolean {
+  const p = road.points[i];
+  const q = road.points[i + 1] ?? road.points[i - 1];
+  return !p || !q || Math.abs(q.z - p.z) >= Math.abs(q.x - p.x);
 }
 
 /** A path checked point by point (`noCrossings`). */

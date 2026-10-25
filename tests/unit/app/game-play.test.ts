@@ -28,6 +28,16 @@ function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a', definiti
   return { game, controls, results };
 }
 
+/** The sample game where hits and rams do no damage, for tests of other things on level a. */
+const HARMLESS = {
+  ...SAMPLE_GAME,
+  hull: {
+    ...SAMPLE_GAME.hull,
+    damage: { bullet: 0, missile: 0, laser: 0, collision: 0 },
+    ramDamage: 0,
+  },
+};
+
 /** Runs `seconds` of frames of 0.1 s. */
 const frames = (game: GamePlay, seconds: number) => {
   for (let i = 0; i < Math.round(seconds * 10); i++) game.frame(0.1);
@@ -130,7 +140,7 @@ describe('GamePlay', () => {
   });
 
   it('P06-R03: tells once that the level is complete, with its counts', () => {
-    const { game, results } = start();
+    const { game, results } = start({}, 'a', HARMLESS);
     frames(game, 35);
     expect(game.state.phase).toBe('complete');
     expect(results).toEqual([{ levelId: 'a', destroyed: 0, spawned: 5, outcome: 'complete' }]);
@@ -175,7 +185,7 @@ describe('GamePlay', () => {
 
   it('phase 6 review: shows a HUD with the health, the weapon level, the progress and the kills', () => {
     const hudParent = document.createElement('div');
-    const { game, controls } = start({ hudParent });
+    const { game, controls } = start({ hudParent }, 'a', HARMLESS);
     frames(game, 5);
     expect(hudParent.querySelector('.hud-ship')?.textContent).toBe('Cube');
     expect(hudParent.querySelector('.hud-health-text')?.textContent).toBe('Life 3 / 3');

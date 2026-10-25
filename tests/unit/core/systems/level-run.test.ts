@@ -151,9 +151,10 @@ describe('LevelRun', () => {
     dropOnShip();
     expect(run.shots.level).toBe(pea.levels.length);
     // The ray starts at the starting level; the pea gets its level back.
-    play(run, 0.1, { ...STILL, switchWeapon: true });
+    // Each step with `switchWeapon` switches once.
+    run.step(1 / 60, { ...STILL, switchWeapon: true });
     expect([run.shots.weapon, run.shots.level]).toEqual([ray, 1]);
-    play(run, 0.1, { ...STILL, switchWeapon: true });
+    run.step(1 / 60, { ...STILL, switchWeapon: true });
     expect([run.shots.weapon, run.shots.level]).toEqual([pea, pea.levels.length]);
     // Without bonus rules, none.
     expect(newRun([]).bonuses).toBeUndefined();
