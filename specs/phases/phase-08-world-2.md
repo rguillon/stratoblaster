@@ -318,6 +318,9 @@ None. The spec was implemented as written; the few interpretations are listed un
 ```
 Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e ✔ (65 tests: a full run gave 62 passed / 3 failed — two phase 1 / 6 tests still expecting World 2 locked, and the new 2-4 test waiting on a time held by the mini boss, both fixed; the touch flow timed out under load — the menu-pointer, world-2 and bosses specs then re-run: 19 / 19 passed)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
+
+Full gate (validation, 2026-10-25): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1084 unit tests ✔ · coverage 98.5 % statements, 88.04 % branches, 98.57 % functions, 99.26 % lines ✔ · build ✔ · 65 e2e ✔ (4.4 min).
+Fixed on the way: three unit tests (World 2 storage tanks and lone antenna mast slightly over their footprints; the P06-R01 level test and Level Zero's prop list updated for World 2 unlocked and its own props), and e2e tests tied to the frame rate under software WebGL, failing on CI (D-075: the tests advance the level clock through the test API, entering a level gets the loading timeout, e2e builds draw a quarter of the pixels).
 ```
 
 ### How to test manually
