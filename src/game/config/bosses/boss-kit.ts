@@ -37,6 +37,11 @@ export interface BossDesign {
   /** One pattern per stage: `stages[k]` once `k` parts are destroyed. */
   readonly stages: readonly BossPatternSpec[];
   /**
+   * Its angry pattern (phase 7 review, `boss-rage.ts`): a bullet hell it fires for
+   * `BOSS_TIMING.rageSeconds` after the pause that follows each destroyed part.
+   */
+  readonly rage?: BossPatternSpec;
+  /**
    * Enemies some parts launch in every stage while they stand (a hangar's Gnats, a bay's
    * Hornets): `count` of `kind` every `every` seconds.
    */
@@ -146,6 +151,8 @@ export const BOSS_TIMING = {
   roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
   /** Degrees a second a turret turns at, following the player (phase 7 review). */
   turretTurnDeg: 150,
+  /** Seconds a boss is angry after the pause that follows each destroyed part (phase 7 review). */
+  rageSeconds: 3,
 } as const;
 
 /** Enemy bullets in a style of `enemy-look.ts`. */

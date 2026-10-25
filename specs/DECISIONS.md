@@ -725,3 +725,12 @@
 - **Alternatives considered:** letting only bullets through (missiles would still home on the core and be wasted); moving the parts out from behind the cores (changes the designs and models of several bosses).
 - **Consequences:** P07-R01's "shots that hit the core make sparks" now holds only while the boss comes in (noted in the phase report's deviations). The D-055 fight times shift slightly for bosses with parts behind their core.
 - **Status:** Accepted
+
+### D-063 — Angry bosses: a bullet hell after each destroyed part
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants every boss to get angry after the player destroys one of its parts and fire a bullet hell for a few seconds.
+- **Decision:** engine: `BossStats.rageSeconds`; `Boss.rage` starts at it when a part is destroyed (with the stage's pause) and runs down once the pause is over, `Boss.updateRage` firing instead of `updatePattern` meanwhile; a new destroyed part starts it again, death stops it. Game: `BossDesign.rage` (a `BossPatternSpec` fired from the core, fresh after each part), 3 s for every boss (`BOSS_TIMING.rageSeconds`), four shapes built from a heat 0 (1-1 mini) to 4.5 (1-5 final) that sets the bullets a second (20 + 8 × heat) and their speed (120 + 8 × heat px/s, slower than the stages'); the Overlord shares its rate between two shapes. While angry the charge lights flicker at 14 Hz, and the turrets follow the angry pattern.
+- **Alternatives considered:** angry instead of the pause (no warning before the hell); angry patterns from the parts left (some bosses have no armed part left, and it would differ with the order of destruction); a faster version of the stage's own pattern (not a bullet hell for bosses with few guns).
+- **Consequences:** each boss now has 3 s of dense fire per part (2 to 4 times a fight), the hardest moments of the fights; whether 1-1's 20 bullets a second at 120 px/s is right for a kid is to be checked by hand (P07-R10 manual validation). Fight times with the simulated player do not change.
+- **Status:** Accepted

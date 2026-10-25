@@ -112,7 +112,11 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   with it, its hit circle and muzzles too.
 - `core/systems/boss-pattern.ts`: a stage's volleys (aimed fans, preset fans, rings / spirals,
   bursts, homing missiles, lasers with their warning, launches), each from a part (it stops with
-  that part) or the core; `patternSignature` names what still fires.
+  that part) or the core; `patternSignature` names what still fires. After the pause that follows
+  each destroyed part, a boss with `rageSeconds` is angry that long (`Boss.rage`, D-063): it fires
+  its angry pattern (`Boss.updateRage`; the game's bullet hells are in
+  `game/config/bosses/boss-rage.ts`) instead of its stage's. `BossPart` and `BossCore` are in
+  `core/entities/boss-pieces.ts`.
 - `core/systems/boss-fights.ts`: brings the level's bosses (`GameLevel.bosses`, by distance) in,
   holds the track and eases its speed to the boss's `groundSpeed`, builds the health bar data
   (`BossBar`), and records the bosses defeated. `LevelRun` starts no wave during a fight, ends a

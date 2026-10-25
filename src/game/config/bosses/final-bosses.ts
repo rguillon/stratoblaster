@@ -10,6 +10,7 @@ import {
   volley,
   type BossDesign,
 } from './boss-kit';
+import { rage } from './boss-rage';
 
 /** A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`). */
 const fpart = (...[id, at, radius, health, options = {}]: Parameters<typeof part>) =>
@@ -43,6 +44,8 @@ const ROTARY: Muzzle[] = [
 /** 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate. */
 export const STORM_PETREL: BossDesign = {
   id: 'storm-petrel',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.flower(0.5, 'magenta', 'red'),
   stats: stats({
     id: 'storm-petrel',
     name: 'Storm Petrel',
@@ -87,6 +90,8 @@ export const STORM_PETREL: BossDesign = {
 /** 1-2: a wide carrier; two hangar bays launch Gnats, two flak turrets; all four shield the core. */
 export const GULL_MOTHERSHIP: BossDesign = {
   id: 'gull-mothership',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.vortex(1.5, 'green', 'orange'),
   stats: stats({
     id: 'gull-mothership',
     name: 'Gull Mothership',
@@ -133,6 +138,8 @@ export const GULL_MOTHERSHIP: BossDesign = {
 /** 1-3: a flying fortress; two laser lances and two missile silos shield the core. */
 export const MESA_FORTRESS: BossDesign = {
   id: 'mesa-fortress',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.curtain(2.5, 'red', 'orange'),
   stats: stats({
     id: 'mesa-fortress',
     name: 'Mesa Fortress',
@@ -188,6 +195,8 @@ export const MESA_FORTRESS: BossDesign = {
 /** 1-4: a heavy tanker-gunship; fuel tanks burst into bullet rings, rotary turrets spiral. */
 export const REFINERY_TITAN: BossDesign = {
   id: 'refinery-titan',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.spirals(3.5, 'orange', 'green'),
   stats: stats({
     id: 'refinery-titan',
     name: 'Refinery Titan',
@@ -238,6 +247,11 @@ export const REFINERY_TITAN: BossDesign = {
 /** 1-5: a city-ship; wing lasers, missile batteries, and two shield generators guard the core. */
 export const OVERLORD: BossDesign = {
   id: 'overlord',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: [
+    ...rage.spirals(4.5, 'purple', 'blue', 0.6),
+    ...rage.flower(4.5, 'magenta', 'purple', 0.4),
+  ],
   stats: stats({
     id: 'overlord',
     name: 'Overlord',

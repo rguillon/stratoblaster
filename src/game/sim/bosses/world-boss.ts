@@ -47,6 +47,8 @@ export class WorldBoss extends Boss {
   /** How far it sways: its design's, or less to keep its parts within reach. */
   readonly swayAmplitude: number;
   #pattern: BossPattern;
+  /** Its angry pattern, fresh after each destroyed part (phase 7 review). */
+  #rage = new BossPattern([]);
   #fighting = 0;
   readonly #launches: readonly BossVolley[];
   readonly #byId: ReadonlyMap<string, BossPart>;
@@ -58,7 +60,11 @@ export class WorldBoss extends Boss {
   ) {
     const [min, max] = area.topRange ?? [0, area.width];
     const y = area.height + bossTop(design) + BOSS_TIMING.spawnMargin;
-    super((min + max) / 2, y, { ...design.stats, turrets: turretsOf(design) });
+    super((min + max) / 2, y, {
+      ...design.stats,
+      turrets: turretsOf(design),
+      ...(design.rage ? { rageSeconds: BOSS_TIMING.rageSeconds } : {}),
+    });
     this.centerX = (min + max) / 2;
     this.stopY = design.stopFraction * area.height;
     this.swayAmplitude = Math.max(
@@ -75,19 +81,23 @@ export class WorldBoss extends Boss {
   /** The pattern of stage `stage`: its design's volleys, from their guns, and the parts' launches. */
   #stage(stage: number): BossPatternSpec {
     const { stages } = this.design;
-    const volleys = stages[Math.min(stage, stages.length - 1)] ?? [];
-    const armed = volleys.map((v) => ({
+    return [...this.#armed(stages[Math.min(stage, stages.length - 1)] ?? []), ...this.#launches];
+  }
+
+  /** `volleys` from the muzzles of their guns (and turrets). */
+  #armed(volleys: BossPatternSpec): BossPatternSpec {
+    return volleys.map((v) => ({
       ...v,
       muzzles: volleyMuzzles(this.design, v),
       turret: volleyOnTurret(this.design, v),
     }));
-    return [...armed, ...this.#launches];
   }
 
   /** Its turrets follow the player as long as it is there, fire pauses included (phase 7 review). */
   override update(ctx: EnemyContext, dt: number): void {
     super.update(ctx, dt);
-    if (this.state !== 'dying') this.#pattern.turnTurrets(ctx, dt, (from) => this.#source(from));
+    const pattern = this.rage > 0 && this.pause <= 0 ? this.#rage : this.#pattern;
+    if (this.state !== 'dying') pattern.turnTurrets(ctx, dt, (from) => this.#source(from));
   }
 
   protected override enter(_ctx: EnemyContext, dt: number): boolean {
@@ -114,8 +124,15 @@ export class WorldBoss extends Boss {
     this.charge = this.#pattern.charge;
   }
 
+  /** Its bullet hell while it is angry (phase 7 review): its charge lights full on. */
+  protected override updateRage(ctx: EnemyContext, dt: number): void {
+    this.#rage.step(ctx, dt, (from) => this.#source(from));
+    this.charge = 1;
+  }
+
   protected override onStageChange(stage: number, ctx: EnemyContext): void {
     this.#pattern = new BossPattern(this.#stage(stage));
+    this.#rage = new BossPattern(this.#armed(this.design.rage ?? []));
     for (const [id, ring] of Object.entries(this.design.breakRings ?? {})) {
       const part = this.#byId.get(id);
       if (!part?.destroyed || this.#ringed.has(id)) continue;

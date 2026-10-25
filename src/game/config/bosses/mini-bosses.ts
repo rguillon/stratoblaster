@@ -1,6 +1,7 @@
 import type { BossJointSpec } from '../../../core/entities/boss-joint';
 import type { Muzzle } from '../../../core/entities/muzzle';
 import { bullet, mirror, part, stages, stats, twin, volley, type BossDesign } from './boss-kit';
+import { rage } from './boss-rage';
 
 /*
  * The World 1 mini bosses (P07-R05): 2 or 3 destroyable parts each. Offsets in px from the
@@ -31,6 +32,8 @@ const CANNON: Muzzle[] = [
 /** 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core. */
 export const REEF_WARDEN: BossDesign = {
   id: 'reef-warden',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.spirals(0, 'orange', 'red'),
   stats: stats({
     id: 'reef-warden',
     name: 'Reef Warden',
@@ -65,6 +68,8 @@ export const REEF_WARDEN: BossDesign = {
 /** 1-2: an armoured flying barge; its front plate shields the core, two mortars lob big bullets. */
 export const BREAKWATER: BossDesign = {
   id: 'breakwater',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.curtain(1, 'red', 'orange'),
   stats: stats({
     id: 'breakwater',
     name: 'Breakwater',
@@ -104,6 +109,8 @@ export const BREAKWATER: BossDesign = {
 /** 1-3: a gyro gunship; three blade pods on its turning ring fire spirals and shield the core. */
 export const DUST_DEVIL: BossDesign = {
   id: 'dust-devil',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.vortex(2, 'green', 'purple'),
   stats: stats({
     id: 'dust-devil',
     name: 'Dust Devil',
@@ -196,6 +203,8 @@ function scorpionArm(side: 'left' | 'right'): Record<string, BossJointSpec> {
  */
 export const SCORPION: BossDesign = {
   id: 'scorpion',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.flower(3, 'purple', 'blue'),
   stats: stats({
     id: 'scorpion',
     name: 'Scorpion',
@@ -238,6 +247,8 @@ export const SCORPION: BossDesign = {
 /** 1-5: a twin-hull police interceptor; two hull guns and a drone bay at its nose shield the core. */
 export const SENTINEL: BossDesign = {
   id: 'sentinel',
+  /** Angry after each destroyed part (phase 7 review). */
+  rage: rage.curtain(4, 'blue', 'red'),
   stats: stats({
     id: 'sentinel',
     name: 'Sentinel',

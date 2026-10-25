@@ -161,6 +161,35 @@ describe('World 1 bosses', () => {
     });
   });
 
+  /** Bullets a second `d` fires in its first stage, and while angry after losing a part. */
+  const fireRates = (d: BossDesign) => {
+    const boss = new WorldBoss(d, AREA);
+    const ctx = new RecordingContext();
+    runUntil(boss, ctx, () => boss.state === 'fighting');
+    run(boss, ctx, 6);
+    const normal = ctx.shots.length / 6;
+    at(boss.parts, 0).destroy();
+    // The pause after a destroyed part, without fire; then angry.
+    run(boss, ctx, 1.01);
+    const before = ctx.shots.length;
+    expect(boss.rage, d.id).toBeGreaterThan(2.9);
+    run(boss, ctx, 3);
+    const angry = (ctx.shots.length - before) / 3;
+    expect(boss.rage, d.id).toBe(0);
+    return { normal, angry };
+  };
+
+  it('phase 7 review: after each destroyed part and its pause, a boss is angry for 3 s: a bullet hell', () => {
+    const levels = Object.values(WORLD_1_BOSSES);
+    for (const rank of ['mini', 'final'] as const) {
+      const rates = levels.map((l) => fireRates(design(l[rank])));
+      for (const { normal, angry } of rates) expect(angry).toBeGreaterThan(5 * normal);
+      // Denser from 1-1 to 1-5, from about 20 bullets a second.
+      expect(increasing(rates.map((r) => r.angry))).toBe(true);
+      expect(at(rates, 0).angry).toBeGreaterThanOrEqual(19);
+    }
+  });
+
   it('P07-R05: the Refinery Titan’s fuel tanks burst into a ring of bullets', () => {
     const boss = new WorldBoss(design('refinery-titan'), AREA);
     const ctx = new RecordingContext();

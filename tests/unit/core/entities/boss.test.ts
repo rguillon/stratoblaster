@@ -79,6 +79,32 @@ describe('Boss', () => {
     expect(part(boss, 'plate').gone).toBe(true);
   });
 
+  it('phase 7 review: after the pause, it is angry for a while: its angry pattern, not its stage’s', () => {
+    class AngryBoss extends SampleBoss {
+      angryFor = 0;
+      protected override updateRage(_ctx: unknown, dt: number): void {
+        this.angryFor += dt;
+      }
+    }
+    const boss = new AngryBoss(AREA, { ...SAMPLE_BOSS_STATS, rageSeconds: 2 });
+    const ctx = new RecordingContext();
+    runUntil(boss, ctx, () => boss.state === 'fighting');
+    run(boss, ctx, 3);
+    expect(boss.angryFor).toBe(0);
+    part(boss, 'gun').health = 0;
+    run(boss, ctx, 1 + 1e-6);
+    expect(boss.rage).toBeCloseTo(2, 1);
+    const fired = ctx.shots.length;
+    run(boss, ctx, 2);
+    // Angry for its 2 s, without its stage's pattern.
+    expect(boss.angryFor).toBeCloseTo(2, 1);
+    expect(boss.rage).toBe(0);
+    expect(ctx.shots.length).toBe(fired);
+    run(boss, ctx, 2);
+    expect(ctx.shots.length).toBeGreaterThan(fired);
+    expect(boss.angryFor).toBeCloseTo(2, 1);
+  });
+
   it('P07-R04: each destroyed part is a stage more, with a pause without fire', () => {
     const { boss, ctx } = inPlace();
     expect(boss.stage).toBe(0);

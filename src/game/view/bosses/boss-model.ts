@@ -316,10 +316,18 @@ function buildPart(
   return { group: new FlashGroup(model, flash), turret, smoke, stump };
 }
 
-/** The brightness of a boss's charge lights: its own, or a strobe during a stage change. */
+/**
+ * The brightness of a boss's charge lights: its own, a strobe during a stage change, and a fast
+ * flicker while it is angry (phase 7 review).
+ */
 function strobe(enemy: Enemy): number {
-  if (!(enemy instanceof Boss) || enemy.pause <= 0) return enemy.charge;
-  return Math.floor(enemy.pause * BOSS_LOOK.stageStrobeHz * 2) % 2 === 0 ? 1 : 0;
+  if (!(enemy instanceof Boss)) return enemy.charge;
+  if (enemy.pause > 0) {
+    return Math.floor(enemy.pause * BOSS_LOOK.stageStrobeHz * 2) % 2 === 0 ? 1 : 0;
+  }
+  if (enemy.rage <= 0) return enemy.charge;
+  const { hz, dim } = BOSS_LOOK.rageFlicker;
+  return Math.floor(enemy.rage * hz * 2) % 2 === 0 ? 1 : dim;
 }
 
 /** A part: its model while it stands (flashing, smoking), its stump once destroyed. */

@@ -22,6 +22,8 @@ export const BOSS_LOOK = {
   } as Readonly<Record<string, Rgb>>,
   /** Its charge lights strobe this many times a second while it holds its fire (P07-R04). */
   stageStrobeHz: 6,
+  /** While it is angry, they flicker this many times a second, down to `dim` (phase 7 review). */
+  rageFlicker: { hz: 14, dim: 0.35 },
   /** A part flashes this colour for `seconds` after a hit (about one frame and a bit). */
   flash: { color: [1, 1, 1] as Rgb, seconds: 0.05 },
   /**

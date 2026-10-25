@@ -105,3 +105,4 @@
 - 2026-10-25 — 7 — Review fix: every boss turret turns the way its next volley goes (at the player, along a fan, spinning with a spiral); three more turrets (Reef Warden prow cannon, Mesa Fortress fan cannon, Refinery Titan rotary turrets) (D-060); still awaiting review.
 - 2026-10-25 — 7 — Review fix: bosses can have moving limbs (joints swinging, parts moving with them); the Scorpion's arms swing at the shoulder and elbow, its claws turn at the wrist and open and close their jaws (D-061); still awaiting review.
 - 2026-10-25 — 7 — Review fix: shots go through a shielded boss core to the parts behind it; Mesa Fortress health re-tuned for P07-R10 (D-062); still awaiting review.
+- 2026-10-25 — 7 — Review fix: bosses get angry for 3 s after each destroyed part and its pause, firing a bullet hell denser from 1-1 to 1-5 (D-063); still awaiting review.

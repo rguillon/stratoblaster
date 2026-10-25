@@ -1,14 +1,8 @@
-import {
-  Enemy,
-  type DropSource,
-  type EnemyContext,
-  type EnemyStats,
-  type LaserOwner,
-} from './enemy';
+import { Enemy, type EnemyContext, type EnemyStats } from './enemy';
 import { BossJoints, type BossJointSpec } from './boss-joint';
 import { rollTowards, type BossRoll } from './boss-roll';
-import { BossTurret, type BossTurretSpec } from './boss-turret';
-import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
+import type { BossTurretSpec } from './boss-turret';
+import { BossCore, BossPart } from './boss-pieces';
 import type { ShotTarget } from './shot-target';
 
 /**
@@ -47,6 +41,11 @@ export interface BossStats extends EnemyStats {
   readonly groundSpeed: number;
   /** Seconds it does not fire after one of its parts is destroyed (P07-R04). */
   readonly stagePause: number;
+  /**
+   * Seconds it is angry after that pause (phase 7 review): it fires its angry pattern
+   * ({@link Boss.updateRage}) instead of its stage's. Never angry when omitted.
+   */
+  readonly rageSeconds?: number;
   /** Its death (P07-R06): a blast every `every` seconds over its hull for `seconds`. */
   readonly death: { readonly seconds: number; readonly every: number };
   /** Chance its core drops a bonus when it is destroyed; the game's rule when omitted. */
@@ -62,163 +61,18 @@ export interface BossStats extends EnemyStats {
   readonly joints?: Readonly<Record<string, BossJointSpec>>;
 }
 
+export { BossCore, BossPart, type BossPiece } from './boss-pieces';
+
 /** Coming in (no damage taken), fighting, or blowing up. */
 export type BossState = 'entering' | 'fighting' | 'dying';
-
-/** Something of a boss that shots hit and its weapons fire from: a part or the core. */
-export interface BossPiece extends ShotTarget, Omit<LaserOwner, 'health'> {
-  /** Seconds since it last took damage (for the hit flash); Infinity before. */
-  readonly sinceHit: number;
-  /** The turret its guns are on, if any (phase 7 review): its weapons turn it. */
-  readonly turret: BossTurret | undefined;
-  /**
-   * Where one of its guns' muzzles is now, `muzzle` given from the boss's centre (as the boss
-   * is drawn, its orbiting parts at a spin of 0, its joints at rest): it rolls with the boss,
-   * turns with it, moves with the joint its piece hangs on, and with its turret when `onTurret`.
-   */
-  place(muzzle: Muzzle, onTurret?: boolean): RaisedPoint;
-}
-
-/** The turret of the piece `id` of `boss`, if it has one. */
-function turretOf(boss: Boss, id: string): BossTurret | undefined {
-  const spec = boss.stats.turrets?.[id];
-  return spec && new BossTurret(spec);
-}
-
-/** Laser owners fire along their heading from one radius ahead of their centre. */
-function emitterOf(piece: { x: number; y: number; radius: number; heading: number }) {
-  return {
-    x: piece.x + Math.sin(piece.heading) * piece.radius,
-    y: piece.y + Math.cos(piece.heading) * piece.radius,
-  };
-}
-
-/** A destroyable part of a {@link Boss}, at its offset from the boss's centre. */
-export class BossPart implements BossPiece, DropSource {
-  x = 0;
-  y = 0;
-  /** Lasers fired from it go this way (straight down). */
-  heading = Math.PI;
-  sinceHit = Infinity;
-  /** Set once the boss has taken its destruction into account (its stage went up). */
-  broken = false;
-  readonly radius: number;
-  readonly maxHealth: number;
-  readonly dropChance: number;
-  readonly shieldsCore: boolean;
-  readonly turret: BossTurret | undefined;
-  #health: number;
-
-  constructor(
-    readonly spec: BossPartSpec,
-    readonly index: number,
-    private readonly boss: Boss,
-  ) {
-    this.radius = spec.radius;
-    this.maxHealth = spec.health;
-    this.#health = spec.health;
-    this.dropChance = spec.dropChance;
-    this.shieldsCore = spec.shieldsCore;
-    this.turret = turretOf(boss, spec.id);
-  }
-
-  /** Unique among the boss's pieces (the core is the boss's id). */
-  get id(): number {
-    return -(this.boss.id * 64 + this.index + 1);
-  }
-
-  get health(): number {
-    return this.#health;
-  }
-
-  /** Damage only counts once the boss is in place (P07-R05). */
-  set health(value: number) {
-    if (!this.boss.vulnerable) return;
-    const next = Math.max(0, value);
-    if (next < this.#health) this.sinceHit = 0;
-    this.#health = next;
-  }
-
-  get destroyed(): boolean {
-    return this.#health <= 0;
-  }
-
-  get gone(): boolean {
-    return this.boss.gone || this.destroyed;
-  }
-
-  get emitter(): { readonly x: number; readonly y: number } {
-    return emitterOf(this);
-  }
-
-  place(muzzle: Muzzle, onTurret = false): RaisedPoint {
-    const [x, y, height] = onTurret && this.turret ? this.turret.turned(muzzle) : muzzle;
-    const moved: Muzzle = [...this.boss.joints.move(this.spec.joint, x, y), height];
-    return muzzlePoint(this.boss, moved, this.spec.orbits ? this.boss.spin : 0);
-  }
-
-  /** Destroys it at once, whatever the boss is doing (its death, a debug key). */
-  destroy(): void {
-    this.#health = 0;
-  }
-}
-
-/** The core of a {@link Boss} as its shots see it: shielded while its shielding parts stand. */
-export class BossCore implements BossPiece {
-  heading = Math.PI;
-  sinceHit = Infinity;
-  readonly radius: number;
-  readonly maxHealth: number;
-  readonly turret: BossTurret | undefined;
-
-  constructor(private readonly boss: Boss) {
-    this.radius = boss.stats.coreRadius;
-    this.maxHealth = boss.stats.health;
-    this.turret = turretOf(boss, 'core');
-  }
-
-  get id(): number {
-    return this.boss.id;
-  }
-
-  get x(): number {
-    return this.boss.x;
-  }
-
-  get y(): number {
-    return this.boss.y;
-  }
-
-  get health(): number {
-    return this.boss.coreHealth;
-  }
-
-  /** Shots that hit a shielded core (or one coming in) spark but do no damage (P07-R01). */
-  set health(value: number) {
-    if (!this.boss.vulnerable || this.boss.coreShielded) return;
-    if (value < this.boss.coreHealth) this.sinceHit = 0;
-    this.boss.hurtCore(value);
-  }
-
-  get gone(): boolean {
-    return this.boss.gone || this.boss.state === 'dying';
-  }
-
-  get emitter(): { readonly x: number; readonly y: number } {
-    return emitterOf(this);
-  }
-
-  place(muzzle: Muzzle, onTurret = false): RaisedPoint {
-    return muzzlePoint(this.boss, onTurret && this.turret ? this.turret.turned(muzzle) : muzzle);
-  }
-}
 
 /**
  * Base of every boss (P07-R01, R04, GD-46): a core and destroyable parts that the player's shots
  * hit one by one. It goes through stages, one more each time a part is destroyed, pausing its
  * fire for `stagePause` at each; it blows up over `death.seconds` once its core has no health
- * left. Concrete bosses (in the game) say how they come in ({@link enter}), move ({@link move})
- * and fire ({@link updatePattern}); they may react to a new stage ({@link onStageChange}).
+ * left; after each pause it may be angry for `rageSeconds`. Concrete bosses (in the game) say how
+ * they come in ({@link enter}), move ({@link move}), fire ({@link updatePattern}) and fire when
+ * angry ({@link updateRage}); they may react to a new stage ({@link onStageChange}).
  *
  * Its `health` (as an {@link Enemy}) only says whether it is still there: it drops to 0 when
  * its death blasts are over, and the enemy world then removes it as destroyed.
@@ -236,6 +90,8 @@ export abstract class Boss extends Enemy {
   stage = 0;
   /** Seconds left without firing, after a stage change. */
   pause = 0;
+  /** Seconds left being angry, once the pause after a stage change is over (phase 7 review). */
+  rage = 0;
   /** How far its orbiting parts have turned, in radians, clockwise on screen. */
   spin = 0;
   /** How far it is rolled into its sideways move, in radians (see `MuzzleBody.roll`). */
@@ -340,6 +196,11 @@ export abstract class Boss extends Enemy {
       this.charge = 0;
       return;
     }
+    if (this.rage > 0 && this.updateRage) {
+      this.rage = Math.max(0, this.rage - dt);
+      this.updateRage(ctx, dt);
+      return;
+    }
     this.updatePattern(ctx, dt);
   }
 
@@ -351,6 +212,9 @@ export abstract class Boss extends Enemy {
 
   /** Fires the pattern of the current stage for `dt` seconds (not during a pause). */
   protected abstract updatePattern(ctx: EnemyContext, dt: number): void;
+
+  /** Fires its angry pattern for `dt` seconds while it is angry, if it has one. */
+  protected updateRage?(ctx: EnemyContext, dt: number): void;
 
   /** Called when a part is destroyed and `stage` has gone up (P07-R04), if defined. */
   protected onStageChange?(stage: number, ctx: EnemyContext): void;
@@ -364,6 +228,7 @@ export abstract class Boss extends Enemy {
       changed = true;
       this.stage++;
       this.pause = this.stats.stagePause;
+      this.rage = this.stats.rageSeconds ?? 0;
       ctx.breakPart(part);
       this.onStageChange?.(this.stage, ctx);
     }
@@ -374,6 +239,7 @@ export abstract class Boss extends Enemy {
     this.state = 'dying';
     this.#coreHealth = 0;
     this.charge = 0;
+    this.rage = 0;
     for (const part of this.parts) {
       part.destroy();
       part.broken = true;
