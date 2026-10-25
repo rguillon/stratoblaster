@@ -1,5 +1,5 @@
 import type { BossKindDefinition } from '../../core/systems/boss-fights';
-import type { BossDesign } from '../config/bosses/boss-kit';
+import { withOwnLasers, type BossDesign } from '../config/bosses/boss-kit';
 import {
   GULL_MOTHERSHIP,
   MESA_FORTRESS,
@@ -53,9 +53,8 @@ export const BOSS_DESIGNS: readonly BossDesign[] = [
   BOREAL_CITADEL,
 ];
 
-/** One boss kind per design. */
-export const BOSS_KINDS: readonly BossKindDefinition[] = BOSS_DESIGNS.map((design) => ({
-  id: design.id,
-  name: design.stats.name,
-  spawn: (area) => new WorldBoss(design, area),
-}));
+/** One boss kind per design, its lasers in its own colour. */
+export const BOSS_KINDS: readonly BossKindDefinition[] = BOSS_DESIGNS.map((design) => {
+  const own = withOwnLasers(design);
+  return { id: design.id, name: design.stats.name, spawn: (area) => new WorldBoss(own, area) };
+});

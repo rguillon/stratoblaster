@@ -7,6 +7,8 @@ import { createBlastRenderer } from '../../../../../src/game/view/enemies/blast-
 import { createEnemyShotRenderer } from '../../../../../src/game/view/enemies/enemy-shot-renderer';
 import { ENEMY_BINDINGS } from '../../../../../src/game/view/enemies/enemy-bindings';
 import { Dropper } from '../../../../fixtures/sample-enemies';
+import { BOSS_LOOK } from '../../../../../src/game/config/boss-look';
+import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
 
 const enabled = (scene: Scene, prefix: string) =>
   scene.meshes.filter(
@@ -53,6 +55,28 @@ describe('createEnemyShotRenderer', () => {
     });
     expect(sizes.every((size) => size > 0 && size < 1)).toBe(true);
     expect(new Set(sizes).size).toBe(3);
+    renderer.dispose();
+  });
+
+  it("phase 8 review: a boss's lasers are drawn in its neon colour, the others in red", () => {
+    const scene = new Scene(new NullEngine());
+    const renderer = createEnemyShotRenderer(scene);
+    const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
+    const laser = { warningSeconds: 1, firingSeconds: 1, width: 10 };
+    shots.fireLaser(new Dropper(100, 500), { ...laser, style: 'sentinel' });
+    shots.fireLaser(new Dropper(200, 500), { ...laser, style: 'lancer' });
+    renderer.sync(frame(shots));
+    expect(enabled(scene, 'enemy-laser-warning-sentinel-')).toHaveLength(1);
+    expect(enabled(scene, 'enemy-laser-warning-lancer-')).toHaveLength(1);
+    const colors = (style: string) => {
+      const beam = scene.getMeshByName(`enemy-laser-beam-${style}`);
+      const data = beam?.getVerticesData('color') ?? [];
+      return Array.from({ length: data.length / 4 }, (_, i) => data.slice(4 * i, 4 * i + 3));
+    };
+    const has = (style: string, rgb: readonly number[]) =>
+      colors(style).some((c) => c.every((v, k) => Math.abs(v - (rgb[k] ?? 0)) < 1e-6));
+    expect(has('sentinel', BOSS_LOOK.neon.sentinel ?? [])).toBe(true);
+    expect(has('lancer', ENEMY_LOOK.laser.color)).toBe(true);
     renderer.dispose();
   });
 

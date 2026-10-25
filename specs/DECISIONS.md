@@ -809,3 +809,12 @@
 - **Alternatives considered:** keeping them in memory only (lost on reload); saving them at every bonus (a level lost would still raise the weapons).
 - **Consequences:** there is no way yet to start again from level 1 weapons but clearing the cookies; a "new game" reset can come with scoring / save slots.
 - **Status:** Accepted
+
+### D-072 — Laser colours by boss, and beams locked once firing
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** every enemy laser was red; the reviewer asked for more colours, and for a laser that may follow the player while it aims to keep its direction once locked.
+- **Decision:** a boss's lasers take its kind id as style (`withOwnLasers`, applied when the boss kinds are built), and the view colours a style with that boss's neon (`laserPalette`: a white-hot beam core, the colour around it, fading out), red for the Lancer and unknown styles. In the engine (`EnemyShots`), a laser's warning line follows its owner's heading; when it starts firing it keeps the heading its owner had then (`locked`), its sweep turning from it, and it still leaves from the emitter.
+- **Alternatives considered:** a colour argument on every boss laser volley (20 boss files to keep in step with their neon).
+- **Consequences:** lasers fired along a swinging joint (the Scorpion's stinger) no longer swing while they fire.
+- **Status:** Accepted

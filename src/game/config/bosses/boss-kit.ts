@@ -352,3 +352,21 @@ export const volley = {
     shape: { kind: 'laser', laser: laserOf(firingSeconds, 12, sweepDeg) },
   }),
 };
+
+/**
+ * `design` with its lasers drawn in its own colour (phase 8 review): their style is its kind
+ * id, which the laser renderer colours with the boss's neon.
+ */
+export function withOwnLasers(design: BossDesign): BossDesign {
+  const own = (pattern: BossPatternSpec): BossPatternSpec =>
+    pattern.map((v) =>
+      v.shape.kind === 'laser'
+        ? { ...v, shape: { ...v.shape, laser: { ...v.shape.laser, style: design.id } } }
+        : v,
+    );
+  return {
+    ...design,
+    stages: design.stages.map(own),
+    ...(design.rage ? { rage: own(design.rage) } : {}),
+  };
+}

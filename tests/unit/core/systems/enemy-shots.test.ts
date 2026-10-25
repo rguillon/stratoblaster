@@ -92,6 +92,23 @@ describe('EnemyShots lasers', () => {
     expect(shots.lasers).toHaveLength(0);
   });
 
+  it('phase 8 review: the warning line follows its owner; the beam keeps the heading it fired at', () => {
+    const shots = new EnemyShots(OPTIONS);
+    const owner = { emitter: { x: 100, y: 480 }, heading: Math.PI, gone: false, health: 1 };
+    shots.fireLaser(owner, LASER);
+    owner.heading = Math.PI - 0.3;
+    shots.step(0.5, 0, 0);
+    expect(shots.lasers[0]?.heading).toBeCloseTo(Math.PI - 0.3);
+    owner.heading = Math.PI - 0.2;
+    shots.step(0.6, 0, 0);
+    expect(shots.lasers[0]).toMatchObject({ phase: 'firing', heading: Math.PI - 0.2 });
+    // The turret keeps turning, the beam does not; it still leaves from the emitter.
+    owner.heading = Math.PI + 0.4;
+    owner.emitter = { x: 120, y: 470 };
+    shots.step(0.5, 0, 0);
+    expect(shots.lasers[0]).toMatchObject({ heading: Math.PI - 0.2, x: 120, y: 470 });
+  });
+
   it('phase 7 review: leave from where the camera sees a raised emitter', () => {
     const eye = { x: 240, y: -150, height: 550 };
     const shots = new EnemyShots({ ...OPTIONS, eye });

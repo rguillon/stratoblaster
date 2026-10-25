@@ -15,6 +15,32 @@ const glow = (core: Rgb, mid: Rgb, rim: Rgb): readonly Rgb[] => [core, mid, rim,
  */
 const bullet = (core: Rgb, color: Rgb): readonly Rgb[] => [core, core, color, color, color, color];
 
+/** A colour scaled by `k`. */
+const times = ([r, g, b]: Rgb, k: number): Rgb => [r * k, g * k, b * k];
+
+/** A colour `t` of the way to white. */
+const whiter = ([r, g, b]: Rgb, t: number): Rgb => [
+  r + (1 - r) * t,
+  g + (1 - g) * t,
+  b + (1 - b) * t,
+];
+
+/** The colours of a laser of `color` (phase 8 review): its warning line, beam and emitter glow. */
+export interface LaserPalette {
+  readonly warning: readonly Rgb[];
+  readonly beam: readonly Rgb[];
+  readonly emitter: readonly Rgb[];
+}
+
+/** A laser in `color`: a white-hot beam core, its colour around it, fading out. */
+export function laserPalette(color: Rgb): LaserPalette {
+  return {
+    warning: [color, times(color, 0.5), [0, 0, 0]],
+    beam: [whiter(color, 0.9), color, times(color, 0.5), [0, 0, 0]],
+    emitter: glow(whiter(color, 0.9), color, times(color, 0.3)),
+  };
+}
+
 export const ENEMY_LOOK = {
   /**
    * Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white to
@@ -109,29 +135,19 @@ export const ENEMY_LOOK = {
     flameSize: [2.6, 6],
   },
   laser: {
+    /**
+     * Colour of the lasers of a style (`EnemyLaserSpec.style`) that is not a boss's: the
+     * Lancer's red. A boss's lasers take its neon colour (`BOSS_LOOK.neon`, phase 8 review).
+     */
+    color: [1, 0.3, 0.4] as Rgb,
     /** The thin warning line, blinking at `blinkHz`, then the beam. */
-    warning: {
-      width: 2,
-      colors: [
-        [1, 0.35, 0.4],
-        [0.5, 0.05, 0.1],
-        [0, 0, 0],
-      ],
-      blinkHz: 8,
-    },
+    warning: { width: 2, blinkHz: 8 },
     beam: {
-      colors: [
-        [1, 0.95, 0.95],
-        [1, 0.3, 0.4],
-        [0.5, 0.02, 0.1],
-        [0, 0, 0],
-      ],
       /** Visual width relative to the beam width. */
       glowWidth: 2,
       flicker: 0.12,
       flickerHz: 21,
     },
-    emitter: glow([1, 0.95, 0.95], [1, 0.3, 0.4], [0.3, 0, 0.05]),
     emitterRadius: 9,
   },
   /**
