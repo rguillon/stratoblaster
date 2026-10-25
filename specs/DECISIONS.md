@@ -716,3 +716,12 @@
 - **Alternatives considered:** animating the limbs in the view only (the claws' hit circles and barrels would stay where the model no longer is, against D-057); limbs that reach for the player (more behaviour to tune; a swing is enough for the look asked).
 - **Consequences:** the claws' hit circles move up to about 8 px and their barrel tips up to about 15 px, and their shots with them; fight times were not re-tuned. Joints do not roll with the boss in the hit circles (as before for every part). A limb drawn on the body flashes with the core; the jaws flash with their claw.
 - **Status:** Accepted
+
+### D-062 — Shots go through a shielded boss core
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer found that a shielded core stopped the player's bullets (they sparked on it, P07-R01), so the parts behind it could only be reached with the laser.
+- **Decision:** `Enemy` gets `shotTargets` (what the player's shots can hit, `hitTargets` by default); `EnemyWorld.targets` is built from it. A `Boss` fighting with its core shielded leaves the core out of it: bullets, missiles (they no longer home on the core) and the laser go through to the parts. Coming in, and once the core can be damaged, the core is a shot target again. `hitTargets` keeps the core, so the ship still bumps into it. Mesa Fortress re-tuned for P07-R10: core 3000 (was 2420), silos 1500 (were 890); fight 83.0 s with the D-055 bot.
+- **Alternatives considered:** letting only bullets through (missiles would still home on the core and be wasted); moving the parts out from behind the cores (changes the designs and models of several bosses).
+- **Consequences:** P07-R01's "shots that hit the core make sparks" now holds only while the boss comes in (noted in the phase report's deviations). The D-055 fight times shift slightly for bosses with parts behind their core.
+- **Status:** Accepted

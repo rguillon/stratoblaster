@@ -166,6 +166,14 @@ export abstract class Enemy implements ShotTarget, LaserOwner {
     return this.#self;
   }
 
+  /**
+   * What the player's shots can hit: its {@link hitTargets}, unless some of them let shots
+   * through (e.g. a boss's shielded core, phase 7 review).
+   */
+  get shotTargets(): readonly ShotTarget[] {
+    return this.hitTargets;
+  }
+
   /** Moves and attacks for `dt` seconds. `age` is already advanced. */
   abstract update(ctx: EnemyContext, dt: number): void;
 

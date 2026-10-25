@@ -188,7 +188,7 @@ export class EnemyWorld {
 
   #rebuildTargets(): void {
     this.targets.length = 0;
-    for (const enemy of this.enemies) if (!enemy.gone) this.targets.push(...enemy.hitTargets);
+    for (const enemy of this.enemies) if (!enemy.gone) this.targets.push(...enemy.shotTargets);
     for (const missile of this.shots.missiles) if (missile.alive) this.targets.push(missile);
   }
 }

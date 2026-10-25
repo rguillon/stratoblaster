@@ -6,6 +6,7 @@ import {
   type LaserOwner,
 } from './enemy';
 import { BossJoints, type BossJointSpec } from './boss-joint';
+import { rollTowards, type BossRoll } from './boss-roll';
 import { BossTurret, type BossTurretSpec } from './boss-turret';
 import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
 import type { ShotTarget } from './shot-target';
@@ -59,13 +60,6 @@ export interface BossStats extends EnemyStats {
   readonly turrets?: Readonly<Record<string, BossTurretSpec>>;
   /** Its moving limbs' joints, by id (phase 7 review): parts hang on them (`BossPartSpec.joint`). */
   readonly joints?: Readonly<Record<string, BossJointSpec>>;
-}
-
-/** How a boss rolls into its sideways moves (see {@link BossStats.roll}). */
-export interface BossRoll {
-  readonly maxDeg: number;
-  readonly fullSpeed: number;
-  readonly easePerSec: number;
 }
 
 /** Coming in (no damage taken), fighting, or blowing up. */
@@ -253,6 +247,7 @@ export abstract class Boss extends Enemy {
   #dyingFor = 0;
   #blasts = 0;
   #targets: ShotTarget[] = [];
+  #parts: ShotTarget[] = [];
 
   constructor(
     x: number,
@@ -300,6 +295,15 @@ export abstract class Boss extends Enemy {
   /** Its intact parts and its core, until it blows up. */
   override get hitTargets(): readonly ShotTarget[] {
     return this.#targets;
+  }
+
+  /**
+   * Its intact parts, and its core unless it is fighting with its core shielded (phase 7
+   * review): shots then go through the core to the parts behind it. Coming in, shots spark on
+   * all of it (P07-R05).
+   */
+  override get shotTargets(): readonly ShotTarget[] {
+    return this.vulnerable && this.coreShielded ? this.#parts : this.#targets;
   }
 
   /** Sets the core's health; at 0 the boss starts blowing up. Used by its {@link core}. */
@@ -375,6 +379,7 @@ export abstract class Boss extends Enemy {
       part.broken = true;
     }
     this.#targets = [];
+    this.#parts = [];
   }
 
   /** Blasts over the hull, one by one, then it is destroyed (its last, big blast). */
@@ -397,10 +402,7 @@ export abstract class Boss extends Enemy {
     const rule = this.stats.roll;
     const vx = dt > 0 ? (this.x - this.#lastX) / dt : 0;
     this.#lastX = this.x;
-    if (!rule || dt <= 0) return;
-    const max = (rule.maxDeg * Math.PI) / 180;
-    const target = Math.max(-max, Math.min(max, (vx / rule.fullSpeed) * max));
-    this.roll += (target - this.roll) * Math.min(1, rule.easePerSec * dt);
+    if (rule && dt > 0) this.roll = rollTowards(rule, this.roll, vx, dt);
   }
 
   #place(): void {
@@ -415,6 +417,7 @@ export abstract class Boss extends Enemy {
   }
 
   #rebuildTargets(): void {
-    this.#targets = [...this.parts.filter((part) => !part.destroyed), this.core];
+    this.#parts = this.parts.filter((part) => !part.destroyed);
+    this.#targets = [...this.#parts, this.core];
   }
 }

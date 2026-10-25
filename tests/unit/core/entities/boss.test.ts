@@ -56,6 +56,19 @@ describe('Boss', () => {
     expect(boss.coreHealth).toBe(20);
   });
 
+  it('phase 7 review: shots go through its shielded core to the parts behind it', () => {
+    const coming = new SampleBoss(AREA);
+    // Coming in, shots spark on all of it.
+    expect(coming.shotTargets).toContain(coming.core);
+    const { boss, ctx } = inPlace();
+    expect(boss.shotTargets).toEqual([part(boss, 'gun'), part(boss, 'plate')]);
+    // The player still bumps into the core.
+    expect(boss.hitTargets).toContain(boss.core);
+    part(boss, 'gun').health = 0;
+    run(boss, ctx, 1 / 60);
+    expect(boss.shotTargets).toEqual([part(boss, 'plate'), boss.core]);
+  });
+
   it('P07-R01: a destroyed part blows up and leaves the hit targets', () => {
     const { boss, ctx } = inPlace();
     expect(boss.hitTargets).toHaveLength(3);
