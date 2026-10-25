@@ -300,7 +300,28 @@ After the muzzle fix (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 fail
 After the turning turrets (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 failed: the key-repeat
 timing test P01-R09 (under load); its spec passed 6/6 (twice each) on its own.
 ```
-Coverage before this phase: 99.33 % lines (phase 6). New numbers come with `/validate-phase 7`.
+Coverage before this phase: 99.33 % lines (phase 6).
+
+**Final gate (`/validate-phase 7`, 2026-10-25, on `phase-07`): `make check` green at the third run.**
+The first run failed in the unit tests (lint and typecheck passed), on 7 tests that had not run since
+the phase's reviews changed what they test (unit tests only run at validation). Fixed in `cec678c`:
+- a real bug: the mini boss's checkpoint saved the track's progress, a hair short of the boss's
+  distance (99.99999999999966 instead of 100); it now saves the boss's own distance (P07-R08);
+- the scenery viewer's time label floored 2 s summed from frame steps to 0:01 or 0:02 depending on
+  rounding (phase 7 changed how the track adds up time); it now allows for the rounding (P04-R06);
+- out-of-date tests: the boss bar test now brings its boss into place before damaging it (bosses
+  only take damage once in place, P07-R05); the Spinner and Lancer shots leave from their muzzles
+  (D-057); the close-up hit circles are numbered since bosses have several; the sample "Small Cube"
+  boss had the Big Cube's name.
+The second run stopped at lint (that commit's Spinner test edit took the file to 302 code lines, over
+the 300 limit), fixed without changing the rule.
+```
+make lint       ✔ (ESLint, 0 warnings; Prettier)
+make typecheck  ✔
+make coverage   ✔ 939 tests in 126 files; 99.34 % lines, 88.69 % branches, 98.55 % functions, 98.52 % statements (thresholds met)
+make build      ✔
+make e2e        ✔ 54 passed (6.2 min)
+```
 
 ### How to test manually
 - `make dev`, then a level from the menus: the mini boss comes at about 2:00 of the level's scroll (after 10 s without new waves), the final boss at its end. Shoot the parts off (the shielding ones first); watch the bar, the pattern change after each part (1 s pause, lights strobing), the bonuses, the ground speed (1-1's final boss speeds the sea chase up, 1-3's stops the ground).

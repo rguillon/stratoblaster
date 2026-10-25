@@ -11,7 +11,7 @@
 | 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
 | 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
 | 6 | `phases/phase-06-world-1.md` | ✅ Validated | `phase-06` | 99.33% lines | 2026-10-25 |
-| 7 | `phases/phase-07-bosses.md` | 🟡 Awaiting review | `phase-07` | | |
+| 7 | `phases/phase-07-bosses.md` | ✅ Validated | `phase-07` | 99.34% lines | 2026-10-25 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -106,3 +106,4 @@
 - 2026-10-25 — 7 — Review fix: bosses can have moving limbs (joints swinging, parts moving with them); the Scorpion's arms swing at the shoulder and elbow, its claws turn at the wrist and open and close their jaws (D-061); still awaiting review.
 - 2026-10-25 — 7 — Review fix: shots go through a shielded boss core to the parts behind it; Mesa Fortress health re-tuned for P07-R10 (D-062); still awaiting review.
 - 2026-10-25 — 7 — Review fix: bosses get angry for 3 s after each destroyed part and its pause, firing a bullet hell denser from 1-1 to 1-5 (D-063); still awaiting review.
+- 2026-10-25 — 7 — Validated: full gate green after fixes (939 unit tests, 99.34% lines, 88.69% branches, 54 e2e); squash-merged into `main`, tagged `v0.07.0`.
