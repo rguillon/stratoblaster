@@ -8,8 +8,10 @@ import type { GamepadSource } from '../input/gamepad-menu-input';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import type { GameView } from '../render/game-view';
 import type { MenuDocument } from '../ui/screens/elements';
+import type { KeyValueStorage } from '../platform/key-value-storage';
 import { GamePlay } from './game-play';
 import type { MenuState } from './menu-flow';
+import { loadSavedWeapons, saveWeapons } from './saved-weapons';
 
 type ListenTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
@@ -52,6 +54,8 @@ export interface GameSessionOptions {
   readonly keyboardTarget?: ListenTarget;
   /** Connected gamepads. No gamepad when omitted. */
   readonly gamepads?: GamepadSource;
+  /** Where the weapons are kept from one completed level to the next. Not kept when omitted. */
+  readonly storage?: KeyValueStorage;
 }
 
 /** Keys go to the level's debug keys first (when on), then to the in-game controls. */
@@ -127,6 +131,8 @@ export class GameSession {
   /** Starts `levelId` for the flow's attempt (from its checkpoint when it has one). */
   #start(state: MenuState, levelId: string): void {
     const shipId = state.chosenShipId ?? state.highlightedShipId;
+    const { storage } = this.options;
+    const weapons = storage && loadSavedWeapons(storage, this.game.id);
     const play: GamePlay = new GamePlay(
       this.engine,
       this.game,
@@ -138,11 +144,15 @@ export class GameSession {
         startTime: this.#startTime,
         startBoss: this.#startBoss,
         atmosphere: atmosphereOf(this.options.debug),
+        ...(weapons ? { weapons } : {}),
         ...(state.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),
         ...(this.options.overlay ? { hudParent: this.options.overlay } : {}),
         onComplete: () => {
+          if (storage && play.run.phase === 'complete') {
+            saveWeapons(storage, this.game.id, play.run.arsenal.snapshot());
+          }
           this.onComplete(play);
         },
       },

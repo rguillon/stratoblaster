@@ -253,6 +253,8 @@ As in P07-R10:
 > After the agent reports, write corrections here, then say **"Fix phase 08"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-25) Make the weapons level persistent when the user finished a level. — Done (D-071): when a level is completed, the weapon in use and the level of each weapon are saved (`<game id>_weapons` in the cookie storage, `app/saved-weapons.ts`), and every level started afterwards starts with them, after a reload too (`LevelRunOptions.startWeapons`). A game over saves nothing: the next attempt starts with the weapons of the last level completed; Continue still restarts with the checkpoint's weapons (P07-R08). Unit tests: `saved-weapons.test.ts`, `game-session.test.ts`, `level-run-bosses.test.ts`.
+- [x] (reviewer, in chat, 2026-10-25) Make the enemy bullets easier to see, more contrast, without making them bigger; then reduce the dark ring around them; then remove the dark ring and make them a colourful blob of energy with fading borders; then make the centre brighter and pulsating. — Done (D-069 revised): no dark backing any more; each bullet is a disc of the same size, a white-hot core going over to its colour, held to its edge while its opacity fades out (`ENEMY_LOOK.bullets.fade`), drawn blended instead of added (`blendedTemplate`), so its colour shows over bright snow instead of washing out to white. A white-hot glow is added over its centre (0.6 of its radius), swelling and shrinking by 30 % 2.5 times a second from when it is fired (`ENEMY_LOOK.bullets.core`; unit test in `enemy-renderers.test.ts`).
 - [ ] 
 
 ---
@@ -273,7 +275,7 @@ None. The spec was implemented as written; the few interpretations are listed un
 | World 2 scenery, looks, waves, difficulty, level assembly and registration | P08-R01..R03, R06, R08, R09 |
 | Boss engine additions (`needs` / `after` volleys, sweeping lasers, bursting bullets); ten bosses (designs + models) and their tuning | P08-R10, R11 |
 | Debug options `weather=0`, `look=`; bosses page grouped by world | P08-R12 |
-| Readability: dark backing under enemy bullets; screenshots of every level under software WebGL | P08-R04, R05 |
+| Readability: enemy bullets as blended blobs of energy (D-069); screenshots of every level under software WebGL | P08-R04, R05 |
 | Unit and e2e tests, docs, decisions | all |
 
 ### Requirement traceability
@@ -317,7 +319,8 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - Each level: `?level=2-1` … `?level=2-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 2-1 dawn over a dark sea with ice floes and icebergs, rocky islets, a harbour coast at the end; 2-2 morning fjords, light snow in the second half; 2-3 overcast tundra, snow falling, frozen lakes with cracks, a pipeline on stilts, radar domes and turbines; 2-4 afternoon glacier with crevasses and dark rock sides, mining outposts then a mining complex, the blizzard from 2:30 (`?level=2-4&t=150`), clearing near the end; 2-5 dusk turning to night over the first 100 s, the aurora's green and violet curtains at the top of the screen, the lit polar city.
 - Debug: `&weather=0` (no snow, e.g. `?level=2-3&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night` (e.g. `?level=2-5&t=200&look=midday`), `&boss=mini|final` (K destroys the next part).
 - Bosses: `bosses/` lists World 1 then World 2 under "World 1" / "World 2" headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe.
-- Readability: enemy bullets now have a faint dark rim; check them over snow (2-3, 2-4 blizzard) and at night (2-5).
+- Weapons kept (review): pick up weapon bonuses in a level and finish it (`&boss=final` then K to destroy the final boss quickly), then start another one: it starts with the same weapon and levels, after a page reload too. Lose all lives instead: nothing new is kept.
+- Readability: enemy bullets are now blobs of colour with a pulsing white-hot core and a fading border, the same size as before; check them over snow (2-3, 2-4 blizzard) and at night (2-5).
 - 60 FPS: the 2-4 blizzard with the most enemies (`?level=2-4&t=230`) and the 2-5 final fight (`?level=2-5&boss=final`), with the F3 / debug FPS tile.
 
 ### Deviations from spec
@@ -325,7 +328,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - P08-R05: flakes fill the air from the ground up to just under the flight altitude, so some are between the camera and the clouds (drawn over them); they are never drawn over the ships, shots or bonuses.
 - P08-R10, Harbour Kraken: "the ground stops over the harbour": the final fight is at 2-2's end, which is inland (2-2 must end where 2-3 begins); the harbour is at 2-2's start.
 - P08-R09 tunable `peak_on_screen` (10 … 17): measured 22 … 51, order kept (as World 1, D-051).
-- The enemy bullets' dark backing (D-069) also shows in World 1.
+- The enemy bullets' new look (D-069) also shows in World 1.
 - Balance and fight-time numbers were measured with throw-away simulation scripts (not the unit test runner), as the implement procedure forbids running unit tests before validation.
 
 ### Known limitations
@@ -336,4 +339,3 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 
 ### Suggestions for future phases
 - Rain (World 3) and ash (World 4) are new entries in `config/weather.ts`; streaks along the fall direction for rain may want a `slant` parameter.
-- A per-world bullet backing strength could tune readability (dark rims are less needed over dark ground).

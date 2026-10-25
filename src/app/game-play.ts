@@ -14,6 +14,7 @@ import {
   type LevelResult,
 } from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
+import type { WeaponLevels } from '../core/systems/run-arsenal';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { BonusRenderer, GameView } from '../render/game-view';
@@ -50,6 +51,8 @@ export interface GamePlayOptions {
   readonly startBoss?: BossRank | null;
   /** Starts again from this checkpoint (P07-R08). */
   readonly resume?: LevelCheckpoint;
+  /** The weapons kept from the levels completed before; all at level 1 when omitted. */
+  readonly weapons?: WeaponLevels;
   /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
   readonly atmosphere?: AtmosphereOptions;
   readonly doc: MenuDocument;
@@ -188,6 +191,7 @@ export class GamePlay {
       hull: this.game.hull,
       bossKinds: this.game.bossKinds,
       bossRules: this.game.bossFights,
+      ...(this.options.weapons ? { startWeapons: this.options.weapons } : {}),
       ...(this.options.resume ? { checkpoint: this.options.resume } : {}),
     });
   }

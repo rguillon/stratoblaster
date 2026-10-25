@@ -34,28 +34,21 @@ export function additiveTemplate(name: string, geo: ColoredGeometry, scene: Scen
 }
 
 /**
- * A disabled template mesh darkening what is behind it (phase 8): a disc of radius 1 in `color`,
- * `alpha` opaque at its centre and fading out to its edge, blended, without writing depth.
+ * A disabled template mesh of colours that hide what is behind them as much as their vertex
+ * alpha says (phase 8 review): unlit, blended, without writing depth. Unlike an additive
+ * glow, its colours stay as they are over bright ground (snow) instead of washing out to white.
  */
-export function shadeTemplate(
+export function blendedTemplate(
   name: string,
-  [segments, color, alpha]: readonly [number, readonly [number, number, number], number],
+  geo: ColoredGeometry,
+  alphas: readonly number[],
   scene: Scene,
 ): Mesh {
-  const positions = [0, 0, 0];
-  const colors = [...color, alpha];
-  const indices: number[] = [];
-  for (let i = 0; i < segments; i++) {
-    const angle = (2 * Math.PI * i) / segments;
-    positions.push(Math.cos(angle), Math.sin(angle), 0);
-    colors.push(...color, 0);
-    indices.push(0, 1 + i, 1 + ((i + 1) % segments));
-  }
   const mesh = new Mesh(name, scene);
   const data = new VertexData();
-  data.positions = positions;
-  data.indices = indices;
-  data.colors = colors;
+  data.positions = geo.positions;
+  data.indices = geo.indices;
+  data.colors = geo.colors.map((c, i) => (i % 4 === 3 ? (alphas[i >> 2] ?? c) : c));
   data.applyToMesh(mesh);
   mesh.hasVertexAlpha = true;
   const material = new StandardMaterial(name, scene);
@@ -67,5 +60,6 @@ export function shadeTemplate(
   material.disableDepthWrite = true;
   mesh.material = material;
   mesh.isPickable = false;
+  mesh.setEnabled(false);
   return mesh;
 }

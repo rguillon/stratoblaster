@@ -9,6 +9,12 @@ type Rgb = readonly [number, number, number];
 /** Glow disc colours, centre to edge (black edge: soft fade with additive blending). */
 const glow = (core: Rgb, mid: Rgb, rim: Rgb): readonly Rgb[] => [core, mid, rim, [0, 0, 0]];
 
+/**
+ * An enemy bullet's colours, centre to edge (phase 8 review): a white-hot core going over to
+ * its colour, which it keeps out to its edge while it fades out (`bullets.fade`).
+ */
+const bullet = (core: Rgb, color: Rgb): readonly Rgb[] => [core, core, color, color, color, color];
+
 export const ENEMY_LOOK = {
   /**
    * Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white to
@@ -74,19 +80,24 @@ export const ENEMY_LOOK = {
     /** Visual radius relative to the hit radius. */
     scale: 1.6,
     /**
-     * A soft dark disc under each bullet (phase 8, P08-R04): the bullets are added onto the
-     * ground, so over bright snow they would wash out to white without it. Its size relative to
-     * the bullet's, and its opacity at the centre.
+     * A blob of energy (phase 8 review): opacity of its centre and of each ring of its colours,
+     * so it is a solid colour inside and its border fades out. Blended rather than added, so
+     * its colour shows over bright snow too.
      */
-    backing: { color: [0.02, 0.02, 0.06] as Rgb, alpha: 0.6, scale: 1.25 },
+    fade: [1, 1, 1, 0.85, 0.4, 0],
+    /**
+     * A white-hot glow added over its centre (phase 8 review), its radius relative to the
+     * bullet's, swelling and shrinking by `amount` of it `hz` times a second as the bullet flies.
+     */
+    core: { size: 0.6, pulse: { hz: 2.5, amount: 0.3 } },
     segments: 10,
     styles: {
-      red: glow([1, 0.9, 0.85], [1, 0.15, 0.1], [0.4, 0, 0]),
-      magenta: glow([1, 0.9, 1], [1, 0.1, 0.8], [0.35, 0, 0.3]),
-      green: glow([0.9, 1, 0.85], [0.2, 1, 0.25], [0, 0.35, 0.05]),
-      orange: glow([1, 0.95, 0.8], [1, 0.5, 0.05], [0.4, 0.12, 0]),
-      blue: glow([0.85, 0.9, 1], [0.2, 0.45, 1], [0, 0.08, 0.4]),
-      purple: glow([0.95, 0.85, 1], [0.65, 0.2, 1], [0.2, 0, 0.4]),
+      red: bullet([1, 0.9, 0.85], [1, 0.15, 0.1]),
+      magenta: bullet([1, 0.9, 1], [1, 0.1, 0.8]),
+      green: bullet([0.9, 1, 0.85], [0.2, 1, 0.25]),
+      orange: bullet([1, 0.95, 0.8], [1, 0.5, 0.05]),
+      blue: bullet([0.85, 0.9, 1], [0.2, 0.45, 1]),
+      purple: bullet([0.95, 0.85, 1], [0.65, 0.2, 1]),
     },
   },
   missile: {

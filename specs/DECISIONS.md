@@ -784,13 +784,13 @@
 - **Consequences:** the Harbour Kraken's final fight is over 2-2's inland end (the harbour is at its start: 2-2 has to end where 2-3 begins).
 - **Status:** Accepted
 
-### D-069 — A dark backing under enemy bullets
+### D-069 — Enemy bullets as blended blobs of energy
 - **Date:** 2026-10-25
-- **Phase:** 8
-- **Context:** enemy bullets are added onto what is behind them (glow discs); over bright snow they washed out to white, against P08-R04/R05 (shots as easy to see as in World 1).
-- **Decision:** each bullet template carries a soft dark disc (`shadeTemplate`, 1.25× its size, 60 % opaque at the centre, vertex alpha so it stays out of the glow layer) just behind it, cloned with it.
-- **Alternatives considered:** a different bullet style per world (every renderer and style would double).
-- **Consequences:** bullets get a faint dark rim in every level, World 1 included.
+- **Phase:** 8 (revised after review)
+- **Context:** enemy bullets were glow discs added onto what is behind them; over bright snow they washed out to white, against P08-R04/R05 (shots as easy to see as in World 1). A first fix put a dark disc under each bullet; the reviewer asked for it to go and for colourful blobs of energy with fading borders instead, no bigger than before.
+- **Decision:** each bullet is a disc of the same size: a white-hot core going over to its colour, which it keeps to its edge while its vertex opacity fades out (`ENEMY_LOOK.bullets.fade`), drawn with alpha blending (`blendedTemplate`) rather than additively, so its colour is kept over bright ground. An additive white-hot core (a child of the template, so every clone has one) pulses in size with the bullet's age (2.5 Hz, ±30 %): a change of size of a small glow, not a flash of the screen.
+- **Alternatives considered:** a dark backing disc under each bullet (first version; the reviewer did not want the dark ring); a different bullet style per world (every renderer and style would double).
+- **Consequences:** the new look shows in every level, World 1 included.
 - **Status:** Accepted
 
 ### D-070 — The bosses page grouped by world
@@ -799,4 +799,13 @@
 - **Context:** P08-R12: the `bosses/` page lists the World 2 bosses after World 1's, grouped by world, each over the scenery and look of its level.
 - **Decision:** `EnemyViewerPanel` takes optional `groups` (headings before a kind index); the bosses page derives them from the level each boss is fought in. The level's scene (and its look, weather included) is already the one the boss belongs to (P07-R09).
 - **Consequences:** none on the `enemies/` page.
+- **Status:** Accepted
+
+### D-071 — Weapon levels kept from one completed level to the next
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the reviewer asked for the weapon levels to persist once a level is finished; until now every level started with every weapon at level 1 (phase 6 known limitation).
+- **Decision:** on "Level complete", `GameSession` saves the run's `RunArsenal.snapshot()` (weapon in use and each weapon's level) as JSON under `<game id>_weapons` in the app's key-value storage (cookies); each level then starts from it (`LevelRunOptions.startWeapons`, restored before a checkpoint's weapons). An unreadable value reads as none. A game over saves nothing.
+- **Alternatives considered:** keeping them in memory only (lost on reload); saving them at every bonus (a level lost would still raise the weapons).
+- **Consequences:** there is no way yet to start again from level 1 weapons but clearing the cookies; a "new game" reset can come with scoring / save slots.
 - **Status:** Accepted

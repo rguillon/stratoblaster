@@ -31,10 +31,28 @@ describe('createEnemyShotRenderer', () => {
     shots.fireBullet(30, 40, 0, { speed: 0, radius: 4, style: 'blue' });
     shots.fireBullet(50, 60, 0, { speed: 0, radius: 4, style: 'unknown' });
     renderer.sync(frame(shots));
-    const red = enabled(scene, 'enemy-bullet-red-');
+    const bullets = (prefix: string) =>
+      enabled(scene, prefix).filter((m) => !m.name.includes('core'));
+    const red = bullets('enemy-bullet-red-');
     expect(red).toHaveLength(2);
     expect(red[0]?.position.x).toBe(10);
-    expect(enabled(scene, 'enemy-bullet-blue-')).toHaveLength(1);
+    expect(bullets('enemy-bullet-blue-')).toHaveLength(1);
+    renderer.dispose();
+  });
+
+  it('phase 8 review: each bullet has a white-hot core that pulses as it flies', () => {
+    const scene = new Scene(new NullEngine());
+    const renderer = createEnemyShotRenderer(scene);
+    const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
+    shots.fireBullet(10, 20, 0, { speed: 0, radius: 4, style: 'red' });
+    const sizes = [0, 0.1, 0.2].map(() => {
+      shots.step(0.1, 0, 0);
+      renderer.sync(frame(shots));
+      const [core] = enabled(scene, 'enemy-bullet-red-').filter((m) => m.name.includes('core'));
+      return core?.scaling.x ?? 0;
+    });
+    expect(sizes.every((size) => size > 0 && size < 1)).toBe(true);
+    expect(new Set(sizes).size).toBe(3);
     renderer.dispose();
   });
 

@@ -8,7 +8,7 @@ import { NodePool } from '../../../render/node-pool';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import { flicker } from '../reactor-flame';
 import { buildGlowBar, buildGlowDisc } from '../shot-geometry';
-import { additiveTemplate, shadeTemplate } from '../shots/shot-meshes';
+import { additiveTemplate, blendedTemplate } from '../shots/shot-meshes';
 import { enemyMaterials, meshOf } from './enemy-mesh';
 
 const LOOK = ENEMY_LOOK;
@@ -20,23 +20,37 @@ function glowPool(name: string, template: Mesh): NodePool<Mesh> {
   return new NodePool((i) => template.clone(`${name}-${String(i)}`));
 }
 
-/** One pool of glowing balls per bullet colour (GD-43). */
+/** Opacity of each vertex of a bullet's disc: its centre, then each ring's. */
+function discAlphas(segments: number, fade: readonly number[]): number[] {
+  return fade.flatMap((alpha, ring) => Array<number>(ring === 0 ? 1 : segments).fill(alpha));
+}
+
+/** One pool of blobs of energy per bullet colour (GD-43). */
 function bulletPools(scene: Scene): { pools: Map<string, NodePool<Mesh>>; templates: Mesh[] } {
   const pools = new Map<string, NodePool<Mesh>>();
   const templates: Mesh[] = [];
   for (const style of STYLES) {
-    const disc = buildGlowDisc(LOOK.bullets.segments, LOOK.bullets.styles[style]);
-    const template = additiveTemplate(`enemy-bullet-${style}`, disc, scene);
-    // A dark disc behind it, so it stays readable over snow (phase 8); its clones get one too.
-    const { color, alpha, scale } = LOOK.bullets.backing;
-    const backing = shadeTemplate(`enemy-bullet-${style}-backing`, [12, color, alpha], scene);
-    backing.parent = template;
-    backing.position.z = 0.3;
-    backing.scaling.setAll(scale);
+    const { segments, fade } = LOOK.bullets;
+    const disc = buildGlowDisc(segments, LOOK.bullets.styles[style]);
+    const alphas = discAlphas(segments, fade);
+    const template = blendedTemplate(`enemy-bullet-${style}`, disc, alphas, scene);
+    // The pulsing white-hot core, added over the blob; its clones get one too.
+    const color = LOOK.bullets.styles[style][2] ?? [1, 1, 1];
+    const glow = buildGlowDisc(segments, [[1, 1, 1], [1, 1, 1], color, [0, 0, 0]]);
+    const core = additiveTemplate(`enemy-bullet-${style}-core`, glow, scene);
+    core.parent = template;
+    core.position.z = -0.2;
+    core.setEnabled(true);
     templates.push(template);
     pools.set(style, glowPool(`enemy-bullet-${style}`, template));
   }
   return { pools, templates };
+}
+
+/** Size of a bullet's core, relative to the bullet, `age` seconds after it was fired. */
+function coreScale(age: number): number {
+  const { size, pulse } = LOOK.bullets.core;
+  return size * (1 + pulse.amount * Math.sin(2 * Math.PI * pulse.hz * age));
 }
 
 function syncBullets(pools: Map<string, NodePool<Mesh>>, bullets: readonly EnemyBullet[]): void {
@@ -48,6 +62,8 @@ function syncBullets(pools: Map<string, NodePool<Mesh>>, bullets: readonly Enemy
       const r = b.radius * LOOK.bullets.scale;
       mesh.position.set(b.x, b.y, -1);
       mesh.scaling.set(r, r, 1);
+      const core = mesh.getChildren()[0] as Mesh | undefined;
+      core?.scaling.setAll(coreScale(b.age));
     });
   }
 }
