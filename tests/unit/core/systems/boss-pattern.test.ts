@@ -256,6 +256,31 @@ describe('BossPattern', () => {
       expect(turret.aim).toBeCloseTo(-45 * DEG);
     });
 
+    it('phase 8 review: during the warning line, a laser turret follows the player slowly', () => {
+      const spec = { x: 0, y: 0, turnRateDeg: 360, laserTurnRateDeg: 20 };
+      const turret = new BossTurret(spec);
+      const source: VolleySource = { ...piece(240, 500), turret };
+      const ctx = new RecordingContext();
+      [ctx.playerX, ctx.playerY] = [340, 400];
+      const laser = { warningSeconds: 1, firingSeconds: 1, width: 4, style: 'l' };
+      const pattern = new BossPattern([
+        { ...volley({ kind: 'laser', laser }, 5, 'gun'), first: 0.5, turret: true },
+      ]);
+      const run = (seconds: number) => {
+        for (let t = 0; t < seconds - 1e-9; t += 1 / 60) {
+          pattern.turnTurrets(ctx, 1 / 60, () => source);
+          pattern.step(ctx, 1 / 60, () => source);
+        }
+      };
+      // Aimed at full speed before it fires (at 0.5 s).
+      run(0.55);
+      expect(turret.aim).toBeCloseTo(-45 * DEG);
+      // The player dodges across: the warning line follows at 20° a second.
+      [ctx.playerX, ctx.playerY] = [140, 400];
+      run(0.5);
+      expect(turret.aim).toBeCloseTo(-35 * DEG, 1);
+    });
+
     it('at the player for the volley that fires next, between a fan and aimed shots', () => {
       const { turret, run } = turreted();
       const fan = { kind: 'fan', headingDeg: 0, count: 1, spacingDeg: 0, bullet: BULLET } as const;

@@ -196,7 +196,8 @@ export class BossPattern {
    * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
    * next volley goes (a burst under way first): at the player for aimed shots and bursts, along
    * a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
-   * A laser's turret aims at the player until its beam fires, then holds still (phase 8 review).
+   * A laser's turret aims at the player until its beam fires (slowly while its warning line
+   * shows, `laserTurnRateDeg`), then holds still (phase 8 review).
    */
   turnTurrets(ctx: EnemyContext, dt: number, sources: VolleySources): void {
     for (const [from, volleys] of this.#turrets) {
@@ -207,10 +208,11 @@ export class BossPattern {
         const state = this.#states[i];
         if (state) state.laserAge += dt;
       }
-      const aim =
-        this.#laserAim(ctx, volleys, [source, turret]) ??
-        this.#aimOf(ctx, volleys, [source, turret], sources);
-      turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
+      const laser = this.#laserAim(ctx, volleys, [source, turret]);
+      const aim = laser ?? this.#aimOf(ctx, volleys, [source, turret], sources);
+      const { turnRateDeg, laserTurnRateDeg = turnRateDeg } = turret.spec;
+      const rate = laser === undefined ? turnRateDeg : laserTurnRateDeg;
+      turret.aim = turnTowards(turret.aim, aim, rate * DEG * dt);
     }
   }
 

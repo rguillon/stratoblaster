@@ -10,6 +10,11 @@ export interface BossTurretSpec {
   readonly y: number;
   /** Degrees a second it turns at, at most. */
   readonly turnRateDeg: number;
+  /**
+   * Degrees a second it follows the player at while a laser's warning line shows (phase 8
+   * review: slow enough to outrun); `turnRateDeg` when omitted.
+   */
+  readonly laserTurnRateDeg?: number;
 }
 
 /** A turret of a boss's piece, and how far it has turned (see {@link BossTurretSpec}). */

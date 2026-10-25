@@ -102,9 +102,14 @@ export function volleyOnTurret(design: BossDesign, volley: BossVolley): boolean 
 /** The turrets of its pieces (`BossStats.turrets`), by piece. */
 export function turretsOf(design: BossDesign): Record<string, BossTurretSpec> {
   const turrets: Record<string, BossTurretSpec> = {};
-  for (const [piece, { turret }] of Object.entries(design.guns)) {
-    if (turret)
-      turrets[piece] = { x: turret[0], y: turret[1], turnRateDeg: BOSS_TIMING.turretTurnDeg };
+  for (const [piece, { turret, turretLaser }] of Object.entries(design.guns)) {
+    if (!turret) continue;
+    turrets[piece] = {
+      x: turret[0],
+      y: turret[1],
+      turnRateDeg: BOSS_TIMING.turretTurnDeg,
+      ...(turretLaser ? { laserTurnRateDeg: BOSS_TIMING.laserTurnDeg } : {}),
+    };
   }
   return turrets;
 }
@@ -156,6 +161,12 @@ export const BOSS_TIMING = {
   roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
   /** Degrees a second a turret turns at, following the player (phase 7 review). */
   turretTurnDeg: 150,
+  /**
+   * Degrees a second a laser turret follows the player at during the warning line (phase 8
+   * review): about half as fast as the ship crosses its aim from 300 px away, so it can be
+   * outrun.
+   */
+  laserTurnDeg: 20,
   /** Seconds a boss is angry after the pause that follows each destroyed part (phase 7 review). */
   rageSeconds: 3,
 } as const;
