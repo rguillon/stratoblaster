@@ -9,9 +9,19 @@ import {
 import { CAR_IDS } from '../../config/cars';
 import { PROP_IDS } from '../../config/level-zero';
 import { PROP_COLORS as C } from '../../config/prop-look';
+import { WORLD_1_PROP_IDS as W } from '../../config/world-1/props';
 import { buildCar } from './car-props';
 import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
+import { buildCactus, buildDryBush, buildPalmTree } from './desert-plants';
+import {
+  buildBeachHut,
+  buildDesertHome,
+  buildMineHeadframe,
+  buildSolarFarm,
+  buildWaterTower,
+  buildWindcatcherHome,
+} from './desert-props';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
 import {
   buildContainerYard,
@@ -62,6 +72,16 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...partModels('industrial-plant', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
   ...partModels('city-tower', CITY_VARIANTS, buildCityBuilding),
   ...partModels('city-block', CITY_VARIANTS, buildCityBuilding),
+  // Phase 6: desert and coast homes, outposts and plants.
+  [W.desertHome]: buildDesertHome,
+  [W.windcatcherHome]: buildWindcatcherHome,
+  [W.waterTower]: buildWaterTower,
+  [W.solarFarm]: buildSolarFarm,
+  [W.mineHeadframe]: buildMineHeadframe,
+  [W.beachHut]: buildBeachHut,
+  [W.palm]: buildPalmTree,
+  [W.dryBush]: buildDryBush,
+  [W.cactus]: buildCactus,
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),

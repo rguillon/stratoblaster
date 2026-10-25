@@ -4,6 +4,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Enemy } from '../core/entities/enemy';
 import type { MenuScreen } from '../core/menu/menu-screen';
 import type { EnemyBullet, EnemyLaser, EnemyMissile } from '../core/systems/enemy-shots';
+import type { Bonus } from '../core/systems/bonus-world';
 import type { EnemyBlast } from '../core/systems/enemy-world';
 import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
@@ -67,6 +68,22 @@ export interface GameView {
   readonly scenery: SceneryBindings;
   /** How the enemies, their shots and their explosions look (P05). */
   readonly enemies: EnemyBindings;
+  /** How the weapon bonuses look (phase 6 review). */
+  readonly bonuses: (scene: Scene) => BonusRenderer;
+}
+
+/** What the bonus renderer draws on one frame, in playfield space (see {@link ShotFrame}). */
+export interface BonusFrame {
+  readonly bonuses: readonly Bonus[];
+  /** Bonuses picked up since the previous frame, where they were. */
+  readonly picked: readonly Bonus[];
+  readonly dtSeconds: number;
+}
+
+/** Draws the weapon bonuses falling, and a flash where the ship picks one up. */
+export interface BonusRenderer {
+  sync(frame: BonusFrame): void;
+  dispose(): void;
 }
 
 /**

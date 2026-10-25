@@ -4,4 +4,8 @@ export interface ScreenHandlers {
   readonly onTap: (index: number) => void;
   /** The on-screen Back button was tapped or clicked. */
   readonly onBack: () => void;
+  /** Game screen: the touch fire button was pressed (`true`) or let go (P06-R02). */
+  readonly onFire?: (held: boolean) => void;
+  /** Game screen: a finger dragged over the playfield, by screen pixels (Y down). */
+  readonly onDrag?: (dx: number, dy: number) => void;
 }

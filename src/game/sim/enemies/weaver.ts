@@ -32,7 +32,7 @@ export class Weaver extends Enemy {
     this.x = Weaver.swayAt(this.centerX, this.#startY - this.y);
     this.heading = Math.atan2(this.x - before, -CFG.speed * dt);
     if (!onPlayfield(this, ctx)) return;
-    for (let i = this.#gun.tick(dt); i > 0; i--) {
+    for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
       for (const side of [-1, 1]) {
         const x = this.x + side * CFG.hullOffset;
         ctx.fireBullet(x, this.y, headingTo(x, this.y, ctx.playerX, ctx.playerY), CFG.bullet);

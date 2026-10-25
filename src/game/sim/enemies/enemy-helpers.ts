@@ -43,18 +43,41 @@ export function onPlayfield(enemy: Enemy, ctx: EnemyContext): boolean {
   return enemy.x >= 0 && enemy.x <= ctx.width && enemy.y >= 0 && enemy.y <= ctx.height;
 }
 
-/** A random X within `range` (fractions of `width`). */
-export function pickX(random: Random, range: readonly [number, number], width: number): number {
-  return randomIn(random, range) * width;
+/** Entries keep enemies this far (a fraction of the edge) from the corners. */
+const ENTRY_INSET = 0.08;
+
+/** A wave's entry position, kept away from the corners of the playfield. */
+export function clampEntry(position: number): number {
+  return Math.min(1 - ENTRY_INSET, Math.max(ENTRY_INSET, position));
 }
 
-/** A path given in fractions of the playfield, mirrored left to right if `mirror`. */
+/** Where enemies coming in from the top may be: the width, or `topRange` (`EnemySpawnArea`). */
+interface TopArea {
+  readonly width: number;
+  readonly topRange?: readonly [number, number];
+}
+
+/** X at `fraction` (0..1) across the range enemies coming in from the top keep to. */
+export function topX(area: TopArea, fraction: number): number {
+  const [min, max] = area.topRange ?? [0, area.width];
+  return min + (max - min) * fraction;
+}
+
+/** A random X at a fraction in `range` across the range enemies coming in from the top keep to. */
+export function pickX(random: Random, range: readonly [number, number], area: TopArea): number {
+  return topX(area, randomIn(random, range));
+}
+
+/**
+ * A path given in fractions of the playfield, mirrored left to right if `mirror`. It comes in
+ * from the top, so its X fractions are taken across the area's `topRange`.
+ */
 export function playfieldPath(
   points: readonly (readonly [number, number])[],
-  size: { readonly width: number; readonly height: number },
+  area: TopArea & { readonly height: number },
   mirror: boolean,
 ): Path {
   return new Path(
-    points.map(([x, y]): PathPoint => [(mirror ? 1 - x : x) * size.width, y * size.height]),
+    points.map(([x, y]): PathPoint => [topX(area, mirror ? 1 - x : x), y * area.height]),
   );
 }

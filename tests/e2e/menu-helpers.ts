@@ -10,7 +10,23 @@ export interface TestState {
   chosenShipId: string | null;
   chosenLevelId: string | null;
   transitioning: boolean;
+  levelResult: { levelId: string; destroyed: number; spawned: number } | null;
   loadingProgress: number[];
+  /** The level being played (src/debug/test-api.ts, `GameTestLevelState`). */
+  game: {
+    levelId: string;
+    phase: string;
+    time: number;
+    duration: number;
+    timeScale: number;
+    enemies: number;
+    destroyed: number;
+    spawned: number;
+    wavesTriggered: number;
+    player: { x: number; y: number };
+    firing: boolean;
+    shots: number;
+  } | null;
 }
 
 interface TestWindow {

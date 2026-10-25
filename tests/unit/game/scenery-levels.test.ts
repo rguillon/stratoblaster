@@ -10,6 +10,7 @@ import { LEVEL_ZERO_LOOK, PLAYFIELD_CAMERA } from '../../../src/game/config/scen
 import { framePlayfield, visibleGround } from '../../../src/render/scenery/playfield-framing';
 import { GAME_CONFIG } from '../../../src/game/config/game';
 import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
+import { WORLD_1_PROP_IDS } from '../../../src/game/config/world-1/props';
 
 describe('Level Zero', () => {
   const field = new HeightField(LEVEL_ZERO);
@@ -124,9 +125,13 @@ describe('Level Zero', () => {
     const placer = new PropPlacer(field, LEVEL_ZERO.props, LEVEL_ZERO.seed, roads);
     const props = placer.place({ xMin: -500, xMax: 500, zMin: 0, zMax: field.length });
     const kinds = new Set(props.map((p) => p.kind));
-    // Every model but the cars, which drive (see `Traffic`) instead of standing.
-    const cars = new Set<string>(LEVEL_ZERO.props.cars?.kinds ?? []);
-    const standing = Object.keys(PROP_MODELS).filter((id) => !cars.has(id));
+    // Every model but the cars, which drive (see `Traffic`) instead of standing, and the ones
+    // added for World 1 (P06-R06), which only its levels use.
+    const others = new Set<string>([
+      ...(LEVEL_ZERO.props.cars?.kinds ?? []),
+      ...Object.values(WORLD_1_PROP_IDS),
+    ]);
+    const standing = Object.keys(PROP_MODELS).filter((id) => !others.has(id));
     expect([...kinds].sort()).toEqual(standing.sort());
     for (const p of props) expect(p.y).toBeGreaterThanOrEqual(LEVEL_ZERO.props.minHeight);
   });

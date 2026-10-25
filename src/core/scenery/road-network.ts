@@ -1,7 +1,8 @@
-import { createNoise2D, smoothstep } from '../math/noise';
+import { createNoise2D } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
 import { lanesOf, mainRoadWidth, runWidth, withWidth } from './lanes';
+import { layPaths, type PathGround } from './road-paths';
 import type { RoadRules } from './scenery-level';
 import { findDistricts, streetRuns, type Block, type District } from './street-grid';
 
@@ -46,6 +47,15 @@ interface Point {
   readonly z: number;
 }
 
+/** A main road to follow at a distance, on one side (`noCrossings`). */
+interface Follow {
+  readonly line: readonly Point[];
+  /** -1: on its left (-X), 1: on its right. */
+  readonly side: number;
+  readonly width: number;
+  readonly gap: number;
+}
+
 interface Segment {
   readonly road: Road;
   readonly ax: number;
@@ -63,18 +73,6 @@ const WOBBLE = 0.3;
 const RETREAT_POINTS = 4;
 /** …at most this many times, then the piece is dropped. */
 const MAX_RETREATS = 40;
-/** A path starts at most this many points from where it was asked for along its road. */
-const PATH_START_SLACK = 4;
-/** Directions (same / other side) and bends (share of the drawn bend) a path tries in turn. */
-const PATH_TRIES: readonly (readonly [number, number])[] = [
-  [1, 1],
-  [1, -1],
-  [1, 0],
-  [-1, 1],
-  [-1, -1],
-  [-1, 0],
-];
-
 function segmentDistance(x: number, z: number, s: Segment): number {
   const dx = s.bx - s.ax;
   const dz = s.bz - s.az;
@@ -107,9 +105,13 @@ export class RoadNetwork {
   readonly blocks: Block[] = [];
   /** Gap between road edges and building footprints. */
   readonly setback: number;
+  /** Roads start and end beyond X = ±offscreenX, out of view. */
+  readonly offscreenX: number;
   readonly #buckets = new Map<string, Segment[]>();
   /** Sections with street grids, kept clear of the winding roads and the paths. */
   readonly #districts: District[];
+  /** Half width of the main road being laid, kept clear of the others (`noCrossings`). */
+  #laying: number | undefined;
 
   constructor(
     private readonly field: HeightField,
@@ -119,18 +121,48 @@ export class RoadNetwork {
     private readonly range: { readonly zMin: number; readonly zMax: number },
   ) {
     this.setback = rules.setback;
+    this.offscreenX = rules.offscreenX;
     this.#districts = findDistricts(field.sections, range);
     const random = createRng(seed + 4);
+    // Without crossings, the streets come first: the winding roads and the paths keep clear.
+    if (rules.noCrossings) this.#addStreets(createRng(seed + 5));
+    let previous: Follow | undefined;
     for (let i = 0; i < rules.mainRoads; i++) {
-      for (const piece of this.#mainPieces(this.#mainLine(random))) {
-        this.#addRoad('main', withWidth(piece, mainRoadWidth(rules, i)));
-      }
+      const width = mainRoadWidth(rules, i);
+      const line = this.#mainLine(random, width, previous);
+      this.#laying = rules.noCrossings ? width / 2 : undefined;
+      this.#addMainPieces(line, width);
+      this.#laying = undefined;
+      previous = this.#follow(line, previous, width);
     }
-    const mains = [...this.roads];
-    for (const path of this.#paths(random, mains)) this.#addRoad('cross', path);
-    this.#addStreets(createRng(seed + 5));
-    for (const road of this.roads) this.#index(road);
+    const ground: PathGround = {
+      rules,
+      range,
+      open: (x, z) => this.#open(x, z),
+      nearest: (x, z, which) => this.#nearest(x, z, which),
+      lay: (points) => {
+        this.#addRoad('cross', points);
+      },
+    };
+    layPaths(
+      ground,
+      random,
+      this.roads.filter((road) => road.kind === 'main'),
+    );
+    if (!rules.noCrossings) this.#addStreets(createRng(seed + 5));
     for (const road of this.roads) this.#addSlots(road);
+  }
+
+  /**
+   * How the next main road follows `line` without crossing it (`noCrossings`): on the side of
+   * the screen the first main road leaves free, at least `gap` from its edge.
+   */
+  #follow(line: readonly Point[], previous: Follow | undefined, width: number): Follow | undefined {
+    const gap = this.rules.noCrossings?.gap;
+    if (gap === undefined) return undefined;
+    const mean = line.reduce((sum, p) => sum + p.x, 0) / Math.max(1, line.length);
+    const side = previous?.side ?? (mean >= 0 ? -1 : 1);
+    return { line, side, width, gap };
   }
 
   /**
@@ -138,13 +170,23 @@ export class RoadNetwork {
    * a road), or Infinity when no road is within about {@link BUCKET} units.
    */
   edgeDistance(x: number, z: number, except?: Road): number {
+    return this.#nearest(x, z, (road) => road !== except).distance;
+  }
+
+  /** The edge of the nearest road `which` accepts, within about {@link BUCKET} units. */
+  #nearest(
+    x: number,
+    z: number,
+    which: (road: Road) => boolean,
+  ): { readonly distance: number; readonly road?: Road } {
     const bx = Math.floor(x / BUCKET);
     const bz = Math.floor(z / BUCKET);
-    let best = Infinity;
+    let best: { distance: number; road?: Road } = { distance: Infinity };
     for (let i = bx - 1; i <= bx + 1; i++) {
       for (let j = bz - 1; j <= bz + 1; j++) {
         for (const s of this.#buckets.get(`${String(i)},${String(j)}`) ?? []) {
-          if (s.road !== except) best = Math.min(best, segmentDistance(x, z, s) - s.halfWidth);
+          const distance = segmentDistance(x, z, s) - s.halfWidth;
+          if (distance < best.distance && which(s.road)) best = { distance, road: s.road };
         }
       }
     }
@@ -166,7 +208,8 @@ export class RoadNetwork {
     );
   }
 
-  #mainLine(random: Random): Point[] {
+  /** A main road's centre line: on its own, or following the previous one (`noCrossings`). */
+  #mainLine(random: Random, width: number, previous?: Follow): Point[] {
     const { meander, spread, step } = this.rules;
     const x0 = randomIn(random, [-spread, spread]);
     const amplitude = randomIn(random, meander.amplitude);
@@ -174,25 +217,33 @@ export class RoadNetwork {
     const phase = random() * Math.PI * 2;
     const wobble = createNoise2D(Math.floor(random() * 1e9));
     const points: Point[] = [];
-    for (let z = this.range.zMin; z <= this.range.zMax; z += step) {
+    for (let z = this.range.zMin, k = 0; z <= this.range.zMax; z += step, k++) {
       const wave =
         Math.sin((2 * Math.PI * z) / wavelength + phase) + WOBBLE * wobble(z / wavelength, 0.5);
-      points.push({ x: x0 + amplitude * wave, z });
+      const followed = previous?.line[k];
+      if (previous && followed) {
+        // From `gap` to `gap + 2 × amplitude` beside the edge of the road it follows.
+        const { side, gap } = previous;
+        const apart = gap + (previous.width + width) / 2;
+        points.push({ x: followed.x + side * (apart + amplitude * (1 + wave / (1 + WOBBLE))), z });
+      } else {
+        points.push({ x: x0 + amplitude * wave, z });
+      }
     }
     return points;
   }
 
   /**
-   * The buildable runs of a main road line, each made to start and end off the screen: an end
+   * Lays the buildable runs of a main road line, each made to start and end off the screen: an end
    * on screen gets a turn that leaves the screen sideways (tried earlier and earlier along the
    * run when the ground does not allow it there).
    */
-  #mainPieces(line: readonly Point[]): Point[][] {
-    const pieces: Point[][] = [];
+  #addMainPieces(line: readonly Point[], width: number): void {
     let run: Point[] = [];
+    // Each piece is laid at once, so the next ones keep clear of it (`noCrossings`).
     const close = (): void => {
       const piece = run.length >= this.rules.minRun ? this.#leaveAtBothEnds(run) : undefined;
-      if (piece) pieces.push(piece);
+      if (piece) this.#addRoad('main', withWidth(piece, width));
       run = [];
     };
     for (const p of line) {
@@ -200,7 +251,6 @@ export class RoadNetwork {
       else close();
     }
     close();
-    return pieces;
   }
 
   #leaveAtBothEnds(run: Point[]): Point[] | undefined {
@@ -253,49 +303,6 @@ export class RoadNetwork {
   }
 
   /**
-   * Paths from points of the main roads to past the screen edge, every `crossSpacing`. Each one
-   * tries both directions and a few bends, and is dropped if none stays on buildable ground.
-   */
-  #paths(random: Random, mains: readonly Road[]): RoadPoint[][] {
-    const { crossSpacing, crossBend, offscreenX } = this.rules;
-    const paths: RoadPoint[][] = [];
-    if (mains.length === 0) return paths;
-    const { zMin, zMax } = this.range;
-    for (
-      let z = zMin + randomIn(random, crossSpacing);
-      z < zMax;
-      z += randomIn(random, crossSpacing)
-    ) {
-      // A point on screen near `z` of each main road piece that passes there.
-      const near = this.rules.step * PATH_START_SLACK;
-      const starts = mains.flatMap((main) => {
-        const p = main.points.find((q) => q.z >= z && Math.abs(q.x) < offscreenX);
-        return p && p.z - z <= near ? [p] : [];
-      });
-      const start = starts[Math.floor(random() * starts.length)];
-      const direction = random() < 0.5 ? -1 : 1;
-      const bend = randomIn(random, [-crossBend, crossBend]);
-      if (!start) continue;
-      const path = PATH_TRIES.map(([d, b]) => this.#pathLine(start, d * direction, b * bend)).find(
-        (line) => line.slice(1).every((p) => this.#open(p.x, p.z)),
-      );
-      if (path) paths.push(path);
-    }
-    return paths;
-  }
-
-  /** A path from `start` to past the screen edge on the `direction` side, bending by `bend`. */
-  #pathLine(start: Point, direction: number, bend: number): RoadPoint[] {
-    const { step, offscreenX } = this.rules;
-    const count = Math.ceil((offscreenX - direction * start.x) / step) + 1;
-    return Array.from({ length: count + 1 }, (_, i) => ({
-      x: start.x + direction * i * step,
-      z: start.z + bend * Math.sin((Math.PI * i) / (2 * count)),
-      width: this.#pathWidth(i * step),
-    }));
-  }
-
-  /**
    * The straight streets of the districts (phase 4 review, see `streetRuns`), as `street`
    * roads of the main road width, or 2×2 avenues.
    */
@@ -315,22 +322,25 @@ export class RoadNetwork {
     }
   }
 
-  /** Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts. */
+  /**
+   * Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts, and
+   * clear of the other roads while a main road is laid without crossings.
+   */
   #open(x: number, z: number): boolean {
-    return !this.#districts.some((d) => z >= d.zMin && z <= d.zMax) && this.buildable(x, z);
-  }
-
-  /** Width of a path `distance` from its junction: wide at the road, narrowing smoothly. */
-  #pathWidth(distance: number): number {
-    const { crossWidth, junction } = this.rules;
-    const t = smoothstep(0, junction.length, distance);
-    return junction.width + (crossWidth - junction.width) * t;
+    return (
+      !this.#districts.some((d) => z >= d.zMin && z <= d.zMax) &&
+      this.buildable(x, z) &&
+      (this.#laying === undefined ||
+        this.edgeDistance(x, z) >= this.#laying + (this.rules.noCrossings?.gap ?? 0))
+    );
   }
 
   #addRoad(kind: Road['kind'], points: readonly RoadPoint[]): void {
     const width = kind === 'cross' ? this.rules.crossWidth : (points[0]?.width ?? 0);
     const lanes = lanesOf(this.rules, width);
-    this.roads.push({ index: this.roads.length, kind, width, lanes, points });
+    const road: Road = { index: this.roads.length, kind, width, lanes, points };
+    this.roads.push(road);
+    this.#index(road);
   }
 
   #index(road: Road): void {

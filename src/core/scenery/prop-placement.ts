@@ -1,8 +1,16 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
+import { placeHamlets, placeLoners, type AwaySite, type Building } from './away-placement';
+import { allowed, between, weighted } from './draws';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
 import { blockParts, type Block } from './street-grid';
-import type { BlockFill, PropGroupRule, PropKindRule, PropRules } from './scenery-level';
+import type {
+  BlockFill,
+  PropGroupRule,
+  PropKindRule,
+  PropRules,
+  TerrainSection,
+} from './scenery-level';
 
 /** One prop standing on the ground. */
 export interface PropPlacement {
@@ -33,37 +41,8 @@ const Draw = { Building: 0, Kind: 1, Scale: 2, Trees: 3 } as const;
 /** Draws per tree: position X, position Z, kind, scale, turn. */
 const TREE_DRAWS = 5;
 
-function weighted<T extends { readonly weight: number }>(
-  items: readonly T[],
-  r: number,
-): T | undefined {
-  const total = items.reduce((sum, item) => sum + item.weight, 0);
-  let left = r * total;
-  for (const item of items) {
-    left -= item.weight;
-    if (left < 0) return item;
-  }
-  return items.at(-1);
-}
-
-/** The `items` whose id is in `ids` (all of them when `ids` is undefined). */
-function allowed<T extends { readonly id: string }>(
-  items: readonly T[],
-  ids?: readonly string[],
-): T[] {
-  return ids ? items.filter((item) => ids.includes(item.id)) : [...items];
-}
-
 function inside(area: GroundArea, x: number, z: number): boolean {
   return x >= area.xMin && x < area.xMax && z >= area.zMin && z < area.zMax;
-}
-
-/** A building with the radius of ground it takes. */
-/** A building with the half-extents (X, Z) of the box of ground it takes. */
-interface Building {
-  readonly placement: PropPlacement;
-  readonly halfX: number;
-  readonly halfZ: number;
 }
 
 /** Blocks are cut into parts of about this size, one tower each at most… */
@@ -74,11 +53,6 @@ const MAX_PARTS = 4;
 const TOWER_MARGIN = 1;
 /** Towers are drawn among the kinds at least this share of the largest one that fits. */
 const LARGEST_SHARE = 0.75;
-
-/** A value in `range` for a draw `r` in [0, 1). */
-function between([min, max]: readonly [number, number], r: number): number {
-  return min + (max - min) * r;
-}
 
 /** Smaller kinds a building slot tries when its first choice does not fit. */
 const FALLBACKS = 3;
@@ -97,8 +71,9 @@ function bucketKey(x: number, z: number): string {
  * of the other roads and of the buildings already placed. Slots of main roads are served first,
  * so they get the street fronts. A low-frequency zone noise picks the building group of each area
  * among the groups the section allows, so industrial buildings, labs and homes gather in
- * clusters. Trees of the kinds the section allows grow on a grid of cells, away from the roads
- * and the buildings, on rougher ground too.
+ * clusters. With `loners` and `hamlets` (phase 6 review), a few lone buildings and bunches of
+ * buildings also stand away from the roads. Trees of the kinds the section allows grow on a grid
+ * of cells, away from the roads and the buildings, on rougher ground too.
  *
  * Buildings are decided once for the whole level, in a fixed order, and trees from a hash of
  * their cell, so the same place always gives the same props whatever area is asked for: areas
@@ -130,6 +105,34 @@ export class PropPlacer {
         .find((b) => b !== undefined && this.#free(b));
       if (building) this.#occupy(building);
     }
+    if (rules.hamlets) placeHamlets(this.#awaySite(), rules.hamlets);
+    if (rules.loners) placeLoners(this.#awaySite(), rules.loners);
+  }
+
+  /** What `placeHamlets` and `placeLoners` need (phase 6 review). */
+  #awaySite(): AwaySite {
+    return {
+      length: this.field.length,
+      offscreenX: this.roads.offscreenX,
+      seed: this.seed,
+      sectionAt: (z) => this.field.sectionAt(z).section,
+      groupAt: (x, z, section) => this.#groupAt(x, z, section),
+      roadDistance: (x, z) => this.roads.edgeDistance(x, z),
+      ground: (x, z, radius) => this.#standingHeight(x, z, radius, this.rules.maxSlope),
+      add: (building, gap) => {
+        if (!this.#free(building, gap)) return false;
+        this.#occupy(building);
+        return true;
+      },
+    };
+  }
+
+  /** The building group of the area around (`x`, `z`), among those `section` allows. */
+  #groupAt(x: number, z: number, section: TerrainSection): PropGroupRule | undefined {
+    const f = this.rules.zoneFrequency;
+    const zone = (this.#zones(x * f, z * f) + 1) / 2;
+    const groups = allowed(this.rules.groups, section.groups);
+    return weighted(groups, Math.min(0.999999, Math.max(0, zone)));
   }
 
   /** Buildings and trees that lie in `area`. */
@@ -150,10 +153,12 @@ export class PropPlacer {
     return hash2D(i, j, this.seed * 31 + draw);
   }
 
-  /** Whether the ground box of `area` keeps `setback` clear of the placed buildings. */
-  #free(area: { placement: { x: number; z: number }; halfX: number; halfZ: number }): boolean {
+  /** Whether the ground box of `area` keeps `gap` clear of the placed buildings. */
+  #free(
+    area: { placement: { x: number; z: number }; halfX: number; halfZ: number },
+    gap = this.roads.setback,
+  ): boolean {
     const { x, z } = area.placement;
-    const gap = this.roads.setback;
     const bx = Math.floor(x / BUILDING_BUCKET);
     const bz = Math.floor(z / BUILDING_BUCKET);
     for (let i = bx - 2; i <= bx + 2; i++) {
@@ -285,10 +290,7 @@ export class PropPlacer {
     const r = (draw: number): number => this.#random(slot.road.index, slot.index, draw);
     const { section } = this.field.sectionAt(slot.z);
     if (r(Draw.Building) >= section.buildingDensity) return [];
-    const f = this.rules.zoneFrequency;
-    const zone = (this.#zones(slot.x * f, slot.z * f) + 1) / 2;
-    const groups = allowed(this.rules.groups, section.groups);
-    const group = weighted(groups, Math.min(0.999999, Math.max(0, zone)));
+    const group = this.#groupAt(slot.x, slot.z, section);
     const kind = group && weighted(group.kinds, r(Draw.Kind));
     if (!group || !kind) return [];
     const smaller = group.kinds
@@ -300,7 +302,7 @@ export class PropPlacer {
 
   /** `kind` standing by `slot`, or undefined when the roads or the ground do not allow it. */
   #fit(slot: RoadSlot, kind: PropKindRule): Building | undefined {
-    const scale = this.#scale(kind, this.#random(slot.road.index, slot.index, Draw.Scale));
+    const scale = between(kind.scale, this.#random(slot.road.index, slot.index, Draw.Scale));
     // A square plan stands at the setback; anything else keeps its footprint circle clear.
     const reach = kind.frontage === undefined ? kind.footprint : kind.frontage * scale;
     const offset = slot.road.width / 2 + this.roads.setback + reach;
@@ -342,22 +344,13 @@ export class PropPlacer {
           y,
           z,
           rotation: r(4) * 2 * Math.PI,
-          scale: this.#scale(kind, r(3)),
+          scale: between(kind.scale, r(3)),
         });
       }
     }
     return placements;
   }
 
-  #scale(kind: PropKindRule, r: number): number {
-    const [min, max] = kind.scale;
-    return min + (max - min) * r;
-  }
-
-  /**
-   * Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or undefined
-   * when the ground there is too steep or too low.
-   */
   /** The lowest ground under a square of half side `half` around (x, z). */
   #lowest(x: number, z: number, half: number): number {
     const corners = [-half, half].flatMap((dx) => [-half, half].map((dz) => [x + dx, z + dz]));
@@ -367,6 +360,10 @@ export class PropPlacer {
     );
   }
 
+  /**
+   * Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or undefined
+   * when the ground there is too steep or too low.
+   */
   #standingHeight(x: number, z: number, radius: number, maxSlope: number): number | undefined {
     const heights = [
       this.field.height(x, z),

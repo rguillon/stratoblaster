@@ -16,6 +16,12 @@ const PEAK_KNEE = 0.25;
 const DETAIL_FREQUENCY = 1 / 60;
 /** How much irregular wobble (as a share of the amplitude) is added to the sine of a meander. */
 const MEANDER_WOBBLE = 0.35;
+/**
+ * Dunes: share of a crest-to-crest cycle taken by the windward slope (the rest is the steep lee
+ * side), the scale (in wavelengths) of the noise bending the crest lines and varying their
+ * height, and the lowest crest height (as a share of `height`).
+ */
+const DUNE = { windward: 0.78, noiseScale: 3, lowestCrest: 0.45 } as const;
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -35,8 +41,8 @@ export function softCap(h: number, max: number): number {
  */
 export function terrainCeiling(level: SceneryLevel): number {
   return Math.max(
-    ...level.sections.map(({ relief, flatten, shore }) => {
-      const top = relief.base + Math.abs(relief.amplitude);
+    ...level.sections.map(({ relief, flatten, shore, dunes }) => {
+      const top = relief.base + Math.abs(relief.amplitude) + (dunes ? Math.abs(dunes.height) : 0);
       return Math.max(
         relief.maxHeight === undefined ? top : Math.min(top, relief.maxHeight),
         flatten ? flatten.height + Math.abs(flatten.roughness) : -Infinity,
@@ -61,6 +67,7 @@ export class HeightField {
   readonly #relief: Noise2D;
   readonly #detail: Noise2D;
   readonly #wobble: Noise2D;
+  readonly #dunes: Noise2D;
   readonly #transition: number;
 
   constructor(level: SceneryLevel, seed = level.seed) {
@@ -70,6 +77,7 @@ export class HeightField {
     this.#relief = createNoise2D(seed);
     this.#detail = createNoise2D(seed + 1);
     this.#wobble = createNoise2D(seed + 2);
+    this.#dunes = createNoise2D(seed + 3);
     this.#transition = Math.max(0, level.transition);
   }
 
@@ -98,6 +106,7 @@ export class HeightField {
     return {
       lush: this.#blend(z, (i) => of(i, 'lush')),
       paved: this.#blend(z, (i) => of(i, 'paved')),
+      sandy: this.#blend(z, (i) => of(i, 'sandy')),
     };
   }
 
@@ -134,7 +143,7 @@ export class HeightField {
   #sectionHeight(index: number, x: number, z: number): number {
     const section = this.sections[index]?.section;
     if (!section) return 0;
-    let h = this.#reliefHeight(section, x, z);
+    let h = this.#reliefHeight(section, x, z) + this.#duneHeight(section, x, z);
     h = this.#flatten(section, x, z, h);
     h = this.#carve(section, x, z, h);
     return this.#shore(section, x, z, h);
@@ -148,6 +157,26 @@ export class HeightField {
         ? relief.base + relief.amplitude * ridged(this.#relief, x * f, z * f, options)
         : relief.base + relief.amplitude * fbm(this.#relief, x * f, z * f, options);
     return relief.maxHeight === undefined ? h : softCap(h, relief.maxHeight);
+  }
+
+  /** Height of the dunes over the relief at (`x`, `z`): 0 in the troughs, up to `height`. */
+  #duneHeight({ dunes }: TerrainSection, x: number, z: number): number {
+    if (!dunes) return 0;
+    const angle = (dunes.angleDeg * Math.PI) / 180;
+    const scale = dunes.wavelength * DUNE.noiseScale;
+    const bend = this.#dunes(x / scale, z / scale);
+    const across = (x * Math.sin(angle) + z * Math.cos(angle)) / dunes.wavelength;
+    const phase = across + dunes.warp * bend;
+    const t = phase - Math.floor(phase);
+    // Long windward rise, then a short steep drop on the lee side, both eased at the crest.
+    const shape =
+      t < DUNE.windward ? smoothstep(0, DUNE.windward, t) : 1 - smoothstep(DUNE.windward, 1, t);
+    const crest = lerp(
+      DUNE.lowestCrest,
+      1,
+      this.#dunes(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
+    );
+    return dunes.height * shape * crest;
   }
 
   #detailNoise(x: number, z: number): number {

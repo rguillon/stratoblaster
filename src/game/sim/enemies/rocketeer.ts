@@ -21,7 +21,7 @@ export class Rocketeer extends Enemy {
   override update(ctx: EnemyContext, dt: number): void {
     this.y -= CFG.speed * dt;
     if (!onPlayfield(this, ctx)) return;
-    for (let i = this.#launcher.tick(dt); i > 0; i--) {
+    for (let i = this.#launcher.tick(dt * ctx.fireRate); i > 0; i--) {
       for (const side of [-1, 1]) {
         ctx.fireMissile(this.x + side * CFG.podOffset, this.y, DOWN, CFG.missile);
       }

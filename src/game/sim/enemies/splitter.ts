@@ -30,7 +30,7 @@ export class Splitter extends Enemy {
     this.heading = pose.heading;
     if (this.#travelled >= this.path.length) this.gone = true;
     if (!onPlayfield(this, ctx)) return;
-    for (let i = this.#gun.tick(dt); i > 0; i--) {
+    for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
       ctx.fireBullet(
         this.x,
         this.y,

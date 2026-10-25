@@ -1,6 +1,7 @@
 import { canTransition, type MenuScreen } from '../core/menu/menu-screen';
 import { moveCursor, type GridShape } from '../core/menu/grid-cursor';
 import { firstUnlockedLevel, type LevelCatalog } from '../core/content/level-catalog';
+import type { LevelResult } from '../core/systems/level-run';
 import { isMenuDirection, type MenuCommand, type MenuDirection } from '../input/menu-action';
 
 /** What a command did, so the presentation can give feedback. */
@@ -19,6 +20,8 @@ export interface MenuState {
   readonly chosenLevelId: string | null;
   /** True during a screen transition, while input is ignored (P01-R15). */
   readonly transitioning: boolean;
+  /** The result of the level just completed, while its overlay shows (P06-R03). */
+  readonly levelResult: LevelResult | null;
 }
 
 /** Data and settings of a {@link MenuFlow}. */
@@ -30,6 +33,8 @@ export interface MenuFlowOptions {
   readonly initialShipId?: string | null;
   /** Input is ignored for this long after each screen change (P01-R15). */
   readonly transitionSeconds: number;
+  /** …and for this long after the "Level complete" overlay shows (P06-R03). */
+  readonly resultDelaySeconds?: number;
 }
 
 const TITLE_ENTRY = 'start';
@@ -46,6 +51,7 @@ export class MenuFlow {
   #chosenLevelId: string | null = null;
   #transitionLeft = 0;
   #revision = 0;
+  #result: LevelResult | null = null;
 
   constructor(private readonly options: MenuFlowOptions) {
     if (options.shipIds.length === 0) throw new Error('The menu needs at least one ship');
@@ -69,6 +75,7 @@ export class MenuFlow {
       chosenShipId: this.#chosenShipId,
       chosenLevelId: this.#chosenLevelId,
       transitioning: this.#transitionLeft > 0,
+      levelResult: this.#result,
     };
   }
 
@@ -76,6 +83,7 @@ export class MenuFlow {
   goTo(screen: MenuScreen): boolean {
     if (!canTransition(this.#screen, screen)) return false;
     if (screen === 'level-select') this.#levelIndex = firstUnlockedLevel(this.options.levels);
+    this.#result = null;
     this.#screen = screen;
     this.#transitionLeft = this.options.transitionSeconds;
     this.#changed();
@@ -85,6 +93,37 @@ export class MenuFlow {
   /** Called when loading completes: shows the title screen. */
   finishLoading(): void {
     this.goTo('title');
+  }
+
+  /**
+   * Shows the "Level complete" (or "Game over") overlay on the game screen (P06-R03); Confirm
+   * then goes to the level select screen. Ignored on other screens.
+   */
+  completeLevel(result: LevelResult): void {
+    if (this.#screen !== 'game' || this.#result) return;
+    this.#result = result;
+    this.#transitionLeft = this.options.resultDelaySeconds ?? this.options.transitionSeconds;
+    this.#changed();
+  }
+
+  /**
+   * Starts a level straight away with the given ship, skipping the menus (P06-R09 debug
+   * options). Returns false, and changes nothing, if the ship or the level is unknown or the
+   * level is locked.
+   */
+  playDirect(shipId: string, levelId: string): boolean {
+    const shipIndex = this.options.shipIds.indexOf(shipId);
+    const levelIndex = this.options.levels.levels.findIndex((l) => l.id === levelId);
+    if (shipIndex < 0 || !this.options.levels.levels[levelIndex]?.unlocked) return false;
+    this.#shipIndex = shipIndex;
+    this.#levelIndex = levelIndex;
+    this.#chosenShipId = shipId;
+    this.#chosenLevelId = levelId;
+    this.#result = null;
+    this.#screen = 'game';
+    this.#transitionLeft = 0;
+    this.#changed();
+    return true;
   }
 
   /** Advances the transition timer. */
@@ -181,9 +220,26 @@ export class MenuFlow {
         return this.goTo('level-select') ? 'screen' : 'none';
       case 'level-select':
         return this.#confirmLevel();
+      case 'game':
+        return this.#leaveCompletedLevel();
       default:
         return 'none';
     }
+  }
+
+  /**
+   * From the "Level complete" overlay to the level select screen, on the next level; from the
+   * "Game over" overlay, on the level played (GD-20).
+   */
+  #leaveCompletedLevel(): MenuFeedback {
+    if (!this.#result) return 'none';
+    const { levels } = this.options.levels;
+    const played = levels.findIndex((l) => l.id === this.#chosenLevelId);
+    const won = this.#result.outcome === 'complete';
+    const next = won && levels[played + 1]?.unlocked ? played + 1 : played;
+    if (!this.goTo('level-select')) return 'none';
+    this.#levelIndex = Math.max(0, next);
+    return 'screen';
   }
 
   #confirmLevel(): MenuFeedback {

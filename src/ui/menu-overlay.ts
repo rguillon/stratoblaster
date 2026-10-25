@@ -8,12 +8,18 @@ import { renderLoadingScreen } from './screens/loading-screen';
 import { renderTitleScreen } from './screens/title-screen';
 import { renderShipSelectScreen } from './screens/ship-select-screen';
 import { renderLevelSelectScreen } from './screens/level-select-screen';
-import { renderGamePlaceholderScreen } from './screens/game-placeholder-screen';
+import { renderGameScreen } from './screens/game-screen';
 
 /** Settings of a {@link MenuOverlay}. */
 export interface MenuOverlayOptions {
   /** Fade-in time of a new screen, in seconds (P01-R15). */
   readonly transitionSeconds: number;
+}
+
+/** Touch controls of the game screen (P06-R02), in logical pixels with Y up. */
+export interface GameTouchHandlers {
+  fire(held: boolean): void;
+  drag(dx: number, dy: number): void;
 }
 
 function renderScreen(doc: MenuDocument, view: MenuView, handlers: ScreenHandlers): HTMLElement {
@@ -27,7 +33,7 @@ function renderScreen(doc: MenuDocument, view: MenuView, handlers: ScreenHandler
     case 'level-select':
       return renderLevelSelectScreen(doc, view, handlers);
     case 'game':
-      return renderGamePlaceholderScreen(doc, view, handlers);
+      return renderGameScreen(doc, view, handlers);
   }
 }
 
@@ -49,7 +55,15 @@ export class MenuOverlay {
     private readonly root: HTMLElement,
     private readonly onCommand: (command: MenuCommand) => void,
     private readonly options: MenuOverlayOptions,
+    private readonly touch?: GameTouchHandlers,
   ) {}
+
+  /** Screen pixels per logical pixel: the overlay is laid out at the logical size and scaled. */
+  #scale(): number {
+    const shown = this.root.getBoundingClientRect().width;
+    const laidOut = this.root.offsetWidth;
+    return shown > 0 && laidOut > 0 ? shown / laidOut : 1;
+  }
 
   /** The view shown last. */
   get view(): MenuView | undefined {
@@ -66,6 +80,13 @@ export class MenuOverlay {
       },
       onBack: () => {
         this.onCommand('back');
+      },
+      onFire: (held) => {
+        this.touch?.fire(held);
+      },
+      onDrag: (dx, dy) => {
+        const scale = this.#scale();
+        this.touch?.drag(dx / scale, -dy / scale);
       },
     });
     screen.dataset.screen = view.kind;

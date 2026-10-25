@@ -64,11 +64,28 @@ export interface Shore {
 
 /**
  * What covers the ground of a section, as shares (0..1) of alternative ground textures over the
- * default one: `lush` (grass) and `paved` (concrete, asphalt).
+ * default one: `lush` (grass), `paved` (concrete, asphalt) and `sandy` (desert sand, P06-R06).
  */
 export interface Surface {
   readonly lush: number;
   readonly paved: number;
+  readonly sandy: number;
+}
+
+/**
+ * Sand dunes (P06-R06): parallel crests every `wavelength`, each with a long gentle windward
+ * slope and a short steep lee slope, whose lines wander with noise and whose heights vary,
+ * added on top of the section's relief.
+ */
+export interface Dunes {
+  /** Height of the highest crests above the relief. */
+  readonly height: number;
+  /** Distance between two crests. */
+  readonly wavelength: number;
+  /** Direction the crests face, in degrees from +Z (the wind blows that way). */
+  readonly angleDeg: number;
+  /** How far the crest lines wander, in wavelengths. */
+  readonly warp: number;
 }
 
 /**
@@ -96,6 +113,7 @@ export interface TerrainSection {
   readonly flatten?: Flatten;
   readonly channel?: Channel;
   readonly shore?: Shore;
+  readonly dunes?: Dunes;
   /** Chance (0..1) that a building slot along a road of this section gets a building. */
   readonly buildingDensity: number;
   /** Chance (0..1) that an empty candidate spot of this section gets trees. */
@@ -169,6 +187,28 @@ export interface PropRules {
   readonly treesPerCell: number;
   /** Cars driving on the streets and main roads (phase 4 review, see `Traffic`). */
   readonly cars?: CarRules;
+  /**
+   * Phase 6 review: a few lone buildings away from the roads. Each square of `cell` units gets
+   * one with the chance `chance × buildingDensity` of its section, at least `clearance` from
+   * every road edge. Not in the sections with street grids.
+   */
+  readonly loners?: { readonly cell: number; readonly chance: number; readonly clearance: number };
+  /** Phase 6 review: hamlets, bunches of buildings close together away from the roads. */
+  readonly hamlets?: HamletRules;
+}
+
+/**
+ * Hamlets (phase 6 review): one every `spacing` along the level, in sections with buildings
+ * (`buildingDensity` > 0) and no street grid. A hamlet is `buildings` buildings of one group,
+ * all turned the same way, within `radius` of its centre, `gap` apart and at least `clearance`
+ * from every road edge. Its centre is tried at a few places across the level.
+ */
+export interface HamletRules {
+  readonly spacing: readonly [number, number];
+  readonly buildings: readonly [number, number];
+  readonly radius: number;
+  readonly gap: number;
+  readonly clearance: number;
 }
 
 /** Cars driving on the streets and main roads: one chance per road point to start there. */
@@ -230,6 +270,14 @@ export interface RoadRules {
   readonly slotSpacing: number;
   /** Gap between the road edge and a building's footprint. */
   readonly setback: number;
+  /**
+   * Phase 6 review: roads never cross, they only meet where a path joins a road. Main roads keep
+   * at least `gap` apart (each one after the first follows the one before it, on one side); a
+   * path starts on a main road and ends off the screen or on another main road or street, `gap`
+   * clear of everything else; street grids have T-junctions only. Unset (Level Zero): main
+   * roads and paths may cross, and streets meet at crossings too.
+   */
+  readonly noCrossings?: { readonly gap: number };
 }
 
 /** The ground of a scrolling level: terrain, optional sea, roads and props. */

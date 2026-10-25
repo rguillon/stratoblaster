@@ -111,11 +111,15 @@ class LayerMesh {
     if (grow) {
       this.mesh.thinInstanceSetBuffer('matrix', this.#matrices, 16, false);
       this.mesh.thinInstanceSetBuffer('color', this.#colors, 4, false);
-    } else {
+    }
+    // Before the update: Babylon uploads only the first `thinInstanceCount` matrices, and new
+    // instances would show for a frame where older ones were, in their new colours (phase 6
+    // review: stray glows when an enemy blew up).
+    this.mesh.thinInstanceCount = n;
+    if (!grow) {
       this.mesh.thinInstanceBufferUpdated('matrix');
       this.mesh.thinInstanceBufferUpdated('color');
     }
-    this.mesh.thinInstanceCount = n;
   }
 
   dispose(): void {

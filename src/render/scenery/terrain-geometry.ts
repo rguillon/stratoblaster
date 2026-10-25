@@ -2,13 +2,13 @@
 export interface HeightSource {
   height(x: number, z: number): number;
   /** Ground cover at `z` (none when omitted). */
-  surface?(z: number): { readonly lush: number; readonly paved: number };
+  surface?(z: number): { readonly lush: number; readonly paved: number; readonly sandy?: number };
 }
 
 /**
  * Ground cover is stored in the terrain's vertex colours: red = 1 - lush × SURFACE_SCALE,
- * blue = 1 - paved × SURFACE_SCALE (green stays 1). The terrain shader decodes it; the plain
- * test material just shows a light tint.
+ * green = 1 - sandy × SURFACE_SCALE, blue = 1 - paved × SURFACE_SCALE. The terrain shader
+ * decodes it; the plain test material just shows a light tint.
  */
 export const SURFACE_SCALE = 0.5;
 
@@ -51,7 +51,13 @@ export function buildTerrainGeometry(source: HeightSource, grid: TerrainGrid): T
   let v = 0;
   for (let r = 0; r <= rows; r++) {
     const cover = source.surface?.(zMin + r * cell) ?? { lush: 0, paved: 0 };
-    const color = [1 - cover.lush * SURFACE_SCALE, 1, 1 - cover.paved * SURFACE_SCALE, 1];
+    const sandy = cover.sandy ?? 0;
+    const color = [
+      1 - cover.lush * SURFACE_SCALE,
+      1 - sandy * SURFACE_SCALE,
+      1 - cover.paved * SURFACE_SCALE,
+      1,
+    ];
     for (let c = 0; c <= columns; c++) colors.set(color, (r * (columns + 1) + c) * 4);
     for (let c = 0; c <= columns; c++) {
       const nx = at(c - 1, r) - at(c + 1, r);

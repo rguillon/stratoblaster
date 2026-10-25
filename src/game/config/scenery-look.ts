@@ -11,7 +11,7 @@ interface TextureExtras {
 }
 
 /** A generated ground texture: three colours and a noise frequency, plus extras. */
-const texture = (
+export const texture = (
   colors: readonly [Rgb, Rgb, Rgb],
   frequency: number,
   extra: TextureExtras = {},
@@ -110,6 +110,16 @@ export const LEVEL_ZERO_LOOK = {
       ],
       10,
       { speckle: 0.03, speckleColor: [0.22, 0.22, 0.23] },
+    ),
+    /** Phase 6: desert sand (Level Zero has none; World 1 has its own look). */
+    sand: texture(
+      [
+        [0.66, 0.53, 0.35],
+        [0.76, 0.62, 0.42],
+        [0.84, 0.71, 0.5],
+      ],
+      18,
+      { speckle: 0.02, speckleColor: [0.5, 0.38, 0.24] },
     ),
     lowHeight: 7,
     highHeight: 205,

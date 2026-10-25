@@ -25,6 +25,15 @@ export interface EnemyWorldOptions {
 }
 
 /**
+ * How hard the enemies are, as factors on each kind's own values (1 = as tuned): their bullets'
+ * speed and how fast their attacks come (P06-R08).
+ */
+export interface EnemyDifficulty {
+  readonly bulletSpeed: number;
+  readonly fireRate: number;
+}
+
+/**
  * The enemies and their shots (P05): updates every enemy, removes the destroyed ones (scoring
  * them, GD-50, and letting them spawn parts) and the ones that left, and moves their shots.
  * Its {@link targets} are what the player's shots can hit. Pure and deterministic.
@@ -36,9 +45,14 @@ export class EnemyWorld {
   readonly targets: ShotTarget[] = [];
   /** Blasts of the last step. */
   blasts: EnemyBlast[] = [];
+  /** Enemies the player's shots destroyed during the last step (e.g. to drop bonuses). */
+  destroyed: Enemy[] = [];
   /** Enemies destroyed and points scored since the world was created. */
   kills = 0;
   score = 0;
+  /** Enemies added (their parts and launches included) and their total health, since then. */
+  spawned = 0;
+  spawnedHealth = 0;
   playerX = 0;
   playerY = 0;
   #nextId = 1;
@@ -49,17 +63,20 @@ export class EnemyWorld {
   constructor(
     readonly options: EnemyWorldOptions,
     random: Random,
+    difficulty: EnemyDifficulty = { bulletSpeed: 1, fireRate: 1 },
   ) {
     this.shots = new EnemyShots(options);
     const shots = this.shots;
+    const { bulletSpeed } = difficulty;
     this.#context = {
       width: options.width,
       height: options.height,
       random,
+      fireRate: difficulty.fireRate,
       playerX: 0,
       playerY: 0,
       fireBullet: (x, y, heading, spec) => {
-        shots.fireBullet(x, y, heading, spec);
+        shots.fireBullet(x, y, heading, { ...spec, speed: spec.speed * bulletSpeed });
       },
       fireMissile: (x, y, heading, spec) => {
         shots.fireMissile(x, y, heading, spec);
@@ -78,8 +95,15 @@ export class EnemyWorld {
     for (const enemy of enemies) {
       enemy.id = this.#nextId++;
       this.enemies.push(enemy);
+      this.spawned++;
+      this.spawnedHealth += enemy.maxHealth;
     }
     this.#rebuildTargets();
+  }
+
+  /** Number of enemies whose centre is over the playfield. */
+  get onScreen(): number {
+    return this.enemies.filter((enemy) => this.#within(enemy, 0)).length;
   }
 
   /** Removes every enemy and shot. */
@@ -87,12 +111,14 @@ export class EnemyWorld {
     this.enemies.length = 0;
     this.shots.clear();
     this.blasts = [];
+    this.destroyed = [];
     this.#rebuildTargets();
   }
 
   /** Advances everything by `dt` seconds. */
   step(dt: number): void {
     this.blasts = [];
+    this.destroyed = [];
     this.#context.playerX = this.playerX;
     this.#context.playerY = this.playerY;
     this.#collectDestroyed();
@@ -120,6 +146,7 @@ export class EnemyWorld {
       this.kills++;
       this.score += enemy.points;
       this.blasts.push({ kind: 'enemy', x: enemy.x, y: enemy.y, radius: enemy.radius });
+      this.destroyed.push(enemy);
       enemy.onDestroyed?.(this.#context);
     }
   }

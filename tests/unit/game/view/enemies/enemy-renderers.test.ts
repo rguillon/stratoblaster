@@ -92,6 +92,24 @@ describe('createBlastRenderer', () => {
     renderer.dispose();
     expect(layer('debris')).toBeUndefined();
   });
+
+  it('phase 6 review: uploads the positions of every instance, new ones included', () => {
+    const scene = new Scene(new NullEngine());
+    const renderer = createBlastRenderer(scene);
+    renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.01);
+    const flashes = scene.getMeshByName('blast-flashes') as Mesh;
+    const uploaded: number[] = [];
+    const update = flashes.thinInstanceBufferUpdated.bind(flashes);
+    flashes.thinInstanceBufferUpdated = (kind) => {
+      if (kind === 'matrix') uploaded.push(flashes.thinInstanceCount);
+      update(kind);
+    };
+    // A second flash while the first one lasts: the buffers have room, they are updated.
+    renderer.sync([{ kind: 'enemy', x: 200, y: 20, radius: 15 }], 0.01);
+    expect(flashes.thinInstanceCount).toBe(2);
+    expect(uploaded).toEqual([2]);
+    renderer.dispose();
+  });
 });
 
 describe('ENEMY_BINDINGS', () => {

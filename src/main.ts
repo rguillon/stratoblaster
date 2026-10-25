@@ -1,5 +1,6 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { startApp } from './app/start-app';
+import { parseDebugOptions } from './app/debug-options';
 import { resolveRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
@@ -46,6 +47,7 @@ function startGame(engine: Engine): void {
   };
   window.addEventListener('resize', fit);
   fit();
+  const debug = parseDebugOptions(window.location.search);
   const app = startApp(engine, GAME, {
     environment: true,
     doc: document,
@@ -55,11 +57,13 @@ function startGame(engine: Engine): void {
     gamepads: browserGamepads(navigator),
     yieldToBrowser: nextFrame,
     renderLoop: true,
+    ...(debug ? { debug, statsParent: document.body } : {}),
   });
   if (__E2E__) {
     installTestApi(window, {
       state: () => app.menu.flow.state,
       loadingProgress: () => app.loadingProgress,
+      game: () => app.game()?.state,
       send: (action) => {
         app.command(action);
       },

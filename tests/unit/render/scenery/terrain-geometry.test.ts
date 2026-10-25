@@ -39,6 +39,12 @@ describe('terrain ground cover', () => {
     const bare = buildTerrainGeometry({ height: () => 0 }, GRID).colors;
     expect(bare.every((c) => c === 1)).toBe(true);
   });
+
+  it('P06-R06: stores the sand cover in the green channel', () => {
+    const source = { height: () => 0, surface: () => ({ lush: 0, paved: 0, sandy: 1 }) };
+    const { colors } = buildTerrainGeometry(source, GRID);
+    expect([...colors.slice(0, 4)]).toEqual([1, 1 - SURFACE_SCALE, 1, 1]);
+  });
 });
 
 describe('buildGridIndices', () => {

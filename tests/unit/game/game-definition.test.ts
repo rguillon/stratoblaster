@@ -31,10 +31,13 @@ describe('GAME', () => {
     expect(GAME.view.playerShipScale).toBeGreaterThan(0);
   });
 
-  it('P01-R08: the placeholder names the ship and the level', () => {
-    expect(MENU_TEXTS.gamePlaceholder('Balanced', '1-1')).toBe(
-      'Balanced ship — Level 1-1 — Gameplay coming soon',
-    );
+  it('P06-R02, P06-R03: names the level played, and counts the enemies at its end', () => {
+    expect(MENU_TEXTS.gameLevel('1-2')).toBe('Level 1-2');
+    expect(MENU_TEXTS.enemiesDestroyed(42, 60)).toBe('Enemies destroyed: 42 / 60');
+  });
+
+  it('P06-R01: registers the five playable levels of World 1', () => {
+    expect(GAME.gameLevels.map((l) => l.id)).toEqual(['1-1', '1-2', '1-3', '1-4', '1-5']);
   });
 
   it('P05-R01..R10, P05-R12: registers the 11 enemy kinds with their look', () => {

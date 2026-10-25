@@ -4,6 +4,8 @@ import { FixedStepClock } from '../core/loop/fixed-step-clock';
 import { ENGINE_CONFIG } from '../config/engine';
 import { MENU_CONFIG } from '../config/menu';
 import { MENU_INPUT_CONFIG } from '../config/menu-input';
+import { GAME_PLAY_CONFIG } from '../config/game-play';
+import type { GameControls } from '../input/game-controls';
 import { runLoadingTasks } from '../assets/loading-tasks';
 import { KeyboardMenuInput } from '../input/keyboard-menu-input';
 import { GamepadMenuInput, type GamepadSource } from '../input/gamepad-menu-input';
@@ -13,6 +15,8 @@ import type { KeyValueStorage } from '../platform/key-value-storage';
 import type { GameView } from '../render/game-view';
 import { MenuOverlay } from '../ui/menu-overlay';
 import type { MenuDocument } from '../ui/screens/elements';
+import type { GamePlay } from './game-play';
+import { GameSession, type GameDebugOptions } from './game-session';
 import { MenuController } from './menu-controller';
 import type { MenuState } from './menu-flow';
 import { prepareMenuScenes, renderMenuScenes, type MenuScenes } from './menu-scenes';
@@ -36,6 +40,10 @@ export interface AppOptions {
   readonly yieldToBrowser: () => Promise<void>;
   /** Starts Babylon's render loop. Tests leave it off and call `tick` themselves. */
   readonly renderLoop: boolean;
+  /** Debug options (P06-R09); none when omitted. */
+  readonly debug?: GameDebugOptions;
+  /** Where the debug FPS / polygons tile goes. */
+  readonly statsParent?: HTMLElement;
 }
 
 /** Handle on a running app, used by main.ts, the test API and tests. */
@@ -48,6 +56,10 @@ export interface RunningApp {
   readonly loadingProgress: readonly number[];
   /** The menu scenes, once loaded. */
   scenes(): MenuScenes | undefined;
+  /** The level being played, on the game screen. */
+  game(): GamePlay | undefined;
+  /** The player's in-game controls. */
+  readonly controls: GameControls;
   /** Sends a menu command, as any input device would. */
   command(command: MenuCommand): void;
   /** Runs one frame: input, menus, animations, rendering. */
@@ -94,9 +106,10 @@ function loadMenuScenes(
 function createMenu(
   game: GameDefinition<GameView>,
   options: AppOptions,
-  input: MenuInput,
+  input: { menu: MenuInput; controls: GameControls },
   onChange: (state: MenuState) => void,
 ): { menu: MenuController; overlay: MenuOverlay } {
+  const { controls } = input;
   const overlay = new MenuOverlay(
     options.doc,
     options.overlay,
@@ -104,12 +117,21 @@ function createMenu(
       menu.command(c);
     },
     MENU_CONFIG,
+    {
+      fire: (held) => {
+        controls.setTouchFire(held);
+      },
+      drag: (dx, dy) => {
+        controls.drag(dx, dy);
+      },
+    },
   );
   const menu: MenuController = new MenuController(game, {
     display: overlay,
-    input,
+    input: input.menu,
     storage: options.storage,
     transitionSeconds: MENU_CONFIG.transitionSeconds,
+    resultDelaySeconds: GAME_PLAY_CONFIG.completeDelay,
     cardsWidthPercent: 100 / MENU_CONFIG.shipSelect.camera.framingMargin,
     version: __APP_VERSION__,
     commit: __APP_COMMIT__,
@@ -118,16 +140,26 @@ function createMenu(
   return { menu, overlay };
 }
 
-/** One frame: clock, menu input and state, scene animations, rendering. */
+/**
+ * One frame: clock, menu input and state, then the level being played, or the menu scenes'
+ * animations, and rendering.
+ */
 function frameTicker(
   clock: FixedStepClock,
   menu: MenuController,
   scenes: () => MenuScenes | undefined,
+  session: { readonly play: GamePlay | undefined },
 ): (dtSeconds: number) => void {
   return (dtSeconds) => {
     const dt = Math.min(Math.max(0, dtSeconds), MENU_CONFIG.maxFrameSeconds);
     clock.advance(dt);
     menu.tick(dt);
+    const { play } = session;
+    if (play) {
+      play.frame(dt);
+      play.view.scene.render();
+      return;
+    }
     const loaded = scenes();
     if (!loaded) return;
     loaded.backdrop.update(dt);
@@ -136,9 +168,32 @@ function frameTicker(
   };
 }
 
+/** Disposes the menu scenes, once loaded. */
+function disposeScenes(scenes: MenuScenes | undefined): void {
+  scenes?.backdropScene.dispose();
+  scenes?.shipScene.dispose();
+}
+
+/** Runs `tick` on every frame of Babylon's render loop, with the frame time in seconds. */
+function runLoop(engine: AbstractEngine, tick: (dtSeconds: number) => void): void {
+  engine.runRenderLoop(() => {
+    tick(engine.getDeltaTime() / 1000);
+  });
+}
+
+/** With debug options (P06-R09), starts their level straight away once loading is over. */
+function startDebugLevel(
+  menu: MenuController,
+  debug: GameDebugOptions | undefined,
+  shipIds: readonly string[],
+): void {
+  if (debug) menu.playDirect(debug.shipId ?? shipIds[0] ?? '', debug.levelId);
+}
+
 /**
  * Wires the layers together (ENG-11): loads the menu scenes behind a loading screen, then
- * runs the menus (P01-R01..R15) in Babylon's render loop with a fixed-step clock (ENG-100).
+ * runs the menus (P01-R01..R15) and the levels (P06) in Babylon's render loop with a
+ * fixed-step clock (ENG-100).
  */
 export function startApp(
   engine: AbstractEngine,
@@ -149,28 +204,31 @@ export function startApp(
   const shipIds = game.playerShips.ships.map((s) => s.id);
   const { input, stop } = createInput(options);
   let scenes: MenuScenes | undefined;
-  const { menu, overlay } = createMenu(game, options, input, (state) => {
+  const session: GameSession = new GameSession(engine, game, options, (play) => {
+    menu.completeLevel(play.run.result);
+  });
+  const { controls } = session;
+  const { menu, overlay } = createMenu(game, options, { menu: input, controls }, (state) => {
     syncScenes(scenes, state, shipIds);
+    session.sync(state);
   });
   const prepared = prepareMenuScenes(engine, game, options.environment);
-  const loading = loadMenuScenes(prepared, menu, options, (loadedScenes) => {
-    scenes = loadedScenes;
+  const loading = loadMenuScenes(prepared, menu, options, (loaded) => {
+    scenes = loaded;
     syncScenes(scenes, menu.flow.state, shipIds);
+    startDebugLevel(menu, options.debug, shipIds);
   });
 
-  const tick = frameTicker(clock, menu, () => scenes);
-  if (options.renderLoop) {
-    engine.runRenderLoop(() => {
-      tick(engine.getDeltaTime() / 1000);
-    });
-  }
-
+  const tick = frameTicker(clock, menu, () => scenes, session);
+  if (options.renderLoop) runLoop(engine, tick);
   return {
     clock,
     menu,
     loaded: loading.loaded,
     loadingProgress: loading.progress,
     scenes: () => scenes,
+    game: () => session.play,
+    controls,
     command: (c) => {
       menu.command(c);
     },
@@ -178,9 +236,9 @@ export function startApp(
     dispose: () => {
       engine.stopRenderLoop();
       stop();
+      session.dispose();
       overlay.dispose();
-      scenes?.backdropScene.dispose();
-      scenes?.shipScene.dispose();
+      disposeScenes(scenes);
     },
   };
 }

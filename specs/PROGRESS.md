@@ -10,6 +10,7 @@
 | 3 | `phases/phase-03-player-shots.md` | ✅ Validated | `phase-03` | 99.45% lines | 2026-10-23 |
 | 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
 | 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
+| 6 | `phases/phase-06-world-1.md` | 🟡 Awaiting review | `phase-06` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -88,3 +89,5 @@
 - 2026-10-24 — 5 — At the reviewer's request, the specs corrected to match the review fixes (P03-R01, P03-R03, P04-R02, P05-R01, P05-R11); still awaiting review.
 - 2026-10-24 — 5 — Review fix: player missiles more visible (bigger, lighter, with a motor flare and an exhaust trail); light verification green (typecheck, build, 40 e2e); still awaiting review.
 - 2026-10-24 — 5 — Validated: full gate green after fixes (668 unit tests, 99.27% lines, 88.83% branches, 40 e2e); squash-merged into `main`, tagged `v0.05.0`.
+- 2026-10-24 — 6 — Spec settled with the reviewer (World 1 has 5 levels of ~4 min, no bosses yet) and set to Ready.
+- 2026-10-24 — 6 — Implemented World 1 (five playable levels, wave scripts, level end, desert ground and props, debug URL options); awaiting review.

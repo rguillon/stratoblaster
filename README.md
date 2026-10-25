@@ -18,12 +18,17 @@ An old-school vertical shoot 'em up with modern 3D graphics, running entirely in
 
 ### In game
 
-| Action         | Keyboard      |
-| -------------- | ------------- |
-| Move           | Arrows / WASD |
-| Shoot          | Space         |
-| Special / bomb | E             |
-| Pause          | Esc / P       |
+| Action            | Keyboard                    | Gamepad           | Touch                     |
+| ----------------- | --------------------------- | ----------------- | ------------------------- |
+| Move              | Arrows / WASD (by position) | Left stick, D-pad | Drag anywhere             |
+| Shoot (hold)      | Space                       | A, right trigger  | Hold the **Fire** button  |
+| Switch weapon     | E (same key on AZERTY)      |                   |                           |
+| Back to the title | Esc, Backspace              | B                 | On-screen **Back** button |
+
+Bombs and pause come in later phases (bombs will need a key other than E).
+
+Debug options (any build): `?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy
+ship. With them, F fast-forwards ×4, ← / → jump 10 s, and an FPS / polygons tile shows.
 
 The high score and the last chosen ship are kept in cookies (`stratoblaster_high_score`, `stratoblaster_last_ship`).
 

@@ -1,4 +1,5 @@
 import type { GameDefinition } from '../core/content/game-definition';
+import type { LevelResult } from '../core/systems/level-run';
 import type { MenuCommand } from '../input/menu-action';
 import type { MenuActionSource } from '../input/menu-input';
 import type { KeyValueStorage } from '../platform/key-value-storage';
@@ -19,6 +20,8 @@ export interface MenuControllerDeps {
   readonly input: MenuActionSource;
   readonly storage: KeyValueStorage;
   readonly transitionSeconds: number;
+  /** Input is ignored this long after the "Level complete" overlay shows (P06-R03). */
+  readonly resultDelaySeconds?: number;
   readonly cardsWidthPercent: number;
   readonly version: string;
   readonly commit: string;
@@ -50,6 +53,9 @@ export class MenuController {
       levels: game.levels,
       initialShipId: saved.lastShipId,
       transitionSeconds: deps.transitionSeconds,
+      ...(deps.resultDelaySeconds === undefined
+        ? {}
+        : { resultDelaySeconds: deps.resultDelaySeconds }),
     });
     this.refresh();
   }
@@ -63,6 +69,19 @@ export class MenuController {
   finishLoading(): void {
     this.flow.finishLoading();
     this.refresh();
+  }
+
+  /** Shows the "Level complete" overlay (P06-R03). */
+  completeLevel(result: LevelResult): void {
+    this.flow.completeLevel(result);
+    this.refresh();
+  }
+
+  /** Starts a level straight away (P06-R09 debug options); see `MenuFlow.playDirect`. */
+  playDirect(shipId: string, levelId: string): boolean {
+    const started = this.flow.playDirect(shipId, levelId);
+    this.refresh();
+    return started;
   }
 
   /** Applies one command (from any device, or the test API). */

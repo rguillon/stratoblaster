@@ -14,6 +14,7 @@ export interface TerrainTextures {
   readonly high: BaseTexture;
   readonly lush: BaseTexture;
   readonly paved: BaseTexture;
+  readonly sand: BaseTexture;
   readonly noise: BaseTexture;
 }
 
@@ -31,6 +32,7 @@ const SAMPLERS = [
   'terrainHigh',
   'terrainLush',
   'terrainPaved',
+  'terrainSandy',
   'terrainNoise',
 ] as const;
 
@@ -56,6 +58,7 @@ uniform sampler2D terrainSteep;
 uniform sampler2D terrainHigh;
 uniform sampler2D terrainLush;
 uniform sampler2D terrainPaved;
+uniform sampler2D terrainSandy;
 uniform sampler2D terrainNoise;
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
@@ -107,8 +110,10 @@ vec3 terrainColor(vec3 p, vec3 n) {
   // Ground cover of the section, from the vertex colour (see terrain-geometry.ts).
   float lush = clamp((1.0 - vColor.r) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
   float paved = clamp((1.0 - vColor.b) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  float sandy = clamp((1.0 - vColor.g) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
   // Cover fades in with noise, in patches rather than as a flat gradient.
   float patchy = clamp(noise.g * 0.6 + 0.2, 0.0, 1.0);
+  ground = mix(ground, terrainTriplanar(terrainSandy, p, w), smoothstep(patchy - 0.25, patchy + 0.25, sandy));
   ground = mix(ground, terrainTriplanar(terrainLush, p, w), smoothstep(patchy - 0.25, patchy + 0.25, lush));
   ground = mix(ground, terrainTriplanar(terrainPaved, p, w), smoothstep(patchy - 0.25, patchy + 0.25, paved));
 #endif
@@ -200,6 +205,7 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     ubo.setTexture('terrainHigh', textures.high);
     ubo.setTexture('terrainLush', textures.lush);
     ubo.setTexture('terrainPaved', textures.paved);
+    ubo.setTexture('terrainSandy', textures.sand);
     ubo.setTexture('terrainNoise', textures.noise);
   }
 

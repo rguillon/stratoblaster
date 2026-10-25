@@ -5,11 +5,31 @@ import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { GameDefinition } from '../../src/core/content/game-definition';
 import type { MenuScreen } from '../../src/core/menu/menu-screen';
-import type { GameView, MenuBackdrop, ShotFrame, ShotRenderer } from '../../src/render/game-view';
+import type {
+  BonusFrame,
+  BonusRenderer,
+  GameView,
+  MenuBackdrop,
+  ShotFrame,
+  ShotRenderer,
+} from '../../src/render/game-view';
 import { SAMPLE_SCENERY, SAMPLE_SCENERY_LEVEL } from './sample-scenery';
 import { SAMPLE_ENEMIES, SAMPLE_ENEMY_KINDS } from './sample-enemies';
 
 const box = (scene: Scene) => CreateBox('sample-ship', { size: 1 }, scene);
+
+/** The frames the sample bonus renderer was given, most recent last. */
+export const bonusFrames: BonusFrame[] = [];
+
+/** A bonus renderer that records its frames. */
+function sampleBonusRenderer(): BonusRenderer {
+  return {
+    sync: (frame) => {
+      bonusFrames.push(frame);
+    },
+    dispose: () => undefined,
+  };
+}
 
 /** A backdrop that records what the engine asks of it. */
 export interface SampleBackdrop extends MenuBackdrop {
@@ -118,8 +138,34 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
       { id: 'c', label: 'C', world: 2, level: 1, unlocked: true },
     ],
   },
+  gameLevels: [
+    {
+      id: 'a',
+      scenery: SAMPLE_SCENERY_LEVEL,
+      waves: [
+        { at: 0, kind: 'dropper', count: 1, interval: 0, entry: { side: 'top', position: 0.5 } },
+        { at: 100, kind: 'pair', count: 2, interval: 1, entry: { side: 'top', position: 0.5 } },
+      ],
+      difficulty: { bulletSpeed: 1, fireRate: 1 },
+    },
+    {
+      id: 'c',
+      scenery: SAMPLE_SCENERY_LEVEL,
+      waves: [],
+      difficulty: { bulletSpeed: 1.5, fireRate: 2 },
+    },
+  ],
   sceneryLevels: [SAMPLE_SCENERY_LEVEL],
   enemyKinds: SAMPLE_ENEMY_KINDS,
+  // No drops unless a test asks for them.
+  bonuses: { chance: { perHealth: 0, min: 0, max: 0 }, fallSpeed: 20, pickupRadius: 15 },
+  hull: {
+    lives: 2,
+    invincibleSeconds: 1,
+    hitRadius: 4,
+    damage: { bullet: 1, missile: 2, laser: 2, collision: 3 },
+    ramDamage: 10,
+  },
   texts: {
     loading: 'Wait',
     highScore: 'Best',
@@ -131,8 +177,16 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     chooseLevelHint: 'Pick a level',
     back: 'Back',
     locked: 'Nope',
-    gamePlaceholder: (ship, level) => `${ship} @ ${level}`,
-    gameHint: 'Esc',
+    gameLevel: (level) => `L${level}`,
+    fire: 'Pew',
+    levelComplete: 'Done',
+    gameOver: 'Lost',
+    enemiesDestroyed: (destroyed, spawned) => `${String(destroyed)}/${String(spawned)}`,
+    continueHint: 'Go on',
+    hudHealth: 'Life',
+    hudLives: (lives) => `L${String(lives)}`,
+    hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
+    hudDestroyed: (count) => `x${String(count)}`,
     unsupported: 'No WebGL2',
   },
   view: {
@@ -142,5 +196,6 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     menuBackdrop: sampleBackdrop,
     scenery: SAMPLE_SCENERY,
     enemies: SAMPLE_ENEMIES,
+    bonuses: sampleBonusRenderer,
   },
 };

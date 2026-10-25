@@ -1,5 +1,4 @@
 import type { GameDefinition } from '../core/content/game-definition';
-import { findPlayerShip } from '../core/entities/player-ship';
 import { shipCaption } from '../ui/ship-caption';
 import type { MenuView } from '../ui/menu-view';
 import type { MenuState } from './menu-flow';
@@ -17,18 +16,24 @@ export interface MenuViewContext {
 }
 
 function gameView(state: MenuState, ctx: MenuViewContext): MenuView {
-  const { game } = ctx;
-  const ship = findPlayerShip(game.playerShips, state.chosenShipId ?? state.highlightedShipId);
-  const level = game.levels.levels.find((l) => l.id === state.chosenLevelId);
+  const { texts, levels } = ctx.game;
+  const label = (id: string | null) => levels.levels.find((l) => l.id === id)?.label ?? '?';
+  const result = state.levelResult;
   return {
     kind: 'game',
-    message: game.texts.gamePlaceholder(ship.name, level?.label ?? '?'),
-    hint: game.texts.gameHint,
-    back: game.texts.back,
+    level: texts.gameLevel(label(state.chosenLevelId)),
+    fire: texts.fire,
+    complete: result && {
+      heading: result.outcome === 'over' ? texts.gameOver : texts.levelComplete,
+      over: result.outcome === 'over',
+      level: label(result.levelId),
+      enemies: texts.enemiesDestroyed(result.destroyed, result.spawned),
+      hint: texts.continueHint,
+    },
   };
 }
 
-/** Builds what the menu overlay shows for the current state (P01-R04, R06, R07, R08). */
+/** Builds what the menu overlay shows for the current state (P01-R04, R06, R07, P06-R02, R03). */
 export function buildMenuView(state: MenuState, ctx: MenuViewContext): MenuView {
   const { game } = ctx;
   const { texts } = game;

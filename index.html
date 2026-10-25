@@ -7,7 +7,7 @@
     <style>
       /*
        * Cyberpunk HUD look (GD-60, P01-R13, review feedback D-013, D-014): acid yellow, cyan
-       * and alarm red on black, chamfered panels, scanlines, monospace readouts. The selected
+       * and alarm red on black, chamfered panels, monospace readouts. The selected
        * entry is a solid yellow block, with its markers. System fonts only: works offline.
        */
       :root {
@@ -47,16 +47,6 @@
         position: fixed;
         overflow: hidden;
         background: var(--black);
-      }
-      /* CRT scanlines and vignette over the whole stage; clicks go through. */
-      #stage::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background:
-          repeating-linear-gradient(rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.14) 2px 3px),
-          radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.5) 100%);
       }
       #game-canvas {
         display: block;
@@ -448,18 +438,189 @@
         color: var(--red);
       }
 
+      /* Game screen (P06-R02): the playfield shows through; drag anywhere to fly (touch). */
       .game-screen {
         justify-content: center;
-        gap: 24px;
+        touch-action: none;
       }
-      .game-message {
-        padding: 16px 24px;
+      .game-level {
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 2px 12px;
+        font-family: var(--font-tech);
+        font-size: 14px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--yellow);
+        background: var(--glass);
+        pointer-events: none;
+      }
+      /* The decorative status tag would sit on the weapon readout. */
+      .game-screen::after {
+        content: none;
+      }
+      /* In-game HUD (phase 6 review): health, weapon, progress, kills. Never takes clicks. */
+      .game-hud {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        font-family: var(--font-tech);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--paper);
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      .hud-health {
+        position: absolute;
+        top: 14px;
+        left: 18px;
+        width: 140px;
+        padding: 4px 8px 6px;
+        background: var(--glass);
         clip-path: var(--chamfer);
-        font-size: 30px;
+      }
+      .hud-ship {
+        color: var(--yellow);
+        text-transform: uppercase;
+      }
+      .hud-bar {
+        height: 8px;
+        margin: 4px 0 3px;
+        border: 1px solid var(--cyan);
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .hud-bar-fill {
+        height: 100%;
+        background: var(--cyan);
+        box-shadow: 0 0 6px var(--cyan);
+      }
+      .hud-bar-fill.low {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+      }
+      .hud-name {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+      }
+      .hud-lives {
+        color: var(--cyan);
+        white-space: nowrap;
+      }
+      .hud-health-text {
+        font-size: 11px;
+      }
+      .hud-weapon {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        padding: 4px 8px;
+        color: var(--yellow);
+        background: var(--glass);
+      }
+      .hud-progress {
+        position: absolute;
+        top: 44px;
+        left: 50%;
+        width: 140px;
+        height: 4px;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(252, 238, 10, 0.6);
+      }
+      .hud-progress-fill {
+        height: 100%;
+        background: var(--yellow);
+      }
+      .hud-destroyed {
+        position: absolute;
+        bottom: 18px;
+        left: 18px;
+        padding: 3px 8px;
+        background: var(--glass);
+      }
+      /* Touch fire button, only on touch screens (keyboard and gamepad have their own). */
+      .game-fire {
+        display: none;
+        position: absolute;
+        right: 22px;
+        bottom: 26px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-tech);
+        font-size: 16px;
         font-weight: 700;
-        line-height: 1.4;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--black);
+        background: rgba(252, 238, 10, 0.55);
+        border: 3px solid var(--yellow);
+        text-shadow: none;
+      }
+      @media (pointer: coarse) {
+        .game-fire {
+          display: flex;
+        }
+      }
+      /* "Level complete" overlay (P06-R03). */
+      .level-complete {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 24px 32px;
+        clip-path: var(--chamfer);
         border: 2px solid var(--yellow);
         background: var(--glass);
+        color: var(--paper);
+      }
+      .level-complete.menu-entry.selected {
+        color: var(--paper);
+        background: var(--glass);
+      }
+      .level-complete-heading {
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--yellow);
+      }
+      .level-complete-level {
+        font-family: var(--font-tech);
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--cyan);
+      }
+      .level-complete-enemies {
+        font-size: 22px;
+      }
+      .level-complete.game-over {
+        border-color: var(--red);
+      }
+      .game-over .level-complete-heading {
+        color: var(--red);
+      }
+
+      /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */
+      .stats-tile {
+        position: fixed;
+        top: 8px;
+        right: 8px;
+        z-index: 10;
+        padding: 6px 10px;
+        background: rgba(6, 8, 18, 0.8);
+        border: 1px solid rgba(252, 238, 10, 0.5);
+        font-family: var(--font-tech);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--yellow);
+        pointer-events: none;
       }
 
       @media (prefers-reduced-motion: reduce) {

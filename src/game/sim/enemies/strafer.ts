@@ -22,7 +22,7 @@ export class Strafer extends Enemy {
   override update(ctx: EnemyContext, dt: number): void {
     this.x += this.#direction * CFG.speed * dt;
     if (!onPlayfield(this, ctx)) return;
-    for (let i = this.#gun.tick(dt); i > 0; i--) {
+    for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
       for (const heading of fanHeadings(DOWN, CFG.fanCount, CFG.fanSpacing * DEG)) {
         ctx.fireBullet(this.x, this.y, heading, CFG.bullet);
       }

@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, openGame } from './menu-helpers';
+import { expectState, openGame, sendAction } from './menu-helpers';
 
 type Press = (target: Locator) => Promise<void>;
 
@@ -19,8 +19,10 @@ async function runFlow(page: Page, press: Press): Promise<void> {
   await expectState(page, { screen: 'level-select', selectedId: '1-1' });
   await press(page.locator('.level-cell').first());
   await expectState(page, { screen: 'game', chosenShipId: 'light', chosenLevelId: '1-1' });
-  await expect(page.locator('.game-message')).toContainText('Light ship — Level 1-1');
-  await press(page.locator('.menu-back'));
+  await expect(page.locator('.game-level')).toHaveText('Level 1-1');
+  // Phase 6 review: no Back button over the playfield; Esc (or the gamepad's B) leaves.
+  await expect(page.locator('.menu-back')).toHaveCount(0);
+  await sendAction(page, 'back');
   await expectState(page, { screen: 'title' });
 }
 
@@ -36,7 +38,7 @@ test.describe('touch', () => {
   });
 });
 
-test('P01-R07: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedback', async ({
+test('P01-R07, P06-R01: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedback', async ({
   page,
 }) => {
   await openGame(page);
@@ -48,8 +50,9 @@ test('P01-R07: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedb
   await expect(cells).toHaveCount(25);
   await expect(cells.first()).toHaveText('1-1');
   await expect(cells.last()).toHaveText('5-5');
-  await expect(page.locator('.level-cell.locked')).toHaveCount(24);
-  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(24);
+  // P06-R01: World 1's five levels are unlocked; worlds 2 to 5 are not built yet.
+  await expect(page.locator('.level-cell.locked')).toHaveCount(20);
+  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(20);
   await cells.nth(6).click();
   await expectState(page, { selectedId: '2-2' });
   await cells.nth(6).click();

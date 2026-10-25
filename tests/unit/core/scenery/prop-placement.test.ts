@@ -245,4 +245,77 @@ describe('PropPlacer', () => {
     };
     expect(placer(empty).place(AREA)).toEqual([]);
   });
+
+  describe('away from the roads (phase 6 review)', () => {
+    const BIG: SceneryLevel['props'] = SAMPLE_SCENERY_LEVEL.props;
+    const key = (b: { x: number; z: number }) => `${b.x.toFixed(3)},${b.z.toFixed(3)}`;
+    /** The buildings `props` adds to the sample level's. */
+    function added(props: Partial<SceneryLevel['props']>, level = SAMPLE_SCENERY_LEVEL) {
+      const base = new Set(
+        placer(level)
+          .place(AREA)
+          .filter((b) => b.kind === 'block')
+          .map(key),
+      );
+      const p = placer({ ...level, props: { ...BIG, ...props } });
+      const extra = p.place(AREA).filter((b) => b.kind === 'block' && !base.has(key(b)));
+      return { p, extra };
+    }
+
+    it('lone buildings stand clear of the roads, scattered over the level', () => {
+      const { p, extra } = added({ loners: { cell: 30, chance: 1, clearance: 8 } });
+      expect(extra.length).toBeGreaterThan(5);
+      for (const b of extra)
+        expect(p.roads.edgeDistance(b.x, b.z)).toBeGreaterThanOrEqual(13 - 1e-6);
+      // A low chance gives fewer, and none where the section has no buildings.
+      expect(added({ loners: { cell: 30, chance: 0.2, clearance: 8 } }).extra.length).toBeLessThan(
+        extra.length,
+      );
+      const bare: SceneryLevel = {
+        ...SAMPLE_SCENERY_LEVEL,
+        sections: SAMPLE_SCENERY_LEVEL.sections.map((s) => ({ ...s, buildingDensity: 0 })),
+      };
+      expect(
+        placer({ ...bare, props: { ...BIG, loners: { cell: 30, chance: 1, clearance: 8 } } })
+          .place(AREA)
+          .filter((b) => b.kind === 'block'),
+      ).toEqual([]);
+    });
+
+    it('hamlets gather buildings close together, turned about the same way, clear of the roads', () => {
+      const hamlets = {
+        spacing: [120, 160],
+        buildings: [4, 6],
+        radius: 18,
+        gap: 1,
+        clearance: 6,
+      } as const;
+      const { p, extra } = added({ hamlets });
+      expect(extra.length).toBeGreaterThanOrEqual(4);
+      for (const b of extra) {
+        expect(p.roads.edgeDistance(b.x, b.z)).toBeGreaterThanOrEqual(11 - 1e-6);
+        // A hamlet at the edge of the area may have its other buildings out of it.
+        if (b.z < 2 * hamlets.radius || b.z > AREA.zMax - 2 * hamlets.radius) continue;
+        const neighbours = extra.filter(
+          (o) => o !== b && Math.hypot(o.x - b.x, o.z - b.z) <= 2 * hamlets.radius,
+        );
+        expect(neighbours.length).toBeGreaterThan(0);
+        // Within the skew of a neighbour's heading, a quarter turn apart at most.
+        const quarter = (a: number) => ((a % (Math.PI / 2)) + Math.PI / 2) % (Math.PI / 2);
+        const skew = Math.min(
+          ...neighbours.map((o) => {
+            const d = Math.abs(quarter(o.rotation) - quarter(b.rotation));
+            return Math.min(d, Math.PI / 2 - d);
+          }),
+        );
+        expect(skew).toBeLessThanOrEqual(0.3 + 1e-9);
+      }
+      // Buildings of a hamlet never overlap.
+      for (const b of extra) {
+        for (const o of extra) {
+          if (o !== b) expect(Math.hypot(o.x - b.x, o.z - b.z)).toBeGreaterThan(5);
+        }
+      }
+    });
+  });
 });
