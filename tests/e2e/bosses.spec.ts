@@ -26,6 +26,14 @@ const BOSSES = [
   'Overlord',
 ];
 
+test('P07-R09 (review): boss/ opens the same page, with every boss', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.goto('./boss/');
+  await expect(page.locator('.enemy-title')).toHaveText('Bosses');
+  await expect(page.locator('.enemy-kind button')).toHaveText(BOSSES);
+  await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 60_000 });
+});
+
 test.describe('P07: bosses/ page', () => {
   // Heavy software-rendered scenes (a World 1 level per boss): one test after another.
   test.describe.configure({ mode: 'default' });

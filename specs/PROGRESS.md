@@ -96,3 +96,4 @@
 - 2026-10-25 — 7 — Spec file created; requirements drafted by the agent at the reviewer's request (Draft).
 - 2026-10-25 — 7 — Open choices settled by the reviewer (all defaults) and set to Ready.
 - 2026-10-25 — 7 — Implemented bosses: engine `Boss` (parts, shielded core, stages, death), fights with ground speed and checkpoint, ten World 1 bosses with code-generated models, boss health bar, Continue panel and the `bosses/` debug page (D-053..D-056); awaiting review.
+- 2026-10-25 — 7 — Review fix: `boss/` debug endpoint (same page as `bosses/`); still awaiting review.

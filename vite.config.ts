@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => ({
     // Multi-page: the game, the player ship viewer at `player_ship/` (phase 02), the
     // player shots viewer at `player_shots/` (phase 03), the generated level viewer at
     // `level_zero/` (phase 04), the enemies viewer at `enemies/` (phase 05) and the bosses viewer
-    // at `bosses/` (phase 07).
+    // at `bosses/` and `boss/` (phase 07).
     rolldownOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => ({
         levelZero: fileURLToPath(new URL('./level_zero/index.html', import.meta.url)),
         enemies: fileURLToPath(new URL('./enemies/index.html', import.meta.url)),
         bosses: fileURLToPath(new URL('./bosses/index.html', import.meta.url)),
+        boss: fileURLToPath(new URL('./boss/index.html', import.meta.url)),
       },
     },
   },

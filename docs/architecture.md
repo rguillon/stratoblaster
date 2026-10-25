@@ -36,7 +36,7 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 ## Pages and routes
 
-The build has six HTML entries sharing one bundle (`src/main.ts`):
+The build has seven HTML entries sharing one bundle (`src/main.ts`):
 
 | Page                      | Route (`app/route.ts`) | Started by                    |
 | ------------------------- | ---------------------- | ----------------------------- |
@@ -46,6 +46,7 @@ The build has six HTML entries sharing one bundle (`src/main.ts`):
 | `level_zero/index.html`   | `scenery-viewer`       | `app/start-scenery-viewer.ts` |
 | `enemies/index.html`      | `enemy-viewer`         | `app/start-enemy-viewer.ts`   |
 | `bosses/index.html`       | `boss-viewer`          | `app/start-boss-viewer.ts`    |
+| `boss/index.html`         | `boss-viewer`          | `app/start-boss-viewer.ts`    |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a

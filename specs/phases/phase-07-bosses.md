@@ -223,7 +223,7 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 > After the agent reports, write corrections here, then say **"Fix phase 07"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (reviewer, in chat, 2026-10-25) Add a `boss/` debug endpoint to see all the bosses. — Done: `boss/` opens the bosses page (the same as `bosses/`: every boss, its fight, model and wireframe views; `app/route.ts`, `boss/index.html`, `route.test.ts`, e2e `bosses.spec.ts`).
 
 ---
 
@@ -290,7 +290,7 @@ Coverage before this phase: 99.33 % lines (phase 6). New numbers come with `/val
 - `make dev`, then a level from the menus: the mini boss comes at about 2:00 of the level's scroll (after 10 s without new waves), the final boss at its end. Shoot the parts off (the shielding ones first); watch the bar, the pattern change after each part (1 s pause, lights strobing), the bonuses, the ground speed (1-1's final boss speeds the sea chase up, 1-3's stops the ground).
 - Straight to a boss: `/?level=1-3&boss=final` (or `boss=mini`, any World 1 level, `&ship=heavy`). K destroys the next part, then the core (debug only). F ×4, ← / → still seek.
 - Checkpoint: `/?level=1-2&boss=mini`, destroy the mini boss (K × 4), then lose the three lives: the "Game over" panel offers Continue / Level select; Continue starts again after the mini boss with the weapon levels you had.
-- `bosses/`: pick a boss (buttons or N / B), it fights over its level; K destroys a part, the panel shows the stage; M model view, V wireframe (core circle red, shielding parts yellow, others cyan), ← / → switch boss in those views; X / 1-5 weapon and level, F fire, P pause.
+- `bosses/` (or `boss/`): pick a boss (buttons or N / B), it fights over its level; K destroys a part, the panel shows the stage; M model view, V wireframe (core circle red, shielding parts yellow, others cyan), ← / → switch boss in those views; X / 1-5 weapon and level, F fire, P pause.
 
 ### Deviations from spec
 - P07-R05: the Scorpion's stinger and the Sentinel's drone bay hang in front of the core (spec table: on the back / no place given). Shots come from below, and a shielding part behind the shielded core could not be hit (D-053).
