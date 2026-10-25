@@ -105,7 +105,10 @@ function drawBody(p: EnemyParts): void {
   }
 }
 
-/** The fan cannon on top (the core's gun): a housing and five barrels fanned out forward. */
+/**
+ * The fan cannon on top (the core's gun): a housing and five barrels fanned out forward,
+ * turning around the hub of its barrels (its pivot).
+ */
 function drawFanCannon(p: EnemyParts): void {
   p.hull.bevelSlab(FAN_HOUSING, [0, 0, 5], [0, 1.5], H.dark, { at: FAN_AT }, H.panel);
   for (let k = 0; k < 5; k++) {
@@ -168,7 +171,6 @@ export function buildMesaFortress(scene: Scene): EnemyModel {
   return buildBossModel(MESA_FORTRESS, scene, N, {
     core: (p) => {
       drawBody(p);
-      drawFanCannon(p);
     },
     parts: {
       'lance-left': drawLance,
@@ -176,5 +178,6 @@ export function buildMesaFortress(scene: Scene): EnemyModel {
       'silo-left': drawSilo,
       'silo-right': drawSilo,
     },
+    turrets: { core: drawFanCannon },
   });
 }

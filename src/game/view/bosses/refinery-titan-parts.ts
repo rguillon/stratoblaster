@@ -86,15 +86,19 @@ const BARRELS = [
 ] as const;
 const BARREL = { length: 10, radius: 1.3 } as const;
 
-/** P07-R05: a rotary turret on the front sponson, three barrels with charge-lit muzzles. */
-export function drawTurret(
-  { hull, neon, charge, muzzle: mark }: EnemyParts,
-  [x, y, z]: Vec3,
-): void {
+/** P07-R05: a rotary turret's base on the front sponson, under its turret ({@link drawRotary}). */
+export function drawTurret({ hull, neon }: EnemyParts, [x, y, z]: Vec3): void {
   const base = y + TITAN_DECK.sponson;
   hull.lathe(TURRET_BASE, 8, H.base, { at: [x, base, z] });
   neon.ring(13.3, 0.9, 8, TITAN_NEON, { at: [x, base + 1, z] });
-  const axis = base + 9;
+}
+
+/** A rotary turret: its housing and three barrels with charge-lit muzzles, on its base. */
+export function drawRotary(
+  { hull, neon, charge, muzzle: mark }: EnemyParts,
+  [x, y, z]: Vec3,
+): void {
+  const axis = y + TITAN_DECK.sponson + 9;
   hull.loft(POD_SECTION, TURRET_HOUSING, H.panel, { at: [x, axis, z] });
   const front = z + TURRET_HOUSING[2][0];
   // The barrel shroud, then the barrels; their muzzles light up as the spiral charges.

@@ -213,15 +213,6 @@ export function buildReefWarden(scene: Scene): EnemyModel {
       drawBody(p);
       drawDeck(p);
       drawCargo(p);
-      // The prow cannon (the core's fans).
-      turret(p, [0, SKIRT[2], 27], {
-        radius: 7,
-        barrels: 1,
-        gap: 0,
-        bore: 1.5,
-        length: 7,
-        neon: CYAN,
-      });
       for (const s of SIDES) {
         socket(p.hull, [s * 34, 3, 2], 8, 1.2);
         p.reactor([s * 13, 5, -31], 3.4);
@@ -229,7 +220,19 @@ export function buildReefWarden(scene: Scene): EnemyModel {
       p.reactor([0, -1, -30], 3);
     },
     parts: { 'cannon-left': cannon, 'cannon-right': cannon },
-    turrets: { 'cannon-left': cannonTurret, 'cannon-right': cannonTurret },
+    turrets: { core: prowTurret, 'cannon-left': cannonTurret, 'cannon-right': cannonTurret },
+  });
+}
+
+/** The prow cannon (the core's gun), on the skirt, turning around its pivot `at`. */
+function prowTurret(p: EnemyParts, at: Vec3): void {
+  turret(p, offset(at, 0, SKIRT[2], 0), {
+    radius: 7,
+    barrels: 1,
+    gap: 0,
+    bore: 1.5,
+    length: 7,
+    neon: CYAN,
   });
 }
 

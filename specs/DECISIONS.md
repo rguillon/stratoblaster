@@ -698,3 +698,12 @@
 - **Alternatives considered:** raising the guns too (every boss and level would need re-tuning); equal raw damage for all three (the laser's focus and the missiles' homing would make the guns pointless).
 - **Consequences:** fights with the laser or missiles get shorter than before; with the guns they are unchanged. Bonus drop chances depend on enemy health, not on the weapon, so they do not change.
 - **Status:** Accepted
+
+### D-060 — Every boss turret turns the way it fires
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer saw the turrets not turning. With D-058 only turrets firing aimed shots turned, and only while their stage fired at the player: from the top of the screen at the ship below, that is a few degrees, and turrets firing fans or rings stayed at rest. The reviewer chose for every turret to turn.
+- **Decision:** `BossPattern.turnTurrets` points each turret the way its next volley goes (the one with the least time left; a burst under way first): at the player for aimed shots and bursts (as before), along the fan's preset heading for fans, and with the ring for rings, spinning on from the last ring's turn to the next one's as it gets ready (the closest of the ring's equal turns, so it never spins back). The turn rate stays 150°/s. Three more guns are turrets (`Guns.turret` pivots and `BossDrawing.turrets`): the Reef Warden's prow cannon, the Mesa Fortress's fan cannon and the Refinery Titan's rotary turrets (base kept on the part so it still flashes on hits).
+- **Alternatives considered:** turning turrets further than they aim (shots would no longer leave from the barrels, D-057); aiming at the player whatever they fire (fans and rings would leave from barrels pointing elsewhere).
+- **Consequences:** fans in World 1 all fire straight down, so a turret between aimed shots and a fan swings back to rest before the fan; spiral turrets spin all through their stage. Guns built into hulls, blades, claws or pods, lasers (they fire straight down) and missile cells do not turn. Shots are unchanged: they still leave the barrel facing their way.
+- **Status:** Accepted

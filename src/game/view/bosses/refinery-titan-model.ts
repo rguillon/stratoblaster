@@ -20,6 +20,7 @@ import { drawTitanLandmarks } from './refinery-titan-landmarks';
 import {
   drawMissileBattery,
   drawTank,
+  drawRotary,
   drawTurret,
   rect,
   TITAN_DECK,
@@ -202,5 +203,6 @@ export function buildRefineryTitan(scene: Scene): EnemyModel {
       'turret-right': drawTurret,
       'missile-battery': drawMissileBattery,
     },
+    turrets: { 'turret-left': drawRotary, 'turret-right': drawRotary },
   });
 }

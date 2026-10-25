@@ -44,7 +44,7 @@ export const REEF_WARDEN: BossDesign = {
   sway: { amplitude: 70, period: 7 },
   bob: { amplitude: 8, period: 3.5 },
   guns: {
-    core: { gun: [[0, -40.5, 5]] },
+    core: { gun: [[0, -40.5, 5]], turret: [0, -27] },
     'cannon-left': { gun: mirror(CANNON), turret: [-36, -2] },
     'cannon-right': { gun: CANNON, turret: [36, -2] },
   },

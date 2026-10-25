@@ -53,8 +53,8 @@ export interface BossDesign {
  * The muzzles of a piece's guns, from the boss's centre (X right, Y up, and height, px; its
  * orbiting parts as drawn, at a spin of 0), by the kind of shot they fire: bullets (`gun`), a
  * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s. Its `gun`s may be on
- * a `turret` turning around the pivot given (from the boss's centre, X right, Y up): it follows
- * the player while they fire at the player (phase 7 review). Its model draws it on its own.
+ * a `turret` turning around the pivot given (from the boss's centre, X right, Y up): it turns
+ * the way they fire next (phase 7 review, D-060). Its model draws it on its own.
  */
 export interface Guns {
   readonly turret?: readonly [x: number, y: number];

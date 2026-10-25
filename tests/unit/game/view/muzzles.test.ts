@@ -78,9 +78,10 @@ describe('Muzzles', () => {
       if (!factory) throw new Error(id);
       const drawn = marked(factory, `${id}-`);
       for (const [piece, guns] of Object.entries(design.guns)) {
+        // Its `turret` is a pivot, not muzzles.
         for (const [kind, muzzles] of Object.entries(
           guns as Partial<Record<string, readonly Muzzle[]>>,
-        )) {
+        ).filter(([kind]) => kind !== 'turret')) {
           const model = drawn.get(`${piece} ${kind}`) ?? [];
           expectSame(muzzles ?? [], model, `${id} ${piece} ${kind}`);
         }

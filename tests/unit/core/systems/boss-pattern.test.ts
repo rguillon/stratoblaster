@@ -173,11 +173,70 @@ describe('BossPattern', () => {
     expect(shot?.x).toBeCloseTo(240 + 10 * Math.SQRT1_2);
     expect(shot?.y).toBeCloseTo(500 - 10 * Math.SQRT1_2);
     expect(shot?.heading).toBeCloseTo(135 * DEG);
-    // A turret only firing preset fans turns back to rest.
+    // A turret firing fans straight down turns back to rest.
     const fan = { kind: 'fan', headingDeg: 0, count: 1, spacingDeg: 0, bullet: BULLET } as const;
     const resting = new BossPattern([{ ...volley(fan, 1, 'gun'), turret: true }]);
     for (let i = 0; i < 60; i++) resting.turnTurrets(ctx, 1 / 60, () => source);
     expect(turret.aim).toBeCloseTo(0);
+  });
+
+  describe('phase 7 review: every turret turns the way its next volley goes', () => {
+    const turreted = () => {
+      const turret = new BossTurret({ x: 0, y: 0, turnRateDeg: 360 });
+      const source: VolleySource = { ...piece(240, 500), turret };
+      const ctx = new RecordingContext();
+      [ctx.playerX, ctx.playerY] = [340, 400];
+      const run = (pattern: BossPattern, seconds: number, each?: () => void) => {
+        for (let t = 0; t < seconds - 1e-9; t += 1 / 60) {
+          pattern.turnTurrets(ctx, 1 / 60, () => source);
+          pattern.step(ctx, 1 / 60, () => source);
+          each?.();
+        }
+      };
+      return { turret, run };
+    };
+
+    it('along a fan’s preset heading', () => {
+      const { turret, run } = turreted();
+      const fan = {
+        kind: 'fan',
+        headingDeg: 30,
+        count: 3,
+        spacingDeg: 10,
+        bullet: BULLET,
+      } as const;
+      run(new BossPattern([{ ...volley(fan, 1, 'gun'), turret: true }]), 0.5);
+      expect(turret.aim).toBeCloseTo(-30 * DEG);
+    });
+
+    it('spinning smoothly with a spiral ring, without going back', () => {
+      const { turret, run } = turreted();
+      const ring = { kind: 'ring', count: 3, turnDeg: 20, bullet: BULLET } as const;
+      const aims: number[] = [];
+      run(new BossPattern([{ ...volley(ring, 1, 'gun'), turret: true }]), 3, () =>
+        aims.push(turret.aim),
+      );
+      // Once caught up with the ring, each frame a little further, by 20° a second.
+      const steps = aims.slice(1).map((a, i) => a - (aims[i] ?? 0));
+      for (const step of steps.slice(10)) expect(step).toBeCloseTo((20 * DEG) / 60, 5);
+      expect(at(aims, aims.length - 1)).toBeCloseTo(40 * DEG, 1);
+    });
+
+    it('at the player for the volley that fires next, between a fan and aimed shots', () => {
+      const { turret, run } = turreted();
+      const fan = { kind: 'fan', headingDeg: 0, count: 1, spacingDeg: 0, bullet: BULLET } as const;
+      const aimed = { kind: 'aimed', count: 1, spacingDeg: 0, bullet: BULLET } as const;
+      const pattern = new BossPattern([
+        { ...volley(fan, 2, 'gun'), first: 0.5, turret: true },
+        { ...volley(aimed, 2, 'gun'), first: 1.5, turret: true },
+      ]);
+      run(pattern, 0.4);
+      expect(turret.aim).toBeCloseTo(0);
+      run(pattern, 0.6);
+      expect(turret.aim).toBeCloseTo(-45 * DEG);
+      run(pattern, 1);
+      expect(turret.aim).toBeCloseTo(0);
+    });
   });
 
   it('phase 7 review: a laser follows its piece from its muzzle', () => {

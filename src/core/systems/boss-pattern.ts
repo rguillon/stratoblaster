@@ -72,7 +72,7 @@ export interface BossVolley {
   readonly muzzles?: readonly Muzzle[];
   /**
    * Whether those muzzles are on the piece's turret (phase 7 review): they turn with it, and
-   * it follows the player while the stage fires shots aimed at the player from it.
+   * it turns the way its next volley goes (see {@link BossPattern.turnTurrets}).
    */
   readonly turret?: boolean;
   /** Seconds between two volleys. */
@@ -95,9 +95,6 @@ export interface VolleySource extends MuzzleSource {
 
 /** The piece a volley fires from, or undefined once it is destroyed. */
 export type VolleySources = (from: string) => VolleySource | undefined;
-
-/** The volleys a turret follows the player for: the ones aimed at the player. */
-const AT_PLAYER: ReadonlySet<BossVolleyShape['kind']> = new Set(['aimed', 'burst']);
 
 /** The core fires the volleys whose `from` is this. */
 export const CORE = 'core';
@@ -135,8 +132,8 @@ interface VolleyState {
  */
 export class BossPattern {
   readonly #states: VolleyState[];
-  /** The pieces whose turrets its volleys fire from, and whether it aims at the player from them. */
-  readonly #turrets = new Map<string, boolean>();
+  /** The pieces whose turrets its volleys fire from, and the indices of those volleys. */
+  readonly #turrets = new Map<string, number[]>();
 
   constructor(readonly volleys: BossPatternSpec) {
     this.#states = volleys.map((v) => ({
@@ -146,13 +143,9 @@ export class BossPattern {
       burstLeft: 0,
       guns: new GunMuzzles(v.muzzles, v.turret),
     }));
-    for (const v of volleys) {
-      if (!v.turret) continue;
-      this.#turrets.set(
-        v.from,
-        (this.#turrets.get(v.from) ?? false) || AT_PLAYER.has(v.shape.kind),
-      );
-    }
+    volleys.forEach((v, i) => {
+      if (v.turret) this.#turrets.set(v.from, [...(this.#turrets.get(v.from) ?? []), i]);
+    });
   }
 
   /** How ready the next volley is, 0..1 (for charging lights). */
@@ -181,17 +174,34 @@ export class BossPattern {
   }
 
   /**
-   * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review): towards the
-   * player while they fire at the player, back to rest otherwise. Pauses included.
+   * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
+   * next volley goes (a burst under way first): at the player for aimed shots and bursts, along
+   * a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
    */
   turnTurrets(ctx: EnemyContext, dt: number, sources: VolleySources): void {
-    for (const [from, tracks] of this.#turrets) {
+    for (const [from, volleys] of this.#turrets) {
       const source = sources(from);
       const turret = source?.turret;
       if (!source || !turret) continue;
-      const aim = tracks ? aimAtPlayer(ctx, source, turret) : 0;
+      const aim = this.#aimOf(ctx, volleys, source, turret);
       turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
     }
+  }
+
+  /** Where `turret` should point for the next of its `volleys` to fire (radians from rest). */
+  #aimOf(
+    ctx: EnemyContext,
+    volleys: readonly number[],
+    source: VolleySource,
+    turret: BossTurret,
+  ): number {
+    const left = (i: number) => this.#states[i]?.left ?? Infinity;
+    const next =
+      volleys.find((i) => (this.#states[i]?.burst ?? 0) > 0) ??
+      volleys.reduce((best, i) => (left(i) < left(best) ? i : best));
+    const volley = this.volleys[next];
+    const state = this.#states[next];
+    return volley && state ? turretAim(ctx, volley, state, source, turret) : 0;
   }
 
   #fire(ctx: EnemyContext, volley: BossVolley, state: VolleyState, source: VolleySource): void {
@@ -259,6 +269,34 @@ function presetHeadings(
     { length: shape.count },
     (_, k) => DOWN + turn + (2 * Math.PI * k) / shape.count,
   );
+}
+
+/** Where `turret` points for `volley` (radians from rest): see {@link BossPattern.turnTurrets}. */
+function turretAim(
+  ctx: EnemyContext,
+  volley: BossVolley,
+  state: VolleyState,
+  source: VolleySource,
+  turret: BossTurret,
+): number {
+  const shape = volley.shape;
+  switch (shape.kind) {
+    case 'aimed':
+    case 'burst':
+      return aimAtPlayer(ctx, source, turret);
+    case 'fan':
+      return wrapAngle(-shape.headingDeg * DEG);
+    case 'ring': {
+      // Spinning on from the last ring's turn to the next one's as the next one gets ready; its
+      // bullets leave from the barrels pointing their way, so the closest of the ring's turns.
+      const ready = 1 - Math.min(1, state.left / volley.every);
+      const turn = (state.turns - 1 + ready) * shape.turnDeg * DEG;
+      const spacing = (2 * Math.PI) / shape.count;
+      return wrapAngle(turn + spacing * Math.round(wrapAngle(turret.aim - turn) / spacing));
+    }
+    default:
+      return 0;
+  }
 }
 
 /** How far `turret` must turn from its rest (straight down) to point at the player. */

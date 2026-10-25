@@ -161,6 +161,7 @@ export const MESA_FORTRESS: BossDesign = {
         [-4.1, -44.4, 17.6],
         [-8, -42.7, 17.6],
       ],
+      turret: [0, -30],
     },
     'lance-left': { laser: [[-58, -51.3, 6]] },
     'lance-right': { laser: [[58, -51.3, 6]] },
@@ -213,8 +214,8 @@ export const REFINERY_TITAN: BossDesign = {
   },
   guns: {
     core: { gun: twin(4.5, -35.8, 19) },
-    'turret-left': { gun: mirror(ROTARY) },
-    'turret-right': { gun: ROTARY },
+    'turret-left': { gun: mirror(ROTARY), turret: [-32, -24] },
+    'turret-right': { gun: ROTARY, turret: [32, -24] },
     'missile-battery': { missile: cells([-5.5, 5.5], [30.5, 38, 45.5], 21.1) },
   },
   stages: stages(

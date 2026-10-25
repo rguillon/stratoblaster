@@ -101,3 +101,5 @@
 - 2026-10-25 — 7 — Review fix: more detailed, asymmetric boss models, seven of them with fat armour over a visible mechanism (2,180–4,164 triangles each); still awaiting review.
 - 2026-10-25 — 7 — Review fix: enemy and boss shots leave from the tips of their barrels, as the tilted camera sees them (D-057); small guns drawn on the Scout, Strafer, Weaver and Bulwark; still awaiting review.
 - 2026-10-25 — 7 — Review fix: boss turrets turn to follow the player while they fire at the player (D-058); still awaiting review.
+- 2026-10-25 — 7 — Review fix: player weapons balanced, the laser and missiles at 70-100 % of the guns' damage per second (GD-33, D-059); still awaiting review.
+- 2026-10-25 — 7 — Review fix: every boss turret turns the way its next volley goes (at the player, along a fan, spinning with a spiral); three more turrets (Reef Warden prow cannon, Mesa Fortress fan cannon, Refinery Titan rotary turrets) (D-060); still awaiting review.
