@@ -9,12 +9,6 @@ type Rgb = readonly [number, number, number];
 /** Glow disc colours, centre to edge (black edge: soft fade with additive blending). */
 const glow = (core: Rgb, mid: Rgb, rim: Rgb): readonly Rgb[] => [core, mid, rim, [0, 0, 0]];
 
-/**
- * An enemy bullet's colours, centre to edge (phase 8 review): a white-hot core going over to
- * its colour, which it keeps out to its edge while it fades out (`bullets.fade`).
- */
-const bullet = (core: Rgb, color: Rgb): readonly Rgb[] => [core, core, color, color, color, color];
-
 /** A colour scaled by `k`. */
 const times = ([r, g, b]: Rgb, k: number): Rgb => [r * k, g * k, b * k];
 
@@ -24,6 +18,24 @@ const whiter = ([r, g, b]: Rgb, t: number): Rgb => [
   g + (1 - g) * t,
   b + (1 - b) * t,
 ];
+
+/**
+ * An enemy bullet's colours, centre to edge (phase 8 review): its body's, a deep shade of its
+ * `color`, darker at the rim so it reads as a ball, fading out (`bullets.fade`), dark enough for
+ * the swirls added over it to show; its faint aura's; its two swirls', the smaller one whiter;
+ * and its pulsing `core`'s. All but the body are added on, so they end in black.
+ */
+const bullet = (core: Rgb, color: Rgb) => ({
+  body: [0.6, 0.6, 0.55, 0.45, 0.35, 0.25].map((k) => times(color, k)),
+  halo: [times(color, 0.4), times(color, 0.2), [0, 0, 0]] as readonly Rgb[],
+  swirls: [0.1, 0.4].map((t): readonly Rgb[] => [
+    whiter(color, t),
+    times(color, 0.8),
+    times(color, 0.35),
+    [0, 0, 0],
+  ]),
+  core: [core, core, times(color, 0.6), [0, 0, 0]] as readonly Rgb[],
+});
 
 /** The colours of a laser of `color` (phase 8 review): its warning line, beam and base flare. */
 export interface LaserPalette {
@@ -115,17 +127,31 @@ export const ENEMY_LOOK = {
     /** Visual radius relative to the hit radius. */
     scale: 1.6,
     /**
-     * A blob of energy (phase 8 review): opacity of its centre and of each ring of its colours,
-     * so it is a solid colour inside and its border fades out. Blended rather than added, so
-     * its colour shows over bright snow too.
+     * A ball of plasma: opacity of the body's centre and of each ring of its colours, so it is
+     * a solid colour inside and its border fades out. Blended rather than added, so its colour
+     * shows over bright snow too.
      */
     fade: [1, 1, 1, 0.85, 0.4, 0],
+    /** A faint aura added around the body, `size` times its radius, flickering by `flicker` at `flickerHz`. */
+    halo: { size: 1.45, flicker: 0.08, flickerHz: 13 },
+    /**
+     * Curled arms of brighter plasma added over the body (`buildSwirl`), spinning at
+     * `spinRadPerSec` (opposite ways, so they churn), `size` times the body's radius, in the
+     * colours of their style (`styles.*.swirls`). Each
+     * bullet starts them turned by its heading, so a ring of bullets does not spin as one.
+     */
+    swirls: [
+      { size: 1, lobes: 3, depth: 0.55, twist: 2.4, spinRadPerSec: 6 },
+      { size: 0.75, lobes: 2, depth: 0.65, twist: -3, spinRadPerSec: -10 },
+    ],
     /**
      * A white-hot glow added over its centre (phase 8 review), its radius relative to the
      * bullet's, swelling and shrinking by `amount` of it `hz` times a second as the bullet flies.
      */
-    core: { size: 0.6, pulse: { hz: 2.5, amount: 0.3 } },
-    segments: 10,
+    core: { size: 0.35, pulse: { hz: 2.5, amount: 0.3 } },
+    segments: 12,
+    /** The swirls' arms need more sides to curl smoothly. */
+    swirlSegments: 24,
     styles: {
       red: bullet([1, 0.9, 0.85], [1, 0.15, 0.1]),
       magenta: bullet([1, 0.9, 1], [1, 0.1, 0.8]),

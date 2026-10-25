@@ -8,7 +8,31 @@ type Rgb = readonly [number, number, number];
  * fades out, which gives the blob its soft edge.
  */
 export function buildGlowDisc(segments: number, colors: readonly Rgb[]): ColoredGeometry {
+  return buildSwirl(segments, colors, { lobes: 0, depth: 0, twist: 0 });
+}
+
+/** The shape of a {@link buildSwirl}: its arms, how deep the gaps between them, their curl. */
+export interface SwirlShape {
+  /** Number of arms (0: a round disc). */
+  readonly lobes: number;
+  /** 0..1: how far in the gaps between the arms reach, relative to the radius. */
+  readonly depth: number;
+  /** Radians each arm turns by, from the centre out to the rim. */
+  readonly twist: number;
+}
+
+/**
+ * A {@link buildGlowDisc} bent into curled arms, like a spiral galaxy: each ring's radius
+ * swells on the arms and shrinks between them, and each ring is turned by `twist` × its
+ * radius, so the arms curl outwards. Spun, it churns like plasma.
+ */
+export function buildSwirl(
+  segments: number,
+  colors: readonly Rgb[],
+  shape: SwirlShape,
+): ColoredGeometry {
   if (segments < 3 || colors.length < 2) throw new RangeError('Need 3 segments and 2 colours');
+  const { lobes, depth, twist } = shape;
   const geo: ColoredGeometry = { positions: [0, 0, 0], indices: [], colors: [] };
   const [center] = colors;
   if (center) geo.colors.push(...center, 1);
@@ -18,7 +42,9 @@ export function buildGlowDisc(segments: number, colors: readonly Rgb[]): Colored
     const rgb = colors[ring] ?? [0, 0, 0];
     for (let i = 0; i < segments; i++) {
       const angle = (2 * Math.PI * i) / segments;
-      geo.positions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+      const r = radius * (1 - depth * (0.5 - 0.5 * Math.cos(lobes * angle)));
+      const turned = angle + twist * radius;
+      geo.positions.push(Math.cos(turned) * r, Math.sin(turned) * r, 0);
       geo.colors.push(...rgb, 1);
     }
   }

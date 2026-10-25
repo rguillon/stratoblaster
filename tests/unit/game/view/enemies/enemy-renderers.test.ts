@@ -26,7 +26,24 @@ function frame(shots: EnemyShots, dtSeconds = 1 / 60) {
 }
 
 describe('createEnemyShotRenderer', () => {
-  it('GD-43: draws each bullet in its colour, where it is', () => {
+  /** Each instance's position, scale and angle in a bullet layer mesh, from its matrices. */
+  const instances = (scene: Scene, name: string) => {
+    const mesh = scene.getMeshByName(name) as Mesh | null;
+    if (!mesh?.isEnabled()) return [];
+    const data = (mesh as unknown as { _thinInstanceDataStorage: { matrixData: Float32Array } })
+      ._thinInstanceDataStorage.matrixData;
+    return Array.from({ length: mesh.thinInstanceCount }, (_, i) => {
+      const [c = 0, s = 0] = data.subarray(i * 16, i * 16 + 2);
+      return {
+        x: data[i * 16 + 12] ?? 0,
+        y: data[i * 16 + 13] ?? 0,
+        scale: Math.hypot(c, s),
+        angle: Math.atan2(s, c),
+      };
+    });
+  };
+
+  it('GD-43: draws each bullet in its colour, where it is, a few draw calls for them all', () => {
     const scene = new Scene(new NullEngine());
     const renderer = createEnemyShotRenderer(scene);
     const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
@@ -34,12 +51,32 @@ describe('createEnemyShotRenderer', () => {
     shots.fireBullet(30, 40, 0, { speed: 0, radius: 4, style: 'blue' });
     shots.fireBullet(50, 60, 0, { speed: 0, radius: 4, style: 'unknown' });
     renderer.sync(frame(shots));
-    const bullets = (prefix: string) =>
-      enabled(scene, prefix).filter((m) => !m.name.includes('core'));
-    const red = bullets('enemy-bullet-red-');
+    const red = instances(scene, 'enemy-bullet-red');
     expect(red).toHaveLength(2);
-    expect(red[0]?.position.x).toBe(10);
-    expect(bullets('enemy-bullet-blue-')).toHaveLength(1);
+    expect(red[0]?.x).toBe(10);
+    expect(red[0]?.scale).toBeCloseTo(4 * ENEMY_LOOK.bullets.scale);
+    expect(instances(scene, 'enemy-bullet-blue')).toHaveLength(1);
+    expect(instances(scene, 'enemy-bullet-green')).toHaveLength(0);
+    renderer.dispose();
+  });
+
+  it('a bullet is a ball of plasma: an aura, a body, swirls spinning opposite ways, a core', () => {
+    const scene = new Scene(new NullEngine());
+    const renderer = createEnemyShotRenderer(scene);
+    const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
+    shots.fireBullet(10, 20, 0, { speed: 0, radius: 4, style: 'red' });
+    const angles = (i: number) =>
+      [0, 1].map(() => {
+        shots.step(0.05, 0, 0);
+        renderer.sync(frame(shots));
+        return instances(scene, `enemy-bullet-red-swirl-${String(i)}`)[0]?.angle ?? 0;
+      });
+    const [a0, a1] = angles(0);
+    const [b0, b1] = angles(1);
+    expect(instances(scene, 'enemy-bullet-red-halo')[0]?.scale).toBeGreaterThan(
+      4 * ENEMY_LOOK.bullets.scale,
+    );
+    expect(Math.sign((a1 ?? 0) - (a0 ?? 0))).toBe(-Math.sign((b1 ?? 0) - (b0 ?? 0)));
     renderer.dispose();
   });
 
@@ -48,11 +85,11 @@ describe('createEnemyShotRenderer', () => {
     const renderer = createEnemyShotRenderer(scene);
     const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
     shots.fireBullet(10, 20, 0, { speed: 0, radius: 4, style: 'red' });
+    const r = 4 * ENEMY_LOOK.bullets.scale;
     const sizes = [0, 0.1, 0.2].map(() => {
       shots.step(0.1, 0, 0);
       renderer.sync(frame(shots));
-      const [core] = enabled(scene, 'enemy-bullet-red-').filter((m) => m.name.includes('core'));
-      return core?.scaling.x ?? 0;
+      return (instances(scene, 'enemy-bullet-red-core')[0]?.scale ?? 0) / r;
     });
     expect(sizes.every((size) => size > 0 && size < 1)).toBe(true);
     expect(new Set(sizes).size).toBe(3);

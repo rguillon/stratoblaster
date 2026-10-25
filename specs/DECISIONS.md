@@ -827,3 +827,12 @@
 - **Alternatives considered:** keeping sweeps but locked (no sweep at all then); turrets for core lasers too (the cores' lenses are built into their hulls).
 - **Consequences:** those lasers now threaten where the player is rather than sweeping an area; fight times were not measured again. After review, a laser turret follows the player at only 20°/s during the warning line (`laserTurnRateDeg`), so the beam can be outrun.
 - **Status:** Accepted
+
+### D-074 — Enemy bullets as balls of plasma, drawn as thin instances
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the enemy bullet (a flat blob with a pulsing core) was to feel like a ball of energy or plasma. More layers per bullet would have cost a draw call each per bullet as cloned meshes (already two each), against the ENG-106 budget in dense boss patterns.
+- **Decision:** each bullet is, back to front, a faint flickering aura, a deep-coloured body (blended, so it shows over snow), two curled swirls of brighter plasma (`buildSwirl`: lobed rings turned more the further out) spinning opposite ways, and a pulsing core. Each layer of each colour is one mesh of thin instances (a matrix per bullet, as the blasts, D-034), so all bullets cost at most 5 × 6 draw calls however many fly. Their colours are worked out in `ENEMY_LOOK.bullets.styles`; spins, sizes and flicker in `ENEMY_LOOK.bullets`.
+- **Alternatives considered:** a noise shader on a quad (truer plasma, but a custom material outside the vertex-colour look of the other shots, and not checkable under `NullEngine`); keeping cloned meshes (up to 5 draw calls per bullet).
+- **Consequences:** bullet layers are drawn under the other transparent meshes (`alphaIndex`), as one block per layer; a bullet no longer has a node of its own.
+- **Status:** Accepted
