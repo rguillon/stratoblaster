@@ -19,6 +19,19 @@ export const ENEMY_SPAWN_MARGIN = 60;
 /** Enemy bullets: colourful glowing balls (GD-43). The style keys the look in `enemy-look.ts`. */
 const bullet = (style: string, speed: number) => ({ speed, radius: 4, style });
 
+/*
+ * `muzzles` (phase 7 review): where the shots leave from, the tips of the barrels the models
+ * draw there: offsets from the centre as seen when the enemy faces down the screen (X right,
+ * Y up), and heights above the playfield (see `core/entities/muzzle.ts`).
+ */
+
+/** The Spinner's pods' muzzles, out from its centre. */
+const SPINNER_MUZZLE = 0.45 * ENEMY_UNIT + 3.1;
+/** The Lancer's emitter, ahead of its centre. */
+const LANCER_NOSE = 0.62 * ENEMY_UNIT;
+/** The Rocketeer's pods, either side of its centre. */
+const ROCKETEER_POD = 0.48 * ENEMY_UNIT;
+
 export const ENEMY_CONFIG = {
   gnat: {
     stats: { model: 'gnat', radius: radius(0.5), health: 10, points: 50 },
@@ -58,6 +71,8 @@ export const ENEMY_CONFIG = {
     /** Delay before the first shot once on the playfield. */
     firstShot: 0.6,
     bullet: bullet('red', 210),
+    /** The nose gun. */
+    muzzles: [[0, -13.3, 1.3]],
     xRange: [0.15, 0.85],
   },
   strafer: {
@@ -70,6 +85,11 @@ export const ENEMY_CONFIG = {
     fanCount: 3,
     fanSpacing: 15,
     bullet: bullet('magenta', 200),
+    /** A gun on each side of its body: it fires from the one facing down the screen. */
+    muzzles: [
+      [9, -1.5, 1.5],
+      [-9, -1.5, 1.5],
+    ],
   },
   weaver: {
     stats: { model: 'weaver', radius: radius(0.9), health: 30, points: 120 },
@@ -79,8 +99,11 @@ export const ENEMY_CONFIG = {
     /** Distance travelled down for one full left-right sway. */
     wavelength: 280,
     fireInterval: 2,
-    /** Half the distance between the two hulls (the guns). */
-    hullOffset: 0.3 * ENEMY_UNIT,
+    /** A gun on the nose of each hull: a bullet from each. */
+    muzzles: [
+      [-10, -15.8, 1.9],
+      [10, -15.8, 1.9],
+    ],
     bullet: bullet('green', 200),
     xRange: [0.3, 0.7],
   },
@@ -100,6 +123,13 @@ export const ENEMY_CONFIG = {
     podRadius: 0.45 * ENEMY_UNIT,
     exitSpeed: 150,
     bullet: bullet('orange', 160),
+    /** The pods' muzzles: each bullet leaves outwards from the pod facing its way. */
+    muzzles: [
+      [0, -SPINNER_MUZZLE, 0],
+      [-SPINNER_MUZZLE, 0, 0],
+      [0, SPINNER_MUZZLE, 0],
+      [SPINNER_MUZZLE, 0, 0],
+    ],
     xRange: [0.25, 0.75],
   },
   lancer: {
@@ -111,7 +141,9 @@ export const ENEMY_CONFIG = {
     stopFraction: 0.8,
     laser: { warningSeconds: 1, firingSeconds: 1.5, width: 10, style: 'lancer' },
     /** Distance from the centre to the emitter at the nose. */
-    emitterOffset: 0.62 * ENEMY_UNIT,
+    emitterOffset: LANCER_NOSE,
+    /** The front of the emitter, where the laser leaves from. */
+    muzzle: [0, -(LANCER_NOSE + 1.8), 0],
     exitSpeed: 200,
     xRange: [0.15, 0.85],
   },
@@ -122,7 +154,12 @@ export const ENEMY_CONFIG = {
     fireInterval: 3,
     firstShot: 1,
     /** Distance of each pod from the centre. */
-    podOffset: 0.48 * ENEMY_UNIT,
+    podOffset: ROCKETEER_POD,
+    /** The pods' missile tips: a missile from each. */
+    muzzles: [
+      [-ROCKETEER_POD, -14.5, 0],
+      [ROCKETEER_POD, -14.5, 0],
+    ],
     missile: {
       speed: 150,
       turnRateDeg: 90,
@@ -147,6 +184,11 @@ export const ENEMY_CONFIG = {
     spreadCount: 5,
     spreadSpacing: 10,
     bullet: bullet('blue', 190),
+    /** The twin cannon on the front of its tower. */
+    muzzles: [
+      [-3, -14, 4.2],
+      [3, -14, 4.2],
+    ],
     xRange: [0.3, 0.7],
   },
   splitter: {
@@ -156,6 +198,8 @@ export const ENEMY_CONFIG = {
     fireInterval: 2.5,
     firstShot: 0.8,
     bullet: bullet('purple', 200),
+    /** The eye on top of its core. */
+    muzzles: [[0, 0, 5.4]],
     /** Curved path, fractions of the playfield; mirrored at random. */
     path: [
       [0.2, 1.1],

@@ -34,14 +34,14 @@ Each bullet causes 10 points of damage
 
 A bright blue laser with a flow of particles following the stream.
 
-At each level, the laser does more damage per second.
+At each level, the laser does more damage per second: 80 / 140 / 200 / 260 / 320 points per second at levels 1-5 (weapon balance, GD-33, 2026-10-25; was 40 / 60 / 85 / 115 / 150).
 After level1, when the laser hits a ship, the beam goes trough the ship but continue with one less level.
 
 
 ### P03-R03 — Missile  · MUST
 
 A small missile, it has a reactir flame effect. The missile has a constant acceleration. The missiles target the closest enemy within about half the screen height (320 px); enemies further away are not pursued (phase 5 review, 2026-10-24).
-On impact, missiles cause a base damage of 8 points for a 10 pixels radius.
+On impact, missiles cause a base damage of 14 points for a 10 pixels radius (weapon balance, GD-33, 2026-10-25; was 8).
 A missile stream consists of 4 missiles par seconds.
 
 
@@ -177,11 +177,11 @@ Values the spec did not give. All of them are agent defaults in `src/game/config
 |-------|---------|
 | Bullet speed / fire rate / hit radius | 600 px/s / 8 shots/s per stream / 4 px (visual blob 4.5 px after review; a 3.4 × 34 px tracer since the phase 5 review) |
 | Dual stream spacing (bullets) | 12 px |
-| Laser damage per second, L1-L5 | 40 / 60 / 85 / 115 / 150 |
+| Laser damage per second, L1-L5 | 40 / 60 / 85 / 115 / 150 (80 / 140 / 200 / 260 / 320 since the weapon balance, GD-33, D-059) |
 | Laser hit width, L1-L5 | 4 / 6 / 8 / 10 / 12 px (drawn 1.8× wider for the glow) |
 | Missile launch speed / acceleration / max speed | 150 px/s / 600 px/s² / 700 px/s |
 | Missile homing | 180°/s towards the target closest to the missile within 320 px (phase 5 review), re-chosen every step; straight when there is none |
-| Missile area damage | 8 flat inside the radius (target hitbox within 10 px of the impact), the same at every level |
+| Missile area damage | 8 flat inside the radius (target hitbox within 10 px of the impact), the same at every level (14 since the weapon balance, GD-33, D-059) |
 | Diagonal streams | symmetric (−a and +a) |
 | Missile diagonal angles | ±25° and ±45°, not the spec's ±10° and ±20° (phase 3 review feedback) |
 

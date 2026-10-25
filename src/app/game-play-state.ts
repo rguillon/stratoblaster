@@ -1,4 +1,19 @@
+import type { BossState } from '../core/entities/boss';
+import type { BossRank } from '../core/systems/boss-fights';
 import type { LevelPhase, LevelRun } from '../core/systems/level-run';
+
+/** The boss being fought (P07), for the test API. */
+export interface GamePlayBoss {
+  readonly name: string;
+  readonly rank: BossRank;
+  readonly state: BossState;
+  readonly stage: number;
+  /** Parts not destroyed yet, out of all its parts. */
+  readonly partsLeft: number;
+  readonly parts: number;
+  readonly health: number;
+  readonly fullHealth: number;
+}
 
 /** A snapshot of a running level, for the test API. */
 export interface GamePlayState {
@@ -23,6 +38,12 @@ export interface GamePlayState {
   readonly health: number;
   readonly lives: number;
   readonly invincible: number;
+  /** The boss being fought, if any; bosses destroyed; the ground's speed factor (P07). */
+  readonly boss: GamePlayBoss | null;
+  readonly bossesDefeated: number;
+  readonly groundSpeed: number;
+  /** Whether the mini boss's checkpoint is saved (P07-R08). */
+  readonly checkpoint: boolean;
 }
 
 /** The state of `run` for the test API; `maxHealth` stands for the health without a hull. */
@@ -46,6 +67,25 @@ export function levelState(run: LevelRun, timeScale: number, maxHealth: number):
     health: hull?.health ?? maxHealth,
     lives: hull?.lives ?? 0,
     invincible: hull?.invincible ?? 0,
+    boss: bossState(run),
+    bossesDefeated: run.fights.defeated.length,
+    groundSpeed: track.speedFactor,
+    checkpoint: run.checkpoint !== undefined,
+  };
+}
+
+function bossState({ fights }: LevelRun): GamePlayBoss | null {
+  const { boss, rank } = fights;
+  if (!boss || !rank) return null;
+  return {
+    name: boss.name,
+    rank,
+    state: boss.state,
+    stage: boss.stage,
+    partsLeft: boss.parts.filter((p) => !p.destroyed).length,
+    parts: boss.parts.length,
+    health: boss.remainingHealth,
+    fullHealth: boss.fullHealth,
   };
 }
 

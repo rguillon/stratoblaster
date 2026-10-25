@@ -16,11 +16,15 @@ export interface EnemyViewerReadout {
   readonly shots: number;
   readonly kills: number;
   readonly score: number;
+  /** A line about the boss shown (its stage, P07-R09), on the `bosses/` page. */
+  readonly stage?: string;
 }
 
 export interface EnemyViewerPanelOptions {
   readonly doc: Pick<Document, 'createElement'>;
   readonly parent: HTMLElement;
+  /** Heading of the panel; `Enemies` when omitted (the `bosses/` page reuses it, P07-R09). */
+  readonly title?: string;
   readonly kinds: readonly string[];
   readonly weapons: readonly string[];
   /** Number of levels of each weapon. */
@@ -51,7 +55,7 @@ export class EnemyViewerPanel {
     this.root.className = 'enemy-panel';
     const title = doc.createElement('div');
     title.className = 'enemy-title';
-    title.textContent = 'Enemies';
+    title.textContent = options.title ?? 'Enemies';
     this.root.append(title);
     this.#addRow('kind', (kind) => ({ kind }));
     this.#addRow('view', (i) => ({ view: VIEWS[i] ?? 'behaviour' }));
@@ -60,7 +64,7 @@ export class EnemyViewerPanel {
     this.#addRow('toggles', (i) =>
       i === 0 ? { fire: !this.#selection.fire } : { paused: !this.#selection.paused },
     );
-    for (const key of ['enemies', 'shots', 'kills', 'score']) {
+    for (const key of ['enemies', 'shots', 'kills', 'score', 'stage']) {
       const el = doc.createElement('div');
       el.className = `enemy-readout enemy-${key}`;
       this.#readouts.set(key, el);
@@ -101,6 +105,7 @@ export class EnemyViewerPanel {
     set('shots', `Enemy shots: ${String(readout.shots)}`);
     set('kills', `Destroyed: ${String(readout.kills)}`);
     set('score', `Score: ${String(readout.score)}`);
+    set('stage', readout.stage ?? '');
   }
 
   #addRow(name: string, change: (i: number) => Partial<EnemyViewerSelection>): void {

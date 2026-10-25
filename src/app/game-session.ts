@@ -1,4 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import type { BossRank } from '../core/systems/boss-fights';
 import type { GameDefinition } from '../core/content/game-definition';
 import { GameControls } from '../input/game-controls';
 import type { GamepadSource } from '../input/gamepad-menu-input';
@@ -20,6 +21,8 @@ export interface GameDebugOptions {
   readonly time: number;
   /** The ship to fly; the game's first ship when null. */
   readonly shipId: string | null;
+  /** Starts at the arrival of the level's mini or final boss instead (P07-R09). */
+  readonly boss: BossRank | null;
 }
 
 /** What a {@link GameSession} needs from the app's options. */
@@ -62,14 +65,18 @@ export function listenControls(
 }
 
 /**
- * Starts the level chosen on the game screen, and ends it when the flow leaves it (P06-R02).
- * The debug options' start time applies to the first level played only.
+ * Starts the level chosen on the game screen, and ends it when the flow leaves it (P06-R02),
+ * or starts it again from its checkpoint (P07-R08). The debug options' start time and boss
+ * apply to the first level played only.
  */
 export class GameSession {
   play: GamePlay | undefined;
   /** The player's in-game controls, fed by the keyboard target and the gamepads. */
   readonly controls: GameControls;
   #startTime: number;
+  #startBoss: BossRank | null;
+  /** The menu flow's attempt the level being played was started for. */
+  #attempt = -1;
   readonly #stopListening: () => void;
 
   constructor(
@@ -79,6 +86,7 @@ export class GameSession {
     private readonly onComplete: (play: GamePlay) => void,
   ) {
     this.#startTime = options.debug?.time ?? 0;
+    this.#startBoss = options.debug?.boss ?? null;
     this.controls = new GameControls(GAME_CONTROLS_CONFIG, options.gamepads);
     this.#stopListening = listenControls(options.keyboardTarget, this.controls, () => this.play);
   }
@@ -95,7 +103,14 @@ export class GameSession {
       this.end();
       return;
     }
+    // Continue from a checkpoint (P07-R08): the level starts again.
+    if (this.play && state.attempt !== this.#attempt) this.end();
     if (this.play || state.levelResult) return;
+    this.#start(state, levelId);
+  }
+
+  /** Starts `levelId` for the flow's attempt (from its checkpoint when it has one). */
+  #start(state: MenuState, levelId: string): void {
     const shipId = state.chosenShipId ?? state.highlightedShipId;
     const play: GamePlay = new GamePlay(
       this.engine,
@@ -106,6 +121,8 @@ export class GameSession {
         environment: this.options.environment,
         debug: this.options.debug !== undefined,
         startTime: this.#startTime,
+        startBoss: this.#startBoss,
+        ...(state.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),
         ...(this.options.overlay ? { hudParent: this.options.overlay } : {}),
@@ -115,6 +132,8 @@ export class GameSession {
       },
     );
     this.#startTime = 0;
+    this.#startBoss = null;
+    this.#attempt = state.attempt;
     this.play = play;
   }
 

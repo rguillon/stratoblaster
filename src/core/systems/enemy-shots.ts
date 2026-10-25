@@ -1,4 +1,10 @@
-import type { Enemy, EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec } from '../entities/enemy';
+import type {
+  EnemyBulletSpec,
+  EnemyLaserSpec,
+  EnemyMissileSpec,
+  LaserOwner,
+} from '../entities/enemy';
+import { seenOnPlayfield, type PlayfieldEye } from '../entities/muzzle';
 import type { ShotTarget } from '../entities/shot-target';
 import { headingTo, turnTowards } from './projectile-motion';
 
@@ -33,7 +39,7 @@ export interface EnemyMissile extends ShotTarget {
 
 /** A laser: a warning line first, then the beam, along its owner's heading from its emitter. */
 export interface EnemyLaser {
-  readonly owner: Enemy;
+  readonly owner: LaserOwner;
   readonly spec: EnemyLaserSpec;
   /** Seconds since it started (warning included). */
   age: number;
@@ -47,7 +53,7 @@ export interface EnemyLaser {
 }
 
 interface LaserState {
-  owner: Enemy;
+  owner: LaserOwner;
   spec: EnemyLaserSpec;
   age: number;
   x: number;
@@ -62,6 +68,11 @@ export interface EnemyShotsOptions {
   readonly height: number;
   /** Shots this far outside the playfield are removed. */
   readonly cullMargin: number;
+  /**
+   * The camera's eye, from which lasers are seen leaving their raised emitters
+   * (`LaserOwner.emitter`); straight below them when omitted.
+   */
+  readonly eye?: PlayfieldEye | undefined;
 }
 
 /** Length of a ray from (x, y) along `heading` to the edge of the playfield grown by `margin`. */
@@ -144,7 +155,7 @@ export class EnemyShots {
     });
   }
 
-  fireLaser(owner: Enemy, spec: EnemyLaserSpec): void {
+  fireLaser(owner: LaserOwner, spec: EnemyLaserSpec): void {
     this.#lasers.push({ owner, spec, age: 0, x: 0, y: 0, heading: 0, length: 0, phase: 'warning' });
     this.#aim(this.#lasers.at(-1));
   }
@@ -209,7 +220,8 @@ export class EnemyShots {
 
   #aim(laser: LaserState | undefined): void {
     if (!laser) return;
-    const { x, y } = laser.owner.emitter;
+    const { x: ex, y: ey, height = 0 } = laser.owner.emitter;
+    const { x, y } = seenOnPlayfield(this.options.eye, { x: ex, y: ey, height });
     laser.x = x;
     laser.y = y;
     laser.heading = laser.owner.heading;

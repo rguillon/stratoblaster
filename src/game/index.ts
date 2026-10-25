@@ -1,12 +1,14 @@
 import type { GameDefinition } from '../core/content/game-definition';
 import type { GameView } from '../render/game-view';
 import { BONUS_RULES } from './config/bonuses';
+import { BOSS_FIGHT_RULES } from './config/boss-fights';
 import { GAME_CONFIG } from './config/game';
 import { HULL_RULES } from './config/hull';
 import { MENU_TEXTS } from './config/menu-texts';
 import { PLAYER_SHIPS } from './config/player-ships';
 import { PLAYER_WEAPONS } from './config/player-weapons';
 import { PLAYER_SHIP_SCALE } from './config/ship-look';
+import { BOSS_KINDS } from './sim/boss-kinds';
 import { ENEMY_KINDS } from './sim/enemy-kinds';
 import { LEVELS } from './sim/levels';
 import { SCENERY_LEVELS } from './sim/scenery-levels';
@@ -29,6 +31,8 @@ export const GAME: GameDefinition<GameView> = {
   gameLevels: WORLD_1,
   sceneryLevels: SCENERY_LEVELS,
   enemyKinds: ENEMY_KINDS,
+  bossKinds: BOSS_KINDS,
+  bossFights: BOSS_FIGHT_RULES,
   bonuses: BONUS_RULES,
   hull: HULL_RULES,
   texts: MENU_TEXTS,

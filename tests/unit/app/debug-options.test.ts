@@ -7,6 +7,7 @@ describe('parseDebugOptions', () => {
       levelId: '1-3',
       time: 120,
       shipId: null,
+      boss: null,
     });
   });
 
@@ -15,9 +16,16 @@ describe('parseDebugOptions', () => {
       levelId: '1-1',
       time: 0,
       shipId: 'heavy',
+      boss: null,
     });
     expect(parseDebugOptions('?level=1-2&t=oops')?.time).toBe(0);
     expect(parseDebugOptions('?level=1-2&t=-5')?.time).toBe(0);
+  });
+
+  it('P07-R09: boss=mini or boss=final starts at that boss; anything else is ignored', () => {
+    expect(parseDebugOptions('?level=1-3&boss=final')?.boss).toBe('final');
+    expect(parseDebugOptions('?level=1-3&boss=mini')?.boss).toBe('mini');
+    expect(parseDebugOptions('?level=1-3&boss=giant')?.boss).toBeNull();
   });
 
   it('P06-R09: without level=, there is no debug mode', () => {

@@ -26,6 +26,10 @@ export interface TestState {
     player: { x: number; y: number };
     firing: boolean;
     shots: number;
+    /** The boss being fought (P07). */
+    boss: { name: string; rank: string; state: string; stage: number; partsLeft: number } | null;
+    bossesDefeated: number;
+    groundSpeed: number;
   } | null;
 }
 

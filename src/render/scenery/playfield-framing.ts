@@ -1,4 +1,5 @@
 import type { LogicalScreen } from '../../core/content/game-definition';
+import type { PlayfieldEye } from '../../core/entities/muzzle';
 import type { PlayfieldCameraLook } from './scenery-look';
 
 const DEG = Math.PI / 180;
@@ -36,6 +37,15 @@ export function framePlayfield(screen: LogicalScreen, look: PlayfieldCameraLook)
     back: -height * Math.tan(tilt - halfFov),
     direction: [-Math.cos(tilt), Math.sin(tilt)],
   };
+}
+
+/**
+ * Where the camera's eye is over a `screen`-sized playfield framed by `framing`: above the
+ * playfield's centre line, behind its bottom edge (enemy shots leave from the barrels it sees
+ * above the playfield, `core/entities/muzzle.ts`).
+ */
+export function playfieldEye(screen: LogicalScreen, framing: PlayfieldFraming): PlayfieldEye {
+  return { x: screen.width / 2, y: framing.back, height: framing.height };
 }
 
 /** The ground the camera can see, relative to the camera's Z. */

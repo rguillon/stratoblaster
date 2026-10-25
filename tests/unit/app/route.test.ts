@@ -23,6 +23,14 @@ describe('resolveRoute', () => {
     ['/enemies', 'enemy-viewer'],
     ['/stratoblaster/enemies/index.html', 'enemy-viewer'],
     ['/enemies/other', 'game'],
+    ['/bosses/', 'boss-viewer'],
+    ['/bosses', 'boss-viewer'],
+    ['/stratoblaster/bosses/index.html', 'boss-viewer'],
+    ['/bosses/other', 'game'],
+    ['/boss/', 'boss-viewer'],
+    ['/boss', 'boss-viewer'],
+    ['/stratoblaster/boss/index.html', 'boss-viewer'],
+    ['/bossy/', 'game'],
   ] as const)('maps %s to %s', (pathname, route) => {
     expect(resolveRoute(pathname)).toBe(route);
   });

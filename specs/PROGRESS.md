@@ -11,7 +11,7 @@
 | 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
 | 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
 | 6 | `phases/phase-06-world-1.md` | ✅ Validated | `phase-06` | 99.33% lines | 2026-10-25 |
-| 7 | `phases/phase-07-bosses.md` | ⚪ Not started | | | |
+| 7 | `phases/phase-07-bosses.md` | ✅ Validated | `phase-07` | 99.34% lines | 2026-10-25 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -94,3 +94,16 @@
 - 2026-10-24 — 6 — Implemented World 1 (five playable levels, wave scripts, level end, desert ground and props, debug URL options); awaiting review.
 - 2026-10-25 — 6 — Validated: full gate green (789 unit tests, 99.33% lines, 89.5% branches, 50 e2e); already squash-merged into `main` (#16), tagged `v0.06.0`.
 - 2026-10-25 — 7 — Spec file created; requirements drafted by the agent at the reviewer's request (Draft).
+- 2026-10-25 — 7 — Open choices settled by the reviewer (all defaults) and set to Ready.
+- 2026-10-25 — 7 — Implemented bosses: engine `Boss` (parts, shielded core, stages, death), fights with ground speed and checkpoint, ten World 1 bosses with code-generated models, boss health bar, Continue panel and the `bosses/` debug page (D-053..D-056); awaiting review.
+- 2026-10-25 — 7 — Review fix: `boss/` debug endpoint (same page as `bosses/`); still awaiting review.
+- 2026-10-25 — 7 — Review fix: bosses roll into their sideways moves (up to 12°); still awaiting review.
+- 2026-10-25 — 7 — Review fix: more detailed, asymmetric boss models, seven of them with fat armour over a visible mechanism (2,180–4,164 triangles each); still awaiting review.
+- 2026-10-25 — 7 — Review fix: enemy and boss shots leave from the tips of their barrels, as the tilted camera sees them (D-057); small guns drawn on the Scout, Strafer, Weaver and Bulwark; still awaiting review.
+- 2026-10-25 — 7 — Review fix: boss turrets turn to follow the player while they fire at the player (D-058); still awaiting review.
+- 2026-10-25 — 7 — Review fix: player weapons balanced, the laser and missiles at 70-100 % of the guns' damage per second (GD-33, D-059); still awaiting review.
+- 2026-10-25 — 7 — Review fix: every boss turret turns the way its next volley goes (at the player, along a fan, spinning with a spiral); three more turrets (Reef Warden prow cannon, Mesa Fortress fan cannon, Refinery Titan rotary turrets) (D-060); still awaiting review.
+- 2026-10-25 — 7 — Review fix: bosses can have moving limbs (joints swinging, parts moving with them); the Scorpion's arms swing at the shoulder and elbow, its claws turn at the wrist and open and close their jaws (D-061); still awaiting review.
+- 2026-10-25 — 7 — Review fix: shots go through a shielded boss core to the parts behind it; Mesa Fortress health re-tuned for P07-R10 (D-062); still awaiting review.
+- 2026-10-25 — 7 — Review fix: bosses get angry for 3 s after each destroyed part and its pause, firing a bullet hell denser from 1-1 to 1-5 (D-063); still awaiting review.
+- 2026-10-25 — 7 — Validated: full gate green after fixes (939 unit tests, 99.34% lines, 88.69% branches, 54 e2e); squash-merged into `main`, tagged `v0.07.0`.

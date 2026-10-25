@@ -635,3 +635,102 @@
 - **Alternatives considered:** a lower pass limit (leaves the dead ends); dropping every path that has not left its own road after a few points (more random draws change, and the start choice is the cause).
 - **Consequences:** the World 1 street grids and paths change a little (other seeds' layouts); the street grids are laid faster (no more 500 passes).
 - **Status:** Accepted
+
+### D-053 — Bosses as enemies with shot-target proxies for their parts and core
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R01 needs several destroyable parts per boss, a core that takes no damage while shielding parts stand, and no damage while the boss comes in. The player's shots, homing missiles, beams and collisions all work on `ShotTarget`s through `damageTarget`, and the enemy world, the shots and the views already handle `Enemy`s.
+- **Decision:** `Boss` (`core/entities/boss.ts`) extends `Enemy`; its parts (`BossPart`) and its core (`BossCore`) are separate `ShotTarget`s whose `health` setters drop damage while the boss is not in place (and, for the core, while a shielding part stands). `Enemy.hitTargets` (the enemy itself by default) is what the enemy world exposes to the shots and to collisions. The boss's own `health` only says it is still there: it goes to 0 when its death blasts are over, so the enemy world removes it as destroyed as for any enemy. Generic hooks were added to the engine: `Enemy.expires` (a boss is never culled), `rammable`, `dropChance`, `EnemyContext.explode` / `breakPart`, `LaserOwner` (lasers from a part).
+- **Alternatives considered:** a separate boss world next to the enemy world (would duplicate shooting, targets, collisions and drawing); making each part an `Enemy` (stages, shield and death would need cross-enemy links).
+- **Consequences:** shots at a shielded core spark and are used up (as P07-R01 says), so a shielding part right behind the core could never be hit: the boss designs keep shielding parts out of the core's shadow (unit test). `ShotWorld.totalDamage` counts damage dealt before a proxy drops it.
+- **Status:** Accepted
+
+### D-054 — Level progress and ground distance kept apart during fights
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R03 changes the ground speed for a fight (from stopped to ×1.5) and says no wave is skipped or squeezed by a fight; P07-R06 says no wave starts while a boss is fought. Waves are triggered by distance (P06-R07).
+- **Decision:** `ScrollTrack` keeps two distances: `distance`, the ground flown over (the scenery), and `progress`, how far the level has got (waves, bosses, end, HUD progress, `time`). While a boss is fought the track is `held`: the ground goes on at `speed × speedFactor` (eased over 2 s with a smoothstep), the progress waits. After the fight the level goes on from where the boss came. Seeking keeps the ground's lead.
+- **Alternatives considered:** waves paused but the distance going on (the waves due during the fight would all come at once afterwards); a time-based level (breaks the distance triggers of P06).
+- **Consequences:** the scenery gets ahead of the level by about each fight's time × its speed factor (e.g. 1-1's coast comes a bit before its last 30 s of waves), and the final fight keeps scrolling past the level's end: `GameLevel.runout` draws that many extra seconds of the level's last section (`withRunout`: 150 / 80 / 30 / 70 / 75 s for 1-1 … 1-5); past it, the terrain still goes on, without props. The level's scroll time stays 240 s (P06-R04); fights add to the time played.
+- **Status:** Accepted
+
+### D-055 — Data-driven stage patterns and World 1 boss tuning
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R04 asks for a different pattern at every stage and lets the agent design the ten bosses' patterns; P07-R10 gives fight-time ranges for a player with guns at level 3 always on target.
+- **Decision:** a stage's pattern is data (`BossPatternSpec`: volleys of generic shapes fired from a part or the core, `core/systems/boss-pattern.ts`). In each World 1 boss the parts' volleys are the same in every stage (each stops with its part) and the core fires something new at every stage, ending (all parts gone) with a ring or spiral not used before; so every order of destruction gives a new pattern at each stage (unit test over all orders). After each destroyed part the boss holds its fire 1 s and flashes. Health was tuned with a simulated player (`tests/helpers/boss-bot.ts`: flies under the next shielding part, then the others, then the core, leading the bullets): 1-1 … 1-5 mini 30 / 33 / 38 / 43 / 44 s, final 59 / 72 / 82 / 92 / 104 s, full health 2 200 → 3 910 (mini) and 5 770 → 15 780 (final). Two part positions of the spec's suggestions moved so they can be shot: the Scorpion's stinger and the Sentinel's drone bay hang in front of the core.
+- **Alternatives considered:** a hand-written class per boss (ten classes for what is mostly data); patterns chosen by which part was destroyed (many more combinations to design).
+- **Consequences:** bosses that launch enemies (Gull Mothership: Gnats; Sentinel: Hornets) count them as spawned; the parts' drop chances are 50 % (mini) and 60 % (final), the final bosses' cores 100 %.
+- **Status:** Accepted
+
+### D-056 — Continue from the mini boss checkpoint
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R08 (GD-42): after the mini boss, a game over offers Continue (selected first) or level select.
+- **Decision:** `LevelRun` saves a `LevelCheckpoint` (progress, bosses passed, weapons and their levels from `RunArsenal`) when the mini boss is destroyed and puts it in a "Game over" result. `MenuFlow` shows the two choices (left / right / up / down or a tap pick, Confirm takes) and on Continue counts a new `attempt` with `resume` set; `GameSession` then starts the level again (a new `GamePlay`) from the checkpoint, with 3 full lives. The checkpoint is forgotten when the level is left (a new attempt from the level select has none).
+- **Alternatives considered:** restoring the same `LevelRun` in place (the scene, HUD and effects would have to be reset by hand).
+- **Consequences:** the scene is rebuilt on Continue (a short pause while the scenery is generated, as when a level starts).
+- **Status:** Accepted
+
+### D-057 — Shots leave from the barrels, as the camera sees them
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer saw enemy bullets, lasers and missiles start away from the barrels of their guns. They started at a part's or an enemy's centre (or one radius ahead for lasers), and on the playfield plane, while the models' barrels stand up to ~20 px above it under a camera tilted 35°.
+- **Decision:** a gun has muzzles: offsets from its enemy's centre as seen when it faces down the screen, plus a height (`core/entities/muzzle.ts`). They are game data (`BossDesign.guns` by piece and by what they fire; `ENEMY_CONFIG.*.muzzles`), copied from the barrel tips the models mark (`EnemyParts.muzzle`), and a unit test keeps the two equal. A shot leaves from the muzzle furthest along its way (side-by-side ones in turn, `GunMuzzles`), turned with the enemy's heading, a boss's roll and an orbiting part's spin, then projected along the camera's line of sight onto the playfield (`EnemyContext.seen`, from the `PlayfieldEye` the app takes from the scenery framing); aimed shots are aimed from that point. Lasers project their emitter the same way each step. The boss roll moved from the view into `Boss` (same rule, `BOSS_TIMING.roll`) so the simulation knows it.
+- **Alternatives considered:** drawing bullets at their muzzle's height and letting them sink to the playfield (the shots would not be where they hit for their first frames, and lasers would need sloped beams); moving the models' barrels to the old spawn points (not where a gun is).
+- **Consequences:** the simulation depends on the camera's geometry through `PlayfieldEye` (without one, e.g. in unit tests, shots start straight below their muzzles). Launches (hangars, drone bay) and the Refinery Titan's tank bursts still start at their part's centre.
+- **Status:** Accepted
+
+### D-058 — Boss turrets follow the player
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants the bosses' turrets to turn and follow the player when they fire bullets aimed at the player. The turrets were drawn into their piece's merged meshes, barrels down the screen.
+- **Decision:** a piece's guns may be on a turret (`Guns.turret`: its pivot, game data; `BossStats.turrets` → `BossTurret`, `BossPiece.turret` in core). Volleys from its `gun`s are flagged `turret`; their muzzles turn with its `aim` around the pivot (`BossPiece.place(muzzle, true)`). `BossPattern.turnTurrets`, called by `WorldBoss` at every step (fire pauses included), turns a turret towards the player at up to `BOSS_TIMING.turretTurnDeg` (150°/s) while the stage fires aimed shots or bursts from it, back to rest otherwise. In the view each turret is its own model on a pivot node under its piece (`BossDrawing.turrets`), turned by its `aim`; it flashes, hides and lights with its piece.
+- **Alternatives considered:** turning the whole part model (the mounts, sponsons and ammunition racks would turn too); turning turrets in the view only (shots would no longer leave from the barrels).
+- **Consequences:** shots aimed at the player still leave from the barrel tips and are aimed from there, so the game plays as before. Only turrets fire at the player turn: the guns fixed in hulls stay put.
+- **Status:** Accepted
+
+### D-059 — Player weapon balance
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer asked to balance the player weapons' damage, specs and code. With every stream counted, the laser dealt 50 % of the guns' damage per second (40-150 against 80-400) and the missiles 40 % (32-160), with no clear reason to choose them.
+- **Decision:** the guns stay the reference: they are the starting weapon and the bosses' health was tuned with guns at level 3 (D-055). New rule GD-33: at every level the laser and the missiles deal 70-100 % of the guns' damage per second, the laser more than the missiles. Laser 80 / 140 / 200 / 260 / 320 damage/s (100 % at L1, then 80-88 %: one column, instant, never misses, pierces at the level below); missiles 14 damage (56-280 damage/s, 70 %: they home on everything in range, but take time to arrive, overkill 10-health enemies and can chase a weak enemy instead of the boss). The guns' diagonals miss small or far targets, so on a single boss their real damage is closer to their forward streams; the laser becomes the best boss weapon at high levels, the guns the best against wide waves, the missiles the safest.
+- **Alternatives considered:** raising the guns too (every boss and level would need re-tuning); equal raw damage for all three (the laser's focus and the missiles' homing would make the guns pointless).
+- **Consequences:** fights with the laser or missiles get shorter than before; with the guns they are unchanged. Bonus drop chances depend on enemy health, not on the weapon, so they do not change.
+- **Status:** Accepted
+
+### D-060 — Every boss turret turns the way it fires
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer saw the turrets not turning. With D-058 only turrets firing aimed shots turned, and only while their stage fired at the player: from the top of the screen at the ship below, that is a few degrees, and turrets firing fans or rings stayed at rest. The reviewer chose for every turret to turn.
+- **Decision:** `BossPattern.turnTurrets` points each turret the way its next volley goes (the one with the least time left; a burst under way first): at the player for aimed shots and bursts (as before), along the fan's preset heading for fans, and with the ring for rings, spinning on from the last ring's turn to the next one's as it gets ready (the closest of the ring's equal turns, so it never spins back). The turn rate stays 150°/s. Three more guns are turrets (`Guns.turret` pivots and `BossDrawing.turrets`): the Reef Warden's prow cannon, the Mesa Fortress's fan cannon and the Refinery Titan's rotary turrets (base kept on the part so it still flashes on hits).
+- **Alternatives considered:** turning turrets further than they aim (shots would no longer leave from the barrels, D-057); aiming at the player whatever they fire (fans and rings would leave from barrels pointing elsewhere).
+- **Consequences:** fans in World 1 all fire straight down, so a turret between aimed shots and a fan swings back to rest before the fan; spiral turrets spin all through their stage. Guns built into hulls, blades, claws or pods, lasers (they fire straight down) and missile cells do not turn. Shots are unchanged: they still leave the barrel facing their way.
+- **Status:** Accepted
+
+### D-061 — Moving boss limbs: joints in the simulation
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants bosses to have moving parts besides turrets, starting with the Scorpion's arms and claws.
+- **Decision:** joints are engine data (`BossJointSpec`: pivot, parent joint, swing amplitude / period / phase; `BossJoints` in `core/entities/boss-joint.ts`), stepped by `Boss.update` all the time the boss is there. A part may hang on a joint (`BossPartSpec.joint`): `Boss` places its centre, and `BossPart.place` its muzzles, through the joint chain (turret first, then joints from the part's up to the body, then roll and the boss's position). Joints are checked at construction (no missing parent, no loop, no part both orbiting and on a joint). The view mirrors them: a node per joint at its pivot, nested as the joints are, turned by `Boss.joints.angle` (`boss-limbs.ts`); parts on a joint, their smoke and stumps hang on its node, and `BossDrawing.limbs` draws what else moves (the Scorpion's upper arms, forearms and jaws; a jaw belongs to its claw and goes with it). Swings are smooth sine waves, out of step between the two arms.
+- **Alternatives considered:** animating the limbs in the view only (the claws' hit circles and barrels would stay where the model no longer is, against D-057); limbs that reach for the player (more behaviour to tune; a swing is enough for the look asked).
+- **Consequences:** the claws' hit circles move up to about 8 px and their barrel tips up to about 15 px, and their shots with them; fight times were not re-tuned. Joints do not roll with the boss in the hit circles (as before for every part). A limb drawn on the body flashes with the core; the jaws flash with their claw.
+- **Status:** Accepted
+
+### D-062 — Shots go through a shielded boss core
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer found that a shielded core stopped the player's bullets (they sparked on it, P07-R01), so the parts behind it could only be reached with the laser.
+- **Decision:** `Enemy` gets `shotTargets` (what the player's shots can hit, `hitTargets` by default); `EnemyWorld.targets` is built from it. A `Boss` fighting with its core shielded leaves the core out of it: bullets, missiles (they no longer home on the core) and the laser go through to the parts. Coming in, and once the core can be damaged, the core is a shot target again. `hitTargets` keeps the core, so the ship still bumps into it. Mesa Fortress re-tuned for P07-R10: core 3000 (was 2420), silos 1500 (were 890); fight 83.0 s with the D-055 bot.
+- **Alternatives considered:** letting only bullets through (missiles would still home on the core and be wasted); moving the parts out from behind the cores (changes the designs and models of several bosses).
+- **Consequences:** P07-R01's "shots that hit the core make sparks" now holds only while the boss comes in (noted in the phase report's deviations). The D-055 fight times shift slightly for bosses with parts behind their core.
+- **Status:** Accepted
+
+### D-063 — Angry bosses: a bullet hell after each destroyed part
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants every boss to get angry after the player destroys one of its parts and fire a bullet hell for a few seconds.
+- **Decision:** engine: `BossStats.rageSeconds`; `Boss.rage` starts at it when a part is destroyed (with the stage's pause) and runs down once the pause is over, `Boss.updateRage` firing instead of `updatePattern` meanwhile; a new destroyed part starts it again, death stops it. Game: `BossDesign.rage` (a `BossPatternSpec` fired from the core, fresh after each part), 3 s for every boss (`BOSS_TIMING.rageSeconds`), four shapes built from a heat 0 (1-1 mini) to 4.5 (1-5 final) that sets the bullets a second (20 + 8 × heat) and their speed (120 + 8 × heat px/s, slower than the stages'); the Overlord shares its rate between two shapes. While angry the charge lights flicker at 14 Hz, and the turrets follow the angry pattern.
+- **Alternatives considered:** angry instead of the pause (no warning before the hell); angry patterns from the parts left (some bosses have no armed part left, and it would differ with the order of destruction); a faster version of the stage's own pattern (not a bullet hell for bosses with few guns).
+- **Consequences:** each boss now has 3 s of dense fire per part (2 to 4 times a fight), the hardest moments of the fights; whether 1-1's 20 bullets a second at 120 px/s is right for a kid is to be checked by hand (P07-R10 manual validation). Fight times with the simulated player do not change.
+- **Status:** Accepted

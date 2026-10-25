@@ -19,10 +19,14 @@ export const MENU_TEXTS: MenuTexts = {
   enemiesDestroyed: (destroyed, spawned) =>
     `Enemies destroyed: ${String(destroyed)} / ${String(spawned)}`,
   continueHint: 'Press Space / Enter or tap to go on',
+  continueFromCheckpoint: 'Continue',
+  toLevelSelect: 'Level select',
   hudHealth: 'HP',
   hudLives: (lives) => `♥ ${String(lives)}`,
   hudWeapon: (weapon, level, levels) => `${weapon} · Lv ${String(level)}/${String(levels)}`,
   hudDestroyed: (count) => `Destroyed: ${String(count)}`,
+  hudMiniBoss: 'Mini boss',
+  hudBoss: 'Boss',
   unsupported:
     'Sorry! This game cannot run in this browser or on this device. ' +
     'Please try a recent version of Chrome, Edge, Firefox or Safari on a computer.',

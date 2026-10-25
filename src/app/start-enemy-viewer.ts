@@ -10,7 +10,7 @@ import { EnemyWorld, type EnemyBlast } from '../core/systems/enemy-world';
 import { ShotWorld, type ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { GameView } from '../render/game-view';
-import { visibleHalfWidth } from '../render/scenery/playfield-framing';
+import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-framing';
 import { HeldDirections } from '../input/held-directions';
 import { EnemyViewerPanel, type EnemyViewerSelection } from '../ui/enemy-viewer-panel';
 import { StatsTile } from '../ui/stats-tile';
@@ -99,7 +99,8 @@ class EnemyViewer {
       glow: game.view.enemies.glow,
     });
     const area = { width, height, cullMargin: CFG.cullMargin };
-    this.enemies = new EnemyWorld({ ...area, maxEnemyAge: CFG.maxEnemyAge }, this.#random);
+    const eye = playfieldEye(game.screen, this.view.stage.framing);
+    this.enemies = new EnemyWorld({ ...area, maxEnemyAge: CFG.maxEnemyAge, eye }, this.#random);
     this.shots = new ShotWorld(area, weaponAt(game, 0));
     this.shots.targets = this.enemies.targets;
     const pf = this.view.playfield;

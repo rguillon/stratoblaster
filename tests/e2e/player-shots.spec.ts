@@ -51,7 +51,7 @@ test.describe('P03-R10: player_shots/ debug page', () => {
     await expect(page.locator('.shot-weapon button.selected')).toHaveText('Missile');
     await expect(page.locator('.shot-level button.selected')).toHaveText('L4');
     await expect(page.locator('.shot-ship button.selected')).toHaveText('Heavy');
-    await expect(page.locator('.shot-summary')).toContainText('8 damage within 10 px');
+    await expect(page.locator('.shot-summary')).toContainText('14 damage within 10 px');
     await expect(page.locator('.shot-shots')).not.toHaveText('Shots in flight: 0');
     // Let a few frames render so WebGL errors surface in the console.
     await waitForFrames(page);

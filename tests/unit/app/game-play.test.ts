@@ -38,6 +38,23 @@ const HARMLESS = {
   },
 };
 
+/** The harmless sample game whose level a has a mini boss at 5 s and a final boss at its end. */
+const BOSSY = {
+  ...HARMLESS,
+  gameLevels: HARMLESS.gameLevels.map((level) =>
+    level.id === 'a'
+      ? {
+          ...level,
+          runout: 5,
+          bosses: [
+            { kind: 'big-cube', rank: 'mini', at: 100 },
+            { kind: 'big-cube', rank: 'final', at: 400 },
+          ] as const,
+        }
+      : level,
+  ),
+};
+
 /** Runs `seconds` of frames of 0.1 s. */
 const frames = (game: GamePlay, seconds: number) => {
   for (let i = 0; i < Math.round(seconds * 10); i++) game.frame(0.1);
@@ -202,6 +219,61 @@ describe('GamePlay', () => {
     game.dispose();
     play = undefined;
     expect(hudParent.querySelector('.game-hud')).toBeNull();
+  });
+
+  it('P07-R09: in debug mode, boss= starts at that boss, and K destroys its parts one by one', () => {
+    const hudParent = document.createElement('div');
+    const { game } = start({ debug: true, startBoss: 'final', hudParent }, 'a', BOSSY);
+    expect(game.state.time).toBeCloseTo(20);
+    frames(game, 0.2);
+    expect(game.state.boss).toMatchObject({
+      name: 'Big Cube',
+      rank: 'final',
+      stage: 0,
+      partsLeft: 2,
+    });
+    expect(game.debugKey('KeyK', true)).toBe(true);
+    expect(game.debugKey('KeyK', false)).toBe(true);
+    frames(game, 0.2);
+    expect(game.state.boss).toMatchObject({ stage: 1, partsLeft: 1 });
+    // P07-R02: its health bar shows over the playfield.
+    frames(game, 1);
+    expect(hudParent.querySelector<HTMLElement>('.boss-bar')?.hidden).toBe(false);
+    expect(hudParent.querySelector('.boss-rank')?.textContent).toBe('Big');
+    expect(hudParent.querySelector('.boss-name')?.textContent).toBe('Big Cube');
+  });
+
+  it('P07-R09: without debug mode, K does nothing', () => {
+    const { game } = start({ startBoss: 'mini' }, 'a', BOSSY);
+    expect(game.debugKey('KeyK', true)).toBe(false);
+  });
+
+  it('P07-R03, P07-R06: the ground slows for the boss; the level completes once the final boss is gone', () => {
+    const { game, results } = start({ debug: true, startBoss: 'final' }, 'a', BOSSY);
+    frames(game, 3);
+    expect(game.state.groundSpeed).toBeCloseTo(0.5, 1);
+    for (let i = 0; i < 3; i++) {
+      game.debugKey('KeyK', true);
+      frames(game, 0.2);
+    }
+    frames(game, 4);
+    expect(game.state.bossesDefeated).toBe(1);
+    expect(game.state.phase).toBe('complete');
+    expect(results).toHaveLength(1);
+  });
+
+  it('P07-R08: starts again from a checkpoint, after the mini boss, with its weapons', () => {
+    const resume = {
+      progress: 100,
+      bossesPassed: 1,
+      weapons: { weapon: 'ray', levels: { ray: 2 } },
+    };
+    const { game } = start({ resume }, 'a', BOSSY);
+    expect(game.state.time).toBeCloseTo(5);
+    expect(game.state.weaponLevel).toBe(2);
+    expect(game.state.checkpoint).toBe(true);
+    frames(game, 1);
+    expect(game.state.boss).toBeNull();
   });
 
   it('refuses a level that cannot be played', () => {

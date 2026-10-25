@@ -39,7 +39,7 @@ describe('startSceneryViewer', () => {
     expect(text('.scenery-title')).toBe('Sample ground');
     for (let i = 0; i < 60; i++) viewer.frame(1 / 30);
     expect(viewer.track.time).toBeCloseTo(2, 1);
-    expect(text('.scenery-time')).toBe('Time: 0:01 / 0:20');
+    expect(text('.scenery-time')).toBe('Time: 0:02 / 0:20');
     viewer.frame(0.1);
     viewer.key('ArrowRight');
     viewer.key('ArrowRight');

@@ -6,7 +6,10 @@ import {
   snappedLightPosition,
   sunDirection,
 } from '../../../../src/render/scenery/scenery-lighting';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Viewport } from '@babylonjs/core/Maths/math.viewport';
+import { seenOnPlayfield } from '../../../../src/core/entities/muzzle';
+import { playfieldEye } from '../../../../src/render/scenery/playfield-framing';
 import {
   SceneryStage,
   type SceneryStageOptions,
@@ -141,6 +144,26 @@ describe('SceneryStage', () => {
     expect(s.field.height(5, 5)).not.toBe(before);
     s.update(0, 0);
     expect(s.stats.props).toBeGreaterThan(0);
+  });
+
+  it('phase 7 review: its camera sees a raised point in front of the point seenOnPlayfield gives', () => {
+    const s = stage();
+    s.update(200, 1 / 60);
+    const eye = playfieldEye(options().screen, s.framing);
+    const transform = s.camera.getViewMatrix(true).multiply(s.camera.getProjectionMatrix(true));
+    const onScreen = (v: Vector3) =>
+      Vector3.Project(v, Matrix.Identity(), transform, new Viewport(0, 0, 1, 1));
+    for (const [x, y, height] of [
+      [150, 300, 20],
+      [40, 120, 12],
+      [260, 380, 35],
+    ] as const) {
+      const raised = s.playfieldPoint(x, y, 200).add(new Vector3(0, height, 0));
+      const seen = seenOnPlayfield(eye, { x, y, height });
+      const below = onScreen(s.playfieldPoint(seen.x, seen.y, 200));
+      expect(below.x).toBeCloseTo(onScreen(raised).x, 6);
+      expect(below.y).toBeCloseTo(onScreen(raised).y, 6);
+    }
   });
 
   it('refuses a level whose props have no model', () => {

@@ -2,6 +2,7 @@ import type { EnemyKindDefinition } from '../entities/enemy';
 import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { BonusRules } from '../systems/bonus-world';
+import type { BossFightRules, BossKindDefinition } from '../systems/boss-fights';
 import type { HullRules } from '../systems/player-hull';
 import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
@@ -48,6 +49,10 @@ export interface GameDefinition<TView = unknown> {
   readonly sceneryLevels: readonly SceneryLevel[];
   /** The kinds of enemies (P05), which the levels' waves bring in by id. */
   readonly enemyKinds: readonly EnemyKindDefinition[];
+  /** The kinds of bosses (P07), which the levels bring in by id (`GameLevel.bosses`). */
+  readonly bossKinds: readonly BossKindDefinition[];
+  /** How boss fights go: the ground's speed change and the health bar (P07-R02, R03). */
+  readonly bossFights: BossFightRules;
   /** Weapon bonuses dropped by destroyed enemies (phase 6 review). */
   readonly bonuses: BonusRules;
   /** What hurts the player, and its lives (GD-20..GD-22, phase 6 review). */

@@ -42,7 +42,8 @@ export interface SceneryViewerPanelOptions {
 
 /** `m:ss`. */
 export function formatTime(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
+  // A hair of slack, so that 2 s summed from frame steps (1.999…) shows as 0:02.
+  const s = Math.max(0, Math.floor(seconds + 1e-6));
   return `${String(Math.floor(s / 60))}:${String(s % 60).padStart(2, '0')}`;
 }
 

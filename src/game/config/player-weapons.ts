@@ -8,6 +8,11 @@ import type {
  * Player weapons (GD-30, GD-31: three weapons, five levels each). Logical pixels, Y up,
  * angles in degrees from forward. Values marked "default" were not given by the phase 3
  * spec; they are the agent's proposal (D-015), to be tuned in review.
+ *
+ * Balance (GD-33, D-059): the bullet is the reference (the bosses were tuned with it, D-055);
+ * at every level the laser and the missiles put out 70-100 % of the bullets' damage per second.
+ * The laser trades spread for focus (one column, never misses, pierces); the missiles trade
+ * damage for reach (they home, but take time to arrive and overkill small enemies).
  */
 
 /** Distance between the two streams of a "dual forward stream" (default). */
@@ -59,24 +64,25 @@ export const BULLET = {
 
 /**
  * P03-R02: bright blue laser, more damage per second at each level; above level 1 it goes
- * through a ship and continues one level lower. Damage and widths are defaults.
+ * through a ship and continues one level lower. Damage per second from GD-33 (D-059); widths
+ * are defaults.
  */
 export const LASER = {
   kind: 'beam',
   id: 'laser',
   name: 'Laser',
   levels: [
-    { damagePerSecond: 40, width: 4 },
-    { damagePerSecond: 60, width: 6 },
-    { damagePerSecond: 85, width: 8 },
-    { damagePerSecond: 115, width: 10 },
-    { damagePerSecond: 150, width: 12 },
+    { damagePerSecond: 80, width: 4 },
+    { damagePerSecond: 140, width: 6 },
+    { damagePerSecond: 200, width: 8 },
+    { damagePerSecond: 260, width: 10 },
+    { damagePerSecond: 320, width: 12 },
   ],
 } as const satisfies BeamWeaponDefinition;
 
 /**
- * P03-R03: missiles with constant acceleration that home on the closest enemy; 8 damage to
- * everything within 10 px of the impact; 4 missiles per second per stream.
+ * P03-R03: missiles with constant acceleration that home on the closest enemy; 14 damage to
+ * everything within 10 px of the impact (GD-33, D-059); 4 missiles per second per stream.
  */
 export const MISSILE = {
   kind: 'projectile',
@@ -97,7 +103,7 @@ export const MISSILE = {
   homingRange: 320,
   /** Default. */
   radius: 3,
-  damage: 8,
+  damage: 14,
   blastRadius: 10,
   levels: [
     [forward],

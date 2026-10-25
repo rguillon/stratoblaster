@@ -325,3 +325,16 @@ export function levelDuration(level: SceneryLevel): number {
 export function levelLength(level: SceneryLevel): number {
   return levelDuration(level) * level.scrollSpeed;
 }
+
+/**
+ * `level` with `seconds` more of its last section (P07-R03): ground drawn past the level's end,
+ * for a final boss fight that keeps the ground scrolling.
+ */
+export function withRunout(level: SceneryLevel, seconds: number): SceneryLevel {
+  const last = level.sections.at(-1);
+  if (!last || seconds <= 0) return level;
+  return {
+    ...level,
+    sections: [...level.sections.slice(0, -1), { ...last, seconds: last.seconds + seconds }],
+  };
+}

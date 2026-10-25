@@ -4,6 +4,7 @@ import type { GameDebugOptions } from './game-session';
  * Reads the debug options of the game screen from a URL query (P06-R09):
  * `?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy ship. `level` turns
  * debug on; `t` (seconds, default 0) and `ship` (default: the first ship) are optional.
+ * `boss=mini` or `boss=final` starts at that boss's arrival instead (P07-R09).
  * Without `level`, or with a value that does not parse, there are no debug options.
  */
 export function parseDebugOptions(search: string): GameDebugOptions | undefined {
@@ -15,5 +16,10 @@ export function parseDebugOptions(search: string): GameDebugOptions | undefined 
     levelId,
     time: Number.isFinite(time) && time > 0 ? time : 0,
     shipId: query.get('ship'),
+    boss: bossOf(query.get('boss')),
   };
+}
+
+function bossOf(value: string | null): GameDebugOptions['boss'] {
+  return value === 'mini' || value === 'final' ? value : null;
 }

@@ -1,3 +1,4 @@
+import { BossBar, type BossBarFrame } from './boss-bar';
 import { element, type MenuDocument } from './screens/elements';
 
 /** Texts of the in-game HUD, provided by the game. */
@@ -24,6 +25,8 @@ export interface HudFrame {
   /** Share of the level flown, 0..1. */
   readonly progress: number;
   readonly destroyed: number;
+  /** The boss being fought, for its health bar (P07-R02); none when omitted. */
+  readonly boss?: BossBarFrame | undefined;
 }
 
 /** The fixed parts of a HUD: the ship and the texts. */
@@ -40,8 +43,9 @@ const percent = (share: number): string =>
 
 /**
  * The in-game HUD (phase 6 review): the ship, its lives and health bar (red when low), the
- * weapon and its level, how far the level has gone, and the enemies destroyed. Laid out at the logical resolution over the
- * playfield; it never takes clicks or taps. Text and bars change only when their value does.
+ * weapon and its level, how far the level has gone, and the enemies destroyed; while a boss is
+ * fought, its health bar (P07-R02). Laid out at the logical resolution over the playfield; it
+ * never takes clicks or taps. Text and bars change only when their value does.
  */
 export class GameHud {
   readonly root: HTMLElement;
@@ -51,6 +55,7 @@ export class GameHud {
   readonly #weapon: HTMLElement;
   readonly #progressBar: HTMLElement;
   readonly #destroyed: HTMLElement;
+  readonly #boss: BossBar;
   #shown = '';
 
   constructor(
@@ -75,11 +80,13 @@ export class GameHud {
     progress.append(this.#progressBar);
     this.#destroyed = element(doc, 'div', 'hud-destroyed');
     this.root.append(health, this.#weapon, progress, this.#destroyed);
+    this.#boss = new BossBar(doc, this.root);
     parent.append(this.root);
   }
 
   /** Shows `frame`, touching the page only when something visible changed. */
   update(frame: HudFrame): void {
+    this.#boss.update(frame.boss);
     const { texts } = this.setup;
     const health = `${texts.health} ${String(Math.ceil(frame.health))} / ${String(frame.maxHealth)}`;
     const shown = [

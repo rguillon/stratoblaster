@@ -1,4 +1,5 @@
 import { Enemy, type EnemyContext } from '../../../core/entities/enemy';
+import { GunMuzzles } from '../../../core/systems/gun-muzzles';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { Cadence, DOWN, onPlayfield } from './enemy-helpers';
 
@@ -11,6 +12,7 @@ const CFG = ENEMY_CONFIG.rocketeer;
  */
 export class Rocketeer extends Enemy {
   readonly #launcher = new Cadence(CFG.fireInterval, CFG.firstShot);
+  readonly #pods = CFG.muzzles.map((muzzle) => new GunMuzzles([muzzle]));
 
   constructor(x: number, y: number) {
     super(x, y, CFG.stats);
@@ -22,8 +24,9 @@ export class Rocketeer extends Enemy {
     this.y -= CFG.speed * dt;
     if (!onPlayfield(this, ctx)) return;
     for (let i = this.#launcher.tick(dt * ctx.fireRate); i > 0; i--) {
-      for (const side of [-1, 1]) {
-        ctx.fireMissile(this.x + side * CFG.podOffset, this.y, DOWN, CFG.missile);
+      for (const pod of this.#pods) {
+        const { x, y } = pod.along(ctx, this, DOWN);
+        ctx.fireMissile(x, y, DOWN, CFG.missile);
       }
     }
     this.charge = this.#launcher.progress;

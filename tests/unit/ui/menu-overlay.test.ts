@@ -140,6 +140,7 @@ describe('MenuOverlay', () => {
     level: 'Level 1-1',
     fire: 'Fire',
     complete: null,
+    selected: 0,
   };
 
   it('P06-R02: the game screen shows the level and the touch fire button, and no Back button', () => {
@@ -192,6 +193,29 @@ describe('MenuOverlay', () => {
       complete: { heading: 'Game over', over: true, level: '1-2', enemies: '5 / 9', hint: 'Go on' },
     });
     expect($('.level-complete')?.classList.contains('game-over')).toBe(true);
+  });
+
+  it('P07-R08: after the mini boss, the "Game over" panel offers two choices to tap', () => {
+    const { overlay, commands, $, $$ } = setup();
+    overlay.show({
+      ...GAME,
+      selected: 0,
+      complete: {
+        heading: 'Game over',
+        over: true,
+        level: '1-2',
+        enemies: '5 / 9',
+        hint: 'Go on',
+        choices: { labels: ['Continue', 'Level select'], selected: 0 },
+      },
+    });
+    const choices = $$('.level-complete-choice');
+    expect(choices.map((c) => c.textContent)).toEqual(['Continue', 'Level select']);
+    expect(choices[0]?.classList.contains('selected')).toBe(true);
+    expect($('.level-complete .menu-hint')).toBeNull();
+    choices[1]?.click();
+    choices[0]?.click();
+    expect(commands).toEqual([{ select: 1 }, 'confirm']);
   });
 
   it('P01-R15: a new screen fades in; a refresh of the same screen does not', () => {

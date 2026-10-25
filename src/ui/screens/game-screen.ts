@@ -2,22 +2,54 @@ import type { GameScreenView } from '../menu-view';
 import { element, type MenuDocument } from './elements';
 import type { ScreenHandlers } from './screen-handlers';
 
-/** The "Level complete" (or "Game over") panel (P06-R03); tapping it goes on, like Confirm. */
+/** Continue or level select (P07-R08): a tap selects a choice, a second tap confirms it. */
+function choiceRow(
+  doc: MenuDocument,
+  choices: NonNullable<NonNullable<GameScreenView['complete']>['choices']>,
+  handlers: ScreenHandlers,
+): HTMLElement {
+  const row = element(doc, 'div', 'level-complete-choices');
+  choices.labels.forEach((label, i) => {
+    const selected = i === choices.selected ? ' selected' : '';
+    const choice = element(doc, 'div', `menu-entry level-complete-choice${selected}`, label);
+    choice.setAttribute('role', 'button');
+    choice.dataset.index = String(i);
+    choice.addEventListener('click', () => {
+      handlers.onTap(i);
+    });
+    row.append(choice);
+  });
+  return row;
+}
+
+/**
+ * The "Level complete" (or "Game over") panel (P06-R03); tapping it goes on, like Confirm. After
+ * the mini boss, a game over offers its two choices instead (P07-R08).
+ */
 function levelComplete(
   doc: MenuDocument,
   complete: NonNullable<GameScreenView['complete']>,
   handlers: ScreenHandlers,
 ): HTMLElement {
   const over = complete.over ? ' game-over' : '';
-  const panel = element(doc, 'div', `menu-entry selected level-complete${over}`);
-  panel.setAttribute('role', 'button');
-  panel.dataset.index = '0';
+  const { choices } = complete;
+  const panel = element(
+    doc,
+    'div',
+    `level-complete${over}${choices ? '' : ' menu-entry selected'}`,
+  );
   panel.append(
     element(doc, 'div', 'level-complete-heading', complete.heading),
     element(doc, 'div', 'level-complete-level', complete.level),
     element(doc, 'div', 'level-complete-enemies', complete.enemies),
-    element(doc, 'div', 'menu-hint', complete.hint),
   );
+  if (choices) {
+    panel.append(choiceRow(doc, choices, handlers));
+    return panel;
+  }
+  panel.setAttribute('role', 'button');
+  panel.dataset.index = '0';
+  panel.append(element(doc, 'div', 'menu-hint', complete.hint));
   panel.addEventListener('click', () => {
     handlers.onTap(0);
   });

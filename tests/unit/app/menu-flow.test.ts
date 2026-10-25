@@ -208,6 +208,50 @@ describe('MenuFlow', () => {
       expect(flow.state).toMatchObject({ screen: 'level-select', selectedId: '1-2' });
     });
 
+    it('P07-R08: after the mini boss, a game over offers Continue (first) and level select', () => {
+      const flow = world1();
+      expect(flow.playDirect('heavy', '1-2')).toBe(true);
+      const attempt = flow.state.attempt;
+      const checkpoint = {
+        progress: 7800,
+        bossesPassed: 1,
+        weapons: { weapon: 'bullet', levels: {} },
+      };
+      flow.completeLevel({ ...result('1-2'), outcome: 'over', checkpoint });
+      flow.update(1);
+      expect(flow.state.choice).toBe(0);
+      expect(flow.dispatch('right')).toBe('moved');
+      expect(flow.state.choice).toBe(1);
+      expect(flow.dispatch('right')).toBe('none');
+      expect(flow.dispatch('up')).toBe('moved');
+      expect(flow.dispatch({ select: 1 })).toBe('moved');
+      expect(flow.dispatch({ select: 5 })).toBe('none');
+      expect(flow.dispatch({ select: 0 })).toBe('moved');
+      expect(flow.dispatch('confirm')).toBe('screen');
+      expect(flow.state).toMatchObject({
+        screen: 'game',
+        levelResult: null,
+        resume: checkpoint,
+        attempt: attempt + 1,
+      });
+    });
+
+    it('P07-R08: choosing level select after the mini boss goes there, on the level played', () => {
+      const flow = world1();
+      flow.playDirect('heavy', '1-2');
+      const checkpoint = {
+        progress: 7800,
+        bossesPassed: 1,
+        weapons: { weapon: 'bullet', levels: {} },
+      };
+      flow.completeLevel({ ...result('1-2'), outcome: 'over', checkpoint });
+      flow.update(1);
+      send(flow, 'down', 'confirm');
+      expect(flow.state).toMatchObject({ screen: 'level-select', selectedId: '1-2', resume: null });
+      send(flow, 'confirm');
+      expect(flow.state).toMatchObject({ screen: 'game', resume: null });
+    });
+
     it('P06-R03: after 1-5, level-select highlights 1-5 again', () => {
       const flow = world1();
       expect(flow.playDirect('heavy', '1-5')).toBe(true);

@@ -23,11 +23,20 @@ export interface MenuTexts {
   readonly gameOver: string;
   readonly enemiesDestroyed: (destroyed: number, spawned: number) => string;
   readonly continueHint: string;
+  /**
+   * The "Game over" panel's two choices after the mini boss (P07-R08): go on from the
+   * checkpoint, or back to the level select screen.
+   */
+  readonly continueFromCheckpoint: string;
+  readonly toLevelSelect: string;
   /** In-game HUD: the health bar's label, lives, the weapon and its level, enemies destroyed. */
   readonly hudHealth: string;
   readonly hudLives: (lives: number) => string;
   readonly hudWeapon: (weaponName: string, level: number, levels: number) => string;
   readonly hudDestroyed: (count: number) => string;
+  /** Kinds shown on the boss health bar (P07-R02). */
+  readonly hudMiniBoss: string;
+  readonly hudBoss: string;
   /** Shown instead of the menu when the browser cannot run the game (ENG-06). */
   readonly unsupported: string;
 }

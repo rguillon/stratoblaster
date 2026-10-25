@@ -188,7 +188,11 @@ describe('startApp', () => {
       app = startApp(
         new NullEngine(),
         SAMPLE_GAME,
-        options({ keyboardTarget, statsParent, debug: { levelId: 'c', time: 5, shipId: null } }),
+        options({
+          keyboardTarget,
+          statsParent,
+          debug: { levelId: 'c', time: 5, shipId: null, boss: null },
+        }),
       );
       await app.loaded;
       expect(app.menu.flow.state).toMatchObject({
