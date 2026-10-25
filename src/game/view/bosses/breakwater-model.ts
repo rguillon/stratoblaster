@@ -271,9 +271,6 @@ export function buildBreakwater(scene: Scene): EnemyModel {
       drawCrane(p);
       drawTower(p);
       drawDeckEdges(p);
-      // The bow gun in the hold (the core's fans, bursts and rings).
-      const gun = { radius: 7, barrels: 2, gap: 3, bore: 1.2, length: 6, neon: ORANGE };
-      turret(p, [0, HULL_Y[2] + 0.4, 21], gun);
       for (const s of SIDES) {
         socket(p.hull, [s * 34, HULL_Y[2], -12], 8, 1);
         // The ram plate's brackets on the bow.
@@ -283,7 +280,14 @@ export function buildBreakwater(scene: Scene): EnemyModel {
       p.reactor([0, -0.5, -40], 3.8);
     },
     parts: { 'ram-plate': ramPlate, 'mortar-left': mortar, 'mortar-right': mortar },
+    turrets: { core: bowGun, 'mortar-left': mortarTurret, 'mortar-right': mortarTurret },
   });
+}
+
+/** The bow gun in the hold (the core's fans, bursts and rings), turning on the hold's floor. */
+function bowGun(p: EnemyParts, at: Vec3): void {
+  const gun = { radius: 7, barrels: 2, gap: 3, bore: 1.2, length: 6, neon: ORANGE };
+  turret(p, offset(at, 0, HULL_Y[2] + 0.4, 0), gun);
 }
 
 /** The ram plate (P07-R05): no weapon, a thick V of armour with orange warning lights. */
@@ -303,7 +307,7 @@ function ramPlate({ hull, neon }: EnemyParts, at: Vec3): void {
   hazard(hull, offset(at, 0, -3, -11), [16, 2], 6, 0);
 }
 
-/** A mortar turret (P07-R05): a mounting plate, a squat dome and a short, fat, raised barrel. */
+/** A mortar (P07-R05): a mounting plate under its turret ({@link mortarTurret}). */
 function mortar(p: EnemyParts, at: Vec3): void {
   const r = BREAKWATER.stats.parts[1]?.radius ?? 13;
   const base = HULL_Y[2];
@@ -315,10 +319,7 @@ function mortar(p: EnemyParts, at: Vec3): void {
     { at },
     H.panel,
   );
-  const s = Math.sign(at[0]);
-  const gun = { radius: r, barrels: 1, gap: 0, bore: 3.6, length: 3, elevation: 0.6, neon: ORANGE };
-  turret(p, offset(at, 0, base + 3, 0), { ...gun, hatch: s });
-  if (s > 0) {
+  if (Math.sign(at[0]) > 0) {
     // A ready rack of shells behind the port mortar.
     for (const a of [2.2, 2.6, 3, 3.4]) {
       const shell = offset(at, Math.sin(a) * 10.5, base + 3, Math.cos(a) * 10.5);
@@ -329,4 +330,11 @@ function mortar(p: EnemyParts, at: Vec3): void {
     p.hull.box([3.5, 3, 4.5], H.panel, { at: offset(at, -9, base + 3, 3) }, SHADE.edge);
     mast(p, offset(at, -9, base + 6, 1.5), 5, ORANGE);
   }
+}
+
+/** A mortar's turret: a squat dome and a short, fat, raised barrel. */
+function mortarTurret(p: EnemyParts, at: Vec3): void {
+  const r = BREAKWATER.stats.parts[1]?.radius ?? 13;
+  const gun = { radius: r, barrels: 1, gap: 0, bore: 3.6, length: 3, elevation: 0.6, neon: ORANGE };
+  turret(p, offset(at, 0, HULL_Y[2] + 3, 0), { ...gun, hatch: Math.sign(at[0]) });
 }

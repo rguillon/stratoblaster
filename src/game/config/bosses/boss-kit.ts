@@ -1,4 +1,5 @@
 import type { BossPartSpec, BossStats } from '../../../core/entities/boss';
+import type { BossTurretSpec } from '../../../core/entities/boss-turret';
 import type {
   EnemyBulletSpec,
   EnemyLaserSpec,
@@ -51,9 +52,12 @@ export interface BossDesign {
 /**
  * The muzzles of a piece's guns, from the boss's centre (X right, Y up, and height, px; its
  * orbiting parts as drawn, at a spin of 0), by the kind of shot they fire: bullets (`gun`), a
- * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s.
+ * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s. Its `gun`s may be on
+ * a `turret` turning around the pivot given (from the boss's centre, X right, Y up): it follows
+ * the player while they fire at the player (phase 7 review). Its model draws it on its own.
  */
 export interface Guns {
+  readonly turret?: readonly [x: number, y: number];
   readonly gun?: readonly Muzzle[];
   readonly ring?: readonly Muzzle[];
   readonly missile?: readonly Muzzle[];
@@ -76,6 +80,22 @@ const FIRED_BY: Readonly<
 /** The muzzles `volley` fires from, among its piece's {@link Guns} (none for launches). */
 export function volleyMuzzles(design: BossDesign, volley: BossVolley): readonly Muzzle[] {
   return FIRED_BY[volley.shape.kind](design.guns[volley.from] ?? {}) ?? [];
+}
+
+/** Whether `volley` fires from its piece's turret: from its `gun`s, when they are on one. */
+export function volleyOnTurret(design: BossDesign, volley: BossVolley): boolean {
+  const guns = design.guns[volley.from];
+  return guns?.turret !== undefined && volleyMuzzles(design, volley) === guns.gun;
+}
+
+/** The turrets of its pieces (`BossStats.turrets`), by piece. */
+export function turretsOf(design: BossDesign): Record<string, BossTurretSpec> {
+  const turrets: Record<string, BossTurretSpec> = {};
+  for (const [piece, { turret }] of Object.entries(design.guns)) {
+    if (turret)
+      turrets[piece] = { x: turret[0], y: turret[1], turnRateDeg: BOSS_TIMING.turretTurnDeg };
+  }
+  return turrets;
 }
 
 /** `muzzles` mirrored left to right, for the gun on the other side. */
@@ -123,6 +143,8 @@ export const BOSS_TIMING = {
    * across (about its fastest sway), easing towards it `easePerSec` of the way a second.
    */
   roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
+  /** Degrees a second a turret turns at, following the player (phase 7 review). */
+  turretTurnDeg: 150,
 } as const;
 
 /** Enemy bullets in a style of `enemy-look.ts`. */

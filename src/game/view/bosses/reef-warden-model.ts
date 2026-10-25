@@ -229,31 +229,36 @@ export function buildReefWarden(scene: Scene): EnemyModel {
       p.reactor([0, -1, -30], 3);
     },
     parts: { 'cannon-left': cannon, 'cannon-right': cannon },
+    turrets: { 'cannon-left': cannonTurret, 'cannon-right': cannonTurret },
   });
 }
 
 /**
- * A side cannon (P07-R05): a mounting plate on the beam and a twin-barrelled turret; the left
- * one (+X) feeds from an ammunition box, the right one carries a rangefinder.
+ * A side cannon (P07-R05): a mounting plate on the beam under its twin-barrelled turret
+ * ({@link cannonTurret}); the left one (+X) feeds from an ammunition box, the right one carries a
+ * rangefinder.
  */
 function cannon(p: EnemyParts, at: Vec3): void {
   const r = REEF_WARDEN.stats.parts[0]?.radius ?? 14;
-  const s = Math.sign(at[0]);
   p.hull.bevelSlab(scaled(MOUNT, r * 0.92), [1, 2.5, 4], [0.6, 1.4], H.base, { at }, H.panel);
-  turret(p, offset(at, 0, 4, 0), {
-    radius: r,
-    barrels: 2,
-    gap: 5,
-    bore: 1.6,
-    length: 9,
-    neon: CYAN,
-    hatch: -s,
-  });
-  if (s > 0) {
+  if (Math.sign(at[0]) > 0) {
     p.hull.box([4, 3.5, 5], SHADE.patch, { at: offset(at, 6.5, 4, -7), yaw: 0.5 }, H.panel);
     hazard(p.hull, offset(at, 6.5, 7.5, -7), [4, 2], 3, 0.5);
   } else {
     p.hull.box([3, 2.6, 6], H.panel, { at: offset(at, -8.5, 6, -1) }, SHADE.edge);
     p.neon.box([2.2, 1.4, 0.4], CYAN, { at: offset(at, -8.5, 6.6, 2) });
   }
+}
+
+/** A side cannon's twin-barrelled turret. */
+function cannonTurret(p: EnemyParts, at: Vec3): void {
+  turret(p, offset(at, 0, 4, 0), {
+    radius: REEF_WARDEN.stats.parts[0]?.radius ?? 14,
+    barrels: 2,
+    gap: 5,
+    bore: 1.6,
+    length: 9,
+    neon: CYAN,
+    hatch: -Math.sign(at[0]),
+  });
 }

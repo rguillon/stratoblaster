@@ -190,15 +190,20 @@ export function buildSentinel(scene: Scene): EnemyModel {
       p.reactor([0, 2, -27], 3);
     },
     parts: { 'gun-left': hullGun, 'gun-right': hullGun, 'drone-bay': droneBay },
+    turrets: { 'gun-left': hullGunTurret, 'gun-right': hullGunTurret },
   });
 }
 
-/** A hull gun (P07-R05): a sponson on the hull's outer flank and a twin-barrelled turret. */
+/** A hull gun (P07-R05): a sponson on the hull's outer flank under its turret. */
 function hullGun(p: EnemyParts, at: Vec3): void {
+  const sponson = at[0] > 0 ? SPONSON : flipX(SPONSON);
+  p.hull.bevelSlab(sponson, [-2, 0.5, 4], [0.8, 1.6], H.base, { at }, H.panel);
+}
+
+/** A hull gun's twin-barrelled turret. */
+function hullGunTurret(p: EnemyParts, at: Vec3): void {
   const r = SENTINEL.stats.parts[0]?.radius ?? 13;
   const outer = at[0] > 0;
-  const sponson = outer ? SPONSON : flipX(SPONSON);
-  p.hull.bevelSlab(sponson, [-2, 0.5, 4], [0.8, 1.6], H.base, { at }, H.panel);
   const neon = outer ? BLUE : POLICE_RED;
   turret(p, offset(at, 0, 4, 0), {
     radius: r * 0.85,

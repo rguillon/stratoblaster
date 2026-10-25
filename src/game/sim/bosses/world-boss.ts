@@ -8,7 +8,13 @@ import {
   type VolleySource,
 } from '../../../core/systems/boss-pattern';
 import { approach } from '../../../core/systems/enemy-motion';
-import { BOSS_TIMING, volleyMuzzles, type BossDesign } from '../../config/bosses/boss-kit';
+import {
+  BOSS_TIMING,
+  turretsOf,
+  volleyMuzzles,
+  volleyOnTurret,
+  type BossDesign,
+} from '../../config/bosses/boss-kit';
 import { launchVolley } from './boss-launches';
 
 /** How far its hit circles reach left and right of its centre (orbiting parts all around). */
@@ -51,7 +57,8 @@ export class WorldBoss extends Boss {
     area: EnemySpawnArea,
   ) {
     const [min, max] = area.topRange ?? [0, area.width];
-    super((min + max) / 2, area.height + bossTop(design) + BOSS_TIMING.spawnMargin, design.stats);
+    const y = area.height + bossTop(design) + BOSS_TIMING.spawnMargin;
+    super((min + max) / 2, y, { ...design.stats, turrets: turretsOf(design) });
     this.centerX = (min + max) / 2;
     this.stopY = design.stopFraction * area.height;
     this.swayAmplitude = Math.max(
@@ -69,8 +76,18 @@ export class WorldBoss extends Boss {
   #stage(stage: number): BossPatternSpec {
     const { stages } = this.design;
     const volleys = stages[Math.min(stage, stages.length - 1)] ?? [];
-    const armed = volleys.map((v) => ({ ...v, muzzles: volleyMuzzles(this.design, v) }));
+    const armed = volleys.map((v) => ({
+      ...v,
+      muzzles: volleyMuzzles(this.design, v),
+      turret: volleyOnTurret(this.design, v),
+    }));
     return [...armed, ...this.#launches];
+  }
+
+  /** Its turrets follow the player as long as it is there, fire pauses included (phase 7 review). */
+  override update(ctx: EnemyContext, dt: number): void {
+    super.update(ctx, dt);
+    if (this.state !== 'dying') this.#pattern.turnTurrets(ctx, dt, (from) => this.#source(from));
   }
 
   protected override enter(_ctx: EnemyContext, dt: number): boolean {

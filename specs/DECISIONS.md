@@ -681,3 +681,11 @@
 - **Consequences:** the simulation depends on the camera's geometry through `PlayfieldEye` (without one, e.g. in unit tests, shots start straight below their muzzles). Launches (hangars, drone bay) and the Refinery Titan's tank bursts still start at their part's centre.
 - **Status:** Accepted
 
+### D-058 — Boss turrets follow the player
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants the bosses' turrets to turn and follow the player when they fire bullets aimed at the player. The turrets were drawn into their piece's merged meshes, barrels down the screen.
+- **Decision:** a piece's guns may be on a turret (`Guns.turret`: its pivot, game data; `BossStats.turrets` → `BossTurret`, `BossPiece.turret` in core). Volleys from its `gun`s are flagged `turret`; their muzzles turn with its `aim` around the pivot (`BossPiece.place(muzzle, true)`). `BossPattern.turnTurrets`, called by `WorldBoss` at every step (fire pauses included), turns a turret towards the player at up to `BOSS_TIMING.turretTurnDeg` (150°/s) while the stage fires aimed shots or bursts from it, back to rest otherwise. In the view each turret is its own model on a pivot node under its piece (`BossDrawing.turrets`), turned by its `aim`; it flashes, hides and lights with its piece.
+- **Alternatives considered:** turning the whole part model (the mounts, sponsons and ammunition racks would turn too); turning turrets in the view only (shots would no longer leave from the barrels).
+- **Consequences:** shots aimed at the player still leave from the barrel tips and are aimed from there, so the game plays as before. Only turrets fire at the player turn: the guns fixed in hulls stay put.
+- **Status:** Accepted

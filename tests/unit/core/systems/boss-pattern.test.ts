@@ -6,6 +6,7 @@ import {
   type BossVolley,
   type VolleySource,
 } from '../../../../src/core/systems/boss-pattern';
+import { BossTurret } from '../../../../src/core/entities/boss-turret';
 import { headingTo } from '../../../../src/core/systems/projectile-motion';
 import { Dropper } from '../../../fixtures/sample-enemies';
 import { RecordingContext } from '../../../helpers/enemy-context';
@@ -137,6 +138,46 @@ describe('BossPattern', () => {
     expect(shot).toMatchObject(seen);
     expect(seen.y).toBeGreaterThan(510);
     expect(shot?.heading).toBeCloseTo(headingTo(seen.x, seen.y, 100, 90));
+  });
+
+  it('phase 7 review: a turret follows the player while it fires at the player, and its shots leave its barrels', () => {
+    const turret = new BossTurret({ x: 0, y: 0, turnRateDeg: 90 });
+    const source: VolleySource = {
+      ...piece(240, 500),
+      turret,
+      place: (m, onTurret) => {
+        const [dx, dy, height] = onTurret ? turret.turned(m) : m;
+        return { x: 240 + dx, y: 500 + dy, height };
+      },
+    };
+    const ctx = new RecordingContext();
+    // The player is down and to the right: 45° from straight down, counter-clockwise on screen.
+    [ctx.playerX, ctx.playerY] = [340, 400];
+    const shape = { kind: 'aimed', count: 1, spacingDeg: 0, bullet: BULLET } as const;
+    const pattern = new BossPattern([
+      { ...volley(shape, 1, 'gun'), muzzles: [[0, -10, 0]], turret: true },
+    ]);
+    const step = (seconds: number) => {
+      for (let t = 0; t < seconds - 1e-9; t += 1 / 60) {
+        pattern.turnTurrets(ctx, 1 / 60, () => source);
+        pattern.step(ctx, 1 / 60, () => source);
+      }
+    };
+    // At most 90°/s.
+    step(0.25);
+    expect(turret.aim).toBeCloseTo(-22.5 * DEG);
+    step(0.75);
+    expect(turret.aim).toBeCloseTo(-45 * DEG);
+    // Its shot left the turned barrel, towards the player.
+    const [shot] = ctx.shots;
+    expect(shot?.x).toBeCloseTo(240 + 10 * Math.SQRT1_2);
+    expect(shot?.y).toBeCloseTo(500 - 10 * Math.SQRT1_2);
+    expect(shot?.heading).toBeCloseTo(135 * DEG);
+    // A turret only firing preset fans turns back to rest.
+    const fan = { kind: 'fan', headingDeg: 0, count: 1, spacingDeg: 0, bullet: BULLET } as const;
+    const resting = new BossPattern([{ ...volley(fan, 1, 'gun'), turret: true }]);
+    for (let i = 0; i < 60; i++) resting.turnTurrets(ctx, 1 / 60, () => source);
+    expect(turret.aim).toBeCloseTo(0);
   });
 
   it('phase 7 review: a laser follows its piece from its muzzle', () => {

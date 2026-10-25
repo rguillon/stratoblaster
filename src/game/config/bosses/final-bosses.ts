@@ -63,7 +63,7 @@ export const STORM_PETREL: BossDesign = {
   sway: { amplitude: 45, period: 8 },
   bob: { amplitude: 10, period: 4 },
   guns: {
-    core: { gun: twin(1.6, -19.3, 16.8) },
+    core: { gun: twin(1.6, -19.3, 16.8), turret: [0, -5] },
     'pod-left': { gun: twin(-56, -18.8, 14.3, 2.5) },
     'pod-right': { gun: twin(56, -18.8, 14.3, 2.5) },
     'missile-rack': { missile: cells([-6.2, 0, 6.2], [36.9, 43.1], 17.3) },
@@ -112,8 +112,8 @@ export const GULL_MOTHERSHIP: BossDesign = {
   ],
   guns: {
     core: { gun: [[0, -69.9, 7]], laser: [[0, -69.9, 7]] },
-    'flak-left': { gun: twin(-28, -46.3, 8.8, 1.6) },
-    'flak-right': { gun: twin(28, -46.3, 8.8, 1.6) },
+    'flak-left': { gun: twin(-28, -46.3, 8.8, 1.6), turret: [-28, -32] },
+    'flak-right': { gun: twin(28, -46.3, 8.8, 1.6), turret: [28, -32] },
   },
   stages: stages(
     [

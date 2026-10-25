@@ -5,9 +5,11 @@ import type {
   EnemyLaserSpec,
   EnemyMissileSpec,
 } from '../entities/enemy';
+import type { BossTurret } from '../entities/boss-turret';
 import type { Muzzle } from '../entities/muzzle';
 import { fanHeadings } from './enemy-motion';
 import { fireAimed, GunMuzzles, type MuzzleSource } from './gun-muzzles';
+import { headingTo, turnTowards, wrapAngle } from './projectile-motion';
 
 const DEG = Math.PI / 180;
 /** Straight down the screen. */
@@ -68,6 +70,11 @@ export interface BossVolley {
    * furthest along each shot's way; the piece's centre when omitted.
    */
   readonly muzzles?: readonly Muzzle[];
+  /**
+   * Whether those muzzles are on the piece's turret (phase 7 review): they turn with it, and
+   * it follows the player while the stage fires shots aimed at the player from it.
+   */
+  readonly turret?: boolean;
   /** Seconds between two volleys. */
   readonly every: number;
   /** Seconds before the first one, from the start of the stage; `every` when omitted. */
@@ -78,11 +85,19 @@ export interface BossVolley {
 /** The volleys of one stage. */
 export type BossPatternSpec = readonly BossVolley[];
 
-/** What volleys fire from: the playfield position of a piece, its muzzles, the laser owner it is. */
-export type VolleySource = MuzzleSource;
+/**
+ * What volleys fire from: the playfield position of a piece, its muzzles, the laser owner it is,
+ * and the turret its guns are on, if any.
+ */
+export interface VolleySource extends MuzzleSource {
+  readonly turret?: BossTurret | undefined;
+}
 
 /** The piece a volley fires from, or undefined once it is destroyed. */
 export type VolleySources = (from: string) => VolleySource | undefined;
+
+/** The volleys a turret follows the player for: the ones aimed at the player. */
+const AT_PLAYER: ReadonlySet<BossVolleyShape['kind']> = new Set(['aimed', 'burst']);
 
 /** The core fires the volleys whose `from` is this. */
 export const CORE = 'core';
@@ -120,6 +135,8 @@ interface VolleyState {
  */
 export class BossPattern {
   readonly #states: VolleyState[];
+  /** The pieces whose turrets its volleys fire from, and whether it aims at the player from them. */
+  readonly #turrets = new Map<string, boolean>();
 
   constructor(readonly volleys: BossPatternSpec) {
     this.#states = volleys.map((v) => ({
@@ -127,8 +144,15 @@ export class BossPattern {
       turns: 0,
       burst: 0,
       burstLeft: 0,
-      guns: new GunMuzzles(v.muzzles),
+      guns: new GunMuzzles(v.muzzles, v.turret),
     }));
+    for (const v of volleys) {
+      if (!v.turret) continue;
+      this.#turrets.set(
+        v.from,
+        (this.#turrets.get(v.from) ?? false) || AT_PLAYER.has(v.shape.kind),
+      );
+    }
   }
 
   /** How ready the next volley is, 0..1 (for charging lights). */
@@ -154,6 +178,20 @@ export class BossPattern {
       }
       this.#stepBurst(ctx, volley, state, source, time);
     });
+  }
+
+  /**
+   * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review): towards the
+   * player while they fire at the player, back to rest otherwise. Pauses included.
+   */
+  turnTurrets(ctx: EnemyContext, dt: number, sources: VolleySources): void {
+    for (const [from, tracks] of this.#turrets) {
+      const source = sources(from);
+      const turret = source?.turret;
+      if (!source || !turret) continue;
+      const aim = tracks ? aimAtPlayer(ctx, source, turret) : 0;
+      turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
+    }
   }
 
   #fire(ctx: EnemyContext, volley: BossVolley, state: VolleyState, source: VolleySource): void {
@@ -221,4 +259,10 @@ function presetHeadings(
     { length: shape.count },
     (_, k) => DOWN + turn + (2 * Math.PI * k) / shape.count,
   );
+}
+
+/** How far `turret` must turn from its rest (straight down) to point at the player. */
+function aimAtPlayer(ctx: EnemyContext, source: VolleySource, turret: BossTurret): number {
+  const pivot = source.place?.([turret.spec.x, turret.spec.y, 0]) ?? source;
+  return wrapAngle(headingTo(pivot.x, pivot.y, ctx.playerX, ctx.playerY) - DOWN);
 }

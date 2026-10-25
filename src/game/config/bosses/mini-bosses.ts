@@ -45,8 +45,8 @@ export const REEF_WARDEN: BossDesign = {
   bob: { amplitude: 8, period: 3.5 },
   guns: {
     core: { gun: [[0, -40.5, 5]] },
-    'cannon-left': { gun: mirror(CANNON) },
-    'cannon-right': { gun: CANNON },
+    'cannon-left': { gun: mirror(CANNON), turret: [-36, -2] },
+    'cannon-right': { gun: CANNON, turret: [36, -2] },
   },
   stages: stages(
     [
@@ -82,9 +82,9 @@ export const BREAKWATER: BossDesign = {
   sway: { amplitude: 60, period: 8 },
   bob: { amplitude: 6, period: 4 },
   guns: {
-    core: { gun: twin(1.5, -33.3, 6.4) },
-    'mortar-left': { gun: [[-34, -1.5, 17.2]] },
-    'mortar-right': { gun: [[34, -1.5, 17.2]] },
+    core: { gun: twin(1.5, -33.3, 6.4), turret: [0, -21] },
+    'mortar-left': { gun: [[-34, -1.5, 17.2]], turret: [-34, 12] },
+    'mortar-right': { gun: [[34, -1.5, 17.2]], turret: [34, 12] },
   },
   stages: stages(
     [
@@ -224,8 +224,8 @@ export const SENTINEL: BossDesign = {
   launches: [{ from: 'drone-bay', kind: 'hornets', count: 2, every: 5.5, first: 3 }],
   guns: {
     core: { gun: twin(15, -12.5, 1) },
-    'gun-left': { gun: twin(-40, -24.6, 7.1, 1.8) },
-    'gun-right': { gun: twin(40, -24.6, 7.1, 1.8) },
+    'gun-left': { gun: twin(-40, -24.6, 7.1, 1.8), turret: [-40, -8] },
+    'gun-right': { gun: twin(40, -24.6, 7.1, 1.8), turret: [40, -8] },
   },
   stages: stages(
     [

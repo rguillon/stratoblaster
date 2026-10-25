@@ -102,7 +102,10 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   furthest along each shot's way, turned with the enemy's heading, a boss's `roll` and its ring's
   `spin`, then projected onto the playfield along the camera's line of sight
   (`EnemyContext.seen`, from the `PlayfieldEye` the app gets from `playfieldEye(screen, framing)`).
-  The game's muzzles are the barrel tips its models mark (`EnemyParts.muzzle`).
+  The game's muzzles are the barrel tips its models mark (`EnemyParts.muzzle`). A boss piece's
+  guns may be on a turret (`core/entities/boss-turret.ts`, D-058): its muzzles turn with its
+  `aim` around its pivot, and `BossPattern.turnTurrets` turns it towards the player while the
+  stage fires at the player from it; its model is drawn on its own node, turned by `aim`.
 - `core/systems/boss-pattern.ts`: a stage's volleys (aimed fans, preset fans, rings / spirals,
   bursts, homing missiles, lasers with their warning, launches), each from a part (it stops with
   that part) or the core; `patternSignature` names what still fires.

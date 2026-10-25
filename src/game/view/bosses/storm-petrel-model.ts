@@ -106,7 +106,7 @@ const FLAPS = [
 ] as const;
 const WING_Y = [6, 7.5, 9.5] as const;
 
-/** The hull, its neon chines and the cockpit turret on its back (the core's gun). */
+/** The hull, its neon chines and the barbette on its back, under the cockpit turret. */
 function drawHull(p: EnemyParts): void {
   p.hull.loft(FIGHTER_SECTION, HULL, H.base, {}, { paint: petrelHullPaint });
   for (const side of [1, 6]) {
@@ -116,7 +116,11 @@ function drawHull(p: EnemyParts): void {
   petrelBack(p, N);
   // A barbette rising out of the back, the gun turret on it: the cockpit turret.
   p.hull.cylinder(8.5, 7.5, 8, H.dark, { at: [0, 7, 5] }, 8);
-  turret(p, [0, 14.5, 5], 8.5, [2, N]);
+}
+
+/** The cockpit turret on its barbette (the core's gun), turning around its pivot `at`. */
+function cockpitTurret(p: EnemyParts, at: Vec3): void {
+  turret(p, shift(at, [0, 14.5, 0]), 8.5, [2, N]);
 }
 
 /** Both wings with their neon edges, the engine nacelles and their reactors. */
@@ -254,5 +258,6 @@ export function buildStormPetrel(scene: Scene): EnemyModel {
       'missile-rack': drawRack,
       'belly-plate': drawPlate,
     },
+    turrets: { core: cockpitTurret },
   });
 }

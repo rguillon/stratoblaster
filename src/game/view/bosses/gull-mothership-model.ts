@@ -147,7 +147,7 @@ function drawHangar(p: EnemyParts, at: Vec3): void {
   hangarDetails(p, at, N);
 }
 
-/** A flak turret on the front deck: an octagonal mount, the turret and its twin guns. */
+/** A flak turret on the front deck: an octagonal mount under the turret ({@link flakTurret}). */
 function drawFlak(p: EnemyParts, at: Vec3): void {
   const mount = Array.from({ length: 8 }, (_, k): OutlinePoint => {
     const a = (2 * Math.PI * (k + 0.5)) / 8;
@@ -155,8 +155,12 @@ function drawFlak(p: EnemyParts, at: Vec3): void {
   });
   const heights = [DECK_TOP - 0.5, DECK_TOP, DECK_TOP + 2.5] as const;
   p.hull.bevelSlab(mount, heights, [0, 1.5], H.dark, { at }, H.base);
-  turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N]);
   flakDetails(p, at, N);
+}
+
+/** A flak turret with its twin guns, on its mount. */
+function flakTurret(p: EnemyParts, at: Vec3): void {
+  turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N]);
 }
 
 /**
@@ -177,5 +181,6 @@ export function buildGullMothership(scene: Scene): EnemyModel {
       'flak-left': drawFlak,
       'flak-right': drawFlak,
     },
+    turrets: { 'flak-left': flakTurret, 'flak-right': flakTurret },
   });
 }

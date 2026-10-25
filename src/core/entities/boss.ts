@@ -5,6 +5,7 @@ import {
   type EnemyStats,
   type LaserOwner,
 } from './enemy';
+import { BossTurret, type BossTurretSpec } from './boss-turret';
 import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
 import type { ShotTarget } from './shot-target';
 
@@ -51,6 +52,8 @@ export interface BossStats extends EnemyStats {
    * across, easing towards it `easePerSec` of the way a second. It does not roll when omitted.
    */
   readonly roll?: BossRoll;
+  /** The turrets of its pieces, by part id (`core` for the core's): see {@link BossPiece.turret}. */
+  readonly turrets?: Readonly<Record<string, BossTurretSpec>>;
 }
 
 /** How a boss rolls into its sideways moves (see {@link BossStats.roll}). */
@@ -67,11 +70,20 @@ export type BossState = 'entering' | 'fighting' | 'dying';
 export interface BossPiece extends ShotTarget, Omit<LaserOwner, 'health'> {
   /** Seconds since it last took damage (for the hit flash); Infinity before. */
   readonly sinceHit: number;
+  /** The turret its guns are on, if any (phase 7 review): its weapons turn it. */
+  readonly turret: BossTurret | undefined;
   /**
    * Where one of its guns' muzzles is now, `muzzle` given from the boss's centre (as the boss
-   * is drawn, its orbiting parts at a spin of 0): it rolls with the boss, and turns with it.
+   * is drawn, its orbiting parts at a spin of 0): it rolls with the boss, and turns with it,
+   * and with its turret too when `onTurret`.
    */
-  place(muzzle: Muzzle): RaisedPoint;
+  place(muzzle: Muzzle, onTurret?: boolean): RaisedPoint;
+}
+
+/** The turret of the piece `id` of `boss`, if it has one. */
+function turretOf(boss: Boss, id: string): BossTurret | undefined {
+  const spec = boss.stats.turrets?.[id];
+  return spec && new BossTurret(spec);
 }
 
 /** Laser owners fire along their heading from one radius ahead of their centre. */
@@ -95,6 +107,7 @@ export class BossPart implements BossPiece, DropSource {
   readonly maxHealth: number;
   readonly dropChance: number;
   readonly shieldsCore: boolean;
+  readonly turret: BossTurret | undefined;
   #health: number;
 
   constructor(
@@ -107,6 +120,7 @@ export class BossPart implements BossPiece, DropSource {
     this.#health = spec.health;
     this.dropChance = spec.dropChance;
     this.shieldsCore = spec.shieldsCore;
+    this.turret = turretOf(boss, spec.id);
   }
 
   /** Unique among the boss's pieces (the core is the boss's id). */
@@ -138,8 +152,9 @@ export class BossPart implements BossPiece, DropSource {
     return emitterOf(this);
   }
 
-  place(muzzle: Muzzle): RaisedPoint {
-    return muzzlePoint(this.boss, muzzle, this.spec.orbits ? this.boss.spin : 0);
+  place(muzzle: Muzzle, onTurret = false): RaisedPoint {
+    const turned = onTurret && this.turret ? this.turret.turned(muzzle) : muzzle;
+    return muzzlePoint(this.boss, turned, this.spec.orbits ? this.boss.spin : 0);
   }
 
   /** Destroys it at once, whatever the boss is doing (its death, a debug key). */
@@ -154,10 +169,12 @@ export class BossCore implements BossPiece {
   sinceHit = Infinity;
   readonly radius: number;
   readonly maxHealth: number;
+  readonly turret: BossTurret | undefined;
 
   constructor(private readonly boss: Boss) {
     this.radius = boss.stats.coreRadius;
     this.maxHealth = boss.stats.health;
+    this.turret = turretOf(boss, 'core');
   }
 
   get id(): number {
@@ -191,8 +208,8 @@ export class BossCore implements BossPiece {
     return emitterOf(this);
   }
 
-  place(muzzle: Muzzle): RaisedPoint {
-    return muzzlePoint(this.boss, muzzle);
+  place(muzzle: Muzzle, onTurret = false): RaisedPoint {
+    return muzzlePoint(this.boss, onTurret && this.turret ? this.turret.turned(muzzle) : muzzle);
   }
 }
 

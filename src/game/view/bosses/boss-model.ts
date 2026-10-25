@@ -5,6 +5,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Boss, type BossPart, type BossPartSpec } from '../../../core/entities/boss';
+import type { BossTurret } from '../../../core/entities/boss-turret';
 import type { Enemy } from '../../../core/entities/enemy';
 import { createRng } from '../../../core/math/rng';
 import { SolidBuilder } from '../../../render/geometry/solids';
@@ -36,6 +37,55 @@ export interface BossDrawing {
   readonly parts: Readonly<Record<string, PartDrawing>>;
   /** A body turning with the boss's spin (`BossPartSpec.orbits` parts are drawn on it). */
   readonly ring?: (parts: EnemyParts) => void;
+  /**
+   * The turrets of its core (`core`) and parts, by piece, drawn around their pivot (`Guns.turret`)
+   * as they are at rest: they turn with the turret's aim (phase 7 review), on their piece.
+   */
+  readonly turrets?: Readonly<Record<string, PartDrawing>>;
+}
+
+/** A piece's turret: its model, on a node turning around its pivot. */
+interface TurretView {
+  readonly pivot: TransformNode;
+  readonly model: EnemyModel;
+}
+
+/** The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one. */
+function buildTurret(
+  design: BossDesign,
+  piece: string,
+  drawing: BossDrawing,
+  holder: TransformNode,
+  neon: Rgb,
+): TurretView | undefined {
+  const draw = drawing.turrets?.[piece];
+  const turret = design.guns[piece]?.turret;
+  if (!draw && !turret) return undefined;
+  if (!draw || !turret)
+    throw new Error(`Boss "${design.id}": "${piece}" needs a turret and its drawing`);
+  const scene = holder.getScene();
+  const at = bossPoint(...turret);
+  const pivot = new TransformNode(`${design.id}-${piece}-pivot`, scene);
+  pivot.position.set(...at);
+  pivot.parent = holder;
+  const model = buildEnemyModel(`${design.id}-${piece}-turret`, scene, neon, (p) => {
+    draw(p, at);
+  });
+  model.root.position.set(-at[0], -at[1], -at[2]);
+  model.root.parent = pivot;
+  return { pivot, model };
+}
+
+/** Shows a turret turned by its aim (+Y turns the nose, down the screen, clockwise on screen). */
+function showTurret(
+  view: TurretView | undefined,
+  turret: BossTurret | undefined,
+  lit: Enemy,
+  dt: number,
+): void {
+  if (!view) return;
+  view.pivot.rotation.y = turret?.aim ?? 0;
+  view.model.sync(lit, dt);
 }
 
 const FLASH_CACHE = new WeakMap<Scene, { flash: StandardMaterial; smoke: StandardMaterial }>();
@@ -148,9 +198,10 @@ function buildStump(name: string, radius: number, scene: Scene, parent: Transfor
   };
 }
 
-/** The pieces of one part: its model, its smoke, its stump. */
+/** The pieces of one part: its model (and turret), its smoke, its stump. */
 interface PartView {
   readonly group: FlashGroup;
+  readonly turret: TurretView | undefined;
   readonly smoke: ReturnType<typeof buildSmoke>;
   readonly stump: ReturnType<typeof buildStump>;
 }
@@ -172,8 +223,10 @@ export function buildBossModel(
   const name = design.id;
   const { flash } = effectMaterials(scene);
   const root = new TransformNode(name, scene);
-  const core = new FlashGroup(buildEnemyModel(`${name}-core`, scene, neon, drawing.core), flash);
-  core.model.root.parent = root;
+  const coreModel = buildEnemyModel(`${name}-core`, scene, neon, drawing.core);
+  coreModel.root.parent = root;
+  const coreTurret = buildTurret(design, 'core', drawing, coreModel.root, neon);
+  const core = new FlashGroup(coreModel, flash);
   const ringNode = new TransformNode(`${name}-ring`, scene);
   ringNode.parent = root;
   const ring =
@@ -192,7 +245,11 @@ export function buildBossModel(
       const enemy = lit as unknown as Enemy;
       core.model.sync(enemy, dt);
       ring?.model.sync(enemy, dt);
-      if (!(boss instanceof Boss)) return;
+      if (!(boss instanceof Boss)) {
+        showTurret(coreTurret, undefined, enemy, dt);
+        return;
+      }
+      showTurret(coreTurret, boss.core.turret, enemy, dt);
       // It rolls into its sideways moves (phase 7 review). Screen right is the model's -X (its
       // nose points down the screen): +Z rolls -X down.
       root.rotation.z = boss.roll;
@@ -224,12 +281,13 @@ function buildPart(
     draw(p, at);
   });
   model.root.parent = holder;
+  const turret = buildTurret(design, spec.id, drawing, model.root, neon);
   const spot = new TransformNode(`${name}-${spec.id}-spot`, scene);
   spot.position.set(...at);
   spot.parent = holder;
   const smoke = buildSmoke(`${name}-${spec.id}`, spec.radius, scene, spot);
   const stump = buildStump(`${name}-${spec.id}`, spec.radius, scene, spot);
-  return { group: new FlashGroup(model, flash), smoke, stump };
+  return { group: new FlashGroup(model, flash), turret, smoke, stump };
 }
 
 /** The brightness of a boss's charge lights: its own, or a strobe during a stage change. */
@@ -250,6 +308,7 @@ function showPart(view: PartView, part: BossPart, lit: Enemy, dt: number): void 
     return;
   }
   view.group.model.sync(lit, dt);
+  showTurret(view.turret, part.turret, lit, dt);
   view.group.show(part.sinceHit);
   if (smoking) view.smoke.step(dt);
 }

@@ -179,6 +179,23 @@ describe('Boss', () => {
     expect(boss.core.place([20, 0, 0]).height).toBeCloseTo(-20 * Math.sin(0.1));
   });
 
+  it("phase 7 review: muzzles on a piece's turret turn with its aim around its pivot", () => {
+    const stats = { ...SAMPLE_BOSS_STATS, turrets: { gun: { x: -20, y: 0, turnRateDeg: 90 } } };
+    const boss = new SampleBoss(AREA, stats);
+    const gun = part(boss, 'gun');
+    expect(boss.core.turret).toBeUndefined();
+    expect(gun.turret?.aim).toBe(0);
+    // At rest, as drawn; a quarter turn (clockwise on screen) points the barrel left.
+    expect(gun.place([-20, -10, 3], true)).toEqual({ x: boss.x - 20, y: boss.y - 10, height: 3 });
+    if (gun.turret) gun.turret.aim = Math.PI / 2;
+    const turned = gun.place([-20, -10, 3], true);
+    expect(turned.x).toBeCloseTo(boss.x - 30);
+    expect(turned.y).toBeCloseTo(boss.y);
+    expect(turned.height).toBe(3);
+    // Muzzles off the turret stay where they are.
+    expect(gun.place([-20, -10, 3])).toEqual({ x: boss.x - 20, y: boss.y - 10, height: 3 });
+  });
+
   it('P07-R04: lasers fired from a part or the core leave from in front of it, straight down', () => {
     const boss = new SampleBoss(AREA);
     expect(boss.core.emitter.x).toBeCloseTo(boss.x);
