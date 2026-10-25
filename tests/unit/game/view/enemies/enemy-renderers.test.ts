@@ -109,6 +109,13 @@ describe('createEnemyShotRenderer', () => {
     expect(enabled(scene, 'enemy-laser-warning-')).toHaveLength(0);
     const [beam] = enabled(scene, 'enemy-laser-beam-');
     expect(beam?.scaling.y).toBeCloseTo(510);
+    // Phase 8 review: a flare at its base, as the player's laser's, stretched along the beam.
+    const [flare] = enabled(scene, 'enemy-laser-emitter-');
+    const { radius, baseScale, widthDivisor, stretch, pulse } = ENEMY_LOOK.laser.flare;
+    const size = radius * (baseScale + 10 / widthDivisor);
+    expect(flare?.scaling.x).toBeGreaterThanOrEqual(size * (1 - pulse) - 1e-6);
+    expect(flare?.scaling.x).toBeLessThanOrEqual(size * (1 + pulse) + 1e-6);
+    expect(flare?.scaling.y).toBeCloseTo((flare?.scaling.x ?? 0) * stretch);
     renderer.dispose();
   });
 });

@@ -25,7 +25,7 @@ const whiter = ([r, g, b]: Rgb, t: number): Rgb => [
   b + (1 - b) * t,
 ];
 
-/** The colours of a laser of `color` (phase 8 review): its warning line, beam and emitter glow. */
+/** The colours of a laser of `color` (phase 8 review): its warning line, beam and base flare. */
 export interface LaserPalette {
   readonly warning: readonly Rgb[];
   readonly beam: readonly Rgb[];
@@ -37,7 +37,16 @@ export function laserPalette(color: Rgb): LaserPalette {
   return {
     warning: [color, times(color, 0.5), [0, 0, 0]],
     beam: [whiter(color, 0.9), color, times(color, 0.5), [0, 0, 0]],
-    emitter: glow(whiter(color, 0.9), color, times(color, 0.3)),
+    // A soft, roughly exponential falloff from white-hot, as the player's laser flare.
+    emitter: [
+      whiter(color, 0.8),
+      whiter(color, 0.5),
+      color,
+      times(color, 0.6),
+      times(color, 0.3),
+      times(color, 0.1),
+      [0, 0, 0],
+    ],
   };
 }
 
@@ -148,7 +157,20 @@ export const ENEMY_LOOK = {
       flicker: 0.12,
       flickerHz: 21,
     },
-    emitterRadius: 9,
+    /**
+     * The flare at the beam's base, as the player's laser's (`SHOT_LOOK.laser.muzzle`, phase 8
+     * review): `radius` × (`baseScale` + beam width / `widthDivisor`), stretched along the beam,
+     * pulsing by `pulse` at `pulseHz`, round and smooth (`segments` sides).
+     */
+    flare: {
+      radius: 12,
+      baseScale: 0.6,
+      widthDivisor: 12,
+      stretch: 1.3,
+      pulse: 0.15,
+      pulseHz: [9, 17],
+      segments: 24,
+    },
   },
   /**
    * Explosions (GD-62; phase 5 review: bigger, with burning debris). Sizes are relative to the

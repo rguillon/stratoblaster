@@ -10,7 +10,7 @@ import { additiveTemplate } from '../shots/shot-meshes';
 
 const LOOK = ENEMY_LOOK.laser;
 
-/** The warning lines, beams and emitter glows of the lasers of one colour. */
+/** The warning lines, beams and base flares of the lasers of one colour. */
 interface LaserPools {
   readonly warning: NodePool<Mesh>;
   readonly beam: NodePool<Mesh>;
@@ -29,7 +29,7 @@ function lasersOf(scene: Scene, style: string): LaserPools {
   const templates = [
     additiveTemplate(name('warning'), buildGlowBar(palette.warning), scene),
     additiveTemplate(name('beam'), buildGlowBar(palette.beam), scene),
-    additiveTemplate(name('emitter'), buildGlowDisc(16, palette.emitter), scene),
+    additiveTemplate(name('emitter'), buildGlowDisc(LOOK.flare.segments, palette.emitter), scene),
   ] as const;
   const pool = (template: Mesh): NodePool<Mesh> =>
     new NodePool((i) => template.clone(`${template.name}-${String(i)}`));
@@ -62,17 +62,22 @@ function syncBeams(pools: LaserPools, beams: readonly EnemyLaser[], time: number
     mesh.rotation.z = -l.heading;
     mesh.scaling.set(l.spec.width * LOOK.beam.glowWidth * wobble, l.length, 1);
   });
+  // A pulsing flare where the beam leaves, as the player's laser's: bigger for wider beams,
+  // stretched along the beam.
+  const flare = LOOK.flare;
+  const pulse = 1 + flare.pulse * flicker(time, 1, flare.pulseHz);
   pools.emitter.show(beams.length).forEach((mesh, i) => {
     const l = beams[i];
     if (!l) return;
-    const r = LOOK.emitterRadius * wobble;
+    const r = flare.radius * (flare.baseScale + l.spec.width / flare.widthDivisor) * pulse;
     mesh.position.set(l.x, l.y, -1.2);
-    mesh.scaling.set(r, r, 1);
+    mesh.rotation.z = -l.heading;
+    mesh.scaling.set(r, r * flare.stretch, 1);
   });
 }
 
 /**
- * The enemies' lasers (GD-43): a blinking warning line, then a beam with a glow at the emitter,
+ * The enemies' lasers (GD-43): a blinking warning line, then a beam with a flare at its base,
  * in the colour of their style (phase 8 review: each boss's lasers in its neon colour).
  */
 export class EnemyLasers {
