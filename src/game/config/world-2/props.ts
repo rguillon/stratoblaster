@@ -181,7 +181,7 @@ export const WORLD_2_PROPS: PropRules = {
         b(W.harbourCrane, 2),
         b(W.fishStore, 2),
         building(P.containerYard, 1, 13),
-        building(P.tanks, 0.5, 15),
+        building(P.tanks, 0.5, 15.4),
       ],
     },
     {
@@ -225,7 +225,7 @@ export const WORLD_2_PROPS: PropRules = {
     tree(W.frostedTree, 1.5, 2),
     tree(W.snowyBush, 2, 2.5),
     { id: W.hut, weight: 0.25, footprint: 4.5, scale: LONE_SCALE },
-    { id: P.antenna, weight: 0.1, footprint: 5, scale: LONE_SCALE },
+    { id: P.antenna, weight: 0.1, footprint: 5.4, scale: LONE_SCALE },
   ],
   treesPerCell: 4,
   cars: CAR_RULES,

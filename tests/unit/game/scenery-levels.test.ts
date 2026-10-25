@@ -11,6 +11,8 @@ import { framePlayfield, visibleGround } from '../../../src/render/scenery/playf
 import { GAME_CONFIG } from '../../../src/game/config/game';
 import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
 import { WORLD_1_PROP_IDS } from '../../../src/game/config/world-1/props';
+import { WORLD_2_PROP_IDS } from '../../../src/game/config/world-2/props';
+import { POLAR_VARIANTS, variantId } from '../../../src/game/config/building-families';
 
 describe('Level Zero', () => {
   const field = new HeightField(LEVEL_ZERO);
@@ -126,10 +128,14 @@ describe('Level Zero', () => {
     const props = placer.place({ xMin: -500, xMax: 500, zMin: 0, zMax: field.length });
     const kinds = new Set(props.map((p) => p.kind));
     // Every model but the cars, which drive (see `Traffic`) instead of standing, and the ones
-    // added for World 1 (P06-R06), which only its levels use.
+    // added for World 1 (P06-R06) and World 2 (P08-R07), which only their levels use.
     const others = new Set<string>([
       ...(LEVEL_ZERO.props.cars?.kinds ?? []),
       ...Object.values(WORLD_1_PROP_IDS),
+      ...Object.values(WORLD_2_PROP_IDS),
+      ...(['polar-tower', 'polar-block', 'mining-complex'] as const).flatMap((family) =>
+        Array.from({ length: POLAR_VARIANTS }, (_, i) => variantId(family, i + 1)),
+      ),
     ]);
     const standing = Object.keys(PROP_MODELS).filter((id) => !others.has(id));
     expect([...kinds].sort()).toEqual(standing.sort());
