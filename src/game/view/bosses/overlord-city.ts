@@ -5,8 +5,9 @@ import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { decal, flipX } from '../enemies/enemy-shapes';
 
-// P07-R05: the Overlord's city: towers standing on its deck, lit windows, neon edges. Model
-// space: logical pixels, nose +Z (down the screen), Y up towards the camera.
+// P07-R05: the Overlord's city: shared shapes, towers standing on its deck with lit windows and
+// rooftop clutter, neon edges. Model space: logical pixels, nose +Z (down the screen), Y up
+// towards the camera; +X is the screen's left.
 const H = ENEMY_LOOK.hull;
 const WHITE = [1, 1, 1] as const;
 /** Purple: the boss's neon (GD-61). */
@@ -15,6 +16,7 @@ export const OVERLORD_NEON = BOSS_LOOK.neon.overlord ?? WHITE;
 export const OVERLORD_DECK = { top: 6, boulevard: 10 } as const;
 
 type Rgb = readonly [number, number, number];
+type Vec3 = [number, number, number];
 
 /** A rectangle `w` wide and `d` long around (x, z). */
 export function box2d(w: number, d: number, [x, z]: OutlinePoint = [0, 0]): OutlinePoint[] {
@@ -77,64 +79,91 @@ export function edgeLights(
   }
 }
 
-/** A tower of the city: where (right side, mirrored left), its footprint and height. */
-interface Tower {
+/** What stands on a tower's roof: air-conditioning boxes, a water tank, an aerial mast. */
+export type Roof = 'ac' | 'tank' | 'mast';
+
+/** A tower of the city: where, its footprint and height, a narrower tier on top, its roof. */
+export interface Tower {
   readonly x: number;
   readonly z: number;
   readonly w: number;
   readonly d: number;
   readonly h: number;
-  readonly antenna?: boolean;
+  /** A setback tier on top: its width, depth and height. */
+  readonly tier?: readonly [number, number, number];
+  readonly roof?: Roof;
 }
 
-const TOWERS: readonly Tower[] = [
-  { x: 50, z: 6, w: 10, d: 14, h: 14 },
-  { x: 37, z: 9, w: 8, d: 8, h: 23, antenna: true },
-  { x: 56, z: -8, w: 8, d: 8, h: 18, antenna: true },
-  { x: 35, z: -53, w: 9, d: 6, h: 10 },
-  { x: 44, z: -49, w: 6, d: 6, h: 14 },
-  { x: 51, z: 26, w: 6, d: 8, h: 9 },
-  { x: 24, z: 54, w: 8, d: 6, h: 7 },
-];
 /** How far the towers' tops are inset (their chamfer). */
 const TOWER_INSET = 1.2;
+const WINDOW = { w: 1.3, h: 1.1, rows: 4.2 } as const;
 
-/** A tower: a chamfered block, rows of lit windows on its front, a lit roof edge, an antenna. */
-function drawTower({ hull, neon }: EnemyParts, { x, z, w, d, h, antenna }: Tower): void {
-  const base = OVERLORD_DECK.top;
-  const footprint = box2d(w, d, [x, z]);
-  hull.bevelSlab(footprint, [base - 1, base, base + h], [0, TOWER_INSET], H.panel, {}, H.base);
-  const rows = Math.floor(h / 6);
-  for (let k = 1; k <= rows; k++) {
-    const t = k / (rows + 1);
-    // The front slopes back by the inset as it rises: the windows follow it.
-    const front = z + d / 2 - TOWER_INSET * t + 0.15;
-    neon.box([w * 0.6, 1, 0.4], OVERLORD_NEON, { at: [x, base + h * t, front] });
-  }
-  const roof = box2d(w - 2 * TOWER_INSET - 1, 1, [x, z + d / 2 - 2]);
-  decal(neon, roof, base + h + 0.05, OVERLORD_NEON);
-  if (antenna) {
-    hull.cylinder(0.8, 9, 4, H.dark, { at: [x, base + h, z - 1] }, 0.3);
-    neon.box([1.2, 1.2, 1.2], OVERLORD_NEON, { at: [x, base + h + 8.5, z - 1] });
+/**
+ * Lit windows on the front of a block `w` wide standing at (x, base, z + d / 2), `h` high, its
+ * front sloping back by the inset as it rises: a grid of panes, a few dark.
+ */
+function frontWindows(neon: SolidBuilder, [x, base, front]: Vec3, w: number, h: number): void {
+  const cols = Math.max(1, Math.floor((w - 2) / 2.2));
+  const rows = Math.floor((h - 1) / WINDOW.rows);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if ((r * 7 + c * 3 + Math.round(x)) % 5 === 0) continue;
+      const cx = x + (c - (cols - 1) / 2) * 2.2;
+      const pane = (dx: number, y: number): Vec3 => {
+        const t = (y - base) / h;
+        return [cx + dx, y, front - TOWER_INSET * t + 0.12];
+      };
+      const y0 = base + 2 + r * WINDOW.rows;
+      const [a, b] = [-WINDOW.w / 2, WINDOW.w / 2];
+      const corners = [pane(a, y0), pane(b, y0), pane(b, y0 + WINDOW.h), pane(a, y0 + WINDOW.h)];
+      neon.face(corners, OVERLORD_NEON);
+    }
   }
 }
 
-/** Lit windows (neon strips) along the boulevard, in front of and behind the citadel. */
-const STREETS: readonly OutlinePoint[][] = [
-  box2d(1.2, 12, [8, 42]),
-  box2d(1.2, 26, [13, -39]),
-  box2d(1.2, 20, [20, -36]),
-];
+/** The clutter on a roof at height `y` around (x, z). */
+function drawRoof({ hull, neon, charge }: EnemyParts, roof: Roof, [x, y, z]: Vec3): void {
+  if (roof === 'ac') {
+    hull.box([2.2, 1.2, 2], H.base, { at: [x - 1.4, y, z - 0.6] }, H.panel);
+    hull.box([1.6, 1, 1.6], H.base, { at: [x + 1.5, y, z + 0.4] }, H.panel);
+    decal(hull, box2d(1.4, 1.2, [x - 1.4, z - 0.6]), y + 1.25, H.dark);
+  } else if (roof === 'tank') {
+    hull.cylinder(1.8, 2.6, 6, H.panel, { at: [x, y, z] }, 1.5);
+    neon.ring(1.85, 0.4, 6, OVERLORD_NEON, { at: [x, y + 1.2, z] });
+  } else {
+    hull.cylinder(0.7, 10, 4, H.dark, { at: [x, y, z] }, 0.25);
+    charge.box([1.1, 1.1, 1.1], WHITE, { at: [x, y + 9.6, z] });
+  }
+}
 
-/** P07-R05: the city on the Overlord's deck, mirrored on both sides. */
-export function drawCity(parts: EnemyParts): void {
-  for (const tower of TOWERS) {
-    drawTower(parts, tower);
-    drawTower(parts, { ...tower, x: -tower.x });
+/** A tower: a chamfered block, lit windows on its front, a lit roof edge, a tier and its roof. */
+export function drawTower(parts: EnemyParts, { x, z, w, d, h, tier, roof }: Tower): void {
+  const { hull, neon } = parts;
+  const base = OVERLORD_DECK.top;
+  hull.bevelSlab(
+    box2d(w, d, [x, z]),
+    [base - 1, base, base + h],
+    [0, TOWER_INSET],
+    H.panel,
+    {},
+    H.base,
+  );
+  frontWindows(neon, [x, base, z + d / 2], w, h);
+  let top = base + h;
+  if (tier) {
+    const [tw, td, th] = tier;
+    hull.bevelSlab(
+      box2d(tw, td, [x, z - 0.5]),
+      [top, top, top + th],
+      [0, 0.8],
+      H.base,
+      {},
+      H.panel,
+    );
+    frontWindows(neon, [x, top, z - 0.5 + td / 2], tw, th);
+    top += th;
+  } else {
+    decal(neon, box2d(w - 2 * TOWER_INSET - 1, 0.8, [x, z + d / 2 - 2]), top + 0.05, OVERLORD_NEON);
   }
-  for (const street of STREETS) {
-    const y = OVERLORD_DECK.boulevard + 0.04;
-    decal(parts.neon, street, y, OVERLORD_NEON);
-    decal(parts.neon, flipX(street), y, OVERLORD_NEON);
-  }
+  if (roof) drawRoof(parts, roof, [x, top, z - 0.5]);
 }

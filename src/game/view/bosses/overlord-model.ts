@@ -6,15 +6,11 @@ import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { decal, flipX, SIDES } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
-import {
-  box2d,
-  drawCity,
-  edgeLights,
-  OVERLORD_DECK,
-  OVERLORD_NEON,
-  symmetric,
-} from './overlord-city';
+import { box2d, edgeLights, OVERLORD_DECK, OVERLORD_NEON, symmetric } from './overlord-city';
+import { drawOverlordArmour } from './overlord-armour';
+import { drawDeck } from './overlord-deck';
 import { drawBattery, drawGenerator, drawLaser, WING_TOP } from './overlord-parts';
+import { drawSkyline } from './overlord-skyline';
 
 // P07-R05: the Overlord, World 1's last boss (1-5). Model space: logical pixels, nose +Z (down
 // the screen), Y up towards the camera. A flying city block: a wide armoured deck with towers,
@@ -156,7 +152,9 @@ function drawHatches({ hull, charge }: EnemyParts): void {
 /** The core: hull, city, citadel and hatches, four reactors in the engine block. */
 function drawCore(parts: EnemyParts): void {
   drawHull(parts);
-  drawCity(parts);
+  drawDeck(parts);
+  drawSkyline(parts);
+  drawOverlordArmour(parts);
   drawCitadel(parts);
   drawHatches(parts);
   for (const s of SIDES) {

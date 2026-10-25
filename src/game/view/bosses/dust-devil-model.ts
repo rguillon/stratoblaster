@@ -5,7 +5,10 @@ import { DUST_DEVIL } from '../../config/bosses/mini-bosses';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { around, canopyPaint, FIGHTER_SECTION, POD_SECTION, SIDES } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
-import { H, scaled, WHITE } from './mini-boss-shapes';
+import type { OutlinePoint } from '../../../render/geometry/outline';
+import { dish, hazard, mast, plate, seam, vent } from './mini-boss-greebles';
+import { cog, conduit, GEAR, glowLine } from './mini-boss-mechanism';
+import { H, QUARTER, scaled, SHADE, WHITE } from './mini-boss-shapes';
 
 // P07-R05, 1-3: the Dust Devil. Logical pixels, nose +Z, Y up (towards the camera).
 type Vec3 = [number, number, number];
@@ -107,11 +110,64 @@ const POD_DOME = [
   [0, 3],
 ] as const;
 const POD_TOP = 3.5;
+/** A patch on the first pod's armour (around the pod's centre). */
+const PATCH = [
+  [-13, 1],
+  [-8, 5.5],
+  [-5, 3],
+  [-9, -1],
+] as const;
 /** The pods are drawn this much bigger than their outlines. */
 const POD_SCALE = 1.15;
 
+/** The armour sectors on the disc's left (+X) shoulder, as turns from the nose (mirrored). */
+const SECTORS = [
+  [0.62, 1.32],
+  [1.82, 2.52],
+] as const;
+
+/** An annular sector seen from above, turns `a0` to `a1` from +Z, radii `r0` to `r1`. */
+function sector(a0: number, a1: number, r0: number, r1: number): OutlinePoint[] {
+  const arc = (r: number): OutlinePoint[] =>
+    Array.from({ length: 4 }, (_, k): OutlinePoint => {
+      const a = a0 + ((a1 - a0) * k) / 3;
+      return [Math.sin(a) * r, Math.cos(a) * r];
+    });
+  return [...arc(r1), ...arc(r0).reverse()];
+}
+
+/**
+ * The disc's fat armour sectors (phase 7 review), and in the gaps between them the pinions that
+ * drive the ring, their conduits and amber light; a dish to port, an ammunition drum and a mast
+ * to starboard.
+ */
+function drawArmour(p: EnemyParts): void {
+  const { hull, neon } = p;
+  for (const s of SIDES) {
+    for (const [a0, a1] of SECTORS) {
+      hull.bevelSlab(
+        sector(s * a0, s * a1, 11.5, 19.5),
+        [3, 4, 7.5],
+        [0, 1.6],
+        H.base,
+        {},
+        H.panel,
+      );
+    }
+    cog(hull, [s * 17, 1.4, 0], 2.8, 8, 0.2);
+    conduit(hull, [s * 9.5, 6.5, 0], [s * 15, 3, 0], 0.8, 2);
+    glowLine(neon, [s * 11, 2.6, 2.2], [s * 18, 1.2, 2.2], 0.9, AMBER);
+    glowLine(neon, [s * 11, 2.6, -2.2], [s * 18, 1.2, -2.2], 0.9, AMBER);
+  }
+  dish(hull, [12.5, 7.5, 7.5], 3.2, 0.5, 0.9);
+  hull.cylinder(2.6, 6, 8, SHADE.patch, { at: [-10, 9.6, -11], roll: QUARTER, yaw: 0.6 });
+  hazard(hull, [-14, 7.5, 7.6], [4, 2], 3, -1);
+  mast(p, [-5, 7.2, -4], 6, AMBER);
+}
+
 /** The core's disc with its amber band, cockpit, engines and ring emitter. */
-function drawCore({ hull, neon, charge, reactor }: EnemyParts): void {
+function drawCore(p: EnemyParts): void {
+  const { hull, neon, charge, reactor } = p;
   hull.lathe(GYRO_DISC, 12, H.base, { yaw: Math.PI / 12 });
   neon.ring(18.2, 1.2, 12, AMBER, { at: [0, -0.4, 0], yaw: Math.PI / 12 });
   hull.loft(FIGHTER_SECTION, COCKPIT, H.panel, {}, { paint: canopyPaint([0, 1], H.dark) });
@@ -122,6 +178,7 @@ function drawCore({ hull, neon, charge, reactor }: EnemyParts): void {
   }
   // Brightens as the core's next volley charges.
   charge.lathe(EMITTER, 6, WHITE);
+  drawArmour(p);
 }
 
 /** The turning ring (P07-R05): a hub collar, three spokes to the pods, swept blades between. */
@@ -133,6 +190,21 @@ function drawRing({ hull, neon }: EnemyParts): void {
     hull.bevelSlab(SPOKE, [-1.5, 0, 1.2], [0.4, 0.7], H.panel, { yaw: a }, H.base);
     hull.bevelSlab(BLADE, [-0.6, 0, 0.6], [0.4, 0.6], H.base, { yaw: a + Math.PI / 3 }, H.panel);
   }
+  drawRingDetail(hull);
+}
+
+/** The ring's gear teeth round the hub, its rim plates, and one hazard-striped spoke. */
+function drawRingDetail(hull: EnemyParts['hull']): void {
+  for (const a of around(24)) {
+    hull.box([1.4, 1.2, 1.8], GEAR, { at: [Math.sin(a) * 21, 1.2, Math.cos(a) * 21], yaw: a });
+  }
+  for (const a of around(6)) {
+    const rim = a + Math.PI / 6;
+    const at: [number, number, number] = [Math.sin(rim) * 40, 1.7, Math.cos(rim) * 40];
+    hull.box([5, 0.6, 2.2], (a * 10) % 3 < 1.5 ? SHADE.edge : H.panel, { at, yaw: rim });
+  }
+  hazard(hull, [0, 1.2, 30], [3, 9], 3, 0);
+  seam(hull, [-3.6, 25], [3.6, 25], [1.2, 0.6, 0.4], SHADE.edge);
 }
 
 /**
@@ -154,4 +226,25 @@ function bladePod({ hull, neon, charge }: EnemyParts, at: Vec3): void {
   neon.slab(POD_LIGHT, [POD_TOP, POD_TOP + 0.3], AMBER, place);
   hull.lathe(POD_DOME, 6, H.dark, { at: [at[0], POD_TOP, at[2]] });
   for (const muzzle of MUZZLES) charge.slab(scaled(muzzle, POD_SCALE), [-1.6, 2.2], WHITE, place);
+  const put = (x: number, z: number): [number, number, number] => [
+    at[0] + x * Math.cos(place.yaw) + z * Math.sin(place.yaw),
+    POD_TOP,
+    at[2] - x * Math.sin(place.yaw) + z * Math.cos(place.yaw),
+  ];
+  vent(hull, put(-8.5, -2), [6, 3], 3, place.yaw + Math.PI / 2);
+  vent(hull, put(8.5, -1.5), [6, 3], 3, place.yaw + Math.PI / 2);
+  seam(hull, ...edge(put(-6, -5), put(6, -5)), [POD_TOP, 0.6, 0.4], H.dark);
+  // The first pod (at the ring's nose at rest) was patched after a hit.
+  if (Math.abs(at[0]) < 1) plate(hull, scaled(PATCH, 1), [POD_TOP, 0.5], SHADE.patch, place);
+}
+
+/** The flat ends of a seam from two 3D points. */
+function edge(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+): [readonly [number, number], readonly [number, number]] {
+  return [
+    [a[0], a[2]],
+    [b[0], b[2]],
+  ];
 }

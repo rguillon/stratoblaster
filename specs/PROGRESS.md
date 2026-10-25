@@ -98,3 +98,4 @@
 - 2026-10-25 — 7 — Implemented bosses: engine `Boss` (parts, shielded core, stages, death), fights with ground speed and checkpoint, ten World 1 bosses with code-generated models, boss health bar, Continue panel and the `bosses/` debug page (D-053..D-056); awaiting review.
 - 2026-10-25 — 7 — Review fix: `boss/` debug endpoint (same page as `bosses/`); still awaiting review.
 - 2026-10-25 — 7 — Review fix: bosses roll into their sideways moves (up to 12°); still awaiting review.
+- 2026-10-25 — 7 — Review fix: more detailed, asymmetric boss models, seven of them with fat armour over a visible mechanism (2,180–4,164 triangles each); still awaiting review.

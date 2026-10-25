@@ -13,6 +13,10 @@ import {
   SIDES,
 } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
+import { drawTitanArmour } from './refinery-titan-armour';
+import { drawTitanDetails, NACELLE } from './refinery-titan-details';
+import { TITAN_HULL } from './refinery-titan-hull';
+import { drawTitanLandmarks } from './refinery-titan-landmarks';
 import {
   drawMissileBattery,
   drawTank,
@@ -29,18 +33,6 @@ const H = ENEMY_LOOK.hull;
 const WHITE = [1, 1, 1] as const;
 const QUARTER = Math.PI / 2;
 
-/** The heavy hull (loft stations: z, half width, bottom, top), tail to nose. */
-const TITAN_HULL = [
-  [-62, 24, -5, 9],
-  [-50, 29, -6, 12],
-  [-34, 34, -7, 15],
-  [-8, 36, -8, 16],
-  [12, 34, -7.5, 15],
-  [32, 29, -6.5, 13],
-  [50, 20, -5, 9],
-  [62, 11, -4, 6],
-  [68, 5, -3, 3.5],
-] as const;
 /** Armour over the hull's front, between the bridge and the nose: a chevron, chamfered. */
 const PROW_ARMOUR: OutlinePoint[] = [
   [0, 50],
@@ -61,13 +53,6 @@ const COLUMN = [
   [0, 17.5],
 ] as const;
 
-/** The engine nacelles at the tail (loft stations), sunk in the hull's back. */
-const NACELLE = [
-  [-62, 7.5, -3, 11],
-  [-52, 8.5, -3.5, 13],
-  [-36, 6, -2, 12.5],
-  [-28, 0, 9, 9],
-] as const;
 /** The beam across the hull the tanks lie on, and the cradle arms outside them. */
 const TANK_BEAM: OutlinePoint[] = [
   [-94, -4],
@@ -129,9 +114,6 @@ function drawPipes({ hull }: EnemyParts): void {
     for (const s of SIDES) {
       hull.cylinder(3.1, 2.4, 6, H.dark, { at: [s * 44 - 1.2, 9, z], roll: -QUARTER });
     }
-  }
-  for (const s of SIDES) {
-    hull.cylinder(2, 44, 6, H.panel, { at: [s * 19, 15.6, -22], pitch: QUARTER });
   }
 }
 
@@ -195,6 +177,9 @@ function drawCore(parts: EnemyParts): void {
   drawGantries(parts);
   drawArmour(parts);
   drawColumns(parts);
+  drawTitanDetails(parts);
+  drawTitanArmour(parts);
+  drawTitanLandmarks(parts);
   for (const s of SIDES) {
     parts.reactor([s * 11, 4, -62], 6);
     parts.reactor([s * 48, -1, -42], 4);

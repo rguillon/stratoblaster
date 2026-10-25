@@ -223,6 +223,8 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 > After the agent reports, write corrections here, then say **"Fix phase 07"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-25) Add more details to the bosses; some may not be symmetrical. — Done: every boss got surface detail (plates, seams, vents, grilles, rivets, hazard paint, weathering, cable runs, antennas, small lights; helpers `mini-boss-greebles.ts`, `final-boss-greebles.ts`, `refinery-titan-details.ts`, `overlord-deck.ts`…) and all ten are now asymmetric (e.g. the Reef Warden's cargo and crane against a radar dish, the Scorpion's fiddler-crab claws and missing leg, the Gull Mothership's carrier island beside its runway, the Mesa Fortress's battle-torn block and comms tower, the Refinery Titan's flare stack against a dock crane and pipe rack, the Overlord's irregular skyline with a spire, billboard, command tower and landing pad). Triangles now 2,180–4,164 a boss (were 1,060–2,250; budget 6,000), sizes still within 15 %. Part positions and hit circles unchanged.
+- [x] (reviewer, in chat, 2026-10-25) Make some bosses look to have complex mechanical parts behind the hull parts: fat armour protecting a complex mechanism. — Done on seven bosses (Breakwater, Scorpion, Dust Devil, Gull Mothership, Mesa Fortress, Refinery Titan, Overlord): thick bevelled armour plates with gaps, slots and cut-outs showing a darker mechanism set lower (cogs, hydraulic rams, cable bundles, ribbed conduits, glowing neon / charge-lit lines); helpers `mini-boss-mechanism.ts`, `final-boss-mechanism.ts`, `refinery-titan-armour.ts`, `overlord-armour.ts`.
 - [x] (reviewer, in chat, 2026-10-25) Make the bosses roll a little when they move left / right. — Done: a boss model rolls into its sideways moves, the wing on the side it flies to dipping, up to 12° at its fastest sway (60 px/s), easing in and out; visual only, its hit circles do not turn (`boss-model.ts`, `BOSS_LOOK.roll`, `boss-models.test.ts`).
 - [x] (reviewer, in chat, 2026-10-25) Add a `boss/` debug endpoint to see all the bosses. — Done: `boss/` opens the bosses page (the same as `bosses/`: every boss, its fight, model and wireframe views; `app/route.ts`, `boss/index.html`, `route.test.ts`, e2e `bosses.spec.ts`).
 
@@ -272,7 +274,7 @@ None. The phase was a Draft written by the agent at the reviewer's request; on 2
 - **Sentinel** (1-5 mini, ×0.6): hull guns fire aimed pairs (blue / red), the drone bay launches 2 Hornets every 5.5 s. Core: 3-way fan → 5-way → 7-way → spiral ring of 14 and 5-way.
 - **Overlord** (1-5 final, ×0.25): wing lasers in turn, missile batteries pairs of missiles. Core: aimed → aimed 3 → burst of 4 → 5-way → ring of 10 → 7-way and burst → spiral ring of 14, its own laser and missiles.
 
-Simulated fights (guns level 3, always on target, from arrival to the end of the death blasts): mini 30.1 / 32.8 / 37.5 / 42.7 / 44.1 s, final 58.8 / 72.3 / 81.7 / 91.7 / 103.5 s for 1-1 … 1-5. Models: 1,060–2,250 triangles each (budget 6,000), within 15 % of their sizes.
+Simulated fights (guns level 3, always on target, from arrival to the end of the death blasts): mini 30.1 / 32.8 / 37.5 / 42.7 / 44.1 s, final 58.8 / 72.3 / 81.7 / 91.7 / 103.5 s for 1-1 … 1-5. Models: 2,180–4,164 triangles each after review (budget 6,000), within 15 % of their sizes.
 
 ### Gate results
 Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
@@ -284,6 +286,8 @@ make e2e        ✔ 53 passed (5.7 min; 50 before + 3 on bosses/; the 1-1 end te
 After the lint fixes of the commit (refactors only): typecheck ✔ / build ✔ / e2e 52 passed, 1 failed:
 the phase 1 key-repeat timing test (P01-R09, 2 repeats seen instead of 3 under load); its spec
 passed 3/3 when run again on its own.
+After the detailed, asymmetric models (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 failed: the
+phase 1 menu test P01-R14 (a 5 s state poll timed out under load); its spec passed 4/4 on its own.
 ```
 Coverage before this phase: 99.33 % lines (phase 6). New numbers come with `/validate-phase 7`.
 

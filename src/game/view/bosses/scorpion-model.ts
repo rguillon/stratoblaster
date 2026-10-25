@@ -7,7 +7,9 @@ import { SCORPION } from '../../config/bosses/mini-bosses';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { angryEyes, decal, flipX, POD_SECTION, SIDES } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
-import { H, offset, QUARTER, scaled, socket, WHITE } from './mini-boss-shapes';
+import { mast, plate, seam } from './mini-boss-greebles';
+import { cog, conduit, GEAR, glowLine, ram } from './mini-boss-mechanism';
+import { H, offset, QUARTER, scaled, SHADE, socket, WHITE } from './mini-boss-shapes';
 
 // P07-R05, 1-4: the Scorpion. Logical pixels, nose +Z, Y up (towards the camera).
 type Vec3 = [number, number, number];
@@ -42,7 +44,10 @@ const ABDOMEN = [
   [-12, -26],
   [-15, -13],
 ] as const;
-/** The right arm, a swept fairing from the head out to the claw's socket (mirrored on the left). */
+/**
+ * The left (+X) arm from the head out to the claw's socket (mirrored on the right): a dark bed of
+ * machinery, under two fat armour plates with a gap between them over the elbow.
+ */
 const ARM = [
   [12, 16],
   [34, 30],
@@ -51,12 +56,27 @@ const ARM = [
   [36, 15],
   [16, 4],
 ] as const;
-/** The yellow light along the right arm's back. */
-const ARM_LIGHT = [
-  [18, 9],
-  [36, 19.5],
-  [36, 21],
-  [17, 10.6],
+const ARM_ARMOUR = [
+  [
+    [12, 16],
+    [22.5, 22.7],
+    [26.5, 10],
+    [16, 4],
+  ],
+  [
+    [28.5, 26.5],
+    [34, 30],
+    [44, 27],
+    [44, 17],
+    [36, 15],
+    [32.5, 13],
+  ],
+] as const;
+/** Direction of the arm seen from above (a yaw), and its lights' centres on the armour. */
+const ARM_YAW = Math.atan2(26, 12);
+const ARM_LIGHTS = [
+  [19.5, 13.5],
+  [37, 21.5],
 ] as const;
 /** The right legs: three short swept vanes under the thorax (mirrored on the left). */
 const LEG = [
@@ -82,6 +102,13 @@ const TAIL = [
   [2, 29],
   [16, 26],
   [24, 21],
+] as const;
+/** A patch welded on the abdomen's left. */
+const PATCH = [
+  [4, -14],
+  [12, -15],
+  [10, -22],
+  [5, -24],
 ] as const;
 /** Half widths of the segments, root to tip. */
 const TAIL_WIDTH = [7, 6.5, 6, 5.5, 5, 4.5] as const;
@@ -111,8 +138,17 @@ const JAW = [
   [5, 0],
   [2, -1],
 ] as const;
-/** The claws are drawn this much bigger than their outlines. */
-const CLAW_SCALE = 1.2;
+/** The armour cap over the back of a knuckle, leaving its front machinery bare. */
+const KNUCKLE_CAP = [
+  [-8.5, -2.5],
+  [8.5, -2.5],
+  [9.5, -6.5],
+  [6, -11.5],
+  [-6, -11.5],
+  [-9.5, -6.5],
+] as const;
+/** The claws are drawn this much bigger than their outlines: the left (+X) one is oversized. */
+const CLAW_SCALE = { left: 1.45, right: 1.22 } as const;
 /** Length of the cannon between the jaws. */
 const CLAW_BARREL = 13;
 const KNUCKLE = Array.from({ length: 8 }, (_, k) => {
@@ -132,16 +168,16 @@ function segment(
   const pitch = -Math.atan2(dy, dz);
   const at: Vec3 = [0, ya, za];
   const bead = [
-    [0, w * 0.75, -w * 0.7, w * 0.7],
-    [length * 0.55, w, -w * 0.85, w * 0.85],
-    [length * 1.05, w * 0.7, -w * 0.6, w * 0.6],
+    [length * 0.14, w * 0.75, -w * 0.7, w * 0.7],
+    [length * 0.5, w, -w * 0.9, w * 0.9],
+    [length * 0.86, w * 0.75, -w * 0.65, w * 0.65],
   ] as const;
   hull.loft(POD_SECTION, bead, H.base, { at, pitch });
   // The light along the segment's upper side: the section's top, or its bottom where the
   // segment runs backwards (pitched over, the section is upside down).
   const up = Math.cos(pitch) < 0 ? -1 : 1;
   neon.box([1, 0.4, length * 0.5], YELLOW, {
-    at: along(at, pitch, w * 0.85 * up, length * 0.55),
+    at: along(at, pitch, w * 0.9 * up, length * 0.5),
     pitch,
   });
 }
@@ -164,9 +200,14 @@ function drawBody({ hull, neon }: EnemyParts): void {
   for (const eye of angryEyes([0, 17], 2, [7, 1.4], 0.35)) decal(neon, eye, 7.05, YELLOW);
   for (const s of SIDES) {
     const side = (o: readonly OutlinePoint[]): readonly OutlinePoint[] => (s > 0 ? o : flipX(o));
-    hull.bevelSlab(side(ARM), [-1.5, 0.5, 4], [0.8, 1.6], H.base, {}, H.panel);
-    neon.slab(side(ARM_LIGHT), [4, 4.3], YELLOW);
-    for (const [x, z, yaw] of LEG_ROOTS) {
+    hull.bevelSlab(side(ARM), [-1.5, -0.5, 1.5], [0.8, 1.2], GEAR);
+    for (const armour of ARM_ARMOUR) {
+      hull.bevelSlab(side(armour), [-1, 0.5, 6], [0.8, 1.8], H.base, {}, H.panel);
+    }
+    for (const [x, z] of ARM_LIGHTS) {
+      neon.box([1, 0.3, 7], YELLOW, { at: [s * x, 6, z], yaw: s * ARM_YAW });
+    }
+    for (const [x, z, yaw] of s > 0 ? LEG_ROOTS : LEG_ROOTS.slice(0, 2)) {
       hull.bevelSlab(LEG, [-1, 0, 1], [0.3, 0.6], H.panel, {
         at: [s * x, -0.5, z],
         yaw: s * (QUARTER + yaw),
@@ -180,6 +221,36 @@ function drawBody({ hull, neon }: EnemyParts): void {
 }
 
 /**
+ * The machinery under the armour (phase 7 review): the elbows' cogs, rams and lit conduits seen
+ * between the arms' plates, the tail's joint drums, and a cable bundle along the tail's left.
+ */
+function drawMachinery({ hull, neon }: EnemyParts): void {
+  for (const s of SIDES) {
+    cog(hull, [s * 27.5, 1.2, 18], 3.4, 8, s * 0.3);
+    ram(hull, [s * 19, 2.6, 11.5], [s * 35, 3, 19.5], 1.2);
+    glowLine(neon, [s * 25, 1.4, 12], [s * 29.5, 1.4, 24], 1.2, YELLOW);
+  }
+  TAIL.slice(1, -1).forEach(([z, y], i) => {
+    const w = (TAIL_WIDTH[i] ?? 5) * 0.8;
+    hull.cylinder(w, w * 2, 8, GEAR, { at: [w, y, z], roll: QUARTER });
+    neon.cylinder(w * 1.04, 0.8, 8, YELLOW, { at: [0.4, y, z], roll: QUARTER });
+  });
+  const cables = TAIL.slice(0, -1).map(([z, y], i): Vec3 => {
+    const w = TAIL_WIDTH[i] ?? 5;
+    return [w + 0.6, y, z];
+  });
+  cables.slice(1).forEach((b, i) => {
+    const a = cables[i];
+    if (a) conduit(hull, a, b, 0.9, 1);
+  });
+  // The missing right hind leg: a capped stump and its loose cable.
+  hull.cylinder(1.6, 2.4, 6, SHADE.soot, { at: [-15, -0.5, -13], roll: QUARTER });
+  // A welded patch on the abdomen's left, a sensor mast on the head's right.
+  plate(hull, PATCH, [6, 0.6], SHADE.patch);
+  seam(hull, [5, -16], [11, -18], [6.6, 0.5, 0.3], SHADE.edge);
+}
+
+/**
  * P07-R05: the Scorpion, a gunship with yellow neon: a segmented carapace, two arms out to its
  * claw cannons, and a segmented tail arched over its back, its stinger hanging in front of the
  * head, between the claws.
@@ -188,6 +259,8 @@ export function buildScorpion(scene: Scene): EnemyModel {
   return buildBossModel(SCORPION, scene, YELLOW, {
     core: (p) => {
       drawBody(p);
+      drawMachinery(p);
+      mast(p, [-6, 6, 12], 6, YELLOW);
       // The core's guns: a charge light at the front of the head.
       p.charge.cylinder(1.8, 3, 6, WHITE, { at: [0, 2, 23], pitch: QUARTER }, 0.8);
       for (const s of SIDES) {
@@ -199,17 +272,37 @@ export function buildScorpion(scene: Scene): EnemyModel {
   });
 }
 
-/** A claw cannon (P07-R05): a knuckle, two jaws open to the front, a cannon between them. */
-function claw({ hull, charge }: EnemyParts, at: Vec3): void {
+/**
+ * A claw cannon (P07-R05): a knuckle, two jaws open to the front, a cannon between them, and the
+ * rams that work the jaws. The left (+X) claw is the bigger one, a fiddler crab's.
+ */
+function claw({ hull, neon, charge }: EnemyParts, at: Vec3): void {
+  const s = Math.sign(at[0]);
+  const k = s > 0 ? CLAW_SCALE.left : CLAW_SCALE.right;
   // Turned a little towards the centre line, so the claws close in front of the head.
-  const place = { at: offset(at, 0, 3, 0), yaw: -Math.sign(at[0]) * 0.18 };
-  hull.bevelSlab(scaled(KNUCKLE, CLAW_SCALE), [-2, 1, 5], [1, 2], H.panel, place, H.base);
-  for (const jaw of [JAW, flipX(JAW)])
-    hull.bevelSlab(jaw, [-1, 1, 4], [0.6, 1.2], H.base, place, H.panel);
-  const barrel = { at: offset(place.at, 0, 2.5, 0), pitch: QUARTER, yaw: place.yaw };
-  hull.cylinder(2.4, CLAW_BARREL, 6, H.dark, barrel, 2);
-  const [dx, dz] = [Math.sin(place.yaw) * CLAW_BARREL, Math.cos(place.yaw) * CLAW_BARREL];
-  charge.cylinder(2.2, 1.6, 6, WHITE, { ...barrel, at: offset(barrel.at, dx, 0, dz) }, 1.4);
+  const place = { at: offset(at, 0, 3, 0), yaw: -s * 0.18 };
+  const put = (x: number, y: number, z: number): Vec3 =>
+    offset(
+      place.at,
+      x * Math.cos(place.yaw) + z * Math.sin(place.yaw),
+      y,
+      -x * Math.sin(place.yaw) + z * Math.cos(place.yaw),
+    );
+  hull.bevelSlab(scaled(KNUCKLE, k), [-2, 1, 3], [1, 1.2], GEAR, place);
+  hull.bevelSlab(scaled(KNUCKLE_CAP, k), [2, 3, 8], [0, 2.2], H.panel, place, H.base);
+  for (const jaw of [JAW, flipX(JAW)]) {
+    hull.bevelSlab(scaled(jaw, k), [-1, 1, 4.5], [0.6, 1.4], H.base, place, H.panel);
+  }
+  for (const x of [-1, 1]) {
+    ram(hull, put(x * 4 * k, 5, -5 * k), put(x * 8 * k, 4.6, 5 * k), 0.9);
+    cog(hull, put(x * 6 * k, 3.6, 0), 1.8 * k, 6);
+  }
+  neon.box([5 * k, 0.4, 0.8], YELLOW, { at: put(0, 8, -6.5 * k), yaw: place.yaw });
+  glowLine(neon, put(-5 * k, 3.4, -0.5 * k), put(5 * k, 3.4, -0.5 * k), 1, YELLOW);
+  const length = CLAW_BARREL * k * 0.85;
+  const barrel = { at: put(0, 2.5, 0), pitch: QUARTER, yaw: place.yaw };
+  hull.cylinder(2.4, length, 6, H.dark, barrel, 2);
+  charge.cylinder(2.2, 1.6, 6, WHITE, { ...barrel, at: put(0, 2.5, length) }, 1.4);
 }
 
 /** The stinger (P07-R05): a bulb hanging from the tail's tip, its laser emitter at the front. */

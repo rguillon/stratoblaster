@@ -5,9 +5,10 @@ import { MESA_FORTRESS } from '../../config/bosses/final-bosses';
 import { BOSS_LOOK } from '../../config/boss-look';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
-import { angryEyes, decal, SIDES } from '../enemies/enemy-shapes';
+import { SIDES } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
 import { edgeStrips, missileTips, mirrored, openHatch, shift, sided } from './final-boss-shapes';
+import { lanceDetails, mesaArm, mesaDeck, mesaKeep, siloDetails } from './final-boss-mesa';
 
 // P07-R05: the Mesa Fortress, the final boss of 1-3. Logical pixels, nose +Z, Y up (towards the
 // camera). A flying fortress built like the canyon's mesas: two stepped armoured tiers, a fan
@@ -31,16 +32,6 @@ const BASE = mirrored([
   [0, -54],
 ]);
 const BASE_TOP = 7;
-/** The upper tier, a heavy block in the middle of the base. */
-const KEEP = mirrored([
-  [0, 40],
-  [16, 38],
-  [28, 26],
-  [30, 4],
-  [26, -14],
-  [14, -20],
-  [0, -22],
-]);
 const KEEP_TOP = 15;
 /** The right arm: a beam out from the base, then a rail forward; the lance lies in between. */
 const ARM = [
@@ -84,7 +75,8 @@ const LENS = [
 /** The two tiers, the arms, the red slits along the armour, and the reactors in the back wall. */
 function drawBody(p: EnemyParts): void {
   p.hull.bevelSlab(BASE, [-6, 0, BASE_TOP], [3, 4], H.base, {}, H.panel);
-  p.hull.bevelSlab(KEEP, [BASE_TOP, BASE_TOP, KEEP_TOP], [0, 3], H.panel, {}, H.base);
+  mesaKeep(p, N);
+  mesaDeck(p);
   const rim: OutlinePoint[] = [
     [-34, 28.5],
     [-19, 41.5],
@@ -107,19 +99,10 @@ function drawBody(p: EnemyParts): void {
       [5.8, 6.4],
       N,
     );
-    // Gun slits along the upper tier's sides.
-    for (let k = 0; k < 4; k++) {
-      const z = -8 + k * 7;
-      const slit: OutlinePoint[] = [
-        [23.5, z],
-        [23.5, z + 5],
-      ];
-      edgeStrips(p.neon, sided(slit, s), 1, [KEEP_TOP - 0.2, KEEP_TOP + 0.3], N);
-    }
+    mesaArm(p, s, N);
     p.reactor([s * 10, 0.5, -53.4], 3.8);
     p.reactor([s * 24, 0.5, -51.8], 3.8);
   }
-  for (const eye of angryEyes([0, 14], 2, [9, 1.6], 0.3)) decal(p.neon, eye, KEEP_TOP + 0.05, N);
 }
 
 /** The fan cannon on top (the core's gun): a housing and five barrels fanned out forward. */
@@ -155,6 +138,7 @@ function drawLance(p: EnemyParts, at: Vec3): void {
   }
   // The lens glows through the warning line and while the laser fires.
   p.charge.lathe(LENS, 8, WHITE, { at: shift(barrel, [0, 0, 27.5]), pitch: QUARTER });
+  lanceDetails(p, at);
 }
 
 /** A missile silo on the rear deck: a hexagonal housing, its hatch open on four missile tips. */
@@ -170,6 +154,7 @@ function drawSilo(p: EnemyParts, at: Vec3): void {
   const hatch = shift(base, [0, 5, 0]);
   openHatch(p, hatch, [12, 15]);
   missileTips(p, shift(hatch, [0, 0.4, 0]), [2, 2], [5.6, 1.9]);
+  siloDetails(p, at);
 }
 
 /**

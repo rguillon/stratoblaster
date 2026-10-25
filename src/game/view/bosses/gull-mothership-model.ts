@@ -7,7 +7,6 @@ import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import {
   CANOPY_SECTION,
-  decal,
   HULL_SECTION,
   POD_SECTION,
   sideStripe,
@@ -15,6 +14,14 @@ import {
 } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
 import { edgeStrips, mirrored, openHatch, shift, sided, turret } from './final-boss-shapes';
+import {
+  flakDetails,
+  gullDeck,
+  gullIsland,
+  gullRunway,
+  gullSpine,
+  hangarDetails,
+} from './final-boss-gull';
 
 // P07-R05: the Gull Mothership, the final boss of 1-2. Logical pixels, nose +Z, Y up (towards
 // the camera). A wide flying carrier: a flat deck, a raised hull along its middle ending in a
@@ -90,18 +97,10 @@ function drawHull(p: EnemyParts): void {
     band === 2 && (side === 1 || side === 2) ? H.dark : undefined;
   p.hull.loft(CANOPY_SECTION, BRIDGE, H.panel, {}, { open: true, paint });
   p.neon.box([1, 0.8, 16], N, { at: [0, 24.6, -9] });
-  // Two rows of green launch lights along the deck, leading out to the hangars.
-  for (const s of SIDES) {
-    for (let k = 0; k < 6; k++) {
-      const [x, z] = [s * 24, -44 + k * 10];
-      const arrow: OutlinePoint[] = [
-        [x - 2.2, z],
-        [x, z + 2.6],
-        [x + 2.2, z],
-      ];
-      decal(p.neon, arrow, DECK_TOP + 0.05, N);
-    }
-  }
+  gullSpine(p, N);
+  gullIsland(p, N);
+  gullRunway(p, N);
+  gullDeck(p, N);
 }
 
 /** The laser emitter at the nose: a barrel, neon rings, and the lens that glows as it charges. */
@@ -141,6 +140,7 @@ function drawHangar(p: EnemyParts, at: Vec3): void {
     [x + 8, z + 16],
   ];
   edgeStrips(p.neon, front, 1.4, [HANGAR_TOP - 0.2, HANGAR_TOP + 0.6], N);
+  hangarDetails(p, at, N);
 }
 
 /** A flak turret on the front deck: an octagonal mount, the turret and its twin guns. */
@@ -152,6 +152,7 @@ function drawFlak(p: EnemyParts, at: Vec3): void {
   const heights = [DECK_TOP - 0.5, DECK_TOP, DECK_TOP + 2.5] as const;
   p.hull.bevelSlab(mount, heights, [0, 1.5], H.dark, { at }, H.base);
   turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N]);
+  flakDetails(p, at, N);
 }
 
 /**

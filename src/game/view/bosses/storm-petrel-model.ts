@@ -8,6 +8,16 @@ import type { EnemyParts } from '../enemies/enemy-mesh';
 import { flipX, FIGHTER_SECTION, POD_SECTION, sideStripe, SIDES } from '../enemies/enemy-shapes';
 import { buildBossModel } from './boss-model';
 import { barrels, edgeStrips, missileTips, shift, sided, turret } from './final-boss-shapes';
+import {
+  petrelBack,
+  petrelHullPaint,
+  petrelNacelle,
+  petrelTail,
+  petrelWing,
+  plateDetails,
+  podDetails,
+  rackDetails,
+} from './final-boss-petrel';
 
 // P07-R05: the Storm Petrel, the final boss of 1-1. Logical pixels, nose +Z, Y up (towards the
 // camera). A flying-boat bomber: a long hull, a high wing with an engine nacelle on each side,
@@ -18,11 +28,17 @@ const QUARTER = Math.PI / 2;
 
 type Vec3 = [number, number, number];
 
-/** The flying-boat hull (loft stations, tail to nose): a deep belly, a rounded back. */
+/**
+ * The flying-boat hull (loft stations, tail to nose): a deep belly, a rounded back. Stations
+ * on the straight lines between others only split its paint into plates ({@link petrelHullPaint}).
+ */
 const HULL = [
   [-64, 3, 3, 7],
   [-50, 7, 0, 9.5],
+  [-40, 8.82, -1.36, 10.86],
   [-28, 11, -3, 12.5],
+  [-14, 12.5, -3.5, 13.75],
+  [-8, 13.14, -3.71, 14.29],
   [0, 14, -4, 15],
   [22, 13, -4, 14],
   [38, 10, -3, 11],
@@ -92,11 +108,12 @@ const WING_Y = [6, 7.5, 9.5] as const;
 
 /** The hull, its neon chines and the cockpit turret on its back (the core's gun). */
 function drawHull(p: EnemyParts): void {
-  p.hull.loft(FIGHTER_SECTION, HULL, H.base);
+  p.hull.loft(FIGHTER_SECTION, HULL, H.base, {}, { paint: petrelHullPaint });
   for (const side of [1, 6]) {
     const stripe = sideStripe(FIGHTER_SECTION, side, [0.25, 0.75]);
     p.neon.loft(stripe, HULL.slice(1, 4), N, {}, { open: true });
   }
+  petrelBack(p, N);
   // A barbette rising out of the back, the gun turret on it: the cockpit turret.
   p.hull.cylinder(8.5, 7.5, 8, H.dark, { at: [0, 7, 5] }, 8);
   turret(p, [0, 14.5, 5], 8.5, [2, N]);
@@ -116,6 +133,8 @@ function drawWings(p: EnemyParts): void {
     p.reactor(shift(nacelle, [0, 3.5, -19.2]), 3.2);
     edgeStrips(p.hull, flip(FLAPS), 3, [9.2, 9.8], H.dark);
     p.hull.loft(POD_SECTION, FLOAT, H.base, { at: [s * 20, -4, 0] });
+    petrelNacelle(p, nacelle, s);
+    petrelWing(p, s, N);
   }
 }
 
@@ -141,6 +160,7 @@ function drawTail(p: EnemyParts): void {
       [7.6, 8.6],
       N,
     );
+    petrelTail(p, s);
   }
 }
 
@@ -168,6 +188,7 @@ function drawPod(p: EnemyParts, at: Vec3): void {
     p.neon.loft(stripe, stations.slice(1, 3), N, { at: pod }, { open: true });
   }
   barrels(p, shift(pod, [0, 4.3, 14]), [2, 5], [1.3, 7]);
+  podDetails(p, at, N);
 }
 
 /** The tail missile rack: an armoured box on the tail, six missile tips standing in it. */
@@ -194,6 +215,7 @@ function drawRack(p: EnemyParts, at: Vec3): void {
     [9.4, 10.6],
     N,
   );
+  rackDetails(p, at, N);
 }
 
 /** The belly plate: an armour shell wrapped over the nose, neon slits along its shoulders. */
@@ -211,6 +233,7 @@ function drawPlate(p: EnemyParts, at: Vec3): void {
     const slit = sideStripe(FIGHTER_SECTION, side, [0.35, 0.65], 1.06);
     p.neon.loft(slit, shell.slice(0, 3), N, place, { open: true });
   }
+  plateDetails(p, at, N);
 }
 
 /**
