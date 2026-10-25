@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Constants } from '@babylonjs/core/Engines/constants';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Scene } from '@babylonjs/core/scene';
@@ -58,6 +59,28 @@ describe('createEnemyShotRenderer', () => {
     renderer.dispose();
   });
 
+  it('phase 8 review: a beam has a flare at its base as the player laser, both over the models', () => {
+    const scene = new Scene(new NullEngine());
+    const renderer = createEnemyShotRenderer(scene);
+    const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
+    const laser = { warningSeconds: 1, firingSeconds: 1, width: 10, style: 'l' };
+    shots.fireLaser(new Dropper(200, 500), laser);
+    shots.step(1.1, 0, 0);
+    renderer.sync(frame(shots));
+    const [beam] = enabled(scene, 'enemy-laser-beam-');
+    const [flare] = enabled(scene, 'enemy-laser-emitter-');
+    const { radius, baseScale, widthDivisor, stretch, pulse } = ENEMY_LOOK.laser.flare;
+    const size = radius * (baseScale + 10 / widthDivisor);
+    expect(flare?.scaling.x).toBeGreaterThanOrEqual(size * (1 - pulse) - 1e-6);
+    expect(flare?.scaling.x).toBeLessThanOrEqual(size * (1 + pulse) + 1e-6);
+    expect(flare?.scaling.y).toBeCloseTo((flare?.scaling.x ?? 0) * stretch);
+    // Drawn over the models, so a beam is seen leaving its emitter's lens.
+    for (const mesh of [beam, flare]) {
+      expect(mesh?.material?.depthFunction).toBe(Constants.ALWAYS);
+    }
+    renderer.dispose();
+  });
+
   it("phase 8 review: a boss's lasers are drawn in its neon colour, the others in red", () => {
     const scene = new Scene(new NullEngine());
     const renderer = createEnemyShotRenderer(scene);
@@ -109,13 +132,6 @@ describe('createEnemyShotRenderer', () => {
     expect(enabled(scene, 'enemy-laser-warning-')).toHaveLength(0);
     const [beam] = enabled(scene, 'enemy-laser-beam-');
     expect(beam?.scaling.y).toBeCloseTo(510);
-    // Phase 8 review: a flare at its base, as the player's laser's, stretched along the beam.
-    const [flare] = enabled(scene, 'enemy-laser-emitter-');
-    const { radius, baseScale, widthDivisor, stretch, pulse } = ENEMY_LOOK.laser.flare;
-    const size = radius * (baseScale + 10 / widthDivisor);
-    expect(flare?.scaling.x).toBeGreaterThanOrEqual(size * (1 - pulse) - 1e-6);
-    expect(flare?.scaling.x).toBeLessThanOrEqual(size * (1 + pulse) + 1e-6);
-    expect(flare?.scaling.y).toBeCloseTo((flare?.scaling.x ?? 0) * stretch);
     renderer.dispose();
   });
 });

@@ -26,10 +26,16 @@ function colorOf(style: string): readonly [number, number, number] {
 function lasersOf(scene: Scene, style: string): LaserPools {
   const palette = laserPalette(colorOf(style));
   const name = (part: string): string => `enemy-laser-${part}-${style}`;
+  // Drawn over the models: a beam leaves its emitter's lens, not from under the hull around it.
   const templates = [
-    additiveTemplate(name('warning'), buildGlowBar(palette.warning), scene),
-    additiveTemplate(name('beam'), buildGlowBar(palette.beam), scene),
-    additiveTemplate(name('emitter'), buildGlowDisc(LOOK.flare.segments, palette.emitter), scene),
+    additiveTemplate(name('warning'), buildGlowBar(palette.warning), scene, true),
+    additiveTemplate(name('beam'), buildGlowBar(palette.beam), scene, true),
+    additiveTemplate(
+      name('emitter'),
+      buildGlowDisc(LOOK.flare.segments, palette.emitter),
+      scene,
+      true,
+    ),
   ] as const;
   const pool = (template: Mesh): NodePool<Mesh> =>
     new NodePool((i) => template.clone(`${template.name}-${String(i)}`));
