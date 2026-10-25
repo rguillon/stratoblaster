@@ -13,18 +13,20 @@ import type { EnemyModel } from '../../../render/game-view';
 import type { BossDesign } from '../../config/bosses/boss-kit';
 import { BOSS_LOOK } from '../../config/boss-look';
 import { buildEnemyModel, meshOf, type EnemyParts } from '../enemies/enemy-mesh';
+import {
+  BossLimbs,
+  bossPoint,
+  hang,
+  JointFrames,
+  ORIGIN,
+  type JointFrame,
+  type LimbDrawing,
+} from './boss-limbs';
+
+export { bossPoint, type LimbDrawing } from './boss-limbs';
 
 type Rgb = readonly [number, number, number];
 type Vec3 = [number, number, number];
-
-/**
- * Model space of a boss: logical pixels, its nose at +Z, +Y up (towards the camera). A boss
- * faces down the screen, so the point `(x, y)` of the playfield (X right, Y up, from its centre)
- * is model `(-x, height, -y)`.
- */
-export function bossPoint(x: number, y: number, height = 0): Vec3 {
-  return [-x, height, -y];
-}
 
 /** Draws a part around its centre `at` (model space), with the builders of an enemy model. */
 export type PartDrawing = (parts: EnemyParts, at: Vec3) => void;
@@ -42,6 +44,12 @@ export interface BossDrawing {
    * as they are at rest: they turn with the turret's aim (phase 7 review), on their piece.
    */
   readonly turrets?: Readonly<Record<string, PartDrawing>>;
+  /**
+   * What is drawn on its joints (`BossStats.joints`), by joint (phase 7 review): drawn as at
+   * rest, they move with the joint. One that belongs to a part goes and flashes with it; the
+   * others flash with the core.
+   */
+  readonly limbs?: Readonly<Record<string, LimbDrawing>>;
 }
 
 /** A piece's turret: its model, on a node turning around its pivot. */
@@ -223,19 +231,16 @@ export function buildBossModel(
   const name = design.id;
   const { flash } = effectMaterials(scene);
   const root = new TransformNode(name, scene);
-  const coreModel = buildEnemyModel(`${name}-core`, scene, neon, drawing.core);
-  coreModel.root.parent = root;
-  const coreTurret = buildTurret(design, 'core', drawing, coreModel.root, neon);
-  const core = new FlashGroup(coreModel, flash);
-  const ringNode = new TransformNode(`${name}-ring`, scene);
-  ringNode.parent = root;
-  const ring =
-    drawing.ring &&
-    new FlashGroup(buildEnemyModel(`${name}-ringbody`, scene, neon, drawing.ring), flash);
-  if (ring) ring.model.root.parent = ringNode;
+  const { core, coreTurret, ringNode, ring } = buildBody(design, drawing, root, { flash, neon });
+  const joints = new JointFrames(design, root);
+  const holder = (spec: BossPartSpec) => joints.frame(spec.joint, spec.orbits ? ringNode : root);
+  const look = { flash, neon };
   const parts = design.stats.parts.map((spec) =>
-    buildPart(design, spec, drawing, spec.orbits ? ringNode : root, { flash, neon }),
+    buildPart(design, spec, drawing, holder(spec), look),
   );
+  const limbs = new BossLimbs(design, drawing.limbs, joints, (limb, draw) => {
+    return new FlashGroup(buildEnemyModel(`${name}-${limb}-limb`, scene, neon, draw), flash);
+  });
   const lit = { charge: 0 };
   return {
     root,
@@ -245,6 +250,7 @@ export function buildBossModel(
       const enemy = lit as unknown as Enemy;
       core.model.sync(enemy, dt);
       ring?.model.sync(enemy, dt);
+      limbs.show(boss instanceof Boss ? boss : undefined, enemy, dt);
       if (!(boss instanceof Boss)) {
         showTurret(coreTurret, undefined, enemy, dt);
         return;
@@ -264,27 +270,47 @@ export function buildBossModel(
   };
 }
 
-/** The model, smoke and stump of one part, on `holder` (the boss, or its turning ring). */
+/** The core body (and its turret) on `root`, and the ring turning with the boss's spin. */
+function buildBody(
+  design: BossDesign,
+  drawing: BossDrawing,
+  root: TransformNode,
+  { flash, neon }: { readonly flash: Material; readonly neon: Rgb },
+) {
+  const [name, scene] = [design.id, root.getScene()];
+  const coreModel = buildEnemyModel(`${name}-core`, scene, neon, drawing.core);
+  coreModel.root.parent = root;
+  const coreTurret = buildTurret(design, 'core', drawing, coreModel.root, neon);
+  const core = new FlashGroup(coreModel, flash);
+  const ringNode = new TransformNode(`${name}-ring`, scene);
+  ringNode.parent = root;
+  const ring =
+    drawing.ring &&
+    new FlashGroup(buildEnemyModel(`${name}-ringbody`, scene, neon, drawing.ring), flash);
+  if (ring) ring.model.root.parent = ringNode;
+  return { core, coreTurret, ringNode, ring };
+}
+
+/** The model, smoke and stump of one part, on `frame` (the boss, its turning ring or a joint). */
 function buildPart(
   design: BossDesign,
   spec: BossPartSpec,
   drawing: BossDrawing,
-  holder: TransformNode,
+  frame: JointFrame,
   { flash, neon }: { readonly flash: Material; readonly neon: Rgb },
 ): PartView {
   const name = design.id;
-  const scene = holder.getScene();
+  const scene = frame.node.getScene();
   const draw = drawing.parts[spec.id];
   if (!draw) throw new Error(`Boss "${name}" has no drawing for its part "${spec.id}"`);
   const at = bossPoint(spec.x, spec.y);
   const model = buildEnemyModel(`${name}-${spec.id}`, scene, neon, (p) => {
     draw(p, at);
   });
-  model.root.parent = holder;
+  hang(model.root, ORIGIN, frame);
   const turret = buildTurret(design, spec.id, drawing, model.root, neon);
   const spot = new TransformNode(`${name}-${spec.id}-spot`, scene);
-  spot.position.set(...at);
-  spot.parent = holder;
+  hang(spot, at, frame);
   const smoke = buildSmoke(`${name}-${spec.id}`, spec.radius, scene, spot);
   const stump = buildStump(`${name}-${spec.id}`, spec.radius, scene, spot);
   return { group: new FlashGroup(model, flash), turret, smoke, stump };

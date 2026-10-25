@@ -1,4 +1,5 @@
 import type { BossPartSpec, BossStats } from '../../../core/entities/boss';
+import type { BossJointSpec } from '../../../core/entities/boss-joint';
 import type { BossTurretSpec } from '../../../core/entities/boss-turret';
 import type {
   EnemyBulletSpec,
@@ -178,7 +179,7 @@ export function part(
   [x, y]: readonly [number, number],
   radius: number,
   health: number,
-  options: { shields?: boolean; drop?: number; orbits?: boolean } = {},
+  options: { shields?: boolean; drop?: number; orbits?: boolean; joint?: string } = {},
 ): BossPartSpec {
   return {
     id,
@@ -189,6 +190,7 @@ export function part(
     shieldsCore: options.shields ?? true,
     dropChance: options.drop ?? 0.5,
     ...(options.orbits ? { orbits: true } : {}),
+    ...(options.joint === undefined ? {} : { joint: options.joint }),
   };
 }
 
@@ -203,6 +205,8 @@ export function stats(options: {
   readonly groundSpeed: number;
   readonly parts: readonly BossPartSpec[];
   readonly coreDrop?: number;
+  /** Its moving limbs (phase 7 review): see `BossStats.joints`. */
+  readonly joints?: Readonly<Record<string, BossJointSpec>>;
 }): BossStats {
   return {
     model: options.id,
@@ -217,6 +221,7 @@ export function stats(options: {
     death: BOSS_TIMING.death,
     roll: BOSS_TIMING.roll,
     ...(options.coreDrop === undefined ? {} : { coreDropChance: options.coreDrop }),
+    ...(options.joints === undefined ? {} : { joints: options.joints }),
   };
 }
 

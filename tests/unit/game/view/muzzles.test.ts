@@ -8,7 +8,7 @@ import { ENEMY_CONFIG } from '../../../../src/game/config/enemies';
 import { createRng } from '../../../../src/core/math/rng';
 import { BOSS_DESIGNS, BOSS_KINDS } from '../../../../src/game/sim/boss-kinds';
 import type { WorldBoss } from '../../../../src/game/sim/bosses/world-boss';
-import { RecordingContext, runUntil } from '../../../helpers/enemy-context';
+import { RecordingContext, run, runUntil } from '../../../helpers/enemy-context';
 import { BOSS_MODELS } from '../../../../src/game/view/bosses/boss-models';
 import { ENEMY_MODELS } from '../../../../src/game/view/enemies/enemy-models';
 import type { EnemyModelFactory } from '../../../../src/render/game-view';
@@ -70,6 +70,32 @@ function turretMuzzles(boss: WorldBoss): Map<string, Muzzle[]> {
   return found;
 }
 
+/** Whether `part` (on a joint) is where `root`'s model draws it: its gun's muzzles, its hit spot. */
+function expectPartDrawn(
+  boss: WorldBoss,
+  part: WorldBoss['parts'][number],
+  root: TransformNode,
+  drawn: Map<string, Muzzle[]>,
+): void {
+  const id = boss.design.id;
+  expect(Math.hypot(part.x - boss.x - part.spec.x, part.y - boss.y - part.spec.y)).toBeGreaterThan(
+    1,
+  );
+  const guns = boss.design.guns[part.spec.id]?.gun ?? [];
+  const placed = guns.map((m): Muzzle => {
+    const p = part.place(m);
+    return [p.x - boss.x, p.y - boss.y, p.height];
+  });
+  expectSame(placed, drawn.get(`${part.spec.id} gun`) ?? [], `${id} ${part.spec.id}`);
+  const spot = root
+    .getDescendants<TransformNode>(false)
+    .find((n) => n.name === `${id}-${part.spec.id}-spot`);
+  spot?.computeWorldMatrix(true);
+  const p = spot?.getAbsolutePosition();
+  expect(-(p?.x ?? NaN)).toBeCloseTo(part.x - boss.x, 1);
+  expect(-(p?.z ?? NaN)).toBeCloseTo(part.y - boss.y, 1);
+}
+
 describe('Muzzles', () => {
   it.each(BOSS_DESIGNS.map((d) => [d.id, d] as const))(
     'phase 7 review: the %s fires from the tips of the barrels its model draws',
@@ -107,6 +133,25 @@ describe('Muzzles', () => {
       for (const [name, placed] of turretMuzzles(boss)) {
         expectSame(placed, drawn.get(`${name} gun`) ?? [], `${id} ${name}`);
       }
+    },
+  );
+
+  const JOINTED = BOSS_DESIGNS.filter((d) => d.stats.parts.some((p) => p.joint !== undefined));
+
+  it.each(JOINTED.map((d) => [d.id] as const))(
+    'phase 7 review: the %s limbs move the barrels and hit circles its model draws',
+    (id) => {
+      const boss = turnedBoss(id);
+      // Well into a swing of every joint.
+      run(boss, new RecordingContext(), 1.3);
+      boss.roll = 0;
+      const model = BOSS_MODELS[id]?.(new Scene(new NullEngine()));
+      if (!model) throw new Error(id);
+      model.sync(boss, 1 / 60);
+      const drawn = markers(model.root, `${id}-`);
+      const moved = boss.parts.filter((p) => p.spec.joint !== undefined);
+      expect(moved.length).toBeGreaterThan(0);
+      for (const part of moved) expectPartDrawn(boss, part, model.root, drawn);
     },
   );
 

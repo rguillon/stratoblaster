@@ -106,7 +106,10 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   guns may be on a turret (`core/entities/boss-turret.ts`, D-058): its muzzles turn with its
   `aim` around its pivot, and `BossPattern.turnTurrets` turns it the way its next volley goes
   (D-060: at the player for aimed shots and bursts, along a fan's heading, spinning with a
-  spiral ring); its model is drawn on its own node, turned by `aim`.
+  spiral ring); its model is drawn on its own node, turned by `aim`. A boss may also have
+  moving limbs (`core/entities/boss-joint.ts`, D-061): joints that swing to and fro around their
+  pivots, each hanging on another or on the body; a part on a joint (`BossPartSpec.joint`) moves
+  with it, its hit circle and muzzles too.
 - `core/systems/boss-pattern.ts`: a stage's volleys (aimed fans, preset fans, rings / spirals,
   bursts, homing missiles, lasers with their warning, launches), each from a part (it stops with
   that part) or the core; `patternSignature` names what still fires.
@@ -119,7 +122,8 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   part's own `dropChance`.
 - Presentation: boss models are enemy models (`GameView.enemies.models`); the game builds them
   with `game/view/bosses/boss-model.ts` (a node per part, a white flash on hits, smoke under half
-  health, a stump once destroyed). The HUD's `ui/boss-bar.ts` shows the bar; after the mini boss
+  health, a stump once destroyed; `boss-limbs.ts` puts a node per joint, turned by its angle,
+  carrying the parts and the limbs drawn on it). The HUD's `ui/boss-bar.ts` shows the bar; after the mini boss
   the "Game over" panel offers Continue (`MenuFlow` `attempt` / `resume`, `GameSession` starts the
   level again from the checkpoint). `GameLevel.runout` draws extra ground past the level's end
   (`withRunout`). `?level=…&boss=mini|final` starts at a boss; K destroys a part (debug only).

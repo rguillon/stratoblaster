@@ -1,3 +1,4 @@
+import type { BossJointSpec } from '../../../core/entities/boss-joint';
 import type { Muzzle } from '../../../core/entities/muzzle';
 import { bullet, mirror, part, stages, stats, twin, volley, type BossDesign } from './boss-kit';
 
@@ -158,6 +159,38 @@ export const DUST_DEVIL: BossDesign = {
 };
 
 /**
+ * A Scorpion's arm (phase 7 review), the left one drawn at -X: it swings at the shoulder, bends
+ * at the elbow and turns its claw at the wrist, while the claw's jaws open and close. The right
+ * arm is its mirror image, a little out of step, so the two arms never move together.
+ */
+function scorpionArm(side: 'left' | 'right'): Record<string, BossJointSpec> {
+  const [s, late] = side === 'left' ? [1, 0] : [-1, 0.37];
+  const joint = (
+    x: number,
+    y: number,
+    swing: readonly [amplitudeDeg: number, period: number, phase: number],
+    parent?: string,
+  ): BossJointSpec => ({
+    x: -s * x,
+    y,
+    ...(parent === undefined ? {} : { parent: `${parent}-${side}` }),
+    swing: { amplitudeDeg: s * swing[0], period: swing[1], phase: swing[2] + late },
+  });
+  // The jaws' hinges, outer and inner: where each claw's jaws turn as its model draws them.
+  const [outer, inner] =
+    side === 'left'
+      ? [joint(47, -20.5, [12, 1.1, 0], 'wrist'), joint(38.5, -19, [-12, 1.1, 0], 'wrist')]
+      : [joint(46.3, -21, [12, 1.1, 0], 'wrist'), joint(39, -19.7, [-12, 1.1, 0], 'wrist')];
+  return {
+    [`shoulder-${side}`]: joint(14, -10, [7, 4.4, 0]),
+    [`elbow-${side}`]: joint(27.5, -18, [12, 3.2, 0.25], 'shoulder'),
+    [`wrist-${side}`]: joint(40, -22, [16, 2.4, 0.5], 'elbow'),
+    [`jaw-${side}-outer`]: outer,
+    [`jaw-${side}-inner`]: inner,
+  };
+}
+
+/**
  * 1-4: a gunship with a tail arched over its back, its stinger hanging in front of the core (so
  * shots from below reach it); claws spread, the stinger fires a laser.
  */
@@ -172,10 +205,11 @@ export const SCORPION: BossDesign = {
     points: 4500,
     groundSpeed: 0.5,
     parts: [
-      part('claw-left', [-42, -24], 14, 730),
-      part('claw-right', [42, -24], 14, 730),
+      part('claw-left', [-42, -24], 14, 730, { joint: 'wrist-left' }),
+      part('claw-right', [42, -24], 14, 730, { joint: 'wrist-right' }),
       part('stinger', [0, -34], 13, 730),
     ],
+    joints: { ...scorpionArm('left'), ...scorpionArm('right') },
   }),
   stopFraction: 0.74,
   sway: { amplitude: 60, period: 7.5 },

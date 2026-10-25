@@ -707,3 +707,12 @@
 - **Alternatives considered:** turning turrets further than they aim (shots would no longer leave from the barrels, D-057); aiming at the player whatever they fire (fans and rings would leave from barrels pointing elsewhere).
 - **Consequences:** fans in World 1 all fire straight down, so a turret between aimed shots and a fan swings back to rest before the fan; spiral turrets spin all through their stage. Guns built into hulls, blades, claws or pods, lasers (they fire straight down) and missile cells do not turn. Shots are unchanged: they still leave the barrel facing their way.
 - **Status:** Accepted
+
+### D-061 — Moving boss limbs: joints in the simulation
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer wants bosses to have moving parts besides turrets, starting with the Scorpion's arms and claws.
+- **Decision:** joints are engine data (`BossJointSpec`: pivot, parent joint, swing amplitude / period / phase; `BossJoints` in `core/entities/boss-joint.ts`), stepped by `Boss.update` all the time the boss is there. A part may hang on a joint (`BossPartSpec.joint`): `Boss` places its centre, and `BossPart.place` its muzzles, through the joint chain (turret first, then joints from the part's up to the body, then roll and the boss's position). Joints are checked at construction (no missing parent, no loop, no part both orbiting and on a joint). The view mirrors them: a node per joint at its pivot, nested as the joints are, turned by `Boss.joints.angle` (`boss-limbs.ts`); parts on a joint, their smoke and stumps hang on its node, and `BossDrawing.limbs` draws what else moves (the Scorpion's upper arms, forearms and jaws; a jaw belongs to its claw and goes with it). Swings are smooth sine waves, out of step between the two arms.
+- **Alternatives considered:** animating the limbs in the view only (the claws' hit circles and barrels would stay where the model no longer is, against D-057); limbs that reach for the player (more behaviour to tune; a swing is enough for the look asked).
+- **Consequences:** the claws' hit circles move up to about 8 px and their barrel tips up to about 15 px, and their shots with them; fight times were not re-tuned. Joints do not roll with the boss in the hit circles (as before for every part). A limb drawn on the body flashes with the core; the jaws flash with their claw.
+- **Status:** Accepted

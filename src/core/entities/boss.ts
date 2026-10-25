@@ -5,6 +5,7 @@ import {
   type EnemyStats,
   type LaserOwner,
 } from './enemy';
+import { BossJoints, type BossJointSpec } from './boss-joint';
 import { BossTurret, type BossTurretSpec } from './boss-turret';
 import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
 import type { ShotTarget } from './shot-target';
@@ -12,7 +13,7 @@ import type { ShotTarget } from './shot-target';
 /**
  * Bosses (P07): big enemies made of a core and destroyable parts (GD-46). Positions are
  * playfield logical pixels, X to the right, Y up. A boss faces down the screen and does not turn:
- * its parts keep their offsets from its centre.
+ * its parts keep their offsets from its centre, unless they hang on one of its joints.
  */
 
 /** A destroyable part of a boss (P07-R01): a turret, a pod, an armour plate… */
@@ -31,6 +32,8 @@ export interface BossPartSpec {
   readonly dropChance: number;
   /** Whether it turns around the boss's centre with {@link Boss.spin} (e.g. on a turning ring). */
   readonly orbits?: boolean;
+  /** The joint it hangs on (phase 7 review): it moves with it, see {@link BossStats.joints}. */
+  readonly joint?: string;
 }
 
 /** Fixed numbers of a boss. `health` is its core's, `radius` the size of the whole boss. */
@@ -54,6 +57,8 @@ export interface BossStats extends EnemyStats {
   readonly roll?: BossRoll;
   /** The turrets of its pieces, by part id (`core` for the core's): see {@link BossPiece.turret}. */
   readonly turrets?: Readonly<Record<string, BossTurretSpec>>;
+  /** Its moving limbs' joints, by id (phase 7 review): parts hang on them (`BossPartSpec.joint`). */
+  readonly joints?: Readonly<Record<string, BossJointSpec>>;
 }
 
 /** How a boss rolls into its sideways moves (see {@link BossStats.roll}). */
@@ -74,8 +79,8 @@ export interface BossPiece extends ShotTarget, Omit<LaserOwner, 'health'> {
   readonly turret: BossTurret | undefined;
   /**
    * Where one of its guns' muzzles is now, `muzzle` given from the boss's centre (as the boss
-   * is drawn, its orbiting parts at a spin of 0): it rolls with the boss, and turns with it,
-   * and with its turret too when `onTurret`.
+   * is drawn, its orbiting parts at a spin of 0, its joints at rest): it rolls with the boss,
+   * turns with it, moves with the joint its piece hangs on, and with its turret when `onTurret`.
    */
   place(muzzle: Muzzle, onTurret?: boolean): RaisedPoint;
 }
@@ -153,8 +158,9 @@ export class BossPart implements BossPiece, DropSource {
   }
 
   place(muzzle: Muzzle, onTurret = false): RaisedPoint {
-    const turned = onTurret && this.turret ? this.turret.turned(muzzle) : muzzle;
-    return muzzlePoint(this.boss, turned, this.spec.orbits ? this.boss.spin : 0);
+    const [x, y, height] = onTurret && this.turret ? this.turret.turned(muzzle) : muzzle;
+    const moved: Muzzle = [...this.boss.joints.move(this.spec.joint, x, y), height];
+    return muzzlePoint(this.boss, moved, this.spec.orbits ? this.boss.spin : 0);
   }
 
   /** Destroys it at once, whatever the boss is doing (its death, a debug key). */
@@ -240,6 +246,8 @@ export abstract class Boss extends Enemy {
   spin = 0;
   /** How far it is rolled into its sideways move, in radians (see `MuzzleBody.roll`). */
   roll = 0;
+  /** Its moving limbs (phase 7 review), swinging all the time it is there. */
+  readonly joints: BossJoints;
   #lastX: number;
   #coreHealth: number;
   #dyingFor = 0;
@@ -258,6 +266,7 @@ export abstract class Boss extends Enemy {
     this.dropChance = stats.coreDropChance;
     this.#coreHealth = stats.health;
     this.#lastX = x;
+    this.joints = new BossJoints(stats.joints, stats.parts);
     this.parts = stats.parts.map((spec, i) => new BossPart(spec, i, this));
     this.core = new BossCore(this);
     this.#place();
@@ -309,6 +318,7 @@ export abstract class Boss extends Enemy {
 
   override update(ctx: EnemyContext, dt: number): void {
     for (const piece of [this.core, ...this.parts]) piece.sinceHit += dt;
+    this.joints.step(dt);
     if (this.state === 'dying') {
       this.#die(ctx, dt);
       return;
@@ -396,7 +406,8 @@ export abstract class Boss extends Enemy {
   #place(): void {
     const [c, s] = [Math.cos(this.spin), Math.sin(this.spin)];
     for (const part of this.parts) {
-      const { x, y, orbits } = part.spec;
+      const { orbits, joint } = part.spec;
+      const [x, y] = this.joints.move(joint, part.spec.x, part.spec.y);
       // Clockwise on screen (X right, Y up) by `spin` for the orbiting ones.
       part.x = this.x + (orbits ? x * c + y * s : x);
       part.y = this.y + (orbits ? -x * s + y * c : y);
