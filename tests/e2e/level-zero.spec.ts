@@ -5,6 +5,9 @@ test.describe('P04: level_zero/ page', () => {
   // Each test software-renders a heavy scene: run them one after another in one worker, so they
   // do not starve the other specs running in parallel (menu tests timed out under that load).
   test.describe.configure({ mode: 'default' });
+  // Loading and rendering the level in software takes 20–30 s per test on a 4-core CI runner
+  // next to the other heavy pages (as on main): more than the 30 s default leaves.
+  test.setTimeout(90_000);
 
   test.beforeEach(async ({ page }) => {
     await page.goto('./level_zero/');
