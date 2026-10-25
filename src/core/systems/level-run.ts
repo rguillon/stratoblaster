@@ -113,6 +113,7 @@ export class LevelRun {
         },
       },
     );
+    if (options.startWeapons) this.arsenal.restore(options.startWeapons);
     if (options.checkpoint) this.#resume(options.checkpoint);
     this.#aimShots();
   }

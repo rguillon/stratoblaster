@@ -1,6 +1,8 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import { placeHamlets, placeLoners, type AwaySite, type Building } from './away-placement';
 import { allowed, between, weighted } from './draws';
+import { floatingIn, linePieces } from './float-placement';
+import { lowestUnder, standingHeight } from './ground-fit';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
 import { blockParts, type Block } from './street-grid';
@@ -90,8 +92,16 @@ export class PropPlacer {
     private readonly rules: PropRules,
     private readonly seed: number,
     readonly roads: RoadNetwork,
+    /** The level's sea level, if it has a sea: floating props float on it (phase 8). */
+    private readonly seaLevel?: number,
   ) {
     this.#zones = createNoise2D(seed + 3);
+    // Phase 8: lines of props (a pipeline) first, so the buildings keep clear of them.
+    for (const line of rules.lines ?? []) {
+      for (const { placement, footprint } of linePieces(line, field, seaLevel)) {
+        this.#occupy({ placement, halfX: footprint, halfZ: footprint });
+      }
+    }
     const mainFirst = [...roads.slots].sort(
       (a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'),
     );
@@ -118,7 +128,8 @@ export class PropPlacer {
       sectionAt: (z) => this.field.sectionAt(z).section,
       groupAt: (x, z, section) => this.#groupAt(x, z, section),
       roadDistance: (x, z) => this.roads.edgeDistance(x, z),
-      ground: (x, z, radius) => this.#standingHeight(x, z, radius, this.rules.maxSlope),
+      ground: (x, z, radius) =>
+        standingHeight(this.field, [x, z, radius], [this.rules.maxSlope, this.rules.minHeight]),
       add: (building, gap) => {
         if (!this.#free(building, gap)) return false;
         this.#occupy(building);
@@ -145,6 +156,10 @@ export class PropPlacer {
     const [j0, j1] = [Math.ceil(area.zMin / cellSize), Math.ceil(area.zMax / cellSize)];
     for (let j = j0; j < j1; j++) {
       for (let i = i0; i < i1; i++) placements.push(...this.#trees(i, j));
+    }
+    const { floating } = this.rules;
+    if (floating && this.seaLevel !== undefined) {
+      placements.push(...floatingIn(floating, this.field, [this.seaLevel, this.seed], area));
     }
     return placements;
   }
@@ -207,7 +222,7 @@ export class PropPlacer {
         if (!tower) return;
         // Without a podium, on the lowest ground under its own plan, so it never floats.
         const { placement, halfX } = tower;
-        const y = roof ?? this.#lowest(placement.x, placement.z, halfX);
+        const y = roof ?? lowestUnder(this.field, placement.x, placement.z, halfX);
         this.#occupy({ ...tower, placement: { ...placement, y } });
       });
   }
@@ -310,7 +325,11 @@ export class PropPlacer {
     const z = slot.z + slot.nz * offset;
     // Clear of every road, its own too where it curves back towards the building.
     if (this.roads.edgeDistance(x, z) < reach + this.roads.setback - 1e-6) return undefined;
-    const y = this.#standingHeight(x, z, kind.footprint, this.rules.maxSlope);
+    const y = standingHeight(
+      this.field,
+      [x, z, kind.footprint],
+      [this.rules.maxSlope, this.rules.minHeight],
+    );
     if (y === undefined) return undefined;
     // The model's front (-Z) faces the road.
     const rotation = Math.atan2(slot.nx, slot.nz);
@@ -336,7 +355,11 @@ export class PropPlacer {
       if (!kind || this.roads.edgeDistance(x, z) < treeClearance + kind.footprint) continue;
       const ground = kind.footprint;
       if (!this.#free({ placement: { x, z }, halfX: ground, halfZ: ground })) continue;
-      const y = this.#standingHeight(x, z, kind.footprint, this.rules.treeMaxSlope);
+      const y = standingHeight(
+        this.field,
+        [x, z, kind.footprint],
+        [this.rules.treeMaxSlope, this.rules.minHeight],
+      );
       if (y !== undefined) {
         placements.push({
           kind: kind.id,
@@ -349,32 +372,5 @@ export class PropPlacer {
       }
     }
     return placements;
-  }
-
-  /** The lowest ground under a square of half side `half` around (x, z). */
-  #lowest(x: number, z: number, half: number): number {
-    const corners = [-half, half].flatMap((dx) => [-half, half].map((dz) => [x + dx, z + dz]));
-    return Math.min(
-      this.field.height(x, z),
-      ...corners.map(([cx = x, cz = z]) => this.field.height(cx, cz)),
-    );
-  }
-
-  /**
-   * Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or undefined
-   * when the ground there is too steep or too low.
-   */
-  #standingHeight(x: number, z: number, radius: number, maxSlope: number): number | undefined {
-    const heights = [
-      this.field.height(x, z),
-      this.field.height(x + radius, z),
-      this.field.height(x - radius, z),
-      this.field.height(x, z + radius),
-      this.field.height(x, z - radius),
-    ];
-    const low = Math.min(...heights);
-    const high = Math.max(...heights);
-    if (low < this.rules.minHeight) return undefined;
-    return high - low <= maxSlope * radius ? low : undefined;
   }
 }

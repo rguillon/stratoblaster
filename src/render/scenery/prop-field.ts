@@ -6,7 +6,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { PropPlacement } from '../../core/scenery/prop-placement';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
-import type { SceneryLevel } from '../../core/scenery/scenery-level';
+import type { PropKindRule, SceneryLevel } from '../../core/scenery/scenery-level';
 import type { PropModelFactory } from './scenery-look';
 
 /** Materials of the props: the lit structure, and the self-lit accents. */
@@ -38,6 +38,15 @@ function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: S
   return mesh;
 }
 
+/** How a kind of prop drifts (`PropKindRule.drift`). */
+export type PropDrift = NonNullable<PropKindRule['drift']>;
+
+/** The kinds of `level` that drift, and how (phase 8: floating ice). */
+export function propDrifts(level: SceneryLevel): Record<string, PropDrift> {
+  const kinds = level.props.floating?.kinds ?? [];
+  return Object.fromEntries(kinds.flatMap((k) => (k.drift ? [[k.id, k.drift]] : [])));
+}
+
 /** Throws if a prop kind of `level` has no model. */
 export function checkPropModels(
   level: SceneryLevel,
@@ -47,6 +56,8 @@ export function checkPropModels(
     ...level.props.groups.flatMap((g) => g.kinds.map((k) => k.id)),
     ...level.props.trees.map((t) => t.id),
     ...(level.props.cars?.kinds ?? []),
+    ...(level.props.floating?.kinds.map((k) => k.id) ?? []),
+    ...(level.props.lines?.map((l) => l.kind) ?? []),
     ...level.sections.flatMap((s) => s.blocks?.podiums ?? []),
   ];
   for (const id of ids) {
@@ -130,6 +141,21 @@ export class PropField {
     // A step wider than asked, so the view can move by a step before the next upload.
     this.#window = { zMin: zMin - step, zMax: zMax + step };
     this.#dirty = true;
+  }
+
+  /**
+   * Moves the kinds that drift (phase 8: ice floes on the sea) to where they are `time` seconds
+   * in: to and fro around where they were placed, each kind on its own course.
+   */
+  drift(drifts: Readonly<Record<string, PropDrift>>, time: number): void {
+    for (const [kind, { x, z, period }] of Object.entries(drifts)) {
+      const meshes = this.#meshes.get(kind);
+      if (!meshes) continue;
+      const phase = (2 * Math.PI * time) / period;
+      for (const mesh of [meshes.structure, meshes.lights]) {
+        mesh?.position.set(x * Math.sin(phase), 0, z * Math.sin(phase * 0.7 + 1));
+      }
+    }
   }
 
   /** Uploads the instance matrices if the placements or the window changed since the last call. */

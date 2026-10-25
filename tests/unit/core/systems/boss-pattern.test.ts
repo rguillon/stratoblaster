@@ -7,7 +7,7 @@ import {
   type VolleySource,
 } from '../../../../src/core/systems/boss-pattern';
 import { BossTurret } from '../../../../src/core/entities/boss-turret';
-import { headingTo } from '../../../../src/core/systems/projectile-motion';
+import { headingTo, wrapAngle } from '../../../../src/core/systems/projectile-motion';
 import { Dropper } from '../../../fixtures/sample-enemies';
 import { RecordingContext } from '../../../helpers/enemy-context';
 
@@ -220,6 +220,65 @@ describe('BossPattern', () => {
       const steps = aims.slice(1).map((a, i) => a - (aims[i] ?? 0));
       for (const step of steps.slice(10)) expect(step).toBeCloseTo((20 * DEG) / 60, 5);
       expect(at(aims, aims.length - 1)).toBeCloseTo(40 * DEG, 1);
+    });
+
+    it('phase 8 review: a laser turret aims at the player until its beam fires, then holds', () => {
+      const turret = new BossTurret({ x: 0, y: 0, turnRateDeg: 360 });
+      const source: VolleySource = { ...piece(240, 500), turret };
+      const ctx = new RecordingContext();
+      [ctx.playerX, ctx.playerY] = [340, 400];
+      const laser = { warningSeconds: 1, firingSeconds: 1, width: 4, style: 'l' };
+      const pattern = new BossPattern([
+        { ...volley({ kind: 'laser', laser }, 5, 'gun'), first: 0.5, turret: true },
+      ]);
+      const run = (seconds: number) => {
+        for (let t = 0; t < seconds - 1e-9; t += 1 / 60) {
+          pattern.turnTurrets(ctx, 1 / 60, () => source);
+          pattern.step(ctx, 1 / 60, () => source);
+        }
+      };
+      run(0.6);
+      expect(turret.aim).toBeCloseTo(-45 * DEG);
+      const [shot] = ctx.lasers;
+      expect(wrapAngle((shot?.owner.heading ?? 0) - headingTo(240, 500, 340, 400))).toBeCloseTo(0);
+      // During its warning line it follows the player.
+      [ctx.playerX, ctx.playerY] = [140, 400];
+      run(0.8);
+      expect(turret.aim).toBeCloseTo(45 * DEG);
+      expect(wrapAngle((shot?.owner.heading ?? 0) - headingTo(240, 500, 140, 400))).toBeCloseTo(0);
+      // Once the beam fires, it holds still wherever the player goes.
+      run(0.3);
+      [ctx.playerX, ctx.playerY] = [340, 400];
+      run(0.5);
+      expect(turret.aim).toBeCloseTo(45 * DEG);
+      // Then it aims at the player again for its next laser.
+      run(0.8);
+      expect(turret.aim).toBeCloseTo(-45 * DEG);
+    });
+
+    it('phase 8 review: during the warning line, a laser turret follows the player slowly', () => {
+      const spec = { x: 0, y: 0, turnRateDeg: 360, laserTurnRateDeg: 20 };
+      const turret = new BossTurret(spec);
+      const source: VolleySource = { ...piece(240, 500), turret };
+      const ctx = new RecordingContext();
+      [ctx.playerX, ctx.playerY] = [340, 400];
+      const laser = { warningSeconds: 1, firingSeconds: 1, width: 4, style: 'l' };
+      const pattern = new BossPattern([
+        { ...volley({ kind: 'laser', laser }, 5, 'gun'), first: 0.5, turret: true },
+      ]);
+      const run = (seconds: number) => {
+        for (let t = 0; t < seconds - 1e-9; t += 1 / 60) {
+          pattern.turnTurrets(ctx, 1 / 60, () => source);
+          pattern.step(ctx, 1 / 60, () => source);
+        }
+      };
+      // Aimed at full speed before it fires (at 0.5 s).
+      run(0.55);
+      expect(turret.aim).toBeCloseTo(-45 * DEG);
+      // The player dodges across: the warning line follows at 20° a second.
+      [ctx.playerX, ctx.playerY] = [140, 400];
+      run(0.5);
+      expect(turret.aim).toBeCloseTo(-35 * DEG, 1);
     });
 
     it('at the player for the volley that fires next, between a fan and aimed shots', () => {

@@ -9,6 +9,59 @@ type Rgb = readonly [number, number, number];
 /** Glow disc colours, centre to edge (black edge: soft fade with additive blending). */
 const glow = (core: Rgb, mid: Rgb, rim: Rgb): readonly Rgb[] => [core, mid, rim, [0, 0, 0]];
 
+/** A colour scaled by `k`. */
+const times = ([r, g, b]: Rgb, k: number): Rgb => [r * k, g * k, b * k];
+
+/** A colour `t` of the way to white. */
+const whiter = ([r, g, b]: Rgb, t: number): Rgb => [
+  r + (1 - r) * t,
+  g + (1 - g) * t,
+  b + (1 - b) * t,
+];
+
+/**
+ * An enemy bullet's colours, centre to edge (phase 8 review): its body's, a deep shade of its
+ * `color`, darker at the rim so it reads as a ball, fading out (`bullets.fade`), dark enough for
+ * the swirls added over it to show; its faint aura's; its two swirls', the smaller one whiter;
+ * and its pulsing `core`'s. All but the body are added on, so they end in black.
+ */
+const bullet = (core: Rgb, color: Rgb) => ({
+  body: [0.6, 0.6, 0.55, 0.45, 0.35, 0.25].map((k) => times(color, k)),
+  halo: [times(color, 0.4), times(color, 0.2), [0, 0, 0]] as readonly Rgb[],
+  swirls: [0.1, 0.4].map((t): readonly Rgb[] => [
+    whiter(color, t),
+    times(color, 0.8),
+    times(color, 0.35),
+    [0, 0, 0],
+  ]),
+  core: [core, core, times(color, 0.6), [0, 0, 0]] as readonly Rgb[],
+});
+
+/** The colours of a laser of `color` (phase 8 review): its warning line, beam and base flare. */
+export interface LaserPalette {
+  readonly warning: readonly Rgb[];
+  readonly beam: readonly Rgb[];
+  readonly emitter: readonly Rgb[];
+}
+
+/** A laser in `color`: a white-hot beam core, its colour around it, fading out. */
+export function laserPalette(color: Rgb): LaserPalette {
+  return {
+    warning: [color, times(color, 0.5), [0, 0, 0]],
+    beam: [whiter(color, 0.9), color, times(color, 0.5), [0, 0, 0]],
+    // A soft, roughly exponential falloff from white-hot, as the player's laser flare.
+    emitter: [
+      whiter(color, 0.8),
+      whiter(color, 0.5),
+      color,
+      times(color, 0.6),
+      times(color, 0.3),
+      times(color, 0.1),
+      [0, 0, 0],
+    ],
+  };
+}
+
 export const ENEMY_LOOK = {
   /**
    * Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white to
@@ -73,14 +126,39 @@ export const ENEMY_LOOK = {
   bullets: {
     /** Visual radius relative to the hit radius. */
     scale: 1.6,
-    segments: 10,
+    /**
+     * A ball of plasma: opacity of the body's centre and of each ring of its colours, so it is
+     * a solid colour inside and its border fades out. Blended rather than added, so its colour
+     * shows over bright snow too.
+     */
+    fade: [1, 1, 1, 0.85, 0.4, 0],
+    /** A faint aura added around the body, `size` times its radius, flickering by `flicker` at `flickerHz`. */
+    halo: { size: 1.45, flicker: 0.08, flickerHz: 13 },
+    /**
+     * Curled arms of brighter plasma added over the body (`buildSwirl`), spinning at
+     * `spinRadPerSec` (opposite ways, so they churn), `size` times the body's radius, in the
+     * colours of their style (`styles.*.swirls`). Each
+     * bullet starts them turned by its heading, so a ring of bullets does not spin as one.
+     */
+    swirls: [
+      { size: 1, lobes: 3, depth: 0.55, twist: 2.4, spinRadPerSec: 6 },
+      { size: 0.75, lobes: 2, depth: 0.65, twist: -3, spinRadPerSec: -10 },
+    ],
+    /**
+     * A white-hot glow added over its centre (phase 8 review), its radius relative to the
+     * bullet's, swelling and shrinking by `amount` of it `hz` times a second as the bullet flies.
+     */
+    core: { size: 0.35, pulse: { hz: 2.5, amount: 0.3 } },
+    segments: 12,
+    /** The swirls' arms need more sides to curl smoothly. */
+    swirlSegments: 24,
     styles: {
-      red: glow([1, 0.9, 0.85], [1, 0.15, 0.1], [0.4, 0, 0]),
-      magenta: glow([1, 0.9, 1], [1, 0.1, 0.8], [0.35, 0, 0.3]),
-      green: glow([0.9, 1, 0.85], [0.2, 1, 0.25], [0, 0.35, 0.05]),
-      orange: glow([1, 0.95, 0.8], [1, 0.5, 0.05], [0.4, 0.12, 0]),
-      blue: glow([0.85, 0.9, 1], [0.2, 0.45, 1], [0, 0.08, 0.4]),
-      purple: glow([0.95, 0.85, 1], [0.65, 0.2, 1], [0.2, 0, 0.4]),
+      red: bullet([1, 0.9, 0.85], [1, 0.15, 0.1]),
+      magenta: bullet([1, 0.9, 1], [1, 0.1, 0.8]),
+      green: bullet([0.9, 1, 0.85], [0.2, 1, 0.25]),
+      orange: bullet([1, 0.95, 0.8], [1, 0.5, 0.05]),
+      blue: bullet([0.85, 0.9, 1], [0.2, 0.45, 1]),
+      purple: bullet([0.95, 0.85, 1], [0.65, 0.2, 1]),
     },
   },
   missile: {
@@ -92,30 +170,33 @@ export const ENEMY_LOOK = {
     flameSize: [2.6, 6],
   },
   laser: {
+    /**
+     * Colour of the lasers of a style (`EnemyLaserSpec.style`) that is not a boss's: the
+     * Lancer's red. A boss's lasers take its neon colour (`BOSS_LOOK.neon`, phase 8 review).
+     */
+    color: [1, 0.3, 0.4] as Rgb,
     /** The thin warning line, blinking at `blinkHz`, then the beam. */
-    warning: {
-      width: 2,
-      colors: [
-        [1, 0.35, 0.4],
-        [0.5, 0.05, 0.1],
-        [0, 0, 0],
-      ],
-      blinkHz: 8,
-    },
+    warning: { width: 2, blinkHz: 8 },
     beam: {
-      colors: [
-        [1, 0.95, 0.95],
-        [1, 0.3, 0.4],
-        [0.5, 0.02, 0.1],
-        [0, 0, 0],
-      ],
       /** Visual width relative to the beam width. */
       glowWidth: 2,
       flicker: 0.12,
       flickerHz: 21,
     },
-    emitter: glow([1, 0.95, 0.95], [1, 0.3, 0.4], [0.3, 0, 0.05]),
-    emitterRadius: 9,
+    /**
+     * The flare at the beam's base, as the player's laser's (`SHOT_LOOK.laser.muzzle`, phase 8
+     * review): `radius` × (`baseScale` + beam width / `widthDivisor`), stretched along the beam,
+     * pulsing by `pulse` at `pulseHz`, round and smooth (`segments` sides).
+     */
+    flare: {
+      radius: 12,
+      baseScale: 0.6,
+      widthDivisor: 12,
+      stretch: 1.3,
+      pulse: 0.15,
+      pulseHz: [9, 17],
+      segments: 24,
+    },
   },
   /**
    * Explosions (GD-62; phase 5 review: bigger, with burning debris). Sizes are relative to the

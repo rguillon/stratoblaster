@@ -734,3 +734,114 @@
 - **Alternatives considered:** angry instead of the pause (no warning before the hell); angry patterns from the parts left (some bosses have no armed part left, and it would differ with the order of destruction); a faster version of the stage's own pattern (not a bullet hell for bosses with few guns).
 - **Consequences:** each boss now has 3 s of dense fire per part (2 to 4 times a fight), the hardest moments of the fights; whether 1-1's 20 bullets a second at 120 px/s is right for a kid is to be checked by hand (P07-R10 manual validation). Fight times with the simulated player do not change.
 - **Status:** Accepted
+
+### D-064 — Time of day, clouds and weather as an engine "atmosphere" along the level
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R04 asks for a documented look per level (time of day, cover of both cloud layers, haze, ground lights) that may change over a stretch of the level, blending every parameter and following the distance; P08-R05 for weather as data. The World 1 looks were fixed values in `SceneryLook`, applied once when the scene was built.
+- **Decision:**
+  - `core/scenery/atmosphere.ts` (pure): an `Atmosphere` is every number that changes (sun height / direction / colour / strength / shadow darkness, haze, sky gradient for reflections, ambient light, fog, each cloud layer's cover / opacity / colours, ground lights, weather `{ kind, strength }`, aurora). `blendAtmosphere` mixes two of them (colours and numbers linearly, the sun's azimuth the short way round, the weather's kind kept from the side that has some); `AtmosphereTrack` gives the atmosphere at a distance: a start look, then each change over `[from, to]` eased with a smoothstep (halfway is exactly half).
+  - `core/scenery/sky-look.ts`: the game's data is a `SkyScript` (`SkyLook` = time of day, cloud cover, `storm`, weather, aurora; changes in seconds of scroll). `resolveSky` turns it into an atmosphere from the engine presets `config/time-of-day.ts` (six times of day; at night a dim, cold moon, and a moonlit reflection gradient so the ships keep their shapes and colours). A heavy low cover dims the sun, softens shadows, raises the ambient light, greys the haze and makes the layers see-through (`OVERCAST`), so the ground still shows from above. The weather brings the fog's end in to its kind's `fogAt1` (0.55 for snow, `blizzard_fog`) and its start half as much.
+  - `render/scenery/sky-layers.ts` builds the lights, cloud layers, weather and aurora, and applies the atmosphere every frame (`applyAtmosphere`, cloud colours / cover, shadow darkness and ground lights in the kits, the reflection cube and environment intensity in `level-scene.ts`, rebuilt only when the gradient changes).
+  - `SceneryLook.atmosphere` is optional: a look without it keeps its fixed values (`lookAtmosphere`), so Level Zero and World 1 look exactly as before. Debug: `weather=0` and `look=<time of day>` (`AtmosphereOptions`, through `GameDebugOptions` to the stage; a forced time of day on a fixed look uses its own cloud cover).
+- **Alternatives considered:** blending whole `SceneryLook`s (their textures are built once; only the light changes over a level); time-based look changes (a debug jump would show the wrong look); a visible sky dome (the 35° camera never sees the sky: the "sky" only lights and reflects).
+- **Consequences:** every frame sets a handful of light and material values (no allocation besides the sun's direction). Look changes follow the ground distance (D-054), so after a fight the look is a little ahead of the level's progress.
+- **Status:** Accepted
+
+### D-065 — Snow as GPU particles, behind the playfield; aurora as an additive sheet
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R05: snowflakes across the playfield at different depths, scrolling with the ground, up to a blizzard that streaks sideways, never hiding what flies, at 60 FPS; weather kinds as data. P08-R06: an aurora in the night haze of 2-5, without flashes.
+- **Decision:** `config/weather.ts` lists kinds (count at strength 1: 1 500 for snow, fall and wind speeds, size, streak, sway, colour, opacity 0.5, the box of air they fill). `WeatherLayer` builds one mesh of quads per kind with a random `flake` attribute each; the shader places them in a box that follows the view along Z while each flake keeps its world Z (so they scroll with the ground), falls, sways and is blown along X by a wind growing with the strength, stretching the quads at strength 1, faded into the haze. Only the first `round(1 500 × strength)` quads are drawn (one sub-mesh), so nothing is uploaded per frame. They are drawn after the cloud layers in the group under the ships, without writing depth, so every ship, shot and bonus is drawn over them; the terrain's depth hides flakes behind hills. The aurora is a sheet just above the highest cloud layer, two slowly bending curtains (green, violet) with fine rays, added on top and strongest in the far haze, moving over tens of seconds.
+- **Alternatives considered:** Babylon `ParticleSystem` (CPU emitters per frame, not tied to the ground); flakes over the ships too (they would hide shots, against P08-R05).
+- **Consequences:** one draw call per weather kind and one for the aurora. Flakes between the camera and the clouds are drawn over the clouds, as falling snow is.
+- **Status:** Accepted
+
+### D-066 — Frozen ground: ice in the existing texture slots, lakes, crevasses, floating ice, a pipeline
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R07 asks for snow, snow-covered rock showing dark rock on slopes, glacier ice with crevasses cut with the heightmap tools, frozen lakes (flat shiny ice with cracks and a snowy edge), ice floes and icebergs drifting on the sea, and a pipeline running along 2-3.
+- **Decision:** the terrain shader's layers are slots each look fills: World 2's `ground` and `high` are snow, `steep` dark rock (only cliffs, `steepSlope` 0.4–0.75), `low` (under `lowHeight` 6) cracked lake ice, the `sandy` cover glacier ice and `paved` trodden snow. Generated textures get `cracks` (cell edges of a tiling jittered grid). Height field: `TerrainSection.lakes` flattens round basins to their level (under `lowHeight`, so they show lake ice with a snowy shore) and `crevasses` cuts narrow, broken lines (`core/scenery/ice-sculpt.ts`); fjords are a flattened shelf with a channel below the sea along the same line. Props: `PropRules.floating` puts ice on the sea where it is deep enough under the whole footprint, with the chance of each section's `floatDensity`, at the sea level; `PropKindRule.drift` sways each floating kind slowly (the kind's mesh moves, `PropField.drift`); `PropRules.lines` lays one piece every `spacing` along a meander (the 2-3 pipeline), placed before the buildings so they keep clear (`core/scenery/float-placement.ts`). Snowy roads: light road colours with dark lane and centre lines as wheel tracks.
+- **Alternatives considered:** a fourth ground cover in the vertex colours (all four channels are used: a new attribute and shader code); an animated per-instance drift (an upload every frame for hundreds of floes).
+- **Consequences:** the floes of one kind drift together; World 2's roads reuse World 1's rules (D-046). Level Zero and World 1 are unchanged (the new rules are opt-in).
+- **Status:** Accepted
+
+### D-067 — World 2 waves composed from plans; balance measured as in World 1
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R08/R09: five 5-minute scripts with given lead kinds, strictly harder from 2-1 to 2-5 per minute of scroll, 2-1 ≥ 1-3 and 2-5 > 1-5.
+- **Decision:** each level is a `WavePlan` (`game/config/world-2/waves.ts`): a cycle of phrases (kind, groups, interval, side, position, spread), a beat every `gap` seconds shrinking over the level, groups growing by 60 % over it; then the World 1 density, filler and quiet stretches (`assembleLevel`, shared with World 1). Measured without shooting (seed 606): 116.8 / 120.4 / 121.4 / 172 / 233 enemies per minute, 2 466 / 3 384 / 3 666 / 6 016 / 7 360 HP per minute, peaks 22 / 23 / 36 / 37 / 51 (World 1 now: 1-3 104.8 / 2 235, 1-5 130.3 / 4 150); every second half heavier. Factors 0.9 / 0.95 / 1 / 1.1 / 1.15.
+- **Alternatives considered:** about 200 hand-written beats (World 1's way; the plans are tuned with a few numbers).
+- **Consequences:** like World 1 (D-051), the peaks are far above the tunable `peak_on_screen` (10 … 17); their order is kept. Carriers' Gnats make 2-3's peak jump.
+- **Status:** Accepted
+
+### D-068 — Boss engine additions for World 2, and World 2 boss tuning
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R10's bosses need a radar mast that makes the other weapons aim while it stands (Fjord Lynx), sweeping lasers (Aurora Station, Glacier Colossus, Boreal Citadel) and slow bullets that burst into rings (Aurora Station's cryo cannons). P08-R11 gives fight times.
+- **Decision:** generic engine data: `BossVolley.needs` / `after` (fires only while a part stands / once it is destroyed; `patternSignature` and turret aiming take them into account), `EnemyLaserSpec.sweepDeg` (the warning line on one side, the beam sweeping to the other while it fires), `EnemyBulletSpec.burst` (after `after` s the bullet becomes a ring of `count` bullets; the level's bullet speed factor applies to both). The ten models and designs were made in parallel by sub-agents following the phase 7 conventions (muzzles drawn from the designs' constants, frost and snow details) and registered after World 1's. Health tuned with the D-055 bot (guns level 3): mini 32.8 / 40.3 / 41.1 / 45.4 / 51.3 s, final 66.7 / 86.7 / 97.0 / 108.0 / 113.6 s; full health 2 720 / 2 880 / 3 550 / 3 800 / 4 200 (mini) and 6 500 / 7 000 / 8 600 / 13 000 / 17 500 (final), each above the World 1 boss of its level and rank. Angry patterns (D-063) go on from World 1: heat 2.5 → 7.
+- **Alternatives considered:** a hand-written boss class for the Lynx (its rule is data: two conditions on volleys).
+- **Consequences:** the Harbour Kraken's final fight is over 2-2's inland end (the harbour is at its start: 2-2 has to end where 2-3 begins).
+- **Status:** Accepted
+
+### D-069 — Enemy bullets as blended blobs of energy
+- **Date:** 2026-10-25
+- **Phase:** 8 (revised after review)
+- **Context:** enemy bullets were glow discs added onto what is behind them; over bright snow they washed out to white, against P08-R04/R05 (shots as easy to see as in World 1). A first fix put a dark disc under each bullet; the reviewer asked for it to go and for colourful blobs of energy with fading borders instead, no bigger than before.
+- **Decision:** each bullet is a disc of the same size: a white-hot core going over to its colour, which it keeps to its edge while its vertex opacity fades out (`ENEMY_LOOK.bullets.fade`), drawn with alpha blending (`blendedTemplate`) rather than additively, so its colour is kept over bright ground. An additive white-hot core (a child of the template, so every clone has one) pulses in size with the bullet's age (2.5 Hz, ±30 %): a change of size of a small glow, not a flash of the screen.
+- **Alternatives considered:** a dark backing disc under each bullet (first version; the reviewer did not want the dark ring); a different bullet style per world (every renderer and style would double).
+- **Consequences:** the new look shows in every level, World 1 included.
+- **Status:** Accepted
+
+### D-070 — The bosses page grouped by world
+- **Date:** 2026-10-25
+- **Phase:** 8
+- **Context:** P08-R12: the `bosses/` page lists the World 2 bosses after World 1's, grouped by world, each over the scenery and look of its level.
+- **Decision:** `EnemyViewerPanel` takes optional `groups` (headings before a kind index); the bosses page derives them from the level each boss is fought in. The level's scene (and its look, weather included) is already the one the boss belongs to (P07-R09).
+- **Consequences:** none on the `enemies/` page.
+- **Status:** Accepted
+
+### D-071 — Weapon levels kept from one completed level to the next
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the reviewer asked for the weapon levels to persist once a level is finished; until now every level started with every weapon at level 1 (phase 6 known limitation).
+- **Decision:** on "Level complete", `GameSession` saves the run's `RunArsenal.snapshot()` (weapon in use and each weapon's level) as JSON under `<game id>_weapons` in the app's key-value storage (cookies); each level then starts from it (`LevelRunOptions.startWeapons`, restored before a checkpoint's weapons). An unreadable value reads as none. A game over saves nothing.
+- **Alternatives considered:** keeping them in memory only (lost on reload); saving them at every bonus (a level lost would still raise the weapons).
+- **Consequences:** there is no way yet to start again from level 1 weapons but clearing the cookies; a "new game" reset can come with scoring / save slots.
+- **Status:** Accepted
+
+### D-072 — Laser colours by boss, and beams locked once firing
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** every enemy laser was red; the reviewer asked for more colours, and for a laser that may follow the player while it aims to keep its direction once locked.
+- **Decision:** a boss's lasers take its kind id as style (`withOwnLasers`, applied when the boss kinds are built), and the view colours a style with that boss's neon (`laserPalette`: a white-hot beam core, the colour around it, fading out), red for the Lancer and unknown styles. In the engine (`EnemyShots`), a laser's warning line follows its owner's heading; when it starts firing it keeps the heading its owner had then (`locked`), its sweep turning from it, and it still leaves from the emitter.
+- **Alternatives considered:** a colour argument on every boss laser volley (20 boss files to keep in step with their neon).
+- **Consequences:** lasers fired along a swinging joint (the Scorpion's stinger) no longer swing while they fire.
+- **Status:** Accepted
+
+### D-073 — Lasers on turrets instead of sweeping lasers
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the reviewer saw the Boreal Citadel's laser turn while it fired (its sweep, D-068) and asked that no boss laser turn once it fires, lasers going on rotating turrets where needed.
+- **Decision:** `EnemyLaserSpec.sweepDeg` is removed. A piece's lasers can be on its turret (`Guns.turretLaser`, `BossVolley.turret`): `BossPattern.turnTurrets` aims that turret at the player until the beam fires and holds it still while it fires, and the laser follows the turret's heading (piece heading + turret aim) until it locks (D-072). The Aurora Station's emitters, the Glacier Colossus's cutters and the Boreal Citadel's cannons are on turrets (their models draw the turning part as the turret, on a mount); the Harbour Kraken's and the Citadel's core lasers fire straight down.
+- **Alternatives considered:** keeping sweeps but locked (no sweep at all then); turrets for core lasers too (the cores' lenses are built into their hulls).
+- **Consequences:** those lasers now threaten where the player is rather than sweeping an area; fight times were not measured again. After review, a laser turret follows the player at only 20°/s during the warning line (`laserTurnRateDeg`), so the beam can be outrun.
+- **Status:** Accepted
+
+### D-074 — Enemy bullets as balls of plasma, drawn as thin instances
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the enemy bullet (a flat blob with a pulsing core) was to feel like a ball of energy or plasma. More layers per bullet would have cost a draw call each per bullet as cloned meshes (already two each), against the ENG-106 budget in dense boss patterns.
+- **Decision:** each bullet is, back to front, a faint flickering aura, a deep-coloured body (blended, so it shows over snow), two curled swirls of brighter plasma (`buildSwirl`: lobed rings turned more the further out) spinning opposite ways, and a pulsing core. Each layer of each colour is one mesh of thin instances (a matrix per bullet, as the blasts, D-034), so all bullets cost at most 5 × 6 draw calls however many fly. Their colours are worked out in `ENEMY_LOOK.bullets.styles`; spins, sizes and flicker in `ENEMY_LOOK.bullets`.
+- **Alternatives considered:** a noise shader on a quad (truer plasma, but a custom material outside the vertex-colour look of the other shots, and not checkable under `NullEngine`); keeping cloned meshes (up to 5 draw calls per bullet).
+- **Consequences:** bullet layers are drawn under the other transparent meshes (`alphaIndex`), as one block per layer; a bullet no longer has a node of its own.
+- **Status:** Accepted
+
+### D-075 — e2e tests drive the level clock, and e2e builds draw fewer pixels
+- **Date:** 2026-10-25
+- **Phase:** 8 (validation)
+- **Context:** e2e tests failed on CI and locally under load: a level's clock gains at most `maxFrameSeconds` (0.1 s) a frame, and under software WebGL a level frame can take seconds, so "wait 4 s of level time" took over a minute on a CI runner (about 0.04× real time). Entering a level also blocks the page for more than the 5 s `expectState` polled, and clicks (Playwright waits for a stable element over animation frames) crawled on the `enemies/` page.
+- **Decision:** `__GAME_TEST__.advance(seconds)` (e2e builds only, ENG-52) runs the level being played at once, one fixed step a frame, without rendering (`GamePlay.advance`); the e2e helper `waitForLevelTime` loads the level, then advances it instead of waiting for frames. `expectState` gives the `game` screen the loading timeout. e2e builds render at half resolution across and without multisampling (`ENGINE_CONFIG.e2e`): tests read the game's state, not its pixels.
+- **Alternatives considered:** longer timeouts (slower tests, and still at the mercy of the runner's speed); fewer e2e workers (slower overall); GPU rendering on CI (not available on the hosted runners).
+- **Consequences:** the World specs and the menu, gamepad and `enemies/` specs pass at 6× CPU throttling in Chromium. Production builds are unchanged. A level advanced through the test API still runs every step of the game's logic, with the keys held at the time.
+- **Status:** Accepted

@@ -73,6 +73,8 @@ export interface LevelRunOptions {
    * starting at `weaponLevel` and keeping its own level. Only `weapon` when omitted.
    */
   readonly weapons?: readonly WeaponDefinition[];
+  /** The weapons kept from the levels completed before, instead of `weapon` at `weaponLevel`. */
+  readonly startWeapons?: WeaponLevels;
   readonly ship: RunShip;
   readonly bounds: FlightBounds;
   /** Enemies and shots this far outside the playfield are removed. */

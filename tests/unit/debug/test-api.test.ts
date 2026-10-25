@@ -3,9 +3,10 @@ import { installTestApi, type GameTestApi } from '../../../src/debug/test-api';
 import type { MenuAction } from '../../../src/input/menu-action';
 
 describe('installTestApi', () => {
-  it('ENG-52: exposes getState and sendAction on the target', () => {
+  it('ENG-52: exposes getState, sendAction and advance on the target', () => {
     const target: { __GAME_TEST__?: GameTestApi } = {};
     const sent: MenuAction[] = [];
+    const advanced: number[] = [];
     installTestApi(target, {
       state: () => ({
         screen: 'title',
@@ -22,6 +23,7 @@ describe('installTestApi', () => {
       loadingProgress: () => [0, 1],
       game: () => undefined,
       send: (a) => sent.push(a),
+      advance: (seconds) => advanced.push(seconds),
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
       screen: 'title',
@@ -31,5 +33,8 @@ describe('installTestApi', () => {
     target.__GAME_TEST__?.sendAction('confirm');
     expect(sent).toEqual(['confirm']);
     expect(() => target.__GAME_TEST__?.sendAction('fly' as MenuAction)).toThrow(TypeError);
+    target.__GAME_TEST__?.advance(4);
+    expect(advanced).toEqual([4]);
+    expect(() => target.__GAME_TEST__?.advance(-1)).toThrow(RangeError);
   });
 });

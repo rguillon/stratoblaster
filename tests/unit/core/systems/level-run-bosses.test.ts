@@ -200,4 +200,20 @@ describe('LevelRun with bosses', () => {
     play(run, 40);
     expect(run.phase).toBe('complete');
   });
+
+  it('phase 8 review: starts with the weapons kept from the levels completed before', () => {
+    const [pea, ray] = SAMPLE_GAME.playerWeapons;
+    const startWeapons = { weapon: 'ray', levels: { pea: 2, ray: 2 } };
+    const run = newRun([], { startWeapons });
+    expect([run.shots.weapon, run.shots.level]).toEqual([ray, 2]);
+    run.step(1 / 60, { ...STILL, switchWeapon: true });
+    expect([run.shots.weapon, run.shots.level]).toEqual([pea, 2]);
+    // A checkpoint's weapons come before them (P07-R08).
+    const weapons = { weapon: 'pea', levels: { pea: 1 } };
+    const resumed = newRun([], {
+      startWeapons,
+      checkpoint: { progress: 0, bossesPassed: 0, weapons },
+    });
+    expect([resumed.shots.weapon, resumed.shots.level]).toEqual([pea, 1]);
+  });
 });

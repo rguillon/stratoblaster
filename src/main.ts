@@ -69,6 +69,9 @@ function startGame(engine: Engine): void {
       send: (action) => {
         app.command(action);
       },
+      advance: (seconds) => {
+        app.game()?.advance(seconds);
+      },
     });
   }
 }
@@ -174,10 +177,11 @@ function boot(): void {
     return;
   }
 
-  const engine = new Engine(canvas, true, { adaptToDeviceRatio: false, stencil: true });
-  engine.setHardwareScalingLevel(
-    1 / Math.min(window.devicePixelRatio, ENGINE_CONFIG.maxDevicePixelRatio),
-  );
+  const { e2e } = ENGINE_CONFIG;
+  const antialias = __E2E__ ? e2e.antialias : true;
+  const engine = new Engine(canvas, antialias, { adaptToDeviceRatio: false, stencil: true });
+  const pixelRatio = Math.min(window.devicePixelRatio, ENGINE_CONFIG.maxDevicePixelRatio);
+  engine.setHardwareScalingLevel(1 / (pixelRatio * (__E2E__ ? e2e.renderScale : 1)));
   engine.onContextLostObservable.add(() => {
     showFatal('The graphics context was lost. Please reload the page.');
   });

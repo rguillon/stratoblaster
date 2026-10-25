@@ -89,6 +89,34 @@ export interface Dunes {
 }
 
 /**
+ * Frozen lakes (phase 8, P08-R03): round basins scattered over a section, one chance in each
+ * square of `spacing` units, flattened to `level` (below the terrain look's `lowHeight`, so they
+ * get its low ground: ice) over `radius`, with a shore `edge` wide.
+ */
+export interface Lakes {
+  readonly spacing: number;
+  /** Chance (0..1) that a square of `spacing` has a lake. */
+  readonly chance: number;
+  readonly radius: readonly [number, number];
+  readonly level: number;
+  readonly edge: number;
+}
+
+/**
+ * Crevasses (phase 8, P08-R07): narrow cuts `depth` deep and `width` wide, about every
+ * `spacing` units, running across the level at `angleDeg` from +X, their lines bent by noise
+ * (`warp`, in spacings) and broken into pieces: about `share` (0..1) of each line is cut.
+ */
+export interface Crevasses {
+  readonly spacing: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly angleDeg: number;
+  readonly warp: number;
+  readonly share: number;
+}
+
+/**
  * A dense network of straight streets over a section (phase 4 review): streets across the level
  * (rows) every `rows` units and streets along it (columns) every `columns` units, of which each
  * stretch between two crossings is built with the chance `links`. Streets meet at crossings and
@@ -114,6 +142,10 @@ export interface TerrainSection {
   readonly channel?: Channel;
   readonly shore?: Shore;
   readonly dunes?: Dunes;
+  readonly lakes?: Lakes;
+  readonly crevasses?: Crevasses;
+  /** Chance (0..1) that a cell of the sea gets floating props (`PropRules.floating`). */
+  readonly floatDensity?: number;
   /** Chance (0..1) that a building slot along a road of this section gets a building. */
   readonly buildingDensity: number;
   /** Chance (0..1) that an empty candidate spot of this section gets trees. */
@@ -158,6 +190,39 @@ export interface PropKindRule {
    * of keeping the whole `footprint` circle clear (phase 4 review).
    */
   readonly frontage?: number;
+  /**
+   * Floating props (phase 8: ice floes) drift slowly to and fro: up to `x` and `z` world units
+   * from where they were placed, over `period` seconds.
+   */
+  readonly drift?: { readonly x: number; readonly z: number; readonly period: number };
+}
+
+/**
+ * Props floating on the sea (phase 8, P08-R07: ice floes and icebergs): in cells of `cellSize`,
+ * up to `perCell` each with the chance of their section's `floatDensity`, where the sea is at
+ * least `depth` deep under their whole footprint. They float at the sea level.
+ */
+export interface FloatRules {
+  readonly cellSize: number;
+  readonly perCell: number;
+  readonly depth: number;
+  readonly kinds: readonly PropKindRule[];
+}
+
+/**
+ * A line of props along the level (phase 8, P08-R03: a pipeline on stilts): one `kind` every
+ * `spacing` along `path`, turned along it, standing where the ground is above the sea level and
+ * no steeper than `maxSlope`, in the sections whose names are listed (all when omitted). They
+ * are placed before the buildings, which keep clear of them.
+ */
+export interface PropLine {
+  readonly kind: string;
+  readonly path: Meander;
+  readonly spacing: number;
+  /** Radius of ground each piece takes, for the buildings to keep clear of. */
+  readonly footprint: number;
+  readonly maxSlope: number;
+  readonly sections?: readonly string[];
 }
 
 /** Buildings of a group cluster together: a low-frequency noise picks the group of each area. */
@@ -195,6 +260,10 @@ export interface PropRules {
   readonly loners?: { readonly cell: number; readonly chance: number; readonly clearance: number };
   /** Phase 6 review: hamlets, bunches of buildings close together away from the roads. */
   readonly hamlets?: HamletRules;
+  /** Phase 8: props floating on the sea (ice floes, icebergs). */
+  readonly floating?: FloatRules;
+  /** Phase 8: lines of props along the level (a pipeline). */
+  readonly lines?: readonly PropLine[];
 }
 
 /**

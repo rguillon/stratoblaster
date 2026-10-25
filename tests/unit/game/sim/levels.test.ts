@@ -9,15 +9,20 @@ describe('LEVELS', () => {
     expect(LEVELS.levels[24]?.label).toBe('5-5');
   });
 
-  it('P06-R01: the five World 1 levels are unlocked; worlds 2 to 5 stay locked', () => {
+  it('P06-R01, P08-R01: the World 1 and World 2 levels are unlocked; worlds 3 to 5 stay locked', () => {
     expect(LEVELS.levels.filter((l) => l.unlocked).map((l) => l.id)).toEqual([
       '1-1',
       '1-2',
       '1-3',
       '1-4',
       '1-5',
+      '2-1',
+      '2-2',
+      '2-3',
+      '2-4',
+      '2-5',
     ]);
-    expect(LEVELS.levels.filter((l) => l.world > 1).every((l) => !l.unlocked)).toBe(true);
-    expect(LEVELS.levels.filter((l) => l.world > 1)).toHaveLength(20);
+    expect(LEVELS.levels.filter((l) => l.world > 2).every((l) => !l.unlocked)).toBe(true);
+    expect(LEVELS.levels.filter((l) => l.world > 2)).toHaveLength(15);
   });
 });

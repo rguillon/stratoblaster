@@ -59,6 +59,39 @@ function groundColor(look: TextureLook, n: number): [number, number, number] {
   return n < 0.5 ? mixRgb(dark, base, n * 2) : mixRgb(base, light, (n - 0.5) * 2);
 }
 
+/** Crack cells across the texture per noise cycle, and the cracks' width (in cells). */
+const CRACK_CELLS = 0.5;
+const CRACK_WIDTH = 0.08;
+
+/**
+ * Crack lines over a `size × size` texture that tiles (phase 8: lake ice): the edges between
+ * the cells of a jittered grid of `cells × cells` points, 1 on a crack and 0 elsewhere.
+ */
+export function crackLines(size: number, cells: number, seed: number): Float32Array {
+  const n = Math.max(2, Math.round(cells));
+  const point = (i: number, j: number): [number, number] => {
+    const [wi, wj] = [((i % n) + n) % n, ((j % n) + n) % n];
+    return [i + hash2D(wi, wj, seed), j + hash2D(wi, wj, seed + 1)];
+  };
+  const lines = new Float32Array(size * size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const [u, v] = [(x / size) * n, (y / size) * n];
+      const distances: number[] = [];
+      for (let j = Math.floor(v) - 1; j <= Math.floor(v) + 1; j++) {
+        for (let i = Math.floor(u) - 1; i <= Math.floor(u) + 1; i++) {
+          const [px, py] = point(i, j);
+          distances.push(Math.hypot(u - px, v - py));
+        }
+      }
+      distances.sort((a, b) => a - b);
+      const gap = (distances[1] ?? 1) - (distances[0] ?? 0);
+      lines[y * size + x] = gap < CRACK_WIDTH ? 1 : 0;
+    }
+  }
+  return lines;
+}
+
 /** How far the ground noise spreads from the base colour towards the dark and light ones. */
 const GROUND_CONTRAST = 1.2;
 
@@ -68,6 +101,9 @@ export function buildGroundTexture(size: number, look: TextureLook, seed: number
     Math.min(1, Math.max(0, 0.5 + v * GROUND_CONTRAST)),
   );
   const bands = tileableFbm(size, look.frequency / 2, 2, seed + 50);
+  const cracks = look.cracks
+    ? crackLines(size, look.frequency * CRACK_CELLS, seed + 70)
+    : undefined;
   const pixels = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -75,7 +111,9 @@ export function buildGroundTexture(size: number, look: TextureLook, seed: number
       // Strata: bands along X whose phase wanders with a second noise; a whole number of bands
       // across the texture keeps it tiling.
       const band = Math.sin(((y / size) * look.frequency * 2 + (bands[i] ?? 0)) * Math.PI * 2);
-      const n = (noise[i] ?? 0) * (1 - look.strata) + look.strata * (band * 0.5 + 0.5);
+      const crack = (cracks?.[i] ?? 0) * (look.cracks ?? 0);
+      const n =
+        ((noise[i] ?? 0) * (1 - look.strata) + look.strata * (band * 0.5 + 0.5)) * (1 - crack);
       const speck = hash2D(x, y, seed) < look.speckle;
       const rgb = speck ? look.speckleColor : groundColor(look, n);
       pixels.set([byte(rgb[0]), byte(rgb[1]), byte(rgb[2]), 255], i * 4);

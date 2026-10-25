@@ -1,6 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { Atmosphere, CloudCover } from '../../core/scenery/atmosphere';
 import type { GroundWindow } from './playfield-framing';
 import type { CloudMaterial } from './scenery-kit';
 import type { CloudLayerLook } from './scenery-look';
@@ -64,9 +65,21 @@ export function buildCloudLayer(
   };
 }
 
-/** Follows the camera at `cameraZ`, and drifts with `time`. */
-export function updateCloudLayer(layer: CloudLayer, cameraZ: number, time: number): void {
+/**
+ * Follows the camera at `cameraZ`, drifts with `time`, and takes the colours of `cover` and the
+ * haze of `atmosphere` (P08-R04); its coverage and opacity too when `follow` (a level whose look
+ * changes), otherwise they stay as set on its state (the `level_zero/` page's controls).
+ */
+export function updateCloudLayer(
+  layer: CloudLayer,
+  [cameraZ, time]: readonly [number, number],
+  [atmosphere, cover, follow]: readonly [Atmosphere, CloudCover | undefined, boolean],
+): void {
   const { look, mesh, material, state } = layer;
+  if (follow && cover) {
+    state.coverage = cover.coverage;
+    state.opacity = cover.opacity;
+  }
   mesh.position.z = cameraZ + layer.middle;
   const visible = state.enabled && state.coverage > 0 && state.opacity > 0;
   mesh.setEnabled(visible);
@@ -75,5 +88,8 @@ export function updateCloudLayer(layer: CloudLayer, cameraZ: number, time: numbe
     opacity: state.opacity,
     offsetX: look.drift[0] * time,
     offsetZ: look.drift[1] * time,
+    color: cover?.color ?? look.color,
+    shade: cover?.shade ?? look.shade,
+    fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
   });
 }

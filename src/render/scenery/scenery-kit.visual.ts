@@ -8,9 +8,16 @@ import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator'
 import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { createAuroraMaterial } from './aurora-material.visual';
 import { createCloudMaterial } from './cloud-material.visual';
+import { createWeatherMaterial } from './weather-material.visual';
 import { buildGroundTexture, buildNoiseTexture, buildWaterNormalMap } from './procedural-textures';
-import { createPropMaterials, createRoadMaterial, type SceneryKitFactory } from './scenery-kit';
+import {
+  createPropMaterials,
+  createRoadMaterial,
+  setGroundLights,
+  type SceneryKitFactory,
+} from './scenery-kit';
 import type { SceneryLook } from './scenery-look';
 import { TerrainBlendPlugin, type TerrainBlendState } from './terrain-blend-plugin.visual';
 
@@ -119,19 +126,24 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
   sun.autoUpdateExtends = false;
   sun.shadowFrustumSize = look.sun.shadow.frustum;
   let camera = Vector3.Zero();
-  const fog = { color: look.sky.haze, start: look.fog.start, end: look.fog.end };
+  const props = createPropMaterials(scene, look);
   return {
     terrain: terrainMaterial(scene, look, state, seed),
     sea,
-    props: createPropMaterials(scene, look),
+    props,
     roads: createRoadMaterial(scene),
-    cloud: (cloud) => createCloudMaterial(scene, cloud, cloudTexture, fog, () => camera),
+    cloud: (cloud) => createCloudMaterial(scene, cloud, cloudTexture, () => camera),
+    weather: createWeatherMaterial,
+    aurora: () => createAuroraMaterial(scene),
     addShadowCaster: (mesh) => {
       shadows.addShadowCaster(mesh, false);
     },
     update: (frame) => {
       camera = frame.cameraPosition;
       state.time = frame.time;
+      // P08-R04: softer shadows under a heavy cover, ground lights by the time of day.
+      shadows.setDarkness(frame.atmosphere.sun.shadowDarkness);
+      setGroundLights(props, frame.atmosphere.groundLights);
       state.seaEnabled = frame.seaEnabled;
       const bump = sea.bumpTexture;
       if (bump instanceof Texture) {

@@ -15,24 +15,20 @@ import {
   type GroundWindow,
   type PlayfieldFraming,
 } from './playfield-framing';
-import { checkPropModels, PropField } from './prop-field';
+import { checkPropModels, PropField, propDrifts, type PropDrift } from './prop-field';
 import { TrafficLayer } from './traffic-layer';
 import type { SceneryKit, SceneryKitFactory } from './scenery-kit';
-import {
-  ABOVE_CLOUDS_GROUP,
-  BELOW_CLOUDS_GROUP,
-  buildCloudLayer,
-  updateCloudLayer,
-  type CloudLayer,
-  type CloudLayerState,
-} from './cloud-layers';
+import { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 import type {
   CloudLayerLook,
   PlayfieldCameraLook,
   PropModelFactory,
   SceneryLook,
 } from './scenery-look';
-import { lightScenery, snappedLightPosition } from './scenery-lighting';
+import { snappedLightPosition } from './scenery-lighting';
+import type { Atmosphere } from '../../core/scenery/atmosphere';
+import type { AtmosphereOptions } from './atmosphere-of';
+import { SkyLayers } from './sky-layers';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
 
@@ -65,6 +61,8 @@ export interface SceneryStageOptions {
   readonly propModels: Readonly<Record<string, PropModelFactory>>;
   readonly kit: SceneryKitFactory;
   readonly config: SceneryStageConfig;
+  /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
+  readonly atmosphere?: AtmosphereOptions;
 }
 
 export { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
@@ -94,11 +92,12 @@ export class SceneryStage {
   readonly #traffic: TrafficLayer;
   readonly #roads: RoadLayers;
   readonly #sea: Mesh | undefined;
-  readonly #cloudLayers: CloudLayer[];
   readonly #ground: GroundWindow;
+  readonly #drifts: Readonly<Record<string, PropDrift>>;
   readonly #xHalf: number;
   #seaEnabled: boolean;
   #time = 0;
+  readonly #sky: SkyLayers;
 
   constructor(
     readonly scene: Scene,
@@ -109,6 +108,7 @@ export class SceneryStage {
     this.#seed = level.seed;
     this.#field = new HeightField(level, this.#seed);
     this.#placer = this.#newPlacer();
+    this.#drifts = propDrifts(level);
     this.framing = framePlayfield(options.screen, options.camera);
     const cameraY = options.camera.flightAltitude + this.framing.height;
     this.#ground = visibleGround(
@@ -120,7 +120,9 @@ export class SceneryStage {
     );
     this.#xHalf = Math.ceil((this.#ground.halfWidth + config.margin) / config.cell) * config.cell;
     this.camera = this.#setUpCamera();
-    this.sun = lightScenery(scene, look);
+    // P08-R04: the time of day, clouds and weather along the level.
+    this.#sky = new SkyLayers(scene, look, [level.scrollSpeed, options.atmosphere]);
+    this.sun = this.#sky.sun;
     // One more wave tile: the sea plane moves by whole tiles (see `update`).
     const seaLength =
       this.#ground.zFar - this.#ground.zNear + 2 * config.margin + look.sea.tileSize;
@@ -140,11 +142,31 @@ export class SceneryStage {
     this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
     this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
     this.#seaEnabled = this.#sea !== undefined;
+    this.clouds = this.#attachSky();
+  }
+
+  /** The clouds, weather and aurora above the ground, drawn keeping the ground's depth. */
+  #attachSky(): readonly CloudLayerState[] {
     for (const group of [BELOW_CLOUDS_GROUP + 1, ABOVE_CLOUDS_GROUP]) {
-      scene.setRenderingAutoClearDepthStencil(group, false, false);
+      this.scene.setRenderingAutoClearDepthStencil(group, false, false);
     }
-    this.#cloudLayers = look.clouds.map((cloud, i) => this.#buildCloudLayer(cloud, i));
-    this.clouds = this.#cloudLayers.map((c) => c.state);
+    this.#sky.attach(this.kit, {
+      windowAt: (altitude) => this.#windowAt(altitude),
+      altitudeOf: (cloud) => this.cloudAltitude(cloud),
+      flightAltitude: this.options.camera.flightAltitude,
+      margin: this.options.config.margin,
+    });
+    return this.#sky.clouds;
+  }
+
+  /** The level's look where the view is now (P08-R04). */
+  get atmosphere(): Atmosphere {
+    return this.#sky.atmosphere;
+  }
+
+  /** Weather particles drawn on the last frame (P08-R05). */
+  get weatherParticles(): number {
+    return this.#sky.weatherParticles;
   }
 
   /** The level's ground. */
@@ -219,27 +241,14 @@ export class SceneryStage {
       this.#roads.removeChunk(index);
     }
     for (const span of changes.added) this.#placeChunk(span.index);
-    const [near, far] = this.options.config.propReach;
-    const [zNear, zFar] = [
-      camera.z + this.#ground.zNear - near,
-      camera.z + this.#ground.zFar + far,
-    ];
-    this.#props.setWindow(zNear, zFar, this.options.config.propStep);
-    this.#props.sync();
-    const height = (x: number, z: number): number => this.#field.height(x, z);
-    const traffic = { roads: this.#placer.roads.roads, height, seed: this.#seed };
-    this.#traffic.update(
-      this.#time,
-      { xMin: -this.#xHalf, xMax: this.#xHalf, zMin, zMax },
-      traffic,
-    );
+    this.#updateProps(camera.z, [zMin, zMax]);
     const middle = camera.z + (this.#ground.zNear + this.#ground.zFar) / 2;
     if (this.#sea) {
       const tile = this.options.look.sea.tileSize;
       // Whole tiles only, so the waves stay put on the ground while the plane follows the camera.
       this.#sea.position.z = Math.round(middle / tile) * tile;
     }
-    for (const layer of this.#cloudLayers) updateCloudLayer(layer, camera.z, this.#time);
+    const atmosphere = this.#sky.update(distance, [this.#time, this.camera, zMin]);
     const { mapSize, frustum } = this.options.look.sun.shadow;
     this.sun.position = snappedLightPosition(
       this.sun.direction,
@@ -247,13 +256,31 @@ export class SceneryStage {
       this.options.config.sunDistance,
       frustum / mapSize,
     );
-    this.kit.update({ time: this.#time, cameraPosition: camera, seaEnabled: this.#seaEnabled });
+    this.kit.update({
+      time: this.#time,
+      cameraPosition: camera,
+      seaEnabled: this.#seaEnabled,
+      atmosphere,
+    });
+  }
+
+  /** The props in view near the camera at `cameraZ`, drifting, and the cars on the ground. */
+  #updateProps(cameraZ: number, [zMin, zMax]: readonly [number, number]): void {
+    const [near, far] = this.options.config.propReach;
+    const [zNear, zFar] = [cameraZ + this.#ground.zNear - near, cameraZ + this.#ground.zFar + far];
+    this.#props.setWindow(zNear, zFar, this.options.config.propStep);
+    this.#props.sync();
+    this.#props.drift(this.#drifts, this.#time);
+    const height = (x: number, z: number): number => this.#field.height(x, z);
+    const traffic = { roads: this.#placer.roads.roads, height, seed: this.#seed };
+    const area = { xMin: -this.#xHalf, xMax: this.#xHalf, zMin, zMax };
+    this.#traffic.update(this.#time, area, traffic);
   }
 
   #newPlacer(): PropPlacer {
     const { level } = this.options;
     const roads = levelRoads(this.#field, level.roads, this.#seed);
-    return new PropPlacer(this.#field, level.props, this.#seed, roads);
+    return new PropPlacer(this.#field, level.props, this.#seed, roads, level.sea?.level);
   }
 
   #placeChunk(index: number): void {
@@ -308,13 +335,10 @@ export class SceneryStage {
     return Math.max(look.altitude, this.#field.ceiling + this.options.config.cloudClearance);
   }
 
-  #buildCloudLayer(look: CloudLayerLook, index: number): CloudLayer {
-    const altitude = this.cloudAltitude(look);
-    const { screen, camera, config } = this.options;
+  /** What the camera sees of the plane at `altitude`. */
+  #windowAt(altitude: number): GroundWindow {
+    const { screen, camera } = this.options;
     const cameraY = camera.flightAltitude + this.framing.height;
-    const aspect = screen.width / screen.height;
-    const seen = visibleGround(this.framing, aspect, cameraY, altitude, altitude);
-    const material = this.kit.cloud(look);
-    return buildCloudLayer(this.scene, look, material, index, [seen, altitude, config.margin]);
+    return visibleGround(this.framing, screen.width / screen.height, cameraY, altitude, altitude);
   }
 }

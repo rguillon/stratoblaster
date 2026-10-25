@@ -1,3 +1,4 @@
+import type { SkyScript } from '../../core/scenery/sky-look';
 import type { GradientStop } from '../environment/gradient-cube';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import type { RoadLook } from './road-geometry';
@@ -16,6 +17,8 @@ export interface TextureLook {
   readonly speckleColor: Rgb;
   /** Strength (0..1) of horizontal bands across the texture, like rock strata. */
   readonly strata: number;
+  /** Strength (0..1) of thin dark crack lines across it, as in lake ice (phase 8). */
+  readonly cracks?: number;
 }
 
 /**
@@ -161,6 +164,11 @@ export interface SceneryLook {
     readonly lightIntensity: number;
   };
   readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
+  /**
+   * Its time of day, clouds and weather along the level (phase 8, P08-R04): when set, they
+   * replace the fixed sky, fog, sun, ambient light, cloud cover and ground lights above.
+   */
+  readonly atmosphere?: SkyScript;
 }
 
 /** Raw geometry of a prop: its lit structure (casts shadows) and its self-lit accents. */

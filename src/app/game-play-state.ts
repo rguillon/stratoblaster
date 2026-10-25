@@ -44,6 +44,20 @@ export interface GamePlayState {
   readonly groundSpeed: number;
   /** Whether the mini boss's checkpoint is saved (P07-R08). */
   readonly checkpoint: boolean;
+  /**
+   * How the level looks where the view is (P08-R04, R05): snowflakes drawn, the aurora's and the
+   * ground lights' strength, and the sun's (or moon's) light. Set by the game screen.
+   */
+  readonly sky?: GamePlaySky;
+}
+
+/** The look of the level where the view is, for the test API (P08). */
+export interface GamePlaySky {
+  readonly weatherParticles: number;
+  readonly aurora: number;
+  readonly groundLights: number;
+  readonly sunIntensity: number;
+  readonly fogEnd: number;
 }
 
 /** The state of `run` for the test API; `maxHealth` stands for the health without a hull. */

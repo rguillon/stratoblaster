@@ -4,6 +4,7 @@ import type {
   EnemyContext,
   EnemyLaserSpec,
   EnemyMissileSpec,
+  LaserOwner,
 } from '../entities/enemy';
 import type { BossTurret } from '../entities/boss-turret';
 import type { Muzzle } from '../entities/muzzle';
@@ -75,6 +76,12 @@ export interface BossVolley {
    * it turns the way its next volley goes (see {@link BossPattern.turnTurrets}).
    */
   readonly turret?: boolean;
+  /**
+   * Fires only while the part with this id stands (e.g. a radar that aims the guns), or only
+   * once it is destroyed (`after`); always when omitted.
+   */
+  readonly needs?: string;
+  readonly after?: string;
   /** Seconds between two volleys. */
   readonly every: number;
   /** Seconds before the first one, from the start of the stage; `every` when omitted. */
@@ -108,10 +115,19 @@ export function patternSignature(
   intact: (from: string) => boolean,
 ): string {
   return pattern
-    .filter((volley) => intact(volley.from))
+    .filter((volley) => live(volley, intact))
     .map((volley) => JSON.stringify({ ...volley, shape: { ...volley.shape, launch: undefined } }))
     .sort()
     .join('|');
+}
+
+/** Whether `volley` fires when only the pieces for which `intact` is true remain. */
+function live(volley: BossVolley, intact: (from: string) => boolean): boolean {
+  return (
+    intact(volley.from) &&
+    (volley.needs === undefined || intact(volley.needs)) &&
+    (volley.after === undefined || !intact(volley.after))
+  );
 }
 
 interface VolleyState {
@@ -122,6 +138,8 @@ interface VolleyState {
   /** Bullets of a burst still to fire, and seconds until the next one. */
   burst: number;
   burstLeft: number;
+  /** Seconds since its last laser was fired (Infinity before the first). */
+  laserAge: number;
   readonly guns: GunMuzzles;
 }
 
@@ -141,6 +159,7 @@ export class BossPattern {
       turns: 0,
       burst: 0,
       burstLeft: 0,
+      laserAge: Infinity,
       guns: new GunMuzzles(v.muzzles, v.turret),
     }));
     volleys.forEach((v, i) => {
@@ -163,7 +182,7 @@ export class BossPattern {
     this.volleys.forEach((volley, i) => {
       const state = this.#states[i];
       const source = sources(volley.from);
-      if (!state || !source) return;
+      if (!state || !source || !live(volley, (from) => sources(from) !== undefined)) return;
       state.left -= time;
       while (state.left <= 0) {
         state.left += volley.every;
@@ -177,25 +196,58 @@ export class BossPattern {
    * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
    * next volley goes (a burst under way first): at the player for aimed shots and bursts, along
    * a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
+   * A laser's turret aims at the player until its beam fires (slowly while its warning line
+   * shows, `laserTurnRateDeg`), then holds still (phase 8 review).
    */
   turnTurrets(ctx: EnemyContext, dt: number, sources: VolleySources): void {
     for (const [from, volleys] of this.#turrets) {
       const source = sources(from);
       const turret = source?.turret;
       if (!source || !turret) continue;
-      const aim = this.#aimOf(ctx, volleys, source, turret);
-      turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
+      for (const i of volleys) {
+        const state = this.#states[i];
+        if (state) state.laserAge += dt;
+      }
+      const laser = this.#laserAim(ctx, volleys, [source, turret]);
+      const aim = laser ?? this.#aimOf(ctx, volleys, [source, turret], sources);
+      const { turnRateDeg, laserTurnRateDeg = turnRateDeg } = turret.spec;
+      const rate = laser === undefined ? turnRateDeg : laserTurnRateDeg;
+      turret.aim = turnTowards(turret.aim, aim, rate * DEG * dt);
     }
+  }
+
+  /**
+   * Where `turret` points while one of its `volleys`' lasers shows: at the player during its
+   * warning line, where it is while the beam fires. Undefined when none shows.
+   */
+  #laserAim(
+    ctx: EnemyContext,
+    volleys: readonly number[],
+    [source, turret]: readonly [VolleySource, BossTurret],
+  ): number | undefined {
+    for (const i of volleys) {
+      const shape = this.volleys[i]?.shape;
+      const age = this.#states[i]?.laserAge ?? Infinity;
+      if (shape?.kind !== 'laser') continue;
+      const { warningSeconds, firingSeconds } = shape.laser;
+      if (age < warningSeconds) return aimAtPlayer(ctx, source, turret);
+      if (age < warningSeconds + firingSeconds) return turret.aim;
+    }
+    return undefined;
   }
 
   /** Where `turret` should point for the next of its `volleys` to fire (radians from rest). */
   #aimOf(
     ctx: EnemyContext,
     volleys: readonly number[],
-    source: VolleySource,
-    turret: BossTurret,
+    [source, turret]: readonly [VolleySource, BossTurret],
+    sources: VolleySources,
   ): number {
-    const left = (i: number) => this.#states[i]?.left ?? Infinity;
+    const on = (i: number) => {
+      const volley = this.volleys[i];
+      return volley !== undefined && live(volley, (from) => sources(from) !== undefined);
+    };
+    const left = (i: number) => (on(i) ? (this.#states[i]?.left ?? Infinity) : Infinity);
     const next =
       volleys.find((i) => (this.#states[i]?.burst ?? 0) > 0) ??
       volleys.reduce((best, i) => (left(i) < left(best) ? i : best));
@@ -217,7 +269,8 @@ export class BossPattern {
         });
         break;
       case 'laser':
-        ctx.fireLaser(state.guns.laser(source), shape.laser);
+        ctx.fireLaser(laserOwner(volley, state, source), shape.laser);
+        state.laserAge = 0;
         break;
       case 'launch':
         for (const enemy of shape.launch(source.x, source.y)) ctx.spawn(enemy);
@@ -283,6 +336,7 @@ function turretAim(
   switch (shape.kind) {
     case 'aimed':
     case 'burst':
+    case 'laser':
       return aimAtPlayer(ctx, source, turret);
     case 'fan':
       return wrapAngle(-shape.headingDeg * DEG);
@@ -297,6 +351,30 @@ function turretAim(
     default:
       return 0;
   }
+}
+
+/**
+ * What a laser of `volley` leaves from and follows: its piece, from a muzzle; turned with the
+ * piece's turret when the volley is on it (phase 8 review).
+ */
+function laserOwner(volley: BossVolley, state: VolleyState, source: VolleySource): LaserOwner {
+  const owner = state.guns.laser(source);
+  const turret = volley.turret ? source.turret : undefined;
+  if (!turret) return owner;
+  return {
+    get emitter() {
+      return owner.emitter;
+    },
+    get heading() {
+      return owner.heading + turret.aim;
+    },
+    get gone() {
+      return owner.gone;
+    },
+    get health() {
+      return owner.health;
+    },
+  };
 }
 
 /** How far `turret` must turn from its rest (straight down) to point at the player. */

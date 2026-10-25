@@ -24,6 +24,17 @@ const BOSSES = [
   'Refinery Titan',
   'Sentinel',
   'Overlord',
+  // World 2 (P08-R12), after World 1.
+  'Floe Breaker',
+  'Narwhal',
+  'Fjord Lynx',
+  'Harbour Kraken',
+  'Snow Owl',
+  'Aurora Station',
+  'Avalanche',
+  'Glacier Colossus',
+  'Ice Queen',
+  'Boreal Citadel',
 ];
 
 test('P07-R09 (review): boss/ opens the same page, with every boss', async ({ page }) => {
@@ -48,8 +59,8 @@ test.describe('P07: bosses/ page', () => {
   });
 
   test('P07-R09: loads without errors, every boss can be picked and comes in', async ({ page }) => {
-    // Ten bosses over five generated levels under software WebGL.
-    test.setTimeout(300_000);
+    // Twenty bosses over ten generated levels under software WebGL.
+    test.setTimeout(600_000);
     await expect(page.locator('.enemy-kind button')).toHaveText(BOSSES);
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
     for (const [i, name] of BOSSES.entries()) {

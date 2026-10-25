@@ -1,3 +1,5 @@
+import type { TimeOfDay } from '../core/scenery/atmosphere';
+import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { BossRank } from '../core/systems/boss-fights';
 import type { GameDefinition } from '../core/content/game-definition';
@@ -6,8 +8,10 @@ import type { GamepadSource } from '../input/gamepad-menu-input';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import type { GameView } from '../render/game-view';
 import type { MenuDocument } from '../ui/screens/elements';
+import type { KeyValueStorage } from '../platform/key-value-storage';
 import { GamePlay } from './game-play';
 import type { MenuState } from './menu-flow';
+import { loadSavedWeapons, saveWeapons } from './saved-weapons';
 
 type ListenTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
@@ -23,6 +27,19 @@ export interface GameDebugOptions {
   readonly shipId: string | null;
   /** Starts at the arrival of the level's mini or final boss instead (P07-R09). */
   readonly boss: BossRank | null;
+  /** `weather=0`: no weather (P08-R12); the level's own weather otherwise. */
+  readonly weather?: boolean;
+  /** `look=<time of day>`: the level at that time of day (P08-R12). */
+  readonly timeOfDay?: TimeOfDay | null;
+}
+
+/** The debug choices on the level's look (P08-R12): none without debug options. */
+function atmosphereOf(debug: GameDebugOptions | undefined): AtmosphereOptions {
+  if (!debug) return {};
+  return {
+    ...(debug.weather === false ? { weather: false } : {}),
+    ...(debug.timeOfDay ? { timeOfDay: debug.timeOfDay } : {}),
+  };
 }
 
 /** What a {@link GameSession} needs from the app's options. */
@@ -37,6 +54,8 @@ export interface GameSessionOptions {
   readonly keyboardTarget?: ListenTarget;
   /** Connected gamepads. No gamepad when omitted. */
   readonly gamepads?: GamepadSource;
+  /** Where the weapons are kept from one completed level to the next. Not kept when omitted. */
+  readonly storage?: KeyValueStorage;
 }
 
 /** Keys go to the level's debug keys first (when on), then to the in-game controls. */
@@ -112,6 +131,8 @@ export class GameSession {
   /** Starts `levelId` for the flow's attempt (from its checkpoint when it has one). */
   #start(state: MenuState, levelId: string): void {
     const shipId = state.chosenShipId ?? state.highlightedShipId;
+    const { storage } = this.options;
+    const weapons = storage && loadSavedWeapons(storage, this.game.id);
     const play: GamePlay = new GamePlay(
       this.engine,
       this.game,
@@ -122,11 +143,16 @@ export class GameSession {
         debug: this.options.debug !== undefined,
         startTime: this.#startTime,
         startBoss: this.#startBoss,
+        atmosphere: atmosphereOf(this.options.debug),
+        ...(weapons ? { weapons } : {}),
         ...(state.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),
         ...(this.options.overlay ? { hudParent: this.options.overlay } : {}),
         onComplete: () => {
+          if (storage && play.run.phase === 'complete') {
+            saveWeapons(storage, this.game.id, play.run.arsenal.snapshot());
+          }
           this.onComplete(play);
         },
       },

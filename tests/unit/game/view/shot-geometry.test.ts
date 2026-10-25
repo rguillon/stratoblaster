@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildGlowBar, buildGlowDisc, buildTracer } from '../../../../src/game/view/shot-geometry';
+import {
+  buildGlowBar,
+  buildGlowDisc,
+  buildSwirl,
+  buildTracer,
+} from '../../../../src/game/view/shot-geometry';
 
 const WHITE = [1, 1, 1] as const;
 const BLACK = [0, 0, 0] as const;
@@ -24,6 +29,29 @@ describe('buildGlowDisc', () => {
   it('needs 3 segments and 2 colours', () => {
     expect(() => buildGlowDisc(2, [WHITE, BLACK])).toThrow(RangeError);
     expect(() => buildGlowDisc(5, [WHITE])).toThrow(RangeError);
+  });
+});
+
+describe('buildSwirl', () => {
+  const radii = (geo: { positions: number[] }, from: number, count: number) =>
+    Array.from({ length: count }, (_, i) =>
+      Math.hypot(geo.positions[(from + i) * 3] ?? 0, geo.positions[(from + i) * 3 + 1] ?? 0),
+    );
+
+  it('swells on its arms and shrinks by `depth` between them', () => {
+    const geo = buildSwirl(8, [WHITE, BLACK], { lobes: 2, depth: 0.6, twist: 0 });
+    const rim = radii(geo, 1, 8);
+    expect(rim[0]).toBeCloseTo(1);
+    expect(rim[2]).toBeCloseTo(0.4);
+    expect(rim[4]).toBeCloseTo(1);
+  });
+
+  it('curls its arms: each ring turned by `twist` times its radius', () => {
+    const geo = buildSwirl(4, [WHITE, WHITE, BLACK], { lobes: 0, depth: 0, twist: 1 });
+    const angle = (v: number) =>
+      Math.atan2(geo.positions[v * 3 + 1] ?? 0, geo.positions[v * 3] ?? 0);
+    expect(angle(1)).toBeCloseTo(0.5);
+    expect(angle(5)).toBeCloseTo(1);
   });
 });
 

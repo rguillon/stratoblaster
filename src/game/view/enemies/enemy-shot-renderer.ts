@@ -1,48 +1,141 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { EnemyBullet, EnemyLaser, EnemyMissile } from '../../../core/systems/enemy-shots';
+import type { EnemyBullet, EnemyMissile } from '../../../core/systems/enemy-shots';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyShotRenderer } from '../../../render/game-view';
 import { NodePool } from '../../../render/node-pool';
 import { ENEMY_LOOK } from '../../config/enemy-look';
-import { flicker } from '../reactor-flame';
-import { buildGlowBar, buildGlowDisc } from '../shot-geometry';
-import { additiveTemplate } from '../shots/shot-meshes';
+import '@babylonjs/core/Meshes/thinInstanceMesh';
+import { buildGlowDisc, buildSwirl } from '../shot-geometry';
+import { additiveTemplate, blendedTemplate } from '../shots/shot-meshes';
 import { enemyMaterials, meshOf } from './enemy-mesh';
+import { EnemyLasers } from './enemy-lasers';
 
 const LOOK = ENEMY_LOOK;
 type Style = keyof typeof LOOK.bullets.styles;
 const STYLES = Object.keys(LOOK.bullets.styles) as Style[];
 
-/** A pool of clones of an additive glow template. */
-function glowPool(name: string, template: Mesh): NodePool<Mesh> {
-  return new NodePool((i) => template.clone(`${name}-${String(i)}`));
+/** Opacity of each vertex of a bullet's disc: its centre, then each ring's. */
+function discAlphas(segments: number, fade: readonly number[]): number[] {
+  return fade.flatMap((alpha, ring) => Array<number>(ring === 0 ? 1 : segments).fill(alpha));
 }
 
-/** One pool of glowing balls per bullet colour (GD-43). */
-function bulletPools(scene: Scene): { pools: Map<string, NodePool<Mesh>>; templates: Mesh[] } {
-  const pools = new Map<string, NodePool<Mesh>>();
-  const templates: Mesh[] = [];
-  for (const style of STYLES) {
-    const disc = buildGlowDisc(LOOK.bullets.segments, LOOK.bullets.styles[style]);
-    const template = additiveTemplate(`enemy-bullet-${style}`, disc, scene);
-    templates.push(template);
-    pools.set(style, glowPool(`enemy-bullet-${style}`, template));
+/** Where, how big and how turned one bullet layer is drawn. */
+interface Spot {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+  readonly angle: number;
+}
+
+/**
+ * One layer of the bullets of one colour, drawn as thin instances of a template (as the blasts,
+ * D-034): one draw call however many bullets are flying.
+ */
+class BulletLayer {
+  #matrices = new Float32Array(0);
+
+  constructor(
+    readonly mesh: Mesh,
+    private readonly z: number,
+    order: number,
+  ) {
+    // Under the blasts and the other shots, in layer order; never culled: instances spread anywhere.
+    mesh.alphaIndex = order - 100;
+    mesh.alwaysSelectAsActiveMesh = true;
   }
-  return { pools, templates };
+
+  show(spots: readonly Spot[]): void {
+    const n = spots.length;
+    this.mesh.setEnabled(n > 0);
+    if (n === 0) return;
+    const grow = n > this.#matrices.length / 16;
+    if (grow) this.#matrices = new Float32Array(Math.max(16, 2 ** Math.ceil(Math.log2(n))) * 16);
+    spots.forEach(({ x, y, radius, angle }, i) => {
+      const c = Math.cos(angle) * radius;
+      const s = Math.sin(angle) * radius;
+      this.#matrices.set([c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, x, y, this.z, 1], i * 16);
+    });
+    if (grow) this.mesh.thinInstanceSetBuffer('matrix', this.#matrices, 16, false);
+    // Before the update, as the blasts (Babylon uploads only `thinInstanceCount` matrices).
+    this.mesh.thinInstanceCount = n;
+    if (!grow) this.mesh.thinInstanceBufferUpdated('matrix');
+  }
+
+  dispose(): void {
+    this.mesh.material?.dispose();
+    this.mesh.dispose();
+  }
 }
 
-function syncBullets(pools: Map<string, NodePool<Mesh>>, bullets: readonly EnemyBullet[]): void {
-  for (const [style, pool] of pools) {
+/** How big and how turned one layer of a bullet is drawn. */
+type Placement = (b: EnemyBullet, r: number) => { radius: number; angle: number };
+
+/**
+ * A ball of plasma (GD-43), back to front: a faint flickering aura, a solid body, two curled
+ * swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core.
+ */
+function bulletLayers(style: Style, scene: Scene): [BulletLayer, Placement][] {
+  const { segments, swirlSegments, fade, swirls } = LOOK.bullets;
+  const colors = LOOK.bullets.styles[style];
+  const name = `enemy-bullet-${style}`;
+  const body = buildGlowDisc(segments, colors.body);
+  const layers: [Mesh, Placement][] = [
+    [
+      additiveTemplate(`${name}-halo`, buildGlowDisc(segments, colors.halo), scene),
+      (b, r) => ({ radius: r * haloScale(b.age), angle: 0 }),
+    ],
+    [
+      blendedTemplate(name, body, discAlphas(segments, fade), scene),
+      (_b, r) => ({ radius: r, angle: 0 }),
+    ],
+    ...swirls.map((swirl, i): [Mesh, Placement] => [
+      additiveTemplate(
+        `${name}-swirl-${String(i)}`,
+        buildSwirl(swirlSegments, colors.swirls[i] ?? colors.halo, swirl),
+        scene,
+      ),
+      (b, r) => ({ radius: r * swirl.size, angle: b.heading * 3 + swirl.spinRadPerSec * b.age }),
+    ]),
+    [
+      additiveTemplate(`${name}-core`, buildGlowDisc(segments, colors.core), scene),
+      (b, r) => ({ radius: r * coreScale(b.age), angle: 0 }),
+    ],
+  ];
+  // Back to front, towards the camera (-Z).
+  return layers.map(([mesh, place], order) => [
+    new BulletLayer(mesh, -1 - 0.05 * order, order),
+    place,
+  ]);
+}
+
+/** One set of plasma layers per bullet colour (GD-43). */
+function bulletPools(scene: Scene): Map<string, [BulletLayer, Placement][]> {
+  return new Map(STYLES.map((style) => [style, bulletLayers(style, scene)]));
+}
+
+/** Size of a bullet's core, relative to the bullet, `age` seconds after it was fired. */
+function coreScale(age: number): number {
+  const { size, pulse } = LOOK.bullets.core;
+  return size * (1 + pulse.amount * Math.sin(2 * Math.PI * pulse.hz * age));
+}
+
+/** Size of a bullet's aura, relative to the bullet, flickering as it flies. */
+function haloScale(age: number): number {
+  const { size, flicker, flickerHz } = LOOK.bullets.halo;
+  return size * (1 + flicker * Math.sin(2 * Math.PI * flickerHz * age));
+}
+
+function syncBullets(
+  pools: Map<string, [BulletLayer, Placement][]>,
+  bullets: readonly EnemyBullet[],
+): void {
+  for (const [style, layers] of pools) {
     const own = bullets.filter((b) => (pools.has(b.style) ? b.style : STYLES[0]) === style);
-    pool.show(own.length).forEach((mesh, i) => {
-      const b = own[i];
-      if (!b) return;
-      const r = b.radius * LOOK.bullets.scale;
-      mesh.position.set(b.x, b.y, -1);
-      mesh.scaling.set(r, r, 1);
-    });
+    for (const [layer, place] of layers) {
+      layer.show(own.map((b) => ({ x: b.x, y: b.y, ...place(b, b.radius * LOOK.bullets.scale) })));
+    }
   }
 }
 
@@ -82,46 +175,9 @@ function syncMissiles(pool: NodePool<TransformNode>, missiles: readonly EnemyMis
   });
 }
 
-interface LaserPools {
-  readonly warning: NodePool<Mesh>;
-  readonly beam: NodePool<Mesh>;
-  readonly emitter: NodePool<Mesh>;
-}
-
-function syncLasers(pools: LaserPools, lasers: readonly EnemyLaser[], time: number): void {
-  const look = LOOK.laser;
-  const warnings = lasers.filter((l) => l.phase === 'warning');
-  const beams = lasers.filter((l) => l.phase === 'firing');
-  // The warning line blinks: drawn at full or half width.
-  const blink = Math.sin(2 * Math.PI * look.warning.blinkHz * time) > 0 ? 1 : 0.5;
-  pools.warning.show(warnings.length).forEach((mesh, i) => {
-    const l = warnings[i];
-    if (!l) return;
-    mesh.position.set(l.x, l.y, -0.8);
-    mesh.rotation.z = -l.heading;
-    mesh.scaling.set(look.warning.width * blink, l.length, 1);
-  });
-  const wobble = 1 + look.beam.flicker * flicker(time, 0, [look.beam.flickerHz]);
-  pools.beam.show(beams.length).forEach((mesh, i) => {
-    const l = beams[i];
-    if (!l) return;
-    mesh.position.set(l.x, l.y, -0.9);
-    mesh.rotation.z = -l.heading;
-    mesh.scaling.set(l.spec.width * look.beam.glowWidth * wobble, l.length, 1);
-  });
-  pools.emitter.show(beams.length).forEach((mesh, i) => {
-    const l = beams[i];
-    if (!l) return;
-    const r = look.emitterRadius * wobble;
-    mesh.position.set(l.x, l.y, -1.2);
-    mesh.scaling.set(r, r, 1);
-  });
-}
-
 /**
  * GD-43: the enemies' shots in playfield space: colourful glowing bullets, small red-tipped
- * missiles with a flame, and lasers (a blinking warning line, then a red beam with a glow at
- * the emitter).
+ * missiles with a flame, and lasers ({@link EnemyLasers}).
  */
 export function createEnemyShotRenderer(scene: Scene): EnemyShotRenderer {
   const bullets = bulletPools(scene);
@@ -131,31 +187,20 @@ export function createEnemyShotRenderer(scene: Scene): EnemyShotRenderer {
     scene,
   );
   const missiles = new NodePool((i) => buildMissile(scene, flame, i));
-  const look = LOOK.laser;
-  const templates = [
-    additiveTemplate('enemy-laser-warning', buildGlowBar(look.warning.colors), scene),
-    additiveTemplate('enemy-laser-beam', buildGlowBar(look.beam.colors), scene),
-    additiveTemplate('enemy-laser-emitter', buildGlowDisc(16, look.emitter), scene),
-  ] as const;
-  const lasers: LaserPools = {
-    warning: glowPool('enemy-laser-warning', templates[0]),
-    beam: glowPool('enemy-laser-beam', templates[1]),
-    emitter: glowPool('enemy-laser-emitter', templates[2]),
-  };
+  const lasers = new EnemyLasers(scene);
   let time = 0;
   return {
     sync: (frame) => {
       time += frame.dtSeconds;
-      syncBullets(bullets.pools, frame.bullets);
+      syncBullets(bullets, frame.bullets);
       syncMissiles(missiles, frame.missiles);
-      syncLasers(lasers, frame.lasers, time);
+      lasers.sync(frame.lasers, time);
     },
     dispose: () => {
-      for (const pool of [...bullets.pools.values(), lasers.warning, lasers.beam, lasers.emitter]) {
-        pool.dispose();
-      }
+      for (const layers of bullets.values()) for (const [layer] of layers) layer.dispose();
+      lasers.dispose();
       missiles.dispose();
-      for (const template of [...bullets.templates, ...templates, flame]) template.dispose();
+      flame.dispose();
     },
   };
 }

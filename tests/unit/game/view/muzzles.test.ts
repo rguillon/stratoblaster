@@ -55,17 +55,22 @@ function turnedBoss(id: string): WorldBoss {
   return boss;
 }
 
-/** Where the muzzles of `boss`'s turrets are now, by piece, from its centre. */
+/**
+ * Where the muzzles on `boss`'s turrets are now, by `<piece> <kind>`, from its centre: their
+ * guns, and their lasers when on them too (phase 8 review).
+ */
 function turretMuzzles(boss: WorldBoss): Map<string, Muzzle[]> {
   const found = new Map<string, Muzzle[]>();
   for (const [name, guns] of Object.entries(boss.design.guns)) {
     const piece = name === 'core' ? boss.core : boss.parts.find((p) => p.spec.id === name);
     if (!guns.turret || !piece?.turret) continue;
-    const placed = (guns.gun ?? []).map((m): Muzzle => {
-      const p = piece.place(m, true);
-      return [p.x - boss.x, p.y - boss.y, p.height];
-    });
-    found.set(name, placed);
+    const place = (muzzles: readonly Muzzle[] = []) =>
+      muzzles.map((m): Muzzle => {
+        const p = piece.place(m, true);
+        return [p.x - boss.x, p.y - boss.y, p.height];
+      });
+    if (guns.gun) found.set(`${name} gun`, place(guns.gun));
+    if (guns.turretLaser) found.set(`${name} laser`, place(guns.laser));
   }
   return found;
 }
@@ -104,10 +109,10 @@ describe('Muzzles', () => {
       if (!factory) throw new Error(id);
       const drawn = marked(factory, `${id}-`);
       for (const [piece, guns] of Object.entries(design.guns)) {
-        // Its `turret` is a pivot, not muzzles.
+        // Its `turret` is a pivot and `turretLaser` a flag, not muzzles.
         for (const [kind, muzzles] of Object.entries(
           guns as Partial<Record<string, readonly Muzzle[]>>,
-        ).filter(([kind]) => kind !== 'turret')) {
+        ).filter(([kind]) => kind !== 'turret' && kind !== 'turretLaser')) {
           const model = drawn.get(`${piece} ${kind}`) ?? [];
           expectSame(muzzles ?? [], model, `${id} ${piece} ${kind}`);
         }
@@ -130,8 +135,8 @@ describe('Muzzles', () => {
       if (!model) throw new Error(id);
       model.sync(boss, 1 / 60);
       const drawn = markers(model.root, `${id}-`);
-      for (const [name, placed] of turretMuzzles(boss)) {
-        expectSame(placed, drawn.get(`${name} gun`) ?? [], `${id} ${name}`);
+      for (const [key, placed] of turretMuzzles(boss)) {
+        expectSame(placed, drawn.get(key) ?? [], `${id} ${key}`);
       }
     },
   );

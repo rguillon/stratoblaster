@@ -26,6 +26,11 @@ export interface EnemyViewerPanelOptions {
   /** Heading of the panel; `Enemies` when omitted (the `bosses/` page reuses it, P07-R09). */
   readonly title?: string;
   readonly kinds: readonly string[];
+  /**
+   * Headings over the kind buttons (P08-R12: the bosses grouped by world): each before the kind
+   * at index `from`. None when omitted.
+   */
+  readonly groups?: readonly { readonly label: string; readonly from: number }[];
   readonly weapons: readonly string[];
   /** Number of levels of each weapon. */
   readonly levelCounts: readonly number[];
@@ -137,18 +142,25 @@ export class EnemyViewerPanel {
   #fill(name: string, labels: readonly string[], selected: (i: number) => boolean): void {
     const row = this.#rows.get(name);
     if (!row) return;
-    if (row.children.length !== labels.length) {
+    const buttons = () => [...row.querySelectorAll('button')];
+    if (buttons().length !== labels.length) {
+      const groups = name === 'kind' ? (this.options.groups ?? []) : [];
       row.replaceChildren(
-        ...labels.map((label, i) => {
+        ...labels.flatMap((label, i) => {
           const button = this.options.doc.createElement('button');
           button.type = 'button';
           button.dataset.index = String(i);
           button.textContent = label;
-          return button;
+          const group = groups.find((g) => g.from === i);
+          if (!group) return [button];
+          const heading = this.options.doc.createElement('div');
+          heading.className = 'enemy-group';
+          heading.textContent = group.label;
+          return [heading, button];
         }),
       );
     }
-    [...row.children].forEach((button, i) => {
+    buttons().forEach((button, i) => {
       button.classList.toggle('selected', selected(i));
       button.setAttribute('aria-pressed', String(selected(i)));
     });

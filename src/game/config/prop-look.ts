@@ -37,6 +37,27 @@ export const PROP_COLORS = {
   cactus: [0.27, 0.4, 0.24],
   dryLeaf: [0.46, 0.43, 0.25],
   dryLeafDark: [0.33, 0.3, 0.18],
+  /**
+   * World 2 (phase 8): snow with a blue-grey shade on its lower faces, ice, snowy pines and pale
+   * frosted wood, painted metal of the harbours and mines, insulated panels.
+   */
+  snow: [0.9, 0.92, 0.96],
+  snowShade: [0.7, 0.76, 0.85],
+  ice: [0.8, 0.89, 0.95],
+  iceBlue: [0.56, 0.73, 0.87],
+  iceDeep: [0.36, 0.55, 0.73],
+  pine: [0.11, 0.24, 0.17],
+  pineDark: [0.07, 0.16, 0.12],
+  frost: [0.68, 0.72, 0.76],
+  frostDark: [0.45, 0.47, 0.5],
+  timber: [0.28, 0.2, 0.15],
+  silver: [0.62, 0.65, 0.7],
+  polarRed: [0.58, 0.15, 0.13],
+  signalOrange: [0.85, 0.42, 0.12],
+  mineYellow: [0.72, 0.56, 0.14],
+  ore: [0.27, 0.25, 0.24],
+  panel: [0.5, 0.56, 0.63],
+  panelDark: [0.3, 0.35, 0.41],
 } as const;
 
 /** Self-lit accents. */
