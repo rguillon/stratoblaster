@@ -20,6 +20,17 @@ import { SHIP_VIEWER_CONFIG } from '../config/ship-viewer';
 const CFG = ENEMY_VIEWER_CONFIG.closeUp;
 
 /**
+ * A hit circle drawn in the wireframe view: its centre as an offset from the enemy's centre on
+ * the playfield (X right, Y up), its radius and colour. For a boss, one per part and its core.
+ */
+export interface HitCircle {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+  readonly color: readonly [number, number, number];
+}
+
+/**
  * The model view of the enemies page (P05-R11, phase 5 review): like `player_ship/`, one enemy
  * model alone on a dark background, turning, with the camera close up on it. Drag to orbit,
  * wheel to zoom; the arrow keys are left to the page (they switch the enemy). In the wireframe
@@ -33,6 +44,7 @@ export class EnemyCloseUp {
   readonly pivot: TransformNode;
   #model: EnemyModel | undefined;
   #enemy: Enemy | undefined;
+  #circles: readonly HitCircle[] | undefined;
   #warmed = false;
   #build: EnemyModelFactory | undefined;
   #wireframe = false;
@@ -93,15 +105,20 @@ export class EnemyCloseUp {
     if (on === this.#wireframe) return;
     this.#wireframe = on;
     this.scene.forceWireframe = on;
-    if (this.#build && this.#enemy) this.show(this.#build, this.#enemy);
+    if (this.#build && this.#enemy) this.show(this.#build, this.#enemy, this.#circles);
   }
 
-  /** Replaces the model with `build`'s, its lights fully charged, and frames it. */
-  show(build: EnemyModelFactory, enemy: Enemy): void {
+  /**
+   * Replaces the model with `build`'s, its lights fully charged, and frames it. The wireframe
+   * view draws `circles` (the enemy's own hit circle when omitted).
+   */
+  show(build: EnemyModelFactory, enemy: Enemy, circles?: readonly HitCircle[]): void {
     this.#model?.root.dispose();
     this.#model = build(this.scene);
     this.#build = build;
-    if (this.#wireframe) this.#showWires(this.#model.root, enemy.radius);
+    this.#circles = circles;
+    const own: HitCircle = { x: 0, y: 0, radius: enemy.radius, color: CFG.hitboxColor };
+    if (this.#wireframe) this.#showWires(this.#model.root, circles ?? [own]);
     // Measured before it joins the turning pivot, in its own axes.
     this.#frame(this.#model.root);
     this.#model.root.parent = this.pivot;
@@ -116,8 +133,8 @@ export class EnemyCloseUp {
     }
   }
 
-  /** Hull edges in the light wire colour, without glow, and the hit circle around the model. */
-  #showWires(root: TransformNode, radius: number): void {
+  /** Hull edges in the light wire colour, without glow, and the hit circles around the model. */
+  #showWires(root: TransformNode, circles: readonly HitCircle[]): void {
     for (const mesh of root.getChildMeshes<Mesh>()) {
       if (mesh.material?.name !== 'enemy-hull') continue;
       mesh.material = this.#wire;
@@ -125,13 +142,16 @@ export class EnemyCloseUp {
       this.#glow?.addExcludedMesh(mesh);
     }
     const n = CFG.hitboxSegments;
-    const points = Array.from({ length: n + 1 }, (_, i) => {
-      const a = (2 * Math.PI * i) / n;
-      return new Vector3(Math.sin(a) * radius, 0, Math.cos(a) * radius);
+    circles.forEach(({ x, y, radius, color }, k) => {
+      // Model space: the nose (+Z) points down the screen, so the playfield's (x, y) is (-x, -y).
+      const points = Array.from({ length: n + 1 }, (_, i) => {
+        const a = (2 * Math.PI * i) / n;
+        return new Vector3(-x + Math.sin(a) * radius, 0, -y + Math.cos(a) * radius);
+      });
+      const hitbox = CreateLines(`close-up-hitbox-${String(k)}`, { points }, this.scene);
+      hitbox.color = new Color3(...color);
+      hitbox.parent = root;
     });
-    const hitbox = CreateLines('close-up-hitbox', { points }, this.scene);
-    hitbox.color = new Color3(...CFG.hitboxColor);
-    hitbox.parent = root;
   }
 
   /** Puts the camera at the distance where the model fills `CFG.fill` of the screen width. */

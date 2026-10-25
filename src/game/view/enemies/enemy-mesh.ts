@@ -107,6 +107,12 @@ export interface EnemyParts {
    * `radius` long around a hub, on their own node so they spin.
    */
   readonly rotor: (at: Vec3, radius: number) => void;
+  /**
+   * Marks the tip of a gun's barrel at `at`, where its shots leave from (phase 7 review: the
+   * game's muzzles must match): an empty node `<name>-muzzle-<kind>-<i>` (kinds as in a boss's
+   * `Guns`: `gun`, `ring`, `missile`, `laser`).
+   */
+  readonly muzzle: (at: Vec3, kind?: string) => void;
 }
 
 type Vec3 = readonly [number, number, number];
@@ -235,12 +241,14 @@ export function buildEnemyModel(
 ): EnemyModel {
   const reactors: Reactor[] = [];
   const rotors: Reactor[] = [];
+  const muzzles: { at: Vec3; kind: string }[] = [];
   const parts: EnemyParts = {
     hull: new SolidBuilder(),
     neon: new SolidBuilder(),
     charge: new SolidBuilder(),
     reactor: (at, radius) => reactors.push({ at, radius }),
     rotor: (at, radius) => rotors.push({ at, radius }),
+    muzzle: (at, kind = 'gun') => muzzles.push({ at, kind }),
   };
   build(parts);
   const neon = enemyMaterials(scene).neon;
@@ -248,6 +256,11 @@ export function buildEnemyModel(
   const root = new TransformNode(name, scene);
   addReactors(name, reactors, parts, root);
   addRotors(name, rotors, hull, root);
+  muzzles.forEach(({ at, kind }, i) => {
+    const node = new TransformNode(`${name}-muzzle-${kind}-${String(i)}`, scene);
+    node.position.set(...at);
+    node.parent = root;
+  });
   for (const [part, material] of [
     [parts.hull, hull],
     [parts.neon, neon],

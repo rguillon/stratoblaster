@@ -1,10 +1,17 @@
 import type {
+  DropSource,
   Enemy,
   EnemyBulletSpec,
   EnemyContext,
   EnemyLaserSpec,
   EnemyMissileSpec,
+  LaserOwner,
 } from '../../src/core/entities/enemy';
+import {
+  seenOnPlayfield,
+  type PlayfieldEye,
+  type RaisedPoint,
+} from '../../src/core/entities/muzzle';
 import { createRng } from '../../src/core/math/rng';
 
 /** A shot an enemy fired, as recorded by {@link RecordingContext}. */
@@ -25,8 +32,16 @@ export class RecordingContext implements EnemyContext {
   readonly random = createRng(1);
   fireRate = 1;
   readonly shots: FiredShot[] = [];
-  readonly lasers: { owner: Enemy; spec: EnemyLaserSpec }[] = [];
+  readonly lasers: { owner: LaserOwner; spec: EnemyLaserSpec }[] = [];
   readonly spawned: Enemy[] = [];
+  readonly blasts: { x: number; y: number; radius: number }[] = [];
+  readonly broken: DropSource[] = [];
+  /** The camera's eye shots are seen from; straight above the playfield when undefined. */
+  eye: PlayfieldEye | undefined = undefined;
+
+  seen(point: RaisedPoint): { x: number; y: number } {
+    return seenOnPlayfield(this.eye, point);
+  }
 
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void {
     this.shots.push({ kind: 'bullet', x, y, heading, spec });
@@ -36,12 +51,20 @@ export class RecordingContext implements EnemyContext {
     this.shots.push({ kind: 'missile', x, y, heading, spec });
   }
 
-  fireLaser(owner: Enemy, spec: EnemyLaserSpec): void {
+  fireLaser(owner: LaserOwner, spec: EnemyLaserSpec): void {
     this.lasers.push({ owner, spec });
   }
 
   spawn(enemy: Enemy): void {
     this.spawned.push(enemy);
+  }
+
+  explode(x: number, y: number, radius: number): void {
+    this.blasts.push({ x, y, radius });
+  }
+
+  breakPart(part: DropSource): void {
+    this.broken.push(part);
   }
 }
 

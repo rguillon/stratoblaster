@@ -72,6 +72,18 @@ export function waveScript(
   });
 }
 
+/**
+ * `script` without the waves that would start in the `quiet` world units before each of the
+ * distances `bosses` (P07-R06: the stretch before a boss is left free).
+ */
+export function quietBefore(
+  script: WaveScript,
+  bosses: readonly number[],
+  quiet: number,
+): WaveScript {
+  return script.filter((wave) => !bosses.some((at) => wave.at > at - quiet && wave.at <= at));
+}
+
 /** Light groups that fill a level's lulls (phase 6 review: the levels felt empty). */
 export interface Filler {
   /** Kinds taken in turn, each group from the top. */

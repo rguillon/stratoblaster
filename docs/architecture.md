@@ -36,7 +36,7 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 ## Pages and routes
 
-The build has five HTML entries sharing one bundle (`src/main.ts`):
+The build has seven HTML entries sharing one bundle (`src/main.ts`):
 
 | Page                      | Route (`app/route.ts`) | Started by                    |
 | ------------------------- | ---------------------- | ----------------------------- |
@@ -45,6 +45,8 @@ The build has five HTML entries sharing one bundle (`src/main.ts`):
 | `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts`    |
 | `level_zero/index.html`   | `scenery-viewer`       | `app/start-scenery-viewer.ts` |
 | `enemies/index.html`      | `enemy-viewer`         | `app/start-enemy-viewer.ts`   |
+| `bosses/index.html`       | `boss-viewer`          | `app/start-boss-viewer.ts`    |
+| `boss/index.html`         | `boss-viewer`          | `app/start-boss-viewer.ts`    |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a
@@ -71,6 +73,64 @@ the kind. The panel
 (`ui/enemy-viewer-panel.ts`) and keys N / B / M / X / 1-9 / F / P pick the kind, the view, the
 weapon and level, fire and pause. e2e builds expose `window.__ENEMIES_TEST__`
 (`debug/enemy-viewer-test-api.ts`: state and frame stepping).
+
+The bosses viewer (phase 07, `bosses/`) works the same way for `GameDefinition.bossKinds`: the
+picked boss comes in over the scenery of its level (`app/boss-viewer-stage.ts`, rebuilt when a
+boss of another level is picked), the ground scrolls at its fight speed, and it comes again once
+it has blown up. K destroys its next part; the panel shows its stage. The wireframe view draws
+the hit circles of its core and of each part (the ones that shield the core in yellow). e2e
+builds expose `window.__BOSSES_TEST__` (`debug/boss-viewer-test-api.ts`).
+
+## Bosses (phase 07)
+
+```
+core/systems/LevelRun ─progress─▶ BossFights ─(LevelBoss kind id)─▶ BossKindDefinition.spawn ─▶ EnemyWorld
+                       ScrollTrack: held during a fight (progress waits, ground goes on), speed factor eased
+Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + BossCore (shielded proxy)
+  entering ─in place─▶ fighting (stage k = k parts destroyed, BossPattern per stage) ─core 0─▶ dying ─▶ destroyed
+```
+
+- `core/entities/boss.ts`: the abstract `Boss` (an `Enemy` that does not expire, takes no ramming
+  damage and may have its own drop chance). Its `BossPart`s and its `BossCore` are the shot
+  targets: their `health` setters ignore damage while the boss comes in, and the core's while a
+  shielding part stands. Each destroyed part raises `stage`, pauses its fire (`stagePause`) and
+  calls `onStageChange`; at 0 core health it blows up over `death.seconds` (`EnemyContext.explode`)
+  before the enemy world removes it as destroyed. Parts may orbit its centre (`spin`). Concrete
+  bosses implement `enter`, `move` and `updatePattern`.
+- `core/entities/muzzle.ts`, `core/systems/gun-muzzles.ts` (phase 7 review, D-057): shots leave
+  from a gun's muzzles (offsets from the enemy's centre as seen facing down, and a height), the one
+  furthest along each shot's way, turned with the enemy's heading, a boss's `roll` and its ring's
+  `spin`, then projected onto the playfield along the camera's line of sight
+  (`EnemyContext.seen`, from the `PlayfieldEye` the app gets from `playfieldEye(screen, framing)`).
+  The game's muzzles are the barrel tips its models mark (`EnemyParts.muzzle`). A boss piece's
+  guns may be on a turret (`core/entities/boss-turret.ts`, D-058): its muzzles turn with its
+  `aim` around its pivot, and `BossPattern.turnTurrets` turns it the way its next volley goes
+  (D-060: at the player for aimed shots and bursts, along a fan's heading, spinning with a
+  spiral ring); its model is drawn on its own node, turned by `aim`. A boss may also have
+  moving limbs (`core/entities/boss-joint.ts`, D-061): joints that swing to and fro around their
+  pivots, each hanging on another or on the body; a part on a joint (`BossPartSpec.joint`) moves
+  with it, its hit circle and muzzles too.
+- `core/systems/boss-pattern.ts`: a stage's volleys (aimed fans, preset fans, rings / spirals,
+  bursts, homing missiles, lasers with their warning, launches), each from a part (it stops with
+  that part) or the core; `patternSignature` names what still fires. After the pause that follows
+  each destroyed part, a boss with `rageSeconds` is angry that long (`Boss.rage`, D-063): it fires
+  its angry pattern (`Boss.updateRage`; the game's bullet hells are in
+  `game/config/bosses/boss-rage.ts`) instead of its stage's. `BossPart` and `BossCore` are in
+  `core/entities/boss-pieces.ts`.
+- `core/systems/boss-fights.ts`: brings the level's bosses (`GameLevel.bosses`, by distance) in,
+  holds the track and eases its speed to the boss's `groundSpeed`, builds the health bar data
+  (`BossBar`), and records the bosses defeated. `LevelRun` starts no wave during a fight, ends a
+  level with a final boss when that boss is destroyed, saves a `LevelCheckpoint` (progress,
+  bosses passed, `RunArsenal` weapons) when the mini boss is destroyed, and can start from one.
+- Destroyed parts go to `EnemyWorld.brokenParts`, which the bonus world drops from with each
+  part's own `dropChance`.
+- Presentation: boss models are enemy models (`GameView.enemies.models`); the game builds them
+  with `game/view/bosses/boss-model.ts` (a node per part, a white flash on hits, smoke under half
+  health, a stump once destroyed; `boss-limbs.ts` puts a node per joint, turned by its angle,
+  carrying the parts and the limbs drawn on it). The HUD's `ui/boss-bar.ts` shows the bar; after the mini boss
+  the "Game over" panel offers Continue (`MenuFlow` `attempt` / `resume`, `GameSession` starts the
+  level again from the checkpoint). `GameLevel.runout` draws extra ground past the level's end
+  (`withRunout`). `?level=…&boss=mini|final` starts at a boss; K destroys a part (debug only).
 
 ## Levels (phase 06)
 
@@ -246,4 +306,8 @@ scene is rendered.
    a look in `view.scenery.looks`, a wave script of enemy kind ids, and the difficulty factors),
    one per unlocked entry of `GameDefinition.levels`. Each level starts with the first player
    weapon at level 1.
+   Declare the bosses in `GameDefinition.bossKinds` (classes extending `Boss`, with a model per
+   model key in `GameDefinition.view.enemies.models`), the fight timings in
+   `GameDefinition.bossFights`, and each level's bosses in `GameLevel.bosses` (a mini boss saves
+   a checkpoint; a final boss ends the level).
 5. Run `make check`.

@@ -1,6 +1,6 @@
 # Phase 07 — Bosses
 
-**Status:** Draft  <!-- Draft | Ready -->
+**Status:** Ready  <!-- Draft | Ready -->
 **Depends on:** Phase 6
 
 ---
@@ -209,7 +209,7 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 - [ ] 60 fps in the 1-5 final boss fight
 
 ## 🧑 Notes, references, sketches
-- **Open choices for the reviewer before setting this phase to Ready** (defaults written above):
+- **Choices settled by the reviewer (2026-10-25): every default below accepted.**
   1. Ten distinct bosses (one mini + one final per World 1 level) in one phase. Alternative: build the engine and the 1-1 / 1-2 bosses here, and the others in a later phase.
   2. The checkpoint (P07-R08, GD-42) is in this phase because it hangs on the mini boss. It could move to a later phase.
   3. The ground speed during a fight is a factor per boss, from ×0 (stopped) to ×1.5 (chase). Alternative: always slower, or always stopped.
@@ -223,7 +223,17 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 > After the agent reports, write corrections here, then say **"Fix phase 07"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (reviewer, in chat, 2026-10-25) Add an "angry" phase to each boss after the player destroys a part, where the boss creates a bullet hell for a few seconds. — Done (D-063): after the 1 s pause that follows each destroyed part (P07-R04), the boss is angry for 3 s (`BOSS_TIMING.rageSeconds`; `Boss.rage`, `Boss.updateRage`): it fires its angry pattern from its core instead of its stage's, its charge lights flickering fast (`BOSS_LOOK.rageFlicker`), and it can still be damaged; then the new stage's pattern starts. Four bullet hells (`game/config/bosses/boss-rage.ts`): **spirals** (two rings turning opposite ways), **flower** (a dense turning ring and small aimed fans), **curtain** (fans sweeping across and back, a ring under them), **vortex** (a fast-turning spiral and aimed bursts). Each boss has one, denser from 1-1 to 1-5 (bullets a second, mini / final: 1-1 20 / 27, 1-2 28 / 32, 1-3 36 / 42, 1-4 47 / 49, 1-5 53 / 61, the Overlord firing spirals and a flower at once), against 1–9 a second for the stages; the angry bullets are slower than the stages' (120 → 156 px/s) and leave lanes between them, for a kid in 1-1. Reef Warden spirals, Storm Petrel flower, Breakwater curtain, Gull Mothership vortex, Dust Devil vortex, Mesa Fortress curtain, Scorpion flower, Refinery Titan spirals, Sentinel curtain, Overlord spirals + flower. The fight times of P07-R10 are unchanged (the simulated player always fires). Unit tests: `boss.test.ts` (the angry time and pattern in the engine), `bosses.test.ts` (every World 1 boss, 3 s of more than 5× its stage's fire, denser from 1-1 to 1-5). `BossPart` and `BossCore` moved to `core/entities/boss-pieces.ts` (`boss.ts` was at its 300-line limit).
+- [x] (reviewer, in chat, 2026-10-25) Make the boss body not stop bullets when only the parts can be shot, or else the parts behind can't be reached without the laser. — Done (D-062): while a boss fights with its core shielded, the player's shots (bullets, missiles, the laser) go through the core to the parts behind it: the core is left out of what shots can hit (`Enemy.shotTargets`, `Boss.shotTargets`, used by `EnemyWorld.targets`); once no shielding part is left, the core stops shots again and takes damage. The ship still bumps into the core (`hitTargets` is unchanged), and while a boss comes in shots still spark on all of it. This changes P07-R01's "shots that hit the core make sparks" (see Deviations). With the silos behind its core now reachable, the 1-3 Mesa Fortress fight fell to 67.5 s (P07-R10 range 70–95 s): its core goes 2420 → 3000 and its silos 890 → 1500 (fight 83.0 s, was 81.7 s; full health 6300 → 8100, still between the 1-2 and 1-4 finals). The other fights stay within their ranges (1-3 mini 37.5 → 35.9 s, 1-1 final 59.1 → 58.2 s). Unit test: `boss.test.ts`.
+- [x] (reviewer, in chat, 2026-10-25) Make the bosses able to have movable parts (other than the turning turrets) like the Scorpion: make the claw, the arm and the claw move. — Done (D-061): a boss can have joints (`BossStats.joints`, `core/entities/boss-joint.ts`): a pivot that swings to and fro (amplitude, period, phase), hanging on the body or on another joint; a part on a joint (`BossPartSpec.joint`) moves with it, its hit circle and muzzles too, so its shots still leave its barrels and the player's shots hit it where it is drawn. In the view each joint is a node turned by its angle (`game/view/bosses/boss-limbs.ts`), carrying its parts and the limbs drawn on it (`BossDrawing.limbs`; a limb of a part goes and flashes with it). The Scorpion's arms swing at the shoulder (±7°, 4.4 s) and bend at the elbow (±12°, 3.2 s), its claws turn at the wrist (±16°, 2.4 s) and their jaws open and close (±12°, 1.1 s); the right arm mirrors the left a little out of step (`scorpionArm`, `scorpion-arms.ts`). Each arm is now an upper arm and a forearm, overlapping under the elbow's cog. Unit tests: `boss-joint.test.ts` (swing, chains, checks) and `muzzles.test.ts` (mid-swing, the claws' barrels and hit circles are where the model draws them).
+- [x] (reviewer, in chat, 2026-10-25) The turrets aren't turning. — Found: they did turn, but only the 9 turrets firing aimed shots or bursts, and only while the stage fired at the player; with the ship under the boss that is 4-15° (under ~30° at the edge of its reach), and turrets firing fans or rings stayed at rest, so they looked still. Reviewer's choice: every turret turns. Done (D-060): a turret now turns the way its next volley goes (a burst under way first): at the player for aimed shots and bursts, along the fan's heading for fans, and with the ring for rings, spinning smoothly from one spiral's turn to the next (e.g. the Refinery Titan's rotary turrets at about 27°/s); `BossPattern.turnTurrets`, `boss-pattern.test.ts`. Three more guns are now turrets on their own pivot: the Reef Warden's prow cannon, the Mesa Fortress's fan cannon (both the core's gun) and the Refinery Titan's two rotary turrets (housing and barrels turn, their base stays on the part and flashes). Guns built into hulls, blades, claws or pods (Overlord, Sentinel core, Storm Petrel pods, Scorpion, Dust Devil, Gull Mothership nose) and launchers, lasers and missile cells do not turn. The muzzle test now leaves out the turret pivots (it compared them as muzzles and failed for every turreted boss).
+- [x] (reviewer, in chat, 2026-10-25) Tune the player weapons' damage to balance the weapons, adapting the specs and the code. — Done (GD-33, D-059): the guns stay the reference (the bosses were tuned with guns at level 3, D-055, so the fight times do not change); the laser goes from 40 / 60 / 85 / 115 / 150 to 80 / 140 / 200 / 260 / 320 damage/s and the missiles from 8 to 14 damage each. Damage per second, every stream counted, L1-L5: guns 80 / 160 / 240 / 320 / 400, laser 80 / 140 / 200 / 260 / 320, missiles 56 / 112 / 168 / 224 / 280 (they were 50 % and 40 % of the guns). P03-R02 / P03-R03 were updated; a unit test checks the GD-33 bands at every level (`player-weapons.test.ts`).
+- [x] (reviewer, in chat, 2026-10-25) Make the bosses' turrets turn and follow the player when they shoot bullets aimed at the player. — Done (D-058): the turrets whose guns fire aimed shots or bursts turn towards the player at up to 150°/s (`BOSS_TIMING.turretTurnDeg`) while their stage fires at the player, and back to rest (barrels down the screen) when it fires preset fans or rings; they keep turning during the pause after a part is destroyed. Their muzzles turn with them, so shots still leave from the barrel tips. Nine turrets on five bosses: the Reef Warden's two side cannons, the Breakwater's bow gun and two mortars, the Storm Petrel's cockpit turret, the Gull Mothership's two flak turrets and the Sentinel's two hull guns (`Guns.turret` pivots, `BossTurret` / `BossPiece.turret` in core, `BossPattern.turnTurrets`; each turret is its own model on a pivot node, `BossDrawing.turrets`). The guns fixed in the hulls (e.g. the Overlord's twin guns, the Sentinel's core guns), the Reef Warden's prow cannon (it fires only fans and rings) and the Refinery Titan's rotary turrets (spirals) do not turn.
+- [x] (reviewer, in chat, 2026-10-25) Make sure the enemy bullets / lasers / missiles start precisely at the barrel of their guns; some look offset. — Done (D-057): every gun now has muzzles, the tips of the barrels its model draws (each model marks them, `EnemyParts.muzzle`; `BossDesign.guns`, `ENEMY_CONFIG.*.muzzles`), and a unit test checks the game's muzzles against the models' (`muzzles.test.ts`). Shots leave from the muzzle facing their way (a ring's bullets from the barrel pointing their way, side-by-side barrels in turn), from where the tilted camera sees it: a muzzle 15–20 px above the playfield was seen up to ~20 px further up the screen than where the bullet started (`core/entities/muzzle.ts`, `EnemyContext.seen`, `PlayfieldEye`); aimed shots are aimed from there. A boss's roll now lives in the simulation (`Boss.roll`, `BOSS_TIMING.roll`) so its muzzles roll with it, and orbiting parts' muzzles turn with the ring. Scout, Strafer, Weaver and Bulwark had no gun drawn: they got small barrels with charge lights (nose gun; a gun on each side of the Strafer, firing from the one facing down; one per Weaver hull; a twin cannon on the Bulwark's tower). Hangar and drone-bay launches and the Titan's tank bursts still start from their part's centre.
+- [x] (reviewer, in chat, 2026-10-25) Add more details to the bosses; some may not be symmetrical. — Done: every boss got surface detail (plates, seams, vents, grilles, rivets, hazard paint, weathering, cable runs, antennas, small lights; helpers `mini-boss-greebles.ts`, `final-boss-greebles.ts`, `refinery-titan-details.ts`, `overlord-deck.ts`…) and all ten are now asymmetric (e.g. the Reef Warden's cargo and crane against a radar dish, the Scorpion's fiddler-crab claws and missing leg, the Gull Mothership's carrier island beside its runway, the Mesa Fortress's battle-torn block and comms tower, the Refinery Titan's flare stack against a dock crane and pipe rack, the Overlord's irregular skyline with a spire, billboard, command tower and landing pad). Triangles now 2,180–4,164 a boss (were 1,060–2,250; budget 6,000), sizes still within 15 %. Part positions and hit circles unchanged.
+- [x] (reviewer, in chat, 2026-10-25) Make some bosses look to have complex mechanical parts behind the hull parts: fat armour protecting a complex mechanism. — Done on seven bosses (Breakwater, Scorpion, Dust Devil, Gull Mothership, Mesa Fortress, Refinery Titan, Overlord): thick bevelled armour plates with gaps, slots and cut-outs showing a darker mechanism set lower (cogs, hydraulic rams, cable bundles, ribbed conduits, glowing neon / charge-lit lines); helpers `mini-boss-mechanism.ts`, `final-boss-mechanism.ts`, `refinery-titan-armour.ts`, `overlord-armour.ts`.
+- [x] (reviewer, in chat, 2026-10-25) Make the bosses roll a little when they move left / right. — Done: a boss model rolls into its sideways moves, the wing on the side it flies to dipping, up to 12° at its fastest sway (60 px/s), easing in and out; visual only, its hit circles do not turn (`boss-model.ts`, `BOSS_LOOK.roll`, `boss-models.test.ts`; moved to `Boss.roll` / `BOSS_TIMING.roll` by the muzzle fix above).
+- [x] (reviewer, in chat, 2026-10-25) Add a `boss/` debug endpoint to see all the bosses. — Done: `boss/` opens the bosses page (the same as `bosses/`: every boss, its fight, model and wireframe views; `app/route.ts`, `boss/index.html`, `route.test.ts`, e2e `bosses.spec.ts`).
 
 ---
 
@@ -231,31 +241,108 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 > Filled by the agent. Do not edit (comment in Review feedback instead).
 
 ### Questions / blockers
-<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+None. The phase was a Draft written by the agent at the reviewer's request; on 2026-10-25 the reviewer accepted every default of its open choices (ten bosses, the checkpoint in this phase, a ground speed per boss, weapon bonuses only, the suggested designs) and it was set to Ready.
 
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Engine: `Boss` with destroyable parts, shielded core, stages, death blasts, orbiting parts (`core/entities/boss.ts`); enemy hooks (`hitTargets`, `expires`, `rammable`, `dropChance`, `explode`, `breakPart`, `LaserOwner`) | P07-R01, R04, R05 |
+| Engine: stage patterns (`core/systems/boss-pattern.ts`) | P07-R04 |
+| Engine: fights in a level, ground speed factor and hold (`boss-fights.ts`, `scroll-track.ts`), level end, no waves during a fight, checkpoint (`level-run.ts`, `run-arsenal.ts`) | P07-R02, R03, R06, R08 |
+| Bonuses from parts (`bonus-world.ts` per-target chance, `EnemyWorld.brokenParts`) | P07-R07 |
+| Game: ten boss designs, `WorldBoss`, launches, World 1 schedule, quiet stretches, runout, health tuning | P07-R03..R07, R10 |
+| View: boss model framework (flash, smoke, stump, ring) and ten models | P07-R01, R05 |
+| UI / app: boss health bar, Continue choice, restart from checkpoint, `boss=` and K debug, `bosses/` page | P07-R02, R08, R09 |
+| Tests (unit with IDs, e2e), docs, decisions | all |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P07-R01 | | | | |
+| P07-R01 | Done | `core/entities/boss.ts`, `game/view/bosses/boss-model.ts` | `boss.test.ts`, `bosses.test.ts`, `boss-models.test.ts` | Parts flash white 0.05 s when hit, smoke under 50 %, leave a burnt sparking stump |
+| P07-R02 | Done | `core/systems/boss-fights.ts` (`bar`), `ui/boss-bar.ts`, `app/game-play-hud.ts`, `index.html` | `boss-fights.test.ts`, `boss-bar.test.ts`, `game-play.test.ts`, e2e `world-1.spec.ts` | Under the HUD, red to yellow, a notch at the end of each part's share |
+| P07-R03 | Done | `core/scenery/scroll-track.ts`, `boss-fights.ts`, `core/scenery/scenery-level.ts` (`withRunout`), `game/config/world-1/bosses.ts` | `scroll-track.test.ts`, `boss-fights.test.ts`, `level-run-bosses.test.ts`, `bosses.test.ts` | Level progress waits, ground goes on (D-054) |
+| P07-R04 | Done | `core/systems/boss-pattern.ts`, `game/sim/bosses/world-boss.ts`, `game/config/bosses/*` | `boss-pattern.test.ts`, `boss.test.ts`, `bosses.test.ts` (all orders of destruction) | 1 s pause, charge lights strobing; patterns listed below |
+| P07-R05 | Done | `game/config/bosses/`, `game/sim/boss-kinds.ts`, `game/view/bosses/*-model.ts` | `bosses.test.ts`, `boss-models.test.ts` | Two part positions moved (see Deviations) |
+| P07-R06 | Done | `level-run.ts`, `game/sim/world-1.ts`, `game/config/world-1/waves.ts` (`quietBefore`), `player-hits.ts` | `level-run-bosses.test.ts`, `world-1.test.ts`, e2e `world-1.spec.ts` | Replaces P06-R03 for World 1 |
+| P07-R07 | Done | `bonus-world.ts`, `enemy-world.ts`, `level-run.ts` | `level-run-bosses.test.ts`, `bosses.test.ts` | Weapon bonuses only |
+| P07-R08 | Done | `level-run.ts` (`LevelCheckpoint`), `run-arsenal.ts`, `app/menu-flow.ts`, `app/game-session.ts`, `ui/screens/game-screen.ts` | `level-run-bosses.test.ts`, `menu-flow.test.ts`, `menu-view-builder.test.ts`, `menu-overlay.test.ts`, `game-session.test.ts`, `game-play.test.ts` | |
+| P07-R09 | Done | `app/start-boss-viewer.ts`, `app/boss-viewer-stage.ts`, `bosses/index.html`, `app/debug-options.ts`, `app/game-play.ts` | `start-boss-viewer.test.ts`, `debug-options.test.ts`, `route.test.ts`, `game-play.test.ts`, e2e `bosses.spec.ts`, `world-1.spec.ts` | |
+| P07-R10 | Done | `game/config/bosses/*` | `bosses.test.ts` (health, simulated fights per level) | Bot in `tests/helpers/boss-bot.ts` |
+
+**The ten bosses and their stage patterns (P07-R04, P07-R05).** Part volleys fire in every stage while their part stands; the core fires the volley listed for each stage (stage *k* = *k* parts destroyed). Ground speed factor in brackets.
+- **Reef Warden** (1-1 mini, ×0.5): side cannons fire aimed 3-bullet bursts in turn. Core: 3-way fan → 5-way fan → spiral ring of 8.
+- **Storm Petrel** (1-1 final, ×1.5 chase): wing pods fire 3-way fans in turn, the tail rack 2 homing missiles; the belly plate does not fire. Core: single aimed → aimed 3 → burst of 4 → 7-way fan → spiral ring of 12.
+- **Breakwater** (1-2 mini, ×0.4): mortars lob slow big bullets at the player. Core: 3-way fan → aimed 3 → burst of 4 → spiral ring of 10.
+- **Gull Mothership** (1-2 final, ×0.6): hangars launch 3 Gnats every 7 s, flak turrets aimed pairs. Core: laser every 7 s, then the laser comes more often with an aimed shot → a 5-way fan → a ring of 8 → a spiral ring of 12.
+- **Dust Devil** (1-3 mini, ×0.5): three orbiting blade pods fire 2-way spirals. Core: aimed → aimed 3 → burst of 4 → spiral ring of 12.
+- **Mesa Fortress** (1-3 final, ×0 ground stops): two laser lances in turn, two missile silos. Core: 3-way fan → 5-way → 5-way and aimed → 7-way → spiral ring of 14 and 5-way.
+- **Scorpion** (1-4 mini, ×0.5): claws fire aimed 3-spreads, the stinger a laser. Core: aimed → ring of 6 → spiral ring of 8 → spiral ring of 12 and aimed.
+- **Refinery Titan** (1-4 final, ×0.3): rotary turrets fire 3-arm spirals (turning opposite ways), the battery 2 missiles; each fuel tank bursts into a ring of 12 when destroyed. Core: aimed → aimed 3 → burst of 4 → 5-way → 7-way and aimed → spiral ring of 14 and burst.
+- **Sentinel** (1-5 mini, ×0.6): hull guns fire aimed pairs (blue / red), the drone bay launches 2 Hornets every 5.5 s. Core: 3-way fan → 5-way → 7-way → spiral ring of 14 and 5-way.
+- **Overlord** (1-5 final, ×0.25): wing lasers in turn, missile batteries pairs of missiles. Core: aimed → aimed 3 → burst of 4 → 5-way → ring of 10 → 7-way and burst → spiral ring of 14, its own laser and missiles.
+
+Simulated fights (guns level 3, always on target, from arrival to the end of the death blasts): mini 30.1 / 32.8 / 37.5 / 42.7 / 44.1 s, final 58.8 / 72.3 / 81.7 / 91.7 / 103.5 s for 1-1 … 1-5. Models: 2,180–4,164 triangles each after review (budget 6,000), within 15 % of their sizes.
 
 ### Gate results
+Light verification only (CLAUDE.md, step 5). Lint, unit tests and coverage run in the full `make check` gate of `/validate-phase`.
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+make typecheck  ✔ (0 errors)
+make build      ✔ (ENG-52 leak check ✔, now also for __BOSSES_TEST__)
+make e2e        ✔ 53 passed (5.7 min; 50 before + 3 on bosses/; the 1-1 end test now goes through
+                  its final boss, and the 1-3 start test expects its mini boss at 2:00)
+After the lint fixes of the commit (refactors only): typecheck ✔ / build ✔ / e2e 52 passed, 1 failed:
+the phase 1 key-repeat timing test (P01-R09, 2 repeats seen instead of 3 under load); its spec
+passed 3/3 when run again on its own.
+After the detailed, asymmetric models (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 failed: the
+phase 1 menu test P01-R14 (a 5 s state poll timed out under load); its spec passed 4/4 on its own.
+After the muzzle fix (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 failed: P01-R14 again
+(timed out under load); passed 2/2 on its own. The changed files pass ESLint (pre-commit hook).
+After the turning turrets (review): typecheck ✔ / build ✔ / e2e 53 passed, 1 failed: the key-repeat
+timing test P01-R09 (under load); its spec passed 6/6 (twice each) on its own.
+```
+Coverage before this phase: 99.33 % lines (phase 6).
+
+**Final gate (`/validate-phase 7`, 2026-10-25, on `phase-07`): `make check` green at the third run.**
+The first run failed in the unit tests (lint and typecheck passed), on 7 tests that had not run since
+the phase's reviews changed what they test (unit tests only run at validation). Fixed in `cec678c`:
+- a real bug: the mini boss's checkpoint saved the track's progress, a hair short of the boss's
+  distance (99.99999999999966 instead of 100); it now saves the boss's own distance (P07-R08);
+- the scenery viewer's time label floored 2 s summed from frame steps to 0:01 or 0:02 depending on
+  rounding (phase 7 changed how the track adds up time); it now allows for the rounding (P04-R06);
+- out-of-date tests: the boss bar test now brings its boss into place before damaging it (bosses
+  only take damage once in place, P07-R05); the Spinner and Lancer shots leave from their muzzles
+  (D-057); the close-up hit circles are numbered since bosses have several; the sample "Small Cube"
+  boss had the Big Cube's name.
+The second run stopped at lint (that commit's Spinner test edit took the file to 302 code lines, over
+the 300 limit), fixed without changing the rule.
+```
+make lint       ✔ (ESLint, 0 warnings; Prettier)
+make typecheck  ✔
+make coverage   ✔ 939 tests in 126 files; 99.34 % lines, 88.69 % branches, 98.55 % functions, 98.52 % statements (thresholds met)
+make build      ✔
+make e2e        ✔ 54 passed (6.2 min)
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `make dev`, then a level from the menus: the mini boss comes at about 2:00 of the level's scroll (after 10 s without new waves), the final boss at its end. Shoot the parts off (the shielding ones first); watch the bar, the pattern change after each part (1 s pause, lights strobing), the bonuses, the ground speed (1-1's final boss speeds the sea chase up, 1-3's stops the ground).
+- Straight to a boss: `/?level=1-3&boss=final` (or `boss=mini`, any World 1 level, `&ship=heavy`). K destroys the next part, then the core (debug only). F ×4, ← / → still seek.
+- Checkpoint: `/?level=1-2&boss=mini`, destroy the mini boss (K × 4), then lose the three lives: the "Game over" panel offers Continue / Level select; Continue starts again after the mini boss with the weapon levels you had.
+- `bosses/` (or `boss/`): pick a boss (buttons or N / B), it fights over its level; K destroys a part, the panel shows the stage; M model view, V wireframe (core circle red, shielding parts yellow, others cyan), ← / → switch boss in those views; X / 1-5 weapon and level, F fire, P pause.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- P07-R05: the Scorpion's stinger and the Sentinel's drone bay hang in front of the core (spec table: on the back / no place given). Shots come from below, and a shielding part behind the shielded core could not be hit (D-053).
+- P07-R04: "the boss flashes its neon lights": the boss's charge lights (its neon colour) strobe during the 1 s pause; the neon strips' material is shared by every enemy of the scene, so they stay lit.
+- P07-R03: the final fight keeps the ground scrolling on extra ground drawn past the level's end (`runout`, sized for about a long fight); beyond it, the terrain goes on bare (no props, no roads) — no gap or edge. The scenery gets ahead of the level by each fight's travel (D-054).
+- P07-R06: a non-shielding part right behind the core (the Storm Petrel's missile rack, the Refinery Titan's missile battery) can only be hit with angled shots or missiles once the core can be damaged; destroying it is optional. While the core is shielded, shots go through it (phase 7 review, D-062).
+- P07-R01: "shots that hit the core make sparks but do no damage": while the boss is fighting with its core shielded, shots now go through the core (no sparks) to the parts behind it, at the reviewer's request (phase 7 review, D-062). Coming in, shots still spark on the whole boss. The requirement text was left as it is (human-owned).
 
 ### Known limitations
--
+- The ten models have not been seen by the reviewer: please check them in `bosses/` (model and wireframe views). They are lighter than budgeted (1–2.3 k triangles) but made of 31–65 meshes each (a node per part, for the stumps and flashes): the draw calls of the 1-5 final fight should be checked against ENG-106 in the 60 fps check.
+- No music change for bosses (no audio yet), no points shown.
+- The main bundle chunk is now a little over Vite's 1,500 kB warning size, minified (410 kB gzip; budget ENG-107: 1.5 MB gzip).
+- The fight times assume a player always on target; real players will take longer.
 
 ### Suggestions for future phases
--
+- Boss music (GD-70) when the bar shows; a short "WARNING" banner as the boss arrives.
+- Points for parts and bosses once scoring exists (GD-50).
+- If draw calls matter, merge each boss's part meshes by material and hide parts by index ranges.

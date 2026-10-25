@@ -19,16 +19,22 @@ function gameView(state: MenuState, ctx: MenuViewContext): MenuView {
   const { texts, levels } = ctx.game;
   const label = (id: string | null) => levels.levels.find((l) => l.id === id)?.label ?? '?';
   const result = state.levelResult;
+  const choices = result?.checkpoint && {
+    labels: [texts.continueFromCheckpoint, texts.toLevelSelect],
+    selected: state.choice,
+  };
   return {
     kind: 'game',
     level: texts.gameLevel(label(state.chosenLevelId)),
     fire: texts.fire,
+    selected: choices ? state.choice : 0,
     complete: result && {
       heading: result.outcome === 'over' ? texts.gameOver : texts.levelComplete,
       over: result.outcome === 'over',
       level: label(result.levelId),
       enemies: texts.enemiesDestroyed(result.destroyed, result.spawned),
       hint: texts.continueHint,
+      ...(choices ? { choices } : {}),
     },
   };
 }

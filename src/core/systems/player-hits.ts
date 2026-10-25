@@ -75,23 +75,31 @@ function laserHits(
 }
 
 function collisionHits(world: EnemyWorld, rules: HullRules, touches: Touches): PlayerHit[] {
-  return world.enemies
-    .filter((e) => !e.gone && e.health > 0 && touches(e, e.radius))
-    .map((e) => ({
+  const hits: PlayerHit[] = [];
+  for (const e of world.enemies) {
+    if (e.gone || e.health <= 0) continue;
+    // What can be hit of it: the enemy, or a boss's core and parts (P07-R06).
+    const body = e.hitTargets.find((t) => t.health > 0 && touches(t, t.radius));
+    if (!body) continue;
+    hits.push({
       kind: 'collision',
       damage: rules.damage.collision,
-      x: e.x,
-      y: e.y,
+      x: body.x,
+      y: body.y,
+      // A boss takes no ramming damage (P07-R06).
       land: () => {
-        e.health = Math.max(0, e.health - rules.ramDamage);
+        if (e.rammable) e.health = Math.max(0, e.health - rules.ramDamage);
       },
-    }));
+    });
+  }
+  return hits;
 }
 
 /**
  * The enemy shots and enemies touching the player's hitbox at (`x`, `y`), the most damaging
  * first (GD-21: a small hitbox). A laser beam counts once: those in `lasersHit` are skipped,
- * and a beam's hit adds it there when it lands. A collision also hurts the enemy rammed.
+ * and a beam's hit adds it there when it lands. A collision also hurts the enemy rammed, unless
+ * it is a boss.
  */
 export function findPlayerHits(
   ship: { readonly x: number; readonly y: number },

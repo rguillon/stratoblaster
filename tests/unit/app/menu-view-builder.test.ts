@@ -21,6 +21,9 @@ const STATE: MenuState = {
   chosenLevelId: null,
   transitioning: false,
   levelResult: null,
+  choice: 0,
+  attempt: 0,
+  resume: null,
 };
 
 describe('buildMenuView', () => {
@@ -80,6 +83,7 @@ describe('buildMenuView', () => {
       level: 'LC',
       fire: 'Pew',
       complete: null,
+      selected: 0,
     });
   });
 
@@ -98,6 +102,22 @@ describe('buildMenuView', () => {
       levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over' },
     };
     expect(buildMenuView(over, CTX)).toMatchObject({ complete: { heading: 'Lost', over: true } });
+    expect(buildMenuView(over, CTX)).not.toHaveProperty('complete.choices');
+  });
+
+  it('P07-R08: a game over after the mini boss offers Continue or level select', () => {
+    const checkpoint = { progress: 50, bossesPassed: 1, weapons: { weapon: 'pea', levels: {} } };
+    const state: MenuState = {
+      ...STATE,
+      screen: 'game',
+      chosenLevelId: 'c',
+      choice: 1,
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over', checkpoint },
+    };
+    expect(buildMenuView(state, CTX)).toMatchObject({
+      selected: 1,
+      complete: { over: true, choices: { labels: ['Again', 'Levels'], selected: 1 } },
+    });
   });
 
   it('shows an unknown level label as "?"', () => {

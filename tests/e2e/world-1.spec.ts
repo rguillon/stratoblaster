@@ -132,8 +132,10 @@ test.describe('P06: World 1', () => {
     expect(game?.levelId).toBe('1-3');
     expect(game?.time).toBeGreaterThanOrEqual(120);
     expect(game?.time).toBeLessThan(125);
-    // The first wave after 2:00 comes at 2:10: nothing before it came in.
-    expect(game?.spawned).toBe(0);
+    // The first wave after 2:00 comes at 2:10: nothing before it came in. At 2:00, the middle
+    // of the level, its mini boss arrives (P07-R06), and only it.
+    expect(game?.boss?.name).toBe('Dust Devil');
+    expect(game?.spawned).toBe(1);
     await expect(page.locator('.stats-fps')).toHaveText(/^FPS: \d+$/, { timeout: 20_000 });
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [\d,]+$/);
     await page.keyboard.press('KeyF');
@@ -143,11 +145,30 @@ test.describe('P06: World 1', () => {
     expect((await gameState(page)).game?.time).toBeGreaterThanOrEqual(before + 10);
   });
 
-  test('P06-R03: the end of 1-1 shows "Level complete"; Confirm goes to level-select on 1-2', async ({
+  test('P06-R03, P07-R06, P07-R09: 1-1 ends once its final boss is destroyed; Confirm goes to 1-2', async ({
     page,
   }) => {
-    await openDebug(page, '?level=1-1&t=237&ship=light');
+    await openDebug(page, '?level=1-1&boss=final&ship=light');
     expect((await gameState(page)).chosenShipId).toBe('light');
+    await expect
+      .poll(async () => (await gameState(page)).game?.boss?.name ?? null, {
+        timeout: LEVEL_TIMEOUT,
+      })
+      .toBe('Storm Petrel');
+    // P07-R02: its health bar shows.
+    await expect(page.locator('.boss-bar')).toBeVisible({ timeout: LEVEL_TIMEOUT });
+    await expect(page.locator('.boss-name')).toHaveText('Storm Petrel');
+    expect((await gameState(page)).game?.phase).toBe('playing');
+    // K destroys its four parts one by one (the stage goes up), then its core.
+    for (let stage = 1; stage <= 4; stage++) {
+      await page.keyboard.press('KeyK');
+      await expect
+        .poll(async () => (await gameState(page)).game?.boss?.stage ?? -1, {
+          timeout: LEVEL_TIMEOUT,
+        })
+        .toBe(stage);
+    }
+    await page.keyboard.press('KeyK');
     await expect(page.locator('.level-complete')).toBeVisible({ timeout: LEVEL_TIMEOUT });
     await expect(page.locator('.level-complete-heading')).toHaveText('Level complete!');
     await expect(page.locator('.level-complete-level')).toHaveText('1-1');
@@ -157,6 +178,7 @@ test.describe('P06: World 1', () => {
     const { levelResult, game } = await gameState(page);
     expect(levelResult?.levelId).toBe('1-1');
     expect(game?.phase).toBe('complete');
+    expect(game?.bossesDefeated).toBe(1);
     await sendAction(page, 'confirm');
     await expectState(page, { screen: 'level-select', selectedId: '1-2', game: null });
   });

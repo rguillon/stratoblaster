@@ -1,7 +1,7 @@
 import { canTransition, type MenuScreen } from '../core/menu/menu-screen';
 import { moveCursor, type GridShape } from '../core/menu/grid-cursor';
 import { firstUnlockedLevel, type LevelCatalog } from '../core/content/level-catalog';
-import type { LevelResult } from '../core/systems/level-run';
+import type { LevelCheckpoint, LevelResult } from '../core/systems/level-run';
 import { isMenuDirection, type MenuCommand, type MenuDirection } from '../input/menu-action';
 
 /** What a command did, so the presentation can give feedback. */
@@ -22,6 +22,15 @@ export interface MenuState {
   readonly transitioning: boolean;
   /** The result of the level just completed, while its overlay shows (P06-R03). */
   readonly levelResult: LevelResult | null;
+  /**
+   * The choice selected on a "Game over" panel with a checkpoint (P07-R08): 0 Continue, 1 level
+   * select.
+   */
+  readonly choice: number;
+  /** Goes up each time a level starts, or starts again from a checkpoint. */
+  readonly attempt: number;
+  /** Where the level being played started again from (P07-R08), or null from its start. */
+  readonly resume: LevelCheckpoint | null;
 }
 
 /** Data and settings of a {@link MenuFlow}. */
@@ -52,6 +61,9 @@ export class MenuFlow {
   #transitionLeft = 0;
   #revision = 0;
   #result: LevelResult | null = null;
+  #choice = 0;
+  #attempt = 0;
+  #resume: LevelCheckpoint | null = null;
 
   constructor(private readonly options: MenuFlowOptions) {
     if (options.shipIds.length === 0) throw new Error('The menu needs at least one ship');
@@ -76,6 +88,9 @@ export class MenuFlow {
       chosenLevelId: this.#chosenLevelId,
       transitioning: this.#transitionLeft > 0,
       levelResult: this.#result,
+      choice: this.#choice,
+      attempt: this.#attempt,
+      resume: this.#resume,
     };
   }
 
@@ -83,6 +98,7 @@ export class MenuFlow {
   goTo(screen: MenuScreen): boolean {
     if (!canTransition(this.#screen, screen)) return false;
     if (screen === 'level-select') this.#levelIndex = firstUnlockedLevel(this.options.levels);
+    if (screen === 'game') this.#startLevel(null);
     this.#result = null;
     this.#screen = screen;
     this.#transitionLeft = this.options.transitionSeconds;
@@ -102,6 +118,7 @@ export class MenuFlow {
   completeLevel(result: LevelResult): void {
     if (this.#screen !== 'game' || this.#result) return;
     this.#result = result;
+    this.#choice = 0;
     this.#transitionLeft = this.options.resultDelaySeconds ?? this.options.transitionSeconds;
     this.#changed();
   }
@@ -120,6 +137,7 @@ export class MenuFlow {
     this.#chosenShipId = shipId;
     this.#chosenLevelId = levelId;
     this.#result = null;
+    this.#startLevel(null);
     this.#screen = 'game';
     this.#transitionLeft = 0;
     this.#changed();
@@ -144,6 +162,17 @@ export class MenuFlow {
 
   #changed(): void {
     this.#revision++;
+  }
+
+  /** A new attempt at the chosen level, from its start or from `checkpoint`. */
+  #startLevel(checkpoint: LevelCheckpoint | null): void {
+    this.#attempt++;
+    this.#resume = checkpoint;
+  }
+
+  /** The "Game over" panel offers Continue or level select (P07-R08). */
+  get #choosing(): boolean {
+    return this.#screen === 'game' && this.#result?.checkpoint !== undefined;
   }
 
   #shipId(index: number): string {
@@ -190,12 +219,14 @@ export class MenuFlow {
   }
 
   #move(direction: MenuDirection): MenuFeedback {
+    if (this.#choosing) return this.#choose(direction === 'left' || direction === 'up' ? 0 : 1);
     const grid = this.#grid();
     if (!grid) return 'none';
     return this.#setSelection(moveCursor(this.#selection(), direction, grid));
   }
 
   #select(index: number): MenuFeedback {
+    if (this.#choosing) return index === 0 || index === 1 ? this.#choose(index) : 'none';
     const grid = this.#grid();
     if (!grid || !Number.isInteger(index) || index < 0 || index >= grid.count) return 'none';
     return this.#setSelection(index);
@@ -233,12 +264,30 @@ export class MenuFlow {
    */
   #leaveCompletedLevel(): MenuFeedback {
     if (!this.#result) return 'none';
+    const { checkpoint } = this.#result;
+    if (checkpoint && this.#choice === 0) return this.#continue(checkpoint);
     const { levels } = this.options.levels;
     const played = levels.findIndex((l) => l.id === this.#chosenLevelId);
     const won = this.#result.outcome === 'complete';
     const next = won && levels[played + 1]?.unlocked ? played + 1 : played;
     if (!this.goTo('level-select')) return 'none';
     this.#levelIndex = Math.max(0, next);
+    return 'screen';
+  }
+
+  #choose(choice: number): MenuFeedback {
+    if (choice === this.#choice) return 'none';
+    this.#choice = choice;
+    this.#changed();
+    return 'moved';
+  }
+
+  /** The level starts again from its checkpoint, on the game screen (P07-R08). */
+  #continue(checkpoint: LevelCheckpoint): MenuFeedback {
+    this.#result = null;
+    this.#startLevel(checkpoint);
+    this.#transitionLeft = this.options.transitionSeconds;
+    this.#changed();
     return 'screen';
   }
 

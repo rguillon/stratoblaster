@@ -1,6 +1,6 @@
 import { Enemy, type EnemyContext } from '../../../core/entities/enemy';
 import type { Path } from '../../../core/systems/enemy-motion';
-import { headingTo } from '../../../core/systems/projectile-motion';
+import { fireAimed, GunMuzzles } from '../../../core/systems/gun-muzzles';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { Cadence, onPlayfield } from './enemy-helpers';
 import { Hornet } from './hornet';
@@ -14,6 +14,7 @@ const POD = ENEMY_CONFIG.splitterPod;
  */
 export class Splitter extends Enemy {
   readonly #gun = new Cadence(CFG.fireInterval, CFG.firstShot);
+  readonly #muzzles = new GunMuzzles(CFG.muzzles);
   #travelled = 0;
 
   constructor(readonly path: Path) {
@@ -31,12 +32,9 @@ export class Splitter extends Enemy {
     if (this.#travelled >= this.path.length) this.gone = true;
     if (!onPlayfield(this, ctx)) return;
     for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
-      ctx.fireBullet(
-        this.x,
-        this.y,
-        headingTo(this.x, this.y, ctx.playerX, ctx.playerY),
-        CFG.bullet,
-      );
+      fireAimed(ctx, this.#muzzles, this, [1, 0], (x, y, aim) => {
+        ctx.fireBullet(x, y, aim, CFG.bullet);
+      });
     }
     this.charge = this.#gun.progress;
   }

@@ -1,4 +1,5 @@
 import { Enemy, type EnemyContext } from '../../../core/entities/enemy';
+import type { RaisedPoint } from '../../../core/entities/muzzle';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { DOWN } from './enemy-helpers';
 
@@ -27,11 +28,9 @@ export class Lancer extends Enemy {
     this.heading = DOWN;
   }
 
-  override get emitter(): { readonly x: number; readonly y: number } {
-    return {
-      x: this.x + Math.sin(this.heading) * CFG.emitterOffset,
-      y: this.y + Math.cos(this.heading) * CFG.emitterOffset,
-    };
+  /** The front of the emitter at its nose. */
+  override get emitter(): RaisedPoint {
+    return this.place(CFG.muzzle);
   }
 
   override update(ctx: EnemyContext, dt: number): void {
