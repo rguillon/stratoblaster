@@ -1,102 +1,47 @@
-import type { LogicalScreen } from '../content/game-definition';
-import type { GameLevel } from '../content/game-level';
-import type { EnemyEntry, EnemyKindDefinition } from '../entities/enemy';
-import type { ShotTarget } from '../entities/shot-target';
-import type { WeaponDefinition } from '../entities/weapon';
 import { createRng } from '../math/rng';
 import { levelLength } from '../scenery/scenery-level';
 import { ScrollTrack } from '../scenery/scroll-track';
-import { BonusWorld, type BonusRules } from './bonus-world';
+import type { EnemyEntry } from '../entities/enemy';
+import type { ShotTarget } from '../entities/shot-target';
+import { BonusWorld } from './bonus-world';
+import { BossFights, type BossFightRules } from './boss-fights';
 import { EnemyWorld, type EnemyBlast } from './enemy-world';
-import { PlayerFlight, type FlightBounds, type FlightInput } from './player-flight';
-import { findPlayerHits, type PlayerHitKind } from './player-hits';
-import { PlayerHull, type HullEvent, type HullRules } from './player-hull';
 import type { EnemyLaser } from './enemy-shots';
+import type {
+  LandedHit,
+  LevelCheckpoint,
+  LevelControls,
+  LevelPhase,
+  LevelResult,
+  LevelRunOptions,
+} from './level-run-types';
+import { PlayerFlight } from './player-flight';
+import { findPlayerHits } from './player-hits';
+import { PlayerHull } from './player-hull';
+import { RunArsenal } from './run-arsenal';
 import { ShotWorld, type ShotImpact } from './shot-world';
 import { validateWaveScript, WaveRunner } from './wave-runner';
 
-/** Where a level stands (P06-R03); `over` once the player has lost every life (GD-20). */
-export type LevelPhase = 'playing' | 'clearing' | 'complete' | 'over';
+export type {
+  LandedHit,
+  LevelCheckpoint,
+  LevelControls,
+  LevelPhase,
+  LevelResult,
+  LevelRunOptions,
+  RunShip,
+} from './level-run-types';
 
-/** What the "Level complete" (or "Game over") overlay shows (P06-R03). */
-export interface LevelResult {
-  readonly levelId: string;
-  readonly destroyed: number;
-  readonly spawned: number;
-  /** Whether the level was completed, or the game is over (phase 6 review). */
-  readonly outcome: 'complete' | 'over';
-}
-
-/** A hit that landed on the player during a step, and what it did. */
-export interface LandedHit {
-  readonly kind: PlayerHitKind;
-  readonly x: number;
-  readonly y: number;
-  readonly event: HullEvent;
-}
-
-/** The player's controls for one step. */
-export interface LevelControls {
-  readonly move: FlightInput;
-  readonly fire: boolean;
-  /** Switch to the next weapon of `LevelRunOptions.weapons` (phase 6 review). */
-  readonly switchWeapon?: boolean;
-}
-
-/** The player ship of a run. */
-export interface RunShip {
-  readonly start: { readonly x: number; readonly y: number };
-  readonly maxSpeed: number;
-  readonly accelerationSeconds: number;
-  /** Shots leave this far above the ship's centre (its nose). */
-  readonly muzzleOffset: number;
-  /** Its health (GD-20); 100 when omitted. */
-  readonly maxHealth?: number;
-}
-
-export interface LevelRunOptions {
-  readonly screen: LogicalScreen;
-  readonly level: GameLevel;
-  readonly kinds: readonly EnemyKindDefinition[];
-  /** The weapon and its level the ship starts with. */
-  readonly weapon: WeaponDefinition;
-  readonly weaponLevel: number;
-  /**
-   * The weapons the player can switch between, in order (`LevelControls.switchWeapon`), each
-   * starting at `weaponLevel` and keeping its own level. Only `weapon` when omitted.
-   */
-  readonly weapons?: readonly WeaponDefinition[];
-  readonly ship: RunShip;
-  readonly bounds: FlightBounds;
-  /** Enemies and shots this far outside the playfield are removed. */
-  readonly cullMargin: number;
-  readonly maxEnemyAge: number;
-  /** Longest wait for the last enemies once the scroll has ended (P06-R03). */
-  readonly endWait: number;
-  readonly seed: number;
-  /**
-   * Whether a point of the playfield is on screen. Only enemies (and missiles) whose centre is
-   * on screen can be hit, so nothing blows up where the player cannot see it. Defaults to the
-   * playfield's rectangle.
-   */
-  readonly inView?: (x: number, y: number) => boolean;
-  /**
-   * Weapon bonuses (phase 6 review): some destroyed enemies drop one, and picking it up raises
-   * the weapon in use by a level. None when omitted.
-   */
-  readonly bonuses?: BonusRules;
-  /**
-   * What hurts the player, and its lives (GD-20..GD-22, phase 6 review). The player cannot be
-   * hurt when omitted.
-   */
-  readonly hull?: HullRules;
-}
+/** Fight timings when the run is given none (only matters for levels with bosses). */
+const NO_BOSS_RULES: BossFightRules = { speedEaseSeconds: 0, barFillSeconds: 1 };
 
 /**
  * One play of a level (P06-R02, R03, R07): the ground scrolls, the wave script brings the
  * enemies in by distance, the player flies and shoots them. When the scroll reaches the end no
  * more enemies come; once the last ones are gone (or after `endWait`) the level is complete.
- * Pure and deterministic: everything depends on the `dt` and controls given to {@link step}.
+ * With bosses (P07-R06), no wave comes while one is fought, and a level with a final boss ends
+ * once that boss is destroyed instead. Pure and deterministic: everything depends on the `dt`
+ * and controls given to {@link step}.
  */
 export class LevelRun {
   readonly track: ScrollTrack;
@@ -106,6 +51,8 @@ export class LevelRun {
   readonly waves: WaveRunner;
   readonly bonuses: BonusWorld | undefined;
   readonly hull: PlayerHull | undefined;
+  readonly fights: BossFights;
+  readonly arsenal: RunArsenal;
   /** Explosions, shot impacts and hits on the player of the last step. */
   blasts: readonly EnemyBlast[] = [];
   impacts: readonly ShotImpact[] = [];
@@ -114,8 +61,8 @@ export class LevelRun {
   #clearingFor = 0;
   /** What the player's shots can hit: the enemies and missiles on screen. */
   readonly #targets: ShotTarget[] = [];
-  /** The level of each weapon used so far (phase 6 review: each keeps its own). */
-  readonly #levels = new Map<WeaponDefinition, number>();
+  /** Saved when the mini boss is destroyed (P07-R08). */
+  #checkpoint: LevelCheckpoint | undefined;
   /** Where the ship can reach at the bottom of the screen. */
   readonly #reach: readonly [number, number];
   /** Laser beams that already hit the player (a beam hits once). */
@@ -149,6 +96,23 @@ export class LevelRun {
     this.waves = new WaveRunner(level.waves, (kind, entry) => {
       this.#spawn(kind, entry, random);
     });
+    this.arsenal = new RunArsenal(
+      this.shots,
+      options.weapons ?? [options.weapon],
+      options.weaponLevel,
+    );
+    this.fights = new BossFights(
+      level.bosses ?? [],
+      options.bossKinds ?? [],
+      options.bossRules ?? NO_BOSS_RULES,
+      {
+        area: () => ({ width: screen.width, height: screen.height, random, topRange: this.#reach }),
+        add: (boss) => {
+          this.enemies.add(boss);
+        },
+      },
+    );
+    if (options.checkpoint) this.#resume(options.checkpoint);
     this.#aimShots();
   }
 
@@ -157,12 +121,19 @@ export class LevelRun {
   }
 
   get result(): LevelResult {
+    const over = this.#phase === 'over';
     return {
       levelId: this.options.level.id,
       destroyed: this.enemies.kills,
       spawned: this.enemies.spawned,
-      outcome: this.#phase === 'over' ? 'over' : 'complete',
+      outcome: over ? 'over' : 'complete',
+      ...(over && this.#checkpoint ? { checkpoint: this.#checkpoint } : {}),
     };
+  }
+
+  /** The checkpoint saved so far (P07-R08), if any. */
+  get checkpoint(): LevelCheckpoint | undefined {
+    return this.#checkpoint;
   }
 
   /** Advances the run by `dt` seconds with the player's `controls`. */
@@ -173,18 +144,12 @@ export class LevelRun {
     if (this.#phase === 'complete') return;
     // Once the game is over the ship is gone; the enemies go on until the overlay shows.
     const flying = this.#phase !== 'over';
-    if (flying && controls.switchWeapon) this.#switchWeapon();
+    if (flying && controls.switchWeapon) this.arsenal.switchWeapon();
     if (flying) this.ship.step(dt, controls.move, this.options.bounds);
     this.#aimShots();
     this.shots.firing = flying && controls.fire;
     this.track.step(dt);
-    if (this.#phase === 'playing') {
-      this.waves.step(dt, this.track.distance);
-      if (this.track.ended) {
-        this.waves.stop();
-        this.#phase = 'clearing';
-      }
-    }
+    if (this.#phase === 'playing') this.#stepLevel(dt);
     this.enemies.playerX = this.ship.x;
     this.enemies.playerY = this.ship.y;
     this.enemies.step(dt);
@@ -204,21 +169,52 @@ export class LevelRun {
   seek(time: number): void {
     if (this.#phase === 'over') return;
     this.track.seek(time);
+    this.#restartAt();
+  }
+
+  /** From the checkpoint (P07-R08): its progress, its bosses passed and its weapons. */
+  #resume(checkpoint: LevelCheckpoint): void {
+    this.track.seek(checkpoint.progress / this.track.speed);
+    this.#restartAt(checkpoint.bossesPassed);
+    this.arsenal.restore(checkpoint.weapons);
+    this.#checkpoint = checkpoint;
+  }
+
+  /** Clears the playfield and goes on from the track's progress, as if the level began there. */
+  #restartAt(bossesPassed?: number): void {
     this.enemies.clear();
     this.bonuses?.clear();
     for (const shot of this.shots.projectiles) shot.alive = false;
-    this.waves.skipTo(this.track.distance);
+    this.waves.skipTo(this.track.progress);
+    this.fights.skipTo(this.track, bossesPassed);
     this.#phase = 'playing';
     this.#clearingFor = 0;
   }
 
-  /** The next weapon of the list, at its own level; shots in flight keep flying. */
-  #switchWeapon(): void {
-    const weapons = this.options.weapons ?? [this.options.weapon];
-    const index = weapons.indexOf(this.shots.weapon);
-    const next = weapons[(index + 1) % weapons.length] ?? this.options.weapon;
-    this.#levels.set(this.shots.weapon, this.shots.level);
-    this.shots.select(next, this.#levels.get(next) ?? this.options.weaponLevel);
+  /**
+   * The level goes on: bosses come and go, the waves come while no boss is fought (P07-R06),
+   * and the level ends with its final boss, or at the end of its scroll without one.
+   */
+  #stepLevel(dt: number): void {
+    const { fights, track } = this;
+    fights.step(dt, track);
+    if (!fights.active) this.waves.step(dt, track.progress);
+    if (fights.justDefeated?.rank === 'mini') {
+      this.#checkpoint = {
+        progress: track.progress,
+        bossesPassed: fights.passed,
+        weapons: this.arsenal.snapshot(),
+      };
+    }
+    if (fights.hasFinal ? fights.finalDefeated : track.ended) {
+      this.waves.stop();
+      this.#phase = 'clearing';
+    }
+  }
+
+  /** A debug key (P07-R09): destroys the next intact part of the boss fought, or its core. */
+  breakBossPart(): void {
+    this.fights.boss?.breakNext();
   }
 
   /**
@@ -245,11 +241,10 @@ export class LevelRun {
   #stepBonuses(dt: number): void {
     const bonuses = this.bonuses;
     if (!bonuses) return;
-    bonuses.drop(this.enemies.destroyed);
+    bonuses.drop([...this.enemies.destroyed, ...this.enemies.brokenParts]);
     bonuses.step(dt, this.#phase === 'over' ? undefined : this.ship);
     // A level per bonus, up to the weapon's last; the new level fires at once.
-    const up = bonuses.picked.length;
-    if (up > 0) this.shots.select(this.shots.weapon, this.shots.level + up);
+    this.arsenal.levelUp(bonuses.picked.length);
   }
 
   /** Only what is on screen can be hit (see `LevelRunOptions.inView`). */

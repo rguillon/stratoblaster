@@ -1,4 +1,4 @@
-import type { ShotTarget } from '../entities/shot-target';
+import type { DropSource } from '../entities/enemy';
 import type { Random } from '../math/rng';
 
 /**
@@ -26,8 +26,12 @@ export interface Bonus {
   age: number;
 }
 
-/** The chance (0..1) that destroying `target` drops a bonus. */
-export function dropChance(rules: BonusRules, target: ShotTarget): number {
+/**
+ * The chance (0..1) that destroying `target` drops a bonus: its own chance if it has one (a
+ * boss's part, P07-R07), the rules' otherwise.
+ */
+export function dropChance(rules: BonusRules, target: DropSource): number {
+  if (target.dropChance !== undefined) return target.dropChance;
   const { perHealth, min, max } = rules.chance;
   return Math.min(max, Math.max(min, perHealth * target.maxHealth));
 }
@@ -55,7 +59,7 @@ export class BonusWorld {
   ) {}
 
   /** Each of the destroyed `targets` drops a bonus with its {@link dropChance}. */
-  drop(targets: readonly ShotTarget[]): void {
+  drop(targets: readonly DropSource[]): void {
     const [xMin, xMax] = this.reach;
     for (const target of targets) {
       if (this.random() >= dropChance(this.rules, target)) continue;

@@ -1,0 +1,227 @@
+import { bullet, part, stages, stats, volley, type BossDesign } from './boss-kit';
+
+/** A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`). */
+const fpart = (...[id, at, radius, health, options = {}]: Parameters<typeof part>) =>
+  part(id, at, radius, health, { drop: 0.6, ...options });
+
+/*
+ * The World 1 final bosses (P07-R05): 4 to 6 destroyable parts each. Offsets in px from the
+ * boss's centre, X right and Y up (its nose points down, at -Y). Stage patterns as for the mini
+ * bosses (see `mini-bosses.ts`); the core of a final boss always drops a bonus (P07-R07).
+ */
+
+const RED = bullet('red', 190);
+const MAGENTA = bullet('magenta', 185);
+const GREEN = bullet('green', 180);
+const ORANGE = bullet('orange', 175);
+const BLUE = bullet('blue', 190);
+const PURPLE = bullet('purple', 195);
+
+/** 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate. */
+export const STORM_PETREL: BossDesign = {
+  id: 'storm-petrel',
+  stats: stats({
+    id: 'storm-petrel',
+    name: 'Storm Petrel',
+    size: 4.5,
+    coreRadius: 20,
+    coreHealth: 2010,
+    points: 8000,
+    groundSpeed: 1.5,
+    coreDrop: 1,
+    parts: [
+      fpart('pod-left', [-56, 4], 15, 1010),
+      fpart('pod-right', [56, 4], 15, 1010),
+      fpart('missile-rack', [0, 40], 14, 820, { shields: false }),
+      fpart('belly-plate', [0, -32], 15, 920, { shields: false }),
+    ],
+  }),
+  stopFraction: 0.72,
+  sway: { amplitude: 45, period: 8 },
+  bob: { amplitude: 10, period: 4 },
+  stages: stages(
+    [
+      volley.fan('pod-left', 2, 3, 15, MAGENTA, 0.8),
+      volley.fan('pod-right', 2, 3, 15, MAGENTA, 1.8),
+      volley.missiles('missile-rack', 5.5, 2, 30, 3),
+    ],
+    [
+      [volley.aimed('core', 3, 1, 0, RED, 1.6)],
+      [volley.aimed('core', 2.4, 3, 12, RED, 0.8)],
+      [volley.burst('core', 2.4, 4, 0.14, RED, 0.6)],
+      [volley.fan('core', 2.2, 7, 12, MAGENTA, 0.6)],
+      [volley.ring('core', 1.5, 12, 8, RED, 0.4)],
+    ],
+  ),
+};
+
+/** 1-2: a wide carrier; two hangar bays launch Gnats, two flak turrets; all four shield the core. */
+export const GULL_MOTHERSHIP: BossDesign = {
+  id: 'gull-mothership',
+  stats: stats({
+    id: 'gull-mothership',
+    name: 'Gull Mothership',
+    size: 5,
+    coreRadius: 20,
+    coreHealth: 2280,
+    points: 9000,
+    groundSpeed: 0.6,
+    coreDrop: 1,
+    parts: [
+      fpart('hangar-left', [-62, 6], 18, 1050),
+      fpart('hangar-right', [62, 6], 18, 1050),
+      fpart('flak-left', [-28, -32], 12, 790),
+      fpart('flak-right', [28, -32], 12, 790),
+    ],
+  }),
+  stopFraction: 0.74,
+  sway: { amplitude: 40, period: 9 },
+  bob: { amplitude: 8, period: 4.5 },
+  launches: [
+    { from: 'hangar-left', kind: 'gnats', count: 3, every: 7, first: 2.5 },
+    { from: 'hangar-right', kind: 'gnats', count: 3, every: 7, first: 6 },
+  ],
+  stages: stages(
+    [
+      volley.aimed('flak-left', 1.9, 2, 8, GREEN, 0.9),
+      volley.aimed('flak-right', 1.9, 2, 8, GREEN, 1.85),
+    ],
+    [
+      [volley.laser('core', 7, 1.5, 4)],
+      [volley.laser('core', 6, 1.5, 2), volley.aimed('core', 2.6, 1, 0, ORANGE, 1)],
+      [volley.laser('core', 5.5, 1.5, 2), volley.fan('core', 2.6, 5, 14, ORANGE, 1)],
+      [volley.laser('core', 5, 1.5, 2), volley.ring('core', 2.2, 8, 0, ORANGE, 1)],
+      [volley.laser('core', 4.5, 1.6, 1.5), volley.ring('core', 1.5, 12, 9, GREEN, 0.4)],
+    ],
+  ),
+};
+
+/** 1-3: a flying fortress; two laser lances and two missile silos shield the core. */
+export const MESA_FORTRESS: BossDesign = {
+  id: 'mesa-fortress',
+  stats: stats({
+    id: 'mesa-fortress',
+    name: 'Mesa Fortress',
+    size: 5,
+    coreRadius: 22,
+    coreHealth: 2420,
+    points: 10_000,
+    groundSpeed: 0,
+    coreDrop: 1,
+    parts: [
+      fpart('lance-left', [-58, -12], 15, 1050),
+      fpart('lance-right', [58, -12], 15, 1050),
+      fpart('silo-left', [-28, 32], 13, 890),
+      fpart('silo-right', [28, 32], 13, 890),
+    ],
+  }),
+  stopFraction: 0.74,
+  sway: { amplitude: 35, period: 10 },
+  bob: { amplitude: 6, period: 5 },
+  stages: stages(
+    [
+      volley.laser('lance-left', 6, 1.4, 2),
+      volley.laser('lance-right', 6, 1.4, 5),
+      volley.missiles('silo-left', 5, 1, 0, 3.5),
+      volley.missiles('silo-right', 5, 1, 0, 6),
+    ],
+    [
+      [volley.fan('core', 3, 3, 16, RED, 1.5)],
+      [volley.fan('core', 2.6, 5, 14, RED, 0.8)],
+      [volley.fan('core', 2.6, 5, 14, RED, 0.8), volley.aimed('core', 2.2, 1, 0, ORANGE, 1.4)],
+      [volley.fan('core', 2.2, 7, 12, RED, 0.6)],
+      [volley.ring('core', 1.5, 14, 12, ORANGE, 0.4), volley.fan('core', 2.6, 5, 14, RED, 1.2)],
+    ],
+  ),
+};
+
+/** 1-4: a heavy tanker-gunship; fuel tanks burst into bullet rings, rotary turrets spiral. */
+export const REFINERY_TITAN: BossDesign = {
+  id: 'refinery-titan',
+  stats: stats({
+    id: 'refinery-titan',
+    name: 'Refinery Titan',
+    size: 5.5,
+    coreRadius: 22,
+    coreHealth: 4740,
+    points: 12_000,
+    groundSpeed: 0.3,
+    coreDrop: 1,
+    parts: [
+      fpart('tank-left', [-66, 18], 17, 1400, { shields: false }),
+      fpart('tank-right', [66, 18], 17, 1400, { shields: false }),
+      fpart('turret-left', [-32, -24], 14, 1810),
+      fpart('turret-right', [32, -24], 14, 1810),
+      fpart('missile-battery', [0, 38], 14, 1530, { shields: false }),
+    ],
+  }),
+  stopFraction: 0.74,
+  sway: { amplitude: 30, period: 10 },
+  bob: { amplitude: 6, period: 5 },
+  breakRings: {
+    'tank-left': { count: 12, bullet: ORANGE },
+    'tank-right': { count: 12, bullet: ORANGE },
+  },
+  stages: stages(
+    [
+      volley.ring('turret-left', 0.7, 3, 19, ORANGE, 0.5),
+      volley.ring('turret-right', 0.7, 3, -19, ORANGE, 0.85),
+      volley.missiles('missile-battery', 5.5, 2, 30, 3),
+    ],
+    [
+      [volley.aimed('core', 3, 1, 0, BLUE, 1.6)],
+      [volley.aimed('core', 2.6, 3, 12, BLUE, 0.8)],
+      [volley.burst('core', 2.4, 4, 0.14, BLUE, 0.6)],
+      [volley.fan('core', 2.4, 5, 14, BLUE, 0.6)],
+      [volley.fan('core', 2.2, 7, 12, BLUE, 0.6), volley.aimed('core', 2.6, 1, 0, ORANGE, 1.2)],
+      [volley.ring('core', 1.3, 14, 9, BLUE, 0.4), volley.burst('core', 2.8, 3, 0.14, ORANGE, 1)],
+    ],
+  ),
+};
+
+/** 1-5: a city-ship; wing lasers, missile batteries, and two shield generators guard the core. */
+export const OVERLORD: BossDesign = {
+  id: 'overlord',
+  stats: stats({
+    id: 'overlord',
+    name: 'Overlord',
+    size: 6,
+    coreRadius: 24,
+    coreHealth: 5540,
+    points: 15_000,
+    groundSpeed: 0.25,
+    coreDrop: 1,
+    parts: [
+      fpart('laser-left', [-78, -6], 15, 1660, { shields: false }),
+      fpart('laser-right', [78, -6], 15, 1660, { shields: false }),
+      fpart('battery-left', [-46, 30], 14, 1520, { shields: false }),
+      fpart('battery-right', [46, 30], 14, 1520, { shields: false }),
+      fpart('generator-left', [-34, -36], 13, 1940),
+      fpart('generator-right', [34, -36], 13, 1940),
+    ],
+  }),
+  stopFraction: 0.75,
+  sway: { amplitude: 25, period: 11 },
+  bob: { amplitude: 6, period: 5 },
+  stages: stages(
+    [
+      volley.laser('laser-left', 6.5, 1.4, 2),
+      volley.laser('laser-right', 6.5, 1.4, 5.25),
+      volley.missiles('battery-left', 5.5, 2, 24, 3.5),
+      volley.missiles('battery-right', 5.5, 2, 24, 6.25),
+    ],
+    [
+      [volley.aimed('core', 2.8, 1, 0, PURPLE, 1.4)],
+      [volley.aimed('core', 2.4, 3, 12, PURPLE, 0.8)],
+      [volley.burst('core', 2.4, 4, 0.13, PURPLE, 0.6)],
+      [volley.fan('core', 2.4, 5, 14, PURPLE, 0.6)],
+      [volley.ring('core', 2, 10, 6, PURPLE, 0.6)],
+      [volley.fan('core', 2.2, 7, 12, PURPLE, 0.6), volley.burst('core', 2.6, 3, 0.13, RED, 1)],
+      [
+        volley.ring('core', 1.2, 14, 9, PURPLE, 0.4),
+        volley.laser('core', 5, 1.4, 2),
+        volley.missiles('core', 6, 2, 30, 3),
+      ],
+    ],
+  ),
+};

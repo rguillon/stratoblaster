@@ -11,7 +11,7 @@
 | 4 | `phases/phase-04-level-zero.md` | ✅ Validated | `phase-04` | 99.35% lines | 2026-10-23 |
 | 5 | `phases/phase-05-first-enemies.md` | ✅ Validated | `phase-05` | 99.27% lines | 2026-10-24 |
 | 6 | `phases/phase-06-world-1.md` | ✅ Validated | `phase-06` | 99.33% lines | 2026-10-25 |
-| 7 | `phases/phase-07-bosses.md` | ⚪ Not started | | | |
+| 7 | `phases/phase-07-bosses.md` | 🟡 Awaiting review | `phase-07` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -94,3 +94,5 @@
 - 2026-10-24 — 6 — Implemented World 1 (five playable levels, wave scripts, level end, desert ground and props, debug URL options); awaiting review.
 - 2026-10-25 — 6 — Validated: full gate green (789 unit tests, 99.33% lines, 89.5% branches, 50 e2e); already squash-merged into `main` (#16), tagged `v0.06.0`.
 - 2026-10-25 — 7 — Spec file created; requirements drafted by the agent at the reviewer's request (Draft).
+- 2026-10-25 — 7 — Open choices settled by the reviewer (all defaults) and set to Ready.
+- 2026-10-25 — 7 — Implemented bosses: engine `Boss` (parts, shielded core, stages, death), fights with ground speed and checkpoint, ten World 1 bosses with code-generated models, boss health bar, Continue panel and the `bosses/` debug page (D-053..D-056); awaiting review.

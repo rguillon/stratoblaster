@@ -542,6 +542,55 @@
         padding: 3px 8px;
         background: var(--glass);
       }
+      /* Boss health bar (P07-R02): centred under the HUD, a notch at the end of each part. */
+      .boss-bar {
+        position: absolute;
+        top: 72px;
+        left: 50%;
+        width: 290px;
+        transform: translateX(-50%);
+        padding: 4px 10px 7px;
+        background: var(--glass);
+        clip-path: var(--chamfer);
+      }
+      .boss-bar[hidden] {
+        display: none;
+      }
+      .boss-label {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        text-transform: uppercase;
+      }
+      .boss-rank {
+        font-size: 11px;
+        color: var(--red);
+        letter-spacing: 0.15em;
+      }
+      .boss-name {
+        color: var(--yellow);
+      }
+      .boss-track {
+        position: relative;
+        height: 9px;
+        margin-top: 4px;
+        border: 1px solid var(--red);
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .boss-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--red), var(--yellow));
+        box-shadow: 0 0 6px var(--red);
+      }
+      .boss-notch {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 2px;
+        margin-left: -1px;
+        background: var(--paper);
+        opacity: 0.8;
+      }
       /* Touch fire button, only on touch screens (keyboard and gamepad have their own). */
       .game-fire {
         display: none;
@@ -605,6 +654,24 @@
       }
       .game-over .level-complete-heading {
         color: var(--red);
+      }
+      /* Game over after the mini boss (P07-R08): Continue from the checkpoint, or level select. */
+      .level-complete-choices {
+        display: flex;
+        gap: 12px;
+      }
+      .level-complete-choice {
+        padding: 6px 14px;
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 2px solid var(--dim);
+        color: var(--paper);
+      }
+      .level-complete-choice.selected {
+        border-color: var(--yellow);
+        color: var(--black);
+        background: var(--yellow);
       }
 
       /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */

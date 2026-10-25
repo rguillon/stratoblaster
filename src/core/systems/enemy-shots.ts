@@ -1,4 +1,9 @@
-import type { Enemy, EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec } from '../entities/enemy';
+import type {
+  EnemyBulletSpec,
+  EnemyLaserSpec,
+  EnemyMissileSpec,
+  LaserOwner,
+} from '../entities/enemy';
 import type { ShotTarget } from '../entities/shot-target';
 import { headingTo, turnTowards } from './projectile-motion';
 
@@ -33,7 +38,7 @@ export interface EnemyMissile extends ShotTarget {
 
 /** A laser: a warning line first, then the beam, along its owner's heading from its emitter. */
 export interface EnemyLaser {
-  readonly owner: Enemy;
+  readonly owner: LaserOwner;
   readonly spec: EnemyLaserSpec;
   /** Seconds since it started (warning included). */
   age: number;
@@ -47,7 +52,7 @@ export interface EnemyLaser {
 }
 
 interface LaserState {
-  owner: Enemy;
+  owner: LaserOwner;
   spec: EnemyLaserSpec;
   age: number;
   x: number;
@@ -144,7 +149,7 @@ export class EnemyShots {
     });
   }
 
-  fireLaser(owner: Enemy, spec: EnemyLaserSpec): void {
+  fireLaser(owner: LaserOwner, spec: EnemyLaserSpec): void {
     this.#lasers.push({ owner, spec, age: 0, x: 0, y: 0, heading: 0, length: 0, phase: 'warning' });
     this.#aim(this.#lasers.at(-1));
   }

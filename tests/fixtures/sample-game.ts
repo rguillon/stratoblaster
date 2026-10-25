@@ -15,6 +15,7 @@ import type {
 } from '../../src/render/game-view';
 import { SAMPLE_SCENERY, SAMPLE_SCENERY_LEVEL } from './sample-scenery';
 import { SAMPLE_ENEMIES, SAMPLE_ENEMY_KINDS } from './sample-enemies';
+import { SAMPLE_BOSS_KINDS } from './sample-boss';
 
 const box = (scene: Scene) => CreateBox('sample-ship', { size: 1 }, scene);
 
@@ -157,6 +158,8 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
   ],
   sceneryLevels: [SAMPLE_SCENERY_LEVEL],
   enemyKinds: SAMPLE_ENEMY_KINDS,
+  bossKinds: SAMPLE_BOSS_KINDS,
+  bossFights: { speedEaseSeconds: 1, barFillSeconds: 0.5 },
   // No drops unless a test asks for them.
   bonuses: { chance: { perHealth: 0, min: 0, max: 0 }, fallSpeed: 20, pickupRadius: 15 },
   hull: {
@@ -183,10 +186,14 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     gameOver: 'Lost',
     enemiesDestroyed: (destroyed, spawned) => `${String(destroyed)}/${String(spawned)}`,
     continueHint: 'Go on',
+    continueFromCheckpoint: 'Again',
+    toLevelSelect: 'Levels',
     hudHealth: 'Life',
     hudLives: (lives) => `L${String(lives)}`,
     hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
     hudDestroyed: (count) => `x${String(count)}`,
+    hudMiniBoss: 'Mini',
+    hudBoss: 'Big',
     unsupported: 'No WebGL2',
   },
   view: {

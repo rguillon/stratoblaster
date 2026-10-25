@@ -7,10 +7,12 @@ import { levelLength } from '../../../../src/core/scenery/scenery-level';
 import { LevelRun } from '../../../../src/core/systems/level-run';
 import { WORLD_1_PROPS } from '../../../../src/game/config/world-1/props';
 import { PLAYER_WEAPONS } from '../../../../src/game/config/player-weapons';
+import { QUIET_BEFORE_BOSS } from '../../../../src/game/config/world-1/bosses';
 import {
   WAVES_1_1,
   WORLD_1_FILLERS,
   fill,
+  quietBefore,
   waveScript,
 } from '../../../../src/game/config/world-1/waves';
 import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
@@ -32,13 +34,14 @@ const increasing = (values: readonly number[]) =>
 /**
  * What a level throws at the player, measured by playing it through without shooting (so the
  * numbers do not depend on the player): enemies spawned, their total health, the most on screen
- * at once, and the health spawned in each half of the level.
+ * at once, and the health spawned in each half of the level. Its waves only: its bosses (P07),
+ * which would wait to be destroyed, are left out.
  */
 function measure(game: GameLevel) {
   const weapon = PLAYER_WEAPONS[0];
   const run = new LevelRun({
     screen: { width: 480, height: 640 },
-    level: game,
+    level: { ...game, bosses: [] },
     kinds: ENEMY_KINDS,
     weapon,
     weaponLevel: 1,
@@ -196,7 +199,11 @@ describe('World 1', () => {
     const speed = level('1-1').scenery.scrollSpeed;
     const filler = WORLD_1_FILLERS['1-1'];
     if (!filler) throw new Error('no filler for 1-1');
-    expect(level('1-1').waves).toEqual(waveScript(speed, fill(WAVES_1_1, filler)));
+    const length = levelLength(level('1-1').scenery);
+    const script = waveScript(speed, fill(WAVES_1_1, filler));
+    expect(level('1-1').waves).toEqual(
+      quietBefore(script, [length / 2, length], QUIET_BEFORE_BOSS * speed),
+    );
     expect(level('1-1').waves[0]?.at).toBe(at(WAVES_1_1, 0)[0] * speed);
     expect(measure(level('1-2'))).toEqual(METRICS[1]);
   });
@@ -217,7 +224,15 @@ describe('World 1', () => {
       const times = [...game.waves]
         .map((w) => w.at / game.scenery.scrollSpeed)
         .sort((a, b) => a - b);
-      const lulls = times.slice(1).map((t, i) => t - (times[i] ?? 0));
+      // The quiet stretches before the bosses (P07-R06) are left out.
+      const bosses = (game.bosses ?? []).map((b) => b.at / game.scenery.scrollSpeed);
+      const quiet = (t0: number, t1: number) =>
+        bosses.some((b) => t0 <= b && t1 >= b - QUIET_BEFORE_BOSS);
+      const lulls = times
+        .slice(1)
+        .map((t, i) => [times[i] ?? 0, t] as const)
+        .filter(([t0, t1]) => !quiet(t0, t1))
+        .map(([t0, t1]) => t1 - t0);
       const filler = WORLD_1_FILLERS[game.id];
       expect(Math.max(...lulls), game.id).toBeLessThanOrEqual(
         (filler?.maxGap[0] ?? 0) * 1.5 + 1e-9,
@@ -249,6 +264,33 @@ describe('World 1', () => {
       expect(now.bulletSpeed + now.fireRate).toBeGreaterThan(before.bulletSpeed + before.fireRate);
     }
     expect(factors.map((f) => f.bulletSpeed)).toEqual([0.8, 0.85, 0.9, 1, 1.1]);
+  });
+
+  it('P07-R06: each level has a mini boss at its middle and a final boss at its end', () => {
+    for (const game of WORLD_1) {
+      const length = levelLength(game.scenery);
+      expect(
+        game.bosses?.map((b) => [b.rank, b.at]),
+        game.id,
+      ).toEqual([
+        ['mini', length / 2],
+        ['final', length],
+      ]);
+    }
+  });
+
+  it('P07-R06: no wave starts in the 10 s before each boss', () => {
+    for (const game of WORLD_1) {
+      const quiet = QUIET_BEFORE_BOSS * game.scenery.scrollSpeed;
+      for (const boss of game.bosses ?? []) {
+        const near = game.waves.filter((w) => w.at > boss.at - quiet && w.at <= boss.at);
+        expect(near, `${game.id} ${boss.rank}`).toEqual([]);
+      }
+    }
+  });
+
+  it('P07-R03: the scenery is drawn past the end of each level for the final fight', () => {
+    expect(WORLD_1.map((l) => l.runout)).toEqual([150, 80, 30, 70, 75]);
   });
 
   it('P06-R08: in each level, the second half has more enemy HP than the first', () => {

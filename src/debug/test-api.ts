@@ -25,6 +25,21 @@ export interface GameTestLevelState {
   readonly health: number;
   readonly lives: number;
   readonly invincible: number;
+  /** The boss being fought, if any; bosses destroyed; the ground's speed factor (P07). */
+  readonly boss: {
+    readonly name: string;
+    readonly rank: 'mini' | 'final';
+    readonly state: 'entering' | 'fighting' | 'dying';
+    readonly stage: number;
+    readonly partsLeft: number;
+    readonly parts: number;
+    readonly health: number;
+    readonly fullHealth: number;
+  } | null;
+  readonly bossesDefeated: number;
+  readonly groundSpeed: number;
+  /** Whether the mini boss's checkpoint is saved (P07-R08). */
+  readonly checkpoint: boolean;
 }
 
 /** What `window.__GAME_TEST__.getState()` returns. */
@@ -38,6 +53,10 @@ export interface GameTestState {
   readonly transitioning: boolean;
   /** The "Level complete" result, while its overlay shows (P06-R03). */
   readonly levelResult: LevelResult | null;
+  /** The choice selected on a "Game over" panel with a checkpoint: 0 Continue (P07-R08). */
+  readonly choice: number;
+  /** Goes up each time a level starts, or starts again from a checkpoint. */
+  readonly attempt: number;
   /** Every progress value the loading screen showed, in order. */
   readonly loadingProgress: readonly number[];
   /** The level being played, on the game screen (P06). */

@@ -1,4 +1,4 @@
-import type { Enemy, EnemyContext } from '../entities/enemy';
+import type { DropSource, Enemy, EnemyContext } from '../entities/enemy';
 import { isAlive, type ShotTarget } from '../entities/shot-target';
 import type { Random } from '../math/rng';
 import { EnemyShots } from './enemy-shots';
@@ -47,6 +47,8 @@ export class EnemyWorld {
   blasts: EnemyBlast[] = [];
   /** Enemies the player's shots destroyed during the last step (e.g. to drop bonuses). */
   destroyed: Enemy[] = [];
+  /** Pieces of enemies (a boss's parts) the player's shots destroyed during the last step. */
+  brokenParts: DropSource[] = [];
   /** Enemies destroyed and points scored since the world was created. */
   kills = 0;
   score = 0;
@@ -87,6 +89,13 @@ export class EnemyWorld {
       spawn: (enemy) => {
         this.#spawned.push(enemy);
       },
+      explode: (x, y, radius) => {
+        this.blasts.push({ kind: 'enemy', x, y, radius });
+      },
+      breakPart: (part) => {
+        this.blasts.push({ kind: 'enemy', x: part.x, y: part.y, radius: part.radius });
+        this.brokenParts.push(part);
+      },
     };
   }
 
@@ -112,6 +121,7 @@ export class EnemyWorld {
     this.shots.clear();
     this.blasts = [];
     this.destroyed = [];
+    this.brokenParts = [];
     this.#rebuildTargets();
   }
 
@@ -119,6 +129,7 @@ export class EnemyWorld {
   step(dt: number): void {
     this.blasts = [];
     this.destroyed = [];
+    this.brokenParts = [];
     this.#context.playerX = this.playerX;
     this.#context.playerY = this.playerY;
     this.#collectDestroyed();
@@ -158,8 +169,12 @@ export class EnemyWorld {
     return x >= -margin && x <= width + margin && y >= -margin && y <= height + margin;
   }
 
-  /** Marks an enemy gone once it has been on the playfield and then left it, or is too old. */
+  /**
+   * Marks an enemy gone once it has been on the playfield and then left it, or is too old; one
+   * that does not expire (a boss) only goes once destroyed.
+   */
   #checkGone(enemy: Enemy): void {
+    if (!enemy.expires) return;
     if (this.#within(enemy, enemy.radius)) this.#entered.add(enemy);
     const left = !this.#within(enemy, this.options.cullMargin) && this.#entered.has(enemy);
     if (left || enemy.age > this.options.maxEnemyAge) enemy.gone = true;
@@ -173,7 +188,7 @@ export class EnemyWorld {
 
   #rebuildTargets(): void {
     this.targets.length = 0;
-    for (const enemy of this.enemies) if (!enemy.gone) this.targets.push(enemy);
+    for (const enemy of this.enemies) if (!enemy.gone) this.targets.push(...enemy.hitTargets);
     for (const missile of this.shots.missiles) if (missile.alive) this.targets.push(missile);
   }
 }

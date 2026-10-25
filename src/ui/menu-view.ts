@@ -55,6 +55,11 @@ export interface LevelCompleteView {
   /** How many enemies were destroyed out of how many came. */
   readonly enemies: string;
   readonly hint: string;
+  /**
+   * "Game over" after the mini boss (P07-R08): Continue from the checkpoint or go to the level
+   * select screen, and which one is selected. None otherwise.
+   */
+  readonly choices?: { readonly labels: readonly string[]; readonly selected: number };
 }
 
 /** Game screen (P06-R02): what the overlay shows over the level being played. */
@@ -64,6 +69,8 @@ export interface GameScreenView {
   /** Label of the on-screen fire button. */
   readonly fire: string;
   readonly complete: LevelCompleteView | null;
+  /** The entry selected on the panel (its choices, P07-R08), for taps. */
+  readonly selected: number;
 }
 
 /** Everything the menu overlay can show. */

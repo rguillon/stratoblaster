@@ -635,3 +635,39 @@
 - **Alternatives considered:** a lower pass limit (leaves the dead ends); dropping every path that has not left its own road after a few points (more random draws change, and the start choice is the cause).
 - **Consequences:** the World 1 street grids and paths change a little (other seeds' layouts); the street grids are laid faster (no more 500 passes).
 - **Status:** Accepted
+
+### D-053 — Bosses as enemies with shot-target proxies for their parts and core
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R01 needs several destroyable parts per boss, a core that takes no damage while shielding parts stand, and no damage while the boss comes in. The player's shots, homing missiles, beams and collisions all work on `ShotTarget`s through `damageTarget`, and the enemy world, the shots and the views already handle `Enemy`s.
+- **Decision:** `Boss` (`core/entities/boss.ts`) extends `Enemy`; its parts (`BossPart`) and its core (`BossCore`) are separate `ShotTarget`s whose `health` setters drop damage while the boss is not in place (and, for the core, while a shielding part stands). `Enemy.hitTargets` (the enemy itself by default) is what the enemy world exposes to the shots and to collisions. The boss's own `health` only says it is still there: it goes to 0 when its death blasts are over, so the enemy world removes it as destroyed as for any enemy. Generic hooks were added to the engine: `Enemy.expires` (a boss is never culled), `rammable`, `dropChance`, `EnemyContext.explode` / `breakPart`, `LaserOwner` (lasers from a part).
+- **Alternatives considered:** a separate boss world next to the enemy world (would duplicate shooting, targets, collisions and drawing); making each part an `Enemy` (stages, shield and death would need cross-enemy links).
+- **Consequences:** shots at a shielded core spark and are used up (as P07-R01 says), so a shielding part right behind the core could never be hit: the boss designs keep shielding parts out of the core's shadow (unit test). `ShotWorld.totalDamage` counts damage dealt before a proxy drops it.
+- **Status:** Accepted
+
+### D-054 — Level progress and ground distance kept apart during fights
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R03 changes the ground speed for a fight (from stopped to ×1.5) and says no wave is skipped or squeezed by a fight; P07-R06 says no wave starts while a boss is fought. Waves are triggered by distance (P06-R07).
+- **Decision:** `ScrollTrack` keeps two distances: `distance`, the ground flown over (the scenery), and `progress`, how far the level has got (waves, bosses, end, HUD progress, `time`). While a boss is fought the track is `held`: the ground goes on at `speed × speedFactor` (eased over 2 s with a smoothstep), the progress waits. After the fight the level goes on from where the boss came. Seeking keeps the ground's lead.
+- **Alternatives considered:** waves paused but the distance going on (the waves due during the fight would all come at once afterwards); a time-based level (breaks the distance triggers of P06).
+- **Consequences:** the scenery gets ahead of the level by about each fight's time × its speed factor (e.g. 1-1's coast comes a bit before its last 30 s of waves), and the final fight keeps scrolling past the level's end: `GameLevel.runout` draws that many extra seconds of the level's last section (`withRunout`: 150 / 80 / 30 / 70 / 75 s for 1-1 … 1-5); past it, the terrain still goes on, without props. The level's scroll time stays 240 s (P06-R04); fights add to the time played.
+- **Status:** Accepted
+
+### D-055 — Data-driven stage patterns and World 1 boss tuning
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R04 asks for a different pattern at every stage and lets the agent design the ten bosses' patterns; P07-R10 gives fight-time ranges for a player with guns at level 3 always on target.
+- **Decision:** a stage's pattern is data (`BossPatternSpec`: volleys of generic shapes fired from a part or the core, `core/systems/boss-pattern.ts`). In each World 1 boss the parts' volleys are the same in every stage (each stops with its part) and the core fires something new at every stage, ending (all parts gone) with a ring or spiral not used before; so every order of destruction gives a new pattern at each stage (unit test over all orders). After each destroyed part the boss holds its fire 1 s and flashes. Health was tuned with a simulated player (`tests/helpers/boss-bot.ts`: flies under the next shielding part, then the others, then the core, leading the bullets): 1-1 … 1-5 mini 30 / 33 / 38 / 43 / 44 s, final 59 / 72 / 82 / 92 / 104 s, full health 2 200 → 3 910 (mini) and 5 770 → 15 780 (final). Two part positions of the spec's suggestions moved so they can be shot: the Scorpion's stinger and the Sentinel's drone bay hang in front of the core.
+- **Alternatives considered:** a hand-written class per boss (ten classes for what is mostly data); patterns chosen by which part was destroyed (many more combinations to design).
+- **Consequences:** bosses that launch enemies (Gull Mothership: Gnats; Sentinel: Hornets) count them as spawned; the parts' drop chances are 50 % (mini) and 60 % (final), the final bosses' cores 100 %.
+- **Status:** Accepted
+
+### D-056 — Continue from the mini boss checkpoint
+- **Date:** 2026-10-25
+- **Phase:** 7
+- **Context:** P07-R08 (GD-42): after the mini boss, a game over offers Continue (selected first) or level select.
+- **Decision:** `LevelRun` saves a `LevelCheckpoint` (progress, bosses passed, weapons and their levels from `RunArsenal`) when the mini boss is destroyed and puts it in a "Game over" result. `MenuFlow` shows the two choices (left / right / up / down or a tap pick, Confirm takes) and on Continue counts a new `attempt` with `resume` set; `GameSession` then starts the level again (a new `GamePlay`) from the checkpoint, with 3 full lives. The checkpoint is forgotten when the level is left (a new attempt from the level select has none).
+- **Alternatives considered:** restoring the same `LevelRun` in place (the scene, HUD and effects would have to be reset by hand).
+- **Consequences:** the scene is rebuilt on Continue (a short pause while the scenery is generated, as when a level starts).
+- **Status:** Accepted

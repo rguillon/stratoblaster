@@ -2,10 +2,17 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { GameDefinition } from '../core/content/game-definition';
 import { findGameLevel, type GameLevel } from '../core/content/game-level';
 import { findPlayerShip, shipMaxSpeedPxPerSec } from '../core/entities/player-ship';
+import { withRunout } from '../core/scenery/scenery-level';
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
 import type { Bonus } from '../core/systems/bonus-world';
+import type { BossRank } from '../core/systems/boss-fights';
 import type { EnemyBlast } from '../core/systems/enemy-world';
-import { LevelRun, type LandedHit, type LevelResult } from '../core/systems/level-run';
+import {
+  LevelRun,
+  type LandedHit,
+  type LevelCheckpoint,
+  type LevelResult,
+} from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
@@ -18,6 +25,7 @@ import { StatsTile } from '../ui/stats-tile';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
+import { hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
 import { buildLevelScene, type LevelScene } from './level-scene';
 import { RateMeter } from './rate-meter';
@@ -37,6 +45,10 @@ export interface GamePlayOptions {
   readonly debug: boolean;
   /** Seconds into the level to start at (P06-R09). */
   readonly startTime: number;
+  /** Starts at the arrival of this boss of the level instead (P07-R09). */
+  readonly startBoss?: BossRank | null;
+  /** Starts again from this checkpoint (P07-R08). */
+  readonly resume?: LevelCheckpoint;
   readonly doc: MenuDocument;
   /** Where the debug tile goes. No tile when omitted. */
   readonly statsParent?: HTMLElement;
@@ -108,7 +120,8 @@ export class GamePlay {
   ) {
     const level = levelOf(game, choice.levelId);
     this.view = buildLevelScene(engine, game, {
-      level: level.scenery,
+      // Extra ground past the end, for the final boss fight (P07-R03).
+      level: withRunout(level.scenery, level.runout ?? 0),
       environment: options.environment,
       glow: game.view.enemies.glow,
       environmentCubeSize: CFG.environmentCubeSize,
@@ -137,6 +150,8 @@ export class GamePlay {
         : undefined;
     this.#hud = options.hudParent && this.#newHud(options.hudParent, shipDef.name);
     if (options.startTime > 0) this.#seek(options.startTime);
+    const boss = this.run.fights.bosses.find((b) => b.rank === options.startBoss);
+    if (boss) this.#seek(boss.at / this.run.track.speed);
     this.frame(0);
   }
 
@@ -166,6 +181,9 @@ export class GamePlay {
       inView: this.#inView(),
       bonuses: this.game.bonuses,
       hull: this.game.hull,
+      bossKinds: this.game.bossKinds,
+      bossRules: this.game.bossFights,
+      ...(this.options.resume ? { checkpoint: this.options.resume } : {}),
     });
   }
 
@@ -246,16 +264,7 @@ export class GamePlay {
       this.#bonuses.sync({ bonuses, picked, dtSeconds: dt });
     });
     this.#shots.sync({ enemies, shots, blasts, impacts, dt });
-    this.#hud?.update({
-      health: this.run.hull?.health ?? this.#maxHealth,
-      maxHealth: this.#maxHealth,
-      lives: this.run.hull?.lives ?? 0,
-      weapon: shots.weapon.name,
-      weaponLevel: shots.level,
-      weaponLevels: shots.weapon.levels.length,
-      progress: this.run.track.time / this.run.track.duration,
-      destroyed: enemies.kills,
-    });
+    this.#hud?.update(hudFrame(this.run, this.#maxHealth, this.game.texts));
     this.#fps.add(dt, ++this.#frames);
     const polygons = this.view.scene.getActiveIndices() / 3;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons });
@@ -287,15 +296,18 @@ export class GamePlay {
   }
 
   /**
-   * A debug key (P06-R09): F toggles ×4 fast forward, ← / → jump 10 s back or on. Returns
-   * whether the key was used; without debug mode no key is.
+   * A debug key (P06-R09): F toggles ×4 fast forward, ← / → jump 10 s back or on, K destroys
+   * the next part of the boss fought (P07-R09). Returns whether the key was used; without debug
+   * mode no key is.
    */
   debugKey(code: string, down: boolean): boolean {
     const { fastForward, seekStep } = CFG.debug;
     const jumps: Readonly<Record<string, number>> = { ArrowLeft: -seekStep, ArrowRight: seekStep };
-    if (!this.options.debug || (code !== 'KeyF' && jumps[code] === undefined)) return false;
+    const known = code === 'KeyF' || code === 'KeyK' || jumps[code] !== undefined;
+    if (!this.options.debug || !known) return false;
     if (!down) return true;
     if (code === 'KeyF') this.#timeScale = this.#timeScale === 1 ? fastForward : 1;
+    else if (code === 'KeyK') this.run.breakBossPart();
     else this.#seek(this.run.track.time + (jumps[code] ?? 0));
     return true;
   }

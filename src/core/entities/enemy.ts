@@ -36,6 +36,25 @@ export interface EnemyLaserSpec {
   readonly style: string;
 }
 
+/**
+ * What a laser leaves from and follows (an enemy, or a part of a boss): it fires along
+ * `heading` from `emitter`, and stops once its owner is gone or has no health left.
+ */
+export interface LaserOwner {
+  readonly emitter: { readonly x: number; readonly y: number };
+  readonly heading: number;
+  readonly gone: boolean;
+  readonly health: number;
+}
+
+/**
+ * Something destroyed that may drop a bonus: a shot target with, optionally, its own chance
+ * (0..1) of dropping one instead of the game's rule (P07-R07).
+ */
+export interface DropSource extends ShotTarget {
+  readonly dropChance?: number | undefined;
+}
+
 /** What an enemy can see and do while it updates. */
 export interface EnemyContext {
   /** The playfield spans X in [0, width] and Y in [0, height]. */
@@ -52,10 +71,17 @@ export interface EnemyContext {
   readonly fireRate: number;
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void;
   fireMissile(x: number, y: number, heading: number, spec: EnemyMissileSpec): void;
-  /** Fires a laser from `owner`'s emitter ({@link Enemy.emitter}), which it follows. */
-  fireLaser(owner: Enemy, spec: EnemyLaserSpec): void;
+  /** Fires a laser from `owner`'s emitter (e.g. {@link Enemy.emitter}), which it follows. */
+  fireLaser(owner: LaserOwner, spec: EnemyLaserSpec): void;
   /** Adds another enemy (e.g. parts that break off), updated from the next step. */
   spawn(enemy: Enemy): void;
+  /** An explosion of size `radius` at (x, y), e.g. one of a dying boss's blasts (GD-62). */
+  explode(x: number, y: number, radius: number): void;
+  /**
+   * A piece of the enemy the player's shots destroyed (a boss's part, P07-R01): it blows up,
+   * and may drop a bonus (P07-R07).
+   */
+  breakPart(part: DropSource): void;
 }
 
 /** Fixed numbers of an enemy kind. */
@@ -73,7 +99,7 @@ export interface EnemyStats {
  * Base of every enemy (GD-45): a circle with health that the player's shots can hit, moved and
  * armed by {@link update}. Concrete enemies live in the game; the engine only steps them.
  */
-export abstract class Enemy implements ShotTarget {
+export abstract class Enemy implements ShotTarget, LaserOwner {
   /** Set by the world when the enemy is added. */
   id = 0;
   readonly radius: number;
@@ -89,6 +115,16 @@ export abstract class Enemy implements ShotTarget {
   charge = 0;
   /** Set when the enemy is done (left for good); the world then removes it. */
   gone = false;
+  /**
+   * Whether the world removes it once it has left the playfield or is too old (a boss stays
+   * until it is destroyed).
+   */
+  readonly expires: boolean = true;
+  /** Whether ramming the player hurts it (not a boss, P07-R06). */
+  readonly rammable: boolean = true;
+  /** Its own chance of dropping a bonus when destroyed; the game's rule when undefined. */
+  readonly dropChance: number | undefined = undefined;
+  readonly #self: readonly ShotTarget[] = [this];
 
   constructor(
     public x: number,
@@ -108,6 +144,14 @@ export abstract class Enemy implements ShotTarget {
       x: this.x + Math.sin(this.heading) * this.radius,
       y: this.y + Math.cos(this.heading) * this.radius,
     };
+  }
+
+  /**
+   * What the player's shots can hit and the player can bump into: the enemy itself, or e.g. a
+   * boss's parts and core (P07-R01). Empty when nothing of it can be hit.
+   */
+  get hitTargets(): readonly ShotTarget[] {
+    return this.#self;
   }
 
   /** Moves and attacks for `dt` seconds. `age` is already advanced. */

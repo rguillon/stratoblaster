@@ -16,6 +16,8 @@ describe('installTestApi', () => {
         chosenLevelId: null,
         transitioning: false,
         levelResult: null,
+        choice: 0,
+        attempt: 0,
       }),
       loadingProgress: () => [0, 1],
       game: () => undefined,
