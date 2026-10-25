@@ -143,11 +143,41 @@ describe('HeightField', () => {
     const grass = section({ surface: { lush: 1 } });
     const town = section({ surface: { paved: 1 } });
     const field = new HeightField(level([section(), grass, town], 40));
-    expect(field.surface(50)).toEqual({ lush: 0, paved: 0 });
-    expect(field.surface(150)).toEqual({ lush: 1, paved: 0 });
+    expect(field.surface(50)).toEqual({ lush: 0, paved: 0, sandy: 0 });
+    expect(field.surface(150)).toEqual({ lush: 1, paved: 0, sandy: 0 });
     expect(field.surface(200).lush).toBeCloseTo(0.5);
     expect(field.surface(200).paved).toBeCloseTo(0.5);
-    expect(field.surface(260)).toEqual({ lush: 0, paved: 1 });
+    expect(field.surface(260)).toEqual({ lush: 0, paved: 1, sandy: 0 });
+  });
+
+  it('P06-R06: a desert section is covered with sand, blending like the other covers', () => {
+    const desert = section({ surface: { sandy: 1 } });
+    const field = new HeightField(level([section(), desert], 40));
+    expect(field.surface(50).sandy).toBe(0);
+    expect(field.surface(100).sandy).toBeCloseTo(0.5);
+    expect(field.surface(150)).toEqual({ lush: 0, paved: 0, sandy: 1 });
+  });
+
+  it('P06-R06: dunes add ripples of crests and troughs on top of the relief, under the ceiling', () => {
+    const flat = section({
+      relief: { base: 20, amplitude: 0, frequency: 1 / 200, octaves: 1, style: 'smooth' },
+    });
+    const dunes = { height: 24, wavelength: 120, angleDeg: 0, warp: 0 } as const;
+    const field = new HeightField(level([section({ ...flat, dunes })]));
+    expect(field.ceiling).toBe(44);
+    // Along the wind (Z), the ground rises slowly to a crest and drops fast on the lee side.
+    const profile = Array.from({ length: 121 }, (_, i) => field.height(0, 1200 + i) - 20);
+    expect(Math.min(...profile)).toBeGreaterThanOrEqual(0);
+    expect(Math.min(...profile)).toBeLessThan(1);
+    expect(Math.max(...profile)).toBeGreaterThan(24 * 0.4);
+    expect(Math.max(...profile)).toBeLessThanOrEqual(24);
+    const crest = profile.indexOf(Math.max(...profile));
+    const trough = profile.indexOf(Math.min(...profile));
+    const rise = (crest - trough + 120) % 120;
+    expect(rise).toBeGreaterThan(80);
+    expect(Math.max(...grid(field, [-600, 600], [0, 300]))).toBeLessThanOrEqual(field.ceiling);
+    // Without dunes, the same relief is flat.
+    expect(new HeightField(level([flat])).height(0, 1260)).toBeCloseTo(20);
   });
 
   it('a meander line winds around its x', () => {

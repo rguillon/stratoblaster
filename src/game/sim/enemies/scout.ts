@@ -20,7 +20,7 @@ export class Scout extends Enemy {
   override update(ctx: EnemyContext, dt: number): void {
     this.y -= CFG.speed * dt;
     if (!onPlayfield(this, ctx)) return;
-    for (let i = this.#gun.tick(dt); i > 0; i--) {
+    for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
       const aim = headingTo(this.x, this.y, ctx.playerX, ctx.playerY);
       ctx.fireBullet(this.x, this.y, aim, CFG.bullet);
     }

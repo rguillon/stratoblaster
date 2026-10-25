@@ -460,3 +460,178 @@
 - **Alternatives considered:** A depth-aware sea shader (reading the depth buffer, or the height field as vertex alpha on a subdivided sea plane): the true water depth on the water itself, but a depth pass or a much denser sea mesh, costly on the software GPU of the tests.
 - **Consequences:** No extra pass or mesh. The underwater ground is lit and shaded like land, so seabed relief shows faintly through the water. With the sea switched off, the ground has no water tint.
 - **Status:** Accepted
+
+### D-036 — Playable levels: `GameLevel`, distance-triggered wave runner, pure `LevelRun`
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** Phase 6 turns the placeholder game screen into real levels: scenery, wave scripts by distance (GD-40), a level end, difficulty per level, and debug shortcuts. The engine must stay game-agnostic (§2.3).
+- **Decision:**
+  - Content: `GameDefinition.gameLevels` lists `GameLevel`s (`core/content/game-level.ts`): a `SceneryLevel`, a `WaveScript` and an `EnemyDifficulty`; the id is the level select entry's. World 1 is data in `src/game/config/world-1/` (sections, props, looks, waves, difficulty) assembled in `src/game/sim/world-1.ts`. Wave beats are written in seconds for readability and turned into distances at the level's ground speed.
+  - `core/systems/wave-runner.ts`: a wave is `{ at, kind, count, interval, entry, spread? }`; groups are queued by time once the distance is passed, so waves overlap. The runner only knows kind ids; `EnemySpawnArea.entry` (side + position) tells the kind where to come in, and kinds that cannot follow it (path kinds) mirror their path towards it.
+  - Difficulty: `EnemyWorld` takes `{ bulletSpeed, fireRate }`; bullet speeds are multiplied when fired, and `EnemyContext.fireRate` is applied by each enemy to its attack timer (`tick(dt * ctx.fireRate)`). Carrier launches and Lancer lasers are not "fire rate" and stay as tuned.
+  - `core/systems/level-run.ts` (pure): scroll, waves, `EnemyWorld`, `ShotWorld` (first weapon, level 1), `PlayerFlight` (top speed reached in 0.08 s, GD-10; bounds from the tilted camera). Phases `playing → clearing → complete`; `clearing` ends when no enemy is left or after `endWait` (10 s). `seek()` clears the screen and skips the waves before that point.
+  - `app/game-play.ts` runs a `LevelRun` at 60 Hz over `app/level-scene.ts` (scenery + playfield layer, now shared with the enemies page); `app/game-session.ts` starts and ends it with the game screen. `MenuFlow.completeLevel()` shows the overlay; input is ignored for 1 s so a held fire key does not skip it; Confirm goes to level select on the next unlocked level (or the same one).
+- **Alternatives considered:** waves triggered by time (the spec asks for distance); a data-only enemy spawn description (kinds already have their own spawn code, P05); running the level inside `MenuFlow` (it would mix menus and gameplay state).
+- **Consequences:** a level is data plus a look; the player cannot be hit yet (out of scope), so the "Level complete" counts only enemies.
+- **Status:** Accepted
+
+### D-037 — Desert ground: a `sandy` ground cover and dunes in the height field
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R06 asks for a sand texture that fades into rock with slope and altitude, and dunes made with the heightmap tools.
+- **Decision:** `Surface` gets `sandy`, stored in the free green channel of the terrain's vertex colours and mixed by the terrain shader like `lush` and `paved` (a new `TerrainLook.sand` texture; it only replaces the `ground` layer, so slopes still turn to rock). The desert looks also use sand for their `ground` and `low` layers and a red layered rock for `steep`, with a higher slope threshold so only cliffs are rock. `TerrainSection.dunes` adds crests every `wavelength` with a long windward slope and a short lee slope (78 % / 22 %), crest lines bent and heights varied by noise; `terrainCeiling` includes them. Desert levels have a lower side sun so the dunes cast shading.
+- **Alternatives considered:** a separate desert terrain material (seams between sections); dunes as a sculpt operation along a path like `channel` (dunes cover whole sections).
+- **Consequences:** no extra texture fetch outside sandy sections' blend; the sampler is named `terrainSandy` because `terrainSand` was already the shore's uniform.
+- **Status:** Accepted
+
+### D-038 — World 1 balance measured by a play-through without shooting
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R08 asks for enemy count, total HP and the peak on screen to go up strictly, and ~60/~80/~100/~120/~140 enemies with peaks 6/8/10/12/15. "On screen" depends on how well the player shoots.
+- **Decision:** the unit test plays each level through with a ship that never fires (`tests/unit/game/sim/world-1.test.ts`), counting every enemy added (Carrier launches included), their health, and the most enemy centres over the playfield at once. Results: 66 / 82 / 124 / 156 / 184 enemies, 1320 / 1910 / 3310 / 4770 / 6940 HP, peaks 6 / 8 / 11 / 12 / 17; the second half always has more HP. Factors 0.8 / 0.85 / 0.9 / 1.0 / 1.1 for bullet speed and fire rate.
+- **Alternatives considered:** counting from the scripts alone (misses Carrier launches and how long kinds stay on screen); a simulated player that shoots (results would depend on its aim).
+- **Consequences:** counts in 1-3 to 1-5 are above the "~" tunables, mostly because each Carrier launches about 20 Gnats; the order is kept, as the tunables allow. A calm stretch around 1:50–2:10 in each level is left for a future mini boss / checkpoint (spec note).
+- **Status:** Accepted
+
+### D-039 — Game screen controls and debug options
+- **Date:** 2026-10-24
+- **Phase:** 6
+- **Context:** P06-R02 asks for the GD §2 controls (keys, gamepad, touch drag and button); P06-R09 for URL debug options with the Level Zero playback keys, ignored without them.
+- **Decision:** `input/game-controls.ts` merges held keys (arrows / WASD by position, Space), the left stick, D-pad and A / right trigger, and a touch drag (the ship covers the dragged distance at most at its top speed) with an on-screen fire button shown on coarse pointers only. The menu input keeps handling Esc (Back) and Confirm. `?level=…&t=…&ship=…` work in every build (so a reviewer can use them on GitHub Pages); with them, F toggles ×4 and ← / → jump 10 s, and those two arrows then do not move the ship (A / D still do). The FPS / polygons tile shows only in debug mode.
+- **Alternatives considered:** debug options only in dev / e2e builds (ENG-111 style): the spec asks for them to check the levels by hand, including on the deployed game.
+- **Consequences:** in debug mode, ← / → are taken by the playback keys.
+- **Status:** Accepted
+
+### D-040 — CRT scanline overlay removed
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The CRT scanlines and vignette over the stage (D-013) drew visible horizontal lines across the playfield once the game screen showed real levels. The reviewer asked for the overlay to be removed.
+- **Decision:** `#stage::after` (scanlines + vignette) is gone from `index.html`. The rest of the cyberpunk HUD (corner brackets, chamfered panels, colours) stays.
+- **Consequences:** The menus lose their faint scanlines; the levels show without any overlay.
+- **Status:** Accepted (partly supersedes D-013)
+
+### D-041 — In-game HUD, no Back button over the playfield
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked to remove the Back button from the in-game view and to add a basic HUD (health, weapon level, etc.).
+- **Decision:** `ui/game-hud.ts` (`GameHud`), owned by the running level (`GamePlay`) and drawn in the menu overlay at the logical resolution: the ship's name and health bar, the weapon and its level, a bar of the level's progress, and the enemies destroyed. It updates every frame but only touches the page when a shown value changes, and never takes pointer input. Its texts come from `MenuTexts` (`hudHealth`, `hudWeapon`, `hudDestroyed`). The game screen view has no Back button; Esc / Backspace / gamepad B still leave (P06-R02).
+- **Alternatives considered:** the HUD inside the game screen's `MenuView` (the overlay would re-render every frame); a Babylon GUI layer (a new package, and the menus are already HTML).
+- **Consequences:** health shows full until the player can be hit (GD-20, a later phase); no score (GD-50, out of scope). On touch screens, leaving a level early waits for pause.
+- **Status:** Accepted
+
+### D-042 — Only enemies on screen can be shot
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer saw explosion lights in the wrong place. Player bullets fly on until 80 px past the playfield, and enemies are targets as soon as they spawn, just above the top edge; the tilted camera also shows less than the playfield's width at the bottom. A play-through of 1-1 to 1-3 found 7–42 % of the explosions (5 to 29 per level) out of view, mostly just above the top edge, where only their glow showed.
+- **Decision:** `LevelRunOptions.inView` decides which targets the player's shots can hit: only enemies and missiles whose centre is on screen. `GamePlay` gives it the camera's visible area (`visibleHalfWidth`); the default is the playfield rectangle. The same play-through now finds no explosion out of view.
+- **Alternatives considered:** removing player shots at the top edge (shots near the edge would vanish before reaching an enemy just coming in); hiding blasts out of view (enemies would still die unseen).
+- **Consequences:** enemies take no damage until they come into view. The `enemies/` debug page (phase 5) is unchanged.
+- **Status:** Accepted
+
+### D-043 — E switches weapon in game
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for a key to switch between weapons in game: E on an AZERTY keyboard. Phase 6 starts every level with the guns at level 1 (P06-R02); weapon pick-ups and upgrades come later (GD-31).
+- **Decision:** `GAME_CONTROLS_CONFIG.switchKeys` (`KeyE`, a key position, so the same key on AZERTY and QWERTY) makes `GameControls` report one `switchWeapon` per press (key-down repeats ignored). `LevelRun` cycles through `LevelRunOptions.weapons` (the game's player weapons) at the starting level; shots in flight keep flying. The HUD shows the weapon fired. The ship still starts each level with the first weapon.
+- **Alternatives considered:** a debug-only key (the reviewer wants it in the game); one key per weapon (1-3 are free, but one key was asked for).
+- **Consequences:** GD §2 gives E to Special / bomb: bombs will need another key when they come. No gamepad or touch binding yet.
+- **Status:** Accepted
+
+### D-044 — Faster ships (+50 %) and denser waves (+50 %)
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked to raise the player's base speed by 50 % and to increase the enemy density.
+- **Decision:**
+  - `PLAYER_SHIPS.baseSpeedPxPerSec` goes from 100 to 150 px/s: balanced 150, heavy 120, light 210 px/s. The ships' factors (P02-R01..R03) are unchanged. `specs/phases/phase-02-player-ships.md` still says 100 px/s: its requirement text is the reviewer's to update.
+  - `WAVE_DENSITY` (1.5, `game/config/world-1/waves.ts`) multiplies the groups of every beat, rounded. A one-group beat gets its extra groups 1.5 s apart and 0.3 across the screen (from the top) or a little lower (from the sides), so they do not come in on top of each other. The beats stay written as before; `waveScript(speed, beats, 1)` gives the old scripts.
+  - Measured as in D-038 (no shooting): 119 / 143 / 213 / 270 / 321 enemies, 2270 / 3180 / 5620 / 8130 / 11860 HP, peaks 11 / 14 / 16 / 18 / 22 on screen; each level's second half still has more HP. The strict order of P06-R08 holds.
+- **Consequences:** the counts and peaks are now well above the spec's tunable values (~60 … ~140 enemies, peaks 6 … 15); 1-1 is busier than "easy for a kid" may allow, to be judged in the manual check. Supersedes the numbers of D-038.
+- **Status:** Accepted
+
+### D-045 — Ship banks when moving sideways; a felt acceleration
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for the player ship to roll when moving left / right, and for a little more acceleration in its movements.
+- **Decision:** `GamePlay` banks the ship model around its nose by up to 35° at full sideways speed (the wing on the side it flies to dips), easing towards that at 8 per second, so it rolls in and levels out smoothly; it is visual only (`config/game-play.ts`, `roll`). The time from rest to full speed (`GAME_CONTROLS_CONFIG.accelerationSeconds`) goes from 0.08 s to 0.18 s, so starts and stops are felt (GD-10 still holds: top speed in under a fifth of a second).
+- **Alternatives considered:** banking from the input instead of the speed (it would snap with the keys); a stronger acceleration (shorter time) — "more acceleration" was read as a more noticeable speed-up, a one-value change either way.
+- **Consequences:** none on the simulation besides the longer speed-up.
+- **Status:** Accepted
+
+### D-046 — No road crossings; lone buildings and hamlets away from the roads
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer found roads crossing each other ugly ("only path to road is permitted"), and asked for a few props not connected to roads, and for groups of buildings close together spawned from time to time. Roads, paths and street grids are phase 4 engine code (`core/scenery`), used by Level Zero too.
+- **Decision:** Three opt-in rules, set for World 1 only (`world-1/props.ts`):
+  - `RoadRules.noCrossings { gap }`: the street grids are laid first; each main road after the first follows the previous one on the side the first leaves free, from `gap` to `gap + 2 × amplitude` beside it, and every piece of main road keeps `gap` clear of the roads laid before it (pieces are laid one at a time, so a road leaving the screen and coming back does not cross itself); a path keeps `gap` clear of everything except the main road it starts on, and may end on another main road or street (it is cut there), never on a path; in street grids every crossing (a node with streets leaving it on all four sides) becomes a T-junction: its streets up or down the level are removed, then the dead ends are fixed again, never extending a street into a new crossing — one pass, as neither step makes a crossing.
+  - `PropRules.loners { cell, chance, clearance }`: one building per square of `cell` units with the chance `chance × buildingDensity`, at least `clearance` from every road, of the area's building group, turned at random.
+  - `PropRules.hamlets` (`HamletRules`): one every `spacing` along the level, in sections with buildings and no street grid; the centre is tried at 6 places across the level, away from the roads; 5–9 buildings of the area's group within `radius`, all facing about the same way, `gap` apart.
+  World 1 values: gap 30; loners every 150 units with chance 0.15, 18 from the roads; hamlets every 700–1400 units, 5–9 buildings within 32, gap 2, 18 from the roads.
+- **Measured** (fixed seeds, whole levels): road crossings on screen 0 / 23 / 14 / 83 / 266 before → 0 in every level; every path ends off screen or on a main road; lone buildings 0 / 4 / 5 / 16 / 3, hamlet buildings about 0 / 48 / 25 / 43 / 6 (1-1 is mostly sea, 1-5 mostly street grid). Lone buildings and hamlets stand within half of `offscreenX` of the middle, so most are in view.
+- **Alternatives considered:** making it the engine default (it would rewrite Level Zero, phase 4, validated); keeping the main roads in separate bands across the screen (much smaller meanders); 4-way crossings kept in the city grids (the request had no exception for them).
+- **Consequences:** World 1 roads and buildings change (other layouts from the same seeds). Level Zero is unchanged; to get the same there, set the three rules in `level-zero.ts`. `RoadNetwork` indexes each road as it is laid, and exposes `offscreenX`; paths are laid by `road-paths.ts`, lone buildings and hamlets by `away-placement.ts` (files kept under the lint size limits). A first version counted built links to find crossings; where two sections meet, overlapping links made it loop, and 1-5's roads took 44 s to generate (e2e timeouts) — counting sides fixed it (about 0.2 s, as before).
+- **Status:** Accepted
+
+### D-047 — Player base speed raised again, to 225 px/s
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for the ships' base speed to go up by 50 % again, after D-044 (100 → 150 px/s).
+- **Decision:** `PLAYER_SHIPS.baseSpeedPxPerSec` 150 → 225: balanced 225, heavy 180, light 315 px/s. The ships' speed factors, the acceleration time (0.18 s to full speed, D-045) and the roll (scaled to each ship's top speed) are unchanged.
+- **Alternatives considered:** raising the speed factors instead (the base speed is the one value the request names).
+- **Consequences:** the light ship crosses the 480 px playfield in about 1.5 s. Enemy density and waves are unchanged. `phase-02-player-ships.md` still says 100 px/s (see D-044).
+- **Status:** Accepted
+
+### D-048 — Enemies from the top come in where the ship can reach
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** With the tilted camera the screen shows more of the playfield at the top (±247 px around the middle) than at the bottom (±146 px), and the ship's reach at the bottom is ±133 px. Enemies coming in from the top across 15–85 % of the width (up to ±168 px) could stay in an upper corner the player cannot shoot at.
+- **Decision:** `EnemySpawnArea.topRange` (optional, default the whole width) is the X range the kinds coming in from the top keep to: their entry position, their random X range and the X of the paths that come in from the top (Gnat, Splitter) are fractions across it instead of across the width. `LevelRun` sets it to the ship's reach at the bottom of its flight area (`bounds.centerX ± bounds.halfWidthAt(bounds.minY)`: 107–373 px in the game). Side passes (Strafer) still cross the whole width. The `enemies/` page (phase 5) does not use `LevelRun` and is unchanged.
+- **Measured** (no shooting, seed 606): enemies coming in from the top start between x 128 and 367; counts and HP unchanged; peaks on screen 11 / 14 / 15 / 18 / 20 (were 11 / 14 / 16 / 18 / 22), still strictly going up.
+- **Alternatives considered:** the bottom edge of the screen (±146 px, a little wider than the ship can go); squeezing only the spawn X and not the paths (Gnats and Splitters would still sweep out to the corners).
+- **Consequences:** waves are a little narrower; a Weaver's sway can still take it slightly past the range.
+- **Status:** Accepted
+
+### D-049 — Weapon bonuses dropped by destroyed enemies
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for bonuses dropped by some destroyed enemies that level the weapons up (GD-31). Phase 6 had them out of scope; asked, the reviewer moved weapon bonuses into phase 6 (bombs and extra lives stay out), chose that each weapon keeps its own level, and a drop chance by toughness.
+- **Decision:**
+  - Core: `BonusWorld` (`core/systems/bonus-world.ts`, pure). A destroyed enemy (`EnemyWorld.destroyed`, new) drops a bonus with the chance `perHealth × maxHealth` kept within [`min`, `max`], drawn from its own seeded random source (the enemies play the same with or without bonuses). The bonus drops within the ship's reach at the bottom of the screen (as D-048), falls at `fallSpeed`, and is picked up when the ship's centre comes within `pickupRadius`; missed ones go past the bottom edge. `LevelRun` raises the weapon in use by a level per bonus picked up (up to its last level; the shot cooldown restarts, so the new level fires at once), and keeps a level per weapon, so switching (E) gets each weapon back at its level. `LevelRunOptions.bonuses` is optional (none without it).
+  - Content: `GameDefinition.bonuses` (`game/config/bonuses.ts`: `perHealth` 0.0015, `min` 0.06, `max` 0.2, fall 45 px/s, pickup 22 px); `GameView.bonuses` renderer (`game/view/bonuses/`, look in `config/bonus-look.ts`).
+  - Look: a hexagon badge (radius 11 px) with an acid-yellow frame, a dark face and two cyan chevrons pointing up, swinging ±50° from side to side (a whole spin showed it edge on half the time) over a small pulsing yellow halo, in front of the ships and explosions; it glows with the playfield's neon. Picking one up flashes a cyan ring out. The HUD's weapon line shows the new level.
+  - Test API: `weaponLevel`, `bonuses`, `bonusesDropped` in the game state.
+- **Measured** (simulated play-through firing all the time and flying to the bonuses, seed 606): 8 / 13 / 12 / 16 / 23 bonuses dropped and picked up in 1-1 … 1-5, the first after 40–90 s; the weapon in use reaches level 5 in every level (after about 3 minutes in 1-1).
+- **Alternatives considered:** one level shared by every weapon, or the switched-to weapon back at level 1 (asked; the reviewer chose per-weapon levels); bonuses marked in the wave scripts (asked; chance by toughness chosen); drifting the bonus sideways towards the ship (picking up stays a matter of flying over it).
+- **Consequences:** levels start again at weapon level 1 (nothing carries over between levels yet). A bonus picked up at the last level is lost. Bombs and extra lives (GD-20, GD-32) are still to come.
+- **Status:** Accepted
+
+### D-050 — Player damage, lives and game over
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer asked for player damage from bullet hits and ship collisions. Phase 6 had damage, lives and game over out of scope; asked, the reviewer chose the full GD-20/21/22 (health bar, 3 lives, small hitbox, 2 s blinking invincibility, game over), damage from every enemy shot and from ramming, and a "Game over" panel leading back to level select.
+- **Decision:**
+  - Core: `PlayerHull` (`core/systems/player-hull.ts`, pure: health, lives, invincibility) and `findPlayerHits` (`player-hits.ts`: enemy bullets, missiles, firing laser beams and enemies touching the hitbox, the most damaging first). Each step `LevelRun` lands at most one hit, the most damaging, when the ship is not invincible: the bullet goes, the missile blows up, the beam is marked (a beam hurts once), the rammed enemy takes `ramDamage` (killed by it, it counts as destroyed and can drop a bonus). A hit gives `invincibleSeconds` of invincibility; while invincible, shots and enemies go through the ship. At 0 health a life is lost and the ship comes back with full health, invincible, where it is; at 0 lives the phase is `over`: the ship is gone (no moves, shots or pickups), the waves stop, the enemies go on. `LevelResult.outcome` is `complete` or `over`. `LevelRunOptions.hull` is optional (no damage without it).
+  - Content (`game/config/hull.ts`): 3 lives; 2 s invincible; hitbox radius 5 px (the ships' models are about 30 px across); bullet 10, missile 20, laser 25, collision 30; ramming takes 40 from the enemy (enemies with up to 40 health blow up: Gnat, Hornet, Scout, Strafer, Weaver, Splitter pods; tougher ones are hurt). Each ship's `maxHealth` (balanced 100, heavy 140, light 80) is its health bar.
+  - App: the ship blinks 10 times a second while invincible; a hit makes a small spark where it landed, a lost life a blast on the ship; once the game is over the "Game over" overlay comes after 2 s (`GAME_PLAY_CONFIG.damage`). The overlay is the "Level complete" panel with the heading "Game over" in red; Confirm goes to level select on the level played (not the next one). The HUD shows the ship's health (red under 30 %) and the lives (`♥ N`, after the ship's name). Test API: `health`, `lives`, `invincible`.
+- **Measured** (simulation, seed 606, balanced ship): standing still in the middle, the 3 lives last 82 / 85 / 78 / 62 / 58 s in 1-1 … 1-5 (mostly bullets); a bot that only weaves and fires (no dodging) finishes 1-1 to 1-3 with 2–3 lives and loses 1-4 and 1-5 at about 1:50 and 2:15. The e2e level tests stay well under the first lost life.
+- **Alternatives considered:** damage only, or no death (asked; full model chosen); bullets and ramming only (asked); restarting the level or going to the title on game over (asked); several hits landing in one step (one hit, then invincibility, is GD-22's intent).
+- **Consequences:** lives and health start again full in every level; no checkpoints (GD-42, mini bosses) and no extra lives from bonuses yet (GD-20). The difficulty for a kid in 1-1 is to be judged in the manual check.
+- **Status:** Accepted
+
+### D-051 — Filler groups in the lulls of the World 1 levels
+- **Date:** 2026-10-24
+- **Phase:** 6 (review)
+- **Context:** The reviewer found the levels empty. Measured with a player always shooting (simulation, seed 606), no enemy was on screen 54 / 39 / 30 / 23 / 14 % of the time in 1-1 … 1-5, about one enemy on average in 1-1, and each of 1-1 to 1-4 had a 20–30 s lull around the middle.
+- **Decision:** the written beats stay; `fill` (`world-1/waves.ts`) adds light groups in their lulls: after each beat, one group from the top every `maxGap` seconds while the next beat is more than one and a half gaps away, the kinds taken in turn and the entry positions alternating (0.3, 0.7, 0.5, 0.2, 0.8). `maxGap` goes down from its `start` at the first beat to its `end` at the last, so each level fills up as it goes (its second half keeps more enemy HP, P06-R08). Fillers per level (`WORLD_1_FILLERS`): 1-1 Hornets and Gnats only (they do not shoot), 4.5 → 3 s; 1-2 Hornet, Gnat, Weaver, Scout, 3.5 → 2.4 s; 1-3 the same, 3.3 → 2.2 s; 1-4 Gnat, Weaver, Hornet, Scout, Splitter, 3.2 → 2 s; 1-5 the same and Spinners, 3 → 1.6 s. The 50 % density (D-044) applies to them too.
+- **Measured** (seed 606): with a player always shooting, no enemy on screen 30 / 23 / 14 / 13 / 6 % of the time, 1.6 / 2.1 / 2.6 / 3.0 / 3.8 on average (were 0.9 / 1.0 / 1.9 / 2.6 / 3.0); without shooting, 279 / 335 / 433 / 498 / 537 enemies, 4470 / 6300 / 9140 / 12610 / 16920 HP, peaks 16 / 20 / 24 / 30 / 32 on screen: still strictly going up, second halves above first halves. A bot weaving and firing without dodging keeps 2 lives in 1-1 and 1-2 (as before the fill in 1-1) and loses 1-3 to 1-5 (it lost 1-3 to 1-5 before too).
+- **Alternatives considered:** a higher `WAVE_DENSITY` (more groups at the same moments: the lulls stay); writing the extra beats by hand (about a hundred beats; the filler is tunable with two numbers per level); fixed gaps (tried: 1-1, with the longest lulls, got more filler than 1-2 and its first half got heavier than its second).
+- **Consequences:** about twice as many enemies; the counts and peaks are now far above the spec's tunables (~60 … ~140 enemies, peaks 6 … 15; see D-044), and the unit test's caps for 1-1 are raised to 300 enemies and a peak of 18. More enemy models at once: the 60 FPS check of 1-5 (manual) matters more.
+- **Status:** Accepted
+
+### D-052 — Dead-end removal and path starts without crossings
+- **Date:** 2026-10-25
+- **Phase:** 6 (review)
+- **Context:** The unit tests found two defects of the no-crossings road layout (D-046). Removing the dead ends with T-junctions only could go round: a street went on to the next crossing, was cut back there because going on would make a crossing, which left the street behind it a dead end that went on again, and so on; it stopped at the 500-pass limit with dead ends on screen. And a path could start on the first on-screen point of a main road piece coming in from the side of the screen (as the main roads do around a district), run on top of it and cross it.
+- **Decision:** with `tees`, a link cut back while removing dead ends is never built again (`Link.cut`), so the removal ends (each pass either builds a link that was never cut or cuts one for good). Without crossings, a path only starts where its main road runs more along the level than across it (`runsAlong`). Both apply only without crossings, so Level Zero (P04) lays out as before.
+- **Alternatives considered:** a lower pass limit (leaves the dead ends); dropping every path that has not left its own road after a few points (more random draws change, and the start choice is the cause).
+- **Consequences:** the World 1 street grids and paths change a little (other seeds' layouts); the street grids are laid faster (no more 500 passes).
+- **Status:** Accepted

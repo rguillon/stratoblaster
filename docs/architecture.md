@@ -72,6 +72,35 @@ the kind. The panel
 weapon and level, fire and pause. e2e builds expose `window.__ENEMIES_TEST__`
 (`debug/enemy-viewer-test-api.ts`: state and frame stepping).
 
+## Levels (phase 06)
+
+```
+input/GameControls (keys, stick, drag, fire) ─┐
+                                              ▼
+core/systems/LevelRun: ScrollTrack ─distance─▶ WaveRunner ─(kind id, entry)─▶ EnemyKindDefinition.spawn
+                       PlayerFlight (bounds)    EnemyWorld (difficulty) ◀─▶ ShotWorld
+                       phase: playing ─scroll ends─▶ clearing ─last enemy gone / endWait─▶ complete
+app/GamePlay: LevelScene (scenery + playfield layer) ◀─ draws ship, EnemyLayer, shots, blasts
+app/GameSession: starts / ends a GamePlay with the game screen; result ─▶ MenuFlow.completeLevel
+```
+
+- `GameDefinition.gameLevels`: one `GameLevel` per playable level (`core/content/game-level.ts`):
+  its `SceneryLevel`, its `WaveScript` and its `EnemyDifficulty` (bullet speed and fire rate
+  factors). Its id is the id of its level select entry.
+- `core/systems/wave-runner.ts`: waves start when the scroll passes their distance (GD-40); each
+  brings `count` groups of a kind, one every `interval` s, at an entry (side and position). The
+  runner knows kinds by id only; kinds read `EnemySpawnArea.entry`. `stop()` at the end of the
+  scroll, `skipTo(distance)` for debug seeking.
+- `core/systems/level-run.ts`: one play of a level, pure and deterministic; `player-flight.ts`
+  moves the ship with a short acceleration inside bounds given by the view (the tilted camera
+  shows less of the playfield at the bottom).
+- `app/game-play.ts` runs a `LevelRun` at 60 Hz and draws it on `app/level-scene.ts` (the
+  scenery stage and the playfield layer, shared with the enemies page). The game screen's
+  overlay (`ui/screens/game-screen.ts`) has Back, the level label, a touch fire button, a drag
+  area and the "Level complete" panel. URL options (`app/debug-options.ts`,
+  `?level=1-3&t=120&ship=heavy`) start a level straight away with the playback keys (F ×4,
+  ← / → 10 s) and the FPS / polygons tile.
+
 ## Enemies (phase 05)
 
 - `core/entities/enemy.ts`: the abstract `Enemy` (a `ShotTarget` with a model key, points, a
@@ -158,8 +187,9 @@ taps     ─┘   (pointerCommand)            │
 ```
 
 - `app/menu-flow.ts`: pure screen state machine `loading → title → ship-select → level-select → game`,
-  with Back on each screen (transition table in `core/menu/menu-screen.ts`). Input is ignored while a
-  screen fades in.
+  with Back on each screen (transition table in `core/menu/menu-screen.ts`), and from a completed
+  level back to level select, on the next level (phase 06). Input is ignored while a screen fades
+  in, and for a moment after the "Level complete" overlay shows.
 - `input/`: keyboard (by `KeyboardEvent.code`, so layouts do not matter), gamepads (polled every frame,
   dead zone) and taps all become the same `MenuAction`s (`up`, `down`, `left`, `right`, `confirm`,
   `back`). Bindings and repeat timings are in `config/menu-input.ts`.
@@ -189,7 +219,9 @@ triangulation, bodies of revolution along Z).
 `app/start-app.ts` runs Babylon's render loop. Each frame, `core/loop/FixedStepClock` turns the real frame time
 into a whole number of 1/60 s simulation steps plus an interpolation factor `alpha` for rendering (ENG-100).
 After a long stall, the step count is capped and excess time is dropped. The menus then read the frame's
-input, update the overlay, and animate and render the menu scenes (frame time capped at 0.1 s).
+input, update the overlay, and animate and render the menu scenes (frame time capped at 0.1 s). On the game
+screen, the level being played (`app/game-play.ts`) runs its own fixed-step clock instead, and only its
+scene is rendered.
 
 ## Making a new game from this template
 
@@ -210,4 +242,8 @@ input, update the overlay, and animate and render the menu scenes (frame time ca
    Declare the enemies in `GameDefinition.enemyKinds` (classes extending `Enemy`), and in
    `GameDefinition.view.enemies` one `EnemyModelFactory` per model key, the enemy shot and
    blast renderers and the playfield glow.
+   Declare the playable levels in `GameDefinition.gameLevels` (`GameLevel`: a scenery level with
+   a look in `view.scenery.looks`, a wave script of enemy kind ids, and the difficulty factors),
+   one per unlocked entry of `GameDefinition.levels`. Each level starts with the first player
+   weapon at level 1.
 5. Run `make check`.

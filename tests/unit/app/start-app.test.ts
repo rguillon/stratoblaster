@@ -95,6 +95,117 @@ describe('startApp', () => {
     expect(app.menu.flow.state.screen).toBe('title'); // A was pressed during the fade-in (ignored); holding it does not press again
   });
 
+  describe('game screen (P06)', () => {
+    /** Through the menus to the game screen on level `index` of the sample grid. */
+    async function toGame(app: RunningApp, index = 0): Promise<void> {
+      await app.loaded;
+      settle(app);
+      app.command('confirm');
+      settle(app);
+      app.command('confirm');
+      settle(app);
+      app.command({ select: index });
+      app.command('confirm');
+    }
+
+    it('P06-R02: confirming a level starts it; the keys fly and fire the ship', async () => {
+      const keyboardTarget = new EventTarget();
+      const overlay = document.createElement('div');
+      app = startApp(new NullEngine(), SAMPLE_GAME, options({ keyboardTarget, overlay }));
+      await toGame(app);
+      const play = app.game();
+      expect(play?.state.levelId).toBe('a');
+      expect(screenOf(overlay)).toBe('game');
+      // Phase 6 review: a HUD over the level, no Back button.
+      expect(overlay.querySelector('.game-hud')).not.toBeNull();
+      expect(overlay.querySelector('.menu-back')).toBeNull();
+      const x = play?.state.player.x ?? 0;
+      keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }));
+      keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' }));
+      for (let i = 0; i < 10; i++) app.tick(0.05);
+      expect(play?.state.player.x).toBeGreaterThan(x);
+      expect(play?.state.firing).toBe(true);
+      keyboardTarget.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
+      app.tick(0.05);
+      expect(play?.state.firing).toBe(false);
+      keyboardTarget.dispatchEvent(new Event('blur'));
+      app.tick(0.05);
+      expect(app.controls.read(1, 1).move).toEqual({ x: 0, y: 0 });
+    });
+
+    it('P06-R02: the touch fire button and drags reach the controls', async () => {
+      const overlay = document.createElement('div');
+      app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));
+      await toGame(app);
+      settle(app);
+      const fire = overlay.querySelector('.game-fire');
+      fire?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(app.controls.read(1 / 60, 50).fire).toBe(true);
+      const screen = overlay.querySelector('.game-screen');
+      screen?.dispatchEvent(new PointerEvent('pointerdown', { clientX: 0, clientY: 0 }));
+      screen?.dispatchEvent(new PointerEvent('pointermove', { clientX: 10, clientY: 0 }));
+      expect(app.controls.read(1, 50).move.x).toBeCloseTo(0.2);
+    });
+
+    it('P06-R02: Back leaves the level for the title screen', async () => {
+      const overlay = document.createElement('div');
+      app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));
+      await toGame(app);
+      const play = app.game();
+      settle(app);
+      app.command('back');
+      expect(app.menu.flow.state.screen).toBe('title');
+      expect(app.game()).toBeUndefined();
+      expect(play?.view.scene.isDisposed).toBe(true);
+      expect(overlay.querySelector('.game-hud')).toBeNull();
+      settle(app);
+    });
+
+    it('P06-R03: at the end of the level the overlay shows; Confirm goes to level-select', async () => {
+      const overlay = document.createElement('div');
+      app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));
+      await toGame(app, 2);
+      for (let i = 0; i < 25 * 10 && !app.menu.flow.state.levelResult; i++) app.tick(0.1);
+      expect(app.menu.flow.state.levelResult).toEqual({
+        levelId: 'c',
+        destroyed: 0,
+        spawned: 0,
+        outcome: 'complete',
+      });
+      expect(overlay.querySelector('.level-complete-level')?.textContent).toBe('C');
+      // Past the overlay's input delay (1 s): ten ticks of 0.1 s fall just short of it.
+      settle(app);
+      settle(app);
+      settle(app);
+      app.command('confirm');
+      expect(app.menu.flow.state).toMatchObject({ screen: 'level-select', selectedId: 'c' });
+      expect(app.game()).toBeUndefined();
+    });
+
+    it('P06-R09: debug options start their level straight away, with the first ship', async () => {
+      const keyboardTarget = new EventTarget();
+      const statsParent = document.createElement('div');
+      app = startApp(
+        new NullEngine(),
+        SAMPLE_GAME,
+        options({ keyboardTarget, statsParent, debug: { levelId: 'c', time: 5, shipId: null } }),
+      );
+      await app.loaded;
+      expect(app.menu.flow.state).toMatchObject({
+        screen: 'game',
+        chosenShipId: 'cube',
+        chosenLevelId: 'c',
+      });
+      expect(app.game()?.state.time).toBeCloseTo(5);
+      keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight' }));
+      expect(app.game()?.state.time).toBeCloseTo(15);
+      const x = app.game()?.state.player.x;
+      app.tick(0.1);
+      expect(app.game()?.state.player.x).toBe(x);
+      expect(statsParent.querySelector('.stats-tile')).not.toBeNull();
+    });
+  });
+
   it('runs in the render loop when asked', async () => {
     const engine = new NullEngine();
     app = startApp(engine, SAMPLE_GAME, options({ renderLoop: true }));

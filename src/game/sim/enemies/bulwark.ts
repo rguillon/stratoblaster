@@ -43,7 +43,7 @@ export class Bulwark extends Enemy {
   }
 
   #fire(ctx: EnemyContext, dt: number): void {
-    for (let i = this.#gun.tick(dt); i > 0; i--) {
+    for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
       const aim = headingTo(this.x, this.y, ctx.playerX, ctx.playerY);
       for (const heading of fanHeadings(aim, CFG.spreadCount, CFG.spreadSpacing * DEG)) {
         ctx.fireBullet(this.x, this.y, heading, CFG.bullet);

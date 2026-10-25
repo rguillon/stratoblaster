@@ -15,13 +15,16 @@ describe('installTestApi', () => {
         chosenShipId: null,
         chosenLevelId: null,
         transitioning: false,
+        levelResult: null,
       }),
       loadingProgress: () => [0, 1],
+      game: () => undefined,
       send: (a) => sent.push(a),
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
       screen: 'title',
       loadingProgress: [0, 1],
+      game: null,
     });
     target.__GAME_TEST__?.sendAction('confirm');
     expect(sent).toEqual(['confirm']);

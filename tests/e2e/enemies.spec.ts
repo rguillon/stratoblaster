@@ -30,6 +30,8 @@ const KINDS = [
 test.describe('P05: enemies/ page', () => {
   // Heavy software-rendered scene (Level Zero): one test after another, as for level_zero/.
   test.describe.configure({ mode: 'default' });
+  // Next to the World 1 specs (phase 6) they take about 30 s under software WebGL.
+  test.setTimeout(90_000);
 
   test.beforeEach(async ({ page }) => {
     await page.goto('./enemies/');
@@ -50,7 +52,8 @@ test.describe('P05: enemies/ page', () => {
   });
 
   test('P05-R01..R12: every enemy kind can be picked, spawns and attacks', async ({ page }) => {
-    test.setTimeout(90_000);
+    // Eleven kinds in turn: about 70 s on a 4-core CI runner.
+    test.setTimeout(150_000);
     await page.keyboard.press('f');
     for (const [i, name] of KINDS.entries()) {
       await page.locator('.enemy-kind button').nth(i).click();

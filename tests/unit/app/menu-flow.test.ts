@@ -156,6 +156,98 @@ describe('MenuFlow', () => {
     });
   });
 
+  describe('World 1 (P06)', () => {
+    const WORLD_1 = ['1-1', '1-2', '1-3', '1-4', '1-5'];
+    const world1 = () => atTitle({ levels: buildLevelGrid(5, 5, WORLD_1), resultDelaySeconds: 1 });
+    const result = (levelId: string) => ({
+      levelId,
+      destroyed: 3,
+      spawned: 5,
+      outcome: 'complete' as const,
+    });
+
+    it('P06-R01: any World 1 level can be started straight away, 1-5 included', () => {
+      const flow = world1();
+      send(flow, 'confirm', 'confirm', 'right', 'right', 'right', 'right');
+      expect(flow.state.selectedId).toBe('1-5');
+      send(flow, 'confirm');
+      expect(flow.state).toMatchObject({ screen: 'game', chosenLevelId: '1-5' });
+    });
+
+    it('P06-R01: the levels of worlds 2 to 5 stay locked', () => {
+      const flow = world1();
+      send(flow, 'confirm', 'confirm', 'down');
+      expect(flow.state.selectedId).toBe('2-1');
+      expect(flow.dispatch('confirm')).toBe('locked');
+    });
+
+    it('P06-R03: at the end of 1-2, the overlay shows; Confirm goes to level-select on 1-3', () => {
+      const flow = world1();
+      send(flow, 'confirm', 'confirm', 'right', 'confirm');
+      expect(flow.dispatch('confirm')).toBe('none');
+      flow.completeLevel(result('1-2'));
+      expect(flow.state).toMatchObject({ screen: 'game', levelResult: result('1-2') });
+      // The overlay ignores input for a moment, so a held fire key does not skip it.
+      expect(flow.state.transitioning).toBe(true);
+      expect(flow.dispatch('confirm')).toBe('none');
+      flow.update(1);
+      expect(flow.dispatch('confirm')).toBe('screen');
+      expect(flow.state).toMatchObject({
+        screen: 'level-select',
+        selectedId: '1-3',
+        levelResult: null,
+      });
+    });
+
+    it('GD-20: after "Game over" in 1-2, Confirm goes to level-select on 1-2 again', () => {
+      const flow = world1();
+      expect(flow.playDirect('heavy', '1-2')).toBe(true);
+      flow.completeLevel({ ...result('1-2'), outcome: 'over' });
+      flow.update(1);
+      expect(flow.dispatch('confirm')).toBe('screen');
+      expect(flow.state).toMatchObject({ screen: 'level-select', selectedId: '1-2' });
+    });
+
+    it('P06-R03: after 1-5, level-select highlights 1-5 again', () => {
+      const flow = world1();
+      expect(flow.playDirect('heavy', '1-5')).toBe(true);
+      flow.completeLevel(result('1-5'));
+      flow.completeLevel(result('1-1'));
+      expect(flow.state.levelResult?.levelId).toBe('1-5');
+      flow.update(1);
+      send(flow, 'confirm');
+      expect(flow.state.selectedId).toBe('1-5');
+    });
+
+    it('P06-R03: a result outside the game screen is ignored; Back still leaves to the title', () => {
+      const flow = world1();
+      flow.completeLevel(result('1-1'));
+      expect(flow.state.levelResult).toBeNull();
+      send(flow, 'confirm', 'confirm', 'confirm');
+      flow.completeLevel(result('1-1'));
+      flow.update(1);
+      send(flow, 'back');
+      expect(flow.state).toMatchObject({ screen: 'title', levelResult: null });
+    });
+
+    it('P06-R09: a level can be started straight away with a ship; unknown or locked ones cannot', () => {
+      const flow = world1();
+      expect(flow.playDirect('light', '1-3')).toBe(true);
+      expect(flow.state).toMatchObject({
+        screen: 'game',
+        chosenShipId: 'light',
+        chosenLevelId: '1-3',
+        highlightedShipId: 'light',
+        transitioning: false,
+      });
+      const other = world1();
+      expect(other.playDirect('light', '2-1')).toBe(false);
+      expect(other.playDirect('wing', '1-1')).toBe(false);
+      expect(other.playDirect('light', '9-9')).toBe(false);
+      expect(other.state.screen).toBe('title');
+    });
+  });
+
   it('P01-R11: a pointer selection selects an entry; out-of-range ones are ignored', () => {
     const flow = atTitle();
     send(flow, 'confirm');

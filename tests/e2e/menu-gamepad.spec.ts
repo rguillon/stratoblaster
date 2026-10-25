@@ -57,6 +57,8 @@ const B = 1;
 const DPAD_RIGHT = 15;
 
 test('P01-R10: the whole flow with the gamepad only (stick, D-pad, A and B)', async ({ page }) => {
+  // The flow enters a level, whose scenery is generated and software-rendered (phase 6).
+  test.setTimeout(90_000);
   await openGame(page);
   await pressButton(page, A, { screen: 'ship-select', selectedId: 'balanced' });
   await tiltStick(page, 0.2, 0); // inside the dead zone

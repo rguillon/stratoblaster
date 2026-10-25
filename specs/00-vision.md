@@ -13,7 +13,7 @@ An old school shoot them up with modern graphics.
 ## Target audience & platform
 - Players: Casual players, the game shall be acessible to kids
 - Devices: Desktop browser at first, but it will be ported to mobile browser later, so keep it in mind when making technical choices.
-- Session length: The first levels shall be doable under 3minutes, 5minutes for the later levels.
+- Session length: The World 1 levels last about 4 minutes, 5 minutes for the later levels.
 
 ## Core loop
 
