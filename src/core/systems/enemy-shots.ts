@@ -43,7 +43,7 @@ export interface EnemyMissile extends ShotTarget {
 /**
  * A laser: a warning line first, then the beam, from its owner's emitter. The warning line
  * follows its owner's heading (a turret turning towards the player); the beam keeps the heading
- * its owner had when it started firing (phase 8 review), turned by its sweep.
+ * its owner had when it started firing, straight (phase 8 review).
  */
 export interface EnemyLaser {
   readonly owner: LaserOwner;
@@ -68,7 +68,7 @@ interface LaserState {
   heading: number;
   length: number;
   phase: 'warning' | 'firing';
-  /** The owner's heading when the beam started firing: it keeps it. */
+  /** The owner's heading when the beam started firing: it keeps it (phase 8 review). */
   locked?: number;
 }
 
@@ -82,16 +82,6 @@ export interface EnemyShotsOptions {
    * (`LaserOwner.emitter`); straight below them when omitted.
    */
   readonly eye?: PlayfieldEye | undefined;
-}
-
-/**
- * How far a sweeping laser is turned from its owner's heading (radians): `-sweepDeg` until it
- * fires, then across to `+sweepDeg` at an even pace while it fires (phase 8).
- */
-function sweepOf({ spec, age }: { spec: EnemyLaserSpec; age: number }): number {
-  const sweep = (spec.sweepDeg ?? 0) * DEG;
-  const t = Math.min(1, Math.max(0, (age - spec.warningSeconds) / spec.firingSeconds));
-  return sweep * (2 * t - 1);
 }
 
 /** Length of a ray from (x, y) along `heading` to the edge of the playfield grown by `margin`. */
@@ -273,7 +263,7 @@ export class EnemyShots {
     const { x, y } = seenOnPlayfield(this.options.eye, { x: ex, y: ey, height });
     laser.x = x;
     laser.y = y;
-    laser.heading = (laser.locked ?? laser.owner.heading) + sweepOf(laser);
+    laser.heading = laser.locked ?? laser.owner.heading;
     laser.length = rayToEdge(x, y, laser.heading, this.options, this.options.cullMargin);
   }
 

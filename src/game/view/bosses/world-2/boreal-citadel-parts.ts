@@ -37,7 +37,8 @@ const LENS = [
 const CURTAINS = [-3.2, 0, 3.2] as const;
 
 /**
- * P08-R10: an aurora cannon on an outrigger: a frosted pod, a long barrel with charge coils,
+ * P08-R10: an aurora cannon on an outrigger, turning on its turntable (its turret, phase 8
+ * review): a frosted pod, a long barrel with charge coils,
  * a lens where its laser leaves, and lit aurora curtains rippling along its back.
  */
 export function drawCannon({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]: Vec3): void {
@@ -77,6 +78,15 @@ export function drawCannon({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]:
       );
     }
   }
+}
+
+/**
+ * The turntable an aurora cannon turns on (phase 8 review: its turret, drawn by
+ * {@link drawCannon}, aims its laser): a low drum on the outrigger, ringed with violet neon.
+ */
+export function drawCannonMount({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
+  hull.cylinder(10, OUTRIGGER_TOP, 8, H.dark, { at: [x, 0, z] });
+  neon.ring(10.3, 0.6, 8, VIOLET, { at: [x, OUTRIGGER_TOP - 0.4, z] });
 }
 
 /** A missile battery's armoured block (around its centre), and the size of a cell's hatch. */

@@ -36,7 +36,7 @@ const CRYO_SHELL = bursting('purple', 95, 8, [1.3, 8, bullet('blue', 150)]);
  * centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
  */
 
-/** The right dish emitter's projector, at the focus of its dish (its sweeping laser). */
+/** The right dish emitter's projector, at the focus of its dish (its laser, on a turret). */
 export const AURORA_EMITTER: Muzzle[] = [[36, -54, 7]];
 /** The right cryo cannon's barrel tip, as its turret rests (barrel down the screen). */
 export const AURORA_CRYO: Muzzle[] = [[66, -15.36, 9.08]];
@@ -47,8 +47,8 @@ export const AURORA_COLLAR: Muzzle[] = [[0, 0, 14]];
 
 /**
  * 2-3: a flying research station with green and violet neon and a slowly turning dish on top;
- * two dish emitters sweep lasers and two cryo cannons fire shells that burst into rings, all
- * four shielding the core; a drone hangar at its nose launches Hornets (P08-R10).
+ * two dish emitters aim lasers from turrets and two cryo cannons fire shells that burst into
+ * rings, all four shielding the core; a drone hangar at its nose launches Hornets (P08-R10).
  */
 export const AURORA_STATION: BossDesign = {
   id: 'aurora-station',
@@ -79,16 +79,17 @@ export const AURORA_STATION: BossDesign = {
   launches: [{ from: 'hangar', kind: 'hornets', count: 2, every: 6.5, first: 3.5 }],
   guns: {
     core: { gun: AURORA_HUB_GUNS, ring: AURORA_COLLAR },
-    'emitter-left': { laser: mirror(AURORA_EMITTER) },
-    'emitter-right': { laser: AURORA_EMITTER },
+    'emitter-left': { laser: mirror(AURORA_EMITTER), turret: [-36, -40], turretLaser: true },
+    'emitter-right': { laser: AURORA_EMITTER, turret: [36, -40], turretLaser: true },
     'cryo-left': { gun: mirror(AURORA_CRYO), turret: [-66, 4] },
     'cryo-right': { gun: AURORA_CRYO, turret: [66, 4] },
   },
   stages: stages(
     [
-      // The two lasers sweep across from either side, one after the other.
-      volley.laser('emitter-left', 6.5, 1.8, 2, 30),
-      volley.laser('emitter-right', 6.5, 1.8, 5.25, -30),
+      // The two projectors turn to aim at the player, one after the other, and hold still while
+      // their beam fires.
+      volley.laser('emitter-left', 6.5, 1.8, 2),
+      volley.laser('emitter-right', 6.5, 1.8, 5.25),
       volley.aimed('cryo-left', 3.6, 1, 0, CRYO_SHELL, 1.4),
       volley.aimed('cryo-right', 3.6, 1, 0, CRYO_SHELL, 3.2),
     ],

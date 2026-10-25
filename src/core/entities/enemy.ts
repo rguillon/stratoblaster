@@ -44,12 +44,6 @@ export interface EnemyLaserSpec {
   /** Width of the beam. */
   readonly width: number;
   readonly style: string;
-  /**
-   * A sweeping laser (phase 8): its warning line points `sweepDeg` to one side of its owner's
-   * heading (negative: the other side), and its beam sweeps across to as far the other way
-   * while it fires.
-   */
-  readonly sweepDeg?: number;
 }
 
 /**

@@ -16,6 +16,7 @@ import { barrelTo, FROST, icicles, PACKED, snowCap } from './avalanche-frost';
 import {
   COLOSSUS_NEON as N,
   cutter,
+  cutterMount,
   heatSink,
   missilePod,
   oreCannon,
@@ -230,12 +231,13 @@ export function buildGlacierColossus(scene: Scene): EnemyModel {
       drawWear(p);
     },
     parts: {
-      'cutter-left': cutter,
-      'cutter-right': cutter,
+      'cutter-left': cutterMount,
+      'cutter-right': cutterMount,
       'ore-left': oreCannon,
       'ore-right': oreCannon,
       'heat-sink': heatSink,
       'missile-pod': missilePod,
     },
+    turrets: { 'cutter-left': cutter, 'cutter-right': cutter },
   });
 }

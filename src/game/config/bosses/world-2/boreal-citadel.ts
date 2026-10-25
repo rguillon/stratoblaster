@@ -58,8 +58,8 @@ const [bx, by] = BOREAL_PARTS.battery;
 const [dx, dy] = BOREAL_PARTS.dome;
 
 /**
- * 2-5: the polar city's flying fortress; two aurora cannons sweep lasers, two missile batteries,
- * and two heated dome generators shield the core, which fires every kind of attack.
+ * 2-5: the polar city's flying fortress; two aurora cannons on turrets aim lasers, two missile
+ * batteries, and two heated dome generators shield the core, which fires every kind of attack.
  */
 export const BOREAL_CITADEL: BossDesign = {
   id: 'boreal-citadel',
@@ -93,15 +93,15 @@ export const BOREAL_CITADEL: BossDesign = {
       laser: [BOREAL_LENS],
       missile: BOREAL_HATCHES,
     },
-    'cannon-left': { laser: mirror(BOREAL_CANNON) },
-    'cannon-right': { laser: BOREAL_CANNON },
+    'cannon-left': { laser: mirror(BOREAL_CANNON), turret: [-cx, cy], turretLaser: true },
+    'cannon-right': { laser: BOREAL_CANNON, turret: [cx, cy], turretLaser: true },
     'battery-left': { missile: mirror(BOREAL_BATTERY) },
     'battery-right': { missile: BOREAL_BATTERY },
   },
   stages: stages(
     [
-      volley.laser('cannon-left', 6.5, 1.6, 2, 15),
-      volley.laser('cannon-right', 6.5, 1.6, 5.25, -15),
+      volley.laser('cannon-left', 6.5, 1.6, 2),
+      volley.laser('cannon-right', 6.5, 1.6, 5.25),
       volley.missiles('battery-left', 5.5, 2, 24, 3.5),
       volley.missiles('battery-right', 5.5, 2, 24, 6.25),
     ],
@@ -114,7 +114,7 @@ export const BOREAL_CITADEL: BossDesign = {
       [volley.ring('core', 2, 10, 0, GREEN, 0.6), volley.burst('core', 2.6, 3, 0.12, MAGENTA, 1)],
       [
         volley.ring('core', 1.2, 16, 9, PURPLE, 0.4),
-        volley.laser('core', 5, 1.4, 2, 20),
+        volley.laser('core', 5, 1.4, 2),
         volley.missiles('core', 6, 2, 30, 3),
         volley.fan('core', 2.8, 5, 14, GREEN, 1.4),
       ],

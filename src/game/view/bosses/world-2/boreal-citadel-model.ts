@@ -24,7 +24,13 @@ import {
   VIOLET,
 } from './boreal-citadel-city';
 import { drawDetails } from './boreal-citadel-details';
-import { drawBattery, drawCannon, drawDome, OUTRIGGER_TOP } from './boreal-citadel-parts';
+import {
+  drawBattery,
+  drawCannon,
+  drawCannonMount,
+  drawDome,
+  OUTRIGGER_TOP,
+} from './boreal-citadel-parts';
 
 // P08-R10, 2-5: the Boreal Citadel, World 2's last boss. Model space: logical pixels, nose +Z
 // (down the screen), Y up towards the camera. A polar city on a flying hull: a snowed deck
@@ -217,12 +223,13 @@ export function buildBorealCitadel(scene: Scene): EnemyModel {
   return buildBossModel(BOREAL_CITADEL, scene, AURORA, {
     core: drawCore,
     parts: {
-      'cannon-left': drawCannon,
-      'cannon-right': drawCannon,
+      'cannon-left': drawCannonMount,
+      'cannon-right': drawCannonMount,
       'battery-left': drawBattery,
       'battery-right': drawBattery,
       'dome-left': drawDome,
       'dome-right': drawDome,
     },
+    turrets: { 'cannon-left': drawCannon, 'cannon-right': drawCannon },
   });
 }

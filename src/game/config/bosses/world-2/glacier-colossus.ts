@@ -52,9 +52,9 @@ export const COLOSSUS_STACK: Muzzle[] = [[0, 6, 32]];
 export const COLOSSUS_CELLS: Muzzle[] = cells([-5.5, 5.5], [41, 51], 24);
 
 /**
- * P08-R10, 2-4: a giant mining ship with glowing heat vents; cutter lasers sweep from its beam,
- * ore cannons fire fans of big shells, a missile pod covers its stern, and a heat sink at its
- * bow (no weapon) shields the core with the ore cannons. The ground slows to ×0.3.
+ * P08-R10, 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from
+ * its beam, ore cannons fire fans of big shells, a missile pod covers its stern, and a heat sink
+ * at its bow (no weapon) shields the core with the ore cannons. The ground slows to ×0.3.
  */
 export const GLACIER_COLOSSUS: BossDesign = {
   id: 'glacier-colossus',
@@ -85,16 +85,24 @@ export const GLACIER_COLOSSUS: BossDesign = {
   bob: { amplitude: 6, period: 5 },
   guns: {
     core: { gun: COLOSSUS_CORE_GUNS, ring: COLOSSUS_STACK },
-    'cutter-left': { laser: COLOSSUS_CUTTER_LASER },
-    'cutter-right': { laser: mirror(COLOSSUS_CUTTER_LASER) },
+    'cutter-left': {
+      laser: COLOSSUS_CUTTER_LASER,
+      turret: [...COLOSSUS_CUTTER],
+      turretLaser: true,
+    },
+    'cutter-right': {
+      laser: mirror(COLOSSUS_CUTTER_LASER),
+      turret: [-COLOSSUS_CUTTER[0], COLOSSUS_CUTTER[1]],
+      turretLaser: true,
+    },
     'ore-left': { gun: COLOSSUS_ORE_GUNS },
     'ore-right': { gun: mirror(COLOSSUS_ORE_GUNS) },
     'missile-pod': { missile: COLOSSUS_CELLS },
   },
   stages: stages(
     [
-      volley.laser('cutter-left', 6.5, 1.4, 2, 18),
-      volley.laser('cutter-right', 6.5, 1.4, 5.25, -18),
+      volley.laser('cutter-left', 6.5, 1.4, 2),
+      volley.laser('cutter-right', 6.5, 1.4, 5.25),
       volley.fan('ore-left', 2.6, 3, 18, ORE, 0.9),
       volley.fan('ore-right', 2.6, 3, 18, ORE, 2.2),
       volley.missiles('missile-pod', 5.5, 2, 30, 3),

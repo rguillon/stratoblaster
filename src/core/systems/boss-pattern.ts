@@ -4,6 +4,7 @@ import type {
   EnemyContext,
   EnemyLaserSpec,
   EnemyMissileSpec,
+  LaserOwner,
 } from '../entities/enemy';
 import type { BossTurret } from '../entities/boss-turret';
 import type { Muzzle } from '../entities/muzzle';
@@ -137,6 +138,8 @@ interface VolleyState {
   /** Bullets of a burst still to fire, and seconds until the next one. */
   burst: number;
   burstLeft: number;
+  /** Seconds since its last laser was fired (Infinity before the first). */
+  laserAge: number;
   readonly guns: GunMuzzles;
 }
 
@@ -156,6 +159,7 @@ export class BossPattern {
       turns: 0,
       burst: 0,
       burstLeft: 0,
+      laserAge: Infinity,
       guns: new GunMuzzles(v.muzzles, v.turret),
     }));
     volleys.forEach((v, i) => {
@@ -192,15 +196,42 @@ export class BossPattern {
    * Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
    * next volley goes (a burst under way first): at the player for aimed shots and bursts, along
    * a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
+   * A laser's turret aims at the player until its beam fires, then holds still (phase 8 review).
    */
   turnTurrets(ctx: EnemyContext, dt: number, sources: VolleySources): void {
     for (const [from, volleys] of this.#turrets) {
       const source = sources(from);
       const turret = source?.turret;
       if (!source || !turret) continue;
-      const aim = this.#aimOf(ctx, volleys, [source, turret], sources);
+      for (const i of volleys) {
+        const state = this.#states[i];
+        if (state) state.laserAge += dt;
+      }
+      const aim =
+        this.#laserAim(ctx, volleys, [source, turret]) ??
+        this.#aimOf(ctx, volleys, [source, turret], sources);
       turret.aim = turnTowards(turret.aim, aim, turret.spec.turnRateDeg * DEG * dt);
     }
+  }
+
+  /**
+   * Where `turret` points while one of its `volleys`' lasers shows: at the player during its
+   * warning line, where it is while the beam fires. Undefined when none shows.
+   */
+  #laserAim(
+    ctx: EnemyContext,
+    volleys: readonly number[],
+    [source, turret]: readonly [VolleySource, BossTurret],
+  ): number | undefined {
+    for (const i of volleys) {
+      const shape = this.volleys[i]?.shape;
+      const age = this.#states[i]?.laserAge ?? Infinity;
+      if (shape?.kind !== 'laser') continue;
+      const { warningSeconds, firingSeconds } = shape.laser;
+      if (age < warningSeconds) return aimAtPlayer(ctx, source, turret);
+      if (age < warningSeconds + firingSeconds) return turret.aim;
+    }
+    return undefined;
   }
 
   /** Where `turret` should point for the next of its `volleys` to fire (radians from rest). */
@@ -236,7 +267,8 @@ export class BossPattern {
         });
         break;
       case 'laser':
-        ctx.fireLaser(state.guns.laser(source), shape.laser);
+        ctx.fireLaser(laserOwner(volley, state, source), shape.laser);
+        state.laserAge = 0;
         break;
       case 'launch':
         for (const enemy of shape.launch(source.x, source.y)) ctx.spawn(enemy);
@@ -302,6 +334,7 @@ function turretAim(
   switch (shape.kind) {
     case 'aimed':
     case 'burst':
+    case 'laser':
       return aimAtPlayer(ctx, source, turret);
     case 'fan':
       return wrapAngle(-shape.headingDeg * DEG);
@@ -316,6 +349,30 @@ function turretAim(
     default:
       return 0;
   }
+}
+
+/**
+ * What a laser of `volley` leaves from and follows: its piece, from a muzzle; turned with the
+ * piece's turret when the volley is on it (phase 8 review).
+ */
+function laserOwner(volley: BossVolley, state: VolleyState, source: VolleySource): LaserOwner {
+  const owner = state.guns.laser(source);
+  const turret = volley.turret ? source.turret : undefined;
+  if (!turret) return owner;
+  return {
+    get emitter() {
+      return owner.emitter;
+    },
+    get heading() {
+      return owner.heading + turret.aim;
+    },
+    get gone() {
+      return owner.gone;
+    },
+    get health() {
+      return owner.health;
+    },
+  };
 }
 
 /** How far `turret` must turn from its rest (straight down) to point at the player. */

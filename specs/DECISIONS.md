@@ -818,3 +818,12 @@
 - **Alternatives considered:** a colour argument on every boss laser volley (20 boss files to keep in step with their neon).
 - **Consequences:** lasers fired along a swinging joint (the Scorpion's stinger) no longer swing while they fire.
 - **Status:** Accepted
+
+### D-073 — Lasers on turrets instead of sweeping lasers
+- **Date:** 2026-10-25
+- **Phase:** 8 (review)
+- **Context:** the reviewer saw the Boreal Citadel's laser turn while it fired (its sweep, D-068) and asked that no boss laser turn once it fires, lasers going on rotating turrets where needed.
+- **Decision:** `EnemyLaserSpec.sweepDeg` is removed. A piece's lasers can be on its turret (`Guns.turretLaser`, `BossVolley.turret`): `BossPattern.turnTurrets` aims that turret at the player until the beam fires and holds it still while it fires, and the laser follows the turret's heading (piece heading + turret aim) until it locks (D-072). The Aurora Station's emitters, the Glacier Colossus's cutters and the Boreal Citadel's cannons are on turrets (their models draw the turning part as the turret, on a mount); the Harbour Kraken's and the Citadel's core lasers fire straight down.
+- **Alternatives considered:** keeping sweeps but locked (no sweep at all then); turrets for core lasers too (the cores' lenses are built into their hulls).
+- **Consequences:** those lasers now threaten where the player is rather than sweeping an area; fight times were not measured again.
+- **Status:** Accepted

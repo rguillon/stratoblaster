@@ -60,10 +60,13 @@ export interface BossDesign {
  * orbiting parts as drawn, at a spin of 0), by the kind of shot they fire: bullets (`gun`), a
  * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s. Its `gun`s may be on
  * a `turret` turning around the pivot given (from the boss's centre, X right, Y up): it turns
- * the way they fire next (phase 7 review, D-060). Its model draws it on its own.
+ * the way they fire next (phase 7 review, D-060). Its model draws it on its own. Its `laser`s
+ * are on that turret too when `turretLaser` (phase 8 review): it aims them at the player during
+ * the warning line and holds still while the beam fires.
  */
 export interface Guns {
   readonly turret?: readonly [x: number, y: number];
+  readonly turretLaser?: boolean;
   readonly gun?: readonly Muzzle[];
   readonly ring?: readonly Muzzle[];
   readonly missile?: readonly Muzzle[];
@@ -88,10 +91,12 @@ export function volleyMuzzles(design: BossDesign, volley: BossVolley): readonly 
   return FIRED_BY[volley.shape.kind](design.guns[volley.from] ?? {}) ?? [];
 }
 
-/** Whether `volley` fires from its piece's turret: from its `gun`s, when they are on one. */
+/** Whether `volley` fires from its piece's turret: its `gun`s (or `laser`s) when on one. */
 export function volleyOnTurret(design: BossDesign, volley: BossVolley): boolean {
   const guns = design.guns[volley.from];
-  return guns?.turret !== undefined && volleyMuzzles(design, volley) === guns.gun;
+  if (guns?.turret === undefined) return false;
+  const muzzles = volleyMuzzles(design, volley);
+  return muzzles === guns.gun || (guns.turretLaser === true && muzzles === guns.laser);
 }
 
 /** The turrets of its pieces (`BossStats.turrets`), by piece. */
@@ -172,16 +177,12 @@ export const MISSILE: EnemyMissileSpec = {
   style: 'rocketeer',
 };
 
-/**
- * Boss lasers: the Lancer's, with its 1 s warning line (GD-43); a sweeping one (phase 8) turns
- * from `sweepDeg` on one side to as far on the other while it fires.
- */
-export const laserOf = (firingSeconds: number, width = 12, sweepDeg?: number): EnemyLaserSpec => ({
+/** Boss lasers: the Lancer's, with its 1 s warning line (GD-43). */
+export const laserOf = (firingSeconds: number, width = 12): EnemyLaserSpec => ({
   warningSeconds: 1,
   firingSeconds,
   width,
   style: 'lancer',
-  ...(sweepDeg === undefined ? {} : { sweepDeg }),
 });
 
 /**
@@ -339,17 +340,11 @@ export const volley = {
     ...(first === undefined ? {} : { first }),
     shape: { kind: 'missiles', count, spacingDeg, missile: MISSILE },
   }),
-  laser: (
-    from: string,
-    every: number,
-    firingSeconds: number,
-    first?: number,
-    sweepDeg?: number,
-  ): BossVolley => ({
+  laser: (from: string, every: number, firingSeconds: number, first?: number): BossVolley => ({
     from,
     every,
     ...(first === undefined ? {} : { first }),
-    shape: { kind: 'laser', laser: laserOf(firingSeconds, 12, sweepDeg) },
+    shape: { kind: 'laser', laser: laserOf(firingSeconds) },
   }),
 };
 

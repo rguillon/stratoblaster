@@ -18,6 +18,7 @@ import {
   cryoTurret,
   dish,
   emitter,
+  emitterTurret,
   FROST,
   hangar,
   ICE,
@@ -160,6 +161,11 @@ export function buildAuroraStation(scene: Scene): EnemyModel {
       'cryo-right': cryoCannon,
       hangar,
     },
-    turrets: { 'cryo-left': cryoTurret, 'cryo-right': cryoTurret },
+    turrets: {
+      'cryo-left': cryoTurret,
+      'cryo-right': cryoTurret,
+      'emitter-left': emitterTurret,
+      'emitter-right': emitterTurret,
+    },
   });
 }

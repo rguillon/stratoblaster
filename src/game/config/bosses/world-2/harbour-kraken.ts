@@ -144,9 +144,9 @@ export const HARBOUR_KRAKEN: BossDesign = {
       [volley.laser('core', 7, 1.5, 4)],
       [volley.laser('core', 6, 1.5, 2), volley.aimed('core', 2.6, 1, 0, MAGENTA, 1)],
       [volley.laser('core', 5.5, 1.5, 2), volley.fan('core', 2.6, 5, 14, MAGENTA, 1)],
-      [volley.laser('core', 5.5, 1.6, 2, 25), volley.aimed('core', 2.4, 3, 12, MAGENTA, 0.8)],
-      [volley.laser('core', 5, 1.6, 2, 30), volley.fan('core', 2.2, 7, 12, MAGENTA, 0.6)],
-      [volley.laser('core', 4.5, 1.6, 1.5, 35), volley.ring('core', 1.4, 14, 9, ORANGE, 0.4)],
+      [volley.laser('core', 5.5, 1.6, 2), volley.aimed('core', 2.4, 3, 12, MAGENTA, 0.8)],
+      [volley.laser('core', 5, 1.6, 2), volley.fan('core', 2.2, 7, 12, MAGENTA, 0.6)],
+      [volley.laser('core', 4.5, 1.6, 1.5), volley.ring('core', 1.4, 14, 9, ORANGE, 0.4)],
     ],
   ),
 };

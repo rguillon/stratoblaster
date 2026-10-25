@@ -38,11 +38,18 @@ const bowl = (r: number) =>
     [0, r * 0.2],
   ] as const;
 
+/** A dish emitter's pylon around its centre `at` (P08-R10): its dish turns on it. */
+export function emitter({ hull }: EnemyParts, at: Vec3): void {
+  hull.cylinder(7, 3, 8, H.base, { at: offset(at, 0, -1, -3), yaw: Math.PI / 8 }, 6);
+  hull.box([4, 6, 5], H.panel, { at: offset(at, 0, 2, -3) }, FROST);
+}
+
 /**
- * A dish emitter around its centre `at` (P08-R10): an upright dish facing down the screen on a
- * pylon, struts holding its projector at the focus, where its sweeping laser leaves from.
+ * A dish emitter's turret, turning on its pylon (phase 8 review: it aims its laser): an upright
+ * dish facing down the screen, struts holding its projector at the focus, where the laser
+ * leaves from.
  */
-export function emitter(p: EnemyParts, at: Vec3): void {
+export function emitterTurret(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   // The right emitter (screen right) is on the model's -X side.
   const lasers = at[0] < 0 ? AURORA_EMITTER : mirror(AURORA_EMITTER);
@@ -50,8 +57,6 @@ export function emitter(p: EnemyParts, at: Vec3): void {
   if (!tip) return;
   const [x, y, z] = tip;
   const forward = { pitch: QUARTER };
-  hull.cylinder(7, 3, 8, H.base, { at: offset(at, 0, -1, -3), yaw: Math.PI / 8 }, 6);
-  hull.box([4, 6, 5], H.panel, { at: offset(at, 0, 2, -3) }, FROST);
   hull.lathe(bowl(9), 10, SHADE.edge, { at: [x, y, z - 15], ...forward });
   neon.ring(9.1, 0.6, 10, AURORA_VIOLET, { at: [x, y, z - 12.2], ...forward });
   hull.cylinder(1.4, 10, 6, H.dark, { at: [x, y, z - 11], ...forward });

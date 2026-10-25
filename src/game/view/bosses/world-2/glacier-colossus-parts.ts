@@ -50,7 +50,16 @@ const sided = (at: Vec3, left: readonly Muzzle[]): readonly Muzzle[] =>
   at[0] > 0 ? left : mirror(left);
 
 /**
- * A cutter laser (P08-R10): a long pod out on the beam, a red-orange stripe along its sides,
+ * The mount a cutter turns on (phase 8 review: the cutter, {@link cutter}, is its turret and
+ * aims its laser): a drum under its pod, ringed with neon.
+ */
+export function cutterMount({ hull, neon }: EnemyParts, at: Vec3): void {
+  hull.cylinder(8, 3, 8, H.dark, { at: offset(at, 0, -7.5, 0) });
+  neon.ring(8.3, 0.6, 8, COLOSSUS_NEON, { at: offset(at, 0, -5, 0) });
+}
+
+/**
+ * A cutter laser (P08-R10), turning on its mount (its turret): a long pod out on the beam, a red-orange stripe along its sides,
  * its emitter at the front, a saw disc at its flank, frost on its back.
  */
 export function cutter(p: EnemyParts, at: Vec3): void {
