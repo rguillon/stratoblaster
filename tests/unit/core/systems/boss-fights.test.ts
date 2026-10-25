@@ -9,6 +9,7 @@ import {
   type LevelBoss,
 } from '../../../../src/core/systems/boss-fights';
 import { SAMPLE_BOSS_KINDS } from '../../../fixtures/sample-boss';
+import { RecordingContext, runUntil } from '../../../helpers/enemy-context';
 
 const RULES = { speedEaseSeconds: 2, barFillSeconds: 1 };
 const BOSSES: readonly LevelBoss[] = [
@@ -90,7 +91,8 @@ describe('BossFights', () => {
     expect(fights.bar?.notches[1]).toBeCloseTo(30 / 60);
     const boss = fights.boss;
     if (!boss) throw new Error('no boss');
-    step(1);
+    // The enemy world moves the boss: here it is brought into place, where it takes damage.
+    runUntil(boss, new RecordingContext(), () => boss.state === 'fighting');
     at(boss.parts, 0).health -= 6;
     expect(fights.bar?.share).toBeCloseTo(1 - 6 / 60);
   });

@@ -199,11 +199,12 @@ describe('P05-R06: Spinner', () => {
     expect(ctx.shots.length).toBeGreaterThan(8);
     const pods = spinner.pods();
     expect(pods).toHaveLength(4);
-    const first = ctx.shots[0]?.heading ?? 0;
-    const last = ctx.shots.at(-1)?.heading ?? 0;
+    const [first, last] = [ctx.shots[0]?.heading ?? 0, ctx.shots.at(-1)?.heading ?? 0];
     expect(angleDiff(first, last)).toBeGreaterThan(0.1);
+    // From the pods' muzzles, the barrel tips their model draws (phase 7 review, D-057).
+    const muzzle = Math.hypot(...C.spinner.muzzles[0]);
     for (const shot of ctx.shots.slice(0, 4)) {
-      expect(Math.hypot(shot.x - 240, shot.y - 480)).toBeCloseTo(C.spinner.podRadius);
+      expect(Math.hypot(shot.x - 240, shot.y - 480)).toBeCloseTo(muzzle);
       // Outwards: along the line from the centre through the pod.
       expect(angleDiff(shot.heading, headingTo(240, 480, shot.x, shot.y))).toBeCloseTo(0);
     }
@@ -231,7 +232,7 @@ describe('P05-R07: Lancer', () => {
     expect(ctx.lasers).toHaveLength(1);
     expect(ctx.lasers[0]?.spec).toMatchObject({ warningSeconds: 1, firingSeconds: 1.5 });
     expect(lancer.emitter.x).toBeCloseTo(200);
-    expect(lancer.emitter.y).toBeCloseTo(512 - C.lancer.emitterOffset);
+    expect(lancer.emitter.y).toBeCloseTo(512 + C.lancer.muzzle[1]);
     run(lancer, ctx, 0.5);
     expect(lancer.charge).toBeCloseTo(0.5, 1);
     run(lancer, ctx, 1.9);

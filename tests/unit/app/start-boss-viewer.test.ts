@@ -4,7 +4,7 @@ import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { startBossViewer, type RunningBossViewer } from '../../../src/app/start-boss-viewer';
 import { BOSS_VIEWER_CONFIG as CFG } from '../../../src/config/boss-viewer';
 import { SAMPLE_GAME } from '../../fixtures/sample-game';
-import { SampleBoss } from '../../fixtures/sample-boss';
+import { SampleBoss, SAMPLE_BOSS_STATS } from '../../fixtures/sample-boss';
 
 /** The sample game with two bosses: Big Cube, of level a, and Small Cube, of no level. */
 const GAME = {
@@ -14,7 +14,8 @@ const GAME = {
     {
       id: 'small-cube',
       name: 'Small Cube',
-      spawn: (area: ConstructorParameters<typeof SampleBoss>[0]) => new SampleBoss(area),
+      spawn: (area: ConstructorParameters<typeof SampleBoss>[0]) =>
+        new SampleBoss(area, { ...SAMPLE_BOSS_STATS, name: 'Small Cube' }),
     },
   ],
   gameLevels: SAMPLE_GAME.gameLevels.map((level) =>

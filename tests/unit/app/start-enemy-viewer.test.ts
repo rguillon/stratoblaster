@@ -104,7 +104,7 @@ describe('startEnemyViewer', () => {
     expect(viewer.panel.selection.kind).toBe(1);
     // The hit circle, as big as the enemy's hit radius, around the model.
     const hitbox = (): AbstractMesh | undefined =>
-      viewer?.closeUp.pivot.getChildMeshes().find((m) => m.name === 'close-up-hitbox');
+      viewer?.closeUp.pivot.getChildMeshes().find((m) => m.name.startsWith('close-up-hitbox-'));
     const circle = hitbox();
     const { radius } = new Twin(0, 0);
     const box = circle?.getBoundingInfo().boundingBox;

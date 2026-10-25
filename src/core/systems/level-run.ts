@@ -200,9 +200,11 @@ export class LevelRun {
     const { fights, track } = this;
     fights.step(dt, track);
     if (!fights.active) this.waves.step(dt, track.progress);
-    if (fights.justDefeated?.rank === 'mini') {
+    const defeated = fights.justDefeated;
+    if (defeated?.rank === 'mini') {
       this.#checkpoint = {
-        progress: track.progress,
+        // Where the mini boss is (the fight may start a hair before it).
+        progress: Math.max(track.progress, defeated.at),
         bossesPassed: fights.passed,
         weapons: this.arsenal.snapshot(),
       };
