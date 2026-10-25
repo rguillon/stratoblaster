@@ -44,13 +44,6 @@ void main() {
 }
 `;
 
-/** Fog the clouds fade into, like the rest of the scene. */
-export interface CloudFog {
-  readonly color: readonly [number, number, number];
-  readonly start: number;
-  readonly end: number;
-}
-
 /**
  * A cloud layer material (P04-R03): a generated noise texture cut at a threshold set by the
  * coverage, with soft edges, faded by the opacity and the fog. Drawn blended, without writing
@@ -60,7 +53,6 @@ export function createCloudMaterial(
   scene: Scene,
   look: CloudLayerLook,
   texture: BaseTexture,
-  fog: CloudFog,
   cameraPosition: () => Vector3,
 ): CloudMaterial {
   const material = new ShaderMaterial(
@@ -87,17 +79,20 @@ export function createCloudMaterial(
   material.backFaceCulling = false;
   material.disableDepthWrite = true;
   material.setTexture('cloudTexture', texture);
-  material.setColor3('cloudColor', new Color3(...look.color));
-  material.setColor3('cloudShade', new Color3(...look.shade));
-  material.setColor3('fogColor', new Color3(...fog.color));
-  material.setVector2('fogRange', new Vector2(fog.start, fog.end));
   const params = new Vector4();
   const offset = new Vector2();
+  const fogRange = new Vector2();
+  const [color, shade, fogColor] = [new Color3(), new Color3(), new Color3()];
   return {
     material,
     set: (state) => {
       params.set(state.coverage, state.opacity, look.softness, 1 / look.tileSize);
       offset.set(state.offsetX, state.offsetZ);
+      // P08-R04: the clouds' colours follow the time of day, and fade into its haze.
+      material.setColor3('cloudColor', color.set(...state.color));
+      material.setColor3('cloudShade', shade.set(...state.shade));
+      material.setColor3('fogColor', fogColor.set(...state.fog.color));
+      material.setVector2('fogRange', fogRange.set(state.fog.start, state.fog.end));
       material.setVector4('cloudParams', params);
       material.setVector2('cloudOffset', offset);
       material.setVector3('cameraPosition', cameraPosition());

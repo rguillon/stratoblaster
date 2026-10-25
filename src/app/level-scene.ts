@@ -8,7 +8,11 @@ import type { GameDefinition } from '../core/content/game-definition';
 import { levelLength, type SceneryLevel } from '../core/scenery/scenery-level';
 import { ScrollTrack } from '../core/scenery/scroll-track';
 import type { GameView } from '../render/game-view';
-import { applyShowcaseEnvironment } from '../render/environment/showcase-environment.visual';
+import {
+  applyShowcaseEnvironment,
+  updateSkyEnvironment,
+} from '../render/environment/showcase-environment.visual';
+import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { NodeAdopter } from '../render/node-adopter';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
@@ -44,6 +48,8 @@ export interface LevelSceneOptions {
   readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
   readonly environmentCubeSize: number;
   readonly stage: SceneryStageConfig;
+  /** Debug choices on the level's look (P08-R12). */
+  readonly atmosphere?: AtmosphereOptions;
 }
 
 /** The look of `level`, or a descriptive error. */
@@ -59,6 +65,12 @@ function playfieldGlow(scene: Scene, look: { intensity: number; blurKernelSize: 
   glow.intensity = look.intensity;
   glow.renderingGroupId = ABOVE_CLOUDS_GROUP;
   return glow;
+}
+
+/** The sky lighting of `stage`'s scene, as its look is now (P08-R04). */
+function followSky(stage: SceneryStage, cubeSize: number): void {
+  const { sky } = stage.atmosphere;
+  updateSkyEnvironment(stage.scene, cubeSize, sky.stops, sky.environmentIntensity);
 }
 
 /**
@@ -89,6 +101,7 @@ export function buildLevelScene(
     propModels: game.view.scenery.propModels,
     kit: options.environment ? createSceneryKit : createPlainSceneryKit,
     config: options.stage,
+    ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
   });
   for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
@@ -110,6 +123,7 @@ export function buildLevelScene(
     playfield,
     update: (distance, dt) => {
       stage.update(distance, dt);
+      if (options.environment) followSky(stage, options.environmentCubeSize);
       root.position = stage.playfieldPoint(0, 0, distance);
     },
   };

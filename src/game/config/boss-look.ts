@@ -19,6 +19,17 @@ export const BOSS_LOOK = {
     'refinery-titan': [1, 0.45, 0.05],
     sentinel: [0.15, 0.4, 1],
     overlord: [0.65, 0.2, 1],
+    // World 2 (P08-R10).
+    'floe-breaker': [0.1, 0.85, 1],
+    narwhal: [0.05, 0.95, 0.75],
+    'fjord-lynx': [0.55, 0.95, 1],
+    'harbour-kraken': [1, 0.5, 0.08],
+    'snow-owl': [0.85, 0.92, 1],
+    'aurora-station': [0.3, 1, 0.55],
+    avalanche: [1, 0.85, 0.1],
+    'glacier-colossus': [1, 0.35, 0.08],
+    'ice-queen': [0.55, 0.65, 1],
+    'boreal-citadel': [0.35, 1, 0.6],
   } as Readonly<Record<string, Rgb>>,
   /** Its charge lights strobe this many times a second while it holds its fire (P07-R04). */
   stageStrobeHz: 6,

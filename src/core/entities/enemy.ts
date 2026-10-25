@@ -14,6 +14,15 @@ export interface EnemyBulletSpec {
   readonly radius: number;
   /** Look of the bullet, a key the game's enemy shot renderer knows. */
   readonly style: string;
+  /**
+   * A bullet that bursts (phase 8): `after` seconds from its firing it is gone, and `count`
+   * bullets of `bullet` leave from where it was, evenly all around, the first one on its way.
+   */
+  readonly burst?: {
+    readonly after: number;
+    readonly count: number;
+    readonly bullet: EnemyBulletSpec;
+  };
 }
 
 /** A missile an enemy launches: it turns towards the player for a while and can be shot down. */

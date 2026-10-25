@@ -5,13 +5,22 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { Atmosphere } from '../../core/scenery/atmosphere';
+import type { AuroraMaterial } from './aurora-layer';
 import type { PropMaterials } from './prop-field';
+import type { WeatherMaterialFactory } from './weather-layer';
 import type { CloudLayerLook, SceneryLook } from './scenery-look';
+
+type Rgb = readonly [number, number, number];
 
 /** What a cloud layer shows on one frame. */
 export interface CloudState {
   readonly coverage: number;
   readonly opacity: number;
+  /** Its colours (P08-R04: they follow the time of day) and the haze it fades into. */
+  readonly color: Rgb;
+  readonly shade: Rgb;
+  readonly fog: { readonly color: Rgb; readonly start: number; readonly end: number };
   /** Drift of the pattern, in world units along X and Z. */
   readonly offsetX: number;
   readonly offsetZ: number;
@@ -29,6 +38,8 @@ export interface SceneryKitFrame {
   readonly time: number;
   readonly cameraPosition: Vector3;
   readonly seaEnabled: boolean;
+  /** The level's look here (P08-R04): shadows' darkness, ground lights. */
+  readonly atmosphere: Atmosphere;
 }
 
 /**
@@ -42,6 +53,10 @@ export interface SceneryKit {
   readonly props: PropMaterials;
   readonly roads: Material;
   cloud(look: CloudLayerLook): CloudMaterial;
+  /** The material of a weather kind's particles (P08-R05). */
+  readonly weather: WeatherMaterialFactory;
+  /** The aurora's material (P08-R04). */
+  aurora(): AuroraMaterial;
   addShadowCaster(mesh: AbstractMesh): void;
   update(frame: SceneryKitFrame): void;
 }
@@ -60,13 +75,20 @@ export interface SceneryKitContext {
 
 export type SceneryKitFactory = (scene: Scene, context: SceneryKitContext) => SceneryKit;
 
-type Rgb = readonly [number, number, number];
-
 function plain(name: string, color: Rgb, scene: Scene): StandardMaterial {
   const mat = new StandardMaterial(name, scene);
   mat.diffuseColor = new Color3(...color);
   mat.specularColor = Color3.Black();
   return mat;
+}
+
+/**
+ * Sets how bright the props' self-lit accents (windows, neon, street and car lights) are
+ * (P08-R04: off by day, on at dusk and night).
+ */
+export function setGroundLights(materials: PropMaterials, glow: number): void {
+  if (materials.lights instanceof StandardMaterial)
+    materials.lights.emissiveColor.set(glow, glow, glow);
 }
 
 /** Vertex-coloured materials of the props: lit structure, and self-lit accents. */
@@ -106,10 +128,11 @@ export function createRoadMaterial(scene: Scene): StandardMaterial {
 export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
   const sea = plain('sea', look.sea.color, scene);
   sea.alpha = look.sea.alpha;
+  const props = createPropMaterials(scene, look);
   return {
     terrain: plain('terrain', look.terrain.ground.colors[1], scene),
     sea,
-    props: createPropMaterials(scene, look),
+    props,
     roads: createRoadMaterial(scene),
     cloud: (cloud) => {
       const material = plain(`cloud-${String(cloud.altitude)}`, cloud.color, scene);
@@ -117,10 +140,23 @@ export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
         material,
         set: (state) => {
           material.alpha = state.coverage > 0 ? state.opacity : 0;
+          material.diffuseColor.set(...state.color);
         },
       };
     },
+    weather: (_scene, kind) => {
+      const material = plain('weather', kind.color, scene);
+      material.alpha = kind.alpha;
+      return { material, set: () => undefined };
+    },
+    aurora: () => {
+      const material = plain('aurora', [0.2, 1, 0.5], scene);
+      material.alpha = 0.3;
+      return { material, set: () => undefined };
+    },
     addShadowCaster: () => undefined,
-    update: () => undefined,
+    update: (frame) => {
+      setGroundLights(props, frame.atmosphere.groundLights);
+    },
   };
 };

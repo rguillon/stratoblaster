@@ -38,7 +38,7 @@ test.describe('touch', () => {
   });
 });
 
-test('P01-R07, P06-R01: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedback', async ({
+test('P01-R07, P06-R01, P08-R01: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedback', async ({
   page,
 }) => {
   await openGame(page);
@@ -50,15 +50,15 @@ test('P01-R07, P06-R01: 25 levels 1-1 … 5-5; a locked level only gives a "lock
   await expect(cells).toHaveCount(25);
   await expect(cells.first()).toHaveText('1-1');
   await expect(cells.last()).toHaveText('5-5');
-  // P06-R01: World 1's five levels are unlocked; worlds 2 to 5 are not built yet.
-  await expect(page.locator('.level-cell.locked')).toHaveCount(20);
-  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(20);
-  await cells.nth(6).click();
-  await expectState(page, { selectedId: '2-2' });
-  await cells.nth(6).click();
+  // P06-R01, P08-R01: Worlds 1 and 2 are unlocked; worlds 3 to 5 are not built yet.
+  await expect(page.locator('.level-cell.locked')).toHaveCount(15);
+  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(15);
+  await cells.nth(11).click();
+  await expectState(page, { selectedId: '3-2' });
+  await cells.nth(11).click();
   await expect(page.locator('.level-cell.selected')).toHaveClass(/shake/);
   await expect(page.locator('.menu-status')).toHaveText('Locked!');
-  await expectState(page, { screen: 'level-select', selectedId: '2-2' });
+  await expectState(page, { screen: 'level-select', selectedId: '3-2' });
 });
 
 test('P01-R14: the last chosen ship is highlighted after a reload', async ({ page }) => {

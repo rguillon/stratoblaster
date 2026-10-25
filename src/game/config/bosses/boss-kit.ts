@@ -60,10 +60,13 @@ export interface BossDesign {
  * orbiting parts as drawn, at a spin of 0), by the kind of shot they fire: bullets (`gun`), a
  * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s. Its `gun`s may be on
  * a `turret` turning around the pivot given (from the boss's centre, X right, Y up): it turns
- * the way they fire next (phase 7 review, D-060). Its model draws it on its own.
+ * the way they fire next (phase 7 review, D-060). Its model draws it on its own. Its `laser`s
+ * are on that turret too when `turretLaser` (phase 8 review): it aims them at the player during
+ * the warning line and holds still while the beam fires.
  */
 export interface Guns {
   readonly turret?: readonly [x: number, y: number];
+  readonly turretLaser?: boolean;
   readonly gun?: readonly Muzzle[];
   readonly ring?: readonly Muzzle[];
   readonly missile?: readonly Muzzle[];
@@ -88,18 +91,25 @@ export function volleyMuzzles(design: BossDesign, volley: BossVolley): readonly 
   return FIRED_BY[volley.shape.kind](design.guns[volley.from] ?? {}) ?? [];
 }
 
-/** Whether `volley` fires from its piece's turret: from its `gun`s, when they are on one. */
+/** Whether `volley` fires from its piece's turret: its `gun`s (or `laser`s) when on one. */
 export function volleyOnTurret(design: BossDesign, volley: BossVolley): boolean {
   const guns = design.guns[volley.from];
-  return guns?.turret !== undefined && volleyMuzzles(design, volley) === guns.gun;
+  if (guns?.turret === undefined) return false;
+  const muzzles = volleyMuzzles(design, volley);
+  return muzzles === guns.gun || (guns.turretLaser === true && muzzles === guns.laser);
 }
 
 /** The turrets of its pieces (`BossStats.turrets`), by piece. */
 export function turretsOf(design: BossDesign): Record<string, BossTurretSpec> {
   const turrets: Record<string, BossTurretSpec> = {};
-  for (const [piece, { turret }] of Object.entries(design.guns)) {
-    if (turret)
-      turrets[piece] = { x: turret[0], y: turret[1], turnRateDeg: BOSS_TIMING.turretTurnDeg };
+  for (const [piece, { turret, turretLaser }] of Object.entries(design.guns)) {
+    if (!turret) continue;
+    turrets[piece] = {
+      x: turret[0],
+      y: turret[1],
+      turnRateDeg: BOSS_TIMING.turretTurnDeg,
+      ...(turretLaser ? { laserTurnRateDeg: BOSS_TIMING.laserTurnDeg } : {}),
+    };
   }
   return turrets;
 }
@@ -151,6 +161,12 @@ export const BOSS_TIMING = {
   roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
   /** Degrees a second a turret turns at, following the player (phase 7 review). */
   turretTurnDeg: 150,
+  /**
+   * Degrees a second a laser turret follows the player at during the warning line (phase 8
+   * review): about half as fast as the ship crosses its aim from 300 px away, so it can be
+   * outrun.
+   */
+  laserTurnDeg: 20,
   /** Seconds a boss is angry after the pause that follows each destroyed part (phase 7 review). */
   rageSeconds: 3,
 } as const;
@@ -179,6 +195,17 @@ export const laserOf = (firingSeconds: number, width = 12): EnemyLaserSpec => ({
   width,
   style: 'lancer',
 });
+
+/**
+ * A slow, big bullet of `style` that bursts into a ring of `count` small ones `after` seconds
+ * from its firing (phase 8: the Aurora Station's cryo cannons).
+ */
+export const bursting = (
+  style: string,
+  speed: number,
+  radius: number,
+  [after, count, small]: readonly [after: number, count: number, small: EnemyBulletSpec],
+): EnemyBulletSpec => ({ speed, radius, style, burst: { after, count, bullet: small } });
 
 /** A part. */
 export function part(
@@ -243,6 +270,19 @@ export function stages(
 ): BossPatternSpec[] {
   return core.map((own) => [...parts, ...own]);
 }
+
+/**
+ * `volley` fired only while the part `part` stands (`needs`), or only once it is destroyed
+ * (`after`): phase 8, the Fjord Lynx's radar mast.
+ */
+export const onlyWhile = (volley: BossVolley, part: string): BossVolley => ({
+  ...volley,
+  needs: part,
+});
+export const onlyAfter = (volley: BossVolley, part: string): BossVolley => ({
+  ...volley,
+  after: part,
+});
 
 /** Volleys, `from` a part id or `core`. `first` defaults to `every`. */
 export const volley = {
@@ -318,3 +358,21 @@ export const volley = {
     shape: { kind: 'laser', laser: laserOf(firingSeconds) },
   }),
 };
+
+/**
+ * `design` with its lasers drawn in its own colour (phase 8 review): their style is its kind
+ * id, which the laser renderer colours with the boss's neon.
+ */
+export function withOwnLasers(design: BossDesign): BossDesign {
+  const own = (pattern: BossPatternSpec): BossPatternSpec =>
+    pattern.map((v) =>
+      v.shape.kind === 'laser'
+        ? { ...v, shape: { ...v.shape, laser: { ...v.shape.laser, style: design.id } } }
+        : v,
+    );
+  return {
+    ...design,
+    stages: design.stages.map(own),
+    ...(design.rage ? { rage: own(design.rage) } : {}),
+  };
+}

@@ -11,6 +11,10 @@ export default defineConfig({
   test: {
     include: ['tests/unit/**/*.test.ts'],
     environment: 'node',
+    // The level-generation tests take about 2 s here and over 5 s (Vitest's default) on the
+    // low-CPU shared CI runners.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

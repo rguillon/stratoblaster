@@ -15,6 +15,7 @@ import { EnemyViewerPanel, type EnemyViewerSelection } from '../ui/enemy-viewer-
 import { StatsTile } from '../ui/stats-tile';
 import { BOSS_VIEWER_CONFIG as CFG } from '../config/boss-viewer';
 import {
+  bossGroups,
   bossViewerState,
   BossViewerStage,
   circlesOf,
@@ -90,6 +91,7 @@ class BossViewer {
       parent: options.panelParent,
       title: 'Bosses',
       kinds: game.bossKinds.map((k) => k.name),
+      groups: bossGroups(game),
       weapons: game.playerWeapons.map((w) => w.name),
       levelCounts: game.playerWeapons.map((w) => w.levels.length),
       initial: { kind: 0, view: 'behaviour', weapon: 0, level: 3, fire: true, paused: false },

@@ -40,6 +40,14 @@ export interface GameTestLevelState {
   readonly groundSpeed: number;
   /** Whether the mini boss's checkpoint is saved (P07-R08). */
   readonly checkpoint: boolean;
+  /** How the level looks where the view is (P08-R04, R05). */
+  readonly sky?: {
+    readonly weatherParticles: number;
+    readonly aurora: number;
+    readonly groundLights: number;
+    readonly sunIntensity: number;
+    readonly fogEnd: number;
+  };
 }
 
 /** What `window.__GAME_TEST__.getState()` returns. */
@@ -68,6 +76,8 @@ export interface GameTestApi {
   getState(): GameTestState;
   /** Sends a menu action as an input device would (P01-R12). */
   sendAction(action: MenuAction): void;
+  /** Runs the level being played for `seconds` at once, without rendering; no level, no-op. */
+  advance(seconds: number): void;
 }
 
 /** What the test API reads from and sends to the running app. */
@@ -76,6 +86,7 @@ export interface GameTestHooks {
   readonly loadingProgress: () => readonly number[];
   readonly game: () => GameTestLevelState | undefined;
   readonly send: (action: MenuAction) => void;
+  readonly advance: (seconds: number) => void;
 }
 
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
@@ -89,6 +100,10 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
     sendAction: (action) => {
       if (!isMenuAction(action)) throw new TypeError(`Unknown menu action "${String(action)}"`);
       hooks.send(action);
+    },
+    advance: (seconds) => {
+      if (!(seconds >= 0)) throw new RangeError(`Cannot advance by ${String(seconds)} s`);
+      hooks.advance(seconds);
     },
   };
   Object.defineProperty(target, '__GAME_TEST__', { value: api, configurable: true });

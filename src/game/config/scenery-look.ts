@@ -8,6 +8,7 @@ interface TextureExtras {
   readonly speckleColor?: Rgb;
   readonly strata?: number;
   readonly octaves?: number;
+  readonly cracks?: number;
 }
 
 /** A generated ground texture: three colours and a noise frequency, plus extras. */
@@ -22,6 +23,7 @@ export const texture = (
   speckle: extra.speckle ?? 0,
   speckleColor: extra.speckleColor ?? colors[0],
   strata: extra.strata ?? 0,
+  ...(extra.cracks === undefined ? {} : { cracks: extra.cracks }),
 });
 
 /**

@@ -44,7 +44,10 @@ describe('World 1 bosses', () => {
       ['mini:sentinel', 'final:overlord'],
     ]);
     expect(BOSS_KINDS.map((k) => k.name)).toEqual(BOSS_DESIGNS.map((d) => d.stats.name));
-    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(10);
+    // Ten World 1 bosses (World 2 adds its own, phase 8).
+    const world1 = Object.values(WORLD_1_BOSSES).flatMap((l) => [l.mini, l.final]);
+    expect(new Set(world1).size).toBe(10);
+    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(BOSS_KINDS.length);
   });
 
   it('P07-R01: mini bosses have 2 or 3 destroyable parts, final bosses 4 to 6', () => {

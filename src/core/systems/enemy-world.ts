@@ -1,4 +1,4 @@
-import type { DropSource, Enemy, EnemyContext } from '../entities/enemy';
+import type { DropSource, Enemy, EnemyBulletSpec, EnemyContext } from '../entities/enemy';
 import { seenOnPlayfield } from '../entities/muzzle';
 import { isAlive, type ShotTarget } from '../entities/shot-target';
 import type { Random } from '../math/rng';
@@ -21,6 +21,15 @@ export interface EnemyWorldOptions extends EnemyShotsOptions {
   readonly cullMargin: number;
   /** Enemies older than this are removed, whatever they do (a safety net). */
   readonly maxEnemyAge: number;
+}
+
+/** `spec` (and the bullets it bursts into) `factor` times as fast. */
+function faster(spec: EnemyBulletSpec, factor: number): EnemyBulletSpec {
+  const { burst } = spec;
+  const speed = spec.speed * factor;
+  return burst
+    ? { ...spec, speed, burst: { ...burst, bullet: faster(burst.bullet, factor) } }
+    : { ...spec, speed };
 }
 
 /**
@@ -78,7 +87,7 @@ export class EnemyWorld {
       playerY: 0,
       seen: (point) => seenOnPlayfield(options.eye, point),
       fireBullet: (x, y, heading, spec) => {
-        shots.fireBullet(x, y, heading, { ...spec, speed: spec.speed * bulletSpeed });
+        shots.fireBullet(x, y, heading, faster(spec, bulletSpeed));
       },
       fireMissile: (x, y, heading, spec) => {
         shots.fireMissile(x, y, heading, spec);

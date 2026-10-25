@@ -38,3 +38,28 @@ export function applyShowcaseEnvironment(
   glow.intensity = options.glow.intensity;
   return glow;
 }
+
+/**
+ * Gives the scene's sky lighting the gradient `stops` and `intensity` (P08-R04: they follow the
+ * time of day). The cube is only rebuilt when the gradient changed since the last call.
+ */
+export function updateSkyEnvironment(
+  scene: Scene,
+  cubeSize: number,
+  stops: readonly GradientStop[],
+  intensity: number,
+): void {
+  scene.environmentIntensity = intensity;
+  const texture = scene.environmentTexture;
+  const key = stops.map((s) => s.color.map((c) => Math.round(c * 255)).join(',')).join(';');
+  if (!(texture instanceof RawCubeTexture) || LAST_SKY.get(scene) === key) return;
+  LAST_SKY.set(scene, key);
+  texture.update(
+    buildGradientCubeFaces(cubeSize, stops),
+    Constants.TEXTUREFORMAT_RGBA,
+    Constants.TEXTURETYPE_UNSIGNED_BYTE,
+    true,
+  );
+}
+
+const LAST_SKY = new WeakMap<Scene, string>();

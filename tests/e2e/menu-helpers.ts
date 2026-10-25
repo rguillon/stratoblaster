@@ -27,14 +27,32 @@ export interface TestState {
     firing: boolean;
     shots: number;
     /** The boss being fought (P07). */
-    boss: { name: string; rank: string; state: string; stage: number; partsLeft: number } | null;
+    boss: {
+      name: string;
+      rank: string;
+      state: string;
+      stage: number;
+      partsLeft: number;
+      parts: number;
+    } | null;
     bossesDefeated: number;
     groundSpeed: number;
+    sky?: {
+      weatherParticles: number;
+      aurora: number;
+      groundLights: number;
+      sunIntensity: number;
+      fogEnd: number;
+    };
   } | null;
 }
 
 interface TestWindow {
-  __GAME_TEST__?: { getState(): TestState; sendAction(action: string): void };
+  __GAME_TEST__?: {
+    getState(): TestState;
+    sendAction(action: string): void;
+    advance(seconds: number): void;
+  };
 }
 
 /** Loading (with shader compilation under SwiftShader) can take a while on CI. */
@@ -87,8 +105,33 @@ export async function sendAction(page: Page, action: string): Promise<void> {
   }, action);
 }
 
-/** Expects the state to reach `expected` (screen, selection...), then waits for input. */
+/**
+ * Expects the state to reach `expected` (screen, selection...), then waits for input. Entering
+ * a level generates its scenery first, which blocks the page for seconds under software WebGL
+ * (CI): the `game` screen gets the loading timeout.
+ */
 export async function expectState(page: Page, expected: Partial<TestState>): Promise<void> {
-  await expect.poll(() => gameState(page)).toMatchObject(expected);
+  const options = expected.screen === 'game' ? { timeout: LOAD_TIMEOUT } : {};
+  await expect.poll(() => gameState(page), options).toMatchObject(expected);
   await waitIdle(page);
+}
+
+/**
+ * Waits for the level to load, then runs it on to `seconds` of level time through the test API
+ * (`advance`) rather than waiting for it: under software WebGL a frame can take so long that
+ * the level's clock, capped per frame, runs many times slower than real time (CI).
+ */
+export async function waitForLevelTime(page: Page, seconds: number): Promise<void> {
+  const time = () => gameState(page).then((s) => s.game?.time ?? -1);
+  await expect.poll(time, { timeout: LOAD_TIMEOUT }).toBeGreaterThanOrEqual(0);
+  const now = await time();
+  if (now <= seconds) {
+    await page.evaluate(
+      (s) => {
+        (window as TestWindow).__GAME_TEST__?.advance(s);
+      },
+      seconds - now + 0.05,
+    );
+  }
+  await expect.poll(time).toBeGreaterThan(seconds);
 }
