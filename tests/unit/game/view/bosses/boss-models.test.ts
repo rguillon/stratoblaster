@@ -121,6 +121,24 @@ describe('Boss models', () => {
     expect((ring as TransformNode | undefined)?.rotation.y).toBe(1.25);
   });
 
+  it('phase 7 review: a boss rolls into its sideways moves, and levels out when it stops', () => {
+    const { boss, model } = shown('reef-warden');
+    const sweep = (dx: number, frames: number) => {
+      for (let i = 0; i < frames; i++) {
+        boss.x += dx;
+        model.sync(boss, 1 / 60);
+      }
+    };
+    sweep(1, 60);
+    // Moving right at 60 px/s: the right wing (the model's -X) dips, about 12°.
+    expect(model.root.rotation.z).toBeGreaterThan(0.18);
+    expect(model.root.rotation.z).toBeLessThanOrEqual((12 * Math.PI) / 180 + 1e-9);
+    sweep(-3, 60);
+    expect(model.root.rotation.z).toBeLessThan(-0.18);
+    sweep(0, 120);
+    expect(Math.abs(model.root.rotation.z)).toBeLessThan(0.01);
+  });
+
   it('P07-R05: a playfield offset maps to the model’s nose-down space', () => {
     expect(bossPoint(10, -20, 3)).toEqual([-10, 3, 20]);
   });

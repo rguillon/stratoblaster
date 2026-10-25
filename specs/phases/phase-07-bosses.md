@@ -223,6 +223,7 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 > After the agent reports, write corrections here, then say **"Fix phase 07"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-25) Make the bosses roll a little when they move left / right. — Done: a boss model rolls into its sideways moves, the wing on the side it flies to dipping, up to 12° at its fastest sway (60 px/s), easing in and out; visual only, its hit circles do not turn (`boss-model.ts`, `BOSS_LOOK.roll`, `boss-models.test.ts`).
 - [x] (reviewer, in chat, 2026-10-25) Add a `boss/` debug endpoint to see all the bosses. — Done: `boss/` opens the bosses page (the same as `bosses/`: every boss, its fight, model and wireframe views; `app/route.ts`, `boss/index.html`, `route.test.ts`, e2e `bosses.spec.ts`).
 
 ---

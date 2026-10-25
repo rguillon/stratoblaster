@@ -184,9 +184,11 @@ export function buildBossModel(
     buildPart(design, spec, drawing, spec.orbits ? ringNode : root, { flash, neon }),
   );
   const lit = { charge: 0 };
+  const roll = bossRoll(root);
   return {
     root,
     sync: (boss: Enemy, dt: number) => {
+      roll(boss.x, dt);
       // After a part is destroyed, its lights strobe while it holds its fire (P07-R04).
       lit.charge = strobe(boss);
       const enemy = lit as unknown as Enemy;
@@ -227,6 +229,25 @@ function buildPart(
   const smoke = buildSmoke(`${name}-${spec.id}`, spec.radius, scene, spot);
   const stump = buildStump(`${name}-${spec.id}`, spec.radius, scene, spot);
   return { group: new FlashGroup(model, flash), smoke, stump };
+}
+
+/**
+ * Rolls the model into its sideways moves (phase 7 review): from how far it moved across the
+ * screen since the last frame, the wing on the side it flies to dips, up to `BOSS_LOOK.roll.maxDeg`
+ * at `fullSpeed`, easing in and out. Visual only: the boss's hit circles do not turn.
+ */
+function bossRoll(root: TransformNode): (x: number, dt: number) => void {
+  const { maxDeg, fullSpeed, easePerSec } = BOSS_LOOK.roll;
+  const max = (maxDeg * Math.PI) / 180;
+  let last: number | undefined;
+  return (x, dt) => {
+    if (dt <= 0) return;
+    const vx = last === undefined ? 0 : (x - last) / dt;
+    last = x;
+    // Screen right is the model's -X (its nose points down the screen): +Z rolls -X down.
+    const target = Math.max(-max, Math.min(max, (vx / fullSpeed) * max));
+    root.rotation.z += (target - root.rotation.z) * Math.min(1, easePerSec * dt);
+  };
 }
 
 /** The brightness of a boss's charge lights: its own, or a strobe during a stage change. */
