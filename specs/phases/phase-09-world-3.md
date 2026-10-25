@@ -1,0 +1,261 @@
+# Phase 09 — World 3
+
+> Fill the **Human** sections. Set **Status** to `Ready` when the agent may implement it.
+> The agent fills the **Agent** sections and never edits the requirement sections.
+
+**Status:** Ready  <!-- Draft | Ready -->
+**Depends on:** Phase 8
+
+---
+
+## 🧑 Goal
+World 3, **the Jungle**, has five playable levels, 3-1 to 3-5, each about 5 minutes long. The levels go from a misty river delta to a deep rainforest, temple ruins under a thunderstorm, a swamp with a giant dam, and a city rising out of the canopy at night. Each level has its own time of day, cloud cover and weather (morning mist, rain showers, a thunderstorm with lightning, night rain). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 3-1 to 3-5, and World 3 as a whole is harder than World 2.
+
+## 🧑 Requirements
+
+> ID format `P09-Rxx`. Every requirement is **MUST** (no SHOULD / MAY).
+> Write each requirement so it is testable. Add acceptance criteria when "done" isn't obvious.
+> World 3 is built exactly like World 2 (phase 8): the World 1 tools and rules (phases 4 to 7 and their review decisions), the level look (P08-R04) and the weather engine (P08-R05). Only what changes for World 3 is written here. Sizes are given relative to the medium player ship length (`L`). Numbers are listed in **Tunable values**.
+> The new weather kinds (P09-R05) are game-agnostic engine features; the World 3 levels, looks and bosses are data and models in `src/game/` (`01-engineering.md` §2.3).
+
+### P09-R01 — World 3 in the level select  · MUST
+
+The World 3 row of the level select grid shows `3-1` to `3-5`, all unlocked (P06-R01). Worlds 4 and 5 stay greyed out. After `2-5` is completed, `level-select` shows with `3-1` highlighted; after `3-5`, with `3-5` highlighted.
+
+**Acceptance criteria**
+- [ ] Given `level-select`, then the World 3 row shows exactly `3-1` to `3-5`, all unlocked, each starting its level.
+- [ ] Given `2-5` is completed, then `level-select` shows with `3-1` highlighted.
+- [ ] Given a level of worlds 4 and 5, then it is still greyed out.
+
+### P09-R02 — Duration  · MUST
+
+Each World 3 level's scroll time at its ground speed is 300 s ± 10 s (as P08-R02).
+
+**Acceptance criteria**
+- [ ] Unit test: for each World 3 level, length ÷ ground speed is between 290 s and 310 s.
+
+### P09-R03 — Scenery progression across World 3  · MUST
+
+The player flies up a great river into the jungle, then over ruins and swamps to a city in the trees. Each level begins on the kind of ground the previous one ended on (as in P06-R05).
+
+| Level | Name | Water | Land | Habitations |
+|-------|------|-------|------|-------------|
+| 3-1 | River delta | Sea at the start, then a wide delta of muddy channels and sandbanks; a single wide river by the end. | Mangroves along the channels, low green islands, then the first rainforest. | Stilt huts and fishing platforms, a small river port at the end. |
+| 3-2 | Rainforest | A winding river runs along the whole level. | Dense rainforest canopy (tall broadleaf trees, palms, giant ferns) covering almost all the ground, a few clearings. | Stilt villages along the river, logging camps in the clearings, a jungle road. |
+| 3-3 | Lost temples | The river narrows, with waterfalls where it drops over cliffs. | Steep jungle hills and cliffs, the canopy broken by stone ruins. | Overgrown stepped pyramids, stone causeways and statues, turned into enemy outposts (antennas, gun pits, neon-lit gates). |
+| 3-4 | Swamp works | Dark swamp water with reeds and lily pads, then a big lake held by a giant dam at the end. | Swampy islands with twisted trees, then hills around the lake. | Bio-labs on stilts, pipelines across the swamp, pumping stations, then the dam with its power plant. |
+| 3-5 | Canopy city | Rivers and pools between the towers. | Rainforest at the start, then a city built into it. | Tree-top outposts, then towers rising out of the canopy linked by sky bridges, then a dense city centre where the trees grow on the roofs. |
+
+**Acceptance criteria**
+- [ ] Unit test: 3-1 has a sea section, its share of sea is ≤ 30 %, and 3-2 to 3-5 have no sea section (rivers, lakes and swamps are not sea).
+- [ ] Unit test: every World 3 level has some river, lake or swamp water.
+- [ ] Unit test (fixed seed): the number of buildings placed goes up from 3-1 to 3-5.
+- [ ] Manual visual validation: delta, rainforest, temples, swamp and canopy city can be told apart, and each level begins where the previous one ended.
+
+### P09-R04 — Look of each World 3 level  · MUST
+
+Each level's look (P08-R04):
+
+| Level | Time of day | Clouds (low / high cover) | Weather | Notes |
+|-------|-------------|---------------------------|---------|-------|
+| 3-1 | morning | 0.3 / 0.2, white | none | A low, warm sun and a **morning mist**: the haze is close and white over the water at the start and lifts (moves away) over the first half (look change). |
+| 3-2 | midday | 0.5 / 0.3, tall white cumulus | rain 0.4 over the middle third, then clearing | Bright, humid light with green-tinted ambient under the canopy. |
+| 3-3 | afternoon, thunderstorm | 0.9 / 0.9, dark blue-grey | rain 0.8 with lightning | The storm builds over the first quarter (look change from 0.5 cloud and no rain); dark, with lightning lighting the ground. |
+| 3-4 | dusk | 0.6 / 0.4, orange to purple | rain 0.3 | Ground lights come on (labs, pumping stations, the dam). |
+| 3-5 | night | 0.6 / 0.4 clearing to 0.2 / 0.1 | rain 0.5, stopping before the final boss | The city's windows, sky bridges and neon are lit and glow in the mist; after the rain, the clouds open on a moonlit sky. |
+
+**Acceptance criteria**
+- [ ] Unit test: each World 3 level's look data matches this table, look changes included.
+- [ ] Manual visual validation of each level against the table; the player ship, enemies, shots and bonuses stay clearly visible in every level, the night and the storm included.
+
+### P09-R05 — Weather: rain and lightning  · MUST
+
+Two new weather kinds for the weather engine (P08-R05), used as data like snow:
+- **Rain:** thin, light streaks falling fast at a slight slant, at different depths, scrolling with the ground. The strength sets how many streaks there are and how close and grey the haze comes. Water surfaces (sea, rivers, swamps) show faint rain rings. Rain is drawn behind the ships, shots and bonuses and never hides them.
+- **Lightning:** a storm option on top of rain. A flash lights the whole scene for a short moment (ambient and sky brighter), sometimes with a bolt drawn inside the clouds. Flashes come at random times from the level's seed (deterministic). For players with photosensitivity, the flashes stay mild: at most **3 flashes in any 1 s**, on average one every few seconds (see **Tunable values**), and the brightness rise of a flash is limited so that the playfield never turns white.
+- Weather is only a look (P08-R05): rain and lightning never change the simulation.
+
+**Acceptance criteria**
+- [ ] Given a look with rain of strength 0, then no streak is drawn; with strength 1, the most streaks allowed by **Tunable values** are drawn.
+- [ ] Unit test: over a long simulated storm, there are never more than 3 flashes in any 1 s window, and the average gap is within **Tunable values**.
+- [ ] Unit test: the same level played twice has its flashes at the same times.
+- [ ] Unit test: weather is not an input of the simulation (as in P08-R05).
+- [ ] Manual visual validation: rain looks light and fast, lightning is dramatic but not blinding; shots and bonuses stay visible through the storm.
+- [ ] 60 FPS (ENG-101) during the 3-3 storm with the most enemies on screen.
+
+### P09-R06 — Jungle ground and props  · MUST
+
+New generated ground and props for World 3 (GD-60, made in code), as light in polygons as the existing ones (D-031) and matte (D-024):
+- **Ground:** dark, wet jungle soil, moss-green on slopes, red-brown mud banks, grey-green cliff rock, and old paved stone around the ruins.
+- **Water:** rivers (muddy green-brown water in a channel cut with the heightmap tools, flowing down the screen), swamp water (dark, still, with reeds and lily pads), a lake, and **waterfalls** (white falling water with spray where a river drops over a cliff).
+- **Vegetation:** a dense **canopy** (big round broadleaf crowns in several greens, packed edge to edge so little ground shows), palms, giant ferns, mangroves on stilt roots, twisted swamp trees, vines on the ruins. The canopy is the main cost of this world, so it is instanced and stays within the triangle budget.
+- **Habitations:** stilt huts and villages, river ports, logging camps, overgrown stepped pyramids, stone statues and causeways, enemy outposts in the ruins (antennas, gun pits, neon gates), bio-labs, pipelines, pumping stations, the giant dam with its power plant, tree-top platforms, and city towers linked by sky bridges with trees on their roofs. They follow the road rules of World 1 (D-046); jungle roads are red dirt tracks.
+
+**Acceptance criteria**
+- [ ] Manual visual validation: the canopy reads as a thick jungle from the playfield camera, the rivers flow, and World 3 does not look like World 1 or 2 with another colour.
+- [ ] Unit test: each new prop model stays under the triangle budget in **Tunable values**.
+
+### P09-R07 — Enemy waves  · MUST
+
+Each World 3 level has a wave script with fillers (P06-R07, D-051), using the eleven phase 5 kinds, every kind allowed from 3-1 on:
+
+| Level | Enemy kinds that lead the waves |
+|-------|--------------------------------|
+| 3-1 | Gnat, Hornet, Scout, Strafer, Weaver, Splitter (skimming the delta) |
+| 3-2 | every kind, with Hornet swarms diving out of the canopy and Lancers along the river |
+| 3-3 | every kind, with Spinner and Rocketeer groups around the temples |
+| 3-4 | every kind, with Carriers over the swamp |
+| 3-5 | every kind, the heaviest mixes (Bulwarks escorting Carriers) |
+
+**Acceptance criteria**
+- [ ] Unit test: each World 3 wave script only uses the kinds listed for its level, and 3-2 to 3-5 use all eleven.
+- [ ] Unit test: the waves are deterministic.
+
+### P09-R08 — Increasing difficulty  · MUST
+
+As in P08-R09:
+- from 3-1 to 3-5, enemies per minute of scroll, total enemy HP per minute and the peak enemies on screen go up strictly; the bullet speed and fire rate factors never go down;
+- in each level, the second half has more enemy HP than the first half;
+- **across worlds:** 3-1 is at least as hard as 2-3, and 3-5 is harder than 2-5, on the same measures.
+
+**Acceptance criteria**
+- [ ] Unit test: the strict increases from 3-1 to 3-5.
+- [ ] Unit test: 3-1 ≥ 2-3 and 3-5 > 2-5.
+- [ ] Unit test: in each World 3 level, the second half has more enemy HP than the first.
+- [ ] Manual validation: 3-1 feels like a fresh start, 3-5 clearly harder than 2-5.
+
+### P09-R09 — The ten World 3 bosses  · MUST
+
+Each World 3 level has its own mini boss and final boss (P07-R05, P07-R06), code-generated in the World 3 theme (dark metal with neon, GD-61, plus moss, vines, stone and animal shapes). Stage patterns are designed by the agent and reported. Moving limbs use D-061.
+
+| Level | Kind | Name | Look | Destroyable parts (weapons) | Fight ground speed |
+|-------|------|------|------|-----------------------------|--------------------|
+| 3-1 | Mini | Mangrove Croc | A long, low hover-gunboat (3 L) with jaws that open and close, green neon eyes | 1 jaw cannon (opens to fire aimed bursts), 2 side pontoon guns (fans), the pontoons shield the core. Core: rings | ×1.4 (chase up the delta) |
+| 3-1 | Final | River Leviathan | A segmented serpent-ship (6 L long) whose body sways from side to side, teal neon along its spine | 4 body segments, each with a turret (rings, in turn), shield the core; 1 tail missile rack. Core (the head): laser | ×0.5 |
+| 3-2 | Mini | Toucan | A stubby gunship (3 L) with a huge bright beak, yellow and orange neon | 1 beak cannon (warning line + laser), 2 wing pods (fans), the pods shield the core. Core: aimed bursts | ×0.6 |
+| 3-2 | Final | Canopy Spider | A four-legged walker-ship (5 L) hanging over the canopy, its legs stepping in turn, red neon eyes | 4 legs, each with a gun (aimed spreads), shield the core; 1 egg sac (launches Gnat groups). Core: spirals | ×0.4 |
+| 3-3 | Mini | Stone Idol | A flying stone head (3 L) with neon cracks, glowing eyes and mouth | 2 eyes (warning line + lasers), shield the core; 1 mouth (rings of slow, big bullets). Core: fans | ×0 (the ground stops over the temple) |
+| 3-3 | Final | Sky Temple | A flying stepped pyramid fortress (5.5 L) with four corner obelisks, gold and cyan neon | 4 obelisks (spirals), shield the core; 1 summit beacon (homing missiles). Core: every bullet pattern | ×0.3 |
+| 3-4 | Mini | Mosquito | A thin, fast bio-drone (3 L) with buzzing wings, pink neon | 2 wings (fans), shield the core; 1 proboscis (warning line + laser). Core: aimed bursts | ×0.6 |
+| 3-4 | Final | Dam Breaker | A giant armoured barge (5.5 L) with sluice gates and glowing chemical tanks, toxic green neon | 2 sluice cannons (waves of slow big bullets), 2 chemical tanks (burst into a ring of bullets when destroyed), 1 drone hangar (launches Hornets), 1 armour plate (no weapon); the cannons and the plate shield the core | ×0.3 |
+| 3-5 | Mini | Jaguar | A sleek stealth interceptor (3.5 L) with spotted armour, amber neon | 2 claw guns (aimed spreads), shield the core; 1 tail cannon (laser). Core: spirals | ×0.6 |
+| 3-5 | Final | Verdant Crown | A city-ship (6 L) carrying a glass garden dome, emerald and magenta neon | 2 thorn cannons (lasers), 2 seed batteries (homing missiles), 2 root generators (no weapon, shield the core). Core: every attack kind | ×0.25 |
+
+Mini bosses have 2 or 3 destroyable parts and final bosses 4 to 6 (P07-R01). Within World 3, at least one fight stops the ground (×0) and at least one is a chase (> ×1).
+
+**Acceptance criteria**
+- [ ] Unit test: each World 3 level has exactly one mini boss and one final boss from this table, with 2–3 and 4–6 destroyable parts.
+- [ ] Unit test: in a long simulated fight, every boss's hit circles stay inside the ship's reach (D-048), the River Leviathan's swaying segments included.
+- [ ] Manual visual validation of the ten models in `bosses/` (model and wireframe views), the moving jaws, legs and segments included.
+
+### P09-R10 — Boss difficulty in World 3  · MUST
+
+As in P08-R11: mini boss and final boss full HP go up strictly from 3-1 to 3-5; each final boss has more full HP than its level's mini boss; each World 3 boss has more full HP than the World 2 boss of the same level and kind; boss bullets use the level's factors; the fight times (simulation, balanced ship, guns at level 3, always firing at the boss) are within **Tunable values**.
+
+**Acceptance criteria**
+- [ ] Unit test: the HP orderings above.
+- [ ] Unit test (simulation): fight times within the ranges.
+- [ ] Manual validation: the World 3 bosses feel harder than the World 2 ones.
+
+### P09-R11 — Debug options and the `bosses/` page  · MUST
+
+- The debug URL options (P06-R09, P07-R09, P08-R12) accept every World 3 level, `weather=0` and `look=<time of day>` included.
+- The `bosses/` page lists the World 3 bosses after the World 2 ones, each over the scenery and look of its level.
+
+**Acceptance criteria**
+- [ ] Given `?level=3-3&t=120`, then 3-3 starts at 2:00 in its thunderstorm.
+- [ ] Given `?level=3-3&weather=0`, then 3-3 shows no rain and no lightning.
+- [ ] Given `bosses/`, then every boss of Worlds 1 to 3 can be picked without console errors.
+
+## 🧑 Tunable values
+| Name | Value | Notes |
+|------|-------|-------|
+| level_duration | 300 s ± 10 s | P09-R02 |
+| ground_speed 3-1 / 3-2 / 3-3 / 3-4 / 3-5 | 70 / 60 / 55 / 60 / 60 px/s | GD-01; slower in the storm |
+| sea_share 3-1 / 3-2..3-5 | ≤ 30 % / 0 % | P09-R03 |
+| peak_on_screen 3-1 / 3-2 / 3-3 / 3-4 / 3-5 | 13 / 14 / 15 / 17 / 19 | P09-R08; the agent may adjust while balancing, keeping the order |
+| enemy_bullet_speed_factor 3-1 → 3-5 | 1.0 / 1.05 / 1.1 / 1.2 / 1.25 | P09-R08 |
+| enemy_fire_rate_factor 3-1 → 3-5 | 1.0 / 1.05 / 1.1 / 1.2 / 1.25 | P09-R08 |
+| rain_streaks_max | 2 000 (at strength 1) | P09-R05; the agent may lower it for ENG-101 |
+| lightning_gap | 4–10 s, random from the seed | P09-R05 |
+| lightning_max_flashes | 3 in any 1 s | P09-R05, photosensitivity |
+| lightning_flash | about 0.15 s, brightness at most ×1.8 the storm's | P09-R05 |
+| morning_mist (3-1) | fog end at 40 % of the clear distance, lifting to 100 % over the first half | P09-R04 |
+| mini_fight_time 3-1 → 3-5 | 35–45 s → 50–60 s | P09-R10, balanced ship, guns level 3, always on target |
+| final_fight_time 3-1 → 3-5 | 70–90 s → 110–140 s | P09-R10, same |
+| boss_triangles | ≤ 6 000 per boss | as in phase 7 |
+| prop_triangles | within the range of the phase 6 props; the canopy crowns lighter still | P09-R06, D-031 |
+
+## 🧑 Out of scope for this phase
+- Worlds 4 and 5 and their weather kinds (falling ash, embers).
+- New regular enemy kinds.
+- Gameplay effects of the weather, water or ground (wind, slowing mud): weather is only a look.
+- Wet ground reflections and puddle reflections (costly); the rain rings on water are enough.
+- Bombs, extra lives, score, high score, pause, music and sound effects.
+- Changing the World 1 and World 2 levels.
+
+## 🧑 Engineering additions for this phase
+- Rain and lightning are new weather kinds in the game-agnostic weather engine, unit tested; the World 3 levels, looks, props, wave scripts and bosses are data and views in `src/game/`.
+- The World 1 and World 2 levels keep passing their tests unchanged.
+- An e2e test confirms each World 3 level from the menu and checks it starts without console errors.
+- An e2e test opens `?level=3-1&boss=final`, destroys the boss with K and the debug fire, and reaches the "Level complete" overlay.
+- 60 FPS (ENG-101) in the 3-2 rainforest (densest canopy), in the 3-3 storm, and in the 3-5 final boss fight at night.
+
+## 🧑 Manual validation checklist
+- [ ] Runs on GitHub Pages / `make dev` without console errors
+- [ ] `3-1` to `3-5` can be picked in the level select; worlds 4 and 5 stay locked
+- [ ] Delta, rainforest, temples, swamp and canopy city across the five levels; each level begins where the previous one ended
+- [ ] Morning mist lifting in 3-1, a rain shower in 3-2, the 3-3 thunderstorm, rainy dusk in 3-4, rainy night clearing in 3-5
+- [ ] Lightning is dramatic but never blinding or fast-flashing
+- [ ] Rivers flow, waterfalls fall, the canopy looks thick
+- [ ] The ten World 3 bosses look good in `bosses/`; jaws, legs and segments move
+- [ ] Difficulty clearly goes up from 3-1 to 3-5, and 3-5 is harder than 2-5
+- [ ] 60 fps in the rainforest, the storm and the 3-5 final boss fight
+
+## 🧑 Notes, references, sketches
+- **Drafted by the agent at the reviewer's request (2026-10-25); open choices, defaults proposed:** the same as phase 8 (themes, no new enemy kinds, 5-minute levels, a softer start for each world, fight times with guns at level 3, boss designs as suggestions).
+- Photosensitivity: the lightning limits follow the usual web accessibility rule (no more than three flashes in any one second).
+- The River Leviathan and the Canopy Spider are the most complex limb animations so far (D-061); if they cost too much, the agent reports it before simplifying.
+
+---
+
+## 🧑 Review feedback
+> After the agent reports, write corrections here, then say **"Fix phase 09"**.
+> The agent ticks each item when fixed.
+
+- [ ] 
+
+---
+
+## 🤖 Implementation report
+> Filled by the agent. Do not edit (comment in Review feedback instead).
+
+### Questions / blockers
+<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+
+### Plan
+| Task | Requirement IDs |
+|------|-----------------|
+| | |
+
+### Requirement traceability
+| ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
+|----|-----------------------------------|------|-------|-------|
+| P09-R01 | | | | |
+
+### Gate results
+```
+make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+```
+
+### How to test manually
+<!-- Steps, keys, debug toggles, URL. -->
+
+### Deviations from spec
+<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+
+### Known limitations
+-
+
+### Suggestions for future phases
+-
