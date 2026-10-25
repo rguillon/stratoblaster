@@ -30,6 +30,7 @@
 - GD-30 The player shall have 3 main weapons: guns, laser, missiles.
 - GD-31 Each weapon shall be upgradable up to level 5
 - GD-32 The player shall have secondary bombs, one bomb cause damage to every enemy on the screen. Enough damage to kill most of the low level enemies.
+- GD-33 The main weapons shall be balanced (2026-10-25): the guns are the reference; at every level the laser and the missiles shall deal 70-100 % of the guns' damage per second (every stream counted). Each weapon pays for its strength: the guns spread widest, the laser is the most focused (one column, never misses, pierces) and out-damages the missiles, the missiles home but take time to arrive.
 
 
 ## 5. Enemies (global rules)

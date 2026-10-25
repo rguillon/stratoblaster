@@ -36,17 +36,33 @@ describe('player weapons', () => {
     for (let i = 1; i < dps.length; i++) expect(dps[i]).toBeGreaterThan(dps[i - 1] ?? Infinity);
   });
 
-  it('P03-R03: missiles accelerate, home, and deal 8 damage within 10 px, 4 per second', () => {
+  it('P03-R03: missiles accelerate, home, and deal 14 damage within 10 px (GD-33), 4 per second', () => {
     expect(MISSILE.acceleration).toBeGreaterThan(0);
     expect(MISSILE.homingTurnRateDeg).toBeGreaterThan(0);
     // Phase 5 review: they only see enemies within about half the screen (640 px high).
     expect(MISSILE.homingRange).toBe(320);
-    expect(MISSILE.damage).toBe(8);
+    expect(MISSILE.damage).toBe(14);
     expect(MISSILE.blastRadius).toBe(10);
     expect(MISSILE.shotsPerSecond).toBe(4);
     // Phase 3 review: missiles leave from the centre of the ship, bullets from its nose.
     expect(MISSILE.launchPoint).toBe('center');
     expect(BULLET.launchPoint).toBe('muzzle');
+  });
+
+  it('GD-33: at every level the laser and the missiles deal 70-100 % of the bullets damage per second', () => {
+    const projectileDps = (weapon: typeof BULLET | typeof MISSILE, level: number) =>
+      (weapon.levels[level - 1]?.length ?? 0) * weapon.shotsPerSecond * weapon.damage;
+    for (let level = 1; level <= 5; level++) {
+      const bullet = projectileDps(BULLET, level);
+      const laser = LASER.levels[level - 1]?.damagePerSecond ?? 0;
+      const missile = projectileDps(MISSILE, level);
+      for (const dps of [laser, missile]) {
+        expect(dps).toBeGreaterThanOrEqual(0.7 * bullet);
+        expect(dps).toBeLessThanOrEqual(bullet);
+      }
+      // The laser hits one column only, so it out-damages the missiles that home on everything.
+      expect(laser).toBeGreaterThan(missile);
+    }
   });
 
   it('P03-R03: missile streams per level, diagonals widened to 25° / 45° (phase 3 review)', () => {

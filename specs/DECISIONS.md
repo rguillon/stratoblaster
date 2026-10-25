@@ -689,3 +689,12 @@
 - **Alternatives considered:** turning the whole part model (the mounts, sponsons and ammunition racks would turn too); turning turrets in the view only (shots would no longer leave from the barrels).
 - **Consequences:** shots aimed at the player still leave from the barrel tips and are aimed from there, so the game plays as before. Only turrets fire at the player turn: the guns fixed in hulls stay put.
 - **Status:** Accepted
+
+### D-059 — Player weapon balance
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer asked to balance the player weapons' damage, specs and code. With every stream counted, the laser dealt 50 % of the guns' damage per second (40-150 against 80-400) and the missiles 40 % (32-160), with no clear reason to choose them.
+- **Decision:** the guns stay the reference: they are the starting weapon and the bosses' health was tuned with guns at level 3 (D-055). New rule GD-33: at every level the laser and the missiles deal 70-100 % of the guns' damage per second, the laser more than the missiles. Laser 80 / 140 / 200 / 260 / 320 damage/s (100 % at L1, then 80-88 %: one column, instant, never misses, pierces at the level below); missiles 14 damage (56-280 damage/s, 70 %: they home on everything in range, but take time to arrive, overkill 10-health enemies and can chase a weak enemy instead of the boss). The guns' diagonals miss small or far targets, so on a single boss their real damage is closer to their forward streams; the laser becomes the best boss weapon at high levels, the guns the best against wide waves, the missiles the safest.
+- **Alternatives considered:** raising the guns too (every boss and level would need re-tuning); equal raw damage for all three (the laser's focus and the missiles' homing would make the guns pointless).
+- **Consequences:** fights with the laser or missiles get shorter than before; with the guns they are unchanged. Bonus drop chances depend on enemy health, not on the weapon, so they do not change.
+- **Status:** Accepted
