@@ -280,6 +280,9 @@ make typecheck  ✔ (0 errors)
 make build      ✔ (ENG-52 leak check ✔, now also for __BOSSES_TEST__)
 make e2e        ✔ 53 passed (5.7 min; 50 before + 3 on bosses/; the 1-1 end test now goes through
                   its final boss, and the 1-3 start test expects its mini boss at 2:00)
+After the lint fixes of the commit (refactors only): typecheck ✔ / build ✔ / e2e 52 passed, 1 failed:
+the phase 1 key-repeat timing test (P01-R09, 2 repeats seen instead of 3 under load); its spec
+passed 3/3 when run again on its own.
 ```
 Coverage before this phase: 99.33 % lines (phase 6). New numbers come with `/validate-phase 7`.
 
