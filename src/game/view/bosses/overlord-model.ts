@@ -105,7 +105,7 @@ function drawHull({ hull, neon }: EnemyParts): void {
 }
 
 /** The citadel over the core: neon tiers, a ring emitter on top, the front weapon array. */
-function drawCitadel({ hull, neon, charge }: EnemyParts): void {
+function drawCitadel({ hull, neon, charge, muzzle }: EnemyParts): void {
   // Turned an eighth of a turn, a flat of the octagon faces the front.
   const tiers = { at: [0, OVERLORD_DECK.top, 0] as const, yaw: Math.PI / 8 };
   hull.lathe(CITADEL, 8, H.panel, tiers);
@@ -125,6 +125,7 @@ function drawCitadel({ hull, neon, charge }: EnemyParts): void {
     WHITE,
     { at: [0, OVERLORD_DECK.top + 25, 0] },
   );
+  muzzle([0, OVERLORD_DECK.top + 27.6, 0], 'ring');
   const deck = OVERLORD_DECK.boulevard;
   hull.bevelSlab(GUN_DECK, [deck, deck, deck + 9], [0, 1.5], H.base, {}, H.panel);
   decal(neon, box2d(14, 1.2, [0, 24]), deck + 9.05, N);
@@ -132,19 +133,22 @@ function drawCitadel({ hull, neon, charge }: EnemyParts): void {
   const axis = deck + 4.5;
   hull.cylinder(4.2, 3, 8, H.dark, { at: [0, axis, 31], pitch: QUARTER });
   charge.lathe(LENS, 6, WHITE, { at: [0, axis, 35.5], pitch: QUARTER });
+  muzzle([0, axis, 38], 'laser');
   for (const s of SIDES) {
     hull.cylinder(1.6, 10, 6, H.dark, { at: [s * 7, axis + 1, 28], pitch: QUARTER });
     charge.cylinder(2, 1.6, 6, WHITE, { at: [s * 7, axis + 1, 38], pitch: QUARTER });
+    muzzle([s * 7, axis + 1, 39.6]);
   }
 }
 
 /** The missile hatches on the boulevard behind the citadel, lit as missiles load. */
-function drawHatches({ hull, charge }: EnemyParts): void {
+function drawHatches({ hull, charge, muzzle }: EnemyParts): void {
   const y = OVERLORD_DECK.boulevard;
   for (const x of [-6, 6]) {
     for (const z of [-30, -38]) {
       decal(hull, box2d(6.4, 5.4, [x, z]), y + 0.03, H.dark);
       decal(charge, box2d(4.6, 3.6, [x, z]), y + 0.06, WHITE);
+      muzzle([x, y + 0.06, z], 'missile');
     }
   }
 }

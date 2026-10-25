@@ -99,3 +99,4 @@
 - 2026-10-25 — 7 — Review fix: `boss/` debug endpoint (same page as `bosses/`); still awaiting review.
 - 2026-10-25 — 7 — Review fix: bosses roll into their sideways moves (up to 12°); still awaiting review.
 - 2026-10-25 — 7 — Review fix: more detailed, asymmetric boss models, seven of them with fat armour over a visible mechanism (2,180–4,164 triangles each); still awaiting review.
+- 2026-10-25 — 7 — Review fix: enemy and boss shots leave from the tips of their barrels, as the tilted camera sees them (D-057); small guns drawn on the Scout, Strafer, Weaver and Bulwark; still awaiting review.

@@ -17,7 +17,7 @@ import type { FlightBounds } from '../core/systems/player-flight';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { BonusRenderer, GameView } from '../render/game-view';
-import { visibleHalfWidth } from '../render/scenery/playfield-framing';
+import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-framing';
 import type { GameControls } from '../input/game-controls';
 import { GameHud } from '../ui/game-hud';
 import type { MenuDocument } from '../ui/screens/elements';
@@ -175,6 +175,7 @@ export class GamePlay {
       },
       bounds: this.#bounds(),
       cullMargin: CFG.cullMargin,
+      eye: playfieldEye(this.game.screen, this.view.stage.framing),
       maxEnemyAge: CFG.maxEnemyAge,
       endWait: CFG.endWait,
       seed: CFG.seed,

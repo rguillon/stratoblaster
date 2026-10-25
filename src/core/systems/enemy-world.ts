@@ -1,7 +1,8 @@
 import type { DropSource, Enemy, EnemyContext } from '../entities/enemy';
+import { seenOnPlayfield } from '../entities/muzzle';
 import { isAlive, type ShotTarget } from '../entities/shot-target';
 import type { Random } from '../math/rng';
-import { EnemyShots } from './enemy-shots';
+import { EnemyShots, type EnemyShotsOptions } from './enemy-shots';
 
 /** Something that blew up during the last step, for the explosions (GD-62). */
 export interface EnemyBlast {
@@ -12,9 +13,7 @@ export interface EnemyBlast {
   readonly radius: number;
 }
 
-export interface EnemyWorldOptions {
-  readonly width: number;
-  readonly height: number;
+export interface EnemyWorldOptions extends EnemyShotsOptions {
   /**
    * Enemies are removed once they have been on the playfield and are this far outside it, and
    * shots once they are this far outside.
@@ -77,6 +76,7 @@ export class EnemyWorld {
       fireRate: difficulty.fireRate,
       playerX: 0,
       playerY: 0,
+      seen: (point) => seenOnPlayfield(options.eye, point),
       fireBullet: (x, y, heading, spec) => {
         shots.fireBullet(x, y, heading, { ...spec, speed: spec.speed * bulletSpeed });
       },

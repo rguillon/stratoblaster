@@ -8,7 +8,7 @@ import {
   type VolleySource,
 } from '../../../core/systems/boss-pattern';
 import { approach } from '../../../core/systems/enemy-motion';
-import { BOSS_TIMING, type BossDesign } from '../../config/bosses/boss-kit';
+import { BOSS_TIMING, volleyMuzzles, type BossDesign } from '../../config/bosses/boss-kit';
 import { launchVolley } from './boss-launches';
 
 /** How far its hit circles reach left and right of its centre (orbiting parts all around). */
@@ -65,10 +65,12 @@ export class WorldBoss extends Boss {
     this.#pattern = new BossPattern(this.#stage(0));
   }
 
-  /** The pattern of stage `stage`: its design's volleys and the parts' launches. */
+  /** The pattern of stage `stage`: its design's volleys, from their guns, and the parts' launches. */
   #stage(stage: number): BossPatternSpec {
     const { stages } = this.design;
-    return [...(stages[Math.min(stage, stages.length - 1)] ?? []), ...this.#launches];
+    const volleys = stages[Math.min(stage, stages.length - 1)] ?? [];
+    const armed = volleys.map((v) => ({ ...v, muzzles: volleyMuzzles(this.design, v) }));
+    return [...armed, ...this.#launches];
   }
 
   protected override enter(_ctx: EnemyContext, dt: number): boolean {

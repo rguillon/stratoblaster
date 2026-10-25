@@ -73,13 +73,14 @@ export function edgeStrips(
 
 /**
  * Gun barrels pointing forward (+Z) from `at`, `gap` apart, `length` long, with a charge light
- * at each muzzle (it brightens as the next shot charges).
+ * at each muzzle (it brightens as the next shot charges); they fire `fires` (`EnemyParts.muzzle`).
  */
 export function barrels(
-  { hull, charge }: EnemyParts,
+  { hull, charge, muzzle }: EnemyParts,
   at: Vec3,
   [count, gap]: readonly [number, number],
   [radius, length]: readonly [number, number],
+  fires = 'gun',
 ): void {
   for (let i = 0; i < count; i++) {
     const x = (i - (count - 1) / 2) * gap;
@@ -89,6 +90,7 @@ export function barrels(
       at: shift(at, [x, 0, length]),
       pitch: QUARTER,
     });
+    muzzle(shift(at, [x, 0, length + radius * 1.4]), fires);
   }
 }
 
@@ -110,6 +112,7 @@ export function turret(
   at: Vec3,
   radius: number,
   [count, neon]: readonly [number, Rgb],
+  fires = 'gun',
 ): void {
   const height = radius * 0.55;
   const dome = TURRET_DOME.map(([r, y]) => [r * radius, y * height] as const);
@@ -119,7 +122,7 @@ export function turret(
     at: shift(at, [0, height * 1.02, -radius * 0.2]),
   });
   const gun = shift(at, [0, height * 0.5, radius * 0.6]);
-  barrels(p, gun, [count, radius * 0.38], [radius * 0.13, radius * 0.9]);
+  barrels(p, gun, [count, radius * 0.38], [radius * 0.13, radius * 0.9], fires);
 }
 
 /**
@@ -127,7 +130,7 @@ export function turret(
  * (towards the camera) out of their tubes; the tips light up as a salvo charges.
  */
 export function missileTips(
-  { hull, charge }: EnemyParts,
+  { hull, charge, muzzle }: EnemyParts,
   at: Vec3,
   [rows, cols]: readonly [number, number],
   [spacing, radius]: readonly [number, number],
@@ -139,6 +142,7 @@ export function missileTips(
       const tube = shift(at, [x, 0, z]);
       hull.ring(radius * 1.3, radius * 0.9, 6, H.dark, { at: tube });
       charge.cylinder(radius, radius * 2.2, 6, WHITE, { at: shift(tube, [0, radius * 0.4, 0]) }, 0);
+      muzzle(shift(tube, [0, radius * 2.6, 0]), 'missile');
     }
   }
 }

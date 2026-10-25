@@ -152,7 +152,7 @@ function drawColumns({ hull, neon }: EnemyParts): void {
 }
 
 /** The bridge over the core: its angry visor, smoke stacks and twin cannon (the core's weapon). */
-function drawBridge({ hull, neon, charge }: EnemyParts): void {
+function drawBridge({ hull, neon, charge, muzzle }: EnemyParts): void {
   hull.bevelSlab(BRIDGE, [14, 14, 24], [0, 3], H.panel, {}, H.base);
   for (const eye of angryEyes([0, 15], 2, [7, 1.4], 0.35)) decal(neon, eye, 24.05, TITAN_NEON);
   for (const s of SIDES) {
@@ -163,6 +163,7 @@ function drawBridge({ hull, neon, charge }: EnemyParts): void {
     // The twin cannon's barrels, out of a mantlet on the bridge's front.
     hull.cylinder(1.8, 14, 6, H.dark, { at: [s * 4.5, 19, 20], pitch: QUARTER });
     charge.cylinder(2.2, 1.8, 6, WHITE, { at: [s * 4.5, 19, 34], pitch: QUARTER });
+    muzzle([s * 4.5, 19, 35.8]);
   }
   hull.bevelSlab(rect(15, 7, [0, 21]), [15, 15, 22.5], [0, 1.5], H.base, {}, H.panel);
   // Headlights on the nose.

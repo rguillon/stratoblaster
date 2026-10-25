@@ -111,6 +111,10 @@ function drawEmitter(p: EnemyParts): void {
     p.neon.ring(7.3 - z * 0.15, 1, 8, N, { at: shift(at, [0, 0, z]), pitch: QUARTER });
   }
   p.charge.lathe(LENS, 8, WHITE, { at: shift(at, [0, 0, 7.5]), pitch: QUARTER });
+  // The core's laser and bullets leave from the lens's front.
+  const lens = shift(at, [0, 0, 11.9]);
+  p.muzzle(lens, 'laser');
+  p.muzzle(lens);
 }
 
 /** The engine housings on the back of the deck and the reactors. */

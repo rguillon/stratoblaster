@@ -32,7 +32,7 @@ const LASER_LENS = [
 ] as const;
 
 /** P07-R05: a wing laser cannon: an armoured pod, a long barrel, coils and a lens charging. */
-export function drawLaser({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3): void {
+export function drawLaser({ hull, neon, charge, muzzle }: EnemyParts, [x, y, z]: Vec3): void {
   const at: Vec3 = [x, y + WING_TOP - 1, z];
   hull.loft(POD_SECTION, LASER_POD, H.base, { at });
   for (const side of [1, 3]) {
@@ -46,6 +46,7 @@ export function drawLaser({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3): 
   // The coils and the lens brighten through the warning line, full while the beam fires.
   for (const dz of [from + 2.5, from + 6]) charge.ring(radius * 1.25, 1.3, 6, WHITE, along(dz));
   charge.lathe(LASER_LENS, 6, WHITE, along(from + length));
+  muzzle([x, axis, z + from + length + 3.6], 'laser');
   // Heat sinks on the pod's back, a neon slit between them.
   for (const s of [-1, 1]) {
     hull.bevelSlab(
@@ -72,13 +73,14 @@ const BATTERY: OutlinePoint[] = [
 const CELLS = [-5, 5].flatMap((cx) => [-7.5, 0, 7.5].map((cz) => [cx, cz] as const));
 
 /** P07-R05: a missile battery on the deck: an armoured block, six hatches lit as it loads. */
-export function drawBattery({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3): void {
+export function drawBattery({ hull, neon, charge, muzzle }: EnemyParts, [x, y, z]: Vec3): void {
   const base = y + OVERLORD_DECK.top;
   const top = base + 8;
   hull.bevelSlab(BATTERY, [base - 1, base, top], [0, 2], H.base, { at: [x, 0, z] }, H.panel);
   for (const [cx, cz] of CELLS) {
     decal(hull, box2d(7, 5.6, [x + cx, z + cz]), top + 0.04, H.dark);
     decal(charge, box2d(5, 3.6, [x + cx, z + cz]), top + 0.08, WHITE);
+    muzzle([x + cx, top + 0.08, z + cz], 'missile');
   }
   for (const s of [-1, 1]) {
     neon.box([0.6, 1.4, 16], OVERLORD_NEON, { at: [x + s * 11.7, base + 3.2, z] });

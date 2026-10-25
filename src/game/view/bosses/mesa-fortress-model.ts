@@ -113,6 +113,7 @@ function drawFanCannon(p: EnemyParts): void {
     const out = (r: number): Vec3 => shift(FAN_AT, [Math.sin(yaw) * r, 2.6, 4 + Math.cos(yaw) * r]);
     p.hull.cylinder(1.6, 9, 6, H.dark, { at: out(4), pitch: QUARTER, yaw }, 1.3);
     p.charge.cylinder(1.5, 2, 6, WHITE, { at: out(13), pitch: QUARTER, yaw });
+    p.muzzle(out(15));
   }
 }
 
@@ -138,6 +139,7 @@ function drawLance(p: EnemyParts, at: Vec3): void {
   }
   // The lens glows through the warning line and while the laser fires.
   p.charge.lathe(LENS, 8, WHITE, { at: shift(barrel, [0, 0, 27.5]), pitch: QUARTER });
+  p.muzzle(shift(barrel, [0, 0, 31.3]), 'laser');
   lanceDetails(p, at);
 }
 

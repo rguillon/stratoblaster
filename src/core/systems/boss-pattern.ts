@@ -4,10 +4,10 @@ import type {
   EnemyContext,
   EnemyLaserSpec,
   EnemyMissileSpec,
-  LaserOwner,
 } from '../entities/enemy';
+import type { Muzzle } from '../entities/muzzle';
 import { fanHeadings } from './enemy-motion';
-import { headingTo } from './projectile-motion';
+import { fireAimed, GunMuzzles, type MuzzleSource } from './gun-muzzles';
 
 const DEG = Math.PI / 180;
 /** Straight down the screen. */
@@ -56,15 +56,18 @@ export type BossVolleyShape =
     }
   /** A laser straight down from the piece: warning line first (GD-43). */
   | { readonly kind: 'laser'; readonly laser: EnemyLaserSpec }
-  /** Enemies launched from the muzzle (e.g. a hangar's drones). */
+  /** Enemies launched from the piece (e.g. a hangar's drones). */
   | { readonly kind: 'launch'; readonly launch: (x: number, y: number) => readonly Enemy[] };
 
 /** One weapon of a stage's pattern (P07-R04). */
 export interface BossVolley {
   /** What fires it: the id of a part (it stops for good once that part is destroyed) or `core`. */
   readonly from: string;
-  /** Offset of the muzzle from that piece's centre (X right, Y up). */
-  readonly muzzle?: readonly [number, number];
+  /**
+   * The muzzles of that piece's gun its shots leave from (see `MuzzleSource.place`), the one
+   * furthest along each shot's way; the piece's centre when omitted.
+   */
+  readonly muzzles?: readonly Muzzle[];
   /** Seconds between two volleys. */
   readonly every: number;
   /** Seconds before the first one, from the start of the stage; `every` when omitted. */
@@ -75,8 +78,8 @@ export interface BossVolley {
 /** The volleys of one stage. */
 export type BossPatternSpec = readonly BossVolley[];
 
-/** What volleys fire from: the playfield position of a piece, and the laser owner it is. */
-export type VolleySource = LaserOwner & { readonly x: number; readonly y: number };
+/** What volleys fire from: the playfield position of a piece, its muzzles, the laser owner it is. */
+export type VolleySource = MuzzleSource;
 
 /** The piece a volley fires from, or undefined once it is destroyed. */
 export type VolleySources = (from: string) => VolleySource | undefined;
@@ -107,6 +110,7 @@ interface VolleyState {
   /** Bullets of a burst still to fire, and seconds until the next one. */
   burst: number;
   burstLeft: number;
+  readonly guns: GunMuzzles;
 }
 
 /**
@@ -123,6 +127,7 @@ export class BossPattern {
       turns: 0,
       burst: 0,
       burstLeft: 0,
+      guns: new GunMuzzles(v.muzzles),
     }));
   }
 
@@ -153,29 +158,30 @@ export class BossPattern {
 
   #fire(ctx: EnemyContext, volley: BossVolley, state: VolleyState, source: VolleySource): void {
     const shape = volley.shape;
-    const [x, y] = muzzleOf(volley, source);
     switch (shape.kind) {
       case 'burst':
         state.burst = shape.count;
         state.burstLeft = 0;
         break;
       case 'missiles':
-        for (const h of fanHeadings(
-          headingTo(x, y, ctx.playerX, ctx.playerY),
-          shape.count,
-          shape.spacingDeg * DEG,
-        )) {
+        fireAimed(ctx, state.guns, source, [shape.count, shape.spacingDeg], (x, y, h) => {
           ctx.fireMissile(x, y, h, shape.missile);
-        }
+        });
         break;
       case 'laser':
-        ctx.fireLaser(source, shape.laser);
+        ctx.fireLaser(state.guns.laser(source), shape.laser);
         break;
       case 'launch':
-        for (const enemy of shape.launch(x, y)) ctx.spawn(enemy);
+        for (const enemy of shape.launch(source.x, source.y)) ctx.spawn(enemy);
+        break;
+      case 'aimed':
+        fireAimed(ctx, state.guns, source, [shape.count, shape.spacingDeg], (x, y, h) => {
+          ctx.fireBullet(x, y, h, shape.bullet);
+        });
         break;
       default:
-        for (const h of bulletHeadings(shape, state, headingTo(x, y, ctx.playerX, ctx.playerY))) {
+        for (const h of presetHeadings(shape, state)) {
+          const { x, y } = state.guns.along(ctx, source, h);
           ctx.fireBullet(x, y, h, shape.bullet);
         }
     }
@@ -193,21 +199,20 @@ export class BossPattern {
     if (shape.kind !== 'burst') return;
     state.burstLeft -= time;
     while (state.burst > 0 && state.burstLeft <= 0) {
-      const [x, y] = muzzleOf(volley, source);
-      ctx.fireBullet(x, y, headingTo(x, y, ctx.playerX, ctx.playerY), shape.bullet);
+      fireAimed(ctx, state.guns, source, [1, 0], (x, y, h) => {
+        ctx.fireBullet(x, y, h, shape.bullet);
+      });
       state.burst--;
       state.burstLeft += shape.gap;
     }
   }
 }
 
-/** The headings of one volley of bullets aimed at `aim`, in a preset fan, or a ring that turns. */
-function bulletHeadings(
-  shape: Extract<BossVolleyShape, { kind: 'aimed' | 'fan' | 'ring' }>,
+/** The headings of one volley of bullets in a preset fan, or a ring that turns. */
+function presetHeadings(
+  shape: Extract<BossVolleyShape, { kind: 'fan' | 'ring' }>,
   state: VolleyState,
-  aim: number,
 ): number[] {
-  if (shape.kind === 'aimed') return fanHeadings(aim, shape.count, shape.spacingDeg * DEG);
   if (shape.kind === 'fan') {
     return fanHeadings(DOWN - shape.headingDeg * DEG, shape.count, shape.spacingDeg * DEG);
   }
@@ -216,9 +221,4 @@ function bulletHeadings(
     { length: shape.count },
     (_, k) => DOWN + turn + (2 * Math.PI * k) / shape.count,
   );
-}
-
-function muzzleOf(volley: BossVolley, source: VolleySource): [number, number] {
-  const [dx, dy] = volley.muzzle ?? [0, 0];
-  return [source.x + dx, source.y + dy];
 }

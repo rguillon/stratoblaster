@@ -10,7 +10,7 @@ import { EnemyWorld } from '../core/systems/enemy-world';
 import { ShotWorld } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { GameView } from '../render/game-view';
-import { visibleHalfWidth } from '../render/scenery/playfield-framing';
+import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-framing';
 import { BOSS_VIEWER_CONFIG as CFG } from '../config/boss-viewer';
 import type { BossViewerState } from '../debug/boss-viewer-test-api';
 import type { HitCircle } from './enemy-close-up';
@@ -72,7 +72,11 @@ export class BossViewerStage {
     const area = { width, height, cullMargin: CFG.cullMargin };
     const difficulty = level?.difficulty ?? { bulletSpeed: 1, fireRate: 1 };
     this.enemies = new EnemyWorld(
-      { ...area, maxEnemyAge: CFG.maxEnemyAge },
+      {
+        ...area,
+        maxEnemyAge: CFG.maxEnemyAge,
+        eye: playfieldEye(game.screen, this.view.stage.framing),
+      },
       options.random,
       difficulty,
     );

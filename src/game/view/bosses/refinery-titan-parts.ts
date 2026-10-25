@@ -87,7 +87,10 @@ const BARRELS = [
 const BARREL = { length: 10, radius: 1.3 } as const;
 
 /** P07-R05: a rotary turret on the front sponson, three barrels with charge-lit muzzles. */
-export function drawTurret({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3): void {
+export function drawTurret(
+  { hull, neon, charge, muzzle: mark }: EnemyParts,
+  [x, y, z]: Vec3,
+): void {
   const base = y + TITAN_DECK.sponson;
   hull.lathe(TURRET_BASE, 8, H.base, { at: [x, base, z] });
   neon.ring(13.3, 0.9, 8, TITAN_NEON, { at: [x, base + 1, z] });
@@ -101,6 +104,7 @@ export function drawTurret({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3):
     hull.cylinder(BARREL.radius, BARREL.length, 6, H.dark, muzzle);
     const tip: Vec3 = [x + bx, axis + by, front + BARREL.length];
     charge.cylinder(BARREL.radius * 1.25, 1.6, 6, WHITE, { at: tip, pitch: QUARTER });
+    mark([tip[0], tip[1], tip[2] + 1.6]);
   }
   // A neon sight slit along the housing's top.
   decal(neon, rect(1.4, 8, [x, z + 2]), axis + 3.9, TITAN_NEON);
@@ -110,7 +114,10 @@ export function drawTurret({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3):
 const CELLS = [-5.5, 5.5].flatMap((cx) => [-7.5, 0, 7.5].map((cz) => [cx, cz] as const));
 
 /** P07-R05: an armoured missile battery on the hull's back, six hatches lit as it loads. */
-export function drawMissileBattery({ hull, neon, charge }: EnemyParts, [x, y, z]: Vec3): void {
+export function drawMissileBattery(
+  { hull, neon, charge, muzzle }: EnemyParts,
+  [x, y, z]: Vec3,
+): void {
   const base = y + TITAN_DECK.back;
   const top = base + 8;
   const block: OutlinePoint[] = [
@@ -127,6 +134,7 @@ export function drawMissileBattery({ hull, neon, charge }: EnemyParts, [x, y, z]
   for (const [cx, cz] of CELLS) {
     decal(hull, rect(7.4, 5.6, [x + cx, z + cz]), top + 0.04, H.dark);
     decal(charge, rect(5.4, 3.6, [x + cx, z + cz]), top + 0.08, WHITE);
+    muzzle([x + cx, top + 0.08, z + cz], 'missile');
   }
   // Neon strips down both flanks of the block.
   for (const s of [-1, 1]) {

@@ -1,4 +1,5 @@
-import { bullet, part, stages, stats, volley, type BossDesign } from './boss-kit';
+import type { Muzzle } from '../../../core/entities/muzzle';
+import { bullet, mirror, part, stages, stats, twin, volley, type BossDesign } from './boss-kit';
 
 /*
  * The World 1 mini bosses (P07-R05): 2 or 3 destroyable parts each. Offsets in px from the
@@ -14,6 +15,17 @@ const RED = bullet('red', 190);
 const BLUE = bullet('blue', 185);
 const GREEN = bullet('green', 180);
 const PURPLE = bullet('purple', 195);
+
+/*
+ * The guns' muzzles (phase 7 review): the tips of the barrels their models draw, from the boss's
+ * centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+ */
+
+/** The Reef Warden's right side cannon's two barrels. */
+const CANNON: Muzzle[] = [
+  [38.5, -23.2, 7.9],
+  [33.5, -23.2, 7.9],
+];
 
 /** 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core. */
 export const REEF_WARDEN: BossDesign = {
@@ -31,6 +43,11 @@ export const REEF_WARDEN: BossDesign = {
   stopFraction: 0.72,
   sway: { amplitude: 70, period: 7 },
   bob: { amplitude: 8, period: 3.5 },
+  guns: {
+    core: { gun: [[0, -40.5, 5]] },
+    'cannon-left': { gun: mirror(CANNON) },
+    'cannon-right': { gun: CANNON },
+  },
   stages: stages(
     [
       volley.burst('cannon-left', 2.6, 3, 0.18, RED, 1),
@@ -64,6 +81,11 @@ export const BREAKWATER: BossDesign = {
   stopFraction: 0.72,
   sway: { amplitude: 60, period: 8 },
   bob: { amplitude: 6, period: 4 },
+  guns: {
+    core: { gun: twin(1.5, -33.3, 6.4) },
+    'mortar-left': { gun: [[-34, -1.5, 17.2]] },
+    'mortar-right': { gun: [[34, -1.5, 17.2]] },
+  },
   stages: stages(
     [
       volley.aimed('mortar-left', 2.4, 1, 0, bullet('orange', 110, 7), 1.2),
@@ -99,6 +121,27 @@ export const DUST_DEVIL: BossDesign = {
   sway: { amplitude: 60, period: 9 },
   bob: { amplitude: 10, period: 3 },
   spinRate: 0.7,
+  guns: {
+    core: { gun: [[0, 0, 10]] },
+    'blade-1': {
+      gun: [
+        [16.8, -38.6, 0.3],
+        [-16.8, -40, 0.3],
+      ],
+    },
+    'blade-2': {
+      gun: [
+        [25, 33.8, 0.3],
+        [43, 5.5, 0.3],
+      ],
+    },
+    'blade-3': {
+      gun: [
+        [-41.8, 4.8, 0.3],
+        [-26.2, 34.5, 0.3],
+      ],
+    },
+  },
   stages: stages(
     [
       volley.ring('blade-1', 1, 2, 23, GREEN, 0.4),
@@ -137,6 +180,12 @@ export const SCORPION: BossDesign = {
   stopFraction: 0.74,
   sway: { amplitude: 60, period: 7.5 },
   bob: { amplitude: 8, period: 3.2 },
+  guns: {
+    core: { gun: [[0, -26, 2]] },
+    'claw-left': { gun: [[-38.8, -41.3, 5.5]] },
+    'claw-right': { gun: [[39.3, -38.8, 5.5]] },
+    stinger: { laser: [[0, -49.3, 8.9]] },
+  },
   stages: stages(
     [
       volley.aimed('claw-left', 2.2, 3, 10, BLUE, 1),
@@ -173,6 +222,11 @@ export const SENTINEL: BossDesign = {
   sway: { amplitude: 70, period: 6.5 },
   bob: { amplitude: 8, period: 3 },
   launches: [{ from: 'drone-bay', kind: 'hornets', count: 2, every: 5.5, first: 3 }],
+  guns: {
+    core: { gun: twin(15, -12.5, 1) },
+    'gun-left': { gun: twin(-40, -24.6, 7.1, 1.8) },
+    'gun-right': { gun: twin(40, -24.6, 7.1, 1.8) },
+  },
   stages: stages(
     [
       volley.aimed('gun-left', 1.7, 2, 8, BLUE, 0.8),

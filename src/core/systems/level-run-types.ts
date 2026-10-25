@@ -1,6 +1,7 @@
 import type { LogicalScreen } from '../content/game-definition';
 import type { GameLevel } from '../content/game-level';
 import type { EnemyKindDefinition } from '../entities/enemy';
+import type { PlayfieldEye } from '../entities/muzzle';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { BonusRules } from './bonus-world';
 import type { BossFightRules, BossKindDefinition } from './boss-fights';
@@ -76,6 +77,8 @@ export interface LevelRunOptions {
   readonly bounds: FlightBounds;
   /** Enemies and shots this far outside the playfield are removed. */
   readonly cullMargin: number;
+  /** The camera's eye, from which enemy shots are seen leaving their raised muzzles. */
+  readonly eye?: PlayfieldEye;
   readonly maxEnemyAge: number;
   /** Longest wait for the last enemies once the scroll has ended (P06-R03). */
   readonly endWait: number;

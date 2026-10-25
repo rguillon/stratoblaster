@@ -100,6 +100,8 @@ export interface TurretSpec {
   readonly neon: Rgb;
   /** Which side of the dome its hatch is on (+1: +X, -1: -X; default +1). */
   readonly hatch?: number;
+  /** What its muzzles fire (`EnemyParts.muzzle`), `gun` by default. */
+  readonly fires?: string;
 }
 
 /** The turret's domed, faceted housing (a lathe profile, in units of its radius). */
@@ -115,7 +117,11 @@ const TURRET_DOME = [
  * A gun turret centred on `at` (P07-R05): a faceted dome, a neon ring around its foot and its
  * barrels pointing along `yaw`, a charge light at every muzzle.
  */
-export function turret({ hull, neon, charge }: EnemyParts, at: Vec3, spec: TurretSpec): void {
+export function turret(
+  { hull, neon, charge, muzzle }: EnemyParts,
+  at: Vec3,
+  spec: TurretSpec,
+): void {
   const r = spec.radius;
   const yaw = spec.yaw ?? 0;
   const dome = TURRET_DOME.map(([u, v]) => [u * r * 0.8, v * r] as const);
@@ -131,8 +137,9 @@ export function turret({ hull, neon, charge }: EnemyParts, at: Vec3, spec: Turre
     const foot: Vec3 = [across, r * 0.28, r * 0.3];
     const barrel = { at: turned(at, foot, 0, pitch, yaw), pitch, yaw };
     hull.cylinder(spec.bore, length, 6, H.dark, barrel, spec.bore * 0.85);
-    const muzzle = { at: turned(at, foot, length, pitch, yaw), pitch, yaw };
-    charge.cylinder(spec.bore * 1.05, spec.bore * 0.6, 6, WHITE, muzzle);
+    const light = { at: turned(at, foot, length, pitch, yaw), pitch, yaw };
+    charge.cylinder(spec.bore * 1.05, spec.bore * 0.6, 6, WHITE, light);
+    muzzle(turned(at, foot, length + spec.bore * 0.6, pitch, yaw), spec.fires);
   }
   dressing(hull, at, spec);
 }

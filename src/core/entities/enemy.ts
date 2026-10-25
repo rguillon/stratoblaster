@@ -1,4 +1,5 @@
 import type { Random } from '../math/rng';
+import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
 import type { ShotTarget } from './shot-target';
 
 /**
@@ -38,10 +39,11 @@ export interface EnemyLaserSpec {
 
 /**
  * What a laser leaves from and follows (an enemy, or a part of a boss): it fires along
- * `heading` from `emitter`, and stops once its owner is gone or has no health left.
+ * `heading` from `emitter` (as the camera sees it when it is raised above the playfield,
+ * {@link EnemyContext.seen}), and stops once its owner is gone or has no health left.
  */
 export interface LaserOwner {
-  readonly emitter: { readonly x: number; readonly y: number };
+  readonly emitter: { readonly x: number; readonly y: number; readonly height?: number };
   readonly heading: number;
   readonly gone: boolean;
   readonly health: number;
@@ -69,6 +71,11 @@ export interface EnemyContext {
    * their attack timers this much faster (a level's difficulty, P06-R08).
    */
   readonly fireRate: number;
+  /**
+   * Where shots must start to look as if they left from `point`, above the playfield (a gun's
+   * muzzle, see `muzzle.ts`): the point of the playfield the camera sees behind it.
+   */
+  seen(point: RaisedPoint): { x: number; y: number };
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void;
   fireMissile(x: number, y: number, heading: number, spec: EnemyMissileSpec): void;
   /** Fires a laser from `owner`'s emitter (e.g. {@link Enemy.emitter}), which it follows. */
@@ -136,6 +143,11 @@ export abstract class Enemy implements ShotTarget, LaserOwner {
     this.maxHealth = stats.health;
     this.model = stats.model;
     this.points = stats.points;
+  }
+
+  /** Where `muzzle`, one of its guns' (see `muzzle.ts`), is now: it turns with its nose. */
+  place(muzzle: Muzzle): RaisedPoint {
+    return muzzlePoint(this, muzzle);
   }
 
   /** Where its laser leaves from. Defaults to the nose, one radius ahead of the centre. */

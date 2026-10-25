@@ -5,6 +5,7 @@ import {
   type EnemyStats,
   type LaserOwner,
 } from './enemy';
+import { muzzlePoint, type Muzzle, type RaisedPoint } from './muzzle';
 import type { ShotTarget } from './shot-target';
 
 /**
@@ -45,6 +46,18 @@ export interface BossStats extends EnemyStats {
   readonly death: { readonly seconds: number; readonly every: number };
   /** Chance its core drops a bonus when it is destroyed; the game's rule when omitted. */
   readonly coreDropChance?: number;
+  /**
+   * It rolls into its sideways moves (phase 7 review): up to `maxDeg` at `fullSpeed` px/s
+   * across, easing towards it `easePerSec` of the way a second. It does not roll when omitted.
+   */
+  readonly roll?: BossRoll;
+}
+
+/** How a boss rolls into its sideways moves (see {@link BossStats.roll}). */
+export interface BossRoll {
+  readonly maxDeg: number;
+  readonly fullSpeed: number;
+  readonly easePerSec: number;
 }
 
 /** Coming in (no damage taken), fighting, or blowing up. */
@@ -54,6 +67,11 @@ export type BossState = 'entering' | 'fighting' | 'dying';
 export interface BossPiece extends ShotTarget, Omit<LaserOwner, 'health'> {
   /** Seconds since it last took damage (for the hit flash); Infinity before. */
   readonly sinceHit: number;
+  /**
+   * Where one of its guns' muzzles is now, `muzzle` given from the boss's centre (as the boss
+   * is drawn, its orbiting parts at a spin of 0): it rolls with the boss, and turns with it.
+   */
+  place(muzzle: Muzzle): RaisedPoint;
 }
 
 /** Laser owners fire along their heading from one radius ahead of their centre. */
@@ -120,6 +138,10 @@ export class BossPart implements BossPiece, DropSource {
     return emitterOf(this);
   }
 
+  place(muzzle: Muzzle): RaisedPoint {
+    return muzzlePoint(this.boss, muzzle, this.spec.orbits ? this.boss.spin : 0);
+  }
+
   /** Destroys it at once, whatever the boss is doing (its death, a debug key). */
   destroy(): void {
     this.#health = 0;
@@ -168,6 +190,10 @@ export class BossCore implements BossPiece {
   get emitter(): { readonly x: number; readonly y: number } {
     return emitterOf(this);
   }
+
+  place(muzzle: Muzzle): RaisedPoint {
+    return muzzlePoint(this.boss, muzzle);
+  }
 }
 
 /**
@@ -195,6 +221,9 @@ export abstract class Boss extends Enemy {
   pause = 0;
   /** How far its orbiting parts have turned, in radians, clockwise on screen. */
   spin = 0;
+  /** How far it is rolled into its sideways move, in radians (see `MuzzleBody.roll`). */
+  roll = 0;
+  #lastX: number;
   #coreHealth: number;
   #dyingFor = 0;
   #blasts = 0;
@@ -211,6 +240,7 @@ export abstract class Boss extends Enemy {
     this.groundSpeed = stats.groundSpeed;
     this.dropChance = stats.coreDropChance;
     this.#coreHealth = stats.health;
+    this.#lastX = x;
     this.parts = stats.parts.map((spec, i) => new BossPart(spec, i, this));
     this.core = new BossCore(this);
     this.#place();
@@ -273,6 +303,7 @@ export abstract class Boss extends Enemy {
       this.move(ctx, dt);
     }
     this.#place();
+    this.#roll(dt);
     if (this.state !== 'fighting' || this.pause > 0) {
       this.pause = Math.max(0, this.pause - dt);
       this.charge = 0;
@@ -332,6 +363,17 @@ export abstract class Boss extends Enemy {
       this.#blasts++;
     }
     if (this.#dyingFor >= seconds) this.health = 0;
+  }
+
+  /** Rolls into its move across the screen since the last step, easing in and out. */
+  #roll(dt: number): void {
+    const rule = this.stats.roll;
+    const vx = dt > 0 ? (this.x - this.#lastX) / dt : 0;
+    this.#lastX = this.x;
+    if (!rule || dt <= 0) return;
+    const max = (rule.maxDeg * Math.PI) / 180;
+    const target = Math.max(-max, Math.min(max, (vx / rule.fullSpeed) * max));
+    this.roll += (target - this.roll) * Math.min(1, rule.easePerSec * dt);
   }
 
   #place(): void {

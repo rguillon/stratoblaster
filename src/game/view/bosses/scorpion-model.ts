@@ -263,6 +263,7 @@ export function buildScorpion(scene: Scene): EnemyModel {
       mast(p, [-6, 6, 12], 6, YELLOW);
       // The core's guns: a charge light at the front of the head.
       p.charge.cylinder(1.8, 3, 6, WHITE, { at: [0, 2, 23], pitch: QUARTER }, 0.8);
+      p.muzzle([0, 2, 26]);
       for (const s of SIDES) {
         socket(p.hull, [s * 40, 3.5, 22], 7, 1);
         p.reactor([s * 9, 2, -28], 2.8);
@@ -276,7 +277,7 @@ export function buildScorpion(scene: Scene): EnemyModel {
  * A claw cannon (P07-R05): a knuckle, two jaws open to the front, a cannon between them, and the
  * rams that work the jaws. The left (+X) claw is the bigger one, a fiddler crab's.
  */
-function claw({ hull, neon, charge }: EnemyParts, at: Vec3): void {
+function claw({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3): void {
   const s = Math.sign(at[0]);
   const k = s > 0 ? CLAW_SCALE.left : CLAW_SCALE.right;
   // Turned a little towards the centre line, so the claws close in front of the head.
@@ -303,10 +304,11 @@ function claw({ hull, neon, charge }: EnemyParts, at: Vec3): void {
   const barrel = { at: put(0, 2.5, 0), pitch: QUARTER, yaw: place.yaw };
   hull.cylinder(2.4, length, 6, H.dark, barrel, 2);
   charge.cylinder(2.2, 1.6, 6, WHITE, { ...barrel, at: put(0, 2.5, length) }, 1.4);
+  muzzle(put(0, 2.5, length + 1.6));
 }
 
 /** The stinger (P07-R05): a bulb hanging from the tail's tip, its laser emitter at the front. */
-function stinger({ hull, neon, charge }: EnemyParts, at: Vec3): void {
+function stinger({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3): void {
   const place = { at: offset(at, 0, STINGER_Y, 0), pitch: STINGER_TILT };
   hull.loft(POD_SECTION, STINGER, H.panel, place);
   neon.box([7.5, 0.6, 1], YELLOW, {
@@ -316,4 +318,5 @@ function stinger({ hull, neon, charge }: EnemyParts, at: Vec3): void {
   // Brightens through the laser's warning, full while it fires.
   const tip = along(place.at, STINGER_TILT, -0.5, 11);
   charge.lathe(STINGER_EMITTER, 6, WHITE, { at: tip, pitch: QUARTER + STINGER_TILT });
+  muzzle(along(tip, QUARTER + STINGER_TILT, 5.5, 0), 'laser');
 }

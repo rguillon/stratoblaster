@@ -1,5 +1,5 @@
 import { Enemy, type EnemyContext } from '../../../core/entities/enemy';
-import { headingTo } from '../../../core/systems/projectile-motion';
+import { fireAimed, GunMuzzles } from '../../../core/systems/gun-muzzles';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { Cadence, onPlayfield } from './enemy-helpers';
 
@@ -11,6 +11,8 @@ const CFG = ENEMY_CONFIG.weaver;
  */
 export class Weaver extends Enemy {
   readonly #gun = new Cadence(CFG.fireInterval, CFG.fireInterval / 2);
+  /** One gun per hull, each firing its own bullet. */
+  readonly #hulls = CFG.muzzles.map((muzzle) => new GunMuzzles([muzzle]));
   readonly #startY: number;
 
   constructor(
@@ -33,9 +35,10 @@ export class Weaver extends Enemy {
     this.heading = Math.atan2(this.x - before, -CFG.speed * dt);
     if (!onPlayfield(this, ctx)) return;
     for (let i = this.#gun.tick(dt * ctx.fireRate); i > 0; i--) {
-      for (const side of [-1, 1]) {
-        const x = this.x + side * CFG.hullOffset;
-        ctx.fireBullet(x, this.y, headingTo(x, this.y, ctx.playerX, ctx.playerY), CFG.bullet);
+      for (const hull of this.#hulls) {
+        fireAimed(ctx, hull, this, [1, 0], (x, y, aim) => {
+          ctx.fireBullet(x, y, aim, CFG.bullet);
+        });
       }
     }
     this.charge = this.#gun.progress;

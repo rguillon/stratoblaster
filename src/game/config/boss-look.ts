@@ -20,11 +20,6 @@ export const BOSS_LOOK = {
     sentinel: [0.15, 0.4, 1],
     overlord: [0.65, 0.2, 1],
   } as Readonly<Record<string, Rgb>>,
-  /**
-   * A boss rolls into its sideways moves (phase 7 review): up to `maxDeg` at `fullSpeed` px/s
-   * across (about its fastest sway), easing towards it `easePerSec` of the way a second.
-   */
-  roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
   /** Its charge lights strobe this many times a second while it holds its fire (P07-R04). */
   stageStrobeHz: 6,
   /** A part flashes this colour for `seconds` after a hit (about one frame and a bit). */

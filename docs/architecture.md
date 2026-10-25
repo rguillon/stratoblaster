@@ -97,6 +97,12 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   calls `onStageChange`; at 0 core health it blows up over `death.seconds` (`EnemyContext.explode`)
   before the enemy world removes it as destroyed. Parts may orbit its centre (`spin`). Concrete
   bosses implement `enter`, `move` and `updatePattern`.
+- `core/entities/muzzle.ts`, `core/systems/gun-muzzles.ts` (phase 7 review, D-057): shots leave
+  from a gun's muzzles (offsets from the enemy's centre as seen facing down, and a height), the one
+  furthest along each shot's way, turned with the enemy's heading, a boss's `roll` and its ring's
+  `spin`, then projected onto the playfield along the camera's line of sight
+  (`EnemyContext.seen`, from the `PlayfieldEye` the app gets from `playfieldEye(screen, framing)`).
+  The game's muzzles are the barrel tips its models mark (`EnemyParts.muzzle`).
 - `core/systems/boss-pattern.ts`: a stage's volleys (aimed fans, preset fans, rings / spirals,
   bursts, homing missiles, lasers with their warning, launches), each from a part (it stops with
   that part) or the core; `patternSignature` names what still fires.

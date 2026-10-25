@@ -4,6 +4,7 @@ import type {
   EnemyLaserSpec,
   EnemyMissileSpec,
 } from '../../../core/entities/enemy';
+import type { Muzzle } from '../../../core/entities/muzzle';
 import type { BossPatternSpec, BossVolley } from '../../../core/systems/boss-pattern';
 import { ENEMY_UNIT } from '../enemies';
 
@@ -40,7 +41,62 @@ export interface BossDesign {
   readonly launches?: readonly Launch[];
   /** A ring of bullets some parts burst into when destroyed (the Refinery Titan's tanks). */
   readonly breakRings?: Readonly<Record<string, { count: number; bullet: EnemyBulletSpec }>>;
+  /**
+   * The muzzles of the guns of its core and parts, by piece (a part id or `core`): where their
+   * shots leave from (phase 7 review). Its model draws its barrels' tips there.
+   */
+  readonly guns: Readonly<Record<string, Guns>>;
 }
+
+/**
+ * The muzzles of a piece's guns, from the boss's centre (X right, Y up, and height, px; its
+ * orbiting parts as drawn, at a spin of 0), by the kind of shot they fire: bullets (`gun`), a
+ * `ring` of bullets (the `gun` ones when omitted), `missile`s and `laser`s.
+ */
+export interface Guns {
+  readonly gun?: readonly Muzzle[];
+  readonly ring?: readonly Muzzle[];
+  readonly missile?: readonly Muzzle[];
+  readonly laser?: readonly Muzzle[];
+}
+
+/** Which of a piece's {@link Guns} fire each kind of volley. */
+const FIRED_BY: Readonly<
+  Record<BossVolley['shape']['kind'], (guns: Guns) => readonly Muzzle[] | undefined>
+> = {
+  aimed: (guns) => guns.gun,
+  fan: (guns) => guns.gun,
+  burst: (guns) => guns.gun,
+  ring: (guns) => guns.ring ?? guns.gun,
+  missiles: (guns) => guns.missile,
+  laser: (guns) => guns.laser,
+  launch: () => [],
+};
+
+/** The muzzles `volley` fires from, among its piece's {@link Guns} (none for launches). */
+export function volleyMuzzles(design: BossDesign, volley: BossVolley): readonly Muzzle[] {
+  return FIRED_BY[volley.shape.kind](design.guns[volley.from] ?? {}) ?? [];
+}
+
+/** `muzzles` mirrored left to right, for the gun on the other side. */
+export const mirror = (muzzles: readonly Muzzle[]): Muzzle[] =>
+  muzzles.map(([x, y, h]): Muzzle => [-x, y, h]);
+
+/** Two muzzles side by side at `x ± gap` (or `±x`, a pair either side of the centre line). */
+export const twin = (x: number, y: number, height: number, gap?: number): Muzzle[] =>
+  gap === undefined
+    ? [
+        [x, y, height],
+        [-x, y, height],
+      ]
+    : [
+        [x - gap, y, height],
+        [x + gap, y, height],
+      ];
+
+/** Missile cells in rows and columns, at the `xs` and `ys` given, all `height` high. */
+export const cells = (xs: readonly number[], ys: readonly number[], height: number): Muzzle[] =>
+  xs.flatMap((x) => ys.map((y): Muzzle => [x, y, height]));
 
 /** Phase 5 enemies a boss's part launches (see {@link BossDesign.launches}). */
 export interface Launch {
@@ -62,6 +118,11 @@ export const BOSS_TIMING = {
   entrySpeed: 75,
   /** Speed it eases into its place at, and the distance over which it brakes. */
   brakeDistance: 60,
+  /**
+   * It rolls into its sideways moves (phase 7 review): up to `maxDeg` at `fullSpeed` px/s
+   * across (about its fastest sway), easing towards it `easePerSec` of the way a second.
+   */
+  roll: { maxDeg: 12, fullSpeed: 60, easePerSec: 4 },
 } as const;
 
 /** Enemy bullets in a style of `enemy-look.ts`. */
@@ -132,6 +193,7 @@ export function stats(options: {
     parts: options.parts,
     stagePause: BOSS_TIMING.stagePause,
     death: BOSS_TIMING.death,
+    roll: BOSS_TIMING.roll,
     ...(options.coreDrop === undefined ? {} : { coreDropChance: options.coreDrop }),
   };
 }

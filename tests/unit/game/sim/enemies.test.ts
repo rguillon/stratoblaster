@@ -172,13 +172,15 @@ describe('P05-R05: Weaver', () => {
     }
   });
 
-  it('P05-R05: every 2 s fires a pair of bullets at the player, one from each hull', () => {
+  it("P05-R05: every 2 s fires a pair of bullets at the player, one from each hull's gun", () => {
     const ctx = new RecordingContext();
     const weaver = new Weaver(240, 600);
     run(weaver, ctx, C.weaver.fireInterval / 2 + 0.01);
     expect(ctx.shots).toHaveLength(2);
     const [left, right] = ctx.shots;
-    expect((right?.x ?? 0) - (left?.x ?? 0)).toBeCloseTo(2 * C.weaver.hullOffset);
+    // From the guns on the noses of its hulls, 20 px apart (phase 7 review).
+    const gap = Math.hypot((right?.x ?? 0) - (left?.x ?? 0), (right?.y ?? 0) - (left?.y ?? 0));
+    expect(gap).toBeCloseTo(20);
     for (const shot of ctx.shots) {
       expect(shot.heading).toBeCloseTo(headingTo(shot.x, shot.y, ctx.playerX, ctx.playerY));
     }

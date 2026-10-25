@@ -1,4 +1,5 @@
 import { Enemy, type EnemyContext } from '../../../core/entities/enemy';
+import { GunMuzzles } from '../../../core/systems/gun-muzzles';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { Cadence, DEG } from './enemy-helpers';
 
@@ -14,6 +15,7 @@ type SpinnerState = 'enter' | 'fire' | 'exit';
 export class Spinner extends Enemy {
   state: SpinnerState = 'enter';
   readonly #guns = new Cadence(CFG.fireInterval, 0);
+  readonly #muzzles = new GunMuzzles(CFG.muzzles);
   #firedFor = 0;
 
   constructor(
@@ -53,7 +55,10 @@ export class Spinner extends Enemy {
     this.#firedFor += dt;
     this.charge = 1;
     for (let i = this.#guns.tick(dt * ctx.fireRate); i > 0; i--) {
-      for (const pod of this.pods()) ctx.fireBullet(pod.x, pod.y, pod.heading, CFG.bullet);
+      for (const { heading } of this.pods()) {
+        const { x, y } = this.#muzzles.along(ctx, this, heading);
+        ctx.fireBullet(x, y, heading, CFG.bullet);
+      }
     }
     if (this.#firedFor >= CFG.fireDuration) {
       this.state = 'exit';

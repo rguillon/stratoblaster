@@ -4,6 +4,7 @@ import type {
   EnemyMissileSpec,
   LaserOwner,
 } from '../entities/enemy';
+import { seenOnPlayfield, type PlayfieldEye } from '../entities/muzzle';
 import type { ShotTarget } from '../entities/shot-target';
 import { headingTo, turnTowards } from './projectile-motion';
 
@@ -67,6 +68,11 @@ export interface EnemyShotsOptions {
   readonly height: number;
   /** Shots this far outside the playfield are removed. */
   readonly cullMargin: number;
+  /**
+   * The camera's eye, from which lasers are seen leaving their raised emitters
+   * (`LaserOwner.emitter`); straight below them when omitted.
+   */
+  readonly eye?: PlayfieldEye | undefined;
 }
 
 /** Length of a ray from (x, y) along `heading` to the edge of the playfield grown by `margin`. */
@@ -214,7 +220,8 @@ export class EnemyShots {
 
   #aim(laser: LaserState | undefined): void {
     if (!laser) return;
-    const { x, y } = laser.owner.emitter;
+    const { x: ex, y: ey, height = 0 } = laser.owner.emitter;
+    const { x, y } = seenOnPlayfield(this.options.eye, { x: ex, y: ey, height });
     laser.x = x;
     laser.y = y;
     laser.heading = laser.owner.heading;

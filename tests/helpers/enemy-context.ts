@@ -7,6 +7,11 @@ import type {
   EnemyMissileSpec,
   LaserOwner,
 } from '../../src/core/entities/enemy';
+import {
+  seenOnPlayfield,
+  type PlayfieldEye,
+  type RaisedPoint,
+} from '../../src/core/entities/muzzle';
 import { createRng } from '../../src/core/math/rng';
 
 /** A shot an enemy fired, as recorded by {@link RecordingContext}. */
@@ -31,6 +36,12 @@ export class RecordingContext implements EnemyContext {
   readonly spawned: Enemy[] = [];
   readonly blasts: { x: number; y: number; radius: number }[] = [];
   readonly broken: DropSource[] = [];
+  /** The camera's eye shots are seen from; straight above the playfield when undefined. */
+  eye: PlayfieldEye | undefined = undefined;
+
+  seen(point: RaisedPoint): { x: number; y: number } {
+    return seenOnPlayfield(this.eye, point);
+  }
 
   fireBullet(x: number, y: number, heading: number, spec: EnemyBulletSpec): void {
     this.shots.push({ kind: 'bullet', x, y, heading, spec });

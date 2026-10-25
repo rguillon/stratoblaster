@@ -169,6 +169,7 @@ function drawBody(p: EnemyParts): void {
   for (const s of SIDES) {
     // The core's fan guns, in the wing's leading edge either side of the pod.
     charge.cylinder(1.4, 2.5, 6, WHITE, { at: [s * 15, 1, 10], pitch: QUARTER }, 1);
+    p.muzzle([s * 15, 1, 12.5]);
     socket(hull, [s * 38, 1, 8], 7, 1);
   }
   // The drone bay's mounting frame on the pod's nose.

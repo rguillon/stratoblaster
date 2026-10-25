@@ -2,7 +2,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { OutlinePoint } from '../../../render/geometry/outline';
 import type { EnemyModel } from '../../../render/game-view';
 import { ENEMY_LOOK } from '../../config/enemy-look';
-import { buildEnemyModel } from './enemy-mesh';
+import { buildEnemyModel, type EnemyParts } from './enemy-mesh';
 import {
   around,
   canopyPaint,
@@ -18,6 +18,28 @@ import {
 // basic solids stuck together), bevelled wings whose roots sit inside it.
 const H = ENEMY_LOOK.hull;
 const N = ENEMY_LOOK.neon;
+const WHITE = [1, 1, 1] as const;
+const QUARTER = Math.PI / 2;
+
+/**
+ * A small gun barrel from `at` along `yaw` (0: to the nose), `length` long, a charge light at
+ * its muzzle (phase 7 review: shots leave from the barrels the player sees), marked there.
+ */
+function gunBarrel(
+  { hull, charge, muzzle }: EnemyParts,
+  at: readonly [number, number, number],
+  length: number,
+  yaw = 0,
+): void {
+  const along = (d: number): [number, number, number] => [
+    at[0] + Math.sin(yaw) * d,
+    at[1],
+    at[2] + Math.cos(yaw) * d,
+  ];
+  hull.cylinder(0.55, length, 6, H.dark, { at: [...at], pitch: QUARTER, yaw }, 0.45);
+  charge.cylinder(0.6, 0.8, 6, WHITE, { at: along(length), pitch: QUARTER, yaw });
+  muzzle(along(length + 0.8));
+}
 
 /** P05-R01: the Gnat's body, a flat disc (lathe profile), and a duct around each fan. */
 const GNAT_BODY = [
@@ -114,7 +136,8 @@ const SCOUT_STRIP = [
 
 /** P05-R03: a small delta wing with twin tail booms and a cyan neon strip along each boom. */
 export function buildScout(scene: Scene): EnemyModel {
-  return buildEnemyModel('scout', scene, N.scout, ({ hull, neon, reactor }) => {
+  return buildEnemyModel('scout', scene, N.scout, (p) => {
+    const { hull, neon, reactor } = p;
     const delta = [
       [0, 11],
       [13, -8],
@@ -133,6 +156,8 @@ export function buildScout(scene: Scene): EnemyModel {
       neon.slab(SCOUT_STRIP, [1.6, 2], N.scout, { at: [s * 7, 0.1, 0] });
       reactor([s * 7, 0.3, -15], 1.1);
     }
+    // Its nose gun (phase 7 review).
+    gunBarrel(p, [0, 1.3, 6], 6.5);
   });
 }
 
@@ -178,7 +203,8 @@ const STRAFER_BODY = [
 
 /** P05-R04: a wide, flat flying wing with a row of magenta neon lights along the leading edge. */
 export function buildStrafer(scene: Scene): EnemyModel {
-  return buildEnemyModel('strafer', scene, N.strafer, ({ hull, neon, reactor }) => {
+  return buildEnemyModel('strafer', scene, N.strafer, (p) => {
+    const { hull, neon, reactor } = p;
     hull.bevelSlab(STRAFER_WING, [-0.9, -0.2, 0.9], [1.2, 2.2], H.base, {}, H.panel);
     const paint = canopyPaint([1, 2], H.dark);
     hull.loft(FIGHTER_SECTION, STRAFER_BODY, H.base, {}, { paint });
@@ -188,6 +214,9 @@ export function buildStrafer(scene: Scene): EnemyModel {
         const light = edgeLight([0, 10], [s * 20.5, -1.5], k / 6, 2.5, [2, 0.7]);
         neon.slab(light, [0.85, 1.15], N.strafer);
       }
+      // A gun on each side of the body, pointing out sideways: it flies across the screen
+      // and fires down it from the one facing down (phase 7 review).
+      gunBarrel(p, [s * 4.6, 1.5, 1.5], 3.6, s * QUARTER);
     }
   });
 }
@@ -212,13 +241,16 @@ const WEAVER_STRUT = [
 
 /** P05-R05: a twin-hull catamaran, the two hulls joined by a glowing green neon bar. */
 export function buildWeaver(scene: Scene): EnemyModel {
-  return buildEnemyModel('weaver', scene, N.weaver, ({ hull, neon, reactor }) => {
+  return buildEnemyModel('weaver', scene, N.weaver, (p) => {
+    const { hull, neon, reactor } = p;
     hull.bevelSlab(WEAVER_STRUT, [-1, -0.4, 0.2], [0.3, 0.6], H.dark);
     const paint = canopyPaint([2, 3], H.dark);
     for (const s of SIDES) {
       const at = { at: [s * 10, 0, 0] as [number, number, number] };
       hull.loft(FIGHTER_SECTION, WEAVER_HULL, H.base, at, { paint });
       reactor([s * 10, 0, -15], 1.5);
+      // A gun along each hull's nose (phase 7 review).
+      gunBarrel(p, [s * 10, 1.9, 8], 7);
     }
     neon.slab(
       WEAVER_STRUT.map(([x, z]): OutlinePoint => [x * 0.88, z * 0.4 - 0.3]),

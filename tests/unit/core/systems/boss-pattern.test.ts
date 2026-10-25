@@ -6,13 +6,14 @@ import {
   type BossVolley,
   type VolleySource,
 } from '../../../../src/core/systems/boss-pattern';
+import { headingTo } from '../../../../src/core/systems/projectile-motion';
 import { Dropper } from '../../../fixtures/sample-enemies';
 import { RecordingContext } from '../../../helpers/enemy-context';
 
 const BULLET = { speed: 50, radius: 2, style: 'dot' };
 const DEG = Math.PI / 180;
 
-/** A piece at (x, y) firing down. */
+/** A piece at (x, y) firing down; its muzzles are offsets from its centre. */
 const piece = (x: number, y: number): VolleySource => ({
   x,
   y,
@@ -20,6 +21,7 @@ const piece = (x: number, y: number): VolleySource => ({
   heading: Math.PI,
   gone: false,
   health: 1,
+  place: ([dx, dy, height]) => ({ x: x + dx, y: y + dy, height }),
 });
 
 /** Steps `pattern` for `seconds` at 60 Hz with every piece at (240, 500) except those in `lost`. */
@@ -98,11 +100,53 @@ describe('BossPattern', () => {
     expect(ctx.spawned).toHaveLength(1);
   });
 
-  it('P07-R04: the volleys of a destroyed part stop; a muzzle offsets where they leave', () => {
+  it('P07-R04: the volleys of a destroyed part stop', () => {
     const shape = { kind: 'aimed', count: 1, spacingDeg: 0, bullet: BULLET } as const;
-    const pattern = new BossPattern([{ ...volley(shape, 1, 'gun'), muzzle: [5, -10] }]);
-    expect(fire(pattern, 1).shots[0]).toMatchObject({ x: 245, y: 490 });
+    const pattern = new BossPattern([volley(shape, 1, 'gun')]);
+    expect(fire(pattern, 1).shots[0]).toMatchObject({ x: 240, y: 500 });
     expect(fire(new BossPattern(pattern.volleys), 3, ['gun']).shots).toHaveLength(0);
+  });
+
+  it('phase 7 review: bullets leave from the muzzle facing their way, side by side ones in turn', () => {
+    const ring = { kind: 'ring', count: 2, turnDeg: 0, bullet: BULLET } as const;
+    const muzzles = [
+      [0, -10, 0],
+      [0, 10, 0],
+    ] as const;
+    const ctx = fire(new BossPattern([{ ...volley(ring), muzzles }]), 1);
+    // Down from the front muzzle, up from the back one.
+    expect(ctx.shots.map((s) => s.y)).toEqual([490, 510]);
+    const twin = { kind: 'fan', headingDeg: 0, count: 1, spacingDeg: 0, bullet: BULLET } as const;
+    const sides = [
+      [-3, -10, 0],
+      [3, -10, 0],
+    ] as const;
+    const pairs = fire(new BossPattern([{ ...volley(twin), muzzles: sides }]), 2);
+    expect(pairs.shots.map((s) => s.x)).toEqual([237, 243]);
+  });
+
+  it('phase 7 review: from a raised muzzle, bullets start where the camera sees it, aimed from there', () => {
+    const shape = { kind: 'aimed', count: 1, spacingDeg: 0, bullet: BULLET } as const;
+    const ctx = new RecordingContext();
+    ctx.eye = { x: 240, y: -150, height: 550 };
+    ctx.playerX = 100;
+    const pattern = new BossPattern([{ ...volley(shape), muzzles: [[0, -10, 20]] }]);
+    for (let t = 0; t < 1; t += 1 / 60) pattern.step(ctx, 1 / 60, () => piece(240, 500));
+    const [shot] = ctx.shots;
+    const seen = ctx.seen({ x: 240, y: 490, height: 20 });
+    expect(shot).toMatchObject(seen);
+    expect(seen.y).toBeGreaterThan(510);
+    expect(shot?.heading).toBeCloseTo(headingTo(seen.x, seen.y, 100, 90));
+  });
+
+  it('phase 7 review: a laser follows its piece from its muzzle', () => {
+    const laser = { warningSeconds: 1, firingSeconds: 1, width: 4, style: 'l' };
+    const ctx = fire(
+      new BossPattern([{ ...volley({ kind: 'laser', laser }), muzzles: [[2, -30, 6]] }]),
+      1,
+    );
+    expect(ctx.lasers[0]?.owner.emitter).toEqual({ x: 242, y: 470, height: 6 });
+    expect(ctx.lasers[0]?.owner.heading).toBe(Math.PI);
   });
 
   it('P06-R08, P07-R04: timers run faster with the level fire rate; `first` sets the first one', () => {

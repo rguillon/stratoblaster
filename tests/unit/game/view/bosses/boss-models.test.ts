@@ -4,7 +4,7 @@ import { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { createRng } from '../../../../../src/core/math/rng';
-import { L } from '../../../../../src/game/config/bosses/boss-kit';
+import { BOSS_TIMING, L } from '../../../../../src/game/config/bosses/boss-kit';
 import { BOSS_LOOK } from '../../../../../src/game/config/boss-look';
 import { BOSS_DESIGNS, BOSS_KINDS } from '../../../../../src/game/sim/boss-kinds';
 import { BOSS_MODELS } from '../../../../../src/game/view/bosses/boss-models';
@@ -121,22 +121,13 @@ describe('Boss models', () => {
     expect((ring as TransformNode | undefined)?.rotation.y).toBe(1.25);
   });
 
-  it('phase 7 review: a boss rolls into its sideways moves, and levels out when it stops', () => {
+  it('phase 7 review: the model rolls with the boss into its sideways moves', () => {
     const { boss, model } = shown('reef-warden');
-    const sweep = (dx: number, frames: number) => {
-      for (let i = 0; i < frames; i++) {
-        boss.x += dx;
-        model.sync(boss, 1 / 60);
-      }
-    };
-    sweep(1, 60);
-    // Moving right at 60 px/s: the right wing (the model's -X) dips, about 12°.
-    expect(model.root.rotation.z).toBeGreaterThan(0.18);
-    expect(model.root.rotation.z).toBeLessThanOrEqual((12 * Math.PI) / 180 + 1e-9);
-    sweep(-3, 60);
-    expect(model.root.rotation.z).toBeLessThan(-0.18);
-    sweep(0, 120);
-    expect(Math.abs(model.root.rotation.z)).toBeLessThan(0.01);
+    expect(boss.stats.roll).toEqual(BOSS_TIMING.roll);
+    boss.roll = 0.2;
+    model.sync(boss, 1 / 60);
+    // The right wing on screen (the model's -X) dips: +Z rolls -X down.
+    expect(model.root.rotation.z).toBe(0.2);
   });
 
   it('P07-R05: a playfield offset maps to the model’s nose-down space', () => {

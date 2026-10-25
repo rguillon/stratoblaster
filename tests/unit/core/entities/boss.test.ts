@@ -139,6 +139,46 @@ describe('Boss', () => {
     expect(ring?.y).toBeCloseTo(boss.y);
   });
 
+  it('phase 7 review: it rolls into its sideways moves, and levels out when it stops', () => {
+    const roll = { maxDeg: 12, fullSpeed: 60, easePerSec: 4 };
+    const { boss, ctx } = inPlace();
+    const rolling = new SampleBoss(AREA, { ...SAMPLE_BOSS_STATS, roll });
+    runUntil(rolling, ctx, () => rolling.state === 'fighting');
+    const sweep = (dx: number, frames: number) => {
+      for (let i = 0; i < frames; i++) {
+        rolling.x += dx;
+        boss.x += dx;
+        run(rolling, ctx, 1 / 60);
+        run(boss, ctx, 1 / 60);
+      }
+    };
+    sweep(1, 60);
+    // Moving right at 60 px/s: the side on the right of the screen dips, about 12°.
+    expect(rolling.roll).toBeGreaterThan(0.18);
+    expect(rolling.roll).toBeLessThanOrEqual((12 * Math.PI) / 180 + 1e-9);
+    expect(boss.roll).toBe(0);
+    sweep(-3, 60);
+    expect(rolling.roll).toBeLessThan(-0.18);
+    sweep(0, 120);
+    expect(Math.abs(rolling.roll)).toBeLessThan(0.01);
+  });
+
+  it("phase 7 review: its pieces place their guns' muzzles: rolled with it, turned with their ring", () => {
+    const stats = {
+      ...SAMPLE_BOSS_STATS,
+      parts: [{ ...at(SAMPLE_BOSS_STATS.parts, 0), x: 0, y: 30, orbits: true }],
+    };
+    const boss = new SampleBoss(AREA, stats);
+    expect(boss.core.place([5, -10, 4])).toEqual({ x: boss.x + 5, y: boss.y - 10, height: 4 });
+    boss.spin = Math.PI / 2;
+    const [ring] = boss.parts;
+    const turned = ring?.place([0, 40, 0]);
+    expect(turned?.x).toBeCloseTo(boss.x + 40);
+    expect(turned?.y).toBeCloseTo(boss.y);
+    boss.roll = 0.1;
+    expect(boss.core.place([20, 0, 0]).height).toBeCloseTo(-20 * Math.sin(0.1));
+  });
+
   it('P07-R04: lasers fired from a part or the core leave from in front of it, straight down', () => {
     const boss = new SampleBoss(AREA);
     expect(boss.core.emitter.x).toBeCloseTo(boss.x);

@@ -176,8 +176,9 @@ function drawCore(p: EnemyParts): void {
     neon.box([0.6, 0.4, 8], AMBER, { at: [s * 6, 8, -17] });
     reactor([s * 6, 4, -23], 2.6);
   }
-  // Brightens as the core's next volley charges.
+  // Brightens as the core's next volley charges; its bullets leave from its top.
   charge.lathe(EMITTER, 6, WHITE);
+  p.muzzle([0, 10, 0]);
   drawArmour(p);
 }
 
@@ -220,7 +221,7 @@ export function buildDustDevil(scene: Scene): EnemyModel {
 }
 
 /** A blade pod on the ring (P07-R05): an armoured airfoil, a canopy, a muzzle at each tip. */
-function bladePod({ hull, neon, charge }: EnemyParts, at: Vec3): void {
+function bladePod({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3): void {
   const place = { at, yaw: Math.atan2(at[0], at[2]) };
   hull.bevelSlab(scaled(POD, POD_SCALE), [-3, 0, POD_TOP], [1, 1.8], H.base, place, H.panel);
   neon.slab(POD_LIGHT, [POD_TOP, POD_TOP + 0.3], AMBER, place);
@@ -231,6 +232,11 @@ function bladePod({ hull, neon, charge }: EnemyParts, at: Vec3): void {
     POD_TOP,
     at[2] - x * Math.sin(place.yaw) + z * Math.cos(place.yaw),
   ];
+  // Its bullets leave from the tips, both ways along the ring.
+  for (const side of [-1, 1]) {
+    const [x, , z] = put(side * 14.6 * POD_SCALE, side < 0 ? -1.2 * POD_SCALE : 0);
+    muzzle([x, 0.3, z]);
+  }
   vent(hull, put(-8.5, -2), [6, 3], 3, place.yaw + Math.PI / 2);
   vent(hull, put(8.5, -1.5), [6, 3], 3, place.yaw + Math.PI / 2);
   seam(hull, ...edge(put(-6, -5), put(6, -5)), [POD_TOP, 0.6, 0.4], H.dark);

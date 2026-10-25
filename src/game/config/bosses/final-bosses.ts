@@ -1,4 +1,15 @@
-import { bullet, part, stages, stats, volley, type BossDesign } from './boss-kit';
+import type { Muzzle } from '../../../core/entities/muzzle';
+import {
+  bullet,
+  cells,
+  mirror,
+  part,
+  stages,
+  stats,
+  twin,
+  volley,
+  type BossDesign,
+} from './boss-kit';
 
 /** A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`). */
 const fpart = (...[id, at, radius, health, options = {}]: Parameters<typeof part>) =>
@@ -16,6 +27,18 @@ const GREEN = bullet('green', 180);
 const ORANGE = bullet('orange', 175);
 const BLUE = bullet('blue', 190);
 const PURPLE = bullet('purple', 195);
+
+/*
+ * The guns' muzzles (phase 7 review): the tips of the barrels their models draw, from the boss's
+ * centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+ */
+
+/** The Refinery Titan's right rotary turret's three barrels. */
+const ROTARY: Muzzle[] = [
+  [32, -46.6, 18.8],
+  [34.2, -46.6, 15.8],
+  [29.8, -46.6, 15.8],
+];
 
 /** 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate. */
 export const STORM_PETREL: BossDesign = {
@@ -39,6 +62,12 @@ export const STORM_PETREL: BossDesign = {
   stopFraction: 0.72,
   sway: { amplitude: 45, period: 8 },
   bob: { amplitude: 10, period: 4 },
+  guns: {
+    core: { gun: twin(1.6, -19.3, 16.8) },
+    'pod-left': { gun: twin(-56, -18.8, 14.3, 2.5) },
+    'pod-right': { gun: twin(56, -18.8, 14.3, 2.5) },
+    'missile-rack': { missile: cells([-6.2, 0, 6.2], [36.9, 43.1], 17.3) },
+  },
   stages: stages(
     [
       volley.fan('pod-left', 2, 3, 15, MAGENTA, 0.8),
@@ -81,6 +110,11 @@ export const GULL_MOTHERSHIP: BossDesign = {
     { from: 'hangar-left', kind: 'gnats', count: 3, every: 7, first: 2.5 },
     { from: 'hangar-right', kind: 'gnats', count: 3, every: 7, first: 6 },
   ],
+  guns: {
+    core: { gun: [[0, -69.9, 7]], laser: [[0, -69.9, 7]] },
+    'flak-left': { gun: twin(-28, -46.3, 8.8, 1.6) },
+    'flak-right': { gun: twin(28, -46.3, 8.8, 1.6) },
+  },
   stages: stages(
     [
       volley.aimed('flak-left', 1.9, 2, 8, GREEN, 0.9),
@@ -118,6 +152,21 @@ export const MESA_FORTRESS: BossDesign = {
   stopFraction: 0.74,
   sway: { amplitude: 35, period: 10 },
   bob: { amplitude: 6, period: 5 },
+  guns: {
+    core: {
+      gun: [
+        [8, -42.7, 17.6],
+        [4.1, -44.4, 17.6],
+        [0, -45, 17.6],
+        [-4.1, -44.4, 17.6],
+        [-8, -42.7, 17.6],
+      ],
+    },
+    'lance-left': { laser: [[-58, -51.3, 6]] },
+    'lance-right': { laser: [[58, -51.3, 6]] },
+    'silo-left': { missile: cells([-30.8, -25.2], [29.2, 34.8], 17.3) },
+    'silo-right': { missile: cells([25.2, 30.8], [29.2, 34.8], 17.3) },
+  },
   stages: stages(
     [
       volley.laser('lance-left', 6, 1.4, 2),
@@ -162,6 +211,12 @@ export const REFINERY_TITAN: BossDesign = {
     'tank-left': { count: 12, bullet: ORANGE },
     'tank-right': { count: 12, bullet: ORANGE },
   },
+  guns: {
+    core: { gun: twin(4.5, -35.8, 19) },
+    'turret-left': { gun: mirror(ROTARY) },
+    'turret-right': { gun: ROTARY },
+    'missile-battery': { missile: cells([-5.5, 5.5], [30.5, 38, 45.5], 21.1) },
+  },
   stages: stages(
     [
       volley.ring('turret-left', 0.7, 3, 19, ORANGE, 0.5),
@@ -203,6 +258,18 @@ export const OVERLORD: BossDesign = {
   stopFraction: 0.75,
   sway: { amplitude: 25, period: 11 },
   bob: { amplitude: 6, period: 5 },
+  guns: {
+    core: {
+      gun: twin(7, -39.6, 15.5),
+      ring: [[0, 0, 33.6]],
+      laser: [[0, -38, 14.5]],
+      missile: cells([-6, 6], [30, 38], 10.1),
+    },
+    'laser-left': { laser: [[-78, -34.6, 4]] },
+    'laser-right': { laser: [[78, -34.6, 4]] },
+    'battery-left': { missile: cells([-51, -41], [22.5, 30, 37.5], 14.1) },
+    'battery-right': { missile: cells([41, 51], [22.5, 30, 37.5], 14.1) },
+  },
   stages: stages(
     [
       volley.laser('laser-left', 6.5, 1.4, 2),

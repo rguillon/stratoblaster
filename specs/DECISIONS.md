@@ -671,3 +671,13 @@
 - **Alternatives considered:** restoring the same `LevelRun` in place (the scene, HUD and effects would have to be reset by hand).
 - **Consequences:** the scene is rebuilt on Continue (a short pause while the scenery is generated, as when a level starts).
 - **Status:** Accepted
+
+### D-057 — Shots leave from the barrels, as the camera sees them
+- **Date:** 2026-10-25
+- **Phase:** 7 (review)
+- **Context:** the reviewer saw enemy bullets, lasers and missiles start away from the barrels of their guns. They started at a part's or an enemy's centre (or one radius ahead for lasers), and on the playfield plane, while the models' barrels stand up to ~20 px above it under a camera tilted 35°.
+- **Decision:** a gun has muzzles: offsets from its enemy's centre as seen when it faces down the screen, plus a height (`core/entities/muzzle.ts`). They are game data (`BossDesign.guns` by piece and by what they fire; `ENEMY_CONFIG.*.muzzles`), copied from the barrel tips the models mark (`EnemyParts.muzzle`), and a unit test keeps the two equal. A shot leaves from the muzzle furthest along its way (side-by-side ones in turn, `GunMuzzles`), turned with the enemy's heading, a boss's roll and an orbiting part's spin, then projected along the camera's line of sight onto the playfield (`EnemyContext.seen`, from the `PlayfieldEye` the app takes from the scenery framing); aimed shots are aimed from that point. Lasers project their emitter the same way each step. The boss roll moved from the view into `Boss` (same rule, `BOSS_TIMING.roll`) so the simulation knows it.
+- **Alternatives considered:** drawing bullets at their muzzle's height and letting them sink to the playfield (the shots would not be where they hit for their first frames, and lasers would need sloped beams); moving the models' barrels to the old spawn points (not where a gun is).
+- **Consequences:** the simulation depends on the camera's geometry through `PlayfieldEye` (without one, e.g. in unit tests, shots start straight below their muzzles). Launches (hangars, drone bay) and the Refinery Titan's tank bursts still start at their part's centre.
+- **Status:** Accepted
+

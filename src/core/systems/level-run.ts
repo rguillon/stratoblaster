@@ -77,7 +77,8 @@ export class LevelRun {
     this.track = new ScrollTrack(level.scenery.scrollSpeed, levelLength(level.scenery));
     const random = createRng(options.seed);
     const area = { width: screen.width, height: screen.height, cullMargin };
-    this.enemies = new EnemyWorld({ ...area, maxEnemyAge }, random, level.difficulty);
+    const world = { ...area, maxEnemyAge, eye: options.eye };
+    this.enemies = new EnemyWorld(world, random, level.difficulty);
     this.shots = new ShotWorld(area, options.weapon);
     this.shots.select(options.weapon, options.weaponLevel);
     this.shots.targets = this.#targets;

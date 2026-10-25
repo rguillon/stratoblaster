@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { seenOnPlayfield } from '../../../../src/core/entities/muzzle';
 import { EnemyShots, rayToEdge } from '../../../../src/core/systems/enemy-shots';
 import { Dropper } from '../../../fixtures/sample-enemies';
 
@@ -89,6 +90,15 @@ describe('EnemyShots lasers', () => {
     expect(shots.lasers[0]).toMatchObject({ phase: 'firing', x: 100, y: 490 });
     shots.step(1.5, 0, 0);
     expect(shots.lasers).toHaveLength(0);
+  });
+
+  it('phase 7 review: leave from where the camera sees a raised emitter', () => {
+    const eye = { x: 240, y: -150, height: 550 };
+    const shots = new EnemyShots({ ...OPTIONS, eye });
+    const emitter = { x: 100, y: 480, height: 12 };
+    shots.fireLaser({ emitter, heading: Math.PI, gone: false, health: 1 }, LASER);
+    expect(shots.lasers[0]).toMatchObject(seenOnPlayfield(eye, emitter));
+    expect(shots.lasers[0]?.y).toBeGreaterThan(480);
   });
 
   it('end when their owner is destroyed or gone', () => {
