@@ -2,6 +2,7 @@ import type { PropGeometry, PropModelFactory } from '../../../render/scenery/sce
 import {
   CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
+  JUNGLE_VARIANTS,
   PART_FAMILIES,
   POLAR_VARIANTS,
   variantId,
@@ -12,6 +13,7 @@ import { PROP_IDS } from '../../config/level-zero';
 import { PROP_COLORS as C } from '../../config/prop-look';
 import { WORLD_1_PROP_IDS as W } from '../../config/world-1/props';
 import { WORLD_2_PROP_IDS as W2 } from '../../config/world-2/props';
+import { WORLD_3_PROP_IDS as W3 } from '../../config/world-3/props';
 import { buildCar } from './car-props';
 import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
@@ -46,6 +48,38 @@ import {
   buildRadarDome,
   buildWindTurbine,
 } from './polar-outposts';
+import {
+  buildCanopyCluster,
+  buildCanopyCrown,
+  buildGiantFern,
+  buildJunglePalm,
+  buildMangrove,
+  buildSwampTree,
+} from './jungle-plants';
+import { buildCanopyBuilding } from './jungle-city';
+import { buildGiantDam } from './jungle-dam';
+import {
+  buildLogPile,
+  buildLonghouse,
+  buildRiverDock,
+  buildSawmill,
+  buildStiltHut,
+} from './jungle-homes';
+import { buildGunPit, buildNeonGate, buildRuinAntenna } from './jungle-outposts';
+import {
+  buildCauseway,
+  buildRuinShrine,
+  buildStepPyramid,
+  buildTempleStatue,
+} from './jungle-ruins';
+import {
+  buildBioLab,
+  buildDamPowerPlant,
+  buildPumpingStation,
+  buildSwampPipeline,
+} from './jungle-swamp';
+import { buildSkyBridgeTowers, buildTreetopPlatform } from './jungle-treetop';
+import { buildFishingPlatform, buildLilyPads, buildReeds, buildWaterfall } from './jungle-water';
 import { buildFrostedTree, buildSnowPine, buildSnowyBush } from './polar-plants';
 import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
@@ -123,6 +157,38 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...partModels('polar-tower', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('polar-block', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('mining-complex', POLAR_VARIANTS, buildMiningComplex),
+  // Phase 9: World 3, the Jungle (P09-R06).
+  [W3.canopyCluster]: buildCanopyCluster,
+  [W3.canopyCrown]: buildCanopyCrown,
+  [W3.junglePalm]: buildJunglePalm,
+  [W3.giantFern]: buildGiantFern,
+  [W3.mangrove]: buildMangrove,
+  [W3.swampTree]: buildSwampTree,
+  [W3.reeds]: buildReeds,
+  [W3.lilyPads]: buildLilyPads,
+  [W3.fishingPlatform]: buildFishingPlatform,
+  [W3.stiltHut]: buildStiltHut,
+  [W3.longhouse]: buildLonghouse,
+  [W3.riverDock]: buildRiverDock,
+  [W3.sawmill]: buildSawmill,
+  [W3.logPile]: buildLogPile,
+  [W3.stepPyramid]: buildStepPyramid,
+  [W3.templeStatue]: buildTempleStatue,
+  [W3.ruinShrine]: buildRuinShrine,
+  [W3.causeway]: buildCauseway,
+  [W3.gunPit]: buildGunPit,
+  [W3.neonGate]: buildNeonGate,
+  [W3.ruinAntenna]: buildRuinAntenna,
+  [W3.bioLab]: buildBioLab,
+  [W3.swampPipeline]: buildSwampPipeline,
+  [W3.pumpingStation]: buildPumpingStation,
+  [W3.dam]: buildGiantDam,
+  [W3.powerPlant]: buildDamPowerPlant,
+  [W3.treetopPlatform]: buildTreetopPlatform,
+  [W3.skyBridgeTowers]: buildSkyBridgeTowers,
+  [W3.waterfall]: buildWaterfall,
+  ...partModels('canopy-tower', JUNGLE_VARIANTS, buildCanopyBuilding),
+  ...partModels('canopy-block', JUNGLE_VARIANTS, buildCanopyBuilding),
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),

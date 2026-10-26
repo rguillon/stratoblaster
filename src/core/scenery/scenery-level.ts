@@ -223,6 +223,30 @@ export interface PropLine {
   readonly footprint: number;
   readonly maxSlope: number;
   readonly sections?: readonly string[];
+  /**
+   * Phase 9: the line also crosses water (a pipeline on stilts over a swamp): its pieces stand on
+   * the ground, or at the sea level where the ground is under it.
+   */
+  readonly overWater?: boolean;
+}
+
+/**
+ * A set piece (phase 9: a dam across a lake, a waterfall on a river, a temple): one prop of
+ * `kind` at `z` along the level, at `x` across it or on `path` (its width then across the path), standing
+ * on the ground or, with `onWater`, at the sea level. It is placed first, whatever the slope, and
+ * the buildings and trees keep clear of its `footprint` (a box `footprint` wide each way, or
+ * `[halfX, halfZ]`).
+ */
+export interface Landmark {
+  readonly kind: string;
+  readonly z: number;
+  readonly x?: number;
+  readonly path?: Meander;
+  /** Turn around the vertical axis (radians), added to the path's heading if any. */
+  readonly rotation?: number;
+  readonly scale?: number;
+  readonly footprint: number | readonly [halfX: number, halfZ: number];
+  readonly onWater?: boolean;
 }
 
 /** Buildings of a group cluster together: a low-frequency noise picks the group of each area. */
@@ -264,6 +288,8 @@ export interface PropRules {
   readonly floating?: FloatRules;
   /** Phase 8: lines of props along the level (a pipeline). */
   readonly lines?: readonly PropLine[];
+  /** Phase 9: set pieces at given places (a dam, waterfalls, a temple). */
+  readonly landmarks?: readonly Landmark[];
 }
 
 /**

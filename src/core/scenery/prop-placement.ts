@@ -1,7 +1,7 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import { placeHamlets, placeLoners, type AwaySite, type Building } from './away-placement';
 import { allowed, between, weighted } from './draws';
-import { floatingIn, linePieces } from './float-placement';
+import { fixedPieces, floatingIn } from './float-placement';
 import { lowestUnder, standingHeight } from './ground-fit';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
@@ -96,12 +96,8 @@ export class PropPlacer {
     private readonly seaLevel?: number,
   ) {
     this.#zones = createNoise2D(seed + 3);
-    // Phase 8: lines of props (a pipeline) first, so the buildings keep clear of them.
-    for (const line of rules.lines ?? []) {
-      for (const { placement, footprint } of linePieces(line, field, seaLevel)) {
-        this.#occupy({ placement, halfX: footprint, halfZ: footprint });
-      }
-    }
+    // Phase 9: set pieces, then (phase 8) lines of props first: the rest keeps clear of them.
+    for (const piece of fixedPieces(rules, field, seaLevel)) this.#occupy(piece);
     const mainFirst = [...roads.slots].sort(
       (a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'),
     );

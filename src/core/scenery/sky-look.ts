@@ -19,6 +19,15 @@ export interface SkyLook {
   readonly weather?: Weather;
   /** Strength (0..1) of an aurora in the night haze. */
   readonly aurora?: number;
+  /** Phase 9: strength (0..1) of the lightning of a storm (P09-R05). */
+  readonly lightning?: number;
+  /**
+   * Phase 9: a mist (P09-R04, the 3-1 morning): the fog ends at `fog` of its distance (1 = as
+   * far as usual) and the haze turns `white` (0..1) of the way to the mist's pale colour.
+   */
+  readonly mist?: { readonly fog: number; readonly white: number };
+  /** Phase 9: a tint (RGB factors) on the ambient light, e.g. green under the canopy. */
+  readonly tint?: Rgb;
 }
 
 /**
@@ -39,6 +48,9 @@ export interface SkyBase {
 /** No weather. */
 export const CLEAR: Weather = { kind: 'snow', strength: 0 };
 
+/** The colour a mist turns the haze to (phase 9). */
+export const MIST_COLOR: Rgb = [0.9, 0.92, 0.9];
+
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
   lerp(a[0], b[0], t),
@@ -46,6 +58,14 @@ const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
   lerp(a[2], b[2], t),
 ];
 const scale = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k];
+const times = (c: Rgb, k: Rgb): Rgb => [c[0] * k[0], c[1] * k[1], c[2] * k[2]];
+
+/** The haze of `weather` (phase 9: rain greys it), over `haze`. */
+function weatherHaze(haze: Rgb, weather: Weather): Rgb {
+  const tint = WEATHER_KINDS[weather.kind]?.haze;
+  if (!tint) return haze;
+  return mix(haze, tint.color, tint.share * Math.min(1, Math.max(0, weather.strength)));
+}
 
 /** How far the fog comes in for `weather`: 1 in clear weather, down to its kind's `fogAt1`. */
 export function weatherFog(weather: Weather): number {
@@ -78,10 +98,14 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
   const o = smoothstep(OVERCAST.overcast[0], OVERCAST.overcast[1], look.clouds[0]);
   const clouds = cloudsOf(look, base, preset.clouds);
   const weather = look.weather ?? CLEAR;
-  // The weather brings the end of the haze in, its start only half as much.
-  const fogEnd = preset.fog * weatherFog(weather);
-  const fogStart = (preset.fog * (1 + weatherFog(weather))) / 2;
+  const mist = look.mist ?? { fog: 1, white: 0 };
+  // The weather and the mist bring the end of the haze in, its start only half as much.
+  const near = weatherFog(weather) * mist.fog;
+  const fogEnd = preset.fog * near;
+  const fogStart = (preset.fog * (1 + near)) / 2;
   const cloudColor = clouds[0]?.color ?? preset.clouds.color;
+  const haze = mix(preset.sky.haze, scale(cloudColor, 0.9), OVERCAST.hazeGrey * o);
+  const tint = look.tint ?? [1, 1, 1];
   return {
     sun: {
       ...preset.sun,
@@ -89,12 +113,13 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
       shadowDarkness: lerp(OVERCAST.shadowDarkness, OVERCAST.softShadows, o),
     },
     sky: {
-      haze: mix(preset.sky.haze, scale(cloudColor, 0.9), OVERCAST.hazeGrey * o),
+      haze: mix(weatherHaze(haze, weather), MIST_COLOR, mist.white),
       stops: preset.sky.gradient.map((color, i) => ({ at: SKY_STOPS[i] ?? 0, color })),
       environmentIntensity: preset.sky.environmentIntensity,
     },
     ambient: {
-      ...preset.ambient,
+      sky: times(preset.ambient.sky, tint),
+      ground: times(preset.ambient.ground, tint),
       intensity: preset.ambient.intensity * (1 + OVERCAST.ambientGain * o),
     },
     fog: { start: base.fog.start * fogStart, end: base.fog.end * fogEnd },
@@ -102,6 +127,7 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
     groundLights: preset.groundLights,
     weather,
     aurora: look.aurora ?? 0,
+    lightning: look.lightning ?? 0,
   };
 }
 
@@ -110,9 +136,9 @@ export function atTimeOfDay(look: SkyLook, timeOfDay: TimeOfDay | undefined): Sk
   return timeOfDay ? { ...look, timeOfDay } : look;
 }
 
-/** `look` without its weather (the `weather=0` debug option, P08-R12). */
+/** `look` without its weather, lightning included (the `weather=0` debug option, P08-R12). */
 export function withoutWeather(look: SkyLook): SkyLook {
-  return { ...look, weather: CLEAR };
+  return { ...look, weather: CLEAR, lightning: 0 };
 }
 
 /**

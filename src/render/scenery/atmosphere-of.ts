@@ -51,6 +51,7 @@ export function lookAtmosphere(look: SceneryLook): Atmosphere {
     groundLights: look.props.lightIntensity,
     weather: CLEAR,
     aurora: 0,
+    lightning: 0,
   };
 }
 

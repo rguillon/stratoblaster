@@ -81,7 +81,7 @@ it has blown up. K destroys its next part; the panel shows its stage. The wirefr
 the hit circles of its core and of each part (the ones that shield the core in yellow). e2e
 builds expose `window.__BOSSES_TEST__` (`debug/boss-viewer-test-api.ts`).
 
-## Time of day, clouds and weather (phase 08)
+## Time of day, clouds and weather (phases 08, 09)
 
 ```
 SceneryLook.atmosphere (SkyScript: SkyLook + changes, game data)
@@ -91,6 +91,8 @@ AtmosphereTrack (core/scenery/atmosphere.ts) ── at(distance) ──▶ Atmos
         │                                                          │
 render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
         ├─ cloud layers (cover, colours, haze), WeatherLayer (GPU particles), AuroraLayer
+        ├─ LightningLayer (LightningSchedule from the level's seed → flash, bolt; `flashed`)
+        ├─ RainRings (scenery-stage: rings on the water when the weather kind has some)
         └─ SceneryKit.update (shadow darkness, ground lights); level-scene: sky environment
 ```
 
@@ -104,7 +106,17 @@ render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
 - Weather kinds are data (`config/weather.ts`): particle count at strength 1, fall, wind, streak,
   size, colour, fog at strength 1. `WeatherLayer` draws one mesh of quads per kind, moved on the
   GPU (`weather-material.visual.ts`), and only the first `strength × max` of them.
-- Debug options: `weather=0` and `look=<time of day>` (`AtmosphereOptions`).
+- Phase 9: rain is a kind aligned with its fall (thin streaks), greying the haze, with rings on
+  the water (`RainRings`, a plane at the water level the terrain hides). A look may have a
+  `mist` (fog brought in, haze whitened), an ambient `tint` and `lightning` (0..1):
+  `LightningSchedule` (`core/scenery/lightning.ts`, pure) draws the strikes from the level's seed
+  (4–10 s apart, at most 2 flashes a second), `flashed` brightens the ambient light and the haze
+  up to ×1.8 during a flash, and `LightningLayer` draws a bolt in the low clouds. The renderer
+  asks for the flash at its own clock; nothing in the simulation reads it.
+- Debug options: `weather=0` (lightning included) and `look=<time of day>` (`AtmosphereOptions`).
+- Scenery tools added for the jungle (phase 9): prop lines over water (`PropLine.overWater`) and
+  set pieces at given places (`PropRules.landmarks`: a dam, waterfalls, a temple), placed before
+  everything else, which keeps clear of them (`placeLandmark`).
 - Scenery tools added for the frozen lands: frozen lakes and crevasses in the height field
   (`core/scenery/ice-sculpt.ts`), props floating on the sea and lines of props such as a
   pipeline (`core/scenery/float-placement.ts`), drifting props (`PropField.drift`), crack lines

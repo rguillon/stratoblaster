@@ -1,5 +1,5 @@
 // The changing part of a level's look (phase 8, P08-R04, P08-R05): the time of day, the clouds,
-// the haze, the ground lights and the weather, as plain numbers that blend smoothly from one
+// the haze, the ground lights and the weather (phase 9: rain and lightning too), as plain numbers that blend smoothly from one
 // look to another along the level. Pure; the renderer applies it to the scene every frame.
 
 type Rgb = readonly [number, number, number];
@@ -64,6 +64,8 @@ export interface Atmosphere {
   readonly weather: Weather;
   /** Strength (0..1) of the aurora's curtains in the haze. */
   readonly aurora: number;
+  /** Strength (0..1) of a storm's lightning flashes (P09-R05). */
+  readonly lightning: number;
 }
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
@@ -126,6 +128,7 @@ export function blendAtmosphere(a: Atmosphere, b: Atmosphere, t: number): Atmosp
     groundLights: lerp(a.groundLights, b.groundLights, t),
     weather: blendWeather(a.weather, b.weather, t),
     aurora: lerp(a.aurora, b.aurora, t),
+    lightning: lerp(a.lightning, b.lightning, t),
   };
 }
 

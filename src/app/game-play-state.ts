@@ -53,7 +53,14 @@ export interface GamePlayState {
 
 /** The look of the level where the view is, for the test API (P08). */
 export interface GamePlaySky {
+  /** Kind of the weather falling (`none` when there is none; P08-R05, P09-R05). */
+  readonly weather: string;
   readonly weatherParticles: number;
+  /** Strength of the rain rings on the water, and of the storm's lightning (P09-R05). */
+  readonly rainRings: number;
+  readonly lightning: number;
+  /** How bright the lightning flash is on this frame (0..1). */
+  readonly flash: number;
   readonly aurora: number;
   readonly groundLights: number;
   readonly sunIntensity: number;

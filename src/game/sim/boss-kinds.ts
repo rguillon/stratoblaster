@@ -24,11 +24,21 @@ import { AVALANCHE } from '../config/bosses/world-2/avalanche';
 import { GLACIER_COLOSSUS } from '../config/bosses/world-2/glacier-colossus';
 import { ICE_QUEEN } from '../config/bosses/world-2/ice-queen';
 import { BOREAL_CITADEL } from '../config/bosses/world-2/boreal-citadel';
+import { MANGROVE_CROC } from '../config/bosses/world-3/mangrove-croc';
+import { RIVER_LEVIATHAN } from '../config/bosses/world-3/river-leviathan';
+import { TOUCAN } from '../config/bosses/world-3/toucan';
+import { CANOPY_SPIDER } from '../config/bosses/world-3/canopy-spider';
+import { STONE_IDOL } from '../config/bosses/world-3/stone-idol';
+import { SKY_TEMPLE } from '../config/bosses/world-3/sky-temple';
+import { MOSQUITO } from '../config/bosses/world-3/mosquito';
+import { DAM_BREAKER } from '../config/bosses/world-3/dam-breaker';
+import { JAGUAR } from '../config/bosses/world-3/jaguar';
+import { VERDANT_CROWN } from '../config/bosses/world-3/verdant-crown';
 import { WorldBoss } from './bosses/world-boss';
 
 /**
  * The boss designs, mini and final boss of 1-1, then of 1-2… (P07-R05), then the ten of World 2
- * in the same order (P08-R10).
+ * (P08-R10) and the ten of World 3 (P09-R09) in the same order.
  */
 export const BOSS_DESIGNS: readonly BossDesign[] = [
   REEF_WARDEN,
@@ -51,6 +61,16 @@ export const BOSS_DESIGNS: readonly BossDesign[] = [
   GLACIER_COLOSSUS,
   ICE_QUEEN,
   BOREAL_CITADEL,
+  MANGROVE_CROC,
+  RIVER_LEVIATHAN,
+  TOUCAN,
+  CANOPY_SPIDER,
+  STONE_IDOL,
+  SKY_TEMPLE,
+  MOSQUITO,
+  DAM_BREAKER,
+  JAGUAR,
+  VERDANT_CROWN,
 ];
 
 /** One boss kind per design, its lasers in its own colour. */
