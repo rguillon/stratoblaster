@@ -7,6 +7,7 @@ describe('installTestApi', () => {
     const target: { __GAME_TEST__?: GameTestApi } = {};
     const sent: MenuAction[] = [];
     const advanced: number[] = [];
+    let bombs = 0;
     installTestApi(target, {
       state: () => ({
         screen: 'title',
@@ -20,18 +21,24 @@ describe('installTestApi', () => {
         choice: 0,
         attempt: 0,
       }),
+      highScore: () => 4200,
       loadingProgress: () => [0, 1],
       game: () => undefined,
       send: (a) => sent.push(a),
+      bomb: () => bombs++,
       advance: (seconds) => advanced.push(seconds),
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
       screen: 'title',
       loadingProgress: [0, 1],
       game: null,
+      highScore: 4200,
     });
     target.__GAME_TEST__?.sendAction('confirm');
     expect(sent).toEqual(['confirm']);
+    // P11-R08: `bomb` sets a bomb off, as the bomb key would.
+    target.__GAME_TEST__?.sendAction('bomb');
+    expect([sent, bombs]).toEqual([['confirm'], 1]);
     expect(() => target.__GAME_TEST__?.sendAction('fly' as MenuAction)).toThrow(TypeError);
     target.__GAME_TEST__?.advance(4);
     expect(advanced).toEqual([4]);

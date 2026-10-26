@@ -40,7 +40,15 @@ describe('BossBar', () => {
     const parent = document.createElement('div');
     const hud = new GameHud(document, parent, {
       ship: 'Heavy',
-      texts: { health: 'HP', weapon: () => 'w', destroyed: () => 'd', lives: () => 'l' },
+      texts: {
+        health: 'HP',
+        weapon: () => 'w',
+        destroyed: () => 'd',
+        lives: () => 'l',
+        score: () => 's',
+        highScore: () => 'h',
+        bomb: () => 'b',
+      },
     });
     const frame = {
       health: 100,
@@ -51,6 +59,8 @@ describe('BossBar', () => {
       weaponLevels: 5,
       progress: 0.5,
       destroyed: 0,
+      score: 0,
+      highScore: 0,
     };
     hud.update({ ...frame, boss: FRAME });
     expect(parent.querySelector<HTMLElement>('.boss-bar')?.hidden).toBe(false);

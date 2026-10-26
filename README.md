@@ -23,9 +23,10 @@ An old-school vertical shoot 'em up with modern 3D graphics, running entirely in
 | Move              | Arrows / WASD (by position) | Left stick, D-pad | Drag anywhere             |
 | Shoot (hold)      | Space                       | A, right trigger  | Hold the **Fire** button  |
 | Switch weapon     | E (same key on AZERTY)      |                   |                           |
+| Bomb              | R, Left Shift (by position) | X / Square, LB    | Tap the **Bomb** button   |
 | Back to the title | Esc, Backspace              | B                 | On-screen **Back** button |
 
-Bombs and pause come in later phases (bombs will need a key other than E).
+Pause comes in a later phase.
 
 Debug options (any build): `?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy
 ship. With them, F fast-forwards ×4, ← / → jump 10 s, and an FPS / polygons tile shows.

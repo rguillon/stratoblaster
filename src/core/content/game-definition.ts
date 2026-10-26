@@ -3,6 +3,7 @@ import type { PlayerShipRoster } from '../entities/player-ship';
 import type { WeaponDefinition } from '../entities/weapon';
 import type { BonusRules } from '../systems/bonus-world';
 import type { BossFightRules, BossKindDefinition } from '../systems/boss-fights';
+import type { BombRules } from '../systems/player-bombs';
 import type { HullRules } from '../systems/player-hull';
 import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
@@ -53,8 +54,10 @@ export interface GameDefinition<TView = unknown> {
   readonly bossKinds: readonly BossKindDefinition[];
   /** How boss fights go: the ground's speed change and the health bar (P07-R02, R03). */
   readonly bossFights: BossFightRules;
-  /** Weapon bonuses dropped by destroyed enemies (phase 6 review). */
+  /** Bonuses dropped by destroyed enemies: weapon, life and bomb (phase 6 review, P11-R07). */
   readonly bonuses: BonusRules;
+  /** The player's bombs (GD-32, P11-R05). */
+  readonly bombs: BombRules;
   /** What hurts the player, and its lives (GD-20..GD-22, phase 6 review). */
   readonly hull: HullRules;
   /** Texts of the menu screens. */

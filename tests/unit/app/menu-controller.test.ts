@@ -103,14 +103,77 @@ describe('MenuController', () => {
     controller.finishLoading();
     expect(controller.playDirect('brick', 'c')).toBe(true);
     expect(display.last).toMatchObject({ kind: 'game', level: 'LC', complete: null });
-    controller.completeLevel({ levelId: 'c', destroyed: 1, spawned: 2, outcome: 'complete' });
+    controller.completeLevel({
+      levelId: 'c',
+      destroyed: 1,
+      spawned: 2,
+      outcome: 'complete',
+      score: 0,
+    });
     expect(display.last).toMatchObject({ kind: 'game', complete: { enemies: '1/2' } });
     expect(changes.at(-1)?.levelResult).toEqual({
       levelId: 'c',
       destroyed: 1,
       spawned: 2,
       outcome: 'complete',
+      score: 0,
     });
+  });
+
+  it('P11-R03: a level score above the high score is saved, and the panel and title say so', () => {
+    const storage = new MemoryStorage();
+    storage.set('sample_high_score', '1000');
+    const { controller, display, changes, press } = setup(storage);
+    controller.finishLoading();
+    controller.playDirect('brick', 'c');
+    controller.completeLevel({
+      levelId: 'c',
+      destroyed: 1,
+      spawned: 2,
+      outcome: 'complete',
+      score: 2500,
+    });
+    expect(storage.get('sample_high_score')).toBe('2500');
+    expect(controller.highScore).toBe(2500);
+    expect(changes.at(-1)?.levelResult?.newHighScore).toBe(true);
+    expect(display.last).toMatchObject({
+      kind: 'game',
+      complete: { score: 'Pts 2500', newHighScore: 'Record!' },
+    });
+    // Back to the title: it shows the new high score.
+    controller.tick(1);
+    press('confirm', 'back', 'back');
+    expect(display.last).toMatchObject({ kind: 'title', highScore: 2500 });
+  });
+
+  it('P11-R03: a lower score leaves the high score as it was, and the panel says nothing', () => {
+    const storage = new MemoryStorage();
+    storage.set('sample_high_score', '5000');
+    const { controller, display } = setup(storage);
+    controller.finishLoading();
+    controller.playDirect('brick', 'c');
+    controller.completeLevel({
+      levelId: 'c',
+      destroyed: 1,
+      spawned: 2,
+      outcome: 'over',
+      score: 2500,
+    });
+    expect(storage.get('sample_high_score')).toBe('5000');
+    expect(display.last).toMatchObject({ kind: 'game', complete: { score: 'Pts 2500' } });
+    expect(display.last).not.toMatchObject({ complete: { newHighScore: 'Record!' } });
+    expect(controller.recordScore(5000)).toBe(false);
+    expect(controller.recordScore(6000)).toBe(true);
+    expect(storage.get('sample_high_score')).toBe('6000');
+  });
+
+  it('P11-R03: with an unreadable high score, any new score overwrites it', () => {
+    const storage = new MemoryStorage();
+    storage.set('sample_high_score', 'lots');
+    const { controller } = setup(storage);
+    expect(controller.highScore).toBe(0);
+    expect(controller.recordScore(10)).toBe(true);
+    expect(storage.get('sample_high_score')).toBe('10');
   });
 
   it('only redraws and notifies when something changed', () => {

@@ -991,3 +991,42 @@
   - GD-50 (tougher enemies score more) is tested on the first eleven kinds only: the Phantom (90 HP, 450 points) scores more than its HP suggests, as its cloak makes it harder.
   - The models were only smoke-checked in software rendering; they need a look in `enemies/`.
 - **Status:** Accepted
+
+### D-091 — Phase 11 spec defaults (score, lives, bombs)
+- **Date:** 2026-10-26
+- **Phase:** 11 (spec drafted by the agent at the reviewer's request)
+- **Context:** The reviewer asked the agent to fill the Phase 11 spec. GD-20, GD-32, GD-50 and GD-51 leave the bomb key, bomb supply, bomb effect, extra-life source and score rules open, and GD §2's E key is taken by the weapon switch (D-043).
+- **Decision:**
+  - The score is per level attempt (levels are played one by one, P06-R01). Every enemy destroyed by the player scores its kind's points; a boss part scores 10 % of its boss's points, a boss core its boss's points. The checkpoint keeps the score, and Continue restores it.
+  - The high score is saved to the existing cookie whenever an attempt ends (complete, game over or leaving with Esc), so leaving never loses it.
+  - Bombs: 3 at the start, topped back up to 3 after a lost life, 5 at most. One press fires one bomb for 1 s: 100 damage to every on-screen enemy and boss part (not a shielded core), clears the enemy bullets, missiles and lasers, and makes the player invincible. Keys `KeyR` and `ShiftLeft`, gamepad X and LB, and a touch `BOMB` button.
+  - Extra lives: a rare life bonus (1 %) and an always-dropping life bonus from each mini boss core; bomb bonuses at 3 %. At most one bonus per enemy, so the weapon bonus rate (D-049) barely changes. At the maximum, a pick-up scores points instead.
+- **Alternatives considered:** a score carried across levels (levels are not chained); extra lives from score thresholds (GD-20 asks for dropped bonuses); a bomb that also kills bosses outright (it would trivialise the fights); the E key (D-043).
+- **Consequences:** GD §2's "Special / bomb: E" row is superseded by D-043 and P11-R06. The reviewer may change any default before setting the spec to `Ready`.
+- **Status:** Accepted (reviewer approved the spec, 2026-10-26)
+
+### D-092 — Phase 11 implementation choices
+- **Date:** 2026-10-26
+- **Phase:** 11
+- **Context:** The Phase 11 spec (D-091) leaves some technical points open: where the bomb button lives, how the life and bomb draws affect the weapon bonuses, what "on screen" means for the shots a bomb clears, and when the high score is checked.
+- **Decision:**
+  - Bonus kinds: `BonusWorld` always makes the weapon draw on the main bonus source (`seed + 1`), and draws life and bomb from a source of their own (`seed + 2`, `LevelRun`). The weapon bonuses' draws stay exactly as before Phase 11. A life or bomb bonus replaces the weapon bonus of the same enemy (at most one bonus).
+  - Bombs: the damage lands once, on every shot target on screen when the bomb goes off (the same list the player's shots aim at, so a shielded core is left out). Every enemy shot is cleared on every step while the bomb lasts, not only at the start, and the player cannot be hit meanwhile. The ship does not blink: it is not the GD-22 invincibility.
+  - Score: `EnemyWorld.score` holds the attempt's score (enemy points, boss part points from `BossStats.partPoints`, bonus points at the most). After a Continue it starts from `LevelCheckpoint.score`.
+  - High score: `MenuController.recordScore` saves it whenever an attempt ends. That covers `completeLevel` (complete or game over, before Continue is offered, which also sets `LevelResult.newHighScore` for the panel) and `GameSession.end` (Esc, Continue, leaving).
+  - Touch bomb button: part of the HUD, which updates every frame (it shows the bombs left), not of the game screen overlay, which redraws only on menu changes. It is the only HUD element that takes taps. Presses made before a level starts are cleared, so a bomb key pressed on a menu does not carry into the level.
+  - Test API: the game state also gives `score`, `bombs`, `enemyShots` and `bonusKinds`, the top level gives `highScore`, and `sendAction('bomb')` presses the bomb.
+- **Measured** (P11-R07, simulated play-through of World 1, seed 606: firing all the time, flying to the weapon bonuses only, no damage; weapon bonuses dropped with the D-049 rules vs. with P11's, then life / bomb bonuses dropped):
+  - 1-1: 24 vs 24 (0 %), 2 / 8
+  - 1-2: 29 vs 29 (0 %), 5 / 10
+  - 1-3: 34 vs 34 (0 %), 5 / 10
+  - 1-4: 43 vs 41 (−5 %), 7 / 11
+  - 1-5: 50 vs 47 (−6 %), 9 / 12
+  - The life counts include each mini boss's. The simulator is not D-049's (that one was not kept), so the absolute counts differ from its 8 to 23; the comparison is between the same simulator with and without the new rules.
+- **Alternatives considered:**
+  - Drawing every kind from one source: the shifted draws moved the weapon bonus counts by up to 32 %.
+  - Clearing the shots only when the bomb goes off: shots fired during the bomb would hit right after it.
+  - The bomb button in the game screen overlay: it could not show the bombs left without redrawing the overlay every frame.
+- **Consequences:**
+  - A player shooting most enemies gets more life and bomb bonuses than the spec's estimate of about one extra life per level. The levels have more kills than that estimate assumed, and the lives and bombs then often sit at their most, scoring points instead. The chances are tunables (`game/config/bonuses.ts`).
+- **Status:** Accepted

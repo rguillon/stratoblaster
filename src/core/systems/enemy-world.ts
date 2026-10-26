@@ -57,7 +57,10 @@ export class EnemyWorld {
   destroyed: Enemy[] = [];
   /** Pieces of enemies (a boss's parts) the player's shots destroyed during the last step. */
   brokenParts: DropSource[] = [];
-  /** Enemies destroyed and points scored since the world was created. */
+  /**
+   * Enemies destroyed and points scored since the world was created: each enemy's points, and
+   * each boss part's (P11-R01). The run adds its bonus points to the score.
+   */
   kills = 0;
   score = 0;
   /** Enemies added (their parts and launches included) and their total health, since then. */
@@ -104,6 +107,7 @@ export class EnemyWorld {
       breakPart: (part) => {
         this.blasts.push({ kind: 'enemy', x: part.x, y: part.y, radius: part.radius });
         this.brokenParts.push(part);
+        this.score += part.points ?? 0;
       },
     };
   }

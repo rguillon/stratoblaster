@@ -2,6 +2,8 @@
 export interface HullRules {
   /** Lives at the start of a level (GD-20). */
   readonly lives: number;
+  /** Most lives the player can have with life bonuses (P11-R07); `lives` when omitted. */
+  readonly maxLives?: number;
   /** Seconds the ship cannot be hurt after a hit (GD-22). */
   readonly invincibleSeconds: number;
   /** Radius of the ship's hitbox: small, much smaller than its model (GD-21). */
@@ -54,6 +56,13 @@ export class PlayerHull {
     if (this.lives <= 0) return 'gameOver';
     this.health = this.maxHealth;
     return 'lifeLost';
+  }
+
+  /** A life bonus (P11-R07): one more life, up to the most. Returns whether it was added. */
+  addLife(): boolean {
+    if (this.out || this.lives >= (this.rules.maxLives ?? this.rules.lives)) return false;
+    this.lives++;
+    return true;
   }
 
   step(dt: number): void {

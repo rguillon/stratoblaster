@@ -191,6 +191,32 @@ function startDebugLevel(
 }
 
 /**
+ * The game session: its levels' results go to the menus, and its scores to the high score
+ * (P11-R03). `menu` is read when they come, once it exists.
+ */
+function createSession(
+  engine: AbstractEngine,
+  game: GameDefinition<GameView>,
+  options: AppOptions,
+  menu: () => MenuController,
+): GameSession {
+  return new GameSession(
+    engine,
+    game,
+    options,
+    (play) => {
+      menu().completeLevel(play.run.result);
+    },
+    {
+      highScore: () => menu().highScore,
+      record: (score) => {
+        menu().recordScore(score);
+      },
+    },
+  );
+}
+
+/**
  * Wires the layers together (ENG-11): loads the menu scenes behind a loading screen, then
  * runs the menus (P01-R01..R15) and the levels (P06) in Babylon's render loop with a
  * fixed-step clock (ENG-100).
@@ -204,9 +230,7 @@ export function startApp(
   const shipIds = game.playerShips.ships.map((s) => s.id);
   const { input, stop } = createInput(options);
   let scenes: MenuScenes | undefined;
-  const session: GameSession = new GameSession(engine, game, options, (play) => {
-    menu.completeLevel(play.run.result);
-  });
+  const session = createSession(engine, game, options, () => menu);
   const { controls } = session;
   const { menu, overlay } = createMenu(game, options, { menu: input, controls }, (state) => {
     syncScenes(scenes, state, shipIds);

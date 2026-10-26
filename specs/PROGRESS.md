@@ -15,6 +15,7 @@
 | 8 | `phases/phase-08-world-2.md` | ✅ Validated | `phase-08` | 99.26% lines | 2026-10-25 |
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
 | 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
+| 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -122,3 +123,5 @@
 - 2026-10-26 — 10 — Review fix: World 5 removed from the specs and the code, the level grid is 4 × 5 (D-089); still awaiting review.
 - 2026-10-26 — 10 — Review fix: ten new enemy kinds (five veteran, five elite, some with moving parts; P05-R13 to P05-R24), in the World 3 and World 4 waves (D-090); still awaiting review.
 - 2026-10-26 — 10 — Validated: full gate green (1384 unit tests, 99.42% lines, 87% branches, 88 e2e); squash-merged into `main`, tagged `v0.10.0`.
+- 2026-10-26 — 11 — Spec drafted by the agent at the reviewer's request and approved (D-091). Implemented score, high score, checkpoint score, bombs (R / Left Shift / X / LB / touch), life and bomb bonuses (D-092); light verification green (typecheck, build, 95 e2e); awaiting review.
+- 2026-10-26 — 11 — Validated: full gate green (1432 unit tests, 99.42% lines, 87.18% branches, 95 e2e); squash-merged into `main`, tagged `v0.11.0`.
