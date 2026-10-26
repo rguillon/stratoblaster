@@ -16,8 +16,11 @@ import {
   WORLD_2_PROPS,
 } from '../../../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS, WORLD_3_PROPS } from '../../../../../src/game/config/world-3/props';
+import * as W4 from '../../../../../src/game/config/world-4/props';
+import { PLUME_KINDS } from '../../../../../src/config/plumes';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
+import type { PropRules } from '../../../../../src/core/scenery/scenery-level';
 
 function extent(geo: ColoredGeometry) {
   const xs = geo.positions.filter((_, i) => i % 3 === 0);
@@ -39,6 +42,22 @@ const PROP_GROUPS = {
   science: ['radar-dish', 'antenna-mast', 'observatory'],
   homes: ['cube-home', 'dome-home', 'stilt-pod'],
 };
+
+/** The kinds of `rules` that need room: its buildings, plants and floating props. */
+const placedKinds = ({ groups, trees, floating }: PropRules) => [
+  ...groups.flatMap((g) => g.kinds),
+  ...trees,
+  ...(floating?.kinds ?? []),
+];
+/** Triangles of a prop model, its structure and its lights. */
+const triangles = (id: string) => {
+  const model = PROP_MODELS[id]?.();
+  return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
+};
+/** The heaviest hand-made Level Zero prop (the range of the earlier props, D-031). */
+const heaviest = Math.max(
+  ...[...PROP_GROUPS.industrial, ...PROP_GROUPS.science, ...PROP_GROUPS.homes].map(triangles),
+);
 
 const variants = (kind: string) =>
   Array.from({ length: kind.startsWith('city') ? CITY_VARIANTS : INDUSTRIAL_VARIANTS }, (_, i) =>
@@ -73,17 +92,12 @@ describe('prop models', () => {
     ]);
     // 17 hand-made models, 9 more for World 1 (phase 6), 5 families of 16 buildings made of
     // parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3 families of 8; for
-    // World 3 (phase 9), 29 hand-made models and 2 families of 8.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 5 * 16 + 6 + 22 + 3 * 8 + 29 + 2 * 8);
+    // World 3 (phase 9), 29 hand-made models and 2 families of 8; for World 4 (phase 10), 31
+    // hand-made models.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 80 + 6 + 22 + 24 + 29 + 16 + 31);
   });
 
   it('P06-R06: desert homes, outposts and plants, as light as the Level Zero props (D-031)', () => {
-    const triangles = (id: string) => {
-      const model = PROP_MODELS[id]?.();
-      return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
-    };
-    const handMade = PROP_GROUPS.industrial.concat(PROP_GROUPS.science, PROP_GROUPS.homes);
-    const heaviest = Math.max(...handMade.map(triangles));
     for (const id of Object.values(WORLD_1_PROP_IDS)) {
       expect(PROP_MODELS[id], id).toBeDefined();
       expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
@@ -163,16 +177,10 @@ describe('prop models', () => {
 });
 
 describe('World 2 prop models', () => {
-  const triangles = (id: string) => {
-    const model = PROP_MODELS[id]?.();
-    return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
-  };
   const polar = (family: PartFamily) =>
     Array.from({ length: POLAR_VARIANTS }, (_, i) => variantId(family, i + 1));
 
   it('P08-R07: every new prop is as light as the hand-made props of the earlier levels (D-031)', () => {
-    const handMade = PROP_GROUPS.industrial.concat(PROP_GROUPS.science, PROP_GROUPS.homes);
-    const heaviest = Math.max(...handMade.map(triangles));
     for (const id of Object.values(WORLD_2_PROP_IDS)) {
       expect(PROP_MODELS[id], id).toBeDefined();
       expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
@@ -205,12 +213,7 @@ describe('World 2 prop models', () => {
   });
 
   it('P08-R07: each building and floating prop fits in its footprint at its largest scale', () => {
-    const kinds = [
-      ...WORLD_2_PROPS.groups.flatMap((g) => g.kinds),
-      ...WORLD_2_PROPS.trees,
-      ...(WORLD_2_PROPS.floating?.kinds ?? []),
-    ];
-    for (const kind of kinds) {
+    for (const kind of placedKinds(WORLD_2_PROPS)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
@@ -238,16 +241,8 @@ describe('World 2 prop models', () => {
 });
 
 describe('World 3 props (P09-R06)', () => {
-  const triangles = (id: string) => {
-    const model = PROP_MODELS[id]?.();
-    return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
-  };
   const jungle = (family: PartFamily) =>
     Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1));
-  /** The heaviest hand-made Level Zero prop (the range of the earlier props, D-031). */
-  const heaviest = Math.max(
-    ...[...PROP_GROUPS.industrial, ...PROP_GROUPS.science, ...PROP_GROUPS.homes].map(triangles),
-  );
   const CANOPY = [WORLD_3_PROP_IDS.canopyCluster, WORLD_3_PROP_IDS.canopyCrown];
 
   it('P09-R06: each new prop stays under the triangle budget; the canopy crowns lighter still', () => {
@@ -263,12 +258,7 @@ describe('World 3 props (P09-R06)', () => {
   });
 
   it('P09-R06: each building, plant and floating prop fits in its footprint at its largest scale', () => {
-    const kinds = [
-      ...WORLD_3_PROPS.groups.flatMap((g) => g.kinds),
-      ...WORLD_3_PROPS.trees,
-      ...(WORLD_3_PROPS.floating?.kinds ?? []),
-    ];
-    for (const kind of kinds) {
+    for (const kind of placedKinds(WORLD_3_PROPS)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
@@ -293,5 +283,58 @@ describe('World 3 props (P09-R06)', () => {
       expect(Math.min(...xs), id).toBeCloseTo(-7.5, 1);
       expect(Math.max(...xs), id).toBeCloseTo(7.5, 1);
     }
+  });
+});
+
+describe('World 4 props (P10-R08)', () => {
+  const W = W4.WORLD_4_PROP_IDS;
+  const { groups, trees, floating } = W4.WORLD_4_PROPS;
+  const ids = (rules: readonly { readonly id: string }[]) => rules.map((r) => r.id);
+  const xs = (id: string) =>
+    (PROP_MODELS[id]?.().structure.positions ?? []).filter((_, i) => i % 3 === 0);
+  const FAR = { structure: { positions: [Infinity], indices: [], colors: [] }, lights: undefined };
+  /** How far a model reaches from its centre, its lights (furnace mouths, neon) included. */
+  const reach = (id: string) => {
+    const { structure, lights = structure } = PROP_MODELS[id]?.() ?? FAR;
+    return Math.max(extent(structure).radius, extent(lights).radius);
+  };
+
+  it('P10-R08: each new prop stays under the triangle budget; each group and scatter has rules', () => {
+    for (const id of Object.values(W)) expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
+    expect(ids(groups)).toEqual(expect.arrayContaining(Object.values(W4.WORLD_4_GROUPS)));
+    expect(ids(trees)).toEqual(expect.arrayContaining(Object.values(W4.VOLCANIC_SCATTER).flat()));
+    expect(ids(floating?.kinds ?? [])).toContain(W.seaSteam);
+  });
+
+  it('P10-R08: each building, plant and floating prop fits in its footprint at its largest scale', () => {
+    for (const kind of placedKinds(W4.WORLD_4_PROPS)) {
+      expect(reach(kind.id) * kind.scale[1], kind.id).toBeLessThanOrEqual(kind.footprint);
+    }
+  });
+
+  it('P10-R08: vents, wells, chimneys, furnaces and cooling towers send up smoke or steam', () => {
+    const vents = [W.smokingVent, W.sulphurVent, W.seaSteam, W.hotSpring, W.geothermalWell];
+    for (const id of [...vents, W.coolingTower, W.powerPlant, W.smelter, W.blastFurnace]) {
+      const model = PROP_MODELS[id]?.();
+      expect(model?.plumes?.length, id).toBeGreaterThan(0);
+      for (const { kind, at } of model?.plumes ?? []) {
+        expect(PLUME_KINDS[kind], id).toBeDefined();
+        expect(Math.hypot(at[0], at[2]), id).toBeLessThanOrEqual(reach(id));
+      }
+    }
+    expect(PROP_MODELS[W.chimneyRow]?.().plumes?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('P10-R08: pipeline and track pieces are laid end to end; ore wagons ride on the track', () => {
+    for (const id of [W.pipeline, W.railLine]) {
+      expect(Math.min(...xs(id)), id).toBeCloseTo(-W4.LINE_PIECE_LENGTH / 2, 1);
+      expect(Math.max(...xs(id)), id).toBeCloseTo(W4.LINE_PIECE_LENGTH / 2, 1);
+    }
+    const [rail, wagons] = W4.railWithWagons({ x: 0, amplitude: 40, wavelength: 3000 });
+    expect([rail?.kind, wagons?.kind, wagons?.path]).toEqual([W.railLine, W.oreWagon, rail?.path]);
+    expect(wagons?.drift).toMatchObject({ x: 0, z: expect.any(Number) as number });
+    // Each wagon stands centred on a track piece, and wagons never touch one another.
+    expect((W4.ORE_WAGON_SPACING / 2 - W4.LINE_PIECE_LENGTH / 2) % W4.LINE_PIECE_LENGTH).toBe(0);
+    expect(2 * Math.max(...xs(W.oreWagon).map(Math.abs))).toBeLessThan(W4.ORE_WAGON_SPACING);
   });
 });

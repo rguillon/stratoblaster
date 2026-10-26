@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { SubMesh } from '@babylonjs/core/Meshes/subMesh';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { WEATHER_KINDS, type WeatherKind } from '../../config/weather';
-import type { Atmosphere } from '../../core/scenery/atmosphere';
+import type { Atmosphere, Weather } from '../../core/scenery/atmosphere';
 import { createRng } from '../../core/math/rng';
 import { weatherParticles } from '../../core/scenery/sky-look';
 import { BELOW_CLOUDS_GROUP } from './cloud-layers';
@@ -91,7 +91,8 @@ function buildParticles(scene: Scene, id: string, kind: WeatherKind, material: M
 }
 
 /**
- * The weather of a level (P08-R05): the particles of its kind, as many as its strength asks,
+ * The weather of a level (P08-R05): the particles of its kind (phase 10: of both its kinds),
+ * as many as its strength asks,
  * falling through the air between the ground and the flight altitude, behind everything on the
  * playfield. It is only a look: nothing in the simulation reads it.
  */
@@ -110,22 +111,27 @@ export class WeatherLayer {
     return this.#drawn;
   }
 
-  /** Shows the weather of `atmosphere` for this frame. */
+  /** Shows the weather of `atmosphere` for this frame (phase 10: its second weather too). */
   update(atmosphere: Atmosphere, frame: Omit<WeatherFrame, 'strength' | 'fog'>): void {
-    const { weather } = atmosphere;
-    const count = weatherParticles(weather);
-    for (const [id, layer] of this.#layers) layer.mesh.setEnabled(id === weather.kind && count > 0);
+    const weathers = [atmosphere.weather, atmosphere.secondWeather].filter(
+      (w): w is Weather => w !== undefined && weatherParticles(w) > 0 && w.kind in this.kinds,
+    );
+    for (const [id, layer] of this.#layers)
+      layer.mesh.setEnabled(weathers.some((w) => w.kind === id));
     this.#drawn = 0;
-    const kind = this.kinds[weather.kind];
-    if (count === 0 || !kind) return;
-    const layer = this.#layer(weather.kind, kind);
-    drawFirst(layer.mesh, count);
-    layer.material.set({
-      ...frame,
-      strength: weather.strength,
-      fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
-    });
-    this.#drawn = count;
+    for (const weather of weathers) {
+      const kind = this.kinds[weather.kind];
+      if (!kind) continue;
+      const count = weatherParticles(weather);
+      const layer = this.#layer(weather.kind, kind);
+      drawFirst(layer.mesh, count);
+      layer.material.set({
+        ...frame,
+        strength: weather.strength,
+        fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
+      });
+      this.#drawn += count;
+    }
   }
 
   #layer(id: string, kind: WeatherKind): { mesh: Mesh; material: WeatherMaterial } {

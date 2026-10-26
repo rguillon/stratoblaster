@@ -41,6 +41,17 @@ export const BOSS_LOOK = {
     'dam-breaker': [0.6, 1, 0.1],
     jaguar: [1, 0.6, 0.05],
     'verdant-crown': [0.1, 1, 0.45],
+    // World 4 (P10-R11).
+    'cinder-crab': [1, 0.45, 0.05],
+    'steam-dreadnought': [1, 0.08, 0.1],
+    'ash-wraith': [0.55, 0.95, 1],
+    'geyser-rig': [1, 0.88, 0.1],
+    'magma-salamander': [1, 0.62, 0.08],
+    'obsidian-golem': [1, 0.32, 0.04],
+    'furnace-drake': [1, 0.22, 0.05],
+    'foundry-ark': [1, 0.55, 0.12],
+    'ember-herald': [1, 0.78, 0.22],
+    'caldera-throne': [0.95, 0.05, 0.22],
   } as Readonly<Record<string, Rgb>>,
   /** Its charge lights strobe this many times a second while it holds its fire (P07-R04). */
   stageStrobeHz: 6,

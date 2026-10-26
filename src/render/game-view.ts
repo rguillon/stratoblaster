@@ -126,7 +126,11 @@ export interface BlastRenderer {
 export interface EnemyBindings {
   /** One model per `EnemyStats.model` key. */
   readonly models: Readonly<Record<string, EnemyModelFactory>>;
-  readonly shots: (scene: Scene) => EnemyShotRenderer;
+  /**
+   * The enemy shot renderer, drawing in the level's `style` if any (phase 10: a style a level's
+   * look names, `SceneryLook.shotStyle`).
+   */
+  readonly shots: (scene: Scene, style?: string) => EnemyShotRenderer;
   readonly blasts: (scene: Scene) => BlastRenderer;
   /** Glow of the self-lit parts drawn on the playfield (neon, shots). */
   readonly glow: { readonly intensity: number; readonly blurKernelSize: number };

@@ -23,9 +23,11 @@ export class EnemyViewerShots {
   readonly #enemy: EnemyShotRenderer;
   readonly #blasts: BlastRenderer;
 
+  /** `shotStyle`: the level's style for the enemy shots (phase 10, P10-R07), if any. */
   constructor(
     game: GameDefinition<GameView>,
     private readonly playfield: NodeAdopter,
+    shotStyle?: string,
   ) {
     const scene = playfield.root.getScene();
     [this.#player, this.#enemy, this.#blasts] = playfield.run(() => {
@@ -36,7 +38,8 @@ export class EnemyViewerShots {
           return [weapon.id, factory(scene)] as const;
         }),
       );
-      return [player, game.view.enemies.shots(scene), game.view.enemies.blasts(scene)] as const;
+      const enemy = game.view.enemies.shots(scene, shotStyle);
+      return [player, enemy, game.view.enemies.blasts(scene)] as const;
     });
   }
 

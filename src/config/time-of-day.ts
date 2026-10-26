@@ -161,3 +161,11 @@ export const OVERCAST = {
   thinning: 0.65,
   storm: { color: [0.36, 0.38, 0.42] as Rgb, shade: [0.22, 0.23, 0.26] as Rgb },
 } as const;
+
+/**
+ * Phase 10: a glow from below (P10-R04: fire and lava lighting the clouds, the haze and the
+ * ambient light from the ground): at strength 1 the clouds' edges turn `shade` of the way to its
+ * colour, their body `cloud` of the way (dark smoke stays dark), the haze `haze` and the ambient light from the ground
+ * `ground` of the way.
+ */
+export const UNDERGLOW = { shade: 0.75, cloud: 0.2, haze: 0.35, ground: 0.6 } as const;

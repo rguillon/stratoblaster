@@ -49,9 +49,7 @@ test.describe('P06: World 1', () => {
   test.describe.configure({ mode: 'default' });
   test.setTimeout(150_000);
 
-  test('P06-R01: the World 1 row shows 1-1 to 1-5, all unlocked; worlds 4 and 5 stay locked (P09-R01)', async ({
-    page,
-  }) => {
+  test('P06-R01: the World 1 row shows 1-1 to 1-5, all unlocked', async ({ page }) => {
     await openGame(page);
     await sendAction(page, 'confirm');
     await sendAction(page, 'confirm');
@@ -60,8 +58,6 @@ test.describe('P06: World 1', () => {
       await expect(cells.nth(i)).toHaveText(id);
       await expect(cells.nth(i)).not.toHaveClass(/locked/);
     }
-    // World 2 is playable since phase 8 (P08-R01), World 3 since phase 9 (P09-R01).
-    for (let i = 15; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
   });
 
   for (const [index, id] of WORLD_1.entries()) {

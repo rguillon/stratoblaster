@@ -57,7 +57,7 @@ describe('World 3 bosses', () => {
       'Jaguar',
       'Verdant Crown',
     ]);
-    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(30);
+    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(40);
   });
 
   it('P09-R09: mini bosses have 2 or 3 destroyable parts, final bosses 4 to 6', () => {

@@ -1,5 +1,5 @@
 // The changing part of a level's look (phase 8, P08-R04, P08-R05): the time of day, the clouds,
-// the haze, the ground lights and the weather (phase 9: rain and lightning too), as plain numbers that blend smoothly from one
+// the haze, the ground lights and the weather (phase 9: rain and lightning; phase 10: ash and embers, two at once), as plain numbers that blend smoothly from one
 // look to another along the level. Pure; the renderer applies it to the scene every frame.
 
 type Rgb = readonly [number, number, number];
@@ -62,6 +62,8 @@ export interface Atmosphere {
   /** Brightness of the window, street, neon and car lights of the ground (0 = off). */
   readonly groundLights: number;
   readonly weather: Weather;
+  /** Phase 10: a second weather at the same time (P10-R06: ash and embers together). */
+  readonly secondWeather?: Weather;
   /** Strength (0..1) of the aurora's curtains in the haze. */
   readonly aurora: number;
   /** Strength (0..1) of a storm's lightning flashes (P09-R05). */
@@ -98,6 +100,16 @@ function blendWeather(a: Weather, b: Weather, t: number): Weather {
   return { kind, strength: lerp(a.strength, b.strength, t) };
 }
 
+/** No weather (a second weather missing on one side blends from or to it). */
+const NO_WEATHER: Weather = { kind: 'snow', strength: 0 };
+
+/** The second weathers of `a` and `b` blended, if either has one (phase 10). */
+function blendSecondWeather(a: Atmosphere, b: Atmosphere, t: number): { secondWeather?: Weather } {
+  if (!a.secondWeather && !b.secondWeather) return {};
+  const [wa, wb] = [a.secondWeather ?? NO_WEATHER, b.secondWeather ?? NO_WEATHER];
+  return { secondWeather: blendWeather(wa, wb, t) };
+}
+
 /** The atmosphere `t` of the way from `a` to `b` (0 = `a`, 1 = `b`): every number halfway at 0.5. */
 export function blendAtmosphere(a: Atmosphere, b: Atmosphere, t: number): Atmosphere {
   if (t <= 0) return a;
@@ -127,6 +139,7 @@ export function blendAtmosphere(a: Atmosphere, b: Atmosphere, t: number): Atmosp
     clouds: blendClouds(a.clouds, b.clouds, t),
     groundLights: lerp(a.groundLights, b.groundLights, t),
     weather: blendWeather(a.weather, b.weather, t),
+    ...blendSecondWeather(a, b, t),
     aurora: lerp(a.aurora, b.aurora, t),
     lightning: lerp(a.lightning, b.lightning, t),
   };
