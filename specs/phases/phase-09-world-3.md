@@ -275,7 +275,7 @@ None. The spec was implemented as written; the interpretations are listed under 
 
 ### Gate results
 ```
-Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 77 tests, 76 passed / 1 failed (a phase 6 test still expecting World 3 locked; fixed, re-run: passed)
+Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 77 tests, 76 passed / 1 failed (a phase 6 test still expecting World 3 locked; fixed), then after a lint refactor of the prop placer, a full re-run: typecheck ✔ · build ✔ · 77 / 77 e2e passed (5.6 min)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
