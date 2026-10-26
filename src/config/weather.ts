@@ -91,7 +91,8 @@ export const WEATHER_KINDS: Readonly<Record<string, WeatherKind>> = {
  * from the level's seed), each a flash or, by `double.chance`, two flashes `double.after` apart,
  * so never more than 2 in any second (`lightning_max_flashes`: 3). A flash rises in `rise`
  * seconds and fades out by `flash`, lighting the ambient light and the sky up to `brightness`
- * times the storm's (never white); `boltChance` of the strikes draw a bolt in the clouds.
+ * times the storm's, the haze never past `maxHaze` (never white); `boltChance` of the strikes
+ * draw a bolt in the clouds.
  */
 export const LIGHTNING = {
   gap: [4, 10] as const,
@@ -99,6 +100,7 @@ export const LIGHTNING = {
   rise: 0.03,
   double: { chance: 0.35, after: 0.25 },
   brightness: 1.8,
+  maxHaze: 0.85,
   boltChance: 0.6,
   maxPerSecond: 3,
 } as const;

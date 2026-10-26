@@ -110,7 +110,7 @@ export const RIVER_LEVIATHAN: BossDesign = {
     name: 'River Leviathan',
     size: 6,
     coreRadius: 22,
-    coreHealth: 2800,
+    coreHealth: 2500,
     points: 20_000,
     groundSpeed: 0.5,
     coreDrop: 1,
@@ -124,7 +124,8 @@ export const RIVER_LEVIATHAN: BossDesign = {
     ],
     joints: spine(),
   }),
-  stopFraction: 0.64,
+  // Stops high enough to be in place within 6.5 s (P07-R05), its tail still on screen.
+  stopFraction: 0.72,
   sway: { amplitude: 55, period: 9.6 },
   bob: { amplitude: 6, period: 4.8 },
   guns: {

@@ -19,6 +19,8 @@ export interface LightningRules {
   readonly double: { readonly chance: number; readonly after: number };
   /** Ambient light and sky at most this many times as bright as the storm's. */
   readonly brightness: number;
+  /** A flash brightens no channel of the haze past this (0..1), so it never turns white. */
+  readonly maxHaze: number;
   /** Chance that a strike draws a bolt in the clouds. */
   readonly boltChance: number;
 }
@@ -101,21 +103,22 @@ function envelope(age: number, rise: number, length: number): number {
   return (1 - t) * (1 - t);
 }
 
-const brighter = (c: Rgb, k: number): Rgb => [
-  Math.min(1, c[0] * k),
-  Math.min(1, c[1] * k),
-  Math.min(1, c[2] * k),
+/** `c` brightened `k` times, no channel past `cap` (or past itself, if it already is). */
+const brighter = (c: Rgb, k: number, cap: number): Rgb => [
+  Math.min(c[0] * k, Math.max(c[0], cap)),
+  Math.min(c[1] * k, Math.max(c[1], cap)),
+  Math.min(c[2] * k, Math.max(c[2], cap)),
 ];
 
 /**
  * `atmosphere` lit by a flash of `flash` (0..1) of a storm's lightning of strength
  * `atmosphere.lightning` (P09-R05): the ambient light, the sky and the haze up to `brightness`
- * times as bright, never more, so the playfield never turns white.
+ * times as bright, never more, the haze never past `maxHaze`, so the playfield never turns white.
  */
 export function flashed(
   atmosphere: Atmosphere,
   flash: number,
-  brightness: number = LIGHTNING.brightness,
+  { brightness, maxHaze }: Pick<LightningRules, 'brightness' | 'maxHaze'> = LIGHTNING,
 ): Atmosphere {
   const f = Math.min(1, Math.max(0, flash)) * Math.min(1, Math.max(0, atmosphere.lightning));
   if (f <= 0) return atmosphere;
@@ -126,7 +129,7 @@ export function flashed(
     ambient: { ...ambient, intensity: ambient.intensity * k },
     sky: {
       ...sky,
-      haze: brighter(sky.haze, k),
+      haze: brighter(sky.haze, k, maxHaze),
       environmentIntensity: sky.environmentIntensity * k,
     },
   };

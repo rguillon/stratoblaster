@@ -261,7 +261,7 @@ None. The spec was implemented as written; the interpretations are listed under 
 
 **Balance (P09-R08)**, measured without shooting (seed 606), per minute of scroll: enemies 178.8 / 194.4 / 215.0 / 262.6 / 308.4, HP 4 214 / 5 694 / 6 884 / 8 068 / 10 506, peak on screen 38 / 41 / 47 / 55 / 58 for 3-1 … 3-5 (2-3: 121.4, 3 666, 36; 2-5: 233.4, 7 360, 51). Every second half carries more HP. As in Worlds 1 and 2, the peaks are far above the tunable 13 … 19, in the same order.
 
-**Bosses (P09-R09, R10).** Fight times with the D-055 bot (guns level 3, always on target), mini / final: 3-1 41.6 / 78.9 s, 3-2 44.4 / 90.6 s, 3-3 47.3 / 102.4 s, 3-4 51.4 / 115.2 s, 3-5 54.7 / 127.1 s. Full health: mini 3 200 / 3 780 / 4 200 / 4 500 / 5 100, final 7 100 / 9 050 / 9 950 / 14 000 / 19 500 (World 2: 2 720 … 4 200 and 6 500 … 17 500). Models 1 628–3 966 triangles, within 6 % of their sizes. Stage patterns (parts fire the same while they stand; the core changes each stage):
+**Bosses (P09-R09, R10).** Fight times with the D-055 bot (guns level 3, always on target), mini / final: 3-1 41.6 / 87.5 s, 3-2 44.4 / 90.6 s, 3-3 47.3 / 102.4 s, 3-4 51.4 / 115.2 s, 3-5 54.7 / 127.1 s. Full health: mini 3 200 / 3 780 / 4 200 / 4 500 / 5 100, final 6 800 / 9 050 / 9 950 / 14 000 / 19 500 (World 2: 2 720 … 4 200 and 6 500 … 17 500). Models 1 628–3 966 triangles, within 6 % of their sizes. Stage patterns (parts fire the same while they stand; the core changes each stage):
 - **Mangrove Croc** (3-1 mini, ×1.4 chase): two pontoons (fans of 3, they shield the core) and a jaw cannon (aimed bursts of 3) between jaws on two hinge joints that open in time with the bursts; core ring 10 → ring 12 → two alternating rings → spiral 4 + ring 14. Angry: vortex.
 - **River Leviathan** (3-1 final, ×0.5): a head and four segments on a five-joint spine, a wave running from head to tail; each segment's turret fires rings of 8 in turn (1.1 s apart), a tail rack homing missiles; the head's laser every stage, plus aimed 3 → fan 5 → burst 4 → fan 7 → two spirals. Angry: spirals.
 - **Toucan** (3-2 mini, ×0.6): two wing pods (fans), a beak laser; core bursts 3 → 4 → 4 + spread 3 → spiral 12 + bursts 3. Angry: curtain.
@@ -277,6 +277,13 @@ None. The spec was implemented as written; the interpretations are listed under 
 ```
 Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 77 tests, 76 passed / 1 failed (a phase 6 test still expecting World 3 locked; fixed), then after a lint refactor of the prop placer, a full re-run: typecheck ✔ · build ✔ · 77 / 77 e2e passed (5.6 min)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
+
+Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1210 unit tests ✔ · coverage 98.61 % statements, 87.25 % branches, 98.65 % functions, 99.35 % lines ✔ (phase 8: 98.5 / 88.04 / 98.57 / 99.26) · build ✔ · 77 e2e ✔ (5.8 min).
+Fixed on the way (first run: 6 of 1210 unit tests failed):
+- set pieces were missed by the placer's bucketed neighbour search past ~64 units from their centre, so trees and buildings could stand on them: every placement now checks the set pieces and lines too (World 3 only; earlier layouts unchanged);
+- a lightning flash could push a haze channel to 1 (white): the flashed haze is capped at 0.85 (`LIGHTNING.maxHaze`);
+- the River Leviathan took 7.1 s to come in (P07-R05: under 6.5 s): it stops higher (0.72 of the screen), and its core went 2 800 → 2 500 HP to stay in its fight range (full 6 800, 87.5 s);
+- three earlier tests counted the registered levels, the bosses and Level Zero's props without World 3; the set-piece test used a place past the end of the small sample level.
 ```
 
 ### How to test manually
@@ -291,6 +298,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - P09-R03 "sea section": a section with a coast or whose relief lies under the water level; rivers, swamps, lakes and pools hold water at the same level as the sea, in channels, low relief or basins (D-079). 3-1's sea sections (open sea, delta mouth) are 80 of its 300 s and 23 % of its ground under water.
 - P09-R06 waterfalls: the river is at one level above and below a fall; the drop is a set piece (a rock ledge across the river, a falling white sheet and spray), four of them in 3-3 (D-079).
 - P09-R05 `lightning_gap`: measured between strikes (4–10 s, about 7 on average); a strike flickers twice with a chance of 0.35, so the flashes come about every 5 s and never more than 2 in a second (cap 3).
+- P09-R05: a flash also never brightens a haze channel past 0.85, so the far haze never turns white.
 - P09-R05: the flash follows the scene's clock (seconds since the level's scene was built), not the level's progress (D-077).
 - P09-R08 tunable `peak_on_screen` (13 … 19): measured 38 … 58, order kept (as Worlds 1 and 2).
 - P09-R09: some boss parts were placed or sized for the bot's spread to reach them within the health bands (Spider forelegs raised forward, Stone Idol eyes 64 apart, Verdant Crown roots 64 apart, larger hit circles on the Leviathan and the Jaguar; D-081). The Croc's jaws open with its bursts in its first stage only.

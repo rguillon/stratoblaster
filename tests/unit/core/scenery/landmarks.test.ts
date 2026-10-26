@@ -58,12 +58,12 @@ describe('Set pieces and lines over water (phase 9)', () => {
     expect([fixed.halfX, fixed.halfZ]).toEqual([12, 12]);
   });
 
-  it('P09-R06: the placer puts the set pieces first, and the trees and buildings keep clear of them', () => {
+  it('P09-R06: the placer puts the set pieces first; the trees and buildings keep clear of them, however big', () => {
     const level: SceneryLevel = {
       ...SAMPLE_SCENERY_LEVEL,
       props: {
         ...SAMPLE_SCENERY_LEVEL.props,
-        landmarks: [{ kind: 'temple', z: 600, x: 0, footprint: [120, 60] }],
+        landmarks: [{ kind: 'temple', z: 200, x: 0, footprint: [120, 60] }],
       },
     };
     const field = new HeightField(level);
@@ -75,8 +75,10 @@ describe('Set pieces and lines over water (phase 9)', () => {
       zMax: field.length,
     });
     expect(placed.filter((p) => p.kind === 'temple')).toHaveLength(1);
+    // The sample level is 400 long; its props stand around the set piece but not on it.
+    expect(placed.length).toBeGreaterThan(10);
     const near = placed.filter(
-      (p) => p.kind !== 'temple' && Math.abs(p.x) < 115 && Math.abs(p.z - 600) < 55,
+      (p) => p.kind !== 'temple' && Math.abs(p.x) < 115 && Math.abs(p.z - 200) < 55,
     );
     expect(near).toEqual([]);
   });

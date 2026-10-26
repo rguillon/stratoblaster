@@ -72,7 +72,10 @@ describe('Lightning', () => {
     expect(lit.ambient.intensity / storm.ambient.intensity).toBeCloseTo(LIGHTNING.brightness);
     expect(LIGHTNING.brightness).toBeLessThanOrEqual(1.8);
     lit.sky.haze.forEach((c, i) => {
-      expect(c).toBeLessThanOrEqual(Math.min(1, (storm.sky.haze[i] ?? 0) * 1.8) + 1e-9);
+      const before = storm.sky.haze[i] ?? 0;
+      expect(c).toBeGreaterThanOrEqual(before);
+      expect(c).toBeLessThanOrEqual(before * 1.8 + 1e-9);
+      expect(c).toBeLessThanOrEqual(Math.max(before, LIGHTNING.maxHaze) + 1e-9);
       expect(c).toBeLessThan(1);
     });
     expect(flashed(storm, 0)).toBe(storm);

@@ -234,7 +234,7 @@ export interface PropLine {
  * A set piece (phase 9: a dam across a lake, a waterfall on a river, a temple): one prop of
  * `kind` at `z` along the level, at `x` across it or on `path` (its width then across the path), standing
  * on the ground or, with `onWater`, at the sea level. It is placed first, whatever the slope, and
- * the buildings and trees keep clear of its `footprint` (a box `footprint` wide each way, or
+ * the buildings and trees keep clear of its `footprint` (but not the blocks of a street grid: no set piece goes in one) (a box `footprint` wide each way, or
  * `[halfX, halfZ]`).
  */
 export interface Landmark {
