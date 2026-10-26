@@ -1102,3 +1102,15 @@
 - **Consequences:** The style tables are the knobs for the review by ear.
 - **Status:** Accepted
 
+### D-099 — Synthwave music: echo and reverb sends, 80s drum machine, a full menu track
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for music on the main menus and for all the music to be synthwave. The menu theme (D-098) was a quiet 84 BPM pad-and-bell piece (−25.8 dB RMS at the default volume); the tracks had no echo or reverb, a marimba and a flute in World 3, plain snares.
+- **Decision:**
+  - Engine: `TrackMixer` (one per playing track) gives each instrument an input with sends to a tempo-synced echo (`echoBeats` 0.75, feedback 0.35) and a shared reverb (a `ConvolverNode` on the music bus, with a generated decaying-noise impulse of 2.2 s); both fade with the track. `Instrument.echo` / `reverb` set the sends; `AudioBindings.effects` turns them on.
+  - Game: synthwave instruments (gated snare, Simmons-style toms at several pitches for descending fills, supersaw lead, detuned saw pads, plucked saw / square and FM-bell arpeggios with echoes); off-beat open hats; World 1 outrun, World 2 dreamwave, World 3 synthwave on toms and shakers, World 4 darksynth with rolling sixteenth basses. The menu theme: 88 BPM, E minor, i–VI–III–VII, a backbeat, pumping octave bass, every section full (`MusicStyle.energies`).
+  - Mix: music bus 0.8 (was 0.5), SFX 1 (was 0.8): the music sits around −17 to −20 dB RMS at the default volume; the loudest sound stays within +6 dB of the music.
+- **Alternatives considered:** echoes written as extra notes (twice the notes, no feedback tail); a per-instrument reverb (one convolver per instrument costs more for little gain); keeping the menu theme calm and sparse (the reviewer did not notice it).
+- **Consequences:** Loudness and style were checked with an offline render in Chromium (`OfflineAudioContext`), not by ear: the reviewer's listening is the final check.
+- **Status:** Accepted
+

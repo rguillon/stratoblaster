@@ -61,13 +61,16 @@ function sectionCount(bpm: number): number {
  * The energy of each section: a level builds up, breaks down and comes back; a boss fight is
  * intense all along, with one shorter breath.
  */
-function energies(count: number, boss: boolean, random: Random): number[] {
-  if (boss) return Array.from({ length: count }, (_, i) => (i === count - 2 ? 1 : 2));
-  const shape = pick(random, [
-    [1, 2, 1, 0, 2],
-    [1, 1, 2, 0, 2],
-    [1, 2, 0, 2, 1],
-  ]);
+/** A level's energy shapes: it builds up, breaks down to its arpeggio and pads, comes back. */
+const LEVEL_ENERGIES: readonly (readonly number[])[] = [
+  [1, 2, 1, 0, 2],
+  [1, 1, 2, 0, 2],
+  [1, 2, 0, 2, 1],
+];
+
+function energies(request: TrackRequest, count: number, random: Random): number[] {
+  if (request.boss) return Array.from({ length: count }, (_, i) => (i === count - 2 ? 1 : 2));
+  const shape = pick(random, request.style.energies ?? LEVEL_ENERGIES);
   return Array.from({ length: count }, (_, i) => shape[i % shape.length] ?? 1);
 }
 
@@ -85,7 +88,7 @@ function sections(request: TrackRequest, count: number, random: Random): Section
     [0, 0, 1, 2, 1],
     [0, 1, 2, 1, 0],
   ]);
-  return energies(count, request.boss === true, random).map((energy, i) => {
+  return energies(request, count, random).map((energy, i) => {
     const theme = themes[(order[i % order.length] ?? 0) % themes.length] ?? themes[0];
     return { progression: theme?.progression ?? [0], motif: theme?.motif ?? [], energy };
   });

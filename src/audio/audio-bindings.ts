@@ -1,4 +1,4 @@
-import type { Instrument, SoundDesign, Track } from './audio-types';
+import type { Instrument, MusicEffects, SoundDesign, Track } from './audio-types';
 
 /** The jingles a game plays once (P12-R07). */
 export type Jingle = 'complete' | 'over' | 'checkpoint';
@@ -26,4 +26,6 @@ export interface AudioBindings {
   readonly largeBlastRadius: number;
   /** Levels of the music and sound effect buses at full volume. */
   readonly mix: { readonly music: number; readonly sfx: number };
+  /** The music's echo and reverb (instruments send to them); dry when omitted. */
+  readonly effects?: MusicEffects;
 }

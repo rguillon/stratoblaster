@@ -68,14 +68,16 @@ export class GameAudio {
     private readonly options: GameAudioOptions,
   ) {
     const mix = bindings?.mix ?? { music: 1, sfx: 1 };
+    const effects = bindings?.effects;
     this.#output = new AudioOutput({
       ...(options.createContext ? { createContext: options.createContext } : {}),
       mix,
       peakDb: AUDIO_CONFIG.masterPeakDb,
       limiter: AUDIO_CONFIG.limiter,
+      ...(effects ? { reverbSeconds: effects.reverbSeconds } : {}),
     });
     const buses = () => this.#output.buses;
-    this.#music = new MusicPlayer(buses, bindings?.instruments ?? {}, AUDIO_CONFIG);
+    this.#music = new MusicPlayer(buses, bindings?.instruments ?? {}, AUDIO_CONFIG, effects);
     this.#sfx = new SfxPlayer(buses, options.clock, {
       ...AUDIO_CONFIG,
       stopFadeSeconds: AUDIO_CONFIG.pauseFadeSeconds,

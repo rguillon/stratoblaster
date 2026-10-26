@@ -9,7 +9,11 @@ import { composeTrack, seedOf } from '../../../../../src/game/view/audio/compose
 import { GAME_AUDIO, gameMusic, worldOf } from '../../../../../src/game/view/audio/game-audio';
 import { INSTRUMENTS } from '../../../../../src/game/view/audio/instruments';
 import { JINGLES } from '../../../../../src/game/view/audio/jingles';
-import { WORLD_STYLES } from '../../../../../src/game/view/audio/music-styles';
+import {
+  MENU_STYLE,
+  WORLD_STYLES,
+  type MusicStyle,
+} from '../../../../../src/game/view/audio/music-styles';
 import { SOUND_DESIGNS } from '../../../../../src/game/view/audio/sound-designs';
 import { GAME } from '../../../../../src/game/index';
 
@@ -122,6 +126,42 @@ describe('game music', () => {
     expect(low).toBeGreaterThanOrEqual(24);
     expect(high).toBeLessThanOrEqual(108);
     expect(notes.every((n) => n.velocity > 0 && n.velocity <= 1)).toBe(true);
+  });
+});
+
+describe('synthwave (reviewer, 2026-10-26)', () => {
+  const styles = [...[1, 2, 3, 4].map((w) => WORLD_STYLES[w]), MENU_STYLE].filter(
+    (s): s is MusicStyle => s !== undefined,
+  );
+  const send = (name: string, kind: 'echo' | 'reverb'): number => INSTRUMENTS[name]?.[kind] ?? 0;
+
+  it('P12-R06: every style plays a drum machine with big gated snares, and synth parts sent to the echo and reverb', () => {
+    expect(styles).toHaveLength(5);
+    for (const { instruments } of styles) {
+      expect(instruments.snare).toBe('snare-gated');
+      expect(send(instruments.arp, 'echo')).toBeGreaterThan(0);
+      expect(send(instruments.lead, 'echo')).toBeGreaterThan(0);
+      expect(send(instruments.pad, 'reverb')).toBeGreaterThan(0);
+    }
+    expect(GAME_AUDIO.effects).toMatchObject({ echoBeats: 0.75 });
+  });
+
+  it('P12-R06: section ends roll down the synth toms', () => {
+    const toms = level('1-1').notes.filter((n) => n.instrument === 'tom');
+    expect(new Set(toms.map((n) => n.pitch)).size).toBeGreaterThan(2);
+  });
+
+  it('P12-R08: the menu theme is a full track: drums, bass, pad, arpeggio and lead in every section', () => {
+    const menu = gameMusic({ kind: 'menu' });
+    const { instruments } = MENU_STYLE;
+    const bars = (menu?.beats ?? 0) / 4;
+    for (const part of [instruments.snare, instruments.bass, instruments.pad, instruments.arp]) {
+      const used = new Set(
+        menu?.notes.filter((n) => n.instrument === part).map((n) => Math.floor(n.beat / 4)),
+      );
+      expect(used.size, part).toBe(bars);
+    }
+    expect(menu?.notes.some((n) => n.instrument === instruments.lead)).toBe(true);
   });
 });
 

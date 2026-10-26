@@ -109,6 +109,7 @@ If Web Audio is missing or fails, the game runs silently without errors. Generat
 
 Every level (`1-1` to `4-5`) has its own music (GD-70), generated from that level's data:
 - each world has a style that matches its look, in the cyberpunk / synthwave direction (GD-60): World 1 (desert and sea) bright and driving, World 2 (Frozen North) cold and airy, World 3 (Jungle) percussive, World 4 (Volcanic Lands) dark and heavy;
+- every track is synthwave (reviewer, 2026-10-26): 80s analog-style synths (detuned saw pads and leads, plucked arpeggios with tempo-synced echoes, pumping or rolling saw basses), drum-machine drums with big gated snares and synth toms, and reverb; the world styles above are synthwave flavours (World 1 outrun, World 2 dreamwave, World 3 synthwave with tom-heavy percussion, World 4 darksynth);
 - the five levels of a world share the world's style (instruments, tempo range) but differ in melody, chords and rhythm, so no two levels sound the same;
 - the same level always plays the same music (deterministic from the level's id, never from `Math.random`);
 - a track lasts at least `music_loop_min` before it repeats, and loops without a gap or a click.
@@ -135,7 +136,7 @@ The music starts with the level and fades out in `music_fade` when the level end
 
 ### P12-R08 — Menu music  · MUST
 
-The menus (title, ship select, level select, settings opened from the title) play one calm **menu theme**, generated like the level music, looping. It keeps playing (it does not restart) when moving between these screens, and fades out when a level starts.
+The menus (title, ship select, level select, settings opened from the title) play one calm **menu theme**, generated like the level music, looping. It is a full synthwave track (drums, bass, pads, arpeggio, lead; reviewer, 2026-10-26), mid-tempo, about as loud as the level tracks. It keeps playing (it does not restart) when moving between these screens, and fades out when a level starts.
 
 **Acceptance criteria**
 - [ ] Given the title, when the player goes to ship select and level select, then the menu theme keeps playing without restarting (unit test on the music state).
@@ -270,7 +271,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 > After the agent reports, write corrections here, then say **"Fix phase 12"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (2026-10-26, reviewer) Add a music to the main menus: a real menu track, clearly audible on the title, ship select and level select screens.
+- [x] (2026-10-26, reviewer) Make the musics synthwave: every level, boss and menu track and the jingles.
 
 ---
 
@@ -311,6 +313,11 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 | P12-R11 | Done | `app/game-audio.ts` (`#setPaused`), `audio/music-player.ts` (`pause` / `resume`), `audio/sfx-player.ts` (`stopAll`), `audio/audio-output.ts` (`setHidden`) | `music-player.test.ts` (30 s in, paused 10 s → ~30 s), `game-audio.test.ts`, `audio-output.test.ts`, `start-app-pause.test.ts`; e2e context `suspended` while hidden, `running` again, menu move sound in the pause menu | |
 | P12-R12 | Done | `debug/test-api.ts` (`paused`, `leaving`, `volumes`, `music`, `sounds`, `audio`), `main.ts` | `test-api.test.ts`; e2e `sendAction('pause' / 'resume')`, `level-2-3` / `boss-2`, `gun-shot` | Absent from the production bundle (existing `make build` check). |
 
+### Review fixes
+- **Menu music (review 1):** the 84 BPM pad-and-bell menu theme was faint (−25.8 dB RMS at the default volume) and easy to miss. It is now a full 88 BPM synthwave track in E minor (i–VI–III–VII chords): a backbeat with gated snares, a pumping octave saw bass, warm pads, a sixteenth-note plucked arpeggio with echoes and a supersaw lead, in every section (no bare breakdown: `MusicStyle.energies`). Measured offline in Chromium over 32 s at the default volume: menu −19.3 dB RMS, level tracks −17.1 to −19.8, boss tracks −15.4 to −17.9. P12-R08 text amended at the reviewer's request.
+- **Synthwave (review 2):** engine: `audio/track-mixer.ts` gives each track an input per instrument with sends to a tempo-synced echo (a dotted eighth, fed back) and to a shared music reverb (`AudioOutput` convolver, generated 2.2 s impulse); `Instrument.echo` / `reverb`, `AudioBindings.effects`. Game: new instruments (gated snare, Simmons-style toms played at several pitches, supersaw lead, detuned juno-style pads, dreamwave bass, square arpeggio; marimba, flute and clap removed), new drum patterns (off-beat open hats, laid-back backbeat, descending tom fills at section ends), rolling sixteenth basses, arpeggios carrying the breakdowns. World flavours: 1 outrun, 2 dreamwave, 3 synthwave on toms and shakers, 4 darksynth; the jingles use the same synths. Mix raised (music 0.5 → 0.8, SFX 0.8 → 1; the loudest sound stays within +6 dB). P12-R06 text amended at the reviewer's request. (D-099)
+- Tests: `track-mixer.test.ts`, `audio-output.test.ts` (reverb), game data tests (gated snares, echo / reverb sends, tom fills, a full menu track). Light verification: typecheck ✔, build ✔, e2e 116 passed (4.2 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
+
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.
 ```
@@ -319,7 +326,7 @@ lint, unit tests, coverage: not run (deferred to /validate-phase)
 ```
 
 ### How to test manually
-1. `make dev`, open http://localhost:5173. The title shows **Start** and **Settings**. Press any key: the menu theme starts (nothing plays before the first key, tap, click or gamepad button).
+1. `make dev`, open http://localhost:5173. The title shows **Start** and **Settings**. Press any key: the synthwave menu theme starts (nothing plays before the first key, tap, click or gamepad button).
 2. **Settings** (↓, Enter): ◀ / ▶ change Music (the music changes at once) and Sound effects (a short blip plays at the new level); tap or drag a bar. Reload: the values are kept. 0 is silent. Esc / Back returns to the title.
 3. Start a level: the menu theme fades into the level's track. Press **Esc** or **P** (gamepad Start or Select, or the **❚❚** button under the weapon readout): the level freezes, dimmed, under **Paused**. Esc / P / Backspace / B / Resume go back exactly where it was. Backspace and B do nothing while playing.
 4. In the pause menu: **Settings** then Back returns to the paused menu; **Main menu** asks *Leave the level?*: No goes back, Yes goes to the title (a beaten high score is saved) and the menu theme comes back.

@@ -1,12 +1,9 @@
-import { midiToHz, type Instrument, type Track } from './audio-types';
+import { midiToHz, type Instrument, type MusicEffects, type Track } from './audio-types';
 import { Sequencer } from './sequencer';
 import { playVoice, type Voice } from './synth';
+import { TrackMixer, type MusicBus } from './track-mixer';
 
-/** Where the music goes, once the audio context exists. */
-export interface MusicBus {
-  readonly context: BaseAudioContext;
-  readonly music: AudioNode;
-}
+export type { MusicBus } from './track-mixer';
 
 /** Timings of a {@link MusicPlayer} (`config/audio.ts`). */
 export interface MusicTimings {
@@ -15,11 +12,11 @@ export interface MusicTimings {
   readonly pauseFadeSeconds: number;
 }
 
-/** A track playing (or fading out), on its own gain into the music bus. */
+/** A track playing (or fading out), on its own mixer into the music bus. */
 interface Slot {
   readonly track: Track;
   readonly sequencer: Sequencer;
-  gain: GainNode | undefined;
+  mixer: TrackMixer | undefined;
   /** Audio time of the track's start; undefined until the context exists. */
   anchor: number | undefined;
   voices: Voice[];
@@ -29,8 +26,6 @@ interface Slot {
   /** Audio time it is over (faded out), if it is fading out. */
   until: number | undefined;
 }
-
-const SILENT = 0.0001;
 
 /**
  * Plays the generated music (P12-R05..R08, P12-R11): one track at a time, cross-fading into the
@@ -49,6 +44,8 @@ export class MusicPlayer {
     private readonly bus: () => MusicBus | undefined,
     private readonly instruments: Readonly<Record<string, Instrument>>,
     private readonly timings: MusicTimings,
+    /** The tracks' echo and reverb; dry when omitted. */
+    private readonly effects?: MusicEffects,
   ) {}
 
   /** The track playing (not a jingle), if any. */
@@ -132,7 +129,7 @@ export class MusicPlayer {
     return {
       track,
       sequencer: new Sequencer(track),
-      gain: undefined,
+      mixer: undefined,
       anchor: undefined,
       voices: [],
       target: 1,
@@ -146,25 +143,22 @@ export class MusicPlayer {
     slot.fade = fade;
     this.#others.push(slot);
     const bus = this.bus();
-    if (!bus || !slot.gain) {
+    if (!bus || !slot.mixer) {
       slot.until = -Infinity;
       return;
     }
     const now = bus.context.currentTime;
     slot.until = now + fade;
-    const param = slot.gain.gain;
-    param.cancelScheduledValues(now);
-    param.setValueAtTime(Math.max(SILENT, param.value), now);
-    param.exponentialRampToValueAtTime(SILENT, now + Math.max(0.01, fade));
+    slot.mixer.fadeTo(0, now, Math.max(0.01, fade));
   }
 
   /** Starts the slot on the bus if needed, then schedules its notes up to the lookahead. */
   #schedule(slot: Slot, bus: MusicBus, now: number): void {
     // A track fading out goes on playing until it is silent; one never started stays so.
-    if (slot.until !== undefined && !slot.gain) return;
-    if (!slot.gain || slot.anchor === undefined) this.#start(slot, bus, now);
-    const { gain, anchor } = slot;
-    if (!gain || anchor === undefined) return;
+    if (slot.until !== undefined && !slot.mixer) return;
+    if (!slot.mixer || slot.anchor === undefined) this.#start(slot, bus, now);
+    const { mixer, anchor } = slot;
+    if (!mixer || anchor === undefined) return;
     slot.voices = slot.voices.filter((v) => v.end > now);
     for (const { note, at, seconds } of slot.sequencer.advance(
       now + this.timings.lookaheadSeconds - anchor,
@@ -172,7 +166,7 @@ export class MusicPlayer {
       const instrument = this.instruments[note.instrument];
       if (!instrument) continue;
       slot.voices.push(
-        playVoice(bus.context, gain, instrument.layers, {
+        playVoice(bus.context, mixer.input(note.instrument, instrument), instrument.layers, {
           when: Math.max(now, anchor + at),
           noteHz: midiToHz(note.pitch),
           hold: seconds,
@@ -183,16 +177,9 @@ export class MusicPlayer {
   }
 
   #start(slot: Slot, bus: MusicBus, now: number): void {
-    const gain = bus.context.createGain();
-    gain.connect(bus.music);
-    const param = gain.gain;
-    if (slot.fade > 0) {
-      param.setValueAtTime(SILENT, now);
-      param.exponentialRampToValueAtTime(1, now + slot.fade);
-    } else {
-      param.setValueAtTime(1, now);
-    }
-    slot.gain = gain;
+    const mixer = new TrackMixer(bus, this.effects, slot.track.bpm);
+    mixer.fadeIn(now, slot.fade);
+    slot.mixer = mixer;
     slot.anchor = now;
   }
 
@@ -208,6 +195,6 @@ export class MusicPlayer {
   #silence(slot: Slot, now: number): void {
     for (const voice of slot.voices) voice.stop(now, this.timings.pauseFadeSeconds);
     slot.voices = [];
-    slot.gain?.disconnect();
+    slot.mixer?.disconnect();
   }
 }

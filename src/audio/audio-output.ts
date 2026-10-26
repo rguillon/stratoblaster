@@ -2,6 +2,8 @@
 export interface AudioBuses {
   readonly context: AudioContext;
   readonly music: GainNode;
+  /** The music reverb's input: it comes out on the music bus. None when not asked for. */
+  readonly reverb?: AudioNode;
   readonly sfx: GainNode;
 }
 
@@ -19,6 +21,26 @@ export interface AudioOutputOptions {
     readonly attackSeconds: number;
     readonly releaseSeconds: number;
   };
+  /** Length of the music reverb's tail in seconds; no reverb when omitted. */
+  readonly reverbSeconds?: number;
+}
+
+/** A stereo reverb impulse: decaying noise, the same on every run (no `Math.random`). */
+function reverbImpulse(context: BaseAudioContext, seconds: number): AudioBuffer {
+  const length = Math.max(1, Math.round(context.sampleRate * seconds));
+  const buffer = context.createBuffer(2, length, context.sampleRate);
+  let seed = 0x2545f491;
+  for (let channel = 0; channel < 2; channel++) {
+    const data = buffer.getChannelData(channel);
+    for (let i = 0; i < length; i++) {
+      seed ^= seed << 13;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      const noise = ((seed >>> 0) / 0xffffffff) * 2 - 1;
+      data[i] = noise * (1 - i / length) ** 3;
+    }
+  }
+  return buffer;
 }
 
 /** Bus gain of a volume `step` out of `steps`: (step / steps)², 0 silent (P12-R04). */
@@ -107,11 +129,22 @@ export class AudioOutput {
       sfx.gain.value = this.#sfx * mix.sfx;
       music.connect(master);
       sfx.connect(master);
-      return { context, music, sfx };
+      const reverb = this.#reverb(context, music);
+      return reverb ? { context, music, reverb, sfx } : { context, music, sfx };
     } catch {
       this.#failed = true;
       return undefined;
     }
+  }
+
+  /** A convolver into the music bus, so the music volume applies to its tail too. */
+  #reverb(context: AudioContext, music: GainNode): ConvolverNode | undefined {
+    const { reverbSeconds } = this.options;
+    if (reverbSeconds === undefined) return undefined;
+    const reverb = context.createConvolver();
+    reverb.buffer = reverbImpulse(context, reverbSeconds);
+    reverb.connect(music);
+    return reverb;
   }
 
   /** Audio promises that fail (a context closed by the browser) are not errors of the game. */

@@ -84,6 +84,15 @@ export class FakePanner extends FakeNode {
   readonly pan = new FakeParam(0);
 }
 
+export class FakeConvolver extends FakeNode {
+  buffer: unknown = null;
+}
+
+export class FakeDelay extends FakeNode {
+  readonly delayTime = new FakeParam(0);
+  maxDelayTime = 1;
+}
+
 export class FakeCompressor extends FakeNode {
   readonly threshold = new FakeParam(-24);
   readonly knee = new FakeParam(30);
@@ -136,6 +145,16 @@ export class FakeAudioContext {
 
   createStereoPanner(): FakePanner {
     return new FakePanner(this, 'panner');
+  }
+
+  createConvolver(): FakeConvolver {
+    return new FakeConvolver(this, 'convolver');
+  }
+
+  createDelay(maxDelayTime = 1): FakeDelay {
+    const delay = new FakeDelay(this, 'delay');
+    delay.maxDelayTime = maxDelayTime;
+    return delay;
   }
 
   createDynamicsCompressor(): FakeCompressor {

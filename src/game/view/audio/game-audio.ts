@@ -13,7 +13,10 @@ const LARGE_BLAST_RADIUS = 18;
  * Levels of the music and sound effect buses at full volume: the loudest sound effects stay
  * within `loudest_sfx` (+6 dB) of the music at equal volume settings (P12-R10).
  */
-const MIX = { music: 0.5, sfx: 0.8 };
+const MIX = { music: 0.8, sfx: 1 };
+
+/** The synthwave echo (a dotted eighth) and reverb the instruments send to. */
+const EFFECTS = { echoBeats: 0.75, echoFeedback: 0.35, reverbSeconds: 2.2 };
 
 /** The world of a level id such as `2-3`. */
 export function worldOf(levelId: string): number {
@@ -63,4 +66,5 @@ export const GAME_AUDIO: AudioBindings = {
   sounds: SOUND_DESIGNS,
   largeBlastRadius: LARGE_BLAST_RADIUS,
   mix: MIX,
+  effects: EFFECTS,
 };

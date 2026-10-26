@@ -345,9 +345,10 @@ MenuState.volumes ─▶ saved-settings (cookies) and GameAudio.setVolumes
 
              GameAudio (app/) ──── reads MenuState, LevelRun after each step (onStep)
               │      │      └─ LevelCues (audio/): state diffs ─▶ SoundCue ─▶ SfxPlayer ─▶ VoicePool
-              │      └─ MusicPlayer: Sequencer (lookahead) ─▶ synth playVoice ─▶ track gains
+              │      └─ MusicPlayer: Sequencer (lookahead) ─▶ synth playVoice ─▶ TrackMixer
+              │                    (per instrument: track fader, echo send, reverb send)
               ▼
-AudioOutput: AudioContext (made on the first gesture) ─▶ music bus, sfx bus ─▶ limiter ─▶ out
+AudioOutput: AudioContext (made on the first gesture) ─▶ music bus (+ reverb), sfx bus ─▶ limiter
 ```
 
 - Pause (P12-R01..R03): `core/menu/menu-screen.ts` has `pause` and `settings` screens. Escape is
@@ -365,7 +366,8 @@ AudioOutput: AudioContext (made on the first gesture) ─▶ music bus, sfx bus 
 - Audio engine (`src/audio/`, game-agnostic): `audio-types.ts` (tone layers, instruments, sound
   designs, tracks of notes), `synth.ts` (oscillators / noise through filters and envelopes),
   `sequencer.ts` (pure note scheduling with loops and seeking), `music-player.ts` (cross-fades,
-  fades, jingles, pause at position), `voice-pool.ts` and `sfx-player.ts` (16 voices, priorities,
+  fades, jingles, pause at position), `track-mixer.ts` (per-instrument inputs with sends to a
+  tempo-synced echo and to the music reverb, faded with the track), `voice-pool.ts` and `sfx-player.ts` (16 voices, priorities,
   30 ms retrigger, panning), `audio-output.ts` (lazy context, buses, limiter, `(step / 10)²`
   volume curve, silent fallback), `level-cues.ts` (cues from the core state: audio never changes
   it). The context is only created during a user gesture (`navigator.userActivation`), so no
@@ -375,7 +377,8 @@ AudioOutput: AudioContext (made on the first gesture) ─▶ music bus, sfx bus 
   level track after the mini boss, kept after the final boss), a fade and a jingle when the level
   ends, nothing new while paused; and plays the menu sounds from `MenuController`'s feedback.
 - Game content (`src/game/view/audio/`, `GameView.audio: AudioBindings`): `music-styles.ts` (one
-  style per world: tempo range, scales, chords, instruments, drum and bass feels),
+  style per world, all synthwave (D-099): outrun, dreamwave, tom-heavy synthwave, darksynth;
+  tempo range, scales, chords, instruments, drum and bass feels),
   `compose-track.ts` / `compose-parts.ts` / `compose-melody.ts` (a seeded, pure composer: the
   level id's hash picks key, tempo, sections, motifs), `instruments.ts`, `jingles.ts`,
   `sound-designs.ts` (one sound per cue), `game-audio.ts` (tracks made once, mix levels).

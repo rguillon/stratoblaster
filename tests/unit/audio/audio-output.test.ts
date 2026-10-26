@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { AudioOutput, volumeGain, type AudioOutputOptions } from '../../../src/audio/audio-output';
 import { AUDIO_CONFIG } from '../../../src/config/audio';
-import { FakeAudioContext, FakeCompressor, FakeGain } from '../../helpers/fake-audio';
+import {
+  FakeAudioContext,
+  FakeCompressor,
+  FakeConvolver,
+  FakeGain,
+} from '../../helpers/fake-audio';
 
 function output(context?: FakeAudioContext, rest: Partial<AudioOutputOptions> = {}): AudioOutput {
   return new AudioOutput({
@@ -79,5 +84,16 @@ describe('AudioOutput', () => {
     context.state = 'suspended';
     audio.unlock();
     expect(context.state).toBe('running');
+  });
+
+  it('P12-R06 (synthwave): with a reverb length, a convolver feeds the music bus', () => {
+    const context = new FakeAudioContext();
+    expect(output(context).unlock()?.reverb).toBeUndefined();
+    const wet = new FakeAudioContext();
+    const buses = output(wet, { reverbSeconds: 0.5 }).unlock();
+    const reverb = wet.nodes.find((n) => n instanceof FakeConvolver);
+    expect(buses?.reverb).toBe(reverb);
+    expect(reverb?.buffer).not.toBeNull();
+    expect(reverb?.outputs).toEqual([buses?.music]);
   });
 });

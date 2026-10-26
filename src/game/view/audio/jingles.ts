@@ -14,10 +14,10 @@ function jingle(id: string, bpm: number, beats: number, notes: Note[]): Track {
   return { id, bpm, beats, notes: [...notes].sort((a, b) => a.beat - b.beat), loop: false };
 }
 
-/** "Level complete": a rising major fanfare. */
+/** "Level complete": a rising major synthwave fanfare, a supersaw over a tom fill. */
 const COMPLETE = jingle('jingle-complete', 132, 8, [
   ...line(
-    'lead-square',
+    'lead-saw',
     [
       [0, 0.5, 72],
       [0.5, 0.5, 76],
@@ -49,17 +49,19 @@ const COMPLETE = jingle('jingle-complete', 132, 8, [
     0.9,
   ),
   ...line(
-    'snare',
+    'tom',
     [
-      [3, 0.25, DRUM_PITCH],
-      [3.25, 0.25, DRUM_PITCH],
+      [3, 0.25, DRUM_PITCH + 12],
+      [3.25, 0.25, DRUM_PITCH + 7],
+      [3.5, 0.25, DRUM_PITCH + 3],
     ],
     0.8,
   ),
+  ...line('snare-gated', [[4, 0.5, DRUM_PITCH]], 0.9),
   ...line('kick', [[4, 0.5, DRUM_PITCH]], 1),
 ]);
 
-/** "Game over": a slow, falling minor line. */
+/** "Game over": a slow, falling darksynth line on analog brass. */
 const OVER = jingle('jingle-over', 84, 8, [
   ...line(
     'lead-brass',
@@ -86,7 +88,7 @@ const OVER = jingle('jingle-over', 84, 8, [
   ...line('bass-heavy', [[0, 7, 36]], 0.8),
 ]);
 
-/** "Checkpoint reached": a short bright chime over the music. */
+/** "Checkpoint reached": a short bright FM bell chime over the music, with its echo. */
 const CHECKPOINT = jingle('jingle-checkpoint', 120, 3, [
   ...line(
     'bell',

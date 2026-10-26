@@ -47,6 +47,20 @@ export interface ToneLayer {
 export interface Instrument {
   readonly layers: readonly ToneLayer[];
   readonly gain: number;
+  /** Share of it sent to the track's tempo-synced echo (0..1): synthwave arpeggios and leads. */
+  readonly echo?: number;
+  /** Share of it sent to the music reverb (0..1): pads, snares, leads. */
+  readonly reverb?: number;
+}
+
+/** The music's effects: a tempo-synced echo per track and a shared reverb. */
+export interface MusicEffects {
+  /** Echo delay, in beats (0.75: a dotted eighth). */
+  readonly echoBeats: number;
+  /** Share of each echo fed back into the next one. */
+  readonly echoFeedback: number;
+  /** Reverb tail, in seconds. */
+  readonly reverbSeconds: number;
 }
 
 /** A sound effect (P12-R09, P12-R10). */
