@@ -1,20 +1,21 @@
 /**
- * Cyberpunk night city behind the menus (P01-R05, GD-60): dark sky and buildings, neon
- * windows, signs and roof trims, haze and rain (review feedback, D-012, D-014).
+ * Darksynth night behind the menus (P01-R05, GD-60; reviewer, 2026-10-26, D-103): a crimson
+ * sunset glow behind a black skyline, a dark street of towers with magenta, red and violet
+ * windows, signs and roof trims, haze and rain (D-012).
  * Linear RGB, 0..1. Distances in world units; heights in gradient stops go from -1 (bottom)
  * to 1 (top).
  */
 const NEON = [
-  [1, 0.12, 0.55],
-  [0.1, 0.95, 1],
-  [1, 0.85, 0.1],
-  [0.65, 0.3, 1],
+  [1, 0.08, 0.55],
+  [1, 0.12, 0.22],
+  [0.6, 0.15, 1],
+  [1, 0.35, 0.75],
 ] as const;
 
 const WINDOW_COLORS = [
-  [1, 0.75, 0.4],
-  [0.35, 0.85, 1],
-  [1, 0.3, 0.7],
+  [0.95, 0.08, 0.4],
+  [0.6, 0.1, 0.9],
+  [1, 0.12, 0.18],
 ] as const;
 
 export const TITLE_LOOK = {
@@ -22,19 +23,19 @@ export const TITLE_LOOK = {
   seed: 2077,
   camera: { position: [0, 4, -8], target: [0, 5.5, 40], fov: 0.8 },
   /** Haze colour; also the clear colour, so the street melts into the distance. */
-  horizon: [0.07, 0.025, 0.12],
+  horizon: [0.11, 0.01, 0.07],
   fog: { start: 30, end: 190 },
   sky: {
     z: 340,
     width: 900,
     height: 400,
     centerY: 150,
-    /** Purple glow of the city lights near the horizon, black higher up. */
+    /** Crimson glow of the sunset near the horizon, through violet, to black higher up. */
     stops: [
-      { at: -1, color: [0.2, 0.05, 0.26] },
-      { at: -0.7, color: [0.1, 0.03, 0.18] },
-      { at: -0.2, color: [0.03, 0.015, 0.08] },
-      { at: 1, color: [0.005, 0.005, 0.02] },
+      { at: -1, color: [0.34, 0.015, 0.15] },
+      { at: -0.7, color: [0.22, 0.02, 0.17] },
+      { at: -0.2, color: [0.05, 0.008, 0.08] },
+      { at: 1, color: [0.006, 0.002, 0.016] },
     ],
   },
   /** Distant towers, flat, in front of the sky; not fogged. */
@@ -44,7 +45,7 @@ export const TITLE_LOOK = {
     halfWidth: 420,
     width: [10, 30],
     height: [40, 150],
-    color: [0.03, 0.02, 0.06],
+    color: [0.018, 0.004, 0.03],
     windows: {
       cellWidth: 3,
       cellHeight: 4,
@@ -80,15 +81,15 @@ export const TITLE_LOOK = {
         signs: false,
       },
     ],
-    colors: { wall: [0.035, 0.035, 0.07], facade: [0.06, 0.05, 0.095], roof: [0.02, 0.02, 0.04] },
+    colors: { wall: [0.04, 0.02, 0.06], facade: [0.07, 0.03, 0.09], roof: [0.02, 0.01, 0.035] },
     street: {
       halfWidth: 80,
-      color: [0.012, 0.012, 0.025],
+      color: [0.015, 0.005, 0.025],
       laneX: [-3, 3],
       dash: 3,
       dashPeriod: 8,
       lineWidth: 0.15,
-      lineColor: [0.05, 0.35, 0.45],
+      lineColor: [0.55, 0.04, 0.38],
     },
     windows: {
       cellWidth: 2.2,
@@ -97,7 +98,7 @@ export const TITLE_LOOK = {
       height: 1.5,
       groundFloor: 3,
       litChance: 0.3,
-      brightness: [0.4, 1],
+      brightness: [0.3, 0.75],
       colors: WINDOW_COLORS,
     },
     neonColors: NEON,
@@ -120,7 +121,7 @@ export const TITLE_LOOK = {
     z: [0, 60],
     length: [0.8, 1.6],
     width: 0.04,
-    color: [0.22, 0.28, 0.4],
+    color: [0.32, 0.12, 0.3],
     /** Fall speed, in units per second. */
     speed: 30,
   },

@@ -1145,3 +1145,32 @@
 - **Consequences:** The order of the streams in `player-weapons.ts` is now the firing order.
 - **Status:** Accepted
 
+### D-103 — Darksynth look for the menus and the HUD, no cyberpunk
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; look requirements in phase 1, P01-R05 and P01-R13)
+- **Context:** The reviewer asked to rework the main menu and the game UI, drop the cyberpunk reference and make it darksynth, matching the music (D-099..D-101). D-013 and D-014 had made the overlay cyberpunk (acid yellow / cyan / red, glitch split, corner brackets, terminal hints) over a night city.
+- **Decision:**
+  - Overlay (`index.html` only, same markup): tokens `--hot` (magenta), `--violet`, `--red`, black-violet glass, `--sunset` and `--chrome` gradients. The logo is chrome italic letters (background-clipped gradient with a horizon line) in a slow magenta / red glow, over a striped sunset sun drawn in CSS (`.title-sun`, a masked gradient disc; removed at the reviewer's request, D-104). Neon glows replace the red / cyan glitch split; a thin neon frame and a sunset line replace the corner brackets and the status tag; hints lose the terminal prompt and cursor (a slow pulse). Selected entries are a magenta gradient block with black text, markers unchanged (they still show without colour).
+  - Backdrop: the night city stays, recoloured: crimson sunset sky, near-black skyline, magenta / red / violet windows and neon, magenta lane lines, dimmer near windows.
+- **Alternatives considered:** a 3D striped sun behind the skyline (tried: the fogged towers of the street hide all but a sliver of it, so it read as an odd shape); replacing the city by the classic sun and neon grid (more synthwave than darksynth, and the reviewer asked to rework the look, not the scene).
+- **Consequences:** D-013 and D-014 are superseded for the look. All the game's pages share these styles (the debug viewers too).
+- **Status:** Accepted
+
+### D-104 — A pilot instead of the ship in the menu backdrop (reverted)
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P01-R05)
+- **Context:** The reviewer asked to remove the sun from the main menu and to replace the ship by a model of a fighter pilot with tons of wires linking the helmet to the seat, then refined it over four rounds (a close-up, anime-styled; cel-shaded; mirrored and more realistic; after a 90s anime reference image).
+- **Decision:** the pilot was generated in code (pure part data, then Babylon meshes with a cel-shading shader and ink outlines). The reviewer then asked to revert to the player ship and to delete all the pilot code: the backdrop shows the balanced ship again (`title_ship_rotation_speed`), and the pilot model, its meshes, its curve helpers, the toon material and their tests are deleted. Only the sun emblem's removal stays.
+- **Alternatives considered:** keeping the pilot code unused for later (the reviewer asked for it to be deleted).
+- **Consequences:** none left in the code; this entry records the experiment.
+- **Status:** Reverted
+
+### D-105 — The boss health bar moves to the left edge
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P07-R02)
+- **Context:** The reviewer found that the boss's name and health bar, a panel at the top of the playfield, hid the boss, which fights in the upper part of the screen.
+- **Decision:** a slim vertical gauge up the left edge, under the player's health panel (top 96 px, 300 px tall, 8 px wide, no panel): it fills from the bottom, the part notches are ticks across it, the kind and name are written along it bottom to top. The left edge is clear of the score, the pause button and, on touch screens, the fire and bomb buttons (bottom right).
+- **Alternatives considered:** a slimmer, see-through bar at the top (still over the boss); the bottom of the screen (over the player's ship); the top HUD row in place of the progress bar (too narrow between the health panel and the pause button for the name).
+- **Consequences:** P07-R02 amended at the reviewer's request.
+- **Status:** Accepted
+

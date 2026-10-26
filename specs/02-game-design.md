@@ -57,8 +57,7 @@ itle ──start──▶ Select Ship t──▶ Select level ──▶Game ─�
 ```
 
 ## 8. Visual style
-- GD-60 Art direction: All the models shall be generated from code, the style shall be Cyber
-punk/synthwave
+- GD-60 Art direction: All the models shall be generated from code, the style shall be darksynth (reviewer, 2026-10-26; was "Cyberpunk/synthwave"): dark, neon magenta, violet and blood red, sunset gradients, chrome
 - GD-61 Palette: The player ship shall be shiny grey/blue. The enemies shall be dark metalic with neon lights.
 - GD-62 Effects: Particle effect shall be emitted every time a projectil hits a ship. Explosions shall be generated when a ship isdestroyed.
 ## 9. Audio

@@ -108,7 +108,7 @@ If Web Audio is missing or fails, the game runs silently without errors. Generat
 ### P12-R06 — Level music  · MUST
 
 Every level (`1-1` to `4-5`) has its own music (GD-70), generated from that level's data:
-- each world has a style that matches its look, in the cyberpunk / synthwave direction (GD-60): World 1 (desert and sea) bright and driving, World 2 (Frozen North) cold and airy, World 3 (Jungle) percussive, World 4 (Volcanic Lands) dark and heavy;
+- each world has a style that matches its look, in the darksynth direction (GD-60; reviewer, 2026-10-26, was cyberpunk / synthwave): World 1 (desert and sea) bright and driving, World 2 (Frozen North) cold and airy, World 3 (Jungle) percussive, World 4 (Volcanic Lands) dark and heavy;
 - every track is synthwave (reviewer, 2026-10-26): 80s analog-style synths (detuned saw pads and leads, plucked arpeggios with tempo-synced echoes, pumping or rolling saw basses), drum-machine drums with big gated snares and synth toms, and reverb; the world styles above are synthwave flavours (World 1 outrun, World 2 dreamwave, World 3 synthwave with tom-heavy percussion, World 4 darksynth);
 - every track leans darksynth (reviewer, 2026-10-26): minor, harmonic minor or phrygian keys, heavy kicks, growling basses and dark pads in every world and the menu theme; World 1 keeps its driving outrun beat (it is no longer bright), World 2 its cold glassy bells, World 3 its toms, World 4 is the heaviest;
 - every track is energetic (reviewer, 2026-10-26): driving drums from the first bar, sixteenth-note arpeggios, no bare breakdown, a rising sweep into each section, and faster tempos (see **Tunable values**);
@@ -162,7 +162,7 @@ Sounds that follow a position (shots, hits, explosions) are panned left or right
 **Acceptance criteria**
 - [ ] Given each event of the table, then the audio layer plays its sound when the core or menu event happens (unit test with a fake audio context, one case per event).
 - [ ] Given an explosion at the left edge of the playfield, then its pan is `-sfx_pan_max`; at the centre, 0 (unit test).
-- [ ] Given each sound, then the reviewer finds it fits the cyberpunk look and is not unpleasant for a child (manual check).
+- [ ] Given each sound, then the reviewer finds it fits the darksynth look and is not unpleasant for a child (manual check).
 
 ### P12-R10 — Mixing limits  · MUST
 
@@ -279,6 +279,10 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - [x] (2026-10-26, reviewer) Rework the music: all synthwave and more energetic.
 - [x] (2026-10-26, reviewer) Make the music more darksynth.
 - [x] (2026-10-26, reviewer) Make the player bullet sound like a minigun (BRRRT).
+- [x] (2026-10-26, reviewer) Rework the main menu and the game UI, drop the cyberpunk reference, make it darksynth. *Done under P01-R13 (phase 1 spec and report), D-103.*
+- [x] (2026-10-26, reviewer) Remove the sun from the main menu; replace the ship by a wireframe fighter pilot with tons of wires from the helmet to the seat; then four rounds on the pilot (close-up anime, cel-shaded, mirrored and realistic, a 90s anime reference). *Sun removed; the pilot was reverted (next item).*
+- [x] (2026-10-26, reviewer) Revert to the player ship and delete all the pilot code. *Done under P01-R05 (phase 1 review feedback); D-104 reverted.*
+- [x] (2026-10-26, reviewer) Change the boss name / health bar, it hides the boss. *Done under P07-R02 (phase 7 spec and review feedback), D-105.*
 - [x] (2026-10-26, reviewer) When the player shoots several bullets or missiles, do not fire them all at once: alternate between the streams, without changing the global firing rate. *Added to the shots spec as P03-R11.*
 
 ---
@@ -331,6 +335,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - **Alternating streams (review 5, P03-R11 added to the shots spec):** `ShotWorld` fires a level's streams one after the other in their listed order (bullets: centre, then left / right pairs from the inside out; missiles likewise), one shot every 1 / (rate × streams) s, so each stream keeps its rate and a level its shots per second and damage. A volley still starts at once when fire is pressed or the weapon changes. `ShotWorld.volleys` counts volleys; `LevelCues` sounds `fire:<weapon>` once per volley (at the ship's x), so the minigun rattle and the missile launch keep their cadence. Tests: `shot-world.test.ts` (alternation, rate), `level-cues.test.ts`, app audio test. (D-102)
 - Unit tests that were already failing before this review fix (found while running the affected suites; not changed here, left for `/validate-phase`): `menu-flow-pause.test.ts` (3), `start-app-pause.test.ts` (1), `music-player.test.ts` (2), `test-api.test.ts` (1).
 - Light verification (reviews 4 and 5): typecheck ✔, build ✔, e2e 116 passed (4.6 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
+- **Darksynth UI (review 6):** menus, pause, settings, HUD and panels restyled darksynth, the menu backdrop recoloured, the cyberpunk references dropped from GD-60, phase 1 and this spec at the reviewer's request; details in the phase 1 review feedback and D-103. Tests: `title-backdrop.test.ts` (dark sky, bright neon). Checked by eye in screenshots at 700×900 (title, level select, game HUD, pause). Then (review 7) the logo's sun emblem was removed, and the menu ship was replaced by a pilot model over five rounds before the reviewer asked to revert to the ship and delete all the pilot code (D-104, reverted): the backdrop is the ship again, with no pilot code left.
+- Light verification (reviews 6 and 7, with the ship back and the boss bar on the left edge): typecheck ✔, build ✔, e2e 116 passed. Lint, unit tests and coverage still deferred to `/validate-phase`.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.

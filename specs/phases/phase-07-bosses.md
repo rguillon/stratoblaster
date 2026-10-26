@@ -34,7 +34,7 @@ A boss is one ship made of a **core** and several **destroyable parts** (turrets
 
 ### P07-R02 — Boss health bar  · MUST
 
-While a boss fight lasts, a health bar is shown at the top of the playfield, in the HUD style (D-013/D-014), with the boss's name and its kind ("MINI BOSS" / "BOSS").
+While a boss fight lasts, a health bar is shown as a slim vertical gauge along the left edge of the playfield, under the player's HUD, so it never hides the boss (reviewer, 2026-10-26; was "at the top of the playfield", where it hid the boss), in the HUD style (D-013/D-014, D-103), with the boss's name and its kind ("MINI BOSS" / "BOSS").
 - The bar shows the boss's remaining HP, the core and all its parts together, against its full HP.
 - It fills up over 1 s when the boss arrives, goes down as any part or the core is damaged, and is removed when the boss is destroyed.
 - Small notches on the bar mark the share of each destroyable part, so the player can see how much a part is worth.
@@ -235,6 +235,7 @@ Like the levels (P06-R08), the bosses get harder from 1-1 to 1-5, and every boss
 - [x] (reviewer, in chat, 2026-10-25) Make the bosses roll a little when they move left / right. — Done: a boss model rolls into its sideways moves, the wing on the side it flies to dipping, up to 12° at its fastest sway (60 px/s), easing in and out; visual only, its hit circles do not turn (`boss-model.ts`, `BOSS_LOOK.roll`, `boss-models.test.ts`; moved to `Boss.roll` / `BOSS_TIMING.roll` by the muzzle fix above).
 - [x] (reviewer, in chat, 2026-10-25) Add a `boss/` debug endpoint to see all the bosses. — Done: `boss/` opens the bosses page (the same as `bosses/`: every boss, its fight, model and wireframe views; `app/route.ts`, `boss/index.html`, `route.test.ts`, e2e `bosses.spec.ts`).
 
+- [x] (2026-10-26, reviewer, during the phase 12 review) Change the boss name / health bar, it hides the boss. *Fixed: the bar is now a slim gauge (8 px wide, 300 px tall) up the left edge of the playfield, under the player's health panel, filling from the bottom, with the part notches as ticks and the kind and name written along it, bottom to top; no panel behind it. `ui/boss-bar.ts` sets the fill's height and the notches' bottom; the rest is CSS in `index.html`. P07-R02 amended at the reviewer's request (D-105).*
 ---
 
 ## 🤖 Implementation report

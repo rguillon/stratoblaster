@@ -6,7 +6,7 @@ import { strut } from './jungle-parts';
 import { stain } from './volcanic-parts';
 
 // P10-R08: the enemy's war factory on the caldera rim of 4-5 (vaulted hangars, launch pads,
-// armoured towers) and the fortress city at the edge of the magma lake, in the game's cyberpunk
+// armoured towers) and the fortress city at the edge of the magma lake, in the game's darksynth
 // style: soot-black armour and dark iron with red, cyan and orange neon (GD-60, GD-61). Sizes in
 // world units, standing on Y = 0; the front faces -Z.
 
