@@ -16,6 +16,7 @@
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
 | 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
 | 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
+| 12 | `phases/phase-12-pause-music-settings.md` | ⚪ Not started | `phase-12` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->

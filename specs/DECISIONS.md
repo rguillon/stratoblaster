@@ -1052,3 +1052,16 @@
 - **Alternatives considered:** dropping type-aware ESLint rules from the hooks (they catch real bugs; the gate would find them late); unit tests on changed files only at push (`vitest --changed`; misses tests affected through imports it does not see); Vitest `isolate: false` (about 3 s less, but test files would share module state).
 - **Consequences:** measured locally, `pre-commit` takes about 8 s on the same 27 files (Prettier 1 s, ESLint 4.7 s, `tsc` 2.2 s) and a few seconds on a small commit; `make check-fast` takes about 18.5 s when the caches are warm, 12 s of which are the unit tests, and about 44 s cold. With the ESLint cache, a file is not re-linted at push when only a file it imports changed, so a type-aware lint error can wait for `make check` / CI. `make clean` removes `node_modules/.cache`.
 - **Status:** Accepted
+
+### D-095 — Phase 12 spec defaults (pause, music, settings)
+- **Date:** 2026-10-26
+- **Phase:** 12 (spec drafted by the agent at the reviewer's request)
+- **Context:** The reviewer asked the agent to fill the Phase 12 spec with software-generated music and sound, pause / resume / main menu, and music and sound volume settings. GD §2 binds Pause to `Esc / P`, but P01-R09, P06-R02 and D-041 made `Esc` leave the level; GD-70 / GD-71 leave the music and sound design open; ENG-07 and ENG-120 assume `localStorage` and audio files.
+- **Decision:**
+  - In the game screen, `Escape`, `KeyP`, gamepad Start and Select, and a touch `❚❚` button pause; `Backspace` and gamepad B do nothing there. Leaving a level goes through the pause menu (Resume, Settings, Main menu with a `Leave the level?` No / Yes question). `Escape` stays Back in the menus.
+  - The level pauses itself when the page is hidden or the gamepad in use is disconnected, and never resumes by itself.
+  - A Settings screen, from the title and the pause menu, has two 0–10 sliders (Music 6, Sound effects 8 by default), saved in cookies (D-010). No master volume, remapping or graphics settings.
+  - All audio is generated with the Web Audio API: music and SFX buses into a limiter, a lookahead sequencer, unlock on the first input. One deterministic track per level in a per-world style, one boss track per world, a menu theme, and three jingles. A fixed list of sound effects, at most 16 voices with priorities.
+- **Alternatives considered:** keeping `Esc` = leave and pausing with `P` only (contradicts GD §2, and a single key that quits a level is easy to hit by accident); a pause countdown (slower to resume, not asked); per-level hand-written music data (20 songs by hand, against GD-70's "code generated").
+- **Consequences:** P06-R02 and D-041's "Esc leaves" wording is superseded in the game screen. ENG-54's pause/resume smoke step and ENG-110's hidden-tab pause are covered. The rest of ENG-112 stays unscheduled. Quality presets (ENG-102) were removed from `01-engineering.md` by the reviewer (2026-10-26).
+- **Status:** Accepted
