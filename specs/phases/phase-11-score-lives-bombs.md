@@ -218,7 +218,8 @@ None. The spec was drafted by the agent at the reviewer's request (D-091) and ap
 ### Gate results
 ```
 Light verification (implementation): make typecheck ✔ / make build ✔ / make e2e ✔ 95 passed (7.8 min), of which 7 new in `score-bombs.spec.ts`
-Lint, unit tests and coverage: not run (deferred to /validate-phase, CLAUDE.md).
+Full gate (validation, make check): lint ✔ / typecheck ✔ / tests 1432 passed (156 files) / coverage 99.42 % lines, 87.18 % branches, 98.73 % functions, 98.68 % statements (Phase 10: 99.42 % lines) / build ✔ / e2e 95 passed (7.3 min)
+The first run failed 2 earlier tests that did not expect Phase 11's changes: `LevelResult.score` (start-app), and the mini boss's life bonus (level-run-bosses P07-R07). Both expectations were updated (e777e12).
 ```
 
 ### How to test manually
