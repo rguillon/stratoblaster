@@ -10,7 +10,9 @@ import {
 } from '../../../../src/game/config/world-3/props';
 import { PLAN_3_1 } from '../../../../src/game/config/world-3/waves';
 import { composeBeats } from '../../../../src/game/config/world-2/waves';
-import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { ELITE_KINDS } from '../../../../src/game/sim/elite-kinds';
+import { VETERAN_KINDS } from '../../../../src/game/sim/veteran-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_2 } from '../../../../src/game/sim/world-2';
 import { WORLD_3 } from '../../../../src/game/sim/world-3';
@@ -40,16 +42,15 @@ const PLANTS = new Set([
 ]);
 
 describe('World 3', () => {
-  it('P09-R01: five playable levels, 3-1 to 3-5, all unlocked; worlds 4 and 5 stay locked', () => {
+  it('P09-R01: five playable levels, 3-1 to 3-5, all unlocked', () => {
     expect(WORLD_3.map((l) => l.id)).toEqual(['3-1', '3-2', '3-3', '3-4', '3-5']);
     const row = LEVELS.levels.filter((l) => l.world === 3);
     expect(row.map((l) => [l.id, l.unlocked])).toEqual(WORLD_3.map((l) => [l.id, true]));
-    expect(LEVELS.levels.filter((l) => l.world > 3).every((l) => !l.unlocked)).toBe(true);
-    // 3-1 comes right after 2-5 in the grid (completing 2-5 highlights it); after 3-5 comes a
-    // locked level, so 3-5 stays highlighted.
+    // 3-1 comes right after 2-5 in the grid (completing 2-5 highlights it); after 3-5 comes
+    // 4-1 (P10-R01).
     const ids = LEVELS.levels.map((l) => l.id);
     expect(ids.indexOf('3-1')).toBe(ids.indexOf('2-5') + 1);
-    expect(LEVELS.levels[ids.indexOf('3-5') + 1]?.unlocked).toBe(false);
+    expect(LEVELS.levels[ids.indexOf('3-5') + 1]?.id).toBe('4-1');
   });
 
   it('P09-R02: each level lasts about 5 minutes (290 to 310 s) at its ground speed', () => {
@@ -181,11 +182,21 @@ describe('World 3', () => {
     expect(clearing?.to).toBeLessThan(300);
   });
 
-  it('P09-R07: each wave script uses only its level’s kinds; 3-2 to 3-5 use all eleven', () => {
+  it('P09-R07, P05-R24: each wave script uses only its level’s kinds; 3-2 to 3-5 use all eleven first kinds; a veteran kind more at each level', () => {
     const kinds = (id: string) => [...new Set(level(id).waves.map((w) => w.kind))].sort();
-    expect(kinds('3-1')).toEqual(['gnat', 'hornet', 'scout', 'splitter', 'strafer', 'weaver']);
-    for (const id of ['3-2', '3-3', '3-4', '3-5'])
-      expect(kinds(id), id).toEqual(ENEMY_KINDS.map((k) => k.id).sort());
+    const veterans = (n: number) => VETERAN_KINDS.slice(0, n).map((k) => k.id);
+    expect(kinds('3-1')).toEqual(
+      ['gnat', 'hornet', 'scout', 'splitter', 'strafer', 'weaver', ...veterans(1)].sort(),
+    );
+    // Wasps, then Mortars, Minelayers, Mantises and Phantoms.
+    const order = ['wasp', 'mortar', 'minelayer', 'mantis', 'phantom'];
+    for (const [i, id] of ['3-2', '3-3', '3-4', '3-5'].entries())
+      expect(kinds(id), id).toEqual(
+        [...FIRST_KINDS.map((k) => k.id), ...order.slice(0, i + 2)].sort(),
+      );
+    // No elite kind before World 4.
+    for (const game of WORLD_3)
+      expect(kinds(game.id).some((k) => ELITE_KINDS.some((e) => e.id === k))).toBe(false);
     // Each level's lead kinds come often.
     const count = (id: string, kind: string) =>
       level(id).waves.filter((w) => w.kind === kind).length;

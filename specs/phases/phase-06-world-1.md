@@ -16,13 +16,13 @@ World 1 has five playable levels, 1-1 to 1-5, each about 4 minutes long. The fir
 
 ### P06-R01 — World 1 in the level select  · MUST
 
-World 1 has **5 levels**, like every world (vision, P01-R07). The World 1 row of the level select grid shows `1-1` to `1-5`, and all five are unlocked. Levels are never locked by progress: the player can pick any existing level at any time, without finishing the levels before it (reviewer's choice, 2026-10-24). Worlds 2 to 5 do not exist yet, so they stay greyed out, 5 levels each, until they are built. Which levels exist and which are unlocked still comes from `src/game/` data (ENG-142/144).
+World 1 has **5 levels**, like every world (vision, P01-R07). The World 1 row of the level select grid shows `1-1` to `1-5`, and all five are unlocked. Levels are never locked by progress: the player can pick any existing level at any time, without finishing the levels before it (reviewer's choice, 2026-10-24). Worlds 2 to 4 do not exist yet, so they stay greyed out, 5 levels each, until they are built (World 5 dropped by the reviewer, 2026-10-26). Which levels exist and which are unlocked still comes from `src/game/` data (ENG-142/144).
 
 **Acceptance criteria**
 - [ ] Given `level-select`, then the World 1 row shows exactly `1-1`, `1-2`, `1-3`, `1-4` and `1-5`, all unlocked.
 - [ ] Given any World 1 level is confirmed, then the `game` screen starts that level.
 - [ ] Given a fresh start (no cookie), then `1-5` can be confirmed straight away, without playing `1-1` to `1-4`.
-- [ ] Given a level of worlds 2 to 5, then it is still greyed out (not built yet).
+- [ ] Given a level of worlds 2 to 4, then it is still greyed out (not built yet).
 
 ### P06-R02 — Playable level  · MUST
 

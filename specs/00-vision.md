@@ -35,5 +35,5 @@ An old school shoot them up with modern graphics.
 
 ## Definition of "done" for the whole project
 
-The first release consists of 5 worlds of 5 levels each. 
+The first release consists of 4 worlds of 5 levels each (World 5 dropped by the reviewer, 2026-10-26; was 5 worlds).
 

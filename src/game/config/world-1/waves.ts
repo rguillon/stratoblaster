@@ -9,7 +9,7 @@ import type { WaveScript } from '../../../core/systems/wave-runner';
  * Gnats come in groups of five; every other kind one by one.
  */
 
-type Kind =
+export type Kind =
   | 'gnat'
   | 'hornet'
   | 'scout'
@@ -20,7 +20,18 @@ type Kind =
   | 'spinner'
   | 'lancer'
   | 'rocketeer'
-  | 'bulwark';
+  | 'bulwark'
+  // P05-R24: the veteran and elite kinds (Worlds 3 and 4).
+  | 'wasp'
+  | 'mortar'
+  | 'mantis'
+  | 'phantom'
+  | 'minelayer'
+  | 'hydra'
+  | 'orbiter'
+  | 'scissor'
+  | 'juggernaut'
+  | 'hive';
 
 type Beat = readonly [
   seconds: number,

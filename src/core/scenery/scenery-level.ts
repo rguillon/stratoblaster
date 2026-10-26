@@ -228,6 +228,11 @@ export interface PropLine {
    * the ground, or at the sea level where the ground is under it.
    */
   readonly overWater?: boolean;
+  /**
+   * Phase 10: the pieces move to and fro together (ore wagons along a rail line), as floating
+   * props drift (`PropKindRule.drift`).
+   */
+  readonly drift?: { readonly x: number; readonly z: number; readonly period: number };
 }
 
 /**

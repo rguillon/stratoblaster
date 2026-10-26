@@ -25,6 +25,17 @@ const KINDS = [
   'Bulwark',
   'Splitter',
   'Carrier',
+  // P05-R24: the veteran and elite kinds.
+  'Wasp',
+  'Mortar',
+  'Mantis',
+  'Phantom',
+  'Minelayer',
+  'Hydra',
+  'Orbiter',
+  'Scissor',
+  'Juggernaut',
+  'Hive',
 ];
 
 test.describe('P05: enemies/ page', () => {
@@ -43,7 +54,7 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
   });
 
-  test('P05-R11: loads without errors, with the 11 enemy kinds and the debug tile', async ({
+  test('P05-R11, P05-R24: loads without errors, with the 21 enemy kinds and the debug tile', async ({
     page,
   }) => {
     await expect(page.locator('.enemy-kind button')).toHaveText(KINDS);
@@ -51,9 +62,9 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
   });
 
-  test('P05-R01..R12: every enemy kind can be picked, spawns and attacks', async ({ page }) => {
-    // Eleven kinds in turn: about 70 s on a 4-core CI runner.
-    test.setTimeout(150_000);
+  test('P05-R01..R24: every enemy kind can be picked, spawns and attacks', async ({ page }) => {
+    // 21 kinds in turn: about 140 s on a 4-core CI runner.
+    test.setTimeout(300_000);
     await page.keyboard.press('f');
     for (const [i, name] of KINDS.entries()) {
       await page.locator('.enemy-kind button').nth(i).click();

@@ -19,12 +19,26 @@ interface LaserPools {
 }
 
 /** The colour of the lasers of `style`: a boss's neon, or the Lancer's red (phase 8 review). */
-function colorOf(style: string): readonly [number, number, number] {
+function colorOf(style: string): Rgb {
   return BOSS_LOOK.neon[style] ?? LOOK.color;
 }
 
-function lasersOf(scene: Scene, style: string): LaserPools {
-  const palette = laserPalette(colorOf(style));
+type Rgb = readonly [number, number, number];
+
+/** A warning line with a white core, standing out over red grounds (P10-R07). */
+function contrastWarning([r, g, b]: Rgb): readonly Rgb[] {
+  const t = ENEMY_LOOK.contrast.warningCore;
+  return [
+    [r + (1 - r) * t, g + (1 - g) * t, b + (1 - b) * t],
+    [r, g, b],
+    [r * 0.5, g * 0.5, b * 0.5],
+    [0, 0, 0],
+  ];
+}
+
+function lasersOf(scene: Scene, style: string, contrast: boolean): LaserPools {
+  const base = laserPalette(colorOf(style));
+  const palette = contrast ? { ...base, warning: contrastWarning(colorOf(style)) } : base;
   const name = (part: string): string => `enemy-laser-${part}-${style}`;
   // Drawn over the models: a beam leaves its emitter's lens, not from under the hull around it.
   const templates = [
@@ -47,7 +61,11 @@ function lasersOf(scene: Scene, style: string): LaserPools {
   };
 }
 
-function syncWarnings(pool: NodePool<Mesh>, warnings: readonly EnemyLaser[], time: number): void {
+function syncWarnings(
+  pool: NodePool<Mesh>,
+  warnings: readonly EnemyLaser[],
+  [time, width]: readonly [number, number],
+): void {
   // The warning line blinks: drawn at full or half width.
   const blink = Math.sin(2 * Math.PI * LOOK.warning.blinkHz * time) > 0 ? 1 : 0.5;
   pool.show(warnings.length).forEach((mesh, i) => {
@@ -55,7 +73,7 @@ function syncWarnings(pool: NodePool<Mesh>, warnings: readonly EnemyLaser[], tim
     if (!l) return;
     mesh.position.set(l.x, l.y, -0.8);
     mesh.rotation.z = -l.heading;
-    mesh.scaling.set(LOOK.warning.width * blink, l.length, 1);
+    mesh.scaling.set(width * blink, l.length, 1);
   });
 }
 
@@ -90,18 +108,24 @@ export class EnemyLasers {
   /** The pools of each style drawn so far. */
   readonly #styles = new Map<string, LaserPools>();
 
-  constructor(private readonly scene: Scene) {}
+  /** `contrast`: warning lines with a white core, wider (P10-R07). */
+  constructor(
+    private readonly scene: Scene,
+    private readonly contrast = false,
+  ) {}
 
   sync(lasers: readonly EnemyLaser[], time: number): void {
     for (const style of new Set(lasers.map((l) => l.spec.style))) {
-      if (!this.#styles.has(style)) this.#styles.set(style, lasersOf(this.scene, style));
+      if (!this.#styles.has(style))
+        this.#styles.set(style, lasersOf(this.scene, style, this.contrast));
     }
+    const scale = this.contrast ? ENEMY_LOOK.contrast.warningWidth : 1;
     for (const [style, pools] of this.#styles) {
       const own = lasers.filter((l) => l.spec.style === style);
       syncWarnings(
         pools.warning,
         own.filter((l) => l.phase === 'warning'),
-        time,
+        [time, LOOK.warning.width * scale],
       );
       syncBeams(
         pools,

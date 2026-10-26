@@ -61,10 +61,10 @@ describe('Boss models', () => {
   });
 
   it.each(BOSS_DESIGNS.map((d) => [d.id, d] as const))(
-    'P07-R05: the %s is about its size across, and within its triangle budget (≤ 6,000)',
+    'P07-R05: the %s is about its size across, and within its triangle budget (≤ 6,000; P10-R11: the Caldera Throne ≤ 7,000)',
     (id, design) => {
       const { model } = shown(id);
-      expect(triangles(model.root), id).toBeLessThanOrEqual(6000);
+      expect(triangles(model.root), id).toBeLessThanOrEqual(id === 'caldera-throne' ? 7000 : 6000);
       const { width, length } = extent(model.root);
       const size = (design.stats.radius * 2) / L;
       expect(Math.abs(Math.max(width, length) / L / size - 1), id).toBeLessThan(0.15);

@@ -29,6 +29,16 @@ import { buildMosquito } from './world-3/mosquito-model';
 import { buildDamBreaker } from './world-3/dam-breaker-model';
 import { buildJaguar } from './world-3/jaguar-model';
 import { buildVerdantCrown } from './world-3/verdant-crown-model';
+import { buildCinderCrab } from './world-4/cinder-crab-model';
+import { buildSteamDreadnought } from './world-4/steam-dreadnought-model';
+import { buildAshWraith } from './world-4/ash-wraith-model';
+import { buildGeyserRig } from './world-4/geyser-rig-model';
+import { buildMagmaSalamander } from './world-4/magma-salamander-model';
+import { buildObsidianGolem } from './world-4/obsidian-golem-model';
+import { buildFurnaceDrake } from './world-4/furnace-drake-model';
+import { buildFoundryArk } from './world-4/foundry-ark-model';
+import { buildEmberHerald } from './world-4/ember-herald-model';
+import { buildCalderaThrone } from './world-4/caldera-throne-model';
 
 /** One model per boss, keyed by its model key (the boss kind id, P07-R05). */
 export const BOSS_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
@@ -64,4 +74,15 @@ export const BOSS_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
   'dam-breaker': buildDamBreaker,
   jaguar: buildJaguar,
   'verdant-crown': buildVerdantCrown,
+  // World 4 (P10-R11).
+  'cinder-crab': buildCinderCrab,
+  'steam-dreadnought': buildSteamDreadnought,
+  'ash-wraith': buildAshWraith,
+  'geyser-rig': buildGeyserRig,
+  'magma-salamander': buildMagmaSalamander,
+  'obsidian-golem': buildObsidianGolem,
+  'furnace-drake': buildFurnaceDrake,
+  'foundry-ark': buildFoundryArk,
+  'ember-herald': buildEmberHerald,
+  'caldera-throne': buildCalderaThrone,
 };

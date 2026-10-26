@@ -43,6 +43,18 @@ export interface WeatherKind {
     readonly alpha: number;
   };
   /**
+   * Phase 10: `add` draws them added onto what is behind (self-lit sparks: embers); the default
+   * blends them (snow, rain, ash).
+   */
+  readonly blend?: 'add';
+  /** Phase 10: each particle's brightness flickers by up to `amount` (0..1), `hz` times a second. */
+  readonly flicker?: { readonly amount: number; readonly hz: number };
+  /**
+   * Phase 10: particles fade out over the top `share` (0..1) of the box of air they fill, as
+   * sparks cool rising (embers).
+   */
+  readonly fadeHigh?: number;
+  /**
    * The box of air they fill around the view: half its width across the level, its length along
    * it, and its bottom and top heights.
    */
@@ -54,7 +66,7 @@ export interface WeatherKind {
   };
 }
 
-/** The weather kinds of the engine (P08-R05, P09-R05). */
+/** The weather kinds of the engine (P08-R05, P09-R05, P10-R06). */
 export const WEATHER_KINDS: Readonly<Record<string, WeatherKind>> = {
   snow: {
     maxParticles: 1500,
@@ -83,6 +95,38 @@ export const WEATHER_KINDS: Readonly<Record<string, WeatherKind>> = {
     haze: { color: [0.52, 0.56, 0.6], share: 0.45 },
     rings: { color: [0.86, 0.9, 0.95], cell: 9, perCell: 1, radius: 2.2, period: 0.8, alpha: 0.32 },
     volume: { halfWidth: 420, length: 1100, bottom: 0, top: 300 },
+  },
+  // P10-R06: grey flakes falling slowly and drifting, a dull snow (`ash_flakes_max`); the haze
+  // comes closer and turns brown-grey with the strength.
+  ash: {
+    maxParticles: 1500,
+    fogAt1: 0.5,
+    fall: [12, 26],
+    wind: [4, 36],
+    size: [1, 1.9],
+    streak: 1.5,
+    sway: [5, 0.22],
+    color: [0.56, 0.54, 0.5],
+    alpha: 0.42,
+    haze: { color: [0.46, 0.41, 0.34], share: 0.6 },
+    volume: { halfWidth: 420, length: 1100, bottom: 0, top: 300 },
+  },
+  // P10-R06: small glowing orange sparks rising from the ground, flickering and fading as they
+  // cool (`embers_max`). Smaller than any bullet, no outline, always moving up the screen.
+  embers: {
+    maxParticles: 800,
+    fogAt1: 0.92,
+    fall: [-58, -28],
+    wind: [6, 26],
+    size: [0.45, 0.85],
+    streak: 0,
+    sway: [4, 0.6],
+    color: [1, 0.42, 0.06],
+    alpha: 0.9,
+    blend: 'add',
+    flicker: { amount: 0.65, hz: 4.5 },
+    fadeHigh: 0.45,
+    volume: { halfWidth: 420, length: 1100, bottom: 0, top: 280 },
   },
 };
 

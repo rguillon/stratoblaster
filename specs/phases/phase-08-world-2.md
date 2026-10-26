@@ -238,7 +238,7 @@ As in P07-R10:
 
 ## 🧑 Notes, references, sketches
 - **Drafted by the agent at the reviewer's request (2026-10-25); open choices for the reviewer, defaults proposed:**
-  1. World themes: World 2 the Frozen North, World 3 the Jungle (phase 9), World 4 the Volcanic Lands (phase 10). World 5 is left free (a suggestion: the enemy's orbital or sky capital).
+  1. World themes: World 2 the Frozen North, World 3 the Jungle (phase 9), World 4 the Volcanic Lands (phase 10). World 4 is the last world (World 5 dropped by the reviewer, 2026-10-26).
   2. No new regular enemy kinds in Worlds 2 to 4; the eleven phase 5 kinds come in harder mixes. Alternative: two or three new kinds per world, in their own phase or in each world phase.
   3. Levels last 5 minutes of scroll from World 2 on (vision); the boss fights add to it.
   4. A new world starts a little easier than the end of the previous one (2-1 ≥ 1-3, not ≥ 1-5).

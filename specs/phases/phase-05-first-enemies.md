@@ -147,6 +147,141 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 - [ ] Given a Carrier, then it never shoots.
 - [ ] Manual visual validation
 
+### Veteran and elite kinds (P05-R13 to P05-R24)
+
+Added at the reviewer's request (2026-10-26), after phase 10: ten new kinds, harder than the first eleven, for the harder worlds. The five **veteran** kinds (P05-R14 to P05-R18) join the waves from World 3, the five **elite** kinds (P05-R19 to P05-R23) only in World 4 (P05-R24). They follow GD-43 to GD-45 and GD-61 like the first kinds, each with its own neon colour. Their numbers are in **Tunable values**.
+
+### P05-R13 — Moving parts  · MUST
+
+Some new kinds carry **moving parts** like the bosses' limbs (D-061): a part hangs on a joint of the hull that swings to and fro, or orbits the hull. Each part is drawn on its joint and moves with it, and has its own hit circle, health and weapon:
+- the player's shots hit a part where it is now; the hull's own hit circle stays at its centre;
+- a destroyed part blows up (small explosion, GD-62), disappears from the model and stops its weapon; it gives no points and drops no bonus;
+- the enemy is destroyed when its hull's health reaches 0, which blows up every part still on it; the points are the kind's points;
+- a part's muzzles move with it, so its shots leave from where it is drawn.
+
+The moving parts are a game-agnostic engine feature; the kinds that use them are game data (`01-engineering.md` §2.3).
+
+**Acceptance criteria**
+- [ ] Unit test: a part's hit circle and muzzle follow its joint's swing (or its orbit).
+- [ ] Unit test: shooting a part to 0 destroys only that part and stops its weapon; the enemy is destroyed only with its hull, taking its remaining parts with it.
+
+### P05-R14 — Wasp (armed diver, veteran)  · MUST
+
+**Shape:** a small, wasp-like dart (0.6 L): a narrow striped abdomen, two pairs of thin swept wings and a yellow neon sting.
+
+**Behavior:** comes in groups of 3, side by side. Each enters from the top, stops for 0.4 s turning its nose to the player, fires a fan of 3 bullets aimed at the player (±12°), then dives at where the player was, like a Hornet (P05-R02).
+
+**Acceptance criteria**
+- [ ] Given a Wasp group spawns, then 3 Wasps come in side by side.
+- [ ] Given a Wasp ends its pause, then it fires its aimed fan of 3 once and dives toward the player position recorded at that moment.
+- [ ] Manual visual validation
+
+### P05-R15 — Mortar (burst shells, veteran)  · MUST
+
+**Shape:** a squat gunship (1.2 L) with a short, wide barrel on a raised mount in its middle, olive-green neon bands.
+
+**Behavior:** descends slowly. Every 2.5 s it lobs a big, slow shell aimed at the player; 1.2 s later the shell bursts into a ring of 8 bullets (phase 8 bursting bullets).
+
+**Acceptance criteria**
+- [ ] Given a Mortar fires, then its shell flies toward the player and bursts into 8 bullets evenly all around after the burst time.
+- [ ] Manual visual validation
+
+### P05-R16 — Mantis (scythe arms, veteran, moving parts)  · MUST
+
+**Shape:** an insect-like hull (1.4 L) with a narrow head and two long scythe arms folded forward, lime neon along the blades.
+
+**Behavior:** descends to the upper half and stops for 6 s, then leaves downward. Its two arms are moving parts (P05-R13) swinging out and in, out of step. While stopped, each arm fires a pair of bullets straight along its blade every 1.2 s, so its shots sweep as the arm swings. Its head fires an aimed bullet every 2 s.
+
+**Acceptance criteria**
+- [ ] Given a Mantis is stopped, then each living arm's shots leave along the arm's current direction.
+- [ ] Given an arm is destroyed, then that arm no longer fires; the head keeps firing.
+- [ ] Manual visual validation
+
+### P05-R17 — Phantom (cloaker, veteran)  · MUST
+
+**Shape:** a sleek flying wing (1 L) with a faceted hull and pale violet neon edges.
+
+**Behavior:** enters from the top and moves to a point in the upper half. Then, three times: it fades out over 0.4 s, stays invisible for 0.8 s, reappears at another point in the upper half (fading in over 0.4 s) and fires a spread of 5 bullets centred on the player (aimed fan, 12° apart). Then it leaves upward. While it is faded out, shots pass through it and it cannot ram the player.
+
+**Acceptance criteria**
+- [ ] Given a Phantom is faded out, then the player's shots cannot hit it.
+- [ ] Given a Phantom reappears, then it fires its aimed spread of 5 from its new place.
+- [ ] Manual visual validation
+
+### P05-R18 — Minelayer (mines, veteran)  · MUST
+
+**Shape:** a long, flat hull (1.3 L) with a mine rack along its belly and red-orange neon lights.
+
+**Behavior:** enters from the left or right side in the top half and crosses horizontally, like a Strafer (P05-R04). Every 0.8 s it drops a mine: a slow bullet drifting down that bursts into a ring of 6 bullets 1.5 s later.
+
+**Acceptance criteria**
+- [ ] Given a Minelayer crosses, then it drops a mine every drop interval, and each mine bursts into 6 bullets after its burst time.
+- [ ] Manual visual validation
+
+### P05-R19 — Hydra (three heads, elite, moving parts)  · MUST
+
+**Shape:** a broad hull (1.6 L) with three long necks forward, each ending in a head with a glowing teal eye.
+
+**Behavior:** descends to the upper third and stays 7 s, then leaves downward. Its three necks are moving parts (P05-R13) swaying out of step. The heads fire in turn, one every 0.5 s: each head fires a bullet aimed at the player.
+
+**Acceptance criteria**
+- [ ] Given a Hydra is in place, then its living heads fire aimed bullets in turn from where each head is.
+- [ ] Given every head is destroyed, then the Hydra no longer fires but can still be destroyed.
+- [ ] Manual visual validation
+
+### P05-R20 — Orbiter (orbiting drones, elite, moving parts)  · MUST
+
+**Shape:** a spherical core (1.1 L) with a glowing white-gold equator, and three small armoured drones orbiting it.
+
+**Behavior:** descends to the upper half and stays 8 s, then leaves upward. The three drones are moving parts (P05-R13) orbiting the core, close enough to catch shots aimed at it. Every 3 s the core fires a ring of 12 bullets; each drone fires a bullet aimed at the player every 2 s.
+
+**Acceptance criteria**
+- [ ] Given an Orbiter, then its drones turn around the core and the shots that hit a drone damage the drone, not the core.
+- [ ] Manual visual validation
+
+### P05-R21 — Scissor (twin lasers, elite, moving parts)  · MUST
+
+**Shape:** a long, narrow hull (1.8 L) with two laser arms hinged at its shoulders, crimson neon.
+
+**Behavior:** moves to the upper part of the screen and stops. Its arms are moving parts (P05-R13), angled 25° out from straight down. Each living arm shows a warning line along its direction for 1 s, then fires a laser along it for 2 s while both arms swing slowly 15° inward, so the two beams close like scissors; then it moves away. The warning line is shown before every laser (GD-43).
+
+**Acceptance criteria**
+- [ ] Given a Scissor starts its attack, then each living arm shows a warning line for 1 s before its laser appears on the same line.
+- [ ] Given its lasers are firing, then the beams turn with their arms; a destroyed arm's laser stops.
+- [ ] Manual visual validation
+
+### P05-R22 — Juggernaut (armoured brute, elite, moving parts)  · MUST
+
+**Shape:** a massive, wide hull (2 L) with two armour plates over its front and a shoulder cannon on each side, steel-blue neon.
+
+**Behavior:** enters from the top, slowly moves to the upper third, drifts left and right for 10 s, then leaves downward. Its two shoulder cannons are moving parts (P05-R13) swinging to and fro, each firing a burst of 3 bullets along its barrel every 1.6 s. The two front plates are parts too: while one of them is left, the core cannot be hit (like a boss's shield, P07-R01). The core fires a spread of 7 bullets centred on the player (aimed fan, 9° apart) every 2.5 s.
+
+**Acceptance criteria**
+- [ ] Given a Juggernaut with a plate left, then shots on the core do no damage; once both plates are destroyed, the core can be hit.
+- [ ] Manual visual validation
+
+### P05-R23 — Hive (Wasp launcher, elite)  · MUST
+
+**Shape:** a huge rounded hive-ship (2 L) with a turning launch ring on its back and honey-amber neon cells.
+
+**Behavior:** enters from the top and slowly flies straight down the screen, then leaves at the bottom. Every 4 s, it launches a Wasp (P05-R14) from its ring, which comes out and attacks like a Wasp. Every 3 s it fires a ring of 12 bullets. It stops launching and firing in the lower part of the screen.
+
+**Acceptance criteria**
+- [ ] Given a Hive is over the playfield, when its launch timer runs out, then a Wasp appears at its ring and attacks.
+- [ ] Manual visual validation
+
+### P05-R24 — The new kinds in the game  · MUST
+
+- The `enemies/` page (P05-R11) lists the 21 kinds; the wireframe view shows the hit circles of the moving parts too.
+- The veteran kinds are in the wave scripts of World 3 and World 4, the elite kinds in those of World 4 only. Worlds 1 and 2 are unchanged.
+- In World 3, 3-1 brings in one veteran kind and each level after it at least one more, so 3-5 uses all five. In World 4, every level uses the five veteran kinds; 4-1 brings in two elite kinds and each level after it at least one more, so 4-4 and 4-5 use all five.
+- The difficulty rules of the worlds still hold with the new kinds (P09-R08, P10-R10: strict increases within each world and the cross-world comparisons), re-measured and reported.
+
+**Acceptance criteria**
+- [ ] Given `enemies/`, then the 21 kinds can be picked and each spawns without console errors (e2e).
+- [ ] Unit test: the kinds used by each World 3 and World 4 level follow the list above; Worlds 1 and 2 use none of the new kinds.
+- [ ] Unit test: P09-R08 and P10-R10 still pass.
+
 ## 🧑 Tunable values
 | Name | Value | Notes |
 |------|-------|-------|
@@ -176,6 +311,26 @@ Added at the reviewer's request during the phase 5 review (2026-10-24).
 | carrier_hp / points | 300 / 600 | P05-R12 |
 | carrier_speed | 30 px/s | P05-R12 |
 | carrier_launch_interval | 3 s, 1 Gnat a port (2 a side) | P05-R12; none below 30 % height |
+| wasp_hp / points | 30 / 150 | P05-R14 |
+| wasp_group_size / pause / fan | 3 / 0.4 s / 3 × 12° | P05-R14 |
+| mortar_hp / points | 140 / 400 | P05-R15 |
+| mortar_fire_interval / burst | 2.5 s / 8 bullets after 1.2 s | P05-R15 |
+| mantis_hp / arm_hp / points | 160 / 50 / 500 | P05-R16 |
+| mantis_stay / arm_fire_interval | 6 s / 1.2 s | P05-R16 |
+| phantom_hp / points | 90 / 450 | P05-R17 |
+| phantom_fade / hidden / jumps | 0.4 s / 0.8 s / 3 | P05-R17 |
+| minelayer_hp / points | 120 / 400 | P05-R18 |
+| minelayer_drop_interval / burst | 0.8 s / 6 bullets after 1.5 s | P05-R18 |
+| hydra_hp / head_hp / points | 220 / 50 / 700 | P05-R19 |
+| hydra_stay / head_fire_interval | 7 s / 0.5 s (in turn) | P05-R19 |
+| orbiter_hp / drone_hp / points | 160 / 40 / 650 | P05-R20 |
+| orbiter_stay / ring / drone_fire | 8 s / 12 every 3 s / 2 s | P05-R20 |
+| scissor_hp / arm_hp / points | 240 / 70 / 800 | P05-R21 |
+| scissor_warning / laser / sweep | 1 s / 2 s / 15° | P05-R21 |
+| juggernaut_hp / plate_hp / cannon_hp / points | 320 / 120 / 60 / 1 000 | P05-R22 |
+| juggernaut_stay / spread | 10 s / 7 × 9° every 2.5 s | P05-R22 |
+| hive_hp / points | 420 / 900 | P05-R23 |
+| hive_launch / ring | a Wasp every 4 s / 12 every 3 s | P05-R23; none below 30 % height |
 
 ## 🧑 Out of scope for this phase
 - Spawning enemies in Level Zero or in any real level (waves by distance, GD-40).

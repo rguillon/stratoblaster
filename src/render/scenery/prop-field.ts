@@ -7,6 +7,13 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { PropPlacement } from '../../core/scenery/prop-placement';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import type { PropKindRule, SceneryLevel } from '../../core/scenery/scenery-level';
+import { PLUME_KINDS } from '../../config/plumes';
+import {
+  buildPlumeMeshes,
+  type PlumeFrame,
+  type PlumeMaterial,
+  type PlumeMaterialFactory,
+} from './plume-layer';
 import type { PropModelFactory } from './scenery-look';
 
 /** Materials of the props: the lit structure, and the self-lit accents. */
@@ -18,6 +25,8 @@ export interface PropMaterials {
 interface PropMeshes {
   readonly structure: Mesh;
   readonly lights: Mesh | undefined;
+  /** Phase 10: its smoke or steam, drawn with the same instances. */
+  readonly plumes: readonly Mesh[];
 }
 
 const MATRIX_FLOATS = 16;
@@ -41,10 +50,14 @@ function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: S
 /** How a kind of prop drifts (`PropKindRule.drift`). */
 export type PropDrift = NonNullable<PropKindRule['drift']>;
 
-/** The kinds of `level` that drift, and how (phase 8: floating ice). */
+/** The kinds of `level` that drift, and how (phase 8: floating ice; phase 10: wagons on lines). */
 export function propDrifts(level: SceneryLevel): Record<string, PropDrift> {
   const kinds = level.props.floating?.kinds ?? [];
-  return Object.fromEntries(kinds.flatMap((k) => (k.drift ? [[k.id, k.drift]] : [])));
+  const lines = level.props.lines ?? [];
+  return Object.fromEntries([
+    ...kinds.flatMap((k) => (k.drift ? [[k.id, k.drift] as const] : [])),
+    ...lines.flatMap((l) => (l.drift ? [[l.kind, l.drift] as const] : [])),
+  ]);
 }
 
 /** Throws if a prop kind of `level` has no model. */
@@ -72,6 +85,8 @@ export function checkPropModels(
  */
 export class PropField {
   readonly #meshes = new Map<string, PropMeshes>();
+  /** Phase 10: one material per kind of plume, driven every frame. */
+  readonly #plumeMaterials = new Map<string, PlumeMaterial>();
   readonly #chunks = new Map<number, readonly PropPlacement[]>();
   #dirty = false;
   /** Only the props whose Z is in this range are drawn, if set (see {@link setWindow}). */
@@ -82,7 +97,18 @@ export class PropField {
     models: Readonly<Record<string, PropModelFactory>>,
     materials: PropMaterials,
     onStructure: (mesh: Mesh) => void = () => undefined,
+    plumeMaterials?: PlumeMaterialFactory,
   ) {
+    const plumeMaterial = (id: string) => {
+      const kind = PLUME_KINDS[id];
+      if (!plumeMaterials || !kind) return undefined;
+      let material = this.#plumeMaterials.get(id);
+      if (!material) {
+        material = plumeMaterials(scene, kind);
+        this.#plumeMaterials.set(id, material);
+      }
+      return material.material;
+    };
     for (const [kind, factory] of Object.entries(models)) {
       const geometry = factory();
       const structure = meshOf(`prop-${kind}`, geometry.structure, materials.structure, scene);
@@ -92,8 +118,21 @@ export class PropField {
         geometry.lights && geometry.lights.indices.length > 0
           ? meshOf(`prop-${kind}-lights`, geometry.lights, materials.lights, scene)
           : undefined;
-      this.#meshes.set(kind, { structure, lights });
+      const plumes = buildPlumeMeshes(scene, `prop-${kind}`, geometry.plumes ?? [], plumeMaterial);
+      this.#meshes.set(kind, { structure, lights, plumes });
     }
+  }
+
+  /** Phase 10: moves the smoke and steam of the props on to this frame. */
+  updatePlumes(frame: PlumeFrame): void {
+    for (const material of this.#plumeMaterials.values()) material.set(frame);
+  }
+
+  /** Plume meshes drawn (phase 10). */
+  get plumeCount(): number {
+    let count = 0;
+    for (const m of this.#meshes.values()) count += m.plumes.filter((p) => p.isEnabled()).length;
+    return count;
   }
 
   /** Number of props in the scene. */
@@ -152,7 +191,7 @@ export class PropField {
       const meshes = this.#meshes.get(kind);
       if (!meshes) continue;
       const phase = (2 * Math.PI * time) / period;
-      for (const mesh of [meshes.structure, meshes.lights]) {
+      for (const mesh of [meshes.structure, meshes.lights, ...meshes.plumes]) {
         mesh?.position.set(x * Math.sin(phase), 0, z * Math.sin(phase * 0.7 + 1));
       }
     }
@@ -165,7 +204,7 @@ export class PropField {
     const byKind = this.#byKind();
     for (const [kind, meshes] of this.#meshes) {
       const matrices = instanceMatrices(byKind.get(kind) ?? []);
-      for (const mesh of [meshes.structure, meshes.lights]) {
+      for (const mesh of [meshes.structure, meshes.lights, ...meshes.plumes]) {
         if (!mesh) continue;
         mesh.setEnabled(matrices.length > 0);
         if (matrices.length === 0) continue;

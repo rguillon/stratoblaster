@@ -3,7 +3,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import type { MaterialDefines } from '@babylonjs/core/Materials/materialDefines';
 import { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase';
 import type { UniformBuffer } from '@babylonjs/core/Materials/uniformBuffer';
-import type { TerrainLook } from './scenery-look';
+import type { LavaLook, TerrainLook } from './scenery-look';
 import { SURFACE_SCALE } from './terrain-geometry';
 
 /** Textures the terrain blends between, plus a noise texture (R fine, G coarse). */
@@ -23,6 +23,8 @@ export interface TerrainBlendState {
   seaLevel: number;
   seaEnabled: boolean;
   time: number;
+  /** Phase 10: the sea is lava; the rock by it glows (P10-R05). */
+  lava?: LavaLook;
 }
 
 const SAMPLERS = [
@@ -48,6 +50,7 @@ const UNIFORMS = [
   { name: 'terrainDeep', size: 3, type: 'vec3' },
   { name: 'terrainFoam', size: 4, type: 'vec4' },
   { name: 'terrainSurf', size: 4, type: 'vec4' },
+  { name: 'terrainLava', size: 4, type: 'vec4' },
 ] as const;
 
 const FRAGMENT_DEFINITIONS = /* glsl */ `
@@ -97,6 +100,24 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
   return mix(color, terrainFoam.rgb, clamp(edge * 0.9 + band * 0.7, 0.0, 1.0));
 }
 
+// Phase 10: where the rock meets lava (P10-R05), it is scorched dark under a hot glowing edge.
+vec3 terrainScorch(vec3 color, vec3 p) {
+  float above = p.y - terrainSea.x;
+  return color * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));
+}
+
+// The glow of the rock by the lava: a bright edge at its level and glowing cracks a little above.
+vec3 terrainHeat(vec3 p) {
+  if (terrainSea.w < 0.5 || terrainSea.y < 0.5) return vec3(0.0);
+  float above = p.y - terrainSea.x;
+  vec4 noise = texture2D(terrainNoise, p.xz * terrainScale.y * 5.0);
+  float flicker = 0.8 + 0.2 * sin(terrainSea.z * 2.3 + noise.g * 12.0);
+  float edge = 1.0 - smoothstep(0.0, terrainLava.w * (0.7 + 0.6 * noise.r), above);
+  float crack = 1.0 - smoothstep(0.0, 0.035, abs(noise.r - 0.5));
+  crack *= 1.0 - smoothstep(0.0, terrainSurf.w, above);
+  return terrainLava.rgb * clamp(edge * 1.4 + crack * 0.8, 0.0, 1.6) * flicker;
+}
+
 vec3 terrainColor(vec3 p, vec3 n) {
   vec3 w = pow(abs(n), vec3(4.0));
   w /= (w.x + w.y + w.z);
@@ -124,6 +145,7 @@ vec3 terrainColor(vec3 p, vec3 n) {
     smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h));
   color = mix(color, terrainTriplanar(terrainSteep, p, w),
     smoothstep(terrainSlope.x, terrainSlope.y, slope));
+  if (terrainSea.y > 0.5 && terrainSea.w > 0.5) return terrainScorch(color, p);
   if (terrainSea.y > 0.5) color = terrainShore(color, p, noise, slope);
   return color;
 }
@@ -136,10 +158,17 @@ const UPDATE_DIFFUSE = /* glsl */ `
 #endif
 `;
 
+const BEFORE_FOG = /* glsl */ `
+#ifdef TERRAIN_BLEND
+  color.rgb += terrainHeat(vPositionW);
+#endif
+`;
+
 /**
  * Turns a `StandardMaterial` into a terrain material (P04-R01): the colour comes from four
  * generated textures blended by altitude and slope, with noise so the borders wander, large
- * tinted patches, and a beach, shallows and surf where the ground meets the sea. Lighting, shadows and fog stay the
+ * tinted patches, and a beach, shallows and surf where the ground meets the sea (phase 10: or,
+ * by lava, scorched rock with a glowing edge and cracks). Lighting, shadows and fog stay the
  * standard material's.
  */
 export class TerrainBlendPlugin extends MaterialPluginBase {
@@ -191,14 +220,23 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     );
     ubo.updateFloat3('terrainTintA', ...look.tints[0]);
     ubo.updateFloat3('terrainTintB', ...look.tints[1]);
-    ubo.updateFloat4('terrainSea', state.seaLevel, state.seaEnabled ? 1 : 0, state.time, 0);
+    const lava = state.lava;
+    ubo.updateFloat4(
+      'terrainSea',
+      state.seaLevel,
+      state.seaEnabled ? 1 : 0,
+      state.time,
+      lava ? 1 : 0,
+    );
+    const edge = lava?.edge ?? { color: [0, 0, 0] as const, width: 1, cracks: 1 };
+    ubo.updateFloat4('terrainLava', ...edge.color, edge.width);
     const { shore } = look;
     ubo.updateFloat4('terrainSand', ...shore.sand, shore.beach);
     ubo.updateFloat4('terrainShallow', ...shore.shallow, shore.depth);
     ubo.updateFloat3('terrainDeep', ...shore.deep);
     ubo.updateFloat4('terrainFoam', ...shore.foam.color, shore.foam.width);
     const { spacing, speed, reach } = shore.foam;
-    ubo.updateFloat4('terrainSurf', spacing, speed, reach, 0);
+    ubo.updateFloat4('terrainSurf', spacing, speed, reach, edge.cracks);
     ubo.setTexture('terrainLow', textures.low);
     ubo.setTexture('terrainGround', textures.ground);
     ubo.setTexture('terrainSteep', textures.steep);
@@ -214,6 +252,7 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     return {
       CUSTOM_FRAGMENT_DEFINITIONS: FRAGMENT_DEFINITIONS,
       CUSTOM_FRAGMENT_UPDATE_DIFFUSE: UPDATE_DIFFUSE,
+      CUSTOM_FRAGMENT_BEFORE_FOG: BEFORE_FOG,
     };
   }
 }

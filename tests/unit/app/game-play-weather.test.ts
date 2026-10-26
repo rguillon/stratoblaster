@@ -48,8 +48,30 @@ describe('GamePlay weather', () => {
       lightning: 1,
     },
   };
-  /** The sample game, its level a under `sky`. */
-  const under = (sky: SkyScript) => ({
+  /** P10-R06: a forge night, falling ash and embers together. */
+  const FORGE_NIGHT: SkyScript = {
+    start: {
+      timeOfDay: 'night',
+      clouds: [0.6, 0.5],
+      weather: { kind: 'ash', strength: 0.3 },
+      secondWeather: { kind: 'embers', strength: 0.6 },
+    },
+  };
+  /** P10-R05: the level's liquid as lava. */
+  const LAVA = {
+    crust: [0.08, 0.03, 0.02],
+    plate: [0.2, 0.07, 0.04],
+    glow: [1, 0.35, 0.05],
+    hot: [1, 0.85, 0.45],
+    cell: 26,
+    crack: 0.12,
+    churn: 0.05,
+    intensity: 1.3,
+    edge: { color: [1, 0.4, 0.08], width: 1.6, cracks: 6 },
+  } as const;
+
+  /** The sample game, its level a under `sky` (and with lava for its sea, if `lava`). */
+  const under = (sky: SkyScript, lava = false) => ({
     ...SAMPLE_GAME,
     view: {
       ...SAMPLE_GAME.view,
@@ -57,7 +79,15 @@ describe('GamePlay weather', () => {
         ...SAMPLE_GAME.view.scenery,
         looks: {
           ...SAMPLE_GAME.view.scenery.looks,
-          ...(look ? { [sceneryId]: { ...look, atmosphere: sky } } : {}),
+          ...(look
+            ? {
+                [sceneryId]: {
+                  ...look,
+                  atmosphere: sky,
+                  ...(lava ? { sea: { ...look.sea, lava: LAVA } } : {}),
+                },
+              }
+            : {}),
         },
       },
     },
@@ -67,8 +97,13 @@ describe('GamePlay weather', () => {
    * Plays level a under `sky` for `seconds` (half moving left, half right), firing all along,
    * and returns what happened, with the most weather and the brightest flash drawn.
    */
-  const playThrough = (sky: SkyScript, overrides: Partial<GamePlayOptions>, seconds = 6) => {
-    const { game, controls } = start(overrides, 'a', under(sky));
+  const playThrough = (
+    sky: SkyScript,
+    overrides: Partial<GamePlayOptions>,
+    seconds = 6,
+    lava = false,
+  ) => {
+    const { game, controls } = start(overrides, 'a', under(sky, lava));
     let flash = 0;
     const half = (key: string) => {
       controls.key(key, true);
@@ -88,6 +123,7 @@ describe('GamePlay weather', () => {
       bullets: run.enemies.shots.bullets.filter((b) => b.alive).map((b) => [b.x, b.y]),
       weather: game.view.stage.weatherParticles,
       flash,
+      lava: game.view.stage.lava !== undefined,
     };
     game.dispose();
     play = undefined;
@@ -115,5 +151,25 @@ describe('GamePlay weather', () => {
     expect(clear.state).toEqual(storm.state);
     expect(clear.enemies).toEqual(storm.enemies);
     expect(clear.bullets).toEqual(storm.bullets);
+  });
+
+  it('P10-R06: falling ash and embers are only a look: the level plays the same without them', () => {
+    const forge = playThrough(FORGE_NIGHT, {});
+    const clear = playThrough(FORGE_NIGHT, { atmosphere: { weather: false } });
+    expect(forge.weather).toBeGreaterThan(0);
+    expect(clear.weather).toBe(0);
+    expect(clear.state).toEqual(forge.state);
+    expect(clear.enemies).toEqual(forge.enemies);
+    expect(clear.bullets).toEqual(forge.bullets);
+  });
+
+  it('P10-R05: lava is not an input of the simulation: the level plays the same over water', () => {
+    const lava = playThrough(FORGE_NIGHT, {}, 6, true);
+    const water = playThrough(FORGE_NIGHT, {}, 6, false);
+    expect(lava.lava).toBe(true);
+    expect(water.lava).toBe(false);
+    expect(lava.state).toEqual(water.state);
+    expect(lava.enemies).toEqual(water.enemies);
+    expect(lava.bullets).toEqual(water.bullets);
   });
 });

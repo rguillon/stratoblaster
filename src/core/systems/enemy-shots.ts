@@ -43,7 +43,7 @@ export interface EnemyMissile extends ShotTarget {
 /**
  * A laser: a warning line first, then the beam, from its owner's emitter. The warning line
  * follows its owner's heading (a turret turning towards the player); the beam keeps the heading
- * its owner had when it started firing, straight (phase 8 review).
+ * its owner had when it started firing, straight (phase 8 review), unless its spec `sweeps`.
  */
 export interface EnemyLaser {
   readonly owner: LaserOwner;
@@ -252,7 +252,7 @@ export class EnemyShots {
       return false;
     }
     laser.phase = laser.age < warningSeconds ? 'warning' : 'firing';
-    if (laser.phase === 'firing') laser.locked ??= owner.heading;
+    if (laser.phase === 'firing' && laser.spec.sweeps !== true) laser.locked ??= owner.heading;
     this.#aim(laser);
     return true;
   }

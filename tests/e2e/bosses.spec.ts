@@ -46,6 +46,17 @@ const BOSSES = [
   'Dam Breaker',
   'Jaguar',
   'Verdant Crown',
+  // World 4 (P10-R13), after World 3.
+  'Cinder Crab',
+  'Steam Dreadnought',
+  'Ash Wraith',
+  'Geyser Rig',
+  'Magma Salamander',
+  'Obsidian Golem',
+  'Furnace Drake',
+  'Foundry Ark',
+  'Ember Herald',
+  'Caldera Throne',
 ];
 
 test('P07-R09 (review): boss/ opens the same page, with every boss', async ({ page }) => {
@@ -69,11 +80,11 @@ test.describe('P07: bosses/ page', () => {
     await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 60_000 });
   });
 
-  test('P07-R09, P08-R12, P09-R11: loads without errors, every boss of Worlds 1 to 3 can be picked and comes in', async ({
+  test('P07-R09, P08-R12, P09-R11, P10-R13: loads without errors, every boss of Worlds 1 to 4 can be picked and comes in', async ({
     page,
   }) => {
-    // Thirty bosses over fifteen generated levels under software WebGL.
-    test.setTimeout(900_000);
+    // Forty bosses over twenty generated levels under software WebGL.
+    test.setTimeout(1_200_000);
     await expect(page.locator('.enemy-kind button')).toHaveText(BOSSES);
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
     for (const [i, name] of BOSSES.entries()) {

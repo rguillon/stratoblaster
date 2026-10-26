@@ -15,7 +15,7 @@ import {
   quietBefore,
   waveScript,
 } from '../../../../src/game/config/world-1/waves';
-import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { ENEMY_KINDS, FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_1 } from '../../../../src/game/sim/world-1';
 import { SCENERY_BINDINGS } from '../../../../src/game/view/scenery-bindings';
@@ -192,7 +192,7 @@ describe('World 1', () => {
     expect(sorted('1-2')).toEqual([...sorted('1-1'), 'splitter', 'weaver'].sort());
     expect(sorted('1-3')).toEqual([...sorted('1-2'), 'carrier', 'spinner'].sort());
     expect(sorted('1-4')).toEqual([...sorted('1-3'), 'lancer', 'rocketeer'].sort());
-    expect(sorted('1-5')).toEqual(ENEMY_KINDS.map((k) => k.id).sort());
+    expect(sorted('1-5')).toEqual(FIRST_KINDS.map((k) => k.id).sort());
   });
 
   it('P06-R07: waves are triggered by distance, the same every time', () => {

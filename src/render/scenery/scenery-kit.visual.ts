@@ -10,6 +10,8 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { createAuroraMaterial } from './aurora-material.visual';
 import { createCloudMaterial } from './cloud-material.visual';
+import { createLavaMaterial } from './lava-material.visual';
+import { createPlumeMaterial } from './plume-material.visual';
 import { createRainRingsMaterial } from './rain-rings-material.visual';
 import { createWeatherMaterial } from './weather-material.visual';
 import { buildGroundTexture, buildNoiseTexture, buildWaterNormalMap } from './procedural-textures';
@@ -17,6 +19,7 @@ import {
   createPropMaterials,
   createRoadMaterial,
   setGroundLights,
+  type SceneryKitContext,
   type SceneryKitFactory,
 } from './scenery-kit';
 import type { SceneryLook } from './scenery-look';
@@ -102,15 +105,27 @@ function seaMaterial(
   return material;
 }
 
+/** The terrain's live state and, for a lava level (P10-R05), the lava's material. */
+function liquidOf(scene: Scene, { look, seaLevel }: SceneryKitContext) {
+  const { lava } = look.sea;
+  const state: TerrainBlendState = {
+    seaLevel,
+    seaEnabled: true,
+    time: 0,
+    ...(lava ? { lava } : {}),
+  };
+  return { state, lava: lava ? createLavaMaterial(scene, lava, look.sea.drift) : undefined };
+}
+
 /**
  * The real scenery kit: generated terrain textures blended in the terrain shader, a sea with
- * drifting generated waves that reflect the sky and the sun, generated cloud layers, and the
- * sun's shadows (PCF, ENG-103). Needs a WebGL engine.
+ * drifting generated waves that reflect the sky and the sun (phase 10: or lava), generated cloud
+ * layers, and the sun's shadows (PCF, ENG-103). Needs a WebGL engine.
  */
 export const createSceneryKit: SceneryKitFactory = (scene, context) => {
-  const { look, sun, seaLevel, seaSize, seed } = context;
-  const state: TerrainBlendState = { seaLevel, seaEnabled: true, time: 0 };
-  const sea = seaMaterial(scene, look, seaSize, seed);
+  const { look, sun, seaSize, seed } = context;
+  const { state, lava } = liquidOf(scene, context);
+  const sea = lava?.material ?? seaMaterial(scene, look, seaSize, seed);
   const cloudTexture = rawTexture(
     scene,
     buildNoiseTexture(look.terrain.textureSize, NOISE_FREQUENCY / 2, seed + 7),
@@ -137,6 +152,7 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
     weather: createWeatherMaterial,
     rings: createRainRingsMaterial,
     aurora: () => createAuroraMaterial(scene),
+    plume: createPlumeMaterial,
     addShadowCaster: (mesh) => {
       shadows.addShadowCaster(mesh, false);
     },
@@ -147,7 +163,9 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
       shadows.setDarkness(frame.atmosphere.sun.shadowDarkness);
       setGroundLights(props, frame.atmosphere.groundLights);
       state.seaEnabled = frame.seaEnabled;
-      const bump = sea.bumpTexture;
+      const { atmosphere } = frame;
+      lava?.set({ time: frame.time, fog: { color: atmosphere.sky.haze, ...atmosphere.fog } });
+      const bump = sea instanceof PBRMaterial ? sea.bumpTexture : null;
       if (bump instanceof Texture) {
         bump.uOffset = (frame.time * look.sea.drift[0]) / look.sea.tileSize;
         bump.vOffset = (frame.time * look.sea.drift[1]) / look.sea.tileSize;

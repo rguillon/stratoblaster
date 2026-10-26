@@ -36,17 +36,18 @@ describe('GAME', () => {
     expect(MENU_TEXTS.enemiesDestroyed(42, 60)).toBe('Enemies destroyed: 42 / 60');
   });
 
-  it('P06-R01, P08-R01, P09-R01: registers the five playable levels of World 1, then World 2, then World 3', () => {
+  it('P06-R01, P08-R01, P09-R01, P10-R01: registers the five playable levels of Worlds 1 to 4, in order', () => {
     expect(GAME.gameLevels.map((l) => l.id)).toEqual([
       ...['1-1', '1-2', '1-3', '1-4', '1-5'],
       ...['2-1', '2-2', '2-3', '2-4', '2-5'],
       ...['3-1', '3-2', '3-3', '3-4', '3-5'],
+      ...['4-1', '4-2', '4-3', '4-4', '4-5'],
     ]);
   });
 
-  it('P05-R01..R10, P05-R12: registers the 11 enemy kinds with their look', () => {
+  it('P05-R01..R10, P05-R12, P05-R24: registers the 21 enemy kinds with their look', () => {
     expect(GAME.enemyKinds).toBe(ENEMY_KINDS);
-    expect(GAME.enemyKinds).toHaveLength(11);
+    expect(GAME.enemyKinds).toHaveLength(21);
     expect(GAME.view.enemies).toBe(ENEMY_BINDINGS);
   });
 });

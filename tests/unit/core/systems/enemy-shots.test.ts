@@ -109,6 +109,17 @@ describe('EnemyShots lasers', () => {
     expect(shots.lasers[0]).toMatchObject({ heading: Math.PI - 0.2, x: 120, y: 470 });
   });
 
+  it('P05-R13: a sweeping beam keeps turning with its owner while it fires', () => {
+    const shots = new EnemyShots(OPTIONS);
+    const owner = { emitter: { x: 100, y: 480 }, heading: Math.PI, gone: false, health: 1 };
+    shots.fireLaser(owner, { ...LASER, sweeps: true });
+    shots.step(1.1, 0, 0);
+    expect(shots.lasers[0]?.phase).toBe('firing');
+    owner.heading = Math.PI + 0.25;
+    shots.step(0.2, 0, 0);
+    expect(shots.lasers[0]?.heading).toBeCloseTo(Math.PI + 0.25);
+  });
+
   it('phase 7 review: leave from where the camera sees a raised emitter', () => {
     const eye = { x: 240, y: -150, height: 550 };
     const shots = new EnemyShots({ ...OPTIONS, eye });

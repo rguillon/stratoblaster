@@ -99,8 +99,36 @@ export interface SeaLook {
   };
   /** World units covered by one repeat of the normal map. */
   readonly tileSize: number;
-  /** World units per second the waves drift, along X and Z. */
+  /** World units per second the waves drift, along X and Z (phase 10: the lava flows so too). */
   readonly drift: readonly [number, number];
+  /** Phase 10: the liquid is lava (P10-R05), not water: it glows by itself and is opaque. */
+  readonly lava?: LavaLook;
+}
+
+/**
+ * Lava (P10-R05): a self-lit liquid at the sea level, dark crust plates drifting and breaking
+ * over a glowing melt that shows in the cracks between them, flowing by the sea's `drift`. Only
+ * a look. Where the rock meets it, the terrain gets a hot glowing edge and glowing cracks.
+ */
+export interface LavaLook {
+  /** The dark crust, the lit side of its plates, the glow in the cracks and their white-hot heart. */
+  readonly crust: Rgb;
+  readonly plate: Rgb;
+  readonly glow: Rgb;
+  readonly hot: Rgb;
+  /** World units across a crust plate. */
+  readonly cell: number;
+  /** Width of the cracks between the plates (0..1 of a plate). */
+  readonly crack: number;
+  /** How fast the plates churn and break (cycles a second). */
+  readonly churn: number;
+  /** Brightness of the self-lit colours (the glow layer blooms what is bright). */
+  readonly intensity: number;
+  /**
+   * The rock where it meets the lava: a glowing edge `width` high above the lava in `color`,
+   * and glowing cracks in the rock up to `cracks` above it.
+   */
+  readonly edge: { readonly color: Rgb; readonly width: number; readonly cracks: number };
 }
 
 /** A layer of clouds under the flight altitude (P04-R03). */
@@ -169,12 +197,31 @@ export interface SceneryLook {
    * replace the fixed sky, fog, sun, ambient light, cloud cover and ground lights above.
    */
   readonly atmosphere?: SkyScript;
+  /**
+   * Phase 10: a style the game's enemy shot renderer draws the shots of this level in (e.g. with
+   * a contrasting outline over a red ground, P10-R07); the game's default when omitted.
+   */
+  readonly shotStyle?: string;
 }
 
-/** Raw geometry of a prop: its lit structure (casts shadows) and its self-lit accents. */
+/**
+ * A column of smoke or steam rising from a prop (phase 10, P10-R08): from `at` (model space, at
+ * scale 1), of a kind of the engine's `PLUME_KINDS`, `scale` times as big as the kind's.
+ */
+export interface PropPlume {
+  readonly at: readonly [number, number, number];
+  readonly kind: string;
+  readonly scale?: number;
+}
+
+/**
+ * Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents and (phase 10)
+ * the smoke or steam it sends up.
+ */
 export interface PropGeometry {
   readonly structure: ColoredGeometry;
   readonly lights?: ColoredGeometry;
+  readonly plumes?: readonly PropPlume[];
 }
 
 /** Builds the geometry of one kind of prop, standing on Y = 0, centred on the origin. */

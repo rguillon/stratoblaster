@@ -20,12 +20,12 @@ World 4, **the Volcanic Lands**, has five playable levels, 4-1 to 4-5, each abou
 
 ### P10-R01 — World 4 in the level select  · MUST
 
-The World 4 row of the level select grid shows `4-1` to `4-5`, all unlocked (P06-R01). World 5 stays greyed out. After `3-5` is completed, `level-select` shows with `4-1` highlighted; after `4-5`, with `4-5` highlighted.
+The World 4 row of the level select grid shows `4-1` to `4-5`, all unlocked (P06-R01). World 4 is the last row of the grid (World 5 dropped by the reviewer, 2026-10-26). After `3-5` is completed, `level-select` shows with `4-1` highlighted; after `4-5`, with `4-5` highlighted.
 
 **Acceptance criteria**
 - [ ] Given `level-select`, then the World 4 row shows exactly `4-1` to `4-5`, all unlocked, each starting its level.
 - [ ] Given `3-5` is completed, then `level-select` shows with `4-1` highlighted.
-- [ ] Given a level of World 5, then it is still greyed out.
+- [ ] Given `level-select`, then the grid has exactly 4 rows (`1-1` … `4-5`) and no level is locked.
 
 ### P10-R02 — Duration  · MUST
 
@@ -212,7 +212,6 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 | prop_triangles | within the range of the phase 6 props | P10-R08, D-031 |
 
 ## 🧑 Out of scope for this phase
-- World 5.
 - New regular enemy kinds.
 - Gameplay effects of the lava, heat or weather (damage from lava, heat haze blurring the view): they are only a look.
 - Real lights cast by the lava on the ships (only glow).
@@ -228,7 +227,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] `4-1` to `4-5` can be picked in the level select; World 5 stays locked
+- [ ] `4-1` to `4-5` can be picked in the level select; the grid ends with World 4
 - [ ] Volcanic islands, ash plains, lava fields, foundries and caldera across the five levels; each level begins where the previous one ended
 - [ ] A red dawn in 4-1, a dim ash-dark noon in 4-2, dusk giving way to lava glow in 4-3, a furnace-lit night in 4-4, the eruption in 4-5
 - [ ] Lava glows and moves; smoke and steam rise without hiding the shots
@@ -242,7 +241,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 - **Drafted by the agent at the reviewer's request (2026-10-25); open choices, defaults proposed:** the same as phase 8 (themes, no new enemy kinds, 5-minute levels, a softer start for each world, fight times with guns at level 3, boss designs as suggestions), plus:
   1. P10-R07 (contrast outline on shots) only in World 4. Alternative: on every world, which would change the look of the validated worlds.
   2. The difficulty numbers keep climbing; with no new enemy kinds, World 4 leans on denser mixes and faster bullets. The reviewer may prefer to cap the bullet factors around 1.3 for kids.
-- World 5 is left free; a natural end for the game after the Caldera Throne would be the enemy's capital in the sky or in orbit.
+- World 4 is the last world: the Caldera Throne (4-5 final) is the game's last boss (World 5 dropped by the reviewer, 2026-10-26).
 
 ---
 
@@ -250,6 +249,17 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 > After the agent reports, write corrections here, then say **"Fix phase 10"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-26) Remove World 5 from the specs and the code. — Done (D-089): the grid is 4 worlds × 5 levels (`LEVELS_CONFIG.worlds` 4), 20 levels, all unlocked; 4-5 is the last level, so it stays highlighted after it is completed. Specs updated with a dated note: vision, P01-R07 (20 entries `1-1` … `4-5`), P06-R01, phase 8 notes, P10-R01 (its World 5 criterion now checks the 4-row grid with no locked level), phase 10 out of scope and notes. Tests: `levels.test.ts`, `world-2/3/4.test.ts`, e2e `world-1/2/3/4.spec.ts`; the menu pointer e2e no longer tries a locked level (none is left in the game); the "locked" feedback stays unit tested with sample grids (`menu-overlay.test.ts`, `menu-controller.test.ts`).
+- [x] (reviewer, in chat, 2026-10-26) Create 10 new, harder kinds of enemies, some with moving parts like the bosses; add them to the spec (in the phase 5 spec, the one describing the first enemies) and to the harder worlds. — Done (D-090): P05-R13 to P05-R24 added to `phase-05-first-enemies.md`.
+  - Engine: `JointedEnemy` and `EnemyPart` (`core/entities/jointed-enemy.ts`), sweeping lasers (`EnemyLaserSpec.sweeps`); the `enemies/` wireframe draws the parts' hit circles.
+  - Five veteran kinds: Wasp, Mortar, Mantis (moving arms), Phantom (cloaks), Minelayer.
+  - Five elite kinds, four of them with moving parts: Hydra (three heads), Orbiter (orbiting drones), Scissor (two laser arms closing), Juggernaut (swinging cannons and shield plates), and the Hive (launches Wasps).
+  - Waves: World 3 brings in one veteran kind a level. World 4 uses all five veteran kinds in every level and brings in the elites two in 4-1, then one more a level. P10-R09's "eleven kinds" now reads together with P05-R24.
+  - Gaps and growth re-tuned in 3-3 to 3-5 and in all World 4 levels; every ordering of P09-R08 and P10-R10 still holds (numbers in D-090).
+  - Tests:
+    - New: `jointed-enemy.test.ts`, `veteran-enemies.test.ts`, `elite-enemies.test.ts`, `veteran-models.test.ts`, `elite-models.test.ts`, `enemy-close-up.test.ts`.
+    - Updated: `enemy-kinds.test.ts`, `enemy-models.test.ts`, `enemy-shots.test.ts`, the World 1–4 kind tests, and the e2e `enemies.spec.ts` (21 kinds).
+  - Manual check needed: the ten models in `enemies/` (model and wireframe views), and how hard 3-3 to 3-5 and World 4 feel.
 - [ ] 
 
 ---
@@ -258,31 +268,94 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 > Filled by the agent. Do not edit (comment in Review feedback instead).
 
 ### Questions / blockers
-<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+None. The spec was implemented as written; the interpretations are listed under Deviations.
 
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Engine weather: a second weather at once, `ash` and `embers` kinds (added on, flickering, fading as they rise), cloud tint and glow from below in the look (`config/weather.ts`, `config/time-of-day.ts`, `core/scenery/sky-look.ts`, `atmosphere.ts`, `render/scenery/weather-layer.ts`, `weather-material.visual.ts`) | P10-R04, R06 |
+| Engine lava: `SeaLook.lava`, a self-lit shader, the hot edge and cracks in the terrain plugin, the glow layer with the terrain as occluder (`lava-material.visual.ts`, `terrain-blend-plugin.visual.ts`, `scenery-kit*.ts`, `scenery-stage.ts`, `app/level-scene.ts`) | P10-R05 |
+| Engine plumes (smoke, steam) from props and moving line pieces (`config/plumes.ts`, `plume-layer.ts`, `plume-material.visual.ts`, `prop-field.ts`, `PropLine.drift`) | P10-R08 |
+| Shot style per level (`SceneryLook.shotStyle`, `EnemyBindings.shots(scene, style)`) and the game's contrast style | P10-R07 |
+| World 4 levels, looks, ground textures (sub-agent) | P10-R02, R03, R04 |
+| World 4 props and prop rules, 31 models (sub-agent) | P10-R08 |
+| Waves and difficulty, measured and tuned | P10-R09, R10 |
+| Ten bosses, designs + models, tuned with the D-055 bot (five sub-agents, one per level) | P10-R11, R12 |
+| Registration, test API (second weather, lava, plumes, shot style), debug options and `bosses/` page follow from the data | P10-R01, R13 |
+| Unit and e2e tests, docs, decisions | all |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P10-R01 | | | | |
+| P10-R01 | Done | `game/sim/world-4.ts`, `game/sim/levels.ts` | `world-4.test.ts`, `levels.test.ts`, e2e `world-4.spec.ts`, `world-3.spec.ts` (after 3-5 → 4-1), `menu-pointer.spec.ts` | |
+| P10-R02 | Done | `game/config/world-4/scenery-*.ts` (300 s each) | `world-4.test.ts`, e2e | speeds 70 / 65 / 60 / 55 / 55 |
+| P10-R03 | Done | `scenery-islands.ts`, `scenery-fire.ts`, `world-4/props.ts` | `world-4.test.ts` | numbers below |
+| P10-R04 | Done | `game/config/world-4/looks.ts`, `core/scenery/sky-look.ts` (cloud tint, underglow, second weather) | `world-4.test.ts`, `sky-look-volcanic.test.ts`, e2e | D-082, D-083; look: manual |
+| P10-R05 | Done | `render/scenery/lava-material.visual.ts`, `terrain-blend-plugin.visual.ts`, `scenery-kit*.ts`, `scenery-stage.ts` (`lava`, `watchTerrain`), `app/level-scene.ts` | `volcanic-layers.test.ts`, `game-play-weather.test.ts` (not an input), `world-4.test.ts`, e2e | D-084; 60 FPS: manual |
+| P10-R06 | Done | `config/weather.ts` (`ash`, `embers`), `weather-layer.ts`, `weather-material.visual.ts` | `sky-look-volcanic.test.ts`, `volcanic-layers.test.ts`, `game-play-weather.test.ts`, e2e | D-082 |
+| P10-R07 | Done | `render/game-view.ts`, `app/enemy-viewer-shots.ts`, `game/config/enemy-look.ts` (`contrast`), `game/view/enemies/enemy-shot-renderer.ts`, `enemy-lasers.ts` | `contrast-shots.test.ts`, e2e | D-086; readability: manual |
+| P10-R08 | Done | `game/view/props/volcanic-*.ts`, `prop-models.ts`, `prop-look.ts`, `world-4/props.ts`, `config/plumes.ts`, `plume-*.ts` | `prop-models.test.ts`, `volcanic-layers.test.ts` | D-085; 31 props ≤ 336 triangles |
+| P10-R09 | Done | `game/config/world-4/waves.ts` | `world-4.test.ts` | D-087 |
+| P10-R10 | Done | `waves.ts`, `world-4/difficulty.ts` | `world-4.test.ts` | numbers below |
+| P10-R11 | Done | `game/config/bosses/world-4/*`, `game/view/bosses/world-4/*`, `world-4/bosses.ts` | `bosses-world-4.test.ts`, `boss-models.test.ts`, `muzzles.test.ts`, e2e | patterns below |
+| P10-R12 | Done | the ten designs' health | `bosses-world-4.test.ts` | fight times below |
+| P10-R13 | Done | level data (debug options, `bosses/` page take every level), `app/game-play.ts` (test API) | e2e `world-4.spec.ts`, `bosses.spec.ts` | |
+
+**Scenery (P10-R03).** 4-1: every section is sea (islands rising from relief under the water, the black-sand coast with a shore), 74.1 % of the ground under the water. 4-2: no sea, no liquid. 4-3 / 4-4 / 4-5: lava under the liquid level on 11.4 / 22.7 / 36.6 % of the ground (4-3 section by section 0, 1, 12, 14, 16, 23 %); no section with a shore or relief under the level. Buildings placed (seed of each level): 107 / 1 535 / 1 982 / 3 838 / 931.
+
+**Balance (P10-R10)**, measured without shooting (seed 606), per minute of scroll: enemies 220.8 / 246.0 / 247.2 / 298.6 / 388.8, HP 7 004 / 8 178 / 9 472 / 9 668 / 12 544, peak on screen 53 / 54 / 57 / 64 / 66 for 4-1 … 4-5 (3-3: 215.0, 6 884, 47; 3-5: 308.4, 10 506, 58). Every second half carries more HP. Factors 1.1 / 1.15 / 1.2 / 1.3 / 1.35.
+
+**Bosses (P10-R11, R12).** Fight times with the D-055 bot (guns level 3, always on target), mini / final: 4-1 44.4 / 89.2 s, 4-2 48.0 / 100.7 s, 4-3 53.2 / 112.4 s, 4-4 56.3 / 126.2 s, 4-5 59.7 / 137.6 s. Full health: mini 3 650 / 4 180 / 4 500 / 5 150 / 5 550, final 7 800 / 9 700 / 12 400 / 14 800 / 21 200 (World 3: 3 200 … 5 100 and 6 800 … 19 500). Models 1 828–3 588 triangles, all come in within 4.1–4.8 s. Angry heat goes on from World 3's 9: minis 9.5 / 10.5 / 11 / 12.5 / 13.5, finals 10 / 11 / 12 / 13 / 14. Stage patterns (parts fire the same while they stand; the core changes each stage):
+- **Cinder Crab** (4-1 mini, ×0.5): two claws on arm joints with snapping fingers (aimed spreads of 3, they shield the core), a back mortar (slow big slag, aimed); core ring 10 → ring 12 → two alternating rings → ring 16 + 3-arm counter-spiral. Angry: curtain.
+- **Steam Dreadnought** (4-1 final, ×0.6): two smokestacks (rings of 10), two broadside turrets (aimed bursts of 4), all four shield the core; a missile rack (2 homing missiles); core laser every stage, plus nothing → aimed 3 → fan 5 → ring 12 → fan 7 + aimed → two opposite spirals. Angry: flower.
+- **Ash Wraith** (4-2 mini, ×1.5 chase): two shroud pods (fans of 3, they shield the core), an eye cannon (laser on a turret); core spiral 3 → reversed spiral 4 → slow spiral 6 → twin spirals of 5. Angry: vortex.
+- **Geyser Rig** (4-2 final, ×0.4): two drill heads on shoulder joints (aimed bursts of 4), two steam vents (spirals of 3), all four shield the core; a drone hangar (2 Hornets every 7 s); core fan 3 → fan 5 → two leaning fans of 4 → fan 7 → fan 9 + quick fan 3 → five sweeping fans of 5. Angry: curtain.
+- **Magma Salamander** (4-3 mini, ×0.6): two back fins (fans of 3, they shield the core), a tail on two joints (sweeping lines of 20 drops); core burst 3 → burst 4 → bursts of 3 + 5 → spiral 6 + bursts of 4. Angry: curtain.
+- **Obsidian Golem** (4-3 final, ×0.3): two fists on shoulder and elbow joints (rings of 8 slow big globs), two shoulder cannons (aimed spreads of 3, on turrets), a chest emitter (laser), an armour plate; the fists and the plate shield the core; core aimed → burst 4 → fan 5 → spiral 10 → fan 7 + burst 3 → ring 12 + aimed 3 → magma bombs bursting into rings of 10 + two counter-turning spirals of 12. Angry: flower + vortex.
+- **Furnace Drake** (4-4 mini, ×0.5): two beating wings on joints (fans of 3, they shield the core), a jaw on a swaying neck (a flame: a burst of 9 small fast bullets + an aimed spray of 4); core spiral 3 → spiral 4 the other way → spiral 5 → twin opposite spirals of 5 and 6. Angry: flower.
+- **Foundry Ark** (4-4 final, ×0.3): two rail cannons (lasers on turrets) and a chimney row shield the core, a missile battery on the bow, two crucibles bursting into a ring of 14 when destroyed; core burst 4 → fan 5 → slag blob (ring 9) + aimed 3 → ring 12 + burst 3 → fan 7 + spiral 4 → two opposite spirals of 5 → two opposite rings of 16 + three slag blobs + burst 4. Angry: curtain + spirals.
+- **Ember Herald** (4-5 mini, ×1.4 chase): three ember lances on a turning ring (spirals of 3), all shielding the core; core bursts 4 → bursts 5 → bursts 5 + spread 3 → two crossing spirals of 5 + bursts 4. Angry: spirals.
+- **Caldera Throne** (4-5 final, ×0): two magma cannons (lasers on turrets), two missile batteries, two heat shield generators shielding the core; core bursts 4 → fan 7 → magma bomb (ring 9) + spread 3 → spiral 12 + bursts 3 → missiles + fan 5 + bursts 3 → laser + ring 14 + magma bomb → spiral 18 + laser + missiles + three magma bombs + bursts 4 + spread 3 (every attack kind). Angry: spirals + vortex.
 
 ### Gate results
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 88 / 88 passed (6.0 min); after small refactors for the pre-commit lint (file and function sizes), again typecheck ✔ · build ✔ · 88 / 88 e2e (6.4 min)
+Lint, unit tests and coverage are deferred to /validate-phase (make check).
+Review fixes (World 5 dropped; ten new enemy kinds): typecheck ✔ · build ✔ · 88 / 88 e2e each time (6.1 and 6.9 min).
+
+Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1384 unit tests ✔ · coverage 98.66 % statements, 87 % branches, 98.74 % functions, 99.42 % lines ✔ (phase 9: 98.61 / 87.25 / 98.65 / 99.35) · build ✔ · 88 e2e ✔ (5.8 min).
+Fixed on the way (first run: 3 of 1384 unit tests failed, all earlier tests not updated for this phase):
+- game-definition.test.ts: the registered levels now include World 4, and the enemy kinds are 21 (P05-R24).
+- scenery-levels.test.ts (P04-R04): Level Zero's prop check now leaves out the World 4 props, which only World 4 uses, as it does for Worlds 1–3.
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `make dev`, then Start → a ship → the level select: the World 4 row (`4-1` … `4-5`) is unlocked and is the last row (20 levels, none locked). After 3-5's "Level complete", `4-1` is highlighted; after 4-5's, `4-5`.
+- Each level: `?level=4-1` … `?level=4-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 4-1 a pink-grey dawn over a dark steaming sea, black rock islands with smoking vents and hardy grass, fishing huts and wells, the black-sand coast and harbour at the end (`t=280`); 4-2 an ash-dark yellowish midday with falling ash, ash plains, burnt forests, cinder cones, hot springs, geothermal plants, cooling towers and pipelines; 4-3 lava rivers and pools growing through the level while the dusk turns to night and embers rise (`t=60`, `t=250`); 4-4 the foundries at night, slag rivers, chimney rows smoking, rail lines with ore wagons moving, ash and embers together (`t=150`); 4-5 the volcano's slopes, the war factory, the fortress city and the magma lake, the sky turning deep red as the embers grow (`t=270`, `&boss=final`).
+- Debug: `&weather=0` (no ash, no embers: `?level=4-4&t=60&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night`, `&boss=mini|final` (K destroys the next part).
+- Shots: in 4-3, 4-4 and 4-5 every bullet has a dark rim and a white heart, laser warning lines a white core; compare with any World 1–3 level (unchanged).
+- Bosses: `bosses/` lists Worlds 1 to 4 under their headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe (the Crab's claws, the Rig's drills, the Golem's fists, the Drake's wings).
+- 60 FPS: the 4-4 forge belt (`?level=4-4&t=150`), the 4-5 final fight (`?level=4-5&boss=final`), with the debug FPS tile.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- P10-R03 "sea section": as D-079, a section with a coast or relief under the liquid level. 4-1 is entirely sea sections (islands rise from sea-floor relief). The lava of 4-3 … 4-5 fills channels and lakes cut below the liquid level, so those levels have no sea section; "lava share" is the ground under that level, measured as the sea share (D-084).
+- P10-R04 4-3 "look change: the sun dims, the lava glow grows": a change from dusk to night over 60–280 s with the glow from below growing from 0.25 to 0.8 (D-083).
+- P10-R04 4-5 "growing to 1.0 at the final boss": embers 0.6 → 1 and the red glow 0.6 → 1 over 180–300 s of ground; the ground is past 300 s when the final boss comes (the mini boss's chase runs it ahead).
+- P10-R08 sea steam: a floating prop with a steam plume, placed on the sea by the sections' float density (denser near the islands and the hot coast; the engine has no "near the coast" rule). Ore wagons all move together, straight along the level.
+- P10-R08 two prop ids got a `volcanic-` prefix (`volcanic-crane`, `volcanic-cooling-tower`): the plain ids already belonged to earlier props.
+- P10-R10 tunable `peak_on_screen` (15 … 21): measured 53 … 66, order kept (as Worlds 1–3).
+- P10-R11: some parts placed or sized for the bot's spread to reach them within the health bands (as D-081): the Crab's claws ±24, the Dreadnought's turrets ±56, the Rig's vents ±35, the Ark's rails ±72 and crucibles ±60; the Ark's missile battery sits on the bow ahead of the chimney row; the Drake's flame is a burst plus a spray (no stream shape in the engine).
+- Angry heats were evened out by the lead after the five boss agents (D-063 rate, going up from 4-1 to 4-5).
+- Tests of earlier phases that said World 4 was locked (P06-R01, P08-R01, P09-R01 unit and e2e, the menu pointer test) now say every level is unlocked and the grid is 4 × 5 (World 5 dropped, D-089); after 3-5 the level select highlights 4-1; the boss count is 40; the boss triangle test allows 7 000 for the Caldera Throne. No World 1–3 level data changed.
+- Balance and fight-time numbers were measured with throw-away simulation scripts (not the unit-test runner).
 
 ### Known limitations
--
+- 60 FPS (ENG-101) could not be measured here: only software WebGL is available (10–13 FPS for every level, as before). The lava levels draw the terrain once more into the glow map.
+- Lint, unit tests and coverage have not been run (deferred to `/validate-phase`).
+- One lava drift per level: 4-5's lake flows like a slow river rather than churning in place (its plates churn).
+- The steam on the bosses' models is static geometry; the props' plumes move.
+- Nothing was checked by eye under GPU rendering; lava, plumes and models were looked at in software-rendered screenshots only. The 4-4 smoke clouds (cover 0.6) hide a good part of the industry below.
 
 ### Suggestions for future phases
--
+- A "near the coast" rule for floating props, and wagons that follow their line's heading and height.
+- A props viewer page (like `bosses/`) would make the 31 new props easier to review.

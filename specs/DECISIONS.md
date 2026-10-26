@@ -898,3 +898,96 @@
 - **Alternatives considered:** a new engine hook to keep the Croc's jaws in step with its jaw cannon's bursts after a stage change (they are in step in its first stage only).
 - **Consequences:** the Croc's jaws and its bursts drift apart after the first destroyed part; the Leviathan's ring turrets fire from their axis (their emitters do not move when they turn).
 - **Status:** Accepted
+
+### D-082 — Two weathers at once, falling ash and rising embers
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R04/R06: 4-4 has falling ash and embers together; embers are small glowing sparks rising past the camera, flickering as they cool, never mistaken for bullets. A look had one weather.
+- **Decision:** `SkyLook.secondWeather` (and `Atmosphere.secondWeather`, optional, blended from or to none) falls at the same time as `weather`; both bring the fog in and tint the haze. `WeatherLayer` draws one mesh per kind present, `weather=0` clears both. Two kinds in `config/weather.ts`: `ash` (1 500 grey flakes falling at 12–26 units/s, swaying, the haze closer and brown-grey with the strength) and `embers` (800 orange sparks 0.45–0.85 across, a negative fall so they rise, added on, flickering by 0.65 at 4.5 Hz, fading out over the top 45 % of their box). New optional kind fields: `blend: 'add'`, `flicker`, `fadeHigh`.
+- **Alternatives considered:** a list of weathers on every look (every World 2–3 look, fixture and test to change); embers as a GPU particle system (another system to drive and pool).
+- **Consequences:** embers are at most 0.85 units across against bullets of radius 4 (drawn 6.4) and have no rim; they move up only. Two draw calls in 4-4.
+- **Status:** Accepted
+
+### D-083 — Clouds lit from below, and tinted clouds
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R04: ash-tinted pink and brown-grey clouds; clouds and smoke "lit orange from below", a red-lit eruption sky; 4-3's lava glow taking over as the sunset fades.
+- **Decision:** `SkyLook.cloudTint` multiplies the clouds' colours; `SkyLook.underglow { color, strength }` turns the clouds’ edges 75 %, their body 20 %, the haze 35 % and the ambient ground light 60 % of the way to its colour at strength 1 (`UNDERGLOW`). 4-3's look changes from dusk (underglow 0.25) to night (0.8) over 60–280 s: the sun sets while the lava light grows; 4-5's eruption raises it to 1 with the embers by the final boss.
+- **Alternatives considered:** a time-of-day preset per World 4 level (presets are shared by all worlds).
+- **Consequences:** none for earlier looks (both optional).
+- **Status:** Accepted
+
+### D-084 — Lava as the level's liquid: a self-lit shader, a hot edge, a glow occluded by the terrain
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R05: lava rivers, pools, slag rivers and a magma lake; self-lit, flowing and churning, a bright hot edge on the rock, glowing with the existing glow tools, no real lights, only a look, 60 FPS.
+- **Decision:** a level's liquid stays one plane at `sea.level` (D-079); a look's `sea.lava` (`LavaLook`) draws it with a shader (`lava-material.visual.ts`): Worley plates whose centres wander (churn), a warp drifting them, cracks opening and closing between them, glowing and white-hot at their heart, flowing by `sea.drift`, fogged but never quite hidden. The terrain plugin, in lava mode, skips the beach and surf, scorches the rock near the lava and adds an emissive edge (`edge.width` above it) and glowing cracks (up to `edge.cracks` above) before the fog. The ground glow layer draws the lava with its own material; the terrain chunks are added to it too (black), as the plane runs under every hill. In 4-3 … 4-5 the "sea sections" stay none (no shore, relief above the level): lava fills channels and lakes cut below it, as World 3's rivers.
+- **Alternatives considered:** a uniform glow colour for the lava in the glow layer (no bloom on the cracks); glowing without occlusion (the plane would glow through the hills); a separate lava plane per river (one liquid level is enough).
+- **Consequences:** the terrain is drawn once more, at the glow map's resolution, in the lava levels only. One drift per level (4-5's lake flows slower than 4-3's rivers).
+- **Status:** Accepted
+
+### D-085 — Smoke and steam plumes from props; wagons moving on a line
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R08: vents and cinder cones send up slow, soft, see-through smoke; steam over the hot coast; moving ore wagons on rail lines.
+- **Decision:** a prop model may list `plumes` (a point and a kind, `smoke` or `steam` in `config/plumes.ts`). `PropField` builds one mesh per prop kind and plume kind: `puffs` camera-facing quads per column, drawn with the prop's own thin instances, lifted, grown, bent and faded on the GPU (each placed prop out of step), lit by the atmosphere, blended without writing depth, under the clouds. `PropLine.drift` moves a line's pieces to and fro together, as floating props drift: ore wagons are a second line on the rail's path.
+- **Alternatives considered:** particle systems per vent (a system per emitter); wagons as road traffic (rails are not roads).
+- **Consequences:** a plume mesh per smoking kind (a few draw calls); wagons all move together.
+- **Status:** Accepted
+
+### D-086 — A shot style per level: contrast outlines in World 4
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R07: over lava and red skies, enemy and boss bullets and laser warning lines need a light core or contrasting outline in World 4, other worlds unchanged.
+- **Decision:** `SceneryLook.shotStyle` (engine, a name) is passed to the game's enemy shot renderer (`EnemyBindings.shots(scene, style)`). The game's `contrast` style (`ENEMY_LOOK.contrast`) adds, per bullet colour, a dark blended rim 1.3 × the bullet behind its body and a white spark at its heart (thin instances, two more draw calls per colour), and gives laser warning lines a white core, 1.5 × as wide. Every World 4 look names it.
+- **Alternatives considered:** contrast everywhere (would change the validated worlds; spec default).
+- **Consequences:** the shot style follows the scenery look, so the `bosses/` page shows World 4 bosses with it too.
+- **Status:** Accepted
+
+### D-087 — World 4 waves and balance, measured as in Worlds 1 to 3
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R09/R10: every kind from 4-1, leads per level, strictly harder from 4-1 to 4-5, 4-1 ≥ 3-3 and 4-5 > 3-5.
+- **Decision:** `WavePlan`s as World 3's (D-080), every kind in every cycle, the lead kinds twice or three times per cycle; gaps and growth chosen by sweeping them with the D-038 play-through (the measure is not monotonic in the gap: cycles line up differently). Measured without shooting (seed 606): 220.8 / 246.0 / 247.2 / 298.6 / 388.8 enemies a minute, 7 004 / 8 178 / 9 472 / 9 668 / 12 544 HP a minute, peaks 53 / 54 / 57 / 64 / 66 (3-3: 215.0, 6 884, 47; 3-5: 308.4, 10 506, 58). Factors 1.1 / 1.15 / 1.2 / 1.3 / 1.35.
+- **Consequences:** as in Worlds 1–3, the peaks are far above the tunable `peak_on_screen` (15 … 21), in its order; 4-5 is a big step up from 4-4.
+- **Status:** Accepted
+
+### D-088 — The ten World 4 bosses, and their tuning
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** P10-R11/R12: ten bosses with moving claws, drills, fists and wings, full health strictly up from 4-1 to 4-5, above World 3's bosses of the same rank, fight times within the tunables.
+- **Decision:** no engine change: every boss is data on the boss engine (joints, turrets, orbiting parts, launches, homing missiles, tanks bursting into rings, slow bullets that burst), made in parallel by five sub-agents, one level each, each given a full-health band between World 3's and the next World 4 level's, so the orderings hold by construction; health tuned with the D-055 bot. Full health mini / final: 3 650 / 7 800, 4 180 / 9 700, 4 500 / 12 400, 5 150 / 14 800, 5 550 / 21 200; fights 44.4 / 89.2, 48.0 / 100.7, 53.2 / 112.4, 56.3 / 126.2, 59.7 / 137.6 s. Angry heats evened out afterwards to go on from World 3's 9: minis 9.5 → 13.5, finals 10 → 14. Some parts placed for the bot's spread (as D-081).
+- **Consequences:** the Crab's mortar and the Dreadnought's rack are seldom destroyed in the bot's fights (they sit behind the core); a player can still shoot them.
+- **Status:** Accepted
+
+### D-089 — World 5 dropped: a 4 × 5 level grid
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** The reviewer asked to remove World 5 from the specs and the code.
+- **Decision:** `LEVELS_CONFIG.worlds` goes from 5 to 4: the level select shows 20 levels, `1-1` … `4-5`, all unlocked. The engine keeps locked levels (`buildLevelGrid`, the padlock and the "locked" feedback) for any other game's data; they are unit tested with sample grids, and no e2e test can reach a locked level any more. The requirement texts that named World 5 (vision, P01-R07, P06-R01, P10-R01, phase 8 and 10 notes) were changed at the reviewer's request, each with a dated note.
+- **Consequences:** after 4-5 the level select keeps 4-5 highlighted because it is the last level (`MenuFlow` already did this for a last level). The Caldera Throne is the game's last boss.
+- **Status:** Accepted
+
+### D-090 — Ten veteran and elite enemy kinds, with moving parts
+- **Date:** 2026-10-26
+- **Phase:** 10 (requirements added to phase 5: P05-R13 to P05-R24)
+- **Context:** The reviewer asked for 10 new, harder enemy kinds, some with moving parts like the bosses, in the spec, and in the harder worlds.
+- **Decision:**
+  - The requirements went into the phase 5 spec (the reviewer's choice), each with a dated note.
+  - The kinds come in two tiers: five **veterans** (Wasp, Mortar, Mantis, Phantom, Minelayer), from World 3; five **elites** (Hydra, Orbiter, Scissor, Juggernaut, Hive), in World 4 only.
+  - Engine: `JointedEnemy` / `EnemyPart` reuse the bosses' `BossJoints` (D-061). Parts give no points and never drop a bonus. A shielding part makes shots pass through the hull, as a boss's shielded core does. `swinging` holds the joints still, and `EnemyLaserSpec.sweeps` lets a beam turn with its owner (the Scissor). The phase 8 rule "a beam keeps its heading" stays the default.
+  - Built in parallel by two sub-agents, one per tier.
+  - Waves:
+    - World 3 brings in a veteran kind at each level (Wasp, Mortar, Minelayer, Mantis, Phantom).
+    - World 4 uses every veteran kind in every level. The elites come in two in 4-1 (Hydra, Orbiter), then Scissor, Hive and Juggernaut.
+    - Gaps and growth were re-swept with the D-038 play-through. 4-2 gets two more Splitter / Spinner phrases to keep its lead kinds frequent.
+- **Measured** (without shooting, seed 606; enemies / HP per minute / peak):
+  - 3-1 180.8 / 4 384 / 37; 3-2 184.0 / 5 494 / 38; 3-3 190.0 / 6 452 / 45; 3-4 219.0 / 7 744 / 50; 3-5 247.8 / 8 952 / 53.
+  - 4-1 195.2 / 7 496 / 53; 4-2 204.4 / 9 216 / 55; 4-3 211.2 / 10 644 / 57; 4-4 225.0 / 11 238 / 62; 4-5 302.0 / 13 752 / 64.
+  - Every ordering of P09-R08 and P10-R10 holds, and every second half is heavier.
+- **Consequences:**
+  - World 3 (validated in phase 9) changes: its waves, and its enemies per minute in 3-3 to 3-5, which went down from 215 / 263 / 308 because the heavier kinds take beat slots. Its HP per minute stays about the same.
+  - The HP measure counts hulls only, not parts.
+  - GD-50 (tougher enemies score more) is tested on the first eleven kinds only: the Phantom (90 HP, 450 points) scores more than its HP suggests, as its cloak makes it harder.
+  - The models were only smoke-checked in software rendering; they need a look in `enemies/`.
+- **Status:** Accepted

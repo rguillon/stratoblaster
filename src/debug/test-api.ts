@@ -44,6 +44,8 @@ export interface GameTestLevelState {
   readonly sky?: {
     /** Kind of the weather falling (`none` when there is none; P08-R05, P09-R05). */
     readonly weather: string;
+    /** Kind of the second weather (phase 10), `none` when there is none. */
+    readonly secondWeather: string;
     readonly weatherParticles: number;
     /** Strength of the rain rings on the water, and of the storm's lightning (P09-R05). */
     readonly rainRings: number;
@@ -54,6 +56,11 @@ export interface GameTestLevelState {
     readonly groundLights: number;
     readonly sunIntensity: number;
     readonly fogEnd: number;
+    /** Phase 10: lava, its depth under the playfield's middle, plumes drawn, shot style. */
+    readonly lava: boolean;
+    readonly liquidDepth: number;
+    readonly plumes: number;
+    readonly shotStyle: string;
   };
 }
 

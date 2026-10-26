@@ -38,7 +38,7 @@ test.describe('touch', () => {
   });
 });
 
-test('P01-R07, P06-R01, P08-R01, P09-R01: 25 levels 1-1 … 5-5; a locked level only gives a "locked" feedback', async ({
+test('P01-R07, P06-R01, P08-R01, P09-R01, P10-R01: 20 levels 1-1 … 4-5, all unlocked', async ({
   page,
 }) => {
   await openGame(page);
@@ -47,18 +47,14 @@ test('P01-R07, P06-R01, P08-R01, P09-R01: 25 levels 1-1 … 5-5; a locked level 
   await page.locator('.ship-card.selected').click();
   await expectState(page, { screen: 'level-select' });
   const cells = page.locator('.level-cell');
-  await expect(cells).toHaveCount(25);
+  await expect(cells).toHaveCount(20);
   await expect(cells.first()).toHaveText('1-1');
-  await expect(cells.last()).toHaveText('5-5');
-  // P06-R01, P08-R01, P09-R01: Worlds 1 to 3 are unlocked; worlds 4 and 5 are not built yet.
-  await expect(page.locator('.level-cell.locked')).toHaveCount(10);
-  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(10);
+  await expect(cells.last()).toHaveText('4-5');
+  // Every level of Worlds 1 to 4 is built; the "locked" feedback is unit tested (menu-overlay,
+  // menu-controller), as no level of this game is locked any more.
+  await expect(page.locator('.level-cell.locked')).toHaveCount(0);
   await cells.nth(16).click();
   await expectState(page, { selectedId: '4-2' });
-  await cells.nth(16).click();
-  await expect(page.locator('.level-cell.selected')).toHaveClass(/shake/);
-  await expect(page.locator('.menu-status')).toHaveText('Locked!');
-  await expectState(page, { screen: 'level-select', selectedId: '4-2' });
 });
 
 test('P01-R14: the last chosen ship is highlighted after a reload', async ({ page }) => {

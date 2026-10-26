@@ -98,7 +98,7 @@ export class BossViewerStage {
     this.shots.targets = this.enemies.targets;
     const pf = this.view.playfield;
     this.layer = pf.run(() => new EnemyLayer(this.view.scene, game.view.enemies.models));
-    this.drawn = new EnemyViewerShots(game, pf);
+    this.drawn = new EnemyViewerShots(game, pf, this.view.look.shotStyle);
     const first = game.playerShips.ships[0];
     const model = first && game.view.playerShipModels[first.id];
     let nose = 0;

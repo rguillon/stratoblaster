@@ -1,7 +1,8 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector2, Vector4 } from '@babylonjs/core/Maths/math.vector';
+import { Constants } from '@babylonjs/core/Engines/constants';
+import { Vector2, Vector3, Vector4 } from '@babylonjs/core/Maths/math.vector';
 import type { WeatherKind } from '../../config/weather';
 import type { WeatherMaterial } from './weather-layer';
 
@@ -21,8 +22,10 @@ uniform vec4 motion;
 uniform vec4 shape;
 uniform vec2 drift;
 uniform float align;
+uniform vec3 spark;
 varying vec2 vCorner;
 varying float vDistance;
+varying float vGlow;
 void main() {
   float t = motion.x;
   float height = volume.w - volume.z;
@@ -43,6 +46,10 @@ void main() {
   vec3 p = centre + mix(sideways, streak, align);
   vCorner = position.xy * 2.0;
   vDistance = distance(p, cameraPosition);
+  // Phase 10: sparks flicker, each on its own beat, and fade out near the top as they cool.
+  float beat = sin(6.2831 * (spark.y * t + flake.w * 11.0)) * 0.5 + 0.5;
+  float cool = 1.0 - smoothstep(1.0 - spark.z, 1.0, (y - volume.z) / height);
+  vGlow = (1.0 - spark.x * beat) * mix(1.0, cool, step(0.0001, spark.z));
   gl_Position = viewProjection * vec4(p, 1.0);
 }
 `;
@@ -51,14 +58,19 @@ const FRAGMENT = /* glsl */ `
 precision highp float;
 varying vec2 vCorner;
 varying float vDistance;
+varying float vGlow;
 uniform vec3 particleColor;
 uniform float particleAlpha;
 uniform vec3 fogColor;
 uniform vec2 fogRange;
+uniform float additive;
 void main() {
   float soft = 1.0 - smoothstep(0.35, 1.0, length(vCorner));
   float fog = clamp((vDistance - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
-  gl_FragColor = vec4(mix(particleColor, fogColor, fog), soft * particleAlpha * (1.0 - 0.7 * fog));
+  float alpha = soft * particleAlpha * (1.0 - 0.7 * fog) * vGlow;
+  // Added sparks fade into the haze by dimming; blended particles take its colour.
+  vec3 color = mix(mix(particleColor, fogColor, fog), particleColor * alpha, additive);
+  gl_FragColor = vec4(color, alpha);
 }
 `;
 
@@ -72,6 +84,8 @@ const UNIFORMS = [
   'shape',
   'drift',
   'align',
+  'spark',
+  'additive',
   'particleColor',
   'particleAlpha',
   'fogColor',
@@ -82,7 +96,8 @@ const UNIFORMS = [
  * The material of a weather's particles (P08-R05): soft, faint discs placed and moved on the GPU
  * in a box of air that follows the view, falling, swaying and blown sideways by a wind that
  * grows with the strength (streaking them at 1), fading into the haze. Phase 9: a kind aligned
- * with its fall (rain) is drawn as thin streaks along the way it falls, at every strength. Blended, without
+ * with its fall (rain) is drawn as thin streaks along the way it falls, at every strength. Blended
+ * (phase 10: or added, for self-lit sparks that flicker and cool as they rise: embers), without
  * writing depth, so they never hide what is drawn after them (the playfield).
  */
 export function createWeatherMaterial(scene: Scene, kind: WeatherKind): WeatherMaterial {
@@ -98,6 +113,11 @@ export function createWeatherMaterial(scene: Scene, kind: WeatherKind): WeatherM
   );
   material.backFaceCulling = false;
   material.disableDepthWrite = true;
+  const additive = kind.blend === 'add';
+  if (additive) material.alphaMode = Constants.ALPHA_ONEONE;
+  material.setFloat('additive', additive ? 1 : 0);
+  const flicker = kind.flicker ?? { amount: 0, hz: 0 };
+  material.setVector3('spark', new Vector3(flicker.amount, flicker.hz, kind.fadeHigh ?? 0));
   const v = kind.volume;
   material.setVector4('volume', new Vector4(v.halfWidth, v.length, v.bottom, v.top));
   material.setColor3('particleColor', new Color3(...kind.color));

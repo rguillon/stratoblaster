@@ -6,6 +6,8 @@ import type { StandardMaterial } from '@babylonjs/core/Materials/standardMateria
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ENEMY_CONFIG, ENEMY_UNIT } from '../../../../../src/game/config/enemies';
+import { ELITE_CONFIG } from '../../../../../src/game/config/enemies-elite';
+import { VETERAN_CONFIG } from '../../../../../src/game/config/enemies-veteran';
 import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
 import { ENEMY_MODELS } from '../../../../../src/game/view/enemies/enemy-models';
 import { Dropper } from '../../../../fixtures/sample-enemies';
@@ -47,8 +49,12 @@ const SIZES: Readonly<Record<string, number>> = {
 };
 
 describe('ENEMY_MODELS', () => {
-  it('P05-R01..R10: a model per enemy model key', () => {
-    const keys = Object.values(ENEMY_CONFIG).map((c) => c.stats.model);
+  it('P05-R01..R10, P05-R24: a model per enemy model key', () => {
+    const keys = [
+      ...Object.values(ENEMY_CONFIG),
+      ...Object.values(VETERAN_CONFIG),
+      ...Object.values(ELITE_CONFIG),
+    ].map((c): string => c.stats.model);
     expect(Object.keys(ENEMY_MODELS).sort()).toEqual([...keys].sort());
   });
 
