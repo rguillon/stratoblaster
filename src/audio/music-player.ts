@@ -163,7 +163,7 @@ export class MusicPlayer {
     for (const { note, at, seconds } of slot.sequencer.advance(
       now + this.timings.lookaheadSeconds - anchor,
     )) {
-      const instrument = this.instruments[note.instrument];
+      const instrument = this.#playable(slot, note.instrument, anchor + at);
       if (!instrument) continue;
       slot.voices.push(
         playVoice(bus.context, mixer.input(note.instrument, instrument), instrument.layers, {
@@ -174,6 +174,12 @@ export class MusicPlayer {
         }),
       );
     }
+  }
+
+  /** The instrument of a note, unless it is unknown or starts once the fade-out is over. */
+  #playable(slot: Slot, name: string, start: number): Instrument | undefined {
+    if (slot.until !== undefined && start >= slot.until) return undefined;
+    return this.instruments[name];
   }
 
   #start(slot: Slot, bus: MusicBus, now: number): void {

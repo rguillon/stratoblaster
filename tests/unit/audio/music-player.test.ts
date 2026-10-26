@@ -72,6 +72,8 @@ describe('MusicPlayer', () => {
   it('P12-R11: paused 30 s in for 10 s, the track goes on from about 30 s, not 40 s', () => {
     const { context, player } = setup();
     player.play(track('level'), 0);
+    // A track starts on the next update: here at once, so it is 30 s in at 30 s.
+    player.update();
     runTo(context, player, 30);
     player.pause();
     expect(player.position).toBeCloseTo(30);

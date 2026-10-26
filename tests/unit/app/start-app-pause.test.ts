@@ -68,11 +68,13 @@ describe('startApp: pause and audio (P12)', () => {
   it('P12-R01: a paused level stays exactly as it was for 10 s, then goes on from there', async () => {
     const keyboardTarget = new EventTarget();
     app = startApp(new NullEngine(), SAMPLE_GAME, options({ keyboardTarget }));
-    await toGame(app, 1);
+    // The first level: the others of the sample grid are locked.
+    await toGame(app);
     settle(app);
     keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' }));
     for (let i = 0; i < 20; i++) app.tick(0.05);
     const play = app.game();
+    expect(play).toBeDefined();
     app.command('pause');
     const before = JSON.stringify(play?.state);
     for (let i = 0; i < 100; i++) app.tick(0.1);

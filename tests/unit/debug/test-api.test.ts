@@ -52,7 +52,7 @@ describe('installTestApi', () => {
     expect(sent).toEqual(['confirm', 'pause', 'resume']);
     // P11-R08: `bomb` sets a bomb off, as the bomb key would.
     target.__GAME_TEST__?.sendAction('bomb');
-    expect([sent, bombs]).toEqual([['confirm'], 1]);
+    expect([sent, bombs]).toEqual([['confirm', 'pause', 'resume'], 1]);
     expect(() => target.__GAME_TEST__?.sendAction('fly' as MenuAction)).toThrow(TypeError);
     target.__GAME_TEST__?.step(3);
     target.__GAME_TEST__?.step(2, false);

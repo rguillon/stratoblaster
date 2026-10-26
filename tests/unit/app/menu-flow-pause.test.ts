@@ -76,6 +76,8 @@ describe('MenuFlow: pause and settings (P12)', () => {
     it('P12-R02: Main menu, then Yes, goes to the title with Start selected', () => {
       const flow = playing();
       flow.pause();
+      // The pause menu takes input once its screen transition has finished.
+      flow.update(1);
       send(flow, 'down', 'down', 'confirm');
       expect(flow.state).toMatchObject({ screen: 'pause', leaving: true, choice: 0 });
       send(flow, 'right');
@@ -87,6 +89,8 @@ describe('MenuFlow: pause and settings (P12)', () => {
     it('P12-R02: No, or Back, on the question goes back to the pause menu, still paused', () => {
       const flow = playing();
       flow.pause();
+      // The pause menu takes input once its screen transition has finished.
+      flow.update(1);
       send(flow, 'down', 'down', 'confirm', 'confirm');
       expect(flow.state).toMatchObject({ screen: 'pause', paused: true, leaving: false });
       send(flow, 'confirm', { select: 1 }, { select: 0 }, 'cancel');
@@ -96,6 +100,8 @@ describe('MenuFlow: pause and settings (P12)', () => {
     it('P12-R02, P12-R04: Settings from the pause menu keeps the level paused; Back returns to the pause menu', () => {
       const flow = playing();
       flow.pause();
+      // The pause menu takes input once its screen transition has finished.
+      flow.update(1);
       send(flow, 'down', 'confirm');
       expect(flow.state).toMatchObject({ screen: 'settings', paused: true, selectedId: 'music' });
       send(flow, 'pause', 'confirm');
