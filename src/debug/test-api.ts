@@ -102,7 +102,13 @@ export interface GameTestApi {
    * level being played, as the bomb key would (P11-R08).
    */
   sendAction(action: MenuAction | 'bomb'): void;
-  /** Runs the level being played for `seconds` at once, without rendering; no level, no-op. */
+  /**
+   * Runs `frames` frames of 1/60 s at once (menus, transitions, the level being played), then
+   * renders once, unless `render` is false. The app has no render loop in e2e builds: nothing
+   * moves between two calls.
+   */
+  step(frames: number, render?: boolean): void;
+  /** Steps the app by `seconds` (rounded up to whole frames). */
   advance(seconds: number): void;
 }
 
@@ -114,7 +120,9 @@ export interface GameTestHooks {
   readonly game: () => GameTestLevelState | undefined;
   readonly send: (action: MenuAction) => void;
   readonly bomb: () => void;
-  readonly advance: (seconds: number) => void;
+  readonly step: (frames: number, render: boolean) => void;
+  /** Frames per second of {@link GameTestApi.step}. */
+  readonly stepHz: number;
 }
 
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
@@ -134,9 +142,15 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
       if (!isMenuAction(action)) throw new TypeError(`Unknown menu action "${String(action)}"`);
       hooks.send(action);
     },
+    step: (frames, render = true) => {
+      if (!Number.isInteger(frames) || frames < 0) {
+        throw new RangeError(`Cannot step by ${String(frames)} frames`);
+      }
+      hooks.step(frames, render);
+    },
     advance: (seconds) => {
       if (!(seconds >= 0)) throw new RangeError(`Cannot advance by ${String(seconds)} s`);
-      hooks.advance(seconds);
+      hooks.step(Math.ceil(seconds * hooks.stepHz - 1e-9), true);
     },
   };
   Object.defineProperty(target, '__GAME_TEST__', { value: api, configurable: true });

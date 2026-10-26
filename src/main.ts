@@ -16,6 +16,7 @@ import { applyStageFit, fitStage } from './ui/stage-fit';
 import { installTestApi } from './debug/test-api';
 import { installEnemyViewerTestApi } from './debug/enemy-viewer-test-api';
 import { installBossViewerTestApi } from './debug/boss-viewer-test-api';
+import { installViewerTestApi } from './debug/viewer-test-api';
 import { GAME } from './game/index';
 
 // Bootstrap only: create the engine and start the app (ENG-10).
@@ -58,7 +59,8 @@ function startGame(engine: Engine): void {
     keyboardTarget: window,
     gamepads: browserGamepads(navigator),
     yieldToBrowser: nextFrame,
-    renderLoop: true,
+    // e2e builds have no render loop: the tests step the app (ENG-52).
+    renderLoop: !__E2E__,
     ...(debug ? { debug, statsParent: document.body } : {}),
   });
   if (__E2E__) {
@@ -73,9 +75,10 @@ function startGame(engine: Engine): void {
       bomb: () => {
         app.controls.bomb();
       },
-      advance: (seconds) => {
-        app.game()?.advance(seconds);
+      step: (frames, render) => {
+        app.step(frames, render);
       },
+      stepHz: 1 / app.clock.stepSeconds,
     });
   }
 }
@@ -99,26 +102,46 @@ function fitCanvasStage(engine: Engine): void {
 
 function startShots(engine: Engine): void {
   fitCanvasStage(engine);
-  startShotViewer(engine, GAME, {
+  const viewer = startShotViewer(engine, GAME, {
     environment: true,
     doc: document,
     panelParent: element('panel'),
     statsParent: document.body,
     keyboardTarget: window,
-    renderLoop: true,
+    renderLoop: !__E2E__,
   });
+  if (__E2E__) {
+    installViewerTestApi(window, '__SHOTS_TEST__', {
+      frame: (dt) => {
+        viewer.frame(dt);
+      },
+      render: () => {
+        viewer.scene.render();
+      },
+    });
+  }
 }
 
 function startScenery(engine: Engine): void {
   fitCanvasStage(engine);
-  startSceneryViewer(engine, GAME, {
+  const viewer = startSceneryViewer(engine, GAME, {
     environment: true,
     doc: document,
     panelParent: element('panel'),
     statsParent: document.body,
     keyboardTarget: window,
-    renderLoop: true,
+    renderLoop: !__E2E__,
   });
+  if (__E2E__) {
+    installViewerTestApi(window, '__SCENERY_TEST__', {
+      frame: (dt) => {
+        viewer.frame(dt);
+      },
+      render: () => {
+        viewer.scene.render();
+      },
+    });
+  }
 }
 
 function startEnemies(engine: Engine): void {
@@ -129,7 +152,7 @@ function startEnemies(engine: Engine): void {
     panelParent: element('panel'),
     statsParent: document.body,
     keyboardTarget: window,
-    renderLoop: true,
+    renderLoop: !__E2E__,
   });
   if (__E2E__) {
     installEnemyViewerTestApi(window, {
@@ -148,6 +171,9 @@ function startEnemies(engine: Engine): void {
       frame: (dt) => {
         viewer.frame(dt);
       },
+      render: () => {
+        viewer.activeScene.render();
+      },
     });
   }
 }
@@ -160,13 +186,16 @@ function startBosses(engine: Engine): void {
     panelParent: element('panel'),
     statsParent: document.body,
     keyboardTarget: window,
-    renderLoop: true,
+    renderLoop: !__E2E__,
   });
   if (__E2E__) {
     installBossViewerTestApi(window, {
       state: () => viewer.state(),
       frame: (dt) => {
         viewer.frame(dt);
+      },
+      render: () => {
+        viewer.activeScene.render();
       },
     });
   }

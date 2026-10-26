@@ -1,3 +1,5 @@
+import { stepFrames, type ViewerStepHooks } from './viewer-test-api';
+
 /** What `window.__BOSSES_TEST__.getState()` returns on the `bosses/` page (P07-R09). */
 export interface BossViewerState {
   readonly boss: {
@@ -21,19 +23,19 @@ export interface BossViewerState {
 /** The e2e test API of the `bosses/` page (ENG-52, P07-R09), in e2e builds only. */
 export interface BossViewerTestApi {
   getState(): BossViewerState;
-  /** Advances the page by `frames` frames of 1/60 s. */
+  /** Advances the page by `frames` frames of 1/60 s, then renders once (no render loop in e2e). */
   step(frames: number): void;
 }
 
 /** Installs `__BOSSES_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
 export function installBossViewerTestApi(
   target: object,
-  hooks: { readonly state: () => BossViewerState; readonly frame: (dt: number) => void },
+  hooks: ViewerStepHooks & { readonly state: () => BossViewerState },
 ): BossViewerTestApi {
   const api: BossViewerTestApi = {
     getState: hooks.state,
     step: (frames) => {
-      for (let i = 0; i < frames; i++) hooks.frame(1 / 60);
+      stepFrames(hooks, frames);
     },
   };
   Object.defineProperty(target, '__BOSSES_TEST__', { value: api, configurable: true });

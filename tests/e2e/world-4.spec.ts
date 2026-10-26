@@ -1,58 +1,25 @@
-import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import {
+  destroyBoss,
   expectState,
   gameState,
+  openDebug,
   openGame,
   sendAction,
+  stepUntil,
   waitForLevelTime,
-  LOAD_TIMEOUT,
 } from './menu-helpers';
 
 const WORLD_4 = ['4-1', '4-2', '4-3', '4-4', '4-5'];
 
-/** A level's scene is generated when it starts; under software WebGL that takes a while. */
-const LEVEL_TIMEOUT = 60_000;
-
-/** Opens the game with debug options (P06-R09, P10-R13) and waits for the level to run. */
-async function openDebug(page: Page, query: string): Promise<void> {
-  await page.goto(`./${query}`);
-  await expect
-    .poll(async () => (await gameState(page)).game?.levelId ?? null, { timeout: LOAD_TIMEOUT })
-    .not.toBeNull();
-}
-
-/** Destroys every part then the core of the boss being fought, with K (P07-R09). */
-async function destroyBoss(page: Page, name: string): Promise<void> {
-  await expect
-    .poll(async () => (await gameState(page)).game?.boss?.name ?? null, {
-      timeout: LEVEL_TIMEOUT,
-    })
-    .toBe(name);
-  const parts = (await gameState(page)).game?.boss?.parts ?? 0;
-  for (let stage = 1; stage <= parts; stage++) {
-    await page.keyboard.press('KeyK');
-    await expect
-      .poll(async () => (await gameState(page)).game?.boss?.stage ?? -1, {
-        timeout: LEVEL_TIMEOUT,
-      })
-      .toBe(stage);
-  }
-  await page.keyboard.press('KeyK');
-  await expect(page.locator('.level-complete')).toBeVisible({ timeout: LEVEL_TIMEOUT });
-}
-
 test.describe('P10: World 4', () => {
-  // Each test software-renders a generated level: one at a time.
-  test.describe.configure({ mode: 'default' });
-  test.setTimeout(150_000);
-
   test('P10-R01: the World 4 row shows 4-1 to 4-5, all unlocked, the last row of the grid', async ({
     page,
   }) => {
     await openGame(page);
     await sendAction(page, 'confirm');
     await sendAction(page, 'confirm');
+    await expectState(page, { screen: 'level-select' });
     const cells = page.locator('.level-cell');
     for (const [i, id] of WORLD_4.entries()) {
       await expect(cells.nth(15 + i)).toHaveText(id);
@@ -123,11 +90,9 @@ test.describe('P10: World 4', () => {
     page,
   }) => {
     await openDebug(page, '?level=4-5&boss=final');
-    await expect
-      .poll(async () => (await gameState(page)).game?.boss?.name ?? null, {
-        timeout: LEVEL_TIMEOUT,
-      })
-      .toBe('Caldera Throne');
+    await stepUntil(page, async () => (await gameState(page)).game?.boss?.name ?? null).toBe(
+      'Caldera Throne',
+    );
     const sky = (await gameState(page)).game?.sky;
     // Over the lake: lava under the middle of the playfield; the embers at their strongest.
     expect(sky).toMatchObject({ lava: true, weather: 'embers', weatherParticles: 800 });
