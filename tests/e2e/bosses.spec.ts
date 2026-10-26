@@ -35,6 +35,17 @@ const BOSSES = [
   'Glacier Colossus',
   'Ice Queen',
   'Boreal Citadel',
+  // World 3 (P09-R11), after World 2.
+  'Mangrove Croc',
+  'River Leviathan',
+  'Toucan',
+  'Canopy Spider',
+  'Stone Idol',
+  'Sky Temple',
+  'Mosquito',
+  'Dam Breaker',
+  'Jaguar',
+  'Verdant Crown',
 ];
 
 test('P07-R09 (review): boss/ opens the same page, with every boss', async ({ page }) => {
@@ -58,9 +69,11 @@ test.describe('P07: bosses/ page', () => {
     await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 60_000 });
   });
 
-  test('P07-R09: loads without errors, every boss can be picked and comes in', async ({ page }) => {
-    // Twenty bosses over ten generated levels under software WebGL.
-    test.setTimeout(600_000);
+  test('P07-R09, P08-R12, P09-R11: loads without errors, every boss of Worlds 1 to 3 can be picked and comes in', async ({
+    page,
+  }) => {
+    // Thirty bosses over fifteen generated levels under software WebGL.
+    test.setTimeout(900_000);
     await expect(page.locator('.enemy-kind button')).toHaveText(BOSSES);
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
     for (const [i, name] of BOSSES.entries()) {

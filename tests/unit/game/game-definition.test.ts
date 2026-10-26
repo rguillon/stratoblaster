@@ -36,10 +36,11 @@ describe('GAME', () => {
     expect(MENU_TEXTS.enemiesDestroyed(42, 60)).toBe('Enemies destroyed: 42 / 60');
   });
 
-  it('P06-R01, P08-R01: registers the five playable levels of World 1, then those of World 2', () => {
+  it('P06-R01, P08-R01, P09-R01: registers the five playable levels of World 1, then World 2, then World 3', () => {
     expect(GAME.gameLevels.map((l) => l.id)).toEqual([
       ...['1-1', '1-2', '1-3', '1-4', '1-5'],
       ...['2-1', '2-2', '2-3', '2-4', '2-5'],
+      ...['3-1', '3-2', '3-3', '3-4', '3-5'],
     ]);
   });
 

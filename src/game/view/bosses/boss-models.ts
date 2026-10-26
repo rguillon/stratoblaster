@@ -19,6 +19,16 @@ import { buildAvalanche } from './world-2/avalanche-model';
 import { buildGlacierColossus } from './world-2/glacier-colossus-model';
 import { buildIceQueen } from './world-2/ice-queen-model';
 import { buildBorealCitadel } from './world-2/boreal-citadel-model';
+import { buildMangroveCroc } from './world-3/mangrove-croc-model';
+import { buildRiverLeviathan } from './world-3/river-leviathan-model';
+import { buildToucan } from './world-3/toucan-model';
+import { buildCanopySpider } from './world-3/canopy-spider-model';
+import { buildStoneIdol } from './world-3/stone-idol-model';
+import { buildSkyTemple } from './world-3/sky-temple-model';
+import { buildMosquito } from './world-3/mosquito-model';
+import { buildDamBreaker } from './world-3/dam-breaker-model';
+import { buildJaguar } from './world-3/jaguar-model';
+import { buildVerdantCrown } from './world-3/verdant-crown-model';
 
 /** One model per boss, keyed by its model key (the boss kind id, P07-R05). */
 export const BOSS_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
@@ -43,4 +53,15 @@ export const BOSS_MODELS: Readonly<Record<string, EnemyModelFactory>> = {
   'glacier-colossus': buildGlacierColossus,
   'ice-queen': buildIceQueen,
   'boreal-citadel': buildBorealCitadel,
+  // World 3 (P09-R09).
+  'mangrove-croc': buildMangroveCroc,
+  'river-leviathan': buildRiverLeviathan,
+  toucan: buildToucan,
+  'canopy-spider': buildCanopySpider,
+  'stone-idol': buildStoneIdol,
+  'sky-temple': buildSkyTemple,
+  mosquito: buildMosquito,
+  'dam-breaker': buildDamBreaker,
+  jaguar: buildJaguar,
+  'verdant-crown': buildVerdantCrown,
 };

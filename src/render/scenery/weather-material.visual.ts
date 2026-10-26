@@ -7,6 +7,7 @@ import type { WeatherMaterial } from './weather-layer';
 
 // volume: half width, length, bottom, top. motion: time, slowest fall, fastest fall, wind.
 // shape: smallest size, largest size, streak, sway. drift: box start Z, sway frequency.
+// align: 0 = stretched sideways (snow in a blizzard), 1 = stretched along the fall (rain).
 const VERTEX = /* glsl */ `
 precision highp float;
 attribute vec3 position;
@@ -19,6 +20,7 @@ uniform vec4 volume;
 uniform vec4 motion;
 uniform vec4 shape;
 uniform vec2 drift;
+uniform float align;
 varying vec2 vCorner;
 varying float vDistance;
 void main() {
@@ -32,8 +34,13 @@ void main() {
   // Each particle keeps its place along the level: the box slides with the view.
   float z = drift.x + mod(flake.z * volume.y - drift.x, volume.y);
   float size = mix(shape.x, shape.y, fract(flake.w * 13.7));
-  vec3 p = vec3(x, y, z) + cameraRight * position.x * size * (1.0 + shape.z)
-    + cameraUp * position.y * size;
+  vec3 centre = vec3(x, y, z);
+  vec3 sideways = cameraRight * position.x * size * (1.0 + shape.z) + cameraUp * position.y * size;
+  // Along its way down (wind across, fall down), as thin as its size across the view.
+  vec3 along = normalize(vec3(motion.w, -fall, 0.0));
+  vec3 across = normalize(cross(along, cameraPosition - centre));
+  vec3 streak = across * position.x * size + along * position.y * size * (1.0 + shape.z);
+  vec3 p = centre + mix(sideways, streak, align);
   vCorner = position.xy * 2.0;
   vDistance = distance(p, cameraPosition);
   gl_Position = viewProjection * vec4(p, 1.0);
@@ -64,6 +71,7 @@ const UNIFORMS = [
   'motion',
   'shape',
   'drift',
+  'align',
   'particleColor',
   'particleAlpha',
   'fogColor',
@@ -73,7 +81,8 @@ const UNIFORMS = [
 /**
  * The material of a weather's particles (P08-R05): soft, faint discs placed and moved on the GPU
  * in a box of air that follows the view, falling, swaying and blown sideways by a wind that
- * grows with the strength (streaking them at 1), fading into the haze. Blended, without
+ * grows with the strength (streaking them at 1), fading into the haze. Phase 9: a kind aligned
+ * with its fall (rain) is drawn as thin streaks along the way it falls, at every strength. Blended, without
  * writing depth, so they never hide what is drawn after them (the playfield).
  */
 export function createWeatherMaterial(scene: Scene, kind: WeatherKind): WeatherMaterial {
@@ -93,6 +102,8 @@ export function createWeatherMaterial(scene: Scene, kind: WeatherKind): WeatherM
   material.setVector4('volume', new Vector4(v.halfWidth, v.length, v.bottom, v.top));
   material.setColor3('particleColor', new Color3(...kind.color));
   material.setFloat('particleAlpha', kind.alpha);
+  const alongFall = kind.align === 'fall';
+  material.setFloat('align', alongFall ? 1 : 0);
   const [motion, shape, drift, fogRange] = [
     new Vector4(),
     new Vector4(),
@@ -106,7 +117,7 @@ export function createWeatherMaterial(scene: Scene, kind: WeatherKind): WeatherM
       const s = Math.min(1, Math.max(0, frame.strength));
       const wind = kind.wind[0] + (kind.wind[1] - kind.wind[0]) * s;
       motion.set(frame.time, kind.fall[0], kind.fall[1], wind);
-      shape.set(kind.size[0], kind.size[1], kind.streak * s * s, kind.sway[0]);
+      shape.set(kind.size[0], kind.size[1], kind.streak * (alongFall ? 1 : s * s), kind.sway[0]);
       drift.set(frame.start, kind.sway[1]);
       material.setVector4('motion', motion);
       material.setVector4('shape', shape);

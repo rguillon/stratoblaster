@@ -30,6 +30,17 @@ export const BOSS_LOOK = {
     'glacier-colossus': [1, 0.35, 0.08],
     'ice-queen': [0.55, 0.65, 1],
     'boreal-citadel': [0.35, 1, 0.6],
+    // World 3 (P09-R09).
+    'mangrove-croc': [0.25, 1, 0.3],
+    'river-leviathan': [0.05, 0.9, 0.8],
+    toucan: [1, 0.7, 0.1],
+    'canopy-spider': [1, 0.12, 0.15],
+    'stone-idol': [0.95, 0.2, 1],
+    'sky-temple': [1, 0.8, 0.2],
+    mosquito: [1, 0.3, 0.7],
+    'dam-breaker': [0.6, 1, 0.1],
+    jaguar: [1, 0.6, 0.05],
+    'verdant-crown': [0.1, 1, 0.45],
   } as Readonly<Record<string, Rgb>>,
   /** Its charge lights strobe this many times a second while it holds its fire (P07-R04). */
   stageStrobeHz: 6,

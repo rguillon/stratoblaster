@@ -57,7 +57,8 @@ describe('World 2 bosses', () => {
       'Ice Queen',
       'Boreal Citadel',
     ]);
-    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(20);
+    // One kind per design, every id its own (World 3's ten came after, P09-R09).
+    expect(new Set(BOSS_KINDS.map((k) => k.id)).size).toBe(BOSS_DESIGNS.length);
   });
 
   it('P08-R10: mini bosses have 2 or 3 destroyable parts, final bosses 4 to 6', () => {
