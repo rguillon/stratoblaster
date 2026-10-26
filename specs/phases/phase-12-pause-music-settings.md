@@ -344,7 +344,7 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - **Explosion sound (review 9, P12-R09):** enemy explosions are short, muffled booms (`sound-recipes.ts`, D-107); details in the review feedback above.
 - Light verification (reviews 8 and 9): typecheck ✔, build ✔, e2e 116 passed. Lint, unit tests and coverage still deferred to `/validate-phase`.
 - **Realistic explosions (review 10, P12-R09):** one layered `explosion` recipe in three sizes for every blast (D-108); details in the review feedback above.
-- Light verification (review 10): see Gate results.
+- Light verification (review 10): typecheck ✔, build ✔, e2e 116 passed.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.
