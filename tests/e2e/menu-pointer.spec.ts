@@ -50,15 +50,15 @@ test('P01-R07, P06-R01, P08-R01, P09-R01: 25 levels 1-1 … 5-5; a locked level 
   await expect(cells).toHaveCount(25);
   await expect(cells.first()).toHaveText('1-1');
   await expect(cells.last()).toHaveText('5-5');
-  // P06-R01, P08-R01, P09-R01: Worlds 1 to 3 are unlocked; worlds 4 and 5 are not built yet.
-  await expect(page.locator('.level-cell.locked')).toHaveCount(10);
-  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(10);
-  await cells.nth(16).click();
-  await expectState(page, { selectedId: '4-2' });
-  await cells.nth(16).click();
+  // P06-R01, P08-R01, P09-R01, P10-R01: Worlds 1 to 4 are unlocked; World 5 is not built yet.
+  await expect(page.locator('.level-cell.locked')).toHaveCount(5);
+  await expect(page.locator('.level-cell.locked .padlock')).toHaveCount(5);
+  await cells.nth(21).click();
+  await expectState(page, { selectedId: '5-2' });
+  await cells.nth(21).click();
   await expect(page.locator('.level-cell.selected')).toHaveClass(/shake/);
   await expect(page.locator('.menu-status')).toHaveText('Locked!');
-  await expectState(page, { screen: 'level-select', selectedId: '4-2' });
+  await expectState(page, { screen: 'level-select', selectedId: '5-2' });
 });
 
 test('P01-R14: the last chosen ship is highlighted after a reload', async ({ page }) => {

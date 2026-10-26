@@ -1,4 +1,4 @@
-import { OVERCAST, SKY_STOPS, TIME_OF_DAY } from '../../config/time-of-day';
+import { OVERCAST, SKY_STOPS, TIME_OF_DAY, UNDERGLOW } from '../../config/time-of-day';
 import { WEATHER_KINDS } from '../../config/weather';
 import { smoothstep } from '../math/noise';
 import type { Atmosphere, AtmosphereChange, CloudCover, TimeOfDay, Weather } from './atmosphere';
@@ -28,6 +28,15 @@ export interface SkyLook {
   readonly mist?: { readonly fog: number; readonly white: number };
   /** Phase 9: a tint (RGB factors) on the ambient light, e.g. green under the canopy. */
   readonly tint?: Rgb;
+  /** Phase 10: a second weather at the same time (P10-R06: falling ash and embers together). */
+  readonly secondWeather?: Weather;
+  /** Phase 10: a tint (RGB factors) on the clouds' colours, e.g. ash-brown clouds. */
+  readonly cloudTint?: Rgb;
+  /**
+   * Phase 10: a glow from below in `color` (fire, lava), lighting the clouds, the haze and the
+   * ambient light from the ground, `strength` 0..1 (`UNDERGLOW`).
+   */
+  readonly underglow?: { readonly color: Rgb; readonly strength: number };
 }
 
 /**
@@ -74,11 +83,20 @@ export function weatherFog(weather: Weather): number {
   return kind ? lerp(1, kind.fogAt1, strength) : 1;
 }
 
-/** The cloud layers of `look`: the time of day's colours, greyed by a storm, thinned when heavy. */
+/** No glow from below. */
+const NO_UNDERGLOW = { color: [0, 0, 0] as Rgb, strength: 0 };
+
+/**
+ * The cloud layers of `look`: the time of day's colours, greyed by a storm, tinted, lit from
+ * below (phase 10), thinned when heavy.
+ */
 function cloudsOf(look: SkyLook, base: SkyBase, colors: { color: Rgb; shade: Rgb }): CloudCover[] {
   const storm = look.storm ?? 0;
-  const color = mix(colors.color, OVERCAST.storm.color, storm);
-  const shade = mix(colors.shade, OVERCAST.storm.shade, storm);
+  const tint = look.cloudTint ?? [1, 1, 1];
+  const glow = look.underglow ?? NO_UNDERGLOW;
+  const [lit, edge] = [UNDERGLOW.cloud * glow.strength, UNDERGLOW.shade * glow.strength];
+  const color = mix(times(mix(colors.color, OVERCAST.storm.color, storm), tint), glow.color, lit);
+  const shade = mix(times(mix(colors.shade, OVERCAST.storm.shade, storm), tint), glow.color, edge);
   return look.clouds.map((coverage, i) => ({
     coverage,
     opacity:
@@ -89,6 +107,17 @@ function cloudsOf(look: SkyLook, base: SkyBase, colors: { color: Rgb; shade: Rgb
   }));
 }
 
+/** The optional parts of `look`, with their defaults. */
+function optionsOf(look: SkyLook) {
+  return {
+    weather: look.weather ?? CLEAR,
+    second: look.secondWeather ?? CLEAR,
+    mist: look.mist ?? { fog: 1, white: 0 },
+    glow: look.underglow ?? NO_UNDERGLOW,
+    tint: look.tint ?? ([1, 1, 1] as Rgb),
+  };
+}
+
 /**
  * The atmosphere of `look` (P08-R04): its time of day's light, dimmed and softened under a heavy
  * cloud cover, its clouds, and the fog of `base` brought in by the time of day and the weather.
@@ -97,15 +126,13 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
   const preset = TIME_OF_DAY[look.timeOfDay];
   const o = smoothstep(OVERCAST.overcast[0], OVERCAST.overcast[1], look.clouds[0]);
   const clouds = cloudsOf(look, base, preset.clouds);
-  const weather = look.weather ?? CLEAR;
-  const mist = look.mist ?? { fog: 1, white: 0 };
-  // The weather and the mist bring the end of the haze in, its start only half as much.
-  const near = weatherFog(weather) * mist.fog;
+  const { weather, second, mist, glow, tint } = optionsOf(look);
+  // The weathers and the mist bring the end of the haze in, its start only half as much.
+  const near = weatherFog(weather) * weatherFog(second) * mist.fog;
   const fogEnd = preset.fog * near;
   const fogStart = (preset.fog * (1 + near)) / 2;
   const cloudColor = clouds[0]?.color ?? preset.clouds.color;
   const haze = mix(preset.sky.haze, scale(cloudColor, 0.9), OVERCAST.hazeGrey * o);
-  const tint = look.tint ?? [1, 1, 1];
   return {
     sun: {
       ...preset.sun,
@@ -113,19 +140,24 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
       shadowDarkness: lerp(OVERCAST.shadowDarkness, OVERCAST.softShadows, o),
     },
     sky: {
-      haze: mix(weatherHaze(haze, weather), MIST_COLOR, mist.white),
+      haze: mix(
+        mix(weatherHaze(weatherHaze(haze, weather), second), MIST_COLOR, mist.white),
+        glow.color,
+        UNDERGLOW.haze * glow.strength,
+      ),
       stops: preset.sky.gradient.map((color, i) => ({ at: SKY_STOPS[i] ?? 0, color })),
       environmentIntensity: preset.sky.environmentIntensity,
     },
     ambient: {
       sky: times(preset.ambient.sky, tint),
-      ground: times(preset.ambient.ground, tint),
+      ground: mix(times(preset.ambient.ground, tint), glow.color, UNDERGLOW.ground * glow.strength),
       intensity: preset.ambient.intensity * (1 + OVERCAST.ambientGain * o),
     },
     fog: { start: base.fog.start * fogStart, end: base.fog.end * fogEnd },
     clouds,
     groundLights: preset.groundLights,
     weather,
+    ...(look.secondWeather ? { secondWeather: second } : {}),
     aurora: look.aurora ?? 0,
     lightning: look.lightning ?? 0,
   };
@@ -136,9 +168,17 @@ export function atTimeOfDay(look: SkyLook, timeOfDay: TimeOfDay | undefined): Sk
   return timeOfDay ? { ...look, timeOfDay } : look;
 }
 
-/** `look` without its weather, lightning included (the `weather=0` debug option, P08-R12). */
+/**
+ * `look` without its weather, lightning and second weather included (the `weather=0` debug
+ * option, P08-R12).
+ */
 export function withoutWeather(look: SkyLook): SkyLook {
-  return { ...look, weather: CLEAR, lightning: 0 };
+  return {
+    ...look,
+    weather: CLEAR,
+    lightning: 0,
+    ...(look.secondWeather ? { secondWeather: CLEAR } : {}),
+  };
 }
 
 /**

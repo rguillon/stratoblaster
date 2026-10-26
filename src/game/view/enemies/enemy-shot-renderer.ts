@@ -72,11 +72,28 @@ class BulletLayer {
 /** How big and how turned one layer of a bullet is drawn. */
 type Placement = (b: EnemyBullet, r: number) => { radius: number; angle: number };
 
+/** The dark rim and white spark of a bullet in the contrast style (P10-R07). */
+function contrastLayers(name: string, scene: Scene): { rim: Mesh; spark: Mesh } {
+  const { segments } = LOOK.bullets;
+  const { rim, spark } = LOOK.contrast;
+  const dark = rim.fade.map(() => rim.color);
+  return {
+    rim: blendedTemplate(
+      `${name}-rim`,
+      buildGlowDisc(segments, dark),
+      discAlphas(segments, rim.fade),
+      scene,
+    ),
+    spark: additiveTemplate(`${name}-spark`, buildGlowDisc(segments, spark.colors), scene),
+  };
+}
+
 /**
  * A ball of plasma (GD-43), back to front: a faint flickering aura, a solid body, two curled
- * swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core.
+ * swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core. In the
+ * contrast style (P10-R07), a dark rim behind the body and a white spark over the core.
  */
-function bulletLayers(style: Style, scene: Scene): [BulletLayer, Placement][] {
+function bulletLayers(style: Style, scene: Scene, contrast: boolean): [BulletLayer, Placement][] {
   const { segments, swirlSegments, fade, swirls } = LOOK.bullets;
   const colors = LOOK.bullets.styles[style];
   const name = `enemy-bullet-${style}`;
@@ -103,6 +120,12 @@ function bulletLayers(style: Style, scene: Scene): [BulletLayer, Placement][] {
       (b, r) => ({ radius: r * coreScale(b.age), angle: 0 }),
     ],
   ];
+  if (contrast) {
+    const extra = contrastLayers(name, scene);
+    const { rim, spark } = LOOK.contrast;
+    layers.splice(1, 0, [extra.rim, (_b, r) => ({ radius: r * rim.size, angle: 0 })]);
+    layers.push([extra.spark, (_b, r) => ({ radius: r * spark.size, angle: 0 })]);
+  }
   // Back to front, towards the camera (-Z).
   return layers.map(([mesh, place], order) => [
     new BulletLayer(mesh, -1 - 0.05 * order, order),
@@ -111,8 +134,8 @@ function bulletLayers(style: Style, scene: Scene): [BulletLayer, Placement][] {
 }
 
 /** One set of plasma layers per bullet colour (GD-43). */
-function bulletPools(scene: Scene): Map<string, [BulletLayer, Placement][]> {
-  return new Map(STYLES.map((style) => [style, bulletLayers(style, scene)]));
+function bulletPools(scene: Scene, contrast: boolean): Map<string, [BulletLayer, Placement][]> {
+  return new Map(STYLES.map((style) => [style, bulletLayers(style, scene, contrast)]));
 }
 
 /** Size of a bullet's core, relative to the bullet, `age` seconds after it was fired. */
@@ -177,17 +200,19 @@ function syncMissiles(pool: NodePool<TransformNode>, missiles: readonly EnemyMis
 
 /**
  * GD-43: the enemies' shots in playfield space: colourful glowing bullets, small red-tipped
- * missiles with a flame, and lasers ({@link EnemyLasers}).
+ * missiles with a flame, and lasers ({@link EnemyLasers}). In the `contrast` style (P10-R07:
+ * World 4's red grounds and skies) the bullets and the laser warning lines stand out more.
  */
-export function createEnemyShotRenderer(scene: Scene): EnemyShotRenderer {
-  const bullets = bulletPools(scene);
+export function createEnemyShotRenderer(scene: Scene, style?: string): EnemyShotRenderer {
+  const contrast = style === LOOK.contrast.style;
+  const bullets = bulletPools(scene, contrast);
   const flame = additiveTemplate(
     'enemy-missile-flame',
     buildGlowDisc(8, LOOK.missile.flame),
     scene,
   );
   const missiles = new NodePool((i) => buildMissile(scene, flame, i));
-  const lasers = new EnemyLasers(scene);
+  const lasers = new EnemyLasers(scene, contrast);
   let time = 0;
   return {
     sync: (frame) => {

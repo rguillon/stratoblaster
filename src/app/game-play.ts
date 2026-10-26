@@ -29,7 +29,7 @@ import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
 import { hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
-import { buildLevelScene, type LevelScene } from './level-scene';
+import { buildLevelScene, skyState, type LevelScene } from './level-scene';
 import { RateMeter } from './rate-meter';
 import { PlayfieldShip } from './shot-viewer-scene';
 
@@ -149,7 +149,7 @@ export class GamePlay {
     });
     this.run = this.#newRun(level, Math.max(0, nose - CFG.muzzleInset));
     this.#enemies = pf.run(() => new EnemyLayer(this.view.scene, game.view.enemies.models));
-    this.#shots = new EnemyViewerShots(game, pf);
+    this.#shots = new EnemyViewerShots(game, pf, this.view.look.shotStyle);
     this.#bonuses = pf.run(() => game.view.bonuses(this.view.scene));
     this.#stats =
       options.debug && options.statsParent
@@ -337,20 +337,12 @@ export class GamePlay {
   }
 
   get state(): GamePlayState {
-    const { stage } = this.view;
-    const { aurora, groundLights, sun, fog, weather, lightning } = stage.atmosphere;
-    const sky = {
-      weather: weather.strength > 0 ? weather.kind : 'none',
-      weatherParticles: stage.weatherParticles,
-      rainRings: stage.rainRings,
-      lightning,
-      flash: stage.lightningFlash,
-      aurora,
-      groundLights,
-      sunIntensity: sun.intensity,
-      fogEnd: fog.end,
+    const middle = this.run.track.distance + this.game.screen.height / 2;
+    const { sea } = levelOf(this.game, this.run.result.levelId).scenery;
+    return {
+      ...levelState(this.run, this.#timeScale, this.#maxHealth),
+      sky: skyState(this.view, sea, middle),
     };
-    return { ...levelState(this.run, this.#timeScale, this.#maxHealth), sky };
   }
 
   dispose(): void {

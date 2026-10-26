@@ -94,6 +94,29 @@ export const PROP_COLORS = {
   riverWater: [0.23, 0.29, 0.2],
   foam: [0.87, 0.91, 0.91],
   spray: [0.76, 0.82, 0.83],
+  /**
+   * World 4 (phase 10): soot black and basalt, grey ash (lighter on the roofs it covers), charred
+   * wood, rust red and sulphur yellow mineral stains, dark industrial iron, dark slag, hardy
+   * yellow-green grass, the steaming water of the hot springs and the pale steam itself.
+   */
+  soot: [0.07, 0.07, 0.075],
+  basalt: [0.15, 0.15, 0.16],
+  basaltLight: [0.25, 0.24, 0.24],
+  ash: [0.5, 0.49, 0.47],
+  ashLight: [0.63, 0.62, 0.6],
+  ashDark: [0.35, 0.34, 0.33],
+  charred: [0.13, 0.1, 0.08],
+  charcoal: [0.08, 0.07, 0.06],
+  rustRed: [0.47, 0.17, 0.09],
+  sulphur: [0.78, 0.68, 0.16],
+  sulphurDark: [0.55, 0.46, 0.12],
+  iron: [0.23, 0.22, 0.22],
+  ironDark: [0.12, 0.12, 0.13],
+  slag: [0.11, 0.1, 0.1],
+  hardyGrass: [0.4, 0.41, 0.2],
+  hardyGrassDark: [0.26, 0.3, 0.15],
+  hotWater: [0.34, 0.55, 0.54],
+  steam: [0.8, 0.82, 0.83],
 } as const;
 
 /** Self-lit accents. */
@@ -113,4 +136,13 @@ export const PROP_LIGHTS = {
   toxic: [0.42, 1, 0.16],
   toxicDim: [0.2, 0.48, 0.08],
   violet: [0.62, 0.2, 1],
+  /**
+   * World 4 (phase 10): molten metal, the furnaces' glowing mouths, lava and glowing slag (dimmer,
+   * as there is a lot of it), and the enemy's orange neon in the foundries and the war factory.
+   */
+  molten: [1, 0.7, 0.22],
+  furnace: [1, 0.36, 0.06],
+  lava: [0.95, 0.3, 0.05],
+  slagGlow: [0.55, 0.16, 0.03],
+  orange: [1, 0.45, 0.05],
 } as const;

@@ -34,11 +34,21 @@ import { MOSQUITO } from '../config/bosses/world-3/mosquito';
 import { DAM_BREAKER } from '../config/bosses/world-3/dam-breaker';
 import { JAGUAR } from '../config/bosses/world-3/jaguar';
 import { VERDANT_CROWN } from '../config/bosses/world-3/verdant-crown';
+import { CINDER_CRAB } from '../config/bosses/world-4/cinder-crab';
+import { STEAM_DREADNOUGHT } from '../config/bosses/world-4/steam-dreadnought';
+import { ASH_WRAITH } from '../config/bosses/world-4/ash-wraith';
+import { GEYSER_RIG } from '../config/bosses/world-4/geyser-rig';
+import { MAGMA_SALAMANDER } from '../config/bosses/world-4/magma-salamander';
+import { OBSIDIAN_GOLEM } from '../config/bosses/world-4/obsidian-golem';
+import { FURNACE_DRAKE } from '../config/bosses/world-4/furnace-drake';
+import { FOUNDRY_ARK } from '../config/bosses/world-4/foundry-ark';
+import { EMBER_HERALD } from '../config/bosses/world-4/ember-herald';
+import { CALDERA_THRONE } from '../config/bosses/world-4/caldera-throne';
 import { WorldBoss } from './bosses/world-boss';
 
 /**
  * The boss designs, mini and final boss of 1-1, then of 1-2… (P07-R05), then the ten of World 2
- * (P08-R10) and the ten of World 3 (P09-R09) in the same order.
+ * (P08-R10), the ten of World 3 (P09-R09) and the ten of World 4 (P10-R11) in the same order.
  */
 export const BOSS_DESIGNS: readonly BossDesign[] = [
   REEF_WARDEN,
@@ -71,6 +81,16 @@ export const BOSS_DESIGNS: readonly BossDesign[] = [
   DAM_BREAKER,
   JAGUAR,
   VERDANT_CROWN,
+  CINDER_CRAB,
+  STEAM_DREADNOUGHT,
+  ASH_WRAITH,
+  GEYSER_RIG,
+  MAGMA_SALAMANDER,
+  OBSIDIAN_GOLEM,
+  FURNACE_DRAKE,
+  FOUNDRY_ARK,
+  EMBER_HERALD,
+  CALDERA_THRONE,
 ];
 
 /** One boss kind per design, its lasers in its own colour. */

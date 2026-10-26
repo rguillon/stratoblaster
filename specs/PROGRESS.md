@@ -14,7 +14,7 @@
 | 7 | `phases/phase-07-bosses.md` | ✅ Validated | `phase-07` | 99.34% lines | 2026-10-25 |
 | 8 | `phases/phase-08-world-2.md` | ✅ Validated | `phase-08` | 99.26% lines | 2026-10-25 |
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
-| 10 | `phases/phase-10-world-4.md` | ⚪ Not started | `phase-10` | | |
+| 10 | `phases/phase-10-world-4.md` | 🟡 Awaiting review | `phase-10` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -118,3 +118,4 @@
 - 2026-10-25 — 8 — Validated: full gate green (1084 unit tests, 99.26% lines, 88.04% branches, 65 e2e); squash-merged into `main`, tagged `v0.08.0`.
 - 2026-10-26 — 9 — Implemented World 3 (the Jungle): five levels, rain and lightning, jungle props, ten bosses; awaiting review.
 - 2026-10-26 — 9 — Validated: full gate green (1210 unit tests, 99.35% lines, 87.25% branches, 77 e2e); squash-merged into `main`, tagged `v0.09.0`.
+- 2026-10-26 — 10 — Implemented World 4 (Volcanic Lands): lava, falling ash and embers, smoke and steam plumes, contrast shots, 31 props, ten bosses; awaiting review.

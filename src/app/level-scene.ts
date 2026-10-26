@@ -5,6 +5,8 @@ import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { GameDefinition } from '../core/content/game-definition';
+import type { Weather } from '../core/scenery/atmosphere';
+import type { GamePlaySky } from './game-play-state';
 import { levelLength, type SceneryLevel } from '../core/scenery/scenery-level';
 import { ScrollTrack } from '../core/scenery/scroll-track';
 import type { GameView } from '../render/game-view';
@@ -27,6 +29,8 @@ import {
 /** A level's scenery under the playfield camera, with a layer for everything on the playfield. */
 export interface LevelScene {
   readonly scene: Scene;
+  /** The level's look (phase 10: its shot style, P10-R07). */
+  readonly look: SceneryLook;
   readonly stage: SceneryStage;
   readonly track: ScrollTrack;
   /**
@@ -67,6 +71,51 @@ function playfieldGlow(scene: Scene, look: { intensity: number; blurKernelSize: 
   return glow;
 }
 
+/**
+ * Phase 10 (P10-R05): the lava blooms in the ground's glow layer with its own material, the
+ * terrain drawn there too, black, so hills hide the lava under them.
+ */
+function glowLava(glow: GlowLayer, stage: SceneryStage): void {
+  const { lava } = stage;
+  if (!lava) return;
+  glow.addIncludedOnlyMesh(lava);
+  glow.referenceMeshToUseItsOwnMaterial(lava);
+  stage.watchTerrain((mesh) => {
+    glow.addIncludedOnlyMesh(mesh);
+  });
+}
+
+/**
+ * How the level looks where the view is, for the test API (P08 … P10): its weathers, lightning,
+ * aurora, light and fog, and (phase 10) whether its liquid (`sea`) is lava, how deep it is under
+ * the playfield at `middle` (≤ 0: ground), the plumes drawn and the shot style.
+ */
+export function skyState(
+  view: LevelScene,
+  sea: { readonly level: number } | undefined,
+  middle: number,
+): GamePlaySky {
+  const { stage, look } = view;
+  const { aurora, groundLights, sun, fog, weather, lightning, secondWeather } = stage.atmosphere;
+  const kind = (w: Weather | undefined) => (w && w.strength > 0 ? w.kind : 'none');
+  return {
+    weather: kind(weather),
+    secondWeather: kind(secondWeather),
+    weatherParticles: stage.weatherParticles,
+    rainRings: stage.rainRings,
+    lightning,
+    flash: stage.lightningFlash,
+    aurora,
+    groundLights,
+    sunIntensity: sun.intensity,
+    fogEnd: fog.end,
+    lava: stage.lava !== undefined,
+    liquidDepth: sea ? sea.level - stage.field.height(0, middle) : 0,
+    plumes: stage.plumes,
+    shotStyle: look.shotStyle ?? 'default',
+  };
+}
+
 /** The sky lighting of `stage`'s scene, as its look is now (P08-R04). */
 function followSky(stage: SceneryStage, cubeSize: number): void {
   const { sky } = stage.atmosphere;
@@ -104,6 +153,7 @@ export function buildLevelScene(
     ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
   });
   for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
+  if (groundGlow) glowLava(groundGlow, stage);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
   const glow = options.environment ? playfieldGlow(scene, options.glow) : undefined;
   const root = new TransformNode('playfield', scene);
@@ -118,6 +168,7 @@ export function buildLevelScene(
   });
   return {
     scene,
+    look,
     stage,
     track: new ScrollTrack(level.scrollSpeed, levelLength(level)),
     playfield,

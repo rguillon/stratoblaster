@@ -47,7 +47,7 @@ test.describe('P09: World 3', () => {
   test.describe.configure({ mode: 'default' });
   test.setTimeout(150_000);
 
-  test('P09-R01: the World 3 row shows 3-1 to 3-5, all unlocked; worlds 4 and 5 stay locked', async ({
+  test('P09-R01: the World 3 row shows 3-1 to 3-5, all unlocked; World 5 stays locked (P10-R01)', async ({
     page,
   }) => {
     await openGame(page);
@@ -58,7 +58,7 @@ test.describe('P09: World 3', () => {
       await expect(cells.nth(10 + i)).toHaveText(id);
       await expect(cells.nth(10 + i)).not.toHaveClass(/locked/);
     }
-    for (let i = 15; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
+    for (let i = 20; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
   });
 
   for (const [index, id] of WORLD_3.entries()) {
@@ -133,10 +133,10 @@ test.describe('P09: World 3', () => {
     await expectState(page, { screen: 'level-select', selectedId: '3-1', game: null });
   });
 
-  test('P09-R01: after 3-5, the level select highlights 3-5', async ({ page }) => {
+  test('P10-R01: after 3-5, the level select highlights 4-1', async ({ page }) => {
     await openDebug(page, '?level=3-5&boss=final');
     await destroyBoss(page, 'Verdant Crown');
     await sendAction(page, 'confirm');
-    await expectState(page, { screen: 'level-select', selectedId: '3-5', game: null });
+    await expectState(page, { screen: 'level-select', selectedId: '4-1', game: null });
   });
 });

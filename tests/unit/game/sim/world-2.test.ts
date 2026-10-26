@@ -34,12 +34,12 @@ const PLANTS = new Set([
 ]);
 
 describe('World 2', () => {
-  it('P08-R01: five playable levels, 2-1 to 2-5, all unlocked; worlds 4 and 5 stay locked (P09-R01)', () => {
+  it('P08-R01: five playable levels, 2-1 to 2-5, all unlocked; World 5 stays locked (P10-R01)', () => {
     expect(WORLD_2.map((l) => l.id)).toEqual(['2-1', '2-2', '2-3', '2-4', '2-5']);
     const row = LEVELS.levels.filter((l) => l.world === 2);
     expect(row.map((l) => [l.id, l.unlocked])).toEqual(WORLD_2.map((l) => [l.id, true]));
     // P09-R01: World 3 is unlocked since phase 9.
-    expect(LEVELS.levels.filter((l) => l.world > 3).every((l) => !l.unlocked)).toBe(true);
+    expect(LEVELS.levels.filter((l) => l.world > 4).every((l) => !l.unlocked)).toBe(true);
     // 2-1 comes right after 1-5 in the grid: completing 1-5 highlights it.
     const ids = LEVELS.levels.map((l) => l.id);
     expect(ids.indexOf('2-1')).toBe(ids.indexOf('1-5') + 1);

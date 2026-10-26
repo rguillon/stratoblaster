@@ -1,7 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
-import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import type { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
-import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LogicalScreen } from '../../core/content/game-definition';
@@ -28,7 +27,9 @@ import type {
 import { snappedLightPosition } from './scenery-lighting';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
 import type { AtmosphereOptions } from './atmosphere-of';
+import { plumeLight } from './plume-layer';
 import { RainRings } from './rain-rings';
+import { lowestGround, seaPlane, stageCamera, TerrainWatch } from './stage-parts';
 import { SkyLayers } from './sky-layers';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
@@ -68,12 +69,6 @@ export interface SceneryStageOptions {
 
 export { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 
-/** Lowest ground of a level: its sea, or the lowest relief. */
-function lowestGround(level: SceneryLevel): number {
-  const lows = level.sections.map((s) => s.relief.base - s.relief.amplitude);
-  return level.sea ? level.sea.level : Math.min(...lows);
-}
-
 /**
  * The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain
  * in chunks, an optional sea, cloud layers and props, lit by a low sun. {@link update} moves
@@ -101,6 +96,7 @@ export class SceneryStage {
   readonly #sky: SkyLayers;
   /** P09-R05: rain rings on the water, when the level has water. */
   readonly #rings: RainRings | undefined;
+  readonly #terrain = new TerrainWatch();
 
   constructor(
     readonly scene: Scene,
@@ -122,7 +118,7 @@ export class SceneryStage {
       options.camera.flightAltitude,
     );
     this.#xHalf = Math.ceil((this.#ground.halfWidth + config.margin) / config.cell) * config.cell;
-    this.camera = this.#setUpCamera();
+    this.camera = stageCamera(scene, this.framing.halfFov, config.farClip);
     // P08-R04: the time of day, clouds and weather along the level.
     this.#sky = new SkyLayers(scene, look, [level.scrollSpeed, options.atmosphere, level.seed]);
     this.sun = this.#sky.sun;
@@ -138,12 +134,13 @@ export class SceneryStage {
     });
     this.#chunks = this.#buildChunks();
     this.#roads = new RoadLayers(scene, this.kit.roads);
-    this.#props = new PropField(scene, options.propModels, this.kit.props, (mesh) => {
-      this.kit.addShadowCaster(mesh);
-    });
+    this.#props = this.#buildProps();
     const { propModels } = options;
     this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
-    this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
+    const seaSize = [this.#xHalf * 2, seaLength] as const;
+    this.#sea = level.sea
+      ? seaPlane(scene, [...seaSize, level.sea.level], this.kit.sea)
+      : undefined;
     this.#seaEnabled = this.#sea !== undefined;
     this.#rings = level.sea
       ? new RainRings(scene, this.kit.rings, [level.sea.level, this.#xHalf * 2, seaLength])
@@ -212,6 +209,24 @@ export class SceneryStage {
     return [...this.#props.lightMeshes, ...this.#traffic.lightMeshes];
   }
 
+  /**
+   * Phase 10: the lava (P10-R05), when the level's liquid is lava: drawn in a glow layer with its
+   * own material, the terrain hiding it there ({@link watchTerrain}).
+   */
+  get lava(): Mesh | undefined {
+    return this.options.look.sea.lava ? this.#sea : undefined;
+  }
+
+  /** Plume meshes drawn on the last frame (phase 10: smoke and steam). */
+  get plumes(): number {
+    return this.#props.plumeCount;
+  }
+
+  /** Calls `watch` with every terrain chunk mesh, now and as new ones are made. */
+  watchTerrain(watch: (mesh: Mesh) => void): void {
+    this.#terrain.watch(watch);
+  }
+
   /** Regenerates the terrain and the props from another seed. */
   setSeed(seed: number): void {
     this.#seed = seed;
@@ -266,6 +281,7 @@ export class SceneryStage {
     }
     const atmosphere = this.#sky.update(distance, [this.#time, this.camera, zMin]);
     this.#rings?.update(atmosphere, [this.#time, middle, this.#seaEnabled]);
+    this.#updatePlumes(atmosphere);
     const { mapSize, frustum } = this.options.look.sun.shadow;
     this.sun.position = snappedLightPosition(
       this.sun.direction,
@@ -294,6 +310,18 @@ export class SceneryStage {
     this.#traffic.update(this.#time, area, traffic);
   }
 
+  /** Phase 10: the props' smoke and steam, lit and fogged by `atmosphere`. */
+  #updatePlumes(atmosphere: Atmosphere): void {
+    this.#props.updatePlumes({
+      time: this.#time,
+      cameraPosition: this.camera.position,
+      right: this.camera.getDirection(Vector3.Right()),
+      up: this.camera.getDirection(Vector3.Up()),
+      light: plumeLight(atmosphere),
+      fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
+    });
+  }
+
   #newPlacer(): PropPlacer {
     const { level } = this.options;
     const roads = levelRoads(this.#field, level.roads, this.#seed);
@@ -308,6 +336,14 @@ export class SceneryStage {
     this.#props.setChunk(index, this.#placer.place(area));
   }
 
+  #buildProps(): PropField {
+    const { kit } = this;
+    const shadow = (mesh: Mesh) => {
+      kit.addShadowCaster(mesh);
+    };
+    return new PropField(this.scene, this.options.propModels, kit.props, shadow, kit.plume);
+  }
+
   #buildChunks(): TerrainChunks {
     const { cell, chunkLength } = this.options.config;
     return new TerrainChunks(
@@ -317,31 +353,9 @@ export class SceneryStage {
       this.#field,
       (mesh) => {
         this.kit.addShadowCaster(mesh);
+        this.#terrain.add(mesh);
       },
     );
-  }
-
-  #setUpCamera(): FreeCamera {
-    const camera = new FreeCamera('scenery-camera', Vector3.Zero(), this.scene);
-    camera.fov = this.framing.halfFov * 2;
-    camera.minZ = 1;
-    camera.maxZ = this.options.config.farClip;
-    this.scene.activeCamera = camera;
-    return camera;
-  }
-
-  #buildSea(level: number, length: number): Mesh {
-    const sea = CreateGround(
-      'sea',
-      { width: this.#xHalf * 2, height: length, subdivisions: 1 },
-      this.scene,
-    );
-    sea.position.y = level;
-    sea.material = this.kit.sea;
-    sea.isPickable = false;
-    sea.receiveShadows = true;
-    sea.alphaIndex = 0;
-    return sea;
   }
 
   /**

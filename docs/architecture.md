@@ -81,7 +81,7 @@ it has blown up. K destroys its next part; the panel shows its stage. The wirefr
 the hit circles of its core and of each part (the ones that shield the core in yellow). e2e
 builds expose `window.__BOSSES_TEST__` (`debug/boss-viewer-test-api.ts`).
 
-## Time of day, clouds and weather (phases 08, 09)
+## Time of day, clouds and weather (phases 08, 09, 10)
 
 ```
 SceneryLook.atmosphere (SkyScript: SkyLook + changes, game data)
@@ -114,6 +114,24 @@ render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
   up to ×1.8 during a flash, and `LightningLayer` draws a bolt in the low clouds. The renderer
   asks for the flash at its own clock; nothing in the simulation reads it.
 - Debug options: `weather=0` (lightning included) and `look=<time of day>` (`AtmosphereOptions`).
+- Phase 10: a look may have a `secondWeather` falling at the same time as its weather (ash and
+  embers together; `WeatherLayer` draws one mesh per kind present), a `cloudTint` (factors on the
+  clouds' colours) and an `underglow` (fire or lava lighting the clouds, the haze and the ambient
+  light from below, `UNDERGLOW` in `config/time-of-day.ts`). Weather kinds may be added on
+  (`blend: 'add'`, self-lit sparks), flicker and fade near the top of their box (`ash`, falling
+  slowly; `embers`, rising: a negative fall).
+- Phase 10: lava (`SeaLook.lava`): the level's liquid at `sea.level` is drawn with a self-lit
+  shader (`lava-material.visual.ts`: drifting, churning crust plates over a glowing melt), the
+  terrain plugin scorches the rock by it and adds a glowing edge and cracks before the fog. The
+  level scene draws the lava in the ground's glow layer with its own material
+  (`referenceMeshToUseItsOwnMaterial`), the terrain chunks there too, black, so hills hide it
+  (`SceneryStage.lava`, `watchTerrain`). Only a look.
+- Phase 10: plumes (`PropGeometry.plumes`, kinds in `config/plumes.ts`): smoke and steam
+  columns rising from a prop, one mesh of camera-facing puffs per prop kind and plume kind,
+  drawn with the prop's own thin instances (`plume-layer.ts`, `plume-material.visual.ts`), lit by
+  the atmosphere (`plumeLight`). `PropLine.drift` moves a line's pieces to and fro (ore wagons).
+- Phase 10: `SceneryLook.shotStyle` names a style the game's enemy shot renderer draws the
+  level's shots in (`EnemyBindings.shots(scene, style)`; World 4: dark rims and white cores).
 - Scenery tools added for the jungle (phase 9): prop lines over water (`PropLine.overWater`) and
   set pieces at given places (`PropRules.landmarks`: a dam, waterfalls, a temple), placed before
   everything else, which keeps clear of them (`placeLandmark`).

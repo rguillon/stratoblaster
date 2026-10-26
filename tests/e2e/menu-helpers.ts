@@ -43,6 +43,10 @@ export interface TestState {
       groundLights: number;
       sunIntensity: number;
       fogEnd: number;
+      /** Phase 10 (P10-R05, R07). */
+      lava: boolean;
+      liquidDepth: number;
+      shotStyle: string;
     };
   } | null;
 }

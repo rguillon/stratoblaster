@@ -40,16 +40,16 @@ const PLANTS = new Set([
 ]);
 
 describe('World 3', () => {
-  it('P09-R01: five playable levels, 3-1 to 3-5, all unlocked; worlds 4 and 5 stay locked', () => {
+  it('P09-R01: five playable levels, 3-1 to 3-5, all unlocked; World 5 stays locked (P10-R01)', () => {
     expect(WORLD_3.map((l) => l.id)).toEqual(['3-1', '3-2', '3-3', '3-4', '3-5']);
     const row = LEVELS.levels.filter((l) => l.world === 3);
     expect(row.map((l) => [l.id, l.unlocked])).toEqual(WORLD_3.map((l) => [l.id, true]));
-    expect(LEVELS.levels.filter((l) => l.world > 3).every((l) => !l.unlocked)).toBe(true);
-    // 3-1 comes right after 2-5 in the grid (completing 2-5 highlights it); after 3-5 comes a
-    // locked level, so 3-5 stays highlighted.
+    expect(LEVELS.levels.filter((l) => l.world > 4).every((l) => !l.unlocked)).toBe(true);
+    // 3-1 comes right after 2-5 in the grid (completing 2-5 highlights it); after 3-5 comes
+    // 4-1 (P10-R01).
     const ids = LEVELS.levels.map((l) => l.id);
     expect(ids.indexOf('3-1')).toBe(ids.indexOf('2-5') + 1);
-    expect(LEVELS.levels[ids.indexOf('3-5') + 1]?.unlocked).toBe(false);
+    expect(LEVELS.levels[ids.indexOf('3-5') + 1]?.id).toBe('4-1');
   });
 
   it('P09-R02: each level lasts about 5 minutes (290 to 310 s) at its ground speed', () => {

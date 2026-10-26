@@ -7,6 +7,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
 import type { AuroraMaterial } from './aurora-layer';
+import type { PlumeMaterialFactory } from './plume-layer';
 import type { PropMaterials } from './prop-field';
 import type { RingsMaterialFactory } from './rain-rings';
 import type { WeatherMaterialFactory } from './weather-layer';
@@ -60,6 +61,8 @@ export interface SceneryKit {
   readonly rings: RingsMaterialFactory;
   /** The aurora's material (P08-R04). */
   aurora(): AuroraMaterial;
+  /** The material of a kind of plume rising from props (phase 10: smoke, steam). */
+  readonly plume: PlumeMaterialFactory;
   addShadowCaster(mesh: AbstractMesh): void;
   update(frame: SceneryKitFrame): void;
 }
@@ -127,10 +130,21 @@ export function createRoadMaterial(scene: Scene): StandardMaterial {
   return roads;
 }
 
+/** A flat sea; phase 10: lava glows by itself, opaque. */
+function plainSea(scene: Scene, sea: SceneryLook['sea']): StandardMaterial {
+  const material = plain('sea', sea.color, scene);
+  material.alpha = sea.alpha;
+  if (sea.lava) {
+    material.alpha = 1;
+    material.emissiveColor = new Color3(...sea.lava.glow);
+    material.disableLighting = true;
+  }
+  return material;
+}
+
 /** Flat-coloured stand-ins for every material, with no texture and no shadow. */
 export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
-  const sea = plain('sea', look.sea.color, scene);
-  sea.alpha = look.sea.alpha;
+  const sea = plainSea(scene, look.sea);
   const props = createPropMaterials(scene, look);
   return {
     terrain: plain('terrain', look.terrain.ground.colors[1], scene),
@@ -160,6 +174,11 @@ export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
     aurora: () => {
       const material = plain('aurora', [0.2, 1, 0.5], scene);
       material.alpha = 0.3;
+      return { material, set: () => undefined };
+    },
+    plume: (_scene, kind) => {
+      const material = plain('plume', kind.color, scene);
+      material.alpha = kind.alpha;
       return { material, set: () => undefined };
     },
     addShadowCaster: () => undefined,
