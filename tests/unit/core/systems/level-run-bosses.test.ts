@@ -137,7 +137,8 @@ describe('LevelRun with bosses', () => {
     expect(run.bonuses?.dropped).toBe(1);
     boss.core.health = 0;
     play(run, 1.2);
-    expect(run.bonuses?.dropped).toBe(2);
+    // The core drops a weapon bonus; this mini boss also drops its life bonus (P11-R07).
+    expect(run.bonuses?.bonuses.map((b) => b.kind).sort()).toEqual(['life', 'weapon', 'weapon']);
   });
 
   it('P07-R08: destroying the mini boss saves a checkpoint; the game over result carries it', () => {
