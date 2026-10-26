@@ -1,25 +1,11 @@
-import type { Envelope, SoundDesign, ToneLayer } from '../../../audio/audio-types';
+import type { SoundDesign, ToneLayer } from '../../../audio/audio-types';
+import { blast, boom, chime, env, minigun, MINIGUN, tone } from './sound-recipes';
 
 /**
  * The game's sound effects (P12-R09, GD-71), all synthesised, keyed by the engine's cue
  * (`SoundCue`). Priorities (P12-R10): the player's and the bombs' sounds highest, the enemy shots
  * lowest. The player's gun shots and the laser hum are mixed quieter than hits and explosions.
  */
-
-const env = (attack: number, decay: number, sustain = 0, release = 0.03): Envelope => ({
-  attack,
-  decay,
-  sustain,
-  release,
-});
-
-const tone = (
-  wave: ToneLayer['wave'],
-  pitch: number,
-  gain: number,
-  envelope: Envelope,
-  rest: Partial<ToneLayer> = {},
-): ToneLayer => ({ wave, pitch, gain, envelope, ...rest });
 
 /** Priorities (P12-R10). */
 const PRIORITY = {
@@ -40,58 +26,6 @@ const sound = (
   layers: readonly ToneLayer[],
   rest: Partial<SoundDesign> = {},
 ): SoundDesign => ({ name, priority, gain, layers, hold: 0, ...rest });
-
-/** A noisy blast: filtered noise closing down, and a falling thump. */
-function blast(seconds: number, from: number, thump: number): ToneLayer[] {
-  return [
-    tone('noise', 1, 0.9, env(0.002, seconds * 0.7, 0.15, seconds * 0.3), {
-      filter: { type: 'lowpass', frequency: 160, from, sweepSeconds: seconds },
-    }),
-    tone('sine', thump, 0.8, env(0.002, seconds * 0.6, 0, 0.05), {
-      glideTo: thump / 3,
-      glideSeconds: seconds * 0.6,
-    }),
-  ];
-}
-
-/** Rounds in a minigun burst, and the seconds between them (about 48 rounds a second). */
-const MINIGUN = { rounds: 6, gap: 0.021 };
-
-/**
- * A minigun burst (reviewer, 2026-10-26): rounds `gap` apart, each a gritty crack over a short
- * thump. A volley's burst lasts until the next volley (the gun fires 8 a second), so holding fire
- * rattles on without a break: BRRRT.
- */
-function minigun({ rounds, gap }: typeof MINIGUN): ToneLayer[] {
-  return Array.from({ length: rounds }, (_, i) => {
-    const delay = i * gap;
-    const accent = i % 2 ? 0.75 : 1;
-    return [
-      tone('noise', 1, accent, env(0.001, 0.014, 0, 0.004), {
-        delay,
-        filter: { type: 'bandpass', frequency: 1700, q: 0.9 },
-      }),
-      tone('square', 150, 0.5 * accent, env(0.001, 0.016, 0, 0.004), {
-        delay,
-        glideTo: 65,
-        glideSeconds: 0.018,
-        filter: { type: 'lowpass', frequency: 1200 },
-      }),
-    ];
-  }).flat();
-}
-
-/** Notes of a little arpeggio, one after the other. */
-function chime(
-  wave: ToneLayer['wave'],
-  pitches: readonly number[],
-  gap: number,
-  gain: number,
-): ToneLayer[] {
-  return pitches.map((pitch, i) =>
-    tone(wave, pitch, gain, env(0.003, 0.12, 0.2, 0.12), { delay: i * gap }),
-  );
-}
 
 const PLAYER_WEAPONS: Readonly<Record<string, SoundDesign>> = {
   'fire:bullet': sound('gun-shot', PRIORITY.weapon, 0.14, minigun(MINIGUN), { positional: true }),
@@ -232,10 +166,10 @@ const HITS: Readonly<Record<string, SoundDesign>> = {
 };
 
 const DESTRUCTION: Readonly<Record<string, SoundDesign>> = {
-  'blast-small': sound('explosion-small', PRIORITY.blast, 0.42, blast(0.35, 3200, 140), {
+  'blast-small': sound('explosion-small', PRIORITY.blast, 0.4, boom(0.22, 900, 150), {
     positional: true,
   }),
-  'blast-large': sound('explosion-large', PRIORITY.blast, 0.55, blast(0.9, 2400, 100), {
+  'blast-large': sound('explosion-large', PRIORITY.blast, 0.5, boom(0.5, 1200, 110), {
     positional: true,
   }),
   'part-destroyed': sound(

@@ -141,7 +141,7 @@ export class ShotWorld {
     shot.weapon = weapon;
     const fromCenter = weapon.launchPoint === 'center';
     shot.x = (fromCenter ? this.centerX : this.muzzleX) + offsetX;
-    shot.y = fromCenter ? this.centerY : this.muzzleY;
+    shot.y = (fromCenter ? this.centerY : this.muzzleY) - (weapon.launchBack ?? 0);
     shot.heading = heading;
     shot.speed = weapon.launchSpeed;
     shot.age = 0;

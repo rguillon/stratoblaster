@@ -41,6 +41,8 @@ export const BULLET = {
   id: 'bullet',
   name: 'Bullet',
   launchPoint: 'muzzle',
+  /** From inside the ship, under it (reviewer, 2026-10-26): 13 px behind the muzzle. */
+  launchBack: 13,
   /** Default. */
   shotsPerSecond: 8,
   /** Default. */

@@ -283,6 +283,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - [x] (2026-10-26, reviewer) Remove the sun from the main menu; replace the ship by a wireframe fighter pilot with tons of wires from the helmet to the seat; then four rounds on the pilot (close-up anime, cel-shaded, mirrored and realistic, a 90s anime reference). *Sun removed; the pilot was reverted (next item).*
 - [x] (2026-10-26, reviewer) Revert to the player ship and delete all the pilot code. *Done under P01-R05 (phase 1 review feedback); D-104 reverted.*
 - [x] (2026-10-26, reviewer) Change the boss name / health bar, it hides the boss. *Done under P07-R02 (phase 7 spec and review feedback), D-105.*
+- [x] (2026-10-26, reviewer) Move the bullets' starting point further into the ship (shooting from under the ship). *Done under P03-R01 (phase 3 review feedback), D-106.*
+- [x] (2026-10-26, reviewer) Rework the enemy explosion sound, it's annoying. *Fixed: small and large enemy explosions are now short, muffled booms (`boom` in `game/view/audio/sound-recipes.ts`): a deep falling thump, a low noise body closing from 900 Hz (1 200 Hz large) to 110 Hz, and a 30 ms crackle; 0.22 s small, 0.5 s large, no sustain or tail (were long low-pass hisses sweeping from 3 200 Hz with a 15 % sustain). Offline render: a busy wave of 14 small and 2 large explosions over 2.5 s peaks at −5.5 dBFS at the default volume, silent 0.25 s after each small one. Boss part, boss and life-lost blasts unchanged. The recipes moved out of `sound-designs.ts` (300-line limit). (D-107)*
 - [x] (2026-10-26, reviewer) When the player shoots several bullets or missiles, do not fire them all at once: alternate between the streams, without changing the global firing rate. *Added to the shots spec as P03-R11.*
 
 ---
@@ -337,6 +339,9 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - Light verification (reviews 4 and 5): typecheck ✔, build ✔, e2e 116 passed (4.6 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
 - **Darksynth UI (review 6):** menus, pause, settings, HUD and panels restyled darksynth, the menu backdrop recoloured, the cyberpunk references dropped from GD-60, phase 1 and this spec at the reviewer's request; details in the phase 1 review feedback and D-103. Tests: `title-backdrop.test.ts` (dark sky, bright neon). Checked by eye in screenshots at 700×900 (title, level select, game HUD, pause). Then (review 7) the logo's sun emblem was removed, and the menu ship was replaced by a pilot model over five rounds before the reviewer asked to revert to the ship and delete all the pilot code (D-104, reverted): the backdrop is the ship again, with no pilot code left.
 - Light verification (reviews 6 and 7, with the ship back and the boss bar on the left edge): typecheck ✔, build ✔, e2e 116 passed. Lint, unit tests and coverage still deferred to `/validate-phase`.
+- **Bullets from inside the ship (review 8, P03-R01):** `launchBack` on projectile weapons, 13 px for the bullet; tracers drawn under the ship (D-106). Tests: `shot-world.test.ts`, `weapon.test.ts`, `shot-renderers.test.ts`.
+- **Explosion sound (review 9, P12-R09):** enemy explosions are short, muffled booms (`sound-recipes.ts`, D-107); details in the review feedback above.
+- Light verification (reviews 8 and 9): typecheck ✔, build ✔, e2e 116 passed. Lint, unit tests and coverage still deferred to `/validate-phase`.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.

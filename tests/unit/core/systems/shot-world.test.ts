@@ -70,6 +70,12 @@ describe('ShotWorld', () => {
     expect(w.projectiles.filter((p) => p.alive).map((p) => p.y)).toContain(10);
   });
 
+  it('P03-R01: shots leave launchBack behind the launch point, from inside the ship (reviewer, 2026-10-26)', () => {
+    const w = world(testGun({ launchBack: 6, launchSpeed: 0, maxSpeed: 0 }));
+    w.step(0);
+    expect(w.projectiles[0]?.y).toBe(4);
+  });
+
   it('moves a new shot by the time since it was fired within the step', () => {
     const w = world();
     w.step(0.05);

@@ -1174,3 +1174,21 @@
 - **Consequences:** P07-R02 amended at the reviewer's request.
 - **Status:** Accepted
 
+### D-106 — Bullets leave from inside the ship, under it
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P03-R01)
+- **Context:** The reviewer asked for the bullets to start further into the ship, as if shot from under it. They started 3 px below the nose tip (the muzzle, phase 3 review), drawn level with the ship.
+- **Decision:** an optional `launchBack` on projectile weapons (engine): shots start that far behind their launch point. The bullet sets 13 px (16 px below the nose tip, inside the hull); its tracers are drawn 8 units under the playfield plane (`SHOT_LOOK.bullet.depth`), so the ship is drawn over them as they leave, as the missiles already are (depth 20).
+- **Alternatives considered:** a deeper muzzle for every weapon (`muzzleInset`): the laser and its base glow would start inside the hull too.
+- **Consequences:** none for the hits: a bullet starts 13 px lower and reaches enemies 13 px later (22 ms at 600 px/s).
+- **Status:** Accepted
+
+### D-107 — Enemy explosions as short, muffled booms
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P12-R09)
+- **Context:** The reviewer found the enemy explosion sound annoying: each was a long low-pass hiss from 3 200 Hz with a sustain, so a busy wave turned into a wash of bright noise.
+- **Decision:** a `boom` recipe for the enemy explosions: a deep falling sine thump, a low noise body closing fast (900 → 110 Hz small, 1 200 → 110 Hz large), a 30 ms band-passed crackle for definition; no sustain, 0.22 s small and 0.5 s large. Boss part, boss and life-lost blasts keep the longer `blast`, so the big moments still stand out.
+- **Alternatives considered:** fewer explosion sounds per second (a per-sound minimum interval in the engine): kept for later if a busy wave still feels crowded.
+- **Consequences:** none on the priorities or the mix rules (P12-R10 data tests unchanged).
+- **Status:** Accepted
+
