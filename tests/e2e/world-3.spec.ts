@@ -1,56 +1,22 @@
-import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import {
+  destroyBoss,
   expectState,
   gameState,
+  openDebug,
   openGame,
   sendAction,
   waitForLevelTime,
-  LOAD_TIMEOUT,
 } from './menu-helpers';
 
 const WORLD_3 = ['3-1', '3-2', '3-3', '3-4', '3-5'];
 
-/** A level's scene is generated when it starts; under software WebGL that takes a while. */
-const LEVEL_TIMEOUT = 60_000;
-
-/** Opens the game with debug options (P06-R09, P09-R11) and waits for the level to run. */
-async function openDebug(page: Page, query: string): Promise<void> {
-  await page.goto(`./${query}`);
-  await expect
-    .poll(async () => (await gameState(page)).game?.levelId ?? null, { timeout: LOAD_TIMEOUT })
-    .not.toBeNull();
-}
-
-/** Destroys every part then the core of the boss being fought, with K (P07-R09). */
-async function destroyBoss(page: Page, name: string): Promise<void> {
-  await expect
-    .poll(async () => (await gameState(page)).game?.boss?.name ?? null, {
-      timeout: LEVEL_TIMEOUT,
-    })
-    .toBe(name);
-  const parts = (await gameState(page)).game?.boss?.parts ?? 0;
-  for (let stage = 1; stage <= parts; stage++) {
-    await page.keyboard.press('KeyK');
-    await expect
-      .poll(async () => (await gameState(page)).game?.boss?.stage ?? -1, {
-        timeout: LEVEL_TIMEOUT,
-      })
-      .toBe(stage);
-  }
-  await page.keyboard.press('KeyK');
-  await expect(page.locator('.level-complete')).toBeVisible({ timeout: LEVEL_TIMEOUT });
-}
-
 test.describe('P09: World 3', () => {
-  // Each test software-renders a generated level: one at a time.
-  test.describe.configure({ mode: 'default' });
-  test.setTimeout(150_000);
-
   test('P09-R01: the World 3 row shows 3-1 to 3-5, all unlocked', async ({ page }) => {
     await openGame(page);
     await sendAction(page, 'confirm');
     await sendAction(page, 'confirm');
+    await expectState(page, { screen: 'level-select' });
     const cells = page.locator('.level-cell');
     for (const [i, id] of WORLD_3.entries()) {
       await expect(cells.nth(10 + i)).toHaveText(id);

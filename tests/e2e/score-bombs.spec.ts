@@ -1,9 +1,15 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, sendAction, LOAD_TIMEOUT } from './menu-helpers';
-
-/** A level's scene is generated when it starts; under software WebGL that takes a while. */
-const LEVEL_TIMEOUT = 60_000;
+import {
+  advance,
+  destroyBoss,
+  expectState,
+  openDebug,
+  openGame,
+  sendAction,
+  step,
+  stepUntil,
+} from './menu-helpers';
 
 /** What P11 adds to the test API's state (src/debug/test-api.ts). */
 interface ScoreState {
@@ -25,11 +31,7 @@ interface ScoreState {
 }
 
 interface ScoreWindow {
-  __GAME_TEST__?: {
-    getState(): ScoreState;
-    sendAction(action: string): void;
-    advance(seconds: number): void;
-  };
+  __GAME_TEST__?: { getState(): ScoreState };
 }
 
 function scoreState(page: Page): Promise<ScoreState> {
@@ -40,28 +42,9 @@ function scoreState(page: Page): Promise<ScoreState> {
   });
 }
 
-/** Runs the level on by `seconds` of level time through the test API. */
-async function advance(page: Page, seconds: number): Promise<void> {
-  await page.evaluate((s) => {
-    (window as ScoreWindow).__GAME_TEST__?.advance(s);
-  }, seconds);
-}
-
-/** Opens the game with debug options (P06-R09) and waits for the level to run. */
-async function openDebug(page: Page, query: string): Promise<void> {
-  await page.goto(`./${query}`);
-  await expect
-    .poll(async () => (await gameState(page)).game?.levelId ?? null, { timeout: LOAD_TIMEOUT })
-    .not.toBeNull();
-}
-
-/** Waits for the boss `name` to be fought. */
+/** Steps the level until the boss `name` is fought. */
 async function waitForBoss(page: Page, name: string): Promise<void> {
-  await expect
-    .poll(async () => (await scoreState(page)).game?.boss?.name ?? null, {
-      timeout: LEVEL_TIMEOUT,
-    })
-    .toBe(name);
+  await stepUntil(page, async () => (await scoreState(page)).game?.boss?.name ?? null).toBe(name);
 }
 
 /** Whether two elements' boxes overlap. */
@@ -72,10 +55,6 @@ async function overlap(a: Locator, b: Locator): Promise<boolean> {
 }
 
 test.describe('P11: score, lives and bombs', () => {
-  // Each test software-renders a generated level: one at a time, so they do not starve each other.
-  test.describe.configure({ mode: 'default' });
-  test.setTimeout(180_000);
-
   test('P11-R01, P11-R02, P11-R03, P11-R08: boss parts score; a new high score is saved and shown after a reload', async ({
     page,
   }) => {
@@ -87,18 +66,13 @@ test.describe('P11: score, lives and bombs', () => {
     // K destroys its four parts (800 points each, 10 % of its 8 000), then its core.
     for (let stage = 1; stage <= 4; stage++) {
       await page.keyboard.press('KeyK');
-      await expect
-        .poll(async () => (await scoreState(page)).game?.boss?.stage ?? -1, {
-          timeout: LEVEL_TIMEOUT,
-        })
-        .toBe(stage);
+      await stepUntil(page, async () => (await scoreState(page)).game?.boss?.stage ?? -1).toBe(
+        stage,
+      );
     }
-    await expect
-      .poll(async () => (await scoreState(page)).game?.score ?? 0)
-      .toBeGreaterThanOrEqual(3200);
+    expect((await scoreState(page)).game?.score ?? 0).toBeGreaterThanOrEqual(3200);
     await expect(page.locator('.hud-score-value')).toHaveText(/^00\d{5}$/);
-    await page.keyboard.press('KeyK');
-    await expect(page.locator('.level-complete')).toBeVisible({ timeout: LEVEL_TIMEOUT });
+    await destroyBoss(page, 'Storm Petrel');
     const { levelResult, highScore } = await scoreState(page);
     const score = levelResult?.score ?? 0;
     expect(score).toBeGreaterThanOrEqual(3200 + 8000);
@@ -121,9 +95,7 @@ test.describe('P11: score, lives and bombs', () => {
     await openDebug(page, '?level=1-1&boss=final');
     await waitForBoss(page, 'Storm Petrel');
     await page.keyboard.press('KeyK');
-    await expect
-      .poll(async () => (await scoreState(page)).game?.score ?? 0, { timeout: LEVEL_TIMEOUT })
-      .toBe(800);
+    await stepUntil(page, async () => (await scoreState(page)).game?.score ?? 0).toBe(800);
     await sendAction(page, 'back');
     await expectState(page, { screen: 'title' });
     await expect(page.locator('.title-high-score')).toHaveText('800');
@@ -136,39 +108,31 @@ test.describe('P11: score, lives and bombs', () => {
     page,
   }) => {
     await openDebug(page, '?level=1-2&boss=mini');
-    await expect
-      .poll(async () => (await scoreState(page)).game?.boss?.name ?? null, {
-        timeout: LEVEL_TIMEOUT,
-      })
-      .not.toBeNull();
+    await stepUntil(
+      page,
+      async () => (await scoreState(page)).game?.boss?.name ?? null,
+    ).not.toBeNull();
     await expect(page.locator('.hud-bombs')).toHaveText('●●●');
     // Let the mini boss come in and fire.
-    await expect
-      .poll(
-        async () => {
-          await advance(page, 0.5);
-          return (await scoreState(page)).game?.enemyShots ?? 0;
-        },
-        { timeout: LEVEL_TIMEOUT },
-      )
-      .toBeGreaterThan(0);
-    const before = (await scoreState(page)).game?.boss?.health ?? 0;
+    await stepUntil(page, async () => (await scoreState(page)).game?.enemyShots ?? 0, {
+      frames: 30,
+    }).toBeGreaterThan(0);
+    const before = (await scoreState(page)).game?.boss?.health;
     await page.keyboard.press('KeyR');
-    await expect
-      .poll(async () => (await scoreState(page)).game?.bombs ?? -1, { timeout: LEVEL_TIMEOUT })
-      .toBe(2);
-    expect((await scoreState(page)).game?.enemyShots).toBe(0);
-    expect((await scoreState(page)).game?.boss?.health ?? before).toBeLessThan(before);
+    await step(page);
+    const bombed = (await scoreState(page)).game;
+    expect(bombed).toMatchObject({ bombs: 2, enemyShots: 0 });
+    expect(bombed?.boss?.health).toBeLessThan(before ?? 0);
     await expect(page.locator('.hud-bombs')).toHaveText('●●');
     // E switches the weapon and sets no bomb off.
     await advance(page, 1.1);
     await page.keyboard.press('KeyE');
+    await step(page);
     await expect(page.locator('.hud-weapon')).toHaveText('Laser · Lv 1/5');
     expect((await scoreState(page)).game?.bombs).toBe(2);
     await sendAction(page, 'bomb');
-    await expect
-      .poll(async () => (await scoreState(page)).game?.bombs ?? -1, { timeout: LEVEL_TIMEOUT })
-      .toBe(1);
+    await step(page);
+    expect((await scoreState(page)).game?.bombs).toBe(1);
   });
 
   test('P11-R04: a Continue after the mini boss keeps the score earned up to the checkpoint', async ({
@@ -176,36 +140,21 @@ test.describe('P11: score, lives and bombs', () => {
   }) => {
     await openDebug(page, '?level=1-1&boss=mini&ship=light');
     await waitForBoss(page, 'Reef Warden');
-    await expect
-      .poll(
-        async () => {
-          await page.keyboard.press('KeyK');
-          return (await scoreState(page)).game?.bossesDefeated ?? 0;
-        },
-        { timeout: LEVEL_TIMEOUT },
-      )
-      .toBe(1);
+    await stepUntil(page, async () => {
+      await page.keyboard.press('KeyK');
+      return (await scoreState(page)).game?.bossesDefeated ?? 0;
+    }).toBe(1);
     // The ship sits still until the enemies have taken all its lives.
-    await expect
-      .poll(
-        async () => {
-          await advance(page, 20);
-          return (await scoreState(page)).levelResult?.outcome ?? null;
-        },
-        { timeout: 150_000, intervals: [100] },
-      )
-      .toBe('over');
+    await stepUntil(page, async () => (await scoreState(page)).levelResult?.outcome ?? null, {
+      frames: 20 * 60,
+    }).toBe('over');
     const { levelResult } = await scoreState(page);
     const saved = levelResult?.checkpoint?.score ?? -1;
     expect(saved).toBeGreaterThanOrEqual(3000);
     await expect(page.locator('.level-complete-choice').first()).toHaveText('Continue');
     await sendAction(page, 'confirm');
-    await expect
-      .poll(async () => (await scoreState(page)).levelResult, { timeout: LEVEL_TIMEOUT })
-      .toBeNull();
-    await expect
-      .poll(async () => (await scoreState(page)).game?.score ?? -1, { timeout: LEVEL_TIMEOUT })
-      .toBe(saved);
+    await stepUntil(page, async () => (await scoreState(page)).levelResult).toBeNull();
+    await stepUntil(page, async () => (await scoreState(page)).game?.score ?? -1).toBe(saved);
     expect((await scoreState(page)).game?.bombs).toBe(3);
   });
 
@@ -221,7 +170,7 @@ test.describe('P11: score, lives and bombs', () => {
       await waitForBoss(page, 'Storm Petrel');
       const score = page.locator('.hud-score');
       await expect(score).toBeVisible();
-      await expect(page.locator('.boss-bar')).toBeVisible({ timeout: LEVEL_TIMEOUT });
+      await expect(page.locator('.boss-bar')).toBeVisible();
       for (const other of ['.hud-health', '.hud-weapon', '.hud-progress', '.boss-bar']) {
         expect(await overlap(score, page.locator(other)), other).toBe(false);
       }
@@ -234,19 +183,17 @@ test.describe('P11: score, lives and bombs', () => {
 
 test.describe('P11: touch bomb button', () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
-  test.setTimeout(120_000);
 
   test('P11-R06: the BOMB button sets a bomb off; the fire button still shows', async ({
     page,
   }) => {
     await openDebug(page, '?level=1-1&t=10');
     const button = page.locator('.hud-bomb-button');
-    await expect(button).toBeVisible({ timeout: LEVEL_TIMEOUT });
+    await expect(button).toBeVisible();
     await expect(button).toHaveText('Bomb 3');
     await button.tap();
-    await expect
-      .poll(async () => (await scoreState(page)).game?.bombs ?? -1, { timeout: LEVEL_TIMEOUT })
-      .toBe(2);
+    await step(page);
+    expect((await scoreState(page)).game?.bombs).toBe(2);
     await expect(button).toHaveText('Bomb 2');
     await expect(page.locator('.game-fire')).toBeVisible();
   });

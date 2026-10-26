@@ -48,6 +48,8 @@ export interface RunningEnemyViewer {
   /** The model view's own scene. */
   readonly closeUp: EnemyCloseUp;
   readonly player: { readonly x: number; readonly y: number };
+  /** The scene drawn now: the level's, or the model view's. */
+  readonly activeScene: Scene;
   /** Advances and draws one frame of `dt` seconds. */
   frame(dt: number): void;
   /** A key going down (`down` true) or up; `code` is `KeyboardEvent.code`. */
@@ -306,6 +308,9 @@ export function startEnemyViewer(
     panel: viewer.panel,
     closeUp: viewer.closeUp,
     player: viewer.player,
+    get activeScene() {
+      return viewer.activeScene;
+    },
     frame: (dt) => {
       viewer.frame(dt);
     },

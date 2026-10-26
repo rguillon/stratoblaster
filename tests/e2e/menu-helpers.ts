@@ -55,12 +55,19 @@ interface TestWindow {
   __GAME_TEST__?: {
     getState(): TestState;
     sendAction(action: string): void;
+    step(frames: number, render?: boolean): void;
     advance(seconds: number): void;
   };
 }
 
-/** Loading (with shader compilation under SwiftShader) can take a while on CI. */
+/**
+ * Loading the menus (and a level's scenery, with debug options) is real work, not game time:
+ * under software WebGL on CI it can take a while.
+ */
 export const LOAD_TIMEOUT = 60_000;
+
+/** Frames stepped between two checks of {@link stepUntil}. */
+const POLL_FRAMES = 10;
 
 export function gameState(page: Page): Promise<TestState> {
   return page.evaluate(() => {
@@ -70,27 +77,59 @@ export function gameState(page: Page): Promise<TestState> {
   });
 }
 
-/** Waits until no screen transition is running (input is ignored during one, P01-R15). */
-export async function waitIdle(page: Page): Promise<void> {
-  await page.waitForFunction(() => {
-    const api = (window as TestWindow).__GAME_TEST__;
-    return api !== undefined && !api.getState().transitioning;
-  });
+/**
+ * Runs the app by `frames` frames of 1/60 s, then renders once (ENG-52). e2e builds have no
+ * render loop: the game only moves when a test steps it, so no test waits on real time.
+ */
+export async function step(page: Page, frames = 1): Promise<void> {
+  await page.evaluate((n) => {
+    (window as TestWindow).__GAME_TEST__?.step(n);
+  }, frames);
+}
+
+/** Runs the app by `seconds` of game time (whole frames), then renders once. */
+export async function advance(page: Page, seconds: number): Promise<void> {
+  await page.evaluate((s) => {
+    (window as TestWindow).__GAME_TEST__?.advance(s);
+  }, seconds);
 }
 
 /**
- * Waits for `count` rendered frames, so the game has polled its input in between. Frames
- * can be slow under software WebGL, so tests wait for frames rather than fixed delays.
+ * Steps the app {@link POLL_FRAMES} frames at a time until `read` returns what the chained
+ * matcher expects: `await stepUntil(page, () => level(page).then((g) => g.shots)).toBe(3)`.
+ * Fails after `timeout` ms of real time (each step renders a frame).
  */
-export async function waitFrames(page: Page, count = 3): Promise<void> {
-  await page.evaluate(async (n) => {
-    for (let i = 0; i < n; i++) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    }
-  }, count);
+export function stepUntil<T>(
+  page: Page,
+  read: () => Promise<T>,
+  { frames = POLL_FRAMES, timeout = LOAD_TIMEOUT }: { frames?: number; timeout?: number } = {},
+) {
+  return expect.poll(
+    async () => {
+      await step(page, frames);
+      return read();
+    },
+    { timeout, intervals: [0] },
+  );
 }
 
-/** Opens the game and waits for the title screen. */
+/**
+ * Steps the app until no screen transition runs (input is ignored during one, P01-R15), then
+ * renders the frame it stopped at.
+ */
+export async function waitIdle(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const api = (window as TestWindow).__GAME_TEST__;
+    if (!api) throw new Error('__GAME_TEST__ is missing');
+    // At least one frame, so input sent before is read. A fade lasts 15 frames; the result
+    // overlay ignores input for a second (P06-R03).
+    api.step(1, false);
+    for (let i = 0; i < 600 && api.getState().transitioning; i++) api.step(1, false);
+    api.step(0);
+  });
+}
+
+/** Opens the game and waits for the title screen, faded in. */
 export async function openGame(page: Page): Promise<void> {
   await page.goto('./');
   await page.waitForFunction(
@@ -101,41 +140,78 @@ export async function openGame(page: Page): Promise<void> {
   await waitIdle(page);
 }
 
+/** Opens the game with debug options (P06-R09) and waits for their level to be playing. */
+export async function openDebug(page: Page, query: string): Promise<void> {
+  await page.goto(`./${query}`);
+  await page.waitForFunction(
+    () => (window as TestWindow).__GAME_TEST__?.getState().game != null,
+    undefined,
+    { timeout: LOAD_TIMEOUT },
+  );
+  await step(page);
+}
+
 /** Sends a menu action through the test API, once the screen accepts input. */
 export async function sendAction(page: Page, action: string): Promise<void> {
-  await waitIdle(page);
   await page.evaluate((a) => {
-    (window as TestWindow).__GAME_TEST__?.sendAction(a);
+    const api = (window as TestWindow).__GAME_TEST__;
+    if (!api) throw new Error('__GAME_TEST__ is missing');
+    // Through any transition first, without drawing: the next check renders.
+    for (let i = 0; i < 600 && api.getState().transitioning; i++) api.step(1, false);
+    api.sendAction(a);
   }, action);
 }
 
 /**
- * Expects the state to reach `expected` (screen, selection...), then waits for input. Entering
- * a level generates its scenery first, which blocks the page for seconds under software WebGL
- * (CI): the `game` screen gets the loading timeout.
+ * Steps the app a frame at a time, without rendering, until the state matches `expected`
+ * (screen, selection...), then until it takes input again. Entering a level generates its
+ * scenery in the frame that starts it.
  */
 export async function expectState(page: Page, expected: Partial<TestState>): Promise<void> {
-  const options = expected.screen === 'game' ? { timeout: LOAD_TIMEOUT } : {};
-  await expect.poll(() => gameState(page), options).toMatchObject(expected);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const api = (window as TestWindow).__GAME_TEST__;
+          if (!api) throw new Error('__GAME_TEST__ is missing');
+          api.step(1, false);
+          return api.getState();
+        }),
+      { timeout: LOAD_TIMEOUT, intervals: [0] },
+    )
+    .toMatchObject(expected);
   await waitIdle(page);
 }
 
-/**
- * Waits for the level to load, then runs it on to `seconds` of level time through the test API
- * (`advance`) rather than waiting for it: under software WebGL a frame can take so long that
- * the level's clock, capped per frame, runs many times slower than real time (CI).
- */
+/** The level being played; fails the test when there is none. */
+export async function level(page: Page): Promise<NonNullable<TestState['game']>> {
+  const { game } = await gameState(page);
+  if (!game) throw new Error('No level is being played');
+  return game;
+}
+
+/** Runs the level being played on to `seconds` of level time. */
 export async function waitForLevelTime(page: Page, seconds: number): Promise<void> {
-  const time = () => gameState(page).then((s) => s.game?.time ?? -1);
-  await expect.poll(time, { timeout: LOAD_TIMEOUT }).toBeGreaterThanOrEqual(0);
-  const now = await time();
-  if (now <= seconds) {
-    await page.evaluate(
-      (s) => {
-        (window as TestWindow).__GAME_TEST__?.advance(s);
-      },
-      seconds - now + 0.05,
-    );
+  const now = (await level(page)).time;
+  if (now <= seconds) await advance(page, seconds - now + 0.05);
+  expect((await level(page)).time).toBeGreaterThan(seconds);
+}
+
+/**
+ * Destroys the parts left then the core of the boss `name` with K (P07-R09), one at a time (the
+ * stage goes up), and steps on to the "Level complete" overlay.
+ */
+export async function destroyBoss(page: Page, name: string): Promise<void> {
+  await stepUntil(page, async () => (await gameState(page)).game?.boss?.name ?? null).toBe(name);
+  const { parts = 0, stage: done = 0 } = (await level(page)).boss ?? {};
+  for (let stage = done + 1; stage <= parts; stage++) {
+    await page.keyboard.press('KeyK');
+    await stepUntil(page, async () => (await gameState(page)).game?.boss?.stage ?? -1).toBe(stage);
   }
-  await expect.poll(time).toBeGreaterThan(seconds);
+  await page.keyboard.press('KeyK');
+  await stepUntil(page, async () => (await gameState(page)).levelResult !== null, {
+    frames: 30,
+  }).toBe(true);
+  await step(page);
+  await expect(page.locator('.level-complete')).toBeVisible();
 }

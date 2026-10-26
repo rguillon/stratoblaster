@@ -3,10 +3,10 @@ import { installTestApi, type GameTestApi } from '../../../src/debug/test-api';
 import type { MenuAction } from '../../../src/input/menu-action';
 
 describe('installTestApi', () => {
-  it('ENG-52: exposes getState, sendAction and advance on the target', () => {
+  it('ENG-52: exposes getState, sendAction, step and advance on the target', () => {
     const target: { __GAME_TEST__?: GameTestApi } = {};
     const sent: MenuAction[] = [];
-    const advanced: number[] = [];
+    const stepped: [number, boolean][] = [];
     let bombs = 0;
     installTestApi(target, {
       state: () => ({
@@ -26,7 +26,8 @@ describe('installTestApi', () => {
       game: () => undefined,
       send: (a) => sent.push(a),
       bomb: () => bombs++,
-      advance: (seconds) => advanced.push(seconds),
+      step: (frames, render) => stepped.push([frames, render]),
+      stepHz: 60,
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
       screen: 'title',
@@ -40,8 +41,19 @@ describe('installTestApi', () => {
     target.__GAME_TEST__?.sendAction('bomb');
     expect([sent, bombs]).toEqual([['confirm'], 1]);
     expect(() => target.__GAME_TEST__?.sendAction('fly' as MenuAction)).toThrow(TypeError);
+    target.__GAME_TEST__?.step(3);
+    target.__GAME_TEST__?.step(2, false);
+    // advance(seconds) steps whole frames, rounded up, and renders.
     target.__GAME_TEST__?.advance(4);
-    expect(advanced).toEqual([4]);
+    target.__GAME_TEST__?.advance(0.01);
+    expect(stepped).toEqual([
+      [3, true],
+      [2, false],
+      [240, true],
+      [1, true],
+    ]);
+    expect(() => target.__GAME_TEST__?.step(-1)).toThrow(RangeError);
+    expect(() => target.__GAME_TEST__?.step(1.5)).toThrow(RangeError);
     expect(() => target.__GAME_TEST__?.advance(-1)).toThrow(RangeError);
   });
 });

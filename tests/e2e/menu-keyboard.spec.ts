@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, waitFrames } from './menu-helpers';
+import { expectState, gameState, openGame, step } from './menu-helpers';
 
 /** Dispatches a key press as a layout would: `code` is the position, `key` the label. */
 async function pressPosition(page: Page, code: string, key: string): Promise<void> {
@@ -50,7 +50,7 @@ test('P01-R09: on an AZERTY layout, Z/Q/S/D (the WASD positions) move the select
   // The keys labelled W and A on AZERTY are elsewhere: they do nothing.
   await pressPosition(page, 'KeyZ', 'w');
   await pressPosition(page, 'KeyQ', 'a');
-  await waitFrames(page);
+  await step(page, 3);
   expect((await gameState(page)).selectedId).toBe('1-1');
 });
 
@@ -60,9 +60,12 @@ test('P01-R09: holding Right moves once, then repeats after the repeat delay', a
   await expectState(page, { screen: 'ship-select' });
   await page.keyboard.press('Enter');
   await expectState(page, { screen: 'level-select', selectedId: '1-1' });
-  // Exact timings are unit-tested (keyboard-menu-input.test.ts); frames can be slow here.
+  // Exact timings are unit-tested (keyboard-menu-input.test.ts).
   await page.keyboard.down('ArrowRight');
-  await expect.poll(async () => (await gameState(page)).selection).toBeGreaterThanOrEqual(1);
-  await expect.poll(async () => (await gameState(page)).selection).toBeGreaterThanOrEqual(3);
+  await step(page);
+  expect((await gameState(page)).selection).toBe(1);
+  // Held for a second of game time, it repeats.
+  await step(page, 60);
+  expect((await gameState(page)).selection).toBeGreaterThanOrEqual(3);
   await page.keyboard.up('ArrowRight');
 });

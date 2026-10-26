@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, waitFrames, type TestState } from './menu-helpers';
+import { expectState, gameState, openGame, step, type TestState } from './menu-helpers';
 
 interface FakePadWindow {
   __pad: { buttons: { pressed: boolean }[]; axes: number[] };
@@ -40,16 +40,16 @@ async function pressButton(page: Page, index: number, expected: Partial<TestStat
   await setPad(page, { button: [index, true] });
   await expectState(page, expected);
   await setPad(page, { button: [index, false] });
-  await waitFrames(page);
+  await step(page);
 }
 
-/** Tilts the left stick until the game reaches `expected` (or for a few frames), then centres it. */
+/** Tilts the left stick until the game reaches `expected` (or for 5 frames), then centres it. */
 async function tiltStick(page: Page, x: number, y: number, expected?: Partial<TestState>) {
   await setPad(page, { axes: [x, y, 0, 0] });
   if (expected) await expectState(page, expected);
-  else await waitFrames(page, 5);
+  else await step(page, 5);
   await setPad(page, { axes: [0, 0, 0, 0] });
-  await waitFrames(page);
+  await step(page);
 }
 
 const A = 0;
@@ -57,8 +57,6 @@ const B = 1;
 const DPAD_RIGHT = 15;
 
 test('P01-R10: the whole flow with the gamepad only (stick, D-pad, A and B)', async ({ page }) => {
-  // The flow enters a level, whose scenery is generated and software-rendered (phase 6).
-  test.setTimeout(90_000);
   await openGame(page);
   await pressButton(page, A, { screen: 'ship-select', selectedId: 'balanced' });
   await tiltStick(page, 0.2, 0); // inside the dead zone

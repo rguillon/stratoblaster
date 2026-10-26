@@ -1,8 +1,11 @@
 import type { Page } from '@playwright/test';
 import type { EnemyViewerTestState } from '../../src/debug/enemy-viewer-test-api';
-import { test, expect, waitForFrames } from './fixtures';
+import { test, expect } from './fixtures';
 
-/** Advances the page by `frames` frames through its e2e test API, and returns its state. */
+/**
+ * Advances the page by `frames` frames through its e2e test API, renders once, and returns its
+ * state. The page has no render loop in e2e builds: nothing moves between two steps.
+ */
 async function step(page: Page, frames: number): Promise<EnemyViewerTestState> {
   return page.evaluate((n) => {
     const api = (
@@ -39,53 +42,52 @@ const KINDS = [
 ];
 
 test.describe('P05: enemies/ page', () => {
-  // Heavy software-rendered scene (Level Zero): one test after another, as for level_zero/.
-  test.describe.configure({ mode: 'default' });
-  // Next to the World 1 specs (phase 6) they take about 30 s under software WebGL.
-  test.setTimeout(90_000);
-
   test.beforeEach(async ({ page }) => {
     await page.goto('./enemies/');
     await expect(page.locator('#game-canvas')).toBeVisible();
     await expect(page.locator('#fatal')).toBeHidden();
     await expect(page.locator('.enemy-title')).toHaveText('Enemies');
-    // Frames are being drawn: the first ones (shader compilation) are slow under SwiftShader,
-    // and keys pressed before them would be checked against a page that has not moved yet.
-    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
   });
 
   test('P05-R11, P05-R24: loads without errors, with the 21 enemy kinds and the debug tile', async ({
     page,
   }) => {
     await expect(page.locator('.enemy-kind button')).toHaveText(KINDS);
-    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
+    // A first frame drawn, then a second of frames: the debug tile shows them both.
+    await step(page, 1);
+    await step(page, 60);
+    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/);
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
   });
 
-  test('P05-R01..R24: every enemy kind can be picked, spawns and attacks', async ({ page }) => {
-    // 21 kinds in turn: about 140 s on a 4-core CI runner.
-    test.setTimeout(300_000);
-    await page.keyboard.press('f');
-    for (const [i, name] of KINDS.entries()) {
-      await page.locator('.enemy-kind button').nth(i).click();
-      await expect(page.locator('.enemy-kind button').nth(i)).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      );
-      await expect(page.locator('.enemy-enemies'), name).not.toHaveText('Enemies: 0');
-      // Every kind but the Gnat, the Hornet and the Carrier shoots within 6 s; the Carrier
-      // launches Gnats instead.
-      let [shots, enemies] = [0, 0];
-      for (let s = 0; s < 6; s++) {
-        const state = await step(page, 60);
-        shots = Math.max(shots, state.bullets + state.missiles + state.lasers.length);
-        enemies = Math.max(enemies, state.enemies.length);
+  // The 21 kinds in three groups of seven, in parallel.
+  for (const first of [0, 7, 14]) {
+    test(`P05-R01..R24: enemy kinds ${String(first + 1)} to ${String(first + 7)} can be picked, spawn and attack`, async ({
+      page,
+    }) => {
+      await page.keyboard.press('f');
+      for (let i = first; i < first + 7; i++) {
+        const name = KINDS[i] ?? '';
+        await page.locator('.enemy-kind button').nth(i).click();
+        await expect(page.locator('.enemy-kind button').nth(i)).toHaveAttribute(
+          'aria-pressed',
+          'true',
+        );
+        await step(page, 1);
+        await expect(page.locator('.enemy-enemies'), name).not.toHaveText('Enemies: 0');
+        // Every kind but the Gnat, the Hornet and the Carrier shoots within 6 s; the Carrier
+        // launches Gnats instead.
+        let [shots, enemies] = [0, 0];
+        for (let s = 0; s < 6; s++) {
+          const state = await step(page, 60);
+          shots = Math.max(shots, state.bullets + state.missiles + state.lasers.length);
+          enemies = Math.max(enemies, state.enemies.length);
+        }
+        if (name === 'Carrier') expect(enemies, name).toBeGreaterThan(1);
+        else if (i > 1) expect(shots, name).toBeGreaterThan(0);
       }
-      if (name === 'Carrier') expect(enemies, name).toBeGreaterThan(1);
-      else if (i > 1) expect(shots, name).toBeGreaterThan(0);
-      await waitForFrames(page, 3);
-    }
-  });
+    });
+  }
 
   test('P05-R07, P05-R08: the Lancer warns before its laser; Rocketeer missiles fly', async ({
     page,
@@ -97,7 +99,6 @@ test.describe('P05: enemies/ page', () => {
     expect([...phases]).toEqual(['warning', 'firing']);
     await page.locator('.enemy-kind button').nth(7).click();
     expect((await step(page, 4 * 60)).missiles).toBeGreaterThan(0);
-    await waitForFrames(page, 3);
   });
 
   test('P05-R11: the model view shows the picked enemy close up; ← / → switch it', async ({
@@ -107,6 +108,7 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.enemy-kind button').nth(1)).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('m');
     await expect(page.locator('.enemy-view button').nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await step(page, 1);
     await expect(page.locator('.enemy-enemies')).toHaveText('Enemies: 0');
     await page.keyboard.press('ArrowRight');
     await expect(page.locator('.enemy-kind button').nth(2)).toHaveAttribute('aria-pressed', 'true');
@@ -118,13 +120,14 @@ test.describe('P05: enemies/ page', () => {
       'aria-pressed',
       'true',
     );
-    await waitForFrames(page, 5);
+    await step(page, 5);
     await page.keyboard.press('v');
     await expect(page.locator('.enemy-view button').nth(2)).toHaveAttribute('aria-pressed', 'true');
+    await step(page, 5);
     await expect(page.locator('.enemy-enemies')).toHaveText('Enemies: 0');
-    await waitForFrames(page, 5);
     await page.keyboard.press('m');
     await page.keyboard.press('m');
+    await step(page, 1);
     await expect(page.locator('.enemy-enemies')).not.toHaveText('Enemies: 0');
   });
 

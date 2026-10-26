@@ -10,6 +10,11 @@ PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
 SKIP_BROWSER ?=
 # Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--shard=1/3`.
 E2E_ARGS ?=
+# Tool caches (D-094). ESLint's cache is only used by `check-fast` (pre-push): it skips unchanged
+# files, whose type-aware results can change with the files they import. `lint` and `check` lint
+# everything.
+CACHE_DIR := node_modules/.cache
+ESLINT_CACHE :=
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -23,20 +28,20 @@ dev: ## Start the Vite dev server with HMR on port 5173
 
 build: ## Production build into dist/ (fails if the e2e test API leaks into it, ENG-52)
 	$(NPX) vite build
-	@if grep -rlqE '__GAME_TEST__|__ENEMIES_TEST__|__BOSSES_TEST__' dist; then \
+	@if grep -rlqE '__GAME_TEST__|__ENEMIES_TEST__|__BOSSES_TEST__|__SCENERY_TEST__|__SHOTS_TEST__' dist; then \
 		echo 'ENG-52: an e2e test API was found in the production bundle' >&2; exit 1; \
 	fi
 
 lint: ## ESLint + Prettier check (no auto-fix)
-	$(NPX) eslint . --max-warnings 0
-	$(NPX) prettier --check .
+	$(NPX) eslint . --max-warnings 0 $(ESLINT_CACHE)
+	$(NPX) prettier --check --cache .
 
 format: ## Prettier write + ESLint --fix
-	$(NPX) prettier --write .
+	$(NPX) prettier --write --cache .
 	$(NPX) eslint . --fix
 
 typecheck: ## TypeScript type check
-	$(NPX) tsc --noEmit
+	$(NPX) tsc --noEmit --incremental --tsBuildInfoFile $(CACHE_DIR)/tsc/tsbuildinfo
 
 test: ## Unit tests, single run
 	$(NPX) vitest run
@@ -56,6 +61,7 @@ e2e: e2e-build ## Build in e2e mode, serve it and run Playwright
 e2e-ui: e2e-build ## Playwright UI mode
 	$(NPX) playwright test --ui
 
+check-fast: ESLINT_CACHE = --cache --cache-strategy content --cache-location $(CACHE_DIR)/eslint/
 check-fast: lint typecheck test ## lint + typecheck + unit tests (pre-push)
 
 check: lint typecheck coverage build e2e ## Full gate (CI and agent)
@@ -64,4 +70,4 @@ preview: build ## Serve the production build locally
 	$(NPX) vite preview
 
 clean: ## Remove build outputs, reports and caches
-	rm -rf dist dist-e2e coverage playwright-report test-results blob-report .eslintcache node_modules/.vite
+	rm -rf dist dist-e2e coverage playwright-report test-results blob-report .eslintcache node_modules/.vite $(CACHE_DIR)
