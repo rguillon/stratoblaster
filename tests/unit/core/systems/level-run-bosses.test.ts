@@ -166,6 +166,7 @@ describe('LevelRun with bosses', () => {
     const checkpoint = {
       progress: 100,
       bossesPassed: 1,
+      score: 0,
       weapons: { weapon: 'ray', levels: { ray: 2, pea: 2 } },
     };
     const run = newRun([], { checkpoint, hull: SAMPLE_GAME.hull });
@@ -212,7 +213,7 @@ describe('LevelRun with bosses', () => {
     const weapons = { weapon: 'pea', levels: { pea: 1 } };
     const resumed = newRun([], {
       startWeapons,
-      checkpoint: { progress: 0, bossesPassed: 0, weapons },
+      checkpoint: { progress: 0, bossesPassed: 0, score: 0, weapons },
     });
     expect([resumed.shots.weapon, resumed.shots.level]).toEqual([pea, 1]);
   });

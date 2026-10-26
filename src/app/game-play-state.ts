@@ -34,6 +34,13 @@ export interface GamePlayState {
   readonly weaponLevel: number;
   readonly bonuses: number;
   readonly bonusesDropped: number;
+  /** The kind of each bonus falling (P11-R07). */
+  readonly bonusKinds: readonly string[];
+  /** Points scored in this attempt, and bombs left (P11-R01, R05). */
+  readonly score: number;
+  readonly bombs: number;
+  /** Enemy bullets and missiles in flight and lasers shown (a bomb clears them, P11-R05). */
+  readonly enemyShots: number;
   /** The ship's health, lives left and seconds of invincibility left (GD-20, GD-22). */
   readonly health: number;
   readonly lives: number;
@@ -95,6 +102,9 @@ export function levelState(run: LevelRun, timeScale: number, maxHealth: number):
     shots: shots.activeCount,
     weaponLevel: shots.level,
     ...bonusState(run),
+    score: run.score,
+    bombs: run.bombs?.count ?? 0,
+    enemyShots: enemies.shots.count,
     health: hull?.health ?? maxHealth,
     lives: hull?.lives ?? 0,
     invincible: hull?.invincible ?? 0,
@@ -120,6 +130,14 @@ function bossState({ fights }: LevelRun): GamePlayBoss | null {
   };
 }
 
-function bonusState({ bonuses }: LevelRun): { bonuses: number; bonusesDropped: number } {
-  return { bonuses: bonuses?.bonuses.length ?? 0, bonusesDropped: bonuses?.dropped ?? 0 };
+function bonusState({ bonuses }: LevelRun): {
+  bonuses: number;
+  bonusesDropped: number;
+  bonusKinds: string[];
+} {
+  return {
+    bonuses: bonuses?.bonuses.length ?? 0,
+    bonusesDropped: bonuses?.dropped ?? 0,
+    bonusKinds: bonuses?.bonuses.map((b) => b.kind) ?? [],
+  };
 }

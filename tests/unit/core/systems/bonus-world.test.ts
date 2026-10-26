@@ -62,4 +62,58 @@ describe('BonusWorld (phase 6 review)', () => {
     w.clear();
     expect(w.bonuses).toHaveLength(0);
   });
+
+  it('P11-R07: a destroyed enemy drops at most one bonus: life first, then bomb, then weapon', () => {
+    const special = { ...RULES, special: { life: 0.1, bomb: 0.2 } };
+    /** A world whose weapon draws come from `weapon` and life / bomb draws from `others`. */
+    const draws = (weapon: readonly number[], others: readonly number[]) => {
+      let [i, j] = [0, 0];
+      const next = () => weapon[i++] ?? 1;
+      return new BonusWorld(special, next, [0, 300], 20, () => others[j++] ?? 1);
+    };
+    const all = () => true;
+    // The weapon draw hits (0.2 < 0.3 for 30 HP), but life 0.05 < 0.1 wins: one life bonus.
+    const life = draws([0.2], [0.05]);
+    life.drop([target(100, 200)], all);
+    expect(life.bonuses.map((b) => b.kind)).toEqual(['life']);
+    // Life missed (0.5), bomb 0.1 < 0.2.
+    const bomb = draws([0.9], [0.5, 0.1]);
+    bomb.drop([target(100, 200)], all);
+    expect(bomb.bonuses.map((b) => b.kind)).toEqual(['bomb']);
+    // Both missed: the weapon draw decides.
+    const weapon = draws([0.2], [0.5, 0.5]);
+    weapon.drop([target(100, 200)], all);
+    expect(weapon.bonuses.map((b) => b.kind)).toEqual(['weapon']);
+    // Not special (a boss or its parts): no life or bomb draw.
+    const plain = draws([0.2], [0]);
+    plain.drop([target(100, 200)], () => false);
+    plain.drop([target(100, 200)]);
+    expect(plain.bonuses.map((b) => b.kind)).toEqual(['weapon']);
+  });
+
+  it('P11-R07: the weapon draws are the same with or without life and bomb bonuses', () => {
+    const sequence = [0.05, 0.5, 0.25, 0.9, 0.1, 0.35];
+    const dropped = (rules: typeof RULES) => {
+      let i = 0;
+      const w = new BonusWorld(
+        rules,
+        () => sequence[i++ % sequence.length] ?? 1,
+        [0, 300],
+        20,
+        () => 0.5,
+      );
+      for (let k = 0; k < 6; k++) w.drop([target(10 * k, 200)], () => true);
+      return w.bonuses.map((b) => b.x);
+    };
+    const special = { ...RULES, special: { life: 0, bomb: 0 } };
+    expect(dropped(special)).toEqual(dropped(RULES));
+    expect(dropped(RULES)).toEqual([0, 20, 40]);
+  });
+
+  it("P11-R07: a bonus of a given kind can be placed, within the ship's reach", () => {
+    const w = world([0], [50, 250]);
+    w.place('life', { x: 10, y: 300 });
+    expect(w.bonuses).toEqual([{ id: 1, x: 50, y: 300, age: 0, kind: 'life' }]);
+    expect(w.dropped).toBe(1);
+  });
 });

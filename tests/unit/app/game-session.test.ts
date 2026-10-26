@@ -43,6 +43,7 @@ describe('GameSession', () => {
     const resume = {
       progress: 100,
       bossesPassed: 0,
+      score: 0,
       weapons: { weapon: 'pea', levels: { pea: 2 } },
     };
     session.sync({ ...GAME, attempt: 2, resume });
@@ -86,5 +87,34 @@ describe('GameSession', () => {
     session.sync({ ...GAME, chosenLevelId: 'c', attempt: 2 });
     const shots = session.play?.run.shots;
     expect([shots?.weapon.id, shots?.level]).toEqual(['ray', 2]);
+  });
+
+  it('P11-R03: leaving a level records its score; the HUD gets the saved high score', () => {
+    const recorded: number[] = [];
+    session = new GameSession(
+      new NullEngine(),
+      SAMPLE_GAME,
+      { environment: false, doc: document },
+      () => undefined,
+      { highScore: () => 4200, record: (score) => recorded.push(score) },
+    );
+    session.sync(GAME);
+    const play = session.play;
+    if (!play) throw new Error('no level');
+    play.run.enemies.score = 3000;
+    session.sync({ ...GAME, screen: 'title', chosenLevelId: null });
+    expect(recorded).toEqual([3000]);
+  });
+
+  it('P11-R06: a bomb press made before the level starts does not carry into it', () => {
+    session = new GameSession(
+      new NullEngine(),
+      SAMPLE_GAME,
+      { environment: false, doc: document },
+      () => undefined,
+    );
+    session.controls.bomb();
+    session.sync(GAME);
+    expect(session.controls.read(1 / 60, 100).bomb).toBe(false);
   });
 });

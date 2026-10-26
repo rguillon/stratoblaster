@@ -1,7 +1,9 @@
 /**
- * Look of the weapon bonuses (phase 6 review): an acid-yellow hexagon badge with cyan chevrons
+ * Look of the bonuses. Weapon bonuses (phase 6 review): an acid-yellow hexagon badge with cyan chevrons
  * pointing up (a level up), swinging from side to side over a pulsing yellow halo; a cyan ring flashes
- * out where the ship picks one up. Linear RGB, 0..1; sizes in logical pixels; times in seconds.
+ * out where the ship picks one up. P11-R07: life bonuses are a pink heart over a pink halo, bomb
+ * bonuses an orange ball marked B over an orange halo, so each kind reads by its shape too.
+ * Linear RGB, 0..1; sizes in logical pixels; times in seconds.
  */
 
 type Rgb = readonly [number, number, number];
@@ -37,4 +39,28 @@ export const BONUS_LOOK = {
     segments: 20,
   },
   flash: { size: 4, life: 0.35, color: [0.3, 1, 1] as Rgb, segments: 32 },
+  /** A life bonus (P11-R07): the heart's rim, the heart, how far in the heart is, its halo. */
+  life: {
+    rim: [0.8, 0.12, 0.42] as Rgb,
+    heart: [1, 0.45, 0.7] as Rgb,
+    inset: 0.72,
+    halo: [
+      [0.45, 0.08, 0.25],
+      [0.2, 0.03, 0.12],
+      [0.05, 0.01, 0.03],
+      [0, 0, 0],
+    ] as readonly Rgb[],
+  },
+  /** A bomb bonus (P11-R07): its shell, highlight, letter and halo. */
+  bomb: {
+    shell: [0.85, 0.32, 0.02] as Rgb,
+    highlight: [1, 0.75, 0.35] as Rgb,
+    letter: [0.05, 0.02, 0.01] as Rgb,
+    halo: [
+      [0.5, 0.2, 0.02],
+      [0.22, 0.08, 0.01],
+      [0.06, 0.02, 0],
+      [0, 0, 0],
+    ] as readonly Rgb[],
+  },
 } as const;
