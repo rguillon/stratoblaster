@@ -298,21 +298,51 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P12-R01 | | | | |
+| P12-R01 | Done | `input/menu-action.ts` (`cancel`, `pause`, `resume`), `config/menu-input.ts` (Esc, KeyP, buttons 8 / 9), `app/menu-flow.ts` (`#inLevel`), `app/game-session.ts` (`paused`), `app/start-app.ts` (frame ticker), `ui/screens/game-screen.ts` (`.game-pause`), `index.html` | `menu-flow-pause.test.ts`, `start-app-pause.test.ts` (frozen 10 s, Back ignored), `pause-settings-screens.test.ts`, `keyboard-menu-input.test.ts`, `menu-input.test.ts`, `menu-screen.test.ts`; e2e `pause-music-settings.spec.ts` (button size / overlap at 390×844 and 800×600, P freezes), `menu-keyboard`, `menu-gamepad`, `menu-pointer` | The pause button sits under the weapon readout, at the top right (see Deviations). |
+| P12-R02 | Done | `app/pause-menu.ts`, `app/menu-flow.ts`, `app/menu-view-builder.ts` (`pauseView`), `ui/screens/pause-panel.ts` | `pause-menu.test.ts`, `menu-flow-pause.test.ts`, `menu-view-builder.test.ts`, `pause-settings-screens.test.ts`, `start-app-pause.test.ts`; e2e Resume / Back / No / Settings / Main menu + Yes with a high score (3 200 over 1 000), keyboard, gamepad and taps flows | |
+| P12-R03 | Done | `app/page-audio.ts` (`listenToPage`: `visibilitychange`), `input/game-controls.ts` (`takeDisconnect`), `app/menu-controller.ts` (`pause()`) | `game-controls.test.ts` (fake gamepad), `start-app-pause.test.ts`, `menu-controller.test.ts`; e2e faked `visibilitychange` (also in the ENG-54 smoke test) | Never resumes by itself. |
+| P12-R04 | Done | `app/settings-menu.ts`, `app/saved-settings.ts`, `app/menu-controller.ts` (load / save), `ui/screens/settings-screen.ts`, `ui/screens/title-screen.ts`, `config/audio.ts`, `audio/audio-output.ts` (`volumeGain`) | `settings-menu.test.ts`, `saved-settings.test.ts` (`banana`, `42`), `audio-output.test.ts` (gains, 0 silent), `menu-flow-pause.test.ts`, `pause-settings-screens.test.ts`; e2e defaults 6 / 8, reload keeps 3, invalid cookies, taps and 44 px targets | A slider change plays `slider-step` at the new volume. |
+| P12-R05 | Partial | `audio/audio-output.ts`, `audio/synth.ts`, `audio/sequencer.ts`, `audio/music-player.ts`, `app/game-audio.ts`, `app/page-audio.ts`, `main.ts` (`browserAudio`, 25 ms timer), `Makefile` (no audio file in `dist/`) | `audio-output.test.ts`, `synth.test.ts`, `sequencer.test.ts`, `music-player.test.ts`, `game-audio.test.ts`, `start-app-pause.test.ts` (no `AudioContext`, gestures, gamepad button); e2e no context before input, running after a key press, no autoplay warning, no media fetched; `fixtures.ts` fails any test on an audio warning | The 60 fps check in the busiest World 4 level is a manual check: not done by the agent (no reference machine). |
+| P12-R06 | Done | `game/view/audio/music-styles.ts`, `compose-track.ts`, `compose-parts.ts`, `compose-melody.ts`, `instruments.ts`, `game-audio.ts` | `game/view/audio/game-audio.test.ts` (20 pairwise different, 2-3 deterministic, ≥ 60 s loops, tempo ranges); `sequencer.test.ts` (gapless loop) | World styles by ear: manual check. Level tracks 61–76 s. |
+| P12-R07 | Done | `app/game-audio.ts` (`#bossMusic`, `levelEnded`, `levelStarted`), `game/view/audio/jingles.ts`, `audio/music-player.ts` (cross-fade, jingles) | `game-audio.test.ts` (app: boss bar → boss track, back to the level track from its start, checkpoint jingle, final boss, jingles once, Continue), game data test (4 boss tracks 20–30 BPM faster); e2e `boss-2` during the 2-3 mini boss | |
+| P12-R08 | Done | `app/game-audio.ts` (`menuChanged`), `game/view/audio/music-styles.ts` (`MENU_STYLE`, 84 BPM) | `game-audio.test.ts` (app: kept across title / ship / level select / settings, fades into the level), game data test; e2e `menu` on the title and ship select | |
+| P12-R09 | Done | `audio/level-cues.ts`, `audio/sfx-player.ts` (`panAt`), `game/view/audio/sound-designs.ts`, `core/systems/shot-world.ts` (`ShotImpact.blocked`), `core/entities/shot-target.ts` | `level-cues.test.ts` (one case per event), `sfx-player.test.ts` (pan −0.6 / 0), game data test (every event of the table has its own sound), `game-audio.test.ts` (menu sounds, laser hum), `shot-world.test.ts`; e2e gun shot and menu move listed | Fit and pleasantness for a child: manual check. |
+| P12-R10 | Done | `audio/voice-pool.ts`, `audio/sfx-player.ts`, `audio/audio-output.ts` (limiter at −1 dBFS), `game/view/audio/sound-designs.ts` (priorities, gains), `game/view/audio/game-audio.ts` (mix) | `voice-pool.test.ts` (40 → 16, 10 ms retrigger, player over enemy shots), `sfx-player.test.ts`, game data test (gun and hum quieter than hits / explosions, loudest sound ≤ +6 dB over the music) | `loudest_sfx` checked on the data (peaks), see Deviations. |
+| P12-R11 | Done | `app/game-audio.ts` (`#setPaused`), `audio/music-player.ts` (`pause` / `resume`), `audio/sfx-player.ts` (`stopAll`), `audio/audio-output.ts` (`setHidden`) | `music-player.test.ts` (30 s in, paused 10 s → ~30 s), `game-audio.test.ts`, `audio-output.test.ts`, `start-app-pause.test.ts`; e2e context `suspended` while hidden, `running` again, menu move sound in the pause menu | |
+| P12-R12 | Done | `debug/test-api.ts` (`paused`, `leaving`, `volumes`, `music`, `sounds`, `audio`), `main.ts` | `test-api.test.ts`; e2e `sendAction('pause' / 'resume')`, `level-2-3` / `boss-2`, `gun-shot` | Absent from the production bundle (existing `make build` check). |
 
 ### Gate results
+Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+make typecheck ✔ / make build ✔ (no test API, no audio file in dist/) / make e2e: 116 passed (4.7 min, after the lint fixes)
+lint, unit tests, coverage: not run (deferred to /validate-phase)
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+1. `make dev`, open http://localhost:5173. The title shows **Start** and **Settings**. Press any key: the menu theme starts (nothing plays before the first key, tap, click or gamepad button).
+2. **Settings** (↓, Enter): ◀ / ▶ change Music (the music changes at once) and Sound effects (a short blip plays at the new level); tap or drag a bar. Reload: the values are kept. 0 is silent. Esc / Back returns to the title.
+3. Start a level: the menu theme fades into the level's track. Press **Esc** or **P** (gamepad Start or Select, or the **❚❚** button under the weapon readout): the level freezes, dimmed, under **Paused**. Esc / P / Backspace / B / Resume go back exactly where it was. Backspace and B do nothing while playing.
+4. In the pause menu: **Settings** then Back returns to the paused menu; **Main menu** asks *Leave the level?*: No goes back, Yes goes to the title (a beaten high score is saved) and the menu theme comes back.
+5. Switch tab or minimise during a level: it is paused and silent when you come back. Unplug the gamepad you play with: the level pauses.
+6. Boss music: `?level=2-3&boss=mini` (or play to a mini boss): the boss track cross-fades in with the boss bar; K (debug) destroys parts; after the mini boss a chime plays and the level track starts again from its start. `?level=1-1&boss=final`: the boss track goes on to the end, then the *Level complete* jingle. Lose every life for the *Game over* jingle; Continue restarts the level track.
+7. Listen to one level of each world (`?level=1-1`, `?level=2-1`, `?level=3-1`, `?level=4-1`) and two of the same world: four moods, different tunes; each loops after 1–1¼ min without a gap.
+8. Sounds: guns, laser (hum while held), missiles (E switches weapon), enemy shots, laser warnings, hits on shielded cores (a metallic ping), explosions, boss parts, bombs (R), bonuses, life lost / extra life, menu moves, pause / resume.
+9. Performance: the busiest World 4 level (`?level=4-5&boss=final`, or `?level=4-4`) with the FPS tile (debug options): it should stay at 60 fps with sound on.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- **Pause button position (P12-R01):** "top-right corner" — the button sits at the top right, just under the weapon readout (top 46, right 18, 56 × 56 logical px), because the corner itself holds the weapon readout and moving that left would cover the score. It covers no HUD element (e2e at 390×844 and 800×600) and is ≥ 44 CSS px. (D-096)
+- **Back on the "Level complete" / "Game over" panels:** Back used to leave to the title there too (`game → title`); with that transition gone (P12-R01) it now does nothing on the panels, which still go on with Confirm / their choices. (D-096)
+- **`loudest_sfx` (P12-R10)** is checked on the data: the loudest sound's peak (its gain × the sum of its layers' gains, × the SFX mix) is at most 2× (+6 dB) the loudest instrument's peak (× the music mix): 5.7 dB today. The limiter (−1 dBFS threshold, ratio 20) keeps the output under `master_peak`. (D-098)
+- **Voice eviction (P12-R10):** a new sound replaces the oldest playing sound of lower *or equal* priority, as written; a retriggered sound (within 30 ms) makes the playing one ×1.25 louder (at most ×1.56). (D-097)
+- **`damageTarget`** now returns the damage really taken (a shielded core reports 0 instead of the damage asked): needed for the shielded-hit sound (`ShotImpact.blocked`). `ShotWorld.totalDamage` no longer counts damage a shielded core ignored. (D-097)
 
 ### Known limitations
--
+- The 60 fps check with music and effects on the reference machine (P12-R05), and the by-ear checks (world styles, sounds fit for a child; P12-R06, P12-R09) are manual and were not done by the agent.
+- Headless e2e cannot hear anything: they check the audio's state (context, track ids, sound names), not the sound.
+- The limiter is a fast compressor (Web Audio has no true-peak limiter); a very loud pile-up can overshoot −1 dBFS by a fraction of a dB for a few milliseconds.
+- If the first key pressed is Escape (not a user activation in browsers), audio starts on the next key, tap or click.
 
 ### Suggestions for future phases
--
+- A master volume and a mute key (out of scope here), and the rest of ENG-112 (remapping, reduce flashes, colour-blind bullets).
+- A short "3, 2, 1" before resuming, and ducking the music under bombs and boss deaths.
+- Per-level variations of the boss tracks (one per world today), and a victory variation of the menu theme after a new high score.

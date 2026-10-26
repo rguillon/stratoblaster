@@ -1065,3 +1065,40 @@
 - **Alternatives considered:** keeping `Esc` = leave and pausing with `P` only (contradicts GD §2, and a single key that quits a level is easy to hit by accident); a pause countdown (slower to resume, not asked); per-level hand-written music data (20 songs by hand, against GD-70's "code generated").
 - **Consequences:** P06-R02 and D-041's "Esc leaves" wording is superseded in the game screen. ENG-54's pause/resume smoke step and ENG-110's hidden-tab pause are covered. The rest of ENG-112 stays unscheduled. Quality presets (ENG-102) were removed from `01-engineering.md` by the reviewer (2026-10-26).
 - **Status:** Accepted
+
+### D-096 — Pause as menu screens; Escape is its own action
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** P12-R01..R04 add a pause menu and a settings screen, and make Escape pause in a level while it stays Back in the menus; Backspace and gamepad B must do nothing in a level. The level must not advance at all while paused, and the fixed-step clock must not catch up.
+- **Decision:**
+  - `pause` and `settings` are `MenuScreen`s of the pure `MenuFlow` (`pause ⇄ game`, `pause → settings → pause`, `pause → title`, `title ⇄ settings`; `game → title` is gone). `MenuState.paused` is true on the pause menu and on the settings opened from it. The pause menu and the settings sliders are small pure helpers (`app/pause-menu.ts`, `app/settings-menu.ts`).
+  - New menu actions: `cancel` (the Escape key: Back in the menus, pause in a level), `pause` (P, gamepad Start / Select, the `❚❚` button; resumes from the pause menu) and `resume` (test API); a `{ set, value }` command for slider taps. `back` does nothing in a level, nor on the "Level complete" / "Game over" panels.
+  - Freezing: while paused, `start-app`'s frame ticker does not call `GamePlay.frame` (it still renders the last frame), so the level's own clock gets no time at all. The controls are cleared on pause and resume; debug keys are ignored while paused.
+  - Auto pause: `visibilitychange` to hidden and `GameControls.takeDisconnect()` (the slot of the gamepad last used to play is empty) call `MenuController.pause()`.
+  - The `❚❚` button sits at the top right under the weapon readout (the corner itself holds the readout, and moving the readout left would cover the score).
+- **Alternatives considered:** pausing inside `GamePlay` with a flag (the level would still be asked to step, and the pause menu would live outside the menu flow); mapping Escape to `pause` and treating `pause` as Back in the menus (gamepad Start and P would then go back on menu screens); keyboard bindings that depend on the screen (input would need to know the flow).
+- **Consequences:** P01-R09, P06-R02 and D-041's "Esc / B leave the level" no longer hold in a level. e2e tests leave levels with a `leaveLevel` helper (pause, Main menu, Yes).
+- **Status:** Accepted
+
+### D-097 — A small Web Audio engine instead of Babylon's audio; cues from the core state
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** All music and sounds are generated (GD-70, GD-71, P12-R05); audio must react to the core without changing it (ENG-11); limits on voices, priorities and retriggers (P12-R10); everything must be unit-testable without real audio.
+- **Decision:**
+  - `src/audio/` uses the Web Audio API directly: oscillators and looped noise through biquad filters and gain envelopes (`synth.ts`), a pure lookahead `Sequencer` (100 ms ahead, every frame and on a 25 ms timer), a `MusicPlayer` (one track per gain node: cross-fades, fades, jingles, pause at position), a pure `VoicePool` (16 voices; a new sound replaces the oldest one of lower or equal priority; the same sound within 30 ms is not replayed but makes the playing one ×1.25 louder) and an `SfxPlayer` (stereo panning by x, at most ±0.6). Babylon's audio engine is built around audio files and spatial sound, which this game does not use.
+  - `AudioOutput` creates the context lazily, only during a user gesture that browsers accept as activation (`navigator.userActivation.isActive`), so there is never an autoplay warning: music and SFX buses (volume `(step / 10)²` × the game's mix) into a `DynamicsCompressor` used as a limiter (−1 dBFS, ratio 20). Without Web Audio, or if it throws, it stays silent. The page hidden suspends the context.
+  - `LevelCues` reads a `LevelRun` after each step (`GamePlayOptions.onStep`) and turns state differences into engine cues (`fire:<weapon>`, `beam-start:<weapon>`, `enemy-bullet`, `laser-warning`, `hit`, `hit-blocked`, `blast-large`, `bonus:<kind>`, ...), one per kind and step. A game maps cues to `SoundDesign`s (`GameView.audio: AudioBindings`). For `hit-blocked`, `ShotImpact.blocked` was added and `damageTarget` now returns the damage really taken (0 on a shielded core).
+  - `app/game-audio.ts` decides the music from the menu state and the run (boss bar → boss track; mini boss destroyed → level track from its start; final boss → its track until the end; level ended → fade and jingle) and keeps the e2e state (track id, last sound names, context state). The SFX limits count in app time, so e2e runs are deterministic.
+- **Alternatives considered:** Babylon `AudioEngineV2` (file-oriented, heavier to fake in tests); an `AudioWorklet` synth (more code, no need at this note density); a core event bus for sounds (a bigger change to `core/`, when the state already says everything).
+- **Consequences:** No runtime dependency and no audio file (`make build` now fails if one gets into `dist/`). ENG-120's audio formats do not apply.
+- **Status:** Accepted
+
+### D-098 — Generated music: per-world styles and a seeded composer
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** P12-R06..R08: one track per level from its data, a style per world, deterministic, at least 60 s before it loops; a faster boss track per world; a calm menu theme; jingles.
+- **Decision:** `src/game/view/audio/`: a `MusicStyle` per world (tempo range from the tunables, scales, chord progressions, instruments, drum and bass feels, arpeggio rate, registers): World 1 major / mixolydian, saw bass in eighths, four-on-the-floor, square lead; World 2 dorian / minor, soft bass, half-time claps, glassy arpeggios and bells; World 3 dorian / minor, plucked bass, shakers and toms, marimba and flute; World 4 phrygian / harmonic minor, heavy detuned saws, slow heavy kicks and low toms, brass. `composeTrack` seeds the level's RNG from an FNV-1a hash of its track id: key, tempo, scale, bass rhythm, arpeggio shape, three themes (progression + a two-bar motif walked on the scale), the order and energy of 8-bar sections, enough sections for 60 s. A boss track is the world style at its top tempo + 20–30 BPM, in a darker scale, full energy, busier bass and drums. Tracks are composed once and kept. The mix (music 0.5, SFX 0.8) keeps the loudest sound effect peak (gain × sum of layer gains) within +6 dB of the loudest instrument peak; gun shots and the laser hum are quieter than hits and explosions (unit tested on the data).
+- **Alternatives considered:** hand-written songs (20 by hand, against "code generated"); a Markov melody model (less control over phrasing for little gain).
+- **Consequences:** The style tables are the knobs for the review by ear.
+- **Status:** Accepted
+
