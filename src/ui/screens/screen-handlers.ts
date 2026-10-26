@@ -8,4 +8,8 @@ export interface ScreenHandlers {
   readonly onFire?: (held: boolean) => void;
   /** Game screen: a finger dragged over the playfield, by screen pixels (Y down). */
   readonly onDrag?: (dx: number, dy: number) => void;
+  /** Game screen: the on-screen pause button was tapped (P12-R01). */
+  readonly onPause?: () => void;
+  /** Settings screen: slider `index` was tapped or dragged to `value` (P12-R04). */
+  readonly onSet?: (index: number, value: number) => void;
 }

@@ -34,6 +34,27 @@ function element(id: string): HTMLElement {
   return el;
 }
 
+/**
+ * Web Audio, if the browser has it (P12-R05): the context is only created during a user
+ * gesture that lets audio start, so no autoplay warning is shown.
+ */
+function browserAudio(): { createContext?: () => AudioContext; canStart?: () => boolean } {
+  if (typeof AudioContext !== 'function') return {};
+  const activation = (navigator as Partial<Navigator>).userActivation;
+  return {
+    createContext: () => new AudioContext(),
+    canStart: () => activation?.isActive ?? true,
+  };
+}
+
+/** Runs `tick` every `seconds` (the music scheduler, P12-R05). */
+function every(tick: () => void, seconds: number): () => void {
+  const id = setInterval(tick, seconds * 1000);
+  return () => {
+    clearInterval(id);
+  };
+}
+
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
@@ -62,10 +83,15 @@ function startGame(engine: Engine): void {
     // e2e builds have no render loop: the tests step the app (ENG-52).
     renderLoop: !__E2E__,
     ...(debug ? { debug, statsParent: document.body } : {}),
+    audio: browserAudio(),
+    gestureTarget: window,
+    visibility: { target: document, hidden: () => document.visibilityState === 'hidden' },
+    every,
   });
   if (__E2E__) {
     installTestApi(window, {
       state: () => app.menu.flow.state,
+      audio: () => app.audio.state,
       highScore: () => app.menu.highScore,
       loadingProgress: () => app.loadingProgress,
       game: () => app.game()?.state,

@@ -15,16 +15,18 @@ import type { KeyValueStorage } from '../platform/key-value-storage';
 import type { GameView } from '../render/game-view';
 import { MenuOverlay } from '../ui/menu-overlay';
 import type { MenuDocument } from '../ui/screens/elements';
+import type { GameAudio } from './game-audio';
 import type { GamePlay } from './game-play';
 import { GameSession, type GameDebugOptions } from './game-session';
 import { MenuController } from './menu-controller';
 import type { MenuState } from './menu-flow';
 import { prepareMenuScenes, renderMenuScenes, type MenuScenes } from './menu-scenes';
+import { createAppAudio, listenToPage, type PageOptions } from './page-audio';
 
 type ListenTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
 /** Browser pieces the app runs on, injected so tests can use fakes. */
-export interface AppOptions {
+export interface AppOptions extends PageOptions {
   /** Image-based lighting and glow. Needs a real WebGL engine. */
   readonly environment: boolean;
   readonly doc: MenuDocument;
@@ -63,6 +65,8 @@ export interface RunningApp {
   game(): GamePlay | undefined;
   /** The player's in-game controls. */
   readonly controls: GameControls;
+  /** The game's music and sounds (P12-R05). */
+  readonly audio: GameAudio;
   /** Sends a menu command, as any input device would. */
   command(command: MenuCommand): void;
   /** Runs one frame: input, menus, animations, rendering. */
@@ -115,7 +119,7 @@ function loadMenuScenes(
 function createMenu(
   game: GameDefinition<GameView>,
   options: AppOptions,
-  input: { menu: MenuInput; controls: GameControls },
+  input: { menu: MenuInput; controls: GameControls; audio: GameAudio },
   onChange: (state: MenuState) => void,
 ): { menu: MenuController; overlay: MenuOverlay } {
   const { controls } = input;
@@ -145,6 +149,9 @@ function createMenu(
     version: __APP_VERSION__,
     commit: __APP_COMMIT__,
     onChange,
+    onFeedback: (command, feedback) => {
+      input.audio.menuFeedback(command, feedback, menu.flow.state.volumes);
+    },
   });
   return { menu, overlay };
 }
@@ -161,7 +168,7 @@ function frameTicker(
   clock: FixedStepClock,
   menu: MenuController,
   scenes: () => MenuScenes | undefined,
-  session: { readonly play: GamePlay | undefined },
+  session: Pick<GameSession, 'play' | 'paused' | 'controls'>,
 ): FrameTicker {
   return {
     simulate: (dtSeconds) => {
@@ -170,7 +177,10 @@ function frameTicker(
       menu.tick(dt);
       const { play } = session;
       if (play) {
-        play.frame(dt);
+        // Paused (P12-R01): nothing in the level advances; its last frame is drawn again.
+        if (!session.paused) play.frame(dt);
+        // The gamepad in use was disconnected (P12-R03).
+        if (session.controls.takeDisconnect()) menu.pause();
         return;
       }
       const loaded = scenes();
@@ -237,18 +247,28 @@ function createSession(
   game: GameDefinition<GameView>,
   options: AppOptions,
   menu: () => MenuController,
+  audio: GameAudio,
 ): GameSession {
   return new GameSession(
     engine,
     game,
     options,
     (play) => {
+      audio.levelEnded(play.run.result);
       menu().completeLevel(play.run.result);
     },
     {
       highScore: () => menu().highScore,
       record: (score) => {
         menu().recordScore(score);
+      },
+    },
+    {
+      started: (levelId) => {
+        audio.levelStarted(levelId);
+      },
+      step: (run) => {
+        audio.levelStep(run);
       },
     },
   );
@@ -268,12 +288,15 @@ export function startApp(
   const shipIds = game.playerShips.ships.map((s) => s.id);
   const { input, stop } = createInput(options);
   let scenes: MenuScenes | undefined;
-  const session = createSession(engine, game, options, () => menu);
+  const { audio, withAudio } = createAppAudio(game, options);
+  const session = createSession(engine, game, options, () => menu, audio);
   const { controls } = session;
-  const { menu, overlay } = createMenu(game, options, { menu: input, controls }, (state) => {
+  const { menu, overlay } = createMenu(game, options, { menu: input, controls, audio }, (state) => {
     syncScenes(scenes, state, shipIds);
     session.sync(state);
+    audio.menuChanged(state);
   });
+  const stopPage = listenToPage(options, menu, audio);
   const prepared = prepareMenuScenes(engine, game, options.environment);
   const loading = loadMenuScenes(prepared, menu, options, (loaded) => {
     scenes = loaded;
@@ -281,10 +304,8 @@ export function startApp(
     startDebugLevel(menu, options.debug, shipIds);
   });
 
-  const { tick, step } = clockControls(
-    clock,
-    frameTicker(clock, menu, () => scenes, session),
-  );
+  const ticker = withAudio(frameTicker(clock, menu, () => scenes, session));
+  const { tick, step } = clockControls(clock, ticker);
   if (options.renderLoop) runLoop(engine, tick);
   return {
     clock,
@@ -294,14 +315,14 @@ export function startApp(
     scenes: () => scenes,
     game: () => session.play,
     controls,
-    command: (c) => {
-      menu.command(c);
-    },
+    audio,
+    command: menu.command.bind(menu),
     tick,
     step,
     dispose: () => {
       engine.stopRenderLoop();
       stop();
+      stopPage();
       session.dispose();
       overlay.dispose();
       disposeScenes(scenes);

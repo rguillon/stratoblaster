@@ -10,7 +10,7 @@ import { SparkBursts } from './spark-bursts';
 /**
  * P03-R01: minigun tracers (phase 5 review, were green blobs): white-hot streaks cooling to red
  * along their tail, flickering, and a burst of sparkling metal sparks where they hit (phase 3
- * review).
+ * review). Drawn under the ship, which they leave from inside (reviewer, 2026-10-26).
  */
 export function createBulletRenderer(scene: Scene): ShotRenderer {
   const look = SHOT_LOOK.bullet;
@@ -29,7 +29,7 @@ export function createBulletRenderer(scene: Scene): ShotRenderer {
       pool.show(frame.projectiles.length).forEach((mesh, i) => {
         const shot = frame.projectiles[i];
         if (!shot) return;
-        mesh.position.set(shot.x, shot.y, 0);
+        mesh.position.set(shot.x, shot.y, look.depth);
         mesh.rotation.z = -shot.heading;
         // Grows out of the muzzle, then keeps its length; its width flickers.
         const length = Math.min(look.length, shot.age * shot.speed + look.width);

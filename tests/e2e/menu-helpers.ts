@@ -12,6 +12,15 @@ export interface TestState {
   transitioning: boolean;
   levelResult: { levelId: string; destroyed: number; spawned: number } | null;
   loadingProgress: number[];
+  /** Phase 12 (P12-R12): pause, volumes, music and sounds. */
+  paused: boolean;
+  leaving: boolean;
+  /** The choice selected on a panel: Continue / level select, or No / Yes before leaving. */
+  choice: number;
+  volumes: { music: number; sfx: number };
+  music: string | null;
+  sounds: string[];
+  audio: string;
   /** The level being played (src/debug/test-api.ts, `GameTestLevelState`). */
   game: {
     levelId: string;
@@ -26,6 +35,8 @@ export interface TestState {
     player: { x: number; y: number };
     firing: boolean;
     shots: number;
+    /** Points scored in this attempt (P11-R01). */
+    score: number;
     /** The boss being fought (P07). */
     boss: {
       name: string;
@@ -160,6 +171,19 @@ export async function sendAction(page: Page, action: string): Promise<void> {
     for (let i = 0; i < 600 && api.getState().transitioning; i++) api.step(1, false);
     api.sendAction(a);
   }, action);
+}
+
+/**
+ * Leaves the level being played through the pause menu (P12-R02): pause, Main menu, Yes. The
+ * title screen shows.
+ */
+export async function leaveLevel(page: Page): Promise<void> {
+  await sendAction(page, 'pause');
+  await expectState(page, { screen: 'pause', paused: true });
+  for (const action of ['down', 'down', 'confirm', 'right', 'confirm']) {
+    await sendAction(page, action);
+  }
+  await expectState(page, { screen: 'title', paused: false });
 }
 
 /**

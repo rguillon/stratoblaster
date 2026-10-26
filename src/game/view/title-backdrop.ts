@@ -99,7 +99,7 @@ function setUpScene(scene: Scene): void {
 }
 
 /**
- * Cyberpunk backdrop of the menus (P01-R05): a night street between dark towers with lit
+ * Darksynth backdrop of the menus (P01-R05, D-103): a night street between dark towers with lit
  * windows, neon signs and roof trims, scrolling towards the camera, a distant skyline, haze,
  * rain, and the balanced ship floating and turning above the street. Everything is generated
  * in code from a fixed seed. The ship is hidden on the ship select screen, which shows the

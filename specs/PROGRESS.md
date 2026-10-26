@@ -16,6 +16,7 @@
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
 | 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
 | 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
+| 12 | `phases/phase-12-pause-music-settings.md` | 🟡 Awaiting review | `phase-12` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -127,3 +128,10 @@
 - 2026-10-26 — 11 — Validated: full gate green (1432 unit tests, 99.42% lines, 87.18% branches, 95 e2e); squash-merged into `main`, tagged `v0.11.0`.
 - 2026-10-26 — — — e2e tests step the game instead of waiting on real time: no render loop in e2e builds, `step(frames)` on every test API (D-093); typecheck, build and e2e green (101 e2e, 3.6 min instead of 7.5); full gate not run.
 - 2026-10-26 — — — Faster git hooks: incremental `tsc`, Prettier and ESLint caches, `import-x` rules that TypeScript covers turned off (D-094); `pre-push` about 18.5 s warm instead of 65 s, `pre-commit` about 8 s instead of 11 on 27 files; `make lint`, `make typecheck` and `make check-fast` green.
+- 2026-10-26 — 12 — Implemented pause (Esc / P / Start / Select / ❚❚, auto pause on a hidden page or a lost gamepad), the pause menu, the Settings screen with saved volumes, a Web Audio engine, generated level / boss / menu music and jingles, and every sound effect (D-096..D-098); light verification green (typecheck, build, 116 e2e); awaiting review.
+- 2026-10-26 — 12 — Review fix: a full synthwave menu theme, as loud as the level tracks, and all the music made synthwave (echo and reverb sends, gated snares, synth toms, supersaws; outrun, dreamwave, darksynth flavours) (D-099); light verification green (typecheck, build, 116 e2e); still awaiting review.
+- 2026-10-26 — 12 — Review fix: stressful boss tracks (pushed kicks, snare rolls, rolling octave bass, chord stabs, tense chords) and more energetic synthwave everywhere (faster tempos, sixteenth arpeggios, no breakdowns, risers) (D-100); light verification green (typecheck, build, 116 e2e); still awaiting review.
+- 2026-10-26 — 12 — Review fix: darksynth in every world and the menu, a minigun rattle for the gun (D-101); bullet and missile streams fire in turn (P03-R11 added, D-102); light verification green (typecheck, build, 116 e2e); still awaiting review.
+- 2026-10-26 — 12 — Review fix: darksynth menus and HUD, cyberpunk references dropped (GD-60, P01-R05, P01-R13 amended at the reviewer's request; D-103), then no sun on the logo (a pilot model in place of the menu ship was tried, then reverted to the ship at the reviewer's request, D-104); the boss health bar moved to a gauge on the left edge so it no longer hides the boss (P07-R02 amended, D-105); light verification green (typecheck, build, 116 e2e); still awaiting review.
+- 2026-10-26 — 12 — Review fix: bullets leave from inside the ship, drawn under it (D-106); enemy explosions are short, muffled booms (D-107); light verification green (typecheck, build, 116 e2e); still awaiting review.
+- 2026-10-26 — 12 — Review fix: realistic, layered explosion sounds for every blast (D-108); light verification green (typecheck, build, 116 e2e); still awaiting review.

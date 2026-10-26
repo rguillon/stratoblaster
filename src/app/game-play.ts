@@ -64,6 +64,8 @@ export interface GamePlayOptions {
   readonly hudParent?: HTMLElement;
   /** Called once, when the level is complete (P06-R03) or the game is over (GD-20). */
   readonly onComplete: (result: LevelResult) => void;
+  /** Called after each step of the level, e.g. for its sounds (P12-R09). */
+  readonly onStep?: (run: LevelRun) => void;
 }
 
 /** What happened during the steps of one frame, to draw. */
@@ -240,6 +242,7 @@ export class GamePlay {
     for (let i = 0; i < steps; i++) {
       this.#previous = this.run.track.distance;
       this.run.step(step, this.controls.read(step, this.#speed));
+      this.options.onStep?.(this.run);
       events.blasts.push(...this.run.blasts);
       events.impacts.push(...this.run.impacts);
       events.picked.push(...(this.run.bonuses?.picked ?? []));

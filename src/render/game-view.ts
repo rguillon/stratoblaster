@@ -10,6 +10,7 @@ import type { EnemyBlast } from '../core/systems/enemy-world';
 import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
 import type { ShotImpact } from '../core/systems/shot-world';
+import type { AudioBindings } from '../audio/audio-bindings';
 import type { PlayfieldCameraLook, PropModelFactory, SceneryLook } from './scenery/scenery-look';
 
 /**
@@ -73,6 +74,8 @@ export interface GameView {
   readonly bonuses: (scene: Scene) => BonusRenderer;
   /** Draws the player's bombs going off (P11-R05). None drawn when omitted. */
   readonly bombs?: (scene: Scene) => BombRenderer;
+  /** The game's generated music and sound effects (P12-R05..R10). Silent when omitted. */
+  readonly audio?: AudioBindings;
 }
 
 /** What the bomb renderer draws on one frame, in playfield space (P11-R05). */

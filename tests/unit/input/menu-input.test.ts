@@ -30,8 +30,18 @@ describe('unified menu input', () => {
     expect(pointerCommand(1, 0)).toEqual({ select: 1 });
   });
 
-  it('P01-R12: the six abstract actions', () => {
-    expect(MENU_ACTIONS).toEqual(['up', 'down', 'left', 'right', 'confirm', 'back']);
+  it('P01-R12, P12-R01: the abstract actions', () => {
+    expect(MENU_ACTIONS).toEqual([
+      'up',
+      'down',
+      'left',
+      'right',
+      'confirm',
+      'back',
+      'cancel',
+      'pause',
+      'resume',
+    ]);
     expect(MENU_ACTIONS.filter(isMenuDirection)).toEqual(['up', 'down', 'left', 'right']);
     expect(isMenuAction('confirm')).toBe(true);
     expect(isMenuAction('jump')).toBe(false);
@@ -42,6 +52,11 @@ describe('unified menu input', () => {
     expect(MENU_INPUT_CONFIG.keyboard.Enter).toBe('confirm');
     expect(MENU_INPUT_CONFIG.gamepadButtons[0]).toBe('confirm');
     expect(MENU_INPUT_CONFIG.gamepadButtons[1]).toBe('back');
+    // P12-R01: Select / View and Start pause.
+    expect(MENU_INPUT_CONFIG.gamepadButtons[8]).toBe('pause');
+    expect(MENU_INPUT_CONFIG.gamepadButtons[9]).toBe('pause');
+    expect(MENU_INPUT_CONFIG.keyboard.Escape).toBe('cancel');
+    expect(MENU_INPUT_CONFIG.keyboard.KeyP).toBe('pause');
     expect(MENU_INPUT_CONFIG.gamepadDeadZone).toBe(0.35);
     expect(MENU_INPUT_CONFIG.repeatDelaySeconds).toBe(0.35);
     expect(MENU_INPUT_CONFIG.repeatIntervalSeconds).toBe(0.12);

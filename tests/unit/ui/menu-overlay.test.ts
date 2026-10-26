@@ -10,6 +10,8 @@ const TITLE: MenuView = {
   highScoreLabel: 'High score',
   highScore: 12345,
   start: 'Start',
+  settings: 'Settings',
+  selected: 0,
   hint: 'Press Space / Enter or tap to start',
   version: '0.0.0',
   commit: 'abc1234',
@@ -139,7 +141,9 @@ describe('MenuOverlay', () => {
     kind: 'game',
     level: 'Level 1-1',
     fire: 'Fire',
+    pause: '❚❚',
     complete: null,
+    paused: null,
     selected: 0,
   };
 

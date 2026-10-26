@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { test, expect } from './fixtures';
-import { expectState, gameState, openGame, sendAction, LOAD_TIMEOUT } from './menu-helpers';
+import {
+  advance,
+  expectState,
+  gameState,
+  leaveLevel,
+  openGame,
+  sendAction,
+  LOAD_TIMEOUT,
+} from './menu-helpers';
 
 const PACKAGE_VERSION = (
   JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as {
@@ -8,7 +16,7 @@ const PACKAGE_VERSION = (
   }
 ).version;
 
-test('ENG-54: loading → title → ship select → level select → game → back to title', async ({
+test('ENG-54, P12-R12: loading → title → ship select → level select → game → pause / resume → back to title', async ({
   page,
 }) => {
   await page.goto('./');
@@ -25,8 +33,27 @@ test('ENG-54: loading → title → ship select → level select → game → ba
   await expectState(page, { screen: 'game', chosenLevelId: '1-1' });
   await expect(page.locator('.game-level')).toHaveText('Level 1-1');
   await expect.poll(async () => (await gameState(page)).game?.levelId).toBe('1-1');
-  await sendAction(page, 'back');
-  await expectState(page, { screen: 'title' });
+  await advance(page, 1);
+  // P12-R12: `pause` pauses the level; nothing moves until `resume`.
+  await sendAction(page, 'pause');
+  await expectState(page, { screen: 'pause', paused: true });
+  const paused = (await gameState(page)).game?.time ?? -1;
+  await advance(page, 2);
+  expect((await gameState(page)).game?.time).toBe(paused);
+  await sendAction(page, 'resume');
+  await expectState(page, { screen: 'game', paused: false });
+  await advance(page, 1);
+  expect((await gameState(page)).game?.time).toBeGreaterThan(paused);
+  // P12-R03: a hidden page pauses the level by itself.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expectState(page, { screen: 'pause', paused: true });
+  await sendAction(page, 'resume');
+  await expectState(page, { screen: 'game', paused: false });
+  await leaveLevel(page);
+  expect((await gameState(page)).game).toBeNull();
 });
 
 test('P01-R02: a progress bar goes from 0 % to 100 %, then the title appears by itself', async ({

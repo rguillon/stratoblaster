@@ -1,10 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { expectState, openGame, sendAction } from './menu-helpers';
+import { expectState, openGame } from './menu-helpers';
 
 type Press = (target: Locator) => Promise<void>;
 
-/** Title → ship select → level select → game → back to title with one kind of press. */
+/** Title → ship select → level select → game → pause → back to title with one kind of press. */
 async function runFlow(page: Page, press: Press): Promise<void> {
   await openGame(page);
   await press(page.locator('.title-start'));
@@ -20,10 +20,19 @@ async function runFlow(page: Page, press: Press): Promise<void> {
   await press(page.locator('.level-cell').first());
   await expectState(page, { screen: 'game', chosenShipId: 'light', chosenLevelId: '1-1' });
   await expect(page.locator('.game-level')).toHaveText('Level 1-1');
-  // Phase 6 review: no Back button over the playfield; Esc (or the gamepad's B) leaves.
+  // Phase 6 review: no Back button over the playfield; P12-R01, P12-R02: the pause button,
+  // then Main menu and Yes, leave.
   await expect(page.locator('.menu-back')).toHaveCount(0);
-  await sendAction(page, 'back');
-  await expectState(page, { screen: 'title' });
+  await press(page.locator('.game-pause'));
+  await expectState(page, { screen: 'pause', paused: true, selectedId: 'resume' });
+  await press(page.locator('.pause-entry').nth(2));
+  await expectState(page, { selectedId: 'main-menu' });
+  await press(page.locator('.pause-entry').nth(2));
+  await expectState(page, { leaving: true, choice: 0 });
+  await press(page.locator('.pause-choice').nth(1));
+  await expectState(page, { choice: 1 });
+  await press(page.locator('.pause-choice').nth(1));
+  await expectState(page, { screen: 'title', paused: false });
 }
 
 test('P01-R11: the whole flow with the mouse only', async ({ page }) => {

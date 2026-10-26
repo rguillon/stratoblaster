@@ -1,7 +1,7 @@
 import type { MenuAction } from '../input/menu-action';
 
 /**
- * Menu input mapping and feel (P01-R09, P01-R10, P01-R12). Kept in config so it can be
+ * Menu input mapping and feel (P01-R09, P01-R10, P01-R12, P12-R01). Kept in config so it can be
  * remapped later (ENG-112).
  */
 export const MENU_INPUT_CONFIG = {
@@ -18,13 +18,20 @@ export const MENU_INPUT_CONFIG = {
     Enter: 'confirm',
     NumpadEnter: 'confirm',
     Space: 'confirm',
-    Escape: 'back',
+    // Back on the menu screens, pause in a level (GD §2, P12-R01).
+    Escape: 'cancel',
     Backspace: 'back',
+    KeyP: 'pause',
   } satisfies Readonly<Record<string, MenuAction>>,
-  /** Standard-mapping gamepad button index → action (A = 0, B = 1, D-pad = 12..15). */
+  /**
+   * Standard-mapping gamepad button index → action (A = 0, B = 1, Select / View = 8, Start = 9,
+   * D-pad = 12..15).
+   */
   gamepadButtons: {
     0: 'confirm',
     1: 'back',
+    8: 'pause',
+    9: 'pause',
     12: 'up',
     13: 'down',
     14: 'left',

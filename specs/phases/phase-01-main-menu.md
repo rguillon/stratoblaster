@@ -11,7 +11,7 @@
 
 ## 🧑 Goal
 
-When the player opens the game, they see a loading screen, then a cyberpunk title screen. From there they go through the menu flow of `02-game-design.md` §7: **Title → Select Ship → Select Level → Game**, and can go back at each step.
+When the player opens the game, they see a loading screen, then a darksynth title screen (reviewer, 2026-10-26; was cyberpunk). From there they go through the menu flow of `02-game-design.md` §7: **Title → Select Ship → Select Level → Game**, and can go back at each step.
 
 All the menus can be used with the keyboard, a gamepad, or touch/mouse. Gameplay does not exist yet: confirming a level opens a placeholder game screen that shows what was chosen.
 
@@ -68,7 +68,7 @@ The title screen shows:
 - [ ] The version string matches `package.json` and the commit hash is injected at build time.
 
 ### P01-R05 — Title screen 3D background  · SHOULD
-Behind the menu, a 3D scene generated in code in a dark cyberpunk style (GD-60), not synthwave: for example a night city with lit windows, neon signs and haze scrolling by, and the balanced player ship (phase 2) flying slowly. It loops forever and keeps 60 FPS (ENG-101).
+Behind the menu, a 3D scene generated in code in a darksynth style (GD-60; reviewer, 2026-10-26, was "dark cyberpunk, not synthwave"): for example a night city with lit windows, neon signs and a crimson sunset haze scrolling by, and the balanced player ship (phase 2) flying slowly. It loops forever and keeps 60 FPS (ENG-101).
 
 **Acceptance criteria**
 - [ ] The background is animated and generated in code (no downloaded model or texture).
@@ -137,7 +137,7 @@ Keyboard, gamepad and touch are translated by `input/` into the same abstract me
 
 ### P01-R13 — Layout, scaling and look  · MUST
 - Menus are an HTML/CSS overlay (`ui/`) laid out on the **480×640 logical resolution**, scaled to fit the window while keeping its aspect ratio (GD-02, GD-03), and they follow window resizes (ENG-110).
-- Cyberpunk look (GD-60), not synthwave: a dark techno HUD with neon accents and a glow on the selected entry.
+- Darksynth look (GD-60; reviewer, 2026-10-26, was "cyberpunk, not synthwave"), for the menus and the in-game HUD: black-violet panels, magenta, violet and blood red neon with soft glows, sunset gradients, a chrome logo over a striped sun, and a glow on the selected entry.
 - Accessible to kids (vision): large readable font, short words, the selected entry is obvious without relying on colour alone (e.g. arrow marker or frame plus colour).
 - Fonts are system fonts or a font bundled with the build (no font loaded from a third-party server at runtime, so the game works offline once loaded).
 
@@ -190,7 +190,7 @@ Short transitions between screens (fade or slide, ≤ 300 ms). Input is ignored 
 <!-- What YOU will check in the browser before validating. The agent should make these easy to check. -->
 - [ ] Runs on GitHub Pages / `make dev` without console errors
 - [ ] A loading bar is visible, then the title screen appears by itself
-- [ ] The title screen shows the title, Start, high score `0`, version + commit hash, and an animated cyberpunk background
+- [ ] The title screen shows the title, Start, high score `0`, version + commit hash, and an animated darksynth background
 - [ ] Set a cookie by hand (browser dev tools) and check that the high score on the title screen shows it
 - [ ] Keyboard: go through Title → Ship select → Level select → placeholder → Title with arrows, Enter/Space and Esc
 - [ ] Keyboard on AZERTY: Z/Q/S/D move the selection
@@ -204,7 +204,7 @@ Short transitions between screens (fade or slide, ≤ 300 ms). Input is ignored 
 ## 🧑 Notes, references, sketches
 <!-- Links, images, pseudo-code, example level layouts... -->
 - Flow source: `02-game-design.md` §7. Controls source: `02-game-design.md` §2.
-- Style references: cyberpunk game HUDs and neon night cities (lit skyscrapers, neon signs, haze), kept readable for kids.
+- Style references: darksynth album art and 80s chrome logos, neon night cities (lit skyscrapers, neon signs, haze, a red sunset), kept readable for kids (reviewer, 2026-10-26; were cyberpunk game HUDs).
 - Rough title layout (480×640 logical):
 
 ```
@@ -235,6 +235,9 @@ Short transitions between screens (fade or slide, ≤ 300 ms). Input is ignored 
 - [x] Make the background dark (all menu screens). *Fixed: dark night palette for the sky, horizon/fog, floor, page and loading screen; sun and neon grid kept bright (D-012).*
 - [x] Make the UI look more technological / cyberpunk. *Fixed: CSS-only HUD restyle in `index.html` (corner brackets, screen frame, scanlines, monospace readouts, glitched title, segmented loading bar, hazard-striped locked levels); selection markers unchanged (D-013).*
 - [x] Remove the pastel background requirement; make the UI look cyberpunk, not synthwave. *Fixed: pastel removed from GD-61, P01-R05, P01-R13 and the notes (at the reviewer's request). Backdrop rebuilt as a generated night city (street of dark towers with lit windows, neon blade signs and roof trims, distant skyline, haze, rain) in place of the sun and grid; overlay restyled in acid yellow / cyan / red with chamfered panels and a solid yellow selected entry; yellow selection ring (D-014).*
+- [x] (2026-10-26, reviewer, during the phase 12 review) Rework the main menu and the game UI: drop the cyberpunk reference, make it darksynth. *Fixed: GD-60, P01-R05, P01-R13 and the notes amended at the reviewer's request. Overlay (menus, pause, settings, HUD, level complete) restyled in `index.html`: hot magenta / violet / blood red on black-violet, a chrome italic logo over a striped sunset sun (`.title-sun`), neon glows instead of the red / cyan glitch split, a neon frame and a sunset line instead of the corner brackets and the "NET//LINK OK" tag, no terminal prompt or blinking cursor, magenta selected entries (markers unchanged), sunset gradients on the loading, progress and health bars. Backdrop recoloured: crimson sunset sky, magenta / red / violet windows and neon, magenta lane lines (D-103).*
+- [x] (2026-10-26, reviewer, during the phase 12 review) Remove the sun from the main menu; replace the ship model by a wireframe model of a fighter plane pilot with tons of wires linking his helmet to the seat. *Fixed: the logo's sun emblem is gone. The pilot went through four more rounds at the reviewer's request (a close-up, anime-styled; cel-shaded; mirrored and more realistic; after a 90s anime reference image), then was reverted (next item).*
+- [x] (2026-10-26, reviewer, during the phase 12 review) Revert to the player ship and delete all the pilot code. *Fixed: the balanced ship floats and turns above the street again (`title_ship_rotation_speed`); every file of the pilot is deleted (model, meshes, curve helpers, the toon material, their tests); P01-R05 and the tunable are back to the ship (D-104 reverted).*
 
 ---
 
@@ -297,7 +300,7 @@ Deferred to /validate-phase: lint, unit tests, coverage (not run during implemen
 
 ### How to test manually
 1. `make dev` and open http://localhost:5173/ (or `make preview` for the production build).
-2. A loading bar fills up, then the title screen appears by itself: title, **▶ START ◀**, high score `0`, the hint, and `v0.0.0` + commit hash bottom right, over a cyberpunk night city (dark towers with lit windows and neon signs scrolling by, haze, rain, the balanced ship floating and turning). The logo is black on a yellow plate; the selected entry is a solid yellow block.
+2. A loading bar fills up, then the title screen appears by itself: title, **▶ START ◀**, high score `0`, the hint, and `v0.0.0` + commit hash bottom right, over a darksynth night city (dark towers with magenta, red and violet windows and neon signs scrolling by, a crimson haze, rain, the balanced ship floating and turning). The logo is chrome letters in a magenta glow; the selected entry is a solid magenta block.
 3. High score cookie: in dev tools (Application → Cookies), add `stratoblaster_high_score` = `12345` and reload; try `abc` too (shows `0`).
 4. Keyboard: Enter/Space to confirm, arrows or WASD to move, Esc/Backspace to go back. On AZERTY, Z/Q/S/D move. Hold an arrow on the level grid to see the repeat.
 5. Gamepad: A confirm, B back, left stick or D-pad to move. A slight stick tilt does nothing.

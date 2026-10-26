@@ -5,6 +5,7 @@ import {
   destroyBoss,
   expectState,
   gameState,
+  leaveLevel,
   level,
   openDebug,
   openGame,
@@ -59,7 +60,7 @@ test.describe('P06: World 1', () => {
       await expect(page.locator('.hud-weapon')).toHaveText('Bullet · Lv 1/5');
       await expect(page.locator('.hud-destroyed')).toHaveText(/^Destroyed: \d+$/);
       await expect(page.locator('.menu-back')).toHaveCount(0);
-      await sendAction(page, 'back');
+      await leaveLevel(page);
       await expectState(page, { screen: 'title', game: null });
     });
   }

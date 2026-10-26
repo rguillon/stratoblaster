@@ -26,10 +26,13 @@ install: ## Install dependencies, git hooks and Playwright Chromium
 dev: ## Start the Vite dev server with HMR on port 5173
 	$(NPX) vite
 
-build: ## Production build into dist/ (fails if the e2e test API leaks into it, ENG-52)
+build: ## Production build into dist/ (fails if the e2e test API or an audio file gets into it)
 	$(NPX) vite build
 	@if grep -rlqE '__GAME_TEST__|__ENEMIES_TEST__|__BOSSES_TEST__|__SCENERY_TEST__|__SHOTS_TEST__' dist; then \
 		echo 'ENG-52: an e2e test API was found in the production bundle' >&2; exit 1; \
+	fi
+	@if find dist -type f \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.aac' -o -iname '*.flac' -o -iname '*.opus' -o -iname '*.webm' \) | grep -q .; then \
+		echo 'P12-R05: an audio file was found in the production build (audio is generated)' >&2; exit 1; \
 	fi
 
 lint: ## ESLint + Prettier check (no auto-fix)

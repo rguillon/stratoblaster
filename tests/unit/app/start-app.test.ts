@@ -155,20 +155,6 @@ describe('startApp', () => {
       expect(app.controls.read(1, 50).move.x).toBeCloseTo(0.2);
     });
 
-    it('P06-R02: Back leaves the level for the title screen', async () => {
-      const overlay = document.createElement('div');
-      app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));
-      await toGame(app);
-      const play = app.game();
-      settle(app);
-      app.command('back');
-      expect(app.menu.flow.state.screen).toBe('title');
-      expect(app.game()).toBeUndefined();
-      expect(play?.view.scene.isDisposed).toBe(true);
-      expect(overlay.querySelector('.game-hud')).toBeNull();
-      settle(app);
-    });
-
     it('P06-R03: at the end of the level the overlay shows; Confirm goes to level-select', async () => {
       const overlay = document.createElement('div');
       app = startApp(new NullEngine(), SAMPLE_GAME, options({ overlay }));

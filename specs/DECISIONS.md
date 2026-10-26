@@ -1052,3 +1052,152 @@
 - **Alternatives considered:** dropping type-aware ESLint rules from the hooks (they catch real bugs; the gate would find them late); unit tests on changed files only at push (`vitest --changed`; misses tests affected through imports it does not see); Vitest `isolate: false` (about 3 s less, but test files would share module state).
 - **Consequences:** measured locally, `pre-commit` takes about 8 s on the same 27 files (Prettier 1 s, ESLint 4.7 s, `tsc` 2.2 s) and a few seconds on a small commit; `make check-fast` takes about 18.5 s when the caches are warm, 12 s of which are the unit tests, and about 44 s cold. With the ESLint cache, a file is not re-linted at push when only a file it imports changed, so a type-aware lint error can wait for `make check` / CI. `make clean` removes `node_modules/.cache`.
 - **Status:** Accepted
+
+### D-095 — Phase 12 spec defaults (pause, music, settings)
+- **Date:** 2026-10-26
+- **Phase:** 12 (spec drafted by the agent at the reviewer's request)
+- **Context:** The reviewer asked the agent to fill the Phase 12 spec with software-generated music and sound, pause / resume / main menu, and music and sound volume settings. GD §2 binds Pause to `Esc / P`, but P01-R09, P06-R02 and D-041 made `Esc` leave the level; GD-70 / GD-71 leave the music and sound design open; ENG-07 and ENG-120 assume `localStorage` and audio files.
+- **Decision:**
+  - In the game screen, `Escape`, `KeyP`, gamepad Start and Select, and a touch `❚❚` button pause; `Backspace` and gamepad B do nothing there. Leaving a level goes through the pause menu (Resume, Settings, Main menu with a `Leave the level?` No / Yes question). `Escape` stays Back in the menus.
+  - The level pauses itself when the page is hidden or the gamepad in use is disconnected, and never resumes by itself.
+  - A Settings screen, from the title and the pause menu, has two 0–10 sliders (Music 6, Sound effects 8 by default), saved in cookies (D-010). No master volume, remapping or graphics settings.
+  - All audio is generated with the Web Audio API: music and SFX buses into a limiter, a lookahead sequencer, unlock on the first input. One deterministic track per level in a per-world style, one boss track per world, a menu theme, and three jingles. A fixed list of sound effects, at most 16 voices with priorities.
+- **Alternatives considered:** keeping `Esc` = leave and pausing with `P` only (contradicts GD §2, and a single key that quits a level is easy to hit by accident); a pause countdown (slower to resume, not asked); per-level hand-written music data (20 songs by hand, against GD-70's "code generated").
+- **Consequences:** P06-R02 and D-041's "Esc leaves" wording is superseded in the game screen. ENG-54's pause/resume smoke step and ENG-110's hidden-tab pause are covered. The rest of ENG-112 stays unscheduled. Quality presets (ENG-102) were removed from `01-engineering.md` by the reviewer (2026-10-26).
+- **Status:** Accepted
+
+### D-096 — Pause as menu screens; Escape is its own action
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** P12-R01..R04 add a pause menu and a settings screen, and make Escape pause in a level while it stays Back in the menus; Backspace and gamepad B must do nothing in a level. The level must not advance at all while paused, and the fixed-step clock must not catch up.
+- **Decision:**
+  - `pause` and `settings` are `MenuScreen`s of the pure `MenuFlow` (`pause ⇄ game`, `pause → settings → pause`, `pause → title`, `title ⇄ settings`; `game → title` is gone). `MenuState.paused` is true on the pause menu and on the settings opened from it. The pause menu and the settings sliders are small pure helpers (`app/pause-menu.ts`, `app/settings-menu.ts`).
+  - New menu actions: `cancel` (the Escape key: Back in the menus, pause in a level), `pause` (P, gamepad Start / Select, the `❚❚` button; resumes from the pause menu) and `resume` (test API); a `{ set, value }` command for slider taps. `back` does nothing in a level, nor on the "Level complete" / "Game over" panels.
+  - Freezing: while paused, `start-app`'s frame ticker does not call `GamePlay.frame` (it still renders the last frame), so the level's own clock gets no time at all. The controls are cleared on pause and resume; debug keys are ignored while paused.
+  - Auto pause: `visibilitychange` to hidden and `GameControls.takeDisconnect()` (the slot of the gamepad last used to play is empty) call `MenuController.pause()`.
+  - The `❚❚` button sits at the top right under the weapon readout (the corner itself holds the readout, and moving the readout left would cover the score).
+- **Alternatives considered:** pausing inside `GamePlay` with a flag (the level would still be asked to step, and the pause menu would live outside the menu flow); mapping Escape to `pause` and treating `pause` as Back in the menus (gamepad Start and P would then go back on menu screens); keyboard bindings that depend on the screen (input would need to know the flow).
+- **Consequences:** P01-R09, P06-R02 and D-041's "Esc / B leave the level" no longer hold in a level. e2e tests leave levels with a `leaveLevel` helper (pause, Main menu, Yes).
+- **Status:** Accepted
+
+### D-097 — A small Web Audio engine instead of Babylon's audio; cues from the core state
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** All music and sounds are generated (GD-70, GD-71, P12-R05); audio must react to the core without changing it (ENG-11); limits on voices, priorities and retriggers (P12-R10); everything must be unit-testable without real audio.
+- **Decision:**
+  - `src/audio/` uses the Web Audio API directly: oscillators and looped noise through biquad filters and gain envelopes (`synth.ts`), a pure lookahead `Sequencer` (100 ms ahead, every frame and on a 25 ms timer), a `MusicPlayer` (one track per gain node: cross-fades, fades, jingles, pause at position), a pure `VoicePool` (16 voices; a new sound replaces the oldest one of lower or equal priority; the same sound within 30 ms is not replayed but makes the playing one ×1.25 louder) and an `SfxPlayer` (stereo panning by x, at most ±0.6). Babylon's audio engine is built around audio files and spatial sound, which this game does not use.
+  - `AudioOutput` creates the context lazily, only during a user gesture that browsers accept as activation (`navigator.userActivation.isActive`), so there is never an autoplay warning: music and SFX buses (volume `(step / 10)²` × the game's mix) into a `DynamicsCompressor` used as a limiter (−1 dBFS, ratio 20). Without Web Audio, or if it throws, it stays silent. The page hidden suspends the context.
+  - `LevelCues` reads a `LevelRun` after each step (`GamePlayOptions.onStep`) and turns state differences into engine cues (`fire:<weapon>`, `beam-start:<weapon>`, `enemy-bullet`, `laser-warning`, `hit`, `hit-blocked`, `blast-large`, `bonus:<kind>`, ...), one per kind and step. A game maps cues to `SoundDesign`s (`GameView.audio: AudioBindings`). For `hit-blocked`, `ShotImpact.blocked` was added and `damageTarget` now returns the damage really taken (0 on a shielded core).
+  - `app/game-audio.ts` decides the music from the menu state and the run (boss bar → boss track; mini boss destroyed → level track from its start; final boss → its track until the end; level ended → fade and jingle) and keeps the e2e state (track id, last sound names, context state). The SFX limits count in app time, so e2e runs are deterministic.
+- **Alternatives considered:** Babylon `AudioEngineV2` (file-oriented, heavier to fake in tests); an `AudioWorklet` synth (more code, no need at this note density); a core event bus for sounds (a bigger change to `core/`, when the state already says everything).
+- **Consequences:** No runtime dependency and no audio file (`make build` now fails if one gets into `dist/`). ENG-120's audio formats do not apply.
+- **Status:** Accepted
+
+### D-098 — Generated music: per-world styles and a seeded composer
+- **Date:** 2026-10-26
+- **Phase:** 12
+- **Context:** P12-R06..R08: one track per level from its data, a style per world, deterministic, at least 60 s before it loops; a faster boss track per world; a calm menu theme; jingles.
+- **Decision:** `src/game/view/audio/`: a `MusicStyle` per world (tempo range from the tunables, scales, chord progressions, instruments, drum and bass feels, arpeggio rate, registers): World 1 major / mixolydian, saw bass in eighths, four-on-the-floor, square lead; World 2 dorian / minor, soft bass, half-time claps, glassy arpeggios and bells; World 3 dorian / minor, plucked bass, shakers and toms, marimba and flute; World 4 phrygian / harmonic minor, heavy detuned saws, slow heavy kicks and low toms, brass. `composeTrack` seeds the level's RNG from an FNV-1a hash of its track id: key, tempo, scale, bass rhythm, arpeggio shape, three themes (progression + a two-bar motif walked on the scale), the order and energy of 8-bar sections, enough sections for 60 s. A boss track is the world style at its top tempo + 20–30 BPM, in a darker scale, full energy, busier bass and drums. Tracks are composed once and kept. The mix (music 0.5, SFX 0.8) keeps the loudest sound effect peak (gain × sum of layer gains) within +6 dB of the loudest instrument peak; gun shots and the laser hum are quieter than hits and explosions (unit tested on the data).
+- **Alternatives considered:** hand-written songs (20 by hand, against "code generated"); a Markov melody model (less control over phrasing for little gain).
+- **Consequences:** The style tables are the knobs for the review by ear.
+- **Status:** Accepted
+
+### D-099 — Synthwave music: echo and reverb sends, 80s drum machine, a full menu track
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for music on the main menus and for all the music to be synthwave. The menu theme (D-098) was a quiet 84 BPM pad-and-bell piece (−25.8 dB RMS at the default volume); the tracks had no echo or reverb, a marimba and a flute in World 3, plain snares.
+- **Decision:**
+  - Engine: `TrackMixer` (one per playing track) gives each instrument an input with sends to a tempo-synced echo (`echoBeats` 0.75, feedback 0.35) and a shared reverb (a `ConvolverNode` on the music bus, with a generated decaying-noise impulse of 2.2 s); both fade with the track. `Instrument.echo` / `reverb` set the sends; `AudioBindings.effects` turns them on.
+  - Game: synthwave instruments (gated snare, Simmons-style toms at several pitches for descending fills, supersaw lead, detuned saw pads, plucked saw / square and FM-bell arpeggios with echoes); off-beat open hats; World 1 outrun, World 2 dreamwave, World 3 synthwave on toms and shakers, World 4 darksynth with rolling sixteenth basses. The menu theme: 88 BPM, E minor, i–VI–III–VII, a backbeat, pumping octave bass, every section full (`MusicStyle.energies`).
+  - Mix: music bus 0.8 (was 0.5), SFX 1 (was 0.8): the music sits around −17 to −20 dB RMS at the default volume; the loudest sound stays within +6 dB of the music.
+- **Alternatives considered:** echoes written as extra notes (twice the notes, no feedback tail); a per-instrument reverb (one convolver per instrument costs more for little gain); keeping the menu theme calm and sparse (the reviewer did not notice it).
+- **Consequences:** Loudness and style were checked with an offline render in Chromium (`OfflineAudioContext`), not by ear: the reviewer's listening is the final check.
+- **Status:** Accepted
+
+### D-100 — Stressful boss tracks and more energetic synthwave
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for more stressful boss music and for all the music to be more energetic synthwave. Boss tracks (D-098, D-099) were the level style faster, with one extra kick; levels had bare breakdowns, half-time dreamwave in World 2 and eighth-note arpeggios in Worlds 2 and 4.
+- **Decision:**
+  - Boss tracks have their own drums, bass and chord stabs (`compose-boss.ts`): pushed kicks, sixteenth hats, rising snare rolls, a root/octave sixteenth bass, 3-3-2 supersaw stabs, tense progressions (`BOSS_PROGRESSIONS`) in harmonic minor or phrygian. They stay in their world's instruments, so a boss still sounds like its world.
+  - Every track has a noise riser into each section. Levels: tempos raised by 8–14 BPM (tunable amended), sixteenth arpeggios, no breakdown at energy 0; World 2 moves from half time to a driving backbeat. The menu theme goes to 100 BPM, still slower than every level.
+- **Alternatives considered:** dissonant alarm-like leads (tritones, sirens), judged unpleasant for a child (P12-R09's spirit); boss-specific instruments per world (more data for little gain over the stabs and drums).
+- **Consequences:** Boss tracks are 2–3 dB louder than the level tracks (denser), within the master limiter; checked offline, not by ear.
+- **Status:** Accepted
+
+### D-101 — Darksynth everywhere, a minigun gun
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for more darksynth music and for the player's bullets to sound like a minigun ("BRRRT"). Worlds 1–3 and the menu used bright or modal scales and lighter instruments; the gun was one zap per volley (8 a second).
+- **Decision:**
+  - Every style plays minor, harmonic minor or phrygian keys with the heavy kick and dark pads; the growling `bass-heavy` (a resonant square layer added) in Worlds 1 and 4 and the menu. Worlds stay apart by drum feel, lead, arpeggio and tempo.
+  - The gun sound is a burst of 6 short rounds, 21 ms apart, made of delayed layers in one sound design: one burst per volley fills the 125 ms to the next, so the rattle is continuous while firing, with no engine change (no new looping cue) and one voice per volley.
+- **Alternatives considered:** a looping "firing" cue like the laser hum (needs a new engine cue and a stop on release; the bursts already stop within one volley); raising the gun's fire rate (gameplay change, out of scope).
+- **Consequences:** The data test's peak counts only layers that start together. If the gun's `shotsPerSecond` changes, the burst (`MINIGUN` in `sound-designs.ts`) must follow; a unit test checks it covers one volley.
+- **Status:** Accepted
+
+### D-102 — Alternating shot streams, one fire cue per volley
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; requirement added to phase 3 as P03-R11)
+- **Context:** The reviewer asked that multi-stream bullet and missile levels fire their streams in turn instead of all at once, without changing the global firing rate.
+- **Decision:** `ShotWorld` keeps one cooldown and a next-stream index: a shot every 1 / (shotsPerSecond × streams) s, streams in their listed order (the weapon data already lists them centre first, then left / right pairs from the inside out). Selecting a weapon or releasing fire restarts from the first stream, at once. `ShotWorld.volleys` counts volleys (each time the first stream fires); `LevelCues` emits `fire:<weapon>` per volley instead of per new projectile, at the ship's x.
+- **Alternatives considered:** random stream order (less readable, not deterministic per seed without an RNG); a sound per shot (the minigun bursts would pile up into a buzz, and a 5-stream level would take 5 voices).
+- **Consequences:** The order of the streams in `player-weapons.ts` is now the firing order.
+- **Status:** Accepted
+
+### D-103 — Darksynth look for the menus and the HUD, no cyberpunk
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; look requirements in phase 1, P01-R05 and P01-R13)
+- **Context:** The reviewer asked to rework the main menu and the game UI, drop the cyberpunk reference and make it darksynth, matching the music (D-099..D-101). D-013 and D-014 had made the overlay cyberpunk (acid yellow / cyan / red, glitch split, corner brackets, terminal hints) over a night city.
+- **Decision:**
+  - Overlay (`index.html` only, same markup): tokens `--hot` (magenta), `--violet`, `--red`, black-violet glass, `--sunset` and `--chrome` gradients. The logo is chrome italic letters (background-clipped gradient with a horizon line) in a slow magenta / red glow, over a striped sunset sun drawn in CSS (`.title-sun`, a masked gradient disc; removed at the reviewer's request, D-104). Neon glows replace the red / cyan glitch split; a thin neon frame and a sunset line replace the corner brackets and the status tag; hints lose the terminal prompt and cursor (a slow pulse). Selected entries are a magenta gradient block with black text, markers unchanged (they still show without colour).
+  - Backdrop: the night city stays, recoloured: crimson sunset sky, near-black skyline, magenta / red / violet windows and neon, magenta lane lines, dimmer near windows.
+- **Alternatives considered:** a 3D striped sun behind the skyline (tried: the fogged towers of the street hide all but a sliver of it, so it read as an odd shape); replacing the city by the classic sun and neon grid (more synthwave than darksynth, and the reviewer asked to rework the look, not the scene).
+- **Consequences:** D-013 and D-014 are superseded for the look. All the game's pages share these styles (the debug viewers too).
+- **Status:** Accepted
+
+### D-104 — A pilot instead of the ship in the menu backdrop (reverted)
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P01-R05)
+- **Context:** The reviewer asked to remove the sun from the main menu and to replace the ship by a model of a fighter pilot with tons of wires linking the helmet to the seat, then refined it over four rounds (a close-up, anime-styled; cel-shaded; mirrored and more realistic; after a 90s anime reference image).
+- **Decision:** the pilot was generated in code (pure part data, then Babylon meshes with a cel-shading shader and ink outlines). The reviewer then asked to revert to the player ship and to delete all the pilot code: the backdrop shows the balanced ship again (`title_ship_rotation_speed`), and the pilot model, its meshes, its curve helpers, the toon material and their tests are deleted. Only the sun emblem's removal stays.
+- **Alternatives considered:** keeping the pilot code unused for later (the reviewer asked for it to be deleted).
+- **Consequences:** none left in the code; this entry records the experiment.
+- **Status:** Reverted
+
+### D-105 — The boss health bar moves to the left edge
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P07-R02)
+- **Context:** The reviewer found that the boss's name and health bar, a panel at the top of the playfield, hid the boss, which fights in the upper part of the screen.
+- **Decision:** a slim vertical gauge up the left edge, under the player's health panel (top 96 px, 300 px tall, 8 px wide, no panel): it fills from the bottom, the part notches are ticks across it, the kind and name are written along it bottom to top. The left edge is clear of the score, the pause button and, on touch screens, the fire and bomb buttons (bottom right).
+- **Alternatives considered:** a slimmer, see-through bar at the top (still over the boss); the bottom of the screen (over the player's ship); the top HUD row in place of the progress bar (too narrow between the health panel and the pause button for the name).
+- **Consequences:** P07-R02 amended at the reviewer's request.
+- **Status:** Accepted
+
+### D-106 — Bullets leave from inside the ship, under it
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P03-R01)
+- **Context:** The reviewer asked for the bullets to start further into the ship, as if shot from under it. They started 3 px below the nose tip (the muzzle, phase 3 review), drawn level with the ship.
+- **Decision:** an optional `launchBack` on projectile weapons (engine): shots start that far behind their launch point. The bullet sets 13 px (16 px below the nose tip, inside the hull); its tracers are drawn 8 units under the playfield plane (`SHOT_LOOK.bullet.depth`), so the ship is drawn over them as they leave, as the missiles already are (depth 20).
+- **Alternatives considered:** a deeper muzzle for every weapon (`muzzleInset`): the laser and its base glow would start inside the hull too.
+- **Consequences:** none for the hits: a bullet starts 13 px lower and reaches enemies 13 px later (22 ms at 600 px/s).
+- **Status:** Accepted
+
+### D-107 — Enemy explosions as short, muffled booms
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P12-R09)
+- **Context:** The reviewer found the enemy explosion sound annoying: each was a long low-pass hiss from 3 200 Hz with a sustain, so a busy wave turned into a wash of bright noise.
+- **Decision:** a `boom` recipe for the enemy explosions: a deep falling sine thump, a low noise body closing fast (900 → 110 Hz small, 1 200 → 110 Hz large), a 30 ms band-passed crackle for definition; no sustain, 0.22 s small and 0.5 s large. Boss part, boss and life-lost blasts keep the longer `blast`, so the big moments still stand out.
+- **Alternatives considered:** fewer explosion sounds per second (a per-sound minimum interval in the engine): kept for later if a busy wave still feels crowded.
+- **Consequences:** none on the priorities or the mix rules (P12-R10 data tests unchanged).
+- **Status:** Accepted
+
+### D-108 — Realistic, layered explosions
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P12-R09)
+- **Context:** After D-107 (short muffled booms for the enemies), the reviewer asked for more realistic explosion sounds.
+- **Decision:** one `explosion` recipe (`sound-recipes.ts`) for every blast, in three sizes (small, large, huge): a 12 ms high-passed noise crack, a low-passed noise body closing from a few kHz to 180 Hz over the blast, a sub-bass sine thump gliding down by half, a low-passed rumble tail for the large and huge sizes, and 3–8 short band-passed debris crackles at fixed, uneven delays (so a sound is the same every time). The boss dies in a chain of three. The old `blast` and `boom` recipes are gone. Bomb, boss and life-lost gains are lowered so the loudest sound stays within +6 dB of the music (P12-R10).
+- **Alternatives considered:** recorded samples (GD-71: sound is generated); random debris per play (the engine plays fixed designs; fixed uneven spacing sounds natural enough).
+- **Consequences:** supersedes D-107's booms. A busy wave peaks at −5.8 dBFS at the default volume in the offline render.
+- **Status:** Accepted
+

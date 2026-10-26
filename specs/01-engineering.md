@@ -67,7 +67,7 @@
 │   ├── input/               # keyboard / gamepad / touch → abstract actions
 │   ├── ui/                  # HUD & menus (HTML/CSS overlay)
 │   ├── assets/              # asset manifest, loaders, loading screen progress
-│   ├── config/              # all tunables (gameplay values, quality presets)
+│   ├── config/              # all tunables (gameplay values)
 │   ├── platform/            # browser wrappers: storage, visibility, capabilities detection
 │   ├── debug/               # inspector toggle, FPS/stats overlay, hitbox view (dev/e2e builds only)
 │   └── game/                # THIS game's content, built on the engine above (§2.3)
@@ -95,7 +95,7 @@
 | ENG-14 | MUST | Type checking: `tsc --noEmit` passes with zero errors. No `any` (lint error), no `@ts-ignore` (`@ts-expect-error` allowed only with a comment). |
 | ENG-15 | MUST | Naming: files `kebab-case.ts`; classes/types `PascalCase`; functions/variables `camelCase`; constants `UPPER_SNAKE_CASE`. One main export per file. Named exports only (no `default`). |
 | ENG-16 | SHOULD | Functions ≤ 50 lines, files ≤ 300 lines, cyclomatic complexity ≤ 10 (ESLint `max-lines-per-function`, `max-lines`, `complexity` as warnings → errors via `--max-warnings 0`). |
-| ENG-17 | MUST | No magic numbers in gameplay code: engine tunables (timestep, quality presets...) live in `src/config/`; game-specific tunables live in `src/game/config/` (ENG-143). |
+| ENG-17 | MUST | No magic numbers in gameplay code: engine tunables (timestep...) live in `src/config/`; game-specific tunables live in `src/game/config/` (ENG-143). |
 | ENG-18 | MUST | Simulation determinism: `core/` uses a seeded RNG and receives `dt` from the loop. No `Math.random()` and no `Date.now()` in `core/` (lint rule). |
 | ENG-19 | SHOULD | Hot paths (per-frame update of bullets, particles, enemies) use object pools and avoid allocations. |
 
@@ -218,8 +218,7 @@ The Makefile is the single entry point for humans, git hooks and CI. CI calls **
 | ID | Priority | Requirement |
 |----|----------|-------------|
 | ENG-100 | MUST | Fixed-timestep simulation at **60 Hz**, with rendering at display rate and interpolation between simulation states. Logic is independent of the monitor's refresh rate. |
-| ENG-101 | MUST | Target **60 FPS** at 1080p on a mid-range laptop with an integrated GPU (Intel Iris Xe / Apple M1 class) on the *Medium* preset. |
-| ENG-102 | MUST | Quality presets **Low / Medium / High**, defined in `src/config/quality.ts`. They control shadow map size and cascades, particle budget, post-processing effects, MSAA and render scale. The preset is chosen automatically on first launch, can be changed in settings, and is saved. |
+| ENG-101 | MUST | Target **60 FPS** at 1080p on a mid-range laptop with an integrated GPU (Intel Iris Xe / Apple M1 class). |
 | ENG-103 | MUST | Graphics feature set available to phases:<br>• PBR materials, image-based lighting (`.env`), directional and point lights<br>• shadow generator (PCF, or cascaded on High)<br>• glow layer for emissive parts (engines, bullets)<br>• `DefaultRenderingPipeline` (bloom, ACES tone mapping, FXAA, optional chromatic aberration and grain)<br>• particle systems: GPU particles with CPU fallback, flipbook textures for fire, smoke and explosions. |
 | ENG-104 | MUST | Many identical objects (bullets, debris) use **thin instances** or instancing, not one mesh each. |
 | ENG-105 | MUST | Particle and effect instances are pooled; the active-particle budget per preset is enforced by `fx/`. |

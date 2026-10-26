@@ -1,12 +1,15 @@
 import type { GameDefinition } from '../core/content/game-definition';
 import type { LevelResult } from '../core/systems/level-run';
+import { AUDIO_CONFIG } from '../config/audio';
 import type { MenuCommand } from '../input/menu-action';
 import type { MenuActionSource } from '../input/menu-input';
 import type { KeyValueStorage } from '../platform/key-value-storage';
 import type { MenuView } from '../ui/menu-view';
-import { MenuFlow, type MenuState } from './menu-flow';
+import { MenuFlow, type MenuFeedback, type MenuState } from './menu-flow';
 import { buildMenuView } from './menu-view-builder';
 import { loadSavedChoices, saveHighScore, saveLastShip } from './saved-choices';
+import { loadVolumes, saveVolumes } from './saved-settings';
+import type { Volumes } from './settings-menu';
 
 /** Where the controller shows menus. Implemented by `ui/MenuOverlay`. */
 export interface MenuDisplay {
@@ -27,6 +30,8 @@ export interface MenuControllerDeps {
   readonly commit: string;
   /** Called after every state change, e.g. to update the 3D scenes. */
   readonly onChange?: (state: MenuState) => void;
+  /** Called after each command with what it did, e.g. for the menu sounds (P12-R09). */
+  readonly onFeedback?: (command: MenuCommand, feedback: MenuFeedback) => void;
 }
 
 /**
@@ -40,6 +45,7 @@ export class MenuController {
   #shownRevision = -1;
   #shownProgress = -1;
   #savedShipId: string | null;
+  #savedVolumes: Volumes;
 
   constructor(
     private readonly game: GameDefinition,
@@ -48,11 +54,15 @@ export class MenuController {
     const saved = loadSavedChoices(deps.storage, game.id);
     this.#highScore = saved.highScore;
     this.#savedShipId = saved.lastShipId;
+    const { volumeSteps, defaultVolumes } = AUDIO_CONFIG;
+    this.#savedVolumes = loadVolumes(deps.storage, game.id, volumeSteps, defaultVolumes);
     this.flow = new MenuFlow({
       shipIds: game.playerShips.ships.map((s) => s.id),
       levels: game.levels,
       initialShipId: saved.lastShipId,
       transitionSeconds: deps.transitionSeconds,
+      volumes: this.#savedVolumes,
+      volumeSteps,
       ...(deps.resultDelaySeconds === undefined
         ? {}
         : { resultDelaySeconds: deps.resultDelaySeconds }),
@@ -106,10 +116,21 @@ export class MenuController {
 
   /** Applies one command (from any device, or the test API). */
   command(command: MenuCommand): void {
-    if (this.flow.dispatch(command) === 'locked') {
-      this.deps.display.shakeSelected(this.game.texts.locked);
-    }
+    const feedback = this.flow.dispatch(command);
+    if (feedback === 'locked') this.deps.display.shakeSelected(this.game.texts.locked);
+    this.deps.onFeedback?.(command, feedback);
     this.refresh();
+  }
+
+  /**
+   * Pauses the level being played (P12-R03: the page is hidden, the gamepad in use is
+   * disconnected). Returns whether it paused.
+   */
+  pause(): boolean {
+    const paused = this.flow.pause();
+    if (paused) this.deps.onFeedback?.('pause', 'paused');
+    this.refresh();
+    return paused;
   }
 
   /** Advances time by one frame: transition timer, then the input of the frame. */
@@ -127,6 +148,7 @@ export class MenuController {
     this.#shownProgress = this.#progress;
     const state = this.flow.state;
     this.#rememberShip(state.chosenShipId);
+    this.#rememberVolumes(state.volumes);
     this.deps.display.show(
       buildMenuView(state, {
         game: this.game,
@@ -135,9 +157,18 @@ export class MenuController {
         commit: this.deps.commit,
         cardsWidthPercent: this.deps.cardsWidthPercent,
         progress: this.#progress,
+        volumeSteps: AUDIO_CONFIG.volumeSteps,
       }),
     );
     this.deps.onChange?.(state);
+  }
+
+  /** Saves the volumes on every change (P12-R04). */
+  #rememberVolumes(volumes: Volumes): void {
+    const saved = this.#savedVolumes;
+    if (volumes.music === saved.music && volumes.sfx === saved.sfx) return;
+    saveVolumes(this.deps.storage, this.game.id, volumes);
+    this.#savedVolumes = volumes;
   }
 
   #rememberShip(shipId: string | null): void {

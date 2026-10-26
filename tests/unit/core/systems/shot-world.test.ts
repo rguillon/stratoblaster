@@ -31,16 +31,35 @@ describe('ShotWorld', () => {
 
   it('P03-R01: fires every stream of the level, from its offset', () => {
     const w = world(testGun(), 2);
+    // Two streams at 10 volleys a second: one shot every 0.05 s, alternating.
     w.step(0.01);
+    w.step(0.05);
     const xs = w.projectiles.filter((p) => p.alive).map((p) => p.x);
     expect(xs.sort((a, b) => a - b)).toEqual([46, 54]);
   });
 
+  it('P03-R01: the streams fire one after the other, each at the weapon rate (reviewer, 2026-10-26)', () => {
+    const w = world(testGun(), 2);
+    const fired: number[] = [];
+    for (let i = 0; i < 99; i++) {
+      const before = new Set(w.projectiles.filter((p) => p.alive));
+      w.step(0.01);
+      for (const p of w.projectiles) {
+        if (p.alive && !before.has(p)) fired.push(p.x);
+      }
+    }
+    // 0.99 s: 10 volleys of 2 streams, never both at once, in the listed order.
+    expect(fired).toHaveLength(20);
+    expect(fired.slice(0, 4)).toEqual([46, 54, 46, 54]);
+    expect(w.volleys).toBe(10);
+  });
+
   it('launches from the ship centre when the weapon says so, from the muzzle otherwise', () => {
-    const w = world(testGun({ launchPoint: 'center' }), 2);
+    const w = world(testGun({ launchPoint: 'center', launchSpeed: 0, maxSpeed: 0 }), 2);
     w.centerX = 40;
     w.centerY = 2;
     w.step(0);
+    w.step(0.05);
     const shots = w.projectiles.filter((p) => p.alive);
     expect(shots.map((p) => [p.x, p.y])).toEqual([
       [36, 2],
@@ -49,6 +68,12 @@ describe('ShotWorld', () => {
     w.select(testGun(), 1);
     w.step(0);
     expect(w.projectiles.filter((p) => p.alive).map((p) => p.y)).toContain(10);
+  });
+
+  it('P03-R01: shots leave launchBack behind the launch point, from inside the ship (reviewer, 2026-10-26)', () => {
+    const w = world(testGun({ launchBack: 6, launchSpeed: 0, maxSpeed: 0 }));
+    w.step(0);
+    expect(w.projectiles[0]?.y).toBe(4);
   });
 
   it('moves a new shot by the time since it was fired within the step', () => {
@@ -98,7 +123,29 @@ describe('ShotWorld', () => {
     w.targets = [target(1, 50, 16)];
     w.step(0.05);
     expect(w.impacts).toHaveLength(1);
-    expect(w.impacts[0]).toMatchObject({ weaponId: 'gun', blastRadius: 10 });
+    expect(w.impacts[0]).toMatchObject({ weaponId: 'gun', blastRadius: 10, blocked: false });
+  });
+
+  it('P12-R09: an impact that does no damage (a shielded target) is reported as blocked', () => {
+    const w = world();
+    const shielded: ShotTarget = {
+      id: 1,
+      x: 50,
+      y: 16,
+      radius: 5,
+      maxHealth: 100,
+      get health() {
+        return 100;
+      },
+      set health(_value: number) {
+        // A shielded core ignores damage.
+      },
+    };
+    w.targets = [shielded];
+    w.step(0.05);
+    expect(w.impacts).toHaveLength(1);
+    expect(w.impacts[0]?.blocked).toBe(true);
+    expect(w.totalDamage).toBe(0);
   });
 
   it('removes shots that leave the playfield and reuses them', () => {

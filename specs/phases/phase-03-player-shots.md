@@ -52,6 +52,13 @@ At level 4, a 4 diagonal stream (10° and 20°)
 At level 5, a single forward missile stream 4 diagonal stream (10° and 20°)
 
 
+### P03-R11 — Alternating streams · MUST
+
+When a bullet or missile level has several streams, they do not fire all at once: they fire one after the other, in turn, evenly spaced over each volley (added at the reviewer's request, 2026-10-26). The firing rate is unchanged: each stream still fires its rate (bullets 8 per second, missiles 4 per second per stream), so a level fires as many shots per second, and deals as much damage, as before.
+
+**Acceptance criteria**
+- [ ] Given a two-stream level held for one volley period, then each stream fired once, never both in the same instant, and over a second each stream fired its rate (unit test).
+
 ### P03-R10 — Debug  · MUST
 
 The game shall provide a player_shots/ debug endpoint that shows the different shots from each ship for visual validation.
@@ -101,6 +108,7 @@ The game shall provide a player_shots/ debug endpoint that shows the different s
 - [x] Make the bullet core brighter. *Fixed: the blob now has a white-hot centre ring inside the neon green (`SHOT_LOOK.bullet.colors`).*
 - [x] The bullets look like they start ahead of the ship; make them start closer to the ship's nose. *Fixed: the muzzle is no longer a fixed height; it is measured on each ship's model, 3 px below its nose tip (`PlayfieldShip.show` returns the nose height, `SHOT_VIEWER_CONFIG.muzzleInset`). Bullets and the laser now start at the nose of every ship.*
 - [x] Reduce the bullets' polygon count. *Fixed: a bullet blob is 8 sides and 3 colour rings, 40 triangles instead of 98; each hit spark is a 4-sided diamond, 12 triangles instead of 40 (`SHOT_LOOK.bullet`, `SHOT_LOOK.impact.bullet`). The look is unchanged in screenshots.*
+- [x] (2026-10-26, reviewer, during the phase 12 review) Move the bullets' starting point further into the ship (shooting from under the ship). *Fixed: projectile weapons may set `launchBack`, how far behind their launch point the shots start (px, towards the tail; engine, `core/entities/weapon.ts`, validated ≥ 0); the bullet starts 13 px behind the muzzle, 16 px below the nose tip, inside the hull. The tracers are drawn 8 units under the playfield plane (`SHOT_LOOK.bullet.depth`), so the ship covers them as they leave, as with the missiles. The laser still starts at the nose (D-106).*
 - [x] The laser glow at the ship level is too polygonal; make it look better. *Fixed: the base glow is a 24-sided disc with 6 colour rings following a soft falloff (was 10 sides, 3 rings), 264 triangles for the single glow (`SHOT_LOOK.laser.muzzle`).*
 
 ---

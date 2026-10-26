@@ -47,4 +47,20 @@ export interface MenuTexts {
   readonly hudBoss: string;
   /** Shown instead of the menu when the browser cannot run the game (ENG-06). */
   readonly unsupported: string;
+  /** The title screen's Settings entry and the settings screen's heading (P12-R04). */
+  readonly settings: string;
+  readonly settingsHint: string;
+  /** The volume sliders' labels (P12-R04). */
+  readonly musicVolume: string;
+  readonly sfxVolume: string;
+  /** Label of the on-screen pause button (P12-R01). */
+  readonly pauseButton: string;
+  /** The pause menu (P12-R02): heading, entries, hint, and the question before leaving. */
+  readonly paused: string;
+  readonly resume: string;
+  readonly mainMenu: string;
+  readonly pauseHint: string;
+  readonly leaveLevel: string;
+  readonly no: string;
+  readonly yes: string;
 }

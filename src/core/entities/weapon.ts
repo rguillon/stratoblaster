@@ -19,6 +19,11 @@ export interface ProjectileWeaponDefinition {
   readonly name: string;
   /** Where the streams start: the ship's muzzle (its nose) or its centre. */
   readonly launchPoint: 'muzzle' | 'center';
+  /**
+   * Shots start this far behind the launch point (px, towards the ship's tail), so they leave
+   * from inside the ship; 0 when omitted.
+   */
+  readonly launchBack?: number;
   /** Shots per second in each stream. */
   readonly shotsPerSecond: number;
   readonly launchSpeed: number;
@@ -67,6 +72,9 @@ function validateProjectile(weapon: ProjectileWeaponDefinition): void {
   const nonNegative = ['acceleration', 'homingTurnRateDeg', 'homingRange', 'blastRadius'] as const;
   for (const key of nonNegative) {
     if (!(weapon[key] >= 0)) throw new Error(`Weapon "${weapon.id}": ${key} must be >= 0`);
+  }
+  if (!((weapon.launchBack ?? 0) >= 0)) {
+    throw new Error(`Weapon "${weapon.id}": launchBack must be >= 0`);
   }
   if (weapon.acceleration > 0 && !(weapon.maxSpeed >= weapon.launchSpeed)) {
     throw new Error(`Weapon "${weapon.id}": maxSpeed must be >= launchSpeed`);

@@ -9,6 +9,7 @@ import { renderTitleScreen } from './screens/title-screen';
 import { renderShipSelectScreen } from './screens/ship-select-screen';
 import { renderLevelSelectScreen } from './screens/level-select-screen';
 import { renderGameScreen } from './screens/game-screen';
+import { renderSettingsScreen } from './screens/settings-screen';
 
 /** Settings of a {@link MenuOverlay}. */
 export interface MenuOverlayOptions {
@@ -34,6 +35,8 @@ function renderScreen(doc: MenuDocument, view: MenuView, handlers: ScreenHandler
       return renderLevelSelectScreen(doc, view, handlers);
     case 'game':
       return renderGameScreen(doc, view, handlers);
+    case 'settings':
+      return renderSettingsScreen(doc, view, handlers);
   }
 }
 
@@ -87,6 +90,12 @@ export class MenuOverlay {
       onDrag: (dx, dy) => {
         const scale = this.#scale();
         this.touch?.drag(dx / scale, -dy / scale);
+      },
+      onPause: () => {
+        this.onCommand('pause');
+      },
+      onSet: (index, value) => {
+        this.onCommand({ set: index, value });
       },
     });
     screen.dataset.screen = view.kind;

@@ -1,5 +1,6 @@
 import type { GameScreenView } from '../menu-view';
 import { element, type MenuDocument } from './elements';
+import { pausePanel } from './pause-panel';
 import type { ScreenHandlers } from './screen-handlers';
 
 /** Continue or level select (P07-R08): a tap selects a choice, a second tap confirms it. */
@@ -76,6 +77,23 @@ function fireButton(doc: MenuDocument, label: string, handlers: ScreenHandlers):
 }
 
 /**
+ * The on-screen pause button (P12-R01), top right of the playfield. Its press does not start a
+ * drag.
+ */
+function pauseButton(doc: MenuDocument, label: string, handlers: ScreenHandlers): HTMLElement {
+  const button = element(doc, 'div', 'game-pause', label);
+  button.setAttribute('role', 'button');
+  button.setAttribute('aria-label', 'Pause');
+  button.addEventListener('pointerdown', (event) => {
+    event.stopPropagation();
+  });
+  button.addEventListener('click', () => {
+    handlers.onPause?.();
+  });
+  return button;
+}
+
+/**
  * Drag anywhere to fly (P06-R02, GD §2 touch): pointer moves while a finger or button is down
  * are passed on as screen pixel offsets.
  */
@@ -97,9 +115,9 @@ function dragArea(root: HTMLElement, handlers: ScreenHandlers): void {
 }
 
 /**
- * The overlay of the game screen (P06-R02, R03): the level played, the touch fire button and the
- * drag area over the playfield, and the "Level complete" panel at the end. The HUD is drawn by
- * `GameHud`, which updates every frame.
+ * The overlay of the game screen (P06-R02, R03): the level played, the touch fire and pause
+ * buttons and the drag area over the playfield, the pause menu while paused (P12-R02), and the
+ * "Level complete" panel at the end. The HUD is drawn by `GameHud`, which updates every frame.
  */
 export function renderGameScreen(
   doc: MenuDocument,
@@ -107,12 +125,14 @@ export function renderGameScreen(
   handlers: ScreenHandlers,
 ): HTMLElement {
   const root = element(doc, 'div', 'menu-screen game-screen');
-  // No Back button over the playfield (phase 6 review): Esc or the gamepad's B leave the level.
+  // No Back button over the playfield (phase 6 review): the level is left from the pause menu.
   root.append(element(doc, 'div', 'game-level', view.level));
   if (view.complete) {
     root.append(levelComplete(doc, view.complete, handlers));
+  } else if (view.paused) {
+    root.append(pausePanel(doc, view.paused, view.selected, handlers));
   } else {
-    root.append(fireButton(doc, view.fire, handlers));
+    root.append(fireButton(doc, view.fire, handlers), pauseButton(doc, view.pause, handlers));
     dragArea(root, handlers);
   }
   return root;

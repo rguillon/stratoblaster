@@ -13,11 +13,14 @@ export function isAlive(target: ShotTarget): boolean {
   return target.health > 0;
 }
 
-/** Removes `amount` health, never below 0. Returns the damage actually dealt. */
+/**
+ * Removes `amount` health, never below 0. Returns the damage actually dealt: 0 when the target
+ * ignores it (a shielded core, P07-R01).
+ */
 export function damageTarget(target: ShotTarget, amount: number): number {
-  const dealt = Math.min(target.health, Math.max(0, amount));
-  target.health -= dealt;
-  return dealt;
+  const before = target.health;
+  target.health = before - Math.min(before, Math.max(0, amount));
+  return before - target.health;
 }
 
 /** The living target closest to (x, y) and within `range`, or undefined if there is none. */

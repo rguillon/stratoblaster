@@ -65,16 +65,6 @@ describe('MenuFlow', () => {
     expect(flow.state.chosenShipId).toBe('light');
   });
 
-  it('P01-R01: given game, when Back (Esc) is pressed, then the screen is title', () => {
-    const flow = atTitle();
-    send(flow, 'confirm', 'confirm', 'confirm');
-    expect(flow.state.screen).toBe('game');
-    send(flow, 'confirm', 'up');
-    expect(flow.state.screen).toBe('game');
-    send(flow, 'back');
-    expect(flow.state.screen).toBe('title');
-  });
-
   it('P01-R01: invalid transitions are rejected and leave the state unchanged', () => {
     const flow = atTitle();
     const before = flow.state;
@@ -264,15 +254,17 @@ describe('MenuFlow', () => {
       expect(flow.state.selectedId).toBe('1-5');
     });
 
-    it('P06-R03: a result outside the game screen is ignored; Back still leaves to the title', () => {
+    it('P06-R03, P12-R01: a result outside the game screen is ignored; the panel cannot be paused or left with Back', () => {
       const flow = world1();
       flow.completeLevel(result('1-1'));
       expect(flow.state.levelResult).toBeNull();
       send(flow, 'confirm', 'confirm', 'confirm');
       flow.completeLevel(result('1-1'));
       flow.update(1);
-      send(flow, 'back');
-      expect(flow.state).toMatchObject({ screen: 'title', levelResult: null });
+      send(flow, 'back', 'cancel', 'pause');
+      expect(flow.pause()).toBe(false);
+      expect(flow.state).toMatchObject({ screen: 'game', paused: false });
+      expect(flow.state.levelResult).not.toBeNull();
     });
 
     it('P06-R09: a level can be started straight away with a ship; unknown or locked ones cannot', () => {

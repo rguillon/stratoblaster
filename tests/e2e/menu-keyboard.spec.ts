@@ -27,7 +27,24 @@ test('P01-R09: the whole flow with arrows, Enter/Space and Esc', async ({ page }
   await expectState(page, { screen: 'level-select' });
   await page.keyboard.press('Enter');
   await expectState(page, { screen: 'game', chosenShipId: 'heavy', chosenLevelId: '1-1' });
+  // P12-R01: Backspace no longer leaves the level; Esc pauses and resumes, P too.
   await page.keyboard.press('Backspace');
+  await step(page, 3);
+  expect((await gameState(page)).screen).toBe('game');
+  await page.keyboard.press('Escape');
+  await expectState(page, { screen: 'pause', paused: true, selectedId: 'resume' });
+  await page.keyboard.press('Escape');
+  await expectState(page, { screen: 'game', paused: false });
+  await page.keyboard.press('KeyP');
+  await expectState(page, { screen: 'pause', paused: true });
+  // P12-R02: Main menu asks first; Yes leaves to the title.
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await expectState(page, { selectedId: 'main-menu' });
+  await page.keyboard.press('Enter');
+  await expectState(page, { leaving: true, choice: 0 });
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
   await expectState(page, { screen: 'title' });
 });
 

@@ -130,4 +130,25 @@ describe('GameControls', () => {
     expect([state.bomb, state.fire]).toEqual([true, true]);
     expect(controls.read(1 / 60, 100).bomb).toBe(false);
   });
+
+  it('P12-R03: the gamepad that was in use is reported once when it is disconnected', () => {
+    let pads: (GamepadLike | null)[] = [null, pad()];
+    const controls = new GameControls(GAME_CONTROLS_CONFIG, () => pads);
+    controls.read(1 / 60, 100);
+    // Connected but never used: its loss is not reported.
+    pads = [null, null];
+    controls.read(1 / 60, 100);
+    expect(controls.takeDisconnect()).toBe(false);
+    pads = [null, pad([0])];
+    controls.read(1 / 60, 100);
+    pads = [null, pad()];
+    controls.read(1 / 60, 100);
+    expect(controls.takeDisconnect()).toBe(false);
+    pads = [null];
+    controls.read(1 / 60, 100);
+    expect(controls.takeDisconnect()).toBe(true);
+    expect(controls.takeDisconnect()).toBe(false);
+    controls.read(1 / 60, 100);
+    expect(controls.takeDisconnect()).toBe(false);
+  });
 });

@@ -30,6 +30,9 @@ describe('validateWeapons', () => {
       validateWeapons([testGun({ blastRadius: -1 })]);
     }).toThrow(/blastRadius/);
     expect(() => {
+      validateWeapons([testGun({ launchBack: -2 })]);
+    }).toThrow(/launchBack/);
+    expect(() => {
       validateWeapons([testGun({ acceleration: 10, maxSpeed: 50 })]);
     }).toThrow(/maxSpeed/);
     expect(() => {

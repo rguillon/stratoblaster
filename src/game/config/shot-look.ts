@@ -32,6 +32,11 @@ export const SHOT_LOOK = {
     /** Width flicker of each tracer (± fraction) and its rate, rad/s. */
     flicker: 0.18,
     flickerRate: 90,
+    /**
+     * Distance behind the playfield plane, so the ship (at Z = 0) is drawn over the tracers
+     * leaving from inside it (reviewer, 2026-10-26).
+     */
+    depth: 8,
   },
   laser: {
     /** Visual width relative to the beam's hit width (the glow spills around the core). */

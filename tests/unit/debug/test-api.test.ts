@@ -20,7 +20,11 @@ describe('installTestApi', () => {
         levelResult: null,
         choice: 0,
         attempt: 0,
+        paused: false,
+        leaving: false,
+        volumes: { music: 6, sfx: 8 },
       }),
+      audio: () => ({ music: 'menu', sounds: ['menu-move'], context: 'none' }),
       highScore: () => 4200,
       loadingProgress: () => [0, 1],
       game: () => undefined,
@@ -34,12 +38,21 @@ describe('installTestApi', () => {
       loadingProgress: [0, 1],
       game: null,
       highScore: 4200,
+      paused: false,
+      volumes: { music: 6, sfx: 8 },
+      music: 'menu',
+      sounds: ['menu-move'],
+      audio: 'none',
     });
     target.__GAME_TEST__?.sendAction('confirm');
     expect(sent).toEqual(['confirm']);
+    // P12-R12: `pause` and `resume` are actions too.
+    target.__GAME_TEST__?.sendAction('pause');
+    target.__GAME_TEST__?.sendAction('resume');
+    expect(sent).toEqual(['confirm', 'pause', 'resume']);
     // P11-R08: `bomb` sets a bomb off, as the bomb key would.
     target.__GAME_TEST__?.sendAction('bomb');
-    expect([sent, bombs]).toEqual([['confirm'], 1]);
+    expect([sent, bombs]).toEqual([['confirm', 'pause', 'resume'], 1]);
     expect(() => target.__GAME_TEST__?.sendAction('fly' as MenuAction)).toThrow(TypeError);
     target.__GAME_TEST__?.step(3);
     target.__GAME_TEST__?.step(2, false);

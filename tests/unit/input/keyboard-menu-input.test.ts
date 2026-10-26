@@ -13,13 +13,13 @@ function keyboard(): KeyboardMenuInput {
 }
 
 describe('KeyboardMenuInput', () => {
-  it('P01-R09: maps arrows, Enter/Space and Esc/Backspace to menu actions', () => {
+  it('P01-R09, P12-R01: maps arrows, Enter/Space, Esc (cancel), Backspace (back) and P (pause)', () => {
     const input = keyboard();
     for (const code of ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) {
       input.keyDown(key(code));
       input.keyUp({ code });
     }
-    for (const code of ['Enter', 'Space', 'Escape', 'Backspace']) input.keyDown(key(code));
+    for (const code of ['Enter', 'Space', 'Escape', 'Backspace', 'KeyP']) input.keyDown(key(code));
     expect(input.update(0)).toEqual([
       'up',
       'down',
@@ -27,8 +27,9 @@ describe('KeyboardMenuInput', () => {
       'right',
       'confirm',
       'confirm',
+      'cancel',
       'back',
-      'back',
+      'pause',
     ]);
   });
 
