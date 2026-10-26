@@ -26,11 +26,11 @@ describe('BossBar', () => {
     expect(bar.root.hidden).toBe(false);
     expect($('.boss-name')?.textContent).toBe('Reef Warden');
     expect($('.boss-rank')?.textContent).toBe('Mini boss');
-    expect($('.boss-fill')?.style.width).toBe('50%');
+    expect($('.boss-fill')?.style.height).toBe('50%');
     const notches = [...parent.querySelectorAll<HTMLElement>('.boss-notch')];
-    expect(notches.map((n) => n.style.left)).toEqual(['25%', '50%']);
+    expect(notches.map((n) => n.style.bottom)).toEqual(['25%', '50%']);
     bar.update({ ...FRAME, share: 0.4 });
-    expect($('.boss-fill')?.style.width).toBe('40%');
+    expect($('.boss-fill')?.style.height).toBe('40%');
     expect(parent.querySelectorAll('.boss-notch')).toHaveLength(2);
     bar.update(undefined);
     expect(bar.root.hidden).toBe(true);

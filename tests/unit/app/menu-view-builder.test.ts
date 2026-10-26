@@ -10,6 +10,7 @@ const CTX: MenuViewContext = {
   commit: 'abc1234',
   cardsWidthPercent: 90,
   progress: 0.5,
+  volumeSteps: 10,
 };
 
 const STATE: MenuState = {
@@ -24,6 +25,9 @@ const STATE: MenuState = {
   choice: 0,
   attempt: 0,
   resume: null,
+  paused: false,
+  leaving: false,
+  volumes: { music: 6, sfx: 8 },
 };
 
 describe('buildMenuView', () => {
@@ -35,13 +39,15 @@ describe('buildMenuView', () => {
     });
   });
 
-  it('P01-R04, ENG-83: the title view has the game title, high score, Start, hint and version', () => {
+  it('P01-R04, ENG-83, P12-R04: the title view has the game title, high score, Start, Settings, hint and version', () => {
     expect(buildMenuView(STATE, CTX)).toEqual({
       kind: 'title',
       title: 'Sample Game',
       highScoreLabel: 'Best',
       highScore: 12345,
       start: 'Go',
+      settings: 'Options',
+      selected: 0,
       hint: 'Press go',
       version: '1.2.3',
       commit: 'abc1234',
@@ -71,7 +77,7 @@ describe('buildMenuView', () => {
     });
   });
 
-  it('P06-R02: the game screen shows the level played and the touch fire button', () => {
+  it('P06-R02, P12-R01: the game screen shows the level played and the touch fire and pause buttons', () => {
     const state: MenuState = {
       ...STATE,
       screen: 'game',
@@ -82,9 +88,54 @@ describe('buildMenuView', () => {
       kind: 'game',
       level: 'LC',
       fire: 'Pew',
+      pause: 'II',
       complete: null,
+      paused: null,
       selected: 0,
     });
+  });
+
+  it('P12-R02: the pause menu shows Resume, Settings and Main menu, then the question before leaving', () => {
+    const paused: MenuState = {
+      ...STATE,
+      screen: 'pause',
+      chosenLevelId: 'c',
+      paused: true,
+      selection: 2,
+    };
+    expect(buildMenuView(paused, CTX)).toMatchObject({
+      kind: 'game',
+      level: 'LC',
+      selected: 2,
+      paused: {
+        heading: 'Pause',
+        entries: ['Go on', 'Options', 'Quit'],
+        hint: 'P',
+        question: null,
+      },
+    });
+    const leaving: MenuState = { ...paused, leaving: true, choice: 1 };
+    expect(buildMenuView(leaving, CTX)).toMatchObject({
+      selected: 1,
+      paused: { question: { text: 'Quit?', choices: ['Nope', 'Yep'], selected: 1 } },
+    });
+  });
+
+  it('P12-R04: the settings view has a slider per volume, dimming the level when opened from the pause menu', () => {
+    const settings: MenuState = { ...STATE, screen: 'settings', selection: 1 };
+    expect(buildMenuView(settings, CTX)).toEqual({
+      kind: 'settings',
+      heading: 'Options',
+      hint: 'Set',
+      back: 'Back',
+      selected: 1,
+      sliders: [
+        { label: 'Tunes', value: 6, max: 10 },
+        { label: 'Effects', value: 8, max: 10 },
+      ],
+      overLevel: false,
+    });
+    expect(buildMenuView({ ...settings, paused: true }, CTX)).toMatchObject({ overLevel: true });
   });
 
   it('P06-R03: after the level, the overlay shows the level and the destroyed / spawned counts', () => {

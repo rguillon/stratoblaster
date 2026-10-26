@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MenuController, type MenuDisplay } from '../../../src/app/menu-controller';
-import type { MenuState } from '../../../src/app/menu-flow';
-import type { MenuAction } from '../../../src/input/menu-action';
+import type { MenuFeedback, MenuState } from '../../../src/app/menu-flow';
+import type { MenuAction, MenuCommand } from '../../../src/input/menu-action';
 import { MemoryStorage } from '../../../src/platform/key-value-storage';
 import type { MenuView } from '../../../src/ui/menu-view';
 import { SAMPLE_GAME } from '../../fixtures/sample-game';
@@ -24,6 +24,7 @@ function setup(storage = new MemoryStorage()) {
   const display = new RecordingDisplay();
   const pending: MenuAction[] = [];
   const changes: MenuState[] = [];
+  const feedback: [MenuCommand, MenuFeedback][] = [];
   const controller = new MenuController(SAMPLE_GAME, {
     display,
     input: { update: () => pending.splice(0) },
@@ -33,6 +34,7 @@ function setup(storage = new MemoryStorage()) {
     version: '0.1.0',
     commit: 'abc1234',
     onChange: (state) => changes.push(state),
+    onFeedback: (command, result) => feedback.push([command, result]),
   });
   const press = (...actions: MenuAction[]): void => {
     for (const action of actions) {
@@ -41,7 +43,7 @@ function setup(storage = new MemoryStorage()) {
       controller.tick(1);
     }
   };
-  return { controller, display, storage, changes, press };
+  return { controller, display, storage, changes, press, feedback };
 }
 
 describe('MenuController', () => {
@@ -185,5 +187,33 @@ describe('MenuController', () => {
     controller.tick(0);
     expect(display.views).toHaveLength(shown);
     expect(changes).toHaveLength(notified);
+  });
+
+  it('P12-R04: reads the saved volumes, and saves them on every change', () => {
+    const storage = new MemoryStorage();
+    storage.set('sample_music_volume', '4');
+    storage.set('sample_sfx_volume', 'banana');
+    const { controller, press } = setup(storage);
+    controller.finishLoading();
+    controller.tick(1);
+    expect(controller.flow.state.volumes).toEqual({ music: 4, sfx: 8 });
+    press('down', 'confirm', 'right', 'down', 'left');
+    expect(controller.flow.state.volumes).toEqual({ music: 5, sfx: 7 });
+    expect(storage.get('sample_music_volume')).toBe('5');
+    expect(storage.get('sample_sfx_volume')).toBe('7');
+  });
+
+  it('P12-R03, P12-R09: pause() pauses the level being played and reports it; each command reports what it did', () => {
+    const { controller, display, feedback, press } = setup();
+    controller.finishLoading();
+    controller.tick(1);
+    expect(controller.pause()).toBe(false);
+    press('down');
+    expect(feedback.at(-1)).toEqual(['down', 'moved']);
+    controller.playDirect('brick', 'c');
+    expect(controller.pause()).toBe(true);
+    expect(feedback.at(-1)).toEqual(['pause', 'paused']);
+    expect(display.last).toMatchObject({ kind: 'game', paused: { question: null } });
+    expect(controller.flow.state).toMatchObject({ screen: 'pause', paused: true });
   });
 });

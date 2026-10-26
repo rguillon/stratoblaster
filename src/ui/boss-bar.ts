@@ -15,9 +15,11 @@ const percent = (share: number): string =>
   `${String(Math.round(Math.min(1, Math.max(0, share)) * 1000) / 10)}%`;
 
 /**
- * The boss health bar (P07-R02), at the top of the playfield under the player's HUD: the boss's
- * name and kind, and a bar of the health of its core and parts together, with a notch at the end
- * of each part's share. Hidden while no boss is fought; the page is touched only on changes.
+ * The boss health bar (P07-R02), a slim gauge up the left edge of the playfield under the
+ * player's HUD, clear of the boss (reviewer, 2026-10-26): the boss's kind and name written along
+ * it, and the health of its core and parts together filling it from the bottom, with a notch at
+ * the end of each part's share. Hidden while no boss is fought; the page is touched only on
+ * changes.
  */
 export class BossBar {
   readonly root: HTMLElement;
@@ -55,7 +57,7 @@ export class BossBar {
     if (!frame) return;
     this.#rank.textContent = frame.rank;
     this.#name.textContent = frame.name;
-    this.#fill.style.width = percent(frame.share);
+    this.#fill.style.height = percent(frame.share);
     this.#setNotches(frame.notches);
   }
 
@@ -66,7 +68,7 @@ export class BossBar {
     this.#notches.replaceChildren(
       ...notches.map((at) => {
         const notch = element(this.doc, 'div', 'boss-notch');
-        notch.style.left = percent(at);
+        notch.style.bottom = percent(at);
         return notch;
       }),
     );

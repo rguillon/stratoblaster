@@ -54,6 +54,9 @@ async function tiltStick(page: Page, x: number, y: number, expected?: Partial<Te
 
 const A = 0;
 const B = 1;
+const SELECT = 8;
+const START = 9;
+const DPAD_DOWN = 13;
 const DPAD_RIGHT = 15;
 
 test('P01-R10: the whole flow with the gamepad only (stick, D-pad, A and B)', async ({ page }) => {
@@ -67,5 +70,19 @@ test('P01-R10: the whole flow with the gamepad only (stick, D-pad, A and B)', as
   await pressButton(page, B, { screen: 'ship-select', selectedId: 'light' });
   await pressButton(page, A, { screen: 'level-select' });
   await pressButton(page, A, { screen: 'game', chosenLevelId: '1-1' });
-  await pressButton(page, B, { screen: 'title' });
+  // P12-R01, P12-R02: B does nothing in a level; Start and Select pause; B resumes; the level is
+  // left from the pause menu.
+  await setPad(page, { button: [B, true] });
+  await step(page, 3);
+  await setPad(page, { button: [B, false] });
+  await step(page);
+  expect((await gameState(page)).screen).toBe('game');
+  await pressButton(page, START, { screen: 'pause', paused: true });
+  await pressButton(page, B, { screen: 'game', paused: false });
+  await pressButton(page, SELECT, { screen: 'pause', selectedId: 'resume' });
+  await pressButton(page, DPAD_DOWN, { selectedId: 'settings' });
+  await pressButton(page, DPAD_DOWN, { selectedId: 'main-menu' });
+  await pressButton(page, A, { leaving: true, choice: 0 });
+  await pressButton(page, DPAD_RIGHT, { choice: 1 });
+  await pressButton(page, A, { screen: 'title' });
 });

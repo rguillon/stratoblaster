@@ -335,6 +335,58 @@ render/scenery/  TerrainChunks ◀──────────┘   PropField 
   (its projectiles, beam segments and impacts). `render/node-pool.ts` reuses nodes;
   `render/shot-playfield.ts` draws the grid, stream guides and target markers.
 
+## Pause, settings and audio (phase 12)
+
+```
+Esc / P / Start / Select / ❚❚ ─▶ MenuAction cancel | pause ─▶ MenuFlow: game ⇄ pause ─▶ settings
+page hidden, gamepad lost ─────▶ MenuController.pause()        (PauseMenu, SettingsMenu)
+MenuState.paused ─▶ GameSession.paused: the level is kept, GamePlay.frame is not called
+MenuState.volumes ─▶ saved-settings (cookies) and GameAudio.setVolumes
+
+             GameAudio (app/) ──── reads MenuState, LevelRun after each step (onStep)
+              │      │      └─ LevelCues (audio/): state diffs ─▶ SoundCue ─▶ SfxPlayer ─▶ VoicePool
+              │      └─ MusicPlayer: Sequencer (lookahead) ─▶ synth playVoice ─▶ TrackMixer
+              │                    (per instrument: track fader, echo send, reverb send)
+              ▼
+AudioOutput: AudioContext (made on the first gesture) ─▶ music bus (+ reverb), sfx bus ─▶ limiter
+```
+
+- Pause (P12-R01..R03): `core/menu/menu-screen.ts` has `pause` and `settings` screens. Escape is
+  the `cancel` action (Back in the menus, pause in a level); P, gamepad Start and Select and the
+  touch button send `pause`; `back` (Backspace, B) does nothing in a level. While
+  `MenuState.paused` (the pause menu, or the settings opened from it), `start-app`'s frame
+  ticker draws the level without calling `GamePlay.frame`: its fixed-step clock gets no time, so
+  nothing moves and nothing catches up. `GameSession` clears the controls on pause and resume and
+  ignores the debug keys. `visibilitychange` (page hidden) and `GameControls.takeDisconnect()`
+  (the gamepad last used to play is gone from its slot) call `MenuController.pause()`.
+- Settings (P12-R04): `app/settings-menu.ts` (two sliders, 0 … `volume_steps`), saved in cookies
+  `<gameId>_music_volume` / `<gameId>_sfx_volume` (`app/saved-settings.ts`, invalid values read
+  as the defaults of `config/audio.ts`). The title has a Settings entry; Back returns to where the
+  screen was opened from.
+- Audio engine (`src/audio/`, game-agnostic): `audio-types.ts` (tone layers, instruments, sound
+  designs, tracks of notes), `synth.ts` (oscillators / noise through filters and envelopes),
+  `sequencer.ts` (pure note scheduling with loops and seeking), `music-player.ts` (cross-fades,
+  fades, jingles, pause at position), `track-mixer.ts` (per-instrument inputs with sends to a
+  tempo-synced echo and to the music reverb, faded with the track), `voice-pool.ts` and `sfx-player.ts` (16 voices, priorities,
+  30 ms retrigger, panning), `audio-output.ts` (lazy context, buses, limiter, `(step / 10)²`
+  volume curve, silent fallback), `level-cues.ts` (cues from the core state: audio never changes
+  it). The context is only created during a user gesture (`navigator.userActivation`), so no
+  autoplay warning shows; a 25 ms timer (`AppOptions.every`) and every frame schedule 100 ms ahead.
+- `app/game-audio.ts` decides the music: the menu theme on the menu screens (kept playing across
+  them), the level's track from its start, the boss track while a boss bar shows (back to the
+  level track after the mini boss, kept after the final boss), a fade and a jingle when the level
+  ends, nothing new while paused; and plays the menu sounds from `MenuController`'s feedback.
+- Game content (`src/game/view/audio/`, `GameView.audio: AudioBindings`): `music-styles.ts` (one
+  style per world, all darksynth-leaning synthwave (D-099, D-101): outrun drive, cold bells, toms, heaviest;
+  tempo range, scales, chords, instruments, drum and bass feels),
+  `compose-track.ts` / `compose-parts.ts` / `compose-melody.ts` (a seeded, pure composer: the
+  level id's hash picks key, tempo, sections, motifs), `compose-boss.ts` (the boss tracks'
+  driving drums with snare rolls, rolling octave bass, 3-3-2 chord stabs and tense progressions;
+  the risers into each section, D-100), `instruments.ts`, `jingles.ts`,
+  `sound-designs.ts` (one sound per cue; the gun a minigun burst per volley, D-101), `game-audio.ts` (tracks made once, mix levels).
+- Test API (P12-R12): `paused`, `leaving`, `volumes`, `music` (track id), `sounds` (last names),
+  `audio` (context state); `sendAction('pause' | 'resume')`.
+
 ## Menus (phase 01)
 
 ```
@@ -379,7 +431,8 @@ into a whole number of 1/60 s simulation steps plus an interpolation factor `alp
 After a long stall, the step count is capped and excess time is dropped. The menus then read the frame's
 input, update the overlay, and animate and render the menu scenes (frame time capped at 0.1 s). On the game
 screen, the level being played (`app/game-play.ts`) runs its own fixed-step clock instead, and only its
-scene is rendered.
+scene is rendered; while it is paused (phase 12) its clock is not advanced at all, and its last frame is
+drawn again. The audio is scheduled on the audio clock, every frame and on a 25 ms timer.
 
 ## Making a new game from this template
 
@@ -411,4 +464,8 @@ scene is rendered.
    Declare the bombs in `GameDefinition.bombs` (`BombRules`), the life and bomb bonus chances and
    their points at the most in `GameDefinition.bonuses`, and each boss's `partPoints` in its
    `BossStats`; optionally, a bomb renderer in `GameDefinition.view.bombs`.
+   Optionally, give the game music and sounds in `GameDefinition.view.audio` (`AudioBindings`):
+   a track per `MusicRequest` (menu, level, boss, jingle), the instruments its notes name, one
+   `SoundDesign` per `SoundCue` (see `audio/level-cues.ts`), the large explosion radius and the
+   mix. Add the new menu texts (settings, pause menu) to `GameDefinition.texts`.
 5. Run `make check`.

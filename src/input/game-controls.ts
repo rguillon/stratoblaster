@@ -75,6 +75,9 @@ export class GameControls {
   /** Drag distance not flown yet, in logical pixels. */
   #dragX = 0;
   #dragY = 0;
+  /** Slot of the gamepad last used to play, if any (P12-R03). */
+  #padInUse: number | undefined;
+  #padLost = false;
 
   constructor(
     private readonly bindings: GameControlBindings,
@@ -119,6 +122,16 @@ export class GameControls {
   }
 
   /**
+   * Whether the gamepad that was in use has been disconnected since the last call (P12-R03: the
+   * level pauses). Reported once.
+   */
+  takeDisconnect(): boolean {
+    const lost = this.#padLost;
+    this.#padLost = false;
+    return lost;
+  }
+
+  /**
    * The controls for a step of `dt` seconds of a ship flying at `maxSpeed`: the strongest of
    * the keys, the gamepads and the drag, which is used up as the ship covers it.
    */
@@ -144,16 +157,26 @@ export class GameControls {
   #readGamepads(): PadInput {
     let best: PadInput = { x: 0, y: 0, fire: false, bomb: false };
     let [fire, bomb] = [false, false];
-    for (const gamepad of this.gamepads()) {
-      if (!gamepad) continue;
+    const gamepads = this.gamepads();
+    this.#checkPadInUse(gamepads);
+    gamepads.forEach((gamepad, slot) => {
+      if (!gamepad) return;
       const pad = padInput(gamepad, this.bindings);
+      if (pad.fire || pad.bomb || pad.x !== 0 || pad.y !== 0) this.#padInUse = slot;
       fire ||= pad.fire;
       bomb ||= pad.bomb;
       if (Math.hypot(pad.x, pad.y) > Math.hypot(best.x, best.y)) best = pad;
-    }
+    });
     const length = Math.hypot(best.x, best.y);
     const scale = length > 1 ? 1 / length : 1;
     return { x: best.x * scale, y: best.y * scale, fire, bomb };
+  }
+
+  /** The gamepad in use is gone from its slot: it was disconnected (P12-R03). */
+  #checkPadInUse(gamepads: readonly (GamepadLike | null)[]): void {
+    if (this.#padInUse === undefined || gamepads[this.#padInUse]) return;
+    this.#padInUse = undefined;
+    this.#padLost = true;
   }
 }
 

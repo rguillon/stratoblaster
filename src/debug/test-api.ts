@@ -92,14 +92,27 @@ export interface GameTestState {
   readonly loadingProgress: readonly number[];
   /** The level being played, on the game screen (P06). */
   readonly game: GameTestLevelState | null;
+  /** Whether the level being played is paused (P12-R01, P12-R12). */
+  readonly paused: boolean;
+  /** Whether the pause menu asks `Leave the level?` (P12-R02). */
+  readonly leaving: boolean;
+  /** The music and sound effect volumes, in slider steps (P12-R04). */
+  readonly volumes: { readonly music: number; readonly sfx: number };
+  /** Id of the music playing (`menu`, `level-2-3`, `boss-2`), or null (P12-R12). */
+  readonly music: string | null;
+  /** Names of the last sound effects played, most recent last (P12-R12). */
+  readonly sounds: readonly string[];
+  /** The audio context's state: `none` before the first user gesture (P12-R05). */
+  readonly audio: string;
 }
 
 /** The e2e test API (ENG-52), installed as `window.__GAME_TEST__` in e2e builds only. */
 export interface GameTestApi {
   getState(): GameTestState;
   /**
-   * Sends a menu action as an input device would (P01-R12), or `bomb`: sets a bomb off in the
-   * level being played, as the bomb key would (P11-R08).
+   * Sends a menu action as an input device would (P01-R12; `pause` and `resume` pause and resume
+   * a level, P12-R12), or `bomb`: sets a bomb off in the level being played, as the bomb key
+   * would (P11-R08).
    */
   sendAction(action: MenuAction | 'bomb'): void;
   /**
@@ -112,9 +125,20 @@ export interface GameTestApi {
   advance(seconds: number): void;
 }
 
+/** What the test API reads of the audio (P12-R12). */
+export interface GameTestAudio {
+  readonly music: string | null;
+  readonly sounds: readonly string[];
+  readonly context: string;
+}
+
 /** What the test API reads from and sends to the running app. */
 export interface GameTestHooks {
-  readonly state: () => Omit<GameTestState, 'loadingProgress' | 'game' | 'highScore'>;
+  readonly state: () => Omit<
+    GameTestState,
+    'loadingProgress' | 'game' | 'highScore' | 'music' | 'sounds' | 'audio'
+  >;
+  readonly audio: () => GameTestAudio;
   readonly highScore: () => number;
   readonly loadingProgress: () => readonly number[];
   readonly game: () => GameTestLevelState | undefined;
@@ -128,12 +152,18 @@ export interface GameTestHooks {
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
 export function installTestApi(target: object, hooks: GameTestHooks): GameTestApi {
   const api: GameTestApi = {
-    getState: () => ({
-      ...hooks.state(),
-      highScore: hooks.highScore(),
-      loadingProgress: [...hooks.loadingProgress()],
-      game: hooks.game() ?? null,
-    }),
+    getState: () => {
+      const { music, sounds, context } = hooks.audio();
+      return {
+        ...hooks.state(),
+        music,
+        sounds: [...sounds],
+        audio: context,
+        highScore: hooks.highScore(),
+        loadingProgress: [...hooks.loadingProgress()],
+        game: hooks.game() ?? null,
+      };
+    },
     sendAction: (action) => {
       if (action === 'bomb') {
         hooks.bomb();

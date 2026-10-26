@@ -1,59 +1,34 @@
 import { canTransition, type MenuScreen } from '../core/menu/menu-screen';
 import { moveCursor, type GridShape } from '../core/menu/grid-cursor';
-import { firstUnlockedLevel, type LevelCatalog } from '../core/content/level-catalog';
+import { firstUnlockedLevel } from '../core/content/level-catalog';
 import type { LevelCheckpoint, LevelResult } from '../core/systems/level-run';
-import { isMenuDirection, type MenuCommand, type MenuDirection } from '../input/menu-action';
+import {
+  isMenuDirection,
+  type MenuAction,
+  type MenuCommand,
+  type MenuDirection,
+} from '../input/menu-action';
+import { PauseMenu, type PauseOutcome } from './pause-menu';
+import { SettingsMenu, type Volumes } from './settings-menu';
+import type { MenuFeedback, MenuFlowOptions, MenuState } from './menu-state';
 
-/** What a command did, so the presentation can give feedback. */
-export type MenuFeedback = 'none' | 'moved' | 'screen' | 'locked';
+export type { MenuFeedback, MenuFlowOptions, MenuState } from './menu-state';
 
-/** Snapshot of the menu flow. */
-export interface MenuState {
-  readonly screen: MenuScreen;
-  /** Index of the selected entry on the current screen. */
-  readonly selection: number;
-  /** Id of the selected entry (`start`, a ship id, a level id), or null. */
-  readonly selectedId: string | null;
-  /** Ship highlighted on the ship select screen. */
-  readonly highlightedShipId: string;
-  readonly chosenShipId: string | null;
-  readonly chosenLevelId: string | null;
-  /** True during a screen transition, while input is ignored (P01-R15). */
-  readonly transitioning: boolean;
-  /** The result of the level just completed, while its overlay shows (P06-R03). */
-  readonly levelResult: LevelResult | null;
-  /**
-   * The choice selected on a "Game over" panel with a checkpoint (P07-R08): 0 Continue, 1 level
-   * select.
-   */
-  readonly choice: number;
-  /** Goes up each time a level starts, or starts again from a checkpoint. */
-  readonly attempt: number;
-  /** Where the level being played started again from (P07-R08), or null from its start. */
-  readonly resume: LevelCheckpoint | null;
-}
+/** The title screen's entries (P01-R04, P12-R04). */
+const TITLE_ENTRIES = ['start', 'settings'] as const;
 
-/** Data and settings of a {@link MenuFlow}. */
-export interface MenuFlowOptions {
-  /** Ship ids in display order; the first one is the default selection. */
-  readonly shipIds: readonly string[];
-  readonly levels: LevelCatalog;
-  /** Ship to highlight first instead of the default one (P01-R14). Ignored if unknown. */
-  readonly initialShipId?: string | null;
-  /** Input is ignored for this long after each screen change (P01-R15). */
-  readonly transitionSeconds: number;
-  /** …and for this long after the "Level complete" overlay shows (P06-R03). */
-  readonly resultDelaySeconds?: number;
-}
-
-const TITLE_ENTRY = 'start';
+/** Volumes and slider size when the options give none. */
+const DEFAULT_VOLUMES: Volumes = { music: 10, sfx: 10 };
+const DEFAULT_VOLUME_STEPS = 10;
 
 /**
  * Screen state machine of the menus (P01-R01): Title → Ship select → Level select → Game,
- * with Back on each screen. Pure: no Babylon, no DOM, time comes from {@link update}.
+ * with Back on each screen; Game ⇄ Pause, and Settings from the title or the pause menu
+ * (P12-R02, P12-R04). Pure: no Babylon, no DOM, time comes from {@link update}.
  */
 export class MenuFlow {
   #screen: MenuScreen = 'loading';
+  #titleIndex = 0;
   #shipIndex: number;
   #levelIndex: number;
   #chosenShipId: string | null = null;
@@ -64,12 +39,20 @@ export class MenuFlow {
   #choice = 0;
   #attempt = 0;
   #resume: LevelCheckpoint | null = null;
+  readonly #pause = new PauseMenu();
+  readonly #settings: SettingsMenu;
+  /** The screen the settings screen was opened from, which Back goes back to. */
+  #settingsFrom: MenuScreen = 'title';
 
   constructor(private readonly options: MenuFlowOptions) {
     if (options.shipIds.length === 0) throw new Error('The menu needs at least one ship');
     if (options.levels.levels.length === 0) throw new Error('The menu needs at least one level');
     this.#shipIndex = Math.max(0, options.shipIds.indexOf(options.initialShipId ?? ''));
     this.#levelIndex = firstUnlockedLevel(options.levels);
+    this.#settings = new SettingsMenu(
+      options.volumes ?? DEFAULT_VOLUMES,
+      options.volumeSteps ?? DEFAULT_VOLUME_STEPS,
+    );
   }
 
   /** Increases on every state change, so views know when to refresh. */
@@ -88,10 +71,20 @@ export class MenuFlow {
       chosenLevelId: this.#chosenLevelId,
       transitioning: this.#transitionLeft > 0,
       levelResult: this.#result,
-      choice: this.#choice,
+      choice: this.#screen === 'pause' ? this.#pause.choice : this.#choice,
       attempt: this.#attempt,
       resume: this.#resume,
+      paused: this.paused,
+      leaving: this.#screen === 'pause' && this.#pause.leaving,
+      volumes: this.#settings.volumes,
     };
+  }
+
+  /** Whether the level being played is paused (P12-R01). */
+  get paused(): boolean {
+    return (
+      this.#screen === 'pause' || (this.#screen === 'settings' && this.#settingsFrom === 'pause')
+    );
   }
 
   /** Goes to `screen` if the flow allows it (P01-R01). Returns false and changes nothing otherwise. */
@@ -99,11 +92,23 @@ export class MenuFlow {
     if (!canTransition(this.#screen, screen)) return false;
     if (screen === 'level-select') this.#levelIndex = firstUnlockedLevel(this.options.levels);
     if (screen === 'game') this.#startLevel(null);
+    if (screen === 'settings') this.#openSettings();
+    if (screen === 'pause' && this.#screen === 'game') this.#pause.open();
+    if (screen === 'title' && this.#screen !== 'settings') this.#titleIndex = 0;
     this.#result = null;
     this.#screen = screen;
     this.#transitionLeft = this.options.transitionSeconds;
     this.#changed();
     return true;
+  }
+
+  /**
+   * Pauses the level being played (P12-R01, P12-R03): the pause menu shows. Ignored on other
+   * screens, and on the "Level complete" or "Game over" panel.
+   */
+  pause(): boolean {
+    if (this.#screen !== 'game' || this.#result) return false;
+    return this.goTo('pause');
   }
 
   /** Called when loading completes: shows the title screen. */
@@ -154,10 +159,68 @@ export class MenuFlow {
   /** Applies a menu command to the current screen. Ignored while loading or in a transition. */
   dispatch(command: MenuCommand): MenuFeedback {
     if (this.#screen === 'loading' || this.#transitionLeft > 0) return 'none';
-    if (typeof command !== 'string') return this.#select(command.select);
+    if (typeof command === 'string') return this.#action(command);
+    if ('select' in command) return this.#select(command.select);
+    return this.#adjusted(this.#settings.set(command.set, command.value));
+  }
+
+  #action(command: MenuAction): MenuFeedback {
+    if (this.#screen === 'pause') return this.#onPause(command);
+    if (this.#screen === 'settings') return this.#onSettings(command);
+    if (this.#screen === 'game' && !this.#result) return this.#inLevel(command);
     if (isMenuDirection(command)) return this.#move(command);
-    if (command === 'back') return this.#back();
-    return this.#confirm();
+    if (command === 'back' || command === 'cancel') return this.#back();
+    return command === 'confirm' ? this.#confirm() : 'none';
+  }
+
+  /**
+   * In a level (P12-R01): Escape, P, Start and Select pause it; Back and the other actions do
+   * nothing.
+   */
+  #inLevel(command: MenuAction): MenuFeedback {
+    if (command !== 'pause' && command !== 'cancel') return 'none';
+    return this.pause() ? 'paused' : 'none';
+  }
+
+  /** The pause menu (P12-R02): Back, Escape, P and Start resume the level. */
+  #onPause(command: MenuAction): MenuFeedback {
+    if (isMenuDirection(command)) return this.#pauseOutcome(this.#pause.move(command));
+    const confirm = command === 'confirm';
+    return this.#pauseOutcome(confirm ? this.#pause.confirm() : this.#pause.back());
+  }
+
+  #pauseOutcome(outcome: PauseOutcome): MenuFeedback {
+    if (outcome === 'resume') return this.#resumeLevel();
+    if (outcome === 'settings' || outcome === 'leave') {
+      return this.goTo(outcome === 'leave' ? 'title' : 'settings') ? 'screen' : 'none';
+    }
+    if (outcome !== 'none') this.#changed();
+    return outcome === 'ask' ? 'screen' : outcome;
+  }
+
+  /** Back to the level, as it was: not a new attempt (P12-R01). */
+  #resumeLevel(): MenuFeedback {
+    this.#screen = 'game';
+    this.#transitionLeft = this.options.transitionSeconds;
+    this.#changed();
+    return 'resumed';
+  }
+
+  /** The settings screen (P12-R04): Back returns to where it was opened from. */
+  #onSettings(command: MenuAction): MenuFeedback {
+    if (isMenuDirection(command)) return this.#adjusted(this.#settings.move(command));
+    if (command !== 'back' && command !== 'cancel') return 'none';
+    return this.goTo(this.#settingsFrom) ? 'screen' : 'none';
+  }
+
+  #adjusted(feedback: 'none' | 'moved' | 'adjusted'): MenuFeedback {
+    if (feedback !== 'none') this.#changed();
+    return feedback;
+  }
+
+  #openSettings(): void {
+    this.#settingsFrom = this.#screen;
+    this.#settings.open();
   }
 
   #changed(): void {
@@ -180,15 +243,24 @@ export class MenuFlow {
   }
 
   #selection(): number {
-    if (this.#screen === 'ship-select') return this.#shipIndex;
-    if (this.#screen === 'level-select') return this.#levelIndex;
-    return 0;
+    const selections: Partial<Record<MenuScreen, number>> = {
+      title: this.#titleIndex,
+      'ship-select': this.#shipIndex,
+      'level-select': this.#levelIndex,
+      pause: this.#pause.selection,
+      settings: this.#settings.selection,
+    };
+    return selections[this.#screen] ?? 0;
   }
 
   #selectedId(selection: number): string | null {
     switch (this.#screen) {
       case 'title':
-        return TITLE_ENTRY;
+        return TITLE_ENTRIES[selection] ?? null;
+      case 'pause':
+        return this.#pause.selectedId;
+      case 'settings':
+        return this.#settings.selectedId;
       case 'ship-select':
         return this.#shipId(selection);
       case 'level-select':
@@ -199,6 +271,7 @@ export class MenuFlow {
   }
 
   #grid(): GridShape | undefined {
+    if (this.#screen === 'title') return { count: TITLE_ENTRIES.length, columns: 1, wrap: false };
     if (this.#screen === 'ship-select') {
       const count = this.options.shipIds.length;
       return { count, columns: count, wrap: true };
@@ -212,7 +285,8 @@ export class MenuFlow {
 
   #setSelection(index: number): MenuFeedback {
     if (index === this.#selection()) return 'none';
-    if (this.#screen === 'ship-select') this.#shipIndex = index;
+    if (this.#screen === 'title') this.#titleIndex = index;
+    else if (this.#screen === 'ship-select') this.#shipIndex = index;
     else this.#levelIndex = index;
     this.#changed();
     return 'moved';
@@ -226,6 +300,8 @@ export class MenuFlow {
   }
 
   #select(index: number): MenuFeedback {
+    if (this.#screen === 'pause') return this.#pauseOutcome(this.#pause.select(index));
+    if (this.#screen === 'settings') return this.#adjusted(this.#settings.select(index));
     if (this.#choosing) return index === 0 || index === 1 ? this.#choose(index) : 'none';
     const grid = this.#grid();
     if (!grid || !Number.isInteger(index) || index < 0 || index >= grid.count) return 'none';
@@ -236,7 +312,6 @@ export class MenuFlow {
     const previous: Partial<Record<MenuScreen, MenuScreen>> = {
       'ship-select': 'title',
       'level-select': 'ship-select',
-      game: 'title',
     };
     const target = previous[this.#screen];
     return target && this.goTo(target) ? 'screen' : 'none';
@@ -245,7 +320,7 @@ export class MenuFlow {
   #confirm(): MenuFeedback {
     switch (this.#screen) {
       case 'title':
-        return this.goTo('ship-select') ? 'screen' : 'none';
+        return this.goTo(this.#titleIndex === 0 ? 'ship-select' : 'settings') ? 'screen' : 'none';
       case 'ship-select':
         this.#chosenShipId = this.#shipId(this.#shipIndex);
         return this.goTo('level-select') ? 'screen' : 'none';

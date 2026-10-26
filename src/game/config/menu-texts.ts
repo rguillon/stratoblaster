@@ -40,4 +40,16 @@ export const MENU_TEXTS: MenuTexts = {
   unsupported:
     'Sorry! This game cannot run in this browser or on this device. ' +
     'Please try a recent version of Chrome, Edge, Firefox or Safari on a computer.',
+  settings: 'Settings',
+  settingsHint: '▲ ▼ to pick · ◀ ▶ or tap to set',
+  musicVolume: 'Music',
+  sfxVolume: 'Sound effects',
+  pauseButton: '❚❚',
+  paused: 'Paused',
+  resume: 'Resume',
+  mainMenu: 'Main menu',
+  pauseHint: 'Esc / P to resume',
+  leaveLevel: 'Leave the level?',
+  no: 'No',
+  yes: 'Yes',
 };

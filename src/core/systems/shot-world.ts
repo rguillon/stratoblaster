@@ -15,6 +15,8 @@ export interface ShotImpact {
   readonly x: number;
   readonly y: number;
   readonly blastRadius: number;
+  /** True when the hit did no damage, e.g. on a shielded core (a sound of its own, P12-R09). */
+  readonly blocked?: boolean;
 }
 
 export interface ShotWorldOptions {
@@ -48,10 +50,14 @@ export class ShotWorld {
   totalDamage = 0;
   /** Whether the weapon fires; shots already in flight keep flying either way. */
   firing = true;
+  /** Volleys started since the world was created (a volley: every stream of the level once). */
+  volleys = 0;
   #weapon: WeaponDefinition;
   #level = 1;
-  /** Seconds until the next volley. */
+  /** Seconds until the next shot. */
   #cooldown = 0;
+  /** The stream that fires next. */
+  #next = 0;
 
   constructor(
     readonly options: ShotWorldOptions,
@@ -73,6 +79,7 @@ export class ShotWorld {
     this.#weapon = weapon;
     this.#level = Math.min(Math.max(1, Math.round(level)), weapon.levels.length);
     this.#cooldown = 0;
+    this.#next = 0;
   }
 
   /** Number of projectiles in flight. */
@@ -90,6 +97,7 @@ export class ShotWorld {
     if (!this.firing) {
       this.beam = [];
       this.#cooldown = 0;
+      this.#next = 0;
     } else if (weapon.kind === 'projectile') {
       this.beam = [];
       this.#fire(weapon, dt);
@@ -104,16 +112,22 @@ export class ShotWorld {
     if (shot.alive && this.#isOut(shot)) shot.alive = false;
   }
 
+  /**
+   * Fires the level's streams one after the other, in their listed order, evenly spaced over the
+   * volley (reviewer, 2026-10-26): each stream still fires `shotsPerSecond` times a second.
+   */
   #fire(weapon: ProjectileWeaponDefinition, dt: number): void {
     this.#cooldown -= dt;
     const streams = weapon.levels[this.#level - 1] ?? [];
+    const count = Math.max(1, streams.length);
     while (this.#cooldown <= 0) {
-      // A volley due during this step has been flying for the rest of the step.
+      // A shot due during this step has been flying for the rest of the step.
       const flown = -this.#cooldown;
-      for (const stream of streams) {
-        this.#move(this.#spawn(weapon, stream.offsetX, stream.angleDeg * DEG), flown);
-      }
-      this.#cooldown += 1 / weapon.shotsPerSecond;
+      const stream = streams[this.#next % count];
+      if (this.#next % count === 0) this.volleys++;
+      if (stream) this.#move(this.#spawn(weapon, stream.offsetX, stream.angleDeg * DEG), flown);
+      this.#next = (this.#next + 1) % count;
+      this.#cooldown += 1 / (weapon.shotsPerSecond * count);
     }
   }
 
@@ -127,7 +141,7 @@ export class ShotWorld {
     shot.weapon = weapon;
     const fromCenter = weapon.launchPoint === 'center';
     shot.x = (fromCenter ? this.centerX : this.muzzleX) + offsetX;
-    shot.y = fromCenter ? this.centerY : this.muzzleY;
+    shot.y = (fromCenter ? this.centerY : this.muzzleY) - (weapon.launchBack ?? 0);
     shot.heading = heading;
     shot.speed = weapon.launchSpeed;
     shot.age = 0;
@@ -159,22 +173,29 @@ export class ShotWorld {
     if (!hit) return;
     const { weapon } = shot;
     shot.alive = false;
+    const dealt = this.#damage(shot, hit);
+    this.totalDamage += dealt;
     this.impacts.push({
       weaponId: weapon.id,
       x: shot.x,
       y: shot.y,
       blastRadius: weapon.blastRadius,
+      blocked: dealt <= 0,
     });
-    if (weapon.blastRadius <= 0) {
-      this.totalDamage += damageTarget(hit, weapon.damage);
-      return;
-    }
+  }
+
+  /** Deals the shot's damage to `hit`, or to everything in its blast. Returns the damage dealt. */
+  #damage(shot: Projectile, hit: ShotTarget): number {
+    const { weapon } = shot;
+    if (weapon.blastRadius <= 0) return damageTarget(hit, weapon.damage);
+    let dealt = 0;
     for (const target of this.targets) {
       const reach = weapon.blastRadius + target.radius;
       if (isAlive(target) && (target.x - shot.x) ** 2 + (target.y - shot.y) ** 2 <= reach ** 2) {
-        this.totalDamage += damageTarget(target, weapon.damage);
+        dealt += damageTarget(target, weapon.damage);
       }
     }
+    return dealt;
   }
 
   #isOut(shot: Projectile): boolean {

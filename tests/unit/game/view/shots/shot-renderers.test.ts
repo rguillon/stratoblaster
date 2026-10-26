@@ -48,7 +48,9 @@ describe('player shot renderers', () => {
     const blobs = s.meshes.filter((m) => /^bullet-\d+$/.test(m.name) && m.isEnabled());
     expect(blobs).toHaveLength(2);
     const [a, b] = blobs;
-    expect(a?.position.asArray()).toEqual([10, 20, 0]);
+    // Under the ship, which is drawn over the tracers leaving from inside it.
+    expect(a?.position.asArray()).toEqual([10, 20, SHOT_LOOK.bullet.depth]);
+    expect(SHOT_LOOK.bullet.depth).toBeGreaterThan(0);
     expect(b?.rotation.z).toBeCloseTo(-0.3);
     // Just fired (age 0): a short streak, growing to its full length from the muzzle.
     expect(b?.scaling.y).toBeCloseTo(SHOT_LOOK.bullet.width);

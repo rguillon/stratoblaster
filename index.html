@@ -6,19 +6,30 @@
     <title>Stratoblaster</title>
     <style>
       /*
-       * Cyberpunk HUD look (GD-60, P01-R13, review feedback D-013, D-014): acid yellow, cyan
-       * and alarm red on black, chamfered panels, monospace readouts. The selected
-       * entry is a solid yellow block, with its markers. System fonts only: works offline.
+       * Darksynth look (GD-60, P01-R13; reviewer 2026-10-26, D-103): hot magenta, violet and
+       * blood red neon on black-violet, a chrome logo, sunset gradients, soft neon glows,
+       * chamfered panels. The selected entry is a solid magenta block, with its markers.
+       * System fonts only: works offline.
        */
       :root {
-        --yellow: #fcee0a;
-        --cyan: #00f0ff;
-        --red: #ff2a55;
-        --black: #050508;
-        --paper: #f2f2f7;
-        --dim: #8a8aa0;
-        --glass: rgba(6, 8, 18, 0.78);
-        --letterbox: #020204;
+        --hot: #ff2bd6;
+        --violet: #b15cff;
+        --red: #ff2244;
+        --black: #07020c;
+        --paper: #f7eefc;
+        --dim: #8e7a9e;
+        --glass: rgba(14, 3, 22, 0.8);
+        --letterbox: #030006;
+        --glow: rgba(255, 43, 214, 0.55);
+        --sunset: linear-gradient(90deg, #7a1cff, #ff1fa6 55%, #ff5a3c 85%, #ffb347);
+        --chrome: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #ffd8f6 40%,
+          #5a1a78 50%,
+          #ff6fd2 60%,
+          #ffe3f6 100%
+        );
         --font:
           'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
           sans-serif;
@@ -90,35 +101,29 @@
         text-align: center;
         text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
       }
-      /* HUD frame: yellow and cyan corner brackets around the screen. */
+      /* Screen frame: a thin neon line, magenta at the top fading to violet, softly glowing. */
       .menu-screen::before {
         content: '';
         position: absolute;
         inset: 6px;
         pointer-events: none;
-        --size: 22px;
-        background:
-          linear-gradient(var(--yellow), var(--yellow)) top left / var(--size) 3px no-repeat,
-          linear-gradient(var(--yellow), var(--yellow)) top left / 3px var(--size) no-repeat,
-          linear-gradient(var(--cyan), var(--cyan)) top right / var(--size) 2px no-repeat,
-          linear-gradient(var(--cyan), var(--cyan)) top right / 2px var(--size) no-repeat,
-          linear-gradient(var(--cyan), var(--cyan)) bottom left / var(--size) 2px no-repeat,
-          linear-gradient(var(--cyan), var(--cyan)) bottom left / 2px var(--size) no-repeat,
-          linear-gradient(var(--yellow), var(--yellow)) bottom right / var(--size) 3px no-repeat,
-          linear-gradient(var(--yellow), var(--yellow)) bottom right / 3px var(--size) no-repeat;
+        border: 1px solid transparent;
+        border-image: linear-gradient(180deg, var(--hot), rgba(122, 28, 255, 0.35)) 1;
+        box-shadow:
+          0 0 14px rgba(255, 43, 214, 0.25),
+          inset 0 0 18px rgba(122, 28, 255, 0.2);
       }
-      /* Decorative status tag in the top right corner. */
+      /* The sunset line along the bottom of every screen. */
       .menu-screen::after {
-        content: 'NET//LINK OK';
+        content: '';
         position: absolute;
-        top: 16px;
-        right: 22px;
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        height: 3px;
         pointer-events: none;
-        font-family: var(--font-tech);
-        font-size: 10px;
-        letter-spacing: 0.15em;
-        color: var(--cyan);
-        opacity: 0.75;
+        background: var(--sunset);
+        box-shadow: 0 0 12px var(--glow);
       }
       .menu-enter {
         animation-name: menu-fade;
@@ -136,13 +141,13 @@
         box-sizing: border-box;
         min-width: 44px;
         min-height: 44px;
-        border: 2px solid rgba(0, 240, 255, 0.45);
+        border: 2px solid rgba(177, 92, 255, 0.45);
         background:
-          linear-gradient(-45deg, var(--cyan) 0 7px, transparent 7px) bottom right / 16px 16px
+          linear-gradient(-45deg, var(--violet) 0 7px, transparent 7px) bottom right / 16px 16px
             no-repeat,
           var(--glass);
       }
-      /* Selected entry: solid yellow block with black text, plus its markers, so it shows
+      /* Selected entry: solid magenta block with black text, plus its markers, so it shows
          without colour too (much lighter than the dark panels in greyscale). */
       .menu-entry.selected {
         border-color: var(--paper);
@@ -151,8 +156,8 @@
         background:
           linear-gradient(-45deg, var(--black) 0 7px, transparent 7px) bottom right / 16px 16px
             no-repeat,
-          var(--yellow);
-        box-shadow: 0 0 18px rgba(252, 238, 10, 0.55);
+          linear-gradient(180deg, #ff6ad5, var(--hot) 55%, #e0148f);
+        box-shadow: 0 0 22px var(--glow);
       }
       .menu-heading {
         margin: 68px 0 0;
@@ -162,30 +167,20 @@
         text-transform: uppercase;
         color: var(--paper);
         text-shadow:
-          -2px 0 var(--red),
-          2px 0 var(--cyan),
+          0 0 6px var(--hot),
+          0 0 18px rgba(122, 28, 255, 0.9),
           0 0 4px rgba(0, 0, 0, 0.9);
       }
-      .menu-heading::before {
-        content: '// ';
-        color: var(--yellow);
-      }
       .menu-hint {
-        font-family: var(--font-tech);
         font-size: 15px;
-        color: var(--cyan);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #e2b8ff;
+        animation: hint-pulse 2.4s ease-in-out infinite;
       }
-      .menu-hint::before {
-        content: '> ';
-        color: var(--yellow);
-      }
-      .menu-hint::after {
-        content: '_';
-        animation: cursor-blink 1s steps(1) infinite;
-      }
-      @keyframes cursor-blink {
+      @keyframes hint-pulse {
         50% {
-          opacity: 0;
+          opacity: 0.55;
         }
       }
       .menu-back {
@@ -200,10 +195,10 @@
         justify-content: center;
         box-sizing: border-box;
         padding: 0 12px;
-        border: 2px solid var(--cyan);
+        border: 2px solid var(--violet);
         clip-path: var(--chamfer);
         background: var(--glass);
-        color: var(--cyan);
+        color: var(--violet);
         font-size: 18px;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -224,30 +219,33 @@
         }
       }
 
+      /* A neon grid floor under a crimson horizon glow. */
       .loading-screen {
         justify-content: center;
         gap: 16px;
         background:
-          linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 32px 32px,
-          linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(90deg, rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          radial-gradient(ellipse at 50% 100%, rgba(255, 34, 68, 0.35), transparent 60%),
           var(--black);
       }
       .loading-text {
         font-size: 30px;
         font-weight: 800;
+        font-style: italic;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: var(--yellow);
+        color: var(--paper);
         text-shadow:
-          -2px 0 var(--red),
-          2px 0 var(--cyan);
+          0 0 8px var(--hot),
+          0 0 20px rgba(122, 28, 255, 0.9);
       }
       .loading-bar {
         width: 320px;
         height: 24px;
         box-sizing: border-box;
         padding: 3px;
-        border: 2px solid var(--yellow);
+        border: 2px solid var(--hot);
         overflow: hidden;
         background: var(--glass);
       }
@@ -256,12 +254,12 @@
         height: 100%;
         background:
           repeating-linear-gradient(90deg, transparent 0 10px, var(--black) 10px 13px),
-          var(--yellow);
+          var(--sunset);
       }
       .loading-percent {
         font-family: var(--font-tech);
         font-size: 18px;
-        color: var(--cyan);
+        color: var(--violet);
       }
 
       .title-score-label {
@@ -269,20 +267,19 @@
         font-size: 15px;
         letter-spacing: 0.3em;
         text-transform: uppercase;
-        color: var(--cyan);
+        color: var(--violet);
       }
       .title-high-score {
         font-family: var(--font-tech);
         font-size: 32px;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        color: var(--yellow);
+        color: var(--hot);
       }
-      /* Logo: black letters on a chamfered yellow plate, with a red / cyan glitch split. */
+      /* 80s chrome letters (a horizon line across the middle) in a slow neon glow. */
       .title-name {
         margin: 40px 0 0;
         padding: 6px 24px;
-        clip-path: var(--chamfer);
         /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen; shrinkToFit()
            lowers it when the system falls back to a wider font. */
         font-size: 46px;
@@ -291,26 +288,17 @@
         letter-spacing: 0.05em;
         white-space: nowrap;
         text-transform: uppercase;
-        color: var(--black);
-        background:
-          repeating-linear-gradient(rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 4px), var(--yellow);
-        text-shadow:
-          -3px 0 var(--red),
-          3px 0 var(--cyan);
-        animation: title-glitch 4s steps(1) infinite;
+        color: transparent;
+        text-shadow: none;
+        background: var(--chrome);
+        -webkit-background-clip: text;
+        background-clip: text;
+        filter: drop-shadow(0 0 6px var(--hot)) drop-shadow(0 0 16px rgba(122, 28, 255, 0.8));
+        animation: title-glow 3.5s ease-in-out infinite;
       }
-      @keyframes title-glitch {
-        92% {
-          text-shadow:
-            -7px 0 var(--red),
-            6px 0 var(--cyan);
-          translate: 3px 0;
-        }
-        94% {
-          text-shadow:
-            -3px 0 var(--red),
-            3px 0 var(--cyan);
-          translate: 0 0;
+      @keyframes title-glow {
+        50% {
+          filter: drop-shadow(0 0 10px var(--hot)) drop-shadow(0 0 26px rgba(255, 34, 68, 0.8));
         }
       }
       .title-start {
@@ -328,6 +316,25 @@
       .title-start.selected::after {
         content: ' ◀';
       }
+      /* Settings entry under Start (P12-R04). */
+      .title-settings {
+        margin-top: 18px;
+        padding: 8px 22px;
+        clip-path: var(--chamfer);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .title-start:not(.selected) {
+        font-size: 28px;
+      }
+      .title-settings.selected::before {
+        content: '▶ ';
+      }
+      .title-settings.selected::after {
+        content: ' ◀';
+      }
       .title-hint {
         margin-top: auto;
         margin-bottom: 28px;
@@ -339,7 +346,7 @@
         font-family: var(--font-tech);
         font-size: 11px;
         text-align: right;
-        color: var(--cyan);
+        color: var(--violet);
         opacity: 0.85;
       }
 
@@ -399,17 +406,17 @@
         font-weight: 700;
       }
       .level-cell:not(.locked) {
-        border-color: var(--cyan);
+        border-color: var(--violet);
       }
       .level-cell.selected:not(.locked) {
         border-color: var(--paper);
       }
-      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the yellow block. */
+      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the magenta block. */
       .level-cell.locked {
         color: var(--dim);
-        border-color: rgba(138, 138, 160, 0.3);
+        border-color: rgba(142, 122, 158, 0.3);
         background:
-          repeating-linear-gradient(-45deg, rgba(138, 138, 160, 0.1) 0 6px, transparent 6px 12px),
+          repeating-linear-gradient(-45deg, rgba(142, 122, 158, 0.1) 0 6px, transparent 6px 12px),
           rgba(14, 14, 22, 0.85);
         text-shadow: none;
         box-shadow: none;
@@ -453,11 +460,11 @@
         font-size: 14px;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: var(--yellow);
+        color: var(--hot);
         background: var(--glass);
         pointer-events: none;
       }
-      /* The decorative status tag would sit on the weapon readout. */
+      /* No sunset line over the playfield. */
       .game-screen::after {
         content: none;
       }
@@ -482,19 +489,19 @@
         clip-path: var(--chamfer);
       }
       .hud-ship {
-        color: var(--yellow);
+        color: var(--hot);
         text-transform: uppercase;
       }
       .hud-bar {
         height: 8px;
         margin: 4px 0 3px;
-        border: 1px solid var(--cyan);
+        border: 1px solid var(--violet);
         background: rgba(0, 0, 0, 0.5);
       }
       .hud-bar-fill {
         height: 100%;
-        background: var(--cyan);
-        box-shadow: 0 0 6px var(--cyan);
+        background: linear-gradient(90deg, #7a1cff, var(--hot));
+        box-shadow: 0 0 6px var(--hot);
       }
       .hud-bar-fill.low {
         background: var(--red);
@@ -507,7 +514,7 @@
         align-items: baseline;
       }
       .hud-lives {
-        color: var(--cyan);
+        color: var(--violet);
         white-space: nowrap;
       }
       .hud-health-text {
@@ -518,7 +525,7 @@
         top: 14px;
         right: 18px;
         padding: 4px 8px;
-        color: var(--yellow);
+        color: var(--hot);
         background: var(--glass);
       }
       .hud-progress {
@@ -529,11 +536,11 @@
         height: 4px;
         transform: translateX(-50%);
         background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(252, 238, 10, 0.6);
+        border: 1px solid rgba(255, 43, 214, 0.6);
       }
       .hud-progress-fill {
         height: 100%;
-        background: var(--yellow);
+        background: var(--sunset);
       }
       .hud-destroyed {
         position: absolute;
@@ -555,12 +562,13 @@
         font-size: 18px;
         font-weight: 700;
         line-height: 20px;
-        color: var(--yellow);
+        color: var(--paper);
+        text-shadow: 0 0 6px var(--hot);
       }
       .hud-high-score {
         font-size: 10px;
         line-height: 12px;
-        color: var(--cyan);
+        color: var(--violet);
       }
       /* Bombs left (P11-R05), one icon each, under the health bar. */
       .hud-bombs {
@@ -601,16 +609,17 @@
           display: flex;
         }
       }
-      /* Boss health bar (P07-R02): centred under the HUD, a notch at the end of each part. */
+      /* Boss health bar (P07-R02): a slim gauge up the left edge, under the player's HUD, so it
+         never hides the boss (reviewer, 2026-10-26); kind and name written along it, bottom to
+         top; a notch at the end of each part's share. */
       .boss-bar {
         position: absolute;
-        top: 72px;
-        left: 50%;
-        width: 290px;
-        transform: translateX(-50%);
-        padding: 4px 10px 7px;
-        background: var(--glass);
-        clip-path: var(--chamfer);
+        top: 96px;
+        left: 14px;
+        height: 300px;
+        display: flex;
+        gap: 4px;
+        align-items: stretch;
       }
       .boss-bar[hidden] {
         display: none;
@@ -619,34 +628,41 @@
         display: flex;
         gap: 8px;
         align-items: baseline;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
         text-transform: uppercase;
+        white-space: nowrap;
+        font-size: 12px;
       }
       .boss-rank {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--red);
         letter-spacing: 0.15em;
       }
       .boss-name {
-        color: var(--yellow);
+        color: var(--hot);
+        letter-spacing: 0.08em;
       }
       .boss-track {
         position: relative;
-        height: 9px;
-        margin-top: 4px;
+        width: 8px;
         border: 1px solid var(--red);
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(0, 0, 0, 0.45);
       }
       .boss-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--red), var(--yellow));
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(0deg, #7a1cff, var(--red) 60%, #ff5a3c);
         box-shadow: 0 0 6px var(--red);
       }
       .boss-notch {
         position: absolute;
-        top: -2px;
-        bottom: -2px;
-        width: 2px;
-        margin-left: -1px;
+        left: -3px;
+        right: -3px;
+        height: 2px;
+        margin-bottom: -1px;
         background: var(--paper);
         opacity: 0.8;
       }
@@ -667,8 +683,8 @@
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--black);
-        background: rgba(252, 238, 10, 0.55);
-        border: 3px solid var(--yellow);
+        background: rgba(255, 43, 214, 0.55);
+        border: 3px solid var(--hot);
         text-shadow: none;
       }
       @media (pointer: coarse) {
@@ -676,6 +692,149 @@
           display: flex;
         }
       }
+      /* Pause button (P12-R01): top right, under the weapon readout, clear of the HUD; at least
+         44 CSS px even on a 390 px wide phone (scale 0.81). */
+      .game-pause {
+        position: absolute;
+        z-index: 5;
+        top: 46px;
+        right: 18px;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 2px solid var(--violet);
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        color: var(--violet);
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: none;
+      }
+      /* Pause menu (P12-R02): the last frame dimmed (pause_dim, 50 % black) under a panel. */
+      .pause-dim {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .pause-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        min-width: 280px;
+        padding: 24px 32px;
+        clip-path: var(--chamfer);
+        border: 2px solid var(--hot);
+        background: var(--glass);
+      }
+      .pause-heading {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-shadow:
+          0 0 6px var(--hot),
+          0 0 18px rgba(122, 28, 255, 0.9);
+      }
+      .pause-entry,
+      .pause-choice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 56px;
+        padding: 6px 20px;
+        clip-path: var(--chamfer);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .pause-entry.selected::before {
+        content: '▶ ';
+      }
+      .pause-question-text {
+        margin: 8px 0 14px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--paper);
+      }
+      .pause-choices {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+      }
+      .pause-choice {
+        min-width: 110px;
+      }
+      .pause-hint {
+        margin-top: 4px;
+      }
+
+      /* Settings screen (P12-R04): one slider per volume; over a paused level, dimmed. */
+      .settings-screen.over-level {
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .settings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        width: 100%;
+        margin: 56px 0 28px;
+      }
+      .settings-slider {
+        display: grid;
+        grid-template-columns: 130px 1fr 34px;
+        gap: 10px;
+        align-items: center;
+        min-height: 64px;
+        padding: 4px 14px;
+        clip-path: var(--chamfer);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-align: left;
+        text-transform: uppercase;
+      }
+      .slider-bar {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+        height: 56px;
+        touch-action: none;
+      }
+      .slider-cell {
+        flex: 1;
+        height: 22px;
+        background: rgba(177, 92, 255, 0.18);
+        border: 1px solid rgba(177, 92, 255, 0.45);
+      }
+      .slider-cell.on {
+        background: var(--violet);
+        box-shadow: 0 0 6px var(--violet);
+      }
+      .settings-slider.selected .slider-cell {
+        background: rgba(0, 0, 0, 0.15);
+        border-color: rgba(0, 0, 0, 0.5);
+        box-shadow: none;
+      }
+      .settings-slider.selected .slider-cell.on {
+        background: var(--black);
+      }
+      .slider-value {
+        font-family: var(--font-tech);
+        font-size: 22px;
+        text-align: right;
+      }
+
       /* "Level complete" overlay (P06-R03). */
       .level-complete {
         display: flex;
@@ -684,7 +843,7 @@
         gap: 12px;
         padding: 24px 32px;
         clip-path: var(--chamfer);
-        border: 2px solid var(--yellow);
+        border: 2px solid var(--hot);
         background: var(--glass);
         color: var(--paper);
       }
@@ -697,13 +856,13 @@
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: var(--yellow);
+        color: var(--hot);
       }
       .level-complete-level {
         font-family: var(--font-tech);
         font-size: 40px;
         font-weight: 700;
-        color: var(--cyan);
+        color: var(--violet);
       }
       .level-complete-enemies {
         font-size: 22px;
@@ -712,13 +871,13 @@
       .level-complete-score {
         font-family: var(--font-tech);
         font-size: 24px;
-        color: var(--yellow);
+        color: var(--hot);
       }
       .level-complete-high-score {
         font-size: 20px;
         font-weight: 700;
         text-transform: uppercase;
-        color: var(--cyan);
+        color: var(--violet);
       }
       .level-complete.game-over {
         border-color: var(--red);
@@ -740,9 +899,9 @@
         color: var(--paper);
       }
       .level-complete-choice.selected {
-        border-color: var(--yellow);
+        border-color: var(--hot);
         color: var(--black);
-        background: var(--yellow);
+        background: var(--hot);
       }
 
       /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */
@@ -752,18 +911,18 @@
         right: 8px;
         z-index: 10;
         padding: 6px 10px;
-        background: rgba(6, 8, 18, 0.8);
-        border: 1px solid rgba(252, 238, 10, 0.5);
+        background: rgba(14, 3, 22, 0.85);
+        border: 1px solid rgba(255, 43, 214, 0.5);
         font-family: var(--font-tech);
         font-size: 12px;
         line-height: 1.5;
-        color: var(--yellow);
+        color: var(--hot);
         pointer-events: none;
       }
 
       @media (prefers-reduced-motion: reduce) {
         .title-name,
-        .menu-hint::after {
+        .menu-hint {
           animation: none;
         }
       }
