@@ -37,6 +37,9 @@ export const PROP_COLORS = {
   cactus: [0.27, 0.4, 0.24],
   dryLeaf: [0.46, 0.43, 0.25],
   dryLeafDark: [0.33, 0.3, 0.18],
+  /** Farms of World 1's green land (reviewer, 2026-10-26): pale panelled walls, dark roofs. */
+  farmWall: [0.66, 0.64, 0.6],
+  farmRoof: [0.2, 0.21, 0.25],
   /**
    * World 2 (phase 8): snow with a blue-grey shade on its lower faces, ice, snowy pines and pale
    * frosted wood, painted metal of the harbours and mines, insulated panels.

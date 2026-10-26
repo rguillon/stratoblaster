@@ -90,14 +90,14 @@ describe('prop models', () => {
       'broadleaf-tree',
       'bush',
     ]);
-    // 17 hand-made models, 9 more for World 1 (phase 6), 5 families of 16 buildings made of
+    // 17 hand-made models, 12 more for World 1 (phase 6, farms added in review), 5 families of 16 buildings made of
     // parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3 families of 8; for
     // World 3 (phase 9), 29 hand-made models and 2 families of 8; for World 4 (phase 10), 31
     // hand-made models.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 80 + 6 + 22 + 24 + 29 + 16 + 31);
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 31);
   });
 
-  it('P06-R06: desert homes, outposts and plants, as light as the Level Zero props (D-031)', () => {
+  it('P06-R06: desert homes, outposts, farms and plants, as light as the Level Zero props (D-031)', () => {
     for (const id of Object.values(WORLD_1_PROP_IDS)) {
       expect(PROP_MODELS[id], id).toBeDefined();
       expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
@@ -108,8 +108,12 @@ describe('prop models', () => {
     expect(desert).toEqual(expect.arrayContaining(['desert-home', 'windcatcher-home']));
     const outposts = WORLD_1_PROPS.groups.find((g) => g.id === 'outposts')?.kinds.map((k) => k.id);
     expect(outposts).toEqual(expect.arrayContaining(['water-tower', 'solar-farm', 'antenna-mast']));
+    const farms = WORLD_1_PROPS.groups.find((g) => g.id === 'farms')?.kinds.map((k) => k.id);
+    expect(farms).toEqual(
+      expect.arrayContaining(['farmhouse', 'greenhouse', 'grain-silos', 'wind-turbine']),
+    );
     expect(WORLD_1_PROPS.trees.map((t) => t.id)).toEqual(
-      expect.arrayContaining(['dry-bush', 'palm-tree', 'cactus', 'dead-tree']),
+      expect.arrayContaining(['dry-bush', 'palm-tree', 'cactus', 'dead-tree', 'broadleaf-tree']),
     );
   });
 

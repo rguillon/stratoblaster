@@ -19,10 +19,16 @@ export const WORLD_1_PROP_IDS = {
   palm: 'palm-tree',
   dryBush: 'dry-bush',
   cactus: 'cactus',
+  /** The farms of the green land (reviewer, 2026-10-26). */
+  farmhouse: 'farmhouse',
+  greenhouse: 'greenhouse',
+  grainSilos: 'grain-silos',
 } as const;
 
 const P = PROP_IDS;
 const W = WORLD_1_PROP_IDS;
+/** World 2's wind turbine (`WORLD_2_PROP_IDS.windTurbine`; World 2's props import these). */
+const WIND_TURBINE = 'wind-turbine';
 
 /** Building groups of World 1; each section lists the ones that stand on it. */
 export const WORLD_1_GROUPS = {
@@ -30,6 +36,10 @@ export const WORLD_1_GROUPS = {
   fishing: 'fishing',
   /** Coastal villages: huts and white homes. */
   coastHomes: 'coast-homes',
+  /** Villages of the green land: futuristic homes among the farms (reviewer, 2026-10-26). */
+  villages: 'villages',
+  /** Farms of the green land: farmhouses, greenhouses, grain silos, wind turbines. */
+  farms: 'farms',
   /** Futuristic desert homes (P06-R06). */
   desertHomes: 'desert-homes',
   /** Desert outposts: water towers, solar farms, antennas. */
@@ -94,6 +104,26 @@ export const WORLD_1_PROPS: PropRules = {
       ],
     },
     {
+      id: G.villages,
+      weight: 3,
+      kinds: [
+        building(P.cubeHome, 3, 7.5),
+        building(P.domeHome, 2, 7),
+        building(W.farmhouse, 1, 8.5),
+        building(W.greenhouse, 0.6, 9.5),
+      ],
+    },
+    {
+      id: G.farms,
+      weight: 2,
+      kinds: [
+        building(W.farmhouse, 3, 8.5),
+        building(W.greenhouse, 2, 9.5),
+        building(W.grainSilos, 2, 9.5),
+        building(WIND_TURBINE, 1, 6),
+      ],
+    },
+    {
       id: G.desertHomes,
       weight: 3,
       kinds: [
@@ -154,6 +184,8 @@ export const WORLD_1_PROPS: PropRules = {
     tree(W.dryBush, 3, 2.5),
     tree(W.cactus, 2, 2),
     tree(P.bush, 1, 3.5),
+    tree(P.broadleaf, 2, 4.5),
+    tree(P.conifer, 1, 3.5),
     { id: W.beachHut, weight: 0.3, footprint: 4.5, scale: LONE_SCALE },
     { id: P.antenna, weight: 0.1, footprint: 5, scale: LONE_SCALE },
   ],
@@ -166,8 +198,13 @@ export const WORLD_1_PROPS: PropRules = {
 
 /** Plants of the sections, and the lone huts of the islands. */
 export const PLANTS = {
-  islands: [W.palm, W.dryBush, W.beachHut, P.antenna],
-  coast: [W.palm, W.dryBush, P.deadTree],
+  islands: [W.palm, P.bush, W.beachHut, P.antenna],
+  coast: [W.palm, P.bush, P.broadleaf],
+  /** The green land (reviewer, 2026-10-26): meadows, then woods and groves. */
+  meadow: [P.broadleaf, P.bush],
+  woods: [P.broadleaf, P.conifer, P.bush],
+  /** Where the grass turns dry and yellow. */
+  dryGrass: [W.dryBush, P.broadleaf, P.forkedTree],
   dry: [W.dryBush, P.deadTree, P.forkedTree],
   desert: [W.cactus, W.dryBush, P.deadTree],
   oasis: [W.palm, P.bush, W.dryBush],
