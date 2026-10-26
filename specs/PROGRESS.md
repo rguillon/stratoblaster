@@ -14,7 +14,7 @@
 | 7 | `phases/phase-07-bosses.md` | ✅ Validated | `phase-07` | 99.34% lines | 2026-10-25 |
 | 8 | `phases/phase-08-world-2.md` | ✅ Validated | `phase-08` | 99.26% lines | 2026-10-25 |
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
-| 10 | `phases/phase-10-world-4.md` | 🟡 Awaiting review | `phase-10` | | |
+| 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -121,3 +121,4 @@
 - 2026-10-26 — 10 — Implemented World 4 (Volcanic Lands): lava, falling ash and embers, smoke and steam plumes, contrast shots, 31 props, ten bosses; awaiting review.
 - 2026-10-26 — 10 — Review fix: World 5 removed from the specs and the code, the level grid is 4 × 5 (D-089); still awaiting review.
 - 2026-10-26 — 10 — Review fix: ten new enemy kinds (five veteran, five elite, some with moving parts; P05-R13 to P05-R24), in the World 3 and World 4 waves (D-090); still awaiting review.
+- 2026-10-26 — 10 — Validated: full gate green (1384 unit tests, 99.42% lines, 87% branches, 88 e2e); squash-merged into `main`, tagged `v0.10.0`.

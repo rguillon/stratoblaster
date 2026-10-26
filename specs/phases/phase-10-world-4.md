@@ -321,6 +321,12 @@ None. The spec was implemented as written; the interpretations are listed under 
 ```
 Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 88 / 88 passed (6.0 min); after small refactors for the pre-commit lint (file and function sizes), again typecheck ✔ · build ✔ · 88 / 88 e2e (6.4 min)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
+Review fixes (World 5 dropped; ten new enemy kinds): typecheck ✔ · build ✔ · 88 / 88 e2e each time (6.1 and 6.9 min).
+
+Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1384 unit tests ✔ · coverage 98.66 % statements, 87 % branches, 98.74 % functions, 99.42 % lines ✔ (phase 9: 98.61 / 87.25 / 98.65 / 99.35) · build ✔ · 88 e2e ✔ (5.8 min).
+Fixed on the way (first run: 3 of 1384 unit tests failed, all earlier tests not updated for this phase):
+- game-definition.test.ts: the registered levels now include World 4, and the enemy kinds are 21 (P05-R24).
+- scenery-levels.test.ts (P04-R04): Level Zero's prop check now leaves out the World 4 props, which only World 4 uses, as it does for Worlds 1–3.
 ```
 
 ### How to test manually
