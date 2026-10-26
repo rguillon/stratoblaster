@@ -125,3 +125,5 @@
 - 2026-10-26 — 10 — Validated: full gate green (1384 unit tests, 99.42% lines, 87% branches, 88 e2e); squash-merged into `main`, tagged `v0.10.0`.
 - 2026-10-26 — 11 — Spec drafted by the agent at the reviewer's request and approved (D-091). Implemented score, high score, checkpoint score, bombs (R / Left Shift / X / LB / touch), life and bomb bonuses (D-092); light verification green (typecheck, build, 95 e2e); awaiting review.
 - 2026-10-26 — 11 — Validated: full gate green (1432 unit tests, 99.42% lines, 87.18% branches, 95 e2e); squash-merged into `main`, tagged `v0.11.0`.
+- 2026-10-26 — — — e2e tests step the game instead of waiting on real time: no render loop in e2e builds, `step(frames)` on every test API (D-093); typecheck, build and e2e green (101 e2e, 3.6 min instead of 7.5); full gate not run.
+- 2026-10-26 — — — Faster git hooks: incremental `tsc`, Prettier and ESLint caches, `import-x` rules that TypeScript covers turned off (D-094); `pre-push` about 18.5 s warm instead of 65 s, `pre-commit` about 8 s instead of 11 on 27 files; `make lint`, `make typecheck` and `make check-fast` green.

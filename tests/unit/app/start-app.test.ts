@@ -108,6 +108,14 @@ describe('startApp', () => {
       app.command('confirm');
     }
 
+    it('ENG-52: step runs the level being played, one step a frame', async () => {
+      app = startApp(new NullEngine(), SAMPLE_GAME, options());
+      await toGame(app);
+      const start = app.game()?.state.time ?? 0;
+      app.step(120);
+      expect(app.game()?.state.time).toBeCloseTo(start + 2, 5);
+    });
+
     it('P06-R02: confirming a level starts it; the keys fly and fire the ship', async () => {
       const keyboardTarget = new EventTarget();
       const overlay = document.createElement('div');
@@ -209,6 +217,25 @@ describe('startApp', () => {
       expect(app.game()?.state.player.x).toBe(x);
       expect(statsParent.querySelector('.stats-tile')).not.toBeNull();
     });
+  });
+
+  it('ENG-52: step runs whole simulation frames, then renders once', async () => {
+    const engine = new NullEngine();
+    app = startApp(engine, SAMPLE_GAME, options());
+    await app.loaded;
+    const backdrop = SAMPLE_BACKDROPS.at(-1);
+    const renders = { count: 0 };
+    app.scenes()?.backdropScene.onAfterRenderObservable.add(() => renders.count++);
+    app.step(3);
+    expect(backdrop?.elapsed).toBeCloseTo(3 / 60);
+    expect(renders.count).toBe(1);
+    app.step(3, false);
+    expect(backdrop?.elapsed).toBeCloseTo(6 / 60);
+    expect(renders.count).toBe(1);
+    // The fade-in is over after enough frames: the title takes input.
+    app.step(30);
+    app.command('confirm');
+    expect(app.menu.flow.state.screen).toBe('ship-select');
   });
 
   it('runs in the render loop when asked', async () => {

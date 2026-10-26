@@ -38,7 +38,10 @@ export interface AppOptions {
   readonly gamepads?: GamepadSource;
   /** Lets the browser paint between loading steps. */
   readonly yieldToBrowser: () => Promise<void>;
-  /** Starts Babylon's render loop. Tests leave it off and call `tick` themselves. */
+  /**
+   * Starts Babylon's render loop. Unit tests leave it off and call `tick` themselves; e2e builds
+   * leave it off and step the app through the test API (ENG-52).
+   */
   readonly renderLoop: boolean;
   /** Debug options (P06-R09); none when omitted. */
   readonly debug?: GameDebugOptions;
@@ -64,6 +67,12 @@ export interface RunningApp {
   command(command: MenuCommand): void;
   /** Runs one frame: input, menus, animations, rendering. */
   tick(dtSeconds: number): void;
+  /**
+   * Runs `frames` frames of one simulation step each, then renders once (unless `render` is
+   * false): the e2e tests' clock (ENG-52), so they never wait on frames that software WebGL draws
+   * slowly.
+   */
+  step(frames: number, render?: boolean): void;
   dispose(): void;
 }
 
@@ -140,31 +149,60 @@ function createMenu(
   return { menu, overlay };
 }
 
-/**
- * One frame: clock, menu input and state, then the level being played, or the menu scenes'
- * animations, and rendering.
- */
+/** One frame, split in two: the simulation, then the drawing of what it left. */
+interface FrameTicker {
+  /** Clock, menu input and state, then the level being played or the menu scenes' animations. */
+  readonly simulate: (dtSeconds: number) => void;
+  /** Renders the level being played, or the menu scenes once loaded. */
+  readonly render: () => void;
+}
+
 function frameTicker(
   clock: FixedStepClock,
   menu: MenuController,
   scenes: () => MenuScenes | undefined,
   session: { readonly play: GamePlay | undefined },
-): (dtSeconds: number) => void {
-  return (dtSeconds) => {
-    const dt = Math.min(Math.max(0, dtSeconds), MENU_CONFIG.maxFrameSeconds);
-    clock.advance(dt);
-    menu.tick(dt);
-    const { play } = session;
-    if (play) {
-      play.frame(dt);
-      play.view.scene.render();
-      return;
-    }
-    const loaded = scenes();
-    if (!loaded) return;
-    loaded.backdrop.update(dt);
-    loaded.stage.update(dt);
-    renderMenuScenes(loaded, menu.flow.state.screen);
+): FrameTicker {
+  return {
+    simulate: (dtSeconds) => {
+      const dt = Math.min(Math.max(0, dtSeconds), MENU_CONFIG.maxFrameSeconds);
+      clock.advance(dt);
+      menu.tick(dt);
+      const { play } = session;
+      if (play) {
+        play.frame(dt);
+        return;
+      }
+      const loaded = scenes();
+      loaded?.backdrop.update(dt);
+      loaded?.stage.update(dt);
+    },
+    render: () => {
+      const { play } = session;
+      if (play) {
+        play.view.scene.render();
+        return;
+      }
+      const loaded = scenes();
+      if (loaded) renderMenuScenes(loaded, menu.flow.state.screen);
+    },
+  };
+}
+
+/** A frame of real time (the render loop, unit tests), and whole steps (the e2e tests). */
+function clockControls(
+  clock: FixedStepClock,
+  ticker: FrameTicker,
+): Pick<RunningApp, 'tick' | 'step'> {
+  return {
+    tick: (dtSeconds) => {
+      ticker.simulate(dtSeconds);
+      ticker.render();
+    },
+    step: (frames, render = true) => {
+      for (let i = 0; i < frames; i++) ticker.simulate(clock.stepSeconds);
+      if (render) ticker.render();
+    },
   };
 }
 
@@ -243,7 +281,10 @@ export function startApp(
     startDebugLevel(menu, options.debug, shipIds);
   });
 
-  const tick = frameTicker(clock, menu, () => scenes, session);
+  const { tick, step } = clockControls(
+    clock,
+    frameTicker(clock, menu, () => scenes, session),
+  );
   if (options.renderLoop) runLoop(engine, tick);
   return {
     clock,
@@ -257,6 +298,7 @@ export function startApp(
       menu.command(c);
     },
     tick,
+    step,
     dispose: () => {
       engine.stopRenderLoop();
       stop();

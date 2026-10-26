@@ -113,6 +113,13 @@ export default defineConfig(
         { 'ts-ignore': true, 'ts-expect-error': 'allow-with-description' },
       ],
       'import-x/no-default-export': 'error',
+      // TypeScript (`make typecheck`, in every hook and gate) already reports unresolved modules
+      // and missing default, named or namespace exports: these rules only added a third of the
+      // lint time (typescript-eslint performance guide, D-094).
+      'import-x/no-unresolved': 'off',
+      'import-x/namespace': 'off',
+      'import-x/default': 'off',
+      'import-x/no-named-as-default-member': 'off',
       'import-x/no-restricted-paths': ['error', { zones: layerZones }],
       'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
       'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],

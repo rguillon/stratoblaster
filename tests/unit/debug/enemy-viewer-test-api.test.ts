@@ -18,10 +18,15 @@ const STATE: EnemyViewerTestState = {
 describe('installEnemyViewerTestApi', () => {
   it('ENG-52, P05-R11: exposes the enemies page state and steps it frame by frame', () => {
     const target: { __ENEMIES_TEST__?: EnemyViewerTestApi } = {};
-    const frames: number[] = [];
-    installEnemyViewerTestApi(target, { state: () => STATE, frame: (dt) => frames.push(dt) });
+    const calls: (number | 'render')[] = [];
+    installEnemyViewerTestApi(target, {
+      state: () => STATE,
+      frame: (dt) => calls.push(dt),
+      render: () => calls.push('render'),
+    });
     expect(target.__ENEMIES_TEST__?.getState()).toEqual(STATE);
     target.__ENEMIES_TEST__?.step(3);
-    expect(frames).toEqual([1 / 60, 1 / 60, 1 / 60]);
+    // Then it renders once (no render loop in e2e builds).
+    expect(calls).toEqual([1 / 60, 1 / 60, 1 / 60, 'render']);
   });
 });

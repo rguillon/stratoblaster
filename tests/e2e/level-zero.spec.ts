@@ -1,14 +1,17 @@
 import type { Page } from '@playwright/test';
-import { test, expect, waitForFrames } from './fixtures';
+import { test, expect } from './fixtures';
+
+/**
+ * Advances the page by `frames` frames of 1/60 s through its e2e test API, then renders once.
+ * The page has no render loop in e2e builds: nothing moves between two steps.
+ */
+async function step(page: Page, frames = 1): Promise<void> {
+  await page.evaluate((n) => {
+    (window as unknown as { __SCENERY_TEST__: { step(n: number): void } }).__SCENERY_TEST__.step(n);
+  }, frames);
+}
 
 test.describe('P04: level_zero/ page', () => {
-  // Each test software-renders a heavy scene: run them one after another in one worker, so they
-  // do not starve the other specs running in parallel (menu tests timed out under that load).
-  test.describe.configure({ mode: 'default' });
-  // Loading and rendering the level in software takes 20–30 s per test on a 4-core CI runner
-  // next to the other heavy pages (as on main): more than the 30 s default leaves.
-  test.setTimeout(90_000);
-
   test.beforeEach(async ({ page }) => {
     await page.goto('./level_zero/');
     await expect(page.locator('#game-canvas')).toBeVisible();
@@ -22,7 +25,10 @@ test.describe('P04: level_zero/ page', () => {
     await expect(page.locator('.scenery-time')).toHaveText(/^Time: 0:\d\d \/ 3:00$/);
     await expect(page.locator('.scenery-section')).toHaveText('Section: plains');
     await expect(page.locator('.scenery-props')).toHaveText(/^Props: [1-9]\d*$/);
-    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/, { timeout: 20_000 });
+    // A first frame drawn, then a second of frames: the debug tile shows them both.
+    await step(page, 1);
+    await step(page, 60);
+    await expect(page.locator('.stats-fps')).toHaveText(/^FPS: [1-9]\d*$/);
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
     // The page has no menu.
     await expect(page.locator('.menu-screen')).toHaveCount(0);
@@ -31,15 +37,18 @@ test.describe('P04: level_zero/ page', () => {
   test('P04-R06: the level scrolls, and ends after 3 minutes', async ({ page }) => {
     await page.keyboard.press('f');
     await expect(page.locator('.scenery-fast')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('.scenery-time')).not.toHaveText(/^Time: 0:00 /, { timeout: 20_000 });
+    await step(page, 60);
+    await expect(page.locator('.scenery-time')).not.toHaveText(/^Time: 0:00 /);
     await page.locator('.scenery-time-slider').fill('180');
+    await step(page);
     await expect(page.locator('.scenery-end')).toBeVisible();
     await expect(page.locator('.scenery-time')).toHaveText('Time: 3:00 / 3:00');
     await page.keyboard.press('r');
+    await step(page);
     await expect(page.locator('.scenery-end')).toBeHidden();
   });
 
-  /** Seeks to each `[time, name]` and checks the section shown, letting a few frames render. */
+  /** Seeks to each `[time, name]`, steps a frame (drawn) and checks the section shown. */
   async function visit(
     page: Page,
     sections: readonly (readonly [string, string])[],
@@ -47,8 +56,8 @@ test.describe('P04: level_zero/ page', () => {
     await page.keyboard.press('p');
     for (const [time, name] of sections) {
       await page.locator('.scenery-time-slider').fill(time);
+      await step(page);
       await expect(page.locator('.scenery-section')).toHaveText(`Section: ${name}`);
-      await waitForFrames(page, 3);
     }
   }
 
@@ -63,7 +72,7 @@ test.describe('P04: level_zero/ page', () => {
     await visit(page, [['95', 'open sea']]);
     await page.keyboard.press('s');
     await expect(page.locator('.scenery-sea')).toHaveAttribute('aria-pressed', 'false');
-    await waitForFrames(page, 3);
+    await step(page);
   });
 
   test('P04 review: the meadows and the industrial zone render', async ({ page }) => {
@@ -82,7 +91,7 @@ test.describe('P04: level_zero/ page', () => {
     await expect(layer.locator('.scenery-cloud-toggle')).toHaveAttribute('aria-pressed', 'true');
     await layer.locator('.scenery-coverage').fill('90');
     await layer.locator('.scenery-opacity').fill('40');
-    await waitForFrames(page, 3);
+    await step(page);
     await page.keyboard.press('1');
     await expect(layer.locator('.scenery-cloud-toggle')).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('.scenery-cloud-2 .scenery-cloud-toggle')).toHaveAttribute(
@@ -98,7 +107,7 @@ test.describe('P04: level_zero/ page', () => {
     await expect(page.locator('.scenery-frame')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.scenery-seed')).toHaveText('Seed: 4242');
     await page.keyboard.press('n');
+    await step(page);
     await expect(page.locator('.scenery-seed')).toHaveText('Seed: 4243');
-    await waitForFrames(page, 3);
   });
 });
