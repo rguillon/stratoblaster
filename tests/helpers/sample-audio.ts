@@ -94,7 +94,7 @@ export function run() {
   return {
     ship: { x: 240 },
     shots: {
-      projectiles: [] as { alive: boolean; x: number; weapon: { id: string } }[],
+      volleys: 0,
       beam: [] as unknown[],
       weapon: { id: 'gun' },
       level: 1,

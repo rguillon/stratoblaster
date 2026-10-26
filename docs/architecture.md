@@ -377,13 +377,13 @@ AudioOutput: AudioContext (made on the first gesture) ─▶ music bus (+ reverb
   level track after the mini boss, kept after the final boss), a fade and a jingle when the level
   ends, nothing new while paused; and plays the menu sounds from `MenuController`'s feedback.
 - Game content (`src/game/view/audio/`, `GameView.audio: AudioBindings`): `music-styles.ts` (one
-  style per world, all synthwave (D-099): outrun, dreamwave, tom-heavy synthwave, darksynth;
+  style per world, all darksynth-leaning synthwave (D-099, D-101): outrun drive, cold bells, toms, heaviest;
   tempo range, scales, chords, instruments, drum and bass feels),
   `compose-track.ts` / `compose-parts.ts` / `compose-melody.ts` (a seeded, pure composer: the
   level id's hash picks key, tempo, sections, motifs), `compose-boss.ts` (the boss tracks'
   driving drums with snare rolls, rolling octave bass, 3-3-2 chord stabs and tense progressions;
   the risers into each section, D-100), `instruments.ts`, `jingles.ts`,
-  `sound-designs.ts` (one sound per cue), `game-audio.ts` (tracks made once, mix levels).
+  `sound-designs.ts` (one sound per cue; the gun a minigun burst per volley, D-101), `game-audio.ts` (tracks made once, mix levels).
 - Test API (P12-R12): `paused`, `leaving`, `volumes`, `music` (track id), `sounds` (last names),
   `audio` (context state); `sendAction('pause' | 'resume')`.
 

@@ -1,6 +1,5 @@
 import type { LevelRun } from '../core/systems/level-run';
 import type { EnemyBullet, EnemyLaser } from '../core/systems/enemy-shots';
-import type { Projectile } from '../core/systems/projectile-motion';
 
 /**
  * The engine's sound cues (P12-R09): what happened in a level step that a game may give a sound.
@@ -34,7 +33,8 @@ interface PlayerSnapshot {
  */
 export class LevelCues {
   #started = false;
-  #shots = new Set<Projectile>();
+  /** The player's volleys counted at the last step. */
+  #volleys = 0;
   #bullets = new Set<EnemyBullet>();
   #lasers = new Map<EnemyLaser, EnemyLaser['phase']>();
   #missileId = 0;
@@ -63,14 +63,11 @@ export class LevelCues {
     return cues;
   }
 
+  /** A volley's first shot sounds it (its streams fire one after the other). */
   #playerShots(run: LevelRun, add: (cue: string, x?: number) => void): void {
-    const alive = new Set<Projectile>();
-    for (const shot of run.shots.projectiles) {
-      if (!shot.alive) continue;
-      alive.add(shot);
-      if (!this.#shots.has(shot)) add(`fire:${shot.weapon.id}`, shot.x);
-    }
-    this.#shots = alive;
+    const { volleys } = run.shots;
+    if (volleys !== this.#volleys) add(`fire:${run.shots.weapon.id}`, run.ship.x);
+    this.#volleys = volleys;
     const beam = run.shots.beam.length > 0 ? run.shots.weapon.id : undefined;
     if (beam !== undefined && beam !== this.beam) add(`beam-start:${beam}`, run.ship.x);
     this.beam = beam;

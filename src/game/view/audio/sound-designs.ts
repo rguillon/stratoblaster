@@ -54,6 +54,33 @@ function blast(seconds: number, from: number, thump: number): ToneLayer[] {
   ];
 }
 
+/** Rounds in a minigun burst, and the seconds between them (about 48 rounds a second). */
+const MINIGUN = { rounds: 6, gap: 0.021 };
+
+/**
+ * A minigun burst (reviewer, 2026-10-26): rounds `gap` apart, each a gritty crack over a short
+ * thump. A volley's burst lasts until the next volley (the gun fires 8 a second), so holding fire
+ * rattles on without a break: BRRRT.
+ */
+function minigun({ rounds, gap }: typeof MINIGUN): ToneLayer[] {
+  return Array.from({ length: rounds }, (_, i) => {
+    const delay = i * gap;
+    const accent = i % 2 ? 0.75 : 1;
+    return [
+      tone('noise', 1, accent, env(0.001, 0.014, 0, 0.004), {
+        delay,
+        filter: { type: 'bandpass', frequency: 1700, q: 0.9 },
+      }),
+      tone('square', 150, 0.5 * accent, env(0.001, 0.016, 0, 0.004), {
+        delay,
+        glideTo: 65,
+        glideSeconds: 0.018,
+        filter: { type: 'lowpass', frequency: 1200 },
+      }),
+    ];
+  }).flat();
+}
+
 /** Notes of a little arpeggio, one after the other. */
 function chime(
   wave: ToneLayer['wave'],
@@ -67,16 +94,7 @@ function chime(
 }
 
 const PLAYER_WEAPONS: Readonly<Record<string, SoundDesign>> = {
-  'fire:bullet': sound(
-    'gun-shot',
-    PRIORITY.weapon,
-    0.16,
-    [
-      tone('square', 1400, 0.5, env(0.001, 0.045), { glideTo: 420, glideSeconds: 0.045 }),
-      tone('noise', 1, 0.35, env(0.001, 0.03), { filter: { type: 'highpass', frequency: 3000 } }),
-    ],
-    { positional: true },
-  ),
+  'fire:bullet': sound('gun-shot', PRIORITY.weapon, 0.14, minigun(MINIGUN), { positional: true }),
   'fire:missile': sound(
     'missile-launch',
     PRIORITY.weapon,

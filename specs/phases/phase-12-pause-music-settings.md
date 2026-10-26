@@ -110,6 +110,7 @@ If Web Audio is missing or fails, the game runs silently without errors. Generat
 Every level (`1-1` to `4-5`) has its own music (GD-70), generated from that level's data:
 - each world has a style that matches its look, in the cyberpunk / synthwave direction (GD-60): World 1 (desert and sea) bright and driving, World 2 (Frozen North) cold and airy, World 3 (Jungle) percussive, World 4 (Volcanic Lands) dark and heavy;
 - every track is synthwave (reviewer, 2026-10-26): 80s analog-style synths (detuned saw pads and leads, plucked arpeggios with tempo-synced echoes, pumping or rolling saw basses), drum-machine drums with big gated snares and synth toms, and reverb; the world styles above are synthwave flavours (World 1 outrun, World 2 dreamwave, World 3 synthwave with tom-heavy percussion, World 4 darksynth);
+- every track leans darksynth (reviewer, 2026-10-26): minor, harmonic minor or phrygian keys, heavy kicks, growling basses and dark pads in every world and the menu theme; World 1 keeps its driving outrun beat (it is no longer bright), World 2 its cold glassy bells, World 3 its toms, World 4 is the heaviest;
 - every track is energetic (reviewer, 2026-10-26): driving drums from the first bar, sixteenth-note arpeggios, no bare breakdown, a rising sweep into each section, and faster tempos (see **Tunable values**);
 - the five levels of a world share the world's style (instruments, tempo range) but differ in melody, chords and rhythm, so no two levels sound the same;
 - the same level always plays the same music (deterministic from the level's id, never from `Math.random`);
@@ -149,7 +150,7 @@ Every event below plays its own generated sound (GD-71), designed so the player 
 
 | Group | Events |
 |-------|--------|
-| Player weapons | gun shot, laser start and laser hum while firing, missile launch, weapon switch, weapon level up |
+| Player weapons | gun shot (a minigun rattle, "BRRRT", while firing; reviewer, 2026-10-26), laser start and laser hum while firing, missile launch, weapon switch, weapon level up |
 | Enemy weapons | enemy bullet shot, enemy missile launch, laser warning line, enemy laser fire |
 | Hits | player shot hits an enemy, player shot hits a shielded or armoured part, player ship is hit |
 | Destruction | small enemy explosion, large enemy explosion, boss part destroyed, boss destroyed |
@@ -276,6 +277,9 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - [x] (2026-10-26, reviewer) Make the musics synthwave: every level, boss and menu track and the jingles.
 - [x] (2026-10-26, reviewer) Make the boss music more stressful.
 - [x] (2026-10-26, reviewer) Rework the music: all synthwave and more energetic.
+- [x] (2026-10-26, reviewer) Make the music more darksynth.
+- [x] (2026-10-26, reviewer) Make the player bullet sound like a minigun (BRRRT).
+- [x] (2026-10-26, reviewer) When the player shoots several bullets or missiles, do not fire them all at once: alternate between the streams, without changing the global firing rate. *Added to the shots spec as P03-R11.*
 
 ---
 
@@ -322,6 +326,11 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - Tests: `track-mixer.test.ts`, `audio-output.test.ts` (reverb), game data tests (gated snares, echo / reverb sends, tom fills, a full menu track). Light verification: typecheck ✔, build ✔, e2e 116 passed (4.2 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
 - **Stressful bosses, energetic synthwave (review 3):** boss tracks get their own parts (`game/view/audio/compose-boss.ts`): four on the floor pushed by off-beat sixteenth kicks under sixteenth hats, snare rolls growing louder (four sixteenths every fourth bar, half a bar at each section's end), a rolling bass jumping between the root and its octave, supersaw chord stabs on a 3-3-2 rhythm (new `stab` instrument), tense progressions around the root (`BOSS_PROGRESSIONS`: the flat second, the diminished second and the major fifth) in harmonic minor (Worlds 1–2) or phrygian (Worlds 3–4). Every track gets a noise riser over each section's last bar (new `riser` instrument). Levels: tempos raised (World 1 128–140, World 2 112–124, World 3 120–132, World 4 104–116; bosses 145–167 BPM), sixteenth-note arpeggios in every world, no bare breakdown (energy shapes 1–2 only), World 2 on a driving backbeat with a pumping plucked bass (half time and long notes removed), World 4 with a backbeat on 2 and 4; menu theme 100 BPM, still slower than every level. Measured offline over 32 s at the default volume: menu −17.9 dB RMS, level tracks −16.5 to −17.2, boss tracks −13.7 to −15.0. P12-R06, R07, R08 and the tempo tunable amended at the reviewer's request. (D-100)
 - Tests: game data tests (new tempo ranges, menu slower than every level, a snare in every level bar and risers, boss tracks denser than their levels with stabs, risers and snare rolls). Light verification: typecheck ✔, build ✔, e2e 116 passed (5.1 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
+- **Darksynth and minigun (review 4):** every world and the menu theme now play in minor, harmonic minor or phrygian, with the heavy kick, dark pads and the growling bass (`bass-heavy`: two detuned saws and a square through a resonant filter over a sub) in Worlds 1 and 4 and the menu; World 2 keeps its dreamwave bass (darker, more resonant), World 3 its plucked bass. Leads: World 1 supersaw, World 2 bells, World 3 square, World 4 brass. The gun shot (`gun-shot`) is now a minigun burst: 6 rounds 21 ms apart (about 48 a second), each a band-passed noise crack over a falling square thump, alternating accents; a burst lasts one volley (the gun fires 8 a second), so holding fire rattles on without a gap and stops within 0.13 s of release. Offline render: a 20 ms rattle with silence between rounds, peak −18 dBFS at full SFX volume. The data test's peak now adds only the layers that start together (layers in sequence do not sound at once). P12-R06 and the P12-R09 table amended at the reviewer's request. (D-101)
+- Tests: game data tests (the minigun burst covers one volley with at least 5 rounds; peaks per start time).
+- **Alternating streams (review 5, P03-R11 added to the shots spec):** `ShotWorld` fires a level's streams one after the other in their listed order (bullets: centre, then left / right pairs from the inside out; missiles likewise), one shot every 1 / (rate × streams) s, so each stream keeps its rate and a level its shots per second and damage. A volley still starts at once when fire is pressed or the weapon changes. `ShotWorld.volleys` counts volleys; `LevelCues` sounds `fire:<weapon>` once per volley (at the ship's x), so the minigun rattle and the missile launch keep their cadence. Tests: `shot-world.test.ts` (alternation, rate), `level-cues.test.ts`, app audio test. (D-102)
+- Unit tests that were already failing before this review fix (found while running the affected suites; not changed here, left for `/validate-phase`): `menu-flow-pause.test.ts` (3), `start-app-pause.test.ts` (1), `music-player.test.ts` (2), `test-api.test.ts` (1).
+- Light verification (reviews 4 and 5): typecheck ✔, build ✔, e2e 116 passed (4.6 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.

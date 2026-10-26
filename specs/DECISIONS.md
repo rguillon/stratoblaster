@@ -1125,3 +1125,23 @@
 - **Consequences:** Boss tracks are 2–3 dB louder than the level tracks (denser), within the master limiter; checked offline, not by ear.
 - **Status:** Accepted
 
+### D-101 — Darksynth everywhere, a minigun gun
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for more darksynth music and for the player's bullets to sound like a minigun ("BRRRT"). Worlds 1–3 and the menu used bright or modal scales and lighter instruments; the gun was one zap per volley (8 a second).
+- **Decision:**
+  - Every style plays minor, harmonic minor or phrygian keys with the heavy kick and dark pads; the growling `bass-heavy` (a resonant square layer added) in Worlds 1 and 4 and the menu. Worlds stay apart by drum feel, lead, arpeggio and tempo.
+  - The gun sound is a burst of 6 short rounds, 21 ms apart, made of delayed layers in one sound design: one burst per volley fills the 125 ms to the next, so the rattle is continuous while firing, with no engine change (no new looping cue) and one voice per volley.
+- **Alternatives considered:** a looping "firing" cue like the laser hum (needs a new engine cue and a stop on release; the bursts already stop within one volley); raising the gun's fire rate (gameplay change, out of scope).
+- **Consequences:** The data test's peak counts only layers that start together. If the gun's `shotsPerSecond` changes, the burst (`MINIGUN` in `sound-designs.ts`) must follow; a unit test checks it covers one volley.
+- **Status:** Accepted
+
+### D-102 — Alternating shot streams, one fire cue per volley
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; requirement added to phase 3 as P03-R11)
+- **Context:** The reviewer asked that multi-stream bullet and missile levels fire their streams in turn instead of all at once, without changing the global firing rate.
+- **Decision:** `ShotWorld` keeps one cooldown and a next-stream index: a shot every 1 / (shotsPerSecond × streams) s, streams in their listed order (the weapon data already lists them centre first, then left / right pairs from the inside out). Selecting a weapon or releasing fire restarts from the first stream, at once. `ShotWorld.volleys` counts volleys (each time the first stream fires); `LevelCues` emits `fire:<weapon>` per volley instead of per new projectile, at the ship's x.
+- **Alternatives considered:** random stream order (less readable, not deterministic per seed without an RNG); a sound per shot (the minigun bursts would pile up into a buzz, and a 5-stream level would take 5 voices).
+- **Consequences:** The order of the streams in `player-weapons.ts` is now the firing order.
+- **Status:** Accepted
+

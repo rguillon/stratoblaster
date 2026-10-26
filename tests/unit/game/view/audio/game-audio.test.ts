@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  trackSeconds,
-  type SoundDesign,
-  type ToneLayer,
-  type Track,
-} from '../../../../../src/audio/audio-types';
+import { trackSeconds, type SoundDesign, type Track } from '../../../../../src/audio/audio-types';
 import { composeTrack, seedOf } from '../../../../../src/game/view/audio/compose-track';
 import { GAME_AUDIO, gameMusic, worldOf } from '../../../../../src/game/view/audio/game-audio';
 import { INSTRUMENTS } from '../../../../../src/game/view/audio/instruments';
@@ -16,6 +11,7 @@ import {
 } from '../../../../../src/game/view/audio/music-styles';
 import { SOUND_DESIGNS } from '../../../../../src/game/view/audio/sound-designs';
 import { GAME } from '../../../../../src/game/index';
+import { BULLET } from '../../../../../src/game/config/player-weapons';
 
 const LEVEL_IDS = GAME.levels.levels.map((l) => l.id);
 
@@ -31,9 +27,17 @@ function bossTrack(levelId: string) {
   return track;
 }
 
-/** The loudest a sound can get: its gain times its layers' gains, all at their peak. */
-const peak = (sound: SoundDesign): number =>
-  sound.gain * sound.layers.reduce((sum: number, l: ToneLayer) => sum + l.gain, 0);
+/**
+ * The loudest a sound can get: its gain times the gains of the layers that start together, all
+ * at their peak (layers in sequence, like a chime or the minigun's rounds, do not add up).
+ */
+function peak(sound: SoundDesign): number {
+  const byStart = new Map<number, number>();
+  for (const l of sound.layers) {
+    byStart.set(l.delay ?? 0, (byStart.get(l.delay ?? 0) ?? 0) + l.gain);
+  }
+  return sound.gain * Math.max(...byStart.values());
+}
 
 describe('game music', () => {
   it('P12-R06: the 20 levels 1-1 … 4-5 each have a track, and their note sequences differ pairwise', () => {
@@ -235,6 +239,16 @@ describe('game sounds', () => {
       expect(SOUND_DESIGNS[cue]?.positional, cue).toBe(true);
     }
     expect(SOUND_DESIGNS['menu-move']?.positional).toBeUndefined();
+  });
+
+  it('P12-R09: the gun is a minigun: a burst of short rounds filling the gap to the next volley (BRRRT)', () => {
+    const gun = SOUND_DESIGNS['fire:bullet'];
+    const starts = [...new Set(gun?.layers.map((l) => l.delay ?? 0))].sort((a, b) => a - b);
+    expect(starts.length).toBeGreaterThanOrEqual(5);
+    const volley = 1 / BULLET.shotsPerSecond;
+    const span = (starts.at(-1) ?? 0) + (starts[1] ?? 0);
+    expect(span).toBeGreaterThan(volley * 0.9);
+    expect(span).toBeLessThan(volley * 1.1);
   });
 
   it('P12-R10: player and bomb sounds have the highest priority, enemy shots the lowest', () => {

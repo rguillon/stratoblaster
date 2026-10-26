@@ -1,7 +1,7 @@
 import type { Envelope, Instrument, ToneLayer } from '../../../audio/audio-types';
 
 /**
- * The instruments of the generated music (P12-R06..R08, GD-70): synthwave (reviewer,
+ * The instruments of the generated music (P12-R06..R08, GD-70): darksynth (reviewer,
  * 2026-10-26), all synthesised from oscillators and noise through filters and envelopes. An 80s
  * drum machine (punchy kicks, big gated snares, synth toms), pumping and rolling saw basses,
  * detuned saw pads, plucked arpeggios and leads sent to the track's echo, and the music reverb.
@@ -144,7 +144,7 @@ const BASSES: Readonly<Record<string, Instrument>> = {
     layers: [
       layer('sawtooth', 0.55, {
         envelope: env(0.005, 0.2, 0.55, 0.06),
-        filter: { type: 'lowpass', frequency: 560, from: 1800, sweepSeconds: 0.12, q: 2 },
+        filter: { type: 'lowpass', frequency: 480, from: 1800, sweepSeconds: 0.12, q: 4 },
       }),
       layer('sine', 0.6, { pitch: 0.5, envelope: env(0.005, 0.22, 0.75, 0.06) }),
     ],
@@ -160,13 +160,18 @@ const BASSES: Readonly<Record<string, Instrument>> = {
       layer('sine', 0.6, { pitch: 0.5, envelope: env(0.003, 0.2, 0.3, 0.06) }),
     ],
   },
-  /** Darksynth: two detuned saws, growling, over a sub. */
+  /** Darksynth: detuned saws and a square, growling through a resonant filter, over a sub. */
   'bass-heavy': {
-    gain: 0.42,
+    gain: 0.4,
     layers: [
-      ...saws([-14, 14], 0.6, {
+      ...saws([-16, 16], 0.55, {
         envelope: env(0.004, 0.18, 0.6, 0.05),
-        filter: { type: 'lowpass', frequency: 560, from: 1600, sweepSeconds: 0.08, q: 3 },
+        filter: { type: 'lowpass', frequency: 620, from: 2200, sweepSeconds: 0.09, q: 6 },
+      }),
+      layer('square', 0.3, {
+        detuneCents: 7,
+        envelope: env(0.004, 0.18, 0.5, 0.05),
+        filter: { type: 'lowpass', frequency: 900, q: 2 },
       }),
       layer('sine', 0.7, { pitch: 0.5, envelope: env(0.004, 0.2, 0.8, 0.05) }),
     ],

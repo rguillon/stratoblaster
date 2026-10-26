@@ -117,7 +117,7 @@ describe('GameAudio', () => {
     audio.levelStarted('1-1');
     const r = run();
     step(audio, r);
-    r.shots.projectiles.push({ alive: true, x: 0, weapon: { id: 'gun' } });
+    r.shots.volleys++;
     step(audio, r);
     expect(audio.state.sounds).toEqual(['gun-shot']);
     later(0.5);

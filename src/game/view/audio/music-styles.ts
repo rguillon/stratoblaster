@@ -1,9 +1,6 @@
 /** Scales, as semitones above their root. */
 export const SCALES = {
-  major: [0, 2, 4, 5, 7, 9, 11],
-  mixolydian: [0, 2, 4, 5, 7, 9, 10],
   minor: [0, 2, 3, 5, 7, 8, 10],
-  dorian: [0, 2, 3, 5, 7, 9, 10],
   phrygian: [0, 1, 3, 5, 7, 8, 10],
   harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
 } as const;
@@ -59,15 +56,16 @@ export interface MusicStyle {
 
 /**
  * The four worlds' styles (P12-R06, tempo ranges from the phase's tunables), all energetic
- * synthwave (reviewer, 2026-10-26): World 1 (desert and sea) bright, driving outrun; World 2
- * (Frozen North) cold, glassy dreamwave on a driving beat; World 3 (Jungle) synthwave on toms and
- * shakers; World 4 (Volcanic Lands) dark, heavy darksynth.
+ * darksynth (reviewer, 2026-10-26): minor and phrygian keys, heavy kicks, growling basses, dark
+ * pads. World 1 (desert and sea) the outrun drive (four on the floor, pumping bass, supersaw lead);
+ * World 2 (Frozen North) cold, with glassy bells on a driving beat; World 3 (Jungle) on toms and
+ * shakers; World 4 (Volcanic Lands) the heaviest.
  */
 export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
   1: {
     tempo: [128, 140],
     bossBoost: [20, 30],
-    scales: [SCALES.major, SCALES.mixolydian, SCALES.minor],
+    scales: [SCALES.minor, SCALES.harmonicMinor, SCALES.phrygian],
     bossScale: SCALES.harmonicMinor,
     roots: [38, 40, 41, 43, 45],
     progressions: [
@@ -78,14 +76,14 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
       [5, 4, 3, 4],
     ],
     instruments: {
-      kick: 'kick',
+      kick: 'kick-heavy',
       snare: 'snare-gated',
       hat: 'hat',
       perc: 'open-hat',
-      bass: 'bass-saw',
-      pad: 'pad-warm',
+      bass: 'bass-heavy',
+      pad: 'pad-dark',
       arp: 'arp-pluck',
-      lead: 'lead-square',
+      lead: 'lead-saw',
     },
     drums: 'four',
     bass: 'eighths',
@@ -95,7 +93,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
   2: {
     tempo: [112, 124],
     bossBoost: [20, 30],
-    scales: [SCALES.dorian, SCALES.minor, SCALES.major],
+    scales: [SCALES.minor, SCALES.harmonicMinor, SCALES.phrygian],
     bossScale: SCALES.harmonicMinor,
     roots: [36, 38, 39, 41, 43],
     progressions: [
@@ -106,7 +104,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
       [3, 0, 6, 4],
     ],
     instruments: {
-      kick: 'kick',
+      kick: 'kick-heavy',
       snare: 'snare-gated',
       hat: 'hat',
       perc: 'open-hat',
@@ -123,7 +121,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
   3: {
     tempo: [120, 132],
     bossBoost: [20, 30],
-    scales: [SCALES.dorian, SCALES.minor, SCALES.mixolydian],
+    scales: [SCALES.phrygian, SCALES.minor, SCALES.harmonicMinor],
     bossScale: SCALES.phrygian,
     roots: [38, 40, 41, 43, 45],
     progressions: [
@@ -134,14 +132,14 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
       [0, 5, 3, 4],
     ],
     instruments: {
-      kick: 'kick',
+      kick: 'kick-heavy',
       snare: 'snare-gated',
       hat: 'shaker',
       perc: 'tom',
       bass: 'bass-pluck',
-      pad: 'pad-warm',
+      pad: 'pad-dark',
       arp: 'arp-square',
-      lead: 'lead-saw',
+      lead: 'lead-square',
     },
     drums: 'tribal',
     bass: 'syncopated',
@@ -179,7 +177,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
 };
 
 /**
- * The menu theme's style (P12-R08, synthwave reviews): mid-tempo synthwave in a minor key, with
+ * The menu theme's style (P12-R08, synthwave reviews): mid-tempo darksynth in a minor key, with
  * the classic i–VI–III–VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and a
  * supersaw lead; slower than every level.
  */
@@ -195,12 +193,12 @@ export const MENU_STYLE: MusicStyle = {
     [5, 3, 0, 6],
   ],
   instruments: {
-    kick: 'kick',
+    kick: 'kick-heavy',
     snare: 'snare-gated',
     hat: 'hat',
     perc: 'open-hat',
-    bass: 'bass-saw',
-    pad: 'pad-warm',
+    bass: 'bass-heavy',
+    pad: 'pad-dark',
     arp: 'arp-pluck',
     lead: 'lead-saw',
   },

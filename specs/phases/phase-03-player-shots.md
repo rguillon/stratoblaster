@@ -52,6 +52,13 @@ At level 4, a 4 diagonal stream (10° and 20°)
 At level 5, a single forward missile stream 4 diagonal stream (10° and 20°)
 
 
+### P03-R11 — Alternating streams · MUST
+
+When a bullet or missile level has several streams, they do not fire all at once: they fire one after the other, in turn, evenly spaced over each volley (added at the reviewer's request, 2026-10-26). The firing rate is unchanged: each stream still fires its rate (bullets 8 per second, missiles 4 per second per stream), so a level fires as many shots per second, and deals as much damage, as before.
+
+**Acceptance criteria**
+- [ ] Given a two-stream level held for one volley period, then each stream fired once, never both in the same instant, and over a second each stream fired its rate (unit test).
+
 ### P03-R10 — Debug  · MUST
 
 The game shall provide a player_shots/ debug endpoint that shows the different shots from each ship for visual validation.

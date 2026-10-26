@@ -50,10 +50,14 @@ export class ShotWorld {
   totalDamage = 0;
   /** Whether the weapon fires; shots already in flight keep flying either way. */
   firing = true;
+  /** Volleys started since the world was created (a volley: every stream of the level once). */
+  volleys = 0;
   #weapon: WeaponDefinition;
   #level = 1;
-  /** Seconds until the next volley. */
+  /** Seconds until the next shot. */
   #cooldown = 0;
+  /** The stream that fires next. */
+  #next = 0;
 
   constructor(
     readonly options: ShotWorldOptions,
@@ -75,6 +79,7 @@ export class ShotWorld {
     this.#weapon = weapon;
     this.#level = Math.min(Math.max(1, Math.round(level)), weapon.levels.length);
     this.#cooldown = 0;
+    this.#next = 0;
   }
 
   /** Number of projectiles in flight. */
@@ -92,6 +97,7 @@ export class ShotWorld {
     if (!this.firing) {
       this.beam = [];
       this.#cooldown = 0;
+      this.#next = 0;
     } else if (weapon.kind === 'projectile') {
       this.beam = [];
       this.#fire(weapon, dt);
@@ -106,16 +112,22 @@ export class ShotWorld {
     if (shot.alive && this.#isOut(shot)) shot.alive = false;
   }
 
+  /**
+   * Fires the level's streams one after the other, in their listed order, evenly spaced over the
+   * volley (reviewer, 2026-10-26): each stream still fires `shotsPerSecond` times a second.
+   */
   #fire(weapon: ProjectileWeaponDefinition, dt: number): void {
     this.#cooldown -= dt;
     const streams = weapon.levels[this.#level - 1] ?? [];
+    const count = Math.max(1, streams.length);
     while (this.#cooldown <= 0) {
-      // A volley due during this step has been flying for the rest of the step.
+      // A shot due during this step has been flying for the rest of the step.
       const flown = -this.#cooldown;
-      for (const stream of streams) {
-        this.#move(this.#spawn(weapon, stream.offsetX, stream.angleDeg * DEG), flown);
-      }
-      this.#cooldown += 1 / weapon.shotsPerSecond;
+      const stream = streams[this.#next % count];
+      if (this.#next % count === 0) this.volleys++;
+      if (stream) this.#move(this.#spawn(weapon, stream.offsetX, stream.angleDeg * DEG), flown);
+      this.#next = (this.#next + 1) % count;
+      this.#cooldown += 1 / (weapon.shotsPerSecond * count);
     }
   }
 

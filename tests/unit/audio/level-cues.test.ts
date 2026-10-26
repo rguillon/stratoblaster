@@ -7,10 +7,10 @@ function fakeRun() {
   return {
     ship: { x: 240 },
     shots: {
-      projectiles: [] as { alive: boolean; x: number; weapon: { id: string } }[],
       beam: [] as unknown[],
       weapon: { id: 'bullet' },
       level: 1,
+      volleys: 0,
     },
     enemies: {
       shots: {
@@ -41,13 +41,13 @@ function cuesAfter(change: (run: FakeRun) => void, run = fakeRun(), cues = new L
 
 describe('LevelCues', () => {
   const cases: [string, (run: FakeRun) => void][] = [
-    [
-      'fire:bullet',
-      (r) => r.shots.projectiles.push({ alive: true, x: 1, weapon: { id: 'bullet' } }),
-    ],
+    ['fire:bullet', (r) => r.shots.volleys++],
     [
       'fire:missile',
-      (r) => r.shots.projectiles.push({ alive: true, x: 1, weapon: { id: 'missile' } }),
+      (r) => {
+        r.shots.weapon.id = 'missile';
+        r.shots.volleys++;
+      },
     ],
     [
       'beam-start:laser',
@@ -93,17 +93,15 @@ describe('LevelCues', () => {
     expect(cues.observe(run as unknown as LevelRun)).toEqual([]);
   });
 
-  it('P12-R09: the first step only takes the starting state; a volley is one cue, with its x', () => {
+  it('P12-R09: the first step only takes the starting state; a volley is one cue, at the ship', () => {
     const run = fakeRun();
-    run.shots.projectiles.push({ alive: true, x: 5, weapon: { id: 'bullet' } });
+    run.shots.volleys = 3;
     const cues = new LevelCues(18);
     expect(cues.observe(run as unknown as LevelRun)).toEqual([]);
-    run.shots.projectiles.push(
-      { alive: true, x: 100, weapon: { id: 'bullet' } },
-      { alive: true, x: 120, weapon: { id: 'bullet' } },
-    );
-    expect(cues.observe(run as unknown as LevelRun)).toEqual([{ cue: 'fire:bullet', x: 100 }]);
-    // Shots seen before make no new sound; a missile shot down is a small blast.
+    // The streams of a volley fire one after the other: only its start sounds.
+    run.shots.volleys = 4;
+    expect(cues.observe(run as unknown as LevelRun)).toEqual([{ cue: 'fire:bullet', x: 240 }]);
+    // A volley seen before makes no new sound; a missile shot down is a small blast.
     run.blasts.push({ kind: 'missile', x: 7, radius: 30 });
     expect(cues.observe(run as unknown as LevelRun)).toEqual([{ cue: 'blast-small', x: 7 }]);
   });
