@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   loadSavedChoices,
   parseHighScore,
+  saveHighScore,
   saveLastShip,
   savedChoiceKeys,
 } from '../../../src/app/saved-choices';
@@ -41,5 +42,12 @@ describe('saved choices', () => {
       highScore: 'demo_high_score',
       lastShip: 'demo_last_ship',
     });
+  });
+
+  it('P11-R03: saves a new high score in the high score cookie, read back on the next visit', () => {
+    const storage = new MemoryStorage();
+    saveHighScore(storage, 'stratoblaster', 2500);
+    expect(storage.get('stratoblaster_high_score')).toBe('2500');
+    expect(loadSavedChoices(storage, 'stratoblaster').highScore).toBe(2500);
   });
 });

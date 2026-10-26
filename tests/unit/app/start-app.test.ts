@@ -171,6 +171,7 @@ describe('startApp', () => {
         destroyed: 0,
         spawned: 0,
         outcome: 'complete',
+        score: 0,
       });
       expect(overlay.querySelector('.level-complete-level')?.textContent).toBe('C');
       // Past the overlay's input delay (1 s): ten ticks of 0.1 s fall just short of it.

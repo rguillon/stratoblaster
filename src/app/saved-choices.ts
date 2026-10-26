@@ -31,3 +31,8 @@ export function loadSavedChoices(storage: KeyValueStorage, gameId: string): Save
 export function saveLastShip(storage: KeyValueStorage, gameId: string, shipId: string): void {
   storage.set(savedChoiceKeys(gameId).lastShip, shipId);
 }
+
+/** Saves `score` as the new high score (GD-51, P11-R03). */
+export function saveHighScore(storage: KeyValueStorage, gameId: string, score: number): void {
+  storage.set(savedChoiceKeys(gameId).highScore, String(Math.max(0, Math.floor(score))));
+}

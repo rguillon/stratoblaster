@@ -11,9 +11,14 @@ const FRAME: HudFrame = {
   weaponLevels: 5,
   progress: 0.25,
   destroyed: 3,
+  score: 0,
+  highScore: 12_340,
+  bombs: 3,
 };
 
-function setup() {
+const pad = (score: number): string => String(score).padStart(7, '0');
+
+function setup(onBomb?: () => void) {
   const parent = document.createElement('div');
   const hud = new GameHud(document, parent, {
     ship: 'Heavy',
@@ -22,7 +27,11 @@ function setup() {
       weapon: (name, level, levels) => `${name} · Lv ${String(level)}/${String(levels)}`,
       destroyed: (count) => `Destroyed: ${String(count)}`,
       lives: (count) => `Lives ${String(count)}`,
+      score: pad,
+      highScore: (score) => `HI ${pad(score)}`,
+      bomb: (bombs) => `Bomb ${String(bombs)}`,
     },
+    ...(onBomb ? { onBomb } : {}),
   });
   const $ = (selector: string) => parent.querySelector<HTMLElement>(selector);
   return { parent, hud, $ };
@@ -72,5 +81,38 @@ describe('GameHud', () => {
     const { hud, parent } = setup();
     hud.dispose();
     expect(parent.children).toHaveLength(0);
+  });
+
+  it('P11-R02: shows the score, zero-padded, and the high score under it', () => {
+    const { hud, $ } = setup();
+    hud.update(FRAME);
+    expect($('.hud-score-value')?.textContent).toBe('0000000');
+    expect($('.hud-high-score')?.textContent).toBe('HI 0012340');
+    hud.update({ ...FRAME, score: 20_000, highScore: 20_000 });
+    expect($('.hud-score-value')?.textContent).toBe('0020000');
+    expect($('.hud-high-score')?.textContent).toBe('HI 0020000');
+  });
+
+  it('P11-R05: shows one icon per bomb left', () => {
+    const { hud, $ } = setup();
+    hud.update(FRAME);
+    expect($('.hud-bombs')?.textContent).toBe('●●●');
+    hud.update({ ...FRAME, bombs: 1 });
+    expect($('.hud-bombs')?.textContent).toBe('●');
+    hud.update({ ...FRAME, bombs: undefined });
+    expect($('.hud-bombs')?.textContent).toBe('');
+  });
+
+  it('P11-R06: the touch bomb button sets a bomb off and is dimmed with no bomb left', () => {
+    let presses = 0;
+    const { hud, $ } = setup(() => presses++);
+    hud.update(FRAME);
+    const button = $('.hud-bomb-button');
+    expect(button?.textContent).toBe('Bomb 3');
+    button?.dispatchEvent(new Event('pointerdown'));
+    expect(presses).toBe(1);
+    hud.update({ ...FRAME, bombs: 0 });
+    expect(button?.classList.contains('empty')).toBe(true);
+    expect(setup().$('.hud-bomb-button')).toBeNull();
   });
 });

@@ -5,6 +5,7 @@ import type { Enemy } from '../core/entities/enemy';
 import type { MenuScreen } from '../core/menu/menu-screen';
 import type { EnemyBullet, EnemyLaser, EnemyMissile } from '../core/systems/enemy-shots';
 import type { Bonus } from '../core/systems/bonus-world';
+import type { ActiveBomb } from '../core/systems/player-bombs';
 import type { EnemyBlast } from '../core/systems/enemy-world';
 import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
@@ -70,6 +71,21 @@ export interface GameView {
   readonly enemies: EnemyBindings;
   /** How the weapon bonuses look (phase 6 review). */
   readonly bonuses: (scene: Scene) => BonusRenderer;
+  /** Draws the player's bombs going off (P11-R05). None drawn when omitted. */
+  readonly bombs?: (scene: Scene) => BombRenderer;
+}
+
+/** What the bomb renderer draws on one frame, in playfield space (P11-R05). */
+export interface BombFrame {
+  /** The bomb going off, if any. */
+  readonly bomb: ActiveBomb | undefined;
+  readonly dtSeconds: number;
+}
+
+/** Draws a bomb going off: a shockwave from the ship over the playfield, and a flash. */
+export interface BombRenderer {
+  sync(frame: BombFrame): void;
+  dispose(): void;
 }
 
 /** What the bonus renderer draws on one frame, in playfield space (see {@link ShotFrame}). */
@@ -80,7 +96,7 @@ export interface BonusFrame {
   readonly dtSeconds: number;
 }
 
-/** Draws the weapon bonuses falling, and a flash where the ship picks one up. */
+/** Draws the bonuses falling (each kind its own look, P11-R07), and a flash where the ship picks one up. */
 export interface BonusRenderer {
   sync(frame: BonusFrame): void;
   dispose(): void;

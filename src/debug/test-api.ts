@@ -21,6 +21,13 @@ export interface GameTestLevelState {
   readonly weaponLevel: number;
   readonly bonuses: number;
   readonly bonusesDropped: number;
+  /** The kind of each bonus falling (P11-R07): `weapon`, `life` or `bomb`. */
+  readonly bonusKinds: readonly string[];
+  /** Points scored in this attempt, and bombs left (P11-R01, R05). */
+  readonly score: number;
+  readonly bombs: number;
+  /** Enemy bullets and missiles in flight and lasers shown (a bomb clears them, P11-R05). */
+  readonly enemyShots: number;
   /** The ship's health, lives left and seconds of invincibility left (GD-20, GD-22). */
   readonly health: number;
   readonly lives: number;
@@ -79,6 +86,8 @@ export interface GameTestState {
   readonly choice: number;
   /** Goes up each time a level starts, or starts again from a checkpoint. */
   readonly attempt: number;
+  /** The saved high score (P11-R03). */
+  readonly highScore: number;
   /** Every progress value the loading screen showed, in order. */
   readonly loadingProgress: readonly number[];
   /** The level being played, on the game screen (P06). */
@@ -88,18 +97,23 @@ export interface GameTestState {
 /** The e2e test API (ENG-52), installed as `window.__GAME_TEST__` in e2e builds only. */
 export interface GameTestApi {
   getState(): GameTestState;
-  /** Sends a menu action as an input device would (P01-R12). */
-  sendAction(action: MenuAction): void;
+  /**
+   * Sends a menu action as an input device would (P01-R12), or `bomb`: sets a bomb off in the
+   * level being played, as the bomb key would (P11-R08).
+   */
+  sendAction(action: MenuAction | 'bomb'): void;
   /** Runs the level being played for `seconds` at once, without rendering; no level, no-op. */
   advance(seconds: number): void;
 }
 
 /** What the test API reads from and sends to the running app. */
 export interface GameTestHooks {
-  readonly state: () => Omit<GameTestState, 'loadingProgress' | 'game'>;
+  readonly state: () => Omit<GameTestState, 'loadingProgress' | 'game' | 'highScore'>;
+  readonly highScore: () => number;
   readonly loadingProgress: () => readonly number[];
   readonly game: () => GameTestLevelState | undefined;
   readonly send: (action: MenuAction) => void;
+  readonly bomb: () => void;
   readonly advance: (seconds: number) => void;
 }
 
@@ -108,10 +122,15 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
   const api: GameTestApi = {
     getState: () => ({
       ...hooks.state(),
+      highScore: hooks.highScore(),
       loadingProgress: [...hooks.loadingProgress()],
       game: hooks.game() ?? null,
     }),
     sendAction: (action) => {
+      if (action === 'bomb') {
+        hooks.bomb();
+        return;
+      }
       if (!isMenuAction(action)) throw new TypeError(`Unknown menu action "${String(action)}"`);
       hooks.send(action);
     },

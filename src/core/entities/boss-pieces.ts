@@ -49,6 +49,8 @@ export class BossPart implements BossPiece, DropSource {
   readonly dropChance: number;
   readonly shieldsCore: boolean;
   readonly turret: BossTurret | undefined;
+  /** Points scored when the player destroys it (P11-R01). */
+  readonly points: number;
   #health: number;
 
   constructor(
@@ -62,6 +64,7 @@ export class BossPart implements BossPiece, DropSource {
     this.dropChance = spec.dropChance;
     this.shieldsCore = spec.shieldsCore;
     this.turret = turretOf(boss, spec.id);
+    this.points = boss.stats.partPoints ?? 0;
   }
 
   /** Unique among the boss's pieces (the core is the boss's id). */

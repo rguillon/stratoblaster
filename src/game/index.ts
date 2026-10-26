@@ -1,5 +1,6 @@
 import type { GameDefinition } from '../core/content/game-definition';
 import type { GameView } from '../render/game-view';
+import { BOMB_RULES } from './config/bombs';
 import { BONUS_RULES } from './config/bonuses';
 import { BOSS_FIGHT_RULES } from './config/boss-fights';
 import { GAME_CONFIG } from './config/game';
@@ -12,6 +13,7 @@ import { BOSS_KINDS } from './sim/boss-kinds';
 import { ENEMY_KINDS } from './sim/enemy-kinds';
 import { GAME_LEVELS, LEVELS } from './sim/levels';
 import { SCENERY_LEVELS } from './sim/scenery-levels';
+import { createBombRenderer } from './view/bombs/bomb-renderer';
 import { createBonusRenderer } from './view/bonuses/bonus-renderer';
 import { ENEMY_BINDINGS } from './view/enemies/enemy-bindings';
 import { PLAYER_SHIP_MODELS } from './view/player-ship-models';
@@ -33,6 +35,7 @@ export const GAME: GameDefinition<GameView> = {
   bossKinds: BOSS_KINDS,
   bossFights: BOSS_FIGHT_RULES,
   bonuses: BONUS_RULES,
+  bombs: BOMB_RULES,
   hull: HULL_RULES,
   texts: MENU_TEXTS,
   view: {
@@ -43,5 +46,6 @@ export const GAME: GameDefinition<GameView> = {
     scenery: SCENERY_BINDINGS,
     enemies: ENEMY_BINDINGS,
     bonuses: createBonusRenderer,
+    bombs: createBombRenderer,
   },
 };

@@ -542,6 +542,65 @@
         padding: 3px 8px;
         background: var(--glass);
       }
+      /* Score and high score (P11-R02): top centre, above the progress bar. */
+      .hud-score {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        white-space: nowrap;
+      }
+      .hud-score-value {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 20px;
+        color: var(--yellow);
+      }
+      .hud-high-score {
+        font-size: 10px;
+        line-height: 12px;
+        color: var(--cyan);
+      }
+      /* Bombs left (P11-R05), one icon each, under the health bar. */
+      .hud-bombs {
+        min-height: 12px;
+        font-size: 11px;
+        line-height: 12px;
+        letter-spacing: 0.2em;
+        color: #ff8a1e;
+      }
+      /* Touch bomb button (P11-R06), above the fire button, only on touch screens. */
+      .hud-bomb-button {
+        display: none;
+        position: absolute;
+        z-index: 5;
+        right: 22px;
+        bottom: 132px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--black);
+        background: rgba(255, 138, 30, 0.55);
+        border: 3px solid #ff8a1e;
+        text-shadow: none;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .hud-bomb-button.empty {
+        opacity: 0.35;
+      }
+      @media (pointer: coarse) {
+        .hud-bomb-button {
+          display: flex;
+        }
+      }
       /* Boss health bar (P07-R02): centred under the HUD, a notch at the end of each part. */
       .boss-bar {
         position: absolute;
@@ -648,6 +707,18 @@
       }
       .level-complete-enemies {
         font-size: 22px;
+      }
+      /* The attempt's score, and a new high score (P11-R03). */
+      .level-complete-score {
+        font-family: var(--font-tech);
+        font-size: 24px;
+        color: var(--yellow);
+      }
+      .level-complete-high-score {
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--cyan);
       }
       .level-complete.game-over {
         border-color: var(--red);

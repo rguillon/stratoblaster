@@ -6,7 +6,7 @@ import type { KeyValueStorage } from '../platform/key-value-storage';
 import type { MenuView } from '../ui/menu-view';
 import { MenuFlow, type MenuState } from './menu-flow';
 import { buildMenuView } from './menu-view-builder';
-import { loadSavedChoices, saveLastShip } from './saved-choices';
+import { loadSavedChoices, saveHighScore, saveLastShip } from './saved-choices';
 
 /** Where the controller shows menus. Implemented by `ui/MenuOverlay`. */
 export interface MenuDisplay {
@@ -35,7 +35,7 @@ export interface MenuControllerDeps {
  */
 export class MenuController {
   readonly flow: MenuFlow;
-  readonly #highScore: number;
+  #highScore: number;
   #progress = 0;
   #shownRevision = -1;
   #shownProgress = -1;
@@ -71,9 +71,29 @@ export class MenuController {
     this.refresh();
   }
 
-  /** Shows the "Level complete" overlay (P06-R03). */
+  /** The best score saved so far (P01-R04, P11-R03). */
+  get highScore(): number {
+    return this.#highScore;
+  }
+
+  /**
+   * A level attempt ended with `score` (P11-R03): above the high score, it is saved as the new
+   * one, and the title screen shows it. Returns whether it beat the high score.
+   */
+  recordScore(score: number): boolean {
+    if (!(score > this.#highScore)) return false;
+    this.#highScore = score;
+    saveHighScore(this.deps.storage, this.game.id, score);
+    return true;
+  }
+
+  /**
+   * Shows the "Level complete" (or "Game over") overlay (P06-R03), after saving its score if it
+   * beat the high score (P11-R03): the overlay then says so.
+   */
   completeLevel(result: LevelResult): void {
-    this.flow.completeLevel(result);
+    const beaten = this.recordScore(result.score);
+    this.flow.completeLevel(beaten ? { ...result, newHighScore: true } : result);
     this.refresh();
   }
 

@@ -5,7 +5,7 @@ import { GamePlay, type GamePlayOptions } from '../../../src/app/game-play';
 import type { LevelResult } from '../../../src/core/systems/level-run';
 import { GameControls } from '../../../src/input/game-controls';
 import { GAME_CONTROLS_CONFIG } from '../../../src/config/game-controls';
-import { bonusFrames, SAMPLE_GAME } from '../../fixtures/sample-game';
+import { bombFrames, bonusFrames, SAMPLE_GAME } from '../../fixtures/sample-game';
 
 let play: GamePlay | undefined;
 afterEach(() => {
@@ -123,7 +123,9 @@ describe('GamePlay', () => {
     expect(pivot?.isEnabled(false)).toBe(false);
     expect(results).toEqual([]);
     frames(game, 2.1);
-    expect(results).toEqual([{ levelId: 'c', destroyed: 0, spawned: 0, outcome: 'over' }]);
+    expect(results).toEqual([
+      { levelId: 'c', destroyed: 0, spawned: 0, outcome: 'over', score: 0 },
+    ]);
   });
 
   it('phase 6 review: the ship banks into sideways moves and levels out when let go', () => {
@@ -160,7 +162,9 @@ describe('GamePlay', () => {
     const { game, results } = start({}, 'a', HARMLESS);
     frames(game, 35);
     expect(game.state.phase).toBe('complete');
-    expect(results).toEqual([{ levelId: 'a', destroyed: 0, spawned: 5, outcome: 'complete' }]);
+    expect(results).toEqual([
+      { levelId: 'a', destroyed: 0, spawned: 5, outcome: 'complete', score: 0 },
+    ]);
     frames(game, 1);
     expect(results).toHaveLength(1);
   });
@@ -230,6 +234,33 @@ describe('GamePlay', () => {
     expect(hudParent.querySelector('.game-hud')).toBeNull();
   });
 
+  it('P11-R02, R05: the HUD shows the score, the saved high score and the bombs left', () => {
+    const hudParent = document.createElement('div');
+    const { game } = start({ hudParent, highScore: 4200 }, 'a', HARMLESS);
+    frames(game, 0.1);
+    const $ = (selector: string) => hudParent.querySelector(selector)?.textContent;
+    expect([$('.hud-score-value'), $('.hud-high-score')]).toEqual(['0', 'Top 4200']);
+    expect($('.hud-bombs')).toBe('●●');
+    game.run.enemies.score = 5000;
+    frames(game, 0.1);
+    expect([$('.hud-score-value'), $('.hud-high-score')]).toEqual(['5000', 'Top 5000']);
+  });
+
+  it('P11-R05, R06: R and the touch bomb button set bombs off, which are drawn', () => {
+    const hudParent = document.createElement('div');
+    const { game, controls } = start({ hudParent }, 'a', HARMLESS);
+    controls.key('KeyR', true);
+    frames(game, 0.1);
+    expect(game.run.bombs?.count).toBe(1);
+    expect(bombFrames.at(-1)?.bomb).toMatchObject({ x: game.run.ship.x, seconds: 0.5 });
+    frames(game, 1);
+    expect(bombFrames.at(-1)?.bomb).toBeUndefined();
+    hudParent.querySelector('.hud-bomb-button')?.dispatchEvent(new Event('pointerdown'));
+    frames(game, 0.1);
+    expect(game.run.bombs?.count).toBe(0);
+    expect(game.state.bombs).toBe(0);
+  });
+
   it('P07-R09: in debug mode, boss= starts at that boss, and K destroys its parts one by one', () => {
     const hudParent = document.createElement('div');
     const { game } = start({ debug: true, startBoss: 'final', hudParent }, 'a', BOSSY);
@@ -275,6 +306,7 @@ describe('GamePlay', () => {
     const resume = {
       progress: 100,
       bossesPassed: 1,
+      score: 0,
       weapons: { weapon: 'ray', levels: { ray: 2 } },
     };
     const { game } = start({ resume }, 'a', BOSSY);

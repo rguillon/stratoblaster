@@ -54,6 +54,10 @@ export interface LevelCompleteView {
   readonly level: string;
   /** How many enemies were destroyed out of how many came. */
   readonly enemies: string;
+  /** The attempt's score (P11-R03). */
+  readonly score: string;
+  /** Shown when the score beat the saved high score (P11-R03); none otherwise. */
+  readonly newHighScore?: string;
   readonly hint: string;
   /**
    * "Game over" after the mini boss (P07-R08): Continue from the checkpoint or go to the level

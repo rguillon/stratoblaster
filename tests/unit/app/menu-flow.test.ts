@@ -25,6 +25,14 @@ function send(flow: MenuFlow, ...commands: MenuCommand[]): void {
   }
 }
 
+/** The checkpoint of a 1-2 game over after its mini boss (P07-R08). */
+const CHECKPOINT = {
+  progress: 7800,
+  bossesPassed: 1,
+  score: 0,
+  weapons: { weapon: 'bullet', levels: {} },
+};
+
 describe('MenuFlow', () => {
   it('P01-R01: starts on the loading screen and shows the title when loading completes', () => {
     const flow = new MenuFlow(OPTIONS);
@@ -164,6 +172,7 @@ describe('MenuFlow', () => {
       destroyed: 3,
       spawned: 5,
       outcome: 'complete' as const,
+      score: 0,
     });
 
     it('P06-R01: any World 1 level can be started straight away, 1-5 included', () => {
@@ -212,11 +221,7 @@ describe('MenuFlow', () => {
       const flow = world1();
       expect(flow.playDirect('heavy', '1-2')).toBe(true);
       const attempt = flow.state.attempt;
-      const checkpoint = {
-        progress: 7800,
-        bossesPassed: 1,
-        weapons: { weapon: 'bullet', levels: {} },
-      };
+      const checkpoint = CHECKPOINT;
       flow.completeLevel({ ...result('1-2'), outcome: 'over', checkpoint });
       flow.update(1);
       expect(flow.state.choice).toBe(0);
@@ -239,11 +244,7 @@ describe('MenuFlow', () => {
     it('P07-R08: choosing level select after the mini boss goes there, on the level played', () => {
       const flow = world1();
       flow.playDirect('heavy', '1-2');
-      const checkpoint = {
-        progress: 7800,
-        bossesPassed: 1,
-        weapons: { weapon: 'bullet', levels: {} },
-      };
+      const checkpoint = CHECKPOINT;
       flow.completeLevel({ ...result('1-2'), outcome: 'over', checkpoint });
       flow.update(1);
       send(flow, 'down', 'confirm');

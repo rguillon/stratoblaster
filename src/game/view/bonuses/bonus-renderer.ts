@@ -3,13 +3,14 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import type { Bonus, BonusKind } from '../../../core/systems/bonus-world';
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import type { BonusRenderer } from '../../../render/game-view';
 import { NodePool } from '../../../render/node-pool';
 import { BONUS_LOOK as LOOK } from '../../config/bonus-look';
 import { buildGlowDisc } from '../shot-geometry';
 import { additiveTemplate } from '../shots/shot-meshes';
-import { buildBonusBadge } from './bonus-geometry';
+import { buildBombBadge, buildBonusBadge, buildLifeBadge } from './bonus-geometry';
 
 type Rgb = readonly [number, number, number];
 
@@ -79,46 +80,91 @@ function syncFlashes(
   });
 }
 
+/** The badges and halos of one kind of bonus. */
+interface KindPools {
+  readonly badges: NodePool<Mesh>;
+  readonly halos: NodePool<Mesh>;
+}
+
+/** The badge and halo templates of each bonus kind (P11-R07). */
+function kindTemplates(scene: Scene): Record<BonusKind, readonly [Mesh, Mesh]> {
+  const { halo, life, bomb } = LOOK;
+  const colors = { frame: LOOK.frame, face: LOOK.face, chevrons: LOOK.chevrons };
+  const glow = (name: string, rings: readonly Rgb[]) =>
+    additiveTemplate(name, buildGlowDisc(halo.segments, rings), scene);
+  return {
+    weapon: [
+      opaqueTemplate('bonus-badge', buildBonusBadge({ ...colors, inset: LOOK.frameInset }), scene),
+      glow('bonus-halo', halo.colors),
+    ],
+    life: [
+      opaqueTemplate('bonus-heart', buildLifeBadge(life), scene),
+      glow('bonus-glow-life', life.halo),
+    ],
+    bomb: [
+      opaqueTemplate('bonus-sphere', buildBombBadge(bomb), scene),
+      glow('bonus-glow-bomb', bomb.halo),
+    ],
+  };
+}
+
+/** Draws `bonuses` (all of one kind) as swinging badges over pulsing halos. */
+function syncKind({ badges, halos }: KindPools, bonuses: readonly Bonus[]): void {
+  const { size, depth, halo } = LOOK;
+  badges.show(bonuses.length).forEach((mesh, i) => {
+    const bonus = bonuses[i];
+    if (!bonus) return;
+    mesh.position.set(bonus.x, bonus.y, depth);
+    mesh.scaling.setAll(size);
+    const { amplitude, hz } = LOOK.swing;
+    mesh.rotation.y = amplitude * Math.sin(2 * Math.PI * hz * bonus.age);
+  });
+  halos.show(bonuses.length).forEach((mesh, i) => {
+    const bonus = bonuses[i];
+    if (!bonus) return;
+    const pulse = 1 + halo.pulse * Math.sin(2 * Math.PI * halo.pulseHz * bonus.age);
+    mesh.position.set(bonus.x, bonus.y, depth + 0.5);
+    mesh.scaling.set(size * halo.size * pulse, size * halo.size * pulse, 1);
+  });
+}
+
+const KINDS: readonly BonusKind[] = ['weapon', 'life', 'bomb'];
+
 /**
- * The weapon bonuses (phase 6 review), in playfield space: each one a badge swinging from side
- * to side over a pulsing halo, and a ring flashing out where the ship picks one up.
+ * The bonuses (phase 6 review, P11-R07), in playfield space: each one a badge of its kind
+ * swinging from side to side over a pulsing halo, and a ring flashing out where the ship picks
+ * one up.
  */
 export function createBonusRenderer(scene: Scene): BonusRenderer {
-  const { size, depth, halo, flash } = LOOK;
-  const colors = { frame: LOOK.frame, face: LOOK.face, chevrons: LOOK.chevrons };
-  const templates = [
-    opaqueTemplate('bonus-badge', buildBonusBadge({ ...colors, inset: LOOK.frameInset }), scene),
-    additiveTemplate('bonus-halo', buildGlowDisc(halo.segments, halo.colors), scene),
-    additiveTemplate('bonus-flash', ring(flash.segments, flash.color), scene),
-  ] as const;
-  const [badges, halos, rings] = templates.map(pool) as [
-    NodePool<Mesh>,
-    NodePool<Mesh>,
-    NodePool<Mesh>,
-  ];
+  const { flash } = LOOK;
+  const byKind = kindTemplates(scene);
+  const flashTemplate = additiveTemplate('bonus-flash', ring(flash.segments, flash.color), scene);
+  const pools = KINDS.map((kind): KindPools => {
+    const [badge, halo] = byKind[kind];
+    return { badges: pool(badge), halos: pool(halo) };
+  });
+  const rings = pool(flashTemplate);
   const flashes: Flash[] = [];
   return {
     sync: ({ bonuses, picked, dtSeconds }) => {
-      badges.show(bonuses.length).forEach((mesh, i) => {
-        const bonus = bonuses[i];
-        if (!bonus) return;
-        mesh.position.set(bonus.x, bonus.y, depth);
-        mesh.scaling.setAll(size);
-        const { amplitude, hz } = LOOK.swing;
-        mesh.rotation.y = amplitude * Math.sin(2 * Math.PI * hz * bonus.age);
-      });
-      halos.show(bonuses.length).forEach((mesh, i) => {
-        const bonus = bonuses[i];
-        if (!bonus) return;
-        const pulse = 1 + halo.pulse * Math.sin(2 * Math.PI * halo.pulseHz * bonus.age);
-        mesh.position.set(bonus.x, bonus.y, depth + 0.5);
-        mesh.scaling.set(size * halo.size * pulse, size * halo.size * pulse, 1);
+      KINDS.forEach((kind, i) => {
+        const kindPools = pools[i];
+        if (kindPools)
+          syncKind(
+            kindPools,
+            bonuses.filter((b) => b.kind === kind),
+          );
       });
       syncFlashes(rings, flashes, picked, dtSeconds);
     },
     dispose: () => {
-      for (const p of [badges, halos, rings]) p.dispose();
-      for (const t of templates) t.dispose();
+      for (const p of pools) {
+        p.badges.dispose();
+        p.halos.dispose();
+      }
+      rings.dispose();
+      for (const kind of KINDS) for (const t of byKind[kind]) t.dispose();
+      flashTemplate.dispose();
     },
   };
 }

@@ -42,7 +42,11 @@ function levelComplete(
     element(doc, 'div', 'level-complete-heading', complete.heading),
     element(doc, 'div', 'level-complete-level', complete.level),
     element(doc, 'div', 'level-complete-enemies', complete.enemies),
+    element(doc, 'div', 'level-complete-score', complete.score),
   );
+  if (complete.newHighScore) {
+    panel.append(element(doc, 'div', 'level-complete-high-score', complete.newHighScore));
+  }
   if (choices) {
     panel.append(choiceRow(doc, choices, handlers));
     return panel;

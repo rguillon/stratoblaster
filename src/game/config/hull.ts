@@ -9,6 +9,8 @@ import type { HullRules } from '../../core/systems/player-hull';
  */
 export const HULL_RULES: HullRules = {
   lives: 3,
+  /** P11-R07: life bonuses add lives up to 5. */
+  maxLives: 5,
   invincibleSeconds: 2,
   hitRadius: 5,
   damage: { bullet: 10, missile: 20, laser: 25, collision: 30 },

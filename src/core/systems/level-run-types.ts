@@ -7,6 +7,7 @@ import type { BonusRules } from './bonus-world';
 import type { BossFightRules, BossKindDefinition } from './boss-fights';
 import type { FlightBounds, FlightInput } from './player-flight';
 import type { PlayerHitKind } from './player-hits';
+import type { BombRules } from './player-bombs';
 import type { HullEvent, HullRules } from './player-hull';
 import type { WeaponLevels } from './run-arsenal';
 
@@ -21,6 +22,8 @@ export interface LevelCheckpoint {
   readonly progress: number;
   readonly bossesPassed: number;
   readonly weapons: WeaponLevels;
+  /** The score when the mini boss was destroyed: a Continue starts from it (P11-R04). */
+  readonly score: number;
 }
 
 /** What the "Level complete" (or "Game over") overlay shows (P06-R03). */
@@ -30,6 +33,10 @@ export interface LevelResult {
   readonly spawned: number;
   /** Whether the level was completed, or the game is over (phase 6 review). */
   readonly outcome: 'complete' | 'over';
+  /** Points scored in this attempt (P11-R01). */
+  readonly score: number;
+  /** Set by the app when `score` beat the saved high score (P11-R03). */
+  readonly newHighScore?: boolean;
   /** When the game is over after the mini boss: where it can go on from (P07-R08). */
   readonly checkpoint?: LevelCheckpoint;
 }
@@ -48,6 +55,8 @@ export interface LevelControls {
   readonly fire: boolean;
   /** Switch to the next weapon of `LevelRunOptions.weapons` (phase 6 review). */
   readonly switchWeapon?: boolean;
+  /** Set a bomb off (P11-R05): once per press. */
+  readonly bomb?: boolean;
 }
 
 /** The player ship of a run. */
@@ -92,10 +101,13 @@ export interface LevelRunOptions {
    */
   readonly inView?: (x: number, y: number) => boolean;
   /**
-   * Weapon bonuses (phase 6 review): some destroyed enemies drop one, and picking it up raises
-   * the weapon in use by a level. None when omitted.
+   * Bonuses (phase 6 review, P11-R07): some destroyed enemies drop one; a weapon bonus raises
+   * the weapon in use by a level, a life bonus adds a life, a bomb bonus a bomb. None when
+   * omitted.
    */
   readonly bonuses?: BonusRules;
+  /** The player's bombs (GD-32, P11-R05). No bomb when omitted. */
+  readonly bombs?: BombRules;
   /**
    * What hurts the player, and its lives (GD-20..GD-22, phase 6 review). The player cannot be
    * hurt when omitted.

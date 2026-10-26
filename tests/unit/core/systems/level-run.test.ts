@@ -271,7 +271,13 @@ describe('LevelRun', () => {
     expect(run.enemies.spawned).toBe(3);
     expect(run.phase).toBe('complete');
     expect(run.track.time).toBe(20);
-    expect(run.result).toEqual({ levelId: 'a', destroyed: 0, spawned: 3, outcome: 'complete' });
+    expect(run.result).toEqual({
+      levelId: 'a',
+      destroyed: 0,
+      spawned: 3,
+      outcome: 'complete',
+      score: 0,
+    });
   });
 
   it('P06-R03: the level completes at most `endWait` seconds after the end of the scroll', () => {

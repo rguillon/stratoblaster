@@ -92,27 +92,54 @@ describe('buildMenuView', () => {
       ...STATE,
       screen: 'game',
       chosenLevelId: 'c',
-      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'complete' },
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'complete', score: 0 },
     };
     expect(buildMenuView(state, CTX)).toMatchObject({
       complete: { heading: 'Done', over: false, level: 'C', enemies: '7/9', hint: 'Go on' },
     });
     const over: MenuState = {
       ...state,
-      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over' },
+      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over', score: 0 },
     };
     expect(buildMenuView(over, CTX)).toMatchObject({ complete: { heading: 'Lost', over: true } });
     expect(buildMenuView(over, CTX)).not.toHaveProperty('complete.choices');
   });
 
+  it('P11-R03: the overlay shows the score, and says when it beat the high score', () => {
+    const result = {
+      levelId: 'c',
+      destroyed: 7,
+      spawned: 9,
+      outcome: 'complete',
+      score: 2500,
+    } as const;
+    const state: MenuState = { ...STATE, screen: 'game', chosenLevelId: 'c', levelResult: result };
+    expect(buildMenuView(state, CTX)).toMatchObject({ complete: { score: 'Pts 2500' } });
+    expect(buildMenuView(state, CTX)).not.toHaveProperty('complete.newHighScore');
+    const best: MenuState = { ...state, levelResult: { ...result, newHighScore: true } };
+    expect(buildMenuView(best, CTX)).toMatchObject({ complete: { newHighScore: 'Record!' } });
+  });
+
   it('P07-R08: a game over after the mini boss offers Continue or level select', () => {
-    const checkpoint = { progress: 50, bossesPassed: 1, weapons: { weapon: 'pea', levels: {} } };
+    const checkpoint = {
+      progress: 50,
+      bossesPassed: 1,
+      score: 0,
+      weapons: { weapon: 'pea', levels: {} },
+    };
     const state: MenuState = {
       ...STATE,
       screen: 'game',
       chosenLevelId: 'c',
       choice: 1,
-      levelResult: { levelId: 'c', destroyed: 7, spawned: 9, outcome: 'over', checkpoint },
+      levelResult: {
+        levelId: 'c',
+        destroyed: 7,
+        spawned: 9,
+        outcome: 'over',
+        score: 0,
+        checkpoint,
+      },
     };
     expect(buildMenuView(state, CTX)).toMatchObject({
       selected: 1,

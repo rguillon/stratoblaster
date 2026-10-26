@@ -206,6 +206,30 @@ Boss (core/entities/boss.ts) extends Enemy: hitTargets = intact BossParts + Boss
   level again from the checkpoint). `GameLevel.runout` draws extra ground past the level's end
   (`withRunout`). `?level=…&boss=mini|final` starts at a boss; K destroys a part (debug only).
 
+## Score, lives and bombs (phase 11)
+
+```
+EnemyWorld.score ◀── destroyed enemies (points) + broken boss parts (BossStats.partPoints)
+LevelRun.score  ◀── + bonus points at the most (BonusRules.overflowPoints)  ─▶ checkpoint.score
+LevelControls.bomb ─▶ PlayerBombs.fire ─▶ damageTarget(every on-screen shot target)
+                                       └▶ EnemyShots.clear() while active; no hit lands
+BonusWorld.drop(targets, special) ─▶ Bonus { kind: weapon | life | bomb } ─▶ LevelRun #collect
+GameSession.end / MenuController.completeLevel ─▶ recordScore ─▶ high score cookie
+```
+
+- `core/systems/player-bombs.ts` (`BombRules`, `PlayerBombs`): bombs left, the one going off,
+  top-up after a lost life. `LevelRunOptions.bombs` is optional (no bombs without it).
+- `core/systems/bonus-world.ts`: `BonusKind`; `BonusRules.special` gives the life and bomb
+  chances, drawn from a random source of their own (`seed + 2`) so the weapon bonuses drop as
+  before; `place(kind, at)` drops a given kind (the mini boss's life bonus). `HullRules.maxLives`
+  caps the lives.
+- `app/`: `MenuController.recordScore` saves a beaten high score (`saveHighScore`), and
+  `completeLevel` marks the result `newHighScore`; `GameSession` records the score of a level
+  left early and hands the saved high score to `GamePlay` for the HUD (`SessionScores`).
+- Presentation: `GameView.bonuses` draws each kind, `GameView.bombs` (optional, `BombRenderer`)
+  the shockwave and flash; `GameHud` shows the score, the high score, the bomb icons and the touch
+  bomb button (`HudSetup.onBomb`).
+
 ## Levels (phase 06)
 
 ```
@@ -384,4 +408,7 @@ scene is rendered.
    model key in `GameDefinition.view.enemies.models`), the fight timings in
    `GameDefinition.bossFights`, and each level's bosses in `GameLevel.bosses` (a mini boss saves
    a checkpoint; a final boss ends the level).
+   Declare the bombs in `GameDefinition.bombs` (`BombRules`), the life and bomb bonus chances and
+   their points at the most in `GameDefinition.bonuses`, and each boss's `partPoints` in its
+   `BossStats`; optionally, a bomb renderer in `GameDefinition.view.bombs`.
 5. Run `make check`.

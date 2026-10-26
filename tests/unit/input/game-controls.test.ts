@@ -36,7 +36,7 @@ describe('GameControls', () => {
     expect(state.move.y).toBeCloseTo(0.5);
     pads = [pad([7, 14], [0.1, 0.1])];
     state = controls.read(1 / 60, 100);
-    expect(state).toEqual({ move: { x: -1, y: 0 }, fire: true, switchWeapon: false });
+    expect(state).toEqual({ move: { x: -1, y: 0 }, fire: true, switchWeapon: false, bomb: false });
     pads = [pad([], [1, -1])];
     state = controls.read(1 / 60, 100);
     expect(Math.hypot(state.move.x, state.move.y)).toBeCloseTo(1);
@@ -90,5 +90,44 @@ describe('GameControls', () => {
     expect(controls.read(0.1, 100).move.y).toBeCloseTo(0.5);
     controls.setTouchFire(false);
     expect(controls.read(0.1, 100).fire).toBe(false);
+  });
+
+  it('P11-R06: R and the left Shift (by position) set a bomb off once per press; E does not', () => {
+    const controls = new GameControls(GAME_CONTROLS_CONFIG);
+    expect(controls.key('KeyR', true)).toBe(true);
+    // Held keys repeat their key-downs: still one press.
+    controls.key('KeyR', true);
+    expect(controls.read(1 / 60, 100).bomb).toBe(true);
+    expect(controls.read(1 / 60, 100).bomb).toBe(false);
+    controls.key('KeyR', false);
+    controls.key('ShiftLeft', true);
+    expect(controls.read(1 / 60, 100).bomb).toBe(true);
+    controls.key('KeyE', true);
+    const state = controls.read(1 / 60, 100);
+    expect([state.switchWeapon, state.bomb]).toEqual([true, false]);
+    controls.key('ShiftLeft', false);
+    controls.key('KeyR', true);
+    controls.clear();
+    expect(controls.read(1 / 60, 100).bomb).toBe(false);
+  });
+
+  it('P11-R06: gamepad X (button 2) or LB (button 4) sets a bomb off once per press', () => {
+    let pads: GamepadLike[] = [pad([2])];
+    const controls = new GameControls(GAME_CONTROLS_CONFIG, () => pads);
+    expect(controls.read(1 / 60, 100).bomb).toBe(true);
+    expect(controls.read(1 / 60, 100).bomb).toBe(false);
+    pads = [pad()];
+    expect(controls.read(1 / 60, 100).bomb).toBe(false);
+    pads = [pad([4])];
+    expect(controls.read(1 / 60, 100).bomb).toBe(true);
+  });
+
+  it('P11-R06: the on-screen bomb button sets a bomb off', () => {
+    const controls = new GameControls(GAME_CONTROLS_CONFIG);
+    controls.bomb();
+    controls.setTouchFire(true);
+    const state = controls.read(1 / 60, 100);
+    expect([state.bomb, state.fire]).toEqual([true, true]);
+    expect(controls.read(1 / 60, 100).bomb).toBe(false);
   });
 });

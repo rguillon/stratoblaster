@@ -36,4 +36,24 @@ describe('PlayerHull (phase 6 review)', () => {
     hull.step(5);
     expect(hull.hit(10)).toBe('ignored');
   });
+
+  it('P11-R07: a life bonus adds a life up to the most, and none once the game is over', () => {
+    const hull = new PlayerHull({ ...RULES, maxLives: 3 }, 50);
+    expect(hull.addLife()).toBe(true);
+    expect(hull.lives).toBe(3);
+    expect(hull.addLife()).toBe(false);
+    expect(hull.lives).toBe(3);
+    // Without a most, the starting lives are the most.
+    const plain = new PlayerHull(RULES, 50);
+    expect(plain.addLife()).toBe(false);
+    plain.hit(60);
+    expect(plain.addLife()).toBe(true);
+    plain.hit(60);
+    plain.step(5);
+    plain.hit(60);
+    plain.step(5);
+    plain.hit(60);
+    expect(plain.out).toBe(true);
+    expect(plain.addLife()).toBe(false);
+  });
 });

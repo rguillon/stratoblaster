@@ -6,6 +6,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { GameDefinition } from '../../src/core/content/game-definition';
 import type { MenuScreen } from '../../src/core/menu/menu-screen';
 import type {
+  BombFrame,
+  BombRenderer,
   BonusFrame,
   BonusRenderer,
   GameView,
@@ -27,6 +29,19 @@ function sampleBonusRenderer(): BonusRenderer {
   return {
     sync: (frame) => {
       bonusFrames.push(frame);
+    },
+    dispose: () => undefined,
+  };
+}
+
+/** The frames the sample bomb renderer was given, most recent last. */
+export const bombFrames: BombFrame[] = [];
+
+/** A bomb renderer that records its frames. */
+function sampleBombRenderer(): BombRenderer {
+  return {
+    sync: (frame) => {
+      bombFrames.push(frame);
     },
     dispose: () => undefined,
   };
@@ -162,6 +177,7 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
   bossFights: { speedEaseSeconds: 1, barFillSeconds: 0.5 },
   // No drops unless a test asks for them.
   bonuses: { chance: { perHealth: 0, min: 0, max: 0 }, fallSpeed: 20, pickupRadius: 15 },
+  bombs: { start: 2, max: 3, damage: 50, seconds: 0.5 },
   hull: {
     lives: 2,
     invincibleSeconds: 1,
@@ -185,6 +201,8 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     levelComplete: 'Done',
     gameOver: 'Lost',
     enemiesDestroyed: (destroyed, spawned) => `${String(destroyed)}/${String(spawned)}`,
+    finalScore: (score) => `Pts ${String(score)}`,
+    newHighScore: 'Record!',
     continueHint: 'Go on',
     continueFromCheckpoint: 'Again',
     toLevelSelect: 'Levels',
@@ -192,6 +210,9 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     hudLives: (lives) => `L${String(lives)}`,
     hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
     hudDestroyed: (count) => `x${String(count)}`,
+    hudScore: (score) => String(score),
+    hudHighScore: (score) => `Top ${String(score)}`,
+    hudBomb: (bombs) => `B${String(bombs)}`,
     hudMiniBoss: 'Mini',
     hudBoss: 'Big',
     unsupported: 'No WebGL2',
@@ -204,5 +225,6 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     scenery: SAMPLE_SCENERY,
     enemies: SAMPLE_ENEMIES,
     bonuses: sampleBonusRenderer,
+    bombs: sampleBombRenderer,
   },
 };

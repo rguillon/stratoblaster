@@ -33,6 +33,8 @@ function gameView(state: MenuState, ctx: MenuViewContext): MenuView {
       over: result.outcome === 'over',
       level: label(result.levelId),
       enemies: texts.enemiesDestroyed(result.destroyed, result.spawned),
+      score: texts.finalScore(result.score),
+      ...(result.newHighScore ? { newHighScore: texts.newHighScore } : {}),
       hint: texts.continueHint,
       ...(choices ? { choices } : {}),
     },
