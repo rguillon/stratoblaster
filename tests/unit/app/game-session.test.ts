@@ -25,6 +25,9 @@ const GAME: MenuState = {
   choice: 0,
   attempt: 1,
   resume: null,
+  paused: false,
+  leaving: false,
+  volumes: { music: 6, sfx: 8 },
 };
 
 describe('GameSession', () => {

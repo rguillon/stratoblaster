@@ -4,6 +4,7 @@ import {
   advance,
   destroyBoss,
   expectState,
+  leaveLevel,
   openDebug,
   openGame,
   sendAction,
@@ -91,13 +92,14 @@ test.describe('P11: score, lives and bombs', () => {
     await expect(page.locator('.title-high-score')).toHaveText(String(score));
   });
 
-  test('P11-R03: leaving a level with Esc saves its score as the high score', async ({ page }) => {
+  test('P11-R03, P12-R02: leaving a level from the pause menu saves its score as the high score', async ({
+    page,
+  }) => {
     await openDebug(page, '?level=1-1&boss=final');
     await waitForBoss(page, 'Storm Petrel');
     await page.keyboard.press('KeyK');
     await stepUntil(page, async () => (await scoreState(page)).game?.score ?? 0).toBe(800);
-    await sendAction(page, 'back');
-    await expectState(page, { screen: 'title' });
+    await leaveLevel(page);
     await expect(page.locator('.title-high-score')).toHaveText('800');
     await page.reload();
     await openGame(page);

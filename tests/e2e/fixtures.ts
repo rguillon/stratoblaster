@@ -1,12 +1,16 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
-/** ENG-53: every e2e test fails on a console error or an uncaught exception. */
+/**
+ * ENG-53: every e2e test fails on a console error or an uncaught exception; P12-R05: and on any
+ * warning from the audio (an autoplay warning, a context that could not start).
+ */
 export const test = base.extend<{ consoleErrors: string[] }>({
   consoleErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
       page.on('console', (msg) => {
         if (msg.type() === 'error') errors.push(msg.text());
+        if (msg.type() === 'warning' && /audio|autoplay/i.test(msg.text())) errors.push(msg.text());
       });
       page.on('pageerror', (err) => errors.push(err.message));
       await use(errors);

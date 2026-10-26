@@ -98,7 +98,29 @@ describe('ShotWorld', () => {
     w.targets = [target(1, 50, 16)];
     w.step(0.05);
     expect(w.impacts).toHaveLength(1);
-    expect(w.impacts[0]).toMatchObject({ weaponId: 'gun', blastRadius: 10 });
+    expect(w.impacts[0]).toMatchObject({ weaponId: 'gun', blastRadius: 10, blocked: false });
+  });
+
+  it('P12-R09: an impact that does no damage (a shielded target) is reported as blocked', () => {
+    const w = world();
+    const shielded: ShotTarget = {
+      id: 1,
+      x: 50,
+      y: 16,
+      radius: 5,
+      maxHealth: 100,
+      get health() {
+        return 100;
+      },
+      set health(_value: number) {
+        // A shielded core ignores damage.
+      },
+    };
+    w.targets = [shielded];
+    w.step(0.05);
+    expect(w.impacts).toHaveLength(1);
+    expect(w.impacts[0]?.blocked).toBe(true);
+    expect(w.totalDamage).toBe(0);
   });
 
   it('removes shots that leave the playfield and reuses them', () => {

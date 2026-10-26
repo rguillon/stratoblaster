@@ -2,6 +2,7 @@ import type { TimeOfDay } from '../core/scenery/atmosphere';
 import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { BossRank } from '../core/systems/boss-fights';
+import type { LevelRun } from '../core/systems/level-run';
 import type { GameDefinition } from '../core/content/game-definition';
 import { GameControls } from '../input/game-controls';
 import type { GamepadSource } from '../input/gamepad-menu-input';
@@ -66,6 +67,14 @@ export interface SessionScores {
   readonly record: (score: number) => void;
 }
 
+/** What the audio hears of the levels played (P12-R07, P12-R09). */
+export interface SessionAudio {
+  /** A level starts, or starts again from its checkpoint. */
+  readonly started: (levelId: string) => void;
+  /** A step of the level was run. */
+  readonly step: (run: LevelRun) => void;
+}
+
 /** Keys go to the level's debug keys first (when on), then to the in-game controls. */
 export function listenControls(
   target: ListenTarget | undefined,
@@ -98,6 +107,8 @@ export function listenControls(
  */
 export class GameSession {
   play: GamePlay | undefined;
+  /** Whether the level being played is paused (P12-R01): it is kept, but not advanced. */
+  paused = false;
   /** The player's in-game controls, fed by the keyboard target and the gamepads. */
   readonly controls: GameControls;
   #startTime: number;
@@ -112,11 +123,15 @@ export class GameSession {
     private readonly options: GameSessionOptions,
     private readonly onComplete: (play: GamePlay) => void,
     private readonly scores?: SessionScores,
+    private readonly audio?: SessionAudio,
   ) {
     this.#startTime = options.debug?.time ?? 0;
     this.#startBoss = options.debug?.boss ?? null;
     this.controls = new GameControls(GAME_CONTROLS_CONFIG, options.gamepads);
-    this.#stopListening = listenControls(options.keyboardTarget, this.controls, () => this.play);
+    // No debug keys while paused (P12-R01: nothing in the level changes).
+    this.#stopListening = listenControls(options.keyboardTarget, this.controls, () =>
+      this.paused ? undefined : this.play,
+    );
   }
 
   /** Ends the level being played and stops listening to the keys. */
@@ -126,7 +141,10 @@ export class GameSession {
   }
 
   sync(state: MenuState): void {
-    const levelId = state.screen === 'game' ? state.chosenLevelId : null;
+    const levelId = state.screen === 'game' || state.paused ? state.chosenLevelId : null;
+    // Presses made while paused (e.g. a bomb key) do not carry into the level (P12-R01).
+    if (state.paused !== this.paused) this.controls.clear();
+    this.paused = state.paused;
     if (levelId === null) {
       this.end();
       return;
@@ -162,17 +180,27 @@ export class GameSession {
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),
         ...(this.options.overlay ? { hudParent: this.options.overlay } : {}),
         onComplete: () => {
-          if (storage && play.run.phase === 'complete') {
-            saveWeapons(storage, this.game.id, play.run.arsenal.snapshot());
-          }
-          this.onComplete(play);
+          this.#completed(play);
+        },
+        onStep: (run) => {
+          this.audio?.step(run);
         },
       },
     );
+    this.audio?.started(levelId);
     this.#startTime = 0;
     this.#startBoss = null;
     this.#attempt = state.attempt;
     this.play = play;
+  }
+
+  /** The level is over: a completed one keeps its weapons for the next (D-071). */
+  #completed(play: GamePlay): void {
+    const { storage } = this.options;
+    if (storage && play.run.phase === 'complete') {
+      saveWeapons(storage, this.game.id, play.run.arsenal.snapshot());
+    }
+    this.onComplete(play);
   }
 
   /** Ends the level being played; its score counts for the high score (P11-R03). */

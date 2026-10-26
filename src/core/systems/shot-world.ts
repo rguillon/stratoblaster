@@ -15,6 +15,8 @@ export interface ShotImpact {
   readonly x: number;
   readonly y: number;
   readonly blastRadius: number;
+  /** True when the hit did no damage, e.g. on a shielded core (a sound of its own, P12-R09). */
+  readonly blocked?: boolean;
 }
 
 export interface ShotWorldOptions {
@@ -159,22 +161,29 @@ export class ShotWorld {
     if (!hit) return;
     const { weapon } = shot;
     shot.alive = false;
+    const dealt = this.#damage(shot, hit);
+    this.totalDamage += dealt;
     this.impacts.push({
       weaponId: weapon.id,
       x: shot.x,
       y: shot.y,
       blastRadius: weapon.blastRadius,
+      blocked: dealt <= 0,
     });
-    if (weapon.blastRadius <= 0) {
-      this.totalDamage += damageTarget(hit, weapon.damage);
-      return;
-    }
+  }
+
+  /** Deals the shot's damage to `hit`, or to everything in its blast. Returns the damage dealt. */
+  #damage(shot: Projectile, hit: ShotTarget): number {
+    const { weapon } = shot;
+    if (weapon.blastRadius <= 0) return damageTarget(hit, weapon.damage);
+    let dealt = 0;
     for (const target of this.targets) {
       const reach = weapon.blastRadius + target.radius;
       if (isAlive(target) && (target.x - shot.x) ** 2 + (target.y - shot.y) ** 2 <= reach ** 2) {
-        this.totalDamage += damageTarget(target, weapon.damage);
+        dealt += damageTarget(target, weapon.damage);
       }
     }
+    return dealt;
   }
 
   #isOut(shot: Projectile): boolean {

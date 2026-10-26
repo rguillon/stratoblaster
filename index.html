@@ -328,6 +328,25 @@
       .title-start.selected::after {
         content: ' ◀';
       }
+      /* Settings entry under Start (P12-R04). */
+      .title-settings {
+        margin-top: 18px;
+        padding: 8px 22px;
+        clip-path: var(--chamfer);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .title-start:not(.selected) {
+        font-size: 28px;
+      }
+      .title-settings.selected::before {
+        content: '▶ ';
+      }
+      .title-settings.selected::after {
+        content: ' ◀';
+      }
       .title-hint {
         margin-top: auto;
         margin-bottom: 28px;
@@ -676,6 +695,149 @@
           display: flex;
         }
       }
+      /* Pause button (P12-R01): top right, under the weapon readout, clear of the HUD; at least
+         44 CSS px even on a 390 px wide phone (scale 0.81). */
+      .game-pause {
+        position: absolute;
+        z-index: 5;
+        top: 46px;
+        right: 18px;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 2px solid var(--cyan);
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        color: var(--cyan);
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: none;
+      }
+      /* Pause menu (P12-R02): the last frame dimmed (pause_dim, 50 % black) under a panel. */
+      .pause-dim {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .pause-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        min-width: 280px;
+        padding: 24px 32px;
+        clip-path: var(--chamfer);
+        border: 2px solid var(--yellow);
+        background: var(--glass);
+      }
+      .pause-heading {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--yellow);
+        text-shadow:
+          -2px 0 var(--red),
+          2px 0 var(--cyan);
+      }
+      .pause-entry,
+      .pause-choice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 56px;
+        padding: 6px 20px;
+        clip-path: var(--chamfer);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .pause-entry.selected::before {
+        content: '▶ ';
+      }
+      .pause-question-text {
+        margin: 8px 0 14px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--paper);
+      }
+      .pause-choices {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+      }
+      .pause-choice {
+        min-width: 110px;
+      }
+      .pause-hint {
+        margin-top: 4px;
+      }
+
+      /* Settings screen (P12-R04): one slider per volume; over a paused level, dimmed. */
+      .settings-screen.over-level {
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .settings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        width: 100%;
+        margin: 56px 0 28px;
+      }
+      .settings-slider {
+        display: grid;
+        grid-template-columns: 130px 1fr 34px;
+        gap: 10px;
+        align-items: center;
+        min-height: 64px;
+        padding: 4px 14px;
+        clip-path: var(--chamfer);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-align: left;
+        text-transform: uppercase;
+      }
+      .slider-bar {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+        height: 56px;
+        touch-action: none;
+      }
+      .slider-cell {
+        flex: 1;
+        height: 22px;
+        background: rgba(0, 240, 255, 0.18);
+        border: 1px solid rgba(0, 240, 255, 0.45);
+      }
+      .slider-cell.on {
+        background: var(--cyan);
+        box-shadow: 0 0 6px var(--cyan);
+      }
+      .settings-slider.selected .slider-cell {
+        background: rgba(0, 0, 0, 0.15);
+        border-color: rgba(0, 0, 0, 0.5);
+        box-shadow: none;
+      }
+      .settings-slider.selected .slider-cell.on {
+        background: var(--black);
+      }
+      .slider-value {
+        font-family: var(--font-tech);
+        font-size: 22px;
+        text-align: right;
+      }
+
       /* "Level complete" overlay (P06-R03). */
       .level-complete {
         display: flex;
