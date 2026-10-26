@@ -1,5 +1,6 @@
 import type { Note, Track } from '../../../audio/audio-types';
 import { createRng, pick, randomIn, type Random } from '../../../core/math/rng';
+import { BOSS_PROGRESSIONS, bossBassBar, bossDrumBar, riserBar, stabBar } from './compose-boss';
 import { makeMotif, motifBars, scalePitch, type Motif } from './compose-melody';
 import {
   arpBar,
@@ -58,16 +59,16 @@ function sectionCount(bpm: number): number {
 }
 
 /**
- * The energy of each section: a level builds up, breaks down and comes back; a boss fight is
- * intense all along, with one shorter breath.
+ * A level's energy shapes: it drives from the start and swells to full sections (no bare
+ * breakdown: energetic synthwave, reviewer 2026-10-26).
  */
-/** A level's energy shapes: it builds up, breaks down to its arpeggio and pads, comes back. */
 const LEVEL_ENERGIES: readonly (readonly number[])[] = [
-  [1, 2, 1, 0, 2],
-  [1, 1, 2, 0, 2],
-  [1, 2, 0, 2, 1],
+  [1, 2, 2, 1, 2],
+  [2, 1, 2, 1, 2],
+  [1, 2, 1, 2, 2],
 ];
 
+/** The energy of each section: the level's shape; a boss fight is intense all along, with one breath. */
 function energies(request: TrackRequest, count: number, random: Random): number[] {
   if (request.boss) return Array.from({ length: count }, (_, i) => (i === count - 2 ? 1 : 2));
   const shape = pick(random, request.style.energies ?? LEVEL_ENERGIES);
@@ -76,7 +77,7 @@ function energies(request: TrackRequest, count: number, random: Random): number[
 
 /** Two or three different sections (verse, chorus, bridge), repeated in the track's order. */
 function sections(request: TrackRequest, count: number, random: Random): Section[] {
-  const { progressions } = request.style;
+  const progressions = request.boss ? BOSS_PROGRESSIONS : request.style.progressions;
   const themes = Array.from({ length: Math.min(3, progressions.length) }, (_, i) => ({
     progression: progressions[
       (Math.floor(random() * progressions.length) + i) % progressions.length
@@ -97,6 +98,18 @@ function sections(request: TrackRequest, count: number, random: Random): Section
 /** The chord of scale step `degree`: a triad in the bass register. */
 function chord(scale: readonly number[], degree: number): number[] {
   return [0, 2, 4].map((third) => scalePitch(scale, degree + third));
+}
+
+/** The drums and bass of a bar: the style's, or the boss's driving ones with chord stabs. */
+function rhythmBar(
+  request: TrackRequest,
+  bar: BarContext,
+  parts: { random: Random; bass: readonly number[] },
+): Note[] {
+  const { style } = request;
+  if (request.boss)
+    return [...bossDrumBar(style, bar), ...bossBassBar(style, bar), ...stabBar(bar)];
+  return [...drumBar(style, bar, parts.random), ...bassBar(style, bar, parts.bass)];
 }
 
 /** The notes of one section, bar by bar. */
@@ -122,9 +135,8 @@ function sectionNotes(
       energy: section.energy,
       fill: b === SECTION_BARS - 1,
     };
-    const kicks = request.boss && b % 2 === 1 ? [14] : [];
-    notes.push(...drumBar(style, bar, parts.random, kicks), ...bassBar(style, bar, parts.bass));
-    notes.push(...padBar(style, bar), ...arpBar(style, bar, parts.arp));
+    notes.push(...rhythmBar(request, bar, parts));
+    notes.push(...padBar(style, bar), ...arpBar(style, bar, parts.arp), ...riserBar(bar));
     if (b % 2 === 0) notes.push(...motifBars(style, section.motif, bar, degree, b === 6 ? 1 : 0));
   }
   return notes;

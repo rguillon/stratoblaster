@@ -138,15 +138,15 @@ const BASSES: Readonly<Record<string, Instrument>> = {
       layer('square', 0.45, { pitch: 0.5, envelope: env(0.004, 0.2, 0.6, 0.04) }),
     ],
   },
-  /** Dreamwave: a round filtered saw over a sine sub. */
+  /** Dreamwave: a round, plucked saw over a sine sub. */
   'bass-dream': {
     gain: 0.45,
     layers: [
       layer('sawtooth', 0.55, {
-        envelope: env(0.02, 0.3, 0.7, 0.2),
-        filter: { type: 'lowpass', frequency: 520, q: 1 },
+        envelope: env(0.005, 0.2, 0.55, 0.06),
+        filter: { type: 'lowpass', frequency: 560, from: 1800, sweepSeconds: 0.12, q: 2 },
       }),
-      layer('sine', 0.6, { pitch: 0.5, envelope: env(0.02, 0.3, 0.8, 0.2) }),
+      layer('sine', 0.6, { pitch: 0.5, envelope: env(0.005, 0.22, 0.75, 0.06) }),
     ],
   },
   /** A plucked square bass for syncopated lines. */
@@ -288,6 +288,30 @@ const LEADS: Readonly<Record<string, Instrument>> = {
   },
 };
 
+const BOSS: Readonly<Record<string, Instrument>> = {
+  /** A short, bright supersaw chord stab (boss tracks). */
+  stab: {
+    gain: 0.075,
+    echo: 0.15,
+    reverb: 0.25,
+    layers: saws([-12, 0, 12], 0.5, {
+      envelope: env(0.002, 0.14, 0.15, 0.05),
+      filter: { type: 'lowpass', frequency: 1400, from: 5500, sweepSeconds: 0.1, q: 3 },
+    }),
+  },
+  /** A noise sweep rising over a bar into the next section. */
+  riser: {
+    gain: 0.12,
+    reverb: 0.4,
+    layers: [
+      layer('noise', 1, {
+        envelope: env(1.3, 0.1, 0.9, 0.05),
+        filter: { type: 'bandpass', frequency: 7000, from: 300, sweepSeconds: 1.4, q: 1.5 },
+      }),
+    ],
+  },
+};
+
 /** Every instrument the game's tracks name. */
 export const INSTRUMENTS: Readonly<Record<string, Instrument>> = {
   ...DRUMS,
@@ -295,4 +319,5 @@ export const INSTRUMENTS: Readonly<Record<string, Instrument>> = {
   ...PADS,
   ...ARPS,
   ...LEADS,
+  ...BOSS,
 };

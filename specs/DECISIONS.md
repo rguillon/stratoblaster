@@ -1114,3 +1114,14 @@
 - **Consequences:** Loudness and style were checked with an offline render in Chromium (`OfflineAudioContext`), not by ear: the reviewer's listening is the final check.
 - **Status:** Accepted
 
+### D-100 — Stressful boss tracks and more energetic synthwave
+- **Date:** 2026-10-26
+- **Phase:** 12 (review)
+- **Context:** The reviewer asked for more stressful boss music and for all the music to be more energetic synthwave. Boss tracks (D-098, D-099) were the level style faster, with one extra kick; levels had bare breakdowns, half-time dreamwave in World 2 and eighth-note arpeggios in Worlds 2 and 4.
+- **Decision:**
+  - Boss tracks have their own drums, bass and chord stabs (`compose-boss.ts`): pushed kicks, sixteenth hats, rising snare rolls, a root/octave sixteenth bass, 3-3-2 supersaw stabs, tense progressions (`BOSS_PROGRESSIONS`) in harmonic minor or phrygian. They stay in their world's instruments, so a boss still sounds like its world.
+  - Every track has a noise riser into each section. Levels: tempos raised by 8–14 BPM (tunable amended), sixteenth arpeggios, no breakdown at energy 0; World 2 moves from half time to a driving backbeat. The menu theme goes to 100 BPM, still slower than every level.
+- **Alternatives considered:** dissonant alarm-like leads (tritones, sirens), judged unpleasant for a child (P12-R09's spirit); boss-specific instruments per world (more data for little gain over the stabs and drums).
+- **Consequences:** Boss tracks are 2–3 dB louder than the level tracks (denser), within the master limiter; checked offline, not by ear.
+- **Status:** Accepted
+

@@ -64,10 +64,10 @@ describe('game music', () => {
 
   it('P12-R06: each world plays in its tempo range and its own instruments', () => {
     const ranges: Record<number, [number, number]> = {
-      1: [120, 132],
-      2: [100, 112],
-      3: [112, 124],
-      4: [90, 104],
+      1: [128, 140],
+      2: [112, 124],
+      3: [120, 132],
+      4: [104, 116],
     };
     for (const id of LEVEL_IDS) {
       const [min, max] = ranges[worldOf(id)] ?? [0, 0];
@@ -94,10 +94,11 @@ describe('game music', () => {
     expect(gameMusic({ kind: 'level', levelId: '9-1' })).toBeUndefined();
   });
 
-  it('P12-R08: a calm menu theme, looping, slower than every level', () => {
+  it('P12-R08: a mid-tempo menu theme, looping, slower than every level', () => {
     const menu = gameMusic({ kind: 'menu' });
     expect(menu).toMatchObject({ id: 'menu', loop: true });
-    expect(menu?.bpm ?? 999).toBeLessThan(90);
+    const slowest = Math.min(...LEVEL_IDS.map((id) => level(id).bpm));
+    expect(menu?.bpm ?? 999).toBeLessThan(slowest);
     expect(trackSeconds(menu ?? level('1-1'))).toBeGreaterThanOrEqual(60);
   });
 
@@ -149,6 +150,39 @@ describe('synthwave (reviewer, 2026-10-26)', () => {
   it('P12-R06: section ends roll down the synth toms', () => {
     const toms = level('1-1').notes.filter((n) => n.instrument === 'tom');
     expect(new Set(toms.map((n) => n.pitch)).size).toBeGreaterThan(2);
+  });
+
+  it('P12-R06: every level drives from its first bar: a snare in every bar, no bare breakdown', () => {
+    for (const id of LEVEL_IDS) {
+      const track = level(id);
+      const snares = new Set(
+        track.notes
+          .filter((n) => n.instrument === 'snare-gated')
+          .map((n) => Math.floor(n.beat / 4)),
+      );
+      expect(snares.size, id).toBe(track.beats / 4);
+      expect(
+        track.notes.some((n) => n.instrument === 'riser'),
+        id,
+      ).toBe(true);
+    }
+  });
+
+  it('P12-R07: boss tracks are stressful: denser than their levels, snare rolls, chord stabs, risers', () => {
+    const perSecond = (t: Track): number => t.notes.length / trackSeconds(t);
+    for (const world of [1, 2, 3, 4]) {
+      const boss = bossTrack(`${String(world)}-1`);
+      const levels = LEVEL_IDS.filter((id) => worldOf(id) === world).map(level);
+      expect(perSecond(boss)).toBeGreaterThan(Math.max(...levels.map(perSecond)));
+      const used = new Set(boss.notes.map((n) => n.instrument));
+      expect(used.has('stab') && used.has('riser'), boss.id).toBe(true);
+      const snaresByBar = new Map<number, number>();
+      for (const n of boss.notes.filter((m) => m.instrument === 'snare-gated')) {
+        const bar = Math.floor(n.beat / 4);
+        snaresByBar.set(bar, (snaresByBar.get(bar) ?? 0) + 1);
+      }
+      expect(Math.max(...snaresByBar.values()), boss.id).toBeGreaterThanOrEqual(8);
+    }
   });
 
   it('P12-R08: the menu theme is a full track: drums, bass, pad, arpeggio and lead in every section', () => {

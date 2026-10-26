@@ -380,7 +380,9 @@ AudioOutput: AudioContext (made on the first gesture) ─▶ music bus (+ reverb
   style per world, all synthwave (D-099): outrun, dreamwave, tom-heavy synthwave, darksynth;
   tempo range, scales, chords, instruments, drum and bass feels),
   `compose-track.ts` / `compose-parts.ts` / `compose-melody.ts` (a seeded, pure composer: the
-  level id's hash picks key, tempo, sections, motifs), `instruments.ts`, `jingles.ts`,
+  level id's hash picks key, tempo, sections, motifs), `compose-boss.ts` (the boss tracks'
+  driving drums with snare rolls, rolling octave bass, 3-3-2 chord stabs and tense progressions;
+  the risers into each section, D-100), `instruments.ts`, `jingles.ts`,
   `sound-designs.ts` (one sound per cue), `game-audio.ts` (tracks made once, mix levels).
 - Test API (P12-R12): `paused`, `leaving`, `volumes`, `music` (track id), `sounds` (last names),
   `audio` (context state); `sendAction('pause' | 'resume')`.

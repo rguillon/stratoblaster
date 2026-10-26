@@ -8,14 +8,11 @@ export const SCALES = {
   harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
 } as const;
 
-/**
- * How the drums go: four on the floor, a laid-back backbeat, half time, tribal (shakers and
- * toms), heavy and slow.
- */
-export type DrumFeel = 'four' | 'backbeat' | 'half' | 'tribal' | 'heavy';
+/** How the drums go: four on the floor, a driving backbeat, tribal (shakers and toms), heavy. */
+export type DrumFeel = 'four' | 'backbeat' | 'tribal' | 'heavy';
 
-/** How the bass goes: pumping octave eighths, long notes, syncopated plucks, rolling sixteenths. */
-export type BassFeel = 'eighths' | 'long' | 'syncopated' | 'rolling';
+/** How the bass goes: pumping octave eighths, syncopated plucks, rolling sixteenths. */
+export type BassFeel = 'eighths' | 'syncopated' | 'rolling';
 
 /** The instrument of each part (keys of `INSTRUMENTS`). */
 export interface StyleInstruments {
@@ -40,7 +37,7 @@ export interface MusicStyle {
   /** Its boss track is this many BPM faster than its fastest level track. */
   readonly bossBoost: readonly [number, number];
   readonly scales: readonly (readonly number[])[];
-  /** The boss track's scale: darker. */
+  /** The boss track's scale: darker and tenser (its chords: `BOSS_PROGRESSIONS`). */
   readonly bossScale: readonly number[];
   /** MIDI pitches the keys' roots are picked from (bass register). */
   readonly roots: readonly number[];
@@ -61,17 +58,17 @@ export interface MusicStyle {
 }
 
 /**
- * The four worlds' styles (P12-R06, tempo ranges from the phase's tunables), all synthwave
- * (reviewer, 2026-10-26): World 1 (desert and sea) bright, driving outrun; World 2 (Frozen North)
- * cold, airy dreamwave; World 3 (Jungle) synthwave on toms and shakers; World 4 (Volcanic Lands)
- * dark, heavy darksynth.
+ * The four worlds' styles (P12-R06, tempo ranges from the phase's tunables), all energetic
+ * synthwave (reviewer, 2026-10-26): World 1 (desert and sea) bright, driving outrun; World 2
+ * (Frozen North) cold, glassy dreamwave on a driving beat; World 3 (Jungle) synthwave on toms and
+ * shakers; World 4 (Volcanic Lands) dark, heavy darksynth.
  */
 export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
   1: {
-    tempo: [120, 132],
+    tempo: [128, 140],
     bossBoost: [20, 30],
     scales: [SCALES.major, SCALES.mixolydian, SCALES.minor],
-    bossScale: SCALES.minor,
+    bossScale: SCALES.harmonicMinor,
     roots: [38, 40, 41, 43, 45],
     progressions: [
       [0, 4, 5, 3],
@@ -96,7 +93,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
     octaves: { pad: 2, arp: 3, lead: 2 },
   },
   2: {
-    tempo: [100, 112],
+    tempo: [112, 124],
     bossBoost: [20, 30],
     scales: [SCALES.dorian, SCALES.minor, SCALES.major],
     bossScale: SCALES.harmonicMinor,
@@ -118,13 +115,13 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
       arp: 'arp-glass',
       lead: 'bell',
     },
-    drums: 'half',
-    bass: 'long',
-    arpRate: 2,
+    drums: 'backbeat',
+    bass: 'eighths',
+    arpRate: 4,
     octaves: { pad: 2, arp: 3, lead: 2 },
   },
   3: {
-    tempo: [112, 124],
+    tempo: [120, 132],
     bossBoost: [20, 30],
     scales: [SCALES.dorian, SCALES.minor, SCALES.mixolydian],
     bossScale: SCALES.phrygian,
@@ -152,7 +149,7 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
     octaves: { pad: 2, arp: 2, lead: 2 },
   },
   4: {
-    tempo: [90, 104],
+    tempo: [104, 116],
     bossBoost: [20, 30],
     scales: [SCALES.phrygian, SCALES.harmonicMinor, SCALES.minor],
     bossScale: SCALES.phrygian,
@@ -176,18 +173,18 @@ export const WORLD_STYLES: Readonly<Record<number, MusicStyle>> = {
     },
     drums: 'heavy',
     bass: 'rolling',
-    arpRate: 2,
+    arpRate: 4,
     octaves: { pad: 2, arp: 2, lead: 2 },
   },
 };
 
 /**
- * The menu theme's style (P12-R08, synthwave review): laid-back synthwave in a minor key, with
+ * The menu theme's style (P12-R08, synthwave reviews): mid-tempo synthwave in a minor key, with
  * the classic i–VI–III–VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and a
- * supersaw lead.
+ * supersaw lead; slower than every level.
  */
 export const MENU_STYLE: MusicStyle = {
-  tempo: [88, 88],
+  tempo: [100, 100],
   bossBoost: [0, 0],
   scales: [SCALES.minor],
   bossScale: SCALES.minor,

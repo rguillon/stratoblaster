@@ -41,32 +41,26 @@ interface DrumPattern {
 }
 
 /**
- * Synthwave drum patterns by feel (synthwave review): four on the floor with off-beat open hats
- * (outrun), a laid-back backbeat, half time (dreamwave), tom-heavy tribal, heavy darksynth.
+ * Synthwave drum patterns by feel (synthwave reviews): four on the floor with off-beat open hats
+ * (outrun), a driving backbeat (dreamwave, the menus), tom-heavy tribal, heavy darksynth.
  */
 const PATTERNS: Readonly<Record<MusicStyle['drums'], DrumPattern>> = {
   four: { kick: [0, 4, 8, 12], snare: [4, 12], hatEvery: 2, open: [2, 6, 10, 14] },
-  backbeat: { kick: [0, 8, 10], snare: [4, 12], hatEvery: 2, open: [6, 14] },
-  half: { kick: [0, 10], snare: [8], hatEvery: 2, open: [14] },
+  backbeat: { kick: [0, 6, 8, 10], snare: [4, 12], hatEvery: 2, open: [2, 6, 10, 14] },
   tribal: { kick: [0, 6, 10], snare: [4, 12], hatEvery: 1, open: [3, 7, 11, 15] },
-  heavy: { kick: [0, 3, 8, 11], snare: [8], hatEvery: 2, open: [] },
+  heavy: { kick: [0, 3, 8, 10, 11], snare: [4, 12], hatEvery: 2, open: [6, 14] },
 };
 
 /** Gated snares ring for an eighth, so their gate shows. */
 const SNARE_BEATS = 0.5;
 
 /** One bar of drums (P12-R06): the style's pattern, hats by energy, a tom fill at section ends. */
-export function drumBar(
-  style: MusicStyle,
-  bar: BarContext,
-  random: Random,
-  extraKicks: readonly number[],
-): Note[] {
+export function drumBar(style: MusicStyle, bar: BarContext, random: Random): Note[] {
   const { kick, snare, hat, perc } = style.instruments;
   const pattern = PATTERNS[style.drums];
   const step = BEATS_PER_BAR / DRUM_STEPS;
   const at = (i: number): number => bar.beat + i * step;
-  const notes = [...pattern.kick, ...extraKicks].map((i) => note(kick, at(i), step, DRUM_PITCH, 1));
+  const notes = pattern.kick.map((i) => note(kick, at(i), step, DRUM_PITCH, 1));
   if (bar.energy === 0) return notes;
   for (const i of pattern.snare) notes.push(note(snare, at(i), SNARE_BEATS, DRUM_PITCH, 0.9));
   const every = bar.energy >= 2 ? 1 : pattern.hatEvery;
@@ -94,7 +88,6 @@ function drumFill(bar: BarContext, random: Random): Note[] {
 /** Steps (of 16 per bar) the bass plays at, by feel; a held note lasts until the next one. */
 const BASS_STEPS: Readonly<Record<MusicStyle['bass'], readonly (readonly number[])[]>> = {
   eighths: [[0, 2, 4, 6, 8, 10, 12, 14]],
-  long: [[0, 8], [0, 6, 12], [0]],
   syncopated: [
     [0, 6, 8, 12],
     [0, 4, 6, 12],
@@ -103,7 +96,7 @@ const BASS_STEPS: Readonly<Record<MusicStyle['bass'], readonly (readonly number[
   rolling: [Array.from({ length: 16 }, (_, i) => i)],
 };
 
-/** Bass steps when intense: rolling sixteenths (driving eighths for the long basses). */
+/** Bass steps when intense: rolling sixteenths. */
 const BUSY_BASS = Array.from({ length: 16 }, (_, i) => i);
 
 /**
@@ -113,10 +106,10 @@ const BUSY_BASS = Array.from({ length: 16 }, (_, i) => i);
 export function bassBar(style: MusicStyle, bar: BarContext, steps: readonly number[]): Note[] {
   const [root = 36, , fifth = root + 7] = bar.chord;
   const sixteenth = BEATS_PER_BAR / DRUM_STEPS;
-  const hits = bar.energy >= 2 && style.bass !== 'long' ? BUSY_BASS : steps;
+  const hits = bar.energy >= 2 ? BUSY_BASS : steps;
   return hits.map((s, i) => {
     const next = hits[i + 1] ?? DRUM_STEPS;
-    let pitch = s >= 12 && s < 14 && style.bass !== 'long' ? fifth : root;
+    let pitch = s >= 12 && s < 14 ? fifth : root;
     if (style.bass === 'eighths' && s % 4 === 2) pitch += 12;
     const accent = s % 4 === 0 ? 1 : 0.75;
     return note(

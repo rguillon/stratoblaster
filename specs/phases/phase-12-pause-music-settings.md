@@ -110,6 +110,7 @@ If Web Audio is missing or fails, the game runs silently without errors. Generat
 Every level (`1-1` to `4-5`) has its own music (GD-70), generated from that level's data:
 - each world has a style that matches its look, in the cyberpunk / synthwave direction (GD-60): World 1 (desert and sea) bright and driving, World 2 (Frozen North) cold and airy, World 3 (Jungle) percussive, World 4 (Volcanic Lands) dark and heavy;
 - every track is synthwave (reviewer, 2026-10-26): 80s analog-style synths (detuned saw pads and leads, plucked arpeggios with tempo-synced echoes, pumping or rolling saw basses), drum-machine drums with big gated snares and synth toms, and reverb; the world styles above are synthwave flavours (World 1 outrun, World 2 dreamwave, World 3 synthwave with tom-heavy percussion, World 4 darksynth);
+- every track is energetic (reviewer, 2026-10-26): driving drums from the first bar, sixteenth-note arpeggios, no bare breakdown, a rising sweep into each section, and faster tempos (see **Tunable values**);
 - the five levels of a world share the world's style (instruments, tempo range) but differ in melody, chords and rhythm, so no two levels sound the same;
 - the same level always plays the same music (deterministic from the level's id, never from `Math.random`);
 - a track lasts at least `music_loop_min` before it repeats, and loops without a gap or a click.
@@ -124,7 +125,7 @@ The music starts with the level and fades out in `music_fade` when the level end
 
 ### P12-R07 — Boss music and jingles  · MUST
 
-- When a mini boss or final boss fight starts (its boss bar shows), the level music cross-fades in `music_crossfade` to that world's **boss track**: faster and more intense than its level tracks (GD-70). When the mini boss is destroyed, it cross-fades back to the level track, from its start. After the final boss, the boss track stops with the level end.
+- When a mini boss or final boss fight starts (its boss bar shows), the level music cross-fades in `music_crossfade` to that world's **boss track**: faster and more intense than its level tracks (GD-70). Boss tracks are stressful (reviewer, 2026-10-26): pushed kicks under sixteenth-note hats, snare rolls, a rolling octave bass, chord stabs on a restless 3-3-2 rhythm, tense chords in a darker scale and a rising sweep into each section. When the mini boss is destroyed, it cross-fades back to the level track, from its start. After the final boss, the boss track stops with the level end.
 - Short jingles, generated like the music, play once: **level complete** (with the "Level complete" panel), **game over** (with the "Game over" panel) and **checkpoint reached** (when the mini boss is destroyed, over the music).
 - Continue (P11-R04) restarts the level track.
 
@@ -136,7 +137,7 @@ The music starts with the level and fades out in `music_fade` when the level end
 
 ### P12-R08 — Menu music  · MUST
 
-The menus (title, ship select, level select, settings opened from the title) play one calm **menu theme**, generated like the level music, looping. It is a full synthwave track (drums, bass, pads, arpeggio, lead; reviewer, 2026-10-26), mid-tempo, about as loud as the level tracks. It keeps playing (it does not restart) when moving between these screens, and fades out when a level starts.
+The menus (title, ship select, level select, settings opened from the title) play one **menu theme**, generated like the level music, looping. It is a full, energetic synthwave track (drums, bass, pads, arpeggio, lead; reviewer, 2026-10-26), mid-tempo and slower than every level, about as loud as the level tracks. It keeps playing (it does not restart) when moving between these screens, and fades out when a level starts.
 
 **Acceptance criteria**
 - [ ] Given the title, when the player goes to ship select and level select, then the menu theme keeps playing without restarting (unit test on the music state).
@@ -207,7 +208,7 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 | music_loop_min | 60 s | P12-R06 |
 | music_fade | 1 s | P12-R06, P12-R08 |
 | music_crossfade | 1 s | P12-R07 |
-| level tempo range | World 1: 120–132 BPM; World 2: 100–112; World 3: 112–124; World 4: 90–104 | P12-R06; boss tracks 20–30 BPM faster than their world |
+| level tempo range | World 1: 128–140 BPM; World 2: 112–124; World 3: 120–132; World 4: 104–116 (raised by the reviewer, 2026-10-26; were 120–132, 100–112, 112–124, 90–104); menu theme 100 BPM | P12-R06, P12-R08; boss tracks 20–30 BPM faster than their world |
 | sfx_pan_max | 0.6 | P12-R09 |
 | sfx_voices_max | 16 | P12-R10 |
 | sfx_retrigger_min | 30 ms | P12-R10 |
@@ -273,6 +274,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 
 - [x] (2026-10-26, reviewer) Add a music to the main menus: a real menu track, clearly audible on the title, ship select and level select screens.
 - [x] (2026-10-26, reviewer) Make the musics synthwave: every level, boss and menu track and the jingles.
+- [x] (2026-10-26, reviewer) Make the boss music more stressful.
+- [x] (2026-10-26, reviewer) Rework the music: all synthwave and more energetic.
 
 ---
 
@@ -307,7 +310,7 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 | P12-R05 | Partial | `audio/audio-output.ts`, `audio/synth.ts`, `audio/sequencer.ts`, `audio/music-player.ts`, `app/game-audio.ts`, `app/page-audio.ts`, `main.ts` (`browserAudio`, 25 ms timer), `Makefile` (no audio file in `dist/`) | `audio-output.test.ts`, `synth.test.ts`, `sequencer.test.ts`, `music-player.test.ts`, `game-audio.test.ts`, `start-app-pause.test.ts` (no `AudioContext`, gestures, gamepad button); e2e no context before input, running after a key press, no autoplay warning, no media fetched; `fixtures.ts` fails any test on an audio warning | The 60 fps check in the busiest World 4 level is a manual check: not done by the agent (no reference machine). |
 | P12-R06 | Done | `game/view/audio/music-styles.ts`, `compose-track.ts`, `compose-parts.ts`, `compose-melody.ts`, `instruments.ts`, `game-audio.ts` | `game/view/audio/game-audio.test.ts` (20 pairwise different, 2-3 deterministic, ≥ 60 s loops, tempo ranges); `sequencer.test.ts` (gapless loop) | World styles by ear: manual check. Level tracks 61–76 s. |
 | P12-R07 | Done | `app/game-audio.ts` (`#bossMusic`, `levelEnded`, `levelStarted`), `game/view/audio/jingles.ts`, `audio/music-player.ts` (cross-fade, jingles) | `game-audio.test.ts` (app: boss bar → boss track, back to the level track from its start, checkpoint jingle, final boss, jingles once, Continue), game data test (4 boss tracks 20–30 BPM faster); e2e `boss-2` during the 2-3 mini boss | |
-| P12-R08 | Done | `app/game-audio.ts` (`menuChanged`), `game/view/audio/music-styles.ts` (`MENU_STYLE`, 84 BPM) | `game-audio.test.ts` (app: kept across title / ship / level select / settings, fades into the level), game data test; e2e `menu` on the title and ship select | |
+| P12-R08 | Done | `app/game-audio.ts` (`menuChanged`), `game/view/audio/music-styles.ts` (`MENU_STYLE`, 100 BPM) | `game-audio.test.ts` (app: kept across title / ship / level select / settings, fades into the level), game data test; e2e `menu` on the title and ship select | |
 | P12-R09 | Done | `audio/level-cues.ts`, `audio/sfx-player.ts` (`panAt`), `game/view/audio/sound-designs.ts`, `core/systems/shot-world.ts` (`ShotImpact.blocked`), `core/entities/shot-target.ts` | `level-cues.test.ts` (one case per event), `sfx-player.test.ts` (pan −0.6 / 0), game data test (every event of the table has its own sound), `game-audio.test.ts` (menu sounds, laser hum), `shot-world.test.ts`; e2e gun shot and menu move listed | Fit and pleasantness for a child: manual check. |
 | P12-R10 | Done | `audio/voice-pool.ts`, `audio/sfx-player.ts`, `audio/audio-output.ts` (limiter at −1 dBFS), `game/view/audio/sound-designs.ts` (priorities, gains), `game/view/audio/game-audio.ts` (mix) | `voice-pool.test.ts` (40 → 16, 10 ms retrigger, player over enemy shots), `sfx-player.test.ts`, game data test (gun and hum quieter than hits / explosions, loudest sound ≤ +6 dB over the music) | `loudest_sfx` checked on the data (peaks), see Deviations. |
 | P12-R11 | Done | `app/game-audio.ts` (`#setPaused`), `audio/music-player.ts` (`pause` / `resume`), `audio/sfx-player.ts` (`stopAll`), `audio/audio-output.ts` (`setHidden`) | `music-player.test.ts` (30 s in, paused 10 s → ~30 s), `game-audio.test.ts`, `audio-output.test.ts`, `start-app-pause.test.ts`; e2e context `suspended` while hidden, `running` again, menu move sound in the pause menu | |
@@ -317,6 +320,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - **Menu music (review 1):** the 84 BPM pad-and-bell menu theme was faint (−25.8 dB RMS at the default volume) and easy to miss. It is now a full 88 BPM synthwave track in E minor (i–VI–III–VII chords): a backbeat with gated snares, a pumping octave saw bass, warm pads, a sixteenth-note plucked arpeggio with echoes and a supersaw lead, in every section (no bare breakdown: `MusicStyle.energies`). Measured offline in Chromium over 32 s at the default volume: menu −19.3 dB RMS, level tracks −17.1 to −19.8, boss tracks −15.4 to −17.9. P12-R08 text amended at the reviewer's request.
 - **Synthwave (review 2):** engine: `audio/track-mixer.ts` gives each track an input per instrument with sends to a tempo-synced echo (a dotted eighth, fed back) and to a shared music reverb (`AudioOutput` convolver, generated 2.2 s impulse); `Instrument.echo` / `reverb`, `AudioBindings.effects`. Game: new instruments (gated snare, Simmons-style toms played at several pitches, supersaw lead, detuned juno-style pads, dreamwave bass, square arpeggio; marimba, flute and clap removed), new drum patterns (off-beat open hats, laid-back backbeat, descending tom fills at section ends), rolling sixteenth basses, arpeggios carrying the breakdowns. World flavours: 1 outrun, 2 dreamwave, 3 synthwave on toms and shakers, 4 darksynth; the jingles use the same synths. Mix raised (music 0.5 → 0.8, SFX 0.8 → 1; the loudest sound stays within +6 dB). P12-R06 text amended at the reviewer's request. (D-099)
 - Tests: `track-mixer.test.ts`, `audio-output.test.ts` (reverb), game data tests (gated snares, echo / reverb sends, tom fills, a full menu track). Light verification: typecheck ✔, build ✔, e2e 116 passed (4.2 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
+- **Stressful bosses, energetic synthwave (review 3):** boss tracks get their own parts (`game/view/audio/compose-boss.ts`): four on the floor pushed by off-beat sixteenth kicks under sixteenth hats, snare rolls growing louder (four sixteenths every fourth bar, half a bar at each section's end), a rolling bass jumping between the root and its octave, supersaw chord stabs on a 3-3-2 rhythm (new `stab` instrument), tense progressions around the root (`BOSS_PROGRESSIONS`: the flat second, the diminished second and the major fifth) in harmonic minor (Worlds 1–2) or phrygian (Worlds 3–4). Every track gets a noise riser over each section's last bar (new `riser` instrument). Levels: tempos raised (World 1 128–140, World 2 112–124, World 3 120–132, World 4 104–116; bosses 145–167 BPM), sixteenth-note arpeggios in every world, no bare breakdown (energy shapes 1–2 only), World 2 on a driving backbeat with a pumping plucked bass (half time and long notes removed), World 4 with a backbeat on 2 and 4; menu theme 100 BPM, still slower than every level. Measured offline over 32 s at the default volume: menu −17.9 dB RMS, level tracks −16.5 to −17.2, boss tracks −13.7 to −15.0. P12-R06, R07, R08 and the tempo tunable amended at the reviewer's request. (D-100)
+- Tests: game data tests (new tempo ranges, menu slower than every level, a snare in every level bar and risers, boss tracks denser than their levels with stabs, risers and snare rolls). Light verification: typecheck ✔, build ✔, e2e 116 passed (5.1 min). Lint, unit tests and coverage still deferred to `/validate-phase`.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.
