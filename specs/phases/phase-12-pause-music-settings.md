@@ -285,6 +285,7 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - [x] (2026-10-26, reviewer) Change the boss name / health bar, it hides the boss. *Done under P07-R02 (phase 7 spec and review feedback), D-105.*
 - [x] (2026-10-26, reviewer) Move the bullets' starting point further into the ship (shooting from under the ship). *Done under P03-R01 (phase 3 review feedback), D-106.*
 - [x] (2026-10-26, reviewer) Rework the enemy explosion sound, it's annoying. *Fixed: small and large enemy explosions are now short, muffled booms (`boom` in `game/view/audio/sound-recipes.ts`): a deep falling thump, a low noise body closing from 900 Hz (1 200 Hz large) to 110 Hz, and a 30 ms crackle; 0.22 s small, 0.5 s large, no sustain or tail (were long low-pass hisses sweeping from 3 200 Hz with a 15 % sustain). Offline render: a busy wave of 14 small and 2 large explosions over 2.5 s peaks at −5.5 dBFS at the default volume, silent 0.25 s after each small one. Boss part, boss and life-lost blasts unchanged. The recipes moved out of `sound-designs.ts` (300-line limit). (D-107)*
+- [x] (2026-10-26, reviewer) Rework the explosion sounds, make them more realistic. *Fixed: every explosion (small and large enemies, boss parts, bosses, the bomb, a lost life) uses one `explosion` recipe in three sizes (`BLAST` in `sound-designs.ts`), layered like a real blast: a 12 ms broadband crack (the shock front), a noise body whose cut-off closes from 2.6–3.4 kHz to 180 Hz (the fireball), a sub-bass thump falling by half, a low rumble rolling on for the large and huge ones (0.9 s, 2 s), and 3 to 8 debris crackles scattered after it. Bosses go down in a chain of three blasts. Most of the energy is low, the hiss lasts milliseconds, so a busy wave stays clear (−5.8 dBFS peak in the offline render). Bomb, boss and life-lost gains lowered a little to keep the loudest sound within +6 dB of the music. (D-108)*
 - [x] (2026-10-26, reviewer) When the player shoots several bullets or missiles, do not fire them all at once: alternate between the streams, without changing the global firing rate. *Added to the shots spec as P03-R11.*
 
 ---
@@ -342,6 +343,8 @@ In e2e builds, `getState()` also gives `paused` (true / false), the current scre
 - **Bullets from inside the ship (review 8, P03-R01):** `launchBack` on projectile weapons, 13 px for the bullet; tracers drawn under the ship (D-106). Tests: `shot-world.test.ts`, `weapon.test.ts`, `shot-renderers.test.ts`.
 - **Explosion sound (review 9, P12-R09):** enemy explosions are short, muffled booms (`sound-recipes.ts`, D-107); details in the review feedback above.
 - Light verification (reviews 8 and 9): typecheck ✔, build ✔, e2e 116 passed. Lint, unit tests and coverage still deferred to `/validate-phase`.
+- **Realistic explosions (review 10, P12-R09):** one layered `explosion` recipe in three sizes for every blast (D-108); details in the review feedback above.
+- Light verification (review 10): see Gate results.
 
 ### Gate results
 Light verification only (`/implement-phase`): lint, unit tests and coverage run in `/validate-phase`.

@@ -1192,3 +1192,12 @@
 - **Consequences:** none on the priorities or the mix rules (P12-R10 data tests unchanged).
 - **Status:** Accepted
 
+### D-108 — Realistic, layered explosions
+- **Date:** 2026-10-26
+- **Phase:** 12 (review; P12-R09)
+- **Context:** After D-107 (short muffled booms for the enemies), the reviewer asked for more realistic explosion sounds.
+- **Decision:** one `explosion` recipe (`sound-recipes.ts`) for every blast, in three sizes (small, large, huge): a 12 ms high-passed noise crack, a low-passed noise body closing from a few kHz to 180 Hz over the blast, a sub-bass sine thump gliding down by half, a low-passed rumble tail for the large and huge sizes, and 3–8 short band-passed debris crackles at fixed, uneven delays (so a sound is the same every time). The boss dies in a chain of three. The old `blast` and `boom` recipes are gone. Bomb, boss and life-lost gains are lowered so the loudest sound stays within +6 dB of the music (P12-R10).
+- **Alternatives considered:** recorded samples (GD-71: sound is generated); random debris per play (the engine plays fixed designs; fixed uneven spacing sounds natural enough).
+- **Consequences:** supersedes D-107's booms. A busy wave peaks at −5.8 dBFS at the default volume in the offline render.
+- **Status:** Accepted
+

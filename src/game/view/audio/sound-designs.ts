@@ -1,5 +1,5 @@
 import type { SoundDesign, ToneLayer } from '../../../audio/audio-types';
-import { blast, boom, chime, env, minigun, MINIGUN, tone } from './sound-recipes';
+import { chime, env, explosion, minigun, MINIGUN, tone, type ExplosionSize } from './sound-recipes';
 
 /**
  * The game's sound effects (P12-R09, GD-71), all synthesised, keyed by the engine's cue
@@ -165,11 +165,18 @@ const HITS: Readonly<Record<string, SoundDesign>> = {
   ),
 };
 
+/** Explosion sizes (D-108): enemies small and large, boss parts and the player, the bomb and bosses. */
+const BLAST: Readonly<Record<'small' | 'large' | 'huge', ExplosionSize>> = {
+  small: { seconds: 0.3, body: 2600, thump: 120, tail: 0, debris: 3 },
+  large: { seconds: 0.6, body: 3000, thump: 90, tail: 0.9, debris: 5 },
+  huge: { seconds: 1.1, body: 3400, thump: 70, tail: 2, debris: 8 },
+};
+
 const DESTRUCTION: Readonly<Record<string, SoundDesign>> = {
-  'blast-small': sound('explosion-small', PRIORITY.blast, 0.4, boom(0.22, 900, 150), {
+  'blast-small': sound('explosion-small', PRIORITY.blast, 0.32, explosion(BLAST.small), {
     positional: true,
   }),
-  'blast-large': sound('explosion-large', PRIORITY.blast, 0.5, boom(0.5, 1200, 110), {
+  'blast-large': sound('explosion-large', PRIORITY.blast, 0.42, explosion(BLAST.large), {
     positional: true,
   }),
   'part-destroyed': sound(
@@ -177,13 +184,16 @@ const DESTRUCTION: Readonly<Record<string, SoundDesign>> = {
     PRIORITY.part,
     0.55,
     [
-      ...blast(0.7, 2800, 110),
+      ...explosion(BLAST.large),
       tone('square', 1200, 0.25, env(0.001, 0.4, 0, 0.1), { glideTo: 300, glideSeconds: 0.4 }),
     ],
     { positional: true },
   ),
-  'boss-destroyed': sound('boss-destroyed', PRIORITY.top, 0.6, [
-    ...blast(2, 2000, 80),
+  'boss-destroyed': sound('boss-destroyed', PRIORITY.top, 0.55, [
+    // A chain: the core goes, then two more blasts inside the hull.
+    ...explosion(BLAST.huge),
+    ...explosion(BLAST.large, 0.35),
+    ...explosion(BLAST.large, 0.8),
     tone('sawtooth', 400, 0.3, env(0.01, 1.4, 0, 0.2), {
       glideTo: 40,
       glideSeconds: 1.4,
@@ -193,13 +203,13 @@ const DESTRUCTION: Readonly<Record<string, SoundDesign>> = {
 };
 
 const PLAYER: Readonly<Record<string, SoundDesign>> = {
-  'life-lost': sound('life-lost', PRIORITY.top, 0.5, [
+  'life-lost': sound('life-lost', PRIORITY.top, 0.45, [
     tone('square', 660, 0.5, env(0.005, 0.6, 0, 0.1), {
       glideTo: 110,
       glideSeconds: 0.6,
       filter: { type: 'lowpass', frequency: 2000 },
     }),
-    ...blast(0.6, 2000, 90),
+    ...explosion(BLAST.large),
   ]),
   'extra-life': sound(
     'extra-life',
@@ -207,8 +217,8 @@ const PLAYER: Readonly<Record<string, SoundDesign>> = {
     0.4,
     chime('triangle', [784, 988, 1175, 1568], 0.08, 0.7),
   ),
-  bomb: sound('bomb', PRIORITY.top, 0.6, [
-    ...blast(1.3, 4000, 75),
+  bomb: sound('bomb', PRIORITY.top, 0.5, [
+    ...explosion(BLAST.huge),
     tone('sawtooth', 800, 0.25, env(0.005, 0.8, 0, 0.1), {
       glideTo: 60,
       glideSeconds: 0.8,
