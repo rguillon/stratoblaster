@@ -1,7 +1,7 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
 import { placeHamlets, placeLoners, type AwaySite, type Building } from './away-placement';
 import { allowed, between, weighted } from './draws';
-import { floatingIn, linePieces } from './float-placement';
+import { fixedPieces, floatingIn } from './float-placement';
 import { lowestUnder, standingHeight } from './ground-fit';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
@@ -62,6 +62,18 @@ const FALLBACKS = 3;
 /** Bucket size of the index of placed buildings. */
 const BUILDING_BUCKET = 32;
 
+/** Whether the ground boxes of `a` and `b` come closer than `gap`. */
+function overlap(a: GroundBox, b: GroundBox, gap: number): boolean {
+  const apartX = Math.abs(a.placement.x - b.placement.x) >= a.halfX + b.halfX + gap;
+  const apartZ = Math.abs(a.placement.z - b.placement.z) >= a.halfZ + b.halfZ + gap;
+  return !apartX && !apartZ;
+}
+
+/** The box of ground a prop takes around its centre. */
+type GroundBox = Pick<Building, 'halfX' | 'halfZ'> & {
+  readonly placement: { x: number; z: number };
+};
+
 function bucketKey(x: number, z: number): string {
   return `${String(Math.floor(x / BUILDING_BUCKET))},${String(Math.floor(z / BUILDING_BUCKET))}`;
 }
@@ -86,6 +98,8 @@ export class PropPlacer {
   readonly #zones: Noise2D;
   readonly #buildings: Building[] = [];
   readonly #occupied = new Map<string, Building[]>();
+  /** Phase 9: set pieces and lines, larger than a bucket: every placement checks them all. */
+  readonly #fixed: Building[] = [];
 
   constructor(
     private readonly field: HeightField,
@@ -96,12 +110,9 @@ export class PropPlacer {
     private readonly seaLevel?: number,
   ) {
     this.#zones = createNoise2D(seed + 3);
-    // Phase 8: lines of props (a pipeline) first, so the buildings keep clear of them.
-    for (const line of rules.lines ?? []) {
-      for (const { placement, footprint } of linePieces(line, field, seaLevel)) {
-        this.#occupy({ placement, halfX: footprint, halfZ: footprint });
-      }
-    }
+    // Phase 9: set pieces, then (phase 8) lines of props first: the rest keeps clear of them.
+    this.#fixed.push(...fixedPieces(rules, field, seaLevel));
+    for (const piece of this.#fixed) this.#occupy(piece);
     const mainFirst = [...roads.slots].sort(
       (a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'),
     );
@@ -169,20 +180,15 @@ export class PropPlacer {
   }
 
   /** Whether the ground box of `area` keeps `gap` clear of the placed buildings. */
-  #free(
-    area: { placement: { x: number; z: number }; halfX: number; halfZ: number },
-    gap = this.roads.setback,
-  ): boolean {
+  #free(area: GroundBox, gap = this.roads.setback): boolean {
     const { x, z } = area.placement;
+    if (this.#fixed.some((b) => overlap(b, area, gap))) return false;
     const bx = Math.floor(x / BUILDING_BUCKET);
     const bz = Math.floor(z / BUILDING_BUCKET);
     for (let i = bx - 2; i <= bx + 2; i++) {
       for (let j = bz - 2; j <= bz + 2; j++) {
-        for (const b of this.#occupied.get(`${String(i)},${String(j)}`) ?? []) {
-          const apartX = Math.abs(b.placement.x - x) >= b.halfX + area.halfX + gap;
-          const apartZ = Math.abs(b.placement.z - z) >= b.halfZ + area.halfZ + gap;
-          if (!apartX && !apartZ) return false;
-        }
+        const near = this.#occupied.get(`${String(i)},${String(j)}`) ?? [];
+        if (near.some((b) => overlap(b, area, gap))) return false;
       }
     }
     return true;

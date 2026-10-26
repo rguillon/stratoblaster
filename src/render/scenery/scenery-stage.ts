@@ -28,6 +28,7 @@ import type {
 import { snappedLightPosition } from './scenery-lighting';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
 import type { AtmosphereOptions } from './atmosphere-of';
+import { RainRings } from './rain-rings';
 import { SkyLayers } from './sky-layers';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
@@ -98,6 +99,8 @@ export class SceneryStage {
   #seaEnabled: boolean;
   #time = 0;
   readonly #sky: SkyLayers;
+  /** P09-R05: rain rings on the water, when the level has water. */
+  readonly #rings: RainRings | undefined;
 
   constructor(
     readonly scene: Scene,
@@ -121,7 +124,7 @@ export class SceneryStage {
     this.#xHalf = Math.ceil((this.#ground.halfWidth + config.margin) / config.cell) * config.cell;
     this.camera = this.#setUpCamera();
     // P08-R04: the time of day, clouds and weather along the level.
-    this.#sky = new SkyLayers(scene, look, [level.scrollSpeed, options.atmosphere]);
+    this.#sky = new SkyLayers(scene, look, [level.scrollSpeed, options.atmosphere, level.seed]);
     this.sun = this.#sky.sun;
     // One more wave tile: the sea plane moves by whole tiles (see `update`).
     const seaLength =
@@ -142,6 +145,9 @@ export class SceneryStage {
     this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
     this.#sea = level.sea ? this.#buildSea(level.sea.level, seaLength) : undefined;
     this.#seaEnabled = this.#sea !== undefined;
+    this.#rings = level.sea
+      ? new RainRings(scene, this.kit.rings, [level.sea.level, this.#xHalf * 2, seaLength])
+      : undefined;
     this.clouds = this.#attachSky();
   }
 
@@ -167,6 +173,16 @@ export class SceneryStage {
   /** Weather particles drawn on the last frame (P08-R05). */
   get weatherParticles(): number {
     return this.#sky.weatherParticles;
+  }
+
+  /** Strength of the rain rings drawn on the water on the last frame (P09-R05; 0 = none). */
+  get rainRings(): number {
+    return this.#rings?.shown ?? 0;
+  }
+
+  /** How bright the lightning was on the last frame (P09-R05; 0 = no flash). */
+  get lightningFlash(): number {
+    return this.#sky.flash;
   }
 
   /** The level's ground. */
@@ -249,6 +265,7 @@ export class SceneryStage {
       this.#sea.position.z = Math.round(middle / tile) * tile;
     }
     const atmosphere = this.#sky.update(distance, [this.#time, this.camera, zMin]);
+    this.#rings?.update(atmosphere, [this.#time, middle, this.#seaEnabled]);
     const { mapSize, frustum } = this.options.look.sun.shadow;
     this.sun.position = snappedLightPosition(
       this.sun.direction,

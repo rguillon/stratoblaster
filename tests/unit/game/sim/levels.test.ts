@@ -21,8 +21,14 @@ describe('LEVELS', () => {
       '2-3',
       '2-4',
       '2-5',
+      // P09-R01: World 3 is unlocked too.
+      '3-1',
+      '3-2',
+      '3-3',
+      '3-4',
+      '3-5',
     ]);
-    expect(LEVELS.levels.filter((l) => l.world > 2).every((l) => !l.unlocked)).toBe(true);
-    expect(LEVELS.levels.filter((l) => l.world > 2)).toHaveLength(15);
+    expect(LEVELS.levels.filter((l) => l.world > 3).every((l) => !l.unlocked)).toBe(true);
+    expect(LEVELS.levels.filter((l) => l.world > 3)).toHaveLength(10);
   });
 });

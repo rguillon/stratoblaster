@@ -22,6 +22,7 @@ const A: Atmosphere = {
   groundLights: 0,
   weather: { kind: 'snow', strength: 0 },
   aurora: 0,
+  lightning: 0,
 };
 
 const B: Atmosphere = {
@@ -40,6 +41,7 @@ const B: Atmosphere = {
   groundLights: 2,
   weather: { kind: 'snow', strength: 1 },
   aurora: 1,
+  lightning: 1,
 };
 
 describe('Atmosphere', () => {

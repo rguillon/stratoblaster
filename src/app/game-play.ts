@@ -338,9 +338,13 @@ export class GamePlay {
 
   get state(): GamePlayState {
     const { stage } = this.view;
-    const { aurora, groundLights, sun, fog } = stage.atmosphere;
+    const { aurora, groundLights, sun, fog, weather, lightning } = stage.atmosphere;
     const sky = {
+      weather: weather.strength > 0 ? weather.kind : 'none',
       weatherParticles: stage.weatherParticles,
+      rainRings: stage.rainRings,
+      lightning,
+      flash: stage.lightningFlash,
       aurora,
       groundLights,
       sunIntensity: sun.intensity,

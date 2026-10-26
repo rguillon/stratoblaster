@@ -39,6 +39,16 @@ describe('parseDebugOptions', () => {
     expect(parseDebugOptions('?level=2-5&look=noon')?.timeOfDay).toBeNull();
   });
 
+  it('P09-R11: every World 3 level, with weather=0 and look=', () => {
+    expect(parseDebugOptions('?level=3-3&t=120')).toMatchObject({ levelId: '3-3', time: 120 });
+    expect(parseDebugOptions('?level=3-3&weather=0')?.weather).toBe(false);
+    expect(parseDebugOptions('?level=3-5&boss=final&look=dusk')).toMatchObject({
+      levelId: '3-5',
+      boss: 'final',
+      timeOfDay: 'dusk',
+    });
+  });
+
   it('P06-R09: without level=, there is no debug mode', () => {
     expect(parseDebugOptions('')).toBeUndefined();
     expect(parseDebugOptions('?t=120&ship=heavy')).toBeUndefined();

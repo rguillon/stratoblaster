@@ -8,6 +8,7 @@ import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
 import type { AuroraMaterial } from './aurora-layer';
 import type { PropMaterials } from './prop-field';
+import type { RingsMaterialFactory } from './rain-rings';
 import type { WeatherMaterialFactory } from './weather-layer';
 import type { CloudLayerLook, SceneryLook } from './scenery-look';
 
@@ -55,6 +56,8 @@ export interface SceneryKit {
   cloud(look: CloudLayerLook): CloudMaterial;
   /** The material of a weather kind's particles (P08-R05). */
   readonly weather: WeatherMaterialFactory;
+  /** The material of a weather kind's rings on the water (P09-R05: rain). */
+  readonly rings: RingsMaterialFactory;
   /** The aurora's material (P08-R04). */
   aurora(): AuroraMaterial;
   addShadowCaster(mesh: AbstractMesh): void;
@@ -147,6 +150,11 @@ export const createPlainSceneryKit: SceneryKitFactory = (scene, { look }) => {
     weather: (_scene, kind) => {
       const material = plain('weather', kind.color, scene);
       material.alpha = kind.alpha;
+      return { material, set: () => undefined };
+    },
+    rings: (_scene, rings) => {
+      const material = plain('rain-rings', rings.color, scene);
+      material.alpha = rings.alpha;
       return { material, set: () => undefined };
     },
     aurora: () => {

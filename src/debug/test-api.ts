@@ -42,7 +42,14 @@ export interface GameTestLevelState {
   readonly checkpoint: boolean;
   /** How the level looks where the view is (P08-R04, R05). */
   readonly sky?: {
+    /** Kind of the weather falling (`none` when there is none; P08-R05, P09-R05). */
+    readonly weather: string;
     readonly weatherParticles: number;
+    /** Strength of the rain rings on the water, and of the storm's lightning (P09-R05). */
+    readonly rainRings: number;
+    readonly lightning: number;
+    /** How bright the lightning flash is on this frame (0..1). */
+    readonly flash: number;
     readonly aurora: number;
     readonly groundLights: number;
     readonly sunIntensity: number;

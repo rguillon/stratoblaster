@@ -845,3 +845,56 @@
 - **Alternatives considered:** longer timeouts (slower tests, and still at the mercy of the runner's speed); fewer e2e workers (slower overall); GPU rendering on CI (not available on the hosted runners).
 - **Consequences:** the World specs and the menu, gamepad and `enemies/` specs pass at 6× CPU throttling in Chromium. Production builds are unchanged. A level advanced through the test API still runs every step of the game's logic, with the keys held at the time.
 - **Status:** Accepted
+
+### D-076 — Rain as a weather kind: streaks along their fall, a greyer haze, rings on the water
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R05 asks for thin, light streaks falling fast at a slight slant at different depths, scrolling with the ground, a haze closer and greyer with the strength, faint rings on the water, never hiding what flies, at 60 FPS; weather kinds are data (P08-R05).
+- **Decision:** `rain` is a new entry of `config/weather.ts` (2 000 streaks at strength 1, falling at 380–520 units/s, a wind of 30–70 for the slant, 0.35–0.55 wide, 16× as long, opacity 0.32), with three optional fields any kind may use: `align: 'fall'` (the shader stretches each particle along its velocity, as thin as its size across the view, at every strength; snow keeps `wind`: sideways in a blizzard), `haze` (the haze turns `share × strength` of the way to a grey) and `rings`. Rings are a plane at the water level following the view (`RainRings`, one draw call) whose shader draws, in each 9-unit cell, a ring spreading from a random point and fading over 0.8 s, fewer cells ringing in light rain; it does not write depth, so the terrain above the water hides it: rings show on the sea, rivers, swamps, lakes and pools only. It is drawn right after the water, under the ships.
+- **Alternatives considered:** splash particles on the ground (thousands more quads, and drops landing on hills read as noise from 320 up); rings in the sea's PBR material (a material plugin for one effect).
+- **Consequences:** two draw calls for rain (streaks, rings). Rain and its rings are only a look: nothing in the simulation reads them (unit test).
+- **Status:** Accepted
+
+### D-077 — Lightning: strikes drawn from the level's seed, a capped flash, a bolt in the clouds
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R05: flashes at random times from the level's seed, the same twice, at most 3 in any 1 s and on average one every few seconds (`lightning_gap` 4–10 s), each about 0.15 s, the ambient light and sky at most ×1.8 the storm's, sometimes a bolt in the clouds; weather never changes the simulation.
+- **Decision:** `core/scenery/lightning.ts` (pure): `LightningSchedule(seed)` draws strikes one after another, 4–10 s apart; a strike is one flash or, with a chance of 0.35, two flashes 0.25 s apart (a flicker), so at most 2 flashes fall in any second. A flash rises in 0.03 s and fades out by 0.15 s (`LIGHTNING`, `config/weather.ts`). `flashed(atmosphere, flash)` multiplies the ambient intensity, the haze (clear colour and fog, each channel capped at 1) and the environment intensity by up to `1 + 0.8 × flash × lightning`, no haze channel past 0.85 (`maxHaze`, added at validation). A look's `lightning` (0..1) blends like any number, so 3-3's storm builds its lightning with its clouds. `LightningLayer` asks the schedule at the scene's clock (seconds since the level's scene started), applies the flash through `SkyLayers` and, for 60 % of the strikes, draws a jagged bolt with two forks (`boltLines`, seeded by the strike) flat in the lowest cloud layer, added on top while the strike's flashes last. `weather=0` removes the lightning with the rain.
+- **Alternatives considered:** flashes driven by the simulation's random numbers (weather would become an input of the simulation, against P08-R05); a white overlay over the screen (would wash out the shots and bonuses); strikes timed by the ground distance (no lightning while the ground stops for a fight).
+- **Consequences:** flashes follow the scene's clock, so after a pause or a frame-time hitch they come at the same seconds of scene time, not of level progress. The flash never touches the ships' emissive neon or the shots, which stay as bright as before (P09-R04 readability).
+- **Status:** Accepted
+
+### D-078 — Mist and an ambient tint as look parameters
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R04: 3-1's morning mist, close and white over the water, lifting over the first half (`morning_mist`: fog end at 40 % of the clear distance, back to 100 %); 3-2's green-tinted ambient under the canopy. `SkyLook` had no way to say either.
+- **Decision:** `SkyLook.mist { fog, white }` brings the fog's end to `fog` of its distance (its start half as much, like weather) and turns the haze `white` of the way to a pale mist colour; `SkyLook.tint` multiplies the ambient sky and ground colours. Both resolve into the atmosphere, so a look change blends them away (3-1: a change from the misty morning to the plain morning over 0–150 s).
+- **Alternatives considered:** a fog distance per section of terrain (the look follows the distance already; no second mechanism).
+- **Consequences:** none for the earlier levels (both optional, default no mist, no tint).
+- **Status:** Accepted
+
+### D-079 — One water level for the sea, rivers, swamps and lakes; set pieces and lines over water
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R03/R06: a delta, rivers flowing down the screen, a swamp, a lake held by a giant dam, waterfalls where the river drops over cliffs, pipelines across the swamp; 3-2 to 3-5 have "no sea section (rivers, lakes and swamps are not sea)". The engine has one water plane per level, at `sea.level`.
+- **Decision:** every World 3 level has a water level (0); rivers are channels cut below it, swamps relief around it, the lake a wide channel, the pools of 3-5 lakes flattened below it. A **sea section** is a section with a coast (`shore`) or whose relief lies under the water level (`relief.base < 0`): only 3-1's open sea and delta mouth (80 of 300 s; 23 % of its ground under the sea). The water flows by drifting its waves down the screen (`sea.drift [0, 16]`). Two generic placement tools: `PropLine.overWater` (pieces stand on the ground or at the water level: the swamp pipelines), and `PropRules.landmarks` (a set piece of a kind at a given place, on a path its width across it, on the ground or the water, placed before everything else, which keeps clear of its footprint box: every placement checks the set pieces and lines, as they are larger than the placer's neighbour buckets): the waterfalls (a rock ledge across the river with a falling white sheet and spray, four in 3-3), the great pyramid the Stone Idol stops over, the dam across 3-4's lake and its power plant. The stone causeway of 3-3 is a line along the temples' paved band.
+- **Alternatives considered:** a second water plane per river at its own height (the terrain shader paints water by depth under one level; waterfalls between two real water levels would need both); carving the cliff into the river bed for the waterfalls (the channel floor is flat per section; the drop would cut the river dry).
+- **Consequences:** the water is one colour per level (3-4's is darker, swamp water). The upper and lower rivers of a waterfall are at the same level: the drop is in the set piece.
+- **Status:** Accepted
+
+### D-080 — World 3 waves and balance, measured as in Worlds 1 and 2
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R07/R08: five 5-minute scripts with given lead kinds, strictly harder from 3-1 to 3-5 per minute of scroll and in peak on screen, 3-1 ≥ 2-3 and 3-5 > 2-5 on the same measures.
+- **Decision:** `WavePlan`s as World 2's (D-067), groups growing by 70 % over each level, gaps 4.9 → 3.5 s (3-1) down to 4 → 2.7 s (3-5); 3-2 leads with swarms of 6 Hornets and Lancers, 3-3 with Spinners and Rocketeers, 3-4 with two Carriers per cycle, 3-5 with Bulwarks around a Carrier. Measured without shooting (seed 606): 178.8 / 194.4 / 215.0 / 262.6 / 308.4 enemies a minute, 4 214 / 5 694 / 6 884 / 8 068 / 10 506 HP a minute, peaks 38 / 41 / 47 / 55 / 58 (2-3: 121.4, 3 666, 36; 2-5: 233.4, 7 360, 51). Factors 1 / 1.05 / 1.1 / 1.2 / 1.25.
+- **Consequences:** as in Worlds 1 and 2, the peaks are far above the tunable `peak_on_screen` (13 … 19), in its order.
+- **Status:** Accepted
+
+### D-081 — The ten World 3 bosses, and their tuning
+- **Date:** 2026-10-26
+- **Phase:** 9
+- **Context:** P09-R09/R10: ten bosses with moving jaws, legs, a swaying serpent body and buzzing wings, full health strictly up from 3-1 to 3-5, above World 2's bosses of the same rank, fight times within the tunables.
+- **Decision:** no engine change: every boss is data on the phase 7/8 boss engine (joints for the Croc's jaws, the Leviathan's five-joint spine, the Spider's hips and knees, the Mosquito's wings; laser turrets; launches; homing missiles; tanks that burst into rings; slow bullets that burst). The designs and models were made in parallel by sub-agents, one level each, against the same conventions, each given a full-health band between World 2's and the next World 3 level's, so the orderings hold by construction; health was tuned with the D-055 bot (guns level 3). Full health mini / final: 3 200 / 6 800, 3 780 / 9 050, 4 200 / 9 950, 4 500 / 14 000, 5 100 / 19 500; fights 41.6 / 87.5, 44.4 / 90.6, 47.3 / 102.4, 51.4 / 115.2, 54.7 / 127.1 s. Some parts were placed for the bot's spread to reach them (the Spider's forelegs raised forward, the Stone Idol's eyes ±32 apart, the Verdant Crown's root generators 64 apart), and some hit circles enlarged (Leviathan, Jaguar). Angry patterns go on from World 2: heat 4.5 (3-1 mini) to 9 (3-5 final). Neon colours in `BOSS_LOOK.neon`.
+- **Alternatives considered:** a new engine hook to keep the Croc's jaws in step with its jaw cannon's bursts after a stage change (they are in step in its first stage only).
+- **Consequences:** the Croc's jaws and its bursts drift apart after the first destroyed part; the Leviathan's ring turrets fire from their axis (their emitters do not move when they turn).
+- **Status:** Accepted

@@ -3,6 +3,7 @@ import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
+import { flashed } from '../../core/scenery/lightning';
 import { atmosphereTrack, type AtmosphereAlong, type AtmosphereOptions } from './atmosphere-of';
 import { AuroraLayer } from './aurora-layer';
 import {
@@ -11,6 +12,7 @@ import {
   type CloudLayer,
   type CloudLayerState,
 } from './cloud-layers';
+import { LightningLayer } from './lightning-layer';
 import type { GroundWindow } from './playfield-framing';
 import type { SceneryKit } from './scenery-kit';
 import { applyAtmosphere, lightScenery, type SceneryLights } from './scenery-lighting';
@@ -38,16 +40,21 @@ export class SkyLayers {
   readonly #lights: SceneryLights;
   /** Whether the clouds' cover follows the look (a look with a time of day). */
   readonly #follow: boolean;
+  /** The level's seed: its lightning strikes are drawn from it (P09-R05). */
+  readonly #seed: number;
   #atmosphere: Atmosphere;
   #clouds: CloudLayer[] = [];
   #weather: WeatherLayer | undefined;
   #aurora: AuroraLayer | undefined;
+  #lightning: LightningLayer | undefined;
+  #flash = 0;
 
   constructor(
     private readonly scene: Scene,
     private readonly look: SceneryLook,
-    [scrollSpeed, options]: readonly [number, AtmosphereOptions | undefined],
+    [scrollSpeed, options, seed = 0]: readonly [number, AtmosphereOptions | undefined, number?],
   ) {
+    this.#seed = seed;
     this.#track = atmosphereTrack(look, scrollSpeed, options);
     this.#atmosphere = this.#track.at(0);
     this.#lights = lightScenery(scene, this.#atmosphere);
@@ -72,6 +79,16 @@ export class SkyLayers {
     return this.#weather?.drawn ?? 0;
   }
 
+  /** How bright the lightning was on the last frame (0..1, its strength included; P09-R05). */
+  get flash(): number {
+    return this.#flash;
+  }
+
+  /** The storm's lightning, once {@link attach}ed. */
+  get lightning(): LightningLayer | undefined {
+    return this.#lightning;
+  }
+
   /** Builds the cloud layers, the weather and the aurora with `kit`'s materials. */
   attach(kit: SceneryKit, place: SkyPlacement): void {
     this.#clouds = this.look.clouds.map((cloud, i) => {
@@ -88,17 +105,23 @@ export class SkyLayers {
     const altitude = Math.min(place.flightAltitude - 4, top + AURORA_ABOVE_CLOUDS);
     const window = place.windowAt(altitude);
     this.#aurora = new AuroraLayer(this.scene, kit.aurora(), [window, altitude, place.margin]);
+    // P09-R05: bolts flash inside the lowest cloud layer.
+    const low = Math.min(top, ...this.look.clouds.map(place.altitudeOf));
+    this.#lightning = new LightningLayer(this.scene, this.#seed, [place.windowAt(low), low]);
   }
 
   /**
    * The look at `distance` along the level, seen from `camera` at `time`: light, haze, clouds,
-   * weather (in the box of air from `zMin`) and aurora.
+   * weather (in the box of air from `zMin`), aurora and lightning (P09-R05: a flash lights the
+   * scene). Returns the atmosphere as lit on this frame.
    */
   update(distance: number, [time, camera, zMin]: readonly [number, Camera, number]): Atmosphere {
-    const atmosphere = this.#track.at(distance);
-    this.#atmosphere = atmosphere;
-    applyAtmosphere(this.scene, this.#lights, atmosphere);
     const at = camera.position;
+    this.#atmosphere = this.#track.at(distance);
+    const flash = this.#lightning?.update(this.#atmosphere, time, at.z) ?? 0;
+    this.#flash = flash * this.#atmosphere.lightning;
+    const atmosphere = flashed(this.#atmosphere, flash);
+    applyAtmosphere(this.scene, this.#lights, atmosphere);
     this.#clouds.forEach((layer, i) => {
       updateCloudLayer(layer, [at.z, time], [atmosphere, atmosphere.clouds[i], this.#follow]);
     });

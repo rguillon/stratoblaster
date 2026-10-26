@@ -19,6 +19,15 @@ import {
 } from '../config/world-2/looks';
 import { LEVEL_2_1, LEVEL_2_2 } from '../config/world-2/scenery-coast';
 import { LEVEL_2_3, LEVEL_2_4, LEVEL_2_5 } from '../config/world-2/scenery-inland';
+import {
+  LEVEL_3_1_LOOK,
+  LEVEL_3_2_LOOK,
+  LEVEL_3_3_LOOK,
+  LEVEL_3_4_LOOK,
+  LEVEL_3_5_LOOK,
+} from '../config/world-3/looks';
+import { LEVEL_3_3, LEVEL_3_4, LEVEL_3_5 } from '../config/world-3/scenery-inland';
+import { LEVEL_3_1, LEVEL_3_2 } from '../config/world-3/scenery-river';
 import { LEVEL_ZERO } from '../sim/scenery-levels';
 import { PROP_MODELS } from './props/prop-models';
 
@@ -43,9 +52,23 @@ const WORLD_2_LOOKS: Readonly<Record<string, SceneryLook>> = {
   [LEVEL_2_5.id]: LEVEL_2_5_LOOK,
 };
 
-/** How this game's generated levels look (P04, P06, P08). */
+/** World 3 (P09-R04): one look per level, with its time of day, clouds, rain and lightning. */
+const WORLD_3_LOOKS: Readonly<Record<string, SceneryLook>> = {
+  [LEVEL_3_1.id]: LEVEL_3_1_LOOK,
+  [LEVEL_3_2.id]: LEVEL_3_2_LOOK,
+  [LEVEL_3_3.id]: LEVEL_3_3_LOOK,
+  [LEVEL_3_4.id]: LEVEL_3_4_LOOK,
+  [LEVEL_3_5.id]: LEVEL_3_5_LOOK,
+};
+
+/** How this game's generated levels look (P04, P06, P08, P09). */
 export const SCENERY_BINDINGS: SceneryBindings = {
   camera: CAMERA,
-  looks: { [LEVEL_ZERO.id]: LEVEL_ZERO_SCENERY, ...WORLD_1_LOOKS, ...WORLD_2_LOOKS },
+  looks: {
+    [LEVEL_ZERO.id]: LEVEL_ZERO_SCENERY,
+    ...WORLD_1_LOOKS,
+    ...WORLD_2_LOOKS,
+    ...WORLD_3_LOOKS,
+  },
   propModels: PROP_MODELS,
 };

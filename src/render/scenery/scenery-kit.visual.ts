@@ -10,6 +10,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { createAuroraMaterial } from './aurora-material.visual';
 import { createCloudMaterial } from './cloud-material.visual';
+import { createRainRingsMaterial } from './rain-rings-material.visual';
 import { createWeatherMaterial } from './weather-material.visual';
 import { buildGroundTexture, buildNoiseTexture, buildWaterNormalMap } from './procedural-textures';
 import {
@@ -134,6 +135,7 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
     roads: createRoadMaterial(scene),
     cloud: (cloud) => createCloudMaterial(scene, cloud, cloudTexture, () => camera),
     weather: createWeatherMaterial,
+    rings: createRainRingsMaterial,
     aurora: () => createAuroraMaterial(scene),
     addShadowCaster: (mesh) => {
       shadows.addShadowCaster(mesh, false);

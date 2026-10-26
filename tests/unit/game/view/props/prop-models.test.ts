@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
+  JUNGLE_VARIANTS,
   POLAR_VARIANTS,
   variantId,
   type PartFamily,
@@ -14,6 +15,7 @@ import {
   WORLD_2_PROP_IDS,
   WORLD_2_PROPS,
 } from '../../../../../src/game/config/world-2/props';
+import { WORLD_3_PROP_IDS, WORLD_3_PROPS } from '../../../../../src/game/config/world-3/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
 
@@ -70,8 +72,9 @@ describe('prop models', () => {
       'bush',
     ]);
     // 17 hand-made models, 9 more for World 1 (phase 6), 5 families of 16 buildings made of
-    // parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3 families of 8.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 5 * 16 + 6 + 22 + 3 * 8);
+    // parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3 families of 8; for
+    // World 3 (phase 9), 29 hand-made models and 2 families of 8.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 9 + 5 * 16 + 6 + 22 + 3 * 8 + 29 + 2 * 8);
   });
 
   it('P06-R06: desert homes, outposts and plants, as light as the Level Zero props (D-031)', () => {
@@ -231,5 +234,64 @@ describe('World 2 prop models', () => {
     const xs = positions.filter((_, i) => i % 3 === 0);
     expect(Math.min(...xs)).toBeCloseTo(-TUNDRA_PIPELINE.spacing / 2, 1);
     expect(Math.max(...xs)).toBeCloseTo(TUNDRA_PIPELINE.spacing / 2, 1);
+  });
+});
+
+describe('World 3 props (P09-R06)', () => {
+  const triangles = (id: string) => {
+    const model = PROP_MODELS[id]?.();
+    return ((model?.structure.indices.length ?? 0) + (model?.lights?.indices.length ?? 0)) / 3;
+  };
+  const jungle = (family: PartFamily) =>
+    Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1));
+  /** The heaviest hand-made Level Zero prop (the range of the earlier props, D-031). */
+  const heaviest = Math.max(
+    ...[...PROP_GROUPS.industrial, ...PROP_GROUPS.science, ...PROP_GROUPS.homes].map(triangles),
+  );
+  const CANOPY = [WORLD_3_PROP_IDS.canopyCluster, WORLD_3_PROP_IDS.canopyCrown];
+
+  it('P09-R06: each new prop stays under the triangle budget; the canopy crowns lighter still', () => {
+    for (const id of Object.values(WORLD_3_PROP_IDS)) {
+      expect(PROP_MODELS[id], id).toBeDefined();
+      // The dam spans the whole lake: one set piece, within the props' 600-triangle cap.
+      const budget = id === WORLD_3_PROP_IDS.dam ? 600 : heaviest;
+      expect(triangles(id), id).toBeLessThanOrEqual(budget);
+    }
+    for (const id of CANOPY) expect(triangles(id), id).toBeLessThanOrEqual(heaviest / 2.5);
+    for (const id of [...jungle('canopy-tower'), ...jungle('canopy-block')])
+      expect(triangles(id), id).toBeLessThan(600);
+  });
+
+  it('P09-R06: each building, plant and floating prop fits in its footprint at its largest scale', () => {
+    const kinds = [
+      ...WORLD_3_PROPS.groups.flatMap((g) => g.kinds),
+      ...WORLD_3_PROPS.trees,
+      ...(WORLD_3_PROPS.floating?.kinds ?? []),
+    ];
+    for (const kind of kinds) {
+      const model = PROP_MODELS[kind.id];
+      if (!model) throw new Error(`no model for ${kind.id}`);
+      const largest = extent(model().structure).radius * kind.scale[1];
+      expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint + 1e-9);
+    }
+  });
+
+  it('P09-R06: the canopy city buildings made of parts differ from one variant to the next', () => {
+    for (const family of ['canopy-tower', 'canopy-block'] as const) {
+      const shapes = new Set(
+        jungle(family).map((id) =>
+          JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
+        ),
+      );
+      expect(shapes.size, family).toBe(JUNGLE_VARIANTS);
+    }
+  });
+
+  it('P09-R06: the causeway and the swamp pipeline are 15 long, as their lines lay them', () => {
+    for (const id of [WORLD_3_PROP_IDS.causeway, WORLD_3_PROP_IDS.swampPipeline]) {
+      const xs = (PROP_MODELS[id]?.().structure.positions ?? []).filter((_, i) => i % 3 === 0);
+      expect(Math.min(...xs), id).toBeCloseTo(-7.5, 1);
+      expect(Math.max(...xs), id).toBeCloseTo(7.5, 1);
+    }
   });
 });

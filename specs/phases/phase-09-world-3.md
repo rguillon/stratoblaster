@@ -231,31 +231,87 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 3-1 to 3-5; 
 > Filled by the agent. Do not edit (comment in Review feedback instead).
 
 ### Questions / blockers
-<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+None. The spec was implemented as written; the interpretations are listed under Deviations.
 
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Engine weather: `rain` kind (streaks along the fall, greyer haze, rings on the water), lightning (seeded schedule, capped flash, bolt), mist and ambient tint in the look (`config/weather.ts`, `core/scenery/lightning.ts`, `sky-look.ts`, `render/scenery/rain-rings*.ts`, `lightning-layer.ts`, `weather-material.visual.ts`) | P09-R04, R05 |
+| Engine placement: set pieces (`PropRules.landmarks`) and prop lines over water (`PropLine.overWater`) | P09-R03, R06 |
+| World 3 scenery (delta, rainforest, temples, swamp and dam, canopy city), looks, waves, difficulty, level assembly and registration | P09-R01..R04, R07, R08 |
+| World 3 props: 29 hand-made models and two families of 8 (sub-agent) | P09-R06 |
+| Ten bosses, designs + models, tuned with the D-055 bot (five sub-agents, one per level) | P09-R09, R10 |
+| Debug options and `bosses/` page (follow from the level data); test API sky state | P09-R11 |
+| Unit and e2e tests, docs, decisions | all |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P09-R01 | | | | |
+| P09-R01 | Done | `game/sim/world-3.ts`, `game/sim/levels.ts` | `world-3.test.ts`, `levels.test.ts`, e2e `world-3.spec.ts`, `menu-pointer.spec.ts` | 2-5 → 3-1 and 3-5 → 3-5 follow from the grid order |
+| P09-R02 | Done | `game/config/world-3/scenery-*.ts` (300 s each) | `world-3.test.ts`, e2e | speeds 70 / 60 / 55 / 60 / 60 |
+| P09-R03 | Done | `scenery-river.ts`, `scenery-inland.ts`, `core/scenery/float-placement.ts` (landmarks, lines over water) | `world-3.test.ts`, `landmarks.test.ts` | D-079; sea 23 % of 3-1's ground; buildings 149 / 615 / 704 / 1 512 / 5 747 |
+| P09-R04 | Done | `game/config/world-3/looks.ts`, `core/scenery/sky-look.ts` (mist, tint, lightning) | `world-3.test.ts`, `sky-look.test.ts`, e2e | D-078; readability: manual |
+| P09-R05 | Done | `config/weather.ts`, `core/scenery/lightning.ts`, `render/scenery/rain-rings*.ts`, `lightning-layer.ts`, `sky-layers.ts`, `weather-material.visual.ts` | `lightning.test.ts`, `sky-look.test.ts`, `storm-layers.test.ts`, `game-play-weather.test.ts` (not an input), e2e | D-076, D-077; 60 FPS: manual |
+| P09-R06 | Done | `game/view/props/jungle-*.ts`, `world-3/props.ts`, `world-3/looks.ts` | `prop-models.test.ts` | hand-made ≤ 336 triangles (dam 553 ≤ 600), canopy 111 / 110 |
+| P09-R07 | Done | `game/config/world-3/waves.ts` | `world-3.test.ts` | D-080 |
+| P09-R08 | Done | `waves.ts`, `world-3/difficulty.ts` | `world-3.test.ts` | numbers below |
+| P09-R09 | Done | `game/config/bosses/world-3/*`, `game/view/bosses/world-3/*` | `bosses-world-3.test.ts`, `boss-models.test.ts`, `muzzles.test.ts`, e2e | D-081; patterns below |
+| P09-R10 | Done | the ten designs' health | `bosses-world-3.test.ts` | fight times below |
+| P09-R11 | Done | level data (the debug options and `bosses/` page take every level), `app/game-play.ts` (sky state) | `debug-options.test.ts`, `storm-layers.test.ts`, e2e `world-3.spec.ts`, `bosses.spec.ts` | |
+
+**Balance (P09-R08)**, measured without shooting (seed 606), per minute of scroll: enemies 178.8 / 194.4 / 215.0 / 262.6 / 308.4, HP 4 214 / 5 694 / 6 884 / 8 068 / 10 506, peak on screen 38 / 41 / 47 / 55 / 58 for 3-1 … 3-5 (2-3: 121.4, 3 666, 36; 2-5: 233.4, 7 360, 51). Every second half carries more HP. As in Worlds 1 and 2, the peaks are far above the tunable 13 … 19, in the same order.
+
+**Bosses (P09-R09, R10).** Fight times with the D-055 bot (guns level 3, always on target), mini / final: 3-1 41.6 / 87.5 s, 3-2 44.4 / 90.6 s, 3-3 47.3 / 102.4 s, 3-4 51.4 / 115.2 s, 3-5 54.7 / 127.1 s. Full health: mini 3 200 / 3 780 / 4 200 / 4 500 / 5 100, final 6 800 / 9 050 / 9 950 / 14 000 / 19 500 (World 2: 2 720 … 4 200 and 6 500 … 17 500). Models 1 628–3 966 triangles, within 6 % of their sizes. Stage patterns (parts fire the same while they stand; the core changes each stage):
+- **Mangrove Croc** (3-1 mini, ×1.4 chase): two pontoons (fans of 3, they shield the core) and a jaw cannon (aimed bursts of 3) between jaws on two hinge joints that open in time with the bursts; core ring 10 → ring 12 → two alternating rings → spiral 4 + ring 14. Angry: vortex.
+- **River Leviathan** (3-1 final, ×0.5): a head and four segments on a five-joint spine, a wave running from head to tail; each segment's turret fires rings of 8 in turn (1.1 s apart), a tail rack homing missiles; the head's laser every stage, plus aimed 3 → fan 5 → burst 4 → fan 7 → two spirals. Angry: spirals.
+- **Toucan** (3-2 mini, ×0.6): two wing pods (fans), a beak laser; core bursts 3 → 4 → 4 + spread 3 → spiral 12 + bursts 3. Angry: curtain.
+- **Canopy Spider** (3-2 final, ×0.4): four legs on hip and knee joints stepping in turn, each with a gun firing aimed spreads; an egg sac launching 3 Gnats every 7 s; core ring 8 → ring 9 → ring 10 → two spirals → ring 11 + slow ring 7 → double spiral 12. Angry: flower.
+- **Stone Idol** (3-3 mini, ×0): two eyes (lasers on turrets), a mouth (rings of 9 slow big bullets); core fan 3 → fan 5 → two leaning fans of 5 → spiral 5 + fan 7. Angry: flower.
+- **Sky Temple** (3-3 final, ×0.3): four obelisks (spirals of 4), a summit beacon (homing missiles); core aimed → spread 3 → burst 4 → fan 5 → ring 12 + fan 7 → two spirals + burst 3 (every bullet pattern). Angry: vortex + flower.
+- **Mosquito** (3-4 mini, ×0.6): two buzzing wings (fans crossing), a proboscis (laser on a turret); core bursts 3 → 4 → 5 + spread 3 → ring 12 + bursts 3. Angry: vortex.
+- **Dam Breaker** (3-4 final, ×0.3): two sluice cannons (waves of slow big bullets), an armour plate, two chemical tanks (a ring of 12 when destroyed), a drone hangar (2 Hornets every 7 s); core aimed → spread 3 → burst 4 → fan 5 → fan 7 + burst → ring 10 + aimed → two spirals of 14. Angry: curtain.
+- **Jaguar** (3-5 mini, ×0.6): two claw guns (aimed spreads, on turrets), a tail cannon (laser on a turret); core spiral 3 → 4 → 5 → twin spirals of 5. Angry: curtain.
+- **Verdant Crown** (3-5 final, ×0.25): two thorn cannons (lasers on turrets), two seed batteries (homing missiles), two root generators shielding the core; core bursts 4 → fans 5 → a seed pod bursting into a ring + spread 3 → missiles + bursts → laser + fan 7 → ring 12 + seed pods → spiral 16 + laser + missiles + seed pods + bursts (every attack kind). Angry: flower + spirals.
 
 ### Gate results
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 77 tests, 76 passed / 1 failed (a phase 6 test still expecting World 3 locked; fixed), then after a lint refactor of the prop placer, a full re-run: typecheck ✔ · build ✔ · 77 / 77 e2e passed (5.6 min)
+Lint, unit tests and coverage are deferred to /validate-phase (make check).
+
+Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1210 unit tests ✔ · coverage 98.61 % statements, 87.25 % branches, 98.65 % functions, 99.35 % lines ✔ (phase 8: 98.5 / 88.04 / 98.57 / 99.26) · build ✔ · 77 e2e ✔ (5.8 min).
+Fixed on the way (first run: 6 of 1210 unit tests failed):
+- set pieces were missed by the placer's bucketed neighbour search past ~64 units from their centre, so trees and buildings could stand on them: every placement now checks the set pieces and lines too (World 3 only; earlier layouts unchanged);
+- a lightning flash could push a haze channel to 1 (white): the flashed haze is capped at 0.85 (`LIGHTNING.maxHaze`);
+- the River Leviathan took 7.1 s to come in (P07-R05: under 6.5 s): it stops higher (0.72 of the screen), and its core went 2 800 → 2 500 HP to stay in its fight range (full 6 800, 87.5 s);
+- three earlier tests counted the registered levels, the bosses and Level Zero's props without World 3; the set-piece test used a place past the end of the small sample level.
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `make dev`, then Start → a ship → the level select: the World 3 row (`3-1` … `3-5`) is unlocked, worlds 4 and 5 stay locked. After 2-5's "Level complete", `3-1` is highlighted; after 3-5's, `3-5`.
+- Each level: `?level=3-1` … `?level=3-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 3-1 a white morning mist over the sea and the delta (sandbanks, mangroves, reeds, lily pads), lifting by 2:30, the wide river, stilt huts and a river port at the end; 3-2 the river through a thick canopy, logging camps, a rain shower from 1:40 to 3:20 with rings on the river, green light; 3-3 the storm building over the first 75 s, then rain with lightning flashes and bolts in the clouds, gorges, waterfalls (`?level=3-3&t=55`, `t=210`), temples, the stone causeway, the great pyramid the Stone Idol stops over (`?level=3-3&boss=mini`), the swamp at the end; 3-4 a rainy dusk over the swamp, pipelines on stilts, lit bio-labs and pumping stations, the lake and the giant dam at the end (`?level=3-4&t=280`); 3-5 a rainy night, tree-top outposts, towers with sky bridges and roof gardens, the city centre, the clouds opening on a moonlit sky before the final boss (`?level=3-5&t=280`).
+- Debug: `&weather=0` (no rain, no rings, no lightning: `?level=3-3&t=120&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night`, `&boss=mini|final` (K destroys the next part).
+- Bosses: `bosses/` lists Worlds 1, 2 and 3 under their headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe (check the Croc's jaws, the Leviathan's swaying body, the Spider's legs, the Mosquito's wings).
+- Lightning: dramatic but not blinding; no more than two flashes in a second (a strike may flicker twice).
+- 60 FPS: the 3-2 rainforest (`?level=3-2&t=150`), the 3-3 storm with the most enemies (`?level=3-3&t=280`), the 3-5 final fight (`?level=3-5&boss=final`), with the F3 / debug FPS tile.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- P09-R03 "sea section": a section with a coast or whose relief lies under the water level; rivers, swamps, lakes and pools hold water at the same level as the sea, in channels, low relief or basins (D-079). 3-1's sea sections (open sea, delta mouth) are 80 of its 300 s and 23 % of its ground under water.
+- P09-R06 waterfalls: the river is at one level above and below a fall; the drop is a set piece (a rock ledge across the river, a falling white sheet and spray), four of them in 3-3 (D-079).
+- P09-R05 `lightning_gap`: measured between strikes (4–10 s, about 7 on average); a strike flickers twice with a chance of 0.35, so the flashes come about every 5 s and never more than 2 in a second (cap 3).
+- P09-R05: a flash also never brightens a haze channel past 0.85, so the far haze never turns white.
+- P09-R05: the flash follows the scene's clock (seconds since the level's scene was built), not the level's progress (D-077).
+- P09-R08 tunable `peak_on_screen` (13 … 19): measured 38 … 58, order kept (as Worlds 1 and 2).
+- P09-R09: some boss parts were placed or sized for the bot's spread to reach them within the health bands (Spider forelegs raised forward, Stone Idol eyes 64 apart, Verdant Crown roots 64 apart, larger hit circles on the Leviathan and the Jaguar; D-081). The Croc's jaws open with its bursts in its first stage only.
+- Tests of earlier phases that said World 3 was locked (P06-R01, P08-R01 unit and e2e) now say worlds 4 and 5 are (P09-R01); the atmosphere test fixtures got the new `lightning` field. No World 1 or 2 level data changed.
+- Balance and fight-time numbers were measured with throw-away simulation scripts (not the unit-test runner), as the implement procedure forbids running unit tests before validation.
 
 ### Known limitations
--
+- 60 FPS (ENG-101) could not be measured here: only software WebGL is available. The canopy is about 8 clusters of ~110 triangles per 50 × 50 cell in the rainforest.
+- Lint, unit tests and coverage have not been run (deferred to `/validate-phase`).
+- The water is one colour per level (3-4's darker); the falling water and spray are not self-lit at night.
+- The Croc's jaws and its bursts drift apart after the first destroyed part (keeping them in step would need an engine change). The Leviathan's ring turrets turn but fire from their axis.
+- Nothing was checked by eye under GPU rendering; the boss models were looked at in software-rendered screenshots only.
 
 ### Suggestions for future phases
--
+- Falling ash (World 4) can reuse the rain's `align` / `haze` fields; embers could be a weather kind with self-lit particles.
+- A props viewer page (like `bosses/`) would make the prop models easier to review.

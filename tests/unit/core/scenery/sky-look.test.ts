@@ -75,4 +75,54 @@ describe('Sky looks', () => {
     expect(atTimeOfDay(look, undefined)).toBe(look);
     expect(withoutWeather(look).weather?.strength).toBe(0);
   });
+
+  it('P09-R05: no rain streak at strength 0, the most allowed (rain_streaks_max) at strength 1', () => {
+    const rain = WEATHER_KINDS.rain;
+    expect(rain?.maxParticles).toBe(2000);
+    expect(weatherParticles({ kind: 'rain', strength: 0 })).toBe(0);
+    expect(weatherParticles({ kind: 'rain', strength: 1 })).toBe(2000);
+    expect(weatherParticles({ kind: 'rain', strength: 0.4 })).toBe(800);
+  });
+
+  it('P09-R05: rain is thin streaks along their fall, much faster than snow, rings on the water', () => {
+    const rain = WEATHER_KINDS.rain;
+    expect(rain?.align).toBe('fall');
+    expect(rain?.fall[0]).toBeGreaterThan(5 * (WEATHER_KINDS.snow?.fall[1] ?? Infinity));
+    expect(rain?.size[1]).toBeLessThan(WEATHER_KINDS.snow?.size[0] ?? 0);
+    expect(rain?.rings?.alpha).toBeLessThan(0.5);
+  });
+
+  it('P09-R05: rain brings the haze closer and greyer with its strength', () => {
+    const look = { timeOfDay: 'midday', clouds: [0.5, 0.3] } as const;
+    const dry = resolveSky(look, BASE);
+    const wet = resolveSky({ ...look, weather: { kind: 'rain', strength: 1 } }, BASE);
+    expect(wet.fog.end).toBeCloseTo(dry.fog.end * (WEATHER_KINDS.rain?.fogAt1 ?? 0));
+    const saturation = (c: readonly number[]) => Math.max(...c) - Math.min(...c);
+    expect(saturation(wet.sky.haze)).toBeLessThan(saturation(dry.sky.haze));
+  });
+
+  it('P09-R04: a mist brings the haze in and whitens it; a tint colours the ambient light', () => {
+    const look = { timeOfDay: 'morning', clouds: [0.3, 0.2] } as const;
+    const clear = resolveSky(look, BASE);
+    const misty = resolveSky({ ...look, mist: { fog: 0.4, white: 0.8 } }, BASE);
+    expect(misty.fog.end).toBeCloseTo(clear.fog.end * 0.4);
+    expect(Math.min(...misty.sky.haze)).toBeGreaterThan(Math.min(...clear.sky.haze));
+    const green = resolveSky({ ...look, tint: [0.9, 1.1, 0.9] }, BASE);
+    expect(green.ambient.sky[1]).toBeCloseTo(clear.ambient.sky[1] * 1.1);
+    expect(green.ambient.ground[0]).toBeCloseTo(clear.ambient.ground[0] * 0.9);
+  });
+
+  it('P09-R05, P09-R11: lightning is part of the look, and turned off with the weather', () => {
+    const look = {
+      timeOfDay: 'afternoon',
+      clouds: [0.9, 0.9],
+      weather: { kind: 'rain', strength: 0.8 },
+      lightning: 1,
+    } as const;
+    expect(resolveSky(look, BASE).lightning).toBe(1);
+    expect(resolveSky(withoutWeather(look), BASE)).toMatchObject({
+      lightning: 0,
+      weather: { strength: 0 },
+    });
+  });
 });

@@ -27,7 +27,7 @@ test.describe('P08: World 2', () => {
   test.describe.configure({ mode: 'default' });
   test.setTimeout(150_000);
 
-  test('P08-R01: the World 2 row shows 2-1 to 2-5, all unlocked; worlds 3 to 5 stay locked', async ({
+  test('P08-R01: the World 2 row shows 2-1 to 2-5, all unlocked; worlds 4 and 5 stay locked (P09-R01)', async ({
     page,
   }) => {
     await openGame(page);
@@ -38,7 +38,8 @@ test.describe('P08: World 2', () => {
       await expect(cells.nth(5 + i)).toHaveText(id);
       await expect(cells.nth(5 + i)).not.toHaveClass(/locked/);
     }
-    for (let i = 10; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
+    // P09-R01: World 3 is unlocked since phase 9.
+    for (let i = 15; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
   });
 
   for (const [index, id] of WORLD_2.entries()) {
