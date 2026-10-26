@@ -58,6 +58,14 @@ export interface GameSessionOptions {
   readonly storage?: KeyValueStorage;
 }
 
+/** Where a {@link GameSession} reads the high score from and records its scores (P11-R03). */
+export interface SessionScores {
+  /** The saved high score, for the HUD. */
+  readonly highScore: () => number;
+  /** A level attempt ended (completed, lost, or left) with `score`. */
+  readonly record: (score: number) => void;
+}
+
 /** Keys go to the level's debug keys first (when on), then to the in-game controls. */
 export function listenControls(
   target: ListenTarget | undefined,
@@ -103,6 +111,7 @@ export class GameSession {
     private readonly game: GameDefinition<GameView>,
     private readonly options: GameSessionOptions,
     private readonly onComplete: (play: GamePlay) => void,
+    private readonly scores?: SessionScores,
   ) {
     this.#startTime = options.debug?.time ?? 0;
     this.#startBoss = options.debug?.boss ?? null;
@@ -133,6 +142,8 @@ export class GameSession {
     const shipId = state.chosenShipId ?? state.highlightedShipId;
     const { storage } = this.options;
     const weapons = storage && loadSavedWeapons(storage, this.game.id);
+    // Presses made outside the level (e.g. a bomb key on a menu) do not carry into it.
+    this.controls.clear();
     const play: GamePlay = new GamePlay(
       this.engine,
       this.game,
@@ -145,6 +156,7 @@ export class GameSession {
         startBoss: this.#startBoss,
         atmosphere: atmosphereOf(this.options.debug),
         ...(weapons ? { weapons } : {}),
+        highScore: this.scores?.highScore() ?? 0,
         ...(state.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
         ...(this.options.statsParent ? { statsParent: this.options.statsParent } : {}),
@@ -163,7 +175,9 @@ export class GameSession {
     this.play = play;
   }
 
+  /** Ends the level being played; its score counts for the high score (P11-R03). */
   end(): void {
+    if (this.play) this.scores?.record(this.play.run.score);
     this.play?.dispose();
     this.play = undefined;
     this.controls.clear();

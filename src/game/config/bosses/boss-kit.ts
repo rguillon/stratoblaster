@@ -9,6 +9,7 @@ import type {
 import type { Muzzle } from '../../../core/entities/muzzle';
 import type { BossPatternSpec, BossVolley } from '../../../core/systems/boss-pattern';
 import { ENEMY_UNIT } from '../enemies';
+import { bossPartPoints } from '../scoring';
 
 /*
  * Building blocks of the World 1 bosses (P07-R05). Logical pixels with X right and Y up, from
@@ -249,6 +250,7 @@ export function stats(options: {
     coreRadius: options.coreRadius,
     health: options.coreHealth,
     points: options.points,
+    partPoints: bossPartPoints(options.points),
     groundSpeed: options.groundSpeed,
     parts: options.parts,
     stagePause: BOSS_TIMING.stagePause,

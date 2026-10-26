@@ -64,10 +64,14 @@ function startGame(engine: Engine): void {
   if (__E2E__) {
     installTestApi(window, {
       state: () => app.menu.flow.state,
+      highScore: () => app.menu.highScore,
       loadingProgress: () => app.loadingProgress,
       game: () => app.game()?.state,
       send: (action) => {
         app.command(action);
+      },
+      bomb: () => {
+        app.controls.bomb();
       },
       advance: (seconds) => {
         app.game()?.advance(seconds);

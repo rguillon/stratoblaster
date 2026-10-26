@@ -178,6 +178,7 @@ describe('MenuOverlay', () => {
         over: false,
         level: '1-2',
         enemies: '5 / 9',
+        score: 'Pts 10',
         hint: 'Go on',
       },
     });
@@ -190,9 +191,33 @@ describe('MenuOverlay', () => {
     expect(commands).toEqual(['confirm']);
     overlay.show({
       ...GAME,
-      complete: { heading: 'Game over', over: true, level: '1-2', enemies: '5 / 9', hint: 'Go on' },
+      complete: {
+        heading: 'Game over',
+        over: true,
+        level: '1-2',
+        enemies: '5 / 9',
+        score: 'Pts 10',
+        hint: 'Go on',
+      },
     });
     expect($('.level-complete')?.classList.contains('game-over')).toBe(true);
+  });
+
+  it('P11-R03: the panel shows the score, and a new high score when there is one', () => {
+    const { overlay, $ } = setup();
+    const complete = {
+      heading: 'Level complete!',
+      over: false,
+      level: '1-2',
+      enemies: '5 / 9',
+      score: 'Score: 2500',
+      hint: 'Go on',
+    };
+    overlay.show({ ...GAME, complete });
+    expect($('.level-complete-score')?.textContent).toBe('Score: 2500');
+    expect($('.level-complete-high-score')).toBeNull();
+    overlay.show({ ...GAME, complete: { ...complete, newHighScore: 'New high score!' } });
+    expect($('.level-complete-high-score')?.textContent).toBe('New high score!');
   });
 
   it('P07-R08: after the mini boss, the "Game over" panel offers two choices to tap', () => {
@@ -205,6 +230,7 @@ describe('MenuOverlay', () => {
         over: true,
         level: '1-2',
         enemies: '5 / 9',
+        score: 'Pts 10',
         hint: 'Go on',
         choices: { labels: ['Continue', 'Level select'], selected: 0 },
       },

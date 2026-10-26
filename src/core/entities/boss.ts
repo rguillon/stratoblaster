@@ -50,6 +50,8 @@ export interface BossStats extends EnemyStats {
   readonly death: { readonly seconds: number; readonly every: number };
   /** Chance its core drops a bonus when it is destroyed; the game's rule when omitted. */
   readonly coreDropChance?: number;
+  /** Points scored for each of its parts the player destroys (P11-R01); none when omitted. */
+  readonly partPoints?: number;
   /**
    * It rolls into its sideways moves (phase 7 review): up to `maxDeg` at `fullSpeed` px/s
    * across, easing towards it `easePerSec` of the way a second. It does not roll when omitted.

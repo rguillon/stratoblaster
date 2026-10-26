@@ -17,17 +17,17 @@ import type { FlightBounds } from '../core/systems/player-flight';
 import type { WeaponLevels } from '../core/systems/run-arsenal';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
-import type { BonusRenderer, GameView } from '../render/game-view';
+import type { BombRenderer, BonusRenderer, GameView } from '../render/game-view';
 import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-framing';
 import type { GameControls } from '../input/game-controls';
-import { GameHud } from '../ui/game-hud';
+import type { GameHud } from '../ui/game-hud';
 import type { MenuDocument } from '../ui/screens/elements';
 import { StatsTile } from '../ui/stats-tile';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
-import { hudFrame } from './game-play-hud';
+import { createHud, hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
 import { buildLevelScene, skyState, type LevelScene } from './level-scene';
 import { RateMeter } from './rate-meter';
@@ -53,6 +53,8 @@ export interface GamePlayOptions {
   readonly resume?: LevelCheckpoint;
   /** The weapons kept from the levels completed before; all at level 1 when omitted. */
   readonly weapons?: WeaponLevels;
+  /** The saved high score, for the HUD (P11-R02); 0 when omitted. */
+  readonly highScore?: number;
   /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
   readonly atmosphere?: AtmosphereOptions;
   readonly doc: MenuDocument;
@@ -103,6 +105,7 @@ export class GamePlay {
   readonly #enemies: EnemyLayer;
   readonly #shots: EnemyViewerShots;
   readonly #bonuses: BonusRenderer;
+  readonly #bombs: BombRenderer | undefined;
   readonly #speed: number;
   readonly #stats: StatsTile | undefined;
   readonly #hud: GameHud | undefined;
@@ -151,11 +154,16 @@ export class GamePlay {
     this.#enemies = pf.run(() => new EnemyLayer(this.view.scene, game.view.enemies.models));
     this.#shots = new EnemyViewerShots(game, pf, this.view.look.shotStyle);
     this.#bonuses = pf.run(() => game.view.bonuses(this.view.scene));
+    this.#bombs = pf.run(() => game.view.bombs?.(this.view.scene));
     this.#stats =
       options.debug && options.statsParent
         ? new StatsTile(options.doc, options.statsParent, CFG.stats.refresh)
         : undefined;
-    this.#hud = options.hudParent && this.#newHud(options.hudParent, shipDef.name);
+    this.#hud =
+      options.hudParent &&
+      createHud(options.doc, options.hudParent, shipDef.name, game.texts, () => {
+        this.controls.bomb();
+      });
     if (options.startTime > 0) this.#seek(options.startTime);
     const boss = this.run.fights.bosses.find((b) => b.rank === options.startBoss);
     if (boss) this.#seek(boss.at / this.run.track.speed);
@@ -188,6 +196,7 @@ export class GamePlay {
       seed: CFG.seed,
       inView: this.#inView(),
       bonuses: this.game.bonuses,
+      bombs: this.game.bombs,
       hull: this.game.hull,
       bossKinds: this.game.bossKinds,
       bossRules: this.game.bossFights,
@@ -204,19 +213,6 @@ export class GamePlay {
       y >= 0 &&
       y <= height &&
       Math.abs(x - width / 2) <= visibleHalfWidth(framing, width / height, y);
-  }
-
-  #newHud(parent: HTMLElement, ship: string): GameHud {
-    const { texts } = this.game;
-    return new GameHud(this.options.doc, parent, {
-      ship,
-      texts: {
-        health: texts.hudHealth,
-        weapon: texts.hudWeapon,
-        destroyed: texts.hudDestroyed,
-        lives: texts.hudLives,
-      },
-    });
   }
 
   /** Where the ship may fly: inside what the tilted camera shows of the playfield (P06-R02). */
@@ -280,9 +276,11 @@ export class GamePlay {
       this.#enemies.sync(enemies.enemies, dt);
       const bonuses = this.run.bonuses?.bonuses ?? [];
       this.#bonuses.sync({ bonuses, picked, dtSeconds: dt });
+      this.#bombs?.sync({ bomb: this.run.bombs?.active, dtSeconds: dt });
     });
     this.#shots.sync({ enemies, shots, blasts, impacts, dt });
-    this.#hud?.update(hudFrame(this.run, this.#maxHealth, this.game.texts));
+    const { highScore = 0 } = this.options;
+    this.#hud?.update(hudFrame(this.run, this.#maxHealth, this.game.texts, highScore));
     this.#fps.add(dt, ++this.#frames);
     const polygons = this.view.scene.getActiveIndices() / 3;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons });
@@ -349,6 +347,7 @@ export class GamePlay {
     this.#enemies.dispose();
     this.#shots.dispose();
     this.#bonuses.dispose();
+    this.#bombs?.dispose();
     this.#stats?.root.remove();
     this.#hud?.dispose();
     this.view.scene.dispose();

@@ -22,6 +22,9 @@ export interface MenuTexts {
   /** Heading of the same overlay when every life is lost (GD-20). */
   readonly gameOver: string;
   readonly enemiesDestroyed: (destroyed: number, spawned: number) => string;
+  /** The attempt's score on the same overlay, and the line shown when it beat the high score (P11-R03). */
+  readonly finalScore: (score: number) => string;
+  readonly newHighScore: string;
   readonly continueHint: string;
   /**
    * The "Game over" panel's two choices after the mini boss (P07-R08): go on from the
@@ -34,6 +37,11 @@ export interface MenuTexts {
   readonly hudLives: (lives: number) => string;
   readonly hudWeapon: (weaponName: string, level: number, levels: number) => string;
   readonly hudDestroyed: (count: number) => string;
+  /** The score, and the high score line under it (P11-R02). */
+  readonly hudScore: (score: number) => string;
+  readonly hudHighScore: (score: number) => string;
+  /** Label of the on-screen bomb button (touch screens, P11-R06), with the bombs left. */
+  readonly hudBomb: (bombs: number) => string;
   /** Kinds shown on the boss health bar (P07-R02). */
   readonly hudMiniBoss: string;
   readonly hudBoss: string;

@@ -69,6 +69,8 @@ export interface LaserOwner {
  */
 export interface DropSource extends ShotTarget {
   readonly dropChance?: number | undefined;
+  /** Points scored when the player destroys it (a boss's part, P11-R01); none when omitted. */
+  readonly points?: number;
 }
 
 /** What an enemy can see and do while it updates. */
