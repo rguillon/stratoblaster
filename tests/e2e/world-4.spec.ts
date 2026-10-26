@@ -47,7 +47,7 @@ test.describe('P10: World 4', () => {
   test.describe.configure({ mode: 'default' });
   test.setTimeout(150_000);
 
-  test('P10-R01: the World 4 row shows 4-1 to 4-5, all unlocked; World 5 stays locked', async ({
+  test('P10-R01: the World 4 row shows 4-1 to 4-5, all unlocked, the last row of the grid', async ({
     page,
   }) => {
     await openGame(page);
@@ -58,7 +58,8 @@ test.describe('P10: World 4', () => {
       await expect(cells.nth(15 + i)).toHaveText(id);
       await expect(cells.nth(15 + i)).not.toHaveClass(/locked/);
     }
-    for (let i = 20; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
+    await expect(cells).toHaveCount(20);
+    await expect(page.locator('.level-cell.locked')).toHaveCount(0);
   });
 
   for (const [index, id] of WORLD_4.entries()) {

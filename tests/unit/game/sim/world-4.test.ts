@@ -50,16 +50,16 @@ const ash = (strength: number) => ({ kind: 'ash', strength });
 const embers = (strength: number) => ({ kind: 'embers', strength });
 
 describe('World 4', () => {
-  it('P10-R01: five playable levels, 4-1 to 4-5, all unlocked; World 5 stays locked', () => {
+  it('P10-R01: five playable levels, 4-1 to 4-5, all unlocked, the last row of the grid', () => {
     expect(WORLD_4.map((l) => l.id)).toEqual(['4-1', '4-2', '4-3', '4-4', '4-5']);
     const row = LEVELS.levels.filter((l) => l.world === 4);
     expect(row.map((l) => [l.id, l.unlocked])).toEqual(WORLD_4.map((l) => [l.id, true]));
-    expect(LEVELS.levels.filter((l) => l.world > 4).every((l) => !l.unlocked)).toBe(true);
-    // 4-1 comes right after 3-5 in the grid (completing 3-5 highlights it); after 4-5 comes a
-    // locked level, so 4-5 stays highlighted.
+    // 4-1 comes right after 3-5 in the grid (completing 3-5 highlights it); 4-5 is the last
+    // level, so it stays highlighted.
     const ids = LEVELS.levels.map((l) => l.id);
     expect(ids.indexOf('4-1')).toBe(ids.indexOf('3-5') + 1);
-    expect(LEVELS.levels[ids.indexOf('4-5') + 1]?.unlocked).toBe(false);
+    expect(ids.at(-1)).toBe('4-5');
+    expect(LEVELS.levels.every((l) => l.unlocked)).toBe(true);
   });
 
   it('P10-R02: each level lasts about 5 minutes (290 to 310 s) at its ground speed', () => {

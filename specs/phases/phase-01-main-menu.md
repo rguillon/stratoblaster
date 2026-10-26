@@ -84,10 +84,10 @@ Shows the 3 player ships from phase 2, rotating, with their name, speed and heal
 - [ ] The highlighted ship is clearly visible (e.g. scaled up, glowing frame or spotlight) and the others are dimmed.
 
 ### P01-R07 — Level select screen  · MUST
-Shows the levels as a grid of **5 worlds × 5 levels** (vision: first release). Only **World 1 – Level 1** is unlocked in this phase; the other levels are shown locked (padlock icon, greyed out) and cannot be confirmed. The player moves the selection with the arrows and confirms an unlocked level.
+Shows the levels as a grid of **4 worlds × 5 levels** (vision: first release; was 5 × 5 until World 5 was dropped, 2026-10-26). Only **World 1 – Level 1** is unlocked in this phase; the other levels are shown locked (padlock icon, greyed out) and cannot be confirmed. The player moves the selection with the arrows and confirms an unlocked level.
 
 **Acceptance criteria**
-- [ ] The grid shows 25 entries labelled `1-1` … `5-5`.
+- [ ] The grid shows 20 entries labelled `1-1` … `4-5`.
 - [ ] Given `level-select` is opened, then `1-1` is highlighted.
 - [ ] When the selection is moved to a locked level and Confirm is pressed, then nothing happens except a "locked" feedback (e.g. a short shake).
 - [ ] When `1-1` is confirmed, then the screen is `game`.
@@ -197,7 +197,7 @@ Short transitions between screens (fade or slide, ≤ 300 ms). Input is ignored 
 - [ ] Gamepad: same flow with the stick / D-pad, A and B
 - [ ] Mouse / touch (or phone emulation in dev tools): same flow with clicks / taps and the Back button
 - [ ] Ship select: the 3 ships rotate, the highlighted one is obvious, stats are shown
-- [ ] Level select: 25 levels, only 1-1 can be chosen, locked levels give feedback
+- [ ] Level select: 20 levels, only 1-1 can be chosen, locked levels give feedback
 - [ ] Resize the window (and try a portrait phone size): the menu stays fully visible and keeps its proportions
 - [ ] `player_ship/` still works
 

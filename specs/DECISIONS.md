@@ -959,3 +959,11 @@
 - **Decision:** no engine change: every boss is data on the boss engine (joints, turrets, orbiting parts, launches, homing missiles, tanks bursting into rings, slow bullets that burst), made in parallel by five sub-agents, one level each, each given a full-health band between World 3's and the next World 4 level's, so the orderings hold by construction; health tuned with the D-055 bot. Full health mini / final: 3 650 / 7 800, 4 180 / 9 700, 4 500 / 12 400, 5 150 / 14 800, 5 550 / 21 200; fights 44.4 / 89.2, 48.0 / 100.7, 53.2 / 112.4, 56.3 / 126.2, 59.7 / 137.6 s. Angry heats evened out afterwards to go on from World 3's 9: minis 9.5 → 13.5, finals 10 → 14. Some parts placed for the bot's spread (as D-081).
 - **Consequences:** the Crab's mortar and the Dreadnought's rack are seldom destroyed in the bot's fights (they sit behind the core); a player can still shoot them.
 - **Status:** Accepted
+
+### D-089 — World 5 dropped: a 4 × 5 level grid
+- **Date:** 2026-10-26
+- **Phase:** 10
+- **Context:** The reviewer asked to remove World 5 from the specs and the code.
+- **Decision:** `LEVELS_CONFIG.worlds` goes from 5 to 4: the level select shows 20 levels, `1-1` … `4-5`, all unlocked. The engine keeps locked levels (`buildLevelGrid`, the padlock and the "locked" feedback) for any other game's data; they are unit tested with sample grids, and no e2e test can reach a locked level any more. The requirement texts that named World 5 (vision, P01-R07, P06-R01, P10-R01, phase 8 and 10 notes) were changed at the reviewer's request, each with a dated note.
+- **Consequences:** after 4-5 the level select keeps 4-5 highlighted because it is the last level (`MenuFlow` already did this for a last level). The Caldera Throne is the game's last boss.
+- **Status:** Accepted

@@ -47,9 +47,7 @@ test.describe('P09: World 3', () => {
   test.describe.configure({ mode: 'default' });
   test.setTimeout(150_000);
 
-  test('P09-R01: the World 3 row shows 3-1 to 3-5, all unlocked; World 5 stays locked (P10-R01)', async ({
-    page,
-  }) => {
+  test('P09-R01: the World 3 row shows 3-1 to 3-5, all unlocked', async ({ page }) => {
     await openGame(page);
     await sendAction(page, 'confirm');
     await sendAction(page, 'confirm');
@@ -58,7 +56,6 @@ test.describe('P09: World 3', () => {
       await expect(cells.nth(10 + i)).toHaveText(id);
       await expect(cells.nth(10 + i)).not.toHaveClass(/locked/);
     }
-    for (let i = 20; i < 25; i++) await expect(cells.nth(i)).toHaveClass(/locked/);
   });
 
   for (const [index, id] of WORLD_3.entries()) {

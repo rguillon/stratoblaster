@@ -119,3 +119,4 @@
 - 2026-10-26 — 9 — Implemented World 3 (the Jungle): five levels, rain and lightning, jungle props, ten bosses; awaiting review.
 - 2026-10-26 — 9 — Validated: full gate green (1210 unit tests, 99.35% lines, 87.25% branches, 77 e2e); squash-merged into `main`, tagged `v0.09.0`.
 - 2026-10-26 — 10 — Implemented World 4 (Volcanic Lands): lava, falling ash and embers, smoke and steam plumes, contrast shots, 31 props, ten bosses; awaiting review.
+- 2026-10-26 — 10 — Review fix: World 5 removed from the specs and the code, the level grid is 4 × 5 (D-089); still awaiting review.

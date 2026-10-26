@@ -20,12 +20,12 @@ World 4, **the Volcanic Lands**, has five playable levels, 4-1 to 4-5, each abou
 
 ### P10-R01 — World 4 in the level select  · MUST
 
-The World 4 row of the level select grid shows `4-1` to `4-5`, all unlocked (P06-R01). World 5 stays greyed out. After `3-5` is completed, `level-select` shows with `4-1` highlighted; after `4-5`, with `4-5` highlighted.
+The World 4 row of the level select grid shows `4-1` to `4-5`, all unlocked (P06-R01). World 4 is the last row of the grid (World 5 dropped by the reviewer, 2026-10-26). After `3-5` is completed, `level-select` shows with `4-1` highlighted; after `4-5`, with `4-5` highlighted.
 
 **Acceptance criteria**
 - [ ] Given `level-select`, then the World 4 row shows exactly `4-1` to `4-5`, all unlocked, each starting its level.
 - [ ] Given `3-5` is completed, then `level-select` shows with `4-1` highlighted.
-- [ ] Given a level of World 5, then it is still greyed out.
+- [ ] Given `level-select`, then the grid has exactly 4 rows (`1-1` … `4-5`) and no level is locked.
 
 ### P10-R02 — Duration  · MUST
 
@@ -212,7 +212,6 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 | prop_triangles | within the range of the phase 6 props | P10-R08, D-031 |
 
 ## 🧑 Out of scope for this phase
-- World 5.
 - New regular enemy kinds.
 - Gameplay effects of the lava, heat or weather (damage from lava, heat haze blurring the view): they are only a look.
 - Real lights cast by the lava on the ships (only glow).
@@ -228,7 +227,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] `4-1` to `4-5` can be picked in the level select; World 5 stays locked
+- [ ] `4-1` to `4-5` can be picked in the level select; the grid ends with World 4
 - [ ] Volcanic islands, ash plains, lava fields, foundries and caldera across the five levels; each level begins where the previous one ended
 - [ ] A red dawn in 4-1, a dim ash-dark noon in 4-2, dusk giving way to lava glow in 4-3, a furnace-lit night in 4-4, the eruption in 4-5
 - [ ] Lava glows and moves; smoke and steam rise without hiding the shots
@@ -242,7 +241,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 - **Drafted by the agent at the reviewer's request (2026-10-25); open choices, defaults proposed:** the same as phase 8 (themes, no new enemy kinds, 5-minute levels, a softer start for each world, fight times with guns at level 3, boss designs as suggestions), plus:
   1. P10-R07 (contrast outline on shots) only in World 4. Alternative: on every world, which would change the look of the validated worlds.
   2. The difficulty numbers keep climbing; with no new enemy kinds, World 4 leans on denser mixes and faster bullets. The reviewer may prefer to cap the bullet factors around 1.3 for kids.
-- World 5 is left free; a natural end for the game after the Caldera Throne would be the enemy's capital in the sky or in orbit.
+- World 4 is the last world: the Caldera Throne (4-5 final) is the game's last boss (World 5 dropped by the reviewer, 2026-10-26).
 
 ---
 
@@ -250,6 +249,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 > After the agent reports, write corrections here, then say **"Fix phase 10"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-26) Remove World 5 from the specs and the code. — Done (D-089): the grid is 4 worlds × 5 levels (`LEVELS_CONFIG.worlds` 4), 20 levels, all unlocked; 4-5 is the last level, so it stays highlighted after it is completed. Specs updated with a dated note: vision, P01-R07 (20 entries `1-1` … `4-5`), P06-R01, phase 8 notes, P10-R01 (its World 5 criterion now checks the 4-row grid with no locked level), phase 10 out of scope and notes. Tests: `levels.test.ts`, `world-2/3/4.test.ts`, e2e `world-1/2/3/4.spec.ts`; the menu pointer e2e no longer tries a locked level (none is left in the game); the "locked" feedback stays unit tested with sample grids (`menu-overlay.test.ts`, `menu-controller.test.ts`).
 - [ ] 
 
 ---
@@ -314,7 +314,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 ```
 
 ### How to test manually
-- `make dev`, then Start → a ship → the level select: the World 4 row (`4-1` … `4-5`) is unlocked, World 5 stays locked. After 3-5's "Level complete", `4-1` is highlighted; after 4-5's, `4-5`.
+- `make dev`, then Start → a ship → the level select: the World 4 row (`4-1` … `4-5`) is unlocked and is the last row (20 levels, none locked). After 3-5's "Level complete", `4-1` is highlighted; after 4-5's, `4-5`.
 - Each level: `?level=4-1` … `?level=4-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 4-1 a pink-grey dawn over a dark steaming sea, black rock islands with smoking vents and hardy grass, fishing huts and wells, the black-sand coast and harbour at the end (`t=280`); 4-2 an ash-dark yellowish midday with falling ash, ash plains, burnt forests, cinder cones, hot springs, geothermal plants, cooling towers and pipelines; 4-3 lava rivers and pools growing through the level while the dusk turns to night and embers rise (`t=60`, `t=250`); 4-4 the foundries at night, slag rivers, chimney rows smoking, rail lines with ore wagons moving, ash and embers together (`t=150`); 4-5 the volcano's slopes, the war factory, the fortress city and the magma lake, the sky turning deep red as the embers grow (`t=270`, `&boss=final`).
 - Debug: `&weather=0` (no ash, no embers: `?level=4-4&t=60&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night`, `&boss=mini|final` (K destroys the next part).
 - Shots: in 4-3, 4-4 and 4-5 every bullet has a dark rim and a white heart, laser warning lines a white core; compare with any World 1–3 level (unchanged).
@@ -330,7 +330,7 @@ Lint, unit tests and coverage are deferred to /validate-phase (make check).
 - P10-R10 tunable `peak_on_screen` (15 … 21): measured 53 … 66, order kept (as Worlds 1–3).
 - P10-R11: some parts placed or sized for the bot's spread to reach them within the health bands (as D-081): the Crab's claws ±24, the Dreadnought's turrets ±56, the Rig's vents ±35, the Ark's rails ±72 and crucibles ±60; the Ark's missile battery sits on the bow ahead of the chimney row; the Drake's flame is a burst plus a spray (no stream shape in the engine).
 - Angry heats were evened out by the lead after the five boss agents (D-063 rate, going up from 4-1 to 4-5).
-- Tests of earlier phases that said World 4 was locked (P06-R01, P08-R01, P09-R01 unit and e2e, the menu pointer test) now say World 5 is; after 3-5 the level select highlights 4-1; the boss count is 40; the boss triangle test allows 7 000 for the Caldera Throne. No World 1–3 level data changed.
+- Tests of earlier phases that said World 4 was locked (P06-R01, P08-R01, P09-R01 unit and e2e, the menu pointer test) now say every level is unlocked and the grid is 4 × 5 (World 5 dropped, D-089); after 3-5 the level select highlights 4-1; the boss count is 40; the boss triangle test allows 7 000 for the Caldera Throne. No World 1–3 level data changed.
 - Balance and fight-time numbers were measured with throw-away simulation scripts (not the unit-test runner).
 
 ### Known limitations
