@@ -140,6 +140,21 @@ render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
   pipeline (`core/scenery/float-placement.ts`), drifting props (`PropField.drift`), crack lines
   in generated textures.
 
+## Enemies with moving parts (P05-R13 to P05-R24)
+
+- `core/entities/jointed-enemy.ts`: `JointedEnemy` (an `Enemy` whose `update` swings its joints,
+  runs the kind's `act`, then places its parts) and `EnemyPart` (a hit circle with health and
+  guns, on a `BossJointSpec` joint or orbiting with the enemy's `spin`; `shields` keeps shots off
+  the hull). Destroyed parts go through `EnemyContext.breakPart` (blast, no bonus); the hull's
+  death takes the parts with it. `swinging = false` holds the joints still.
+- `EnemyLaserSpec.sweeps`: a beam that keeps turning with its owner while it fires (a laser on a
+  moving arm); other beams keep the heading they fired at (phase 8 review).
+- Game: the first eleven kinds are `FIRST_KINDS`, the veteran and elite kinds
+  `game/sim/veteran-kinds.ts` and `elite-kinds.ts` (configs in `game/config/enemies-veteran.ts`
+  and `enemies-elite.ts`); their models use `game/view/enemies/jointed-model.ts`
+  (`buildJointedModel`: a node per joint, a ring for the spin, a sub-model per part, hidden once
+  destroyed). The `enemies/` wireframe draws every hit target's circle.
+
 ## Bosses (phase 07)
 
 ```

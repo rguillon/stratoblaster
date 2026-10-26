@@ -13,6 +13,8 @@ import { Spinner } from './enemies/spinner';
 import { Splitter } from './enemies/splitter';
 import { Strafer } from './enemies/strafer';
 import { Weaver } from './enemies/weaver';
+import { ELITE_KINDS } from './elite-kinds';
+import { VETERAN_KINDS } from './veteran-kinds';
 
 /** Just above the top edge. */
 const top = (area: EnemySpawnArea): number => area.height + MARGIN;
@@ -47,8 +49,8 @@ const sidePass = (area: EnemySpawnArea, heightFraction: number) => {
   return { left: coin(area), y: heightFraction * area.height };
 };
 
-/** The 11 enemy kinds of P05, in the order of the spec. */
-export const ENEMY_KINDS: readonly EnemyKindDefinition[] = [
+/** The 11 first enemy kinds of P05 (P05-R01 to P05-R12), in the order of the spec. */
+export const FIRST_KINDS: readonly EnemyKindDefinition[] = [
   {
     id: 'gnat',
     name: 'Gnat',
@@ -131,4 +133,11 @@ export const ENEMY_KINDS: readonly EnemyKindDefinition[] = [
     name: 'Carrier',
     spawn: (area) => [new Carrier(entryX(area, C.carrier.xRange), top(area))],
   },
+];
+
+/** Every enemy kind of P05: the first eleven, then the veteran and elite kinds (P05-R24). */
+export const ENEMY_KINDS: readonly EnemyKindDefinition[] = [
+  ...FIRST_KINDS,
+  ...VETERAN_KINDS,
+  ...ELITE_KINDS,
 ];

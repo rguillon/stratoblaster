@@ -6,15 +6,16 @@ import type { WavePlan } from '../world-2/waves';
  * D-067): a beat every `gap` seconds shrinking over the level, each the next phrase of the
  * level's cycle, its groups growing over the level; the World 1 filler (D-051) fills the lulls.
  * A phrase is `[kind, groups, seconds between groups, side, position (0..1), spread]`. Every
- * level uses all eleven kinds.
+ * level uses the eleven first kinds and the five veteran kinds; the elite kinds come in two in
+ * 4-1, then one more a level (P05-R24, D-090).
  */
 
 /** 4-1: every kind, Weavers and Strafers low over the steaming sea. */
 export const PLAN_4_1: WavePlan = {
   from: 4,
   to: 292,
-  gap: [3.8, 2.7],
-  growth: 1.1,
+  gap: [3, 2.6],
+  growth: 0.9,
   phrases: [
     ['weaver', 4, 1.1, 'top', 0.25, 0.2],
     ['strafer', 3, 1.4, 'left', 0.8],
@@ -31,6 +32,14 @@ export const PLAN_4_1: WavePlan = {
     ['bulwark', 1, 0, 'top', 0.5],
     ['carrier', 1, 0, 'top', 0.4],
     ['gnat', 3, 1.6, 'top', 0.3, 0.4],
+    // P05-R24: a new kind.
+    ['wasp', 2, 1.6, 'top', 0.4, 0.3],
+    ['mortar', 1, 0, 'top', 0.6],
+    ['minelayer', 1, 0, 'left', 0.74],
+    ['mantis', 1, 0, 'top', 0.35],
+    ['phantom', 1, 0, 'top', 0.65],
+    ['hydra', 1, 0, 'top', 0.5],
+    ['orbiter', 1, 0, 'top', 0.4],
   ],
 };
 
@@ -38,8 +47,8 @@ export const PLAN_4_1: WavePlan = {
 export const PLAN_4_2: WavePlan = {
   from: 4,
   to: 292,
-  gap: [4, 2.8],
-  growth: 1,
+  gap: [3, 2.1],
+  growth: 1.1,
   phrases: [
     ['splitter', 3, 1.6, 'top', 0.2, 0.3],
     ['spinner', 3, 2, 'top', 0.25, 0.5],
@@ -56,6 +65,17 @@ export const PLAN_4_2: WavePlan = {
     ['carrier', 1, 0, 'top', 0.6],
     ['hornet', 5, 0.6, 'top', 0.1, 0.2],
     ['gnat', 3, 1.5, 'top', 0.3, 0.4],
+    ['splitter', 3, 1.5, 'top', 0.6, -0.3],
+    ['spinner', 2, 2, 'top', 0.5, 0.3],
+    // P05-R24: a new kind.
+    ['wasp', 2, 1.6, 'top', 0.6, -0.3],
+    ['mortar', 1, 0, 'top', 0.4],
+    ['minelayer', 1, 0, 'right', 0.74],
+    ['mantis', 1, 0, 'top', 0.6],
+    ['phantom', 1, 0, 'top', 0.35],
+    ['hydra', 1, 0, 'top', 0.45],
+    ['orbiter', 1, 0, 'top', 0.6],
+    ['scissor', 1, 0, 'top', 0.5],
   ],
 };
 
@@ -63,8 +83,8 @@ export const PLAN_4_2: WavePlan = {
 export const PLAN_4_3: WavePlan = {
   from: 4,
   to: 292,
-  gap: [3.6, 2.5],
-  growth: 1.1,
+  gap: [3, 2],
+  growth: 1,
   phrases: [
     ['lancer', 3, 1.6, 'top', 0.25, 0.4],
     ['rocketeer', 2, 2, 'top', 0.3, 0.4],
@@ -81,6 +101,16 @@ export const PLAN_4_3: WavePlan = {
     ['strafer', 3, 1.4, 'left', 0.8],
     ['hornet', 5, 0.6, 'top', 0.1, 0.2],
     ['gnat', 3, 1.5, 'top', 0.3, 0.4],
+    // P05-R24: a new kind.
+    ['wasp', 2, 1.6, 'top', 0.3, 0.3],
+    ['mortar', 1, 0, 'top', 0.65],
+    ['minelayer', 1, 0, 'left', 0.74],
+    ['mantis', 1, 0, 'top', 0.4],
+    ['phantom', 1, 0, 'top', 0.6],
+    ['hydra', 1, 0, 'top', 0.55],
+    ['orbiter', 1, 0, 'top', 0.35],
+    ['scissor', 1, 0, 'top', 0.45],
+    ['hive', 1, 0, 'top', 0.5],
   ],
 };
 
@@ -88,7 +118,7 @@ export const PLAN_4_3: WavePlan = {
 export const PLAN_4_4: WavePlan = {
   from: 4,
   to: 292,
-  gap: [4, 2.8],
+  gap: [2.8, 2],
   growth: 0.6,
   phrases: [
     ['carrier', 1, 0, 'top', 0.35],
@@ -105,6 +135,17 @@ export const PLAN_4_4: WavePlan = {
     ['strafer', 3, 1.4, 'right', 0.8],
     ['hornet', 6, 0.55, 'top', 0.1, 0.2],
     ['gnat', 3, 1.4, 'top', 0.2, 0.3],
+    // P05-R24: a new kind.
+    ['wasp', 2, 1.6, 'top', 0.7, -0.3],
+    ['mortar', 1, 0, 'top', 0.35],
+    ['minelayer', 1, 0, 'right', 0.74],
+    ['mantis', 1, 0, 'top', 0.6],
+    ['phantom', 1, 0, 'top', 0.4],
+    ['hydra', 1, 0, 'top', 0.5],
+    ['orbiter', 1, 0, 'top', 0.65],
+    ['scissor', 1, 0, 'top', 0.4],
+    ['hive', 1, 0, 'top', 0.55],
+    ['juggernaut', 1, 0, 'top', 0.5],
   ],
 };
 
@@ -112,8 +153,8 @@ export const PLAN_4_4: WavePlan = {
 export const PLAN_4_5: WavePlan = {
   from: 4,
   to: 292,
-  gap: [3.8, 2.7],
-  growth: 1,
+  gap: [2.6, 2.2],
+  growth: 0.8,
   phrases: [
     ['bulwark', 1, 0, 'top', 0.3],
     ['carrier', 1, 0, 'top', 0.5],
@@ -131,6 +172,18 @@ export const PLAN_4_5: WavePlan = {
     ['carrier', 1, 0, 'top', 0.6],
     ['hornet', 7, 0.45, 'top', 0.1, 0.2],
     ['gnat', 5, 1.1, 'top', 0.2, 0.3],
+    // P05-R24: a new kind.
+    ['wasp', 3, 1.4, 'top', 0.3, 0.4],
+    ['mortar', 2, 2, 'top', 0.3, 0.4],
+    ['minelayer', 1, 0, 'left', 0.74],
+    ['mantis', 1, 0, 'top', 0.4],
+    ['phantom', 2, 2, 'top', 0.3, 0.4],
+    ['hydra', 1, 0, 'top', 0.55],
+    ['orbiter', 1, 0, 'top', 0.35],
+    ['scissor', 1, 0, 'top', 0.5],
+    ['hive', 1, 0, 'top', 0.45],
+    ['juggernaut', 1, 0, 'top', 0.5],
+    ['minelayer', 1, 0, 'right', 0.72],
   ],
 };
 

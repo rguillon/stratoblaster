@@ -967,3 +967,27 @@
 - **Decision:** `LEVELS_CONFIG.worlds` goes from 5 to 4: the level select shows 20 levels, `1-1` … `4-5`, all unlocked. The engine keeps locked levels (`buildLevelGrid`, the padlock and the "locked" feedback) for any other game's data; they are unit tested with sample grids, and no e2e test can reach a locked level any more. The requirement texts that named World 5 (vision, P01-R07, P06-R01, P10-R01, phase 8 and 10 notes) were changed at the reviewer's request, each with a dated note.
 - **Consequences:** after 4-5 the level select keeps 4-5 highlighted because it is the last level (`MenuFlow` already did this for a last level). The Caldera Throne is the game's last boss.
 - **Status:** Accepted
+
+### D-090 — Ten veteran and elite enemy kinds, with moving parts
+- **Date:** 2026-10-26
+- **Phase:** 10 (requirements added to phase 5: P05-R13 to P05-R24)
+- **Context:** The reviewer asked for 10 new, harder enemy kinds, some with moving parts like the bosses, in the spec, and in the harder worlds.
+- **Decision:**
+  - The requirements went into the phase 5 spec (the reviewer's choice), each with a dated note.
+  - The kinds come in two tiers: five **veterans** (Wasp, Mortar, Mantis, Phantom, Minelayer), from World 3; five **elites** (Hydra, Orbiter, Scissor, Juggernaut, Hive), in World 4 only.
+  - Engine: `JointedEnemy` / `EnemyPart` reuse the bosses' `BossJoints` (D-061). Parts give no points and never drop a bonus. A shielding part makes shots pass through the hull, as a boss's shielded core does. `swinging` holds the joints still, and `EnemyLaserSpec.sweeps` lets a beam turn with its owner (the Scissor). The phase 8 rule "a beam keeps its heading" stays the default.
+  - Built in parallel by two sub-agents, one per tier.
+  - Waves:
+    - World 3 brings in a veteran kind at each level (Wasp, Mortar, Minelayer, Mantis, Phantom).
+    - World 4 uses every veteran kind in every level. The elites come in two in 4-1 (Hydra, Orbiter), then Scissor, Hive and Juggernaut.
+    - Gaps and growth were re-swept with the D-038 play-through. 4-2 gets two more Splitter / Spinner phrases to keep its lead kinds frequent.
+- **Measured** (without shooting, seed 606; enemies / HP per minute / peak):
+  - 3-1 180.8 / 4 384 / 37; 3-2 184.0 / 5 494 / 38; 3-3 190.0 / 6 452 / 45; 3-4 219.0 / 7 744 / 50; 3-5 247.8 / 8 952 / 53.
+  - 4-1 195.2 / 7 496 / 53; 4-2 204.4 / 9 216 / 55; 4-3 211.2 / 10 644 / 57; 4-4 225.0 / 11 238 / 62; 4-5 302.0 / 13 752 / 64.
+  - Every ordering of P09-R08 and P10-R10 holds, and every second half is heavier.
+- **Consequences:**
+  - World 3 (validated in phase 9) changes: its waves, and its enemies per minute in 3-3 to 3-5, which went down from 215 / 263 / 308 because the heavier kinds take beat slots. Its HP per minute stays about the same.
+  - The HP measure counts hulls only, not parts.
+  - GD-50 (tougher enemies score more) is tested on the first eleven kinds only: the Phantom (90 HP, 450 points) scores more than its HP suggests, as its cloak makes it harder.
+  - The models were only smoke-checked in software rendering; they need a look in `enemies/`.
+- **Status:** Accepted

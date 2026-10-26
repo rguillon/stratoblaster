@@ -10,7 +10,9 @@ import {
 } from '../../../../src/game/config/world-3/props';
 import { PLAN_3_1 } from '../../../../src/game/config/world-3/waves';
 import { composeBeats } from '../../../../src/game/config/world-2/waves';
-import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { ELITE_KINDS } from '../../../../src/game/sim/elite-kinds';
+import { VETERAN_KINDS } from '../../../../src/game/sim/veteran-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_2 } from '../../../../src/game/sim/world-2';
 import { WORLD_3 } from '../../../../src/game/sim/world-3';
@@ -180,11 +182,21 @@ describe('World 3', () => {
     expect(clearing?.to).toBeLessThan(300);
   });
 
-  it('P09-R07: each wave script uses only its level’s kinds; 3-2 to 3-5 use all eleven', () => {
+  it('P09-R07, P05-R24: each wave script uses only its level’s kinds; 3-2 to 3-5 use all eleven first kinds; a veteran kind more at each level', () => {
     const kinds = (id: string) => [...new Set(level(id).waves.map((w) => w.kind))].sort();
-    expect(kinds('3-1')).toEqual(['gnat', 'hornet', 'scout', 'splitter', 'strafer', 'weaver']);
-    for (const id of ['3-2', '3-3', '3-4', '3-5'])
-      expect(kinds(id), id).toEqual(ENEMY_KINDS.map((k) => k.id).sort());
+    const veterans = (n: number) => VETERAN_KINDS.slice(0, n).map((k) => k.id);
+    expect(kinds('3-1')).toEqual(
+      ['gnat', 'hornet', 'scout', 'splitter', 'strafer', 'weaver', ...veterans(1)].sort(),
+    );
+    // Wasps, then Mortars, Minelayers, Mantises and Phantoms.
+    const order = ['wasp', 'mortar', 'minelayer', 'mantis', 'phantom'];
+    for (const [i, id] of ['3-2', '3-3', '3-4', '3-5'].entries())
+      expect(kinds(id), id).toEqual(
+        [...FIRST_KINDS.map((k) => k.id), ...order.slice(0, i + 2)].sort(),
+      );
+    // No elite kind before World 4.
+    for (const game of WORLD_3)
+      expect(kinds(game.id).some((k) => ELITE_KINDS.some((e) => e.id === k))).toBe(false);
     // Each level's lead kinds come often.
     const count = (id: string, kind: string) =>
       level(id).waves.filter((w) => w.kind === kind).length;

@@ -44,6 +44,11 @@ export interface EnemyLaserSpec {
   /** Width of the beam. */
   readonly width: number;
   readonly style: string;
+  /**
+   * Whether the beam keeps turning with its owner while it fires (P05-R13: lasers on moving
+   * parts); otherwise it keeps the heading its owner had when it started firing.
+   */
+  readonly sweeps?: boolean;
 }
 
 /**

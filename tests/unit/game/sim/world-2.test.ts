@@ -5,7 +5,7 @@ import { resolveSky } from '../../../../src/core/scenery/sky-look';
 import { QUIET_BEFORE_BOSS } from '../../../../src/game/config/world-1/bosses';
 import { WORLD_2_FLOATING, WORLD_2_PROP_IDS } from '../../../../src/game/config/world-2/props';
 import { composeBeats, PLAN_2_1 } from '../../../../src/game/config/world-2/waves';
-import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_1 } from '../../../../src/game/sim/world-1';
 import { WORLD_2 } from '../../../../src/game/sim/world-2';
@@ -140,12 +140,12 @@ describe('World 2', () => {
     expect(sky('2-4').fog.end).toBeLessThan(sky('2-3').fog.end);
   });
 
-  it('P08-R08: each wave script uses only its level’s kinds; 2-3 to 2-5 use all eleven', () => {
+  it('P08-R08: each wave script uses only its level’s kinds; 2-3 to 2-5 use all eleven first kinds, none of the new ones (P05-R24)', () => {
     const kinds = (id: string) => [...new Set(level(id).waves.map((w) => w.kind))].sort();
     expect(kinds('2-1')).toEqual(['gnat', 'hornet', 'scout', 'strafer', 'weaver']);
     expect(kinds('2-2')).toEqual([...kinds('2-1'), 'lancer', 'splitter'].sort());
     for (const id of ['2-3', '2-4', '2-5'])
-      expect(kinds(id), id).toEqual(ENEMY_KINDS.map((k) => k.id).sort());
+      expect(kinds(id), id).toEqual(FIRST_KINDS.map((k) => k.id).sort());
   });
 
   it('P08-R08: the waves are deterministic: same distances, same enemies, twice', () => {

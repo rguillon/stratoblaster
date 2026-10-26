@@ -250,6 +250,16 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 > The agent ticks each item when fixed.
 
 - [x] (reviewer, in chat, 2026-10-26) Remove World 5 from the specs and the code. — Done (D-089): the grid is 4 worlds × 5 levels (`LEVELS_CONFIG.worlds` 4), 20 levels, all unlocked; 4-5 is the last level, so it stays highlighted after it is completed. Specs updated with a dated note: vision, P01-R07 (20 entries `1-1` … `4-5`), P06-R01, phase 8 notes, P10-R01 (its World 5 criterion now checks the 4-row grid with no locked level), phase 10 out of scope and notes. Tests: `levels.test.ts`, `world-2/3/4.test.ts`, e2e `world-1/2/3/4.spec.ts`; the menu pointer e2e no longer tries a locked level (none is left in the game); the "locked" feedback stays unit tested with sample grids (`menu-overlay.test.ts`, `menu-controller.test.ts`).
+- [x] (reviewer, in chat, 2026-10-26) Create 10 new, harder kinds of enemies, some with moving parts like the bosses; add them to the spec (in the phase 5 spec, the one describing the first enemies) and to the harder worlds. — Done (D-090): P05-R13 to P05-R24 added to `phase-05-first-enemies.md`.
+  - Engine: `JointedEnemy` and `EnemyPart` (`core/entities/jointed-enemy.ts`), sweeping lasers (`EnemyLaserSpec.sweeps`); the `enemies/` wireframe draws the parts' hit circles.
+  - Five veteran kinds: Wasp, Mortar, Mantis (moving arms), Phantom (cloaks), Minelayer.
+  - Five elite kinds, four of them with moving parts: Hydra (three heads), Orbiter (orbiting drones), Scissor (two laser arms closing), Juggernaut (swinging cannons and shield plates), and the Hive (launches Wasps).
+  - Waves: World 3 brings in one veteran kind a level. World 4 uses all five veteran kinds in every level and brings in the elites two in 4-1, then one more a level. P10-R09's "eleven kinds" now reads together with P05-R24.
+  - Gaps and growth re-tuned in 3-3 to 3-5 and in all World 4 levels; every ordering of P09-R08 and P10-R10 still holds (numbers in D-090).
+  - Tests:
+    - New: `jointed-enemy.test.ts`, `veteran-enemies.test.ts`, `elite-enemies.test.ts`, `veteran-models.test.ts`, `elite-models.test.ts`, `enemy-close-up.test.ts`.
+    - Updated: `enemy-kinds.test.ts`, `enemy-models.test.ts`, `enemy-shots.test.ts`, the World 1–4 kind tests, and the e2e `enemies.spec.ts` (21 kinds).
+  - Manual check needed: the ten models in `enemies/` (model and wireframe views), and how hard 3-3 to 3-5 and World 4 feel.
 - [ ] 
 
 ---

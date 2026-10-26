@@ -14,7 +14,9 @@ import {
 import { WORLD_4_FLOATING, WORLD_4_PROPS } from '../../../../src/game/config/world-4/props';
 import { PLAN_4_1 } from '../../../../src/game/config/world-4/waves';
 import { composeBeats } from '../../../../src/game/config/world-2/waves';
-import { ENEMY_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
+import { ELITE_KINDS } from '../../../../src/game/sim/elite-kinds';
+import { VETERAN_KINDS } from '../../../../src/game/sim/veteran-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
 import { WORLD_3 } from '../../../../src/game/sim/world-3';
 import { WORLD_4 } from '../../../../src/game/sim/world-4';
@@ -207,10 +209,17 @@ describe('World 4', () => {
     }
   });
 
-  it('P10-R09: each wave script uses all eleven kinds, its lead kinds often', () => {
+  it('P10-R09, P05-R24: each wave script uses all eleven first kinds and the five veterans; the elites come in level by level', () => {
     const kinds = (id: string) => [...new Set(level(id).waves.map((w) => w.kind))].sort();
-    for (const game of WORLD_4)
-      expect(kinds(game.id), game.id).toEqual(ENEMY_KINDS.map((k) => k.id).sort());
+    const first = FIRST_KINDS.map((k) => k.id);
+    const veterans = VETERAN_KINDS.map((k) => k.id);
+    // Hydras and Orbiters first, then Scissors, Hives and Juggernauts.
+    const order = ['hydra', 'orbiter', 'scissor', 'hive', 'juggernaut'];
+    const elites = (n: number) => order.slice(0, n);
+    expect([...order].sort()).toEqual(ELITE_KINDS.map((k) => k.id).sort());
+    const expected = { '4-1': 2, '4-2': 3, '4-3': 4, '4-4': 5, '4-5': 5 };
+    for (const [id, n] of Object.entries(expected))
+      expect(kinds(id), id).toEqual([...first, ...veterans, ...elites(n)].sort());
     const count = (id: string, kind: string) =>
       level(id).waves.filter((w) => w.kind === kind).length;
     const leads: [string, string[]][] = [

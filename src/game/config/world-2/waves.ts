@@ -1,5 +1,5 @@
 import type { EnemySide } from '../../../core/entities/enemy';
-import type { Filler } from '../world-1/waves';
+import type { Filler, Kind } from '../world-1/waves';
 
 /*
  * The wave scripts of World 2 (P08-R08, R09). Each level cycles through its own phrases: a beat
@@ -9,19 +9,6 @@ import type { Filler } from '../world-1/waves';
  * and turned into distances at the level's ground speed; the World 1 filler (D-051) fills the
  * lulls. A phrase is `[kind, groups, seconds between groups, side, position (0..1), spread]`.
  */
-
-type Kind =
-  | 'gnat'
-  | 'hornet'
-  | 'scout'
-  | 'strafer'
-  | 'weaver'
-  | 'splitter'
-  | 'carrier'
-  | 'spinner'
-  | 'lancer'
-  | 'rocketeer'
-  | 'bulwark';
 
 type Phrase = readonly [
   kind: Kind,

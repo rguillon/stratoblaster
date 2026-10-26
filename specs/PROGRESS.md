@@ -120,3 +120,4 @@
 - 2026-10-26 — 9 — Validated: full gate green (1210 unit tests, 99.35% lines, 87.25% branches, 77 e2e); squash-merged into `main`, tagged `v0.09.0`.
 - 2026-10-26 — 10 — Implemented World 4 (Volcanic Lands): lava, falling ash and embers, smoke and steam plumes, contrast shots, 31 props, ten bosses; awaiting review.
 - 2026-10-26 — 10 — Review fix: World 5 removed from the specs and the code, the level grid is 4 × 5 (D-089); still awaiting review.
+- 2026-10-26 — 10 — Review fix: ten new enemy kinds (five veteran, five elite, some with moving parts; P05-R13 to P05-R24), in the World 3 and World 4 waves (D-090); still awaiting review.

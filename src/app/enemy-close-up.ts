@@ -110,15 +110,21 @@ export class EnemyCloseUp {
 
   /**
    * Replaces the model with `build`'s, its lights fully charged, and frames it. The wireframe
-   * view draws `circles` (the enemy's own hit circle when omitted).
+   * view draws `circles`; when omitted, the circles of what can be hit of the enemy (its own,
+   * and those of its moving parts, P05-R24), from its centre.
    */
   show(build: EnemyModelFactory, enemy: Enemy, circles?: readonly HitCircle[]): void {
     this.#model?.root.dispose();
     this.#model = build(this.scene);
     this.#build = build;
     this.#circles = circles;
-    const own: HitCircle = { x: 0, y: 0, radius: enemy.radius, color: CFG.hitboxColor };
-    if (this.#wireframe) this.#showWires(this.#model.root, circles ?? [own]);
+    const own = enemy.hitTargets.map((t): HitCircle => ({
+      x: t.x - enemy.x,
+      y: t.y - enemy.y,
+      radius: t.radius,
+      color: CFG.hitboxColor,
+    }));
+    if (this.#wireframe) this.#showWires(this.#model.root, circles ?? own);
     // Measured before it joins the turning pivot, in its own axes.
     this.#frame(this.#model.root);
     this.#model.root.parent = this.pivot;
