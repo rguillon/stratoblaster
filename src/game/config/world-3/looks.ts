@@ -83,7 +83,7 @@ const TOWN_TERRAIN = {
 const RIVER_FLOW = [0, 16] as const;
 
 /** A World 3 look: the town ground, its water and the sky script (P09-R04). */
-const town = (atmosphere: SkyScript) =>
+export const town = (atmosphere: SkyScript) =>
   ({
     ...LEVEL_ZERO_LOOK,
     terrain: TOWN_TERRAIN,

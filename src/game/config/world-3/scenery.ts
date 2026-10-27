@@ -31,7 +31,7 @@ const canal = (halfWidth: number): Channel => ({
 
 /** The river through the suburbs and the villages, between grassy banks. */
 const RIVER_PATH = { x: -40, amplitude: 120, wavelength: 2400 } as const;
-const river = (halfWidth: number): Channel => ({
+export const river = (halfWidth: number): Channel => ({
   path: RIVER_PATH,
   halfWidth,
   wall: 45,
@@ -39,22 +39,22 @@ const river = (halfWidth: number): Channel => ({
 });
 
 /** Ponds among the gardens of 3-5. */
-const PONDS: Lakes = { spacing: 260, chance: 0.4, radius: [22, 45], level: -5, edge: 16 };
+export const PONDS: Lakes = { spacing: 260, chance: 0.4, radius: [22, 45], level: -5, edge: 16 };
 
 /** Flat ground of the factories, the yards and the streets. */
-const FLAT = smooth(32, 2, 600, 2);
+export const FLAT = smooth(32, 2, 600, 2);
 /** Gently rolling ground of the suburbs and the villages. */
-const ROLLING = smooth(30, 6, 560, 3);
+export const ROLLING = smooth(30, 6, 560, 3);
 /** A dense maze of straight streets, as in World 2's factories. */
-const STREETS = { rows: [45, 90], columns: [50, 110], links: 0.6 } as const;
+export const STREETS = { rows: [45, 90], columns: [50, 110], links: 0.6 } as const;
 /** Narrower, longer blocks of the terraced streets. */
 const TERRACE_STREETS = { rows: [35, 60], columns: [50, 100], links: 0.6 } as const;
 /** Blocks of the suburbs, a house on each plot. */
-const SUBURB_STREETS = { rows: [45, 80], columns: [55, 105], links: 0.6 } as const;
+export const SUBURB_STREETS = { rows: [45, 80], columns: [55, 105], links: 0.6 } as const;
 /** Small blocks of the garden villages: lanes between the gardens. */
-const VILLAGE_STREETS = { rows: [40, 70], columns: [45, 90], links: 0.65 } as const;
+export const VILLAGE_STREETS = { rows: [40, 70], columns: [45, 90], links: 0.65 } as const;
 /** The lanes of the last garden villages, closest of all. */
-const LANES = { rows: [35, 60], columns: [40, 80], links: 0.7 } as const;
+export const LANES = { rows: [35, 60], columns: [40, 80], links: 0.7 } as const;
 
 const section = (
   name: string,
@@ -273,6 +273,18 @@ const SUBURBS: readonly TerrainSection[] = [
   VILLAGE_EDGE,
 ];
 
+/** The garden villages of small houses, where 3-5 ends and World 4 begins. */
+export const GARDEN_VILLAGE_END = section('garden villages', 95, {
+  relief: ROLLING,
+  channel: river(26),
+  lakes: PONDS,
+  treeDensity: 0.7,
+  surface: { paved: 0.1, lush: 0.82 },
+  streets: LANES,
+  trees: PL.gardens,
+  groups: [G.villages],
+});
+
 /**
  * 3-5, Garden villages: a village green with its ponds, allotments and greenhouses, cottages
  * along the river, then garden villages of small houses to the end.
@@ -308,16 +320,7 @@ const GARDEN_VILLAGES: readonly TerrainSection[] = [
     trees: PL.parks,
     groups: [G.villages],
   }),
-  section('garden villages', 95, {
-    relief: ROLLING,
-    channel: river(26),
-    lakes: PONDS,
-    treeDensity: 0.7,
-    surface: { paved: 0.1, lush: 0.82 },
-    streets: LANES,
-    trees: PL.gardens,
-    groups: [G.villages],
-  }),
+  GARDEN_VILLAGE_END,
 ];
 
 const level = (

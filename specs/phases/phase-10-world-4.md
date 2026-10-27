@@ -9,7 +9,7 @@
 ---
 
 ## 🧑 Goal
-World 4, **the Volcanic Lands**, has five playable levels, 4-1 to 4-5, each about 5 minutes long. The levels go from black-sand volcanic islands to grey ash plains, glowing lava fields and the enemy's giant foundries at night, and end over an erupting caldera. Each level has its own time of day, cloud cover and weather (a red dawn, an ash-dark noon, embers rising at dusk, a furnace-lit night). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 4-1 to 4-5, and World 4 as a whole is harder than World 3.
+World 4, **the Metropolis** (first the Volcanic Lands; reworked at the reviewer's request, 2026-10-27), has five playable levels, 4-1 to 4-5, each about 5 minutes long. The levels are one journey from the garden villages of small houses World 3 ended on, through a town, mid-rise blocks and offices, to the towers of a business district and a downtown of skyscrapers, with slow transitions along the levels. No sea and no lava: a river runs through the town and the city. Each level has its own time of day, cloud cover and weather (a red dawn, an ash-dark noon, embers rising at dusk, a furnace-lit night). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 4-1 to 4-5, and World 4 as a whole is harder than World 3.
 
 ## 🧑 Requirements
 
@@ -36,23 +36,25 @@ Each World 4 level's scroll time at its ground speed is 300 s ± 10 s (as P08-R0
 
 ### P10-R03 — Scenery progression across World 4  · MUST
 
-The player crosses a volcanic sea to the land of the enemy's war industry, deeper and deeper into fire. Each level begins on the kind of ground the previous one ended on (as in P06-R05).
+**Reworked at the reviewer's request (2026-10-27):** World 4 starts with houses (where World 3 ends) and ends with skyscrapers. The table below replaces the volcanic one (black sands, ash plains, lava fields, forge belt, caldera); the slow transitions are World 2's and World 3's (P08-R03, P09-R03).
 
-| Level | Name | Sea / lava | Land | Habitations |
-|-------|------|------------|------|-------------|
-| 4-1 | Black sands | Mostly a dark, steaming sea between volcanic islands; a black-sand coast in the last 30 s. | Black rock islands with smoking vents, black-sand beaches, sparse hardy grass. | A few fishing huts, a geothermal well, a small harbour on the final coast. |
-| 4-2 | Ash plains | No sea. | Flat grey ash plains, dead burnt forests, low cinder cones, a few hot springs. | Geothermal power plants, pipelines, cooling towers, ash-covered settlements along a road. |
-| 4-3 | Lava fields | Rivers and pools of **lava** among the rock, more and more of them through the level. | Cooled black basalt with cracks, steep cinder cones, a volcano's flank. | Mining outposts on the cooled rock, lava pumps and heat collectors. |
-| 4-4 | Forge belt | Slag rivers (lava) running out of the factories. | Scorched ground and basalt between the industrial sites. | The enemy's giant foundries: smelters, blast furnaces, chimney rows, rail lines, cranes, slag heaps, dense industry all along the level. |
-| 4-5 | Caldera | The final stretch is a **magma lake** filling the caldera. | The volcano's slopes, then the caldera rim, then the lake. | The enemy's war factory on the rim (hangars, launch pads, armoured towers), a fortress city at the edge of the lake. |
+The player flies from the garden villages 3-5 ended on into a growing city. Each level begins on the very ground the previous one ended on (4-1 on 3-5's), the sections blend over a long stretch, the grass gives way to concrete a little in each section, and each taller kind of building first comes in mixed with the one before it.
 
-The amount of lava goes up from 4-3 to 4-5, and the number of buildings goes up from 4-1 to 4-4 (4-5 trades buildings for its lake).
+| Level | Name | Water | Ground | Buildings |
+|-------|------|-------|--------|-----------|
+| 4-1 | Garden town | World 3's river between grassy banks, then stone quays. | Mostly grass and gardens. | Garden villages, suburban lanes, suburbs, terraced streets, flats, then a town centre with the first mid-rise blocks. |
+| 4-2 | Inner town | The river between quays, wider at a park. | Grass and concrete about even. | Town streets, the ring road, mid-rise flats, a city park, then mid-rise blocks among the first offices. |
+| 4-3 | Midtown | The river quays. | Mostly concrete. | Offices among mid-rise blocks, office blocks, river quays, plazas, then the first city towers. No skyscraper. |
+| 4-4 | Business district | The river quays. | Concrete, a park among the towers. | City towers, a tower park, the financial district with the first skyscrapers, high rise, then the first skyline. |
+| 4-5 | Downtown | The river quays. | All concrete, a central park. | Skyscrapers, a central park, then skyscrapers filling every block; skyscrapers only at the end. |
 
 **Acceptance criteria**
-- [ ] Unit test: 4-1 has a sea share ≥ 70 %, 4-2 to 4-5 have no sea section.
-- [ ] Unit test: 4-1 and 4-2 have no lava; the share of the level's ground covered by lava goes up strictly from 4-3 to 4-5.
-- [ ] Unit test (fixed seed): the number of buildings placed goes up from 4-1 to 4-4.
-- [ ] Manual visual validation: volcanic islands, ash plains, lava fields, foundries and caldera can be told apart, and each level begins where the previous one ended.
+- [ ] Unit test: no World 4 level has a sea section or lava; every level has some river water.
+- [ ] Unit test: the concrete cover goes up and the grass cover goes down from 4-1 to 4-5 (more grass than concrete in 4-1, more concrete in 4-3 to 4-5).
+- [ ] Unit test: 4-1 starts on garden villages; no city tower or skyscraper in 4-1 and 4-2, no skyscraper in 4-3; skyscrapers only in the last section of 4-5.
+- [ ] Unit test (fixed seed): the mean height of the buildings placed goes up from 3-5 through 4-1 to 4-5, and in each level the second half's is higher than the first's; the skyscrapers stand taller than every city tower.
+- [ ] Unit test: each level begins on the ground (relief, cover, streets, buildings, river) the previous one ended on, 4-1 on 3-5's; the sections blend over the same long stretch as World 2's.
+- [ ] Manual visual validation: garden town, inner town, midtown, business district and downtown can be told apart, the city grows slowly, and downtown reads as a skyline of skyscrapers.
 
 ### P10-R04 — Look of each World 4 level  · MUST
 
@@ -60,17 +62,21 @@ Each level's look (P08-R04):
 
 | Level | Time of day | Clouds (low / high cover) | Weather | Notes |
 |-------|-------------|---------------------------|---------|-------|
-| 4-1 | dawn | 0.4 / 0.3, ash-tinted pink and grey | none | A red rising sun behind a smoke haze; steam over the sea. |
+| 4-1 | dawn | 0.4 / 0.3, ash-tinted pink and grey | none | A red rising sun behind a smoke haze over the garden town. |
 | 4-2 | midday, under an ash cloud | 0.9 / 0.9, brown-grey | falling ash 0.5 | A dim, flat, yellowish light, as if the sun were behind smoke; weak shadows. |
-| 4-3 | dusk | 0.5 / 0.4, dark grey lit orange from below | embers 0.4 | The sunset fades while the lava's glow takes over (look change over the level: the sun dims, the lava glow grows). |
-| 4-4 | night | 0.6 / 0.5, smoke lit orange from below | falling ash 0.3, embers 0.3 | Lit by the furnaces, slag rivers and factory lights; ground lights at their strongest. |
-| 4-5 | night, eruption | 0.7 / 0.6, red-lit | embers 0.6, growing to 1.0 at the final boss | The volcano erupts during the level (look change: the sky haze turns deep red and the embers grow as the caldera comes near). |
+| 4-3 | dusk | 0.5 / 0.4, dark grey lit orange from below | embers 0.4 | The sunset fades while the city's glow takes over (look change over the level: the sun dims, the glow from below grows). |
+| 4-4 | night | 0.6 / 0.5, smoke lit orange from below | falling ash 0.3, embers 0.3 | Lit by the towers' windows and neon; ground lights at their strongest. |
+| 4-5 | night, eruption | 0.7 / 0.6, red-lit | embers 0.6, growing to 1.0 at the final boss | A volcano erupts beyond downtown during the level (look change: the sky haze turns deep red and the embers grow). |
+
+Since the rework (reviewer, 2026-10-27) the times of day, clouds and weather are kept; the glow from below is the city's, not the lava's.
 
 **Acceptance criteria**
 - [ ] Unit test: each World 4 level's look data matches this table, look changes included.
 - [ ] Manual visual validation of each level against the table; the player ship, enemies, shots and bonuses stay clearly visible in every level. Red and orange enemy shots must still stand out from the lava and the red sky (see P10-R07).
 
 ### P10-R05 — Lava  · MUST
+
+**Since the reviewer's rework (2026-10-27)** no World 4 level has lava: the engine feature below stays, with its own tests, for later use.
 
 A new kind of liquid ground, used for lava rivers, lava pools, slag rivers and the magma lake:
 - it glows by itself (bright orange-yellow in its cracks, dark red crust plates on top), so it is visible at night and lights the haze above it;
@@ -107,6 +113,8 @@ World 4's ground and sky are red, orange and dark. So the player can always tell
 - [ ] Unit test: the shot look used in World 4 levels has the contrast outline or core on (data), and the other worlds are unchanged.
 
 ### P10-R08 — Volcanic ground and props  · MUST
+
+**Reworked at the reviewer's request (2026-10-27):** the ground is World 3's (grass and gardens, damp earth, concrete that covers more and more of it, stone quays, river water flowing down the screen, asphalt roads). The buildings are World 3's houses, terraces and flats, Level Zero's city blocks and towers made of parts, and a new family of 8 skyscrapers made of parts (110 to 170 high at full scale, taller than every city tower, under 600 triangles each). The plants are World 3's. The volcanic ground and props below were built for the first World 4 and stay in the game, but no level uses them.
 
 New generated ground and props for World 4 (GD-60, made in code), as light in polygons as the existing ones (D-031) and matte (D-024):
 - **Ground:** black volcanic sand, black and dark grey basalt with cracks (glowing cracks near the lava), grey ash covering the ground in drifts, rust-red and sulphur-yellow mineral stains around the vents.
@@ -198,8 +206,10 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 |------|-------|-------|
 | level_duration | 300 s ± 10 s | P10-R02 |
 | ground_speed 4-1 / 4-2 / 4-3 / 4-4 / 4-5 | 70 / 65 / 60 / 55 / 55 px/s | GD-01 |
-| sea_share 4-1 / 4-2..4-5 | ≥ 70 % / 0 % | P10-R03 |
-| lava_share 4-3 / 4-4 / 4-5 | ~10 % / ~20 % / ~35 % of the ground | P10-R03 |
+| sea_share | 0 % in every level | P10-R03 (reviewer, 2026-10-27; was ≥ 70 % in 4-1) |
+| lava_share | 0 % in every level | P10-R03 (reviewer, 2026-10-27; was ~10 / 20 / 35 % in 4-3 … 4-5) |
+| section_transition | 900 units, as World 2 | P10-R03 (reviewer, 2026-10-27) |
+| skyscraper_height | 110–170 at full scale (55–110 drawn) | P10-R08 (reviewer, 2026-10-27) |
 | peak_on_screen 4-1 / 4-2 / 4-3 / 4-4 / 4-5 | 15 / 16 / 17 / 19 / 21 | P10-R10; the agent may lower them for ENG-101, keeping the order |
 | enemy_bullet_speed_factor 4-1 → 4-5 | 1.1 / 1.15 / 1.2 / 1.3 / 1.35 | P10-R10 |
 | enemy_fire_rate_factor 4-1 → 4-5 | 1.1 / 1.15 / 1.2 / 1.3 / 1.35 | P10-R10 |
@@ -228,9 +238,9 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
 - [ ] `4-1` to `4-5` can be picked in the level select; the grid ends with World 4
-- [ ] Volcanic islands, ash plains, lava fields, foundries and caldera across the five levels; each level begins where the previous one ended
+- [ ] Garden town, inner town, midtown, business district and downtown across the five levels, slow changes, from houses to skyscrapers; each level begins where the previous one ended, 4-1 where 3-5 ended
 - [ ] A red dawn in 4-1, a dim ash-dark noon in 4-2, dusk giving way to lava glow in 4-3, a furnace-lit night in 4-4, the eruption in 4-5
-- [ ] Lava glows and moves; smoke and steam rise without hiding the shots
+- [ ] The river flows; downtown reads as a skyline
 - [ ] Falling ash and embers look right, and embers are never mistaken for bullets
 - [ ] Enemy and boss shots stay easy to see over lava and red skies
 - [ ] The ten World 4 bosses look good in `bosses/`; claws, fists, wings and drills move
@@ -260,7 +270,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 4-1 to 4-5; 
     - New: `jointed-enemy.test.ts`, `veteran-enemies.test.ts`, `elite-enemies.test.ts`, `veteran-models.test.ts`, `elite-models.test.ts`, `enemy-close-up.test.ts`.
     - Updated: `enemy-kinds.test.ts`, `enemy-models.test.ts`, `enemy-shots.test.ts`, the World 1–4 kind tests, and the e2e `enemies.spec.ts` (21 kinds).
   - Manual check needed: the ten models in `enemies/` (model and wireframe views), and how hard 3-3 to 3-5 and World 4 feel.
-- [ ] 
+- [x] (reviewer, in chat, 2026-10-27, after validation) Rework World 4: start with houses and end up with skyscrapers. → P10-R03, R04 (notes), R05 (note), R08 amended; D-112.
 
 ---
 
@@ -289,12 +299,12 @@ None. The spec was implemented as written; the interpretations are listed under 
 |----|-----------------------------------|------|-------|-------|
 | P10-R01 | Done | `game/sim/world-4.ts`, `game/sim/levels.ts` | `world-4.test.ts`, `levels.test.ts`, e2e `world-4.spec.ts`, `world-3.spec.ts` (after 3-5 → 4-1), `menu-pointer.spec.ts` | |
 | P10-R02 | Done | `game/config/world-4/scenery-*.ts` (300 s each) | `world-4.test.ts`, e2e | speeds 70 / 65 / 60 / 55 / 55 |
-| P10-R03 | Done | `scenery-islands.ts`, `scenery-fire.ts`, `world-4/props.ts` | `world-4.test.ts` | numbers below |
+| P10-R03 | Done (reworked 2026-10-27) | `world-4/scenery.ts` (replaces `scenery-islands.ts` and `scenery-fire.ts`), `world-4/city-props.ts` | `world-4.test.ts` | D-112; mean building height 6.1 / 16.2 / 27.5 / 44.7 / 82.0 (3-5: 5.5) |
 | P10-R04 | Done | `game/config/world-4/looks.ts`, `core/scenery/sky-look.ts` (cloud tint, underglow, second weather) | `world-4.test.ts`, `sky-look-volcanic.test.ts`, e2e | D-082, D-083; look: manual |
 | P10-R05 | Done | `render/scenery/lava-material.visual.ts`, `terrain-blend-plugin.visual.ts`, `scenery-kit*.ts`, `scenery-stage.ts` (`lava`, `watchTerrain`), `app/level-scene.ts` | `volcanic-layers.test.ts`, `game-play-weather.test.ts` (not an input), `world-4.test.ts`, e2e | D-084; 60 FPS: manual |
 | P10-R06 | Done | `config/weather.ts` (`ash`, `embers`), `weather-layer.ts`, `weather-material.visual.ts` | `sky-look-volcanic.test.ts`, `volcanic-layers.test.ts`, `game-play-weather.test.ts`, e2e | D-082 |
 | P10-R07 | Done | `render/game-view.ts`, `app/enemy-viewer-shots.ts`, `game/config/enemy-look.ts` (`contrast`), `game/view/enemies/enemy-shot-renderer.ts`, `enemy-lasers.ts` | `contrast-shots.test.ts`, e2e | D-086; readability: manual |
-| P10-R08 | Done | `game/view/props/volcanic-*.ts`, `prop-models.ts`, `prop-look.ts`, `world-4/props.ts`, `config/plumes.ts`, `plume-*.ts` | `prop-models.test.ts`, `volcanic-layers.test.ts` | D-085; 31 props ≤ 336 triangles |
+| P10-R08 | Done (reworked 2026-10-27) | `game/view/props/skyscraper-props.ts` (new), `volcanic-*.ts` (kept, unused), `prop-models.ts`, `prop-look.ts`, `world-4/props.ts`, `world-4/city-props.ts`, `config/plumes.ts`, `plume-*.ts` | `world-4-skyscrapers.test.ts`, `prop-models.test.ts`, `volcanic-layers.test.ts` | D-085, D-112; 31 volcanic props ≤ 336 triangles; skyscrapers < 600 |
 | P10-R09 | Done | `game/config/world-4/waves.ts` | `world-4.test.ts` | D-087 |
 | P10-R10 | Done | `waves.ts`, `world-4/difficulty.ts` | `world-4.test.ts` | numbers below |
 | P10-R11 | Done | `game/config/bosses/world-4/*`, `game/view/bosses/world-4/*`, `world-4/bosses.ts` | `bosses-world-4.test.ts`, `boss-models.test.ts`, `muzzles.test.ts`, e2e | patterns below |
@@ -321,6 +331,8 @@ None. The spec was implemented as written; the interpretations are listed under 
 ```
 Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 88 / 88 passed (6.0 min); after small refactors for the pre-commit lint (file and function sizes), again typecheck ✔ · build ✔ · 88 / 88 e2e (6.4 min)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
+
+Rework (2026-10-27, D-112): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1591 unit tests ✔ · coverage 98.61 % statements, 87.87 % branches, 98.69 % functions, 99.4 % lines ✔ · build ✔ · 117 e2e ✔ (5.6 min).
 Review fixes (World 5 dropped; ten new enemy kinds): typecheck ✔ · build ✔ · 88 / 88 e2e each time (6.1 and 6.9 min).
 
 Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1384 unit tests ✔ · coverage 98.66 % statements, 87 % branches, 98.74 % functions, 99.42 % lines ✔ (phase 9: 98.61 / 87.25 / 98.65 / 99.35) · build ✔ · 88 e2e ✔ (5.8 min).
@@ -331,13 +343,14 @@ Fixed on the way (first run: 3 of 1384 unit tests failed, all earlier tests not 
 
 ### How to test manually
 - `make dev`, then Start → a ship → the level select: the World 4 row (`4-1` … `4-5`) is unlocked and is the last row (20 levels, none locked). After 3-5's "Level complete", `4-1` is highlighted; after 4-5's, `4-5`.
-- Each level: `?level=4-1` … `?level=4-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 4-1 a pink-grey dawn over a dark steaming sea, black rock islands with smoking vents and hardy grass, fishing huts and wells, the black-sand coast and harbour at the end (`t=280`); 4-2 an ash-dark yellowish midday with falling ash, ash plains, burnt forests, cinder cones, hot springs, geothermal plants, cooling towers and pipelines; 4-3 lava rivers and pools growing through the level while the dusk turns to night and embers rise (`t=60`, `t=250`); 4-4 the foundries at night, slag rivers, chimney rows smoking, rail lines with ore wagons moving, ash and embers together (`t=150`); 4-5 the volcano's slopes, the war factory, the fortress city and the magma lake, the sky turning deep red as the embers grow (`t=270`, `&boss=final`).
+- Each level (reworked 2026-10-27, D-112): `?level=4-1` … `?level=4-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s; add `&look=midday&weather=0` to see the ground under the clouds). Look for: 4-1 a pink-grey dawn over the garden villages 3-5 ended on, suburbs, terraces, flats and a town centre at the end (`t=250`); 4-2 an ash-dark midday over town streets, the ring road, mid-rise flats and a city park; 4-3 midtown's offices and mid-rise blocks, the river quays, the first city towers at the end, dusk turning to night; 4-4 the towers of the business district at night, the first skyscrapers in the financial district (`t=200`); 4-5 a skyline of skyscrapers, a central park, then skyscrapers filling every block under the red sky of the eruption (`t=250`, `&boss=final`).
 - Debug: `&weather=0` (no ash, no embers: `?level=4-4&t=60&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night`, `&boss=mini|final` (K destroys the next part).
 - Shots: in 4-3, 4-4 and 4-5 every bullet has a dark rim and a white heart, laser warning lines a white core; compare with any World 1–3 level (unchanged).
 - Bosses: `bosses/` lists Worlds 1 to 4 under their headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe (the Crab's claws, the Rig's drills, the Golem's fists, the Drake's wings).
 - 60 FPS: the 4-4 forge belt (`?level=4-4&t=150`), the 4-5 final fight (`?level=4-5&boss=final`), with the debug FPS tile.
 
 ### Deviations from spec
+- Rework (2026-10-27, D-112): the World 4 bosses and wave scripts are unchanged, so the volcanic bosses (Steam Dreadnought, Magma Salamander, Caldera Throne…) now fly over the town and the city. The times of day, clouds and weather (ash, embers, the eruption's red sky) are kept, as in the World 3 rework; the volcano erupts somewhere beyond the city. Lava, the volcanic props, their set pieces and lines (smoke vents, pipelines, rail lines with ore wagons) stay in the engine and the game, unused.
 - P10-R03 "sea section": as D-079, a section with a coast or relief under the liquid level. 4-1 is entirely sea sections (islands rise from sea-floor relief). The lava of 4-3 … 4-5 fills channels and lakes cut below the liquid level, so those levels have no sea section; "lava share" is the ground under that level, measured as the sea share (D-084).
 - P10-R04 4-3 "look change: the sun dims, the lava glow grows": a change from dusk to night over 60–280 s with the glow from below growing from 0.25 to 0.8 (D-083).
 - P10-R04 4-5 "growing to 1.0 at the final boss": embers 0.6 → 1 and the red glow 0.6 → 1 over 180–300 s of ground; the ground is past 300 s when the final boss comes (the mini boss's chase runs it ahead).

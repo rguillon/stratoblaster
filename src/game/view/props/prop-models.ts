@@ -5,6 +5,7 @@ import {
   JUNGLE_VARIANTS,
   PART_FAMILIES,
   POLAR_VARIANTS,
+  SKYSCRAPER_VARIANTS,
   variantId,
   type PartFamily,
 } from '../../config/building-families';
@@ -118,6 +119,7 @@ import {
 } from './volcanic-war';
 import { buildGantryCrane, buildOreWagon, buildRailLine, buildSlagHeap } from './volcanic-yard';
 import { buildRowHouses, buildSuburbHouse, buildWalkUp } from './suburb-props';
+import { buildSkyscraper } from './skyscraper-props';
 
 /** The `count` variants of a family of buildings made of parts, built by `build`. */
 function partModels(
@@ -195,6 +197,7 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W2.floeLarge]: buildLargeFloe,
   [W2.iceberg]: buildIceberg,
   [W2.weatherBuoy]: buildWeatherBuoy,
+  ...partModels('skyscraper', SKYSCRAPER_VARIANTS, buildSkyscraper),
   ...partModels('polar-tower', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('polar-block', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('mining-complex', POLAR_VARIANTS, buildMiningComplex),
