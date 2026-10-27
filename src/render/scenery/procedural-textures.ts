@@ -6,6 +6,28 @@ type Rgb = readonly [number, number, number];
 /** Largest lattice period the noise supports (its permutation table size). */
 const MAX_PERIOD = 256;
 
+/** How many generated textures are kept for reuse (P13-R03). */
+const KEPT_TEXTURES = 48;
+const kept = new Map<string, Uint8Array>();
+
+/**
+ * The pixels `build` makes for `args`, made once and kept (the most recent {@link KEPT_TEXTURES}),
+ * so starting a level again, or another level with the same look, does not generate them again
+ * (P13-R03). The textures are pure functions of their arguments; callers must not change them.
+ */
+function keptPixels(name: string, args: readonly unknown[], build: () => Uint8Array): Uint8Array {
+  const key = `${name}:${JSON.stringify(args)}`;
+  let pixels = kept.get(key);
+  if (pixels) {
+    kept.delete(key);
+  } else {
+    pixels = build();
+    if (kept.size >= KEPT_TEXTURES) kept.delete(kept.keys().next().value ?? '');
+  }
+  kept.set(key, pixels);
+  return pixels;
+}
+
 /**
  * Fractal noise on a `size × size` grid that tiles seamlessly: octave `k` has `frequency × 2^k`
  * cycles across the grid, each with its own wrapping lattice. Values are in [-1, 1].
@@ -97,6 +119,10 @@ const GROUND_CONTRAST = 1.2;
 
 /** RGBA8 pixels of a tiling ground texture (P04-R01). */
 export function buildGroundTexture(size: number, look: TextureLook, seed: number): Uint8Array {
+  return keptPixels('ground', [size, look, seed], () => groundPixels(size, look, seed));
+}
+
+function groundPixels(size: number, look: TextureLook, seed: number): Uint8Array {
   const noise = tileableFbm(size, look.frequency, look.octaves, seed).map((v) =>
     Math.min(1, Math.max(0, 0.5 + v * GROUND_CONTRAST)),
   );
@@ -127,6 +153,10 @@ export function buildGroundTexture(size: number, look: TextureLook, seed: number
  * (a quarter of it), both evenly spread over [0, 1].
  */
 export function buildNoiseTexture(size: number, frequency: number, seed: number): Uint8Array {
+  return keptPixels('noise', [size, frequency, seed], () => noisePixels(size, frequency, seed));
+}
+
+function noisePixels(size: number, frequency: number, seed: number): Uint8Array {
   const fine = equalize(tileableFbm(size, frequency, 4, seed));
   const coarse = equalize(tileableFbm(size, Math.max(1, frequency / 4), 3, seed + 10));
   const pixels = new Uint8Array(size * size * 4);
@@ -141,6 +171,14 @@ export function buildNoiseTexture(size: number, frequency: number, seed: number)
  * map, `strength` times steeper, encoded as tangent-space normals.
  */
 export function buildWaterNormalMap(
+  size: number,
+  options: { readonly frequency: number; readonly octaves: number; readonly strength: number },
+  seed: number,
+): Uint8Array {
+  return keptPixels('water', [size, options, seed], () => waterPixels(size, options, seed));
+}
+
+function waterPixels(
   size: number,
   options: { readonly frequency: number; readonly octaves: number; readonly strength: number },
   seed: number,

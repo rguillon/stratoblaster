@@ -48,6 +48,19 @@ export class EnemyLayer {
     }
   }
 
+  /**
+   * Builds one hidden model of each kind not built yet, kept for reuse, so an enemy's first
+   * appearance does not build (and compile) its model during play (P13-R04).
+   */
+  prepare(): void {
+    for (const key of Object.keys(this.models)) {
+      if (this.#free.get(key)?.length) continue;
+      const slot = this.#build(key);
+      slot.pivot.setEnabled(false);
+      this.#free.set(key, [slot]);
+    }
+  }
+
   /** Hides every model. */
   clear(): void {
     for (const [enemy, slot] of this.#slots) this.#release(enemy, slot);

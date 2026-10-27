@@ -83,6 +83,12 @@ function startGame(engine: Engine): void {
     // e2e builds have no render loop: the tests step the app (ENG-52).
     renderLoop: !__E2E__,
     ...(debug ? { debug, statsParent: document.body } : {}),
+    // P13-R03: levels load in steps, behind a loading screen.
+    steppedLoading: true,
+    // P13-R04: shaders compiled while a level loads; not in e2e builds (software WebGL, ENG-52).
+    precompileShaders: !__E2E__,
+    // P13-R01: the perf overlay (F3) in dev and e2e builds only (ENG-111).
+    ...(import.meta.env.DEV || __E2E__ ? { perfParent: document.body } : {}),
     audio: browserAudio(),
     gestureTarget: window,
     visibility: { target: document, hidden: () => document.visibilityState === 'hidden' },
@@ -105,6 +111,7 @@ function startGame(engine: Engine): void {
         app.step(frames, render);
       },
       stepHz: 1 / app.clock.stepSeconds,
+      perf: () => app.perf.numbers,
     });
   }
 }

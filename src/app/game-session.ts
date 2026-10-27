@@ -11,6 +11,8 @@ import type { GameView } from '../render/game-view';
 import type { MenuDocument } from '../ui/screens/elements';
 import type { KeyValueStorage } from '../platform/key-value-storage';
 import { GamePlay } from './game-play';
+import { prepareLevel } from './level-prepare';
+import { LevelLoadingScreen } from '../ui/level-loading';
 import type { MenuState } from './menu-flow';
 import { loadSavedWeapons, saveWeapons } from './saved-weapons';
 
@@ -57,6 +59,33 @@ export interface GameSessionOptions {
   readonly gamepads?: GamepadSource;
   /** Where the weapons are kept from one completed level to the next. Not kept when omitted. */
   readonly storage?: KeyValueStorage;
+  /** A level starts loading (P13-R01). */
+  readonly onLoadStart?: () => void;
+  /**
+   * Loads a level in steps, one per {@link GameSession.loadStep} (one per frame), behind a
+   * loading screen (P13-R02, R03). All at once in `sync` when omitted.
+   */
+  readonly steppedLoading?: boolean;
+  /**
+   * With stepped loading, compiles the level's shaders while it loads (P13-R04). Off in e2e
+   * builds: software WebGL compiles them slowly, one after the other, and the tests check the
+   * game's state, not its frame times (ENG-52).
+   */
+  readonly precompileShaders?: boolean;
+}
+
+/** Most frames a level's loading waits for its shaders to compile in parallel (P13-R03). */
+const COMPILE_FRAMES = 60;
+
+/** A level being loaded in steps (P13-R03). */
+interface LevelLoad {
+  /** A step returning false is not over: it runs again on the next frame. */
+  readonly steps: readonly (() => unknown)[];
+  /** Frames the step being run has taken so far. */
+  tries: number;
+  done: number;
+  play?: GamePlay;
+  readonly screen: LevelLoadingScreen | undefined;
 }
 
 /** Where a {@link GameSession} reads the high score from and records its scores (P11-R03). */
@@ -115,6 +144,7 @@ export class GameSession {
   #startBoss: BossRank | null;
   /** The menu flow's attempt the level being played was started for. */
   #attempt = -1;
+  #load: LevelLoad | undefined;
   readonly #stopListening: () => void;
 
   constructor(
@@ -151,12 +181,81 @@ export class GameSession {
     }
     // Continue from a checkpoint (P07-R08): the level starts again.
     if (this.play && state.attempt !== this.#attempt) this.end();
-    if (this.play || state.levelResult) return;
+    if (this.play || this.#load || state.levelResult) return;
     this.#start(state, levelId);
   }
 
-  /** Starts `levelId` for the flow's attempt (from its checkpoint when it has one). */
+  /** Whether a level is being loaded (P13-R03). */
+  get loading(): boolean {
+    return this.#load !== undefined;
+  }
+
+  /** Runs the next step of the level being loaded, if any (P13-R03): one per frame. */
+  loadStep(): void {
+    const load = this.#load;
+    if (!load) return;
+    load.tries++;
+    if (load.steps[load.done]?.() === false) return;
+    load.done++;
+    load.tries = 0;
+    load.screen?.show(load.done / load.steps.length);
+    if (load.done >= load.steps.length) {
+      load.screen?.dispose();
+      this.#load = undefined;
+    }
+  }
+
+  /**
+   * Starts `levelId` for the flow's attempt (from its checkpoint when it has one): at once, or in
+   * steps (P13-R03): the level's ground, its scene, a first drawing that compiles its shaders.
+   */
   #start(state: MenuState, levelId: string): void {
+    this.options.onLoadStart?.();
+    const { doc, overlay } = this.options;
+    const load: LevelLoad = {
+      steps: [
+        () => {
+          prepareLevel(this.game, levelId, 'roads');
+        },
+        () => {
+          prepareLevel(this.game, levelId, 'all');
+        },
+        () => {
+          load.play = this.#newPlay(state, levelId);
+        },
+        () => {
+          if (this.options.steppedLoading)
+            load.play?.prepare(this.options.precompileShaders ?? true);
+        },
+        // Hidden by the loading screen, the shaders compile (in parallel where WebGL can, over
+        // a few frames), then a first drawing finishes them.
+        () => {
+          const scene = load.play?.view.scene;
+          if (!this.options.steppedLoading || !scene) return true;
+          if (this.options.precompileShaders === false) return true;
+          const parallel = scene.getEngine().getCaps().parallelShaderCompile !== undefined;
+          if (!scene.isReady(true) && parallel && load.tries < COMPILE_FRAMES) return false;
+          scene.render();
+          return true;
+        },
+        () => {
+          if (load.play) this.#started(load.play, state, levelId);
+        },
+      ],
+      done: 0,
+      tries: 0,
+      screen:
+        this.options.steppedLoading && overlay
+          ? new LevelLoadingScreen(doc, overlay, this.game.texts.loading)
+          : undefined,
+    };
+    this.#load = load;
+    load.screen?.show(0);
+    if (this.options.steppedLoading) return;
+    while (this.#load === load) this.loadStep();
+  }
+
+  #newPlay(state: MenuState, levelId: string): GamePlay {
     const shipId = state.chosenShipId ?? state.highlightedShipId;
     const { storage } = this.options;
     const weapons = storage && loadSavedWeapons(storage, this.game.id);
@@ -187,6 +286,13 @@ export class GameSession {
         },
       },
     );
+    return play;
+  }
+
+  /** The level is loaded: it is played from now on. */
+  #started(play: GamePlay, state: MenuState, levelId: string): void {
+    // Presses made while it loaded do not carry into it either.
+    this.controls.clear();
     this.audio?.started(levelId);
     this.#startTime = 0;
     this.#startBoss = null;
@@ -203,8 +309,13 @@ export class GameSession {
     this.onComplete(play);
   }
 
-  /** Ends the level being played; its score counts for the high score (P11-R03). */
+  /** Ends the level being played, or drops the one being loaded; its score counts (P11-R03). */
   end(): void {
+    if (this.#load) {
+      this.#load.play?.dispose();
+      this.#load.screen?.dispose();
+      this.#load = undefined;
+    }
     if (this.play) this.scores?.record(this.play.run.score);
     this.play?.dispose();
     this.play = undefined;

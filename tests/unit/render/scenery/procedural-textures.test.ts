@@ -67,4 +67,14 @@ describe('procedural textures', () => {
       expect(z).toBeGreaterThan(0);
     }
   });
+
+  it('P13-R03: a texture made again with the same arguments is the one made before', () => {
+    const ground = buildGroundTexture(16, LOOK, 3);
+    expect(buildGroundTexture(16, LOOK, 3)).toBe(ground);
+    expect(buildGroundTexture(16, { ...LOOK }, 3)).toBe(ground);
+    expect(buildGroundTexture(16, LOOK, 4)).not.toBe(ground);
+    expect(buildNoiseTexture(16, 4, 1)).toBe(buildNoiseTexture(16, 4, 1));
+    const waves = { frequency: 4, octaves: 2, strength: 2 };
+    expect(buildWaterNormalMap(16, waves, 1)).toBe(buildWaterNormalMap(16, waves, 1));
+  });
 });

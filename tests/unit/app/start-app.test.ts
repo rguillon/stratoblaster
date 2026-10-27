@@ -46,7 +46,7 @@ describe('startApp', () => {
     expect(screenOf(overlay)).toBe('loading');
     expect(app.scenes()).toBeUndefined();
     await app.loaded;
-    expect(app.loadingProgress).toEqual([0, 0.25, 0.5, 0.75, 1]);
+    expect(app.loadingProgress).toEqual([0, 0.2, 0.4, 0.6, 0.8, 1]);
     expect(app.menu.flow.state.screen).toBe('title');
     expect(screenOf(overlay)).toBe('title');
   });

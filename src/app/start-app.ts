@@ -22,6 +22,7 @@ import { MenuController } from './menu-controller';
 import type { MenuState } from './menu-flow';
 import { prepareMenuScenes, renderMenuScenes, type MenuScenes } from './menu-scenes';
 import { createAppAudio, listenToPage, type PageOptions } from './page-audio';
+import { PerfMonitor, perfOverlay } from './perf-monitor';
 
 type ListenTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
@@ -49,6 +50,14 @@ export interface AppOptions extends PageOptions {
   readonly debug?: GameDebugOptions;
   /** Where the debug FPS / polygons tile goes. */
   readonly statsParent?: HTMLElement;
+  /** The clock frames and level starts are timed with, in ms (P13-R01); `performance.now`. */
+  readonly now?: () => number;
+  /** Where the debug perf overlay goes (P13-R01, F3; dev and e2e builds). None when omitted. */
+  readonly perfParent?: HTMLElement;
+  /** Loads the levels in steps, one per frame, behind a loading screen (P13-R03). */
+  readonly steppedLoading?: boolean;
+  /** Compiles a level's shaders while it loads (P13-R04); on when omitted. */
+  readonly precompileShaders?: boolean;
 }
 
 /** Handle on a running app, used by main.ts, the test API and tests. */
@@ -67,6 +76,8 @@ export interface RunningApp {
   readonly controls: GameControls;
   /** The game's music and sounds (P12-R05). */
   readonly audio: GameAudio;
+  /** Frame and level loading times (P13-R01). */
+  readonly perf: PerfMonitor;
   /** Sends a menu command, as any input device would. */
   command(command: MenuCommand): void;
   /** Runs one frame: input, menus, animations, rendering. */
@@ -168,7 +179,8 @@ function frameTicker(
   clock: FixedStepClock,
   menu: MenuController,
   scenes: () => MenuScenes | undefined,
-  session: Pick<GameSession, 'play' | 'paused' | 'controls'>,
+  session: Pick<GameSession, 'play' | 'paused' | 'controls' | 'loadStep'>,
+  perf: PerfMonitor,
 ): FrameTicker {
   return {
     simulate: (dtSeconds) => {
@@ -183,6 +195,8 @@ function frameTicker(
         if (session.controls.takeDisconnect()) menu.pause();
         return;
       }
+      // P13-R03: a step of the level being loaded, if any, each frame.
+      session.loadStep();
       const loaded = scenes();
       loaded?.backdrop.update(dt);
       loaded?.stage.update(dt);
@@ -191,6 +205,8 @@ function frameTicker(
       const { play } = session;
       if (play) {
         play.view.scene.render();
+        // The level's first frame is drawn: it is loaded; its first second is not counted.
+        if (perf.loading) perf.loadFinished(ENGINE_CONFIG.simulationHz);
         return;
       }
       const loaded = scenes();
@@ -203,15 +219,24 @@ function frameTicker(
 function clockControls(
   clock: FixedStepClock,
   ticker: FrameTicker,
+  perf: PerfMonitor,
 ): Pick<RunningApp, 'tick' | 'step'> {
   return {
     tick: (dtSeconds) => {
+      perf.frameStarted();
       ticker.simulate(dtSeconds);
       ticker.render();
+      perf.frameEnded();
     },
+    // Each step is timed as a frame; the last one with the drawing (P13-R01).
     step: (frames, render = true) => {
-      for (let i = 0; i < frames; i++) ticker.simulate(clock.stepSeconds);
-      if (render) ticker.render();
+      for (let i = 0; i < frames; i++) {
+        perf.frameStarted();
+        ticker.simulate(clock.stepSeconds);
+        if (render && i === frames - 1) ticker.render();
+        perf.frameEnded();
+      }
+      if (render && frames === 0) ticker.render();
     },
   };
 }
@@ -221,6 +246,9 @@ function disposeScenes(scenes: MenuScenes | undefined): void {
   scenes?.backdropScene.dispose();
   scenes?.shipScene.dispose();
 }
+
+/** The browser's clock, in milliseconds (P13-R01). */
+const performanceNow = (): number => performance.now();
 
 /** Runs `tick` on every frame of Babylon's render loop, with the frame time in seconds. */
 function runLoop(engine: AbstractEngine, tick: (dtSeconds: number) => void): void {
@@ -248,11 +276,17 @@ function createSession(
   options: AppOptions,
   menu: () => MenuController,
   audio: GameAudio,
+  perf: PerfMonitor,
 ): GameSession {
   return new GameSession(
     engine,
     game,
-    options,
+    {
+      ...options,
+      onLoadStart: () => {
+        perf.loadStarted();
+      },
+    },
     (play) => {
       audio.levelEnded(play.run.result);
       menu().completeLevel(play.run.result);
@@ -289,7 +323,8 @@ export function startApp(
   const { input, stop } = createInput(options);
   let scenes: MenuScenes | undefined;
   const { audio, withAudio } = createAppAudio(game, options);
-  const session = createSession(engine, game, options, () => menu, audio);
+  const perf = new PerfMonitor(ENGINE_CONFIG.longFrameMs, options.now ?? performanceNow);
+  const session = createSession(engine, game, options, () => menu, audio, perf);
   const { controls } = session;
   const { menu, overlay } = createMenu(game, options, { menu: input, controls, audio }, (state) => {
     syncScenes(scenes, state, shipIds);
@@ -304,8 +339,9 @@ export function startApp(
     startDebugLevel(menu, options.debug, shipIds);
   });
 
-  const ticker = withAudio(frameTicker(clock, menu, () => scenes, session));
-  const { tick, step } = clockControls(clock, ticker);
+  const overlayPerf = perfOverlay(options, perf);
+  const ticker = overlayPerf.wrap(withAudio(frameTicker(clock, menu, () => scenes, session, perf)));
+  const { tick, step } = clockControls(clock, ticker, perf);
   if (options.renderLoop) runLoop(engine, tick);
   return {
     clock,
@@ -316,15 +352,14 @@ export function startApp(
     game: () => session.play,
     controls,
     audio,
+    perf,
     command: menu.command.bind(menu),
     tick,
     step,
     dispose: () => {
       engine.stopRenderLoop();
-      stop();
-      stopPage();
-      session.dispose();
-      overlay.dispose();
+      for (const done of [stop, stopPage]) done();
+      for (const part of [session, overlay, overlayPerf]) part.dispose();
       disposeScenes(scenes);
     },
   };

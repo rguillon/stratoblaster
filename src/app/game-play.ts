@@ -1,8 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { GameDefinition } from '../core/content/game-definition';
-import { findGameLevel, type GameLevel } from '../core/content/game-level';
+import type { GameLevel } from '../core/content/game-level';
 import { findPlayerShip, shipMaxSpeedPxPerSec } from '../core/entities/player-ship';
-import { withRunout } from '../core/scenery/scenery-level';
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
 import type { Bonus } from '../core/systems/bonus-world';
 import type { BossRank } from '../core/systems/boss-fights';
@@ -30,6 +29,7 @@ import { EnemyViewerShots } from './enemy-viewer-shots';
 import { createHud, hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
 import { buildLevelScene, skyState, type LevelScene } from './level-scene';
+import { levelOf, sceneryWithRunout } from './level-prepare';
 import { RateMeter } from './rate-meter';
 import { PlayfieldShip } from './shot-viewer-scene';
 
@@ -88,12 +88,6 @@ function hitBlasts(
   );
 }
 
-function levelOf(game: GameDefinition, id: string): GameLevel {
-  const level = findGameLevel(game.gameLevels, id);
-  if (!level) throw new Error(`Level "${id}" cannot be played`);
-  return level;
-}
-
 /**
  * The game screen (P06-R02): the chosen ship flies over the chosen level's scrolling scenery,
  * moved and fired by the {@link GameControls}, while the level's waves come in. It runs the
@@ -132,7 +126,7 @@ export class GamePlay {
     const level = levelOf(game, choice.levelId);
     this.view = buildLevelScene(engine, game, {
       // Extra ground past the end, for the final boss fight (P07-R03).
-      level: withRunout(level.scenery, level.runout ?? 0),
+      level: sceneryWithRunout(level),
       environment: options.environment,
       glow: game.view.enemies.glow,
       environmentCubeSize: CFG.environmentCubeSize,
@@ -335,6 +329,21 @@ export class GamePlay {
       ...levelState(this.run, this.#timeScale, this.#maxHealth),
       sky: skyState(this.view, sea, middle),
     };
+  }
+
+  /**
+   * Gets the level ready to play smoothly (P13-R04): one model of each enemy kind built, and (with
+   * `compileShaders`) the shaders of everything in the scene compiled, before play starts.
+   */
+  prepare(compileShaders: boolean): void {
+    this.view.playfield.run(() => {
+      this.#enemies.prepare();
+    });
+    if (!compileShaders) return;
+    for (const mesh of this.view.scene.meshes) {
+      const { material } = mesh;
+      if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
+    }
   }
 
   dispose(): void {

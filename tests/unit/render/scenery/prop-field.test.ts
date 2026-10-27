@@ -75,6 +75,30 @@ describe('PropField', () => {
     expect(block?.thinInstanceCount).toBe(3);
   });
 
+  it('P13-R04: uploads again only the kinds whose props drawn changed', () => {
+    const props = field();
+    props.setChunk(0, [place('block', 0), place('stick', 3)]);
+    props.sync();
+    const block = props.structureOf('block');
+    const stick = props.structureOf('stick');
+    const uploads = { block: 0, stick: 0 };
+    if (!block || !stick) throw new Error('no meshes');
+    const count = (mesh: typeof block, kind: keyof typeof uploads) => {
+      const upload = mesh.thinInstanceSetBuffer.bind(mesh);
+      mesh.thinInstanceSetBuffer = (...args) => {
+        uploads[kind]++;
+        upload(...args);
+      };
+    };
+    count(block, 'block');
+    count(stick, 'stick');
+    props.setChunk(1, [place('block', 20)]);
+    props.sync();
+    expect(uploads).toEqual({ block: 1, stick: 0 });
+    expect(block.thinInstanceCount).toBe(2);
+    expect(stick.thinInstanceCount).toBe(1);
+  });
+
   it('P04-R04: props cast shadows, and unknown kinds are refused', () => {
     let casters = 0;
     const props = field(() => {
