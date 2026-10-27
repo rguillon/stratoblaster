@@ -5,6 +5,7 @@ import {
   JUNGLE_VARIANTS,
   PART_FAMILIES,
   POLAR_VARIANTS,
+  SKYSCRAPER_VARIANTS,
   variantId,
   type PartFamily,
 } from '../../config/building-families';
@@ -117,6 +118,8 @@ import {
   buildWarHangar,
 } from './volcanic-war';
 import { buildGantryCrane, buildOreWagon, buildRailLine, buildSlagHeap } from './volcanic-yard';
+import { buildRowHouses, buildSuburbHouse, buildWalkUp } from './suburb-props';
+import { buildSkyscraper } from './skyscraper-props';
 
 /** The `count` variants of a family of buildings made of parts, built by `build`. */
 function partModels(
@@ -194,6 +197,7 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W2.floeLarge]: buildLargeFloe,
   [W2.iceberg]: buildIceberg,
   [W2.weatherBuoy]: buildWeatherBuoy,
+  ...partModels('skyscraper', SKYSCRAPER_VARIANTS, buildSkyscraper),
   ...partModels('polar-tower', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('polar-block', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('mining-complex', POLAR_VARIANTS, buildMiningComplex),
@@ -227,6 +231,9 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W3.treetopPlatform]: buildTreetopPlatform,
   [W3.skyBridgeTowers]: buildSkyBridgeTowers,
   [W3.waterfall]: buildWaterfall,
+  [W3.suburbHouse]: buildSuburbHouse,
+  [W3.rowHouses]: buildRowHouses,
+  [W3.walkUp]: buildWalkUp,
   ...partModels('canopy-tower', JUNGLE_VARIANTS, buildCanopyBuilding),
   ...partModels('canopy-block', JUNGLE_VARIANTS, buildCanopyBuilding),
   // Phase 10: World 4, the Volcanic Lands (P10-R08).

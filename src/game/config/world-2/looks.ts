@@ -11,7 +11,7 @@ import { DESERT_ROCK, DRY_EARTH, SAND } from '../world-1/looks';
  */
 
 /** Industrial concrete: grey, stained with oil and soot, sand blown into its cracks. */
-const INDUSTRIAL_PAVING = texture(
+export const INDUSTRIAL_PAVING = texture(
   [
     [0.3, 0.29, 0.28],
     [0.4, 0.38, 0.36],

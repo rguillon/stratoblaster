@@ -9,7 +9,7 @@
 ---
 
 ## 🧑 Goal
-World 3, **the Jungle**, has five playable levels, 3-1 to 3-5, each about 5 minutes long. The levels go from a misty river delta to a deep rainforest, temple ruins under a thunderstorm, a swamp with a giant dam, and a city rising out of the canopy at night. Each level has its own time of day, cloud cover and weather (morning mist, rain showers, a thunderstorm with lightning, night rain). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 3-1 to 3-5, and World 3 as a whole is harder than World 2.
+World 3, **the Industrial Towns** (first the Jungle; reworked at the reviewer's request, 2026-10-27), has five playable levels, 3-1 to 3-5, each about 5 minutes long. The levels are one journey from the factories World 2 ended on, along canals and docks, through the workers' quarters and their terraces, to suburbs and garden villages of small houses (no skyscraper, no tower), with slow transitions along the levels. No sea: canals, rivers and ponds only. Each level has its own time of day, cloud cover and weather (morning mist, rain showers, a thunderstorm with lightning, night rain). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 3-1 to 3-5, and World 3 as a whole is harder than World 2.
 
 ## 🧑 Requirements
 
@@ -36,21 +36,26 @@ Each World 3 level's scroll time at its ground speed is 300 s ± 10 s (as P08-R0
 
 ### P09-R03 — Scenery progression across World 3  · MUST
 
-The player flies up a great river into the jungle, then over ruins and swamps to a city in the trees. Each level begins on the kind of ground the previous one ended on (as in P06-R05).
+**Reworked at the reviewer's request (2026-10-27):** World 3 starts in the factories (where World 2 ends) and ends in habitations, small buildings only (no skyscrapers), with slow transitions along the levels; no sea (canals and rivers are allowed, as in World 2). The table below replaces the Jungle one (river delta, rainforest, lost temples, swamp works, canopy city).
 
-| Level | Name | Water | Land | Habitations |
-|-------|------|-------|------|-------------|
-| 3-1 | River delta | Sea at the start, then a wide delta of muddy channels and sandbanks; a single wide river by the end. | Mangroves along the channels, low green islands, then the first rainforest. | Stilt huts and fishing platforms, a small river port at the end. |
-| 3-2 | Rainforest | A winding river runs along the whole level. | Dense rainforest canopy (tall broadleaf trees, palms, giant ferns) covering almost all the ground, a few clearings. | Stilt villages along the river, logging camps in the clearings, a jungle road. |
-| 3-3 | Lost temples | The river narrows, with waterfalls where it drops over cliffs. | Steep jungle hills and cliffs, the canopy broken by stone ruins. | Overgrown stepped pyramids, stone causeways and statues, turned into enemy outposts (antennas, gun pits, neon-lit gates). |
-| 3-4 | Swamp works | Dark swamp water with reeds and lily pads, then a big lake held by a giant dam at the end. | Swampy islands with twisted trees, then hills around the lake. | Bio-labs on stilts, pipelines across the swamp, pumping stations, then the dam with its power plant. |
-| 3-5 | Canopy city | Rivers and pools between the towers. | Rainforest at the start, then a city built into it. | Tree-top outposts, then towers rising out of the canopy linked by sky bridges, then a dense city centre where the trees grow on the roofs. |
+The player flies from the great works World 2 ended on, along a canal through the factories and the docks, over the workers' quarters, to the suburbs and the garden villages. Each level begins on the very ground the previous one ended on (3-1 on 2-5's), and the changes are slow, as in World 2 (P08-R03): the sections blend over a long stretch, the concrete gives way to grass a little in each section, and each new kind of building first comes in mixed with the one before it.
+
+| Level | Name | Water | Ground | Buildings |
+|-------|------|-------|--------|-----------|
+| 3-1 | Canal works | A canal between stone walls, from the second section on. | All concrete. | The great works 2-5 ended on, foundries along the canal, rail yards, canal docks, factory yards, the first workshops. |
+| 3-2 | Docklands | The canal, wider at the docks. | Concrete, the first patches of grass. | Warehouses on the docks, workshop streets, old mills, then the first workers' flats. |
+| 3-3 | Workers' quarter | The canal, a park along it, then a river. | Concrete and grass about even by the end. | Small blocks of flats, terraced streets, a canal park, brick terraces, then the first houses. |
+| 3-4 | Suburbs | A river between grassy banks. | Mostly grass and gardens. | Houses with gardens, terraces, a town park, leafy avenues, then the first garden villages. No industry. |
+| 3-5 | Garden villages | The river, ponds among the gardens. | Grass and gardens. | Houses, farmhouses, greenhouses and small modern homes; garden villages only at the end. No industry, no tower. |
 
 **Acceptance criteria**
-- [ ] Unit test: 3-1 has a sea section, its share of sea is ≤ 30 %, and 3-2 to 3-5 have no sea section (rivers, lakes and swamps are not sea).
-- [ ] Unit test: every World 3 level has some river, lake or swamp water.
-- [ ] Unit test (fixed seed): the number of buildings placed goes up from 3-1 to 3-5.
-- [ ] Manual visual validation: delta, rainforest, temples, swamp and canopy city can be told apart, and each level begins where the previous one ended.
+- [ ] Unit test: no World 3 level has a sea section (no coast, no ground under the water level, nothing floating); canals, rivers and ponds are not sea.
+- [ ] Unit test: every World 3 level has some canal, river or pond water.
+- [ ] Unit test: the concrete cover goes down and the grass cover goes up from 3-1 to 3-5 (more concrete than grass in 3-1 to 3-3, more grass in 3-4 and 3-5).
+- [ ] Unit test: heavy industry in 3-1, no industry in 3-4 and 3-5, no suburb or village in 3-1, garden villages only in the last section of 3-5.
+- [ ] Unit test (fixed seed): the number of props and of buildings placed goes up from 3-1 to 3-5, and each level's second half has more props than its first.
+- [ ] Unit test: each level begins on the ground (relief, cover, streets, buildings, canal or river) the previous one ended on, 3-1 on 2-5's; the sections blend over the same long stretch as World 2's.
+- [ ] Manual visual validation: factories, docks, workers' quarter, suburbs and garden villages can be told apart, the changes are slow, and no tall building stands in the suburbs and villages.
 
 ### P09-R04 — Look of each World 3 level  · MUST
 
@@ -58,11 +63,11 @@ Each level's look (P08-R04):
 
 | Level | Time of day | Clouds (low / high cover) | Weather | Notes |
 |-------|-------------|---------------------------|---------|-------|
-| 3-1 | morning | 0.3 / 0.2, white | none | A low, warm sun and a **morning mist**: the haze is close and white over the water at the start and lifts (moves away) over the first half (look change). |
-| 3-2 | midday | 0.5 / 0.3, tall white cumulus | rain 0.4 over the middle third, then clearing | Bright, humid light with green-tinted ambient under the canopy. |
+| 3-1 | morning | 0.3 / 0.2, white | none | A low, warm sun and a **morning mist**: the haze is close and white over the factories at the start and lifts (moves away) over the first half (look change). |
+| 3-2 | midday | 0.5 / 0.3, tall white cumulus | rain 0.4 over the middle third, then clearing | Bright, humid light (the green canopy tint was dropped with the rework, 2026-10-27). |
 | 3-3 | afternoon, thunderstorm | 0.9 / 0.9, dark blue-grey | rain 0.8 with lightning | The storm builds over the first quarter (look change from 0.5 cloud and no rain); dark, with lightning lighting the ground. |
-| 3-4 | dusk | 0.6 / 0.4, orange to purple | rain 0.3 | Ground lights come on (labs, pumping stations, the dam). |
-| 3-5 | night | 0.6 / 0.4 clearing to 0.2 / 0.1 | rain 0.5, stopping before the final boss | The city's windows, sky bridges and neon are lit and glow in the mist; after the rain, the clouds open on a moonlit sky. |
+| 3-4 | dusk | 0.6 / 0.4, orange to purple | rain 0.3 | Ground lights come on (the windows and neon of the houses, the streets). |
+| 3-5 | night | 0.6 / 0.4 clearing to 0.2 / 0.1 | rain 0.5, stopping before the final boss | The villages' windows and neon are lit and glow in the mist; after the rain, the clouds open on a moonlit sky. |
 
 **Acceptance criteria**
 - [ ] Unit test: each World 3 level's look data matches this table, look changes included.
@@ -84,6 +89,8 @@ Two new weather kinds for the weather engine (P08-R05), used as data like snow:
 - [ ] 60 FPS (ENG-101) during the 3-3 storm with the most enemies on screen.
 
 ### P09-R06 — Jungle ground and props  · MUST
+
+**Reworked at the reviewer's request (2026-10-27):** the ground is World 2's stained industrial concrete giving way to grass, with damp dark earth between, grey stone on the canal walls and mud along the water; grey-green canal and river water flowing down the screen; asphalt roads. The buildings are Level Zero's industrial ones and those made of parts, then new homes (small blocks of flats, rows of terraced houses, houses with a pitched roof and a garage), Level Zero's modern homes and World 1's farmhouses and greenhouses; the plants are Level Zero's (dead trees by the factories, broadleaf trees, conifers and bushes in the streets, parks and gardens). The jungle ground and props below were built for the first World 3 and stay in the game, but no level uses them.
 
 New generated ground and props for World 3 (GD-60, made in code), as light in polygons as the existing ones (D-031) and matte (D-024):
 - **Ground:** dark, wet jungle soil, moss-green on slopes, red-brown mud banks, grey-green cliff rock, and old paved stone around the ruins.
@@ -172,7 +179,8 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 3-1 to 3-5; 
 |------|-------|-------|
 | level_duration | 300 s ± 10 s | P09-R02 |
 | ground_speed 3-1 / 3-2 / 3-3 / 3-4 / 3-5 | 70 / 60 / 55 / 60 / 60 px/s | GD-01; slower in the storm |
-| sea_share 3-1 / 3-2..3-5 | ≤ 30 % / 0 % | P09-R03 |
+| sea_share | 0 % in every level | P09-R03 (reviewer, 2026-10-27; was ≤ 30 % in 3-1) |
+| section_transition | 900 units, as World 2 | P09-R03 (reviewer, 2026-10-27) |
 | peak_on_screen 3-1 / 3-2 / 3-3 / 3-4 / 3-5 | 13 / 14 / 15 / 17 / 19 | P09-R08; the agent may adjust while balancing, keeping the order |
 | enemy_bullet_speed_factor 3-1 → 3-5 | 1.0 / 1.05 / 1.1 / 1.2 / 1.25 | P09-R08 |
 | enemy_fire_rate_factor 3-1 → 3-5 | 1.0 / 1.05 / 1.1 / 1.2 / 1.25 | P09-R08 |
@@ -204,10 +212,10 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 3-1 to 3-5; 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
 - [ ] `3-1` to `3-5` can be picked in the level select; worlds 4 and 5 stay locked
-- [ ] Delta, rainforest, temples, swamp and canopy city across the five levels; each level begins where the previous one ended
+- [ ] Factories, docks, workers' quarter, suburbs and garden villages across the five levels, slow changes; each level begins where the previous one ended, 3-1 where 2-5 ended; no tall building in the suburbs and villages
 - [ ] Morning mist lifting in 3-1, a rain shower in 3-2, the 3-3 thunderstorm, rainy dusk in 3-4, rainy night clearing in 3-5
 - [ ] Lightning is dramatic but never blinding or fast-flashing
-- [ ] Rivers flow, waterfalls fall, the canopy looks thick
+- [ ] Canals and rivers flow
 - [ ] The ten World 3 bosses look good in `bosses/`; jaws, legs and segments move
 - [ ] Difficulty clearly goes up from 3-1 to 3-5, and 3-5 is harder than 2-5
 - [ ] 60 fps in the rainforest, the storm and the 3-5 final boss fight
@@ -223,7 +231,7 @@ As in P08-R11: mini boss and final boss full HP go up strictly from 3-1 to 3-5; 
 > After the agent reports, write corrections here, then say **"Fix phase 09"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (2026-10-27, after validation) Rework World 3: start in the factories and end in habitations (small buildings only, no skyscrapers), with slow transitions along the levels. → P09-R03, R04 (notes), R06 amended; D-111.
 
 ---
 
@@ -248,11 +256,11 @@ None. The spec was implemented as written; the interpretations are listed under 
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
 | P09-R01 | Done | `game/sim/world-3.ts`, `game/sim/levels.ts` | `world-3.test.ts`, `levels.test.ts`, e2e `world-3.spec.ts`, `menu-pointer.spec.ts` | 2-5 → 3-1 and 3-5 → 3-5 follow from the grid order |
-| P09-R02 | Done | `game/config/world-3/scenery-*.ts` (300 s each) | `world-3.test.ts`, e2e | speeds 70 / 60 / 55 / 60 / 60 |
-| P09-R03 | Done | `scenery-river.ts`, `scenery-inland.ts`, `core/scenery/float-placement.ts` (landmarks, lines over water) | `world-3.test.ts`, `landmarks.test.ts` | D-079; sea 23 % of 3-1's ground; buildings 149 / 615 / 704 / 1 512 / 5 747 |
-| P09-R04 | Done | `game/config/world-3/looks.ts`, `core/scenery/sky-look.ts` (mist, tint, lightning) | `world-3.test.ts`, `sky-look.test.ts`, e2e | D-078; readability: manual |
+| P09-R02 | Done | `game/config/world-3/scenery.ts` (300 s each) | `world-3.test.ts`, e2e | speeds 70 / 60 / 55 / 60 / 60 |
+| P09-R03 | Done (reworked 2026-10-27) | `world-3/scenery.ts` (replaces `scenery-river.ts` and `scenery-inland.ts`), `world-3/props.ts` | `world-3.test.ts` | D-111; no sea; props 11 085 / 11 429 / 12 336 / 13 739 / 14 909, buildings 11 085 / 11 400 / 11 695 / 12 190 / 13 514 |
+| P09-R04 | Done | `game/config/world-3/looks.ts`, `core/scenery/sky-look.ts` (mist, tint, lightning) | `world-3.test.ts`, `sky-look.test.ts`, e2e | D-078; readability: manual; the rework keeps the sky scripts, minus 3-2's green tint (D-111) |
 | P09-R05 | Done | `config/weather.ts`, `core/scenery/lightning.ts`, `render/scenery/rain-rings*.ts`, `lightning-layer.ts`, `sky-layers.ts`, `weather-material.visual.ts` | `lightning.test.ts`, `sky-look.test.ts`, `storm-layers.test.ts`, `game-play-weather.test.ts` (not an input), e2e | D-076, D-077; 60 FPS: manual |
-| P09-R06 | Done | `game/view/props/jungle-*.ts`, `world-3/props.ts`, `world-3/looks.ts` | `prop-models.test.ts` | hand-made ≤ 336 triangles (dam 553 ≤ 600), canopy 111 / 110 |
+| P09-R06 | Done (reworked 2026-10-27) | `game/view/props/suburb-props.ts` (new homes), `jungle-*.ts` (kept, unused), `world-3/props.ts`, `world-3/looks.ts` | `world-3-homes.test.ts`, `prop-models.test.ts` | homes 36 / 66 / 50 triangles; hand-made jungle props ≤ 336 (dam 553 ≤ 600), canopy 111 / 110 |
 | P09-R07 | Done | `game/config/world-3/waves.ts` | `world-3.test.ts` | D-080 |
 | P09-R08 | Done | `waves.ts`, `world-3/difficulty.ts` | `world-3.test.ts` | numbers below |
 | P09-R09 | Done | `game/config/bosses/world-3/*`, `game/view/bosses/world-3/*` | `bosses-world-3.test.ts`, `boss-models.test.ts`, `muzzles.test.ts`, e2e | D-081; patterns below |
@@ -278,6 +286,8 @@ None. The spec was implemented as written; the interpretations are listed under 
 Light verification (implementation): make typecheck ✔ · make build ✔ · make e2e: 77 tests, 76 passed / 1 failed (a phase 6 test still expecting World 3 locked; fixed), then after a lint refactor of the prop placer, a full re-run: typecheck ✔ · build ✔ · 77 / 77 e2e passed (5.6 min)
 Lint, unit tests and coverage are deferred to /validate-phase (make check).
 
+Rework (2026-10-27, D-111): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1580 unit tests ✔ · coverage 98.62 % statements, 87.97 % branches, 98.71 % functions, 99.41 % lines ✔ · build ✔ · 117 e2e ✔ (6.0 min).
+
 Full gate (validation, 2026-10-26): make check ✔ — lint ✔ · prettier ✔ · typecheck ✔ · 1210 unit tests ✔ · coverage 98.61 % statements, 87.25 % branches, 98.65 % functions, 99.35 % lines ✔ (phase 8: 98.5 / 88.04 / 98.57 / 99.26) · build ✔ · 77 e2e ✔ (5.8 min).
 Fixed on the way (first run: 6 of 1210 unit tests failed):
 - set pieces were missed by the placer's bucketed neighbour search past ~64 units from their centre, so trees and buildings could stand on them: every placement now checks the set pieces and lines too (World 3 only; earlier layouts unchanged);
@@ -288,13 +298,14 @@ Fixed on the way (first run: 6 of 1210 unit tests failed):
 
 ### How to test manually
 - `make dev`, then Start → a ship → the level select: the World 3 row (`3-1` … `3-5`) is unlocked, worlds 4 and 5 stay locked. After 2-5's "Level complete", `3-1` is highlighted; after 3-5's, `3-5`.
-- Each level: `?level=3-1` … `?level=3-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 3-1 a white morning mist over the sea and the delta (sandbanks, mangroves, reeds, lily pads), lifting by 2:30, the wide river, stilt huts and a river port at the end; 3-2 the river through a thick canopy, logging camps, a rain shower from 1:40 to 3:20 with rings on the river, green light; 3-3 the storm building over the first 75 s, then rain with lightning flashes and bolts in the clouds, gorges, waterfalls (`?level=3-3&t=55`, `t=210`), temples, the stone causeway, the great pyramid the Stone Idol stops over (`?level=3-3&boss=mini`), the swamp at the end; 3-4 a rainy dusk over the swamp, pipelines on stilts, lit bio-labs and pumping stations, the lake and the giant dam at the end (`?level=3-4&t=280`); 3-5 a rainy night, tree-top outposts, towers with sky bridges and roof gardens, the city centre, the clouds opening on a moonlit sky before the final boss (`?level=3-5&t=280`).
+- Each level (reworked 2026-10-27, D-111): `?level=3-1` … `?level=3-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s; add `&look=midday&weather=0` to see the ground under the rain clouds). Look for: 3-1 the great works 2-5 ended on under a white morning mist lifting by 2:30, then a canal between stone walls through foundries, rail yards, docks and factory yards, the first workshops at the end; 3-2 warehouses on the canal docks, workshop streets, old mills, the first workers' flats, a rain shower from 1:40 to 3:20 with rings on the canal; 3-3 the storm building over the first 75 s over blocks of flats, terraced streets, a park along the canal, brick terraces where the canal becomes a river, the first houses; 3-4 a rainy dusk over garden suburbs, houses along the river, a town park, leafy avenues; 3-5 a rainy night over garden villages (houses, farmhouses, greenhouses, ponds), no tall building, the clouds opening on a moonlit sky before the final boss (`?level=3-5&t=280`). The slow changes: the concrete turns to grass and the buildings change a little in each section.
 - Debug: `&weather=0` (no rain, no rings, no lightning: `?level=3-3&t=120&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night`, `&boss=mini|final` (K destroys the next part).
 - Bosses: `bosses/` lists Worlds 1, 2 and 3 under their headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe (check the Croc's jaws, the Leviathan's swaying body, the Spider's legs, the Mosquito's wings).
 - Lightning: dramatic but not blinding; no more than two flashes in a second (a strike may flicker twice).
 - 60 FPS: the 3-2 rainforest (`?level=3-2&t=150`), the 3-3 storm with the most enemies (`?level=3-3&t=280`), the 3-5 final fight (`?level=3-5&boss=final`), with the F3 / debug FPS tile.
 
 ### Deviations from spec
+- Rework (2026-10-27, D-111): the World 3 bosses and wave scripts are unchanged, so the jungle-themed bosses (Mangrove Croc, River Leviathan, Canopy Spider, Stone Idol, Sky Temple, Dam Breaker, Verdant Crown…) now fly over factories and suburbs; the Stone Idol still stops the ground (×0), over the workers' quarter. The jungle props, the set pieces (waterfalls, great pyramid, dam) and the prop lines (causeway, swamp pipelines) stay in the game, unused. The time of day and weather of each level are kept (morning mist, midday shower, afternoon storm, rainy dusk, rainy night), only 3-2's green canopy tint is dropped.
 - P09-R03 "sea section": a section with a coast or whose relief lies under the water level; rivers, swamps, lakes and pools hold water at the same level as the sea, in channels, low relief or basins (D-079). 3-1's sea sections (open sea, delta mouth) are 80 of its 300 s and 23 % of its ground under water.
 - P09-R06 waterfalls: the river is at one level above and below a fall; the drop is a set piece (a rock ledge across the river, a falling white sheet and spray), four of them in 3-3 (D-079).
 - P09-R05 `lightning_gap`: measured between strikes (4–10 s, about 7 on average); a strike flickers twice with a chance of 0.35, so the flashes come about every 5 s and never more than 2 in a second (cap 3).

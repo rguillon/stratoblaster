@@ -34,7 +34,7 @@ export const DRY_EARTH = texture(
 );
 
 /** Fresh green grass of the islands, the coast and the meadows, with a few yellow tufts. */
-const GRASS = texture(
+export const GRASS = texture(
   [
     [0.22, 0.34, 0.12],
     [0.3, 0.46, 0.16],
