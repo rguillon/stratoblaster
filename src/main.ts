@@ -87,6 +87,8 @@ function startGame(engine: Engine): void {
     steppedLoading: true,
     // P13-R04: shaders compiled while a level loads; not in e2e builds (software WebGL, ENG-52).
     precompileShaders: !__E2E__,
+    // P13-R03: the level highlighted on the level select screen is prepared in a worker.
+    backgroundLoading: true,
     // P13-R01: the perf overlay (F3) in dev and e2e builds only (ENG-111).
     ...(import.meta.env.DEV || __E2E__ ? { perfParent: document.body } : {}),
     audio: browserAudio(),

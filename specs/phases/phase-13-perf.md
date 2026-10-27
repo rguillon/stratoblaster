@@ -120,7 +120,8 @@ The optimisations do not change the game: the same scenery, models, effects, mus
 > After the agent reports, write corrections here, then say **"Fix phase 13"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (2026-10-27, reviewer in chat) "there is still a lag when we select the second or third ship". Fixed: each ship has its own key light, so highlighting another ship only switches lights on and off and no shader is recompiled (D-116). First press 186 → 6 ms.
+- [x] (2026-10-27, reviewer in chat) "the level loading is too long, is it not possible to start instantly and do the rest of the loading in background?" Fixed: the level highlighted on the level select is prepared in a worker while the player chooses (ground and textures). Enemy models are built during play, one per frame, instead of during loading (D-117). Load after the highlight rests on a level: 3.7–4 s → 0.44–0.51 s.
 
 ---
 
@@ -146,7 +147,7 @@ None. The reference machine (P13-R01) was not available to the agent: this WSL m
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
 | P13-R01 | Partial | `src/app/perf-monitor.ts`, `src/ui/perf-overlay.ts`, `src/app/start-app.ts` (`perf`, `perfOverlay`), `src/debug/test-api.ts` (`perf`), `scripts/measure-perf.mjs` | `perf-monitor.test.ts`, `perf-overlay.test.ts`, `test-api.test.ts`, e2e `perf.spec.ts` (F3) | Causes found and named (D-113). Before / after table measured on software WebGL, not on the reference machine |
-| P13-R02 | Partial | `game-session.ts` (stepped loading), `menu-scenes.ts` (ship highlight warm-up) | `game-session.test.ts` (stepped), `menu-scenes.test.ts`, `start-app.test.ts` | Level confirm 2368 → 42–48 ms. On software WebGL, the first ← / → on ship select still takes 186–222 ms (WebGL calls waiting on SwiftShader while the ship scene draws its first frames); the presses after it take 5–14 ms |
+| P13-R02 | Done (software WebGL) | `game-session.ts` (stepped loading), `menu-scenes.ts` (ship highlight warm-up) | `game-session.test.ts` (stepped), `menu-scenes.test.ts`, `start-app.test.ts` | Level confirm 2368 → 5 ms; ship select ← / → 186 → 6 ms (review fix: one key light per ship) |
 | P13-R03 | Partial | `game-session.ts`, `ui/level-loading.ts`, `scenery-stage.ts` (`prepareLevelRoads`, `prepareLevelGround`, kept ground), `procedural-textures.ts` (kept textures), `noise.ts`, road files | `game-session.test.ts` (steps, Retry), `procedural-textures.test.ts`, `noise.test.ts`, e2e `perf.spec.ts` (one level per world) | Real progress, moving bar, Retry reuses the ground. On software WebGL the loads are 1.5–4.3 s and the longest step (shader compilation) 0.6–3.4 s: over `level_load_max_s` and `loading_step_max_ms` there; needs the reference machine |
 | P13-R04 | Done for the game's own work; see limitations | road files, `prop-field.ts`, `enemy-layer.ts` (`prepare`), `game-play.ts` (`prepare`) | `road-traffic.test.ts`, `prop-field.test.ts` | Long simulation frames per 2 min of play: 19–25 → 0–3 in Worlds 2–4. Rare multi-second stalls remain, inside WebGL calls waiting on SwiftShader (before and after) |
 | P13-R05 | Done | (no change of results) | `noise.test.ts` (same values as the old formula), `road-traffic.test.ts` (index = full check), existing unit and screenshot e2e tests | Bundle 561 → 563 KB gzip (ENG-107) |
@@ -203,9 +204,14 @@ Re-measured with the ship-select warm-up (e2e build): ship select → 222 ms, le
 2. **Slow level loading.** The same road scan for the first chunks (4 s of the 6.1 s it took to load 3-1). Generating the level's roads and props took 1.1 s, regenerating the ground textures took 0.6 s, and the noise worked out a cosine and a sine on every call (0.7 s across all of these).
 3. **Lag of up to 1 s after a button press.** Confirming a level (also Retry, Next level, Continue) built the whole level inside the key press, so the screen didn't change until it was built. Moving the highlight on the ship select screen compiled shaders the first time each ship was lit (186 ms).
 
+### Review fixes (2026-10-27)
+- **Ship select lag:** changing the one key light's `includedOnlyMeshes` dirtied the ship materials and recompiled their shaders the first time each ship was lit. Now there is one key light per ship (`ShipSelectStage`), and highlighting only changes intensities. The menu loading warm-up task added earlier was removed. Measured on software WebGL: ship select → 6 ms (was 186–222 ms).
+- **Background loading:** `BackgroundLoader` (`src/render/scenery/background-loader.ts`) runs a worker (`ground-worker.ts`) that generates a level's ground (`groundSnapshot`: roads and placed buildings as plain data) and its scenery textures (`sceneryTextureJobs`). The main thread rebuilds the road network and placer from that data (`RoadNetwork`/`PropPlacer` take a snapshot: same roads, same buildings, same indexes, checked by a unit test on 3-3). `LevelPrefetcher` asks for the highlighted level once the highlight has rested on it for 0.25 s, so passing over levels doesn't queue them all. The loading step for the ground waits for the worker; without a worker (unit tests) it generates at once, and after a worker error it falls back to generating on the main thread. Enemy models: `EnemyLayer.prepareNext` builds one model per frame during play (shaders compiled as they're built, outside e2e).
+- Measured (software WebGL, `--warm`: highlight rests 3 s): 1-1 0.44 s, 3-1 0.51 s, 4-5 0.47 s to the first playable frame (were 3.6–4.3 s). Steps: scene 287–349 ms, first draw 101–131 ms, others ≤ 11 ms. No frame over 50 ms in 20 s of play. Confirming at once (cold) takes ~4 s while the worker generates, but the frames stay at 1–3 ms and the bar keeps moving.
+
 ### Gate results
 ```
-Light verification (implementation): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (5.2 min).
+Light verification (implementation): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (5.8 min, after the review fixes).
 Lint, unit tests and coverage: not run (deferred to /validate-phase, per CLAUDE.md).
 ```
 
@@ -222,8 +228,8 @@ Lint, unit tests and coverage: not run (deferred to /validate-phase, per CLAUDE.
 - e2e builds don't precompile a level's shaders while it loads (`precompileShaders: !__E2E__`). On SwiftShader, compiling them takes 2–4 s per load, and pushed tests that load several levels past their 30 s timeout under the parallel run (4 timeouts in one run). The e2e tests check state, not frame times (ENG-52). The browser game precompiles. Enemy models are prebuilt in both.
 
 ### Known limitations
+- A level confirmed before the worker has prepared it (less than ~3 s after it was highlighted) still waits for the worker, about 4 s on this machine, behind the loading screen.
 - On software WebGL, loading still takes longer than `level_load_max_s` (1.5–4.3 s), and the longest step is longer than `loading_step_max_ms`. The steps over 200 ms are the roads and props generation (~350–600 ms, CPU) and shader compilation (SwiftShader). Shader compilation should be much shorter on a real GPU, which also compiles in parallel (the loader waits for that). The generation steps would need resumable generators in `core/scenery` if the reference machine shows them over 200 ms (Suggestions).
-- Ship select: the first highlight move takes ~200 ms on software WebGL (GPU-process waits on the ship scene's first frames). The warm-up (each ship highlighted during the menu loading) didn't change that there. It needs checking on a real GPU.
 - Rare multi-second stalls inside WebGL calls happen on SwiftShader, both before and after this phase. They need checking on the reference machine.
 - The F3 overlay only exists in dev and e2e builds (ENG-111).
 

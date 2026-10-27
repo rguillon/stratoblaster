@@ -58,6 +58,11 @@ export interface AppOptions extends PageOptions {
   readonly steppedLoading?: boolean;
   /** Compiles a level's shaders while it loads (P13-R04); on when omitted. */
   readonly precompileShaders?: boolean;
+  /**
+   * Prepares the level highlighted on the level select screen in a worker (P13-R03), so it
+   * starts at once when confirmed. Off when omitted (no worker in unit tests).
+   */
+  readonly backgroundLoading?: boolean;
 }
 
 /** Handle on a running app, used by main.ts, the test API and tests. */
@@ -196,7 +201,7 @@ function frameTicker(
         return;
       }
       // P13-R03: a step of the level being loaded, if any, each frame.
-      session.loadStep();
+      session.loadStep(dt);
       const loaded = scenes();
       loaded?.backdrop.update(dt);
       loaded?.stage.update(dt);

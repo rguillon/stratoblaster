@@ -11,7 +11,8 @@ import type { GameView } from '../render/game-view';
 import type { MenuDocument } from '../ui/screens/elements';
 import type { KeyValueStorage } from '../platform/key-value-storage';
 import { GamePlay } from './game-play';
-import { prepareLevel } from './level-prepare';
+import { LevelPrefetcher, prepareLevel } from './level-prepare';
+import { startBackgroundLoader, type BackgroundLoader } from '../render/scenery/background-loader';
 import { LevelLoadingScreen } from '../ui/level-loading';
 import type { MenuState } from './menu-flow';
 import { loadSavedWeapons, saveWeapons } from './saved-weapons';
@@ -72,6 +73,8 @@ export interface GameSessionOptions {
    * game's state, not its frame times (ENG-52).
    */
   readonly precompileShaders?: boolean;
+  /** Prepares the level highlighted on the level select screen in a worker (P13-R03). */
+  readonly backgroundLoading?: boolean;
 }
 
 /** Most frames a level's loading waits for its shaders to compile in parallel (P13-R03). */
@@ -102,6 +105,11 @@ export interface SessionAudio {
   readonly started: (levelId: string) => void;
   /** A step of the level was run. */
   readonly step: (run: LevelRun) => void;
+}
+
+/** The cell highlighted on the level select screen, if it shows (P13-R03: prefetched). */
+function highlightedLevel(state: MenuState): string | null {
+  return state.screen === 'level-select' ? state.selectedId : null;
 }
 
 /** Keys go to the level's debug keys first (when on), then to the in-game controls. */
@@ -146,6 +154,10 @@ export class GameSession {
   #attempt = -1;
   #load: LevelLoad | undefined;
   readonly #stopListening: () => void;
+  readonly #loader: BackgroundLoader | undefined;
+  readonly #prefetcher: LevelPrefetcher;
+  /** The level highlighted on the level select screen, if it shows. */
+  #highlighted: string | null = null;
 
   constructor(
     private readonly engine: AbstractEngine,
@@ -158,6 +170,8 @@ export class GameSession {
     this.#startTime = options.debug?.time ?? 0;
     this.#startBoss = options.debug?.boss ?? null;
     this.controls = new GameControls(GAME_CONTROLS_CONFIG, options.gamepads);
+    this.#loader = options.backgroundLoading ? startBackgroundLoader() : undefined;
+    this.#prefetcher = new LevelPrefetcher(game, this.#loader);
     // No debug keys while paused (P12-R01: nothing in the level changes).
     this.#stopListening = listenControls(options.keyboardTarget, this.controls, () =>
       this.paused ? undefined : this.play,
@@ -168,9 +182,11 @@ export class GameSession {
   dispose(): void {
     this.end();
     this.#stopListening();
+    this.#loader?.stop();
   }
 
   sync(state: MenuState): void {
+    this.#highlighted = highlightedLevel(state);
     const levelId = state.screen === 'game' || state.paused ? state.chosenLevelId : null;
     // Presses made while paused (e.g. a bomb key) do not carry into the level (P12-R01).
     if (state.paused !== this.paused) this.controls.clear();
@@ -190,8 +206,12 @@ export class GameSession {
     return this.#load !== undefined;
   }
 
-  /** Runs the next step of the level being loaded, if any (P13-R03): one per frame. */
-  loadStep(): void {
+  /**
+   * Runs the next step of the level being loaded, if any (P13-R03), one per frame of `dt`
+   * seconds, and prefetches the level highlighted on the level select screen once it rests there.
+   */
+  loadStep(dt = 0): void {
+    this.#prefetcher.update(dt, this.#highlighted);
     const load = this.#load;
     if (!load) return;
     load.tries++;
@@ -211,15 +231,12 @@ export class GameSession {
    */
   #start(state: MenuState, levelId: string): void {
     this.options.onLoadStart?.();
+    this.#prefetcher.start(levelId);
     const { doc, overlay } = this.options;
     const load: LevelLoad = {
       steps: [
-        () => {
-          prepareLevel(this.game, levelId, 'roads');
-        },
-        () => {
-          prepareLevel(this.game, levelId, 'all');
-        },
+        // The ground, generated in the background (often already, while the level was chosen).
+        () => prepareLevel(this.game, levelId),
         () => {
           load.play = this.#newPlay(state, levelId);
         },

@@ -1,58 +1,94 @@
 import { HeightField } from '../../core/scenery/height-field';
-import { PropPlacer } from '../../core/scenery/prop-placement';
-import { levelRoads, type RoadNetwork } from '../../core/scenery/road-network';
+import { PropPlacer, type PlacerSnapshot } from '../../core/scenery/prop-placement';
+import { levelRoads, type RoadSnapshot } from '../../core/scenery/road-network';
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
 
 /** A level's generated ground: its height field and its props' placer (with the roads). */
-interface LevelGround {
+export interface LevelGround {
   readonly level: SceneryLevel;
   readonly seed: number;
   readonly field: HeightField;
   readonly placer: PropPlacer;
 }
 
-/**
- * The ground generated last (P13-R03): starting the same level again (Retry, Continue, the next
- * attempt) reuses it instead of generating it again. Generation is deterministic, so the ground
- * is the same either way.
- */
-let lastGround: LevelGround | undefined;
-
-/**
- * Generates the ground of `level` (or finds it generated last), so a {@link SceneryStage} built
- * next for it starts straight away: a level's loading can do it as a step of its own (P13-R03).
- */
-export function prepareLevelGround(level: SceneryLevel, seed = level.seed): void {
-  levelGround(level, seed);
+/** What generating a level's ground made, as plain data (sent back by a worker, P13-R03). */
+export interface GroundSnapshot {
+  readonly roads: RoadSnapshot;
+  readonly placer: PlacerSnapshot;
 }
 
-/** The roads made last, by {@link prepareLevelRoads}, for the ground made next. */
-let lastRoads:
-  { level: SceneryLevel; seed: number; field: HeightField; roads: RoadNetwork } | undefined;
+/** Generates the ground of `level` from `seed` as plain data: what the worker runs. */
+export function groundSnapshot(level: SceneryLevel, seed: number): GroundSnapshot {
+  const { placer } = generate(level, seed);
+  return { roads: placer.roads.snapshot(), placer: placer.snapshot() };
+}
 
-/** The first half of {@link prepareLevelGround}: the level's roads (P13-R03). */
-export function prepareLevelRoads(level: SceneryLevel, seed = level.seed): void {
-  if (lastGround?.level === level && lastGround.seed === seed) return;
-  if (lastRoads?.level === level && lastRoads.seed === seed) return;
+function generate(level: SceneryLevel, seed: number, made?: GroundSnapshot): LevelGround {
   const field = new HeightField(level, seed);
-  lastRoads = { level, seed, field, roads: levelRoads(field, level.roads, seed) };
+  const roads = levelRoads(field, level.roads, seed, made?.roads);
+  const { props, sea } = level;
+  const placer = new PropPlacer(field, props, seed, roads, sea?.level, made?.placer);
+  return { level, seed, field, placer };
 }
 
-/** The roads made by {@link prepareLevelRoads} for `level` and `seed`, now taken. */
-function takeRoads(level: SceneryLevel, seed: number): { field: HeightField; roads: RoadNetwork } {
-  prepareLevelRoads(level, seed);
-  const made = lastRoads;
-  lastRoads = undefined;
-  if (made?.level === level && made.seed === seed) return made;
-  const field = new HeightField(level, seed);
-  return { field, roads: levelRoads(field, level.roads, seed) };
+/** Grounds kept for reuse (P13-R03): the level being played, Retry, and those prefetched. */
+const KEPT = 3;
+const kept: LevelGround[] = [];
+
+function keep(ground: LevelGround): LevelGround {
+  kept.unshift(ground);
+  kept.length = Math.min(kept.length, KEPT);
+  return ground;
 }
 
-/** The ground of `level` from `seed`: the one generated last when it is the same. */
+function find(level: SceneryLevel, seed: number): LevelGround | undefined {
+  const i = kept.findIndex((g) => g.level === level && g.seed === seed);
+  const [ground] = i >= 0 ? kept.splice(i, 1) : [];
+  return ground && keep(ground);
+}
+
+/** Where grounds are generated in the background: posts a level and seed, calls back with it. */
+export type GroundGenerator = (
+  level: SceneryLevel,
+  seed: number,
+  done: (made: GroundSnapshot | undefined) => void,
+) => void;
+
+let background: GroundGenerator | undefined;
+/** Set once a background generation failed: the grounds are generated here from then on. */
+let failed = false;
+/** The grounds being generated in the background. */
+const pending: { level: SceneryLevel; seed: number }[] = [];
+
+/** Generates the grounds in the background from now on, with `generator` (P13-R03). */
+export function generateGroundsWith(generator: GroundGenerator | undefined): void {
+  background = generator;
+  failed = false;
+}
+
+/**
+ * Asks for the ground of `level`: true when it is ready. With a background generator it is
+ * generated there, if not already on its way (false until it comes back); without one, now.
+ */
+export function requestLevelGround(level: SceneryLevel, seed = level.seed): boolean {
+  if (find(level, seed)) return true;
+  if (!background || failed) {
+    keep(generate(level, seed));
+    return true;
+  }
+  if (pending.some((p) => p.level === level && p.seed === seed)) return false;
+  const job = { level, seed };
+  pending.push(job);
+  background(level, seed, (made) => {
+    pending.splice(pending.indexOf(job), 1);
+    // After a failed background generation, the ground is generated here when it is needed.
+    if (made) keep(generate(level, seed, made));
+    else failed = true;
+  });
+  return false;
+}
+
+/** The ground of `level` from `seed`: kept, or generated now. */
 export function levelGround(level: SceneryLevel, seed: number): LevelGround {
-  if (lastGround?.level === level && lastGround.seed === seed) return lastGround;
-  const { field, roads } = takeRoads(level, seed);
-  const placer = new PropPlacer(field, level.props, seed, roads, level.sea?.level);
-  lastGround = { level, seed, field, placer };
-  return lastGround;
+  return find(level, seed) ?? keep(generate(level, seed));
 }

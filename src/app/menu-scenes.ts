@@ -60,16 +60,6 @@ export function prepareMenuScenes(
     },
     () => backdropScene?.whenReadyAsync(),
     () => shipScene?.whenReadyAsync(),
-    // P13-R02: each ship highlighted once (the spot light lights other meshes), so moving the
-    // highlight on the ship select screen does not compile shaders.
-    async () => {
-      if (!shipScene || !stage) return;
-      const ships = game.playerShips.ships.length;
-      for (let i = ships - 1; i >= 0; i--) {
-        stage.select(i);
-        await shipScene.whenReadyAsync();
-      }
-    },
   ];
   return {
     tasks,

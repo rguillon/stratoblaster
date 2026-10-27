@@ -8,6 +8,7 @@ import {
   openGame,
   sendAction,
   LOAD_TIMEOUT,
+  waitForLoad,
 } from './menu-helpers';
 
 const PACKAGE_VERSION = (
@@ -32,6 +33,8 @@ test('ENG-54, P12-R12: loading → title → ship select → level select → ga
   await sendAction(page, 'confirm');
   await expectState(page, { screen: 'game', chosenLevelId: '1-1' });
   await expect(page.locator('.game-level')).toHaveText('Level 1-1');
+  // P13-R03: the level loads in steps (its ground from a worker) before it plays.
+  await waitForLoad(page);
   await expect.poll(async () => (await gameState(page)).game?.levelId).toBe('1-1');
   await advance(page, 1);
   // P12-R12: `pause` pauses the level; nothing moves until `resume`.

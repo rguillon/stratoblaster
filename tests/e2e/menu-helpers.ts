@@ -219,18 +219,23 @@ export async function expectState(page: Page, expected: Partial<TestState>): Pro
 /** The level being played; fails the test when there is none. */
 /**
  * Steps through the loading of the level chosen, if one is loading (P13-R03: a level loads in
- * steps, one per frame, behind its loading screen).
+ * steps, one per frame, behind its loading screen; its ground comes from a worker, so the page
+ * must get its messages between two checks).
  */
 export async function waitForLoad(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const api = (window as TestWindow).__GAME_TEST__;
-    if (!api) throw new Error('__GAME_TEST__ is missing');
-    const loading = () => {
-      const state = api.getState();
-      return state.screen === 'game' && state.game === null && state.levelResult === null;
-    };
-    for (let i = 0; i < 600 && loading(); i++) api.step(1);
-  });
+  const loading = () =>
+    page.evaluate(() => {
+      const api = (window as TestWindow).__GAME_TEST__;
+      if (!api) throw new Error('__GAME_TEST__ is missing');
+      const still = () => {
+        const state = api.getState();
+        return state.screen === 'game' && state.game === null && state.levelResult === null;
+      };
+      for (let i = 0; i < 5 && still(); i++) api.step(1);
+      return still();
+    });
+  const deadline = Date.now() + LOAD_TIMEOUT;
+  while ((await loading()) && Date.now() < deadline) await page.waitForTimeout(20);
 }
 
 export async function level(page: Page): Promise<NonNullable<TestState['game']>> {

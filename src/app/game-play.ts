@@ -1,3 +1,4 @@
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { GameDefinition } from '../core/content/game-definition';
 import type { GameLevel } from '../core/content/game-level';
@@ -68,6 +69,14 @@ export interface GamePlayOptions {
   readonly onStep?: (run: LevelRun) => void;
 }
 
+/** Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04). */
+function compile(meshes: readonly AbstractMesh[]): void {
+  for (const mesh of meshes) {
+    const { material } = mesh;
+    if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
+  }
+}
+
 /** What happened during the steps of one frame, to draw. */
 interface FrameEvents {
   readonly blasts: EnemyBlast[];
@@ -113,6 +122,8 @@ export class GamePlay {
   /** How far the ship is banked, in radians (visual only). */
   #roll = 0;
   #completed = false;
+  /** Whether the shaders of the enemy models built ahead are compiled (see {@link prepare}). */
+  #compileShaders = false;
   /** Seconds since the last life was lost (the "Game over" overlay waits a little). */
   #overFor = 0;
 
@@ -246,6 +257,9 @@ export class GamePlay {
     const distance = this.#previous + (track.distance - this.#previous) * alpha;
     this.view.update(distance, dt);
     this.#draw(dt, events);
+    // P13-R04: one more enemy model built ahead of its first appearance, each frame.
+    const built = this.view.playfield.run(() => this.#enemies.prepareNext());
+    if (this.#compileShaders) compile(built);
     if (this.run.phase === 'over') this.#overFor += dt * this.#timeScale;
     const over = this.#overFor >= CFG.damage.gameOverDelay;
     if ((this.run.phase === 'complete' || over) && !this.#completed) {
@@ -332,18 +346,13 @@ export class GamePlay {
   }
 
   /**
-   * Gets the level ready to play smoothly (P13-R04): one model of each enemy kind built, and (with
-   * `compileShaders`) the shaders of everything in the scene compiled, before play starts.
+   * Gets the level ready to play smoothly (P13-R04): with `compileShaders`, the shaders of
+   * everything in the scene compiled before play starts, and those of each enemy model built
+   * ahead of its first appearance (one per frame, see {@link frame}).
    */
   prepare(compileShaders: boolean): void {
-    this.view.playfield.run(() => {
-      this.#enemies.prepare();
-    });
-    if (!compileShaders) return;
-    for (const mesh of this.view.scene.meshes) {
-      const { material } = mesh;
-      if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
-    }
+    this.#compileShaders = compileShaders;
+    if (compileShaders) compile(this.view.scene.meshes);
   }
 
   dispose(): void {

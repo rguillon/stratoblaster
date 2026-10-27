@@ -1261,3 +1261,19 @@
 - **Decision:** With `steppedLoading` (the browser game; unit tests keep loading at once), confirming a level only starts its loading: the game screen shows straight away, and one step runs per frame: the roads, the rest of the ground, the scene, `GamePlay.prepare` (one hidden model of each enemy kind built into the pool, every material in the scene compiled with `forceCompilation`), then a first drawing, waiting up to 60 frames for the shaders where WebGL compiles them in parallel (`KHR_parallel_shader_compile`). A loading screen (the menus' one, real progress) is drawn over the game screen, fading in after 300 ms (`loading_screen_after_ms`) so a quick load does not flash it. Menu loading gets one more task: each ship is highlighted once, so its spot light's shaders are compiled before the ship select screen. The e2e helpers step through a level's loading (`waitForLoad`, also called by `level()` and `openDebug`). e2e builds skip the shader precompilation (`precompileShaders: !__E2E__`): SwiftShader compiles serially, 2–4 s per load, and pushed tests that load several levels past their timeout; the tests check state, not frame times (ENG-52).
 - **Alternatives considered:** splitting the road and prop generation themselves over frames (resumable generators in `core/scenery`): a large change of deterministic code; left as a suggestion if the reference machine shows steps over `loading_step_max_ms`.
 - **Status:** Accepted
+
+### D-116 — Ship select: one key light per ship
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R02)
+- **Context:** The reviewer still saw a lag when highlighting the second or third ship. The single key light changed its `includedOnlyMeshes` on each move, which dirties the materials of every ship and makes Babylon rebuild their shaders the first time each one is lit.
+- **Decision:** One directional key light per ship, each always lighting only its own ship. Highlighting sets the highlighted ship's light to `spotIntensity` and the others to 0. The look is the same (only the highlighted ship is key-lit). The menu loading task that highlighted each ship once (D-115) was removed.
+- **Status:** Accepted
+
+### D-117 — Levels prepared in a worker while they are chosen
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The reviewer found the level loading still too long and asked for an instant start, with the rest loaded in the background.
+- **Decision:** A module worker (`ground-worker.ts`, bundled by Vite) generates the ground of a level (roads and placed buildings, sent back as plain data) and its scenery textures. The main thread rebuilds the road network and the prop placer from that data without generating anything (`RoadSnapshot`, `PlacerSnapshot`; the indexes are rebuilt in the order the roads and buildings were made, so every query answers the same). The level highlighted on the level select is prefetched once the highlight has rested on it for 0.25 s, and a confirmed level that isn't prefetched yet is asked for at once. Up to 3 grounds and 48 textures are kept. The loading step for the ground waits for the worker; without workers (unit tests) or after a worker error, the ground is generated on the main thread as before. Enemy models are no longer built during loading: one is built per frame during play (`EnemyLayer.prepareNext`), with its shaders compiled as it's built (not in e2e builds). The e2e helper `waitForLoad` polls across `page.evaluate` calls so the worker's messages arrive.
+- **Alternatives considered:** building the Babylon scene ahead on the level select screen (it would freeze the menus, P13-R02); starting play before the props are placed (props would pop in, P13-R05).
+- **Status:** Accepted
+

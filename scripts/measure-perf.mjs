@@ -1,6 +1,7 @@
 // P13-R01: measures the menu buttons, the level loading times and the frames of every level, on
 // the e2e build (`make e2e-build`, then `npx vite preview --mode e2e --outDir dist-e2e`).
-// Usage: node scripts/measure-perf.mjs [--seconds 120] [--levels 1-1,4-5] [--gpu] [--out file]
+// Usage: node scripts/measure-perf.mjs [--seconds 120] [--levels 1-1,4-5] [--gpu] [--warm]
+//   [--out file]
 import { chromium } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import process from 'node:process';
@@ -17,6 +18,8 @@ const levels = arg('levels', '').split(',').filter(Boolean);
 const allLevels = [1, 2, 3, 4].flatMap((w) => [1, 2, 3, 4, 5].map((l) => `${w}-${l}`));
 const out = arg('out', '');
 const gpu = args.includes('--gpu');
+const warm = args.includes('--warm');
+const warmMs = Number(arg('warm-ms', '3000'));
 
 const browser = await chromium.launch({
   args: gpu
@@ -91,8 +94,10 @@ async function goToLevel(page, id) {
 
 /** Confirms the level selected and steps until it is loaded, timing each step. */
 const confirmLevel = (page) =>
-  page.evaluate(() => {
+  page.evaluate(async () => {
     const api = window.__GAME_TEST__;
+    // One frame per task, as in the browser: the worker's messages come in between.
+    const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
     const t = performance.now();
     api.sendAction('confirm');
     const press = performance.now() - t;
@@ -106,6 +111,7 @@ const confirmLevel = (page) =>
       const s = performance.now();
       api.step(1);
       steps.push(Math.round(performance.now() - s));
+      await nextTask();
     }
     const total = performance.now() - t;
     const perf = api.getState().perf ?? {
@@ -157,6 +163,12 @@ async function measureLevel(id) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await goToLevel(page, id);
+  // --warm: the highlight rests on the level a moment, as a player's would, so its ground and
+  // textures are prepared in the background (P13-R03) before it is confirmed.
+  if (warm) {
+    await page.evaluate(() => window.__GAME_TEST__.step(30));
+    await page.waitForTimeout(warmMs);
+  }
   const confirm = await confirmLevel(page);
   const run = await playLevel(page);
   await page.close();

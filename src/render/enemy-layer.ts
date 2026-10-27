@@ -1,3 +1,4 @@
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Scene } from '@babylonjs/core/scene';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Enemy } from '../core/entities/enemy';
@@ -18,6 +19,8 @@ export class EnemyLayer {
   readonly #slots = new Map<Enemy, Slot>();
   readonly #free = new Map<string, Slot[]>();
   #created = 0;
+  /** The kinds with a model built. */
+  readonly #built = new Set<string>();
 
   constructor(
     private readonly scene: Scene,
@@ -49,16 +52,17 @@ export class EnemyLayer {
   }
 
   /**
-   * Builds one hidden model of each kind not built yet, kept for reuse, so an enemy's first
-   * appearance does not build (and compile) its model during play (P13-R04).
+   * Builds one hidden model of the next kind not built yet, kept for reuse (P13-R04), and returns
+   * its meshes (e.g. to compile their shaders), or none once every kind has one. Called once per
+   * frame, it gets every kind ready before its first appearance without freezing a frame.
    */
-  prepare(): void {
-    for (const key of Object.keys(this.models)) {
-      if (this.#free.get(key)?.length) continue;
-      const slot = this.#build(key);
-      slot.pivot.setEnabled(false);
-      this.#free.set(key, [slot]);
-    }
+  prepareNext(): readonly AbstractMesh[] {
+    const key = Object.keys(this.models).find((k) => !this.#built.has(k));
+    if (key === undefined) return [];
+    const slot = this.#build(key);
+    slot.pivot.setEnabled(false);
+    this.#free.set(key, [...(this.#free.get(key) ?? []), slot]);
+    return slot.pivot.getChildMeshes(false);
   }
 
   /** Hides every model. */
@@ -91,6 +95,7 @@ export class EnemyLayer {
     holder.rotation.x = -Math.PI / 2;
     const model = factory(this.scene);
     model.root.parent = holder;
+    this.#built.add(key);
     return { pivot, model, key };
   }
 
