@@ -28,6 +28,7 @@ import {
   buildWindcatcherHome,
 } from './desert-props';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
+import { buildFarmhouse, buildGrainSilos, buildGreenhouse } from './farm-props';
 import {
   buildContainerYard,
   buildCoolingTower,
@@ -163,6 +164,10 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W.palm]: buildPalmTree,
   [W.dryBush]: buildDryBush,
   [W.cactus]: buildCactus,
+  // Reviewer, 2026-10-26: the farms of World 1's green land.
+  [W.farmhouse]: buildFarmhouse,
+  [W.greenhouse]: buildGreenhouse,
+  [W.grainSilos]: buildGrainSilos,
   // Phase 8: World 2, the Frozen North (P08-R07).
   [W2.snowPine]: buildSnowPine,
   [W2.frostedTree]: buildFrostedTree,

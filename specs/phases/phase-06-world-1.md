@@ -6,7 +6,7 @@
 ---
 
 ## 🧑 Goal
-World 1 has five playable levels, 1-1 to 1-5, each about 4 minutes long. The first level starts over the open sea, and the levels after it bring more and more desert land and denser towns. From the level select screen, the player flies the chosen ship through a level, shoots the phase 5 enemies as they come in waves, and reaches the end of the level. Each level is harder than the one before it.
+World 1 has five playable levels, 1-1 to 1-5, each about 4 minutes long. The five levels are cut from one long journey: it starts over the open sea, crosses green grassland, then dries out into the desert, with more and more props along the way (reworked at the reviewer's request, 2026-10-26; was: the open sea, then more and more desert land and denser towns). From the level select screen, the player flies the chosen ship through a level, shoots the phase 5 enemies as they come in waves, and reaches the end of the level. Each level is harder than the one before it.
 
 ## 🧑 Requirements
 
@@ -57,34 +57,41 @@ Each World 1 level lasts **about 4 minutes**: the time from the start of the lev
 
 ### P06-R05 — Scenery progression across the world  · MUST
 
-Over the five levels, the land changes from open sea to desert, and the towns grow denser. Each level's ground is built from terrain sections (as in Level Zero), in this order:
+> Reworked at the reviewer's request (2026-10-26): the five levels are cut from one gradient, sea → green grass → desert, with more and more props along the way. It was: open sea, a dry coast, then desert, desert towns and a desert city.
+>
+> Amended at the reviewer's request (2026-10-27): 1-5 ends in the desert too. No factory and no city in World 1: they are for other worlds.
+
+The five levels are one journey cut into five pieces: the ground goes from the open sea to green grassland, then dries out into the desert, and there are more and more props (plants and buildings) along the way. Each level's ground is built from terrain sections (as in Level Zero), in this order:
 
 | Level | Name | Sea | Land | Habitations |
 |-------|------|-----|------|-------------|
-| 1-1 | Open sea | Almost all sea, with small rocky islands and reefs. The first coast comes in the last 30 s. | Bare rocky islands, then a sandy coast with dry scrub. | Almost none: a few lone huts or masts on the islands, a small fishing village on the final coast. |
-| 1-2 | Dry coast | It starts along the coast, with bays and beaches. The sea is gone after the first half. | Dry coastal hills, then sand and rock. | Coastal villages along a coast road; small groups of homes and some industrial outposts inland. |
-| 1-3 | Desert | No sea. At most a dry riverbed or an oasis pond. | Open desert: sand dunes, rocky mesas, a canyon. | Small towns and desert outposts along desert roads. |
-| 1-4 | Desert towns | No sea. At most an oasis pond. | Desert with rocky mesas between the towns. | Denser towns along the roads, then an industrial zone (mines, refinery, tanks) in the second half. |
-| 1-5 | Desert city | No sea. | Desert at the start, then a city built on it. | Suburbs, then a dense industrial zone, then a dense city centre at the end of the level. |
+| 1-1 | Open sea | Almost all sea, with small green islands and reefs. The first coast comes in the last 30 s. | Small islands with palms and bushes, then a green coast. | Almost none: a few lone huts or masts on the islands, a small fishing village on the final coast. |
+| 1-2 | Green coast | It starts along the coast, with beaches and bays. The sea is gone after the first half. | Green coastal land, then green meadows with trees and groves. | Coastal villages along a coast road, then villages and farms in the meadows. |
+| 1-3 | Green country | No sea. | Green meadows, woods and hills; in the last part, the grass turns dry and yellow. | Farms, villages and a market town with streets. |
+| 1-4 | Dry lands | No sea. At most an oasis. | Dry grassland and scrub, then sand and rock, dunes, an oasis, a canyon and mesas. | Dry-land villages, then desert towns, outposts and mines. |
+| 1-5 | Deep desert | No sea. | Sand to the end, dunes, a rocky pass. | Desert outskirts, great dunes, oasis villages, a rocky pass, desert towns, then a great oasis town on the sand at the end of the level. No factory, no city (reviewer, 2026-10-27). |
 
-How much of the ground is built on goes up from level to level. Each level begins on the same kind of ground the previous level ended on: 1-2 starts on the coast where 1-1 ended, 1-3 starts on the dry land 1-2 ended on, 1-4 starts in the open desert 1-3 ended on, and 1-5 starts on the desert edge of the industrial land 1-4 ended on.
+The number of props goes up from level to level, and within each level (the second half has more than the first). Each level begins on the same kind of ground the previous level ended on: 1-2 starts on the green coast where 1-1 ended, 1-3 on the meadows 1-2 ended on, 1-4 on the dry grassland 1-3 ended on, and 1-5 on the desert outskirts 1-4 ended on.
 
 **Acceptance criteria**
 - [ ] Given the 5 level definitions, then the share of the level that is over sea goes down from 1-1 to 1-3 (unit test), and 1-3, 1-4 and 1-5 have no sea section.
-- [ ] Given the 5 level definitions, then the number of buildings placed goes up from 1-1 to 1-5 (unit test, fixed seed).
-- [ ] Manual visual validation: the sea, then desert and denser towns can be seen across the five levels, and each level begins where the previous one ended.
+- [ ] Given the 5 level definitions, then grass covers the ground of 1-2 and 1-3 more than any other cover, and sand covers 1-4 and 1-5 more than grass (unit test).
+- [ ] Given the 5 level definitions, then the number of props placed (plants and buildings) and the number of buildings both go up from 1-1 to 1-5, and in each level the second half has more props than the first (unit test, fixed seed).
+- [ ] Given two levels in a row, then the next one starts with the same relief, ground cover and shore as the previous one ended with (unit test).
+- [ ] Manual visual validation: sea, then green grass, then desert can be seen across the five levels, with more and more props, and each level begins where the previous one ended.
 
-### P06-R06 — Desert ground and props  · MUST
+### P06-R06 — Green land, desert ground and props  · MUST
 
-New generated ground and props for the desert (GD-60, all made in code):
-- **Ground:** a sand texture that fades into the existing rock texture with slope and altitude (P04-R01), and sand dunes: ripple-shaped heights, made with the heightmap tools.
-- **Vegetation:** dry bushes, palm trees (oases, coast) and cacti-like plants, plus the existing dead trees.
-- **Habitations:** futuristic desert homes (flat-roofed, thick-walled blocks with neon trims, solar panels or wind catchers on the roof) and desert outposts (water tanks, antennas, solar farms). They are placed along roads like the other buildings (P04-R07). In 1-4 and 1-5, the industrial zones and the city use the existing industrial zone and city centre buildings.
+New generated ground and props for World 1 (GD-60, all made in code):
+- **Ground:** a sand texture that fades into the existing rock texture with slope and altitude (P04-R01), and sand dunes: ripple-shaped heights, made with the heightmap tools. Grass (the existing `lush` cover) on the green land, fading through dry earth into the sand (added at the reviewer's request, 2026-10-26).
+- **Vegetation:** dry bushes, palm trees (islands, oases, coast) and cacti-like plants, plus the existing dead trees; the existing broadleaf trees, conifers and bushes on the green land.
+- **Habitations:** futuristic desert homes (flat-roofed, thick-walled blocks with neon trims, solar panels or wind catchers on the roof) and desert outposts (water tanks, antennas, solar farms). They are placed along roads like the other buildings (P04-R07). World 1 has no industrial zone and no city centre: those are for other worlds (reviewer, 2026-10-27).
+- **Farms** (added at the reviewer's request, 2026-10-26): a futuristic farmhouse, a greenhouse and grain silos, with the existing wind turbines, for the green land of 1-2 and 1-3.
 
 The new props are as light in polygons as the existing ones (D-031) and keep the matte look of the props (D-024).
 
 **Acceptance criteria**
-- [ ] Manual visual validation: sand, dunes and desert props read clearly from the playfield camera, and the desert does not look like the Level Zero wasteland with another colour.
+- [ ] Manual visual validation: grass, sand, dunes, farms and desert props read clearly from the playfield camera, and the desert does not look like the Level Zero wasteland with another colour.
 
 ### P06-R07 — Enemy waves by distance  · MUST
 
@@ -130,6 +137,16 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - [ ] Given the URL `?level=1-3&t=120`, then level 1-3 starts at 2:00, with the waves that come before 2:00 skipped.
 - [ ] Given no debug option, then F, ← and → do not change the level's time.
 
+### P06-R10 — Time of day per level  · MUST
+
+> Added at the reviewer's request (2026-10-26).
+
+Each level has its own time of day, which sets the sun's height, direction and colour, the sky and the ambient light. 1-1 is at midday; the next levels come later and later in the day: early afternoon (1-2), late afternoon (1-3), sunset (1-4) and dusk with the town lights on (1-5) (`time_of_day`). The time does not change within a level.
+
+**Acceptance criteria**
+- [ ] Unit test: the sun is highest in 1-1 (midday) and lower in each level after it.
+- [ ] Manual visual validation: the light and the shadows change from level to level, and the ships stay easy to see at sunset and dusk.
+
 ## 🧑 Tunable values
 | Name | Value | Notes |
 |------|-------|-------|
@@ -142,6 +159,7 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 | enemy_fire_rate_factor 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 0.8 / 0.85 / 0.9 / 1.0 / 1.1 | P06-R08 |
 | start_weapon | guns, level 1 | P06-R02; weapon bonuses raise it in the level (reviewer, D-049) |
 | sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 % / 0 % / 0 % | P06-R05 |
+| time_of_day 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | midday / early afternoon / late afternoon / sunset / dusk | P06-R10 (reviewer, 2026-10-26) |
 
 ## 🧑 Out of scope for this phase
 - (Moved into this phase by the reviewer, D-050: damage to the player, health bar, lives, invincibility and game over, GD-20..GD-22.)
@@ -156,13 +174,14 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 - The wave runner (distance triggers, spawn queue) and level end logic are pure `core/` code and unit tested; the five levels (terrain sections, props, wave scripts, tunables) are data in `src/game/`.
 - An e2e test confirms each World 1 level from the menu and checks that it starts without console errors.
 - An e2e test opens `?level=1-1&t=235` (or similar) and reaches the "Level complete" overlay.
-- 60 FPS (ENG-101) with the busiest moment of 1-5 (the most enemies on screen over the city centre).
+- 60 FPS (ENG-101) with the busiest moment of 1-5 (the most enemies on screen over the great oasis town).
 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
 - [ ] `1-1` to `1-5` can be picked in the level select; the other worlds stay locked
 - [ ] Each level lasts about 4 minutes and ends with the "Level complete" overlay
-- [ ] 1-1 is mostly sea; the desert and denser towns grow across 1-2 to 1-5; each level begins where the previous one ended
+- [ ] 1-1 is mostly sea; green grass in 1-2 and 1-3, then the desert in 1-4 and 1-5, with more and more props; each level begins where the previous one ended
+- [ ] Each level has its own time of day, from midday in 1-1 to dusk in 1-5
 - [ ] Desert sand, dunes and props look good from the playfield camera
 - [ ] New enemy kinds appear level after level, and the difficulty clearly goes up
 - [ ] 60 fps in the busiest part of 1-5
@@ -181,6 +200,8 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 > After the agent reports, write corrections here, then say **"Fix phase 06"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-27) Make 1-5 end on the desert; the factory and the city are for other worlds. — Done (D-109 amended): 1-5 "Deep desert": desert outskirts, great dunes, oasis villages, a rocky pass, desert towns, a great oasis town on the sand. 1-4 ends on the desert outskirts instead of the mining outskirts, and its mesas lose their mines. No industrial, heavy-industry or city group in World 1 (unit test). Props per level 406 / 4 829 / 5 898 / 6 042 / 9 486, each second half fuller than the first.
+- [x] (reviewer, in chat, 2026-10-26) Rework World 1: start on the sea, then green grass, then desert, with more and more props along the way; the 5 levels are cut in this single gradient. Level 1 at midday, the other levels at other times of day. — Done (D-109): P06-R05 and P06-R06 amended, P06-R10 added. 1-1 open sea with green islands, a green coast at the end; 1-2 green coast, meadows, groves, farmland; 1-3 green country (woods, hills, a market town), the grass yellowing at the end; 1-4 dry lands (scrub, sand and rock, dunes, an oasis town, a canyon, mesas and mines, a desert town); 1-5 desert city. New farm props (farmhouse, greenhouse, grain silos, with World 2's wind turbines). Props per level 406 / 4 829 / 5 898 / 5 959 / 8 756, buildings 43 / 1 475 / 2 797 / 3 889 / 7 974, each second half fuller than the first. Sun at 72° (midday), 55°, 35°, 14° (sunset) and 8° (dusk, city lights on).
 - [x] (reviewer, in chat, 2026-10-25) The e2e tests fail on the pipeline (shard 1/3: level_zero/ tests timed out at 30 s). — Fixed: not a slowdown of the page (Level Zero's roads and props build as fast as on main, and on main the same tests take the same 21–28 s on 4 cores, against the 30 s default); shard 1 runs the three heaviest pages (level_zero/, enemies/, the menu flows) side by side under software WebGL, and a slower runner tips them over. The level_zero/ spec now has 90 s per test like the other heavy specs, and the "every enemy kind" test 150 s (it takes about 70 s against its 90 s). With 4 cores and 2 workers, as on CI, the three shards pass: 17, 17 and 16 tests.
 - [x] (reviewer, in chat, 2026-10-25) The unit tests fail. — Fixed (9 failures): two real bugs, (1) without crossings, removing dead ends could go round for ever (a street went on, was cut back because it would make a crossing, then the street behind it went on again…) and stopped after 500 passes with dead ends left; a street cut back is no longer built again (`street-grid.ts`), and (2) a path could start where a main road piece comes in from the side and run on top of it before crossing it; without crossings paths start only where their main road runs along the level (`road-paths.ts`) (D-052); also the gamepad's `fire` flag leaked into the `move` direction (`game-controls.ts`). The other tests were out of date with the review changes: the Level Zero props test now leaves out the World 1 models (P06-R06), the World 1 wave script test includes the fillers (D-051), the game-play completion and HUD tests use a hull that takes no damage (the sample enemies now hit the still ship, D-050), the weapon-level test switches weapon once per step instead of an even number of times, and the app overlay test waits past the 1 s input delay (ten 0.1 s ticks left 1e-16 s of it).
 - [x] (reviewer, in chat, 2026-10-24) Remove the CRT overlay (scanlines drew lines over the levels). — Done: `#stage::after` removed (D-040).
@@ -227,11 +248,12 @@ So the 4-minute levels can be checked by hand, the `game` screen takes debug opt
 | P06-R02 | Done | `src/core/systems/level-run.ts`, `player-flight.ts`, `src/app/game-play.ts`, `game-session.ts`, `level-scene.ts`, `src/input/game-controls.ts`, `src/ui/screens/game-screen.ts`, `src/app/start-app.ts` | `level-run.test.ts`, `player-flight.test.ts`, `game-controls.test.ts`, `game-play.test.ts`, `start-app.test.ts`, `menu-overlay.test.ts`, e2e `world-1.spec.ts`, `smoke.spec.ts` | Replaces the P01-R08 placeholder; guns level 1 at every start; Back (Esc) → title |
 | P06-R03 | Done | `LevelRun` phases, `MenuFlow.completeLevel`, `menu-view-builder.ts`, `game-screen.ts` | `level-run.test.ts`, `menu-flow.test.ts`, `menu-view-builder.test.ts`, `start-app.test.ts`, e2e `world-1.spec.ts` (`?level=1-1&t=237`) | Overlay ignores input for 1 s; next level highlighted (1-5 again after 1-5) |
 | P06-R04 | Done | `src/game/config/world-1/scenery-*.ts` | `world-1.test.ts` | Every level is exactly 240 s |
-| P06-R05 | Done | `scenery-coast.ts`, `scenery-desert.ts`, `looks.ts` | `world-1.test.ts` (sea share, buildings, continuity) | Sea 90 % / 18 % / 0 / 0 / 0; buildings 96 / 537 / 732 / 3204 / 9516 (seed of each level). Manual check needed |
-| P06-R06 | Done | `height-field.ts` (dunes), `terrain-geometry.ts`, `terrain-blend-plugin.visual.ts` (sand), `desert-props.ts`, `desert-plants.ts`, `world-1/props.ts` | `height-field.test.ts`, `terrain-geometry.test.ts`, `prop-models.test.ts`, `world-1.test.ts` | Manual visual check needed (D-037) |
+| P06-R05 | Done | `scenery-coast.ts`, `scenery-country.ts`, `scenery-desert.ts`, `looks.ts` | `world-1.test.ts` (sea share, ground cover, props and buildings, halves, continuity) | Reworked in review (D-109): sea → grass → desert. Props 406 / 4 829 / 5 898 / 5 959 / 8 756; buildings 43 / 1 475 / 2 797 / 3 889 / 7 974 (seed of each level). Manual check needed |
+| P06-R06 | Done | `height-field.ts` (dunes), `terrain-geometry.ts`, `terrain-blend-plugin.visual.ts` (sand), `desert-props.ts`, `desert-plants.ts`, `farm-props.ts`, `world-1/props.ts` | `height-field.test.ts`, `terrain-geometry.test.ts`, `prop-models.test.ts`, `world-1.test.ts` | Manual visual check needed (D-037) |
 | P06-R07 | Done | `src/core/systems/wave-runner.ts`, `EnemySpawnArea.entry`, `enemy-kinds.ts`, `world-1/waves.ts` | `wave-runner.test.ts`, `level-run.test.ts`, `enemy-kinds.test.ts`, `world-1.test.ts` | Kinds: 1-1 Gnat/Hornet/Scout/Strafer; +Weaver/Splitter; +Carrier/Spinner; +Lancer/Rocketeer; +Bulwark |
 | P06-R08 | Done | `world-1/difficulty.ts`, `EnemyWorld` difficulty, `ctx.fireRate` in the enemies | `enemy-world.test.ts`, `world-1.test.ts` | See D-038 for the numbers; manual "feel" check needed |
 | P06-R09 | Done | `src/app/debug-options.ts`, `GamePlay.debugKey`, `game-session.ts`, `main.ts` | `debug-options.test.ts`, `game-play.test.ts`, `start-app.test.ts`, `menu-flow.test.ts`, e2e `world-1.spec.ts` | Works in every build (D-039) |
+| P06-R10 | Done | `src/game/config/world-1/looks.ts` | `world-1.test.ts` (sun lower level after level) | Added in review (D-109): midday 72°, early afternoon 55°, late afternoon 35°, sunset 14°, dusk 8°. Manual check needed |
 
 ### Gate results
 ```
@@ -274,8 +296,8 @@ make e2e        ✔ 50 passed
 - HUD: top left the ship, its lives (`♥ 3`) and health bar (red under 30 %), top right the weapon and its level (`Bullet · Lv 1/5`), under the level label a bar of the level's progress, bottom left the enemies destroyed.
 - Debug URL options: `?level=1-3` starts 1-3 straight away with the balanced ship, `&t=120` starts at 2:00 (waves before it skipped), `&ship=heavy` (or `light`) picks the ship. With them, F toggles ×4 fast forward, ← / → jump 10 s back / on (A / D still steer), and the FPS / polygons tile shows top right. Without them, F, ← and → do nothing to the time.
 - Level end: `?level=1-1&t=235` → after the scroll ends and the last enemies leave (≤ 10 s), "Level complete!" shows `1-1` and "Enemies destroyed: N / M"; Enter / Space / tap → level select on `1-2`.
-- Scenery: `?level=1-1&t=0`, `1-1&t=210` (first coast), `1-2&t=0` (coast), `1-2&t=200` (sand and rock), `1-3&t=30` (dunes), `1-3&t=145` (canyon), `1-4&t=200` (industrial zone), `1-5&t=140` (city centre). Each level begins on the ground the previous one ended on.
-- 60 FPS check: `?level=1-5&t=225` (most enemies on screen over the city centre), FPS on the debug tile.
+- Scenery: `?level=1-1&t=0`, `1-1&t=210` (first coast), `1-2&t=0` (coast), `1-2&t=200` (sand and rock), `1-3&t=30` (dunes), `1-3&t=145` (canyon), `1-4&t=200` (desert town), `1-5&t=200` (great oasis town). Each level begins on the ground the previous one ended on.
+- 60 FPS check: `?level=1-5&t=225` (most enemies on screen over the great oasis town), FPS on the debug tile.
 
 ### Deviations from spec
 - Enemy counts and peaks are above the tunables: after the reviewer's +50 % density (D-044) and the filled lulls (D-051), 279 / 335 / 433 / 498 / 537 enemies (tunables ~60 … ~140; Carriers' Gnats included) and peaks 16 / 20 / 24 / 30 / 32 on screen (tunables 6 … 15); they still go up strictly from 1-1 to 1-5 (P06-R08).

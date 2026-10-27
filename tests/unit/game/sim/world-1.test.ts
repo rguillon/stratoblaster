@@ -82,10 +82,19 @@ function seaShare(game: GameLevel): number {
   return wet / all;
 }
 
-const PLANTS = new Set(['dead-tree', 'forked-tree', 'palm-tree', 'dry-bush', 'cactus', 'bush']);
+const PLANTS = new Set([
+  'dead-tree',
+  'forked-tree',
+  'palm-tree',
+  'dry-bush',
+  'cactus',
+  'bush',
+  'broadleaf-tree',
+  'conifer',
+]);
 
-/** Buildings placed over the whole level, with its own seed. */
-function buildings(game: GameLevel): number {
+/** Props placed over the whole level with its own seed: all, buildings, and in each half. */
+function props(game: GameLevel) {
   const { scenery } = game;
   const field = new HeightField(scenery);
   const placer = new PropPlacer(
@@ -94,8 +103,19 @@ function buildings(game: GameLevel): number {
     scenery.seed,
     levelRoads(field, scenery.roads, scenery.seed),
   );
-  const area = { xMin: -400, xMax: 400, zMin: 0, zMax: field.length };
-  return placer.place(area).filter((p) => !PLANTS.has(p.kind)).length;
+  const placed = placer.place({ xMin: -400, xMax: 400, zMin: 0, zMax: field.length });
+  const firstHalf = placed.filter((p) => p.z < field.length / 2).length;
+  return {
+    all: placed.length,
+    buildings: placed.filter((p) => !PLANTS.has(p.kind)).length,
+    firstHalf,
+    secondHalf: placed.length - firstHalf,
+  };
+}
+
+/** How much of a level each ground cover covers: its shares weighted by the sections' time. */
+function cover(game: GameLevel, kind: 'lush' | 'sandy' | 'paved'): number {
+  return game.scenery.sections.reduce((sum, s) => sum + s.seconds * (s.surface?.[kind] ?? 0), 0);
 }
 
 describe('World 1', () => {
@@ -137,52 +157,72 @@ describe('World 1', () => {
     expect(sections.slice(0, coast).every((s) => s.relief.base < 0)).toBe(true);
   });
 
-  it('P06-R05: the number of buildings goes up from 1-1 to 1-5 (fixed seed)', () => {
-    const counts = WORLD_1.map(buildings);
-    expect(increasing(counts)).toBe(true);
+  it('P06-R05: grass covers 1-2 and 1-3 the most, sand covers 1-4 and 1-5 more than grass', () => {
+    for (const id of ['1-2', '1-3']) {
+      expect(cover(level(id), 'lush'), id).toBeGreaterThan(cover(level(id), 'sandy'));
+      expect(cover(level(id), 'lush'), id).toBeGreaterThan(cover(level(id), 'paved'));
+    }
+    for (const id of ['1-4', '1-5']) {
+      expect(cover(level(id), 'sandy'), id).toBeGreaterThan(cover(level(id), 'lush'));
+    }
+  });
+
+  it('P06-R05: props and buildings go up from 1-1 to 1-5, and from each first half to the second (fixed seed)', () => {
+    const counts = WORLD_1.map(props);
+    expect(increasing(counts.map((c) => c.all))).toBe(true);
+    expect(increasing(counts.map((c) => c.buildings))).toBe(true);
+    for (const [i, c] of counts.entries()) {
+      expect(c.secondHalf, at(WORLD_1, i).id).toBeGreaterThan(c.firstHalf);
+    }
   });
 
   it('P06-R05: each level begins on the kind of ground the previous one ended on', () => {
-    const first = (id: string) => at(level(id).scenery.sections, 0);
-    const last = (id: string) => {
-      const { sections } = level(id).scenery;
-      return at(sections, sections.length - 1);
-    };
-    // 1-2 starts on the coast where 1-1 ended,
-    expect(last('1-1').shore).toBeDefined();
-    expect(first('1-2').shore).toEqual(last('1-1').shore);
-    // 1-3 on the sand and rock 1-2 ended on,
-    expect(first('1-3').relief).toEqual(last('1-2').relief);
-    expect(first('1-3').surface).toEqual(last('1-2').surface);
-    // 1-4 in the open desert (dunes) 1-3 ended on,
-    expect(last('1-3').dunes).toBeDefined();
-    expect(first('1-4').dunes).toBeDefined();
-    // and 1-5 on flat desert at the edge of the industry 1-4 ended on.
-    expect(last('1-4').groups).toEqual(['heavy-industry']);
-    expect(first('1-5').dunes).toBeUndefined();
-    expect(first('1-5').relief.amplitude).toBeLessThanOrEqual(10);
-    expect(first('1-5').surface).toMatchObject({ sandy: 1 });
-    expect(last('1-5').groups).toEqual(['city']);
+    for (const [i, next] of WORLD_1.slice(1).entries()) {
+      const { sections } = at(WORLD_1, i).scenery;
+      const [last, first] = [at(sections, sections.length - 1), at(next.scenery.sections, 0)];
+      expect(first.relief, next.id).toEqual(last.relief);
+      expect(first.surface, next.id).toEqual(last.surface);
+      expect(first.shore, next.id).toEqual(last.shore);
+    }
+    // 1-2 starts on the green coast where 1-1 ended, 1-3 on the farmland, 1-4 on the dry
+    // grassland, and 1-5 on the desert outskirts; it ends on the sand, in a desert town.
+    expect(at(level('1-2').scenery.sections, 0).shore).toBeDefined();
+    expect(at(level('1-3').scenery.sections, 0).surface).toEqual({ lush: 1 });
+    expect(at(level('1-4').scenery.sections, 0).surface).toEqual({ lush: 0.2 });
+    expect(at(level('1-5').scenery.sections, 0).groups).toContain('desert-homes');
+    const end = level('1-5').scenery.sections.at(-1);
+    expect(end?.groups).toEqual(['desert-homes']);
+    expect(end?.surface?.sandy).toBeGreaterThan(0.5);
   });
 
-  it('P06-R06: the desert levels are sand with dunes, and use the desert homes and outposts', () => {
-    for (const id of ['1-3', '1-4', '1-5']) {
-      const { sections } = level(id).scenery;
-      expect(
-        sections.some((s) => (s.surface?.sandy ?? 0) > 0),
-        id,
-      ).toBe(true);
-      expect(
-        sections.some((s) => s.groups?.includes('desert-homes')),
-        id,
-      ).toBe(true);
+  it('P06-R06: the green levels have farms and villages; the dry ones sand, dunes and desert homes', () => {
+    for (const id of ['1-2', '1-3']) {
+      const groups = level(id).scenery.sections.flatMap((s) => s.groups ?? []);
+      expect(groups, id).toEqual(expect.arrayContaining(['farms', 'villages']));
     }
-    expect(level('1-3').scenery.sections.some((s) => s.dunes)).toBe(true);
-    expect(level('1-3').scenery.sections.some((s) => s.channel)).toBe(true);
+    for (const id of ['1-4', '1-5']) {
+      const groups = level(id).scenery.sections.flatMap((s) => s.groups ?? []);
+      expect(groups, id).toContain('desert-homes');
+    }
+    expect(level('1-4').scenery.sections.some((s) => s.dunes)).toBe(true);
+    // Reviewer, 2026-10-27: no factory and no city in World 1, they are for other worlds.
+    const groups = WORLD_1.flatMap((l) => l.scenery.sections.flatMap((s) => s.groups ?? []));
+    for (const kept of ['industrial', 'heavy-industry', 'city']) expect(groups).not.toContain(kept);
+    expect(level('1-4').scenery.sections.some((s) => s.channel)).toBe(true);
     expect(WORLD_1.every((l) => l.scenery.props === WORLD_1_PROPS)).toBe(true);
     for (const game of WORLD_1) {
-      expect(SCENERY_BINDINGS.looks[game.scenery.id]?.terrain.sand, game.id).toBeDefined();
+      const look = SCENERY_BINDINGS.looks[game.scenery.id];
+      expect(look?.terrain.sand, game.id).toBeDefined();
+      expect(look?.terrain.lush, game.id).toBe(SCENERY_BINDINGS.looks['world-1-1']?.terrain.lush);
     }
+  });
+
+  it('P06-R10: the sun is highest in 1-1 (midday) and lower in each level after it', () => {
+    const elevations = WORLD_1.map(
+      (l) => SCENERY_BINDINGS.looks[l.scenery.id]?.sun.elevationDeg ?? 0,
+    );
+    expect(at(elevations, 0)).toBeGreaterThanOrEqual(65);
+    expect(increasing(elevations.map((e) => -e))).toBe(true);
   });
 
   it('P06-R07: each level only uses the kinds it introduces and those of the levels before', () => {

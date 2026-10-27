@@ -1,11 +1,13 @@
 import type { Dunes, SceneryLevel, TerrainSection } from '../../../core/scenery/scenery-level';
 import { PLANTS, WORLD_1_GROUPS as G, WORLD_1_PROPS, WORLD_1_ROADS } from './props';
 import { smooth } from './scenery-coast';
+import { DRY_GRASSLAND, TOWN_STREETS } from './scenery-country';
 
 /*
- * The desert levels of World 1 (P06-R05, R06): open desert with dunes, mesas and a canyon,
- * then desert towns and their industry, then a city built on the desert. No sea. Each level's
- * `seconds` add up to 240 (P06-R04).
+ * The dry levels of World 1 (P06-R05, R06, reworked at the reviewer's request, 2026-10-26):
+ * from the dry grassland 1-3 ended on to sand and rock, dunes, an oasis, a canyon and mesas,
+ * then deeper into the desert, its towns bigger and denser. No factory and
+ * no city: they are for other worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up to 240 (P06-R04).
  */
 
 /** Sand dunes: crests every `wavelength`, `height` high (P06-R06). */
@@ -27,11 +29,6 @@ const mesas = (top: number) =>
     maxHeight: top,
   }) as const;
 
-/** A dense maze of straight streets, as in Level Zero's districts. */
-const STREETS = { rows: [45, 90], columns: [50, 110], links: 0.6 } as const;
-/** Streets of the suburbs: wider blocks, fewer crossings. */
-const SUBURB_STREETS = { rows: [60, 110], columns: [70, 130], links: 0.55 } as const;
-
 const desert = (name: string, seconds: number, extra: Partial<TerrainSection>): TerrainSection => ({
   name,
   seconds,
@@ -44,9 +41,32 @@ const desert = (name: string, seconds: number, extra: Partial<TerrainSection>): 
   ...extra,
 });
 
-/** 1-3, Desert: sand and rock where 1-2 ended, dunes, towns, mesas, a canyon, an oasis. */
-const DESERT: readonly TerrainSection[] = [
-  desert('sand and rock', 25, {
+/** The outskirts of the desert towns, where 1-4 ends and 1-5 begins: homes and outposts. */
+const DESERT_OUTSKIRTS = desert('desert outskirts', 30, {
+  relief: smooth(30, 8, 560, 3),
+  buildingDensity: 1,
+  treeDensity: 0.45,
+  surface: { sandy: 0.85 },
+  trees: PLANTS.oasis,
+  groups: [G.desertHomes, G.outposts],
+});
+
+/**
+ * 1-4, Dry lands: dry grass and scrub, then sand and rock, dunes, an oasis town, a canyon, mesas
+ * and a desert town. The bare stretches (rock, dunes, cliffs) are short, so the
+ * props keep growing in number (P06-R05).
+ */
+const DRY_LANDS: readonly TerrainSection[] = [
+  DRY_GRASSLAND,
+  desert('scrubland villages', 40, {
+    relief: smooth(30, 14, 520),
+    buildingDensity: 1,
+    treeDensity: 0.6,
+    surface: { sandy: 0.35 },
+    trees: PLANTS.dry,
+    groups: [G.desertHomes, G.outposts],
+  }),
+  desert('sand and rock', 20, {
     relief: {
       base: 20,
       amplitude: 90,
@@ -55,15 +75,18 @@ const DESERT: readonly TerrainSection[] = [
       style: 'ridged',
       maxHeight: 120,
     },
-    buildingDensity: 0.25,
+    buildingDensity: 0.6,
   }),
-  desert('dunes', 35, { dunes: dunes(50, 260), buildingDensity: 0.15, treeDensity: 0.15 }),
-  desert('desert road towns', 40, {
-    buildingDensity: 0.7,
-    groups: [G.desertHomes, G.outposts],
+  desert('dunes', 20, { dunes: dunes(50, 260), buildingDensity: 0.45, treeDensity: 0.2 }),
+  desert('oasis town', 45, {
+    buildingDensity: 1,
+    treeDensity: 0.7,
+    surface: { sandy: 0.75, lush: 0.25 },
+    streets: TOWN_STREETS,
+    trees: PLANTS.oasis,
+    groups: [G.desertHomes],
   }),
-  desert('mesas', 35, { relief: mesas(110), buildingDensity: 0.3 }),
-  desert('canyon', 35, {
+  desert('canyon', 20, {
     relief: smooth(95, 22, 380, 5),
     channel: {
       path: { x: 0, amplitude: 140, wavelength: 1900 },
@@ -71,83 +94,62 @@ const DESERT: readonly TerrainSection[] = [
       wall: 110,
       floor: 10,
     },
-    buildingDensity: 0.15,
+    buildingDensity: 0.5,
   }),
-  desert('oasis town', 35, {
-    buildingDensity: 0.85,
-    treeDensity: 0.7,
-    surface: { sandy: 0.8, lush: 0.25 },
-    trees: PLANTS.oasis,
+  desert('mesas', 20, {
+    relief: mesas(100),
+    buildingDensity: 0.9,
+  }),
+  desert('desert town', 25, {
+    relief: smooth(30, 4, 600, 3),
+    buildingDensity: 1,
+    treeDensity: 0.45,
+    surface: { sandy: 0.8, paved: 0.15 },
+    streets: TOWN_STREETS,
+    trees: PLANTS.town,
     groups: [G.desertHomes],
   }),
-  desert('open dunes', 35, { dunes: dunes(50, 280, -50), treeDensity: 0.1 }),
+  { ...DESERT_OUTSKIRTS, seconds: 20 },
 ];
 
-/** 1-4, Desert towns: from the open desert to denser towns, then mines and an industrial zone. */
-const DESERT_TOWNS: readonly TerrainSection[] = [
-  desert('open dunes', 30, { dunes: dunes(50, 280, -50), treeDensity: 0.1, buildingDensity: 0.15 }),
-  desert('desert towns', 45, {
+/**
+ * 1-5, Deep desert (reviewer, 2026-10-27: the factories and the city are for other worlds): the
+ * desert outskirts, great dunes, oasis villages, a rocky pass, then desert towns, bigger and
+ * denser, on the sand to the end.
+ */
+const DEEP_DESERT: readonly TerrainSection[] = [
+  DESERT_OUTSKIRTS,
+  desert('great dunes', 25, { dunes: dunes(60, 300), buildingDensity: 0.45, treeDensity: 0.2 }),
+  desert('oasis villages', 40, {
+    buildingDensity: 1,
+    treeDensity: 0.7,
+    surface: { sandy: 0.7, lush: 0.3 },
+    streets: TOWN_STREETS,
+    trees: PLANTS.oasis,
+    groups: [G.desertHomes, G.outposts],
+  }),
+  desert('rocky pass', 20, {
+    relief: smooth(60, 30, 420, 5),
     buildingDensity: 0.7,
-    treeDensity: 0.4,
+    groups: [G.outposts],
+  }),
+  desert('desert towns', 55, {
+    relief: smooth(28, 6, 560, 3),
+    buildingDensity: 1,
+    treeDensity: 0.45,
+    surface: { sandy: 0.85, paved: 0.1 },
+    streets: TOWN_STREETS,
     trees: PLANTS.town,
     groups: [G.desertHomes, G.outposts],
   }),
-  desert('mesas and mines', 35, {
-    relief: mesas(100),
-    buildingDensity: 0.5,
-    groups: [G.industrial, G.outposts],
-  }),
-  desert('town', 40, {
-    buildingDensity: 0.9,
-    treeDensity: 0.4,
-    trees: PLANTS.town,
-    groups: [G.desertHomes],
-  }),
-  desert('mining outskirts', 40, {
-    relief: smooth(30, 8, 560, 3),
-    buildingDensity: 0.8,
-    surface: { sandy: 0.7, paved: 0.2 },
-    groups: [G.industrial, G.outposts],
-  }),
-  desert('industrial zone', 50, {
-    relief: smooth(32, 4, 600, 3),
-    buildingDensity: 1,
-    treeDensity: 0.05,
-    surface: { sandy: 0.35, paved: 0.6 },
-    streets: STREETS,
-    groups: [G.heavyIndustry],
-  }),
-];
-
-/** 1-5, Desert city: the desert edge of the industry, suburbs, an industrial zone, the city. */
-const DESERT_CITY: readonly TerrainSection[] = [
-  desert('desert edge', 25, { relief: smooth(30, 8, 560, 3), buildingDensity: 0.5 }),
-  desert('suburbs', 50, {
+  desert('great oasis town', 70, {
     relief: smooth(30, 4, 600, 3),
     buildingDensity: 1,
-    treeDensity: 0.3,
-    surface: { sandy: 0.6, paved: 0.3 },
-    streets: SUBURB_STREETS,
-    trees: PLANTS.town,
+    treeDensity: 0.6,
+    surface: { sandy: 0.8, lush: 0.1, paved: 0.1 },
+    streets: { rows: [45, 90], columns: [50, 110], links: 0.6 },
+    trees: PLANTS.oasis,
     groups: [G.desertHomes],
-  }),
-  desert('industrial zone', 55, {
-    relief: smooth(32, 4, 600, 3),
-    buildingDensity: 1,
-    treeDensity: 0.05,
-    surface: { sandy: 0.3, paved: 0.7 },
-    streets: STREETS,
-    groups: [G.heavyIndustry],
-  }),
-  desert('city centre', 110, {
-    relief: smooth(32, 2, 600, 2),
-    buildingDensity: 1,
-    treeDensity: 0.1,
-    surface: { paved: 1 },
-    streets: STREETS,
-    trees: [PLANTS.town[0]],
-    groups: [G.city],
-    blocks: { podiums: [], podiumHeight: [0, 0], towers: [16, 16] },
   }),
 ];
 
@@ -163,9 +165,7 @@ const level = (id: string, name: string, seed: number, sections: readonly Terrai
     props: WORLD_1_PROPS,
   }) satisfies SceneryLevel;
 
-/** 1-3 (P06-R05): open desert, starting on the sand and rock 1-2 ended on. */
-export const LEVEL_1_3: SceneryLevel = level('world-1-3', '1-3 Desert', 1301, DESERT);
-/** 1-4: desert towns, starting in the open desert 1-3 ended on. */
-export const LEVEL_1_4: SceneryLevel = level('world-1-4', '1-4 Desert towns', 1401, DESERT_TOWNS);
-/** 1-5: the desert city, starting on the desert edge of the industry 1-4 ended on. */
-export const LEVEL_1_5: SceneryLevel = level('world-1-5', '1-5 Desert city', 1501, DESERT_CITY);
+/** 1-4 (P06-R05): the dry lands, starting on the dry grassland 1-3 ended on. */
+export const LEVEL_1_4: SceneryLevel = level('world-1-4', '1-4 Dry lands', 1401, DRY_LANDS);
+/** 1-5: the deep desert, starting on the desert outskirts 1-4 ended on. */
+export const LEVEL_1_5: SceneryLevel = level('world-1-5', '1-5 Deep desert', 1501, DEEP_DESERT);

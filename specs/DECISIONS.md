@@ -1201,3 +1201,13 @@
 - **Consequences:** supersedes D-107's booms. A busy wave peaks at −5.8 dBFS at the default volume in the offline render.
 - **Status:** Accepted
 
+### D-109 — World 1 as one gradient: sea, green grass, desert
+- **Date:** 2026-10-26
+- **Phase:** 6 (review after validation, at the reviewer's request; P06-R05, R06, R10)
+- **Context:** The reviewer asked for World 1 to start on the sea, then green grass, then desert, with more and more props along the way, the five levels cut from that one gradient; 1-1 at midday and the other levels at other times of day.
+- **Decision:** one ground for the whole world (`looks.ts`): dry earth by default, covered by section with grass (`lush`), sand or pavement, so the land fades from green to sand through the `surface` shares the sections already blend; red rock and sand below only in 1-4 and 1-5. Cut: 1-1 open sea, green coast; 1-2 green coast, meadows, groves, farmland; 1-3 green country, the grass yellowing at the end (new `scenery-country.ts`); 1-4 dry lands to the desert; 1-5 desert city. Each level starts on the very section the previous one ended on (shared constants). Two new building groups (`villages`, `farms`) and three new props (farmhouse, greenhouse, grain silos; World 2's wind turbine reused by id, as World 2's props import World 1's roads). The bare desert stretches (rock, dunes, mesas: almost no prop fits on them) are kept short, and an oasis town and a desert town with streets keep 1-4 fuller than 1-3. Time of day fixed per level, the sun lower each level: 72° midday, 55°, 35°, 14° sunset, 8° dusk with the city lights brighter (darksynth sky: magenta haze, violet zenith).
+- **Alternatives considered:** a time of day moving within each level (World 2's sky scripts): not asked, and the levels can be played in any order; one look per section instead of per level (the engine has one look per level).
+- **Consequences:** level names change (1-2 Green coast, 1-3 Green country, 1-4 Dry lands). The bosses and wave scripts are unchanged; some boss names (e.g. 1-3's Dust devil, Mesa fortress) now fly over greener land than they were named for.
+- **Amended (2026-10-27, reviewer):** 1-5 ends on the desert too, as "Deep desert" (dunes, oasis villages, a rocky pass, desert towns, a great oasis town on the sand); 1-4 ends on desert outskirts, its mesas without mines. No industrial zone and no city in World 1: they are for other worlds. A great oasis town with dense streets keeps 1-5 the fullest level.
+- **Status:** Accepted
+
