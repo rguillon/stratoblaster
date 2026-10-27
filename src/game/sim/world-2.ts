@@ -2,8 +2,7 @@ import type { GameLevel } from '../../core/content/game-level';
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import { WORLD_2_BOSSES } from '../config/world-2/bosses';
 import { WORLD_2_DIFFICULTY } from '../config/world-2/difficulty';
-import { LEVEL_2_1, LEVEL_2_2 } from '../config/world-2/scenery-coast';
-import { LEVEL_2_3, LEVEL_2_4, LEVEL_2_5 } from '../config/world-2/scenery-inland';
+import { LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2_4, LEVEL_2_5 } from '../config/world-2/scenery';
 import {
   composeBeats,
   PLAN_2_1,
@@ -26,8 +25,9 @@ const level = (id: string, scenery: SceneryLevel, plan: WavePlan) =>
   assembleLevel(id, scenery, composeBeats(plan), TABLES);
 
 /**
- * World 2, the Frozen North (P08): five levels of about 5 minutes, from a cold sea with drifting
- * ice to a polar city at night, each with a mini boss and a final boss.
+ * World 2, the Industrial Desert (P08, reworked at the reviewer's request, 2026-10-27): five
+ * levels of about 5 minutes, from the deep desert to dense factories, each with a mini boss and a
+ * final boss.
  */
 export const WORLD_2: readonly GameLevel[] = [
   level('2-1', LEVEL_2_1, PLAN_2_1),

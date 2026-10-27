@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { GameLevel } from '../../../../src/core/content/game-level';
 import { levelLength } from '../../../../src/core/scenery/scenery-level';
-import { resolveSky } from '../../../../src/core/scenery/sky-look';
 import { QUIET_BEFORE_BOSS } from '../../../../src/game/config/world-1/bosses';
-import { WORLD_2_FLOATING, WORLD_2_PROP_IDS } from '../../../../src/game/config/world-2/props';
+import { TRANSITION } from '../../../../src/game/config/world-2/scenery';
+import { WORLD_2_GROUPS, WORLD_2_PROPS } from '../../../../src/game/config/world-2/props';
 import { composeBeats, PLAN_2_1 } from '../../../../src/game/config/world-2/waves';
 import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
 import { LEVELS } from '../../../../src/game/sim/levels';
@@ -11,7 +11,7 @@ import { WORLD_1 } from '../../../../src/game/sim/world-1';
 import { WORLD_2 } from '../../../../src/game/sim/world-2';
 import { SCENERY_BINDINGS } from '../../../../src/game/view/scenery-bindings';
 import { at } from '../../../helpers/at';
-import { buildingCount, levelMetrics, seaShare } from '../../../helpers/level-metrics';
+import { levelMetrics, propCounts } from '../../../helpers/level-metrics';
 
 const level = (id: string): GameLevel => {
   const found = [...WORLD_1, ...WORLD_2].find((l) => l.id === id);
@@ -25,13 +25,12 @@ const increasing = (values: readonly number[]) =>
 const METRICS = WORLD_2.map(levelMetrics);
 const lookOf = (id: string) => SCENERY_BINDINGS.looks[level(id).scenery.id];
 
-/** Plants and the lone huts and masts scattered like plants: not buildings. */
-const PLANTS = new Set([
-  WORLD_2_PROP_IDS.snowPine,
-  WORLD_2_PROP_IDS.frostedTree,
-  WORLD_2_PROP_IDS.snowyBush,
-  ...WORLD_2_FLOATING.kinds.map((k) => k.id),
-]);
+/** Plants: not buildings. */
+const PLANTS = new Set(WORLD_2_PROPS.trees.map((t) => t.id));
+
+/** How much of a level a ground cover covers: its shares weighted by the sections' time. */
+const cover = (game: GameLevel, kind: 'lush' | 'sandy' | 'paved') =>
+  game.scenery.sections.reduce((sum, s) => sum + s.seconds * (s.surface?.[kind] ?? 0), 0);
 
 describe('World 2', () => {
   it('P08-R01: five playable levels, 2-1 to 2-5, all unlocked', () => {
@@ -52,41 +51,57 @@ describe('World 2', () => {
     expect(WORLD_2.map((l) => l.scenery.scrollSpeed)).toEqual([70, 65, 60, 55, 60]);
   });
 
-  it('P08-R03: the share over the sea goes down from 2-1 to 2-2; 2-3 to 2-5 have no sea', () => {
-    const [first, second] = WORLD_2.map(seaShare);
-    expect(first).toBeGreaterThanOrEqual(0.8);
-    expect(second).toBeLessThanOrEqual(0.5);
-    expect(second).toBeLessThan(first ?? 0);
-    for (const id of ['2-3', '2-4', '2-5']) {
-      const { scenery } = level(id);
-      expect(scenery.sea, id).toBeUndefined();
+  it('P08-R03: no World 2 level has a sea or a shore (reworked, 2026-10-27)', () => {
+    for (const game of WORLD_2) {
+      expect(game.scenery.sea, game.id).toBeUndefined();
       expect(
-        scenery.sections.some((s) => s.shore),
-        id,
+        game.scenery.sections.some((s) => s.shore),
+        game.id,
       ).toBe(false);
     }
   });
 
-  it('P08-R03: the number of buildings goes up from 2-1 to 2-5 (fixed seed)', () => {
-    expect(increasing(WORLD_2.map((l) => buildingCount(l, PLANTS)))).toBe(true);
+  it('P08-R03: the sand gives way to pavement from 2-1 to 2-5', () => {
+    for (const id of ['2-1', '2-2'])
+      expect(cover(level(id), 'sandy'), id).toBeGreaterThan(cover(level(id), 'paved'));
+    for (const id of ['2-4', '2-5'])
+      expect(cover(level(id), 'paved'), id).toBeGreaterThan(cover(level(id), 'sandy'));
+    expect(increasing(WORLD_2.map((l) => -cover(l, 'sandy')))).toBe(true);
+    expect(increasing(WORLD_2.map((l) => cover(l, 'paved')))).toBe(true);
   });
 
-  it('P08-R03: each level begins on the kind of ground the previous one ended on', () => {
-    const first = (id: string) => at(level(id).scenery.sections, 0);
-    const last = (id: string) => level(id).scenery.sections.at(-1);
-    // 2-1's coast and 2-2's start, the snowy hills of 2-2 and the tundra's edge, the lakes, the
-    // mine fields.
-    expect(first('2-2').shore).toEqual(last('2-1')?.shore);
-    expect(first('2-3').relief).toEqual(last('2-2')?.relief);
-    expect(first('2-4').lakes).toEqual(last('2-3')?.lakes);
-    expect(first('2-5').relief).toEqual(last('2-4')?.relief);
-    expect(last('2-5')?.groups).toEqual(['polar-city']);
-    // Fjords, frozen lakes, a glacier with crevasses, ice floating on the sea of 2-1.
-    expect(level('2-2').scenery.sections.some((s) => s.channel && s.channel.floor < 0)).toBe(true);
-    expect(level('2-3').scenery.sections.some((s) => s.lakes)).toBe(true);
-    expect(level('2-3').scenery.props.lines?.length).toBe(1);
-    expect(level('2-4').scenery.sections.some((s) => s.crevasses)).toBe(true);
-    expect(level('2-1').scenery.sections.some((s) => (s.floatDensity ?? 0) > 0)).toBe(true);
+  it('P08-R03: the industry comes in slowly: none in 2-1, heavy industry only at the end of 2-5', () => {
+    const groups = (id: string) => new Set(level(id).scenery.sections.flatMap((s) => s.groups));
+    for (const g of [WORLD_2_GROUPS.industrial, WORLD_2_GROUPS.heavyIndustry])
+      expect(groups('2-1').has(g), g).toBe(false);
+    expect(groups('2-1').has(WORLD_2_GROUPS.mines)).toBe(true);
+    expect(groups('2-3').has(WORLD_2_GROUPS.oil)).toBe(true);
+    expect(level('2-5').scenery.sections.at(-1)?.groups).toEqual([WORLD_2_GROUPS.heavyIndustry]);
+  });
+
+  it('P08-R03: props and buildings go up from 2-1 to 2-5, and from each first half to the second (fixed seed)', () => {
+    const counts = WORLD_2.map((l) => propCounts(l, PLANTS));
+    expect(increasing(counts.map((c) => c.all))).toBe(true);
+    expect(increasing(counts.map((c) => c.buildings))).toBe(true);
+    for (const [i, c] of counts.entries())
+      expect(c.secondHalf, at(WORLD_2, i).id).toBeGreaterThan(c.firstHalf);
+  });
+
+  it('P08-R03: each level begins on the ground the previous one ended on; slow transitions', () => {
+    for (const [i, next] of WORLD_2.slice(1).entries()) {
+      const { sections } = at(WORLD_2, i).scenery;
+      const [last, first] = [at(sections, sections.length - 1), at(next.scenery.sections, 0)];
+      expect(first.relief, next.id).toEqual(last.relief);
+      expect(first.surface, next.id).toEqual(last.surface);
+      expect(first.groups, next.id).toEqual(last.groups);
+    }
+    for (const game of WORLD_2) {
+      expect(game.scenery.transition, game.id).toBe(TRANSITION);
+      expect(game.scenery.transition, game.id).toBeGreaterThan(at(WORLD_1, 0).scenery.transition);
+      // Each section is longer than the blend, so the blends never overlap.
+      for (const s of game.scenery.sections)
+        expect(s.seconds * game.scenery.scrollSpeed, s.name).toBeGreaterThan(TRANSITION);
+    }
   });
 
   /** The sky script of level `id`; fails when it has none. */
@@ -95,49 +110,16 @@ describe('World 2', () => {
     if (!found) throw new Error(`no sky script for ${id}`);
     return found;
   };
-  const snow = (strength: number) => ({ kind: 'snow', strength });
-  const changes = (id: string) => script(id).changes ?? [];
 
-  it('P08-R04, P08-R06: 2-1 at dawn; 2-2 a clear morning, light snow over its second half', () => {
-    expect(script('2-1').start).toEqual({ timeOfDay: 'dawn', clouds: [0.25, 0.15] });
-    expect(changes('2-1')).toEqual([]);
-    expect(script('2-2').start).toEqual({ timeOfDay: 'morning', clouds: [0.2, 0.3] });
-    expect(changes('2-2').map((c) => [c.from, c.look.weather])).toEqual([[150, snow(0.2)]]);
-  });
-
-  it('P08-R04, P08-R06: 2-3 overcast with snow; 2-4 a blizzard over its second half', () => {
-    expect(script('2-3').start).toMatchObject({
-      timeOfDay: 'midday',
-      clouds: [0.8, 0.6],
-      weather: snow(0.4),
-    });
-    expect(script('2-4').start).toMatchObject({
-      timeOfDay: 'afternoon',
-      clouds: [0.9, 0.8],
-      weather: snow(0.5),
-    });
-    // A blizzard over the second half (from 150 s), clearing for the final boss (at 300 s).
-    expect(changes('2-4').map((c) => [c.to, c.look.weather])).toEqual([
-      [150, snow(1)],
-      [292, snow(0.3)],
+  it('P08-R04, P08-R06: a time of day per level, fixed within it: three days, dusk, night', () => {
+    expect(WORLD_2.map((l) => script(l.id).start)).toEqual([
+      { timeOfDay: 'morning', clouds: [0.15, 0.1] },
+      { timeOfDay: 'midday', clouds: [0.2, 0.15] },
+      { timeOfDay: 'afternoon', clouds: [0.25, 0.2], storm: 0.15 },
+      { timeOfDay: 'dusk', clouds: [0.35, 0.25], storm: 0.3 },
+      { timeOfDay: 'night', clouds: [0.4, 0.3], storm: 0.35 },
     ]);
-  });
-
-  it('P08-R04, P08-R06: 2-5 dusk to night over its first third, with an aurora', () => {
-    expect(script('2-5').start).toMatchObject({ timeOfDay: 'dusk', clouds: [0.3, 0.2] });
-    expect(changes('2-5').map((c) => [c.from, c.to, c.look])).toEqual([
-      [0, 100, { timeOfDay: 'night', clouds: [0.1, 0.05], aurora: 1 }],
-    ]);
-  });
-
-  it('P08-R04: the clouds follow the time of day: pink-orange dawn, dark grey storm, blue-grey night', () => {
-    const base = { fog: { start: 1000, end: 2600 }, cloudOpacity: [0.75, 0.5] };
-    const sky = (id: string) =>
-      resolveSky(lookOf(id)?.atmosphere?.start ?? { timeOfDay: 'midday', clouds: [0, 0] }, base);
-    const [r, , b] = sky('2-1').clouds[0]?.color ?? [0, 0, 0];
-    expect(r).toBeGreaterThan(b);
-    expect(Math.max(...(sky('2-4').clouds[0]?.color ?? [1]))).toBeLessThan(0.5);
-    expect(sky('2-4').fog.end).toBeLessThan(sky('2-3').fog.end);
+    for (const game of WORLD_2) expect(script(game.id).changes ?? [], game.id).toEqual([]);
   });
 
   it('P08-R08: each wave script uses only its level’s kinds; 2-3 to 2-5 use all eleven first kinds, none of the new ones (P05-R24)', () => {
