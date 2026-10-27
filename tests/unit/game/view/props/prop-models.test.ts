@@ -208,7 +208,8 @@ describe('World 2 prop models', () => {
   });
 
   it('P08-R07: each building fits in its footprint at its largest scale', () => {
-    for (const kind of placedKinds(WORLD_2_PROPS)) {
+    // Buildings only: the plants are World 1's, whose footprints space their trunks (P06-R06).
+    for (const kind of WORLD_2_PROPS.groups.flatMap((g) => g.kinds)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
