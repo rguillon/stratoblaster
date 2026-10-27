@@ -63,6 +63,21 @@ export class RoadField {
   }
 }
 
+/** The paths and the other roads of a list of roads, split once per list (P13-R04). */
+const splits = new WeakMap<readonly Road[], { paths: readonly Road[]; roads: readonly Road[] }>();
+
+function splitRoads(roads: readonly Road[]): { paths: readonly Road[]; roads: readonly Road[] } {
+  let split = splits.get(roads);
+  if (!split) {
+    split = {
+      paths: roads.filter((r) => r.kind === 'cross'),
+      roads: roads.filter((r) => r.kind !== 'cross'),
+    };
+    splits.set(roads, split);
+  }
+  return split;
+}
+
 /** Draw order of the see-through road ribbons: before the sea (0) and the clouds. */
 const DRAW_ORDER = { paths: -2, roads: -1 } as const;
 
@@ -92,14 +107,9 @@ export class RoadLayers {
     span: { readonly zMin: number; readonly zMax: number },
     look: RoadLook,
   ): void {
+    const split = splitRoads(roads);
     const ribbons = (paths: boolean): ColoredGeometry =>
-      buildRoadGeometry(
-        roads.filter((r) => (r.kind === 'cross') === paths),
-        ground,
-        span.zMin,
-        span.zMax,
-        look,
-      );
+      buildRoadGeometry(paths ? split.paths : split.roads, ground, span.zMin, span.zMax, look);
     this.#paths.setChunk(index, ribbons(true));
     // Main roads and streets.
     this.#roads.setChunk(index, ribbons(false));

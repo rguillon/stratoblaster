@@ -30,7 +30,7 @@ function environmentOptions(): Parameters<typeof applyShowcaseEnvironment>[1] {
 
 /**
  * Splits the creation of the menu scenes into loading steps (P01-R02): build the backdrop,
- * build the ships, then compile each scene's shaders. `result()` is available once every
+ * build the ships, then compile each scene's shaders and draw each ship highlighted once. `result()` is available once every
  * task has run. `environment` (image-based lighting, glow) needs a real WebGL engine.
  */
 export function prepareMenuScenes(
@@ -60,6 +60,16 @@ export function prepareMenuScenes(
     },
     () => backdropScene?.whenReadyAsync(),
     () => shipScene?.whenReadyAsync(),
+    // P13-R02: each ship drawn once highlighted, hidden by the loading screen, so the GPU driver
+    // has every highlight state ready before the first press on the ship select screen.
+    () => {
+      if (!environment || !shipScene || !stage) return;
+      const ships = stage.showcase.pivots.length;
+      for (let i = ships - 1; i >= 0; i--) {
+        stage.select(i);
+        shipScene.render();
+      }
+    },
   ];
   return {
     tasks,

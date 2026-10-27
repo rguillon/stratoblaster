@@ -1,0 +1,24 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-11-score-lives-bombs.md",
+  "type": "SPEC",
+  "confidence": "low",
+  "manifest_override": true,
+  "title": "Phase 11 — Score, Lives and Bombs",
+  "summary": "Phase 11 requirements: enemy points, score and high score in the HUD and cookie, checkpoint score, bombs and their controls, extra life and bomb bonuses, and the test API.",
+  "scope": [
+    "score",
+    "high score",
+    "HUD",
+    "bombs",
+    "bomb controls",
+    "life bonus",
+    "bomb bonus",
+    "checkpoint",
+    "boss parts",
+    "test API"
+  ],
+  "cross_refs": ["01-engineering.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path under specs/ gives a strong SPEC signal. Content is PRD-like: P11-R01..R08 with acceptance criteria, goal and out-of-scope sections, user-facing behaviour. Status is Ready, not an ADR, so locked is false."
+}

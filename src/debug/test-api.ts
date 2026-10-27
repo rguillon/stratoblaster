@@ -2,6 +2,7 @@ import type { MenuScreen } from '../core/menu/menu-screen';
 import type { LevelResult } from '../core/systems/level-run';
 
 import { isMenuAction, type MenuAction } from '../input/menu-action';
+import type { PerfNumbers } from '../ui/perf-overlay';
 
 /** The level being played (P06), as the game screen reports it. */
 export interface GameTestLevelState {
@@ -104,6 +105,8 @@ export interface GameTestState {
   readonly sounds: readonly string[];
   /** The audio context's state: `none` before the first user gesture (P12-R05). */
   readonly audio: string;
+  /** Long frames, longest frame and last level loading time, in ms (P13-R01). */
+  readonly perf: PerfNumbers;
 }
 
 /** The e2e test API (ENG-52), installed as `window.__GAME_TEST__` in e2e builds only. */
@@ -136,7 +139,7 @@ export interface GameTestAudio {
 export interface GameTestHooks {
   readonly state: () => Omit<
     GameTestState,
-    'loadingProgress' | 'game' | 'highScore' | 'music' | 'sounds' | 'audio'
+    'loadingProgress' | 'game' | 'highScore' | 'music' | 'sounds' | 'audio' | 'perf'
   >;
   readonly audio: () => GameTestAudio;
   readonly highScore: () => number;
@@ -147,6 +150,8 @@ export interface GameTestHooks {
   readonly step: (frames: number, render: boolean) => void;
   /** Frames per second of {@link GameTestApi.step}. */
   readonly stepHz: number;
+  /** What the perf monitor measured (P13-R01). */
+  readonly perf: () => PerfNumbers;
 }
 
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
@@ -162,6 +167,7 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
         highScore: hooks.highScore(),
         loadingProgress: [...hooks.loadingProgress()],
         game: hooks.game() ?? null,
+        perf: hooks.perf(),
       };
     },
     sendAction: (action) => {

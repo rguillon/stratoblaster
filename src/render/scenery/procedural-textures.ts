@@ -1,10 +1,93 @@
 import { createNoise2D, hash2D } from '../../core/math/noise';
-import type { TextureLook } from './scenery-look';
+import type { SceneryLook, TextureLook } from './scenery-look';
 
 type Rgb = readonly [number, number, number];
 
 /** Largest lattice period the noise supports (its permutation table size). */
 const MAX_PERIOD = 256;
+
+/** How many generated textures are kept for reuse (P13-R03). */
+const KEPT_TEXTURES = 48;
+const kept = new Map<string, Uint8Array>();
+
+/** A texture to generate: the builder and its arguments (P13-R03: made in a worker). */
+export type TextureJob =
+  | { readonly name: 'ground'; readonly args: Parameters<typeof groundPixels> }
+  | { readonly name: 'noise'; readonly args: Parameters<typeof noisePixels> }
+  | { readonly name: 'water'; readonly args: Parameters<typeof waterPixels> };
+
+const keyOf = (job: TextureJob): string => `${job.name}:${JSON.stringify(job.args)}`;
+
+/** The pixels of `job`, generated now (not kept): what a worker runs. */
+export function texturePixels(job: TextureJob): Uint8Array {
+  switch (job.name) {
+    case 'ground':
+      return groundPixels(...job.args);
+    case 'noise':
+      return noisePixels(...job.args);
+    case 'water':
+      return waterPixels(...job.args);
+  }
+}
+
+/** Whether the pixels of `job` are kept already. */
+export function hasTexture(job: TextureJob): boolean {
+  return kept.has(keyOf(job));
+}
+
+/** Keeps `pixels` as those of `job` (made in a worker), for the next build of that texture. */
+export function keepTexture(job: TextureJob, pixels: Uint8Array): void {
+  keptPixels(job.name, job.args, () => pixels);
+}
+
+/** Noise cycles across the terrain blending and cloud noise textures (the scenery kit's). */
+export const NOISE_FREQUENCY = 8;
+
+/**
+ * Every texture the scenery kit generates for a level with `look` and `seed`
+ * (`createSceneryKit`): its ground layers, its noise, its clouds and (without lava) its waves.
+ */
+export function sceneryTextureJobs(look: SceneryLook, seed: number): TextureJob[] {
+  const t = look.terrain;
+  const layers = [
+    [t.low, 1],
+    [t.ground, 2],
+    [t.steep, 3],
+    [t.high, 4],
+    [t.lush, 8],
+    [t.paved, 9],
+    [t.sand, 10],
+  ] as const;
+  const jobs: TextureJob[] = [
+    ...layers.map(([layer, n]): TextureJob => ({
+      name: 'ground',
+      args: [t.textureSize, layer, seed + n],
+    })),
+    { name: 'noise', args: [t.textureSize, NOISE_FREQUENCY, seed + 5] },
+    { name: 'noise', args: [t.textureSize, NOISE_FREQUENCY / 2, seed + 7] },
+  ];
+  const { sea } = look;
+  if (!sea.lava) jobs.push({ name: 'water', args: [sea.normalMap.size, sea.normalMap, seed + 6] });
+  return jobs;
+}
+
+/**
+ * The pixels `build` makes for `args`, made once and kept (the most recent {@link KEPT_TEXTURES}),
+ * so starting a level again, or another level with the same look, does not generate them again
+ * (P13-R03). The textures are pure functions of their arguments; callers must not change them.
+ */
+function keptPixels(name: string, args: readonly unknown[], build: () => Uint8Array): Uint8Array {
+  const key = `${name}:${JSON.stringify(args)}`;
+  let pixels = kept.get(key);
+  if (pixels) {
+    kept.delete(key);
+  } else {
+    pixels = build();
+    if (kept.size >= KEPT_TEXTURES) kept.delete(kept.keys().next().value ?? '');
+  }
+  kept.set(key, pixels);
+  return pixels;
+}
 
 /**
  * Fractal noise on a `size × size` grid that tiles seamlessly: octave `k` has `frequency × 2^k`
@@ -97,6 +180,10 @@ const GROUND_CONTRAST = 1.2;
 
 /** RGBA8 pixels of a tiling ground texture (P04-R01). */
 export function buildGroundTexture(size: number, look: TextureLook, seed: number): Uint8Array {
+  return keptPixels('ground', [size, look, seed], () => groundPixels(size, look, seed));
+}
+
+function groundPixels(size: number, look: TextureLook, seed: number): Uint8Array {
   const noise = tileableFbm(size, look.frequency, look.octaves, seed).map((v) =>
     Math.min(1, Math.max(0, 0.5 + v * GROUND_CONTRAST)),
   );
@@ -127,6 +214,10 @@ export function buildGroundTexture(size: number, look: TextureLook, seed: number
  * (a quarter of it), both evenly spread over [0, 1].
  */
 export function buildNoiseTexture(size: number, frequency: number, seed: number): Uint8Array {
+  return keptPixels('noise', [size, frequency, seed], () => noisePixels(size, frequency, seed));
+}
+
+function noisePixels(size: number, frequency: number, seed: number): Uint8Array {
   const fine = equalize(tileableFbm(size, frequency, 4, seed));
   const coarse = equalize(tileableFbm(size, Math.max(1, frequency / 4), 3, seed + 10));
   const pixels = new Uint8Array(size * size * 4);
@@ -141,6 +232,14 @@ export function buildNoiseTexture(size: number, frequency: number, seed: number)
  * map, `strength` times steeper, encoded as tangent-space normals.
  */
 export function buildWaterNormalMap(
+  size: number,
+  options: { readonly frequency: number; readonly octaves: number; readonly strength: number },
+  seed: number,
+): Uint8Array {
+  return keptPixels('water', [size, options, seed], () => waterPixels(size, options, seed));
+}
+
+function waterPixels(
   size: number,
   options: { readonly frequency: number; readonly octaves: number; readonly strength: number },
   seed: number,

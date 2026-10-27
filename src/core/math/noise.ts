@@ -29,11 +29,14 @@ export function createNoise2D(seed: number, period = TABLE_SIZE): Noise2D {
     [perm[i], perm[j]] = [perm[j] ?? 0, perm[i] ?? 0];
   }
   const angles = Array.from({ length: TABLE_SIZE }, () => random() * Math.PI * 2);
+  // P13-R03: each angle's cosine and sine worked out once (the same values, every call).
+  const table = Int32Array.from(perm);
+  const cos = Float64Array.from(angles, Math.cos);
+  const sin = Float64Array.from(angles, Math.sin);
   const p = Math.max(1, Math.floor(period));
   const gradient = (ix: number, iy: number, dx: number, dy: number): number => {
-    const h = perm[(wrap(ix, p) + (perm[wrap(iy, p) % TABLE_SIZE] ?? 0)) % TABLE_SIZE] ?? 0;
-    const a = angles[h] ?? 0;
-    return Math.cos(a) * dx + Math.sin(a) * dy;
+    const h = table[(wrap(ix, p) + (table[wrap(iy, p) % TABLE_SIZE] ?? 0)) % TABLE_SIZE] ?? 0;
+    return (cos[h] ?? 1) * dx + (sin[h] ?? 0) * dy;
   };
   return (x, y) => {
     const ix = Math.floor(x);

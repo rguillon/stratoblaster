@@ -3,6 +3,8 @@ import type { LevelRun } from '../core/systems/level-run';
 import type { BossBarFrame } from '../ui/boss-bar';
 import { GameHud, type HudFrame } from '../ui/game-hud';
 import type { MenuDocument } from '../ui/screens/elements';
+import { StatsTile } from '../ui/stats-tile';
+import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 
 /** The boss health bar of `run`'s fight (P07-R02), if a boss is being fought. */
 export function bossBarFrame(run: LevelRun, texts: MenuTexts): BossBarFrame | undefined {
@@ -63,4 +65,26 @@ export function createHud(
     },
     onBomb,
   });
+}
+
+/** Where a level's HUD and debug tile go, and what they show. */
+export interface LevelOverlaysOptions {
+  readonly doc: MenuDocument;
+  readonly debug: boolean;
+  readonly statsParent?: HTMLElement;
+  readonly hudParent?: HTMLElement;
+}
+
+/** The level's HUD (with a parent) and debug tile (in debug mode, with a parent). */
+export function createLevelOverlays(
+  options: LevelOverlaysOptions,
+  ship: string,
+  texts: MenuTexts,
+  onBomb: () => void,
+): { hud: GameHud | undefined; stats: StatsTile | undefined } {
+  const { doc, debug, statsParent, hudParent } = options;
+  return {
+    stats: debug && statsParent ? new StatsTile(doc, statsParent, CFG.stats.refresh) : undefined,
+    hud: hudParent && createHud(doc, hudParent, ship, texts, onBomb),
+  };
 }

@@ -21,7 +21,7 @@ describe('menu scenes', () => {
 
   it('P01-R02: are built in several loading steps', () => {
     const prepared = prepareMenuScenes(new NullEngine(), SAMPLE_GAME, false);
-    expect(prepared.tasks).toHaveLength(4);
+    expect(prepared.tasks).toHaveLength(5);
   });
 
   it('P01-R06: put every player ship on the ship select stage, drawn over the backdrop', async () => {

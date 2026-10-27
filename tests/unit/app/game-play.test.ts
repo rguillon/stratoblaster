@@ -24,6 +24,7 @@ function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a', definiti
     onComplete: (result) => results.push(result),
     ...overrides,
   });
+  game.attach();
   play = game;
   return { game, controls, results };
 }

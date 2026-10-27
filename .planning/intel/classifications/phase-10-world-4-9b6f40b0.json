@@ -1,0 +1,28 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-10-world-4.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase 10 — World 4",
+  "summary": "Requirements, tunable values and acceptance criteria for World 4 (the Metropolis): five levels, look, lava, weather, waves, ten bosses, and difficulty.",
+  "scope": [
+    "World 4 Metropolis",
+    "levels 4-1 to 4-5",
+    "scenery progression",
+    "level look and time of day",
+    "lava",
+    "falling ash and embers weather",
+    "shot contrast",
+    "volcanic ground and props",
+    "skyscraper props",
+    "enemy waves",
+    "difficulty",
+    "ten bosses",
+    "debug options",
+    "bosses/ page"
+  ],
+  "cross_refs": ["01-engineering.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path matches **/specs/** (SPEC signal). MUST requirements, acceptance criteria and tunables; PRD-like goals too, so medium confidence. Not an ADR, not locked."
+}
