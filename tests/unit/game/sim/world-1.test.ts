@@ -201,11 +201,8 @@ describe('World 1', () => {
       expect(groups, id).toEqual(expect.arrayContaining(['farms', 'villages']));
     }
     for (const id of ['1-4', '1-5']) {
-      const { sections } = level(id).scenery;
-      expect(
-        sections.some((s) => s.groups?.includes('desert-homes')),
-        id,
-      ).toBe(true);
+      const groups = level(id).scenery.sections.flatMap((s) => s.groups ?? []);
+      expect(groups, id).toContain('desert-homes');
     }
     expect(level('1-4').scenery.sections.some((s) => s.dunes)).toBe(true);
     // Reviewer, 2026-10-27: no factory and no city in World 1, they are for other worlds.
