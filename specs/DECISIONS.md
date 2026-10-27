@@ -1277,3 +1277,17 @@
 - **Alternatives considered:** building the Babylon scene ahead on the level select screen (it would freeze the menus, P13-R02); starting play before the props are placed (props would pop in, P13-R05).
 - **Status:** Accepted
 
+### D-118 — Ship select: each ship drawn highlighted while the menus load
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R02)
+- **Context:** The reviewer still sees the whole screen freeze on the first highlight of the second or third ship, on a local phase-13 build. In this build the press runs no long task and creates no shader, texture or buffer, so the stall is taken to be driver-side: the GPU finishing a shader the first time a ship is drawn in its highlighted state.
+- **Decision:** One more menu loading step selects each ship, from the last to the first, and renders the ship scene once, behind the loading screen. Only with the real environment (WebGL), not in unit tests.
+- **Status:** Accepted
+
+### D-119 — The highlighted level is built ahead on the level select
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The reviewer asked again for an instant level start (focus on 4-1), and accepted that the level select screen may stutter while a level is built.
+- **Decision:** Once the highlight has rested 0.6 s on a level, `GameSession` runs that level's loading steps, one per frame (ground, scene, shader compilation, a first drawing hidden behind the menus), all but the last. `GamePlay.attach()` shows the HUD at the start instead of in the constructor. Confirming that level with the same ship (and not from a checkpoint) starts it in that frame, with no loading screen. A partly built level carries on behind the loading screen. Another level or ship drops it, and so does leaving the level select. Off in e2e builds (`prebuildLevels: !__E2E__`, ENG-52). This replaces the "alternatives considered" verdict of D-117 at the reviewer's request.
+- **Status:** Accepted
+

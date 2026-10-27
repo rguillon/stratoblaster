@@ -63,6 +63,8 @@ export interface AppOptions extends PageOptions {
    * starts at once when confirmed. Off when omitted (no worker in unit tests).
    */
   readonly backgroundLoading?: boolean;
+  /** Builds the level highlighted on the level select screen ahead (P13-R03). */
+  readonly prebuildLevels?: boolean;
 }
 
 /** Handle on a running app, used by main.ts, the test API and tests. */

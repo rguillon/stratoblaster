@@ -122,6 +122,8 @@ The optimisations do not change the game: the same scenery, models, effects, mus
 
 - [x] (2026-10-27, reviewer in chat) "there is still a lag when we select the second or third ship". Fixed: each ship has its own key light, so highlighting another ship only switches lights on and off and no shader is recompiled (D-116). First press 186 → 6 ms.
 - [x] (2026-10-27, reviewer in chat) "the level loading is too long, is it not possible to start instantly and do the rest of the loading in background?" Fixed: the level highlighted on the level select is prepared in a worker while the player chooses (ground and textures). Enemy models are built during play, one per frame, instead of during loading (D-117). Load after the highlight rests on a level: 3.7–4 s → 0.44–0.51 s.
+- [x] (2026-10-27, reviewer in chat, second time) "there is still a lag when we select the second or third ship" (a whole-screen freeze, on a local phase-13 build). Fixed as far as the agent can see: no work was found on the press in this build (no long task, and no shader, texture or buffer created on ← / →, checked on the dev and production builds), so the stall is taken to be the GPU driver finishing a shader the first time a ship is drawn highlighted. While the menus load, each ship is now drawn once highlighted, hidden by the loading screen (D-118). Needs the reviewer's check on the real GPU.
+- [x] (2026-10-27, reviewer in chat, second time) "the level loading is too long, is it not possible to start instantly and do the rest of the loading in background? focus only on level 4-1." Fixed: the level the level select highlight rests on (0.6 s) is now fully built in the background, one step per frame: scene, shaders compiled, drawn once off screen. Confirm then starts it in the same frame, with no loading screen (D-119). 4-1 in the dev build: Confirm → playing in 1 ms (was about 0.5 s plus shader compilation). The cost moves to the level select screen: one step of about 0.7 s (dev build, CPU) about 0.6 s after the highlight stops, which the reviewer accepted.
 
 ---
 
@@ -209,9 +211,16 @@ Re-measured with the ship-select warm-up (e2e build): ship select → 222 ms, le
 - **Background loading:** `BackgroundLoader` (`src/render/scenery/background-loader.ts`) runs a worker (`ground-worker.ts`) that generates a level's ground (`groundSnapshot`: roads and placed buildings as plain data) and its scenery textures (`sceneryTextureJobs`). The main thread rebuilds the road network and placer from that data (`RoadNetwork`/`PropPlacer` take a snapshot: same roads, same buildings, same indexes, checked by a unit test on 3-3). `LevelPrefetcher` asks for the highlighted level once the highlight has rested on it for 0.25 s, so passing over levels doesn't queue them all. The loading step for the ground waits for the worker; without a worker (unit tests) it generates at once, and after a worker error it falls back to generating on the main thread. Enemy models: `EnemyLayer.prepareNext` builds one model per frame during play (shaders compiled as they're built, outside e2e).
 - Measured (software WebGL, `--warm`: highlight rests 3 s): 1-1 0.44 s, 3-1 0.51 s, 4-5 0.47 s to the first playable frame (were 3.6–4.3 s). Steps: scene 287–349 ms, first draw 101–131 ms, others ≤ 11 ms. No frame over 50 ms in 20 s of play. Confirming at once (cold) takes ~4 s while the worker generates, but the frames stay at 1–3 ms and the bar keeps moving.
 
+### Review fixes, second round (2026-10-27, focus on 4-1)
+- **Diagnosis** (dev and production builds, real render loop, keyboard presses through Playwright): on ship select, ← / → creates no WebGL resource (counted on `compileShader`, `linkProgram`, `texImage2D`, `bufferData`, …) and causes no long task, so nothing in the game runs on the press. On 4-1 the earlier loading took 0.5 s to build the scene, 0.2 s to prepare it, then linked 20 shader programs and uploaded 36 textures and about 6000 buffers. On software WebGL the long frames after a 4-1 start (300 ms–2.8 s) are SwiftShader drawing the full-size scene: they are the same with no audio and with no enemy prebuild, and appear the moment the loading screen goes away.
+- **Ship select** (D-118): a menu loading step draws each ship once highlighted, so that any driver-side shader work is done behind the loading screen.
+- **4-1 instant start** (D-119): `GameSession` builds the level the highlight rests on (`prebuildLevels`, not in e2e builds) with the same steps as a load, short of starting it. `GamePlay.attach()` adds its HUD only when it starts. Confirming that level with the same ship starts it at once. A level built for another level or ship is dropped, and so is the one built when the level select is left. Dev build log for 4-1: build steps of 724 / 200 / 101 ms on the level select, Confirm → started in 1 ms.
+
 ### Gate results
 ```
 Light verification (implementation): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (5.8 min, after the review fixes).
+Light verification (second review round): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (6.8 min). A first run had one timeout (world-2 "lights come on at dusk and night", 24.3 s alone against the 30 s limit).
+The unit tests in tests/unit/app were run as a check: 229 passed, 1 failed. That failure, `level-prepare.test.ts` "prefetches the highlighted level once the highlight rests on it", fails the same way on c7f6af1, before this round. Left for /validate-phase.
 Lint, unit tests and coverage: not run (deferred to /validate-phase, per CLAUDE.md).
 ```
 
@@ -232,6 +241,8 @@ Lint, unit tests and coverage: not run (deferred to /validate-phase, per CLAUDE.
 - On software WebGL, loading still takes longer than `level_load_max_s` (1.5–4.3 s), and the longest step is longer than `loading_step_max_ms`. The steps over 200 ms are the roads and props generation (~350–600 ms, CPU) and shader compilation (SwiftShader). Shader compilation should be much shorter on a real GPU, which also compiles in parallel (the loader waits for that). The generation steps would need resumable generators in `core/scenery` if the reference machine shows them over 200 ms (Suggestions).
 - Rare multi-second stalls inside WebGL calls happen on SwiftShader, both before and after this phase. They need checking on the reference machine.
 - The F3 overlay only exists in dev and e2e builds (ENG-111).
+- Building a level ahead freezes the level select for one step (the scene, ~0.7 s dev build on this CPU) about 0.6 s after the highlight stops on a level. Splitting the scene build over frames is listed in Suggestions.
+- The ship-select freeze could not be reproduced on software WebGL; the fix rests on the driver hypothesis (D-118).
 
 ### Suggestions for future phases
 - Split road and prop generation over frames (resumable generators), or prepare the highlighted level's ground in idle time on the level select screen.

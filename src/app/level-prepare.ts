@@ -77,6 +77,11 @@ export class LevelPrefetcher {
     prefetchLevel(this.game, levelId, this.loader);
   }
 
+  /** The level the highlight has rested on for `seconds` (at least until prefetched), if any. */
+  restedOn(seconds: number): string | null {
+    return this.#rest >= Math.max(seconds, PREFETCH_AFTER) ? this.#highlighted : null;
+  }
+
   /** The level being started now is prefetched at once, if it is not yet. */
   start(levelId: string): void {
     if (this.#done.has(levelId)) return;

@@ -187,4 +187,57 @@ describe('GameSession stepped loading', () => {
     session.sync({ ...GAME, attempt: 2 });
     expect(session.play?.view.stage.stats).toEqual(first);
   });
+
+  const LEVEL_SELECT: MenuState = {
+    ...GAME,
+    screen: 'level-select',
+    selectedId: 'a',
+    chosenLevelId: null,
+  };
+
+  function prebuilding(overlay: HTMLElement): GameSession {
+    return new GameSession(
+      new NullEngine(),
+      SAMPLE_GAME,
+      { environment: false, doc: document, overlay, steppedLoading: true, prebuildLevels: true },
+      () => undefined,
+    );
+  }
+
+  it('P13-R03: the level the level select highlight rests on is built ahead; confirming it starts it at once', () => {
+    const overlay = document.createElement('div');
+    session = prebuilding(overlay);
+    session.sync(LEVEL_SELECT);
+    for (let i = 0; i < 60; i++) session.loadStep(1 / 60);
+    // Built, but not started, and no HUD or loading screen in the page.
+    expect([session.play, session.loading]).toEqual([undefined, false]);
+    expect(overlay.children).toHaveLength(0);
+    session.sync(GAME);
+    expect(session.loading).toBe(false);
+    expect(session.play?.state.levelId).toBe('a');
+    expect(overlay.querySelector('.level-loading')).toBeNull();
+  });
+
+  it('P13-R03: a level only passed over is not built; a level built ahead for another is not used', () => {
+    const overlay = document.createElement('div');
+    session = prebuilding(overlay);
+    session.sync({ ...LEVEL_SELECT, selectedId: 'b' });
+    for (let i = 0; i < 10; i++) session.loadStep(1 / 60);
+    session.sync(LEVEL_SELECT);
+    for (let i = 0; i < 60; i++) session.loadStep(1 / 60);
+    // Confirming another ship's level loads it again, behind the loading screen.
+    session.sync({ ...GAME, chosenShipId: 'other' });
+    expect(session.loading).toBe(true);
+    expect(overlay.querySelector('.level-loading')).not.toBeNull();
+  });
+
+  it('P13-R03: leaving the level select drops the level built ahead', () => {
+    session = prebuilding(document.createElement('div'));
+    session.sync(LEVEL_SELECT);
+    for (let i = 0; i < 60; i++) session.loadStep(1 / 60);
+    session.sync({ ...LEVEL_SELECT, screen: 'title', selectedId: null });
+    session.loadStep(1 / 60);
+    session.sync(GAME);
+    expect(session.loading).toBe(true);
+  });
 });
