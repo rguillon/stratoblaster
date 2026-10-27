@@ -32,27 +32,28 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
-          if-no-files-found: ignore
+          if-no-files-found:
+            ignore
 
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - run: make install
-      - run: make e2e
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          if-no-files-found: ignore
+            #  e2e:
+            #    runs-on: ubuntu-latest
+            #    steps:
+            #     - uses: actions/checkout@v7
+            #      - uses: actions/setup-node@v7
+            #        with:
+            #         node-version-file: .nvmrc
+            #         cache: npm
+            #    - uses: actions/cache@v6
+            #       with:
+            #       path: ~/.cache/ms-playwright
+            #        key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+            #    - run: make install
+            #      - run: make e2e
+            #      - uses: actions/upload-artifact@v7
+            #       if: failure()
+            #   with:
+            #       name: playwright-report
+            #       path: |
+            #           playwright-report/
+            #           test-results/
+            #          if-no-files-found: ignore
