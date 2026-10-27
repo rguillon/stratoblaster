@@ -14,6 +14,8 @@ export const AUDIO_CONFIG = {
   /** `scheduler lookahead`: notes are scheduled this far ahead, checked this often. */
   lookaheadSeconds: 0.1,
   scheduleIntervalSeconds: 0.025,
+  /** P13-R03: music scheduled this far ahead before each level loading step, which may stall. */
+  stallCoverSeconds: 1.5,
   /** `music_fade`, `music_crossfade`. */
   fadeSeconds: 1,
   crossfadeSeconds: 1,

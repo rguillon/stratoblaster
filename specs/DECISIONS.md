@@ -1291,3 +1291,11 @@
 - **Decision:** Once the highlight has rested 0.6 s on a level, `GameSession` runs that level's loading steps, one per frame (ground, scene, shader compilation, a first drawing hidden behind the menus), all but the last. `GamePlay.attach()` shows the HUD at the start instead of in the constructor. Confirming that level with the same ship (and not from a checkpoint) starts it in that frame, with no loading screen. A partly built level carries on behind the loading screen. Another level or ship drops it, and so does leaving the level select. Off in e2e builds (`prebuildLevels: !__E2E__`, ENG-52). This replaces the "alternatives considered" verdict of D-117 at the reviewer's request.
 - **Status:** Accepted
 
+### D-120 — Music scheduled ahead before each loading step
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The music, scheduled 100 ms ahead from the page (P12 tunable), stopped during any loading step longer than that, which made the loading noticeable.
+- **Decision:** Before the first run of each level loading step (also while a level is built ahead), the music is scheduled `AUDIO_CONFIG.stallCoverSeconds` (1.5 s) ahead, so it plays on through a frozen frame. The usual lookahead stays 100 ms. Fades, cross-fades and pause still apply to the notes already scheduled (fades go through the track's gain, and pause stops its voices).
+- **Alternatives considered:** a 1.5 s lookahead all the time (it would change the validated P12 tunable); an AudioWorklet sequencer (much larger change).
+- **Status:** Accepted
+

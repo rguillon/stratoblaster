@@ -112,12 +112,15 @@ export class MusicPlayer {
     this.#pausedAt.clear();
   }
 
-  /** Schedules the notes due within the lookahead, and drops the tracks that are over. */
-  update(): void {
+  /**
+   * Schedules the notes due within the lookahead (or `ahead` seconds, before a long frame), and
+   * drops the tracks that are over.
+   */
+  update(ahead = this.timings.lookaheadSeconds): void {
     const bus = this.bus();
     if (!bus || this.#paused) return;
     const now = bus.context.currentTime;
-    for (const slot of this.#slots()) this.#schedule(slot, bus, now);
+    for (const slot of this.#slots()) this.#schedule(slot, bus, now, ahead);
     this.#others = this.#others.filter((slot) => !this.#over(slot, now));
   }
 
@@ -153,16 +156,14 @@ export class MusicPlayer {
   }
 
   /** Starts the slot on the bus if needed, then schedules its notes up to the lookahead. */
-  #schedule(slot: Slot, bus: MusicBus, now: number): void {
+  #schedule(slot: Slot, bus: MusicBus, now: number, ahead: number): void {
     // A track fading out goes on playing until it is silent; one never started stays so.
     if (slot.until !== undefined && !slot.mixer) return;
     if (!slot.mixer || slot.anchor === undefined) this.#start(slot, bus, now);
     const { mixer, anchor } = slot;
     if (!mixer || anchor === undefined) return;
     slot.voices = slot.voices.filter((v) => v.end > now);
-    for (const { note, at, seconds } of slot.sequencer.advance(
-      now + this.timings.lookaheadSeconds - anchor,
-    )) {
+    for (const { note, at, seconds } of slot.sequencer.advance(now + ahead - anchor)) {
       const instrument = this.#playable(slot, note.instrument, anchor + at);
       if (!instrument) continue;
       slot.voices.push(

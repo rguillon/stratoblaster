@@ -311,6 +311,7 @@ function createSession(
       step: (run) => {
         audio.levelStep(run);
       },
+      beforeLoadStep: audio.coverStall.bind(audio),
     },
   );
 }

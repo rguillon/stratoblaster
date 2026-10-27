@@ -113,9 +113,17 @@ export class GameAudio {
     this.#output.setVolumes(volumeGain(music, steps), volumeGain(sfx, steps));
   }
 
-  /** Schedules the music ahead (every frame, and on a timer). */
-  update(): void {
-    this.#music.update();
+  /**
+   * Schedules the music ahead (every frame, and on a timer); `ahead` seconds of it before work
+   * that may stall the page, so that it plays on meanwhile (P13-R03).
+   */
+  update(ahead?: number): void {
+    this.#music.update(ahead);
+  }
+
+  /** Work that may stall the page follows: the music is scheduled far enough ahead (P13-R03). */
+  coverStall(): void {
+    this.update(AUDIO_CONFIG.stallCoverSeconds);
   }
 
   /** The menus changed (P12-R08, P12-R11): the music of their screen, pausing with the game. */

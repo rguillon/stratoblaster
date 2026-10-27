@@ -69,6 +69,17 @@ describe('MusicPlayer', () => {
     expect(player.position).toBeCloseTo(2.95);
   });
 
+  it('P13-R03: scheduled further ahead before a stall, the notes play on through it', () => {
+    const { context, player } = setup();
+    player.play(track('a'), 0);
+    player.update(2.5);
+    // No update for 2.5 s (a frozen frame): the notes of 1 s and 2 s are already scheduled.
+    expect(oscillators(context).map((o) => o.started)).toEqual([0, 1, 2]);
+    context.currentTime = 2.5;
+    player.update();
+    expect(oscillators(context).map((o) => o.started)).toEqual([0, 1, 2]);
+  });
+
   it('P12-R11: paused 30 s in for 10 s, the track goes on from about 30 s, not 40 s', () => {
     const { context, player } = setup();
     player.play(track('level'), 0);

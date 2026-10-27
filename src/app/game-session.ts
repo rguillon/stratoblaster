@@ -119,6 +119,8 @@ export interface SessionAudio {
   readonly started: (levelId: string) => void;
   /** A step of the level was run. */
   readonly step: (run: LevelRun) => void;
+  /** A loading step that may stall the page is about to run: the music is scheduled ahead. */
+  readonly beforeLoadStep?: () => void;
 }
 
 /** The cell highlighted on the level select screen, if it shows (P13-R03: prefetched). */
@@ -222,6 +224,8 @@ export class GameSession {
 
   /** Runs the next step of `load`; true once its last step has run. */
   #runStep(load: LevelLoad): boolean {
+    // Once per step: a step waiting (e.g. on the worker) runs again every frame, quickly.
+    if (load.tries === 0) this.audio?.beforeLoadStep?.();
     load.tries++;
     if (load.steps[load.done]?.() === false) return false;
     load.done++;
