@@ -11,8 +11,8 @@ import { LEVEL_ZERO_LOOK, texture } from '../scenery-look';
 
 type Rgb = readonly [number, number, number];
 
-/** Desert sand (P06-R06): warm, fine-grained, with dark grains. */
-const SAND = texture(
+/** Desert sand (P06-R06): warm, fine-grained, with dark grains. World 2 starts on it too. */
+export const SAND = texture(
   [
     [0.76, 0.6, 0.4],
     [0.81, 0.66, 0.45],
@@ -23,7 +23,7 @@ const SAND = texture(
 );
 
 /** Dry earth: the ground where the grass turns dry, between the green land and the sand. */
-const DRY_EARTH = texture(
+export const DRY_EARTH = texture(
   [
     [0.5, 0.42, 0.3],
     [0.6, 0.51, 0.37],
@@ -45,7 +45,7 @@ const GRASS = texture(
 );
 
 /** Red-brown desert rock, layered: what the sand gives way to on slopes. */
-const DESERT_ROCK = texture(
+export const DESERT_ROCK = texture(
   [
     [0.42, 0.28, 0.2],
     [0.56, 0.38, 0.27],

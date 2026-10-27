@@ -9,7 +9,7 @@
 ---
 
 ## 🧑 Goal
-World 2, **the Frozen North**, has five playable levels, 2-1 to 2-5, each about 5 minutes long. The levels go from a cold sea with drifting ice to snowy fjords, a tundra, a glacier and a polar city at night. Each level has its own time of day, cloud cover and weather (dawn light, falling snow, a blizzard, an aurora at night). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 2-1 to 2-5, and World 2 as a whole is harder than World 1.
+World 2, **the Industrial Desert**, has five playable levels, 2-1 to 2-5, each about 5 minutes long, with no sea (rivers are allowed). The five levels are cut from one long journey: it starts in the deep desert, where World 1 ended, and the desert slowly gives way to mines, oil fields, refineries and finally dense factories, with slow transitions along the levels. Each level has its own time of day: three day levels, then dusk, then night (reworked at the reviewer's request, 2026-10-27; was: the Frozen North, from a cold sea with drifting ice to snowy fjords, a tundra, a glacier and a polar city at night, with snow, a blizzard and an aurora). Each level has its own mini boss and final boss, ten new bosses in all. The levels get harder from 2-1 to 2-5, and World 2 as a whole is harder than World 1.
 
 ## 🧑 Requirements
 
@@ -37,22 +37,27 @@ Each World 2 level lasts **about 5 minutes** (vision: 5 minutes for the levels a
 
 ### P08-R03 — Scenery progression across World 2  · MUST
 
-Over the five levels, the player flies north from a cold sea into a frozen land that gets more and more built on. Each level begins on the same kind of ground the previous one ended on (as in P06-R05).
+> Reworked at the reviewer's request (2026-10-27): World 2 starts in the desert and ends in the factories, with slow transitions along the levels. It was: a cold sea with ice floes, fjords, a tundra, a glacier and a polar city.
 
-| Level | Name | Sea | Land | Habitations |
-|-------|------|-----|------|-------------|
-| 2-1 | Ice floes | Almost all dark cold sea, with drifting ice floes and a few icebergs. The first snowy coast comes in the last 30 s. | Small snowy rock islands, then a snowy coast. | Almost none: a lighthouse, a weather buoy, a few huts, a small harbour on the final coast. |
-| 2-2 | Fjords | Long fjords cut into the land; the sea is gone after the first half. | Steep snowy cliffs, pine forests in the valleys, then snowy hills. | Fishing villages and a harbour along the fjords, a coast road, then hamlets inland. |
-| 2-3 | Tundra | No sea; frozen lakes (flat ice, with cracks) instead. | Flat snowy tundra with frozen lakes, patches of pines and low rock ridges. | Research outposts (radar domes, antennas), a pipeline running along the level, small settlements. |
-| 2-4 | Glacier | No sea. | A wide glacier with crevasses and ice cliffs, bare dark rock on its sides. | Mining outposts on the glacier's edge, then a big mining complex (drills, conveyors, ore silos) in the second half. |
-| 2-5 | Polar city | No sea. | Snowy land at the start, then a city built on it. | A mining town, then suburbs, then a dense polar city centre (towers and heated domes) at the end. |
+The five levels are one journey cut into five pieces: from the deep desert where World 1 ended, the desert is slowly taken over by industry, mines first, then oil fields, refineries, an industrial belt and dense factories at the end. The changes are slow: the ground cover goes from sand to concrete in small steps, the ground blends over a longer stretch between sections than in World 1, and each new kind of building first shows up mixed with the ones before it before it takes over. Each level begins on the same kind of ground the previous one ended on (as in P06-R05). There is no sea in World 2; rivers are allowed (reviewer, 2026-10-27), as long as no open sea, coast or shore comes with them.
 
-The share of the level over sea goes down from 2-1 to 2-3, and the number of buildings goes up from 2-1 to 2-5.
+| Level | Name | Land | Habitations |
+|-------|------|------|-------------|
+| 2-1 | Great erg | Open sand to the end: an oasis edge, great dunes, dune fields, then rocky desert. | Oasis homes and caravan outposts (water towers, solar farms, antennas), then desert outposts; the first mine headframes in the last 30 s. |
+| 2-2 | Mining mesas | Rocky desert, mesas and a canyon, the sand trodden around the mines. | Mines and their outposts, a mining town with streets, then the first oil pumpjacks and storage tanks at the end. |
+| 2-3 | Oil fields | Flat sand and rock, more and more of it paved. | Oil fields (pumpjacks, tanks), a company town, refineries and tank farms, the first factories at the end. |
+| 2-4 | Industrial belt | Mostly paved ground, a little sand left between the plots. | Industrial outskirts, workers' suburbs, warehouses and container yards with streets, a power plant (cooling towers), then a factory district. |
+| 2-5 | Factory district | Paved to the end. | Foundries and factories along streets, yards, then dense heavy industry, every block filled with plants and works at the end. |
+
+The share of the ground covered by sand goes down from 2-1 to 2-5 and the paved share goes up; the number of props and of buildings goes up from 2-1 to 2-5, and in each level the second half has more props than the first.
 
 **Acceptance criteria**
-- [ ] Unit test: the share of the level over sea goes down from 2-1 to 2-2, and 2-3, 2-4 and 2-5 have no sea section.
-- [ ] Unit test (fixed seed): the number of buildings placed goes up from 2-1 to 2-5.
-- [ ] Manual visual validation: the ice, fjords, tundra, glacier and city can be told apart, and each level begins where the previous one ended.
+- [ ] Unit test: no World 2 level has open sea: no shore, no sea-bed section, no floating ice; rivers (channels) are allowed.
+- [ ] Unit test: sand covers more of the ground than pavement in 2-1 and 2-2, pavement more than sand in 2-4 and 2-5, and the sand share goes down strictly from 2-1 to 2-5 while the paved share goes up.
+- [ ] Unit test: the industrial and heavy-industry groups are not in 2-1; 2-5 ends on heavy industry only.
+- [ ] Unit test (fixed seed): the number of props and the number of buildings go up from 2-1 to 2-5, and each level's second half has more props than its first.
+- [ ] Unit test: two levels in a row: the next one starts with the same relief, ground cover and building groups as the previous one ended with; the World 2 sections blend over a longer stretch than the World 1 ones.
+- [ ] Manual visual validation: desert, mines, oil fields, refineries and factories can be told apart, the changes are slow, and each level begins where the previous one ended.
 
 ### P08-R04 — Level look: time of day and clouds  · MUST
 
@@ -89,29 +94,33 @@ The engine supports weather kinds as data, so the next worlds can add rain and f
 
 ### P08-R06 — Look of each World 2 level  · MUST
 
+> Reworked at the reviewer's request (2026-10-27): a different time of day for each level, as in World 1 (P06-R10): three day levels, then dusk, then night. The time of day does not change within a level. No snow and no aurora any more (they belonged to the Frozen North). It was: dawn, morning, overcast midday with snow, an afternoon blizzard, dusk turning to night with an aurora.
+
 | Level | Time of day | Clouds (low / high cover) | Weather | Notes |
 |-------|-------------|---------------------------|---------|-------|
-| 2-1 | dawn | 0.25 / 0.15, pink-orange | none | A low sun near the horizon, long shadows of the icebergs, a pastel sky over a dark sea. |
-| 2-2 | morning | 0.2 / 0.3, white | none, light snow (0.2) over the second half | Crisp, clear light; the fjord cliffs cast deep blue shadows. |
-| 2-3 | midday, overcast | 0.8 / 0.6, light grey | snow 0.4 | Flat, soft light with weak shadows; the frozen lakes shine. |
-| 2-4 | afternoon | 0.9 / 0.8, dark grey | snow 0.5, growing to a blizzard (1.0) in the second half, then clearing to 0.3 for the final boss | The haze comes closer as the blizzard grows. |
-| 2-5 | dusk → night | 0.3 / 0.2 at dusk, clearing to 0.1 / 0.05 at night | none | The look changes from dusk to night over the first third; at night an **aurora** (slow green and violet curtains) moves in the sky haze, and the city's windows, streets and neon are lit. |
+| 2-1 | morning | 0.15 / 0.1 | none | A clear desert morning, warm light, long shadows of the dunes. |
+| 2-2 | midday | 0.2 / 0.15 | none | A high, hard sun over the mesas and the mines. |
+| 2-3 | afternoon | 0.25 / 0.2 | none | Golden light over the oil fields; the first smoke greys the clouds a little. |
+| 2-4 | dusk | 0.35 / 0.25, greyed by smog | none | A low sun through the smog over the industrial belt; the window, street and car lights come on. |
+| 2-5 | night | 0.4 / 0.3, greyed by smog | none | Night over the factories, lit by their windows, neon, streets and cars; moonlight shows the ground's shapes. |
 
 **Acceptance criteria**
-- [ ] Unit test: each World 2 level's look data matches this table (time of day, cloud cover, weather and its changes).
-- [ ] Manual visual validation of each level against the table.
+- [ ] Unit test: each World 2 level's look data matches this table (time of day, cloud cover, no weather, no change within the level).
+- [ ] Manual visual validation of each level against the table; the ships, shots and bonuses stay easy to see at dusk and at night.
 
-### P08-R07 — Frozen ground and props  · MUST
+### P08-R07 — Desert and industrial ground and props  · MUST
 
-New generated ground and props for World 2 (GD-60, all made in code), as light in polygons as the existing ones (D-031) and matte (D-024):
+> Reworked at the reviewer's request (2026-10-27): World 2's ground is World 1's desert (P06-R06) slowly covered by the concrete and asphalt of the industry (the existing `paved` cover), with dark industrial roads. Its buildings are the World 1 desert homes and outposts, the Level Zero industrial buildings and the industrial buildings made of parts (P04, D-025), plus one new prop: an **oil pumpjack** (a nodding-donkey oil pump on a concrete pad, its walking beam and horse head, a small motor house and a warning light), as light in polygons as the existing props (D-031) and matte (D-024). The frozen ground and props below were built for the first version of World 2; their models stay in the game (`bosses/` and the props tests) but no World 2 level uses them any more.
+
+Original requirement (2026-10-25), kept for the record — New generated ground and props for World 2 (GD-60, all made in code), as light in polygons as the existing ones (D-031) and matte (D-024):
 - **Ground:** snow (bright, with a faint blue shade in the shadows), snow-covered rock that shows dark rock on steep slopes, glacier ice (blue-white, with crevasses as dark cuts made with the heightmap tools), and frozen lakes (flat, shiny ice with crack lines and a snowy edge).
 - **Sea:** a dark, cold sea colour, with **ice floes** (flat white plates of different sizes) and **icebergs** (tall white-blue blocks) floating on it. They scroll with the ground and drift very slowly.
 - **Vegetation:** snow-covered pines (dark green under white caps), bare frosted trees, and snowy bushes.
 - **Habitations:** futuristic northern homes (steep-roofed, timber-and-metal chalets with neon trims and snow on the roofs), heated domes, lighthouses, radar domes, antennas, wind turbines, a pipeline on stilts, mining equipment (drill towers, conveyors, ore silos, cranes), and polar city towers. They follow the road rules of World 1 (D-046: no crossing roads, lone buildings and hamlets); the roads are snowy, with darker wheel tracks.
 
 **Acceptance criteria**
-- [ ] Manual visual validation: snow, ice, glacier and frozen lakes read clearly from the playfield camera, and World 2 does not look like World 1 with another colour.
-- [ ] Unit test: each new prop model stays under the triangle budget in **Tunable values**.
+- [ ] Manual visual validation: the sand, the paved industrial ground, the pumpjacks, refineries and factories read clearly from the playfield camera, and the slow change from desert to factories shows.
+- [ ] Unit test: the pumpjack stays under the triangle budget in **Tunable values** and fits its footprint; the World 2 props use the desert, oil and industrial buildings and no frozen prop.
 
 ### P08-R08 — Enemy waves  · MUST
 
@@ -119,8 +128,8 @@ Each World 2 level has a wave script in `src/game/` (P06-R07), with fillers in t
 
 | Level | Enemy kinds that lead the waves |
 |-------|--------------------------------|
-| 2-1 | Gnat, Hornet, Scout, Strafer, Weaver (low over the sea) |
-| 2-2 | the 2-1 kinds plus Splitter, Lancer (along the fjords) |
+| 2-1 | Gnat, Hornet, Scout, Strafer, Weaver (low over the sea; over the dunes since the 2026-10-27 rework) |
+| 2-2 | the 2-1 kinds plus Splitter, Lancer (along the fjords; over the mines since the 2026-10-27 rework) |
 | 2-3 | every kind, with Carrier and Spinner groups over the tundra |
 | 2-4 | every kind, with Rocketeer and Bulwark in the blizzard |
 | 2-5 | every kind, the heaviest mixes (Bulwark and Carrier together) |
@@ -188,8 +197,8 @@ As in P07-R10:
 - The `bosses/` page lists the World 2 bosses after the World 1 ones (grouped by world), each fighting over the scenery and look of its level.
 
 **Acceptance criteria**
-- [ ] Given `?level=2-4&t=150`, then 2-4 starts at 2:30 in its blizzard.
-- [ ] Given `?level=2-3&weather=0`, then 2-3 shows no snow.
+- [ ] Given `?level=2-4&t=150`, then 2-4 starts at 2:30 (its blizzard until the 2026-10-27 rework).
+- [ ] Given `?level=2-3&weather=0`, then 2-3 shows no weather (it has none since the 2026-10-27 rework; the option is still tested on the worlds that have weather).
 - [ ] Given `bosses/`, then every World 1 and World 2 boss can be picked without console errors.
 - [ ] Given no debug option, then the look and weather are the level's own.
 
@@ -197,8 +206,10 @@ As in P07-R10:
 | Name | Value | Notes |
 |------|-------|-------|
 | level_duration | 300 s ± 10 s | P08-R02 |
-| ground_speed 2-1 / 2-2 / 2-3 / 2-4 / 2-5 | 70 / 65 / 60 / 55 / 60 px/s | GD-01; slower in the blizzard |
-| sea_share 2-1 / 2-2 / 2-3 / 2-4 / 2-5 | ≥ 80 % / ≤ 50 % / 0 % / 0 % / 0 % | P08-R03 |
+| ground_speed 2-1 / 2-2 / 2-3 / 2-4 / 2-5 | 70 / 65 / 60 / 55 / 60 px/s | GD-01 |
+| sea_share 2-1 → 2-5 | 0 % (was ≥ 80 % / ≤ 50 % / 0 / 0 / 0 before the 2026-10-27 rework) | P08-R03 |
+| time_of_day 2-1 / 2-2 / 2-3 / 2-4 / 2-5 | morning / midday / afternoon / dusk / night | P08-R06 (reviewer, 2026-10-27) |
+| section_transition | longer than World 1's (420 units) | P08-R03, slow transitions (reviewer, 2026-10-27) |
 | peak_on_screen 2-1 / 2-2 / 2-3 / 2-4 / 2-5 | 10 / 11 / 13 / 15 / 17 | P08-R09; the agent may adjust while balancing, keeping the order |
 | enemy_bullet_speed_factor 2-1 → 2-5 | 0.9 / 0.95 / 1.0 / 1.1 / 1.15 | P08-R09 |
 | enemy_fire_rate_factor 2-1 → 2-5 | 0.9 / 0.95 / 1.0 / 1.1 / 1.15 | P08-R09 |
@@ -228,13 +239,12 @@ As in P07-R10:
 - [ ] Runs on GitHub Pages / `make dev` without console errors
 - [ ] `2-1` to `2-5` can be picked in the level select; worlds 3 to 5 stay locked
 - [ ] Each level lasts about 5 minutes of scroll, plus its two boss fights
-- [ ] Ice floes, fjords, tundra, glacier and polar city across the five levels; each level begins where the previous one ended
-- [ ] Each level has its own time of day: dawn, morning, overcast midday, afternoon blizzard, dusk turning to night with an aurora
-- [ ] Snow falls in 2-2, 2-3 and 2-4 and grows into a blizzard in 2-4, without hiding shots or bonuses
+- [ ] Desert, mines, oil fields, refineries and factories across the five levels, changing slowly; each level begins where the previous one ended (reworked 2026-10-27)
+- [ ] Each level has its own time of day: morning, midday, afternoon, dusk, night (reworked 2026-10-27)
 - [ ] The night level stays readable: ship, enemies, shots and bonuses clearly visible
 - [ ] The ten World 2 bosses look good in `bosses/` and each part changes the attack
 - [ ] Difficulty clearly goes up from 2-1 to 2-5; 2-1 feels like a fresh start, not a wall
-- [ ] 60 fps in the 2-4 blizzard and in the 2-5 final boss fight
+- [ ] 60 fps in the busiest part of 2-5 and in the 2-5 final boss fight at night over the factories
 
 ## 🧑 Notes, references, sketches
 - **Drafted by the agent at the reviewer's request (2026-10-25); open choices for the reviewer, defaults proposed:**
@@ -253,6 +263,7 @@ As in P07-R10:
 > After the agent reports, write corrections here, then say **"Fix phase 08"**.
 > The agent ticks each item when fixed.
 
+- [x] (reviewer, in chat, 2026-10-27) Rework World 2: start in the desert and end in factories, with slow transitions along the levels; like World 1, a different time of day for each level (3 days, 1 night). — Done (D-110): P08-R03, R06 and R07 amended. World 2 is now the Industrial Desert: 2-1 Great erg (first named Sand sea), 2-2 Mining mesas, 2-3 Oil fields, 2-4 Industrial belt, 2-5 Factory district, one gradient from World 1's sand to dense factories. Slow transitions: sections blend over 900 units (World 1: 420), the sand steps down to concrete a little in each section, and each new building group comes in mixed with the previous one; each level starts on the section the previous one ended on. Time of day: morning, midday, afternoon, dusk, night, fixed within each level; no snow, no aurora. New prop: an oil pumpjack. Props per level 2 982 / 6 548 / 9 087 / 11 182 / 12 049, each second half fuller than the first. Bosses and waves unchanged (their frost names now fly over the desert).
 - [x] (reviewer, in chat, 2026-10-25) Make the weapons level persistent when the user finished a level. — Done (D-071): when a level is completed, the weapon in use and the level of each weapon are saved (`<game id>_weapons` in the cookie storage, `app/saved-weapons.ts`), and every level started afterwards starts with them, after a reload too (`LevelRunOptions.startWeapons`). A game over saves nothing: the next attempt starts with the weapons of the last level completed; Continue still restarts with the checkpoint's weapons (P07-R08). Unit tests: `saved-weapons.test.ts`, `game-session.test.ts`, `level-run-bosses.test.ts`.
 - [x] (reviewer, in chat, 2026-10-25) Make the enemy bullets easier to see, more contrast, without making them bigger; then reduce the dark ring around them; then remove the dark ring and make them a colourful blob of energy with fading borders; then make the centre brighter and pulsating. — Done (D-069 revised): no dark backing any more; each bullet is a disc of the same size, a white-hot core going over to its colour, held to its edge while its opacity fades out (`ENEMY_LOOK.bullets.fade`), drawn blended instead of added (`blendedTemplate`), so its colour shows over bright snow instead of washing out to white. A white-hot glow is added over its centre (0.6 of its radius), swelling and shrinking by 30 % 2.5 times a second from when it is fired (`ENEMY_LOOK.bullets.core`; unit test in `enemy-renderers.test.ts`).
 - [x] (reviewer, in chat, 2026-10-25) Add more diversity to the enemy laser colours; a laser may follow the player (on a rotating turret) but once locked it keeps its direction. — Done (D-072): a boss's lasers are drawn in its neon colour (`withOwnLasers` gives them the boss's kind as style; `EnemyLasers` colours each style, `laserPalette`), the Lancer's stay red: the ten bosses that fire lasers each have their own (yellow, green, red, violet, teal, orange, ice white…; the Aurora Station's and the Boreal Citadel's greens are close). The warning line follows its owner's heading; when the beam starts firing it locks that heading and keeps it (a sweep turns from it), still leaving from the emitter (`EnemyShots`). Unit tests: `enemy-shots.test.ts`, `boss-lasers.test.ts`, `enemy-renderers.test.ts`.
@@ -289,11 +300,11 @@ None. The spec was implemented as written; the few interpretations are listed un
 |----|-----------------------------------|------|-------|-------|
 | P08-R01 | Done | `game/sim/world-2.ts`, `game/sim/levels.ts` (`GAME_LEVELS`) | `world-2.test.ts`, `game-definition.test.ts`, e2e `world-2.spec.ts` | 1-5 → 2-1 and 2-5 → 2-5 follow from the level grid order |
 | P08-R02 | Done | `game/config/world-2/scenery-*.ts` (300 s each) | `world-2.test.ts`, e2e | speeds 70 / 65 / 60 / 55 / 60 |
-| P08-R03 | Done | `scenery-coast.ts`, `scenery-inland.ts`, `core/scenery/ice-sculpt.ts`, `float-placement.ts` | `world-2.test.ts`, `ice-sculpt.test.ts` | sea share 0.90 / 0.17 / 0 / 0 / 0; buildings 69 / 610 / 2 566 / 3 942 / 11 670 (seed of each level; 2-3 counts its pipeline pieces) |
+| P08-R03 | Done | `world-2/scenery.ts` (reworked, D-110; was `scenery-coast.ts`, `scenery-inland.ts`) | `world-2.test.ts` (no sea, sand → pavement, groups, props and halves, continuity, transitions) | Reworked in review (D-110): desert → factories. Sand 0.89 / 0.67 / 0.39 / 0.17 / 0.05, paved 0.005 / 0.14 / 0.40 / 0.67 / 0.89; props 2 982 / 6 548 / 9 087 / 11 182 / 12 049; buildings 1 553 / 4 883 / 8 570 / 11 039 / 12 049. Manual check needed |
 | P08-R04 | Done | `core/scenery/atmosphere.ts`, `sky-look.ts`, `config/time-of-day.ts`, `render/scenery/sky-layers.ts`, `atmosphere-of.ts` | `atmosphere.test.ts`, `sky-look.test.ts`, `sky-layers.test.ts`, e2e | D-064 |
 | P08-R05 | Done | `config/weather.ts`, `render/scenery/weather-layer.ts`, `weather-material.visual.ts` | `sky-look.test.ts`, `sky-layers.test.ts`, `game-play.test.ts` (weather not an input), e2e | D-065; 60 FPS: manual |
-| P08-R06 | Done | `game/config/world-2/looks.ts`, `render/scenery/aurora-*.ts` | `world-2.test.ts` | table followed; 2-4's blizzard is full from 2:30 (see Deviations) |
-| P08-R07 | Done | `game/view/props/polar-*.ts`, `world-2/props.ts`, `world-2/looks.ts` | `prop-models.test.ts` | D-066; hand-made ≤ 336 triangles (the heaviest phase 4 prop) |
+| P08-R06 | Done | `game/config/world-2/looks.ts` | `world-2.test.ts`, e2e `world-2.spec.ts` | Reworked in review (D-110): morning, midday, afternoon, dusk, night; no weather, no change within a level. Manual check needed |
+| P08-R07 | Done | `world-2/props.ts`, `world-2/looks.ts`, `game/view/props/oil-props.ts` (pumpjack); `polar-*.ts` kept, unused | `prop-models.test.ts` | Reworked in review (D-110): desert, oil and industrial props; D-066 for the frozen ones |
 | P08-R08 | Done | `game/config/world-2/waves.ts` | `world-2.test.ts` | D-067 |
 | P08-R09 | Done | `waves.ts`, `world-2/difficulty.ts` | `world-2.test.ts` | numbers below |
 | P08-R10 | Done | `game/config/bosses/world-2/*`, `game/view/bosses/world-2/*`, `core/systems/boss-pattern.ts`, `enemy-shots.ts` | `bosses-world-2.test.ts`, `muzzles.test.ts`, `boss-models.test.ts`, e2e | D-068; patterns below |
@@ -325,7 +336,8 @@ Fixed on the way: three unit tests (World 2 storage tanks and lone antenna mast 
 
 ### How to test manually
 - `make dev`, then Start → a ship → the level select: the World 2 row (`2-1` … `2-5`) is unlocked, worlds 3 to 5 stay locked. After 1-5's "Level complete", `2-1` is highlighted.
-- Each level: `?level=2-1` … `?level=2-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 2-1 dawn over a dark sea with ice floes and icebergs, rocky islets, a harbour coast at the end; 2-2 morning fjords, light snow in the second half; 2-3 overcast tundra, snow falling, frozen lakes with cracks, a pipeline on stilts, radar domes and turbines; 2-4 afternoon glacier with crevasses and dark rock sides, mining outposts then a mining complex, the blizzard from 2:30 (`?level=2-4&t=150`), clearing near the end; 2-5 dusk turning to night over the first 100 s, the aurora's green and violet curtains at the top of the screen, the lit polar city.
+- Each level (since the 2026-10-27 rework, D-110): `?level=2-1` … `?level=2-5`. Look for: 2-1 Great erg, a morning over oasis, dunes and rocky desert, the first mines at the end (`&t=280`), never any sea; 2-2 Mining mesas at midday, mines, a canyon, a mining town, the first oil pumps (`&t=280`); 2-3 Oil fields in the afternoon, pumpjacks, a company town, refineries, tank farms; 2-4 Industrial belt at dusk, lights coming on, warehouses, cooling towers, factory yards; 2-5 Factory district at night, every block filled at the end (`&t=280`). Each level begins where the previous one ended.
+- Before the rework: `?level=2-1` … `?level=2-5` (with `&t=<seconds>`; F ×4, ← / → jump 10 s). Look for: 2-1 dawn over a dark sea with ice floes and icebergs, rocky islets, a harbour coast at the end; 2-2 morning fjords, light snow in the second half; 2-3 overcast tundra, snow falling, frozen lakes with cracks, a pipeline on stilts, radar domes and turbines; 2-4 afternoon glacier with crevasses and dark rock sides, mining outposts then a mining complex, the blizzard from 2:30 (`?level=2-4&t=150`), clearing near the end; 2-5 dusk turning to night over the first 100 s, the aurora's green and violet curtains at the top of the screen, the lit polar city.
 - Debug: `&weather=0` (no snow, e.g. `?level=2-3&weather=0`), `&look=dawn|morning|midday|afternoon|dusk|night` (e.g. `?level=2-5&t=200&look=midday`), `&boss=mini|final` (K destroys the next part).
 - Bosses: `bosses/` lists World 1 then World 2 under "World 1" / "World 2" headings; each boss comes in over its level's scenery and look; M / V show the model and wireframe.
 - Weapons kept (review): pick up weapon bonuses in a level and finish it (`&boss=final` then K to destroy the final boss quickly), then start another one: it starts with the same weapon and levels, after a page reload too. Lose all lives instead: nothing new is kept.
