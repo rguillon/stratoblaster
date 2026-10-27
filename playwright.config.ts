@@ -7,7 +7,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : [['list']],
+  // `list` everywhere, so the log shows each test as it ends (CI included).
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }], ['github']] : [['list']],
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',

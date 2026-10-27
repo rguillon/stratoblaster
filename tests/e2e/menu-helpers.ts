@@ -12,6 +12,14 @@ export interface TestState {
   transitioning: boolean;
   levelResult: { levelId: string; destroyed: number; spawned: number } | null;
   loadingProgress: number[];
+  /** Phase 13 (P13-R01): long frames, longest frame and level loading times, in ms. */
+  perf: {
+    longFrames: number;
+    longestFrame: number;
+    frames: number;
+    lastLoad: number | null;
+    longestLoadStep: number | null;
+  };
   /** Phase 12 (P12-R12): pause, volumes, music and sounds. */
   paused: boolean;
   leaving: boolean;
@@ -155,10 +163,11 @@ export async function openGame(page: Page): Promise<void> {
 export async function openDebug(page: Page, query: string): Promise<void> {
   await page.goto(`./${query}`);
   await page.waitForFunction(
-    () => (window as TestWindow).__GAME_TEST__?.getState().game != null,
+    () => (window as TestWindow).__GAME_TEST__?.getState().screen === 'game',
     undefined,
     { timeout: LOAD_TIMEOUT },
   );
+  await waitForLoad(page);
   await step(page);
 }
 
@@ -208,7 +217,29 @@ export async function expectState(page: Page, expected: Partial<TestState>): Pro
 }
 
 /** The level being played; fails the test when there is none. */
+/**
+ * Steps through the loading of the level chosen, if one is loading (P13-R03: a level loads in
+ * steps, one per frame, behind its loading screen; its ground comes from a worker, so the page
+ * must get its messages between two checks).
+ */
+export async function waitForLoad(page: Page): Promise<void> {
+  const loading = () =>
+    page.evaluate(() => {
+      const api = (window as TestWindow).__GAME_TEST__;
+      if (!api) throw new Error('__GAME_TEST__ is missing');
+      const still = () => {
+        const state = api.getState();
+        return state.screen === 'game' && state.game === null && state.levelResult === null;
+      };
+      for (let i = 0; i < 5 && still(); i++) api.step(1);
+      return still();
+    });
+  const deadline = Date.now() + LOAD_TIMEOUT;
+  while ((await loading()) && Date.now() < deadline) await page.waitForTimeout(20);
+}
+
 export async function level(page: Page): Promise<NonNullable<TestState['game']>> {
+  await waitForLoad(page);
   const { game } = await gameState(page);
   if (!game) throw new Error('No level is being played');
   return game;

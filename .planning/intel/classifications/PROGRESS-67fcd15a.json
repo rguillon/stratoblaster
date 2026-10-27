@@ -1,0 +1,26 @@
+{
+  "source_path": "/home/renaud/pewet/specs/PROGRESS.md",
+  "type": "DOC",
+  "confidence": "low",
+  "manifest_override": true,
+  "title": "Progress",
+  "summary": "Phase status board and dated event log for the Pewet project: 12 phases with status, branch, coverage and validation date.",
+  "scope": ["phases", "phase status board", "validation log", "coverage", "git branches"],
+  "cross_refs": [
+    "phases/phase-01-main-menu.md",
+    "phases/phase-02-player-ships.md",
+    "phases/phase-03-player-shots.md",
+    "phases/phase-04-level-zero.md",
+    "phases/phase-05-first-enemies.md",
+    "phases/phase-06-world-1.md",
+    "phases/phase-07-bosses.md",
+    "phases/phase-08-world-2.md",
+    "phases/phase-09-world-3.md",
+    "phases/phase-10-world-4.md",
+    "phases/phase-11-score-lives-bombs.md",
+    "phases/phase-12-pause-music-settings.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path is under specs/ (heuristic SPEC signal) but content conflicts: it is a status table plus a dated changelog, with no requirements, no technical contracts (endpoints, schemas, protocols) and no decision statements. It cross-references phase files and cites decision IDs (D-xxx) without a decision log file. No ADR status field. Placed as UNKNOWN because the signals conflict; the user should type-tag it via the manifest. SHA-256 hash suffix could not be computed (no hashing tool available to this agent), so the file is written as PROGRESS-nohash.json and must be renamed to PROGRESS-<first 8 hex of sha256('/home/renaud/pewet/specs/PROGRESS.md')>.json."
+}

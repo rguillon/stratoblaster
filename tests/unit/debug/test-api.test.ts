@@ -32,8 +32,17 @@ describe('installTestApi', () => {
       bomb: () => bombs++,
       step: (frames, render) => stepped.push([frames, render]),
       stepHz: 60,
+      perf: () => ({
+        longFrames: 2,
+        longestFrame: 80,
+        frames: 100,
+        lastLoad: 900,
+        longestLoadStep: 120,
+      }),
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
+      // P13-R01: the perf numbers are readable from the test API.
+      perf: { longFrames: 2, longestFrame: 80, frames: 100, lastLoad: 900 },
       screen: 'title',
       loadingProgress: [0, 1],
       game: null,

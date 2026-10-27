@@ -1240,3 +1240,70 @@
 - **Consequences:** the ten World 4 bosses and the wave scripts are unchanged, so the volcanic bosses fly over the town and the city. No level uses lava any more; the lava engine (P10-R05), the 31 volcanic prop models, their rules (`VOLCANIC_PROPS`), lines and plumes stay with their own tests. The ground speeds (70 / 65 / 60 / 55 / 55) and the 300 s levels are kept.
 - **Status:** Accepted
 
+
+### D-113 — Perf: measured first, causes of the three reported problems
+- **Date:** 2026-10-27
+- **Phase:** 13 (P13-R01)
+- **Context:** The reviewer reported lag of up to 1 s after some button presses, slow level loading, and repeated 1 s freezes in Worlds 3 and 4. No machine with a hardware GPU was available to the agent (WSL: SwiftShader and llvmpipe only).
+- **Decision:** A `PerfMonitor` (`src/app/perf-monitor.ts`) times the work of each frame and each level start (long frames above `long_frame_ms` = 50, longest frame, last loading time, longest loading step); it is shown by a perf overlay toggled with F3 (dev and e2e builds, `src/ui/perf-overlay.ts`) and read by the e2e test API (`getState().perf`). `scripts/measure-perf.mjs` drives the e2e build to time the menu presses, each level's loading and its frames over `measure_run_s`, and takes `--url` to measure another build (the "before" numbers were taken on `main` this way). The Chrome profiler (CDP, unminified e2e build) found the causes: (1) **freezes in play**: every new terrain chunk rebuilt its road ribbons by checking each point of every road of the whole level against every street (`meetingWidth`, `inCrossing`: O(roads²) per chunk), 0.8–0.9 s per chunk in the street mazes of Worlds 3 and 4; and every prop window move re-uploaded the instances of every prop kind; (2) **slow loading**: the same road scan for the first chunks (4 s of 3-1's 6 s), the roads and props generated for the level (1.1 s), the ground textures generated again for every start (0.6 s), and the noise computing a cosine and a sine on each call (0.7 s); (3) **button lag**: confirming a level built the whole level inside the key press, so nothing changed on screen until it was built; moving the highlight on the ship select screen compiled shaders the first time each ship was lit.
+- **Alternatives considered:** a Web Worker for the generation (results are classes, not plain data, and the e2e tests step the game synchronously); a quality preset (out of scope).
+- **Status:** Accepted
+
+### D-114 — Perf: same results, less work (indexes, caches, tables)
+- **Date:** 2026-10-27
+- **Phase:** 13 (P13-R03, R04, R05)
+- **Decision:** No change to any result, only to how it is computed: (1) street lines are indexed by bands of Z (32 units, widened by `width / 2 + 1`), so `inCrossing` and `meetingWidth` check only the streets near a point (a query reaching further than the index scans them all); the street lines, the paths / roads split and each road's Z span are made once per list of roads (`WeakMap`s), and roads with no point near a chunk are skipped; (2) `PropField.sync` uploads again only the kinds whose drawn placements changed; (3) `createNoise2D` works out each lattice angle's cosine and sine once (the same doubles); (4) the generated ground, noise and water textures are kept (the 48 most recent, keyed by their arguments), and the level's ground (height field, roads, props placer) generated last is kept, so a Retry or Continue does not generate it again; each level's scenery with its runout is made once, so it is the same object between starts. Unit tests check the index against a check of every street, and the noise against its old formula.
+- **Status:** Accepted
+
+### D-115 — Perf: levels load in steps behind a loading screen
+- **Date:** 2026-10-27
+- **Phase:** 13 (P13-R02, R03, R04)
+- **Decision:** With `steppedLoading` (the browser game; unit tests keep loading at once), confirming a level only starts its loading: the game screen shows straight away, and one step runs per frame: the roads, the rest of the ground, the scene, `GamePlay.prepare` (one hidden model of each enemy kind built into the pool, every material in the scene compiled with `forceCompilation`), then a first drawing, waiting up to 60 frames for the shaders where WebGL compiles them in parallel (`KHR_parallel_shader_compile`). A loading screen (the menus' one, real progress) is drawn over the game screen, fading in after 300 ms (`loading_screen_after_ms`) so a quick load does not flash it. Menu loading gets one more task: each ship is highlighted once, so its spot light's shaders are compiled before the ship select screen. The e2e helpers step through a level's loading (`waitForLoad`, also called by `level()` and `openDebug`). e2e builds skip the shader precompilation (`precompileShaders: !__E2E__`): SwiftShader compiles serially, 2–4 s per load, and pushed tests that load several levels past their timeout; the tests check state, not frame times (ENG-52).
+- **Alternatives considered:** splitting the road and prop generation themselves over frames (resumable generators in `core/scenery`): a large change of deterministic code; left as a suggestion if the reference machine shows steps over `loading_step_max_ms`.
+- **Status:** Accepted
+
+### D-116 — Ship select: one key light per ship
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R02)
+- **Context:** The reviewer still saw a lag when highlighting the second or third ship. The single key light changed its `includedOnlyMeshes` on each move, which dirties the materials of every ship and makes Babylon rebuild their shaders the first time each one is lit.
+- **Decision:** One directional key light per ship, each always lighting only its own ship. Highlighting sets the highlighted ship's light to `spotIntensity` and the others to 0. The look is the same (only the highlighted ship is key-lit). The menu loading task that highlighted each ship once (D-115) was removed.
+- **Status:** Accepted
+
+### D-117 — Levels prepared in a worker while they are chosen
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The reviewer found the level loading still too long and asked for an instant start, with the rest loaded in the background.
+- **Decision:** A module worker (`ground-worker.ts`, bundled by Vite) generates the ground of a level (roads and placed buildings, sent back as plain data) and its scenery textures. The main thread rebuilds the road network and the prop placer from that data without generating anything (`RoadSnapshot`, `PlacerSnapshot`; the indexes are rebuilt in the order the roads and buildings were made, so every query answers the same). The level highlighted on the level select is prefetched once the highlight has rested on it for 0.25 s, and a confirmed level that isn't prefetched yet is asked for at once. Up to 3 grounds and 48 textures are kept. The loading step for the ground waits for the worker; without workers (unit tests) or after a worker error, the ground is generated on the main thread as before. Enemy models are no longer built during loading: one is built per frame during play (`EnemyLayer.prepareNext`), with its shaders compiled as it's built (not in e2e builds). The e2e helper `waitForLoad` polls across `page.evaluate` calls so the worker's messages arrive.
+- **Alternatives considered:** building the Babylon scene ahead on the level select screen (it would freeze the menus, P13-R02); starting play before the props are placed (props would pop in, P13-R05).
+- **Status:** Accepted
+
+### D-118 — Ship select: each ship drawn highlighted while the menus load
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R02)
+- **Context:** The reviewer still sees the whole screen freeze on the first highlight of the second or third ship, on a local phase-13 build. In this build the press runs no long task and creates no shader, texture or buffer, so the stall is taken to be driver-side: the GPU finishing a shader the first time a ship is drawn in its highlighted state.
+- **Decision:** One more menu loading step selects each ship, from the last to the first, and renders the ship scene once, behind the loading screen. Only with the real environment (WebGL), not in unit tests.
+- **Status:** Accepted
+
+### D-119 — The highlighted level is built ahead on the level select
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The reviewer asked again for an instant level start (focus on 4-1), and accepted that the level select screen may stutter while a level is built.
+- **Decision:** Once the highlight has rested 0.6 s on a level, `GameSession` runs that level's loading steps, one per frame (ground, scene, shader compilation, a first drawing hidden behind the menus), all but the last. `GamePlay.attach()` shows the HUD at the start instead of in the constructor. Confirming that level with the same ship (and not from a checkpoint) starts it in that frame, with no loading screen. A partly built level carries on behind the loading screen. Another level or ship drops it, and so does leaving the level select. Off in e2e builds (`prebuildLevels: !__E2E__`, ENG-52). This replaces the "alternatives considered" verdict of D-117 at the reviewer's request.
+- **Status:** Accepted
+
+### D-120 — Music scheduled ahead before each loading step
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03)
+- **Context:** The music, scheduled 100 ms ahead from the page (P12 tunable), stopped during any loading step longer than that, which made the loading noticeable.
+- **Decision:** Before the first run of each level loading step (also while a level is built ahead), the music is scheduled `AUDIO_CONFIG.stallCoverSeconds` (1.5 s) ahead, so it plays on through a frozen frame. The usual lookahead stays 100 ms. Fades, cross-fades and pause still apply to the notes already scheduled (fades go through the track's gain, and pause stops its voices).
+- **Alternatives considered:** a 1.5 s lookahead all the time (it would change the validated P12 tunable); an AudioWorklet sequencer (much larger change).
+- **Status:** Accepted
+
+### D-120 — Music scheduled 1.5 s ahead
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03, P13-R04)
+- **Context:** The music, scheduled 100 ms ahead from the page (P12 tunable `scheduler lookahead`), stopped during any frame longer than that: level loading steps, a level built ahead, the first frames of play. That made the loading noticeable. Scheduling ahead only before the loading steps was tried first and was not enough.
+- **Decision:** `AUDIO_CONFIG.lookaheadSeconds` is 1.5 s. Notes already scheduled play on through a frozen frame. Fades and cross-fades go through the track's gain, pause stops the voices scheduled, and a faded-out track is silenced when its fade ends, so they all still apply. The music is unchanged.
+- **Alternatives considered:** scheduling ahead only before each loading step (tried; the gaps at the level start remained); an AudioWorklet sequencer (much larger change).
+- **Status:** Accepted
+

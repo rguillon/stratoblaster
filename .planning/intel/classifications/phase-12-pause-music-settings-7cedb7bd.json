@@ -1,0 +1,30 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-12-pause-music-settings.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase 12 — Pause, Music and Settings",
+  "summary": "Phase 12 requirements: pause and resume, pause menu, settings screen with saved volumes, generated Web Audio music and sound effects, and test API.",
+  "scope": [
+    "pause menu",
+    "pause and resume",
+    "automatic pause",
+    "settings screen",
+    "music volume",
+    "sound effect volume",
+    "audio engine",
+    "Web Audio",
+    "level music",
+    "boss music",
+    "jingles",
+    "menu theme",
+    "sound effects",
+    "mixing limits",
+    "test API",
+    "cookies"
+  ],
+  "cross_refs": ["01-engineering.md", "docs/architecture.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path under specs/ gives a strong SPEC signal (ambiguity rule: SPEC over PRD). Content is mixed: P12-Rxx MUST requirements with testable acceptance criteria (PRD-like), plus audio engine, cookie storage, test API and tunables (SPEC-like). Status is Ready. Filename does not follow a SPEC-*/RFC-* convention, so confidence is medium. The SHA-256 source hash could not be computed (no shell tool available to the classifier); this file is named with the placeholder suffix UNHASHED and should be renamed to phase-12-pause-music-settings-<first 8 hex of SHA-256 of the source path>.json."
+}
