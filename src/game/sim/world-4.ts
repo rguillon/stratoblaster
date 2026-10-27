@@ -24,8 +24,9 @@ const level = (id: string, scenery: SceneryLevel, plan: WavePlan) =>
   assembleLevel(id, scenery, composeBeats(plan), TABLES);
 
 /**
- * World 4, the Volcanic Lands (P10): five levels of about 5 minutes, from black-sand volcanic
- * islands to an erupting caldera, each with a mini boss and a final boss.
+ * World 4 (P10; reworked at the reviewer's request, 2026-10-27): five levels of about 5 minutes,
+ * from the garden villages World 3 ended on to a downtown of skyscrapers, each with a mini boss
+ * and a final boss.
  */
 export const WORLD_4: readonly GameLevel[] = [
   level('4-1', LEVEL_4_1, PLAN_4_1),

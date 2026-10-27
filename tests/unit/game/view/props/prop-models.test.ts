@@ -11,7 +11,7 @@ import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { LEVEL_ZERO } from '../../../../../src/game/sim/scenery-levels';
 import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/world-1/props';
 import { WORLD_2_PROP_IDS, WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
-import { WORLD_3_PROP_IDS, WORLD_3_PROPS } from '../../../../../src/game/config/world-3/props';
+import { WORLD_3_PROP_IDS } from '../../../../../src/game/config/world-3/props';
 import * as W4 from '../../../../../src/game/config/world-4/props';
 import { PLUME_KINDS } from '../../../../../src/config/plumes';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
@@ -84,8 +84,11 @@ describe('prop models', () => {
     // 17 hand-made models, 12 more for World 1 (phase 6, farms added in review), 5 families of 16
     // buildings made of parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3
     // families of 8; for World 3 (phase 9), 29 hand-made models and 2 families of 8; for World 4
-    // (phase 10), 31 hand-made models; the World 2 pumpjack (reviewer's rework, 2026-10-27).
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 31 + 1);
+    // (phase 10), 31 hand-made models; the World 2 pumpjack, the 3 World 3 homes and the 8 World 4
+    // skyscrapers (reviewer's reworks, 2026-10-27).
+    expect(Object.keys(PROP_MODELS)).toHaveLength(
+      17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 31 + 1 + 3 + 8,
+    );
   });
 
   it('P06-R06: desert homes, outposts, farms and plants, as light as the Level Zero props (D-031)', () => {
@@ -253,15 +256,6 @@ describe('World 3 props (P09-R06)', () => {
       expect(triangles(id), id).toBeLessThan(600);
   });
 
-  it('P09-R06: each building, plant and floating prop fits in its footprint at its largest scale', () => {
-    for (const kind of placedKinds(WORLD_3_PROPS)) {
-      const model = PROP_MODELS[kind.id];
-      if (!model) throw new Error(`no model for ${kind.id}`);
-      const largest = extent(model().structure).radius * kind.scale[1];
-      expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint + 1e-9);
-    }
-  });
-
   it('P09-R06: the canopy city buildings made of parts differ from one variant to the next', () => {
     for (const family of ['canopy-tower', 'canopy-block'] as const) {
       const shapes = new Set(
@@ -282,9 +276,11 @@ describe('World 3 props (P09-R06)', () => {
   });
 });
 
-describe('World 4 props (P10-R08)', () => {
+// The volcanic props of the first World 4: no level places them since the reviewer's rework
+// (2026-10-27), but their rules and models are kept.
+describe('World 4 volcanic props (P10-R08)', () => {
   const W = W4.WORLD_4_PROP_IDS;
-  const { groups, trees, floating } = W4.WORLD_4_PROPS;
+  const { groups, trees, floating } = W4.VOLCANIC_PROPS;
   const ids = (rules: readonly { readonly id: string }[]) => rules.map((r) => r.id);
   const xs = (id: string) =>
     (PROP_MODELS[id]?.().structure.positions ?? []).filter((_, i) => i % 3 === 0);
@@ -297,13 +293,13 @@ describe('World 4 props (P10-R08)', () => {
 
   it('P10-R08: each new prop stays under the triangle budget; each group and scatter has rules', () => {
     for (const id of Object.values(W)) expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
-    expect(ids(groups)).toEqual(expect.arrayContaining(Object.values(W4.WORLD_4_GROUPS)));
+    expect(ids(groups)).toEqual(expect.arrayContaining(Object.values(W4.VOLCANIC_GROUPS)));
     expect(ids(trees)).toEqual(expect.arrayContaining(Object.values(W4.VOLCANIC_SCATTER).flat()));
     expect(ids(floating?.kinds ?? [])).toContain(W.seaSteam);
   });
 
   it('P10-R08: each building, plant and floating prop fits in its footprint at its largest scale', () => {
-    for (const kind of placedKinds(W4.WORLD_4_PROPS)) {
+    for (const kind of placedKinds(W4.VOLCANIC_PROPS)) {
       expect(reach(kind.id) * kind.scale[1], kind.id).toBeLessThanOrEqual(kind.footprint);
     }
   });

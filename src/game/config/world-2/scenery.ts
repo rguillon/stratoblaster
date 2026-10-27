@@ -269,6 +269,19 @@ const INDUSTRIAL_BELT: readonly TerrainSection[] = [
   FACTORY_DISTRICT,
 ];
 
+/** The great works filling every block, where 2-5 ends and World 3 begins. */
+export const GREAT_WORKS = section('great works', 80, {
+  relief: smooth(32, 2, 600, 2),
+  buildingDensity: 1,
+  treeDensity: 0.02,
+  surface: { paved: 1 },
+  streets: STREETS,
+  trees: PL.industry,
+  groups: [G.heavyIndustry],
+  // Every part of every block gets a plant or works, side by side, as in Level Zero's city.
+  blocks: { podiums: [], podiumHeight: [0, 0], towers: [16, 16] },
+});
+
 /**
  * 2-5, Factory district: foundries, rail yards, heavy industry, then great works filling every
  * block to the end.
@@ -302,17 +315,7 @@ const FACTORIES: readonly TerrainSection[] = [
     trees: PL.industry,
     groups: [G.heavyIndustry],
   }),
-  section('great works', 80, {
-    relief: smooth(32, 2, 600, 2),
-    buildingDensity: 1,
-    treeDensity: 0.02,
-    surface: { paved: 1 },
-    streets: STREETS,
-    trees: PL.industry,
-    groups: [G.heavyIndustry],
-    // Every part of every block gets a plant or works, side by side, as in Level Zero's city.
-    blocks: { podiums: [], podiumHeight: [0, 0], towers: [16, 16] },
-  }),
+  GREAT_WORKS,
 ];
 
 const level = (

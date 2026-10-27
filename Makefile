@@ -8,7 +8,7 @@ NPX := npx --no-install
 PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
 # `make install SKIP_BROWSER=1` skips Chromium: jobs without e2e, or the Playwright image that has it.
 SKIP_BROWSER ?=
-# Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--shard=1/3`.
+# Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--grep=P09`.
 E2E_ARGS ?=
 # Tool caches (D-094). ESLint's cache is only used by `check-fast` (pre-push): it skips unchanged
 # files, whose type-aware results can change with the files they import. `lint` and `check` lint

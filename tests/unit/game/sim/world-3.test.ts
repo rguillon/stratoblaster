@@ -2,12 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { GameLevel } from '../../../../src/core/content/game-level';
 import { levelLength, type TerrainSection } from '../../../../src/core/scenery/scenery-level';
 import { QUIET_BEFORE_BOSS } from '../../../../src/game/config/world-1/bosses';
+import { TRANSITION } from '../../../../src/game/config/world-2/scenery';
 import { MORNING_MIST } from '../../../../src/game/config/world-3/looks';
-import {
-  JUNGLE_PLANTS,
-  WORLD_3_FLOATING,
-  WORLD_3_PROPS,
-} from '../../../../src/game/config/world-3/props';
+import { WORLD_3_GROUPS, WORLD_3_PROPS } from '../../../../src/game/config/world-3/props';
 import { PLAN_3_1 } from '../../../../src/game/config/world-3/waves';
 import { composeBeats } from '../../../../src/game/config/world-2/waves';
 import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
@@ -18,7 +15,7 @@ import { WORLD_2 } from '../../../../src/game/sim/world-2';
 import { WORLD_3 } from '../../../../src/game/sim/world-3';
 import { SCENERY_BINDINGS } from '../../../../src/game/view/scenery-bindings';
 import { at } from '../../../helpers/at';
-import { buildingCount, levelMetrics, waterShares } from '../../../helpers/level-metrics';
+import { levelMetrics, propCounts, waterShares } from '../../../helpers/level-metrics';
 
 const level = (id: string): GameLevel => {
   const found = [...WORLD_2, ...WORLD_3].find((l) => l.id === id);
@@ -35,11 +32,12 @@ const lookOf = (id: string) => SCENERY_BINDINGS.looks[level(id).scenery.id];
 /** A sea section: a coast, or open water whose ground lies under the water level. */
 const isSea = (s: TerrainSection) => s.shore !== undefined || s.relief.base < 0;
 
-/** Plants and what grows or stands on the water: not buildings. */
-const PLANTS = new Set([
-  ...WORLD_3_PROPS.trees.map((t) => t.id),
-  ...WORLD_3_FLOATING.kinds.map((k) => k.id),
-]);
+/** Plants: not buildings. */
+const PLANTS = new Set(WORLD_3_PROPS.trees.map((t) => t.id));
+
+/** How much of a level a ground cover covers: its shares weighted by the sections' time. */
+const cover = (game: GameLevel, kind: 'lush' | 'paved') =>
+  game.scenery.sections.reduce((sum, s) => sum + s.seconds * (s.surface?.[kind] ?? 0), 0);
 
 describe('World 3', () => {
   it('P09-R01: five playable levels, 3-1 to 3-5, all unlocked', () => {
@@ -62,64 +60,74 @@ describe('World 3', () => {
     expect(WORLD_3.map((l) => l.scenery.scrollSpeed)).toEqual([70, 60, 55, 60, 60]);
   });
 
-  it('P09-R03: 3-1 has a sea section, at most 30 % of it sea; 3-2 to 3-5 have none', () => {
-    const first = at(WORLD_3, 0);
-    expect(first.scenery.sections.some(isSea)).toBe(true);
-    expect(waterShares(first, isSea).sea).toBeGreaterThan(0);
-    expect(waterShares(first, isSea).sea).toBeLessThanOrEqual(0.3);
-    const seconds = (sections: readonly TerrainSection[]) =>
-      sections.reduce((sum, s) => sum + s.seconds, 0);
-    const sections = first.scenery.sections;
-    expect(seconds(sections.filter(isSea)) / seconds(sections)).toBeLessThanOrEqual(0.3);
-    for (const game of WORLD_3.slice(1)) {
+  it('P09-R03: no open sea in World 3, canals and rivers allowed (reviewer, 2026-10-27)', () => {
+    for (const game of WORLD_3) {
       expect(game.scenery.sections.filter(isSea), game.id).toEqual([]);
       expect(waterShares(game, isSea).sea, game.id).toBe(0);
+      for (const s of game.scenery.sections) {
+        expect(s.relief.base, `${game.id} ${s.name}`).toBeGreaterThan(game.scenery.sea?.level ?? 0);
+        expect(s.floatDensity ?? 0, `${game.id} ${s.name}`).toBe(0);
+      }
+      expect(game.scenery.props.floating, game.id).toBeUndefined();
     }
   });
 
-  it('P09-R03: every level has some river, lake or swamp water', () => {
-    for (const game of WORLD_3)
+  it('P09-R03: every level has some canal, river or pond water', () => {
+    for (const game of WORLD_3) {
       expect(waterShares(game, isSea).inland, game.id).toBeGreaterThan(0.02);
-    // Rivers cut below the water level, the swamps, the lake and the pools.
-    const has = (id: string, test: (s: TerrainSection) => boolean) =>
-      level(id).scenery.sections.some(test);
-    for (const id of ['3-1', '3-2', '3-3', '3-5'])
       expect(
-        has(id, (s) => (s.channel?.floor ?? 0) < 0),
-        id,
+        game.scenery.sections.some((s) => (s.channel?.floor ?? 0) < 0),
+        game.id,
       ).toBe(true);
-    expect(has('3-4', (s) => s.relief.base < 4 && (s.floatDensity ?? 0) > 0)).toBe(true);
-    expect(has('3-5', (s) => (s.lakes?.level ?? 0) < 0)).toBe(true);
-  });
-
-  it('P09-R03: the number of buildings goes up from 3-1 to 3-5 (fixed seed)', () => {
-    expect(increasing(WORLD_3.map((l) => buildingCount(l, PLANTS)))).toBe(true);
-  });
-
-  it('P09-R03: each level begins on the kind of ground the previous one ended on', () => {
-    const first = (id: string) => at(level(id).scenery.sections, 0);
-    const last = (id: string) => level(id).scenery.sections.at(-1);
-    for (const [prev, next] of [
-      ['3-1', '3-2'],
-      ['3-2', '3-3'],
-      ['3-3', '3-4'],
-      ['3-4', '3-5'],
-    ] as const) {
-      expect(first(next).relief, next).toEqual(last(prev)?.relief);
     }
-    expect(first('3-2').channel).toEqual(last('3-1')?.channel);
-    expect(last('3-5')?.groups).toEqual(['canopy-centre']);
-    // The delta's sea, the waterfalls of 3-3, the swamp pipelines and the dam of 3-4.
-    expect(first('3-1').relief.base).toBeLessThan(-20);
-    expect(
-      level('3-3').scenery.props.landmarks?.filter((l) => l.kind === 'waterfall').length,
-    ).toBeGreaterThanOrEqual(2);
-    expect(level('3-4').scenery.props.lines?.every((l) => l.overWater)).toBe(true);
-    expect(level('3-4').scenery.props.landmarks?.map((l) => l.kind)).toContain('giant-dam');
-    // The rainforest's canopy: the densest trees of the world.
-    const rainforest = level('3-2').scenery.sections;
-    expect(rainforest.filter((s) => s.treeDensity >= 1).length).toBeGreaterThanOrEqual(2);
-    expect(rainforest.some((s) => s.trees?.includes(at(JUNGLE_PLANTS.rainforest, 0)))).toBe(true);
+    expect(level('3-5').scenery.sections.some((s) => (s.lakes?.level ?? 0) < 0)).toBe(true);
+  });
+
+  it('P09-R03: the concrete gives way to grass from 3-1 to 3-5', () => {
+    for (const id of ['3-1', '3-2', '3-3'])
+      expect(cover(level(id), 'paved'), id).toBeGreaterThan(cover(level(id), 'lush'));
+    for (const id of ['3-4', '3-5'])
+      expect(cover(level(id), 'lush'), id).toBeGreaterThan(cover(level(id), 'paved'));
+    expect(increasing(WORLD_3.map((l) => -cover(l, 'paved')))).toBe(true);
+    expect(increasing(WORLD_3.map((l) => cover(l, 'lush')))).toBe(true);
+  });
+
+  it('P09-R03: from the factories to the homes: no industry in 3-4 and 3-5, garden villages only at the end', () => {
+    const groups = (id: string) => new Set(level(id).scenery.sections.flatMap((s) => s.groups));
+    const G = WORLD_3_GROUPS;
+    const industry = [G.heavyIndustry, G.industrial, G.docks, G.workshops];
+    expect(groups('3-1').has(G.heavyIndustry)).toBe(true);
+    for (const id of ['3-4', '3-5'])
+      for (const g of industry) expect(groups(id).has(g), `${id} ${g}`).toBe(false);
+    for (const g of [G.suburbs, G.villages]) expect(groups('3-1').has(g), g).toBe(false);
+    expect(level('3-5').scenery.sections.at(-1)?.groups).toEqual([G.villages]);
+  });
+
+  it('P09-R03: props and buildings go up from 3-1 to 3-5, and from each first half to the second (fixed seed)', () => {
+    const counts = WORLD_3.map((l) => propCounts(l, PLANTS));
+    expect(increasing(counts.map((c) => c.all))).toBe(true);
+    expect(increasing(counts.map((c) => c.buildings))).toBe(true);
+    for (const [i, c] of counts.entries())
+      expect(c.secondHalf, at(WORLD_3, i).id).toBeGreaterThan(c.firstHalf);
+  });
+
+  it('P09-R03: each level begins on the ground the previous one ended on, 3-1 on 2-5’s; slow transitions', () => {
+    const levels = [level('2-5'), ...WORLD_3];
+    for (const [i, next] of levels.slice(1).entries()) {
+      const { sections } = at(levels, i).scenery;
+      const [last, first] = [at(sections, sections.length - 1), at(next.scenery.sections, 0)];
+      expect(first.relief, next.id).toEqual(last.relief);
+      expect(first.surface, next.id).toEqual(last.surface);
+      expect(first.streets, next.id).toEqual(last.streets);
+      if (i > 0) expect(first.groups, next.id).toEqual(last.groups);
+      if (i > 0) expect(first.channel, next.id).toEqual(last.channel);
+    }
+    for (const game of WORLD_3) {
+      expect(game.scenery.transition, game.id).toBe(TRANSITION);
+      // Each section is longer than the blend, so the blends never overlap.
+      for (const s of game.scenery.sections)
+        expect(s.seconds * game.scenery.scrollSpeed, s.name).toBeGreaterThan(TRANSITION);
+    }
   });
 
   /** The sky script of level `id`; fails when it has none. */
@@ -140,11 +148,8 @@ describe('World 3', () => {
     expect(changes('3-1').map((c) => [c.from, c.to, c.look])).toEqual([
       [0, 150, { timeOfDay: 'morning', clouds: [0.3, 0.2] }],
     ]);
-    expect(script('3-2').start).toMatchObject({ timeOfDay: 'midday', clouds: [0.5, 0.3] });
-    expect(script('3-2').start.weather).toBeUndefined();
-    // Green-tinted ambient under the canopy.
-    const tint = script('3-2').start.tint ?? [1, 1, 1];
-    expect(tint[1]).toBeGreaterThan(Math.max(tint[0], tint[2]));
+    // No green canopy tint since the rework (reviewer, 2026-10-27).
+    expect(script('3-2').start).toEqual({ timeOfDay: 'midday', clouds: [0.5, 0.3] });
     expect(changes('3-2').map((c) => [c.from, c.to, c.look.weather])).toEqual([
       [92, 108, rain(0.4)],
       [192, 208, undefined],

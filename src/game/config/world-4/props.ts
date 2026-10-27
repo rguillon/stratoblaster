@@ -8,7 +8,11 @@ import type {
 import { CAR_RULES } from '../cars';
 import { WORLD_1_ROADS } from '../world-1/props';
 
-/** Ids of the props added for World 4, the Volcanic Lands (P10-R08). */
+/**
+ * Ids of the props added for World 4, the Volcanic Lands (P10-R08). Since the reviewer's rework
+ * (2026-10-27) no level places them: World 4 goes from the houses to the skyscrapers
+ * (`city-props.ts`); the volcanic rules below are kept with their models.
+ */
 export const WORLD_4_PROP_IDS = {
   // Vegetation and rock.
   hardyGrass: 'hardy-grass',
@@ -52,7 +56,7 @@ export const WORLD_4_PROP_IDS = {
 } as const;
 
 /** Building groups of World 4; each section lists the ones that stand on it. */
-export const WORLD_4_GROUPS = {
+export const VOLCANIC_GROUPS = {
   /** Fishing huts on the black-sand beaches of the islands (4-1). */
   fishing: 'fishing-huts',
   /** Geothermal wells on the islands and the plains (4-1, 4-2). */
@@ -78,7 +82,7 @@ export const WORLD_4_GROUPS = {
 } as const;
 
 const W = WORLD_4_PROP_IDS;
-const G = WORLD_4_GROUPS;
+const G = VOLCANIC_GROUPS;
 
 /**
  * What grows and lies on the ground of each kind of section (P10-R08), as `TerrainSection.trees`
@@ -153,7 +157,7 @@ const tree = (
  * it is at least `depth` deep, with the chance of each section's `floatDensity`: the sea sections
  * near the islands and the hot coast get a high `floatDensity`, the open sea a low one.
  */
-export const WORLD_4_FLOATING: FloatRules = {
+export const VOLCANIC_FLOATING: FloatRules = {
   cellSize: 45,
   perCell: 2,
   depth: 1,
@@ -164,11 +168,12 @@ export const WORLD_4_FLOATING: FloatRules = {
 };
 
 /**
- * The props of World 4 (P10-R03, R08): the building groups the sections pick from, what grows
- * and lies on the ground (`VOLCANIC_SCATTER` picks per section), and what stands on the hot sea.
- * Lone ash huts stand out on the plains like the scatter.
+ * The props of the first World 4, the Volcanic Lands (P10-R03, R08): the building groups the
+ * sections picked from, what grows and lies on the ground (`VOLCANIC_SCATTER` picks per section),
+ * and what stands on the hot sea. Lone ash huts stand out on the plains like the scatter. No
+ * level uses them since the reviewer's rework (2026-10-27); kept with their models.
  */
-export const WORLD_4_PROPS: PropRules = {
+export const VOLCANIC_PROPS: PropRules = {
   cellSize: 50,
   treeClearance: 2,
   maxSlope: 0.12,
@@ -247,7 +252,7 @@ export const WORLD_4_PROPS: PropRules = {
   cars: CAR_RULES,
   loners: { cell: 150, chance: 0.15, clearance: 18 },
   hamlets: { spacing: [700, 1400], buildings: [5, 9], radius: 32, gap: 2, clearance: 18 },
-  floating: WORLD_4_FLOATING,
+  floating: VOLCANIC_FLOATING,
 };
 
 // Lines of World 4 (P10-R08): the geothermal pipeline of 4-2, and the rail lines of 4-4 with ore
@@ -259,7 +264,7 @@ export const WORLD_4_PROPS: PropRules = {
 // ```ts
 // const YARD_PATH = { x: -90, amplitude: 40, wavelength: 3000 };
 // props: {
-//   ...WORLD_4_PROPS,
+//   ...VOLCANIC_PROPS,
 //   lines: [pipelineLine(PIPE_PATH, ['ash plain']), ...railWithWagons(YARD_PATH, ['forge'])],
 // }
 // ```

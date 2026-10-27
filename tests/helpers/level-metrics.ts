@@ -89,11 +89,8 @@ export function buildingCount(game: GameLevel, plants: ReadonlySet<string>): num
   return placer.place(area).filter((p) => !plants.has(p.kind)).length;
 }
 
-/**
- * Props placed over the whole level with its own seed: all of them, the buildings (props that
- * are not `plants`), and how many stand in each half of the level.
- */
-export function propCounts(game: GameLevel, plants: ReadonlySet<string>) {
+/** The props placed over the whole level with its own seed, and the level's length. */
+export function placedProps(game: GameLevel) {
   const { scenery } = game;
   const field = new HeightField(scenery);
   const placer = new PropPlacer(
@@ -104,7 +101,16 @@ export function propCounts(game: GameLevel, plants: ReadonlySet<string>) {
     scenery.sea?.level,
   );
   const placed = placer.place({ xMin: -400, xMax: 400, zMin: 0, zMax: field.length });
-  const firstHalf = placed.filter((p) => p.z < field.length / 2).length;
+  return { placed, length: field.length };
+}
+
+/**
+ * Props placed over the whole level with its own seed: all of them, the buildings (props that
+ * are not `plants`), and how many stand in each half of the level.
+ */
+export function propCounts(game: GameLevel, plants: ReadonlySet<string>) {
+  const { placed, length } = placedProps(game);
+  const firstHalf = placed.filter((p) => p.z < length / 2).length;
   return {
     all: placed.length,
     buildings: placed.filter((p) => !plants.has(p.kind)).length,

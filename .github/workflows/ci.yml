@@ -35,12 +35,7 @@ jobs:
           if-no-files-found: ignore
 
   e2e:
-    name: e2e (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -52,11 +47,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: make install
-      - run: make e2e E2E_ARGS=--shard=${{ matrix.shard }}/3
+      - run: make e2e
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report-${{ matrix.shard }}
+          name: playwright-report
           path: |
             playwright-report/
             test-results/

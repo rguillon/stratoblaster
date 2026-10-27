@@ -10,7 +10,7 @@ import type { WavePlan } from '../world-2/waves';
  * 4-1, then one more a level (P05-R24, D-090).
  */
 
-/** 4-1: every kind, Weavers and Strafers low over the steaming sea. */
+/** 4-1: every kind, Weavers and Strafers low over the garden town. */
 export const PLAN_4_1: WavePlan = {
   from: 4,
   to: 292,
@@ -43,7 +43,7 @@ export const PLAN_4_1: WavePlan = {
   ],
 };
 
-/** 4-2: every kind, Splitters and Spinners over the ash plains. */
+/** 4-2: every kind, Splitters and Spinners over the inner town. */
 export const PLAN_4_2: WavePlan = {
   from: 4,
   to: 292,
@@ -79,7 +79,7 @@ export const PLAN_4_2: WavePlan = {
   ],
 };
 
-/** 4-3: every kind, Lancers and Rocketeers along the lava rivers. */
+/** 4-3: every kind, Lancers and Rocketeers along the river quays of midtown. */
 export const PLAN_4_3: WavePlan = {
   from: 4,
   to: 292,
@@ -114,7 +114,7 @@ export const PLAN_4_3: WavePlan = {
   ],
 };
 
-/** 4-4: every kind, Carriers and Bulwarks out of the foundries. */
+/** 4-4: every kind, Carriers and Bulwarks between the towers. */
 export const PLAN_4_4: WavePlan = {
   from: 4,
   to: 292,

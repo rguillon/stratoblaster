@@ -11,7 +11,8 @@ import {
   LAVA_GLOW,
   SMOKE_HAZE,
 } from '../../../../src/game/config/world-4/looks';
-import { WORLD_4_FLOATING, WORLD_4_PROPS } from '../../../../src/game/config/world-4/props';
+import { TRANSITION } from '../../../../src/game/config/world-2/scenery';
+import { WORLD_4_GROUPS, WORLD_4_PROPS } from '../../../../src/game/config/world-4/city-props';
 import { PLAN_4_1 } from '../../../../src/game/config/world-4/waves';
 import { composeBeats } from '../../../../src/game/config/world-2/waves';
 import { FIRST_KINDS } from '../../../../src/game/sim/enemy-kinds';
@@ -22,7 +23,8 @@ import { WORLD_3 } from '../../../../src/game/sim/world-3';
 import { WORLD_4 } from '../../../../src/game/sim/world-4';
 import { SCENERY_BINDINGS } from '../../../../src/game/view/scenery-bindings';
 import { at } from '../../../helpers/at';
-import { buildingCount, levelMetrics, seaShare } from '../../../helpers/level-metrics';
+import { PROP_MODELS } from '../../../../src/game/view/props/prop-models';
+import { levelMetrics, placedProps, waterShares } from '../../../helpers/level-metrics';
 
 const level = (id: string): GameLevel => {
   const found = [...WORLD_3, ...WORLD_4].find((l) => l.id === id);
@@ -39,14 +41,35 @@ const lookOf = (id: string) => SCENERY_BINDINGS.looks[level(id).scenery.id];
 /** A sea section: a coast, or open water whose ground lies under the water level. */
 const isSea = (s: TerrainSection) => s.shore !== undefined || s.relief.base < 0;
 
-/** Share of a level's ground covered by lava: under its liquid level, if its look makes it lava. */
-const lavaShare = (id: string) => (lookOf(id)?.sea.lava ? seaShare(level(id)) : 0);
+/** Plants: not buildings. */
+const PLANTS = new Set(WORLD_4_PROPS.trees.map((t) => t.id));
 
-/** Plants, rocks and what floats on the sea: not buildings. */
-const SCATTER = new Set([
-  ...WORLD_4_PROPS.trees.map((t) => t.id),
-  ...WORLD_4_FLOATING.kinds.map((k) => k.id),
-]);
+/** How much of a level a ground cover covers: its shares weighted by the sections' time. */
+const cover = (game: GameLevel, kind: 'lush' | 'paved') =>
+  game.scenery.sections.reduce((sum, s) => sum + s.seconds * (s.surface?.[kind] ?? 0), 0);
+
+/** The top of a prop model, at scale 1. */
+const top = (id: string) =>
+  Math.max(...(PROP_MODELS[id]?.().structure.positions ?? [0]).filter((_, i) => i % 3 === 1));
+
+/**
+ * The mean height of the buildings placed over a level (its own seed), over the whole level and
+ * over each half.
+ */
+function buildingHeights(game: GameLevel) {
+  const { placed, length } = placedProps(game);
+  const buildings = placed.filter((p) => !PLANTS.has(p.kind));
+  const tops = new Map<string, number>();
+  const height = (kind: string) => tops.get(kind) ?? tops.set(kind, top(kind)).get(kind) ?? 0;
+  const mean = (ps: typeof buildings) =>
+    ps.reduce((sum, p) => sum + height(p.kind) * p.scale, 0) / ps.length;
+  return {
+    all: mean(buildings),
+    firstHalf: mean(buildings.filter((p) => p.z < length / 2)),
+    secondHalf: mean(buildings.filter((p) => p.z >= length / 2)),
+    tallest: Math.max(...buildings.map((p) => height(p.kind) * p.scale)),
+  };
+}
 
 const ash = (strength: number) => ({ kind: 'ash', strength });
 const embers = (strength: number) => ({ kind: 'embers', strength });
@@ -73,47 +96,65 @@ describe('World 4', () => {
     expect(WORLD_4.map((l) => l.scenery.scrollSpeed)).toEqual([70, 65, 60, 55, 55]);
   });
 
-  it('P10-R03: 4-1 is mostly sea (≥ 70 %); 4-2 to 4-5 have no sea section', () => {
-    const first = at(WORLD_4, 0);
-    const seconds = (sections: readonly TerrainSection[]) =>
-      sections.reduce((sum, s) => sum + s.seconds, 0);
-    const sections = first.scenery.sections;
-    expect(seconds(sections.filter(isSea)) / seconds(sections)).toBeGreaterThanOrEqual(0.7);
-    expect(seaShare(first)).toBeGreaterThanOrEqual(0.7);
-    expect(lookOf('4-1')?.sea.lava).toBeUndefined();
-    for (const game of WORLD_4.slice(1))
+  it('P10-R03: no sea and no lava in World 4: the river is water (reviewer, 2026-10-27)', () => {
+    for (const game of WORLD_4) {
       expect(game.scenery.sections.filter(isSea), game.id).toEqual([]);
-  });
-
-  it('P10-R03: no lava in 4-1 and 4-2; the lava’s share of the ground goes up from 4-3 to 4-5', () => {
-    expect(lavaShare('4-1')).toBe(0);
-    expect(lavaShare('4-2')).toBe(0);
-    expect(seaShare(level('4-2'))).toBe(0);
-    const shares = ['4-3', '4-4', '4-5'].map(lavaShare);
-    expect(increasing(shares)).toBe(true);
-    // About 10 %, 20 % and 35 % (tunable values).
-    expect(at(shares, 0)).toBeGreaterThan(0.05);
-    expect(at(shares, 2)).toBeGreaterThan(0.25);
-  });
-
-  it('P10-R03: the number of buildings goes up from 4-1 to 4-4 (fixed seed)', () => {
-    const counts = WORLD_4.slice(0, 4).map((l) => buildingCount(l, SCATTER));
-    expect(increasing(counts)).toBe(true);
-  });
-
-  it('P10-R03: each level begins on the kind of ground the previous one ended on', () => {
-    const first = (id: string) => at(level(id).scenery.sections, 0);
-    const last = (id: string) => level(id).scenery.sections.at(-1);
-    for (const [prev, next] of [
-      ['4-1', '4-2'],
-      ['4-2', '4-3'],
-      ['4-3', '4-4'],
-      ['4-4', '4-5'],
-    ] as const) {
-      expect(first(next).relief, next).toEqual(last(prev)?.relief);
+      expect(lookOf(game.id)?.sea.lava, game.id).toBeUndefined();
+      expect(game.scenery.props.floating, game.id).toBeUndefined();
+      expect(waterShares(game, isSea).sea, game.id).toBe(0);
+      expect(waterShares(game, isSea).inland, game.id).toBeGreaterThan(0.02);
     }
-    // 4-5 ends on the magma lake, which the final fight's runout repeats.
-    expect(lavaShare('4-5')).toBeGreaterThan(lavaShare('4-4'));
+  });
+
+  it('P10-R03: the grass gives way to concrete from 4-1 to 4-5', () => {
+    expect(cover(level('4-1'), 'lush')).toBeGreaterThan(cover(level('4-1'), 'paved'));
+    for (const id of ['4-3', '4-4', '4-5'])
+      expect(cover(level(id), 'paved'), id).toBeGreaterThan(cover(level(id), 'lush'));
+    expect(increasing(WORLD_4.map((l) => cover(l, 'paved')))).toBe(true);
+    expect(increasing(WORLD_4.map((l) => -cover(l, 'lush')))).toBe(true);
+  });
+
+  it('P10-R03: from the houses to the skyscrapers: no tower in 4-1 and 4-2, no skyscraper before 4-4, skyscrapers only at the end', () => {
+    const G = WORLD_4_GROUPS;
+    const groups = (id: string) => new Set(level(id).scenery.sections.flatMap((s) => s.groups));
+    expect(at(level('4-1').scenery.sections, 0).groups).toEqual([G.villages]);
+    for (const id of ['4-1', '4-2'])
+      for (const g of [G.towers, G.skyscrapers, G.downtown])
+        expect(groups(id).has(g), `${id} ${g}`).toBe(false);
+    expect(groups('4-3').has(G.skyscrapers)).toBe(false);
+    expect(groups('4-4').has(G.skyscrapers)).toBe(true);
+    expect(level('4-5').scenery.sections.at(-1)?.groups).toEqual([G.downtown]);
+    const downtown = WORLD_4_PROPS.groups.find((g) => g.id === G.downtown)?.kinds ?? [];
+    expect(downtown.every((k) => k.id.startsWith('skyscraper-'))).toBe(true);
+  });
+
+  it('P10-R03: the buildings grow taller from 4-1 to 4-5, and from each first half to the second (fixed seed)', () => {
+    const heights = WORLD_4.map(buildingHeights);
+    expect(increasing([buildingHeights(level('3-5')).all, ...heights.map((h) => h.all)])).toBe(
+      true,
+    );
+    for (const [i, h] of heights.entries())
+      expect(h.secondHalf, at(WORLD_4, i).id).toBeGreaterThan(h.firstHalf);
+    // The skyscrapers stand at least twice as tall as Level Zero's tallest city tower.
+    expect(at(heights, 4).tallest).toBeGreaterThan(2 * top('city-tower-9') * 0.5);
+  });
+
+  it('P10-R03: each level begins on the ground the previous one ended on, 4-1 on 3-5’s; slow transitions', () => {
+    const levels = [level('3-5'), ...WORLD_4];
+    for (const [i, next] of levels.slice(1).entries()) {
+      const { sections } = at(levels, i).scenery;
+      const [last, first] = [at(sections, sections.length - 1), at(next.scenery.sections, 0)];
+      expect(first.relief, next.id).toEqual(last.relief);
+      expect(first.surface, next.id).toEqual(last.surface);
+      expect(first.streets, next.id).toEqual(last.streets);
+      expect(first.groups, next.id).toEqual(last.groups);
+      expect(first.channel, next.id).toEqual(last.channel);
+    }
+    for (const game of WORLD_4) {
+      expect(game.scenery.transition, game.id).toBe(TRANSITION);
+      for (const s of game.scenery.sections)
+        expect(s.seconds * game.scenery.scrollSpeed, s.name).toBeGreaterThan(TRANSITION);
+    }
   });
 
   /** The sky script of level `id`; fails when it has none. */
@@ -145,7 +186,7 @@ describe('World 4', () => {
     expect(ASH_LIGHT[2]).toBeLessThan(ASH_LIGHT[1]);
   });
 
-  it('P10-R04: 4-3 a dusk giving way to the lava’s glow, with embers', () => {
+  it('P10-R04: 4-3 a dusk giving way to the city’s glow, with embers', () => {
     expect(script('4-3').start).toEqual({
       timeOfDay: 'dusk',
       clouds: [0.5, 0.4],
@@ -168,7 +209,7 @@ describe('World 4', () => {
     ]);
   });
 
-  it('P10-R04: 4-4 a furnace-lit night with ash and embers; 4-5 the eruption growing to the final boss', () => {
+  it('P10-R04: 4-4 a night lit by the towers, with ash and embers; 4-5 the eruption growing to the final boss', () => {
     expect(script('4-4').start).toEqual({
       timeOfDay: 'night',
       clouds: [0.6, 0.5],
@@ -198,15 +239,6 @@ describe('World 4', () => {
         },
       ],
     ]);
-  });
-
-  it('P10-R05: the lava levels’ liquid is lava, flowing down the screen', () => {
-    for (const id of ['4-3', '4-4', '4-5']) {
-      const sea = lookOf(id)?.sea;
-      expect(sea?.lava, id).toBeDefined();
-      expect(sea?.drift[1], id).toBeGreaterThan(0);
-      expect(level(id).scenery.sea, id).toBeDefined();
-    }
   });
 
   it('P10-R09, P05-R24: each wave script uses all eleven first kinds and the five veterans; the elites come in level by level', () => {

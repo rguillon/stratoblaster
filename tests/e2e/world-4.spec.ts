@@ -72,7 +72,9 @@ test.describe('P10: World 4', () => {
     });
   });
 
-  test('P10-R04: 4-4 a furnace-lit night with ash and embers together', async ({ page }) => {
+  test('P10-R04: 4-4 a night over the lit towers with ash and embers together', async ({
+    page,
+  }) => {
     await openDebug(page, '?level=4-4&t=60');
     await waitForLevelTime(page, 60.1);
     const sky = (await gameState(page)).game?.sky;
@@ -81,12 +83,13 @@ test.describe('P10: World 4', () => {
       weather: 'ash',
       secondWeather: 'embers',
       weatherParticles: 690,
-      lava: true,
+      // No lava since the rework (reviewer, 2026-10-27): the river is water.
+      lava: false,
     });
     expect(sky?.groundLights).toBeGreaterThan(1);
   });
 
-  test('P10-R13: ?level=4-5&boss=final starts at the Caldera Throne, over the magma lake, in the eruption', async ({
+  test('P10-R13: ?level=4-5&boss=final starts at the Caldera Throne, over the lit skyscrapers, in the eruption', async ({
     page,
   }) => {
     await openDebug(page, '?level=4-5&boss=final');
@@ -94,9 +97,9 @@ test.describe('P10: World 4', () => {
       'Caldera Throne',
     );
     const sky = (await gameState(page)).game?.sky;
-    // Over the lake: lava under the middle of the playfield; the embers at their strongest.
-    expect(sky).toMatchObject({ lava: true, weather: 'embers', weatherParticles: 800 });
-    expect(sky?.liquidDepth).toBeGreaterThan(0);
+    // Over downtown (no lava since the rework, 2026-10-27); the embers at their strongest.
+    expect(sky).toMatchObject({ lava: false, weather: 'embers', weatherParticles: 800 });
+    expect(sky?.groundLights).toBeGreaterThan(1);
   });
 
   test('P10-R11: ?level=4-1&boss=final: K destroys the Steam Dreadnought and the level is complete', async ({

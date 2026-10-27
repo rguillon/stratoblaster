@@ -71,7 +71,7 @@ test.describe('P09: World 3', () => {
     });
   });
 
-  test('P09-R04: 3-5 rains at night over the lit city', async ({ page }) => {
+  test('P09-R04: 3-5 rains at night over the lit villages', async ({ page }) => {
     await openDebug(page, '?level=3-5&t=60');
     await waitForLevelTime(page, 60.1);
     const sky = (await gameState(page)).game?.sky;
