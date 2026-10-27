@@ -26,8 +26,7 @@ import {
   LEVEL_3_4_LOOK,
   LEVEL_3_5_LOOK,
 } from '../config/world-3/looks';
-import { LEVEL_3_3, LEVEL_3_4, LEVEL_3_5 } from '../config/world-3/scenery-inland';
-import { LEVEL_3_1, LEVEL_3_2 } from '../config/world-3/scenery-river';
+import { LEVEL_3_1, LEVEL_3_2, LEVEL_3_3, LEVEL_3_4, LEVEL_3_5 } from '../config/world-3/scenery';
 import {
   LEVEL_4_1_LOOK,
   LEVEL_4_2_LOOK,

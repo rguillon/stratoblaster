@@ -9,7 +9,7 @@ import type { WavePlan } from '../world-2/waves';
  * at each level, from the Wasp in 3-1 to the Phantom in 3-5 (P05-R24, D-090).
  */
 
-/** 3-1: Gnats, Hornets, Scouts, Strafers, Weavers and Splitters skimming the delta. */
+/** 3-1: Gnats, Hornets, Scouts, Strafers, Weavers and Splitters skimming the canal works. */
 export const PLAN_3_1: WavePlan = {
   from: 4,
   to: 292,
@@ -31,7 +31,7 @@ export const PLAN_3_1: WavePlan = {
   ],
 };
 
-/** 3-2: every kind, Hornet swarms diving out of the canopy and Lancers along the river. */
+/** 3-2: every kind, Hornet swarms diving over the docks and Lancers along the canal. */
 export const PLAN_3_2: WavePlan = {
   from: 4,
   to: 292,
@@ -58,7 +58,7 @@ export const PLAN_3_2: WavePlan = {
   ],
 };
 
-/** 3-3: every kind, Spinner and Rocketeer groups around the temples. */
+/** 3-3: every kind, Spinner and Rocketeer groups over the workers' quarter. */
 export const PLAN_3_3: WavePlan = {
   from: 4,
   to: 292,
@@ -85,7 +85,7 @@ export const PLAN_3_3: WavePlan = {
   ],
 };
 
-/** 3-4: every kind, Carriers over the swamp. */
+/** 3-4: every kind, Carriers over the suburbs. */
 export const PLAN_3_4: WavePlan = {
   from: 4,
   to: 292,

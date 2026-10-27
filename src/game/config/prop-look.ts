@@ -120,6 +120,14 @@ export const PROP_COLORS = {
   hardyGrassDark: [0.26, 0.3, 0.15],
   hotWater: [0.34, 0.55, 0.54],
   steam: [0.8, 0.82, 0.83],
+  /**
+   * World 3's homes (reviewer's rework, 2026-10-27): pale rendered walls, warm brick, red tile and
+   * dark slate roofs.
+   */
+  render: [0.76, 0.73, 0.66],
+  renderWarm: [0.72, 0.62, 0.5],
+  tileRoof: [0.5, 0.24, 0.17],
+  slateRoof: [0.27, 0.28, 0.32],
 } as const;
 
 /** Self-lit accents. */
