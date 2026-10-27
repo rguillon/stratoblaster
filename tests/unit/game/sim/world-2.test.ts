@@ -51,13 +51,15 @@ describe('World 2', () => {
     expect(WORLD_2.map((l) => l.scenery.scrollSpeed)).toEqual([70, 65, 60, 55, 60]);
   });
 
-  it('P08-R03: no World 2 level has a sea or a shore (reworked, 2026-10-27)', () => {
+  it('P08-R03: no open sea in World 2, rivers allowed (reviewer, 2026-10-27)', () => {
     for (const game of WORLD_2) {
-      expect(game.scenery.sea, game.id).toBeUndefined();
-      expect(
-        game.scenery.sections.some((s) => s.shore),
-        game.id,
-      ).toBe(false);
+      for (const s of game.scenery.sections) {
+        // No coast, no sea bed under the water level, no ice or boats floating on open water.
+        expect(s.shore, `${game.id} ${s.name}`).toBeUndefined();
+        expect(s.relief.base, `${game.id} ${s.name}`).toBeGreaterThan(game.scenery.sea?.level ?? 0);
+        expect(s.floatDensity ?? 0, `${game.id} ${s.name}`).toBe(0);
+      }
+      expect(game.scenery.props.floating, game.id).toBeUndefined();
     }
   });
 

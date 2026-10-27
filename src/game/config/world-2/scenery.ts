@@ -7,8 +7,8 @@ import { DESERT_PLANTS as PL, WORLD_2_GROUPS as G, WORLD_2_PROPS, WORLD_2_ROADS 
  * five levels are one journey from the deep desert, where World 1 ended, to dense factories.
  * The changes are slow: the sand gives way to concrete in small steps, the sections blend over a
  * long stretch (`TRANSITION`), and each new building group first comes in mixed with the one
- * before it. Each level starts on the very section the previous one ended on. No sea. Each
- * level's `seconds` add up to 300 (P08-R02).
+ * before it. Each level starts on the very section the previous one ended on. No sea (rivers
+ * would be fine, reviewer, 2026-10-27). Each level's `seconds` add up to 300 (P08-R02).
  */
 
 /** Sections blend over this many units: about 15 s of scrolling, World 1's 420 doubled. */
@@ -86,10 +86,10 @@ const FACTORY_DISTRICT = section('factory district', 55, {
 });
 
 /**
- * 2-1, Sand sea: from an oasis on the sand World 1 ended on, across great dunes and a sea of
- * sand, caravan posts and rocky desert, to the first mines in the last 30 s.
+ * 2-1, Great erg: from an oasis on the sand World 1 ended on, across great dunes and dune
+ * fields, caravan posts and rocky desert, to the first mines in the last 30 s.
  */
-const SAND_SEA: readonly TerrainSection[] = [
+const GREAT_ERG: readonly TerrainSection[] = [
   section('oasis edge', 40, {
     relief: FLAT,
     buildingDensity: 0.3,
@@ -100,7 +100,7 @@ const SAND_SEA: readonly TerrainSection[] = [
   }),
   section('great dunes', 50, { dunes: dunes(60, 300), buildingDensity: 0.3, treeDensity: 0.2 }),
   section('caravan posts', 45, { groups: [G.outposts, G.desertHomes] }),
-  section('sand sea', 45, { dunes: dunes(45, 240, 70), buildingDensity: 0.45, treeDensity: 0.2 }),
+  section('dune field', 45, { dunes: dunes(45, 240, 70), buildingDensity: 0.45, treeDensity: 0.2 }),
   section('rocky desert', 50, {
     relief: {
       base: 22,
@@ -331,8 +331,8 @@ const level = (
     props: WORLD_2_PROPS,
   }) satisfies SceneryLevel;
 
-/** 2-1 (P08-R03): the sand sea, from an oasis to the first mines. */
-export const LEVEL_2_1: SceneryLevel = level(['world-2-1', '2-1 Sand sea', 2101], 70, SAND_SEA);
+/** 2-1 (P08-R03): the great erg, from an oasis to the first mines. */
+export const LEVEL_2_1: SceneryLevel = level(['world-2-1', '2-1 Great erg', 2101], 70, GREAT_ERG);
 /** 2-2: the mining mesas, starting on the mines 2-1 ended on. */
 export const LEVEL_2_2: SceneryLevel = level(
   ['world-2-2', '2-2 Mining mesas', 2201],

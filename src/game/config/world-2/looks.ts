@@ -47,7 +47,7 @@ const industrial = (sky: SkyLook) =>
     atmosphere: { start: sky },
   }) as const;
 
-/** 2-1: a clear desert morning over the sand sea. */
+/** 2-1: a clear desert morning over the great erg. */
 export const LEVEL_2_1_LOOK = industrial({ timeOfDay: 'morning', clouds: [0.15, 0.1] });
 
 /** 2-2: a high, hard midday sun over the mesas and the mines. */

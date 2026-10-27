@@ -47,7 +47,7 @@ export function composeBeats(plan: WavePlan): Beat[] {
   return beats;
 }
 
-/** 2-1: Gnats, Hornets, Scouts, Strafers and Weavers low over the sea (P08-R08). */
+/** 2-1: Gnats, Hornets, Scouts, Strafers and Weavers over the dunes (P08-R08). */
 export const PLAN_2_1: WavePlan = {
   from: 4,
   to: 292,
@@ -65,7 +65,7 @@ export const PLAN_2_1: WavePlan = {
   ],
 };
 
-/** 2-2: the 2-1 kinds plus Splitters and Lancers, along the fjords. */
+/** 2-2: the 2-1 kinds plus Splitters and Lancers, over the mines and mesas. */
 export const PLAN_2_2: WavePlan = {
   from: 4,
   to: 292,
