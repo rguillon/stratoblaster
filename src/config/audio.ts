@@ -11,11 +11,12 @@ export const AUDIO_CONFIG = {
   masterPeakDb: -1,
   /** Master limiter: a fast compressor with a high ratio just under the peak. */
   limiter: { kneeDb: 0, ratio: 20, attackSeconds: 0.003, releaseSeconds: 0.25 },
-  /** `scheduler lookahead`: notes are scheduled this far ahead, checked this often. */
-  lookaheadSeconds: 0.1,
+  /**
+   * `scheduler lookahead`: notes are scheduled this far ahead, checked this often. 1.5 s instead
+   * of P12's 100 ms (D-120): the music plays on through a frozen frame (loading, first frames).
+   */
+  lookaheadSeconds: 1.5,
   scheduleIntervalSeconds: 0.025,
-  /** P13-R03: music scheduled this far ahead before each level loading step, which may stall. */
-  stallCoverSeconds: 1.5,
   /** `music_fade`, `music_crossfade`. */
   fadeSeconds: 1,
   crossfadeSeconds: 1,

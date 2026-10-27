@@ -1299,3 +1299,11 @@
 - **Alternatives considered:** a 1.5 s lookahead all the time (it would change the validated P12 tunable); an AudioWorklet sequencer (much larger change).
 - **Status:** Accepted
 
+### D-120 — Music scheduled 1.5 s ahead
+- **Date:** 2026-10-27
+- **Phase:** 13 (review fix, P13-R03, P13-R04)
+- **Context:** The music, scheduled 100 ms ahead from the page (P12 tunable `scheduler lookahead`), stopped during any frame longer than that: level loading steps, a level built ahead, the first frames of play. That made the loading noticeable. Scheduling ahead only before the loading steps was tried first and was not enough.
+- **Decision:** `AUDIO_CONFIG.lookaheadSeconds` is 1.5 s. Notes already scheduled play on through a frozen frame. Fades and cross-fades go through the track's gain, pause stops the voices scheduled, and a faded-out track is silenced when its fade ends, so they all still apply. The music is unchanged.
+- **Alternatives considered:** scheduling ahead only before each loading step (tried; the gaps at the level start remained); an AudioWorklet sequencer (much larger change).
+- **Status:** Accepted
+

@@ -1,3 +1,4 @@
+import { AUDIO_CONFIG } from '../../../src/config/audio';
 import { describe, expect, it } from 'vitest';
 import type { Instrument, Track } from '../../../src/audio/audio-types';
 import { MusicPlayer } from '../../../src/audio/music-player';
@@ -69,15 +70,19 @@ describe('MusicPlayer', () => {
     expect(player.position).toBeCloseTo(2.95);
   });
 
-  it('P13-R03: scheduled further ahead before a stall, the notes play on through it', () => {
-    const { context, player } = setup();
+  it('P13-R03: with the game lookahead, a frozen frame of 1 s leaves no gap in the music', () => {
+    const context = new FakeAudioContext();
+    const music = context.createGain();
+    const player = new MusicPlayer(
+      () => ({ context: context.asContext(), music: music as unknown as AudioNode }),
+      INSTRUMENTS,
+      AUDIO_CONFIG,
+    );
     player.play(track('a'), 0);
-    player.update(2.5);
-    // No update for 2.5 s (a frozen frame): the notes of 1 s and 2 s are already scheduled.
-    expect(oscillators(context).map((o) => o.started)).toEqual([0, 1, 2]);
-    context.currentTime = 2.5;
     player.update();
-    expect(oscillators(context).map((o) => o.started)).toEqual([0, 1, 2]);
+    runTo(context, player, 0.5);
+    // No update from 0.5 s to 1.5 s: the note of 1 s was scheduled before.
+    expect(oscillators(context).map((o) => o.started)).toEqual([0, 1]);
   });
 
   it('P12-R11: paused 30 s in for 10 s, the track goes on from about 30 s, not 40 s', () => {

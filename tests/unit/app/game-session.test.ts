@@ -240,19 +240,4 @@ describe('GameSession stepped loading', () => {
     session.sync(GAME);
     expect(session.loading).toBe(true);
   });
-
-  it('P13-R03: the music is scheduled ahead before each loading step', () => {
-    let before = 0;
-    session = new GameSession(
-      new NullEngine(),
-      SAMPLE_GAME,
-      { environment: false, doc: document, steppedLoading: true },
-      () => undefined,
-      undefined,
-      { started: () => undefined, step: () => undefined, beforeLoadStep: () => before++ },
-    );
-    session.sync(GAME);
-    while (session.loading) session.loadStep();
-    expect(before).toBeGreaterThanOrEqual(5);
-  });
 });
