@@ -1,0 +1,35 @@
+{
+  "source_path": "/home/renaud/pewet/specs/README.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "How to use these specs",
+  "summary": "Guide to writing the spec files and phase files and to the implement, fix, and validate workflow loop.",
+  "scope": [
+    "specs",
+    "00-vision.md",
+    "01-engineering.md",
+    "02-game-design.md",
+    "phase files",
+    "/implement-phase",
+    "/fix-phase",
+    "/validate-phase",
+    "/new-phase",
+    "CLAUDE.md",
+    "GitHub Pages",
+    "Makefile",
+    "CI"
+  ],
+  "cross_refs": [
+    "00-vision.md",
+    "01-engineering.md",
+    "02-game-design.md",
+    "phases/_TEMPLATE.md",
+    "phases/phase-NN-name.md",
+    "/CLAUDE.md",
+    "/.claude/commands/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path heuristic matched **/specs/** (strong SPEC signal), but content is a process/tutorial guide with no API contracts, schemas, SLOs, or requirements. Content signals indicate DOC, so DOC was chosen over SPEC. The path-based SPEC signal was overridden by content. Output filename could not be hashed: the classifier has no shell tool to compute SHA-256 of the source path, so the file is written as README-hashpending.json and must be renamed to README-<first 8 hex of sha256('/home/renaud/pewet/specs/README.md')>.json."
+}

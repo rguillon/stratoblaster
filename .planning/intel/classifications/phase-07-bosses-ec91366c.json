@@ -1,0 +1,29 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-07-bosses.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase 07 — Bosses",
+  "summary": "Phase 7 requirements: ten World 1 boss fights with destroyable parts, stages, ground speed changes, checkpoint, and debug page.",
+  "scope": [
+    "boss engine",
+    "bosses",
+    "destroyable parts",
+    "core shield",
+    "boss health bar",
+    "ground scroll speed",
+    "shooting patterns",
+    "stages",
+    "World 1 levels",
+    "mini boss",
+    "final boss",
+    "weapon bonuses",
+    "checkpoint",
+    "game over panel",
+    "bosses/ debug page"
+  ],
+  "cross_refs": ["01-engineering.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path heuristic gives a strong SPEC signal (specs/phases/). Content is mixed: MUST requirements with testable acceptance criteria and a tunables table read like PRD, while the engine, hit circles, triangle budget and ENG-101 read like SPEC. Ambiguity resolved to SPEC by precedence (ADR > SPEC > PRD > DOC). No frontmatter; the 'Status: Ready' line is a phase status, not an ADR status. Filename does not follow SPEC-/RFC- convention, so confidence is medium. SOURCE_HASH NOT COMPUTED: the classifier has no shell or hashing tool, so the required 8-hex SHA-256 of the source path is missing from the filename. The orchestrator must rename this file to phase-07-bosses-{first 8 hex of sha256('/home/renaud/pewet/specs/phases/phase-07-bosses.md')}.json."
+}

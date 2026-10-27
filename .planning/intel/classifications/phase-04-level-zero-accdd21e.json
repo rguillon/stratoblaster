@@ -1,0 +1,23 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-04-level-zero.md",
+  "type": "SPEC",
+  "confidence": "low",
+  "manifest_override": true,
+  "title": "Phase 04 — Level Zero",
+  "summary": "Phase 4 requirements for Level Zero, a test scenery level: heightmap terrain, sea, clouds, props, camera, roads, and a three-minute duration.",
+  "scope": [
+    "Level Zero",
+    "heightmap terrain",
+    "sea level",
+    "cloud layers",
+    "props",
+    "camera",
+    "roads and paths",
+    "level duration",
+    "level_zero page"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": "Signals conflict. Path heuristic gives strong SPEC (path contains /specs/). Content is a phase requirements doc: MUST requirement IDs (P04-R01..R07), per-requirement acceptance criteria, and a Review feedback section. Requirements are product-level (look, camera framing, duration, roads), with no endpoint, schema or API contracts, which points to PRD. SPEC chosen per the path-first ambiguity rule (SPEC > PRD). The file has no frontmatter type and no ADR status field, so locked is false. cross_refs is empty: the document cites decision and design IDs (D-007, D-020, D-021, GD-02, GD-60/61, ENG-52, ENG-101, ENG-102, ENG-104, ENG-140/141) and a 'player_shots/' directory, but no file paths or markdown links. OUTPUT FILENAME: the SHA-256 hash suffix could not be computed (no hashing tool available to this classifier), so the file is named with the literal suffix 'nohash' instead of the first 8 hex chars of SHA-256 of the source path. The orchestrator should rename it to the hashed name."
+}
