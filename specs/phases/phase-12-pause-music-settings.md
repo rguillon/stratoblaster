@@ -353,6 +353,8 @@ make typecheck ✔ / make build ✔ (no test API, no audio file in dist/) / make
 lint, unit tests, coverage: not run (deferred to /validate-phase)
 ```
 
+**Validation (2026-10-27):** validated by the reviewer without re-running `make check` for this phase, at the reviewer's request. The phase code was already squash-merged into `main` as #23 (6da41c0), and the World 1–3 reworks (#24–#26) went on top of it. The latest full gate on a tree containing Phase 12 is the World 4 rework gate (2026-10-27): lint, typecheck, 1591 unit tests, coverage 99.4 % lines / 87.87 % branches, build, 117 e2e, all green. Tag `v0.12.0` is on 6da41c0.
+
 ### How to test manually
 1. `make dev`, open http://localhost:5173. The title shows **Start** and **Settings**. Press any key: the synthwave menu theme starts (nothing plays before the first key, tap, click or gamepad button).
 2. **Settings** (↓, Enter): ◀ / ▶ change Music (the music changes at once) and Sound effects (a short blip plays at the new level); tap or drag a bar. Reload: the values are kept. 0 is silent. Esc / Back returns to the title.
