@@ -5,7 +5,7 @@ import { LEVEL_ZERO_LOOK, texture } from '../scenery-look';
  * 2026-10-26): one ground for the whole world, from a turquoise sea over green grass and dry
  * earth to the sand, and a time of day per level, later and later: midday over the sea (1-1),
  * early afternoon on the green coast (1-2), late afternoon in the green country (1-3), sunset
- * over the dry lands (1-4) and dusk over the desert city, its lights on (1-5). Every look
+ * over the dry lands (1-4) and dusk over the deep desert, its towns' lights on (1-5). Every look
  * starts from Level Zero's. Gamma-space RGB, 0..1.
  */
 
@@ -155,12 +155,12 @@ export const LEVEL_1_4_LOOK = {
   clouds: clouds(0.14, 0.1, [1, 0.72, 0.56], [0.62, 0.4, 0.5]),
 } as const;
 
-/** 1-5: dusk over the desert city: the sun on the horizon, a violet sky, the lights on. */
+/** 1-5: dusk over the deep desert: the sun on the horizon, a violet sky, the town lights on. */
 export const LEVEL_1_5_LOOK = {
   ...LEVEL_1_4_LOOK,
   sky: sky([0.7, 0.48, 0.6], [0.96, 0.5, 0.42], [0.2, 0.16, 0.4], 0.6),
   fog: { start: 1000, end: 2600 },
-  // Low but still lighting the ground: in a darker dusk the ship was lost over the city.
+  // Low but still lighting the ground: in a darker dusk the ship was lost over the towns.
   sun: sun(8, 30, [1, 0.56, 0.4], 1.6),
   ambient: { sky: [0.66, 0.58, 0.82], ground: [0.44, 0.34, 0.34], intensity: 1 },
   props: { ...LEVEL_ZERO_LOOK.props, lightIntensity: 1.3 },

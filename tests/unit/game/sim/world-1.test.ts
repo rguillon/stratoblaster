@@ -185,12 +185,14 @@ describe('World 1', () => {
       expect(first.shore, next.id).toEqual(last.shore);
     }
     // 1-2 starts on the green coast where 1-1 ended, 1-3 on the farmland, 1-4 on the dry
-    // grassland, and 1-5 on the mining outskirts; it ends in the city.
+    // grassland, and 1-5 on the desert outskirts; it ends on the sand, in a desert town.
     expect(at(level('1-2').scenery.sections, 0).shore).toBeDefined();
     expect(at(level('1-3').scenery.sections, 0).surface).toEqual({ lush: 1 });
     expect(at(level('1-4').scenery.sections, 0).surface).toEqual({ lush: 0.2 });
-    expect(at(level('1-5').scenery.sections, 0).groups).toContain('industrial');
-    expect(level('1-5').scenery.sections.at(-1)?.groups).toEqual(['city']);
+    expect(at(level('1-5').scenery.sections, 0).groups).toContain('desert-homes');
+    const end = level('1-5').scenery.sections.at(-1);
+    expect(end?.groups).toEqual(['desert-homes']);
+    expect(end?.surface?.sandy).toBeGreaterThan(0.5);
   });
 
   it('P06-R06: the green levels have farms and villages; the dry ones sand, dunes and desert homes', () => {
@@ -206,6 +208,9 @@ describe('World 1', () => {
       ).toBe(true);
     }
     expect(level('1-4').scenery.sections.some((s) => s.dunes)).toBe(true);
+    // Reviewer, 2026-10-27: no factory and no city in World 1, they are for other worlds.
+    const groups = WORLD_1.flatMap((l) => l.scenery.sections.flatMap((s) => s.groups ?? []));
+    for (const kept of ['industrial', 'heavy-industry', 'city']) expect(groups).not.toContain(kept);
     expect(level('1-4').scenery.sections.some((s) => s.channel)).toBe(true);
     expect(WORLD_1.every((l) => l.scenery.props === WORLD_1_PROPS)).toBe(true);
     for (const game of WORLD_1) {

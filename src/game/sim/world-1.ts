@@ -25,8 +25,8 @@ const level = (id: string, scenery: SceneryLevel, beats: Parameters<typeof assem
   assembleLevel(id, scenery, beats, TABLES);
 
 /**
- * World 1 (P06): five levels of about 4 minutes, from the open sea over green grassland to a desert city, each with
- * a mini boss and a final boss (P07).
+ * World 1 (P06): five levels of about 4 minutes, from the open sea over green grassland to the
+ * deep desert, each with a mini boss and a final boss (P07).
  */
 export const WORLD_1: readonly GameLevel[] = [
   level('1-1', LEVEL_1_1, WAVES_1_1),
