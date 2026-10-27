@@ -16,7 +16,7 @@
 | 9 | `phases/phase-09-world-3.md` | ✅ Validated | `phase-09` | 99.35% lines | 2026-10-26 |
 | 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
 | 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
-| 12 | `phases/phase-12-pause-music-settings.md` | 🟡 Awaiting review | `phase-12` | | |
+| 12 | `phases/phase-12-pause-music-settings.md` | ✅ Validated | `phase-12` | 99.4% lines | 2026-10-27 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -143,3 +143,4 @@
 - 2026-10-27 — 9 — Review change after validation, at the reviewer's request: World 3 reworked, from the factories World 2 ends on to garden villages of small houses (no tower), slow transitions (sections blend over 900 units, concrete stepping down to grass, building groups mixing in); no sea, a canal then a river; three new home models (P09-R03, R04 notes, R06 amended; D-111). Full gate green: `make check` (lint, typecheck, 1580 unit tests, coverage 99.41 % lines / 87.97 % branches, build, 117 e2e); awaiting the reviewer's check.
 - 2026-10-27 — 10 — Review change after validation, at the reviewer's request: World 4 reworked as the Metropolis, from the houses World 3 ends on to a downtown of skyscrapers, slow transitions (sections blend over 900 units, grass stepping down to concrete, taller building groups mixing in), the river on between quays; no sea, no lava; a new family of 8 skyscrapers (P10-R03, R04 notes, R05 note, R08 amended; D-112). Full gate green: `make check` (lint, typecheck, 1591 unit tests, coverage 99.4 % lines / 87.87 % branches, build, 117 e2e); awaiting the reviewer's check.
 - 2026-10-27 — CI — At the reviewer's request: the e2e tests run in a single CI job instead of 3 shards (D-018 amended).
+- 2026-10-27 — 12 — Validated by the reviewer, without re-running `make check` for this phase (reviewer's choice): already squash-merged into `main` as #23, tagged `v0.12.0` on 6da41c0; coverage from the latest full gate (World 4 rework: 1591 unit tests, 99.4 % lines, 87.87 % branches, 117 e2e).
