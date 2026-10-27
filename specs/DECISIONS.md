@@ -1307,3 +1307,38 @@
 - **Alternatives considered:** scheduling ahead only before each loading step (tried; the gaps at the level start remained); an AudioWorklet sequencer (much larger change).
 - **Status:** Accepted
 
+
+### D-121 — Colour families by hue range, colours folded into them at drawing time
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R02)
+- **Context:** The reviewer chose (phase 14 questions) one colour family per kind of object: player cyan / ice blue, enemies violet / magenta / blood red, enemy shots orange / yellow round a white core, pickups green. About 70 enemy and boss neon colours, reactors and lasers were set by earlier phases, many outside their family.
+- **Decision:** A family is a hue range plus a minimum saturation (`READABILITY.families`, `core/math/color.ts`); pale colours (sand, beige, under 0.5 saturation) belong to none. Enemy and boss lights are moved into the enemy family where every enemy model is built (`buildEnemyModel`: neon vertex colours, charge lights, hull tint, reactors), by squeezing the whole hue wheel into the family's range in order, so different enemies keep different colours. Lasers are folded into the enemy-shot family the same way. Enemy bullets, the player shots and the bonuses were recoloured in their config files. The old neon tables are kept as they are: they still tell enemies apart.
+- **Alternatives considered:** rewriting every neon table by hand (about 70 values in 40 files, and boss models that pick their own accents); a shader-side hue shift (cost in every frame).
+- **Status:** Accepted
+
+### D-122 — Background veil under the playfield
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R01)
+- **Context:** The ground must be darker and less saturated than the playfield, without dimming the ships and shots, and cheaply.
+- **Decision:** A screen-wide unlit plane hangs in front of the camera, drawn last in the clouds' rendering group (after the ground, its glow, the clouds and the weather), before the playfield group. It blends the background towards a near-black violet by a per-world opacity (`READABILITY.veils`: 0.42 to 0.55; World 2's snow and World 3's mist the most). Mixing towards a dark colour lowers brightness and colourfulness together. `SceneryLook.veil` (engine, optional) carries it.
+- **Alternatives considered:** a post-process on a second camera for the background only (a camera split and doubled glow layers); darkening every world's palette (many values, and the menu views share them).
+- **Status:** Accepted
+
+### D-123 — Rims with the per-mesh outline renderer
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R03, R04)
+- **Context:** The player ship and the enemies need an outline that separates them from the ground.
+- **Decision:** A mesh asks for a rim through its metadata (`setOutline`); the level's `OutlineLayer` turns on Babylon's outline renderer for it as it joins the playfield (one more draw per mesh, width undone from the mesh's scale so every rim is about 1 logical pixel). Enemy rims are their neon colour half way to white, since violet and magenta are too dark on their own. A `HighlightLayer` in stroke mode was tried first: its blurred map, thresholded, came out as a solid halo several times the ship's size.
+- **Status:** Accepted
+
+### D-124 — Enemy bullets drawn over everything, explosions capped
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R05, R07)
+- **Decision:** The P10-R07 contrast look (dark rim, white spark, wider warning lines with a white core) applies in every level. Bullet layers get alpha indices above any other playfield mesh and ignore depth; a bullet is drawn at least 6 px across, its hitbox unchanged. Enemy missiles get an orange rim. Blasts are drawn no bigger than for a 22 px hit radius and every particle is gone within 0.6 s (shorter fireballs, smoke, debris and embers); a simulation test checks the screen share and the duration. The bomb flash is dimmer.
+- **Status:** Accepted
+
+### D-125 — Readability measured from read-back pixels
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R08)
+- **Decision:** `__GAME_TEST__.readability(share)` renders the frame twice, with and without the playfield, reads both back, and for the ship, the first enemy, enemy bullet and player shot well inside the view returns the WCAG contrast ratio of the brightest pixel round it against the median of the same pixels without the playfield; also the background luminance only `share` of the pixels exceed. The pixel maths is pure (`core/math/pixel-contrast.ts`). R06 sets no contrast for player shots, so the e2e test checks that they still show (2:1, `minPlayerShotContrast`).
+- **Status:** Accepted

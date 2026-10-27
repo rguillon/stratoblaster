@@ -8,7 +8,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LogicalScreen } from '../core/content/game-definition';
-import type { ModelFactory } from '../render/game-view';
+import type { ModelFactory, ModelFactoryOf } from '../render/game-view';
 import { stepModelAnimations } from '../render/model-animation';
 import { SHOT_VIEWER_CONFIG as CFG } from '../config/shot-viewer';
 
@@ -68,6 +68,11 @@ export class PlayfieldShip {
     factory(this.scene).parent = holder;
     this.#model = holder;
     return this.#noseY(holder);
+  }
+
+  /** Adds a marker on the ship's hitbox (P14-R03), built by `factory` for its `radius`. */
+  mark(factory: ModelFactoryOf<number> | undefined, radius: number): void {
+    if (factory) factory(this.scene, radius).parent = this.pivot;
   }
 
   /** Highest point of the model's meshes, i.e. its nose tip (the pivot when it has none). */

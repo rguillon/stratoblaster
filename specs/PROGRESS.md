@@ -18,6 +18,7 @@
 | 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
 | 12 | `phases/phase-12-pause-music-settings.md` | ✅ Validated | `phase-12` | 99.4% lines | 2026-10-27 |
 | 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
+| 14 | `phases/phase-14-playability.md` | 🟡 Awaiting review | `phase-14` | — | — |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -151,3 +152,4 @@
 - 2026-10-27 — 13 — Review fix: the music no longer stops during level loading steps; it is scheduled 1.5 s ahead before each step (D-120). Light verification green (typecheck, build, 122 e2e). Still awaiting review.
 - 2026-10-27 — 13 — Review fix: the music is scheduled 1.5 s ahead (was 100 ms, P12 tunable), so it no longer stops during loading or the first frames of a level (D-120). Light verification: typecheck, build green; e2e 121 passed + 1 known flaky timeout (World 2 dusk lights, passed alone). Still awaiting review.
 - 2026-10-27 — 13 — Validated: full gate green (1617 unit tests, 99.28 % lines, 87.83 % branches, 122 e2e); squash-merged into `main`, tagged `v0.13.0`.
+- 2026-10-27 — 14 — Phase created and requirements written (playability: readable ships, enemies and shots), set Ready; colour questions answered by the reviewer (recolour enemies, one warm family for enemy shots, cyan player shots, green pickups). Implemented: background veil per world, colour families with enemy lights folded into theirs, rims on the ship and enemies, hitbox marker, enemy bullets over everything, player shots toned to 0.7, short capped explosions, readability probe in the test API (D-121..D-125). Light verification green (typecheck, build, 131 e2e). Awaiting review.

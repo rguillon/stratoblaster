@@ -120,6 +120,7 @@ function startGame(engine: Engine): void {
       },
       stepHz: 1 / app.clock.stepSeconds,
       perf: () => app.perf.numbers,
+      readability: (share) => app.game()?.readability(share) ?? Promise.resolve(null),
     });
   }
 }

@@ -153,12 +153,14 @@ export const ENEMY_LOOK = {
     /** The swirls' arms need more sides to curl smoothly. */
     swirlSegments: 24,
     styles: {
-      red: bullet([1, 0.9, 0.85], [1, 0.15, 0.1]),
-      magenta: bullet([1, 0.9, 1], [1, 0.1, 0.8]),
-      green: bullet([0.9, 1, 0.85], [0.2, 1, 0.25]),
-      orange: bullet([1, 0.95, 0.8], [1, 0.5, 0.05]),
-      blue: bullet([0.85, 0.9, 1], [0.2, 0.45, 1]),
-      purple: bullet([0.95, 0.85, 1], [0.65, 0.2, 1]),
+      // Phase 14 (P14-R02, reviewer): every style in the enemy shots' warm family, white-hot
+      // cores round orange to yellow; the style names are kept for the enemy specs.
+      red: bullet([1, 0.95, 0.88], [1, 0.36, 0.04]),
+      magenta: bullet([1, 0.95, 0.88], [1, 0.55, 0.05]),
+      green: bullet([1, 1, 0.88], [1, 0.88, 0.1]),
+      orange: bullet([1, 0.95, 0.85], [1, 0.48, 0.02]),
+      blue: bullet([1, 0.97, 0.88], [1, 0.7, 0.08]),
+      purple: bullet([1, 0.95, 0.88], [1, 0.42, 0.1]),
     },
   },
   /**
@@ -187,8 +189,9 @@ export const ENEMY_LOOK = {
     /** Body length and radius. */
     length: 11,
     radius: 1.8,
-    tip: [1, 0.12, 0.08],
-    flame: glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.05, 0]),
+    // Phase 14 (P14-R02): an orange tip, in the enemy shots' family.
+    tip: [1, 0.5, 0.04],
+    flame: glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.12, 0]),
     flameSize: [2.6, 6],
   },
   laser: {
@@ -197,6 +200,7 @@ export const ENEMY_LOOK = {
      * Lancer's red. A boss's lasers take its neon colour (`BOSS_LOOK.neon`, phase 8 review).
      */
     color: [1, 0.3, 0.4] as Rgb,
+    // Phase 14 (P14-R02): every laser colour is moved into the enemy shots' family when drawn.
     /** The thin warning line, blinking at `blinkHz`, then the beam. */
     warning: { width: 2, blinkHz: 8 },
     beam: {
@@ -221,14 +225,20 @@ export const ENEMY_LOOK = {
     },
   },
   /**
-   * Explosions (GD-62; phase 5 review: bigger, with burning debris). Sizes are relative to the
-   * hit radius of what blew up, `[min, max)` ranges are picked at random per particle, `life`
+   * Explosions (GD-62; phase 5 review: bigger, with burning debris; phase 14, P14-R07: smaller,
+   * over in `READABILITY.effectMaxDuration`, so they never hide the shots for long). Sizes are
+   * relative to the hit radius of what blew up, `[min, max)` ranges are picked at random per particle, `life`
    * and `delay` in seconds, speeds in logical pixels a second, `drag` per second.
    */
   blasts: {
     seed: 11,
     /** Missiles blow up smaller, with fewer particles. */
     missileScale: 0.6,
+    /**
+     * Phase 14 (P14-R07): blasts are drawn no bigger than for this hit radius, so one covers at
+     * most `READABILITY.effectMaxScreenShare` of the screen (a boss part's was up to a third).
+     */
+    maxRadius: 22,
     /**
      * Debris, embers and smoke wisps are full size for blasts this big (a hit radius, logical
      * pixels) and up, smaller for smaller ones (phase 5 review: small booms for tiny ships).
@@ -245,7 +255,7 @@ export const ENEMY_LOOK = {
     /** A white flash, at once. */
     flash: { size: 3.6, life: 0.16, brightness: 0.9, segments: 16 },
     /** A thin shock ring that races out and fades. */
-    ring: { size: 6.5, life: 0.45, segments: 32, color: [1, 0.75, 0.45] as Rgb },
+    ring: { size: 4, life: 0.35, segments: 32, color: [1, 0.75, 0.45] as Rgb },
     /**
      * Fireballs around the centre, one after the other, swelling as they cool. Laid over what is
      * behind them (not added on, which turns to flat white over a bright ground), along `colors`,
@@ -263,19 +273,19 @@ export const ENEMY_LOOK = {
       alpha: 0.95,
       perRadius: 0.3,
       count: [2, 14] as const,
-      spread: 1.3,
-      delay: 0.4,
-      size: [1.4, 2.6] as const,
-      growth: 1.8,
-      life: [0.65, 1.1] as const,
+      spread: 1.1,
+      delay: 0.12,
+      size: [1.2, 2] as const,
+      growth: 1.5,
+      life: [0.3, 0.45] as const,
       drift: 40,
       segments: 16,
     },
     /** Dark smoke left by the fireballs and the burning debris, lingering. */
     smoke: {
-      size: [1.5, 2.6] as const,
-      growth: 2.2,
-      life: [1.3, 2.3] as const,
+      size: [1, 1.6] as const,
+      growth: 1.6,
+      life: [0.2, 0.3] as const,
       drift: 14,
       alpha: 0.55,
       /** Lit by the fire at first, then grey. */
@@ -290,9 +300,9 @@ export const ENEMY_LOOK = {
       perRadius: 0.9,
       min: 4,
       max: 36,
-      speed: [120, 420] as const,
+      speed: [80, 240] as const,
       size: [2.6, 5] as const,
-      life: [0.8, 1.6] as const,
+      life: [0.3, 0.4] as const,
       drag: 1.8,
       /** One ember every `emberEvery` seconds and one smoke wisp every `smokeEvery`, while hot. */
       emberEvery: 0.025,
@@ -306,7 +316,7 @@ export const ENEMY_LOOK = {
       count: [5, 40] as const,
       speed: [60, 220] as const,
       size: [1, 2] as const,
-      life: [0.25, 0.55] as const,
+      life: [0.12, 0.25] as const,
       drag: 4,
     },
     /** At most this many particles in each layer; new ones are dropped beyond. */

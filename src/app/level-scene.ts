@@ -16,6 +16,8 @@ import {
 } from '../render/environment/showcase-environment.visual';
 import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { NodeAdopter } from '../render/node-adopter';
+import { OutlineLayer, type OutlineLook } from '../render/outline';
+import { addBackgroundVeil } from '../render/scenery/background-veil';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
 import type { SceneryLook } from '../render/scenery/scenery-look';
@@ -54,6 +56,8 @@ export interface LevelSceneOptions {
   readonly stage: SceneryStageConfig;
   /** Debug choices on the level's look (P08-R12). */
   readonly atmosphere?: AtmosphereOptions;
+  /** Phase 14 (P14-R03, R04): rim glows round the playfield meshes that ask for one. */
+  readonly outline?: OutlineLook;
 }
 
 /** The look of `level`, or a descriptive error. */
@@ -123,6 +127,26 @@ function followSky(stage: SceneryStage, cubeSize: number): void {
 }
 
 /**
+ * The playfield layer of a level: what is created through it is drawn above the clouds, with
+ * the playfield's glow and (phase 14) the rims meshes ask for.
+ */
+function playfieldLayer(scene: Scene, options: LevelSceneOptions): NodeAdopter {
+  const glow = options.environment ? playfieldGlow(scene, options.glow) : undefined;
+  const outline = options.outline ? new OutlineLayer(options.outline) : undefined;
+  const root = new TransformNode('playfield', scene);
+  // The playfield's XY plane onto the flight plane: Y along the level (+Z), -Z up (+Y).
+  root.rotation.x = Math.PI / 2;
+  // Shots are additive and bright enough already: only the ships' neon lights glow. Nor do soft,
+  // see-through particles (vertex alpha: the blasts' fire and smoke), which the glow layer would
+  // draw white, without their tints.
+  return new NodeAdopter(scene, root, ABOVE_CLOUDS_GROUP, (mesh) => {
+    const additive = mesh.material?.alphaMode === Constants.ALPHA_ADD;
+    if (mesh instanceof Mesh && !additive && !mesh.hasVertexAlpha) glow?.addIncludedOnlyMesh(mesh);
+    outline?.add(mesh);
+  });
+}
+
+/**
  * Builds the scene of a level (P04, P05-R11, P06-R02): its generated ground under the tilted
  * playfield camera, and the playfield layer above it where ships, enemies and shots are drawn.
  */
@@ -155,17 +179,9 @@ export function buildLevelScene(
   for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
   if (groundGlow) glowLava(groundGlow, stage);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
-  const glow = options.environment ? playfieldGlow(scene, options.glow) : undefined;
-  const root = new TransformNode('playfield', scene);
-  // The playfield's XY plane onto the flight plane: Y along the level (+Z), -Z up (+Y).
-  root.rotation.x = Math.PI / 2;
-  // Shots are additive and bright enough already: only the ships' neon lights glow. Nor do soft,
-  // see-through particles (vertex alpha: the blasts' fire and smoke), which the glow layer would
-  // draw white, without their tints.
-  const playfield = new NodeAdopter(scene, root, ABOVE_CLOUDS_GROUP, (mesh) => {
-    const additive = mesh.material?.alphaMode === Constants.ALPHA_ADD;
-    if (mesh instanceof Mesh && !additive && !mesh.hasVertexAlpha) glow?.addIncludedOnlyMesh(mesh);
-  });
+  if (look.veil) addBackgroundVeil(scene, stage.camera, look.veil);
+  const playfield = playfieldLayer(scene, options);
+  const root = playfield.root;
   return {
     scene,
     look,

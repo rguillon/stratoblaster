@@ -11,10 +11,28 @@ import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
 import { addModelAnimation, stepModelAnimations } from '../../../render/model-animation';
+import { foldIntoFamily } from '../../../core/math/color';
+import { setOutline } from '../../../render/outline';
 import { ENEMY_LOOK } from '../../config/enemy-look';
+import { READABILITY } from '../../config/readability';
 import { buildReactorFlame, type FlameMaterials } from '../reactor-flame';
 
 type Rgb = readonly [number, number, number];
+
+/** `color` moved into the enemies' colour family (P14-R02). */
+export function enemyColor(color: Rgb): Rgb {
+  return foldIntoFamily(color, READABILITY.families.enemy);
+}
+
+/** `geo` with its vertex colours moved into the enemies' colour family (P14-R02). */
+function inEnemyFamily(geo: ColoredGeometry): ColoredGeometry {
+  const colors = [...geo.colors];
+  for (let i = 0; i + 3 < colors.length; i += 4) {
+    const rgb = enemyColor([colors[i] ?? 0, colors[i + 1] ?? 0, colors[i + 2] ?? 0]);
+    [colors[i], colors[i + 1], colors[i + 2]] = rgb;
+  }
+  return { ...geo, colors };
+}
 
 interface EnemyMaterials {
   /** Dark metal, tinted by the vertex colours. */
@@ -71,6 +89,13 @@ function tintedHull(scene: Scene, neon: Rgb): PBRMaterial {
     byColor.set(key, mat);
   }
   return mat;
+}
+
+/** The rim colour of an enemy whose neon is `neon` (P14-R04). */
+function rimOf(neon: Rgb): Rgb {
+  const { whiten, strength } = READABILITY.enemyOutline;
+  const lift = (c: number) => (c + (1 - c) * whiten) * strength;
+  return [lift(neon[0]), lift(neon[1]), lift(neon[2])];
 }
 
 /** A flat-shaded, vertex-coloured mesh. */
@@ -195,7 +220,7 @@ function addReactors(
   root: TransformNode,
 ): void {
   const look = ENEMY_LOOK.reactor;
-  const { color } = look;
+  const color = enemyColor(look.color);
   const behind = -Math.PI / 2;
   reactors.forEach(({ at: [x, y, z], radius }, i) => {
     const depth = radius * look.depth;
@@ -229,6 +254,29 @@ function addReactors(
 }
 
 /**
+ * The hull (with a rim, P14-R04) and the neon lights (in the enemies' colour family, P14-R02)
+ * of an enemy model whose neon is `neonColor`, under `root`.
+ */
+function addSurfaces(
+  name: string,
+  parts: EnemyParts,
+  mats: { readonly hull: Material; readonly neon: Material },
+  neonColor: Rgb,
+  root: TransformNode,
+): void {
+  const scene = root.getScene();
+  if (parts.hull.geometry.positions.length > 0) {
+    const mesh = meshOf(`${name}-${mats.hull.name}`, parts.hull.geometry, mats.hull, scene);
+    mesh.parent = root;
+    setOutline(mesh, rimOf(neonColor));
+  }
+  if (parts.neon.geometry.positions.length > 0) {
+    const geo = inEnemyFamily(parts.neon.geometry);
+    meshOf(`${name}-${mats.neon.name}`, geo, mats.neon, scene).parent = root;
+  }
+}
+
+/**
  * Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
  * charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
  * hull is tinted towards `chargeColor`, the enemy's neon colour.
@@ -236,9 +284,11 @@ function addReactors(
 export function buildEnemyModel(
   name: string,
   scene: Scene,
-  chargeColor: Rgb,
+  neonColor: Rgb,
   build: (parts: EnemyParts) => void,
 ): EnemyModel {
+  // Phase 14 (P14-R02): every enemy's lights in the enemies' colour family.
+  const chargeColor = enemyColor(neonColor);
   const reactors: Reactor[] = [];
   const rotors: Reactor[] = [];
   const muzzles: { at: Vec3; kind: string }[] = [];
@@ -261,14 +311,7 @@ export function buildEnemyModel(
     node.position.set(...at);
     node.parent = root;
   });
-  for (const [part, material] of [
-    [parts.hull, hull],
-    [parts.neon, neon],
-  ] as const) {
-    if (part.geometry.positions.length > 0) {
-      meshOf(`${name}-${material.name}`, part.geometry, material, scene).parent = root;
-    }
-  }
+  addSurfaces(name, parts, { hull, neon }, chargeColor, root);
   const chargeMat = unlit(`${name}-charge`, scene);
   if (parts.charge.geometry.positions.length > 0) {
     meshOf(`${name}-charge`, parts.charge.geometry, chargeMat, scene).parent = root;

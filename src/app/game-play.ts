@@ -32,6 +32,8 @@ import { buildLevelScene, skyState, type LevelScene } from './level-scene';
 import { levelOf, sceneryWithRunout } from './level-prepare';
 import { RateMeter } from './rate-meter';
 import { hitBlasts } from './hit-blasts';
+import type { ReadabilityReport } from '../core/math/pixel-contrast';
+import { probeReadability } from './readability-probe';
 import { PlayfieldShip } from './shot-viewer-scene';
 
 /** What the player chose: a ship and a level. */
@@ -130,6 +132,7 @@ export class GamePlay {
       environmentCubeSize: CFG.environmentCubeSize,
       stage: CFG.stage,
       ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
+      ...(options.environment && game.view.outline ? { outline: game.view.outline } : {}),
     });
     this.#speed = shipMaxSpeedPxPerSec(game.playerShips, choice.shipId);
     this.#shipDef = findPlayerShip(game.playerShips, choice.shipId);
@@ -141,6 +144,7 @@ export class GamePlay {
     this.#ship = pf.run(() => {
       const ship = new PlayfieldShip(this.view.scene, scale, 0, 0);
       if (model) nose = ship.show(model);
+      ship.mark(game.view.hitboxMarker, game.hull.hitRadius);
       return ship;
     });
     this.run = this.#newRun(level, Math.max(0, nose - CFG.muzzleInset));
@@ -320,6 +324,12 @@ export class GamePlay {
       ...levelState(this.run, this.#timeScale, this.#shipDef.maxHealth),
       sky: skyState(this.view, sea, middle),
     };
+  }
+
+  /** How readable the frame is (P14-R08), background but its `brightShare` brightest pixels. */
+  readability(brightShare: number): Promise<ReadabilityReport> {
+    const { scene, playfield } = this.view;
+    return probeReadability(scene, playfield.root, this.run, this.#inView(), brightShare);
   }
 
   /**

@@ -125,7 +125,8 @@ export class BlastParticles {
 
   emit(blast: EnemyBlast): void {
     const scale = blast.kind === 'missile' ? LOOK.missileScale : 1;
-    const radius = blast.radius * scale;
+    // P14-R07: never bigger than for `maxRadius`.
+    const radius = Math.min(blast.radius, LOOK.maxRadius) * scale;
     // Pieces, embers and wisps shrink with blasts smaller than `fullRadius`.
     const small = Math.min(1, radius / LOOK.fullRadius);
     const at = { x: blast.x, y: blast.y };

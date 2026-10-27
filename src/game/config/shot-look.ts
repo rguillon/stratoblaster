@@ -5,17 +5,19 @@
 export const SHOT_LOOK = {
   /**
    * Minigun tracer (phase 5 review, was a green blob): a long thin streak, white-hot at its head,
-   * cooling to orange then red along its tail.
+   * cooling to cyan then deep blue along its tail (phase 14, P14-R02: was orange then red, the
+   * enemy shots' colours).
    */
   bullet: {
-    width: 3.4,
+    // Phase 14: a little wider (was 3.4), so it still shows toned down (P14-R06).
+    width: 4.2,
     /** Length of the streak behind the bullet; a new one grows to it from the muzzle. */
     length: 34,
     /** Across the streak, centre line to edge. */
     colors: [
-      [1, 0.96, 0.82],
-      [1, 0.62, 0.2],
-      [0.45, 0.1, 0.02],
+      [1, 1, 1],
+      [0.3, 0.8, 1],
+      [0.04, 0.25, 0.5],
       [0, 0, 0],
     ],
     /**
@@ -25,8 +27,8 @@ export const SHOT_LOOK = {
     rows: [
       { at: 0.08, tint: [0, 0, 0] },
       { at: 0, tint: [1, 1, 1] },
-      { at: -0.2, tint: [1, 0.85, 0.6] },
-      { at: -0.6, tint: [0.75, 0.35, 0.12] },
+      { at: -0.2, tint: [0.85, 0.95, 1] },
+      { at: -0.6, tint: [0.35, 0.6, 0.75] },
       { at: -1, tint: [0, 0, 0] },
     ],
     /** Width flicker of each tracer (± fraction) and its rate, rad/s. */
@@ -108,7 +110,7 @@ export const SHOT_LOOK = {
     radius: 0.2,
     finSpan: 0.4,
     body: [0.78, 0.8, 0.85],
-    tip: [1, 0.2, 0.25],
+    tip: [0.3, 0.85, 1],
     flame: { length: 1.6, diameter: 0.36, puffDiameter: 0.28, sides: 6 },
     /**
      * Phase 5 review, to stand out on any ground: a bright motor flare at the nozzle (radius
@@ -166,10 +168,10 @@ export const SHOT_LOOK = {
       /** Brightness flicker of each spark (± fraction) and its frequency range. */
       twinkle: 0.45,
       twinkleHz: [18, 34],
-      /** Centre to edge: white-hot, gold, black (transparent). */
+      /** Centre to edge: white-hot, ice blue (phase 14: was gold), black (transparent). */
       colors: [
-        [1, 1, 0.95],
-        [0.9, 0.6, 0.2],
+        [0.95, 1, 1],
+        [0.3, 0.75, 1],
         [0, 0, 0],
       ],
       /** A diamond: 4 × (2 × 2 − 1) = 12 triangles per spark (40 before the phase 3 review). */
@@ -180,10 +182,11 @@ export const SHOT_LOOK = {
     missile: {
       radiusFactor: 1.6,
       duration: 0.3,
+      // Phase 14 (P14-R02): in the player's cyan, not the enemy shots' orange.
       colors: [
-        [1, 0.75, 0.35],
-        [0.85, 0.35, 0.06],
-        [0.35, 0.05, 0.02],
+        [0.75, 0.95, 1],
+        [0.2, 0.6, 1],
+        [0.04, 0.18, 0.45],
         [0, 0, 0],
       ],
     },

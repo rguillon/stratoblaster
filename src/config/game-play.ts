@@ -48,4 +48,10 @@ export const GAME_PLAY_CONFIG = {
   debug: { fastForward: 4, seekStep: 10 },
   /** Debug tile: FPS averaged over `fpsWindow` s, text refreshed every `refresh` s. */
   stats: { fpsWindow: 0.5, refresh: 0.25 },
+  /**
+   * Phase 14 (P14-R08): the readability probe measures round the ship and round a player shot
+   * this far (logical pixels; enemies and bullets use their hit radius), only objects this far
+   * inside the view, and only player shots this far ahead of the ship.
+   */
+  readabilityProbe: { shipRadius: 14, shotRadius: 5, margin: 12, shotAhead: 60 },
 } as const;

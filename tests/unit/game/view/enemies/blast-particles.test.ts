@@ -45,17 +45,16 @@ describe('BlastParticles', () => {
     expect(Math.max(...counts)).toBeGreaterThanOrEqual(LOOK.fireball.count[0]);
   });
 
-  it('phase 5 review: fire cools from white hot to deep red; smoke stays after it', () => {
+  it('phase 5 review: fire cools from white hot to deep red, with smoke (P14-R07: shorter)', () => {
     const blasts = new BlastParticles(createRng(4));
     blasts.emit({ kind: 'enemy', x: 0, y: 0, radius: 20 });
     const hot = lastFrame(blasts, 1 / 60).fireballs[0];
     expect(hot?.b).toBeGreaterThan(0.5);
-    const cool = lastFrame(blasts, 0.6).fireballs[0];
+    const cool = lastFrame(blasts, 0.25).fireballs[0];
     expect(cool?.b).toBeLessThan(hot?.b ?? 0);
-    const after = lastFrame(blasts, 1);
-    expect(after.fireballs).toHaveLength(0);
-    expect(after.smoke.length).toBeGreaterThan(0);
-    for (const s of after.smoke) expect(s.a).toBeLessThanOrEqual(LOOK.smoke.alpha);
+    const smoky = lastFrame(blasts, 0.1);
+    expect(smoky.smoke.length).toBeGreaterThan(0);
+    for (const s of smoky.smoke) expect(s.a).toBeLessThanOrEqual(LOOK.smoke.alpha);
   });
 
   it('phase 5 review: burning debris leaves embers and smoke along its way', () => {
