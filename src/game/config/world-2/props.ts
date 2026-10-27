@@ -1,16 +1,17 @@
-import type {
-  FloatRules,
-  PropLine,
-  PropRules,
-  RoadRules,
-} from '../../../core/scenery/scenery-level';
-import { POLAR_VARIANTS, familyRules, type PartFamily } from '../building-families';
+import type { PropRules, RoadRules } from '../../../core/scenery/scenery-level';
+import { INDUSTRIAL_VARIANTS, familyRules, type PartFamily } from '../building-families';
 import { CAR_RULES } from '../cars';
 import { PROP_IDS } from '../level-zero';
-import { WORLD_1_ROADS } from '../world-1/props';
+import { WORLD_1_PROP_IDS, WORLD_1_ROADS } from '../world-1/props';
 
-/** Ids of the props added for World 2, the Frozen North (P08-R07). */
+/**
+ * Ids of the props added for World 2 (P08-R07). The frozen ones were made for the first World 2,
+ * the Frozen North; since the reviewer's rework (2026-10-27) no level places them, only the
+ * oil pumpjack.
+ */
 export const WORLD_2_PROP_IDS = {
+  /** The oil fields of 2-2 and 2-3 (reviewer, 2026-10-27). */
+  pumpjack: 'oil-pumpjack',
   // Plants.
   snowPine: 'snow-pine',
   frostedTree: 'frosted-tree',
@@ -43,27 +44,26 @@ export const WORLD_2_PROP_IDS = {
 
 const P = PROP_IDS;
 const W = WORLD_2_PROP_IDS;
+const W1 = WORLD_1_PROP_IDS;
 
 /** Building groups of World 2; each section lists the ones that stand on it. */
 export const WORLD_2_GROUPS = {
-  /** Lone posts of the cold coasts: a lighthouse, huts, a mast. */
-  coastPosts: 'coast-posts',
-  /** Fishing villages along the fjords. */
-  fishing: 'polar-fishing',
-  /** A harbour: cranes, fish stores, containers. */
-  harbour: 'polar-harbour',
-  /** Futuristic northern homes: chalets and heated domes. */
-  homes: 'northern-homes',
-  /** Research outposts of the tundra: radar domes, antennas, wind turbines. */
-  research: 'research',
-  /** Mining outposts on the glacier's edge. */
-  mining: 'mining',
-  /** The big mining complex of 2-4. */
-  heavyMining: 'heavy-mining',
-  /** The mining town and suburbs of 2-5. */
-  polarTown: 'polar-town',
-  /** The dense polar city centre of 2-5. */
-  polarCity: 'polar-city',
+  /** Oasis and desert homes: World 1's flat-roofed homes and wind catchers. */
+  desertHomes: 'w2-desert-homes',
+  /** Caravan and desert outposts: water towers, solar farms, antennas, radars. */
+  outposts: 'w2-outposts',
+  /** Mines: headframes, their tanks and sheds. */
+  mines: 'w2-mines',
+  /** Mining and company towns: homes of the workers between mine and oil buildings. */
+  workerHomes: 'w2-worker-homes',
+  /** Oil fields: pumpjacks and storage tanks. */
+  oil: 'w2-oil',
+  /** Refineries and tank farms. */
+  refinery: 'w2-refinery',
+  /** The industrial belt: factories, warehouses, yards, cooling towers. */
+  industrial: 'w2-industrial',
+  /** Dense heavy industry: large plants and works made of parts. */
+  heavyIndustry: 'w2-heavy-industry',
 } as const;
 
 const G = WORLD_2_GROUPS;
@@ -71,16 +71,16 @@ const G = WORLD_2_GROUPS;
 /** Props are drawn small next to the ships, as in World 1. */
 const BUILDING_SCALE = [0.5, 0.65] as const;
 const TREE_SCALE = [0.45, 0.75] as const;
-const LONE_SCALE = [0.5, 0.6] as const;
 
+/** The variants of `family`, sharing `weight` between them (not `weight` each). */
 const variants = (family: PartFamily, weight: number) =>
-  familyRules(family, POLAR_VARIANTS, weight, BUILDING_SCALE);
+  familyRules(family, INDUSTRIAL_VARIANTS, weight / INDUSTRIAL_VARIANTS, BUILDING_SCALE);
 
-/** A building of `id`, whose model fits in a circle of `radius` (world units, at scale 1). */
-const building = (id: string, weight: number, radius: number) => ({
+/** A building of `id` taking `footprint` of ground (its model radius at the largest scale). */
+const building = (id: string, weight: number, footprint: number) => ({
   id,
   weight,
-  footprint: Math.ceil(radius * BUILDING_SCALE[1] * 10) / 10,
+  footprint,
   scale: BUILDING_SCALE,
 });
 
@@ -91,70 +91,14 @@ const tree = (id: string, weight: number, footprint: number) => ({
   scale: TREE_SCALE,
 });
 
-/**
- * Model radii (world units, at scale 1) of the World 2 buildings: their models stay inside
- * these circles (P04-R04 footprints).
- */
-export const WORLD_2_RADII: Readonly<Record<string, number>> = {
-  [W.chalet]: 11,
-  [W.longChalet]: 12.5,
-  [W.hut]: 7,
-  [W.heatedDome]: 11,
-  [W.lighthouse]: 7,
-  [W.harbourCrane]: 13,
-  [W.fishStore]: 14,
-  [W.radarDome]: 10,
-  [W.antennaArray]: 10,
-  [W.windTurbine]: 8,
-  [W.drillTower]: 10,
-  [W.conveyor]: 15,
-  [W.oreSilo]: 9,
-  [W.miningCrane]: 13,
-};
-
-const radius = (id: string): number => WORLD_2_RADII[id] ?? 10;
-const b = (id: string, weight: number) => building(id, weight, radius(id));
-
-/** Ice floating on the cold sea of 2-1 (P08-R07): floes and icebergs drift very slowly. */
-export const WORLD_2_FLOATING: FloatRules = {
-  cellSize: 60,
-  perCell: 1,
-  depth: 6,
-  kinds: [
-    {
-      id: W.floeSmall,
-      weight: 5,
-      footprint: 7,
-      scale: [0.6, 1],
-      drift: { x: 6, z: 4, period: 70 },
-    },
-    {
-      id: W.floeLarge,
-      weight: 2,
-      footprint: 16,
-      scale: [0.6, 1],
-      drift: { x: -5, z: 3, period: 90 },
-    },
-    {
-      id: W.iceberg,
-      weight: 0.6,
-      footprint: 13,
-      scale: [0.6, 0.9],
-      drift: { x: 3, z: -2, period: 120 },
-    },
-    {
-      id: W.weatherBuoy,
-      weight: 0.08,
-      footprint: 3,
-      scale: [0.6, 0.7],
-      drift: { x: 1, z: 1, period: 9 },
-    },
-  ],
-};
+/** Model radius of the pumpjack (world units, at scale 1): its model stays inside it. */
+export const PUMPJACK_RADIUS = 7;
 
 /**
- * The props of World 2 (P08-R03, R07): the building groups the sections pick from, the plants,
- * and the ice on the sea. Lone huts and masts stand on the islands of 2-1 like plants.
+ * The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27): World 1's
+ * desert homes, outposts and plants, Level Zero's industrial buildings, the industrial buildings
+ * made of parts, and the oil pumpjacks; each section picks the groups that stand on it, so the
+ * industry slowly takes over the desert.
  */
 export const WORLD_2_PROPS: PropRules = {
   cellSize: 50,
@@ -165,96 +109,117 @@ export const WORLD_2_PROPS: PropRules = {
   zoneFrequency: 1 / 700,
   groups: [
     {
-      id: G.coastPosts,
-      weight: 1,
-      kinds: [b(W.lighthouse, 1), b(W.hut, 3), b(W.antennaArray, 0.5)],
-    },
-    {
-      id: G.fishing,
-      weight: 2,
-      kinds: [b(W.hut, 3), b(W.chalet, 2), b(W.fishStore, 1), b(W.harbourCrane, 0.5)],
-    },
-    {
-      id: G.harbour,
-      weight: 1,
-      kinds: [
-        b(W.harbourCrane, 2),
-        b(W.fishStore, 2),
-        building(P.containerYard, 1, 13),
-        building(P.tanks, 0.5, 15.4),
-      ],
-    },
-    {
-      id: G.homes,
+      id: G.desertHomes,
       weight: 3,
-      kinds: [b(W.chalet, 3), b(W.longChalet, 2), b(W.heatedDome, 1), b(W.hut, 0.5)],
-    },
-    {
-      id: G.research,
-      weight: 2,
-      kinds: [b(W.radarDome, 2), b(W.antennaArray, 1.5), b(W.windTurbine, 1.5), b(W.heatedDome, 1)],
-    },
-    {
-      id: G.mining,
-      weight: 2,
-      kinds: [b(W.drillTower, 3), b(W.conveyor, 2), b(W.oreSilo, 2), b(W.miningCrane, 1)],
-    },
-    {
-      id: G.heavyMining,
-      weight: 1,
-      kinds: [...variants('mining-complex', 6), b(W.oreSilo, 1), b(W.drillTower, 1)],
-    },
-    {
-      id: G.polarTown,
-      weight: 2,
       kinds: [
-        ...variants('polar-tower', 2),
-        b(W.chalet, 2),
-        b(W.longChalet, 2),
-        b(W.heatedDome, 2),
+        building(W1.desertHome, 3, 7.5),
+        building(W1.windcatcherHome, 2, 7),
+        building(W1.waterTower, 0.7, 5),
+        building(P.domeHome, 0.4, 7),
       ],
     },
     {
-      id: G.polarCity,
+      id: G.outposts,
+      weight: 2,
+      kinds: [
+        building(W1.waterTower, 2, 5),
+        building(W1.solarFarm, 2, 9.5),
+        building(P.antenna, 1, 6),
+        building(P.radar, 1, 7),
+        building(P.tanks, 0.5, 10),
+      ],
+    },
+    {
+      id: G.mines,
+      weight: 2,
+      kinds: [
+        building(W1.mineHeadframe, 4, 7),
+        building(P.tanks, 1, 10),
+        building(P.warehouse, 0.6, 15.5),
+        building(W1.solarFarm, 0.6, 9.5),
+        building(P.containerYard, 0.5, 8.5),
+      ],
+    },
+    {
+      id: G.workerHomes,
+      weight: 3,
+      kinds: [
+        building(P.cubeHome, 3, 7.5),
+        building(W1.desertHome, 2, 7.5),
+        building(P.domeHome, 1, 7),
+        building(W1.waterTower, 0.5, 5),
+      ],
+    },
+    {
+      id: G.oil,
+      weight: 2,
+      kinds: [
+        building(W.pumpjack, 5, Math.ceil(PUMPJACK_RADIUS * BUILDING_SCALE[1] * 10) / 10),
+        building(P.tanks, 2, 10),
+        building(P.refinery, 0.4, 7.5),
+      ],
+    },
+    {
+      id: G.refinery,
+      weight: 2,
+      kinds: [
+        building(P.refinery, 3, 7.5),
+        building(P.tanks, 3, 10),
+        building(P.coolingTower, 0.8, 9.5),
+        building(P.containerYard, 0.8, 8.5),
+        ...variants('industrial-complex', 2),
+      ],
+    },
+    {
+      id: G.industrial,
+      weight: 3,
+      kinds: [
+        building(P.factory, 3, 15),
+        building(P.warehouse, 3, 15.5),
+        building(P.tanks, 1.5, 10),
+        building(P.coolingTower, 1, 9.5),
+        building(P.containerYard, 2, 8.5),
+        building(P.refinery, 1, 7.5),
+        ...variants('industrial-complex', 4),
+      ],
+    },
+    {
+      id: G.heavyIndustry,
       weight: 1,
-      kinds: [...variants('polar-block', 6), ...variants('polar-tower', 3)],
+      kinds: [
+        ...variants('industrial-plant', 16),
+        ...variants('industrial-works', 10),
+        ...variants('industrial-complex', 5),
+        building(P.containerYard, 4, 8.5),
+        building(P.tanks, 4, 10),
+        building(P.refinery, 3, 7.5),
+        building(P.factory, 2, 15),
+        building(P.warehouse, 2, 15.5),
+        building(P.coolingTower, 2, 9.5),
+      ],
     },
   ],
   trees: [
-    tree(W.snowPine, 4, 3),
-    tree(W.frostedTree, 1.5, 2),
-    tree(W.snowyBush, 2, 2.5),
-    { id: W.hut, weight: 0.25, footprint: 4.5, scale: LONE_SCALE },
-    { id: P.antenna, weight: 0.1, footprint: 5.4, scale: LONE_SCALE },
+    tree(P.deadTree, 1, 1.5),
+    tree(P.forkedTree, 0.6, 1.5),
+    tree(W1.palm, 2, 4),
+    tree(W1.dryBush, 3, 2.5),
+    tree(W1.cactus, 2, 2),
   ],
   treesPerCell: 4,
   cars: CAR_RULES,
   loners: { cell: 150, chance: 0.15, clearance: 18 },
   hamlets: { spacing: [700, 1400], buildings: [5, 9], radius: 32, gap: 2, clearance: 18 },
-  floating: WORLD_2_FLOATING,
 };
 
-/** Plants of the sections, and the lone huts of the islands. */
-export const POLAR_PLANTS = {
-  islands: [W.snowyBush, W.hut, P.antenna],
-  coast: [W.snowPine, W.snowyBush, W.frostedTree],
-  forest: [W.snowPine, W.snowPine, W.frostedTree],
-  tundra: [W.snowyBush, W.frostedTree, W.snowPine],
-  glacier: [W.frostedTree],
-  town: [W.snowPine, W.snowyBush],
+/** Plants of the sections, from the oases to the last dead trees between the factories. */
+export const DESERT_PLANTS = {
+  oasis: [W1.palm, W1.dryBush, P.bush],
+  desert: [W1.cactus, W1.dryBush, P.deadTree],
+  rock: [W1.dryBush, P.deadTree, P.forkedTree],
+  town: [W1.palm, W1.dryBush],
+  industry: [P.deadTree, W1.dryBush],
 } as const;
 
-/**
- * The pipeline on stilts of 2-3 (P08-R03): one 15-unit piece every 15 along a gentle line across
- * the tundra, from end to end.
- */
-export const TUNDRA_PIPELINE: PropLine = {
-  kind: W.pipeline,
-  path: { x: 120, amplitude: 70, wavelength: 3200 },
-  spacing: 15,
-  footprint: 9,
-  maxSlope: 0.6,
-};
-
-/** Roads of World 2: as in World 1 (no crossings, phase 6 review), on snowy ground. */
+/** Roads of World 2: as in World 1 (no crossings, phase 6 review). */
 export const WORLD_2_ROADS: RoadRules = WORLD_1_ROADS;

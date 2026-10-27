@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import {
   destroyBoss,
@@ -48,36 +49,49 @@ test.describe('P08: World 2', () => {
     });
   }
 
-  test('P08-R12: ?level=2-4&t=150 starts 2-4 at 2:30 in its blizzard', async ({ page }) => {
+  test('P08-R12: ?level=2-4&t=150 starts 2-4 at 2:30', async ({ page }) => {
     await openDebug(page, '?level=2-4&t=150');
     // At 2:30, the middle of the level, its mini boss comes (and holds the level's progress).
-    await stepUntil(
-      page,
-      async () => (await gameState(page)).game?.sky?.weatherParticles ?? -1,
-    ).toBe(1500);
+    await stepUntil(page, async () => ((await gameState(page)).game?.time ?? 0) >= 150).toBe(true);
     const { game } = await gameState(page);
     expect(game?.levelId).toBe('2-4');
     expect(game?.time).toBeGreaterThanOrEqual(150);
     expect(game?.time).toBeLessThan(156);
   });
 
-  test('P08-R12: ?level=2-3&weather=0 shows no snow; without it, 2-3 snows', async ({ page }) => {
-    await openDebug(page, '?level=2-3&weather=0');
-    await waitForLevelTime(page, 0.2);
-    expect((await gameState(page)).game?.sky?.weatherParticles).toBe(0);
-    await openDebug(page, '?level=2-3');
-    await waitForLevelTime(page, 0.2);
-    expect((await gameState(page)).game?.sky?.weatherParticles).toBe(600);
+  /** The sky of the level opened with `query`, once its clock is past `time`. */
+  const skyAt = async (page: Page, query: string, time: number) => {
+    await openDebug(page, query);
+    await waitForLevelTime(page, time);
+    return (await gameState(page)).game?.sky;
+  };
+
+  test('P08-R06 (rework, 2026-10-27): no weather or aurora in World 2', async ({ page }) => {
+    for (const [query, time] of [
+      ['?level=2-1', 0.2],
+      ['?level=2-5&t=120', 120.1],
+    ] as const) {
+      expect(await skyAt(page, query, time), query).toMatchObject({
+        weatherParticles: 0,
+        aurora: 0,
+      });
+    }
   });
 
-  test('P08-R04, P08-R12: 2-5 turns to night, its aurora on; look= forces a time of day', async ({
-    page,
-  }) => {
+  test('P08-R06 (rework, 2026-10-27): the lights come on at dusk and night', async ({ page }) => {
+    const morning = await skyAt(page, '?level=2-1', 0.2);
+    const dusk = await skyAt(page, '?level=2-4&t=60', 60.1);
+    const night = await skyAt(page, '?level=2-5&t=120', 120.1);
+    expect(morning?.groundLights).toBeLessThan(0.5);
+    expect(dusk?.groundLights).toBeGreaterThan(morning?.groundLights ?? Infinity);
+    expect(night?.groundLights).toBeGreaterThan(1);
+    expect(night?.sunIntensity).toBeLessThan(morning?.sunIntensity ?? 0);
+  });
+
+  test('P08-R12: look= forces a time of day', async ({ page }) => {
     await openDebug(page, '?level=2-5&t=120');
     await waitForLevelTime(page, 120.1);
     const night = (await gameState(page)).game?.sky;
-    expect(night?.aurora).toBe(1);
-    expect(night?.groundLights).toBeGreaterThan(1);
     await openDebug(page, '?level=2-5&t=120&look=midday');
     await waitForLevelTime(page, 120.1);
     const midday = (await gameState(page)).game?.sky;

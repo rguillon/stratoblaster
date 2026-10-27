@@ -90,6 +90,30 @@ export function buildingCount(game: GameLevel, plants: ReadonlySet<string>): num
 }
 
 /**
+ * Props placed over the whole level with its own seed: all of them, the buildings (props that
+ * are not `plants`), and how many stand in each half of the level.
+ */
+export function propCounts(game: GameLevel, plants: ReadonlySet<string>) {
+  const { scenery } = game;
+  const field = new HeightField(scenery);
+  const placer = new PropPlacer(
+    field,
+    scenery.props,
+    scenery.seed,
+    levelRoads(field, scenery.roads, scenery.seed),
+    scenery.sea?.level,
+  );
+  const placed = placer.place({ xMin: -400, xMax: 400, zMin: 0, zMax: field.length });
+  const firstHalf = placed.filter((p) => p.z < field.length / 2).length;
+  return {
+    all: placed.length,
+    buildings: placed.filter((p) => !plants.has(p.kind)).length,
+    firstHalf,
+    secondHalf: placed.length - firstHalf,
+  };
+}
+
+/**
  * Shares of the ground under the playfield that are under the water level (phase 9): in the
  * sections `isSea` says are sea, and in the others (rivers, swamps, lakes, pools).
  */

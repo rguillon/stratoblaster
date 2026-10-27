@@ -10,11 +10,7 @@ import {
 import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { LEVEL_ZERO } from '../../../../../src/game/sim/scenery-levels';
 import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/world-1/props';
-import {
-  TUNDRA_PIPELINE,
-  WORLD_2_PROP_IDS,
-  WORLD_2_PROPS,
-} from '../../../../../src/game/config/world-2/props';
+import { WORLD_2_PROP_IDS, WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS, WORLD_3_PROPS } from '../../../../../src/game/config/world-3/props';
 import * as W4 from '../../../../../src/game/config/world-4/props';
 import { PLUME_KINDS } from '../../../../../src/config/plumes';
@@ -88,8 +84,8 @@ describe('prop models', () => {
     // 17 hand-made models, 12 more for World 1 (phase 6, farms added in review), 5 families of 16
     // buildings made of parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3
     // families of 8; for World 3 (phase 9), 29 hand-made models and 2 families of 8; for World 4
-    // (phase 10), 31 hand-made models.
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 31);
+    // (phase 10), 31 hand-made models; the World 2 pumpjack (reviewer's rework, 2026-10-27).
+    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 31 + 1);
   });
 
   it('P06-R06: desert homes, outposts, farms and plants, as light as the Level Zero props (D-031)', () => {
@@ -185,33 +181,35 @@ describe('World 2 prop models', () => {
     }
   });
 
-  it('P08-R07: snowy pines, frosted trees, chalets, domes, outposts, mines and floating ice', () => {
+  it('P08-R07 (rework, 2026-10-27): desert homes and outposts, mines, oil pumpjacks, refineries and factories; no frozen prop', () => {
+    const kinds = new Set(WORLD_2_PROPS.groups.flatMap((g) => g.kinds.map((k) => k.id)));
+    for (const id of [
+      'desert-home',
+      'solar-farm',
+      'mine-headframe',
+      'oil-pumpjack',
+      'refinery',
+      'storage-tanks',
+      'factory',
+      'cooling-tower',
+      variantId('industrial-plant', 1),
+      variantId('industrial-works', 1),
+    ])
+      expect(kinds.has(id), id).toBe(true);
     expect(WORLD_2_PROPS.trees.map((t) => t.id)).toEqual(
-      expect.arrayContaining(['snow-pine', 'frosted-tree', 'snowy-bush']),
+      expect.arrayContaining(['cactus', 'dry-bush', 'palm-tree', 'dead-tree']),
     );
-    const kinds = WORLD_2_PROPS.groups.flatMap((g) => g.kinds.map((k) => k.id));
-    expect(kinds).toEqual(
-      expect.arrayContaining([
-        'polar-chalet',
-        'heated-dome',
-        'lighthouse',
-        'radar-dome',
-        'wind-turbine',
-        'drill-tower',
-        'conveyor',
-        'ore-silo',
-        ...polar('polar-tower'),
-        ...polar('polar-block'),
-        ...polar('mining-complex'),
-      ]),
+    const frozen = new Set<string>(
+      Object.values(WORLD_2_PROP_IDS).filter((id) => id !== WORLD_2_PROP_IDS.pumpjack),
     );
-    expect(WORLD_2_PROPS.floating?.kinds.map((k) => k.id)).toEqual(
-      expect.arrayContaining(['ice-floe-small', 'ice-floe-large', 'iceberg']),
-    );
+    for (const id of [...kinds, ...WORLD_2_PROPS.trees.map((t) => t.id)])
+      expect(frozen.has(id), id).toBe(false);
+    expect(WORLD_2_PROPS.floating).toBeUndefined();
   });
 
-  it('P08-R07: each building and floating prop fits in its footprint at its largest scale', () => {
-    for (const kind of placedKinds(WORLD_2_PROPS)) {
+  it('P08-R07: each building fits in its footprint at its largest scale', () => {
+    // Buildings only: the plants are World 1's, whose footprints space their trunks (P06-R06).
+    for (const kind of WORLD_2_PROPS.groups.flatMap((g) => g.kinds)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
@@ -233,8 +231,8 @@ describe('World 2 prop models', () => {
   it('P08-R03: the pipeline is one piece every 15 units along its line', () => {
     const { positions } = PROP_MODELS.pipeline?.().structure ?? { positions: [] };
     const xs = positions.filter((_, i) => i % 3 === 0);
-    expect(Math.min(...xs)).toBeCloseTo(-TUNDRA_PIPELINE.spacing / 2, 1);
-    expect(Math.max(...xs)).toBeCloseTo(TUNDRA_PIPELINE.spacing / 2, 1);
+    expect(Math.min(...xs)).toBeCloseTo(-15 / 2, 1);
+    expect(Math.max(...xs)).toBeCloseTo(15 / 2, 1);
   });
 });
 

@@ -38,6 +38,7 @@ import {
   buildWarehouse,
 } from './industrial-props';
 import { buildBroadleafTree, buildBush, buildConifer } from './green-tree-props';
+import { buildPumpjack } from './oil-props';
 import { buildPolarBuilding } from './polar-city';
 import { buildFishStore, buildHarbourCrane, buildLighthouse } from './polar-coast';
 import { buildHeatedDome, buildIceHut, buildLongChalet, buildPolarChalet } from './polar-homes';
@@ -168,7 +169,9 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W.farmhouse]: buildFarmhouse,
   [W.greenhouse]: buildGreenhouse,
   [W.grainSilos]: buildGrainSilos,
-  // Phase 8: World 2, the Frozen North (P08-R07).
+  // Reviewer's rework (2026-10-27): the oil fields of World 2.
+  [W2.pumpjack]: buildPumpjack,
+  // Phase 8: World 2, the Frozen North (P08-R07); no level places them since the rework.
   [W2.snowPine]: buildSnowPine,
   [W2.frostedTree]: buildFrostedTree,
   [W2.snowyBush]: buildSnowyBush,

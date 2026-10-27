@@ -18,8 +18,7 @@ import {
   LEVEL_2_4_LOOK,
   LEVEL_2_5_LOOK,
 } from '../config/world-2/looks';
-import { LEVEL_2_1, LEVEL_2_2 } from '../config/world-2/scenery-coast';
-import { LEVEL_2_3, LEVEL_2_4, LEVEL_2_5 } from '../config/world-2/scenery-inland';
+import { LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2_4, LEVEL_2_5 } from '../config/world-2/scenery';
 import {
   LEVEL_3_1_LOOK,
   LEVEL_3_2_LOOK,
@@ -52,7 +51,7 @@ const WORLD_1_LOOKS: Readonly<Record<string, SceneryLook>> = {
   [LEVEL_1_5.id]: LEVEL_1_5_LOOK,
 };
 
-/** World 2 (P08-R06): one look per level, with its time of day, clouds and weather. */
+/** World 2 (P08-R06): one look per level, with its time of day and clouds. */
 const WORLD_2_LOOKS: Readonly<Record<string, SceneryLook>> = {
   [LEVEL_2_1.id]: LEVEL_2_1_LOOK,
   [LEVEL_2_2.id]: LEVEL_2_2_LOOK,
