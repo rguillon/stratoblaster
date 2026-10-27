@@ -9,7 +9,8 @@ import {
   LEVEL_1_5_LOOK,
 } from '../config/world-1/looks';
 import { LEVEL_1_1, LEVEL_1_2 } from '../config/world-1/scenery-coast';
-import { LEVEL_1_3, LEVEL_1_4, LEVEL_1_5 } from '../config/world-1/scenery-desert';
+import { LEVEL_1_3 } from '../config/world-1/scenery-country';
+import { LEVEL_1_4, LEVEL_1_5 } from '../config/world-1/scenery-desert';
 import {
   LEVEL_2_1_LOOK,
   LEVEL_2_2_LOOK,
