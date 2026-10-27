@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createNoise2D, fbm, hash2D, ridged, smoothstep } from '../../../../src/core/math/noise';
+import { createRng } from '../../../../src/core/math/rng';
 
 const OCTAVES = { octaves: 4, lacunarity: 2, gain: 0.5 };
 
@@ -76,5 +77,46 @@ describe('smoothstep and hash2D', () => {
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     expect(mean).toBeGreaterThan(0.45);
     expect(mean).toBeLessThan(0.55);
+  });
+});
+
+describe('createNoise2D, with its tables worked out once (P13-R03)', () => {
+  /** The noise as it was before phase 13: cosine and sine on every call. */
+  function reference(seed: number, period = 256): (x: number, y: number) => number {
+    const random = createRng(seed);
+    const perm = Array.from({ length: 256 }, (_, i) => i);
+    for (let i = 255; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [perm[i], perm[j]] = [perm[j] ?? 0, perm[i] ?? 0];
+    }
+    const angles = Array.from({ length: 256 }, () => random() * Math.PI * 2);
+    const p = Math.max(1, Math.floor(period));
+    const wrap = (i: number) => ((i % p) + p) % p;
+    const g = (ix: number, iy: number, dx: number, dy: number) => {
+      const a = angles[perm[(wrap(ix) + (perm[wrap(iy) % 256] ?? 0)) % 256] ?? 0] ?? 0;
+      return Math.cos(a) * dx + Math.sin(a) * dy;
+    };
+    const s = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    return (x, y) => {
+      const [ix, iy] = [Math.floor(x), Math.floor(y)];
+      const [fx, fy] = [x - ix, y - iy];
+      const bottom = lerp(g(ix, iy, fx, fy), g(ix + 1, iy, fx - 1, fy), s(fx));
+      const top = lerp(g(ix, iy + 1, fx, fy - 1), g(ix + 1, iy + 1, fx - 1, fy - 1), s(fx));
+      return Math.max(-1, Math.min(1, lerp(bottom, top, s(fy)) * Math.SQRT2));
+    };
+  }
+
+  it('P13-R05: gives exactly the values it gave before, tiling or not', () => {
+    for (const [seed, period] of [
+      [1, 256],
+      [42, 256],
+      [7, 8],
+    ] as const) {
+      const [now, before] = [createNoise2D(seed, period), reference(seed, period)];
+      for (let x = -20; x < 20; x += 0.37) {
+        for (let y = -20; y < 20; y += 0.41) expect(now(x, y)).toBe(before(x, y));
+      }
+    }
   });
 });

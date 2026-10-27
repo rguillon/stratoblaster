@@ -14,7 +14,12 @@ import { createLavaMaterial } from './lava-material.visual';
 import { createPlumeMaterial } from './plume-material.visual';
 import { createRainRingsMaterial } from './rain-rings-material.visual';
 import { createWeatherMaterial } from './weather-material.visual';
-import { buildGroundTexture, buildNoiseTexture, buildWaterNormalMap } from './procedural-textures';
+import {
+  buildGroundTexture,
+  buildNoiseTexture,
+  buildWaterNormalMap,
+  NOISE_FREQUENCY,
+} from './procedural-textures';
 import {
   createPropMaterials,
   createRoadMaterial,
@@ -25,8 +30,6 @@ import {
 import type { SceneryLook } from './scenery-look';
 import { TerrainBlendPlugin, type TerrainBlendState } from './terrain-blend-plugin.visual';
 
-/** Noise cycles across the blending and cloud noise textures. */
-const NOISE_FREQUENCY = 8;
 const ANISOTROPY = 8;
 
 function rawTexture(scene: Scene, pixels: Uint8Array, size: number): RawTexture {

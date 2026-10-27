@@ -1,5 +1,10 @@
 import { hash2D } from '../../core/math/noise';
-import { meetingWidth, streetLines, type StreetLine } from '../../core/scenery/road-traffic';
+import {
+  cachedStreetLines,
+  meetingWidth,
+  roadZSpan,
+  type StreetLine,
+} from '../../core/scenery/road-traffic';
 import type { Road, RoadPoint } from '../../core/scenery/road-network';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import { paintCentreLines, type CentreLineLook } from './road-lines';
@@ -105,8 +110,13 @@ export function buildRoadGeometry(
 ): ColoredGeometry {
   const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
   const rows = ROWS.length;
-  const lines = streetLines(roads);
+  const lines = cachedStreetLines(roads);
+  // How far past its points a street's ribbon may reach (see `ribbonPoints`).
+  const reach = Math.max(0, ...lines.map((l) => l.width)) / 2 + 1;
   for (const road of roads) {
+    // P13-R04: a road with no point near the chunk has no segment in it.
+    const [zLow, zHigh] = roadZSpan(road);
+    if (zHigh < zMin - reach || zLow >= zMax + reach) continue;
     const shoulder = road.kind === 'street' ? look.streetShoulder : look.shoulder;
     for (const run of runs(ribbonPoints(road, lines), zMin, zMax)) {
       const base = geo.positions.length / 3;

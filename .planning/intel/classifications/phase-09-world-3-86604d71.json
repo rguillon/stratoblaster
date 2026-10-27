@@ -1,0 +1,26 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-09-world-3.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase 09 — World 3",
+  "summary": "Requirements for World 3 (Industrial Towns): five levels, rain and lightning weather, scenery, waves, difficulty, and ten bosses.",
+  "scope": [
+    "World 3",
+    "levels 3-1 to 3-5",
+    "level select",
+    "scenery",
+    "rain weather",
+    "lightning",
+    "props",
+    "enemy waves",
+    "difficulty",
+    "bosses",
+    "debug options",
+    "bosses/ page"
+  ],
+  "cross_refs": ["01-engineering.md", "src/game/"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path matches **/specs/** (strong SPEC signal). Content is a phase requirements document with acceptance criteria (PRD-like hallmarks) plus technical contracts (tunable values, triangle budgets, fight times, boss part tables), so confidence is medium. No frontmatter type field; Status: Ready. The 8-hex source_hash suffix in the filename could not be computed (no shell or hashing tool available to this classifier); the file is named with the placeholder suffix 'hash-pending' and must be renamed to phase-09-world-3-{first 8 hex of SHA-256 of /home/renaud/pewet/specs/phases/phase-09-world-3.md}.json."
+}

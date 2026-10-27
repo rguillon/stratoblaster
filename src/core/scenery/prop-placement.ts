@@ -13,39 +13,24 @@ import type {
   PropRules,
   TerrainSection,
 } from './scenery-level';
+import {
+  BUILDING_BUCKET,
+  bucketKey,
+  inside,
+  overlap,
+  type GroundArea,
+  type GroundBox,
+  type PlacerSnapshot,
+  type PropPlacement,
+} from './ground-boxes';
 
-/** One prop standing on the ground. */
-export interface PropPlacement {
-  /** Key of the prop's model (`PropKindRule.id`). */
-  readonly kind: string;
-  readonly x: number;
-  /** Height of the ground the prop stands on. */
-  readonly y: number;
-  readonly z: number;
-  /** Turn around the vertical axis, in radians. */
-  readonly rotation: number;
-  readonly scale: number;
-  /** Per-axis scale (X, Y, Z) instead of `scale`, for podiums stretched to their block. */
-  readonly size?: readonly [number, number, number];
-}
-
-/** A rectangle of ground, in world units. */
-export interface GroundArea {
-  readonly xMin: number;
-  readonly xMax: number;
-  readonly zMin: number;
-  readonly zMax: number;
-}
+export type { GroundArea, PlacerSnapshot, PropPlacement } from './ground-boxes';
 
 /** Hash streams of a slot or a cell; each draw uses its own stream so they stay independent. */
 const Draw = { Building: 0, Kind: 1, Scale: 2, Trees: 3 } as const;
 
 /** Draws per tree: position X, position Z, kind, scale, turn. */
 const TREE_DRAWS = 5;
-
-function inside(area: GroundArea, x: number, z: number): boolean {
-  return x >= area.xMin && x < area.xMax && z >= area.zMin && z < area.zMax;
-}
 
 /** Blocks are cut into parts of about this size, one tower each at most… */
 const PART_SIZE = 30;
@@ -58,25 +43,6 @@ const LARGEST_SHARE = 0.75;
 
 /** Smaller kinds a building slot tries when its first choice does not fit. */
 const FALLBACKS = 3;
-
-/** Bucket size of the index of placed buildings. */
-const BUILDING_BUCKET = 32;
-
-/** Whether the ground boxes of `a` and `b` come closer than `gap`. */
-function overlap(a: GroundBox, b: GroundBox, gap: number): boolean {
-  const apartX = Math.abs(a.placement.x - b.placement.x) >= a.halfX + b.halfX + gap;
-  const apartZ = Math.abs(a.placement.z - b.placement.z) >= a.halfZ + b.halfZ + gap;
-  return !apartX && !apartZ;
-}
-
-/** The box of ground a prop takes around its centre. */
-type GroundBox = Pick<Building, 'halfX' | 'halfZ'> & {
-  readonly placement: { x: number; z: number };
-};
-
-function bucketKey(x: number, z: number): string {
-  return `${String(Math.floor(x / BUILDING_BUCKET))},${String(Math.floor(z / BUILDING_BUCKET))}`;
-}
 
 /**
  * Places props on a level (P04-R04, P04-R07). Buildings stand only along the roads: each slot of
@@ -94,6 +60,7 @@ function bucketKey(x: number, z: number): string {
  * that touch can be placed separately (terrain chunks). A building belongs to the area that
  * contains its centre; a cell to the area that contains its corner.
  */
+
 export class PropPlacer {
   readonly #zones: Noise2D;
   readonly #buildings: Building[] = [];
@@ -108,8 +75,14 @@ export class PropPlacer {
     readonly roads: RoadNetwork,
     /** The level's sea level, if it has a sea: floating props float on it (phase 8). */
     private readonly seaLevel?: number,
+    /** The buildings placed before (e.g. in a worker, P13-R03): taken as they are. */
+    made?: PlacerSnapshot,
   ) {
     this.#zones = createNoise2D(seed + 3);
+    if (made) {
+      this.#restore(made);
+      return;
+    }
     // Phase 9: set pieces, then (phase 8) lines of props first: the rest keeps clear of them.
     this.#fixed.push(...fixedPieces(rules, field, seaLevel));
     for (const piece of this.#fixed) this.#occupy(piece);
@@ -192,6 +165,17 @@ export class PropPlacer {
       }
     }
     return true;
+  }
+
+  /** The buildings placed before, occupying the ground in the order they were placed. */
+  #restore(made: PlacerSnapshot): void {
+    this.#fixed.push(...made.buildings.slice(0, made.fixed));
+    for (const building of made.buildings) this.#occupy(building);
+  }
+
+  /** What this placer placed (P13-R03). */
+  snapshot(): PlacerSnapshot {
+    return { buildings: this.#buildings, fixed: this.#fixed.length };
   }
 
   #occupy(building: Building): void {

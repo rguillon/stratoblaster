@@ -4,9 +4,9 @@ import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LogicalScreen } from '../../core/content/game-definition';
-import { HeightField } from '../../core/scenery/height-field';
-import { PropPlacer } from '../../core/scenery/prop-placement';
-import { levelRoads } from '../../core/scenery/road-network';
+import type { HeightField } from '../../core/scenery/height-field';
+import type { PropPlacer } from '../../core/scenery/prop-placement';
+import { levelGround } from './level-ground';
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import {
   framePlayfield,
@@ -105,8 +105,7 @@ export class SceneryStage {
     const { level, look, config } = options;
     checkPropModels(level, options.propModels);
     this.#seed = level.seed;
-    this.#field = new HeightField(level, this.#seed);
-    this.#placer = this.#newPlacer();
+    ({ field: this.#field, placer: this.#placer } = levelGround(level, this.#seed));
     this.#drifts = propDrifts(level);
     this.framing = framePlayfield(options.screen, options.camera);
     const cameraY = options.camera.flightAltitude + this.framing.height;
@@ -230,8 +229,7 @@ export class SceneryStage {
   /** Regenerates the terrain and the props from another seed. */
   setSeed(seed: number): void {
     this.#seed = seed;
-    this.#field = new HeightField(this.options.level, seed);
-    this.#placer = this.#newPlacer();
+    ({ field: this.#field, placer: this.#placer } = levelGround(this.options.level, seed));
     this.#chunks.rebuild(this.#field);
     this.#props.clear();
     this.#roads.clear();
@@ -320,12 +318,6 @@ export class SceneryStage {
       light: plumeLight(atmosphere),
       fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
     });
-  }
-
-  #newPlacer(): PropPlacer {
-    const { level } = this.options;
-    const roads = levelRoads(this.#field, level.roads, this.#seed);
-    return new PropPlacer(this.#field, level.props, this.#seed, roads, level.sea?.level);
   }
 
   #placeChunk(index: number): void {

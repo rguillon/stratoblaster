@@ -60,13 +60,14 @@ test.describe('P05: enemies/ page', () => {
     await expect(page.locator('.stats-polygons')).toHaveText(/^Polygons: [1-9][\d,]*$/);
   });
 
-  // The 21 kinds in three groups of seven, in parallel.
-  for (const first of [0, 7, 14]) {
-    test(`P05-R01..R24: enemy kinds ${String(first + 1)} to ${String(first + 7)} can be picked, spawn and attack`, async ({
+  // The 21 kinds in seven groups of three, in parallel (seven kinds per test came close to the
+  // 30 s timeout on CI).
+  for (const first of [0, 3, 6, 9, 12, 15, 18]) {
+    test(`P05-R01..R24: enemy kinds ${String(first + 1)} to ${String(first + 3)} can be picked, spawn and attack`, async ({
       page,
     }) => {
       await page.keyboard.press('f');
-      for (let i = first; i < first + 7; i++) {
+      for (let i = first; i < first + 3; i++) {
         const name = KINDS[i] ?? '';
         await page.locator('.enemy-kind button').nth(i).click();
         await expect(page.locator('.enemy-kind button').nth(i)).toHaveAttribute(

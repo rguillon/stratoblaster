@@ -51,7 +51,8 @@ export interface ShipSelectStageOptions {
 export class ShipSelectStage {
   readonly showcase: ModelShowcase;
   readonly camera: ArcRotateCamera;
-  readonly spot: DirectionalLight;
+  /** Each ship's key light, lighting only that ship; only the highlighted one is on. */
+  readonly #spots: DirectionalLight[];
   readonly ring: Mesh;
   #selected = 0;
 
@@ -67,15 +68,28 @@ export class ShipSelectStage {
       lights.ambientIntensity;
     const rim = new DirectionalLight('ship-select-rim', new Vector3(...lights.rimDirection), scene);
     rim.intensity = lights.rimIntensity;
-    this.spot = new DirectionalLight(
-      'ship-select-spot',
-      new Vector3(...lights.spotDirection),
-      scene,
-    );
-    this.spot.intensity = lights.spotIntensity;
+    // P13-R02: one light per ship, so highlighting another ship only turns lights on and off:
+    // no mesh's lights change, and no shader is compiled again.
+    this.#spots = this.showcase.pivots.map((pivot, i) => {
+      const spot = new DirectionalLight(
+        `ship-select-spot-${String(i)}`,
+        new Vector3(...lights.spotDirection),
+        scene,
+      );
+      spot.includedOnlyMeshes = pivot.getChildMeshes(false);
+      spot.intensity = 0;
+      return spot;
+    });
     this.ring = this.#createRing();
     this.select(0);
     for (const pivot of this.showcase.pivots) pivot.scaling.setAll(this.#targetScale(pivot));
+  }
+
+  /** The key light of the highlighted ship. */
+  get spot(): DirectionalLight {
+    const spot = this.#spots[this.#selected];
+    if (!spot) throw new Error('The ship select stage has no ship');
+    return spot;
   }
 
   /** Index of the highlighted ship. */
@@ -89,7 +103,9 @@ export class ShipSelectStage {
     this.#selected = Math.min(Math.max(0, index), pivots.length - 1);
     const pivot = pivots[this.#selected];
     if (!pivot) return;
-    this.spot.includedOnlyMeshes = pivot.getChildMeshes(false);
+    this.#spots.forEach((spot, i) => {
+      spot.intensity = i === this.#selected ? this.options.lights.spotIntensity : 0;
+    });
     this.ring.position.x = pivot.position.x;
   }
 

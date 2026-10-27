@@ -1,0 +1,22 @@
+{
+  "source_path": "/home/renaud/pewet/specs/00-vision.md",
+  "type": "PRD",
+  "confidence": "low",
+  "manifest_override": true,
+  "title": "00 — Vision",
+  "summary": "Vision for an old-school vertical-scrolling shoot 'em up with 3D graphics, for casual players, desktop first then mobile.",
+  "scope": [
+    "vertical scroller shoot 'em up",
+    "3D graphics",
+    "desktop browser",
+    "mobile browser",
+    "worlds and levels",
+    "core loop",
+    "controls responsiveness",
+    "frame rate"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path heuristic (**/specs/**) suggests SPEC, but content has no technical contracts (no APIs, schemas, protocols, SLOs). Content is vision-level: audience, core loop, pillars, goals/non-goals, definition of done, matching PRD hallmarks, so classified as PRD. Confidence low because path and content conflict. Filename hash not computed: no shell tool was available to compute SHA-256 of the full path, so the file is named 00-vision-nohash.json instead of 00-vision-{hash8}.json. Rename once the hash is known. Source also contains a reviewer edit note (World 5 dropped, 2026-10-26) that is recorded in the source only and not summarized here."
+}

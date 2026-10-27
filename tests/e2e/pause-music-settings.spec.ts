@@ -278,7 +278,8 @@ test.describe('P12: audio', () => {
     expect(media, `audio files fetched from ${baseURL ?? ''}`).toEqual([]);
   });
 
-  test('P12-R08, P12-R12: the menu theme plays in the menus, the level track in the level, the boss track in its fight', async ({
+  // Split in two: three page loads in one test came close to the 30 s timeout on CI.
+  test('P12-R08, P12-R12: the menu theme plays in the menus, the level track in the level', async ({
     page,
   }) => {
     await openGame(page);
@@ -288,6 +289,9 @@ test.describe('P12: audio', () => {
     await openDebug(page, '?level=2-3');
     await step(page, 2);
     expect((await gameState(page)).music).toBe('level-2-3');
+  });
+
+  test('P12-R08, P12-R12: the boss track plays in its fight', async ({ page }) => {
     await openDebug(page, '?level=2-3&boss=mini');
     await stepUntil(page, async () => (await gameState(page)).music).toBe('boss-2');
   });

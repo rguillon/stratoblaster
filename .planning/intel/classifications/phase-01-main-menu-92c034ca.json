@@ -1,0 +1,28 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-01-main-menu.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase 01 — Main Menu",
+  "summary": "Requirements for the main menu: loading and title screens, ship and level select, placeholder game screen, and keyboard, gamepad and touch navigation.",
+  "scope": [
+    "loading screen",
+    "title screen",
+    "ship select screen",
+    "level select screen",
+    "placeholder game screen",
+    "screen state machine",
+    "high score cookie",
+    "last ship cookie",
+    "title background scene",
+    "keyboard input",
+    "gamepad input",
+    "touch and mouse input",
+    "WebGL2 check",
+    "__GAME_TEST__ test API"
+  ],
+  "cross_refs": ["02-game-design.md", "01-engineering.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path under specs/ gives a strong SPEC signal. Content is mostly PRD-style (P01-Rxx MUST/SHOULD/MAY requirements, acceptance criteria, goals, out of scope), with some technical content (state machine, cookie storage interface, test API). Ambiguity resolved by path signal per the SPEC-over-PRD precedence rule. Output filename uses the placeholder suffix NOHASH because no hashing tool was available to compute the 8-char SHA-256 prefix of the source path; the hash must be recomputed before the synthesizer relies on the filename convention."
+}

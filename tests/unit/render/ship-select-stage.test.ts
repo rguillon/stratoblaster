@@ -43,6 +43,10 @@ describe('ShipSelectStage', () => {
     expect(stage.selected).toBe(1);
     expect(stage.ring.position.x).toBe(second.position.x);
     expect(ids(stage.spot.includedOnlyMeshes)).toEqual(ids(second.getChildMeshes(false)));
+    // P13-R02: each ship keeps its own key light; only the highlighted one is on.
+    const spots = stage.scene.lights.filter((l) => l.name.startsWith('ship-select-spot'));
+    expect(spots.map((l) => l.intensity > 0)).toEqual(spots.map((l) => l === stage.spot));
+    expect(spots).toHaveLength(stage.showcase.pivots.length);
     stage.update(0.05);
     expect(second.scaling.x).toBeGreaterThan(MENU_CONFIG.shipSelect.dimScale);
     expect(first.scaling.x).toBeLessThan(MENU_CONFIG.shipSelect.highlightScale);

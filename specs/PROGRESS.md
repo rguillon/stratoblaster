@@ -17,6 +17,7 @@
 | 10 | `phases/phase-10-world-4.md` | ✅ Validated | `phase-10` | 99.42% lines | 2026-10-26 |
 | 11 | `phases/phase-11-score-lives-bombs.md` | ✅ Validated | `phase-11` | 99.42% lines | 2026-10-26 |
 | 12 | `phases/phase-12-pause-music-settings.md` | ✅ Validated | `phase-12` | 99.4% lines | 2026-10-27 |
+| 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -144,3 +145,9 @@
 - 2026-10-27 — 10 — Review change after validation, at the reviewer's request: World 4 reworked as the Metropolis, from the houses World 3 ends on to a downtown of skyscrapers, slow transitions (sections blend over 900 units, grass stepping down to concrete, taller building groups mixing in), the river on between quays; no sea, no lava; a new family of 8 skyscrapers (P10-R03, R04 notes, R05 note, R08 amended; D-112). Full gate green: `make check` (lint, typecheck, 1591 unit tests, coverage 99.4 % lines / 87.87 % branches, build, 117 e2e); awaiting the reviewer's check.
 - 2026-10-27 — CI — At the reviewer's request: the e2e tests run in a single CI job instead of 3 shards (D-018 amended).
 - 2026-10-27 — 12 — Validated by the reviewer, without re-running `make check` for this phase (reviewer's choice): already squash-merged into `main` as #23, tagged `v0.12.0` on 6da41c0; coverage from the latest full gate (World 4 rework: 1591 unit tests, 99.4 % lines, 87.87 % branches, 117 e2e).
+- 2026-10-27 — 13 — Set Ready by the reviewer. Implemented: perf monitor + F3 overlay + test API numbers + `scripts/measure-perf.mjs`; causes found (O(roads²) road ribbons per chunk, all prop kinds re-uploaded, level built inside the key press, regenerated ground and textures); street index, caches, noise tables, stepped level loading behind a loading screen with shader precompile and prebuilt enemy models (D-113..D-115). Software WebGL only (no reference machine): long sim frames in Worlds 2–4 19–25 → 0–3 per 2 min, level confirm 2.4 s → 48 ms. Light verification green (typecheck, build, 122 e2e); awaiting review.
+- 2026-10-27 — 13 — Review fixes: one key light per ship on ship select (no shader rebuild on highlight, 186 → 6 ms; D-116); the highlighted level is prepared in a worker while it is chosen, enemy models built during play (load 3.7–4 s → 0.44–0.51 s once the highlight has rested; D-117). Still awaiting review.
+- 2026-10-27 — 13 — Second review round (focus on 4-1): the level the level select highlight rests on is built ahead, so Confirm starts it in the same frame (D-119); each ship drawn highlighted once while the menus load, for the ship-select freeze, which can't be reproduced on software WebGL (D-118). Light verification green (typecheck, build, 122 e2e). Still awaiting review.
+- 2026-10-27 — 13 — Review fix: the music no longer stops during level loading steps; it is scheduled 1.5 s ahead before each step (D-120). Light verification green (typecheck, build, 122 e2e). Still awaiting review.
+- 2026-10-27 — 13 — Review fix: the music is scheduled 1.5 s ahead (was 100 ms, P12 tunable), so it no longer stops during loading or the first frames of a level (D-120). Light verification: typecheck, build green; e2e 121 passed + 1 known flaky timeout (World 2 dusk lights, passed alone). Still awaiting review.
+- 2026-10-27 — 13 — Validated: full gate green (1617 unit tests, 99.28 % lines, 87.83 % branches, 122 e2e); squash-merged into `main`, tagged `v0.13.0`.

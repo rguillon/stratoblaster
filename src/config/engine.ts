@@ -12,4 +12,8 @@ export const ENGINE_CONFIG = {
    * a quarter of the pixels, without multisampling, makes their frames several times cheaper.
    */
   e2e: { renderScale: 0.5, antialias: false },
+  /** P13-R01 `long_frame_ms`: a frame whose work takes longer counts as a long frame. */
+  longFrameMs: 50,
+  /** Debug perf overlay (P13-R01, ENG-111): refreshed every `refresh` s, toggled with F3. */
+  perfOverlay: { refresh: 0.25, key: 'F3' },
 } as const;

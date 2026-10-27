@@ -5,6 +5,9 @@ import { lanesOf, mainRoadWidth, runWidth, withWidth } from './lanes';
 import { layPaths, type PathGround } from './road-paths';
 import type { RoadRules } from './scenery-level';
 import { findDistricts, streetRuns, type Block, type District } from './street-grid';
+import { BUCKET, segmentDistance, type RoadSnapshot, type Segment } from './road-segments';
+
+export type { RoadSnapshot } from './road-segments';
 
 /** One point of a road's centre line. */
 export interface RoadPoint {
@@ -56,32 +59,12 @@ interface Follow {
   readonly gap: number;
 }
 
-interface Segment {
-  readonly road: Road;
-  readonly ax: number;
-  readonly az: number;
-  readonly bx: number;
-  readonly bz: number;
-  readonly halfWidth: number;
-}
-
-/** Bucket size of the segment index; distance queries see at least this far. */
-const BUCKET = 64;
 /** Irregular wobble of a main road, as a share of its meander amplitude. */
 const WOBBLE = 0.3;
 /** When a road cannot leave the screen from its end, it tries again this many points earlier… */
 const RETREAT_POINTS = 4;
 /** …at most this many times, then the piece is dropped. */
 const MAX_RETREATS = 40;
-function segmentDistance(x: number, z: number, s: Segment): number {
-  const dx = s.bx - s.ax;
-  const dz = s.bz - s.az;
-  const length2 = dx * dx + dz * dz;
-  const t =
-    length2 > 0 ? Math.max(0, Math.min(1, ((x - s.ax) * dx + (z - s.az) * dz) / length2)) : 0;
-  return Math.hypot(x - (s.ax + t * dx), z - (s.az + t * dz));
-}
-
 /** Heading of the segment ending at `points[i]`, in radians from +Z, positive towards +X. */
 function heading(points: readonly Point[], i: number): number {
   const a = points[Math.max(0, i - 1)];
@@ -98,6 +81,7 @@ function heading(points: readonly Point[], i: number): number {
  * cannot reach it on buildable ground is dropped. Buildings stand only along roads, in slots
  * every `slotSpacing` on both sides. Pure and deterministic for a given seed.
  */
+
 export class RoadNetwork {
   readonly roads: Road[] = [];
   readonly slots: RoadSlot[] = [];
@@ -119,10 +103,16 @@ export class RoadNetwork {
     seed: number,
     /** Z range covered by the main roads; their ends there are out of view. */
     private readonly range: { readonly zMin: number; readonly zMax: number },
+    /** The roads made before (e.g. in a worker, P13-R03): taken as they are, not generated. */
+    made?: RoadSnapshot,
   ) {
     this.setback = rules.setback;
     this.offscreenX = rules.offscreenX;
     this.#districts = findDistricts(field.sections, range);
+    if (made) {
+      this.#restore(made);
+      return;
+    }
     const random = createRng(seed + 4);
     // Without crossings, the streets come first: the winding roads and the paths keep clear.
     if (rules.noCrossings) this.#addStreets(createRng(seed + 5));
@@ -335,6 +325,19 @@ export class RoadNetwork {
     );
   }
 
+  /** The roads, slots and blocks made before, indexed as they were when made (in order). */
+  #restore(made: RoadSnapshot): void {
+    this.roads.push(...made.roads);
+    for (const road of this.roads) this.#index(road);
+    this.slots.push(...made.slots);
+    this.blocks.push(...made.blocks);
+  }
+
+  /** What this network made (P13-R03). */
+  snapshot(): RoadSnapshot {
+    return { roads: this.roads, slots: this.slots, blocks: this.blocks };
+  }
+
   #addRoad(kind: Road['kind'], points: readonly RoadPoint[]): void {
     const width = kind === 'cross' ? this.rules.crossWidth : (points[0]?.width ?? 0);
     const lanes = lanesOf(this.rules, width);
@@ -391,9 +394,12 @@ export class RoadNetwork {
 const LEVEL_MARGIN = 3000;
 
 /** The roads of a whole level, a little beyond both ends (the camera sees past them). */
-export function levelRoads(field: HeightField, rules: RoadRules, seed: number): RoadNetwork {
-  return new RoadNetwork(field, rules, seed, {
-    zMin: -LEVEL_MARGIN,
-    zMax: field.length + LEVEL_MARGIN,
-  });
+export function levelRoads(
+  field: HeightField,
+  rules: RoadRules,
+  seed: number,
+  made?: RoadSnapshot,
+): RoadNetwork {
+  const range = { zMin: -LEVEL_MARGIN, zMax: field.length + LEVEL_MARGIN };
+  return new RoadNetwork(field, rules, seed, range, made);
 }

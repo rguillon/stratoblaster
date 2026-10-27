@@ -56,4 +56,19 @@ describe('EnemyLayer', () => {
       layer.sync([enemy], 0);
     }).toThrow(/No model for enemy "nope"/);
   });
+
+  it('P13-R04: builds one hidden model of the next kind not built yet each call, reused later', () => {
+    const { layer, pivot } = setUp();
+    const meshes = layer.prepareNext();
+    expect(Array.isArray(meshes)).toBe(true);
+    expect(layer.modelCount).toBe(1);
+    expect(pivot(0)?.isEnabled()).toBe(false);
+    // Every kind has a model: nothing more is built.
+    expect(layer.prepareNext()).toEqual([]);
+    expect(layer.modelCount).toBe(1);
+    // The first enemy of that kind takes the model built ahead.
+    layer.sync([new Dropper(0, 0)], 0.1);
+    expect(layer.modelCount).toBe(1);
+    expect(pivot(0)?.isEnabled()).toBe(true);
+  });
 });

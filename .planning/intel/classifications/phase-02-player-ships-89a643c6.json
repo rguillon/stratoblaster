@@ -1,0 +1,22 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/phase-02-player-ships.md",
+  "type": "SPEC",
+  "confidence": "low",
+  "manifest_override": true,
+  "title": "Phase 02 — Player Ships",
+  "summary": "Requirements for three procedurally modelled player ship designs (Balanced, Heavy, Light) with speed and HP stats, plus a player_ship/ viewer endpoint.",
+  "scope": [
+    "player ships",
+    "Balanced ship",
+    "Heavy ship",
+    "Light ship",
+    "ship 3D model",
+    "reactor blue light effect",
+    "player_ship/ viewer endpoint",
+    "base ship speed"
+  ],
+  "cross_refs": ["DECISIONS.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path matches **/specs/** (SPEC heuristic), but the filename lacks the SPEC- prefix and there is no frontmatter. Content is phase requirements: a Goal section, MUST requirements P02-R01..R03 with acceptance criteria, and a user-facing viewer. That reads like PRD, with no endpoint schemas, protocols, or SLOs. Per the ambiguity rule (ADR > SPEC > PRD > DOC), SPEC was chosen; PRD is the close alternative. Confidence is low because the signals conflict. The file also carries an agent-filled Implementation report (ship designs, gate results). Only the requirement sections are classification-relevant. source_hash could not be computed: the classifier toolset has no hashing capability, so this file is named with the UNHASHED suffix instead of the 8-hex SHA-256 prefix. Rename it to phase-02-player-ships-<sha256(source_path)[0:8]>.json once a hash is available."
+}

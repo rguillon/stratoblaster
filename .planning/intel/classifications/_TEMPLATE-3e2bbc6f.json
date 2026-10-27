@@ -1,0 +1,20 @@
+{
+  "source_path": "/home/renaud/pewet/specs/phases/_TEMPLATE.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": true,
+  "title": "Phase NN — <Title>",
+  "summary": "Copy-and-fill template for phase spec files, with placeholder sections for goal, requirements, tunables, validation, and agent implementation report.",
+  "scope": [
+    "phase spec files",
+    "phase requirements",
+    "acceptance criteria",
+    "tunable values",
+    "manual validation checklist",
+    "implementation report"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": "Template with placeholder content only; no concrete requirements, decisions, or API/schema definitions. Classified DOC (authoring guide) because it carries instructions for writing phase specs. Contains no requirement IDs with real content (PNN-Rxx entries are placeholders). Example filenames (phase-NN-short-name.md, phase-03-enemies.md) are naming examples, not cross-references, so cross_refs is empty. Output filename uses the placeholder suffix -HASH-PENDING because no shell was available to compute the SHA-256 of the source path; the orchestrator must rename it to -TEMPLATE-<first 8 hex of sha256('/home/renaud/pewet/specs/phases/_TEMPLATE.md')>.json."
+}

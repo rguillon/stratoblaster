@@ -1,4 +1,9 @@
-import { inCrossing, streetLines, type StreetLine } from '../../core/scenery/road-traffic';
+import {
+  cachedStreetLines,
+  inCrossing,
+  roadZSpan,
+  type StreetLine,
+} from '../../core/scenery/road-traffic';
 import type { Road, RoadPoint } from '../../core/scenery/road-network';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import type { HeightSource } from './terrain-geometry';
@@ -113,9 +118,12 @@ export function paintCentreLines(
   zMin: number,
   zMax: number,
 ): void {
-  const lines = streetLines(roads);
+  const lines = cachedStreetLines(roads);
   for (const road of roads) {
     if (road.kind === 'cross') continue;
+    // P13-R04: a road with no point in the range has no segment starting there.
+    const [zLow, zHigh] = roadZSpan(road);
+    if (zHigh < zMin || zLow >= zMax) continue;
     let along = 0;
     road.points.forEach((a, i) => {
       const b = road.points[i + 1];

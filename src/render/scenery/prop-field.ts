@@ -88,6 +88,8 @@ export class PropField {
   /** Phase 10: one material per kind of plume, driven every frame. */
   readonly #plumeMaterials = new Map<string, PlumeMaterial>();
   readonly #chunks = new Map<number, readonly PropPlacement[]>();
+  /** The placements uploaded last for each kind (P13-R04: unchanged kinds are not uploaded). */
+  readonly #drawn = new Map<string, readonly PropPlacement[]>();
   #dirty = false;
   /** Only the props whose Z is in this range are drawn, if set (see {@link setWindow}). */
   #window: { readonly zMin: number; readonly zMax: number } | undefined;
@@ -203,7 +205,10 @@ export class PropField {
     this.#dirty = false;
     const byKind = this.#byKind();
     for (const [kind, meshes] of this.#meshes) {
-      const matrices = instanceMatrices(byKind.get(kind) ?? []);
+      const placements = byKind.get(kind) ?? [];
+      if (samePlacements(this.#drawn.get(kind), placements)) continue;
+      this.#drawn.set(kind, placements);
+      const matrices = instanceMatrices(placements);
       for (const mesh of [meshes.structure, meshes.lights, ...meshes.plumes]) {
         if (!mesh) continue;
         mesh.setEnabled(matrices.length > 0);
@@ -228,6 +233,15 @@ export class PropField {
     }
     return byKind;
   }
+}
+
+/** Whether `a` and `b` hold the same placements in the same order (or none in both). */
+function samePlacements(
+  a: readonly PropPlacement[] | undefined,
+  b: readonly PropPlacement[],
+): boolean {
+  if (a === undefined) return false;
+  return a.length === b.length && a.every((p, i) => p === b[i]);
 }
 
 /**

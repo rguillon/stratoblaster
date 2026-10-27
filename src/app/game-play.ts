@@ -1,18 +1,17 @@
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { GameDefinition } from '../core/content/game-definition';
-import { findGameLevel, type GameLevel } from '../core/content/game-level';
-import { findPlayerShip, shipMaxSpeedPxPerSec } from '../core/entities/player-ship';
-import { withRunout } from '../core/scenery/scenery-level';
+import type { GameLevel } from '../core/content/game-level';
+import {
+  findPlayerShip,
+  shipMaxSpeedPxPerSec,
+  type PlayerShipDefinition,
+} from '../core/entities/player-ship';
 import { FixedStepClock } from '../core/loop/fixed-step-clock';
 import type { Bonus } from '../core/systems/bonus-world';
 import type { BossRank } from '../core/systems/boss-fights';
 import type { EnemyBlast } from '../core/systems/enemy-world';
-import {
-  LevelRun,
-  type LandedHit,
-  type LevelCheckpoint,
-  type LevelResult,
-} from '../core/systems/level-run';
+import { LevelRun, type LevelCheckpoint, type LevelResult } from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
 import type { WeaponLevels } from '../core/systems/run-arsenal';
 import type { ShotImpact } from '../core/systems/shot-world';
@@ -23,14 +22,16 @@ import { playfieldEye, visibleHalfWidth } from '../render/scenery/playfield-fram
 import type { GameControls } from '../input/game-controls';
 import type { GameHud } from '../ui/game-hud';
 import type { MenuDocument } from '../ui/screens/elements';
-import { StatsTile } from '../ui/stats-tile';
+import type { StatsTile } from '../ui/stats-tile';
 import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
-import { createHud, hudFrame } from './game-play-hud';
+import { createLevelOverlays, hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
 import { buildLevelScene, skyState, type LevelScene } from './level-scene';
+import { levelOf, sceneryWithRunout } from './level-prepare';
 import { RateMeter } from './rate-meter';
+import { hitBlasts } from './hit-blasts';
 import { PlayfieldShip } from './shot-viewer-scene';
 
 /** What the player chose: a ship and a level. */
@@ -68,30 +69,19 @@ export interface GamePlayOptions {
   readonly onStep?: (run: LevelRun) => void;
 }
 
+/** Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04). */
+function compile(meshes: readonly AbstractMesh[]): void {
+  for (const mesh of meshes) {
+    const { material } = mesh;
+    if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
+  }
+}
+
 /** What happened during the steps of one frame, to draw. */
 interface FrameEvents {
   readonly blasts: EnemyBlast[];
   readonly impacts: ShotImpact[];
   readonly picked: Bonus[];
-}
-
-/** A spark where a hit landed; a blast at the ship when it cost a life (phase 6 review). */
-function hitBlasts(
-  hits: readonly LandedHit[],
-  ship: { readonly x: number; readonly y: number },
-): EnemyBlast[] {
-  const { hitSpark, shipBlast } = CFG.damage;
-  return hits.map((hit) =>
-    hit.event === 'hit'
-      ? { kind: 'missile', x: hit.x, y: hit.y, radius: hitSpark }
-      : { kind: 'enemy', x: ship.x, y: ship.y, radius: shipBlast },
-  );
-}
-
-function levelOf(game: GameDefinition, id: string): GameLevel {
-  const level = findGameLevel(game.gameLevels, id);
-  if (!level) throw new Error(`Level "${id}" cannot be played`);
-  return level;
 }
 
 /**
@@ -109,9 +99,9 @@ export class GamePlay {
   readonly #bonuses: BonusRenderer;
   readonly #bombs: BombRenderer | undefined;
   readonly #speed: number;
-  readonly #stats: StatsTile | undefined;
-  readonly #hud: GameHud | undefined;
-  readonly #maxHealth: number;
+  #stats: StatsTile | undefined;
+  #hud: GameHud | undefined;
+  readonly #shipDef: PlayerShipDefinition;
   readonly #fps = new RateMeter(CFG.stats.fpsWindow);
   #frames = 0;
   #previous = 0;
@@ -119,6 +109,8 @@ export class GamePlay {
   /** How far the ship is banked, in radians (visual only). */
   #roll = 0;
   #completed = false;
+  /** Whether the shaders of the enemy models built ahead are compiled (see {@link prepare}). */
+  #compileShaders = false;
   /** Seconds since the last life was lost (the "Game over" overlay waits a little). */
   #overFor = 0;
 
@@ -132,7 +124,7 @@ export class GamePlay {
     const level = levelOf(game, choice.levelId);
     this.view = buildLevelScene(engine, game, {
       // Extra ground past the end, for the final boss fight (P07-R03).
-      level: withRunout(level.scenery, level.runout ?? 0),
+      level: sceneryWithRunout(level),
       environment: options.environment,
       glow: game.view.enemies.glow,
       environmentCubeSize: CFG.environmentCubeSize,
@@ -140,8 +132,7 @@ export class GamePlay {
       ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
     });
     this.#speed = shipMaxSpeedPxPerSec(game.playerShips, choice.shipId);
-    const shipDef = findPlayerShip(game.playerShips, choice.shipId);
-    this.#maxHealth = shipDef.maxHealth;
+    this.#shipDef = findPlayerShip(game.playerShips, choice.shipId);
     const pf = this.view.playfield;
     const scale = game.view.playerShipScale;
     const model = game.view.playerShipModels[choice.shipId];
@@ -157,15 +148,6 @@ export class GamePlay {
     this.#shots = new EnemyViewerShots(game, pf, this.view.look.shotStyle);
     this.#bonuses = pf.run(() => game.view.bonuses(this.view.scene));
     this.#bombs = pf.run(() => game.view.bombs?.(this.view.scene));
-    this.#stats =
-      options.debug && options.statsParent
-        ? new StatsTile(options.doc, options.statsParent, CFG.stats.refresh)
-        : undefined;
-    this.#hud =
-      options.hudParent &&
-      createHud(options.doc, options.hudParent, shipDef.name, game.texts, () => {
-        this.controls.bomb();
-      });
     if (options.startTime > 0) this.#seek(options.startTime);
     const boss = this.run.fights.bosses.find((b) => b.rank === options.startBoss);
     if (boss) this.#seek(boss.at / this.run.track.speed);
@@ -188,7 +170,7 @@ export class GamePlay {
         maxSpeed: this.#speed,
         accelerationSeconds: GAME_CONTROLS_CONFIG.accelerationSeconds,
         muzzleOffset,
-        maxHealth: this.#maxHealth,
+        maxHealth: this.#shipDef.maxHealth,
       },
       bounds: this.#bounds(),
       cullMargin: CFG.cullMargin,
@@ -252,6 +234,9 @@ export class GamePlay {
     const distance = this.#previous + (track.distance - this.#previous) * alpha;
     this.view.update(distance, dt);
     this.#draw(dt, events);
+    // P13-R04: one more enemy model built ahead of its first appearance, each frame.
+    const built = this.view.playfield.run(() => this.#enemies.prepareNext());
+    if (this.#compileShaders) compile(built);
     if (this.run.phase === 'over') this.#overFor += dt * this.#timeScale;
     const over = this.#overFor >= CFG.damage.gameOverDelay;
     if ((this.run.phase === 'complete' || over) && !this.#completed) {
@@ -274,7 +259,7 @@ export class GamePlay {
     });
     this.#shots.sync({ enemies, shots, blasts, impacts, dt });
     const { highScore = 0 } = this.options;
-    this.#hud?.update(hudFrame(this.run, this.#maxHealth, this.game.texts, highScore));
+    this.#hud?.update(hudFrame(this.run, this.#shipDef.maxHealth, this.game.texts, highScore));
     this.#fps.add(dt, ++this.#frames);
     const polygons = this.view.scene.getActiveIndices() / 3;
     this.#stats?.update(dt, { fps: this.#fps.rate, polygons });
@@ -332,9 +317,39 @@ export class GamePlay {
     const middle = this.run.track.distance + this.game.screen.height / 2;
     const { sea } = levelOf(this.game, this.run.result.levelId).scenery;
     return {
-      ...levelState(this.run, this.#timeScale, this.#maxHealth),
+      ...levelState(this.run, this.#timeScale, this.#shipDef.maxHealth),
       sky: skyState(this.view, sea, middle),
     };
+  }
+
+  /**
+   * Shows the level's HUD (and the debug tile) in the page: when it starts, not while it is built
+   * ahead on the level select screen (P13-R03).
+   */
+  attach(): void {
+    if (this.#hud || this.#stats) return;
+    const overlays = createLevelOverlays(this.options, this.#shipDef.name, this.game.texts, () => {
+      this.controls.bomb();
+    });
+    this.#hud = overlays.hud;
+    this.#stats = overlays.stats;
+    const frame = hudFrame(
+      this.run,
+      this.#shipDef.maxHealth,
+      this.game.texts,
+      this.options.highScore ?? 0,
+    );
+    this.#hud?.update(frame);
+  }
+
+  /**
+   * Gets the level ready to play smoothly (P13-R04): with `compileShaders`, the shaders of
+   * everything in the scene compiled before play starts, and those of each enemy model built
+   * ahead of its first appearance (one per frame, see {@link frame}).
+   */
+  prepare(compileShaders: boolean): void {
+    this.#compileShaders = compileShaders;
+    if (compileShaders) compile(this.view.scene.meshes);
   }
 
   dispose(): void {
