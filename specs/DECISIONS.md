@@ -219,6 +219,7 @@
   - The two fixed 1 s waits in the viewer e2e tests became `waitForFrames()` (10 animation frames).
 - **Alternatives considered:** Running `e2e` in the `mcr.microsoft.com/playwright` image to skip `--with-deps`: the image has no `make`, so `apt-get install make` plus the image pull (about 2 GB) costs as much as it saves, and the image tag must be kept in sync with `@playwright/test` by hand. More workers on one runner: software rendering is CPU-bound and the runner has 4 vCPUs.
 - **Consequences:** CI uses about 3× the e2e runner minutes (free for a public repository). Each failed shard uploads its own `playwright-report-N` artefact.
+- **Amended (2026-10-27, reviewer):** the e2e tests run in a single `e2e` job again, no shards (`make e2e`, as ENG-72 says); on failure it uploads one `playwright-report` artefact. The rest of this decision stands (`check` without Chromium, the Playwright browser cache).
 - **Status:** Accepted
 
 ### D-019 — ESLint 10 with eslint-plugin-import-x
