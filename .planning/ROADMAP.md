@@ -31,6 +31,7 @@ Phase 2 has no dependency and was implemented before Phase 1 (2026-10-22). Phase
 - [x] **Phase 10: World 4** - Metropolis levels 4-1 to 4-5, ash and embers weather, ten new bosses ending with the Caldera Throne (validated 2026-10-26)
 - [x] **Phase 11: Score, Lives and Bombs** - Score and saved high score, extra lives, bombs and their bonuses (validated 2026-10-26)
 - [x] **Phase 12: Pause, Music and Settings** - Pause menu, generated music and sound effects, volume settings (validated 2026-10-27)
+- [ ] **Phase 13: Perf** - Instant button feedback, fast level loading, no freezes in play (Worlds 3 and 4)
 
 ## Phase Details
 
@@ -223,6 +224,20 @@ Every phase below is Validated. For each: the spec file under `specs/phases/` ho
    **Plans**: n/a (`specs/phases/phase-12-pause-music-settings.md`)
    **UI hint**: yes
    **Validation**: 2026-10-27, branch `phase-12`, tag `v0.12.0` (PR #23); validated by the reviewer without re-running `make check` for this phase; coverage from the latest full gate (after the World 4 rework): 99.4 % lines, 87.87 % branches, 1591 unit tests, 117 e2e
+
+### Phase 13: Perf
+
+**Goal**: The game feels instant: every button press gets visible feedback straight away, a level starts within a couple of seconds, and play in every level (Worlds 3 and 4 included) runs without freezes. Nothing about the look, content or rules changes.
+**Depends on**: Phase 12
+**Requirements**: P13-R01, P13-R02, P13-R03, P13-R04, P13-R05
+**Success Criteria** (what must be TRUE):
+
+1. The causes of the button lag, slow loading and World 3/4 freezes are measured and named; long frames, longest frame and loading time show in the F3 overlay and the e2e test API
+2. Every menu and pause-menu button reacts visibly within 100 ms on the reference machine
+3. Every level 1-1 to 4-5 is playable within 2 s of being confirmed, with a moving loading screen past 300 ms
+4. After the first second of any level no frame exceeds 100 ms, and at most 3 frames per minute exceed 50 ms
+5. Look, content, simulation results and bundle budget are unchanged
+   **Plans**: n/a (`specs/phases/phase-13-perf.md`, Draft)
    **Supersessions**: P12-R06 still names the original World 2-4 themes (Frozen North, Jungle, Volcanic Lands), superseded by D-110 to D-112; P12-R05 explicitly scopes ENG-120's audio file formats out (all audio generated, D-097)
 
 ## Progress
@@ -230,20 +245,21 @@ Every phase below is Validated. For each: the spec file under `specs/phases/` ho
 **Execution Order:**
 Phases execute in numeric order, except that Phase 2 (no dependency) was implemented first: 2 -> 1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 
-| Phase                         | Plans Complete | Status   | Completed  |
-| ----------------------------- | -------------- | -------- | ---------- |
-| 1. Main Menu                  | n/a            | Complete | 2026-10-23 |
-| 2. Player Ships               | n/a            | Complete | 2026-10-22 |
-| 3. Player Shots               | n/a            | Complete | 2026-10-23 |
-| 4. Level Zero                 | n/a            | Complete | 2026-10-23 |
-| 5. First Enemies              | n/a            | Complete | 2026-10-24 |
-| 6. World 1                    | n/a            | Complete | 2026-10-25 |
-| 7. Bosses                     | n/a            | Complete | 2026-10-25 |
-| 8. World 2                    | n/a            | Complete | 2026-10-25 |
-| 9. World 3                    | n/a            | Complete | 2026-10-26 |
-| 10. World 4                   | n/a            | Complete | 2026-10-26 |
-| 11. Score, Lives and Bombs    | n/a            | Complete | 2026-10-26 |
-| 12. Pause, Music and Settings | n/a            | Complete | 2026-10-27 |
+| Phase                         | Plans Complete | Status      | Completed  |
+| ----------------------------- | -------------- | ----------- | ---------- |
+| 1. Main Menu                  | n/a            | Complete    | 2026-10-23 |
+| 2. Player Ships               | n/a            | Complete    | 2026-10-22 |
+| 3. Player Shots               | n/a            | Complete    | 2026-10-23 |
+| 4. Level Zero                 | n/a            | Complete    | 2026-10-23 |
+| 5. First Enemies              | n/a            | Complete    | 2026-10-24 |
+| 6. World 1                    | n/a            | Complete    | 2026-10-25 |
+| 7. Bosses                     | n/a            | Complete    | 2026-10-25 |
+| 8. World 2                    | n/a            | Complete    | 2026-10-25 |
+| 9. World 3                    | n/a            | Complete    | 2026-10-26 |
+| 10. World 4                   | n/a            | Complete    | 2026-10-26 |
+| 11. Score, Lives and Bombs    | n/a            | Complete    | 2026-10-26 |
+| 12. Pause, Music and Settings | n/a            | Complete    | 2026-10-27 |
+| 13. Perf                      | n/a            | Not started | -          |
 
 ## Next
 
