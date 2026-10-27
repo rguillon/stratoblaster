@@ -220,7 +220,7 @@ Re-measured with the ship-select warm-up (e2e build): ship select → 222 ms, le
 ```
 Light verification (implementation): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (5.8 min, after the review fixes).
 Light verification (second review round): make typecheck ✔ / make build ✔ / make e2e ✔ 122 passed (6.8 min). A first run had one timeout (world-2 "lights come on at dusk and night", 24.3 s alone against the 30 s limit).
-The unit tests in tests/unit/app were run as a check: 229 passed, 1 failed. That failure, `level-prepare.test.ts` "prefetches the highlighted level once the highlight rests on it", fails the same way on c7f6af1, before this round. Left for /validate-phase.
+The unit tests in tests/unit/app were run as a check: 229 passed, 1 failed. That failure, `level-prepare.test.ts` "prefetches the highlighted level once the highlight rests on it", failed the same way on c7f6af1. It is now fixed: levels a and c of the test game share one scenery, so starting a found c's ground already requested; the test gives a its own seed. Full unit suite: 1616 passed.
 Lint, unit tests and coverage: not run (deferred to /validate-phase, per CLAUDE.md).
 ```
 

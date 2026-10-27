@@ -21,7 +21,14 @@ afterEach(() => {
 describe('LevelPrefetcher', () => {
   it('P13-R03: prefetches the highlighted level once the highlight rests on it', () => {
     const worker = port();
-    const prefetcher = new LevelPrefetcher(SAMPLE_GAME, new BackgroundLoader(worker));
+    // Level a gets a scenery of its own, so its ground is not the one asked for c.
+    const game = {
+      ...SAMPLE_GAME,
+      gameLevels: SAMPLE_GAME.gameLevels.map((l) =>
+        l.id === 'a' ? { ...l, scenery: { ...l.scenery, seed: l.scenery.seed + 1 } } : l,
+      ),
+    };
+    const prefetcher = new LevelPrefetcher(game, new BackgroundLoader(worker));
     prefetcher.update(0.1, 'a');
     // Passed over: nothing asked yet.
     prefetcher.update(0.1, 'c');
