@@ -14,6 +14,7 @@ import type {
   LevelPhase,
   LevelResult,
   LevelRunOptions,
+  Supplies,
 } from './level-run-types';
 import { PlayerBombs } from './player-bombs';
 import { PlayerFlight } from './player-flight';
@@ -31,6 +32,7 @@ export type {
   LevelResult,
   LevelRunOptions,
   RunShip,
+  Supplies,
 } from './level-run-types';
 
 /** Fight timings when the run is given none (only matters for levels with bosses). */
@@ -44,7 +46,7 @@ function playerSystems(
   options: LevelRunOptions,
   reach: readonly [number, number],
 ): { bonuses?: BonusWorld; hull?: PlayerHull; bombs?: PlayerBombs } {
-  const { seed, cullMargin } = options;
+  const { seed, cullMargin, startSupplies: supplies } = options;
   return {
     ...(options.bonuses && {
       bonuses: new BonusWorld(
@@ -55,8 +57,10 @@ function playerSystems(
         createRng(seed + 2),
       ),
     }),
-    ...(options.hull && { hull: new PlayerHull(options.hull, options.ship.maxHealth ?? 100) }),
-    ...(options.bombs && { bombs: new PlayerBombs(options.bombs) }),
+    ...(options.hull && {
+      hull: new PlayerHull(options.hull, options.ship.maxHealth ?? 100, supplies?.lives),
+    }),
+    ...(options.bombs && { bombs: new PlayerBombs(options.bombs, supplies?.bombs) }),
   };
 }
 
@@ -164,6 +168,11 @@ export class LevelRun {
   /** Points scored so far in this attempt (P11-R01), from the checkpoint's after a Continue. */
   get score(): number {
     return this.enemies.score;
+  }
+
+  /** The lives and bombs left, kept for the next level (reviewer, 2026-10-28); none without a hull. */
+  get supplies(): Supplies | undefined {
+    return this.hull && { lives: this.hull.lives, bombs: this.bombs?.count ?? 0 };
   }
 
   /** The checkpoint saved so far (P07-R08), if any. */

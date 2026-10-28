@@ -2,7 +2,10 @@
 export interface HullRules {
   /** Lives at the start of a level (GD-20). */
   readonly lives: number;
-  /** Most lives the player can have with life bonuses (P11-R07); `lives` when omitted. */
+  /**
+   * Most lives the player can have with life bonuses (P11-R07); no limit when omitted
+   * (reviewer, 2026-10-28).
+   */
   readonly maxLives?: number;
   /** Seconds the ship cannot be hurt after a hit (GD-22). */
   readonly invincibleSeconds: number;
@@ -33,12 +36,14 @@ export class PlayerHull {
   /** Seconds of invincibility left. */
   invincible = 0;
 
+  /** Starts with `lives`: the rules' (GD-20), or those kept from the level before. */
   constructor(
     private readonly rules: HullRules,
     readonly maxHealth: number,
+    lives = rules.lives,
   ) {
     this.health = maxHealth;
-    this.lives = rules.lives;
+    this.lives = lives;
   }
 
   /** Whether the game is over (no life left). */
@@ -58,9 +63,9 @@ export class PlayerHull {
     return 'lifeLost';
   }
 
-  /** A life bonus (P11-R07): one more life, up to the most. Returns whether it was added. */
+  /** A life bonus (P11-R07): one more life, up to the most if any. Returns whether it was added. */
   addLife(): boolean {
-    if (this.out || this.lives >= (this.rules.maxLives ?? this.rules.lives)) return false;
+    if (this.out || this.lives >= (this.rules.maxLives ?? Infinity)) return false;
     this.lives++;
     return true;
   }

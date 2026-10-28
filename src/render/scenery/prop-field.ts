@@ -6,6 +6,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { PropPlacement } from '../../core/scenery/prop-placement';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
+import { allowed } from '../../core/scenery/draws';
 import type { PropKindRule, SceneryLevel } from '../../core/scenery/scenery-level';
 import { PLUME_KINDS } from '../../config/plumes';
 import {
@@ -14,7 +15,7 @@ import {
   type PlumeMaterial,
   type PlumeMaterialFactory,
 } from './plume-layer';
-import type { PropModelFactory } from './scenery-look';
+import type { PropGeometry, PropModelFactory } from './scenery-look';
 
 /** Materials of the props: the lit structure, and the self-lit accents. */
 export interface PropMaterials {
@@ -31,15 +32,71 @@ interface PropMeshes {
 
 const MATRIX_FLOATS = 16;
 
-function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
+/**
+ * The props of one kind in a chunk, with their instance matrices, made on their first upload and
+ * kept while the chunk is (reviewer, 2026-10-28: not made again each time the window moves).
+ */
+interface KindProps {
+  readonly placements: PropPlacement[];
+  matrices: Float32Array | undefined;
+}
+
+/** The props of a kind to draw: each placement, and the chunk's props it comes from, at `at`. */
+interface Drawn {
+  readonly placements: PropPlacement[];
+  readonly from: KindProps[];
+  readonly at: number[];
+}
+
+/**
+ * Each prop model's geometry, made once and kept for the next levels (reviewer, 2026-10-28): the
+ * models are the same every time. Nothing changes a geometry once made.
+ */
+const GEOMETRIES = new WeakMap<PropModelFactory, PropGeometry>();
+
+/** The geometry of `factory`, made on first use. */
+function geometryOf(factory: PropModelFactory): PropGeometry {
+  let geometry = GEOMETRIES.get(factory);
+  if (!geometry) {
+    geometry = factory();
+    GEOMETRIES.set(factory, geometry);
+  }
+  return geometry;
+}
+
+/** The normals of each geometry, worked out once. */
+const NORMALS = new WeakMap<ColoredGeometry, number[]>();
+
+function normalsOf(geo: ColoredGeometry): number[] {
+  let normals = NORMALS.get(geo);
+  if (!normals) {
+    normals = [];
+    VertexData.ComputeNormals(geo.positions, geo.indices, normals);
+    NORMALS.set(geo, normals);
+  }
+  return normals;
+}
+
+/**
+ * Draws `mesh` without checking whether it is in view, so its bounds are never fitted to its
+ * instances (reviewer, 2026-10-28): for the cars, placed again every frame, that was the largest
+ * single cost of a frame in Worlds 3 and 4, and for the other props half of each upload. Their
+ * instances are near the view anyway, and the sun's shadows have a fixed frustum
+ * (`shadowFrustumSize`), which no bounds change.
+ */
+function drawAlways(mesh: Mesh): void {
+  mesh.alwaysSelectAsActiveMesh = true;
+  mesh.doNotSyncBoundingInfo = true;
+}
+
+/** A disabled, unpickable mesh of `geo`, drawn with `material`. */
+export function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
   const mesh = new Mesh(name, scene);
   const data = new VertexData();
   data.positions = geo.positions;
   data.indices = geo.indices;
   data.colors = geo.colors;
-  const normals: number[] = [];
-  VertexData.ComputeNormals(geo.positions, geo.indices, normals);
-  data.normals = normals;
+  data.normals = normalsOf(geo);
   data.applyToMesh(mesh);
   mesh.material = material;
   mesh.isPickable = false;
@@ -60,20 +117,43 @@ export function propDrifts(level: SceneryLevel): Record<string, PropDrift> {
   ]);
 }
 
-/** Throws if a prop kind of `level` has no model. */
+/**
+ * The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
+ * sections allow, its floating props, lines, podiums and set pieces.
+ */
+export function levelPropKinds(level: SceneryLevel): Set<string> {
+  const { props, sections } = level;
+  const groups = sections.flatMap((s) => allowed(props.groups, s.groups));
+  return new Set([
+    ...groups.flatMap((g) => g.kinds.map((k) => k.id)),
+    ...sections.flatMap((s) => allowed(props.trees, s.trees).map((t) => t.id)),
+    ...(props.floating?.kinds.map((k) => k.id) ?? []),
+    ...(props.lines?.map((l) => l.kind) ?? []),
+    ...sections.flatMap((s) => s.blocks?.podiums ?? []),
+    ...(props.landmarks?.map((l) => l.kind) ?? []),
+  ]);
+}
+
+/**
+ * The models of the props of `level` (`levelPropKinds`): only those are built (reviewer,
+ * 2026-10-28: building all the game's took about 36 ms and 841 meshes per level). Throws if one
+ * of them, or one of its cars, has no model.
+ */
+export function levelPropModels(
+  level: SceneryLevel,
+  models: Readonly<Record<string, PropModelFactory>>,
+): Record<string, PropModelFactory> {
+  checkPropModels(level, models);
+  const kinds = levelPropKinds(level);
+  return Object.fromEntries(Object.entries(models).filter(([id]) => kinds.has(id)));
+}
+
+/** Throws if a prop kind of `level`, or one of its cars, has no model. */
 export function checkPropModels(
   level: SceneryLevel,
   models: Readonly<Record<string, PropModelFactory>>,
 ): void {
-  const ids = [
-    ...level.props.groups.flatMap((g) => g.kinds.map((k) => k.id)),
-    ...level.props.trees.map((t) => t.id),
-    ...(level.props.cars?.kinds ?? []),
-    ...(level.props.floating?.kinds.map((k) => k.id) ?? []),
-    ...(level.props.lines?.map((l) => l.kind) ?? []),
-    ...level.sections.flatMap((s) => s.blocks?.podiums ?? []),
-  ];
-  for (const id of ids) {
+  for (const id of [...levelPropKinds(level), ...(level.props.cars?.kinds ?? [])]) {
     if (!(id in models)) throw new Error(`No model for prop "${id}"`);
   }
 }
@@ -87,7 +167,8 @@ export class PropField {
   readonly #meshes = new Map<string, PropMeshes>();
   /** Phase 10: one material per kind of plume, driven every frame. */
   readonly #plumeMaterials = new Map<string, PlumeMaterial>();
-  readonly #chunks = new Map<number, readonly PropPlacement[]>();
+  /** The placements of each chunk, by kind. */
+  readonly #chunks = new Map<number, ReadonlyMap<string, KindProps>>();
   /** The placements uploaded last for each kind (P13-R04: unchanged kinds are not uploaded). */
   readonly #drawn = new Map<string, readonly PropPlacement[]>();
   #dirty = false;
@@ -112,7 +193,7 @@ export class PropField {
       return material.material;
     };
     for (const [kind, factory] of Object.entries(models)) {
-      const geometry = factory();
+      const geometry = geometryOf(factory);
       const structure = meshOf(`prop-${kind}`, geometry.structure, materials.structure, scene);
       structure.receiveShadows = true;
       onStructure(structure);
@@ -121,6 +202,7 @@ export class PropField {
           ? meshOf(`prop-${kind}-lights`, geometry.lights, materials.lights, scene)
           : undefined;
       const plumes = buildPlumeMeshes(scene, `prop-${kind}`, geometry.plumes ?? [], plumeMaterial);
+      for (const mesh of [structure, lights, ...plumes]) if (mesh) drawAlways(mesh);
       this.#meshes.set(kind, { structure, lights, plumes });
     }
   }
@@ -140,7 +222,9 @@ export class PropField {
   /** Number of props in the scene. */
   get count(): number {
     let count = 0;
-    for (const placements of this.#chunks.values()) count += placements.length;
+    for (const kinds of this.#chunks.values()) {
+      for (const { placements } of kinds.values()) count += placements.length;
+    }
     return count;
   }
 
@@ -149,16 +233,25 @@ export class PropField {
     return [...this.#meshes.values()].flatMap((m) => (m.lights ? [m.lights] : []));
   }
 
+  /** Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer). */
+  get structureMeshes(): Mesh[] {
+    return [...this.#meshes.values()].map((m) => m.structure);
+  }
+
   /** The structure mesh of a kind of prop. */
   structureOf(kind: string): Mesh | undefined {
     return this.#meshes.get(kind)?.structure;
   }
 
   setChunk(index: number, placements: readonly PropPlacement[]): void {
+    const kinds = new Map<string, KindProps>();
     for (const p of placements) {
       if (!this.#meshes.has(p.kind)) throw new Error(`No model for prop "${p.kind}"`);
+      const props = kinds.get(p.kind);
+      if (props) props.placements.push(p);
+      else kinds.set(p.kind, { placements: [p], matrices: undefined });
     }
-    this.#chunks.set(index, placements);
+    this.#chunks.set(index, kinds);
     this.#dirty = true;
   }
 
@@ -205,34 +298,51 @@ export class PropField {
     this.#dirty = false;
     const byKind = this.#byKind();
     for (const [kind, meshes] of this.#meshes) {
-      const placements = byKind.get(kind) ?? [];
+      const drawn = byKind.get(kind);
+      const placements = drawn?.placements ?? [];
       if (samePlacements(this.#drawn.get(kind), placements)) continue;
       this.#drawn.set(kind, placements);
-      const matrices = instanceMatrices(placements);
+      const matrices = drawn ? matricesOf(drawn) : new Float32Array(0);
       for (const mesh of [meshes.structure, meshes.lights, ...meshes.plumes]) {
         if (!mesh) continue;
         mesh.setEnabled(matrices.length > 0);
         if (matrices.length === 0) continue;
         mesh.thinInstanceSetBuffer('matrix', matrices, MATRIX_FLOATS, false);
-        mesh.thinInstanceRefreshBoundingInfo(false);
       }
     }
   }
 
-  /** The placements to draw (in the window, if any), by kind. */
-  #byKind(): Map<string, PropPlacement[]> {
+  /** The props to draw (in the window, if any), by kind, in the order of the chunks. */
+  #byKind(): Map<string, Drawn> {
     const window = this.#window;
-    const byKind = new Map<string, PropPlacement[]>();
-    for (const placements of this.#chunks.values()) {
-      for (const p of placements) {
-        if (window && (p.z < window.zMin || p.z > window.zMax)) continue;
-        const list = byKind.get(p.kind);
-        if (list) list.push(p);
-        else byKind.set(p.kind, [p]);
+    const byKind = new Map<string, Drawn>();
+    for (const kinds of this.#chunks.values()) {
+      for (const [kind, props] of kinds) {
+        props.placements.forEach((p, i) => {
+          if (window && (p.z < window.zMin || p.z > window.zMax)) return;
+          let drawn = byKind.get(kind);
+          if (!drawn) byKind.set(kind, (drawn = { placements: [], from: [], at: [] }));
+          drawn.placements.push(p);
+          drawn.from.push(props);
+          drawn.at.push(i);
+        });
       }
     }
     return byKind;
   }
+}
+
+/** The instance matrices of `drawn`, copied from those of their chunks (made on first use). */
+function matricesOf({ from, at }: Drawn): Float32Array {
+  const buffer = new Float32Array(at.length * MATRIX_FLOATS);
+  at.forEach((i, j) => {
+    const props = from[j];
+    if (!props) return;
+    props.matrices ??= instanceMatrices(props.placements);
+    const start = i * MATRIX_FLOATS;
+    buffer.set(props.matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS);
+  });
+  return buffer;
 }
 
 /** Whether `a` and `b` hold the same placements in the same order (or none in both). */

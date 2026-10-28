@@ -7,10 +7,10 @@ export interface HudTexts {
   readonly health: string;
   /** The weapon and its level, e.g. `Bullet · Lv 1/5`. */
   readonly weapon: (name: string, level: number, levels: number) => string;
-  /** How many enemies were destroyed so far. */
-  readonly destroyed: (count: number) => string;
   /** The lives left (GD-20). */
   readonly lives: (count: number) => string;
+  /** The bombs left (P11-R05). */
+  readonly bombs: (count: number) => string;
   /** The score, and the high score line under it (P11-R02). */
   readonly score: (score: number) => string;
   readonly highScore: (score: number) => string;
@@ -29,7 +29,6 @@ export interface HudFrame {
   readonly weaponLevels: number;
   /** Share of the level flown, 0..1. */
   readonly progress: number;
-  readonly destroyed: number;
   /** The score, and the best of it and the saved high score (P11-R02). */
   readonly score: number;
   readonly highScore: number;
@@ -47,9 +46,6 @@ export interface HudSetup {
   readonly onBomb?: () => void;
 }
 
-/** Icon of one bomb left, next to the lives (P11-R05). */
-const BOMB_ICON = '●';
-
 /** Under this share of its health the bar turns red. */
 const LOW_HEALTH = 0.3;
 
@@ -57,11 +53,12 @@ const percent = (share: number): string =>
   `${String(Math.round(Math.min(1, Math.max(0, share)) * 1000) / 10)}%`;
 
 /**
- * The in-game HUD (phase 6 review): the ship, its lives, bombs (P11-R05) and health bar (red
- * when low), the weapon and its level, the score and high score (P11-R02), how far the level
- * has gone, and the enemies destroyed; while a boss is fought, its health bar (P07-R02). Laid
- * out at the logical resolution over the playfield; it takes no clicks or taps but on its touch
- * bomb button (P11-R06). Text and bars change only when their value does.
+ * The in-game HUD (reworked at the reviewer's request, 2026-10-28): one bar along the bottom of
+ * the playfield, the level's progress along its top edge; on the left the ship, its lives, bombs
+ * (P11-R05) and health bar (red when low); the score and high score in the middle (P11-R02); the
+ * weapon and its level on the right. While a boss is fought, its health bar (P07-R02). Laid out
+ * at the logical resolution over the playfield; it takes no clicks or taps but on its touch bomb
+ * button (P11-R06). Text and bars change only when their value does.
  */
 export class GameHud {
   readonly root: HTMLElement;
@@ -70,7 +67,6 @@ export class GameHud {
   readonly #lives: HTMLElement;
   readonly #weapon: HTMLElement;
   readonly #progressBar: HTMLElement;
-  readonly #destroyed: HTMLElement;
   readonly #score: HTMLElement;
   readonly #highScore: HTMLElement;
   readonly #bombs: HTMLElement;
@@ -86,26 +82,29 @@ export class GameHud {
   ) {
     this.root = element(doc, 'div', 'game-hud');
     this.root.setAttribute('aria-hidden', 'true');
-    const health = element(doc, 'div', 'hud-health');
-    const bar = element(doc, 'div', 'hud-bar');
-    this.#healthBar = element(doc, 'div', 'hud-bar-fill');
-    this.#healthText = element(doc, 'div', 'hud-health-text');
-    bar.append(this.#healthBar);
-    this.#lives = element(doc, 'div', 'hud-lives');
-    const name = element(doc, 'div', 'hud-name');
-    name.append(element(doc, 'div', 'hud-ship', setup.ship), this.#lives);
-    this.#bombs = element(doc, 'div', 'hud-bombs');
-    health.append(name, bar, this.#healthText, this.#bombs);
-    this.#weapon = element(doc, 'div', 'hud-weapon');
+    const panel = element(doc, 'div', 'hud-panel');
     const progress = element(doc, 'div', 'hud-progress');
     this.#progressBar = element(doc, 'div', 'hud-progress-fill');
     progress.append(this.#progressBar);
-    this.#destroyed = element(doc, 'div', 'hud-destroyed');
+    this.#lives = element(doc, 'div', 'hud-lives');
+    this.#bombs = element(doc, 'div', 'hud-bombs');
+    const name = element(doc, 'div', 'hud-name');
+    name.append(element(doc, 'div', 'hud-ship', setup.ship), this.#lives, this.#bombs);
+    const bar = element(doc, 'div', 'hud-bar');
+    this.#healthBar = element(doc, 'div', 'hud-bar-fill');
+    bar.append(this.#healthBar);
+    this.#healthText = element(doc, 'div', 'hud-health-text');
+    const meter = element(doc, 'div', 'hud-meter');
+    meter.append(bar, this.#healthText);
+    const health = element(doc, 'div', 'hud-health');
+    health.append(name, meter);
     const score = element(doc, 'div', 'hud-score');
     this.#score = element(doc, 'div', 'hud-score-value');
     this.#highScore = element(doc, 'div', 'hud-high-score');
     score.append(this.#score, this.#highScore);
-    this.root.append(health, this.#weapon, score, progress, this.#destroyed);
+    this.#weapon = element(doc, 'div', 'hud-weapon');
+    panel.append(progress, health, score, this.#weapon);
+    this.root.append(panel);
     this.#bombButton = setup.onBomb && this.#newBombButton(doc, setup.onBomb);
     this.#boss = new BossBar(doc, this.root);
     parent.append(this.root);
@@ -134,25 +133,23 @@ export class GameHud {
       percent(frame.health / frame.maxHealth),
       texts.weapon(frame.weapon, frame.weaponLevel, frame.weaponLevels),
       percent(frame.progress),
-      texts.destroyed(frame.destroyed),
       texts.lives(frame.lives),
       frame.health < LOW_HEALTH * frame.maxHealth ? 'low' : '',
     ];
     const key = shown.join('|');
     if (key === this.#shown) return;
     this.#shown = key;
-    const [text = '', healthWidth = '', weaponText = '', progressWidth = '', destroyed = ''] =
+    const [text = '', healthWidth = '', weaponText = '', progressWidth = '', lives = '', low] =
       shown;
-    this.#lives.textContent = shown[5] ?? '';
-    this.#healthBar.classList.toggle('low', shown[6] === 'low');
+    this.#lives.textContent = lives;
+    this.#healthBar.classList.toggle('low', low === 'low');
     this.#healthText.textContent = text;
     this.#healthBar.style.width = healthWidth;
     this.#weapon.textContent = weaponText;
     this.#progressBar.style.width = progressWidth;
-    this.#destroyed.textContent = destroyed;
   }
 
-  /** The score, the high score, and the bombs left as icons and on the touch button. */
+  /** The score, the high score, and the bombs left, by the lives and on the touch button. */
   #updateScore({ score, highScore, bombs }: HudFrame): void {
     const key = `${String(score)}|${String(highScore)}|${String(bombs)}`;
     if (key === this.#shownScore) return;
@@ -160,7 +157,7 @@ export class GameHud {
     const { texts } = this.setup;
     this.#score.textContent = texts.score(score);
     this.#highScore.textContent = texts.highScore(Math.max(score, highScore));
-    this.#bombs.textContent = BOMB_ICON.repeat(bombs ?? 0);
+    this.#bombs.textContent = bombs === undefined ? '' : texts.bombs(bombs);
     const button = this.#bombButton;
     if (!button) return;
     button.textContent = texts.bomb(bombs ?? 0);

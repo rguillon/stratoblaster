@@ -1,11 +1,15 @@
 import type { Scene } from '@babylonjs/core/scene';
+import { Constants } from '@babylonjs/core/Engines/constants';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { EnemyBullet, EnemyMissile } from '../../../core/systems/enemy-shots';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyShotRenderer } from '../../../render/game-view';
+import { ON_TOP_ALPHA_INDEX } from '../../../render/node-adopter';
 import { NodePool } from '../../../render/node-pool';
+import { setOutline } from '../../../render/outline';
 import { ENEMY_LOOK } from '../../config/enemy-look';
+import { READABILITY } from '../../config/readability';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { buildGlowDisc, buildSwirl } from '../shot-geometry';
 import { additiveTemplate, blendedTemplate } from '../shots/shot-meshes';
@@ -13,6 +17,11 @@ import { enemyMaterials, meshOf } from './enemy-mesh';
 import { EnemyLasers } from './enemy-lasers';
 
 const LOOK = ENEMY_LOOK;
+/**
+ * Draw order of the bullets: after every other see-through mesh of the playfield, the missiles'
+ * flames and the lasers ({@link ON_TOP_ALPHA_INDEX}) included (P14-R05).
+ */
+const ON_TOP = ON_TOP_ALPHA_INDEX + 1;
 type Style = keyof typeof LOOK.bullets.styles;
 const STYLES = Object.keys(LOOK.bullets.styles) as Style[];
 
@@ -41,9 +50,11 @@ class BulletLayer {
     private readonly z: number,
     order: number,
   ) {
-    // Under the blasts and the other shots, in layer order; never culled: instances spread anywhere.
-    mesh.alphaIndex = order - 100;
+    // P14-R05: over everything else on the playfield (blasts, player shots, models), in layer
+    // order; never culled: instances spread anywhere.
+    mesh.alphaIndex = ON_TOP + order;
     mesh.alwaysSelectAsActiveMesh = true;
+    if (mesh.material) mesh.material.depthFunction = Constants.ALWAYS;
   }
 
   show(spots: readonly Spot[]): void {
@@ -150,6 +161,11 @@ function haloScale(age: number): number {
   return size * (1 + flicker * Math.sin(2 * Math.PI * flickerHz * age));
 }
 
+/** A bullet's drawn radius: never under half `minEnemyBulletSize` (P14-R05); its hitbox is kept. */
+function drawnRadius(b: EnemyBullet): number {
+  return Math.max(b.radius * LOOK.bullets.scale, READABILITY.minEnemyBulletSize / 2);
+}
+
 function syncBullets(
   pools: Map<string, [BulletLayer, Placement][]>,
   bullets: readonly EnemyBullet[],
@@ -157,12 +173,15 @@ function syncBullets(
   for (const [style, layers] of pools) {
     const own = bullets.filter((b) => (pools.has(b.style) ? b.style : STYLES[0]) === style);
     for (const [layer, place] of layers) {
-      layer.show(own.map((b) => ({ x: b.x, y: b.y, ...place(b, b.radius * LOOK.bullets.scale) })));
+      layer.show(own.map((b) => ({ x: b.x, y: b.y, ...place(b, drawnRadius(b)) })));
     }
   }
 }
 
-/** A small dark missile pointing +Y with a red tip and a flame behind it. */
+/**
+ * A small dark missile pointing +Y with an orange tip and a flame behind it, and (P14-R05) a
+ * rim glow in the enemy shots' colour, so it shows over blasts and bright ground.
+ */
 function buildMissile(scene: Scene, flame: Mesh, i: number): TransformNode {
   const look = LOOK.missile;
   const root = new TransformNode(`enemy-missile-${String(i)}`, scene);
@@ -178,7 +197,9 @@ function buildMissile(scene: Scene, flame: Mesh, i: number): TransformNode {
     0,
   );
   const mats = enemyMaterials(scene);
-  meshOf(`${root.name}-body`, body.geometry, mats.hull, scene).parent = root;
+  const hull = meshOf(`${root.name}-body`, body.geometry, mats.hull, scene);
+  hull.parent = root;
+  setOutline(hull, look.tip);
   meshOf(`${root.name}-tip`, tip.geometry, mats.neon, scene).parent = root;
   const glow = flame.clone(`${root.name}-flame`);
   glow.parent = root;
@@ -199,18 +220,21 @@ function syncMissiles(pool: NodePool<TransformNode>, missiles: readonly EnemyMis
 }
 
 /**
- * GD-43: the enemies' shots in playfield space: colourful glowing bullets, small red-tipped
- * missiles with a flame, and lasers ({@link EnemyLasers}). In the `contrast` style (P10-R07:
- * World 4's red grounds and skies) the bullets and the laser warning lines stand out more.
+ * GD-43: the enemies' shots in playfield space: glowing bullets, small orange-tipped missiles
+ * with a flame, and lasers ({@link EnemyLasers}). The contrast look (P10-R07: a dark rim and a
+ * white spark, wider laser warning lines) is used in every level since phase 14 (P14-R05),
+ * whatever style a level names.
  */
-export function createEnemyShotRenderer(scene: Scene, style?: string): EnemyShotRenderer {
-  const contrast = style === LOOK.contrast.style;
+export function createEnemyShotRenderer(scene: Scene): EnemyShotRenderer {
+  const contrast = true;
   const bullets = bulletPools(scene, contrast);
   const flame = additiveTemplate(
     'enemy-missile-flame',
     buildGlowDisc(8, LOOK.missile.flame),
     scene,
   );
+  // P14-R05: over the player's shots and the blasts, under the bullets (its clones too).
+  flame.alphaIndex = ON_TOP_ALPHA_INDEX;
   const missiles = new NodePool((i) => buildMissile(scene, flame, i));
   const lasers = new EnemyLasers(scene, contrast);
   let time = 0;

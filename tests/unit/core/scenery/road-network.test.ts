@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { HeightField } from '../../../../src/core/scenery/height-field';
-import { levelRoads, RoadNetwork, type Road } from '../../../../src/core/scenery/road-network';
+import {
+  levelRoads,
+  RoadNetwork,
+  STREETS_BEFORE,
+  type Road,
+} from '../../../../src/core/scenery/road-network';
 import type { SceneryLevel } from '../../../../src/core/scenery/scenery-level';
+import { GAME } from '../../../../src/game/index';
 import { SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 import { checkStreet, FLAT, network, offscreen, RULES } from '../../../helpers/road-network';
 
@@ -194,5 +200,32 @@ describe('RoadNetwork', () => {
     const zs = roads.filter((r) => r.kind === 'main').flatMap((r) => r.points.map((p) => p.z));
     expect(Math.min(...zs)).toBeLessThan(-1000);
     expect(Math.max(...zs)).toBeGreaterThan(field.length + 1000);
+  });
+
+  it('reviewer, 2026-10-28: a street grid the level starts in begins only a little before it', () => {
+    const scenery = GAME.gameLevels.find((l) => l.id === '4-1')?.scenery;
+    if (!scenery) throw new Error('no level 4-1');
+    const field = new HeightField(scenery);
+    const roads = levelRoads(field, scenery.roads, scenery.seed).roads;
+    const zs = roads.flatMap((r) => r.points.map((p) => p.z));
+    expect(roads.every((r) => r.kind === 'street')).toBe(true);
+    expect(Math.min(...zs)).toBeCloseTo(-STREETS_BEFORE);
+  });
+});
+
+describe('clearOf (reviewer, 2026-10-28)', () => {
+  it('says the same as edgeDistance, near the roads and away from them', () => {
+    const roads = network();
+    let near = 0;
+    for (let x = -300; x <= 300; x += 7) {
+      for (let z = 0; z <= 2000; z += 13) {
+        for (const clearance of [0, 3, 10, 30]) {
+          const clear = roads.edgeDistance(x, z) >= clearance;
+          if (!clear) near++;
+          expect(roads.clearOf(x, z, clearance), `${String(x)}, ${String(z)}`).toBe(clear);
+        }
+      }
+    }
+    expect(near).toBeGreaterThan(0);
   });
 });

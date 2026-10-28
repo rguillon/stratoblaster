@@ -10,6 +10,8 @@ import { ENEMY_BINDINGS } from '../../../../../src/game/view/enemies/enemy-bindi
 import { Dropper } from '../../../../fixtures/sample-enemies';
 import { BOSS_LOOK } from '../../../../../src/game/config/boss-look';
 import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
+import { READABILITY } from '../../../../../src/game/config/readability';
+import { foldIntoFamily, type Rgb } from '../../../../../src/core/math/color';
 
 const enabled = (scene: Scene, prefix: string) =>
   scene.meshes.filter(
@@ -135,8 +137,13 @@ describe('createEnemyShotRenderer', () => {
     };
     const has = (style: string, rgb: readonly number[]) =>
       colors(style).some((c) => c.every((v, k) => Math.abs(v - (rgb[k] ?? 0)) < 1e-6));
-    expect(has('sentinel', BOSS_LOOK.neon.sentinel ?? [])).toBe(true);
-    expect(has('lancer', ENEMY_LOOK.laser.color)).toBe(true);
+    // Folded into the enemy shots' family since phase 14 (P14-R02).
+    const shotColor = (c: Rgb) => foldIntoFamily(c, READABILITY.families.enemyShot);
+    expect(has('sentinel', shotColor(BOSS_LOOK.neon.sentinel ?? [0, 0, 0]))).toBe(true);
+    expect(has('lancer', shotColor(ENEMY_LOOK.laser.color))).toBe(true);
+    expect(shotColor(ENEMY_LOOK.laser.color)).not.toEqual(
+      shotColor(BOSS_LOOK.neon.sentinel ?? [0, 0, 0]),
+    );
     renderer.dispose();
   });
 
@@ -181,10 +188,13 @@ describe('createBlastRenderer', () => {
       (scene.getMeshByName(`blast-${name}`) as Mesh | null) ?? undefined;
     expect(layer('fireballs')?.isEnabled()).toBe(false);
     renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.05);
-    for (const name of ['fireballs', 'debris', 'embers', 'flashes', 'rings']) {
+    for (const name of ['fireballs', 'debris', 'embers', 'rings']) {
       expect(layer(name)?.isEnabled(), name).toBe(true);
       expect(layer(name)?.thinInstanceCount, name).toBeGreaterThan(0);
     }
+    // No flash, and the ring laid over the ground: a blast does not light it (reviewer, 2026-10-28).
+    expect(layer('flashes')).toBeUndefined();
+    expect(layer('rings')?.material?.alphaMode).toBe(Constants.ALPHA_COMBINE);
     // Two blasts: more instances, not more meshes.
     const meshes = scene.meshes.length;
     const debris = layer('debris')?.thinInstanceCount ?? 0;
@@ -199,16 +209,16 @@ describe('createBlastRenderer', () => {
     const scene = new Scene(new NullEngine());
     const renderer = createBlastRenderer(scene);
     renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.01);
-    const flashes = scene.getMeshByName('blast-flashes') as Mesh;
+    const rings = scene.getMeshByName('blast-rings') as Mesh;
     const uploaded: number[] = [];
-    const update = flashes.thinInstanceBufferUpdated.bind(flashes);
-    flashes.thinInstanceBufferUpdated = (kind) => {
-      if (kind === 'matrix') uploaded.push(flashes.thinInstanceCount);
+    const update = rings.thinInstanceBufferUpdated.bind(rings);
+    rings.thinInstanceBufferUpdated = (kind) => {
+      if (kind === 'matrix') uploaded.push(rings.thinInstanceCount);
       update(kind);
     };
-    // A second flash while the first one lasts: the buffers have room, they are updated.
+    // A second ring while the first one lasts: the buffers have room, they are updated.
     renderer.sync([{ kind: 'enemy', x: 200, y: 20, radius: 15 }], 0.01);
-    expect(flashes.thinInstanceCount).toBe(2);
+    expect(rings.thinInstanceCount).toBe(2);
     expect(uploaded).toEqual([2]);
     renderer.dispose();
   });

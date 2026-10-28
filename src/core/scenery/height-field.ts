@@ -1,7 +1,16 @@
-import { createNoise2D, fbm, ridged, smoothstep, type Noise2D } from '../math/noise';
-import { crevasseDepth, withLakes } from './ice-sculpt';
+import {
+  createNoise2D,
+  fbm,
+  NOISE_SLOPE,
+  ridged,
+  smoothstep,
+  type Noise2D,
+  type OctaveOptions,
+} from '../math/noise';
+import { crevasseDepth, LakeField } from './ice-sculpt';
 import {
   layoutSections,
+  type Lakes,
   type Meander,
   type PlacedSection,
   type SceneryLevel,
@@ -26,6 +35,49 @@ const DUNE = { windward: 0.78, noiseScale: 3, lowestCrest: 0.45 } as const;
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
+}
+
+/** Rounding left out when telling whether a channel can reach somewhere. */
+const SLACK = 1e-9;
+
+/**
+ * How steep the relief of a section can be (most height change per unit along X or Z), and the
+ * heights it stays between; undefined when it has more than a smooth relief (dunes, crevasses,
+ * lakes, a plateau, a coast, ridges), or is too short for its blends to stay apart.
+ */
+interface Steepness {
+  readonly slope: number;
+  readonly low: number;
+  readonly high: number;
+}
+
+/** Whether `section`'s ground is its relief alone, smooth (no ridges). */
+function smoothOnly({ relief, dunes, crevasses, lakes, flatten, shore }: TerrainSection): boolean {
+  return relief.style === 'smooth' && !dunes && !crevasses && !lakes && !flatten && !shore;
+}
+
+/** How much steeper than one octave `octaves` octaves of `fbm` can be. */
+function octavesSteepness(octaves: number): number {
+  let [sum, total] = [0, 0];
+  for (let k = 0; k < octaves; k++) {
+    sum += (OCTAVES.gain * OCTAVES.lacunarity) ** k;
+    total += OCTAVES.gain ** k;
+  }
+  return total > 0 ? sum / total : 0;
+}
+
+function sectionSteepness(
+  { section, start, end }: PlacedSection,
+  transition: number,
+): Steepness | undefined {
+  if (!smoothOnly(section) || end - start < transition) return undefined;
+  const { relief } = section;
+  const amplitude = Math.abs(relief.amplitude);
+  const slope = amplitude * relief.frequency * NOISE_SLOPE * octavesSteepness(relief.octaves);
+  // Squashed peaks (`softCap`) are no steeper, and stay above the start of the squash.
+  const max = relief.maxHeight;
+  const squash = max === undefined ? Infinity : max - (Math.abs(max) * PEAK_KNEE || 1);
+  return { slope, low: Math.min(relief.base - amplitude, squash), high: relief.base + amplitude };
 }
 
 /** `h`, squashed smoothly so it never exceeds `max`. */
@@ -74,6 +126,12 @@ export class HeightField {
   readonly #ice: Noise2D;
   readonly #seed: number;
   readonly #transition: number;
+  /** Each section's octaves, made once (reviewer, 2026-10-28: not on every height asked for). */
+  readonly #octaves: readonly OctaveOptions[];
+  /** The lakes of the sections that have some, each square's lake worked out once. */
+  readonly #lakes = new Map<Lakes, LakeField>();
+  /** How steep each section's relief can be, if known. */
+  readonly #steepness: readonly (Steepness | undefined)[];
 
   constructor(level: SceneryLevel, seed = level.seed) {
     this.sections = layoutSections(level);
@@ -86,12 +144,55 @@ export class HeightField {
     this.#ice = createNoise2D(seed + 4);
     this.#seed = seed;
     this.#transition = Math.max(0, level.transition);
+    this.#octaves = this.sections.map(({ section }) => ({
+      ...OCTAVES,
+      octaves: section.relief.octaves,
+    }));
+    this.#steepness = this.sections.map((placed) => sectionSteepness(placed, this.#transition));
+  }
+
+  /**
+   * At least the most the ground changes per unit along X or along Z within `reach` of (`x`, `z`),
+   * or Infinity when that cannot be told (reviewer, 2026-10-28: where it is low enough, a road
+   * need not measure the slope). Known for smooth reliefs away from their channels, blends
+   * included.
+   */
+  steepness(x: number, z: number, reach: number): number {
+    const half = this.#transition / 2;
+    const first = this.sectionIndexAt(z - reach - half);
+    const last = this.sectionIndexAt(z + reach + half);
+    let [slope, blend] = [0, 0];
+    for (let i = first; i <= last; i++) {
+      const own = this.#steepness[i];
+      if (!own || !this.#clearOfChannel(i, x, z, reach)) return Infinity;
+      slope = Math.max(slope, own.slope);
+      // Blending into the next section changes the height along Z by up to their difference.
+      const next = i < last ? this.#steepness[i + 1] : undefined;
+      if (next && half > 0) {
+        const apart = Math.max(own.high, next.high) - Math.min(own.low, next.low);
+        blend = Math.max(blend, (1.5 / this.#transition) * apart);
+      }
+    }
+    return slope + blend;
+  }
+
+  /** Whether section `i`'s channel, if any, stays out of reach of (`x`, `z`). */
+  #clearOfChannel(i: number, x: number, z: number, reach: number): boolean {
+    const channel = this.sections[i]?.section.channel;
+    if (!channel) return true;
+    const { path } = channel;
+    // How far the channel's middle line can move over `reach` along Z, its wobble included.
+    const turn =
+      (Math.abs(path.amplitude) * (2 * Math.PI + MEANDER_WOBBLE * NOISE_SLOPE)) / path.wavelength;
+    const away = Math.abs(x - this.pathX(path, z)) - reach * (1 + turn);
+    return away > channel.halfWidth + channel.wall + SLACK;
   }
 
   /** Index of the section under `z` (the first or last one outside the level). */
   sectionIndexAt(z: number): number {
-    const i = this.sections.findIndex((s) => z < s.end);
-    return i < 0 ? this.sections.length - 1 : i;
+    const { sections } = this;
+    for (let i = 0; i < sections.length; i++) if (z < (sections[i]?.end ?? Infinity)) return i;
+    return sections.length - 1;
   }
 
   /** The section under `z`. */
@@ -150,17 +251,28 @@ export class HeightField {
   #sectionHeight(index: number, x: number, z: number): number {
     const section = this.sections[index]?.section;
     if (!section) return 0;
-    let h = this.#reliefHeight(section, x, z) + this.#duneHeight(section, x, z);
+    let h = this.#reliefHeight(index, x, z) + this.#duneHeight(section, x, z);
     if (section.crevasses) h -= crevasseDepth(section.crevasses, this.#ice, x, z);
-    if (section.lakes) h = withLakes(section.lakes, this.#seed, x, z, h);
+    if (section.lakes) h = this.#lakeField(section.lakes).apply(x, z, h);
     h = this.#flatten(section, x, z, h);
     h = this.#carve(section, x, z, h);
     return this.#shore(section, x, z, h);
   }
 
-  #reliefHeight({ relief }: TerrainSection, x: number, z: number): number {
+  #lakeField(lakes: Lakes): LakeField {
+    let field = this.#lakes.get(lakes);
+    if (!field) {
+      field = new LakeField(lakes, this.#seed);
+      this.#lakes.set(lakes, field);
+    }
+    return field;
+  }
+
+  #reliefHeight(index: number, x: number, z: number): number {
+    const relief = this.sections[index]?.section.relief;
+    const options = this.#octaves[index];
+    if (!relief || !options) return 0;
     const f = relief.frequency;
-    const options = { ...OCTAVES, octaves: relief.octaves };
     const h =
       relief.style === 'ridged'
         ? relief.base + relief.amplitude * ridged(this.#relief, x * f, z * f, options)

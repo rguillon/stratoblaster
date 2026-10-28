@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { GameSession } from '../../../src/app/game-session';
 import type { MenuState } from '../../../src/app/menu-flow';
+import { loadSavedSupplies } from '../../../src/app/saved-supplies';
 import { saveWeapons, loadSavedWeapons } from '../../../src/app/saved-weapons';
 import { MemoryStorage } from '../../../src/platform/key-value-storage';
 import { SAMPLE_GAME } from '../../fixtures/sample-game';
@@ -90,6 +91,47 @@ describe('GameSession', () => {
     session.sync({ ...GAME, chosenLevelId: 'c', attempt: 2 });
     const shots = session.play?.run.shots;
     expect([shots?.weapon.id, shots?.level]).toEqual(['ray', 2]);
+  });
+
+  it('reviewer, 2026-10-28: a level starts with the lives and bombs kept when the last one was completed', () => {
+    const storage = new MemoryStorage();
+    const harmless = {
+      ...SAMPLE_GAME,
+      hull: {
+        ...SAMPLE_GAME.hull,
+        damage: { bullet: 0, missile: 0, laser: 0, collision: 0 },
+        ramDamage: 0,
+      },
+    };
+    session = new GameSession(
+      new NullEngine(),
+      harmless,
+      { environment: false, doc: document, storage },
+      () => undefined,
+    );
+    session.sync(GAME);
+    const play = session.play;
+    if (!play) throw new Error('the level should have started');
+    const start = play.run.supplies;
+    if (!start) throw new Error('the sample game has lives and bombs');
+    play.run.hull?.addLife();
+    play.run.hull?.addLife();
+    for (let i = 0; i < 350; i++) play.frame(0.1);
+    expect(play.run.phase).toBe('complete');
+    const kept = { lives: start.lives + 2, bombs: start.bombs };
+    expect(loadSavedSupplies(storage, harmless.id)).toEqual(kept);
+    // The next level starts with them, a Continue with the starting ones.
+    session.sync({ ...GAME, screen: 'title', chosenLevelId: null });
+    session.sync({ ...GAME, chosenLevelId: 'c', attempt: 2 });
+    expect(session.play?.run.supplies).toEqual(kept);
+    const resume = {
+      progress: 10,
+      bossesPassed: 0,
+      score: 0,
+      weapons: { weapon: 'pea', levels: {} },
+    };
+    session.sync({ ...GAME, chosenLevelId: 'c', attempt: 3, resume });
+    expect(session.play?.run.supplies).toEqual(start);
   });
 
   it('P11-R03: leaving a level records its score; the HUD gets the saved high score', () => {

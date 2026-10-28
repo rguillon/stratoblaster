@@ -70,6 +70,12 @@ export interface RunShip {
   readonly maxHealth?: number;
 }
 
+/** The player's lives and bombs, kept from one level to the next (reviewer, 2026-10-28). */
+export interface Supplies {
+  readonly lives: number;
+  readonly bombs: number;
+}
+
 export interface LevelRunOptions {
   readonly screen: LogicalScreen;
   readonly level: GameLevel;
@@ -84,6 +90,11 @@ export interface LevelRunOptions {
   readonly weapons?: readonly WeaponDefinition[];
   /** The weapons kept from the levels completed before, instead of `weapon` at `weaponLevel`. */
   readonly startWeapons?: WeaponLevels;
+  /**
+   * The lives and bombs kept from the level completed before (reviewer, 2026-10-28), instead of
+   * the hull's and bombs' starting ones.
+   */
+  readonly startSupplies?: Supplies;
   readonly ship: RunShip;
   readonly bounds: FlightBounds;
   /** Enemies and shots this far outside the playfield are removed. */

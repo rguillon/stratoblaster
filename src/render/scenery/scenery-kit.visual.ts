@@ -166,6 +166,7 @@ export const createSceneryKit: SceneryKitFactory = (scene, context) => {
       shadows.setDarkness(frame.atmosphere.sun.shadowDarkness);
       setGroundLights(props, frame.atmosphere.groundLights);
       state.seaEnabled = frame.seaEnabled;
+      if (frame.ground) state.ground = frame.ground;
       const { atmosphere } = frame;
       lava?.set({ time: frame.time, fog: { color: atmosphere.sky.haze, ...atmosphere.fog } });
       const bump = sea instanceof PBRMaterial ? sea.bumpTexture : null;

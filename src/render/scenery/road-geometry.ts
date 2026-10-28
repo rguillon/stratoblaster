@@ -39,6 +39,9 @@ const ROWS = [
   { across: 1, shoulder: 1, opacity: 0 },
 ] as const;
 
+/** The quad between rows 1 and 2: the even middle of a road, between its soft edges. */
+const MIDDLE = 1;
+
 /** Runs of consecutive points whose segments start inside [zMin, zMax). */
 function runs(points: readonly RoadPoint[], zMin: number, zMax: number): RoadPoint[][] {
   const out: RoadPoint[][] = [];
@@ -93,13 +96,24 @@ function worn(road: Road, p: RoadPoint, look: RoadLook): [number, number, number
   return [r * shade, g * shade, b * shade, opacity * fade];
 }
 
+/** Copies the quad of `from`'s vertices `l0, r0, l1, r1` into `to`, faces as the ribbons'. */
+function quad(to: ColoredGeometry, from: ColoredGeometry, corners: readonly number[]): void {
+  const base = to.positions.length / 3;
+  for (const v of corners) {
+    to.positions.push(...from.positions.slice(v * 3, v * 3 + 3));
+    to.colors.push(...from.colors.slice(v * 4, v * 4 + 4));
+  }
+  to.indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+}
+
 /**
  * Ribbons draped on the ground along the segments of `roads` that start in [zMin, zMax)
  * (P04-R07), so neighbouring terrain chunks draw each segment once. The ribbon follows the
  * width of each point (paths widen at their junction). Each ribbon
  * has a slightly see-through, worn surface and soft shoulders that fade to nothing on both
  * sides, so the road blends into the ground (phase 4 review). Streets and main roads get a
- * yellow centre line.
+ * yellow centre line. With `middles`, the even middles of the streets go there instead, to be drawn
+ * opaque (reviewer, 2026-10-28), their soft edges staying with the rest.
  */
 export function buildRoadGeometry(
   roads: readonly Road[],
@@ -107,6 +121,7 @@ export function buildRoadGeometry(
   zMin: number,
   zMax: number,
   look: RoadLook,
+  middles?: ColoredGeometry,
 ): ColoredGeometry {
   const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
   const rows = ROWS.length;
@@ -118,6 +133,7 @@ export function buildRoadGeometry(
     const [zLow, zHigh] = roadZSpan(road);
     if (zHigh < zMin - reach || zLow >= zMax + reach) continue;
     const shoulder = road.kind === 'street' ? look.streetShoulder : look.shoulder;
+    const middle = road.kind === 'street' ? middles : undefined;
     for (const run of runs(ribbonPoints(road, lines), zMin, zMax)) {
       const base = geo.positions.length / 3;
       run.forEach((p, i) => {
@@ -135,7 +151,8 @@ export function buildRoadGeometry(
           const [l0, r0] = [base + rows * (i - 1) + k, base + rows * (i - 1) + k + 1];
           const [l1, r1] = [base + rows * i + k, base + rows * i + k + 1];
           // Front faces up (Babylon: normal = (c - a) × (b - a)).
-          geo.indices.push(l0, r0, l1, r0, r1, l1);
+          if (middle && k === MIDDLE) quad(middle, geo, [l0, r0, l1, r1]);
+          else geo.indices.push(l0, r0, l1, r0, r1, l1);
         }
       });
     }

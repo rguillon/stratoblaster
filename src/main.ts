@@ -1,11 +1,12 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { startApp } from './app/start-app';
 import { parseDebugOptions } from './app/debug-options';
-import { resolveRoute } from './app/route';
+import { redirectOf, resolveRoute, type AppRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
 import { startSceneryViewer } from './app/start-scenery-viewer';
 import { startEnemyViewer } from './app/start-enemy-viewer';
+import { startPropViewer } from './app/start-prop-viewer';
 import { startBossViewer } from './app/start-boss-viewer';
 import { ENGINE_CONFIG } from './config/engine';
 import { MENU_CONFIG } from './config/menu';
@@ -120,6 +121,7 @@ function startGame(engine: Engine): void {
       },
       stepHz: 1 / app.clock.stepSeconds,
       perf: () => app.perf.numbers,
+      readability: (share) => app.game()?.readability(share) ?? Promise.resolve(null),
     });
   }
 }
@@ -242,7 +244,33 @@ function startBosses(engine: Engine): void {
   }
 }
 
+function startProps(engine: Engine): void {
+  window.addEventListener('resize', () => {
+    engine.resize();
+  });
+  const viewer = startPropViewer(engine, GAME, {
+    environment: true,
+    doc: document,
+    panelParent: element('panel'),
+    keyboardTarget: window,
+    renderLoop: !__E2E__,
+  });
+  if (__E2E__) {
+    installViewerTestApi(window, '__PROPS_TEST__', {
+      frame: () => undefined,
+      render: () => {
+        viewer.scene.render();
+      },
+    });
+  }
+}
+
 function boot(): void {
+  const redirect = redirectOf(window.location.pathname);
+  if (redirect) {
+    window.location.replace(redirect + window.location.search);
+    return;
+  }
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('#game-canvas not found');
 
@@ -260,27 +288,31 @@ function boot(): void {
     showFatal('The graphics context was lost. Please reload the page.');
   });
 
-  const route = resolveRoute(window.location.pathname);
-  if (route === 'player-ship-viewer') {
-    window.addEventListener('resize', () => {
-      engine.resize();
-    });
-    startShipViewer(engine, GAME, {
-      environment: true,
-      captions: { doc: document, parent: document.body },
-    });
-  } else if (route === 'player-shots-viewer') {
-    startShots(engine);
-  } else if (route === 'scenery-viewer') {
-    startScenery(engine);
-  } else if (route === 'enemy-viewer') {
-    startEnemies(engine);
-  } else if (route === 'boss-viewer') {
-    startBosses(engine);
-  } else {
+  START[resolveRoute(window.location.pathname)](engine);
+}
+
+function startPlayerShips(engine: Engine): void {
+  window.addEventListener('resize', () => {
+    engine.resize();
+  });
+  startShipViewer(engine, GAME, {
+    environment: true,
+    captions: { doc: document, parent: document.body },
+  });
+}
+
+/** What each page starts. */
+const START: Record<AppRoute, (engine: Engine) => void> = {
+  game: (engine) => {
     document.title = GAME.title;
     startGame(engine);
-  }
-}
+  },
+  'player-ship-viewer': startPlayerShips,
+  'player-shots-viewer': startShots,
+  'scenery-viewer': startScenery,
+  'enemy-viewer': startEnemies,
+  'boss-viewer': startBosses,
+  'prop-viewer': startProps,
+};
 
 boot();

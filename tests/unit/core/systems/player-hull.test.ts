@@ -43,11 +43,13 @@ describe('PlayerHull (phase 6 review)', () => {
     expect(hull.lives).toBe(3);
     expect(hull.addLife()).toBe(false);
     expect(hull.lives).toBe(3);
-    // Without a most, the starting lives are the most.
+    // Without a most, no limit (reviewer, 2026-10-28).
     const plain = new PlayerHull(RULES, 50);
-    expect(plain.addLife()).toBe(false);
+    expect([plain.addLife(), plain.addLife(), plain.lives]).toEqual([true, true, RULES.lives + 2]);
     plain.hit(60);
-    expect(plain.addLife()).toBe(true);
+    plain.step(5);
+    plain.hit(60);
+    plain.step(5);
     plain.hit(60);
     plain.step(5);
     plain.hit(60);
@@ -55,5 +57,10 @@ describe('PlayerHull (phase 6 review)', () => {
     plain.hit(60);
     expect(plain.out).toBe(true);
     expect(plain.addLife()).toBe(false);
+  });
+
+  it('reviewer, 2026-10-28: starts with the lives kept from the level before', () => {
+    const hull = new PlayerHull(RULES, 50, 7);
+    expect([hull.lives, hull.health]).toEqual([7, 50]);
   });
 });

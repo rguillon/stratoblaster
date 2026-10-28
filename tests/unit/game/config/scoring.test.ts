@@ -31,8 +31,8 @@ describe('scoring, lives and bombs of the game (P11)', () => {
     }
   });
 
-  it('P11-R05: 3 bombs at the start, 5 at most, 100 damage, 1 s; it destroys every World 1 kind up to the Rocketeer', () => {
-    expect(BOMB_RULES).toEqual({ start: 3, max: 5, damage: 100, seconds: 1 });
+  it('P11-R05: 3 bombs at the start, no limit (reviewer, 2026-10-28), 100 damage, 1 s; it destroys every World 1 kind up to the Rocketeer', () => {
+    expect(BOMB_RULES).toEqual({ start: 3, damage: 100, seconds: 1 });
     const health = (name: string): number => {
       const kind = ENEMY_KINDS.find((k) => k.name === name);
       return kind?.spawn({ ...AREA, random: createRng(1) })[0]?.maxHealth ?? Infinity;
@@ -51,8 +51,8 @@ describe('scoring, lives and bombs of the game (P11)', () => {
     }
   });
 
-  it('P11-R07: lives go up to 5; life 1 %, bomb 3 %; at the most they score 5 000 and 2 000', () => {
-    expect([HULL_RULES.lives, HULL_RULES.maxLives]).toEqual([3, 5]);
+  it('P11-R07: lives without limit (reviewer, 2026-10-28); life 1 %, bomb 3 %; at a most they would score 5 000 and 2 000', () => {
+    expect([HULL_RULES.lives, HULL_RULES.maxLives]).toEqual([3, undefined]);
     expect(BONUS_RULES.special).toEqual({ life: 0.01, bomb: 0.03 });
     expect(BONUS_RULES.overflowPoints).toEqual(SCORING.overflow);
     expect(SCORING.overflow).toEqual({ life: 5000, bomb: 2000 });
