@@ -30,7 +30,8 @@ export const READABILITY = {
     // Snow and ice: the brightest ground.
     world2: 0.45,
     world3: 0.45,
-    world4: 0.58,
+    // D-162: lower, as the props stretched to whole tiles cover more of the ground.
+    world4: 0.55,
   },
   /** P14-R01: the ground's brightest pixels (relative luminance), but for a share of the screen. */
   backgroundMaxLuminance: 0.35,

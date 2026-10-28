@@ -10,7 +10,12 @@ import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/
 import { WORLD_2_PROP_IDS, WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../../../../src/game/config/world-3/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
-import { TILE_GROUPS, TILE_MODELS } from '../../../../../src/game/config/tile-buildings';
+import {
+  BUILDING_MARGIN,
+  TILE,
+  TILE_GROUPS,
+  TILE_MODELS,
+} from '../../../../../src/game/config/tile-buildings';
 import { ROAD_KIT_MODELS } from '../../../../../src/game/view/props/road-kit';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
 
@@ -35,6 +40,22 @@ const tileIds = (group: keyof typeof TILE_GROUPS): string[] =>
   TILE_GROUPS[group].models.map((m) => m.id);
 
 describe('prop models', () => {
+  it('Phase 15 (reviewer, 2026-10-28): every model but the road kit spans whole tiles less the margin, centred', () => {
+    for (const [id, build] of Object.entries(PROP_MODELS)) {
+      if (id in ROAD_KIT_MODELS) continue;
+      const { positions } = build().structure;
+      for (const axis of [0, 2]) {
+        const vs = positions.filter((_, i) => i % 3 === axis);
+        const [lo, hi] = [Math.min(...vs), Math.max(...vs)];
+        const tiles = (hi - lo + 2 * BUILDING_MARGIN) / TILE.size;
+        expect(Math.abs(tiles - Math.round(tiles)), `${id} axis ${String(axis)}`).toBeLessThan(
+          1e-6,
+        );
+        expect(Math.abs(lo + hi), id).toBeLessThan(1e-6);
+      }
+    }
+  });
+
   it('P04-R04: the model count (Level Zero and its own models removed, reviewer 2026-10-28)', () => {
     // 8 shared models (trees, antenna, two homes), 8 more for World 1, 6 cars; for World 2,
     // 22 hand-made models and 3 families of 8; for World 3, 29 hand-made models and 2 families
@@ -147,11 +168,11 @@ describe('World 2 prop models', () => {
     }
   });
 
-  it('P08-R03: the pipeline is one piece every 15 units along its line', () => {
+  it('P08-R03: the pipeline piece is 15 long, stretched to 2 tiles (phase 15)', () => {
     const { positions } = PROP_MODELS.pipeline?.().structure ?? { positions: [] };
     const xs = positions.filter((_, i) => i % 3 === 0);
-    expect(Math.min(...xs)).toBeCloseTo(-15 / 2, 1);
-    expect(Math.max(...xs)).toBeCloseTo(15 / 2, 1);
+    expect(Math.min(...xs)).toBeCloseTo(-(20 - 2 * BUILDING_MARGIN) / 2, 6);
+    expect(Math.max(...xs)).toBeCloseTo((20 - 2 * BUILDING_MARGIN) / 2, 6);
   });
 });
 
@@ -183,11 +204,11 @@ describe('World 3 props (P09-R06)', () => {
     }
   });
 
-  it('P09-R06: the causeway and the swamp pipeline are 15 long, as their lines lay them', () => {
+  it('P09-R06: the causeway and the swamp pipeline, 15 long, stretched to 2 tiles (phase 15)', () => {
     for (const id of [WORLD_3_PROP_IDS.causeway, WORLD_3_PROP_IDS.swampPipeline]) {
       const xs = (PROP_MODELS[id]?.().structure.positions ?? []).filter((_, i) => i % 3 === 0);
-      expect(Math.min(...xs), id).toBeCloseTo(-7.5, 1);
-      expect(Math.max(...xs), id).toBeCloseTo(7.5, 1);
+      expect(Math.min(...xs), id).toBeCloseTo(-(20 - 2 * BUILDING_MARGIN) / 2, 6);
+      expect(Math.max(...xs), id).toBeCloseTo((20 - 2 * BUILDING_MARGIN) / 2, 6);
     }
   });
 });

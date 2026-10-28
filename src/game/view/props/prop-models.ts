@@ -66,6 +66,7 @@ import { buildFrostedTree, buildSnowPine, buildSnowyBush } from './polar-plants'
 import { buildAntennaMast } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
 import { TILE_PROP_MODELS } from './tile-models';
+import { onTiles } from './tile-fit';
 import { ROAD_KIT_MODELS } from './road-kit';
 
 /** The `count` variants of a family of buildings made of parts, built by `build`. */
@@ -80,8 +81,8 @@ function partModels(
   );
 }
 
-/** One model per prop kind of this game, keyed by its id (P04-R04). */
-export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
+/** The hand-made models and the buildings made of parts, before they are fitted to tiles. */
+const FREE_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [PROP_IDS.antenna]: buildAntennaMast,
   [PROP_IDS.cubeHome]: buildCubeHome,
   [PROP_IDS.domeHome]: buildDomeHome,
@@ -159,14 +160,21 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W3.waterfall]: buildWaterfall,
   ...partModels('canopy-tower', JUNGLE_VARIANTS, buildCanopyBuilding),
   ...partModels('canopy-block', JUNGLE_VARIANTS, buildCanopyBuilding),
-  // Phase 15: the models made for the grid of tiles.
-  ...TILE_PROP_MODELS,
-  // Phase 15: the road kit, for the `props/` page (no level places it: its streets are drawn).
-  ...ROAD_KIT_MODELS,
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),
   [CAR_IDS.grey]: () => buildCar('sedan', C.metal),
   [CAR_IDS.van]: () => buildCar('van', C.white),
   [CAR_IDS.truck]: () => buildCar('truck', C.containerGreen),
+};
+
+/**
+ * One model per prop kind of this game, keyed by its id (P04-R04). Phase 15: every model has a
+ * footprint of whole tiles (reviewer, 2026-10-28); those made for the grid already do.
+ */
+export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
+  ...onTiles(FREE_MODELS),
+  ...TILE_PROP_MODELS,
+  // The road kit, for the `props/` page (no level places it: its streets are drawn).
+  ...ROAD_KIT_MODELS,
 };
