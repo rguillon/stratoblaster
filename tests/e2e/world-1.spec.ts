@@ -55,10 +55,11 @@ test.describe('P06: World 1', () => {
       expect(game?.duration).toBeGreaterThanOrEqual(230);
       expect(game?.duration).toBeLessThanOrEqual(250);
       await expect(page.locator('.game-level')).toHaveText(`Level ${id}`);
-      // Phase 6 review: a HUD with the ship's health, the weapon level and the kills.
+      // Phase 6 review: a HUD with the ship's health and the weapon level; no kills since the
+      // reviewer's rework (2026-10-28).
       await expect(page.locator('.hud-health-text')).toHaveText('HP 100 / 100');
       await expect(page.locator('.hud-weapon')).toHaveText('Bullet · Lv 1/5');
-      await expect(page.locator('.hud-destroyed')).toHaveText(/^Destroyed: \d+$/);
+      await expect(page.locator('.hud-destroyed')).toHaveCount(0);
       await expect(page.locator('.menu-back')).toHaveCount(0);
       await leaveLevel(page);
       await expectState(page, { screen: 'title', game: null });

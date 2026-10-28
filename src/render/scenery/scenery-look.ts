@@ -26,6 +26,11 @@ export interface TextureLook {
  * (shores, sea bed), `ground` in between, `high` above `highHeight` (snow), `steep` on slopes.
  */
 export interface TerrainLook {
+  /**
+   * Whether the terrain casts the sun's shadows (default: yes). Flat ground has nothing to shade
+   * (reviewer, 2026-10-28: World 4).
+   */
+  readonly castsShadows?: boolean;
   readonly textureSize: number;
   /** World units covered by one repeat of the ground textures. */
   readonly tileSize: number;
@@ -202,6 +207,12 @@ export interface SceneryLook {
    * a contrasting outline over a red ground, P10-R07); the game's default when omitted.
    */
   readonly shotStyle?: string;
+  /**
+   * Phase 14 (P14-R01): how bright the background is kept under the playfield, 0..1: a factor
+   * on the props' lit colours, the haze (fog) and the clouds, so the ships and shots stand out.
+   * The props' self-lit accents keep their brightness. 1 when omitted.
+   */
+  readonly tone?: number;
 }
 
 /**
@@ -235,4 +246,11 @@ export interface PlayfieldCameraLook {
   readonly fovDeg: number;
   /** Height of the playfield plane, where the ships fly. */
   readonly flightAltitude: number;
+  /**
+   * How much bigger the ground is drawn, as if flying lower (reviewer, 2026-10-28): the terrain,
+   * roads, props and cars are `groundScale` times as big and pass `groundScale` times as fast,
+   * while the level still covers the same ground a second. The clouds and the weather stay as
+   * they are. 1 when omitted.
+   */
+  readonly groundScale?: number;
 }

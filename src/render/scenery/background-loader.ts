@@ -1,14 +1,18 @@
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import type { GroundWorkerJob } from './ground-worker';
-import { generateGroundsWith, type GroundSnapshot } from './level-ground';
+import { generateGroundsWith, type GroundSnapshot, type RunoutSnapshot } from './level-ground';
 import { hasTexture, keepTexture, type TextureJob } from './procedural-textures';
 
-/** What the worker sends back for a job. */
+/** What the worker sends back for a job: a ground job is answered twice, ground then runout. */
 interface Reply {
   readonly id: number;
   readonly ground?: GroundSnapshot;
+  readonly runout?: RunoutSnapshot;
   readonly pixels?: Uint8Array;
 }
+
+/** Takes a reply to a job (undefined: the worker broke); whether the job is done. */
+type ReplyHandler = (reply: Reply | undefined) => boolean;
 
 /** The worker's side the loader talks to (a `Worker`, or a fake in tests). */
 export interface WorkerPort {
@@ -25,23 +29,30 @@ export interface WorkerPort {
  */
 export class BackgroundLoader {
   #next = 0;
-  readonly #waiting = new Map<number, (reply: Reply | undefined) => void>();
+  readonly #waiting = new Map<number, ReplyHandler>();
   /** Textures asked for and not back yet, by key. */
   readonly #textures = new Set<string>();
 
   constructor(private readonly port: WorkerPort) {
     port.onmessage = ({ data }) => {
-      this.#waiting.get(data.id)?.(data);
-      this.#waiting.delete(data.id);
+      if (this.#waiting.get(data.id)?.(data) ?? true) this.#waiting.delete(data.id);
     };
     // A broken worker: every job waiting fails (the ground is then generated on the main thread).
     port.onerror = () => {
       for (const done of this.#waiting.values()) done(undefined);
       this.#waiting.clear();
     };
-    generateGroundsWith((level, seed, done) => {
+    generateGroundsWith((level, seed, replies) => {
+      let ground = false;
       this.#post({ kind: 'ground', level, seed }, (reply) => {
-        done(reply?.ground);
+        if (!ground && reply?.ground) {
+          ground = true;
+          replies.ground(reply.ground);
+          return false;
+        }
+        if (ground) replies.runout(reply?.runout);
+        else replies.ground(undefined);
+        return true;
       });
     });
   }
@@ -55,6 +66,7 @@ export class BackgroundLoader {
       this.#post({ kind: 'texture', job }, (reply) => {
         this.#textures.delete(key);
         if (reply?.pixels) keepTexture(job, reply.pixels);
+        return true;
       });
     }
   }
@@ -69,7 +81,7 @@ export class BackgroundLoader {
     job:
       | { readonly kind: 'ground'; readonly level: SceneryLevel; readonly seed: number }
       | { readonly kind: 'texture'; readonly job: TextureJob },
-    done: (reply: Reply | undefined) => void,
+    done: ReplyHandler,
   ): void {
     const id = this.#next++;
     this.#waiting.set(id, done);

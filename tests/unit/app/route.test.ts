@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveRoute } from '../../../src/app/route';
+import { redirectOf, resolveRoute } from '../../../src/app/route';
 
 describe('resolveRoute', () => {
   it.each([
@@ -27,11 +27,28 @@ describe('resolveRoute', () => {
     ['/bosses', 'boss-viewer'],
     ['/stratoblaster/bosses/index.html', 'boss-viewer'],
     ['/bosses/other', 'game'],
+    ['/props/', 'prop-viewer'],
+    ['/props', 'prop-viewer'],
+    ['/stratoblaster/props/index.html', 'prop-viewer'],
+    ['/props/other', 'game'],
     ['/boss/', 'boss-viewer'],
     ['/boss', 'boss-viewer'],
     ['/stratoblaster/boss/index.html', 'boss-viewer'],
     ['/bossy/', 'game'],
   ] as const)('maps %s to %s', (pathname, route) => {
     expect(resolveRoute(pathname)).toBe(route);
+  });
+});
+
+describe('redirectOf', () => {
+  it.each([
+    ['/props', '/props/'],
+    ['/stratoblaster/enemies', '/stratoblaster/enemies/'],
+    ['/props/', undefined],
+    ['/props/index.html', undefined],
+    ['/', undefined],
+    ['/stratoblaster', undefined],
+  ])('%s → %s', (path, to) => {
+    expect(redirectOf(path)).toBe(to);
   });
 });

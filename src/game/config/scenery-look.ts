@@ -1,7 +1,13 @@
 type Rgb = readonly [number, number, number];
 
 /** P04-R05: the camera above the playfield, tilted 35° from straight down, looking forward. */
-export const PLAYFIELD_CAMERA = { tiltDeg: 35, fovDeg: 40, flightAltitude: 320 } as const;
+/** The playfield camera; the ground drawn twice as big, as if flying lower (reviewer, 2026-10-28). */
+export const PLAYFIELD_CAMERA = {
+  tiltDeg: 35,
+  fovDeg: 40,
+  flightAltitude: 320,
+  groundScale: 2,
+} as const;
 
 interface TextureExtras {
   readonly speckle?: number;

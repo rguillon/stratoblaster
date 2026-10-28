@@ -16,9 +16,67 @@ export type GroundBox = Pick<Building, 'halfX' | 'halfZ'> & {
   readonly placement: { x: number; z: number };
 };
 
-/** Key of the bucket of the building index holding (`x`, `z`). */
-export function bucketKey(x: number, z: number): string {
-  return `${String(Math.floor(x / BUILDING_BUCKET))},${String(Math.floor(z / BUILDING_BUCKET))}`;
+/** Key of the bucket (`i`, `j`) of a {@link BuildingIndex} (|j| stays far below a million). */
+function bucketKey(i: number, j: number): number {
+  return i * 1_000_003 + j;
+}
+
+/** A bucket of a {@link BuildingIndex}: its buildings, and the largest half-extents among them. */
+interface Bucket {
+  readonly buildings: Building[];
+  halfX: number;
+  halfZ: number;
+}
+
+/** Distance from `v` to the bucket `i` along one axis (0 inside it). */
+function toBucket(v: number, i: number): number {
+  return Math.max(0, i * BUILDING_BUCKET - v, v - (i + 1) * BUILDING_BUCKET);
+}
+
+/** Margin the buckets left out keep, so rounding never leaves out one that counts. */
+const SLACK = 1e-9;
+
+/**
+ * The placed buildings, in buckets {@link BUILDING_BUCKET} wide by where their centres are
+ * (reviewer, 2026-10-28: number keys, and a bucket too far for its largest building to come
+ * close is left out).
+ */
+export class BuildingIndex {
+  readonly #buckets = new Map<number, Bucket>();
+
+  add(building: Building): void {
+    const { x, z } = building.placement;
+    const key = bucketKey(Math.floor(x / BUILDING_BUCKET), Math.floor(z / BUILDING_BUCKET));
+    const bucket = this.#buckets.get(key);
+    if (!bucket) {
+      this.#buckets.set(key, {
+        buildings: [building],
+        halfX: building.halfX,
+        halfZ: building.halfZ,
+      });
+      return;
+    }
+    bucket.buildings.push(building);
+    bucket.halfX = Math.max(bucket.halfX, building.halfX);
+    bucket.halfZ = Math.max(bucket.halfZ, building.halfZ);
+  }
+
+  /** Whether no building of the buckets two around `area`'s comes closer to it than `gap`. */
+  clear(area: GroundBox, gap: number): boolean {
+    const { x, z } = area.placement;
+    const [bx, bz] = [Math.floor(x / BUILDING_BUCKET), Math.floor(z / BUILDING_BUCKET)];
+    for (let i = bx - 2; i <= bx + 2; i++) {
+      const dx = toBucket(x, i);
+      for (let j = bz - 2; j <= bz + 2; j++) {
+        const bucket = this.#buckets.get(bucketKey(i, j));
+        if (!bucket) continue;
+        if (dx > area.halfX + bucket.halfX + gap + SLACK) continue;
+        if (toBucket(z, j) > area.halfZ + bucket.halfZ + gap + SLACK) continue;
+        if (bucket.buildings.some((b) => overlap(b, area, gap))) return false;
+      }
+    }
+    return true;
+  }
 }
 
 /**

@@ -1,9 +1,12 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { EnemyLaser } from '../../../core/systems/enemy-shots';
+import { ON_TOP_ALPHA_INDEX } from '../../../render/node-adopter';
 import { NodePool } from '../../../render/node-pool';
 import { BOSS_LOOK } from '../../config/boss-look';
+import { foldIntoFamily } from '../../../core/math/color';
 import { ENEMY_LOOK, laserPalette } from '../../config/enemy-look';
+import { READABILITY } from '../../config/readability';
 import { flicker } from '../reactor-flame';
 import { buildGlowBar, buildGlowDisc } from '../shot-geometry';
 import { additiveTemplate } from '../shots/shot-meshes';
@@ -18,9 +21,12 @@ interface LaserPools {
   readonly templates: readonly Mesh[];
 }
 
-/** The colour of the lasers of `style`: a boss's neon, or the Lancer's red (phase 8 review). */
+/**
+ * The colour of the lasers of `style`: a boss's neon, or the Lancer's (phase 8 review), moved
+ * into the enemy shots' colour family (P14-R02).
+ */
 function colorOf(style: string): Rgb {
-  return BOSS_LOOK.neon[style] ?? LOOK.color;
+  return foldIntoFamily(BOSS_LOOK.neon[style] ?? LOOK.color, READABILITY.families.enemyShot);
 }
 
 type Rgb = readonly [number, number, number];
@@ -51,6 +57,8 @@ function lasersOf(scene: Scene, style: string, contrast: boolean): LaserPools {
       true,
     ),
   ] as const;
+  // P14-R05: over the player's shots and the blasts, under the bullets (their clones too).
+  for (const template of templates) template.alphaIndex = ON_TOP_ALPHA_INDEX;
   const pool = (template: Mesh): NodePool<Mesh> =>
     new NodePool((i) => template.clone(`${template.name}-${String(i)}`));
   return {

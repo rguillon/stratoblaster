@@ -213,7 +213,9 @@ describe('World 1', () => {
     for (const game of WORLD_1) {
       const look = SCENERY_BINDINGS.looks[game.scenery.id];
       expect(look?.terrain.sand, game.id).toBeDefined();
-      expect(look?.terrain.lush, game.id).toBe(SCENERY_BINDINGS.looks['world-1-1']?.terrain.lush);
+      expect(look?.terrain.lush, game.id).toEqual(
+        SCENERY_BINDINGS.looks['world-1-1']?.terrain.lush,
+      );
     }
   });
 

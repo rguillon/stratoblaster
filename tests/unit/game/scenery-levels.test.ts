@@ -3,17 +3,18 @@ import { GAME } from '../../../src/game/index';
 import { HeightField } from '../../../src/core/scenery/height-field';
 import { PropPlacer } from '../../../src/core/scenery/prop-placement';
 import { meetingWidth, streetLines } from '../../../src/core/scenery/road-traffic';
-import { levelRoads } from '../../../src/core/scenery/road-network';
+import { levelRoads, STREETS_BEFORE } from '../../../src/core/scenery/road-network';
 import { levelDuration } from '../../../src/core/scenery/scenery-level';
 import { LEVEL_ZERO, SCENERY_LEVELS } from '../../../src/game/sim/scenery-levels';
 import { LEVEL_ZERO_LOOK, PLAYFIELD_CAMERA } from '../../../src/game/config/scenery-look';
 import { framePlayfield, visibleGround } from '../../../src/render/scenery/playfield-framing';
+import { groundWindowOf } from '../../../src/render/scenery/ground-root';
+import { GAME_PLAY_CONFIG } from '../../../src/config/game-play';
 import { GAME_CONFIG } from '../../../src/game/config/game';
 import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
 import { WORLD_1_PROP_IDS } from '../../../src/game/config/world-1/props';
 import { WORLD_2_PROP_IDS } from '../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../../src/game/config/world-3/props';
-import { WORLD_4_PROP_IDS } from '../../../src/game/config/world-4/props';
 import {
   JUNGLE_VARIANTS,
   SKYSCRAPER_VARIANTS,
@@ -148,7 +149,6 @@ describe('Level Zero', () => {
       ...(['canopy-tower', 'canopy-block'] as const).flatMap((family) =>
         Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1)),
       ),
-      ...Object.values(WORLD_4_PROP_IDS),
       ...Array.from({ length: SKYSCRAPER_VARIANTS }, (_, i) => variantId('skyscraper', i + 1)),
     ]);
     const standing = Object.keys(PROP_MODELS).filter((id) => !others.has(id));
@@ -186,5 +186,35 @@ describe('Level Zero', () => {
       (k) => k.id,
     );
     for (const id of ids) expect(GAME.view.scenery.propModels[id]).toBeTypeOf('function');
+  });
+});
+
+describe('the ground generated around the view (reviewer, 2026-10-28)', () => {
+  const { camera } = GAME.view.scenery;
+  const framing = framePlayfield(GAME.screen, camera);
+  const scale = camera.groundScale ?? 1;
+  const windowOf = (level: (typeof GAME.gameLevels)[number]) =>
+    groundWindowOf({ screen: GAME.screen, camera, level: level.scenery }, framing, scale);
+
+  it('the street grids of Worlds 3 and 4 reach past the ground that shows, not far past it', () => {
+    const levels = GAME.gameLevels.filter((l) => /^[34]-/.test(l.id));
+    expect(levels).toHaveLength(10);
+    for (const level of levels) {
+      const { offscreenX, mainWidth, dual, boulevards = [] } = level.scenery.roads;
+      const widest = Math.max(mainWidth, dual.width, ...boulevards.map((b) => b.width));
+      const { halfWidth } = windowOf(level);
+      const shoulder = LEVEL_ZERO_LOOK.roads.shoulder;
+      expect(offscreenX, level.id).toBeGreaterThan(halfWidth + widest / 2 + shoulder);
+      expect(offscreenX, level.id).toBeLessThan(halfWidth * 1.5);
+    }
+  });
+
+  it('the street grids start below the ground the camera sees at the start of a level', () => {
+    for (const level of GAME.gameLevels) {
+      // The ground under the camera at distance 0, and the nearest the camera sees from there.
+      const lowest = framing.back / scale + windowOf(level).zNear - GAME_PLAY_CONFIG.stage.margin;
+      // At least a row of blocks below it.
+      expect(-STREETS_BEFORE, level.id).toBeLessThan(lowest - 200);
+    }
   });
 });

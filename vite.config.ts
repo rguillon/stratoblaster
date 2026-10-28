@@ -45,6 +45,8 @@ export default defineConfig(({ mode }) => ({
         enemies: fileURLToPath(new URL('./enemies/index.html', import.meta.url)),
         bosses: fileURLToPath(new URL('./bosses/index.html', import.meta.url)),
         boss: fileURLToPath(new URL('./boss/index.html', import.meta.url)),
+        // The props viewer at `props/` (reviewer, 2026-10-28).
+        props: fileURLToPath(new URL('./props/index.html', import.meta.url)),
       },
     },
   },

@@ -116,4 +116,32 @@ describe('RoadNetwork without crossings (phase 6 review)', () => {
       expect(atEnd(a, x, z, reach) || atEnd(b, x, z, reach)).toBe(true);
     }
   });
+
+  it('boulevards (reviewer, 2026-10-28) run straight, and no street runs on through one', () => {
+    const WIDE: RoadRules = {
+      ...SEPARATE,
+      boulevards: [
+        { lanes: 3, width: 18, share: 0.25 },
+        { lanes: 4, width: 24, share: 0.2 },
+      ],
+    };
+    const n = network(TOWN, WIDE);
+    const streets = n.roads.filter((r) => r.kind === 'street');
+    const wide = streets.filter((r) => r.lanes >= 3);
+    expect(wide.length).toBeGreaterThan(0);
+    for (const road of wide) {
+      const [a, b] = [road.points[0], road.points.at(-1)];
+      // Straight: along X or along Z.
+      expect(a?.x === b?.x || a?.z === b?.z, `road ${String(road.index)}`).toBe(true);
+    }
+    // Where a street meets a boulevard, one of them ends there (a boulevard only at the edge of
+    // its section): no street runs on through a boulevard.
+    const reach = RULES.step / 2;
+    // Two boulevards may cross: neither turns or stops.
+    const meets = meetings(streets).filter(({ a, b }) => a.lanes >= 3 !== b.lanes >= 3);
+    expect(meets.length).toBeGreaterThan(0);
+    for (const { x, z, a, b } of meets) {
+      expect(atEnd(a, x, z, reach) || atEnd(b, x, z, reach)).toBe(true);
+    }
+  });
 });

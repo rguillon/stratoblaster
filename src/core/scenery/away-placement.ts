@@ -26,8 +26,8 @@ export interface AwaySite {
   sectionAt(z: number): TerrainSection;
   /** The building group of the area around (`x`, `z`), among those `section` allows. */
   groupAt(x: number, z: number, section: TerrainSection): PropGroupRule | undefined;
-  /** Distance to the nearest road edge (Infinity beyond about 60). */
-  roadDistance(x: number, z: number): number;
+  /** Whether (`x`, `z`) is at least `clearance` from every road edge. */
+  clearOfRoads(x: number, z: number, clearance: number): boolean;
   /** Height of the flat enough ground under a footprint of `radius`, or undefined. */
   ground(x: number, z: number, radius: number): number | undefined;
   /** Adds `building` if it keeps `gap` (default: the road setback) from the others. */
@@ -62,7 +62,7 @@ interface Candidate {
 function standalone(site: AwaySite, c: Candidate, clearance: number): Building | undefined {
   const { kind, x, z, rotation, scale } = c;
   const reach = kind.frontage === undefined ? kind.footprint : kind.frontage * scale;
-  if (site.roadDistance(x, z) < reach + clearance) return undefined;
+  if (!site.clearOfRoads(x, z, reach + clearance)) return undefined;
   const y = site.ground(x, z, kind.footprint);
   if (y === undefined) return undefined;
   const turned = Math.abs(Math.cos(rotation)) + Math.abs(Math.sin(rotation));
@@ -76,12 +76,21 @@ function tryPlace(site: AwaySite, c: Candidate, clearance: number, gap?: number)
   return building !== undefined && site.add(building, gap);
 }
 
-/** Hamlets every `spacing` along the level (phase 6 review, see `HamletRules`). */
-export function placeHamlets(site: AwaySite, hamlets: HamletRules): void {
+/** A stretch of the level along Z, from `from` (included) to `to`. */
+export interface ZRange {
+  readonly from: number;
+  readonly to: number;
+}
+
+/**
+ * Hamlets every `spacing` along the level (phase 6 review, see `HamletRules`), those in `range`
+ * (reviewer, 2026-10-28: the runout's are placed apart).
+ */
+export function placeHamlets(site: AwaySite, hamlets: HamletRules, range: ZRange): void {
   const r = (n: number, draw: number): number => hash2D(n, draw, site.seed * 47 + 13);
   let z = -AWAY_MARGIN + between(hamlets.spacing, r(0, 0));
   for (let n = 1; z < site.length + AWAY_MARGIN; n++) {
-    hamlet(site, hamlets, z, (draw) => r(n, draw));
+    if (z >= range.from && z < range.to) hamlet(site, hamlets, z, (draw) => r(n, draw));
     z += between(hamlets.spacing, r(n, 0));
   }
 }
@@ -99,7 +108,7 @@ function hamletCentre(
     z: z + (r(1 + HAMLET_TRIES + t) - 0.5) * radius,
   })).find(
     (c) =>
-      site.roadDistance(c.x, c.z) >= radius + clearance &&
+      site.clearOfRoads(c.x, c.z, radius + clearance) &&
       site.ground(c.x, c.z, radius / 2) !== undefined,
   );
 }
@@ -136,14 +145,22 @@ function hamlet(
   }
 }
 
-/** A few lone buildings away from the roads (phase 6 review, see `PropRules.loners`). */
-export function placeLoners(site: AwaySite, loners: NonNullable<PropRules['loners']>): void {
+/**
+ * A few lone buildings away from the roads (phase 6 review, see `PropRules.loners`), those in
+ * `range`.
+ */
+export function placeLoners(
+  site: AwaySite,
+  loners: NonNullable<PropRules['loners']>,
+  range: ZRange,
+): void {
   const { cell } = loners;
   const half = site.offscreenX * AWAY_SPREAD;
   const [i0, i1] = [Math.floor(-half / cell), Math.ceil(half / cell)];
-  const [j0, j1] = [Math.floor(-AWAY_MARGIN / cell), Math.ceil((site.length + AWAY_MARGIN) / cell)];
+  const j0 = Math.max(Math.floor(-AWAY_MARGIN / cell), Math.floor(range.from / cell));
+  const j1 = Math.min(Math.ceil((site.length + AWAY_MARGIN) / cell), Math.ceil(range.to / cell));
   for (let j = j0; j < j1; j++) {
-    for (let i = i0; i < i1; i++) loner(site, loners, i, j);
+    for (let i = i0; i < i1; i++) loner(site, loners, [i, j], range);
   }
 }
 
@@ -151,11 +168,12 @@ export function placeLoners(site: AwaySite, loners: NonNullable<PropRules['loner
 function loner(
   site: AwaySite,
   { cell, chance, clearance }: NonNullable<PropRules['loners']>,
-  i: number,
-  j: number,
+  [i, j]: readonly [number, number],
+  range: ZRange,
 ): void {
   const r = (draw: number): number => hash2D(i, j, site.seed * 43 + 7 + draw);
   const [x, z] = [(i + r(0)) * cell, (j + r(1)) * cell];
+  if (z < range.from || z >= range.to) return;
   const section = site.sectionAt(z);
   if (section.streets || r(2) >= chance * section.buildingDensity) return;
   const kind = weighted(site.groupAt(x, z, section)?.kinds ?? [], r(3));

@@ -48,4 +48,11 @@ describe('PlayerBombs (P11-R05)', () => {
     low.refill();
     expect(low.count).toBe(1);
   });
+
+  it('reviewer, 2026-10-28: starts with the bombs kept from the level before; no limit without a most', () => {
+    const bombs = new PlayerBombs({ start: 3, damage: 100, seconds: 1 }, 7);
+    expect(bombs.count).toBe(7);
+    for (let i = 0; i < 5; i++) expect(bombs.add()).toBe(true);
+    expect(bombs.count).toBe(12);
+  });
 });

@@ -30,7 +30,7 @@ export interface ViewerTestApi {
  */
 export function installViewerTestApi(
   target: object,
-  name: '__SCENERY_TEST__' | '__SHOTS_TEST__',
+  name: '__SCENERY_TEST__' | '__SHOTS_TEST__' | '__PROPS_TEST__',
   hooks: ViewerStepHooks,
 ): ViewerTestApi {
   const api: ViewerTestApi = {
