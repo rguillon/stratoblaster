@@ -1384,3 +1384,9 @@
 - **Phase:** 14 (reviewer request; follows D-131)
 - **Decision:** The ground's glow image is antialiased (4 samples, `ShowcaseEnvironmentOptions.glow.samples`), so lights thinner than a pixel stop flickering. The glow layer now also draws the props, cars and terrain chunks, black (`SceneryStage.glowOccluders`, `watchTerrain`), so a light behind a building or a hill no longer glows through it. Cost: every prop and the ground are drawn a second time each frame, into the glow image.
 - **Status:** Accepted
+
+### D-133 — No flash in the blasts
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** Explosions no longer start with a white flash: the `flashes` layer and `ENEMY_LOOK.blast.flash` are removed. Their shock ring is blended over the ground instead of added to it, so a blast no longer lights up the ground under it. The fireballs, debris, embers and smoke are unchanged.
+- **Status:** Accepted

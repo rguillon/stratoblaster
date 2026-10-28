@@ -24,11 +24,11 @@ function lastFrame(blasts: BlastParticles, seconds: number): BlastSpots {
 const mean = (v: readonly number[]): number => v.reduce((a, b) => a + b, 0) / v.length;
 
 describe('BlastParticles', () => {
-  it('GD-62: a destroyed enemy flashes, makes fireballs and debris, which all fade away', () => {
+  it('GD-62: a destroyed enemy makes a ring, fireballs and debris, which all fade away; no flash lights the ground', () => {
     const blasts = new BlastParticles(createRng(1));
     blasts.emit({ kind: 'enemy', x: 100, y: 200, radius: 20 });
     const first = blasts.step(0.05);
-    expect(first.flashes).toHaveLength(1);
+    expect(first).not.toHaveProperty('flashes');
     expect(first.rings).toHaveLength(1);
     expect(first.fireballs[0]).toMatchObject({ x: 100, y: 200 });
     expect(first.debris.length).toBeGreaterThanOrEqual(LOOK.debris.min);

@@ -181,10 +181,13 @@ describe('createBlastRenderer', () => {
       (scene.getMeshByName(`blast-${name}`) as Mesh | null) ?? undefined;
     expect(layer('fireballs')?.isEnabled()).toBe(false);
     renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.05);
-    for (const name of ['fireballs', 'debris', 'embers', 'flashes', 'rings']) {
+    for (const name of ['fireballs', 'debris', 'embers', 'rings']) {
       expect(layer(name)?.isEnabled(), name).toBe(true);
       expect(layer(name)?.thinInstanceCount, name).toBeGreaterThan(0);
     }
+    // No flash, and the ring laid over the ground: a blast does not light it (reviewer, 2026-10-28).
+    expect(layer('flashes')).toBeUndefined();
+    expect(layer('rings')?.material?.alphaMode).toBe(Constants.ALPHA_COMBINE);
     // Two blasts: more instances, not more meshes.
     const meshes = scene.meshes.length;
     const debris = layer('debris')?.thinInstanceCount ?? 0;
@@ -199,16 +202,16 @@ describe('createBlastRenderer', () => {
     const scene = new Scene(new NullEngine());
     const renderer = createBlastRenderer(scene);
     renderer.sync([{ kind: 'enemy', x: 10, y: 20, radius: 15 }], 0.01);
-    const flashes = scene.getMeshByName('blast-flashes') as Mesh;
+    const rings = scene.getMeshByName('blast-rings') as Mesh;
     const uploaded: number[] = [];
-    const update = flashes.thinInstanceBufferUpdated.bind(flashes);
-    flashes.thinInstanceBufferUpdated = (kind) => {
-      if (kind === 'matrix') uploaded.push(flashes.thinInstanceCount);
+    const update = rings.thinInstanceBufferUpdated.bind(rings);
+    rings.thinInstanceBufferUpdated = (kind) => {
+      if (kind === 'matrix') uploaded.push(rings.thinInstanceCount);
       update(kind);
     };
-    // A second flash while the first one lasts: the buffers have room, they are updated.
+    // A second ring while the first one lasts: the buffers have room, they are updated.
     renderer.sync([{ kind: 'enemy', x: 200, y: 20, radius: 15 }], 0.01);
-    expect(flashes.thinInstanceCount).toBe(2);
+    expect(rings.thinInstanceCount).toBe(2);
     expect(uploaded).toEqual([2]);
     renderer.dispose();
   });

@@ -252,8 +252,6 @@ export const ENEMY_LOOK = {
       [0.65, 0.14, 0.03],
       [0, 0, 0],
     ] as readonly Rgb[],
-    /** A white flash, at once. */
-    flash: { size: 3.6, life: 0.16, brightness: 0.9, segments: 16 },
     /** A thin shock ring that races out and fades. */
     ring: { size: 4, life: 0.35, segments: 32, color: [1, 0.75, 0.45] as Rgb },
     /**
