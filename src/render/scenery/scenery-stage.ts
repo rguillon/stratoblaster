@@ -209,6 +209,14 @@ export class SceneryStage {
   }
 
   /**
+   * Meshes that hide the glowing ones behind them (reviewer, 2026-10-28): the props and the cars.
+   * A glow layer draws them black; the terrain chunks come through {@link watchTerrain}.
+   */
+  get glowOccluders(): Mesh[] {
+    return [...this.#props.structureMeshes, ...this.#traffic.structureMeshes];
+  }
+
+  /**
    * Phase 10: the lava (P10-R05), when the level's liquid is lava: drawn in a glow layer with its
    * own material, the terrain hiding it there ({@link watchTerrain}).
    */

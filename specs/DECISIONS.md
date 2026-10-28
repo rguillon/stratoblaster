@@ -1378,3 +1378,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** The ground's glow layer is drawn at full resolution (`mainTextureRatio` 1, up from Babylon's 0.5), its blur kernel doubled so it spreads as wide on screen. At half resolution, small lights (windows, lamps, headlights) blinked as the ground scrolled. `ShowcaseEnvironmentOptions.glow.ratio` is a new optional setting. The playfield's glow (ships, enemies) is unchanged. The glow pass costs about four times as much.
 - **Status:** Accepted
+
+### D-132 — Ground glow antialiased, lights hidden behind buildings
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; follows D-131)
+- **Decision:** The ground's glow image is antialiased (4 samples, `ShowcaseEnvironmentOptions.glow.samples`), so lights thinner than a pixel stop flickering. The glow layer now also draws the props, cars and terrain chunks, black (`SceneryStage.glowOccluders`, `watchTerrain`), so a light behind a building or a hill no longer glows through it. Cost: every prop and the ground are drawn a second time each frame, into the glow image.
+- **Status:** Accepted

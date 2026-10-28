@@ -77,13 +77,21 @@ function playfieldGlow(scene: Scene, look: { intensity: number; blurKernelSize: 
 /** Babylon's default resolution of a glow image, as a share of the screen's. */
 const DEFAULT_GLOW_RATIO = 0.5;
 
+/** Samples per pixel of the ground's glow image (antialiased: thin lights do not flicker). */
+const GROUND_GLOW_SAMPLES = 4;
+
 /**
- * The ground's glow drawn at full resolution (reviewer, 2026-10-28: at half resolution, small
- * lights blinked as the ground scrolled), its blur as wide on screen as before.
+ * The ground's glow drawn at full resolution and antialiased (reviewer, 2026-10-28: small lights
+ * blinked as the ground scrolled), its blur as wide on screen as before.
  */
 export function groundGlowLook(glow: SceneryLook['glow']) {
   const ratio = 1;
-  return { ...glow, ratio, blurKernelSize: (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO };
+  return {
+    ...glow,
+    ratio,
+    samples: GROUND_GLOW_SAMPLES,
+    blurKernelSize: (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO,
+  };
 }
 
 /**
@@ -95,9 +103,20 @@ function glowLava(glow: GlowLayer, stage: SceneryStage): void {
   if (!lava) return;
   glow.addIncludedOnlyMesh(lava);
   glow.referenceMeshToUseItsOwnMaterial(lava);
+}
+
+/**
+ * The ground's glow (reviewer, 2026-10-28): the lights, and the props, cars and terrain, drawn
+ * black there, so a light behind a building or a hill does not glow through it.
+ */
+function glowGround(glow: GlowLayer, stage: SceneryStage): void {
+  for (const mesh of [...stage.glowingMeshes, ...stage.glowOccluders]) {
+    glow.addIncludedOnlyMesh(mesh);
+  }
   stage.watchTerrain((mesh) => {
     glow.addIncludedOnlyMesh(mesh);
   });
+  glowLava(glow, stage);
 }
 
 /**
@@ -187,8 +206,7 @@ export function buildLevelScene(
     config: options.stage,
     ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
   });
-  for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
-  if (groundGlow) glowLava(groundGlow, stage);
+  if (groundGlow) glowGround(groundGlow, stage);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
   const playfield = playfieldLayer(scene, options);
   const root = playfield.root;

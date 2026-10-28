@@ -150,6 +150,11 @@ export class PropField {
     return [...this.#meshes.values()].flatMap((m) => (m.lights ? [m.lights] : []));
   }
 
+  /** Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer). */
+  get structureMeshes(): Mesh[] {
+    return [...this.#meshes.values()].map((m) => m.structure);
+  }
+
   /** The structure mesh of a kind of prop. */
   structureOf(kind: string): Mesh | undefined {
     return this.#meshes.get(kind)?.structure;

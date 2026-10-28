@@ -120,4 +120,11 @@ describe('Sky layers', () => {
       expect(dim.ambient).toEqual(bright.ambient);
     }
   });
+
+  it('the props and cars hide the glowing lights behind them (reviewer, 2026-10-28)', () => {
+    const s = stage(SAMPLE_SCENERY_LOOK);
+    const occluders = s.glowOccluders;
+    expect(occluders.length).toBeGreaterThan(0);
+    for (const mesh of occluders) expect(s.glowingMeshes, mesh.name).not.toContain(mesh);
+  });
 });

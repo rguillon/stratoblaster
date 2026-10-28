@@ -39,6 +39,11 @@ export class TrafficLayer {
     return this.#field.lightMeshes;
   }
 
+  /** Meshes of the car bodies (e.g. to hide lights behind them in a glow layer). */
+  get structureMeshes(): Mesh[] {
+    return this.#field.structureMeshes;
+  }
+
   /** Number of cars in view. */
   get count(): number {
     return this.#field.count;
