@@ -1516,3 +1516,9 @@
 - **Phase:** 14 (reviewer request; amends P11-R05 and P11-R07)
 - **Decision:** A completed level keeps its lives and bombs, as it keeps its weapons (D-071): they are saved (`<game>_supplies`, `saved-supplies.ts`) and the next level started, whichever it is, starts with them (`LevelRunOptions.startSupplies`). A Continue, after a game over, starts again with the starting 3 lives and 3 bombs; a lost life still tops the bombs up to 3. Life and bomb bonuses no longer stop at 5: `HullRules.maxLives` and `BombRules.max` are optional, with no limit when omitted, and the game sets neither (so the points a bonus scores at the most, P11-R07, no longer come up). The HUD shows the bombs as a count (`● 7`), not one icon each.
 - **Status:** Accepted
+
+### D-155 — The in-game HUD in one bar at the bottom
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P11-R02's place of the score)
+- **Decision:** The HUD is one bar, 48 px high, along the bottom of the playfield (`.hud-panel`): the level's progress as a line along its top edge; the ship, its lives, bombs and health bar on the left; the score and high score in the middle; the weapon and its level, and the level played under it, on the right. The enemies destroyed are no longer shown. The ship flies no lower than 30 px above the bar (`shipMargin.bottom` 78, was 30), so the bar never hides it. The boss gauge starts at the top of the left edge, the pause button stays in the top-right corner (P12-R01), now at the top, and the touch fire and bomb buttons sit above the bar.
+- **Status:** Accepted
