@@ -1342,3 +1342,9 @@
 - **Phase:** 14 (P14-R08)
 - **Decision:** `__GAME_TEST__.readability(share)` renders the frame twice, with and without the playfield, reads both back, and for the ship, the first enemy, enemy bullet and player shot well inside the view returns the WCAG contrast ratio of the brightest pixel round it against the median of the same pixels without the playfield; also the background luminance only `share` of the pixels exceed. The pixel maths is pure (`core/math/pixel-contrast.ts`). R06 sets no contrast for player shots, so the e2e test checks that they still show (2:1, `minPlayerShotContrast`).
 - **Status:** Accepted
+
+### D-126 — World 4: a bright, cloudless midday city
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** Every World 4 level is midday with no clouds (cover 0). Its ground holds only buildings and roads: each section is passed through `cityOnly` (no river, lakes or shore, flat, fully paved, no trees), so 4-1 no longer blends in from 3-5's grass and river. Two optional sky-look fields were added to the engine: `groundLights` overrides the time of day's window and car light strength, and `brightness` scales the sun and the ambient light. World 4 uses 1.5 and 1.3. Each level keeps its storm, underglow and weather. The World 4 veil stays at 0.42: at 0.3, a sand colour went over the P14-R01 brightness cap.
+- **Status:** Accepted

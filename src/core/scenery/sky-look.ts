@@ -37,6 +37,10 @@ export interface SkyLook {
    * ambient light from the ground, `strength` 0..1 (`UNDERGLOW`).
    */
   readonly underglow?: { readonly color: Rgb; readonly strength: number };
+  /** Strength of the lights on the ground (windows, cars); the time of day's when omitted. */
+  readonly groundLights?: number;
+  /** A factor on the sun and the ambient light (1 = the time of day's). */
+  readonly brightness?: number;
 }
 
 /**
@@ -115,6 +119,7 @@ function optionsOf(look: SkyLook) {
     mist: look.mist ?? { fog: 1, white: 0 },
     glow: look.underglow ?? NO_UNDERGLOW,
     tint: look.tint ?? ([1, 1, 1] as Rgb),
+    brightness: look.brightness ?? 1,
   };
 }
 
@@ -126,7 +131,7 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
   const preset = TIME_OF_DAY[look.timeOfDay];
   const o = smoothstep(OVERCAST.overcast[0], OVERCAST.overcast[1], look.clouds[0]);
   const clouds = cloudsOf(look, base, preset.clouds);
-  const { weather, second, mist, glow, tint } = optionsOf(look);
+  const { weather, second, mist, glow, tint, brightness } = optionsOf(look);
   // The weathers and the mist bring the end of the haze in, its start only half as much.
   const near = weatherFog(weather) * weatherFog(second) * mist.fog;
   const fogEnd = preset.fog * near;
@@ -136,7 +141,7 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
   return {
     sun: {
       ...preset.sun,
-      intensity: preset.sun.intensity * (1 - OVERCAST.sunDim * o),
+      intensity: preset.sun.intensity * brightness * (1 - OVERCAST.sunDim * o),
       shadowDarkness: lerp(OVERCAST.shadowDarkness, OVERCAST.softShadows, o),
     },
     sky: {
@@ -151,11 +156,11 @@ export function resolveSky(look: SkyLook, base: SkyBase): Atmosphere {
     ambient: {
       sky: times(preset.ambient.sky, tint),
       ground: mix(times(preset.ambient.ground, tint), glow.color, UNDERGLOW.ground * glow.strength),
-      intensity: preset.ambient.intensity * (1 + OVERCAST.ambientGain * o),
+      intensity: preset.ambient.intensity * brightness * (1 + OVERCAST.ambientGain * o),
     },
     fog: { start: base.fog.start * fogStart, end: base.fog.end * fogEnd },
     clouds,
-    groundLights: preset.groundLights,
+    groundLights: look.groundLights ?? preset.groundLights,
     weather,
     ...(look.secondWeather ? { secondWeather: second } : {}),
     aurora: look.aurora ?? 0,

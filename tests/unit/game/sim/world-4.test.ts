@@ -96,22 +96,22 @@ describe('World 4', () => {
     expect(WORLD_4.map((l) => l.scenery.scrollSpeed)).toEqual([70, 65, 60, 55, 55]);
   });
 
-  it('P10-R03: no sea and no lava in World 4: the river is water (reviewer, 2026-10-27)', () => {
+  it('P10-R03: no sea, no lava and no river in World 4: only buildings and roads (reviewer, 2026-10-28)', () => {
     for (const game of WORLD_4) {
       expect(game.scenery.sections.filter(isSea), game.id).toEqual([]);
       expect(lookOf(game.id)?.sea.lava, game.id).toBeUndefined();
       expect(game.scenery.props.floating, game.id).toBeUndefined();
       expect(waterShares(game, isSea).sea, game.id).toBe(0);
-      expect(waterShares(game, isSea).inland, game.id).toBeGreaterThan(0.02);
+      expect(waterShares(game, isSea).inland, game.id).toBe(0);
+      for (const section of game.scenery.sections) {
+        expect(section.channel, section.name).toBeUndefined();
+        expect(section.treeDensity, section.name).toBe(0);
+      }
     }
   });
 
-  it('P10-R03: the grass gives way to concrete from 4-1 to 4-5', () => {
-    expect(cover(level('4-1'), 'lush')).toBeGreaterThan(cover(level('4-1'), 'paved'));
-    for (const id of ['4-3', '4-4', '4-5'])
-      expect(cover(level(id), 'paved'), id).toBeGreaterThan(cover(level(id), 'lush'));
-    expect(increasing(WORLD_4.map((l) => cover(l, 'paved')))).toBe(true);
-    expect(increasing(WORLD_4.map((l) => -cover(l, 'lush')))).toBe(true);
+  it('P10-R03: concrete everywhere, no grass (reviewer, 2026-10-28)', () => {
+    for (const game of WORLD_4) expect(cover(game, 'lush'), game.id).toBe(0);
   });
 
   it('P10-R03: from the houses to the skyscrapers: no tower in 4-1 and 4-2, no skyscraper before 4-4, skyscrapers only at the end', () => {
@@ -144,11 +144,12 @@ describe('World 4', () => {
     for (const [i, next] of levels.slice(1).entries()) {
       const { sections } = at(levels, i).scenery;
       const [last, first] = [at(sections, sections.length - 1), at(next.scenery.sections, 0)];
-      expect(first.relief, next.id).toEqual(last.relief);
-      expect(first.surface, next.id).toEqual(last.surface);
       expect(first.streets, next.id).toEqual(last.streets);
       expect(first.groups, next.id).toEqual(last.groups);
-      expect(first.channel, next.id).toEqual(last.channel);
+      // 3-5 has grass and a river; World 4 is all concrete (reviewer, 2026-10-28).
+      if (i === 0) continue;
+      expect(first.relief, next.id).toEqual(last.relief);
+      expect(first.surface, next.id).toEqual(last.surface);
     }
     for (const game of WORLD_4) {
       expect(game.scenery.transition, game.id).toBe(TRANSITION);
@@ -165,42 +166,54 @@ describe('World 4', () => {
   };
   const changes = (id: string) => script(id).changes ?? [];
 
+  it('World 4 is lit as brightly as midday allows, its windows and cars on (reviewer, 2026-10-28)', () => {
+    for (const game of WORLD_4) {
+      const sky = script(game.id);
+      for (const look of [sky.start, ...(sky.changes ?? []).map((c) => c.look)])
+        expect(look, game.id).toMatchObject({
+          timeOfDay: 'midday',
+          groundLights: 1.5,
+          brightness: 1.3,
+        });
+    }
+  });
+
   it('P10-R04: 4-1 a red dawn behind a smoke haze; 4-2 an ash-dark midday with falling ash', () => {
-    expect(script('4-1').start).toEqual({
-      timeOfDay: 'dawn',
-      clouds: [0.4, 0.3],
+    expect(script('4-1').start).toMatchObject({
+      timeOfDay: 'midday',
+      clouds: [0, 0],
       cloudTint: ASH_PINK,
       mist: SMOKE_HAZE,
     });
     expect(changes('4-1')).toEqual([]);
-    expect(script('4-2').start).toEqual({
+    expect(script('4-2').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0.9, 0.9],
+      clouds: [0, 0],
       cloudTint: ASH_BROWN,
       tint: ASH_LIGHT,
       weather: ash(0.5),
     });
     expect(changes('4-2')).toEqual([]);
-    // Brown-grey clouds; a dim, yellowish light.
+    // No clouds (reviewer, 2026-10-28); a dim, yellowish light.
     expect(ASH_BROWN[2]).toBeLessThan(ASH_BROWN[0]);
     expect(ASH_LIGHT[2]).toBeLessThan(ASH_LIGHT[1]);
   });
 
   it('P10-R04: 4-3 a dusk giving way to the city’s glow, with embers', () => {
-    expect(script('4-3').start).toEqual({
-      timeOfDay: 'dusk',
-      clouds: [0.5, 0.4],
+    expect(script('4-3').start).toMatchObject({
+      timeOfDay: 'midday',
+      clouds: [0, 0],
       storm: 0.5,
       underglow: { color: LAVA_GLOW, strength: 0.25 },
       weather: embers(0.4),
     });
-    expect(changes('4-3').map((c) => [c.from, c.to, c.look])).toEqual([
+    expect(changes('4-3').map((c) => [c.from, c.to, c.look])).toMatchObject([
       [
         60,
         280,
         {
-          timeOfDay: 'night',
-          clouds: [0.5, 0.4],
+          timeOfDay: 'midday',
+          clouds: [0, 0],
           storm: 0.5,
           underglow: { color: LAVA_GLOW, strength: 0.8 },
           weather: embers(0.4),
@@ -210,30 +223,30 @@ describe('World 4', () => {
   });
 
   it('P10-R04: 4-4 a night lit by the towers, with ash and embers; 4-5 the eruption growing to the final boss', () => {
-    expect(script('4-4').start).toEqual({
-      timeOfDay: 'night',
-      clouds: [0.6, 0.5],
+    expect(script('4-4').start).toMatchObject({
+      timeOfDay: 'midday',
+      clouds: [0, 0],
       storm: 0.6,
       underglow: { color: FURNACE_GLOW, strength: 0.7 },
       weather: ash(0.3),
       secondWeather: embers(0.3),
     });
     expect(changes('4-4')).toEqual([]);
-    expect(script('4-5').start).toEqual({
-      timeOfDay: 'night',
-      clouds: [0.7, 0.6],
+    expect(script('4-5').start).toMatchObject({
+      timeOfDay: 'midday',
+      clouds: [0, 0],
       underglow: { color: ERUPTION_RED, strength: 0.6 },
       weather: embers(0.6),
     });
     // The final boss comes at 300 s of the level, the ground ahead of it after the mini boss's
     // chase: the eruption is at its strongest by then.
-    expect(changes('4-5').map((c) => [c.from, c.to, c.look])).toEqual([
+    expect(changes('4-5').map((c) => [c.from, c.to, c.look])).toMatchObject([
       [
         180,
         300,
         {
-          timeOfDay: 'night',
-          clouds: [0.7, 0.6],
+          timeOfDay: 'midday',
+          clouds: [0, 0],
           underglow: { color: ERUPTION_RED, strength: 1 },
           weather: embers(1),
         },
