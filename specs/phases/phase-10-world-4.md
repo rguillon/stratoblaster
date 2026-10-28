@@ -299,7 +299,7 @@ None. The spec was implemented as written; the interpretations are listed under 
 |----|-----------------------------------|------|-------|-------|
 | P10-R01 | Done | `game/sim/world-4.ts`, `game/sim/levels.ts` | `world-4.test.ts`, `levels.test.ts`, e2e `world-4.spec.ts`, `world-3.spec.ts` (after 3-5 → 4-1), `menu-pointer.spec.ts` | |
 | P10-R02 | Done | `game/config/world-4/scenery-*.ts` (300 s each) | `world-4.test.ts`, e2e | speeds 70 / 65 / 60 / 55 / 55 |
-| P10-R03 | Done (reworked 2026-10-27) | `world-4/scenery.ts` (replaces `scenery-islands.ts` and `scenery-fire.ts`), `world-4/city-props.ts` | `world-4.test.ts` | D-112; mean building height 6.1 / 16.2 / 27.5 / 44.7 / 82.0 (3-5: 5.5) |
+| P10-R03 | Done (reworked 2026-10-27) | `world-4/scenery.ts` (replaces `scenery-islands.ts` and `scenery-fire.ts`), `world-4/city-props.ts` | `world-4.test.ts` | D-112, D-136, D-139; mean building height 6.1 / 16.3 / 27.6 / 45.0 / 81.4 (3-5: 5.5; 2026-10-28, with the boulevards and the narrower street grids) |
 | P10-R04 | Done | `game/config/world-4/looks.ts`, `core/scenery/sky-look.ts` (cloud tint, underglow, second weather) | `world-4.test.ts`, `sky-look-volcanic.test.ts`, e2e | D-082, D-083; look: manual |
 | P10-R05 | Done | `render/scenery/lava-material.visual.ts`, `terrain-blend-plugin.visual.ts`, `scenery-kit*.ts`, `scenery-stage.ts` (`lava`, `watchTerrain`), `app/level-scene.ts` | `volcanic-layers.test.ts`, `game-play-weather.test.ts` (not an input), `world-4.test.ts`, e2e | D-084; 60 FPS: manual |
 | P10-R06 | Done | `config/weather.ts` (`ash`, `embers`), `weather-layer.ts`, `weather-material.visual.ts` | `sky-look-volcanic.test.ts`, `volcanic-layers.test.ts`, `game-play-weather.test.ts`, e2e | D-082 |

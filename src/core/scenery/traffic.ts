@@ -61,15 +61,20 @@ export class Traffic {
 
   constructor(
     roads: readonly Road[],
-    height: (x: number, z: number) => number,
+    private readonly height: (x: number, z: number) => number,
     private readonly rules: CarRules,
-    seed: number,
+    private readonly seed: number,
   ) {
+    this.add(roads);
+  }
+
+  /** Adds the cars of `roads` (e.g. the runout's, which come later: reviewer, 2026-10-28). */
+  add(roads: readonly Road[]): void {
     for (const road of roads) {
       if (road.kind === 'cross' || road.points.length < 2) continue;
-      const track = trackOf(road, height, rules.lift);
+      const track = trackOf(road, this.height, this.rules.lift);
       road.points.forEach((_, i) => {
-        const car = this.#carAt(track, i, seed);
+        const car = this.#carAt(track, i, this.seed);
         if (car) this.#cars.push(car);
       });
     }

@@ -1402,3 +1402,51 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** The ground is drawn twice as big, as if flying lower (`PlayfieldCameraLook.groundScale`: 2). The terrain, roads, props, cars, sea and rain rings hang from one node (`GroundRoot`), scaled by it and moved along Z as the view scrolls, so the level still covers the same ground each second, passing twice as fast on screen. The clouds and the weather are unchanged. The terrain shader takes its colours from the ground point (`groundPoint`), not the world point, so its textures grow with the ground. The stage works out its chunks, props and cars in ground units: the ground in view (`groundWindowOf`) is half as wide and half as long. Cloud layers keep clear of the scaled ground. The stage's options moved to `scenery-stage-options.ts`.
 - **Status:** Accepted
+
+### D-136 — Boulevards in World 4's street grids
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** World 4's street grids get wide boulevards (`RoadRules.boulevards`): 3 lanes each way, 18 wide, on 12 % of the grid lines, and 4 lanes each way, 24 wide, on 8 % (by a hash of the line, `streetWidth`). A boulevard is built along its whole line and runs straight: at a crossing, the street across it is cut instead (`sideToCut`); where two boulevards cross, the crossing stays. Their markings are a double yellow line in the middle and dashed white lines between the lanes (`lanesOf`, `stripes`). The straight runs of the grids moved to `street-runs.ts`.
+- **Status:** Accepted
+
+### D-137 — Lane markings merged on straight ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter ground)
+- **Decision:** The lane markings are still cut into pieces of 2, so they follow the ground and stop cleanly at crossings, but pieces in a row of a road segment become one quad while the ground under them stays within 0.02 of a straight line (`road-lines.ts`). The heights are read once per piece end and line, the crossings once per piece. Road triangles go down by about 40 % (4-1: 56 400 to 34 400 in view), and the worst frame making a chunk on 4-1 from 33 to about 20 ms.
+- **Status:** Accepted
+
+### D-138 — Road clearance asked as such
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The props only ask whether a spot is clear of every road by some distance, now asked as such (`RoadNetwork.clearOf`): only the buckets a road in reach can be in are searched, up to the first road in reach. It answers as `edgeDistance(x, z) >= clearance` does (tested), so every prop stays where it was. The index of the road segments moved to `SegmentIndex` (`road-segments.ts`), with number keys and no object made per segment looked at. Level build about 30 % faster.
+- **Status:** Accepted
+
+### D-139 — Street grids only as wide as the ground that shows
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build; amends the layouts of P09-R03 and P10-R03)
+- **Decision:** In Worlds 3 and 4, streets start and end beyond X = ±240 (`offscreenX`, World 1's 420 before): with the ground drawn twice as big (D-135), about ±195 of it shows, and the streets and buildings beyond were never seen. Most of World 3's rise in buildings from 3-1 to 3-5 (P09-R03) came from those unseen ones, so 3-3 and 3-4 are made denser to keep it: the workers' flats have a building on every slot (0.85 before), the terraced streets narrower blocks (rows 33–56, columns 38–76), the suburbs smaller blocks (rows 40–70, columns 50–95, also in 4-2's city park), and 3-4's river suburbs and leafy avenues their own, closer blocks. Buildings now 6 919 / 7 225 / 7 354 / 7 556 / 7 942 from 3-1 to 3-5, each level's second half with more props than its first by 113 at least. A test checks that the grids of Worlds 3 and 4 reach past the ground in view.
+- **Status:** Accepted
+
+### D-140 — Street grids begin 400 before the level
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** A street grid the level starts in begins 400 before Z = 0 (`STREETS_BEFORE`; 3 000 before), its first row counted out of view: the camera sees the ground from Z = 0 at the start (a test checks that the grid starts more than a row of blocks below it). The winding roads and paths still begin 3 000 before: they cost little, and Level Zero and World 1 stay as they were.
+- **Status:** Accepted
+
+### D-141 — The runout's ground generated after the rest
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: the level ready sooner)
+- **Decision:** `withRunout` records the runout's seconds (`SceneryLevel.runout`, starting at `runoutStart`), and its streets and buildings are generated after the rest of the ground. The districts are cut there (`splitDistricts`): the part before ends with a full row, the runout's part starts its columns on it (`District.continues`), a column ending there only where that row was laid. `RoadNetwork.addRunout` lays its streets with their own random stream, `PropPlacer.placeRunout` its buildings (blocks, slots, hamlets and loners past its start). The worker answers a ground job twice (`generateInTwo`): the ground, with which the level is ready, then the runout, after the jobs already waiting. The stage then places again the chunks the runout shows in (`PropPlacer.runoutPlaced`), and the traffic adds the cars of its streets; if the worker breaks in between, the main thread generates the runout. A ground made from the worker's two answers is the one generated at once (tested).
+- **Status:** Accepted
+
+### D-142 — Only the roads and buildings sent from the worker
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P13-R03's snapshot)
+- **Decision:** `RoadSnapshot` keeps the roads only: the building slots and the city blocks are only needed to place the buildings, which is done with the network, in the worker. Copying a ground to the main thread and indexing it there takes 25–54 ms in Worlds 3 and 4 before the level can start (116–228 ms before D-139 to D-142).
+- **Status:** Accepted
+
+### D-143 — Faster ground generation, same ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The ground generation does less work for the same result. A building slot fits its smaller kinds only when the ones before do not fit. The placed buildings are indexed with number keys, a bucket left out when its largest building cannot come close (`BuildingIndex`). The street grid's nodes are numbered objects, not text keys (`street-links.ts`), each node's ground is checked once, and the dead-end removal makes the same passes in the same order, but only looks at the nodes whose streets changed since it last did (`street-dead-ends.ts`); `straightRuns` no longer copies its lists. The height field makes its octave settings once per section and each pond once per square (`LakeField`). Where the ground cannot be steep enough to matter, a road's slope is not measured: `HeightField.steepness` bounds the slope of a smooth relief away from its channels, blends included, from the steepest a noise can be (`NOISE_SLOPE`, 9 per unit; measured slopes stay under a fifth of the bound). Every level's roads, slots, blocks, buildings, trees and heights are as before (compared on all 22 levels). With D-139 to D-141, the ground of a level is ready in 70–115 ms in World 3 (0.6–1 s before) and 55–140 ms in World 4 (0.3–0.6 s).
+- **Status:** Accepted

@@ -33,6 +33,12 @@ export type { SceneryStageConfig, SceneryStageOptions } from './scenery-stage-op
 export { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 
 /**
+ * How far before the runout its streets and buildings can change what a chunk shows: the trees
+ * keep clear of the buildings (reviewer, 2026-10-28).
+ */
+const RUNOUT_REACH = 64;
+
+/**
  * The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain
  * in chunks, an optional sea, cloud layers and props, lit by a low sun. {@link update} moves
  * everything to a distance along the level.
@@ -62,6 +68,8 @@ export class SceneryStage {
   readonly #terrain = new TerrainWatch();
   /** The ground, drawn bigger when flying lower (`PlayfieldCameraLook.groundScale`). */
   readonly #groundRoot: GroundRoot;
+  /** Whether the chunks were placed with the runout's streets and buildings (they come later). */
+  #withRunout = false;
 
   constructor(
     readonly scene: Scene,
@@ -303,12 +311,27 @@ export class SceneryStage {
 
   /** Keeps the chunks over [zMin, zMax], with their roads and props. */
   #cover(zMin: number, zMax: number): void {
+    this.#takeRunout();
     const changes = this.#chunks.cover(zMin, zMax);
     for (const index of changes.removed) {
       this.#props.removeChunk(index);
       this.#roads.removeChunk(index);
     }
     for (const span of changes.added) this.#placeChunk(span.index);
+  }
+
+  /**
+   * Once the runout's streets and buildings come (generated after the rest, reviewer
+   * 2026-10-28), places again the chunks they show in.
+   */
+  #takeRunout(): void {
+    const placed = this.#placer.runoutPlaced;
+    if (placed === this.#withRunout) return;
+    this.#withRunout = placed;
+    const from = (this.#placer.roads.runoutFrom ?? Infinity) - RUNOUT_REACH;
+    for (const index of this.#chunks.meshes.keys()) {
+      if (this.#chunks.span(index).zMax > from) this.#placeChunk(index);
+    }
   }
 
   #placeChunk(index: number): void {

@@ -139,8 +139,9 @@ describe('centre lines', () => {
     const lined = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, LINED);
     const plain = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, LOOK);
     const quads = (lined.indices.length - plain.indices.length) / 6;
-    // 40 long in pieces of 2: half of them in dashes of 4.
-    expect(quads).toBe(10);
+    // 40 long in 4 segments, dashes of 4: 5 dashes, one quad per dash and segment on flat ground
+    // (reviewer, 2026-10-28; the dash over the segment at 20 takes two).
+    expect(quads).toBe(6);
     expect(yellow(lined.colors)).toBeGreaterThan(0);
     const path = buildRoadGeometry(
       [{ ...ROAD, kind: 'cross' }],
@@ -150,6 +151,19 @@ describe('centre lines', () => {
       LINED,
     );
     expect(path.indices).toHaveLength(4 * 3 * 6);
+  });
+
+  it('reviewer, 2026-10-28: line pieces merge on straight ground, and follow a bumpy one', () => {
+    const solid = { ...LINED, centreLine: { ...LINED.centreLine, dash: 1000 } };
+    const flat = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, solid);
+    const plain = buildRoadGeometry([ROAD], { height: () => 0 }, 0, 100, LOOK);
+    // One quad per segment of the road.
+    expect((flat.indices.length - plain.indices.length) / 6).toBe(4);
+    const bumps = { height: (_x: number, z: number) => 0.1 * z * z };
+    const bumpy = buildRoadGeometry([ROAD], bumps, 0, 100, solid);
+    const bare = buildRoadGeometry([ROAD], bumps, 0, 100, LOOK);
+    // 40 long in pieces of 2: one quad per piece.
+    expect((bumpy.indices.length - bare.indices.length) / 6).toBe(20);
   });
 
   it('P04 review: 2×2 roads get a double yellow line and white dashed lines between lanes', () => {
@@ -171,5 +185,36 @@ describe('centre lines', () => {
     expect(xs.some((x) => Math.abs(Math.abs(x) - 3) <= 0.25)).toBe(true);
     const white = geo.colors.filter((_, i) => i % 4 === 2).filter((b) => b === 1).length;
     expect(white).toBeGreaterThan(0);
+  });
+
+  it('boulevards (reviewer, 2026-10-28): white dashed lines between each of their 3 or 4 lanes', () => {
+    for (const [lanes, width] of [
+      [3, 18],
+      [4, 24],
+    ] as const) {
+      const wide: Road = {
+        ...ROAD,
+        kind: 'street',
+        width,
+        lanes,
+        points: ROAD.points.map((p) => ({ ...p, width })),
+      };
+      const geo = buildRoadGeometry([wide], { height: () => 0 }, 0, 100, LINED);
+      const plain = buildRoadGeometry([wide], { height: () => 0 }, 0, 100, LOOK);
+      const xs = Array.from(
+        { length: geo.positions.length / 3 - plain.positions.length / 3 },
+        (_, k) => geo.positions[(plain.positions.length / 3 + k) * 3] ?? 0,
+      );
+      // Lanes 3 wide: lines at 3, 6 (and 9 on a 4×4) from the middle, on both sides.
+      for (let k = 1; k < lanes; k++) {
+        for (const side of [-1, 1]) {
+          expect(
+            xs.some((x) => Math.abs(x - side * k * 3) <= 0.25),
+            `${String(lanes)} lanes, line ${String(k * side)}`,
+          ).toBe(true);
+        }
+      }
+      expect(xs.every((x) => Math.abs(x) <= width / 2)).toBe(true);
+    }
   });
 });

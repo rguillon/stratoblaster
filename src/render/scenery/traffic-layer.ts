@@ -49,14 +49,25 @@ export class TrafficLayer {
     return this.#field.count;
   }
 
-  /** Places the cars in `area` at `time`; new roads (a new seed) get new traffic. */
+  /**
+   * Places the cars in `area` at `time`. New roads (a new seed) get new traffic; roads that go on
+   * from the ones before (the runout's, reviewer 2026-10-28) only add theirs.
+   */
   update(time: number, area: GroundArea, source: TrafficSource): void {
     if (!this.rules) return;
-    if (source.roads !== this.#roads) {
+    const before = this.#roads;
+    if (source.roads !== before) {
       this.#roads = source.roads;
-      this.#traffic = new Traffic(source.roads, source.height, this.rules, source.seed);
+      if (this.#traffic && before && goesOn(before, source.roads)) {
+        this.#traffic.add(source.roads.slice(before.length));
+      } else this.#traffic = new Traffic(source.roads, source.height, this.rules, source.seed);
     }
     this.#field.setChunk(0, this.#traffic?.at(time, area) ?? []);
     this.#field.sync();
   }
+}
+
+/** Whether `roads` starts with `before` (the same roads, more after them). */
+function goesOn(before: readonly Road[], roads: readonly Road[]): boolean {
+  return roads.length >= before.length && before.every((road, i) => roads[i] === road);
 }

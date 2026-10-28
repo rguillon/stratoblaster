@@ -327,6 +327,13 @@ export interface CarRules {
 
 type Range = readonly [number, number];
 
+/** See {@link RoadRules.boulevards}. */
+export interface Boulevard {
+  readonly lanes: 3 | 4;
+  readonly width: number;
+  readonly share: number;
+}
+
 /**
  * Randomly generated roads and paths (P04-R07): `mainRoads` roads wind along the whole level,
  * and paths branch off them across it to past the screen edges. Buildings stand only along them.
@@ -347,6 +354,12 @@ export interface RoadRules {
    * lines of the street grids, are `width` wide with two lanes each way.
    */
   readonly dual: { readonly width: number; readonly mainRoads: number; readonly avenues: number };
+  /**
+   * Wider avenues of the street grids (reviewer, 2026-10-28): a share `share` of the grid lines
+   * are `width` wide with `lanes` lanes each way. They run straight through their district: every
+   * stretch is built, and where a crossing must go (`noCrossings`), the side street is cut.
+   */
+  readonly boulevards?: readonly Boulevard[];
   /**
    * Where a path meets a road it widens to `width`, narrowing back to `crossWidth` over
    * `length`, so it merges into the road.
@@ -393,6 +406,12 @@ export interface SceneryLevel {
   readonly sea?: { readonly level: number };
   readonly roads: RoadRules;
   readonly props: PropRules;
+  /**
+   * Seconds at the end of the last section that are only flown over past the level's end, during
+   * a final boss fight (P07-R03, see {@link withRunout}). Their roads and buildings are generated
+   * after the rest, so the level is ready sooner (reviewer, 2026-10-28).
+   */
+  readonly runout?: number;
 }
 
 /** A section with its place along the level. */
@@ -436,5 +455,12 @@ export function withRunout(level: SceneryLevel, seconds: number): SceneryLevel {
   return {
     ...level,
     sections: [...level.sections.slice(0, -1), { ...last, seconds: last.seconds + seconds }],
+    runout: (level.runout ?? 0) + seconds,
   };
+}
+
+/** Z where the runout of `level` starts (see `SceneryLevel.runout`), if it has one. */
+export function runoutStart(level: SceneryLevel): number | undefined {
+  if (!level.runout) return undefined;
+  return levelLength(level) - level.runout * level.scrollSpeed;
 }
