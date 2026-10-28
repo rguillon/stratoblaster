@@ -97,6 +97,9 @@ export function setGroundLights(materials: PropMaterials, glow: number): void {
     materials.lights.emissiveColor.set(glow, glow, glow);
 }
 
+/** Depth offset of the props' self-lit accents (see {@link createPropMaterials}). */
+export const LIGHTS_Z_OFFSET = -2;
+
 /** Vertex-coloured materials of the props: lit structure, and self-lit accents. */
 export function createPropMaterials(scene: Scene, look: SceneryLook): PropMaterials {
   const structure = new StandardMaterial('prop-structure', scene);
@@ -113,6 +116,10 @@ export function createPropMaterials(scene: Scene, look: SceneryLook): PropMateri
   lights.diffuseColor = Color3.Black();
   lights.specularColor = Color3.Black();
   lights.disableLighting = true;
+  // Pulled towards the camera in depth: the lights lie flat on walls and roads, and would flicker
+  // against them, in the glow layer most of all, where the walls are drawn black (reviewer,
+  // 2026-10-28).
+  lights.zOffset = LIGHTS_Z_OFFSET;
   return { structure, lights };
 }
 

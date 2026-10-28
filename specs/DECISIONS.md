@@ -1390,3 +1390,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** Explosions no longer start with a white flash: the `flashes` layer and `ENEMY_LOOK.blast.flash` are removed. Their shock ring is blended over the ground instead of added to it, so a blast no longer lights up the ground under it. The fireballs, debris, embers and smoke are unchanged.
 - **Status:** Accepted
+
+### D-134 — Props' lights drawn just in front of their walls
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; follows D-132)
+- **Decision:** The props' self-lit accents (windows, lamps, headlights) get a depth offset of −2 (`LIGHTS_Z_OFFSET`, their material's `zOffset`), as the road ribbons already have. They lie flat on walls and roads, and flickered against them as the ground scrolled, in the ground's glow layer most of all, where the walls are drawn black (D-132).
+- **Status:** Accepted
