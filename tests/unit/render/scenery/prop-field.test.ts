@@ -3,9 +3,16 @@ import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { instanceMatrices, PropField } from '../../../../src/render/scenery/prop-field';
+import {
+  checkPropModels,
+  instanceMatrices,
+  levelPropKinds,
+  levelPropModels,
+  PropField,
+} from '../../../../src/render/scenery/prop-field';
 import type { PropPlacement } from '../../../../src/core/scenery/prop-placement';
-import { SAMPLE_SCENERY } from '../../../fixtures/sample-scenery';
+import type { SceneryLevel } from '../../../../src/core/scenery/scenery-level';
+import { SAMPLE_SCENERY, SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 
 const place = (kind: string, x: number): PropPlacement => ({
   kind,
@@ -110,6 +117,26 @@ describe('PropField', () => {
     }).toThrow(/ufo/);
   });
 
+  it('fits the bounds of its meshes to their instances', () => {
+    const props = field();
+    props.setChunk(0, [place('block', 100)]);
+    props.sync();
+    expect(props.structureOf('block')?.getBoundingInfo().boundingBox.maximum.x).toBeCloseTo(104);
+  });
+
+  it('draws the meshes always, without fitting their bounds (reviewer, 2026-10-28: cars)', () => {
+    const props = field();
+    props.drawAlways();
+    props.setChunk(0, [place('block', 100)]);
+    props.sync();
+    const block = props.structureOf('block');
+    expect(block?.thinInstanceCount).toBe(1);
+    expect(block?.getBoundingInfo().boundingBox.maximum.x).toBeCloseTo(2);
+    for (const mesh of [block, ...props.lightMeshes]) {
+      expect(mesh?.alwaysSelectAsActiveMesh).toBe(true);
+    }
+  });
+
   it('places, turns and scales each instance', () => {
     const [matrix] = [Matrix.FromArray(instanceMatrices([place('block', 7)]))];
     const point = Vector3.TransformCoordinates(new Vector3(1, 0, 0), matrix);
@@ -117,5 +144,42 @@ describe('PropField', () => {
     expect(point.y).toBeCloseTo(2);
     // A quarter turn around Y sends +X to -Z (left-handed), scaled by 2.
     expect(point.z).toBeCloseTo(5 - 2);
+  });
+});
+
+describe('the props a level builds (reviewer, 2026-10-28)', () => {
+  const kind = (id: string) => ({ id, weight: 1, footprint: 5, scale: [1, 1] as const });
+  const { props, sections } = SAMPLE_SCENERY_LEVEL;
+  const level: SceneryLevel = {
+    ...SAMPLE_SCENERY_LEVEL,
+    // Its sections allow its blocks, not its towers, and no trees.
+    sections: sections.map((s) => ({ ...s, groups: ['blocks'], trees: [] })),
+    props: {
+      ...props,
+      groups: [...props.groups, { id: 'towers', weight: 1, kinds: [kind('tower')] }],
+      landmarks: [{ kind: 'dam', z: 100, footprint: 10 }],
+      cars: { kinds: ['car'], density: 1, lift: 0, scale: 1, length: 4, speed: [1, 2] },
+    },
+  };
+  // Only the ids matter here.
+  const model = () => ({ structure: { positions: [], indices: [], colors: [] } });
+
+  it('the kinds its sections allow and its set pieces, not its cars', () => {
+    expect(levelPropKinds(level)).toEqual(new Set(['block', 'dam']));
+    expect(levelPropKinds(SAMPLE_SCENERY_LEVEL)).toEqual(new Set(['block', 'stick']));
+  });
+
+  it('only their models are built; a missing one is refused, set pieces and cars too', () => {
+    const models = { block: model, stick: model, tower: model, dam: model, car: model };
+    expect(Object.keys(levelPropModels(level, models)).sort()).toEqual(['block', 'dam']);
+    expect(() => {
+      checkPropModels(level, models);
+    }).not.toThrow();
+    expect(() => {
+      checkPropModels(level, { block: model, car: model });
+    }).toThrow(/dam/);
+    expect(() => {
+      checkPropModels(level, { block: model, dam: model });
+    }).toThrow(/car/);
   });
 });

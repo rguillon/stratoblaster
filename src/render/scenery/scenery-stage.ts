@@ -12,7 +12,7 @@ import {
   type GroundWindow,
   type PlayfieldFraming,
 } from './playfield-framing';
-import { checkPropModels, PropField, propDrifts, type PropDrift } from './prop-field';
+import { levelPropModels, PropField, propDrifts, type PropDrift } from './prop-field';
 import { TrafficLayer } from './traffic-layer';
 import type { SceneryKit } from './scenery-kit';
 import { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
@@ -76,7 +76,7 @@ export class SceneryStage {
     private readonly options: SceneryStageOptions,
   ) {
     const { level, look, config } = options;
-    checkPropModels(level, options.propModels);
+    const models = levelPropModels(level, options.propModels);
     this.#seed = level.seed;
     ({ field: this.#field, placer: this.#placer } = levelGround(level, this.#seed));
     this.#drifts = propDrifts(level);
@@ -101,7 +101,7 @@ export class SceneryStage {
     const adopt = <T>(create: () => T): T => this.#groundRoot.adopt(create);
     this.#chunks = adopt(() => this.#buildChunks());
     this.#roads = new RoadLayers(scene, this.kit.roads);
-    this.#props = adopt(() => this.#buildProps());
+    this.#props = adopt(() => this.#buildProps(models));
     const { propModels } = options;
     this.#traffic = adopt(
       () => new TrafficLayer(scene, propModels, this.kit.props, level.props.cars),
@@ -342,12 +342,13 @@ export class SceneryStage {
     this.#props.setChunk(index, this.#placer.place(area));
   }
 
-  #buildProps(): PropField {
+  /** The props of the level, of `models`, casting shadows. */
+  #buildProps(models: SceneryStageOptions['propModels']): PropField {
     const { kit } = this;
     const shadow = (mesh: Mesh) => {
       kit.addShadowCaster(mesh);
     };
-    return new PropField(this.scene, this.options.propModels, kit.props, shadow, kit.plume);
+    return new PropField(this.scene, models, kit.props, shadow, kit.plume);
   }
 
   #buildChunks(): TerrainChunks {

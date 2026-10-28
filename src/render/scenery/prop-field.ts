@@ -6,6 +6,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { PropPlacement } from '../../core/scenery/prop-placement';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
+import { allowed } from '../../core/scenery/draws';
 import type { PropKindRule, SceneryLevel } from '../../core/scenery/scenery-level';
 import { PLUME_KINDS } from '../../config/plumes';
 import {
@@ -61,20 +62,43 @@ export function propDrifts(level: SceneryLevel): Record<string, PropDrift> {
   ]);
 }
 
-/** Throws if a prop kind of `level` has no model. */
+/**
+ * The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
+ * sections allow, its floating props, lines, podiums and set pieces.
+ */
+export function levelPropKinds(level: SceneryLevel): Set<string> {
+  const { props, sections } = level;
+  const groups = sections.flatMap((s) => allowed(props.groups, s.groups));
+  return new Set([
+    ...groups.flatMap((g) => g.kinds.map((k) => k.id)),
+    ...sections.flatMap((s) => allowed(props.trees, s.trees).map((t) => t.id)),
+    ...(props.floating?.kinds.map((k) => k.id) ?? []),
+    ...(props.lines?.map((l) => l.kind) ?? []),
+    ...sections.flatMap((s) => s.blocks?.podiums ?? []),
+    ...(props.landmarks?.map((l) => l.kind) ?? []),
+  ]);
+}
+
+/**
+ * The models of the props of `level` (`levelPropKinds`): only those are built (reviewer,
+ * 2026-10-28: building all the game's took about 36 ms and 841 meshes per level). Throws if one
+ * of them, or one of its cars, has no model.
+ */
+export function levelPropModels(
+  level: SceneryLevel,
+  models: Readonly<Record<string, PropModelFactory>>,
+): Record<string, PropModelFactory> {
+  checkPropModels(level, models);
+  const kinds = levelPropKinds(level);
+  return Object.fromEntries(Object.entries(models).filter(([id]) => kinds.has(id)));
+}
+
+/** Throws if a prop kind of `level`, or one of its cars, has no model. */
 export function checkPropModels(
   level: SceneryLevel,
   models: Readonly<Record<string, PropModelFactory>>,
 ): void {
-  const ids = [
-    ...level.props.groups.flatMap((g) => g.kinds.map((k) => k.id)),
-    ...level.props.trees.map((t) => t.id),
-    ...(level.props.cars?.kinds ?? []),
-    ...(level.props.floating?.kinds.map((k) => k.id) ?? []),
-    ...(level.props.lines?.map((l) => l.kind) ?? []),
-    ...level.sections.flatMap((s) => s.blocks?.podiums ?? []),
-  ];
-  for (const id of ids) {
+  for (const id of [...levelPropKinds(level), ...(level.props.cars?.kinds ?? [])]) {
     if (!(id in models)) throw new Error(`No model for prop "${id}"`);
   }
 }
@@ -123,6 +147,22 @@ export class PropField {
           : undefined;
       const plumes = buildPlumeMeshes(scene, `prop-${kind}`, geometry.plumes ?? [], plumeMaterial);
       this.#meshes.set(kind, { structure, lights, plumes });
+    }
+  }
+
+  /**
+   * Draws the meshes without checking whether they are in view, so their bounds are never fitted
+   * to their instances (reviewer, 2026-10-28: for the cars, placed again every frame, that was the
+   * largest cost of a frame in Worlds 3 and 4; some cars are always in view anyway). Not for the
+   * meshes that cast shadows: the light fits its shadows to their bounds.
+   */
+  drawAlways(): void {
+    for (const { structure, lights, plumes } of this.#meshes.values()) {
+      for (const mesh of [structure, lights, ...plumes]) {
+        if (!mesh) continue;
+        mesh.alwaysSelectAsActiveMesh = true;
+        mesh.doNotSyncBoundingInfo = true;
+      }
     }
   }
 
@@ -219,8 +259,8 @@ export class PropField {
         if (!mesh) continue;
         mesh.setEnabled(matrices.length > 0);
         if (matrices.length === 0) continue;
+        // Also fits the mesh's bounds to its instances, unless `drawAlways` turned that off.
         mesh.thinInstanceSetBuffer('matrix', matrices, MATRIX_FLOATS, false);
-        mesh.thinInstanceRefreshBoundingInfo(false);
       }
     }
   }

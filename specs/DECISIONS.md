@@ -1450,3 +1450,27 @@
 - **Phase:** 14 (reviewer request: faster level build)
 - **Decision:** The ground generation does less work for the same result. A building slot fits its smaller kinds only when the ones before do not fit. The placed buildings are indexed with number keys, a bucket left out when its largest building cannot come close (`BuildingIndex`). The street grid's nodes are numbered objects, not text keys (`street-links.ts`), each node's ground is checked once, and the dead-end removal makes the same passes in the same order, but only looks at the nodes whose streets changed since it last did (`street-dead-ends.ts`); `straightRuns` no longer copies its lists. The height field makes its octave settings once per section and each pond once per square (`LakeField`). Where the ground cannot be steep enough to matter, a road's slope is not measured: `HeightField.steepness` bounds the slope of a smooth relief away from its channels, blends included, from the steepest a noise can be (`NOISE_SLOPE`, 9 per unit; measured slopes stay under a fifth of the bound). Every level's roads, slots, blocks, buildings, trees and heights are as before (compared on all 22 levels). With D-139 to D-141, the ground of a level is ready in 70–115 ms in World 3 (0.6–1 s before) and 55–140 ms in World 4 (0.3–0.6 s).
 - **Status:** Accepted
+
+### D-144 — Cars drawn without fitting bounds
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames)
+- **Decision:** The cars' meshes are always drawn (`alwaysSelectAsActiveMesh`) and their bounds are never fitted to their instances (`doNotSyncBoundingInfo`, `PropField.drawAlways`). They are placed again every frame, and fitting the bounds to every car was the largest single cost of a frame in Worlds 3 and 4 (about 0.25 ms in 4-1); some cars are always in view, so leaving them out of the view check costs nothing. The cars cast no shadows, so no light fits its shadows to their bounds, and render targets (shadows, glow) do not check bounds. The other props now fit their bounds once per upload: `thinInstanceSetBuffer` already did it, and `PropField.sync` did it a second time. Same look.
+- **Status:** Accepted
+
+### D-145 — The cars near the view looked up by Z
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames)
+- **Decision:** `Traffic` indexes its roads with cars by the 256-unit buckets of Z they span, and `at` only looks at the roads in the buckets of the area, in the roads' order, so it gives the same cars in the same order (tested against the whole level, and compared on six levels over a whole flight). It looked at all the level's 6–11K cars every frame; it now looks at 350–790, of which 290–455 show, and takes half to two thirds of the time (what is left is placing the cars that show).
+- **Status:** Accepted
+
+### D-146 — A stage builds its level's prop models only
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The stage builds the models of the props its level can place (`levelPropKinds`: the building groups and trees its sections allow, its floating props, lines, podiums and set pieces), not all the game's 218: 8 to 61 per level (97 in Level Zero), each a structure mesh, a lights mesh and plumes, and a shadow caster. Building them all took about 36 ms and 841 meshes per level. The check that every prop has a model now covers the set pieces too. Every prop placed over every level is of a kind built (checked on all 21 levels).
+- **Status:** Accepted
+
+### D-147 — No sea under World 4
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** World 4's levels have no sea. Theirs was at 0, under flat ground 30.5 to 34 high: it never showed, but its see-through plane and rain rings were drawn, and the terrain shader ran its shore on every pixel. Its generated ground is the same (compared on all 22 levels). Without a sea, the ground the camera sees is worked out at the lowest ground, 30, as in the other levels without a sea, not at 0: its half-width goes from 195 to 181 and its far edge from 622 to 580, so the terrain is 528 wide, not 560, and fewer props are placed beside and beyond the view.
+- **Status:** Accepted

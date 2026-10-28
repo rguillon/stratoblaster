@@ -55,9 +55,25 @@ function segmentAt(track: Track, s: number): number {
   return lo;
 }
 
-/** The cars of `rules` on all the streets and main roads of a level, and where they are. */
+/** Z span of a bucket of the roads with cars (`Traffic.#buckets`). */
+const BUCKET = 256;
+
+const bucketOf = (z: number): number => Math.floor(z / BUCKET);
+
+/**
+ * The cars of `rules` on all the streets and main roads of a level, and where they are. The roads
+ * with cars are indexed by the buckets of Z they span, so finding the cars in an area only looks
+ * at the roads near it (reviewer, 2026-10-28: not at the level's 6–11K cars every frame).
+ */
 export class Traffic {
-  readonly #cars: Car[] = [];
+  /** The roads with cars, in the order of the level's roads, each with its cars. */
+  readonly #tracks: { readonly track: Track; readonly cars: readonly Car[] }[] = [];
+  /** Indices in `#tracks` of the roads that span each bucket, by bucket. */
+  readonly #buckets = new Map<number, number[]>();
+  /** The first and last buckets with roads. */
+  #lowest = Infinity;
+  #highest = -Infinity;
+  #count = 0;
 
   constructor(
     roads: readonly Road[],
@@ -73,16 +89,26 @@ export class Traffic {
     for (const road of roads) {
       if (road.kind === 'cross' || road.points.length < 2) continue;
       const track = trackOf(road, this.height, this.rules.lift);
-      road.points.forEach((_, i) => {
-        const car = this.#carAt(track, i, this.seed);
-        if (car) this.#cars.push(car);
-      });
+      const cars = road.points.flatMap((_, i) => this.#carAt(track, i, this.seed) ?? []);
+      if (cars.length === 0) continue;
+      const index = this.#tracks.push({ track, cars }) - 1;
+      const [first, last] = [bucketOf(track.zMin), bucketOf(track.zMax)];
+      for (let b = first; b <= last; b++) {
+        const bucket = this.#buckets.get(b);
+        if (bucket) bucket.push(index);
+        else this.#buckets.set(b, [index]);
+      }
+      [this.#lowest, this.#highest] = [
+        Math.min(this.#lowest, first),
+        Math.max(this.#highest, last),
+      ];
+      this.#count += cars.length;
     }
   }
 
   /** Number of cars on the level. */
   get count(): number {
-    return this.#cars.length;
+    return this.#count;
   }
 
   /** The car that starts at point `i` of a road, if any: one chance per point. */
@@ -106,17 +132,35 @@ export class Traffic {
     };
   }
 
-  /** The cars in `area` at `time` (seconds), facing the way they drive. */
+  /** The cars in `area` at `time` (seconds), facing the way they drive, in the roads' order. */
   at(time: number, area: GroundArea): PropPlacement[] {
     const out: PropPlacement[] = [];
-    for (const car of this.#cars) {
-      if (car.track.zMax < area.zMin || car.track.zMin >= area.zMax) continue;
-      const p = this.#place(car, time);
-      if (p && p.x >= area.xMin && p.x < area.xMax && p.z >= area.zMin && p.z < area.zMax) {
-        out.push(p);
+    for (const index of this.#tracksIn(area)) {
+      for (const car of this.#tracks[index]?.cars ?? []) {
+        const p = this.#place(car, time);
+        if (p && p.x >= area.xMin && p.x < area.xMax && p.z >= area.zMin && p.z < area.zMax) {
+          out.push(p);
+        }
       }
     }
     return out;
+  }
+
+  /** Indices of the roads with cars whose Z range meets `area`, in order. */
+  #tracksIn(area: GroundArea): number[] {
+    // Within the buckets that have roads (the area may be endless).
+    const first = Math.max(bucketOf(area.zMin), this.#lowest);
+    const last = Math.min(bucketOf(area.zMax), this.#highest);
+    const found: number[] = [];
+    for (let b = first; b <= last; b++) {
+      for (const index of this.#buckets.get(b) ?? []) {
+        const track = this.#tracks[index]?.track;
+        // Once per road: in the first bucket of the area it spans.
+        if (!track || Math.max(bucketOf(track.zMin), first) !== b) continue;
+        if (track.zMax >= area.zMin && track.zMin < area.zMax) found.push(index);
+      }
+    }
+    return found.sort((a, b) => a - b);
   }
 
   /** How far along its road `car` is at `time`; none near the ends, where it is hidden. */

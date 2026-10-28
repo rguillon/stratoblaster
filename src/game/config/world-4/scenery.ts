@@ -271,8 +271,7 @@ const level = (
     scrollSpeed,
     transition: TRANSITION,
     sections: sections.map(cityOnly),
-    // Under the flat ground: no water shows.
-    sea: { level: 0 },
+    // No sea (reviewer, 2026-10-28): one under the flat ground never showed, but was drawn.
     roads: WORLD_4_ROADS,
     props: WORLD_4_PROPS,
   }) satisfies SceneryLevel;

@@ -21,6 +21,7 @@ import {
   type GroundReplies,
 } from '../../../../src/render/scenery/level-ground';
 import { runoutStart, withRunout } from '../../../../src/core/scenery/scenery-level';
+import { SolidBuilder } from '../../../../src/render/geometry/solids';
 import {
   SAMPLE_SCENERY,
   SAMPLE_SCENERY_LEVEL,
@@ -200,6 +201,14 @@ describe('SceneryStage', () => {
 
   it('refuses a level whose props have no model', () => {
     expect(() => stage({ propModels: {} })).toThrow(/block/);
+  });
+
+  it('builds the models of the props its level has, no others (reviewer, 2026-10-28)', () => {
+    const ufo = () => ({ structure: new SolidBuilder().box([1, 1, 1], [1, 1, 1]).geometry });
+    stage({ propModels: { ...SAMPLE_SCENERY.propModels, ufo } });
+    const names = scene?.meshes.map((m) => m.name) ?? [];
+    expect(names).toContain('prop-block');
+    expect(names.some((n) => n.includes('ufo'))).toBe(false);
   });
 
   it('P04 review: the sun moves by whole shadow texels, so shadows do not shimmer', () => {

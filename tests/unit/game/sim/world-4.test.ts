@@ -110,6 +110,10 @@ describe('World 4', () => {
     }
   });
 
+  it('no sea plane under the ground, where it never showed (reviewer, 2026-10-28)', () => {
+    for (const game of WORLD_4) expect(game.scenery.sea, game.id).toBeUndefined();
+  });
+
   it('P10-R03: concrete everywhere, no grass (reviewer, 2026-10-28)', () => {
     for (const game of WORLD_4) expect(cover(game, 'lush'), game.id).toBe(0);
   });
