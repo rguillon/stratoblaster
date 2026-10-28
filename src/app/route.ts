@@ -27,3 +27,12 @@ export function resolveRoute(pathname: string): AppRoute {
   if (PROP_VIEWER.test(pathname)) return 'prop-viewer';
   return 'game';
 }
+
+/**
+ * Where to send the browser instead of `pathname`, if anywhere: a viewer's path without its
+ * trailing slash (`/props`) gets the game's page from the dev server, so it goes to `/props/`.
+ */
+export function redirectOf(pathname: string): string | undefined {
+  if (resolveRoute(pathname) === 'game' || /(\/|\.html)$/.test(pathname)) return undefined;
+  return `${pathname}/`;
+}

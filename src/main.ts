@@ -1,7 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { startApp } from './app/start-app';
 import { parseDebugOptions } from './app/debug-options';
-import { resolveRoute, type AppRoute } from './app/route';
+import { redirectOf, resolveRoute, type AppRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
 import { startSceneryViewer } from './app/start-scenery-viewer';
@@ -266,6 +266,11 @@ function startProps(engine: Engine): void {
 }
 
 function boot(): void {
+  const redirect = redirectOf(window.location.pathname);
+  if (redirect) {
+    window.location.replace(redirect + window.location.search);
+    return;
+  }
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('#game-canvas not found');
 
