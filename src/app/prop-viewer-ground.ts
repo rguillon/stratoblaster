@@ -1,5 +1,4 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -7,9 +6,9 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { TileRules } from '../core/scenery/scenery-level';
-import type { ColoredGeometry } from '../render/geometry/gradient-shapes';
-import { meshOf } from '../render/scenery/prop-field';
-import { addPiece, type TileRoadLook } from '../render/scenery/tile-road-geometry';
+import type { RoadPiece } from '../core/scenery/road-tiles';
+import type { TileRoadLook } from '../render/scenery/tile-road-geometry';
+import type { ViewerRoads } from './prop-viewer-roads';
 import { PROP_VIEWER_CONFIG as CFG } from '../config/prop-viewer';
 import type { TileLayout } from './prop-viewer-layout';
 
@@ -21,9 +20,9 @@ export interface ViewerTiles {
   readonly tile: TileRules;
   /** None: no road is drawn. */
   readonly look?: TileRoadLook;
+  /** Models drawn as road pieces (the road kit), by id, centred on the origin. */
+  readonly pieces?: Readonly<Record<string, readonly RoadPiece[]>>;
 }
-
-const flat = (): number => 0;
 
 /** [x0, x1, z0, z1], in world units. */
 type Bounds = readonly [number, number, number, number];
@@ -70,7 +69,7 @@ export function buildViewerGround(
   scene: Scene,
   layout: TileLayout,
   tiles: ViewerTiles,
-  material: Material,
+  roads: ViewerRoads | undefined,
 ): TransformNode {
   const root = new TransformNode('props-floor', scene);
   const t = tiles.tile.size;
@@ -79,13 +78,10 @@ export function buildViewerGround(
   const bounds: Bounds = [(bx0 - m) * t, (bx1 + m) * t, (bz0 - m) * t, (bz1 + m) * t];
   floor(scene, bounds, root);
   gridLines(scene, bounds, t, root);
-  const { look } = tiles;
-  if (look && layout.roads.length > 0) {
-    const geo: ColoredGeometry = { positions: [], indices: [], colors: [] };
-    for (const piece of layout.roads) addPiece(geo, piece, tiles.tile, look, flat);
-    const roads = meshOf('props-roads', geo, material, scene);
-    roads.parent = root;
-    roads.setEnabled(true);
+  const mesh = roads?.mesh('props-roads', layout.roads);
+  if (mesh) {
+    mesh.isPickable = false;
+    mesh.parent = root;
   }
   return root;
 }

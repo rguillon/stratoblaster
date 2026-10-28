@@ -11,15 +11,15 @@ import { pieceRoadway } from '../../../../../src/render/scenery/tile-road-geomet
 // Phase 15: the road kit (P15-R03, R04) and how the `props/` page shows it (P15-R10).
 
 describe('road kit (phase 15)', () => {
-  it('P15-R03, R04: a straight, a turn, a T and an X of each size, and the 12 adapters', () => {
+  it('P15-R03, R04: a straight, a turn, a T and an X of each size up to 3 × 3, and the 6 adapters', () => {
     const plain = ROAD_KIT.filter((p) => !p.piece.adapter);
     const adapters = ROAD_KIT.filter((p) => p.piece.adapter);
-    expect(plain).toHaveLength(16);
-    for (const size of [1, 2, 3, 4]) {
+    expect(plain).toHaveLength(12);
+    for (const size of [1, 2, 3]) {
       const kinds = plain.filter((p) => p.piece.size === size).map((p) => p.piece.kind);
       expect(kinds.sort()).toEqual(['cross', 'straight', 'tee', 'turn']);
     }
-    expect(adapters).toHaveLength(12);
+    expect(adapters).toHaveLength(6);
     expect(new Set(adapters.map((p) => p.piece.kind))).toEqual(new Set(['tee', 'cross']));
   });
 
@@ -45,7 +45,7 @@ describe('road kit (phase 15)', () => {
 
   it('P15-R10: the props page shows the road kit and its sample layout, and footprints in tiles', () => {
     const kit = PROP_GROUPS.find((g) => g.label === 'Road kit');
-    expect(kit?.ids.length).toBeGreaterThanOrEqual(29);
+    expect(kit?.ids.length).toBe(19);
     expect(kit?.ids).toContain(ROAD_SAMPLE_ID);
     expect(ROAD_KIT_MODELS[ROAD_SAMPLE_ID]?.().structure.indices.length).toBeGreaterThan(0);
     const tiles = PROP_GROUPS.filter((g) => g.label.startsWith('Tiles:'));

@@ -7,7 +7,12 @@ import { cachedRoadPieces } from '../../core/scenery/road-tiles';
 import type { TileRules } from '../../core/scenery/scenery-level';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import { buildRoadGeometry, type RoadLook } from './road-geometry';
-import { buildTileGrid, buildTileRoadGeometry, type TileRoadLook } from './tile-road-geometry';
+import { buildTileGrid, type TileRoadLook } from './tile-road-geometry';
+import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { ATLAS_SIZE, RoadAtlas } from './road-atlas';
+import { buildRoadSurfaces } from './road-surface';
 
 /** Colour of the grid of tiles drawn with `tiles=1` (phase 15). */
 const GRID_COLOR = [0, 0.9, 1] as const;
@@ -40,7 +45,7 @@ export class RoadField {
     return this.#meshes.get(index);
   }
 
-  setChunk(index: number, geometry: ColoredGeometry): void {
+  setChunk(index: number, geometry: ColoredGeometry & { readonly uvs?: number[] }): void {
     this.removeChunk(index);
     if (geometry.indices.length === 0) return;
     const mesh = new Mesh(`${this.name}-${String(index)}`, this.scene);
@@ -48,6 +53,7 @@ export class RoadField {
     data.positions = geometry.positions;
     data.indices = geometry.indices;
     data.colors = geometry.colors;
+    if (geometry.uvs) data.uvs = geometry.uvs;
     const normals: number[] = [];
     VertexData.ComputeNormals(geometry.positions, geometry.indices, normals);
     data.normals = normals;
@@ -128,6 +134,10 @@ export class RoadLayers {
   readonly #streets: RoadField;
 
   #grid: RoadField | undefined;
+  /** Phase 15 (experiment): the street pieces as textured surfaces, one atlas per road look. */
+  readonly #surfaces: RoadField;
+  readonly #atlases = new Map<TileRoadLook, { atlas: RoadAtlas; texture: RawTexture }>();
+  readonly #surfaceMaterial: StandardMaterial;
   readonly #scene: Scene;
   readonly #material: Material;
 
@@ -137,6 +147,30 @@ export class RoadLayers {
     this.#paths = new RoadField(scene, material, 'paths', DRAW_ORDER.paths);
     this.#roads = new RoadField(scene, material, 'roads', DRAW_ORDER.roads);
     this.#streets = new RoadField(scene, opaqueOf(material), 'streets', 0, false);
+    this.#surfaceMaterial = opaqueOf(material) as StandardMaterial;
+    this.#surfaces = new RoadField(scene, this.#surfaceMaterial, 'street-surfaces', 0, false);
+  }
+
+  /** The atlas of `look`, its texture on the surfaces' material. */
+  #atlasOf(tiles: TileRules, look: TileRoadLook): { atlas: RoadAtlas; texture: RawTexture } {
+    let entry = this.#atlases.get(look);
+    if (!entry) {
+      const atlas = new RoadAtlas(tiles, look);
+      const texture = RawTexture.CreateRGBATexture(
+        atlas.data,
+        ATLAS_SIZE,
+        ATLAS_SIZE,
+        this.#scene,
+        true,
+        false,
+        Texture.TRILINEAR_SAMPLINGMODE,
+      );
+      texture.anisotropicFilteringLevel = 8;
+      entry = { atlas, texture };
+      this.#atlases.set(look, entry);
+    }
+    this.#surfaceMaterial.diffuseTexture = entry.texture;
+    return entry;
   }
 
   /** Number of chunks with road ribbons. */
@@ -190,10 +224,17 @@ export class RoadLayers {
     this.#roads.setChunk(index, buildRoadGeometry(others, ground, zMin, zMax, look));
     const pieces = cachedRoadPieces(roads, tiles);
     const height = (x: number, z: number): number => ground.height(x, z);
-    this.#streets.setChunk(
-      index,
-      buildTileRoadGeometry(pieces, tiles, tileLook, height, [zMin, zMax]),
-    );
+    const { atlas, texture } = this.#atlasOf(tiles, tileLook);
+    const { surfaces, layered } = buildRoadSurfaces(pieces, [tiles, tileLook], atlas, height, [
+      zMin,
+      zMax,
+    ]);
+    if (atlas.dirty) {
+      texture.update(atlas.data);
+      atlas.dirty = false;
+    }
+    this.#surfaces.setChunk(index, surfaces);
+    this.#streets.setChunk(index, layered);
     if (this.#grid) {
       this.#grid.setChunk(index, buildTileGrid(pieces, tiles, height, [zMin, zMax], GRID_COLOR));
     }
@@ -213,6 +254,7 @@ export class RoadLayers {
 
   removeChunk(index: number): void {
     this.#grid?.removeChunk(index);
+    this.#surfaces.removeChunk(index);
     this.#paths.removeChunk(index);
     this.#roads.removeChunk(index);
     this.#streets.removeChunk(index);
@@ -220,6 +262,7 @@ export class RoadLayers {
 
   clear(): void {
     this.#grid?.clear();
+    this.#surfaces.clear();
     this.#paths.clear();
     this.#roads.clear();
     this.#streets.clear();

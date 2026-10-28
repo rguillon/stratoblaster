@@ -14,12 +14,12 @@ test.describe('P15: districts on a grid of tiles', () => {
     const kit = page.locator('.prop-groups button', { hasText: 'Road kit' });
     await expect(kit).toHaveText(/^Road kit \((\d+)\)$/);
     const count = Number((await kit.textContent())?.match(/\((\d+)\)/)?.[1] ?? 0);
-    expect(count).toBeGreaterThanOrEqual(29);
+    expect(count).toBe(19);
     await kit.click();
     await expect(page.locator('.prop-kinds button.selected')).toHaveText('road-straight-1 · 1×1');
     await expect(page.locator('.prop-kinds button', { hasText: 'road-sample' })).toHaveCount(1);
-    await expect(page.locator('.prop-kinds button', { hasText: 'road-cross-4-1' })).toHaveText(
-      'road-cross-4-1 · 4×4 adapter',
+    await expect(page.locator('.prop-kinds button', { hasText: 'road-cross-3-1' })).toHaveText(
+      'road-cross-3-1 · 3×3 adapter',
     );
     await page.locator('.prop-groups button', { hasText: 'Tiles: industrial' }).click();
     const buttons = page.locator('.prop-kinds button');

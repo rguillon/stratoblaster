@@ -13,6 +13,7 @@ import type { ShotImpact } from '../core/systems/shot-world';
 import type { AudioBindings } from '../audio/audio-bindings';
 import type { OutlineLook } from './outline';
 import type { TileRules } from '../core/scenery/scenery-level';
+import type { RoadPiece } from '../core/scenery/road-tiles';
 import type { TileRoadLook } from './scenery/tile-road-geometry';
 import type { PlayfieldCameraLook, PropModelFactory, SceneryLook } from './scenery/scenery-look';
 
@@ -181,7 +182,12 @@ export interface SceneryBindings {
   /** How the `props/` page groups the prop models (all in one group when omitted). */
   readonly propGroups?: readonly PropGroup[];
   /** The grid of tiles of the `props/` page's ground, and how its road tiles look. */
-  readonly propTiles?: { readonly tile: TileRules; readonly look: TileRoadLook };
+  readonly propTiles?: {
+    readonly tile: TileRules;
+    readonly look: TileRoadLook;
+    /** Models drawn as road pieces (the road kit), by id, centred on the origin. */
+    readonly pieces?: Readonly<Record<string, readonly RoadPiece[]>>;
+  };
 }
 
 /** A named group of prop model ids, shown together on the `props/` page. */

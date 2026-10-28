@@ -10,7 +10,8 @@ import { TILE } from '../../config/tile-buildings';
 // each piece is joined to the straights of its open sides.
 
 const LOOK: TileRoadLook = BASE_SCENERY_LOOK.roads.tiles;
-const SIZES = [1, 2, 3, 4] as const;
+/** Road sizes of the kit: up to 3 × 3 (the 4 × 4 roads dropped, reviewer 2026-10-28). */
+const SIZES = [1, 2, 3] as const;
 
 /** A named piece of the kit, at tile (0, 0). */
 interface KitPiece {
@@ -103,13 +104,35 @@ function withStubs(piece: RoadPiece, x: number, z: number): RoadPiece[] {
 
 /** The sample layout (P15-R10): every piece of the kit with straights on its open sides. */
 function buildSample(): PropGeometry {
+  return geometryOf(samplePieces());
+}
+
+/** `pieces` moved so their middle is at the origin (in tiles; may be a half tile off). */
+function centred(pieces: readonly RoadPiece[]): RoadPiece[] {
+  const xs = pieces.flatMap((p) => [p.x, p.x + p.size]);
+  const zs = pieces.flatMap((p) => [p.z, p.z + p.size]);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cz = (Math.min(...zs) + Math.max(...zs)) / 2;
+  return pieces.map((p) => ({ ...p, x: p.x - cx, z: p.z - cz }));
+}
+
+/** The sample layout's pieces: every piece of the kit with straights on its open sides. */
+function samplePieces(): RoadPiece[] {
   const cell = 4 + 2 * Math.max(...SIZES);
   const columns = 7;
-  const pieces = ROAD_KIT.flatMap(({ piece }, i) =>
+  return ROAD_KIT.flatMap(({ piece }, i) =>
     withStubs(piece, (i % columns) * cell, Math.floor(i / columns) * cell),
   );
-  return geometryOf(pieces);
 }
+
+/**
+ * The pieces of each model of the kit, centred as the models are: the `props/` page draws them
+ * as textured surfaces, like the levels (phase 15).
+ */
+export const ROAD_KIT_PIECES: Readonly<Record<string, readonly RoadPiece[]>> = {
+  ...Object.fromEntries(ROAD_KIT.map(({ id, piece }) => [id, centred([piece])])),
+  [ROAD_SAMPLE_ID]: centred(samplePieces()),
+};
 
 /** The road kit and its sample layout, as models for the `props/` page. */
 export const ROAD_KIT_MODELS: Readonly<Record<string, PropModelFactory>> = {

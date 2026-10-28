@@ -16,6 +16,8 @@ import { PropViewerPanel, type PropViewerSelection } from '../ui/prop-viewer-pan
 import { PROP_VIEWER_CONFIG as CFG } from '../config/prop-viewer';
 import { buildViewerGround, type ViewerTiles } from './prop-viewer-ground';
 import { tileLayout } from './prop-viewer-layout';
+import { ViewerRoads } from './prop-viewer-roads';
+import type { RoadPiece } from '../core/scenery/road-tiles';
 
 /** Options of {@link startPropViewer}. */
 export interface PropViewerOptions {
@@ -91,6 +93,7 @@ class PropGrid {
   /** Index of the group shown; -1 before the first. */
   group = -1;
   readonly #materials;
+  readonly #roads: ViewerRoads | undefined;
   #ground: TransformNode | undefined;
 
   constructor(
@@ -99,6 +102,7 @@ class PropGrid {
     private readonly tiles: ViewerTiles,
   ) {
     this.#materials = materials(scene);
+    if (tiles.look) this.#roads = new ViewerRoads(scene, tiles.tile, tiles.look);
   }
 
   /** Shows the props of `group` (index `index`) in place of the ones shown. */
@@ -119,12 +123,14 @@ class PropGrid {
       prop.root.position.set(cx * t - mid[0], 0, cz * t - mid[1]);
     });
     this.props = built.map((b) => b.prop);
-    this.#ground = buildViewerGround(this.scene, layout, this.tiles, this.#materials.structure);
+    this.#ground = buildViewerGround(this.scene, layout, this.tiles, this.#roads);
     this.group = index;
   }
 
   /** The prop `id`, and the middle of its footprint in its own frame. */
   #build(id: string): { prop: ShownProp; mid: [number, number] }[] {
+    const pieces = this.tiles.pieces?.[id];
+    if (pieces && this.#roads) return this.#buildRoad(id, pieces, this.#roads);
     const factory = this.models[id];
     if (!factory) return [];
     const geometry = factory();
@@ -143,6 +149,28 @@ class PropGrid {
     const triangles =
       (geometry.structure.indices.length + (geometry.lights?.indices.length ?? 0)) / 3;
     const prop: ShownProp = { id, root, triangles, size: [x1 - x0, z1 - z0, height] };
+    return [{ prop, mid: [(x0 + x1) / 2, (z0 + z1) / 2] }];
+  }
+
+  /** A model of the road kit, drawn as the levels draw their roads: textured pieces. */
+  #buildRoad(
+    id: string,
+    pieces: readonly RoadPiece[],
+    roads: ViewerRoads,
+  ): { prop: ShownProp; mid: [number, number] }[] {
+    const root = new TransformNode(`prop-${id}`, this.scene);
+    const mesh = roads.mesh(id, pieces);
+    if (mesh) {
+      mesh.parent = root;
+      mesh.isPickable = true;
+    }
+    const t = this.tiles.tile.size;
+    const x0 = Math.min(...pieces.map((p) => p.x)) * t;
+    const x1 = Math.max(...pieces.map((p) => p.x + p.size)) * t;
+    const z0 = Math.min(...pieces.map((p) => p.z)) * t;
+    const z1 = Math.max(...pieces.map((p) => p.z + p.size)) * t;
+    const triangles = (mesh?.getTotalIndices() ?? 0) / 3;
+    const prop: ShownProp = { id, root, triangles, size: [x1 - x0, z1 - z0, 0] };
     return [{ prop, mid: [(x0 + x1) / 2, (z0 + z1) / 2] }];
   }
 }

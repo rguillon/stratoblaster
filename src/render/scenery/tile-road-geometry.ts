@@ -23,7 +23,7 @@ export interface TileRoadLook {
 }
 
 /** A rectangle in the piece's own frame: [x0, x1] × [z0, z1]. */
-type Rect = readonly [number, number, number, number];
+export type Rect = readonly [number, number, number, number];
 
 /** Layers above the sidewalk, so the kerb, the roadway and the lines each show over the last. */
 const LAYER = 0.1;
@@ -103,7 +103,7 @@ interface Arm {
 }
 
 /** The line rectangles of an arm: the centre line, and lane lines on wide roads. */
-function armLines(arm: Arm, width: number): { centre: Rect[]; lanes: Rect[] } {
+export function armLines(arm: Arm, width: number): { centre: Rect[]; lanes: Rect[] } {
   const [x0, x1, z0, z1] = arm.line;
   const [a, b] = arm.alongX ? [z0, z1] : [x0, x1];
   const lane = (b - a) / (2 * arm.lanes);

@@ -40,6 +40,7 @@ import { READABILITY } from '../config/readability';
 import { PROP_MODELS } from './props/prop-models';
 import { allToned } from './readability-view';
 import { PROP_GROUPS } from './props/prop-groups';
+import { ROAD_KIT_PIECES } from './props/road-kit';
 
 const TONES = READABILITY.tones;
 const CAMERA: PlayfieldCameraLook = PLAYFIELD_CAMERA;
@@ -92,5 +93,5 @@ export const SCENERY_BINDINGS: SceneryBindings = {
   },
   propModels: PROP_MODELS,
   propGroups: PROP_GROUPS,
-  propTiles: { tile: TILE, look: BASE_SCENERY_LOOK.roads.tiles },
+  propTiles: { tile: TILE, look: BASE_SCENERY_LOOK.roads.tiles, pieces: ROAD_KIT_PIECES },
 };
