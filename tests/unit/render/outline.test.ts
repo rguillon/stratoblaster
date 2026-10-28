@@ -45,7 +45,8 @@ describe('rims (P14-R03, R04)', () => {
     const layer = new OutlineLayer({ width: 1, intensity: 2 });
     const plain = CreateBox('plain', {}, scene);
     expect(layer.add(plain)).toBe(false);
-    expect(plain.renderOutline).toBe(false);
+    // Not turned on (Babylon leaves it unset until it is).
+    expect(plain.renderOutline).toBeFalsy();
     const holder = new TransformNode('holder', scene);
     holder.scaling.setAll(4);
     const big = CreateBox('big', {}, scene);
