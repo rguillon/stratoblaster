@@ -3,7 +3,10 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 
 /** Nodes of `list` created after the node numbered `after` (lists are in creation order). */
-function newer<T extends { readonly uniqueId: number }>(list: readonly T[], after: number): T[] {
+export function newer<T extends { readonly uniqueId: number }>(
+  list: readonly T[],
+  after: number,
+): T[] {
   let i = list.length;
   while (i > 0 && (list[i - 1]?.uniqueId ?? 0) > after) i--;
   return list.slice(i);

@@ -42,6 +42,17 @@ export interface SceneryKitFrame {
   readonly seaEnabled: boolean;
   /** The level's look here (P08-R04): shadows' darkness, ground lights. */
   readonly atmosphere: Atmosphere;
+  /**
+   * How the ground is drawn (`PlayfieldCameraLook.groundScale`): a world point is `scale` times
+   * its ground point, moved `offsetZ` along Z. None: drawn as it is.
+   */
+  readonly ground?: GroundTransform;
+}
+
+/** See {@link SceneryKitFrame.ground}. */
+export interface GroundTransform {
+  readonly scale: number;
+  readonly offsetZ: number;
 }
 
 /**

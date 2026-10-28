@@ -241,4 +241,11 @@ export interface PlayfieldCameraLook {
   readonly fovDeg: number;
   /** Height of the playfield plane, where the ships fly. */
   readonly flightAltitude: number;
+  /**
+   * How much bigger the ground is drawn, as if flying lower (reviewer, 2026-10-28): the terrain,
+   * roads, props and cars are `groundScale` times as big and pass `groundScale` times as fast,
+   * while the level still covers the same ground a second. The clouds and the weather stay as
+   * they are. 1 when omitted.
+   */
+  readonly groundScale?: number;
 }

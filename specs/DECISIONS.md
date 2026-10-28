@@ -1396,3 +1396,9 @@
 - **Phase:** 14 (reviewer request; follows D-132)
 - **Decision:** The props' self-lit accents (windows, lamps, headlights) get a depth offset of −2 (`LIGHTS_Z_OFFSET`, their material's `zOffset`), as the road ribbons already have. They lie flat on walls and roads, and flickered against them as the ground scrolled, in the ground's glow layer most of all, where the walls are drawn black (D-132).
 - **Status:** Accepted
+
+### D-135 — Ground drawn twice as big
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The ground is drawn twice as big, as if flying lower (`PlayfieldCameraLook.groundScale`: 2). The terrain, roads, props, cars, sea and rain rings hang from one node (`GroundRoot`), scaled by it and moved along Z as the view scrolls, so the level still covers the same ground each second, passing twice as fast on screen. The clouds and the weather are unchanged. The terrain shader takes its colours from the ground point (`groundPoint`), not the world point, so its textures grow with the ground. The stage works out its chunks, props and cars in ground units: the ground in view (`groundWindowOf`) is half as wide and half as long. Cloud layers keep clear of the scaled ground. The stage's options moved to `scenery-stage-options.ts`.
+- **Status:** Accepted

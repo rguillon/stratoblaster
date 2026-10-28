@@ -25,6 +25,8 @@ export interface TerrainBlendState {
   time: number;
   /** Phase 10: the sea is lava; the rock by it glows (P10-R05). */
   lava?: LavaLook;
+  /** How the ground is drawn: its colours follow the ground, not the world (`GroundTransform`). */
+  ground?: { readonly scale: number; readonly offsetZ: number };
 }
 
 const SAMPLERS = [
@@ -51,6 +53,7 @@ const UNIFORMS = [
   { name: 'terrainFoam', size: 4, type: 'vec4' },
   { name: 'terrainSurf', size: 4, type: 'vec4' },
   { name: 'terrainLava', size: 4, type: 'vec4' },
+  { name: 'terrainGroundFrame', size: 4, type: 'vec4' },
 ] as const;
 
 const FRAGMENT_DEFINITIONS = /* glsl */ `
@@ -107,6 +110,11 @@ vec3 terrainScorch(vec3 color, vec3 p) {
 }
 
 // The glow of the rock by the lava: a bright edge at its level and glowing cracks a little above.
+// The ground point drawn at world point \`p\` (the ground may be drawn scaled and moved).
+vec3 groundPoint(vec3 p) {
+  return vec3(p.x, p.y, p.z - terrainGroundFrame.y) / terrainGroundFrame.x;
+}
+
 vec3 terrainHeat(vec3 p) {
   if (terrainSea.w < 0.5 || terrainSea.y < 0.5) return vec3(0.0);
   float above = p.y - terrainSea.x;
@@ -154,13 +162,13 @@ vec3 terrainColor(vec3 p, vec3 n) {
 
 const UPDATE_DIFFUSE = /* glsl */ `
 #ifdef TERRAIN_BLEND
-  baseColor.rgb = terrainColor(vPositionW, normalW);
+  baseColor.rgb = terrainColor(groundPoint(vPositionW), normalW);
 #endif
 `;
 
 const BEFORE_FOG = /* glsl */ `
 #ifdef TERRAIN_BLEND
-  color.rgb += terrainHeat(vPositionW);
+  color.rgb += terrainHeat(groundPoint(vPositionW));
 #endif
 `;
 
@@ -230,6 +238,8 @@ export class TerrainBlendPlugin extends MaterialPluginBase {
     );
     const edge = lava?.edge ?? { color: [0, 0, 0] as const, width: 1, cracks: 1 };
     ubo.updateFloat4('terrainLava', ...edge.color, edge.width);
+    const ground = state.ground ?? { scale: 1, offsetZ: 0 };
+    ubo.updateFloat4('terrainGroundFrame', ground.scale, ground.offsetZ, 0, 0);
     const { shore } = look;
     ubo.updateFloat4('terrainSand', ...shore.sand, shore.beach);
     ubo.updateFloat4('terrainShallow', ...shore.shallow, shore.depth);

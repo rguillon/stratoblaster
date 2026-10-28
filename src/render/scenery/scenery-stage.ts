@@ -3,11 +3,9 @@ import type { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { LogicalScreen } from '../../core/content/game-definition';
 import type { HeightField } from '../../core/scenery/height-field';
 import type { PropPlacer } from '../../core/scenery/prop-placement';
 import { levelGround } from './level-ground';
-import type { SceneryLevel } from '../../core/scenery/scenery-level';
 import {
   framePlayfield,
   visibleGround,
@@ -16,56 +14,21 @@ import {
 } from './playfield-framing';
 import { checkPropModels, PropField, propDrifts, type PropDrift } from './prop-field';
 import { TrafficLayer } from './traffic-layer';
-import type { SceneryKit, SceneryKitFactory } from './scenery-kit';
+import type { SceneryKit } from './scenery-kit';
 import { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
-import type {
-  CloudLayerLook,
-  PlayfieldCameraLook,
-  PropModelFactory,
-  SceneryLook,
-} from './scenery-look';
+import type { CloudLayerLook } from './scenery-look';
 import { snappedLightPosition } from './scenery-lighting';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
-import type { AtmosphereOptions } from './atmosphere-of';
 import { plumeLight } from './plume-layer';
 import { RainRings } from './rain-rings';
-import { lowestGround, seaPlane, stageCamera, TerrainWatch } from './stage-parts';
+import { seaPlane, stageCamera, TerrainWatch } from './stage-parts';
 import { SkyLayers } from './sky-layers';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
+import { GroundRoot, groundWindowOf } from './ground-root';
+import type { SceneryStageOptions } from './scenery-stage-options';
 
-/** Engine settings of a {@link SceneryStage}. */
-export interface SceneryStageConfig {
-  /** Terrain chunk length along Z and grid cell size. */
-  readonly chunkLength: number;
-  readonly cell: number;
-  /** Extra ground generated around what the camera sees. */
-  readonly margin: number;
-  /** Smallest gap between the highest ground and a cloud layer. */
-  readonly cloudClearance: number;
-  /** How far behind the scene the sun is placed, for its shadows. */
-  readonly sunDistance: number;
-  /** Far clipping distance of the camera. */
-  readonly farClip: number;
-  /**
-   * How far before and past the ground in view props are drawn (tall ones show from further),
-   * and by how much the drawn range is widened, so it is uploaded again only now and then.
-   */
-  readonly propReach: readonly [near: number, far: number];
-  readonly propStep: number;
-}
-
-export interface SceneryStageOptions {
-  readonly screen: LogicalScreen;
-  readonly camera: PlayfieldCameraLook;
-  readonly level: SceneryLevel;
-  readonly look: SceneryLook;
-  readonly propModels: Readonly<Record<string, PropModelFactory>>;
-  readonly kit: SceneryKitFactory;
-  readonly config: SceneryStageConfig;
-  /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
-  readonly atmosphere?: AtmosphereOptions;
-}
+export type { SceneryStageConfig, SceneryStageOptions } from './scenery-stage-options';
 
 export { ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP, type CloudLayerState } from './cloud-layers';
 
@@ -97,6 +60,8 @@ export class SceneryStage {
   /** P09-R05: rain rings on the water, when the level has water. */
   readonly #rings: RainRings | undefined;
   readonly #terrain = new TerrainWatch();
+  /** The ground, drawn bigger when flying lower (`PlayfieldCameraLook.groundScale`). */
+  readonly #groundRoot: GroundRoot;
 
   constructor(
     readonly scene: Scene,
@@ -108,14 +73,8 @@ export class SceneryStage {
     ({ field: this.#field, placer: this.#placer } = levelGround(level, this.#seed));
     this.#drifts = propDrifts(level);
     this.framing = framePlayfield(options.screen, options.camera);
-    const cameraY = options.camera.flightAltitude + this.framing.height;
-    this.#ground = visibleGround(
-      this.framing,
-      options.screen.width / options.screen.height,
-      cameraY,
-      lowestGround(level),
-      options.camera.flightAltitude,
-    );
+    this.#groundRoot = new GroundRoot(scene, options.camera.groundScale ?? 1);
+    this.#ground = groundWindowOf(options, this.framing, this.#groundRoot.scale);
     this.#xHalf = Math.ceil((this.#ground.halfWidth + config.margin) / config.cell) * config.cell;
     this.camera = stageCamera(scene, this.framing.halfFov, config.farClip);
     // P08-R04: the time of day, clouds and weather along the level.
@@ -131,18 +90,28 @@ export class SceneryStage {
       seaSize: { width: this.#xHalf * 2, length: seaLength },
       seed: level.seed,
     });
-    this.#chunks = this.#buildChunks();
+    const adopt = <T>(create: () => T): T => this.#groundRoot.adopt(create);
+    this.#chunks = adopt(() => this.#buildChunks());
     this.#roads = new RoadLayers(scene, this.kit.roads);
-    this.#props = this.#buildProps();
+    this.#props = adopt(() => this.#buildProps());
     const { propModels } = options;
-    this.#traffic = new TrafficLayer(scene, propModels, this.kit.props, level.props.cars);
+    this.#traffic = adopt(
+      () => new TrafficLayer(scene, propModels, this.kit.props, level.props.cars),
+    );
     const seaSize = [this.#xHalf * 2, seaLength] as const;
     this.#sea = level.sea
-      ? seaPlane(scene, [...seaSize, level.sea.level], this.kit.sea)
+      ? adopt(() => seaPlane(scene, [...seaSize, level.sea?.level ?? 0], this.kit.sea))
       : undefined;
     this.#seaEnabled = this.#sea !== undefined;
     this.#rings = level.sea
-      ? new RainRings(scene, this.kit.rings, [level.sea.level, this.#xHalf * 2, seaLength])
+      ? adopt(
+          () =>
+            new RainRings(scene, this.kit.rings, [
+              level.sea?.level ?? 0,
+              this.#xHalf * 2,
+              seaLength,
+            ]),
+        )
       : undefined;
     this.clouds = this.#attachSky();
   }
@@ -238,10 +207,12 @@ export class SceneryStage {
   setSeed(seed: number): void {
     this.#seed = seed;
     ({ field: this.#field, placer: this.#placer } = levelGround(this.options.level, seed));
-    this.#chunks.rebuild(this.#field);
-    this.#props.clear();
-    this.#roads.clear();
-    for (const index of this.#chunks.meshes.keys()) this.#placeChunk(index);
+    this.#groundRoot.adopt(() => {
+      this.#chunks.rebuild(this.#field);
+      this.#props.clear();
+      this.#roads.clear();
+      for (const index of this.#chunks.meshes.keys()) this.#placeChunk(index);
+    });
   }
 
   /** Shows or hides the sea; a level without a sea stays without one (P04-R02). */
@@ -268,30 +239,31 @@ export class SceneryStage {
     );
     const [dy, dz] = this.framing.direction;
     this.camera.setTarget(new Vector3(0, camera.y + dy, camera.z + dz));
+    // The ground's Z under the camera, and the ground in view (ground units).
+    const ground = this.#groundRoot;
+    ground.moveTo(distance);
+    const cameraZ = ground.toGround(camera.z);
     const [zMin, zMax] = [
-      camera.z + this.#ground.zNear - margin,
-      camera.z + this.#ground.zFar + margin,
+      cameraZ + this.#ground.zNear - margin,
+      cameraZ + this.#ground.zFar + margin,
     ];
-    const changes = this.#chunks.cover(zMin, zMax);
-    for (const index of changes.removed) {
-      this.#props.removeChunk(index);
-      this.#roads.removeChunk(index);
-    }
-    for (const span of changes.added) this.#placeChunk(span.index);
-    this.#updateProps(camera.z, [zMin, zMax]);
-    const middle = camera.z + (this.#ground.zNear + this.#ground.zFar) / 2;
+    ground.adopt(() => {
+      this.#cover(zMin, zMax);
+    });
+    this.#updateProps(cameraZ, [zMin, zMax]);
+    const middle = cameraZ + (this.#ground.zNear + this.#ground.zFar) / 2;
     if (this.#sea) {
       const tile = this.options.look.sea.tileSize;
       // Whole tiles only, so the waves stay put on the ground while the plane follows the camera.
       this.#sea.position.z = Math.round(middle / tile) * tile;
     }
-    const atmosphere = this.#sky.update(distance, [this.#time, this.camera, zMin]);
+    const atmosphere = this.#sky.update(distance, [this.#time, this.camera, ground.toWorld(zMin)]);
     this.#rings?.update(atmosphere, [this.#time, middle, this.#seaEnabled]);
     this.#updatePlumes(atmosphere);
     const { mapSize, frustum } = this.options.look.sun.shadow;
     this.sun.position = snappedLightPosition(
       this.sun.direction,
-      new Vector3(0, 0, middle),
+      new Vector3(0, 0, ground.toWorld(middle)),
       this.options.config.sunDistance,
       frustum / mapSize,
     );
@@ -300,6 +272,7 @@ export class SceneryStage {
       cameraPosition: camera,
       seaEnabled: this.#seaEnabled,
       atmosphere,
+      ground: ground.transform,
     });
   }
 
@@ -326,6 +299,16 @@ export class SceneryStage {
       light: plumeLight(atmosphere),
       fog: { color: atmosphere.sky.haze, ...atmosphere.fog },
     });
+  }
+
+  /** Keeps the chunks over [zMin, zMax], with their roads and props. */
+  #cover(zMin: number, zMax: number): void {
+    const changes = this.#chunks.cover(zMin, zMax);
+    for (const index of changes.removed) {
+      this.#props.removeChunk(index);
+      this.#roads.removeChunk(index);
+    }
+    for (const span of changes.added) this.#placeChunk(span.index);
   }
 
   #placeChunk(index: number): void {
@@ -363,7 +346,8 @@ export class SceneryStage {
    * the highest ground, so clouds never pass through the terrain (phase 4 review).
    */
   cloudAltitude(look: CloudLayerLook): number {
-    return Math.max(look.altitude, this.#field.ceiling + this.options.config.cloudClearance);
+    const ceiling = this.#field.ceiling * this.#groundRoot.scale;
+    return Math.max(look.altitude, ceiling + this.options.config.cloudClearance);
   }
 
   /** What the camera sees of the plane at `altitude`. */
