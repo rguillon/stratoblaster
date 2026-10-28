@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAR_IDS } from '../../../../../src/game/config/cars';
+import { CAR_IDS, CAR_RULES } from '../../../../../src/game/config/cars';
 import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/world-1/props';
 import { WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
@@ -33,9 +33,9 @@ const tileIds = (group: keyof typeof TILE_GROUPS): string[] =>
   TILE_GROUPS[group].models.map((m) => m.id);
 
 describe('prop models', () => {
-  it('Phase 15 (reviewer, 2026-10-28): every model but the road kit spans whole tiles less the margin, centred', () => {
+  it('Phase 15 (reviewer, 2026-10-28): every model but the road kit and the cars spans whole tiles less the margin, centred', () => {
     for (const [id, build] of Object.entries(PROP_MODELS)) {
-      if (id in ROAD_KIT_MODELS) continue;
+      if (id in ROAD_KIT_MODELS || (Object.values(CAR_IDS) as string[]).includes(id)) continue;
       const { positions } = build().structure;
       for (const axis of [0, 2]) {
         const vs = positions.filter((_, i) => i % 3 === axis);
@@ -132,6 +132,19 @@ describe('World 2 prop models', () => {
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
       expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint + 1e-9);
+    }
+  });
+});
+
+describe('cars (D-162 amended)', () => {
+  it('fit in a lane of the roadway at their scale in the traffic: narrower than half a one-tile street', () => {
+    const roadway = TILE.size - 2 * TILE.sidewalk;
+    for (const id of Object.values(CAR_IDS)) {
+      const { positions } = PROP_MODELS[id]?.().structure ?? { positions: [] };
+      const xs = positions.filter((_, i) => i % 3 === 0);
+      const zs = positions.filter((_, i) => i % 3 === 2);
+      const width = Math.min(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs));
+      expect(width * CAR_RULES.scale, id).toBeLessThan(roadway / 2);
     }
   });
 });

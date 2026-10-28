@@ -1568,8 +1568,9 @@
 ### D-162 — Every prop model spans whole tiles
 - **Date:** 2026-10-28
 - **Phase:** 15 (reviewer's request, in chat)
-- **Decision:** Every prop model, placed on the grid of tiles or not (trees, homes, landmarks, buildings made of parts, line pieces and cars included), is stretched along X and Z to the nearest whole number of tiles (at least one) less the 0.5 building margin, centred on the origin; heights are kept (`game/view/props/tile-fit.ts`, applied to all of `PROP_MODELS` but the tile models and the road kit, which already fit). The pipeline, swamp pipeline and causeway pieces (15 long) become 2 tiles long (19).
-- **Consequences:** small props grow to a 9.0 × 9.0 footprint at least: trees, bushes and cars are stretched sideways (a car is about 9 wide); World 4's P14 tone goes from 0.58 to 0.55 so 4-1 stays under the background luminance cap; the placement footprints and scale ranges of the world configs are unchanged, so the random scale of a scattered prop still moves it off whole tiles in the levels.
+- **Decision:** Every prop model, placed on the grid of tiles or not (trees, homes, landmarks, buildings made of parts and line pieces included; not the cars, amended below), is stretched along X and Z to the nearest whole number of tiles (at least one) less the 0.5 building margin, centred on the origin; heights are kept (`game/view/props/tile-fit.ts`, applied to all of `PROP_MODELS` but the tile models and the road kit, which already fit). The pipeline, swamp pipeline and causeway pieces (15 long) become 2 tiles long (19).
+- **Consequences:** small props grow to a 9.0 × 9.0 footprint at least: trees and bushes are stretched sideways; World 4's P14 tone goes from 0.58 to 0.55 so 4-1 stays under the background luminance cap; the placement footprints and scale ranges of the world configs are unchanged, so the random scale of a scattered prop still moves it off whole tiles in the levels.
+- **Amended (reviewer, 2026-10-28):** the cars keep their own size, so they fit in a lane of the roads.
 - **Status:** Accepted
 
 ### D-163 — Prop models no level places are removed

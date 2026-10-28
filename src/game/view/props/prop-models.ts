@@ -37,6 +37,10 @@ const FREE_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W.greenhouse]: buildGreenhouse,
   [W.grainSilos]: buildGrainSilos,
   [W.windTurbine]: buildWindTurbine,
+};
+
+/** The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162). */
+const CAR_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),
@@ -51,6 +55,7 @@ const FREE_MODELS: Readonly<Record<string, PropModelFactory>> = {
  */
 export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   ...onTiles(FREE_MODELS),
+  ...CAR_MODELS,
   ...TILE_PROP_MODELS,
   // The road kit, for the `props/` page (no level places it: its streets are drawn).
   ...ROAD_KIT_MODELS,
