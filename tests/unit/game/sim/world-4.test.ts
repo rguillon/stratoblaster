@@ -143,8 +143,9 @@ describe('World 4', () => {
     );
     for (const [i, h] of heights.entries())
       expect(h.secondHalf, at(WORLD_4, i).id).toBeGreaterThan(h.firstHalf);
-    // The skyscrapers stand at least twice as tall as Level Zero's tallest city tower.
-    expect(at(heights, 4).tallest).toBeGreaterThan(2 * top('city-tower-9') * 0.5);
+    // The skyscrapers stand at least twice as tall as Level Zero's tallest city tower (86.8 high
+    // at scale 0.5; the tower was removed in phase 15).
+    expect(at(heights, 4).tallest).toBeGreaterThan(2 * 86.8 * 0.5);
   });
 
   it('P10-R03: each level begins on the ground the previous one ended on, 4-1 on 3-5’s; slow transitions', () => {

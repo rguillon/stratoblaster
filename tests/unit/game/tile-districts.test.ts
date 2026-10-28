@@ -15,12 +15,10 @@ import { Traffic } from '../../../src/core/scenery/traffic';
 import { CAR_RULES } from '../../../src/game/config/cars';
 import { TILE } from '../../../src/game/config/tile-buildings';
 import { GAME_LEVELS } from '../../../src/game/sim/levels';
-import { LEVEL_ZERO } from '../../../src/game/sim/scenery-levels';
 
-// Phase 15: the districts of Level Zero and one level of each world, on the grid of tiles.
+// Phase 15: the districts of one level of each world, on the grid of tiles.
 
 const LEVELS: readonly SceneryLevel[] = [
-  LEVEL_ZERO,
   ...['1-5', '2-5', '3-3', '4-5'].map((id) => {
     const level = GAME_LEVELS.find((l) => l.id === id)?.scenery;
     if (!level) throw new Error(`no level ${id}`);

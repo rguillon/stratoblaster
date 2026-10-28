@@ -1,7 +1,7 @@
 import type { PropRules, RoadRules } from '../../../core/scenery/scenery-level';
 import { LOT_KINDS, TILE, tileKinds } from '../tile-buildings';
 import { CAR_RULES } from '../cars';
-import { PROP_IDS } from '../level-zero';
+import { PROP_IDS } from '../prop-ids';
 
 /** Ids of the props added for World 1 (P06-R06). */
 export const WORLD_1_PROP_IDS = {
@@ -38,7 +38,6 @@ export const WORLD_1_GROUPS = {
   /** Mines, refinery, tanks: the desert industry (1-4). */
   industrial: 'industrial',
   heavyIndustry: 'heavy-industry',
-  city: 'city',
 } as const;
 
 const G = WORLD_1_GROUPS;
@@ -127,11 +126,6 @@ export const WORLD_1_PROPS: PropRules = {
       id: G.heavyIndustry,
       weight: 1,
       kinds: tileKinds('heavyIndustry'),
-    },
-    {
-      id: G.city,
-      weight: 1,
-      kinds: tileKinds('city'),
     },
   ],
   trees: [

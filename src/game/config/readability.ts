@@ -26,7 +26,6 @@ export const READABILITY = {
    * and the props keep (reviewer, 2026-10-28: in place of a dark veil over the background).
    */
   tones: {
-    world0: 0.58,
     world1: 0.55,
     // Snow and ice: the brightest ground.
     world2: 0.45,

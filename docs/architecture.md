@@ -38,15 +38,14 @@ Engine tests use the sample game in `tests/fixtures/`, not `src/game/`.
 
 The build has seven HTML entries sharing one bundle (`src/main.ts`):
 
-| Page                      | Route (`app/route.ts`) | Started by                    |
-| ------------------------- | ---------------------- | ----------------------------- |
-| `index.html`              | `game`                 | `app/start-app.ts`            |
-| `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts`    |
-| `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts`    |
-| `level_zero/index.html`   | `scenery-viewer`       | `app/start-scenery-viewer.ts` |
-| `enemies/index.html`      | `enemy-viewer`         | `app/start-enemy-viewer.ts`   |
-| `bosses/index.html`       | `boss-viewer`          | `app/start-boss-viewer.ts`    |
-| `boss/index.html`         | `boss-viewer`          | `app/start-boss-viewer.ts`    |
+| Page                      | Route (`app/route.ts`) | Started by                  |
+| ------------------------- | ---------------------- | --------------------------- |
+| `index.html`              | `game`                 | `app/start-app.ts`          |
+| `player_ship/index.html`  | `player-ship-viewer`   | `app/start-ship-viewer.ts`  |
+| `player_shots/index.html` | `player-shots-viewer`  | `app/start-shot-viewer.ts`  |
+| `enemies/index.html`      | `enemy-viewer`         | `app/start-enemy-viewer.ts` |
+| `bosses/index.html`       | `boss-viewer`          | `app/start-boss-viewer.ts`  |
+| `boss/index.html`         | `boss-viewer`          | `app/start-boss-viewer.ts`  |
 
 The player ship viewer shows every ship of `GameDefinition.playerShips` side by side, rotating
 (`render/model-showcase.ts`), with name and stats captions (`ui/caption-row.ts`). It is lit by a
@@ -58,11 +57,9 @@ selected weapon at the selected level at dummy targets (`app/dummy-targets.ts`);
 (`ui/shot-viewer-panel.ts`) and keys 1-9 / W / S / G / T switch level, weapon, ship, stream
 guides and targets. A tile (`ui/stats-tile.ts`) shows the FPS and the triangles drawn per frame.
 
-The generated level viewer (phase 04, `level_zero/`) flies the game's first scenery level
-(`GameDefinition.sceneryLevels`) under the tilted playfield camera for its whole duration. The
-panel (`ui/scenery-viewer-panel.ts`) and keys P / F / R / N / S / O / 1-9 / ← → pause,
-fast-forward, restart, change the seed, switch the sea, the playfield outline and the cloud
-layers, and seek.
+The generated level viewer of phase 04 (`level_zero/`) and its test level, Level Zero, were removed
+(reviewer, 2026-10-28): the `enemies/` page and a boss with no level fly over the first playable
+level's ground.
 
 The enemies viewer (phase 05, `enemies/`) shows one kind of `GameDefinition.enemyKinds` at a
 time over the first scenery level, under the same tilted camera. The kind spawns again once its
@@ -99,7 +96,7 @@ render/scenery/SkyLayers ── applyAtmosphere (sun, ambient, haze) ◀─┘
 - A level's look has a fixed part (`SceneryLook`: ground textures, sea, roads, shadows) and,
   optionally, an `atmosphere`: a time of day (`dawn` … `night`), the cover of both cloud layers,
   a storm greyness, a weather (`{ kind, strength }`) and an aurora, with changes over stretches
-  of the level (seconds of scroll). A look without one keeps its fixed sky (Level Zero, World 1).
+  of the level (seconds of scroll). A look without one keeps its fixed sky (World 1).
 - `AtmosphereTrack.at(distance)` blends every number smoothly between looks, following the ground
   distance, so a debug jump shows the right look. Nothing in `core/systems` reads it: weather and
   light are only a look (P08-R05).

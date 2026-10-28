@@ -58,17 +58,6 @@ export const TILE_GROUPS = {
       model('plant', 4, 4, 2),
     ],
   },
-  city: {
-    range: CITY,
-    models: [
-      model('office', 2, 2),
-      model('office', 2, 3),
-      model('tower', 3, 3),
-      model('midrise', 2, 2),
-      model('tower', 2, 3, 3),
-      model('office', 3, 3),
-    ],
-  },
   desertHomes: {
     range: HOMES,
     models: [

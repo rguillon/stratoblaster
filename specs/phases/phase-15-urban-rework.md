@@ -273,7 +273,7 @@ The phase 14 readability checks still pass.
 > After the agent reports, write corrections here, then say **"Fix phase 15"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [x] (reviewer, in chat, 2026-10-28) Remove Level Zero and all the code that only applies to it. — Done (D-161): the level, the `level_zero/` page, `GameDefinition.sceneryLevels`, the models only it placed and their builders; the `enemies/` page and a boss without a level use the first level's ground.
 
 ---
 
@@ -315,6 +315,7 @@ None. The three choices were made with the reviewer when the spec was written.
 ### Gate results
 ```
 Light verification (implementation): make typecheck ✔ / build ✔ / e2e 138 passed.
+After removing Level Zero (review): make typecheck ✔ / build ✔ / e2e 129 passed.
 Lint, unit tests and coverage are deferred to /validate-phase.
 Note: port 4173 was held by a `vite preview` of another project (/home/renaud/pewet), which
 Playwright reused (reuseExistingServer); the e2e run was repeated on port 4174 with a temporary
@@ -329,7 +330,7 @@ Ground generation (Node, fixed seeds, whole level with runout), before → after
 
 ### How to test manually
 - `props/`: group **Road kit** (each piece, `road-sample` joins every piece to straights), groups **Tiles: …** (footprints in the button names), **Tiles: lots**.
-- Levels with the grid: `?level=1-5&t=200&tiles=1`, `?level=2-5&t=200`, `?level=3-3&t=120`, `?level=4-5&t=200&tiles=1`; `level_zero/?tiles=1`.
+- Levels with the grid: `?level=1-5&t=200&tiles=1`, `?level=2-5&t=200`, `?level=3-3&t=120`, `?level=4-5&t=200&tiles=1`; (`level_zero/` was removed in review, D-161).
 - Look for sidewalks, X and T crossings, adapters where a street crosses an avenue or boulevard, buildings filling whole tiles and facing the streets, cars in their lanes.
 
 ### Deviations from spec

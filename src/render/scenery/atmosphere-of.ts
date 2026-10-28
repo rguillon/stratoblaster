@@ -25,7 +25,7 @@ export interface AtmosphereOptions {
 }
 
 /**
- * The fixed atmosphere of a look without a sky script (Level Zero, World 1): its own sky, fog,
+ * The fixed atmosphere of a look without a sky script (World 1): its own sky, fog,
  * sun, ambient light, clouds and lights, as they always were.
  */
 export function lookAtmosphere(look: SceneryLook): Atmosphere {

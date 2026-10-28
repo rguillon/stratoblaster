@@ -1,7 +1,7 @@
 import type { PropRules, RoadRules } from '../../../core/scenery/scenery-level';
 import { LOT_KINDS, tileKinds } from '../tile-buildings';
 import { CAR_RULES } from '../cars';
-import { PROP_IDS } from '../level-zero';
+import { PROP_IDS } from '../prop-ids';
 import { WORLD_1_ROADS } from '../world-1/props';
 
 /**

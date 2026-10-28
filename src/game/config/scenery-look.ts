@@ -33,11 +33,11 @@ export const texture = (
 });
 
 /**
- * Level Zero's look: a dusty wasteland in late-afternoon light (low, warm sun ahead of the
+ * The look the worlds start from (first made for Level Zero, phase 4): a dusty wasteland in late-afternoon light (low, warm sun ahead of the
  * camera, light haze), wet dark sand on the shores, grey-brown rock on slopes, dirty snow on
  * the peaks, a dark teal sea and two cloud layers. Gamma-space RGB, 0..1.
  */
-export const LEVEL_ZERO_LOOK = {
+export const BASE_SCENERY_LOOK = {
   sky: {
     haze: [0.74, 0.65, 0.56],
     stops: [
@@ -119,7 +119,7 @@ export const LEVEL_ZERO_LOOK = {
       10,
       { speckle: 0.03, speckleColor: [0.22, 0.22, 0.23] },
     ),
-    /** Phase 6: desert sand (Level Zero has none; World 1 has its own look). */
+    /** Phase 6: desert sand (the worlds set their own). */
     sand: texture(
       [
         [0.66, 0.53, 0.35],

@@ -2,14 +2,14 @@ import type { PieceSide, PieceSides, RoadPiece } from '../../../core/scenery/roa
 import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import type { PropGeometry, PropModelFactory } from '../../../render/scenery/scenery-look';
 import { addPiece, type TileRoadLook } from '../../../render/scenery/tile-road-geometry';
-import { LEVEL_ZERO_LOOK } from '../../config/scenery-look';
+import { BASE_SCENERY_LOOK } from '../../config/scenery-look';
 import { TILE } from '../../config/tile-buildings';
 
 // Phase 15 (P15-R03, R04, R10): the road kit, for the `props/` page: a straight, a 90° turn, a T
 // and an X for each size, the T and X adapters for each pair of sizes, and a sample layout where
 // each piece is joined to the straights of its open sides.
 
-const LOOK: TileRoadLook = LEVEL_ZERO_LOOK.roads.tiles;
+const LOOK: TileRoadLook = BASE_SCENERY_LOOK.roads.tiles;
 const SIZES = [1, 2, 3, 4] as const;
 
 /** A named piece of the kit, at tile (0, 0). */

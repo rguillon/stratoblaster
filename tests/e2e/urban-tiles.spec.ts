@@ -43,16 +43,4 @@ test.describe('P15: districts on a grid of tiles', () => {
       await expect(page.locator('#fatal')).toBeHidden();
     });
   }
-
-  test('P15-R10: level_zero/?tiles=1 draws the grid over its districts', async ({ page }) => {
-    await page.goto('./level_zero/?tiles=1');
-    await expect(page.locator('#game-canvas')).toBeVisible();
-    await expect(page.locator('.scenery-title')).toHaveText('Level Zero');
-    await page.evaluate(() => {
-      (window as unknown as { __SCENERY_TEST__: { step(n: number): void } }).__SCENERY_TEST__.step(
-        1,
-      );
-    });
-    await expect(page.locator('#fatal')).toBeHidden();
-  });
 });

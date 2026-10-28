@@ -1,6 +1,5 @@
 import type { PropGeometry, PropModelFactory } from '../../../render/scenery/scenery-look';
 import {
-  INDUSTRIAL_VARIANTS,
   JUNGLE_VARIANTS,
   PART_FAMILIES,
   POLAR_VARIANTS,
@@ -8,25 +7,16 @@ import {
   type PartFamily,
 } from '../../config/building-families';
 import { CAR_IDS } from '../../config/cars';
-import { PROP_IDS } from '../../config/level-zero';
+import { PROP_IDS } from '../../config/prop-ids';
 import { PROP_COLORS as C } from '../../config/prop-look';
 import { WORLD_1_PROP_IDS as W } from '../../config/world-1/props';
 import { WORLD_2_PROP_IDS as W2 } from '../../config/world-2/props';
 import { WORLD_3_PROP_IDS as W3 } from '../../config/world-3/props';
 import { buildCar } from './car-props';
-import { buildIndustrialComplex } from './industrial-parts';
 import { buildCactus, buildDryBush, buildPalmTree } from './desert-plants';
 import { buildBeachHut, buildDesertHome } from './desert-props';
-import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
+import { buildDomeHome, buildCubeHome } from './home-props';
 import { buildFarmhouse, buildGrainSilos, buildGreenhouse } from './farm-props';
-import {
-  buildContainerYard,
-  buildCoolingTower,
-  buildFactory,
-  buildRefinery,
-  buildStorageTanks,
-  buildWarehouse,
-} from './industrial-props';
 import { buildBroadleafTree, buildBush, buildConifer } from './green-tree-props';
 import { buildPolarBuilding } from './polar-city';
 import { buildFishStore, buildHarbourCrane, buildLighthouse } from './polar-coast';
@@ -73,7 +63,7 @@ import {
 import { buildSkyBridgeTowers, buildTreetopPlatform } from './jungle-treetop';
 import { buildFishingPlatform, buildLilyPads, buildReeds, buildWaterfall } from './jungle-water';
 import { buildFrostedTree, buildSnowPine, buildSnowyBush } from './polar-plants';
-import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
+import { buildAntennaMast } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
 import { TILE_PROP_MODELS } from './tile-models';
 import { ROAD_KIT_MODELS } from './road-kit';
@@ -92,25 +82,14 @@ function partModels(
 
 /** One model per prop kind of this game, keyed by its id (P04-R04). */
 export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
-  [PROP_IDS.factory]: buildFactory,
-  [PROP_IDS.tanks]: buildStorageTanks,
-  [PROP_IDS.warehouse]: buildWarehouse,
-  [PROP_IDS.coolingTower]: buildCoolingTower,
-  [PROP_IDS.radar]: buildRadarDish,
   [PROP_IDS.antenna]: buildAntennaMast,
-  [PROP_IDS.observatory]: buildObservatory,
   [PROP_IDS.cubeHome]: buildCubeHome,
   [PROP_IDS.domeHome]: buildDomeHome,
-  [PROP_IDS.stiltPod]: buildStiltPod,
   [PROP_IDS.deadTree]: buildDeadTree,
   [PROP_IDS.forkedTree]: buildForkedTree,
-  [PROP_IDS.containerYard]: buildContainerYard,
-  [PROP_IDS.refinery]: buildRefinery,
   [PROP_IDS.conifer]: buildConifer,
   [PROP_IDS.broadleaf]: buildBroadleafTree,
   [PROP_IDS.bush]: buildBush,
-  // Phase 4 review: buildings assembled from parts, one model per variant and family.
-  ...partModels('industrial-complex', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
   // Phase 6: desert and coast homes, outposts and plants.
   [W.desertHome]: buildDesertHome,
   [W.beachHut]: buildBeachHut,

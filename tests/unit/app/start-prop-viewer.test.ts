@@ -39,7 +39,7 @@ describe('startPropViewer (reviewer, 2026-10-28)', () => {
   it('lays out the game’s groups on a grid, props apart, and steps with the arrow keys', () => {
     viewer = start(GAME);
     const labels = viewer.groups.map((g) => g.label);
-    expect(labels).toEqual(expect.arrayContaining(['Level Zero', 'World 3', 'Buildings', 'Cars']));
+    expect(labels).toEqual(expect.arrayContaining(['Shared', 'World 3', 'Road kit', 'Cars']));
     const all = viewer.groups.flatMap((g) => g.ids);
     expect(new Set(all).size).toBe(all.length);
     expect(new Set(all)).toEqual(new Set(Object.keys(GAME.view.scenery.propModels)));

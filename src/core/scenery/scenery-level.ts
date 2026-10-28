@@ -408,7 +408,7 @@ export interface RoadRules {
    * Phase 6 review: roads never cross, they only meet where a path joins a road. Main roads keep
    * at least `gap` apart (each one after the first follows the one before it, on one side); a
    * path starts on a main road and ends off the screen or on another main road or street, `gap`
-   * clear of everything else; street grids have T-junctions only. Unset (Level Zero): main
+   * clear of everything else; street grids have T-junctions only. Unset: main
    * roads and paths may cross, and streets meet at crossings too.
    */
   readonly noCrossings?: { readonly gap: number };

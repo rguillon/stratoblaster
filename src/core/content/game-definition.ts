@@ -8,7 +8,6 @@ import type { HullRules } from '../systems/player-hull';
 import type { GameLevel } from './game-level';
 import type { LevelCatalog } from './level-catalog';
 import type { MenuTexts } from './menu-texts';
-import type { SceneryLevel } from '../scenery/scenery-level';
 
 /** Logical resolution the game is laid out on, scaled to fit the window (GD-02). */
 export interface LogicalScreen {
@@ -43,11 +42,6 @@ export interface GameDefinition<TView = unknown> {
    * their entry in {@link levels}.
    */
   readonly gameLevels: readonly GameLevel[];
-  /**
-   * Test levels with generated ground (terrain, sea, props), first one first, not listed on the
-   * level select screen: the `level_zero/` and `enemies/` debug pages show the first one (P04).
-   */
-  readonly sceneryLevels: readonly SceneryLevel[];
   /** The kinds of enemies (P05), which the levels' waves bring in by id. */
   readonly enemyKinds: readonly EnemyKindDefinition[];
   /** The kinds of bosses (P07), which the levels bring in by id (`GameLevel.bosses`). */

@@ -1,6 +1,6 @@
 import type { SceneryBindings } from '../../render/game-view';
 import type { PlayfieldCameraLook, SceneryLook } from '../../render/scenery/scenery-look';
-import { LEVEL_ZERO_LOOK, PLAYFIELD_CAMERA } from '../config/scenery-look';
+import { PLAYFIELD_CAMERA } from '../config/scenery-look';
 import {
   LEVEL_1_1_LOOK,
   LEVEL_1_2_LOOK,
@@ -35,7 +35,6 @@ import {
   LEVEL_4_5_LOOK,
 } from '../config/world-4/looks';
 import { LEVEL_4_1, LEVEL_4_2, LEVEL_4_3, LEVEL_4_4, LEVEL_4_5 } from '../config/world-4/scenery';
-import { LEVEL_ZERO } from '../sim/scenery-levels';
 import { READABILITY } from '../config/readability';
 import { PROP_MODELS } from './props/prop-models';
 import { allToned } from './readability-view';
@@ -43,7 +42,6 @@ import { PROP_GROUPS } from './props/prop-groups';
 
 const TONES = READABILITY.tones;
 const CAMERA: PlayfieldCameraLook = PLAYFIELD_CAMERA;
-const LEVEL_ZERO_SCENERY: SceneryLook = LEVEL_ZERO_LOOK;
 
 /** World 1 (P06-R05): one look per level. */
 const WORLD_1_LOOKS: Readonly<Record<string, SceneryLook>> = {
@@ -86,7 +84,6 @@ export const SCENERY_BINDINGS: SceneryBindings = {
   camera: CAMERA,
   looks: {
     // Phase 14 (P14-R01): each world's ground and props darkened.
-    ...allToned({ [LEVEL_ZERO.id]: LEVEL_ZERO_SCENERY }, TONES.world0),
     ...allToned(WORLD_1_LOOKS, TONES.world1),
     ...allToned(WORLD_2_LOOKS, TONES.world2),
     ...allToned(WORLD_3_LOOKS, TONES.world3),
