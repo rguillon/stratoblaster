@@ -81,6 +81,8 @@ function addLights(scene: Scene): void {
   new HemisphericLight('props-ambient', Vector3.Up(), scene).intensity = lights.ambientIntensity;
   const key = new DirectionalLight('props-key', new Vector3(...lights.keyDirection), scene);
   key.intensity = lights.keyIntensity;
+  const fill = new DirectionalLight('props-fill', new Vector3(...lights.fillDirection), scene);
+  fill.intensity = lights.fillIntensity;
 }
 
 /** The props of one group, each on whole tiles of the grid of the ground (phase 15). */
