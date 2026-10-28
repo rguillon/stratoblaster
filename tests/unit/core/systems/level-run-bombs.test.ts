@@ -110,4 +110,13 @@ describe('LevelRun bombs (P11-R05)', () => {
     expect(boss.parts.map((p) => p.health)).toEqual([15, 5]);
     expect(boss.coreHealth).toBe(core);
   });
+
+  it('reviewer, 2026-10-28: starts with the lives and bombs kept, and gives what is left to keep', () => {
+    const run = newRun({ startSupplies: { lives: 6, bombs: 8 } });
+    expect([run.hull?.lives, run.bombs?.count]).toEqual([6, 8]);
+    run.bombs?.fire(0, 0);
+    expect(run.supplies).toEqual({ lives: 6, bombs: 7 });
+    const plain = newRun();
+    expect(plain.supplies).toEqual({ lives: plain.hull?.lives, bombs: plain.bombs?.count });
+  });
 });

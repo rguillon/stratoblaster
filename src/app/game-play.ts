@@ -1,4 +1,3 @@
-import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import type { GameDefinition } from '../core/content/game-definition';
 import type { GameLevel } from '../core/content/game-level';
@@ -14,6 +13,7 @@ import type { EnemyBlast } from '../core/systems/enemy-world';
 import { LevelRun, type LevelCheckpoint, type LevelResult } from '../core/systems/level-run';
 import type { FlightBounds } from '../core/systems/player-flight';
 import type { WeaponLevels } from '../core/systems/run-arsenal';
+import type { Supplies } from '../core/systems/level-run-types';
 import type { ShotImpact } from '../core/systems/shot-world';
 import { EnemyLayer } from '../render/enemy-layer';
 import type { BombRenderer, BonusRenderer, GameView } from '../render/game-view';
@@ -28,7 +28,7 @@ import { GAME_PLAY_CONFIG as CFG } from '../config/game-play';
 import { EnemyViewerShots } from './enemy-viewer-shots';
 import { createLevelOverlays, hudFrame } from './game-play-hud';
 import { levelState, type GamePlayState } from './game-play-state';
-import { buildLevelScene, skyState, type LevelScene } from './level-scene';
+import { buildLevelScene, compileShaders, skyState, type LevelScene } from './level-scene';
 import { levelOf, sceneryWithRunout } from './level-prepare';
 import { RateMeter } from './rate-meter';
 import { hitBlasts } from './hit-blasts';
@@ -56,6 +56,8 @@ export interface GamePlayOptions {
   readonly resume?: LevelCheckpoint;
   /** The weapons kept from the levels completed before; all at level 1 when omitted. */
   readonly weapons?: WeaponLevels;
+  /** The lives and bombs kept from the level completed before; the game's when omitted. */
+  readonly supplies?: Supplies;
   /** The saved high score, for the HUD (P11-R02); 0 when omitted. */
   readonly highScore?: number;
   /** Debug choices on the level's look (P08-R12): a forced time of day, no weather. */
@@ -69,14 +71,6 @@ export interface GamePlayOptions {
   readonly onComplete: (result: LevelResult) => void;
   /** Called after each step of the level, e.g. for its sounds (P12-R09). */
   readonly onStep?: (run: LevelRun) => void;
-}
-
-/** Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04). */
-function compile(meshes: readonly AbstractMesh[]): void {
-  for (const mesh of meshes) {
-    const { material } = mesh;
-    if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
-  }
 }
 
 /** What happened during the steps of one frame, to draw. */
@@ -189,6 +183,7 @@ export class GamePlay {
       bossKinds: this.game.bossKinds,
       bossRules: this.game.bossFights,
       ...(this.options.weapons ? { startWeapons: this.options.weapons } : {}),
+      ...(this.options.supplies ? { startSupplies: this.options.supplies } : {}),
       ...(this.options.resume ? { checkpoint: this.options.resume } : {}),
     });
   }
@@ -240,7 +235,7 @@ export class GamePlay {
     this.#draw(dt, events);
     // P13-R04: one more enemy model built ahead of its first appearance, each frame.
     const built = this.view.playfield.run(() => this.#enemies.prepareNext());
-    if (this.#compileShaders) compile(built);
+    if (this.#compileShaders) compileShaders(built);
     if (this.run.phase === 'over') this.#overFor += dt * this.#timeScale;
     const over = this.#overFor >= CFG.damage.gameOverDelay;
     if ((this.run.phase === 'complete' || over) && !this.#completed) {
@@ -353,13 +348,13 @@ export class GamePlay {
   }
 
   /**
-   * Gets the level ready to play smoothly (P13-R04): with `compileShaders`, the shaders of
-   * everything in the scene compiled before play starts, and those of each enemy model built
-   * ahead of its first appearance (one per frame, see {@link frame}).
+   * Gets the level ready to play smoothly (P13-R04): with `compile`, the shaders of everything
+   * in the scene compiled before play starts, and those of each enemy model built ahead of its
+   * first appearance (one per frame, see {@link frame}).
    */
-  prepare(compileShaders: boolean): void {
-    this.#compileShaders = compileShaders;
-    if (compileShaders) compile(this.view.scene.meshes);
+  prepare(compile: boolean): void {
+    this.#compileShaders = compile;
+    if (compile) compileShaders(this.view.scene.meshes);
   }
 
   dispose(): void {

@@ -1510,3 +1510,9 @@
 - **Phase:** 14 (reviewer request: lighter drawing)
 - **Decision:** In the levels whose roads are all streets (2-4, 2-5, Worlds 3 and 4), the even middle of each street is drawn opaque and written in depth, apart from its soft edges and lane markings, which stay see-through and drawn over it (`RoadLayers`): the terrain under the streets is no longer shaded, and those ribbons are no longer blended. Elsewhere, a street drawn before a main road or a path would end up under it, so nothing changes there. The middles are pulled towards the camera less than the see-through ribbons and markings (depth offset -1, not -2), so the markings always stay on top. As a result, the lowest part of the cars on the streets, which the street hid, now shows.
 - **Status:** Accepted
+
+### D-154 — Lives and bombs kept from one level to the next, without limit
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P11-R05 and P11-R07)
+- **Decision:** A completed level keeps its lives and bombs, as it keeps its weapons (D-071): they are saved (`<game>_supplies`, `saved-supplies.ts`) and the next level started, whichever it is, starts with them (`LevelRunOptions.startSupplies`). A Continue, after a game over, starts again with the starting 3 lives and 3 bombs; a lost life still tops the bombs up to 3. Life and bomb bonuses no longer stop at 5: `HullRules.maxLives` and `BombRules.max` are optional, with no limit when omitted, and the game sets neither (so the points a bonus scores at the most, P11-R07, no longer come up). The HUD shows the bombs as a count (`● 7`), not one icon each.
+- **Status:** Accepted

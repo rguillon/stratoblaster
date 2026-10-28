@@ -1,4 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Scene } from '@babylonjs/core/scene';
 import { Constants } from '@babylonjs/core/Engines/constants';
 import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
@@ -57,6 +58,14 @@ export interface LevelSceneOptions {
   readonly atmosphere?: AtmosphereOptions;
   /** Phase 14 (P14-R03, R04): rim glows round the playfield meshes that ask for one. */
   readonly outline?: OutlineLook;
+}
+
+/** Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04). */
+export function compileShaders(meshes: readonly AbstractMesh[]): void {
+  for (const mesh of meshes) {
+    const { material } = mesh;
+    if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
+  }
 }
 
 /** The look of `level`, or a descriptive error. */
