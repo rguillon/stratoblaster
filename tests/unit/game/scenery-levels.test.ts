@@ -13,7 +13,6 @@ import { PROP_MODELS } from '../../../src/game/view/props/prop-models';
 import { WORLD_1_PROP_IDS } from '../../../src/game/config/world-1/props';
 import { WORLD_2_PROP_IDS } from '../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../../src/game/config/world-3/props';
-import { WORLD_4_PROP_IDS } from '../../../src/game/config/world-4/props';
 import {
   JUNGLE_VARIANTS,
   SKYSCRAPER_VARIANTS,
@@ -148,7 +147,6 @@ describe('Level Zero', () => {
       ...(['canopy-tower', 'canopy-block'] as const).flatMap((family) =>
         Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1)),
       ),
-      ...Object.values(WORLD_4_PROP_IDS),
       ...Array.from({ length: SKYSCRAPER_VARIANTS }, (_, i) => variantId('skyscraper', i + 1)),
     ]);
     const standing = Object.keys(PROP_MODELS).filter((id) => !others.has(id));

@@ -1360,3 +1360,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** A new `props/` page (`startPropViewer`, game-agnostic) shows the prop models of one group on a grid, using the same vertex-coloured materials as the scenery, under a turning camera. The panel picks the group and a prop; the camera centres on it, and a readout gives its size and triangle count. Clicking a prop or pressing ←/→ also picks one. The game names the groups (`SceneryBindings.propGroups`): Level Zero, World 1 to World 4, Buildings (the part-built variants) and Cars. Without groups, every model goes in one group. `main.ts` now starts each page from a route table.
 - **Status:** Accepted
+
+### D-129 — Volcanic props removed
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The 31 volcanic props of the first World 4 (lava boulders, vents, geothermal and lava works, foundries, rail yard, war factory) were removed, as no level placed them since the World 4 rework (2026-10-27). This removes their models (`view/props/volcanic-*.ts`), their ids, their placement rules and their tests. `config/world-4/props.ts` keeps only World 4's roads. Lava as a sea (`sea.lava`) and the plume kinds stay in the engine.
+- **Status:** Accepted

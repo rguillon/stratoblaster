@@ -4,7 +4,6 @@ import { PROP_IDS } from '../../config/level-zero';
 import { WORLD_1_PROP_IDS } from '../../config/world-1/props';
 import { WORLD_2_PROP_IDS } from '../../config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../config/world-3/props';
-import { WORLD_4_PROP_IDS } from '../../config/world-4/props';
 import { PROP_MODELS } from './prop-models';
 
 /** The props named by each world, then the buildings made of parts, then the cars. */
@@ -13,7 +12,6 @@ const NAMED: readonly [string, Readonly<Record<string, string>>][] = [
   ['World 1', WORLD_1_PROP_IDS],
   ['World 2', WORLD_2_PROP_IDS],
   ['World 3', WORLD_3_PROP_IDS],
-  ['World 4', WORLD_4_PROP_IDS],
   ['Cars', CAR_IDS],
 ];
 
