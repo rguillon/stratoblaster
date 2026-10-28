@@ -4,50 +4,6 @@ import { CAR_RULES } from '../cars';
 import { PROP_IDS } from '../prop-ids';
 import { WORLD_1_ROADS } from '../world-1/props';
 
-/**
- * Ids of the props added for World 3 (P09-R06). The jungle ones were made for the first World 3,
- * the Jungle; since the reviewer's rework (2026-10-27) no level places them, only the homes.
- */
-export const WORLD_3_PROP_IDS = {
-  // The homes, from the factories to the garden suburbs (reviewer, 2026-10-27).
-  // Plants.
-  canopyCluster: 'canopy-cluster',
-  canopyCrown: 'canopy-crown',
-  junglePalm: 'jungle-palm',
-  giantFern: 'giant-fern',
-  mangrove: 'mangrove',
-  swampTree: 'swamp-tree',
-  // On the water.
-  reeds: 'reeds',
-  lilyPads: 'lily-pads',
-  fishingPlatform: 'fishing-platform',
-  // Stilt villages, river ports and logging camps.
-  stiltHut: 'stilt-hut',
-  longhouse: 'stilt-longhouse',
-  riverDock: 'river-dock',
-  sawmill: 'sawmill',
-  logPile: 'log-pile',
-  // Temple ruins and the enemy outposts in them.
-  stepPyramid: 'step-pyramid',
-  templeStatue: 'temple-statue',
-  ruinShrine: 'ruin-shrine',
-  causeway: 'causeway',
-  gunPit: 'gun-pit',
-  neonGate: 'neon-gate',
-  ruinAntenna: 'ruin-antenna',
-  // Swamp works.
-  bioLab: 'bio-lab',
-  swampPipeline: 'swamp-pipeline',
-  pumpingStation: 'pumping-station',
-  dam: 'giant-dam',
-  powerPlant: 'dam-power-plant',
-  // The canopy city.
-  treetopPlatform: 'treetop-platform',
-  skyBridgeTowers: 'sky-bridge-towers',
-  // Water features.
-  waterfall: 'waterfall',
-} as const;
-
 const P = PROP_IDS;
 
 /** Building groups of World 3; each section lists the ones that stand on it. */

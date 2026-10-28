@@ -14,12 +14,12 @@ export const WORLD_1_PROP_IDS = {
   farmhouse: 'farmhouse',
   greenhouse: 'greenhouse',
   grainSilos: 'grain-silos',
+  /** The wind turbines of the farms, also placed in World 2. */
+  windTurbine: 'wind-turbine',
 } as const;
 
 const P = PROP_IDS;
 const W = WORLD_1_PROP_IDS;
-/** World 2's wind turbine (`WORLD_2_PROP_IDS.windTurbine`; World 2's props import these). */
-const WIND_TURBINE = 'wind-turbine';
 
 /** Building groups of World 1; each section lists the ones that stand on it. */
 export const WORLD_1_GROUPS = {
@@ -104,7 +104,7 @@ export const WORLD_1_PROPS: PropRules = {
         building(W.farmhouse, 3, 8.5),
         building(W.greenhouse, 2, 9.5),
         building(W.grainSilos, 2, 9.5),
-        building(WIND_TURBINE, 1, 6),
+        building(W.windTurbine, 1, 6),
       ],
     },
     {

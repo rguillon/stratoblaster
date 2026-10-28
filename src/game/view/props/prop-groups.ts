@@ -2,8 +2,6 @@ import type { PropGroup } from '../../../render/game-view';
 import { CAR_IDS } from '../../config/cars';
 import { PROP_IDS } from '../../config/prop-ids';
 import { WORLD_1_PROP_IDS } from '../../config/world-1/props';
-import { WORLD_2_PROP_IDS } from '../../config/world-2/props';
-import { WORLD_3_PROP_IDS } from '../../config/world-3/props';
 import { PROP_MODELS } from './prop-models';
 import { LOT_MODELS, TILE_GROUPS, type TileModel } from '../../config/tile-buildings';
 import { ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID } from './road-kit';
@@ -39,8 +37,6 @@ const TILE_PAGE: readonly PropGroup[] = [
 const NAMED: readonly [string, Readonly<Record<string, string>>][] = [
   ['Shared', PROP_IDS],
   ['World 1', WORLD_1_PROP_IDS],
-  ['World 2', WORLD_2_PROP_IDS],
-  ['World 3', WORLD_3_PROP_IDS],
   ['Cars', CAR_IDS],
 ];
 

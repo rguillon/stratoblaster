@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  JUNGLE_VARIANTS,
-  POLAR_VARIANTS,
-  variantId,
-  type PartFamily,
-} from '../../../../../src/game/config/building-families';
 import { CAR_IDS } from '../../../../../src/game/config/cars';
 import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/world-1/props';
-import { WORLD_2_PROP_IDS, WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
-import { WORLD_3_PROP_IDS } from '../../../../../src/game/config/world-3/props';
+import { WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import {
   BUILDING_MARGIN,
@@ -56,12 +49,11 @@ describe('prop models', () => {
     }
   });
 
-  it('P04-R04: the model count (Level Zero and its own models removed, reviewer 2026-10-28)', () => {
-    // 8 shared models (trees, antenna, two homes), 8 more for World 1, 6 cars; for World 2,
-    // 22 hand-made models and 3 families of 8; for World 3, 29 hand-made models and 2 families
-    // of 8; phase 15: the models of the grid of tiles and the road kit.
+  it('P04-R04: the model count (only the models a level places, reviewer 2026-10-28)', () => {
+    // 8 shared models (trees, antenna, two homes), 9 for World 1 (the wind turbine included),
+    // 6 cars; phase 15: the models of the grid of tiles and the road kit.
     expect(Object.keys(PROP_MODELS)).toHaveLength(
-      8 + 8 + 6 + 22 + 24 + 29 + 16 + TILE_MODELS.length + Object.keys(ROAD_KIT_MODELS).length,
+      8 + 9 + 6 + TILE_MODELS.length + Object.keys(ROAD_KIT_MODELS).length,
     );
   });
 
@@ -115,17 +107,7 @@ describe('prop models', () => {
 });
 
 describe('World 2 prop models', () => {
-  const polar = (family: PartFamily) =>
-    Array.from({ length: POLAR_VARIANTS }, (_, i) => variantId(family, i + 1));
-
-  it('P08-R07: every new prop is as light as the hand-made props of the earlier levels (D-031)', () => {
-    for (const id of Object.values(WORLD_2_PROP_IDS)) {
-      expect(PROP_MODELS[id], id).toBeDefined();
-      expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
-    }
-  });
-
-  it('P08-R07 (rework, 2026-10-27): desert homes and outposts, mines, oil pumpjacks, refineries and factories; no frozen prop', () => {
+  it('P08-R07 (rework, 2026-10-27): desert homes and outposts, mines, oil, refineries and factories', () => {
     const kinds = new Set(WORLD_2_PROPS.groups.flatMap((g) => g.kinds.map((k) => k.id)));
     // Phase 15: the models made for the grid of tiles, by group.
     for (const id of [
@@ -141,74 +123,15 @@ describe('World 2 prop models', () => {
     expect(WORLD_2_PROPS.trees.map((t) => t.id)).toEqual(
       expect.arrayContaining(['cactus', 'dry-bush', 'palm-tree', 'dead-tree']),
     );
-    const frozen = new Set<string>(Object.values(WORLD_2_PROP_IDS));
-    for (const id of [...kinds, ...WORLD_2_PROPS.trees.map((t) => t.id)])
-      expect(frozen.has(id), id).toBe(false);
     expect(WORLD_2_PROPS.floating).toBeUndefined();
   });
 
   it('P08-R07: each building fits in its footprint at its largest scale', () => {
-    // Buildings only: the plants are World 1's, whose footprints space their trunks (P06-R06).
     for (const kind of WORLD_2_PROPS.groups.flatMap((g) => g.kinds)) {
       const model = PROP_MODELS[kind.id];
       if (!model) throw new Error(`no model for ${kind.id}`);
       const largest = extent(model().structure).radius * kind.scale[1];
       expect(largest, kind.id).toBeLessThanOrEqual(kind.footprint + 1e-9);
-    }
-  });
-
-  it('P08-R07: the polar buildings made of parts differ from one variant to the next', () => {
-    for (const family of ['polar-tower', 'polar-block', 'mining-complex'] as const) {
-      const shapes = new Set(
-        polar(family).map((id) =>
-          JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
-        ),
-      );
-      expect(shapes.size, family).toBe(POLAR_VARIANTS);
-    }
-  });
-
-  it('P08-R03: the pipeline piece is 15 long, stretched to 2 tiles (phase 15)', () => {
-    const { positions } = PROP_MODELS.pipeline?.().structure ?? { positions: [] };
-    const xs = positions.filter((_, i) => i % 3 === 0);
-    expect(Math.min(...xs)).toBeCloseTo(-(20 - 2 * BUILDING_MARGIN) / 2, 6);
-    expect(Math.max(...xs)).toBeCloseTo((20 - 2 * BUILDING_MARGIN) / 2, 6);
-  });
-});
-
-describe('World 3 props (P09-R06)', () => {
-  const jungle = (family: PartFamily) =>
-    Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1));
-  const CANOPY = [WORLD_3_PROP_IDS.canopyCluster, WORLD_3_PROP_IDS.canopyCrown];
-
-  it('P09-R06: each new prop stays under the triangle budget; the canopy crowns lighter still', () => {
-    for (const id of Object.values(WORLD_3_PROP_IDS)) {
-      expect(PROP_MODELS[id], id).toBeDefined();
-      // The dam spans the whole lake: one set piece, within the props' 600-triangle cap.
-      const budget = id === WORLD_3_PROP_IDS.dam ? 600 : heaviest;
-      expect(triangles(id), id).toBeLessThanOrEqual(budget);
-    }
-    for (const id of CANOPY) expect(triangles(id), id).toBeLessThanOrEqual(heaviest / 2.5);
-    for (const id of [...jungle('canopy-tower'), ...jungle('canopy-block')])
-      expect(triangles(id), id).toBeLessThan(600);
-  });
-
-  it('P09-R06: the canopy city buildings made of parts differ from one variant to the next', () => {
-    for (const family of ['canopy-tower', 'canopy-block'] as const) {
-      const shapes = new Set(
-        jungle(family).map((id) =>
-          JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
-        ),
-      );
-      expect(shapes.size, family).toBe(JUNGLE_VARIANTS);
-    }
-  });
-
-  it('P09-R06: the causeway and the swamp pipeline, 15 long, stretched to 2 tiles (phase 15)', () => {
-    for (const id of [WORLD_3_PROP_IDS.causeway, WORLD_3_PROP_IDS.swampPipeline]) {
-      const xs = (PROP_MODELS[id]?.().structure.positions ?? []).filter((_, i) => i % 3 === 0);
-      expect(Math.min(...xs), id).toBeCloseTo(-(20 - 2 * BUILDING_MARGIN) / 2, 6);
-      expect(Math.max(...xs), id).toBeCloseTo((20 - 2 * BUILDING_MARGIN) / 2, 6);
     }
   });
 });

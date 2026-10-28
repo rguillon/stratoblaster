@@ -4,43 +4,6 @@ import { CAR_RULES } from '../cars';
 import { PROP_IDS } from '../prop-ids';
 import { WORLD_1_PROP_IDS, WORLD_1_ROADS } from '../world-1/props';
 
-/**
- * Ids of the props added for World 2 (P08-R07). The frozen ones were made for the first World 2,
- * the Frozen North; since the reviewer's rework (2026-10-27) no level places them, only the
- * oil pumpjack.
- */
-export const WORLD_2_PROP_IDS = {
-  /** The oil fields of 2-2 and 2-3 (reviewer, 2026-10-27). */
-  // Plants.
-  snowPine: 'snow-pine',
-  frostedTree: 'frosted-tree',
-  snowyBush: 'snowy-bush',
-  // Homes.
-  chalet: 'polar-chalet',
-  longChalet: 'long-chalet',
-  hut: 'ice-hut',
-  heatedDome: 'heated-dome',
-  // The coast and the harbours.
-  lighthouse: 'lighthouse',
-  harbourCrane: 'harbour-crane',
-  fishStore: 'fish-store',
-  // Research outposts and the tundra.
-  radarDome: 'radar-dome',
-  antennaArray: 'antenna-array',
-  windTurbine: 'wind-turbine',
-  pipeline: 'pipeline',
-  // Mining.
-  drillTower: 'drill-tower',
-  conveyor: 'conveyor',
-  oreSilo: 'ore-silo',
-  miningCrane: 'mining-crane',
-  // On the sea.
-  floeSmall: 'ice-floe-small',
-  floeLarge: 'ice-floe-large',
-  iceberg: 'iceberg',
-  weatherBuoy: 'weather-buoy',
-} as const;
-
 const P = PROP_IDS;
 const W1 = WORLD_1_PROP_IDS;
 

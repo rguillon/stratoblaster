@@ -1571,3 +1571,9 @@
 - **Decision:** Every prop model, placed on the grid of tiles or not (trees, homes, landmarks, buildings made of parts, line pieces and cars included), is stretched along X and Z to the nearest whole number of tiles (at least one) less the 0.5 building margin, centred on the origin; heights are kept (`game/view/props/tile-fit.ts`, applied to all of `PROP_MODELS` but the tile models and the road kit, which already fit). The pipeline, swamp pipeline and causeway pieces (15 long) become 2 tiles long (19).
 - **Consequences:** small props grow to a 9.0 × 9.0 footprint at least: trees, bushes and cars are stretched sideways (a car is about 9 wide); World 4's P14 tone goes from 0.58 to 0.55 so 4-1 stays under the background luminance cap; the placement footprints and scale ranges of the world configs are unchanged, so the random scale of a scattered prop still moves it off whole tiles in the levels.
 - **Status:** Accepted
+
+### D-163 — Prop models no level places are removed
+- **Date:** 2026-10-28
+- **Phase:** 15 (reviewer's request, in chat)
+- **Decision:** The 90 prop models no level places any more (checked with `levelPropKinds` and the car kinds over every game level) are removed with their builders: World 2's frozen props (snow plants, chalets, huts, domes, harbour, outposts, pipeline, mining, sea ice) and its families of parts (polar towers and blocks, mining complexes), and all of World 3's own props (jungle plants, water props, stilt villages, ruins, swamp works, dam, canopy city and its families). Deleted: `polar-*.ts`, `jungle-*.ts`, `config/building-families.ts`, `WORLD_2_PROP_IDS`, `WORLD_3_PROP_IDS` and the 56 palette colours only they used. The wind turbine, still placed in Worlds 1 and 2, moves to `view/props/wind-turbine.ts` and to `WORLD_1_PROP_IDS`. The `props/` page loses its World 2, World 3 and Buildings groups.
+- **Status:** Accepted
