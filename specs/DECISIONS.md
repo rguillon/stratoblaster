@@ -1354,3 +1354,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** The PBR metal of the player ships, enemies and bosses takes 1.8× the direct light and 1.8× the sky reflections (`READABILITY.hullLight`, set on the shared hull materials). The scenery lights are unchanged.
 - **Status:** Accepted
+
+### D-128 — Props viewer page
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** A new `props/` page (`startPropViewer`, game-agnostic) shows the prop models of one group on a grid, using the same vertex-coloured materials as the scenery, under a turning camera. The panel picks the group and a prop; the camera centres on it, and a readout gives its size and triangle count. Clicking a prop or pressing ←/→ also picks one. The game names the groups (`SceneryBindings.propGroups`): Level Zero, World 1 to World 4, Buildings (the part-built variants) and Cars. Without groups, every model goes in one group. `main.ts` now starts each page from a route table.
+- **Status:** Accepted

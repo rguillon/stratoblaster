@@ -31,7 +31,8 @@ interface PropMeshes {
 
 const MATRIX_FLOATS = 16;
 
-function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
+/** A disabled, unpickable mesh of `geo`, drawn with `material`. */
+export function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
   const mesh = new Mesh(name, scene);
   const data = new VertexData();
   data.positions = geo.positions;

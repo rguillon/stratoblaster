@@ -176,4 +176,12 @@ export interface SceneryBindings {
   readonly looks: Readonly<Record<string, SceneryLook>>;
   /** One model per prop kind, keyed by `PropKindRule.id`. */
   readonly propModels: Readonly<Record<string, PropModelFactory>>;
+  /** How the `props/` page groups the prop models (all in one group when omitted). */
+  readonly propGroups?: readonly PropGroup[];
+}
+
+/** A named group of prop model ids, shown together on the `props/` page. */
+export interface PropGroup {
+  readonly label: string;
+  readonly ids: readonly string[];
 }

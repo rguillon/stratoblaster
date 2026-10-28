@@ -39,6 +39,7 @@ import { LEVEL_ZERO } from '../sim/scenery-levels';
 import { READABILITY } from '../config/readability';
 import { PROP_MODELS } from './props/prop-models';
 import { withVeil } from './readability-view';
+import { PROP_GROUPS } from './props/prop-groups';
 
 const VEILS = READABILITY.veils;
 const CAMERA: PlayfieldCameraLook = PLAYFIELD_CAMERA;
@@ -92,4 +93,5 @@ export const SCENERY_BINDINGS: SceneryBindings = {
     ...withVeil(WORLD_4_LOOKS, VEILS.world4),
   },
   propModels: PROP_MODELS,
+  propGroups: PROP_GROUPS,
 };
