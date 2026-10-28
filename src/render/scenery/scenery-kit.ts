@@ -100,7 +100,8 @@ export function setGroundLights(materials: PropMaterials, glow: number): void {
 /** Vertex-coloured materials of the props: lit structure, and self-lit accents. */
 export function createPropMaterials(scene: Scene, look: SceneryLook): PropMaterials {
   const structure = new StandardMaterial('prop-structure', scene);
-  structure.diffuseColor = Color3.White();
+  const tone = look.tone ?? 1;
+  structure.diffuseColor = new Color3(tone, tone, tone);
   structure.specularColor = new Color3(
     look.props.specular,
     look.props.specular,

@@ -38,10 +38,10 @@ import { LEVEL_4_1, LEVEL_4_2, LEVEL_4_3, LEVEL_4_4, LEVEL_4_5 } from '../config
 import { LEVEL_ZERO } from '../sim/scenery-levels';
 import { READABILITY } from '../config/readability';
 import { PROP_MODELS } from './props/prop-models';
-import { withVeil } from './readability-view';
+import { allToned } from './readability-view';
 import { PROP_GROUPS } from './props/prop-groups';
 
-const VEILS = READABILITY.veils;
+const TONES = READABILITY.tones;
 const CAMERA: PlayfieldCameraLook = PLAYFIELD_CAMERA;
 const LEVEL_ZERO_SCENERY: SceneryLook = LEVEL_ZERO_LOOK;
 
@@ -85,12 +85,12 @@ const WORLD_4_LOOKS: Readonly<Record<string, SceneryLook>> = {
 export const SCENERY_BINDINGS: SceneryBindings = {
   camera: CAMERA,
   looks: {
-    // Phase 14 (P14-R01): each world's ground under its veil.
-    ...withVeil({ [LEVEL_ZERO.id]: LEVEL_ZERO_SCENERY }, VEILS.world0),
-    ...withVeil(WORLD_1_LOOKS, VEILS.world1),
-    ...withVeil(WORLD_2_LOOKS, VEILS.world2),
-    ...withVeil(WORLD_3_LOOKS, VEILS.world3),
-    ...withVeil(WORLD_4_LOOKS, VEILS.world4),
+    // Phase 14 (P14-R01): each world's ground and props darkened.
+    ...allToned({ [LEVEL_ZERO.id]: LEVEL_ZERO_SCENERY }, TONES.world0),
+    ...allToned(WORLD_1_LOOKS, TONES.world1),
+    ...allToned(WORLD_2_LOOKS, TONES.world2),
+    ...allToned(WORLD_3_LOOKS, TONES.world3),
+    ...allToned(WORLD_4_LOOKS, TONES.world4),
   },
   propModels: PROP_MODELS,
   propGroups: PROP_GROUPS,

@@ -22,18 +22,16 @@ export const READABILITY = {
     pickup: { from: 85, to: 160, minSaturation: 0.5 },
   } satisfies Record<string, ColorFamily>,
   /**
-   * P14-R01: a veil of `color` laid over the ground, the sky and the clouds (under the
-   * playfield), covering them `opacity` of the way, per world. Dark violet, so the ground keeps
-   * its darksynth tint (GD-60).
+   * P14-R01, per world: the share of their colour the ground, the shores, the water, the roads
+   * and the props keep (reviewer, 2026-10-28: in place of a dark veil over the background).
    */
-  veils: {
-    world0: { color: [0.012, 0.006, 0.02] as Rgb, opacity: 0.42 },
-    world1: { color: [0.012, 0.006, 0.02] as Rgb, opacity: 0.45 },
+  tones: {
+    world0: 0.58,
+    world1: 0.55,
     // Snow and ice: the brightest ground.
-    world2: { color: [0.012, 0.006, 0.02] as Rgb, opacity: 0.55 },
-    // Mist and low clouds over the jungle.
-    world3: { color: [0.012, 0.006, 0.02] as Rgb, opacity: 0.55 },
-    world4: { color: [0.012, 0.006, 0.02] as Rgb, opacity: 0.42 },
+    world2: 0.45,
+    world3: 0.45,
+    world4: 0.58,
   },
   /** P14-R01: the ground's brightest pixels (relative luminance), but for a share of the screen. */
   backgroundMaxLuminance: 0.35,

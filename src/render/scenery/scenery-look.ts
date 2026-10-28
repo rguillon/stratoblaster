@@ -1,7 +1,6 @@
 import type { SkyScript } from '../../core/scenery/sky-look';
 import type { GradientStop } from '../environment/gradient-cube';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
-import type { VeilLook } from './background-veil';
 import type { RoadLook } from './road-geometry';
 
 type Rgb = readonly [number, number, number];
@@ -204,10 +203,11 @@ export interface SceneryLook {
    */
   readonly shotStyle?: string;
   /**
-   * Phase 14 (P14-R01): a veil laid over the ground, sky and clouds, under the playfield, so the
-   * ships and shots stand out from the background. None when omitted.
+   * Phase 14 (P14-R01): how bright the background is kept under the playfield, 0..1: a factor
+   * on the props' lit colours, the haze (fog) and the clouds, so the ships and shots stand out.
+   * The props' self-lit accents keep their brightness. 1 when omitted.
    */
-  readonly veil?: VeilLook;
+  readonly tone?: number;
 }
 
 /**

@@ -6,7 +6,6 @@ import {
   inFamily,
   relativeLuminance,
   srgbByteToLinear,
-  veiled,
   type ColorFamily,
 } from '../../../../src/core/math/color';
 
@@ -64,12 +63,5 @@ describe('colour helpers (phase 14)', () => {
     }
     expect(new Set(folded.map((f) => f.map((c) => c.toFixed(2)).join())).size).toBe(5);
     expect(foldIntoFamily([0.5, 0.5, 0.5], WARM)).toEqual([0.5, 0.5, 0.5]);
-  });
-
-  it('P14-R01: a veil pulls a colour towards its own by its opacity', () => {
-    expect(veiled([1, 1, 1], { color: [0, 0, 0], opacity: 0.4 })).toEqual([0.6, 0.6, 0.6]);
-    const v = veiled([1, 0, 0], { color: [0, 0, 1], opacity: 0.5 });
-    expect(v).toEqual([0.5, 0, 0.5]);
-    expect(veiled([0.2, 0.3, 0.4], { color: [1, 1, 1], opacity: 0 })).toEqual([0.2, 0.3, 0.4]);
   });
 });

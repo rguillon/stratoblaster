@@ -4,7 +4,6 @@ import {
   hueSaturation,
   inFamily,
   relativeLuminance,
-  veiled,
   type ColorFamily,
   type Rgb,
 } from '../../../../src/core/math/color';
@@ -109,22 +108,11 @@ describe('P14-R02: reserved gameplay colours', () => {
 
   it('P14-R01, R02: no ground colour of the enemy shots family is brighter than the cap', () => {
     for (const [id, look] of Object.entries(SCENERY_BINDINGS.looks)) {
-      const veil = look.veil;
-      expect({ id, veil: veil !== undefined }).toEqual({ id, veil: true });
-      if (!veil) continue;
-      const palette = Object.fromEntries(Object.entries(look).filter(([key]) => key !== 'veil'));
-      for (const c of colorsIn(palette, NOT_SEEN)) {
+      expect(look.tone ?? 1, id).toBeLessThan(1);
+      for (const c of colorsIn([look.terrain, look.sea, look.roads], NOT_SEEN)) {
         if (!inFamily(c, FAMILIES.enemyShot)) continue;
-        const seen = veiled(c, veil);
-        expect({
-          id,
-          c,
-          ok: relativeLuminance(seen) <= READABILITY.backgroundMaxLuminance,
-        }).toEqual({
-          id,
-          c,
-          ok: true,
-        });
+        const ok = relativeLuminance(c) <= READABILITY.backgroundMaxLuminance;
+        expect({ id, c, ok }).toEqual({ id, c, ok: true });
       }
     }
   });

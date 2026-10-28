@@ -1366,3 +1366,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** The 31 volcanic props of the first World 4 (lava boulders, vents, geothermal and lava works, foundries, rail yard, war factory) were removed, as no level placed them since the World 4 rework (2026-10-27). This removes their models (`view/props/volcanic-*.ts`), their ids, their placement rules and their tests. `config/world-4/props.ts` keeps only World 4's roads. Lava as a sea (`sea.lava`) and the plume kinds stay in the engine.
 - **Status:** Accepted
+
+### D-130 — Background darkened at the source, no veil
+- **Date:** 2026-10-28
+- **Phase:** 14 (P14-R01, reviewer request; replaces the veil of D-121)
+- **Decision:** The dark veil over the background is removed. Each world instead has a tone (`READABILITY.tones`: 0.58, 0.55, 0.45, 0.45, 0.58 for Level Zero and Worlds 1–4). The game multiplies the colours of its looks' ground textures, shores, water and roads by it (`toned`; tint factors and lava excepted). The engine applies `SceneryLook.tone` to the props' lit colours, the haze (fog and clear colour) and the cloud colours as it resolves the atmosphere. The sun, the ambient light and the props' self-lit accents are unchanged. Measured background luminance stays 0.07–0.13 in the four e2e levels.
+- **Status:** Accepted

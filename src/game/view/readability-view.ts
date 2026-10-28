@@ -3,7 +3,6 @@ import { Constants } from '@babylonjs/core/Engines/constants';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { ModelFactory, ShotRendererFactory } from '../../render/game-view';
 import { outlineModel } from '../../render/outline';
-import type { VeilLook } from '../../render/scenery/background-veil';
 import type { SceneryLook } from '../../render/scenery/scenery-look';
 import { READABILITY } from '../config/readability';
 import { buildGlowDisc } from './shot-geometry';
@@ -50,12 +49,46 @@ export function buildHitboxMarker(scene: Scene, radius: number): TransformNode {
   return root;
 }
 
-/** `looks`, each with the background veil `veil` (P14-R01). */
-export function withVeil(
+type Rgb = readonly [number, number, number];
+
+/** `value` with every colour (3 numbers) in it times `k`, but under the `skip` keys. */
+function scaled<T>(value: T, k: number, skip: RegExp): T {
+  if (Array.isArray(value)) {
+    if (value.length === 3 && value.every((v) => typeof v === 'number')) {
+      return (value as unknown as Rgb).map((v) => v * k) as T;
+    }
+    return value.map((v: unknown) => scaled(v, k, skip)) as T;
+  }
+  if (typeof value !== 'object' || value === null) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, v]) => [key, skip.test(key) ? v : scaled(v, k, skip)]),
+  ) as T;
+}
+
+/** Colours that are not darkened: tint factors, and lava, which glows by itself. */
+const KEEP = /^(tints|lava)$/;
+
+/**
+ * P14-R01: `look` with its ground, shores, water and roads darkened to `tone` (0..1) of their
+ * colours, and its props, haze and clouds by the engine (`SceneryLook.tone`), so the ships and
+ * shots stand out over them. The props' self-lit accents keep their brightness.
+ */
+export function toned(look: SceneryLook, tone: number): SceneryLook {
+  return {
+    ...look,
+    terrain: scaled(look.terrain, tone, KEEP),
+    sea: scaled(look.sea, tone, KEEP),
+    roads: scaled(look.roads, tone, KEEP),
+    tone,
+  };
+}
+
+/** `looks`, each {@link toned} to `tone`. */
+export function allToned(
   looks: Readonly<Record<string, SceneryLook>>,
-  veil: VeilLook,
+  tone: number,
 ): Readonly<Record<string, SceneryLook>> {
-  return Object.fromEntries(Object.entries(looks).map(([id, look]) => [id, { ...look, veil }]));
+  return Object.fromEntries(Object.entries(looks).map(([id, look]) => [id, toned(look, tone)]));
 }
 
 /**

@@ -77,11 +77,3 @@ export function foldIntoFamily(color: Rgb, family: ColorFamily): Rgb {
   if (saturation === 0) return color;
   return withHue(color, (family.from + (hue / 360) * span(family)) % 360);
 }
-
-/** A colour seen through a veil of `color` covering it `opacity` (0..1) of the way. */
-export function veiled(seen: Rgb, veil: { color: Rgb; opacity: number }): Rgb {
-  const k = veil.opacity;
-  const mix = (a: number, b: number) => a * (1 - k) + b * k;
-  const [r, g, b] = veil.color;
-  return [mix(seen[0], r), mix(seen[1], g), mix(seen[2], b)];
-}

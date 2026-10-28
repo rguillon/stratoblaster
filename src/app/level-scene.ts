@@ -17,7 +17,6 @@ import {
 import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { NodeAdopter } from '../render/node-adopter';
 import { OutlineLayer, type OutlineLook } from '../render/outline';
-import { addBackgroundVeil } from '../render/scenery/background-veil';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
 import type { SceneryLook } from '../render/scenery/scenery-look';
@@ -179,7 +178,6 @@ export function buildLevelScene(
   for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
   if (groundGlow) glowLava(groundGlow, stage);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
-  if (look.veil) addBackgroundVeil(scene, stage.camera, look.veil);
   const playfield = playfieldLayer(scene, options);
   const root = playfield.root;
   return {

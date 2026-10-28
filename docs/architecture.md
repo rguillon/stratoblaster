@@ -229,8 +229,8 @@ GameSession.end / MenuController.completeLevel ─▶ recordScore ─▶ high sc
 - Presentation: `GameView.bonuses` draws each kind, `GameView.bombs` (optional, `BombRenderer`)
   the shockwave and flash; `GameHud` shows the score, the high score, the bomb icons and the touch
   bomb button (`HudSetup.onBomb`).
-- Readability (phase 14): `SceneryLook.veil` lays a veil over the background under the playfield;
-  meshes ask for a rim with `setOutline` (`render/outline.ts`) and get one when `GameView.outline`
+- Readability (phase 14): `SceneryLook.tone` dims the props, the haze and the clouds under the
+  playfield (the game darkens the ground, water and road colours in its looks); meshes ask for a rim with `setOutline` (`render/outline.ts`) and get one when `GameView.outline`
   is set; `GameView.hitboxMarker` (optional) draws a marker on the ship's hitbox. Colour families
   and contrast maths are pure (`core/math/color.ts`, `core/math/pixel-contrast.ts`).
 

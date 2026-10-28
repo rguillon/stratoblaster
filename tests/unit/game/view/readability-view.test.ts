@@ -11,9 +11,11 @@ import {
   buildHitboxMarker,
   outlinedShips,
   tonedShots,
-  withVeil,
+  toned,
 } from '../../../../src/game/view/readability-view';
 import { outlineOf } from '../../../../src/render/outline';
+import { SAMPLE_GAME } from '../../../fixtures/sample-game';
+import { at } from '../../../helpers/at';
 
 const scene = () => new Scene(new NullEngine());
 
@@ -70,11 +72,20 @@ describe('readability views (phase 14)', () => {
     }
   });
 
-  it('P14-R01: every level of the game has its world’s veil', () => {
-    const looks = GAME.view.scenery.looks;
-    for (const [id, look] of Object.entries(looks)) expect(look.veil, id).toBeDefined();
-    const veiled = withVeil({ a: { shotStyle: 'x' } as never }, READABILITY.veils.world1);
-    expect(veiled.a?.veil).toBe(READABILITY.veils.world1);
-    expect(veiled.a?.shotStyle).toBe('x');
+  it('P14-R01 (reviewer, 2026-10-28): every level darkens its ground, props, haze and clouds', () => {
+    const tones = Object.values(READABILITY.tones);
+    for (const [id, look] of Object.entries(GAME.view.scenery.looks)) {
+      expect(tones, id).toContain(look.tone);
+    }
+    const look = at(Object.values(SAMPLE_GAME.view.scenery.looks), 0);
+    const dark = toned(look, 0.5);
+    expect(dark.tone).toBe(0.5);
+    expect(dark.terrain.ground.colors[1]).toEqual(look.terrain.ground.colors[1].map((v) => v / 2));
+    expect(dark.terrain.shore.deep).toEqual(look.terrain.shore.deep.map((v) => v / 2));
+    expect(dark.sea.color).toEqual(look.sea.color.map((v) => v / 2));
+    expect(dark.roads.main).toEqual(look.roads.main.map((v) => v / 2));
+    // Tint factors stay as they were; the engine dims the haze and the clouds.
+    expect(dark.terrain.tints).toEqual(look.terrain.tints);
+    expect(dark.sky).toEqual(look.sky);
   });
 });
