@@ -67,12 +67,26 @@ uniform sampler2D terrainPaved;
 uniform sampler2D terrainSandy;
 uniform sampler2D terrainNoise;
 
+// Planes and layers weighing less than this are not read (reviewer, 2026-10-28): they would change
+// the colour by less than half a step. On flat paved ground, one texture read instead of 21.
+const float TERRAIN_SKIP = 1.0 / 512.0;
+
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
 // slopes are not stretched.
 vec3 terrainTriplanar(sampler2D tex, vec3 p, vec3 w) {
   float s = terrainScale.x;
-  return texture2D(tex, p.zy * s).rgb * w.x + texture2D(tex, p.xz * s).rgb * w.y
-    + texture2D(tex, p.xy * s).rgb * w.z;
+  vec3 color = vec3(0.0);
+  if (w.x > 0.0) color += texture2D(tex, p.zy * s).rgb * w.x;
+  if (w.y > 0.0) color += texture2D(tex, p.xz * s).rgb * w.y;
+  if (w.z > 0.0) color += texture2D(tex, p.xy * s).rgb * w.z;
+  return color;
+}
+
+// A layer of the ground: its texture times its share \`k\` of the colour, and that share; none
+// when too small to show.
+vec4 terrainLayer(sampler2D tex, vec3 p, vec3 w, float k) {
+  if (k <= TERRAIN_SKIP) return vec4(0.0);
+  return vec4(terrainTriplanar(tex, p, w) * k, k);
 }
 
 // Where the ground meets the sea: a sand beach above the water, the ground under it tinted by
@@ -129,30 +143,47 @@ vec3 terrainHeat(vec3 p) {
 vec3 terrainColor(vec3 p, vec3 n) {
   vec3 w = pow(abs(n), vec3(4.0));
   w /= (w.x + w.y + w.z);
+  w *= step(vec3(TERRAIN_SKIP), w);
+  w /= (w.x + w.y + w.z);
   vec4 noise = texture2D(terrainNoise, p.xz * terrainScale.y);
   float jitter = noise.r - 0.5;
   float h = p.y + jitter * terrainSlope.z;
   float slope = 1.0 - clamp(n.y, 0.0, 1.0) + jitter * terrainSlope.w;
-  float tint = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainScale.z).g);
-  vec3 ground = terrainTriplanar(terrainGround, p, w) * mix(terrainTintA, terrainTintB, tint);
+  float blend = terrainHeights.z;
+  // The ground above the low layer, the high layer over them, and the steep layer over all.
+  float above = smoothstep(terrainHeights.x - blend, terrainHeights.x + blend, h);
+  float high = smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h);
+  float steep = smoothstep(terrainSlope.x, terrainSlope.y, slope);
+  float sandy = 0.0;
+  float lush = 0.0;
+  float paved = 0.0;
 #ifdef VERTEXCOLOR
   // Ground cover of the section, from the vertex colour (see terrain-geometry.ts).
-  float lush = clamp((1.0 - vColor.r) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
-  float paved = clamp((1.0 - vColor.b) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
-  float sandy = clamp((1.0 - vColor.g) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
-  // Cover fades in with noise, in patches rather than as a flat gradient.
+  float lushCover = clamp((1.0 - vColor.r) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  float pavedCover = clamp((1.0 - vColor.b) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  float sandyCover = clamp((1.0 - vColor.g) / ${SURFACE_SCALE.toFixed(4)}, 0.0, 1.0);
+  // Cover fades in with noise, in patches rather than as a flat gradient: sand over the ground,
+  // grass over that, paving over all.
   float patchy = clamp(noise.g * 0.6 + 0.2, 0.0, 1.0);
-  ground = mix(ground, terrainTriplanar(terrainSandy, p, w), smoothstep(patchy - 0.25, patchy + 0.25, sandy));
-  ground = mix(ground, terrainTriplanar(terrainLush, p, w), smoothstep(patchy - 0.25, patchy + 0.25, lush));
-  ground = mix(ground, terrainTriplanar(terrainPaved, p, w), smoothstep(patchy - 0.25, patchy + 0.25, paved));
+  sandy = smoothstep(patchy - 0.25, patchy + 0.25, sandyCover);
+  lush = smoothstep(patchy - 0.25, patchy + 0.25, lushCover);
+  paved = smoothstep(patchy - 0.25, patchy + 0.25, pavedCover);
 #endif
-  float blend = terrainHeights.z;
-  vec3 color = mix(terrainTriplanar(terrainLow, p, w), ground,
-    smoothstep(terrainHeights.x - blend, terrainHeights.x + blend, h));
-  color = mix(color, terrainTriplanar(terrainHigh, p, w),
-    smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h));
-  color = mix(color, terrainTriplanar(terrainSteep, p, w),
-    smoothstep(terrainSlope.x, terrainSlope.y, slope));
+  // Each texture's share of the colour, from the layers laid one over the other.
+  float ground = above * (1.0 - high) * (1.0 - steep);
+  float bare = ground * (1.0 - sandy) * (1.0 - lush) * (1.0 - paved);
+  vec4 sum = terrainLayer(terrainLow, p, w, (1.0 - above) * (1.0 - high) * (1.0 - steep));
+  if (bare > TERRAIN_SKIP) {
+    float tint = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainScale.z).g);
+    sum += terrainLayer(terrainGround, p, w, bare) * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
+  }
+  sum += terrainLayer(terrainSandy, p, w, ground * sandy * (1.0 - lush) * (1.0 - paved));
+  sum += terrainLayer(terrainLush, p, w, ground * lush * (1.0 - paved));
+  sum += terrainLayer(terrainPaved, p, w, ground * paved);
+  sum += terrainLayer(terrainHigh, p, w, high * (1.0 - steep));
+  sum += terrainLayer(terrainSteep, p, w, steep);
+  // What was not read is shared out among what was.
+  vec3 color = sum.rgb / sum.a;
   if (terrainSea.y > 0.5 && terrainSea.w > 0.5) return terrainScorch(color, p);
   if (terrainSea.y > 0.5) color = terrainShore(color, p, noise, slope);
   return color;

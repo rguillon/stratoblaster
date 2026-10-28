@@ -20,8 +20,8 @@ import type { CloudLayerLook } from './scenery-look';
 import { snappedLightPosition } from './scenery-lighting';
 import type { Atmosphere } from '../../core/scenery/atmosphere';
 import { plumeLight } from './plume-layer';
-import { RainRings } from './rain-rings';
-import { seaPlane, stageCamera, TerrainWatch } from './stage-parts';
+import type { RainRings } from './rain-rings';
+import { seaParts, stageCamera, TerrainWatch, terrainLast } from './stage-parts';
 import { SkyLayers } from './sky-layers';
 import { TerrainChunks } from './terrain-chunks';
 import { RoadLayers } from './road-field';
@@ -106,21 +106,9 @@ export class SceneryStage {
     this.#traffic = adopt(
       () => new TrafficLayer(scene, propModels, this.kit.props, level.props.cars),
     );
-    const seaSize = [this.#xHalf * 2, seaLength] as const;
-    this.#sea = level.sea
-      ? adopt(() => seaPlane(scene, [...seaSize, level.sea?.level ?? 0], this.kit.sea))
-      : undefined;
+    const water = adopt(() => seaParts(scene, level, [this.#xHalf * 2, seaLength], this.kit));
+    [this.#sea, this.#rings] = [water?.sea, water?.rings];
     this.#seaEnabled = this.#sea !== undefined;
-    this.#rings = level.sea
-      ? adopt(
-          () =>
-            new RainRings(scene, this.kit.rings, [
-              level.sea?.level ?? 0,
-              this.#xHalf * 2,
-              seaLength,
-            ]),
-        )
-      : undefined;
     this.clouds = this.#attachSky();
   }
 
@@ -293,8 +281,15 @@ export class SceneryStage {
     this.#props.drift(this.#drifts, this.#time);
     const height = (x: number, z: number): number => this.#field.height(x, z);
     const traffic = { roads: this.#placer.roads.roads, height, seed: this.#seed };
-    const area = { xMin: -this.#xHalf, xMax: this.#xHalf, zMin, zMax };
-    this.#traffic.update(this.#time, area, traffic);
+    // The cars, placed again every frame, only near the ground in view, as the props (reviewer,
+    // 2026-10-28): not over the whole chunks.
+    const xHalf = Math.min(this.#xHalf, this.#ground.halfWidth + near);
+    const [zLow, zHigh] = [Math.max(zMin, zNear), Math.min(zMax, zFar)];
+    this.#traffic.update(
+      this.#time,
+      { xMin: -xHalf, xMax: xHalf, zMin: zLow, zMax: zHigh },
+      traffic,
+    );
   }
 
   /** Phase 10: the props' smoke and steam, lit and fogged by `atmosphere`. */
@@ -353,13 +348,14 @@ export class SceneryStage {
 
   #buildChunks(): TerrainChunks {
     const { cell, chunkLength } = this.options.config;
+    this.scene.setRenderingOrder(BELOW_CLOUDS_GROUP, terrainLast(this.kit.terrain));
     return new TerrainChunks(
       this.scene,
       this.kit.terrain,
       { length: chunkLength, cell, xMin: -this.#xHalf, columns: (2 * this.#xHalf) / cell },
       this.#field,
       (mesh) => {
-        this.kit.addShadowCaster(mesh);
+        if (this.options.look.terrain.castsShadows !== false) this.kit.addShadowCaster(mesh);
         this.#terrain.add(mesh);
       },
     );

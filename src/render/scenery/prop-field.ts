@@ -15,7 +15,7 @@ import {
   type PlumeMaterial,
   type PlumeMaterialFactory,
 } from './plume-layer';
-import type { PropModelFactory } from './scenery-look';
+import type { PropGeometry, PropModelFactory } from './scenery-look';
 
 /** Materials of the props: the lit structure, and the self-lit accents. */
 export interface PropMaterials {
@@ -32,6 +32,63 @@ interface PropMeshes {
 
 const MATRIX_FLOATS = 16;
 
+/**
+ * The props of one kind in a chunk, with their instance matrices, made on their first upload and
+ * kept while the chunk is (reviewer, 2026-10-28: not made again each time the window moves).
+ */
+interface KindProps {
+  readonly placements: PropPlacement[];
+  matrices: Float32Array | undefined;
+}
+
+/** The props of a kind to draw: each placement, and the chunk's props it comes from, at `at`. */
+interface Drawn {
+  readonly placements: PropPlacement[];
+  readonly from: KindProps[];
+  readonly at: number[];
+}
+
+/**
+ * Each prop model's geometry, made once and kept for the next levels (reviewer, 2026-10-28): the
+ * models are the same every time. Nothing changes a geometry once made.
+ */
+const GEOMETRIES = new WeakMap<PropModelFactory, PropGeometry>();
+
+/** The geometry of `factory`, made on first use. */
+function geometryOf(factory: PropModelFactory): PropGeometry {
+  let geometry = GEOMETRIES.get(factory);
+  if (!geometry) {
+    geometry = factory();
+    GEOMETRIES.set(factory, geometry);
+  }
+  return geometry;
+}
+
+/** The normals of each geometry, worked out once. */
+const NORMALS = new WeakMap<ColoredGeometry, number[]>();
+
+function normalsOf(geo: ColoredGeometry): number[] {
+  let normals = NORMALS.get(geo);
+  if (!normals) {
+    normals = [];
+    VertexData.ComputeNormals(geo.positions, geo.indices, normals);
+    NORMALS.set(geo, normals);
+  }
+  return normals;
+}
+
+/**
+ * Draws `mesh` without checking whether it is in view, so its bounds are never fitted to its
+ * instances (reviewer, 2026-10-28): for the cars, placed again every frame, that was the largest
+ * single cost of a frame in Worlds 3 and 4, and for the other props half of each upload. Their
+ * instances are near the view anyway, and the sun's shadows have a fixed frustum
+ * (`shadowFrustumSize`), which no bounds change.
+ */
+function drawAlways(mesh: Mesh): void {
+  mesh.alwaysSelectAsActiveMesh = true;
+  mesh.doNotSyncBoundingInfo = true;
+}
+
 /** A disabled, unpickable mesh of `geo`, drawn with `material`. */
 export function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
   const mesh = new Mesh(name, scene);
@@ -39,9 +96,7 @@ export function meshOf(name: string, geo: ColoredGeometry, material: Material, s
   data.positions = geo.positions;
   data.indices = geo.indices;
   data.colors = geo.colors;
-  const normals: number[] = [];
-  VertexData.ComputeNormals(geo.positions, geo.indices, normals);
-  data.normals = normals;
+  data.normals = normalsOf(geo);
   data.applyToMesh(mesh);
   mesh.material = material;
   mesh.isPickable = false;
@@ -112,7 +167,8 @@ export class PropField {
   readonly #meshes = new Map<string, PropMeshes>();
   /** Phase 10: one material per kind of plume, driven every frame. */
   readonly #plumeMaterials = new Map<string, PlumeMaterial>();
-  readonly #chunks = new Map<number, readonly PropPlacement[]>();
+  /** The placements of each chunk, by kind. */
+  readonly #chunks = new Map<number, ReadonlyMap<string, KindProps>>();
   /** The placements uploaded last for each kind (P13-R04: unchanged kinds are not uploaded). */
   readonly #drawn = new Map<string, readonly PropPlacement[]>();
   #dirty = false;
@@ -137,7 +193,7 @@ export class PropField {
       return material.material;
     };
     for (const [kind, factory] of Object.entries(models)) {
-      const geometry = factory();
+      const geometry = geometryOf(factory);
       const structure = meshOf(`prop-${kind}`, geometry.structure, materials.structure, scene);
       structure.receiveShadows = true;
       onStructure(structure);
@@ -146,23 +202,8 @@ export class PropField {
           ? meshOf(`prop-${kind}-lights`, geometry.lights, materials.lights, scene)
           : undefined;
       const plumes = buildPlumeMeshes(scene, `prop-${kind}`, geometry.plumes ?? [], plumeMaterial);
+      for (const mesh of [structure, lights, ...plumes]) if (mesh) drawAlways(mesh);
       this.#meshes.set(kind, { structure, lights, plumes });
-    }
-  }
-
-  /**
-   * Draws the meshes without checking whether they are in view, so their bounds are never fitted
-   * to their instances (reviewer, 2026-10-28: for the cars, placed again every frame, that was the
-   * largest cost of a frame in Worlds 3 and 4; some cars are always in view anyway). Not for the
-   * meshes that cast shadows: the light fits its shadows to their bounds.
-   */
-  drawAlways(): void {
-    for (const { structure, lights, plumes } of this.#meshes.values()) {
-      for (const mesh of [structure, lights, ...plumes]) {
-        if (!mesh) continue;
-        mesh.alwaysSelectAsActiveMesh = true;
-        mesh.doNotSyncBoundingInfo = true;
-      }
     }
   }
 
@@ -181,7 +222,9 @@ export class PropField {
   /** Number of props in the scene. */
   get count(): number {
     let count = 0;
-    for (const placements of this.#chunks.values()) count += placements.length;
+    for (const kinds of this.#chunks.values()) {
+      for (const { placements } of kinds.values()) count += placements.length;
+    }
     return count;
   }
 
@@ -201,10 +244,14 @@ export class PropField {
   }
 
   setChunk(index: number, placements: readonly PropPlacement[]): void {
+    const kinds = new Map<string, KindProps>();
     for (const p of placements) {
       if (!this.#meshes.has(p.kind)) throw new Error(`No model for prop "${p.kind}"`);
+      const props = kinds.get(p.kind);
+      if (props) props.placements.push(p);
+      else kinds.set(p.kind, { placements: [p], matrices: undefined });
     }
-    this.#chunks.set(index, placements);
+    this.#chunks.set(index, kinds);
     this.#dirty = true;
   }
 
@@ -251,34 +298,51 @@ export class PropField {
     this.#dirty = false;
     const byKind = this.#byKind();
     for (const [kind, meshes] of this.#meshes) {
-      const placements = byKind.get(kind) ?? [];
+      const drawn = byKind.get(kind);
+      const placements = drawn?.placements ?? [];
       if (samePlacements(this.#drawn.get(kind), placements)) continue;
       this.#drawn.set(kind, placements);
-      const matrices = instanceMatrices(placements);
+      const matrices = drawn ? matricesOf(drawn) : new Float32Array(0);
       for (const mesh of [meshes.structure, meshes.lights, ...meshes.plumes]) {
         if (!mesh) continue;
         mesh.setEnabled(matrices.length > 0);
         if (matrices.length === 0) continue;
-        // Also fits the mesh's bounds to its instances, unless `drawAlways` turned that off.
         mesh.thinInstanceSetBuffer('matrix', matrices, MATRIX_FLOATS, false);
       }
     }
   }
 
-  /** The placements to draw (in the window, if any), by kind. */
-  #byKind(): Map<string, PropPlacement[]> {
+  /** The props to draw (in the window, if any), by kind, in the order of the chunks. */
+  #byKind(): Map<string, Drawn> {
     const window = this.#window;
-    const byKind = new Map<string, PropPlacement[]>();
-    for (const placements of this.#chunks.values()) {
-      for (const p of placements) {
-        if (window && (p.z < window.zMin || p.z > window.zMax)) continue;
-        const list = byKind.get(p.kind);
-        if (list) list.push(p);
-        else byKind.set(p.kind, [p]);
+    const byKind = new Map<string, Drawn>();
+    for (const kinds of this.#chunks.values()) {
+      for (const [kind, props] of kinds) {
+        props.placements.forEach((p, i) => {
+          if (window && (p.z < window.zMin || p.z > window.zMax)) return;
+          let drawn = byKind.get(kind);
+          if (!drawn) byKind.set(kind, (drawn = { placements: [], from: [], at: [] }));
+          drawn.placements.push(p);
+          drawn.from.push(props);
+          drawn.at.push(i);
+        });
       }
     }
     return byKind;
   }
+}
+
+/** The instance matrices of `drawn`, copied from those of their chunks (made on first use). */
+function matricesOf({ from, at }: Drawn): Float32Array {
+  const buffer = new Float32Array(at.length * MATRIX_FLOATS);
+  at.forEach((i, j) => {
+    const props = from[j];
+    if (!props) return;
+    props.matrices ??= instanceMatrices(props.placements);
+    const start = i * MATRIX_FLOATS;
+    buffer.set(props.matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS);
+  });
+  return buffer;
 }
 
 /** Whether `a` and `b` hold the same placements in the same order (or none in both). */

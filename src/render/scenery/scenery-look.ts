@@ -26,6 +26,11 @@ export interface TextureLook {
  * (shores, sea bed), `ground` in between, `high` above `highHeight` (snow), `steep` on slopes.
  */
 export interface TerrainLook {
+  /**
+   * Whether the terrain casts the sun's shadows (default: yes). Flat ground has nothing to shade
+   * (reviewer, 2026-10-28: World 4).
+   */
+  readonly castsShadows?: boolean;
   readonly textureSize: number;
   /** World units covered by one repeat of the ground textures. */
   readonly tileSize: number;

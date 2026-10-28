@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
-import { createPlainSceneryKit } from '../../../../src/render/scenery/scenery-kit';
+import {
+  createPlainSceneryKit,
+  type SceneryKitFactory,
+} from '../../../../src/render/scenery/scenery-kit';
+import { terrainLast } from '../../../../src/render/scenery/stage-parts';
 import {
   snappedLightPosition,
   sunDirection,
@@ -197,6 +201,39 @@ describe('SceneryStage', () => {
       expect(below.x).toBeCloseTo(onScreen(raised).x, 6);
       expect(below.y).toBeCloseTo(onScreen(raised).y, 6);
     }
+  });
+
+  it('the terrain casts shadows, unless its look says not (reviewer, 2026-10-28)', () => {
+    const terrainCasters = (castsShadows?: boolean): number => {
+      let casters = 0;
+      const kit: SceneryKitFactory = (s, context) => ({
+        ...createPlainSceneryKit(s, context),
+        addShadowCaster: (mesh) => {
+          if (mesh.name.startsWith('terrain-chunk')) casters++;
+        },
+      });
+      const terrain = {
+        ...SAMPLE_SCENERY_LOOK.terrain,
+        ...(castsShadows === undefined ? {} : { castsShadows }),
+      };
+      stage({ kit, look: { ...SAMPLE_SCENERY_LOOK, terrain } }).update(100, 0);
+      scene?.dispose();
+      return casters;
+    };
+    expect(terrainCasters()).toBeGreaterThan(0);
+    expect(terrainCasters(false)).toBe(0);
+  });
+
+  it('draws the terrain after the props, so props hide it before it is shaded (reviewer, 2026-10-28)', () => {
+    const s = stage();
+    s.update(100, 0);
+    const first = (prefix: string) =>
+      scene?.meshes.find((m) => m.name.startsWith(prefix) && m.isEnabled())?.subMeshes[0];
+    const [terrain, prop] = [first('terrain-chunk'), first('prop-block')];
+    if (!terrain || !prop) throw new Error('no terrain or props');
+    const order = terrainLast(s.kit.terrain);
+    expect(order(terrain, prop)).toBeGreaterThan(0);
+    expect(order(prop, terrain)).toBeLessThan(0);
   });
 
   it('refuses a level whose props have no model', () => {

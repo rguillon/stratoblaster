@@ -1474,3 +1474,39 @@
 - **Phase:** 14 (reviewer request: lighter drawing)
 - **Decision:** World 4's levels have no sea. Theirs was at 0, under flat ground 30.5 to 34 high: it never showed, but its see-through plane and rain rings were drawn, and the terrain shader ran its shore on every pixel. Its generated ground is the same (compared on all 22 levels). Without a sea, the ground the camera sees is worked out at the lowest ground, 30, as in the other levels without a sea, not at 0: its half-width goes from 195 to 181 and its far edge from 622 to 580, so the terrain is 528 wide, not 560, and fewer props are placed beside and beyond the view.
 - **Status:** Accepted
+
+### D-148 — Prop models made once for the game
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** Each prop model's geometry is made the first time a level needs it and kept for the next levels, with its normals (`geometryOf`, `normalsOf` in `prop-field.ts`): the models are the same every time and nothing changes a geometry once made. Each level still makes its own meshes (a scene's meshes cannot be shared). Not timed on its own.
+- **Status:** Accepted
+
+### D-149 — Props drawn without bounds, their matrices made once per chunk
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames; extends D-144)
+- **Decision:** All the props' meshes, not only the cars', are always drawn and never have their bounds fitted to their instances: the sun's shadows have a fixed frustum (`shadowFrustumSize`), which no caster's bounds change, and the props drawn are those near the view anyway. Each chunk keeps the instance matrices of its props by kind, made on their first upload; when the prop window moves, the matrices are copied, not made again. The same instances are drawn in the same order. Over a whole flight (Node), the uploads take 40–54 ms instead of 95–126 ms in 3-1, 4-1 and 4-5; fitting the bounds was most of it.
+- **Status:** Accepted
+
+### D-150 — Cars set up lazily and placed near the view only
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level start and frames)
+- **Decision:** A road's surface heights, for its cars, are worked out when a car is first placed on it, not for every road at the start: setting up a level's traffic takes 3–9 ms instead of 10–20 ms (Node, six levels), the same cars. The cars are placed only where the props are drawn (the prop reach past the ground in view, `propReach`), not over all the terrain chunks, which reach well past the view: before this, 420–660 cars were placed every frame (0.14–0.26 ms in Node).
+- **Status:** Accepted
+
+### D-151 — Terrain drawn last; no shadows from World 4's flat ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** The opaque meshes under the clouds are drawn with the terrain last (`terrainLast`), so its costly shading is skipped wherever a prop or car in front of it was drawn first. Babylon already did so by sorting on material ids, because the kit makes the props' materials before the terrain's; the order is now explicit and tested. A terrain look may say its terrain casts no shadows (`TerrainLook.castsShadows`); World 4's looks do: its flat ground has nothing to shade. 4-1 draws 21 120 fewer triangles per frame (four chunks in the shadow map), and its frames are the same pixel for pixel.
+- **Status:** Accepted
+
+### D-152 — The terrain shader reads only what shows
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** The terrain shader works out each texture's share of the colour from its layers (low ground, ground and its cover of sand, grass and paving, high ground, steep slopes) and reads only the textures, and the planes of each, whose share is over 1/512, sharing what was left out among the rest. On flat paved ground it reads one texture once instead of seven textures on three planes each. Screenshots of six levels are the same within 1/255, but for a few pixels of 1-3 (0.006 %, up to 13/255).
+- **Status:** Accepted
+
+### D-153 — The streets' middles drawn opaque
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** In the levels whose roads are all streets (2-4, 2-5, Worlds 3 and 4), the even middle of each street is drawn opaque and written in depth, apart from its soft edges and lane markings, which stay see-through and drawn over it (`RoadLayers`): the terrain under the streets is no longer shaded, and those ribbons are no longer blended. Elsewhere, a street drawn before a main road or a path would end up under it, so nothing changes there. The middles are pulled towards the camera less than the see-through ribbons and markings (depth offset -1, not -2), so the markings always stay on top. As a result, the lowest part of the cars on the streets, which the street hid, now shows.
+- **Status:** Accepted

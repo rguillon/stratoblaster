@@ -13,9 +13,18 @@ import { town } from '../world-3/looks';
 
 type Rgb = readonly [number, number, number];
 
-/** A World 4 look: World 3's town ground and water, the sky script, contrast shots (P10-R07). */
-const city = (atmosphere: SkyScript) =>
-  ({ ...town(bright(atmosphere)), shotStyle: ENEMY_LOOK.contrast.style }) as const;
+/**
+ * A World 4 look: World 3's town ground and water, the sky script, contrast shots (P10-R07). The
+ * flat ground casts no shadows (reviewer, 2026-10-28: it has nothing to shade).
+ */
+const city = (atmosphere: SkyScript) => {
+  const look = town(bright(atmosphere));
+  return {
+    ...look,
+    terrain: { ...look.terrain, castsShadows: false },
+    shotStyle: ENEMY_LOOK.contrast.style,
+  } as const;
+};
 
 /**
  * Reviewer, 2026-10-28: World 4 at midday, brighter, the windows and the cars lit as at night.

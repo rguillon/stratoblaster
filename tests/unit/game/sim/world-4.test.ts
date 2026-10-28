@@ -114,6 +114,10 @@ describe('World 4', () => {
     for (const game of WORLD_4) expect(game.scenery.sea, game.id).toBeUndefined();
   });
 
+  it('the flat ground casts no shadows (reviewer, 2026-10-28)', () => {
+    for (const game of WORLD_4) expect(lookOf(game.id)?.terrain.castsShadows, game.id).toBe(false);
+  });
+
   it('P10-R03: concrete everywhere, no grass (reviewer, 2026-10-28)', () => {
     for (const game of WORLD_4) expect(cover(game, 'lush'), game.id).toBe(0);
   });

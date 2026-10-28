@@ -9,11 +9,15 @@ import type { CarRules } from './scenery-level';
 // round to its start, hidden near both ends: streets end in the crossing street, main roads off
 // the screen.
 
-/** A road as cars follow it: its points, their distance along it, and the road surface height. */
+/**
+ * A road as cars follow it: its points, their distance along it, and the road surface height
+ * there, worked out when a car is first placed on it (reviewer, 2026-10-28: for every road at the
+ * start of a level, that took 24–104 ms).
+ */
 interface Track {
   readonly road: Road;
   readonly along: readonly number[];
-  readonly heights: readonly number[];
+  heights: readonly number[] | undefined;
   readonly length: number;
   /** Z range of the road, to skip the cars of roads out of view. */
   readonly zMin: number;
@@ -32,16 +36,15 @@ interface Car {
   readonly speed: number;
 }
 
-function trackOf(road: Road, height: (x: number, z: number) => number, lift: number): Track {
+function trackOf(road: Road): Track {
   const along = [0];
   road.points.forEach((p, i) => {
     const next = road.points[i + 1];
     if (next) along.push((along[i] ?? 0) + Math.hypot(next.x - p.x, next.z - p.z));
   });
-  const heights = road.points.map((p) => height(p.x, p.z) + lift);
   const zs = road.points.map((p) => p.z);
   const [zMin, zMax] = [Math.min(...zs) - road.width, Math.max(...zs) + road.width];
-  return { road, along, heights, length: along.at(-1) ?? 0, zMin, zMax };
+  return { road, along, heights: undefined, length: along.at(-1) ?? 0, zMin, zMax };
 }
 
 /** Index of the segment of `track` that contains distance `s` (binary search). */
@@ -88,7 +91,7 @@ export class Traffic {
   add(roads: readonly Road[]): void {
     for (const road of roads) {
       if (road.kind === 'cross' || road.points.length < 2) continue;
-      const track = trackOf(road, this.height, this.rules.lift);
+      const track = trackOf(road);
       const cars = road.points.flatMap((_, i) => this.#carAt(track, i, this.seed) ?? []);
       if (cars.length === 0) continue;
       const index = this.#tracks.push({ track, cars }) - 1;
@@ -171,6 +174,12 @@ export class Traffic {
     return s < this.rules.length || s > length - this.rules.length ? undefined : s;
   }
 
+  /** The road surface heights at the points of `track`, worked out on first use. */
+  #heightsOf(track: Track): readonly number[] {
+    track.heights ??= track.road.points.map((p) => this.height(p.x, p.z) + this.rules.lift);
+    return track.heights;
+  }
+
   #place(car: Car, time: number): PropPlacement | undefined {
     const { track, side } = car;
     const s = this.#distance(car, time);
@@ -181,7 +190,8 @@ export class Traffic {
     if (!a || !b || s1 <= s0) return undefined;
     const t = (s - s0) / (s1 - s0);
     const [dx, dz] = [(b.x - a.x) / (s1 - s0), (b.z - a.z) / (s1 - s0)];
-    const [h0, h1] = [track.heights[i] ?? 0, track.heights[i + 1] ?? 0];
+    const heights = this.#heightsOf(track);
+    const [h0, h1] = [heights[i] ?? 0, heights[i + 1] ?? 0];
     return {
       kind: car.kind,
       x: a.x + (b.x - a.x) * t + dz * side * car.offset,

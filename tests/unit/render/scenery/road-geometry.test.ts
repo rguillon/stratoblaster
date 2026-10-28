@@ -217,4 +217,29 @@ describe('centre lines', () => {
       expect(xs.every((x) => Math.abs(x) <= width / 2)).toBe(true);
     }
   });
+
+  it('the even middles of the streets apart, opaque, their soft edges kept (reviewer, 2026-10-28)', () => {
+    const street: Road = {
+      index: 1,
+      kind: 'street',
+      width: 6,
+      lanes: 1,
+      points: [point(0, 0, 6), point(0, 10, 6), point(0, 20, 6)],
+    };
+    const flat = { height: () => 0 };
+    const whole = buildRoadGeometry([street, ROAD], flat, -100, 100, LOOK);
+    const middles = { positions: [] as number[], indices: [] as number[], colors: [] as number[] };
+    const rest = buildRoadGeometry([street, ROAD], flat, -100, 100, LOOK, middles);
+    // The street's middle quads moved over; nothing lost, the main road left as it was.
+    expect(middles.indices.length + rest.indices.length).toBe(whole.indices.length);
+    expect(middles.indices.length).toBeGreaterThan(0);
+    const xs = middles.positions.filter((_, i) => i % 3 === 0);
+    expect(Math.max(...xs.map(Math.abs))).toBeCloseTo(3);
+    expect(middles.colors.filter((_, i) => i % 4 === 3).every((a) => a === 1)).toBe(true);
+    expect(upwardY(middles.positions, middles.indices)).toBeGreaterThan(0);
+    const roadOnly = buildRoadGeometry([ROAD], flat, -100, 100, LOOK);
+    const none = { positions: [] as number[], indices: [] as number[], colors: [] as number[] };
+    expect(buildRoadGeometry([ROAD], flat, -100, 100, LOOK, none)).toEqual(roadOnly);
+    expect(none.indices).toEqual([]);
+  });
 });

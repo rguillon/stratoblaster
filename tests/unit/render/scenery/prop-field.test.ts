@@ -117,23 +117,61 @@ describe('PropField', () => {
     }).toThrow(/ufo/);
   });
 
-  it('fits the bounds of its meshes to their instances', () => {
+  it('draws its meshes always, without fitting bounds to their props (reviewer, 2026-10-28)', () => {
     const props = field();
-    props.setChunk(0, [place('block', 100)]);
-    props.sync();
-    expect(props.structureOf('block')?.getBoundingInfo().boundingBox.maximum.x).toBeCloseTo(104);
-  });
-
-  it('draws the meshes always, without fitting their bounds (reviewer, 2026-10-28: cars)', () => {
-    const props = field();
-    props.drawAlways();
     props.setChunk(0, [place('block', 100)]);
     props.sync();
     const block = props.structureOf('block');
     expect(block?.thinInstanceCount).toBe(1);
+    // The box of the model, not moved to the prop at x = 100.
     expect(block?.getBoundingInfo().boundingBox.maximum.x).toBeCloseTo(2);
     for (const mesh of [block, ...props.lightMeshes]) {
       expect(mesh?.alwaysSelectAsActiveMesh).toBe(true);
+    }
+  });
+
+  it('builds each model once, for every level (reviewer, 2026-10-28)', () => {
+    let built = 0;
+    const block = () => {
+      built++;
+      return (
+        SAMPLE_SCENERY.propModels.block?.() ?? {
+          structure: { positions: [], indices: [], colors: [] },
+        }
+      );
+    };
+    const scenes = [new Scene(new NullEngine()), new Scene(new NullEngine())];
+    const fields = scenes.map((s) => {
+      const materials = {
+        structure: new StandardMaterial('s', s),
+        lights: new StandardMaterial('l', s),
+      };
+      return new PropField(s, { block }, materials);
+    });
+    expect(built).toBe(1);
+    const normals = fields.map((f) => f.structureOf('block')?.getVerticesData('normal'));
+    expect(normals[1]).toEqual(normals[0]);
+    for (const s of scenes) s.dispose();
+  });
+
+  it('draws the same matrices, made once per chunk, as the window moves', () => {
+    const props = field();
+    const at = (z: number, x: number): PropPlacement => ({ ...place('block', x), z });
+    const placements = [at(0, 1), at(100, 2), at(200, 3), at(300, 4)];
+    props.setChunk(0, placements);
+    for (const [zMin, zMax] of [
+      [90, 110],
+      [190, 310],
+      [-10, 120],
+    ] as const) {
+      props.setWindow(zMin, zMax, 0);
+      props.sync();
+      const shown = placements.filter((p) => p.z >= zMin && p.z <= zMax);
+      const buffer = props
+        .structureOf('block')
+        ?.thinInstanceGetWorldMatrices()
+        .flatMap((m) => [...m.asArray()]);
+      expect(buffer).toEqual([...instanceMatrices(shown)]);
     }
   });
 

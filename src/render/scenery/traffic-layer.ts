@@ -32,7 +32,6 @@ export class TrafficLayer {
     const kinds = new Set(rules?.kinds ?? []);
     const cars = Object.fromEntries(Object.entries(models).filter(([id]) => kinds.has(id)));
     this.#field = new PropField(scene, cars, materials);
-    this.#field.drawAlways();
   }
 
   /** Meshes of the headlights and tail lights (e.g. for a glow layer). */
