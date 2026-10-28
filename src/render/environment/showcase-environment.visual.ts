@@ -10,7 +10,12 @@ export interface ShowcaseEnvironmentOptions {
   readonly cubeSize: number;
   readonly intensity: number;
   readonly stops: readonly GradientStop[];
-  readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
+  readonly glow: {
+    readonly intensity: number;
+    readonly blurKernelSize: number;
+    /** Resolution of the glow image, as a share of the screen's; Babylon's 0.5 when omitted. */
+    readonly ratio?: number;
+  };
 }
 
 /**
@@ -34,7 +39,11 @@ export function applyShowcaseEnvironment(
   scene.imageProcessingConfiguration.toneMappingEnabled = true;
   scene.imageProcessingConfiguration.toneMappingType =
     ImageProcessingConfiguration.TONEMAPPING_ACES;
-  const glow = new GlowLayer('glow', scene, { blurKernelSize: options.glow.blurKernelSize });
+  const { blurKernelSize, ratio } = options.glow;
+  const glow = new GlowLayer('glow', scene, {
+    blurKernelSize,
+    ...(ratio === undefined ? {} : { mainTextureRatio: ratio }),
+  });
   glow.intensity = options.glow.intensity;
   return glow;
 }

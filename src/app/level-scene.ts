@@ -74,6 +74,18 @@ function playfieldGlow(scene: Scene, look: { intensity: number; blurKernelSize: 
   return glow;
 }
 
+/** Babylon's default resolution of a glow image, as a share of the screen's. */
+const DEFAULT_GLOW_RATIO = 0.5;
+
+/**
+ * The ground's glow drawn at full resolution (reviewer, 2026-10-28: at half resolution, small
+ * lights blinked as the ground scrolled), its blur as wide on screen as before.
+ */
+export function groundGlowLook(glow: SceneryLook['glow']) {
+  const ratio = 1;
+  return { ...glow, ratio, blurKernelSize: (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO };
+}
+
 /**
  * Phase 10 (P10-R05): the lava blooms in the ground's glow layer with its own material, the
  * terrain drawn there too, black, so hills hide the lava under them.
@@ -162,7 +174,7 @@ export function buildLevelScene(
         cubeSize: options.environmentCubeSize,
         intensity: look.sky.environmentIntensity,
         stops: look.sky.stops,
-        glow: look.glow,
+        glow: groundGlowLook(look.glow),
       })
     : undefined;
   const stage = new SceneryStage(scene, {

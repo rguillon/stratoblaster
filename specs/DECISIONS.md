@@ -1372,3 +1372,9 @@
 - **Phase:** 14 (P14-R01, reviewer request; replaces the veil of D-121)
 - **Decision:** The dark veil over the background is removed. Each world instead has a tone (`READABILITY.tones`: 0.58, 0.55, 0.45, 0.45, 0.58 for Level Zero and Worlds 1–4). The game multiplies the colours of its looks' ground textures, shores, water and roads by it (`toned`; tint factors and lava excepted). The engine applies `SceneryLook.tone` to the props' lit colours, the haze (fog and clear colour) and the cloud colours as it resolves the atmosphere. The sun, the ambient light and the props' self-lit accents are unchanged. Measured background luminance stays 0.07–0.13 in the four e2e levels.
 - **Status:** Accepted
+
+### D-131 — Ground glow at full resolution
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The ground's glow layer is drawn at full resolution (`mainTextureRatio` 1, up from Babylon's 0.5), its blur kernel doubled so it spreads as wide on screen. At half resolution, small lights (windows, lamps, headlights) blinked as the ground scrolled. `ShowcaseEnvironmentOptions.glow.ratio` is a new optional setting. The playfield's glow (ships, enemies) is unchanged. The glow pass costs about four times as much.
+- **Status:** Accepted
