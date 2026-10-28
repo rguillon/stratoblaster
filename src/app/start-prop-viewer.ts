@@ -208,8 +208,7 @@ export function startPropViewer(
   addLights(scene);
   if (options.environment) applyShowcaseEnvironment(scene, { ...CFG.environment, glow: CFG.glow });
   const camera = createCamera(scene);
-  const tiles = game.view.scenery.propTiles ?? { tile: CFG.tile };
-  const grid = new PropGrid(scene, propModels, tiles);
+  const grid = new PropGrid(scene, propModels, game.view.scenery.propTiles ?? { tile: CFG.tile });
 
   const select = (selection: PropViewerSelection): void => {
     if (selection.group !== grid.group) grid.show(groups[selection.group], selection.group);
@@ -224,6 +223,7 @@ export function startPropViewer(
     groups,
     initial: { group: 0, prop: 0 },
     onChange: select,
+    onWireframe: (wireframe) => (scene.forceWireframe = wireframe),
   });
   select(panel.selection);
 
