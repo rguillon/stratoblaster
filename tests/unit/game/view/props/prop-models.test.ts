@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
   JUNGLE_VARIANTS,
   POLAR_VARIANTS,
@@ -13,6 +12,8 @@ import { WORLD_1_PROPS, WORLD_1_PROP_IDS } from '../../../../../src/game/config/
 import { WORLD_2_PROP_IDS, WORLD_2_PROPS } from '../../../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../../../../src/game/config/world-3/props';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
+import { TILE_GROUPS, TILE_MODELS } from '../../../../../src/game/config/tile-buildings';
+import { ROAD_KIT_MODELS } from '../../../../../src/game/view/props/road-kit';
 import type { ColoredGeometry } from '../../../../../src/render/geometry/gradient-shapes';
 
 function extent(geo: ColoredGeometry) {
@@ -47,9 +48,11 @@ const heaviest = Math.max(
 );
 
 const variants = (kind: string) =>
-  Array.from({ length: kind.startsWith('city') ? CITY_VARIANTS : INDUSTRIAL_VARIANTS }, (_, i) =>
-    variantId(kind as PartFamily, i + 1),
-  );
+  Array.from({ length: INDUSTRIAL_VARIANTS }, (_, i) => variantId(kind as PartFamily, i + 1));
+
+/** Ids of the models of a building group made for the grid of tiles (phase 15). */
+const tileIds = (group: keyof typeof TILE_GROUPS): string[] =>
+  TILE_GROUPS[group].models.map((m) => m.id);
 
 describe('prop models', () => {
   it('P04-R04 + review: industrial, technical / scientific, homes, city buildings and trees', () => {
@@ -59,25 +62,29 @@ describe('prop models', () => {
       expect(ids(group)).toEqual(expect.arrayContaining(kinds));
     }
     expect(ids('industrial')).toEqual(expect.arrayContaining(variants('industrial-complex')));
-    // Review: the industrial zone and the city centre are filled by large buildings made of parts.
-    expect(ids('heavy-industry')).toEqual(
-      expect.arrayContaining([
-        ...variants('industrial-plant'),
-        ...variants('industrial-works'),
-        ...variants('industrial-complex'),
-      ]),
-    );
-    expect(ids('city')).toEqual(
-      expect.arrayContaining([...variants('city-block'), ...variants('city-tower')]),
-    );
+    // P15-R09: the industrial zone and the city centre are filled with models made for the grid.
+    expect(ids('heavy-industry')).toEqual(tileIds('heavyIndustry'));
+    expect(ids('city')).toEqual(tileIds('city'));
     const trees = LEVEL_ZERO.props.trees.map((t) => t.id);
     expect(trees).toEqual(['dead-tree', 'forked-tree', 'conifer', 'broadleaf-tree', 'bush']);
     // 17 hand-made models, 12 more for World 1 (phase 6, farms added in review), 5 families of 16
     // buildings made of parts, and 6 cars; for World 2 (phase 8), 22 hand-made models and 3
     // families of 8; for World 3 (phase 9), 29 hand-made models and 2 families of 8; for World 4
-    // (phase 10), 31 hand-made volcanic models, removed (reviewer, 2026-10-28); the World 2
-    // pumpjack, the 3 World 3 homes and the 8 World 4 skyscrapers (reviewer's reworks, 2026-10-27).
-    expect(Object.keys(PROP_MODELS)).toHaveLength(17 + 12 + 80 + 6 + 22 + 24 + 29 + 16 + 1 + 3 + 8);
+    // (phase 10), 31 hand-made volcanic models, removed (reviewer, 2026-10-28). Phase 15: the
+    // models of the grid of tiles and the road kit replace 4 World 1 models, 4 families of parts,
+    // the pumpjack, the World 3 homes and the World 4 skyscrapers.
+    expect(Object.keys(PROP_MODELS)).toHaveLength(
+      17 +
+        8 +
+        16 +
+        6 +
+        22 +
+        24 +
+        29 +
+        16 +
+        TILE_MODELS.length +
+        Object.keys(ROAD_KIT_MODELS).length,
+    );
   });
 
   it('P06-R06: desert homes, outposts, farms and plants, as light as the Level Zero props (D-031)', () => {
@@ -86,8 +93,8 @@ describe('prop models', () => {
       expect(triangles(id), id).toBeLessThanOrEqual(heaviest);
     }
     const expected = {
-      'desert-homes': ['desert-home', 'windcatcher-home'],
-      outposts: ['water-tower', 'solar-farm', 'antenna-mast'],
+      'desert-homes': tileIds('desertHomes'),
+      outposts: tileIds('outposts'),
       farms: ['farmhouse', 'greenhouse', 'grain-silos', 'wind-turbine'],
     };
     for (const [group, kinds] of Object.entries(expected)) {
@@ -108,7 +115,8 @@ describe('prop models', () => {
     }
   });
 
-  it.each(Object.entries(PROP_MODELS))(
+  // The road kit is flat: see `road-kit.test.ts`.
+  it.each(Object.entries(PROP_MODELS).filter(([id]) => !(id in ROAD_KIT_MODELS)))(
     'P04-R04: %s is low-poly and stands on the ground',
     (id, build) => {
       const { structure, lights } = build();
@@ -137,27 +145,13 @@ describe('prop models', () => {
   });
 
   it('P04 review: buildings made of parts differ from one variant to the next', () => {
-    for (const kind of [
-      'industrial-complex',
-      'industrial-works',
-      'industrial-plant',
-      'city-tower',
-      'city-block',
-    ]) {
+    for (const kind of ['industrial-complex']) {
       const shapes = new Set(
         variants(kind).map((id) =>
           JSON.stringify(PROP_MODELS[id]?.().structure.positions.slice(0, 30)),
         ),
       );
       expect(shapes.size, kind).toBe(variants(kind).length);
-    }
-  });
-
-  it('P04 review: big city buildings are made of lots of different heights, not one square', () => {
-    for (const id of variants('city-block')) {
-      const ys = PROP_MODELS[id]?.().structure.positions.filter((_, i) => i % 3 === 1) ?? [];
-      // Several roofs: tall towers next to lower slabs or wings.
-      expect(new Set(ys.map((y) => Math.round(y))).size, id).toBeGreaterThan(3);
     }
   });
 });
@@ -175,25 +169,21 @@ describe('World 2 prop models', () => {
 
   it('P08-R07 (rework, 2026-10-27): desert homes and outposts, mines, oil pumpjacks, refineries and factories; no frozen prop', () => {
     const kinds = new Set(WORLD_2_PROPS.groups.flatMap((g) => g.kinds.map((k) => k.id)));
+    // Phase 15: the models made for the grid of tiles, by group.
     for (const id of [
-      'desert-home',
-      'solar-farm',
-      'mine-headframe',
-      'oil-pumpjack',
-      'refinery',
-      'storage-tanks',
-      'factory',
-      'cooling-tower',
-      variantId('industrial-plant', 1),
-      variantId('industrial-works', 1),
+      ...tileIds('desertHomes'),
+      ...tileIds('outposts'),
+      ...tileIds('mines'),
+      ...tileIds('oil'),
+      ...tileIds('refinery'),
+      ...tileIds('industrial'),
+      ...tileIds('heavyIndustry'),
     ])
       expect(kinds.has(id), id).toBe(true);
     expect(WORLD_2_PROPS.trees.map((t) => t.id)).toEqual(
       expect.arrayContaining(['cactus', 'dry-bush', 'palm-tree', 'dead-tree']),
     );
-    const frozen = new Set<string>(
-      Object.values(WORLD_2_PROP_IDS).filter((id) => id !== WORLD_2_PROP_IDS.pumpjack),
-    );
+    const frozen = new Set<string>(Object.values(WORLD_2_PROP_IDS));
     for (const id of [...kinds, ...WORLD_2_PROPS.trees.map((t) => t.id)])
       expect(frozen.has(id), id).toBe(false);
     expect(WORLD_2_PROPS.floating).toBeUndefined();

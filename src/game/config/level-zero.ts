@@ -1,15 +1,11 @@
+import { LOT_KINDS, TILE, tileKinds } from './tile-buildings';
 import type {
   PropRules,
   RoadRules,
   SceneryLevel,
   TerrainSection,
 } from '../../core/scenery/scenery-level';
-import {
-  CITY_VARIANTS,
-  INDUSTRIAL_VARIANTS,
-  familyRules,
-  type PartFamily,
-} from './building-families';
+import { INDUSTRIAL_VARIANTS, familyRules, type PartFamily } from './building-families';
 import { CAR_RULES } from './cars';
 
 /*
@@ -65,6 +61,8 @@ const variants = (family: PartFamily, count: number, weight: number) =>
   familyRules(family, count, weight, BUILDING_SCALE);
 
 const PROP_RULES: PropRules = {
+  // Phase 15 (P15-R08): lots for the tiles of the districts no building fits.
+  lots: LOT_KINDS,
   cellSize: 50,
   treeClearance: 3,
   maxSlope: 0.12,
@@ -89,17 +87,7 @@ const PROP_RULES: PropRules = {
       // Only in the industrial zone: mostly large plants that fill its blocks (review).
       id: GROUP_IDS.heavyIndustry,
       weight: 1,
-      kinds: [
-        ...variants('industrial-plant', INDUSTRIAL_VARIANTS, 6),
-        ...variants('industrial-works', INDUSTRIAL_VARIANTS, 3),
-        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1),
-        { id: PROP_IDS.containerYard, weight: 0.5, footprint: 8.5, scale: BUILDING_SCALE },
-        { id: PROP_IDS.refinery, weight: 0.5, footprint: 7.5, scale: BUILDING_SCALE },
-        // The widest hand-made ones rarely find flat enough ground in the wasteland (review).
-        { id: PROP_IDS.factory, weight: 0.5, footprint: 15, scale: BUILDING_SCALE },
-        { id: PROP_IDS.warehouse, weight: 0.5, footprint: 15.5, scale: BUILDING_SCALE },
-        { id: PROP_IDS.coolingTower, weight: 0.5, footprint: 9.5, scale: BUILDING_SCALE },
-      ],
+      kinds: tileKinds('heavyIndustry'),
     },
     {
       id: GROUP_IDS.science,
@@ -123,11 +111,7 @@ const PROP_RULES: PropRules = {
       // Only in the city centre (phase 4 review).
       id: GROUP_IDS.city,
       weight: 1,
-      kinds: [
-        // Mostly large blocks that fill the city's blocks (review).
-        ...variants('city-block', CITY_VARIANTS, 6),
-        ...variants('city-tower', CITY_VARIANTS, 3),
-      ],
+      kinds: tileKinds('city'),
     },
   ],
   trees: [
@@ -165,6 +149,8 @@ const ROAD_RULES: RoadRules = {
   step: 8,
   slotSpacing: 24,
   setback: 2,
+  // Phase 15: the districts on a grid of tiles.
+  tiles: TILE,
 };
 
 const smooth = (base: number, amplitude: number, wavelength: number, octaves: number) =>

@@ -1,4 +1,5 @@
 import type { CarRules } from '../../core/scenery/scenery-level';
+import { TILE } from './tile-buildings';
 
 /** Cars on the streets and main roads (phase 4 review). */
 export const CAR_IDS = {
@@ -17,5 +18,7 @@ export const CAR_RULES: CarRules = {
   lift: 0.6,
   scale: 0.6,
   length: 4,
+  // Phase 15 (P15-R11): cars keep off the sidewalks of the streets.
+  sidewalk: TILE.sidewalk,
   speed: [12, 30],
 };

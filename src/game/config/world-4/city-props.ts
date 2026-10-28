@@ -1,10 +1,5 @@
 import type { PropRules } from '../../../core/scenery/scenery-level';
-import {
-  CITY_VARIANTS,
-  SKYSCRAPER_VARIANTS,
-  familyRules,
-  type PartFamily,
-} from '../building-families';
+import { tileKinds } from '../tile-buildings';
 import { CAR_RULES } from '../cars';
 import { WORLD_3_GROUPS, WORLD_3_PROPS } from '../world-3/props';
 
@@ -31,25 +26,10 @@ export const WORLD_4_GROUPS = {
 
 const G = WORLD_4_GROUPS;
 
-/** Props are drawn small next to the ships, as in Worlds 1 to 3. */
-const BUILDING_SCALE = [0.5, 0.65] as const;
-
-/** The variants of `family`, sharing `weight` between them (not `weight` each). */
-const variants = (family: PartFamily, weight: number) => {
-  const count = family === 'skyscraper' ? SKYSCRAPER_VARIANTS : CITY_VARIANTS;
-  return familyRules(family, count, weight / count, BUILDING_SCALE);
-};
-
 /** World 3's rules for the home groups World 4 starts with. */
 const homeGroups = WORLD_3_PROPS.groups.filter((g) =>
   [G.villages, G.suburbs, G.terraces, G.workerFlats].some((id) => id === g.id),
 );
-/** The kinds of World 3's group `id`, with their weights shared out as `weight`. */
-const kindsOf = (id: string, weight: number) => {
-  const kinds = WORLD_3_PROPS.groups.find((g) => g.id === id)?.kinds ?? [];
-  const total = kinds.reduce((sum, k) => sum + k.weight, 0);
-  return kinds.map((k) => ({ ...k, weight: (k.weight / total) * weight }));
-};
 
 /**
  * The props of World 4 (P10-R03, R08; reworked at the reviewer's request, 2026-10-27): World 3's
@@ -64,37 +44,29 @@ export const WORLD_4_PROPS: PropRules = {
     {
       id: G.townCentre,
       weight: 3,
-      kinds: [
-        ...kindsOf(G.workerFlats, 4),
-        ...kindsOf(G.terraces, 3),
-        ...variants('city-block', 1),
-      ],
+      kinds: tileKinds('townCentre'),
     },
     {
       id: G.midrise,
       weight: 3,
-      kinds: [
-        ...variants('city-block', 6),
-        ...kindsOf(G.workerFlats, 2),
-        ...variants('city-tower', 1),
-      ],
+      kinds: tileKinds('midrise'),
     },
     {
       id: G.offices,
       weight: 3,
-      kinds: [...variants('city-block', 4), ...variants('city-tower', 4)],
+      kinds: tileKinds('offices'),
     },
     {
       id: G.towers,
       weight: 3,
-      kinds: [...variants('city-tower', 6), ...variants('city-block', 2)],
+      kinds: tileKinds('towers'),
     },
     {
       id: G.skyscrapers,
       weight: 3,
-      kinds: [...variants('skyscraper', 6), ...variants('city-tower', 2)],
+      kinds: tileKinds('skyscrapers'),
     },
-    { id: G.downtown, weight: 3, kinds: variants('skyscraper', 1) },
+    { id: G.downtown, weight: 3, kinds: tileKinds('downtown') },
   ],
   cars: CAR_RULES,
 };

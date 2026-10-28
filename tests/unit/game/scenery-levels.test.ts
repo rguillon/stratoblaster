@@ -17,10 +17,11 @@ import { WORLD_2_PROP_IDS } from '../../../src/game/config/world-2/props';
 import { WORLD_3_PROP_IDS } from '../../../src/game/config/world-3/props';
 import {
   JUNGLE_VARIANTS,
-  SKYSCRAPER_VARIANTS,
   POLAR_VARIANTS,
   variantId,
 } from '../../../src/game/config/building-families';
+import { TILE_GROUPS, TILE_MODELS } from '../../../src/game/config/tile-buildings';
+import { ROAD_KIT_MODELS } from '../../../src/game/view/props/road-kit';
 
 describe('Level Zero', () => {
   const field = new HeightField(LEVEL_ZERO);
@@ -100,11 +101,13 @@ describe('Level Zero', () => {
     expect(['conifer', 'broadleaf-tree', 'bush'].every((k) => green.has(k))).toBe(true);
     expect(green.has('dead-tree')).toBe(false);
     const industrial = kindsIn(industry);
-    expect(industrial.has('industrial-plant-1') || industrial.has('industrial-plant-2')).toBe(true);
-    expect([...industrial].some((k) => k.startsWith('industrial-works'))).toBe(true);
+    // Phase 15: the heavy industry made for the grid of tiles.
+    const heavy = new Set<string>(TILE_GROUPS.heavyIndustry.models.map((m) => m.id));
+    expect([...industrial].filter((k) => heavy.has(k)).length).toBeGreaterThan(2);
     expect(industrial.has('glass-tower')).toBe(false);
     const downtown = kindsIn(city);
-    expect([...downtown].some((k) => k.startsWith('city-block'))).toBe(true);
+    const cityModels = new Set<string>(TILE_GROUPS.city.models.map((m) => m.id));
+    expect([...downtown].some((k) => cityModels.has(k))).toBe(true);
     expect(downtown.has('factory')).toBe(false);
     // Dense: many more buildings per unit of length in the city than on the plains.
     const count = (zMin: number, zMax: number) =>
@@ -149,10 +152,12 @@ describe('Level Zero', () => {
       ...(['canopy-tower', 'canopy-block'] as const).flatMap((family) =>
         Array.from({ length: JUNGLE_VARIANTS }, (_, i) => variantId(family, i + 1)),
       ),
-      ...Array.from({ length: SKYSCRAPER_VARIANTS }, (_, i) => variantId('skyscraper', i + 1)),
+      // Phase 15: the models of the grid of tiles (Level Zero places some of them) and the road kit.
+      ...TILE_MODELS.map((m) => m.id),
+      ...Object.keys(ROAD_KIT_MODELS),
     ]);
     const standing = Object.keys(PROP_MODELS).filter((id) => !others.has(id));
-    expect([...kinds].sort()).toEqual(standing.sort());
+    expect([...kinds].filter((k) => !others.has(k)).sort()).toEqual(standing.sort());
     for (const p of props) expect(p.y).toBeGreaterThanOrEqual(LEVEL_ZERO.props.minHeight);
   });
 

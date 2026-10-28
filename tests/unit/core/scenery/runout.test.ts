@@ -13,6 +13,9 @@ describe('the runout (reviewer, 2026-10-28)', () => {
   if (!scenery) throw new Error('no level 4-4');
   const level = withRunout(scenery, 60);
   const from = runoutStart(level) ?? 0;
+  // Phase 15: on a grid of tiles, the row where the runout starts is the one on the tile there.
+  const tile = level.roads.tiles?.size;
+  const row = tile ? (Math.round(from / tile - 0.5) + 0.5) * tile : from;
   const field = new HeightField(level);
   const streetsAt = (roads: readonly Road[], z: number) =>
     roads.filter((r) => r.points.every((p) => Math.abs(p.z - z) < 1e-6));
@@ -25,19 +28,19 @@ describe('the runout (reviewer, 2026-10-28)', () => {
   it('its streets are laid apart, going on from a full row where it starts', () => {
     const network = levelRoads(field, level.roads, level.seed, { runoutFrom: from });
     const before = network.roads;
-    expect(before.every((r) => r.points.every((p) => p.z <= from + 1e-6))).toBe(true);
-    expect(streetsAt(before, from).length).toBeGreaterThan(0);
+    expect(before.every((r) => r.points.every((p) => p.z <= row + 1e-6))).toBe(true);
+    expect(streetsAt(before, row).length).toBeGreaterThan(0);
     const added = network.addRunout();
     expect(added.length).toBeGreaterThan(50);
     expect(network.roads).toEqual([...before, ...added]);
     // The list of roads is a new one: the one before stays as it was.
     expect(network.roads).not.toBe(before);
     for (const road of added) {
-      expect(road.points.every((p) => p.z >= from - 1e-6)).toBe(true);
+      expect(road.points.every((p) => p.z >= row - 1e-6)).toBe(true);
       // A column starting at the row ends on it (or off the screen), never in the open.
-      const start = road.points.find((p) => Math.abs(p.z - from) < 1e-6);
+      const start = road.points.find((p) => Math.abs(p.z - row) < 1e-6);
       if (start && Math.abs(start.x) < level.roads.offscreenX) {
-        const onRow = streetsAt(before, from).some((r) => {
+        const onRow = streetsAt(before, row).some((r) => {
           const xs = r.points.map((p) => p.x);
           return start.x >= Math.min(...xs) && start.x <= Math.max(...xs);
         });
@@ -49,7 +52,7 @@ describe('the runout (reviewer, 2026-10-28)', () => {
 
   it('without a runout, every street is laid at once', () => {
     const network = levelRoads(field, level.roads, level.seed);
-    expect(network.roads.some((r) => r.points.some((p) => p.z > from + 1))).toBe(true);
+    expect(network.roads.some((r) => r.points.some((p) => p.z > row + 1))).toBe(true);
     expect(network.addRunout()).toEqual([]);
   });
 

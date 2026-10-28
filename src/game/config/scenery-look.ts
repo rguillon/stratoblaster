@@ -202,6 +202,17 @@ export const LEVEL_ZERO_LOOK = {
       dash: 4,
       lift: 0.05,
     },
+    /** Phase 15 (P15-R02): dark asphalt, grey sidewalks and pale kerbs on the tiles. */
+    tiles: {
+      roadway: [0.2, 0.2, 0.22],
+      sidewalk: [0.38, 0.37, 0.38],
+      kerb: [0.55, 0.54, 0.52],
+      kerbWidth: 0.35,
+      centreLine: [0.7, 0.56, 0.12],
+      laneLine: [0.6, 0.6, 0.58],
+      lineWidth: 0.3,
+      lift: 0.15,
+    },
   },
   /** Matte props: specular highlights on their facets flickered as the view scrolled (review). */
   props: { specular: 0, lightIntensity: 1 },

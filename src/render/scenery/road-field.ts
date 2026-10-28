@@ -3,8 +3,14 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import type { Road } from '../../core/scenery/road-network';
+import { cachedRoadPieces } from '../../core/scenery/road-tiles';
+import type { TileRules } from '../../core/scenery/scenery-level';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import { buildRoadGeometry, type RoadLook } from './road-geometry';
+import { buildTileGrid, buildTileRoadGeometry, type TileRoadLook } from './tile-road-geometry';
+
+/** Colour of the grid of tiles drawn with `tiles=1` (phase 15). */
+const GRID_COLOR = [0, 0.9, 1] as const;
 import type { HeightSource } from './terrain-geometry';
 
 /**
@@ -72,6 +78,9 @@ interface SplitRoads {
   readonly streetsOnly: boolean;
 }
 
+/** The winding roads of a list, without its streets on tiles (phase 15). */
+const winding = new WeakMap<readonly Road[], readonly Road[]>();
+
 /** The roads split once per list (P13-R04). */
 const splits = new WeakMap<readonly Road[], SplitRoads>();
 
@@ -118,7 +127,13 @@ export class RoadLayers {
   readonly #roads: RoadField;
   readonly #streets: RoadField;
 
+  #grid: RoadField | undefined;
+  readonly #scene: Scene;
+  readonly #material: Material;
+
   constructor(scene: Scene, material: Material) {
+    this.#scene = scene;
+    this.#material = material;
     this.#paths = new RoadField(scene, material, 'paths', DRAW_ORDER.paths);
     this.#roads = new RoadField(scene, material, 'roads', DRAW_ORDER.roads);
     this.#streets = new RoadField(scene, opaqueOf(material), 'streets', 0, false);
@@ -134,14 +149,22 @@ export class RoadLayers {
     return this.#streets.mesh(index);
   }
 
-  /** Ribbons of the segments of `roads` that start in the chunk's Z range. */
+  /**
+   * Ribbons of the segments of `roads` that start in the chunk's Z range; with `tiles` (phase
+   * 15), the streets are road pieces on the grid instead, opaque.
+   */
   setChunk(
     index: number,
     roads: readonly Road[],
     ground: HeightSource,
     span: { readonly zMin: number; readonly zMax: number },
     look: RoadLook,
+    tiles?: TileRules,
   ): void {
+    if (tiles && look.tiles) {
+      this.#setTileChunk(index, roads, ground, span, look, [tiles, look.tiles]);
+      return;
+    }
     const split = splitRoads(roads);
     const { zMin, zMax } = span;
     this.#paths.setChunk(index, buildRoadGeometry(split.paths, ground, zMin, zMax, look));
@@ -152,13 +175,51 @@ export class RoadLayers {
     else this.#streets.removeChunk(index);
   }
 
+  #setTileChunk(
+    index: number,
+    roads: readonly Road[],
+    ground: HeightSource,
+    { zMin, zMax }: { readonly zMin: number; readonly zMax: number },
+    look: RoadLook,
+    [tiles, tileLook]: readonly [TileRules, TileRoadLook],
+  ): void {
+    const split = splitRoads(roads);
+    const others = winding.get(roads) ?? split.roads.filter((r) => r.kind !== 'street');
+    winding.set(roads, others);
+    this.#paths.setChunk(index, buildRoadGeometry(split.paths, ground, zMin, zMax, look));
+    this.#roads.setChunk(index, buildRoadGeometry(others, ground, zMin, zMax, look));
+    const pieces = cachedRoadPieces(roads, tiles);
+    const height = (x: number, z: number): number => ground.height(x, z);
+    this.#streets.setChunk(
+      index,
+      buildTileRoadGeometry(pieces, tiles, tileLook, height, [zMin, zMax]),
+    );
+    if (this.#grid) {
+      this.#grid.setChunk(index, buildTileGrid(pieces, tiles, height, [zMin, zMax], GRID_COLOR));
+    }
+  }
+
+  /** Phase 15 (P15-R10, `tiles=1`): draws the grid of tiles over the districts from now on. */
+  showTileGrid(): void {
+    this.#grid ??= new RoadField(this.#scene, this.#gridMaterial(), 'tile-grid', 0, false);
+  }
+
+  #gridMaterial(): Material {
+    const material = this.#material.clone('tile-grid') ?? this.#material;
+    material.disableDepthWrite = false;
+    material.zOffset = -3;
+    return material;
+  }
+
   removeChunk(index: number): void {
+    this.#grid?.removeChunk(index);
     this.#paths.removeChunk(index);
     this.#roads.removeChunk(index);
     this.#streets.removeChunk(index);
   }
 
   clear(): void {
+    this.#grid?.clear();
     this.#paths.clear();
     this.#roads.clear();
     this.#streets.clear();

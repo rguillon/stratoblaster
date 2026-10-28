@@ -1,11 +1,9 @@
 import type { PropGeometry, PropModelFactory } from '../../../render/scenery/scenery-look';
 import {
-  CITY_VARIANTS,
   INDUSTRIAL_VARIANTS,
   JUNGLE_VARIANTS,
   PART_FAMILIES,
   POLAR_VARIANTS,
-  SKYSCRAPER_VARIANTS,
   variantId,
   type PartFamily,
 } from '../../config/building-families';
@@ -16,17 +14,9 @@ import { WORLD_1_PROP_IDS as W } from '../../config/world-1/props';
 import { WORLD_2_PROP_IDS as W2 } from '../../config/world-2/props';
 import { WORLD_3_PROP_IDS as W3 } from '../../config/world-3/props';
 import { buildCar } from './car-props';
-import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
 import { buildCactus, buildDryBush, buildPalmTree } from './desert-plants';
-import {
-  buildBeachHut,
-  buildDesertHome,
-  buildMineHeadframe,
-  buildSolarFarm,
-  buildWaterTower,
-  buildWindcatcherHome,
-} from './desert-props';
+import { buildBeachHut, buildDesertHome } from './desert-props';
 import { buildDomeHome, buildCubeHome, buildStiltPod } from './home-props';
 import { buildFarmhouse, buildGrainSilos, buildGreenhouse } from './farm-props';
 import {
@@ -38,7 +28,6 @@ import {
   buildWarehouse,
 } from './industrial-props';
 import { buildBroadleafTree, buildBush, buildConifer } from './green-tree-props';
-import { buildPumpjack } from './oil-props';
 import { buildPolarBuilding } from './polar-city';
 import { buildFishStore, buildHarbourCrane, buildLighthouse } from './polar-coast';
 import { buildHeatedDome, buildIceHut, buildLongChalet, buildPolarChalet } from './polar-homes';
@@ -86,8 +75,8 @@ import { buildFishingPlatform, buildLilyPads, buildReeds, buildWaterfall } from 
 import { buildFrostedTree, buildSnowPine, buildSnowyBush } from './polar-plants';
 import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
-import { buildRowHouses, buildSuburbHouse, buildWalkUp } from './suburb-props';
-import { buildSkyscraper } from './skyscraper-props';
+import { TILE_PROP_MODELS } from './tile-models';
+import { ROAD_KIT_MODELS } from './road-kit';
 
 /** The `count` variants of a family of buildings made of parts, built by `build`. */
 function partModels(
@@ -122,16 +111,8 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [PROP_IDS.bush]: buildBush,
   // Phase 4 review: buildings assembled from parts, one model per variant and family.
   ...partModels('industrial-complex', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
-  ...partModels('industrial-works', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
-  ...partModels('industrial-plant', INDUSTRIAL_VARIANTS, buildIndustrialComplex),
-  ...partModels('city-tower', CITY_VARIANTS, buildCityBuilding),
-  ...partModels('city-block', CITY_VARIANTS, buildCityBuilding),
   // Phase 6: desert and coast homes, outposts and plants.
   [W.desertHome]: buildDesertHome,
-  [W.windcatcherHome]: buildWindcatcherHome,
-  [W.waterTower]: buildWaterTower,
-  [W.solarFarm]: buildSolarFarm,
-  [W.mineHeadframe]: buildMineHeadframe,
   [W.beachHut]: buildBeachHut,
   [W.palm]: buildPalmTree,
   [W.dryBush]: buildDryBush,
@@ -141,7 +122,6 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W.greenhouse]: buildGreenhouse,
   [W.grainSilos]: buildGrainSilos,
   // Reviewer's rework (2026-10-27): the oil fields of World 2.
-  [W2.pumpjack]: buildPumpjack,
   // Phase 8: World 2, the Frozen North (P08-R07); no level places them since the rework.
   [W2.snowPine]: buildSnowPine,
   [W2.frostedTree]: buildFrostedTree,
@@ -165,7 +145,6 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W2.floeLarge]: buildLargeFloe,
   [W2.iceberg]: buildIceberg,
   [W2.weatherBuoy]: buildWeatherBuoy,
-  ...partModels('skyscraper', SKYSCRAPER_VARIANTS, buildSkyscraper),
   ...partModels('polar-tower', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('polar-block', POLAR_VARIANTS, buildPolarBuilding),
   ...partModels('mining-complex', POLAR_VARIANTS, buildMiningComplex),
@@ -199,11 +178,12 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W3.treetopPlatform]: buildTreetopPlatform,
   [W3.skyBridgeTowers]: buildSkyBridgeTowers,
   [W3.waterfall]: buildWaterfall,
-  [W3.suburbHouse]: buildSuburbHouse,
-  [W3.rowHouses]: buildRowHouses,
-  [W3.walkUp]: buildWalkUp,
   ...partModels('canopy-tower', JUNGLE_VARIANTS, buildCanopyBuilding),
   ...partModels('canopy-block', JUNGLE_VARIANTS, buildCanopyBuilding),
+  // Phase 15: the models made for the grid of tiles.
+  ...TILE_PROP_MODELS,
+  // Phase 15: the road kit, for the `props/` page (no level places it: its streets are drawn).
+  ...ROAD_KIT_MODELS,
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),

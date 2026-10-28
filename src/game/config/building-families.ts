@@ -1,22 +1,15 @@
-/** Variants of the industrial complexes and city buildings assembled from parts (review). */
+/** Variants of the industrial complexes assembled from parts (review). */
 export const INDUSTRIAL_VARIANTS = 16;
-export const CITY_VARIANTS = 16;
 /** Variants of the World 2 buildings assembled from parts (P08-R07). */
 export const POLAR_VARIANTS = 8;
 /** Variants of the World 3 city buildings assembled from parts (P09-R06). */
 export const JUNGLE_VARIANTS = 8;
-/** Variants of the World 4 skyscrapers (reviewer's rework, 2026-10-27). */
-export const SKYSCRAPER_VARIANTS = 8;
 /**
  * Families of buildings assembled from parts, with the half side of the square their models fit
  * in. The large ones fill the blocks of the industrial zone and the city centre (review).
  */
 export const PART_FAMILIES = {
   'industrial-complex': 12,
-  'industrial-works': 18,
-  'industrial-plant': 30,
-  'city-tower': 14,
-  'city-block': 24,
   // World 2 (P08-R07): polar city towers and blocks, and the big mining complex of 2-4.
   'polar-tower': 12,
   'polar-block': 20,
@@ -24,8 +17,6 @@ export const PART_FAMILIES = {
   // World 3 (P09-R06): the canopy city's towers and blocks, trees on their roofs.
   'canopy-tower': 12,
   'canopy-block': 20,
-  // World 4 (reviewer's rework, 2026-10-27): the downtown skyscrapers.
-  skyscraper: 12,
 } as const;
 export type PartFamily = keyof typeof PART_FAMILIES;
 /** Id of variant `n` (1-based) of a building assembled from parts. */

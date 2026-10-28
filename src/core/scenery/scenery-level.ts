@@ -195,6 +195,11 @@ export interface PropKindRule {
    * from where they were placed, over `period` seconds.
    */
   readonly drift?: { readonly x: number; readonly z: number; readonly period: number };
+  /**
+   * Phase 15 (P15-R07): the W × D tiles the model stands on, in its own X and Z (its front is
+   * -Z). In the districts it stands on them, at scale 1, turned by quarter turns.
+   */
+  readonly tiles?: readonly [number, number];
 }
 
 /**
@@ -295,6 +300,11 @@ export interface PropRules {
   readonly lines?: readonly PropLine[];
   /** Phase 9: set pieces at given places (a dam, waterfalls, a temple). */
   readonly landmarks?: readonly Landmark[];
+  /**
+   * Phase 15 (P15-R08): props of whole tiles (car parks, yards, plazas, parks) for the tiles of
+   * a district's blocks that no building of their group fits.
+   */
+  readonly lots?: readonly PropKindRule[];
 }
 
 /**
@@ -321,11 +331,22 @@ export interface CarRules {
   readonly scale: number;
   /** About the length of a car: cars are hidden this close to the ends of their road. */
   readonly length: number;
+  /** Phase 15: width of the sidewalks of the streets, which cars keep off (default 0). */
+  readonly sidewalk?: number;
   /** Speeds (world units per second); all the cars of one lane share one. */
   readonly speed: readonly [number, number];
 }
 
 type Range = readonly [number, number];
+
+/**
+ * The grid of square tiles the districts are laid on (phase 15, P15-R01): `size` world units a
+ * side, the width of a one-lane-each-way street with its two sidewalks, each `sidewalk` wide.
+ */
+export interface TileRules {
+  readonly size: number;
+  readonly sidewalk: number;
+}
 
 /** See {@link RoadRules.boulevards}. */
 export interface Boulevard {
@@ -391,6 +412,12 @@ export interface RoadRules {
    * roads and paths may cross, and streets meet at crossings too.
    */
   readonly noCrossings?: { readonly gap: number };
+  /**
+   * Phase 15: the districts are laid on a grid of tiles: streets with sidewalks, N tiles wide
+   * for N lanes each way (`dual.width` and the boulevards' widths are then N tiles), which cross
+   * (`noCrossings` then only holds outside the districts), and buildings of whole tiles.
+   */
+  readonly tiles?: TileRules;
 }
 
 /** The ground of a scrolling level: terrain, optional sea, roads and props. */

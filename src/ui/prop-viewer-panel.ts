@@ -84,7 +84,8 @@ export class PropViewerPanel {
       this.#propRow.replaceChildren(
         ...(this.options.groups[group]?.ids ?? []).map((id, i) => {
           const button = this.options.doc.createElement('button');
-          button.textContent = id;
+          const note = this.options.groups[group]?.notes?.[id];
+          button.textContent = note ? `${id} · ${note}` : id;
           button.addEventListener('click', () => {
             this.#choose({ group, prop: i });
           });

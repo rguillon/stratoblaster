@@ -184,4 +184,6 @@ export interface SceneryBindings {
 export interface PropGroup {
   readonly label: string;
   readonly ids: readonly string[];
+  /** Phase 15: a note shown after some ids' names, e.g. the tiles they stand on (`3×4`). */
+  readonly notes?: Readonly<Record<string, string>>;
 }

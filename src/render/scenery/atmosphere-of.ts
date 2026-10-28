@@ -20,6 +20,8 @@ export interface AtmosphereOptions {
   readonly timeOfDay?: TimeOfDay | undefined;
   /** `weather=0`: no weather at all. */
   readonly weather?: boolean;
+  /** Phase 15 (P15-R10), `tiles=1`: the grid of tiles drawn over the districts. */
+  readonly tileGrid?: boolean;
 }
 
 /**
