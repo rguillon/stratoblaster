@@ -5,6 +5,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { EnemyBullet, EnemyMissile } from '../../../core/systems/enemy-shots';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyShotRenderer } from '../../../render/game-view';
+import { ON_TOP_ALPHA_INDEX } from '../../../render/node-adopter';
 import { NodePool } from '../../../render/node-pool';
 import { setOutline } from '../../../render/outline';
 import { ENEMY_LOOK } from '../../config/enemy-look';
@@ -16,8 +17,11 @@ import { enemyMaterials, meshOf } from './enemy-mesh';
 import { EnemyLasers } from './enemy-lasers';
 
 const LOOK = ENEMY_LOOK;
-/** Draw order of the bullets: after every other see-through mesh of the playfield (P14-R05). */
-const ON_TOP = 1_000_000;
+/**
+ * Draw order of the bullets: after every other see-through mesh of the playfield, the missiles'
+ * flames and the lasers ({@link ON_TOP_ALPHA_INDEX}) included (P14-R05).
+ */
+const ON_TOP = ON_TOP_ALPHA_INDEX + 1;
 type Style = keyof typeof LOOK.bullets.styles;
 const STYLES = Object.keys(LOOK.bullets.styles) as Style[];
 
@@ -229,6 +233,8 @@ export function createEnemyShotRenderer(scene: Scene): EnemyShotRenderer {
     buildGlowDisc(8, LOOK.missile.flame),
     scene,
   );
+  // P14-R05: over the player's shots and the blasts, under the bullets (its clones too).
+  flame.alphaIndex = ON_TOP_ALPHA_INDEX;
   const missiles = new NodePool((i) => buildMissile(scene, flame, i));
   const lasers = new EnemyLasers(scene, contrast);
   let time = 0;

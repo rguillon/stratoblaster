@@ -235,7 +235,8 @@ function addReactors(
       const a = (-2 * Math.PI * k) / look.sides;
       return [x + Math.cos(a) * radius * look.core, y + Math.sin(a) * radius * look.core, z];
     });
-    parts.neon.face(core, color);
+    // Folded with the rest of the neon (`inEnemyFamily`): the colour of the flame.
+    parts.neon.face(core, look.color);
     const node = new TransformNode(`${name}-reactor-${String(i)}`, root.getScene());
     node.position.set(x, y, 0);
     node.parent = root;

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { inFamily, type Rgb } from '../../../../../src/core/math/color';
+import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
 import { READABILITY } from '../../../../../src/game/config/readability';
 import { GAME } from '../../../../../src/game';
 import { buildEnemyModel, enemyColor } from '../../../../../src/game/view/enemies/enemy-mesh';
@@ -25,6 +26,13 @@ describe('enemies stand out (P14-R02, R04)', () => {
       expect(inFamily(c, ENEMY)).toBe(true);
     }
     expect(inFamily(enemyColor([0.1, 0.95, 1]), ENEMY)).toBe(true);
+    // The reactor's core is the colour of its flame, folded once.
+    const core = enemyColor(ENEMY_LOOK.reactor.color);
+    const close = (c: number, k: number) => Math.abs(c - (core[k] ?? 0)) < 1e-6;
+    const vertices = Array.from({ length: colors.length / 4 }, (_, i) =>
+      colors.slice(4 * i, 4 * i + 3),
+    );
+    expect(vertices.some((c) => c.every(close))).toBe(true);
   });
 
   it('P14-R04: its hull asks for a rim in a light shade of its neon', () => {

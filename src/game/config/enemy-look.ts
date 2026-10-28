@@ -99,7 +99,8 @@ export const ENEMY_LOOK = {
    * triangles a reactor (about 150 before).
    */
   reactor: {
-    color: [0.55, 0.85, 1] as Rgb,
+    // Saturated enough (0.52) to be folded into the enemy family when drawn (P14-R02).
+    color: [0.48, 0.82, 1] as Rgb,
     flameSides: 4,
     puffs: 2,
     depth: 1.2,

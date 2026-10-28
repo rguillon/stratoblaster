@@ -1522,3 +1522,9 @@
 - **Phase:** 14 (reviewer request; amends P11-R02's place of the score)
 - **Decision:** The HUD is one bar, 48 px high, along the bottom of the playfield (`.hud-panel`): the level's progress as a line along its top edge; the ship, its lives, bombs and health bar on the left; the score and high score in the middle; the weapon and its level, and the level played under it, on the right. The enemies destroyed are no longer shown. The ship flies no lower than 30 px above the bar (`shipMargin.bottom` 78, was 30), so the bar never hides it. The boss gauge starts at the top of the left edge, the pause button stays in the top-right corner (P12-R01), now at the top, and the touch fire and bomb buttons sit above the bar.
 - **Status:** Accepted
+
+### D-156 — Playfield meshes without a draw order drawn under the enemy shots
+- **Date:** 2026-10-28
+- **Phase:** 14 (P14-R05, R06; found by the unit tests of `/validate-phase 14`)
+- **Decision:** Babylon draws the see-through meshes of a rendering group by draw order (`alphaIndex`) before distance, and a mesh that sets none keeps `Number.MAX_VALUE`, so it was drawn after the enemy bullets (1 000 000 and up, D-124): the player's shots, reactor flames, missile flames and laser beams all were. The playfield's `NodeAdopter` now gives every mesh it adopts with no draw order `ON_TOP_ALPHA_INDEX - 1` (999 999); clones keep it. Missile flames and laser parts are drawn at `ON_TOP_ALPHA_INDEX`, over the player's shots and the blasts, and the bullets just above (1 000 001 and up), under the hitbox marker. The order of the other meshes among themselves is unchanged. Also found by those tests: the reactor cores were folded into the enemy family twice (they now match their flames), and the reactor colour was too pale (0.45 saturation) for the family's 0.5; it is `[0.48, 0.82, 1]` (0.52), so it folds into the family.
+- **Status:** Accepted

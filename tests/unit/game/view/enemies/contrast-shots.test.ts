@@ -13,6 +13,7 @@ import { WORLD_2 } from '../../../../../src/game/sim/world-2';
 import { WORLD_3 } from '../../../../../src/game/sim/world-3';
 import { WORLD_4 } from '../../../../../src/game/sim/world-4';
 import { SCENERY_BINDINGS } from '../../../../../src/game/view/scenery-bindings';
+import { ON_TOP_ALPHA_INDEX } from '../../../../../src/render/node-adopter';
 import { Dropper } from '../../../../fixtures/sample-enemies';
 
 const LASER = { warningSeconds: 1, firingSeconds: 1, width: 10, style: 'l' };
@@ -44,14 +45,21 @@ const lookOf = (id: string) => SCENERY_BINDINGS.looks[id];
 const rgb = (m: Mesh | null) => Array.from(m?.getVerticesData('color')?.slice(0, 3) ?? []);
 const order = (m: Mesh | null) => m?.alphaIndex ?? Number.NaN;
 
-/** A renderer after one frame with a tiny red bullet (0.5 px hit radius). */
+/** A renderer after one frame with a tiny red bullet (0.5 px hit radius), a missile and a laser. */
 function tinyBullet() {
   const scene = new Scene(new NullEngine());
   const renderer = createEnemyShotRenderer(scene);
   const shots = new EnemyShots({ width: 480, height: 640, cullMargin: 20 });
   shots.fireBullet(10, 20, 0, { speed: 0, radius: 0.5, style: 'red' });
-  const bullets = shots.bullets.filter((b) => b.alive);
-  renderer.sync({ bullets, missiles: [], lasers: [], dtSeconds: 1 / 60 });
+  const missile = { speed: 0, turnRateDeg: 0, homingSeconds: 0, radius: 4, health: 1 };
+  shots.fireMissile(100, 300, Math.PI, { ...missile, style: 'r' });
+  shots.fireLaser(new Dropper(200, 500), LASER);
+  renderer.sync({
+    bullets: shots.bullets.filter((b) => b.alive),
+    missiles: shots.missiles.filter((m) => m.alive),
+    lasers: shots.lasers,
+    dtSeconds: 1 / 60,
+  });
   return { scene, body: scene.getMeshByName('enemy-bullet-red') as Mesh | null };
 }
 
@@ -98,9 +106,18 @@ describe('Enemy shots over fire (P10-R07)', () => {
 
   it('P14-R05: bullets are drawn over everything else, at least the smallest size', () => {
     const { scene, body } = tinyBullet();
-    const others = scene.meshes.filter((m) => !m.name.startsWith('enemy-bullet-'));
-    for (const m of others) expect(order(body)).toBeGreaterThan(m.alphaIndex);
+    // The see-through meshes, drawn by draw order after the solid ones (missiles' bodies).
+    const others = scene.meshes.filter(
+      (m) => !m.name.startsWith('enemy-bullet-') && m.material?.needAlphaBlendingForMesh(m),
+    );
+    for (const m of others) expect(order(body), m.name).toBeGreaterThan(m.alphaIndex);
     expect(body?.material?.depthFunction).toBe(Constants.ALWAYS);
+    // Missiles' flames and lasers too: over every playfield mesh that sets no draw order.
+    const glows = others.filter((m) => m.material?.alphaMode === Constants.ALPHA_ADD);
+    expect(glows.map((m) => m.name)).toEqual(
+      expect.arrayContaining(['enemy-missile-0-flame', 'enemy-laser-warning-l-0']),
+    );
+    for (const m of glows) expect(m.alphaIndex, m.name).toBeGreaterThanOrEqual(ON_TOP_ALPHA_INDEX);
     // Its drawn radius (the matrix's scale) is at least half the smallest size.
     const m = body?.thinInstanceGetWorldMatrices()[0]?.m ?? [0, 0];
     const scale = Math.hypot(m[0] ?? 0, m[1] ?? 0);
