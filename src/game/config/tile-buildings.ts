@@ -245,7 +245,7 @@ export const TILE_GROUPS = {
       model('skyscraper', 2, 2),
       model('skyscraper', 3, 3, 2),
       model('skyscraper', 2, 3),
-      model('skyscraper', 3, 3),
+      model('skyscraper', 3, 3, 5),
       model('skyscraper', 2, 2, 2),
     ],
   },

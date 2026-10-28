@@ -1,6 +1,7 @@
 import type { SceneryBindings } from '../../render/game-view';
 import type { PlayfieldCameraLook, SceneryLook } from '../../render/scenery/scenery-look';
-import { PLAYFIELD_CAMERA } from '../config/scenery-look';
+import { BASE_SCENERY_LOOK, PLAYFIELD_CAMERA } from '../config/scenery-look';
+import { TILE } from '../config/tile-buildings';
 import {
   LEVEL_1_1_LOOK,
   LEVEL_1_2_LOOK,
@@ -91,4 +92,5 @@ export const SCENERY_BINDINGS: SceneryBindings = {
   },
   propModels: PROP_MODELS,
   propGroups: PROP_GROUPS,
+  propTiles: { tile: TILE, look: BASE_SCENERY_LOOK.roads.tiles },
 };

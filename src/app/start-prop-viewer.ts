@@ -6,8 +6,6 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { GameDefinition } from '../core/content/game-definition';
 import type { GameView, PropGroup } from '../render/game-view';
@@ -16,6 +14,8 @@ import type { ColoredGeometry } from '../render/geometry/gradient-shapes';
 import { meshOf } from '../render/scenery/prop-field';
 import { PropViewerPanel, type PropViewerSelection } from '../ui/prop-viewer-panel';
 import { PROP_VIEWER_CONFIG as CFG } from '../config/prop-viewer';
+import { buildViewerGround, type ViewerTiles } from './prop-viewer-ground';
+import { tileLayout } from './prop-viewer-layout';
 
 /** Options of {@link startPropViewer}. */
 export interface PropViewerOptions {
@@ -83,41 +83,46 @@ function addLights(scene: Scene): void {
   key.intensity = lights.keyIntensity;
 }
 
-/** The props of one group, laid out on a grid on a plain ground. */
+/** The props of one group, each on whole tiles of the grid of the ground (phase 15). */
 class PropGrid {
   props: readonly ShownProp[] = [];
   /** Index of the group shown; -1 before the first. */
   group = -1;
   readonly #materials;
-  #ground: Mesh | undefined;
+  #ground: TransformNode | undefined;
 
   constructor(
     private readonly scene: Scene,
     private readonly models: GameView['scenery']['propModels'],
+    private readonly tiles: ViewerTiles,
   ) {
     this.#materials = materials(scene);
   }
 
-  /** Shows the props `ids` (group `group`) in place of the ones shown. */
-  show(ids: readonly string[], group: number): void {
+  /** Shows the props of `group` (index `index`) in place of the ones shown. */
+  show(group: PropGroup | undefined, index: number): void {
     for (const p of this.props) p.root.dispose();
     this.#ground?.dispose();
-    this.props = ids.flatMap((id) => this.#build(id));
-    const cell = Math.max(1, ...this.props.flatMap((p) => [p.size[0], p.size[1]])) + CFG.gap;
-    const columns = Math.ceil(Math.sqrt(this.props.length));
-    const rows = Math.ceil(this.props.length / Math.max(1, columns));
-    this.props.forEach((p, i) => {
-      p.root.position.set(
-        ((i % columns) - (columns - 1) / 2) * cell,
-        0,
-        ((rows - 1) / 2 - Math.floor(i / columns)) * cell,
-      );
+    const built = (group?.ids ?? []).flatMap((id) => this.#build(id));
+    const t = this.tiles.tile.size;
+    const tilesOf = (v: number): number => Math.max(1, Math.ceil(v / t - 1e-6));
+    const streets = group?.streets === true && this.tiles.look !== undefined;
+    const layout = tileLayout(
+      built.map(({ prop }) => [tilesOf(prop.size[0]), tilesOf(prop.size[1])] as const),
+      streets ? 1 : Math.ceil(CFG.gap / t),
+      streets,
+    );
+    built.forEach(({ prop, mid }, i) => {
+      const [cx, cz] = layout.centres[i] ?? [0, 0];
+      prop.root.position.set(cx * t - mid[0], 0, cz * t - mid[1]);
     });
-    this.#ground = this.#floor(Math.max(columns, rows) * cell + CFG.ground.margin);
-    this.group = group;
+    this.props = built.map((b) => b.prop);
+    this.#ground = buildViewerGround(this.scene, layout, this.tiles, this.#materials.structure);
+    this.group = index;
   }
 
-  #build(id: string): ShownProp[] {
+  /** The prop `id`, and the middle of its footprint in its own frame. */
+  #build(id: string): { prop: ShownProp; mid: [number, number] }[] {
     const factory = this.models[id];
     if (!factory) return [];
     const geometry = factory();
@@ -135,17 +140,8 @@ class PropGrid {
     const [x0, x1, height, z0, z1] = extent(geometry.structure);
     const triangles =
       (geometry.structure.indices.length + (geometry.lights?.indices.length ?? 0)) / 3;
-    return [{ id, root, triangles, size: [x1 - x0, z1 - z0, height] }];
-  }
-
-  #floor(side: number): Mesh {
-    const ground = CreateGround('props-ground', { width: side, height: side }, this.scene);
-    const floor = new StandardMaterial('props-ground', this.scene);
-    floor.diffuseColor = new Color3(...CFG.ground.color);
-    floor.specularColor = Color3.Black();
-    ground.material = floor;
-    ground.isPickable = false;
-    return ground;
+    const prop: ShownProp = { id, root, triangles, size: [x1 - x0, z1 - z0, height] };
+    return [{ prop, mid: [(x0 + x1) / 2, (z0 + z1) / 2] }];
   }
 }
 
@@ -197,7 +193,7 @@ function listenPicks(
 
 /**
  * The props viewer page (`props/`, reviewer 2026-10-28): the prop models of one group laid out
- * on a grid on a plain ground, a turning camera, and a panel to pick the group and a prop, which
+ * on the grid of tiles of a plain ground (with road tiles around the models made for the grid), a turning camera, and a panel to pick the group and a prop, which
  * the camera then centres on.
  */
 export function startPropViewer(
@@ -212,11 +208,11 @@ export function startPropViewer(
   addLights(scene);
   if (options.environment) applyShowcaseEnvironment(scene, { ...CFG.environment, glow: CFG.glow });
   const camera = createCamera(scene);
-  const grid = new PropGrid(scene, propModels);
+  const tiles = game.view.scenery.propTiles ?? { tile: CFG.tile };
+  const grid = new PropGrid(scene, propModels, tiles);
 
   const select = (selection: PropViewerSelection): void => {
-    if (selection.group !== grid.group)
-      grid.show(groups[selection.group]?.ids ?? [], selection.group);
+    if (selection.group !== grid.group) grid.show(groups[selection.group], selection.group);
     panel.update(selection);
     const prop = grid.props[selection.prop];
     if (prop) panel.setReadout(frame(camera, prop));

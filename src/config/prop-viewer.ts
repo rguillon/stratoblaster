@@ -21,6 +21,10 @@ export const PROP_VIEWER_CONFIG = {
     ],
   },
   glow: { intensity: 0.6, blurKernelSize: 32 },
-  /** Ground under the grid. */
-  ground: { color: [0.16, 0.16, 0.2], margin: 10 },
+  /** Ground under the grid; its margin beyond the props, in tiles. */
+  ground: { color: [0.16, 0.16, 0.2], margin: 1 },
+  /** Lines of the grid of tiles on the ground (phase 15), above the road tiles. */
+  grid: { color: [0.45, 0.5, 0.65], height: 0.3 },
+  /** Grid of tiles when the game names none. */
+  tile: { size: 10, sidewalk: 2 },
 } as const;

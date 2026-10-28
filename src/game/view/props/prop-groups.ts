@@ -25,8 +25,14 @@ const TILE_PAGE: readonly PropGroup[] = [
     label: `Tiles: ${id}`,
     ids: group.models.map((m) => m.id),
     notes: tileNotes(group.models),
+    streets: true,
   })),
-  { label: 'Tiles: lots', ids: LOT_MODELS.map((m) => m.id), notes: tileNotes(LOT_MODELS) },
+  {
+    label: 'Tiles: lots',
+    ids: LOT_MODELS.map((m) => m.id),
+    notes: tileNotes(LOT_MODELS),
+    streets: true,
+  },
 ];
 
 /** The props named by each world, then the buildings made of parts, then the cars. */
