@@ -40,6 +40,19 @@ export const GAME_PLAY_CONFIG = {
   maxEnemyAge: 40,
   /** `level_end_wait`: the longest wait for the last enemies after the scroll ends (P06-R03). */
   endWait: 10,
+  /**
+   * The ship's arrival and departure (reviewer, 2026-10-28): it rises from `below` under the
+   * bottom edge to its start in `arriveSeconds`; once the final boss is destroyed the player
+   * keeps it `freeSeconds`, then it flies off the top, from `leaveSpeed` px/s, accelerating.
+   */
+  journey: {
+    arriveSeconds: 1.6,
+    below: 160,
+    freeSeconds: 3,
+    leaveSpeed: 120,
+    leaveAcceleration: 900,
+    above: 120,
+  },
   /** Input is ignored this long after the "Level complete" overlay shows, so a held fire key
    * does not skip it. */
   completeDelay: 1,
