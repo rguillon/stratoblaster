@@ -282,6 +282,34 @@ app/GameSession: starts / ends a GamePlay with the game screen; result ─▶ Me
   group: the enemies page uses it to draw the playfield (ships, shots, explosions) on the tilted
   level view, above the clouds, with its own glow layer.
 
+## Districts on a grid of tiles (phase 15)
+
+With `RoadRules.tiles` (`{ size, sidewalk }`), the sections with a street grid are laid on one
+grid of square tiles per district (`core/scenery/tile-streets.ts`, pure):
+
+```
+District ── tileStreetRuns ──▶ straight streets (Road, kind 'street', width = N tiles)
+                                + blocks (whole tiles)
+streets ── roadPieces (core/scenery/road-tiles.ts) ──▶ RoadPiece[]: straight / turn / tee /
+          cross, N × N tiles, with open sides { size, offset }; adapters where sizes differ
+blocks + pieces ── packDistricts (district-packing.ts, tile-packing.ts) ──▶ buildings of
+          PropKindRule.tiles (W × D), scale 1, quarter turns, facing a street; PropRules.lots
+          where no building fits
+pieces ── render/scenery/tile-road-geometry.ts ──▶ sidewalks, kerbs, roadways and lines,
+          draped on the ground, in the opaque streets field of `RoadLayers`
+```
+
+- Rows (along X) may be wide (`dual.avenues`, `boulevards`: N lanes each way, N tiles); columns
+  are one tile. A column sits where the junction piece of every wide row it crosses starts on
+  that row's N-tile lattice (`columnFits`), so a row is made of whole N × N pieces. A wide row
+  whose ground does not allow it is a one-tile street. Streets cross in districts (no
+  T-junction-only rule there); dead ends on screen are removed without building a cut link
+  again (`removeDeadEnds(…, keepCut)`).
+- Cars keep `CarRules.sidewalk` off each edge of a street. `levelPropKinds` includes the lots.
+- Game: `game/config/tile-buildings.ts` (tile size, building groups and their models, lots),
+  `game/view/props/tile-*.ts` (models built for any W × D tiles), `road-kit.ts` (the kit and its
+  sample layout for `props/`). `?level=…&tiles=1` draws the grid over the districts.
+
 ## Generated levels (phase 04)
 
 ```

@@ -39,6 +39,8 @@ export interface SceneryViewerOptions {
   readonly frameSeconds?: () => number;
   /** Starts the engine's render loop (off in unit tests, which call `frame()`). */
   readonly renderLoop: boolean;
+  /** Phase 15 (P15-R10, `?tiles=1`): the grid of tiles drawn over the districts. */
+  readonly tileGrid?: boolean;
 }
 
 /** Handle on a running viewer. */
@@ -101,6 +103,7 @@ class SceneryViewer {
       propModels: game.view.scenery.propModels,
       kit: options.environment ? createSceneryKit : createPlainSceneryKit,
       config: CFG.stage,
+      ...(options.tileGrid ? { atmosphere: { tileGrid: true } } : {}),
     });
     for (const mesh of this.stage.glowingMeshes) glow?.addIncludedOnlyMesh(mesh);
     // The glow is composed before the clouds are drawn, so it does not shine through them.

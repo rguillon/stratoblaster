@@ -38,7 +38,7 @@ const NAMED: readonly [string, Readonly<Record<string, string>>][] = [
   ['Cars', CAR_IDS],
 ];
 
-/** How the `props/` page groups the prop models (reviewer, 2026-10-28; phase 15: tiles first). */
+/** How the `props/` page groups the prop models (reviewer, 2026-10-28; phase 15: the road kit and the tiles). */
 export const PROP_GROUPS: readonly PropGroup[] = (() => {
   const models = new Set(Object.keys(PROP_MODELS));
   const named = NAMED.map(([label, ids]) => ({
@@ -48,7 +48,7 @@ export const PROP_GROUPS: readonly PropGroup[] = (() => {
   const taken = new Set([...named, ...TILE_PAGE].flatMap((g) => g.ids));
   const buildings = [...models].filter((id) => !taken.has(id));
   const cars = named.splice(-1);
-  return [...TILE_PAGE, ...named, { label: 'Buildings', ids: buildings }, ...cars].filter(
+  return [...named, ...TILE_PAGE, { label: 'Buildings', ids: buildings }, ...cars].filter(
     (g) => g.ids.length > 0,
   );
 })();

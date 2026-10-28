@@ -149,6 +149,15 @@ describe.each(LEVELS.map((l) => [l.id, l] as const))('level %s on tiles (phase 1
     expect(pieces.some((p) => p.kind === 'tee')).toBe(true);
   });
 
+  it('P15-R06: no winding road or path runs onto a district street, so none ends there with a gap', () => {
+    for (const r of roads.roads.filter((q) => q.kind !== 'street')) {
+      for (const p of r.points) {
+        const [x, z] = [Math.floor(p.x / t), Math.floor(p.z / t)];
+        if (Math.abs(p.x) < level.roads.offscreenX) expect(road.has(tileKey(x, z))).toBe(false);
+      }
+    }
+  });
+
   it('P15-R07: buildings stand on their tiles at scale 1, turned by quarter turns', () => {
     expect(tiled.length).toBeGreaterThan(100);
     for (const { b, k, w, d } of tiled) {

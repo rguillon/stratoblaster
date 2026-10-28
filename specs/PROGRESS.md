@@ -19,7 +19,7 @@
 | 12 | `phases/phase-12-pause-music-settings.md` | ✅ Validated | `phase-12` | 99.4% lines | 2026-10-27 |
 | 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
-| 15 | `phases/phase-15-urban-rework.md` | ⚪ Not started | `phase-15` | — | — |
+| 15 | `phases/phase-15-urban-rework.md` | 🟡 Awaiting review | `phase-15` | — | — |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -156,3 +156,4 @@
 - 2026-10-27 — 14 — Phase created and requirements written (playability: readable ships, enemies and shots), set Ready; colour questions answered by the reviewer (recolour enemies, one warm family for enemy shots, cyan player shots, green pickups). Implemented: background veil per world, colour families with enemy lights folded into theirs, rims on the ship and enemies, hitbox marker, enemy bullets over everything, player shots toned to 0.7, short capped explosions, readability probe in the test API (D-121..D-125). Light verification green (typecheck, build, 131 e2e). Awaiting review.
 - 2026-10-28 — 14 — Review fixes D-126..D-155 committed (look of the worlds, faster level builds and frames, lives and bombs kept between levels, HUD in one bar at the bottom).
 - 2026-10-28 — 14 — Validated: full gate green after fixing what the first unit test run found (enemy shots drawn over the playfield meshes that set no draw order, reactor colours in the enemy family, D-156; 4 tests updated to the folded colours): 1681 unit tests, 99.03% lines, 87.6% branches, 132 e2e; squash-merged into `main`, tagged `v0.14.0`.
+- 2026-10-28 — 15 — Implemented the districts on a grid of tiles (road kit, adapters, 111 models made for the grid); light verification green (typecheck, build, 138 e2e); awaiting review.

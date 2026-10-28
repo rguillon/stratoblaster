@@ -1528,3 +1528,32 @@
 - **Phase:** 14 (P14-R05, R06; found by the unit tests of `/validate-phase 14`)
 - **Decision:** Babylon draws the see-through meshes of a rendering group by draw order (`alphaIndex`) before distance, and a mesh that sets none keeps `Number.MAX_VALUE`, so it was drawn after the enemy bullets (1 000 000 and up, D-124): the player's shots, reactor flames, missile flames and laser beams all were. The playfield's `NodeAdopter` now gives every mesh it adopts with no draw order `ON_TOP_ALPHA_INDEX - 1` (999 999); clones keep it. Missile flames and laser parts are drawn at `ON_TOP_ALPHA_INDEX`, over the player's shots and the blasts, and the bullets just above (1 000 001 and up), under the hitbox marker. The order of the other meshes among themselves is unchanged. Also found by those tests: the reactor cores were folded into the enemy family twice (they now match their flames), and the reactor colour was too pale (0.45 saturation) for the family's 0.5; it is `[0.48, 0.82, 1]` (0.52), so it folds into the family.
 - **Status:** Accepted
+
+### D-157 — Districts on a grid of tiles: wide rows, one-tile columns
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R01, R02, R04, R05)
+- **Context:** Every road of an N-lane road must be made of N × N pieces between its junctions, and the narrower road of an adapter enters on whole tiles. When two wide roads cross, the junction of one breaks the N-tile lattice of the other unless one size divides the other (3 with 2 or 4 cannot both hold).
+- **Decision:** In a district, rows (across the level) carry the sizes: one tile, 2×2 avenues (`dual.avenues`) and World 4's 3×3 and 4×4 boulevards (`boulevards`, by `lanes`). Columns are one tile wide, and sit where the junction of every wide row of their part starts on a multiple of the row's size (`columnFits`): the column is then as close to the middle of the adapter as the grid allows. Wide rows are built along their whole line (so a wide road never ends on a narrower one, and no turn joins two sizes); one whose ground does not allow it is a one-tile street on its first tile. The rows shared by two parts of a district are one tile wide. The tile grid is the level's (tile edges at multiples of `tiles.size` from X = 0 and Z = 0), so districts cut where the runout starts stay on it.
+- **Alternatives considered:** wide columns too (2×2 avenues along the level): 3 against 2 or 4 cannot both keep their lattices, and every wide column would end on the narrower boundary rows; N × 1 straight slices to fill odd lengths: against the reviewer's "round number of blocks".
+- **Consequences:** the X and T adapters with two wide roads (3-2, 4-2, 4-3) are in the kit and on the `props/` page, but no level lays them. Streets are 10 units wide per lane each way (a one-lane street is 6 of roadway and two 2-unit sidewalks), wider than the 6-unit streets before.
+- **Status:** Accepted
+
+### D-158 — Streets cross again inside the districts (amends D-046)
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R05; reviewer's choice when writing the spec)
+- **Decision:** On tiles, the street grids keep their crossings: `removeCrossings` is not run for them, whatever `noCrossings` says. Winding roads and paths outside the districts still never cross (`noCrossings` keeps its meaning there). A link cut back while removing dead ends is never built again (`removeDeadEnds(…, keepCut = true)`): without the T-junction rule, a street could otherwise be cut from one end and built again from the other until the pass limit, leaving dead ends on screen.
+- **Status:** Accepted
+
+### D-159 — Packing the blocks with buildings of whole tiles
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R07, R08)
+- **Decision:** `packBlock` takes the free tiles of a block in a random order (from the block's hash) and gives each the first kind that fits with that tile at a corner: the kind drawn in the area's group, then the group's others from the largest down, then the lots. A building touching a street must face it (its front, -Z, on a road side, by quarter turns; a non-square one that can only face a road along its long side is not placed there); one touching none is turned at random. Packing stops at `buildingDensity` of the block's tiles fit to build on (a tile is fit when its corners are above `minHeight` and differ by at most `maxSlope` over half a tile; corner heights are shared between tiles, so packing samples the ground once per corner). The lots count in that share. Placement in districts no longer uses `slotSpacing`, `setback` or `BlockFill`. The groups' models were balanced so no footprint makes more than 60 % of a section's buildings.
+- **Alternatives considered:** lots outside the share (sections at density 1 then fall short where no building fits a leftover tile).
+- **Consequences:** the districts hold 1.5 to 3.7 times as many buildings as before (smaller ones), and generating a level takes about 0.2 to 0.6 s instead of 0.1 to 0.2 s (see the report).
+- **Status:** Accepted
+
+### D-160 — Models made for the grid replace the district buildings
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R09)
+- **Decision:** 38 archetypes (`TileArchetype`: houses, villas, cottages, terraces, flats, workshops, farms, adobe homes, outposts, mines, oil, refineries, factories, warehouses, containers, cooling towers, tanks, foundries, plants, dock cranes, mid-rise, offices, towers, skyscrapers, and the lots) are each built for any W × D tiles less a 0.5 margin, from a seed (`game/view/props/tile-*.ts`). The 21 building groups of the districts list their models (`TILE_GROUPS`, at least 5 each, 3 footprints, one non-square); groups may share a model. Removed, as no level places them any more: the city towers and blocks, the industrial plants and works (families of parts), the World 4 skyscrapers, the World 3 suburb house, row houses and walk-up flats, the pumpjack, and World 1's wind-catcher home, water tower, solar farm and mine headframe (`city-parts.ts`, `city-landmarks.ts`, `skyscraper-props.ts`, `suburb-props.ts`, `oil-props.ts` deleted). Models no level placed before this phase (the frozen and jungle ones) are kept, as before. World 1's unused industrial, heavy industry and city groups also use the new models.
+- **Status:** Accepted

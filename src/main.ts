@@ -174,6 +174,7 @@ function startScenery(engine: Engine): void {
     statsParent: document.body,
     keyboardTarget: window,
     renderLoop: !__E2E__,
+    tileGrid: new URLSearchParams(window.location.search).get('tiles') === '1',
   });
   if (__E2E__) {
     installViewerTestApi(window, '__SCENERY_TEST__', {

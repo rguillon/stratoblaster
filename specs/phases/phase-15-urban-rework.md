@@ -281,31 +281,67 @@ The phase 14 readability checks still pass.
 > Filled by the agent. Do not edit (comment in Review feedback instead).
 
 ### Questions / blockers
-<!-- Ambiguities found before implementing. If non-empty, agent stops and waits. -->
+None. The three choices were made with the reviewer when the spec was written.
 
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Tile grid, street layout on tiles (rows carry the sizes, one-tile columns on the rows' lattices), crossings in districts | R01, R02, R05 |
+| Road pieces from the streets (straight, turn, T, X, adapters), draped geometry with sidewalks, kerbs, lines | R02, R03, R04 |
+| Packing blocks with buildings of whole tiles, facing the streets, lots | R07, R08 |
+| 111 models made for the grid (38 archetypes), groups and footprint table; old district models removed | R09 |
+| `props/` road kit, sample layout, footprint labels; `tiles=1` in levels and `level_zero/` | R10 |
+| Car lanes off the sidewalks | R11 |
+| Perf: generation profiled and cached (corner heights, numeric tile keys) | R12 |
+| Old tests adapted; new unit and e2e tests | R13 |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P15-R01 | | | | |
+| P15-R01 | Done | `core/scenery/tile-streets.ts`, `road-tiles.ts` | `tiles.test.ts`, `tile-districts.test.ts` | Grid from X = 0, Z = 0, so runout cuts stay on it |
+| P15-R02 | Done | `tile-road-geometry.ts`, `TILE` in `game/config/tile-buildings.ts`, look `roads.tiles` | `road-kit.test.ts`, `tiles.test.ts` | Sidewalk colour shared, dimmed per world by P14 `toned` |
+| P15-R03 | Done | `road-tiles.ts`, `tile-road-geometry.ts`, `game/view/props/road-kit.ts` | `road-tiles.test.ts`, `road-kit.test.ts` | |
+| P15-R04 | Done | same | same | Wide–wide adapters (3-2, 4-2, 4-3) are in the kit only (D-157) |
+| P15-R05 | Done | `tile-streets.ts`, `street-dead-ends.ts` (`keepCut`) | `tiles.test.ts`, `tile-districts.test.ts` | Amends D-046 in districts (D-158) |
+| P15-R06 | Done | (no change) | `tile-districts.test.ts` | No winding road or path ever reaches a district (they keep out of its Z range since phase 4), so no joint exists |
+| P15-R07 | Done | `district-packing.ts`, `tile-packing.ts`, `game/view/props/tile-*.ts` | `tile-models.test.ts`, `tile-districts.test.ts` | |
+| P15-R08 | Done | same | `tiles.test.ts`, `tile-districts.test.ts` | Lots count in the density share (D-159) |
+| P15-R09 | Done | `tile-buildings.ts`, `tile-model.ts`, `tile-*.ts` | `tile-models.test.ts`, `prop-models.test.ts` | 21 groups, 111 models + 5 lots; removed models in D-160 |
+| P15-R10 | Done | `prop-groups.ts`, `road-kit.ts`, `prop-viewer-panel.ts`, `debug-options.ts`, `road-field.ts` | `road-kit.test.ts`, `e2e/urban-tiles.spec.ts` | |
+| P15-R11 | Done | `traffic.ts` (`CarRules.sidewalk`) | `tiles.test.ts`, `tile-districts.test.ts` | |
+| P15-R12 | Partial | `tile-packing.ts` (`TileGround`), numeric `tileKey` | `e2e/perf.spec.ts` (P13 load budget passes) | Reference-machine table not measured, see limitations |
+| P15-R13 | Done | — | existing suites; `runout.test.ts`, `scenery-levels.test.ts`, `prop-models.test.ts` adapted | P14 readability e2e passes for every world |
 
 ### Gate results
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+Light verification (implementation): make typecheck ✔ / build ✔ / e2e 138 passed.
+Lint, unit tests and coverage are deferred to /validate-phase.
+Note: port 4173 was held by a `vite preview` of another project (/home/renaud/pewet), which
+Playwright reused (reuseExistingServer); the e2e run was repeated on port 4174 with a temporary
+config, not committed.
 ```
 
+Ground generation (Node, fixed seeds, whole level with runout), before → after:
+| Level | 0 | 1-5 | 2-4 | 2-5 | 3-1 | 4-1 | 4-5 |
+|---|---|---|---|---|---|---|---|
+| ms | 141 → 193 | 211 → 444 | 221 → 549 | 209 → 470 | 186 → 345 | 170 → 348 | 94 → 236 |
+| buildings | 4.9k → 10.1k | 17k → 63k | 21k → 47k | 21k → 37k | 12k → 28k | 20k → 52k | 13k → 24k |
+
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `props/`: group **Road kit** (each piece, `road-sample` joins every piece to straights), groups **Tiles: …** (footprints in the button names), **Tiles: lots**.
+- Levels with the grid: `?level=1-5&t=200&tiles=1`, `?level=2-5&t=200`, `?level=3-3&t=120`, `?level=4-5&t=200&tiles=1`; `level_zero/?tiles=1`.
+- Look for sidewalks, X and T crossings, adapters where a street crosses an avenue or boulevard, buildings filling whole tiles and facing the streets, cars in their lanes.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- Wide roads are rows only; columns are one tile (D-157), so the wide–wide adapters never appear in levels.
+- Lots count in a section's density share (D-159).
+- Models no level placed before this phase (frozen, jungle) are kept, as before; only the replaced ones are removed (D-160).
 
 ### Known limitations
--
+- R12: the before/after table on the reference machine (load time, long frames, triangles in view) was not measured here (no GPU browser); the P13 e2e load budget passes. Districts hold 1.5–3.7× as many (smaller) buildings, so triangles in view may be higher in 1-5 and 4-1 — please check FPS and the F3 overlay.
+- In two final-boss runouts (3-1, 3-4) one row end can still meet nothing (seen only during the boss fight).
+- The sidewalk colour is one tunable for all worlds (per-world dimming by P14).
 
 ### Suggestions for future phases
--
+- Street lamps and zebra crossings on the kit; bridges over the canals and the river.
+- Wide columns (avenues along the level) with a lattice that keeps 2, 3 and 4 apart.
