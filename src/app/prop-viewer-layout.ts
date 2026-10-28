@@ -40,6 +40,37 @@ const centre = (start: number, room: number, w: number): number =>
   start + Math.floor((room - w) / 2) + w / 2;
 
 /**
+ * Without streets: rows of props side by side, each `gap` tiles from the next, so a large prop
+ * (the road sample) does not spread the small ones apart.
+ */
+function packedLayout(footprints: readonly (readonly [number, number])[], gap: number): TileLayout {
+  const columns = Math.max(1, Math.ceil(Math.sqrt(footprints.length)));
+  const rows: (readonly [number, number])[][] = [];
+  footprints.forEach((f, i) => {
+    if (i % columns === 0) rows.push([]);
+    rows.at(-1)?.push(f);
+  });
+  const widths = rows.map((r) => r.reduce((sum, [w]) => sum + w + gap, gap));
+  const depths = rows.map((r) => Math.max(...r.map(([, d]) => d)));
+  const width = Math.max(...widths);
+  const depth = depths.reduce((sum, d) => sum + d + gap, gap);
+  const [ox, oz] = [-Math.floor(width / 2), -Math.floor(depth / 2)];
+  const centres: [number, number][] = [];
+  let z = oz + depth - gap;
+  rows.forEach((row, r) => {
+    const rowDepth = depths[r] ?? 1;
+    z -= rowDepth;
+    let x = ox + gap;
+    for (const [w, d] of row) {
+      centres.push([x + w / 2, centre(z, rowDepth, d)]);
+      x += w + gap;
+    }
+    z -= gap;
+  });
+  return { centres, roads: [], bounds: [ox, ox + width, oz, oz + depth] };
+}
+
+/**
  * Lays out props whose footprints are `footprints` (in tiles, width × depth) on a square-ish
  * grid of cells, `gap` tiles between them; with `streets`, the gaps are roads one tile wide.
  */
@@ -48,6 +79,7 @@ export function tileLayout(
   gap: number,
   streets: boolean,
 ): TileLayout {
+  if (!streets) return packedLayout(footprints, gap);
   const room = Math.max(1, ...footprints.flat());
   const cell = room + gap;
   const columns = Math.max(1, Math.ceil(Math.sqrt(footprints.length)));
@@ -58,7 +90,7 @@ export function tileLayout(
     centre(oz + (rows - 1 - Math.floor(i / columns)) * cell + gap, room, d),
   ]);
   const bounds = [ox, ox + columns * cell + gap, oz, oz + rows * cell + gap] as const;
-  if (!streets || gap === 0) return { centres, roads: [], bounds };
+  if (gap === 0) return { centres, roads: [], bounds };
   const tiles: [number, number][] = [];
   for (let x = bounds[0]; x < bounds[1]; x++) {
     for (let z = bounds[2]; z < bounds[3]; z++) {
