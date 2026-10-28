@@ -26,7 +26,7 @@ export interface TileRoadLook {
 type Rect = readonly [number, number, number, number];
 
 /** Layers above the sidewalk, so the kerb, the roadway and the lines each show over the last. */
-const LAYER = 0.04;
+const LAYER = 0.1;
 
 /** Where the roadway of an open side runs across the piece, from its low edge. */
 const roadwayOf = (s: PieceSide, tile: TileRules): [number, number] => [
@@ -115,7 +115,20 @@ function armLines(arm: Arm, width: number): { centre: Rect[]; lanes: Rect[] } {
   return { centre: [at(mid)], lanes };
 }
 
-/** Appends `rect` (piece frame) to `geo`, cut into cells about a tile wide, draped on `height`. */
+/**
+ * The cuts of [a, b] (world units): its ends, and every multiple of `cell` between them. All the
+ * layers of the roads are cut on the same world lattice, so their vertices line up and, draped
+ * on uneven ground, one layer never bulges through the one above it (z-fighting on the wide
+ * roads of World 4, reviewer 2026-10-28).
+ */
+function cuts(a: number, b: number, cell: number): number[] {
+  const out = [a];
+  for (let c = (Math.floor(a / cell) + 1) * cell; c < b - 1e-6; c += cell) out.push(c);
+  out.push(b);
+  return out;
+}
+
+/** Appends `rect` (piece frame) to `geo`, cut on the world lattice of `cell`, draped on `height`. */
 function addRect(
   geo: ColoredGeometry,
   rect: Rect,
@@ -126,18 +139,17 @@ function addRect(
 ): void {
   const [x0, x1, z0, z1] = rect;
   if (x1 - x0 <= 0 || z1 - z0 <= 0) return;
-  const nx = Math.max(1, Math.ceil((x1 - x0) / cell));
-  const nz = Math.max(1, Math.ceil((z1 - z0) / cell));
+  const xs = cuts(ox + x0, ox + x1, cell);
+  const zs = cuts(oz + z0, oz + z1, cell);
   const base = geo.positions.length / 3;
-  for (let j = 0; j <= nz; j++) {
-    for (let i = 0; i <= nx; i++) {
-      const x = ox + x0 + ((x1 - x0) * i) / nx;
-      const z = oz + z0 + ((z1 - z0) * j) / nz;
+  for (const z of zs) {
+    for (const x of xs) {
       geo.positions.push(x, height(x, z), z);
       geo.colors.push(...color, 1);
     }
   }
-  for (let j = 0; j < nz; j++) {
+  const nx = xs.length - 1;
+  for (let j = 0; j < zs.length - 1; j++) {
     for (let i = 0; i < nx; i++) {
       const a = base + j * (nx + 1) + i;
       const b = a + 1;
@@ -163,7 +175,7 @@ export function addPiece(
   const size = piece.size * tile.size;
   const origin = [piece.x * tile.size, piece.z * tile.size] as const;
   const at = (layer: number) => (x: number, z: number) => ground(x, z) + look.lift + layer * LAYER;
-  const cell = tile.size;
+  const cell = tile.size / 2;
   addRect(geo, [0, size, 0, size], origin, at(0), look.sidewalk, cell);
   const { roadway, arms } = pieceRoadway(piece, tile);
   const k = look.kerbWidth;
