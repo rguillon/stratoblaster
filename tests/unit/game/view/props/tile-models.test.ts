@@ -9,6 +9,7 @@ import {
 import { PROP_COLORS, PROP_LIGHTS } from '../../../../../src/game/config/prop-look';
 import { PROP_MODELS } from '../../../../../src/game/view/props/prop-models';
 import { buildTileModel } from '../../../../../src/game/view/props/tile-models';
+import { SILHOUETTE_COUNT } from '../../../../../src/game/view/props/tile-towers';
 
 // Phase 15: the models made for the grid of tiles.
 
@@ -72,6 +73,16 @@ describe('models made for the grid (phase 15)', () => {
           expect(colors.has(rgb), `${m.id} ${rgb}`).toBe(true);
         }
       }
+    }
+  });
+
+  it('Phase 15 (reviewer, 2026-10-28): the city buildings of a group each have their own silhouette', () => {
+    const city = new Set(['midrise', 'office', 'tower', 'skyscraper']);
+    for (const [id, group] of Object.entries(TILE_GROUPS)) {
+      const shapes = group.models
+        .filter((m) => city.has(m.archetype))
+        .map((m) => (m.seed - 1) % SILHOUETTE_COUNT);
+      expect(new Set(shapes).size, id).toBe(shapes.length);
     }
   });
 });

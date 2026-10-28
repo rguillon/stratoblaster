@@ -20,6 +20,8 @@ export interface TileKit {
   readonly d: number;
   /** Size of a tile, for spacing things out by the tile. */
   readonly tile: number;
+  /** The model's seed: some builders pick their shape by it, so a group's models differ. */
+  readonly seed: number;
 }
 
 export function tileKit(w: number, d: number, tile: number, seed: number): TileKit {
@@ -30,6 +32,7 @@ export function tileKit(w: number, d: number, tile: number, seed: number): TileK
     w,
     d,
     tile,
+    seed,
   };
 }
 

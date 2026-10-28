@@ -204,7 +204,7 @@ export const TILE_GROUPS = {
     models: [
       model('midrise', 2, 2, 2),
       model('midrise', 2, 3),
-      model('midrise', 3, 3),
+      model('midrise', 3, 3, 6),
       model('flats', 2, 3, 4),
       model('office', 3, 3, 4),
     ],
@@ -213,8 +213,8 @@ export const TILE_GROUPS = {
     range: CITY,
     models: [
       model('midrise', 2, 2, 3),
-      model('midrise', 2, 3, 2),
-      model('midrise', 3, 3, 2),
+      model('midrise', 2, 3, 5),
+      model('midrise', 3, 3, 4),
       model('office', 2, 3, 2),
       model('midrise', 2, 2),
     ],
@@ -223,9 +223,9 @@ export const TILE_GROUPS = {
     range: CITY,
     models: [
       model('office', 2, 2, 3),
-      model('office', 2, 3, 3),
+      model('office', 2, 3, 4),
       model('office', 3, 3, 2),
-      model('tower', 2, 2, 2),
+      model('tower', 2, 2, 6),
       model('office', 3, 3),
     ],
   },
@@ -234,8 +234,8 @@ export const TILE_GROUPS = {
     models: [
       model('tower', 2, 2, 3),
       model('tower', 3, 3, 2),
-      model('tower', 2, 3),
-      model('tower', 2, 2),
+      model('tower', 2, 3, 4),
+      model('tower', 2, 2, 5),
       model('skyscraper', 3, 3),
     ],
   },
@@ -244,9 +244,9 @@ export const TILE_GROUPS = {
     models: [
       model('skyscraper', 2, 2),
       model('skyscraper', 3, 3, 2),
-      model('skyscraper', 2, 3),
+      model('skyscraper', 2, 3, 3),
       model('skyscraper', 3, 3, 5),
-      model('skyscraper', 2, 2, 2),
+      model('skyscraper', 2, 2, 6),
     ],
   },
   downtown: {
@@ -256,9 +256,9 @@ export const TILE_GROUPS = {
     ],
     models: [
       model('skyscraper', 3, 3, 3),
-      model('skyscraper', 3, 4),
+      model('skyscraper', 3, 4, 4),
       model('skyscraper', 4, 4),
-      model('skyscraper', 3, 3, 4),
+      model('skyscraper', 3, 3, 6),
       model('skyscraper', 4, 4, 2),
     ],
   },
