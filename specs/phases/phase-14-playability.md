@@ -157,12 +157,12 @@ P14-R02 (reserved colour families) conflicts with colours set by validated phase
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P14-R01 | Done | `render/scenery/background-veil.ts`, `app/level-scene.ts`, `game/view/scenery-bindings.ts`, `READABILITY.veils` | `background-veil.test.ts`, `readability.test.ts` (palette under the cap), `readability-view.test.ts`, e2e `readability.spec.ts` (background luminance) | Veil 0.42–0.55 by world. Measured background (98th percentile luminance): 0.13 (1-2), 0.08 (2-1), 0.12 (3-1), 0.10 (4-1), cap 0.35 |
+| P14-R01 | Done | `READABILITY.tones`, `game/view/readability-view.ts` (`toned`), `game/view/scenery-bindings.ts`, `render/scenery/atmosphere-of.ts`, `render/scenery/scenery-kit.ts` (`SceneryLook.tone`) | `readability.test.ts` (palette under the cap), `readability-view.test.ts`, `sky-layers.test.ts`, e2e `readability.spec.ts` (background luminance) | Review: the veil was replaced by a tone per world, applied at the source (D-130). Measured background (98th percentile luminance): 0.13 (1-2), 0.08 (2-1), 0.12 (3-1), 0.10 (4-1), cap 0.35 |
 | P14-R02 | Done | `core/math/color.ts`, `READABILITY.families`, `enemy-mesh.ts` (`enemyColor`), `enemy-lasers.ts`, `enemy-look.ts`, `shot-look.ts`, `bonus-look.ts` | `color.test.ts`, `readability.test.ts`, `enemy-readability.test.ts` | Families: player 180–235°, enemy 265–5°, enemy shots 18–58°, pickups 85–160°; saturation ≥ 0.5 (see Deviations) |
 | P14-R03 | Done | `render/outline.ts`, `readability-view.ts` (`outlinedShips`, `buildHitboxMarker`), `game-play.ts` | `outline.test.ts`, `readability-view.test.ts`, e2e | Ship contrast 10–13:1 measured. The marker is a white dot ringed cyan, the hitbox's radius, on the ship's pivot (it blinks with the ship) |
 | P14-R04 | Done | `enemy-mesh.ts` (`rimOf`, `setOutline` on every hull, boss parts included), `OutlineLayer` | `enemy-readability.test.ts`, `outline.test.ts`, e2e | Enemy contrast 4.1–11:1 measured |
-| P14-R05 | Done | `enemy-shot-renderer.ts`, `enemy-lasers.ts`, `enemy-look.ts` | `contrast-shots.test.ts`, `readability.test.ts`, e2e | Bullet contrast 6.1–11.6:1 measured. Missiles: an orange rim; warning lines: wide, white core |
-| P14-R06 | Done | `readability-view.ts` (`tonedShots`), `game/index.ts` | `readability-view.test.ts`, `contrast-shots.test.ts` (bullets over everything), e2e | Additive player shot materials capped at 0.7 |
+| P14-R05 | Done | `enemy-shot-renderer.ts`, `enemy-lasers.ts`, `enemy-look.ts`, `render/node-adopter.ts` (`ON_TOP_ALPHA_INDEX`) | `contrast-shots.test.ts`, `node-adopter.test.ts`, `readability.test.ts`, e2e | Bullet contrast 6.1–11.6:1 measured. Missiles: an orange rim; warning lines: wide, white core. Bullets, then missile flames and lasers, drawn over every playfield mesh that sets no draw order (D-156, found at validation) |
+| P14-R06 | Done | `readability-view.ts` (`tonedShots`), `game/index.ts`, `render/node-adopter.ts` | `readability-view.test.ts`, `contrast-shots.test.ts` (bullets over everything), `node-adopter.test.ts` (player shots, which set no draw order, drawn under them), e2e | Additive player shot materials capped at 0.7 |
 | P14-R07 | Done | `enemy-look.ts` (`blasts`), `blast-particles.ts` (`maxRadius`), `bomb-look.ts` | `blast-readability.test.ts`, `blast-particles.test.ts` | Simulated: at most 7.8 % of the screen, over by 0.55 s (cap 15 %, 0.6 s) |
 | P14-R08 | Done | `core/math/pixel-contrast.ts`, `app/readability-probe.ts`, `debug/test-api.ts`, `main.ts` | `pixel-contrast.test.ts`, `test-api.test.ts`, e2e `readability.spec.ts` (1-2, 2-1, 3-1, 4-1) | No F3 overlay needed |
 
@@ -170,8 +170,16 @@ P14-R02 (reserved colour families) conflicts with colours set by validated phase
 ```
 Light verification (implementation): typecheck ✔ / build ✔ / e2e 131 passed, the 4 new readability tests included
 Lint, unit tests and coverage: deferred to /validate-phase (CLAUDE.md).
+
+Full gate (/validate-phase 14, 2026-10-28), make check:
+  lint ✔ (ESLint 0 warnings, Prettier)  typecheck ✔
+  unit: 199 files, 1681 tests passed
+  coverage: 99.03% lines, 87.6% branches, 98.19% statements, 98.18% functions (thresholds met)
+  build ✔ (no test API in dist)  e2e: 132 passed (6.4 min)
 ```
-Note: port 4173 was held by a `vite preview` of another project on this machine (`~/pewet`), which Playwright reuses outside CI. The e2e runs above used the same config pointed at port 4183 (a throwaway local config, not committed). `make e2e` will test the wrong app while that server runs.
+The first full run failed 6 unit tests, all failing since the phase's first commit (4a0d612): enemy bullets were not drawn over the playfield meshes that set no draw order (fixed, D-156), the reactor cores were folded twice and too pale for the enemy family (fixed, D-156), and four tests expected pre-phase-14 colours or Babylon's unset `renderOutline` as `false` (updated). The second run is the one above.
+
+Note: port 4173 was held by a `vite preview` of another project on this machine (`~/pewet`), which Playwright reuses outside CI. Every e2e run of this phase, the full gate's included, used the same config pointed at port 4183 (a throwaway local config, not committed). `make e2e` will test the wrong app while that server runs.
 
 Perf (engineering addition), `scripts/measure-perf.mjs`, 120 s of 2-1, 3-1, 4-1, software WebGL, same machine and load:
 
@@ -182,6 +190,9 @@ Perf (engineering addition), `scripts/measure-perf.mjs`, 120 s of 2-1, 3-1, 4-1,
 | 4-1 | 30 | 32 | 4 / 5 ms |
 
 No more long frames than `main` within noise (this machine was busier than at the end of Phase 13, so both are above Phase 13's 0–3); about 1 ms more per drawn frame for the rims.
+
+### Review fixes
+Made at the reviewer's request during review, without items in "Review feedback": D-126..D-155 (World 4 a bright midday city, brighter hulls, the `props/` viewer page, the background darkened at the source instead of a veil, ground glow, blasts without flash, ground drawn twice as big, boulevards, faster level builds and frames, no sea under World 4, lives and bombs kept between levels without limit, the HUD in one bar at the bottom). D-154 amends P11-R05 / P11-R07 and D-155 the place of the score (P11-R02); this phase's "HUD layout changes" out-of-scope line was overridden by the reviewer.
 
 ### How to test manually
 - `make dev`, play one level of each world (or `?level=1-2&t=40`, `?level=2-1&t=40`, `?level=3-1&t=40`, `?level=4-1&t=90`).
