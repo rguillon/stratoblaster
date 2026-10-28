@@ -1,64 +1,10 @@
 import { randomIn, type Random } from '../math/rng';
-import { streetWidth } from './lanes';
-import type { PlacedSection, RoadRules, StreetGrid } from './scenery-level';
-
-/** A run of consecutive sections with street grids (phase 4 review). */
-export interface District {
-  readonly zMin: number;
-  zMax: number;
-  readonly parts: { readonly grid: StreetGrid; readonly zMin: number; readonly zMax: number }[];
-}
-
-/** A point of the street network. */
-interface Node {
-  readonly x: number;
-  readonly z: number;
-}
-
-/** A stretch of street between two neighbouring crossings. */
-interface Link {
-  readonly a: Node;
-  readonly b: Node;
-  readonly across: boolean;
-  /** Links on a district or section boundary are always built (if their ground allows). */
-  readonly required: boolean;
-  /** Whether a street can be built on the ground there. */
-  readonly ground: boolean;
-  built: boolean;
-  /**
-   * Cut back while removing dead ends: with `tees`, never built again, so a street cannot keep
-   * going on and being cut back.
-   */
-  cut: boolean;
-}
-
-/** Most passes of the dead-end removal (each pass can extend or cut every dead end by a link). */
-const MAX_PASSES = 500;
-
-/**
- * Runs of consecutive sections with a street grid. Districts at the ends of the level go on
- * past them (to `range`), out of view.
- */
-export function findDistricts(
-  sections: readonly PlacedSection[],
-  range: { readonly zMin: number; readonly zMax: number },
-): District[] {
-  const districts: District[] = [];
-  sections.forEach((placed, i) => {
-    const grid = placed.section.streets;
-    if (!grid) return;
-    const zMin = i === 0 ? range.zMin : placed.start;
-    const zMax = i === sections.length - 1 ? range.zMax : placed.end;
-    const previous = districts.at(-1);
-    if (previous && sections[i - 1]?.section.streets) {
-      previous.parts.push({ grid, zMin, zMax });
-      previous.zMax = zMax;
-    } else {
-      districts.push({ zMin, zMax, parts: [{ grid, zMin, zMax }] });
-    }
-  });
-  return districts;
-}
+import { isBoulevard, streetWidth } from './lanes';
+import type { District } from './districts';
+import { removeCrossings, removeDeadEnds } from './street-dead-ends';
+import { dedupe, linksByNode, Nodes, pair, type Link, type Node } from './street-links';
+import { straightRuns } from './street-runs';
+import type { RoadRules } from './scenery-level';
 
 /** Positions from `from` to `to`, spaced by random gaps in `gap`, both ends included. */
 function spaced(
@@ -75,8 +21,6 @@ function spaced(
   return out;
 }
 
-const key = (n: Node): string => `${n.x.toFixed(3)},${n.z.toFixed(3)}`;
-
 /**
  * The straight streets of a district (phase 4 review), as maximal straight runs of built links,
  * each a list of points every `rules.step`:
@@ -88,7 +32,9 @@ const key = (n: Node): string => `${n.x.toFixed(3)},${n.z.toFixed(3)}`;
  *   is cut back, until every street ends at a crossing, a junction, or off the screen;
  * - without crossings (`rules.noCrossings`, phase 6 review), every crossing then becomes a
  *   T-junction: one of its two stretches along the level goes, and the dead ends that leaves are
- *   removed again, without making new crossings.
+ *   removed again, without making new crossings;
+ * - boulevards (`rules.boulevards`, reviewer 2026-10-28) are built along their whole line and run
+ *   straight: at a crossing, the street across them is cut instead.
  */
 export function streetRuns(
   district: District,
@@ -97,15 +43,21 @@ export function streetRuns(
   buildable: (x: number, z: number) => boolean,
   outOfView: (node: Node) => boolean,
 ): { runs: { x: number; z: number }[][]; blocks: Block[] } {
-  const { links, layouts } = gridLinks(district, rules, random, buildable);
-  const at = linksByNode(links);
-  removeDeadEnds(at, outOfView, false);
-  if (rules.noCrossings) removeCrossings(at, outOfView, random);
+  const { links, layouts, nodes } = gridLinks(district, rules, random, buildable);
+  const at = linksByNode(links, nodes.length);
+  removeDeadEnds(at, nodes, outOfView, false);
+  if (rules.noCrossings) removeCrossings(at, nodes, outOfView, random);
   const inset = (coord: number): number => streetWidth(rules, coord) / 2 + BLOCK_KERB;
   const blocks = gridBlocks(layouts, links, inset).filter((b) =>
     buildable((b.xMin + b.xMax) / 2, (b.zMin + b.zMax) / 2),
   );
-  return { runs: straightRuns(links, rules.step), blocks };
+  return {
+    runs: straightRuns(
+      links.filter((l) => l.built),
+      rules.step,
+    ),
+    blocks,
+  };
 }
 
 /**
@@ -123,22 +75,22 @@ export interface Block {
 /** Gap between a street's edge and the block beside it. */
 const BLOCK_KERB = 0.5;
 
-/** Columns and rows of one section of a district. */
+/** The nodes of one section of a district, by row and column. */
 interface Layout {
-  readonly xs: readonly number[];
-  readonly zs: readonly number[];
+  readonly grid: readonly (readonly Node[])[];
+  /** Its first row was laid before it (by the section, or the district, before it). */
+  readonly laidBefore: boolean;
 }
 
-const linkKey = (a: Node, b: Node): string => `${key(a)}>${key(b)}`;
-
-/** X and Z bounds of cell (`c`, `r`) of a layout. */
-function cellBounds(
-  xs: readonly number[],
-  zs: readonly number[],
-  c: number,
-  r: number,
-): [number, number, number, number] {
-  return [xs[c] ?? 0, xs[c + 1] ?? 0, zs[r] ?? 0, zs[r + 1] ?? 0];
+/** The corners of cell (`c`, `r`) of `grid`: bottom left, bottom right, top left, top right. */
+function corners(grid: Layout['grid'], c: number, r: number): [Node, Node, Node, Node] | undefined {
+  const [n00, n10, n01, n11] = [
+    grid[r]?.[c],
+    grid[r]?.[c + 1],
+    grid[r + 1]?.[c],
+    grid[r + 1]?.[c + 1],
+  ];
+  return n00 && n10 && n01 && n11 ? [n00, n10, n01, n11] : undefined;
 }
 
 function gridBlocks(
@@ -146,31 +98,42 @@ function gridBlocks(
   links: readonly Link[],
   inset: (coord: number) => number,
 ): Block[] {
-  const built = new Set(links.filter((l) => l.built).map((l) => linkKey(l.a, l.b)));
-  const has = (a: Node, b: Node): boolean => built.has(linkKey(a, b));
+  const built = new Set(links.filter((l) => l.built).map((l) => pair(l.a, l.b)));
+  const has = (a: Node, b: Node): boolean => built.has(pair(a, b));
   const blocks: Block[] = [];
-  layouts.forEach(({ xs, zs }, p) => {
-    for (let r = 0; r + 1 < zs.length; r++) {
-      for (let c = 0; c + 1 < xs.length; c++) {
-        const [x0, x1, z0, z1] = cellBounds(xs, zs, c, r);
-        // The first row of a later section was laid on the merged columns: it is a full street.
-        const bottom = (r === 0 && p > 0) || has({ x: x0, z: z0 }, { x: x1, z: z0 });
-        const top = has({ x: x0, z: z1 }, { x: x1, z: z1 });
-        const left = has({ x: x0, z: z0 }, { x: x0, z: z1 });
-        const right = has({ x: x1, z: z0 }, { x: x1, z: z1 });
-        // Up to the edge of the street along each side (avenues are wider).
-        const cut = (side: boolean, coord: number): number => (side ? inset(coord) : 0);
-        const block = {
-          xMin: x0 + cut(left, x0),
-          xMax: x1 - cut(right, x1),
-          zMin: z0 + cut(bottom, z0),
-          zMax: z1 - cut(top, z1),
-        };
-        if (block.xMax > block.xMin && block.zMax > block.zMin) blocks.push(block);
+  for (const { grid, laidBefore } of layouts) {
+    for (let r = 0; r + 1 < grid.length; r++) {
+      for (let c = 0; c + 1 < (grid[r]?.length ?? 0); c++) {
+        const cell = corners(grid, c, r);
+        // The first row of a later section was laid on the merged columns (or, going on from
+        // another district, with it): it is a full street.
+        const block = cell && cellBlock(cell, has, r === 0 && laidBefore, inset);
+        if (block) blocks.push(block);
       }
     }
-  });
+  }
   return blocks;
+}
+
+/**
+ * The block of a cell, up to the edge of the street along each side it has (avenues are wider);
+ * `bottom` when its first row is known to be a street.
+ */
+function cellBlock(
+  [n00, n10, n01, n11]: readonly [Node, Node, Node, Node],
+  has: (a: Node, b: Node) => boolean,
+  bottom: boolean,
+  inset: (coord: number) => number,
+): Block | undefined {
+  const [x0, x1, z0, z1] = [n00.x, n11.x, n00.z, n11.z];
+  const cut = (side: boolean, coord: number): number => (side ? inset(coord) : 0);
+  const block = {
+    xMin: x0 + cut(has(n00, n01), x0),
+    xMax: x1 - cut(has(n10, n11), x1),
+    zMin: z0 + cut(bottom || has(n00, n10), z0),
+    zMax: z1 - cut(has(n01, n11), z1),
+  };
+  return block.xMax > block.xMin && block.zMax > block.zMin ? block : undefined;
 }
 
 function gridLinks(
@@ -178,14 +141,21 @@ function gridLinks(
   rules: RoadRules,
   random: Random,
   buildable: (x: number, z: number) => boolean,
-): { links: Link[]; layouts: Layout[] } {
+): { links: Link[]; layouts: Layout[]; nodes: readonly Node[] } {
   const edge = rules.offscreenX + rules.step;
   const links: Link[] = [];
-  const add = (a: Node, b: Node, across: boolean, required: boolean): void => {
-    const mid = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
-    const ground = [a, mid, b].every((p) => buildable(p.x, p.z));
-    const built = ground && (required || random() < chance);
-    links.push({ a, b, across, required, ground, built, cut: false });
+  const nodes = new Nodes(buildable);
+  const add = (
+    [ax, az]: readonly [number, number],
+    [bx, bz]: readonly [number, number],
+    across: boolean,
+    required: boolean,
+  ): void => {
+    const [a, b] = [nodes.use(nodes.at(ax, az)), nodes.use(nodes.at(bx, bz))];
+    const ground = nodes.ground(a) && buildable((ax + bx) / 2, (az + bz) / 2) && nodes.ground(b);
+    const boulevard = isBoulevard(rules, streetWidth(rules, across ? az : ax));
+    const built = ground && (required || boulevard || random() < chance);
+    links.push({ a, b, across, required, boulevard, ground, built, cut: false });
   };
   let chance = 0;
   const columnsOf: number[][] = [];
@@ -195,175 +165,30 @@ function gridLinks(
     const xs = spaced(-edge, edge, part.grid.columns, random);
     columnsOf.push(xs);
     const zs = spaced(part.zMin, part.zMax, part.grid.rows, random);
-    layouts.push({ xs, zs });
+    const goesOn = p === 0 && district.continues === true;
+    const grid = zs.map((z) => xs.map((x) => nodes.at(x, z)));
+    layouts.push({ grid, laidBefore: p > 0 || goesOn });
     zs.forEach((z, r) => {
+      // Going on from another district: its first row was laid with it.
+      if (r === 0 && goesOn) return;
       const boundary = r === 0 || r === zs.length - 1;
       // A boundary row shared with the previous section was already laid with its columns.
       const columns = r === 0 && p > 0 ? mergeColumns(columnsOf[p - 1] ?? [], xs) : xs;
       columns.slice(1).forEach((x, c) => {
-        add({ x: columns[c] ?? x, z }, { x, z }, true, boundary);
+        add([columns[c] ?? x, z], [x, z], true, boundary);
       });
     });
     for (const x of xs) {
       zs.slice(1).forEach((z, r) => {
-        add({ x, z: zs[r] ?? z }, { x, z }, false, false);
+        add([x, zs[r] ?? z], [x, z], false, false);
       });
     }
   });
-  return { links: dedupe(links), layouts };
+  return { links: dedupe(links), layouts, nodes: nodes.used };
 }
 
 function mergeColumns(a: readonly number[], b: readonly number[]): number[] {
   return [...new Set([...a, ...b])].sort((x, y) => x - y);
-}
-
-/** Drops links laid twice (the shared boundary rows), keeping the first. */
-function dedupe(links: Link[]): Link[] {
-  const seen = new Set<string>();
-  return links.filter((l) => {
-    const k = `${key(l.a)}>${key(l.b)}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-}
-
-/** The links at each node. */
-function linksByNode(links: readonly Link[]): Map<string, Link[]> {
-  const at = new Map<string, Link[]>();
-  for (const l of links) {
-    for (const n of [l.a, l.b]) {
-      const around = at.get(key(n));
-      if (around) around.push(l);
-      else at.set(key(n), [l]);
-    }
-  }
-  return at;
-}
-
-/** The side of the node `k` that `link` leaves it by. */
-function sideOf(k: string, link: Link): 'left' | 'right' | 'down' | 'up' {
-  const [self, other] = key(link.a) === k ? [link.a, link.b] : [link.b, link.a];
-  if (link.across) return other.x < self.x ? 'left' : 'right';
-  return other.z < self.z ? 'down' : 'up';
-}
-
-/** Whether built streets (and `extra`, if given) leave the node `k` on all four sides. */
-function isCrossing(k: string, around: readonly Link[] | undefined, extra?: Link): boolean {
-  const sides = new Set(
-    (around ?? []).filter((l) => l.built || l === extra).map((l) => sideOf(k, l)),
-  );
-  return sides.size === 4;
-}
-
-/** Whether building `link`, from the node `k`, would make a crossing at its far end. */
-function makesCrossing(link: Link, k: string, at: ReadonlyMap<string, readonly Link[]>): boolean {
-  const far = key(key(link.a) === k ? link.b : link.a);
-  return isCrossing(far, at.get(far), link);
-}
-
-/**
- * Fixes the node `k` if a single built street ends there on screen: the street goes on straight
- * when the next link's ground allows it (and, with `tees`, its far end is no T-junction it would
- * turn into a crossing, nor was cut back before), else it is cut back. Returns whether anything
- * changed.
- */
-function fixDeadEnd(
-  k: string,
-  at: ReadonlyMap<string, readonly Link[]>,
-  outOfView: (node: Node) => boolean,
-  tees: boolean,
-): boolean {
-  const around = at.get(k) ?? [];
-  const built = around.filter((l) => l.built);
-  const only = built[0];
-  if (built.length !== 1 || !only || outOfView(key(only.a) === k ? only.a : only.b)) return false;
-  const ahead = around.find((l) => l !== only && l.across === only.across);
-  if (ahead && mayGoOn(ahead, k, at, tees)) {
-    ahead.built = true;
-  } else {
-    only.built = false;
-    only.cut = true;
-  }
-  return true;
-}
-
-/** Whether a dead end at the node `k` may go on through `ahead` (see {@link fixDeadEnd}). */
-function mayGoOn(
-  ahead: Link,
-  k: string,
-  at: ReadonlyMap<string, readonly Link[]>,
-  tees: boolean,
-): boolean {
-  return ahead.ground && !(tees && (ahead.cut || makesCrossing(ahead, k, at)));
-}
-
-function removeDeadEnds(
-  at: ReadonlyMap<string, readonly Link[]>,
-  outOfView: (node: Node) => boolean,
-  tees: boolean,
-): void {
-  for (let pass = 0; pass < MAX_PASSES; pass++) {
-    let changed = false;
-    for (const k of at.keys()) changed = fixDeadEnd(k, at, outOfView, tees) || changed;
-    if (!changed) return;
-  }
-}
-
-/**
- * Turns every crossing into a T-junction (see {@link streetRuns}): the streets leaving it up or
- * down the level go. Cutting makes no crossing, nor does fixing the dead ends that leaves with
- * `tees`, so one pass is enough.
- */
-function removeCrossings(
-  at: ReadonlyMap<string, readonly Link[]>,
-  outOfView: (node: Node) => boolean,
-  random: Random,
-): void {
-  for (const [k, around] of at) {
-    if (!isCrossing(k, around)) continue;
-    const side = random() < 0.5 ? 'down' : 'up';
-    for (const l of around) if (l.built && sideOf(k, l) === side) l.built = false;
-  }
-  removeDeadEnds(at, outOfView, true);
-}
-
-/** Maximal straight runs of built links, as points every `step`. */
-function straightRuns(links: readonly Link[], step: number): { x: number; z: number }[][] {
-  const runs: { x: number; z: number }[][] = [];
-  const lines = new Map<string, Link[]>();
-  for (const l of links.filter((link) => link.built)) {
-    const line = l.across ? `z${l.a.z.toFixed(3)}` : `x${l.a.x.toFixed(3)}`;
-    lines.set(line, [...(lines.get(line) ?? []), l]);
-  }
-  for (const line of lines.values()) {
-    const along = (n: Node): number => (line[0]?.across ? n.x : n.z);
-    line.sort((p, q) => along(p.a) - along(q.a));
-    let run: Node[] = [];
-    for (const l of line) {
-      const last = run.at(-1);
-      if (last && key(last) === key(l.a)) run.push(l.b);
-      else {
-        if (run.length > 1) runs.push(resample(run, step));
-        run = [l.a, l.b];
-      }
-    }
-    if (run.length > 1) runs.push(resample(run, step));
-  }
-  return runs;
-}
-
-/** Points every about `step` from the first to the last node of a straight run. */
-function resample(run: readonly Node[], step: number): { x: number; z: number }[] {
-  const first = run[0];
-  const last = run.at(-1);
-  if (!first || !last) return [];
-  const length = Math.hypot(last.x - first.x, last.z - first.z);
-  const count = Math.max(1, Math.round(length / step));
-  return Array.from({ length: count + 1 }, (_, i) => ({
-    x: first.x + ((last.x - first.x) * i) / count,
-    z: first.z + ((last.z - first.z) * i) / count,
-  }));
 }
 
 /** `block` cut into `nx × nz` equal parts. */

@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
-import { createPlainSceneryKit } from '../../../../src/render/scenery/scenery-kit';
+import {
+  createPlainSceneryKit,
+  type SceneryKitFactory,
+} from '../../../../src/render/scenery/scenery-kit';
+import { terrainLast } from '../../../../src/render/scenery/stage-parts';
 import {
   snappedLightPosition,
   sunDirection,
@@ -14,6 +18,14 @@ import {
   SceneryStage,
   type SceneryStageOptions,
 } from '../../../../src/render/scenery/scenery-stage';
+import {
+  generateGroundsWith,
+  generateInTwo,
+  requestLevelGround,
+  type GroundReplies,
+} from '../../../../src/render/scenery/level-ground';
+import { runoutStart, withRunout } from '../../../../src/core/scenery/scenery-level';
+import { SolidBuilder } from '../../../../src/render/geometry/solids';
 import {
   SAMPLE_SCENERY,
   SAMPLE_SCENERY_LEVEL,
@@ -48,12 +60,37 @@ describe('SceneryStage', () => {
   let scene: Scene | undefined;
   afterEach(() => {
     scene?.dispose();
+    generateGroundsWith(undefined);
   });
 
   function stage(overrides: Partial<SceneryStageOptions> = {}): SceneryStage {
     scene = new Scene(new NullEngine());
     return new SceneryStage(scene, options(overrides));
   }
+
+  it('reviewer, 2026-10-28: the chunks in the runout take its streets and buildings when they come', () => {
+    const level = withRunout(SAMPLE_SCENERY_LEVEL, 30);
+    const at = (runoutStart(level) ?? 0) - 100;
+    let replies: GroundReplies | undefined;
+    generateGroundsWith((_level, _seed, r) => {
+      replies = r;
+    });
+    requestLevelGround(level);
+    const made = generateInTwo(level, level.seed);
+    replies?.ground(structuredClone(made.ground));
+    const s = stage({ level });
+    s.update(at, 1 / 60);
+    const before = s.stats.props;
+    replies?.runout(structuredClone(made.runout()));
+    s.update(at, 1 / 60);
+    expect(s.stats.props).toBeGreaterThan(before);
+    // As on a stage made with the whole ground at once.
+    generateGroundsWith(undefined);
+    const whole = new SceneryStage(new Scene(new NullEngine()), options({ level: { ...level } }));
+    whole.update(at, 1 / 60);
+    expect(s.stats).toEqual(whole.stats);
+    whole.scene.dispose();
+  });
 
   it('P04-R01, P04-R04: builds terrain chunks and props around the camera, and follows it', () => {
     const s = stage();
@@ -166,8 +203,49 @@ describe('SceneryStage', () => {
     }
   });
 
+  it('the terrain casts shadows, unless its look says not (reviewer, 2026-10-28)', () => {
+    const terrainCasters = (castsShadows?: boolean): number => {
+      let casters = 0;
+      const kit: SceneryKitFactory = (s, context) => ({
+        ...createPlainSceneryKit(s, context),
+        addShadowCaster: (mesh) => {
+          if (mesh.name.startsWith('terrain-chunk')) casters++;
+        },
+      });
+      const terrain = {
+        ...SAMPLE_SCENERY_LOOK.terrain,
+        ...(castsShadows === undefined ? {} : { castsShadows }),
+      };
+      stage({ kit, look: { ...SAMPLE_SCENERY_LOOK, terrain } }).update(100, 0);
+      scene?.dispose();
+      return casters;
+    };
+    expect(terrainCasters()).toBeGreaterThan(0);
+    expect(terrainCasters(false)).toBe(0);
+  });
+
+  it('draws the terrain after the props, so props hide it before it is shaded (reviewer, 2026-10-28)', () => {
+    const s = stage();
+    s.update(100, 0);
+    const first = (prefix: string) =>
+      scene?.meshes.find((m) => m.name.startsWith(prefix) && m.isEnabled())?.subMeshes[0];
+    const [terrain, prop] = [first('terrain-chunk'), first('prop-block')];
+    if (!terrain || !prop) throw new Error('no terrain or props');
+    const order = terrainLast(s.kit.terrain);
+    expect(order(terrain, prop)).toBeGreaterThan(0);
+    expect(order(prop, terrain)).toBeLessThan(0);
+  });
+
   it('refuses a level whose props have no model', () => {
     expect(() => stage({ propModels: {} })).toThrow(/block/);
+  });
+
+  it('builds the models of the props its level has, no others (reviewer, 2026-10-28)', () => {
+    const ufo = () => ({ structure: new SolidBuilder().box([1, 1, 1], [1, 1, 1]).geometry });
+    stage({ propModels: { ...SAMPLE_SCENERY.propModels, ufo } });
+    const names = scene?.meshes.map((m) => m.name) ?? [];
+    expect(names).toContain('prop-block');
+    expect(names.some((n) => n.includes('ufo'))).toBe(false);
   });
 
   it('P04 review: the sun moves by whole shadow texels, so shadows do not shimmer', () => {

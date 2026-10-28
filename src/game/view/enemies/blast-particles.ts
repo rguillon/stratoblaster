@@ -8,7 +8,7 @@ type Rgb = readonly [number, number, number];
 type Range = readonly [number, number];
 
 /** The layers of an explosion, each drawn in one go. */
-export type BlastLayer = 'smoke' | 'rings' | 'fireballs' | 'debris' | 'embers' | 'flashes';
+export type BlastLayer = 'smoke' | 'rings' | 'fireballs' | 'debris' | 'embers';
 
 export const BLAST_LAYERS: readonly BlastLayer[] = [
   'smoke',
@@ -16,7 +16,6 @@ export const BLAST_LAYERS: readonly BlastLayer[] = [
   'fireballs',
   'debris',
   'embers',
-  'flashes',
 ];
 
 interface Particle {
@@ -73,16 +72,9 @@ const spot = (p: Particle, radius: number, [r, g, b]: Rgb, a = 1): BlastSpot => 
 
 /** How each layer looks at `t` (0..1) of a particle's life. */
 const LOOKS: Readonly<Record<BlastLayer, (p: Particle, t: number) => BlastSpot>> = {
-  flashes: (p, t) => {
-    const [r, g, b] = ramp(LOOK.heat, t * 0.6);
-    const k = LOOK.flash.brightness * (1 - t);
-    return spot(p, p.size * (0.6 + 0.4 * Math.sqrt(t)), [r * k, g * k, b * k]);
-  },
-  rings: (p, t) => {
-    const fade = (1 - t) ** 2;
-    const [r, g, b] = LOOK.ring.color;
-    return spot(p, p.size * Math.sqrt(t), [r * fade, g * fade, b * fade]);
-  },
+  // Laid over the ground, not added on: an explosion does not light the ground (reviewer,
+  // 2026-10-28).
+  rings: (p, t) => spot(p, p.size * Math.sqrt(t), LOOK.ring.color, (1 - t) ** 2),
   fireballs: (p, t) => {
     const f = LOOK.fireball;
     const alpha = f.alpha * Math.min(1, (1 - t) / (1 - f.opaque));
@@ -103,7 +95,7 @@ function grown(p: Particle, k: number): number {
 
 /**
  * Explosions where enemies and missiles were destroyed (GD-62; phase 5 review: bigger, more
- * realistic): a white flash and a shock ring, a cluster of fireballs going off one after the
+ * realistic): a shock ring, a cluster of fireballs going off one after the
  * other and cooling from white to deep red, dark smoke that lingers, and burning debris thrown
  * out in every direction, trailing embers and smoke. Bigger enemies blow up bigger.
  */
@@ -114,7 +106,6 @@ export class BlastParticles {
     fireballs: [],
     debris: [],
     embers: [],
-    flashes: [],
   };
 
   constructor(private readonly random: Random) {}
@@ -125,11 +116,11 @@ export class BlastParticles {
 
   emit(blast: EnemyBlast): void {
     const scale = blast.kind === 'missile' ? LOOK.missileScale : 1;
-    const radius = blast.radius * scale;
+    // P14-R07: never bigger than for `maxRadius`.
+    const radius = Math.min(blast.radius, LOOK.maxRadius) * scale;
     // Pieces, embers and wisps shrink with blasts smaller than `fullRadius`.
     const small = Math.min(1, radius / LOOK.fullRadius);
     const at = { x: blast.x, y: blast.y };
-    this.#add('flashes', { ...at, size: radius * LOOK.flash.size, life: LOOK.flash.life });
     this.#add('rings', { ...at, size: radius * LOOK.ring.size, life: LOOK.ring.life });
     const f = LOOK.fireball;
     const fireballs = this.#count(radius * f.perRadius, f.count, scale);

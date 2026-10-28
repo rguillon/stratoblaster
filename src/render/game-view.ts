@@ -11,6 +11,7 @@ import type { BeamSegment } from '../core/systems/beam';
 import type { Projectile } from '../core/systems/projectile-motion';
 import type { ShotImpact } from '../core/systems/shot-world';
 import type { AudioBindings } from '../audio/audio-bindings';
+import type { OutlineLook } from './outline';
 import type { PlayfieldCameraLook, PropModelFactory, SceneryLook } from './scenery/scenery-look';
 
 /**
@@ -76,7 +77,20 @@ export interface GameView {
   readonly bombs?: (scene: Scene) => BombRenderer;
   /** The game's generated music and sound effects (P12-R05..R10). Silent when omitted. */
   readonly audio?: AudioBindings;
+  /**
+   * Phase 14 (P14-R03, R04): how the rim glows round the playfield meshes that ask for one
+   * (`setOutline`) look. No rim glows when omitted.
+   */
+  readonly outline?: OutlineLook;
+  /**
+   * Phase 14 (P14-R03): a marker on the player ship's hitbox centre, `radius` the hitbox's,
+   * drawn over the ship. None when omitted.
+   */
+  readonly hitboxMarker?: ModelFactoryOf<number>;
 }
+
+/** Builds a model in the scene from a value (e.g. a size) and returns its root node. */
+export type ModelFactoryOf<T> = (scene: Scene, value: T) => TransformNode;
 
 /** What the bomb renderer draws on one frame, in playfield space (P11-R05). */
 export interface BombFrame {
@@ -162,4 +176,12 @@ export interface SceneryBindings {
   readonly looks: Readonly<Record<string, SceneryLook>>;
   /** One model per prop kind, keyed by `PropKindRule.id`. */
   readonly propModels: Readonly<Record<string, PropModelFactory>>;
+  /** How the `props/` page groups the prop models (all in one group when omitted). */
+  readonly propGroups?: readonly PropGroup[];
+}
+
+/** A named group of prop model ids, shown together on the `props/` page. */
+export interface PropGroup {
+  readonly label: string;
+  readonly ids: readonly string[];
 }

@@ -43,7 +43,7 @@ describe('BossBar', () => {
       texts: {
         health: 'HP',
         weapon: () => 'w',
-        destroyed: () => 'd',
+        bombs: () => 'n',
         lives: () => 'l',
         score: () => 's',
         highScore: () => 'h',

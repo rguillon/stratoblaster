@@ -48,9 +48,13 @@ export const ROLLING = smooth(30, 6, 560, 3);
 /** A dense maze of straight streets, as in World 2's factories. */
 export const STREETS = { rows: [45, 90], columns: [50, 110], links: 0.6 } as const;
 /** Narrower, longer blocks of the terraced streets. */
-const TERRACE_STREETS = { rows: [35, 60], columns: [50, 100], links: 0.6 } as const;
+const TERRACE_STREETS = { rows: [33, 56], columns: [38, 76], links: 0.6 } as const;
 /** Blocks of the suburbs, a house on each plot. */
-export const SUBURB_STREETS = { rows: [45, 80], columns: [55, 105], links: 0.6 } as const;
+export const SUBURB_STREETS = { rows: [40, 70], columns: [50, 95], links: 0.6 } as const;
+/** The closer blocks of the river suburbs of 3-4. */
+const GARDEN_SUBURB_STREETS = { rows: [36, 62], columns: [46, 88], links: 0.6 } as const;
+/** The small blocks of the leafy avenues of 3-4. */
+const AVENUE_STREETS = { rows: [36, 62], columns: [40, 78], links: 0.65 } as const;
 /** Small blocks of the garden villages: lanes between the gardens. */
 export const VILLAGE_STREETS = { rows: [40, 70], columns: [45, 90], links: 0.65 } as const;
 /** The lanes of the last garden villages, closest of all. */
@@ -194,7 +198,6 @@ const WORKERS_QUARTER: readonly TerrainSection[] = [
   { ...FIRST_FLATS, seconds: 40 },
   section("workers' flats", 60, {
     channel: canal(26),
-    buildingDensity: 0.85,
     treeDensity: 0.25,
     surface: { paved: 0.64, lush: 0.15 },
     trees: PL.streets,
@@ -248,7 +251,7 @@ const SUBURBS: readonly TerrainSection[] = [
     channel: river(36),
     treeDensity: 0.55,
     surface: { paved: 0.3, lush: 0.52 },
-    streets: SUBURB_STREETS,
+    streets: GARDEN_SUBURB_STREETS,
     trees: PL.gardens,
     groups: [G.suburbs],
   }),
@@ -266,7 +269,7 @@ const SUBURBS: readonly TerrainSection[] = [
     channel: river(30),
     treeDensity: 0.55,
     surface: { paved: 0.26, lush: 0.58 },
-    streets: VILLAGE_STREETS,
+    streets: AVENUE_STREETS,
     trees: PL.gardens,
     groups: [G.suburbs],
   }),

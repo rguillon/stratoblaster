@@ -9,8 +9,8 @@ import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import type { HeightSource } from './terrain-geometry';
 
 // Phase 4 review: a yellow line along the middle of the streets (stopping where they cross) and
-// of the main roads (dashed); on 2×2 roads, a double yellow line and white dashed lines between
-// the lanes. Painted just above the road surface.
+// of the main roads (dashed); on wider roads (2×2 to 4×4), a double yellow line and white dashed
+// lines between the lanes. Painted just above the road surface.
 
 type Rgb = readonly [number, number, number];
 
@@ -47,39 +47,97 @@ interface Stripe {
 /** The lines painted on `road`. */
 function stripes(road: Road, look: CentreLineLook): Stripe[] {
   if (road.lanes === 1) return [{ offset: 0, color: look.color, dashed: road.kind === 'main' }];
-  const lane = road.width / 4;
+  const lane = road.width / (2 * road.lanes);
+  // Between the lanes of each side, `lane` apart from the middle.
+  const between = Array.from({ length: road.lanes - 1 }, (_, i) => (i + 1) * lane).flatMap(
+    (offset) => [-offset, offset].map((o) => ({ offset: o, color: look.laneColor, dashed: true })),
+  );
   return [
     { offset: -look.width, color: look.color, dashed: false },
     { offset: look.width, color: look.color, dashed: false },
-    { offset: -lane, color: look.laneColor, dashed: true },
-    { offset: lane, color: look.laneColor, dashed: true },
+    ...between,
   ];
 }
 
-/** One flat quad of `stripe` along the piece from (ax, az) to (bx, bz) of the centre line. */
+/** Lines are cut into pieces of {@link PIECE}; pieces in a row merge while the ground under
+ * them stays this close to straight (reviewer, 2026-10-28: far fewer quads on flat cities). */
+const FLAT = 0.02;
+
+type Point = readonly [number, number];
+
+/** One flat quad of `stripe` from (ax, az) to (bx, bz) of the centre line, at heights ha, hb. */
 function quad(
   paint: Painter,
   stripe: Stripe,
-  [ax, az]: readonly [number, number],
-  [bx, bz]: readonly [number, number],
+  [ax, az]: Point,
+  [bx, bz]: Point,
+  ha: number,
+  hb: number,
 ): void {
-  const { geo, ground, look } = paint;
+  const { geo, look } = paint;
   const length = Math.hypot(bx - ax, bz - az) || 1;
   const [ux, uz] = [(bz - az) / length, -(bx - ax) / length];
   const [nx, nz] = [ux * (look.width / 2), uz * (look.width / 2)];
   const [sx, sz] = [ux * stripe.offset, uz * stripe.offset];
   const base = geo.positions.length / 3;
-  for (const [x, z] of [
-    [ax + sx - nx, az + sz - nz],
-    [ax + sx + nx, az + sz + nz],
-    [bx + sx - nx, bz + sz - nz],
-    [bx + sx + nx, bz + sz + nz],
+  const lift = paint.roadLift + look.lift;
+  for (const [x, z, h] of [
+    [ax + sx - nx, az + sz - nz, ha],
+    [ax + sx + nx, az + sz + nz, ha],
+    [bx + sx - nx, bz + sz - nz, hb],
+    [bx + sx + nx, bz + sz + nz, hb],
   ] as const) {
-    geo.positions.push(x, ground.height(x, z) + paint.roadLift + look.lift, z);
+    geo.positions.push(x, h + lift, z);
     geo.colors.push(...stripe.color, 1);
   }
   // Front faces up, as the road ribbons.
   geo.indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+}
+
+/** Ground height under `stripe` at the centre-line point `p` of a piece going along (dx, dz). */
+function heightUnder(paint: Painter, stripe: Stripe, [x, z]: Point, [dx, dz]: Point): number {
+  return paint.ground.height(x + dz * stripe.offset, z - dx * stripe.offset);
+}
+
+/**
+ * Paints `stripe` over the pieces between the centre-line points `at[0..n]`, one quad for as many
+ * pieces in a row as the ground under them stays straight.
+ */
+function paintRun(paint: Painter, stripe: Stripe, at: readonly Point[], dir: Point): void {
+  const heights = at.map((p) => heightUnder(paint, stripe, p, dir));
+  const h = (k: number) => heights[k] ?? 0;
+  const pt = (k: number) => at[k] ?? [0, 0];
+  let from = 0;
+  while (from < at.length - 1) {
+    let to = from + 1;
+    while (to + 1 < at.length && straight(heights, from, to + 1)) to++;
+    quad(paint, stripe, pt(from), pt(to), h(from), h(to));
+    from = to;
+  }
+}
+
+/** Whether the heights between `from` and `to` lie on the line between theirs. */
+function straight(heights: readonly number[], from: number, to: number): boolean {
+  const [a, b] = [heights[from] ?? 0, heights[to] ?? 0];
+  for (let k = from + 1; k < to; k++) {
+    const expected = a + ((b - a) * (k - from)) / (to - from);
+    if (Math.abs((heights[k] ?? 0) - expected) > FLAT) return false;
+  }
+  return true;
+}
+
+/** Whether each of the `pieces` pieces of a segment of `road` touches a street crossing it. */
+function crossed(
+  road: Road,
+  lines: readonly StreetLine[],
+  at: (k: number) => Point,
+  pieces: number,
+): boolean[] {
+  const ends = Array.from(
+    { length: pieces + 1 },
+    (_, k) => road.kind === 'street' && inCrossing(lines, road.index, ...at(k), 0.5),
+  );
+  return Array.from({ length: pieces }, (_, k) => ends[k] === true || ends[k + 1] === true);
 }
 
 /** Paints the lines of the segment from `a` to `b` of `road`, `start` along it. */
@@ -92,18 +150,23 @@ function paintSegment(
 ): void {
   const length = Math.hypot(b.x - a.x, b.z - a.z);
   const pieces = Math.max(1, Math.round(length / PIECE));
-  const painted = stripes(road, paint.look);
-  for (let k = 0; k < pieces; k++) {
-    const [t0, t1] = [k / pieces, (k + 1) / pieces];
-    const from = [a.x + (b.x - a.x) * t0, a.z + (b.z - a.z) * t0] as const;
-    const to = [a.x + (b.x - a.x) * t1, a.z + (b.z - a.z) * t1] as const;
-    const crossing =
-      road.kind === 'street' &&
-      (inCrossing(lines, road.index, ...from, 0.5) || inCrossing(lines, road.index, ...to, 0.5));
-    // Dashes and gaps by the distance along the road.
-    const gap = Math.floor((start + (length * (t0 + t1)) / 2) / paint.look.dash) % 2 === 1;
-    for (const stripe of painted) {
-      if (!crossing && !(stripe.dashed && gap)) quad(paint, stripe, from, to);
+  const dir = [(b.x - a.x) / (length || 1), (b.z - a.z) / (length || 1)] as const;
+  const at = (k: number): Point => [
+    a.x + ((b.x - a.x) * k) / pieces,
+    a.z + ((b.z - a.z) * k) / pieces,
+  ];
+  const blocked = crossed(road, lines, at, pieces);
+  // Dashes and gaps by the distance along the road.
+  const gap = (k: number) =>
+    Math.floor((start + (length * (k + 0.5)) / pieces) / paint.look.dash) % 2 === 1;
+  for (const stripe of stripes(road, paint.look)) {
+    let run: Point[] = [];
+    for (let k = 0; k <= pieces; k++) {
+      if (k < pieces && !blocked[k] && !(stripe.dashed && gap(k))) run.push(at(k));
+      else if (run.length > 0) {
+        paintRun(paint, stripe, [...run, at(k)], dir);
+        run = [];
+      }
     }
   }
 }

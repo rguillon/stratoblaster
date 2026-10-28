@@ -24,7 +24,7 @@ export function hudFrame(
   texts: MenuTexts,
   highScore = 0,
 ): HudFrame {
-  const { shots, track, hull, enemies } = run;
+  const { shots, track, hull } = run;
   return {
     health: hull?.health ?? maxHealth,
     maxHealth,
@@ -33,7 +33,6 @@ export function hudFrame(
     weaponLevel: shots.level,
     weaponLevels: shots.weapon.levels.length,
     progress: track.length > 0 ? track.progress / track.length : 1,
-    destroyed: enemies.kills,
     score: run.score,
     highScore: Math.max(highScore, run.score),
     bombs: run.bombs?.count,
@@ -57,8 +56,8 @@ export function createHud(
     texts: {
       health: texts.hudHealth,
       weapon: texts.hudWeapon,
-      destroyed: texts.hudDestroyed,
       lives: texts.hudLives,
+      bombs: texts.hudBombs,
       score: texts.hudScore,
       highScore: texts.hudHighScore,
       bomb: texts.hudBomb,

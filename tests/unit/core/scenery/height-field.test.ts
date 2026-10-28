@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { HeightField, softCap, terrainCeiling } from '../../../../src/core/scenery/height-field';
 import type { SceneryLevel, TerrainSection } from '../../../../src/core/scenery/scenery-level';
+import { GAME } from '../../../../src/game/index';
+import { LEVEL_ZERO } from '../../../../src/game/sim/scenery-levels';
 import { SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 
 const STRAIGHT = { x: 0, amplitude: 0, wavelength: 1000 } as const;
@@ -186,5 +188,53 @@ describe('HeightField', () => {
     const xs = Array.from({ length: 40 }, (_, i) => field.pathX(path, i * 20));
     expect(Math.min(...xs)).toBeLessThan(0);
     expect(Math.max(...xs)).toBeGreaterThan(60);
+  });
+});
+
+describe('steepness (reviewer, 2026-10-28)', () => {
+  it('is never below the slope measured around a point, and known on most of the cities', () => {
+    const levels = [
+      LEVEL_ZERO,
+      ...['1-3', '2-4', '3-3', '3-5', '4-1', '4-5'].map((id) => {
+        const found = GAME.gameLevels.find((l) => l.id === id);
+        if (!found) throw new Error(`no level ${id}`);
+        return found.scenery;
+      }),
+    ];
+    for (const l of levels) {
+      const field = new HeightField(l);
+      let [known, all] = [0, 0];
+      for (let z = -300; z < field.length + 300; z += 41.3) {
+        for (let x = -450; x <= 450; x += 17.9) {
+          for (const step of [1, 8]) {
+            all++;
+            const bound = field.steepness(x, z, step);
+            if (!Number.isFinite(bound)) continue;
+            known++;
+            expect(field.slope(x, z, step)).toBeLessThanOrEqual(Math.SQRT2 * bound + 1e-12);
+          }
+        }
+      }
+      if (l.id.startsWith('world-4')) expect(known / all, l.id).toBe(1);
+    }
+  });
+
+  it('is not known by a canal, nor on ridges', () => {
+    const canal = { path: STRAIGHT, halfWidth: 20, wall: 10, floor: -5 };
+    const gentle = {
+      base: 50,
+      amplitude: 2,
+      frequency: 1 / 200,
+      octaves: 4,
+      style: 'smooth',
+    } as const;
+    const field = new HeightField(level([section({ channel: canal, relief: gentle })]));
+    expect(field.steepness(0, 50, 8)).toBe(Infinity);
+    expect(field.steepness(25, 50, 8)).toBe(Infinity);
+    expect(field.steepness(60, 50, 8)).toBeLessThan(1);
+    const ridges = section({
+      relief: { base: 0, amplitude: 50, frequency: 1 / 100, octaves: 3, style: 'ridged' },
+    });
+    expect(new HeightField(level([ridges])).steepness(0, 50, 8)).toBe(Infinity);
   });
 });

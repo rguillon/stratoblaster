@@ -234,5 +234,9 @@ export const TOWN_PLANTS = {
   gardens: [P.broadleaf, P.bush, P.conifer],
 } as const;
 
-/** Roads of World 3: as in World 1 (no crossings, phase 6 review). */
-export const WORLD_3_ROADS: RoadRules = WORLD_1_ROADS;
+/**
+ * Roads of World 3: as in World 1 (no crossings, phase 6 review), but the street grids stop
+ * closer to the screen edges (reviewer, 2026-10-28): the ground is drawn twice as big, so only
+ * about ±195 of it shows, and the streets and buildings generated out to ±420 were never seen.
+ */
+export const WORLD_3_ROADS: RoadRules = { ...WORLD_1_ROADS, offscreenX: 240 };

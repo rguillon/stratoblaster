@@ -4,7 +4,7 @@ import { Scene } from '@babylonjs/core/scene';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import { NodeAdopter } from '../../../src/render/node-adopter';
+import { NodeAdopter, ON_TOP_ALPHA_INDEX } from '../../../src/render/node-adopter';
 
 function setUp() {
   const scene = new Scene(new NullEngine());
@@ -40,6 +40,21 @@ describe('NodeAdopter', () => {
     const clone = template.clone('clone');
     expect(clone.parent).toBe(root);
     expect(clone.renderingGroupId).toBe(2);
+  });
+
+  it('P14-R05: meshes that set no draw order are drawn under those on top, the others keep theirs', () => {
+    const { scene, adopter } = setUp();
+    const [plain, ordered, onTop] = adopter.run(() => {
+      const top = CreateBox('top', {}, scene);
+      top.alphaIndex = ON_TOP_ALPHA_INDEX;
+      const low = CreateBox('low', {}, scene);
+      low.alphaIndex = 3;
+      return [CreateBox('plain', {}, scene), low, top] as const;
+    });
+    expect(plain.alphaIndex).toBeLessThan(ON_TOP_ALPHA_INDEX);
+    expect(plain.alphaIndex).toBeGreaterThan(ordered.alphaIndex);
+    expect(onTop.alphaIndex).toBe(ON_TOP_ALPHA_INDEX);
+    expect(plain.clone('clone').alphaIndex).toBe(plain.alphaIndex);
   });
 
   it('adopts even when run throws', () => {

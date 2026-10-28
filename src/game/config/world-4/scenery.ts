@@ -241,6 +241,24 @@ const DOWNTOWN: readonly TerrainSection[] = [
   }),
 ];
 
+/**
+ * `s` with only buildings and roads (reviewer, 2026-10-28): no river, flat paved ground, no
+ * grass or trees.
+ */
+const cityOnly = (s: TerrainSection): TerrainSection => {
+  const city: { -readonly [K in keyof TerrainSection]: TerrainSection[K] } = {
+    ...s,
+    relief: FLAT,
+    treeDensity: 0,
+    surface: { paved: 1, lush: 0 },
+  };
+  delete city.channel;
+  delete city.lakes;
+  delete city.shore;
+  delete city.flatten;
+  return city;
+};
+
 const level = (
   [id, name, seed]: readonly [string, string, number],
   scrollSpeed: number,
@@ -252,9 +270,8 @@ const level = (
     seed,
     scrollSpeed,
     transition: TRANSITION,
-    sections,
-    // The water of the river: no section is open sea.
-    sea: { level: 0 },
+    sections: sections.map(cityOnly),
+    // No sea (reviewer, 2026-10-28): one under the flat ground never showed, but was drawn.
     roads: WORLD_4_ROADS,
     props: WORLD_4_PROPS,
   }) satisfies SceneryLevel;

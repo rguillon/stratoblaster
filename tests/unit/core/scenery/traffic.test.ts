@@ -72,4 +72,30 @@ describe('Traffic', () => {
     expect(half.length).toBeLessThan(traffic.at(2, AREA).length);
     expect(half.every((c) => c.z >= 200)).toBe(true);
   });
+
+  it('only looks at the roads near an area, and finds the same cars (reviewer, 2026-10-28)', () => {
+    // Streets across the level all along it, and long streets along it, over many buckets.
+    const across = Array.from({ length: 40 }, (_, i): Road => {
+      const z = i * 97 - 300;
+      const points = Array.from({ length: 21 }, (_, j) => ({ x: j * 8 - 80, z, width: 6 }));
+      return { index: i, kind: 'street', width: 6, lanes: 1, points };
+    });
+    const along = [-60, 60].map((x, i): Road => {
+      const points = Array.from({ length: 401 }, (_, j) => ({ x, z: j * 8 - 200, width: 6 }));
+      return { index: 40 + i, kind: 'street', width: 6, lanes: 1, points };
+    });
+    const traffic = new Traffic([...across, ...along], () => 0, RULES, 6);
+    const everywhere = { xMin: -500, xMax: 500, zMin: -Infinity, zMax: Infinity };
+    for (const [time, zMin, zMax] of [
+      [0, 100, 600],
+      [3, -1000, -250],
+      [7, 2900, 3500],
+      [9, 255, 257],
+    ] as const) {
+      const area = { ...AREA, zMin, zMax };
+      const all = traffic.at(time, everywhere).filter((c) => c.z >= zMin && c.z < zMax);
+      expect(traffic.at(time, area), `${String(zMin)}…${String(zMax)}`).toEqual(all);
+    }
+    expect(traffic.at(0, { ...AREA, zMin: 5000, zMax: 6000 })).toEqual([]);
+  });
 });

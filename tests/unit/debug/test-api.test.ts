@@ -39,6 +39,14 @@ describe('installTestApi', () => {
         lastLoad: 900,
         longestLoadStep: 120,
       }),
+      readability: (share) =>
+        Promise.resolve({
+          player: share,
+          enemy: null,
+          enemyBullet: null,
+          playerShot: null,
+          backgroundLuminance: 0.2,
+        }),
     });
     expect(target.__GAME_TEST__?.getState()).toMatchObject({
       // P13-R01: the perf numbers are readable from the test API.
@@ -77,5 +85,40 @@ describe('installTestApi', () => {
     expect(() => target.__GAME_TEST__?.step(-1)).toThrow(RangeError);
     expect(() => target.__GAME_TEST__?.step(1.5)).toThrow(RangeError);
     expect(() => target.__GAME_TEST__?.advance(-1)).toThrow(RangeError);
+  });
+
+  it('P14-R08: forwards readability, and rejects shares outside 0..1', async () => {
+    const target: { __GAME_TEST__?: GameTestApi } = {};
+    installTestApi(target, {
+      state: () => {
+        throw new Error('unused');
+      },
+      audio: () => ({ music: null, sounds: [], context: 'none' }),
+      highScore: () => 0,
+      loadingProgress: () => [],
+      game: () => undefined,
+      send: () => undefined,
+      bomb: () => undefined,
+      step: () => undefined,
+      stepHz: 60,
+      perf: () => ({
+        longFrames: 0,
+        longestFrame: 0,
+        frames: 0,
+        lastLoad: null,
+        longestLoadStep: null,
+      }),
+      readability: (share) =>
+        Promise.resolve({
+          player: 5,
+          enemy: 4,
+          enemyBullet: 6,
+          playerShot: 3,
+          backgroundLuminance: share,
+        }),
+    });
+    const report = await target.__GAME_TEST__?.readability(0.02);
+    expect(report?.backgroundLuminance).toBe(0.02);
+    expect(() => target.__GAME_TEST__?.readability(2)).toThrow(RangeError);
   });
 });

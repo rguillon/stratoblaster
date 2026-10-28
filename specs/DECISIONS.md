@@ -1307,3 +1307,224 @@
 - **Alternatives considered:** scheduling ahead only before each loading step (tried; the gaps at the level start remained); an AudioWorklet sequencer (much larger change).
 - **Status:** Accepted
 
+
+### D-121 — Colour families by hue range, colours folded into them at drawing time
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R02)
+- **Context:** The reviewer chose (phase 14 questions) one colour family per kind of object: player cyan / ice blue, enemies violet / magenta / blood red, enemy shots orange / yellow round a white core, pickups green. About 70 enemy and boss neon colours, reactors and lasers were set by earlier phases, many outside their family.
+- **Decision:** A family is a hue range plus a minimum saturation (`READABILITY.families`, `core/math/color.ts`); pale colours (sand, beige, under 0.5 saturation) belong to none. Enemy and boss lights are moved into the enemy family where every enemy model is built (`buildEnemyModel`: neon vertex colours, charge lights, hull tint, reactors), by squeezing the whole hue wheel into the family's range in order, so different enemies keep different colours. Lasers are folded into the enemy-shot family the same way. Enemy bullets, the player shots and the bonuses were recoloured in their config files. The old neon tables are kept as they are: they still tell enemies apart.
+- **Alternatives considered:** rewriting every neon table by hand (about 70 values in 40 files, and boss models that pick their own accents); a shader-side hue shift (cost in every frame).
+- **Status:** Accepted
+
+### D-122 — Background veil under the playfield
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R01)
+- **Context:** The ground must be darker and less saturated than the playfield, without dimming the ships and shots, and cheaply.
+- **Decision:** A screen-wide unlit plane hangs in front of the camera, drawn last in the clouds' rendering group (after the ground, its glow, the clouds and the weather), before the playfield group. It blends the background towards a near-black violet by a per-world opacity (`READABILITY.veils`: 0.42 to 0.55; World 2's snow and World 3's mist the most). Mixing towards a dark colour lowers brightness and colourfulness together. `SceneryLook.veil` (engine, optional) carries it.
+- **Alternatives considered:** a post-process on a second camera for the background only (a camera split and doubled glow layers); darkening every world's palette (many values, and the menu views share them).
+- **Status:** Accepted
+
+### D-123 — Rims with the per-mesh outline renderer
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R03, R04)
+- **Context:** The player ship and the enemies need an outline that separates them from the ground.
+- **Decision:** A mesh asks for a rim through its metadata (`setOutline`); the level's `OutlineLayer` turns on Babylon's outline renderer for it as it joins the playfield (one more draw per mesh, width undone from the mesh's scale so every rim is about 1 logical pixel). Enemy rims are their neon colour half way to white, since violet and magenta are too dark on their own. A `HighlightLayer` in stroke mode was tried first: its blurred map, thresholded, came out as a solid halo several times the ship's size.
+- **Status:** Accepted
+
+### D-124 — Enemy bullets drawn over everything, explosions capped
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R05, R07)
+- **Decision:** The P10-R07 contrast look (dark rim, white spark, wider warning lines with a white core) applies in every level. Bullet layers get alpha indices above any other playfield mesh and ignore depth; a bullet is drawn at least 6 px across, its hitbox unchanged. Enemy missiles get an orange rim. Blasts are drawn no bigger than for a 22 px hit radius and every particle is gone within 0.6 s (shorter fireballs, smoke, debris and embers); a simulation test checks the screen share and the duration. The bomb flash is dimmer.
+- **Status:** Accepted
+
+### D-125 — Readability measured from read-back pixels
+- **Date:** 2026-10-27
+- **Phase:** 14 (P14-R08)
+- **Decision:** `__GAME_TEST__.readability(share)` renders the frame twice, with and without the playfield, reads both back, and for the ship, the first enemy, enemy bullet and player shot well inside the view returns the WCAG contrast ratio of the brightest pixel round it against the median of the same pixels without the playfield; also the background luminance only `share` of the pixels exceed. The pixel maths is pure (`core/math/pixel-contrast.ts`). R06 sets no contrast for player shots, so the e2e test checks that they still show (2:1, `minPlayerShotContrast`).
+- **Status:** Accepted
+
+### D-126 — World 4: a bright, cloudless midday city
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** Every World 4 level is midday with no clouds (cover 0). Its ground holds only buildings and roads: each section is passed through `cityOnly` (no river, lakes or shore, flat, fully paved, no trees), so 4-1 no longer blends in from 3-5's grass and river. Two optional sky-look fields were added to the engine: `groundLights` overrides the time of day's window and car light strength, and `brightness` scales the sun and the ambient light. World 4 uses 1.5 and 1.3. Each level keeps its storm, underglow and weather. The World 4 veil stays at 0.42: at 0.3, a sand colour went over the P14-R01 brightness cap.
+- **Status:** Accepted
+
+### D-127 — Brighter hulls
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The PBR metal of the player ships, enemies and bosses takes 1.8× the direct light and 1.8× the sky reflections (`READABILITY.hullLight`, set on the shared hull materials). The scenery lights are unchanged.
+- **Status:** Accepted
+
+### D-128 — Props viewer page
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** A new `props/` page (`startPropViewer`, game-agnostic) shows the prop models of one group on a grid, using the same vertex-coloured materials as the scenery, under a turning camera. The panel picks the group and a prop; the camera centres on it, and a readout gives its size and triangle count. Clicking a prop or pressing ←/→ also picks one. The game names the groups (`SceneryBindings.propGroups`): Level Zero, World 1 to World 4, Buildings (the part-built variants) and Cars. Without groups, every model goes in one group. `main.ts` now starts each page from a route table.
+- **Status:** Accepted
+
+### D-129 — Volcanic props removed
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The 31 volcanic props of the first World 4 (lava boulders, vents, geothermal and lava works, foundries, rail yard, war factory) were removed, as no level placed them since the World 4 rework (2026-10-27). This removes their models (`view/props/volcanic-*.ts`), their ids, their placement rules and their tests. `config/world-4/props.ts` keeps only World 4's roads. Lava as a sea (`sea.lava`) and the plume kinds stay in the engine.
+- **Status:** Accepted
+
+### D-130 — Background darkened at the source, no veil
+- **Date:** 2026-10-28
+- **Phase:** 14 (P14-R01, reviewer request; replaces the veil of D-121)
+- **Decision:** The dark veil over the background is removed. Each world instead has a tone (`READABILITY.tones`: 0.58, 0.55, 0.45, 0.45, 0.58 for Level Zero and Worlds 1–4). The game multiplies the colours of its looks' ground textures, shores, water and roads by it (`toned`; tint factors and lava excepted). The engine applies `SceneryLook.tone` to the props' lit colours, the haze (fog and clear colour) and the cloud colours as it resolves the atmosphere. The sun, the ambient light and the props' self-lit accents are unchanged. Measured background luminance stays 0.07–0.13 in the four e2e levels.
+- **Status:** Accepted
+
+### D-131 — Ground glow at full resolution
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The ground's glow layer is drawn at full resolution (`mainTextureRatio` 1, up from Babylon's 0.5), its blur kernel doubled so it spreads as wide on screen. At half resolution, small lights (windows, lamps, headlights) blinked as the ground scrolled. `ShowcaseEnvironmentOptions.glow.ratio` is a new optional setting. The playfield's glow (ships, enemies) is unchanged. The glow pass costs about four times as much.
+- **Status:** Accepted
+
+### D-132 — Ground glow antialiased, lights hidden behind buildings
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; follows D-131)
+- **Decision:** The ground's glow image is antialiased (4 samples, `ShowcaseEnvironmentOptions.glow.samples`), so lights thinner than a pixel stop flickering. The glow layer now also draws the props, cars and terrain chunks, black (`SceneryStage.glowOccluders`, `watchTerrain`), so a light behind a building or a hill no longer glows through it. Cost: every prop and the ground are drawn a second time each frame, into the glow image.
+- **Status:** Accepted
+
+### D-133 — No flash in the blasts
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** Explosions no longer start with a white flash: the `flashes` layer and `ENEMY_LOOK.blast.flash` are removed. Their shock ring is blended over the ground instead of added to it, so a blast no longer lights up the ground under it. The fireballs, debris, embers and smoke are unchanged.
+- **Status:** Accepted
+
+### D-134 — Props' lights drawn just in front of their walls
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; follows D-132)
+- **Decision:** The props' self-lit accents (windows, lamps, headlights) get a depth offset of −2 (`LIGHTS_Z_OFFSET`, their material's `zOffset`), as the road ribbons already have. They lie flat on walls and roads, and flickered against them as the ground scrolled, in the ground's glow layer most of all, where the walls are drawn black (D-132).
+- **Status:** Accepted
+
+### D-135 — Ground drawn twice as big
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The ground is drawn twice as big, as if flying lower (`PlayfieldCameraLook.groundScale`: 2). The terrain, roads, props, cars, sea and rain rings hang from one node (`GroundRoot`), scaled by it and moved along Z as the view scrolls, so the level still covers the same ground each second, passing twice as fast on screen. The clouds and the weather are unchanged. The terrain shader takes its colours from the ground point (`groundPoint`), not the world point, so its textures grow with the ground. The stage works out its chunks, props and cars in ground units: the ground in view (`groundWindowOf`) is half as wide and half as long. Cloud layers keep clear of the scaled ground. The stage's options moved to `scenery-stage-options.ts`.
+- **Status:** Accepted
+
+### D-136 — Boulevards in World 4's street grids
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** World 4's street grids get wide boulevards (`RoadRules.boulevards`): 3 lanes each way, 18 wide, on 12 % of the grid lines, and 4 lanes each way, 24 wide, on 8 % (by a hash of the line, `streetWidth`). A boulevard is built along its whole line and runs straight: at a crossing, the street across it is cut instead (`sideToCut`); where two boulevards cross, the crossing stays. Their markings are a double yellow line in the middle and dashed white lines between the lanes (`lanesOf`, `stripes`). The straight runs of the grids moved to `street-runs.ts`.
+- **Status:** Accepted
+
+### D-137 — Lane markings merged on straight ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter ground)
+- **Decision:** The lane markings are still cut into pieces of 2, so they follow the ground and stop cleanly at crossings, but pieces in a row of a road segment become one quad while the ground under them stays within 0.02 of a straight line (`road-lines.ts`). The heights are read once per piece end and line, the crossings once per piece. Road triangles go down by about 40 % (4-1: 56 400 to 34 400 in view), and the worst frame making a chunk on 4-1 from 33 to about 20 ms.
+- **Status:** Accepted
+
+### D-138 — Road clearance asked as such
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The props only ask whether a spot is clear of every road by some distance, now asked as such (`RoadNetwork.clearOf`): only the buckets a road in reach can be in are searched, up to the first road in reach. It answers as `edgeDistance(x, z) >= clearance` does (tested), so every prop stays where it was. The index of the road segments moved to `SegmentIndex` (`road-segments.ts`), with number keys and no object made per segment looked at. Level build about 30 % faster.
+- **Status:** Accepted
+
+### D-139 — Street grids only as wide as the ground that shows
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build; amends the layouts of P09-R03 and P10-R03)
+- **Decision:** In Worlds 3 and 4, streets start and end beyond X = ±240 (`offscreenX`, World 1's 420 before): with the ground drawn twice as big (D-135), about ±195 of it shows, and the streets and buildings beyond were never seen. Most of World 3's rise in buildings from 3-1 to 3-5 (P09-R03) came from those unseen ones, so 3-3 and 3-4 are made denser to keep it: the workers' flats have a building on every slot (0.85 before), the terraced streets narrower blocks (rows 33–56, columns 38–76), the suburbs smaller blocks (rows 40–70, columns 50–95, also in 4-2's city park), and 3-4's river suburbs and leafy avenues their own, closer blocks. Buildings now 6 919 / 7 225 / 7 354 / 7 556 / 7 942 from 3-1 to 3-5, each level's second half with more props than its first by 113 at least. A test checks that the grids of Worlds 3 and 4 reach past the ground in view.
+- **Status:** Accepted
+
+### D-140 — Street grids begin 400 before the level
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** A street grid the level starts in begins 400 before Z = 0 (`STREETS_BEFORE`; 3 000 before), its first row counted out of view: the camera sees the ground from Z = 0 at the start (a test checks that the grid starts more than a row of blocks below it). The winding roads and paths still begin 3 000 before: they cost little, and Level Zero and World 1 stay as they were.
+- **Status:** Accepted
+
+### D-141 — The runout's ground generated after the rest
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: the level ready sooner)
+- **Decision:** `withRunout` records the runout's seconds (`SceneryLevel.runout`, starting at `runoutStart`), and its streets and buildings are generated after the rest of the ground. The districts are cut there (`splitDistricts`): the part before ends with a full row, the runout's part starts its columns on it (`District.continues`), a column ending there only where that row was laid. `RoadNetwork.addRunout` lays its streets with their own random stream, `PropPlacer.placeRunout` its buildings (blocks, slots, hamlets and loners past its start). The worker answers a ground job twice (`generateInTwo`): the ground, with which the level is ready, then the runout, after the jobs already waiting. The stage then places again the chunks the runout shows in (`PropPlacer.runoutPlaced`), and the traffic adds the cars of its streets; if the worker breaks in between, the main thread generates the runout. A ground made from the worker's two answers is the one generated at once (tested).
+- **Status:** Accepted
+
+### D-142 — Only the roads and buildings sent from the worker
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P13-R03's snapshot)
+- **Decision:** `RoadSnapshot` keeps the roads only: the building slots and the city blocks are only needed to place the buildings, which is done with the network, in the worker. Copying a ground to the main thread and indexing it there takes 25–54 ms in Worlds 3 and 4 before the level can start (116–228 ms before D-139 to D-142).
+- **Status:** Accepted
+
+### D-143 — Faster ground generation, same ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The ground generation does less work for the same result. A building slot fits its smaller kinds only when the ones before do not fit. The placed buildings are indexed with number keys, a bucket left out when its largest building cannot come close (`BuildingIndex`). The street grid's nodes are numbered objects, not text keys (`street-links.ts`), each node's ground is checked once, and the dead-end removal makes the same passes in the same order, but only looks at the nodes whose streets changed since it last did (`street-dead-ends.ts`); `straightRuns` no longer copies its lists. The height field makes its octave settings once per section and each pond once per square (`LakeField`). Where the ground cannot be steep enough to matter, a road's slope is not measured: `HeightField.steepness` bounds the slope of a smooth relief away from its channels, blends included, from the steepest a noise can be (`NOISE_SLOPE`, 9 per unit; measured slopes stay under a fifth of the bound). Every level's roads, slots, blocks, buildings, trees and heights are as before (compared on all 22 levels). With D-139 to D-141, the ground of a level is ready in 70–115 ms in World 3 (0.6–1 s before) and 55–140 ms in World 4 (0.3–0.6 s).
+- **Status:** Accepted
+
+### D-144 — Cars drawn without fitting bounds
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames)
+- **Decision:** The cars' meshes are always drawn (`alwaysSelectAsActiveMesh`) and their bounds are never fitted to their instances (`doNotSyncBoundingInfo`, `PropField.drawAlways`). They are placed again every frame, and fitting the bounds to every car was the largest single cost of a frame in Worlds 3 and 4 (about 0.25 ms in 4-1); some cars are always in view, so leaving them out of the view check costs nothing. The cars cast no shadows, so no light fits its shadows to their bounds, and render targets (shadows, glow) do not check bounds. The other props now fit their bounds once per upload: `thinInstanceSetBuffer` already did it, and `PropField.sync` did it a second time. Same look.
+- **Status:** Accepted
+
+### D-145 — The cars near the view looked up by Z
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames)
+- **Decision:** `Traffic` indexes its roads with cars by the 256-unit buckets of Z they span, and `at` only looks at the roads in the buckets of the area, in the roads' order, so it gives the same cars in the same order (tested against the whole level, and compared on six levels over a whole flight). It looked at all the level's 6–11K cars every frame; it now looks at 350–790, of which 290–455 show, and takes half to two thirds of the time (what is left is placing the cars that show).
+- **Status:** Accepted
+
+### D-146 — A stage builds its level's prop models only
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** The stage builds the models of the props its level can place (`levelPropKinds`: the building groups and trees its sections allow, its floating props, lines, podiums and set pieces), not all the game's 218: 8 to 61 per level (97 in Level Zero), each a structure mesh, a lights mesh and plumes, and a shadow caster. Building them all took about 36 ms and 841 meshes per level. The check that every prop has a model now covers the set pieces too. Every prop placed over every level is of a kind built (checked on all 21 levels).
+- **Status:** Accepted
+
+### D-147 — No sea under World 4
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** World 4's levels have no sea. Theirs was at 0, under flat ground 30.5 to 34 high: it never showed, but its see-through plane and rain rings were drawn, and the terrain shader ran its shore on every pixel. Its generated ground is the same (compared on all 22 levels). Without a sea, the ground the camera sees is worked out at the lowest ground, 30, as in the other levels without a sea, not at 0: its half-width goes from 195 to 181 and its far edge from 622 to 580, so the terrain is 528 wide, not 560, and fewer props are placed beside and beyond the view.
+- **Status:** Accepted
+
+### D-148 — Prop models made once for the game
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level build)
+- **Decision:** Each prop model's geometry is made the first time a level needs it and kept for the next levels, with its normals (`geometryOf`, `normalsOf` in `prop-field.ts`): the models are the same every time and nothing changes a geometry once made. Each level still makes its own meshes (a scene's meshes cannot be shared). Not timed on its own.
+- **Status:** Accepted
+
+### D-149 — Props drawn without bounds, their matrices made once per chunk
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster frames; extends D-144)
+- **Decision:** All the props' meshes, not only the cars', are always drawn and never have their bounds fitted to their instances: the sun's shadows have a fixed frustum (`shadowFrustumSize`), which no caster's bounds change, and the props drawn are those near the view anyway. Each chunk keeps the instance matrices of its props by kind, made on their first upload; when the prop window moves, the matrices are copied, not made again. The same instances are drawn in the same order. Over a whole flight (Node), the uploads take 40–54 ms instead of 95–126 ms in 3-1, 4-1 and 4-5; fitting the bounds was most of it.
+- **Status:** Accepted
+
+### D-150 — Cars set up lazily and placed near the view only
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: faster level start and frames)
+- **Decision:** A road's surface heights, for its cars, are worked out when a car is first placed on it, not for every road at the start: setting up a level's traffic takes 3–9 ms instead of 10–20 ms (Node, six levels), the same cars. The cars are placed only where the props are drawn (the prop reach past the ground in view, `propReach`), not over all the terrain chunks, which reach well past the view: before this, 420–660 cars were placed every frame (0.14–0.26 ms in Node).
+- **Status:** Accepted
+
+### D-151 — Terrain drawn last; no shadows from World 4's flat ground
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** The opaque meshes under the clouds are drawn with the terrain last (`terrainLast`), so its costly shading is skipped wherever a prop or car in front of it was drawn first. Babylon already did so by sorting on material ids, because the kit makes the props' materials before the terrain's; the order is now explicit and tested. A terrain look may say its terrain casts no shadows (`TerrainLook.castsShadows`); World 4's looks do: its flat ground has nothing to shade. 4-1 draws 21 120 fewer triangles per frame (four chunks in the shadow map), and its frames are the same pixel for pixel.
+- **Status:** Accepted
+
+### D-152 — The terrain shader reads only what shows
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** The terrain shader works out each texture's share of the colour from its layers (low ground, ground and its cover of sand, grass and paving, high ground, steep slopes) and reads only the textures, and the planes of each, whose share is over 1/512, sharing what was left out among the rest. On flat paved ground it reads one texture once instead of seven textures on three planes each. Screenshots of six levels are the same within 1/255, but for a few pixels of 1-3 (0.006 %, up to 13/255).
+- **Status:** Accepted
+
+### D-153 — The streets' middles drawn opaque
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request: lighter drawing)
+- **Decision:** In the levels whose roads are all streets (2-4, 2-5, Worlds 3 and 4), the even middle of each street is drawn opaque and written in depth, apart from its soft edges and lane markings, which stay see-through and drawn over it (`RoadLayers`): the terrain under the streets is no longer shaded, and those ribbons are no longer blended. Elsewhere, a street drawn before a main road or a path would end up under it, so nothing changes there. The middles are pulled towards the camera less than the see-through ribbons and markings (depth offset -1, not -2), so the markings always stay on top. As a result, the lowest part of the cars on the streets, which the street hid, now shows.
+- **Status:** Accepted
+
+### D-154 — Lives and bombs kept from one level to the next, without limit
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P11-R05 and P11-R07)
+- **Decision:** A completed level keeps its lives and bombs, as it keeps its weapons (D-071): they are saved (`<game>_supplies`, `saved-supplies.ts`) and the next level started, whichever it is, starts with them (`LevelRunOptions.startSupplies`). A Continue, after a game over, starts again with the starting 3 lives and 3 bombs; a lost life still tops the bombs up to 3. Life and bomb bonuses no longer stop at 5: `HullRules.maxLives` and `BombRules.max` are optional, with no limit when omitted, and the game sets neither (so the points a bonus scores at the most, P11-R07, no longer come up). The HUD shows the bombs as a count (`● 7`), not one icon each.
+- **Status:** Accepted
+
+### D-155 — The in-game HUD in one bar at the bottom
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request; amends P11-R02's place of the score)
+- **Decision:** The HUD is one bar, 48 px high, along the bottom of the playfield (`.hud-panel`): the level's progress as a line along its top edge; the ship, its lives, bombs and health bar on the left; the score and high score in the middle; the weapon and its level, and the level played under it, on the right. The enemies destroyed are no longer shown. The ship flies no lower than 30 px above the bar (`shipMargin.bottom` 78, was 30), so the bar never hides it. The boss gauge starts at the top of the left edge, the pause button stays in the top-right corner (P12-R01), now at the top, and the touch fire and bomb buttons sit above the bar.
+- **Status:** Accepted
+
+### D-156 — Playfield meshes without a draw order drawn under the enemy shots
+- **Date:** 2026-10-28
+- **Phase:** 14 (P14-R05, R06; found by the unit tests of `/validate-phase 14`)
+- **Decision:** Babylon draws the see-through meshes of a rendering group by draw order (`alphaIndex`) before distance, and a mesh that sets none keeps `Number.MAX_VALUE`, so it was drawn after the enemy bullets (1 000 000 and up, D-124): the player's shots, reactor flames, missile flames and laser beams all were. The playfield's `NodeAdopter` now gives every mesh it adopts with no draw order `ON_TOP_ALPHA_INDEX - 1` (999 999); clones keep it. Missile flames and laser parts are drawn at `ON_TOP_ALPHA_INDEX`, over the player's shots and the blasts, and the bullets just above (1 000 001 and up), under the hitbox marker. The order of the other meshes among themselves is unchanged. Also found by those tests: the reactor cores were folded into the enemy family twice (they now match their flames), and the reactor colour was too pale (0.45 saturation) for the family's 0.5; it is `[0.48, 0.82, 1]` (0.52), so it folds into the family.
+- **Status:** Accepted

@@ -42,6 +42,17 @@ export interface SceneryKitFrame {
   readonly seaEnabled: boolean;
   /** The level's look here (P08-R04): shadows' darkness, ground lights. */
   readonly atmosphere: Atmosphere;
+  /**
+   * How the ground is drawn (`PlayfieldCameraLook.groundScale`): a world point is `scale` times
+   * its ground point, moved `offsetZ` along Z. None: drawn as it is.
+   */
+  readonly ground?: GroundTransform;
+}
+
+/** See {@link SceneryKitFrame.ground}. */
+export interface GroundTransform {
+  readonly scale: number;
+  readonly offsetZ: number;
 }
 
 /**
@@ -97,10 +108,14 @@ export function setGroundLights(materials: PropMaterials, glow: number): void {
     materials.lights.emissiveColor.set(glow, glow, glow);
 }
 
+/** Depth offset of the props' self-lit accents (see {@link createPropMaterials}). */
+export const LIGHTS_Z_OFFSET = -2;
+
 /** Vertex-coloured materials of the props: lit structure, and self-lit accents. */
 export function createPropMaterials(scene: Scene, look: SceneryLook): PropMaterials {
   const structure = new StandardMaterial('prop-structure', scene);
-  structure.diffuseColor = Color3.White();
+  const tone = look.tone ?? 1;
+  structure.diffuseColor = new Color3(tone, tone, tone);
   structure.specularColor = new Color3(
     look.props.specular,
     look.props.specular,
@@ -112,6 +127,10 @@ export function createPropMaterials(scene: Scene, look: SceneryLook): PropMateri
   lights.diffuseColor = Color3.Black();
   lights.specularColor = Color3.Black();
   lights.disableLighting = true;
+  // Pulled towards the camera in depth: the lights lie flat on walls and roads, and would flicker
+  // against them, in the glow layer most of all, where the walls are drawn black (reviewer,
+  // 2026-10-28).
+  lights.zOffset = LIGHTS_Z_OFFSET;
   return { structure, lights };
 }
 

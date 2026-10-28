@@ -1,6 +1,6 @@
 // P13-R03: generates levels' grounds and scenery textures off the main thread.
 import type { SceneryLevel } from '../../core/scenery/scenery-level';
-import { groundSnapshot } from './level-ground';
+import { generateInTwo } from './level-ground';
 import { texturePixels, type TextureJob } from './procedural-textures';
 
 /** A job for the worker. */
@@ -20,7 +20,13 @@ const scope = self as unknown as {
 
 scope.onmessage = ({ data }) => {
   if (data.kind === 'ground') {
-    scope.postMessage({ id: data.id, ground: groundSnapshot(data.level, data.seed) });
+    const made = generateInTwo(data.level, data.seed);
+    scope.postMessage({ id: data.id, ground: made.ground });
+    // Reviewer, 2026-10-28: the runout after the jobs already waiting (the level's textures), as
+    // the level can start without it.
+    setTimeout(() => {
+      scope.postMessage({ id: data.id, runout: made.runout() });
+    }, 0);
     return;
   }
   const pixels = texturePixels(data.job);

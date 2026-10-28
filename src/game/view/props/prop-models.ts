@@ -15,7 +15,6 @@ import { PROP_COLORS as C } from '../../config/prop-look';
 import { WORLD_1_PROP_IDS as W } from '../../config/world-1/props';
 import { WORLD_2_PROP_IDS as W2 } from '../../config/world-2/props';
 import { WORLD_3_PROP_IDS as W3 } from '../../config/world-3/props';
-import { WORLD_4_PROP_IDS as W4 } from '../../config/world-4/props';
 import { buildCar } from './car-props';
 import { buildCityBuilding } from './city-parts';
 import { buildIndustrialComplex } from './industrial-parts';
@@ -87,37 +86,6 @@ import { buildFishingPlatform, buildLilyPads, buildReeds, buildWaterfall } from 
 import { buildFrostedTree, buildSnowPine, buildSnowyBush } from './polar-plants';
 import { buildAntennaMast, buildObservatory, buildRadarDish } from './science-props';
 import { buildDeadTree, buildForkedTree } from './tree-props';
-import {
-  buildFishingHut,
-  buildGeothermalWell,
-  buildVolcanicCrane,
-  buildHarbourDock,
-} from './volcanic-coast';
-import { buildBlastFurnace, buildChimneyRow, buildSmelter } from './volcanic-foundry';
-import { buildAshHouse, buildAshHut } from './volcanic-homes';
-import { buildHeatCollector, buildLavaPump, buildMiningOutpost } from './volcanic-mining';
-import {
-  buildBurntStump,
-  buildBurntTree,
-  buildHardyGrass,
-  buildHotSpring,
-  buildLavaBoulder,
-  buildSeaSteam,
-  buildSmokingVent,
-  buildSulphurVent,
-} from './volcanic-nature';
-import {
-  buildVolcanicCoolingTower,
-  buildGeothermalPlant,
-  buildVolcanicPipeline,
-} from './volcanic-power';
-import {
-  buildArmouredTower,
-  buildFortressBlock,
-  buildLaunchPad,
-  buildWarHangar,
-} from './volcanic-war';
-import { buildGantryCrane, buildOreWagon, buildRailLine, buildSlagHeap } from './volcanic-yard';
 import { buildRowHouses, buildSuburbHouse, buildWalkUp } from './suburb-props';
 import { buildSkyscraper } from './skyscraper-props';
 
@@ -236,38 +204,6 @@ export const PROP_MODELS: Readonly<Record<string, PropModelFactory>> = {
   [W3.walkUp]: buildWalkUp,
   ...partModels('canopy-tower', JUNGLE_VARIANTS, buildCanopyBuilding),
   ...partModels('canopy-block', JUNGLE_VARIANTS, buildCanopyBuilding),
-  // Phase 10: World 4, the Volcanic Lands (P10-R08).
-  [W4.hardyGrass]: buildHardyGrass,
-  [W4.burntTree]: buildBurntTree,
-  [W4.burntStump]: buildBurntStump,
-  [W4.lavaBoulder]: buildLavaBoulder,
-  [W4.smokingVent]: buildSmokingVent,
-  [W4.sulphurVent]: buildSulphurVent,
-  [W4.seaSteam]: buildSeaSteam,
-  [W4.hotSpring]: buildHotSpring,
-  [W4.fishingHut]: buildFishingHut,
-  [W4.geothermalWell]: buildGeothermalWell,
-  [W4.harbourDock]: buildHarbourDock,
-  [W4.harbourCrane]: buildVolcanicCrane,
-  [W4.powerPlant]: buildGeothermalPlant,
-  [W4.coolingTower]: buildVolcanicCoolingTower,
-  [W4.pipeline]: buildVolcanicPipeline,
-  [W4.ashHut]: buildAshHut,
-  [W4.ashHouse]: buildAshHouse,
-  [W4.miningOutpost]: buildMiningOutpost,
-  [W4.lavaPump]: buildLavaPump,
-  [W4.heatCollector]: buildHeatCollector,
-  [W4.smelter]: buildSmelter,
-  [W4.blastFurnace]: buildBlastFurnace,
-  [W4.chimneyRow]: buildChimneyRow,
-  [W4.gantryCrane]: buildGantryCrane,
-  [W4.railLine]: buildRailLine,
-  [W4.oreWagon]: buildOreWagon,
-  [W4.slagHeap]: buildSlagHeap,
-  [W4.hangar]: buildWarHangar,
-  [W4.launchPad]: buildLaunchPad,
-  [W4.armouredTower]: buildArmouredTower,
-  [W4.fortressBlock]: buildFortressBlock,
   [CAR_IDS.red]: () => buildCar('sedan', C.containerRed),
   [CAR_IDS.blue]: () => buildCar('sedan', C.containerBlue),
   [CAR_IDS.white]: () => buildCar('sedan', C.white),

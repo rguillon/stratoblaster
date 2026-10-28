@@ -3,6 +3,7 @@ import type { LevelResult } from '../core/systems/level-run';
 
 import { isMenuAction, type MenuAction } from '../input/menu-action';
 import type { PerfNumbers } from '../ui/perf-overlay';
+import type { ReadabilityReport } from '../core/math/pixel-contrast';
 
 /** The level being played (P06), as the game screen reports it. */
 export interface GameTestLevelState {
@@ -126,6 +127,11 @@ export interface GameTestApi {
   step(frames: number, render?: boolean): void;
   /** Steps the app by `seconds` (rounded up to whole frames). */
   advance(seconds: number): void;
+  /**
+   * Phase 14 (P14-R08): how readable the level's current frame is, the background measured but
+   * for its `brightShare` brightest pixels (0..1); null off the game screen.
+   */
+  readability(brightShare: number): Promise<ReadabilityReport | null>;
 }
 
 /** What the test API reads of the audio (P12-R12). */
@@ -152,6 +158,8 @@ export interface GameTestHooks {
   readonly stepHz: number;
   /** What the perf monitor measured (P13-R01). */
   readonly perf: () => PerfNumbers;
+  /** How readable the level's frame is (P14-R08); null off the game screen. */
+  readonly readability: (brightShare: number) => Promise<ReadabilityReport | null>;
 }
 
 /** Installs `__GAME_TEST__` on `target` (the window). Only call it when `__E2E__` is true. */
@@ -187,6 +195,12 @@ export function installTestApi(target: object, hooks: GameTestHooks): GameTestAp
     advance: (seconds) => {
       if (!(seconds >= 0)) throw new RangeError(`Cannot advance by ${String(seconds)} s`);
       hooks.step(Math.ceil(seconds * hooks.stepHz - 1e-9), true);
+    },
+    readability: (brightShare) => {
+      if (!(brightShare >= 0 && brightShare <= 1)) {
+        throw new RangeError(`Cannot measure with a share of ${String(brightShare)}`);
+      }
+      return hooks.readability(brightShare);
     },
   };
   Object.defineProperty(target, '__GAME_TEST__', { value: api, configurable: true });

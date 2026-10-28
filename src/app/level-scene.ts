@@ -1,4 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Scene } from '@babylonjs/core/scene';
 import { Constants } from '@babylonjs/core/Engines/constants';
 import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
@@ -16,6 +17,7 @@ import {
 } from '../render/environment/showcase-environment.visual';
 import type { AtmosphereOptions } from '../render/scenery/atmosphere-of';
 import { NodeAdopter } from '../render/node-adopter';
+import { OutlineLayer, type OutlineLook } from '../render/outline';
 import { createPlainSceneryKit } from '../render/scenery/scenery-kit';
 import { createSceneryKit } from '../render/scenery/scenery-kit.visual';
 import type { SceneryLook } from '../render/scenery/scenery-look';
@@ -54,6 +56,16 @@ export interface LevelSceneOptions {
   readonly stage: SceneryStageConfig;
   /** Debug choices on the level's look (P08-R12). */
   readonly atmosphere?: AtmosphereOptions;
+  /** Phase 14 (P14-R03, R04): rim glows round the playfield meshes that ask for one. */
+  readonly outline?: OutlineLook;
+}
+
+/** Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04). */
+export function compileShaders(meshes: readonly AbstractMesh[]): void {
+  for (const mesh of meshes) {
+    const { material } = mesh;
+    if (material && mesh.subMeshes.length > 0) material.forceCompilation(mesh);
+  }
 }
 
 /** The look of `level`, or a descriptive error. */
@@ -71,6 +83,26 @@ function playfieldGlow(scene: Scene, look: { intensity: number; blurKernelSize: 
   return glow;
 }
 
+/** Babylon's default resolution of a glow image, as a share of the screen's. */
+const DEFAULT_GLOW_RATIO = 0.5;
+
+/** Samples per pixel of the ground's glow image (antialiased: thin lights do not flicker). */
+const GROUND_GLOW_SAMPLES = 4;
+
+/**
+ * The ground's glow drawn at full resolution and antialiased (reviewer, 2026-10-28: small lights
+ * blinked as the ground scrolled), its blur as wide on screen as before.
+ */
+export function groundGlowLook(glow: SceneryLook['glow']) {
+  const ratio = 1;
+  return {
+    ...glow,
+    ratio,
+    samples: GROUND_GLOW_SAMPLES,
+    blurKernelSize: (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO,
+  };
+}
+
 /**
  * Phase 10 (P10-R05): the lava blooms in the ground's glow layer with its own material, the
  * terrain drawn there too, black, so hills hide the lava under them.
@@ -80,9 +112,20 @@ function glowLava(glow: GlowLayer, stage: SceneryStage): void {
   if (!lava) return;
   glow.addIncludedOnlyMesh(lava);
   glow.referenceMeshToUseItsOwnMaterial(lava);
+}
+
+/**
+ * The ground's glow (reviewer, 2026-10-28): the lights, and the props, cars and terrain, drawn
+ * black there, so a light behind a building or a hill does not glow through it.
+ */
+function glowGround(glow: GlowLayer, stage: SceneryStage): void {
+  for (const mesh of [...stage.glowingMeshes, ...stage.glowOccluders]) {
+    glow.addIncludedOnlyMesh(mesh);
+  }
   stage.watchTerrain((mesh) => {
     glow.addIncludedOnlyMesh(mesh);
   });
+  glowLava(glow, stage);
 }
 
 /**
@@ -123,6 +166,26 @@ function followSky(stage: SceneryStage, cubeSize: number): void {
 }
 
 /**
+ * The playfield layer of a level: what is created through it is drawn above the clouds, with
+ * the playfield's glow and (phase 14) the rims meshes ask for.
+ */
+function playfieldLayer(scene: Scene, options: LevelSceneOptions): NodeAdopter {
+  const glow = options.environment ? playfieldGlow(scene, options.glow) : undefined;
+  const outline = options.outline ? new OutlineLayer(options.outline) : undefined;
+  const root = new TransformNode('playfield', scene);
+  // The playfield's XY plane onto the flight plane: Y along the level (+Z), -Z up (+Y).
+  root.rotation.x = Math.PI / 2;
+  // Shots are additive and bright enough already: only the ships' neon lights glow. Nor do soft,
+  // see-through particles (vertex alpha: the blasts' fire and smoke), which the glow layer would
+  // draw white, without their tints.
+  return new NodeAdopter(scene, root, ABOVE_CLOUDS_GROUP, (mesh) => {
+    const additive = mesh.material?.alphaMode === Constants.ALPHA_ADD;
+    if (mesh instanceof Mesh && !additive && !mesh.hasVertexAlpha) glow?.addIncludedOnlyMesh(mesh);
+    outline?.add(mesh);
+  });
+}
+
+/**
  * Builds the scene of a level (P04, P05-R11, P06-R02): its generated ground under the tilted
  * playfield camera, and the playfield layer above it where ships, enemies and shots are drawn.
  */
@@ -139,7 +202,7 @@ export function buildLevelScene(
         cubeSize: options.environmentCubeSize,
         intensity: look.sky.environmentIntensity,
         stops: look.sky.stops,
-        glow: look.glow,
+        glow: groundGlowLook(look.glow),
       })
     : undefined;
   const stage = new SceneryStage(scene, {
@@ -152,20 +215,10 @@ export function buildLevelScene(
     config: options.stage,
     ...(options.atmosphere ? { atmosphere: options.atmosphere } : {}),
   });
-  for (const mesh of stage.glowingMeshes) groundGlow?.addIncludedOnlyMesh(mesh);
-  if (groundGlow) glowLava(groundGlow, stage);
+  if (groundGlow) glowGround(groundGlow, stage);
   if (groundGlow) groundGlow.renderingGroupId = BELOW_CLOUDS_GROUP;
-  const glow = options.environment ? playfieldGlow(scene, options.glow) : undefined;
-  const root = new TransformNode('playfield', scene);
-  // The playfield's XY plane onto the flight plane: Y along the level (+Z), -Z up (+Y).
-  root.rotation.x = Math.PI / 2;
-  // Shots are additive and bright enough already: only the ships' neon lights glow. Nor do soft,
-  // see-through particles (vertex alpha: the blasts' fire and smoke), which the glow layer would
-  // draw white, without their tints.
-  const playfield = new NodeAdopter(scene, root, ABOVE_CLOUDS_GROUP, (mesh) => {
-    const additive = mesh.material?.alphaMode === Constants.ALPHA_ADD;
-    if (mesh instanceof Mesh && !additive && !mesh.hasVertexAlpha) glow?.addIncludedOnlyMesh(mesh);
-  });
+  const playfield = playfieldLayer(scene, options);
+  const root = playfield.root;
   return {
     scene,
     look,

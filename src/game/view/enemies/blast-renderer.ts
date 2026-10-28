@@ -44,11 +44,10 @@ const LAYERS: Readonly<
   Record<BlastLayer, { geo: () => ColoredGeometry; add: boolean; z: number }>
 > = {
   smoke: { geo: () => puff(LOOK.smoke.segments), add: false, z: -2.8 },
-  rings: { geo: () => ring(LOOK.ring.segments), add: true, z: -3 },
+  rings: { geo: () => ring(LOOK.ring.segments), add: false, z: -3 },
   fireballs: { geo: () => puff(LOOK.fireball.segments), add: false, z: -3.2 },
   debris: { geo: () => soft(LOOK.debris.segments), add: true, z: -3.4 },
   embers: { geo: () => soft(LOOK.debris.segments), add: true, z: -3.5 },
-  flashes: { geo: () => soft(LOOK.flash.segments), add: true, z: -3.6 },
 };
 
 /** One mesh drawing a whole layer as thin instances, tinted one by one. */
@@ -130,7 +129,7 @@ class LayerMesh {
 
 /**
  * GD-62: explosions where enemies and missiles were destroyed, in playfield space. Each layer
- * (smoke, shock rings, fireballs, debris, embers, flashes) is one mesh of thin instances, so a
+ * (smoke, shock rings, fireballs, debris, embers) is one mesh of thin instances, so a
  * big blast costs no more draw calls than a small one.
  */
 export function createBlastRenderer(scene: Scene): BlastRenderer {

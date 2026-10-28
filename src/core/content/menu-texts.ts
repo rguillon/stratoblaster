@@ -36,7 +36,8 @@ export interface MenuTexts {
   readonly hudHealth: string;
   readonly hudLives: (lives: number) => string;
   readonly hudWeapon: (weaponName: string, level: number, levels: number) => string;
-  readonly hudDestroyed: (count: number) => string;
+  /** The bombs left, next to the lives (P11-R05; a count since they have no limit, reviewer 2026-10-28). */
+  readonly hudBombs: (bombs: number) => string;
   /** The score, and the high score line under it (P11-R02). */
   readonly hudScore: (score: number) => string;
   readonly hudHighScore: (score: number) => string;

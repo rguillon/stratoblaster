@@ -61,6 +61,14 @@ export interface OctaveOptions {
   readonly gain: number;
 }
 
+/**
+ * Most a {@link createNoise2D} noise changes per unit along either axis (reviewer, 2026-10-28):
+ * between lattice points it blends four unit gradients' ramps (each at most √2 in a cell, so two
+ * differ by at most 2√2) with a smootherstep of slope at most 15/8, plus the ramps' own slope (at
+ * most 1), scaled by √2: (15/8 × 2√2 + 1) × √2 ≈ 8.91.
+ */
+export const NOISE_SLOPE = 9;
+
 /** Fractal sum of `noise` octaves, normalised back to [-1, 1]. */
 export function fbm(noise: Noise2D, x: number, y: number, options: OctaveOptions): number {
   let sum = 0;

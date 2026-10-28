@@ -9,6 +9,7 @@ import { ENEMY_CONFIG, ENEMY_UNIT } from '../../../../../src/game/config/enemies
 import { ELITE_CONFIG } from '../../../../../src/game/config/enemies-elite';
 import { VETERAN_CONFIG } from '../../../../../src/game/config/enemies-veteran';
 import { ENEMY_LOOK } from '../../../../../src/game/config/enemy-look';
+import { enemyColor } from '../../../../../src/game/view/enemies/enemy-mesh';
 import { ENEMY_MODELS } from '../../../../../src/game/view/enemies/enemy-models';
 import { Dropper } from '../../../../fixtures/sample-enemies';
 
@@ -102,7 +103,8 @@ describe('ENEMY_MODELS', () => {
     const dim = mat?.emissiveColor.r ?? 0;
     enemy.charge = 1;
     model.sync(enemy, 0);
-    expect(mat?.emissiveColor.r).toBeCloseTo(ENEMY_LOOK.neon.rocketeer[0]);
+    // Its neon, folded into the enemy family since phase 14 (P14-R02).
+    expect(mat?.emissiveColor.r).toBeCloseTo(enemyColor(ENEMY_LOOK.neon.rocketeer)[0]);
     expect(dim).toBeLessThan(mat?.emissiveColor.r ?? 0);
   });
 
@@ -138,8 +140,10 @@ describe('ENEMY_MODELS', () => {
         .model.root.getChildMeshes()
         .find((m) => m.name.endsWith('reactor-0-exhaust'))?.material as
         StandardMaterial | undefined;
+    // The same colour on every enemy, folded into the enemy family since phase 14 (P14-R02).
+    const reactor = [...enemyColor(ENEMY_LOOK.reactor.color)];
     for (const key of ['gnat', 'rocketeer', 'bulwark', 'splitter']) {
-      expect(exhaust(key)?.emissiveColor.asArray(), key).toEqual([...ENEMY_LOOK.reactor.color]);
+      expect(exhaust(key)?.emissiveColor.asArray(), key).toEqual(reactor);
     }
     const { model } = extent('bulwark');
     const flame = model.root.getChildMeshes().find((m) => m.name.endsWith('reactor-0-exhaust'));

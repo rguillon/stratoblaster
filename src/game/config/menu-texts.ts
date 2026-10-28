@@ -31,7 +31,7 @@ export const MENU_TEXTS: MenuTexts = {
   hudHealth: 'HP',
   hudLives: (lives) => `♥ ${String(lives)}`,
   hudWeapon: (weapon, level, levels) => `${weapon} · Lv ${String(level)}/${String(levels)}`,
-  hudDestroyed: (count) => `Destroyed: ${String(count)}`,
+  hudBombs: (bombs) => `● ${String(bombs)}`,
   hudScore: padded,
   hudHighScore: (score) => `HI ${padded(score)}`,
   hudBomb: (bombs) => `Bomb ${String(bombs)}`,

@@ -2,8 +2,8 @@
 export interface BombRules {
   /** Bombs at the start of a level, after a Continue, and the least after a lost life. */
   readonly start: number;
-  /** Most bombs the player can have with bomb bonuses (P11-R07). */
-  readonly max: number;
+  /** Most bombs the player can have with bomb bonuses (P11-R07); no limit when omitted (reviewer, 2026-10-28). */
+  readonly max?: number;
   /** Damage each enemy and boss piece on screen takes, once, when a bomb goes off. */
   readonly damage: number;
   /**
@@ -33,8 +33,12 @@ export class PlayerBombs {
   /** Bombs gone off since the level started. */
   fired = 0;
 
-  constructor(readonly rules: BombRules) {
-    this.count = rules.start;
+  /** Starts with `count` bombs: the rules' start, or those kept from the level before. */
+  constructor(
+    readonly rules: BombRules,
+    count = rules.start,
+  ) {
+    this.count = count;
   }
 
   /** The bomb going off, if any. */
@@ -52,9 +56,9 @@ export class PlayerBombs {
     return true;
   }
 
-  /** A bomb bonus (P11-R07): one more bomb, up to the most. Returns whether it was added. */
+  /** A bomb bonus (P11-R07): one more bomb, up to the most if any. Returns whether it was added. */
   add(): boolean {
-    if (this.count >= this.rules.max) return false;
+    if (this.count >= (this.rules.max ?? Infinity)) return false;
     this.count++;
     return true;
   }

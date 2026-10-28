@@ -30,10 +30,12 @@ export const BOMB_LOOK = {
     /** Seconds it fades over, and its radius. */
     seconds: 0.3,
     radius: 320,
+    // Phase 14 (P14-R07): dimmer (was 0.7 at its heart), so the ship and the enemy bullets
+    // that survive the bomb stay visible through it; the bullets are drawn over it.
     colors: [
-      [0.7, 0.6, 0.4],
-      [0.4, 0.3, 0.18],
-      [0.12, 0.08, 0.04],
+      [0.4, 0.34, 0.22],
+      [0.22, 0.17, 0.1],
+      [0.07, 0.05, 0.02],
       [0, 0, 0],
     ] as readonly Rgb[],
     segments: 32,

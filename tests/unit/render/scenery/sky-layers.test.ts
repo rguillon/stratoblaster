@@ -107,4 +107,24 @@ describe('Sky layers', () => {
     plain.update(0, 1 / 60);
     expect(plain.atmosphere.groundLights).toBeGreaterThan(1);
   });
+
+  it('P14-R01 (reviewer, 2026-10-28): a look’s tone dims its haze and clouds, not its light', () => {
+    for (const look of [LOOK, SAMPLE_SCENERY_LOOK]) {
+      const bright = atmosphereTrack(look, 20).at(380);
+      const dim = atmosphereTrack({ ...look, tone: 0.5 }, 20).at(380);
+      expect(dim.sky.haze).toEqual(bright.sky.haze.map((v) => v / 2));
+      expect(dim.clouds.map((c) => c.color)).toEqual(
+        bright.clouds.map((c) => c.color.map((v) => v / 2)),
+      );
+      expect(dim.sun).toEqual(bright.sun);
+      expect(dim.ambient).toEqual(bright.ambient);
+    }
+  });
+
+  it('the props and cars hide the glowing lights behind them (reviewer, 2026-10-28)', () => {
+    const s = stage(SAMPLE_SCENERY_LOOK);
+    const occluders = s.glowOccluders;
+    expect(occluders.length).toBeGreaterThan(0);
+    for (const mesh of occluders) expect(s.glowingMeshes, mesh.name).not.toContain(mesh);
+  });
 });

@@ -1,5 +1,12 @@
 import { createNoise2D, hash2D, type Noise2D } from '../math/noise';
-import { placeHamlets, placeLoners, type AwaySite, type Building } from './away-placement';
+import {
+  placeHamlets,
+  placeLoners,
+  type AwaySite,
+  type Building,
+  type ZRange,
+} from './away-placement';
+import { towerIn } from './block-towers';
 import { allowed, between, weighted } from './draws';
 import { fixedPieces, floatingIn } from './float-placement';
 import { lowestUnder, standingHeight } from './ground-fit';
@@ -14,8 +21,7 @@ import type {
   TerrainSection,
 } from './scenery-level';
 import {
-  BUILDING_BUCKET,
-  bucketKey,
+  BuildingIndex,
   inside,
   overlap,
   type GroundArea,
@@ -36,10 +42,6 @@ const TREE_DRAWS = 5;
 const PART_SIZE = 30;
 /** …and at most this many parts across either way. */
 const MAX_PARTS = 4;
-/** Gap between a tower and the edge of its part of the podium roof. */
-const TOWER_MARGIN = 1;
-/** Towers are drawn among the kinds at least this share of the largest one that fits. */
-const LARGEST_SHARE = 0.75;
 
 /** Smaller kinds a building slot tries when its first choice does not fit. */
 const FALLBACKS = 3;
@@ -58,15 +60,17 @@ const FALLBACKS = 3;
  * Buildings are decided once for the whole level, in a fixed order, and trees from a hash of
  * their cell, so the same place always gives the same props whatever area is asked for: areas
  * that touch can be placed separately (terrain chunks). A building belongs to the area that
- * contains its centre; a cell to the area that contains its corner.
+ * contains its centre; a cell to the area that contains its corner. The buildings of the runout,
+ * past the level's end, are placed after the others ({@link placeRunout}).
  */
 
 export class PropPlacer {
   readonly #zones: Noise2D;
   readonly #buildings: Building[] = [];
-  readonly #occupied = new Map<string, Building[]>();
+  readonly #occupied = new BuildingIndex();
   /** Phase 9: set pieces and lines, larger than a bucket: every placement checks them all. */
   readonly #fixed: Building[] = [];
+  #runoutPlaced = false;
 
   constructor(
     private readonly field: HeightField,
@@ -86,21 +90,46 @@ export class PropPlacer {
     // Phase 9: set pieces, then (phase 8) lines of props first: the rest keeps clear of them.
     this.#fixed.push(...fixedPieces(rules, field, seaLevel));
     for (const piece of this.#fixed) this.#occupy(piece);
-    const mainFirst = [...roads.slots].sort(
-      (a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'),
-    );
-    roads.blocks.forEach((block, i) => {
-      this.#fillBlock(block, i);
+    this.#placeBuildings({ from: -Infinity, to: roads.runoutFrom ?? Infinity });
+  }
+
+  /** Whether the buildings of the runout are placed (see {@link placeRunout}). */
+  get runoutPlaced(): boolean {
+    return this.#runoutPlaced;
+  }
+
+  /**
+   * Places the buildings of the runout (reviewer, 2026-10-28: after the others, so the level is
+   * ready sooner), once its streets are laid (`RoadNetwork.addRunout`), or takes those `made`
+   * before (e.g. in a worker), and returns them. Once only: afterwards, it adds nothing.
+   */
+  placeRunout(made?: readonly Building[]): readonly Building[] {
+    const from = this.roads.runoutFrom;
+    if (this.#runoutPlaced || from === undefined) return [];
+    this.#runoutPlaced = true;
+    const before = this.#buildings.length;
+    if (made) for (const building of made) this.#occupy(building);
+    else this.#placeBuildings({ from, to: Infinity });
+    return this.#buildings.slice(before);
+  }
+
+  /** The buildings of the blocks, the road slots and the spots away from the roads in `range`. */
+  #placeBuildings(range: ZRange): void {
+    const within = (z: number): boolean => z >= range.from && z < range.to;
+    this.roads.blocks.forEach((block, i) => {
+      if (within((block.zMin + block.zMax) / 2)) this.#fillBlock(block, i);
     });
+    const mainFirst = this.roads.slots
+      .filter((slot) => within(slot.z))
+      .sort((a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'));
     for (const slot of mainFirst) {
       if (this.field.sectionAt(slot.z).section.blocks) continue;
-      const building = this.#candidates(slot)
-        .map((kind) => this.#fit(slot, kind))
-        .find((b) => b !== undefined && this.#free(b));
+      const building = this.#buildingBy(slot);
       if (building) this.#occupy(building);
     }
-    if (rules.hamlets) placeHamlets(this.#awaySite(), rules.hamlets);
-    if (rules.loners) placeLoners(this.#awaySite(), rules.loners);
+    const { hamlets, loners } = this.rules;
+    if (hamlets) placeHamlets(this.#awaySite(), hamlets, range);
+    if (loners) placeLoners(this.#awaySite(), loners, range);
   }
 
   /** What `placeHamlets` and `placeLoners` need (phase 6 review). */
@@ -111,7 +140,7 @@ export class PropPlacer {
       seed: this.seed,
       sectionAt: (z) => this.field.sectionAt(z).section,
       groupAt: (x, z, section) => this.#groupAt(x, z, section),
-      roadDistance: (x, z) => this.roads.edgeDistance(x, z),
+      clearOfRoads: (x, z, clearance) => this.roads.clearOf(x, z, clearance),
       ground: (x, z, radius) =>
         standingHeight(this.field, [x, z, radius], [this.rules.maxSlope, this.rules.minHeight]),
       add: (building, gap) => {
@@ -154,17 +183,8 @@ export class PropPlacer {
 
   /** Whether the ground box of `area` keeps `gap` clear of the placed buildings. */
   #free(area: GroundBox, gap = this.roads.setback): boolean {
-    const { x, z } = area.placement;
     if (this.#fixed.some((b) => overlap(b, area, gap))) return false;
-    const bx = Math.floor(x / BUILDING_BUCKET);
-    const bz = Math.floor(z / BUILDING_BUCKET);
-    for (let i = bx - 2; i <= bx + 2; i++) {
-      for (let j = bz - 2; j <= bz + 2; j++) {
-        const near = this.#occupied.get(`${String(i)},${String(j)}`) ?? [];
-        if (near.some((b) => overlap(b, area, gap))) return false;
-      }
-    }
-    return true;
+    return this.#occupied.clear(area, gap);
   }
 
   /** The buildings placed before, occupying the ground in the order they were placed. */
@@ -173,17 +193,14 @@ export class PropPlacer {
     for (const building of made.buildings) this.#occupy(building);
   }
 
-  /** What this placer placed (P13-R03). */
+  /** What this placer placed so far (P13-R03). */
   snapshot(): PlacerSnapshot {
-    return { buildings: this.#buildings, fixed: this.#fixed.length };
+    return { buildings: [...this.#buildings], fixed: this.#fixed.length };
   }
 
   #occupy(building: Building): void {
     this.#buildings.push(building);
-    const key = bucketKey(building.placement.x, building.placement.z);
-    const bucket = this.#occupied.get(key);
-    if (bucket) bucket.push(building);
-    else this.#occupied.set(key, [building]);
+    this.#occupied.add(building);
   }
 
   /**
@@ -208,7 +225,7 @@ export class PropPlacer {
       .sort((a, b) => a.order - b.order)
       .slice(0, towers)
       .forEach(({ part }, k) => {
-        const tower = this.#tower(part, groups, roof ?? 0, r(20 + k));
+        const tower = towerIn(part, groups, roof ?? 0, r(20 + k));
         if (!tower) return;
         // Without a podium, on the lowest ground under its own plan, so it never floats.
         const { placement, halfX } = tower;
@@ -248,42 +265,16 @@ export class PropPlacer {
     return ground + height;
   }
 
-  /** The largest kind of `groups` that fits `part`, standing at `y`, with the ground it takes. */
-  #tower(
-    part: Block,
-    groups: readonly PropGroupRule[],
-    y: number,
-    r: number,
-  ): Building | undefined {
-    const half = Math.min(part.xMax - part.xMin, part.zMax - part.zMin) / 2 - TOWER_MARGIN;
-    const fitting = groups
-      .flatMap((g) => g.kinds)
-      .map((kind) => ({
-        kind,
-        scale: Math.min(kind.scale[1], half / (kind.frontage ?? kind.footprint / kind.scale[1])),
-      }))
-      .filter(({ kind, scale }) => scale >= kind.scale[0]);
-    const largest = Math.max(
-      ...fitting.map(({ kind, scale }) => (kind.frontage ?? kind.footprint) * scale),
-    );
-    const choices = fitting.filter(
-      ({ kind, scale }) => (kind.frontage ?? kind.footprint) * scale >= largest * LARGEST_SHARE,
-    );
-    const choice = choices[Math.floor(r * choices.length)];
-    if (!choice) return undefined;
-    // Shifted within the room its part leaves around it, so towers do not line up (review).
-    const size = (choice.kind.frontage ?? choice.kind.footprint) * choice.scale;
-    const shift = (min: number, max: number, t: number): number =>
-      (min + max) / 2 + (t - 0.5) * Math.max(0, max - min - 2 * (size + TOWER_MARGIN));
-    const placement = {
-      kind: choice.kind.id,
-      x: shift(part.xMin, part.xMax, (r * 31) % 1),
-      y,
-      z: shift(part.zMin, part.zMax, (r * 57) % 1),
-      rotation: (Math.floor(r * 4 * 7919) % 4) * (Math.PI / 2),
-      scale: choice.scale,
-    };
-    return { placement, halfX: size, halfZ: size };
+  /**
+   * The first of the kinds `slot` tries that fits there, free of the others (reviewer,
+   * 2026-10-28: the smaller ones are only fitted when the ones before do not fit).
+   */
+  #buildingBy(slot: RoadSlot): Building | undefined {
+    for (const kind of this.#candidates(slot)) {
+      const building = this.#fit(slot, kind);
+      if (building && this.#free(building)) return building;
+    }
+    return undefined;
   }
 
   /**
@@ -314,7 +305,7 @@ export class PropPlacer {
     const x = slot.x + slot.nx * offset;
     const z = slot.z + slot.nz * offset;
     // Clear of every road, its own too where it curves back towards the building.
-    if (this.roads.edgeDistance(x, z) < reach + this.roads.setback - 1e-6) return undefined;
+    if (!this.roads.clearOf(x, z, reach + this.roads.setback - 1e-6)) return undefined;
     const y = standingHeight(
       this.field,
       [x, z, kind.footprint],
@@ -342,7 +333,7 @@ export class PropPlacer {
       const x = (i + r(0)) * cellSize;
       const z = (j + r(1)) * cellSize;
       const kind = weighted(trees, r(2));
-      if (!kind || this.roads.edgeDistance(x, z) < treeClearance + kind.footprint) continue;
+      if (!kind || !this.roads.clearOf(x, z, treeClearance + kind.footprint)) continue;
       const ground = kind.footprint;
       if (!this.#free({ placement: { x, z }, halfX: ground, halfZ: ground })) continue;
       const y = standingHeight(

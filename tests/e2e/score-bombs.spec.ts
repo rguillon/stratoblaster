@@ -114,7 +114,7 @@ test.describe('P11: score, lives and bombs', () => {
       page,
       async () => (await scoreState(page)).game?.boss?.name ?? null,
     ).not.toBeNull();
-    await expect(page.locator('.hud-bombs')).toHaveText('●●●');
+    await expect(page.locator('.hud-bombs')).toHaveText('● 3');
     // Let the mini boss come in and fire.
     await stepUntil(page, async () => (await scoreState(page)).game?.enemyShots ?? 0, {
       frames: 30,
@@ -125,7 +125,7 @@ test.describe('P11: score, lives and bombs', () => {
     const bombed = (await scoreState(page)).game;
     expect(bombed).toMatchObject({ bombs: 2, enemyShots: 0 });
     expect(bombed?.boss?.health).toBeLessThan(before ?? 0);
-    await expect(page.locator('.hud-bombs')).toHaveText('●●');
+    await expect(page.locator('.hud-bombs')).toHaveText('● 2');
     // E switches the weapon and sets no bomb off.
     await advance(page, 1.1);
     await page.keyboard.press('KeyE');

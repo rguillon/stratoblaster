@@ -11,11 +11,12 @@ import { GAME_CONTROLS_CONFIG } from '../config/game-controls';
 import type { GameView } from '../render/game-view';
 import type { MenuDocument } from '../ui/screens/elements';
 import type { KeyValueStorage } from '../platform/key-value-storage';
-import { GamePlay } from './game-play';
+import { GamePlay, type GamePlayOptions } from './game-play';
 import { LevelPrefetcher, prepareLevel } from './level-prepare';
 import { startBackgroundLoader, type BackgroundLoader } from '../render/scenery/background-loader';
 import { LevelLoadingScreen } from '../ui/level-loading';
 import type { MenuState } from './menu-flow';
+import { loadSavedSupplies, saveSupplies } from './saved-supplies';
 import { loadSavedWeapons, saveWeapons } from './saved-weapons';
 
 /**
@@ -333,9 +334,20 @@ export class GameSession {
     return load;
   }
 
-  #newPlay(state: MenuState | undefined, levelId: string, shipId: string): GamePlay {
+  /**
+   * What the player kept from the levels completed before: the weapons (D-071), the lives and
+   * bombs (reviewer, 2026-10-28). A Continue, after a game over, starts again with the starting
+   * lives and bombs.
+   */
+  #kept(state: MenuState | undefined): Pick<GamePlayOptions, 'weapons' | 'supplies'> {
     const { storage } = this.options;
-    const weapons = storage && loadSavedWeapons(storage, this.game.id);
+    if (!storage) return {};
+    const weapons = loadSavedWeapons(storage, this.game.id);
+    const supplies = state?.resume ? null : loadSavedSupplies(storage, this.game.id);
+    return { ...(weapons ? { weapons } : {}), ...(supplies ? { supplies } : {}) };
+  }
+
+  #newPlay(state: MenuState | undefined, levelId: string, shipId: string): GamePlay {
     // Presses made outside the level (e.g. a bomb key on a menu) do not carry into it.
     this.controls.clear();
     const play: GamePlay = new GamePlay(
@@ -349,7 +361,7 @@ export class GameSession {
         startTime: this.#startTime,
         startBoss: this.#startBoss,
         atmosphere: atmosphereOf(this.options.debug),
-        ...(weapons ? { weapons } : {}),
+        ...this.#kept(state),
         highScore: this.scores?.highScore() ?? 0,
         ...(state?.resume ? { resume: state.resume } : {}),
         doc: this.options.doc,
@@ -378,11 +390,16 @@ export class GameSession {
     this.play = play;
   }
 
-  /** The level is over: a completed one keeps its weapons for the next (D-071). */
+  /**
+   * The level is over: a completed one keeps its weapons (D-071), lives and bombs (reviewer,
+   * 2026-10-28) for the next.
+   */
   #completed(play: GamePlay): void {
     const { storage } = this.options;
     if (storage && play.run.phase === 'complete') {
       saveWeapons(storage, this.game.id, play.run.arsenal.snapshot());
+      const { supplies } = play.run;
+      if (supplies) saveSupplies(storage, this.game.id, supplies);
     }
     this.onComplete(play);
   }

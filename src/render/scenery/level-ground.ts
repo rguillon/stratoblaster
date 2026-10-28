@@ -1,7 +1,8 @@
+import type { Building } from '../../core/scenery/away-placement';
 import { HeightField } from '../../core/scenery/height-field';
 import { PropPlacer, type PlacerSnapshot } from '../../core/scenery/prop-placement';
-import { levelRoads, type RoadSnapshot } from '../../core/scenery/road-network';
-import type { SceneryLevel } from '../../core/scenery/scenery-level';
+import { levelRoads, type Road, type RoadSnapshot } from '../../core/scenery/road-network';
+import { runoutStart, type SceneryLevel } from '../../core/scenery/scenery-level';
 
 /** A level's generated ground: its height field and its props' placer (with the roads). */
 export interface LevelGround {
@@ -17,18 +18,53 @@ export interface GroundSnapshot {
   readonly placer: PlacerSnapshot;
 }
 
-/** Generates the ground of `level` from `seed` as plain data: what the worker runs. */
-export function groundSnapshot(level: SceneryLevel, seed: number): GroundSnapshot {
-  const { placer } = generate(level, seed);
-  return { roads: placer.roads.snapshot(), placer: placer.snapshot() };
+/**
+ * What generating the runout of a level's ground added, as plain data (reviewer, 2026-10-28: the
+ * worker sends it after the rest of the ground).
+ */
+export interface RunoutSnapshot {
+  readonly roads: readonly Road[];
+  readonly buildings: readonly Building[];
 }
 
-function generate(level: SceneryLevel, seed: number, made?: GroundSnapshot): LevelGround {
+/**
+ * Generates the ground of `level` from `seed` as plain data, its runout apart: what the worker
+ * runs. The ground first, then `runout()` for the rest.
+ */
+export function generateInTwo(
+  level: SceneryLevel,
+  seed: number,
+): { readonly ground: GroundSnapshot; runout(): RunoutSnapshot } {
+  const made = withoutRunout(level, seed);
+  const { placer } = made;
+  return {
+    ground: { roads: placer.roads.snapshot(), placer: placer.snapshot() },
+    runout: () => addRunout(made),
+  };
+}
+
+/** The ground of `level` up to its runout: generated, or from what was made before. */
+function withoutRunout(level: SceneryLevel, seed: number, made?: GroundSnapshot): LevelGround {
   const field = new HeightField(level, seed);
-  const roads = levelRoads(field, level.roads, seed, made?.roads);
+  const options = { runoutFrom: runoutStart(level), made: made?.roads };
+  const roads = levelRoads(field, level.roads, seed, options);
   const { props, sea } = level;
   const placer = new PropPlacer(field, props, seed, roads, sea?.level, made?.placer);
   return { level, seed, field, placer };
+}
+
+/** Adds the runout to `ground`: generated, or what was made before. What it added. */
+function addRunout(ground: LevelGround, made?: RunoutSnapshot): RunoutSnapshot {
+  const { placer } = ground;
+  const roads = placer.roads.addRunout(made?.roads);
+  return { roads, buildings: placer.placeRunout(made?.buildings) };
+}
+
+/** The whole ground of `level`, generated here. */
+function generate(level: SceneryLevel, seed: number): LevelGround {
+  const ground = withoutRunout(level, seed);
+  addRunout(ground);
+  return ground;
 }
 
 /** Grounds kept for reuse (P13-R03): the level being played, Retry, and those prefetched. */
@@ -47,12 +83,16 @@ function find(level: SceneryLevel, seed: number): LevelGround | undefined {
   return ground && keep(ground);
 }
 
-/** Where grounds are generated in the background: posts a level and seed, calls back with it. */
-export type GroundGenerator = (
-  level: SceneryLevel,
-  seed: number,
-  done: (made: GroundSnapshot | undefined) => void,
-) => void;
+/** What a background generation sends back for a level: its ground, then its runout. */
+export interface GroundReplies {
+  /** The ground up to the runout, or undefined when the generation failed. */
+  ground(made: GroundSnapshot | undefined): void;
+  /** Then its runout, or undefined when the generation failed after the ground. */
+  runout(made: RunoutSnapshot | undefined): void;
+}
+
+/** Where grounds are generated in the background: posts a level and seed, answers `replies`. */
+export type GroundGenerator = (level: SceneryLevel, seed: number, replies: GroundReplies) => void;
 
 let background: GroundGenerator | undefined;
 /** Set once a background generation failed: the grounds are generated here from then on. */
@@ -68,7 +108,8 @@ export function generateGroundsWith(generator: GroundGenerator | undefined): voi
 
 /**
  * Asks for the ground of `level`: true when it is ready. With a background generator it is
- * generated there, if not already on its way (false until it comes back); without one, now.
+ * generated there, if not already on its way (false until it comes back, its runout after it);
+ * without one, now.
  */
 export function requestLevelGround(level: SceneryLevel, seed = level.seed): boolean {
   if (find(level, seed)) return true;
@@ -79,11 +120,20 @@ export function requestLevelGround(level: SceneryLevel, seed = level.seed): bool
   if (pending.some((p) => p.level === level && p.seed === seed)) return false;
   const job = { level, seed };
   pending.push(job);
-  background(level, seed, (made) => {
-    pending.splice(pending.indexOf(job), 1);
-    // After a failed background generation, the ground is generated here when it is needed.
-    if (made) keep(generate(level, seed, made));
-    else failed = true;
+  let ground: LevelGround | undefined;
+  background(level, seed, {
+    ground: (made) => {
+      pending.splice(pending.indexOf(job), 1);
+      // After a failed background generation, the ground is generated here when it is needed.
+      if (!made) failed = true;
+      else if (!find(level, seed)) ground = keep(withoutRunout(level, seed, made));
+    },
+    // Adds nothing to a ground that has its runout already (one generated here meanwhile); if it
+    // failed, the runout is generated here.
+    runout: (made) => {
+      if (!made) failed = true;
+      if (ground) addRunout(ground, made ?? addRunout(withoutRunout(level, seed)));
+    },
   });
   return false;
 }

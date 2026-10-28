@@ -73,8 +73,9 @@ export function atmosphereTrack(
   options: AtmosphereOptions = {},
 ): AtmosphereAlong {
   const script = scriptOf(look, options.timeOfDay);
+  const tone = look.tone ?? 1;
   // A fixed look has no weather to turn off.
-  if (!script) return new AtmosphereTrack(look, [], lookAtmosphere);
+  if (!script) return new AtmosphereTrack(look, [], (l) => toned(lookAtmosphere(l), tone));
   const base = { fog: look.fog, cloudOpacity: look.clouds.map((c) => c.opacity) };
   const adjust = (sky: SkyLook): SkyLook => {
     const timed = atTimeOfDay(sky, options.timeOfDay);
@@ -85,5 +86,19 @@ export function atmosphereTrack(
     to: c.to * scrollSpeed,
     look: adjust(c.look),
   }));
-  return new AtmosphereTrack(adjust(script.start), changes, (sky) => resolveSky(sky, base));
+  return new AtmosphereTrack(adjust(script.start), changes, (sky) =>
+    toned(resolveSky(sky, base), tone),
+  );
+}
+
+/** `atmosphere` with its haze and clouds `tone` (0..1) as bright (`SceneryLook.tone`). */
+export function toned(atmosphere: Atmosphere, tone: number): Atmosphere {
+  if (tone === 1) return atmosphere;
+  const dim = ([r, g, b]: readonly [number, number, number]) =>
+    [r * tone, g * tone, b * tone] as const;
+  return {
+    ...atmosphere,
+    sky: { ...atmosphere.sky, haze: dim(atmosphere.sky.haze) },
+    clouds: atmosphere.clouds.map((c) => ({ ...c, color: dim(c.color), shade: dim(c.shade) })),
+  };
 }

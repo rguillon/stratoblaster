@@ -1,8 +1,9 @@
 /**
- * Look of the bonuses. Weapon bonuses (phase 6 review): an acid-yellow hexagon badge with cyan chevrons
- * pointing up (a level up), swinging from side to side over a pulsing yellow halo; a cyan ring flashes
- * out where the ship picks one up. P11-R07: life bonuses are a pink heart over a pink halo, bomb
- * bonuses an orange ball marked B over an orange halo, so each kind reads by its shape too.
+ * Look of the bonuses. Weapon bonuses (phase 6 review): a hexagon badge with chevrons pointing up
+ * (a level up), swinging from side to side over a pulsing halo; a ring flashes out where the ship
+ * picks one up. P11-R07: life bonuses are a heart, bomb bonuses a ball marked B, so each kind
+ * reads by its shape. Phase 14 (P14-R02): all in the pickups' green family (acid green badge,
+ * mint heart, green ball; were yellow, pink and orange).
  * Linear RGB, 0..1; sizes in logical pixels; times in seconds.
  */
 
@@ -14,9 +15,11 @@ export const BONUS_LOOK = {
   /** In front of the ships and the explosions (towards the camera, -Z). */
   depth: -4,
   // Below full strength: the playfield's glow would wash them out to white.
-  frame: [0.8, 0.6, 0.03] as Rgb,
+  // Phase 14 (P14-R02, reviewer): every bonus in the pickups' green family, the kinds told
+  // apart by their shapes (was acid yellow with cyan chevrons).
+  frame: [0.45, 0.85, 0.05] as Rgb,
   face: [0.06, 0.04, 0.1] as Rgb,
-  chevrons: [0.02, 0.6, 0.75] as Rgb,
+  chevrons: [0.05, 0.75, 0.35] as Rgb,
   /** Inner edge of the frame, as a share of the size. */
   frameInset: 0.78,
   /**
@@ -26,9 +29,9 @@ export const BONUS_LOOK = {
   swing: { amplitude: 0.9, hz: 0.7 },
   halo: {
     colors: [
-      [0.5, 0.43, 0.05],
-      [0.22, 0.18, 0.03],
-      [0.06, 0.05, 0.01],
+      [0.28, 0.5, 0.04],
+      [0.12, 0.22, 0.02],
+      [0.03, 0.06, 0.01],
       [0, 0, 0],
     ] as readonly Rgb[],
     /** Radius, as a multiple of the badge size. */
@@ -38,28 +41,28 @@ export const BONUS_LOOK = {
     pulseHz: 2.5,
     segments: 20,
   },
-  flash: { size: 4, life: 0.35, color: [0.3, 1, 1] as Rgb, segments: 32 },
+  flash: { size: 4, life: 0.35, color: [0.35, 1, 0.55] as Rgb, segments: 32 },
   /** A life bonus (P11-R07): the heart's rim, the heart, how far in the heart is, its halo. */
   life: {
-    rim: [0.8, 0.12, 0.42] as Rgb,
-    heart: [1, 0.45, 0.7] as Rgb,
+    rim: [0.1, 0.7, 0.3] as Rgb,
+    heart: [0.55, 1, 0.6] as Rgb,
     inset: 0.72,
     halo: [
-      [0.45, 0.08, 0.25],
-      [0.2, 0.03, 0.12],
-      [0.05, 0.01, 0.03],
+      [0.08, 0.45, 0.2],
+      [0.03, 0.2, 0.09],
+      [0.01, 0.05, 0.02],
       [0, 0, 0],
     ] as readonly Rgb[],
   },
   /** A bomb bonus (P11-R07): its shell, highlight, letter and halo. */
   bomb: {
-    shell: [0.85, 0.32, 0.02] as Rgb,
-    highlight: [1, 0.75, 0.35] as Rgb,
+    shell: [0.2, 0.75, 0.1] as Rgb,
+    highlight: [0.7, 1, 0.45] as Rgb,
     letter: [0.05, 0.02, 0.01] as Rgb,
     halo: [
-      [0.5, 0.2, 0.02],
-      [0.22, 0.08, 0.01],
-      [0.06, 0.02, 0],
+      [0.2, 0.48, 0.06],
+      [0.09, 0.22, 0.03],
+      [0.02, 0.06, 0.01],
       [0, 0, 0],
     ] as readonly Rgb[],
   },

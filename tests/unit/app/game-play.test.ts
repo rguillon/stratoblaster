@@ -205,7 +205,7 @@ describe('GamePlay', () => {
     expect(statsParent.querySelector('.stats-polygons')?.textContent).toMatch(/^Polygons: /);
   });
 
-  it('phase 6 review: shows a HUD with the health, the weapon level, the progress and the kills', () => {
+  it('phase 6 review: shows a HUD with the health, the weapon level and the progress, not the kills', () => {
     const hudParent = document.createElement('div');
     const { game, controls } = start({ hudParent }, 'a', HARMLESS);
     frames(game, 5);
@@ -215,7 +215,8 @@ describe('GamePlay', () => {
     expect(hudParent.querySelector<HTMLElement>('.hud-progress-fill')?.style.width).toMatch(
       /^(24\.\d|25)%$/,
     );
-    expect(hudParent.querySelector('.hud-destroyed')?.textContent).toBe('x0');
+    // Reviewer, 2026-10-28: the enemies destroyed are not shown.
+    expect(hudParent.querySelector('.hud-destroyed')).toBeNull();
     // Phase 6 review: E switches to the next weapon, and the HUD follows.
     controls.key('KeyE', true);
     frames(game, 0.1);
@@ -232,7 +233,7 @@ describe('GamePlay', () => {
     frames(game, 0.1);
     const $ = (selector: string) => hudParent.querySelector(selector)?.textContent;
     expect([$('.hud-score-value'), $('.hud-high-score')]).toEqual(['0', 'Top 4200']);
-    expect($('.hud-bombs')).toBe('●●');
+    expect($('.hud-bombs')).toBe('B2');
     game.run.enemies.score = 5000;
     frames(game, 0.1);
     expect([$('.hud-score-value'), $('.hud-high-score')]).toEqual(['5000', 'Top 5000']);

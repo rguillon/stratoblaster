@@ -21,6 +21,8 @@ import { PLAYER_SHIP_MODELS } from './view/player-ship-models';
 import { PLAYER_SHOT_RENDERERS } from './view/shots/player-shot-renderers';
 import { SCENERY_BINDINGS } from './view/scenery-bindings';
 import { buildTitleBackdrop } from './view/title-backdrop';
+import { READABILITY } from './config/readability';
+import { buildHitboxMarker, outlinedShips, tonedShots } from './view/readability-view';
 
 /** The single entry point of this game's content (ENG-144). */
 export const GAME: GameDefinition<GameView> = {
@@ -40,14 +42,17 @@ export const GAME: GameDefinition<GameView> = {
   hull: HULL_RULES,
   texts: MENU_TEXTS,
   view: {
-    playerShipModels: PLAYER_SHIP_MODELS,
+    // Phase 14: the ships with a rim glow (P14-R03), the shots toned down (P14-R06).
+    playerShipModels: outlinedShips(PLAYER_SHIP_MODELS),
     playerShipScale: PLAYER_SHIP_SCALE,
-    playerShotRenderers: PLAYER_SHOT_RENDERERS,
+    playerShotRenderers: tonedShots(PLAYER_SHOT_RENDERERS),
     menuBackdrop: buildTitleBackdrop,
     scenery: SCENERY_BINDINGS,
     enemies: ENEMY_BINDINGS,
     bonuses: createBonusRenderer,
     bombs: createBombRenderer,
     audio: GAME_AUDIO,
+    outline: READABILITY.outline,
+    hitboxMarker: buildHitboxMarker,
   },
 };

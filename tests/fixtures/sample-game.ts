@@ -209,7 +209,7 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
     hudHealth: 'Life',
     hudLives: (lives) => `L${String(lives)}`,
     hudWeapon: (weapon, level, levels) => `${weapon} ${String(level)}/${String(levels)}`,
-    hudDestroyed: (count) => `x${String(count)}`,
+    hudBombs: (bombs) => `B${String(bombs)}`,
     hudScore: (score) => String(score),
     hudHighScore: (score) => `Top ${String(score)}`,
     hudBomb: (bombs) => `B${String(bombs)}`,
