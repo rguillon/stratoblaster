@@ -3,6 +3,7 @@ import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { SHIP_LOOK } from '../config/ship-look';
+import { READABILITY } from '../config/readability';
 
 /** Materials shared by all the player ships of a scene. */
 export interface ShipMaterials {
@@ -34,6 +35,8 @@ function metal(name: string, look: MetalLook, scene: Scene): PBRMaterial {
   mat.albedoColor = new Color3(...look.albedo);
   mat.metallic = look.metallic;
   mat.roughness = look.roughness;
+  mat.directIntensity = READABILITY.hullLight.direct;
+  mat.environmentIntensity = READABILITY.hullLight.environment;
   return mat;
 }
 

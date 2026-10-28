@@ -67,6 +67,8 @@ function metal(name: string, albedo: Color3, scene: Scene): PBRMaterial {
   hull.albedoColor = albedo;
   hull.metallic = ENEMY_LOOK.hull.metallic;
   hull.roughness = ENEMY_LOOK.hull.roughness;
+  hull.directIntensity = READABILITY.hullLight.direct;
+  hull.environmentIntensity = READABILITY.hullLight.environment;
   return hull;
 }
 

@@ -62,6 +62,11 @@ export const READABILITY = {
    * magenta alone are too dark to stand out on a dark ground), times `strength`.
    */
   enemyOutline: { whiten: 0.5, strength: 1 },
+  /**
+   * Reviewer, 2026-10-28: the light on the ships', enemies' and bosses' metal, as factors on the
+   * direct light (sun, lamps) and on the sky's reflections, so they stand out brighter.
+   */
+  hullLight: { direct: 1.8, environment: 1.8 },
   /** Rims (P14-R03, R04): width in logical pixels, and strength. */
   outline: { width: 0.9, intensity: 1.2 },
 } as const;

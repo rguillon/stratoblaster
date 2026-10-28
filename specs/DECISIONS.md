@@ -1348,3 +1348,9 @@
 - **Phase:** 14 (reviewer request)
 - **Decision:** Every World 4 level is midday with no clouds (cover 0). Its ground holds only buildings and roads: each section is passed through `cityOnly` (no river, lakes or shore, flat, fully paved, no trees), so 4-1 no longer blends in from 3-5's grass and river. Two optional sky-look fields were added to the engine: `groundLights` overrides the time of day's window and car light strength, and `brightness` scales the sun and the ambient light. World 4 uses 1.5 and 1.3. Each level keeps its storm, underglow and weather. The World 4 veil stays at 0.42: at 0.3, a sand colour went over the P14-R01 brightness cap.
 - **Status:** Accepted
+
+### D-127 — Brighter hulls
+- **Date:** 2026-10-28
+- **Phase:** 14 (reviewer request)
+- **Decision:** The PBR metal of the player ships, enemies and bosses takes 1.8× the direct light and 1.8× the sky reflections (`READABILITY.hullLight`, set on the shared hull materials). The scenery lights are unchanged.
+- **Status:** Accepted
