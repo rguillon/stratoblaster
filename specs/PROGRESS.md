@@ -19,6 +19,7 @@
 | 12 | `phases/phase-12-pause-music-settings.md` | ✅ Validated | `phase-12` | 99.4% lines | 2026-10-27 |
 | 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
+| 15 | `phases/phase-15-urban-rework.md` | ⚪ Not started | `phase-15` | — | — |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
