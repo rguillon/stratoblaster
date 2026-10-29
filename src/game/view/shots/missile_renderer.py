@@ -50,9 +50,9 @@ def create_missile_renderer(scene: Any) -> ShotRenderer:
                 continue
             node.position.set(shot.x, shot.y, depth)
             node.rotation.z = -shot.heading
-            step_model_animations(node, frame.dtSeconds)
+            step_model_animations(node, frame.dt_seconds)
         exhaust.sync(shots)
-        explosions.sync(frame.impacts, frame.dtSeconds)
+        explosions.sync(frame.impacts, frame.dt_seconds)
 
     def dispose() -> None:
         pool.dispose()

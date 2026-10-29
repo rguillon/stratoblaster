@@ -331,7 +331,7 @@ def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
     clock = [0.0]
 
     def sync(frame: Any) -> None:
-        clock[0] += frame.dtSeconds
+        clock[0] += frame.dt_seconds
         sync_bullets(bullets, frame.bullets)
         sync_missiles(missiles, frame.missiles)
         lasers.sync(frame.lasers, clock[0])

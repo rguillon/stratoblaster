@@ -197,7 +197,7 @@ def create_bonus_renderer(scene: Any) -> BonusRenderer:
             kind_pools = pools[i]
             if kind_pools:
                 sync_kind(kind_pools, [b for b in frame.bonuses if b.kind == kind])
-        sync_flashes(rings, flashes, frame.picked, frame.dtSeconds)
+        sync_flashes(rings, flashes, frame.picked, frame.dt_seconds)
 
     def dispose() -> None:
         for p in pools:

@@ -104,13 +104,13 @@ def create_laser_renderer(scene: Any) -> ShotRenderer:
     clock = [0.0]
 
     def sync(frame: Any) -> None:
-        clock[0] += frame.dtSeconds
+        clock[0] += frame.dt_seconds
         time = clock[0]
         wobble = 1 + LOOK.flicker * flicker(time, 0, [LOOK.flickerHz])
         place_bars(bars, frame.beam, wobble)
         place_contacts(contacts, frame.beam, wobble)
         place_muzzle(muzzle, frame.beam, time)
-        place_sparks(sparks, particles.step(frame.beam, frame.dtSeconds))
+        place_sparks(sparks, particles.step(frame.beam, frame.dt_seconds))
 
     def dispose() -> None:
         for pool, template in [

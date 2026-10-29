@@ -53,7 +53,7 @@ def create_bullet_renderer(scene: Any) -> ShotRenderer:
             mesh.scaling.set(look.width * flicker, length, 1)
         for impact in frame.impacts:
             sparks.emit(impact.x, impact.y)
-        spots = sparks.step(frame.dtSeconds)
+        spots = sparks.step(frame.dt_seconds)
         for i, mesh in enumerate(spark_pool.show(len(spots))):
             spark = spots[i]
             if not spark:

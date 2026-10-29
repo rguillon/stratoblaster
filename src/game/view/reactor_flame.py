@@ -7,6 +7,7 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from game.config.record import field  # noqa: E402
 from game.config.ship_look import REACTOR_FLAME as FLAME
 from game.view.ship_materials import get_ship_materials
 
@@ -187,7 +188,7 @@ def build_reactor_flame(
     if materials is None:
         materials = _player_flame(parent)
     sides = size["sides"]
-    light = size.get("light")
+    light = field(size, "light", None)
     caps = not light
     outer = _cone(
         name + "-exhaust",
