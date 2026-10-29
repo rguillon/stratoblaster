@@ -15,6 +15,7 @@ type Rgb = list[float]
 __pragma__("noskip")
 
 from core.entities.jointed_enemy import JointedEnemy  # noqa: E402
+from game.config.record import field  # noqa: E402
 from game.view.bosses.boss_limbs import boss_point  # noqa: E402
 from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
 from game.view.enemies.living_motion import new_breath  # noqa: E402
@@ -38,13 +39,13 @@ class Frame:
 
 def joint_frames(name: str, design: Any, root: Any) -> dict[str, Frame]:
     """A node per joint, hung on the joint it hangs on, its pivot where the design puts it."""
-    specs = design.get("joints", {})  # noqa: SIM401
+    specs = field(design, "joints", {})
     frames: dict[str, Frame] = {}
 
     def make(joint_id: str) -> Frame:
         if joint_id in frames:
             return frames[joint_id]
-        spec = specs.get(joint_id, None)  # noqa: SIM401
+        spec = field(specs, joint_id, None)
         if spec == None:  # noqa: E711
             raise Exception('Enemy "' + name + '" has no joint "' + joint_id + '"')
         parent = Frame(root, ORIGIN) if spec["parent"] == None else make(spec["parent"])  # noqa: E711
@@ -93,7 +94,7 @@ def build_jointed_model(  # noqa: C901
 
     if "ring" in drawing:
         hang("ring", drawing["ring"], Frame(ring, ORIGIN))
-    limbs = drawing.get("limbs", {})  # noqa: SIM401
+    limbs = field(drawing, "limbs", {})
     for joint, draw in limbs.items():
         hang(joint, draw, frame_of(joint))
     parts: list[Any] = []
@@ -104,7 +105,7 @@ def build_jointed_model(  # noqa: C901
         if "orbits" in spec and spec["orbits"]:
             frame = Frame(ring, ORIGIN)
         else:
-            frame = frame_of(spec.get("joint", None))  # noqa: SIM401
+            frame = frame_of(field(spec, "joint", None))
         parts.append(hang(spec["id"], draw, frame))
 
     def sync(enemy: Any, dt: float) -> None:

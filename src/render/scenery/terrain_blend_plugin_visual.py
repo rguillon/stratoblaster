@@ -144,7 +144,7 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
   float gentle = 1.0 - smoothstep(terrainSlope.x, terrainSlope.y, slope);
   // Beach: dry sand fading into the ground, darker where the swash wets it.
   vec3 sand = terrainSand.rgb * (0.9 + 0.2 * fine);
-  float beach = 1.0 - smoothstep(terrainSand.w * 0.4, terrainSand.w, -depth + (noise.g - 0.5) * 3.0);  # noqa: E501
+  float beach = 1.0 - smoothstep(terrainSand.w * 0.4, terrainSand.w, -depth + (noise.g - 0.5) * 3.0);
   color = mix(color, sand, beach * gentle);
   color *= 1.0 - 0.3 * (1.0 - smoothstep(-1.2, 0.0, -depth)) * gentle;
   // Water: the deeper, the darker, up to the colour of the open sea.
@@ -165,7 +165,7 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
 // Phase 10: where the rock meets lava (P10-R05), it is scorched dark under a hot glowing edge.
 vec3 terrainScorch(vec3 color, vec3 p) {
   float above = p.y - terrainSea.x;
-  return color * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));  # noqa: E501
+  return color * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));
 }
 
 // The glow of the rock by the lava: a bright edge at its level and glowing cracks a little above.
@@ -220,7 +220,7 @@ vec3 terrainColor(vec3 p, vec3 n) {
   vec4 sum = terrainLayer(terrainLow, p, w, (1.0 - above) * (1.0 - high) * (1.0 - steep));
   if (bare > TERRAIN_SKIP) {
     float tint = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainScale.z).g);
-    sum += terrainLayer(terrainGround, p, w, bare) * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);  # noqa: E501
+    sum += terrainLayer(terrainGround, p, w, bare) * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
   }
   sum += terrainLayer(terrainSandy, p, w, ground * sandy * (1.0 - lush) * (1.0 - paved));
   sum += terrainLayer(terrainLush, p, w, ground * lush * (1.0 - paved));

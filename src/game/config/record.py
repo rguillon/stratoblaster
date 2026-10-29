@@ -38,3 +38,17 @@ def concat(*parts: list[Any]) -> list[Any]:
     for part in parts:
         out.extend(part)
     return out
+
+
+def field(obj: Any, key: str, default: Any) -> Any:
+    """`obj[key]`, or `default` when the record has no such field (`dict.get` is not on JS
+    objects)."""
+    value: Any = None
+    __pragma__(
+        "js",
+        "{}",
+        """
+    value = obj[key];
+    """,
+    )
+    return default if value == None else value  # noqa: E711 (undefined for an absent field)

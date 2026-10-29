@@ -122,7 +122,7 @@ class SolidBuilder:
 
     def _point(self, p: Vec3, place: Placement) -> Vec3:
         r = _rotate(p, place)
-        a = place.at if place.at is not None else [0, 0, 0]
+        a = place.at if place.at != None else [0, 0, 0]  # noqa: E711 (undefined for an absent field)
         return [r[0] + a[0], r[1] + a[1], r[2] + a[2]]
 
     def face(
