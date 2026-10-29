@@ -1,76 +1,44 @@
 # Single entry point for humans, git hooks and CI (specs/01-engineering.md §3).
+# uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build lint format typecheck test test-watch coverage e2e e2e-build e2e-ui check-fast check preview clean
+.PHONY: help install dev build lint format typecheck check check-fast clean
 
-NPX := npx --no-install
-# CI also needs the system libraries for Chromium (requires sudo).
-PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
-# `make install SKIP_BROWSER=1` skips Chromium: jobs without e2e, or the Playwright image that has it.
-SKIP_BROWSER ?=
-# Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--grep=P09`.
-E2E_ARGS ?=
-# Tool caches (D-094). ESLint's cache is only used by `check-fast` (pre-push): it skips unchanged
-# files, whose type-aware results can change with the files they import. `lint` and `check` lint
-# everything.
-CACHE_DIR := node_modules/.cache
-ESLINT_CACHE :=
+DIST := dist
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install dependencies, git hooks and Playwright Chromium
-	npm ci
-	$(if $(SKIP_BROWSER),,$(NPX) playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium)
+install: ## Install Python dependencies from uv.lock, then the git hooks (ENG-21)
+	uv sync --locked
+	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
-dev: ## Start the Vite dev server with HMR on port 5173
-	$(NPX) vite
+build: ## Compile src/ to JavaScript with Transcrypt and assemble dist/
+	rm -rf $(DIST)
+	cd src && uv run transcrypt -b -n -od ../$(DIST)/js main.py
+	cp index.html $(DIST)/
+	@if [ -d public ]; then cp -r public/. $(DIST)/; fi
+	@if grep -qE '__pragma__ *\(' $(DIST)/js/main.js; then \
+		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
 
-build: ## Production build into dist/ (fails if the e2e test API or an audio file gets into it)
-	$(NPX) vite build
-	@if grep -rlqE '__GAME_TEST__|__ENEMIES_TEST__|__BOSSES_TEST__|__SCENERY_TEST__|__SHOTS_TEST__' dist; then \
-		echo 'ENG-52: an e2e test API was found in the production bundle' >&2; exit 1; \
-	fi
-	@if find dist -type f \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.aac' -o -iname '*.flac' -o -iname '*.opus' -o -iname '*.webm' \) | grep -q .; then \
-		echo 'P12-R05: an audio file was found in the production build (audio is generated)' >&2; exit 1; \
-	fi
+dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
+	uv run python -m http.server 5173 --directory $(DIST)
 
-lint: ## ESLint + Prettier check (no auto-fix)
-	$(NPX) eslint . --max-warnings 0 $(ESLINT_CACHE)
-	$(NPX) prettier --check --cache .
+lint: ## Ruff check + format check + layering contracts (no auto-fix)
+	uv run ruff check src
+	uv run ruff format --check src
+	PYTHONPATH=src uv run lint-imports
 
-format: ## Prettier write + ESLint --fix
-	$(NPX) prettier --write --cache .
-	$(NPX) eslint . --fix
+format: ## Ruff format + ruff fix
+	uv run ruff format src
+	uv run ruff check --fix src
 
-typecheck: ## TypeScript type check
-	$(NPX) tsc --noEmit --incremental --tsBuildInfoFile $(CACHE_DIR)/tsc/tsbuildinfo
+typecheck: ## mypy --strict
+	uv run mypy
 
-test: ## Unit tests, single run
-	$(NPX) vitest run
+check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
-test-watch: ## Unit tests in watch mode
-	$(NPX) vitest
+check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
 
-coverage: ## Unit tests with coverage; fails below thresholds
-	$(NPX) vitest run --coverage
-
-e2e-build:
-	$(NPX) vite build --mode e2e
-
-e2e: e2e-build ## Build in e2e mode, serve it and run Playwright
-	$(NPX) playwright test $(E2E_ARGS)
-
-e2e-ui: e2e-build ## Playwright UI mode
-	$(NPX) playwright test --ui
-
-check-fast: ESLINT_CACHE = --cache --cache-strategy content --cache-location $(CACHE_DIR)/eslint/
-check-fast: lint typecheck test ## lint + typecheck + unit tests (pre-push)
-
-check: lint typecheck coverage build e2e ## Full gate (CI and agent)
-
-preview: build ## Serve the production build locally
-	$(NPX) vite preview
-
-clean: ## Remove build outputs, reports and caches
-	rm -rf dist dist-e2e coverage playwright-report test-results blob-report .eslintcache node_modules/.vite $(CACHE_DIR)
+clean: ## Remove build outputs and caches
+	rm -rf $(DIST) src/__target__ .mypy_cache .ruff_cache

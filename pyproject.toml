@@ -1,0 +1,55 @@
+[project]
+name = "stratoblaster"
+version = "0.0.0"
+description = "Stratoblaster, a 3D shoot 'em up, compiled to JavaScript with Transcrypt."
+license = { text = "MIT" }
+# Transcrypt 3.9.5 cannot compile its own runtime under Python 3.13 or later (ENG-04).
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "transcrypt==3.9.5",
+    "ruff",
+    "mypy",
+    "import-linter",
+    "pre-commit>=4.7.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
+ignore = ["PLR0913"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"random".msg = "ENG-18: core/ uses the seeded RNG (core/math/rng.py), never the random module."
+"time".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
+"datetime".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
+mypy_path = ["src", "typings"]
+
+[tool.importlinter]
+root_packages = ["core"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core/ is pure: no browser or DOM"
+type = "forbidden"
+source_modules = ["core"]
+forbidden_modules = ["org", "browser"]
+# core/math/rng.py imports __pragma__ only as a compile-time marker for Transcrypt (no DOM access).
+ignore_imports = ["core.math.rng -> org"]

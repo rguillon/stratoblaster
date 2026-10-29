@@ -1608,3 +1608,25 @@
 - **Phase:** 16
 - **Decision:** The 61 models were reworked in six independent scopes (basic enemies, veterans and elites, then one per world's bosses), each on its own files, the shared boss helpers (`mini-boss-*`, `final-boss-*`, `boss-limbs`, `overlord-city`) left as they were. Each scope keeps its part ids, joints, turrets and muzzles as they were, so the sim and its tests are untouched.
 - **Status:** Accepted
+
+### D-169 — Python port: Python 3.12, Transcrypt, uv, Babylon.js through interop
+- **Date:** 2026-10-29
+- **Phase:** 17 (the port, requested by the owner)
+- **Decision:** The game is ported from TypeScript to Python 3.12. Transcrypt 3.9.5 compiles it to browser ES modules. uv manages the environment and the commands (`pyproject.toml`, `uv.lock`, `.python-version`). Babylon.js stays the 3D engine (D-001 still holds for the engine), used as a pinned JavaScript build vendored under `public/vendor/` by `make vendor` (SHA-256 checked), and called from Python through thin wrappers in `render/` only. Vite, Vitest, ESLint, Prettier, Husky and npm are replaced by `mypy --strict`, ruff, import-linter and the `pre-commit` tool. The TypeScript toolchain files (`package.json`, `vite.config.ts`, ...) stay on the branch until the port reaches parity, then they are removed. The requirements in `01-engineering.md` now state this (ENG-01..05, 12..14, 20..36, 40..61, 82..84, §13).
+- **Alternatives considered:** a different engine that is Python-native or has a Transcrypt binding (none is as complete as Babylon, and it would change the look, D-001); keeping TypeScript and adding a Python tool (fails the owner's request); Brython or PyScript (run Python at run time, far heavier for a 60 Hz game).
+- **Consequences:** The game is not playable on the `python-transcrypt` branch until the port reaches parity with `main`. The TypeScript code stays on `main` as the reference; it is removed from the branch when the port is complete. The unit tests are not ported yet (the test phase restores ENG-27..29, 40..48). Babylon is not vendored yet (the render phase does it).
+- **Status:** Accepted (owner request, 2026-10-29). Vendoring Babylon with `make vendor` and its SHA-256 is a proposal to confirm when the render phase starts.
+
+### D-170 — Transcrypt 3.9.5 constraints, measured
+- **Date:** 2026-10-29
+- **Phase:** 17
+- **Decision:** Measured on Python 3.12 with Transcrypt 3.9.5 and Node 26. Works: classes with inheritance, closures and mutable closure state (`state = [seed]`), list comprehensions, positional default arguments, dotted packages (`core.math.rng` compiles to `core.math.rng.js`), `from org.transcrypt.stubs.browser import document, window` (compile-time only), `window.Math.imul`, `str()`, `//` and `%` on integers, `1 << n` for small `n`, function annotations (dropped at compile time), `__pragma__('skip')` blocks, `__new__(JSConstructor)(args)` for JavaScript constructors. Does not work: keyword arguments at call sites (silently ignored: `add(4, scale=3)` returns the default result); `%` string formatting (returns `NaN`); `from typing import ...` outside a `skip` block (its runtime has no `typing` module); `from browser import ...` (compile error); Python 3.14 (the compiler fails on its own runtime). A parameter named `name` is renamed to `py_name` at run time.
+- **Consequences:** These rules are in `01-engineering.md` §13 (ENG-150..154) and in the `pyproject.toml` lint configuration. The RNG port checks its output against the TypeScript one (7000 values, zero mismatches), which is the template for porting other numeric code.
+- **Status:** Accepted
+
+### D-171 — Build and lint without Node: `dist/js` and import-linter exceptions
+- **Date:** 2026-10-29
+- **Phase:** 17
+- **Decision:** `make build` runs `transcrypt -b -n -od ../dist/js main.py` from `src/`, so package imports resolve, then copies `index.html` and `public/` into `dist/`. There is no minification (`-n`) yet; the size budget (ENG-107) is checked when the game is ported. Layering is checked with import-linter (`root_packages = ["core"]`, forbidden: `org`, `browser`). One explicit exception: `core.math.rng` imports `__pragma__` from the Transcrypt browser stub, a compile-time marker that does not touch the DOM. `typings/org/transcrypt/stubs/browser.pyi` types the browser globals for mypy.
+- **Consequences:** The exception is the only one. Any other import of `org` or `browser` from `core/` breaks `make lint` (checked with a probe file on 2026-10-29).
+- **Status:** Accepted
