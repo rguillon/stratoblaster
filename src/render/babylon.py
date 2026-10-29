@@ -178,6 +178,26 @@ def scene_transform_nodes(scene: Any) -> list[Any]:
 # -- Typed arrays (for textures and buffers) -----------------------------------------------------
 
 
+def block_material_marks(scene: Any, block: bool) -> bool:
+    """Sets whether Babylon re-marks the meshes using a material each time one of its properties is
+    set (a scan of the whole scene per set). Materials made and set before any mesh uses them need
+    no marks: block them while they are built. Returns the previous setting, to put back.
+
+    The scene's setter, when it is set back to false, marks every material dirty (a scan of all
+    of them), so the backing field is written instead: the vendored Babylon is pinned (D-173).
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+    var was = scene._blockMaterialDirtyMechanism;
+    scene._blockMaterialDirtyMechanism = block;
+    return was;
+    """,
+    )
+    return False
+
+
 def uint8_array(length: int) -> Any:
     """A zero-filled `Uint8Array` of `length` bytes."""
     __pragma__("js", "{}", "return new Uint8Array(length);")

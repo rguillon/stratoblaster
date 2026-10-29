@@ -18,7 +18,7 @@ from render.babylon import (
 )
 from render.scenery.cloud_layers import ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP
 from render.scenery.ground_root import GroundRoot, ground_window_of
-from render.scenery.level_ground import level_ground
+from render.scenery.level_ground import level_ground, road_source_of
 from render.scenery.playfield_framing import (
     GroundWindow,
     PlayfieldFraming,
@@ -133,7 +133,12 @@ class SceneryStage:
         self._placer.ensure_placed(self._ground.z_far + self._ahead)
         self._chunks = self._ground_root.adopt(self._build_chunks)
         self._roads = RoadLayers(scene, self.kit.roads)
-        if options.atmosphere is not None and options.atmosphere.tile_grid:
+        # The street surfaces of the tile roads come from the ground (the worker's, or made here)
+        # when their chunk is placed; the ones not made yet wait in `_road_pending`.
+        self._road_source = road_source_of(ground)
+        self._road_grid = bool(options.atmosphere is not None and options.atmosphere.tile_grid)
+        self._road_pending: list[int] = []
+        if self._road_grid:
             self._roads.show_tile_grid()
         self._props = self._ground_root.adopt(lambda: self._build_props(models))
         prop_models = options.prop_models
@@ -367,8 +372,10 @@ class SceneryStage:
         for index in changes.removed:
             self._props.remove_chunk(index)
             self._roads.remove_chunk(index)
+        self._road_pending = [i for i in self._road_pending if i not in changes.removed]
         for span in changes.added:
             self._place_chunk(span.index)
+        self._take_roads()
 
     def _take_runout(self) -> None:
         """Once the runout's streets and buildings come (generated after the rest, reviewer
@@ -387,9 +394,29 @@ class SceneryStage:
         span = self._chunks.span(index)
         roads = self._placer.roads.roads
         tiles = self._placer.roads.tiles
-        self._roads.set_chunk(index, roads, self._field, span, self.options.look.roads, tiles)
+        look = self.options.look.roads
+        # The bounds are passed as a pair: a `ChunkSpan` is not indexable (the street test would
+        # then pass every street of the level into every chunk).
+        self._roads.set_chunk(index, roads, self._field, (span.z_min, span.z_max), look, tiles)
+        if tiles is not None and look.tiles is not None:
+            self._road_source.request(
+                [[index, span.z_min, span.z_max]], look.tiles, self._road_grid
+            )
+            if index not in self._road_pending:
+                self._road_pending.append(index)
         area = GroundArea(-self._x_half, self._x_half, span.z_min, span.z_max)
         self._props.set_chunk(index, self._placer.place(area))
+
+    def _take_roads(self) -> None:
+        """Gives the street surfaces that are ready to their chunks; the others keep waiting."""
+        waiting: list[int] = []
+        for index in self._road_pending:
+            chunk = self._road_source.take(index)
+            if chunk is None:
+                waiting.append(index)
+            else:
+                self._roads.set_tile_chunk(index, chunk)
+        self._road_pending = waiting
 
     def _build_props(self, models: Any) -> PropField:
         """The props of the level, of `models`, casting shadows."""

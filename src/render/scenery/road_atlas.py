@@ -14,7 +14,6 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-from render.babylon import uint8_array  # noqa: E402
 from render.scenery.road_paint import paint_piece  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -38,6 +37,21 @@ SLOTS = 8
 ATLAS_SIZE = SLOT * SLOTS
 
 
+def _uint8_array(length: int) -> Any:
+    """A zero-filled `Uint8Array` of `length` bytes (the atlas is pure: no Babylon here)."""
+    __pragma__("js", "{}", "return new Uint8Array(length);")
+    return None
+
+
+def _clamp_index(v: int, n: int) -> int:
+    """`v` kept to 0..n-1 (plain comparisons: Transcrypt's min and max are slow)."""
+    if v < 0:
+        return 0
+    if v > n - 1:
+        return n - 1
+    return v
+
+
 def _key_of(p: RoadPiece) -> str:
     """Key of a piece's look: its size and its open sides (where it is does not matter)."""
     sides: list[str] = []
@@ -54,7 +68,7 @@ class RoadAtlas:
     for."""
 
     def __init__(self, tile: TileRules, look: TileRoadLook) -> None:
-        self.data = uint8_array(ATLAS_SIZE * ATLAS_SIZE * 4)
+        self.data = _uint8_array(ATLAS_SIZE * ATLAS_SIZE * 4)
         """The RGBA pixels (a `Uint8Array`)."""
         self.dirty = False
         """Whether pixels changed since the last upload."""
@@ -89,12 +103,9 @@ class RoadAtlas:
         """Writes `pixels` (`n` x `n`) at (sx + PAD, sy + PAD), its edge pixels repeated into the
         pad."""
 
-        def clamp(v: int) -> int:
-            return min(n - 1, max(0, v))
-
         for y in range(-PAD, n + PAD):
             for x in range(-PAD, n + PAD):
-                c = pixels[clamp(y) * n + clamp(x)]
+                c = pixels[_clamp_index(y, n) * n + _clamp_index(x, n)]
                 if not c:
                     c = self._look.sidewalk
                 o = ((sy + PAD + y) * ATLAS_SIZE + sx + PAD + x) * 4

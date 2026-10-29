@@ -16,6 +16,7 @@ from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
 from game.config.readability import READABILITY  # noqa: E402
 from render.babylon import (  # noqa: E402
     apply_vertex_data,
+    block_material_marks,
     color3,
     color3_black,
     compute_normals,
@@ -86,11 +87,13 @@ def _cached(cache: list[list[Any]], scene: Any) -> list[Any] | None:
 
 def unlit(name: str, scene: Any) -> Any:
     """An unlit material: white emissive, black diffuse and specular."""
+    was = block_material_marks(scene, True)
     mat = new_standard_material(name, scene)
     mat.emissiveColor = color3(1, 1, 1)
     mat.diffuseColor = color3_black()
     mat.specularColor = color3_black()
     mat.disableLighting = True
+    block_material_marks(scene, was)
     return mat
 
 
@@ -111,20 +114,24 @@ def enemy_materials(scene: Any) -> EnemyMaterials:
 
 def metal(name: str, albedo: Any, scene: Any) -> Any:
     """Dark metal lit by the hull settings of the enemy look."""
+    was = block_material_marks(scene, True)
     hull = new_pbr_material(name, scene)
     hull.albedoColor = albedo
     hull.metallic = ENEMY_LOOK.hull.metallic
     hull.roughness = ENEMY_LOOK.hull.roughness
     hull.directIntensity = READABILITY.hullLight.direct
     hull.environmentIntensity = READABILITY.hullLight.environment
+    block_material_marks(scene, was)
     return hull
 
 
 def flesh_of(name: str, albedo: Any, scene: Any) -> Any:
     """A waxy, barely metallic flesh (P16-R01), lit as the hulls are."""
+    was = block_material_marks(scene, True)
     mat = metal(name, albedo, scene)
     mat.metallic = ENEMY_LOOK.flesh.metallic
     mat.roughness = ENEMY_LOOK.flesh.roughness
+    block_material_marks(scene, was)
     return mat
 
 
@@ -181,10 +188,12 @@ def mesh_of(name: str, geo: Any, material: Any, scene: Any) -> Any:
 
 def glowing(name: str, color: Sequence[float], alpha: float, scene: Any) -> Any:
     """An unlit, see-through material of `color` at `alpha`, drawn both sides."""
+    was = block_material_marks(scene, True)
     mat = unlit(name, scene)
     mat.emissiveColor = color3(color[0], color[1], color[2])
     mat.alpha = alpha
     mat.backFaceCulling = False
+    block_material_marks(scene, was)
     return mat
 
 

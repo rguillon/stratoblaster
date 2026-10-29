@@ -83,7 +83,14 @@ class BulletLayer:
     def __init__(self, mesh: Any, z: float, order: int) -> None:
         self.mesh = mesh
         self.z = z
-        self.matrices = _float32_array(0)
+        # A first buffer of 16 instances, one of them (a zero matrix, drawn nowhere) and the mesh
+        # hidden: a thin-instanced mesh from the start, so its shader with thin instances is
+        # compiled before play (P13-R04), not on the frame of the first shot. (Babylon counts a
+        # mesh as thin-instanced only while it has instances.)
+        self.matrices = _float32_array(16 * 16)
+        mesh.thinInstanceSetBuffer("matrix", self.matrices, 16, False)
+        mesh.thinInstanceCount = 1
+        mesh.setEnabled(False)
         # P14-R05: over everything else on the playfield (blasts, player shots, models), in layer
         # order; never culled: instances spread anywhere.
         mesh.alphaIndex = ON_TOP + order

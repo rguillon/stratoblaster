@@ -45,6 +45,29 @@ def _post_chunks(job_id: int, reply: Any) -> None:
     )
 
 
+def _post_roads(job_id: int, chunks: Any, atlas: Any) -> None:
+    """`self.postMessage({ id, chunks, atlas })`: the atlas's pixels (a copy) are moved over."""
+    __pragma__(
+        "js",
+        "{}",
+        """
+    if (atlas) {
+        self.postMessage({id: job_id, chunks: chunks, atlas: atlas}, [atlas.buffer]);
+    } else {
+        self.postMessage({id: job_id, chunks: chunks, atlas: null});
+    }
+    """,
+    )
+
+
+def _copy_pixels(pixels: Any) -> Any:
+    """A copy of the atlas's pixels (the worker's own array goes on changing)."""
+    if pixels is None:
+        return None
+    __pragma__("js", "{}", "return pixels.slice();")
+    return None
+
+
 def _no_chunks() -> Any:
     """Nothing placed: for a job the worker no longer keeps (the main thread places its own)."""
     __pragma__("js", "{}", "return {chunks: [], done: false};")
@@ -84,6 +107,15 @@ def _on_message(event: Any) -> None:
             _post_chunks(data.id, _no_chunks())
             return
         _post_chunks(data.id, to_plain(made.chunks(data.through)))
+        return
+    if data.kind == "roads":
+        # The street surfaces of the chunks asked for, from the ground's roads and heights.
+        made = _job_of(data.ground)
+        if made is None:
+            _post_roads(data.id, [], None)
+            return
+        reply = made.roads(data.spans, data.look, data.grid)
+        _post_roads(data.id, to_plain(reply.chunks), _copy_pixels(reply.atlas))
         return
     if data.kind == "ground":
         made = generate_in_two(data.level, data.seed)

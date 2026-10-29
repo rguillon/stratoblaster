@@ -7,7 +7,6 @@ Ported from `render/scenery/road-field.ts`. A chunk span is a `(z_min, z_max)` p
 
 from org.transcrypt.stubs.browser import __pragma__
 
-from core.scenery.road_tiles import cached_road_pieces
 from render.babylon import (
     apply_vertex_data,
     compute_normals,
@@ -20,10 +19,9 @@ from render.babylon import (
     update_raw_texture,
 )
 from render.geometry.gradient_shapes import ColoredGeometry
-from render.scenery.road_atlas import ATLAS_SIZE, RoadAtlas
+from render.scenery.road_atlas import ATLAS_SIZE
+from render.scenery.road_chunks import RoadChunk
 from render.scenery.road_geometry import RoadLook, build_road_geometry
-from render.scenery.road_surface import build_road_surfaces
-from render.scenery.tile_road_geometry import TileRoadLook, build_tile_grid
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -35,9 +33,6 @@ from core.scenery.scenery_level import TileRules  # noqa: E402
 from render.scenery.terrain_geometry import HeightSource  # noqa: E402
 
 __pragma__("noskip")
-
-# Colour of the grid of tiles drawn with `tiles=1` (phase 15).
-GRID_COLOR = (0, 0.9, 1)
 
 # Depth offset of the opaque middles of the streets: pulled towards the camera less than the
 # see-through ribbons and lane markings (-2), which stay on top of them.
@@ -171,14 +166,6 @@ def _opaque_of(material: Any) -> Any:
     return opaque
 
 
-class AtlasEntry:
-    """The road atlas of one look, and the texture it is uploaded to."""
-
-    def __init__(self, atlas: RoadAtlas, texture: Any) -> None:
-        self.atlas = atlas
-        self.texture = texture
-
-
 class RoadLayers:
     """The ribbons of the paths and of the main roads, in two fields: the paths are drawn first, so
     the roads stay on top where they meet (phase 4 review). Where all the roads are streets, the
@@ -199,19 +186,13 @@ class RoadLayers:
         self._surface_material = _opaque_of(material)
         self._surfaces = RoadField(scene, self._surface_material, "street-surfaces", 0, False)
         self._grid: RoadField | None = None
-        self._atlas_looks: list[TileRoadLook] = []
-        self._atlas_entries: list[AtlasEntry] = []
+        self._atlas_texture: Any = None
 
-    def _atlas_of(self, tiles: TileRules, look: TileRoadLook) -> AtlasEntry:
-        """The atlas of `look`, its texture on the surfaces' material."""
-        entry: AtlasEntry | None = None
-        for i in range(len(self._atlas_looks)):
-            if self._atlas_looks[i] is look:
-                entry = self._atlas_entries[i]
-        if entry is None:
-            atlas = RoadAtlas(tiles, look)
+    def _show_atlas(self, pixels: Any) -> None:
+        """The road atlas's pixels on the surfaces' texture: made once, then updated."""
+        if self._atlas_texture is None:
             texture = raw_rgba_texture(
-                atlas.data,
+                pixels,
                 ATLAS_SIZE,
                 self._scene,
                 True,
@@ -219,11 +200,10 @@ class RoadLayers:
                 texture_trilinear_sampling_mode(),
             )
             texture.anisotropicFilteringLevel = 8
-            entry = AtlasEntry(atlas, texture)
-            self._atlas_looks.append(look)
-            self._atlas_entries.append(entry)
-        self._surface_material.diffuseTexture = entry.texture
-        return entry
+            self._atlas_texture = texture
+            self._surface_material.diffuseTexture = texture
+        else:
+            update_raw_texture(self._atlas_texture, pixels)
 
     @property
     def count(self) -> int:
@@ -246,7 +226,7 @@ class RoadLayers:
         """Ribbons of the segments of `roads` that start in the chunk's Z range (`span`); with
         `tiles` (phase 15), the streets are road pieces on the grid instead, opaque."""
         if tiles is not None and look.tiles is not None:
-            self._set_tile_chunk(index, roads, ground, span, look, tiles, look.tiles)
+            self._set_tile_ribbons(index, roads, ground, span, look)
             return
         split = _split_roads(roads)
         z_min, z_max = span
@@ -261,42 +241,33 @@ class RoadLayers:
         else:
             self._streets.remove_chunk(index)
 
-    def _set_tile_chunk(  # noqa: PLR0917
+    def _set_tile_ribbons(
         self,
         index: int,
         roads: list[Road],
         ground: HeightSource,
         span: tuple[float, float],
         look: RoadLook,
-        tiles: TileRules,
-        tile_look: TileRoadLook,
     ) -> None:
+        """The paths and the other roads of a chunk (the tile path's ribbons); its street surfaces
+        come with `set_tile_chunk`."""
         split = _split_roads(roads)
         others = _slot_get(roads, _WINDING_SLOT)
         if not others:
             others = [r for r in split.roads if r.kind != "street"]
         _slot_set(roads, _WINDING_SLOT, others)
         z_min, z_max = span
-
-        def height(x: float, z: float) -> float:
-            return ground.height(x, z)
-
         self._paths.set_chunk(index, build_road_geometry(split.paths, ground, z_min, z_max, look))
         self._roads.set_chunk(index, build_road_geometry(others, ground, z_min, z_max, look))
-        pieces = cached_road_pieces(roads, tiles)
-        entry = self._atlas_of(tiles, tile_look)
-        surfaces, layered = build_road_surfaces(
-            pieces, tiles, tile_look, entry.atlas, height, z_min, z_max
-        )
-        if entry.atlas.dirty:
-            update_raw_texture(entry.texture, entry.atlas.data)
-            entry.atlas.dirty = False
-        self._surfaces.set_chunk(index, surfaces)
-        self._streets.set_chunk(index, layered)
-        if self._grid is not None:
-            self._grid.set_chunk(
-                index, build_tile_grid(pieces, tiles, height, z_min, z_max, GRID_COLOR)
-            )
+
+    def set_tile_chunk(self, index: int, chunk: RoadChunk) -> None:
+        """The street surfaces of a chunk, made by `road_chunks` (in the worker or here)."""
+        if chunk.atlas is not None:
+            self._show_atlas(chunk.atlas)
+        self._surfaces.set_chunk(index, chunk.surfaces)
+        self._streets.set_chunk(index, chunk.layered)
+        if self._grid is not None and chunk.grid is not None:
+            self._grid.set_chunk(index, chunk.grid)
 
     def show_tile_grid(self) -> None:
         """Phase 15 (P15-R10, `tiles=1`): draws the grid of tiles over the districts from now on."""

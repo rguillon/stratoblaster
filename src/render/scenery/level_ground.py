@@ -9,6 +9,8 @@ from core.scenery.height_field import HeightField
 from core.scenery.prop_placement import PropPlacer
 from core.scenery.road_network import RoadNetworkOptions, level_roads
 from core.scenery.scenery_level import SceneryLevel, runout_start
+from render.scenery.road_chunks import TileRoadChunks
+from render.scenery.road_sources import LocalRoadSource, WorkerRoadSource
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -28,6 +30,8 @@ class LevelGround:
         self.seed = seed
         self.field = field
         self.placer = placer
+        # Where the street surfaces come from: the worker's, or made here when first asked for.
+        self.roads_source: Any = None
 
 
 class GroundSnapshot:
@@ -55,20 +59,60 @@ class ChunksReply:
         self.done = done
 
 
+class RoadsReply:
+    """The street surfaces of some chunks (`road_chunks`), and the road atlas's pixels when they
+    changed (else None)."""
+
+    def __init__(self, chunks: Sequence[Any], atlas: Any) -> None:
+        self.chunks = chunks
+        self.atlas = atlas
+
+
+class _RoadMaker:
+    """Makes the street surfaces of a ground's chunks, for the worker's `roads` requests: one
+    `TileRoadChunks` (with its atlas) per road look, kept while the look is the same."""
+
+    def __init__(self, ground: LevelGround) -> None:
+        self.ground = ground
+        self.key = ""
+        self.road: TileRoadChunks | None = None
+
+    def reply(self, spans: Sequence[Any], look: Any, grid: bool) -> RoadsReply:
+        key = _look_key(look)
+        if self.road is None or key != self.key:
+            roads = self.ground.placer.roads
+            self.road = TileRoadChunks(roads.roads, roads.tiles, look, self.ground.field)
+            self.key = key
+        road = self.road
+        chunks: list[Any] = []
+        for span in spans:
+            chunks.append(road.chunk(span[0], span[1], span[2], grid))
+        atlas = road.atlas_pixels() if road.atlas_changed() else None
+        return RoadsReply(chunks, atlas)
+
+
+def _look_key(look: Any) -> str:
+    """The look as a string (its JSON), to tell the looks apart."""
+    __pragma__("js", "{}", "return JSON.stringify(look);")
+    return ""
+
+
 class GeneratedInTwo:
     """The ground of a level as plain data (`ground`, with its first chunks of buildings),
-    `runout()` for the rest of it, and `chunks(z)` for the chunks up to `z`, asked for as the level
-    scrolls."""
+    `runout()` for the rest of it, `chunks(z)` for the chunks up to `z`, asked for as the level
+    scrolls, and `roads(spans, look, grid)` for the street surfaces of chunks (`road_chunks`)."""
 
     def __init__(
         self,
         ground: GroundSnapshot,
         runout: Callable[[], RunoutSnapshot],
         chunks: Callable[[float], ChunksReply],
+        roads: Callable[[Sequence[Any], Any, bool], RoadsReply],
     ) -> None:
         self.ground = ground
         self.runout = runout
         self.chunks = chunks
+        self.roads = roads
 
 
 # The chunks up to this Z are placed before the ground is sent: the level's first screens.
@@ -83,10 +127,12 @@ def generate_in_two(level: SceneryLevel, seed: int) -> GeneratedInTwo:
     placer = made.placer
     roads = placer.roads.snapshot()
     placer.ensure_placed(FIRST_Z)
+    maker = _RoadMaker(made)
     return GeneratedInTwo(
         GroundSnapshot(roads, placer.snapshot()),
         lambda: _add_runout_snapshot(made),
         lambda z: _chunks_reply(made, z),
+        maker.reply,
     )
 
 
@@ -183,7 +229,7 @@ class GroundReplies:
 
     def __init__(
         self,
-        ground: Callable[[Any, Any], None],
+        ground: Callable[[Any, Any, Any], None],
         runout: Callable[[Any], None],
         chunks: Callable[[Any], None],
     ) -> None:
@@ -242,7 +288,7 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
     _state.pending.append(job)
     slot = _Slot()
 
-    def on_ground(made: GroundSnapshot | None, ask: Any) -> None:
+    def on_ground(made: GroundSnapshot | None, ask: Any, ask_roads: Any) -> None:
         _remove_job(job)
         # After a failed background generation, the ground is generated here when it is needed.
         # (`made` comes from the worker: undefined when it failed, so the test is by truth.)
@@ -252,6 +298,7 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
             slot.ground = _keep(_without_runout(level, seed, made))
             # The chunks after the first ones come from the worker, as the level asks for them.
             slot.ground.placer.ask = ask
+            slot.ground.roads_source = WorkerRoadSource(ask_roads)
 
     def on_runout(made: RunoutSnapshot | None) -> None:
         if not made:
@@ -269,6 +316,15 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
 
     _state.background(level, seed, GroundReplies(on_ground, on_runout, on_chunks))
     return False
+
+
+def road_source_of(ground: LevelGround) -> Any:
+    """Where the street surfaces of `ground` come from (see `road_sources`): the worker's, when it
+    made the ground, else made here."""
+    if ground.roads_source is None:
+        roads = ground.placer.roads
+        ground.roads_source = LocalRoadSource(roads.roads, roads.tiles, ground.field)
+    return ground.roads_source
 
 
 def level_ground(level: SceneryLevel, seed: int) -> LevelGround:

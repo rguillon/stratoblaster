@@ -81,6 +81,17 @@ def _chunks_message(job_id: int, through: float) -> Any:
     return None
 
 
+def _roads_message(ground_id: int, spans: Any, look: Any, grid: bool) -> Any:
+    """`{ kind: 'roads', ground, spans, look, grid, id }`: asks for the street surfaces of chunks
+    of a ground (`spans`: `[index, z_min, z_max]` each), with its road look."""
+    __pragma__(
+        "js",
+        "{}",
+        "return {kind: 'roads', ground: ground_id, spans: spans, look: look, grid: grid};",
+    )
+    return None
+
+
 def _worker_available() -> bool:
     """`typeof Worker !== 'undefined'`."""
     __pragma__("js", "{}", "return typeof Worker !== 'undefined';")
@@ -140,13 +151,20 @@ class BackgroundLoader:
         def ask(through: float) -> None:
             self.port.postMessage(_chunks_message(job[0], through))
 
+        def ask_roads(spans: Any, look: Any, grid: bool, done: Callable[[Any], None]) -> None:
+            def on_reply(reply: Any) -> bool:
+                done(reply)
+                return True
+
+            self._post(_roads_message(job[0], spans, to_plain(look), grid), on_reply)
+
         def on_reply(reply: Any) -> bool:
             if not state[0]:
                 state[0] = True
                 if reply and reply.ground:
-                    replies.ground(reply.ground, ask)
+                    replies.ground(reply.ground, ask, ask_roads)
                     return False
-                replies.ground(None, ask)
+                replies.ground(None, ask, ask_roads)
                 return True
             if reply is None:
                 return True

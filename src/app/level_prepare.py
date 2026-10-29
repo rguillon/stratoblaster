@@ -5,9 +5,10 @@ A level's scenery with its runout is made once per level, so its generated groun
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from config.scenery_stage import SCENERY_STAGE_CONFIG
 from core.content.game_level import find_game_level
 from core.scenery.scenery_level import with_runout
-from render.scenery.level_ground import request_level_ground
+from render.scenery.level_ground import FIRST_Z, level_ground, request_level_ground
 from render.scenery.procedural_textures import has_texture, scenery_texture_jobs
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -91,6 +92,31 @@ def textures_ready(game: Any, level_id: str, loader: Any, tries: int) -> bool:
         if not has_texture(job):
             ready = False
     return ready
+
+
+# Frames a level's loading waits for the street surfaces of its first screens from the worker.
+ROAD_WAIT_FRAMES = 120
+
+
+def roads_ready(game: Any, level_id: str, grid: bool, tries: int) -> bool:
+    """Whether the street surfaces of the first screens of `level_id` are made (P13-R03): the
+    worker makes them while the loading goes on, so the scene does not make them on the main
+    thread. Without a worker, or after ROAD_WAIT_FRAMES, the scene makes them itself.
+    """
+    level = find_game_level(game.game_levels, level_id)
+    if level is None or tries > ROAD_WAIT_FRAMES:
+        return True
+    scenery = scenery_with_runout(level)
+    source = level_ground(scenery, scenery.seed).roads_source
+    look = game.view.scenery.looks.get(level.scenery.id)
+    if source is None or look is None or look.roads.tiles is None:
+        return True
+    length = SCENERY_STAGE_CONFIG.chunk_length
+    spans = []
+    for index in range(-1, int(FIRST_Z / length) + 2):
+        spans.append([index, index * length, (index + 1) * length])
+    source.request(spans, look.roads.tiles, grid)
+    return all(source.ready(span[0]) for span in spans)
 
 
 # Seconds the level select highlight rests on a level before it is prefetched.

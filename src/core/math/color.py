@@ -37,11 +37,27 @@ def contrast_ratio(a: float, b: float) -> float:
     return (hi + 0.05) / (lo + 0.05)
 
 
+def _high_of(r: float, g: float, b: float) -> float:
+    """The largest of three (plain comparisons: Transcrypt's max is slow here)."""
+    high = r
+    high = max(high, g)
+    high = max(high, b)
+    return high
+
+
+def _low_of(r: float, g: float, b: float) -> float:
+    """The smallest of three (plain comparisons: Transcrypt's min is slow here)."""
+    low = r
+    low = min(low, g)
+    low = min(low, b)
+    return low
+
+
 def hue_saturation(color: Rgb) -> tuple[float, float]:
     """Hue in degrees [0, 360) and saturation (HSV, 0..1) of a colour; grey has hue 0."""
     r, g, b = color[0], color[1], color[2]
-    high = max(r, g, b)
-    low = min(r, g, b)
+    high = _high_of(r, g, b)
+    low = _low_of(r, g, b)
     chroma = high - low
     if chroma <= 0:
         return 0.0, 0.0
@@ -79,12 +95,16 @@ def in_family(color: Rgb, family: ColorFamily) -> bool:
 
 def _with_hue(color: Rgb, hue: float) -> Rgb:
     """`color` with its hue set to `hue`, keeping its HSV value and saturation."""
-    high = max(color[0], color[1], color[2])
-    low = min(color[0], color[1], color[2])
+    high = _high_of(color[0], color[1], color[2])
+    low = _low_of(color[0], color[1], color[2])
 
     def channel(n: float) -> float:
         k = (n + hue / 60) % 6
-        return high - (high - low) * max(0, min(k, 4 - k, 1))
+        # The middle of 0, min(k, 4 - k) and 1 (plain comparisons, as above).
+        share = k if k < 4 - k else 4 - k
+        share = min(share, 1)
+        share = max(share, 0)
+        return high - (high - low) * share
 
     return [channel(5), channel(3), channel(1)]
 

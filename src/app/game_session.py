@@ -9,7 +9,7 @@ level select highlight rests on is built ahead (P13-R03).
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.game_play import GameChoice, GamePlay, GamePlayOptions
-from app.level_prepare import LevelPrefetcher, prepare_level, textures_ready
+from app.level_prepare import LevelPrefetcher, prepare_level, roads_ready, textures_ready
 from app.listen_controls import listen_controls
 from app.saved_supplies import load_saved_supplies, save_supplies
 from app.saved_weapons import load_saved_weapons, save_weapons
@@ -360,6 +360,23 @@ class GameSession:
         scene.render()
         return True
 
+    def _road_grid(self) -> bool:
+        """Whether the tile grid is drawn (the debug option), so the roads are made with it."""
+        debug = self.options.debug
+        return debug is not None and debug.tiles is True
+
+    def _roads_step(self, level_id: str, load: LevelLoad) -> bool:
+        """The street surfaces of the first screens, made by the worker (P13-R03)."""
+        return roads_ready(self.game, level_id, self._road_grid(), load.tries)
+
+    def _enemies_step(self, load: LevelLoad) -> bool:
+        """The enemy models, one a frame, here rather than in play (P13-R04)."""
+        if not self.options.stepped_loading or load.play is None:
+            return True
+        precompile = self.options.precompile_shaders
+        built: bool = load.play.build_enemies(True if precompile is None else precompile)
+        return built
+
     def _new_load(self, level_id: str, ship_id: str, state: Any) -> LevelLoad:
         """The steps loading `level_id` flown by `ship_id` (P13-R03): the level's ground, its
         scene, a first drawing that compiles its shaders, then its start (for the flow's state when
@@ -379,14 +396,6 @@ class GameSession:
                 precompile = self.options.precompile_shaders
                 load.play.prepare(True if precompile is None else precompile)
 
-        def enemies() -> bool:
-            # The enemy models, one a frame, here rather than in play (P13-R04).
-            if not self.options.stepped_loading or load.play is None:
-                return True
-            precompile = self.options.precompile_shaders
-            built: bool = load.play.build_enemies(True if precompile is None else precompile)
-            return built
-
         def start() -> None:
             if load.play and load.state:
                 self._started(load.play, load.state, level_id)
@@ -398,9 +407,10 @@ class GameSession:
         load.steps = [
             ground,
             textures,
+            lambda: self._roads_step(level_id, load),
             build,
             prepare_play,
-            enemies,
+            lambda: self._enemies_step(load),
             lambda: self._compile_wait(load),
             start,
         ]
