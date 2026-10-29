@@ -16,7 +16,7 @@ import { EnemyViewerPanel, type EnemyViewerSelection } from '../ui/enemy-viewer-
 import { StatsTile } from '../ui/stats-tile';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../config/enemy-viewer';
 import { EnemyCloseUp } from './enemy-close-up';
-import { HELP, shortcut, SWITCH_KEYS } from './enemy-viewer-keys';
+import { HELP, listenToKeys, shortcut, SWITCH_KEYS } from './enemy-viewer-keys';
 import { buildEnemyViewerScene, type EnemyViewerScene } from './enemy-viewer-scene';
 import { EnemyViewerShots } from './enemy-viewer-shots';
 import { RateMeter } from './rate-meter';
@@ -120,7 +120,16 @@ class EnemyViewer {
       kinds: game.enemyKinds.map((k) => k.name),
       weapons: game.playerWeapons.map((w) => w.name),
       levelCounts: game.playerWeapons.map((w) => w.levels.length),
-      initial: { kind: 0, view: 'behaviour', weapon: 0, level: 1, fire: true, paused: false },
+      initial: {
+        kind: 0,
+        view: 'behaviour',
+        weapon: 0,
+        level: 1,
+        fire: true,
+        paused: false,
+        living: true,
+        hitbox: false,
+      },
       help: HELP,
       onChange: (selection) => {
         this.#apply(selection);
@@ -147,6 +156,8 @@ class EnemyViewer {
     // The wireframe view is the model view drawn as lines (phase 5 review: to see the polygons).
     const modelView = s.view !== 'behaviour';
     this.closeUp.wireframe = s.view === 'wireframe';
+    this.closeUp.hitbox = s.hitbox;
+    this.game.view.enemies.setIdleMotion?.(s.living);
     if (s.kind !== this.#kind || modelView !== this.#modelView) {
       this.#kind = s.kind;
       this.#modelView = modelView;
@@ -284,16 +295,7 @@ export function startEnemyViewer(
   options: EnemyViewerOptions,
 ): RunningEnemyViewer {
   const viewer = new EnemyViewer(engine, game, options);
-  const onKey = (event: Event): void => {
-    const e = event as KeyboardEvent;
-    viewer.key(e.key, e.code, e.type === 'keydown');
-  };
-  const onBlur = (): void => {
-    viewer.held.clear();
-  };
-  options.keyboardTarget?.addEventListener('keydown', onKey);
-  options.keyboardTarget?.addEventListener('keyup', onKey);
-  options.keyboardTarget?.addEventListener('blur', onBlur);
+  const stopListening = listenToKeys(options.keyboardTarget, viewer);
   const frameSeconds = options.frameSeconds ?? (() => engine.getDeltaTime() / 1000);
   if (options.renderLoop) {
     engine.runRenderLoop(() => {
@@ -319,9 +321,7 @@ export function startEnemyViewer(
     },
     dispose: () => {
       engine.stopRenderLoop();
-      for (const type of ['keydown', 'keyup'])
-        options.keyboardTarget?.removeEventListener(type, onKey);
-      options.keyboardTarget?.removeEventListener('blur', onBlur);
+      stopListening();
       viewer.dispose();
     },
   };

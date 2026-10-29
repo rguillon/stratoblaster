@@ -48,6 +48,7 @@ export class EnemyCloseUp {
   #warmed = false;
   #build: EnemyModelFactory | undefined;
   #wireframe = false;
+  #hitbox = false;
   readonly #glow: GlowLayer | undefined;
   /** The hull's wireframe colour: light and unlit, as the dark lit metal is hard to see. */
   readonly #wire: StandardMaterial;
@@ -96,6 +97,17 @@ export class EnemyCloseUp {
     this.#wire.disableLighting = true;
   }
 
+  /** P16-R10: whether the hit circles are drawn over the model in the model view too. */
+  get hitbox(): boolean {
+    return this.#hitbox;
+  }
+
+  set hitbox(on: boolean) {
+    if (on === this.#hitbox) return;
+    this.#hitbox = on;
+    if (this.#build && this.#enemy) this.show(this.#build, this.#enemy, this.#circles);
+  }
+
   get wireframe(): boolean {
     return this.#wireframe;
   }
@@ -124,7 +136,8 @@ export class EnemyCloseUp {
       radius: t.radius,
       color: CFG.hitboxColor,
     }));
-    if (this.#wireframe) this.#showWires(this.#model.root, circles ?? own);
+    if (this.#wireframe) this.#showWires(this.#model.root);
+    if (this.#wireframe || this.#hitbox) this.#showCircles(this.#model.root, circles ?? own);
     // Measured before it joins the turning pivot, in its own axes.
     this.#frame(this.#model.root);
     this.#model.root.parent = this.pivot;
@@ -139,14 +152,18 @@ export class EnemyCloseUp {
     }
   }
 
-  /** Hull edges in the light wire colour, without glow, and the hit circles around the model. */
-  #showWires(root: TransformNode, circles: readonly HitCircle[]): void {
+  /** Hull edges in the light wire colour, without glow. */
+  #showWires(root: TransformNode): void {
     for (const mesh of root.getChildMeshes<Mesh>()) {
-      if (mesh.material?.name !== 'enemy-hull') continue;
+      if (!CFG.bodyMaterials.includes(mesh.material?.name ?? '')) continue;
       mesh.material = this.#wire;
       mesh.useVertexColors = false;
       this.#glow?.addExcludedMesh(mesh);
     }
+  }
+
+  /** The hit circles around the model. */
+  #showCircles(root: TransformNode, circles: readonly HitCircle[]): void {
     const n = CFG.hitboxSegments;
     circles.forEach(({ x, y, radius, color }, k) => {
       // Model space: the nose (+Z) points down the screen, so the playfield's (x, y) is (-x, -y).

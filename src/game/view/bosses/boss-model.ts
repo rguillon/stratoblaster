@@ -1,18 +1,21 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Boss, type BossPart, type BossPartSpec } from '../../../core/entities/boss';
 import type { BossTurret } from '../../../core/entities/boss-turret';
 import type { Enemy } from '../../../core/entities/enemy';
-import { createRng } from '../../../core/math/rng';
-import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
 import type { BossDesign } from '../../config/bosses/boss-kit';
 import { BOSS_LOOK } from '../../config/boss-look';
-import { buildEnemyModel, meshOf, type EnemyParts } from '../enemies/enemy-mesh';
+import { buildSmoke, buildStump, effectMaterials } from './boss-damage';
+import {
+  BODY_MATERIALS,
+  buildEnemyModel,
+  newBreath,
+  type Breath,
+  type EnemyParts,
+} from '../enemies/enemy-mesh';
 import {
   BossLimbs,
   bossPoint,
@@ -64,7 +67,7 @@ function buildTurret(
   piece: string,
   drawing: BossDrawing,
   holder: TransformNode,
-  neon: Rgb,
+  { neon, breath }: { readonly neon: Rgb; readonly breath: Breath },
 ): TurretView | undefined {
   const draw = drawing.turrets?.[piece];
   const turret = design.guns[piece]?.turret;
@@ -76,9 +79,15 @@ function buildTurret(
   const pivot = new TransformNode(`${design.id}-${piece}-pivot`, scene);
   pivot.position.set(...at);
   pivot.parent = holder;
-  const model = buildEnemyModel(`${design.id}-${piece}-turret`, scene, neon, (p) => {
-    draw(p, at);
-  });
+  const model = buildEnemyModel(
+    `${design.id}-${piece}-turret`,
+    scene,
+    neon,
+    (p) => {
+      draw(p, at);
+    },
+    { breath },
+  );
   model.root.position.set(-at[0], -at[1], -at[2]);
   model.root.parent = pivot;
   return { pivot, model };
@@ -96,26 +105,6 @@ function showTurret(
   view.model.sync(lit, dt);
 }
 
-const FLASH_CACHE = new WeakMap<Scene, { flash: StandardMaterial; smoke: StandardMaterial }>();
-
-/** The flash and smoke materials of the scene, created on first use. */
-function effectMaterials(scene: Scene): { flash: StandardMaterial; smoke: StandardMaterial } {
-  let mats = FLASH_CACHE.get(scene);
-  if (!mats) {
-    const flash = new StandardMaterial('boss-flash', scene);
-    flash.emissiveColor = new Color3(...BOSS_LOOK.flash.color);
-    flash.disableLighting = true;
-    const smoke = new StandardMaterial('boss-smoke', scene);
-    smoke.emissiveColor = new Color3(...BOSS_LOOK.smoke.color);
-    smoke.disableLighting = true;
-    smoke.alpha = BOSS_LOOK.smoke.alpha;
-    smoke.backFaceCulling = false;
-    mats = { flash, smoke };
-    FLASH_CACHE.set(scene, mats);
-  }
-  return mats;
-}
-
 /** A piece of the model shown for a part, or the core, with its hit flash. */
 class FlashGroup {
   readonly #hulls: { mesh: Mesh; material: Material | null }[];
@@ -126,7 +115,7 @@ class FlashGroup {
   ) {
     this.#hulls = model.root
       .getChildMeshes<Mesh>()
-      .filter((m) => m.material?.name === 'enemy-hull')
+      .filter((m) => BODY_MATERIALS.has(m.material?.name ?? ''))
       .map((mesh) => ({ mesh, material: mesh.material }));
   }
 
@@ -140,70 +129,11 @@ class FlashGroup {
   }
 }
 
-/** The smoke rising from a damaged part (P07-R01): a few puffs drifting back and fading. */
-function buildSmoke(name: string, radius: number, scene: Scene, parent: TransformNode) {
-  const look = BOSS_LOOK.smoke;
-  const node = new TransformNode(`${name}-smoke`, scene);
-  node.parent = parent;
-  const disc = new SolidBuilder();
-  const outline = Array.from({ length: 6 }, (_, k) => {
-    const a = (2 * Math.PI * k) / 6;
-    return [Math.cos(a) * radius * look.size, Math.sin(a) * radius * look.size] as const;
-  });
-  disc.slab(outline, [0, 0.1], [1, 1, 1]);
-  const puffs = Array.from({ length: look.puffs }, (_, i) => {
-    const mesh = meshOf(
-      `${name}-puff-${String(i)}`,
-      disc.geometry,
-      effectMaterials(scene).smoke,
-      scene,
-    );
-    mesh.parent = node;
-    return mesh;
-  });
-  let time = 0;
-  return {
-    node,
-    step(dt: number): void {
-      time += dt;
-      puffs.forEach((puff, i) => {
-        const t = (time / look.seconds + i / puffs.length) % 1;
-        puff.position.set(0, look.rise * t + radius, -look.drift * t);
-        puff.scaling.setAll(0.6 + t);
-        puff.visibility = 1 - t;
-      });
-    },
-  };
-}
-
-/** A burnt, sparking stump where a destroyed part was (P07-R01). */
-function buildStump(name: string, radius: number, scene: Scene, parent: TransformNode) {
-  const look = BOSS_LOOK.stump;
-  const node = new TransformNode(`${name}-stump`, scene);
-  node.parent = parent;
-  const model = buildEnemyModel(name + '-stump', scene, look.spark, ({ hull, charge }) => {
-    hull.cylinder(radius * 0.55, radius * 0.25, 6, look.char, {});
-    for (let k = 0; k < 3; k++) {
-      const a = (2 * Math.PI * k) / 3 + 0.4;
-      const shard = [
-        [-radius * 0.12, 0],
-        [radius * 0.12, 0],
-        [0, radius * 0.5],
-      ] as const;
-      hull.slab(shard, [0, radius * 0.18], look.char, { yaw: a, at: [0, radius * 0.2, 0] });
-    }
-    charge.cylinder(radius * 0.2, radius * 0.32, 4, [1, 1, 1], {});
-  });
-  model.root.parent = node;
-  const random = createRng(name.length * 7919);
-  return {
-    node,
-    sync(enemy: Enemy, dt: number): void {
-      // Sparks flicker at random.
-      enemy.charge = random() < look.sparkChance ? 1 : 0;
-      model.sync(enemy, dt);
-    },
-  };
+/** What every model of a boss is drawn with: its hit flash, its neon, its breathing. */
+interface PartLook {
+  readonly flash: Material;
+  readonly neon: Rgb;
+  readonly breath: Breath;
 }
 
 /** The pieces of one part: its model (and turret), its smoke, its stump. */
@@ -231,15 +161,17 @@ export function buildBossModel(
   const name = design.id;
   const { flash } = effectMaterials(scene);
   const root = new TransformNode(name, scene);
-  const { core, coreTurret, ringNode, ring } = buildBody(design, drawing, root, { flash, neon });
+  // P16-R07: its core, parts and limbs breathe as one creature.
+  const look = { flash, neon, breath: newBreath() };
+  const { core, coreTurret, ringNode, ring } = buildBody(design, drawing, root, look);
   const joints = new JointFrames(design, root);
   const holder = (spec: BossPartSpec) => joints.frame(spec.joint, spec.orbits ? ringNode : root);
-  const look = { flash, neon };
   const parts = design.stats.parts.map((spec) =>
     buildPart(design, spec, drawing, holder(spec), look),
   );
   const limbs = new BossLimbs(design, drawing.limbs, joints, (limb, draw) => {
-    return new FlashGroup(buildEnemyModel(`${name}-${limb}-limb`, scene, neon, draw), flash);
+    const model = buildEnemyModel(`${name}-${limb}-limb`, scene, neon, draw, look);
+    return new FlashGroup(model, flash);
   });
   const lit = { charge: 0 };
   return {
@@ -271,22 +203,18 @@ export function buildBossModel(
 }
 
 /** The core body (and its turret) on `root`, and the ring turning with the boss's spin. */
-function buildBody(
-  design: BossDesign,
-  drawing: BossDrawing,
-  root: TransformNode,
-  { flash, neon }: { readonly flash: Material; readonly neon: Rgb },
-) {
+function buildBody(design: BossDesign, drawing: BossDrawing, root: TransformNode, look: PartLook) {
+  const { flash, neon } = look;
   const [name, scene] = [design.id, root.getScene()];
-  const coreModel = buildEnemyModel(`${name}-core`, scene, neon, drawing.core);
+  const coreModel = buildEnemyModel(`${name}-core`, scene, neon, drawing.core, look);
   coreModel.root.parent = root;
-  const coreTurret = buildTurret(design, 'core', drawing, coreModel.root, neon);
+  const coreTurret = buildTurret(design, 'core', drawing, coreModel.root, look);
   const core = new FlashGroup(coreModel, flash);
   const ringNode = new TransformNode(`${name}-ring`, scene);
   ringNode.parent = root;
   const ring =
     drawing.ring &&
-    new FlashGroup(buildEnemyModel(`${name}-ringbody`, scene, neon, drawing.ring), flash);
+    new FlashGroup(buildEnemyModel(`${name}-ringbody`, scene, neon, drawing.ring, look), flash);
   if (ring) ring.model.root.parent = ringNode;
   return { core, coreTurret, ringNode, ring };
 }
@@ -297,18 +225,25 @@ function buildPart(
   spec: BossPartSpec,
   drawing: BossDrawing,
   frame: JointFrame,
-  { flash, neon }: { readonly flash: Material; readonly neon: Rgb },
+  look: PartLook,
 ): PartView {
+  const { flash, neon } = look;
   const name = design.id;
   const scene = frame.node.getScene();
   const draw = drawing.parts[spec.id];
   if (!draw) throw new Error(`Boss "${name}" has no drawing for its part "${spec.id}"`);
   const at = bossPoint(spec.x, spec.y);
-  const model = buildEnemyModel(`${name}-${spec.id}`, scene, neon, (p) => {
-    draw(p, at);
-  });
+  const model = buildEnemyModel(
+    `${name}-${spec.id}`,
+    scene,
+    neon,
+    (p) => {
+      draw(p, at);
+    },
+    look,
+  );
   hang(model.root, ORIGIN, frame);
-  const turret = buildTurret(design, spec.id, drawing, model.root, neon);
+  const turret = buildTurret(design, spec.id, drawing, model.root, look);
   const spot = new TransformNode(`${name}-${spec.id}-spot`, scene);
   hang(spot, at, frame);
   const smoke = buildSmoke(`${name}-${spec.id}`, spec.radius, scene, spot);

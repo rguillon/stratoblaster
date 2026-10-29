@@ -170,6 +170,8 @@ export interface EnemyBindings {
   readonly blasts: (scene: Scene) => BlastRenderer;
   /** Glow of the self-lit parts drawn on the playfield (neon, shots). */
   readonly glow: { readonly intensity: number; readonly blurKernelSize: number };
+  /** Turns the models' idle animation (breathing, pulsing lights...) on or off, for debug pages. */
+  readonly setIdleMotion?: (on: boolean) => void;
 }
 
 /** Presentation of the levels with generated ground (`GameDefinition.sceneryLevels`). */

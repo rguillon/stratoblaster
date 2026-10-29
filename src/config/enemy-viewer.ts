@@ -38,6 +38,8 @@ export const ENEMY_VIEWER_CONFIG = {
     wireColor: [0.75, 0.8, 0.85],
     hitboxColor: [1, 0.2, 0.2],
     hitboxSegments: 48,
+    /** The materials of the meshes drawn as wires: the body's metal and flesh (P16-R01). */
+    bodyMaterials: ['enemy-hull', 'enemy-flesh'] as readonly string[],
     spinRadPerSec: 0.6,
     fill: 0.6,
     zoom: [0.4, 3],

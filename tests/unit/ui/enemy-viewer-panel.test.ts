@@ -9,6 +9,8 @@ const INITIAL: EnemyViewerSelection = {
   level: 1,
   fire: true,
   paused: false,
+  living: true,
+  hitbox: false,
 };
 
 function panel() {

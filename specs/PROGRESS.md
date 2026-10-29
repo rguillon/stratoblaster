@@ -20,6 +20,7 @@
 | 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
 | 15 | `phases/phase-15-urban-rework.md` | ✅ Validated | `phase-15` | 96.14% lines | 2026-10-29 |
+| 16 | `phases/phase-16-enemies-design.md` | ⚪ Not started | | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
