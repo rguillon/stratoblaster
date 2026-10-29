@@ -14,6 +14,7 @@ import { sided } from '../final-boss-shapes';
 import { seam } from '../mini-boss-greebles';
 import { H, offset, QUARTER, WHITE } from '../mini-boss-shapes';
 import { segment } from '../world-3/toucan-jungle';
+import { glands, SKIN } from './living-forge';
 
 // P10-R11, 4-3: the Magma Salamander's parts (its back fins and its tail) and its molten look.
 // Logical pixels, nose +Z, Y up (towards the camera).
@@ -94,11 +95,20 @@ const POD = [
  * lit orange, a molten glow at its root, and under its leading edge a pod with two fan barrels.
  */
 export function fin(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
+  const { hull, neon, flesh } = p;
   const s = Math.sign(at[0]);
-  hull.bevelSlab(sided(FIN, s), [FIN_Y - 1.4, FIN_Y, FIN_Y + 1.2], [0.4, 0.6], H.base, {}, SCORCH);
+  // P16-R05: a membrane frill on bone spines, a gland at its root.
+  flesh.bevelSlab(
+    sided(FIN, s),
+    [FIN_Y - 1.4, FIN_Y, FIN_Y + 1.2],
+    [0.4, 0.6],
+    SKIN.dark,
+    {},
+    SKIN.base,
+  );
+  glands(p, [[s * 22, FIN_Y + 0.8, 4]], 1.5, MOLTEN);
   for (const [[ax, az], [bx, bz]] of SPINES) {
-    seam(hull, [s * ax, az], [s * bx, bz], [FIN_Y + 1.1, 1.4, 0.8], H.panel);
+    seam(flesh, [s * ax, az], [s * bx, bz], [FIN_Y + 1.1, 1.4, 0.8], SKIN.bone);
     seam(neon, [s * ax, az], [s * bx, bz], [FIN_Y + 1.8, 0.45, 0.3], SALAMANDER_NEON);
   }
   neon.box([3, 0.8, 18], MOLTEN, { at: [s * 20, FIN_Y + 0.6, -2] });
@@ -127,14 +137,14 @@ const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [
  * The tail's root, on its root joint (D-061): two armoured rings tapering to the knuckle, a
  * molten glow between them, a spine of neon studs along its back.
  */
-function tailRoot({ hull, neon }: EnemyParts): void {
+function tailRoot({ hull, neon, flesh }: EnemyParts): void {
   const [root, knuckle] = tailPoints();
-  segment(hull, [offset(root, 0, -3, 0), offset(knuckle, 0, -2, 0)], [6.4, 4.8], H.dark, 6);
+  segment(flesh, [offset(root, 0, -3, 0), offset(knuckle, 0, -2, 0)], [6.4, 4.8], SKIN.base, 6);
   for (const [a, b, r] of [
     [0, 0.45, 7],
     [0.52, 0.95, 5.8],
   ] as const) {
-    segment(hull, [lerp(root, knuckle, a), lerp(root, knuckle, b)], [r, r * 0.9], H.base, 6);
+    segment(flesh, [lerp(root, knuckle, a), lerp(root, knuckle, b)], [r, r * 0.9], SKIN.panel, 6);
   }
   for (const t of [0.2, 0.7])
     neon.box([1.2, 1, 1.2], SALAMANDER_NEON, { at: offset(lerp(root, knuckle, t), 0, 5.6, 0) });
@@ -161,16 +171,16 @@ const BULB = [
  * that sweeps its lines of bullets across the screen.
  */
 export function tail(p: EnemyParts): void {
-  const { hull, neon, charge } = p;
+  const { hull, neon, charge, flesh } = p;
   const [, knuckle, tip] = tailPoints();
   const bulb: Vec3 = [tip[0], 3, tip[2] - 4];
-  segment(hull, [knuckle, bulb], [4.8, 3.6], H.base, 6);
-  segment(hull, [lerp(knuckle, bulb, 0.15), lerp(knuckle, bulb, 0.55)], [5.4, 4.6], H.panel, 6);
+  segment(flesh, [knuckle, bulb], [4.8, 3.6], SKIN.base, 6);
+  segment(flesh, [lerp(knuckle, bulb, 0.15), lerp(knuckle, bulb, 0.55)], [5.4, 4.6], SKIN.panel, 6);
   neon.box([5, 0.6, 1.2], MOLTEN, {
     at: offset(lerp(knuckle, bulb, 0.6), 0, 4, 0),
     yaw: Math.atan2(bulb[0] - knuckle[0], bulb[2] - knuckle[2]),
   });
-  hull.lathe(BULB, 7, SCORCH, { at: bulb, pitch: QUARTER });
+  flesh.lathe(BULB, 7, SKIN.dark, { at: bulb, pitch: QUARTER });
   charge.ring(5.3, 1, 7, WHITE, { at: offset(bulb, 0, 0, -0.5), pitch: QUARTER });
   hull.box([3.4, tip[1] - bulb[1] - 1, 5], H.panel, { at: offset(bulb, 0, 1, 2) });
   barrel(p, tip, [1.2, 5]);

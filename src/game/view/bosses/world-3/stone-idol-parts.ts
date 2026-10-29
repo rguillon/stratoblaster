@@ -6,6 +6,7 @@ import { SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-model';
 import { offset, QUARTER, WHITE } from '../mini-boss-shapes';
 import { crack, moss, STONE, vine } from './stone-idol-stone';
+import { F, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth). Logical
 // pixels, nose +Z (the chin), Y up (towards the camera); the face looks up at the camera.
@@ -30,10 +31,18 @@ const EYEBALL = [
  * An eye's socket around its centre `at` (P09-R09): a deep, round hollow in the face, its rim
  * cracked and lit, moss on its lower lid. Its eyeball ({@link eyeball}) turns in it.
  */
-export function eyeSocket({ hull, neon }: EnemyParts, at: Vec3): void {
+export function eyeSocket(p: EnemyParts, at: Vec3): void {
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]);
+  // P16-R05: a raw flesh eyelid ringed by a stone growth, veins spreading from its corner.
   hull.cylinder(10.5, 1.6, 10, STONE.dark, { at: offset(at, 0, FACE - 0.4, 0) }, 9.5);
-  hull.cylinder(9, 0.3, 10, STONE.deep, { at: offset(at, 0, FACE + 1, 0) });
+  flesh.cylinder(9, 0.3, 10, F.crimson, { at: offset(at, 0, FACE + 1, 0) });
+  veinTo(
+    p,
+    [offset(at, -s * 9, FACE + 0.6, -2), offset(at, -s * 15, FACE + 0.4, -9)],
+    [0, 0, 2],
+    IDOL_NEON,
+  );
   neon.ring(9.7, 0.5, 10, IDOL_NEON, { at: offset(at, 0, FACE + 1.1, 0) });
   // A crack running from the socket's outer corner, and moss on the lower lid.
   const [x, , z] = at;
@@ -55,14 +64,15 @@ export function eyeSocket({ hull, neon }: EnemyParts, at: Vec3): void {
  * stone, a neon iris facing down the screen and the charge-lit lens its laser leaves from.
  */
 export function eyeball(p: EnemyParts, at: Vec3): void {
-  const { hull, neon, charge, muzzle } = p;
+  const { flesh, vein, charge, muzzle } = p;
   // The right eye (screen right) is on the model's -X side.
   const lasers = at[0] < 0 ? IDOL_EYE : mirror(IDOL_EYE);
   const [tip] = lasers.map((m) => bossPoint(...m));
   if (!tip) return;
   const [x, y, z] = tip;
   const centre: Vec3 = [at[0], y, at[2]];
-  hull.lathe(EYEBALL, 10, STONE.deep, { at: centre });
+  // P16-R05: a living, wet eyeball of bone-white flesh, its iris a pulsing gland.
+  flesh.lathe(EYEBALL, 8, F.bone, { at: centre });
   // The glowing iris looks up and forward, half at the camera, half where the eye aims.
   const iris = { pitch: IRIS_TILT };
   const along = (d: number): Vec3 => [
@@ -70,8 +80,8 @@ export function eyeball(p: EnemyParts, at: Vec3): void {
     y + d * Math.cos(IRIS_TILT),
     centre[2] + d * Math.sin(IRIS_TILT),
   ];
-  neon.cylinder(4.4, 0.8, 10, IDOL_NEON, { at: along(6.1), ...iris }, 4);
-  hull.cylinder(2, 0.5, 8, STONE.deep, { at: along(6.8), ...iris });
+  vein.cylinder(4.4, 0.8, 8, IDOL_NEON, { at: along(6.1), ...iris }, 4);
+  flesh.cylinder(2, 0.5, 6, F.purple, { at: along(6.8), ...iris });
   const forward = { pitch: QUARTER };
   charge.cylinder(2.2, 1.6, 8, WHITE, { at: [x, y, z - 1.6], ...forward }, 1.4);
   muzzle(tip, 'laser');
@@ -88,22 +98,24 @@ const LIPS = { width: 15, depth: 8 } as const;
  * teeth, a neon lining; its rings of boulders leave from the throat's glow.
  */
 export function mouth(p: EnemyParts, at: Vec3): void {
-  const { hull, neon, charge, muzzle } = p;
+  const { hull, flesh, neon, charge, muzzle } = p;
   const { width: w, depth: d } = LIPS;
-  hull.box([w * 2, 0.6, d * 2], STONE.deep, { at: offset(at, 0, FACE - 0.2, 0) });
+  // P16-R05: a living maw: a red throat, swollen flesh lips, the stone grown over them as armour.
+  flesh.box([w * 2, 0.6, d * 2], F.wound, { at: offset(at, 0, FACE - 0.2, 0) });
   // Upper lip (towards the nose, -Z), lower lip, and the corners.
-  hull.box([w * 2 + 4, 4, 4], STONE.base, { at: offset(at, 0, FACE - 1, -d - 1) }, STONE.light);
-  hull.box([w * 2, 4.5, 5], STONE.base, { at: offset(at, 0, FACE - 1, d + 1.5) }, STONE.light);
+  flesh.box([w * 2 + 4, 4, 4], F.sinew, { at: offset(at, 0, FACE - 1, -d - 1) }, F.crimson);
+  flesh.box([w * 2, 4.5, 5], F.sinew, { at: offset(at, 0, FACE - 1, d + 1.5) }, F.crimson);
+  hull.box([w * 1.2, 1, 2.4], STONE.base, { at: offset(at, 0, FACE + 3, -d - 1.6) }, STONE.light);
   for (const s of SIDES) {
-    hull.box([4, 4, d * 2], STONE.base, { at: offset(at, s * (w + 1), FACE - 1, 0) });
+    flesh.box([4, 4, d * 2], F.sinew, { at: offset(at, s * (w + 1), FACE - 1, 0) });
     neon.box([0.5, 0.5, d * 2 - 1], IDOL_NEON, { at: offset(at, s * (w - 1.2), FACE + 0.4, 0) });
   }
   neon.box([w * 2 - 2, 0.5, 0.5], IDOL_NEON, { at: offset(at, 0, FACE + 0.4, -d + 1.2) });
   neon.box([w * 2 - 2, 0.5, 0.5], IDOL_NEON, { at: offset(at, 0, FACE + 0.4, d - 1.2) });
   // Stone teeth: square ones under the upper lip, worn ones on the lower.
   for (const x of [-9, -4.5, 0, 4.5, 9]) {
-    hull.box([3, 1.6, 2.6], STONE.light, { at: offset(at, x, FACE, -d + 2.4) });
-    if (x !== 0) hull.box([2.6, 1.2, 2], STONE.base, { at: offset(at, x * 0.9, FACE, d - 2.2) });
+    flesh.box([3, 1.6, 2.6], F.bone, { at: offset(at, x, FACE, -d + 2.4) });
+    if (x !== 0) flesh.box([2.6, 1.2, 2], F.bone, { at: offset(at, x * 0.9, FACE, d - 2.2) });
   }
   for (const throat of IDOL_THROAT.map((m) => bossPoint(...m))) {
     const glow: Vec3 = [throat[0], FACE + 0.1, throat[2]];

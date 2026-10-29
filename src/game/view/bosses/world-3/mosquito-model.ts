@@ -6,7 +6,10 @@ import {
   MOSQUITO_SAC,
 } from '../../../config/bosses/world-3/mosquito';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { FIGHTER_SECTION, POD_SECTION, SIDES } from '../../enemies/enemy-shapes';
+import { SIDES } from '../../enemies/enemy-shapes';
+import { reactorSac } from '../../enemies/organic-parts';
+import { ROUND_SECTION, tendril } from '../../../../render/geometry/organic';
+import { F, sinew, veinTo } from './jungle-flesh';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { rod } from '../final-boss-greebles';
 import { lamps, seam } from '../mini-boss-greebles';
@@ -84,9 +87,21 @@ const SAC = [
 
 /** The thorax and the segmented abdomen, pink bands between the segments, moss on its back. */
 function drawBody(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.loft(FIGHTER_SECTION, THORAX, H.panel);
-  hull.loft(POD_SECTION, ABDOMEN, H.base);
+  const { hull, flesh, neon } = p;
+  // P16-R05: a living insect: a purple flesh thorax, a swollen, blood-filled abdomen ringed by
+  // grafted metal bands, a vein pulsing down its back.
+  flesh.loft(ROUND_SECTION, THORAX, F.purple);
+  flesh.loft(ROUND_SECTION, ABDOMEN, F.crimson);
+  veinTo(
+    p,
+    [
+      [0, 6.4, 12],
+      [0, 4.2, -40],
+    ],
+    [0, 2, 0],
+    MOSQUITO_PINK,
+    1,
+  );
   for (const [z, w, y] of SEGMENTS) {
     neon.box([w * 1.6, 0.4, 0.8], MOSQUITO_PINK, { at: [0, y, z] });
     hull.box([w * 2.1, 1, 1.4], H.dark, { at: [0, y - 2.4, z] });
@@ -100,16 +115,26 @@ function drawBody(p: EnemyParts): void {
   ]);
   // A strand of vine trailing from its side.
   rod(hull, [-6, 1, -22], [-10, -6, -30], 0.5, MOSS);
-  p.reactor([0, 1.8, -44.4], 1.6);
+  reactorSac(p, [0, 1.8, -44.4], 1.6, MOSQUITO_PINK, { flesh: F.purple });
   for (const s of SIDES) p.reactor([s * 5, 2, -9.2], 1.6);
 }
 
 /** The head: big pink compound eyes and the mandible guns under them (the core's bursts). */
-function drawHead({ hull, neon, charge, muzzle }: EnemyParts): void {
-  hull.lathe(HEAD, 8, H.base, { at: HEAD_AT, pitch: QUARTER });
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon, charge, muzzle } = p;
+  flesh.lathe(HEAD, 7, F.purple, { at: HEAD_AT, pitch: QUARTER });
   for (const s of SIDES) {
     neon.lathe(EYE, 6, MOSQUITO_PINK, { at: [s * 4.6, 3.4, 22.5], roll: -s * QUARTER });
-    rod(hull, [s * 2, 7, 22], [s * 6, 12, 15], 0.35);
+    // P16-R05: feathery antennae of sinew, tipped with a lit gland.
+    sinew(
+      p,
+      [
+        [s * 2, 7, 22],
+        [s * 6, 12, 15],
+      ],
+      [s * 0.6, 1, 0],
+      0.45,
+    );
     lamps(neon, [[s * 6, 12, 15]], 0.9, MOSQUITO_PINK);
   }
   for (const tip of MOSQUITO_MANDIBLES.map((m) => bossPoint(...m))) {
@@ -122,22 +147,25 @@ function drawHead({ hull, neon, charge, muzzle }: EnemyParts): void {
 }
 
 /** Six thin legs hanging under the thorax, bent at the knee. */
-function drawLegs({ hull }: EnemyParts): void {
+function drawLegs(p: EnemyParts): void {
   for (const s of SIDES) {
     for (const [hip, knee, foot] of LEGS) {
       const side = (v: Vec3): Vec3 => [s * v[0], v[1], v[2]];
-      rod(hull, side(hip), side(knee), 0.7, H.panel);
-      rod(hull, side(knee), side(foot), 0.5, H.dark);
+      // P16-R05: thin legs of sinew, a metal knee joint grafted where they bend.
+      tendril(p.flesh, [side(hip), side(knee)], [0.8, 0.6], 4, F.sinew);
+      tendril(p.flesh, [side(knee), side(foot)], [0.55, 0.15], 3, F.bone);
+      p.hull.box([1.4, 1.4, 1.4], H.panel, { at: side(knee) });
     }
   }
 }
 
 /** The blood sac on its back, where its last-stage rings leave from. */
-function drawSac({ hull, neon, charge, muzzle }: EnemyParts): void {
+function drawSac({ flesh, neon, charge, muzzle }: EnemyParts): void {
   const [top] = MOSQUITO_SAC.map((m) => bossPoint(...m));
   if (!top) return;
   const [x, y, z] = top;
-  hull.cylinder(4.4, 1.6, 8, H.dark, { at: [x, y - 4.2, z] });
+  // P16-R05: the blood sac swelling out of the abdomen's flesh.
+  flesh.cylinder(4.4, 1.6, 7, F.wound, { at: [x, y - 4.2, z] });
   neon.ring(4.5, 0.4, 8, MOSQUITO_PINK, { at: [x, y - 3, z] });
   charge.lathe(SAC, 8, WHITE, { at: [x, y - 2.5, z] });
   muzzle(top, 'ring');

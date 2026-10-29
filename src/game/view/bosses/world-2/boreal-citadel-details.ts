@@ -4,6 +4,7 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { decal, SIDES } from '../../enemies/enemy-shapes';
 import { dish, grille, mast, rod, studs } from '../final-boss-greebles';
 import { AURORA, CITADEL_DECK, FROST, rect, VIOLET } from './boreal-citadel-city';
+import { ICE_FLESH, sinew } from './w2-organic';
 
 // P08-R10, 2-5: the Boreal Citadel's details: armour skirts on its deck's sides, snow drifts,
 // dishes and masts, lamps along its avenue, buttresses round its keep, heating pipes, the
@@ -46,7 +47,7 @@ const BUTTRESSES = [Math.PI / 4, (3 * Math.PI) / 4] as const;
 const BUTTRESS: Vec3 = [4, 13, 7];
 
 /** Armour skirts lit by violet slits, and snow drifts piled on the deck. */
-function drawDeckEdges({ hull, neon }: EnemyParts): void {
+function drawDeckEdges({ hull, flesh, neon }: EnemyParts): void {
   const top = CITADEL_DECK.top;
   for (const s of SIDES) {
     for (const skirt of SKIRTS) {
@@ -56,25 +57,26 @@ function drawDeckEdges({ hull, neon }: EnemyParts): void {
     neon.box([0.5, 0.8, 9], VIOLET, { at: [s * 55, top + 1.2, 46], yaw: s * 0.5 });
     for (const [x, z, w] of DRIFTS) {
       const mound = DRIFT.map(([r, y]) => [r * w, y * w] as const);
-      hull.lathe(mound, 6, FROST.snow, { at: [s * x, top, z], yaw: x });
+      flesh.lathe(mound, 6, ICE_FLESH.crystal, { at: [s * x, top, z], yaw: x });
     }
   }
 }
 
 /** Buttresses round the keep, snowed on top, and heating pipes from the domes to the keep. */
-function drawKeepDetail({ hull, neon }: EnemyParts): void {
+function drawKeepDetail({ hull, flesh, neon }: EnemyParts): void {
   const top = CITADEL_DECK.top;
   for (const s of SIDES) {
     for (const a of BUTTRESSES) {
       const turn = s * a;
       const at: Vec3 = [Math.sin(turn) * 21, top, Math.cos(turn) * 21];
-      hull.box(BUTTRESS, H.base, { at, yaw: turn }, FROST.snow);
+      flesh.box(BUTTRESS, ICE_FLESH.sinew, { at, yaw: turn }, ICE_FLESH.rime);
       neon.box([0.4, 6, 0.4], s > 0 ? AURORA : VIOLET, {
         at: [Math.sin(turn) * 24.2, top + 3, Math.cos(turn) * 24.2],
         yaw: turn,
       });
     }
-    rod(hull, [s * 30, top + 1, 32], [s * 17, top + 1, 15], 0.8, H.panel);
+    // Arteries from the blisters to the heart, a metal pipe grafted along them.
+    sinew(flesh, [s * 30, top + 1, 32], [s * 17, top + 1, 15], 1.2, ICE_FLESH.crimson);
     rod(hull, [s * 27, top + 1, 35], [s * 14, top + 1, 18], 0.6, H.dark);
   }
 }
@@ -100,11 +102,11 @@ function drawRoofs(p: EnemyParts): void {
 }
 
 /** The engine block's grilles and heat-sink fins. */
-function drawEngineBlock({ hull }: EnemyParts): void {
+function drawEngineBlock({ hull, flesh }: EnemyParts): void {
   for (const s of SIDES) {
     grille(hull, [s * 19, -86], [10, 8], [4, 5.05]);
     for (const dx of [4, 7, 10]) {
-      hull.box([1, 3, 9], H.panel, { at: [s * (dx + 22), 5, -86] }, FROST.snow);
+      flesh.box([1, 3, 9], ICE_FLESH.bone, { at: [s * (dx + 22), 5, -86] }, ICE_FLESH.rime);
     }
   }
   decal(hull, rect(8, 8, [0, -86]), 5.05, H.dark);

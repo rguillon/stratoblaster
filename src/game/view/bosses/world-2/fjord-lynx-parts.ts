@@ -3,7 +3,8 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import { FJORD_LYNX } from '../../../config/bosses/world-2/fjord-lynx';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { hazard } from '../mini-boss-greebles';
-import { GEAR, ram } from '../mini-boss-mechanism';
+import { GEAR } from '../mini-boss-mechanism';
+import { crystals, gland, ICE_FLESH, sinew } from './w2-organic';
 import { H, offset, SHADE, turret, WHITE } from '../mini-boss-shapes';
 import { icicles, RIME, snowCap, spread } from './fjord-lynx-frost';
 
@@ -53,20 +54,36 @@ const at2 = (outline: readonly OutlinePoint[], [x, , z]: Vec3): OutlinePoint[] =
  * A paw (P08-R10): an armoured pad with three toe claws, frosted on top, its cannon on a turret
  * ({@link pawTurret}); a ram from the foreleg works it.
  */
-export function paw({ hull, neon }: EnemyParts, at: Vec3): void {
+export function paw(p: EnemyParts, at: Vec3): void {
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]) || 1;
-  hull.bevelSlab(at2(PAD, at), [-2.5, 0, PAD_TOP], [1.2, 1.6], H.panel, {}, RIME);
+  // P16-R05: a fleshy paw, bone claws, a metal armour plate where the cannon is grafted.
+  flesh.bevelSlab(
+    at2(PAD, at),
+    [-2.5, 0, PAD_TOP - 1],
+    [1.2, 1.6],
+    ICE_FLESH.sinew,
+    {},
+    ICE_FLESH.rime,
+  );
+  hull.bevelSlab(
+    at2(PAD.slice(2, 7), offset(at, 0, 0, 0)),
+    [PAD_TOP - 1.2, PAD_TOP - 0.6, PAD_TOP],
+    [0, 0.6],
+    H.panel,
+  );
   for (const dx of [-5, 0, 5]) {
-    hull.bevelSlab(CLAW, [-1.5, -0.5, 1.2], [0.2, 0.4], SHADE.edge, {
+    flesh.bevelSlab(CLAW, [-1.5, -0.5, 1.2], [0.2, 0.4], ICE_FLESH.bone, {
       at: offset(at, dx, 0, dx === 0 ? 11.5 : 9.5),
       yaw: -dx * 0.05,
     });
   }
-  snowCap(hull, at2(PAD.slice(3, 7), offset(at, 0, 0, -1)), PAD_TOP);
+  snowCap(flesh, at2(PAD.slice(3, 7), offset(at, 0, 0, -1)), PAD_TOP);
   neon.box([1, 0.5, 9], CYAN, { at: offset(at, s * 9, 1.4, -1), yaw: s * 0.15 });
   neon.box([5, 0.5, 0.8], WHITE_NEON, { at: offset(at, 0, PAD_TOP - 0.2, -9.6) });
-  ram(hull, offset(at, -s * 8, 1.5, -12), offset(at, -s * 5, 2, -6), 1);
-  icicles(hull, spread(offset(at, s * 9.5, 0, -6), offset(at, s * 9.5, 0, 3), 3), 3.5);
+  sinew(flesh, offset(at, -s * 8, 1.5, -12), offset(at, -s * 5, 2, -6), 1.4);
+  gland(p, offset(at, s * 5, 1.5, -7), 0.9, CYAN);
+  icicles(flesh, spread(offset(at, s * 9.5, 0, -6), offset(at, s * 9.5, 0, 3), 3), 3.5);
 }
 
 /** A paw's twin-barrelled cannon, on its turret. */
@@ -100,7 +117,9 @@ export function chinTurret(p: EnemyParts, at: Vec3): void {
  */
 export function radarMast(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge } = p;
-  hull.bevelSlab(at2(MOUNT, at), [-1, 0, 2.5], [0.5, 1], H.base, {}, H.panel);
+  // P16-R05: a metal mast grafted in a swollen mound of flesh, crystals around it.
+  p.flesh.bevelSlab(at2(MOUNT, at), [-1, 0, 2.5], [0.5, 1], ICE_FLESH.purple, {}, ICE_FLESH.rime);
+  crystals(p.flesh, offset(at, 4, 2, 3), 3);
   hazard(hull, offset(at, 0, 2.5, -5), [6, 1.6], 4, 0);
   hull.cylinder(2, MAST_HEIGHT, 4, H.panel, { at: offset(at, 0, 2.5, 0), yaw: 0.3 }, 0.9);
   for (const h of [6, 10]) {

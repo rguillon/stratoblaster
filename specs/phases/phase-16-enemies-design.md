@@ -179,26 +179,57 @@ Shared by every enemy and boss model. Builders: `src/render/geometry/organic.ts`
 ### Plan
 | Task | Requirement IDs |
 |------|-----------------|
-| | |
+| Style guide (above) | P16-R01 |
+| Organic shape kit `src/render/geometry/organic.ts` + tests | P16-R02 |
+| Flesh material, `flesh` / `vein` / `flap` parts, `organic-parts.ts` | P16-R01, R02 |
+| Basic enemies reworked | P16-R03 |
+| Veteran and elite enemies reworked | P16-R04 |
+| Mini and final bosses of Worlds 1–4 reworked, wounds | P16-R05, R06 |
+| Breathing, vein pulse, wing flutter on a body node, one breath per creature | P16-R07 |
+| Muzzles and reactors off the breathing node; size, muzzle, readability tests kept | P16-R08 |
+| Triangle budgets in config + test | P16-R09 |
+| Motion (L) and Hitbox (H) toggles on `enemies/` and `bosses/` | P16-R10 |
 
 ### Requirement traceability
 | ID | Status (Done / Partial / Not done) | Code | Tests | Notes |
 |----|-----------------------------------|------|-------|-------|
-| P16-R01 | | | | |
+| P16-R01 | Done | `config/enemy-look.ts` (`flesh`), `enemy-materials.ts`, style guide above | `cyber-organic.test.ts` (flesh body + metal grafts, dark shades) | |
+| P16-R02 | Done | `src/render/geometry/organic.ts`, `game/view/enemies/organic-parts.ts` | `tests/unit/render/geometry/organic.test.ts` | rivets of `plate` ignore its turns (tiny) |
+| P16-R03 | Done | `small-enemy-models.ts`, `heavy-enemy-models.ts`, `heavy-beetle-models.ts`, `carrier-model.ts`, `basic-parts.ts` | `enemy-models.test.ts` (sizes), `cyber-organic.test.ts`, e2e `enemies.spec.ts` | |
+| P16-R04 | Done | `veteran-*.ts`, `elite-*.ts`, `vetelite-organic.ts` | `veteran-models.test.ts`, `elite-models.test.ts`, `muzzles.test.ts` | joints, part ids unchanged |
+| P16-R05 | Done | World 1 mini bosses in `view/bosses/`, `world-{2,3,4}/`, `boss-damage.ts` (wound) | `boss-models.test.ts`, `cyber-organic.test.ts` (wound) | |
+| P16-R06 | Done | final bosses, same folders; kits `world-1-organic-kit.ts`, `w2-organic.ts`, `jungle-flesh.ts`, `living-forge.ts` | `boss-models.test.ts`, e2e `bosses.spec.ts` | |
+| P16-R07 | Done | `living-motion.ts`, `enemy-mesh.ts` (body node, `flap`), `boss-model.ts` / `jointed-model.ts` (shared breath) | `cyber-organic.test.ts` (motion, tunables, still on dt 0, muzzles same) | |
+| P16-R08 | Done | muzzles and reactors on the root, sim untouched | existing size / muzzle / readability tests untouched; e2e readability | |
+| P16-R09 | Done | `ENEMY_LOOK.budget` | `cyber-organic.test.ts` (budget per tier) | all bosses also under the existing 6000 cap |
+| P16-R10 | Done | `ui/enemy-viewer-panel.ts`, `app/enemy-viewer-keys.ts`, `app/enemy-close-up.ts` (`hitbox`), `EnemyBindings.setIdleMotion` | panel and viewer unit tests; e2e on both pages | |
 
 ### Gate results
 ```
-make check output summary: lint ✔ / typecheck ✔ / tests N passed / coverage xx% / build ✔
+Light verification (phase 16): typecheck ✔ / build ✔ / e2e 131 passed
+Lint, unit tests and coverage: not run (deferred to /validate-phase).
+e2e ran on port 4174 with a scratch copy of playwright.config.ts: 4173 is held by another
+project on this machine (as in phase 15); against it 14 unrelated tests fail.
 ```
 
 ### How to test manually
-<!-- Steps, keys, debug toggles, URL. -->
+- `make dev`, open `enemies/` and `bosses/`: M model view, ← / → switch, H hit circles over the
+  model, L motion on/off, V wireframe, K (bosses) destroys the next part and shows its wound.
+- Play a level of each world (`?level=2-1`, `?level=3-1`, `?level=4-1`, `&boss=final`) and check
+  that enemies stand out and bullets stay readable.
 
 ### Deviations from spec
-<!-- Anything done differently and why. Also logged in DECISIONS.md. -->
+- The Toucan's beak (World 3) keeps its bright paint, above the 0.2 flesh shades, so the bird
+  still reads; the frost caps and icicles of World 2 keep their bright ice too.
+- Big wings (Storm Petrel, Snow Owl, Toucan) stay still instead of fluttering: the style guide
+  allows it for heavy wings.
 
 ### Known limitations
--
+- Triangle counts were checked by script, not on a reference machine (P16-R09 perf monitor
+  check left to manual validation).
+- Unit tests have not run yet (deferred to `/validate-phase`); size, muzzle and budget tests may
+  need fixes then.
+- Nothing visual was checked in a browser by the agent beyond the e2e runs.
 
 ### Suggestions for future phases
 -

@@ -4,7 +4,8 @@ import { SIDES } from '../../enemies/enemy-shapes';
 import { rod } from '../final-boss-greebles';
 import { seam } from '../mini-boss-greebles';
 import { H, SHADE } from '../mini-boss-shapes';
-import { ARK_ORANGE, DECK_TOP, MOLTEN, RUST, SOOT } from './foundry-ark-parts';
+import { SKIN } from './living-forge';
+import { ARK_ORANGE, DECK_TOP, MOLTEN, SOOT } from './foundry-ark-parts';
 
 // P10-R11, 4-4: the Foundry Ark's yard, the heavy industry on its deck around the furnace: casting
 // sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between the plates.
@@ -42,11 +43,12 @@ const PIPE: readonly Vec3[] = [
 
 /** A casting shed: a long block with a sawtooth roof, a row of furnace-lit windows. */
 function shed(
-  { hull, neon }: EnemyParts,
+  { hull, neon, flesh }: EnemyParts,
   s: number,
   [x, z, w, d, h]: readonly [number, number, number, number, number],
 ): void {
-  hull.box([w, h, d], H.base, { at: [s * x, DECK_TOP, z] }, RUST);
+  // P16-R06: a swollen flesh growth, metal ribs across its top.
+  flesh.box([w, h, d], SKIN.base, { at: [s * x, DECK_TOP, z] }, SKIN.panel);
   for (const dz of [-d / 3, 0, d / 3]) {
     hull.box([w * 0.9, 2, 2], H.panel, { at: [s * x, DECK_TOP + h, z + dz], roll: s * 0.35 });
   }
@@ -62,7 +64,7 @@ function wagon({ hull, neon }: EnemyParts, z: number): void {
 
 /** The yard on the deck: sheds, wagons, pipe runs and glowing seams between the plates. */
 export function drawYard(p: EnemyParts): void {
-  const { hull, neon } = p;
+  const { flesh, neon } = p;
   for (const s of SIDES) {
     for (const spec of SHEDS) shed(p, s, spec);
     for (const [[ax, az], [bx, bz]] of SEAMS) {
@@ -71,7 +73,7 @@ export function drawYard(p: EnemyParts): void {
     const side = PIPE.map(([x, y, z]): Vec3 => [s * x, y, z]);
     side.slice(1).forEach((b, i) => {
       const a = side[i];
-      if (a) rod(hull, a, b, 1.3, H.panel);
+      if (a) rod(flesh, a, b, 1.3, SKIN.panel);
     });
   }
   for (const z of WAGONS) wagon(p, z);

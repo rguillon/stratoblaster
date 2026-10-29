@@ -8,6 +8,7 @@ import { around, decal, POD_SECTION } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-limbs';
 import { rect } from '../final-boss-greebles';
 import { H, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { SKIN } from './living-forge';
 
 // P10-R11, 4-5: the Caldera Throne's colours and its destroyable parts (magma cannons, missile
 // batteries, heat shield generators), each drawn around its centre `at`, each turret around its
@@ -29,6 +30,9 @@ export const HEAT = {
 /** Height of the deck's top, which the keep and the parts stand on, and the bastions' top. */
 export const DECK_TOP = 8;
 export const BASTION_TOP = 5;
+
+// P16-R06: its parts are growths of its body: flesh drums under the magma cannons, shield
+// generators as glowing glands in crowns of bone, batteries cased in metal.
 
 /** A magma cannon's housing (loft stations around its pivot), soot-black on its back. */
 const HOUSING = [
@@ -75,8 +79,9 @@ export function magmaCannon(p: EnemyParts, [x, , z]: Vec3): void {
 }
 
 /** The turntable a magma cannon turns on: a low drum on the bastion, ringed with crimson. */
-export function magmaMount({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
-  hull.cylinder(12, BASTION_TOP, 8, H.dark, { at: [x, 0, z] });
+export function magmaMount({ hull, neon, flesh }: EnemyParts, [x, , z]: Vec3): void {
+  flesh.cylinder(12, BASTION_TOP, 8, SKIN.base, { at: [x, 0, z] });
+  hull.ring(10, 0.6, 8, H.dark, { at: [x, BASTION_TOP - 0.3, z] });
   neon.ring(12.3, 0.7, 8, CRIMSON, { at: [x, BASTION_TOP - 0.5, z] });
   neon.ring(12.3, 0.5, 8, HEAT.glow, { at: [x, 0.6, z] });
 }
@@ -131,15 +136,16 @@ const CORE = [
  * A heat shield generator (P10-R11; no weapon, it shields the core): a molten core glowing in a
  * crown of heat-sink fins edged with gold, on an armoured drum ringed with crimson.
  */
-export function shieldGenerator({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
+export function shieldGenerator({ hull, neon, flesh }: EnemyParts, [x, , z]: Vec3): void {
   const base = DECK_TOP;
-  hull.cylinder(13, 4, 8, H.dark, { at: [x, base - 1, z], yaw: Math.PI / 8 }, 12);
+  flesh.cylinder(13, 4, 8, SKIN.base, { at: [x, base - 1, z], yaw: Math.PI / 8 }, 12);
+  hull.ring(12.6, 0.6, 8, H.dark, { at: [x, base + 2.2, z], yaw: Math.PI / 8 });
   neon.ring(12.4, 0.7, 8, CRIMSON, { at: [x, base + 2.8, z], yaw: Math.PI / 8 });
   neon.lathe(CORE, 6, HEAT.molten, { at: [x, base + 3, z] });
   for (const a of around(FINS.count)) {
     const [c, s] = [Math.cos(a), Math.sin(a)];
     const mid: Vec3 = [x + s * FINS.reach * 0.62, base + 3, z + c * FINS.reach * 0.62];
-    hull.box([FINS.thick, FINS.height, FINS.reach * 0.7], H.panel, { at: mid, yaw: a }, H.dark);
+    flesh.box([FINS.thick, FINS.height, FINS.reach * 0.7], SKIN.bone, { at: mid, yaw: a });
     const edge: Vec3 = [x + s * FINS.reach * 0.96, base + 3, z + c * FINS.reach * 0.96];
     neon.box([FINS.thick * 1.1, FINS.height * 0.8, 0.5], GOLD, { at: edge, yaw: a });
   }

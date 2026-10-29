@@ -22,11 +22,14 @@ import {
   tail,
   tailLimbs,
 } from './magma-salamander-parts';
+import { backRibs, glands, lumps, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-3: the Magma Salamander. Logical pixels, nose +Z, Y up (towards the camera). A
 // segmented lizard-ship: a flat, wedge-shaped head, a body of overlapping armour plates with
 // magma glowing in the seams between them, four clawed legs splayed out, a spiny fin on each
 // side of its back (its parts) and a tail curling back to its right (on two joints).
+// P16-R05: a living lizard, its scorched flesh body under bony scale plates and metal grafts,
+// magma glands along its spine, its reactors set in flesh sacs.
 type Vec3 = [number, number, number];
 
 /** The underbody along the centre line, tail to neck (loft stations: z, half width, bottom, top). */
@@ -60,8 +63,9 @@ const LEGS: readonly (readonly [z: number, reach: number])[] = [
 ];
 
 /** The underbody and its plates, a molten seam glowing between each plate and the next. */
-function drawBody({ hull, neon }: EnemyParts): void {
-  hull.loft(HULL_SECTION, BELLY, H.dark);
+function drawBody(p: EnemyParts): void {
+  const { hull, neon, flesh } = p;
+  flesh.loft(HULL_SECTION, BELLY, SKIN.base);
   PLATES.forEach(([z0, z1, half, top], i) => {
     const plate: LoftStation[] = [
       [z0, half * 0.85, 1, top - 1.2],
@@ -69,7 +73,8 @@ function drawBody({ hull, neon }: EnemyParts): void {
       [z1 - 2, half, 0.5, top],
       [z1, half * 0.88, 1, top - 1],
     ];
-    hull.loft(FIGHTER_SECTION, plate, i % 2 === 0 ? H.base : H.panel, {}, {});
+    const b = i === PLATES.length - 1 ? hull : flesh;
+    b.loft(FIGHTER_SECTION, plate, i % 2 === 0 ? SKIN.dark : SKIN.panel, {}, {});
     if (i > 0) moltenSeam(neon, [half * 1.5, top - 1.6, z0 - 0.5]);
   });
   for (const s of SIDES) {
@@ -77,12 +82,24 @@ function drawBody({ hull, neon }: EnemyParts): void {
     hull.box([4, 0.5, 6], SCORCH, { at: [s * 6, 11.6, 16 - s * 10] });
   }
   vent(hull, [-6, 12.2, 3], [5, 6], 3);
+  glands(
+    p,
+    [
+      [4, 12, -11],
+      [-3, 11.6, 17],
+      [0, 10.6, 29],
+    ],
+    1.6,
+    MOLTEN,
+  );
+  backRibs(p, [-22, -12, 0, 13], { halfWidth: 12, y: 3, height: 9, thickness: 0.8 });
 }
 
 /** The head: a flat wedge with orange eyes, the jaw guns either side of the snout. */
 function drawHead(p: EnemyParts): void {
   const { hull, neon, charge } = p;
-  hull.loft(FIGHTER_SECTION, HEAD, H.base);
+  p.flesh.loft(FIGHTER_SECTION, HEAD, SKIN.base);
+  lumps(p, [[0, 6.5, 44]], 4, SKIN.panel, 0.5);
   hull.box([12, 1.6, 12], H.dark, { at: [0, -0.6, 54] });
   moltenSeam(neon, [12, 7.6, 37]);
   for (const s of SIDES) {
@@ -97,19 +114,19 @@ function drawHead(p: EnemyParts): void {
 }
 
 /** Four clawed legs splayed out from its sides, armoured at the shoulder. */
-function drawLegs({ hull, neon }: EnemyParts): void {
+function drawLegs({ hull, neon, flesh }: EnemyParts): void {
   for (const s of SIDES) {
     for (const [z, reach] of LEGS) {
       const hip: Vec3 = [s * 11, 3, z];
       const knee: Vec3 = [s * 21, 5, z + reach * 0.4];
       const foot: Vec3 = [s * 27, 0, z + reach];
-      segment(hull, [hip, knee], [3, 2.4], H.panel, 5);
-      segment(hull, [knee, foot], [2.2, 1.4], H.base, 5);
+      segment(flesh, [hip, knee], [3, 2.4], SKIN.panel, 5);
+      segment(flesh, [knee, foot], [2.2, 1.4], SKIN.base, 5);
       hull.cylinder(3.2, 2.4, 6, H.dark, { at: offset(knee, 0, -1.2, 0) });
       neon.box([1, 0.6, 1], MOLTEN, { at: offset(knee, 0, 1.6, 0) });
       for (const yaw of [-0.5, 0, 0.5]) {
         const toe = Math.sign(reach) * 3.4;
-        hull.box([0.9, 0.9, 3.4], SHADE.edge, {
+        flesh.box([0.9, 0.9, 3.4], SKIN.bone, {
           at: offset(foot, Math.sin(yaw) * toe, -0.4, Math.cos(yaw) * toe),
           yaw,
         });
@@ -123,8 +140,26 @@ function drawBack(p: EnemyParts): void {
   const { hull, neon, charge, muzzle } = p;
   for (const s of SIDES) {
     socket(hull, [s * 14, 3, -4], 4, 6);
-    p.reactor([s * 6, 3, -25], 2.2);
   }
+  reactorSacs(
+    p,
+    [
+      [6, 3, -25],
+      [-6, 3, -25],
+    ],
+    2.2,
+    MOLTEN,
+  );
+  magmaVein(
+    p,
+    [
+      [0, 9, -20],
+      [0, 11, -8],
+      [0, 12, 10],
+      [0, 10.5, 30],
+    ],
+    1,
+  );
   const [top] = SALAMANDER_VENT.map((m) => bossPoint(...m));
   if (!top) return;
   hull.cylinder(5.4, top[1] - 10.4, 7, SCORCH, { at: offset(top, 0, -(top[1] - 10), 0) }, 3.4);

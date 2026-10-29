@@ -10,6 +10,7 @@ import { rod } from '../final-boss-greebles';
 import { sided } from '../final-boss-shapes';
 import { lamps, seam } from '../mini-boss-greebles';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { FL, glands, SKIN } from './living-forge';
 
 // P10-R11, 4-4: the Furnace Drake's parts (its beating wings and its jaw) and its forge colours.
 // Logical pixels, nose +Z, Y up (towards the camera).
@@ -90,16 +91,17 @@ const NACELLE = [
 ] as const;
 
 /** The membrane and its bones, lit along their length by molten seams. */
-function membrane({ hull, neon }: EnemyParts, s: number): void {
-  hull.bevelSlab(sided(WING, s), [WING_Y - 0.4, WING_Y, WING_Y + 0.5], [0.3, 0.3], HIDE);
+function membrane({ flesh: hull, neon }: EnemyParts, s: number): void {
+  // P16-R05: a membrane stretched on bone, veined molten.
+  hull.bevelSlab(sided(WING, s), [WING_Y - 0.4, WING_Y, WING_Y + 0.5], [0.3, 0.3], FL.membrane);
   BONES.forEach(([a, b], i) => {
     const side = (v: Vec3): Vec3 => [s * v[0], v[1], v[2]];
-    rod(hull, side(a), side(b), i < 3 ? 1.1 : 0.7, H.panel);
+    rod(hull, side(a), side(b), i < 3 ? 1.1 : 0.7, SKIN.bone);
     seam(neon, [s * a[0], a[2]], [s * b[0], b[2]], [a[1] + 0.6, 0.45, 0.25], DRAKE_ORANGE);
   });
   // A claw at the wing's thumb, and soot along its trailing edge.
-  spike(hull, [s * 30, 5.6, 14], [1.4, 5], SHADE.edge, -0.9);
-  seam(hull, [s * 15, -10], [s * 38, -14], [WING_Y + 0.5, 1.6, 0.3], SOOT);
+  spike(hull, [s * 30, 5.6, 14], [1.4, 5], SKIN.bone, -0.9);
+  seam(hull, [s * 15, -10], [s * 38, -14], [WING_Y + 0.5, 1.6, 0.3], HIDE);
 }
 
 /**
@@ -148,14 +150,16 @@ const LOWER_JAW: OutlinePoint[] = [
 ];
 
 /** The skull: horns swept back, red eyes, the open lower jaw with its teeth. */
-function skull({ hull, neon }: EnemyParts): void {
-  hull.loft(FIGHTER_SECTION, SKULL, H.base);
+function skull(p: EnemyParts): void {
+  const { flesh: hull, neon } = p;
+  hull.loft(FIGHTER_SECTION, SKULL, SKIN.base);
   for (const s of SIDES) {
-    rod(hull, [s * 4.5, 8.4, 33], [s * 7, 12.5, 27], 1.2, SHADE.edge);
-    rod(hull, [s * 7, 12.5, 27], [s * 8, 13.4, 23.5], 0.6, SHADE.edge);
+    rod(hull, [s * 4.5, 8.4, 33], [s * 7, 12.5, 27], 1.2, SKIN.bone);
+    rod(hull, [s * 7, 12.5, 27], [s * 8, 13.4, 23.5], 0.6, SKIN.bone);
     lamps(neon, [[s * 4.6, 8.4, 41]], 1.6, DRAKE_RED);
-    hull.bevelSlab(sided(LOWER_JAW, s), [0.4, 1.4, 2.8], [0.3, 0.3], H.panel);
-    for (const z of [42, 47, 52]) spike(hull, [s * 4.5, 2.8, z], [0.6, 1.8], SHADE.edge);
+    glands(p, [[s * 4.6, 8.6, 38]], 1, DRAKE_ORANGE);
+    p.hull.bevelSlab(sided(LOWER_JAW, s), [0.4, 1.4, 2.8], [0.3, 0.3], H.panel);
+    for (const z of [42, 47, 52]) spike(hull, [s * 4.5, 2.8, z], [0.6, 1.8], SKIN.bone);
   }
   seam(neon, [0, 30], [0, 48], [8.9, 0.5, 0.3], DRAKE_ORANGE);
 }
@@ -166,9 +170,9 @@ function skull({ hull, neon }: EnemyParts): void {
  */
 export function jaw(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
-  hull.loft(POD_SECTION, NECK, H.panel);
+  p.flesh.loft(POD_SECTION, NECK, SKIN.panel);
   for (const s of SIDES) seam(neon, [s * 5.2, 17], [s * 5, 28], [3.4, 0.4, 0.4], DRAKE_ORANGE);
-  for (const z of [18, 24]) spike(hull, [0, 7, z], [1.2, 3.4], H.dark, 0.6);
+  for (const z of [18, 24]) spike(p.flesh, [0, 7, z], [1.2, 3.4], SKIN.bone, 0.6);
   skull(p);
   const [tip] = DRAKE_MAW.map((m) => bossPoint(...m));
   if (!tip) return;

@@ -118,6 +118,23 @@ describe('startEnemyViewer', () => {
     expect(viewer.enemies.enemies.length).toBeGreaterThan(0);
   });
 
+  it('P16-R10: H draws the hit circles over the model in the model view, L holds its motion', () => {
+    viewer = start();
+    viewer.key('m', 'KeyM', true);
+    const hitbox = (): AbstractMesh | undefined =>
+      viewer?.closeUp.pivot.getChildMeshes().find((m) => m.name.startsWith('close-up-hitbox-'));
+    expect(hitbox()).toBeUndefined();
+    viewer.key('h', 'KeyH', true);
+    expect(viewer.panel.selection.hitbox).toBe(true);
+    expect(viewer.closeUp.hitbox).toBe(true);
+    expect(hitbox()).toBeDefined();
+    expect(viewer.closeUp.scene.forceWireframe).toBe(false);
+    viewer.key('l', 'KeyL', true);
+    expect(viewer.panel.selection.living).toBe(false);
+    viewer.key('h', 'KeyH', true);
+    expect(hitbox()).toBeUndefined();
+  });
+
   it('P05-R11: in the model view, ← / → switch the enemy instead of moving the ship', () => {
     viewer = start();
     viewer.key('m', 'KeyM', true);

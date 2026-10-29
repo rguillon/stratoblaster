@@ -20,7 +20,7 @@
 | 13 | `phases/phase-13-perf.md` | ✅ Validated | `phase-13` | 99.28% lines | 2026-10-27 |
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
 | 15 | `phases/phase-15-urban-rework.md` | ✅ Validated | `phase-15` | 96.14% lines | 2026-10-29 |
-| 16 | `phases/phase-16-enemies-design.md` | ⚪ Not started | | | |
+| 16 | `phases/phase-16-enemies-design.md` | 🟡 Awaiting review | `phase-16` | | |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -159,3 +159,4 @@
 - 2026-10-28 — 14 — Validated: full gate green after fixing what the first unit test run found (enemy shots drawn over the playfield meshes that set no draw order, reactor colours in the enemy family, D-156; 4 tests updated to the folded colours): 1681 unit tests, 99.03% lines, 87.6% branches, 132 e2e; squash-merged into `main`, tagged `v0.14.0`.
 - 2026-10-28 — 15 — Implemented the districts on a grid of tiles (road kit, adapters, 111 models made for the grid); light verification green (typecheck, build, 138 e2e); awaiting review.
 - 2026-10-29 — 15 — Validated: full gate green after fixing what the first unit test run found (a building turned across its tiles when no road faced it; levels retuned for the growth checks, D-164; 8 tests updated to the grid: streets on tile middles, cars per road point, scattered homes, lanes at crossings, tile model ids): 1712 unit tests, 96.14% lines, 85.27% branches, 129 e2e (on port 4174, 4173 held by another project); squash-merged into `main`, tagged `v0.15.0`.
+- 2026-10-29 — 16 — Implemented the Cyber-Organic enemies and bosses (organic kit, flesh material, living motion, wounds, 61 models reworked, debug toggles; D-165..D-168); light verification green (typecheck, build, 131 e2e on port 4174); awaiting review.

@@ -12,6 +12,7 @@ import { flipX } from '../../enemies/enemy-shapes';
 import { bossPoint, type LimbDrawing } from '../boss-limbs';
 import { H, offset, SHADE, WHITE } from '../mini-boss-shapes';
 import { barrelTo, blot, FORGE, moltenSeam, soot, strut } from './black-sands-kit';
+import { glands, SKIN } from './living-forge';
 
 // P10-R11, 4-1: the Cinder Crab's arms (on their shoulders) and outer fingers (on their wrists),
 // moving limbs (D-061), its claws and its back mortar (its parts). Logical pixels, nose +Z, Y up;
@@ -69,11 +70,13 @@ const sided = (outline: readonly OutlinePoint[], s: number) => (s > 0 ? outline 
  * palm gun between the fingers.
  */
 export function claw(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
+  const { hull, neon, flesh } = p;
   const s = sideAt(at);
-  hull.bevelSlab(PALM, PALM_Y, [1, 1.6], H.base, { at }, H.panel);
+  // P16-R05: a swollen flesh palm, bone pincers, a molten gland.
+  flesh.bevelSlab(PALM, PALM_Y, [1, 1.6], SKIN.base, { at }, SKIN.panel);
+  glands(p, [offset(at, -s * 2.5, PALM_Y[2] - 0.4, 3)], 1.6, FORGE.molten);
   const fixed = offset(at, -s * FINGER_OUT, 0, 5);
-  hull.bevelSlab(sided(FIXED_FINGER, s), FINGER_Y, [0.6, 0.9], H.panel, { at: fixed });
+  flesh.bevelSlab(sided(FIXED_FINGER, s), FINGER_Y, [0.6, 0.9], SKIN.bone, { at: fixed });
   for (const dz of [5, 10]) {
     hull.box([1.4, 1.6, 1.2], SHADE.edge, { at: offset(fixed, s * 2.2, 1.5, dz) });
   }
@@ -98,13 +101,13 @@ const ELBOW = { out: 30, height: 7, z: 22 } as const;
 
 /** The arm on side `s`: a shoulder ball, an armoured upper arm out to the elbow, a forearm. */
 function arm(s: number) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ hull, neon, flesh }: EnemyParts): void => {
     const [sx, sy] = CRAB_ARM.shoulder;
     const [cx, cy] = CRAB_ARM.claw;
     const shoulder = bossPoint(s * sx, sy, 5);
     const elbow: Vec3 = [s * ELBOW.out, ELBOW.height, ELBOW.z];
     const wrist = offset(bossPoint(s * cx, cy, 4), -s * 1, 0, -6);
-    hull.lathe(
+    flesh.lathe(
       [
         [0, -1],
         [4, 0.5],
@@ -112,11 +115,11 @@ function arm(s: number) {
         [0, 4.5],
       ],
       7,
-      H.panel,
+      SKIN.panel,
       { at: offset(shoulder, 0, -2, 0) },
     );
-    strut(hull, [shoulder, elbow], [3.2, 2.8], H.base);
-    strut(hull, [elbow, wrist], [2.8, 2.4], H.base);
+    strut(flesh, [shoulder, elbow], [3.2, 2.8], SKIN.base);
+    strut(flesh, [elbow, wrist], [2.8, 2.4], SKIN.panel);
     hull.lathe(
       [
         [0, -3],
@@ -144,13 +147,13 @@ function arm(s: number) {
  * shut to wide open with its joint (D-061), a hot glow along its inner edge.
  */
 function finger(s: number) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ hull, neon, flesh }: EnemyParts): void => {
     const [wx, wy] = CRAB_ARM.wrist;
     const pivot = bossPoint(s * wx, wy);
     const yaw = (s * CRAB_SWING.fingerDeg * Math.PI) / 180;
     const root = turn([s * FINGER_OUT, 0, 1], yaw);
     const at = offset(pivot, root[0], 0, root[2]);
-    hull.bevelSlab(sided(MOVING_FINGER, s), FINGER_Y, [0.6, 0.9], H.panel, { at, yaw });
+    flesh.bevelSlab(sided(MOVING_FINGER, s), FINGER_Y, [0.6, 0.9], SKIN.bone, { at, yaw });
     for (const dz of [5, 10, 14]) {
       const tooth = turn([-s * 2.2, 1.5, dz], yaw);
       hull.box([1.4, 1.6, 1.2], SHADE.edge, { at: offset(at, tooth[0], 1.5, tooth[2]), yaw });

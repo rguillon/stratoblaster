@@ -139,3 +139,17 @@ export function sideStripe(
   const at = (t: number): SectionPoint => [(ua + (ub - ua) * t) * lift, va + (vb - va) * t];
   return [at(t0), at(t1)];
 }
+
+/**
+ * P16-R03: a lean rounded section for the basic kinds' swollen bodies (`segmentedBody`): a flat
+ * belly, round flanks and a soft back, in seven facets.
+ */
+export const LOBE_SECTION: readonly SectionPoint[] = [
+  [0.4, 0],
+  [1, 0.35],
+  [0.75, 0.85],
+  [0, 1],
+  [-0.75, 0.85],
+  [-1, 0.35],
+  [-0.4, 0],
+];

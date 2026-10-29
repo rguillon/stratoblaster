@@ -5,8 +5,9 @@ import { AVALANCHE_DRILL_GUN } from '../../../config/bosses/world-2/avalanche';
 import { BOSS_LOOK } from '../../../config/boss-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import type { LimbDrawing } from '../boss-limbs';
-import { hazard } from '../mini-boss-greebles';
-import { cog, GEAR, glowLine, ram } from '../mini-boss-mechanism';
+import { organ } from '../../../../render/geometry/organic';
+import { glowLine } from '../mini-boss-mechanism';
+import { glowVein, ICE_FLESH, sinew } from './w2-organic';
 import { H, offset, QUARTER, SHADE } from '../mini-boss-shapes';
 import { barrelTo, icicles, snowCap } from './avalanche-frost';
 
@@ -47,7 +48,7 @@ function beamOutline([ax, az]: Flat, [bx, bz]: Flat, width: number): OutlinePoin
  * armour plate, frost on its top, a yellow light along it and a ram working it.
  */
 function segment(
-  { hull, neon }: { hull: SolidBuilder; neon: SolidBuilder },
+  { hull, flesh, neon }: { hull: SolidBuilder; flesh: SolidBuilder; neon: SolidBuilder },
   s: number,
   [a, b]: readonly [Flat, Flat],
   width: number,
@@ -56,15 +57,31 @@ function segment(
     [s * a[0], a[1]],
     [s * b[0], b[1]],
   ];
-  hull.bevelSlab(beamOutline(pa, pb, width), [0, 1.5, 4], [0.6, 1], GEAR);
+  // P16-R05: a muscle of flesh along the bone, an armour plate grafted on top of it.
+  flesh.bevelSlab(beamOutline(pa, pb, width), [0, 1.5, 4], [0.6, 1], ICE_FLESH.sinew);
   const inset = (t: number): Flat => [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t];
   const [ia, ib] = [inset(0.12), inset(0.82)];
-  hull.bevelSlab(beamOutline(ia, ib, width * 1.15), [3, 5, 9], [0.8, 1.8], H.base, {}, H.panel);
-  snowCap(hull, beamOutline(inset(0.2), inset(0.55), width * 0.7), 9, 0.8);
+  flesh.bevelSlab(
+    beamOutline(ia, ib, width * 1.15),
+    [3, 5, 7.5],
+    [0.8, 1.8],
+    ICE_FLESH.purple,
+    {},
+    ICE_FLESH.teal,
+  );
+  hull.bevelSlab(
+    beamOutline(inset(0.3), inset(0.7), width * 0.8),
+    [7.3, 8.2, 9],
+    [0.4, 0.8],
+    H.base,
+    {},
+    H.panel,
+  );
+  snowCap(flesh, beamOutline(inset(0.2), inset(0.55), width * 0.7), 9, 0.8);
   const [lx, lz] = inset(0.72);
   const [mx, mz] = inset(0.6);
   glowLine(neon, [mx, 9.2, mz], [lx, 9.2, lz], 1, AVALANCHE_YELLOW);
-  ram(hull, [pa[0] - s * 3, 2, pa[1] + 2], [ib[0] - s * 2, 2.5, ib[1]], 1.1);
+  sinew(flesh, [pa[0] - s * 3, 2, pa[1] + 2], [ib[0] - s * 2, 2.5, ib[1]], 1.4);
 }
 
 /** The upper arm (side `s`, +1 left at +X), on its shoulder: its segment and the elbow's cog. */
@@ -79,7 +96,7 @@ function upperArm(s: number) {
       ],
       9,
     );
-    cog(p.hull, [s * 34, 1.5, 24], 4, 8, s * 0.2);
+    organ(p.flesh, 4, 6, ICE_FLESH.bone, { at: [s * 34, 0, 24] }, 0.6);
   };
 }
 
@@ -96,7 +113,7 @@ function forearm(s: number) {
       8,
     );
     icicles(
-      p.hull,
+      p.flesh,
       [
         [s * 37, 3, 25],
         [s * 39.5, 3, 28],
@@ -135,12 +152,13 @@ function flutes(hull: SolidBuilder, root: Vec3, color: Rgb): void {
  * bit pointing down the screen, its gun along the outer side, frost on top and icicles under it.
  */
 export function drill(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]);
   const axis = offset(at, 0, HOUSING.axis, 0);
   const back = offset(axis, 0, 0, -HOUSING.length / 2);
-  hull.cylinder(HOUSING.radius, HOUSING.length, 8, H.panel, { at: back, pitch: QUARTER });
-  hull.cylinder(HOUSING.radius * 0.7, 3, 8, GEAR, {
+  // P16-R05: a swollen fist of flesh, the bit a metal graft driven into it.
+  organ(flesh, HOUSING.radius, 7, ICE_FLESH.purple, { at: back, pitch: QUARTER }, 0.8);
+  flesh.cylinder(HOUSING.radius * 0.7, 3, 6, ICE_FLESH.sinew, {
     at: offset(back, 0, 0, -3),
     pitch: QUARTER,
   });
@@ -155,9 +173,15 @@ export function drill(p: EnemyParts, at: Vec3): void {
   const [tip] = s > 0 ? AVALANCHE_DRILL_GUN : mirror(AVALANCHE_DRILL_GUN);
   if (tip) barrelTo(p, tip, [1.7, 9]);
   hull.box([5, 3, 8], H.dark, { at: offset(at, s * 6.5, 5, 7) }, H.base);
-  hazard(hull, offset(axis, 0, HOUSING.radius - 0.6, -3), [6, 5], 4, QUARTER);
+  glowVein(
+    p,
+    offset(axis, 0, HOUSING.radius - 1, -6),
+    offset(axis, s * 3, HOUSING.radius - 2, 4),
+    0.8,
+    AVALANCHE_YELLOW,
+  );
   snowCap(
-    hull,
+    flesh,
     (
       [
         [-4, -6],
@@ -170,5 +194,5 @@ export function drill(p: EnemyParts, at: Vec3): void {
     0.9,
   );
   const under = HOUSING.axis - HOUSING.radius + 0.6;
-  icicles(hull, [offset(at, -4, under, 4), offset(at, 3, under, 0), offset(at, 0, under, -4)], 4);
+  icicles(flesh, [offset(at, -4, under, 4), offset(at, 3, under, 0), offset(at, 0, under, -4)], 4);
 }

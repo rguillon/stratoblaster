@@ -8,11 +8,14 @@ import { vent } from '../mini-boss-greebles';
 import { H, offset, SHADE, WHITE } from '../mini-boss-shapes';
 import { blot, bolts, FORGE, moltenSeam, soot, strut } from './black-sands-kit';
 import { claw, CRAB_LIMBS, CRAB_ORANGE as N, mortar } from './cinder-crab-parts';
+import { backRibs, fleshShell, glands, magmaVein, MAGMA, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-1: the Cinder Crab. Logical pixels, nose +Z, Y up (towards the camera). A wide,
 // low crab-ship: a soot-black carapace cracked by molten seams, orange neon along its rim and on
 // its eye stalks, six short legs, arms reaching from under its front rim to the two claws, the
 // ring dome on its back and the mortar behind it.
+// P16-R05: a living crab, a scorched flesh shell banded in darker seams, bony legs, glowing eyes
+// on fleshy stalks, metal grafted on as its belly plate, dome, joints and guns.
 type Vec3 = [number, number, number];
 
 /** The carapace (loft stations, tail to front: z, half width, bottom, top): wide and low. */
@@ -56,7 +59,7 @@ const widthAt = (z: number): number => stationAt(z, 1);
 /** The carapace, its orange neon flanks, the belly plate and the reactors. */
 function drawCarapace(p: EnemyParts): void {
   const { hull, neon } = p;
-  hull.loft(HULL_SECTION, CARAPACE, H.base);
+  fleshShell(p.flesh, HULL_SECTION, CARAPACE, [SKIN.base, SKIN.dark]);
   for (const side of [1, 3]) {
     neon.loft(
       sideStripe(HULL_SECTION, side, [0.15, 0.4], 1.03),
@@ -67,29 +70,39 @@ function drawCarapace(p: EnemyParts): void {
     );
   }
   hull.box([44, 2.4, 40], H.dark, { at: [0, -3.4, -6] }, H.panel);
-  for (const s of SIDES) p.reactor([s * 9, 2.5, -33], 2.4);
+  reactorSacs(
+    p,
+    [
+      [9, 2.5, -33],
+      [-9, 2.5, -33],
+    ],
+    2.4,
+    MAGMA,
+  );
 }
 
 /** Its six short legs: each bends up at the knee and down to a pointed foot. */
-function drawLegs({ hull, neon }: EnemyParts): void {
+function drawLegs({ flesh, neon }: EnemyParts): void {
   for (const s of SIDES) {
     for (const z of LEGS) {
       const w = widthAt(z);
       const hip: Vec3 = [s * (w - 6), LEG.hip, z];
       const knee: Vec3 = [s * (w + LEG.out), LEG.knee, z - 3];
       const foot: Vec3 = [s * (w + LEG.foot), LEG.drop, z - 7];
-      strut(hull, [hip, knee], [2.2, 1.8], H.base, 5);
-      strut(hull, [knee, foot], [1.8, 0.4], H.panel, 4);
+      strut(flesh, [hip, knee], [2.2, 1.8], SKIN.panel, 5);
+      strut(flesh, [knee, foot], [1.8, 0.4], SKIN.bone, 4);
       neon.box([1, 0.6, 1], N, { at: offset(knee, 0, 1.6, 0) });
     }
   }
 }
 
 /** The front: two eye stalks with orange neon tips, a brow plate, the arms' shoulder sockets. */
-function drawFront({ hull, neon, charge }: EnemyParts): void {
+function drawFront(p: EnemyParts): void {
+  const { hull, neon, charge, flesh } = p;
   for (const s of SIDES) {
     const base: Vec3 = [s * EYES.x, topAt(EYES.z) - 0.5, EYES.z];
-    hull.cylinder(1.4, EYES.height - base[1], 5, H.panel, { at: base }, 1);
+    flesh.cylinder(1.4, EYES.height - base[1], 5, SKIN.panel, { at: base }, 1);
+    glands(p, [[s * EYES.x, EYES.height + 0.6, EYES.z + 0.6]], 1.4, N);
     neon.box([2.6, 1.6, 2.6], N, { at: [s * EYES.x, EYES.height, EYES.z] });
     hull.cylinder(4.5, 4, 7, H.dark, { at: [s * 16, -1, 14] }, 3.6);
   }
@@ -97,9 +110,34 @@ function drawFront({ hull, neon, charge }: EnemyParts): void {
   charge.box([8, 0.4, 1.6], WHITE, { at: [0, topAt(13) + 0.1, 13] });
 }
 
+/** P16-R05, P16-R06: its living flesh: veins, glands and ribs. */
+function backFlesh(p: EnemyParts): void {
+  backRibs(p, [-20, 1], { halfWidth: 30, y: 4, height: 6.5, thickness: 0.9 });
+  magmaVein(
+    p,
+    [
+      [-24, 7, -16],
+      [-10, topAt(-6), -6],
+      [10, topAt(-6), -6],
+      [24, 7, -16],
+    ],
+    1.1,
+  );
+  glands(
+    p,
+    [
+      [-26, 7.5, 3],
+      [26, 7.5, 3],
+    ],
+    1.8,
+    MAGMA,
+  );
+}
+
 /** Its back: molten seams between the plates, soot, bolts, a hot vent and the ring dome. */
 function drawBack(p: EnemyParts): void {
   const { hull, neon, charge } = p;
+  backFlesh(p);
   for (const z of [-11, 9]) {
     const y = topAt(z) + 0.05;
     const half = widthAt(z) * 0.55;

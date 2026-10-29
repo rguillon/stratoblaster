@@ -4,6 +4,7 @@ import { lamps } from '../mini-boss-greebles';
 import { H, QUARTER } from '../mini-boss-shapes';
 import { SUMMIT, TEMPLE_CYAN, TEMPLE_GOLD, TIERS } from './sky-temple-parts';
 import { leaf, moss, STONE, vine } from './stone-idol-stone';
+import { templeReactors } from './sky-temple-flesh';
 
 // P09-R09, 3-3: the Sky Temple's dressing (phase 7 review: detail and some asymmetry; World 3
 // theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up.
@@ -22,8 +23,8 @@ export function templeMachinery(p: EnemyParts): void {
   neon.box([60, 0.6, 0.5], TEMPLE_CYAN, { at: [0, 4, THRUSTERS.z - 7.1] });
   for (const x of THRUSTERS.nozzles) {
     hull.cylinder(5.4, 3, 8, H.dark, { at: [x, 0, THRUSTERS.z - 7], pitch: -QUARTER });
-    p.reactor([x, 0, THRUSTERS.z - 7.4], 4.5);
   }
+  templeReactors(p, THRUSTERS.z - 7.4, THRUSTERS.nozzles);
   const base = TIERS.halves[0];
   for (const s of SIDES) {
     hull.box([6, 11, 44], H.base, { at: [s * (base + 2.4), -6, -6] }, H.panel);

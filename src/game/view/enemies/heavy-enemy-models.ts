@@ -1,55 +1,23 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { OutlinePoint } from '../../../render/geometry/outline';
 import type { EnemyModel } from '../../../render/game-view';
-import type { SolidBuilder } from '../../../render/geometry/solids';
+import { curve, organ, segmentedBody, tendril, vein } from '../../../render/geometry/organic';
 import { ENEMY_CONFIG } from '../../config/enemies';
 import { ENEMY_LOOK } from '../../config/enemy-look';
+import { eyePair, sinew } from './basic-parts';
 import { buildEnemyModel } from './enemy-mesh';
-import {
-  angryEyes,
-  around,
-  canopyPaint,
-  decal,
-  FIGHTER_SECTION,
-  flipX,
-  POD_SECTION,
-  radial,
-  sideStripe,
-  SIDES,
-} from './enemy-shapes';
+import { angryEyes, around, decal, LOBE_SECTION, radial, SIDES } from './enemy-shapes';
 
-// P05-R06..R10: the bigger enemies. Logical pixels, nose +Z, Y up (towards the camera).
-// Parts blend into each other (phase 5 review): pods faired or fitted into their bodies,
-// canopies and stripes painted on, armour in one piece.
+// P05-R06..R08, P16-R03: the bigger enemies, Cyber-Organic (P16-R01): swollen flesh bodies and
+// organs, metal grafted on for armour, nozzles and guns. Logical pixels, nose +Z, Y up.
+// The Bulwark and the Splitter are in `heavy-beetle-models.ts`.
 const H = ENEMY_LOOK.hull;
+const F = ENEMY_LOOK.flesh;
 const N = ENEMY_LOOK.neon;
 const WHITE = [1, 1, 1] as const;
 const QUARTER = Math.PI / 2;
 
-/** P05-R06: the Spinner's ring (a lathe profile), spokes, and pods growing out of the ring. */
-const SPINNER_RING = [
-  [10.2, -1.2],
-  [11.8, -1.6],
-  [12.6, 0],
-  [11.8, 1.6],
-  [10.2, 1.2],
-  [10.2, -1.2],
-] as const;
-const SPINNER_SPOKE = [
-  [-1.3, -4],
-  [1.3, -4],
-  [0.7, 4.5],
-  [-0.7, 4.5],
-] as const;
-/** Around the pod's centre, outwards along +Z: its root wraps the ring. */
-const SPINNER_POD = [
-  [-2.6, -3.8],
-  [2.6, -3.8],
-  [3, 0.3],
-  [1.6, 2.7],
-  [-1.6, 2.7],
-  [-3, 0.3],
-] as const;
+/** P05-R06: the Spinner's pod muzzles, lit while it fires. */
 const SPINNER_MUZZLE = [
   [-1.5, 2.2],
   [1.5, 2.2],
@@ -57,61 +25,64 @@ const SPINNER_MUZZLE = [
   [-1.3, 3.1],
 ] as const;
 
-/** P05-R06: a ring with four spokes, a pod at the end of each, and an orange neon core. */
+/**
+ * P05-R06, P16-R03: a spiral turret: an organic core spinning four sinew arms curled the same
+ * way round, a flesh pod at the end of each with a metal muzzle collar, an orange neon heart.
+ */
 export function buildSpinner(scene: Scene): EnemyModel {
   const podRadius = ENEMY_CONFIG.spinner.podRadius;
-  return buildEnemyModel('spinner', scene, N.spinner, ({ hull, neon, charge, muzzle }) => {
-    hull.lathe(SPINNER_RING, 12, H.base, {}, false);
+  return buildEnemyModel('spinner', scene, N.spinner, (p) => {
+    const { flesh, hull, neon, charge, muzzle } = p;
+    organ(flesh, 5, 6, F.purple, { at: [0, -1.6, 0] }, 0.35);
     for (const a of around(4)) {
-      const spoke = { at: radial(a, 6.5, 0), yaw: a };
-      hull.bevelSlab(SPINNER_SPOKE, [-0.8, 0, 0.8], [0.3, 0.5], H.panel, spoke);
-      const pod = { at: radial(a, podRadius, 0), yaw: a };
-      hull.bevelSlab(SPINNER_POD, [-1.8, 0, 1.8], [0.4, 0.9], H.panel, pod, H.base);
+      // Each arm leaves the core a quarter turn behind its pod: a spiral.
+      const arm = curve(radial(a - 0.9, 4.2, 0), radial(a, podRadius - 3.4, 0), [0, 0.5, 0], 3);
+      const bowed = arm.map((q, i): [number, number, number] => {
+        const k = Math.sin((Math.PI * i) / 3) * 2.2;
+        return [q[0] + Math.cos(a) * k, q[1], q[2] - Math.sin(a) * k];
+      });
+      tendril(flesh, bowed, [1.3, 1], 3, F.sinew);
+      const pod = { at: radial(a, podRadius - 3.6, -0.2), pitch: QUARTER, yaw: a };
+      organ(flesh, 2.4, 5, F.crimson, pod, 1.1);
+      hull.ring(1.6, 1, 5, H.panel, { at: radial(a, podRadius + 1.2, 0), pitch: QUARTER, yaw: a });
       // The pods' muzzles light up while it fires.
-      charge.slab(SPINNER_MUZZLE, [-0.7, 0.7], WHITE, pod);
+      charge.slab(SPINNER_MUZZLE, [-0.7, 0.7], WHITE, { at: radial(a, podRadius, 0), yaw: a });
       muzzle(radial(a, podRadius + 3.1, 0));
     }
     const core = [
       [0, -1.5],
-      [3.2, -0.8],
-      [3.2, 0.8],
-      [0, 2],
+      [3.2, -0.6],
+      [0, 2.6],
     ] as const;
-    neon.lathe(core, 8, N.spinner);
+    neon.lathe(core, 6, N.spinner);
   });
 }
 
-/** P05-R07: the Lancer's right fin. */
+/** P05-R07: the Lancer's right fin, a flesh blade at its tail. */
 const LANCER_FIN = [
-  [3, -5],
+  [2.5, -6],
   [10, -17],
   [9.5, -20],
   [2.5, -15],
 ] as const;
 
-/** P05-R07: a long needle hull with a glowing emitter at the nose and two small side fins. */
+/**
+ * P05-R07, P16-R03: a laser lance: a long body of swollen segments, a metal lance grafted on
+ * its head ending in the glowing emitter, two flesh fins and violet veins along its back.
+ */
 export function buildLancer(scene: Scene): EnemyModel {
   const nose = ENEMY_CONFIG.lancer.emitterOffset;
-  return buildEnemyModel('lancer', scene, N.lancer, ({ hull, neon, charge, reactor, muzzle }) => {
-    const needle = [
-      [-21, 2.3, -1.3, 1.2],
-      [-12, 3, -1.5, 1.6],
-      [-6, 3.2, -1.5, 2.4],
-      [4, 2.6, -1.3, 2.3],
-      [10, 1.8, -1, 1.3],
-      [nose - 4, 1.2, -0.6, 0.6],
-      [nose - 1, 0, 0, 0],
-    ] as const;
-    hull.loft(FIGHTER_SECTION, needle, H.base, {}, { paint: canopyPaint([2, 3], H.dark) });
+  return buildEnemyModel('lancer', scene, N.lancer, (p) => {
+    const { flesh, hull, neon, charge, reactor, muzzle } = p;
+    const body = { tail: -21, nose: 9, segments: 4, width: 3.2, bottom: -1.5, top: 2.4 };
+    segmentedBody(flesh, body, F.purple, {}, LOBE_SECTION);
+    hull.cylinder(1.5, nose - 6, 5, H.panel, { at: [0, 0, 5], pitch: QUARTER }, 0.6);
+    eyePair(p, [0, 1.6, 6], 1, 0.5, N.lancer);
     reactor([0, 0, -21], 1.6);
-    // Neon stripes painted along both flanks, from the fins to the canopy's front.
-    for (const side of [1, 6]) {
-      const stripe = sideStripe(FIGHTER_SECTION, side, [0.3, 0.7]);
-      neon.loft(stripe, needle.slice(1, 5), N.lancer, {}, { open: true });
-    }
     for (const s of SIDES) {
+      neon.box([0.5, 0.4, 14], N.lancer, { at: [s * 1.6, 2.1, -6] });
       const fin = LANCER_FIN.map(([x, z]): OutlinePoint => [s * x, z]);
-      hull.bevelSlab(fin, [-0.5, 0, 0.5], [0.3, 0.5], H.base, {}, H.panel);
+      flesh.bevelSlab(fin, [-0.5, 0, 0.5], [0.3, 0.5], F.membrane, {}, F.sinew);
       reactor([s * 6.5, 0, -17.8], 0.9);
     }
     const emitter = [
@@ -125,18 +96,7 @@ export function buildLancer(scene: Scene): EnemyModel {
   });
 }
 
-/** P05-R08: the Rocketeer's body, armour, the fairings out to its pods, and the pods. */
-const ROCKETEER_BODY = [
-  [0, 14],
-  [7, 10],
-  [9, 0],
-  [8, -12],
-  [4, -15],
-  [-4, -15],
-  [-8, -12],
-  [-9, 0],
-  [-7, 10],
-] as const;
+/** P05-R08: the Rocketeer's armour plate, grafted on its back. */
 const ROCKETEER_ARMOUR = [
   [0, 9],
   [4.5, 5],
@@ -144,180 +104,32 @@ const ROCKETEER_ARMOUR = [
   [-4.5, -8],
   [-4.5, 5],
 ] as const;
-const ROCKETEER_MISSILE = [
-  [2.6, 0],
-  [4, 2.5],
-  [4, 18.5],
-  [3.3, 22],
-] as const;
 
-/** P05-R08: a bulky hull with a missile pod on each side; the missile tips glow when loaded. */
+/**
+ * P05-R08, P16-R03: a bulky flesh body with an armour plate on its back, carrying on sinews a
+ * long egg sac on each side: its missiles, their tips glowing when loaded.
+ */
 export function buildRocketeer(scene: Scene): EnemyModel {
   const pod = ENEMY_CONFIG.rocketeer.podOffset;
   return buildEnemyModel('rocketeer', scene, N.rocketeer, (p) => {
-    const { hull, neon, charge, reactor } = p;
-    hull.bevelSlab(ROCKETEER_BODY, [-2.2, 0, 2.4], [1.4, 2], H.base, {}, H.panel);
-    hull.bevelSlab(ROCKETEER_ARMOUR, [2.4, 2.4, 3.6], [0, 1], H.dark);
+    const { flesh, hull, neon, charge, reactor } = p;
+    const body = { tail: -15, nose: 14, segments: 3, width: 9, bottom: -2.2, top: 3.4 };
+    segmentedBody(flesh, body, F.crimson, {}, LOBE_SECTION);
+    hull.bevelSlab(ROCKETEER_ARMOUR, [2.4, 2.4, 3.6], [0, 1], H.panel, {}, H.base);
     for (const eye of angryEyes([0, 6.2], 0.8, [2.4, 0.6], 0.4)) {
       decal(neon, eye, 3.62, N.rocketeer);
     }
-    // A thick, swept fairing from the hull into each pod, instead of a pylon.
-    const fairing = [
-      [7.5, 8],
-      [pod - 1, 9.5],
-      [pod - 1, -9.5],
-      [7.5, -11],
-    ] as const;
-    for (const outline of [fairing, flipX(fairing)]) {
-      hull.bevelSlab(outline, [-1.4, -0.2, 1.2], [0.4, 0.9], H.base, {}, H.panel);
-    }
     for (const s of SIDES) {
-      hull.lathe(ROCKETEER_MISSILE, 8, H.panel, { at: [s * pod, 0, -11], pitch: QUARTER });
-      neon.box([1, 0.4, 12], N.rocketeer, { at: [s * pod, 3.9, -3] });
-      charge.cylinder(2.6, 3.5, 8, WHITE, { at: [s * pod, 0, 11], pitch: QUARTER }, 0);
+      sinew(p, [s * 7, 0.5, 6], [s * (pod - 3), 0.5, 4], [0, 1, 1], 1.4);
+      sinew(p, [s * 7, 0.5, -8], [s * (pod - 3), 0.5, -6], [0, 1, -1], 1.4);
+      // The egg sac: a long organ lying along Z, its missile tip at the front.
+      organ(flesh, 4, 6, F.membrane, { at: [s * pod, 0, -11], pitch: QUARTER }, 2.75);
+      vein(p.vein, curve([s * pod, 3.6, -8], [s * pod, 3.6, 6], [0, 0.8, 0], 3), 0.9, N.rocketeer);
+      charge.cylinder(2.4, 3.5, 6, WHITE, { at: [s * pod, 0, 11], pitch: QUARTER }, 0);
       p.muzzle([s * pod, 0, 14.5], 'missile');
       reactor([s * 2.4, 0, -15], 1.6);
     }
   });
 }
 
-/** P05-R09: the Bulwark's hull, its armour (one band along the front), tower and visor. */
-const BULWARK_BODY = [
-  [0, 16],
-  [14, 13],
-  [27, 2],
-  [27, -8],
-  [18, -17],
-  [-18, -17],
-  [-27, -8],
-  [-27, 2],
-  [-14, 13],
-] as const;
-const BULWARK_ARMOUR = [
-  [0, 13],
-  [12.5, 10.3],
-  [23, 1],
-  [19.5, -1],
-  [10.5, 6.5],
-  [0, 9],
-  [-10.5, 6.5],
-  [-19.5, -1],
-  [-23, 1],
-  [-12.5, 10.3],
-] as const;
-const BULWARK_TOWER = [
-  [0, 4],
-  [9, 0],
-  [9, -12],
-  [-9, -12],
-  [-9, 0],
-] as const;
-/** Follows the tower's sloped front, just below its top. */
-const BULWARK_VISOR = [
-  [-7, 0.2],
-  [0, 3.3],
-  [7, 0.2],
-  [7, -0.6],
-  [0, 2.5],
-  [-7, -0.6],
-] as const;
-/** The engine nacelles, sunk into the back of the hull. */
-const BULWARK_NACELLE = [
-  [-20.5, 3, -2.2, 1.2],
-  [-16, 3.4, -2.6, 1.6],
-  [-10, 2, -1.6, 0.6],
-] as const;
-
-/** P05-R09: a heavy, wide hull covered with front armour plates and a blue neon visor slit. */
-export function buildBulwark(scene: Scene): EnemyModel {
-  return buildEnemyModel('bulwark', scene, N.bulwark, ({ hull, neon, charge, reactor, muzzle }) => {
-    hull.bevelSlab(BULWARK_BODY, [-3, -0.6, 2.5], [2, 2.5], H.base, {}, H.panel);
-    hull.bevelSlab(BULWARK_ARMOUR, [2.5, 2.5, 3.9], [0, 1.1], H.panel, {}, H.base);
-    hull.bevelSlab(BULWARK_TOWER, [2.5, 2.5, 5.5], [0, 1.6], H.dark, {}, H.base);
-    neon.slab(BULWARK_VISOR, [3.9, 5], N.bulwark);
-    for (const s of SIDES) {
-      hull.loft(POD_SECTION, BULWARK_NACELLE, H.dark, { at: [s * 12, 0, 0] });
-      reactor([s * 12, -0.5, -20.5], 1.3);
-      // The twin cannon on the tower's front, over the armour (phase 7 review).
-      hull.cylinder(0.9, 11, 6, H.dark, { at: [s * 3, 4.2, 2], pitch: QUARTER }, 0.75);
-      charge.cylinder(0.95, 1, 6, WHITE, { at: [s * 3, 4.2, 13], pitch: QUARTER });
-      muzzle([s * 3, 4.2, 14]);
-    }
-    reactor([0, 0, -17], 2.2);
-  });
-}
-
-/**
- * A Splitter pod: a wedge fitted around a flat of the core, `inner` to `outer` from the core's
- * centre, outwards along +Z, around its own centre `offset` out.
- */
-function splitterPodOutline(offset: number, inner: number, outer: number): OutlinePoint[] {
-  const rim = (a: number): OutlinePoint => [outer * Math.sin(a), outer * Math.cos(a) - offset];
-  return [[-4, inner - offset], rim(-0.42), rim(-0.21), rim(0.21), rim(0.42), [4, inner - offset]];
-}
-
-/** A pod of the Splitter, and the neon seam along its inner side. */
-function pod(
-  hull: SolidBuilder,
-  neon: SolidBuilder,
-  place: { at?: [number, number, number]; yaw?: number },
-): void {
-  const offset = ENEMY_CONFIG.splitter.podOffset;
-  const inner = 8.3;
-  hull.bevelSlab(
-    splitterPodOutline(offset, inner, 16.4),
-    [-2.2, 0, 2.4],
-    [0.5, 1.2],
-    H.panel,
-    place,
-    H.base,
-  );
-  const z0 = inner - offset - 0.45;
-  const seam = [
-    [-4.3, z0],
-    [4.3, z0],
-    [4.3, z0 + 0.4],
-    [-4.3, z0 + 0.4],
-  ] as const;
-  neon.slab(seam, [-1.6, 1.8], N.splitter, place);
-}
-
-/** P05-R10: a hexagonal core with three pods around it, purple neon seams in between. */
-export function buildSplitter(scene: Scene): EnemyModel {
-  const offset = ENEMY_CONFIG.splitter.podOffset;
-  return buildEnemyModel(
-    'splitter',
-    scene,
-    N.splitter,
-    ({ hull, neon, charge, reactor, muzzle }) => {
-      const core = [
-        [0, -3],
-        [9, -2.5],
-        [9, 2.5],
-        [6, 3.5],
-        [0, 4],
-      ] as const;
-      // Six sides: one flat faces each pod, and the back one the reactor.
-      hull.lathe(core, 6, H.base);
-      neon.ring(9.1, 0.7, 6, N.splitter, { at: [0, 1, 0] });
-      for (const a of around(3)) pod(hull, neon, { at: radial(a, offset, 0), yaw: a });
-      const eye = [
-        [0, 0],
-        [2.2, 0.4],
-        [0, 1.4],
-      ] as const;
-      charge.lathe(eye, 6, WHITE, { at: [0, 4, 0] });
-      muzzle([0, 5.4, 0]);
-      reactor([0, 0, -7.8], 1.6);
-    },
-  );
-}
-
-/** P05-R10: a pod broken off a Splitter, diving outer side first. */
-export function buildSplitterPod(scene: Scene): EnemyModel {
-  const { podOffset } = ENEMY_CONFIG.splitter;
-  return buildEnemyModel('splitter-pod', scene, N.splitter, ({ hull, neon, reactor }) => {
-    pod(hull, neon, {});
-    reactor([0, 0, 8.3 - podOffset], 1);
-  });
-}
+export { buildBulwark, buildSplitter, buildSplitterPod } from './heavy-beetle-models';

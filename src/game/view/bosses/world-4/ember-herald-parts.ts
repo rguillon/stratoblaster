@@ -5,6 +5,7 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { bossPoint } from '../boss-limbs';
 import { H, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { SKIN } from './living-forge';
 
 // P10-R11, 4-5: the Ember Herald's colours, its ember lances (the parts on its turning ring),
 // the spikes on its hull and the embers drifting round it. Logical pixels, nose +Z, Y up.
@@ -56,19 +57,20 @@ const SPIKE = [
 
 /**
  * A spike of `[radius, length]` growing from `at`, tilted by `[pitch, roll, yaw]` from straight
- * up: soot-black metal, a molten glow at its root.
+ * up: bone, a molten glow at its root.
  */
 export function spike(
-  { hull, neon }: EnemyParts,
+  { flesh, neon }: EnemyParts,
   at: Vec3,
   [pitch, roll, yaw]: readonly [number, number, number],
   [radius, length]: readonly [number, number],
 ): void {
   const place: Placement = { at, pitch, roll, yaw };
-  hull.lathe(
+  // P16-R05: a bone spike, a molten glow at its root.
+  flesh.lathe(
     SPIKE.map(([r, y]) => [r * radius, y * length] as const),
     4,
-    HEAT.soot,
+    SKIN.bone,
     place,
   );
   neon.ring(radius * 1.05, length * 0.1, 4, HEAT.molten, place);
@@ -93,7 +95,7 @@ export function emberLance(p: EnemyParts, muzzles: readonly Muzzle[], at: Vec3):
   ];
   const axis = (r: number): Placement => ({ at: out(r), pitch: QUARTER, yaw });
   const inner = LANCE_LENGTH + LANCE_TIP[1][1];
-  p.hull.lathe(SHAFT, 6, H.dark, axis(inner));
+  p.flesh.lathe(SHAFT, 6, SKIN.panel, axis(inner));
   p.neon.lathe(BLADE, 6, GOLD, axis(inner), false);
   p.charge.lathe(LANCE_TIP, 6, WHITE, axis(LANCE_TIP[1][1]));
   p.muzzle(tip);

@@ -8,6 +8,7 @@ import { bossPoint } from '../boss-model';
 import { rod } from '../final-boss-greebles';
 import { lamps, seam } from '../mini-boss-greebles';
 import { H, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { SKIN } from './living-forge';
 import { box2d } from '../overlord-city';
 
 // P10-R11, 4-4: the Foundry Ark's destroyable parts (rail cannons, chimney row, missile battery,
@@ -26,9 +27,13 @@ export const RUST: Rgb = [0.18, 0.08, 0.04];
 /** Height of the deck, and of the outriggers' top, where the rail cannons turn. */
 export const DECK_TOP = 4;
 
+// P16-R06: its parts are flesh growths with metal grafted on: a flesh drum under each rail
+// cannon, a flesh mound under the chimneys, crucibles as swollen sacs brimming with slag.
+
 /** The turntable a rail cannon turns on: a low drum on its outrigger, ringed with orange. */
-export function railMount({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
-  hull.cylinder(11, DECK_TOP + 1, 8, H.dark, { at: [x, 0, z], yaw: Math.PI / 8 });
+export function railMount({ hull, neon, flesh }: EnemyParts, [x, , z]: Vec3): void {
+  flesh.cylinder(11, DECK_TOP + 1, 8, SKIN.base, { at: [x, 0, z], yaw: Math.PI / 8 });
+  hull.ring(9, 0.6, 8, H.dark, { at: [x, DECK_TOP + 0.6, z], yaw: Math.PI / 8 });
   neon.ring(11.3, 0.6, 8, ARK_ORANGE, { at: [x, DECK_TOP - 0.2, z], yaw: Math.PI / 8 });
 }
 
@@ -69,8 +74,15 @@ const CHIMNEY_TOP = 32;
  * The chimney row (P10-R11; no weapon, it shields the core): four tall stacks on a brick-dark
  * plinth, sooty at the top with a heat glow under their lips, a red lamp on each.
  */
-export function chimneyRow({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
-  hull.bevelSlab(box2d(46, 15, [x, z]), [DECK_TOP - 1, DECK_TOP, 10], [0, 1.2], H.base, {}, RUST);
+export function chimneyRow({ hull, neon, flesh }: EnemyParts, [x, , z]: Vec3): void {
+  flesh.bevelSlab(
+    box2d(46, 15, [x, z]),
+    [DECK_TOP - 1, DECK_TOP, 10],
+    [0, 1.2],
+    SKIN.base,
+    {},
+    SKIN.dark,
+  );
   CHIMNEYS.forEach((dx, i) => {
     const top = CHIMNEY_TOP - (i % 2) * 3;
     const at: Vec3 = [x + dx, 10, z];
@@ -118,9 +130,9 @@ const BUCKET_FOOT = DECK_TOP + 2;
  * on chains, a pouring lip on its inboard side, a hot band round its belly. Destroyed, it spills
  * into a ring of bullets.
  */
-export function crucible({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
+export function crucible({ hull, neon, flesh }: EnemyParts, [x, , z]: Vec3): void {
   const inboard = -Math.sign(x);
-  hull.lathe(BUCKET, 8, SOOT, { at: [x, BUCKET_FOOT, z] }, false);
+  flesh.lathe(BUCKET, 8, SKIN.dark, { at: [x, BUCKET_FOOT, z] }, false);
   neon.ring(11.7, 0.8, 8, ARK_ORANGE, { at: [x, BUCKET_FOOT + 7, z] });
   neon.cylinder(11.9, 0.3, 8, MOLTEN, { at: [x, BUCKET_FOOT + 11.4, z] });
   hull.box([5, 1.2, 5], H.dark, { at: [x + inboard * 12.5, BUCKET_FOOT + 11.6, z] });

@@ -15,9 +15,12 @@ import { seam, vent } from '../mini-boss-greebles';
 import { H, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
 import { edgeLights, symmetric } from '../overlord-city';
 import { emberLance, embers, GOLD, HEAT, spike } from './ember-herald-parts';
+import { backRibs, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-5: the Ember Herald, the mini boss of the Caldera. Model space: logical pixels,
 // nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
+// P16-R05: a living fire-wasp, its long flesh body ribbed in bone, scorched membrane wings veined
+// molten, bone spines, a metal spire and halo grafted on.
 type Vec3 = [number, number, number];
 
 /** The fuselage (loft stations, tail to nose): a long, hard-edged body closing to a needle nose. */
@@ -110,28 +113,57 @@ const SPOKE: OutlinePoint[] = [
 ];
 
 /** The fuselage, soot-black behind its canopy, gold strips down its flanks, reactors aft. */
-function drawFuselage({ hull, neon, reactor }: EnemyParts): void {
+function drawFuselage(p: EnemyParts): void {
+  const { hull, neon } = p;
   const canopy = canopyPaint([3, 4], H.dark);
   // Soot over its back behind the canopy, from the reactors' heat.
   const paint = (side: number, band: number) =>
-    canopy(side, band) ?? (band < 2 && BACK.has(side) ? HEAT.soot : undefined);
-  hull.loft(FIGHTER_SECTION, FUSELAGE, H.base, {}, { paint });
+    canopy(side, band) ?? (band < 2 && BACK.has(side) ? SKIN.dark : undefined);
+  p.flesh.loft(FIGHTER_SECTION, FUSELAGE, SKIN.base, {}, { paint });
+  backRibs(p, [-26, -18, 18], { halfWidth: 8.5, y: 2, height: 7, thickness: 0.7 });
+  glands(p, [[0, 9.6, 24]], 1.4, HEAT.molten);
   for (const s of SIDES) {
     neon.box([0.5, 0.5, 34], GOLD, { at: [s * 9.4, 4, 4], yaw: s * 0.07 });
     neon.box([0.5, 0.4, 16], HEAT.molten, { at: [s * 4.6, 7.4, 38], yaw: -s * 0.1 });
-    reactor([s * 4, 3.6, -55], 3);
-    reactor([s * 11, 2.4, -50], 2.2);
     vent(hull, [s * 5.5, 9, -32], [4, 8], 3, 0);
   }
+  reactorSacs(
+    p,
+    [
+      [4, 3.6, -55],
+      [-4, 3.6, -55],
+    ],
+    3,
+    HEAT.molten,
+  );
+  reactorSacs(
+    p,
+    [
+      [11, 2.4, -50],
+      [-11, 2.4, -50],
+    ],
+    2.2,
+    GOLD,
+  );
   seam(hull, [0, -50], [0, -16], [11.05, 0.8, 0.4], H.dark);
 }
 
 /** The spiky wings: soot-dark tops cracked with molten seams, gold leading edges, spikes. */
 function drawWings(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(WING, WING_Y, [0.6, 0.8], H.base, {}, HEAT.blued);
+  const { neon } = p;
+  p.flesh.bevelSlab(WING, WING_Y, [0.6, 0.8], SKIN.dark, {}, SKIN.base);
   edgeLights(neon, WING, LEADING, [-1.2, -0.2], GOLD);
   for (const s of SIDES) {
+    magmaVein(
+      p,
+      [
+        [s * 10, 2.7, 0],
+        [s * 30, 2.7, -6],
+        [s * 48, 2.6, -18],
+      ],
+      0.8,
+      GOLD,
+    );
     for (const [[ax, az], [bx, bz]] of SEAMS) {
       const [dx, dz] = [s * (bx - ax), bz - az];
       neon.box([0.7, 0.3, Math.hypot(dx, dz)], HEAT.molten, {
@@ -142,7 +174,7 @@ function drawWings(p: EnemyParts): void {
     spike(p, [s * 52, WING_Y[2] - 0.5, -21], [QUARTER + 0.15, 0, Math.PI - s * 0.6], [1.6, 9]);
     spike(p, [s * 46, WING_Y[2] - 0.5, 11], [QUARTER - 0.1, 0, s * 0.9], [1.4, 7]);
     spike(p, [s * 28, WING_Y[2] - 0.5, -42], [QUARTER, 0, Math.PI - s * 0.25], [1.3, 6]);
-    hull.box([1, 7, 12], H.panel, { at: [s * 12, 4, -36], roll: s * 0.45 }, HEAT.soot);
+    p.flesh.box([1, 7, 12], SKIN.dark, { at: [s * 12, 4, -36], roll: s * 0.45 }, SKIN.bone);
     neon.box([0.5, 0.5, 10], GOLD, { at: [s * 15, 10.2, -36], roll: s * 0.45 });
   }
 }
