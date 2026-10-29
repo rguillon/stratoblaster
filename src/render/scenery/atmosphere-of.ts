@@ -20,10 +20,12 @@ export interface AtmosphereOptions {
   readonly timeOfDay?: TimeOfDay | undefined;
   /** `weather=0`: no weather at all. */
   readonly weather?: boolean;
+  /** Phase 15 (P15-R10), `tiles=1`: the grid of tiles drawn over the districts. */
+  readonly tileGrid?: boolean;
 }
 
 /**
- * The fixed atmosphere of a look without a sky script (Level Zero, World 1): its own sky, fog,
+ * The fixed atmosphere of a look without a sky script (World 1): its own sky, fog,
  * sun, ambient light, clouds and lights, as they always were.
  */
 export function lookAtmosphere(look: SceneryLook): Atmosphere {

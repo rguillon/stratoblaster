@@ -54,6 +54,11 @@ export interface GamePlayOptions {
   readonly startBoss?: BossRank | null;
   /** Starts again from this checkpoint (P07-R08). */
   readonly resume?: LevelCheckpoint;
+  /**
+   * The ship rises into the level and flies off its top at the end (reviewer, 2026-10-28). On
+   * when omitted.
+   */
+  readonly journey?: boolean;
   /** The weapons kept from the levels completed before; all at level 1 when omitted. */
   readonly weapons?: WeaponLevels;
   /** The lives and bombs kept from the level completed before; the game's when omitted. */
@@ -175,6 +180,7 @@ export class GamePlay {
       eye: playfieldEye(this.game.screen, this.view.stage.framing),
       maxEnemyAge: CFG.maxEnemyAge,
       endWait: CFG.endWait,
+      ...(this.options.journey === false ? {} : { journey: CFG.journey }),
       seed: CFG.seed,
       inView: this.#inView(),
       bonuses: this.game.bonuses,

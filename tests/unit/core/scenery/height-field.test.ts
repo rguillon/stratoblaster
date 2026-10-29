@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { HeightField, softCap, terrainCeiling } from '../../../../src/core/scenery/height-field';
 import type { SceneryLevel, TerrainSection } from '../../../../src/core/scenery/scenery-level';
 import { GAME } from '../../../../src/game/index';
-import { LEVEL_ZERO } from '../../../../src/game/sim/scenery-levels';
 import { SAMPLE_SCENERY_LEVEL } from '../../../fixtures/sample-scenery';
 
 const STRAIGHT = { x: 0, amplitude: 0, wavelength: 1000 } as const;
@@ -194,7 +193,6 @@ describe('HeightField', () => {
 describe('steepness (reviewer, 2026-10-28)', () => {
   it('is never below the slope measured around a point, and known on most of the cities', () => {
     const levels = [
-      LEVEL_ZERO,
       ...['1-3', '2-4', '3-3', '3-5', '4-1', '4-5'].map((id) => {
         const found = GAME.gameLevels.find((l) => l.id === id);
         if (!found) throw new Error(`no level ${id}`);

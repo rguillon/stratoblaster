@@ -274,7 +274,7 @@ class EnemyViewer {
 }
 
 /**
- * Starts the enemies debug page (P05-R11): the enemy kind picked spawns over Level Zero, again
+ * Starts the enemies debug page (P05-R11): the enemy kind picked spawns over the first level's ground, again
  * and again, while a player ship flies (arrows / WASD) and shoots it with any weapon and level;
  * the model view shows the enemy's model alone, turning.
  */

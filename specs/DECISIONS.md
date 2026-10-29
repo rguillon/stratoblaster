@@ -1528,3 +1528,59 @@
 - **Phase:** 14 (P14-R05, R06; found by the unit tests of `/validate-phase 14`)
 - **Decision:** Babylon draws the see-through meshes of a rendering group by draw order (`alphaIndex`) before distance, and a mesh that sets none keeps `Number.MAX_VALUE`, so it was drawn after the enemy bullets (1 000 000 and up, D-124): the player's shots, reactor flames, missile flames and laser beams all were. The playfield's `NodeAdopter` now gives every mesh it adopts with no draw order `ON_TOP_ALPHA_INDEX - 1` (999 999); clones keep it. Missile flames and laser parts are drawn at `ON_TOP_ALPHA_INDEX`, over the player's shots and the blasts, and the bullets just above (1 000 001 and up), under the hitbox marker. The order of the other meshes among themselves is unchanged. Also found by those tests: the reactor cores were folded into the enemy family twice (they now match their flames), and the reactor colour was too pale (0.45 saturation) for the family's 0.5; it is `[0.48, 0.82, 1]` (0.52), so it folds into the family.
 - **Status:** Accepted
+
+### D-157 — Districts on a grid of tiles: wide rows, one-tile columns
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R01, R02, R04, R05)
+- **Context:** Every road of an N-lane road must be made of N × N pieces between its junctions, and the narrower road of an adapter enters on whole tiles. When two wide roads cross, the junction of one breaks the N-tile lattice of the other unless one size divides the other (3 with 2 or 4 cannot both hold).
+- **Decision:** In a district, rows (across the level) carry the sizes: one tile, 2×2 avenues (`dual.avenues`) and World 4's 3×3 and 4×4 boulevards (`boulevards`, by `lanes`). Columns are one tile wide, and sit where the junction of every wide row of their part starts on a multiple of the row's size (`columnFits`): the column is then as close to the middle of the adapter as the grid allows. Wide rows are built along their whole line (so a wide road never ends on a narrower one, and no turn joins two sizes); one whose ground does not allow it is a one-tile street on its first tile. The rows shared by two parts of a district are one tile wide. The tile grid is the level's (tile edges at multiples of `tiles.size` from X = 0 and Z = 0), so districts cut where the runout starts stay on it.
+- **Alternatives considered:** wide columns too (2×2 avenues along the level): 3 against 2 or 4 cannot both keep their lattices, and every wide column would end on the narrower boundary rows; N × 1 straight slices to fill odd lengths: against the reviewer's "round number of blocks".
+- **Consequences:** the X and T adapters with two wide roads (3-2, 4-2, 4-3) are in the kit and on the `props/` page, but no level lays them. Streets are 10 units wide per lane each way (a one-lane street is 6 of roadway and two 2-unit sidewalks), wider than the 6-unit streets before.
+- **Status:** Accepted
+
+### D-158 — Streets cross again inside the districts (amends D-046)
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R05; reviewer's choice when writing the spec)
+- **Decision:** On tiles, the street grids keep their crossings: `removeCrossings` is not run for them, whatever `noCrossings` says. Winding roads and paths outside the districts still never cross (`noCrossings` keeps its meaning there). A link cut back while removing dead ends is never built again (`removeDeadEnds(…, keepCut = true)`): without the T-junction rule, a street could otherwise be cut from one end and built again from the other until the pass limit, leaving dead ends on screen.
+- **Status:** Accepted
+
+### D-159 — Packing the blocks with buildings of whole tiles
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R07, R08)
+- **Decision:** `packBlock` takes the free tiles of a block in a random order (from the block's hash) and gives each the first kind that fits with that tile at a corner: the kind drawn in the area's group, then the group's others from the largest down, then the lots. A building touching a street must face it (its front, -Z, on a road side, by quarter turns; a non-square one that can only face a road along its long side is not placed there); one touching none is turned at random. Packing stops at `buildingDensity` of the block's tiles fit to build on (a tile is fit when its corners are above `minHeight` and differ by at most `maxSlope` over half a tile; corner heights are shared between tiles, so packing samples the ground once per corner). The lots count in that share. Placement in districts no longer uses `slotSpacing`, `setback` or `BlockFill`. The groups' models were balanced so no footprint makes more than 60 % of a section's buildings.
+- **Alternatives considered:** lots outside the share (sections at density 1 then fall short where no building fits a leftover tile).
+- **Consequences:** the districts hold 1.5 to 3.7 times as many buildings as before (smaller ones), and generating a level takes about 0.2 to 0.6 s instead of 0.1 to 0.2 s (see the report).
+- **Status:** Accepted
+
+### D-160 — Models made for the grid replace the district buildings
+- **Date:** 2026-10-28
+- **Phase:** 15 (P15-R09)
+- **Decision:** 38 archetypes (`TileArchetype`: houses, villas, cottages, terraces, flats, workshops, farms, adobe homes, outposts, mines, oil, refineries, factories, warehouses, containers, cooling towers, tanks, foundries, plants, dock cranes, mid-rise, offices, towers, skyscrapers, and the lots) are each built for any W × D tiles less a 0.5 margin, from a seed (`game/view/props/tile-*.ts`). The 21 building groups of the districts list their models (`TILE_GROUPS`, at least 5 each, 3 footprints, one non-square); groups may share a model. Removed, as no level places them any more: the city towers and blocks, the industrial plants and works (families of parts), the World 4 skyscrapers, the World 3 suburb house, row houses and walk-up flats, the pumpjack, and World 1's wind-catcher home, water tower, solar farm and mine headframe (`city-parts.ts`, `city-landmarks.ts`, `skyscraper-props.ts`, `suburb-props.ts`, `oil-props.ts` deleted). Models no level placed before this phase (the frozen and jungle ones) are kept, as before. World 1's unused industrial, heavy industry and city groups also use the new models.
+- **Status:** Accepted
+
+### D-161 — Level Zero and its viewer removed
+- **Date:** 2026-10-28
+- **Phase:** 15 (reviewer's request, in chat)
+- **Decision:** The test level of phase 4 (Level Zero) and the `level_zero/` page are removed: `game/config/level-zero.ts`, `game/sim/scenery-levels.ts`, `app/start-scenery-viewer.ts`, `ui/scenery-viewer-panel.ts`, `config/scenery-viewer.ts` (its stage tunables move to `config/scenery-stage.ts`, used by the game and the viewers), the route and the Vite page. `GameDefinition.sceneryLevels` is removed from the engine contract: the `enemies/` page, and a boss with no level on `bosses/`, fly over the first playable level's ground (`gameLevels[0]`). The models only Level Zero placed are removed (factory, storage tanks, warehouse, cooling tower, container yard, refinery, the 16 industrial complexes, radar dish, observatory, stilt pod, and the `city` group of tile models with World 1's unused `city` group), with their builders (`industrial-props.ts`, `industrial-parts.ts`, `industrial-yard.ts`). The props the worlds share keep their ids in `game/config/prop-ids.ts`; the look the worlds start from is `BASE_SCENERY_LOOK` (was `LEVEL_ZERO_LOOK`); the P14 tone `world0` is gone.
+- **Consequences:** phase 4 requirements about Level Zero (P04-R01 to R07 shown on `level_zero/`) no longer have a page; the terrain tools they built stay, used by the worlds.
+- **Status:** Accepted
+
+### D-162 — Every prop model spans whole tiles
+- **Date:** 2026-10-28
+- **Phase:** 15 (reviewer's request, in chat)
+- **Decision:** Every prop model, placed on the grid of tiles or not (trees, homes, landmarks, buildings made of parts and line pieces included; not the cars, amended below), is stretched along X and Z to the nearest whole number of tiles (at least one) less the 0.5 building margin, centred on the origin; heights are kept (`game/view/props/tile-fit.ts`, applied to all of `PROP_MODELS` but the tile models and the road kit, which already fit). The pipeline, swamp pipeline and causeway pieces (15 long) become 2 tiles long (19).
+- **Consequences:** small props grow to a 9.0 × 9.0 footprint at least: trees and bushes are stretched sideways; World 4's P14 tone goes from 0.58 to 0.55 so 4-1 stays under the background luminance cap; the placement footprints and scale ranges of the world configs are unchanged, so the random scale of a scattered prop still moves it off whole tiles in the levels.
+- **Amended (reviewer, 2026-10-28):** the cars keep their own size, so they fit in a lane of the roads.
+- **Status:** Accepted
+
+### D-163 — Prop models no level places are removed
+- **Date:** 2026-10-28
+- **Phase:** 15 (reviewer's request, in chat)
+- **Decision:** The 90 prop models no level places any more (checked with `levelPropKinds` and the car kinds over every game level) are removed with their builders: World 2's frozen props (snow plants, chalets, huts, domes, harbour, outposts, pipeline, mining, sea ice) and its families of parts (polar towers and blocks, mining complexes), and all of World 3's own props (jungle plants, water props, stilt villages, ruins, swamp works, dam, canopy city and its families). Deleted: `polar-*.ts`, `jungle-*.ts`, `config/building-families.ts`, `WORLD_2_PROP_IDS`, `WORLD_3_PROP_IDS` and the 56 palette colours only they used. The wind turbine, still placed in Worlds 1 and 2, moves to `view/props/wind-turbine.ts` and to `WORLD_1_PROP_IDS`. The `props/` page loses its World 2, World 3 and Buildings groups.
+- **Status:** Accepted
+
+### D-164 — Levels retuned for the growth checks on the grid
+- **Date:** 2026-10-29
+- **Phase:** 15 (validation, reviewer's choice: retune the levels, keep the tests)
+- **Decision:** On the grid, big footprints and the lots that fill the tiles they leave made the P08-R03, P09-R03 and P10-R03 growth checks fail. Retuned: 2-4 warehouses building density 1 → 0.7; 3-2 warehouse docks 1 → 0.85; 3-3 canal park and 3-4 town park 0.8 → 1; 4-5 downtown and city heart 1 → 0.7 (fewer low lots among the skyscrapers). A building that cannot face a road now turns only by half turns from the way its footprint was fitted (`tile-packing.ts`), so it never stands across its tiles.
+- **Status:** Accepted

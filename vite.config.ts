@@ -33,15 +33,14 @@ export default defineConfig(({ mode }) => ({
     // Babylon alone exceeds Vite's 500 kB default; the real budget is ENG-107 (1.5 MB gzip).
     chunkSizeWarningLimit: 1500,
     // Multi-page: the game, the player ship viewer at `player_ship/` (phase 02), the
-    // player shots viewer at `player_shots/` (phase 03), the generated level viewer at
-    // `level_zero/` (phase 04), the enemies viewer at `enemies/` (phase 05) and the bosses viewer
+    // player shots viewer at `player_shots/` (phase 03), the enemies viewer at `enemies/`
+    // (phase 05) and the bosses viewer
     // at `bosses/` and `boss/` (phase 07).
     rolldownOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         playerShip: fileURLToPath(new URL('./player_ship/index.html', import.meta.url)),
         playerShots: fileURLToPath(new URL('./player_shots/index.html', import.meta.url)),
-        levelZero: fileURLToPath(new URL('./level_zero/index.html', import.meta.url)),
         enemies: fileURLToPath(new URL('./enemies/index.html', import.meta.url)),
         bosses: fileURLToPath(new URL('./bosses/index.html', import.meta.url)),
         boss: fileURLToPath(new URL('./boss/index.html', import.meta.url)),

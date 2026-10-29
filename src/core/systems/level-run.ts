@@ -17,10 +17,11 @@ import type {
   Supplies,
 } from './level-run-types';
 import { PlayerBombs } from './player-bombs';
-import { PlayerFlight } from './player-flight';
+import type { PlayerFlight } from './player-flight';
 import { findPlayerHits } from './player-hits';
 import { PlayerHull } from './player-hull';
 import { RunArsenal } from './run-arsenal';
+import { flightOf, type ShipJourney } from './ship-journey';
 import { ShotWorld, type ShotImpact } from './shot-world';
 import { validateWaveScript, WaveRunner } from './wave-runner';
 
@@ -83,6 +84,8 @@ export class LevelRun {
   readonly bombs: PlayerBombs | undefined;
   readonly fights: BossFights;
   readonly arsenal: RunArsenal;
+  /** The ship's arrival and departure (reviewer, 2026-10-28); none when omitted. */
+  readonly journey: ShipJourney | undefined;
   /** Explosions, shot impacts and hits on the player of the last step. */
   blasts: readonly EnemyBlast[] = [];
   impacts: readonly ShotImpact[] = [];
@@ -120,11 +123,7 @@ export class LevelRun {
       hull: this.hull,
       bombs: this.bombs,
     } = playerSystems(options, this.#reach));
-    this.ship = new PlayerFlight(
-      options.ship.start,
-      options.ship.maxSpeed,
-      options.ship.accelerationSeconds,
-    );
+    ({ ship: this.ship, journey: this.journey } = flightOf(options));
     this.waves = new WaveRunner(level.waves, (kind, entry) => {
       this.#spawn(kind, entry, random);
     });
@@ -186,10 +185,7 @@ export class LevelRun {
     this.impacts = [];
     this.hits = [];
     if (this.#phase === 'complete') return;
-    // Once the game is over the ship is gone; the enemies go on until the overlay shows.
-    const flying = this.#phase !== 'over';
-    if (flying && controls.switchWeapon) this.arsenal.switchWeapon();
-    if (flying) this.ship.step(dt, controls.move, this.options.bounds);
+    const flying = this.#fly(dt, controls);
     this.#aimShots();
     this.shots.firing = flying && controls.fire;
     this.track.step(dt);
@@ -214,6 +210,7 @@ export class LevelRun {
   seek(time: number): void {
     if (this.#phase === 'over') return;
     this.track.seek(time);
+    this.journey?.skipArrival(this.ship);
     this.#restartAt();
   }
 
@@ -258,6 +255,7 @@ export class LevelRun {
     if (fights.hasFinal ? fights.finalDefeated : track.ended) {
       this.waves.stop();
       this.#phase = 'clearing';
+      this.journey?.clear();
     }
   }
 
@@ -290,7 +288,7 @@ export class LevelRun {
     const rules = this.options.hull;
     if (!hull || !rules || this.#phase === 'over') return;
     hull.step(dt);
-    if (hull.invincible > 0 || this.bombs?.active) return;
+    if (hull.invincible > 0 || this.bombs?.active || this.journey?.scripted) return;
     const [hit] = findPlayerHits(this.ship, rules, this.enemies, this.#lasersHit);
     if (!hit) return;
     hit.land();
@@ -347,11 +345,31 @@ export class LevelRun {
     }
   }
 
-  /** Completes the level once the last enemies are gone, or after the longest wait. */
+  /**
+   * Completes the level once the last enemies are gone, or after the longest wait, and with a
+   * journey once the ship has flown off the top of the screen.
+   */
   #clear(dt: number): void {
     this.#clearingFor += dt;
-    const empty = this.enemies.enemies.length === 0;
-    if (empty || this.#clearingFor >= this.options.endWait) this.#phase = 'complete';
+    if (this.journey ? this.journey.stage === 'gone' : this.#cleared) this.#phase = 'complete';
+  }
+
+  get #cleared(): boolean {
+    return this.enemies.enemies.length === 0 || this.#clearingFor >= this.options.endWait;
+  }
+
+  /**
+   * The player flies the ship; whether they do: once the game is over the ship is gone (the
+   * enemies go on until the overlay shows), and while it arrives or leaves the journey flies it.
+   */
+  #fly(dt: number, controls: LevelControls): boolean {
+    if (this.#phase === 'over') return false;
+    const flying = this.journey?.scripted !== true;
+    if (flying && controls.switchWeapon) this.arsenal.switchWeapon();
+    if (flying) this.ship.step(dt, controls.move, this.options.bounds);
+    const ready = this.#phase === 'clearing' && this.#cleared;
+    this.journey?.step(dt, this.ship, this.options.bounds, ready);
+    return flying;
   }
 
   #spawn(kindId: string, entry: EnemyEntry, random: () => number): void {

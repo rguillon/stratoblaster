@@ -9,6 +9,7 @@ describe('parseDebugOptions', () => {
       shipId: null,
       boss: null,
       weather: true,
+      tiles: false,
       timeOfDay: null,
     });
   });
@@ -20,6 +21,7 @@ describe('parseDebugOptions', () => {
       shipId: 'heavy',
       boss: null,
       weather: true,
+      tiles: false,
       timeOfDay: null,
     });
     expect(parseDebugOptions('?level=1-2&t=oops')?.time).toBe(0);

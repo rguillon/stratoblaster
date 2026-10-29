@@ -127,6 +127,8 @@ describe('startApp', () => {
       // Phase 6 review: a HUD over the level, no Back button.
       expect(overlay.querySelector('.game-hud')).not.toBeNull();
       expect(overlay.querySelector('.menu-back')).toBeNull();
+      // The ship rises into the level first (reviewer, 2026-10-28).
+      for (let i = 0; i < 40; i++) app.tick(0.05);
       const x = play?.state.player.x ?? 0;
       keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }));
       keyboardTarget.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' }));

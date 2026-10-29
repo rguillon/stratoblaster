@@ -41,6 +41,8 @@ export interface SkyLook {
   readonly groundLights?: number;
   /** A factor on the sun and the ambient light (1 = the time of day's). */
   readonly brightness?: number;
+  /** The clouds keep the time of day's colours: no storm grey, tint or glow from below. */
+  readonly plainClouds?: boolean;
 }
 
 /**
@@ -95,9 +97,10 @@ const NO_UNDERGLOW = { color: [0, 0, 0] as Rgb, strength: 0 };
  * below (phase 10), thinned when heavy.
  */
 function cloudsOf(look: SkyLook, base: SkyBase, colors: { color: Rgb; shade: Rgb }): CloudCover[] {
-  const storm = look.storm ?? 0;
-  const tint = look.cloudTint ?? [1, 1, 1];
-  const glow = look.underglow ?? NO_UNDERGLOW;
+  const plain = look.plainClouds === true;
+  const storm = plain ? 0 : (look.storm ?? 0);
+  const tint = plain ? ([1, 1, 1] as Rgb) : (look.cloudTint ?? [1, 1, 1]);
+  const glow = plain ? NO_UNDERGLOW : (look.underglow ?? NO_UNDERGLOW);
   const [lit, edge] = [UNDERGLOW.cloud * glow.strength, UNDERGLOW.shade * glow.strength];
   const color = mix(times(mix(colors.color, OVERCAST.storm.color, storm), tint), glow.color, lit);
   const shade = mix(times(mix(colors.shade, OVERCAST.storm.shade, storm), tint), glow.color, edge);

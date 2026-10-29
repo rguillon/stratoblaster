@@ -39,6 +39,7 @@ function fixDeadEnd(
   at: LinksAt,
   outOfView: (node: Node) => boolean,
   tees: boolean,
+  keepCut: boolean,
 ): Link | undefined {
   const around = at[node.id] ?? [];
   let only: Link | undefined;
@@ -50,7 +51,7 @@ function fixDeadEnd(
   }
   if (built !== 1 || !only || outOfView(node)) return undefined;
   const ahead = around.find((l) => l !== only && l.across === only.across);
-  if (ahead && mayGoOn(ahead, node, at, tees)) {
+  if (ahead && mayGoOn(ahead, node, at, [tees, keepCut])) {
     ahead.built = true;
     return ahead;
   }
@@ -60,8 +61,14 @@ function fixDeadEnd(
 }
 
 /** Whether a dead end at `node` may go on through `ahead` (see {@link fixDeadEnd}). */
-function mayGoOn(ahead: Link, node: Node, at: LinksAt, tees: boolean): boolean {
-  return ahead.ground && !(tees && (ahead.cut || makesCrossing(ahead, node, at)));
+function mayGoOn(
+  ahead: Link,
+  node: Node,
+  at: LinksAt,
+  [tees, keepCut]: readonly [boolean, boolean],
+): boolean {
+  if (!ahead.ground || (keepCut && ahead.cut)) return false;
+  return !(tees && (ahead.cut || makesCrossing(ahead, node, at)));
 }
 
 /**
@@ -75,13 +82,18 @@ export function removeDeadEnds(
   nodes: readonly Node[],
   outOfView: (node: Node) => boolean,
   tees: boolean,
+  /**
+   * Phase 15: a link cut back is never built again (as with `tees`), so a street cannot keep
+   * being cut from one end and built again from the other.
+   */
+  keepCut = tees,
 ): void {
   const passes = new Passes(nodes.length);
   for (let pass = 0; pass < MAX_PASSES; pass++) {
     let changed = false;
     for (let id = passes.take(); id !== undefined; id = passes.take()) {
       const node = nodes[id];
-      const link = node && fixDeadEnd(node, at, outOfView, tees);
+      const link = node && fixDeadEnd(node, at, outOfView, tees, keepCut);
       if (!link) continue;
       changed = true;
       passes.again(link.a.id, id);

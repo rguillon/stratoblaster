@@ -15,12 +15,18 @@ export class LevelLoadingScreen {
     private readonly text: string,
   ) {}
 
-  /** Shows `progress` (0..1). */
+  /**
+   * Shows `progress` (0..1). Later calls update the screen in place: a new element would start
+   * its fade-in again, transparent, and the menus drawn behind it would show for a few frames.
+   */
   show(progress: number): void {
     const root = renderLoadingScreen(this.doc, { kind: 'loading', text: this.text, progress });
+    if (this.#root) {
+      this.#root.replaceChildren(...root.childNodes);
+      return;
+    }
     root.classList.add('level-loading');
-    if (this.#root) this.#root.replaceWith(root);
-    else this.parent.append(root);
+    this.parent.append(root);
     this.#root = root;
   }
 

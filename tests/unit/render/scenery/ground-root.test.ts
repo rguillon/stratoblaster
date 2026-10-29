@@ -10,7 +10,7 @@ import {
   SAMPLE_SCENERY_LEVEL,
   SAMPLE_SCENERY_LOOK,
 } from '../../../fixtures/sample-scenery';
-import { SCENERY_VIEWER_CONFIG } from '../../../../src/config/scenery-viewer';
+import { SCENERY_STAGE_CONFIG } from '../../../../src/config/scenery-stage';
 
 describe('ground drawn bigger, as if flying lower (reviewer, 2026-10-28)', () => {
   it('hangs what it makes from a node twice as big, the ground under the view still `distance` in', () => {
@@ -43,7 +43,7 @@ describe('ground drawn bigger, as if flying lower (reviewer, 2026-10-28)', () =>
         look: SAMPLE_SCENERY_LOOK,
         propModels: SAMPLE_SCENERY.propModels,
         kit: createPlainSceneryKit,
-        config: SCENERY_VIEWER_CONFIG.stage,
+        config: SCENERY_STAGE_CONFIG,
       });
       stage.update(500, 1 / 60);
       return { scene, stage };

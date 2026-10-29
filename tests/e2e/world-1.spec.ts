@@ -69,6 +69,8 @@ test.describe('P06: World 1', () => {
   test('P06-R02: the heavy ship flies over 1-1, shoots, and stays on screen', async ({ page }) => {
     await playLevel(page, 0, 1);
     expect((await gameState(page)).chosenShipId).toBe('heavy');
+    // The ship rises into the level first (reviewer, 2026-10-28).
+    await advance(page, 2);
     const start = (await level(page)).player;
     await page.keyboard.down('ArrowUp');
     await page.keyboard.down('Space');

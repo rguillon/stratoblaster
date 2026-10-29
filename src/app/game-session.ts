@@ -35,6 +35,8 @@ export interface GameDebugOptions {
   readonly weather?: boolean;
   /** `look=<time of day>`: the level at that time of day (P08-R12). */
   readonly timeOfDay?: TimeOfDay | null;
+  /** `tiles=1`: the grid of tiles over the districts (P15-R10). */
+  readonly tiles?: boolean;
 }
 
 /** The debug choices on the level's look (P08-R12): none without debug options. */
@@ -43,6 +45,7 @@ function atmosphereOf(debug: GameDebugOptions | undefined): AtmosphereOptions {
   return {
     ...(debug.weather === false ? { weather: false } : {}),
     ...(debug.timeOfDay ? { timeOfDay: debug.timeOfDay } : {}),
+    ...(debug.tiles ? { tileGrid: true } : {}),
   };
 }
 

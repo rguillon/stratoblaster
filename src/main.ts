@@ -4,7 +4,6 @@ import { parseDebugOptions } from './app/debug-options';
 import { redirectOf, resolveRoute, type AppRoute } from './app/route';
 import { startShipViewer } from './app/start-ship-viewer';
 import { startShotViewer } from './app/start-shot-viewer';
-import { startSceneryViewer } from './app/start-scenery-viewer';
 import { startEnemyViewer } from './app/start-enemy-viewer';
 import { startPropViewer } from './app/start-prop-viewer';
 import { startBossViewer } from './app/start-boss-viewer';
@@ -165,28 +164,6 @@ function startShots(engine: Engine): void {
   }
 }
 
-function startScenery(engine: Engine): void {
-  fitCanvasStage(engine);
-  const viewer = startSceneryViewer(engine, GAME, {
-    environment: true,
-    doc: document,
-    panelParent: element('panel'),
-    statsParent: document.body,
-    keyboardTarget: window,
-    renderLoop: !__E2E__,
-  });
-  if (__E2E__) {
-    installViewerTestApi(window, '__SCENERY_TEST__', {
-      frame: (dt) => {
-        viewer.frame(dt);
-      },
-      render: () => {
-        viewer.scene.render();
-      },
-    });
-  }
-}
-
 function startEnemies(engine: Engine): void {
   fitCanvasStage(engine);
   const viewer = startEnemyViewer(engine, GAME, {
@@ -309,7 +286,6 @@ const START: Record<AppRoute, (engine: Engine) => void> = {
   },
   'player-ship-viewer': startPlayerShips,
   'player-shots-viewer': startShots,
-  'scenery-viewer': startScenery,
   'enemy-viewer': startEnemies,
   'boss-viewer': startBosses,
   'prop-viewer': startProps,
