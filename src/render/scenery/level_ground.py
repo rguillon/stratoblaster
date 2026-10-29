@@ -221,8 +221,13 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
         # it failed, the runout is generated here.
         ground = slot.ground
         if ground is not None:
-            fallback = _add_runout_snapshot(_without_runout(level, seed, None))
-            _add_runout_snapshot(ground, made if made else fallback)
+            # The fallback is made only when the worker sent nothing (`made ?? ...` in the TS).
+            if made:
+                _add_runout_snapshot(ground, made)
+            else:
+                _add_runout_snapshot(
+                    ground, _add_runout_snapshot(_without_runout(level, seed, None))
+                )
 
     _state.background(level, seed, GroundReplies(on_ground, on_runout))
     return False
