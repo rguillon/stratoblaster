@@ -85,7 +85,8 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         bottom = _lerp(gradient(ix, iy, fx, fy), gradient(ix + 1, iy, fx - 1, fy), u)
         top = _lerp(gradient(ix, iy + 1, fx, fy - 1), gradient(ix + 1, iy + 1, fx - 1, fy - 1), u)
         # Gradient noise peaks at about ±0.71 in 2D: scale it to fill [-1, 1].
-        return max(-1, min(1, _lerp(bottom, top, v) * SQRT2))
+        value = _lerp(bottom, top, v) * SQRT2
+        return -1 if value < -1 else (1 if value > 1 else value)
 
     return noise
 
@@ -114,7 +115,7 @@ def ridged(noise: Noise2D, x: float, y: float, options: OctaveOptions) -> float:
     for _ in range(options.octaves):
         crest = 1 - abs(noise(x * frequency, y * frequency))
         value = crest * crest * weight
-        weight = min(1, value * 2)
+        weight = value * 2 if value * 2 < 1 else 1
         total_sum += value * amplitude
         total += amplitude
         amplitude *= options.gain
@@ -126,7 +127,8 @@ def smoothstep(edge0: float, edge1: float, x: float) -> float:
     """0 below `edge0`, 1 above `edge1`, smooth in between."""
     if edge0 == edge1:
         return 0.0 if x < edge0 else 1.0
-    t = max(0, min(1, (x - edge0) / (edge1 - edge0)))
+    t = (x - edge0) / (edge1 - edge0)
+    t = 0 if t < 0 else (1 if t > 1 else t)
     return t * t * (3 - 2 * t)
 
 
