@@ -1661,3 +1661,11 @@
 - **Alternatives considered:** keeping `globals.d.ts` as a type-only file (it is not read by Transcrypt or mypy, so it would be dead); injecting the version and commit from the Makefile into a generated module (not needed until the title screen shows a real commit).
 - **Consequences:** Pages are chosen by `app/route.py` and started from `main.py`, as in `main.ts`. Building the commit hash and the e2e build are follow-ups; the title screen shows `unknown` until then.
 - **Status:** Accepted
+
+### D-176 — Bundle the compiled game into one file with esbuild; the ground worker is a second entry
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** Opening the game made one HTTP request per Transcrypt module (567 files). `make build` now compiles two entries into `build/` (`main.py` into `build/game/`, and `worker_main.py` into `build/worker/`) and bundles them with esbuild into `dist/js/game.js` and `dist/js/ground_worker.js`, minified. esbuild is pinned as an exact dev dependency (`esbuild` 0.28.2 in `package.json`, installed by `make install` with `npm ci`). `index.html` imports `./js/game.js`.
+- **Alternatives considered:** a hand-written Python bundler (rejected: Transcrypt output has cyclic imports and per-module globals, so inlining by rewriting imports is fragile); a zip archive the page unpacks (rejected: needs a decompressor in the page, and the browser still fetches one file, with no gain over a single script). esbuild 0.25.0 was not used because vite, in the TypeScript toolchain, needs esbuild 0.27 or 0.28.
+- **Consequences:** This adds Node to the build for the bundling step only. D-171 ("build without Node") is superseded for that step; Transcrypt itself still runs under uv. The worker was never compiled before: it lives in `render/scenery/`, and Transcrypt does not compile modules that `main.py` does not reach, so `worker_main.py` is its entry and is now bundled. Transcrypt cannot write two entries into one output folder (the second run deletes the first), hence the separate folders. Browser check (headless Firefox): the page makes 3 requests (HTML, Babylon, `game.js`), with no console errors; the worker is requested when a level loads. The title screen could not be seen there, because that headless build has no WebGL2.
+- **Status:** Accepted

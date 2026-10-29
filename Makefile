@@ -18,8 +18,9 @@ SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || e
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install Python dependencies from uv.lock, then the git hooks (ENG-21)
+install: ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
 	uv sync --locked
+	npm ci
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
 vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
@@ -39,16 +40,26 @@ vendor: ## Download the pinned Babylon.js build into public/vendor/, checking it
 		echo 'vendor: downloaded Babylon.js $(BABYLON_VERSION), checksum OK'; \
 	fi
 
-build: ## Compile src/ to JavaScript with Transcrypt and assemble dist/ (needs make vendor)
+# Transcrypt writes one ES module per Python module into build/transcrypt/; esbuild bundles the
+# game (main.py) and its ground worker (a Web Worker entry, not reached from main.py) into one
+# file each under dist/js/, so the page makes 2 requests for code instead of one per module.
+TRANSCRYPT_OUT := build
+ESBUILD := node_modules/.bin/esbuild
+
+build: ## Compile src/ to JavaScript, bundle it into dist/js/, and assemble dist/ (needs make vendor)
 	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
 		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
-	rm -rf $(DIST)
-	cd src && uv run transcrypt -b -n -od ../$(DIST)/js main.py
+	rm -rf $(DIST) $(TRANSCRYPT_OUT)
+	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/game main.py
+	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
+	mkdir -p $(DIST)/js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/game/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/game.js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
 	cp index.html $(DIST)/
 	@if [ -d public ]; then cp -r public/. $(DIST)/; fi
 	@if [ -d $(VENDOR) ] && [ ! -f $(DIST)/vendor/babylon.js ]; then \
 		echo 'build: vendored files were not copied to dist/' >&2; exit 1; fi
-	@if grep -qE '__pragma__ *\(' $(DIST)/js/main.js; then \
+	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
 
 dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
@@ -71,4 +82,4 @@ check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back w
 check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
 
 clean: ## Remove build outputs and caches
-	rm -rf $(DIST) src/__target__ .mypy_cache .ruff_cache
+	rm -rf $(DIST) build src/__target__ .mypy_cache .ruff_cache
