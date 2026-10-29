@@ -39,31 +39,62 @@ class GroundSnapshot:
 
 
 class RunoutSnapshot:
-    """What generating the runout of a level's ground added, as plain data (the worker sends it
-    after the rest of the ground)."""
+    """What laying the runout's streets of a level's ground added, as plain data (the worker sends
+    it after the rest of the ground). Its buildings are placed later, chunk by chunk."""
 
-    def __init__(self, roads: Sequence[Any], buildings: Sequence[Any]) -> None:
+    def __init__(self, roads: Any) -> None:
         self.roads = roads
-        self.buildings = buildings
+
+
+class ChunksReply:
+    """Chunks of buildings placed in the worker, as plain data: `chunks` in order, and `done` when
+    the level has no chunk left."""
+
+    def __init__(self, chunks: Sequence[Any], done: bool) -> None:
+        self.chunks = chunks
+        self.done = done
 
 
 class GeneratedInTwo:
-    """The ground of a level as plain data (`ground`), and `runout()` for the rest of it."""
+    """The ground of a level as plain data (`ground`, with its first chunks of buildings),
+    `runout()` for the rest of it, and `chunks(z)` for the chunks up to `z`, asked for as the level
+    scrolls."""
 
-    def __init__(self, ground: GroundSnapshot, runout: Callable[[], RunoutSnapshot]) -> None:
+    def __init__(
+        self,
+        ground: GroundSnapshot,
+        runout: Callable[[], RunoutSnapshot],
+        chunks: Callable[[float], ChunksReply],
+    ) -> None:
         self.ground = ground
         self.runout = runout
+        self.chunks = chunks
+
+
+# The chunks up to this Z are placed before the ground is sent: the level's first screens.
+FIRST_Z = 1600
 
 
 def generate_in_two(level: SceneryLevel, seed: int) -> GeneratedInTwo:
-    """Generates the ground of `level` from `seed` as plain data, its runout apart: what the worker
-    runs. The ground first, then `runout()` for the rest."""
+    """Generates the ground of `level` from `seed` as plain data, its runout and its chunks of
+    buildings apart: what the worker runs. The roads first (before anything is laid), then the
+    first chunks, then `runout()` and `chunks(z)` as they are asked for."""
     made = _without_runout(level, seed, None)
     placer = made.placer
+    roads = placer.roads.snapshot()
+    placer.ensure_placed(FIRST_Z)
     return GeneratedInTwo(
-        GroundSnapshot(placer.roads.snapshot(), placer.snapshot()),
+        GroundSnapshot(roads, placer.snapshot()),
         lambda: _add_runout_snapshot(made),
+        lambda z: _chunks_reply(made, z),
     )
+
+
+def _chunks_reply(ground: LevelGround, z: float) -> ChunksReply:
+    """The chunks of `ground` up to `z`, placed now (see `PropPlacer.ensure_placed_chunks`)."""
+    placer = ground.placer
+    chunks = placer.ensure_placed_chunks(z)
+    return ChunksReply(chunks, placer.chunks_done)
 
 
 def _without_runout(level: SceneryLevel, seed: int, made: GroundSnapshot | None) -> LevelGround:
@@ -89,17 +120,16 @@ def _without_runout(level: SceneryLevel, seed: int, made: GroundSnapshot | None)
 
 
 def _add_runout_snapshot(ground: LevelGround, made: RunoutSnapshot | None = None) -> RunoutSnapshot:
-    """Adds the runout to `ground`: generated, or what was made before. What it added."""
+    """Lays the runout's streets of `ground`: generated, or what was made before. What they are
+    (the first lay's, even when laid before by the placer for its chunks)."""
     placer = ground.placer
-    roads = placer.roads.add_runout(made.roads if made is not None else None)
-    return RunoutSnapshot(roads, placer.place_runout(made.buildings if made is not None else None))
+    placer.lay_runout(made.roads if made is not None else None)
+    return RunoutSnapshot(placer.runout_added)
 
 
 def _generate(level: SceneryLevel, seed: int) -> LevelGround:
-    """The whole ground of `level`, generated here."""
-    ground = _without_runout(level, seed, None)
-    _add_runout_snapshot(ground)
-    return ground
+    """The ground of `level` generated here, up to its runout (laid when its chunks need them)."""
+    return _without_runout(level, seed, None)
 
 
 # Grounds kept for reuse (P13-R03): the level being played, Retry, and those prefetched.
@@ -146,13 +176,20 @@ def _find(level: SceneryLevel, seed: int) -> LevelGround | None:
 
 
 class GroundReplies:
-    """What a background generation sends back for a level: `ground(made)`, the ground up to the
-    runout (None when the generation failed), then `runout(made)`, the runout (None when it failed
-    after the ground)."""
+    """What a background generation sends back for a level: `ground(made, ask)`, the ground up to
+    the runout (None when the generation failed; `ask(z)` asks for the chunks up to `z`), then
+    `runout(made)`, the runout (None when it failed after the ground), and `chunks(chunks)` as they
+    come back."""
 
-    def __init__(self, ground: Callable[[Any], None], runout: Callable[[Any], None]) -> None:
+    def __init__(
+        self,
+        ground: Callable[[Any, Any], None],
+        runout: Callable[[Any], None],
+        chunks: Callable[[Any], None],
+    ) -> None:
         self.ground = ground
         self.runout = runout
+        self.chunks = chunks
 
 
 class _Job:
@@ -205,7 +242,7 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
     _state.pending.append(job)
     slot = _Slot()
 
-    def on_ground(made: GroundSnapshot | None) -> None:
+    def on_ground(made: GroundSnapshot | None, ask: Any) -> None:
         _remove_job(job)
         # After a failed background generation, the ground is generated here when it is needed.
         # (`made` comes from the worker: undefined when it failed, so the test is by truth.)
@@ -213,23 +250,24 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
             _state.failed = True
         elif _find(level, seed) is None:
             slot.ground = _keep(_without_runout(level, seed, made))
+            # The chunks after the first ones come from the worker, as the level asks for them.
+            slot.ground.placer.ask = ask
 
     def on_runout(made: RunoutSnapshot | None) -> None:
         if not made:
             _state.failed = True
-        # Adds nothing to a ground that has its runout already (one generated here meanwhile); if
-        # it failed, the runout is generated here.
+        # Adds nothing to a ground that has its runout already (laid here meanwhile); if it failed,
+        # the runout is laid here.
         ground = slot.ground
         if ground is not None:
-            # The fallback is made only when the worker sent nothing (`made ?? ...` in the TS).
-            if made:
-                _add_runout_snapshot(ground, made)
-            else:
-                _add_runout_snapshot(
-                    ground, _add_runout_snapshot(_without_runout(level, seed, None))
-                )
+            _add_runout_snapshot(ground, made)
 
-    _state.background(level, seed, GroundReplies(on_ground, on_runout))
+    def on_chunks(made: Any) -> None:
+        ground = slot.ground
+        if ground is not None and made:
+            ground.placer.receive(made)
+
+    _state.background(level, seed, GroundReplies(on_ground, on_runout, on_chunks))
     return False
 
 

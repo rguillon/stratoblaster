@@ -10,10 +10,15 @@ lone buildings and bunches of buildings also stand away from the roads. Trees of
 section allows grow on a grid of cells, away from the roads and the buildings, on rougher ground
 too.
 
-Buildings are decided once for the whole level, in a fixed order, and trees from a hash of their
-cell, so the same place always gives the same props whatever area is asked for. A building belongs
-to the area that contains its centre; a cell to the area that contains its corner. The buildings of
-the runout, past the level's end, are placed after the others (`place_runout`).
+Buildings are placed in chunks: the Z chunks of `CHUNK_SIZE`, in increasing order, each one with
+the same phases (blocks, road slots, hamlets, loners) over its own span. `ensure_placed` places the
+chunks up to a Z, so the level's buildings come as it scrolls, not all before it starts. Each
+chunk depends only on the chunks before it, so the buildings are the same whatever the order and
+the distance the chunks are asked for in (only the first chunk not placed yet moves). Trees come
+from a hash of their cell and are checked against the buildings `place` has placed around them. A
+building belongs to the chunk that contains its centre; a cell to the area that contains its corner.
+The runout's streets are laid (`RoadNetwork.add_runout`) before the chunk `RUNOUT_GATE` before its
+start is placed, so the chunks before it never see them.
 """
 
 import math
@@ -26,7 +31,7 @@ from collections.abc import Callable, Sequence  # noqa: E402
 from core.scenery.ground_boxes import BuildingRecord, GroundBox  # noqa: E402
 from core.scenery.height_field import HeightField  # noqa: E402
 from core.scenery.road_network import RoadNetwork  # noqa: E402
-from core.scenery.road_types import RoadSlot  # noqa: E402
+from core.scenery.road_types import RoadSlot, RoadSnapshot  # noqa: E402
 from core.scenery.scenery_level import (  # noqa: E402
     BlockFill,
     PropGroupRule,
@@ -39,9 +44,15 @@ from core.scenery.street_links import Block  # noqa: E402
 __pragma__("noskip")
 
 from core.math.noise import create_noise2d, hash_2d  # noqa: E402
-from core.scenery.away_placement import Building, ZSpan, place_hamlets, place_loners  # noqa: E402
+from core.scenery.away_placement import (  # noqa: E402
+    AWAY_MARGIN,
+    Building,
+    ZSpan,
+    place_hamlets,
+    place_loners,
+)
 from core.scenery.block_towers import tower_in  # noqa: E402
-from core.scenery.district_packing import DistrictSite, pack_districts  # noqa: E402
+from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts  # noqa: E402
 from core.scenery.draws import allowed, between, weighted  # noqa: E402
 from core.scenery.float_placement import fixed_pieces, floating_in  # noqa: E402
 from core.scenery.ground_boxes import (  # noqa: E402
@@ -73,6 +84,27 @@ FALLBACKS = 3
 AWAY_SPREAD = 0.5
 
 INFINITY = float("Infinity")
+
+# Z length of a chunk of buildings, in world units (see the module doc).
+CHUNK_SIZE = 200
+# Buildings and trees reach this far from their centre or cell: a tree looks this far past its
+# area for buildings to keep clear of, so every building that could touch it is placed by then.
+TREE_REACH = CHUNK_SIZE
+# The runout's streets are laid before the chunk containing this far before its start is placed.
+RUNOUT_GATE = 2 * CHUNK_SIZE
+
+
+def chunk_of(z: float) -> int:
+    """The index of the chunk that contains Z `z`."""
+    return math.floor(z / CHUNK_SIZE)
+
+
+class ChunkBuildings:
+    """The buildings of chunk `k`, in the order they were placed (plain data for the worker)."""
+
+    def __init__(self, k: int, buildings: Sequence[BuildingRecord]) -> None:
+        self.k = k
+        self.buildings = buildings
 
 
 class _Box:
@@ -142,7 +174,17 @@ class PropPlacer:
         self._occupied = BuildingIndex()
         # Phase 9: set pieces and lines, larger than a bucket: every placement checks them all.
         self._fixed: list[BuildingRecord] = []
-        self._runout_placed = False
+        # The chunks from the first (its span reaches back past the level's start) to the last
+        # (its span reaches on past its end), and the first one not placed yet.
+        self._first = chunk_of(-AWAY_MARGIN)
+        self._last = chunk_of(field.length_ + AWAY_MARGIN)
+        self._placed_to = self._first
+        self._asked_to = self._first
+        self._road_tiles = RoadTilesCache()
+        self.runout_added: RoadSnapshot | None = None
+        """What laying the runout's streets added (the first lay's, see `lay_runout`)."""
+        self.ask: Callable[[float], None] | None = None
+        """Asks another place (the worker) to place the chunks up to a Z (see `want_placed`)."""
         if made is not None:
             self._restore(made)
             return
@@ -150,28 +192,96 @@ class PropPlacer:
         self._fixed.extend(fixed_pieces(rules, field, sea_level))
         for piece in self._fixed:
             self.occupy(piece)
-        end = roads.runout_from if roads.runout_from is not None else INFINITY
-        self._place_buildings(ZSpan(-INFINITY, end))
 
     @property
-    def runout_placed(self) -> bool:
-        """Whether the buildings of the runout are placed (see `place_runout`)."""
-        return self._runout_placed
+    def runout_laid(self) -> bool:
+        """Whether the runout's streets are laid (see `RoadNetwork.add_runout`)."""
+        return self.roads.runout_laid
 
-    def place_runout(self, made: Sequence[BuildingRecord] | None = None) -> list[BuildingRecord]:
-        """Places the buildings of the runout (reviewer, 2026-10-28: after the others, so the level
-        is ready sooner), once its streets are laid, or takes those `made` before (e.g. in a
-        worker), and returns them. Once only: afterwards, it adds nothing."""
+    def lay_runout(self, made: RoadSnapshot | None = None) -> RoadSnapshot:
+        """Lays the runout's streets (or takes those `made` before, e.g. in a worker), and returns
+        what they added. Once only (see `RoadNetwork.add_runout`): the first call's result is kept
+        as `runout_added`."""
+        added = self.roads.add_runout(made)
+        if self.runout_added is None and self.roads.runout_laid:
+            self.runout_added = added
+        return added
+
+    def _gate_chunk(self) -> int | None:
+        """The chunk that needs the runout's streets laid before it is placed, if the level has a
+        runout."""
         start = self.roads.runout_from
-        if self._runout_placed or start is None:
-            return []
-        self._runout_placed = True
+        if start is None:
+            return None
+        return chunk_of(start - RUNOUT_GATE)
+
+    def _lay_runout_for(self, k: int) -> None:
+        """Lays the runout's streets if chunk `k` is one that needs them."""
+        gate = self._gate_chunk()
+        if gate is not None and k >= gate and not self.roads.runout_laid:
+            self.lay_runout()
+
+    @property
+    def placed_to(self) -> int:
+        """The first chunk not placed yet."""
+        return self._placed_to
+
+    @property
+    def chunks_done(self) -> bool:
+        """Whether every chunk of the level is placed."""
+        return self._placed_to > self._last
+
+    def ensure_placed_chunks(self, z: float) -> list[ChunkBuildings]:
+        """Places the chunks not placed yet up to the one that contains `z` (idempotent), and
+        returns them, in order, with their buildings. The runout's streets are laid before the chunk
+        that needs them (see `RUNOUT_GATE`)."""
+        target = min(max(chunk_of(z), self._first), self._last)
+        made: list[ChunkBuildings] = []
+        while self._placed_to <= target:
+            k = self._placed_to
+            self._lay_runout_for(k)
+            made.append(ChunkBuildings(k, self._place_chunk(k)))
+            self._placed_to = k + 1
+        return made
+
+    def ensure_placed(self, z: float) -> list[BuildingRecord]:
+        """Places the chunks not placed yet up to the one that contains `z` here (idempotent), and
+        returns the buildings placed now."""
+        made: list[BuildingRecord] = []
+        for chunk in self.ensure_placed_chunks(z):
+            made.extend(chunk.buildings)
+        return made
+
+    def want_placed(self, z: float) -> None:
+        """Asks for the chunks up to the one that contains `z`: from the worker that places them,
+        if there is one (see `ask`), else places them here now."""
+        if self.ask is None:
+            self.ensure_placed(z)
+            return
+        target = min(max(chunk_of(z), self._first), self._last)
+        if target >= self._asked_to:
+            self._asked_to = target + 1
+            self.ask(z)
+
+    def receive(self, chunks: Sequence[ChunkBuildings]) -> None:
+        """Takes the chunks placed elsewhere (the worker's), in order. A chunk placed here already
+        is skipped: both place the same buildings."""
+        for chunk in chunks:
+            if chunk.k == self._placed_to:
+                for building in chunk.buildings:
+                    self.occupy(building)
+                self._placed_to = chunk.k + 1
+
+    def _span_of(self, k: int) -> ZSpan:
+        """The Z span of chunk `k`: the first and the last reach past the level at both ends."""
+        from_ = -INFINITY if k == self._first else k * CHUNK_SIZE
+        to = INFINITY if k == self._last else (k + 1) * CHUNK_SIZE
+        return ZSpan(from_, to)
+
+    def _place_chunk(self, k: int) -> list[BuildingRecord]:
+        """The buildings of chunk `k`, placed now."""
         before = len(self._buildings)
-        if made is not None:
-            for building in made:
-                self.occupy(building)
-        else:
-            self._place_buildings(ZSpan(start, INFINITY))
+        self._place_buildings(self._span_of(k))
         return self._buildings[before:]
 
     def _place_buildings(self, span: ZSpan) -> None:
@@ -191,7 +301,8 @@ class PropPlacer:
                 lambda x, z, section: self.group_at(x, z, section),  # noqa: PLW0108 (Transcrypt: keep the lambda, it binds self)
                 lambda building: self.occupy(building),  # noqa: PLW0108 (Transcrypt: keep the lambda, it binds self)
             )
-            pack_districts(site, within, tiles)
+            road = self._road_tiles.of(self.roads.roads, tiles)
+            pack_districts(site, within, tiles, road)
         else:
             for i, block in enumerate(self.roads.blocks):
                 if within((block.z_min + block.z_max) / 2):
@@ -219,7 +330,11 @@ class PropPlacer:
         return weighted(groups, min(0.999999, max(0, zone)))
 
     def place(self, area: GroundArea) -> list[PropPlacement]:
-        """Buildings and trees that lie in `area`."""
+        """Buildings and trees that lie in `area` (the buildings around it are placed first)."""
+        self.ensure_placed(area.z_max + TREE_REACH)
+        gate = self._gate_chunk()
+        if gate is not None and chunk_of(area.z_max + TREE_REACH) >= gate:
+            self.lay_runout()
         placements = [
             b.placement for b in self._buildings if inside(area, b.placement.x, b.placement.z)
         ]
@@ -253,10 +368,12 @@ class PropPlacer:
         self._fixed.extend(made.buildings[0 : made.fixed])
         for building in made.buildings:
             self.occupy(building)
+        self._placed_to = made.placed_to
+        self._asked_to = made.placed_to
 
     def snapshot(self) -> PlacerSnapshot:
         """What this placer placed so far (P13-R03)."""
-        return PlacerSnapshot(list(self._buildings), len(self._fixed))
+        return PlacerSnapshot(list(self._buildings), len(self._fixed), self._placed_to)
 
     def occupy(self, building: BuildingRecord) -> None:
         self._buildings.append(building)

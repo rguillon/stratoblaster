@@ -36,15 +36,58 @@ def _post_pixels(job_id: int, pixels: Any) -> None:
     __pragma__("js", "{}", "self.postMessage({id: job_id, pixels: pixels}, [pixels.buffer]);")
 
 
+def _post_chunks(job_id: int, reply: Any) -> None:
+    """`self.postMessage({ id, chunks, done })`: the chunks placed for a ground job."""
+    __pragma__(
+        "js",
+        "{}",
+        "self.postMessage({id: job_id, chunks: reply.chunks, done: reply.done});",
+    )
+
+
+def _no_chunks() -> Any:
+    """Nothing placed: for a job the worker no longer keeps (the main thread places its own)."""
+    __pragma__("js", "{}", "return {chunks: [], done: false};")
+    return None
+
+
 def _later(task: Any) -> None:
     """`setTimeout(task, 0)`."""
     __pragma__("js", "{}", "setTimeout(task, 0);")
 
 
+# The grounds made in this worker, by job id (the last few: their chunks are asked for as the
+# level scrolls).
+_KEPT_JOBS = 4
+_jobs: list[Any] = []
+
+
+def _keep_job(job_id: int, made: Any) -> None:
+    _jobs.append([job_id, made])
+    if len(_jobs) > _KEPT_JOBS:
+        _jobs.pop(0)
+
+
+def _job_of(job_id: int) -> Any:
+    for entry in _jobs:
+        if entry[0] == job_id:
+            return entry[1]
+    return None
+
+
 def _on_message(event: Any) -> None:
     data = event.data
+    if data.kind == "chunks":
+        # The worker places the chunks the level asks for, in order (P04-R04).
+        made = _job_of(data.id)
+        if made is None:
+            _post_chunks(data.id, _no_chunks())
+            return
+        _post_chunks(data.id, to_plain(made.chunks(data.through)))
+        return
     if data.kind == "ground":
         made = generate_in_two(data.level, data.seed)
+        _keep_job(data.id, made)
         _post_ground(data.id, to_plain(made.ground))
 
         # Reviewer, 2026-10-28: the runout after the jobs already waiting (the level's textures),

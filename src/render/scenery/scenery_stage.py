@@ -128,6 +128,9 @@ class SceneryStage:
             scene,
             _kit_context(look, self.sun, sea_level, self._x_half * 2, sea_length, level.seed),
         )
+        # The screens the level starts with (and two more ahead of each, see `update`), placed now.
+        self._ahead = 2 * (self._ground.z_far - self._ground.z_near)
+        self._placer.ensure_placed(self._ground.z_far + self._ahead)
         self._chunks = self._ground_root.adopt(self._build_chunks)
         self._roads = RoadLayers(scene, self.kit.roads)
         if options.atmosphere is not None and options.atmosphere.tile_grid:
@@ -283,6 +286,8 @@ class SceneryStage:
         camera_z = ground.to_ground(camera.z)
         z_min = camera_z + self._ground.z_near - margin
         z_max = camera_z + self._ground.z_far + margin
+        # The buildings two screens ahead of the view are asked for as the view moves.
+        self._placer.want_placed(camera_z + self._ground.z_far + self._ahead)
         ground.adopt(lambda: self._cover(z_min, z_max))
         self._update_props(camera_z, z_min, z_max)
         middle = camera_z + (self._ground.z_near + self._ground.z_far) / 2
@@ -368,7 +373,7 @@ class SceneryStage:
     def _take_runout(self) -> None:
         """Once the runout's streets and buildings come (generated after the rest, reviewer
         2026-10-28), places again the chunks they show in."""
-        placed = self._placer.runout_placed
+        placed = self._placer.runout_laid
         if placed == self._with_runout:
             return
         self._with_runout = placed

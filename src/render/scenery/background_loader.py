@@ -75,6 +75,12 @@ def _texture_message(job_id: int, job: Any) -> Any:
     return None
 
 
+def _chunks_message(job_id: int, through: float) -> Any:
+    """`{ kind: 'chunks', id, through }`: asks for the chunks of a ground up to a Z."""
+    __pragma__("js", "{}", "return {kind: 'chunks', id: job_id, through: through};")
+    return None
+
+
 def _worker_available() -> bool:
     """`typeof Worker !== 'undefined'`."""
     __pragma__("js", "{}", "return typeof Worker !== 'undefined';")
@@ -127,20 +133,32 @@ class BackgroundLoader:
         _map_clear(self._waiting.handlers)
 
     def _ground_generator(self, level: Any, seed: int, replies: GroundReplies) -> None:
-        state = [False]
+        # Whether the ground, then the runout and the chunks (asked for later) came back.
+        state = [False, False, False]
+        job = [0]
+
+        def ask(through: float) -> None:
+            self.port.postMessage(_chunks_message(job[0], through))
 
         def on_reply(reply: Any) -> bool:
-            if not state[0] and reply and reply.ground:
+            if not state[0]:
                 state[0] = True
-                replies.ground(reply.ground)
-                return False
-            if state[0]:
-                replies.runout(reply.runout if reply else None)
-            else:
-                replies.ground(None)
-            return True
+                if reply and reply.ground:
+                    replies.ground(reply.ground, ask)
+                    return False
+                replies.ground(None, ask)
+                return True
+            if reply is None:
+                return True
+            if reply.runout:
+                state[1] = True
+                replies.runout(reply.runout)
+            if reply.chunks:
+                replies.chunks(reply.chunks)
+                state[2] = reply.done
+            return state[1] and state[2]
 
-        self._post_ground(level, seed, on_reply)
+        job[0] = self._post_ground(level, seed, on_reply)
 
     def prefetch_textures(self, jobs: Sequence[TextureJob]) -> None:
         """Generates the textures of `jobs` not kept yet, keeping them when they come back."""
@@ -165,8 +183,8 @@ class BackgroundLoader:
     def _post_texture(self, job: TextureJob, key: str) -> None:
         self._post(_texture_message(0, to_plain(job)), self._texture_reply(job, key))
 
-    def _post_ground(self, level: Any, seed: int, done: Callable[[Any], bool]) -> None:
-        self._post(_ground_message(0, to_plain(level), seed), done)
+    def _post_ground(self, level: Any, seed: int, done: Callable[[Any], bool]) -> int:
+        return self._post(_ground_message(0, to_plain(level), seed), done)
 
     def stop(self) -> None:
         """Stops generating in the background: the grounds are generated on the main thread
@@ -175,12 +193,13 @@ class BackgroundLoader:
         if hasattr(self.port, "terminate"):
             self.port.terminate()
 
-    def _post(self, message: Any, done: Callable[[Any], bool]) -> None:
+    def _post(self, message: Any, done: Callable[[Any], bool]) -> int:
         job_id = self._waiting.next
         self._waiting.next += 1
         message.id = job_id
         _map_set(self._waiting.handlers, job_id, done)
         self.port.postMessage(message)
+        return job_id
 
 
 def start_background_loader() -> BackgroundLoader | None:

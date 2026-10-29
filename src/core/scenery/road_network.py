@@ -181,20 +181,27 @@ class RoadNetwork:
         return self.rules.tiles
 
     @property
+    def runout_laid(self) -> bool:
+        """Whether the runout's streets are laid (see `add_runout`)."""
+        return self._runout_laid
+
+    @property
     def roads(self) -> list[Road]:
         """The roads, the runout's last once laid (a new list then: the old one stays as it was)."""
         return self._roads
 
-    def add_runout(self, made: Sequence[Road] | None = None) -> list[Road]:
+    def add_runout(self, made: RoadSnapshot | None = None) -> RoadSnapshot:
         """Lays the streets of the runout (reviewer, 2026-10-28: after the rest, so the level is
-        ready sooner), or takes those `made` before (e.g. in a worker), and returns them. Their
-        columns start on the last row laid before the runout. Once only: afterwards, it adds
-        nothing."""
+        ready sooner), or takes those `made` before (e.g. in a worker), and returns what it added:
+        its roads, blocks and slots. Their columns start on the last row laid before the runout.
+        Once only: afterwards, it adds nothing."""
         if self._runout_laid:
-            return []
+            return RoadSnapshot([], [], [])
         self._runout_laid = True
         kept = self._roads
         self._roads = list(kept)
+        blocks_before = len(self.blocks)
+        slots_before = len(self.slots)
         from_ = self.runout_from if self.runout_from is not None else INFINITY
 
         # A column may end where it starts, on the row laid before (but not where that row was cut).
@@ -202,8 +209,10 @@ class RoadNetwork:
             return self._street_ends(p) or (p.z <= from_ and self.edge_distance(p.x, p.z) < 0)
 
         if made is not None:
-            for road in made:
+            for road in made.roads:
                 self._index(road)
+            self.blocks.extend(made.blocks)
+            self.slots.extend(made.slots)
         else:
             self._add_streets(self._runout, create_rng(self._seed + 6), joins)
         added = self._roads[len(kept) :]
@@ -213,7 +222,11 @@ class RoadNetwork:
         elif made is None:
             for road in added:
                 self._slots(road)
-        return added
+        return RoadSnapshot(
+            added,
+            self.blocks[blocks_before:],
+            self.slots[slots_before:],
+        )
 
     def _follow(
         self, line: Sequence[Point], previous: Follow | None, width: float
@@ -425,14 +438,16 @@ class RoadNetwork:
         return any(z >= d.z_min and z <= d.z_max for d in self._districts)
 
     def snapshot(self) -> RoadSnapshot:
-        """What this network made (P13-R03): its roads only (reviewer, 2026-10-28: the slots and
-        the blocks are only needed to place the buildings, which are made with it)."""
-        return RoadSnapshot(self._roads)
+        """What this network made (P13-R03): its roads, blocks and slots."""
+        return RoadSnapshot(list(self._roads), list(self.blocks), list(self.slots))
 
     def _restore(self, made: RoadSnapshot) -> None:
-        """The roads made before, indexed as they were when made (in order)."""
+        """The roads made before, indexed as they were when made (in order), with their blocks
+        and slots."""
         for road in made.roads:
             self._index(road)
+        self.blocks.extend(made.blocks)
+        self.slots.extend(made.slots)
 
     def _add_road(self, kind: str, points: Sequence[RoadPoint]) -> None:
         if kind == "cross":

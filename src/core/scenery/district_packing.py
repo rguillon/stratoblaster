@@ -10,6 +10,7 @@ from collections.abc import Callable, Sequence  # noqa: E402
 
 from core.scenery.height_field import HeightField  # noqa: E402
 from core.scenery.road_network import RoadNetwork  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402
 from core.scenery.scenery_level import (  # noqa: E402
     PropGroupRule,
     PropKindRule,
@@ -27,7 +28,13 @@ from core.scenery.away_placement import Building  # noqa: E402
 from core.scenery.draws import weighted  # noqa: E402
 from core.scenery.ground_boxes import PropPlacement  # noqa: E402
 from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import has_tile_key, road_pieces, road_tiles, tile_has, tile_key  # noqa: E402
+from core.scenery.road_tiles import (  # noqa: E402
+    has_tile_key,
+    road_pieces,
+    road_tiles,
+    tile_has,
+    tile_key,
+)
 from core.scenery.tile_packing import PackSite, TileBlock, TileGround, pack_block  # noqa: E402
 
 
@@ -133,16 +140,32 @@ def _kinds_at_for(
     return kinds_at
 
 
+class RoadTilesCache:
+    """The tiles the roads of a network cover, worked out once per list of roads (the packing asks
+    for them in every chunk; the list changes only when the runout's streets are laid)."""
+
+    def __init__(self) -> None:
+        self._roads: Sequence[Road] | None = None
+        self._tiles: dict[str, bool] = {}
+
+    def of(self, roads: Sequence[Road], tiles: TileRules) -> dict[str, bool]:
+        """The tiles `roads` cover on the grid `tiles`."""
+        if self._roads is None or self._roads is not roads:
+            self._tiles = road_tiles(road_pieces(roads, tiles))
+            self._roads = roads
+        return self._tiles
+
+
 def pack_districts(  # noqa: C901 (mirrors the TypeScript closure structure)
     site: DistrictSite,
     within: Callable[[float], bool],
     tiles: TileRules,
+    road: dict[str, bool],
 ) -> None:
     """Packs the blocks of the districts whose middle `within` accepts with buildings of whole tiles
     (P15-R07, R08): at scale 1, turned by quarter turns to face a street, then lots where no
-    building of the area's group fits."""
+    building of the area's group fits. `road`: the tiles the roads cover (see `RoadTilesCache`)."""
     t = tiles.size
-    road = road_tiles(road_pieces(site.roads.roads, tiles))
     taken: dict[str, bool] = {}
     grounds = TileGround(site.field, tiles, site.rules)
     lots = stable_sort_by(list(site.rules.lots or []), lambda k: -_area(k))

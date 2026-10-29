@@ -168,8 +168,10 @@ class BuildingIndex:
 
 class PlacerSnapshot:
     """What a `PropPlacer` placed, in order: enough to make it again without placing them
-    (P13-R03). The first `fixed` buildings are its set pieces and lines."""
+    (P13-R03). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
+    chunk not placed yet (see `PropPlacer.ensure_placed`)."""
 
-    def __init__(self, buildings: Sequence[BuildingRecord], fixed: int) -> None:
+    def __init__(self, buildings: Sequence[BuildingRecord], fixed: int, placed_to: int) -> None:
         self.buildings = buildings
         self.fixed = fixed
+        self.placed_to = placed_to
