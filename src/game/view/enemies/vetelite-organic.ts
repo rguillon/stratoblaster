@@ -1,6 +1,6 @@
 import type { MembraneWing } from '../../../render/geometry/organic';
 import { curve, tendril } from '../../../render/geometry/organic';
-import type { SolidBuilder } from '../../../render/geometry/solids';
+import type { SectionPoint, SolidBuilder } from '../../../render/geometry/solids';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from './enemy-mesh';
 import { SIDES } from './enemy-shapes';
@@ -68,3 +68,14 @@ export function sinew(
 ): void {
   tendril(b, curve(from, to, bow, 2), [r0, r1], 4, color);
 }
+
+/** A lean rounded cross-section (7 points instead of 9): a swollen body on fewer triangles. */
+export const LEAN_SECTION: readonly SectionPoint[] = [
+  [0.5, 0],
+  [1, 0.4],
+  [0.6, 0.9],
+  [0, 1],
+  [-0.6, 0.9],
+  [-1, 0.4],
+  [-0.5, 0],
+];

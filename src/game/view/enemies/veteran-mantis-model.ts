@@ -14,8 +14,8 @@ import {
 import { MANTIS_DESIGN } from '../../sim/enemies/mantis';
 import { bossPoint } from '../bosses/boss-limbs';
 import type { EnemyParts } from './enemy-mesh';
-import { eyes, reactorSac } from './organic-parts';
-import { mandibles } from './vetelite-organic';
+import { eyes } from './organic-parts';
+import { LEAN_SECTION } from './vetelite-organic';
 import { buildJointedModel } from './jointed-model';
 import { backBand, noseGun } from './veteran-shapes';
 
@@ -40,7 +40,7 @@ const ABDOMEN: SegmentedBody = {
 const THORAX: SegmentedBody = {
   tail: -2,
   nose: 8.5,
-  segments: 2,
+  segments: 1,
   width: 3.6,
   bottom: -1,
   top: 2.4,
@@ -91,9 +91,9 @@ const outline = (s: 1 | -1, points: readonly (readonly [number, number])[]): Out
 function drawArm(s: 1 | -1) {
   return ({ flesh, neon, charge, muzzle }: EnemyParts): void => {
     // P16-R04: the forearm a sinew, the scythe grown out of it.
-    const fore = [0, 4, 8, 11.5].map((t) => bladePoint(s, [t, 0], 1.2));
+    const fore = [0, 6, 11.5].map((t) => bladePoint(s, [t, 0], 1.2));
     tendril(flesh, fore, [1.5, 1.1], 3, F.sinew);
-    flesh.bevelSlab(outline(s, BLADE), [0.4, 1.2, 1.9], [0.3, 0.5], F.bone, {}, F.sinew);
+    flesh.slab(outline(s, BLADE), [0.6, 1.8], F.bone, {}, F.sinew);
     neon.slab(outline(s, EDGE), [1.85, 2.05], N.mantis);
     const muzzles = s === 1 ? ARM.muzzles.right : ARM.muzzles.left;
     for (const [x, y, h] of muzzles) {
@@ -112,10 +112,10 @@ function drawShoulder(s: 1 | -1) {
   };
 }
 
-/** The body: abdomen striped with lime, plated thorax, the head with its eyes, mandibles, gun. */
+/** The body: abdomen striped with lime, plated thorax, the head with its eyes and gun. */
 function drawBody(p: EnemyParts): void {
   const { hull, flesh, neon } = p;
-  segmentedBody(flesh, ABDOMEN, F.teal);
+  segmentedBody(flesh, ABDOMEN, F.teal, {}, LEAN_SECTION);
   carapace(flesh, THORAX, [F.sinew, F.teal]);
   // The narrow head, a bulb on its neck, a metal plate on its brow.
   organ(flesh, 2.4, 5, F.teal, { at: [0, 0.3, 9.4], pitch: QUARTER }, 1.1);
@@ -129,8 +129,7 @@ function drawBody(p: EnemyParts): void {
     backBand(neon, stations, band, N.mantis);
   }
   eyes(p, [0, 1.6, 12.6], { count: 2, size: 0.7, spacing: 2.8 }, N.mantis);
-  mandibles(flesh, [0, 0.6, 13.4], [2.6, 2.4, 0.4]);
-  reactorSac(p, [0, 0.3, -20], 1.1, N.mantis, { flesh: F.teal });
+  p.reactor([0, 0.3, -20], 1.1);
   noseGun(p, [0, 1.4, 11.8], 2);
 }
 

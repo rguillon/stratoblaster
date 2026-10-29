@@ -13,7 +13,8 @@ import {
 import { buildEnemyModel } from './enemy-mesh';
 import type { EnemyParts } from './enemy-mesh';
 import { flipX, SIDES } from './enemy-shapes';
-import { eyes, reactorSac } from './organic-parts';
+import { eyes } from './organic-parts';
+import { LEAN_SECTION } from './vetelite-organic';
 
 // P05-R15, P05-R18, P16-R04: the heavier veteran kinds. Logical pixels, nose +Z, Y up (to the camera).
 const H = ENEMY_LOOK.hull;
@@ -41,10 +42,9 @@ const MORTAR_PLATE = [
 ] as const;
 
 /** A side sac on side `s`, swollen with shells, a running light along it. */
-function mortarSac({ flesh, neon, vein }: EnemyParts, s: 1 | -1): void {
-  organ(flesh, 3, 6, F.crimson, { at: [s * 18, 0.6, -9], pitch: QUARTER }, 0.95);
+function mortarSac({ flesh, neon }: EnemyParts, s: 1 | -1): void {
+  organ(flesh, 3, 5, F.crimson, { at: [s * 18, 0.6, -9], pitch: QUARTER }, 0.95);
   neon.box([0.8, 0.3, 4], N.mortar, { at: [s * 18.2, 3.6, -4] });
-  veinTube(vein, curve([s * 15.5, 3, -4], [s * 8, 4.2, -2], [0, 1, 1.5], 2), 0.6, N.mortar);
 }
 
 /**
@@ -68,7 +68,7 @@ export function buildMortar(scene: Scene): EnemyModel {
     muzzle([0, mouthHeight, mouth]);
     eyes(p, [0, 1.6, 11.4], { count: 2, size: 0.6, spacing: 3 }, N.mortar);
     for (const s of SIDES) {
-      reactorSac(p, [s * 8, 0, -14], 1.6, N.mortar, { veinLength: 4 });
+      p.reactor([s * 8, 0, -14], 1.6);
       hull.bevelSlab(
         s === 1 ? MORTAR_PLATE : flipX(MORTAR_PLATE),
         [2, 2.6, 3.6],
@@ -114,7 +114,7 @@ export function buildMinelayer(scene: Scene): EnemyModel {
   const hatches = VETERAN_CONFIG.minelayer.muzzles;
   return buildEnemyModel('minelayer', scene, N.minelayer, (p) => {
     const { hull, flesh, neon, charge, vein, muzzle } = p;
-    segmentedBody(flesh, MINELAYER_BODY, F.purple);
+    segmentedBody(flesh, MINELAYER_BODY, F.purple, {}, LEAN_SECTION);
     // The egg rack along its belly, a metal graft.
     hull.box([4, 1, 26], H.dark, { at: [0, -2.6, 0] });
     for (const [, y, height] of hatches) {
@@ -127,14 +127,13 @@ export function buildMinelayer(scene: Scene): EnemyModel {
     }
     veinTube(vein, curve([0, 2.6, -18], [0, 2.6, 17], [0, 0.4, 0], 2), 0.8, N.minelayer);
     neon.box([0.8, 0.25, 6], N.minelayer, { at: [0, 2.2, 18] });
-    eyes(p, [0, 1.4, 19.5], { count: 2, size: 0.6, spacing: 2.4 }, N.minelayer);
     for (const s of SIDES) {
       for (const z of [-14, -4, 6]) {
         neon.box([0.8, 0.4, 2.2], N.minelayer, { at: [s * 5.4, 1.4, z] });
       }
       const fin = s === 1 ? MINELAYER_FIN : flipX(MINELAYER_FIN);
       hull.bevelSlab(fin, [-0.5, 0, 0.6], [0.3, 0.5], H.base, {}, H.panel);
-      reactorSac(p, [s * 2.4, 0.2, -21], 1.3, N.minelayer, { flesh: F.purple });
+      p.reactor([s * 2.4, 0.2, -21], 1.3);
     }
   });
 }

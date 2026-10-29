@@ -15,8 +15,8 @@ import { ENEMY_LOOK } from '../../config/enemy-look';
 import { Phantom } from '../../sim/enemies/phantom';
 import { buildEnemyModel } from './enemy-mesh';
 import { flipX, POD_SECTION, SIDES } from './enemy-shapes';
-import { eyes, reactorSac } from './organic-parts';
-import { mandibles, membranePair, sinew } from './vetelite-organic';
+import { eyes } from './organic-parts';
+import { LEAN_SECTION, mandibles, membranePair, sinew } from './vetelite-organic';
 import { backBand, edgeStrip, noseGun } from './veteran-shapes';
 
 // P05-R14, P05-R17, P16-R04: the lighter veteran kinds. Logical pixels, nose +Z, Y up (to the camera).
@@ -70,12 +70,12 @@ const WASP_WINGS: readonly MembraneWing[] = [
 /**
  * P05-R14, P16-R04: a small, wasp-like insect: a swollen abdomen striped with yellow neon bands,
  * two pairs of fluttering membrane wings, a yellow neon sting, bone mandibles round a gun
- * grafted in its jaws, and reactors in flesh sacs under its wings.
+ * grafted in its jaws, and reactors under its wings.
  */
 export function buildWasp(scene: Scene): EnemyModel {
   return buildEnemyModel('wasp', scene, N.wasp, (p) => {
-    const { hull, flesh, neon, vein } = p;
-    segmentedBody(flesh, WASP_ABDOMEN, F.sinew);
+    const { hull, flesh, neon } = p;
+    segmentedBody(flesh, WASP_ABDOMEN, F.sinew, {}, LEAN_SECTION);
     carapace(flesh, WASP_THORAX, [F.crimson, F.membrane]);
     // The head, a bulb between the eyes, capped with a metal plate.
     organ(flesh, 1.6, 6, F.crimson, { at: [0, 0.3, 7.2], pitch: QUARTER }, 0.9);
@@ -93,8 +93,7 @@ export function buildWasp(scene: Scene): EnemyModel {
     neon.cylinder(0.45, 2, 6, N.wasp, { at: [0, 0.3, -8.8], pitch: -QUARTER }, 0);
     eyes(p, [0, 1.3, 8.3], { count: 2, size: 0.5, spacing: 2.2 }, N.wasp);
     mandibles(flesh, [0, 0.5, 8.2], [2.4, 2.6, 0.35]);
-    veinTube(vein, curve([0, 1.9, -1], [0, 2, 5], [0, 0.3, 0], 2), 0.5, N.wasp);
-    for (const s of SIDES) reactorSac(p, [s * 2.6, 0.2, 0.6], 0.6, N.wasp, { veinLength: 1.2 });
+    for (const s of SIDES) p.reactor([s * 2.6, 0.2, 0.6], 0.6);
     noseGun(p, [0, 0.8, 7.6], 2, 0.45);
   });
 }
@@ -168,9 +167,9 @@ export function buildPhantom(scene: Scene): EnemyModel {
         0.6,
         N.phantom,
       );
-      reactorSac(p, [s * 2.4, 0.2, -10], 1.2, N.phantom, { flesh: F.purple });
+      p.reactor([s * 2.4, 0.2, -10], 1.2);
     }
-    eyes(p, [0, 1.6, 9], { count: 3, size: 0.45, spacing: 1.2 }, N.phantom);
+    eyes(p, [0, 1.6, 9], { count: 2, size: 0.5, spacing: 1.6 }, N.phantom);
     hull.loft(POD_SECTION, PHANTOM_NOSE, H.panel);
     noseGun(p, [0, 0.6, 8], 5.8);
   });

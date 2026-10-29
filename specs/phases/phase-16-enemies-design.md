@@ -206,10 +206,11 @@ Shared by every enemy and boss model. Builders: `src/render/geometry/organic.ts`
 
 ### Gate results
 ```
-Light verification (phase 16): typecheck ✔ / build ✔ / e2e 131 passed
-Lint, unit tests and coverage: not run (deferred to /validate-phase).
-e2e ran on port 4174 with a scratch copy of playwright.config.ts: 4173 is held by another
-project on this machine (as in phase 15); against it 14 unrelated tests fail.
+make check (2026-10-29): lint ✔ / typecheck ✔ / tests 1734 passed / coverage 96.74% lines,
+84.96% branches / build ✔ / e2e 131 passed
+e2e on port 4174 with a scratch copy of playwright.config.ts (4173 held by another project).
+First unit test run: 5 failures, the P05 veteran triangle check (< 550) under the P16 budget of
+700; fixed by slimming the five veterans to 488–516 (the test kept).
 ```
 
 ### How to test manually
@@ -224,11 +225,12 @@ project on this machine (as in phase 15); against it 14 unrelated tests fail.
 - Big wings (Storm Petrel, Snow Owl, Toucan) stay still instead of fluttering: the style guide
   allows it for heavy wings.
 
+- The five veteran kinds use plain reactors, without the flesh sac, to stay under the P05 cap of
+  550 triangles (elites and bosses keep their sacs).
+
 ### Known limitations
 - Triangle counts were checked by script, not on a reference machine (P16-R09 perf monitor
   check left to manual validation).
-- Unit tests have not run yet (deferred to `/validate-phase`); size, muzzle and budget tests may
-  need fixes then.
 - Nothing visual was checked in a browser by the agent beyond the e2e runs.
 
 ### Suggestions for future phases
