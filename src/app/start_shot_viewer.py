@@ -15,7 +15,7 @@ from app.rate_meter import RateMeter  # noqa: E402
 from app.shot_viewer_scene import PlayfieldShip, create_playfield_scene  # noqa: E402
 from app.start_ship_viewer import frame_source  # noqa: E402
 from config.shot_viewer import SHOT_VIEWER_CONFIG as CFG  # noqa: E402
-from core.entities.weapon import ShotStream, validate_weapons  # noqa: E402
+from core.entities.weapon import validate_weapons  # noqa: E402
 from core.loop.fixed_step_clock import FixedStepClock  # noqa: E402
 from core.systems.shot_world import ShotWorld, ShotWorldOptions  # noqa: E402
 from render.environment.showcase_environment_visual import (  # noqa: E402
@@ -116,14 +116,30 @@ def _launch_origin(weapon: Any, muzzle: _Point, center: _Point) -> _Point:
     return muzzle
 
 
+def _stream_record(stream: Any) -> Any:
+    """A core stream (`offset_x`, `angle_deg`, as `game/sim/player_build.py` maps it) as the
+    config-style record `render/shot_playfield.py` reads (`offsetX`, `angleDeg`)."""
+    record: Any = None
+    __pragma__("js", "{}", "record = { offsetX: stream.offset_x, angleDeg: stream.angle_deg };")
+    return record
+
+
+def _straight_stream() -> Any:
+    """A beam's one stream, straight ahead, as a config-style record (`offsetX`, `angleDeg`)."""
+    record: Any = None
+    __pragma__("js", "{}", "record = { offsetX: 0, angleDeg: 0 };")
+    return record
+
+
 def _guide_streams(weapon: Any, level: int) -> Any:
-    """Streams to draw guides for: those of a projectile level, or straight ahead for a beam."""
+    """Streams to draw guides for: those of a projectile level, or straight ahead for a beam, as
+    the config-style records `build_stream_guides` reads."""
     if weapon.kind == "projectile":
         levels = weapon.levels
         if 0 <= level - 1 < len(levels):
-            return levels[level - 1]
+            return [_stream_record(s) for s in levels[level - 1]]
         return []
-    return [ShotStream(0, 0)]
+    return [_straight_stream()]
 
 
 class _ShotViewer:

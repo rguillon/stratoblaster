@@ -95,7 +95,7 @@ def atmosphere_track(
     `AtmosphereTrack` (its `at(distance)`: the TypeScript `AtmosphereAlong`)."""
     if options is None:
         options = AtmosphereOptions()
-    # The record's `changes` are plain objects (`from`, `to`, `look`), not AtmosphereChange.
+    # `script` is mapped by game/sim/sky_build.py: its changes are AtmosphereChange (`from_`).
     script: Any = _script_of(look, options.time_of_day)
     tone = 1 if look.tone == None else look.tone  # noqa: E711 (optional record field)
     # A fixed look has no weather to turn off.
@@ -114,7 +114,7 @@ def atmosphere_track(
     changes: list[AtmosphereChange] = []
     for c in script.changes if script.changes != None else []:  # noqa: E711 (optional record field)
         changes.append(
-            AtmosphereChange(c["from"] * scroll_speed, c.to * scroll_speed, adjust(c.look))
+            AtmosphereChange(c.from_ * scroll_speed, c.to * scroll_speed, adjust(c.look))
         )
     return AtmosphereTrack(
         adjust(script.start),
