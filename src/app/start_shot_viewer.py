@@ -184,8 +184,8 @@ class _ShotViewer:
             ShotViewerPanelOptions(
                 options.doc,
                 options.panel_parent,
-                [s["name"] for s in game.player_ships.ships],
-                [w["name"] for w in game.player_weapons],
+                [s.name for s in game.player_ships.ships],
+                [w.name for w in game.player_weapons],
                 [len(w.levels) for w in game.player_weapons],
                 ShotViewerSelection(0, 0, 1, False, True),
                 on_change,

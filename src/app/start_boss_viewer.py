@@ -86,7 +86,7 @@ class BossViewer:
                 options.doc,
                 options.panel_parent,
                 [k.name for k in game.boss_kinds],
-                [w["name"] for w in game.player_weapons],
+                [w.name for w in game.player_weapons],
                 [len(w.levels) for w in game.player_weapons],
                 EnemyViewerSelection(0, "behaviour", 0, 3, True, False, True, False),
                 HELP,
@@ -159,7 +159,7 @@ class BossViewer:
         kind = self._kind_at(self.panel.selection.kind)
         self._boss = self._stage.spawn(kind, self._random)
         self._stage.view.track.set_speed_factor(
-            self._boss.ground_speed, self.game.boss_fights.speedEaseSeconds
+            self._boss.ground_speed, self.game.boss_fights.speed_ease_seconds
         )
 
     def frame(self, dt: float) -> None:
@@ -229,7 +229,7 @@ class BossViewer:
             return
         if self._boss:
             self._boss = None
-            self._stage.view.track.set_speed_factor(1, self.game.boss_fights.speedEaseSeconds)
+            self._stage.view.track.set_speed_factor(1, self.game.boss_fights.speed_ease_seconds)
         self._respawn_in += dt
         if self._respawn_in < CFG.respawn_delay:
             return

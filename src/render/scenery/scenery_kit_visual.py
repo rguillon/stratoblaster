@@ -74,7 +74,7 @@ def _terrain_material(scene: Any, look: Any, state: TerrainBlendState, seed: int
 
     def ground(layer: Any, n: int) -> Any:
         return _raw_texture(
-            scene, build_ground_texture(t.texture_size, layer, seed + n), t.texture_size
+            scene, build_ground_texture(t.textureSize, layer, seed + n), t.textureSize
         )
 
     material = new_standard_material("terrain", scene)
@@ -90,8 +90,8 @@ def _terrain_material(scene: Any, look: Any, state: TerrainBlendState, seed: int
         ground(t.sand, 10),
         _raw_texture(
             scene,
-            build_noise_texture(t.texture_size, NOISE_FREQUENCY, seed + 5),
-            t.texture_size,
+            build_noise_texture(t.textureSize, NOISE_FREQUENCY, seed + 5),
+            t.textureSize,
         ),
     )
     new_terrain_blend_plugin(material, t, textures, state)
@@ -106,15 +106,15 @@ def _sea_material(scene: Any, look: Any, size: Any, seed: int) -> Any:
     material.roughness = sea.roughness
     material.alpha = sea.alpha
     material.transparencyMode = babylon_class("PBRMaterial").PBRMATERIAL_ALPHABLEND
-    material.directIntensity = sea.sun_glint
-    normal_map = sea.normal_map
+    material.directIntensity = sea.sunGlint
+    normal_map = sea.normalMap
     normals = _raw_texture(
         scene,
         build_water_normal_map(normal_map.size, normal_map, seed + 6),
         normal_map.size,
     )
-    normals.uScale = size.width / sea.tile_size
-    normals.vScale = size.length_ / sea.tile_size
+    normals.uScale = size.width / sea.tileSize
+    normals.vScale = size.length_ / sea.tileSize
     material.bumpTexture = normals
     return material
 
@@ -143,14 +143,14 @@ class VisualSceneryKit:
         self._sea = lava.material if lava else _sea_material(scene, look, context.sea_size, seed)
         self._cloud_texture = _raw_texture(
             scene,
-            build_noise_texture(look.terrain.texture_size, NOISE_FREQUENCY / 2, seed + 7),
-            look.terrain.texture_size,
+            build_noise_texture(look.terrain.textureSize, NOISE_FREQUENCY / 2, seed + 7),
+            look.terrain.textureSize,
         )
         shadows = new_shadow_generator(look.sun.shadow.map_size, sun)
         shadows.usePercentageCloserFiltering = True
         shadows.filteringQuality = babylon_class("ShadowGenerator").QUALITY_MEDIUM
         shadows.bias = look.sun.shadow.bias
-        shadows.normalBias = look.sun.shadow.normal_bias
+        shadows.normalBias = look.sun.shadow.normalBias
         shadows.setDarkness(look.sun.shadow.darkness)
         # A fixed shadow frustum: re-fitting it to the scene every frame made the shadows shimmer
         # (the stage moves the sun by whole texels, phase 4 review).
@@ -191,8 +191,8 @@ class VisualSceneryKit:
         bump = self._sea.bumpTexture if is_instance_of(self._sea, "PBRMaterial") else None
         if is_instance_of(bump, "Texture"):
             assert bump is not None
-            bump.uOffset = (frame.time * self._look.sea.drift[0]) / self._look.sea.tile_size
-            bump.vOffset = (frame.time * self._look.sea.drift[1]) / self._look.sea.tile_size
+            bump.uOffset = (frame.time * self._look.sea.drift[0]) / self._look.sea.tileSize
+            bump.vOffset = (frame.time * self._look.sea.drift[1]) / self._look.sea.tileSize
 
 
 def create_scenery_kit(scene: Any, context: Any) -> VisualSceneryKit:

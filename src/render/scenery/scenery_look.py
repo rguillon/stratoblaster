@@ -36,13 +36,13 @@ class TextureLook:
     ) -> None:
         """`colors`: dark, base and light, at the low, middle and high noise values. `frequency`:
         noise cycles across the texture (first octave). `speckle`: share (0..1) of pixels turned
-        into speckles of `speckle_color`. `strata`: horizontal bands, like rock strata. `cracks`:
+        into speckles of `speckleColor`. `strata`: horizontal bands, like rock strata. `cracks`:
         thin dark crack lines, as in lake ice (phase 8)."""
         self.colors = colors
         self.frequency = frequency
         self.octaves = octaves
         self.speckle = speckle
-        self.speckle_color = speckle_color
+        self.speckleColor = speckle_color
         self.strata = strata
         self.cracks = cracks
 
@@ -57,7 +57,7 @@ class Jitter:
 
 class TerrainLook:
     """Generated ground textures blended by altitude and slope (P04-R01): `low` under
-    `low_height` (shores, sea bed), `ground` in between, `high` above `high_height` (snow),
+    `lowHeight` (shores, sea bed), `ground` in between, `high` above `highHeight` (snow),
     `steep` on slopes. `lush`, `paved` and `sand` are the covers of the terrain sections."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -81,11 +81,11 @@ class TerrainLook:
         tint_tile_size: float,
         shore: "ShoreLook",
         specular: float,
-        cast_shadows: bool | None = None,
+        casts_shadows: bool | None = None,
     ) -> None:
-        """`cast_shadows`: whether the terrain casts the sun's shadows (default: yes)."""
-        self.texture_size = texture_size
-        self.tile_size = tile_size
+        """`castsShadows`: whether the terrain casts the sun's shadows (default: yes)."""
+        self.textureSize = texture_size
+        self.tileSize = tile_size
         self.low = low
         self.ground = ground
         self.steep = steep
@@ -93,17 +93,17 @@ class TerrainLook:
         self.lush = lush
         self.paved = paved
         self.sand = sand
-        self.low_height = low_height
-        self.high_height = high_height
-        self.height_blend = height_blend
-        self.steep_slope = steep_slope
+        self.lowHeight = low_height
+        self.highHeight = high_height
+        self.heightBlend = height_blend
+        self.steepSlope = steep_slope
         self.jitter = jitter
-        self.noise_tile_size = noise_tile_size
+        self.noiseTileSize = noise_tile_size
         self.tints = tints
-        self.tint_tile_size = tint_tile_size
+        self.tintTileSize = tint_tile_size
         self.shore = shore
         self.specular = specular
-        self.cast_shadows = cast_shadows
+        self.castsShadows = casts_shadows
 
 
 class ShoreFoam:
@@ -200,15 +200,15 @@ class SeaLook:
         drift: tuple[float, float],
         lava: LavaLook | None = None,
     ) -> None:
-        """`sun_glint`: strength of the sun's direct light on the water (above 1, brighter glint).
+        """`sunGlint`: strength of the sun's direct light on the water (above 1, brighter glint).
         `drift`: world units per second the waves drift along X and Z. `lava` (phase 10): the
         liquid is lava (P10-R05), not water."""
         self.color = color
         self.alpha = alpha
         self.roughness = roughness
-        self.sun_glint = sun_glint
-        self.normal_map = normal_map
-        self.tile_size = tile_size
+        self.sunGlint = sun_glint
+        self.normalMap = normal_map
+        self.tileSize = tile_size
         self.drift = drift
         self.lava = lava
 
@@ -233,7 +233,7 @@ class CloudLayerLook:
         self.altitude = altitude
         self.coverage = coverage
         self.opacity = opacity
-        self.tile_size = tile_size
+        self.tileSize = tile_size
         self.drift = drift
         self.softness = softness
         self.color = color
@@ -246,7 +246,7 @@ class SceneryLookSky:
     def __init__(self, haze: Rgb, stops: Sequence[Any], environment_intensity: float) -> None:
         self.haze = haze
         self.stops = stops
-        self.environment_intensity = environment_intensity
+        self.environmentIntensity = environment_intensity
 
 
 class SceneryFog:
@@ -264,10 +264,10 @@ class ShadowLook:
     def __init__(
         self, map_size: float, frustum: float, bias: float, normal_bias: float, darkness: float
     ) -> None:
-        self.map_size = map_size
+        self.mapSize = map_size
         self.frustum = frustum
         self.bias = bias
-        self.normal_bias = normal_bias
+        self.normalBias = normal_bias
         self.darkness = darkness
 
 
@@ -283,8 +283,8 @@ class SunLook:
         intensity: float,
         shadow: ShadowLook,
     ) -> None:
-        self.elevation_deg = elevation_deg
-        self.azimuth_deg = azimuth_deg
+        self.elevationDeg = elevation_deg
+        self.azimuthDeg = azimuth_deg
         self.color = color
         self.intensity = intensity
         self.shadow = shadow
@@ -304,7 +304,7 @@ class PropsLook:
 
     def __init__(self, specular: float, light_intensity: float) -> None:
         self.specular = specular
-        self.light_intensity = light_intensity
+        self.lightIntensity = light_intensity
 
 
 class GlowLook:
@@ -312,13 +312,13 @@ class GlowLook:
 
     def __init__(self, intensity: float, blur_kernel_size: float) -> None:
         self.intensity = intensity
-        self.blur_kernel_size = blur_kernel_size
+        self.blurKernelSize = blur_kernel_size
 
 
 class SceneryLook:
     """How a scenery level looks: sky, light, terrain, sea, clouds and props. The optional fields
     are last: `atmosphere` (phase 8, its sky script, replaces the fixed sky, fog, sun, ambient,
-    clouds and ground lights), `shot_style` (phase 10, the enemy shot style of this level),
+    clouds and ground lights), `shotStyle` (phase 10, the enemy shot style of this level),
     `tone` (phase 14, 0..1, how bright the background is kept under the playfield; 1 when None)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -348,7 +348,7 @@ class SceneryLook:
         self.props = props
         self.glow = glow
         self.atmosphere = atmosphere
-        self.shot_style = shot_style
+        self.shotStyle = shot_style
         self.tone = tone
 
 
@@ -387,7 +387,7 @@ __pragma__("noskip")
 
 class PlayfieldCameraLook:
     """The camera above the playfield (P04-R05): its tilt from straight down, vertical field of
-    view, the height of the playfield plane, and `ground_scale` (how much bigger the ground is
+    view, the height of the playfield plane, and `groundScale` (how much bigger the ground is
     drawn, as if flying lower; 1 when None)."""
 
     def __init__(
@@ -397,7 +397,7 @@ class PlayfieldCameraLook:
         flight_altitude: float,
         ground_scale: float | None = None,
     ) -> None:
-        self.tilt_deg = tilt_deg
-        self.fov_deg = fov_deg
-        self.flight_altitude = flight_altitude
-        self.ground_scale = ground_scale
+        self.tiltDeg = tilt_deg
+        self.fovDeg = fov_deg
+        self.flightAltitude = flight_altitude
+        self.groundScale = ground_scale

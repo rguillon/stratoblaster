@@ -295,19 +295,19 @@ class TerrainBlendOwner:
         look = self._look
         state = self._state
         textures = self._textures
-        ubo.updateFloat4("terrainHeights", look.low_height, look.high_height, look.height_blend, 0)
+        ubo.updateFloat4("terrainHeights", look.lowHeight, look.highHeight, look.heightBlend, 0)
         ubo.updateFloat4(
             "terrainSlope",
-            look.steep_slope[0],
-            look.steep_slope[1],
+            look.steepSlope[0],
+            look.steepSlope[1],
             look.jitter.height,
             look.jitter.slope,
         )
         ubo.updateFloat4(
             "terrainScale",
-            1 / look.tile_size,
-            1 / look.noise_tile_size,
-            1 / look.tint_tile_size,
+            1 / look.tileSize,
+            1 / look.noiseTileSize,
+            1 / look.tintTileSize,
             0,
         )
         ubo.updateFloat3("terrainTintA", look.tints[0][0], look.tints[0][1], look.tints[0][2])

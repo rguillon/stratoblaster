@@ -171,7 +171,7 @@ def create_prop_materials(scene: Any, look: Any) -> PropMaterials:
     specular = look.props.specular
     structure.specularColor = color3(specular, specular, specular)
     lights = new_standard_material("prop-lights", scene)
-    glow = look.props.light_intensity
+    glow = look.props.lightIntensity
     lights.emissiveColor = color3(glow, glow, glow)
     lights.diffuseColor = color3_black()
     lights.specularColor = color3_black()

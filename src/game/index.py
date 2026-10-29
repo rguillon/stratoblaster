@@ -17,6 +17,8 @@ from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.sim.boss_kinds import BOSS_KINDS
 from game.sim.enemy_kinds import ENEMY_KINDS
 from game.sim.levels import GAME_LEVELS, LEVELS
+from game.sim.player_build import player_roster, player_weapons
+from game.sim.rules_build import bomb_rules, bonus_rules, boss_fight_rules, hull_rules
 from game.view.audio.game_audio import GAME_AUDIO
 from game.view.bombs.bomb_renderer import create_bomb_renderer
 from game.view.bonuses.bonus_renderer import create_bonus_renderer
@@ -65,16 +67,16 @@ GAME = GameDefinition(
     GAME_CONFIG.id,
     GAME_CONFIG.title,
     GAME_CONFIG.screen,
-    PLAYER_SHIPS,
-    PLAYER_WEAPONS,
+    player_roster(PLAYER_SHIPS),
+    player_weapons(PLAYER_WEAPONS),
     LEVELS,
     GAME_LEVELS,
     ENEMY_KINDS,
     BOSS_KINDS,
-    BOSS_FIGHT_RULES,
-    BONUS_RULES,
-    BOMB_RULES,
-    HULL_RULES,
+    boss_fight_rules(BOSS_FIGHT_RULES),
+    bonus_rules(BONUS_RULES),
+    bomb_rules(BOMB_RULES),
+    hull_rules(HULL_RULES),
     MENU_TEXTS,
     # Phase 14: the ships with a rim glow (P14-R03), the shots toned down (P14-R06).
     GameBindings(

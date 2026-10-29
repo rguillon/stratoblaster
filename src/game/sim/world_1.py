@@ -22,8 +22,6 @@ from game.sim.assemble_level import WorldTables, assemble_level
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
-
 # A beat is a config record (`game/config/record.py`), typed as Any there.
 __pragma__("skip")
 Beat = Any
@@ -34,7 +32,7 @@ __pragma__("noskip")
 TABLES = WorldTables(WORLD_1_DIFFICULTY, WORLD_1_FILLERS, WORLD_1_BOSSES)
 
 
-def _level(id: str, scenery: SceneryLevel, beats: list[Beat]) -> GameLevel:
+def _level(id: str, scenery: Any, beats: list[Beat]) -> GameLevel:
     return assemble_level(id, scenery, beats, TABLES)
 
 

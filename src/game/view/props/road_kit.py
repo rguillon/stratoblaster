@@ -18,20 +18,10 @@ from game.config.scenery_look import BASE_SCENERY_LOOK  # noqa: E402
 from game.config.tile_buildings import TILE  # noqa: E402
 from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
 from render.scenery.scenery_look import PropGeometry  # noqa: E402
-from render.scenery.tile_road_geometry import TileRoadLook, add_piece  # noqa: E402
+from render.scenery.tile_road_geometry import add_piece  # noqa: E402
 
-# The config record has camelCase fields; the render class takes them by position.
-_TILES = BASE_SCENERY_LOOK.roads.tiles
-LOOK = TileRoadLook(
-    _TILES.roadway,
-    _TILES.sidewalk,
-    _TILES.kerb,
-    _TILES.kerbWidth,
-    _TILES.centreLine,
-    _TILES.laneLine,
-    _TILES.lineWidth,
-    _TILES.lift,
-)
+# The render code reads the look's camelCase fields, so the config record is the look itself.
+LOOK = BASE_SCENERY_LOOK.roads.tiles
 # Road sizes of the kit: up to 3 × 3 (the 4 × 4 roads dropped, reviewer 2026-10-28).
 SIZES = [1, 2, 3]
 

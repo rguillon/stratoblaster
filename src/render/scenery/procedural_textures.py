@@ -163,12 +163,12 @@ def scenery_texture_jobs(look: Any, seed: int) -> list[TextureJob]:
     ]
     jobs: list[TextureJob] = []
     for pair in layers:
-        jobs.append(TextureJob("ground", [t.texture_size, pair[0], seed + pair[1]]))
-    jobs.append(TextureJob("noise", [t.texture_size, NOISE_FREQUENCY, seed + 5]))
-    jobs.append(TextureJob("noise", [t.texture_size, NOISE_FREQUENCY / 2, seed + 7]))
+        jobs.append(TextureJob("ground", [t.textureSize, pair[0], seed + pair[1]]))
+    jobs.append(TextureJob("noise", [t.textureSize, NOISE_FREQUENCY, seed + 5]))
+    jobs.append(TextureJob("noise", [t.textureSize, NOISE_FREQUENCY / 2, seed + 7]))
     sea = look.sea
-    if sea.lava is None:
-        jobs.append(TextureJob("water", [sea.normal_map.size, sea.normal_map, seed + 6]))
+    if sea.lava == None:  # noqa: E711 (an absent lava field is undefined in JavaScript)
+        jobs.append(TextureJob("water", [sea.normalMap.size, sea.normalMap, seed + 6]))
     return jobs
 
 
@@ -281,7 +281,7 @@ def _ground_pixels(size: int, look: Any, seed: int) -> Any:
     )
     bands = tileable_fbm(size, look.frequency / 2, 2, seed + 50)
     cracks = crack_lines(size, look.frequency * CRACK_CELLS, seed + 70) if look.cracks else None
-    crack_strength = look.cracks if look.cracks is not None else 0
+    crack_strength = look.cracks if look.cracks != None else 0  # noqa: E711 (absent: undefined)
     pixels = uint8_array(size * size * 4)
     for y in range(0, size):
         for x in range(0, size):
@@ -292,7 +292,7 @@ def _ground_pixels(size: int, look: Any, seed: int) -> Any:
             crack = (cracks[i] if cracks is not None else 0) * crack_strength
             n = (noise[i] * (1 - look.strata) + look.strata * (band * 0.5 + 0.5)) * (1 - crack)
             speck = hash_2d(x, y, seed) < look.speckle
-            rgb = look.speckle_color if speck else _ground_color(look, n)
+            rgb = look.speckleColor if speck else _ground_color(look, n)
             pixels.set([_byte(rgb[0]), _byte(rgb[1]), _byte(rgb[2]), 255], i * 4)
     return pixels
 

@@ -57,17 +57,17 @@ def look_atmosphere(look: SceneryLook) -> Atmosphere:
         clouds.append(CloudCover(c.coverage, c.opacity, c.color, c.shade))
     return Atmosphere(
         Sun(
-            look.sun.elevation_deg,
-            look.sun.azimuth_deg,
+            look.sun.elevationDeg,
+            look.sun.azimuthDeg,
             look.sun.color,
             look.sun.intensity,
             look.sun.shadow.darkness,
         ),
-        Sky(look.sky.haze, look.sky.stops, look.sky.environment_intensity),
+        Sky(look.sky.haze, look.sky.stops, look.sky.environmentIntensity),
         Ambient(look.ambient.sky, look.ambient.ground, look.ambient.intensity),
         Fog(look.fog.start, look.fog.end),
         clouds,
-        look.props.light_intensity,
+        look.props.lightIntensity,
         CLEAR,
         0,
         0,
@@ -76,7 +76,7 @@ def look_atmosphere(look: SceneryLook) -> Atmosphere:
 
 def _script_of(look: SceneryLook, time_of_day: str | None) -> SkyScript | None:
     """The sky script of `look`, or one made from its own clouds when a time of day is forced."""
-    if look.atmosphere is not None:
+    if look.atmosphere != None:  # noqa: E711 (optional record field: undefined when absent)
         return look.atmosphere
     if time_of_day is None:
         return None
@@ -95,8 +95,9 @@ def atmosphere_track(
     `AtmosphereTrack` (its `at(distance)`: the TypeScript `AtmosphereAlong`)."""
     if options is None:
         options = AtmosphereOptions()
-    script = _script_of(look, options.time_of_day)
-    tone = 1 if look.tone is None else look.tone
+    # The record's `changes` are plain objects (`from`, `to`, `look`), not AtmosphereChange.
+    script: Any = _script_of(look, options.time_of_day)
+    tone = 1 if look.tone == None else look.tone  # noqa: E711 (optional record field)
     # A fixed look has no weather to turn off.
     if script is None:
         return AtmosphereTrack(
@@ -111,9 +112,9 @@ def atmosphere_track(
         return without_weather(timed) if options.weather is False else timed
 
     changes: list[AtmosphereChange] = []
-    for c in script.changes if script.changes is not None else []:
+    for c in script.changes if script.changes != None else []:  # noqa: E711 (optional record field)
         changes.append(
-            AtmosphereChange(c.from_ * scroll_speed, c.to * scroll_speed, adjust(c.look))
+            AtmosphereChange(c["from"] * scroll_speed, c.to * scroll_speed, adjust(c.look))
         )
     return AtmosphereTrack(
         adjust(script.start),

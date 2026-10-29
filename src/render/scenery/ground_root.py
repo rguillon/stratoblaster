@@ -79,8 +79,8 @@ def ground_window_of(options: Any, framing: PlayfieldFraming, scale: float) -> G
     world = visible_ground(
         framing,
         screen.width / screen.height,
-        camera.flight_altitude + framing.height,
+        camera.flightAltitude + framing.height,
         lowest_ground(options.level) * scale,
-        camera.flight_altitude,
+        camera.flightAltitude,
     )
     return GroundWindow(world.z_near / scale, world.z_far / scale, world.half_width / scale)

@@ -107,7 +107,7 @@ class SceneryStage:
         self._placer = ground.placer
         self._drifts = prop_drifts(level)
         self.framing: PlayfieldFraming = frame_playfield(options.screen, options.camera)
-        scale = options.camera.ground_scale if options.camera.ground_scale is not None else 1
+        scale = options.camera.groundScale if options.camera.groundScale is not None else 1
         self._ground_root = GroundRoot(scene, scale)
         self._ground: GroundWindow = ground_window_of(
             options, self.framing, self._ground_root.scale
@@ -121,7 +121,7 @@ class SceneryStage:
         self.sun = self._sky.sun
         # One more wave tile: the sea plane moves by whole tiles (see `update`).
         sea_length = (
-            self._ground.z_far - self._ground.z_near + 2 * config.margin + look.sea.tile_size
+            self._ground.z_far - self._ground.z_near + 2 * config.margin + look.sea.tileSize
         )
         sea_level = level.sea.level if level.sea is not None else 0
         self.kit = options.kit(
@@ -156,7 +156,7 @@ class SceneryStage:
             _sky_placement(
                 self._window_at,
                 self.cloud_altitude,
-                options.camera.flight_altitude,
+                options.camera.flightAltitude,
                 options.config.margin,
             ),
         )
@@ -224,7 +224,7 @@ class SceneryStage:
     @property
     def lava(self) -> Any:
         """Phase 10: the lava (P10-R05), when the level's liquid is lava, else None."""
-        return self._sea if self.options.look.sea.lava is not None else None
+        return self._sea if self.options.look.sea.lava != None else None  # noqa: E711 (absent: undefined)
 
     @property
     def plumes(self) -> int:
@@ -262,7 +262,7 @@ class SceneryStage:
         """World position of a playfield point (logical pixels, origin at its bottom left)."""
         screen = self.options.screen
         camera = self.options.camera
-        return vector3(x - screen.width / 2, camera.flight_altitude, distance + y)
+        return vector3(x - screen.width / 2, camera.flightAltitude, distance + y)
 
     def update(self, distance: float, dt: float) -> None:
         """Moves the camera, the terrain, the sea and the clouds to `distance` along the level."""
@@ -271,7 +271,7 @@ class SceneryStage:
         camera = self.camera.position
         camera.set(
             0,
-            self.options.camera.flight_altitude + self.framing.height,
+            self.options.camera.flightAltitude + self.framing.height,
             distance + self.framing.back,
         )
         dy = self.framing.direction[0]
@@ -287,7 +287,7 @@ class SceneryStage:
         self._update_props(camera_z, z_min, z_max)
         middle = camera_z + (self._ground.z_near + self._ground.z_far) / 2
         if self._sea is not None:
-            tile = self.options.look.sea.tile_size
+            tile = self.options.look.sea.tileSize
             # Whole tiles only, so the waves stay put on the ground while the plane follows the
             # camera.
             self._sea.position.z = math.floor(middle / tile + 0.5) * tile
@@ -300,7 +300,7 @@ class SceneryStage:
             self.sun.direction,
             vector3(0, 0, ground.to_world(middle)),
             self.options.config.sun_distance,
-            shadow.frustum / shadow.map_size,
+            shadow.frustum / shadow.mapSize,
         )
         self.kit.update(
             SceneryKitFrame(
@@ -406,7 +406,7 @@ class SceneryStage:
         )
 
         def on_mesh(mesh: Any) -> None:
-            if self.options.look.terrain.cast_shadows is not False:
+            if self.options.look.terrain.castsShadows is not False:
                 self.kit.add_shadow_caster(mesh)
             self._terrain.add(mesh)
 
@@ -421,7 +421,7 @@ class SceneryStage:
     def _window_at(self, altitude: float) -> GroundWindow:
         """What the camera sees of the plane at `altitude`."""
         screen = self.options.screen
-        camera_y = self.options.camera.flight_altitude + self.framing.height
+        camera_y = self.options.camera.flightAltitude + self.framing.height
         return visible_ground(
             self.framing,
             screen.width / screen.height,

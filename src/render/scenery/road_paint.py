@@ -242,14 +242,14 @@ def _paint_lines(
     for arm in arms:
         cut = _crossing(arm.line, arm.along_x, size) if junction else None
         line = cut[0] if cut is not None else arm.line
-        centre, lanes = arm_lines(Arm(arm.lanes, line, arm.along_x), look.line_width)
+        centre, lanes = arm_lines(Arm(arm.lanes, line, arm.along_x), look.lineWidth)
         for rect in lanes:
-            _fill(pixels, c, rect, look.lane_line)
+            _fill(pixels, c, rect, look.laneLine)
         for rect in centre:
-            _fill(pixels, c, rect, look.centre_line)
+            _fill(pixels, c, rect, look.centreLine)
         if cut is not None:
             for rect in _stripes(cut[1], arm.along_x):
-                _fill(pixels, c, rect, look.lane_line)
+                _fill(pixels, c, rect, look.laneLine)
 
 
 def _paint_turn(piece: RoadPiece, tile: TileRules, look: TileRoadLook, n: int) -> list[Any]:
@@ -261,11 +261,11 @@ def _paint_turn(piece: RoadPiece, tile: TileRules, look: TileRoadLook, n: int) -
     inner = tile.sidewalk
     outer = size - tile.sidewalk
     lane = (outer - inner) / (2 * piece.size)
-    half = look.line_width / 2
-    arcs: list[tuple[float, Rgb]] = [(size / 2, look.centre_line)]
+    half = look.lineWidth / 2
+    arcs: list[tuple[float, Rgb]] = [(size / 2, look.centreLine)]
     for k in range(1, piece.size):
-        arcs.append((size / 2 - k * lane, look.lane_line))
-        arcs.append((size / 2 + k * lane, look.lane_line))
+        arcs.append((size / 2 - k * lane, look.laneLine))
+        arcs.append((size / 2 + k * lane, look.laneLine))
 
     def colour(r: float) -> Rgb:
         if r >= inner and r <= outer:
@@ -273,7 +273,7 @@ def _paint_turn(piece: RoadPiece, tile: TileRules, look: TileRoadLook, n: int) -
                 if abs(r - at) <= half:
                     return col
             return look.roadway
-        kerb = r >= inner - look.kerb_width and r <= outer + look.kerb_width
+        kerb = r >= inner - look.kerbWidth and r <= outer + look.kerbWidth
         return look.kerb if kerb else look.sidewalk
 
     out: list[Any] = []
@@ -300,10 +300,10 @@ def paint_piece(
     if piece.kind == "turn":
         return _paint_turn(piece, tile, look, n)
     scale = n / (piece.size * tile.size)
-    margin = math.ceil((KERB_RADIUS + look.kerb_width) * 2 * scale)
+    margin = math.ceil((KERB_RADIUS + look.kerbWidth) * 2 * scale)
     c = Canvas(scale, margin, n + 2 * margin)
     road = _rounded_road(piece, tile, c)
-    kerb = _within(road, c.side, look.kerb_width * scale)
+    kerb = _within(road, c.side, look.kerbWidth * scale)
     pixels = [
         look.roadway if road[i] else (look.kerb if kerb[i] else look.sidewalk)
         for i in range(c.side * c.side)

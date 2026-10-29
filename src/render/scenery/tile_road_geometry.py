@@ -55,10 +55,10 @@ class TileRoadLook:
         self.sidewalk = sidewalk
         self.kerb = kerb
         """Width of the kerb along the roadway's edges."""
-        self.kerb_width = kerb_width
-        self.centre_line = centre_line
-        self.lane_line = lane_line
-        self.line_width = line_width
+        self.kerbWidth = kerb_width
+        self.centreLine = centre_line
+        self.laneLine = lane_line
+        self.lineWidth = line_width
         """Height of the sidewalks above the ground."""
         self.lift = lift
 
@@ -264,20 +264,18 @@ def add_piece(
         geo, (0, size, 0, size), ox, oz, _layer_height(ground, look.lift, 0), look.sidewalk, cell
     )
     roadway, arms = piece_roadway(piece, tile)
-    k = look.kerb_width
+    k = look.kerbWidth
     for x0, x1, z0, z1 in roadway:
         kerb = (max(0, x0 - k), min(size, x1 + k), max(0, z0 - k), min(size, z1 + k))
         _add_rect(geo, kerb, ox, oz, _layer_height(ground, look.lift, 1), look.kerb, cell)
     for rect in roadway:
         _add_rect(geo, rect, ox, oz, _layer_height(ground, look.lift, 2), look.roadway, cell)
     for arm in arms:
-        centre, lanes = arm_lines(arm, look.line_width)
+        centre, lanes = arm_lines(arm, look.lineWidth)
         for rect in centre:
-            _add_rect(
-                geo, rect, ox, oz, _layer_height(ground, look.lift, 3), look.centre_line, cell
-            )
+            _add_rect(geo, rect, ox, oz, _layer_height(ground, look.lift, 3), look.centreLine, cell)
         for rect in lanes:
-            _add_rect(geo, rect, ox, oz, _layer_height(ground, look.lift, 3), look.lane_line, cell)
+            _add_rect(geo, rect, ox, oz, _layer_height(ground, look.lift, 3), look.laneLine, cell)
 
 
 def build_tile_grid(

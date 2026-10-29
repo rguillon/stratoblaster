@@ -51,7 +51,7 @@ class CentreLineLook:
     ) -> None:
         self.color = color
         """Colour of the lines between the lanes of 2x2 roads."""
-        self.lane_color = lane_color
+        self.laneColor = lane_color
         self.width = width
         """Length of the dashes, and of the gaps between them."""
         self.dash = dash
@@ -94,8 +94,8 @@ def _stripes(road: Road, look: CentreLineLook) -> list[Stripe]:
     between: list[Stripe] = []
     for i in range(road.lanes - 1):
         offset = (i + 1) * lane
-        between.append(Stripe(-offset, look.lane_color, True))
-        between.append(Stripe(offset, look.lane_color, True))
+        between.append(Stripe(-offset, look.laneColor, True))
+        between.append(Stripe(offset, look.laneColor, True))
     out = [Stripe(-look.width, look.color, False), Stripe(look.width, look.color, False)]
     out.extend(between)
     return out

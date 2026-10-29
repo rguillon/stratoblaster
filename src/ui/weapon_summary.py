@@ -33,9 +33,7 @@ def weapon_summary(weapon: WeaponDefinition, level: int) -> str:
     """One-line description of a weapon at a level, for the shots viewer (P03-R10), e.g.
     "Bullet L3 · 3 streams (0°, −10°, +10°) · 8 shots/s per stream · 10 damage".
     """
-    # A game/config record: camelCase keys (Transcrypt reads them as plain properties).
-    raw: Any = weapon
-    head: str = raw["name"] + " L" + str(level)
+    head: str = weapon.name + " L" + str(level)
     if isinstance(weapon, BeamWeaponDefinition):
         if not _has_level(weapon, level):
             return head
@@ -46,20 +44,20 @@ def weapon_summary(weapon: WeaponDefinition, level: int) -> str:
         return (
             head
             + " · "
-            + str(beam.damagePerSecond)
+            + str(beam.damage_per_second)
             + " damage/s · "
             + str(beam.width)
             + " px wide · "
             + pierce
         )
-    streams: Any = raw.levels[level - 1] if _has_level(weapon, level) else []
-    angles = ", ".join([_signed_angle(s.angleDeg) for s in streams])
-    area = " within " + str(raw.blastRadius) + " px" if raw.blastRadius > 0 else ""
+    streams: Any = weapon.levels[level - 1] if _has_level(weapon, level) else []
+    angles = ", ".join([_signed_angle(s.angle_deg) for s in streams])
+    area = " within " + str(weapon.blast_radius) + " px" if weapon.blast_radius > 0 else ""
     return " · ".join(
         [
             head,
             _plural(len(streams), "stream") + " (" + angles + ")",
-            str(raw.shotsPerSecond) + " shots/s per stream",
+            str(weapon.shots_per_second) + " shots/s per stream",
             str(weapon.damage) + " damage" + area,
         ]
     )

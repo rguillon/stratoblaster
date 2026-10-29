@@ -2,7 +2,7 @@
 
 The playfield is the XY plane at Z = 0, one world unit per logical pixel, Y up, seen from -Z.
 `size` objects have `width` and `height`; `muzzle` has `x` and `y`; a target has `id`, `x`, `y`,
-`radius`, `health` and `max_health`; streams have `angle_deg` and `offset_x`.
+`radius`, `health` and `max_health`; streams have `angleDeg` and `offsetX`.
 """
 
 import math
@@ -75,8 +75,8 @@ def build_stream_guides(
     right)."""
     lines: list[list[Any]] = []
     for s in streams:
-        a = (s.angle_deg * math.pi) / 180
-        start = vector3(muzzle.x + s.offset_x, muzzle.y, 0.5)
+        a = (s.angleDeg * math.pi) / 180
+        start = vector3(muzzle.x + s.offsetX, muzzle.y, 0.5)
         end = start.add(vector3(math.sin(a) * length, math.cos(a) * length, 0))
         lines.append([start, end])
     guides = create_line_system("stream-guides", lines, scene)

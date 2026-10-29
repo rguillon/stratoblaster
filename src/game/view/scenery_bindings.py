@@ -60,6 +60,7 @@ from game.config.world_4.scenery import (
     LEVEL_4_4,
     LEVEL_4_5,
 )
+from game.sim.sky_build import sky_script
 from game.view.props.prop_groups import PROP_GROUPS
 from game.view.props.prop_models import PROP_MODELS
 from game.view.props.road_kit import ROAD_KIT_PIECES
@@ -110,6 +111,15 @@ WORLD_4_LOOKS = {
 }
 
 
+def _with_sky_script(look: Any) -> Any:
+    """`look` (a copy, as `toned` makes it) with its sky script mapped to the core's classes
+    (P08-R04): its `atmosphere` is read by `core/scenery/sky_look.py`.
+    """
+    if look.atmosphere != None:  # noqa: E711 (undefined: a look without a sky script)
+        look.atmosphere = sky_script(look.atmosphere)
+    return look
+
+
 def _all_looks() -> dict[str, Any]:
     """The looks of every world, each world's ground and props darkened (Phase 14, P14-R01)."""
     looks: dict[str, Any] = {}
@@ -117,6 +127,8 @@ def _all_looks() -> dict[str, Any]:
     looks.update(all_toned(WORLD_2_LOOKS, TONES.world2))
     looks.update(all_toned(WORLD_3_LOOKS, TONES.world3))
     looks.update(all_toned(WORLD_4_LOOKS, TONES.world4))
+    for look_id, look in looks.items():
+        looks[look_id] = _with_sky_script(look)
     return looks
 
 

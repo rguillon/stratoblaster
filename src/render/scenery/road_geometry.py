@@ -62,8 +62,8 @@ class RoadLook:
         tiles: TileRoadLook | None,
     ) -> None:
         """`main`: colour of the main roads; `cross`: colour of the paths. `shoulder`: width of the
-        soft edge on each side, where the road fades into the ground. `street_shoulder`: narrower
-        soft edge of the streets, so their crossings and corners stay clean. `centre_line`: the
+        soft edge on each side, where the road fades into the ground. `streetShoulder`: narrower
+        soft edge of the streets, so their crossings and corners stay clean. `centreLine`: the
         yellow line along the streets and main roads, if any. `wear`: how much (0..1) colour and
         opacity vary along a road, so it looks worn. `lift`: height of the road surface above the
         ground. `tiles` (phase 15): the road pieces of the districts laid on tiles."""
@@ -71,8 +71,8 @@ class RoadLook:
         self.cross = cross
         self.opacity = opacity
         self.shoulder = shoulder
-        self.street_shoulder = street_shoulder
-        self.centre_line = centre_line
+        self.streetShoulder = street_shoulder
+        self.centreLine = centre_line
         self.wear = wear
         self.lift = lift
         self.tiles = tiles
@@ -182,7 +182,7 @@ def build_road_geometry(  # noqa: C901
         z_low, z_high = road_z_span(road)
         if z_high < z_min - reach or z_low >= z_max + reach:
             continue
-        shoulder = look.street_shoulder if road.kind == "street" else look.shoulder
+        shoulder = look.streetShoulder if road.kind == "street" else look.shoulder
         middle = middles if road.kind == "street" else None
         for run in _runs(_ribbon_points(road, lines), z_min, z_max):
             base = len(geo.positions) // 3
@@ -208,9 +208,9 @@ def build_road_geometry(  # noqa: C901
                     else:
                         geo.indices.extend([l0, r0, l1, r0, r1, l1])
     # Painted after the ribbons, so they draw over them.
-    if look.centre_line is not None:
+    if look.centreLine != None:  # noqa: E711 (optional record field: undefined when absent)
         paint_centre_lines(
-            Painter(geo, ground, look.centre_line, look.lift),
+            Painter(geo, ground, look.centreLine, look.lift),
             roads,
             z_min,
             z_max,

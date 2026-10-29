@@ -59,9 +59,9 @@ class GroundWindow:
 
 
 def frame_playfield(screen: LogicalScreen, look: PlayfieldCameraLook) -> PlayfieldFraming:
-    """Frames a `screen`-sized playfield with a camera tilted by `look.tilt_deg`."""
-    tilt = look.tilt_deg * DEG
-    half_fov = (look.fov_deg * DEG) / 2
+    """Frames a `screen`-sized playfield with a camera tilted by `look.tiltDeg`."""
+    tilt = look.tiltDeg * DEG
+    half_fov = (look.fovDeg * DEG) / 2
     if not (half_fov > 0) or tilt + half_fov >= math.pi / 2 or tilt - half_fov <= -math.pi / 2:
         raise ValueError("The camera must see the whole playfield below the horizon")
     height = screen.height / (math.tan(tilt + half_fov) - math.tan(tilt - half_fov))

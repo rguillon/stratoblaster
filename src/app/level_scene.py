@@ -150,7 +150,7 @@ def sky_state(view: Any, sea: Any, middle: float) -> Any:
     liquid_depth = 0
     if sea is not None:
         liquid_depth = sea.level - stage.field.height(0, middle)
-    shot_style = look.shotStyle if look.shotStyle is not None else "default"
+    shot_style = look.shotStyle if look.shotStyle != None else "default"  # noqa: E711 (absent: undefined)
     return game_play_sky(
         kind(atmosphere.weather),
         kind(atmosphere.second_weather),

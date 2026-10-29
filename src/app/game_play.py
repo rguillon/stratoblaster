@@ -160,7 +160,7 @@ class GamePlay:
             ship = PlayfieldShip(self.view.scene, scale, 0, 0)
             # The nose is measured on the model before it joins the playfield.
             nose = ship.show(model) if model is not None else 0
-            ship.mark(game.view.hitbox_marker, game.hull.hitRadius)
+            ship.mark(game.view.hitbox_marker, game.hull.hit_radius)
             return [ship, nose]
 
         built = playfield.run(build_ship)
@@ -191,7 +191,7 @@ class GamePlay:
             self._speed,
             GAME_CONTROLS_CONFIG.acceleration_seconds,
             muzzle_offset,
-            self._ship_def.maxHealth,
+            self._ship_def.max_health,
         )
         # The config journey is a ShipJourney, not its JourneyRules (a config mismatch, typed Any).
         journey: Any = None if self._options.journey is False else CFG.journey
@@ -311,7 +311,7 @@ class GamePlay:
         self._shots.sync(ShotsToDraw(enemies, shots, blasts, impacts, dt))
         high_score = self._options.high_score if self._options.high_score is not None else 0
         if self._hud is not None:
-            self._hud.update(hud_frame(run, self._ship_def.maxHealth, self.game.texts, high_score))
+            self._hud.update(hud_frame(run, self._ship_def.max_health, self.game.texts, high_score))
         self._frames += 1
         self._fps.add(dt, self._frames)
         polygons = self.view.scene.getActiveIndices() / 3
@@ -376,7 +376,7 @@ class GamePlay:
         """The state of the level for the test API, with its look where the view is (P08)."""
         middle = self.run.track.distance + self.game.screen.height / 2
         sea = level_of(self.game, self.run.result.level_id).scenery.sea
-        state = level_state(self.run, self._time_scale, self._ship_def.maxHealth)
+        state = level_state(self.run, self._time_scale, self._ship_def.max_health)
         js_set(state, "sky", sky_state(self.view, sea, middle))
         return state
 
@@ -400,15 +400,13 @@ class GamePlay:
         def on_bomb() -> None:
             self._controls.bomb()
 
-        hud, stats = create_level_overlays(
-            overlays, self._ship_def["name"], self.game.texts, on_bomb
-        )
+        hud, stats = create_level_overlays(overlays, self._ship_def.name, self.game.texts, on_bomb)
         self._hud = hud
         self._stats = stats
         if self._hud is not None:
             high_score = options.high_score if options.high_score is not None else 0
             self._hud.update(
-                hud_frame(self.run, self._ship_def.maxHealth, self.game.texts, high_score)
+                hud_frame(self.run, self._ship_def.max_health, self.game.texts, high_score)
             )
 
     def prepare(self, compile_now: bool) -> None:

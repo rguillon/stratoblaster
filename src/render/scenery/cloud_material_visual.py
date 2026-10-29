@@ -81,7 +81,7 @@ class CloudMaterialImpl:
     def set(self, state: Any) -> None:
         look = self._look
         material = self.material
-        self._params.set(state.coverage, state.opacity, look.softness, 1 / look.tile_size)
+        self._params.set(state.coverage, state.opacity, look.softness, 1 / look.tileSize)
         self._offset.set(state.offset_x, state.offset_z)
         # P08-R04: the clouds' colours follow the time of day, and fade into its haze.
         material.setColor3(

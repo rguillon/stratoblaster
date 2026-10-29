@@ -20,8 +20,6 @@ from game.sim.assemble_level import WorldTables, assemble_level
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
-
 # A wave plan or a beat is a config record (`game/config/record.py`), typed as Any there.
 __pragma__("skip")
 WavePlan = Any
@@ -33,7 +31,7 @@ __pragma__("noskip")
 TABLES = WorldTables(WORLD_2_DIFFICULTY, WORLD_2_FILLERS, WORLD_2_BOSSES)
 
 
-def _level(id: str, scenery: SceneryLevel, plan: WavePlan) -> GameLevel:
+def _level(id: str, scenery: Any, plan: WavePlan) -> GameLevel:
     return assemble_level(id, scenery, compose_beats(plan), TABLES)
 
 

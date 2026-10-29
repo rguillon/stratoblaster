@@ -100,7 +100,7 @@ class BossViewerStage:
         self.shots.targets = self.enemies.targets
         pf = self.view.playfield
         self.layer = pf.run(lambda: EnemyLayer(self.view.scene, game.view.enemies.models))
-        self.drawn = EnemyViewerShots(game, pf, self.view.look.shot_style)
+        self.drawn = EnemyViewerShots(game, pf, self.view.look.shotStyle)
         first = game.player_ships.ships[0] if len(game.player_ships.ships) > 0 else None
         model = game.view.player_ship_models.get(first.id) if first else None
 
