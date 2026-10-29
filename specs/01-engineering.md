@@ -73,7 +73,7 @@
 │   ├── ui/                  # HUD & menus (HTML/CSS overlay)
 │   ├── assets/              # asset manifest, loaders, loading screen progress
 │   ├── config/              # all tunables (gameplay values)
-│   ├── platform/            # browser wrappers: storage, visibility, capabilities detection
+│   ├── host/                # browser wrappers: storage, visibility, capabilities (named host: "platform" shadows the stdlib)
 │   ├── debug/               # inspector toggle, FPS/stats overlay, hitbox view (dev/e2e builds only)
 │   └── game/                # THIS game's content, built on the engine above (§2.3)
 │       ├── index.py         # exports the single GameDefinition used by main.py

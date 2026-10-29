@@ -1630,3 +1630,10 @@
 - **Decision:** `make build` runs `transcrypt -b -n -od ../dist/js main.py` from `src/`, so package imports resolve, then copies `index.html` and `public/` into `dist/`. There is no minification (`-n`) yet; the size budget (ENG-107) is checked when the game is ported. Layering is checked with import-linter (`root_packages = ["core"]`, forbidden: `org`, `browser`). One explicit exception: `core.math.rng` imports `__pragma__` from the Transcrypt browser stub, a compile-time marker that does not touch the DOM. `typings/org/transcrypt/stubs/browser.pyi` types the browser globals for mypy.
 - **Consequences:** The exception is the only one. Any other import of `org` or `browser` from `core/` breaks `make lint` (checked with a probe file on 2026-10-29).
 - **Status:** Accepted
+
+### D-172 — The browser wrappers package is `host/`, not `platform/`
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** ENG-10's `platform/` becomes `host/` (browser storage, cookies, WebGL capability checks, loading tasks). With `src/` on the import path, a package named `platform` shadows the standard library module, which `uuid` needs. import-linter then crashes.
+- **Consequences:** The directory layout line in `01-engineering.md` changes accordingly; no requirement changes.
+- **Status:** Accepted
