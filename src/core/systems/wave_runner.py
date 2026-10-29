@@ -79,7 +79,10 @@ def validate_wave_script(script: Sequence[Wave], kind_ids: Sequence[str]) -> Non
 
 def _group_entry(wave: Wave, index: int) -> EnemyEntry:
     """The entry of group `index` of `wave`."""
-    shifted = wave.entry.position + (wave.spread if wave.spread is not None else 0) * index
+    # `!= None`: a config record leaves an absent spread undefined, which `is not None` takes for
+    # a value (the strafers then entered at NaN, clamped to the bottom of the playfield).
+    spread = wave.spread if wave.spread != None else 0  # noqa: E711
+    shifted = wave.entry.position + spread * index
     return EnemyEntry(wave.entry.side, shifted - math.floor(shifted))
 
 
