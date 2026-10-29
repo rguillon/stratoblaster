@@ -198,82 +198,17 @@ class HeightField:
             _section_steepness(placed, self._transition) for placed in self.sections
         ]
 
-    def steepness(self, x: float, z: float, reach: float) -> float:
-        """At least the most the ground changes per unit along X or along Z within `reach` of
-        (`x`, `z`), or Infinity when that cannot be told. Known for smooth reliefs away from their
-        channels, blends included."""
-        half = self._transition / 2
-        first = self.section_index_at(z - reach - half)
-        last = self.section_index_at(z + reach + half)
-        slope = 0.0
-        blend = 0.0
-        for i in range(first, last + 1):
-            own = self._steepness[i] if i < len(self._steepness) else None
-            if own is None or not self._clear_of_channel(i, x, z, reach):
-                return INFINITY
-            slope = max(slope, own.slope)
-            # Blending into the next section changes the height along Z by up to their difference.
-            nxt = self._steepness[i + 1] if i < last and i + 1 < len(self._steepness) else None
-            if nxt is not None and half > 0:
-                apart = max(own.high, nxt.high) - min(own.low, nxt.low)
-                blend = max(blend, (1.5 / self._transition) * apart)
-        return slope + blend
-
-    def _clear_of_channel(self, i: int, x: float, z: float, reach: float) -> bool:
-        """Whether section `i`'s channel, if any, stays out of reach of (`x`, `z`)."""
-        channel = self.sections[i].section.channel if i < len(self.sections) else None
-        if channel is None:
-            return True
-        path = channel.path
-        # How far the channel's middle line can move over `reach` along Z, its wobble included.
-        turn = (
-            abs(path.amplitude) * (2 * math.pi + MEANDER_WOBBLE * NOISE_SLOPE)
-        ) / path.wavelength
-        away = abs(x - self.path_x(path, z)) - reach * (1 + turn)
-        return away > channel.half_width + channel.wall + SLACK
-
-    def section_index_at(self, z: float) -> int:
-        """Index of the section under `z` (the first or last one outside the level)."""
-        sections = self.sections
-        for i in range(len(sections)):
-            if z < sections[i].end:
-                return i
-        return len(sections) - 1
-
-    def section_at(self, z: float) -> PlacedSection:
-        """The section under `z`."""
-        index = self.section_index_at(z)
-        if index < 0 or index >= len(self.sections):
-            raise ValueError("A height field needs a section")
-        return self.sections[index]
-
     def height(self, x: float, z: float) -> float:
         """Ground height at (`x`, `z`)."""
-        return self._blend(z, lambda i: self._section_height(i, x, z))
+        return _blend_height(self, z, lambda i: _height_of_section(self, i, x, z))
 
     def surface(self, z: float) -> Surface:
         """Ground cover at `z`, blended between sections like the height."""
         return Surface(
-            self._blend(z, lambda i: _surface_share(self.sections, i, "lush")),
-            self._blend(z, lambda i: _surface_share(self.sections, i, "paved")),
-            self._blend(z, lambda i: _surface_share(self.sections, i, "sandy")),
+            _blend_height(self, z, lambda i: _surface_share(self.sections, i, "lush")),
+            _blend_height(self, z, lambda i: _surface_share(self.sections, i, "paved")),
+            _blend_height(self, z, lambda i: _surface_share(self.sections, i, "sandy")),
         )
-
-    def _blend(self, z: float, value: Callable[[int], float]) -> float:
-        """`value` of the section under `z`, blended with its neighbour near their boundary."""
-        i = self.section_index_at(z)
-        here = value(i)
-        half = self._transition / 2
-        if i >= len(self.sections) or half == 0:
-            return here
-        placed = self.sections[i]
-        if i < len(self.sections) - 1 and z > placed.end - half:
-            return _lerp(here, value(i + 1), smoothstep(placed.end - half, placed.end + half, z))
-        if i > 0 and z < placed.start + half:
-            return _lerp(
-                value(i - 1), here, smoothstep(placed.start - half, placed.start + half, z)
-            )
-        return here
 
     def slope(self, x: float, z: float, step: float = 1) -> float:
         """Steepness at (`x`, `z`): height change per unit of horizontal distance."""
@@ -281,87 +216,175 @@ class HeightField:
         dz = (self.height(x, z + step) - self.height(x, z - step)) / (2 * step)
         return math.hypot(dx, dz)
 
+    def steepness(self, x: float, z: float, reach: float) -> float:
+        """At least the most the ground changes per unit along X or along Z within `reach` of
+        (`x`, `z`), or Infinity when that cannot be told. Known for smooth reliefs away from their
+        channels, blends included."""
+        return _steepness_at(self, x, z, reach)
+
+    def section_index_at(self, z: float) -> int:
+        """Index of the section under `z` (the first or last one outside the level)."""
+        return _section_index(self, z)
+
+    def section_at(self, z: float) -> PlacedSection:
+        """The section under `z`."""
+        index = _section_index(self, z)
+        if index < 0 or index >= len(self.sections):
+            raise ValueError("A height field needs a section")
+        return self.sections[index]
+
     def path_x(self, path: Meander, z: float) -> float:
         """X of a meander line at `z`."""
-        phase = (2 * math.pi * z) / path.wavelength
-        wobble = self._wobble(z / path.wavelength, path.x / path.wavelength)
-        return path.x + path.amplitude * (math.sin(phase) + MEANDER_WOBBLE * wobble)
+        return _path_x_at(self, path, z)
 
-    def _section_height(self, index: int, x: float, z: float) -> float:
-        if index >= len(self.sections):
-            return 0
-        section = self.sections[index].section
-        h = self._relief_height(index, x, z) + self._dune_height(section, x, z)
-        if section.crevasses is not None:
-            h -= crevasse_depth(section.crevasses, self._ice, x, z)
-        if section.lakes is not None:
-            h = self._lake_field(index, section.lakes).apply(x, z, h)
-        h = self._flatten(section, x, z, h)
-        h = self._carve(section, x, z, h)
-        return self._shore(section, x, z, h)
 
-    def _lake_field(self, index: int, lakes: Lakes) -> LakeField:
-        field = self._lake_fields[index]
-        if field is None:
-            field = LakeField(lakes, self._seed)
-            self._lake_fields[index] = field
-        return field
+# The height field's internals are plain functions of the field, not methods: a method call goes
+# through Transcrypt's wrapper, and the height is evaluated for every vertex of the ground.
 
-    def _relief_height(self, index: int, x: float, z: float) -> float:
-        relief = self.sections[index].section.relief
-        options = self._octaves[index]
-        f = relief.frequency
-        if relief.style == "ridged":
-            h = relief.base + relief.amplitude * ridged(self._relief, x * f, z * f, options)
-        else:
-            h = relief.base + relief.amplitude * fbm(self._relief, x * f, z * f, options)
-        return h if relief.max_height is None else soft_cap(h, relief.max_height)
 
-    def _dune_height(self, section: TerrainSection, x: float, z: float) -> float:
-        """Height of the dunes over the relief at (`x`, `z`): 0 in the troughs, up to `height`."""
-        dunes = section.dunes
-        if dunes is None:
-            return 0
-        angle = (dunes.angle_deg * math.pi) / 180
-        scale = dunes.wavelength * DUNE_NOISE_SCALE
-        bend = self._dunes(x / scale, z / scale)
-        across = (x * math.sin(angle) + z * math.cos(angle)) / dunes.wavelength
-        phase = across + dunes.warp * bend
-        t = phase - math.floor(phase)
-        # Long windward rise, then a short steep drop on the lee side, both eased at the crest.
-        if t < DUNE_WINDWARD:
-            shape = smoothstep(0, DUNE_WINDWARD, t)
-        else:
-            shape = 1 - smoothstep(DUNE_WINDWARD, 1, t)
-        crest = _lerp(
-            DUNE_LOWEST_CREST,
-            1,
-            self._dunes(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
-        )
-        return dunes.height * shape * crest
+def _steepness_at(field: HeightField, x: float, z: float, reach: float) -> float:
+    half = field._transition / 2
+    first = _section_index(field, z - reach - half)
+    last = _section_index(field, z + reach + half)
+    slope = 0.0
+    blend = 0.0
+    for i in range(first, last + 1):
+        own = field._steepness[i] if i < len(field._steepness) else None
+        if own is None or not _clear_of(field, i, x, z, reach):
+            return INFINITY
+        slope = max(slope, own.slope)
+        # Blending into the next section changes the height along Z by up to their difference.
+        nxt = field._steepness[i + 1] if i < last and i + 1 < len(field._steepness) else None
+        if nxt is not None and half > 0:
+            apart = max(own.high, nxt.high) - min(own.low, nxt.low)
+            blend = max(blend, (1.5 / field._transition) * apart)
+    return slope + blend
 
-    def _detail_noise(self, x: float, z: float) -> float:
-        return self._detail(x * DETAIL_FREQUENCY, z * DETAIL_FREQUENCY)
 
-    def _flatten(self, section: TerrainSection, x: float, z: float, h: float) -> float:
-        flatten = section.flatten
-        if flatten is None:
-            return h
-        d = abs(x - self.path_x(flatten.path, z))
-        flat = flatten.height + flatten.roughness * self._detail_noise(x, z)
-        return _lerp(flat, h, smoothstep(flatten.half_width, flatten.half_width + flatten.edge, d))
+def _clear_of(field: HeightField, i: int, x: float, z: float, reach: float) -> bool:
+    """Whether section `i`'s channel, if any, stays out of reach of (`x`, `z`)."""
+    channel = field.sections[i].section.channel if i < len(field.sections) else None
+    if channel is None:
+        return True
+    path = channel.path
+    # How far the channel's middle line can move over `reach` along Z, its wobble included.
+    turn = (abs(path.amplitude) * (2 * math.pi + MEANDER_WOBBLE * NOISE_SLOPE)) / path.wavelength
+    away = abs(x - _path_x_at(field, path, z)) - reach * (1 + turn)
+    return away > channel.half_width + channel.wall + SLACK
 
-    def _carve(self, section: TerrainSection, x: float, z: float, h: float) -> float:
-        channel = section.channel
-        if channel is None:
-            return h
-        d = abs(x - self.path_x(channel.path, z))
-        floor = min(h, channel.floor + self._detail_noise(x, z))
-        return _lerp(floor, h, smoothstep(channel.half_width, channel.half_width + channel.wall, d))
 
-    def _shore(self, section: TerrainSection, x: float, z: float, h: float) -> float:
-        shore = section.shore
-        if shore is None:
-            return h
-        inland = shore.land_side * (x - self.path_x(shore.path, z))
-        return _lerp(shore.seabed, h, smoothstep(-shore.width / 2, shore.width / 2, inland))
+def _section_index(field: HeightField, z: float) -> int:
+    """Index of the section under `z` (the first or last one outside the level)."""
+    sections = field.sections
+    for i in range(len(sections)):
+        if z < sections[i].end:
+            return i
+    return len(sections) - 1
+
+
+def _path_x_at(field: HeightField, path: Meander, z: float) -> float:
+    phase = (2 * math.pi * z) / path.wavelength
+    wobble = field._wobble(z / path.wavelength, path.x / path.wavelength)
+    return path.x + path.amplitude * (math.sin(phase) + MEANDER_WOBBLE * wobble)
+
+
+def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -> float:
+    """`value` of the section under `z`, blended with its neighbour near their boundary."""
+    i = _section_index(field, z)
+    here = value(i)
+    half = field._transition / 2
+    if i >= len(field.sections) or half == 0:
+        return here
+    placed = field.sections[i]
+    if i < len(field.sections) - 1 and z > placed.end - half:
+        return _lerp(here, value(i + 1), smoothstep(placed.end - half, placed.end + half, z))
+    if i > 0 and z < placed.start + half:
+        return _lerp(value(i - 1), here, smoothstep(placed.start - half, placed.start + half, z))
+    return here
+
+
+def _height_of_section(field: HeightField, index: int, x: float, z: float) -> float:
+    if index >= len(field.sections):
+        return 0
+    section = field.sections[index].section
+    h = _relief_of(field, index, x, z) + _dune_of(field, section, x, z)
+    if section.crevasses is not None:
+        h -= crevasse_depth(section.crevasses, field._ice, x, z)
+    if section.lakes is not None:
+        h = _lake_of(field, index, section.lakes).apply(x, z, h)
+    h = _flatten_by(field, section, x, z, h)
+    h = _carve_by(field, section, x, z, h)
+    return _shore_by(field, section, x, z, h)
+
+
+def _lake_of(field: HeightField, index: int, lakes: Lakes) -> LakeField:
+    lake = field._lake_fields[index]
+    if lake is None:
+        lake = LakeField(lakes, field._seed)
+        field._lake_fields[index] = lake
+    return lake
+
+
+def _relief_of(field: HeightField, index: int, x: float, z: float) -> float:
+    relief = field.sections[index].section.relief
+    options = field._octaves[index]
+    f = relief.frequency
+    if relief.style == "ridged":
+        h = relief.base + relief.amplitude * ridged(field._relief, x * f, z * f, options)
+    else:
+        h = relief.base + relief.amplitude * fbm(field._relief, x * f, z * f, options)
+    return h if relief.max_height is None else soft_cap(h, relief.max_height)
+
+
+def _dune_of(field: HeightField, section: TerrainSection, x: float, z: float) -> float:
+    """Height of the dunes over the relief at (`x`, `z`): 0 in the troughs, up to `height`."""
+    dunes = section.dunes
+    if dunes is None:
+        return 0
+    angle = (dunes.angle_deg * math.pi) / 180
+    scale = dunes.wavelength * DUNE_NOISE_SCALE
+    bend = field._dunes(x / scale, z / scale)
+    across = (x * math.sin(angle) + z * math.cos(angle)) / dunes.wavelength
+    phase = across + dunes.warp * bend
+    t = phase - math.floor(phase)
+    # Long windward rise, then a short steep drop on the lee side, both eased at the crest.
+    if t < DUNE_WINDWARD:
+        shape = smoothstep(0, DUNE_WINDWARD, t)
+    else:
+        shape = 1 - smoothstep(DUNE_WINDWARD, 1, t)
+    crest = _lerp(
+        DUNE_LOWEST_CREST,
+        1,
+        field._dunes(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
+    )
+    return dunes.height * shape * crest
+
+
+def _detail_at(field: HeightField, x: float, z: float) -> float:
+    return field._detail(x * DETAIL_FREQUENCY, z * DETAIL_FREQUENCY)
+
+
+def _flatten_by(field: HeightField, section: TerrainSection, x: float, z: float, h: float) -> float:
+    flatten = section.flatten
+    if flatten is None:
+        return h
+    d = abs(x - _path_x_at(field, flatten.path, z))
+    flat = flatten.height + flatten.roughness * _detail_at(field, x, z)
+    return _lerp(flat, h, smoothstep(flatten.half_width, flatten.half_width + flatten.edge, d))
+
+
+def _carve_by(field: HeightField, section: TerrainSection, x: float, z: float, h: float) -> float:
+    channel = section.channel
+    if channel is None:
+        return h
+    d = abs(x - _path_x_at(field, channel.path, z))
+    floor = min(h, channel.floor + _detail_at(field, x, z))
+    return _lerp(floor, h, smoothstep(channel.half_width, channel.half_width + channel.wall, d))
+
+
+def _shore_by(field: HeightField, section: TerrainSection, x: float, z: float, h: float) -> float:
+    shore = section.shore
+    if shore is None:
+        return h
+    inland = shore.land_side * (x - _path_x_at(field, shore.path, z))
+    return _lerp(shore.seabed, h, smoothstep(-shore.width / 2, shore.width / 2, inland))
