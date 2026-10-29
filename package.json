@@ -7,9 +7,6 @@
   "engines": {
     "node": ">=24 <25"
   },
-  "scripts": {
-    "prepare": "husky"
-  },
   "dependencies": {
     "@babylonjs/core": "^9.32.0"
   },
