@@ -2,9 +2,18 @@
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build lint format typecheck check check-fast clean
+.PHONY: help install vendor dev build lint format typecheck check check-fast clean
 
 DIST := dist
+
+# Babylon.js (ENG-02, P18-R04): the pinned UMD build, vendored under public/vendor/ by `make vendor`
+# and checked against its SHA-256 (DECISIONS D-173). Bump the version and the hash together.
+BABYLON_VERSION := 9.32.0
+BABYLON_URL := https://cdn.jsdelivr.net/npm/babylonjs@$(BABYLON_VERSION)/babylon.js
+BABYLON_SHA256 := 58c486bececb6cde67b188e6410321e72d1d051ea7a9e5f23c560b6049ab37a5
+VENDOR := public/vendor
+BABYLON_FILE := $(VENDOR)/babylon.js
+SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo "shasum -a 256")
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -13,11 +22,32 @@ install: ## Install Python dependencies from uv.lock, then the git hooks (ENG-21
 	uv sync --locked
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
-build: ## Compile src/ to JavaScript with Transcrypt and assemble dist/
+vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
+	@mkdir -p $(VENDOR)
+	@if echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null; then \
+		echo 'vendor: $(BABYLON_FILE) is Babylon.js $(BABYLON_VERSION) (checksum OK)'; \
+	else \
+		tmp=$$(mktemp) && \
+		{ curl -fsSL -o "$$tmp" '$(BABYLON_URL)' || { rm -f "$$tmp"; echo 'vendor: download failed: $(BABYLON_URL)' >&2; exit 1; }; } && \
+		actual=$$($(SHA256SUM) "$$tmp" | cut -d' ' -f1) && \
+		if [ "$$actual" != '$(BABYLON_SHA256)' ]; then \
+			rm -f "$$tmp"; \
+			echo "vendor: SHA-256 mismatch for Babylon.js $(BABYLON_VERSION): expected $(BABYLON_SHA256), got $$actual" >&2; \
+			exit 1; \
+		fi && \
+		mv "$$tmp" $(BABYLON_FILE) && \
+		echo 'vendor: downloaded Babylon.js $(BABYLON_VERSION), checksum OK'; \
+	fi
+
+build: ## Compile src/ to JavaScript with Transcrypt and assemble dist/ (needs make vendor)
+	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
+		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
 	rm -rf $(DIST)
 	cd src && uv run transcrypt -b -n -od ../$(DIST)/js main.py
 	cp index.html $(DIST)/
 	@if [ -d public ]; then cp -r public/. $(DIST)/; fi
+	@if [ -d $(VENDOR) ] && [ ! -f $(DIST)/vendor/babylon.js ]; then \
+		echo 'build: vendored files were not copied to dist/' >&2; exit 1; fi
 	@if grep -qE '__pragma__ *\(' $(DIST)/js/main.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
 

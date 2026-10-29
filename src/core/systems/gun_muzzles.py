@@ -56,9 +56,8 @@ class _TurnedLaserOwner:
         self._on_turret = on_turret
 
     @property
-    def emitter(self) -> PlanePoint:
-        # A raised point is a plane point with a height (`entities/muzzle.py` does not subclass it).
-        return self._source.place(self._muzzle, self._on_turret)  # type: ignore[return-value]
+    def emitter(self) -> PlanePoint | RaisedPoint:
+        return self._source.place(self._muzzle, self._on_turret)
 
     @property
     def heading(self) -> float:

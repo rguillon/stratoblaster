@@ -1,23 +1,972 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Stratoblaster</title>
     <style>
+      /*
+       * Darksynth look (GD-60, P01-R13; reviewer 2026-10-26, D-103): hot magenta, violet and
+       * blood red neon on black-violet, a chrome logo, sunset gradients, soft neon glows,
+       * chamfered panels. The selected entry is a solid magenta block, with its markers.
+       * System fonts only: works offline.
+       */
+      :root {
+        --hot: #ff2bd6;
+        --violet: #b15cff;
+        --red: #ff2244;
+        --black: #07020c;
+        --paper: #f7eefc;
+        --dim: #8e7a9e;
+        --glass: rgba(14, 3, 22, 0.8);
+        --letterbox: #030006;
+        --glow: rgba(255, 43, 214, 0.55);
+        --sunset: linear-gradient(90deg, #7a1cff, #ff1fa6 55%, #ff5a3c 85%, #ffb347);
+        --chrome: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #ffd8f6 40%,
+          #5a1a78 50%,
+          #ff6fd2 60%,
+          #ffe3f6 100%
+        );
+        --font:
+          'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
+          sans-serif;
+        --font-tech: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
+        --cut: 14px;
+        /* Panel with its top-left and bottom-right corners cut off. */
+        --chamfer: polygon(
+          var(--cut) 0,
+          100% 0,
+          100% calc(100% - var(--cut)),
+          calc(100% - var(--cut)) 100%,
+          0 100%,
+          0 var(--cut)
+        );
+      }
+      html,
       body {
         margin: 0;
-        min-height: 100vh;
+        height: 100%;
+        overflow: hidden;
+        background: var(--letterbox);
+        color: var(--paper);
+        font-family: var(--font);
+      }
+      #stage {
+        position: fixed;
+        overflow: hidden;
+        background: var(--black);
+      }
+      #game-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      #menu {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform-origin: 0 0;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+      #fatal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        font-size: 22px;
+        line-height: 1.5;
+        background: var(--letterbox);
+      }
+      #fatal[hidden] {
+        display: none;
+      }
+
+      .menu-screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 24px 16px;
+        text-align: center;
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      /* Screen frame: a thin neon line, magenta at the top fading to violet, softly glowing. */
+      .menu-screen::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        pointer-events: none;
+        border: 1px solid transparent;
+        border-image: linear-gradient(180deg, var(--hot), rgba(122, 28, 255, 0.35)) 1;
+        box-shadow:
+          0 0 14px rgba(255, 43, 214, 0.25),
+          inset 0 0 18px rgba(122, 28, 255, 0.2);
+      }
+      /* The sunset line along the bottom of every screen. */
+      .menu-screen::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        height: 3px;
+        pointer-events: none;
+        background: var(--sunset);
+        box-shadow: 0 0 12px var(--glow);
+      }
+      .menu-enter {
+        animation-name: menu-fade;
+        animation-timing-function: ease-out;
+      }
+      @keyframes menu-fade {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+          filter: brightness(2.5);
+        }
+      }
+      .menu-entry {
+        cursor: pointer;
+        box-sizing: border-box;
+        min-width: 44px;
+        min-height: 44px;
+        border: 2px solid rgba(177, 92, 255, 0.45);
+        background:
+          linear-gradient(-45deg, var(--violet) 0 7px, transparent 7px) bottom right / 16px 16px
+            no-repeat,
+          var(--glass);
+      }
+      /* Selected entry: solid magenta block with black text, plus its markers, so it shows
+         without colour too (much lighter than the dark panels in greyscale). */
+      .menu-entry.selected {
+        border-color: var(--paper);
+        color: var(--black);
+        text-shadow: none;
+        background:
+          linear-gradient(-45deg, var(--black) 0 7px, transparent 7px) bottom right / 16px 16px
+            no-repeat,
+          linear-gradient(180deg, #ff6ad5, var(--hot) 55%, #e0148f);
+        box-shadow: 0 0 22px var(--glow);
+      }
+      .menu-heading {
+        margin: 68px 0 0;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-shadow:
+          0 0 6px var(--hot),
+          0 0 18px rgba(122, 28, 255, 0.9),
+          0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      .menu-hint {
+        font-size: 15px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #e2b8ff;
+        animation: hint-pulse 2.4s ease-in-out infinite;
+      }
+      @keyframes hint-pulse {
+        50% {
+          opacity: 0.55;
+        }
+      }
+      .menu-back {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        /* ≥ 44 CSS px even on a 390 px wide phone (scale 0.81). */
+        min-width: 96px;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 0 12px;
+        border: 2px solid var(--violet);
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        color: var(--violet);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .shake {
+        animation: menu-shake 0.3s linear;
+      }
+      @keyframes menu-shake {
+        20%,
+        60% {
+          translate: -6px 0;
+        }
+        40%,
+        80% {
+          translate: 6px 0;
+        }
+      }
+
+      /* A neon grid floor under a crimson horizon glow. */
+      .loading-screen {
+        justify-content: center;
+        gap: 16px;
+        background:
+          linear-gradient(rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(90deg, rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          radial-gradient(ellipse at 50% 100%, rgba(255, 34, 68, 0.35), transparent 60%),
+          var(--black);
+      }
+      .loading-text {
+        font-size: 30px;
+        font-weight: 800;
+        font-style: italic;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-shadow:
+          0 0 8px var(--hot),
+          0 0 20px rgba(122, 28, 255, 0.9);
+      }
+      .loading-bar {
+        width: 320px;
+        height: 24px;
+        box-sizing: border-box;
+        padding: 3px;
+        border: 2px solid var(--hot);
+        overflow: hidden;
+        background: var(--glass);
+      }
+      /* Segmented fill, like a power gauge. */
+      .loading-fill {
+        height: 100%;
+        background:
+          repeating-linear-gradient(90deg, transparent 0 10px, var(--black) 10px 13px),
+          var(--sunset);
+      }
+      .loading-percent {
+        font-family: var(--font-tech);
+        font-size: 18px;
+        color: var(--violet);
+      }
+
+      .title-score-label {
+        font-family: var(--font-tech);
+        font-size: 15px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--violet);
+      }
+      .title-high-score {
+        font-family: var(--font-tech);
+        font-size: 32px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--hot);
+      }
+      /* 80s chrome letters (a horizon line across the middle) in a slow neon glow. */
+      .title-name {
+        margin: 40px 0 0;
+        padding: 6px 24px;
+        /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen; shrinkToFit()
+           lowers it when the system falls back to a wider font. */
+        font-size: 46px;
+        font-weight: 900;
+        font-style: italic;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        text-transform: uppercase;
+        color: transparent;
+        text-shadow: none;
+        background: var(--chrome);
+        -webkit-background-clip: text;
+        background-clip: text;
+        filter: drop-shadow(0 0 6px var(--hot)) drop-shadow(0 0 16px rgba(122, 28, 255, 0.8));
+        animation: title-glow 3.5s ease-in-out infinite;
+      }
+      @keyframes title-glow {
+        50% {
+          filter: drop-shadow(0 0 10px var(--hot)) drop-shadow(0 0 26px rgba(255, 34, 68, 0.8));
+        }
+      }
+      .title-start {
+        margin-top: 56px;
+        padding: 10px 28px;
+        clip-path: var(--chamfer);
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .title-start.selected::before {
+        content: '▶ ';
+      }
+      .title-start.selected::after {
+        content: ' ◀';
+      }
+      /* Settings entry under Start (P12-R04). */
+      .title-settings {
+        margin-top: 18px;
+        padding: 8px 22px;
+        clip-path: var(--chamfer);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .title-start:not(.selected) {
+        font-size: 28px;
+      }
+      .title-settings.selected::before {
+        content: '▶ ';
+      }
+      .title-settings.selected::after {
+        content: ' ◀';
+      }
+      .title-hint {
+        margin-top: auto;
+        margin-bottom: 28px;
+      }
+      .title-version {
+        position: absolute;
+        right: 16px;
+        bottom: 14px;
+        font-family: var(--font-tech);
+        font-size: 11px;
+        text-align: right;
+        color: var(--violet);
+        opacity: 0.85;
+      }
+
+      .ship-cards {
+        display: flex;
+        margin-top: auto;
+      }
+      .ship-card {
+        flex: 1;
+        margin: 0 3px;
+        padding: 6px 2px 8px;
+        clip-path: var(--chamfer);
+        font-size: 12px;
+        line-height: 1.5;
+        opacity: 0.6;
+      }
+      .ship-card::before {
+        content: '▲';
+        display: block;
+        font-size: 16px;
+        line-height: 1;
+        visibility: hidden;
+      }
+      .ship-card.selected::before {
+        visibility: visible;
+      }
+      .ship-card.selected {
+        opacity: 1;
+      }
+      .ship-card-name {
+        white-space: nowrap;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .ship-select-screen .menu-hint {
+        margin: 12px 0 8px;
+      }
+
+      .level-grid {
         display: grid;
-        place-items: center;
-        background: #05060d;
-        color: #e6f7ff;
-        font-family: system-ui, sans-serif;
+        gap: 10px;
+        margin-top: 40px;
+      }
+      /* No clip-path here: it would hide the dashed outline of the selected cell. */
+      .level-cell {
+        position: relative;
+        width: 68px;
+        height: 68px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-tech);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .level-cell:not(.locked) {
+        border-color: var(--violet);
+      }
+      .level-cell.selected:not(.locked) {
+        border-color: var(--paper);
+      }
+      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the magenta block. */
+      .level-cell.locked {
+        color: var(--dim);
+        border-color: rgba(142, 122, 158, 0.3);
+        background:
+          repeating-linear-gradient(-45deg, rgba(142, 122, 158, 0.1) 0 6px, transparent 6px 12px),
+          rgba(14, 14, 22, 0.85);
+        text-shadow: none;
+        box-shadow: none;
+      }
+      .level-cell.locked.selected {
+        color: var(--red);
+        border-color: var(--red);
+      }
+      .level-cell.selected {
+        outline: 3px dashed var(--paper);
+        outline-offset: 3px;
+      }
+      .padlock {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+      }
+      .menu-status {
+        min-height: 32px;
+        margin-top: 16px;
+        font-family: var(--font-tech);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--red);
+      }
+
+      /* Game screen (P06-R02): the playfield shows through; drag anywhere to fly (touch). */
+      .game-screen {
+        justify-content: center;
+        touch-action: none;
+      }
+      /* The level played: in the HUD's bar at the bottom, under the weapon (reviewer, 2026-10-28). */
+      .game-level {
+        position: absolute;
+        right: 12px;
+        bottom: 6px;
+        font-family: var(--font-tech);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--paper);
+        opacity: 0.75;
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+        pointer-events: none;
+      }
+      /* No sunset line over the playfield. */
+      .game-screen::after {
+        content: none;
+      }
+      /* In-game HUD (reworked at the reviewer's request, 2026-10-28): one bar along the bottom of
+         the playfield, 48 px high (the ship stays above it: `shipMargin` in game-play.ts), the
+         level's progress along its top edge; the ship, lives, bombs and health on the left, the
+         score in the middle, the weapon and the level on the right. Never takes clicks. */
+      .game-hud {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        font-family: var(--font-tech);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--paper);
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+      }
+      .hud-panel {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 48px;
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 12px 4px;
+        background: var(--glass);
+        border-top: 1px solid rgba(255, 43, 214, 0.45);
+      }
+      /* Level progress: a thin line along the top edge of the bar. */
+      .hud-progress {
+        position: absolute;
+        top: -1px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .hud-progress-fill {
+        height: 100%;
+        background: var(--sunset);
+        box-shadow: 0 0 6px var(--hot);
+      }
+      .hud-health {
+        min-width: 0;
+      }
+      .hud-name {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        white-space: nowrap;
+      }
+      .hud-ship {
+        color: var(--hot);
+        text-transform: uppercase;
+      }
+      .hud-lives {
+        color: var(--violet);
+      }
+      /* Bombs left (P11-R05), next to the lives. */
+      .hud-bombs {
+        color: #ff8a1e;
+      }
+      .hud-meter {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-top: 4px;
+      }
+      .hud-bar {
+        flex: 1;
+        max-width: 110px;
+        height: 7px;
+        border: 1px solid var(--violet);
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .hud-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7a1cff, var(--hot));
+        box-shadow: 0 0 6px var(--hot);
+      }
+      .hud-bar-fill.low {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+      }
+      .hud-health-text {
+        font-size: 10px;
+        white-space: nowrap;
+      }
+      /* Score and high score (P11-R02), in the middle of the bar. */
+      .hud-score {
+        text-align: center;
+        white-space: nowrap;
+      }
+      .hud-score-value {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 20px;
+        color: var(--paper);
+        text-shadow: 0 0 6px var(--hot);
+      }
+      .hud-high-score {
+        font-size: 10px;
+        line-height: 12px;
+        color: var(--violet);
+      }
+      .hud-weapon {
+        justify-self: end;
+        align-self: start;
+        margin-top: 2px;
+        color: var(--hot);
+        white-space: nowrap;
+      }
+      /* Touch bomb button (P11-R06), above the fire button, only on touch screens. */
+      .hud-bomb-button {
+        display: none;
+        position: absolute;
+        z-index: 5;
+        right: 22px;
+        bottom: 180px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--black);
+        background: rgba(255, 138, 30, 0.55);
+        border: 3px solid #ff8a1e;
+        text-shadow: none;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .hud-bomb-button.empty {
+        opacity: 0.35;
+      }
+      @media (pointer: coarse) {
+        .hud-bomb-button {
+          display: flex;
+        }
+      }
+      /* Boss health bar (P07-R02): a slim gauge down the left edge from the top (the player's HUD
+         is at the bottom since 2026-10-28), so it never hides the boss (reviewer, 2026-10-26);
+         kind and name written along it, bottom to top; a notch at the end of each part's share. */
+      .boss-bar {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        height: 300px;
+        display: flex;
+        gap: 4px;
+        align-items: stretch;
+      }
+      .boss-bar[hidden] {
+        display: none;
+      }
+      .boss-label {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        text-transform: uppercase;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .boss-rank {
+        font-size: 10px;
+        color: var(--red);
+        letter-spacing: 0.15em;
+      }
+      .boss-name {
+        color: var(--hot);
+        letter-spacing: 0.08em;
+      }
+      .boss-track {
+        position: relative;
+        width: 8px;
+        border: 1px solid var(--red);
+        background: rgba(0, 0, 0, 0.45);
+      }
+      .boss-fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(0deg, #7a1cff, var(--red) 60%, #ff5a3c);
+        box-shadow: 0 0 6px var(--red);
+      }
+      .boss-notch {
+        position: absolute;
+        left: -3px;
+        right: -3px;
+        height: 2px;
+        margin-bottom: -1px;
+        background: var(--paper);
+        opacity: 0.8;
+      }
+      /* Touch fire button, only on touch screens (keyboard and gamepad have their own). */
+      .game-fire {
+        display: none;
+        position: absolute;
+        right: 22px;
+        bottom: 74px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-tech);
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--black);
+        background: rgba(255, 43, 214, 0.55);
+        border: 3px solid var(--hot);
+        text-shadow: none;
+      }
+      @media (pointer: coarse) {
+        .game-fire {
+          display: flex;
+        }
+      }
+      /* Pause button (P12-R01): top right, under the weapon readout, clear of the HUD; at least
+         44 CSS px even on a 390 px wide phone (scale 0.81). */
+      .game-pause {
+        position: absolute;
+        z-index: 5;
+        top: 14px;
+        right: 18px;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 2px solid var(--violet);
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        color: var(--violet);
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: none;
+      }
+      /* Pause menu (P12-R02): the last frame dimmed (pause_dim, 50 % black) under a panel. */
+      .pause-dim {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .pause-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        min-width: 280px;
+        padding: 24px 32px;
+        clip-path: var(--chamfer);
+        border: 2px solid var(--hot);
+        background: var(--glass);
+      }
+      .pause-heading {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-shadow:
+          0 0 6px var(--hot),
+          0 0 18px rgba(122, 28, 255, 0.9);
+      }
+      .pause-entry,
+      .pause-choice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 56px;
+        padding: 6px 20px;
+        clip-path: var(--chamfer);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .pause-entry.selected::before {
+        content: '▶ ';
+      }
+      .pause-question-text {
+        margin: 8px 0 14px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--paper);
+      }
+      .pause-choices {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+      }
+      .pause-choice {
+        min-width: 110px;
+      }
+      .pause-hint {
+        margin-top: 4px;
+      }
+
+      /* Settings screen (P12-R04): one slider per volume; over a paused level, dimmed. */
+      .settings-screen.over-level {
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .settings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        width: 100%;
+        margin: 56px 0 28px;
+      }
+      .settings-slider {
+        display: grid;
+        grid-template-columns: 130px 1fr 34px;
+        gap: 10px;
+        align-items: center;
+        min-height: 64px;
+        padding: 4px 14px;
+        clip-path: var(--chamfer);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-align: left;
+        text-transform: uppercase;
+      }
+      .slider-bar {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+        height: 56px;
+        touch-action: none;
+      }
+      .slider-cell {
+        flex: 1;
+        height: 22px;
+        background: rgba(177, 92, 255, 0.18);
+        border: 1px solid rgba(177, 92, 255, 0.45);
+      }
+      .slider-cell.on {
+        background: var(--violet);
+        box-shadow: 0 0 6px var(--violet);
+      }
+      .settings-slider.selected .slider-cell {
+        background: rgba(0, 0, 0, 0.15);
+        border-color: rgba(0, 0, 0, 0.5);
+        box-shadow: none;
+      }
+      .settings-slider.selected .slider-cell.on {
+        background: var(--black);
+      }
+      .slider-value {
+        font-family: var(--font-tech);
+        font-size: 22px;
+        text-align: right;
+      }
+
+      /* "Level complete" overlay (P06-R03). */
+      .level-complete {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 24px 32px;
+        clip-path: var(--chamfer);
+        border: 2px solid var(--hot);
+        background: var(--glass);
+        color: var(--paper);
+      }
+      .level-complete.menu-entry.selected {
+        color: var(--paper);
+        background: var(--glass);
+      }
+      .level-complete-heading {
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--hot);
+      }
+      .level-complete-level {
+        font-family: var(--font-tech);
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--violet);
+      }
+      .level-complete-enemies {
+        font-size: 22px;
+      }
+      /* The attempt's score, and a new high score (P11-R03). */
+      .level-complete-score {
+        font-family: var(--font-tech);
+        font-size: 24px;
+        color: var(--hot);
+      }
+      .level-complete-high-score {
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--violet);
+      }
+      .level-complete.game-over {
+        border-color: var(--red);
+      }
+      .game-over .level-complete-heading {
+        color: var(--red);
+      }
+      /* Game over after the mini boss (P07-R08): Continue from the checkpoint, or level select. */
+      .level-complete-choices {
+        display: flex;
+        gap: 12px;
+      }
+      .level-complete-choice {
+        padding: 6px 14px;
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 2px solid var(--dim);
+        color: var(--paper);
+      }
+      .level-complete-choice.selected {
+        border-color: var(--hot);
+        color: var(--black);
+        background: var(--hot);
+      }
+
+      /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */
+      .stats-tile {
+        position: fixed;
+        top: 8px;
+        right: 8px;
+        z-index: 10;
+        padding: 6px 10px;
+        background: rgba(14, 3, 22, 0.85);
+        border: 1px solid rgba(255, 43, 214, 0.5);
+        font-family: var(--font-tech);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--hot);
+        pointer-events: none;
+      }
+
+      /* A level's loading screen (P13-R03): shown only if loading takes longer than 300 ms. */
+      .level-loading {
+        z-index: 5;
+        opacity: 0;
+        animation: level-loading-in 0.15s 0.3s forwards;
+      }
+      @keyframes level-loading-in {
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Debug perf overlay (P13-R01, F3): long frames, longest frame, level loading time. */
+      .perf-overlay {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 10;
+        padding: 6px 10px;
+        background: rgba(14, 3, 22, 0.85);
+        border: 1px solid rgba(255, 43, 214, 0.5);
+        font-family: var(--font-tech);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--hot);
+        white-space: pre;
+        pointer-events: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .title-name,
+        .menu-hint {
+          animation: none;
+        }
       }
     </style>
   </head>
   <body>
-    <p>Python port in progress: the playable game is on <code>main</code> (TypeScript).</p>
+    <div id="stage">
+      <canvas id="game-canvas"></canvas>
+      <div id="menu"></div>
+    </div>
+    <div id="fatal" role="alert" hidden></div>
+    <script src="vendor/babylon.js"></script>
     <script type="module">
       import { main } from './js/main.js';
       main();

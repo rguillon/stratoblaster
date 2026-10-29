@@ -1637,3 +1637,27 @@
 - **Decision:** ENG-10's `platform/` becomes `host/` (browser storage, cookies, WebGL capability checks, loading tasks). With `src/` on the import path, a package named `platform` shadows the standard library module, which `uuid` needs. import-linter then crashes.
 - **Consequences:** The directory layout line in `01-engineering.md` changes accordingly; no requirement changes.
 - **Status:** Accepted
+
+### D-173 — Babylon.js vendored from the UMD build of `babylonjs` 9.32.0, SHA-256 pinned in the Makefile
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port, P18-R04)
+- **Decision:** `make vendor` downloads `babylon.js` from the `babylonjs@9.32.0` npm package through jsDelivr (`cdn.jsdelivr.net/npm/babylonjs@9.32.0/babylon.js`, the same bytes as unpkg), checks its SHA-256 against `BABYLON_SHA256` in the Makefile, and writes it to `public/vendor/babylon.js` only when the hash matches. A mismatch fails the target and leaves nothing behind. The version on `main` is `@babylonjs/core` 9.32.0 (`package-lock.json`); the `babylonjs` package is its UMD build. Only `babylon.js` is vendored: `main` uses no glTF loader, no materials package and no inspector (grep of `src/`), so the loaders, materials and inspector builds are not needed yet. `make build` fails early when the file is missing or wrong, and checks that `dist/vendor/babylon.js` was copied.
+- **Alternatives considered:** committing the 8.7 MB binary to git (not allowed: ENG-02 says it is vendored by `make vendor`); a `vendor.lock` file (the Makefile keeps the pin next to its use, one place to bump).
+- **Consequences:** `make build` and `make check` need `make vendor` to have run (CI must run it first). `public/vendor/` must be added to `.gitignore` (not done in this change, it is outside the render scope). `index.html` must load `vendor/babylon.js` as a classic script before the module (not done here). The bundle grows by 8.7 MB before gzip: the ENG-107 budget (initial JS ≤ 1.5 MB gzip) is checked when the port reaches the game; the file is loaded as a script, not part of the Transcrypt bundle.
+- **Status:** Accepted, to confirm at review.
+
+### D-174 — Render layer: `render/babylon.py` is the only module that names the Babylon global
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port, P18-R01, P18-R02)
+- **Decision:** Every Babylon object is built by a function of `render/babylon.py` (`vector3`, `new_standard_material`, `create_torus`, `new_raw_cube_texture`, ...). Constructors and builders with option objects are raw JavaScript in `__pragma__("js")` blocks, because Transcrypt drops keyword arguments and a dict is not a JavaScript object. Babylon names that Transcrypt renames (`name`, `update`, `from`) are read or called through raw JavaScript helpers (`node_name`, `update_raw_cube_texture`). Maps keyed by Babylon objects are JavaScript `WeakMap`s (`new_weak_map`). The TypeScript interfaces of `render/game-view.ts` and the other render modules are plain classes (importable at run time, implemented structurally); their type aliases are annotations only and are imported inside a skip block. The `.visual.ts` files become `*_visual.py` (a dot is not a valid module name).
+- **Alternatives considered:** one wrapper class per Babylon class (a large surface for no gain: the engine objects are used as handles); keeping the TypeScript interface names as Protocols inside skip blocks (they could not be imported at run time).
+- **Consequences:** Code outside `render/` gets engine objects as opaque handles (typed `Any`) and calls the render functions; adding a Babylon call means adding one helper here. Parity: the pure geometry and gradient modules (`render/geometry/*`, `render/environment/gradient_cube.py`) match the TypeScript on 27,632 values with zero mismatches; the Babylon-touching modules are smoke-tested against a recording fake of the Babylon global, not compared call by call with the TypeScript.
+- **Status:** Accepted
+
+### D-175 — `globals.d.ts` is dropped; build constants are module constants
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `src/globals.d.ts` declared the Vite-injected constants (`__APP_VERSION__`, `__APP_COMMIT__`, `__E2E__`) for the TypeScript compiler only. It has no runtime role in Python, so it is removed. `src/main.py` sets them as module constants: `E2E = False` (the Python port has no e2e build yet, ENG-52; the e2e test API hooks are not wired), `DEV_BUILD = False` (the perf overlay of ENG-111 stays off until the build is split into dev and deployed builds), `APP_VERSION = "0.0.0"` (the `pyproject.toml` version) and `APP_COMMIT = "unknown"` (the Makefile does not inject the commit yet). `app/start_app.py` takes the version and commit as `AppOptions` fields instead of globals.
+- **Alternatives considered:** keeping `globals.d.ts` as a type-only file (it is not read by Transcrypt or mypy, so it would be dead); injecting the version and commit from the Makefile into a generated module (not needed until the title screen shows a real commit).
+- **Consequences:** Pages are chosen by `app/route.py` and started from `main.py`, as in `main.ts`. Building the commit hash and the e2e build are follow-ups; the title screen shows `unknown` until then.
+- **Status:** Accepted

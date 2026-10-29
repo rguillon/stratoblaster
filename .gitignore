@@ -10,3 +10,5 @@ blob-report/
 .vite/
 .DS_Store
 __pycache__/
+# Babylon.js is downloaded by `make vendor` (ENG-02, D-173), not committed.
+public/vendor/

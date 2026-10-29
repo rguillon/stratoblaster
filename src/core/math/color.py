@@ -54,25 +54,27 @@ def hue_saturation(color: Rgb) -> tuple[float, float]:
     return sector * 60, chroma / high
 
 
-class ColorFamily:
-    """Colours whose hue lies in `[start, end]` degrees (`start` > `end` wraps past 0),
-    saturated at least `min_saturation`. Greys and whites belong to no family."""
+__pragma__("skip")
+from typing import TypedDict  # noqa: E402
 
-    def __init__(self, start: float, end: float, min_saturation: float) -> None:
-        self.start = start
-        self.end = end
-        self.min_saturation = min_saturation
+# A family of colours: those whose hue lies in `from`..`to` degrees (`from` > `to` wraps past 0),
+# saturated at least `minSaturation`. Greys and whites belong to no family. It is a plain record
+# (the config's object literals, `READABILITY.families`), read by key: a Transcrypt object has no
+# `family.from` (a keyword) and no `family.start` (a name of this module, never set on a record).
+ColorFamily = TypedDict("ColorFamily", {"from": float, "to": float, "minSaturation": float})
+__pragma__("noskip")
 
 
 def _span(family: ColorFamily) -> float:
     """Width of `family`'s hue range, in degrees."""
-    return (family.end - family.start + 360) % 360
+    return (family["to"] - family["from"] + 360) % 360
 
 
 def in_family(color: Rgb, family: ColorFamily) -> bool:
     """Whether `color` is in `family`."""
     hue, saturation = hue_saturation(color)
-    return saturation >= family.min_saturation and (hue - family.start + 360) % 360 <= _span(family)
+    offset = (hue - family["from"] + 360) % 360
+    return saturation >= family["minSaturation"] and offset <= _span(family)
 
 
 def _with_hue(color: Rgb, hue: float) -> Rgb:
@@ -93,4 +95,4 @@ def fold_into_family(color: Rgb, family: ColorFamily) -> Rgb:
     hue, saturation = hue_saturation(color)
     if saturation == 0:
         return color
-    return _with_hue(color, (family.start + (hue / 360) * _span(family)) % 360)
+    return _with_hue(color, (family["from"] + (hue / 360) * _span(family)) % 360)

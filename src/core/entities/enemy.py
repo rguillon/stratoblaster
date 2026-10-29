@@ -31,7 +31,7 @@ class LaserOwner(Protocol):
     """
 
     @property
-    def emitter(self) -> PlanePoint: ...
+    def emitter(self) -> PlanePoint | RaisedPoint: ...
 
     @property
     def heading(self) -> float: ...
@@ -219,19 +219,22 @@ class Enemy:
         # Seconds since the enemy was added.
         self.age = 0
         # How ready the next attack is, 0..1, for the visuals (e.g. a charging light).
-        self.charge = 0
+        self.charge: float = 0
         # Set when the enemy is done (left for good); the world then removes it.
         self.gone = False
         # Its own chance of dropping a bonus when destroyed; the game's rule when None.
         self.drop_chance: float | None = None
         self._self_targets: list[ShotTarget] = [self]
 
-    def place(self, muzzle: Muzzle) -> RaisedPoint:
-        """Where `muzzle`, one of its guns' (see `muzzle.py`), is now: it turns with its nose."""
+    def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
+        """Where `muzzle`, one of its guns' (see `muzzle.py`), is now: it turns with its nose.
+        `on_turret` is accepted for `MuzzleSource` but ignored: an enemy has no turret
+        (`enemy.ts`' `place` takes only the muzzle, and so does not turn it either).
+        """
         return muzzle_point(self, muzzle)
 
     @property
-    def emitter(self) -> PlanePoint:
+    def emitter(self) -> PlanePoint | RaisedPoint:
         """Where its laser leaves from. Defaults to the nose, one radius ahead of the centre."""
         return PlanePoint(
             self.x + math.sin(self.heading) * self.radius,

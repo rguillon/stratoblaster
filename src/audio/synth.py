@@ -27,8 +27,8 @@ NOISE_SEED = 0x9E3779B9
 
 # One noise buffer per context (a WeakMap in the TypeScript): parallel lists, as Transcrypt has
 # no object-keyed dictionaries.
-_noise_contexts: list[Any] = []
-_noise_buffers: list[Any] = []
+_noise_contexts = []  # type: list[Any]
+_noise_buffers = []  # type: list[Any]
 
 
 class VoiceOptions:
