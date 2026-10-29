@@ -268,7 +268,8 @@ def create_input(options: AppOptions) -> InputHandle:
 def sync_scenes(scenes: Any, state: MenuState, ship_ids: list[str]) -> None:
     if scenes is None:
         return
-    scenes.backdrop.show_screen(state.screen)
+    # The backdrop handle is a JavaScript object: its callbacks are read by their JS names.
+    scenes.backdrop["showScreen"](state.screen)
     scenes.stage.select(max(0, _index_of(ship_ids, state.highlighted_ship_id)))
 
 
@@ -359,7 +360,7 @@ def frame_ticker(
         session.load_step(dt)
         loaded = get_scenes()
         if loaded is not None:
-            loaded.backdrop.update(dt)
+            loaded.backdrop["update"](dt)
             loaded.stage.update(dt)
 
     def render() -> None:
