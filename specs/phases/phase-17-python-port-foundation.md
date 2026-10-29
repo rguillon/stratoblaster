@@ -3,7 +3,7 @@
 > Requirements written by the agent at the owner's request ("update the specs yourself and start the port", 2026-10-29). Review them like any other phase.
 > The agent fills the **Agent** sections and never edits the requirement sections.
 
-**Status:** ✅ Validated  <!-- Draft | Ready | 🟡 Awaiting review | ✅ Validated -->
+**Status:** Ready  <!-- Draft | Ready -->
 **Depends on:** Phase 16 (the TypeScript game on `main` is the reference for every port)
 
 ---
@@ -121,9 +121,6 @@ e2e              not run (deferred)
 - Git hooks: Husky (npm) is replaced by the `pre-commit` tool (ENG-60): `ruff format` and `ruff check --fix` on staged files, `make typecheck` on commit, `make check-fast` on push. `.husky/` is removed. The TypeScript toolchain files (`package.json`, `vite.config.ts`, `eslint.config.mjs`, ...) stay until parity.
 - `ruff` runs on `src/` only; the TypeScript files on `main` are not checked by the Python gates.
 - Recorded in `DECISIONS.md`: D-169 (the port), D-170 (Transcrypt constraints), D-171 (build, lint exception).
-
-### Validation
-- 2026-10-29, owner: validated with the reduced gate (lint, typecheck, build). Tests, coverage and e2e were deferred by the owner, so they are not part of this validation. Not merged into `main` yet.
 
 ### Known limitations
 - The game does not run on this branch. The page is a shell.
