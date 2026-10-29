@@ -470,11 +470,16 @@ def is_instance_of(value: Any, class_name: str) -> bool:
 
 
 def new_material_plugin(
-    material: Any, owner: Any, plugin_name: str, priority: float, define_name: str
+    material: Any,
+    owner: Any,
+    plugin_name: str,
+    priority: float,
+    define_name: str,
+    class_name: str,
 ) -> Any:
     """A `BABYLON.MaterialPluginBase` subclass whose hooks call the methods of `owner`: Transcrypt
     cannot subclass a JavaScript class, so the subclass is written here. `owner` provides
-    `class_name` (attribute), `prepare_defines(defines)`, `get_samplers(samplers)`,
+    `prepare_defines(defines)`, `get_samplers(samplers)`,
     `get_uniforms()` (a JavaScript object), `bind_for_sub_mesh(ubo)` and
     `get_custom_code(shader_type)` (a JavaScript object or None). `define_name` is the define
     switched on by the plugin."""
@@ -482,21 +487,22 @@ def new_material_plugin(
         "js",
         "{}",
         "class OwnedMaterialPlugin extends BABYLON.MaterialPluginBase {"
-        "  constructor(material, owner, plugin_name, priority, define_name) {"
+        "  constructor(material, owner, plugin_name, priority, define_name, class_name) {"
         "    var defines = {};"
         "    defines[define_name] = false;"
         "    super(material, plugin_name, priority, defines);"
         "    this.owner = owner;"
         "    this._enable(true);"
         "  }"
-        "  getClassName() { return this.owner.class_name; }"
+        "  getClassName() { return class_name; }"
         "  prepareDefines(defines) { this.owner.prepare_defines(defines); }"
         "  getSamplers(samplers) { this.owner.get_samplers(samplers); }"
         "  getUniforms() { return this.owner.get_uniforms(); }"
         "  bindForSubMesh(ubo) { this.owner.bind_for_sub_mesh(ubo); }"
         "  getCustomCode(shaderType) { return this.owner.get_custom_code(shaderType); }"
         "}"
-        "return new OwnedMaterialPlugin(material, owner, plugin_name, priority, define_name);",
+        "return new OwnedMaterialPlugin(material, owner, plugin_name, priority, define_name,"
+        " class_name);",
     )
     return None
 

@@ -264,7 +264,6 @@ class TerrainBlendOwner:
     """What the plugin's hooks read and write (see `new_terrain_blend_plugin`)."""
 
     def __init__(self, look: Any, textures: TerrainTextures, state: TerrainBlendState) -> None:
-        self.class_name = "TerrainBlendPlugin"
         self._look = look
         self._textures = textures
         self._state = state
@@ -369,4 +368,6 @@ def new_terrain_blend_plugin(
     by lava, scorched rock with a glowing edge and cracks). Lighting, shadows and fog stay the
     standard material's. Returns the plugin (TypeScript: `new TerrainBlendPlugin(...)`)."""
     owner = TerrainBlendOwner(look, textures, state)
-    return new_material_plugin(material, owner, "TerrainBlend", 200, "TERRAIN_BLEND")
+    return new_material_plugin(
+        material, owner, "TerrainBlend", 200, "TERRAIN_BLEND", "TerrainBlendPlugin"
+    )
