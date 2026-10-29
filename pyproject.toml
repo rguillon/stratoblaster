@@ -68,6 +68,7 @@ ignore_imports = [
     "core.entities.weapon -> org",
     "core.math.color -> org",
     "core.math.min_heap -> org",
+    "core.math.bits -> org",
     "core.math.noise -> org",
     "core.math.pixel_contrast -> org",
     "core.math.rng -> org",
