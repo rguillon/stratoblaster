@@ -45,13 +45,20 @@ vendor: ## Download the pinned Babylon.js build into public/vendor/, checking it
 # file each under dist/js/, so the page makes 2 requests for code instead of one per module.
 TRANSCRYPT_OUT := build
 ESBUILD := node_modules/.bin/esbuild
+# Transcrypt has no incremental mode here (its `-b`-less build fails), so it compiles everything
+# (about 20 s) whenever a Python source changed: the stamp file records the last compile.
+PY_SOURCES := $(shell find src -name '*.py' -not -path '*/__pycache__/*')
+TRANSCRYPT_STAMP := $(TRANSCRYPT_OUT)/.stamp
 
-build: ## Compile src/ to JavaScript, bundle it into dist/js/, and assemble dist/ (needs make vendor)
-	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
-		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
-	rm -rf $(DIST) $(TRANSCRYPT_OUT)
+$(TRANSCRYPT_STAMP): $(PY_SOURCES)
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/game main.py
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
+	touch $@
+
+build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
+	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
+		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
+	rm -rf $(DIST)
 	mkdir -p $(DIST)/js
 	$(ESBUILD) ./$(TRANSCRYPT_OUT)/game/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/game.js
 	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
