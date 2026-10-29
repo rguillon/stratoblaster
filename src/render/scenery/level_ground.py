@@ -120,9 +120,10 @@ class _GroundState:
 _state = _GroundState()
 
 
-def _truncate(values: list[Any], count: int) -> None:
-    """`values.length = count` (Transcrypt renames the `length` attribute, so it is raw)."""
-    __pragma__("js", "{}", "values.length = count;")
+def _truncate(kept: list[Any], count: int) -> None:
+    """`kept.length = count` (Transcrypt renames the `length` attribute, so it is raw; the
+    parameter keeps its name in the JavaScript: `values` would be renamed `py_values`)."""
+    __pragma__("js", "{}", "kept.length = count;")
 
 
 def _keep(ground: LevelGround) -> LevelGround:
