@@ -14,15 +14,10 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { decal, flipX, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { edgeLights, symmetric } from '../overlord-city';
-import {
-  AURORA,
-  CITADEL_DECK,
-  drawCity,
-  FROST,
-  icicles,
-  rect,
-  VIOLET,
-} from './boreal-citadel-city';
+import { ribs } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { glowVein, ICE_FLESH, sinew } from './w2-organic';
+import { AURORA, CITADEL_DECK, drawCity, icicles, rect, VIOLET } from './boreal-citadel-city';
 import { drawDetails } from './boreal-citadel-details';
 import {
   drawBattery,
@@ -116,9 +111,11 @@ const LENS = [
 ] as const;
 
 /** The deck with its snow and lit rim, the avenue, the engine block, the outriggers. */
-function drawHull({ hull, neon }: EnemyParts): void {
+function drawHull(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
   const { top, avenue } = CITADEL_DECK;
-  hull.bevelSlab(DECK, [-8, -2, top], [3, 3], H.base, {}, FROST.snow);
+  // P16-R06: the back of a colossal beast, rimed flesh, its spine (the avenue) a ridge of bone.
+  flesh.bevelSlab(DECK, [-8, -2, top], [3, 3], ICE_FLESH.teal, {}, ICE_FLESH.rime);
   edgeLights(
     neon,
     DECK,
@@ -126,29 +123,51 @@ function drawHull({ hull, neon }: EnemyParts): void {
     [-2.6, -1.4],
     AURORA,
   );
-  hull.bevelSlab(AVENUE, [top - 1, top, avenue], [0, 1.5], H.panel, {}, FROST.frosted);
+  flesh.bevelSlab(AVENUE, [top - 1, top, avenue], [0, 3], ICE_FLESH.bone, {}, ICE_FLESH.sinew);
+  ribs(
+    flesh,
+    [-60, -48, -36],
+    { halfWidth: 17, y: top, height: 8, thickness: 1.1 },
+    ICE_FLESH.bone,
+  );
   edgeLights(neon, AVENUE, [1, 3], [top + 0.4, top + 1.4], VIOLET);
   hull.bevelSlab(ENGINES, [-7, -1, 5], [1, 1.5], H.dark, {}, H.base);
   for (const s of SIDES) {
     const wing = s > 0 ? OUTRIGGER : flipX(OUTRIGGER);
-    hull.bevelSlab(wing, [-4, -1, OUTRIGGER_TOP], [1, 2], H.base, {}, FROST.snow);
+    flesh.bevelSlab(
+      wing,
+      [-4, -1, OUTRIGGER_TOP],
+      [1, 2],
+      ICE_FLESH.membrane,
+      {},
+      ICE_FLESH.purple,
+    );
+    sinew(
+      flesh,
+      [s * 58, OUTRIGGER_TOP, 0],
+      [s * 98, OUTRIGGER_TOP, 2],
+      1.6,
+      ICE_FLESH.bone,
+      [0, 1, 6],
+    );
+    glowVein(p, [s * 18, top + 1, 40], [s * 56, top, 0], 1.4, AURORA);
     edgeLights(neon, wing, [0, 1, 2], [-1.5, -0.5], AURORA);
-    icicles(hull, [wing[0] ?? [0, 0], wing[1] ?? [0, 0]], -1, 5);
+    icicles(flesh, [wing[0] ?? [0, 0], wing[1] ?? [0, 0]], -1, 5);
     for (const [[ax, az], [bx, bz]] of BOW_EDGES) {
       const edge: [OutlinePoint, OutlinePoint] = [
         [s * ax, az],
         [s * bx, bz],
       ];
-      icicles(hull, edge, -2, 4);
+      icicles(flesh, edge, -2, 4);
     }
   }
 }
 
 /** The keep over the core: tiers lit green and violet, its spire and ring emitter on top. */
-function drawKeep({ hull, neon, charge, muzzle }: EnemyParts): void {
+function drawKeep({ hull, flesh, neon, charge, muzzle }: EnemyParts): void {
   const base = CITADEL_DECK.top;
-  // Turned an eighth of a turn, a flat of the octagon faces the front.
-  hull.lathe(KEEP, 8, H.panel, { at: [0, base, 0], yaw: Math.PI / 8 });
+  // P16-R06: the keep is the beast's heart, a stepped mound of flesh, metal bands on its ledges.
+  flesh.lathe(KEEP, 8, ICE_FLESH.purple, { at: [0, base, 0], yaw: Math.PI / 8 });
   for (const [[r0, y0], [r1, y1], color, lit] of LEDGES) {
     hull.lathe(
       [
@@ -156,14 +175,14 @@ function drawKeep({ hull, neon, charge, muzzle }: EnemyParts): void {
         [r1 + 0.1, y1 + 0.1],
       ],
       8,
-      FROST.snow,
+      H.panel,
       { at: [0, base, 0], yaw: Math.PI / 8 },
       false,
     );
     neon.ring(lit, 1.1, 8, color, { at: [0, base + y0 - 2.6, 0], yaw: Math.PI / 8 });
   }
   const spire = base + 30;
-  hull.lathe(SPIRE, 6, FROST.ice, { at: [0, spire, 0] });
+  flesh.lathe(SPIRE, 6, ICE_FLESH.crystal, { at: [0, spire, 0] });
   charge.lathe(SPIRE_TIP, 6, WHITE, { at: [0, spire + 7, 0] });
   muzzle(bossPoint(...BOREAL_SPIRE), 'ring');
 }
@@ -171,7 +190,7 @@ function drawKeep({ hull, neon, charge, muzzle }: EnemyParts): void {
 /** The gun deck on the keep's front: twin cannons and a laser lens, charging before they fire. */
 function drawGunDeck({ hull, neon, charge, muzzle }: EnemyParts): void {
   const base = CITADEL_DECK.top;
-  hull.bevelSlab(GUN_DECK, [base, base, GUN_DECK_TOP], [0, 1.5], H.base, {}, FROST.snow);
+  hull.bevelSlab(GUN_DECK, [base, base, GUN_DECK_TOP], [0, 1.5], H.base, {}, H.panel);
   decal(neon, rect(16, 1.2, [0, 39]), GUN_DECK_TOP + 0.05, VIOLET);
   const front = 42;
   for (const m of BOREAL_GUNS) {
@@ -208,8 +227,8 @@ function drawCore(parts: EnemyParts): void {
   drawHatches(parts);
   drawDetails(parts);
   for (const s of SIDES) {
-    parts.reactor([s * 12, -1, -92], 5.5);
-    parts.reactor([s * 26, -1, -92], 4.2);
+    reactorSac(parts, [s * 12, -1, -92], 5.5, AURORA, { flesh: ICE_FLESH.purple, veinLength: 8 });
+    reactorSac(parts, [s * 26, -1, -92], 4.2, AURORA, { flesh: ICE_FLESH.crimson, veinLength: 6 });
   }
 }
 
@@ -218,6 +237,9 @@ function drawCore(parts: EnemyParts): void {
  * violet neon: towers and heated domes on a snowed deck, two aurora cannons on its outriggers,
  * two missile batteries aft, two dome generators ahead, and a keep over the core carrying a
  * laser, twin cannons, a ring emitter and missile hatches.
+ * P16-R06: now a colossal living beast carrying its city on its back: rimed flesh, a spine of
+ * bone, spires of crystal and flesh where the towers were, its heart (the keep) banded in metal,
+ * membrane fins out to its cannons, glowing blisters for domes.
  */
 export function buildBorealCitadel(scene: Scene): EnemyModel {
   return buildBossModel(BOREAL_CITADEL, scene, AURORA, {

@@ -1,8 +1,9 @@
 import type { OutlinePoint } from '../../../../render/geometry/outline';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { CANOPY_SECTION, flipX, POD_SECTION, SIDES } from '../../enemies/enemy-shapes';
-import { lamps, plate, seam, vent } from '../mini-boss-greebles';
-import { H, QUARTER, SHADE } from '../mini-boss-shapes';
+import { lamps, plate } from '../mini-boss-greebles';
+import { H, QUARTER } from '../mini-boss-shapes';
+import { gland, glowVein, ICE_FLESH } from './w2-organic';
 import { crystal, FROST, icicles, PALE_BLUE, VIOLET } from './ice-queen-shards';
 
 // P08-R10, 2-5: the Ice Queen's details: its crystal canopy, its engine nacelles, the crystal
@@ -62,20 +63,22 @@ function drawCanopy({ hull, neon }: EnemyParts): void {
 }
 
 /** The engine nacelles on the wing roots: snowed backs, pale blue strips along their sides. */
-function drawNacelles({ hull, neon }: EnemyParts): void {
+function drawNacelles(p: EnemyParts): void {
+  const { flesh, neon } = p;
   for (const s of SIDES) {
     const at: Vec3 = [s * NACELLE_X, 0, 0];
-    hull.loft(
+    // P16-R05: swollen engine sacs of flesh on the wing roots.
+    flesh.loft(
       POD_SECTION,
       NACELLE,
-      H.panel,
+      ICE_FLESH.teal,
       { at },
       {
-        paint: (side) => (side === NACELLE_BACK ? FROST.snow : undefined),
+        paint: (side) => (side === NACELLE_BACK ? ICE_FLESH.rime : undefined),
       },
     );
     neon.box([0.4, 0.6, 20], PALE_BLUE, { at: [s * (NACELLE_X + 3.3), 2.4, -36] });
-    vent(hull, [s * NACELLE_X, 5.7, -40], [3, 6], 3);
+    glowVein(p, [s * NACELLE_X, 5.6, -46], [s * NACELLE_X, 5.4, -22], 0.7, VIOLET);
   }
 }
 
@@ -83,7 +86,7 @@ function drawNacelles({ hull, neon }: EnemyParts): void {
  * The crystal fins leaning back at the tail, and low crystals along the spine (under the crown
  * ring and its spokes as they turn).
  */
-function drawCrystals({ hull }: EnemyParts): void {
+function drawCrystals({ flesh: hull }: EnemyParts): void {
   for (const s of SIDES) {
     crystal(hull, [s * 4.5, 7, -44], [-0.8, -0.35 * s, 0], [2.2, 13]);
     crystal(hull, [s * 3, 8.4, -26], [-0.5, -0.6 * s, 0], [1.3, 3.5]);
@@ -93,18 +96,18 @@ function drawCrystals({ hull }: EnemyParts): void {
 }
 
 /** Frosted plates, seams and a vent on the wings, lights at their tips, crystal pods under them. */
-function drawWingDetail({ hull, neon }: EnemyParts): void {
+function drawWingDetail(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
   for (const s of SIDES) {
     for (const outline of WING_PLATES) {
       plate(hull, s > 0 ? outline : flipX(outline), [2.4, 0.5], FROST.frosted);
     }
-    seam(hull, [s * 9, 12], [s * 44, -28], [2.5, 0.6, 0.3], SHADE.edge);
-    vent(hull, [s * 18, 2.5, -22], [5, 4], 3, s * 0.6);
+    gland(p, [s * 18, 2.6, -22], 1, PALE_BLUE);
     lamps(neon, [[s * 47, 2.6, -32]], 1.4, VIOLET);
     lamps(neon, [[s * 14.5, 3.6, 24]], 1, PALE_BLUE);
-    hull.lathe(POD, 6, FROST.ice, { at: [s * 30, -0.6, -14], pitch: QUARTER });
+    flesh.lathe(POD, 6, ICE_FLESH.membrane, { at: [s * 30, -0.6, -14], pitch: QUARTER });
     hull.box([1.2, 1.4, 6], H.dark, { at: [s * 30, -0.2, -14] });
-    icicles(hull, s, [
+    icicles(flesh, s, [
       [6, 24],
       [10, 23],
     ]);

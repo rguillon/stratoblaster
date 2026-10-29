@@ -14,6 +14,8 @@ import { bossPoint, buildBossModel } from '../boss-model';
 import { H, neonBand, QUARTER, socket, WHITE } from '../mini-boss-shapes';
 import { eyeball, eyeSocket, FACE, IDOL_NEON, mouth } from './stone-idol-parts';
 import { crack, leaf, moss, STONE, vine } from './stone-idol-stone';
+import { reactorSac } from '../../enemies/organic-parts';
+import { F, gland, JUNGLE_FLESH, sinew, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-3: the Stone Idol. Logical pixels, nose +Z (the chin, down the screen), Y up
 // (towards the camera): a carved head flying face up, so the camera sees its face.
@@ -86,8 +88,11 @@ const CRACKS: readonly (readonly (readonly [number, number])[])[] = [
 ];
 
 /** The carved head: its block, the neon glowing under its rim, the helmet and the brows. */
-function drawHead({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(HEAD, [-10, 2, FACE], [6, 5], STONE.base, {}, STONE.light);
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R05: a living head of grey-green flesh, the carved stone grown over it as armour (its
+  // helmet, brows, nose and ear spools), roots of sinew trailing from its chin.
+  flesh.bevelSlab(HEAD, [-10, 2, FACE], [6, 5], F.sinew, {}, JUNGLE_FLESH);
   neonBand(neon, HEAD, [-4.5, -1.5], [0.92, 0.975], IDOL_NEON);
   hull.bevelSlab(HELMET, [FACE - 1, FACE + 2, FACE + 5], [0, 1.5], STONE.base, {}, STONE.light);
   neon.box([60, 0.6, 0.6], IDOL_NEON, { at: [0, FACE + 3.2, -19.6], yaw: 0 });
@@ -129,6 +134,39 @@ function drawGuns({ hull, neon, charge, muzzle }: EnemyParts): void {
     hull.cylinder(2.2, 0.8, 6, STONE.deep, { at: [x, y, z - 1.4], pitch: QUARTER });
     charge.cylinder(1.6, 0.6, 6, WHITE, { at: [x, y, z - 0.6], pitch: QUARTER }, 1.2);
     muzzle(nostril, 'gun');
+  }
+}
+
+/** P16-R05: the sinew roots trailing from its chin, its veins and glands. */
+function drawRoots(p: EnemyParts): void {
+  for (const [x, bow] of [
+    [-16, -3],
+    [14, 4],
+    [28, 2],
+  ] as const) {
+    sinew(
+      p,
+      [
+        [x, 2, 44],
+        [x + bow, -4, 53],
+      ],
+      [bow, -2, 0],
+      2,
+      F.sinew,
+    );
+  }
+  for (const s of SIDES) {
+    veinTo(
+      p,
+      [
+        [s * 8, FACE + 0.3, 26],
+        [s * 34, FACE + 0.3, 30],
+      ],
+      [0, 0, 6],
+      IDOL_NEON,
+      1.2,
+    );
+    gland(p, [s * 38, FACE - 0.5, -32], 3, IDOL_NEON);
   }
 }
 
@@ -174,8 +212,9 @@ function drawJungle(p: EnemyParts): void {
     [-38, -2, 39],
   ]);
   leaf(hull, [-40, FACE - 4, 25], 4, 3);
+  drawRoots(p);
   for (const s of SIDES) {
-    p.reactor([s * 16, -3, -48.5], 4.5);
+    reactorSac(p, [s * 16, -3, -48.5], 4.5, IDOL_NEON, { flesh: F.purple });
     hull.cylinder(5.4, 3, 8, H.dark, { at: [s * 16, -3, -50], pitch: -QUARTER });
   }
 }

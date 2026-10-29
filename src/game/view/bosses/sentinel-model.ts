@@ -4,20 +4,27 @@ import type { EnemyModel } from '../../../render/game-view';
 import { BOSS_LOOK } from '../../config/boss-look';
 import { SENTINEL } from '../../config/bosses/mini-bosses';
 import type { EnemyParts } from '../enemies/enemy-mesh';
-import {
-  canopyPaint,
-  FIGHTER_SECTION,
-  flipX,
-  HULL_SECTION,
-  POD_SECTION,
-  sideStripe,
-  SIDES,
-} from '../enemies/enemy-shapes';
+import { membraneWing, organ, segmentedBody } from '../../../render/geometry/organic';
+import { flipX, SIDES } from '../enemies/enemy-shapes';
+import { eyes, reactorSac } from '../enemies/organic-parts';
 import { buildBossModel } from './boss-model';
-import { hazard, lamps, mast, plate, seam, vent } from './mini-boss-greebles';
-import { H, offset, QUARTER, scaled, SHADE, socket, turret, WHITE } from './mini-boss-shapes';
+import { lamps, mast } from './mini-boss-greebles';
+import { offset, QUARTER, scaled, socket, turret, WHITE } from './mini-boss-shapes';
+import {
+  barbs,
+  F,
+  gland,
+  graft,
+  growth,
+  hide,
+  M,
+  mantle,
+  polygon,
+  ribCage,
+  veinLine,
+} from './world-1-organic-kit';
 
-// P07-R05, 1-5: the Sentinel. Logical pixels, nose +Z, Y up (towards the camera).
+// P07-R05, P16-R05, 1-5: the Sentinel. Logical pixels, nose +Z, Y up (towards the camera).
 type Vec3 = [number, number, number];
 type Rgb = readonly [number, number, number];
 
@@ -27,23 +34,7 @@ const POLICE_RED: Rgb = [1, 0.08, 0.1];
 /** Where the hulls run, either side of the centre line: the +X hull is blue, the -X one red. */
 const HULL_X = 30;
 
-/** Each hull (loft stations along Z: half width, bottom, top), its nose ahead of the bay. */
-const HULL = [
-  [-37, 7, -3, 5],
-  [-22, 10, -4, 7.5],
-  [12, 10, -4, 7.5],
-  [34, 7, -3, 5.5],
-  [46, 2, -1, 2],
-] as const;
-/** The cockpit pod between the hulls, its canopy painted on its back. */
-const POD = [
-  [-27, 7, -2, 6],
-  [-12, 11, -3, 9],
-  [6, 10, -3, 10],
-  [16, 7, -2, 7],
-  [23, 3, -1, 3],
-] as const;
-/** The wing joining the hulls through the pod, and the right tail fin (mirrored on the left). */
+/** The membrane joining the bodies through the thorax, and the right tail fin (mirrored). */
 const WING = [
   [-14, 12],
   [14, 12],
@@ -62,21 +53,14 @@ const FIN = [
 ] as const;
 /** Height of the hulls' flat backs. */
 const BACK = 7.5;
-/** The red hull's radome, a canoe along its back (loft stations). */
-const RADOME = [
-  [-22, 1.5, 0, 1.5],
-  [-16, 3.5, 0, 3.8],
-  [-2, 3.5, 0, 3.8],
-  [4, 0, 2, 2],
-] as const;
-/** A panel on the wing between the pod and a hull (around its centre). */
+/** A plate on the membrane between the thorax and a body (around its centre). */
 const WING_PANEL = [
   [-3, -12],
   [3, -12],
   [3, -1],
   [-3, 1],
 ] as const;
-/** A patch welded on the red hull's back (the blue hull's extra plate is the same, further back). */
+/** A plate grafted on the red body's back (the blue body's extra plate is the same, further back). */
 const PATCH = [
   [-34, -6],
   [-26, -7],
@@ -111,93 +95,111 @@ const HATCH = [
 ] as const;
 const BAY_TOP = 6;
 
-/** A hull at `x`: its neon stripes along both flanks, in `color`, and its tail fin. */
-function drawHull({ hull, neon }: EnemyParts, x: number, color: Rgb): void {
+/**
+ * A body at `x` (P16-R05): a long segmented worm along Z, a shell plated on its back, lit veins
+ * along its flanks in `color`, its tail fin a membrane on bone struts.
+ */
+function drawHull(p: EnemyParts, x: number, color: Rgb): void {
   const at: Vec3 = [x, 0, 0];
-  hull.loft(HULL_SECTION, HULL, H.base, { at });
-  for (const side of [1, 3]) {
-    const stripe = sideStripe(HULL_SECTION, side, [0.25, 0.6]);
-    neon.loft(stripe, HULL.slice(1, 4), color, { at }, { open: true });
-  }
-  const fin: readonly OutlinePoint[] = x > 0 ? FIN : flipX(FIN);
-  hull.bevelSlab(fin, [-0.8, 0, 1.2], [0.3, 0.6], H.panel, { at: [0, 2, 0] }, H.base);
+  hide(p, {
+    tail: -38,
+    nose: 47,
+    width: 10,
+    bottom: -4,
+    top: BACK,
+    segments: 4,
+    shell: [F.purple, F.membrane],
+    belly: F.crimson,
+    at,
+  });
   const s = Math.sign(x);
-  lamps(neon, [[s * 56, 3.2, -32]], 1.4, color);
-  vent(hull, [x, BACK, -27], [6, 6], 4);
-  vent(hull, [x, BACK, 31], [5, 4], 3);
-  for (const z of [-15, 6]) seam(hull, [x - 6, z], [x + 6, z], [BACK, 0.6, 0.3], H.dark);
-  // Police livery: a checkered band across the wing beside the hull.
-  for (let i = 0; i < 4; i++) {
-    const at: Vec3 = [s * (12.5 + i * 2.2), 2.5, -17];
-    hull.box([2.2, 0.4, 2.2], i % 2 === 0 ? SHADE.edge : H.dark, { at });
-    hull.box([2.2, 0.4, 2.2], i % 2 === 0 ? H.dark : SHADE.edge, { at: offset(at, 0, 0, 2.2) });
+  for (const side of SIDES) {
+    veinLine(p, [x + side * 9, 2.5, -24], [x + side * 9, 2.5, 30], [side, 0.5, 0], 1.1, color);
   }
+  p.neon.box([0.6, 0.3, 30], color, { at: [x, BACK + 0.2, -4] });
+  const fin: readonly OutlinePoint[] = x > 0 ? FIN : flipX(FIN);
+  const [root, ...tips] = fin;
+  membraneWing(p.flesh, p.flesh, { root: root ?? [x, -13], tips, y: 2, thickness: 1, strut: 1.2 }, [
+    F.membrane,
+    F.bone,
+  ]);
+  lamps(p.neon, [[s * 56, 3.2, -32]], 1.4, color);
+  graft(p, polygon(4, 4, [1, 1.8]), [BACK - 0.2, BACK + 0.8], [x, 0, 31]);
+  barbs(p, [x, BACK + 0.5, -20], { count: 3, spacing: 4, size: 2.5, dir: [0, 1, -0.4] });
 }
 
 /**
- * The hulls' differences: the red one carries a radome, its mast and a patched flank; the blue
- * one a searchlight on its bow and an extra armour plate; a whip antenna off-centre on the pod.
+ * Grafts on the bodies (P16-R05): a radome and mast on the red one, a searchlight and an extra
+ * plate on the blue one, a whip antenna off-centre on the thorax.
  */
 function drawGear(p: EnemyParts): void {
-  const { hull, neon, charge } = p;
-  hull.loft(POD_SECTION, RADOME, H.panel, { at: [-HULL_X, BACK, 0] });
-  neon.box([0.6, 0.3, 10], POLICE_RED, { at: [-HULL_X, BACK + 3.8, -12] });
   mast(p, [-HULL_X - 3, BACK, 10], 9, POLICE_RED);
-  plate(hull, PATCH, [BACK, 0.6], SHADE.patch);
-  hull.cylinder(2.2, 2, 6, H.panel, { at: [HULL_X, BACK, 20] });
-  hull.box([3.6, 2.4, 2], H.dark, { at: [HULL_X, BACK + 2, 20.5], pitch: -0.2 });
-  charge.box([2.8, 1.6, 0.4], WHITE, { at: [HULL_X, BACK + 2.4, 21.6], pitch: -0.2 });
-  plate(hull, scaled(PATCH, 1, 2 * HULL_X, -14), [BACK, 1], H.panel);
-  hazard(hull, [HULL_X, BACK + 1, -7], [8, 1.6], 5, 0);
-  mast(p, [-3.5, 7.4, -20], 7, BLUE);
+  graft(p, PATCH, [BACK, BACK + 0.8], [0, 0, 0], { color: M.base });
+  p.hull.cylinder(2.2, 2, 6, M.panel, { at: [HULL_X, BACK, 20] });
+  p.hull.box([3.6, 2.4, 2], M.dark, { at: [HULL_X, BACK + 2, 20.5], pitch: -0.2 });
+  p.charge.box([2.8, 1.6, 0.4], WHITE, { at: [HULL_X, BACK + 2.4, 21.6], pitch: -0.2 });
+  graft(p, scaled(PATCH, 1, 2 * HULL_X, -14), [BACK, BACK + 1], [0, 0, 0]);
+  mast(p, [-3.5, 9.4, -20], 7, BLUE);
   for (const s of SIDES) {
-    plate(hull, scaled(WING_PANEL, 1, s * 17.5, 0), [2.5, 0.5], H.base);
-    seam(hull, [s * 12, 9], [s * 21, 4.5], [2.5, 0.6, 0.3], H.dark);
+    graft(p, scaled(WING_PANEL, 1, s * 17.5, 0), [2.5, 3], [0, 0, 0], { color: M.base });
+    veinLine(p, [s * 8, 5, 0], [s * 22, 2.2, -14], [0, 1, 0], 0.8, s > 0 ? BLUE : POLICE_RED);
   }
 }
 
-/** The pod with its light bar, the wing, both hulls, and the core's guns on the wing's front. */
+/** The thorax with its glands, the membrane joining the bodies, both bodies, the core's guns. */
 function drawBody(p: EnemyParts): void {
-  const { hull, neon, charge } = p;
-  hull.bevelSlab(WING, [-1.5, 0, 2.5], [0.6, 1.2], H.panel, {}, H.base);
-  hull.loft(FIGHTER_SECTION, POD, H.base, {}, { paint: canopyPaint([1, 2], H.dark) });
-  // The light bar on the pod's back, red on one side and blue on the other.
-  neon.box([3.6, 1.4, 2.4], BLUE, { at: [2.4, 9, -8] });
-  neon.box([3.6, 1.4, 2.4], POLICE_RED, { at: [-2.4, 9, -8] });
+  mantle(p, WING, [-1.5, 2.5], F.membrane);
+  ribCage(p, [-14, 2], { halfWidth: HULL_X - 6, y: 1, height: 3, thickness: 0.9 });
+  segmentedBody(
+    p.flesh,
+    { tail: -28, nose: 24, segments: 3, width: 11, bottom: -3, top: 10 },
+    F.crimson,
+  );
+  eyes(p, [0, 7, 18], { count: 2, size: 1.2, spacing: 4 }, BLUE);
+  // The light bar on the thorax's back: a red gland and a blue one.
+  gland(p, [2.4, 9, -8], 1.6, BLUE);
+  gland(p, [-2.4, 9, -8], 1.6, POLICE_RED);
+  p.neon.box([3.6, 0.6, 2.4], BLUE, { at: [2.4, 10.4, -12] });
+  p.neon.box([3.6, 0.6, 2.4], POLICE_RED, { at: [-2.4, 10.4, -12] });
   drawHull(p, HULL_X, BLUE);
   drawHull(p, -HULL_X, POLICE_RED);
   for (const s of SIDES) {
-    // The core's fan guns, in the wing's leading edge either side of the pod.
-    charge.cylinder(1.4, 2.5, 6, WHITE, { at: [s * 15, 1, 10], pitch: QUARTER }, 1);
+    // The core's fan guns, grafted in the membrane's leading edge either side of the thorax.
+    p.hull.cylinder(1.8, 3, 6, M.dark, { at: [s * 15, 1, 7], pitch: QUARTER });
+    p.charge.cylinder(1.4, 2.5, 6, WHITE, { at: [s * 15, 1, 10], pitch: QUARTER }, 1);
     p.muzzle([s * 15, 1, 12.5]);
-    socket(hull, [s * 38, 1, 8], 7, 1);
+    socket(p.hull, [s * 38, 1, 8], 7, 1);
   }
-  // The drone bay's mounting frame on the pod's nose.
-  hull.box([18, 2, 4], H.dark, { at: [0, 0, 23] });
+  // The brood pouch's grafted frame on the thorax's front.
+  p.hull.box([18, 2, 4], M.dark, { at: [0, 0, 23] });
 }
 
 /**
- * P07-R05: the Sentinel, a twin-hull police interceptor: a blue hull and a red one joined by a
- * wing through the cockpit pod, a light bar on the pod, a gun on each hull's outer flank and a
- * drone bay at the nose, between the hulls.
+ * P07-R05, P16-R05: the Sentinel, a twin-bodied city hunter: a blue body and a red one joined
+ * by a membrane through its thorax, police-light glands on its back, a gun growth on each body's
+ * outer flank and a brood pouch at the nose, between the bodies.
  */
 export function buildSentinel(scene: Scene): EnemyModel {
   return buildBossModel(SENTINEL, scene, BLUE, {
     core: (p) => {
       drawBody(p);
       drawGear(p);
-      for (const s of SIDES) p.reactor([s * HULL_X, 1, -37], 3.6);
-      p.reactor([0, 2, -27], 3);
+      for (const s of SIDES) reactorSac(p, [s * HULL_X, 1, -37], 3.6, s > 0 ? BLUE : POLICE_RED);
+      reactorSac(p, [0, 2, -27], 3, BLUE);
     },
     parts: { 'gun-left': hullGun, 'gun-right': hullGun, 'drone-bay': droneBay },
     turrets: { 'gun-left': hullGunTurret, 'gun-right': hullGunTurret },
   });
 }
 
-/** A hull gun (P07-R05): a sponson on the hull's outer flank under its turret. */
+/** A hull gun (P07-R05, P16-R05): an armoured growth on the body's outer flank under its turret. */
 function hullGun(p: EnemyParts, at: Vec3): void {
   const sponson = at[0] > 0 ? SPONSON : flipX(SPONSON);
-  p.hull.bevelSlab(sponson, [-2, 0.5, 4], [0.8, 1.6], H.base, { at }, H.panel);
+  p.flesh.bevelSlab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.crimson, { at }, F.sinew);
+  growth(p, offset(at, 0, 1, 0), 9, at[0] > 0 ? BLUE : POLICE_RED, {
+    flesh: F.purple,
+    height: 0.35,
+  });
 }
 
 /** A hull gun's twin-barrelled turret. */
@@ -216,24 +218,36 @@ function hullGunTurret(p: EnemyParts, at: Vec3): void {
   });
 }
 
-/** The drone bay (P07-R05): a housing at the nose, a dark hatch and launch lights around it. */
-function droneBay({ hull, neon, charge }: EnemyParts, at: Vec3): void {
-  hull.bevelSlab(BAY, [-3, 1, BAY_TOP], [1, 2], H.base, { at }, H.panel);
-  hull.slab(HATCH, [BAY_TOP, BAY_TOP + 0.2], H.dark, { at });
-  // The hatch's two doors' seam, and launch lights at its corners, flashing red and blue.
-  neon.box([0.5, 0.3, 16], BLUE, { at: offset(at, 0, BAY_TOP + 0.2, 1.5) });
+/**
+ * The drone bay (P07-R05, P16-R05): a swollen brood pouch at the nose, its slit lit, launch
+ * glands at its corners, two drones hatching from it; a grafted rim plate behind.
+ */
+function droneBay(p: EnemyParts, at: Vec3): void {
+  p.flesh.bevelSlab(BAY, [-3, 1, BAY_TOP - 1], [1, 3], F.crimson, { at }, F.purple);
+  organ(p.flesh, 10, 7, F.purple, { at: offset(at, 0, 0, 1) }, 0.35);
+  p.neon.box([0.5, 0.3, 16], BLUE, { at: offset(at, 0, BAY_TOP + 0.4, 1.5) });
   for (const [x, z] of scaled(HATCH, 1.12)) {
-    charge.box([2, 0.8, 2], WHITE, { at: offset(at, x, BAY_TOP - 0.5, z) });
+    p.charge.box([2, 0.8, 2], WHITE, { at: offset(at, x, BAY_TOP - 1.5, z) });
   }
   for (const s of SIDES) {
-    neon.box([0.8, 0.5, 14], s > 0 ? BLUE : POLICE_RED, {
-      at: offset(at, s * 13, BAY_TOP - 1.5, -2),
+    p.vein.box([0.8, 0.5, 14], s > 0 ? BLUE : POLICE_RED, {
+      at: offset(at, s * 13, BAY_TOP - 2.5, -2),
     });
-    // A drone docked on each hatch door, ready to drop.
+    // A drone hatching on each side of the slit, ready to drop.
     const drone = offset(at, s * 4, BAY_TOP + 0.2, 2);
-    hull.box([4.4, 0.8, 1], H.panel, { at: drone, yaw: 0.8 });
-    hull.box([4.4, 0.8, 1], H.panel, { at: drone, yaw: -0.8 });
-    neon.box([1, 0.6, 1], s > 0 ? BLUE : POLICE_RED, { at: offset(drone, 0, 0.6, 0) });
+    organ(p.flesh, 1.6, 5, F.sinew, { at: drone }, 0.6);
+    p.hull.box([4.4, 0.6, 1], M.panel, { at: drone, yaw: s * 0.8 });
+    p.neon.box([1, 0.6, 1], s > 0 ? BLUE : POLICE_RED, { at: offset(drone, 0, 1.4, 0) });
   }
-  hazard(hull, offset(at, 0, BAY_TOP, -10.5), [14, 1.6], 7, 0);
+  graft(
+    p,
+    [
+      [-12, -9],
+      [12, -9],
+      [10, -13],
+      [-10, -13],
+    ],
+    [BAY_TOP - 2.5, BAY_TOP - 1.5],
+    at,
+  );
 }

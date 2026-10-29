@@ -159,4 +159,23 @@ test.describe('P05: enemies/ page', () => {
       'false',
     );
   });
+  test('P16-R10: every enemy kind model shows close up with its hit circles, moving or still', async ({
+    page,
+  }) => {
+    await page.keyboard.press('m');
+    await page.keyboard.press('h');
+    const toggles = page.locator('.enemy-toggles button');
+    await expect(toggles.nth(3)).toHaveAttribute('aria-pressed', 'true');
+    for (let i = 0; i < KINDS.length; i++) {
+      await expect(page.locator('.enemy-kind button').nth(i)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await step(page, 2);
+      await page.keyboard.press('ArrowRight');
+    }
+    await page.keyboard.press('l');
+    await expect(toggles.nth(2)).toHaveAttribute('aria-pressed', 'false');
+    await step(page, 2);
+  });
 });

@@ -14,6 +14,8 @@ import { decal, flipX, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { edgeLights, symmetric } from '../overlord-city';
 import { drawCity } from './verdant-crown-city';
+import { reactorSac } from '../../enemies/organic-parts';
+import { F, JUNGLE_FLESH, veinTo } from './jungle-flesh';
 import { DECK_TOP, drawGarden, EMERALD, JUNGLE, MAGENTA } from './verdant-crown-garden';
 import {
   OUTRIGGER_TOP,
@@ -29,6 +31,7 @@ import {
 // deck carrying a glass garden dome over the core, a gun deck on its bow, outriggers out to the
 // thorn cannons.
 type Rgb = readonly [number, number, number];
+type Vec3 = readonly [number, number, number];
 
 const H = ENEMY_LOOK.hull;
 const WHITE: Rgb = [1, 1, 1];
@@ -71,8 +74,15 @@ const LENS = [
 ] as const;
 
 /** The deck with its lit rim, the engine block, the outriggers wrapped in vines. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(DECK, [-8, -2, DECK_TOP], [3, 3], H.dark, {}, H.base);
+function drawHull(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a colossal living plant-beast: its back a broad body of moss-skinned flesh, the
+  // city grafted on it, its outriggers fleshy limbs, veins pulsing out from under the dome.
+  flesh.bevelSlab(DECK, [-8, -2, DECK_TOP], [3, 3], F.sinew, {}, JUNGLE_FLESH);
+  for (const a of [0.5, 1.6, 2.6, 3.7, 4.7, 5.8]) {
+    const out: Vec3 = [Math.sin(a) * 74, DECK_TOP + 0.3, Math.cos(a) * 74];
+    veinTo(p, [[Math.sin(a) * 34, DECK_TOP + 0.3, Math.cos(a) * 34], out], [0, 0, 6], EMERALD, 1.6);
+  }
   edgeLights(
     neon,
     DECK,
@@ -83,7 +93,7 @@ function drawHull({ hull, neon }: EnemyParts): void {
   hull.bevelSlab(ENGINES, [-7, -1, 5], [1, 1.5], H.dark, {}, H.base);
   for (const s of SIDES) {
     const wing = s > 0 ? OUTRIGGER : flipX(OUTRIGGER);
-    hull.bevelSlab(wing, [-4, -1, OUTRIGGER_TOP], [1, 2], H.base, {}, JUNGLE.moss);
+    flesh.bevelSlab(wing, [-4, -1, OUTRIGGER_TOP], [1, 2], F.sinew, {}, JUNGLE.moss);
     edgeLights(neon, wing, [0, 1, 2, 3, 4], [-1.5, -0.5], MAGENTA);
     for (const dz of [-6, 0, 6]) {
       hull.box([0.9, 0.5, 26], JUNGLE.leaf, {
@@ -141,8 +151,8 @@ export function buildVerdantCrown(scene: Scene): EnemyModel {
       drawBow(p);
       drawHatches(p);
       for (const s of SIDES) {
-        p.reactor([s * 12, -1, -94], 5.5);
-        p.reactor([s * 26, -1, -94], 4.2);
+        reactorSac(p, [s * 12, -1, -94], 5.5, EMERALD, { flesh: F.sinew, veinLength: 8 });
+        reactorSac(p, [s * 26, -1, -94], 4.2, EMERALD, { flesh: F.sinew, veinLength: 8 });
       }
     },
     parts: {

@@ -6,6 +6,7 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-model';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { crystals, gland, ICE_FLESH } from './w2-organic';
 
 // P08-R10, 2-3: the Snow Owl's parts (its radar pods and sensor eye) and its frost. Logical
 // pixels, nose +Z, Y up (towards the camera).
@@ -16,7 +17,7 @@ type Vec3 = [number, number, number];
 export const OWL_WHITE: Rgb = BOSS_LOOK.neon['snow-owl'] ?? [0.85, 0.92, 1];
 /** Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost). */
 export const FROST: Rgb = [0.75, 0.82, 0.9];
-export const ICE: Rgb = [0.5, 0.62, 0.76];
+export const ICE: Rgb = ICE_FLESH.crystal;
 
 /** Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice. */
 export function icicles(hull: SolidBuilder, points: readonly Vec3[], side = 1): void {
@@ -49,12 +50,14 @@ const RADOME = [
 export function radarPod(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   const s = Math.sign(at[0]);
-  hull.loft(POD_SECTION, NACELLE, H.base, { at: [at[0], 0, at[2]] });
+  // P16-R05: a swollen nacelle of flesh, the radome a metal graft on it.
+  p.flesh.loft(POD_SECTION, NACELLE, ICE_FLESH.purple, { at: [at[0], 0, at[2]] });
+  gland(p, offset(at, -s * 4, 3.6, 8), 0.9, OWL_WHITE);
   hull.lathe(RADOME, 8, FROST, { at: offset(at, 0, 0, -2), yaw: Math.PI / 8 });
   neon.ring(7.3, 0.6, 8, OWL_WHITE, { at: offset(at, 0, 2, -2), yaw: Math.PI / 8 });
   p.rotor(offset(at, 0, 7.4, -2), 6.5);
   hull.box([3, 1, 5], SHADE.edge, { at: offset(at, s * 4.5, 3.4, -9) });
-  icicles(hull, [offset(at, 3, -3, -6), offset(at, -3, -3, -3)]);
+  icicles(p.flesh, [offset(at, 3, -3, -6), offset(at, -3, -3, -3)]);
   // The right pod (screen right) is on the model's -X side.
   const guns = s < 0 ? OWL_POD_GUNS : mirror(OWL_POD_GUNS);
   for (const tip of guns.map((m) => bossPoint(...m))) {
@@ -75,16 +78,28 @@ export function eye(p: EnemyParts, at: Vec3): void {
   if (!lens) return;
   const [x, y, z] = lens;
   const forward = { pitch: QUARTER };
-  hull.cylinder(9.5, 9, 10, H.panel, { at: [x, y, z - 10.5], ...forward }, 9);
+  // P16-R05: a real eye, its lid of flesh, a bone brow over it.
+  p.flesh.cylinder(9.5, 9, 10, ICE_FLESH.sinew, { at: [x, y, z - 10.5], ...forward }, 9);
   neon.ring(9.7, 0.8, 10, OWL_WHITE, { at: [x, y, z - 2.3], ...forward });
   neon.cylinder(7.5, 0.8, 10, OWL_WHITE, { at: [x, y, z - 1.5], ...forward });
   hull.cylinder(5.4, 0.3, 10, H.dark, { at: [x, y, z - 0.7], ...forward });
   charge.cylinder(3.6, 0.7, 8, WHITE, { at: [x, y, z - 0.7], ...forward });
   muzzle(lens, 'laser');
-  hull.box([22, 2.2, 7], H.base, { at: offset(at, 0, 14.5, 1), pitch: -0.12 }, FROST);
-  icicles(hull, [offset(at, 6, 14.6, 4), offset(at, -1, 14.6, 4.3), offset(at, -7, 14.6, 4)]);
+  p.flesh.box(
+    [22, 2.2, 7],
+    ICE_FLESH.bone,
+    { at: offset(at, 0, 14.5, 1), pitch: -0.12 },
+    ICE_FLESH.rime,
+  );
+  icicles(p.flesh, [offset(at, 6, 14.6, 4), offset(at, -1, 14.6, 4.3), offset(at, -7, 14.6, 4)]);
   for (const s of SIDES) {
-    hull.box([1.4, 7, 8], H.base, { at: offset(at, s * 10.4, 2.5, 0) }, SHADE.edge);
+    p.flesh.box(
+      [1.4, 7, 8],
+      ICE_FLESH.purple,
+      { at: offset(at, s * 10.4, 2.5, 0) },
+      ICE_FLESH.rime,
+    );
+    crystals(p.flesh, offset(at, s * 9, 13, -2), 3, 2);
     neon.box([0.5, 0.5, 6], OWL_WHITE, { at: offset(at, s * 11.2, 8.6, 0) });
   }
 }

@@ -7,6 +7,7 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { around, decal, POD_SECTION, radial } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-limbs';
 import { DECK_TOP, EMERALD, JUNGLE, MAGENTA, strut } from './verdant-crown-garden';
+import { F } from './jungle-flesh';
 
 // P09-R09, 3-5: the Verdant Crown's destroyable parts (thorn cannons, seed batteries, root
 // generators), each drawn around its centre `at`, each turret around its pivot. Model space:
@@ -102,8 +103,10 @@ export function thornCannon(p: EnemyParts, [x, , z]: Vec3): void {
 }
 
 /** The turntable a thorn cannon turns on: a low drum on the outrigger, ringed with magenta. */
-export function thornMount({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
-  hull.cylinder(10, OUTRIGGER_TOP, 8, H.dark, { at: [x, 0, z] });
+export function thornMount({ hull, flesh, neon }: EnemyParts, [x, , z]: Vec3): void {
+  // P16-R06: a swollen knuckle of flesh at the limb's end, a metal turntable grafted on top.
+  flesh.cylinder(10, OUTRIGGER_TOP - 1, 7, F.crimson, { at: [x, 0, z] }, 8.4);
+  hull.cylinder(8.8, 1, 8, H.dark, { at: [x, OUTRIGGER_TOP - 1, z] });
   neon.ring(10.3, 0.6, 8, MAGENTA, { at: [x, OUTRIGGER_TOP - 0.4, z] });
 }
 
@@ -118,12 +121,16 @@ const HATCH = [7, 5.6] as const;
  * A seed battery (P09-R09): a mossy armoured seed pod on the deck, six hatches lit as its
  * missiles load, magenta strips down its sides, leaves sprouting at its ends.
  */
-export function seedBattery({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]: Vec3): void {
+export function seedBattery(
+  { hull, flesh, neon, charge, muzzle }: EnemyParts,
+  [x, , z]: Vec3,
+): void {
   const cells = (x < 0 ? VERDANT_SEEDS : mirror(VERDANT_SEEDS)).map((m) => bossPoint(...m));
   const height = cells[0]?.[1] ?? 0;
   const top = height - 0.08;
   const pod = SEED_POD.map(([px, pz]): OutlinePoint => [x + px, z + pz]);
-  hull.bevelSlab(pod, [DECK_TOP - 1, DECK_TOP + 2, top], [0, 3], JUNGLE.moss, {}, H.base);
+  // P16-R06: a living seed pod of purple flesh, its hatches grafted metal.
+  flesh.bevelSlab(pod, [DECK_TOP - 1, DECK_TOP + 2, top], [0, 3], F.purple, {}, JUNGLE.moss);
   for (const [cx, , cz] of cells) {
     decal(hull, rect(...HATCH, [cx, cz]), top + 0.04, H.dark);
     decal(charge, rect(HATCH[0] - 2, HATCH[1] - 2, [cx, cz]), height, WHITE);
@@ -144,7 +151,7 @@ const ROOT_REACH = 12;
  * A root generator (P09-R09; no weapon, it shields the core): a glowing magenta seed on a stone
  * pedestal, gnarled roots arching from it into the deck, an emerald ring round its foot.
  */
-export function rootGenerator({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
+export function rootGenerator({ hull, flesh, neon }: EnemyParts, [x, , z]: Vec3): void {
   hull.lathe(
     [
       [8, 0],
@@ -170,8 +177,9 @@ export function rootGenerator({ hull, neon }: EnemyParts, [x, , z]: Vec3): void 
     const top: Vec3 = [x + Math.sin(a) * 3, DECK_TOP + 8 + (i % 2), z + Math.cos(a) * 3];
     const knee: Vec3 = [x + Math.sin(a) * 8, DECK_TOP + 6.5, z + Math.cos(a) * 8];
     const foot: Vec3 = [x + Math.sin(a) * ROOT_REACH, DECK_TOP, z + Math.cos(a) * ROOT_REACH];
-    strut(hull, [top, knee], [1.7, 1.5], JUNGLE.bark, 5);
-    strut(hull, [knee, foot], [1.5, 1.1], i % 2 === 0 ? JUNGLE.moss : JUNGLE.bark, 5);
+    // P16-R06: roots of living sinew arching from the seed into the beast's flesh.
+    strut(flesh, [top, knee], [1.7, 1.5], F.sinew, 5);
+    strut(flesh, [knee, foot], [1.5, 1.1], i % 2 === 0 ? JUNGLE.moss : F.crimson, 5);
   });
   neon.ring(ROOT_REACH + 0.6, 0.6, 10, EMERALD, { at: [x, DECK_TOP + 0.1, z] });
 }

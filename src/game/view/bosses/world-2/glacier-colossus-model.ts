@@ -10,7 +10,10 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { mirrored } from '../final-boss-shapes';
-import { hazard, lamps, mast, plate, seam, vent } from '../mini-boss-greebles';
+import { lamps, mast, plate, rect, vent } from '../mini-boss-greebles';
+import { ribs } from '../../../../render/geometry/organic';
+import { eyes, reactorSac } from '../../enemies/organic-parts';
+import { crystals, glowVein, ICE_FLESH, shell, spineRow } from './w2-organic';
 import { H, neonBand, offset, scaled, SHADE, WHITE } from '../mini-boss-shapes';
 import { barrelTo, FROST, icicles, PACKED, snowCap } from './avalanche-frost';
 import {
@@ -138,19 +141,23 @@ const PATCH = [
 
 /** The hull, its neon band, the upper deck and the bridge tower. */
 function drawHull(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(HULL, HULL_Y, [3, 2.5], H.base, {}, H.panel);
+  const { hull, flesh, neon } = p;
+  // P16-R06: a glacier titan, a vast body of cold flesh under a ridged shell, its brain hump
+  // where the bridge tower was, eyes round it.
+  flesh.bevelSlab(HULL, HULL_Y, [3, 2.5], ICE_FLESH.sinew, {}, ICE_FLESH.teal);
   neonBand(neon, HULL, [-3.6, -1.2], [0.985, 1.015], N);
-  hull.bevelSlab(UPPER, UPPER_Y, [0, 1.6], H.panel, {}, H.base);
-  hull.bevelSlab(TOWER, TOWER_Y, [0, 1.4], H.base, {}, H.panel);
-  // The bridge's windows: a dark band round the tower, a red-orange light above it.
-  neonBand(hull, TOWER, [22, 24.5], [1.02, 1.02], H.dark);
+  flesh.bevelSlab(UPPER, UPPER_Y, [0, 1.6], ICE_FLESH.teal, {}, ICE_FLESH.purple);
+  shell(flesh, { tail: -58, nose: 6, segments: 5, width: 26, bottom: UPPER_Y[2] - 1, top: 24 });
+  flesh.bevelSlab(TOWER, TOWER_Y, [0, 4], ICE_FLESH.purple, {}, ICE_FLESH.rime);
+  neonBand(flesh, TOWER, [22, 24.5], [1.02, 1.02], ICE_FLESH.seam);
+  eyes(p, [0, 23, 28.4], { count: 4, size: 1.2, spacing: 5 }, N);
   neonBand(neon, TOWER, [25, 25.8], [1.02, 1.02], N);
   for (const tip of COLOSSUS_CORE_GUNS) barrelTo(p, tip, [2, 8]);
   for (const s of SIDES) {
     // The pylons out to the cutters (they stay when a cutter is gone).
-    hull.box([16, 5, 12], H.panel, { at: [s * 64, 1, 10] }, H.base);
-    p.reactor([s * 16, 2, -78], 5);
+    flesh.box([16, 5, 12], ICE_FLESH.sinew, { at: [s * 64, 1, 10] }, ICE_FLESH.rime);
+    hull.box([6, 6, 13], H.panel, { at: [s * 60, 1, 10] }, H.base);
+    reactorSac(p, [s * 16, 2, -78], 5, N, { flesh: ICE_FLESH.purple });
     p.reactor([s * 38, 2, -70], 4.5);
   }
 }
@@ -161,25 +168,28 @@ function drawStack(p: EnemyParts): void {
   if (!ring) return;
   const top = bossPoint(...ring);
   const foot = offset(top, 0, -16, 0);
-  p.hull.cylinder(9, 13, 8, H.panel, { at: foot, yaw: Math.PI / 8 }, 7.5);
+  // A spiracle of flesh breathing heat, a metal ring grafted round its mouth.
+  p.flesh.cylinder(9, 13, 7, ICE_FLESH.crimson, { at: foot, yaw: Math.PI / 8 }, 7);
+  p.hull.ring(7.9, 2, 8, H.panel, { at: offset(foot, 0, 12, 0), yaw: Math.PI / 8 });
   p.neon.ring(7.8, 1.2, 8, N, { at: offset(foot, 0, 10.5, 0), yaw: Math.PI / 8 });
   p.charge.cylinder(5.5, 3, 8, WHITE, { at: offset(top, 0, -3, 0) }, 2.5);
   p.muzzle(top, 'ring');
   for (const s of SIDES) {
-    p.hull.cylinder(3, 9, 6, H.dark, { at: offset(foot, s * 12, 0, -4) }, 2.6);
+    p.flesh.cylinder(3, 9, 5, ICE_FLESH.sinew, { at: offset(foot, s * 12, 0, -4) }, 2.4);
     p.hull.cylinder(2.7, 1, 6, SHADE.soot, { at: offset(foot, s * 12, 9, -4) });
   }
 }
 
 /** The heat vents along the deck: dark grilles glowing red-orange between their slats. */
-function drawVents({ hull, neon }: EnemyParts): void {
+function drawVents(p: EnemyParts): void {
+  const { hull, neon } = p;
   for (const s of SIDES) {
-    // Seams between the deck's armour plates, out from the upper deck to the rim.
+    // Veins out from the shell to the rim; the vents are gill slits glowing between metal grilles.
     for (const [z0, z1] of [
       [20, 24],
       [-48, -54],
     ] as const) {
-      seam(hull, [s * 32, z0], [s * 58, z1], [HULL_Y[2] - 0.2, 1, 0.6], H.dark);
+      glowVein(p, [s * 30, HULL_Y[2] + 2, z0], [s * 58, HULL_Y[2], z1], 1.3, N);
     }
     for (const z of VENTS_Z) {
       const at: Vec3 = [s * VENT_X, HULL_Y[2] - 0.2, z];
@@ -190,7 +200,7 @@ function drawVents({ hull, neon }: EnemyParts): void {
 }
 
 /** The frost: snow caps on the decks and the tower's roof, icicles under the hull's rim. */
-function drawFrost({ hull }: EnemyParts): void {
+function drawFrost({ flesh: hull }: EnemyParts): void {
   for (const [outline, y, color] of SNOW) snowCap(hull, outline, y, 1.2, color);
   const rim = scaled(HULL, 0.95);
   icicles(
@@ -202,16 +212,22 @@ function drawFrost({ hull }: EnemyParts): void {
 
 /** Ore bins heaped with rock and snow on the stern, and wear: hazard paint, a patch, masts. */
 function drawWear(p: EnemyParts): void {
-  const { hull } = p;
+  const { hull, flesh } = p;
   for (const s of SIDES) {
-    hull.box([16, 5, 12], H.dark, { at: [s * 38, HULL_Y[2], -57] }, H.panel);
-    hull.box([12, 3, 8], s > 0 ? FROST : PACKED, { at: [s * 38, HULL_Y[2] + 5, -57], yaw: 0.3 });
-    hull.box([7, 3, 6], PACKED, { at: [s * 35, HULL_Y[2] + 6.5, -55], yaw: 1.1 });
-    seam(hull, [s * 30, 26], [s * 30, -28], [UPPER_Y[2] - 0.2, 0.8, 0.6], SHADE.edge);
+    // Glacier ice grown through the flesh on the stern, crystals over the shell.
+    crystals(flesh, [s * 38, HULL_Y[2], -57], 9, 4);
+    crystals(flesh, [s * 20, UPPER_Y[2] + 4, -20], 5);
+    ribs(
+      flesh,
+      [s * 46],
+      { halfWidth: 4, y: HULL_Y[2], height: 3, thickness: 0.8 },
+      ICE_FLESH.bone,
+    );
     lamps(p.neon, [[s * 60, HULL_Y[2], -8]], 1.8, N);
   }
-  hazard(hull, [0, HULL_Y[2] - 0.2, 33], [18, 4], 6);
+  plate(hull, rect(18, 8), [HULL_Y[2], 1], H.panel, { at: [0, 0, 33] });
   plate(hull, PATCH, [UPPER_Y[2], 0.6], SHADE.patch);
+  spineRow(flesh, [0, 24, -6], [0, 22, -50], 5, 5);
   mast(p, [8, TOWER_Y[2], 12], 8, N);
   mast(p, [-24, UPPER_Y[2], -54], 6, N);
 }
@@ -220,6 +236,8 @@ function drawWear(p: EnemyParts): void {
  * P08-R10: the Glacier Colossus, a giant mining ship 5.5 L across, red-orange neon, glowing heat
  * vents along its deck, crusted with snow and hung with icicles; its cutters out on its beam,
  * its ore cannons and heat sink at its bow, its missile pod on its stern.
+ * P16-R06: now a living glacier titan, a vast shelled body of cold flesh with glacier ice grown
+ * through it, gills glowing down its back; its parts armoured organs and fleshy gun limbs.
  */
 export function buildGlacierColossus(scene: Scene): EnemyModel {
   return buildBossModel(GLACIER_COLOSSUS, scene, N, {

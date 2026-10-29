@@ -1584,3 +1584,27 @@
 - **Phase:** 15 (validation, reviewer's choice: retune the levels, keep the tests)
 - **Decision:** On the grid, big footprints and the lots that fill the tiles they leave made the P08-R03, P09-R03 and P10-R03 growth checks fail. Retuned: 2-4 warehouses building density 1 → 0.7; 3-2 warehouse docks 1 → 0.85; 3-3 canal park and 3-4 town park 0.8 → 1; 4-5 downtown and city heart 1 → 0.7 (fewer low lots among the skyscrapers). A building that cannot face a road now turns only by half turns from the way its footprint was fitted (`tile-packing.ts`), so it never stands across its tiles.
 - **Status:** Accepted
+
+### D-165 — Cyber-Organic look as two body materials and a shape kit
+- **Date:** 2026-10-29
+- **Phase:** 16
+- **Decision:** The living body is a second material, `enemy-flesh` (a waxy PBR, metallic 0.25, roughness 0.5, tinted towards the neon less than the metal is), next to the dark metal `enemy-hull`, which now only draws what is grafted on. `EnemyParts` gains `flesh`, `vein` (pulsing lights) and `flap` (fluttering wings). The shapes come from a game-agnostic kit, `src/render/geometry/organic.ts` (segmented bodies, carapaces, tendrils, ribs, organs, membrane wings, veins, riveted plates, grown outlines); `organic-parts.ts` in `src/game` adds the reactor sac and eyes. Boss hit flashes, the close-up wireframe and the rims cover both materials.
+- **Status:** Accepted
+
+### D-166 — Living motion on a body node, shared by a creature
+- **Date:** 2026-10-29
+- **Phase:** 16
+- **Decision:** Each model's hull, flesh, lights and wings sit on a `<name>-body` node that breathes (scale pulse); its muzzles and reactor flames stay on the root, so shots leave from the same points and hitboxes (sim only) are untouched. The veins get a material per model whose brightness pulses, as the charge lights already do. Time is the `dt` the frame passes to `sync`, so a paused game holds still. A boss's core, parts, limbs, turrets (and a jointed enemy's pieces) share one `Breath` (period and phase), so the creature breathes as one. The debug pages turn the motion off through an optional `EnemyBindings.setIdleMotion`.
+- **Status:** Accepted
+
+### D-167 — Boss wounds replace the burnt stumps
+- **Date:** 2026-10-29
+- **Phase:** 16
+- **Decision:** A destroyed part's stump (`boss-damage.ts`) becomes a wound: a torn flesh rim, a dimmed organ, three bone shards and three plates of torn metal, with the same sparks. The damage pieces (flash, smoke, wound) move out of `boss-model.ts` into `boss-damage.ts`.
+- **Status:** Accepted
+
+### D-168 — Model rework split by scope
+- **Date:** 2026-10-29
+- **Phase:** 16
+- **Decision:** The 61 models were reworked in six independent scopes (basic enemies, veterans and elites, then one per world's bosses), each on its own files, the shared boss helpers (`mini-boss-*`, `final-boss-*`, `boss-limbs`, `overlord-city`) left as they were. Each scope keeps its part ids, joints, turrets and muzzles as they were, so the sim and its tests are untouched.
+- **Status:** Accepted

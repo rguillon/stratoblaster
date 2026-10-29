@@ -13,8 +13,10 @@ import {
   SIDES,
 } from '../../enemies/enemy-shapes';
 import { buildBossModel } from '../boss-model';
-import { plate, seam, vent } from '../mini-boss-greebles';
-import { ram } from '../mini-boss-mechanism';
+import { plate } from '../mini-boss-greebles';
+import { ribs } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { crystals, gland, glowVein, ICE_FLESH, sinew, spineRow } from './w2-organic';
 import { H, offset, scaled, SHADE, socket } from '../mini-boss-shapes';
 import { icicles, RIME, snowCap, spread } from './fjord-lynx-frost';
 import {
@@ -103,9 +105,24 @@ function tip(length: number, { at = [0, 0, 0], pitch = 0, roll = 0 }: Placement)
 }
 
 /** The hull, the back and head, the haunches and the forelegs out to the paws. */
-function drawBody({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(BODY, HULL, [2, 2.5], H.base, {}, H.panel);
-  hull.loft(FIGHTER_SECTION, BACK, H.base, {}, { paint: canopyPaint([3, 4], H.dark) });
+function drawBody(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R05: a crouched, muscled cat of cold flesh; metal only on its haunches' armour.
+  flesh.bevelSlab(BODY, HULL, [2, 2.5], ICE_FLESH.teal, {}, ICE_FLESH.rime);
+  flesh.loft(
+    FIGHTER_SECTION,
+    BACK,
+    ICE_FLESH.purple,
+    {},
+    { paint: canopyPaint([3, 4], ICE_FLESH.seam) },
+  );
+  ribs(
+    flesh,
+    [-30, -22, -14, -6],
+    { halfWidth: 10, y: 6, height: 6, thickness: 0.8 },
+    ICE_FLESH.bone,
+  );
+  spineRow(flesh, [0, 12, -2], [0, 10, -34], 5, 3);
   for (const side of [1, 6]) {
     const stripe = sideStripe(FIGHTER_SECTION, side, [0.3, 0.75]);
     neon.loft(stripe, BACK.slice(1, 5), CYAN, {}, { open: true });
@@ -116,18 +133,20 @@ function drawBody({ hull, neon }: EnemyParts): void {
     hull.bevelSlab(haunch, [4, 5, 8], [0.5, 1.4], H.panel, {}, RIME);
     snowCap(hull, scaled(haunch, 0.7, s * 3.5, -8.5), 8);
     const leg = FORELEG.map(([x, z]): [number, number] => [s * x, z]);
-    hull.bevelSlab(leg, [-2, 0, 3.5], [0.6, 1], H.panel, {}, RIME);
-    ram(hull, [s * 16, 4, 8], offset(pawCentre(s), -s * 7, 2.5, -8), 1.1);
+    flesh.bevelSlab(leg, [-2, 0, 3.5], [0.6, 1], ICE_FLESH.sinew, {}, ICE_FLESH.rime);
+    sinew(flesh, [s * 16, 4, 8], offset(pawCentre(s), -s * 7, 2.5, -8), 1.6);
+    glowVein(p, [s * 8, 11, -4], [s * 15, 6, 20], 0.8, CYAN);
     neon.box([0.8, 0.5, 18], CYAN, { at: [s * 20.6, 0.4, -6], yaw: s * -0.05 });
   }
-  hull.loft(POD_SECTION, TAIL, H.panel);
+  flesh.loft(POD_SECTION, TAIL, ICE_FLESH.sinew);
+  crystals(flesh, [0, 8, -50], 3, 3);
 }
 
 /** The tufted antennas: an ear on each side of the head, a whip with a light on its tip. */
-function drawEars({ hull, neon }: EnemyParts): void {
+function drawEars({ hull, flesh, neon }: EnemyParts): void {
   for (const s of SIDES) {
     const ear = { at: [s * 6, 10, 14] as Vec3, pitch: -0.25, roll: -s * 0.35 };
-    hull.cylinder(3.4, 8, 3, H.panel, { ...ear, yaw: s * 0.5 }, 0);
+    flesh.cylinder(3.4, 8, 3, ICE_FLESH.sinew, { ...ear, yaw: s * 0.5 }, 0);
     const top = tip(7, ear);
     const whip = { at: top, pitch: -0.55, roll: -s * 0.5 };
     hull.cylinder(0.4, 9, 4, H.dark, whip, 0.25);
@@ -147,27 +166,29 @@ function drawEars({ hull, neon }: EnemyParts): void {
 }
 
 /** Deck details: vents, seams, the sponson for the radar mast, frost and icicles, the eyes. */
-function drawDeck({ hull, neon }: EnemyParts): void {
+function drawDeck(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
   const mast = FJORD_LYNX.stats.parts[2];
   const at: Vec3 = [-(mast?.x ?? -25), 0, -(mast?.y ?? 22)];
   const sponson = SPONSON.map(([x, z]): [number, number] => [x + at[0], z + at[2]]);
-  hull.bevelSlab(sponson, [-2, 0, 2.5], [0.6, 1], H.base, {}, H.panel);
+  flesh.bevelSlab(sponson, [-2, 0, 2.5], [0.6, 1], ICE_FLESH.purple, {}, ICE_FLESH.rime);
   socket(hull, offset(at, 0, 2.5, 0), 6, 0.6);
   for (const s of SIDES) {
-    vent(hull, [s * 13, HULL[2] - 0.1, 20], [4, 8], 3, s * 0.3);
-    seam(hull, [s * 6, 34], [s * 13, 26], [HULL[2], 0.6, 0.5], H.dark);
-    icicles(hull, spread([s * 20.5, -0.5, 8], [s * 19, -0.5, -22], 5), 4);
-    icicles(hull, spread([s * 13, -0.5, -38], [s * 5, -0.5, -45], 3), 3);
+    gland(p, [s * 13, HULL[2] + 0.3, 20], 1.2, CYAN);
+    crystals(flesh, [s * 14, HULL[2], -26], 3);
+    icicles(flesh, spread([s * 20.5, -0.5, 8], [s * 19, -0.5, -22], 5), 4);
+    icicles(flesh, spread([s * 13, -0.5, -38], [s * 5, -0.5, -45], 3), 3);
   }
   plate(hull, scaled(SPONSON, 0.5, at[0] + 1, at[2] - 1), [2.5, 0.4], SHADE.patch);
-  snowCap(hull, REAR_SNOW, HULL[2]);
+  snowCap(flesh, REAR_SNOW, HULL[2]);
   for (const eye of angryEyes([0, 41.5], 2.4, [5, 1.2], 0.35)) decal(neon, eye, 5.05, CYAN);
 }
 
 /**
  * P08-R10: the Fjord Lynx, a fast, low gunship crouched like a lynx: two forward paws with
  * cannons, tufted antennas over its head, a radar mast on its left flank, white and cyan neon,
- * snow on its back.
+ * snow on its back. P16-R05: now a living cyber-lynx of cold flesh, ribs and ice spines down
+ * its back, sinews to its paws, metal plates on its haunches and grafted guns.
  */
 export function buildFjordLynx(scene: Scene): EnemyModel {
   return buildBossModel(FJORD_LYNX, scene, CYAN, {
@@ -175,7 +196,7 @@ export function buildFjordLynx(scene: Scene): EnemyModel {
       drawBody(p);
       drawEars(p);
       drawDeck(p);
-      for (const s of SIDES) p.reactor([s * 7, 2.5, -46], 3);
+      for (const s of SIDES) reactorSac(p, [s * 7, 2.5, -46], 3, CYAN, { flesh: ICE_FLESH.purple });
     },
     parts: { 'paw-left': paw, 'paw-right': paw, 'radar-mast': radarMast },
     turrets: { core: chinTurret, 'paw-left': pawTurret, 'paw-right': pawTurret },

@@ -25,6 +25,7 @@ import {
   OBSIDIAN,
   plate,
 } from './obsidian-golem-parts';
+import { backRibs, fleshShell, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-3: the Obsidian Golem. Logical pixels, nose +Z, Y up (towards the camera). A massive
 // flying fortress shaped like a hunched giant: a broad armoured torso of black obsidian plates
@@ -32,6 +33,8 @@ import {
 // back, heavy pauldrons, two arms bending at the shoulder and elbow down to huge fists (limbs on
 // joints), the shoulder cannons behind the pauldrons, the armour plate and the chest emitter
 // on its front.
+// P16-R06: a living hunched giant, its flesh torso and hump ribbed in bone and veined with magma,
+// obsidian growths for pauldrons, knuckles and chest plate, a metal helm and guns grafted on.
 type Vec3 = [number, number, number];
 
 /** The torso seen from above (right half, chest to back). */
@@ -78,9 +81,23 @@ const HELM: readonly LoftStation[] = [
 ];
 
 /** The torso: a slab of dark metal, the obsidian hump on it, magma seams across its back. */
-function drawTorso({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(TORSO, [-4, 2, 16], [4, 3], H.base, {}, H.panel);
-  hull.loft(HULL_SECTION, HUMP, OBSIDIAN);
+function drawTorso(p: EnemyParts): void {
+  const { hull, neon } = p;
+  p.flesh.bevelSlab(TORSO, [-4, 2, 16], [4, 3], SKIN.base, {}, SKIN.panel);
+  fleshShell(p.flesh, HULL_SECTION, HUMP, [SKIN.dark, SKIN.base]);
+  backRibs(p, [-22, -10], { halfWidth: 26, y: 12, height: 15, thickness: 1.2 });
+  for (const s of SIDES) {
+    magmaVein(
+      p,
+      [
+        [s * 30, 16.2, 16],
+        [s * 34, 16.2, -2],
+        [s * 28, 16.2, -24],
+      ],
+      1.4,
+    );
+    glands(p, [[s * 32, 15.8, -30]], 2.4, GOLEM_NEON);
+  }
   for (const path of SEAMS) crack(neon, path, 28.2);
   for (const s of SIDES) {
     neon.box([0.7, 0.6, 50], GOLEM_NEON, { at: [s * 39.6, 10, -6], yaw: s * 0.05 });
@@ -146,8 +163,16 @@ function drawStack({ hull, neon, charge, muzzle }: EnemyParts): void {
 
 /** Its reactors under the back, and the sockets where the plate and the emitter are bolted. */
 function drawUnderside(p: EnemyParts): void {
-  for (const s of SIDES) p.reactor([s * 16, 4, -36], 4.4);
-  p.reactor([0, 4, -36], 3.6);
+  reactorSacs(
+    p,
+    [
+      [16, 4, -36],
+      [-16, 4, -36],
+    ],
+    4.4,
+    MAGMA,
+  );
+  reactorSacs(p, [[0, 4, -36]], 3.6, MAGMA);
   socket(p.hull, [0, 0, 34], 10, 3);
   p.neon.box([30, 0.6, 0.8], MAGMA, { at: [0, 2.4, 29.6] });
 }

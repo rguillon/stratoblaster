@@ -23,7 +23,7 @@ import {
   type BossViewerState,
 } from './boss-viewer-stage';
 import { EnemyCloseUp } from './enemy-close-up';
-import { shortcut, SWITCH_KEYS } from './enemy-viewer-keys';
+import { listenToKeys, shortcut, SWITCH_KEYS } from './enemy-viewer-keys';
 import type { EnemyViewerOptions } from './start-enemy-viewer';
 import { RateMeter } from './rate-meter';
 
@@ -46,7 +46,7 @@ export interface RunningBossViewer {
 }
 
 const HELP =
-  'Move: arrows / WASD · N / B: next / previous boss · K: destroy a part · M: model · V: wireframe (← / →: switch boss) · X: weapon · 1-5: level · F: fire · P: pause';
+  'Move: arrows / WASD · N / B: next / previous boss · K: destroy a part · M: model · V: wireframe (← / →: switch boss) · X: weapon · 1-5: level · F: fire · P: pause · L: motion · H: hitbox';
 
 function weaponAt(game: GameDefinition, index: number): WeaponDefinition {
   const weapon = game.playerWeapons[index];
@@ -94,7 +94,16 @@ class BossViewer {
       groups: bossGroups(game),
       weapons: game.playerWeapons.map((w) => w.name),
       levelCounts: game.playerWeapons.map((w) => w.levels.length),
-      initial: { kind: 0, view: 'behaviour', weapon: 0, level: 3, fire: true, paused: false },
+      initial: {
+        kind: 0,
+        view: 'behaviour',
+        weapon: 0,
+        level: 3,
+        fire: true,
+        paused: false,
+        living: true,
+        hitbox: false,
+      },
       help: HELP,
       onChange: (selection) => {
         this.#apply(selection);
@@ -124,6 +133,8 @@ class BossViewer {
   #apply(s: EnemyViewerSelection): void {
     const modelView = s.view !== 'behaviour';
     this.closeUp.wireframe = s.view === 'wireframe';
+    this.closeUp.hitbox = s.hitbox;
+    this.game.view.enemies.setIdleMotion?.(s.living);
     if (s.kind !== this.#kind || modelView !== this.#modelView) {
       const kind = this.#kindAt(s.kind);
       if (levelOfBoss(this.game, kind) !== this.#stage.level) {
@@ -294,16 +305,7 @@ export function startBossViewer(
   options: BossViewerOptions,
 ): RunningBossViewer {
   const viewer = new BossViewer(engine, game, options);
-  const onKey = (event: Event): void => {
-    const e = event as KeyboardEvent;
-    viewer.key(e.key, e.code, e.type === 'keydown');
-  };
-  const onBlur = (): void => {
-    viewer.held.clear();
-  };
-  options.keyboardTarget?.addEventListener('keydown', onKey);
-  options.keyboardTarget?.addEventListener('keyup', onKey);
-  options.keyboardTarget?.addEventListener('blur', onBlur);
+  const stopListening = listenToKeys(options.keyboardTarget, viewer);
   const frameSeconds = options.frameSeconds ?? (() => engine.getDeltaTime() / 1000);
   if (options.renderLoop) {
     engine.runRenderLoop(() => {
@@ -326,9 +328,7 @@ export function startBossViewer(
     },
     dispose: () => {
       engine.stopRenderLoop();
-      for (const type of ['keydown', 'keyup'])
-        options.keyboardTarget?.removeEventListener(type, onKey);
-      options.keyboardTarget?.removeEventListener('blur', onBlur);
+      stopListening();
       viewer.dispose();
     },
   };

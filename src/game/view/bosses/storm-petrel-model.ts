@@ -1,51 +1,38 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { OutlinePoint } from '../../../render/geometry/outline';
 import type { EnemyModel } from '../../../render/game-view';
+import { segmentedBody } from '../../../render/geometry/organic';
 import { STORM_PETREL } from '../../config/bosses/final-bosses';
 import { BOSS_LOOK } from '../../config/boss-look';
-import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
-import { flipX, FIGHTER_SECTION, POD_SECTION, sideStripe, SIDES } from '../enemies/enemy-shapes';
+import { flipX, SIDES } from '../enemies/enemy-shapes';
+import { eyes, reactorSac } from '../enemies/organic-parts';
 import { buildBossModel } from './boss-model';
-import { barrels, edgeStrips, missileTips, shift, sided, turret } from './final-boss-shapes';
+import { edgeStrips, shift, sided, turret } from './final-boss-shapes';
+import { drawPlate, drawPod, drawRack } from './final-boss-petrel';
 import {
-  petrelBack,
-  petrelHullPaint,
-  petrelNacelle,
-  petrelTail,
-  petrelWing,
-  plateDetails,
-  podDetails,
-  rackDetails,
-} from './final-boss-petrel';
+  barbs,
+  F,
+  gland,
+  graft,
+  hide,
+  M,
+  polygon,
+  ribCage,
+  spine,
+  tentacle,
+  veinLine,
+} from './world-1-organic-kit';
 
-// P07-R05: the Storm Petrel, the final boss of 1-1. Logical pixels, nose +Z, Y up (towards the
-// camera). A flying-boat bomber: a long hull, a high wing with an engine nacelle on each side,
-// magenta neon along the wing edges; its parts are fitted onto the wing and the hull.
-const H = ENEMY_LOOK.hull;
+// P07-R05, P16-R06: the Storm Petrel, the final boss of 1-1. Logical pixels, nose +Z, Y up
+// (towards the camera). A colossal sea-bird creature: a long shelled body, broad membrane wings
+// on bone struts with an engine sac on each, magenta veins along the wing edges; its parts are
+// growths on its wings, tail and breast.
 const N = BOSS_LOOK.neon['storm-petrel'] ?? [1, 0.1, 0.85];
-const QUARTER = Math.PI / 2;
 
 type Vec3 = [number, number, number];
 
-/**
- * The flying-boat hull (loft stations, tail to nose): a deep belly, a rounded back. Stations
- * on the straight lines between others only split its paint into plates ({@link petrelHullPaint}).
- */
-const HULL = [
-  [-64, 3, 3, 7],
-  [-50, 7, 0, 9.5],
-  [-40, 8.82, -1.36, 10.86],
-  [-28, 11, -3, 12.5],
-  [-14, 12.5, -3.5, 13.75],
-  [-8, 13.14, -3.71, 14.29],
-  [0, 14, -4, 15],
-  [22, 13, -4, 14],
-  [38, 10, -3, 11],
-  [50, 5, -1.5, 6],
-  [56, 0, 1.5, 1.5],
-] as const;
-/** The right wing, root inside the hull, its tip squared off; the gun pod sits near its tip. */
+/** The right wing, root inside the body, its tip squared off; the gun pod sits near its tip. */
 const WING = [
   [8, 20],
   [36, 12],
@@ -64,10 +51,20 @@ const WING_LEAD = [
   [77.8, -1],
   [76.8, -7.6],
 ] as const;
-const WING_TRAIL = [
-  [40, -13],
-  [30, -14.8],
-  [14, -19.6],
+/** The bone struts of the right wing, from its root out (x, z of their ends). */
+const STRUTS = [
+  [
+    [10, 16],
+    [74, 2],
+  ],
+  [
+    [10, 4],
+    [70, -8],
+  ],
+  [
+    [10, -8],
+    [46, -11],
+  ],
 ] as const;
 /** The right tailplane and the fin standing at its tip (in its own plane, rolled upright). */
 const TAILPLANE = [
@@ -77,45 +74,34 @@ const TAILPLANE = [
   [24, -64],
   [4, -62],
 ] as const;
-const FIN = [
-  [0, -52],
-  [11, -59],
-  [11, -63],
-  [0, -64],
-] as const;
-/** An engine nacelle on the wing (loft stations, tail to front), around its axis. */
-const NACELLE = [
-  [-19, 3.6, 0, 7],
-  [-8, 5.5, -1, 9],
-  [10, 5, -1, 8.5],
-  [19, 3.4, 0.8, 6.2],
-] as const;
 const NACELLE_X = 24;
-/** A float on each side of the hull, low under the wing root, its nose ahead of the wing. */
-const FLOAT = [
-  [-14, 2, 0, 3],
-  [-4, 4, 0, 5.5],
-  [12, 4, 0, 5.5],
-  [24, 0, 2.5, 2.5],
-] as const;
-/** Dark flaps along the right wing's trailing edge, set into its top. */
-const FLAPS = [
-  [14, -17.6],
-  [30, -12.6],
-  [40, -11.2],
-] as const;
 const WING_Y = [6, 7.5, 9.5] as const;
 
-/** The hull, its neon chines and the barbette on its back, under the cockpit turret. */
+/**
+ * The body (P16-R06): a long shelled body from tail to beak, plated grafts on its back, ribs
+ * across its shoulders, a magenta vein down its spine, eyes over its beak, and the barbette of
+ * the cockpit turret growing out of its back.
+ */
 function drawHull(p: EnemyParts): void {
-  p.hull.loft(FIGHTER_SECTION, HULL, H.base, {}, { paint: petrelHullPaint });
-  for (const side of [1, 6]) {
-    const stripe = sideStripe(FIGHTER_SECTION, side, [0.25, 0.75]);
-    p.neon.loft(stripe, HULL.slice(1, 4), N, {}, { open: true });
-  }
-  petrelBack(p, N);
-  // A barbette rising out of the back, the gun turret on it: the cockpit turret.
-  p.hull.cylinder(8.5, 7.5, 8, H.dark, { at: [0, 7, 5] }, 8);
+  hide(p, {
+    tail: -64,
+    nose: 56,
+    width: 14,
+    bottom: -4,
+    top: 15,
+    segments: 7,
+    shell: [F.purple, F.membrane],
+    belly: F.crimson,
+  });
+  ribCage(p, [-22, -12, 14], { halfWidth: 15, y: 3, height: 12, thickness: 1.1 });
+  spine(p, [0, 15.5, -50], [0, 15.5, -10], { color: N, width: 1.4 });
+  graft(p, polygon(6, 5, [1.2, 1.6]), [13.6, 15], [0, 0, 26]);
+  graft(p, polygon(4, 4, [1.4, 1]), [13.6, 14.8], [0, 0, 38], { color: M.base });
+  eyes(p, [0, 9.5, 46], { count: 2, size: 1.4, spacing: 7 }, N);
+  barbs(p, [0, 14, -32], { count: 3, spacing: 0.1, size: 4, dir: [0, 1, -0.5] });
+  // A barbette of flesh rising out of the back, the gun turret on it: the cockpit turret.
+  p.flesh.cylinder(8.5, 7.5, 7, F.sinew, { at: [0, 7, 5] }, 8);
+  p.neon.box([2, 1.2, 1], N, { at: [0, 4.4, -64.4] });
 }
 
 /** The cockpit turret on its barbette (the core's gun), turning around its pivot `at`. */
@@ -123,34 +109,47 @@ function cockpitTurret(p: EnemyParts, at: Vec3): void {
   turret(p, shift(at, [0, 14.5, 0]), 8.5, [2, N]);
 }
 
-/** Both wings with their neon edges, the engine nacelles and their reactors. */
+/**
+ * Both wings (P16-R06): a membrane on bone struts (big, heavy wings: they stay still), neon along
+ * their leading edges, veins across them, an engine sac on each with its reactor, a float of
+ * flesh under each root.
+ */
 function drawWings(p: EnemyParts): void {
   for (const s of SIDES) {
     const flip = (o: readonly OutlinePoint[]): readonly OutlinePoint[] => sided(o, s);
-    p.hull.bevelSlab(flip(WING), WING_Y, [1.2, 1.8], H.base, {}, H.panel);
+    p.flesh.bevelSlab(flip(WING), WING_Y, [1.2, 1.8], F.membrane, {}, F.purple);
     edgeStrips(p.neon, flip(WING_LEAD), 1.2, [6.9, 8.1], N);
-    edgeStrips(p.neon, flip(WING_TRAIL), 1, [6.9, 8.1], N);
+    for (const [[x0, z0], [x1, z1]] of STRUTS) {
+      tentacle(p, [s * x0, 9, z0], [s * x1, 9, z1], [0, 1.2, 0], [1.8, 0.5], F.bone, 4);
+    }
+    veinLine(p, [s * 12, 9.8, -2], [s * 60, 9.7, -6], [0, 0.6, 2], 1.1, N);
     const nacelle: Vec3 = [s * NACELLE_X, 7, 0];
-    p.hull.loft(POD_SECTION, NACELLE, H.panel, { at: nacelle });
-    // A dark intake on the nacelle's front, a neon ring around it.
-    p.neon.ring(3.6, 0.8, 6, N, { at: shift(nacelle, [0, 3.8, 19.2]), pitch: QUARTER });
-    p.reactor(shift(nacelle, [0, 3.5, -19.2]), 3.2);
-    edgeStrips(p.hull, flip(FLAPS), 3, [9.2, 9.8], H.dark);
-    p.hull.loft(POD_SECTION, FLOAT, H.base, { at: [s * 20, -4, 0] });
-    petrelNacelle(p, nacelle, s);
-    petrelWing(p, s, N);
+    segmentedBody(
+      p.flesh,
+      { tail: -19, nose: 19, segments: 3, width: 5.5, bottom: -1, top: 9 },
+      F.crimson,
+      { at: nacelle },
+    );
+    graft(p, polygon(5, 3.4), [9, 10], shift(nacelle, [0, 0, 12]));
+    p.neon.ring(3.6, 0.8, 6, N, { at: shift(nacelle, [0, 3.8, 19.2]), pitch: Math.PI / 2 });
+    reactorSac(p, shift(nacelle, [0, 3.5, -19.2]), 3.2, N);
+    segmentedBody(
+      p.flesh,
+      { tail: -14, nose: 24, segments: 2, width: 4, bottom: 0, top: 5.5 },
+      F.sinew,
+      { at: [s * 20, -4, 0] },
+    );
+    gland(p, [s * 76.6, 8.6, -3.5], 1.2, N);
   }
 }
 
-/** The tailplanes, their fins and neon tips. */
+/** The tailplanes: membrane on bone, their fins of bone, neon on their leading edges. */
 function drawTail(p: EnemyParts): void {
   for (const s of SIDES) {
     const plane = s > 0 ? TAILPLANE : flipX(TAILPLANE);
-    p.hull.bevelSlab(plane, [7, 8, 9.5], [0.6, 1], H.base, {}, H.panel);
-    p.hull.bevelSlab(FIN, [-0.9, 0, 0.9], [0.2, 0.5], H.panel, {
-      at: [s * 28, 9, 0],
-      roll: QUARTER,
-    });
+    p.flesh.bevelSlab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, {}, F.purple);
+    tentacle(p, [s * 4, 9, -50], [s * 30, 9, -57], [0, 1, 0], [1.4, 0.4], F.bone, 4);
+    tentacle(p, [s * 28, 9, -55], [s * 28, 19, -63], [0, 0, 2], [1.4, 0.2], F.bone, 4);
     edgeStrips(
       p.neon,
       sided(
@@ -164,86 +163,13 @@ function drawTail(p: EnemyParts): void {
       [7.6, 8.6],
       N,
     );
-    petrelTail(p, s);
   }
-}
-
-/** A wing gun pod: an armoured glove over the wing, the pod on it, twin guns at its nose. */
-function drawPod(p: EnemyParts, at: Vec3): void {
-  const glove = [
-    [-13, 15],
-    [13, 15],
-    [14, -10],
-    [10, -14],
-    [-10, -14],
-    [-14, -10],
-  ] as const;
-  p.hull.bevelSlab(glove, [9, 9, 11.5], [0, 1.2], H.dark, { at }, H.base);
-  const pod = shift(at, [0, 10, 0]);
-  const stations = [
-    [-16, 4, 1, 6.5],
-    [-9, 7, 0, 9],
-    [8, 7, 0, 9],
-    [14, 5.5, 1, 7.5],
-  ] as const;
-  p.hull.loft(POD_SECTION, stations, H.panel, { at: pod });
-  for (const side of [1, 3]) {
-    const stripe = sideStripe(POD_SECTION, side, [0.3, 0.7]);
-    p.neon.loft(stripe, stations.slice(1, 3), N, { at: pod }, { open: true });
-  }
-  barrels(p, shift(pod, [0, 4.3, 14]), [2, 5], [1.3, 7]);
-  podDetails(p, at, N);
-}
-
-/** The tail missile rack: an armoured box on the tail, six missile tips standing in it. */
-function drawRack(p: EnemyParts, at: Vec3): void {
-  const box = [
-    [-11, 13],
-    [11, 13],
-    [12, -9],
-    [8, -13],
-    [-8, -13],
-    [-12, -9],
-  ] as const;
-  p.hull.bevelSlab(box, [7, 9, 13], [0.5, 1.4], H.panel, { at }, H.base);
-  missileTips(p, shift(at, [0, 12.6, 0]), [2, 3], [6.2, 1.8]);
-  // A neon lip along its front edge.
-  const [x, , z] = at;
-  edgeStrips(
-    p.neon,
-    [
-      [x - 10, z + 13.6],
-      [x + 10, z + 13.6],
-    ],
-    1,
-    [9.4, 10.6],
-    N,
-  );
-  rackDetails(p, at, N);
-}
-
-/** The belly plate: an armour shell wrapped over the nose, neon slits along its shoulders. */
-function drawPlate(p: EnemyParts, at: Vec3): void {
-  const z = at[2];
-  const shell = [
-    [z - 16, 14.6, -1, 15.9],
-    [z - 2, 12.6, -1, 13.7],
-    [z + 10, 9.6, -0.5, 10.7],
-    [z + 17, 6.3, 0, 7.5],
-  ] as const;
-  const place = { at: [at[0], 0, 0] as Vec3 };
-  p.hull.loft(FIGHTER_SECTION, shell, H.panel, place, { open: true });
-  for (const side of [2, 5]) {
-    const slit = sideStripe(FIGHTER_SECTION, side, [0.35, 0.65], 1.06);
-    p.neon.loft(slit, shell.slice(0, 3), N, place, { open: true });
-  }
-  plateDetails(p, at, N);
 }
 
 /**
- * P07-R05: the Storm Petrel, a seaplane bomber 4.5 L across its wings, magenta neon along the
- * wing edges; a gun pod on each wing, a missile rack on its tail, an armour plate over its nose,
- * and a cockpit turret on the hull (the core).
+ * P07-R05, P16-R06: the Storm Petrel, a colossal sea-bird creature 4.5 L across its wings,
+ * magenta veins along the wing edges; a gun growth on each wing, a missile brood on its tail, a
+ * bony shell over its breast, and a cockpit turret on its back (the core).
  */
 export function buildStormPetrel(scene: Scene): EnemyModel {
   return buildBossModel(STORM_PETREL, scene, N, {

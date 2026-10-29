@@ -3,11 +3,12 @@ import { SCORPION } from '../../config/bosses/mini-bosses';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { flipX } from '../enemies/enemy-shapes';
 import { bossPoint, type LimbDrawing } from './boss-limbs';
-import { cog, GEAR, glowLine, ram } from './mini-boss-mechanism';
-import { H, offset, QUARTER, scaled, socket, WHITE } from './mini-boss-shapes';
+import { organ } from '../../../render/geometry/organic';
+import { offset, QUARTER, scaled, socket, WHITE } from './mini-boss-shapes';
+import { F, graft, M, sac, tentacle, veinLine } from './world-1-organic-kit';
 import { YELLOW } from './scorpion-look';
 
-// P07-R05, 1-4: the Scorpion's arms and claws, moving on their joints (phase 7 review). Logical
+// P07-R05, P16-R05, 1-4: the Scorpion's arms and claws, moving on their joints (phase 7 review). Logical
 // pixels, nose +Z, Y up (towards the camera).
 type Vec3 = [number, number, number];
 
@@ -91,26 +92,36 @@ const onSide = (s: number, outline: readonly OutlinePoint[]): readonly OutlinePo
  * machinery seen at the elbow (its cog, a ram and a lit conduit).
  */
 function upperArm(s: number) {
-  return ({ hull, neon }: EnemyParts): void => {
-    hull.bevelSlab(onSide(s, UPPER_ARM), [-1.5, -0.5, 1.5], [0.8, 1.2], GEAR);
-    hull.bevelSlab(onSide(s, ARM_ARMOUR[0]), [-1, 0.5, 6], [0.8, 1.8], H.base, {}, H.panel);
+  return (p: EnemyParts): void => {
+    p.flesh.bevelSlab(onSide(s, UPPER_ARM), [-1.5, -0.5, 1.5], [0.8, 1.2], F.sinew);
+    p.flesh.bevelSlab(onSide(s, ARM_ARMOUR[0]), [-1, 0.5, 5], [0.8, 1.8], F.crimson);
+    graft(p, scaled(onSide(s, ARM_ARMOUR[0]), 0.75, s * 4.75, 3.25), [5, 6], [0, 0, 0], {
+      color: M.base,
+    });
     const [x, z] = ARM_LIGHTS[0];
-    neon.box([1, 0.3, 7], YELLOW, { at: [s * x, 6, z], yaw: s * ARM_YAW });
-    cog(hull, [s * 27.5, 1.2, 18], 3.4, 8, s * 0.3);
-    ram(hull, [s * 19, 2.6, 11.5], [s * 27, 2.8, 15.5], 1.2);
-    glowLine(neon, [s * 25, 1.4, 12], [s * 29.5, 1.4, 24], 1.2, YELLOW);
+    p.neon.box([1, 0.3, 7], YELLOW, { at: [s * x, 6.3, z], yaw: s * ARM_YAW });
+    sac(p, [s * 27.5, 0, 18], 3.6, F.purple, { stretch: 0.45 });
+    tentacle(p, [s * 19, 2.6, 11.5], [s * 27, 2.8, 15.5], [0, 0.8, 0], [1.2, 0.9], F.sinew);
+    veinLine(p, [s * 25, 1.4, 12], [s * 29.5, 1.4, 24], [0, 0.6, 0], 1.2, YELLOW);
   };
 }
 
 /** A forearm (side `s`), on its elbow joint: its bed, armour plate, light, ram and claw socket. */
 function forearm(s: number) {
-  return ({ hull, neon }: EnemyParts): void => {
-    hull.bevelSlab(onSide(s, FOREARM), [-1.5, -0.5, 1.5], [0.8, 1.2], GEAR);
-    hull.bevelSlab(onSide(s, ARM_ARMOUR[1]), [-1, 0.5, 6], [0.8, 1.8], H.base, {}, H.panel);
+  return (p: EnemyParts): void => {
+    p.flesh.bevelSlab(onSide(s, FOREARM), [-1.5, -0.5, 1.5], [0.8, 1.2], F.sinew);
+    p.flesh.bevelSlab(
+      onSide(s, ARM_ARMOUR[1]),
+      [-1, 0.5, 6],
+      [0.8, 1.8],
+      F.crimson,
+      {},
+      F.membrane,
+    );
     const [x, z] = ARM_LIGHTS[1];
-    neon.box([1, 0.3, 7], YELLOW, { at: [s * x, 6, z], yaw: s * ARM_YAW });
-    ram(hull, [s * 29, 2.8, 16], [s * 35, 3, 19.5], 1.2);
-    socket(hull, [s * 40, 3.5, 22], 7, 1);
+    p.neon.box([1, 0.3, 7], YELLOW, { at: [s * x, 6, z], yaw: s * ARM_YAW });
+    tentacle(p, [s * 29, 2.8, 16], [s * 35, 3, 19.5], [0, 0.8, 0], [1.2, 0.9], F.sinew);
+    socket(p.hull, [s * 40, 3.5, 22], 7, 1);
   };
 }
 
@@ -160,29 +171,30 @@ function clawPlace(at: Vec3) {
 }
 
 /** One jaw of the claw at `at`, from its outline (on its hinge's joint). */
-function drawJaw({ hull }: EnemyParts, at: Vec3, jaw: readonly OutlinePoint[]): void {
+function drawJaw({ flesh }: EnemyParts, at: Vec3, jaw: readonly OutlinePoint[]): void {
   const { k, place } = clawPlace(at);
-  hull.bevelSlab(scaled(jaw, k), [-1, 1, 4.5], [0.6, 1.4], H.base, place, H.panel);
+  flesh.bevelSlab(scaled(jaw, k), [-1, 1, 4.5], [0.6, 1.4], F.crimson, place, F.bone);
 }
 
 /**
- * A claw cannon (P07-R05), on its wrist joint: a knuckle, a cannon between its two jaws (drawn on
- * their own hinges, {@link drawJaw}), and the rams that work the jaws. The left (+X) claw is the
+ * A claw cannon (P07-R05, P16-R05), on its wrist joint: a swollen knuckle under a grafted cap,
+ * a cannon between its two pincers (drawn on their own hinges, {@link drawJaw}), and the sinews
+ * that work them. The left (+X) claw is the
  * bigger one, a fiddler crab's.
  */
-export function claw({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3): void {
+export function claw(p: EnemyParts, at: Vec3): void {
   const { k, place, put } = clawPlace(at);
-  hull.bevelSlab(scaled(KNUCKLE, k), [-2, 1, 3], [1, 1.2], GEAR, place);
-  hull.bevelSlab(scaled(KNUCKLE_CAP, k), [2, 3, 8], [0, 2.2], H.panel, place, H.base);
+  p.flesh.bevelSlab(scaled(KNUCKLE, k), [-2, 1, 3], [1, 1.2], F.sinew, place);
+  organ(p.flesh, 8 * k, 7, F.crimson, { at: put(0, 0, -4 * k) }, 0.4);
+  p.hull.bevelSlab(scaled(KNUCKLE_CAP, k), [5, 5.5, 8], [0, 2.2], M.panel, place, M.base);
   for (const x of [-1, 1]) {
-    ram(hull, put(x * 4 * k, 5, -5 * k), put(x * 8 * k, 4.6, 5 * k), 0.9);
-    cog(hull, put(x * 6 * k, 3.6, 0), 1.8 * k, 6);
+    tentacle(p, put(x * 4 * k, 5, -5 * k), put(x * 8 * k, 4.6, 5 * k), [0, 0.6, 0], [0.9, 0.7]);
   }
-  neon.box([5 * k, 0.4, 0.8], YELLOW, { at: put(0, 8, -6.5 * k), yaw: place.yaw });
-  glowLine(neon, put(-5 * k, 3.4, -0.5 * k), put(5 * k, 3.4, -0.5 * k), 1, YELLOW);
+  p.neon.box([5 * k, 0.4, 0.8], YELLOW, { at: put(0, 8, -6.5 * k), yaw: place.yaw });
+  veinLine(p, put(-5 * k, 3.4, -0.5 * k), put(5 * k, 3.4, -0.5 * k), [0, 0.8, 0], 1, YELLOW);
   const length = CLAW_BARREL * k * 0.85;
   const barrel = { at: put(0, 2.5, 0), pitch: QUARTER, yaw: place.yaw };
-  hull.cylinder(2.4, length, 6, H.dark, barrel, 2);
-  charge.cylinder(2.2, 1.6, 6, WHITE, { ...barrel, at: put(0, 2.5, length) }, 1.4);
-  muzzle(put(0, 2.5, length + 1.6));
+  p.hull.cylinder(2.4, length, 6, M.dark, barrel, 2);
+  p.charge.cylinder(2.2, 1.6, 6, WHITE, { ...barrel, at: put(0, 2.5, length) }, 1.4);
+  p.muzzle(put(0, 2.5, length + 1.6));
 }

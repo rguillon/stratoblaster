@@ -3,7 +3,10 @@ import type { LoftStation } from '../../../../render/geometry/solids';
 import type { EnemyModel } from '../../../../render/game-view';
 import { TOUCAN, TOUCAN_CHEEK_GUNS, TOUCAN_CREST } from '../../../config/bosses/world-3/toucan';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { FIGHTER_SECTION, SIDES } from '../../enemies/enemy-shapes';
+import { SIDES } from '../../enemies/enemy-shapes';
+import { reactorSac } from '../../enemies/organic-parts';
+import { ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, sinew, spine } from './jungle-flesh';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { mirrored, strip } from '../final-boss-shapes';
 import { seam, vent } from '../mini-boss-greebles';
@@ -49,10 +52,18 @@ const TAIL = mirrored([
 ]);
 
 /** The body: black plates, a cream bib, orange neon along its flanks, moss on its back. */
-function drawBody({ hull, neon }: EnemyParts): void {
+function drawBody(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
   const paint = (side: number, band: number) =>
     band === 4 && BIB_SIDES.has(side) ? BIB : undefined;
-  hull.loft(FIGHTER_SECTION, BODY, H.base, {}, { paint });
+  // P16-R05: a round, living bird's body of dark purple flesh, a bone ribcage over its back.
+  flesh.loft(ROUND_SECTION, BODY, F.purple, {}, { paint });
+  spine(
+    p,
+    BODY.slice(1).map(([z, , , t]) => [0, t + 0.3, z] as const),
+    { at: [-20, -12, -4], halfWidth: 13, y: 2, height: 11.8 },
+    TOUCAN_ORANGE,
+  );
   for (const s of SIDES) {
     strip(neon, [s * 15.6, 4], [s * 12, -20], 0.8, [3.6, 4.4], TOUCAN_ORANGE);
     seam(hull, [s * 6, 10], [s * 7, -22], [12.4, 0.8, 0.5], H.dark);
@@ -64,16 +75,45 @@ function drawBody({ hull, neon }: EnemyParts): void {
 
 /** The wings and the tail: dark, bevelled, neon on their edges, vines hanging from them. */
 function drawWingsAndTail(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(WINGS, [-1.5, 0, 2], [0.8, 1], H.base, {}, H.panel);
-  hull.bevelSlab(TAIL, [0.5, 1.5, 3], [0.4, 0.8], H.panel, {}, H.base);
+  const { hull, flesh, neon } = p;
+  // P16-R05: short, heavy membrane wings (still, P16-R01) on bone struts, a fan of bone quills.
+  flesh.bevelSlab(WINGS, [-1.5, 0, 2], [0.8, 1], F.membrane, {}, F.purple);
+  flesh.bevelSlab(TAIL, [0.5, 1.5, 3], [0.4, 0.8], F.membrane, {}, F.crimson);
+  for (const s of SIDES) {
+    for (const [x, z] of [
+      [30, 4],
+      [30, -9],
+      [24, -15],
+    ] as const) {
+      sinew(
+        p,
+        [
+          [s * 4, 2.4, 0],
+          [s * x, 2.2, z],
+        ],
+        [0, 0.6, 0],
+        1,
+        F.bone,
+      );
+    }
+    sinew(
+      p,
+      [
+        [s * 2, 3.2, -30],
+        [s * 10, 3.2, -45],
+      ],
+      [0, 0.3, 0],
+      0.7,
+      F.bone,
+    );
+  }
   for (const s of SIDES) {
     strip(neon, [s * 14, 12.2], [s * 25.5, 9.4], 0.8, [1.9, 2.3], TOUCAN_YELLOW);
     strip(neon, [s * 8.5, -33], [s * 10.6, -44.5], 0.7, [2.9, 3.3], TOUCAN_ORANGE);
     seam(hull, [s * 18, 8], [s * 22, -14], [2, 0.6, 0.4], H.dark);
     vine(hull, sagging([s * 12, -0.5, -16.5], [s * 26, -0.5, -14.5], 5, 3.5));
     moss(hull, [s * 20, 2, -4], 3, s);
-    p.reactor([s * 4.5, 3, -36.2], 2.8);
+    reactorSac(p, [s * 4.5, 3, -36.2], 2.8, TOUCAN_ORANGE);
   }
 }
 

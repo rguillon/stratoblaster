@@ -3,7 +3,9 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import { mirror } from '../../../config/bosses/boss-kit';
 import { TOUCAN_BEAK_TIP, TOUCAN_POD_GUNS } from '../../../config/bosses/world-3/toucan';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { FIGHTER_SECTION, SIDES } from '../../enemies/enemy-shapes';
+import { SIDES } from '../../enemies/enemy-shapes';
+import { ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, sac, veinTo } from './jungle-flesh';
 import { bossPoint } from '../boss-limbs';
 import { lamps } from '../mini-boss-greebles';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
@@ -44,8 +46,10 @@ function beakPaint(_side: number, band: number): Rgb | undefined {
  * edges, the laser emitter in its tip (its lens lights up as it charges).
  */
 export function beak(p: EnemyParts): void {
-  const { hull, neon, charge, muzzle } = p;
-  hull.loft(FIGHTER_SECTION, BEAK, BEAK_YELLOW, {}, { paint: beakPaint });
+  const { hull, flesh, neon, charge, muzzle } = p;
+  // P16-R05: a living, horny beak (its bright paint the toucan's mark), a metal band at its root.
+  flesh.loft(ROUND_SECTION, BEAK, BEAK_YELLOW, {}, { paint: beakPaint });
+  hull.box([20.4, 2, 2.4], H.panel, { at: [0, 4.6, 22] }, H.base);
   segment(
     neon,
     [
@@ -98,6 +102,9 @@ const DUCT = [
 export function wingPod(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   const s = Math.sign(at[0]);
+  // P16-R05: the grafted fan duct grows out of a swollen flesh root at the wing's end.
+  sac(p, offset(at, -s * 9, 1.5, -2), 5.5, F.crimson, 0.6);
+  veinTo(p, [offset(at, -s * 12, 3.4, -2), offset(at, -s * 6, 4.4, 5)], [0, 1, 0], TOUCAN_ORANGE);
   hull.lathe(DUCT, 10, H.panel, { at, yaw: Math.PI / 10 }, false);
   hull.cylinder(9.6, 0.5, 10, H.dark, { at: offset(at, 0, 0.2, 0) });
   hull.cylinder(2.4, 3, 6, H.base, { at: offset(at, 0, 0.6, 0) });

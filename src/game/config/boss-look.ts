@@ -73,6 +73,14 @@ export const BOSS_LOOK = {
     color: [0.16, 0.15, 0.15] as Rgb,
     alpha: 0.55,
   },
-  /** A destroyed part's stump: charred metal, and sparks flickering on `sparkChance` of frames. */
-  stump: { char: [0.05, 0.04, 0.035] as Rgb, spark: [1, 0.55, 0.15] as Rgb, sparkChance: 0.35 },
+  /**
+   * A destroyed part's wound (P16-R05): torn plating in `char`, its organ dimmed to `organ`, and
+   * sparks flickering on `sparkChance` of frames.
+   */
+  stump: {
+    char: [0.05, 0.04, 0.035] as Rgb,
+    organ: [0.06, 0.012, 0.018] as Rgb,
+    spark: [1, 0.55, 0.15] as Rgb,
+    sparkChance: 0.35,
+  },
 } as const;

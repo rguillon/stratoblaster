@@ -4,6 +4,7 @@ import { VERDANT_BLOOM } from '../../../config/bosses/world-3/verdant-crown';
 import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { around, radial } from '../../enemies/enemy-shapes';
+import { F } from './jungle-flesh';
 import { bossPoint } from '../boss-limbs';
 
 // P09-R09, 3-5: the Verdant Crown's colours and its glass garden dome over the core: a lattice of
@@ -56,13 +57,14 @@ function onDome(a: number, e: number): Vec3 {
 }
 
 /** The dome's lattice: dark ribs up to the oculus, glowing mullions round it, a lit rim. */
-function drawLattice({ hull, neon }: EnemyParts): void {
+function drawLattice({ hull, flesh, neon }: EnemyParts): void {
   const { radius, ribs, mullions, oculus, steps } = DOME;
   for (const a of around(ribs)) {
     const turn = a + Math.PI / ribs;
     for (let k = 0; k < steps; k++) {
       const [e0, e1] = [(oculus * k) / steps, (oculus * (k + 1)) / steps];
-      strut(hull, [onDome(turn, e0), onDome(turn, e1)], [1, 1], H.panel);
+      // P16-R06: the dome's ribs are bone, a ribcage over the garden.
+      strut(flesh, [onDome(turn, e0), onDome(turn, e1)], [1, 1], F.bone);
     }
   }
   for (const e of mullions) {

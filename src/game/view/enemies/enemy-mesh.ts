@@ -1,125 +1,59 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Enemy } from '../../../core/entities/enemy';
-import type { ColoredGeometry } from '../../../render/geometry/gradient-shapes';
 import { SolidBuilder } from '../../../render/geometry/solids';
 import type { EnemyModel } from '../../../render/game-view';
 import { addModelAnimation, stepModelAnimations } from '../../../render/model-animation';
-import { foldIntoFamily } from '../../../core/math/color';
 import { setOutline } from '../../../render/outline';
 import { ENEMY_LOOK } from '../../config/enemy-look';
-import { READABILITY } from '../../config/readability';
-import { buildReactorFlame, type FlameMaterials } from '../reactor-flame';
+import {
+  enemyColor,
+  enemyMaterials,
+  inEnemyFamily,
+  meshOf,
+  rimOf,
+  tintedHull,
+  unlit,
+} from './enemy-materials';
+import {
+  breathScale,
+  flutterAngle,
+  glowLevel,
+  isLivingMotion,
+  newBreath,
+  type Breath,
+} from './living-motion';
+import { addReactors, addRotors, type Reactor } from './enemy-engines';
+
+export { BODY_MATERIALS, enemyColor, enemyMaterials, meshOf } from './enemy-materials';
+export {
+  breathScale,
+  flutterAngle,
+  glowLevel,
+  isLivingMotion,
+  newBreath,
+  setLivingMotion,
+  type Breath,
+} from './living-motion';
 
 type Rgb = readonly [number, number, number];
 
-/** `color` moved into the enemies' colour family (P14-R02). */
-export function enemyColor(color: Rgb): Rgb {
-  return foldIntoFamily(color, READABILITY.families.enemy);
-}
-
-/** `geo` with its vertex colours moved into the enemies' colour family (P14-R02). */
-function inEnemyFamily(geo: ColoredGeometry): ColoredGeometry {
-  const colors = [...geo.colors];
-  for (let i = 0; i + 3 < colors.length; i += 4) {
-    const rgb = enemyColor([colors[i] ?? 0, colors[i + 1] ?? 0, colors[i + 2] ?? 0]);
-    [colors[i], colors[i + 1], colors[i + 2]] = rgb;
-  }
-  return { ...geo, colors };
-}
-
-interface EnemyMaterials {
-  /** Dark metal, tinted by the vertex colours. */
-  readonly hull: PBRMaterial;
-  /** Unlit neon, coloured by the vertex colours. */
-  readonly neon: StandardMaterial;
-}
-
-const CACHE = new WeakMap<Scene, EnemyMaterials>();
-
-function unlit(name: string, scene: Scene): StandardMaterial {
-  const mat = new StandardMaterial(name, scene);
-  mat.emissiveColor = Color3.White();
-  mat.diffuseColor = Color3.Black();
-  mat.specularColor = Color3.Black();
-  mat.disableLighting = true;
-  return mat;
-}
-
-/** The scene's enemy materials, created on first use. */
-export function enemyMaterials(scene: Scene): EnemyMaterials {
-  let mats = CACHE.get(scene);
-  if (!mats) {
-    mats = { hull: metal('enemy-hull', Color3.White(), scene), neon: unlit('enemy-neon', scene) };
-    CACHE.set(scene, mats);
-  }
-  return mats;
-}
-
-function metal(name: string, albedo: Color3, scene: Scene): PBRMaterial {
-  const hull = new PBRMaterial(name, scene);
-  hull.albedoColor = albedo;
-  hull.metallic = ENEMY_LOOK.hull.metallic;
-  hull.roughness = ENEMY_LOOK.hull.roughness;
-  hull.directIntensity = READABILITY.hullLight.direct;
-  hull.environmentIntensity = READABILITY.hullLight.environment;
-  return hull;
-}
-
-const TINTED_CACHE = new WeakMap<Scene, Map<string, PBRMaterial>>();
-
-/**
- * The dark metal of an enemy whose neon is `neon` (phase 5 review: enemies easier to see on the
- * ground): tinted towards its neon colour, and faintly lit by it.
- */
-function tintedHull(scene: Scene, neon: Rgb): PBRMaterial {
-  const look = ENEMY_LOOK.hull;
-  const byColor = TINTED_CACHE.get(scene) ?? new Map<string, PBRMaterial>();
-  TINTED_CACHE.set(scene, byColor);
-  const key = neon.join(',');
-  let mat = byColor.get(key);
-  if (!mat) {
-    const [r, g, b] = neon.map((c) => 1 + (c - 1) * look.tint);
-    mat = metal('enemy-hull', new Color3(r, g, b), scene);
-    mat.emissiveColor = new Color3(...neon).scale(look.selfLight);
-    byColor.set(key, mat);
-  }
-  return mat;
-}
-
-/** The rim colour of an enemy whose neon is `neon` (P14-R04). */
-function rimOf(neon: Rgb): Rgb {
-  const { whiten, strength } = READABILITY.enemyOutline;
-  const lift = (c: number) => (c + (1 - c) * whiten) * strength;
-  return [lift(neon[0]), lift(neon[1]), lift(neon[2])];
-}
-
-/** A flat-shaded, vertex-coloured mesh. */
-export function meshOf(name: string, geo: ColoredGeometry, material: Material, scene: Scene): Mesh {
-  const mesh = new Mesh(name, scene);
-  const data = new VertexData();
-  data.positions = geo.positions;
-  data.indices = geo.indices;
-  data.colors = geo.colors;
-  const normals: number[] = [];
-  VertexData.ComputeNormals(geo.positions, geo.indices, normals);
-  data.normals = normals;
-  data.applyToMesh(mesh);
-  mesh.material = material;
-  mesh.isPickable = false;
-  return mesh;
-}
-
 /** Builders for the three parts of an enemy model. */
 export interface EnemyParts {
-  /** Dark metal (use the `ENEMY_LOOK.hull` shades). */
+  /** Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (P16-R01). */
   readonly hull: SolidBuilder;
+  /** Dark flesh (use the `ENEMY_LOOK.flesh` shades): the living body (P16-R01). */
+  readonly flesh: SolidBuilder;
+  /** Glowing veins, eyes and glands, pulsing slowly (P16-R07); in the enemies' colour family. */
+  readonly vein: SolidBuilder;
+  /**
+   * Adds a wing hinged along Z at `pivot`, fluttering (P16-R07) on its own node: `draw` draws it
+   * in model space, as at rest, with the same builders. `side` (-1 left, 1 right) sets which way
+   * it flaps; `span` (its length out) picks the slower beat of big wings.
+   */
+  readonly flap: (pivot: Vec3, side: number, span: number, draw: (wing: WingParts) => void) => void;
   /** Neon lights, always lit. */
   readonly neon: SolidBuilder;
   /** Lights that brighten as the next attack charges (`Enemy.charge`); white, tinted by `charge`. */
@@ -144,116 +78,19 @@ export interface EnemyParts {
 
 type Vec3 = readonly [number, number, number];
 
-interface Reactor {
-  readonly at: Vec3;
-  readonly radius: number;
+/** The builders a fluttering wing is drawn with. */
+export interface WingParts {
+  readonly hull: SolidBuilder;
+  readonly flesh: SolidBuilder;
+  readonly neon: SolidBuilder;
+  readonly vein: SolidBuilder;
 }
 
-const FLAME_CACHE = new WeakMap<Scene, Map<string, FlameMaterials>>();
-
-function glowing(name: string, color: Rgb, alpha: number, scene: Scene): StandardMaterial {
-  const mat = unlit(name, scene);
-  mat.emissiveColor = new Color3(...color);
-  mat.alpha = alpha;
-  mat.backFaceCulling = false;
-  return mat;
-}
-
-/** Flame materials in `color`, shared by the scene's reactors of that colour. */
-function flameMaterials(scene: Scene, color: Rgb): FlameMaterials {
-  const look = ENEMY_LOOK.reactor;
-  const byColor = FLAME_CACHE.get(scene) ?? new Map<string, FlameMaterials>();
-  FLAME_CACHE.set(scene, byColor);
-  const key = color.join(',');
-  let mats = byColor.get(key);
-  if (!mats) {
-    const hot = color.map((c) => c + (1 - c) * look.whiten) as unknown as Rgb;
-    mats = {
-      exhaust: glowing(`enemy-exhaust-${key}`, color, look.exhaustAlpha, scene),
-      flame: glowing(`enemy-flame-${key}`, hot, look.flameAlpha, scene),
-      plasma: glowing(`enemy-plasma-${key}`, color, look.plasmaAlpha, scene),
-    };
-    byColor.set(key, mats);
-  }
-  return mats;
-}
-
-/** The rotors' blades and hubs, each on a node spun by a model animation. */
-function addRotors(
-  name: string,
-  rotors: readonly Reactor[],
-  material: Material,
-  root: TransformNode,
-): void {
-  const look = ENEMY_LOOK.rotor;
-  const scene = root.getScene();
-  rotors.forEach(({ at: [x, y, z], radius }, i) => {
-    const parts = new SolidBuilder();
-    const blade = [
-      [-0.12, 0.3],
-      [0.12, 0.3],
-      [0.22, 0.92],
-      [-0.08, 0.95],
-    ] as const;
-    for (let k = 0; k < look.blades; k++) {
-      const outline = blade.map(([u, v]) => [u * radius, v * radius] as const);
-      parts.slab(outline, [-0.08, 0.08], ENEMY_LOOK.hull.panel, {
-        yaw: (2 * Math.PI * k) / look.blades,
-      });
-    }
-    parts.cylinder(radius * look.hub, radius * 0.3, 4, ENEMY_LOOK.hull.dark, {
-      at: [0, -radius * 0.15, 0],
-    });
-    const node = new TransformNode(`${name}-rotor-${String(i)}`, scene);
-    node.position.set(x, y, z);
-    node.parent = root;
-    meshOf(`${node.name}-blades`, parts.geometry, material, scene).parent = node;
-    addModelAnimation(node, (dt) => {
-      node.rotation.y += look.spinRadPerSec * dt;
-    });
-  });
-}
-
-/** Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`. */
-function addReactors(
-  name: string,
-  reactors: readonly Reactor[],
-  parts: EnemyParts,
-  root: TransformNode,
-): void {
-  const look = ENEMY_LOOK.reactor;
-  const color = enemyColor(look.color);
-  const behind = -Math.PI / 2;
-  reactors.forEach(({ at: [x, y, z], radius }, i) => {
-    const depth = radius * look.depth;
-    // Pitched back, a band standing on `at` runs towards -Z: an open nozzle (no caps), with a
-    // flat neon core across its mouth, facing back.
-    const place = { at: [x, y, z + depth] as Vec3, pitch: behind };
-    parts.hull.ring(radius, depth, look.sides, ENEMY_LOOK.hull.dark, place);
-    const core = Array.from({ length: look.sides }, (_, k): Vec3 => {
-      // Counter-clockwise seen from behind (-Z), so the face points back, out of the nozzle.
-      const a = (-2 * Math.PI * k) / look.sides;
-      return [x + Math.cos(a) * radius * look.core, y + Math.sin(a) * radius * look.core, z];
-    });
-    // Folded with the rest of the neon (`inEnemyFamily`): the colour of the flame.
-    parts.neon.face(core, look.color);
-    const node = new TransformNode(`${name}-reactor-${String(i)}`, root.getScene());
-    node.position.set(x, y, 0);
-    node.parent = root;
-    buildReactorFlame(
-      node.name,
-      {
-        nozzleZ: z - 0.05,
-        length: radius * look.flameLength,
-        diameter: radius * 2 * look.core * look.flameWidth,
-        puffDiameter: radius * look.puffSize,
-        sides: look.flameSides,
-        light: { puffs: look.puffs },
-      },
-      node,
-      flameMaterials(root.getScene(), color),
-    );
-  });
+interface Wing {
+  readonly pivot: Vec3;
+  readonly side: number;
+  readonly span: number;
+  readonly parts: WingParts;
 }
 
 /**
@@ -262,66 +99,146 @@ function addReactors(
  */
 function addSurfaces(
   name: string,
-  parts: EnemyParts,
-  mats: { readonly hull: Material; readonly neon: Material },
+  parts: WingParts,
+  mats: SurfaceMaterials,
   neonColor: Rgb,
   root: TransformNode,
 ): void {
   const scene = root.getScene();
-  if (parts.hull.geometry.positions.length > 0) {
-    const mesh = meshOf(`${name}-${mats.hull.name}`, parts.hull.geometry, mats.hull, scene);
+  for (const [geo, mat] of [
+    [parts.hull.geometry, mats.hull],
+    [parts.flesh.geometry, mats.flesh],
+  ] as const) {
+    if (geo.positions.length === 0) continue;
+    const mesh = meshOf(`${name}-${mat.name}`, geo, mat, scene);
     mesh.parent = root;
     setOutline(mesh, rimOf(neonColor));
   }
-  if (parts.neon.geometry.positions.length > 0) {
-    const geo = inEnemyFamily(parts.neon.geometry);
-    meshOf(`${name}-${mats.neon.name}`, geo, mats.neon, scene).parent = root;
+  for (const [geo, mat] of [
+    [parts.neon.geometry, mats.neon],
+    [parts.vein.geometry, mats.vein],
+  ] as const) {
+    if (geo.positions.length === 0) continue;
+    meshOf(`${name}-${mat.name}`, inEnemyFamily(geo), mat, scene).parent = root;
   }
+}
+
+interface SurfaceMaterials {
+  readonly hull: Material;
+  readonly flesh: Material;
+  readonly neon: Material;
+  readonly vein: StandardMaterial;
+}
+
+const wingParts = (): WingParts => ({
+  hull: new SolidBuilder(),
+  flesh: new SolidBuilder(),
+  neon: new SolidBuilder(),
+  vein: new SolidBuilder(),
+});
+
+/** The wings, each on a node at its pivot rolling as it flutters (P16-R07), under `body`. */
+function addWings(
+  name: string,
+  wings: readonly Wing[],
+  mats: SurfaceMaterials,
+  neonColor: Rgb,
+  body: TransformNode,
+  clock: { time: number },
+): void {
+  wings.forEach(({ pivot, side, span, parts }, i) => {
+    const node = new TransformNode(`${name}-wing-${String(i)}`, body.getScene());
+    node.position.set(...pivot);
+    node.parent = body;
+    const inner = new TransformNode(`${node.name}-skin`, body.getScene());
+    inner.position.set(-pivot[0], -pivot[1], -pivot[2]);
+    inner.parent = node;
+    addSurfaces(node.name, parts, mats, neonColor, inner);
+    // Left and right wings of a pair beat together.
+    addModelAnimation(node, () => {
+      node.rotation.z = flutterAngle(side, span, clock.time);
+    });
+  });
+}
+
+/** The parts `build` draws, and the reactors, rotors, wings and muzzles it adds. */
+function collectParts(build: (parts: EnemyParts) => void) {
+  const reactors: Reactor[] = [];
+  const rotors: Reactor[] = [];
+  const wings: Wing[] = [];
+  const muzzles: { at: Vec3; kind: string }[] = [];
+  const parts: EnemyParts = {
+    ...wingParts(),
+    charge: new SolidBuilder(),
+    reactor: (at, radius) => reactors.push({ at, radius }),
+    rotor: (at, radius) => rotors.push({ at, radius }),
+    muzzle: (at, kind = 'gun') => muzzles.push({ at, kind }),
+    flap: (pivot, side, span, draw) => {
+      const wing = { pivot, side, span, parts: wingParts() };
+      draw(wing.parts);
+      wings.push(wing);
+    },
+  };
+  build(parts);
+  return { parts, reactors, rotors, wings, muzzles };
+}
+
+/** Options of {@link buildEnemyModel}. */
+export interface EnemyModelOptions {
+  /** The breathing it shares with the rest of its creature (a new one by default). */
+  readonly breath?: Breath;
 }
 
 /**
  * Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
  * charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
- * hull is tinted towards `chargeColor`, the enemy's neon colour.
+ * hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
+ * wings) is on a node of its own, `<name>-body`, that breathes (P16-R07); its reactors and
+ * muzzles are not, so shots leave from the same points (P16-R08).
  */
 export function buildEnemyModel(
   name: string,
   scene: Scene,
   neonColor: Rgb,
   build: (parts: EnemyParts) => void,
+  { breath = newBreath() }: EnemyModelOptions = {},
 ): EnemyModel {
   // Phase 14 (P14-R02): every enemy's lights in the enemies' colour family.
   const chargeColor = enemyColor(neonColor);
-  const reactors: Reactor[] = [];
-  const rotors: Reactor[] = [];
-  const muzzles: { at: Vec3; kind: string }[] = [];
-  const parts: EnemyParts = {
-    hull: new SolidBuilder(),
-    neon: new SolidBuilder(),
-    charge: new SolidBuilder(),
-    reactor: (at, radius) => reactors.push({ at, radius }),
-    rotor: (at, radius) => rotors.push({ at, radius }),
-    muzzle: (at, kind = 'gun') => muzzles.push({ at, kind }),
+  const { parts, reactors, rotors, wings, muzzles } = collectParts(build);
+  const vein = unlit(`${name}-vein`, scene);
+  const mats: SurfaceMaterials = {
+    hull: tintedHull(scene, chargeColor),
+    flesh: tintedHull(scene, chargeColor, true),
+    neon: enemyMaterials(scene).neon,
+    vein,
   };
-  build(parts);
-  const neon = enemyMaterials(scene).neon;
-  const hull = tintedHull(scene, chargeColor);
   const root = new TransformNode(name, scene);
+  const body = new TransformNode(`${name}-body`, scene);
+  body.parent = root;
+  const clock = { time: 0 };
   addReactors(name, reactors, parts, root);
-  addRotors(name, rotors, hull, root);
+  addRotors(name, rotors, mats.hull, body);
   muzzles.forEach(({ at, kind }, i) => {
     const node = new TransformNode(`${name}-muzzle-${kind}-${String(i)}`, scene);
     node.position.set(...at);
     node.parent = root;
   });
-  addSurfaces(name, parts, { hull, neon }, chargeColor, root);
+  addSurfaces(name, parts, mats, chargeColor, body);
+  addWings(name, wings, mats, chargeColor, body, clock);
   const chargeMat = unlit(`${name}-charge`, scene);
   if (parts.charge.geometry.positions.length > 0) {
-    meshOf(`${name}-charge`, parts.charge.geometry, chargeMat, scene).parent = root;
+    meshOf(`${name}-charge`, parts.charge.geometry, chargeMat, scene).parent = body;
   }
   return {
     root,
     sync: (enemy: Enemy, dt: number) => {
+      // P16-R07: driven by the frames' sim time, so a paused game holds still.
+      if (isLivingMotion()) clock.time += dt;
+      else clock.time = 0;
+      body.scaling.setAll(isLivingMotion() ? breathScale(breath, clock.time) : 1);
+      const glow = isLivingMotion() ? glowLevel(breath, clock.time) : 1;
+      vein.emissiveColor.set(glow, glow, glow);
       stepModelAnimations(root, dt);
       const k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * enemy.charge;
       chargeMat.emissiveColor.set(chargeColor[0] * k, chargeColor[1] * k, chargeColor[2] * k);

@@ -1,11 +1,13 @@
+import { organ } from '../../../render/geometry/organic';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
-import { decal } from '../enemies/enemy-shapes';
-import { box2d, drawTower, OVERLORD_DECK, OVERLORD_NEON, type Tower } from './overlord-city';
+import { OVERLORD_DECK, OVERLORD_NEON, type Tower } from './overlord-city';
+import { F, graft, polygon } from './world-1-organic-kit';
 
-// P07-R05 (phase 7 review: more detail, not symmetrical): the Overlord's skyline, a different
-// city on each side of the boulevard. A broadcast spire and a neon billboard on the left (+X,
-// the screen's left), the command tower on the right. Model space: logical pixels, nose +Z, Y up.
+// P07-R05 (phase 7 review: more detail, not symmetrical), P16-R06: the Overlord's skyline, a
+// city grown out of its back, different on each side of its spine: towers of flesh and bone lit
+// with window glands, a broadcast spire and a neon billboard on the left (+X, the screen's
+// left), the command stalk on the right. Model space: logical pixels, nose +Z, Y up.
 const H = ENEMY_LOOK.hull;
 const WHITE = [1, 1, 1] as const;
 const N = OVERLORD_NEON;
@@ -37,13 +39,38 @@ const TOWERS: readonly Tower[] = [
 /** The spire's foot on the left, and its height. */
 const SPIRE = { x: 46, z: -6, top: 50 } as const;
 
-/** A broadcast spire on the left: a block, a tapered mast ringed with neon, a beacon on top. */
-function drawSpire({ hull, neon, charge }: EnemyParts): void {
+/** A tower's flesh shades, picked by its place (uneven, not mirrored). */
+const SHADES = [F.purple, F.crimson, F.sinew, F.bone] as const;
+
+/**
+ * A tower grown out of the back (P16-R06): a tapering spire of flesh or bone over the tower's
+ * footprint, bands of window glands up it, a grafted roof plate where it had a roof.
+ */
+function spire(p: EnemyParts, { x, z, w, d, h, tier, roof }: Tower): void {
+  const base = OVERLORD_DECK.top - 1;
+  const r = Math.max(w, d) * 0.6;
+  const height = h + (tier?.[2] ?? 0) + 1;
+  const color = SHADES[Math.abs(Math.round(x + z)) % SHADES.length] ?? F.purple;
+  const profile = [
+    [r, 0],
+    [r * 0.8, height * 0.55],
+    [r * 0.45, height],
+    [0, height + r * 0.3],
+  ] as const;
+  p.flesh.lathe(profile, 5, color, { at: [x, base, z], yaw: x * 0.1 });
+  for (let y = 4; y < height - 1; y += 7) {
+    const k = 1 - (y / height) * 0.5;
+    p.vein.ring(r * 0.86 * k + 0.1, 0.7, 5, N, { at: [x, base + y, z], yaw: x * 0.1 });
+  }
+  if (roof) graft(p, polygon(4, r * 0.6), [base + height - 1, base + height], [x, 0, z]);
+}
+
+/** A broadcast spire on the left: a bulb, a tapered bone mast ringed with neon, a beacon on top. */
+function drawSpire({ flesh, neon, charge }: EnemyParts): void {
   const { x, z, top } = SPIRE;
   const base = OVERLORD_DECK.top;
-  hull.bevelSlab(box2d(9, 9, [x, z]), [base - 1, base, base + 9], [0, 1.5], H.panel, {}, H.base);
-  decal(neon, box2d(5, 0.8, [x, z + 2.8]), base + 9.05, N);
-  hull.cylinder(2.8, top - base - 9, 4, H.dark, { at: [x, base + 9, z], yaw: Math.PI / 4 }, 0.5);
+  organ(flesh, 5.5, 6, F.crimson, { at: [x, base - 1, z] }, 0.9);
+  flesh.cylinder(2.8, top - base - 9, 4, F.bone, { at: [x, base + 9, z], yaw: Math.PI / 4 }, 0.5);
   for (const [y, r] of [
     [24, 2],
     [34, 1.4],
@@ -62,7 +89,6 @@ function drawSpire({ hull, neon, charge }: EnemyParts): void {
     { at: [x, top, z] },
   );
 }
-
 /** The billboard's foot on the left: its board faces the nose, leaning back towards the camera. */
 const BILLBOARD = { x: 39, z: 16, y: 14, w: 18, h: 9, lean: -0.5 } as const;
 /** The bars of its logo (x, height), and its strips of text lit by the charge (x0, y0, x1, y1). */
@@ -118,26 +144,26 @@ const CAB = [
 ] as const;
 const COMMAND = { x: -42, z: 1, shaft: 20 } as const;
 
-/** The command tower on the right: a shaft, a cab ringed with lit windows, a dish and masts. */
-function drawCommandTower({ hull, neon, charge }: EnemyParts): void {
+/** The command stalk on the right: a sinew stalk, an eye of a cab ringed with lit glands, masts. */
+function drawCommandTower(p: EnemyParts): void {
   const { x, z, shaft } = COMMAND;
   const base = OVERLORD_DECK.top;
   const top = base + shaft;
-  hull.bevelSlab(box2d(11, 11, [x, z]), [base - 1, base, base + 6], [0, 1.5], H.panel, {}, H.base);
-  hull.cylinder(4.6, shaft, 8, H.base, { at: [x, base, z], yaw: Math.PI / 8 }, 4);
-  hull.lathe(CAB, 8, H.panel, { at: [x, top, z], yaw: Math.PI / 8 });
-  neon.ring(8.85, 2, 8, N, { at: [x, top + 3.4, z], yaw: Math.PI / 8 });
-  neon.ring(4.7, 1, 8, N, { at: [x, base + 9, z], yaw: Math.PI / 8 });
+  organ(p.flesh, 7, 6, F.purple, { at: [x, base - 1, z] }, 0.6);
+  p.flesh.cylinder(4.6, shaft, 6, F.sinew, { at: [x, base, z], yaw: Math.PI / 6 }, 3.4);
+  p.flesh.lathe(CAB, 8, F.crimson, { at: [x, top, z], yaw: Math.PI / 8 });
+  p.neon.ring(8.85, 2, 8, N, { at: [x, top + 3.4, z], yaw: Math.PI / 8 });
+  p.vein.ring(4.4, 1, 6, N, { at: [x, base + 9, z], yaw: Math.PI / 6 });
   const roof = top + 8.5;
-  // A dish leaning towards the nose, an aerial with a light that charges.
-  hull.cylinder(0.6, 2.4, 6, H.dark, { at: [x + 2, roof, z - 2], pitch: 0.5 }, 4.2);
-  hull.cylinder(0.5, 12, 4, H.dark, { at: [x - 3, roof, z + 1] }, 0.2);
-  charge.box([1.1, 1.1, 1.1], WHITE, { at: [x - 3, roof + 11.6, z + 1] });
+  // A dish leaning towards the nose, an aerial with a light that charges: grafted metal.
+  p.hull.cylinder(0.6, 2.4, 6, H.dark, { at: [x + 2, roof, z - 2], pitch: 0.5 }, 4.2);
+  p.hull.cylinder(0.5, 12, 4, H.dark, { at: [x - 3, roof, z + 1] }, 0.2);
+  p.charge.box([1.1, 1.1, 1.1], WHITE, { at: [x - 3, roof + 11.6, z + 1] });
 }
 
-/** P07-R05 (phase 7 review): the Overlord's city, its towers and landmarks. */
+/** P07-R05, P16-R06: the Overlord's city, its living towers and landmarks. */
 export function drawSkyline(parts: EnemyParts): void {
-  for (const tower of TOWERS) drawTower(parts, tower);
+  for (const tower of TOWERS) spire(parts, tower);
   drawSpire(parts);
   drawBillboard(parts);
   drawCommandTower(parts);

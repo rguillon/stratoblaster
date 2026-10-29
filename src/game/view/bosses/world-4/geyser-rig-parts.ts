@@ -17,8 +17,9 @@ import { bossPoint, type LimbDrawing } from '../boss-limbs';
 import { lamps, rect, vent } from '../mini-boss-greebles';
 import { conduit, ram } from '../mini-boss-mechanism';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { glands, SKIN } from './living-forge';
 import { segment } from '../world-3/toucan-jungle';
-import { ashDrift, EMBER, SCORCH, SOOT } from './ash-plains-soot';
+import { ashDrift, EMBER, SOOT } from './ash-plains-soot';
 
 // P10-R11, 4-2: the Geyser Rig's parts: its two drill heads on their swinging arms (moving limbs,
 // D-061), its two steam vents and its drone hangar. Logical pixels, nose +Z, Y up.
@@ -41,15 +42,16 @@ function armPoints(side: RigSide): [shoulder: Vec3, head: Vec3] {
 
 /** The `side` drill arm, on its shoulder joint: a heavy boom, a ram along it, a yellow line. */
 function drillArm(side: RigSide) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ hull, neon, flesh }: EnemyParts): void => {
     const [shoulder, head] = armPoints(side);
     const back = offset(head, 0, 1, -7);
     hull.cylinder(5.4, DRILL_HEIGHT.shoulder + 2 - DECK_Y, 8, H.dark, {
       at: offset(shoulder, 0, DECK_Y - DRILL_HEIGHT.shoulder, 0),
     });
     hull.cylinder(4.4, 2.6, 8, H.panel, { at: offset(shoulder, 0, 2, 0) }, 3.6);
-    segment(hull, [shoulder, back], [3.6, 3], H.base, 6);
-    segment(hull, [offset(shoulder, 0, 3, 0), offset(back, 0, 2.6, 0)], [1.4, 1.2], SHADE.edge, 4);
+    // P16-R06: a muscled flesh arm, a sinew along its back.
+    segment(flesh, [shoulder, back], [3.6, 3], SKIN.base, 6);
+    segment(flesh, [offset(shoulder, 0, 3, 0), offset(back, 0, 2.6, 0)], [1.4, 1.2], SKIN.panel, 4);
     segment(
       neon,
       [offset(shoulder, 0, 4.3, 0), offset(back, 0, 3.8, 0)],
@@ -79,7 +81,7 @@ export function drillHead(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   const forward = { pitch: QUARTER };
   const bitRoot = at[2] + 6;
-  hull.cylinder(7.4, 14, 8, H.base, { at: offset(at, 0, 0, -8), ...forward, yaw: 0 });
+  p.flesh.cylinder(7.4, 14, 8, SKIN.base, { at: offset(at, 0, 0, -8), ...forward, yaw: 0 });
   for (const dz of [-6, 0])
     hull.cylinder(8, 1.6, 8, H.panel, { at: offset(at, 0, 0, dz), ...forward });
   neon.ring(8.1, 0.6, 8, RIG_YELLOW, { at: offset(at, 0, 0, 3.4), ...forward });
@@ -128,7 +130,14 @@ export function steamVent(p: EnemyParts, at: Vec3): void {
   const [m] = s > 0 ? RIG_VENT_TOP : mirror(RIG_VENT_TOP);
   const top = m ? bossPoint(...m) : offset(at, 0, 24, 0);
   hull.box([15, 3, 15], H.base, { at: offset(at, 0, DECK_Y - 1, 0) }, H.panel);
-  hull.lathe(STACK, 8, SCORCH, { at: offset(at, 0, DECK_Y + 1.4, 0), yaw: Math.PI / 8 }, false);
+  // P16-R06: a steaming flesh blowhole on a metal valve block.
+  p.flesh.lathe(
+    STACK,
+    8,
+    SKIN.panel,
+    { at: offset(at, 0, DECK_Y + 1.4, 0), yaw: Math.PI / 8 },
+    false,
+  );
   neon.ring(5.9, 0.6, 8, RIG_YELLOW, { at: offset(top, 0, -2.6, 0), yaw: Math.PI / 8 });
   hull.cylinder(5.2, 0.4, 8, SOOT, { at: offset(top, 0, -4.2, 0) });
   neon.ring(3.4, 1.2, 8, EMBER, { at: offset(top, 0, -3.6, 0) });
@@ -145,8 +154,18 @@ export function steamVent(p: EnemyParts, at: Vec3): void {
  * The drone hangar around its centre `at` (P10-R11): a bay jutting from the bow, its open door
  * framed in yellow, where its Hornets leave from; warning lamps either side.
  */
-export function hangar({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.bevelSlab(rect(28, 24), [DECK_Y - 5, DECK_Y, DECK_Y + 6], [1, 1.5], H.base, { at }, H.panel);
+export function hangar(p: EnemyParts, at: Vec3): void {
+  const { hull, neon } = p;
+  // P16-R06: a brood sac jutting from the bow, its mouth framed in metal.
+  p.flesh.bevelSlab(
+    rect(28, 24),
+    [DECK_Y - 5, DECK_Y, DECK_Y + 6],
+    [1, 1.5],
+    SKIN.base,
+    { at },
+    SKIN.dark,
+  );
+  glands(p, [offset(at, -6, DECK_Y + 5.5, 2), offset(at, 6, DECK_Y + 5.5, -2)], 1.6, RIG_YELLOW);
   hull.box([18, 6, 0.8], H.dark, { at: offset(at, 0, DECK_Y - 2, 11.8) });
   neon.box([20, 0.8, 0.6], RIG_YELLOW, { at: offset(at, 0, DECK_Y + 4, 12.2) });
   for (const s of SIDES) {

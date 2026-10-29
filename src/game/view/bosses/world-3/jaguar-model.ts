@@ -9,16 +9,12 @@ import {
 } from '../../../config/bosses/world-3/jaguar';
 import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import {
-  angryEyes,
-  canopyPaint,
-  decal,
-  FIGHTER_SECTION,
-  sideStripe,
-  SIDES,
-} from '../../enemies/enemy-shapes';
+import { angryEyes, canopyPaint, decal, sideStripe, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { vent } from '../mini-boss-greebles';
+import { reactorSac } from '../../enemies/organic-parts';
+import { ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, sinew, spine, veinTo } from './jungle-flesh';
 import { edgeLights, symmetric } from '../overlord-city';
 import { AMBER, clawMount, clawTurret, COAT, rosette, tailMount, tailTurret } from './jaguar-parts';
 
@@ -89,19 +85,53 @@ const TAIL: readonly Vec3[] = [
 function segment(p: EnemyParts, [a, b]: readonly [Vec3, Vec3], radius: number, end: number): void {
   const [dx, dz] = [b[0] - a[0], b[2] - a[2]];
   const place: Placement = { at: a, pitch: QUARTER, yaw: Math.atan2(dx, dz) };
-  p.hull.cylinder(radius, Math.hypot(dx, dz), 6, COAT, place, end);
+  p.flesh.cylinder(radius, Math.hypot(dx, dz), 6, COAT, place, end);
   p.neon.ring(radius + 0.2, 0.7, 6, AMBER, place);
+}
+
+/** P16-R05: its bone spine, the sinews and veins under its pelt. */
+function drawSinews(p: EnemyParts): void {
+  spine(
+    p,
+    FUSELAGE.slice(1, 5).map(([z, , , t]) => [0, t + 0.3, z] as const),
+    { at: [-30, -18, -6, 6], halfWidth: 11, y: 2, height: 9.6 },
+    AMBER,
+  );
+  for (const s of SIDES) {
+    sinew(
+      p,
+      [
+        [s * 9, 4, 16],
+        [s * 40, 2.4, -14],
+      ],
+      [0, 1.4, 4],
+      1.4,
+      F.sinew,
+    );
+    veinTo(
+      p,
+      [
+        [s * 10, 3.4, 4],
+        [s * 36, 3.4, -30],
+      ],
+      [0, 0, 6],
+      AMBER,
+    );
+  }
 }
 
 /** The wings and the fuselage, the cockpit dark, rosettes on the wings, lit leading edges. */
 function drawBody(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(WING, WING_Y, [1.5, 2], H.base, {}, COAT);
+  const { hull, flesh, neon } = p;
+  // P16-R05: a living big cat: a spotted pelt stretched over its delta like a flying squirrel's,
+  // a muscular body with a bone spine, metal fins and nozzles grafted on.
+  flesh.bevelSlab(WING, WING_Y, [1.5, 2], F.sinew, {}, COAT);
   edgeLights(neon, WING, LEADING, [-1.4, -0.3], AMBER);
-  hull.loft(FIGHTER_SECTION, FUSELAGE, COAT, {}, { paint: canopyPaint([3, 4], H.dark) });
+  flesh.loft(ROUND_SECTION, FUSELAGE, COAT, {}, { paint: canopyPaint([3, 4], F.crimson) });
+  drawSinews(p);
   for (const side of [1, 6]) {
     neon.loft(
-      sideStripe(FIGHTER_SECTION, side, [0.3, 0.75]),
+      sideStripe(ROUND_SECTION, side, [0.3, 0.75]),
       FUSELAGE.slice(1, 6),
       AMBER,
       {},
@@ -124,15 +154,16 @@ function drawBody(p: EnemyParts): void {
 }
 
 /** The cat's head: ears on the fuselage, angry amber eyes, fang guns under the nose. */
-function drawHead({ hull, neon, charge, muzzle }: EnemyParts): void {
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon, charge, muzzle } = p;
   for (const s of SIDES) {
-    hull.lathe(
+    flesh.lathe(
       [
         [3.2, 0],
         [0, 5.5],
       ],
       3,
-      H.panel,
+      COAT,
       { at: [s * 6, 8, 36], yaw: s * 0.4 },
     );
   }
@@ -171,7 +202,7 @@ export function buildJaguar(scene: Scene): EnemyModel {
     core: (p) => {
       drawBody(p);
       drawHead(p);
-      for (const s of SIDES) p.reactor([s * 6, 3.5, -50], 3.5);
+      for (const s of SIDES) reactorSac(p, [s * 6, 3.5, -50], 3.5, AMBER, { flesh: F.sinew });
     },
     parts: { 'claw-left': clawMount, 'claw-right': clawMount, 'tail-cannon': tailMount },
     turrets: { 'claw-left': clawTurret, 'claw-right': clawTurret, 'tail-cannon': tailTurret },

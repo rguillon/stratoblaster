@@ -4,6 +4,7 @@ import { openHatch } from '../final-boss-shapes';
 import { H, offset, QUARTER, WHITE } from '../mini-boss-shapes';
 import { SPIDER_RED } from './canopy-spider-legs';
 import { segment, VINE } from './toucan-jungle';
+import { veinTo } from './jungle-flesh';
 
 // P09-R09, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups. Logical
 // pixels, nose +Z, Y up (towards the camera).
@@ -39,10 +40,19 @@ const EGGS: readonly Vec3[] = [
 export function eggSac(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge } = p;
   const centre = offset(at, 0, 4, -3);
-  hull.lathe(COCOON, 8, SILK, { at: centre, pitch: -QUARTER, yaw: Math.PI / 8 });
+  // P16-R06: a living egg sac of pale membrane in grafted metal bands, veined with red.
+  p.flesh.lathe(COCOON, 8, SILK, { at: centre, pitch: -QUARTER, yaw: Math.PI / 8 });
   for (const dz of [-4, 3]) {
     hull.cylinder(11.2, 1.6, 8, H.base, { at: offset(centre, 0, 0, dz), pitch: QUARTER });
     neon.ring(11.4, 0.6, 8, SPIDER_RED, { at: offset(centre, 0, 0, dz + 0.5), pitch: QUARTER });
+  }
+  for (const s of SIDES) {
+    veinTo(
+      p,
+      [offset(centre, s * 9, 4, -8), offset(centre, s * 4, 9.2, 6)],
+      [s * 2, 2, 0],
+      SPIDER_RED,
+    );
   }
   for (const egg of EGGS) charge.cylinder(1.8, 1.2, 6, WHITE, { at: offset(at, ...egg) }, 1);
   openHatch(p, offset(centre, 0, 11, 4), [6, 4]);

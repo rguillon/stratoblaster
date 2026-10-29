@@ -3,25 +3,38 @@ import type { OutlinePoint } from '../../../render/geometry/outline';
 import type { EnemyModel } from '../../../render/game-view';
 import { MESA_FORTRESS } from '../../config/bosses/final-bosses';
 import { BOSS_LOOK } from '../../config/boss-look';
-import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { SIDES } from '../enemies/enemy-shapes';
+import { eyes, reactorSac } from '../enemies/organic-parts';
 import { buildBossModel } from './boss-model';
-import { edgeStrips, missileTips, mirrored, openHatch, shift, sided } from './final-boss-shapes';
-import { lanceDetails, mesaArm, mesaDeck, mesaKeep, siloDetails } from './final-boss-mesa';
+import { edgeStrips, mirrored, shift, sided } from './final-boss-shapes';
+import { BASE_TOP, drawLance, drawSilo } from './final-boss-mesa';
+import {
+  barbs,
+  F,
+  gland,
+  graft,
+  hide,
+  M,
+  mantle,
+  polygon,
+  ribCage,
+  spine,
+  tentacle,
+  veinLine,
+} from './world-1-organic-kit';
 
-// P07-R05: the Mesa Fortress, the final boss of 1-3. Logical pixels, nose +Z, Y up (towards the
-// camera). A flying fortress built like the canyon's mesas: two stepped armoured tiers, a fan
-// cannon on top, an arm on each side cradling a laser lance, two missile silos on the rear deck,
-// red neon slits along its armour.
-const H = ENEMY_LOOK.hull;
+// P07-R05, P16-R06: the Mesa Fortress, the final boss of 1-3. Logical pixels, nose +Z, Y up
+// (towards the camera). A colossal canyon tortoise: a wide skirt of hide under a high, stepped
+// shell like the mesas, plated with grafted armour, a fan cannon on its brow, a forelimb on each
+// side cradling a laser lance, two spore silos on its back, red veins along its shell.
 const N = BOSS_LOOK.neon['mesa-fortress'] ?? [1, 0.1, 0.12];
 const WHITE = [1, 1, 1] as const;
 const QUARTER = Math.PI / 2;
 
 type Vec3 = [number, number, number];
 
-/** The lower tier (right half, front to back): the silos stand on its rear deck. */
+/** The skirt of hide (right half, front to back): the silos stand on its rear. */
 const BASE = mirrored([
   [0, 48],
   [22, 46],
@@ -31,9 +44,7 @@ const BASE = mirrored([
   [34, -50],
   [0, -54],
 ]);
-const BASE_TOP = 7;
-const KEEP_TOP = 15;
-/** The right arm: a beam out from the base, then a rail forward; the lance lies in between. */
+/** The right forelimb: an upper limb out from the body, then a forearm forward. */
 const ARM = [
   [40, -6],
   [72, -6],
@@ -44,7 +55,7 @@ const ARM = [
   [80, -23],
   [40, -24],
 ] as const;
-/** The fan cannon's housing, on the front of the upper tier. */
+/** The fan cannon's housing, on the brow. */
 const FAN_HOUSING = [
   [-12, -8],
   [12, -8],
@@ -53,30 +64,39 @@ const FAN_HOUSING = [
   [-7, 12],
   [-14, 4],
 ] as const;
-const FAN_AT: Vec3 = [0, KEEP_TOP, 26];
-/** The lance's housing around its centre, its emitter barrel and lens (lathe profiles). */
-const LANCE_HOUSING = [
-  [-10, 10],
-  [10, 10],
-  [12, 2],
-  [11, -14],
-  [7, -18],
-  [-7, -18],
-  [-11, -14],
-  [-12, 2],
-] as const;
-const LENS = [
-  [0, 0],
-  [4, 1],
-  [3.2, 3],
-  [0, 3.8],
+const FAN_AT: Vec3 = [0, 15, 26];
+/** Grafted armour plates on the shell (x, z, radius), mirrored. */
+const SHELL_PLATES = [
+  [14, -26, 6],
+  [20, 2, 5],
+  [10, 14, 4.5],
 ] as const;
 
-/** The two tiers, the arms, the red slits along the armour, and the reactors in the back wall. */
+/** The skirt, the stepped shell with its ribs, veins and grafted plates, the head at its front. */
 function drawBody(p: EnemyParts): void {
-  p.hull.bevelSlab(BASE, [-6, 0, BASE_TOP], [3, 4], H.base, {}, H.panel);
-  mesaKeep(p, N);
-  mesaDeck(p);
+  mantle(p, BASE, [-6, BASE_TOP], F.sinew, N);
+  hide(p, {
+    tail: -50,
+    nose: 30,
+    width: 38,
+    bottom: BASE_TOP - 2,
+    top: 22,
+    segments: 4,
+    shell: [F.crimson, F.membrane],
+    belly: F.purple,
+  });
+  hide(p, {
+    tail: -36,
+    nose: 18,
+    width: 22,
+    bottom: 14,
+    top: 30,
+    segments: 3,
+    shell: [F.sinew, F.crimson],
+    belly: F.crimson,
+  });
+  ribCage(p, [-40, 22], { halfWidth: 34, y: BASE_TOP, height: 13, thickness: 1.4 }, F.bone);
+  spine(p, [0, 30.5, -32], [0, 30.5, 14], { color: N, width: 1.6 });
   const rim: OutlinePoint[] = [
     [-34, 28.5],
     [-19, 41.5],
@@ -85,7 +105,29 @@ function drawBody(p: EnemyParts): void {
   ];
   edgeStrips(p.neon, rim, 1.2, [BASE_TOP - 0.2, BASE_TOP + 0.5], N);
   for (const s of SIDES) {
-    p.hull.bevelSlab(sided(ARM, s), [-4, 0, 6], [1, 1.5], H.base, {}, H.panel);
+    for (const [x, z, r] of SHELL_PLATES) {
+      graft(p, polygon(6, r, [1, 1.3]), [17, 18.4], [s * x, 0, z], { color: M.base });
+    }
+    for (const z of [-30, -8]) {
+      veinLine(p, [s * 18, 27, z], [s * 38, 12, z - 6], [s * 3, 4, 0], 1.3, N);
+    }
+    gland(p, [s * 12, 29, 0], 2.2, N);
+    reactorSac(p, [s * 10, 0.5, -53.4], 3.8, N);
+    reactorSac(p, [s * 24, 0.5, -51.8], 3.8, N);
+  }
+  eyes(p, [0, 12, 40], { count: 2, size: 1.6, spacing: 10 }, N);
+  barbs(p, [0, 7, 46], { count: 4, spacing: 6, size: 3, dir: [0, -0.2, 1] });
+}
+
+/** The forelimbs: a scaly limb out to each lance's cradle, a bone claw at its front. */
+function drawArms(p: EnemyParts): void {
+  for (const s of SIDES) {
+    p.flesh.bevelSlab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, {}, F.crimson);
+    tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.crimson, 5);
+    graft(p, polygon(4, 5, [2, 0.9]), [8.5, 9.6], [s * 56, 0, -16]);
+    for (const dx of [-3, 3]) {
+      tentacle(p, [s * (81 + dx), 4, 26], [s * (80 + dx), 0, 36], [0, 2, 0], [1.6, 0.1], F.bone, 3);
+    }
     edgeStrips(
       p.neon,
       sided(
@@ -99,78 +141,34 @@ function drawBody(p: EnemyParts): void {
       [5.8, 6.4],
       N,
     );
-    mesaArm(p, s, N);
-    p.reactor([s * 10, 0.5, -53.4], 3.8);
-    p.reactor([s * 24, 0.5, -51.8], 3.8);
   }
 }
 
 /**
- * The fan cannon on top (the core's gun): a housing and five barrels fanned out forward,
- * turning around the hub of its barrels (its pivot).
+ * The fan cannon on the brow (the core's gun): a grafted housing and five barrels fanned out
+ * forward, turning around the hub of its barrels (its pivot).
  */
 function drawFanCannon(p: EnemyParts): void {
-  p.hull.bevelSlab(FAN_HOUSING, [0, 0, 5], [0, 1.5], H.dark, { at: FAN_AT }, H.panel);
+  p.hull.bevelSlab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, { at: FAN_AT }, M.panel);
   for (let k = 0; k < 5; k++) {
     const yaw = (k - 2) * 0.28;
     const out = (r: number): Vec3 => shift(FAN_AT, [Math.sin(yaw) * r, 2.6, 4 + Math.cos(yaw) * r]);
-    p.hull.cylinder(1.6, 9, 6, H.dark, { at: out(4), pitch: QUARTER, yaw }, 1.3);
+    p.hull.cylinder(1.6, 9, 6, M.dark, { at: out(4), pitch: QUARTER, yaw }, 1.3);
     p.charge.cylinder(1.5, 2, 6, WHITE, { at: out(13), pitch: QUARTER, yaw });
     p.muzzle(out(15));
   }
 }
 
-/** A laser lance in its cradle: an armoured housing, a long barrel ringed with neon, its lens. */
-function drawLance(p: EnemyParts, at: Vec3): void {
-  p.hull.bevelSlab(LANCE_HOUSING, [-2, 2, 11], [1.5, 2.5], H.panel, { at }, H.base);
-  const [x, , z] = at;
-  edgeStrips(
-    p.neon,
-    [
-      [x, z - 13],
-      [x, z + 4],
-    ],
-    1.4,
-    [10.8, 11.4],
-    N,
-  );
-  const barrel = shift(at, [0, 6, 8]);
-  p.hull.cylinder(5.5, 28, 8, H.dark, { at: barrel, pitch: QUARTER }, 3.6);
-  for (const dz of [6, 13, 20]) {
-    const r = 5.5 - (dz / 28) * 1.9 + 0.3;
-    p.neon.ring(r, 1.2, 8, N, { at: shift(barrel, [0, 0, dz]), pitch: QUARTER });
-  }
-  // The lens glows through the warning line and while the laser fires.
-  p.charge.lathe(LENS, 8, WHITE, { at: shift(barrel, [0, 0, 27.5]), pitch: QUARTER });
-  p.muzzle(shift(barrel, [0, 0, 31.3]), 'laser');
-  lanceDetails(p, at);
-}
-
-/** A missile silo on the rear deck: a hexagonal housing, its hatch open on four missile tips. */
-function drawSilo(p: EnemyParts, at: Vec3): void {
-  const housing = [
-    [12.5, 0],
-    [12.5, 2.5],
-    [10.5, 5],
-  ] as const;
-  const base = shift(at, [0, BASE_TOP, 0]);
-  p.hull.lathe(housing, 6, H.panel, { at: base });
-  p.neon.ring(12.7, 0.8, 6, N, { at: shift(base, [0, 0.6, 0]) });
-  const hatch = shift(base, [0, 5, 0]);
-  openHatch(p, hatch, [12, 15]);
-  missileTips(p, shift(hatch, [0, 0.4, 0]), [2, 2], [5.6, 1.9]);
-  siloDetails(p, at);
-}
-
 /**
- * P07-R05: the Mesa Fortress, a flying fortress 5 L across with red neon slits; a laser lance
- * in each side arm, two missile silos on its rear deck, and a fan cannon on its heavy armoured
- * central block (the core).
+ * P07-R05, P16-R06: the Mesa Fortress, a colossal canyon tortoise 5 L across with red veins; a
+ * laser lance in each forelimb, two spore silos on its back, and a fan cannon on its armoured
+ * brow (the core).
  */
 export function buildMesaFortress(scene: Scene): EnemyModel {
   return buildBossModel(MESA_FORTRESS, scene, N, {
     core: (p) => {
       drawBody(p);
+      drawArms(p);
     },
     parts: {
       'lance-left': drawLance,

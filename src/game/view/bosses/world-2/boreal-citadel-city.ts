@@ -4,6 +4,7 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { SIDES } from '../../enemies/enemy-shapes';
+import { ICE_FLESH } from './w2-organic';
 
 // P08-R10, 2-5: the Boreal Citadel's polar city: its colours, the towers and heated domes on its
 // deck, the icicles under its edges. Model space: logical pixels, nose +Z (down the screen), Y up
@@ -87,16 +88,17 @@ function windows(
 }
 
 /** A tower on the deck: a dark block, its snowed roof, lit windows, a setback tier. */
-function drawTower({ hull, neon }: EnemyParts, t: Tower, s: number): void {
+function drawTower({ flesh, neon }: EnemyParts, t: Tower, s: number): void {
   const base = CITADEL_DECK.top;
   const x = s * t.x;
-  hull.bevelSlab(
+  // P16-R06: a spire of flesh grown from the back, tapering, its pores lit like windows.
+  flesh.bevelSlab(
     rect(t.w, t.d, [x, t.z]),
     [base, base, base + t.h],
-    [0, 0.7],
-    H.base,
+    [0, t.w * 0.3],
+    t.h > 12 ? ICE_FLESH.purple : ICE_FLESH.sinew,
     {},
-    FROST.snow,
+    ICE_FLESH.rime,
   );
   // The left half's towers have the other colour, so the city is not a mirror image.
   const lit = s > 0 ? t.lit : t.lit === AURORA ? VIOLET : AURORA;
@@ -104,13 +106,14 @@ function drawTower({ hull, neon }: EnemyParts, t: Tower, s: number): void {
   if (!t.tier) return;
   const [w, d, h] = t.tier;
   const top = base + t.h;
-  hull.bevelSlab(
-    rect(w, d, [x, t.z - 0.5]),
-    [top, top, top + h],
-    [0, 0.5],
-    H.panel,
-    {},
-    FROST.snow,
+  // A crystal grown out of the spire's tip.
+  flesh.cylinder(
+    Math.min(w, d) * 0.4,
+    h * 1.4,
+    4,
+    ICE_FLESH.crystal,
+    { at: [x, top, t.z - 0.5] },
+    0,
   );
   windows(neon, [x, top - 1, t.z - 0.5 + d / 2 + 0.1], [w, h + 1], lit);
 }
@@ -128,10 +131,10 @@ export function drawCity(p: EnemyParts): void {
   for (const s of SIDES) {
     for (const t of TOWERS) drawTower(p, t, s);
     const at: Vec3 = [s * 15, CITADEL_DECK.top, 77];
-    p.hull.cylinder(5.6, 1.2, 8, H.panel, { at });
+    p.flesh.cylinder(5.6, 1.2, 7, ICE_FLESH.purple, { at });
     p.neon.lathe(CITY_DOME, 8, s > 0 ? AURORA : VIOLET, { at: [at[0], at[1] + 1.2, at[2]] });
-    p.hull.ring(5.2, 0.6, 8, FROST.snow, { at: [at[0], at[1] + 1.2, at[2]] });
-    p.hull.cylinder(0.4, 9, 4, H.dark, { at: [s * 26, CITADEL_DECK.top + 21, 60] }, 0.2);
+    p.hull.ring(5.2, 0.6, 8, H.panel, { at: [at[0], at[1] + 1.2, at[2]] });
+    p.flesh.cylinder(0.4, 9, 4, ICE_FLESH.sinew, { at: [s * 26, CITADEL_DECK.top + 21, 60] }, 0.2);
     p.neon.box([0.8, 0.8, 0.8], VIOLET, { at: [s * 26, CITADEL_DECK.top + 30, 60] });
   }
 }
@@ -149,6 +152,6 @@ export function icicles(
   for (let i = 0; i < count; i++) {
     const t = (i + 0.5) / count;
     const at: Vec3 = [a[0] + (b[0] - a[0]) * t, y, a[1] + (b[1] - a[1]) * t];
-    hull.cylinder(0.9, 3 + (i % 3) * 1.6, 4, FROST.ice, { at, pitch: Math.PI }, 0);
+    hull.cylinder(0.9, 3 + (i % 3) * 1.6, 4, ICE_FLESH.crystal, { at, pitch: Math.PI }, 0);
   }
 }

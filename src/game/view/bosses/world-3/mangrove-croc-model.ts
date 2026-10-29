@@ -3,7 +3,10 @@ import type { EnemyModel } from '../../../../render/game-view';
 import type { OutlinePoint } from '../../../../render/geometry/outline';
 import { CROC_DOME, MANGROVE_CROC } from '../../../config/bosses/world-3/mangrove-croc';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { decal, HULL_SECTION, sideStripe, SIDES } from '../../enemies/enemy-shapes';
+import { decal, sideStripe, SIDES } from '../../enemies/enemy-shapes';
+import { reactorSac } from '../../enemies/organic-parts';
+import { organ, ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, gland, JUNGLE_FLESH, spine } from './jungle-flesh';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { vent } from '../mini-boss-greebles';
 import { H, offset, SHADE, WHITE } from '../mini-boss-shapes';
@@ -66,12 +69,20 @@ function topAt(z: number): number {
 }
 
 /** The hull, its skirt, its green neon chines and the pontoons' pylons. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.loft(HULL_SECTION, HULL, H.base);
+function drawHull(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R05: a living croc's swollen, moss-skinned body; its hover skirt a grafted metal belly.
+  flesh.loft(ROUND_SECTION, HULL, JUNGLE_FLESH);
   hull.bevelSlab(SKIRT, [-4.5, -3.5, -2.5], [0.5, 0.5], H.dark, {}, SWAMP.mud);
-  for (const side of [1, 4]) {
+  spine(
+    p,
+    HULL.slice(1).map(([z, , , t]) => [0, t + 0.4, z] as const),
+    { at: [-30, -18, -6], halfWidth: 9, y: 4, height: 6.2 },
+    N,
+  );
+  for (const side of [1, 6]) {
     neon.loft(
-      sideStripe(HULL_SECTION, side, [0.2, 0.45], 1.03),
+      sideStripe(ROUND_SECTION, side, [0.2, 0.45], 1.03),
       HULL.slice(1, 6),
       N,
       {},
@@ -90,10 +101,13 @@ function drawHull({ hull, neon }: EnemyParts): void {
 }
 
 /** The head: its two raised eyes with green neon slits, nostrils at the snout, a brow ridge. */
-function drawHead({ hull, neon, charge }: EnemyParts): void {
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon, charge } = p;
   for (const s of SIDES) {
     const at: Vec3 = [s * EYE.x, topAt(EYE.z) - 1, EYE.z];
-    hull.cylinder(EYE.radius, EYE.height - at[1], 6, H.panel, { at }, EYE.radius * 0.7);
+    // P16-R05: a bulging flesh eye socket, its eye a gland under the neon slit.
+    organ(flesh, EYE.radius, 6, F.sinew, { at }, (EYE.height - at[1]) / (EYE.radius * 2));
+    gland(p, [s * EYE.x, EYE.height - 1.6, EYE.z], 1.6, N);
     const slit: OutlinePoint[] = [
       [s * (EYE.x - 2.4), EYE.z - 0.6],
       [s * (EYE.x + 2.2), EYE.z - 1.6],
@@ -164,7 +178,7 @@ export function buildMangroveCroc(scene: Scene): EnemyModel {
       drawHull(p);
       drawHead(p);
       drawBack(p);
-      for (const s of SIDES) p.reactor([s * 4, 3, -45], 2.2);
+      for (const s of SIDES) reactorSac(p, [s * 4, 3, -45], 2.2, N, { flesh: F.sinew });
     },
     parts: { 'jaw-cannon': jawCannon, 'pontoon-left': pontoon, 'pontoon-right': pontoon },
     limbs: CROC_JAWS,

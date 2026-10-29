@@ -7,8 +7,10 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { flipX, sideStripe, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { edgeStrips, shift, turret } from '../final-boss-shapes';
-import { hazard, plate, rect, seam, vent } from '../mini-boss-greebles';
-import { FROST, iceChunk, icicle } from './floe-breaker-frost';
+import { plate, rect } from '../mini-boss-greebles';
+import { organ, ribs } from '../../../../render/geometry/organic';
+import { FROST } from './floe-breaker-frost';
+import { crystals, gland, glowVein, ICE_FLESH, spineRow } from './w2-organic';
 import { deckDressing, hullDressing } from './narwhal-details';
 import { ballastPod, hornLance, SUB_SECTION, torpedoTube } from './narwhal-parts';
 
@@ -39,7 +41,7 @@ const HULL = [
 const BACK = 4;
 /** Snow lies in patches along its back, between the neon lines. */
 const hullPaint = (side: number, band: number) =>
-  side === BACK && band % 2 === 1 ? FROST.snow : undefined;
+  side === BACK && band % 2 === 1 ? ICE_FLESH.rime : band === 0 ? ICE_FLESH.bone : undefined;
 /** The sail (conning tower) on its back (loft stations, aft to front). */
 const SAIL = [
   [-8, 3, 15, 22],
@@ -48,7 +50,7 @@ const SAIL = [
   [22, 3, 15, 23],
 ] as const;
 /** The sail's flat top under its snow cap. */
-const sailPaint = (side: number) => (side === BACK ? FROST.snow : undefined);
+const sailPaint = (side: number) => (side === BACK ? ICE_FLESH.rime : undefined);
 /** The right sail plane (the screen's left: +X is the model's left side, mirrored for the other). */
 const SAIL_PLANE = [
   [4.5, 15],
@@ -86,8 +88,15 @@ const EMITTER = [
 ] as const;
 
 /** The pressure hull, its teal neon along the back, and the ballast pods' pylons. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.loft(SUB_SECTION, HULL, H.base, {}, { paint: hullPaint });
+function drawHull({ hull, flesh, neon }: EnemyParts): void {
+  // P16-R06: a whale's body of cold teal flesh, ribbed, metal bands grafted round it.
+  flesh.loft(SUB_SECTION, HULL, ICE_FLESH.teal, {}, { paint: hullPaint });
+  ribs(
+    flesh,
+    [-36, -28, 28, 36],
+    { halfWidth: 15.5, y: 3, height: 13, thickness: 0.8 },
+    ICE_FLESH.bone,
+  );
   for (const side of [BACK - 1, BACK + 1]) {
     const stripe = sideStripe(SUB_SECTION, side, [0.1, 0.35], 1.03);
     neon.loft(stripe, HULL.slice(1, 7), N, {}, { open: true });
@@ -101,14 +110,16 @@ function drawHull({ hull, neon }: EnemyParts): void {
       [s * 33, -12],
       [s * 15, -6],
     ] as const;
-    hull.bevelSlab(pylon, [3, 5, 7], [0.5, 1], H.panel, {}, FROST.panel);
+    flesh.bevelSlab(pylon, [3, 5, 7], [0.5, 1], ICE_FLESH.sinew, {}, ICE_FLESH.rime);
+    hull.ring(17.8, 1.4, 8, H.panel, { at: [0, 5, s * 6 - 10], pitch: QUARTER });
   }
 }
 
 /** The sail, its planes and the spiral emitter on its top. */
 function drawSail(p: EnemyParts): void {
-  const { hull, neon, charge, muzzle } = p;
-  hull.loft(SUB_SECTION, SAIL, H.panel, {}, { paint: sailPaint });
+  const { hull, flesh, neon, charge, muzzle } = p;
+  // The dorsal hump where the sail was, its planes now fins.
+  flesh.loft(SUB_SECTION, SAIL, ICE_FLESH.purple, {}, { paint: sailPaint });
   edgeStrips(
     neon,
     [
@@ -121,10 +132,10 @@ function drawSail(p: EnemyParts): void {
   );
   for (const s of SIDES) {
     const plane = s > 0 ? SAIL_PLANE : flipX(SAIL_PLANE);
-    hull.bevelSlab(plane, [21, 22, 23], [0.3, 0.6], H.base, {}, FROST.snow);
-    icicle(hull, [s * 12, 21, 8.5], 3);
-    // Periscope and snorkel masts, of different heights.
-    hull.cylinder(0.8, 4 + s * 1.5, 4, H.dark, { at: [s * 2.2, 27, 2] });
+    flesh.bevelSlab(plane, [21, 22, 23], [0.3, 0.6], ICE_FLESH.membrane, {}, ICE_FLESH.purple);
+    crystals(flesh, [s * 12, 22, 9], 2.6, 2);
+    // Feelers on the hump, of different heights.
+    flesh.cylinder(0.8, 4 + s * 1.5, 4, ICE_FLESH.sinew, { at: [s * 2.2, 27, 2] }, 0.2);
   }
   hull.lathe(EMITTER, 8, H.dark, { at: [0, 27, 10] });
   neon.ring(3.3, 0.5, 8, N, { at: [0, 27.4, 10] });
@@ -134,10 +145,11 @@ function drawSail(p: EnemyParts): void {
 
 /** The cruciform tail: stern planes, rudders, the propeller shroud and its reactor. */
 function drawTail(p: EnemyParts): void {
-  const { hull, neon } = p;
+  const { hull, flesh, neon } = p;
   for (const s of SIDES) {
+    // The tail flukes, flesh where the stern planes were.
     const plane = s > 0 ? STERN_PLANE : flipX(STERN_PLANE);
-    hull.bevelSlab(plane, [4, 5, 6.5], [0.4, 0.8], H.base, {}, FROST.panel);
+    flesh.bevelSlab(plane, [4, 5, 6.5], [0.4, 0.8], ICE_FLESH.teal, {}, ICE_FLESH.rime);
     edgeStrips(
       neon,
       s > 0 ? STERN_PLANE.slice(0, 2) : flipX(STERN_PLANE.slice(0, 2)),
@@ -145,30 +157,37 @@ function drawTail(p: EnemyParts): void {
       [5.6, 6.6],
       N,
     );
-    icicle(hull, [s * 22, 4, -62], 3.5);
-    icicle(hull, [s * 14, 4, -60], 2.2);
+    crystals(flesh, [s * 22, 6, -60], 3, 2);
   }
-  hull.bevelSlab(RUDDER, [-0.8, 0, 0.8], [0.2, 0.4], H.panel, { at: [0, 9, 0], roll: QUARTER });
-  hull.bevelSlab(RUDDER, [-0.8, 0, 0.8], [0.2, 0.4], H.base, { at: [0, 1, 0], roll: -QUARTER });
+  flesh.bevelSlab(RUDDER, [-0.8, 0, 0.8], [0.2, 0.4], ICE_FLESH.sinew, {
+    at: [0, 9, 0],
+    roll: QUARTER,
+  });
+  flesh.bevelSlab(RUDDER, [-0.8, 0, 0.8], [0.2, 0.4], ICE_FLESH.sinew, {
+    at: [0, 1, 0],
+    roll: -QUARTER,
+  });
+  organ(flesh, 6.5, 7, ICE_FLESH.purple, { at: [0, 5, -72], pitch: QUARTER }, 0.6);
   hull.lathe(SHROUD, 8, H.dark, { at: [0, 5, -73], pitch: QUARTER }, false);
   neon.ring(7.2, 0.8, 8, N, { at: [0, 5, -70], pitch: QUARTER });
   p.reactor([0, 5, -67], 3.6);
+  glowVein(p, [0, 10, -66], [0, 14, -44], 1.2, N);
 }
 
 /** Deck details: hatches, vents, frost, ice chunks, hazard paint. */
 function drawDeck(p: EnemyParts): void {
-  const { hull } = p;
-  const deck: Vec3 = [0, 17.4, 0];
+  const { hull, flesh } = p;
   plate(hull, rect(5, 7), [17.6, 0.5], FROST.panel, { at: [0, 0, -18] });
   plate(hull, rect(4, 4), [15.6, 0.5], H.panel, { at: [0, 0, -38] });
-  vent(hull, shift(deck, [0, -1.2, -26]), [4, 8], 4);
-  seam(hull, [-5, 26], [-5, 40], [16.5, 0.6, 0.5], H.dark);
-  seam(hull, [5, -48], [5, -26], [15, 0.6, 0.5], H.dark);
-  hazard(hull, [0, 16.8, 44], [6, 2], 4, 0);
-  iceChunk(hull, [6, 16.6, -32], 2.4);
-  iceChunk(hull, [-7, 16.6, 24], 1.8);
-  iceChunk(hull, [-9, 12, -48], 2.2);
-  for (const s of SIDES) icicle(hull, [s * 17.5, -1, 0], 3);
+  gland(p, [0, 17, -26], 1.6, N);
+  spineRow(flesh, [0, 16, -50], [0, 17, -30], 4, 3.5);
+  crystals(flesh, [6, 16.6, -32], 3.4);
+  crystals(flesh, [-7, 16.6, 24], 2.6);
+  crystals(flesh, [-9, 12, -48], 3);
+  for (const s of SIDES) {
+    glowVein(p, [s * 5, 17, 20], [s * 14, 10, 44], 1, N);
+    glowVein(p, [s * 5, 16, -14], [s * 15, 8, -48], 1, N);
+  }
 }
 
 /** The deck gun on the forward deck (the core's turret), around its pivot `at`. */
@@ -181,6 +200,8 @@ function deckGun(p: EnemyParts, at: Vec3): void {
  * P08-R10: the Narwhal, a long flying submarine 5 L from its tail to the tip of its spiral horn,
  * teal neon along its back; its horn lance, two torpedo tubes on its flanks and two ballast
  * pods on pylons are its parts, its deck gun and the emitter on its sail the core's guns.
+ * P16-R06: now a living cyber-narwhal, a whale of cold flesh, ribbed, with fins and flukes, its
+ * horn of bone; its torpedo tubes and ballast sacs swell from its flanks, metal grafted on.
  */
 export function buildNarwhal(scene: Scene): EnemyModel {
   return buildBossModel(NARWHAL, scene, N, {

@@ -5,9 +5,12 @@ import { OWL_CHIN_GUNS, OWL_CROWN, SNOW_OWL } from '../../../config/bosses/world
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { canopyPaint, FIGHTER_SECTION, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
-import { lamps, seam, vent } from '../mini-boss-greebles';
-import { H, QUARTER, scaled, SHADE, socket, WHITE } from '../mini-boss-shapes';
-import { eye, FROST, icicles, ICE, OWL_WHITE, radarPod } from './snow-owl-parts';
+import { lamps, seam } from '../mini-boss-greebles';
+import { H, QUARTER, scaled, SHADE, WHITE } from '../mini-boss-shapes';
+import { ribs } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { eye, icicles, OWL_WHITE, radarPod } from './snow-owl-parts';
+import { crystals, gland, ICE_FLESH, sinew, spineRow } from './w2-organic';
 
 // P08-R10, 2-3: the Snow Owl. Logical pixels, nose +Z, Y up (towards the camera).
 type Vec3 = [number, number, number];
@@ -69,10 +72,17 @@ const WING_ICICLES: Vec3[] = [
 ];
 
 /** The wings: dark metal under a crust of snow, white neon along their leading edges. */
-function drawWings({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(WING, [-1.2, 0, 1.6], [0.8, 1.2], H.base, {}, H.panel);
-  // Snow lies on the front of the wings; the feathers behind stay dark.
-  hull.bevelSlab(scaled(WING, 0.86, 0, 2), [1.5, 1.7, 2.1], [0, 0.5], ICE, {}, FROST);
+function drawWings({ hull, flesh, neon }: EnemyParts): void {
+  // P16-R05: broad membrane wings on bone struts, rime on their fronts; too big to flutter.
+  flesh.bevelSlab(WING, [-1.2, 0, 1.6], [0.8, 1.2], ICE_FLESH.membrane, {}, ICE_FLESH.purple);
+  flesh.bevelSlab(
+    scaled(WING, 0.86, 0, 2),
+    [1.5, 1.7, 2.1],
+    [0, 0.5],
+    ICE_FLESH.teal,
+    {},
+    ICE_FLESH.rime,
+  );
   for (const s of SIDES) {
     LEADING_EDGE.slice(1).forEach(([x, z], i) => {
       const [ax, az] = LEADING_EDGE[i] ?? [x, z];
@@ -85,10 +95,11 @@ function drawWings({ hull, neon }: EnemyParts): void {
       [30, -7],
       [21, -9],
     ] as const) {
-      seam(hull, [s * x, z + 4], [s * (x - 2), z - 3], [1.7, 0.6, 0.4], H.dark);
+      sinew(flesh, [s * 6, 2.4, 2], [s * (x - 2), 2, z - 3], 0.7, ICE_FLESH.bone, [0, 0.6, 4]);
     }
-    icicles(hull, WING_ICICLES, s);
-    socket(hull, [s * 38, 1.6, 2], 8, 1);
+    sinew(flesh, [s * 5, 2.4, 10], [s * 50, 1.8, -2], 1.1, ICE_FLESH.bone, [0, 1, 6]);
+    icicles(flesh, WING_ICICLES, s);
+    hull.ring(8, 1, 8, H.panel, { at: [s * 38, 1.6, 2] });
   }
   lamps(neon, [[50.5, 0.4, -3]], 1.4, PORT_RED);
   lamps(neon, [[-50.5, 0.4, -3]], 1.4, STARBOARD_GREEN);
@@ -96,19 +107,33 @@ function drawWings({ hull, neon }: EnemyParts): void {
 
 /** The body: a rounded fuselage, snow on its back, ear tufts, vents and twin reactors. */
 function drawBody(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.loft(FIGHTER_SECTION, BODY, H.panel, {}, { paint: canopyPaint([1, 2], FROST) });
-  // The neck holding the eye's housing.
-  hull.cylinder(6, 5, 8, H.dark, { at: [0, 5, 23], pitch: QUARTER, yaw: Math.PI / 8 });
+  const { hull, flesh, neon } = p;
+  // P16-R05: a plump body of cold flesh, ribbed, a sinewy neck holding the great eye.
+  hull.ring(6.4, 1.2, 8, H.panel, { at: [0, 5, 21], pitch: QUARTER });
+  flesh.loft(
+    FIGHTER_SECTION,
+    BODY,
+    ICE_FLESH.teal,
+    {},
+    { paint: canopyPaint([1, 2], ICE_FLESH.rime) },
+  );
+  ribs(flesh, [-16, -8, 0], { halfWidth: 11, y: 4, height: 7, thickness: 0.7 }, ICE_FLESH.bone);
+  flesh.cylinder(6, 5, 7, ICE_FLESH.sinew, { at: [0, 5, 23], pitch: QUARTER, yaw: Math.PI / 8 });
   for (const s of SIDES) {
     // Ear tufts, swept back over the head, a white light on each tip.
-    hull.box([2.4, 9, 4], H.base, { at: [s * 6.5, 8, 15], roll: -s * 0.45, pitch: -0.5 }, FROST);
+    flesh.box(
+      [2.4, 9, 4],
+      ICE_FLESH.purple,
+      { at: [s * 6.5, 8, 15], roll: -s * 0.45, pitch: -0.5 },
+      ICE_FLESH.rime,
+    );
     neon.box([1.2, 1.2, 1.2], OWL_WHITE, { at: [s * 9.9, 14.6, 10.7] });
-    vent(hull, [s * 8, 8.6, -10], [3.5, 7], 3, s * 0.15);
+    gland(p, [s * 7, 9.4, -10], 1.2, OWL_WHITE);
+    crystals(flesh, [s * 5, 9, -20], 2.6);
     neon.box([0.6, 0.4, 14], OWL_WHITE, { at: [s * 10.6, 6.2, -8], yaw: s * 0.05 });
-    p.reactor([s * 4, 2.5, -27.2], 2.6);
+    reactorSac(p, [s * 4, 2.5, -27.2], 2.6, OWL_WHITE, { flesh: ICE_FLESH.purple });
   }
-  seam(hull, [0, 2], [0, -20], [11, 0.8, 0.5], H.dark);
+  spineRow(flesh, [0, 12, 4], [0, 9, -18], 4, 2.6);
 }
 
 /** The crown emitter on the back (its rings) and the chin guns either side of the eye. */
@@ -132,6 +157,8 @@ function drawGuns({ hull, neon, charge, muzzle }: EnemyParts): void {
 /**
  * P08-R10: the Snow Owl, a wide-winged recon drone with white neon: snow on its broad wings,
  * two radar pods with turning antennas on them and a big round sensor eye at its front.
+ * P16-R05: now a living owl of cold flesh with membrane wings on bone, its radomes grafted on
+ * swollen nacelles, its eye a real eye in a lid of flesh.
  */
 export function buildSnowOwl(scene: Scene): EnemyModel {
   return buildBossModel(SNOW_OWL, scene, OWL_WHITE, {

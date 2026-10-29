@@ -10,10 +10,12 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION, sideStripe } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-model';
-import { hazard, vent } from '../mini-boss-greebles';
+import { organ, ribs } from '../../../../render/geometry/organic';
+import { vent } from '../mini-boss-greebles';
+import { gland, ICE_FLESH } from './w2-organic';
 import { cog, GEAR } from '../mini-boss-mechanism';
-import { H, neonBand, offset, scaled, SHADE, WHITE } from '../mini-boss-shapes';
-import { barrelTo, FROST, icicles, PACKED, snowCap } from './avalanche-frost';
+import { H, neonBand, offset, scaled, WHITE } from '../mini-boss-shapes';
+import { barrelTo, icicles, PACKED, snowCap } from './avalanche-frost';
 
 // P08-R10, 2-4: the Glacier Colossus's parts. Logical pixels, nose +Z, Y up (towards the
 // camera); each part is drawn around its centre `at` (model space), the left ones at +X.
@@ -53,8 +55,9 @@ const sided = (at: Vec3, left: readonly Muzzle[]): readonly Muzzle[] =>
  * The mount a cutter turns on (phase 8 review: the cutter, {@link cutter}, is its turret and
  * aims its laser): a drum under its pod, ringed with neon.
  */
-export function cutterMount({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.cylinder(8, 3, 8, H.dark, { at: offset(at, 0, -7.5, 0) });
+export function cutterMount({ flesh, neon }: EnemyParts, at: Vec3): void {
+  // P16-R06: a shoulder of muscle the cutter limb turns on.
+  flesh.cylinder(8, 3, 7, ICE_FLESH.purple, { at: offset(at, 0, -7.5, 0) }, 7);
   neon.ring(8.3, 0.6, 8, COLOSSUS_NEON, { at: offset(at, 0, -5, 0) });
 }
 
@@ -63,14 +66,15 @@ export function cutterMount({ hull, neon }: EnemyParts, at: Vec3): void {
  * its emitter at the front, a saw disc at its flank, frost on its back.
  */
 export function cutter(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]);
-  hull.loft(
+  // P16-R06: a limb of flesh, an armour plate on its back, the laser and saw grafted on.
+  flesh.loft(
     POD_SECTION,
     CUTTER_POD,
-    H.base,
+    ICE_FLESH.sinew,
     { at },
-    { paint: (side) => (side === 2 ? H.panel : undefined) },
+    { paint: (side) => (side === 2 ? ICE_FLESH.teal : undefined) },
   );
   for (const side of [1, 3]) {
     const stripe = sideStripe(POD_SECTION, side, [0.3, 0.7]);
@@ -84,7 +88,7 @@ export function cutter(p: EnemyParts, at: Vec3): void {
   });
   cog(hull, offset(at, s * 9.5, 2, 6), 6, 10);
   snowCap(
-    hull,
+    flesh,
     [
       [-3.5, -16],
       [3.5, -14],
@@ -94,7 +98,7 @@ export function cutter(p: EnemyParts, at: Vec3): void {
     at[1] + 9.6,
     0.8,
   );
-  icicles(hull, [offset(at, 5, -2.5, -8), offset(at, -5, -2.5, 0), offset(at, 5, -2.5, 10)], 4);
+  icicles(flesh, [offset(at, 5, -2.5, -8), offset(at, -5, -2.5, 0), offset(at, 5, -2.5, 10)], 4);
 }
 
 /**
@@ -102,8 +106,10 @@ export function cutter(p: EnemyParts, at: Vec3): void {
  * that fire fans of big shells, a red-orange ring round its foot, snow on its roof.
  */
 export function oreCannon(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(scaled(OCTAGON, 13), [6, 9, 15], [0, 1.5], H.base, { at }, H.panel);
+  const { hull, flesh, neon } = p;
+  // P16-R06: an armoured growth, a swollen organ under a metal casemate.
+  organ(flesh, 13, 8, ICE_FLESH.purple, { at: offset(at, 0, 2, 0) }, 0.45);
+  hull.bevelSlab(scaled(OCTAGON, 9), [12, 13.5, 15], [0, 1.2], H.base, { at }, H.panel);
   neonBand(neon, scaled(OCTAGON, 13), [6.5, 8.5], [1.02, 1.02], COLOSSUS_NEON, { at });
   hull.box([16, 6, 14], H.panel, { at: offset(at, 0, 9, 4) }, H.base);
   for (const tip of sided(at, COLOSSUS_ORE_GUNS)) {
@@ -112,7 +118,7 @@ export function oreCannon(p: EnemyParts, at: Vec3): void {
     hull.cylinder(3.4, 3, 6, GEAR, { at: [x, y, z - 13], pitch: Math.PI / 2 });
   }
   snowCap(
-    hull,
+    flesh,
     [
       [-6, -2],
       [5, -4],
@@ -122,7 +128,7 @@ export function oreCannon(p: EnemyParts, at: Vec3): void {
     15,
     1,
   );
-  hazard(hull, offset(at, 0, 15, -6.5), [10, 3], 5);
+  gland(p, offset(at, 0, 9, -11), 1.6, COLOSSUS_NEON);
 }
 
 /**
@@ -130,15 +136,16 @@ export function oreCannon(p: EnemyParts, at: Vec3): void {
  * between them; the ice around it has melted, the frost only on its outer rims.
  */
 export function heatSink(p: EnemyParts, at: Vec3): void {
-  const { hull, neon, charge } = p;
-  hull.bevelSlab(SINK_BASE, [8, 10, 12], [0, 1.2], H.base, { at }, H.panel);
+  const { hull, flesh, neon, charge } = p;
+  // P16-R06: a gill organ, its fleshy lamellae glowing between them.
+  flesh.bevelSlab(SINK_BASE, [8, 10, 12], [0, 1.2], ICE_FLESH.crimson, { at }, ICE_FLESH.purple);
   for (let i = 0; i < 6; i++) {
     const z = -9 + i * 4.4;
-    hull.box(
+    flesh.box(
       [26 - Math.abs(i - 2.5) * 2, FIN_HEIGHT, 1.4],
-      H.panel,
+      ICE_FLESH.membrane,
       { at: offset(at, 0, 12, z) },
-      SHADE.edge,
+      ICE_FLESH.sinew,
     );
     if (i < 5)
       neon.box([22 - Math.abs(i - 2) * 2, FIN_HEIGHT - 2, 1.6], COLOSSUS_NEON, {
@@ -147,10 +154,10 @@ export function heatSink(p: EnemyParts, at: Vec3): void {
   }
   charge.box([6, 0.6, 20], WHITE, { at: offset(at, 0, 12 + FIN_HEIGHT, 2) });
   for (const s of [-1, 1]) {
-    hull.box([3, FIN_HEIGHT + 2, 26], H.dark, { at: offset(at, s * 14.5, 12, 2) }, FROST);
+    hull.box([3, FIN_HEIGHT + 2, 26], H.dark, { at: offset(at, s * 14.5, 12, 2) }, H.panel);
   }
   icicles(
-    hull,
+    flesh,
     [offset(at, -15, 8, 14), offset(at, 15, 8, 14), offset(at, -12, 8, 17), offset(at, 12, 8, 17)],
     4,
   );
@@ -161,7 +168,7 @@ export function heatSink(p: EnemyParts, at: Vec3): void {
  * tubes (they light up as a salvo charges), vents and frost on its back.
  */
 export function missilePod(p: EnemyParts, at: Vec3): void {
-  const { hull, charge, muzzle } = p;
+  const { hull, flesh, charge, muzzle } = p;
   const box: OutlinePoint[] = [
     [-12, -11],
     [12, -11],
@@ -170,7 +177,15 @@ export function missilePod(p: EnemyParts, at: Vec3): void {
     [-9, 12],
     [-13, 8],
   ];
-  hull.bevelSlab(box, [15, 17, 22], [0, 1.4], H.base, { at }, H.panel);
+  // P16-R06: a brood sac on the stern, four metal tubes grafted in it, missiles growing inside.
+  flesh.bevelSlab(box, [15, 17, 22], [0, 3], ICE_FLESH.membrane, { at }, ICE_FLESH.purple);
+  ribs(
+    flesh,
+    [at[2] - 6, at[2] + 6],
+    { halfWidth: 13, y: 16, height: 6, thickness: 0.8 },
+    ICE_FLESH.bone,
+    { at: [at[0], 0, 0] },
+  );
   for (const cell of COLOSSUS_CELLS) {
     const tip = bossPoint(...cell);
     hull.ring(2.6, 1, 6, H.dark, { at: offset(tip, 0, -2.8, 0) });
@@ -179,7 +194,7 @@ export function missilePod(p: EnemyParts, at: Vec3): void {
   }
   vent(hull, offset(at, 0, 21.8, -8.5), [10, 3], 3);
   snowCap(
-    hull,
+    flesh,
     [
       [-12, 4],
       [-6, 2],

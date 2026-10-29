@@ -7,6 +7,7 @@ import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { decal, POD_SECTION } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-limbs';
+import { F, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-5: the Jaguar's destroyable parts (its two claw guns and its tail cannon) and its
 // spotted armour. Model space: logical pixels, nose +Z, Y up; each part drawn around its centre
@@ -24,7 +25,6 @@ export const AMBER: Rgb = BOSS_LOOK.neon.jaguar ?? [1, 0.6, 0.05];
 export const COAT: Rgb = [0.2, 0.135, 0.06];
 export const ROSETTE: Rgb = [0.03, 0.022, 0.015];
 const ROSETTE_HEART: Rgb = [0.13, 0.08, 0.03];
-const TALON: Rgb = [0.26, 0.25, 0.27];
 
 /**
  * A jaguar's rosette painted at height `y` around `[x, z]`: five dark blotches in a ring, `r`
@@ -75,10 +75,22 @@ const moved = (outline: readonly OutlinePoint[], [x, , z]: Vec3): OutlinePoint[]
  * A claw gun's mount (P09-R09): an armoured pad on an arm reaching forward from the wing root,
  * spotted on top, amber lights along its flank (its gun turns on it, {@link clawTurret}).
  */
-export function clawMount({ hull, neon }: EnemyParts, at: Vec3): void {
+export function clawMount(p: EnemyParts, at: Vec3): void {
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]) || 1;
-  hull.bevelSlab(moved(PAD, at), [-2, 0, PAD_TOP], [1, 1.4], H.panel, {}, COAT);
-  hull.box([7, 3.5, 14], H.base, { at: [at[0] - s * 2, -1.5, at[2] - 14] }, COAT);
+  // P16-R05: a muscled paw of spotted flesh, a metal ring grafted where its gun turns.
+  flesh.bevelSlab(moved(PAD, at), [-2, 0, PAD_TOP], [1, 1.4], F.sinew, {}, COAT);
+  flesh.box([7, 3.5, 14], F.sinew, { at: [at[0] - s * 2, -1.5, at[2] - 14] }, COAT);
+  hull.cylinder(7.2, 0.8, 8, H.panel, { at: [at[0], PAD_TOP - 0.6, at[2]], yaw: Math.PI / 8 });
+  veinTo(
+    p,
+    [
+      [at[0] - s * 2, 2.2, at[2] - 20],
+      [at[0] - s * 1, PAD_TOP, at[2] - 6],
+    ],
+    [0, 0.6, 0],
+    AMBER,
+  );
   rosette(hull, [at[0] + s * 4, at[2] - 14], 2, 2.05);
   neon.box([0.8, 0.6, 12], AMBER, { at: [at[0] + s * 8.2, 0.2, at[2] - 1], yaw: s * 0.12 });
   neon.ring(7.6, 0.5, 8, AMBER, { at: [at[0], PAD_TOP - 0.3, at[2]], yaw: Math.PI / 8 });
@@ -123,7 +135,7 @@ export function clawTurret(p: EnemyParts, at: Vec3): void {
   hull.box([9, 2.6, 4], H.dark, { at: [at[0], 4.6, at[2] + 4] }, COAT);
   for (const tip of tips) barrel(p, tip, [at[2] + 4, 1.2]);
   for (const dx of [-5, 0, 5]) {
-    hull.bevelSlab(BLADE, [3, 3.6, 4.6], [0.2, 0.5], TALON, {
+    p.flesh.bevelSlab(BLADE, [3, 3.6, 4.6], [0.2, 0.5], F.bone, {
       at: [at[0] + dx, 0, at[2] + (dx === 0 ? 7 : 5)],
       yaw: dx * 0.05,
     });
@@ -135,8 +147,9 @@ export function clawTurret(p: EnemyParts, at: Vec3): void {
 const PYLON_TOP = 13;
 
 /** The tail cannon's mount (P09-R09): a spotted pod at the tail's tip, a pylon, a lit ring. */
-export function tailMount({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.lathe(
+export function tailMount({ hull, flesh, neon }: EnemyParts, at: Vec3): void {
+  // P16-R05: a swollen tail tip of spotted flesh, the cannon's metal pylon grafted into it.
+  flesh.lathe(
     [
       [7, -2],
       [8, 1],

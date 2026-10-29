@@ -6,9 +6,12 @@ import { HULL_SECTION, SIDES } from '../../enemies/enemy-shapes';
 import { buildBossModel } from '../boss-model';
 import { bossPoint } from '../boss-limbs';
 import { barrels, edgeStrips, mirrored } from '../final-boss-shapes';
-import { lamps, mast, rect, seam } from '../mini-boss-greebles';
+import { lamps, mast, plate, rect } from '../mini-boss-greebles';
+import { organ } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { crystals, fringe, glowVein, ICE_FLESH, shell } from './w2-organic';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
-import { icicles, RIME, snowCap, spread } from './fjord-lynx-frost';
+import { icicles, snowCap, spread } from './fjord-lynx-frost';
 import { containerBay, hatchCovers } from './harbour-kraken-cargo';
 import { craneLimbs, DECK_Y, grab, ORANGE_NEON, pedestal } from './harbour-kraken-cranes';
 
@@ -59,11 +62,26 @@ const EMITTER: Vec3 = [0, 6, 68];
 const GUNS: Vec3 = [9, 9.5, 58];
 
 /** The hull, its orange-lit rim, the forecastle, frost and icicles along its sides. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(HULL, HULL_Y, [3, 2], H.base, {}, H.panel);
-  hull.bevelSlab(FORECASTLE, [DECK_Y - 1, DECK_Y, FORECASTLE_TOP], [0, 1], H.panel, {}, RIME);
+function drawHull(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: the mantle of a great kraken, cold crimson flesh under a ridged shell.
+  flesh.bevelSlab(HULL, HULL_Y, [3, 2], ICE_FLESH.crimson, {}, ICE_FLESH.purple);
+  shell(
+    flesh,
+    { tail: -64, nose: 46, segments: 6, width: 22, bottom: DECK_Y - 1, top: 11 },
+    ICE_FLESH.purple,
+  );
+  flesh.bevelSlab(
+    FORECASTLE,
+    [DECK_Y - 1, DECK_Y, FORECASTLE_TOP],
+    [0, 1],
+    ICE_FLESH.sinew,
+    {},
+    ICE_FLESH.rime,
+  );
+  plate(hull, rect(14, 8), [FORECASTLE_TOP, 0.6], H.panel, { at: [0, 0, 56] });
   snowCap(
-    hull,
+    flesh,
     [
       [-12, 62],
       [12, 62],
@@ -84,20 +102,24 @@ function drawHull({ hull, neon }: EnemyParts): void {
       [DECK_Y - 2, DECK_Y - 1],
       ORANGE_NEON,
     );
-    seam(hull, [s * 26, 30], [s * 26, -54], [DECK_Y, 1, 0.8], H.dark);
-    icicles(hull, spread([s * 30.5, -1, 20], [s * 30.5, -1, -50], 7), 5);
-    icicles(hull, spread([s * 21, -1, 58], [s * 11, -1, 71], 3), 4);
+    glowVein(p, [s * 8, 11, 30], [s * 26, DECK_Y, -50], 1.2, ORANGE_NEON);
+    fringe(flesh, [s * 29, -2, -30], [s, -0.3], 3, 9, ICE_FLESH.crimson);
+    icicles(flesh, spread([s * 30.5, -1, 20], [s * 30.5, -1, -50], 7), 5);
+    icicles(flesh, spread([s * 21, -1, 58], [s * 11, -1, 71], 3), 4);
+    crystals(flesh, [s * 16, 10, -40], 4);
   }
 }
 
 /** The bridge tower: a lofted block, dark windows lit as it charges, a funnel and a mast. */
 function drawBridge(p: EnemyParts): void {
-  const { hull, neon, charge } = p;
-  hull.loft(HULL_SECTION, BRIDGE, H.panel, {}, {});
-  snowCap(hull, rect(16, 12), 17, { at: [0, 0, -1] });
-  hull.box([22, 2.4, 1], H.dark, { at: [0, 13.4, 15.6], pitch: 0.4 });
+  const { hull, flesh, neon, charge } = p;
+  // The head amidships, its great eyes across its brow.
+  flesh.loft(HULL_SECTION, BRIDGE, ICE_FLESH.purple, {}, {});
+  snowCap(flesh, rect(16, 12), 17, { at: [0, 0, -1] });
+  flesh.box([22, 2.4, 1], ICE_FLESH.seam, { at: [0, 13.4, 15.6], pitch: 0.4 });
+  for (const s of SIDES) organ(p.vein, 2.2, 6, ORANGE_NEON, { at: [s * 11, 12, 12] }, 0.6);
   charge.box([18, 1, 0.6], WHITE, { at: [0, 14, 16.4], pitch: 0.4 });
-  hull.cylinder(4.5, 9, 8, H.base, { at: [-6, 16, -9] }, 4);
+  flesh.cylinder(4.5, 9, 6, ICE_FLESH.sinew, { at: [-6, 16, -9] }, 3);
   neon.ring(4.4, 1.2, 8, ORANGE_NEON, { at: [-6, 22, -9] });
   hull.cylinder(3.6, 0.5, 8, SHADE.soot, { at: [-6, 25, -9] });
   mast(p, [7, 17, -4], 9, ORANGE_NEON);
@@ -108,12 +130,14 @@ function drawBridge(p: EnemyParts): void {
 /** The bow: the laser emitter, its neon rings, and the twin guns either side of it. */
 function drawBow(p: EnemyParts): void {
   const { hull, neon, charge } = p;
+  // The beak, a metal emitter grafted in it.
+  organ(p.flesh, 6, 6, ICE_FLESH.bone, { at: offset(EMITTER, 0, 0, -6), pitch: QUARTER }, 0.6);
   hull.cylinder(5, 6, 8, H.dark, { at: EMITTER, pitch: QUARTER }, 4.2);
   neon.ring(5.1, 1, 8, ORANGE_NEON, { at: offset(EMITTER, 0, 0, 2), pitch: QUARTER });
   charge.lathe(LENS, 8, WHITE, { at: offset(EMITTER, 0, 0, 6), pitch: QUARTER });
   p.muzzle(offset(EMITTER, 0, 0, 10.4), 'laser');
   for (const s of SIDES) {
-    hull.box([5, 3, 6], H.panel, { at: [s * GUNS[0], FORECASTLE_TOP, GUNS[2] - 2] }, RIME);
+    hull.box([5, 3, 6], H.panel, { at: [s * GUNS[0], FORECASTLE_TOP, GUNS[2] - 2] }, H.base);
     barrels(p, [s * GUNS[0], GUNS[1], GUNS[2]], [1, 0], [1.2, 8]);
   }
 }
@@ -121,15 +145,17 @@ function drawBow(p: EnemyParts): void {
 /** The stern: the reactors and the hull's rudder fins. */
 function drawStern(p: EnemyParts): void {
   for (const s of SIDES) {
-    p.reactor([s * 12, 1.5, -66], 4);
-    p.hull.box([1.4, 6, 8], H.panel, { at: [s * 21, -6, -62] });
+    reactorSac(p, [s * 12, 1.5, -66], 4, ORANGE_NEON, { flesh: ICE_FLESH.purple });
+    p.flesh.box([1.4, 6, 8], ICE_FLESH.sinew, { at: [s * 21, -6, -62] });
   }
-  p.reactor([0, 1.5, -66], 3);
+  reactorSac(p, [0, 1.5, -66], 3, ORANGE_NEON, { flesh: ICE_FLESH.crimson });
 }
 
 /**
  * P08-R10: the Harbour Kraken, a cargo crane-ship with four crane arms swinging at the shoulder
  * and the elbow, a grab cannon hanging from each, orange neon, frost over its deck.
+ * P16-R06: now a living kraken, a shelled mantle of cold flesh with a head and beak amidships,
+ * four tentacles ending in clawed gun-fists, a brood sac of eggs at its stern.
  */
 export function buildHarbourKraken(scene: Scene): EnemyModel {
   return buildBossModel(HARBOUR_KRAKEN, scene, ORANGE_NEON, {

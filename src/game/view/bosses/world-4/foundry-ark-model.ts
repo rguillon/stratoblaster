@@ -24,15 +24,17 @@ import {
   MOLTEN,
   railCannon,
   railMount,
-  RUST,
   SOOT,
 } from './foundry-ark-parts';
+import { backRibs, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 import { drawYard } from './foundry-ark-yard';
 
 // P10-R11, 4-4: the Foundry Ark. Model space: logical pixels, nose +Z (down the screen), Y up
 // towards the camera; +X is the screen's left. A huge flying foundry: an iron deck carrying a
 // blast furnace at its heart, slag channels glowing from it to the crucibles aft, a chimney row
 // on the foredeck, a missile battery on the bow and outriggers out to the rail cannons.
+// P16-R06: a living colossus, its broad back scorched flesh ribbed in bone, its furnace a swollen
+// heart, slag running in its veins, its stacks, engines, rails and guns metal grafts.
 
 /** The deck (right half, front to tail), closed across the bow. */
 const DECK = symmetric(
@@ -82,13 +84,34 @@ const CHANNEL: readonly OutlinePoint[] = [
 ];
 
 /** The deck with its lit rim, the outriggers, the engine block, rust and soot. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(DECK, [-10, -3, DECK_TOP], [3, 3], H.dark, {}, H.base);
+function drawHull(p: EnemyParts): void {
+  const { hull, neon } = p;
+  p.flesh.bevelSlab(DECK, [-10, -3, DECK_TOP], [3, 3], SKIN.base, {}, SKIN.dark);
+  backRibs(p, [-80, -66, 60, 72], { halfWidth: 46, y: 0, height: 5.5, thickness: 1.2 });
   edgeLights(neon, DECK, [1, 2, 3, 4, 13, 14, 15, 16], [-3, -1.8], ARK_ORANGE);
   hull.bevelSlab(ENGINES, [-8, -1, 7], [1, 1.5], H.dark, {}, H.panel);
   for (const s of SIDES) {
     const wing = s > 0 ? OUTRIGGER : flipX(OUTRIGGER);
-    hull.bevelSlab(wing, [-5, -1, DECK_TOP - 0.6], [1, 2], H.base, {}, RUST);
+    p.flesh.bevelSlab(wing, [-5, -1, DECK_TOP - 0.6], [1, 2], SKIN.panel, {}, SKIN.dark);
+    magmaVein(
+      p,
+      [
+        [s * 20, DECK_TOP + 0.3, -50],
+        [s * 44, DECK_TOP + 0.3, -36],
+        [s * 56, DECK_TOP + 0.3, -10],
+      ],
+      1.6,
+      MOLTEN,
+    );
+    glands(
+      p,
+      [
+        [s * 50, DECK_TOP, 10],
+        [s * 18, DECK_TOP, 84],
+      ],
+      2.6,
+      ARK_ORANGE,
+    );
     edgeLights(neon, wing, [0, 1, 2, 3, 4], [-2, -1], ARK_ORANGE);
     for (const z of [-60, -20, 40]) vent(hull, [s * 48, DECK_TOP, z], [8, 10], 4);
     hazard(hull, [s * 40, 76], [10, 6], 4, DECK_TOP + 0.05);
@@ -101,7 +124,7 @@ function drawHull({ hull, neon }: EnemyParts): void {
 /** The blast furnace (the core): hearth, stack, glowing slits, the furnace door and tap guns. */
 function drawFurnace(p: EnemyParts): void {
   const { hull, neon, charge, muzzle } = p;
-  hull.lathe(HEARTH, 8, H.base, { at: [0, HEARTH_FOOT, 0], yaw: Math.PI / 8 });
+  p.flesh.lathe(HEARTH, 8, SKIN.base, { at: [0, HEARTH_FOOT, 0], yaw: Math.PI / 8 });
   hull.lathe(STACK, 8, H.panel, { at: [0, STACK_FOOT, 0], yaw: Math.PI / 8 });
   hull.ring(11.2, 2.6, 8, SOOT, { at: [0, STACK_FOOT + 17, 0], yaw: Math.PI / 8 });
   neon.ring(12.3, 0.8, 8, ARK_ORANGE, { at: [0, STACK_FOOT + 6, 0], yaw: Math.PI / 8 });
@@ -126,12 +149,12 @@ function drawFurnace(p: EnemyParts): void {
 }
 
 /** The slag channels glowing across the deck from the furnace to the crucibles. */
-function drawChannels({ hull, neon }: EnemyParts): void {
+function drawChannels({ hull, neon, flesh }: EnemyParts): void {
   for (const s of SIDES) {
     CHANNEL.slice(1).forEach((b, i) => {
       const a = CHANNEL[i];
       if (!a) return;
-      seam(hull, [s * a[0], a[1]], [s * b[0], b[1]], [DECK_TOP, 5, 1], H.dark);
+      seam(flesh, [s * a[0], a[1]], [s * b[0], b[1]], [DECK_TOP, 5, 1], SKIN.panel);
       seam(neon, [s * a[0], a[1]], [s * b[0], b[1]], [DECK_TOP + 0.4, 2.6, 0.7], MOLTEN);
     });
   }
@@ -142,8 +165,8 @@ function drawChannels({ hull, neon }: EnemyParts): void {
 /** The engines' nozzles at the stern, and red lamps on the deck's corners. */
 function drawStern(p: EnemyParts): void {
   for (const s of SIDES) {
-    p.reactor([s * 12, 1, -100.2], 5.5);
-    p.reactor([s * 28, 1, -100.2], 4.2);
+    reactorSacs(p, [[s * 12, 1, -100.2]], 5.5, MOLTEN);
+    reactorSacs(p, [[s * 28, 1, -100.2]], 4.2, MOLTEN);
     p.neon.box([1.2, 0.8, 1.2], ARK_RED, { at: [s * 56, DECK_TOP + 0.2, -74] });
     p.neon.box([1.2, 0.8, 1.2], ARK_RED, { at: [s * 40, DECK_TOP + 0.2, 86] });
   }

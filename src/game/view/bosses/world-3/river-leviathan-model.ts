@@ -14,7 +14,8 @@ import { bossPoint, buildBossModel } from '../boss-model';
 import type { PartDrawing } from '../boss-model';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
 import { SUB_SECTION } from '../world-2/narwhal-parts';
-import { barrelTo, moss, scutes, stone, SWAMP } from './mangrove-croc-jungle';
+import { barrelTo, moss, scutes, stone } from './mangrove-croc-jungle';
+import { F, gland } from './jungle-flesh';
 import {
   LEVIATHAN_TEAL as N,
   leviathanBody,
@@ -53,8 +54,11 @@ const EMITTER = [
 ] as const;
 
 /** The head's hull, its jaw line, the teal light along its back and its glaring eyes. */
-function drawHead({ hull, neon }: EnemyParts): void {
-  hull.loft(SUB_SECTION, HEAD, H.base);
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a living serpent's head of teal flesh, its scutes and jaw line grafted armour.
+  flesh.loft(SUB_SECTION, HEAD, F.teal);
+  for (const s of SIDES) gland(p, [s * 9, 10.6, 10], 2.2, N);
   // The jaw line: a dark lip round the snout, under the eyes.
   for (const s of SIDES) {
     hull.box([2, 2.4, 22], H.dark, { at: [s * 13.5, 1, 12], yaw: -s * 0.3 });
@@ -81,11 +85,12 @@ function drawHead({ hull, neon }: EnemyParts): void {
 }
 
 /** The crest on its back and the ring emitter at its top (the core's spirals). */
-function drawCrest({ hull, neon, charge, muzzle }: EnemyParts): void {
+function drawCrest({ hull, flesh, neon, charge, muzzle }: EnemyParts): void {
   const [tip] = LEVIATHAN_CREST;
   if (!tip) return;
   const top = bossPoint(...tip);
-  hull.slab(CREST, [-1.4, 1.4], H.panel, { pitch: -QUARTER, yaw: -QUARTER }, SHADE.edge);
+  // P16-R06: a membrane fin on its back, the emitter grafted at its top.
+  flesh.slab(CREST, [-1.4, 1.4], F.membrane, { pitch: -QUARTER, yaw: -QUARTER }, F.bone);
   const base = offset(top, 0, -1.5, 0);
   hull.lathe(EMITTER, 8, H.dark, { at: base });
   neon.ring(3.7, 0.5, 8, N, { at: base });
@@ -108,7 +113,7 @@ function drawSnout(p: EnemyParts): void {
     barrelTo(p, tip, [1.3, 6]);
     const [x, , z] = bossPoint(...tip);
     hull.box([3.6, 3, 5], H.dark, { at: [x, 1.6, z - 9] }, H.panel);
-    hull.cylinder(0.9, 2.6, 4, SWAMP.tooth, { at: [x * 0.6, 2, z - 1], pitch: Math.PI }, 0);
+    p.flesh.cylinder(0.9, 2.6, 4, F.bone, { at: [x * 0.6, 2, z - 1], pitch: Math.PI }, 0);
   }
 }
 

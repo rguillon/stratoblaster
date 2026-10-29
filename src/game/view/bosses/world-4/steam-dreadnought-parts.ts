@@ -12,6 +12,8 @@ import { missileTips } from '../final-boss-shapes';
 import { hazard } from '../mini-boss-greebles';
 import { H, offset, SHADE, WHITE } from '../mini-boss-shapes';
 import { barrelTo, blot, FORGE, moltenSeam, soot, steam } from './black-sands-kit';
+import { organ } from '../../../../render/geometry/organic';
+import { SKIN } from './living-forge';
 
 // P10-R11, 4-1: the Steam Dreadnought's parts: its two smokestacks, its two broadside turrets
 // (each turning on its barbette, D-058) and the missile rack on its stern. Logical pixels, nose
@@ -20,6 +22,9 @@ type Vec3 = [number, number, number];
 
 /** The Steam Dreadnought's red neon (P10-R11). */
 export const DREAD_RED = BOSS_LOOK.neon['steam-dreadnought'] ?? [1, 0.08, 0.1];
+
+// P16-R06: the stacks are steaming blowholes of flesh banded in metal, the rack a fleshy growth
+// cased in a metal launcher, the turrets metal grafts on flesh mounts.
 
 const DECK = DREAD_HEIGHTS.deck;
 /** The side of a part drawn at `at`: +1 for a left one (at +X), -1 for a right one. */
@@ -47,7 +52,7 @@ export function smokestack(p: EnemyParts, at: Vec3): void {
   const [mouth] = s > 0 ? DREAD_STACK : mirror(DREAD_STACK);
   if (!mouth) return;
   const tip = bossPoint(...mouth);
-  hull.lathe(STACK, 8, H.base, { at: [at[0], 0, at[2]], yaw: Math.PI / 8 });
+  p.flesh.lathe(STACK, 8, SKIN.base, { at: [at[0], 0, at[2]], yaw: Math.PI / 8 });
   for (const y of [DECK + 9, DECK + 15]) {
     hull.ring(6.7, 1, 8, SHADE.edge, { at: [at[0], y, at[2]], yaw: Math.PI / 8 });
   }
@@ -75,9 +80,9 @@ const DOME = [
 ] as const;
 
 /** A broadside turret's mount (P10-R11): its armoured barbette with a red ring, on the sponson. */
-export function barbette({ hull, neon }: EnemyParts, at: Vec3): void {
+export function barbette({ hull, neon, flesh }: EnemyParts, at: Vec3): void {
   const s = sideAt(at);
-  hull.lathe(BARBETTE, 8, H.panel, { at: [at[0], 0, at[2]], yaw: Math.PI / 8 });
+  flesh.lathe(BARBETTE, 8, SKIN.panel, { at: [at[0], 0, at[2]], yaw: Math.PI / 8 });
   neon.ring(10.6, 0.7, 8, DREAD_RED, { at: [at[0], DECK + 0.6, at[2]], yaw: Math.PI / 8 });
   hazard(hull, [at[0] + s * 4, DECK + 0.05, at[2] - 13], [10, 3], 4);
 }
@@ -119,7 +124,8 @@ export function missileRack(p: EnemyParts, at: Vec3): void {
   const { hull, neon } = p;
   const [cell] = DREAD_RACK;
   const top = (cell?.[2] ?? DREAD_HEIGHTS.rack) - TUBE * 2.6;
-  hull.box([22, top - DECK, 22], H.base, { at: [at[0], DECK, at[2]] }, H.panel);
+  organ(p.flesh, 13, 6, SKIN.base, { at: [at[0], DECK - 3, at[2]] }, 0.3);
+  hull.box([18, top - DECK, 18], H.base, { at: [at[0], DECK, at[2]] }, H.panel);
   for (const s of [-1, 1]) {
     neon.box([0.5, 0.8, 18], DREAD_RED, { at: [at[0] + s * 11.1, top - 2, at[2]] });
     hull.box([2.4, top - DECK + 1, 6], H.dark, { at: [at[0] + s * 12, DECK - 1, at[2] - 7] });

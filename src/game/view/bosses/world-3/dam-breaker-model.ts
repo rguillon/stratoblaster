@@ -2,7 +2,10 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { EnemyModel } from '../../../../render/game-view';
 import { DAM_BREAKER, DAM_CORE_GUNS, DAM_STACK } from '../../../config/bosses/world-3/dam-breaker';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { HULL_SECTION, SIDES } from '../../enemies/enemy-shapes';
+import { SIDES } from '../../enemies/enemy-shapes';
+import { reactorSac } from '../../enemies/organic-parts';
+import { ribs, ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, JUNGLE_FLESH, veinTo } from './jungle-flesh';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { barrels, edgeStrips, mirrored } from '../final-boss-shapes';
 import { rod } from '../final-boss-greebles';
@@ -42,8 +45,23 @@ const PUMP_HOUSE = [
 const STACK_FOOT: Vec3 = [0, 17, -8];
 
 /** The hull, its green-lit rim, rusty patches, deck seams, and the swamp growing over it. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(HULL, HULL_Y, [4, 2], H.base, {}, H.panel);
+function drawHull(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a giant, bloated swamp beast wallowing like a barge: a broad back of moss-skinned
+  // flesh, its rusty plates, sluices and tanks grafted on, veins of toxin pulsing through it.
+  flesh.bevelSlab(HULL, HULL_Y, [4, 2], F.sinew, {}, JUNGLE_FLESH);
+  for (const s of SIDES) {
+    veinTo(
+      p,
+      [
+        [s * 8, DECK_Y + 0.3, 40],
+        [s * 30, DECK_Y + 0.3, -60],
+      ],
+      [s * 14, 0, 0],
+      TOXIC,
+      1.6,
+    );
+  }
   for (const s of SIDES) {
     edgeStrips(
       neon,
@@ -77,8 +95,10 @@ function drawHull({ hull, neon }: EnemyParts): void {
 
 /** The pump house: a lofted block, its windows lit as it charges, the stack and its pipes. */
 function drawPumpHouse(p: EnemyParts): void {
-  const { hull, neon, charge } = p;
-  hull.loft(HULL_SECTION, PUMP_HOUSE, H.panel);
+  const { hull, flesh, neon, charge } = p;
+  // P16-R06: the pump house a swollen hump of flesh over bone ribs, its stack grafted on.
+  flesh.loft(ROUND_SECTION, PUMP_HOUSE, F.crimson);
+  ribs(flesh, [-14, -2, 8], { halfWidth: 19, y: DECK_Y, height: 13.4, thickness: 0.9 }, F.bone);
   hull.box([30, 2.4, 1], H.dark, { at: [0, 13.6, 16.8], pitch: 0.5 });
   charge.box([26, 1, 0.6], WHITE, { at: [0, 14.1, 17.4], pitch: 0.5 });
   vent(hull, [10, 18, -12], [8, 7], 3);
@@ -121,10 +141,10 @@ function drawGuns(p: EnemyParts): void {
 /** The stern: three reactors, a rudder housing and the dam-breaking ram's pistons. */
 function drawStern(p: EnemyParts): void {
   for (const s of SIDES) {
-    p.reactor([s * 20, 0, -72], 4.5);
+    reactorSac(p, [s * 20, 0, -72], 4.5, TOXIC, { flesh: F.sinew });
     p.hull.box([1.6, 8, 10], H.panel, { at: [s * 40, -8, -64] });
   }
-  p.reactor([0, 0, -72], 4);
+  reactorSac(p, [0, 0, -72], 4, TOXIC, { flesh: F.sinew });
   p.hull.box([30, 6, 8], H.base, { at: [0, DECK_Y, -64] }, SHADE.edge);
   p.neon.box([26, 0.5, 0.6], TOXIC, { at: [0, DECK_Y + 6, -59.8] });
 }

@@ -27,11 +27,14 @@ import {
   missileBattery,
   shieldGenerator,
 } from './caldera-throne-parts';
+import { backRibs, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-5: the Caldera Throne, World 4's last boss. Model space: logical pixels, nose +Z
 // (down the screen), Y up towards the camera; +X is the screen's left. A war fortress: an
 // armoured hull carrying a stepped keep over the core, a prow gun deck, side bastions out to the
 // magma cannons, missile batteries and smokestacks aft.
+// P16-R06: a living tyrant of the caldera, its vast flesh back ribbed in bone and veined with
+// magma, a keep of flesh and armour rising over its heart, crowned in metal and gold.
 
 /** The hull (right half, front to tail), closed across the prow. */
 const HULL = symmetric(
@@ -98,15 +101,35 @@ const PLATES = [
 ] as const;
 
 /** The hull with its crimson rim, the engine block, the bastions out to the turntables. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(HULL, [-10, -2, DECK_TOP], [3, 3], H.dark, {}, H.base);
+function drawHull(p: EnemyParts): void {
+  const { hull, neon } = p;
+  p.flesh.bevelSlab(HULL, [-10, -2, DECK_TOP], [3, 3], SKIN.base, {}, SKIN.dark);
+  backRibs(p, [-84, -72, 56, 66], { halfWidth: 44, y: 3, height: 6.5, thickness: 1.3 });
   const all = HULL.map((_, i) => i);
   edgeLights(neon, HULL, all, [-2.8, -1.4], CRIMSON);
   edgeLights(neon, HULL, all, [-8.6, -7.8], HEAT.glow, 0.2);
   hull.bevelSlab(ENGINES, [-8, -1, 6], [1, 1.5], H.dark, {}, HEAT.soot);
   for (const s of SIDES) {
     const bastion = s > 0 ? BASTION : flipX(BASTION);
-    hull.bevelSlab(bastion, [-5, -1, BASTION_TOP], [1, 2], H.base, {}, HEAT.blued);
+    p.flesh.bevelSlab(bastion, [-5, -1, BASTION_TOP], [1, 2], SKIN.panel, {}, SKIN.dark);
+    magmaVein(
+      p,
+      [
+        [s * 22, DECK_TOP + 0.3, -46],
+        [s * 42, DECK_TOP + 0.3, -20],
+        [s * 40, DECK_TOP + 0.3, 30],
+      ],
+      1.6,
+    );
+    glands(
+      p,
+      [
+        [s * 50, DECK_TOP - 0.5, -6],
+        [s * 36, DECK_TOP, 58],
+      ],
+      2.6,
+      CRIMSON,
+    );
     edgeLights(neon, bastion, [0, 1, 2, 3, 4], [-1.4, -0.4], GOLD);
     edgeLights(neon, bastion, [1, 2, 3], [-4.2, -3.6], CRIMSON);
   }
@@ -187,8 +210,8 @@ export function buildCalderaThrone(scene: Scene): EnemyModel {
       drawProw(p);
       drawHatches(p);
       for (const s of SIDES) {
-        p.reactor([s * 12, -1, -102], 6);
-        p.reactor([s * 28, -1, -102], 4.5);
+        reactorSacs(p, [[s * 12, -1, -102]], 6, HEAT.molten);
+        reactorSacs(p, [[s * 28, -1, -102]], 4.5, HEAT.molten);
       }
     },
     parts: {

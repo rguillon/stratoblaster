@@ -9,7 +9,10 @@ import {
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
-import { lamps, seam, vent } from '../mini-boss-greebles';
+import { lamps, plate, rect, seam } from '../mini-boss-greebles';
+import { curve, organ, tendril } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { crystals, glowVein, ICE_FLESH, sinew } from './w2-organic';
 import { H, QUARTER, SHADE, socket, WHITE } from '../mini-boss-shapes';
 import {
   AURORA_GREEN,
@@ -19,9 +22,7 @@ import {
   dish,
   emitter,
   emitterTurret,
-  FROST,
   hangar,
-  ICE,
   iced,
   icicles,
 } from './aurora-station-parts';
@@ -64,11 +65,23 @@ const RADIATOR_ICICLES: Vec3[] = [
 ];
 
 /** The hub, its module and the mast the turning dish stands on; the collar its spirals leave. */
-function drawHub({ hull, neon, charge, muzzle }: EnemyParts): void {
-  hull.lathe(HUB, 8, H.base, { yaw: EIGHTH });
-  hull.cylinder(20.5, 0.3, 8, FROST, { at: [0, 7, 0], yaw: EIGHTH });
+function drawHub(p: EnemyParts): void {
+  const { hull, flesh, neon, charge, muzzle } = p;
+  // P16-R06: the bell of a great ice jellyfish, a metal collar grafted round its crown.
+  flesh.lathe(HUB, 8, ICE_FLESH.purple, { yaw: EIGHTH });
+  flesh.cylinder(20.5, 0.3, 8, ICE_FLESH.rime, { at: [0, 7, 0], yaw: EIGHTH });
   neon.ring(25.1, 1, 8, AURORA_GREEN, { at: [0, -0.5, 0], yaw: EIGHTH });
   hull.cylinder(11, 6, 8, H.panel, { at: [0, 7, 0], yaw: EIGHTH }, 10);
+  for (const a of [0, 1, 2, 3, 4, 5]) {
+    const yaw = (a * Math.PI) / 3 + 0.3;
+    glowVein(
+      p,
+      [Math.sin(yaw) * 11, 7.4, Math.cos(yaw) * 11],
+      [Math.sin(yaw) * 23, 3, Math.cos(yaw) * 23],
+      1,
+      AURORA_GREEN,
+    );
+  }
   neon.ring(10.9, 0.8, 8, AURORA_VIOLET, { at: [0, 9.5, 0], yaw: EIGHTH });
   for (const collar of AURORA_COLLAR.map((m) => bossPoint(...m))) {
     charge.cylinder(4.2, 1, 8, WHITE, { at: [collar[0], collar[1] - 1, collar[2]] });
@@ -76,22 +89,26 @@ function drawHub({ hull, neon, charge, muzzle }: EnemyParts): void {
     hull.cylinder(1.8, 5, 6, H.dark, { at: collar });
   }
   for (const s of SIDES) {
-    vent(hull, [s * 15, 7.3, -6], [4, 7], 3, s * 0.4);
+    crystals(flesh, [s * 16, 6.5, -8], 3.5);
     socket(hull, [s * 36, 1, 40], 7.5, 0.8);
   }
 }
 
 /** The truss: a girder across to the cryo cannons, struts to the emitters, the hangar's spine. */
-function drawTruss({ hull, neon }: EnemyParts): void {
-  hull.box([116, 3, 7], H.base, { at: [0, -1, -4] }, FROST);
-  hull.box([10, 5, 26], H.panel, { at: [0, -1, 33] }, FROST);
+function drawTruss({ hull, flesh, neon }: EnemyParts): void {
+  // P16-R06: a spine of bone across to the cryo bladders, arms of sinew out to the emitters.
+  flesh.box([10, 5, 26], ICE_FLESH.sinew, { at: [0, -1, 33] }, ICE_FLESH.rime);
   for (const s of SIDES) {
-    seam(hull, [s * 15, 14], [s * 33, 36], [-1, 4, 3], H.base);
-    seam(hull, [s * 15, 14], [s * 33, 36], [2, 2, 0.6], FROST);
-    for (const x of [28, 40]) {
-      seam(hull, [s * x, -7.5], [s * (x + 8), -0.5], [2, 1, 0.8], H.panel);
-      seam(hull, [s * (x + 8), -7.5], [s * x, -0.5], [2, 1, 0.8], H.panel);
-    }
+    tendril(
+      flesh,
+      curve([s * 20, 0, -4], [s * 58, 0, -4], [0, 2, 1], 3),
+      [3, 2.2],
+      5,
+      ICE_FLESH.bone,
+    );
+    sinew(flesh, [s * 15, 0, 14], [s * 33, 0, 36], 2.2, ICE_FLESH.sinew);
+    for (const x of [30, 42]) organ(flesh, 2.6, 5, ICE_FLESH.bone, { at: [s * x, -2.5, -4] }, 0.9);
+    hull.ring(3.2, 1.2, 6, H.panel, { at: [s * 50, 0, -4], roll: QUARTER });
     neon.box([30, 0.5, 0.6], s > 0 ? AURORA_GREEN : AURORA_VIOLET, {
       at: [s * 38, 0.6, -0.4],
     });
@@ -102,29 +119,31 @@ function drawTruss({ hull, neon }: EnemyParts): void {
 function drawHabitats(p: EnemyParts): void {
   const { hull, neon } = p;
   for (const s of SIDES) {
-    hull.loft(POD_SECTION, HABITAT, H.panel, { at: [s * 12, 0, 0] }, { paint: iced });
+    p.flesh.loft(POD_SECTION, HABITAT, ICE_FLESH.membrane, { at: [s * 12, 0, 0] }, { paint: iced });
     lamps(
       neon,
       [-28, -34, -40, -46].map((z): Vec3 => [s * 19, 4, z]),
       1.2,
       AURORA_VIOLET,
     );
-    p.reactor([s * 12, 2.5, -56], 3.4);
+    reactorSac(p, [s * 12, 2.5, -56], 3.4, AURORA_GREEN, { flesh: ICE_FLESH.purple });
   }
-  seam(hull, [0, -22], [0, -50], [3, 3, 1], H.dark);
+  tendril(p.flesh, curve([0, 0, -20], [0, 0, -52], [0, 2, 0], 3), [2.6, 1], 5, ICE_FLESH.sinew);
+  plate(hull, rect(5, 8), [2.8, 0.5], H.panel, { at: [0, 0, -30] });
 }
 
 /** The radiator wings behind the truss: iced panels, dark ribs, a green edge light. */
-function drawRadiators({ hull, neon }: EnemyParts): void {
+function drawRadiators({ hull, flesh, neon }: EnemyParts): void {
   for (const s of SIDES) {
+    // P16-R06: frilled membrane fins on bone rays, where the radiators were; too big to flutter.
     const outline = RADIATOR.map(([x, z]): OutlinePoint => [s * x, z]);
-    hull.bevelSlab(outline, [-0.6, 0, 1], [0.4, 0.6], H.base, {}, ICE);
+    flesh.bevelSlab(outline, [-0.6, 0, 1], [0.4, 0.6], ICE_FLESH.membrane, {}, ICE_FLESH.teal);
     for (const x of [30, 42, 54, 66, 78]) {
-      seam(hull, [s * x, -26], [s * x, -46.5], [0.9, 1, 0.5], H.dark);
+      sinew(flesh, [s * (x - 4), 1, -25], [s * x, 1, -46.5], 0.6, ICE_FLESH.bone, [0, 0.4, 0]);
     }
     seam(neon, [s * 84.2, -32], [s * 84.2, -46], [0.2, 0.5, 0.6], AURORA_GREEN);
     seam(hull, [s * 18, -30], [s * 21, -30], [0, 3, 3], H.panel);
-    icicles(hull, RADIATOR_ICICLES, s);
+    icicles(flesh, RADIATOR_ICICLES, s);
   }
 }
 
@@ -143,6 +162,8 @@ function drawGuns({ hull, charge, muzzle }: EnemyParts): void {
  * P08-R10: the Aurora Station, a flying research station in green and violet neon: a hub under
  * a slowly turning dish, two dish emitters and a drone hangar at its nose, two cryo cannons at
  * the ends of its truss, habitat modules and iced radiator wings behind.
+ * P16-R06: now a living ice jellyfish, a bell of cold flesh under a frilled crown, a bone spine
+ * out to its cryo bladders, egg sacs and membrane fins behind, metal grafts on its guns.
  */
 export function buildAuroraStation(scene: Scene): EnemyModel {
   return buildBossModel(AURORA_STATION, scene, AURORA_GREEN, {

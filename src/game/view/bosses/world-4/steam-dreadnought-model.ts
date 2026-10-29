@@ -22,11 +22,14 @@ import {
   missileRack,
   smokestack,
 } from './steam-dreadnought-parts';
+import { backRibs, fleshShell, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-1: the Steam Dreadnought. Logical pixels, nose +Z (down the screen), Y up towards
 // the camera; +X is the screen's left. A flying battleship: a long armoured hull under a deck
 // with sponsons for its broadside turrets, a stepped bridge over the core, two smokestacks
 // amidships, a laser ram at the bow and a missile rack on the stern.
+// P16-R06: a living sky-leviathan, its flesh belly banded and ribbed in bone, its back a scorched
+// hide, a metal bridge, guns and ram grafted on, steaming blowholes for stacks.
 
 const DECK = DREAD_HEIGHTS.deck;
 /** The hull under the deck (loft stations, stern to bow: z, half width, bottom, top). */
@@ -71,10 +74,32 @@ const LENS = [
   [0, 3],
 ] as const;
 
+/** P16-R05, P16-R06: its living flesh: veins, glands and ribs. */
+function deckFlesh(p: EnemyParts, s: number): void {
+  magmaVein(
+    p,
+    [
+      [s * 34, DECK + 0.3, -60],
+      [s * 40, DECK + 0.3, -20],
+      [s * 36, DECK + 0.3, 30],
+    ],
+    1.4,
+  );
+  glands(
+    p,
+    [
+      [s * 46, DECK, 0],
+      [s * 30, DECK, 44],
+    ],
+    2.2,
+    N,
+  );
+}
+
 /** The hull, its glowing seams low on the sides, the deck with its red-lit rim, the reactors. */
 function drawHull(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.loft(HULL_SECTION, HULL, H.dark);
+  const { neon } = p;
+  fleshShell(p.flesh, HULL_SECTION, HULL, [SKIN.base, SKIN.dark]);
   for (const side of [0, 4]) {
     neon.loft(
       sideStripe(HULL_SECTION, side, [0.35, 0.6], 1.03),
@@ -84,7 +109,11 @@ function drawHull(p: EnemyParts): void {
       { open: true },
     );
   }
-  hull.bevelSlab(DECK_OUTLINE, [4.5, 7, DECK], [1, 0.8], H.base, {}, H.panel);
+  p.flesh.bevelSlab(DECK_OUTLINE, [4.5, 7, DECK], [1, 0.8], SKIN.dark, {}, SKIN.panel);
+  backRibs(p, [-60, -48, 36, 48], { halfWidth: 30, y: DECK - 2, height: 4, thickness: 1 });
+  for (const s of SIDES) {
+    deckFlesh(p, s);
+  }
   edgeLights(
     neon,
     DECK_OUTLINE,
@@ -92,8 +121,16 @@ function drawHull(p: EnemyParts): void {
     [5.8, 6.8],
     N,
   );
-  p.reactor([0, 3, -82], 5);
-  for (const s of SIDES) p.reactor([s * 14, 3, -78], 4);
+  reactorSacs(p, [[0, 3, -82]], 5, FORGE.molten);
+  reactorSacs(
+    p,
+    [
+      [14, 3, -78],
+      [-14, 3, -78],
+    ],
+    4,
+    FORGE.molten,
+  );
 }
 
 /** The deck's dressing: molten seams between its plates, soot behind the stacks, cowls, bolts. */

@@ -9,6 +9,7 @@ import { rod } from '../final-boss-greebles';
 import { cog } from '../mini-boss-mechanism';
 import { hazard, lamps, rect, vent } from '../mini-boss-greebles';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { F, gland, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-4: the Dam Breaker's parts (sluice cannons, chemical tanks, armour plate, drone
 // hangar) and its swamp growth. Logical pixels, nose +Z, Y up (towards the camera).
@@ -51,7 +52,9 @@ export function sluice(p: EnemyParts, at: Vec3): void {
   const spouts = at[0] > 0 ? DAM_SPOUT : mirror(DAM_SPOUT);
   const [lip] = spouts.map((m) => bossPoint(...m));
   if (!lip) return;
-  hull.box([22, 12, 14], H.base, { at: offset(at, 0, DECK_Y, -2) }, H.panel);
+  // P16-R06: a gland swelling out of the beast's back, a metal sluice gate grafted in its mouth.
+  p.flesh.box([22, 12, 14], F.crimson, { at: offset(at, 0, DECK_Y, -2) }, F.sinew);
+  gland(p, offset(at, 0, DECK_Y + 12, -5), 3, TOXIC);
   // The gate, raised in its frame, and the dark culvert under it.
   hull.box([16, 6, 1.6], SHADE.edge, { at: offset(at, 0, DECK_Y + 8, 5.6) });
   hull.box([15, 6, 0.6], H.dark, { at: offset(at, 0, DECK_Y + 0.5, 5.4) });
@@ -85,10 +88,12 @@ const TANK = [
  * A chemical tank around its centre `at` (P09-R09): a fat capsule on cradles at the barge's
  * side, glowing green through bands of glass, hooped with rusty straps, vines hanging off it.
  */
-export function tank({ hull, neon }: EnemyParts, at: Vec3): void {
+export function tank(p: EnemyParts, at: Vec3): void {
+  const { hull, neon } = p;
   const s = Math.sign(at[0]);
   const axis = offset(at, 0, 12, 0);
-  hull.lathe(TANK, 8, H.base, { at: axis, pitch: QUARTER, yaw: Math.PI / 8 });
+  // P16-R06: a bloated toxin bladder of teal flesh, hooped by rusty grafted straps.
+  p.flesh.lathe(TANK, 7, F.teal, { at: axis, pitch: QUARTER, yaw: Math.PI / 8 });
   for (const dz of [-9, 0, 9]) {
     neon.ring(12.2, 3, 8, TOXIC, { at: offset(axis, 0, 0, dz - 1.5), pitch: QUARTER });
   }
@@ -137,8 +142,23 @@ export function plate({ hull, neon }: EnemyParts, at: Vec3): void {
  * The drone hangar around its centre `at` (P09-R09): a bay at the bow, its open door framed in
  * green, where its Hornets leave from.
  */
-export function hangar({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.bevelSlab(rect(26, 20), [DECK_Y - 4, DECK_Y, DECK_Y + 7], [1, 1.5], H.base, { at }, H.panel);
+export function hangar(p: EnemyParts, at: Vec3): void {
+  const { hull, neon } = p;
+  // P16-R06: a brood pouch of flesh on the bow, its drone hatch a grafted metal door.
+  p.flesh.bevelSlab(
+    rect(26, 20),
+    [DECK_Y - 4, DECK_Y, DECK_Y + 7],
+    [1, 1.5],
+    F.purple,
+    { at },
+    F.crimson,
+  );
+  veinTo(
+    p,
+    [offset(at, -11, DECK_Y + 7.2, -8), offset(at, 11, DECK_Y + 7.2, -8)],
+    [0, 1, 4],
+    TOXIC,
+  );
   hull.box([18, 6, 0.8], H.dark, { at: offset(at, 0, DECK_Y - 1.5, 9.8) });
   neon.box([20, 0.8, 0.6], TOXIC, { at: offset(at, 0, DECK_Y + 4.8, 10.2) });
   for (const s of SIDES) {

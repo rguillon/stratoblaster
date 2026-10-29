@@ -17,6 +17,7 @@ import { bossPoint, type LimbDrawing } from '../boss-model';
 import { mirrored } from '../final-boss-shapes';
 import { seam } from '../mini-boss-greebles';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
+import { glands, SKIN } from './living-forge';
 import { segment } from '../world-3/toucan-jungle';
 import { barrel } from './magma-salamander-parts';
 
@@ -24,6 +25,7 @@ import { barrel } from './magma-salamander-parts';
 // plate), its arms and its obsidian look. Logical pixels, nose +Z, Y up (towards the camera).
 type Rgb = readonly [number, number, number];
 type Vec3 = [number, number, number];
+// P16-R06: muscled flesh arms and fists, obsidian growths on them, metal joints and guns.
 
 /** The Golem's neon: the deep orange of its magma seams. */
 export const GOLEM_NEON: Rgb = BOSS_LOOK.neon['obsidian-golem'] ?? [1, 0.32, 0.04];
@@ -49,9 +51,9 @@ export function armPoints(arm: Arm): [shoulder: Vec3, elbow: Vec3, fist: Vec3] {
 
 /** `arm`'s upper arm, on its shoulder: a thick, plated strut down to the elbow's joint. */
 function upperArm(arm: Arm) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ hull, neon, flesh }: EnemyParts): void => {
     const [shoulder, elbow] = armPoints(arm);
-    segment(hull, [shoulder, elbow], [7, 6], H.base, 6);
+    segment(flesh, [shoulder, elbow], [7, 6], SKIN.base, 6);
     segment(hull, [offset(shoulder, 0, 4, 0), offset(elbow, 0, 3.6, 0)], [3.6, 3], OBSIDIAN, 5);
     segment(neon, [offset(shoulder, 0, 6.8, 0), offset(elbow, 0, 6.2, 0)], [0.5, 0.5], MAGMA, 4);
     hull.cylinder(7.4, 9, 7, H.dark, { at: offset(elbow, 0, -4.5, 0) });
@@ -61,10 +63,10 @@ function upperArm(arm: Arm) {
 
 /** `arm`'s forearm, on its elbow: a massive tapering block of armour down to the wrist. */
 function forearm(arm: Arm) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ neon, flesh }: EnemyParts): void => {
     const [, elbow, fist] = armPoints(arm);
     const wrist = offset(fist, 0, 0, -10);
-    segment(hull, [elbow, wrist], [6.4, 7.6], H.panel, 6);
+    segment(flesh, [elbow, wrist], [6.4, 7.6], SKIN.panel, 6);
     for (const t of [0.35, 0.7]) {
       const at: Vec3 = [
         elbow[0] + (wrist[0] - elbow[0]) * t,
@@ -95,14 +97,15 @@ export function fist(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge } = p;
   const s = Math.sign(at[0]);
   const base = offset(at, 0, -1, -2);
-  hull.box([26, 15, 20], OBSIDIAN, { at: base }, H.base);
+  p.flesh.box([26, 15, 20], SKIN.base, { at: base }, SKIN.panel);
+  glands(p, [offset(at, s * 8, 13.6, -6)], 2, GOLEM_NEON);
   hull.box([27, 4, 21], H.dark, { at: offset(base, 0, 4, 0) });
   for (let k = 0; k < 4; k++) {
     const x = (k - 1.5) * 6.2;
     hull.box([5.6, 8, 5], H.panel, { at: offset(at, x, 1, 9) }, SHADE.edge);
     if (k > 0) neon.box([0.6, 6, 4], MAGMA, { at: offset(at, x - 3.1, 1.6, 9.4) });
   }
-  hull.box([6, 7, 12], H.base, { at: offset(at, -s * 15, 0, 2), yaw: -s * 0.3 });
+  p.flesh.box([6, 7, 12], SKIN.panel, { at: offset(at, -s * 15, 0, 2), yaw: -s * 0.3 });
   crack(
     neon,
     [
@@ -124,8 +127,9 @@ export function fist(p: EnemyParts, at: Vec3): void {
  * A shoulder cannon's mount around its centre `at` (P10-R11): a low armoured ring on the back
  * of its shoulder, its turret turning on it.
  */
-export function cannonMount({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.cylinder(11, 11, 8, H.base, { at: offset(at, 0, 0, 0), yaw: Math.PI / 8 }, 9.6);
+export function cannonMount({ hull, neon, flesh }: EnemyParts, at: Vec3): void {
+  flesh.cylinder(11, 11, 8, SKIN.base, { at: offset(at, 0, 0, 0), yaw: Math.PI / 8 }, 9.6);
+  hull.ring(10, 1.2, 8, H.dark, { at: offset(at, 0, 9.4, 0), yaw: Math.PI / 8 });
   neon.ring(9.8, 0.7, 8, GOLEM_NEON, { at: offset(at, 0, 10.6, 0), yaw: Math.PI / 8 });
 }
 
@@ -211,7 +215,7 @@ export function emitter(p: EnemyParts, at: Vec3): void {
   const back: Vec3 = [lens[0], lens[1], lens[2] - 17.4];
   hull.lathe(HOUSING, 8, H.panel, { at: back, pitch: QUARTER, yaw: Math.PI / 8 });
   neon.ring(8.8, 1, 8, GOLEM_NEON, { at: offset(back, 0, 0, 8), pitch: QUARTER });
-  hull.box([12, 4, 14], OBSIDIAN, { at: offset(at, 0, -2, -4) });
+  p.flesh.box([12, 4, 14], SKIN.panel, { at: offset(at, 0, -2, -4) });
   charge.cylinder(4.4, 1.4, 8, WHITE, { at: offset(lens, 0, 0, -1.4), pitch: QUARTER });
   muzzle(lens, 'laser');
 }

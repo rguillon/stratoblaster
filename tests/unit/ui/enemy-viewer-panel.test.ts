@@ -9,6 +9,8 @@ const INITIAL: EnemyViewerSelection = {
   level: 1,
   fire: true,
   paused: false,
+  living: true,
+  hitbox: false,
 };
 
 function panel() {
@@ -42,7 +44,7 @@ describe('EnemyViewerPanel', () => {
     expect(selected('view')).toEqual(['Behaviour']);
     expect(selected('weapon')).toEqual(['Gun']);
     expect(buttons('level').map((b) => b.textContent)).toEqual(['L1', 'L2']);
-    expect(selected('toggles')).toEqual(['Fire (F)']);
+    expect(selected('toggles')).toEqual(['Fire (F)', 'Motion (L)']);
     expect(p.root.querySelector('.enemy-help')?.textContent).toBe('Keys');
   });
 
@@ -60,11 +62,19 @@ describe('EnemyViewerPanel', () => {
     expect(p.selection.level).toBe(3);
     buttons('toggles')[0]?.click();
     buttons('toggles')[1]?.click();
-    expect(selected('toggles')).toEqual(['Pause (P)']);
+    expect(selected('toggles')).toEqual(['Pause (P)', 'Motion (L)']);
     // One per click: kind, two views, weapon, level and two toggles.
     expect(changes).toHaveLength(7);
     p.root.querySelector<HTMLElement>('.enemy-kind')?.click();
     expect(changes).toHaveLength(7);
+  });
+
+  it('P16-R10: toggles for the living motion and the hit circles', () => {
+    const { p, buttons, selected } = panel();
+    buttons('toggles')[2]?.click();
+    buttons('toggles')[3]?.click();
+    expect(p.selection).toMatchObject({ living: false, hitbox: true });
+    expect(selected('toggles')).toEqual(['Fire (F)', 'Hitbox (H)']);
   });
 
   it('keeps indices and levels in range', () => {

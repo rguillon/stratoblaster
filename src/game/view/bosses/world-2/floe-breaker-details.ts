@@ -1,38 +1,24 @@
+import { organ } from '../../../../render/geometry/organic';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { SIDES } from '../../enemies/enemy-shapes';
-import { cable } from '../mini-boss-greebles';
-import { ram } from '../mini-boss-mechanism';
-import { H, SHADE } from '../mini-boss-shapes';
-import { FROST, icicle } from './floe-breaker-frost';
+import { crystals, gland, ICE_FLESH, sinew } from './w2-organic';
 
-// P08-R10, 2-1: the Floe Breaker's deck dressing (phase 7 review: detail and some asymmetry,
-// World 2 frost). Logical pixels, nose +Z, Y up.
+// P08-R10, 2-1: the Floe Breaker's dressing (phase 7 review: detail and some asymmetry).
+// P16-R05: glands down its flanks, an egg sac to port, a coiled tow sinew to starboard.
+// Logical pixels, nose +Z, Y up.
 type Rgb = readonly [number, number, number];
 
 /**
- * Along the bridge: portholes lit `n` down its sides, a lifeboat in its davits to port (+X),
- * a towing winch on the stern to starboard.
+ * Along the hump: glands lit `n` down its sides, an egg sac to port (+X), a coiled tow sinew on
+ * the stern to starboard.
  */
 export function floeDressing(p: EnemyParts, n: Rgb): void {
-  const { hull, neon } = p;
   for (const s of SIDES) {
-    for (const z of [-12, -18, -24]) neon.box([0.4, 1, 1.4], n, { at: [s * 13.1, 6.4, z] });
-    icicle(hull, [s * 12.6, 11, -6.8], 2.4);
+    for (const z of [-12, -24]) gland(p, [s * 12.6, 6.4, z], 0.8, n);
+    crystals(p.flesh, [s * 12, 10, -7], 2.4, 2);
   }
-  // A lifeboat hanging in its davits, a tarpaulin of snow over it.
-  hull.box([3.2, 2.6, 10], SHADE.hazard, { at: [17.5, 5.6, -18] }, FROST.snow);
-  for (const z of [-22, -14]) ram(hull, [15, 4.6, z], [17.5, 10, z], 0.5);
-  // The towing winch, its cable led aft to the stern.
-  hull.cylinder(2.4, 6, 8, H.panel, { at: [-9, 5.4, -40], roll: Math.PI / 2 });
-  cable(
-    hull,
-    [
-      [-12, -40],
-      [-9, -43],
-      [-5, -44],
-    ],
-    3.2,
-    0.8,
-  );
-  hull.box([4, 1.6, 2.4], H.dark, { at: [-4, 3, -44] }, SHADE.edge);
+  organ(p.flesh, 3.4, 6, ICE_FLESH.membrane, { at: [17.5, 4, -18], pitch: Math.PI / 2 }, 1.4);
+  sinew(p.flesh, [15, 5, -22], [17.5, 7, -14], 0.6);
+  organ(p.flesh, 2.6, 5, ICE_FLESH.sinew, { at: [-9, 4, -40] }, 0.8);
+  sinew(p.flesh, [-12, 4, -40], [-5, 3, -44], 0.8, ICE_FLESH.sinew, [0, 0, -3]);
 }

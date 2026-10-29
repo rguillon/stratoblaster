@@ -4,6 +4,8 @@ import { BOSS_LOOK } from '../../../config/boss-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { bossPoint } from '../boss-limbs';
 import { H, QUARTER, WHITE } from '../mini-boss-shapes';
+import { organ } from '../../../../render/geometry/organic';
+import { ICE_FLESH } from './w2-organic';
 
 // P08-R10, 2-5: the Ice Queen's crystals: its shards (the parts on its crown ring), the crystals
 // growing on its wings and ring, its icicles. Logical pixels, nose +Z, Y up.
@@ -109,7 +111,9 @@ export function iceShard(p: EnemyParts, muzzles: readonly Muzzle[], height: numb
   p.charge.lathe(SHARD_TIP, 4, WHITE, axis(-10.8, 0, yaw + Math.PI));
   p.muzzle(a);
   p.muzzle(b);
-  p.hull.box([5, 2.6, 6], H.dark, { at: [centre[0], height - 3.6, centre[2]], yaw });
+  // P16-R05: each crystal is grown from a sac of flesh, held to the ring by a metal clamp.
+  organ(p.flesh, 4.5, 6, ICE_FLESH.purple, { at: [centre[0], height - 5, centre[2]], yaw }, 0.5);
+  p.hull.box([5, 1.2, 3], H.dark, { at: [centre[0], height - 5.2, centre[2]], yaw });
   const out = Math.atan2(centre[0], centre[2]);
   const spike: Vec3 = [
     centre[0] + Math.sin(out) * 2.5,
