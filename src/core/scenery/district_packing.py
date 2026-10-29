@@ -114,9 +114,10 @@ def _kinds_at_for(
     lots: Sequence[PropKindRule],
     order_for: Callable[[PropGroupRule], _Tries],
     t: float,
+    random: Callable[[int], float],
 ) -> Callable[[int, int, int], Sequence[PropKindRule]]:
-    """The kinds a tile of a block of `section` tries, in order (see `pack_block`)."""
-    random = _random_of(site, 0)
+    """The kinds a tile of a block of `section` tries, in order (see `pack_block`); `random` is the
+    block's own draws."""
 
     def kinds_at(x: int, z: int, n: int) -> Sequence[PropKindRule]:
         group = site.group_at((x + 0.5) * t, (z + 0.5) * t, section)
@@ -177,6 +178,6 @@ def pack_districts(  # noqa: C901 (mirrors the TypeScript closure structure)
             continue
         section = site.field.section_at(cz).section
         random = _random_of(site, i)
-        kinds_at = _kinds_at_for(site, section, lots, order_for, t)
+        kinds_at = _kinds_at_for(site, section, lots, order_for, t, random)
         pack = PackSite(free, road_at, kinds_at, random)
         pack_block(pack, _tile_block(block, t), section.building_density, take)
