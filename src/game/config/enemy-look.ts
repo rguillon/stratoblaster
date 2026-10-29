@@ -77,6 +77,35 @@ export const ENEMY_LOOK = {
     tint: 0.6,
     selfLight: 0.04,
   },
+  /**
+   * Cyber-Organic bodies (P16-R01): dark flesh shades, multiplied into a less metallic, waxy
+   * material (`metallic`, `roughness`) tinted `tint` of the way towards the enemy's neon. Kept dark
+   * (under 0.2) so the enemies still stand out from the darkened ground (P14-R04).
+   */
+  flesh: {
+    crimson: [0.13, 0.035, 0.045],
+    purple: [0.085, 0.04, 0.12],
+    teal: [0.03, 0.09, 0.095],
+    sinew: [0.17, 0.08, 0.075],
+    bone: [0.19, 0.17, 0.15],
+    membrane: [0.1, 0.04, 0.07],
+    wound: [0.2, 0.02, 0.03],
+    metallic: 0.25,
+    roughness: 0.5,
+    tint: 0.35,
+  },
+  /**
+   * Living motion (P16-R07), visual only: the body breathes (its scale pulses by `amplitude` over
+   * `period`, ± `spread` per enemy), its veins pulse (from `low` to full over `period`), and its
+   * wings flutter (`angle` radians at `hz`; `bigHz` for wings longer than `bigSpan`).
+   */
+  living: {
+    breathing: { amplitude: 0.03, period: 2.5, spread: 0.2 },
+    glow: { period: 1.2, low: 0.55 },
+    flutter: { hz: 6, bigHz: 2, bigSpan: 25, angle: 0.16 },
+  },
+  /** Triangle budgets per tier (P16-R09). */
+  budget: { basic: 400, veteran: 700, elite: 1200, miniBoss: 4000, finalBoss: 10000 },
   /** Neon colours of each enemy (P05-R01..R10, P05-R12). */
   neon: {
     gnat: [0.1, 0.95, 1],

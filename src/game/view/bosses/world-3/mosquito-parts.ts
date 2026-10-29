@@ -5,6 +5,7 @@ import { mirror } from '../../../config/bosses/boss-kit';
 import { MOSQUITO_NEEDLE, MOSQUITO_WING_GUNS } from '../../../config/bosses/world-3/mosquito';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION } from '../../enemies/enemy-shapes';
+import { F } from './jungle-flesh';
 import { bossPoint } from '../boss-model';
 import { sided } from '../final-boss-shapes';
 import { seam } from '../mini-boss-greebles';
@@ -72,15 +73,18 @@ const NACELLE = [
  * membrane veined with pink neon, and under it the fan pod with its two barrels.
  */
 export function wing(p: EnemyParts, at: Vec3): void {
-  const { hull, neon, charge, muzzle } = p;
+  const { hull, flesh, neon, charge, muzzle } = p;
   const s = Math.sign(at[0]);
-  hull.bevelSlab(sided(WING, s), [WING_Y - 0.3, WING_Y, WING_Y + 0.5], [0.3, 0.3], MEMBRANE);
+  // P16-R05: a living membrane wing on a bone spar, its fan pod a grafted metal nacelle in a
+  // flesh sheath.
+  flesh.bevelSlab(sided(WING, s), [WING_Y - 0.3, WING_Y, WING_Y + 0.5], [0.3, 0.3], MEMBRANE);
   for (const [[ax, az], [bx, bz]] of VEINS) {
     seam(neon, [s * ax, az], [s * bx, bz], [WING_Y + 0.6, 0.5, 0.25], MOSQUITO_PINK);
   }
-  seam(hull, [s * 10, 1], [s * 47, -1], [WING_Y + 0.4, 1.2, 0.8], H.panel);
+  seam(flesh, [s * 10, 1], [s * 47, -1], [WING_Y + 0.4, 1.2, 0.8], F.bone);
   neon.box([1.4, 0.8, 1.4], MOSQUITO_PINK, { at: [s * 51, WING_Y + 0.6, -7] });
-  hull.loft(POD_SECTION, NACELLE, H.base, { at: [at[0], -1, at[2]] });
+  flesh.loft(POD_SECTION, NACELLE, F.purple, { at: [at[0], -1, at[2]] });
+  hull.cylinder(3, 2, 6, H.panel, { at: [at[0], 0, at[2] + 2], pitch: QUARTER });
   // The left wing (screen left) is on the model's +X side.
   const guns = s > 0 ? MOSQUITO_WING_GUNS : mirror(MOSQUITO_WING_GUNS);
   for (const tip of guns.map((m) => bossPoint(...m))) {
@@ -100,8 +104,9 @@ const SOCKET = [
 ] as const;
 
 /** The proboscis around its centre `at` (P09-R09): a ringed socket the needle turns in. */
-export function proboscis({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.lathe(SOCKET, 8, H.panel, { at: offset(at, 0, -1, 0), yaw: Math.PI / 8 });
+export function proboscis({ hull, flesh, neon }: EnemyParts, at: Vec3): void {
+  // P16-R05: a fleshy mouthpart sheath, metal blades grafted either side of it.
+  flesh.lathe(SOCKET, 8, F.crimson, { at: offset(at, 0, -1, 0), yaw: Math.PI / 8 });
   neon.ring(6.1, 0.6, 8, MOSQUITO_PINK, { at: offset(at, 0, 1, 0), yaw: Math.PI / 8 });
   for (const s of [-1, 1]) {
     hull.box([1.2, 1.6, 7], SHADE.edge, { at: offset(at, s * 6, 1, -2), yaw: s * 0.3 });

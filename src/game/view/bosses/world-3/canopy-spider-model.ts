@@ -4,7 +4,9 @@ import type { LoftStation } from '../../../../render/geometry/solids';
 import type { EnemyModel } from '../../../../render/game-view';
 import { CANOPY_SPIDER, SPIDER_CROWN } from '../../../config/bosses/world-3/canopy-spider';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { FIGHTER_SECTION, HULL_SECTION, SIDES } from '../../enemies/enemy-shapes';
+import { SIDES } from '../../enemies/enemy-shapes';
+import { ribs, ROUND_SECTION, SHELL_SECTION } from '../../../../render/geometry/organic';
+import { F, veinTo } from './jungle-flesh';
 import { bossPoint, buildBossModel } from '../boss-model';
 import { seam, vent } from '../mini-boss-greebles';
 import { H, offset, QUARTER, SHADE, socket, WHITE } from '../mini-boss-shapes';
@@ -54,10 +56,26 @@ const EYES: readonly (readonly [number, number, number, number])[] = [
 ];
 
 /** The cephalothorax and the abdomen: dark armour, the red hourglass, moss on the plates. */
-function drawBody({ hull, neon }: EnemyParts): void {
-  hull.loft(FIGHTER_SECTION, THORAX, H.base, {}, {});
-  hull.loft(HULL_SECTION, ABDOMEN, H.panel, {}, {});
-  hull.box([12, 6, 6], H.dark, { at: [0, 2, -8] });
+function drawBody(p: EnemyParts): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a living spider: a chitin-shelled cephalothorax, a swollen purple abdomen with bone
+  // ribs and pulsing veins, a sinew waist; metal plates and vents grafted on.
+  flesh.loft(SHELL_SECTION, THORAX, F.purple, {}, {});
+  flesh.loft(ROUND_SECTION, ABDOMEN, F.purple, {}, {});
+  flesh.box([12, 6, 6], F.sinew, { at: [0, 2, -8] });
+  ribs(flesh, [-18, -28, -38], { halfWidth: 15, y: 6, height: 15.4, thickness: 0.8 }, F.bone);
+  for (const s of SIDES) {
+    veinTo(
+      p,
+      [
+        [s * 3, 21.2, -14],
+        [s * 9, 19, -44],
+      ],
+      [s * 4, 0.6, 0],
+      SPIDER_RED,
+      1.1,
+    );
+  }
   neon.slab(HOURGLASS, [21.05, 21.35], SPIDER_RED, { at: [0, -0.3, 0] });
   for (const s of SIDES) {
     seam(hull, [s * 5, 12], [s * 4, -6], [12, 0.8, 0.6], H.dark);
@@ -72,17 +90,20 @@ function drawBody({ hull, neon }: EnemyParts): void {
 }
 
 /** The head: the red neon eyes, the fangs under them, the hips' sockets on the thorax. */
-function drawHead({ hull, neon, charge }: EnemyParts): void {
+function drawHead(p: EnemyParts): void {
+  const { hull, flesh, neon, charge } = p;
   for (const s of SIDES) {
     for (const [x, y, z, r] of EYES) {
       const eye: Vec3 = [s * x, y, z];
-      hull.cylinder(r * 1.3, 0.8, 8, H.dark, { at: offset(eye, 0, -0.6, 0), pitch: 0.7 });
+      flesh.cylinder(r * 1.3, 0.8, 7, F.crimson, { at: offset(eye, 0, -0.6, 0), pitch: 0.7 });
       neon.cylinder(r, 0.7, 8, SPIDER_RED, { at: eye, pitch: 0.7 });
       charge.cylinder(r * 0.45, 0.3, 6, WHITE, { at: offset(eye, 0, 0.45, 0.35), pitch: 0.7 });
     }
     // The fangs (chelicerae), curving down in front of the head.
-    hull.box([3.4, 4, 7], H.panel, { at: [s * 3.6, -1, 31], pitch: 0.5 }, H.base);
-    hull.cylinder(1.1, 5, 4, SHADE.edge, { at: [s * 3.6, 0.5, 36], pitch: 2.2 }, 0);
+    // P16-R06: flesh chelicerae, bone fangs, a metal cap grafted on each.
+    flesh.box([3.4, 4, 7], F.sinew, { at: [s * 3.6, -1, 31], pitch: 0.5 }, F.crimson);
+    hull.box([3.6, 1, 3], H.panel, { at: [s * 3.6, 1.4, 29.5], pitch: 0.5 });
+    flesh.cylinder(1.1, 5, 4, F.bone, { at: [s * 3.6, 0.5, 36], pitch: 2.2 }, 0);
   }
 }
 

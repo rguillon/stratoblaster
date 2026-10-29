@@ -4,17 +4,29 @@ import type { EnemyModel } from '../../../render/game-view';
 import { OVERLORD } from '../../config/bosses/final-bosses';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
+import { segmentedBody } from '../../../render/geometry/organic';
 import { decal, flipX, SIDES } from '../enemies/enemy-shapes';
+import { eyes, reactorSac } from '../enemies/organic-parts';
 import { buildBossModel } from './boss-model';
 import { box2d, edgeLights, OVERLORD_DECK, OVERLORD_NEON, symmetric } from './overlord-city';
-import { drawOverlordArmour } from './overlord-armour';
-import { drawDeck } from './overlord-deck';
 import { drawBattery, drawGenerator, drawLaser, WING_TOP } from './overlord-parts';
 import { drawSkyline } from './overlord-skyline';
+import {
+  barbs,
+  F,
+  graft,
+  M,
+  mantle,
+  polygon,
+  ribCage,
+  tentacle,
+  veinLine,
+} from './world-1-organic-kit';
 
-// P07-R05: the Overlord, World 1's last boss (1-5). Model space: logical pixels, nose +Z (down
-// the screen), Y up towards the camera. A flying city block: a wide armoured deck with towers,
-// a raised boulevard down its middle carrying the citadel, wings out to the laser cannons.
+// P07-R05, P16-R06: the Overlord, World 1's last boss (1-5). Model space: logical pixels, nose
+// +Z (down the screen), Y up towards the camera. A city-sized organism: a vast mantle with a
+// city of living towers grown on its back, a shelled spine down its middle carrying the citadel
+// (its brain), membrane wings out to the laser cannons.
 const H = ENEMY_LOOK.hull;
 const WHITE = [1, 1, 1] as const;
 const QUARTER = Math.PI / 2;
@@ -50,8 +62,6 @@ const WING: OutlinePoint[] = [
   [96, -20],
   [60, -34],
 ];
-/** The engine block across the tail. */
-const ENGINES = box2d(72, 12, [0, -62]);
 /** The citadel over the core: a stepped octagonal tower (lathe profile, bottom to top). */
 const CITADEL = [
   [24, 0],
@@ -75,40 +85,52 @@ const LENS = [
   [0, 2.5],
 ] as const;
 
-/** The deck, its neon rim, the boulevard, the engine block and the wings with lit edges. */
-function drawHull({ hull, neon }: EnemyParts): void {
-  hull.bevelSlab(DECK, [-8, -2, OVERLORD_DECK.top], [3, 3], H.base, {}, H.panel);
+/**
+ * The body (P16-R06): a vast purple mantle with a neon rim, a shelled spine down its middle (the
+ * boulevard) carrying the citadel, ribs across it, veins out to its edges, membrane wings out to
+ * the laser cannons on bone struts, swim bladders across its tail.
+ */
+function drawHull(p: EnemyParts): void {
+  const { top, boulevard } = OVERLORD_DECK;
+  mantle(p, DECK, [-8, top], F.purple);
   edgeLights(
-    neon,
+    p.neon,
     DECK,
     DECK.map((_, i) => i),
     [-2.6, -1.4],
     N,
   );
-  const { top, boulevard } = OVERLORD_DECK;
-  hull.bevelSlab(BOULEVARD, [top - 1, top, boulevard], [0, 1.5], H.panel, {}, H.base);
-  edgeLights(
-    neon,
-    BOULEVARD,
-    BOULEVARD.map((_, i) => i),
-    [top + 0.2, top + 1],
-    N,
+  mantle(p, BOULEVARD, [top - 1, boulevard], F.crimson, N);
+  ribCage(p, [-44, -20, 20, 44], { halfWidth: 30, y: top - 1, height: 7, thickness: 1.3 });
+  segmentedBody(
+    p.flesh,
+    { tail: -68, nose: -50, segments: 3, width: 36, bottom: -7, top: 6 },
+    F.sinew,
   );
-  hull.bevelSlab(ENGINES, [-7, -1, 5], [1, 1.5], H.dark, {}, H.base);
   for (const s of SIDES) {
     const wing = s > 0 ? WING : flipX(WING);
-    hull.bevelSlab(wing, [-4, -1, WING_TOP], [1, 2], H.base, {}, H.panel);
-    // The leading edge and the tip, lit.
-    edgeLights(neon, wing, [0, 1, 2], [-1.5, -0.5], N);
-    decal(neon, box2d(1.6, 12, [s * 100.5, -6]), WING_TOP + 0.05, N);
+    p.flesh.bevelSlab(wing, [-4, -1, WING_TOP], [1, 2], F.membrane, {}, F.purple);
+    edgeLights(p.neon, wing, [0, 1, 2], [-1.5, -0.5], N);
+    tentacle(p, [s * 56, 1, 20], [s * 102, 2, 2], [0, 2, 0], [2.6, 0.8], F.bone, 4);
+    tentacle(p, [s * 56, 1, -30], [s * 100, 2, -16], [0, 2, 0], [2.4, 0.8], F.bone, 4);
+    for (const z of [-40, -6, 30]) {
+      veinLine(p, [s * 24, boulevard, z], [s * 60, top + 0.2, z + 6], [0, 2, 0], 1.3, N);
+    }
+    graft(p, polygon(5, 6, [1.4, 1]), [top - 0.4, top + 0.8], [s * 30, 0, 44], { color: M.base });
   }
+  barbs(p, [0, top, 58], { count: 5, spacing: 8, size: 4, dir: [0, -0.2, 1] });
 }
 
-/** The citadel over the core: neon tiers, a ring emitter on top, the front weapon array. */
-function drawCitadel({ hull, neon, charge, muzzle }: EnemyParts): void {
+/**
+ * The citadel over the core (P16-R06): a swollen, tiered brain-head ringed with neon, eyes on its
+ * front, a ring emitter on top, the grafted weapon array before it.
+ */
+function drawCitadel(p: EnemyParts): void {
+  const { hull, neon, charge, muzzle } = p;
   // Turned an eighth of a turn, a flat of the octagon faces the front.
   const tiers = { at: [0, OVERLORD_DECK.top, 0] as const, yaw: Math.PI / 8 };
-  hull.lathe(CITADEL, 8, H.panel, tiers);
+  p.flesh.lathe(CITADEL, 8, F.crimson, tiers);
+  eyes(p, [0, OVERLORD_DECK.top + 17, 17], { count: 3, size: 1.3, spacing: 4 }, N);
   const lit = (r: number, y: number, h: number): void => {
     neon.ring(r, h, 8, N, { at: [0, OVERLORD_DECK.top + y, 0], yaw: Math.PI / 8 });
   };
@@ -142,8 +164,10 @@ function drawCitadel({ hull, neon, charge, muzzle }: EnemyParts): void {
 }
 
 /** The missile hatches on the boulevard behind the citadel, lit as missiles load. */
-function drawHatches({ hull, charge, muzzle }: EnemyParts): void {
+function drawHatches(p: EnemyParts): void {
+  const { hull, charge, muzzle } = p;
   const y = OVERLORD_DECK.boulevard;
+  graft(p, box2d(22, 18, [0, -34]), [y - 0.6, y], [0, 0, 0], { color: M.base });
   for (const x of [-6, 6]) {
     for (const z of [-30, -38]) {
       decal(hull, box2d(6.4, 5.4, [x, z]), y + 0.03, H.dark);
@@ -153,23 +177,21 @@ function drawHatches({ hull, charge, muzzle }: EnemyParts): void {
   }
 }
 
-/** The core: hull, city, citadel and hatches, four reactors in the engine block. */
+/** The core: body, city, citadel and hatches, four reactors in sacs across the tail. */
 function drawCore(parts: EnemyParts): void {
   drawHull(parts);
-  drawDeck(parts);
   drawSkyline(parts);
-  drawOverlordArmour(parts);
   drawCitadel(parts);
   drawHatches(parts);
   for (const s of SIDES) {
-    parts.reactor([s * 12, -1, -68], 5.5);
-    parts.reactor([s * 28, -1, -68], 4.2);
+    reactorSac(parts, [s * 12, -1, -68], 5.5, N);
+    reactorSac(parts, [s * 28, -1, -68], 4.2, N);
   }
 }
 
 /**
- * P07-R05: the Overlord, a city-ship (6 L) under purple neon: towers with lit windows over a
- * wide deck, two wing laser cannons, two missile batteries at the back, two shield generators
+ * P07-R05, P16-R06: the Overlord, a city-sized organism (6 L) under purple neon: living towers
+ * lit with window glands grown out of its vast mantle, two wing laser cannons, two missile batteries at the back, two shield generators
  * in front, and a citadel over the core carrying a laser, twin cannons, a ring emitter and
  * missile hatches.
  */

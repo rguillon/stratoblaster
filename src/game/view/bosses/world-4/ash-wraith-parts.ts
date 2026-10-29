@@ -5,6 +5,7 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { bossPoint } from '../boss-limbs';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
 import { ashDrift, ASH_THIN, EMBER } from './ash-plains-soot';
+import { glands, SKIN } from './living-forge';
 
 // P10-R11, 4-2: the Ash Wraith's parts: its two shroud pods (ducted fans under ragged shrouds)
 // and its eye cannon (a mount on the nose, the eye itself on a turret). Logical pixels, nose +Z,
@@ -32,10 +33,14 @@ const TATTER = [
 ] as const;
 
 /** Torn strips of the shroud around a duct at `at`, out towards the back and the side `s`. */
-function tatters(hull: EnemyParts['hull'], at: Vec3, s: number): void {
+function tatters(flesh: EnemyParts['flesh'], at: Vec3, s: number): void {
   for (const [k, yaw] of [Math.PI * 0.75, Math.PI, Math.PI * 1.2, s * Math.PI * 0.55].entries()) {
     const root = offset(at, Math.sin(yaw) * 10.6, 3.6 - (k % 2) * 0.8, Math.cos(yaw) * 10.6);
-    hull.slab(TATTER, [0, 0.4], k % 2 === 0 ? ASH_THIN : H.panel, { at: root, yaw, pitch: -0.25 });
+    flesh.slab(TATTER, [0, 0.4], k % 2 === 0 ? SKIN.dark : SKIN.base, {
+      at: root,
+      yaw,
+      pitch: -0.25,
+    });
   }
 }
 
@@ -47,12 +52,14 @@ function tatters(hull: EnemyParts['hull'], at: Vec3, s: number): void {
 export function shroudPod(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   const s = Math.sign(at[0]);
-  hull.lathe(DUCT, 10, H.panel, { at, yaw: Math.PI / 10 }, false);
+  // P16-R05: a flesh gill ringing its fan, torn membrane trailing off it.
+  p.flesh.lathe(DUCT, 10, SKIN.base, { at, yaw: Math.PI / 10 }, false);
   hull.cylinder(9.4, 0.5, 10, H.dark, { at: offset(at, 0, 0.2, 0) });
   hull.cylinder(2.4, 3, 6, H.base, { at: offset(at, 0, 0.6, 0) });
   p.rotor(offset(at, 0, 3, 0), 8.4);
   neon.ring(11.3, 0.7, 10, WRAITH_CYAN, { at: offset(at, 0, 3.9, 0), yaw: Math.PI / 10 });
-  tatters(hull, at, s);
+  tatters(p.flesh, at, s);
+  glands(p, [offset(at, -s * 9, 3, -4)], 1.3, WRAITH_CYAN);
   ashDrift(hull, offset(at, s * 8.6, 5, -5), 2.6, at[0]);
   hull.box([9, 3, 6], H.base, { at: offset(at, 0, 0.3, 9) }, H.panel);
   // The right pod (screen right) is on the model's -X side.
@@ -74,8 +81,8 @@ const COLLAR = [
 ] as const;
 
 /** The eye cannon's mount around its pivot `at` (P10-R11): a collar on the nose, a cyan ring. */
-export function eyeMount({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.lathe(COLLAR, 9, H.panel, { at, yaw: Math.PI / 9 });
+export function eyeMount({ hull, neon, flesh }: EnemyParts, at: Vec3): void {
+  flesh.lathe(COLLAR, 9, SKIN.panel, { at, yaw: Math.PI / 9 });
   neon.ring(9.5, 0.5, 9, WRAITH_CYAN, { at: offset(at, 0, 1.2, 0), yaw: Math.PI / 9 });
   hull.cylinder(6.2, 3.3, 9, H.dark, { at });
   for (const yaw of [Math.PI * 0.8, Math.PI * 1.2]) {
@@ -104,7 +111,8 @@ export function eyeTurret(p: EnemyParts, at: Vec3): void {
   const { hull, neon, charge, muzzle } = p;
   const [m] = WRAITH_EYE_LENS;
   const tip = m ? bossPoint(...m) : at;
-  hull.lathe(BALL, 9, H.base, { at });
+  // P16-R05: a living eyeball under a metal lid.
+  p.flesh.lathe(BALL, 9, SKIN.bone, { at });
   hull.box([7, 1.2, 5], H.dark, { at: offset(at, 0, 8.2, -1.5), pitch: -0.18 }, ASH_THIN);
   const forward = { pitch: QUARTER };
   hull.cylinder(2.6, 6, 8, H.dark, { at: [tip[0], tip[1], at[2] + 3.2], ...forward }, 2.2);

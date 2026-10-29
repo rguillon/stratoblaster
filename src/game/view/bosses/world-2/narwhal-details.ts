@@ -1,8 +1,8 @@
 import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { SIDES } from '../../enemies/enemy-shapes';
-import { lamps, mast, plate, rect, seam } from '../mini-boss-greebles';
-import { FROST } from './floe-breaker-frost';
+import { lamps, mast, plate, rect } from '../mini-boss-greebles';
+import { ICE_FLESH } from './w2-organic';
 
 // P08-R10, 2-1: the Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2
 // frost). Logical pixels, nose +Z, Y up.
@@ -24,11 +24,12 @@ function flank(z: number): number {
  * Along both flanks: rows of dark free-flood slots, the hull's ring seams, its bow planes; on its
  * belly a sonar window lit teal.
  */
-export function hullDressing({ hull, neon }: EnemyParts, n: Rgb): void {
+export function hullDressing({ flesh, neon }: EnemyParts, n: Rgb): void {
   for (const s of SIDES) {
+    // P16-R06: gill slits down the flanks.
     for (let z = -44; z <= 34; z += 8) {
       if (z > -6 && z < 14) continue;
-      hull.box([0.6, 1.4, 3.6], H.dark, { at: [s * (flank(z) + 0.1), 1.6, z] });
+      flesh.box([0.6, 1.4, 3.6], ICE_FLESH.seam, { at: [s * (flank(z) + 0.1), 1.6, z] });
     }
     const bowPlane = [
       [s * 11, 44],
@@ -36,15 +37,7 @@ export function hullDressing({ hull, neon }: EnemyParts, n: Rgb): void {
       [s * 19, 36],
       [s * 11, 36],
     ] as const;
-    hull.bevelSlab(bowPlane, [4.5, 5.5, 6.5], [0.3, 0.6], H.base, {}, FROST.panel);
-  }
-  // Ring seams across its back.
-  for (const [z, top] of [
-    [-40, 15],
-    [-24, 16.4],
-    [32, 16.2],
-  ] as const) {
-    seam(hull, [-6.5, z], [6.5, z], [top, 0.6, 0.6], H.dark);
+    flesh.bevelSlab(bowPlane, [4.5, 5.5, 6.5], [0.3, 0.6], ICE_FLESH.sinew, {}, ICE_FLESH.rime);
   }
   neon.box([5, 0.5, 6], n, { at: [0, -5.6, 40] });
 }
@@ -62,10 +55,10 @@ export function deckDressing(p: EnemyParts, n: Rgb): void {
     [1, 45],
     [-4, 42],
   ] as const;
-  hull.slab(crust, [12.5, 16.4], FROST.ice, {}, FROST.snow);
-  for (const s of SIDES) seam(hull, [s * 5.5, -36], [s * 5.5, -12], [16.4, 0.5, 0.9], EDGE);
-  hull.cylinder(1.6, 2.2, 8, EDGE, { at: [-3, 15.6, -33] });
-  hull.cylinder(2.2, 0.6, 8, H.dark, { at: [-3, 17.8, -33] });
+  p.flesh.slab(crust, [12.5, 16.4], ICE_FLESH.crystal, {}, ICE_FLESH.rime);
+  // A blowhole, its metal valve grafted on.
+  p.flesh.cylinder(2.4, 2.2, 6, ICE_FLESH.sinew, { at: [-3, 15.6, -33] }, 1.6);
+  hull.cylinder(1.6, 0.6, 8, EDGE, { at: [-3, 17.8, -33] });
   plate(hull, rect(4, 4), [17.4, 0.5], H.panel, { at: [-3, 0, -13] });
   mast(p, [-3, 27, -1], 5, n);
   mast(p, [2.5, 15, -40], 4, n);

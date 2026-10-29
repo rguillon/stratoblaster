@@ -4,7 +4,7 @@ import type { Enemy } from '../../../core/entities/enemy';
 import { JointedEnemy, type JointedDesign } from '../../../core/entities/jointed-enemy';
 import type { EnemyModel } from '../../../render/game-view';
 import { bossPoint } from '../bosses/boss-limbs';
-import { buildEnemyModel, type EnemyParts } from './enemy-mesh';
+import { buildEnemyModel, newBreath, type EnemyParts } from './enemy-mesh';
 
 type Rgb = readonly [number, number, number];
 type Vec3 = [number, number, number];
@@ -69,14 +69,16 @@ export function buildJointedModel(
   design: JointedDesign,
   drawing: JointedDrawing,
 ): EnemyModel {
-  const body = buildEnemyModel(name, scene, color, drawing.body);
+  // P16-R07: its hull, limbs and parts breathe as one creature.
+  const look = { breath: newBreath() };
+  const body = buildEnemyModel(name, scene, color, drawing.body, look);
   const { root } = body;
   const frames = jointFrames(name, design, root);
   const ring = new TransformNode(`${name}-ring`, scene);
   ring.parent = root;
   const pieces: EnemyModel[] = [];
   const hang = (piece: string, draw: Draw, frame: Frame): EnemyModel => {
-    const model = buildEnemyModel(`${name}-${piece}`, scene, color, draw);
+    const model = buildEnemyModel(`${name}-${piece}`, scene, color, draw, look);
     model.root.parent = frame.node;
     model.root.position.set(...sub(ORIGIN, frame.origin));
     pieces.push(model);

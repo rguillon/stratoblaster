@@ -9,12 +9,15 @@ import {
 } from '../../../config/bosses/world-3/river-leviathan';
 import { BOSS_LOOK } from '../../../config/boss-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
-import { around, HULL_SECTION, radial, SIDES } from '../../enemies/enemy-shapes';
+import { around, radial, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint, type LimbDrawing } from '../boss-limbs';
 import type { PartDrawing } from '../boss-model';
 import { GEAR } from '../mini-boss-mechanism';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
 import { moss, scutes, SWAMP, vine } from './mangrove-croc-jungle';
+import { reactorSac } from '../../enemies/organic-parts';
+import { ribs, ROUND_SECTION } from '../../../../render/geometry/organic';
+import { F, gland, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-1: the River Leviathan's body: its four segments and its tail, each drawn on its
 // hinge (D-061) so that they sway one after the other, the segments' ring turrets on their
@@ -77,16 +80,24 @@ function drawSegment(k: Segment) {
   const w = SEGMENT_WIDTH[i] ?? 12;
   const [front, back] = [hingeZ(i) - 2, hingeZ(i + 1) + 1];
   return (p: EnemyParts): void => {
-    const { hull, neon } = p;
+    const { hull, flesh, neon } = p;
     collar(p, i, w * 0.85);
     const [b, t] = SEGMENT_Y;
+    // P16-R06: a living serpent's segment: swollen teal flesh, bone ribs over it, a vein along
+    // its spine; the scutes and the sponson its grafted armour.
     const stations = [
       [back, w * 0.8, b + 1, t - 1.5],
       [back + 6, w, b, t],
       [front - 6, w, b, t],
       [front, w * 0.85, b + 1, t - 1],
     ] as const;
-    hull.loft(HULL_SECTION, stations, H.base);
+    flesh.loft(ROUND_SECTION, stations, F.teal);
+    ribs(
+      flesh,
+      [back + 9, front - 9],
+      { halfWidth: w * 0.95, y: b + 2, height: t - b - 1.4, thickness: 0.7 },
+      F.bone,
+    );
     neon.box([1.2, 0.5, front - back - 8], N, { at: [0, t + 0.05, (front + back) / 2] });
     const ridge: Vec3[] = [front - 8, (front + back) / 2, back + 8].map((z) => [0, t - 0.4, z]);
     scutes(hull, ridge.slice(0, 1), 2.2);
@@ -132,20 +143,21 @@ function turretSpot(k: Segment): Vec3 {
 
 /** The tail, on its hinge: its collar, a tapering hull, two flukes with reactors, moss. */
 function drawTail(p: EnemyParts): void {
-  const { hull, neon } = p;
+  const { hull, flesh, neon } = p;
   const z0 = hingeZ(4);
   collar(p, 4, 9.5);
-  hull.loft(
-    HULL_SECTION,
+  // P16-R06: a tapering flesh tail, membrane flukes on bone, its reactors in flesh sacs.
+  flesh.loft(
+    ROUND_SECTION,
     [...TAIL].reverse().map(([z, w, b, t]) => [z0 + z, w, b, t] as const),
-    H.base,
+    F.teal,
   );
   const tip = z0 + (TAIL.at(-1)?.[0] ?? 0);
   for (const s of SIDES) {
     const fluke = FLUKE.map(([x, z]): OutlinePoint => [s * x, tip + 4 + z]);
-    hull.bevelSlab(fluke, [1.5, 2.5, 3.5], [0.4, 0.8], H.panel, {}, H.base);
+    flesh.bevelSlab(fluke, [1.5, 2.5, 3.5], [0.4, 0.8], F.membrane, {}, F.teal);
     neon.box([0.8, 0.5, 8], N, { at: [s * 8, 3.6, tip - 2], yaw: s * 0.9 });
-    p.reactor([s * 4.5, 3, tip + 2], 1.8);
+    reactorSac(p, [s * 4.5, 3, tip + 2], 1.8, N, { flesh: F.teal });
   }
   neon.box([1, 0.5, 20], N, { at: [0, 8.55, z0 - 4] });
   moss(
@@ -169,10 +181,18 @@ export function leviathanBody(): Record<string, LimbDrawing> {
 }
 
 /** A segment's turret mount (the part, P09-R09): a round armoured base with a teal ring. */
-export const turretMount: PartDrawing = ({ hull, neon }, at) => {
-  hull.cylinder(10, MOUNT, 8, H.panel, { at: offset(at, 0, 0, 0), yaw: QUARTER / 4 }, 9);
+export const turretMount: PartDrawing = (p, at) => {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a swollen gland on the serpent's flank, the turret's metal ring grafted on top.
+  flesh.cylinder(10, MOUNT, 7, F.crimson, { at: offset(at, 0, 0, 0), yaw: QUARTER / 4 }, 9);
   hull.cylinder(8.6, 0.6, 8, GEAR, { at: offset(at, 0, MOUNT, 0), yaw: QUARTER / 4 });
   neon.ring(10.1, 0.8, 8, N, { at: offset(at, 0, MOUNT - 2.2, 0), yaw: QUARTER / 4 });
+  veinTo(
+    p,
+    [offset(at, 0, MOUNT * 0.4, -10), offset(at, 0, MOUNT * 0.4, 10)],
+    [-Math.sign(at[0]) * 3, 0, 0],
+    N,
+  );
 };
 
 /**
@@ -213,9 +233,12 @@ export const ringTurret: PartDrawing = (p, at) => {
  * The tail's missile rack (P09-R09): an armoured box on the tail's back, four cells open at its
  * top, each with a charge light round its mouth, a teal band round it.
  */
-export const missileRack: PartDrawing = ({ hull, neon, charge, muzzle }, at) => {
+export const missileRack: PartDrawing = (p, at) => {
+  const { hull, neon, charge, muzzle } = p;
   const height = LEVIATHAN_RACK[0]?.[2] ?? 10;
-  hull.box([16, height - 4, 18], H.panel, { at: offset(at, 0, 4, 0) }, H.base);
+  // P16-R06: an egg sac swelling on the tail, a grafted rack of missile cells capping it.
+  p.flesh.box([16, height - 4, 18], F.crimson, { at: offset(at, 0, 4, 0) }, F.sinew);
+  gland(p, offset(at, 0, height - 2, -10), 2, N);
   hull.box([17, 1.4, 19], H.dark, { at: offset(at, 0, 4.5, 0) });
   neon.box([16.4, 0.6, 18.4], N, { at: offset(at, 0, 6.5, 0) });
   for (const cell of LEVIATHAN_RACK) {

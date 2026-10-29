@@ -8,6 +8,10 @@ export interface EnemyViewerSelection {
   readonly level: number;
   readonly fire: boolean;
   readonly paused: boolean;
+  /** P16-R10: the models' living motion (P16-R07) runs. */
+  readonly living: boolean;
+  /** P16-R10: the hit circles are drawn over the model in the model view. */
+  readonly hitbox: boolean;
 }
 
 /** Live numbers shown under the controls. */
@@ -66,9 +70,16 @@ export class EnemyViewerPanel {
     this.#addRow('view', (i) => ({ view: VIEWS[i] ?? 'behaviour' }));
     this.#addRow('weapon', (weapon) => ({ weapon }));
     this.#addRow('level', (i) => ({ level: i + 1 }));
-    this.#addRow('toggles', (i) =>
-      i === 0 ? { fire: !this.#selection.fire } : { paused: !this.#selection.paused },
-    );
+    this.#addRow('toggles', (i) => {
+      const s = this.#selection;
+      const toggles = [
+        { fire: !s.fire },
+        { paused: !s.paused },
+        { living: !s.living },
+        { hitbox: !s.hitbox },
+      ];
+      return toggles[i] ?? {};
+    });
     for (const key of ['enemies', 'shots', 'kills', 'score', 'stage']) {
       const el = doc.createElement('div');
       el.className = `enemy-readout enemy-${key}`;
@@ -136,7 +147,10 @@ export class EnemyViewerPanel {
     this.#fill('view', ['Behaviour', 'Model (M)', 'Wireframe (V)'], (i) => VIEWS[i] === s.view);
     this.#fill('weapon', this.options.weapons, (i) => i === s.weapon);
     this.#fill('level', levels, (i) => i + 1 === s.level);
-    this.#fill('toggles', ['Fire (F)', 'Pause (P)'], (i) => (i === 0 ? s.fire : s.paused));
+    const toggles = [s.fire, s.paused, s.living, s.hitbox];
+    this.#fill('toggles', ['Fire (F)', 'Pause (P)', 'Motion (L)', 'Hitbox (H)'], (i) => {
+      return toggles[i] === true;
+    });
   }
 
   #fill(name: string, labels: readonly string[], selected: (i: number) => boolean): void {

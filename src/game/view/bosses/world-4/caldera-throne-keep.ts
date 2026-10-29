@@ -6,6 +6,7 @@ import { bossPoint } from '../boss-limbs';
 import { studs } from '../final-boss-greebles';
 import { armour, conduit } from '../final-boss-mechanism';
 import { H, SHADE, WHITE } from '../mini-boss-shapes';
+import { SKIN } from './living-forge';
 import { edgeLights } from '../overlord-city';
 import { CRIMSON, DECK_TOP, GOLD, HEAT } from './caldera-throne-parts';
 
@@ -14,6 +15,8 @@ import { CRIMSON, DECK_TOP, GOLD, HEAT } from './caldera-throne-parts';
 // core's rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Model space: logical pixels, nose
 // +Z (down the screen), Y up towards the camera.
 type Vec3 = [number, number, number];
+// P16-R06: the keep's lowest tier is the flesh of its back swelling up, the upper ones armour
+// grafted on; its stacks are flesh spiracles, its watchtowers bone horns.
 
 /** An octagon of `radius` (to its corners) around `[x, z]`, its faces square to the axes. */
 function octagon(radius: number, [x, z]: OutlinePoint = [0, 0]): OutlinePoint[] {
@@ -44,10 +47,11 @@ const STACKS = [
 ] as const;
 
 /** The three tiers, their edges lit crimson, molten slits in the lowest, battlements on it. */
-function drawTiers({ hull, neon }: EnemyParts): void {
+function drawTiers({ hull, neon, flesh }: EnemyParts): void {
   TIERS.forEach(([radius, y0, y1], i) => {
     const outline = octagon(radius);
-    armour(hull, outline, [y0, y1], H.base, 1.6, i === 0 ? HEAT.blued : H.panel);
+    if (i === 0) armour(flesh, outline, [y0, y1], SKIN.base, 1.6, SKIN.dark);
+    else armour(hull, outline, [y0, y1], H.base, 1.6, H.panel);
     const all = outline.map((_, k) => k);
     edgeLights(neon, outline, all, [y1 - 3.2, y1 - 2.2], i === 1 ? GOLD : CRIMSON);
   });
@@ -93,16 +97,16 @@ function drawTower({ hull, neon, charge, muzzle }: EnemyParts): void {
 }
 
 /** The smokestacks aft: soot-black, banded crimson, their mouths glowing with the furnaces. */
-function drawStacks({ hull, neon }: EnemyParts): void {
+function drawStacks({ hull, neon, flesh }: EnemyParts): void {
   for (const s of SIDES) {
     for (const [x, z, radius, top] of STACKS) {
       const at: Vec3 = [s * x, DECK_TOP, z];
-      hull.cylinder(radius, top - DECK_TOP, 6, H.base, { at }, radius * 0.85);
+      flesh.cylinder(radius, top - DECK_TOP, 6, SKIN.panel, { at }, radius * 0.85);
       hull.ring(radius * 0.9, 2, 6, HEAT.soot, { at: [s * x, top - 2, z] });
       neon.ring(radius * 0.95, 0.8, 6, CRIMSON, { at: [s * x, DECK_TOP + 6, z] });
       neon.cylinder(radius * 0.7, 0.4, 6, HEAT.molten, { at: [s * x, top - 0.3, z] });
     }
-    conduit(hull, [s * 18, DECK_TOP + 3, -36], [s * 24, DECK_TOP + 3, -68], [1.6, 3]);
+    conduit(flesh, [s * 18, DECK_TOP + 3, -36], [s * 24, DECK_TOP + 3, -68], [1.6, 3]);
   }
 }
 
@@ -121,11 +125,11 @@ const LAMP_ROWS = [
 ] as const satisfies readonly (readonly [OutlinePoint, OutlinePoint])[];
 
 /** The watchtowers by the prow, gold beacons on their roofs, and the deck's rows of lamps. */
-function drawWatch({ hull, neon }: EnemyParts): void {
+function drawWatch({ hull, neon, flesh }: EnemyParts): void {
   const { x, z, radius, top } = WATCHTOWER;
   for (const s of SIDES) {
     const at: Vec3 = [s * x, DECK_TOP, z];
-    hull.cylinder(radius, top - DECK_TOP, 6, H.base, { at }, radius * 0.8);
+    flesh.cylinder(radius, top - DECK_TOP, 6, SKIN.bone, { at }, radius * 0.8);
     hull.cylinder(radius * 1.25, 2, 6, H.panel, { at: [s * x, top, z] }, radius * 0.9);
     neon.ring(radius * 0.95, 0.7, 6, CRIMSON, { at: [s * x, top - 4, z] });
     neon.box([1.6, 1.6, 1.6], GOLD, { at: [s * x, top + 2.2, z] });

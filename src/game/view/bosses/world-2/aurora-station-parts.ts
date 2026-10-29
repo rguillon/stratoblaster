@@ -5,7 +5,9 @@ import { AURORA_EMITTER } from '../../../config/bosses/world-2/aurora-station';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION, SIDES } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-model';
-import { hazard, lamps, rect } from '../mini-boss-greebles';
+import { organ, ribs } from '../../../../render/geometry/organic';
+import { lamps, plate, rect } from '../mini-boss-greebles';
+import { crystals, gland, ICE_FLESH } from './w2-organic';
 import { conduit } from '../mini-boss-mechanism';
 import { H, offset, QUARTER, SHADE, turret, WHITE } from '../mini-boss-shapes';
 
@@ -19,7 +21,7 @@ export const AURORA_GREEN: Rgb = BOSS_LOOK.neon['aurora-station'] ?? [0.3, 1, 0.
 export const AURORA_VIOLET: Rgb = [0.62, 0.3, 1];
 /** Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost). */
 export const FROST: Rgb = [0.75, 0.82, 0.9];
-export const ICE: Rgb = [0.5, 0.62, 0.76];
+export const ICE: Rgb = ICE_FLESH.crystal;
 
 /** Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice. */
 export function icicles(hull: SolidBuilder, points: readonly Vec3[], side = 1): void {
@@ -39,9 +41,11 @@ const bowl = (r: number) =>
   ] as const;
 
 /** A dish emitter's pylon around its centre `at` (P08-R10): its dish turns on it. */
-export function emitter({ hull }: EnemyParts, at: Vec3): void {
-  hull.cylinder(7, 3, 8, H.base, { at: offset(at, 0, -1, -3), yaw: Math.PI / 8 }, 6);
-  hull.box([4, 6, 5], H.panel, { at: offset(at, 0, 2, -3) }, FROST);
+export function emitter(p: EnemyParts, at: Vec3): void {
+  // P16-R06: a swollen node of flesh at the end of its arm, a metal socket for the dish.
+  organ(p.flesh, 7, 6, ICE_FLESH.purple, { at: offset(at, 0, -2, -3) }, 0.5);
+  p.hull.box([4, 6, 5], H.panel, { at: offset(at, 0, 2, -3) }, H.base);
+  gland(p, offset(at, Math.sign(at[0]) * 5, 2, -6), 1, AURORA_GREEN);
 }
 
 /**
@@ -72,7 +76,7 @@ export function emitterTurret(p: EnemyParts, at: Vec3): void {
   }
   // Snow caught on the dish's top rim, icicles under its lower rim.
   hull.box([8, 1, 2.4], FROST, { at: [x, y + 8.6, z - 12.4] });
-  icicles(hull, [
+  icicles(p.flesh, [
     [x + 4, y - 7.5, z - 12],
     [x - 3, y - 8.3, z - 12],
   ]);
@@ -91,20 +95,28 @@ const TANK = [
  * truss, iced over, two coolant flasks behind its turret ({@link cryoTurret}).
  */
 export function cryoCannon(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
-  hull.loft(POD_SECTION, TANK, H.base, { at: [at[0], 0, at[2]] }, { paint: iced });
+  const { flesh, neon } = p;
+  // P16-R06: a cryo bladder of flesh, rimed over, two glands of coolant behind its gun.
+  flesh.loft(POD_SECTION, TANK, ICE_FLESH.teal, { at: [at[0], 0, at[2]] }, { paint: iced });
+  ribs(
+    flesh,
+    [at[2] - 8, at[2]],
+    { halfWidth: 12, y: -2, height: 7, thickness: 0.7 },
+    ICE_FLESH.bone,
+    { at: [at[0], 0, 0] },
+  );
   for (const s of SIDES) {
     const flask = offset(at, s * 6, 6, -14);
-    hull.cylinder(3.6, 5, 8, ICE, { at: flask }, 2.4);
+    organ(flesh, 3.6, 6, ICE_FLESH.membrane, { at: flask }, 0.7);
     neon.ring(3.7, 0.6, 8, AURORA_VIOLET, { at: offset(flask, 0, 2, 0) });
     neon.box([0.6, 0.4, 14], AURORA_GREEN, { at: offset(at, s * 12.3, 1, -3) });
   }
-  icicles(hull, [offset(at, 6, -4, 9), offset(at, -2, -4.5, 10), offset(at, -8, -4, 6)]);
+  icicles(flesh, [offset(at, 6, -4, 9), offset(at, -2, -4.5, 10), offset(at, -8, -4, 6)]);
 }
 
 /** Ice on the top of a {@link POD_SECTION} loft (its side 2). */
 export function iced(side: number): Rgb | undefined {
-  return side === 2 ? FROST : undefined;
+  return side === 2 ? ICE_FLESH.rime : undefined;
 }
 
 /** A cryo cannon's turret: a single wide-bored barrel, a violet ring round its foot. */
@@ -124,17 +136,19 @@ export function cryoTurret(p: EnemyParts, at: Vec3): void {
  * The drone hangar around its centre `at` (P08-R10): a snow-roofed bay at the station's nose,
  * its open door framed in violet, where its Hornets leave from.
  */
-export function hangar({ hull, neon }: EnemyParts, at: Vec3): void {
-  hull.bevelSlab(rect(26, 24), [-3, 0, 8], [1, 1.5], H.base, { at }, FROST);
-  hull.box([18, 7, 0.8], H.dark, { at: offset(at, 0, -1.5, 11.8) });
+export function hangar(p: EnemyParts, at: Vec3): void {
+  const { hull, flesh, neon } = p;
+  // P16-R06: a brood pouch of flesh at the nose, its mouth framed in violet.
+  flesh.bevelSlab(rect(26, 24), [-3, 0, 8], [1, 3], ICE_FLESH.sinew, { at }, ICE_FLESH.rime);
+  flesh.box([18, 7, 0.8], ICE_FLESH.seam, { at: offset(at, 0, -1.5, 11.8) });
   neon.box([20, 0.8, 0.6], AURORA_VIOLET, { at: offset(at, 0, 5.6, 12.2) });
   for (const s of SIDES) {
     neon.box([0.8, 7, 0.6], AURORA_VIOLET, { at: offset(at, s * 9.8, -1.4, 12.2) });
     lamps(neon, [offset(at, s * 11, 8, 9), offset(at, s * 11, 8, -9)], 1.2, AURORA_GREEN);
   }
-  hazard(hull, offset(at, 0, 8, 6), [14, 3], 6, 0);
-  hull.box([10, 2, 6], H.panel, { at: offset(at, 0, 8, -4) }, FROST);
-  icicles(hull, [offset(at, 6, 5.5, 12.4), offset(at, 0, 5.5, 12.4), offset(at, -6, 5.5, 12.4)]);
+  plate(hull, rect(10, 6), [8, 0.8], H.panel, { at: offset(at, 0, 0, -4) });
+  crystals(flesh, offset(at, -8, 8, 2), 3.5);
+  icicles(flesh, [offset(at, 6, 5.5, 12.4), offset(at, 0, 5.5, 12.4), offset(at, -6, 5.5, 12.4)]);
 }
 
 /** The dish's tilt: it looks up and forward, and turns with the boss's spin. */
@@ -144,7 +158,8 @@ const DISH_TILT = 0.6;
  * The big dish on top (P08-R10), drawn on the model's ring so that it turns slowly: a snow-filled
  * bowl on a turntable, a violet rim, and its feed horn lit green at the focus.
  */
-export function dish({ hull, neon }: EnemyParts): void {
+export function dish({ hull, flesh, neon }: EnemyParts): void {
+  // P16-R06: the crown, a frilled bowl of membrane turning on its stalk.
   const tilt = { pitch: DISH_TILT };
   const axis = (along: number): Vec3 => [
     0,
@@ -152,9 +167,9 @@ export function dish({ hull, neon }: EnemyParts): void {
     along * Math.sin(DISH_TILT),
   ];
   hull.cylinder(4, 2, 8, H.panel, { at: [0, 17, 0] });
-  hull.lathe(bowl(15), 12, FROST, { at: axis(0), ...tilt });
+  flesh.lathe(bowl(15), 12, ICE_FLESH.membrane, { at: axis(0), ...tilt });
   neon.ring(15.1, 0.6, 12, AURORA_VIOLET, { at: axis(4.9), ...tilt });
-  hull.cylinder(0.7, 10, 4, H.dark, { at: axis(0), ...tilt });
+  flesh.cylinder(0.9, 10, 4, ICE_FLESH.sinew, { at: axis(0), ...tilt });
   neon.box([2.2, 2.2, 2.2], AURORA_GREEN, { at: axis(10), ...tilt });
   hull.box([5, 4, 3], H.base, { at: [0, 15.5, -4] }, SHADE.edge);
 }

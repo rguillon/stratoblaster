@@ -17,9 +17,12 @@ import {
   SIDES,
 } from '../../enemies/enemy-shapes';
 import { bossPoint, buildBossModel } from '../boss-model';
-import { hazard, lamps, plate, vent } from '../mini-boss-greebles';
+import { lamps, plate, rect } from '../mini-boss-greebles';
+import { ribs, segmentedBody } from '../../../../render/geometry/organic';
+import { reactorSac } from '../../enemies/organic-parts';
+import { crystals, gland, glowVein, ICE_FLESH, shell, sinew, spineRow } from './w2-organic';
 import { GEAR } from '../mini-boss-mechanism';
-import { H, neonBand, offset, QUARTER, SHADE, socket, WHITE } from '../mini-boss-shapes';
+import { H, neonBand, offset, SHADE, socket, WHITE } from '../mini-boss-shapes';
 import { armLimbs, AVALANCHE_YELLOW as YELLOW, drill } from './avalanche-arms';
 import { barrelTo, FROST, icicles, PACKED, snowCap } from './avalanche-frost';
 
@@ -113,30 +116,55 @@ const PATCH = [
 
 /** The chassis, its tracks, the cab and the engine deck. */
 function drawBody(p: EnemyParts): void {
-  const { hull, neon } = p;
-  hull.bevelSlab(CHASSIS, DECK, [2, 2.2], H.base, {}, H.panel);
+  const { hull, flesh, neon } = p;
+  // P16-R05: a burrowing beast, a squat body of flesh under a ridged shell, its head in front.
+  flesh.bevelSlab(CHASSIS, DECK, [2, 2.2], ICE_FLESH.sinew, {}, ICE_FLESH.purple);
   neonBand(neon, CHASSIS, [-2.2, -0.6], [0.985, 1.02], YELLOW);
-  hull.loft(FIGHTER_SECTION, CAB, H.base, {}, { paint: canopyPaint([1, 2], H.dark) });
+  shell(flesh, { tail: -36, nose: 6, segments: 4, width: 21, bottom: 4, top: 13 });
+  flesh.loft(
+    FIGHTER_SECTION,
+    CAB,
+    ICE_FLESH.purple,
+    {},
+    { paint: canopyPaint([1, 2], ICE_FLESH.seam) },
+  );
+  plate(hull, rect(10, 8), [17, 0.8], H.panel, { at: [0, 0, 16] });
   for (const side of [1, 6]) {
     const stripe = sideStripe(FIGHTER_SECTION, side, [0.3, 0.75]);
     neon.loft(stripe, CAB.slice(0, 3), YELLOW, {}, { open: true });
   }
   for (const eye of angryEyes([0, 30.5], 3, [5, 1.3], 0.3)) decal(neon, eye, 11.2, YELLOW);
   for (const s of SIDES) drawTrack(p, s);
-  // The engine deck behind the cab, two exhaust stacks sooted at their tops.
-  hull.box([26, 6, 18], H.panel, { at: [0, DECK[2], -9] }, H.base);
-  vent(hull, [0, DECK[2] + 6.1, -9], [14, 10], 4);
+  // Spiracles breathing out of the shell, metal valves sooted at their tops.
+  ribs(flesh, [-24, -16, -8], { halfWidth: 14, y: 8, height: 7, thickness: 1 }, ICE_FLESH.bone);
   for (const s of SIDES) {
-    hull.cylinder(2.4, 13, 6, H.dark, { at: [s * 10, DECK[2] + 4, -15] }, 2);
+    flesh.cylinder(2.6, 13, 5, ICE_FLESH.sinew, { at: [s * 10, DECK[2] + 4, -15] }, 1.8);
+    glowVein(p, [s * 4, 16, 10], [s * 16, 10, -26], 0.9, YELLOW);
     hull.cylinder(2.1, 1.5, 6, SHADE.soot, { at: [s * 10, DECK[2] + 17, -15] });
     lamps(neon, [[s * 13.5, DECK[2] + 6, -2]], 1.4, YELLOW);
   }
 }
 
 /** A track on side `s`: its belt, fender, road wheels and the packed snow in its treads. */
-function drawTrack({ hull }: EnemyParts, s: number): void {
+function drawTrack({ hull, flesh }: EnemyParts, s: number): void {
   const x = s * TRACK.x;
-  hull.box([9, TRACK.height, TRACK.length], H.dark, { at: [x, -6, TRACK.z] }, GEAR);
+  // P16-R05: a crawling flank of swollen segments where the track was, a metal fender over it.
+  segmentedBody(
+    flesh,
+    {
+      tail: TRACK.z - TRACK.length / 2,
+      nose: TRACK.z + TRACK.length / 2,
+      segments: 5,
+      width: 5,
+      bottom: -10,
+      top: 0,
+      pinch: 0.25,
+      girth: () => 1,
+      closed: [false, false],
+    },
+    ICE_FLESH.teal,
+    { at: [x, 0, 0] },
+  );
   hull.bevelSlab(
     [
       [x - 5.5, TRACK.z - TRACK.length / 2 + 3],
@@ -162,32 +190,35 @@ function drawTrack({ hull }: EnemyParts, s: number): void {
     6.5,
     0.8,
   );
+  // Short clawed legs under each segment, digging.
   for (let i = 0; i < 4; i++) {
     const z = TRACK.z - 21 + i * 14;
-    hull.cylinder(3.6, 1.2, 6, H.panel, { at: [x + s * 4.6, -1.5, z], roll: -s * QUARTER });
+    sinew(flesh, [x + s * 4, -3, z], [x + s * 8, -7, z + 3], 1.3, ICE_FLESH.bone, [0, 2, 0]);
   }
-  hull.box([9.4, 2, 5], PACKED, { at: [x, -2, TRACK.z + TRACK.length / 2 - 3] });
 }
 
 /** Frost over the deck, icicles under the nose and along the flanks, hazard paint, sockets. */
-function drawFrost({ hull }: EnemyParts): void {
-  for (const [outline, y, thick] of SNOW) snowCap(hull, outline, y, thick);
+function drawFrost(p: EnemyParts): void {
+  const { hull, flesh } = p;
+  for (const [outline, y, thick] of SNOW) snowCap(flesh, outline, y, thick);
   const nose: Vec3[] = [-14, -8, -2, 4, 10, 15].map((x) => [
     x,
     DECK[0] + 0.5,
     31.5 - Math.abs(x) * 0.12,
   ]);
-  icicles(hull, nose, 4.5);
+  icicles(flesh, nose, 4.5);
   for (const s of SIDES) {
     const flank: Vec3[] = [
       [s * 24, DECK[0] + 0.5, 12],
       [s * 25, DECK[0] + 0.5, 0],
     ];
-    icicles(hull, flank, 3.5);
+    icicles(flesh, flank, 3.5);
     const [x, y] = AVALANCHE_ARM.shoulder;
     socket(hull, bossPoint(s * x, y, DECK[2]), 6, 1.5);
+    crystals(flesh, [s * 14, 12, -28], 4);
+    gland(p, [s * 18, DECK[2], -6], 1.5, YELLOW);
   }
-  hazard(hull, [0, DECK[2] - 0.2, 29], [14, 3], 5);
+  spineRow(flesh, [0, 15, -4], [0, 13, -30], 4, 4);
   plate(hull, PATCH, [DECK[2], 0.6], SHADE.patch);
 }
 
@@ -201,7 +232,9 @@ function drawGuns(p: EnemyParts): void {
 /**
  * P08-R10: the Avalanche, a heavy drilling machine 3.5 L across, yellow neon: a tracked chassis
  * crusted with snow and icicles, a cab at its nose, two drill arms swinging in front of it and a
- * rock hopper heaped with ice and stone on its back.
+ * rock hopper heaped with ice and stone on its back. P16-R05: now a burrowing beast of flesh
+ * under a ridged shell, crawling on segmented flanks, a crop sac of rock and ice on its back and
+ * fleshy arms ending in grafted drills.
  */
 export function buildAvalanche(scene: Scene): EnemyModel {
   return buildBossModel(AVALANCHE, scene, YELLOW, {
@@ -209,7 +242,8 @@ export function buildAvalanche(scene: Scene): EnemyModel {
       drawBody(p);
       drawFrost(p);
       drawGuns(p);
-      for (const s of SIDES) p.reactor([s * 16, 2, -36.5], 3.4);
+      for (const s of SIDES)
+        reactorSac(p, [s * 16, 2, -36.5], 3.4, YELLOW, { flesh: ICE_FLESH.purple });
     },
     parts: { 'drill-left': drill, 'drill-right': drill, hopper },
     limbs: { ...armLimbs('left'), ...armLimbs('right') },
@@ -221,10 +255,12 @@ export function buildAvalanche(scene: Scene): EnemyModel {
  * its rim and a chute at its front, where its rocks drop from.
  */
 function hopper(p: EnemyParts, at: Vec3): void {
-  const { hull, neon, charge } = p;
+  const { hull, flesh, neon, charge } = p;
+  // P16-R05: a crop sac of flesh, its mouth gaping with rocks and ice, a metal rim grafted on.
   const bin = BIN.map(([x, z]): OutlinePoint => [x + at[0], z + at[2]]);
-  hull.bevelSlab(bin, BIN_Y, [2.5, 0.8], H.base, {}, H.panel);
-  hull.box([22, 1, 22], H.dark, { at: offset(at, 0, BIN_Y[2] - 1, 0) });
+  flesh.bevelSlab(bin, BIN_Y, [2.5, 0.8], ICE_FLESH.membrane, {}, ICE_FLESH.purple);
+  flesh.box([22, 1, 22], ICE_FLESH.seam, { at: offset(at, 0, BIN_Y[2] - 1, 0) });
+  glowVein(p, offset(at, -13, BIN_Y[0] + 2, -10), offset(at, -12, BIN_Y[2] - 3, 10), 0.8, YELLOW);
   neonBand(neon, BIN, [BIN_Y[2] - 2.5, BIN_Y[2] - 1.2], [1.01, 1.02], YELLOW, { at });
   for (const [x, z, size, turn, snowy] of ROCKS) {
     hull.box(
@@ -245,9 +281,10 @@ function hopper(p: EnemyParts, at: Vec3): void {
     charge.box([6, 0.5, 1.2], WHITE, { at: offset(lip, 0, -0.5, -0.8) });
     p.muzzle(lip);
   }
-  for (const s of SIDES) hull.box([2, 6, 2], GEAR, { at: offset(at, s * 10, 0, 6) });
+  for (const s of SIDES)
+    sinew(flesh, offset(at, s * 10, 0, 6), offset(at, s * 12, BIN_Y[1], 10), 1.2);
   icicles(
-    hull,
+    flesh,
     [offset(at, -11, BIN_Y[0], -13), offset(at, 0, BIN_Y[0], -13.5), offset(at, 10, BIN_Y[0], -13)],
     4,
   );

@@ -3,8 +3,8 @@ import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { POD_SECTION, sideStripe } from '../../enemies/enemy-shapes';
 import { barrels, shift } from '../final-boss-shapes';
-import { vent } from '../mini-boss-greebles';
-import { FROST, iceChunk, icicle } from './floe-breaker-frost';
+import { organ } from '../../../../render/geometry/organic';
+import { crystals, ICE_FLESH, sinew } from './w2-organic';
 
 // P08-R10, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast
 // pods). Logical pixels, nose +Z, Y up; each drawn around its centre `at`.
@@ -13,6 +13,8 @@ const WHITE = [1, 1, 1] as const;
 const QUARTER = Math.PI / 2;
 /** Light metal: the horn's ridges and the tubes' rims. */
 const EDGE = [0.24, 0.24, 0.27] as const;
+/** The horn's darker bone bands. */
+const BONE_DARK = [0.12, 0.11, 0.1] as const;
 
 type Rgb = readonly [number, number, number];
 type Vec3 = [number, number, number];
@@ -41,7 +43,12 @@ const HORN = { root: 52, tip: 90, height: 4.5, radius: 4.2, segments: 7, twist: 
  * The horn lance (P08-R10): a collar on the nose and a long spiral horn, a teal light winding
  * round it, its tip glowing as its laser charges.
  */
-export function hornLance({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3, n: Rgb): void {
+export function hornLance(
+  { hull, flesh, neon, charge, muzzle }: EnemyParts,
+  at: Vec3,
+  n: Rgb,
+): void {
+  // P16-R06: a spiral horn of bone, a metal collar grafted where it leaves the head.
   const { root, tip, height, radius, segments, twist } = HORN;
   hull.cylinder(5.4, 5, 8, H.panel, { at: [at[0], height, root - 4], pitch: QUARTER }, 4.4);
   neon.ring(5.5, 0.8, 8, n, { at: [at[0], height, root - 2], pitch: QUARTER });
@@ -49,7 +56,7 @@ export function hornLance({ hull, neon, charge, muzzle }: EnemyParts, at: Vec3, 
   for (let i = 0; i < segments; i++) {
     const [r0, r1] = [radius * (1 - i / segments), radius * (1 - (i + 1) / segments) + 0.3];
     const place = { at: [at[0], height, root + i * step] as Vec3, pitch: QUARTER, roll: i * twist };
-    hull.cylinder(r0, step, 5, i % 2 === 0 ? EDGE : H.panel, place, r1);
+    flesh.cylinder(r0, step, 5, i % 2 === 0 ? ICE_FLESH.bone : BONE_DARK, place, r1);
     // The light winding round the horn, a bead on each segment.
     const a = i * 1.3;
     const r = r0 * 0.9;
@@ -76,13 +83,15 @@ const BLISTER = [
  */
 export function torpedoTube(p: EnemyParts, at: Vec3, n: Rgb): void {
   const s = Math.sign(at[0]);
-  p.hull.loft(
+  // P16-R06: a swollen blister of flesh on the flank, metal tube mouths grafted at its front.
+  p.flesh.loft(
     POD_SECTION,
     BLISTER,
-    H.panel,
+    ICE_FLESH.purple,
     { at },
-    { paint: (side) => (side === 2 ? FROST.panel : undefined) },
+    { paint: (side) => (side === 2 ? ICE_FLESH.rime : undefined) },
   );
+  organ(p.vein, 1, 5, n, { at: shift(at, [s * 4, 8, -6]) }, 0.6);
   const outer = s > 0 ? 0 : 4;
   p.neon.loft(
     sideStripe(POD_SECTION, outer, [0.3, 0.8], 1.06),
@@ -93,7 +102,7 @@ export function torpedoTube(p: EnemyParts, at: Vec3, n: Rgb): void {
   );
   p.hull.box([11, 7, 0.6], EDGE, { at: shift(at, [0, 1.5, 11]) });
   barrels(p, shift(at, [0, 5, 11]), [2, 5], [1.8, 1.5], 'missile');
-  icicle(p.hull, shift(at, [s * 4, 0.4, -6]), 2.6);
+  crystals(p.flesh, shift(at, [s * 3, 9, -10]), 2.6, 2);
 }
 
 /** A ballast pod (loft stations around its centre: z, half width, bottom, top). */
@@ -110,18 +119,24 @@ const POD = [
  */
 export function ballastPod(p: EnemyParts, at: Vec3, n: Rgb): void {
   const s = Math.sign(at[0]);
-  p.hull.loft(
+  // P16-R06: a ballast sac of flesh, held in metal bands, a gland on its back.
+  p.flesh.loft(
     POD_SECTION,
     POD,
-    H.base,
+    ICE_FLESH.membrane,
     { at },
-    { paint: (side, band) => (side === 2 && band !== 1 ? FROST.snow : undefined) },
+    { paint: (side, band) => (side === 2 && band !== 1 ? ICE_FLESH.rime : undefined) },
   );
   for (const z of [-6, 2]) {
     p.neon.ring(8.4, 0.8, 6, n, { at: shift(at, [0, 5, z]), pitch: QUARTER, roll: Math.PI / 6 });
   }
-  vent(p.hull, shift(at, [0, 11.8, -16]), [4, 6], 3);
+  p.hull.ring(8.6, 2, 6, H.panel, {
+    at: shift(at, [0, 5, -13]),
+    pitch: QUARTER,
+    roll: Math.PI / 6,
+  });
+  organ(p.vein, 1.4, 5, n, { at: shift(at, [0, 11.4, -16]) }, 0.6);
   barrels(p, shift(at, [0, 6, 18]), [2, 5], [1.2, 4]);
-  iceChunk(p.hull, shift(at, [-s * 3, 11.6, 6]), 1.8);
-  for (const z of [-10, 0, 8]) icicle(p.hull, shift(at, [s * 6, -1, z]), 2 + Math.abs(z) * 0.1);
+  crystals(p.flesh, shift(at, [-s * 3, 11.6, 6]), 2.6);
+  sinew(p.flesh, shift(at, [-s * 6, 6, -12]), shift(at, [-s * 14, 7, -14]), 1.4);
 }

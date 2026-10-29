@@ -5,7 +5,9 @@ import { ENEMY_LOOK } from '../../../config/enemy-look';
 import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { around, decal, POD_SECTION, radial } from '../../enemies/enemy-shapes';
 import { bossPoint } from '../boss-limbs';
-import { AURORA, CITADEL_DECK, FROST, icicles, rect, VIOLET } from './boreal-citadel-city';
+import { ribs } from '../../../../render/geometry/organic';
+import { AURORA, CITADEL_DECK, icicles, rect, VIOLET } from './boreal-citadel-city';
+import { ICE_FLESH } from './w2-organic';
 
 // P08-R10, 2-5: the Boreal Citadel's destroyable parts (aurora cannons, missile batteries, dome
 // generators), each drawn around its centre `at` (model space: logical pixels, nose +Z, Y up).
@@ -41,15 +43,19 @@ const CURTAINS = [-3.2, 0, 3.2] as const;
  * review): a frosted pod, a long barrel with charge coils,
  * a lens where its laser leaves, and lit aurora curtains rippling along its back.
  */
-export function drawCannon({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]: Vec3): void {
+export function drawCannon(
+  { hull, flesh, neon, charge, muzzle }: EnemyParts,
+  [x, , z]: Vec3,
+): void {
   const at: Vec3 = [x, OUTRIGGER_TOP, z];
-  hull.loft(
+  // P16-R06: a swollen gun organ, its barrel a metal graft, its curtains lit fins on its back.
+  flesh.loft(
     POD_SECTION,
     CANNON_POD,
-    H.base,
+    ICE_FLESH.purple,
     { at },
     {
-      paint: (side) => (side === POD_BACK ? FROST.snow : undefined),
+      paint: (side) => (side === POD_BACK ? ICE_FLESH.rime : undefined),
     },
   );
   const [m] = BOREAL_CANNON;
@@ -66,26 +72,24 @@ export function drawCannon({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]:
     neon.box([0.35, 3.2, 14 - i * 2], AURORA, { at: [x + dx, top, z - 2], yaw: sway });
     neon.box([0.45, 0.8, 14 - i * 2], VIOLET, { at: [x + dx, top + 3.2, z - 2], yaw: sway });
   });
-  hull.box([12, 1.2, 5], H.panel, { at: [x, OUTRIGGER_TOP + 1, z - 13] }, FROST.snow);
-  // Radiator fins on its flanks, snowed over.
-  for (const s of [-1, 1]) {
-    for (const dz of [-7, -3.5, 0, 3.5]) {
-      hull.box(
-        [2.6, 0.6, 2.2],
-        H.panel,
-        { at: [x + s * 8.6, OUTRIGGER_TOP + 4.5, z + dz] },
-        FROST.snow,
-      );
-    }
-  }
+  hull.box([12, 1.2, 5], H.panel, { at: [x, OUTRIGGER_TOP + 1, z - 13] }, H.base);
+  // Ribs along its flanks.
+  ribs(
+    flesh,
+    [z - 6, z, z + 6],
+    { halfWidth: 8.4, y: OUTRIGGER_TOP, height: 8.5, thickness: 0.6 },
+    ICE_FLESH.bone,
+    { at: [x, 0, 0] },
+  );
 }
 
 /**
  * The turntable an aurora cannon turns on (phase 8 review: its turret, drawn by
  * {@link drawCannon}, aims its laser): a low drum on the outrigger, ringed with violet neon.
  */
-export function drawCannonMount({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
-  hull.cylinder(10, OUTRIGGER_TOP, 8, H.dark, { at: [x, 0, z] });
+export function drawCannonMount({ flesh, neon }: EnemyParts, [x, , z]: Vec3): void {
+  // P16-R06: a shoulder of muscle on the fin.
+  flesh.cylinder(10, OUTRIGGER_TOP, 8, ICE_FLESH.sinew, { at: [x, 0, z] }, 9);
   neon.ring(10.3, 0.6, 8, VIOLET, { at: [x, OUTRIGGER_TOP - 0.4, z] });
 }
 
@@ -97,12 +101,31 @@ const HATCH = [7, 5.6] as const;
  * P08-R10: a missile battery on the deck: a snowed-over armoured block, six hatches lit as its
  * missiles load, violet strips down its sides, icicles under its front.
  */
-export function drawBattery({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]: Vec3): void {
+export function drawBattery(
+  { hull, flesh, neon, charge, muzzle }: EnemyParts,
+  [x, , z]: Vec3,
+): void {
   const cells = (x < 0 ? BOREAL_BATTERY : mirror(BOREAL_BATTERY)).map((m) => bossPoint(...m));
   const height = cells[0]?.[1] ?? 0;
   const top = height - 0.08;
   const base = CITADEL_DECK.top;
-  hull.bevelSlab(BATTERY, [base - 1, base, top], [0, 2], H.base, { at: [x, 0, z] }, FROST.snow);
+  // P16-R06: an armoured growth, a mound of flesh under a metal hatch plate.
+  flesh.bevelSlab(
+    BATTERY,
+    [base - 1, base, top - 1.2],
+    [0, 3],
+    ICE_FLESH.crimson,
+    { at: [x, 0, z] },
+    ICE_FLESH.purple,
+  );
+  hull.bevelSlab(
+    rect(18, 20),
+    [top - 1.4, top - 0.6, top],
+    [0, 0.6],
+    H.base,
+    { at: [x, 0, z] },
+    H.panel,
+  );
   for (const [cx, , cz] of cells) {
     decal(hull, rect(...HATCH, [cx, cz]), top + 0.04, H.dark);
     decal(charge, rect(HATCH[0] - 2, HATCH[1] - 2, [cx, cz]), height, WHITE);
@@ -113,7 +136,7 @@ export function drawBattery({ hull, neon, charge, muzzle }: EnemyParts, [x, , z]
   }
   neon.box([18, 1.2, 0.6], AURORA, { at: [x, base + 3.4, z + 13.2] });
   icicles(
-    hull,
+    flesh,
     [
       [x - 10, z + 13.4],
       [x + 10, z + 13.4],
@@ -141,17 +164,25 @@ const DOME = [
  * P08-R10: a dome generator (no weapon; it shields the core): a heated glass dome glowing
  * aurora green through its ring of ice, three pylons with violet lights.
  */
-export function drawDome({ hull, neon }: EnemyParts, [x, , z]: Vec3): void {
+export function drawDome({ hull, flesh, neon }: EnemyParts, [x, , z]: Vec3): void {
   const base = CITADEL_DECK.top;
-  hull.lathe(PEDESTAL, 8, H.panel, { at: [x, base, z], yaw: Math.PI / 8 });
-  hull.ring(12.6, 1, 8, FROST.snow, { at: [x, base + 1.2, z], yaw: Math.PI / 8 });
+  // P16-R06: a glowing blister swelling from the flesh, held by bone spikes.
+  flesh.lathe(PEDESTAL, 8, ICE_FLESH.purple, { at: [x, base, z], yaw: Math.PI / 8 });
+  hull.ring(12.6, 1, 8, H.panel, { at: [x, base + 1.2, z], yaw: Math.PI / 8 });
   neon.ring(12.7, 0.6, 8, VIOLET, { at: [x, base + 0.4, z], yaw: Math.PI / 8 });
   neon.lathe(DOME, 8, AURORA, { at: [x, base + 4.5, z] });
-  hull.ring(9.4, 1, 8, FROST.ice, { at: [x, base + 4.4, z] });
+  flesh.ring(9.4, 1, 8, ICE_FLESH.sinew, { at: [x, base + 4.4, z] });
   for (const a of around(3)) {
     const [px, , pz] = radial(a + Math.PI / 3, 11, 0);
     const pylon = rect(2.6, 2.6, [x + px, z + pz]);
-    hull.bevelSlab(pylon, [base + 4, base + 4, base + 15], [0, 0.6], H.dark, {}, FROST.snow);
+    flesh.bevelSlab(
+      pylon,
+      [base + 4, base + 4, base + 15],
+      [0, 1.1],
+      ICE_FLESH.bone,
+      {},
+      ICE_FLESH.rime,
+    );
     decal(neon, rect(1.4, 1.4, [x + px, z + pz]), base + 15.05, VIOLET);
   }
 }

@@ -11,7 +11,9 @@ import type { EnemyParts } from '../../enemies/enemy-mesh';
 import { flipX, POD_SECTION, sideStripe } from '../../enemies/enemy-shapes';
 import { bossPoint, type LimbDrawing } from '../boss-limbs';
 import { H, offset, QUARTER, SHADE, WHITE } from '../mini-boss-shapes';
-import { barrelTo, moss, SWAMP, vine } from './mangrove-croc-jungle';
+import { barrelTo, moss, vine } from './mangrove-croc-jungle';
+import { ribs } from '../../../../render/geometry/organic';
+import { F, gland, JUNGLE_FLESH, sac, veinTo } from './jungle-flesh';
 
 // P09-R09, 3-1: the Mangrove Croc's jaws (on their hinges, D-061), its jaw cannon and its side
 // pontoons. Logical pixels, nose +Z, Y up; the left jaw and pontoon (the screen's left, -X on
@@ -45,15 +47,22 @@ const TEETH = [5, 10, 15, 20, 24] as const;
  * row of teeth along its inner edge, green neon along its outer edge and moss on its back.
  */
 function drawJaw(s: number) {
-  return ({ hull, neon }: EnemyParts): void => {
+  return ({ hull, flesh, neon }: EnemyParts): void => {
     const [hx, hy] = CROC_JAW.hinge;
     const at: Vec3 = bossPoint(s * -Math.abs(hx), hy);
     const place = { at, yaw: (s * CROC_JAW_SWING.amplitudeDeg * Math.PI) / 180 };
     const outline = s > 0 ? JAW : flipX(JAW);
-    hull.bevelSlab(outline, JAW_Y, [0.8, 1.2], H.base, place, H.panel);
+    // P16-R05: a fleshy jaw, bone fangs along it, a metal plate grafted on its back.
+    flesh.bevelSlab(outline, JAW_Y, [0.8, 1.2], F.sinew, place, JUNGLE_FLESH);
+    hull.box(
+      [5, 0.8, 8],
+      H.panel,
+      { at: turnAbout(at, [s * -1.5, JAW_Y[2], 4], place.yaw), yaw: place.yaw },
+      H.base,
+    );
     for (const z of TEETH) {
       const edge = -6.6 + Math.max(0, z - 14) * 0.25;
-      hull.box([2.2, 2.4, 1.6], SWAMP.tooth, {
+      flesh.box([2.2, 2.4, 1.6], F.bone, {
         at: turnAbout(at, [s * edge, 0.4, z], place.yaw),
         yaw: place.yaw,
       });
@@ -103,6 +112,9 @@ export function jawCannon(p: EnemyParts, at: Vec3): void {
   if (!tip) return;
   const axis = bossPoint(...tip)[1];
   const back = offset(at, 0, axis, -8);
+  // P16-R05: a throat gland swelling behind the grafted cannon, veins feeding it.
+  sac(p, offset(back, 0, 0, -2), 5, F.crimson);
+  gland(p, offset(back, 0, 2.6, -2), 1.8, CROC_GREEN);
   hull.cylinder(4.4, 9, 8, H.panel, { at: back, pitch: QUARTER }, 3.4);
   hull.cylinder(5, 1.6, 8, H.dark, { at: offset(back, 0, 0, 1), pitch: QUARTER });
   neon.ring(3.6, 0.9, 8, CROC_GREEN, { at: offset(back, 0, 0, 7.4), pitch: QUARTER });
@@ -124,10 +136,19 @@ const FLOAT = [
  * light along its outer side, moss on its back and a vine trailing from it.
  */
 export function pontoon(p: EnemyParts, at: Vec3): void {
-  const { hull, neon } = p;
+  const { hull, flesh, neon } = p;
   const s = Math.sign(at[0]);
   const stations = FLOAT.map(([z, w, b, t]) => [z + at[2], w, b, t] as const);
-  hull.loft(POD_SECTION, stations, H.base, { at: [at[0], 0, 0] });
+  // P16-R05: a swollen float-bladder, ridged like a croc's flank, plated at its bow.
+  flesh.loft(POD_SECTION, stations, JUNGLE_FLESH, { at: [at[0], 0, 0] });
+  ribs(
+    flesh,
+    [at[2] - 12, at[2] - 6, at[2]],
+    { halfWidth: 8, y: 2, height: 5.6, thickness: 0.6 },
+    F.bone,
+    { at: [at[0], 0, 0] },
+  );
+  veinTo(p, [offset(at, 0, 7.6, -16), offset(at, 0, 7.6, 8)], [0, 0.8, 0], CROC_GREEN);
   const side = s > 0 ? 1 : 3;
   neon.loft(
     sideStripe(POD_SECTION, side, [0.15, 0.45], 1.04),

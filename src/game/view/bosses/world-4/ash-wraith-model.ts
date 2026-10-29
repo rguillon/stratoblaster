@@ -11,10 +11,13 @@ import { vent } from '../mini-boss-greebles';
 import { H, offset, socket, WHITE } from '../mini-boss-shapes';
 import { ASH, ashDrift, ASH_THIN, moltenSeam, SCORCH, sootStreaks } from './ash-plains-soot';
 import { eyeMount, eyeTurret, shroudPod, WRAITH_CYAN } from './ash-wraith-parts';
+import { backRibs, glands, magmaVein, reactorSacs, SKIN } from './living-forge';
 
 // P10-R11, 4-2: the Ash Wraith. Logical pixels, nose +Z, Y up (towards the camera). A ragged
 // stealth flying wing: a thin faceted wing, its trailing edge torn into tatters, a low fuselage
 // with a dark canopy, the two shroud pods on the wings, the eye cannon on the nose.
+// P16-R05: a living ash ray, its wing a scorched membrane veined with cyan, its body flesh under
+// ribs, a great eye on its brow, metal only on its grafts (vents, plates, guns, reactors).
 
 /**
  * The wing seen from above (right half, nose to tail): a sharp delta, its trailing edge torn
@@ -50,11 +53,35 @@ const FUSELAGE: readonly LoftStation[] = [
 /** The dark glass of its canopy, on the back of the fuselage's front bands. */
 const CANOPY_GLASS: readonly [number, number, number] = [0.03, 0.05, 0.06];
 
+/** P16-R05, P16-R06: its living flesh: veins, glands and ribs. */
+function wingVeins(p: EnemyParts, s: number): void {
+  magmaVein(
+    p,
+    [
+      [s * 8, 3.2, 12],
+      [s * 24, 3.1, 2],
+      [s * 40, 3, -8],
+    ],
+    0.9,
+    WRAITH_CYAN,
+  );
+  magmaVein(
+    p,
+    [
+      [s * 9, 3.2, 0],
+      [s * 22, 3.1, -14],
+    ],
+    0.8,
+    WRAITH_CYAN,
+  );
+}
+
 /** The wing: grey, bevelled plates, pale cyan neon along its leading edges, ash and soot on it. */
 function drawWing(p: EnemyParts): void {
   const { hull, neon } = p;
-  hull.bevelSlab(WING, [-1, 0.6, 3], [0.8, 1], H.base, {}, ASH_THIN);
+  p.flesh.bevelSlab(WING, [-1, 0.6, 3], [0.8, 1], SKIN.dark, {}, SKIN.base);
   for (const s of SIDES) {
+    wingVeins(p, s);
     edgeStrips(
       neon,
       [
@@ -104,14 +131,39 @@ function drawWing(p: EnemyParts): void {
 /** The fuselage: a low faceted spine, its dark canopy, vents and scorched plates by the engines. */
 function drawFuselage(p: EnemyParts): void {
   const { hull, neon } = p;
-  hull.loft(FIGHTER_SECTION, FUSELAGE, H.base, {}, { paint: canopyPaint([2, 3], CANOPY_GLASS) });
+  p.flesh.loft(
+    FIGHTER_SECTION,
+    FUSELAGE,
+    SKIN.base,
+    {},
+    { paint: canopyPaint([2, 3], CANOPY_GLASS) },
+  );
+  backRibs(p, [-12, -4, 4], { halfWidth: 8, y: 3, height: 6.6, thickness: 0.7 });
+  glands(
+    p,
+    [
+      [0, 8.6, -9],
+      [0, 8.8, 0],
+    ],
+    1.2,
+    WRAITH_CYAN,
+  );
   strip(neon, [0, 21], [0, 14], 0.6, [9.4, 9.8], WRAITH_CYAN);
   for (const s of SIDES) {
     vent(hull, [s * 7, 7.2, -16], [3, 6], 3, s * 0.15);
     hull.box([5, 1.4, 8], SCORCH, { at: [s * 6, 2.6, -30] }, H.dark);
-    p.reactor([s * 5.5, 2.2, -34], 2.6);
+
     strip(neon, [s * 10.6, 2], [s * 8.4, -18], 0.6, [5.6, 6.2], WRAITH_CYAN);
   }
+  reactorSacs(
+    p,
+    [
+      [5.5, 2.2, -34],
+      [-5.5, 2.2, -34],
+    ],
+    2.6,
+    WRAITH_CYAN,
+  );
 }
 
 /** Flakes of ash trailing off its torn wing (x, z, size, turn): it sheds ash as it flies. */

@@ -4,8 +4,9 @@ import { BOSS_LOOK } from '../../config/boss-look';
 import { ENEMY_LOOK } from '../../config/enemy-look';
 import type { EnemyParts } from '../enemies/enemy-mesh';
 import { decal, POD_SECTION } from '../enemies/enemy-shapes';
+import { F, graft, polygon, veinLine } from './world-1-organic-kit';
 
-// P07-R05: the Refinery Titan's destroyable parts (fuel tanks, rotary turrets, missile battery),
+// P07-R05, P16-R06: the Refinery Titan's destroyable parts (fuel bladders, rotary turrets, missile brood),
 // each drawn around its centre `at` (model space: logical pixels, nose +Z, Y up).
 const H = ENEMY_LOOK.hull;
 const WHITE = [1, 1, 1] as const;
@@ -47,8 +48,11 @@ const TANK_RADIUS = 14;
 const TANK_BANDS = [-13.2, -1.2, 10.8] as const;
 const TANK_WINDOWS = [-6, 6] as const;
 
-/** P07-R05: a big fuel tank cradled on the beam, orange bands and windows glowing on it. */
-export function drawTank({ hull, neon }: EnemyParts, [x, y, z]: Vec3): void {
+/**
+ * P07-R05, P16-R06: a big fuel bladder held in the limbs, a swollen sac of flesh, orange bands
+ * of neon and glowing veins on it, grafted valves at its ends.
+ */
+export function drawTank({ hull, flesh, neon, vein }: EnemyParts, [x, y, z]: Vec3): void {
   const axis = y + TITAN_DECK.beam + 9;
   // Pitched, the lathe's axis runs along +Z; rolled by an eighth of a turn, a flat faces up.
   const along = (dz: number): Placement => ({
@@ -56,11 +60,11 @@ export function drawTank({ hull, neon }: EnemyParts, [x, y, z]: Vec3): void {
     pitch: QUARTER,
     roll: Math.PI / 8,
   });
-  hull.lathe(TANK_PROFILE, 8, H.panel, along(0));
+  flesh.lathe(TANK_PROFILE, 8, F.crimson, along(0));
   for (const dz of TANK_BANDS) neon.ring(TANK_RADIUS * 1.04, 2.4, 8, TITAN_NEON, along(dz));
   // The top flat of the octagon, a little above it: two lit windows and a valve.
   const top = axis + TANK_RADIUS * Math.cos(Math.PI / 8);
-  for (const dz of TANK_WINDOWS) decal(neon, rect(3.2, 7, [x, z + dz]), top + 0.05, TITAN_NEON);
+  for (const dz of TANK_WINDOWS) decal(vein, rect(3.2, 7, [x, z + dz]), top + 0.05, TITAN_NEON);
   hull.cylinder(2.6, 3.2, 6, H.dark, { at: [x, top - 1.2, z + 15] }, 1.8);
   hull.cylinder(2.6, 3.2, 6, H.dark, { at: [x, top - 1.2, z - 15] }, 1.8);
 }
@@ -86,11 +90,15 @@ const BARRELS = [
 ] as const;
 const BARREL = { length: 10, radius: 1.3 } as const;
 
-/** P07-R05: a rotary turret's base on the front sponson, under its turret ({@link drawRotary}). */
-export function drawTurret({ hull, neon }: EnemyParts, [x, y, z]: Vec3): void {
+/**
+ * P07-R05, P16-R06: a rotary turret's base on the front apron, a swollen growth plated round its
+ * crown, under its turret ({@link drawRotary}).
+ */
+export function drawTurret(p: EnemyParts, [x, y, z]: Vec3): void {
   const base = y + TITAN_DECK.sponson;
-  hull.lathe(TURRET_BASE, 8, H.base, { at: [x, base, z] });
-  neon.ring(13.3, 0.9, 8, TITAN_NEON, { at: [x, base + 1, z] });
+  p.flesh.lathe(TURRET_BASE, 8, F.purple, { at: [x, base, z] });
+  p.neon.ring(13.3, 0.9, 8, TITAN_NEON, { at: [x, base + 1, z] });
+  graft(p, polygon(8, 9), [base + 5.6, base + 7], [x, 0, z], { color: H.base });
 }
 
 /** A rotary turret: its housing and three barrels with charge-lit muzzles, on its base. */
@@ -117,11 +125,12 @@ export function drawRotary(
 /** The missile battery's cells: 2 columns by 3 rows on its top. */
 const CELLS = [-5.5, 5.5].flatMap((cx) => [-7.5, 0, 7.5].map((cz) => [cx, cz] as const));
 
-/** P07-R05: an armoured missile battery on the hull's back, six hatches lit as it loads. */
-export function drawMissileBattery(
-  { hull, neon, charge, muzzle }: EnemyParts,
-  [x, y, z]: Vec3,
-): void {
+/**
+ * P07-R05, P16-R06: a missile brood on the body's back, a swollen mound under a grafted plate
+ * with six hatches lit as it loads.
+ */
+export function drawMissileBattery(p: EnemyParts, [x, y, z]: Vec3): void {
+  const { hull, neon, charge, muzzle } = p;
   const base = y + TITAN_DECK.back;
   const top = base + 8;
   const block: OutlinePoint[] = [
@@ -134,7 +143,15 @@ export function drawMissileBattery(
     [-13.5, 10],
     [-13.5, -9],
   ];
-  hull.bevelSlab(block, [base - 2, base, top], [0, 2], H.base, { at: [x, 0, z] }, H.panel);
+  p.flesh.bevelSlab(
+    block,
+    [base - 2, base, top - 1],
+    [0, 3],
+    F.crimson,
+    { at: [x, 0, z] },
+    F.sinew,
+  );
+  hull.bevelSlab(block, [top - 1.2, top - 1.2, top], [0, 1], H.base, { at: [x, 0, z] }, H.panel);
   for (const [cx, cz] of CELLS) {
     decal(hull, rect(7.4, 5.6, [x + cx, z + cz]), top + 0.04, H.dark);
     decal(charge, rect(5.4, 3.6, [x + cx, z + cz]), top + 0.08, WHITE);
@@ -143,5 +160,13 @@ export function drawMissileBattery(
   // Neon strips down both flanks of the block.
   for (const s of [-1, 1]) {
     neon.box([0.6, 1.4, 16], TITAN_NEON, { at: [x + s * 12.6, base + 3.2, z] });
+    veinLine(
+      p,
+      [x + s * 13, base, z - 12],
+      [x + s * 22, base - 4, z - 20],
+      [0, 2, 0],
+      1,
+      TITAN_NEON,
+    );
   }
 }

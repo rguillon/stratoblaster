@@ -23,6 +23,8 @@ import {
   TIERS,
 } from './sky-temple-parts';
 import { templeJungle, templeMachinery } from './sky-temple-details';
+import { templeBody } from './sky-temple-flesh';
+import { F } from './jungle-flesh';
 import { bar, STONE } from './stone-idol-stone';
 
 // P09-R09, 3-3: the Sky Temple. Logical pixels, nose +Z (its grand stair, down the screen), Y up
@@ -48,10 +50,14 @@ const STAIR = { steps: 9, width: 20, front: 88, depth: 5.8, bottom: -4 } as cons
 const SANCTUM = { z: -8, size: [30, 10, 24], door: 4 } as const;
 
 /** The stepped pyramid: its tiers, each trimmed with neon, and the rock under it. */
-function drawPyramid({ hull, neon }: EnemyParts): void {
+function drawPyramid(p: EnemyParts): void {
+  const { hull, neon } = p;
+  // P16-R06: the lowest tier is the living beast itself; the stone tiers grew on its back.
+  templeBody(p);
   TIERS.halves.forEach((half, i) => {
     const y = i * TIERS.height;
-    hull.box([half * 2, TIERS.height, half * 2], STONE.base, { at: [0, y, 0] }, STONE.light);
+    if (i > 0)
+      hull.box([half * 2, TIERS.height, half * 2], STONE.base, { at: [0, y, 0] }, STONE.light);
     const trim = i === 0 ? TEMPLE_CYAN : TEMPLE_GOLD;
     neonBand(
       neon,
@@ -61,7 +67,7 @@ function drawPyramid({ hull, neon }: EnemyParts): void {
       trim,
     );
   });
-  hull.lathe(ROOTS, 4, STONE.dark, { yaw: SQUARE }, false);
+  p.flesh.lathe(ROOTS, 4, F.sinew, { yaw: SQUARE }, false);
 }
 
 /** The grand stair, its walls and its cyan balustrades. */
