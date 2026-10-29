@@ -325,8 +325,8 @@ class RunningPropViewer:
 def start_prop_viewer(engine: Any, game: Any, options: PropViewerOptions) -> RunningPropViewer:
     """Starts the props viewer page: the prop models of one group, laid out on the grid of tiles, a
     turning camera, and a panel to pick the group and a prop."""
-    prop_models = game.view.scenery.prop_models
-    groups = game.view.scenery.prop_groups or [PropGroup("Props", list(prop_models.keys()))]
+    prop_models = game.view.scenery["propModels"]
+    groups = game.view.scenery["propGroups"] or [PropGroup("Props", list(prop_models.keys()))]
     scene = new_scene(engine)
     clear = CFG.clear_color
     scene.clearColor = color4(clear[0], clear[1], clear[2], clear[3])
@@ -344,7 +344,7 @@ def start_prop_viewer(engine: Any, game: Any, options: PropViewerOptions) -> Run
             ),
         )
     camera = _create_camera(scene)
-    tiles = game.view.scenery.prop_tiles
+    tiles = game.view.scenery["propTiles"]
     if not tiles:
         tiles = ViewerTiles(CFG.tile, None, None)
     grid = PropGrid(scene, prop_models, tiles)

@@ -264,7 +264,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
         game.view.scenery.camera,
         level,
         look,
-        game.view.scenery.prop_models,
+        game.view.scenery["propModels"],
         kit,
         options.stage,
         options.atmosphere,
