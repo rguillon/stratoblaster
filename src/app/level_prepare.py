@@ -8,7 +8,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from core.content.game_level import find_game_level
 from core.scenery.scenery_level import with_runout
 from render.scenery.level_ground import request_level_ground
-from render.scenery.procedural_textures import scenery_texture_jobs
+from render.scenery.procedural_textures import has_texture, scenery_texture_jobs
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -67,6 +67,30 @@ def prefetch_level(game: Any, level_id: str | None, loader: Any) -> None:
     look = game.view.scenery.looks.get(level.scenery.id)
     if look is not None:
         loader.prefetch_textures(scenery_texture_jobs(look, level.scenery.seed))
+
+
+# Frames a level's loading waits for its textures from the worker, before making them itself.
+TEXTURE_WAIT_FRAMES = 60
+
+
+def textures_ready(game: Any, level_id: str, loader: Any, tries: int) -> bool:
+    """Whether the scenery textures of `level_id` are made (P13-R03): the worker is asked for those
+    not made yet, and the loading waits for it, so the level's scene is not built here with them.
+    Without a worker, or after TEXTURE_WAIT_FRAMES, the scene makes them itself.
+    """
+    level = find_game_level(game.game_levels, level_id)
+    if loader is None or level is None or tries > TEXTURE_WAIT_FRAMES:
+        return True
+    look = game.view.scenery.looks.get(level.scenery.id)
+    if look is None:
+        return True
+    jobs = scenery_texture_jobs(look, level.scenery.seed)
+    loader.prefetch_textures(jobs)
+    ready = True
+    for job in jobs:
+        if not has_texture(job):
+            ready = False
+    return ready
 
 
 # Seconds the level select highlight rests on a level before it is prefetched.

@@ -9,7 +9,7 @@ level select highlight rests on is built ahead (P13-R03).
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.game_play import GameChoice, GamePlay, GamePlayOptions
-from app.level_prepare import LevelPrefetcher, prepare_level
+from app.level_prepare import LevelPrefetcher, prepare_level, textures_ready
 from app.listen_controls import listen_controls
 from app.saved_supplies import load_saved_supplies, save_supplies
 from app.saved_weapons import load_saved_weapons, save_weapons
@@ -381,7 +381,18 @@ class GameSession:
             if load.play and load.state:
                 self._started(load.play, load.state, level_id)
 
-        load.steps = [ground, build, prepare_play, lambda: self._compile_wait(load), start]
+        def textures() -> bool:
+            # The textures the worker makes, before the scene (which would make them here).
+            return textures_ready(self.game, level_id, self._loader, load.tries)
+
+        load.steps = [
+            ground,
+            textures,
+            build,
+            prepare_play,
+            lambda: self._compile_wait(load),
+            start,
+        ]
         return load
 
     def _kept(self, state: Any) -> tuple[Any, Any]:
