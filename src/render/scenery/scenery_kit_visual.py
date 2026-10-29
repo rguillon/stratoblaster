@@ -146,7 +146,7 @@ class VisualSceneryKit:
             build_noise_texture(look.terrain.textureSize, NOISE_FREQUENCY / 2, seed + 7),
             look.terrain.textureSize,
         )
-        shadows = new_shadow_generator(look.sun.shadow.map_size, sun)
+        shadows = new_shadow_generator(look.sun.shadow.mapSize, sun)
         shadows.usePercentageCloserFiltering = True
         shadows.filteringQuality = babylon_class("ShadowGenerator").QUALITY_MEDIUM
         shadows.bias = look.sun.shadow.bias
