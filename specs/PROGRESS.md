@@ -21,7 +21,7 @@
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
 | 15 | `phases/phase-15-urban-rework.md` | ✅ Validated | `phase-15` | 96.14% lines | 2026-10-29 |
 | 16 | `phases/phase-16-enemies-design.md` | ✅ Validated | `phase-16` | 96.74% lines | 2026-10-29 |
-| 17 | `phases/phase-17-python-port-foundation.md` | 🟡 Awaiting review | `python-transcrypt` | not measured (no tests yet) | — |
+| 17 | `phases/phase-17-python-port-foundation.md` | ✅ Validated | `python-transcrypt` | n/a (no tests yet; owner deferred the test phase) | 2026-10-29 |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -163,3 +163,4 @@
 - 2026-10-29 — 16 — Implemented the Cyber-Organic enemies and bosses (organic kit, flesh material, living motion, wounds, 61 models reworked, debug toggles; D-165..D-168); light verification green (typecheck, build, 131 e2e on port 4174); awaiting review.
 - 2026-10-29 — 16 — Validated: full gate green after slimming the five veterans under the P05 cap of 550 triangles (first unit test run: 5 failures): 1734 unit tests, 96.74% lines, 84.96% branches, 131 e2e (on port 4174); squash-merged into `main`, tagged `v0.16.0`.
 - 2026-10-29 — 17 — Owner request: specs rewritten for Python 3.12 + Transcrypt + uv (01-engineering ENG-01..05, 12..36, 40..61, 82..84, §13; D-169..171). Foundation implemented: uv project, Makefile, `core/math/rng.py` ported and checked against the TypeScript output (7000 values, 0 mismatches), `make lint` / `make typecheck` / `make build` green; unit tests deferred by the owner; awaiting review.
+- 2026-10-29 — 17 — Validated by the owner with a reduced gate: `make check` green for lint, typecheck and build (tests, coverage and e2e deferred). Not merged into `main`: `main` is still the playable TypeScript game, so the squash-merge and tag v0.17.0 wait for an explicit go-ahead.
