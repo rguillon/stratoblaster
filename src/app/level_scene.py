@@ -278,7 +278,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
         scene,
         look,
         stage,
-        ScrollTrack(level.scrollSpeed, level_length(level)),
+        ScrollTrack(level.scroll_speed, level_length(level)),
         playfield,
         options.environment,
         options.environment_cube_size,
