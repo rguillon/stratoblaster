@@ -42,8 +42,16 @@ def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
 
 
+def _int_mod(a: int, n: int) -> int:
+    """`a % n` for whole numbers, with JavaScript's `%` (Transcrypt's `%` also corrects the sign,
+    which is slow here: the noise is evaluated for every texel). Equal to Python's for `a >= 0`."""
+    r = 0
+    __pragma__("js", "{}", "r = a % n;")
+    return r
+
+
 def _wrap(i: int, period: int) -> int:
-    return ((i % period) + period) % period
+    return _int_mod(_int_mod(i, period) + period, period)
 
 
 def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
@@ -64,7 +72,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
     p = max(1, math.floor(period))
 
     def gradient(ix: int, iy: int, dx: float, dy: float) -> float:
-        h = perm[(_wrap(ix, p) + perm[_wrap(iy, p) % TABLE_SIZE]) % TABLE_SIZE]
+        h = perm[_int_mod(_wrap(ix, p) + perm[_int_mod(_wrap(iy, p), TABLE_SIZE)], TABLE_SIZE)]
         return cos_table[h] * dx + sin_table[h] * dy
 
     def noise(x: float, y: float) -> float:

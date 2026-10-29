@@ -87,12 +87,19 @@ def _fits(site: PackSite, block: TileBlock, x: int, z: int, w: int, d: int) -> b
 
 def _faces(site: PackSite, x: int, z: int, w: int, d: int, facing: tuple[int, int, float]) -> bool:
     """Whether a road runs along the side of a spot that `facing` looks at."""
+    # Plain loops: Transcrypt runs `any(...)` over a generator through its slow iterator protocol.
     dx, dz, _ = facing
     if dz != 0:
         row = z - 1 if dz < 0 else z + d
-        return any(site.road(x + i, row) for i in range(w))
+        for i in range(w):  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+            if site.road(x + i, row):
+                return True
+        return False
     column = x - 1 if dx < 0 else x + w
-    return any(site.road(column, z + j) for j in range(d))
+    for j in range(d):  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        if site.road(column, z + j):
+            return True
+    return False
 
 
 def _run(site: PackSite, block: TileBlock, x: int, z: int, dx: int, dz: int) -> int:
@@ -124,7 +131,10 @@ def _corners_at(x: int, z: int, w: int, d: int) -> list[tuple[int, int]]:
 
 def _away_from_roads(site: PackSite, spot: TileSpot) -> bool:
     """Whether no road runs along any side of `spot`."""
-    return not any(_faces(site, spot.x, spot.z, spot.w, spot.d, g) for g in FACINGS)
+    for g in FACINGS:  # noqa: SIM110 (Transcrypt: all() over a generator is slow)
+        if _faces(site, spot.x, spot.z, spot.w, spot.d, g):
+            return False
+    return True
 
 
 def _turn_of(r: float, facing: tuple[int, int, float]) -> float:
