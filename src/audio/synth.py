@@ -106,7 +106,7 @@ def _source(ctx: Any, layer: ToneLayer, start: float, base: float) -> Any:
             )
         return noise
     osc = ctx.createOscillator()
-    osc.type = layer.wave
+    osc["type"] = layer.wave
     osc.frequency.setValueAtTime(pitch, start)
     if glide is not None:
         osc.frequency.exponentialRampToValueAtTime(max(1, glide), start + seconds)
@@ -121,7 +121,7 @@ def _layer_filter(ctx: Any, layer: ToneLayer, start: float) -> Any:
     if spec is None:
         return None
     node = ctx.createBiquadFilter()
-    node.type = spec.type
+    node["type"] = spec.type
     node.Q.setValueAtTime(spec.q if spec.q is not None else 1, start)
     node.frequency.setValueAtTime(spec.from_ if spec.from_ is not None else spec.frequency, start)
     if spec.from_ is not None:

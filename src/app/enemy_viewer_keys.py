@@ -103,7 +103,7 @@ def listen_to_keys(target: Any, viewer: Any) -> Callable[[], None]:
     Returns what stops listening. `target` may be None (no keyboard)."""
 
     def on_key(event: Any) -> None:
-        viewer.key(event.key, event.code, event.type == "keydown")
+        viewer.key(event.key, event.code, event["type"] == "keydown")
 
     def on_blur(_event: Any) -> None:
         viewer.held.clear()

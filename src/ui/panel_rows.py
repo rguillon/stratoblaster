@@ -40,7 +40,7 @@ def _group_from(groups: list[Any], index: int) -> Any:
 
 def _button(doc: Any, label: str, index: int) -> Any:
     button = doc.createElement("button")
-    button.type = "button"
+    button["type"] = "button"
     button.dataset.index = str(index)
     button.textContent = label
     return button

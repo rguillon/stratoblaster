@@ -26,7 +26,7 @@ def listen_controls(
 
     def on_key(event: Any) -> None:
         code = event.code
-        down = event.type == "keydown"
+        down = event["type"] == "keydown"
         play = game()
         # The debug keys of the level take their keys first, when they are on.
         if not (play and play.debug_key(code, down)):
