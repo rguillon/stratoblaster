@@ -1697,3 +1697,12 @@
 - **Alternatives considered:** placing the chunks on the main thread, spread over frames (rejected: the densest chunks take hundreds of milliseconds, and smaller chunks only halve them); placing every chunk in the worker before the level starts (rejected: it is the cost this decision removes from the start).
 - **Consequences:** the layout deliberately differs from the TypeScript (the TypeScript is being removed after the port, and the owner does not need the building layout to match). Roads, heights and runouts still match it exactly. Level snapshots now carry the blocks and the road slots, copied (a snapshot shares no list with the network). Trees are checked against the buildings placed around them: `place` asks for chunks up to the area's end plus `TREE_REACH` (one chunk). Building totals stay within a few buildings of the TypeScript's (with the runout) on every level, and the owner does not need them to match.
 - **Status:** Accepted
+
+### D-180 — The rim shaders are compiled before play, and the level waits for them (P13-R04)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `compile_shaders` (before play) also asks Babylon's outline renderer for the rim shader of each outlined mesh (`render/outline.py` `compile_outlines`). Babylon creates a mesh's rim effect, and starts compiling it, only when that mesh is first drawn or asked if it is ready. The loader's compile step (`game_session` `_compile_wait`) now waits for `outlines_ready` as well as `scene.isReady(True)`.
+- **Why:** the first enemy or ship with a rim drew for the first time during play, and its rim effect was compiled then, on the frame it appeared: a stall of about 300 ms in the headless software renderer (a shorter one on a GPU). Levels of world 4 show it, because their enemies have rims from the first wave. A frame profile after the change shows no shader compile during the first 8 seconds of play on 4-1, 4-2, 4-3, 4-4.
+- **Alternatives considered:** compiling the rims on the first frame of each level (still a stall on that frame); disabling the rims (changes the look, P14-R03).
+- **Consequences:** a rim mesh that is built later (an enemy model built ahead of its first appearance) still compiles its rim effect when it is made ready, which is one frame of the enemy's build step, not play. The remaining long task at about 3 s on world 4 levels is native time in the GPU pipeline of the headless software renderer (no JavaScript frames under it); it is not reproduced on a GPU and is not changed here.
+- **Status:** Accepted

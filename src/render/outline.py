@@ -80,3 +80,25 @@ class OutlineLayer:
         mesh.outlineColor = color3(color[0], color[1], color[2]).scale(self._look.intensity)
         mesh.outlineWidth = self._look.width / scale
         return True
+
+
+def compile_outlines(meshes: Any) -> None:
+    """Makes the rim shaders of the outlined `meshes` (P13-R04): Babylon creates each one, and
+    starts compiling it, when it is first asked if it is ready. Done before play, the first ship or
+    enemy with a rim does not stall the frame it appears in."""
+    for mesh in meshes:
+        if mesh.renderOutline:
+            renderer = mesh.getScene().getOutlineRenderer()
+            for sub in mesh.subMeshes:
+                renderer.isReady(sub, False)
+
+
+def outlines_ready(meshes: Any) -> bool:
+    """Whether the rim shaders of the outlined `meshes` are compiled (see `compile_outlines`)."""
+    for mesh in meshes:
+        if mesh.renderOutline:
+            renderer = mesh.getScene().getOutlineRenderer()
+            for sub in mesh.subMeshes:
+                if not renderer.isReady(sub, False):
+                    return False
+    return True

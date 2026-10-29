@@ -24,7 +24,7 @@ from render.environment.showcase_environment_visual import (
     update_sky_environment,
 )
 from render.node_adopter import NodeAdopter
-from render.outline import OutlineLayer
+from render.outline import OutlineLayer, compile_outlines
 from render.scenery.cloud_layers import ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP
 from render.scenery.scenery_kit import create_plain_scenery_kit
 from render.scenery.scenery_kit_visual import create_scenery_kit
@@ -71,11 +71,12 @@ class LevelSceneOptions:
 
 
 def compile_shaders(meshes: Any) -> None:
-    """Compiles the shaders of `meshes` (in parallel where WebGL can, P13-R04)."""
+    """Compiles the shaders of `meshes`, and their rims' (in parallel where WebGL can, P13-R04)."""
     for mesh in meshes:
         material = mesh.material
         if material is not None and len(mesh.subMeshes) > 0:
             material.forceCompilation(mesh)
+    compile_outlines(meshes)
 
 
 def scenery_look(game: Any, level: Any) -> Any:

@@ -15,6 +15,7 @@ from app.saved_supplies import load_saved_supplies, save_supplies
 from app.saved_weapons import load_saved_weapons, save_weapons
 from config.game_controls import GAME_CONTROLS_CONFIG
 from input.game_controls import GameControls
+from render.outline import outlines_ready
 from render.scenery.atmosphere_of import AtmosphereOptions
 from render.scenery.background_loader import start_background_loader
 from ui.level_loading import LevelLoadingScreen
@@ -353,7 +354,8 @@ class GameSession:
         # `!= None` also catches the undefined of a missing WebGL capability.
         caps = scene.getEngine().getCaps()
         parallel = caps.parallelShaderCompile != None  # noqa: E711
-        if not scene.isReady(True) and parallel and load.tries < COMPILE_FRAMES:
+        ready = scene.isReady(True) and outlines_ready(scene.meshes)
+        if not ready and parallel and load.tries < COMPILE_FRAMES:
             return False
         scene.render()
         return True
