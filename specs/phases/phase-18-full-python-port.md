@@ -110,13 +110,14 @@ When P18-R01 to P18-R06 pass, the TypeScript source, `package.json`, `package-lo
 | Remove the TypeScript toolchain | P18-R07 |
 
 ### Progress
-- Not started (session 1 of this phase).
+- `src/core/math/` ported (6 of 530 TypeScript files): `bits` (new: 32-bit helpers shared by the RNG and the hash), `rng`, `min_heap`, `color`, `noise`, `pixel_contrast`. Parity: 385 values compared with zero mismatches (`brightest_but` allowed 1e-7 for the Float32 rounding it skips, see its docstring).
+- Remaining: `core/` (65 files), `config/`, `platform/`, `input/`, `audio/`, `ui/`, `render/`, `app/`, `game/`, the Babylon vendoring, the tests and the TypeScript removal.
 
 ### Requirement traceability
 | ID | Status | Code | Tests | Notes |
 |----|--------|------|-------|-------|
-| P18-R01 | Not done | | | |
-| P18-R02 | Not done | | | |
+| P18-R01 | In progress (6 of ~530 files) | `src/core/math/` | | |
+| P18-R02 | In progress | `src/core/math/` | parity script (scratch, not committed) | 385 values, 0 mismatches |
 | P18-R03 | Not done | | | |
 | P18-R04 | Not done | | | |
 | P18-R05 | Not done | | | |

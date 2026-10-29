@@ -51,5 +51,12 @@ name = "core/ is pure: no browser or DOM"
 type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = ["org", "browser"]
-# core/math/rng.py imports __pragma__ only as a compile-time marker for Transcrypt (no DOM access).
-ignore_imports = ["core.math.rng -> org"]
+# Each module below imports __pragma__ only as a compile-time marker for Transcrypt (it skips
+# the typing names and never touches the DOM). Any other import of org or browser fails `make lint`.
+ignore_imports = [
+    "core.math.rng -> org",
+    "core.math.color -> org",
+    "core.math.min_heap -> org",
+    "core.math.noise -> org",
+    "core.math.pixel_contrast -> org",
+]

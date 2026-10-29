@@ -265,7 +265,7 @@ Measured with Transcrypt 3.9.5 on 2026-10-29 (`DECISIONS.md` D-170). Transcrypt 
 |----|----------|-------------|
 | ENG-150 | MUST | Transcrypt 3.9.5 (pinned) compiles `src/main.py` and its imports into browser ES modules. The entry point is `main()`, called from `index.html`. |
 | ENG-151 | MUST | **No keyword arguments in calls.** Transcrypt 3.9.5 drops them silently: `add(4, scale=3)` returns the default-argument result. Pass arguments by position. |
-| ENG-152 | MUST | **No `%` string formatting** (it compiles to `NaN`): build strings with `+` and `str()`. 32-bit unsigned arithmetic is written with `//` and `%` (see `core/math/rng.py`), not with `>>>`. |
+| ENG-152 | MUST | **No `%` string formatting** (it compiles to `NaN`) and **no list repetition** (`[x] * n` compiles to the number `x * n`): build strings with `+` and `str()`, lists with comprehensions. 32-bit unsigned arithmetic is written with `//` and `%` (see `core/math/bits.py`), not with `>>>`. |
 | ENG-153 | MUST | **`typing` is imported inside `__pragma__('skip')` blocks only**, because Transcrypt has no `typing` module at run time. Browser globals come from `from org.transcrypt.stubs.browser import ...`, and only outside `core/` (ENG-11). |
 | ENG-154 | MUST | **Python 3.12 only** (ENG-04). Transcrypt 3.9.5 cannot compile under Python 3.14 (its runtime fails with a compile error). |
 
