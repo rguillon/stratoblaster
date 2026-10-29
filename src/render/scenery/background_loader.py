@@ -6,6 +6,7 @@ generated there (`generate_grounds_with`).
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from host.worker_data import to_plain
 from render.scenery.level_ground import GroundReplies, generate_grounds_with
 from render.scenery.procedural_textures import TextureJob, has_texture, keep_texture
 
@@ -162,10 +163,10 @@ class BackgroundLoader:
         return on_reply
 
     def _post_texture(self, job: TextureJob, key: str) -> None:
-        self._post(_texture_message(0, job), self._texture_reply(job, key))
+        self._post(_texture_message(0, to_plain(job)), self._texture_reply(job, key))
 
     def _post_ground(self, level: Any, seed: int, done: Callable[[Any], bool]) -> None:
-        self._post(_ground_message(0, level, seed), done)
+        self._post(_ground_message(0, to_plain(level), seed), done)
 
     def stop(self) -> None:
         """Stops generating in the background: the grounds are generated on the main thread

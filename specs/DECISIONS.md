@@ -1678,3 +1678,12 @@
 - **Alternatives considered:** leaving the worker on (the game freezes on the first level); building the level from its id inside the worker (pulls the game's sim and view modules into the worker).
 - **Consequences:** level loads take longer on the main thread (the loading screen shows the progress in steps). Reviving the worker is a follow-up: plain data both ways, with a test that checks the round trip.
 - **Status:** Accepted, temporary
+
+### D-178 — The ground worker is back: its messages carry plain data (supersedes D-177)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `host/worker_data.py` `to_plain` copies a level, a texture job or a generated ground into plain objects and arrays before `postMessage`: the fields of each object, with shared references kept (one copy per object, as a structured clone would keep them), and without functions or the `__class__` marker. The loader posts the plain level and jobs; the worker posts the plain ground and runout. `main.py` runs with the worker on again (`background_loading=True`).
+- **Why:** the first ground job failed with "Function object could not be cloned" (D-177). The worker was then off, and levels loaded on the main thread: level 4-2 took about 34 s in Chromium, against about 4 s for the TypeScript build.
+- **Alternatives considered:** building the level from its id inside the worker (pulls the game's sim and view modules into the worker); keeping the worker off and optimizing on the main thread alone (ground generation stayed on the critical path).
+- **Consequences:** the copies are plain objects: they must not rely on methods or `isinstance` (scenery code uses neither, checked by grep). Main-thread ground generation drops from about 5 s to about 1.6 s in the profile; the level still waits for the worker, whose Transcrypt code is slower than the TypeScript it replaces.
+- **Status:** Accepted

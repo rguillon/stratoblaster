@@ -11,6 +11,7 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
+from host.worker_data import to_plain  # noqa: E402
 from render.scenery.level_ground import generate_in_two  # noqa: E402
 from render.scenery.procedural_textures import texture_pixels  # noqa: E402
 
@@ -44,12 +45,12 @@ def _on_message(event: Any) -> None:
     data = event.data
     if data.kind == "ground":
         made = generate_in_two(data.level, data.seed)
-        _post_ground(data.id, made.ground)
+        _post_ground(data.id, to_plain(made.ground))
 
         # Reviewer, 2026-10-28: the runout after the jobs already waiting (the level's textures),
         # as the level can start without it.
         def send_runout() -> None:
-            _post_runout(data.id, made.runout())
+            _post_runout(data.id, to_plain(made.runout()))
 
         _later(send_runout)
         return
