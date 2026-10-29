@@ -88,7 +88,7 @@ def scenery_look(game: Any, level: Any) -> Any:
 
 def _playfield_glow(scene: Any, look: Any) -> Any:
     """A glow layer for the playfield's self-lit parts (enemy neon, shots), above the clouds."""
-    glow = new_glow_layer("playfield-glow", scene, look.blur_kernel_size, None, None)
+    glow = new_glow_layer("playfield-glow", scene, look.blurKernelSize, None, None)
     glow.intensity = look.intensity
     glow.renderingGroupId = ABOVE_CLOUDS_GROUP
     return glow
@@ -101,7 +101,7 @@ def ground_glow_look(glow: Any) -> Any:
     ratio = 1
     return ShowcaseGlow(
         glow.intensity,
-        (glow.blur_kernel_size * ratio) / DEFAULT_GLOW_RATIO,
+        (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO,
         ratio,
         GROUND_GLOW_SAMPLES,
     )
@@ -150,7 +150,7 @@ def sky_state(view: Any, sea: Any, middle: float) -> Any:
     liquid_depth = 0
     if sea is not None:
         liquid_depth = sea.level - stage.field.height(0, middle)
-    shot_style = look.shot_style if look.shot_style is not None else "default"
+    shot_style = look.shotStyle if look.shotStyle is not None else "default"
     return game_play_sky(
         kind(atmosphere.weather),
         kind(atmosphere.second_weather),
@@ -252,7 +252,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
             scene,
             ShowcaseEnvironmentOptions(
                 options.environment_cube_size,
-                look.sky.environment_intensity,
+                look.sky.environmentIntensity,
                 look.sky.stops,
                 ground_glow_look(look.glow),
             ),
@@ -278,7 +278,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
         scene,
         look,
         stage,
-        ScrollTrack(level.scroll_speed, level_length(level)),
+        ScrollTrack(level.scrollSpeed, level_length(level)),
         playfield,
         options.environment,
         options.environment_cube_size,

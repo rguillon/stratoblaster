@@ -128,7 +128,7 @@ class EnemyViewer:
                 options.doc,
                 options.panel_parent,
                 [k.name for k in game.enemy_kinds],
-                [w.name for w in game.player_weapons],
+                [w["name"] for w in game.player_weapons],
                 [len(w.levels) for w in game.player_weapons],
                 EnemyViewerSelection(0, "behaviour", 0, 1, True, False, True, False),
                 HELP,

@@ -111,7 +111,7 @@ def _shot_shortcut(key: str, s: ShotViewerSelection, game: Any) -> dict[str, Any
 
 def _launch_origin(weapon: Any, muzzle: _Point, center: _Point) -> _Point:
     """Where a weapon's streams start: the muzzle, or the ship's centre."""
-    if weapon.kind == "projectile" and weapon.launch_point == "center":
+    if weapon.kind == "projectile" and weapon.launchPoint == "center":
         return center
     return muzzle
 
@@ -184,8 +184,8 @@ class _ShotViewer:
             ShotViewerPanelOptions(
                 options.doc,
                 options.panel_parent,
-                [s.name for s in game.player_ships.ships],
-                [w.name for w in game.player_weapons],
+                [s["name"] for s in game.player_ships.ships],
+                [w["name"] for w in game.player_weapons],
                 [len(w.levels) for w in game.player_weapons],
                 ShotViewerSelection(0, 0, 1, False, True),
                 on_change,

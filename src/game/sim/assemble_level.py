@@ -64,11 +64,12 @@ def assemble_level(
     if difficulty is None or filler is None or bosses is None:
         raise ValueError('No difficulty, filler or boss for "' + id + '"')
     length = level_length(scenery)
+    raw: Any = scenery  # a game/config record: camelCase keys
     fights = [
         LevelBoss(bosses.mini, "mini", length * MINI_BOSS_AT),
         LevelBoss(bosses.final, "final", length),
     ]
-    script = wave_script(scenery.scroll_speed, fill(beats, filler))
-    quiet = QUIET_BEFORE_BOSS * scenery.scroll_speed
+    script = wave_script(raw.scrollSpeed, fill(beats, filler))
+    quiet = QUIET_BEFORE_BOSS * raw.scrollSpeed
     waves = quiet_before(script, [fight.at for fight in fights], quiet)
     return GameLevel(id, scenery, waves, difficulty, fights, bosses.runout)

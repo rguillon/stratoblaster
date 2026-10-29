@@ -61,29 +61,29 @@ class MenuViewContext:
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
     """The pause menu (P12-R02), and its `Leave the level?` question when it shows."""
-    texts = ctx.game.texts
+    texts: Any = ctx.game.texts
     question = None
     if state.leaving:
-        question = PauseQuestion(texts.leave_level, [texts.no, texts.yes], state.choice)
+        question = PauseQuestion(texts.leaveLevel, [texts.no, texts.yes], state.choice)
     return PauseView(
         texts.paused,
-        [texts.resume, texts.settings, texts.main_menu],
-        texts.pause_hint,
+        [texts.resume, texts.settings, texts.mainMenu],
+        texts.pauseHint,
         question,
     )
 
 
 def _settings_view(state: MenuState, ctx: MenuViewContext) -> SettingsView:
     """The settings screen (P12-R04): one slider per volume."""
-    texts = ctx.game.texts
-    labels = {"music": texts.music_volume, "sfx": texts.sfx_volume}
+    texts: Any = ctx.game.texts
+    labels = {"music": texts.musicVolume, "sfx": texts.sfxVolume}
     sliders: list[SliderView] = []
     for slider in SETTINGS_SLIDERS:
         value = state.volumes.music if slider == "music" else state.volumes.sfx
         sliders.append(SliderView(labels[slider], value, ctx.volume_steps))
     return SettingsView(
         texts.settings,
-        texts.settings_hint,
+        texts.settingsHint,
         texts.back,
         state.selection,
         sliders,
@@ -98,22 +98,22 @@ def _complete_view(
     label: Any,
 ) -> LevelCompleteView:
     """The "Level complete" (or "Game over") panel (P06-R03), with its choices (P07-R08)."""
-    texts = ctx.game.texts
+    texts: Any = ctx.game.texts
     choices = None
     if result.checkpoint is not None:
         choices = LevelChoices(
-            [texts.continue_from_checkpoint, texts.to_level_select],
+            [texts.continueFromCheckpoint, texts.toLevelSelect],
             state.choice,
         )
     over = result.outcome == "over"
     return LevelCompleteView(
-        texts.game_over if over else texts.level_complete,
+        texts.gameOver if over else texts.levelComplete,
         over,
         label(result.level_id),
-        texts.enemies_destroyed(result.destroyed, result.spawned),
-        texts.final_score(int(result.score)),
-        texts.continue_hint,
-        texts.new_high_score if result.new_high_score else None,
+        texts.enemiesDestroyed(result.destroyed, result.spawned),
+        texts.finalScore(int(result.score)),
+        texts.continueHint,
+        texts.newHighScore if result.new_high_score else None,
         choices,
     )
 
@@ -127,7 +127,7 @@ def _selected_on_game(state: MenuState, paused: PauseView | None) -> int:
 
 
 def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
-    texts = ctx.game.texts
+    texts: Any = ctx.game.texts
     levels = ctx.game.levels.levels
 
     def label(level_id: str | None) -> str:
@@ -140,9 +140,9 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
     paused = _pause_view(state, ctx) if state.screen == "pause" else None
     complete = None if result is None else _complete_view(result, state, ctx, label)
     return GameScreenView(
-        texts.game_level(label(state.chosen_level_id)),
+        texts.gameLevel(label(state.chosen_level_id)),
         texts.fire,
-        texts.pause_button,
+        texts.pauseButton,
         complete,
         paused,
         _selected_on_game(state, paused),
@@ -152,27 +152,27 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """The view of the current screen: one of the classes of `ui/menu_view`."""
     game = ctx.game
-    texts = game.texts
+    texts: Any = game.texts
     screen = state.screen
     if screen == "loading":
         return LoadingView(texts.loading, ctx.progress)
     if screen == "title":
         return TitleView(
             game.title,
-            texts.high_score,
+            texts.highScore,
             ctx.high_score,
             texts.start,
             texts.settings,
             state.selection,
-            texts.start_hint,
+            texts.startHint,
             ctx.version,
             ctx.commit,
         )
     if screen == "ship-select":
         ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]
         return ShipSelectView(
-            texts.choose_ship,
-            texts.choose_ship_hint,
+            texts.chooseShip,
+            texts.chooseShipHint,
             texts.back,
             state.selection,
             ships,
@@ -181,8 +181,8 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     if screen == "level-select":
         options = [LevelOption(entry.label, not entry.unlocked) for entry in game.levels.levels]
         return LevelSelectView(
-            texts.choose_level,
-            texts.choose_level_hint,
+            texts.chooseLevel,
+            texts.chooseLevelHint,
             texts.back,
             state.selection,
             game.levels.columns,

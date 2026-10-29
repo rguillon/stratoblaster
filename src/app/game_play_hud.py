@@ -22,7 +22,7 @@ def boss_bar_frame(run: Any, texts: Any) -> BossBarFrame | None:
     bar = run.fights.bar
     if bar is None:
         return None
-    rank = texts.hud_mini_boss if bar.rank == "mini" else texts.hud_boss
+    rank = texts.hudMiniBoss if bar.rank == "mini" else texts.hudBoss
     return BossBarFrame(bar.name, rank, bar.share, bar.notches)
 
 
@@ -68,13 +68,13 @@ def create_hud(
     is the touch bomb button's.
     """
     hud_texts = HudTexts(
-        texts.hud_health,
-        texts.hud_weapon,
-        texts.hud_lives,
-        texts.hud_bombs,
-        texts.hud_score,
-        texts.hud_high_score,
-        texts.hud_bomb,
+        texts.hudHealth,
+        texts.hudWeapon,
+        texts.hudLives,
+        texts.hudBombs,
+        texts.hudScore,
+        texts.hudHighScore,
+        texts.hudBomb,
     )
     return GameHud(doc, parent, HudSetup(ship, hud_texts, on_bomb))
 
