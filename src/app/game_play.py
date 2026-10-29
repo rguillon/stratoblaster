@@ -418,6 +418,10 @@ class GamePlay:
         if compile_now:
             compile_shaders(self.view.scene.meshes)
 
+    def warm_shots(self, on: bool) -> None:
+        """Shows (or hides) one enemy bullet of each colour while the level loads (P13-R04)."""
+        self._shots.warm(on)
+
     def build_enemies(self, compile_now: bool) -> bool:
         """Builds one more enemy model (of the kinds not built yet), and compiles its shaders with
         `compile_now` (P13-R04). Called while the level loads, one model a frame, so no model is

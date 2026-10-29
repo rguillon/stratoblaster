@@ -256,6 +256,16 @@ def bullet_pools(scene: Any, contrast: bool) -> dict[str, list[list[Any]]]:
     return pools
 
 
+def warm_bullets(pools: dict[str, list[list[Any]]], on: bool) -> None:
+    """Shows one bullet in each layer of each colour (`on`), or hides them all: the loading draws
+    them, so the shaders of the layers (some only drawn with their instances) compile before play
+    (P13-R04), not on the frame of the first shot of each colour."""
+    spot = [[0, 0, 0, 0]] if on else []
+    for style in STYLES:
+        for entry in pools[style]:
+            entry[0].show(spot)
+
+
 def sync_bullets(pools: dict[str, list[list[Any]]], bullets: list[Any]) -> None:
     """Draws every bullet in its colour's layers."""
     for style in STYLES:
@@ -318,11 +328,13 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
 
 
 class ShotRendererHandle:
-    """The enemy shot renderer (`EnemyShotRenderer` in the TypeScript): its `sync` and `dispose`."""
+    """The enemy shot renderer (`EnemyShotRenderer` in the TypeScript): its `sync`, `dispose`, and
+    `warm(on)` (one bullet shown in each colour's layers, or none: see `warm_bullets`)."""
 
-    def __init__(self, sync: Any, dispose: Any) -> None:
+    def __init__(self, sync: Any, dispose: Any, warm: Any) -> None:
         self.sync = sync
         self.dispose = dispose
+        self.warm = warm
 
 
 def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
@@ -351,4 +363,7 @@ def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
         missiles.dispose()
         flame.dispose()
 
-    return ShotRendererHandle(sync, dispose)
+    def warm(on: bool) -> None:
+        warm_bullets(bullets, on)
+
+    return ShotRendererHandle(sync, dispose, warm)

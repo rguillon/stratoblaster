@@ -82,6 +82,11 @@ class EnemyViewerShots:
 
         self.playfield.run(draw)
 
+    def warm(self, on: bool) -> None:
+        """Shows (or hides) one enemy bullet of each colour, so their shaders compile (see
+        `warm_bullets`)."""
+        self._enemy.warm(on)
+
     def dispose(self) -> None:
         for renderer in self._player.values():
             renderer.dispose()

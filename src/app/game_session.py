@@ -395,8 +395,12 @@ class GameSession:
             if self.options.stepped_loading and load.play is not None:
                 precompile = self.options.precompile_shaders
                 load.play.prepare(True if precompile is None else precompile)
+                # The bullets are shown while the shaders compile (see `start`).
+                load.play.warm_shots(True)
 
         def start() -> None:
+            if load.play is not None:
+                load.play.warm_shots(False)
             if load.play and load.state:
                 self._started(load.play, load.state, level_id)
 

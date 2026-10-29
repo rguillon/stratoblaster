@@ -1724,3 +1724,11 @@
 - **Also (main thread, load):** the colour helpers (hue of an enemy's colour) use comparisons instead of Transcrypt's slow `min`/`max`; the enemy materials are built with Babylon's dirty marking blocked (`block_material_marks`, which writes the scene's backing field: its setter marks every material dirty when it is set back to false); the bullet layers are thin-instanced from the start, so their thin variant is compiled before play. The atlas blit no longer calls `min`/`max` per pixel.
 - **Consequences:** the main thread's busy time in a load of 4-2 went from about 5.8 s to about 4.0 s (headless). The worker now does the road work in parallel with the loader. One variant of the enemy bullets (with both `INSTANCES` and `THIN_INSTANCES`) is still compiled on its first draw, about 0.5 s in headless software WebGL, once per shot kind; so is one `VERTEXALPHA` variant of the hitbox marker. A road reply that never comes (a worker that dropped its ground job) leaves its chunks waiting, and the loader stops waiting after `ROAD_WAIT_FRAMES`.
 - **Status:** Accepted
+
+### D-183 — The enemy bullets are shown while the level loads, so their shaders compile before play (P13-R04)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `warm_bullets` shows one bullet in each layer of each colour while the level loads (`GamePlay.warm_shots(True)` in the `prepare_play` step), and hides them when the level starts (`start` step). The shot renderer's handle has `warm(on)`, reached through `EnemyViewerShots.warm`.
+- **Why:** a bullet layer is a thin-instanced mesh, which Babylon compiles in a variant with thin instances. The first shot of a colour compiled that variant on its frame. With the warm-up, the profile of 4-2 has one stall fewer in 25 seconds of play (two before, one now).
+- **Not fixed:** one purple-bullet variant still compiles on its first draw (about 0.5 s in headless software WebGL). Its defines include `INSTANCESCOLOR`, which Babylon sets on draw; the warm-up does not create it, and drawing during the compile wait did not either. The cause is still open.
+- **Status:** Accepted, partial
