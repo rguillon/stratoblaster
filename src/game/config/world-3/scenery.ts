@@ -142,6 +142,7 @@ const CANAL_WORKS: readonly TerrainSection[] = [
 const DOCKLANDS: readonly TerrainSection[] = [
   { ...CANAL_WORKSHOPS, seconds: 40 },
   section('warehouse docks', 55, {
+    buildingDensity: 0.85,
     treeDensity: 0.1,
     surface: { paved: 0.84, lush: 0.04 },
     trees: PL.yards,
@@ -188,7 +189,7 @@ const WORKERS_QUARTER: readonly TerrainSection[] = [
     groups: [G.residences, G.workerFlats],
   }),
   section('canal park', 45, {
-    buildingDensity: 0.8,
+    buildingDensity: 1,
     treeDensity: 0.55,
     surface: { paved: 0.4, lush: 0.45 },
     trees: PL.parks,
@@ -228,7 +229,7 @@ const SUBURBS: readonly TerrainSection[] = [
   }),
   section('town park', 45, {
     relief: ROLLING,
-    buildingDensity: 0.8,
+    buildingDensity: 1,
     treeDensity: 0.7,
     surface: { paved: 0.2, lush: 0.7 },
     trees: PL.parks,

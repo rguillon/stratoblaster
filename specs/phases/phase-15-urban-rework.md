@@ -317,6 +317,10 @@ None. The three choices were made with the reviewer when the spec was written.
 Light verification (implementation): make typecheck ✔ / build ✔ / e2e 138 passed.
 After removing Level Zero (review): make typecheck ✔ / build ✔ / e2e 129 passed.
 Lint, unit tests and coverage are deferred to /validate-phase.
+
+Full gate (validation, 2026-10-29), after the fixes of D-164:
+make lint ✔ / typecheck ✔ / unit 1712 passed / coverage 96.14% lines, 85.27% branches,
+96.62% functions (thresholds met) / build ✔ / e2e 129 passed (port 4174, temporary config).
 Note: port 4173 was held by a `vite preview` of another project (/home/renaud/pewet), which
 Playwright reused (reuseExistingServer); the e2e run was repeated on port 4174 with a temporary
 config, not committed.

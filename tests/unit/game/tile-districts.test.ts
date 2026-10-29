@@ -114,7 +114,10 @@ describe.each(LEVELS.map((l) => [l.id, l] as const))('level %s on tiles (phase 1
   const lots = new Set((level.props.lots ?? []).map((k) => k.id));
   const tiled = placer.snapshot().buildings.flatMap((b) => {
     const k = kinds.get(b.placement.kind);
-    if (!k?.tiles) return [];
+    // Packed on the grid: a few homes of the same kinds are still scattered away from the
+    // streets, with a round footprint.
+    const whole = (half: number) => Math.abs((2 * half) / t - Math.round((2 * half) / t)) < 1e-6;
+    if (!k?.tiles || !whole(b.halfX) || !whole(b.halfZ)) return [];
     const [w, d] = [Math.round((2 * b.halfX) / t), Math.round((2 * b.halfZ) / t)];
     const [x, z] = [Math.round(b.placement.x / t - w / 2), Math.round(b.placement.z / t - d / 2)];
     return [{ b, k, x, z, w, d }];
@@ -208,17 +211,21 @@ describe.each(LEVELS.map((l) => [l.id, l] as const))('level %s on tiles (phase 1
     for (const car of cars) {
       const [x, z] = [Math.floor(car.x / t), Math.floor(car.z / t)];
       expect(road.has(tileKey(x, z))).toBe(true);
-      // Within the roadway: at least the sidewalk's width from the edge of its street's tiles.
-      const street = streets.find((s) =>
-        s.points.some(
-          (p) => Math.abs(p.x - car.x) < s.width / 2 && Math.abs(p.z - car.z) < s.width / 2,
-        ),
-      );
-      if (!street) continue;
-      const [a, b] = [street.points[0], street.points.at(-1)];
-      const row = a?.z === b?.z;
-      const off = row ? Math.abs(car.z - (a?.z ?? 0)) : Math.abs(car.x - (a?.x ?? 0));
-      expect(off).toBeLessThanOrEqual(street.width / 2 - TILE.sidewalk + 1e-6);
+      // Within the roadway of a street: at least the sidewalk's width from the edge of its tiles
+      // (at a crossing, of either street).
+      const onRoadway = (q: (typeof streets)[number]) => {
+        const [a, b] = [q.points[0], q.points.at(-1)];
+        if (!a || !b) return false;
+        const [lo, hi] = a.z === b.z ? [a.x, b.x] : [a.z, b.z];
+        const along = a.z === b.z ? car.x : car.z;
+        const off = a.z === b.z ? Math.abs(car.z - a.z) : Math.abs(car.x - a.x);
+        return (
+          along >= Math.min(lo, hi) - 1e-6 &&
+          along <= Math.max(lo, hi) + 1e-6 &&
+          off <= q.width / 2 - TILE.sidewalk + 1e-6
+        );
+      };
+      expect(streets.some(onRoadway)).toBe(true);
     }
   });
 });

@@ -142,9 +142,9 @@ function awayFromRoads(site: PackSite, { x, z, w, d }: TileSpot): boolean {
   return !FACINGS.some((g) => faces(site, x, z, w, d, g));
 }
 
-/** A random turn (draw `r`), or that of `f`. */
+/** A random turn (draw `r`): that of `f` or the half turn from it, so the footprint stays `f`'s. */
 const turnOf = (r: number, f: (typeof FACINGS)[number]): number =>
-  (FACINGS[Math.floor(r * 4)] ?? f).rotation;
+  r < 0.5 ? f.rotation : f.rotation + Math.PI;
 
 /**
  * Packs `block` with buildings until about `density` of its free tiles are covered (P15-R08):

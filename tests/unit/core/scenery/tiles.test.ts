@@ -208,10 +208,8 @@ describe('cars on streets with sidewalks (phase 15)', () => {
       kind: 'street',
       width: 20,
       lanes: 2,
-      points: [
-        { x: 5, z: 0, width: 20 },
-        { x: 5, z: 400, width: 20 },
-      ],
+      // One chance of a car per point: a point every 10.
+      points: Array.from({ length: 41 }, (_, i) => ({ x: 5, z: i * 10, width: 20 })),
     };
     const rules = {
       kinds: ['car'],

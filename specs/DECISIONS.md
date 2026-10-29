@@ -1578,3 +1578,9 @@
 - **Phase:** 15 (reviewer's request, in chat)
 - **Decision:** The 90 prop models no level places any more (checked with `levelPropKinds` and the car kinds over every game level) are removed with their builders: World 2's frozen props (snow plants, chalets, huts, domes, harbour, outposts, pipeline, mining, sea ice) and its families of parts (polar towers and blocks, mining complexes), and all of World 3's own props (jungle plants, water props, stilt villages, ruins, swamp works, dam, canopy city and its families). Deleted: `polar-*.ts`, `jungle-*.ts`, `config/building-families.ts`, `WORLD_2_PROP_IDS`, `WORLD_3_PROP_IDS` and the 56 palette colours only they used. The wind turbine, still placed in Worlds 1 and 2, moves to `view/props/wind-turbine.ts` and to `WORLD_1_PROP_IDS`. The `props/` page loses its World 2, World 3 and Buildings groups.
 - **Status:** Accepted
+
+### D-164 — Levels retuned for the growth checks on the grid
+- **Date:** 2026-10-29
+- **Phase:** 15 (validation, reviewer's choice: retune the levels, keep the tests)
+- **Decision:** On the grid, big footprints and the lots that fill the tiles they leave made the P08-R03, P09-R03 and P10-R03 growth checks fail. Retuned: 2-4 warehouses building density 1 → 0.7; 3-2 warehouse docks 1 → 0.85; 3-3 canal park and 3-4 town park 0.8 → 1; 4-5 downtown and city heart 1 → 0.7 (fewer low lots among the skyscrapers). A building that cannot face a road now turns only by half turns from the way its footprint was fitted (`tile-packing.ts`), so it never stands across its tiles.
+- **Status:** Accepted

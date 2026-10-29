@@ -133,7 +133,7 @@ describe('World 4', () => {
     expect(groups('4-4').has(G.skyscrapers)).toBe(true);
     expect(level('4-5').scenery.sections.at(-1)?.groups).toEqual([G.downtown]);
     const downtown = WORLD_4_PROPS.groups.find((g) => g.id === G.downtown)?.kinds ?? [];
-    expect(downtown.every((k) => k.id.startsWith('skyscraper-'))).toBe(true);
+    expect(downtown.every((k) => k.id.startsWith('tile-skyscraper-'))).toBe(true);
   });
 
   it('P10-R03: the buildings grow taller from 4-1 to 4-5, and from each first half to the second (fixed seed)', () => {

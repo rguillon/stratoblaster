@@ -71,7 +71,7 @@ describe('road pieces (phase 15)', () => {
     expect(adapter?.sides[1]).toEqual({ size: 3, offset: 0 });
     // The boulevard's straights are 3 × 3, on its lattice.
     for (const p of pieces.filter((q) => q.size === 3 && q.kind === 'straight')) {
-      expect(p.x % 3).toBe(0);
+      expect(Math.abs(p.x % 3)).toBe(0);
     }
   });
 

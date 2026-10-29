@@ -229,6 +229,7 @@ const DOWNTOWN: readonly TerrainSection[] = [
   }),
   section('downtown', 70, {
     channel: quays(24),
+    buildingDensity: 0.7,
     treeDensity: 0.04,
     surface: { paved: 0.97 },
     groups: [G.skyscrapers, G.downtown],
@@ -236,6 +237,7 @@ const DOWNTOWN: readonly TerrainSection[] = [
   }),
   section('city heart', 90, {
     channel: quays(22),
+    buildingDensity: 0.7,
     treeDensity: 0.02,
     surface: { paved: 1 },
     groups: [G.downtown],
