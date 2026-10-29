@@ -13,6 +13,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
 from collections.abc import Sequence  # noqa: E402
+from typing import Any  # noqa: E402
 
 from core.scenery.road_types import Road  # noqa: E402
 from core.scenery.scenery_level import TileRules  # noqa: E402
@@ -91,7 +92,7 @@ def tile_has(tiles: dict[str, bool], x: int, z: int) -> bool:
     return has_tile_key(tiles, tile_key(x, z))
 
 
-def has_tile_key(tiles: dict[str, bool], key: int) -> bool:
+def has_tile_key(tiles: Any, key: int) -> bool:
     """Whether the key `key` (a `tile_key`) is in `tiles`: an own property, as `str(key) in tiles`
     (the generic `in` is slow, and this runs for every tile the packing tries)."""
     found = False

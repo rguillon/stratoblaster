@@ -14,7 +14,7 @@ from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noq
 __pragma__("noskip")
 
 from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import tile_key  # noqa: E402
+from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402
 
 INFINITY = float("Infinity")
 
@@ -129,10 +129,10 @@ def _corners_at(x: int, z: int, w: int, d: int) -> list[tuple[int, int]]:
     return [(x, z), (x - w + 1, z), (x, z - d + 1), (x - w + 1, z - d + 1)]
 
 
-def _away_from_roads(site: PackSite, spot: TileSpot) -> bool:
-    """Whether no road runs along any side of `spot`."""
+def _away_from_roads(site: PackSite, x: int, z: int, w: int, d: int) -> bool:
+    """Whether no road runs along any side of the spot `w` × `d` at (`x`, `z`)."""
     for g in FACINGS:  # noqa: SIM110 (Transcrypt: all() over a generator is slow)
-        if _faces(site, spot.x, spot.z, spot.w, spot.d, g):
+        if _faces(site, x, z, w, d, g):
             return False
     return True
 
@@ -166,11 +166,10 @@ def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
         for sx, sz in _corners_at(x, z, w, d):
             if not _fits(site, block, sx, sz, w, d):
                 continue
-            spot = TileSpot(kind, sx, sz, w, d, facing[2])
             if _faces(site, sx, sz, w, d, facing):
-                return spot
+                return TileSpot(kind, sx, sz, w, d, facing[2])
             # Standing there with a road along a side it cannot face is not allowed (P15-R08).
-            if fallback is None and _away_from_roads(site, spot):
+            if fallback is None and _away_from_roads(site, sx, sz, w, d):
                 fallback = TileSpot(kind, sx, sz, w, d, _turn_of(r, facing))
     # No way of standing there faces a road: only away from the streets, any way.
     return fallback
@@ -239,34 +238,31 @@ class TileGround:
         self._field = field
         self._tiles = tiles
         self._rules = rules
-        self._corners: dict[str, float] = {}
-        self._fit: dict[str, bool] = {}
+        self._corners: dict[int, float] = {}
+        self._fit: dict[int, bool] = {}
 
     def _corner(self, x: int, z: int) -> float:
-        k = str(tile_key(x, z))
-        if k not in self._corners:
-            self._corners[k] = self._field.height(x * self._tiles.size, z * self._tiles.size)
-        return self._corners[k]
+        key = tile_key(x, z)
+        if not has_tile_key(self._corners, key):
+            self._corners[key] = self._field.height(x * self._tiles.size, z * self._tiles.size)
+        return self._corners[key]
 
     def _range(self, x: int, z: int) -> tuple[float, float]:
         """Lowest and highest corner of tile (x, z)."""
-        hs = [
-            self._corner(x, z),
-            self._corner(x + 1, z),
-            self._corner(x, z + 1),
-            self._corner(x + 1, z + 1),
-        ]
-        low = hs[0]
-        high = hs[0]
-        for h in hs:
-            low = min(low, h)
-            high = max(high, h)
+        low = self._corner(x, z)
+        high = low
+        for h in (self._corner(x + 1, z), self._corner(x, z + 1), self._corner(x + 1, z + 1)):
+            # Plain comparisons: the same choice as min and max, NaN included.
+            if h < low:  # noqa: PLR1730 (Transcrypt: min() and max() are slow here)
+                low = h
+            if h > high:  # noqa: PLR1730 (Transcrypt: min() and max() are slow here)
+                high = h
         return low, high
 
     def fit(self, x: int, z: int, key: int | None = None) -> bool:
         """Whether tile (x, z), of key `key`, is fit to build on."""
-        k = str(key if key is not None else tile_key(x, z))
-        if k not in self._fit:
+        k = key if key is not None else tile_key(x, z)
+        if not has_tile_key(self._fit, k):
             low, high = self._range(x, z)
             self._fit[k] = (
                 low >= self._rules.min_height
