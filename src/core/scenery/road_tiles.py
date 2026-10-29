@@ -88,7 +88,15 @@ def tile_key(x: int, z: int) -> int:
 
 def tile_has(tiles: dict[str, bool], x: int, z: int) -> bool:
     """Whether the tile (`x`, `z`) is in the set `tiles` (see the module doc)."""
-    return str(tile_key(x, z)) in tiles
+    return has_tile_key(tiles, tile_key(x, z))
+
+
+def has_tile_key(tiles: dict[str, bool], key: int) -> bool:
+    """Whether the key `key` (a `tile_key`) is in `tiles`: an own property, as `str(key) in tiles`
+    (the generic `in` is slow, and this runs for every tile the packing tries)."""
+    found = False
+    __pragma__("js", "{}", "found = tiles.hasOwnProperty(key);")
+    return found
 
 
 def _line_of(road: Road, tile: TileRules) -> _TileLine | None:

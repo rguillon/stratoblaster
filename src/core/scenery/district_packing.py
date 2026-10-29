@@ -27,7 +27,7 @@ from core.scenery.away_placement import Building  # noqa: E402
 from core.scenery.draws import weighted  # noqa: E402
 from core.scenery.ground_boxes import PropPlacement  # noqa: E402
 from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import road_pieces, road_tiles, tile_has, tile_key  # noqa: E402
+from core.scenery.road_tiles import has_tile_key, road_pieces, road_tiles, tile_has, tile_key  # noqa: E402
 from core.scenery.tile_packing import PackSite, TileBlock, TileGround, pack_block  # noqa: E402
 
 
@@ -159,7 +159,9 @@ def pack_districts(  # noqa: C901 (mirrors the TypeScript closure structure)
 
     def free(x: int, z: int) -> bool:
         key = tile_key(x, z)
-        return (not tile_has(road, x, z)) and (str(key) not in taken) and grounds.fit(x, z, key)
+        return (
+            (not tile_has(road, x, z)) and (not has_tile_key(taken, key)) and grounds.fit(x, z, key)
+        )
 
     def road_at(x: int, z: int) -> bool:
         return tile_has(road, x, z)
