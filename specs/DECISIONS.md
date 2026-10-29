@@ -1706,3 +1706,12 @@
 - **Alternatives considered:** compiling the rims on the first frame of each level (still a stall on that frame); disabling the rims (changes the look, P14-R03).
 - **Consequences:** a rim mesh that is built later (an enemy model built ahead of its first appearance) still compiles its rim effect when it is made ready, which is one frame of the enemy's build step, not play. The remaining long task at about 3 s on world 4 levels is native time in the GPU pipeline of the headless software renderer (no JavaScript frames under it); it is not reproduced on a GPU and is not changed here.
 - **Status:** Accepted
+
+### D-181 — The enemy models are all built while the level loads, not one a frame in play (P13-R04)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `GamePlay.build_enemies` builds one enemy model per call (`EnemyLayer.prepare_next`) and compiles its shaders; the level loader runs it as a step, once per loading frame, until every kind has a model (`game_session` `enemies` step, between `prepare_play` and `compile_wait`). The per-frame call in `GamePlay.frame` stays, as the fallback when stepped loading is off; it does nothing once every kind is built.
+- **Why:** the kinds were built one per frame in play. Each build (a boss-class model is the heaviest) cost 40 to 90 ms on the main thread, so from the first frames of a level the frame rate dropped every frame for several seconds, with the kinds' shaders compiled on the same frames. Every level uses every kind (`config/world_4/waves.py`), so the builds could not be limited to the kinds a level uses.
+- **Alternatives considered:** building the kinds a level uses (no help: every level uses them all); spreading the builds over more frames in play (the hitch stays, only longer).
+- **Consequences:** the level loads about 2 to 2.7 s longer (measured in headless Chromium on the same machine state: 1-1 3.7 s to 5.8 s, 4-2 5.1 s to 7.8 s). Play no longer builds enemy models. Not done here: the road surfaces of each terrain chunk are still built in play (about 0.2 to 0.7 s for dense chunks in software WebGL), and a shader variant of the hitbox marker is still compiled on its first draw; both are one-off or periodic stalls to address next.
+- **Status:** Accepted

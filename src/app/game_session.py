@@ -379,6 +379,14 @@ class GameSession:
                 precompile = self.options.precompile_shaders
                 load.play.prepare(True if precompile is None else precompile)
 
+        def enemies() -> bool:
+            # The enemy models, one a frame, here rather than in play (P13-R04).
+            if not self.options.stepped_loading or load.play is None:
+                return True
+            precompile = self.options.precompile_shaders
+            built: bool = load.play.build_enemies(True if precompile is None else precompile)
+            return built
+
         def start() -> None:
             if load.play and load.state:
                 self._started(load.play, load.state, level_id)
@@ -392,6 +400,7 @@ class GameSession:
             textures,
             build,
             prepare_play,
+            enemies,
             lambda: self._compile_wait(load),
             start,
         ]

@@ -418,6 +418,16 @@ class GamePlay:
         if compile_now:
             compile_shaders(self.view.scene.meshes)
 
+    def build_enemies(self, compile_now: bool) -> bool:
+        """Builds one more enemy model (of the kinds not built yet), and compiles its shaders with
+        `compile_now` (P13-R04). Called while the level loads, one model a frame, so no model is
+        built in play. True once every kind has one.
+        """
+        built = self.view.playfield.run(self._enemies.prepare_next)
+        if compile_now:
+            compile_shaders(built)
+        return len(built) == 0
+
     def dispose(self) -> None:
         self._enemies.dispose()
         self._shots.dispose()
