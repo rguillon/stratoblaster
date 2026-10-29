@@ -9,3 +9,4 @@ blob-report/
 .eslintcache
 .vite/
 .DS_Store
+__pycache__/
