@@ -16,38 +16,28 @@ interface Tower {
   readonly top: number;
 }
 
-/** Tiers stepping back up to the top, neon up two corners on some, something on top. */
+/** Tiers stepping back up to the top, something on top. */
 function stepped({ k, kit, base, top }: Tower): void {
   const tiers = 2 + Math.floor(k.random() * 2);
   let [w, d, y] = [k.w * r(k, [0.7, 0.85]), k.d * r(k, [0.7, 0.85]), base];
   for (let t = 0; t < tiers; t++) {
     const h = (top - y) / (tiers - t);
     volume(kit, [0, 0, w, d], y, h);
-    if (t === 0 && k.random() < 0.5) {
-      const neon = any(k, NEON);
-      for (const c of [-1, 1])
-        k.l.box([0.4, h - 2, 0.4], neon, { at: [(c * w) / 2, y + 1, -d / 2] });
-    }
     y += h;
     [w, d] = [w * r(k, [0.72, 0.88]), d * r(k, [0.72, 0.88])];
   }
   crown(kit, [0, y, 0], Math.min(w, d) * 0.8);
 }
 
-/** One flat slab, the full height, ribbed with fins on its long faces and lit strips between. */
+/** One flat slab, the full height, ribbed with fins on its long faces. */
 function slab({ k, kit, base, top }: Tower): void {
   const [w, d] = [k.w * 0.85, k.d * 0.55];
   volume(kit, [0, 0, w, d], base, top - base);
   const fins = Math.max(3, Math.round(w / 4));
-  const light = any(k, NEON);
   for (let i = 0; i <= fins; i++) {
     const x = -w / 2 + (i * w) / fins;
     for (const z of [-d / 2, d / 2])
       k.s.box([0.6, top - base, 0.8], C.metalDark, { at: [x, base, z] });
-    if (i < fins && i % 2 === 0)
-      k.l.box([0.3, top - base - 4, 0.3], light, {
-        at: [x + w / fins / 2, base + 2, -d / 2 - 0.3],
-      });
   }
   k.s.box([w * 0.3, 0.4, d * 0.6], C.metal, { at: [0, top, 0] });
   k.l.ring(Math.min(w, d) * 0.2, 0.2, 8, L.yellowDim, { at: [0, top + 0.4, 0] });
@@ -115,11 +105,47 @@ const SILHOUETTES = [stepped, slab, round, twin, needle, pair] as const;
 /** Number of silhouettes: seeds 1 to this give different buildings. */
 export const SILHOUETTE_COUNT = SILHOUETTES.length;
 
-/** A city building up to a height in `height`, of the silhouette its seed names. */
-export function cityBuilding(k: TileKit, kit: LotKit, height: readonly [number, number]): void {
+/**
+ * Phase 15 (reviewer, 2026-10-28): what makes a building differ from each side: a lower annex
+ * against one side, off-centre, and a dark fin up one corner past the top.
+ */
+function asymmetry({ k, kit, base, top }: Tower): void {
+  const side = Math.floor(k.random() * 4);
+  const alongX = side % 2 === 0;
+  const [len, deep] = alongX
+    ? [k.w * r(k, [0.4, 0.6]), k.d * 0.3]
+    : [k.d * r(k, [0.4, 0.6]), k.w * 0.3];
+  // Inset, so the lights on its faces stay inside the plot.
+  const inset = 0.5;
+  const shift = r(k, [-0.2, 0.2]) * (alongX ? k.w : k.d);
+  const out = side < 2 ? -1 : 1;
+  const [x, z] = alongX
+    ? [shift, out * (k.d / 2 - deep / 2 - inset)]
+    : [out * (k.w / 2 - deep / 2 - inset), shift];
+  const [w, d] = alongX ? [len, deep] : [deep, len];
+  volume(kit, [x, z, w, d], base, (top - base) * r(k, [0.2, 0.4]));
+  const [cx, cz] = [
+    (k.random() < 0.5 ? -1 : 1) * k.w * 0.32,
+    (k.random() < 0.5 ? -1 : 1) * k.d * 0.32,
+  ];
+  k.s.box([0.8, top * 1.08 - base, 0.8], C.metalDark, { at: [cx, base, cz] });
+}
+
+/**
+ * A city building up to a height in `height`, of the silhouette its seed names; with
+ * `asymmetric`, an annex and a fin make it differ from each side.
+ */
+export function cityBuilding(
+  k: TileKit,
+  kit: LotKit,
+  height: readonly [number, number],
+  asymmetric = false,
+): void {
   const base = plinth(kit, [0, 0, k.w, k.d]);
   // A lit strip along the front of the plinth, inside the plot, so every building shows at night.
   k.l.box([k.w * 0.6, 0.3, 0.4], L.window, { at: [0, base, -k.d / 2 + 0.4] });
   const build = SILHOUETTES[(k.seed - 1) % SILHOUETTES.length] ?? stepped;
-  build({ k, kit, base, top: r(k, height) });
+  const tower = { k, kit, base, top: r(k, height) };
+  build(tower);
+  if (asymmetric) asymmetry(tower);
 }

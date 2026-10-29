@@ -37,10 +37,6 @@ const WORKS = [
   [1, 1],
   [3, 4],
 ] as const;
-const INDUSTRY = [
-  [2, 2],
-  [3, 4],
-] as const;
 
 /** The building groups of the districts and their models (P15-R09, footprint table). */
 export const TILE_GROUPS = {
@@ -78,33 +74,31 @@ export const TILE_GROUPS = {
       model('depot', 1, 2, 2),
     ],
   },
-  villages: {
+  /**
+   * Reviewer, 2026-10-28: the villages and the worker homes, one group of small homes of the
+   * future on paved plots, each model of a different silhouette (`tile-homesteads.ts`).
+   */
+  homes: {
     range: [
       [1, 1],
       [2, 3],
     ],
     models: [
-      model('cottage', 1, 1),
-      model('house', 1, 2),
-      model('farmhouse', 2, 2),
-      model('greenhouse', 1, 2),
-      model('barn', 2, 3),
+      model('homestead', 2, 1, 1),
+      model('homestead', 1, 1, 2),
+      model('homestead', 1, 1, 3),
+      model('homestead', 1, 2, 4),
+      model('homestead', 2, 2, 5),
+      model('homestead', 2, 1, 6),
+      model('homestead', 1, 2, 7),
+      model('homestead', 2, 3, 10),
     ],
   },
-  workerHomes: {
-    range: [
-      [1, 1],
-      [2, 3],
-    ],
-    models: [
-      model('cottage', 1, 1, 2),
-      model('terrace', 1, 3),
-      model('flats', 2, 2),
-      model('flats', 2, 3),
-      model('house', 1, 2, 2),
-    ],
-  },
-  mines: {
+  /**
+   * Reviewer, 2026-10-28: the mines, the oil fields, the refineries and the industrial works as
+   * one group.
+   */
+  industrial: {
     range: WORKS,
     models: [
       model('headframe', 2, 2),
@@ -112,32 +106,17 @@ export const TILE_GROUPS = {
       model('mineWorks', 3, 3),
       model('mineWorks', 2, 3, 2),
       model('headframe', 3, 3, 2),
-    ],
-  },
-  oil: {
-    range: WORKS,
-    models: [
       model('pumpjack', 1, 1),
       model('pumpjack', 1, 2, 2),
       model('oilTanks', 2, 2),
       model('oilTanks', 2, 3, 2),
       model('flare', 1, 1),
-    ],
-  },
-  refinery: {
-    range: WORKS,
-    models: [
       model('tanks', 2, 2),
       model('tanks', 3, 3, 2),
       model('refinery', 2, 3),
       model('refinery', 3, 4, 2),
       model('flare', 1, 1, 2),
       model('tanks', 1, 2, 5),
-    ],
-  },
-  industrial: {
-    range: INDUSTRY,
-    models: [
       model('factory', 2, 3),
       model('factory', 3, 4),
       model('warehouse', 2, 3),
@@ -176,27 +155,24 @@ export const TILE_GROUPS = {
       model('flats', 2, 2, 3),
     ],
   },
-  terraces: {
+  /**
+   * Reviewer, 2026-10-28: the terraces and the suburbs, one group of homes of the future on paved
+   * plots, each model of a different silhouette (`tile-residences.ts`).
+   */
+  residences: {
     range: [
-      [1, 2],
-      [1, 4],
+      [1, 1],
+      [2, 4],
     ],
     models: [
-      model('terrace', 1, 2),
-      model('terrace', 1, 3, 2),
-      model('terrace', 1, 4),
-      model('terrace', 1, 4, 2),
-      model('terrace', 1, 3, 3),
-    ],
-  },
-  suburbs: {
-    range: HOMES,
-    models: [
-      model('house', 1, 1),
-      model('house', 1, 2, 3),
-      model('villa', 2, 2),
-      model('villa', 1, 2, 2),
-      model('house', 2, 2, 2),
+      model('residence', 1, 2, 1),
+      model('residence', 1, 1, 2),
+      model('residence', 1, 4, 3),
+      model('residence', 2, 2, 4),
+      model('residence', 2, 2, 5),
+      model('residence', 1, 2, 6),
+      model('residence', 2, 3, 7),
+      model('residence', 1, 3, 9),
     ],
   },
   townCentre: {

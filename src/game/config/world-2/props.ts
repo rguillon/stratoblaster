@@ -67,22 +67,22 @@ export const WORLD_2_PROPS: PropRules = {
     {
       id: G.mines,
       weight: 2,
-      kinds: tileKinds('mines'),
+      kinds: tileKinds('industrial'),
     },
     {
       id: G.workerHomes,
       weight: 3,
-      kinds: tileKinds('workerHomes'),
+      kinds: tileKinds('homes'),
     },
     {
       id: G.oil,
       weight: 2,
-      kinds: tileKinds('oil'),
+      kinds: tileKinds('industrial'),
     },
     {
       id: G.refinery,
       weight: 2,
-      kinds: tileKinds('refinery'),
+      kinds: tileKinds('industrial'),
     },
     {
       id: G.industrial,

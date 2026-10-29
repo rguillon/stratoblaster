@@ -7,8 +7,7 @@ import { WORLD_3_GROUPS, WORLD_3_PROPS } from '../world-3/props';
 export const WORLD_4_GROUPS = {
   /** World 3's garden villages and suburbs, where World 3 ended. */
   villages: WORLD_3_GROUPS.villages,
-  suburbs: WORLD_3_GROUPS.suburbs,
-  terraces: WORLD_3_GROUPS.terraces,
+  residences: WORLD_3_GROUPS.residences,
   workerFlats: WORLD_3_GROUPS.workerFlats,
   /** A town centre: flats and terraces, the first mid-rise blocks. */
   townCentre: 'w4-town-centre',
@@ -28,7 +27,7 @@ const G = WORLD_4_GROUPS;
 
 /** World 3's rules for the home groups World 4 starts with. */
 const homeGroups = WORLD_3_PROPS.groups.filter((g) =>
-  [G.villages, G.suburbs, G.terraces, G.workerFlats].some((id) => id === g.id),
+  [G.villages, G.residences, G.workerFlats].some((id) => id === g.id),
 );
 
 /**

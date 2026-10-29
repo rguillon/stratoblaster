@@ -113,9 +113,7 @@ describe('World 2 prop models', () => {
     for (const id of [
       ...tileIds('desertHomes'),
       ...tileIds('outposts'),
-      ...tileIds('mines'),
-      ...tileIds('oil'),
-      ...tileIds('refinery'),
+      // Reviewer, 2026-10-28: the mines, oil fields and refineries are in the industrial group.
       ...tileIds('industrial'),
       ...tileIds('heavyIndustry'),
     ])

@@ -264,8 +264,9 @@ export async function destroyBoss(page: Page, name: string): Promise<void> {
     await stepUntil(page, async () => (await gameState(page)).game?.boss?.stage ?? -1).toBe(stage);
   }
   await page.keyboard.press('KeyK');
+  // The ship flies on a while, then off the top (reviewer, 2026-10-28): up to ~15 s of play.
   await stepUntil(page, async () => (await gameState(page)).levelResult !== null, {
-    frames: 30,
+    frames: 120,
   }).toBe(true);
   await step(page);
   await expect(page.locator('.level-complete')).toBeVisible();

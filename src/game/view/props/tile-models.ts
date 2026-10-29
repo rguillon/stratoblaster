@@ -29,6 +29,8 @@ import {
   buildVilla,
   buildWorkshop,
 } from './tile-homes';
+import { buildResidence } from './tile-residences';
+import { buildHomestead } from './tile-homesteads';
 import { geometryOf, tileKit, type TileKit } from './tile-kit';
 import {
   buildContainers,
@@ -61,6 +63,8 @@ const BUILDERS: Readonly<Record<TileArchetype, (k: TileKit) => void>> = {
   cottage: buildCottage,
   terrace: buildTerrace,
   flats: buildFlats,
+  residence: buildResidence,
+  homestead: buildHomestead,
   workshop: buildWorkshop,
   farmhouse: buildFarmhouse,
   greenhouse: buildGreenhouse,

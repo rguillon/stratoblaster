@@ -190,20 +190,20 @@ describe('World 4', () => {
   it('P10-R04: 4-1 a red dawn behind a smoke haze; 4-2 an ash-dark midday with falling ash', () => {
     expect(script('4-1').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0, 0],
+      clouds: [0.4, 0.3],
       cloudTint: ASH_PINK,
       mist: SMOKE_HAZE,
     });
     expect(changes('4-1')).toEqual([]);
     expect(script('4-2').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0, 0],
+      clouds: [0.9, 0.9],
       cloudTint: ASH_BROWN,
       tint: ASH_LIGHT,
       weather: ash(0.5),
     });
     expect(changes('4-2')).toEqual([]);
-    // No clouds (reviewer, 2026-10-28); a dim, yellowish light.
+    // Clouds back (reviewer, 2026-10-29); a dim, yellowish light.
     expect(ASH_BROWN[2]).toBeLessThan(ASH_BROWN[0]);
     expect(ASH_LIGHT[2]).toBeLessThan(ASH_LIGHT[1]);
   });
@@ -211,7 +211,7 @@ describe('World 4', () => {
   it('P10-R04: 4-3 a dusk giving way to the city’s glow, with embers', () => {
     expect(script('4-3').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0, 0],
+      clouds: [0.5, 0.4],
       storm: 0.5,
       underglow: { color: LAVA_GLOW, strength: 0.25 },
       weather: embers(0.4),
@@ -222,7 +222,7 @@ describe('World 4', () => {
         280,
         {
           timeOfDay: 'midday',
-          clouds: [0, 0],
+          clouds: [0.5, 0.4],
           storm: 0.5,
           underglow: { color: LAVA_GLOW, strength: 0.8 },
           weather: embers(0.4),
@@ -234,7 +234,7 @@ describe('World 4', () => {
   it('P10-R04: 4-4 a night lit by the towers, with ash and embers; 4-5 the eruption growing to the final boss', () => {
     expect(script('4-4').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0, 0],
+      clouds: [0.6, 0.5],
       storm: 0.6,
       underglow: { color: FURNACE_GLOW, strength: 0.7 },
       weather: ash(0.3),
@@ -243,7 +243,7 @@ describe('World 4', () => {
     expect(changes('4-4')).toEqual([]);
     expect(script('4-5').start).toMatchObject({
       timeOfDay: 'midday',
-      clouds: [0, 0],
+      clouds: [0.7, 0.6],
       underglow: { color: ERUPTION_RED, strength: 0.6 },
       weather: embers(0.6),
     });
@@ -255,7 +255,7 @@ describe('World 4', () => {
         300,
         {
           timeOfDay: 'midday',
-          clouds: [0, 0],
+          clouds: [0.7, 0.6],
           underglow: { color: ERUPTION_RED, strength: 1 },
           weather: embers(1),
         },

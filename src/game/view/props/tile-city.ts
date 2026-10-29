@@ -20,9 +20,17 @@ function lotKit(k: TileKit, facades: readonly Rgb[], lights: readonly Rgb[]): Lo
   };
 }
 
-/** A city building of the silhouette its seed names (see `tile-towers.ts`). */
-function city(k: TileKit, height: readonly [number, number], facades: readonly Rgb[]): void {
-  cityBuilding(k, lotKit(k, facades, NEON_DIM), height);
+/**
+ * A city building of the silhouette its seed names (see `tile-towers.ts`); `asymmetric`, each
+ * face lit its own way, an annex and a fin on one side (reviewer, 2026-10-28).
+ */
+function city(
+  k: TileKit,
+  height: readonly [number, number],
+  facades: readonly Rgb[],
+  asymmetric = false,
+): void {
+  cityBuilding(k, { ...lotKit(k, facades, NEON_DIM), faces: asymmetric }, height, asymmetric);
 }
 
 export function buildMidrise(k: TileKit): void {
@@ -30,15 +38,15 @@ export function buildMidrise(k: TileKit): void {
 }
 
 export function buildOffice(k: TileKit): void {
-  city(k, [26, 42], FACADES);
+  city(k, [26, 42], FACADES, true);
 }
 
 export function buildTower(k: TileKit): void {
-  city(k, [44, 66], FACADES);
+  city(k, [44, 66], FACADES, true);
 }
 
 export function buildSkyscraper(k: TileKit): void {
-  city(k, [70, 110], [C.glassBlue, C.glassDark, C.glassGreen]);
+  city(k, [70, 110], [C.glassBlue, C.glassDark, C.glassGreen], true);
 }
 
 export function buildCarPark(k: TileKit): void {

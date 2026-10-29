@@ -95,7 +95,7 @@ export const WORLD_1_PROPS: PropRules = {
     {
       id: G.villages,
       weight: 3,
-      kinds: tileKinds('villages'),
+      kinds: tileKinds('homes'),
     },
     {
       id: G.farms,

@@ -7,6 +7,8 @@ export type TileArchetype =
   | 'villa'
   | 'cottage'
   | 'terrace'
+  | 'residence'
+  | 'homestead'
   | 'flats'
   | 'workshop'
   | 'farmhouse'

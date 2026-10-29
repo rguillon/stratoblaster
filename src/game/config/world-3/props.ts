@@ -18,10 +18,8 @@ export const WORLD_3_GROUPS = {
   workshops: 'w3-workshops',
   /** The workers' flats: small blocks, terraces. */
   workerFlats: 'w3-worker-flats',
-  /** Rows of terraced houses. */
-  terraces: 'w3-terraces',
-  /** The suburbs: houses, terraces, modern homes. */
-  suburbs: 'w3-suburbs',
+  /** The residences (reviewer, 2026-10-28: the terraces and suburbs as one): homes of the future. */
+  residences: 'w3-residences',
   /** The garden villages: houses, farmhouses and greenhouses. */
   villages: 'w3-villages',
 } as const;
@@ -80,19 +78,14 @@ export const WORLD_3_PROPS: PropRules = {
       kinds: tileKinds('workerFlats'),
     },
     {
-      id: G.terraces,
+      id: G.residences,
       weight: 3,
-      kinds: tileKinds('terraces'),
-    },
-    {
-      id: G.suburbs,
-      weight: 3,
-      kinds: tileKinds('suburbs'),
+      kinds: tileKinds('residences'),
     },
     {
       id: G.villages,
       weight: 3,
-      kinds: tileKinds('villages'),
+      kinds: tileKinds('homes'),
     },
   ],
   trees: [
