@@ -13,6 +13,7 @@ import { lowestUnder, standingHeight } from './ground-fit';
 import type { HeightField } from './height-field';
 import type { RoadNetwork, RoadSlot } from './road-network';
 import { blockParts, type Block } from './street-grid';
+import { packDistricts } from './district-packing';
 import type {
   BlockFill,
   PropGroupRule,
@@ -116,9 +117,27 @@ export class PropPlacer {
   /** The buildings of the blocks, the road slots and the spots away from the roads in `range`. */
   #placeBuildings(range: ZRange): void {
     const within = (z: number): boolean => z >= range.from && z < range.to;
-    this.roads.blocks.forEach((block, i) => {
-      if (within((block.zMin + block.zMax) / 2)) this.#fillBlock(block, i);
-    });
+    const { tiles } = this.roads;
+    if (tiles) {
+      packDistricts(
+        {
+          field: this.field,
+          rules: this.rules,
+          roads: this.roads,
+          seed: this.seed,
+          groupAt: (x, z, section) => this.#groupAt(x, z, section),
+          occupy: (building) => {
+            this.#occupy(building);
+          },
+        },
+        within,
+        tiles,
+      );
+    } else {
+      this.roads.blocks.forEach((block, i) => {
+        if (within((block.zMin + block.zMax) / 2)) this.#fillBlock(block, i);
+      });
+    }
     const mainFirst = this.roads.slots
       .filter((slot) => within(slot.z))
       .sort((a, b) => Number(a.road.kind === 'cross') - Number(b.road.kind === 'cross'));

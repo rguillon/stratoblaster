@@ -40,11 +40,11 @@ export function bossGroups(game: GameDefinition<GameView>): { label: string; fro
   return groups;
 }
 
-/** The scenery a boss is fought over: its level's (and its extra ground), or the first test level. */
+/** The scenery a boss is fought over: its level's (and its extra ground), or the first level's. */
 function sceneryOf(game: GameDefinition<GameView>, level: GameLevel | undefined): SceneryLevel {
   if (level) return withRunout(level.scenery, level.runout ?? 0);
-  const first = game.sceneryLevels[0];
-  if (!first) throw new Error('The game has no scenery level');
+  const first = game.gameLevels[0]?.scenery;
+  if (!first) throw new Error('The game has no level');
   return first;
 }
 

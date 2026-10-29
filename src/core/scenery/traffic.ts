@@ -114,6 +114,11 @@ export class Traffic {
     return this.#count;
   }
 
+  /** Width of the part of `road` cars drive on: P15-R11, streets without their sidewalks. */
+  #roadway(road: Road): number {
+    return road.kind === 'street' ? road.width - 2 * (this.rules.sidewalk ?? 0) : road.width;
+  }
+
   /** The car that starts at point `i` of a road, if any: one chance per point. */
   #carAt(track: Track, i: number, seed: number): Car | undefined {
     const { road } = track;
@@ -129,7 +134,7 @@ export class Traffic {
       kind,
       track,
       side,
-      offset: (road.width / (2 * road.lanes)) * (lane + 0.5),
+      offset: (this.#roadway(road) / (2 * road.lanes)) * (lane + 0.5),
       start: track.along[i] ?? 0,
       speed: slow + (fast - slow) * lr,
     };

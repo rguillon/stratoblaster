@@ -119,7 +119,7 @@ export function propDrifts(level: SceneryLevel): Record<string, PropDrift> {
 
 /**
  * The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
- * sections allow, its floating props, lines, podiums and set pieces.
+ * sections allow, its floating props, lines, podiums, set pieces and lots.
  */
 export function levelPropKinds(level: SceneryLevel): Set<string> {
   const { props, sections } = level;
@@ -131,6 +131,8 @@ export function levelPropKinds(level: SceneryLevel): Set<string> {
     ...(props.lines?.map((l) => l.kind) ?? []),
     ...sections.flatMap((s) => s.blocks?.podiums ?? []),
     ...(props.landmarks?.map((l) => l.kind) ?? []),
+    // Phase 15: the lots of the districts on tiles.
+    ...(props.lots?.map((k) => k.id) ?? []),
   ]);
 }
 

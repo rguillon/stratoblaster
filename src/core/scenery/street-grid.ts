@@ -1,10 +1,11 @@
 import { randomIn, type Random } from '../math/rng';
-import { isBoulevard, streetWidth } from './lanes';
+import { isBoulevard, runWidth, streetWidth } from './lanes';
 import type { District } from './districts';
 import { removeCrossings, removeDeadEnds } from './street-dead-ends';
 import { dedupe, linksByNode, Nodes, pair, type Link, type Node } from './street-links';
 import { straightRuns } from './street-runs';
 import type { RoadRules } from './scenery-level';
+import { tileStreetRuns, type StreetRun } from './tile-streets';
 
 /** Positions from `from` to `to`, spaced by random gaps in `gap`, both ends included. */
 function spaced(
@@ -42,7 +43,10 @@ export function streetRuns(
   random: Random,
   buildable: (x: number, z: number) => boolean,
   outOfView: (node: Node) => boolean,
-): { runs: { x: number; z: number }[][]; blocks: Block[] } {
+): { runs: StreetRun[]; blocks: Block[] } {
+  // Phase 15: on a grid of tiles.
+  if (rules.tiles)
+    return tileStreetRuns(district, rules, rules.tiles, random, buildable, outOfView);
   const { links, layouts, nodes } = gridLinks(district, rules, random, buildable);
   const at = linksByNode(links, nodes.length);
   removeDeadEnds(at, nodes, outOfView, false);
@@ -55,7 +59,7 @@ export function streetRuns(
     runs: straightRuns(
       links.filter((l) => l.built),
       rules.step,
-    ),
+    ).map((points) => ({ points, width: runWidth(rules, points) })),
     blocks,
   };
 }

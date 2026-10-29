@@ -6,6 +6,7 @@ import type { LevelResult } from '../../../src/core/systems/level-run';
 import { GameControls } from '../../../src/input/game-controls';
 import { GAME_CONTROLS_CONFIG } from '../../../src/config/game-controls';
 import { bombFrames, bonusFrames, SAMPLE_GAME } from '../../fixtures/sample-game';
+import { BOSSY, HARMLESS } from './game-play-games';
 
 let play: GamePlay | undefined;
 afterEach(() => {
@@ -20,6 +21,8 @@ function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a', definiti
     environment: false,
     debug: false,
     startTime: 0,
+    // The arrival and departure have their own test below.
+    journey: false,
     doc: document,
     onComplete: (result) => results.push(result),
     ...overrides,
@@ -29,34 +32,6 @@ function start(overrides: Partial<GamePlayOptions> = {}, levelId = 'a', definiti
   return { game, controls, results };
 }
 
-/** The sample game where hits and rams do no damage, for tests of other things on level a. */
-const HARMLESS = {
-  ...SAMPLE_GAME,
-  hull: {
-    ...SAMPLE_GAME.hull,
-    damage: { bullet: 0, missile: 0, laser: 0, collision: 0 },
-    ramDamage: 0,
-  },
-};
-
-/** The harmless sample game whose level a has a mini boss at 5 s and a final boss at its end. */
-const BOSSY = {
-  ...HARMLESS,
-  gameLevels: HARMLESS.gameLevels.map((level) =>
-    level.id === 'a'
-      ? {
-          ...level,
-          runout: 5,
-          bosses: [
-            { kind: 'big-cube', rank: 'mini', at: 100 },
-            { kind: 'big-cube', rank: 'final', at: 400 },
-          ] as const,
-        }
-      : level,
-  ),
-};
-
-/** Runs `seconds` of frames of 0.1 s. */
 const frames = (game: GamePlay, seconds: number) => {
   for (let i = 0; i < Math.round(seconds * 10); i++) game.frame(0.1);
 };

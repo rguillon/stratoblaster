@@ -79,6 +79,8 @@ test.describe('P08: World 2', () => {
   });
 
   test('P08-R06 (rework, 2026-10-27): the lights come on at dusk and night', async ({ page }) => {
+    // Three levels loaded, each with its tile districts (phase 15): about 28 s on CI.
+    test.setTimeout(60_000);
     const morning = await skyAt(page, '?level=2-1', 0.2);
     const dusk = await skyAt(page, '?level=2-4&t=60', 60.1);
     const night = await skyAt(page, '?level=2-5&t=120', 120.1);

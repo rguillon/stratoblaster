@@ -12,6 +12,8 @@ export interface PropViewerPanelOptions {
   readonly groups: readonly PropGroup[];
   readonly initial: PropViewerSelection;
   readonly onChange: (selection: PropViewerSelection) => void;
+  /** Called with true for the wireframe view, false for the normal one. No buttons when omitted. */
+  readonly onWireframe?: (wireframe: boolean) => void;
 }
 
 const HELP = 'Drag to turn, wheel to zoom. Click a prop, or ←/→ to step through them.';
@@ -37,6 +39,7 @@ export class PropViewerPanel {
     this.#readout = this.#element('div', 'enemy-readout prop-readout');
     this.root.append(this.#groupRow, this.#propRow, this.#readout);
     this.root.append(this.#element('div', 'enemy-help', HELP));
+    if (options.onWireframe) this.#groupRow.before(this.#viewRow(options.onWireframe));
     options.groups.forEach((group, i) => {
       const button = doc.createElement('button');
       button.textContent = `${group.label} (${String(group.ids.length)})`;
@@ -65,6 +68,23 @@ export class PropViewerPanel {
     this.#readout.textContent = text;
   }
 
+  /** The Normal / Wireframe buttons, Normal first and picked. */
+  #viewRow(onWireframe: (wireframe: boolean) => void): HTMLElement {
+    const row = this.#element('div', 'enemy-row prop-views');
+    const buttons = ['Normal', 'Wireframe'].map((label, i) => {
+      const button = this.options.doc.createElement('button');
+      button.textContent = label;
+      button.classList.toggle('selected', i === 0);
+      button.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.toggle('selected', b === button));
+        onWireframe(i === 1);
+      });
+      return button;
+    });
+    row.append(...buttons);
+    return row;
+  }
+
   #choose(selection: PropViewerSelection): void {
     this.update(selection);
     this.options.onChange(selection);
@@ -84,7 +104,8 @@ export class PropViewerPanel {
       this.#propRow.replaceChildren(
         ...(this.options.groups[group]?.ids ?? []).map((id, i) => {
           const button = this.options.doc.createElement('button');
-          button.textContent = id;
+          const note = this.options.groups[group]?.notes?.[id];
+          button.textContent = note ? `${id} · ${note}` : id;
           button.addEventListener('click', () => {
             this.#choose({ group, prop: i });
           });

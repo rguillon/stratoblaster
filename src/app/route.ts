@@ -3,14 +3,12 @@ export type AppRoute =
   | 'game'
   | 'player-ship-viewer'
   | 'player-shots-viewer'
-  | 'scenery-viewer'
   | 'enemy-viewer'
   | 'boss-viewer'
   | 'prop-viewer';
 
 const PLAYER_SHIP_VIEWER = /\/player_ship(\/(index\.html)?)?$/;
 const PLAYER_SHOTS_VIEWER = /\/player_shots(\/(index\.html)?)?$/;
-const SCENERY_VIEWER = /\/level_zero(\/(index\.html)?)?$/;
 const ENEMY_VIEWER = /\/enemies(\/(index\.html)?)?$/;
 /** `bosses/`, or `boss/` (phase 7 review). */
 const BOSS_VIEWER = /\/boss(es)?(\/(index\.html)?)?$/;
@@ -21,7 +19,6 @@ const PROP_VIEWER = /\/props(\/(index\.html)?)?$/;
 export function resolveRoute(pathname: string): AppRoute {
   if (PLAYER_SHIP_VIEWER.test(pathname)) return 'player-ship-viewer';
   if (PLAYER_SHOTS_VIEWER.test(pathname)) return 'player-shots-viewer';
-  if (SCENERY_VIEWER.test(pathname)) return 'scenery-viewer';
   if (ENEMY_VIEWER.test(pathname)) return 'enemy-viewer';
   if (BOSS_VIEWER.test(pathname)) return 'boss-viewer';
   if (PROP_VIEWER.test(pathname)) return 'prop-viewer';

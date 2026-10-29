@@ -72,15 +72,15 @@ describe('World 3', () => {
     }
   });
 
-  it('P09-R03: every level has some canal, river or pond water', () => {
+  it('P09-R03 (reviewer, 2026-10-28): no level has any water: no sea, canal, river or pond', () => {
     for (const game of WORLD_3) {
-      expect(waterShares(game, isSea).inland, game.id).toBeGreaterThan(0.02);
+      expect(game.scenery.sea, game.id).toBeUndefined();
+      expect(waterShares(game, isSea).inland, game.id).toBe(0);
       expect(
-        game.scenery.sections.some((s) => (s.channel?.floor ?? 0) < 0),
+        game.scenery.sections.some((s) => s.channel !== undefined || s.lakes !== undefined),
         game.id,
-      ).toBe(true);
+      ).toBe(false);
     }
-    expect(level('3-5').scenery.sections.some((s) => (s.lakes?.level ?? 0) < 0)).toBe(true);
   });
 
   it('P09-R03: the concrete gives way to grass from 3-1 to 3-5', () => {
@@ -99,7 +99,7 @@ describe('World 3', () => {
     expect(groups('3-1').has(G.heavyIndustry)).toBe(true);
     for (const id of ['3-4', '3-5'])
       for (const g of industry) expect(groups(id).has(g), `${id} ${g}`).toBe(false);
-    for (const g of [G.suburbs, G.villages]) expect(groups('3-1').has(g), g).toBe(false);
+    for (const g of [G.residences, G.villages]) expect(groups('3-1').has(g), g).toBe(false);
     expect(level('3-5').scenery.sections.at(-1)?.groups).toEqual([G.villages]);
   });
 
