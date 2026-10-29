@@ -15,7 +15,7 @@ from render.babylon import (
     create_polyhedron,
     new_transform_node,
 )
-from render.geometry.lathe_z import create_faceted_lathe_along_z
+from render.geometry.lathe_z import LatheHalves, create_faceted_lathe_along_z
 from render.geometry.prism import create_prism
 
 __pragma__("skip")
@@ -31,13 +31,7 @@ PART_FACETS = 6
 
 
 # Section of fuselages: a smooth, finely faceted top over a low-poly 3-facet belly.
-def _body_section() -> Any:
-    """The section of fuselages (a LatheSection: upper and lower facets)."""
-    section: Any = {"upper": 20, "lower": 3}
-    return section
-
-
-BODY_SECTION = _body_section()
+BODY_SECTION = LatheHalves(20, 3)
 
 PLATE_THICKNESS = 0.012
 NAV_LIGHT_SIZE = 0.07
