@@ -176,8 +176,9 @@ def start_game(engine: Any) -> None:
         True,
         # P13-R04: shaders compiled while a level loads; not in e2e builds (ENG-52).
         not E2E,
-        # P13-R03: the highlighted level is prepared in a worker, and built ahead.
-        True,
+        # P13-R03: the worker is off for now (D-177): level data cannot cross the worker
+        # boundary yet, so the grounds are generated on the main thread.
+        False,
         not E2E,
         browser_audio(),
         browser_gamepads(window.navigator),
