@@ -12,7 +12,6 @@ import { PLAYER_SHIP_SCALE } from './config/ship-look';
 import { BOSS_KINDS } from './sim/boss-kinds';
 import { ENEMY_KINDS } from './sim/enemy-kinds';
 import { GAME_LEVELS, LEVELS } from './sim/levels';
-import { SCENERY_LEVELS } from './sim/scenery-levels';
 import { GAME_AUDIO } from './view/audio/game-audio';
 import { createBombRenderer } from './view/bombs/bomb-renderer';
 import { createBonusRenderer } from './view/bonuses/bonus-renderer';
@@ -33,7 +32,6 @@ export const GAME: GameDefinition<GameView> = {
   playerWeapons: PLAYER_WEAPONS,
   levels: LEVELS,
   gameLevels: GAME_LEVELS,
-  sceneryLevels: SCENERY_LEVELS,
   enemyKinds: ENEMY_KINDS,
   bossKinds: BOSS_KINDS,
   bossFights: BOSS_FIGHT_RULES,

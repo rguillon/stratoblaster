@@ -51,4 +51,27 @@ describe('PropViewerPanel (reviewer, 2026-10-28)', () => {
     p.setReadout('house — 4 × 4 × 4');
     expect(p.root.querySelector('.prop-readout')?.textContent).toBe('house — 4 × 4 × 4');
   });
+
+  it('switches between the normal and the wireframe view', () => {
+    const views: boolean[] = [];
+    const p = new PropViewerPanel({
+      doc: document,
+      parent: document.body,
+      groups: GROUPS,
+      initial: { group: 0, prop: 0 },
+      onChange: () => undefined,
+      onWireframe: (w) => views.push(w),
+    });
+    const buttons = [...p.root.querySelectorAll<HTMLButtonElement>('.prop-views button')];
+    expect(buttons.map((b) => b.textContent)).toEqual(['Normal', 'Wireframe']);
+    buttons[1]?.click();
+    buttons[0]?.click();
+    expect(views).toEqual([true, false]);
+    expect(buttons[0]?.classList.contains('selected')).toBe(true);
+    expect(buttons[1]?.classList.contains('selected')).toBe(false);
+  });
+
+  it('shows no view buttons without onWireframe', () => {
+    expect(panel().p.root.querySelector('.prop-views')).toBeNull();
+  });
 });

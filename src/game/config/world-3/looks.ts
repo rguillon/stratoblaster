@@ -1,5 +1,5 @@
 import type { SkyLook, SkyScript } from '../../../core/scenery/sky-look';
-import { LEVEL_ZERO_LOOK, texture } from '../scenery-look';
+import { BASE_SCENERY_LOOK, texture } from '../scenery-look';
 
 import { GRASS } from '../world-1/looks';
 import { INDUSTRIAL_PAVING } from '../world-2/looks';
@@ -53,7 +53,7 @@ const WATER: Rgb = [0.1, 0.13, 0.12];
 
 /** The ground of World 3: concrete at the start, grass and gardens by the end. */
 const TOWN_TERRAIN = {
-  ...LEVEL_ZERO_LOOK.terrain,
+  ...BASE_SCENERY_LOOK.terrain,
   ground: DAMP_EARTH,
   low: MUD,
   steep: STONE,
@@ -70,12 +70,12 @@ const TOWN_TERRAIN = {
     [0.88, 0.9, 0.86],
   ],
   shore: {
-    ...LEVEL_ZERO_LOOK.terrain.shore,
+    ...BASE_SCENERY_LOOK.terrain.shore,
     sand: [0.34, 0.3, 0.24],
     beach: 2,
     shallow: [0.2, 0.23, 0.19],
     deep: WATER,
-    foam: { ...LEVEL_ZERO_LOOK.terrain.shore.foam, color: [0.78, 0.8, 0.76] },
+    foam: { ...BASE_SCENERY_LOOK.terrain.shore.foam, color: [0.78, 0.8, 0.76] },
   },
 } as const;
 
@@ -85,9 +85,9 @@ const RIVER_FLOW = [0, 16] as const;
 /** A World 3 look: the town ground, its water and the sky script (P09-R04). */
 export const town = (atmosphere: SkyScript) =>
   ({
-    ...LEVEL_ZERO_LOOK,
+    ...BASE_SCENERY_LOOK,
     terrain: TOWN_TERRAIN,
-    sea: { ...LEVEL_ZERO_LOOK.sea, color: WATER, alpha: 0.6, sunGlint: 1.2, drift: RIVER_FLOW },
+    sea: { ...BASE_SCENERY_LOOK.sea, color: WATER, alpha: 0.6, sunGlint: 1.2, drift: RIVER_FLOW },
     glow: { intensity: 0.45, blurKernelSize: 16 },
     atmosphere,
   }) as const;

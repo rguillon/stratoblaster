@@ -18,7 +18,7 @@ export function stepFrames(hooks: ViewerStepHooks, frames: number): void {
   hooks.render();
 }
 
-/** The e2e test API of a viewer page that reports no state (`level_zero/`, `player_shots/`). */
+/** The e2e test API of a viewer page that reports no state (`player_shots/`). */
 export interface ViewerTestApi {
   /** Advances the page by `frames` frames of 1/60 s, then renders once. */
   step(frames: number): void;

@@ -7,6 +7,7 @@ import type { GameDebugOptions } from './game-session';
  * debug on; `t` (seconds, default 0) and `ship` (default: the first ship) are optional.
  * `boss=mini` or `boss=final` starts at that boss's arrival instead (P07-R09). `weather=0` turns
  * the weather off and `look=night` (or another time of day) forces the time of day (P08-R12).
+ * `tiles=1` draws the grid of tiles over the districts (P15-R10).
  * Without `level`, or with a value that does not parse, there are no debug options.
  */
 export function parseDebugOptions(search: string): GameDebugOptions | undefined {
@@ -21,6 +22,7 @@ export function parseDebugOptions(search: string): GameDebugOptions | undefined 
     boss: bossOf(query.get('boss')),
     weather: query.get('weather') !== '0',
     timeOfDay: timeOfDayOf(query.get('look')),
+    tiles: query.get('tiles') === '1',
   };
 }
 

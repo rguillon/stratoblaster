@@ -4,12 +4,12 @@ import type { GameView } from '../render/game-view';
 import { ENEMY_VIEWER_CONFIG as CFG } from '../config/enemy-viewer';
 import { buildLevelScene, type LevelScene } from './level-scene';
 
-/** The Level Zero view of the enemies page, with a layer for everything on the playfield. */
+/** The view of the enemies page, with a layer for everything on the playfield. */
 export type EnemyViewerScene = LevelScene;
 
 /**
- * Builds the scene of the enemies page (P05-R11): the game's first scenery level under the
- * tilted playfield camera (as on `level_zero/`), and the playfield layer above it.
+ * Builds the scene of the enemies page (P05-R11): the ground of the game's first level under
+ * the tilted playfield camera, and the playfield layer above it.
  */
 export function buildEnemyViewerScene(
   engine: AbstractEngine,
@@ -19,8 +19,9 @@ export function buildEnemyViewerScene(
     readonly glow: { intensity: number; blurKernelSize: number };
   },
 ): EnemyViewerScene {
-  const level = game.sceneryLevels[0];
-  if (!level) throw new Error('The game has no scenery level');
+  // The ground of the first playable level.
+  const level = game.gameLevels[0]?.scenery;
+  if (!level) throw new Error('The game has no level');
   return buildLevelScene(engine, game, {
     level,
     environment: options.environment,

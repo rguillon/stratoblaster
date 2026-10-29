@@ -49,8 +49,8 @@ The high score, the last chosen ship and the volumes are kept in cookies (`strat
 ```sh
 make install   # npm ci + git hooks + Playwright Chromium
 make dev       # http://localhost:5173 (player ship viewer: http://localhost:5173/player_ship/)
-# Debug pages: /player_ship/ (ships), /player_shots/ (shots), /level_zero/ (generated level),
-# /enemies/ (enemies)
+# Debug pages: /player_ship/ (ships), /player_shots/ (shots), /enemies/ (enemies),
+# /bosses/ (bosses), /props/ (props)
 ```
 
 ## Make targets

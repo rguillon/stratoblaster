@@ -9,6 +9,7 @@ import type { Road, RoadPoint } from '../../core/scenery/road-network';
 import type { ColoredGeometry } from '../geometry/gradient-shapes';
 import { paintCentreLines, type CentreLineLook } from './road-lines';
 import type { HeightSource } from './terrain-geometry';
+import type { TileRoadLook } from './tile-road-geometry';
 
 type Rgb = readonly [number, number, number];
 
@@ -29,6 +30,8 @@ export interface RoadLook {
   readonly wear: number;
   /** Height of the road surface above the ground, so it does not sink into the terrain mesh. */
   readonly lift: number;
+  /** Phase 15: the road pieces of the districts laid on tiles. */
+  readonly tiles?: TileRoadLook;
 }
 
 /** Offsets across a road (in half-widths) and opacity factors of its 4 vertex rows. */

@@ -101,6 +101,7 @@ export class SceneryStage {
     const adopt = <T>(create: () => T): T => this.#groundRoot.adopt(create);
     this.#chunks = adopt(() => this.#buildChunks());
     this.#roads = new RoadLayers(scene, this.kit.roads);
+    if (options.atmosphere?.tileGrid) this.#roads.showTileGrid();
     this.#props = adopt(() => this.#buildProps(models));
     const { propModels } = options;
     this.#traffic = adopt(
@@ -331,8 +332,8 @@ export class SceneryStage {
 
   #placeChunk(index: number): void {
     const span = this.#chunks.span(index);
-    const { roads } = this.#placer.roads;
-    this.#roads.setChunk(index, roads, this.#field, span, this.options.look.roads);
+    const { roads, tiles } = this.#placer.roads;
+    this.#roads.setChunk(index, roads, this.#field, span, this.options.look.roads, tiles);
     const area = { xMin: -this.#xHalf, xMax: this.#xHalf, zMin: span.zMin, zMax: span.zMax };
     this.#props.setChunk(index, this.#placer.place(area));
   }

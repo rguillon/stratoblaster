@@ -171,7 +171,6 @@ export const SAMPLE_GAME: GameDefinition<GameView> = {
       difficulty: { bulletSpeed: 1.5, fireRate: 2 },
     },
   ],
-  sceneryLevels: [SAMPLE_SCENERY_LEVEL],
   enemyKinds: SAMPLE_ENEMY_KINDS,
   bossKinds: SAMPLE_BOSS_KINDS,
   bossFights: { speedEaseSeconds: 1, barFillSeconds: 0.5 },

@@ -119,8 +119,9 @@ describe('BackgroundLoader', () => {
     expect(requestLevelGround(level)).toBe(true);
     const ground = levelGround(level, level.seed);
     const before = ground.placer.roads.roads;
+    // Past the tile the runout starts in (phase 15: the streets keep to whole tiles of 10).
     const past = (roads: readonly { points: readonly { z: number }[] }[]) =>
-      roads.some((r) => r.points.some((p) => p.z > from + 1));
+      roads.some((r) => r.points.some((p) => p.z > from + 10));
     expect(past(before)).toBe(false);
     worker.run();
     expect(ground.placer.roads.roads.length).toBeGreaterThan(before.length);

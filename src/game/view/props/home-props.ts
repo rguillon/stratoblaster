@@ -36,29 +36,3 @@ export function buildDomeHome(): PropGeometry {
   l.box([1.6, 2.6, 0.4], L.window, { at: [0, 0.4, -10.2] });
   return { structure: s.geometry, lights: l.geometry };
 }
-
-/** A pod on four legs, under a cone roof, with a pink ring. */
-export function buildStiltPod(): PropGeometry {
-  const s = new SolidBuilder();
-  const l = new SolidBuilder();
-  for (const [x, z] of [
-    [-4, -4],
-    [4, -4],
-    [-4, 4],
-    [4, 4],
-  ] as const) {
-    s.box([1, 6, 1], C.metalDark, { at: [x, 0, z] });
-  }
-  s.cylinder(7, 6, 8, C.concrete, { at: [0, 6, 0] });
-  s.lathe(
-    [
-      [7.6, 12],
-      [0, 15.5],
-    ],
-    8,
-    C.roof,
-  );
-  l.ring(7.1, 0.6, 8, L.pink, { at: [0, 9.6, 0] });
-  l.box([3, 1.4, 0.4], L.window, { at: [0, 7.6, -6.8] });
-  return { structure: s.geometry, lights: l.geometry };
-}

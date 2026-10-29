@@ -209,7 +209,9 @@ describe('RoadNetwork', () => {
     const roads = levelRoads(field, scenery.roads, scenery.seed).roads;
     const zs = roads.flatMap((r) => r.points.map((p) => p.z));
     expect(roads.every((r) => r.kind === 'street')).toBe(true);
-    expect(Math.min(...zs)).toBeCloseTo(-STREETS_BEFORE);
+    // Within the first tile (phase 15): the streets run along the middles of the tiles.
+    expect(Math.min(...zs)).toBeGreaterThanOrEqual(-STREETS_BEFORE);
+    expect(Math.min(...zs)).toBeLessThan(-STREETS_BEFORE + 10);
   });
 });
 

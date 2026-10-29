@@ -1,20 +1,11 @@
 import type { PropRules, RoadRules } from '../../../core/scenery/scenery-level';
-import {
-  CITY_VARIANTS,
-  INDUSTRIAL_VARIANTS,
-  familyRules,
-  type PartFamily,
-} from '../building-families';
+import { LOT_KINDS, TILE, tileKinds } from '../tile-buildings';
 import { CAR_RULES } from '../cars';
-import { PROP_IDS } from '../level-zero';
+import { PROP_IDS } from '../prop-ids';
 
 /** Ids of the props added for World 1 (P06-R06). */
 export const WORLD_1_PROP_IDS = {
   desertHome: 'desert-home',
-  windcatcherHome: 'windcatcher-home',
-  waterTower: 'water-tower',
-  solarFarm: 'solar-farm',
-  mineHeadframe: 'mine-headframe',
   beachHut: 'beach-hut',
   palm: 'palm-tree',
   dryBush: 'dry-bush',
@@ -23,12 +14,12 @@ export const WORLD_1_PROP_IDS = {
   farmhouse: 'farmhouse',
   greenhouse: 'greenhouse',
   grainSilos: 'grain-silos',
+  /** The wind turbines of the farms, also placed in World 2. */
+  windTurbine: 'wind-turbine',
 } as const;
 
 const P = PROP_IDS;
 const W = WORLD_1_PROP_IDS;
-/** World 2's wind turbine (`WORLD_2_PROP_IDS.windTurbine`; World 2's props import these). */
-const WIND_TURBINE = 'wind-turbine';
 
 /** Building groups of World 1; each section lists the ones that stand on it. */
 export const WORLD_1_GROUPS = {
@@ -47,7 +38,6 @@ export const WORLD_1_GROUPS = {
   /** Mines, refinery, tanks: the desert industry (1-4). */
   industrial: 'industrial',
   heavyIndustry: 'heavy-industry',
-  city: 'city',
 } as const;
 
 const G = WORLD_1_GROUPS;
@@ -57,9 +47,6 @@ const BUILDING_SCALE = [0.5, 0.65] as const;
 const TREE_SCALE = [0.45, 0.75] as const;
 /** Lone huts and masts scattered on the islands, where no road goes (see `scatter` below). */
 const LONE_SCALE = [0.5, 0.6] as const;
-
-const variants = (family: PartFamily, count: number, weight: number) =>
-  familyRules(family, count, weight, BUILDING_SCALE);
 
 const building = (id: string, weight: number, footprint: number) => ({
   id,
@@ -81,6 +68,8 @@ const tree = (id: string, weight: number, footprint: number) => ({
  * of 1-1, where no road goes, so they are scattered like plants instead of placed along roads.
  */
 export const WORLD_1_PROPS: PropRules = {
+  // Phase 15 (P15-R08): lots for the tiles of the districts no building fits.
+  lots: LOT_KINDS,
   cellSize: 50,
   treeClearance: 3,
   maxSlope: 0.12,
@@ -106,12 +95,7 @@ export const WORLD_1_PROPS: PropRules = {
     {
       id: G.villages,
       weight: 3,
-      kinds: [
-        building(P.cubeHome, 3, 7.5),
-        building(P.domeHome, 2, 7),
-        building(W.farmhouse, 1, 8.5),
-        building(W.greenhouse, 0.6, 9.5),
-      ],
+      kinds: tileKinds('homes'),
     },
     {
       id: G.farms,
@@ -120,61 +104,28 @@ export const WORLD_1_PROPS: PropRules = {
         building(W.farmhouse, 3, 8.5),
         building(W.greenhouse, 2, 9.5),
         building(W.grainSilos, 2, 9.5),
-        building(WIND_TURBINE, 1, 6),
+        building(W.windTurbine, 1, 6),
       ],
     },
     {
       id: G.desertHomes,
       weight: 3,
-      kinds: [
-        building(W.desertHome, 3, 7.5),
-        building(W.windcatcherHome, 2, 7),
-        building(W.waterTower, 0.7, 5),
-        building(P.domeHome, 0.4, 7),
-      ],
+      kinds: tileKinds('desertHomes'),
     },
     {
       id: G.outposts,
       weight: 2,
-      kinds: [
-        building(W.waterTower, 2, 5),
-        building(W.solarFarm, 2, 9.5),
-        building(P.antenna, 1, 6),
-        building(P.radar, 1, 7),
-        building(P.tanks, 1, 10),
-      ],
+      kinds: tileKinds('outposts'),
     },
     {
       id: G.industrial,
       weight: 2,
-      kinds: [
-        building(W.mineHeadframe, 3, 7),
-        building(P.refinery, 2, 7.5),
-        building(P.tanks, 2, 10),
-        building(P.warehouse, 1, 15.5),
-        building(P.containerYard, 1, 8.5),
-        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1),
-      ],
+      kinds: tileKinds('industrial'),
     },
     {
       id: G.heavyIndustry,
       weight: 1,
-      kinds: [
-        ...variants('industrial-plant', INDUSTRIAL_VARIANTS, 6),
-        ...variants('industrial-works', INDUSTRIAL_VARIANTS, 3),
-        ...variants('industrial-complex', INDUSTRIAL_VARIANTS, 1),
-        building(W.mineHeadframe, 0.5, 7),
-        building(P.refinery, 0.5, 7.5),
-        building(P.tanks, 0.5, 10),
-      ],
-    },
-    {
-      id: G.city,
-      weight: 1,
-      kinds: [
-        ...variants('city-block', CITY_VARIANTS, 6),
-        ...variants('city-tower', CITY_VARIANTS, 3),
-      ],
+      kinds: tileKinds('heavyIndustry'),
     },
   ],
   trees: [
@@ -236,4 +187,6 @@ export const WORLD_1_ROADS: RoadRules = {
   setback: 2,
   // Phase 6 review: roads never cross; paths only join roads.
   noCrossings: { gap: 30 },
+  // Phase 15: the districts on a grid of tiles.
+  tiles: TILE,
 };

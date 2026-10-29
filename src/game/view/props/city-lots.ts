@@ -2,6 +2,7 @@ import { pick, randomIn, type Random } from '../../../core/math/rng';
 import type { SolidBuilder } from '../../../render/geometry/solids';
 import { PROP_COLORS as C, PROP_LIGHTS as L } from '../../config/prop-look';
 import { windowBands } from './city-props';
+import { faceLights } from './tile-facades';
 
 // Phase 4 review: the lots a city building is made of, each one a different kind of volume (a
 // stepped tower, a round tower, a low slab, a courtyard block or an L-shaped block; more in
@@ -21,6 +22,8 @@ export interface LotKit {
   /** Colour of the flat roofs. */
   readonly roof: Rgb;
   readonly random: Random;
+  /** Phase 15 (reviewer, 2026-10-28): each face lit in its own pattern (`tile-facades.ts`). */
+  readonly faces?: boolean;
 }
 
 /** A box with rows of lit windows, from `y` up to `y + h`. */
@@ -33,7 +36,9 @@ export function volume(
 ): void {
   kit.s.box([w, h, d], facade, { at: [x, y, z] }, kit.roof);
   // Few rows, and none on low volumes, to keep the triangle count down (review).
-  if (h >= 8) windowBands(kit.l, [w, d], [y + 3, y + h - 2], 10, 2, kit.windows, [x, z]);
+  if (h < 8) return;
+  if (kit.faces) faceLights({ ...kit, color: kit.windows }, [x, z, w, d], [y + 3, y + h - 2]);
+  else windowBands(kit.l, [w, d], [y + 3, y + h - 2], 10, 2, kit.windows, [x, z]);
 }
 
 /** Something on top of a tower at (x, y, z): a spire, a mast, a pyramid or roof units. */

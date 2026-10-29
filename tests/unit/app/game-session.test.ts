@@ -183,10 +183,14 @@ describe('GameSession stepped loading', () => {
     session.sync(GAME);
     // The press only starts the loading: nothing heavy runs before its feedback.
     expect([session.play, session.loading, loads]).toEqual([undefined, true, 1]);
-    expect(overlay.querySelector('.level-loading')).not.toBeNull();
+    const screen = overlay.querySelector('.level-loading');
+    expect(screen).not.toBeNull();
     const progress: string[] = [];
     for (let i = 0; i < 20 && session.loading; i++) {
       session.loadStep();
+      // Updated in place: a new element would fade in again, the menus showing through it.
+      const shown = overlay.querySelector('.level-loading');
+      if (shown) expect(shown).toBe(screen);
       const bar = overlay.querySelector('.loading-bar');
       if (bar) progress.push(bar.getAttribute('aria-valuenow') ?? '');
     }

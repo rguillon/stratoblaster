@@ -9,6 +9,7 @@ import type { FlightBounds, FlightInput } from './player-flight';
 import type { PlayerHitKind } from './player-hits';
 import type { BombRules } from './player-bombs';
 import type { HullEvent, HullRules } from './player-hull';
+import type { JourneyRules } from './ship-journey';
 import type { WeaponLevels } from './run-arsenal';
 
 /** Where a level stands (P06-R03); `over` once the player has lost every life (GD-20). */
@@ -129,4 +130,9 @@ export interface LevelRunOptions {
   readonly bossRules?: BossFightRules;
   /** Starts from this checkpoint instead of the level's start (P07-R08). */
   readonly checkpoint?: LevelCheckpoint;
+  /**
+   * The ship rises into the level from below the screen, and once the level is cleared flies
+   * off its top (reviewer, 2026-10-28). It is at its start and the level ends at once when omitted.
+   */
+  readonly journey?: JourneyRules;
 }

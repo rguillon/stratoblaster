@@ -1,4 +1,4 @@
-import { SCENERY_VIEWER_CONFIG } from './scenery-viewer';
+import { SCENERY_STAGE_CONFIG } from './scenery-stage';
 
 /**
  * Tunables of the enemies debug page (`enemies/`, P05-R11). Logical pixels, Y up, origin at the
@@ -11,8 +11,8 @@ export const ENEMY_VIEWER_CONFIG = {
   /** Longest frame time used, so a stall does not jump the animations. */
   maxFrameSeconds: 0.1,
   environmentCubeSize: 64,
-  /** The Level Zero scenery, as on `level_zero/`. */
-  stage: SCENERY_VIEWER_CONFIG.stage,
+  /** The generated ground under the playfield. */
+  stage: SCENERY_STAGE_CONFIG,
   /** Where the player ship starts, and how close to the visible edges it may fly. */
   shipStart: { x: 240, y: 90 },
   shipMargin: { side: 18, bottom: 30, top: 200 },

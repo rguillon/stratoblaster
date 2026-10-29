@@ -68,7 +68,7 @@ export function buildCloudLayer(
 /**
  * Follows the camera at `cameraZ`, drifts with `time`, and takes the colours of `cover` and the
  * haze of `atmosphere` (P08-R04); its coverage and opacity too when `follow` (a level whose look
- * changes), otherwise they stay as set on its state (the `level_zero/` page's controls).
+ * changes), otherwise they stay as set on its state (set by code).
  */
 export function updateCloudLayer(
   layer: CloudLayer,

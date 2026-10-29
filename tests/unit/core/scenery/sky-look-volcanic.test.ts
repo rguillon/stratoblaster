@@ -86,4 +86,14 @@ describe('Sky looks: falling ash, embers and fire light (phase 10)', () => {
     const grey = resolveSky(NIGHT, BASE);
     expect(brown.clouds[0]?.color[2]).toBeCloseTo((grey.clouds[0]?.color[2] ?? 0) * 0.6);
   });
+
+  it('reviewer, 2026-10-29: plain clouds keep the time of day colours, under a storm, a tint and a glow', () => {
+    const look: SkyLook = { ...NIGHT, storm: 0.6, cloudTint: [0.8, 0.7, 0.6] };
+    const glow = { color: [1, 0.2, 0.1] as const, strength: 1 };
+    const plain = resolveSky({ ...look, underglow: glow, plainClouds: true }, BASE);
+    expect(plain.clouds).toEqual(resolveSky(NIGHT, BASE).clouds);
+    // The glow still lights the haze.
+    const red = (c: readonly number[]) => (c[0] ?? 0) - (c[2] ?? 0);
+    expect(red(plain.sky.haze)).toBeGreaterThan(red(resolveSky(look, BASE).sky.haze));
+  });
 });

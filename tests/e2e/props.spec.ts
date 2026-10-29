@@ -8,7 +8,7 @@ test.describe('props/ page (reviewer, 2026-10-28)', () => {
     await expect(page.locator('#game-canvas')).toBeVisible();
     await expect(page.locator('#fatal')).toBeHidden();
     await expect(page.locator('.enemy-title')).toHaveText('Props');
-    await expect(page.locator('.prop-groups button.selected')).toHaveText(/^Level Zero \(\d+\)$/);
+    await expect(page.locator('.prop-groups button.selected')).toHaveText(/^Shared \(\d+\)$/);
     await page.locator('.prop-groups button', { hasText: 'Cars' }).click();
     await expect(page.locator('.prop-kinds button.selected')).toHaveText('car-red');
     await expect(page.locator('.prop-readout')).toHaveText(/^car-red — .* — \d+ triangles$/);

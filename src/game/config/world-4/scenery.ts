@@ -5,6 +5,7 @@ import {
   FLAT,
   GARDEN_VILLAGE_END,
   LANES,
+  PONDS,
   ROLLING,
   STREETS,
   SUBURB_STREETS,
@@ -84,7 +85,8 @@ const SKYLINE_EDGE = section('skyline edge', 50, {
  * streets and flats, to the town centre.
  */
 const GARDEN_TOWN: readonly TerrainSection[] = [
-  { ...GARDEN_VILLAGE_END, seconds: 40 },
+  // World 3 has no water (reviewer, 2026-10-28); World 4 keeps its river and ponds.
+  { ...GARDEN_VILLAGE_END, channel: river(26), lakes: PONDS, seconds: 40 },
   section('suburban lanes', 55, {
     relief: ROLLING,
     channel: river(26),
@@ -92,7 +94,7 @@ const GARDEN_TOWN: readonly TerrainSection[] = [
     surface: { paved: 0.14, lush: 0.78 },
     streets: LANES,
     trees: PL.gardens,
-    groups: [G.villages, G.suburbs],
+    groups: [G.villages, G.residences],
   }),
   section('suburbs', 55, {
     relief: ROLLING,
@@ -101,19 +103,19 @@ const GARDEN_TOWN: readonly TerrainSection[] = [
     surface: { paved: 0.2, lush: 0.7 },
     streets: VILLAGE_STREETS,
     trees: PL.gardens,
-    groups: [G.suburbs],
+    groups: [G.residences],
   }),
   section('terraced streets', 50, {
     channel: river(28),
     treeDensity: 0.45,
     surface: { paved: 0.28, lush: 0.6 },
     streets: VILLAGE_STREETS,
-    groups: [G.suburbs, G.terraces],
+    groups: [G.residences],
   }),
   section('flats', 50, {
     treeDensity: 0.35,
     surface: { paved: 0.36, lush: 0.5 },
-    groups: [G.terraces, G.workerFlats],
+    groups: [G.residences, G.workerFlats],
   }),
   TOWN_CENTRE,
 ];
@@ -227,6 +229,7 @@ const DOWNTOWN: readonly TerrainSection[] = [
   }),
   section('downtown', 70, {
     channel: quays(24),
+    buildingDensity: 0.7,
     treeDensity: 0.04,
     surface: { paved: 0.97 },
     groups: [G.skyscrapers, G.downtown],
@@ -234,6 +237,7 @@ const DOWNTOWN: readonly TerrainSection[] = [
   }),
   section('city heart', 90, {
     channel: quays(22),
+    buildingDensity: 0.7,
     treeDensity: 0.02,
     surface: { paved: 1 },
     groups: [G.downtown],

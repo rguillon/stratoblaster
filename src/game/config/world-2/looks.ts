@@ -1,5 +1,5 @@
 import type { SkyLook } from '../../../core/scenery/sky-look';
-import { LEVEL_ZERO_LOOK, texture } from '../scenery-look';
+import { BASE_SCENERY_LOOK, texture } from '../scenery-look';
 import { DESERT_ROCK, DRY_EARTH, SAND } from '../world-1/looks';
 
 /*
@@ -23,7 +23,7 @@ export const INDUSTRIAL_PAVING = texture(
 
 /** The ground of the whole world: the desert, more and more paved along the levels. */
 const TERRAIN = {
-  ...LEVEL_ZERO_LOOK.terrain,
+  ...BASE_SCENERY_LOOK.terrain,
   ground: DRY_EARTH,
   low: SAND,
   sand: SAND,
@@ -40,7 +40,7 @@ const TERRAIN = {
 /** A World 2 look: the desert and industrial ground, under `sky` for the whole level. */
 const industrial = (sky: SkyLook) =>
   ({
-    ...LEVEL_ZERO_LOOK,
+    ...BASE_SCENERY_LOOK,
     terrain: TERRAIN,
     fog: { start: 1100, end: 2800 },
     glow: { intensity: 0.4, blurKernelSize: 16 },

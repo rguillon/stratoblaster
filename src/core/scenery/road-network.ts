@@ -1,9 +1,9 @@
 import { createNoise2D } from '../math/noise';
 import { createRng, randomIn, type Random } from '../math/rng';
 import type { HeightField } from './height-field';
-import { lanesOf, mainRoadWidth, runWidth, withWidth, type Lanes } from './lanes';
+import { lanesOf, mainRoadWidth, withWidth, type Lanes } from './lanes';
 import { layPaths, type PathGround } from './road-paths';
-import type { RoadRules } from './scenery-level';
+import type { RoadRules, TileRules } from './scenery-level';
 import { findDistricts, laidDistricts, type District } from './districts';
 import { streetRuns, type Block } from './street-grid';
 import { addSlots, SegmentIndex, type RoadSnapshot } from './road-segments';
@@ -171,7 +171,18 @@ export class RoadNetwork {
       this.#roads.filter((road) => road.kind === 'main'),
     );
     if (!rules.noCrossings) this.#addStreets(before, createRng(seed + 5));
-    for (const road of this.#roads) addSlots(road, this.rules.slotSpacing, this.slots);
+    for (const road of this.#roads) this.#slots(road);
+  }
+
+  /** Building slots along `road`; none along the streets on tiles (P15-R08: blocks instead). */
+  #slots(road: Road): void {
+    if (road.kind === 'street' && this.rules.tiles) return;
+    addSlots(road, this.rules.slotSpacing, this.slots);
+  }
+
+  /** The grid of tiles of the districts, if they are laid on one (phase 15). */
+  get tiles(): TileRules | undefined {
+    return this.rules.tiles;
   }
 
   /** The roads, the runout's last once laid (a new list then: the old one stays as it was). */
@@ -198,7 +209,7 @@ export class RoadNetwork {
     const added = this.#roads.slice(kept.length);
     // The same list when there is nothing more.
     if (added.length === 0) this.#roads = kept;
-    else if (!made) for (const road of added) addSlots(road, this.rules.slotSpacing, this.slots);
+    else if (!made) for (const road of added) this.#slots(road);
     return added;
   }
 
@@ -367,9 +378,7 @@ export class RoadNetwork {
         outOfView,
       );
       this.blocks.push(...blocks);
-      for (const run of runs) {
-        this.#addRoad('street', withWidth(run, runWidth(this.rules, run)));
-      }
+      for (const run of runs) this.#addRoad('street', withWidth(run.points, run.width));
     }
   }
 
@@ -401,7 +410,12 @@ export class RoadNetwork {
 
   #addRoad(kind: Road['kind'], points: readonly RoadPoint[]): void {
     const width = kind === 'cross' ? this.rules.crossWidth : (points[0]?.width ?? 0);
-    const lanes = lanesOf(this.rules, width);
+    const { tiles } = this.rules;
+    // Phase 15: a street on tiles has as many lanes each way as it is tiles wide.
+    const lanes =
+      kind === 'street' && tiles
+        ? (Math.min(4, Math.max(1, Math.round(width / tiles.size))) as Lanes)
+        : lanesOf(this.rules, width);
     this.#index({ index: this.#roads.length, kind, width, lanes, points });
   }
 

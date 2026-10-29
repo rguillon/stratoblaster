@@ -241,7 +241,7 @@ const INDUSTRIAL_BELT: readonly TerrainSection[] = [
   }),
   section('warehouses', 55, {
     relief: FLAT,
-    buildingDensity: 1,
+    buildingDensity: 0.7,
     treeDensity: 0.12,
     surface: { sandy: 0.18, paved: 0.65 },
     streets: STREETS,
@@ -313,7 +313,7 @@ const FACTORIES: readonly TerrainSection[] = [
     surface: { sandy: 0.04, paved: 0.92 },
     streets: STREETS,
     trees: PL.industry,
-    groups: [G.heavyIndustry],
+    groups: [G.heavyIndustry, G.industrial],
   }),
   GREAT_WORKS,
 ];

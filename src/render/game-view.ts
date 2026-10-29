@@ -12,6 +12,9 @@ import type { Projectile } from '../core/systems/projectile-motion';
 import type { ShotImpact } from '../core/systems/shot-world';
 import type { AudioBindings } from '../audio/audio-bindings';
 import type { OutlineLook } from './outline';
+import type { TileRules } from '../core/scenery/scenery-level';
+import type { RoadPiece } from '../core/scenery/road-tiles';
+import type { TileRoadLook } from './scenery/tile-road-geometry';
 import type { PlayfieldCameraLook, PropModelFactory, SceneryLook } from './scenery/scenery-look';
 
 /**
@@ -178,10 +181,21 @@ export interface SceneryBindings {
   readonly propModels: Readonly<Record<string, PropModelFactory>>;
   /** How the `props/` page groups the prop models (all in one group when omitted). */
   readonly propGroups?: readonly PropGroup[];
+  /** The grid of tiles of the `props/` page's ground, and how its road tiles look. */
+  readonly propTiles?: {
+    readonly tile: TileRules;
+    readonly look: TileRoadLook;
+    /** Models drawn as road pieces (the road kit), by id, centred on the origin. */
+    readonly pieces?: Readonly<Record<string, readonly RoadPiece[]>>;
+  };
 }
 
 /** A named group of prop model ids, shown together on the `props/` page. */
 export interface PropGroup {
   readonly label: string;
   readonly ids: readonly string[];
+  /** Phase 15: a note shown after some ids' names, e.g. the tiles they stand on (`3×4`). */
+  readonly notes?: Readonly<Record<string, string>>;
+  /** Whether the props stand in blocks ringed by road tiles (the models made for the grid). */
+  readonly streets?: boolean;
 }

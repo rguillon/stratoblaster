@@ -1,4 +1,4 @@
-import { LEVEL_ZERO_LOOK, texture } from '../scenery-look';
+import { BASE_SCENERY_LOOK, texture } from '../scenery-look';
 
 /*
  * How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request,
@@ -60,12 +60,12 @@ export const DESERT_ROCK = texture(
  * section (`surface`), so the land fades from green to sand along the levels.
  */
 const TERRAIN = {
-  ...LEVEL_ZERO_LOOK.terrain,
+  ...BASE_SCENERY_LOOK.terrain,
   ground: DRY_EARTH,
   lush: GRASS,
   sand: SAND,
   shore: {
-    ...LEVEL_ZERO_LOOK.terrain.shore,
+    ...BASE_SCENERY_LOOK.terrain.shore,
     sand: [0.86, 0.78, 0.6],
     shallow: [0.1, 0.62, 0.6],
     deep: [0.02, 0.2, 0.32],
@@ -97,7 +97,7 @@ const sky = (haze: Rgb, horizon: Rgb, zenith: Rgb, intensity: number) => ({
 });
 
 const sun = (elevationDeg: number, azimuthDeg: number, color: Rgb, intensity: number) => ({
-  ...LEVEL_ZERO_LOOK.sun,
+  ...BASE_SCENERY_LOOK.sun,
   elevationDeg,
   azimuthDeg,
   color,
@@ -106,7 +106,7 @@ const sun = (elevationDeg: number, azimuthDeg: number, color: Rgb, intensity: nu
 
 /** The two cloud layers of Level Zero, with another coverage and colour each. */
 const clouds = (low: number, high: number, color?: Rgb, shade?: Rgb) => {
-  const [a, b] = LEVEL_ZERO_LOOK.clouds;
+  const [a, b] = BASE_SCENERY_LOOK.clouds;
   const tint = color && shade ? { color, shade } : {};
   return [
     { ...a, coverage: low, ...tint },
@@ -116,12 +116,12 @@ const clouds = (low: number, high: number, color?: Rgb, shade?: Rgb) => {
 
 /** 1-1: midday, the sun high, over a clear turquoise sea, scattered white clouds. */
 export const LEVEL_1_1_LOOK = {
-  ...LEVEL_ZERO_LOOK,
+  ...BASE_SCENERY_LOOK,
   sky: sky([0.7, 0.8, 0.9], [0.86, 0.9, 0.95], [0.22, 0.45, 0.82], 0.7),
   sun: sun(72, 20, [1, 0.97, 0.92], 1.7),
   ambient: { sky: [0.66, 0.76, 0.9], ground: [0.32, 0.36, 0.3], intensity: 0.65 },
   terrain: TERRAIN,
-  sea: { ...LEVEL_ZERO_LOOK.sea, color: [0.02, 0.2, 0.32] },
+  sea: { ...BASE_SCENERY_LOOK.sea, color: [0.02, 0.2, 0.32] },
   clouds: clouds(0.35, 0.2),
 } as const;
 
@@ -145,13 +145,13 @@ export const LEVEL_1_3_LOOK = {
 
 /** 1-4: sunset over the dry lands: a low orange sun, a magenta haze, long shadows. */
 export const LEVEL_1_4_LOOK = {
-  ...LEVEL_ZERO_LOOK,
+  ...BASE_SCENERY_LOOK,
   sky: sky([0.86, 0.56, 0.52], [1, 0.62, 0.36], [0.26, 0.24, 0.52], 0.6),
   fog: { start: 1100, end: 2800 },
   sun: sun(14, 40, [1, 0.64, 0.38], 1.6),
   ambient: { sky: [0.66, 0.56, 0.72], ground: [0.46, 0.32, 0.24], intensity: 0.7 },
   terrain: DRY_TERRAIN,
-  props: { ...LEVEL_ZERO_LOOK.props, lightIntensity: 1.15 },
+  props: { ...BASE_SCENERY_LOOK.props, lightIntensity: 1.15 },
   clouds: clouds(0.14, 0.1, [1, 0.72, 0.56], [0.62, 0.4, 0.5]),
 } as const;
 
@@ -163,7 +163,7 @@ export const LEVEL_1_5_LOOK = {
   // Low but still lighting the ground: in a darker dusk the ship was lost over the towns.
   sun: sun(8, 30, [1, 0.56, 0.4], 1.6),
   ambient: { sky: [0.66, 0.58, 0.82], ground: [0.44, 0.34, 0.34], intensity: 1 },
-  props: { ...LEVEL_ZERO_LOOK.props, lightIntensity: 1.3 },
+  props: { ...BASE_SCENERY_LOOK.props, lightIntensity: 1.3 },
   glow: { intensity: 0.4, blurKernelSize: 16 },
   clouds: clouds(0.15, 0.1, [0.9, 0.56, 0.6], [0.46, 0.3, 0.46]),
 } as const;
