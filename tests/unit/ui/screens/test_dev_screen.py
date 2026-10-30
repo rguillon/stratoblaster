@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from helpers.dom import FakeDocument
 
 from ui.menu_view import DevChoice, DevMenuView, DevViewerView
-from ui.screens.dev_screen import centre_choices, render_dev_screen, render_dev_viewer_screen
+from ui.screens.dev_screen import centre_menu, render_dev_screen, render_dev_viewer_screen
 from ui.screens.screen_handlers import ScreenHandlers
 
 
@@ -93,57 +93,59 @@ def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() 
     assert turns == [(5, -2), (10, 0)]
 
 
-def test_d204_a_grouped_viewer_has_tappable_group_and_prop_buttons() -> None:
+def test_d206_a_grouped_viewer_has_a_menu_of_tappable_headings_and_items() -> None:
     taps: list[int] = []
-    groups = [DevChoice("Farm (2)", 0, True), DevChoice("City (1)", 2, False)]
-    choices = [DevChoice("hut", 0, False), DevChoice("barn", 1, True)]
-    view = DevViewerView(
-        "Props", "Wheel", "Back", 1, "barn", "Farm · 2 / 2", False, groups, choices
-    )
+    menu = [
+        DevChoice("Farm (2)", 0, True, True),
+        DevChoice("hut", 0, False),
+        DevChoice("barn", 1, True),
+        DevChoice("City (1)", 2, False, True),
+    ]
+    view = DevViewerView("Props", "Wheel", "Back", 1, "barn", "Farm · 2 / 2", False, menu)
     root = render_dev_viewer_screen(FakeDocument(), view, ScreenHandlers(taps.append, lambda: None))
-    group_buttons = root.querySelector(".dev-groups").querySelectorAll(".dev-choice")
-    prop_buttons = root.querySelector(".dev-props").querySelectorAll(".dev-choice")
-    assert [b.textContent for b in group_buttons] == ["Farm (2)", "City (1)"]
-    assert [b.textContent for b in prop_buttons] == ["hut", "barn"]
-    assert group_buttons[0].classList.contains("selected")
-    assert prop_buttons[1].classList.contains("selected")
-    group_buttons[1].fire("click")
-    prop_buttons[0].fire("click")
+    panel = root.querySelector(".dev-menu")
+    headings = panel.querySelectorAll(".dev-menu-group")
+    items = panel.querySelectorAll(".dev-menu-item")
+    assert [h.textContent for h in headings] == ["Farm (2)", "City (1)"]
+    assert [i.textContent for i in items] == ["hut", "barn"]
+    assert headings[0].classList.contains("selected")
+    assert items[1].classList.contains("selected")
+    headings[1].fire("click")
+    items[0].fire("click")
     assert taps == [2, 0]
 
 
-def test_d204_a_viewer_without_groups_has_no_buttons() -> None:
+def test_d206_a_viewer_without_groups_has_no_menu() -> None:
     view = DevViewerView("Ships", "Wheel", "Back", 0, "Alpha", "1 / 2", False)
     root = render_dev_viewer_screen(
         FakeDocument(), view, ScreenHandlers(lambda i: None, lambda: None)
     )
-    assert root.querySelector(".dev-choices") is None
+    assert root.querySelector(".dev-menu") is None
 
 
-class Row:
+class Menu:
     def __init__(self, selected: object) -> None:
         self.selected = selected
-        self.scrollLeft = 0.0
-        self.clientWidth = 300.0
+        self.scrollTop = 0.0
+        self.clientHeight = 300.0
 
     def querySelector(self, selector: str) -> object:  # noqa: N802 (the DOM's name)
         return self.selected
 
 
-def test_d204_the_wheel_over_a_row_of_buttons_scrolls_it() -> None:
+def test_d206_the_wheel_over_the_menu_scrolls_it() -> None:
     wheels: list[float] = []
-    view = DevViewerView("Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", False, [], [])
+    view = DevViewerView("Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", False, [])
     handlers = ScreenHandlers(lambda i: None, lambda: None, None, None, None, None, wheels.append)
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
-    row = Row(None)
-    target = SimpleNamespace(closest=lambda selector: row)
+    menu = Menu(None)
+    target = SimpleNamespace(closest=lambda selector: menu)
     root.fire("wheel", SimpleNamespace(deltaY=40, target=target, preventDefault=lambda: None))
-    assert (row.scrollLeft, wheels) == (40, [])
+    assert (menu.scrollTop, wheels) == (40, [])
 
 
-def test_d204_each_row_is_scrolled_to_put_its_selected_button_in_the_middle() -> None:
-    row = Row(SimpleNamespace(offsetLeft=500.0, offsetWidth=60.0))
-    empty = Row(None)
-    screen = SimpleNamespace(querySelectorAll=lambda selector: [row, empty])
-    centre_choices(screen)
-    assert (row.scrollLeft, empty.scrollLeft) == (380, 0)
+def test_d206_the_menu_is_scrolled_to_put_the_item_shown_in_its_middle() -> None:
+    menu = Menu(SimpleNamespace(offsetTop=500.0, offsetHeight=20.0))
+    centre_menu(SimpleNamespace(querySelector=lambda selector: menu))
+    assert menu.scrollTop == 360
+    centre_menu(SimpleNamespace(querySelector=lambda selector: None))

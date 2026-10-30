@@ -1906,3 +1906,35 @@
 - **Camera:** an orbiting camera round the prop. A drag across turns it round, and a drag up or down raises or lowers it, clamped to [0.15, 1.45] rad from straight up (D-203 turned only round; the vertical drag did nothing). "Game size" puts it at the game camera's distance from the ground in ground units (the flight altitude plus the framing's height, down the tilted view, over the ground scale), with the game's field of view, so the prop is as big as in game. The close-up comes closer, until the prop fills `close_up_fill` of the screen's height.
 - **Supersedes:** D-203 for the props (the camera turning round a prop on a level's ground). The ships, enemies, bosses and levels viewers still show a level's scene.
 - **Status:** Accepted
+
+### D-206 — The dev props viewer's buttons become a scrolling menu
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "replace the buttons with a scroll menu")
+- **Choice:** the two rows of buttons (D-204) are replaced by one menu that scrolls up and down, in a panel down the left side of the screen. It lists each group's heading (`Tiles: docks (5)`), then that group's props. A tap on a heading shows its group's first prop; a tap on a prop shows that prop. The prop shown is filled; its group's heading is outlined. Each time the item changes, the menu is made anew and scrolled so the prop shown is in its middle (`centre_menu`). The wheel over the menu scrolls it, and the wheel elsewhere still steps through the props. A touch drag pans the menu; a drag that starts on the menu does not turn the camera. Long names are cut with an ellipsis.
+- **The view:** so the menu does not hide the prop, the props camera draws its target right of the middle, by 0.34 of half the view's width (`DEV_VIEWER_CONFIG.props.view_shift`, Babylon's `targetScreenOffset`).
+- **Where:** `DevChoice.heading` and `DevViewerView.menu` (in place of `groups` and `choices`), `menu_view_builder._dev_view`, `dev_screen._menu`, `centre_menu`, and the `.dev-menu` styles in `index.html`.
+- **Supersedes:** D-204's layout. The taps (a `MenuSelect` of the item's index) are unchanged.
+- **Status:** Accepted
+
+### D-207 — The shared and World 1 props are deleted; no plant grows any more
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "delete all the props from the catagories \"shared\" and \"world 1\" and replace with other existing props in the levels that used them"; asked about the plants, the reviewer chose "Remove all plants")
+- **Deleted:** the 17 hand-made props and their models and tests: antenna-mast, cube-home, dome-home, dead-tree, forked-tree, conifer, broadleaf-tree, bush (`config/prop_ids.py`), and desert-home, beach-hut, palm-tree, dry-bush, cactus, farmhouse, greenhouse, grain-silos, wind-turbine (`WORLD_1_PROP_IDS`). The model modules gone are `desert_plants`, `desert_props`, `farm_props`, `green_tree_props`, `home_props`, `science_props`, `tree_props` and `wind_turbine`. The colours only they used are gone from `prop_look.py`: woodDark, palmLeaf, palmTrunk, cactus, dryLeafDark, snow.
+- **Replaced:** World 1's building groups that drew from them now draw from the grid's buildings: `fishing` from the docks, `coastHomes` from the homes, and `farms` from the outposts (water towers, solar farms, radio masts, depots). Their ids, and the sections that name them, are unchanged.
+- **Plants:** they were all of the game's plants (Worlds 1 to 4), and no other plant model exists, so none grows: each world's `trees` is empty, `treesPerCell` is 0, and every section's `treeDensity` is 0. The plant lists (`PLANTS`, `DESERT_PLANTS`, `TOWN_PLANTS`) and the sections' `trees` are gone. The lone huts and masts of 1-1's islands, scattered like plants, went with them.
+- **Conflict:** the requirements still describe these props, e.g. P04-R04 (living trees), P06-R06 (desert homes and plants), and the plants of P08, P09 and P10. Those lines need amending by the reviewer; the agent does not edit them.
+- **Checked:** unit tests, typecheck and build pass. e2e: 100 passed, plus the 2 P14-R08 failures from D-195 (3-1, 4-1). Screenshots of 1-1, 1-3 and 3-2 show no page errors.
+- **Status:** Accepted
+
+### D-208 — Every dev viewer has the scrolling menu; the wheel zooms instead of changing model
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "use the scroll menu for every dev views, and make the scroll zoomin andout instead of switching model")
+- **Menu:** the scrolling menu of D-206 is shown by every viewer: the ships, the enemies, the bosses, the props and the levels. It lists their items, with each group's heading before its items only where the items are in groups (the props). Tapping an item shows it, as before.
+- **Wheel:** in the model viewers (ships, enemies, bosses, props) the wheel zooms instead of moving to the next model. Turning it up zooms in, down zooms out, by e^(0.0015) per pixel, within 0.25 to 8 times the view without zoom (`zoom_per_pixel`, `zoom_range`). The zoom is kept from one model to the next, like the drag's turn. Over a level's scene (ships, enemies, bosses) it narrows the field of view on top of the close-up's, so the ground is magnified with the model. In the props viewer it brings the orbiting camera closer, keeping the field of view. In every viewer the wheel over the menu scrolls the menu. The levels viewer's wheel still scrubs the level's time: it never changed the level. ◀ ▶, ▲ ▼ and the menu change the model. The menu's wheel-to-command path (`wheel_steps`, `max_wheel_steps`, the session's `command`) is gone.
+- **Status:** Accepted
+
+### D-209 — The dev props viewer lists the cars too
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "addthe carsto the props view")
+- **Choice (`app/dev_catalog.py`):** the props viewer lists the kinds of car each level drives on its roads (`props.cars.kinds`) with its ground props. Each is shown over the first level that has it (for its world's tone), under the game's "Cars" group, last in the menu. They are drawn at the scale the levels draw them (`props.cars.scale`, 0.6: `DevItem.scale`, applied by `DevPropStage`), so they read true against the grid of blocks at game size; the close-up still fits them to the screen.
+- **Status:** Accepted

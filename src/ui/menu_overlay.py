@@ -34,7 +34,7 @@ from ui.menu_view import (  # noqa: E402
     TitleView,
 )
 from ui.screens.dev_screen import (  # noqa: E402
-    centre_choices,
+    centre_menu,
     render_dev_screen,
     render_dev_viewer_screen,
 )
@@ -173,7 +173,7 @@ class MenuOverlay:
         logo = screen.querySelector(".title-name")
         if logo:
             shrink_to_fit(logo)
-        centre_choices(screen)
+        centre_menu(screen)
 
     def shake_selected(self, text: str) -> None:
         """ "Locked" feedback (P01-R07): shakes the selected entry and shows `text`."""

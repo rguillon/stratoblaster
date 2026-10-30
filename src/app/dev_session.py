@@ -1,11 +1,11 @@
 """The dev viewers of the app (D-199): the viewer the menu flow shows on its `dev-viewer` screen,
-built when it opens and dropped when it closes; the mouse wheel over it.
+built when it opens and dropped when it closes; the mouse wheel over it (D-208: it zooms, or
+scrubs the levels viewer's time).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.dev_viewer import DevViewer
-from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -16,19 +16,9 @@ from app.dev_catalog import DevItem  # noqa: E402
 __pragma__("noskip")
 
 
-def wheel_steps(total: float, step: float, most: int) -> int:
-    """Whole steps of `step` in a wheel delta `total` (towards zero), at most `most` either way."""
-    if step <= 0:
-        return 0
-    steps = int(abs(total) // step)
-    steps = min(steps, most)
-    return -steps if total < 0 else steps
-
-
 class DevSession:
     """Runs the dev viewer the flow shows (see the module doc). `status_root`: the element whose
-    `.dev-status` line the viewer's status is written into (None: not written). `command(action)`
-    sends a menu command (the wheel moves through the items as the arrows do)."""
+    `.dev-status` line the viewer's status is written into (None: not written)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -37,16 +27,13 @@ class DevSession:
         catalog: dict[str, list[DevItem]],
         environment: bool,
         status_root: Any,
-        command: Any,
     ) -> None:
         self._engine = engine
         self._game = game
         self._catalog = catalog
         self._environment = environment
         self._status_root = status_root
-        self._command = command
         self.viewer: DevViewer | None = None
-        self._wheel = 0.0
 
     @property
     def active(self) -> bool:
@@ -67,22 +54,15 @@ class DevSession:
         self.viewer.show(state.selection, state.dev_close_up)
 
     def wheel(self, delta_y: float) -> None:
-        """The wheel turned by `delta_y` pixels: the levels viewer scrubs; the others show the next
-        items (down) or the ones before (up), one per `wheel_step`."""
+        """The wheel turned by `delta_y` pixels: the levels viewer scrubs; the others zoom (D-208:
+        in when it turns up, out when it turns down)."""
         viewer = self.viewer
         if viewer is None:
             return
         if viewer.viewer == "levels":
             viewer.scrub(delta_y)
             return
-        self._wheel += delta_y
-        steps = wheel_steps(self._wheel, CFG.wheel_step, int(CFG.max_wheel_steps))
-        if steps == 0:
-            return
-        self._wheel = 0.0
-        action = "right" if steps > 0 else "left"
-        for _ in range(abs(steps)):
-            self._command(action)
+        viewer.zoom(delta_y)
 
     def turn(self, dx: float, dy: float) -> None:
         """A drag over the viewer, by (`dx`, `dy`) screen pixels, turns its model."""
@@ -115,7 +95,6 @@ class DevSession:
         if self.viewer is not None:
             self.viewer.dispose()
         self.viewer = None
-        self._wheel = 0.0
 
     def dispose(self) -> None:
         self._drop()

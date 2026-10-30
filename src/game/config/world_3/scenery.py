@@ -14,7 +14,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_2.scenery import GREAT_WORKS, TRANSITION
-from game.config.world_3.props import TOWN_PLANTS, WORLD_3_GROUPS, WORLD_3_PROPS, WORLD_3_ROADS
+from game.config.world_3.props import WORLD_3_GROUPS, WORLD_3_PROPS, WORLD_3_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -22,7 +22,6 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-PL = TOWN_PLANTS
 G = WORLD_3_GROUPS
 
 # The river through World 4's suburbs and villages, between grassy banks.
@@ -66,10 +65,9 @@ def section(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": FLAT,
                 "buildingDensity": 1,
-                "treeDensity": 0.1,
+                "treeDensity": 0,
                 "surface": {"paved": 0.9},
                 "streets": STREETS,
-                "trees": PL["industry"],
                 "groups": [G.industrial],
             }
         ),
@@ -82,9 +80,8 @@ CANAL_WORKSHOPS = section(
     "canal workshops",
     50,
     {
-        "treeDensity": 0.12,
+        "treeDensity": 0,
         "surface": {"paved": 0.85, "lush": 0.04},
-        "trees": PL["yards"],
         "groups": [G.workshops, G.industrial],
     },
 )
@@ -94,9 +91,8 @@ FIRST_FLATS = section(
     "first flats",
     50,
     {
-        "treeDensity": 0.22,
+        "treeDensity": 0,
         "surface": {"paved": 0.68, "lush": 0.12},
-        "trees": PL["streets"],
         "groups": [G.workerFlats, G.workshops],
     },
 )
@@ -107,10 +103,9 @@ SUBURB_EDGE = section(
     45,
     {
         "relief": ROLLING,
-        "treeDensity": 0.45,
+        "treeDensity": 0,
         "surface": {"paved": 0.42, "lush": 0.4},
         "streets": SUBURB_STREETS,
-        "trees": PL["streets"],
         "groups": [G.residences],
     },
 )
@@ -121,10 +116,9 @@ VILLAGE_EDGE = section(
     45,
     {
         "relief": ROLLING,
-        "treeDensity": 0.6,
+        "treeDensity": 0,
         "surface": {"paved": 0.2, "lush": 0.65},
         "streets": SUBURB_STREETS,
-        "trees": PL["gardens"],
         "groups": [G.residences, G.villages],
     },
 )
@@ -138,7 +132,7 @@ CANAL_WORKS = [
         55,
         {
             "buildingDensity": 0.6,
-            "treeDensity": 0.04,
+            "treeDensity": 0,
             "surface": {"paved": 0.96},
             "groups": [G.heavyIndustry, G.industrial],
         },
@@ -148,7 +142,7 @@ CANAL_WORKS = [
         50,
         {
             "buildingDensity": 0.6,
-            "treeDensity": 0.06,
+            "treeDensity": 0,
             "surface": {"paved": 0.94},
         },
     ),
@@ -157,7 +151,7 @@ CANAL_WORKS = [
         55,
         {
             "buildingDensity": 0.9,
-            "treeDensity": 0.06,
+            "treeDensity": 0,
             "surface": {"paved": 0.92},
             "groups": [G.docks, G.industrial],
         },
@@ -166,9 +160,8 @@ CANAL_WORKS = [
         "factory yards",
         50,
         {
-            "treeDensity": 0.08,
+            "treeDensity": 0,
             "surface": {"paved": 0.88, "lush": 0.02},
-            "trees": PL["yards"],
             "groups": [G.industrial, G.docks],
         },
     ),
@@ -184,9 +177,8 @@ DOCKLANDS = [
         55,
         {
             "buildingDensity": 0.85,
-            "treeDensity": 0.1,
+            "treeDensity": 0,
             "surface": {"paved": 0.84, "lush": 0.04},
-            "trees": PL["yards"],
             "groups": [G.docks, G.workshops],
         },
     ),
@@ -194,9 +186,8 @@ DOCKLANDS = [
         "workshop streets",
         55,
         {
-            "treeDensity": 0.14,
+            "treeDensity": 0,
             "surface": {"paved": 0.8, "lush": 0.06},
-            "trees": PL["yards"],
             "groups": [G.workshops],
         },
     ),
@@ -204,9 +195,8 @@ DOCKLANDS = [
         "old mills",
         50,
         {
-            "treeDensity": 0.16,
+            "treeDensity": 0,
             "surface": {"paved": 0.76, "lush": 0.08},
-            "trees": PL["yards"],
             "groups": [G.workshops, G.industrial],
         },
     ),
@@ -214,9 +204,8 @@ DOCKLANDS = [
         "workers' blocks",
         50,
         {
-            "treeDensity": 0.18,
+            "treeDensity": 0,
             "surface": {"paved": 0.72, "lush": 0.1},
-            "trees": PL["streets"],
             "groups": [G.workshops, G.workerFlats],
         },
     ),
@@ -231,9 +220,8 @@ WORKERS_QUARTER = [
         "workers' flats",
         60,
         {
-            "treeDensity": 0.25,
+            "treeDensity": 0,
             "surface": {"paved": 0.64, "lush": 0.15},
-            "trees": PL["streets"],
             "groups": [G.workerFlats],
         },
     ),
@@ -241,10 +229,9 @@ WORKERS_QUARTER = [
         "terraced streets",
         55,
         {
-            "treeDensity": 0.28,
+            "treeDensity": 0,
             "surface": {"paved": 0.6, "lush": 0.18},
             "streets": TERRACE_STREETS,
-            "trees": PL["streets"],
             "groups": [G.residences, G.workerFlats],
         },
     ),
@@ -253,9 +240,8 @@ WORKERS_QUARTER = [
         45,
         {
             "buildingDensity": 1,
-            "treeDensity": 0.55,
+            "treeDensity": 0,
             "surface": {"paved": 0.4, "lush": 0.45},
-            "trees": PL["parks"],
             "groups": [G.residences],
         },
     ),
@@ -263,10 +249,9 @@ WORKERS_QUARTER = [
         "brick terraces",
         55,
         {
-            "treeDensity": 0.35,
+            "treeDensity": 0,
             "surface": {"paved": 0.5, "lush": 0.3},
             "streets": TERRACE_STREETS,
-            "trees": PL["streets"],
             "groups": [G.residences],
         },
     ),
@@ -282,10 +267,9 @@ SUBURBS = [
         60,
         {
             "relief": ROLLING,
-            "treeDensity": 0.5,
+            "treeDensity": 0,
             "surface": {"paved": 0.36, "lush": 0.46},
             "streets": SUBURB_STREETS,
-            "trees": PL["streets"],
             "groups": [G.residences],
         },
     ),
@@ -294,10 +278,9 @@ SUBURBS = [
         55,
         {
             "relief": ROLLING,
-            "treeDensity": 0.55,
+            "treeDensity": 0,
             "surface": {"paved": 0.3, "lush": 0.52},
             "streets": GARDEN_SUBURB_STREETS,
-            "trees": PL["gardens"],
             "groups": [G.residences],
         },
     ),
@@ -307,9 +290,8 @@ SUBURBS = [
         {
             "relief": ROLLING,
             "buildingDensity": 1,
-            "treeDensity": 0.7,
+            "treeDensity": 0,
             "surface": {"paved": 0.2, "lush": 0.7},
-            "trees": PL["parks"],
             "groups": [G.residences],
         },
     ),
@@ -318,10 +300,9 @@ SUBURBS = [
         55,
         {
             "relief": ROLLING,
-            "treeDensity": 0.55,
+            "treeDensity": 0,
             "surface": {"paved": 0.26, "lush": 0.58},
             "streets": AVENUE_STREETS,
-            "trees": PL["gardens"],
             "groups": [G.residences],
         },
     ),
@@ -334,10 +315,9 @@ GARDEN_VILLAGE_END = section(
     95,
     {
         "relief": ROLLING,
-        "treeDensity": 0.7,
+        "treeDensity": 0,
         "surface": {"paved": 0.1, "lush": 0.82},
         "streets": LANES,
-        "trees": PL["gardens"],
         "groups": [G.villages],
     },
 )
@@ -351,10 +331,9 @@ GARDEN_VILLAGES = [
         60,
         {
             "relief": ROLLING,
-            "treeDensity": 0.65,
+            "treeDensity": 0,
             "surface": {"paved": 0.16, "lush": 0.72},
             "streets": VILLAGE_STREETS,
-            "trees": PL["gardens"],
             "groups": [G.villages, G.residences],
         },
     ),
@@ -363,10 +342,9 @@ GARDEN_VILLAGES = [
         50,
         {
             "relief": ROLLING,
-            "treeDensity": 0.6,
+            "treeDensity": 0,
             "surface": {"paved": 0.12, "lush": 0.78},
             "streets": VILLAGE_STREETS,
-            "trees": PL["gardens"],
             "groups": [G.villages],
         },
     ),
@@ -375,10 +353,9 @@ GARDEN_VILLAGES = [
         55,
         {
             "relief": ROLLING,
-            "treeDensity": 0.65,
+            "treeDensity": 0,
             "surface": {"paved": 0.12, "lush": 0.78},
             "streets": VILLAGE_STREETS,
-            "trees": PL["parks"],
             "groups": [G.villages],
         },
     ),

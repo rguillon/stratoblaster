@@ -14,7 +14,6 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_2.scenery import TRANSITION
-from game.config.world_3.props import TOWN_PLANTS
 from game.config.world_3.scenery import (
     FLAT,
     GARDEN_VILLAGE_END,
@@ -35,7 +34,6 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-PL = TOWN_PLANTS
 G = WORLD_4_GROUPS
 
 
@@ -62,10 +60,9 @@ def section(name: str, seconds: float, extra: Any) -> Any:
                 "relief": FLAT,
                 "channel": quays(30),
                 "buildingDensity": 1,
-                "treeDensity": 0.2,
+                "treeDensity": 0,
                 "surface": {"paved": 0.7, "lush": 0.2},
                 "streets": STREETS,
-                "trees": PL["streets"],
                 "groups": [G["offices"]],
             }
         ),
@@ -78,7 +75,7 @@ TOWN_CENTRE = section(
     "town centre",
     50,
     {
-        "treeDensity": 0.3,
+        "treeDensity": 0,
         "surface": {"paved": 0.45, "lush": 0.4},
         "groups": [G["workerFlats"], G["townCentre"]],
     },
@@ -99,9 +96,8 @@ TOWER_EDGE = section(
     "tower edge",
     50,
     {
-        "treeDensity": 0.12,
+        "treeDensity": 0,
         "surface": {"paved": 0.85, "lush": 0.06},
-        "trees": PL["streets"],
         "groups": [G["towers"], G["offices"]],
     },
 )
@@ -112,7 +108,7 @@ SKYLINE_EDGE = section(
     50,
     {
         "channel": quays(26),
-        "treeDensity": 0.08,
+        "treeDensity": 0,
         "surface": {"paved": 0.94, "lush": 0.02},
         "groups": [G["skyscrapers"]],
     },
@@ -129,10 +125,9 @@ GARDEN_TOWN = [
         {
             "relief": ROLLING,
             "channel": river(26),
-            "treeDensity": 0.65,
+            "treeDensity": 0,
             "surface": {"paved": 0.14, "lush": 0.78},
             "streets": LANES,
-            "trees": PL["gardens"],
             "groups": [G["villages"], G["residences"]],
         },
     ),
@@ -142,10 +137,9 @@ GARDEN_TOWN = [
         {
             "relief": ROLLING,
             "channel": river(28),
-            "treeDensity": 0.55,
+            "treeDensity": 0,
             "surface": {"paved": 0.2, "lush": 0.7},
             "streets": VILLAGE_STREETS,
-            "trees": PL["gardens"],
             "groups": [G["residences"]],
         },
     ),
@@ -154,7 +148,7 @@ GARDEN_TOWN = [
         50,
         {
             "channel": river(28),
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"paved": 0.28, "lush": 0.6},
             "streets": VILLAGE_STREETS,
             "groups": [G["residences"]],
@@ -164,7 +158,7 @@ GARDEN_TOWN = [
         "flats",
         50,
         {
-            "treeDensity": 0.35,
+            "treeDensity": 0,
             "surface": {"paved": 0.36, "lush": 0.5},
             "groups": [G["residences"], G["workerFlats"]],
         },
@@ -180,7 +174,7 @@ INNER_TOWN = [
         "town streets",
         60,
         {
-            "treeDensity": 0.28,
+            "treeDensity": 0,
             "surface": {"paved": 0.5, "lush": 0.35},
             "groups": [G["townCentre"]],
         },
@@ -189,7 +183,7 @@ INNER_TOWN = [
         "ring road",
         50,
         {
-            "treeDensity": 0.25,
+            "treeDensity": 0,
             "surface": {"paved": 0.56, "lush": 0.3},
             "groups": [G["townCentre"], G["midrise"]],
         },
@@ -198,7 +192,7 @@ INNER_TOWN = [
         "mid-rise flats",
         55,
         {
-            "treeDensity": 0.22,
+            "treeDensity": 0,
             "surface": {"paved": 0.62, "lush": 0.25},
             "groups": [G["midrise"]],
         },
@@ -209,10 +203,9 @@ INNER_TOWN = [
         {
             "channel": quays(36),
             "buildingDensity": 0.8,
-            "treeDensity": 0.55,
+            "treeDensity": 0,
             "surface": {"paved": 0.4, "lush": 0.5},
             "streets": SUBURB_STREETS,
-            "trees": PL["parks"],
             "groups": [G["midrise"]],
         },
     ),
@@ -226,7 +219,7 @@ MIDTOWN = [
         "midtown",
         60,
         {
-            "treeDensity": 0.18,
+            "treeDensity": 0,
             "surface": {"paved": 0.72, "lush": 0.16},
             "groups": [G["offices"], G["midrise"]],
         },
@@ -235,7 +228,7 @@ MIDTOWN = [
         "office blocks",
         55,
         {
-            "treeDensity": 0.15,
+            "treeDensity": 0,
             "surface": {"paved": 0.76, "lush": 0.12},
         },
     ),
@@ -244,7 +237,7 @@ MIDTOWN = [
         50,
         {
             "channel": quays(38),
-            "treeDensity": 0.15,
+            "treeDensity": 0,
             "surface": {"paved": 0.78, "lush": 0.1},
         },
     ),
@@ -252,7 +245,7 @@ MIDTOWN = [
         "plazas",
         45,
         {
-            "treeDensity": 0.14,
+            "treeDensity": 0,
             "surface": {"paved": 0.82, "lush": 0.08},
             "groups": [G["offices"], G["towers"]],
         },
@@ -268,7 +261,7 @@ BUSINESS_DISTRICT = [
         "business district",
         60,
         {
-            "treeDensity": 0.1,
+            "treeDensity": 0,
             "surface": {"paved": 0.88, "lush": 0.05},
             "groups": [G["towers"]],
         },
@@ -278,9 +271,8 @@ BUSINESS_DISTRICT = [
         45,
         {
             "buildingDensity": 0.8,
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"paved": 0.6, "lush": 0.3},
-            "trees": PL["parks"],
             "groups": [G["towers"]],
         },
     ),
@@ -288,7 +280,7 @@ BUSINESS_DISTRICT = [
         "financial district",
         55,
         {
-            "treeDensity": 0.08,
+            "treeDensity": 0,
             "surface": {"paved": 0.9, "lush": 0.04},
             "groups": [G["towers"], G["skyscrapers"]],
         },
@@ -298,7 +290,7 @@ BUSINESS_DISTRICT = [
         50,
         {
             "channel": quays(28),
-            "treeDensity": 0.08,
+            "treeDensity": 0,
             "surface": {"paved": 0.92, "lush": 0.03},
             "groups": [G["skyscrapers"], G["towers"]],
         },
@@ -314,7 +306,7 @@ DOWNTOWN = [
         60,
         {
             "channel": quays(26),
-            "treeDensity": 0.06,
+            "treeDensity": 0,
             "surface": {"paved": 0.95, "lush": 0.02},
             "groups": [G["skyscrapers"]],
         },
@@ -325,9 +317,8 @@ DOWNTOWN = [
         {
             "channel": quays(30),
             "buildingDensity": 0.7,
-            "treeDensity": 0.5,
+            "treeDensity": 0,
             "surface": {"paved": 0.55, "lush": 0.4},
-            "trees": PL["parks"],
             "groups": [G["skyscrapers"]],
         },
     ),
@@ -337,7 +328,7 @@ DOWNTOWN = [
         {
             "channel": quays(24),
             "buildingDensity": 0.7,
-            "treeDensity": 0.04,
+            "treeDensity": 0,
             "surface": {"paved": 0.97},
             "groups": [G["skyscrapers"], G["downtown"]],
             "blocks": FILLED_BLOCKS,
@@ -349,7 +340,7 @@ DOWNTOWN = [
         {
             "channel": quays(22),
             "buildingDensity": 0.7,
-            "treeDensity": 0.02,
+            "treeDensity": 0,
             "surface": {"paved": 1},
             "groups": [G["downtown"]],
             "blocks": FILLED_BLOCKS,

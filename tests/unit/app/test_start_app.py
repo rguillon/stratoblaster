@@ -236,20 +236,18 @@ def test_p01_r13_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
 
 def test_d199_without_dev_there_are_no_dev_viewers() -> None:
     options = SimpleNamespace(dev=None)
-    assert start_app.create_dev("engine", None, options, lambda: None) is None
+    assert start_app.create_dev("engine", None, options) is None
 
 
-def test_d199_with_dev_the_session_sends_its_wheel_commands_to_the_menu(monkeypatch) -> None:
+def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch) -> None:
     monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
     monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
     monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
-    menu = MagicMock()
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay")
-    session, labels, groups = start_app.create_dev("engine", "game", options, lambda: menu)
+    session, labels, groups = start_app.create_dev("engine", "game", options)
+    assert session._catalog == {"ships": ["item"]}
     assert labels == {"ships": ["Item"]}
     assert groups == {"ships": [""]}
-    session._command("right")
-    menu.command.assert_called_once_with("right")
 
 
 def test_d199_the_dev_viewer_moves_on_with_the_menus_and_is_drawn_instead_of_them() -> None:

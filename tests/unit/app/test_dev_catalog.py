@@ -6,8 +6,8 @@ import pytest
 from helpers.menu_game import make_game
 
 from app import dev_catalog
+from app.dev_catalog import car_kinds, car_scale, dev_groups, dev_items, dev_labels
 from app.dev_catalog import dev_catalog as catalog_of
-from app.dev_catalog import dev_groups, dev_items, dev_labels
 from config.dev_viewer import DEV_VIEWERS
 
 
@@ -26,7 +26,8 @@ def game() -> SimpleNamespace:
 @pytest.fixture(autouse=True)
 def prop_kinds(monkeypatch: pytest.MonkeyPatch) -> None:
     kinds = {"sea": ["buoy", "hut"], "town": ["hut", "tower"]}
-    monkeypatch.setattr(dev_catalog, "level_prop_kinds", lambda scenery: kinds[scenery])
+    monkeypatch.setattr(dev_catalog, "level_prop_kinds", lambda scenery: list(kinds[scenery]))
+    monkeypatch.setattr(dev_catalog, "car_kinds", lambda scenery: [])
 
 
 def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> None:
@@ -103,3 +104,28 @@ def test_d199_the_catalog_and_its_labels_cover_every_viewer() -> None:
     groups = dev_groups(catalog)
     assert groups["props"] == ["Other", "Other", "Other"]
     assert groups["ships"] == ["", ""]
+
+
+def test_d209_the_cars_of_the_levels_are_listed_with_their_props(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cars = {"sea": [], "town": ["van", "hut"]}
+    monkeypatch.setattr(dev_catalog, "car_kinds", lambda scenery: cars[scenery])
+    monkeypatch.setattr(dev_catalog, "car_scale", lambda scenery: 0.6)
+    g = game()
+    g.view.scenery["propGroups"] = [SimpleNamespace(label="Cars", ids=["van"])]
+    props = dev_items(g, "props")
+    assert [(i.id, i.group, i.host, i.scale) for i in props] == [
+        ("van", "Cars", "1-2", 0.6),
+        ("buoy", "Other", "1-1", 1),
+        ("hut", "Other", "1-1", 1),
+        ("tower", "Other", "1-2", 1),
+    ]
+
+
+def test_d209_a_level_without_cars_has_none() -> None:
+    level = SimpleNamespace(props=SimpleNamespace(cars=None))
+    assert car_kinds(level) == []
+    level.props.cars = SimpleNamespace(kinds=["van", "truck"], scale=0.6)
+    assert car_kinds(level) == ["van", "truck"]
+    assert car_scale(level) == 0.6

@@ -7,8 +7,7 @@ import pytest
 from helpers.dom import FakeDocument
 
 from app import dev_session
-from app.dev_session import DevSession, wheel_steps
-from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
+from app.dev_session import DevSession
 
 
 class FakeViewer:
@@ -19,6 +18,7 @@ class FakeViewer:
         self.items = items
         self.shown: tuple[int, bool] | None = None
         self.scrubbed: list[float] = []
+        self.zoomed: list[float] = []
         self.frames: list[float] = []
         self.disposed = False
         self.status = "1:00 / 4:00"
@@ -33,6 +33,9 @@ class FakeViewer:
 
     def scrub(self, delta: float) -> None:
         self.scrubbed.append(delta)
+
+    def zoom(self, delta: float) -> None:
+        self.zoomed.append(delta)
 
     def frame(self, dt: float) -> None:
         self.frames.append(dt)
@@ -51,21 +54,13 @@ def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> Simple
     return SimpleNamespace(dev_viewer=viewer, selection=selection, dev_close_up=toggle)
 
 
-def session(root: Any = None) -> tuple[DevSession, list[str]]:
-    commands: list[str] = []
+def session(root: Any = None) -> DevSession:
     catalog = {"ships": ["a", "b"], "levels": ["1-1"]}
-    return DevSession("engine", "game", catalog, True, root, commands.append), commands
-
-
-def test_d199_the_wheel_counts_whole_steps_capped_either_way() -> None:
-    assert wheel_steps(250, 100, 3) == 2
-    assert wheel_steps(-99, 100, 3) == 0
-    assert wheel_steps(-1000, 100, 3) == -3
-    assert wheel_steps(500, 0, 3) == 0
+    return DevSession("engine", "game", catalog, True, root)
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
-    s, _ = session()
+    s = session()
     assert not s.active
     s.sync(state("ships", 1, False))
     viewer = FakeViewer.made[0]
@@ -81,24 +76,21 @@ def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
     assert not s.active
 
 
-def test_d199_the_wheel_moves_through_the_models_as_the_arrows_do() -> None:
-    s, commands = session()
+def test_d208_the_wheel_zooms_the_model_viewers() -> None:
+    s = session()
     s.wheel(100)
     s.sync(state("ships"))
-    s.wheel(CFG.wheel_step / 2)
-    assert commands == []
-    s.wheel(CFG.wheel_step / 2)
-    assert commands == ["right"]
-    s.wheel(-CFG.wheel_step * 10)
-    assert commands == ["right"] + ["left"] * int(CFG.max_wheel_steps)
+    s.wheel(-120)
+    assert FakeViewer.made[0].zoomed == [-120]
+    assert FakeViewer.made[0].scrubbed == []
 
 
 def test_d199_the_wheel_scrubs_the_levels_viewer() -> None:
-    s, commands = session()
+    s = session()
     s.sync(state("levels"))
     s.wheel(120)
     assert FakeViewer.made[0].scrubbed == [120]
-    assert commands == []
+    assert FakeViewer.made[0].zoomed == []
 
 
 def test_d199_each_frame_moves_the_viewer_and_writes_its_status_line() -> None:
@@ -107,7 +99,7 @@ def test_d199_each_frame_moves_the_viewer_and_writes_its_status_line() -> None:
     line = doc.createElement("div")
     line.className = "dev-status"
     root.append(line)
-    s, _ = session(root)
+    s = session(root)
     s.frame(0.1)
     s.sync(state("levels"))
     s.frame(0.1)
@@ -116,7 +108,7 @@ def test_d199_each_frame_moves_the_viewer_and_writes_its_status_line() -> None:
 
 
 def test_d199_the_viewer_is_drawn_once_its_scene_is_built() -> None:
-    s, _ = session()
+    s = session()
     assert not s.render()
     s.sync(state("ships"))
     assert not s.render()
@@ -130,7 +122,7 @@ def test_d199_the_viewer_is_drawn_once_its_scene_is_built() -> None:
 
 
 def test_d199_a_drag_turns_the_viewer_s_model() -> None:
-    s, _ = session()
+    s = session()
     s.turn(3, 4)
     s.sync(state("ships"))
     s.turn(5, -2)

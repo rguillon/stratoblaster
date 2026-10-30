@@ -174,32 +174,27 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     item = labels[index] if index < len(labels) else ""
     scrub = viewer == "levels"
     starts = group_starts(groups)
+    grouped = len(starts) > 1
     hint = texts.levels_hint if scrub else texts.models_hint
     position = str(index + 1) + " / " + str(len(labels))
-    if len(starts) <= 1:
-        return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub)
-    # D-202: the item's group, and its place in it.
-    g = group_of(starts, index)
-    end = starts[g + 1] if g + 1 < len(starts) else len(groups)
-    position = groups[index] + " · " + str(index - starts[g] + 1) + " / " + str(end - starts[g])
-    # D-204: a button per group, then one per item of the item's group.
-    buttons: list[DevChoice] = []
-    for k in range(len(starts)):
-        last = starts[k + 1] if k + 1 < len(starts) else len(groups)
-        label = groups[starts[k]] + " (" + str(last - starts[k]) + ")"
-        buttons.append(DevChoice(label, starts[k], k == g))
-    choices = [DevChoice(labels[i], i, i == index) for i in range(starts[g], end)]
-    return DevViewerView(
-        texts.labels[viewer],
-        texts.groups_hint,
-        back,
-        index,
-        item,
-        position,
-        scrub,
-        buttons,
-        choices,
-    )
+    if grouped:
+        # D-202: the item's group, and its place in it.
+        g = group_of(starts, index)
+        end = starts[g + 1] if g + 1 < len(starts) else len(groups)
+        place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
+        position = groups[index] + " · " + place
+        hint = texts.groups_hint
+    # D-206, D-208: the menu of every viewer: its items, each group's heading before its items
+    # when they are in groups.
+    menu: list[DevChoice] = []
+    for i in range(len(labels)):
+        if grouped and i in starts:
+            k = group_of(starts, i)
+            last = starts[k + 1] if k + 1 < len(starts) else len(groups)
+            label = groups[i] + " (" + str(last - i) + ")"
+            menu.append(DevChoice(label, i, k == group_of(starts, index), True))
+        menu.append(DevChoice(labels[i], i, i == index))
+    return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub, menu)
 
 
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:

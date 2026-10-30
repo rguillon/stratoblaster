@@ -49,7 +49,8 @@ class DevPropStageConfig:
     floor and the lines of the grid, one square per block (the game's tile), `grid_lift` above the
     floor. `grid_reach`: blocks of grid beyond the prop's footprint, each way. `pitch`: the
     camera's starting angle from straight up (radians); `pitch_range`: the lowest and highest it
-    is dragged to.
+    is dragged to. `view_shift`: how far right the prop is drawn, as a share of half the view's
+    width, to clear the menu on the left (D-206).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -69,6 +70,7 @@ class DevPropStageConfig:
         grid_reach: int,
         pitch: float,
         pitch_range: list[float],
+        view_shift: float,
     ) -> None:
         self.clear_color = clear_color
         self.ambient_intensity = ambient_intensity
@@ -85,16 +87,18 @@ class DevPropStageConfig:
         self.grid_reach = grid_reach
         self.pitch = pitch
         self.pitch_range = pitch_range
+        self.view_shift = view_shift
 
 
 class DevViewerConfig:
     """How the dev viewers show things.
 
     `close_up_fill`: share of the screen height the model fills in the close-up (the camera's field
-    of view narrowed, so the ground is magnified with it). `wheel_step`: wheel delta (pixels) per
-    model in the model viewers. `scrub_seconds`: level seconds per wheel step of `wheel_step` in
-    the levels viewer. `scrub_ease`: how fast the levels viewer catches up with the wheel, per
-    second. `max_wheel_steps`: most models one wheel event moves by. `model_seed`: the random
+    of view narrowed, so the ground is magnified with it). `wheel_step`, `scrub_seconds`: the
+    levels viewer's wheel moves the time by `scrub_seconds` per `wheel_step` pixels. `scrub_ease`:
+    how fast the levels viewer catches up with the wheel, per second. `zoom_per_pixel`,
+    `zoom_range`: in the model viewers the wheel zooms (D-208), by e^(`zoom_per_pixel`) per pixel,
+    within `zoom_range` (times the view without zoom). `model_seed`: the random
     numbers the enemies and bosses are spawned with (their look only). `turn_per_pixel`: radians a
     model turns per pixel dragged.
     """
@@ -105,17 +109,19 @@ class DevViewerConfig:
         wheel_step: float,
         scrub_seconds: float,
         scrub_ease: float,
-        max_wheel_steps: int,
+        zoom_per_pixel: float,
         model_seed: int,
         texts: DevViewerTexts,
         turn_per_pixel: float,
         props: DevPropStageConfig,
+        zoom_range: list[float],
     ) -> None:
         self.close_up_fill = close_up_fill
         self.wheel_step = wheel_step
         self.scrub_seconds = scrub_seconds
         self.scrub_ease = scrub_ease
-        self.max_wheel_steps = max_wheel_steps
+        self.zoom_per_pixel = zoom_per_pixel
+        self.zoom_range = zoom_range
         self.model_seed = model_seed
         self.texts = texts
         self.turn_per_pixel = turn_per_pixel
@@ -130,7 +136,7 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
     100,
     4,
     10,
-    3,
+    0.0015,
     7,
     DevViewerTexts(
         "Dev",
@@ -143,10 +149,11 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
             "props": "Props",
             "levels": "Levels",
         },
-        "Wheel / arrows: next · Drag: turn · Enter: close-up / game size · Esc: back",
+        "Wheel: zoom · ◀ ▶ or menu: next · Drag: turn · Enter: close-up / game size · Esc: back",
         "Wheel: scrub · Arrows: level · Enter: play / stop · Esc: back",
         "Building…",
-        "Wheel / ◀ ▶: next · ▲ ▼: group · Drag: turn · Enter: close-up / game size · Esc: back",
+        "Wheel: zoom · ◀ ▶ or menu: next · ▲ ▼: group · Drag: turn · Enter: close-up / game size"
+        " · Esc: back",
         "1 square = 1 block",
     ),
     0.01,
@@ -170,5 +177,7 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         8,
         1.0,
         [0.15, 1.45],
+        0.34,
     ),
+    [0.25, 8],
 )

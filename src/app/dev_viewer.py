@@ -51,6 +51,20 @@ def close_up_fov(size: float, distance: float, fill: float, widest: float) -> fl
     return min(widest, 2 * math.atan(size / (2 * distance * fill)))
 
 
+def zoomed_fov(fov: float, zoom: float) -> float:
+    """The field of view `fov` narrowed `zoom` times (D-208: what is seen looks `zoom` times as
+    big)."""
+    return 2 * math.atan(math.tan(fov / 2) / zoom)
+
+
+def zoomed(zoom: float, delta_y: float) -> float:
+    """`zoom` after the wheel turned by `delta_y` pixels (D-208): in when it turns up (negative),
+    out when it turns down, within `zoom_range`."""
+    low = math.log(CFG.zoom_range[0])
+    high = math.log(CFG.zoom_range[1])
+    return math.exp(max(low, min(high, math.log(zoom) - delta_y * CFG.zoom_per_pixel)))
+
+
 def eased_time(time: float, target: float, ease: float, dt: float) -> float:
     """`time` moved towards `target` by the share `ease * dt` of the way (all of it at most)."""
     return time + (target - time) * min(1, ease * dt)
@@ -143,6 +157,9 @@ class DevViewer:
         # and nose up or down (props: the camera, round the prop and up or down). Kept from one
         # item to the next.
         self._turn = [0.0, 0.0]
+        # D-208: how many times as big the wheel makes the model look. Kept from one item to the
+        # next.
+        self._zoom = 1.0
         # Levels viewer: the time shown, the time the wheel asked for, and the level's length.
         self._time = 0.0
         self._target = 0.0
@@ -170,6 +187,10 @@ class DevViewer:
         """The item the menu picked, and its toggle (close-up, or play for the levels)."""
         self._index = max(0, min(index, len(self._items) - 1))
         self._toggle = toggle
+
+    def zoom(self, delta_y: float) -> None:
+        """The wheel turned by `delta_y` pixels zooms in or out (D-208)."""
+        self._zoom = zoomed(self._zoom, delta_y)
 
     def turn(self, dx: float, dy: float) -> None:
         """A drag of (`dx`, `dy`) screen pixels turns the model (see `_turn`)."""
@@ -309,7 +330,7 @@ class DevViewer:
         if self._shown != self._index:
             self._props.show(item)
             self._shown = self._index
-        self._props.update(self._turn, self._toggle)
+        self._props.update(self._turn, self._toggle, self._zoom)
 
     def _measure(self, root: Any) -> float:
         """The size of what hangs from `root`: its largest side, in world units."""
@@ -372,6 +393,7 @@ class DevViewer:
         camera.fov = self._fov
         if self._toggle:
             camera.fov = close_up_fov(self._size, self._distance(), CFG.close_up_fill, self._fov)
+        camera.fov = zoomed_fov(camera.fov, self._zoom)
 
     def _apply_turn(self) -> None:
         """Turns the model as dragged: a ship or an enemy around its nose and nose up or down (on

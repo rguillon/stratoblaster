@@ -1,6 +1,6 @@
 """What each dev viewer lists (D-199): the player ships, the enemy kinds, the boss kinds, the props
-the levels stand on their ground, and the levels, in the game's order. The props are gathered by
-the game's prop groups (D-202), as the TypeScript `props/` page showed them.
+the levels stand on their ground and their cars (D-209), and the levels, in the game's order. The
+props are gathered by the game's prop groups (D-202), as the TypeScript `props/` page showed them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -21,14 +21,17 @@ OTHER_GROUP = "Other"
 
 class DevItem:
     """One item of a dev viewer: its `id` (ship, kind, prop or level id), the `label` shown, the
-    level it is shown over (`host`: a prop stands on the first level that has it), and the `group`
-    it is listed in ("": none; D-202)."""
+    level it is shown over (`host`: a prop stands on the first level that has it), the `group`
+    it is listed in ("": none; D-202), and the `scale` a prop is drawn at (D-209: the cars')."""
 
-    def __init__(self, id: str, label: str, host: str, group: str = "") -> None:
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self, id: str, label: str, host: str, group: str = "", scale: float = 1
+    ) -> None:
         self.id = id
         self.label = label
         self.host = host
         self.group = group
+        self.scale = scale
 
 
 def _first_level(game: Any) -> str:
@@ -56,27 +59,47 @@ def _prop_groups(game: Any) -> list[Any]:
     return groups
 
 
+def car_kinds(scenery: Any) -> list[str]:
+    """The kinds of car driving on the roads of the scenery level `scenery` (D-209)."""
+    cars = scenery.props.cars
+    if cars is None:
+        return []
+    kinds: list[str] = list(cars.kinds)
+    return kinds
+
+
+def car_scale(scenery: Any) -> float:
+    """The scale the cars of the scenery level `scenery` are drawn at (D-209)."""
+    scale: float = scenery.props.cars.scale
+    return scale
+
+
 def _props(game: Any) -> list[DevItem]:
-    """The props of every level's ground (not their cars), each over the first level that has it,
-    so it is lit and drawn as there; gathered by the game's prop groups, in their order, then the
+    """The props of every level's ground and its cars (D-209), each over the first level that has
+    it, so it has its world's tone; gathered by the game's prop groups, in their order, then the
     props in none of them (D-202)."""
     hosts: dict[str, str] = {}
+    scales: dict[str, float] = {}
     kinds: list[str] = []
     for level in game.game_levels:
-        for kind in level_prop_kinds(level.scenery):
+        level_kinds = level_prop_kinds(level.scenery)
+        cars = car_kinds(level.scenery)
+        level_kinds.extend(cars)
+        for kind in level_kinds:
             if kind not in kinds:
                 kinds.append(kind)
                 hosts[kind] = level.id
+                scales[kind] = car_scale(level.scenery) if kind in cars else 1
     items: list[DevItem] = []
     listed: list[str] = []
     for group in _prop_groups(game):
         for kind in group.ids:
             if kind in kinds and kind not in listed:
                 listed.append(kind)
-                items.append(DevItem(kind, kind, hosts[kind], group.label))
+                items.append(DevItem(kind, kind, hosts[kind], group.label, scales[kind]))
     for kind in kinds:
         if kind not in listed:
-            items.append(DevItem(kind, kind, hosts[kind], OTHER_GROUP))
+            items.append(DevItem(kind, kind, hosts[kind], OTHER_GROUP, scales[kind]))
     return items
 
 

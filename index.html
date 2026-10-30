@@ -982,47 +982,66 @@
       .dev-status:empty {
         display: none;
       }
-      /* The props viewer's buttons (D-204), at the bottom so the prop stays in view: a row of
-         groups, then the props of the group shown, each on one line, scrolled sideways. */
-      .dev-choices {
+      /* The props viewer's menu (D-206): a scrolling list down the left side, each group's
+         heading then its props, so the prop in the middle stays in view. */
+      .dev-menu {
+        position: absolute;
+        left: 14px;
+        top: 270px;
+        bottom: 70px;
+        width: 170px;
         display: flex;
-        flex-wrap: nowrap;
-        gap: 4px;
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px;
         box-sizing: border-box;
-        width: calc(100% - 24px);
-        margin: 0 12px;
-        padding: 2px 0 4px;
-        overflow-x: auto;
+        overflow-y: auto;
         scrollbar-width: thin;
-        touch-action: pan-x;
+        scrollbar-color: var(--neon) transparent;
+        touch-action: pan-y;
+        background: var(--glass);
+        border: 1px solid rgba(0, 232, 255, 0.35);
+        text-align: left;
         cursor: default;
+        z-index: 1;
       }
-      .dev-groups {
-        margin-top: auto;
-      }
-      .dev-choices ~ .dev-hint {
-        margin-top: 6px;
-      }
-      .dev-choice {
-        min-height: 26px;
-        padding: 3px 8px;
+      .dev-menu .menu-entry {
+        flex: none;
+        min-height: 24px;
+        padding: 2px 8px;
+        border-width: 1px;
         font-family: var(--font-tech);
         font-size: 11px;
-        font-weight: 700;
         line-height: 18px;
-        color: var(--paper);
         white-space: nowrap;
-        flex: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
         cursor: pointer;
       }
-      .dev-groups .dev-choice {
-        color: var(--accent);
-        text-transform: uppercase;
+      .dev-menu-group {
+        margin-top: 6px;
+        font-weight: 800;
         letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
       }
-      .dev-groups .dev-choice.selected,
-      .dev-choice.selected {
+      .dev-menu-group:first-child {
+        margin-top: 0;
+      }
+      .dev-menu-item {
+        margin-left: 10px;
+        font-weight: 600;
+        color: var(--paper);
+      }
+      .dev-menu .menu-entry.selected {
         color: var(--black);
+      }
+      /* The group of the prop shown: marked, not filled like the prop itself. */
+      .dev-menu .dev-menu-group.selected {
+        color: var(--neon);
+        background: var(--glass);
+        border-color: var(--neon);
+        box-shadow: none;
       }
       .dev-hint {
         margin-top: auto;

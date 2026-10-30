@@ -8,7 +8,7 @@ import pytest
 
 from app import dev_viewer
 from app.dev_catalog import DevItem
-from app.dev_viewer import DevViewer, clock_text, close_up_fov, eased_time
+from app.dev_viewer import DevViewer, clock_text, close_up_fov, eased_time, zoomed, zoomed_fov
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
 ALTITUDE = 320.0
@@ -116,15 +116,15 @@ class FakePropStage:
     def __init__(self, engine: Any, game: Any, environment: bool) -> None:
         self.scene = SimpleNamespace(name="props-scene")
         self.shown: list[str] = []
-        self.updates: list[tuple[list[float], bool]] = []
+        self.updates: list[tuple[list[float], bool, float]] = []
         self.disposed = False
         FakePropStage.made.append(self)
 
     def show(self, item: DevItem) -> None:
         self.shown.append(item.id)
 
-    def update(self, turn: list[float], close_up: bool) -> None:
-        self.updates.append((list(turn), close_up))
+    def update(self, turn: list[float], close_up: bool, zoom: float) -> None:
+        self.updates.append((list(turn), close_up, zoom))
 
     def dispose(self) -> None:
         self.disposed = True
@@ -454,10 +454,11 @@ def test_d205_a_drag_and_the_toggle_reach_the_props_camera(env: Env) -> None:
     v.show(0, True)
     v.turn(50, -20)
     v.frame(0)
-    turn, close_up = FakePropStage.made[0].updates[-1]
+    turn, close_up, zoom = FakePropStage.made[0].updates[-1]
     step = CFG.turn_per_pixel
     assert turn == pytest.approx([50 * step, -20 * step])
     assert close_up is True
+    assert zoom == 1
 
 
 def test_d205_dispose_drops_the_props_stage(env: Env) -> None:
@@ -466,3 +467,31 @@ def test_d205_dispose_drops_the_props_stage(env: Env) -> None:
     v.dispose()
     assert FakePropStage.made[0].disposed
     assert v.scene is None
+
+
+def test_d208_the_wheel_zooms_in_up_and_out_down_within_its_range() -> None:
+    assert zoomed(1, -100) == pytest.approx(math.exp(100 * CFG.zoom_per_pixel))
+    assert zoomed(1, 100) == pytest.approx(math.exp(-100 * CFG.zoom_per_pixel))
+    assert zoomed(1, -1e6) == pytest.approx(CFG.zoom_range[1])
+    assert zoomed(1, 1e6) == pytest.approx(CFG.zoom_range[0])
+
+
+def test_d208_a_zoom_narrows_the_field_of_view_so_things_look_that_much_bigger() -> None:
+    fov = 0.8
+    assert math.tan(zoomed_fov(fov, 2) / 2) == pytest.approx(math.tan(fov / 2) / 2)
+    assert zoomed_fov(fov, 1) == pytest.approx(fov)
+
+
+def test_d208_the_wheel_zooms_a_ship_and_the_props_camera(env: Env) -> None:
+    v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
+    v.show(0, False)
+    v.frame(0)
+    camera = env.views[0].stage.camera
+    before = camera.fov
+    v.zoom(-200)
+    v.frame(0)
+    assert camera.fov == pytest.approx(zoomed_fov(before, zoomed(1, -200)))
+    props = viewer("props", [DevItem("hut", "hut", "1-1")])
+    props.zoom(-200)
+    props.frame(0)
+    assert FakePropStage.made[0].updates[-1][2] == pytest.approx(zoomed(1, -200))

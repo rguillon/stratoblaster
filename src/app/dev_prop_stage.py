@@ -150,7 +150,9 @@ class DevPropStage:
         factory = self._game.view.scenery["propModels"].get(item.id)
         if factory is None:
             return
-        b = prop_bounds(factory)
+        # D-209: drawn at the scale the levels draw it (the cars smaller than their models).
+        scale = item.scale
+        b = [v * scale for v in prop_bounds(factory)]
         block = self.block
         across = blocks_of(b[3] - b[0], block)
         along = blocks_of(b[5] - b[2], block)
@@ -158,6 +160,7 @@ class DevPropStage:
         z = block_centre(along, block)
         root = new_transform_node("dev-prop-" + item.id, self.scene)
         root.position.set(x - (b[0] + b[3]) / 2, 0, z - (b[2] + b[5]) / 2)
+        root.scaling.setAll(scale)
         materials = self._materials_of(item.host)
         geometry = prop_geometry(factory)
         parts = [[geometry.structure, materials.structure], [geometry.lights, materials.lights]]
@@ -174,9 +177,10 @@ class DevPropStage:
         reach = int(CFG.props.grid_reach)
         self._floor = self._rule_floor(max(across, along) // 2 + 1 + reach)
 
-    def update(self, turn: list[float], close_up: bool) -> None:
+    def update(self, turn: list[float], close_up: bool, zoom: float) -> None:
         """Turns the camera round the prop as far as dragged (`turn`: radians across and up or
-        down, as Babylon's own orbiting camera turns), at the close-up's distance or the game's."""
+        down, as Babylon's own orbiting camera turns), at the close-up's distance or the game's,
+        divided by `zoom` (D-208)."""
         props = CFG.props
         camera = self.camera
         camera.alpha = -math.pi / 2 - turn[0]
@@ -186,8 +190,14 @@ class DevPropStage:
         camera.radius = self._distance
         if close_up and self.size > 0:
             camera.radius = close_up_distance(self.size, self._fov, CFG.close_up_fill)
+        # D-208: the wheel's zoom brings the camera closer (the field of view kept).
+        camera.radius /= zoom
         t = self.target
         camera.setTarget(vector3(t[0], t[1], t[2]))
+        # D-206: drawn right of the middle, clear of the menu on the left.
+        aspect = self.scene.getEngine().getAspectRatio(camera)
+        half_width = camera.radius * math.tan(self._fov / 2) * aspect
+        camera.targetScreenOffset.x = props.view_shift * half_width
 
     def _materials_of(self, level_id: str) -> Any:
         materials = self._materials.get(level_id)

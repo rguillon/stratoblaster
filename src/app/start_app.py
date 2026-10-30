@@ -494,18 +494,13 @@ def create_session(
     )
 
 
-def create_dev(engine: Any, game: Any, options: AppOptions, get_menu: Any) -> Any:
+def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
     """The dev viewers (D-199) with `options.dev`: their session, their items' labels and groups
-    (D-202), as [session, labels, groups]; None without. `get_menu` is read when the wheel sends
-    a command."""
+    (D-202), as [session, labels, groups]; None without."""
     if not options.dev:
         return None
     catalog = dev_catalog(game)
-
-    def command(action: Any) -> None:
-        get_menu().command(action)
-
-    session = DevSession(engine, game, catalog, options.environment, options.overlay, command)
+    session = DevSession(engine, game, catalog, options.environment, options.overlay)
     return [session, dev_labels(catalog), dev_groups(catalog)]
 
 
@@ -527,7 +522,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
 
     session = create_session(engine, game, options, get_menu, audio, perf)
     controls = session.controls
-    dev = create_dev(engine, game, options, get_menu)
+    dev = create_dev(engine, game, options)
 
     def on_change(state: MenuState) -> None:
         sync_scenes(scenes_box[0], state, ship_ids)

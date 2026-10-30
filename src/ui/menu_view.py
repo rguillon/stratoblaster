@@ -252,13 +252,15 @@ class DevMenuView(BackView):
 
 
 class DevChoice:
-    """A button of a dev viewer (D-204): its `label`, the item it shows (`index` in the viewer's
-    list), and whether it is the one shown (`selected`: for a group, the shown item is in it)."""
+    """An entry of a dev viewer's menu (D-206): its `label`, the item it shows (`index` in the
+    viewer's list), whether it is the one shown (`selected`: for a group, the shown item is in
+    it), and whether it is a group's heading (`heading`) rather than an item."""
 
-    def __init__(self, label: str, index: int, selected: bool) -> None:
+    def __init__(self, label: str, index: int, selected: bool, heading: bool = False) -> None:
         self.label = label
         self.index = index
         self.selected = selected
+        self.heading = heading
 
 
 class DevViewerView(BackView):
@@ -276,8 +278,7 @@ class DevViewerView(BackView):
         item: str,
         position: str,
         scrub: bool,
-        groups: list[DevChoice] | None = None,
-        choices: list[DevChoice] | None = None,
+        menu: list[DevChoice] | None = None,
     ) -> None:
         BackView.__init__(self, heading, hint, back, selected)
         self.item = item
@@ -286,10 +287,9 @@ class DevViewerView(BackView):
         # True: the wheel scrubs the level's time (the levels viewer); False: it moves through
         # the items.
         self.scrub = scrub
-        # D-204: one button per group of the items (to its first item), and one per item of the
-        # group shown. None: no buttons (the viewer's items are not in groups).
-        self.groups = groups
-        self.choices = choices
+        # D-206, D-208: the scrolling menu of the items, each group's heading (to its first item)
+        # before its items when they are in groups. None: no menu.
+        self.menu = menu
 
 
 __pragma__("skip")
