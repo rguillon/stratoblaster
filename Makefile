@@ -2,7 +2,7 @@
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install vendor dev build lint format typecheck check check-fast clean
+.PHONY: help install build-info vendor dev build lint format typecheck check check-fast clean
 
 DIST := dist
 
@@ -18,7 +18,17 @@ SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || e
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
+# The version and the short commit shown on the title screen (ENG-83): `src/build_info.py`, written
+# from git by `make build-info` (git-ignored, so a checkout has none until then).
+APP_VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
+BUILD_INFO := src/build_info.py
+
+build-info: ## Write src/build_info.py: the version and the short commit (unknown without git)
+	@commit=$$(git rev-parse --short HEAD 2>/dev/null || echo unknown); \
+	printf 'APP_VERSION = "%s"\nAPP_COMMIT = "%s"\n' '$(APP_VERSION)' "$$commit" > $(BUILD_INFO).tmp; \
+	if cmp -s $(BUILD_INFO).tmp $(BUILD_INFO); then rm -f $(BUILD_INFO).tmp; else mv $(BUILD_INFO).tmp $(BUILD_INFO); fi
+
+install: build-info ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
 	uv sync --locked
 	npm ci
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
@@ -55,7 +65,7 @@ $(TRANSCRYPT_STAMP): $(PY_SOURCES)
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
 	touch $@
 
-build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
+build: build-info $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
 	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
 		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
 	rm -rf $(DIST)
@@ -72,7 +82,7 @@ build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed),
 dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
 	uv run python -m http.server 5173 --directory $(DIST)
 
-lint: ## Ruff check + format check + layering contracts (no auto-fix)
+lint: build-info ## Ruff check + format check + layering contracts (no auto-fix)
 	uv run ruff check src
 	uv run ruff format --check src
 	PYTHONPATH=src uv run lint-imports
@@ -81,7 +91,7 @@ format: ## Ruff format + ruff fix
 	uv run ruff format src
 	uv run ruff check --fix src
 
-typecheck: ## mypy --strict
+typecheck: build-info ## mypy --strict
 	uv run mypy
 
 test: ## Unit tests (pytest, CPython over src/)

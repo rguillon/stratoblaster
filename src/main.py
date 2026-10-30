@@ -18,6 +18,7 @@ from app.start_enemy_viewer import EnemyViewerOptions, start_enemy_viewer
 from app.start_prop_viewer import PropViewerOptions, start_prop_viewer
 from app.start_ship_viewer import ShipCaptions, ShipViewerOptions, start_ship_viewer
 from app.start_shot_viewer import ShotViewerOptions, start_shot_viewer
+from build_info import APP_COMMIT, APP_VERSION  # The version and commit on the title (ENG-83).
 from config.engine import ENGINE_CONFIG
 from config.menu import MENU_CONFIG
 from game.index import GAME
@@ -35,10 +36,6 @@ __pragma__("noskip")
 
 E2E = False
 DEV_BUILD = False
-# The version and short commit hash on the title screen (ENG-83): the Makefile does not inject
-# them yet, so they are fixed here.
-APP_VERSION = "0.0.0"
-APP_COMMIT = "unknown"
 
 
 def show_fatal(message: str) -> None:

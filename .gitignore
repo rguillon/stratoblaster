@@ -16,3 +16,6 @@ build/
 
 # Python coverage data (make coverage)
 .coverage
+
+# Generated from git by `make build-info` (the commit on the title screen)
+src/build_info.py
