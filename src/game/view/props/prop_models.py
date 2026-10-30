@@ -12,6 +12,7 @@ __pragma__("noskip")
 
 from game.config.cars import CAR_IDS  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
 from game.view.props.car_props import build_car  # noqa: E402
 from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402
 from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402
@@ -26,20 +27,20 @@ def merged(parts: list[Any]) -> dict[str, Any]:
     return result
 
 
-def car_model(shape: str, paint: list[float]) -> Any:
-    """A factory of one car model."""
-    return lambda: build_car(shape, paint)
+def car_model(shape: str, paint: list[float], accent: list[float]) -> Any:
+    """A factory of one car model, its neon `accent` (D-211)."""
+    return lambda: build_car(shape, paint, accent)
 
 
 def make_car_models() -> dict[str, Any]:
     """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162)."""
     return {
-        CAR_IDS.red: car_model("sedan", C.containerRed),
-        CAR_IDS.blue: car_model("sedan", C.containerBlue),
-        CAR_IDS.white: car_model("sedan", C.white),
-        CAR_IDS.grey: car_model("sedan", C.metal),
-        CAR_IDS.van: car_model("van", C.white),
-        CAR_IDS.truck: car_model("truck", C.containerGreen),
+        CAR_IDS.red: car_model("sedan", C.containerRed, L.cyan),
+        CAR_IDS.blue: car_model("sedan", C.containerBlue, L.pink),
+        CAR_IDS.white: car_model("sedan", C.white, L.cyan),
+        CAR_IDS.grey: car_model("sedan", C.metal, L.violet),
+        CAR_IDS.van: car_model("van", C.white, L.pink),
+        CAR_IDS.truck: car_model("truck", C.containerGreen, L.yellow),
     }
 
 
