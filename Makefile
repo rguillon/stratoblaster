@@ -19,8 +19,9 @@ help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 # The version and the short commit shown on the title screen (ENG-83): `src/build_info.py`, written
-# from git by `make build-info` (git-ignored, so a checkout has none until then).
-APP_VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
+# from git by `make build-info` (git-ignored, so a checkout has none until then). The version is the
+# latest release tag (highest version, `v` dropped): a checkout without tags shows `unknown`.
+APP_VERSION := $(or $(patsubst v%,%,$(shell git tag --sort=-v:refname 2>/dev/null | head -n 1)),unknown)
 BUILD_INFO := src/build_info.py
 
 build-info: ## Write src/build_info.py: the version and the short commit (unknown without git)
