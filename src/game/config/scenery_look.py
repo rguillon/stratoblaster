@@ -5,6 +5,7 @@ Gamma-space RGB, 0..1, unless noted; distances in world units.
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from game.config.cars import CAR_IMPOSTERS
 from game.config.record import record
 from game.config.window_look import WINDOW_ATLAS
 
@@ -243,7 +244,13 @@ BASE_SCENERY_LOOK = record(
         },
         # Matte props: specular highlights on their facets flickered as the view scrolled (review).
         # The windows' atlas (D-210), the same for every level.
-        "props": {"specular": 0, "lightIntensity": 1, "windows": WINDOW_ATLAS},
+        "props": {
+            "specular": 0,
+            "lightIntensity": 1,
+            "windows": WINDOW_ATLAS,
+            # The cars drawn as imposters (D-211), the same for every level.
+            "imposters": CAR_IMPOSTERS,
+        },
         "glow": {"intensity": 0.3, "blurKernelSize": 16},
     }
 )

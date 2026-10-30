@@ -1,11 +1,17 @@
 """The moving cars of a level (phase 4 review): the cars in view are placed again every frame, as
 thin instances of their own meshes, apart from the props that stay put.
+
+D-211: where the kit has imposters, a car's body is a picture of it baked from its detailed model
+(`imposters.py`), one quad facing the camera; only its lights are real geometry.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.scenery.traffic import Traffic
-from render.scenery.prop_field import PropField, PropMaterials
+from render.geometry.gradient_shapes import ColoredGeometry
+from render.scenery.imposter_field import ImposterField
+from render.scenery.prop_field import PropField, PropMaterials, prop_geometry
+from render.scenery.scenery_look import PropGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -34,18 +40,55 @@ def _goes_on(before: list[Any], roads: list[Any]) -> bool:
     return True
 
 
-class TrafficLayer:
-    """The cars of a level, drawn as thin instances of their models."""
+def _lights_only(factory: Any) -> Any:  # noqa: ANN401
+    """A model factory making only the lights of what `factory` makes."""
 
-    def __init__(self, scene: Any, models: Any, materials: PropMaterials, rules: Any) -> None:
+    def make() -> PropGeometry:
+        return PropGeometry(ColoredGeometry(), prop_geometry(factory).lights)
+
+    return make
+
+
+class TrafficLayer:
+    """The cars of a level, drawn as thin instances of their models, or of their imposters."""
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        scene: Any,  # noqa: ANN401
+        models: Any,  # noqa: ANN401
+        materials: PropMaterials,
+        rules: Any,  # noqa: ANN401
+        imposter_atlas: Any = None,  # noqa: ANN401
+        tilt: float = 0,
+    ) -> None:
         """`models`: the prop models (only those of the cars' kinds are used). `rules`: the cars'
-        rules, or None for a level without cars."""
+        rules, or None for a level without cars. `imposter_atlas(kinds)`: an `ImposterAtlas` for
+        that many kinds, or None (D-211; the camera tilted by `tilt`)."""
         self._rules = rules
         self._traffic: Traffic | None = None
         self._roads: list[Any] | None = None
         kinds = rules.kinds if rules is not None else []
         cars = {k: v for k, v in models.items() if k in kinds}
-        self._field = PropField(scene, cars, materials, None, None)
+        names = [k for k in kinds if k in cars]
+        atlas = (
+            imposter_atlas(len(names)) if imposter_atlas is not None and len(names) > 0 else None
+        )
+        self._atlas = atlas
+        self._imposters: ImposterField | None = None
+        self._bake: Any = None
+        if atlas is None:
+            self._field = PropField(scene, cars, materials, None, None)
+            return
+        lights = {k: _lights_only(cars[k]) for k in names}
+        self._field = PropField(scene, lights, materials, None, None)
+        self._imposters = ImposterField(scene, names, atlas.look, tilt, atlas.material)
+        bodies = [prop_geometry(cars[k]).structure for k in names]
+
+        def bake() -> None:
+            atlas.bake(bodies, tilt)
+
+        # On the first update, not now: the bake's mesh must not hang from the ground.
+        self._bake = bake
 
     @property
     def light_meshes(self) -> list[Any]:
@@ -77,3 +120,8 @@ class TrafficLayer:
         cars = self._traffic.at(time, area) if self._traffic is not None else []
         self._field.set_chunk(0, cars)
         self._field.sync()
+        if self._imposters is not None:
+            if self._bake is not None:
+                self._bake()
+                self._bake = None
+            self._imposters.place(cars)

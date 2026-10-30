@@ -149,7 +149,14 @@ class SceneryStage:
         self._props = self._ground_root.adopt(lambda: self._build_props(models))
         prop_models = options.prop_models
         self._traffic = self._ground_root.adopt(
-            lambda: TrafficLayer(scene, prop_models, _props_of(self.kit), level.props.cars),
+            lambda: TrafficLayer(
+                scene,
+                prop_models,
+                _props_of(self.kit),
+                level.props.cars,
+                self.kit.imposter_atlas,
+                self.framing.tilt,
+            ),
         )
         water = self._ground_root.adopt(
             lambda: sea_parts(scene, level, [self._x_half * 2, sea_length], self.kit),

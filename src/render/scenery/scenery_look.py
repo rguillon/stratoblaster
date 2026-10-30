@@ -301,17 +301,20 @@ class AmbientLook:
 
 class PropsLook:
     """The props: their specular, the brightness of their self-lit accents and the look of the
-    atlas their windows are painted into (D-210, see `window_atlas.py`; None: plain windows)."""
+    atlas their windows are painted into (D-210, see `window_atlas.py`; None: plain windows) and
+    of the cars' imposters (D-211, see `imposters.py`; None: the cars drawn as they are)."""
 
     def __init__(
         self,
         specular: float,
         light_intensity: float,
         windows: Any = None,  # noqa: ANN401 (a config record)
+        imposters: Any = None,  # noqa: ANN401 (a config record)
     ) -> None:
         self.specular = specular
         self.lightIntensity = light_intensity
         self.windows = windows
+        self.imposters = imposters
 
 
 class GlowLook:

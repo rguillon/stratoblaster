@@ -164,6 +164,17 @@ def _draw_always(mesh: Any) -> None:
     mesh.doNotSyncBoundingInfo = True
 
 
+def _part_mesh(name: str, geo: Any, material: Any, scene: Any) -> Any:  # noqa: ANN401
+    """The mesh of a part of a prop (its lights, its windows), drawn always; None if it has no
+    such part or no material for it."""
+    # `== None`: a materials object made without windows has the field undefined.
+    if geo == None or material == None or len(geo.indices) == 0:  # noqa: E711
+        return None
+    mesh = mesh_of(name, geo, material, scene)
+    _draw_always(mesh)
+    return mesh
+
+
 def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
     """A disabled, unpickable mesh of `geo`, drawn with `material`."""
     mesh = new_mesh(name, scene)
@@ -299,31 +310,22 @@ class PropField:
 
         for kind, factory in models.items():
             geometry = _geometry_of(factory)
-            structure = mesh_of("prop-" + kind, geometry.structure, materials.structure, scene)
-            structure.receiveShadows = True
-            if on_structure is not None:
-                on_structure(structure)
-            lights = None
-            if geometry.lights is not None and len(geometry.lights.indices) > 0:
-                lights = mesh_of(
-                    "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
-                )
-            windows = None
-            # `!= None`: a materials object made without windows has the field undefined.
-            if (
-                materials.windows != None  # noqa: E711
-                and geometry.windows != None  # noqa: E711
-                and len(geometry.windows.indices) > 0
-            ):
-                windows = mesh_of(
-                    "prop-" + kind + "-windows", geometry.windows, materials.windows, scene
-                )
-                _draw_always(windows)
+            # D-211: a model may have no structure (the cars' lights, their bodies imposters).
+            structure = None
+            if len(geometry.structure.indices) > 0:
+                structure = mesh_of("prop-" + kind, geometry.structure, materials.structure, scene)
+                structure.receiveShadows = True
+                if on_structure is not None:
+                    on_structure(structure)
+                _draw_always(structure)
+            lights = _part_mesh(
+                "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
+            )
+            windows = _part_mesh(
+                "prop-" + kind + "-windows", geometry.windows, materials.windows, scene
+            )
             plumes_of = geometry.plumes if geometry.plumes is not None else []
             plumes = build_plume_meshes(scene, "prop-" + kind, plumes_of, plume_material)
-            _draw_always(structure)
-            if lights is not None:
-                _draw_always(lights)
             for plume in plumes:
                 _draw_always(plume)
             self._meshes[kind] = PropMeshes(structure, lights, plumes, windows)
@@ -371,7 +373,7 @@ class PropField:
     @property
     def structure_meshes(self) -> list[Any]:
         """Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer)."""
-        return [m.structure for m in self._meshes.values()]
+        return [m.structure for m in self._meshes.values() if m.structure is not None]
 
     def structure_of(self, kind: str) -> Any:
         """The structure mesh of a kind of prop."""
@@ -441,7 +443,7 @@ class PropField:
                 mesh.position.set(d.x * math.sin(phase), 0, d.z * math.sin(phase * 0.7 + 1))
 
     def _mesh_list(self, meshes: PropMeshes) -> list[Any]:
-        out: list[Any] = [meshes.structure]
+        out: list[Any] = [meshes.structure] if meshes.structure is not None else []
         if meshes.lights is not None:
             out.append(meshes.lights)
         if meshes.windows is not None:

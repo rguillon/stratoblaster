@@ -19,6 +19,7 @@ from render.babylon import (
 )
 from render.scenery.aurora_material_visual import create_aurora_material
 from render.scenery.cloud_material_visual import create_cloud_material
+from render.scenery.imposter_bake_visual import ImposterAtlas
 from render.scenery.lava_material_visual import LavaFrame, create_lava_material
 from render.scenery.plume_material_visual import create_plume_material
 from render.scenery.procedural_textures import (
@@ -172,6 +173,14 @@ class VisualSceneryKit:
 
     def aurora(self) -> Any:
         return create_aurora_material(self._scene)
+
+    def imposter_atlas(self, kinds: int) -> Any:
+        """D-211: an atlas for `kinds` kinds of car, if the look has their imposters' look."""
+        look = self._look.props.imposters
+        if look == None:  # noqa: E711 (absent: undefined)
+            return None
+        tone = self._look.tone if self._look.tone != None else 1  # noqa: E711
+        return ImposterAtlas(self._scene, look, kinds, tone)
 
     def add_shadow_caster(self, mesh: Any) -> None:
         self._shadows.addShadowCaster(mesh, False)

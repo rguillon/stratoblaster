@@ -14,6 +14,11 @@ CAR_IDS = record(
     }
 )
 
+# D-211: the cars drawn as imposters, baked from their detailed models (see
+# `render/scenery/imposters.py`): 16 headings, 128-pixel frames 12 model units across, centred
+# 1.8 up.
+CAR_IMPOSTERS = record({"headings": 16, "framePx": 128, "frameSize": 12, "centre": 1.8})
+
 # Cars stand in the middle of a lane, on the road surface (`roads.lift`).
 CAR_RULES = record(
     {
