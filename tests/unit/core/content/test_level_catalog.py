@@ -71,3 +71,9 @@ def test_first_unlocked_level_is_the_first_unlocked_index() -> None:
 
 def test_first_unlocked_level_is_zero_when_all_are_locked() -> None:
     assert first_unlocked_level(build_level_grid(1, 3, [])) == 0
+
+
+def test_a_grid_takes_whole_numbers_given_as_floats() -> None:
+    """Transcrypt's numbers are all floats: a whole number given as one builds the same grid."""
+    catalog = build_level_grid(2.0, 1.0, [])
+    assert [entry.id for entry in catalog.levels] == ["1-1", "2-1"]

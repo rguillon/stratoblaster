@@ -43,6 +43,8 @@ def build_level_grid(worlds: int, levels_per_world: int, unlocked_ids: list[str]
         raise ValueError("worlds and levels_per_world must be integers")
     if worlds < 1 or levels_per_world < 1:
         raise ValueError("A level grid needs one level")
+    worlds = int(worlds)
+    levels_per_world = int(levels_per_world)
     levels: list[LevelEntry] = []
     for world in range(1, worlds + 1):
         for level in range(1, levels_per_world + 1):

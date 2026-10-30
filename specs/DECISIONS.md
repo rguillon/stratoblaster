@@ -1740,3 +1740,10 @@
 - **Why:** the earlier helpers returned placeholder values under CPython, so the tests could not check them. The `boss` and `boss_pieces` modules imported each other at the top; `boss_pieces` needed `Boss` only for annotations, so that import now sits under `TYPE_CHECKING` and the annotations are quoted.
 - **Consequences:** core coverage is 99 % lines and branches. Five strict `xfail` tests record genuine defects: `street_dead_ends` (the default removal leaves an on-screen dead end, also in the TypeScript), `ground_boxes` (a building wider than two buckets is missed), `wave_runner` (an infinite count raises `OverflowError`), and two `away_placement` cases (`math.floor` of an unbounded span raises under CPython only: Transcrypt's `Math.floor` accepts it). The `src/game/**` configs do not import under CPython yet (records are plain dicts there), so the scenery tests build small levels by hand.
 - **Status:** Accepted
+
+### D-185 — The defects the unit tests found are fixed (D-184)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** (1) `street_dead_ends`: a link cut back stays cut by default (`keep_cut` defaults to `True`; before, it followed `tees`, so with the default flags a cut street was built again from its other end and could leave an on-screen dead end). This changes the default street layout of `street_grid`, as the owner accepted for the port: the TypeScript had the same defect. (2) `ground_boxes.BuildingIndex.clear` searches as far as the largest building reaches, not two buckets. (3) `away_placement.place_loners` clamps the span to the level before flooring (an unbounded first or last chunk is infinite). (4) `wave_runner._is_integer` tests finiteness before `floor`. (5) `level_catalog.build_level_grid` converts its whole numbers to `int`. (6) `grid_cursor.move_cursor` raises on a grid with entries and no column. (7) `BossDeath` raises on a non-positive `every` (the death never ended).
+- **Why:** each was found by a unit test (D-184). Four only failed under CPython (`math.floor` of an infinity, `range` of a float); they are fixed in the source so both runtimes agree.
+- **Status:** Accepted

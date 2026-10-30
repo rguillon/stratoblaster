@@ -1,7 +1,5 @@
 """Dead ends and crossings of a street grid (`core/scenery/street_dead_ends.py`)."""
 
-import pytest
-
 from core.math.rng import create_rng
 from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends
 from core.scenery.street_links import Link, Nodes, links_by_node
@@ -59,14 +57,6 @@ def test_p04_r08_a_dead_end_is_not_extended_over_unbuildable_ground() -> None:
     assert links[2].built is False
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Defect (also in street-dead-ends.ts): with the default flags a link cut back is built "
-    "again from its other end on the next pass, so the removal flips until MAX_PASSES and can end "
-    "with an on-screen dead end: xs 0..30, links built [T, T, F], unbuildable 3rd link, "
-    "node at X=10 "
-    "left as a dead end.",
-)
 def test_p04_r08_the_default_removal_leaves_no_dead_end_on_screen() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     nodes, links = _chain(xs, [True, True, False], [True, True, False])

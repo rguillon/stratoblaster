@@ -59,7 +59,8 @@ class _QueuedGroup:
 
 def _is_integer(value: float) -> bool:
     """`Number.isInteger`."""
-    return math.floor(value) == value and value < INFINITY and value > -INFINITY
+    # Finite first: `math.floor` raises on an infinite value (CPython; NaN fails the comparisons).
+    return value < INFINITY and value > -INFINITY and math.floor(value) == value
 
 
 def validate_wave_script(script: Sequence[Wave], kind_ids: Sequence[str]) -> None:

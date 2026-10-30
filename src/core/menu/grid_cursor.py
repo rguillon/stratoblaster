@@ -38,6 +38,8 @@ def move_cursor(index: int, direction: CursorDirection, shape: GridShape) -> int
     """
     if shape.count <= 0:
         return 0
+    if shape.columns <= 0:
+        raise ValueError("A grid with entries needs at least one column")
     rows = math.ceil(shape.count / shape.columns)
     row = math.floor(index / shape.columns)
     column = index % shape.columns

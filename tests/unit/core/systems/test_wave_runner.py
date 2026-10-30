@@ -43,12 +43,6 @@ def test_p06_r07_a_wave_entry_must_lie_on_its_edge(position: float) -> None:
         validate_wave_script([Wave(0, "scout", 1, 0, EnemyEntry("top", position))], KINDS)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=OverflowError,
-    reason="BUG: _is_integer calls math.floor(inf), which raises OverflowError instead of the "
-    'descriptive "bad count" ValueError (the TypeScript Number.isInteger says false).',
-)
 def test_p06_r07_an_infinite_count_is_a_descriptive_bad_count() -> None:
     with pytest.raises(ValueError, match="bad count"):
         validate_wave_script([Wave(0, "scout", float("inf"), 0, TOP)], KINDS)

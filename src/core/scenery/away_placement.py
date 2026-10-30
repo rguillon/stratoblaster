@@ -249,8 +249,9 @@ def place_loners(site: AwaySite, loners: Loners, span: ZSpan) -> None:
     half = site.offscreen_x * AWAY_SPREAD
     i0 = math.floor(-half / cell)
     i1 = math.ceil(half / cell)
-    j0 = max(math.floor(-AWAY_MARGIN / cell), math.floor(span.from_ / cell))
-    j1 = min(math.ceil((site.length_ + AWAY_MARGIN) / cell), math.ceil(span.to / cell))
+    # Clamped to the level before dividing: an unbounded span (the first or last chunk) is infinite.
+    j0 = math.floor(max(-AWAY_MARGIN, span.from_) / cell)
+    j1 = math.ceil(min(site.length_ + AWAY_MARGIN, span.to) / cell)
     for j in range(j0, j1):
         for i in range(i0, i1):
             _loner(site, loners, i, j, span)

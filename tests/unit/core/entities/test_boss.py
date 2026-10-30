@@ -298,3 +298,11 @@ def test_the_base_hooks_of_a_boss_are_abstract(ctx: FakeContext) -> None:
 def test_boss_death_keeps_its_timing() -> None:
     death = BossDeath(seconds=2.0, every=0.5)
     assert (death.seconds, death.every) == (2.0, 0.5)
+
+
+@pytest.mark.parametrize("every", [0.0, -1.0, float("nan")])
+def test_boss_death_needs_a_positive_blast_interval(every: float) -> None:
+    """A death blast every `every` seconds never ends for `every` of zero (the blasts never catch up
+    with the time), so the interval must be positive."""
+    with pytest.raises(ValueError, match="positive interval"):
+        BossDeath(seconds=1.0, every=every)

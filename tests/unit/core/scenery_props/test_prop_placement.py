@@ -471,12 +471,6 @@ def test_without_a_road_it_can_be_built_there_are_no_buildings() -> None:
     assert all(p.kind != "block" for p in props)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=OverflowError,
-    reason="a level with loners cannot be placed in CPython: the first chunk's span is unbounded, "
-    "and place_loners floors it (away_placement.py; Transcrypt's Math.floor takes infinity)",
-)
 def test_p04_r04_a_level_with_loners_places_its_first_chunk() -> None:
     level = sample_level(props=sample_props(loners=Loners(40, 1, 2)))
     placer_for(level).place(AREA)

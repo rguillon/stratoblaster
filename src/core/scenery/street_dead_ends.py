@@ -109,10 +109,11 @@ def remove_dead_ends(
     looked at (those it would have fixed); the others would be left as they are. Same passes, same
     fixes in the same order, without going through every node each time.
 
-    `keep_cut` (phase 15): a link cut back is never built again (as with `tees`), so a street
-    cannot keep being cut from one end and built again from the other. Defaults to `tees`.
+    `keep_cut`: a link cut back is never built again, so a street cannot keep being cut from one
+    end and built again from the other (the default; the removal flips until `MAX_PASSES`
+    otherwise and can leave an on-screen dead end).
     """
-    keep = tees if keep_cut is None else keep_cut
+    keep = True if keep_cut is None else keep_cut
     passes = _Passes(len(nodes))
     for _ in range(MAX_PASSES):
         changed = False

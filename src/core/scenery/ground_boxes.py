@@ -131,10 +131,15 @@ class BuildingIndex:
 
     def __init__(self) -> None:
         self._buckets: dict[str, _Bucket] = {}
+        # The largest half-extents of all the buildings: how far one can reach from its bucket.
+        self._max_half_x = 0.0
+        self._max_half_z = 0.0
 
     def add(self, building: BuildingRecord) -> None:
         x = building.placement.x
         z = building.placement.z
+        self._max_half_x = max(self._max_half_x, building.half_x)
+        self._max_half_z = max(self._max_half_z, building.half_z)
         key = _bucket_key(math.floor(x / BUILDING_BUCKET), math.floor(z / BUILDING_BUCKET))
         bucket = self._buckets.get(key)
         if bucket is None:
@@ -145,14 +150,17 @@ class BuildingIndex:
         bucket.half_z = max(bucket.half_z, building.half_z)
 
     def clear(self, area: GroundBox, gap: float) -> bool:
-        """Whether no building of the buckets two around `area`'s comes closer to it than `gap`."""
+        """Whether no building comes closer to `area` than `gap`: the buckets within reach of the
+        largest building (so a wide building, centred further off, is not missed)."""
         x = area.placement.x
         z = area.placement.z
         bx = math.floor(x / BUILDING_BUCKET)
         bz = math.floor(z / BUILDING_BUCKET)
-        for i in range(bx - 2, bx + 3):
+        reach_x = math.ceil((area.half_x + self._max_half_x + gap) / BUILDING_BUCKET) + 1
+        reach_z = math.ceil((area.half_z + self._max_half_z + gap) / BUILDING_BUCKET) + 1
+        for i in range(bx - reach_x, bx + reach_x + 1):
             dx = _to_bucket(x, i)
-            for j in range(bz - 2, bz + 3):
+            for j in range(bz - reach_z, bz + reach_z + 1):
                 bucket = self._buckets.get(_bucket_key(i, j))
                 if bucket is None:
                     continue

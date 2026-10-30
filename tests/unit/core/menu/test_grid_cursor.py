@@ -50,3 +50,8 @@ def test_a_single_column_wraps_vertically() -> None:
 
 def test_an_empty_grid_stays_at_zero() -> None:
     assert move_cursor(0, "down", GridShape(count=0, columns=3, wrap=True)) == 0
+
+
+def test_a_grid_with_entries_needs_a_column() -> None:
+    with pytest.raises(ValueError, match="at least one column"):
+        move_cursor(0, "right", GridShape(count=3, columns=0, wrap=False))

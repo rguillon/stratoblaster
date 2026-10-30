@@ -68,6 +68,8 @@ class BossDeath:
     """A boss's death (P07-R06): a blast every `every` seconds over its hull for `seconds`."""
 
     def __init__(self, seconds: float, every: float) -> None:
+        if not every > 0:
+            raise ValueError("A boss's death blasts need a positive interval")
         self.seconds = seconds
         self.every = every
 

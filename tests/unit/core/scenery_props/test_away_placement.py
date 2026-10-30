@@ -230,12 +230,6 @@ def test_away_margin_is_the_reach_past_the_level() -> None:
     assert AWAY_MARGIN == 400
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=OverflowError,
-    reason="place_loners floors an infinite span (the first and last chunks): math.floor(-inf) "
-    "raises in CPython (away_placement.py); Transcrypt's Math.floor does not",
-)
 def test_loners_take_an_unbounded_span_as_the_first_chunk_does() -> None:
     site = FakeSite()
     place_loners(site, Loners(100, 1, 1), ZSpan(-math.inf, 300))

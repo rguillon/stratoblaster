@@ -1,7 +1,5 @@
 """Boxes of ground props take, and the index of placed buildings (`core.scenery.ground_boxes`)."""
 
-import pytest
-
 from core.scenery.ground_boxes import (
     BUILDING_BUCKET,
     BuildingIndex,
@@ -109,16 +107,11 @@ def test_placer_snapshot_keeps_its_fields() -> None:
     assert (snapshot.buildings, snapshot.fixed, snapshot.placed_to) == ([], 2, 3)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BuildingIndex.clear searches two buckets around the query only: a building wider than "
-    "two buckets, centred further off, is missed (ground_boxes.py)",
-)
 def test_index_finds_a_huge_building_whose_bucket_is_two_or_more_away() -> None:
-    # Bug, found by these tests (xfail): the index looks at the buckets two around the query only,
-    # so a building wider than two buckets (BUILDING_BUCKET) whose centre lies further off is
-    # missed. Its centre is at X = 100 (bucket 3), half 100, so it reaches X = 0; the query box
-    # at X = -1 (bucket -1) with half 1 and gap 1 overlaps it (|dx| = 101 < 102) but is not checked.
+    # A building wider than two buckets (BUILDING_BUCKET) whose centre lies further off must not be
+    # missed: the index searches as far as its largest building reaches. Its centre is at X = 100
+    # (bucket 3), half 100, so it reaches X = 0; the query box at X = -1 with half 1 and gap 1
+    # overlaps it (|dx| = 101 < 102).
     index = BuildingIndex()
     index.add(Box(100, 0, 100))
     assert not index.clear(Box(-1, 0, 1), 1)
