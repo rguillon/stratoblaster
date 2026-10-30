@@ -379,20 +379,23 @@ class PropPlume:
 
 class PropGeometry:
     """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents, the
-    smoke or steam it sends up and its windows (D-210: quads on the walls, mapped on the windows'
-    atlas)."""
+    smoke or steam it sends up, its windows (D-210: quads on the walls, mapped on the windows'
+    atlas) and a stand-in that only casts its shadow (D-212: a prop drawn as an imposter, whose
+    quad would cast a wrong one; a few low-poly solids round where it stands)."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         structure: ColoredGeometry,
         lights: ColoredGeometry | None = None,
         plumes: Sequence[PropPlume] | None = None,
         windows: TexturedGeometry | None = None,
+        shadow: ColoredGeometry | None = None,
     ) -> None:
         self.structure = structure
         self.lights = lights
         self.plumes = plumes
         self.windows = windows
+        self.shadow = shadow
 
 
 # Builds the geometry of one kind of prop, standing on Y = 0, centred on the origin.

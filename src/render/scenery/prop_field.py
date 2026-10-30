@@ -18,6 +18,7 @@ from render.babylon import (
     matrix_compose_to_ref,
     new_matrix,
     new_mesh,
+    new_standard_material,
     new_vertex_data,
     quaternion,
     quaternion_yaw_pitch_roll_to_ref,
@@ -46,6 +47,8 @@ Window = list[float]
 __pragma__("noskip")
 
 MATRIX_FLOATS = 16
+# D-212: the layer of the shadows' stand-ins, which no camera sees (theirs is 0x0FFFFFFF).
+SHADOW_ONLY_LAYER = 0x20000000
 
 # Keys of the objects that hold their cached results (a WeakMap keyed by the object).
 _GEOMETRY_SLOT = "render_prop_geometry"
@@ -81,6 +84,7 @@ class PropMeshes:
         lights: Any,  # noqa: ANN401
         plumes: list[Any],
         windows: Any = None,  # noqa: ANN401
+        shadow: Any = None,  # noqa: ANN401
     ) -> None:
         self.structure = structure
         self.lights = lights
@@ -88,6 +92,8 @@ class PropMeshes:
         self.plumes = plumes
         """D-210: its windows (None if it has none)."""
         self.windows = windows
+        """D-212: its shadow's stand-in, drawn in the shadows only (None if it has none)."""
+        self.shadow = shadow
 
 
 class KindProps:
@@ -178,6 +184,16 @@ def _part_mesh(name: str, geo: Any, material: Any, scene: Any) -> Any:  # noqa: 
     mesh = mesh_of(name, geo, material, scene)
     _draw_always(mesh)
     return mesh
+
+
+def shadow_only_material(scene: Any) -> Any:  # noqa: ANN401
+    """D-212: a material that draws nothing (no colour, no depth): a mesh with it only shows in
+    the shadow maps, which draw it with their own shader."""
+    material = new_standard_material("prop-shadow-only", scene)
+    material.disableColorWrite = True
+    material.disableDepthWrite = True
+    material.disableLighting = True
+    return material
 
 
 def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
@@ -318,6 +334,8 @@ class PropField:
                 self._plume_materials[id] = material
             return material.material
 
+        self._shadow_material: Any = None
+        self._on_structure = on_structure
         for kind, factory in models.items():
             geometry = _geometry_of(factory)
             # D-211: a model may have no structure (the cars' lights, their bodies imposters).
@@ -334,11 +352,29 @@ class PropField:
             windows = _part_mesh(
                 "prop-" + kind + "-windows", geometry.windows, materials.windows, scene
             )
+            # D-212: a stand-in drawn only in the shadows, with the instances: for a model with no
+            # structure (an imposter's, whose quad casts no shadow), not to cast a second one.
+            shadow = None if structure is not None else self._shadow_mesh(scene, kind, geometry)
+            if shadow is not None:
+                on_structure(shadow)
             plumes_of = geometry.plumes if geometry.plumes is not None else []
             plumes = build_plume_meshes(scene, "prop-" + kind, plumes_of, plume_material)
             for plume in plumes:
                 _draw_always(plume)
-            self._meshes[kind] = PropMeshes(structure, lights, plumes, windows)
+            self._meshes[kind] = PropMeshes(structure, lights, plumes, windows, shadow)
+
+    def _shadow_mesh(self, scene: Any, kind: str, geometry: PropGeometry) -> Any:  # noqa: ANN401
+        """D-212: the mesh of the shadow's stand-in of `kind`, if it has one and there are shadows
+        (`on_structure`)."""
+        if geometry.shadow == None or self._on_structure is None:  # noqa: E711 (absent: undefined)
+            return None
+        if self._shadow_material is None:
+            self._shadow_material = shadow_only_material(scene)
+        mesh = _part_mesh("prop-" + kind + "-shadow", geometry.shadow, self._shadow_material, scene)
+        if mesh is not None:
+            # On a layer no camera sees: only the shadow map draws it.
+            mesh.layerMask = SHADOW_ONLY_LAYER
+        return mesh
 
     def update_plumes(self, frame: PlumeFrame) -> None:
         """Phase 10: moves the smoke and steam of the props on to this frame."""
@@ -468,6 +504,8 @@ class PropField:
             out.append(meshes.lights)
         if meshes.windows is not None:
             out.append(meshes.windows)
+        if meshes.shadow is not None:
+            out.append(meshes.shadow)
         for plume in meshes.plumes:
             out.append(plume)
         return out

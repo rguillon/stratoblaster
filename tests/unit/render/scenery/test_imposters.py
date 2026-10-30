@@ -19,7 +19,7 @@ from render.scenery.imposters import (
     view_axes,
 )
 
-LOOK = record({"headings": 8, "framePx": 64, "frameSize": 10, "centre": 1.5})
+LOOK = record({"headings": 8, "framePx": 64, "frameSize": 10, "centre": 1.5, "ambient": 0.75})
 TILT = math.radians(35)
 
 

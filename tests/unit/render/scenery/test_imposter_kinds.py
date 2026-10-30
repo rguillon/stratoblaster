@@ -29,7 +29,9 @@ def _model(lit: bool):
         if lit:
             lights.positions.extend([0, 0, 0, 1, 0, 0, 0, 1, 0])
             lights.indices.extend([0, 1, 2])
-        return PropGeometry(body, lights)
+        shadow = ColoredGeometry()
+        shadow.indices.extend([0, 1, 2])
+        return PropGeometry(body, lights, None, None, shadow)
 
     return make
 
@@ -73,6 +75,8 @@ def test_d212_imposter_kinds_keep_only_their_lights_and_bake_once() -> None:
     tree = kinds.models["tree"]()
     assert tree.structure.indices == []
     assert tree.lights.indices == [0, 1, 2]
+    # D-212: and its shadow's stand-in.
+    assert tree.shadow.indices == [0, 1, 2]
     assert kinds.models["house"] is models["house"]
     kinds.bake_once()
     kinds.bake_once()

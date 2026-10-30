@@ -10,7 +10,8 @@ is at the top.
 
 The look (`ImposterLook`, a config record) has `headings` (frames per kind), `framePx` (pixels
 across a frame), `frameSize` (model units across a frame) and `centre` (the height, in model units,
-of the point at the middle of each frame).
+of the point at the middle of each frame) and `ambient` (how bright the faces turned from the bake's
+light are, 0..1: D-212).
 """
 
 import math
@@ -26,10 +27,9 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# How the bake shades the models (their colours are drawn unlit): towards this light, from this
-# much ambient.
+# How the bake shades the models (their colours are drawn unlit): towards this light, from the
+# look's `ambient` (D-212).
 BAKE_LIGHT = [-0.35, 0.85, -0.4]
-BAKE_AMBIENT = 0.75
 # How high the bottom of an imposter's quad stays over the ground.
 QUAD_CLEARANCE = 0.05
 
@@ -90,8 +90,8 @@ def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[floa
     return _plus(_plus([0, 0, 0], axes[0], across), axes[1], up)
 
 
-def _shade(normal: list[float]) -> float:
-    """How bright a face of `normal` is baked (BAKE_LIGHT, BAKE_AMBIENT)."""
+def _shade(normal: list[float], ambient: float) -> float:
+    """How bright a face of `normal` is baked (towards BAKE_LIGHT, from `ambient`)."""
     lx = BAKE_LIGHT[0]
     ly = BAKE_LIGHT[1]
     lz = BAKE_LIGHT[2]
@@ -100,7 +100,7 @@ def _shade(normal: list[float]) -> float:
     if n == 0:
         return 1
     dot = (normal[0] * lx + normal[1] * ly + normal[2] * lz) / (length * n)
-    return BAKE_AMBIENT + (1 - BAKE_AMBIENT) * max(0, dot)
+    return ambient + (1 - ambient) * max(0, dot)
 
 
 def _face_normal(p: list[float], i: int, j: int, k: int) -> list[float]:
@@ -145,8 +145,9 @@ def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
     # A loop: Transcrypt has no list repetition (`[1.0] * count`).
     shades: list[float] = [1.0 for _ in range(count)]
     indices = model.indices
+    ambient: float = look.ambient
     for t in range(0, len(indices), 3):
-        shade = _shade(_face_normal(turned, indices[t], indices[t + 1], indices[t + 2]))
+        shade = _shade(_face_normal(turned, indices[t], indices[t + 1], indices[t + 2]), ambient)
         for k in range(3):
             shades[indices[t + k]] = shade
     out.positions.extend(turned)

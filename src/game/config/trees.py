@@ -26,9 +26,12 @@ TREE_KINDS = [
 ]
 
 # D-212: the trees drawn as imposters (see `render/scenery/imposters.py`): 4 headings (a tree
-# turned is another tree), 128-pixel frames 13 model units across, centred 5 up (the middle of a
-# tree seen from the playfield camera).
-TREE_IMPOSTERS = record({"headings": 4, "framePx": 128, "frameSize": 13, "centre": 5})
+# turned is another tree), 256-pixel frames (their leaves are small) 13 model units across, centred
+# 5 up (the middle of a tree seen from the playfield camera), shaded hard (soft, they looked like
+# plastic).
+TREE_IMPOSTERS = record(
+    {"headings": 4, "framePx": 256, "frameSize": 13, "centre": 5, "ambient": 0.6}
+)
 
 # D-212: woods almost everywhere on the grass (the noise is over 0.27 on about 93 % of the ground),
 # clearings about 300 units apart, ragged edges.

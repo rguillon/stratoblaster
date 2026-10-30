@@ -20,10 +20,12 @@ __pragma__("noskip")
 
 
 def lights_only(factory: Any) -> Any:  # noqa: ANN401
-    """A model factory making only the lights of what `factory` makes."""
+    """A model factory making only the lights of what `factory` makes, and its shadow's stand-in
+    (D-212)."""
 
     def make() -> PropGeometry:
-        return PropGeometry(ColoredGeometry(), prop_geometry(factory).lights)
+        geometry = prop_geometry(factory)
+        return PropGeometry(ColoredGeometry(), geometry.lights, None, None, geometry.shadow)
 
     return make
 

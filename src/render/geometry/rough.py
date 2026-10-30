@@ -109,3 +109,156 @@ def rough_ball(  # noqa: PLR0917 (positional: Transcrypt has no keyword argument
     # height by Y.
     stretched = [[p[0] * radii[0], p[1] * radii[1]] for p in profile]
     rough_lathe(s, stretched, 9, color, rough, Placement(centre))
+
+
+# A direction this close to up is crossed with Z, not with up, for a tuft's sides.
+NEAR_UP = 0.9
+
+
+class Leaves:
+    """How a cloud of leaves looks: `palette` (colours picked at random), `count` tufts of about
+    `size` across, laid from the surface down to `depth` of the way in (the deeper, the darker, by
+    `inner`; the lower, the darker, by `shadow`), each shaded up to `shade` lighter or darker."""
+
+    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        palette: list[Rgb],
+        count: int,
+        size: float,
+        depth: float,
+        inner: float,
+        shadow: float,
+        shade: float,
+    ) -> None:
+        self.palette = palette
+        self.count = count
+        self.size = size
+        self.depth = depth
+        self.inner = inner
+        self.shadow = shadow
+        self.shade = shade
+
+
+def _norm(v: Vec3) -> Vec3:
+    length = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+    if length == 0:
+        return [0, 1, 0]
+    return [v[0] / length, v[1] / length, v[2] / length]
+
+
+def _cross(a: Vec3, b: Vec3) -> Vec3:
+    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+
+
+def _plus(a: Vec3, b: Vec3, k: float) -> Vec3:
+    return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]
+
+
+def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    s: SolidBuilder,
+    at: Vec3,
+    out: Vec3,
+    size: float,
+    color: Rgb,
+    turn: float,
+) -> None:
+    """A tuft of leaves at `at`: a little three-sided pyramid `size` across, its tip towards `out`
+    (a unit vector), turned `turn` round it; its faces face outwards."""
+    side = _norm(_cross(out, [0, 0, 1] if abs(out[1]) > NEAR_UP else [0, 1, 0]))
+    other = _cross(out, side)
+    base: list[Vec3] = []
+    for k in range(3):
+        angle = turn + k * math.pi * 2 / 3
+        corner = _plus(
+            _plus(at, side, math.cos(angle) * size * 0.5), other, math.sin(angle) * size * 0.5
+        )
+        base.append(_plus(corner, out, -size * 0.15))
+    tip = _plus(at, out, size * 0.45)
+    for k in range(3):
+        a = base[k]
+        b = base[(k + 1) % 3]
+        # Outward: (b - a) x (tip - a) along `out` (SolidBuilder.face: counter-clockwise from out).
+        n = _cross(
+            [b[0] - a[0], b[1] - a[1], b[2] - a[2]], [tip[0] - a[0], tip[1] - a[1], tip[2] - a[2]]
+        )
+        mid = [
+            (a[0] + b[0] + tip[0]) / 3 - at[0],
+            (a[1] + b[1] + tip[1]) / 3 - at[1],
+            (a[2] + b[2] + tip[2]) / 3 - at[2],
+        ]
+        if n[0] * mid[0] + n[1] * mid[1] + n[2] * mid[2] >= 0:
+            s.face([a, b, tip], color)
+        else:
+            s.face([a, tip, b], color)
+
+
+def _tuft_color(leaves: Leaves, seed: int, k: int, deep: float, up: float) -> Rgb:
+    """The colour of tuft `k`: from the palette, darker the deeper (`deep`, 0 at the surface to 1)
+    and the lower (`up`, 0 at the bottom to 1 at the top), jittered."""
+    palette = leaves.palette
+    pick = math.floor(hash_2d(k, 4, seed) * len(palette))
+    pick = len(palette) - 1 if pick >= len(palette) else pick
+    jitter = 1 + (hash_2d(k, 5, seed) - 0.5) * 2 * leaves.shade
+    k_light = (1 - leaves.inner * deep) * (1 - leaves.shadow * (1 - up)) * jitter
+    return _shaded(palette[pick], k_light)
+
+
+def leaf_cloud(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    s: SolidBuilder,
+    centre: Vec3,
+    radii: Vec3,
+    leaves: Leaves,
+    seed: int,
+) -> None:
+    """A clump of leaves: `leaves.count` tufts in the shell of an ellipsoid of `radii` round
+    `centre` (D-212: a crown that reads as leaves, not as one smooth ball)."""
+    for k in range(leaves.count):
+        # A direction spread evenly over the sphere, and how deep in the shell.
+        y = hash_2d(k, 0, seed) * 2 - 1
+        a = hash_2d(k, 1, seed) * math.pi * 2
+        ring = math.sqrt(max(0, 1 - y * y))
+        unit = [ring * math.cos(a), y, ring * math.sin(a)]
+        deep = hash_2d(k, 2, seed) * leaves.depth
+        reach = 1 - deep
+        at = [
+            centre[0] + unit[0] * radii[0] * reach,
+            centre[1] + unit[1] * radii[1] * reach,
+            centre[2] + unit[2] * radii[2] * reach,
+        ]
+        # Out along the ellipsoid's normal, a little askew.
+        out = _norm(
+            [
+                unit[0] / radii[0] + (hash_2d(k, 7, seed) - 0.5) * 0.6 / radii[0],
+                unit[1] / radii[1] + (hash_2d(k, 8, seed) - 0.5) * 0.6 / radii[1],
+                unit[2] / radii[2] + (hash_2d(k, 9, seed) - 0.5) * 0.6 / radii[2],
+            ]
+        )
+        size = leaves.size * (0.7 + 0.6 * hash_2d(k, 3, seed))
+        color = _tuft_color(leaves, seed, k, deep / max(leaves.depth, 1e-6), (y + 1) / 2)
+        tuft(s, at, out, size, color, hash_2d(k, 6, seed) * math.pi * 2)
+
+
+def leaf_cone(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    s: SolidBuilder,
+    base: Vec3,
+    size: list[float],
+    leaves: Leaves,
+    seed: int,
+) -> None:
+    """A tier of needles: `leaves.count` tufts on and just under a cone of `size` (radius, height)
+    standing at `base`, pointing out and a little down (D-212: a pine's)."""
+    radius = size[0]
+    height = size[1]
+    slope = radius / height
+    for k in range(leaves.count):
+        f = math.sqrt(hash_2d(k, 0, seed))
+        # More tufts low on the cone, where it is wider: `f` is the share of the way down.
+        up = 1 - f
+        a = hash_2d(k, 1, seed) * math.pi * 2
+        deep = hash_2d(k, 2, seed) * leaves.depth
+        r = radius * f * (1 - deep)
+        at = [base[0] + math.cos(a) * r, base[1] + up * height, base[2] + math.sin(a) * r]
+        out = _norm([math.cos(a), slope - 0.35 + (hash_2d(k, 7, seed) - 0.5) * 0.5, math.sin(a)])
+        tuft_size = leaves.size * (0.7 + 0.6 * hash_2d(k, 3, seed))
+        color = _tuft_color(leaves, seed, k, deep / max(leaves.depth, 1e-6), up)
+        tuft(s, at, out, tuft_size, color, hash_2d(k, 6, seed) * math.pi * 2)
