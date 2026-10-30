@@ -13,10 +13,10 @@ WINDOW_ATLAS = record(
         # One band of columns per style: square punched windows, ribbons running along the floor,
         # tall narrow windows, and a curtain wall of large panes.
         "styles": [
-            {"window": [2, 2, 6, 6], "lit": 0.4},
-            {"window": [0, 3, 8, 6], "lit": 0.45},
-            {"window": [3, 1, 5, 7], "lit": 0.35},
-            {"window": [1, 1, 7, 7], "lit": 0.5},
+            {"window": [2, 2, 6, 6], "lit": 0.18},
+            {"window": [0, 3, 8, 6], "lit": 0.2},
+            {"window": [3, 1, 5, 7], "lit": 0.15},
+            {"window": [1, 1, 7, 7], "lit": 0.22},
         ],
         # Warm lamps mostly, now and then a cold office light or a screen.
         "colors": [
@@ -28,9 +28,9 @@ WINDOW_ATLAS = record(
         ],
         "brightness": [0.45, 1],
         "blinds": 0.25,
-        "dark": [0.02, 0.025, 0.035],
-        # The glass, as the sun lights it (by day the windows show as dark glass).
-        "glass": [0.1, 0.12, 0.16],
+        "dark": [0.01, 0.01, 0.015],
+        # How much the sun shows the atlas: by day lit windows show faintly, dark ones black.
+        "glass": [0.25, 0.25, 0.25],
         "halo": 0.3,
         "seed": 4242,
     }

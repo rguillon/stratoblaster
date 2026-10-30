@@ -230,6 +230,13 @@ class SceneryStage:
         return _concat(self._props.light_meshes, self._traffic.light_meshes)
 
     @property
+    def window_meshes(self) -> list[Any]:
+        """Meshes of the props' windows (D-210), among the glowing ones: a glow layer draws them
+        with their own material."""
+        meshes: list[Any] = self._props.window_meshes
+        return meshes
+
+    @property
     def glow_occluders(self) -> list[Any]:
         """Meshes that hide the glowing ones behind them (reviewer, 2026-10-28): the props and the
         cars. A glow layer draws them black; the terrain chunks come through `watch_terrain`."""

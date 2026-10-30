@@ -40,7 +40,7 @@ from render.environment.showcase_environment_visual import (
 from render.scenery.playfield_framing import frame_playfield
 from render.scenery.prop_field import mesh_of, prop_bounds, prop_geometry
 from render.scenery.scenery_kit import create_prop_materials
-from render.scenery.window_material_visual import add_window_material
+from render.scenery.window_material_visual import add_window_material, glow_windows
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -111,9 +111,11 @@ class DevPropStage:
         fill = props.fill_direction
         light = new_directional_light("dev-props-fill", vector3(fill[0], fill[1], fill[2]), scene)
         light.intensity = props.fill_intensity
+        # The glow layer, if any (D-210: it draws the windows with their own material).
+        self._glow: Any = None
         if environment:
             stops = [GradientStop(s[0], [s[1], s[2], s[3]]) for s in props.environment_stops]
-            apply_showcase_environment(
+            self._glow = apply_showcase_environment(
                 scene,
                 ShowcaseEnvironmentOptions(
                     int(GAME_PLAY_CONFIG.environment_cube_size),
@@ -178,6 +180,8 @@ class DevPropStage:
             mesh = mesh_of("dev-prop-" + item.id, geo, part[1], self.scene)
             mesh.parent = root
             set_enabled(mesh, True)
+            if part[1] == materials.windows and self._glow != None:  # noqa: E711
+                glow_windows(self._glow, mesh)
         self._prop = root
         self.size = max(b[3] - b[0], b[4] - b[1], b[5] - b[2])
         self.target = [x, max(0, b[4]) / 2, z]

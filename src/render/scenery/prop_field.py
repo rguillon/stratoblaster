@@ -364,6 +364,11 @@ class PropField:
         return out
 
     @property
+    def window_meshes(self) -> list[Any]:
+        """Meshes of the windows (D-210: a glow layer draws them with their own material)."""
+        return [m.windows for m in self._meshes.values() if m.windows is not None]
+
+    @property
     def structure_meshes(self) -> list[Any]:
         """Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer)."""
         return [m.structure for m in self._meshes.values()]

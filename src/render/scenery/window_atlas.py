@@ -14,7 +14,7 @@ The look (`WindowAtlasLook`, a config record) has:
 - `colors`: the colours of the lit windows; `brightness`: their `[low, high]` brightness;
 - `blinds`: the chance a lit window has its blind half down (its top half dimmer);
 - `dark`: the colour of a dark window; `halo`: the opacity of the halo round a lit one;
-- `glass`: the colour of the glass as the sun lights it (for the material, not the atlas);
+- `glass`: how much the sun lights the atlas (for the material, not the atlas);
 - `seed`: the seed of the lit pattern.
 """
 
