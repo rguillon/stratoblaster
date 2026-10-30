@@ -52,7 +52,8 @@ def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
             "seconds": seconds,
             "relief": smooth(base, amplitude, 520, 5),
             "buildingDensity": 0,
-            "treeDensity": 0,
+            # D-212: copses on the islands.
+            "treeDensity": 0.35,
             "surface": {"lush": 0.7},
             "groups": [G.fishing],
         }
@@ -67,7 +68,7 @@ GREEN_COAST = record(
         "relief": smooth(16, 10, 480),
         "shore": shore(-40, 90, 1800),
         "buildingDensity": 0.5,
-        "treeDensity": 0,
+        "treeDensity": 0.35,
         "surface": {"lush": 0.8, "sandy": 0.2},
         "groups": [G.fishing, G.coastHomes],
     }
@@ -83,7 +84,8 @@ def green(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(24, 10, 600),
                 "buildingDensity": 0.5,
-                "treeDensity": 0,
+                # D-212: woods here and there.
+                "treeDensity": 0.45,
                 "surface": {"lush": 1},
                 "groups": [G.villages, G.farms],
             }
@@ -125,7 +127,7 @@ GREEN_COAST_LEVEL = [
             "relief": smooth(22, 14, 460),
             "shore": shore(-90, 170, 1500),
             "buildingDensity": 0.55,
-            "treeDensity": 0,
+            "treeDensity": 0.3,
             "groups": [G.coastHomes, G.villages],
         },
     ),
@@ -139,14 +141,14 @@ GREEN_COAST_LEVEL = [
             "groups": [G.coastHomes, G.farms],
         },
     ),
-    green("meadows", 45, {"buildingDensity": 0.5, "treeDensity": 0}),
+    green("meadows", 45, {"buildingDensity": 0.5, "treeDensity": 0.3}),
     green(
         "groves",
         40,
         {
             "relief": smooth(30, 16, 480),
             "buildingDensity": 0.45,
-            "treeDensity": 0,
+            "treeDensity": 0.8,
             "groups": [G.farms],
         },
     ),

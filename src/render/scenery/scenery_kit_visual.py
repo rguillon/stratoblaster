@@ -174,9 +174,8 @@ class VisualSceneryKit:
     def aurora(self) -> Any:
         return create_aurora_material(self._scene)
 
-    def imposter_atlas(self, kinds: int) -> Any:
-        """D-211: an atlas for `kinds` kinds of car, if the look has their imposters' look."""
-        look = self._look.props.imposters
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """D-211: an atlas of `look` for `kinds` kinds of prop, if there is a look."""
         if look == None:  # noqa: E711 (absent: undefined)
             return None
         tone = self._look.tone if self._look.tone != None else 1  # noqa: E711

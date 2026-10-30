@@ -1,6 +1,6 @@
 """One model per prop kind of this game, keyed by its id (P04-R04): the cars, the buildings and lots
-of the grid of tiles, and the road kit. D-207: the hand-made homes, huts, masts, farms and plants
-are gone."""
+of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts, masts,
+farms and plants are gone."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -16,6 +16,7 @@ from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
 from game.view.props.car_props import build_car  # noqa: E402
 from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402
 from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402
+from game.view.props.tree_props import TREE_MODELS  # noqa: E402
 
 
 def merged(parts: list[Any]) -> dict[str, Any]:
@@ -50,6 +51,8 @@ def make_prop_models() -> dict[str, Any]:
         [
             make_car_models(),
             TILE_PROP_MODELS,
+            # D-212: the trees of the green land.
+            TREE_MODELS,
             # The road kit, for the `props/` page (no level places it: its streets are drawn).
             ROAD_KIT_MODELS,
         ]

@@ -1,6 +1,7 @@
 """The props standing on the terrain (P04-R04): each kind of prop is one mesh (plus one for its
 self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped by
-terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair.
+terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair. D-212:
+some kinds may be drawn as imposters instead (`ImposterKinds`).
 """
 
 import math
@@ -28,13 +29,17 @@ from render.scenery.plume_layer import build_plume_meshes
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
 from core.scenery.ground_boxes import PropPlacement  # noqa: E402
 from core.scenery.scenery_level import SceneryLevel  # noqa: E402
 from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
 from render.scenery.plume_layer import PlumeFrame, PlumeMaterial, PlumeMaterialFactory  # noqa: E402
 from render.scenery.scenery_look import PropGeometry, PropModelFactory  # noqa: E402
+
+if TYPE_CHECKING:
+    # It imports this module.
+    from render.scenery.imposter_kinds import ImposterKinds
 
 PropDrift = Any
 Window = list[float]
@@ -283,9 +288,14 @@ class PropField:
         materials: PropMaterials,
         on_structure: Any = None,
         plume_materials: PlumeMaterialFactory | None = None,
+        imposters: "ImposterKinds | None" = None,
     ) -> None:
         """`on_structure(mesh)`: called with each structure mesh (optional). `plume_materials`: the
-        material factory of the plumes (phase 10, optional)."""
+        material factory of the plumes (phase 10, optional). `imposters` (D-212, optional): the
+        kinds drawn as imposters (`models` then the imposters' own, making only their lights)."""
+        self._imposters = imposters
+        if imposters is not None:
+            models = imposters.models
         self._meshes: dict[str, PropMeshes] = {}
         """Phase 10: one material per kind of plume, driven every frame."""
         self._plume_materials: dict[str, PlumeMaterial] = {}
@@ -372,8 +382,18 @@ class PropField:
 
     @property
     def structure_meshes(self) -> list[Any]:
-        """Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer)."""
-        return [m.structure for m in self._meshes.values() if m.structure is not None]
+        """Meshes of the lit structures and of the imposters (e.g. to hide the lights behind them
+        in a glow layer)."""
+        meshes = [m.structure for m in self._meshes.values() if m.structure is not None]
+        if self._imposters is not None:
+            meshes.extend(self._imposters.meshes)
+        return meshes
+
+    def bake_imposters(self) -> None:
+        """D-212: bakes the imposters' pictures (the first time only). Not while the ground adopts
+        what is made: the bake's mesh must not hang from it."""
+        if self._imposters is not None:
+            self._imposters.bake_once()
 
     def structure_of(self, kind: str) -> Any:
         """The structure mesh of a kind of prop."""
@@ -473,6 +493,17 @@ class PropField:
                 if len(matrices) == 0:
                     continue
                 mesh.thinInstanceSetBuffer("matrix", matrices, MATRIX_FLOATS, False)
+        if self._imposters is not None:
+            self._place_imposters(by_kind, self._imposters)
+
+    def _place_imposters(self, by_kind: dict[str, Drawn], imposters: "ImposterKinds") -> None:
+        """D-212: the imposters of the props drawn."""
+        placements: list[PropPlacement] = []
+        for kind in imposters.kinds:
+            drawn = by_kind.get(kind)
+            if drawn:
+                placements.extend(drawn.placements)
+        imposters.place(placements)
 
     def _by_kind(self) -> dict[str, Drawn]:
         """The props to draw (in the window, if any), by kind, in the order of the chunks."""

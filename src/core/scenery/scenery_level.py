@@ -440,6 +440,17 @@ class CarRules:
         self.sidewalk = sidewalk
 
 
+class Forests:
+    """Trees gather in woods (D-212): a low-frequency noise of `frequency` cycles per world unit
+    over the ground; a tree stands only where it is over `threshold` (0..1), surely `edge` over it,
+    by chance in between (ragged edges)."""
+
+    def __init__(self, frequency: float, threshold: float, edge: float) -> None:
+        self.frequency = frequency
+        self.threshold = threshold
+        self.edge = edge
+
+
 class PropRules:
     """Where and which props stand on the ground (P04-R04). Buildings follow the roads (R07)."""
 
@@ -461,6 +472,7 @@ class PropRules:
         lines: Sequence[PropLine] | None = None,
         landmarks: Sequence[Landmark] | None = None,
         lots: Sequence[PropKindRule] | None = None,
+        forests: Forests | None = None,
     ) -> None:
         """`cell_size`: trees grow in the cells of a grid of this size. `tree_clearance`: trees keep
         this far from the road edges. `max_slope`: steepest ground (height difference over the
@@ -473,7 +485,8 @@ class PropRules:
         given
         places. `lots` (phase 15, P15-R08): props of whole tiles (car parks, yards, plazas, parks)
         for
-        the tiles of a district's blocks that no building of their group fits."""
+        the tiles of a district's blocks that no building of their group fits. `forests` (D-212):
+        trees gather in woods (default: they grow evenly)."""
         self.cell_size = cell_size
         self.tree_clearance = tree_clearance
         self.max_slope = max_slope
@@ -490,6 +503,7 @@ class PropRules:
         self.lines = lines
         self.landmarks = landmarks
         self.lots = lots
+        self.forests = forests
 
 
 class TileRules:

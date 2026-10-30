@@ -72,12 +72,14 @@ DRAW_BUILDING = 0
 DRAW_KIND = 1
 DRAW_SCALE = 2
 DRAW_TREES = 3
-# Draws per tree: position X, position Z, kind, scale, turn.
-TREE_DRAWS = 5
+# Draws per tree: position X, position Z, kind, scale, turn, whether it stands at a wood's edge.
+TREE_DRAWS = 6
 # Blocks are cut into parts of about this size, one tower each at most…
 PART_SIZE = 30
 # …and at most this many parts across either way.
 MAX_PARTS = 4
+# D-212: with woods, each cell tries the most trees give or take this share.
+WOODS_SPREAD = 0.2
 # Smaller kinds a building slot tries when its first choice does not fit.
 FALLBACKS = 3
 # Lone buildings and hamlets stand within this share of the offscreen X of the level's middle…
@@ -170,6 +172,8 @@ class PropPlacer:
         self.roads = roads
         self.sea_level = sea_level
         self._zones = create_noise2d(seed + 3)
+        # D-212: where the woods are.
+        self._woods = create_noise2d(seed + 5)
         self._buildings: list[BuildingRecord] = []
         self._occupied = BuildingIndex()
         # Phase 9: set pieces and lines, larger than a bucket: every placement checks them all.
@@ -525,19 +529,45 @@ class PropPlacer:
 
         return draw
 
+    def _tree_count(self, i: int, j: int, density: float) -> int:
+        """The trees tried in cell (`i`, `j`) of a section of tree `density`: any number up to
+        `trees_per_cell` times the density; with `forests` (D-212), about `trees_per_cell` (give or
+        take `WOODS_SPREAD`), so the cells do not show in a wood."""
+        draw = self._random(i, j, DRAW_TREES)
+        most = self.rules.trees_per_cell
+        if density <= 0:
+            return 0
+        if self.rules.forests is None:
+            return math.floor(draw * (most + 1) * density)
+        return math.floor(most * (1 + (draw - 0.5) * 2 * WOODS_SPREAD))
+
+    def _in_woods(self, x: float, z: float, draw: float, density: float) -> bool:
+        """Whether a tree at (`x`, `z`) grows (D-212): in a wood, or at its edge by `draw`. The
+        section's tree `density` sets how much of the ground the woods cover: all the noise over
+        `threshold` at 1, less below (the threshold raised towards 1). Every tree grows without
+        `forests`."""
+        forests = self.rules.forests
+        if forests is None:
+            return True
+        f = forests.frequency
+        wood = (self._woods(x * f, z * f) + 1) / 2
+        threshold = forests.threshold + (1 - min(1, density)) * (1 - forests.threshold)
+        return wood >= threshold + draw * forests.edge
+
     def _trees(self, i: int, j: int) -> list[PropPlacement]:
         cell = self.rules.cell_size
         section = self.field.section_at((j + 0.5) * cell).section
         trees = allowed(self.rules.trees, section.trees)
-        count = math.floor(
-            self._random(i, j, DRAW_TREES) * (self.rules.trees_per_cell + 1) * section.tree_density
-        )
+        density = section.tree_density
+        count = self._tree_count(i, j, density)
         placements: list[PropPlacement] = []
         for n in range(count):
             r = self._tree_draws(i, j, n)
 
             x = (i + r(0)) * cell
             z = (j + r(1)) * cell
+            if not self._in_woods(x, z, r(5), density):
+                continue
             kind = weighted(trees, r(2))
             if kind is None or not self.roads.clear_of(
                 x, z, self.rules.tree_clearance + kind.footprint

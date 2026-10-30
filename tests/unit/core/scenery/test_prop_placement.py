@@ -237,3 +237,47 @@ def test_without_a_road_it_can_be_built_there_are_no_buildings() -> None:
     level = sample_level(roads=sample_roads(min_height=1000))
     props = placer_for(level).place(AREA)
     assert all(p.kind != "block" for p in props)
+
+
+def _trees(level) -> list:
+    return [p for p in placer_for(level).place(AREA) if p.kind == "stick"]
+
+
+def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
+    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+
+    everywhere = _trees(sample_level(props=sample_props(trees_per_cell=20)))
+    nowhere = _trees(
+        sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 1.1, 0)))
+    )
+    woods = _trees(
+        sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0.5, 0.05)))
+    )
+    assert len(everywhere) > 0
+    assert nowhere == []
+    assert len(woods) > 0
+
+
+def test_d212_with_woods_every_cell_tries_about_the_most_trees() -> None:
+    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+
+    # A threshold of 0: every tree grows, so the count is the cells' own.
+    level = sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0, 0)))
+    placer = placer_for(level)
+    counts = [placer._tree_count(i, 0, 1) for i in range(50)]  # noqa: SLF001
+    assert min(counts) >= 16
+    assert max(counts) <= 24
+    assert placer._tree_count(0, 0, 0) == 0  # noqa: SLF001
+
+
+def test_d212_a_lower_tree_density_means_fewer_woods() -> None:
+    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+
+    def count(density: float) -> int:
+        sections = [flat("low", 10, 10), flat("high", 10, 30)]
+        for section in sections:
+            section.tree_density = density
+        props = sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0.3, 0))
+        return len(_trees(sample_level(sections=sections, props=props)))
+
+    assert count(1) > count(0.4) >= 0

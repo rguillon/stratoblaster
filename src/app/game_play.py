@@ -8,7 +8,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.enemy_viewer_shots import EnemyViewerShots, ShotsToDraw
-from app.game_play_hud import LevelOverlaysOptions, create_level_overlays, hud_frame
+from app.game_play_hud import (
+    STATS_SHOWN,
+    LevelOverlaysOptions,
+    create_level_overlays,
+    create_stats,
+    hud_frame,
+)
 from app.game_play_state import level_state
 from app.hit_blasts import hit_blasts
 from app.level_prepare import level_of, scenery_with_runout
@@ -136,6 +142,8 @@ class GamePlay:
         self._over_for = 0.0
         self._hud: Any = None
         self._stats: Any = None
+        # Whether the level is in the page (see `attach`).
+        self._attached = False
 
         level = level_of(game, choice.level_id)
         outline = game.view.outline if options.environment else None
@@ -369,8 +377,12 @@ class GamePlay:
     def debug_key(self, code: str, down: bool) -> bool:
         """A debug key (P06-R09): F toggles x4 fast forward, left / right jump 10 s back or on, K
         destroys the next part of the boss fought (P07-R09). Returns whether the key was used;
-        without debug mode no key is.
+        without debug mode no key is, but the debug tile's (D-212: F2 shows or hides it).
         """
+        if code == CFG.stats.key:
+            if down:
+                self._toggle_stats()
+            return True
         fast_forward = CFG.debug.fast_forward
         seek_step = CFG.debug.seek_step
         jumps = code in ("ArrowLeft", "ArrowRight")
@@ -413,12 +425,10 @@ class GamePlay:
         """Shows the level's HUD (and the debug tile) in the page: when it starts, not while it is
         built ahead on the level select screen (P13-R03).
         """
-        if self._hud is not None or self._stats is not None:
+        if self._attached:
             return
-        options = self._options
-        overlays = LevelOverlaysOptions(
-            options.doc, options.debug, options.stats_parent, options.hud_parent
-        )
+        self._attached = True
+        overlays = self._overlays()
 
         def on_bomb() -> None:
             self._controls.bomb()
@@ -427,10 +437,30 @@ class GamePlay:
         self._hud = hud
         self._stats = stats
         if self._hud is not None:
-            high_score = options.high_score if options.high_score is not None else 0
+            high_score = self._options.high_score
+            high_score = high_score if high_score is not None else 0
             self._hud.update(
                 hud_frame(self.run, self._ship_def.max_health, self.game.texts, high_score)
             )
+
+    def _overlays(self) -> LevelOverlaysOptions:
+        options = self._options
+        return LevelOverlaysOptions(
+            options.doc, options.debug, options.stats_parent, options.hud_parent
+        )
+
+    def _toggle_stats(self) -> None:
+        """Shows or hides the debug tile (D-212), for this level and the next ones; only once the
+        level is in the page."""
+        if not self._attached:
+            return
+        shown = self._stats is None
+        STATS_SHOWN.chosen = shown
+        if shown:
+            self._stats = create_stats(self._overlays())
+        else:
+            self._stats.root.remove()
+            self._stats = None
 
     def prepare(self, compile_now: bool) -> None:
         """Gets the level ready to play smoothly (P13-R04): with `compile_now`, the shaders of

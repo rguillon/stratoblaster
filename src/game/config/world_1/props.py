@@ -5,6 +5,7 @@ buildings of the grid of tiles only; no plant grows any more)
 from game.config.cars import CAR_RULES
 from game.config.record import record
 from game.config.tile_buildings import LOT_KINDS, TILE, tile_kinds
+from game.config.trees import FORESTS, TREE_KINDS, TREES_PER_CELL
 
 # Building groups of World 1; each section lists the ones that stand on it.
 WORLD_1_GROUPS = record(
@@ -84,9 +85,11 @@ WORLD_1_PROPS = record(
                 "kinds": tile_kinds("heavyIndustry"),
             },
         ],
-        # D-207: no plant grows.
-        "trees": [],
-        "treesPerCell": 0,
+        # D-212: trees on the green land, gathered in woods, drawn as imposters (D-207: the plants
+        # of before are gone).
+        "trees": TREE_KINDS,
+        "treesPerCell": TREES_PER_CELL,
+        "forests": FORESTS,
         "cars": CAR_RULES,
         # Phase 6 review: a few buildings away from the roads, and hamlets from time to time.
         "loners": {"cell": 150, "chance": 0.15, "clearance": 18},

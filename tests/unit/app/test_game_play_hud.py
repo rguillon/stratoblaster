@@ -120,3 +120,27 @@ def test_p13_r01_the_overlays_build_the_hud_and_the_debug_tile_only_in_debug_mod
     )
     assert hud2 is None
     assert stats2 is None
+
+
+def test_d212_the_debug_tile_shows_as_last_chosen_with_its_key() -> None:
+    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
+
+    doc = FakeDocument()
+    parent = doc.createElement("div")
+    try:
+        STATS_SHOWN.chosen = True
+        _, stats = create_level_overlays(
+            LevelOverlaysOptions(doc, False, parent, None), "Ship A", hud_texts(), None
+        )
+        assert stats is not None
+        STATS_SHOWN.chosen = False
+        _, hidden = create_level_overlays(
+            LevelOverlaysOptions(doc, True, parent, None), "Ship A", hud_texts(), None
+        )
+        assert hidden is None
+        _, orphan = create_level_overlays(
+            LevelOverlaysOptions(doc, True, None, None), "Ship A", hud_texts(), None
+        )
+        assert orphan is None
+    finally:
+        STATS_SHOWN.chosen = None

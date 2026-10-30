@@ -17,6 +17,7 @@ from core.scenery.scenery_level import (
     Dunes,
     Flatten,
     FloatRules,
+    Forests,
     HamletRules,
     Junction,
     Lakes,
@@ -234,7 +235,12 @@ def _props(props: ConfigRecord) -> PropRules:
         maybe(props.lines, _lines),
         maybe(props.landmarks, _landmarks),
         maybe(props.lots, _lots),
+        maybe(props.forests, _forests),
     )
+
+
+def _forests(forests: ConfigRecord) -> Forests:
+    return Forests(forests.frequency, forests.threshold, forests.edge)
 
 
 def _lines(lines: ConfigRecord) -> list[PropLine]:

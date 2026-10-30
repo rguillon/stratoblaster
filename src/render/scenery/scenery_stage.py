@@ -18,6 +18,7 @@ from render.babylon import (
 )
 from render.scenery.cloud_layers import ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP
 from render.scenery.ground_root import GroundRoot, ground_window_of
+from render.scenery.imposter_kinds import imposter_kinds
 from render.scenery.level_ground import level_ground, road_source_of
 from render.scenery.playfield_framing import (
     GroundWindow,
@@ -154,7 +155,7 @@ class SceneryStage:
                 prop_models,
                 _props_of(self.kit),
                 level.props.cars,
-                self.kit.imposter_atlas,
+                lambda kinds: self.kit.imposter_atlas(look.props.imposters, kinds),
                 self.framing.tilt,
             ),
         )
@@ -389,6 +390,7 @@ class SceneryStage:
         z_near = camera_z + self._ground.z_near - near
         z_far = camera_z + self._ground.z_far + far
         self._props.set_window(z_near, z_far, config.prop_step)
+        self._props.bake_imposters()
         self._props.sync()
         self._props.drift(self._drifts, self._time)
         traffic = js_object()
@@ -484,7 +486,16 @@ class SceneryStage:
         def shadow(mesh: Any) -> None:
             kit.add_shadow_caster(mesh)
 
-        return PropField(self.scene, models, _props_of(kit), shadow, kit.plume)
+        # D-212: the trees drawn as imposters, if the look has theirs.
+        level = self.options.level
+        trees = imposter_kinds(
+            self.scene,
+            models,
+            [tree.id for tree in level.props.trees],
+            lambda kinds: kit.imposter_atlas(self.options.look.props.treeImposters, kinds),
+            self.framing.tilt,
+        )
+        return PropField(self.scene, models, _props_of(kit), shadow, kit.plume, trees)
 
     def _build_chunks(self) -> TerrainChunks:
         config = self.options.config

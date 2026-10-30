@@ -8,10 +8,8 @@ D-211: where the kit has imposters, a car's body is a picture of it baked from i
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.scenery.traffic import Traffic
-from render.geometry.gradient_shapes import ColoredGeometry
-from render.scenery.imposter_field import ImposterField
-from render.scenery.prop_field import PropField, PropMaterials, prop_geometry
-from render.scenery.scenery_look import PropGeometry
+from render.scenery.imposter_kinds import ImposterKinds, imposter_kinds
+from render.scenery.prop_field import PropField, PropMaterials
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -40,15 +38,6 @@ def _goes_on(before: list[Any], roads: list[Any]) -> bool:
     return True
 
 
-def _lights_only(factory: Any) -> Any:  # noqa: ANN401
-    """A model factory making only the lights of what `factory` makes."""
-
-    def make() -> PropGeometry:
-        return PropGeometry(ColoredGeometry(), prop_geometry(factory).lights)
-
-    return make
-
-
 class TrafficLayer:
     """The cars of a level, drawn as thin instances of their models, or of their imposters."""
 
@@ -69,26 +58,11 @@ class TrafficLayer:
         self._roads: list[Any] | None = None
         kinds = rules.kinds if rules is not None else []
         cars = {k: v for k, v in models.items() if k in kinds}
-        names = [k for k in kinds if k in cars]
-        atlas = (
-            imposter_atlas(len(names)) if imposter_atlas is not None and len(names) > 0 else None
+        self._imposters: ImposterKinds | None = imposter_kinds(
+            scene, cars, kinds, imposter_atlas, tilt
         )
-        self._atlas = atlas
-        self._imposters: ImposterField | None = None
-        self._bake: Any = None
-        if atlas is None:
-            self._field = PropField(scene, cars, materials, None, None)
-            return
-        lights = {k: _lights_only(cars[k]) for k in names}
-        self._field = PropField(scene, lights, materials, None, None)
-        self._imposters = ImposterField(scene, names, atlas.look, tilt, atlas.material)
-        bodies = [prop_geometry(cars[k]).structure for k in names]
-
-        def bake() -> None:
-            atlas.bake(bodies, tilt)
-
-        # On the first update, not now: the bake's mesh must not hang from the ground.
-        self._bake = bake
+        drawn = self._imposters.models if self._imposters is not None else cars
+        self._field = PropField(scene, drawn, materials, None, None)
 
     @property
     def light_meshes(self) -> list[Any]:
@@ -97,7 +71,8 @@ class TrafficLayer:
 
     @property
     def structure_meshes(self) -> list[Any]:
-        """Meshes of the car bodies (e.g. to hide lights behind them in a glow layer)."""
+        """Meshes of the car bodies (e.g. to hide lights behind them in a glow layer). Not their
+        imposters: a car's quad stands in front of its far half, and would hide its own lights."""
         return self._field.structure_meshes
 
     @property
@@ -121,7 +96,6 @@ class TrafficLayer:
         self._field.set_chunk(0, cars)
         self._field.sync()
         if self._imposters is not None:
-            if self._bake is not None:
-                self._bake()
-                self._bake = None
+            # On the first update, not when made: the bake's mesh must not hang from the ground.
+            self._imposters.bake_once()
             self._imposters.place(cars)

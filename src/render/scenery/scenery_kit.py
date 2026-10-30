@@ -140,9 +140,9 @@ class SceneryKit(Protocol):
 
     def aurora(self) -> Any: ...
 
-    def imposter_atlas(self, kinds: int) -> Any:
-        """D-211: an `ImposterAtlas` for `kinds` kinds of car, or None (the cars drawn as they
-        are)."""
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """D-211: an `ImposterAtlas` of `look` (an imposter look, see `imposters.py`) for `kinds`
+        kinds of prop, or None (no look, or no imposters: the props drawn as they are)."""
         ...
 
     def add_shadow_caster(self, mesh: Any) -> None: ...
@@ -281,8 +281,8 @@ class PlainSceneryKit:
             _plain_material("cloud-" + str(look.altitude), look.color, self._scene)
         )
 
-    def imposter_atlas(self, kinds: int) -> Any:
-        """No imposters (they need a render target): the cars are drawn as they are."""
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """No imposters (they need a render target): the props are drawn as they are."""
         return None
 
     def aurora(self) -> PlainMaterial:

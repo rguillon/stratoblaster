@@ -7,6 +7,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.cars import CAR_IMPOSTERS
 from game.config.record import record
+from game.config.trees import TREE_IMPOSTERS
 from game.config.window_look import WINDOW_ATLAS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -250,6 +251,8 @@ BASE_SCENERY_LOOK = record(
             "windows": WINDOW_ATLAS,
             # The cars drawn as imposters (D-211), the same for every level.
             "imposters": CAR_IMPOSTERS,
+            # D-212: and so are the trees.
+            "treeImposters": TREE_IMPOSTERS,
         },
         "glow": {"intensity": 0.3, "blurKernelSize": 16},
     }
