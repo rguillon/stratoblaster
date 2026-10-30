@@ -5,7 +5,7 @@ from helpers.geometry_checks import bounds, check_colored
 
 from core.math.rng import create_rng
 from game.config.window_look import WINDOW_ATLAS, WINDOW_CELL, WINDOW_OFFSET
-from game.view.props.window_facades import facade_windows, tint_of, wall_uv
+from game.view.props.window_facades import facade_windows, round_windows, tint_of, wall_uv
 from render.geometry.textured import QuadBuilder
 
 CELLS = 64
@@ -77,3 +77,22 @@ def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad():
 
 def test_d210_the_atlas_has_as_many_bands_as_styles():
     assert len(WINDOW_ATLAS.styles) * BAND == CELLS
+
+
+def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper():
+    quads = QuadBuilder()
+    tower = [2.0, 3.0, 5.0, 20.0, 4.0, 2.0, 6]
+    round_windows(quads, create_rng(2), tower, [5.0, 25.0], [1.0, 1.0, 1.0])
+    geo = quads.geometry
+    check_colored(geo)
+    assert len(geo.indices) == 6 * 6
+    # The first facet's first corners: at the foot, radius 4 (+ offset); at the top, radius 2.
+    assert geo.positions[0:3] == pytest.approx([2.0 + 4 + WINDOW_OFFSET, 5.0, 3.0])
+    assert geo.positions[3:6] == pytest.approx([2.0 + 2 + WINDOW_OFFSET, 25.0, 3.0])
+    assert len(set(_bands(geo))) == 1
+
+
+def test_d210_a_round_tower_too_low_gets_no_windows():
+    quads = QuadBuilder()
+    round_windows(quads, create_rng(2), [0.0, 0.0, 0.0, 10.0, 3.0, 3.0, 8], [2.0, 2.5], [1, 1, 1])
+    assert quads.geometry.indices == []

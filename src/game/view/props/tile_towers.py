@@ -20,6 +20,7 @@ from game.config.prop_look import PROP_COLORS as C  # noqa: E402
 from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
 from game.view.props.city_lots import crown, plinth, volume  # noqa: E402
 from game.view.props.tile_kit import NEON, any_of, js_remainder, r, windows  # noqa: E402
+from game.view.props.window_facades import round_windows  # noqa: E402
 
 
 class Tower:
@@ -67,25 +68,15 @@ def slab(t: Tower) -> None:
 
 
 def round_tower(t: Tower) -> None:
-    """A round tower tapering a little, rings of light up it, and a mast."""
+    """A round tower tapering a little, windows round it (D-210), and a mast."""
     k = t.k
     radius = min(k.w, k.d) * 0.4
     color = any_of(k, [C.glassBlue, C.glassDark, C.glassGreen, C.white])
     sides = 10
-    k.s.cylinder(
-        radius,
-        t.top - t.base,
-        sides,
-        color,
-        Placement([0, t.base, 0], 0, 0, 0),
-        radius * r(k, [0.65, 0.9]),
-    )
-    light = any_of(k, NEON)
-    rings = max(2, math.floor((t.top - t.base) / 14))
-    for i in range(1, rings + 1):
-        y = t.base + ((t.top - t.base) * i) / (rings + 1)
-        at = radius * (1 - ((1 - 0.78) * (y - t.base)) / (t.top - t.base)) + 0.15
-        k.lights.ring(at, 0.6, sides, light, Placement([0, y, 0], 0, 0, 0))
+    top = radius * r(k, [0.65, 0.9])
+    k.s.cylinder(radius, t.top - t.base, sides, color, Placement([0, t.base, 0], 0, 0, 0), top)
+    tower = [0, 0, t.base, t.top - t.base, radius, top, sides]
+    round_windows(k.windows, k.random, tower, [t.base + 1, t.top - 1], any_of(k, NEON))
     k.s.cylinder(0.4, t.top * 0.12, 4, C.metal, Placement([0, t.top, 0], 0, 0, 0), 0.1)
     k.lights.box([0.6, 0.6, 0.6], L.red, Placement([0, t.top * 1.12, 0], 0, 0, 0))
 

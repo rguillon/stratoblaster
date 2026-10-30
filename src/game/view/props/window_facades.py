@@ -97,3 +97,48 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
             wall_uv(random, style, wall[4], y1 - y0),
             tint,
         )
+
+
+def round_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    windows: QuadBuilder,
+    random: Any,  # noqa: ANN401 (a seeded generator)
+    tower: list[float],
+    span: list[float],
+    color: Rgb,
+) -> None:
+    """The windows of a round tower (`SolidBuilder.cylinder`, maybe tapered): one quad per facet,
+    just off it, from `y0` to `y1` (`span`), one style for the whole tower, tinted by `color`.
+    `tower` is `[x, z, base, height, radius, top_radius, sides]`: where it stands, the height of
+    its foot and how tall it is, its radius at the foot and at the top, and its facets."""
+    x = tower[0]
+    z = tower[1]
+    base = tower[2]
+    height = tower[3]
+    sides = math.floor(tower[6])
+    y0 = span[0]
+    y1 = span[1]
+    if y1 - y0 < MIN_WALL or height <= 0:
+        return
+
+    def radius_at(y: float) -> float:
+        return tower[4] + (tower[5] - tower[4]) * (y - base) / height + WINDOW_OFFSET
+
+    style = math.floor(random() * len(WINDOW_ATLAS.styles))
+    tint = tint_of(color)
+    low = radius_at(y0)
+    high = radius_at(y1)
+    facet = 2 * (low + high) / 2 * math.sin(math.pi / sides)
+    for i in range(sides):
+        # The facets' corners are those of `SolidBuilder.lathe`, at i / sides of a turn.
+        a = (i / sides) * math.pi * 2
+        b = ((i + 1) / sides) * math.pi * 2
+        windows.quad(
+            [
+                [x + low * math.cos(a), y0, z + low * math.sin(a)],
+                [x + high * math.cos(a), y1, z + high * math.sin(a)],
+                [x + high * math.cos(b), y1, z + high * math.sin(b)],
+                [x + low * math.cos(b), y0, z + low * math.sin(b)],
+            ],
+            wall_uv(random, style, facet, y1 - y0),
+            tint,
+        )

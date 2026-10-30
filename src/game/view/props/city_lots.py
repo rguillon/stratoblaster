@@ -15,7 +15,7 @@ __pragma__("noskip")
 from core.math.rng import pick, random_in  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
 from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.window_facades import facade_windows  # noqa: E402
+from game.view.props.window_facades import facade_windows, round_windows  # noqa: E402
 from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
 from render.geometry.textured import QuadBuilder  # noqa: E402
 
@@ -149,9 +149,8 @@ def stepped_tower(kit: LotKit, lot: list[float]) -> None:
 
 
 def round_tower(kit: LotKit, lot: list[float]) -> None:
-    """A round tower in octagonal facets, with lit rings around it."""
+    """A round tower in hexagonal facets, with windows round it (D-210)."""
     s = kit.s
-    lights = kit.lights
     random = kit.random
     x = lot[0]
     z = lot[1]
@@ -160,18 +159,10 @@ def round_tower(kit: LotKit, lot: list[float]) -> None:
     radius = (min(w, d) / 2) * random_in(random, 0.6, 0.85)
     base = plinth(kit, lot)
     h = base + random_in(random, 25, 60)
-    s.cylinder(
-        radius,
-        h - base,
-        6,
-        kit.facade,
-        Placement([x, base, z], 0, 0, 0),
-        radius * random_in(random, 0.7, 1),
-    )
-    y = base + 4
-    while y + 2 < h - 4:
-        lights.ring(radius * 1.02, 2, 6, kit.windows, Placement([x, y, z], 0, 0, 0))
-        y += 12
+    top = radius * random_in(random, 0.7, 1)
+    s.cylinder(radius, h - base, 6, kit.facade, Placement([x, base, z], 0, 0, 0), top)
+    tower = [x, z, base, h - base, radius, top, 6]
+    round_windows(kit.quads, random, tower, [base + 1, h - 1], kit.windows)
     crown(kit, [x, h, z], radius)
 
 
