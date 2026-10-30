@@ -1810,3 +1810,10 @@
 - **Defects the drawings showed in the browser's code too:** the carrier's sponson slab was given `{}` where the placement is (a JavaScript object with no `yaw`: NaN geometry), now `None`; the floe breaker's barrel count was a float (`2.0`, now `2`). Two drawings (the toucan's beak and the salamander's tail) and the ice queen's shards take the part's point, which they ignore (they are drawn in model space); they now accept it. JavaScript ignores extra arguments, so the browser was never affected by that.
 - **Result:** 3,888 tests pass, and no test is expected to fail. The levels 2-3, 3-2 and 4-3 load into their bosses (toucan, magma salamander, ice queen) with no page errors, and their meshes are in the scene with finite bounds.
 - **Status:** Accepted
+
+### D-194 — No hitbox marker on the player ship, no dark ring round the enemy bullets
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat)
+- **Decision:** the white dot ringed in cyan on the player ship's hitbox is removed (`build_hitbox_marker`, `READABILITY.hitboxMarker`, `GameView.hitbox_marker`, `PlayfieldShip.mark`), and so is the dark blended disc behind every enemy bullet (`ENEMY_LOOK.contrast.rim`). The player ship keeps its cyan rim glow; the bullets keep their body, aura, swirls, pulsing core and white spark. Hitboxes are unchanged.
+- **Amends:** P14-R03 (the hitbox marker) and P14-R05 / P10-R07 (the bullets' dark contrasting rim). The requirement text of those phases is left as written, as for D-154.
+- **Status:** Accepted

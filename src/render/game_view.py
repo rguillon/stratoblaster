@@ -208,8 +208,7 @@ class GameView:
     `player_ship_scale` (logical pixels per model unit), `player_shot_renderers` (one per player
     weapon id), `menu_backdrop` (a `MenuBackdropFactory`), `scenery` (`SceneryBindings`),
     `enemies` (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`). Optional, None when left
-    out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`),
-    `hitbox_marker` (a `ModelFactoryOf` of the hitbox radius).
+    out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`).
     """
 
     def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -224,7 +223,6 @@ class GameView:
         bombs: Any = None,
         audio: Any = None,
         outline: Any = None,
-        hitbox_marker: Any = None,
     ) -> None:
         self.player_ship_models = player_ship_models
         self.player_ship_scale = player_ship_scale
@@ -236,4 +234,3 @@ class GameView:
         self.bombs = bombs
         self.audio = audio
         self.outline = outline
-        self.hitbox_marker = hitbox_marker

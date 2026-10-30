@@ -24,7 +24,7 @@ from game.view.bombs.bomb_renderer import create_bomb_renderer
 from game.view.bonuses.bonus_renderer import create_bonus_renderer
 from game.view.enemies.enemy_bindings import ENEMY_BINDINGS
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
-from game.view.readability_view import build_hitbox_marker, outlined_ships, toned_shots
+from game.view.readability_view import outlined_ships, toned_shots
 from game.view.scenery_bindings import SCENERY_BINDINGS
 from game.view.shots.player_shot_renderers import PLAYER_SHOT_RENDERERS
 from game.view.title_backdrop import build_title_backdrop
@@ -47,7 +47,6 @@ class GameBindings:
         bombs: object,
         audio: object,
         outline: object,
-        hitbox_marker: object,
     ) -> None:
         self.player_ship_models = player_ship_models
         self.player_ship_scale = player_ship_scale
@@ -59,7 +58,6 @@ class GameBindings:
         self.bombs = bombs
         self.audio = audio
         self.outline = outline
-        self.hitbox_marker = hitbox_marker
 
 
 # The single entry point of this game's content (ENG-144).
@@ -90,6 +88,5 @@ GAME = GameDefinition(
         create_bomb_renderer,
         GAME_AUDIO,
         READABILITY.outline,
-        build_hitbox_marker,
     ),
 )

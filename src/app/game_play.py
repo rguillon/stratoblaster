@@ -160,7 +160,6 @@ class GamePlay:
             ship = PlayfieldShip(self.view.scene, scale, 0, 0)
             # The nose is measured on the model before it joins the playfield.
             nose = ship.show(model) if model is not None else 0
-            ship.mark(game.view.hitbox_marker, game.hull.hit_radius)
             return [ship, nose]
 
         built = playfield.run(build_ship)

@@ -50,9 +50,8 @@ READABILITY = record(
         # P14-R07: an explosion's largest share of the screen, and how long it may last.
         "effectMaxScreenShare": 0.15,
         "effectMaxDuration": 0.6,
-        # P14-R03: the player ship's rim glow, and the marker on its hitbox centre.
+        # P14-R03: the player ship's rim glow (no hitbox marker: reviewer, 2026-10-30, D-194).
         "playerOutline": {"color": [0.3, 0.9, 1]},
-        "hitboxMarker": {"color": [1, 1, 1], "rim": [0.2, 0.85, 1], "segments": 16},
         # P14-R04: the enemies' rim is their neon colour `whiten` of the way to white (violet and
         # magenta alone are too dark to stand out on a dark ground), times `strength`.
         "enemyOutline": {"whiten": 0.5, "strength": 1},
