@@ -441,9 +441,10 @@ class CarRules:
 
 
 class Forests:
-    """Trees gather in woods (D-212): a low-frequency noise of `frequency` cycles per world unit
-    over the ground; a tree stands only where it is over `threshold` (0..1), surely `edge` over it,
-    by chance in between (ragged edges)."""
+    """Trees gather in woods on the grass (D-212): a low-frequency noise of `frequency` cycles per
+    world unit over the ground; on full grass at full tree density, a tree stands only where it is
+    over `threshold` (0..1), surely `edge` over it, by chance in between (ragged edges). Less grass
+    or a lower density raises the threshold towards 1: fewer woods."""
 
     def __init__(self, frequency: float, threshold: float, edge: float) -> None:
         self.frequency = frequency

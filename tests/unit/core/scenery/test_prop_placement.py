@@ -243,41 +243,60 @@ def _trees(level) -> list:
     return [p for p in placer_for(level).place(AREA) if p.kind == "stick"]
 
 
-def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
+def _grassy(lush: float | None, density: float = 1) -> list:
+    """The sample's two sections, covered with grass by `lush`, of tree `density`."""
+    from core.scenery.scenery_level import Surface  # noqa: PLC0415
+
+    sections = [flat("low", 10, 10), flat("high", 10, 30)]
+    for section in sections:
+        section.tree_density = density
+        section.surface = Surface(lush, None, None)
+    return sections
+
+
+def _woods(threshold: float, edge: float = 0):
     from core.scenery.scenery_level import Forests  # noqa: PLC0415
 
+    return sample_props(trees_per_cell=20, forests=Forests(1 / 300, threshold, edge))
+
+
+def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
     everywhere = _trees(sample_level(props=sample_props(trees_per_cell=20)))
-    nowhere = _trees(
-        sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 1.1, 0)))
-    )
-    woods = _trees(
-        sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0.5, 0.05)))
-    )
+    nowhere = _trees(sample_level(sections=_grassy(1), props=_woods(1.1)))
+    woods = _trees(sample_level(sections=_grassy(1), props=_woods(0.5, 0.05)))
     assert len(everywhere) > 0
     assert nowhere == []
     assert len(woods) > 0
 
 
 def test_d212_with_woods_every_cell_tries_about_the_most_trees() -> None:
-    from core.scenery.scenery_level import Forests  # noqa: PLC0415
-
-    # A threshold of 0: every tree grows, so the count is the cells' own.
-    level = sample_level(props=sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0, 0)))
-    placer = placer_for(level)
+    placer = placer_for(sample_level(sections=_grassy(1), props=_woods(0)))
     counts = [placer._tree_count(i, 0, 1) for i in range(50)]  # noqa: SLF001
     assert min(counts) >= 16
     assert max(counts) <= 24
     assert placer._tree_count(0, 0, 0) == 0  # noqa: SLF001
 
 
-def test_d212_a_lower_tree_density_means_fewer_woods() -> None:
-    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+def test_d212_woods_grow_on_the_grass_and_less_with_a_lower_density() -> None:
+    def count(lush: float | None, density: float = 1) -> int:
+        return len(_trees(sample_level(sections=_grassy(lush, density), props=_woods(0.3))))
 
-    def count(density: float) -> int:
-        sections = [flat("low", 10, 10), flat("high", 10, 30)]
-        for section in sections:
-            section.tree_density = density
-        props = sample_props(trees_per_cell=20, forests=Forests(1 / 300, 0.3, 0))
-        return len(_trees(sample_level(sections=sections, props=props)))
+    assert count(1) > count(0.6) >= 0
+    assert count(1) > count(1, 0.6)
+    assert count(None) == 0
+    assert count(0) == 0
 
-    assert count(1) > count(0.4) >= 0
+
+def test_d212_trees_placed_a_strip_at_a_time_are_those_placed_at_once() -> None:
+    level = sample_level(sections=_grassy(1), props=_woods(0.3))
+    at_once = keys(t for t in placer_for(level).place(AREA) if t.kind == "stick")
+    placer = placer_for(level)
+    strips = [0, 37, 50, 120, 333, 400]
+    by_strip: list = []
+    for k in range(len(strips) - 1):
+        by_strip.extend(
+            placer.trees_in(GroundArea(AREA.x_min, AREA.x_max, strips[k], strips[k + 1]))
+        )
+    assert len(at_once) > 0
+    assert sorted(keys(by_strip)) == sorted(at_once)
+    assert all(t.kind != "stick" for t in placer.place_without_trees(AREA))

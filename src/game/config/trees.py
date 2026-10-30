@@ -16,13 +16,13 @@ TREE_IDS = record(
 
 # The trees as the placement picks them: weight, radius of ground (at their largest), scales.
 TREE_KINDS = [
-    {"id": TREE_IDS.oak, "weight": 4, "footprint": 3.5, "scale": [1.1, 1.7]},
-    {"id": TREE_IDS.pine, "weight": 3, "footprint": 3, "scale": [1.1, 1.7]},
-    {"id": TREE_IDS.birch, "weight": 2, "footprint": 3, "scale": [1.1, 1.6]},
-    {"id": TREE_IDS.poplar, "weight": 1.5, "footprint": 2, "scale": [1.1, 1.5]},
-    {"id": TREE_IDS.bush, "weight": 1.5, "footprint": 2, "scale": [1, 1.6]},
+    {"id": TREE_IDS.oak, "weight": 4, "footprint": 4.5, "scale": [1.4, 2.1]},
+    {"id": TREE_IDS.pine, "weight": 3, "footprint": 4, "scale": [1.4, 2.1]},
+    {"id": TREE_IDS.birch, "weight": 2, "footprint": 4, "scale": [1.4, 2]},
+    {"id": TREE_IDS.poplar, "weight": 1.5, "footprint": 2.5, "scale": [1.4, 1.9]},
+    {"id": TREE_IDS.bush, "weight": 1.5, "footprint": 2.5, "scale": [1.3, 2]},
     # A few copper beeches, so the woods are not all one green.
-    {"id": TREE_IDS.copper, "weight": 0.4, "footprint": 3.5, "scale": [1.1, 1.6]},
+    {"id": TREE_IDS.copper, "weight": 0.4, "footprint": 4.5, "scale": [1.4, 2]},
 ]
 
 # D-212: the trees drawn as imposters (see `render/scenery/imposters.py`): 4 headings (a tree
@@ -30,9 +30,10 @@ TREE_KINDS = [
 # tree seen from the playfield camera).
 TREE_IMPOSTERS = record({"headings": 4, "framePx": 128, "frameSize": 13, "centre": 5})
 
-# D-212: the woods, about 300 units apart, over 0.45 of the noise at a section's full tree density,
-# with ragged edges.
-FORESTS = record({"frequency": 1 / 300, "threshold": 0.45, "edge": 0.08})
+# D-212: woods almost everywhere on the grass (the noise is over 0.27 on about 93 % of the ground),
+# clearings about 300 units apart, ragged edges.
+FORESTS = record({"frequency": 1 / 300, "threshold": 0.27, "edge": 0.06})
 
-# D-212: trees tried per cell of 50 units, in a wood: about one per 20 square units.
-TREES_PER_CELL = 120
+# D-212: trees tried per cell of 50 units, in a wood: about one per 35 square units (fewer, bigger
+# trees: each costs its checks as the ground scrolls in).
+TREES_PER_CELL = 70

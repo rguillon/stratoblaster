@@ -166,6 +166,11 @@ class SceneryStage:
         self._rings: RainRings | None = water.rings if water is not None else None
         self._sea_enabled = self._sea is not None
         self._terrain = TerrainWatch()
+        # D-212: the chunks whose trees are still to come, a row of cells per frame, as
+        # `[index, z from, z to, placements so far]`; the chunks of the first cover get theirs at
+        # once (the level is loading).
+        self._tree_jobs: list[list[Any]] = []
+        self._trees_later = False
         self.clouds: list[CloudLayerState] = self._attach_sky()
 
     def _attach_sky(self) -> list[CloudLayerState]:
@@ -274,6 +279,7 @@ class SceneryStage:
 
         def rebuild() -> None:
             self._chunks.rebuild(self._field)
+            self._tree_jobs = []
             self._props.clear()
             self._roads.clear()
             for index in _map_keys(self._chunks.meshes):
@@ -292,6 +298,7 @@ class SceneryStage:
         `placements` (`PropPlacement`, in ground units: kinds of this level), standing on its
         ground as its own do."""
         self._solo = True
+        self._tree_jobs = []
         self._props.clear()
         self._props.set_chunk(SOLO_CHUNK, placements)
 
@@ -351,6 +358,8 @@ class SceneryStage:
         # The buildings two screens ahead of the view are asked for as the view moves.
         self._placer.want_placed(camera_z + self._ground.z_far + self._ahead)
         ground.adopt(lambda: self._cover(z_min, z_max))
+        self._trees_later = True
+        self._grow_trees()
         self._update_props(camera_z, z_min, z_max)
         middle = camera_z + (self._ground.z_near + self._ground.z_far) / 2
         if self._sea is not None:
@@ -431,6 +440,7 @@ class SceneryStage:
         for index in changes.removed:
             self._props.remove_chunk(index)
             self._roads.remove_chunk(index)
+        self._tree_jobs = [job for job in self._tree_jobs if job[0] not in changes.removed]
         self._road_pending = [i for i in self._road_pending if i not in changes.removed]
         for span in changes.added:
             self._place_chunk(span.index)
@@ -464,9 +474,32 @@ class SceneryStage:
             if index not in self._road_pending:
                 self._road_pending.append(index)
         area = GroundArea(-self._x_half, self._x_half, span.z_min, span.z_max)
-        placed = self._placer.place(area)
-        if not self._solo:
-            self._props.set_chunk(index, placed)
+        if self._solo:
+            return
+        if not self._trees_later:
+            self._props.set_chunk(index, self._placer.place(area))
+            return
+        # D-212: the buildings now, the trees over the next frames (see `_grow_trees`).
+        placed = self._placer.place_without_trees(area)
+        self._props.set_chunk(index, placed)
+        self._tree_jobs = [job for job in self._tree_jobs if job[0] != index]
+        self._tree_jobs.append([index, span.z_min, span.z_max, placed])
+
+    def _grow_trees(self) -> None:
+        """D-212: the trees of one more row of cells of the first chunk still waiting for them (a
+        wood's take tens of milliseconds a chunk: placed at once, they made the frame long)."""
+        if len(self._tree_jobs) == 0:
+            return
+        job = self._tree_jobs[0]
+        cell = self._placer.rules.cell_size
+        z_from: float = job[1]
+        z_to = min(job[2], (math.floor(z_from / cell) + 1) * cell)
+        placed: list[Any] = job[3]
+        placed.extend(self._placer.trees_in(GroundArea(-self._x_half, self._x_half, z_from, z_to)))
+        self._props.set_chunk(job[0], placed)
+        job[1] = z_to
+        if z_to >= job[2]:
+            self._tree_jobs.pop(0)
 
     def _take_roads(self) -> None:
         """Gives the street surfaces that are ready to their chunks; the others keep waiting."""
