@@ -1,7 +1,7 @@
-"""Turns held keys into repeated presses, ported from `input/hold-repeater.ts`: a press is emitted
+"""Turns held keys into repeated presses: a press is emitted
 at once, then again after `delay_seconds`, then every `interval_seconds` while the key stays held.
 
-Keys are strings (the TypeScript `K extends string`): a Transcrypt dict keeps insertion order for
+Keys are strings: a Transcrypt dict keeps insertion order for
 them, as a JavaScript `Map` does."""
 
 

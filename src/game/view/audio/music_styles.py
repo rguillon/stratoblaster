@@ -1,6 +1,5 @@
-"""Scales, styles and the drum, bass and tempo choices of the generated music (P12-R06, P12-R08),
-ported from `audio/music-styles.ts`. A world's style says its key, tempo, chords and rhythm.
-"""
+"""Scales, styles and the drum, bass and tempo choices of the generated music (P12-R06, P12-R08) A
+world's style says its key, tempo, chords and rhythm."""
 
 # Scales, as semitones above their root.
 SCALES = {
@@ -46,7 +45,7 @@ class Octaves:
 
 class MusicStyle:
     """A world's musical style (P12-R06): its levels share it but differ in key, tempo, chords,
-    melody and rhythm. `drums` is one of four, `bass` one of three (see the TypeScript)."""
+    melody and rhythm. `drums` is one of four, `bass` one of three."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

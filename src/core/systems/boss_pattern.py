@@ -1,4 +1,4 @@
-"""Boss volleys (P07-R04, GD-43, GD-44), ported from `core/systems/boss-pattern.ts`.
+"""Boss volleys (P07-R04, GD-43, GD-44)
 
 What volleys fire, from which piece, on which timer. Angles in degrees in the data; a preset heading
 of 0 is straight down, positive towards the right of the screen. Pure and deterministic.

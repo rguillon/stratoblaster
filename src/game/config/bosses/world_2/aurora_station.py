@@ -1,4 +1,4 @@
-"""The Aurora Station (P08-R10, 2-3), ported from `config/bosses/world-2/aurora-station.ts`.
+"""The Aurora Station (P08-R10, 2-3)
 
 The final boss of the Tundra level. Offsets in px from the boss's centre, X right and Y up (its
 nose points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the

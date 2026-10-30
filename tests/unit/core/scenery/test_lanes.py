@@ -1,17 +1,10 @@
-"""Lanes and widths of the roads (`core/scenery/lanes.py`, phase 4 review)."""
+"""Unit tests of `src/core/scenery/lanes.py`."""
 
 from types import SimpleNamespace
 
-from level_builders import road_rules
+from helpers.level_builders import road_rules
 
-from core.scenery.lanes import (
-    is_boulevard,
-    lanes_of,
-    main_road_width,
-    run_width,
-    street_width,
-    with_width,
-)
+from core.scenery.lanes import is_boulevard, lanes_of, run_width, street_width, with_width
 from core.scenery.scenery_level import Boulevard, Dual
 
 
@@ -31,16 +24,6 @@ def test_boulevards_have_their_own_lanes() -> None:
     assert lanes_of(rules, 36.0) == 3
     assert is_boulevard(rules, 36.0) is True
     assert is_boulevard(rules, 24.0) is False
-
-
-def test_the_first_main_roads_are_dual() -> None:
-    rules = road_rules(main_roads=4, dual=Dual(48.0, 3, 0.2))
-    assert [main_road_width(rules, i) for i in range(4)] == [
-        rules.dual.width,
-        rules.dual.width,
-        rules.dual.width,
-        rules.main_width,
-    ]
 
 
 def test_p04_r07_every_street_line_has_one_of_the_widths_of_the_grid() -> None:

@@ -1,4 +1,4 @@
-"""Helpers shared by the concrete enemies (P05), ported from `game/sim/enemies/enemy-helpers.ts`."""
+"""Helpers shared by the concrete enemies (P05)"""
 
 import math
 

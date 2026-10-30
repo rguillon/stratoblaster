@@ -1,6 +1,5 @@
 """The districts of a level: the runs of sections with street grids (phase 4 review), split out of
-`street-grid.ts`, and the parts of them laid apart (reviewer, 2026-10-28). Ported from
-`core/scenery/districts.ts`."""
+and the parts of them laid apart (reviewer, 2026-10-28)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

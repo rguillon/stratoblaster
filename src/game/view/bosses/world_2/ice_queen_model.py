@@ -1,4 +1,4 @@
-"""The Ice Queen (P08-R10, 2-5), ported from `bosses/world-2/ice-queen-model.ts`.
+"""The Ice Queen (P08-R10, 2-5)
 
 Logical pixels, nose +Z (down the screen), Y up (towards the camera); +X is the screen's left.
 """
@@ -272,6 +272,9 @@ def draw_ring(p: EnemyParts) -> None:
 def keyed(names: list[str], drawings: list[Any]) -> Any:
     """`Object.fromEntries`: a plain object from parallel lists of keys and values."""
     result: Any = None
+    __pragma__("skip")
+    result = record({name: drawing for name, drawing in zip(names, drawings, strict=False)})
+    __pragma__("noskip")
     __pragma__(
         "js",
         "{}",
@@ -289,7 +292,8 @@ def shard_part(part_id: str) -> Any:
     """The drawing of the crown shard `part_id`: its muzzles from the design (a factory, so
     each shard keeps its own id)."""
 
-    def draw(parts: EnemyParts) -> None:
+    def draw(parts: EnemyParts, _at: Any = None) -> None:
+        # Drawn in model space: the point the part sits at (handed to every part) is not used.
         gun = ICE_QUEEN.guns[part_id]
         muzzles = []
         if gun != None and gun.gun != None:  # noqa: E711
@@ -310,7 +314,7 @@ def shard_parts() -> Any:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

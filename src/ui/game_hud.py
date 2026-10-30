@@ -1,4 +1,4 @@
-"""The in-game HUD, ported from `ui/game-hud.ts`: one bar along the bottom of the playfield, the
+"""The in-game HUD: one bar along the bottom of the playfield, the
 level's progress along its top edge, the ship's health, lives and bombs, the score and the weapon.
 """
 

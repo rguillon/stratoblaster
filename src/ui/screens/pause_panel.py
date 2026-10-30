@@ -1,4 +1,4 @@
-"""The pause menu (P12-R02), ported from `ui/screens/pause-panel.ts`: over the playfield, dimmed
+"""The pause menu (P12-R02): over the playfield, dimmed
 by a layer behind it: Resume, Settings and Main menu, or the question before leaving the level."""
 
 from org.transcrypt.stubs.browser import __pragma__

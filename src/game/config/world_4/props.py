@@ -1,4 +1,4 @@
-"""World 4's own rules (ported from `config/world-4/props.ts`).
+"""World 4's own rules ().
 
 Its buildings are the city's (`city_props.py`); the volcanic props of the first World 4 were removed
 (reviewer, 2026-10-28).

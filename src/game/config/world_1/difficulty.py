@@ -1,5 +1,4 @@
-"""Per-level factors on the phase 5 enemy values (P06-R08, tunable values), ported from
-`config/world-1/difficulty.ts`.
+"""Per-level factors on the phase 5 enemy values (P06-R08, tunable values)
 
 Enemy bullets fly faster and enemies attack more often from 1-1 to 1-5. Neither ever goes down.
 """

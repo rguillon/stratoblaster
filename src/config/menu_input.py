@@ -1,5 +1,4 @@
-"""Menu input mapping and feel (P01-R09, P01-R10, P01-R12, P12-R01), ported from
-`config/menu-input.ts`.
+"""Menu input mapping and feel (P01-R09, P01-R10, P01-R12, P12-R01)
 
 Kept in config so it can be remapped later (ENG-112).
 """
@@ -10,8 +9,8 @@ from org.transcrypt.stubs.browser import __pragma__
 __pragma__("skip")
 from typing import Literal  # noqa: E402
 
-# The abstract menu actions (`input/menu-action.ts` on main, a plain string union); it is only
-# used to type the mappings here, so it is defined here rather than ported on its own.
+# The abstract menu actions; it is only
+# used to type the mappings here, so it is defined here rather than on its own.
 MenuAction = Literal["up", "down", "left", "right", "confirm", "back", "cancel", "pause", "resume"]
 __pragma__("noskip")
 

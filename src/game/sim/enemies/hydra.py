@@ -1,4 +1,4 @@
-"""The Hydra (P05-R19), ported from `game/sim/enemies/hydra.ts`."""
+"""The Hydra (P05-R19)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,6 +7,7 @@ from core.systems.enemy_motion import approach
 from core.systems.projectile_motion import heading_to
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
+from game.sim.joints import jointed_design
 
 __pragma__("skip")
 from core.entities.enemy import EnemyContext  # noqa: E402
@@ -24,7 +25,7 @@ class Hydra(JointedEnemy):
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
-        super().__init__(x, y, CFG.stats, CFG.design)
+        super().__init__(x, y, CFG.stats, jointed_design(CFG.design))
         self.stop_y = stop_y
         self.state = "enter"
         self._heads = Cadence(CFG.headFireInterval, CFG.firstShot)

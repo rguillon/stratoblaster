@@ -1,5 +1,5 @@
 """P10-R11, 4-3: the Obsidian Golem's parts (its fists, shoulder cannons, chest emitter and armour
-plate), its arms and its obsidian look. Ported from `bosses/world-4/obsidian-golem-parts.ts`.
+plate), its arms and its obsidian look.
 Logical
 pixels, nose +Z, Y up (towards the camera).
 """

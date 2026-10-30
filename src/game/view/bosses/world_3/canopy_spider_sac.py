@@ -1,5 +1,5 @@
-"""P09-R09, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups. Ported from
-`view/bosses/world-3/canopy-spider-sac.ts`. Logical pixels, nose +Z, Y up (towards the camera)."""
+"""P09-R09, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups. Logical
+pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 

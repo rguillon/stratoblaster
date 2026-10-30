@@ -1,9 +1,9 @@
 """Materials, textures and shadows of a scenery scene (P04, P08, P09, P10): the kit's interfaces,
-and the plain stand-in kit that needs no WebGL. Ported from `render/scenery/scenery-kit.ts`.
+and the plain stand-in kit that needs no WebGL.
 
-The TypeScript interfaces are classes here (fields in the TypeScript order, optional fields last,
-default None). The materials are plain Python objects with a `material` attribute and a `set`
-method, so the kit's callers use them as the TypeScript ones.
+The interfaces are classes here. The materials are plain Python objects with a `material` attribute
+and a `set`
+method, so the kit's callers use them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -148,7 +148,7 @@ __pragma__("noskip")
 
 
 def _or_default(value: Any, fallback: Any) -> Any:
-    """`value ?? fallback` of TypeScript: the fallback when `value` is missing (None)."""
+    """`value ?? fallback`: the fallback when `value` is missing (None)."""
     return fallback if value is None else value
 
 

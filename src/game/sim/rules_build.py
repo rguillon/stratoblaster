@@ -1,5 +1,5 @@
 """Builds the core rules of the player's hull, bombs and bonuses, and of the boss fights (GD-20,
-GD-32, P07, P11) from their config records. The config keeps the TypeScript's camelCase shape;
+GD-32, P07, P11) from their config records. The config keeps camelCase keys;
 `core/` takes snake_case attributes. Mapping rules are in `config_build.py`.
 """
 

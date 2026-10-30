@@ -1,5 +1,5 @@
-"""The atmosphere of a level along its length (P08-R04, P08-R12), ported from
-`render/scenery/atmosphere-of.ts`: a level's fixed look or its sky script, as the atmosphere the
+"""The atmosphere of a level along its length (P08-R04, P08-R12): a level's fixed look or its sky
+script, as the atmosphere the
 renderer applies.
 """
 
@@ -92,7 +92,7 @@ def atmosphere_track(
 ) -> Any:
     """The atmosphere of a level along its length (P08-R04): its sky script's looks, their changes
     turned from seconds into distances at `scroll_speed`; or its fixed look. Returns an
-    `AtmosphereTrack` (its `at(distance)`: the TypeScript `AtmosphereAlong`)."""
+    `AtmosphereTrack` (its `at(distance)`)."""
     if options is None:
         options = AtmosphereOptions()
     # `script` is mapped by game/sim/sky_build.py: its changes are AtmosphereChange (`from_`).

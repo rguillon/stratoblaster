@@ -1,4 +1,4 @@
-"""How an enemy with moving parts is drawn (P05-R13), ported from `enemies/jointed-model.ts`.
+"""How an enemy with moving parts is drawn (P05-R13)
 
 Everything is in model space as at rest (logical pixels, nose +Z, Y up; a point `(x, y)` of the
 design is at `boss_point`).
@@ -125,7 +125,7 @@ def build_jointed_model(  # noqa: C901
 
 
 class _Built:
-    """The model built (`EnemyModel` in the TypeScript): its root node and per-frame sync."""
+    """The model built: its root node and per-frame sync."""
 
     def __init__(self, root: Any, sync: Any) -> None:
         self.root = root

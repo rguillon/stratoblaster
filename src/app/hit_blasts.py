@@ -1,4 +1,4 @@
-"""The blasts of the hits a step landed on the player (ported from `app/hit-blasts.ts`): a spark
+"""The blasts of the hits a step landed on the player (): a spark
 where a hit landed; a blast at the ship when it cost a life (phase 6 review).
 """
 

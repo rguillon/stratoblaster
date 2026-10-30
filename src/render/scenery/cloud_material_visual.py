@@ -1,6 +1,6 @@
-# ruff: noqa: E501 (GLSL shader source lines, kept as in the TypeScript)
+# ruff: noqa: E501
 """A cloud layer's material (P04-R03): a generated noise texture cut at a threshold set by the
-coverage. Ported from `render/scenery/cloud-material.visual.ts`.
+coverage.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).

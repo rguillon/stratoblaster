@@ -1,4 +1,4 @@
-"""Level select screen (P01-R07), ported from `ui/screens/level-select-screen.ts`: a grid of
+"""Level select screen (P01-R07): a grid of
 levels, locked ones greyed out with a padlock."""
 
 from org.transcrypt.stubs.browser import __pragma__

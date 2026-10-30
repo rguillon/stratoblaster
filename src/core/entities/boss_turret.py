@@ -1,4 +1,4 @@
-"""A turret on a boss's piece, ported from `core/entities/boss-turret.ts` (phase 7 review).
+"""A turret on a boss's piece (phase 7 review).
 
 Its guns' muzzles turn with it around its pivot, so that the barrels the player sees point the
 way it aims.

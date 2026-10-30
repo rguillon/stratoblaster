@@ -1,5 +1,4 @@
-"""How the World 3 levels look (P09-R04, R06; reworked at the reviewer's request, 2026-10-27),
-ported from `config/world-3/looks.ts`.
+"""How the World 3 levels look (P09-R04, R06; reworked at the reviewer's request, 2026-10-27)
 
 World 2's stained industrial concrete where it ended, slowly giving way to the grass of gardens and
 parks (the `lush` cover the sections raise level after level), damp dark earth between them, grey

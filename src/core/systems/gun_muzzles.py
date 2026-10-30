@@ -1,4 +1,4 @@
-"""Where a gun's shots leave from (phase 7 review), ported from `core/systems/gun-muzzles.ts`.
+"""Where a gun's shots leave from (phase 7 review)
 
 A gun fires from its muzzles: the one furthest along each shot's way, the ones side by side in
 turn, as the camera sees them.

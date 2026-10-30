@@ -1,5 +1,4 @@
-"""Engine tunables of the audio layer and the volume settings (P12-R04, P12-R05, P12-R10), ported
-from `config/audio.ts`.
+"""Engine tunables of the audio layer and the volume settings (P12-R04, P12-R05, P12-R10)
 
 The music, the sounds and their own levels are game data (`src/game/view/audio/`).
 """

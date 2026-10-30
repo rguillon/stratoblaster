@@ -1,1 +1,1 @@
-"""The app layer: menus, game screen, viewers and page start-up (ported from `app/`)."""
+"""The app layer: menus, the game screen and page start-up."""

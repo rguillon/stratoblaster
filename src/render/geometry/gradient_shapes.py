@@ -1,4 +1,4 @@
-"""Vertex-coloured rectangles for gradients (ported from `render/geometry/gradient-shapes.ts`)."""
+"""Vertex-coloured rectangles for gradients ()."""
 
 from render.environment.gradient_cube import GradientStop
 

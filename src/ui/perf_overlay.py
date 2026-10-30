@@ -1,4 +1,4 @@
-"""Debug perf overlay (P13-R01, ENG-111), ported from `ui/perf-overlay.ts`."""
+"""Debug perf overlay (P13-R01, ENG-111)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

@@ -1,4 +1,4 @@
-"""The props of World 1 (P06-R05, R06), ported from `config/world-1/props.ts`.
+"""The props of World 1 (P06-R05, R06)
 
 The props of World 1: the building groups the sections pick from, and the plants. Lone huts and
 masts are also listed with the plants: they stand alone on the islands of 1-1, where no road goes,

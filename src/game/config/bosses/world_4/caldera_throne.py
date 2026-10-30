@@ -1,5 +1,5 @@
 """P10-R11, 4-5's final boss: the Caldera Throne, World 4's last boss and the hardest of the game
-so far (ported from `config/bosses/world-4/caldera-throne.ts`).
+so far ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the earlier final bosses (P07-R04, D-055): its parts fire the same while they

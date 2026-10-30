@@ -1,4 +1,4 @@
-"""P09-R09, 3-1: the Mangrove Croc. Ported from `view/bosses/world-3/mangrove-croc-model.ts`.
+"""P09-R09, 3-1: the Mangrove Croc.
 Logical pixels, nose +Z, Y up (towards the camera). A long, low hover-gunboat shaped like a
 crocodile: a scaly armoured back, a broad head with raised green neon eyes, jaws that open and
 close around the jaw cannon, and two side pontoons."""

@@ -1,5 +1,4 @@
-"""Per-level factors on the phase 5 enemy values in World 2 (P08-R09, tunable values), ported from
-`config/world-2/difficulty.ts`.
+"""Per-level factors on the phase 5 enemy values in World 2 (P08-R09, tunable values)
 
 They go on from World 1: 2-1 as hard as 1-3 and 2-5 harder than 1-5. Neither ever goes down.
 """

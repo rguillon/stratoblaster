@@ -1,5 +1,5 @@
-"""The frost on the 2-1 bosses (World 2 theme: dark metal with neon, plus frost, ice and snow),
-ported from `bosses/world-2/floe-breaker-frost.ts`. Logical pixels, nose +Z, Y up. Pale vertex
+"""The frost on the 2-1 bosses (World 2 theme: dark metal with neon, plus frost, ice and snow)
+Logical pixels, nose +Z, Y up. Pale vertex
 colours on the hull's top faces.
 """
 

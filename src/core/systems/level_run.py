@@ -1,4 +1,4 @@
-"""One play of a level (P06-R02, R03, R07), ported from `core/systems/level-run.ts`.
+"""One play of a level (P06-R02, R03, R07)
 
 The ground scrolls, the wave script brings the enemies in by distance, the player flies and shoots
 them. When the scroll reaches the end no more enemies come; once the last ones are gone (or after

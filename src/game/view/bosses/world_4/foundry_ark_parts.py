@@ -1,6 +1,6 @@
 """P10-R11, 4-4: the Foundry Ark's destroyable parts (rail cannons, chimney row, missile battery,
 crucibles), each drawn around its centre `at`, each turret around its pivot, and its forge colours.
-Ported from `bosses/world-4/foundry-ark-parts.ts`. Model space: logical pixels, nose +Z, Y up.
+Model space: logical pixels, nose +Z, Y up.
 """
 
 import math

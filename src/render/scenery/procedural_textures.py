@@ -1,5 +1,5 @@
-"""Generated textures of a scenery level (P04-R01, P04-R02, P13-R03), ported from
-`render/scenery/procedural-textures.ts`: fractal noise, ground, noise and water normal maps as
+"""Generated textures of a scenery level (P04-R01, P04-R02, P13-R03): fractal noise, ground, noise
+and water normal maps as
 RGBA8 pixels, pure functions of their arguments, made here or in the worker, and kept for reuse.
 """
 
@@ -44,7 +44,7 @@ class TextureJob:
 
 
 def _new_map() -> Any:
-    """An empty JavaScript `Map` (insertion order, as the TypeScript one)."""
+    """An empty JavaScript `Map`."""
     __pragma__("js", "{}", "return new Map();")
     return None
 
@@ -84,15 +84,15 @@ def _json_of(value: Any) -> str:
 
 
 def _hypot2(a: float, b: float) -> float:
-    """`Math.hypot(a, b)`: JavaScript's rounding, as the TypeScript."""
+    """`Math.hypot(a, b)`: JavaScript's rounding."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 def _hypot3(a: float, b: float, c: float) -> float:
     """`Math.hypot(a, b, c)`."""
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 _kept: Any = _new_map()

@@ -1,4 +1,4 @@
-"""The Glacier Colossus (P08-R10, 2-4), ported from `bosses/world-2/glacier-colossus-model.ts`.
+"""The Glacier Colossus (P08-R10, 2-4)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -173,7 +173,7 @@ def snow_caps() -> list[Any]:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

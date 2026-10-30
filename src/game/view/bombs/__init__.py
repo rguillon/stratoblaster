@@ -1,1 +1,1 @@
-"""Bomb renderers, ported from `bombs/`."""
+"""Bomb renderers."""

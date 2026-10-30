@@ -1,4 +1,4 @@
-"""The Scissor (P05-R21), ported from `game/sim/enemies/scissor.ts`."""
+"""The Scissor (P05-R21)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,6 +7,7 @@ from core.entities.jointed_enemy import EnemyPart, JointedEnemy
 from core.entities.muzzle import RaisedPoint
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN
+from game.sim.joints import jointed_design
 
 __pragma__("skip")
 from typing import Any  # noqa: E402
@@ -62,7 +63,7 @@ class Scissor(JointedEnemy):
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
-        super().__init__(x, y, CFG.stats, CFG.design)
+        super().__init__(x, y, CFG.stats, jointed_design(CFG.design))
         self.stop_y = stop_y
         self.state = "enter"
         self._attack_for = 0.0

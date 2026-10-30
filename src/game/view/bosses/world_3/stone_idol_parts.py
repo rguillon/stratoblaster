@@ -1,5 +1,5 @@
-"""P09-R09, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth). Ported from
-`view/bosses/world-3/stone-idol-parts.ts`. Logical pixels, nose +Z (the chin), Y up (towards the
+"""P09-R09, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth). Logical
+pixels, nose +Z (the chin), Y up (towards the
 camera); the face looks up at the camera."""
 
 import math

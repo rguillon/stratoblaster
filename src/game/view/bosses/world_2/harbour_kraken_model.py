@@ -1,4 +1,4 @@
-"""The Harbour Kraken (P08-R10, 2-2), ported from `bosses/world-2/harbour-kraken-model.ts`.
+"""The Harbour Kraken (P08-R10, 2-2)
 
 Logical pixels, nose +Z, Y up (towards the camera). A cargo ship flying over the harbour: a long
 hull, a forecastle with its laser emitter and twin guns, a bridge tower amidships, four crane
@@ -215,7 +215,7 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

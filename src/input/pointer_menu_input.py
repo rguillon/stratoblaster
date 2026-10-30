@@ -1,4 +1,4 @@
-"""Tap / click on a menu entry, ported from `input/pointer-menu-input.ts` (P01-R11, P01-R12):
+"""Tap / click on a menu entry (P01-R11, P01-R12):
 tapping the selected entry confirms it, tapping another entry selects it."""
 
 from org.transcrypt.stubs.browser import __pragma__

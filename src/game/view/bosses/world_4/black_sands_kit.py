@@ -1,7 +1,7 @@
 """P10-R11, 4-1: the heavy industry on the Black sands' bosses (the Cinder Crab and the Steam
 Dreadnought): soot, molten seams glowing between the plates, steam, struts and barrels (GD-61,
-World 4: dark metal with neon, plus soot, heat glow and molten seams). Ported from
-`bosses/world-4/black-sands-kit.ts`. Logical pixels, nose +Z, Y up (towards the camera).
+World 4: dark metal with neon, plus soot, heat glow and molten seams). Logical pixels, nose +Z, Y up
+(towards the camera).
 """
 
 import math

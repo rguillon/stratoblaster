@@ -1,5 +1,4 @@
-"""P10-R11, 4-1: the Steam Dreadnought, the Black sands' final boss (ported from
-`config/bosses/world-4/steam-dreadnought.ts`).
+"""P10-R11, 4-1: the Steam Dreadnought, the Black sands' final boss ().
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down the screen, at -Y). The
 stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core

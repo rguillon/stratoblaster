@@ -1,5 +1,4 @@
-"""P10-R11, 4-4: the Furnace Drake, the mini boss of the forge belt (ported from
-`config/bosses/world-4/furnace-drake.ts`).
+"""P10-R11, 4-4: the Furnace Drake, the mini boss of the forge belt ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two wings
 beat on their joints (D-061) and shield the core, each firing fans from the gun pod under it; its

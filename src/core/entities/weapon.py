@@ -1,4 +1,4 @@
-"""Data-only description of player weapons, ported from `core/entities/weapon.ts`.
+"""Data-only description of player weapons
 
 Positions and distances are in logical pixels, with X to the right and Y up (forward); angles are
 in degrees from forward, positive to the right.
@@ -42,7 +42,7 @@ class ProjectileWeaponDefinition:
         levels: list[list[ShotStream]],
         launch_back: float = 0,
     ) -> None:
-        """Fields as in the TypeScript, with the optional `launch_back` last.
+        """Fields, with the optional `launch_back` last.
 
         - `launch_point`: `"muzzle"` (the ship's nose) or `"center"`, where the streams start.
         - `shots_per_second`: shots per second in each stream.

@@ -1,11 +1,11 @@
-"""Moving a selection index in a grid (`core.menu.grid_cursor`)."""
+"""Unit tests of `src/core/menu/grid_cursor.py`."""
 
 import pytest
 
 from core.menu.grid_cursor import GridShape, move_cursor
 
-# Seven entries, three per row: [0 1 2] [3 4 5] [6 .].
 SHAPE = GridShape(count=7, columns=3, wrap=False)
+
 WRAP = GridShape(count=7, columns=3, wrap=True)
 
 

@@ -1,6 +1,4 @@
-"""Tunables of the generated ground under the playfield camera (P04): the game and the viewers,
-ported from `config/scenery-stage.ts`.
-"""
+"""Tunables of the generated ground under the playfield camera (P04): the game"""
 
 
 class SceneryStageConfig:

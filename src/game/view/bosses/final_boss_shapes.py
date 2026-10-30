@@ -1,5 +1,5 @@
 """P07-R05: shapes shared by the World 1 final bosses (Storm Petrel, Gull Mothership, Mesa
-Fortress), ported from `bosses/final-boss-shapes.ts`. Logical pixels, nose +Z, Y up (towards the
+Fortress) Logical pixels, nose +Z, Y up (towards the
 camera).
 """
 

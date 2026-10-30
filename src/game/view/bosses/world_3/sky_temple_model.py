@@ -1,4 +1,4 @@
-"""P09-R09, 3-3: the Sky Temple. Ported from `view/bosses/world-3/sky-temple-model.ts`. Logical
+"""P09-R09, 3-3: the Sky Temple. Logical
 pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera)."""
 
 from org.transcrypt.stubs.browser import __pragma__

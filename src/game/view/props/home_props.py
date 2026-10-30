@@ -1,4 +1,4 @@
-"""Futuristic homes (P04-R04), ported from `props/home-props.ts`. Sizes in world units, standing
+"""Futuristic homes (P04-R04) Sizes in world units, standing
 on Y = 0."""
 
 from game.config.prop_look import PROP_COLORS as C

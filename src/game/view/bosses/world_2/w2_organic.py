@@ -1,5 +1,5 @@
-"""The Cyber-Organic pieces of the World 2 bosses (ice world), ported from
-`bosses/world-2/w2-organic.ts`: pale, cold flesh with crystals of frost grown through it, bone,
+"""The Cyber-Organic pieces of the World 2 bosses (ice world): pale, cold flesh with crystals of
+frost grown through it, bone,
 and metal grafts. Logical pixels, nose +Z, Y up.
 """
 

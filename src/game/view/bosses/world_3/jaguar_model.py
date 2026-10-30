@@ -1,5 +1,5 @@
-"""P09-R09, 3-5: the Jaguar, the mini boss of the canopy city. Ported from
-`view/bosses/world-3/jaguar-model.ts`. Model space: logical pixels, nose +Z (down the screen),
+"""P09-R09, 3-5: the Jaguar, the mini boss of the canopy city. Model space: logical pixels, nose +Z
+(down the screen),
 Y up towards the camera; +X is the screen's left."""
 
 import math

@@ -1,5 +1,5 @@
 """The dead ends and crossings of a district's street grid, fixed (phase 4 review, phase 6
-review), split out of `street-grid.ts`. Ported from `core/scenery/street-dead-ends.ts`."""
+review)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

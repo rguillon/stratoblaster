@@ -1,7 +1,7 @@
 """32-bit integer helpers: JavaScript's `>>>`, `Math.imul` and `^` in pure arithmetic.
 
 JavaScript bit operators work on signed 32-bit values. The helpers below take any integer
-and return the unsigned 32-bit result, so the port matches the TypeScript bit by bit.
+and return the unsigned 32-bit result, so the results match JavaScript bit by bit.
 """
 
 from org.transcrypt.stubs.browser import __pragma__  # noqa: E402

@@ -1,4 +1,4 @@
-"""The Wasp (P05-R14), ported from `game/sim/enemies/wasp.ts`."""
+"""The Wasp (P05-R14)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

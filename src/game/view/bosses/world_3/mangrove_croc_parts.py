@@ -1,5 +1,5 @@
 """P09-R09, 3-1: the Mangrove Croc's jaws (on their hinges, D-061), its jaw cannon and its side
-pontoons. Ported from `view/bosses/world-3/mangrove-croc-parts.ts`. Logical pixels, nose +Z,
+pontoons. Logical pixels, nose +Z,
 Y up; the left jaw and pontoon (the screen's left, -X on the playfield) are drawn at +X."""
 
 import math

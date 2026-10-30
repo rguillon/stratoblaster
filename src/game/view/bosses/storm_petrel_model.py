@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Storm Petrel, the final boss of 1-1, ported from
-`bosses/storm-petrel-model.ts`. Logical pixels, nose +Z, Y up (towards the camera). A colossal
+"""P07-R05, P16-R06: the Storm Petrel, the final boss of 1-1 Logical pixels, nose +Z, Y up (towards
+the camera). A colossal
 sea-bird creature: a long shelled body, broad membrane wings on bone struts with an engine sac on
 each, magenta veins along the wing edges; its parts are growths on its wings, tail and breast.
 """

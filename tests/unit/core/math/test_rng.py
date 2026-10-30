@@ -1,8 +1,19 @@
-"""Seeded pseudo-random numbers (`core.math.rng`)."""
+"""Unit tests of `src/core/math/rng.py`."""
 
 import pytest
 
+from core.entities.enemy import EnemySpawnArea
+from core.math.min_heap import MinHeap
 from core.math.rng import create_rng, pick, random_in
+
+
+def _drain(heap: MinHeap) -> list[float]:
+    out: list[float] = []
+    while heap.size > 0:
+        value = heap.pop()
+        assert value is not None
+        out.append(value)
+    return out
 
 
 def _mulberry32(seed: int) -> list[float]:
@@ -16,6 +27,23 @@ def _mulberry32(seed: int) -> list[float]:
         t = (t ^ ((t + (((t ^ (t >> 7)) * (t | 61)) & 0xFFFFFFFF)) & 0xFFFFFFFF)) & 0xFFFFFFFF
         out.append(((t ^ (t >> 14)) & 0xFFFFFFFF) / 4294967296)
     return out
+
+
+def test_a_spawn_area_keeps_its_settings() -> None:
+    random = create_rng(1)
+    area = EnemySpawnArea(400, 600, random)
+    assert (area.width, area.height, area.random) == (400, 600, random)
+    assert area.entry is None
+    assert area.top_range is None
+
+
+def test_heap_sorts_a_seeded_random_sequence() -> None:
+    random = create_rng(99)
+    values = [random_in(random, -100, 100) for _ in range(200)]
+    heap = MinHeap(sorted(values[:50]))
+    for value in values[50:]:
+        heap.push(value)
+    assert _drain(heap) == sorted(values)
 
 
 def test_same_seed_gives_the_same_sequence() -> None:

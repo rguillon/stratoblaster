@@ -1,7 +1,5 @@
 """Road ribbons draped on the ground (phase 4 review, P04-R07): each road as one see-through
 surface, its soft shoulders fading into the ground, cut on the terrain chunks.
-
-Ported from `render/scenery/road-geometry.ts`.
 """
 
 import math
@@ -35,7 +33,7 @@ MIDDLE = 1
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 class RoadOpacity:
@@ -100,11 +98,12 @@ def _across(run: list[RoadPoint], i: int) -> tuple[float, float]:
     """Unit vector across the road at point `i` of a run (from the neighbouring points)."""
     a = run[max(0, i - 1)]
     b = run[min(len(run) - 1, i + 1)]
-    if not a or not b:
+    if a is None or b is None:
         return (1, 0)
     length = _hypot(b.x - a.x, b.z - a.z)
     if length == 0:
-        length = 1
+        # Two equal points have no direction: as with a missing neighbour, the road runs along X.
+        return (1, 0)
     return ((b.z - a.z) / length, -(b.x - a.x) / length)
 
 

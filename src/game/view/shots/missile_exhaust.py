@@ -1,5 +1,5 @@
-"""The missile motor flares and exhaust trails (phase 5 review), ported from
-`shots/missile-exhaust.ts`: a bright, flickering flare at each missile's nozzle and a glowing
+"""The missile motor flares and exhaust trails (phase 5 review): a bright, flickering flare at each
+missile's nozzle and a glowing
 exhaust trail behind it, added on, so the missiles show on any ground.
 """
 

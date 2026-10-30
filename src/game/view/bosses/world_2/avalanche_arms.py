@@ -1,5 +1,5 @@
-"""P08-R10, 2-4: the Avalanche's drill arms, moving on their joints (D-061), and its drills,
-ported from `bosses/world-2/avalanche-arms.ts`. Logical pixels, nose +Z, Y up (towards the
+"""P08-R10, 2-4: the Avalanche's drill arms, moving on their joints (D-061), and its drills Logical
+pixels, nose +Z, Y up (towards the
 camera); the left arm is drawn at +X."""
 
 import math

@@ -1,5 +1,5 @@
-"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry), ported from
-`bosses/world-2/floe-breaker-details.ts`. P16-R05: glands down its flanks, an egg sac to port, a
+"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry) P16-R05: glands down its
+flanks, an egg sac to port, a
 coiled tow sinew to starboard. Logical pixels, nose +Z, Y up.
 """
 

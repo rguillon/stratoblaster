@@ -1,5 +1,4 @@
-"""P09-R09, 3-1: the River Leviathan, the River delta's final boss (ported from
-`config/bosses/world-3/river-leviathan.ts`).
+"""P09-R09, 3-1: the River Leviathan, the River delta's final boss ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its head is
 the core, at the centre; its body trails behind it (+Y) in four segments and a tail, each hinged on

@@ -1,5 +1,5 @@
 """The silhouettes of the city buildings (Phase 15, reviewer 2026-10-28: "all the skyscrapers
-look the same"), ported from `props/tile-towers.ts`. Each model takes the one its seed names, so
+look the same") Each model takes the one its seed names, so
 the models of a building group (which have different seeds) all differ: stepped tiers, a slab
 with fins, a round tower, twin towers and a bridge, a needle set back off-centre, and blocks of
 two heights side by side."""

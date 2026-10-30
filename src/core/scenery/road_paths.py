@@ -1,7 +1,6 @@
 """Paths from points of the main roads to past the screen edge, every `cross_spacing` (P04-R07).
 Each one tries both directions and a few bends, and is dropped if none stays on buildable ground
-(and, without crossings, clear of the roads and the paths laid before it). Ported from
-`core/scenery/road-paths.ts`."""
+(and, without crossings, clear of the roads and the paths laid before it)."""
 
 import math
 
@@ -40,7 +39,7 @@ PATH_TRIES = [
 
 
 class PathGround:
-    """What laying the paths needs from the road network (TypeScript `PathGround`)."""
+    """What laying the paths needs from the road network."""
 
     def __init__(
         self,

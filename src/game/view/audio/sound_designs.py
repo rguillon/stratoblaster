@@ -1,10 +1,10 @@
-"""The game's sound effects (P12-R09, GD-71), ported from `audio/sound-designs.ts`, all
+"""The game's sound effects (P12-R09, GD-71), all
 synthesised, keyed by the engine's cue (`SoundCue`). Priorities (P12-R10): the player's and the
 bombs' sounds highest, the enemy shots lowest. The player's gun shots and the laser hum are mixed
 quieter than hits and explosions.
 
 `sound(...)` takes its optional fields (`positional`, `loop`, `hold`) as a dict, as the
-TypeScript takes a partial object.
+The layers take a partial object.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

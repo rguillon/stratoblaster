@@ -1,4 +1,4 @@
-"""A level the player can fly (P06), ported from `core/content/game-level.ts`."""
+"""A level the player can fly (P06)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

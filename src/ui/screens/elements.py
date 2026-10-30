@@ -1,4 +1,4 @@
-"""DOM helpers of the menu screens, ported from `ui/screens/elements.ts`."""
+"""DOM helpers of the menu screens"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,7 +7,7 @@ __pragma__("skip")
 from collections.abc import Callable  # noqa: E402
 from typing import Any  # noqa: E402
 
-# The DOM is not in the type stubs, so its objects are `Any` (TypeScript: `Pick<Document, ...>`).
+# The DOM is not in the type stubs, so its objects are `Any`.
 MenuDocument = Any
 HtmlElement = Any
 TapHandler = Callable[[int], None]

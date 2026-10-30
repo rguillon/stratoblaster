@@ -1,4 +1,4 @@
-"""The Spinner (P05-R06), ported from `game/sim/enemies/spinner.ts`."""
+"""The Spinner (P05-R06)"""
 
 import math
 

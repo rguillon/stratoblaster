@@ -1,6 +1,4 @@
-"""Static, data-only description of the ships the player can fly, ported from
-`core/entities/player-ship.ts`.
-"""
+"""Static, data-only description of the ships the player can fly"""
 
 import math
 
@@ -53,7 +51,7 @@ def validate_player_ship_roster(roster: PlayerShipRoster) -> None:
     """Raises a descriptive error if the roster is empty, has duplicate ids or invalid stats."""
     if len(roster.ships) == 0:
         raise ValueError("A roster needs at least one player ship")
-    # `not (x > 0)` (rather than `x <= 0`) also rejects NaN, as the TypeScript does.
+    # `not (x > 0)` (rather than `x <= 0`) also rejects NaN.
     if not (roster.base_speed_px_per_sec > 0):  # noqa: SIM201
         raise ValueError("The base speed must be positive")
     ids: list[str] = []

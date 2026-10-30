@@ -1,4 +1,4 @@
-"""The Carrier (P05-R12), ported from `game/sim/enemies/carrier.ts`."""
+"""The Carrier (P05-R12)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-5: the Sentinel, ported from `bosses/sentinel-model.ts`: a twin-bodied city
+"""P07-R05, P16-R05, 1-5: the Sentinel: a twin-bodied city
 hunter, a blue body and a red one joined by a membrane through its thorax. Logical pixels, nose +Z,
 Y up (towards the camera).
 """

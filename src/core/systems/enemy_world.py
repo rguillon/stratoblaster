@@ -1,4 +1,4 @@
-"""The enemies and their shots (P05), ported from `core/systems/enemy-world.ts`.
+"""The enemies and their shots (P05)
 
 Updates every enemy, removes the destroyed ones (scoring them, GD-50, and letting them spawn
 parts) and the ones that left, and moves their shots. Its `targets` are what the player's shots

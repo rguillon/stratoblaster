@@ -1,4 +1,4 @@
-"""Weighted and range draws shared by the scenery generators, ported from `draws.ts`."""
+"""Weighted and range draws shared by the scenery generators"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""The Orbiter (P05-R20), ported from `game/sim/enemies/orbiter.ts`."""
+"""The Orbiter (P05-R20)"""
 
 import math
 

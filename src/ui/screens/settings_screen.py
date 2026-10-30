@@ -1,4 +1,4 @@
-"""Settings screen (P12-R04), ported from `ui/screens/settings-screen.ts`: the Music and Sound
+"""Settings screen (P12-R04): the Music and Sound
 effects sliders. Over a paused level, the playfield shows dimmed behind it."""
 
 from org.transcrypt.stubs.browser import __pragma__, window

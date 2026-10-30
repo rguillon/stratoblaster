@@ -1,4 +1,4 @@
-"""The light player ship (P02-R03), ported from `light-ship.ts`: a faceted tandem-wing interceptor,
+"""The light player ship (P02-R03): a faceted tandem-wing interceptor,
 like a dragonfly. A small front wing pair sits low (anhedral) and a larger swept rear pair sits
 high (dihedral); each of the 4 wings carries a hexagonal reactor at its tip, so the front flames
 stream under the rear wings. Everything is polygonal: fuselage with a smooth top and a faceted

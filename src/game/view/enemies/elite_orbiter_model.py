@@ -1,4 +1,4 @@
-"""P05-R20, P16-R04: the Orbiter, ported from `enemies/elite-orbiter-model.ts`. Logical pixels,
+"""P05-R20, P16-R04: the Orbiter Logical pixels,
 nose +Z, Y up (towards the camera).
 """
 

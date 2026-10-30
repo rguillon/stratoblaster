@@ -1,11 +1,83 @@
-"""Tests of a level's wave script (P06-R07, GD-40), `core/systems/wave_runner.py`."""
+"""Unit tests of `src/core/systems/wave_runner.py`."""
+
+from types import SimpleNamespace
 
 import pytest
 
-from core.entities.enemy import EnemyEntry
+from core.content.game_level import GameLevel
+from core.entities.enemy import Enemy, EnemyEntry, EnemyKindDefinition, EnemyStats
+from core.entities.muzzle import PlanePoint
+from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
+from core.systems.enemy_world import EnemyDifficulty
+from core.systems.level_run import LevelRun
+from core.systems.level_run_types import LevelRunOptions, RunShip
 from core.systems.wave_runner import Wave, WaveRunner, validate_wave_script
 
+SCREEN = SimpleNamespace(width=100, height=100)
+
+SHIP = RunShip(PlanePoint(50, 10), 100, 0, 5)
+
+
+class _Bounds:
+    min_y = 0
+    max_y = 100
+    center_x = 50
+
+    def half_width_at(self, y: float) -> float:
+        return 50
+
+
+class Still(Enemy):
+    """An enemy that does nothing but stand where it is put."""
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+
+def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDefinition:
+    return EnemyKindDefinition(
+        "still",
+        "Still",
+        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+    )
+
+
+GUN = ProjectileWeaponDefinition(
+    "gun", "Gun", "muzzle", 1, 50, 0, 50, 0, 0, 1, 5, 0, [[ShotStream(0, 0)], [ShotStream(0, 0)]]
+)
+
+ENTRY = SimpleNamespace(side="top", position=0.5)
+
+
+def _level(
+    waves: list | None = None,
+    seconds: float = 10,
+    bosses: list | None = None,
+) -> GameLevel:
+    scenery = SimpleNamespace(scroll_speed=10, sections=[SimpleNamespace(seconds=seconds)])
+    return GameLevel("L1", scenery, waves or [], EnemyDifficulty(1, 1), bosses)  # type: ignore[arg-type]
+
+
+def _run(**overrides: object) -> LevelRun:
+    options: dict = dict(
+        screen=SCREEN,
+        level=_level(),
+        kinds=[_kind()],
+        weapon=GUN,
+        weapon_level=1,
+        ship=SHIP,
+        bounds=_Bounds(),
+        cull_margin=10,
+        max_enemy_age=60,
+        end_wait=1,
+        seed=1,
+    )
+    options.update(overrides)
+    return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
+
+
 TOP = EnemyEntry("top", 0.5)
+
 KINDS = ["scout", "drone"]
 
 
@@ -13,6 +85,11 @@ def _runner(script: list[Wave]) -> tuple[WaveRunner, list[tuple[str, EnemyEntry]
     spawned: list[tuple[str, EnemyEntry]] = []
     runner = WaveRunner(script, lambda kind, entry: spawned.append((kind, entry)))
     return runner, spawned
+
+
+def test_p06_r03_a_bad_wave_script_is_refused_when_the_run_starts() -> None:
+    with pytest.raises(ValueError, match="unknown enemy kind"):
+        _run(level=_level([Wave(0, "ghost", 1, 0, ENTRY)]))  # type: ignore[arg-type]
 
 
 def test_p06_r07_a_valid_script_passes_validation() -> None:

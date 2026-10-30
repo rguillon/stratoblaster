@@ -1,5 +1,4 @@
-"""World 3 (P09-R03; reworked at the reviewer's request, 2026-10-27), ported from
-`config/world-3/scenery.ts`.
+"""World 3 (P09-R03; reworked at the reviewer's request, 2026-10-27)
 
 The five levels are one journey from the great works World 2 ended on, along canals and docks,
 through the workers' quarters and the terraces, to garden suburbs and villages of small houses (no

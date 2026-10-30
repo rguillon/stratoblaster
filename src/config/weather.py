@@ -1,7 +1,6 @@
-"""Weather kinds and lightning tunables (phase 8-10, P08-R05, P09-R05, P10-R06), ported from
-`config/weather.ts`.
+"""Weather kinds and lightning tunables (phase 8-10, P08-R05, P09-R05, P10-R06)
 
-The classes are defined here (not imported from `core/`), so `config/` never imports `core/` at
+The classes are defined here (not im), so `config/` never imports `core/` at
 runtime: `core/scenery/lightning.py` imports this module.
 """
 

@@ -1,4 +1,4 @@
-"""The data a level run takes and gives (P06-R03), ported from `core/systems/level-run-types.ts`.
+"""The data a level run takes and gives (P06-R03)
 
 The options are passed to `LevelRun` in the positional order of its constructor (see
 `LevelRunOptions`).

@@ -1,4 +1,4 @@
-"""How far a scrolling level has gone (P04-R06), ported from `core/scenery/scroll-track.ts`.
+"""How far a scrolling level has gone (P04-R06)
 
 The ground scrolls at `speed` world units per second from distance 0 to `length`, then the level
 has ended and the track stops.

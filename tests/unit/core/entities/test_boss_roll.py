@@ -1,13 +1,26 @@
-"""How a boss rolls into its sideways moves (`core.entities.boss_roll`)."""
+"""Unit tests of `src/core/entities/boss_roll.py`."""
 
 import math
+from collections.abc import Callable
 
 import pytest
+from helpers.fakes import FakeContext, ProbeBoss
 
 from core.entities.boss_roll import BossRoll, roll_towards
 
+Make = Callable[..., ProbeBoss]
+
 RULE = BossRoll(max_deg=30, full_speed=100, ease_per_sec=1)
+
 LIMIT = math.pi / 6
+
+
+def test_the_boss_rolls_into_a_sideways_move(make_boss: Make, ctx: FakeContext) -> None:
+    boss = make_boss(fighting=True, roll=BossRoll(max_deg=30, full_speed=100, ease_per_sec=1000))
+    boss.update(ctx, 0.0)
+    boss.x += 10
+    boss.update(ctx, 0.1)
+    assert boss.roll == pytest.approx(math.pi / 6)
 
 
 def test_a_roll_rule_keeps_its_settings() -> None:

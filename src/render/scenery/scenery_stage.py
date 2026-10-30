@@ -1,5 +1,5 @@
-"""The ground of a scrolling level seen by the tilted playfield camera (P04), ported from
-`render/scenery/scenery-stage.ts`: sculpted terrain in chunks, an optional sea, cloud layers and
+"""The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain in
+chunks, an optional sea, cloud layers and
 props, lit by a low sun. `update` moves everything to a distance along the level.
 """
 
@@ -52,7 +52,7 @@ __pragma__("noskip")
 # keep clear of the buildings (reviewer, 2026-10-28).
 RUNOUT_REACH = 64
 
-# Infinity, as the TypeScript's `Infinity`.
+# Infinity.
 INFINITY = float("Infinity")
 
 

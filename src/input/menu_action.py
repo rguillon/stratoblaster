@@ -1,12 +1,11 @@
-"""Abstract menu actions every input device is translated into (P01-R12), ported from
-`input/menu-action.ts`:
+"""Abstract menu actions every input device is translated into (P01-R12):
 - `back`: Back on the menu screens (Backspace, gamepad B); nothing in a level (P12-R01);
 - `cancel`: the Escape key: Back on the menu screens (P01-R09), pause in a level (P12-R01);
 - `pause`: pauses a level, or resumes it from the pause menu (P, gamepad Start / Select, the
   on-screen pause button);
 - `resume`: resumes a paused level (test API, P12-R12).
 
-An action is a plain string (the TypeScript union of literals); `MENU_ACTIONS` lists them all.
+An action is a plain string; `MENU_ACTIONS` lists them all.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

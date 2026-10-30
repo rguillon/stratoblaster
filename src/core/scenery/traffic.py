@@ -1,8 +1,7 @@
 """Phase 4 review: cars driving along the streets and main roads (not the paths), right-hand
 traffic, in one lane each way (two on 2×2 roads). All the cars of one lane drive at the same speed,
 so they never catch up with each other. A car that reaches the end of its road goes round to its
-start, hidden near both ends: streets end in the crossing street, main roads off the screen. Ported
-from `core/scenery/traffic.ts`.
+start, hidden near both ends: streets end in the crossing street, main roads off the screen.
 """
 
 import math
@@ -20,7 +19,7 @@ from core.math.noise import hash_2d  # noqa: E402
 from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402
 from core.scenery.road_types import Road  # noqa: E402
 
-# `%` keeps JavaScript's sign rule, as in the TypeScript (see `_distance_along`).
+# `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")
 
 # Z span of a bucket of the roads with cars (`Traffic._buckets`).

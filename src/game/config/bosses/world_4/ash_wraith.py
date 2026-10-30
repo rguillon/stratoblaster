@@ -1,5 +1,5 @@
 """P10-R11, 4-2: the Ash Wraith, the mini boss of the Ash plains level, a chase over the plains
-(ported from `config/bosses/world-4/ash-wraith.ts`).
+().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
 patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core

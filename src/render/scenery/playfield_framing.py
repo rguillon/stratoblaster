@@ -1,5 +1,4 @@
-"""Where the tilted camera stands relative to the playfield (P04-R05), ported from
-`render/scenery/playfield-framing.ts`.
+"""Where the tilted camera stands relative to the playfield (P04-R05)
 
 The playfield is a `screen`-sized rectangle on the flight plane: X across (centred on 0), Z along
 the level from its bottom edge. The camera is tilted from straight down towards +Z.

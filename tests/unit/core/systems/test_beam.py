@@ -1,4 +1,4 @@
-"""Tests of the beam of a beam weapon (P03-R02), `core/systems/beam.py`."""
+"""Unit tests of `src/core/systems/beam.py`."""
 
 import pytest
 

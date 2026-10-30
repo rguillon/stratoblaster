@@ -1,4 +1,4 @@
-"""The loading screen of a level (P13-R03), ported from `ui/level-loading.ts`: the menus' loading
+"""The loading screen of a level (P13-R03): the menus' loading
 screen over the game screen, with the level's real progress."""
 
 from org.transcrypt.stubs.browser import __pragma__

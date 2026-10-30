@@ -1,4 +1,4 @@
-"""Enemies (P05), ported from `core/entities/enemy.ts`.
+"""Enemies (P05)
 
 Positions are playfield logical pixels, X to the right, Y up; headings are in radians from +Y,
 positive to the right (pi points straight down, towards the player's side).
@@ -228,8 +228,7 @@ class Enemy:
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
         """Where `muzzle`, one of its guns' (see `muzzle.py`), is now: it turns with its nose.
-        `on_turret` is accepted for `MuzzleSource` but ignored: an enemy has no turret
-        (`enemy.ts`' `place` takes only the muzzle, and so does not turn it either).
+        `on_turret` is accepted for `MuzzleSource` but ignored: an enemy has no turret.
         """
         return muzzle_point(self, muzzle)
 

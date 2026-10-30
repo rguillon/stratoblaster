@@ -1,5 +1,4 @@
-"""Per-frame animations attached to the nodes of a model (ported from
-`render/model-animation.ts`).
+"""Per-frame animations attached to the nodes of a model ().
 
 A `ModelAnimation` is a function of the elapsed seconds. It is kept per node in a JavaScript
 `WeakMap`, so it is dropped with the node.

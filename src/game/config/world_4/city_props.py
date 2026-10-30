@@ -1,4 +1,4 @@
-"""Building groups and props of World 4 (P10-R03, R08), ported from `config/world-4/city-props.ts`.
+"""Building groups and props of World 4 (P10-R03, R08)
 
 World 3's houses, terraces and flats, then Level Zero's city blocks and towers made of parts, then
 the skyscrapers; each section picks the groups that stand on it, so the buildings slowly grow from

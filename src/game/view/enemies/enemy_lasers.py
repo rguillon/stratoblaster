@@ -1,9 +1,14 @@
 """The enemies' lasers (GD-43): a blinking warning line, then a beam with a flare at its base, in
-the colour of their style (phase 8 review), ported from `enemies/enemy-lasers.ts`."""
+the colour of their style (phase 8 review)"""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -67,6 +72,9 @@ def contrast_warning(color: Sequence[float]) -> list[Rgb]:
 
 def with_warning(base: Any, warning: list[Rgb]) -> Any:
     """`{ ...base, warning }`: the palette with another warning colour."""
+    __pragma__("skip")
+    return record({**fields_of(base), "warning": warning})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, base, {warning: warning});")
     return None
 
@@ -153,7 +161,7 @@ class EnemyLasers:
         self.scene = scene
         # `contrast`: warning lines with a white core, wider (P10-R07).
         self.contrast = contrast
-        # The styles drawn so far, in order, and the pools of each (a Map in the TypeScript).
+        # The styles drawn so far, in order, and the pools of each.
         self.style_names: list[str] = []
         self.pools: dict[str, LaserPools] = {}
 

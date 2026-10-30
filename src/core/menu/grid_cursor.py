@@ -1,4 +1,4 @@
-"""Moves a selection index in a grid of entries, ported from `core/menu/grid-cursor.ts`."""
+"""Moves a selection index in a grid of entries"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

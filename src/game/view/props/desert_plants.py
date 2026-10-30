@@ -1,4 +1,4 @@
-"""Desert and coast vegetation (P06-R06), ported from `props/desert-plants.ts`. Sizes in world
+"""Desert and coast vegetation (P06-R06) Sizes in world
 units, standing on Y = 0."""
 
 import math

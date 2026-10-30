@@ -1,4 +1,4 @@
-"""The Snow Owl (P08-R10, 2-3's mini boss), ported from `config/bosses/world-2/snow-owl.ts`.
+"""The Snow Owl (P08-R10, 2-3's mini boss)
 
 The mini boss of the Tundra level. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the same

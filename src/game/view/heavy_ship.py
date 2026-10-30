@@ -1,4 +1,4 @@
-"""The heavy player ship (P02-R02), ported from `heavy-ship.ts`: inspired by modern flying-wing
+"""The heavy player ship (P02-R02): inspired by modern flying-wing
 stealth bombers (B-2 / B-21): no fuselage and no tail, swept leading edges with accent bands,
 sawtooth trailing edge with elevons, a raised cockpit with a dark visor, dorsal intakes feeding 2
 reactors, bomb bay doors underneath. Wingspan 6 units. Low-poly and polygonal like the other

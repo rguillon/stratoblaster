@@ -1,4 +1,4 @@
-"""The Rocketeer (P05-R08), ported from `game/sim/enemies/rocketeer.ts`."""
+"""The Rocketeer (P05-R08)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

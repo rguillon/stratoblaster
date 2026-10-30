@@ -1,5 +1,4 @@
-"""P10-R11, 4-1: the Cinder Crab, the Black sands' mini boss (ported from
-`config/bosses/world-4/cinder-crab.ts`).
+"""P10-R11, 4-1: the Cinder Crab, the Black sands' mini boss ().
 
 Offsets in px from the boss's centre, X right and Y up (its claws reach down the screen, at -Y).
 Each claw hangs on an arm that swings from its shoulder (D-061), and its outer finger opens and

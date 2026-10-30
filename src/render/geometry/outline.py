@@ -1,7 +1,9 @@
-"""2D planform outlines (ported from `render/geometry/outline.ts`).
+"""2D planform outlines ().
 
 A point is a two-element list `[x, z]`, seen from above (X right, Z forward).
 """
+
+import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -18,16 +20,16 @@ ALONG_EPSILON = 1e-9
 
 def _hypot2(a: float, b: float) -> float:
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 def _hypot3(a: float, b: float, c: float) -> float:
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 def hypot2(a: float, b: float) -> float:
-    """`Math.hypot(a, b)`: JavaScript's rounding, the one the TypeScript results come from."""
+    """`Math.hypot(a, b)`: JavaScript's rounding."""
     return _hypot2(a, b)
 
 

@@ -1,4 +1,4 @@
-"""Gamepad -> menu actions (P01-R10), ported from `input/gamepad-menu-input.ts`, polled once per
+"""Gamepad -> menu actions (P01-R10), polled once per
 frame. Buttons fire on press; the D-pad and the left stick repeat while held. All connected
 gamepads are merged."""
 

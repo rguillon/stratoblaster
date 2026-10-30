@@ -1,5 +1,4 @@
-"""P10-R11, 4-3: the Magma Salamander, the mini boss of the Lava fields level (ported from
-`config/bosses/world-4/magma-salamander.ts`).
+"""P10-R11, 4-3: the Magma Salamander, the mini boss of the Lava fields level ().
 
 Offsets in px from the boss's centre, X right and Y up (its snout points down, at -Y). Its tail
 curls back to its right and swings on two joints (D-061), sweeping lines of bullets across the

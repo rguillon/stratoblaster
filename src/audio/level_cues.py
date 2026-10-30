@@ -1,4 +1,4 @@
-"""The engine's sound cues (P12-R09), ported from `audio/level-cues.ts`: what happened in a level
+"""The engine's sound cues (P12-R09): what happened in a level
 step that a game may give a sound. `fire:<weaponId>` (a volley of a projectile weapon),
 `beam-start:<weaponId>` (a beam starts; `beam:<weaponId>` names its looping hum), `weapon-switch`,
 `weapon-up`, `enemy-bullet`, `enemy-missile`, `laser-warning`, `laser-fire`, `hit`, `hit-blocked`,
@@ -6,7 +6,7 @@ step that a game may give a sound. `fire:<weaponId>` (a volley of a projectile w
 `extra-life`, `bomb`, `bonus:<kind>`; and on the menus `menu-move`, `menu-confirm`, `menu-back`,
 `pause`, `resume`, `slider`.
 
-Audio only reads the core's state, it never changes it (ENG-11). The TypeScript Sets and Maps of
+Audio only reads the core's state, it never changes it (ENG-11). The sets and maps of
 bullets and lasers are lists compared by identity (`is`), as Transcrypt has no object-keyed
 collections.
 """

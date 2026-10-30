@@ -1,4 +1,4 @@
-"""P10-R11, 4-3: the Magma Salamander. Ported from `bosses/world-4/magma-salamander-model.ts`.
+"""P10-R11, 4-3: the Magma Salamander.
 Logical
 pixels, nose +Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped head, a
 body of overlapping armour plates with magma glowing in the seams between them, four clawed legs

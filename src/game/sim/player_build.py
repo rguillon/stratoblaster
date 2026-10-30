@@ -1,7 +1,7 @@
 """Builds the core types of the player's ships and weapons (P02, P03) from their config records:
 the one place where the config meets `core/` for them. Mapping rules are in `config_build.py`.
 
-`PLAYER_SHIPS` and `PLAYER_WEAPONS` keep the TypeScript's camelCase shape; `core/` dispatches
+`PLAYER_SHIPS` and `PLAYER_WEAPONS` keep camelCase keys; `core/` dispatches
 projectile and beam weapons with `isinstance`, so a weapon is built as its class here.
 """
 
@@ -49,7 +49,7 @@ def _projectile(weapon: ConfigRecord) -> ProjectileWeaponDefinition:
     for streams in weapon.levels:
         levels.append(mapped(streams, _stream))
     launch_back = weapon.launchBack
-    if launch_back == None:  # noqa: E711 (omitted: 0, as the TypeScript)
+    if launch_back == None:  # noqa: E711
         launch_back = 0
     return ProjectileWeaponDefinition(
         weapon.id,

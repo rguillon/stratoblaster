@@ -1,4 +1,4 @@
-"""Plays one voice's layers into a destination (P12-R05), ported from `audio/synth.ts`: each layer
+"""Plays one voice's layers into a destination (P12-R05): each layer
 is an oscillator or looped noise, through its filter and envelope. The Web Audio context is passed
 in (a fake one in the tests); nothing here reads a browser global.
 
@@ -25,7 +25,7 @@ STOP_MARGIN = 0.02
 # The noise seed: a fixed sequence (no Math.random), so the noise sounds the same on every run.
 NOISE_SEED = 0x9E3779B9
 
-# One noise buffer per context (a WeakMap in the TypeScript): parallel lists, as Transcrypt has
+# One noise buffer per context: parallel lists, as Transcrypt has
 # no object-keyed dictionaries.
 _noise_contexts = []  # type: list[Any]
 _noise_buffers = []  # type: list[Any]
@@ -68,7 +68,7 @@ class Voice:
             part.gain.gain.setTargetAtTime(SILENT, at, max(0.001, fade / 4))
             try:  # noqa: SIM105 (Transcrypt has no contextlib)
                 part.source.stop(at + fade + STOP_MARGIN)
-            except:  # noqa: E722 (a Web Audio call that throws must not stop the game, as in the TypeScript)
+            except:  # noqa: E722
                 # Already stopped earlier than that: nothing to do.
                 pass
 

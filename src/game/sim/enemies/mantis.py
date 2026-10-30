@@ -1,4 +1,4 @@
-"""The Mantis (P05-R16), ported from `game/sim/enemies/mantis.ts`."""
+"""The Mantis (P05-R16)"""
 
 import math
 

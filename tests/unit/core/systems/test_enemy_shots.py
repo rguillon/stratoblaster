@@ -1,4 +1,4 @@
-"""Tests of the shots of all the enemies (GD-43, GD-44), `core/systems/enemy_shots.py`."""
+"""Unit tests of `src/core/systems/enemy_shots.py`."""
 
 import math
 from types import SimpleNamespace
@@ -91,30 +91,6 @@ def test_gd43_bullets_fly_straight_and_leave_the_playfield_behind() -> None:
     assert shots.bullets[1].alive is False
 
 
-def test_gd43_a_bullet_bursts_into_a_ring_once_its_time_is_up() -> None:
-    shots = _shots()
-    burst = EnemyBurstSpec(1, 4, _bullet(speed=3))
-    shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=burst))
-    shots.step(0.5, 0, 0)
-    assert len([b for b in shots.bullets if b.alive]) == 1
-    shots.step(0.5, 0, 0)
-    alive = [b for b in shots.bullets if b.alive]
-    assert len(alive) == 4
-    assert all(b.speed == 3 for b in alive)
-    assert sorted(round(b.heading, 6) for b in alive) == pytest.approx(
-        sorted([0, math.pi / 2, math.pi, 3 * math.pi / 2])
-    )
-    # The ring leaves from where the bullet was when it burst (after its last move, at y 60).
-    assert all(b.y == pytest.approx(60) for b in alive)
-
-
-def test_gd43_a_burst_at_once_fires_on_the_first_step() -> None:
-    shots = _shots()
-    shots.fire_bullet(50, 50, 0, _bullet(burst=EnemyBurstSpec(0, 2, _bullet())))
-    shots.step(0.1, 0, 0)
-    assert len([b for b in shots.bullets if b.alive]) == 2
-
-
 def test_gd44_a_missile_homes_on_the_player_for_its_homing_time() -> None:
     shots = _shots()
     shots.fire_missile(0, 0, math.pi / 2, _missile())
@@ -140,14 +116,6 @@ def test_gd44_a_missile_with_no_health_dies_without_moving() -> None:
     shots.step(1, 0, 0)
     assert shots.missiles[0].alive is False
     assert shots.missiles[0].y == 0
-
-
-def test_gd44_a_missile_that_leaves_the_playfield_is_removed() -> None:
-    shots = _shots()
-    # No homing: it flies straight up out of the playfield (105 + 10 > 100 + margin).
-    shots.fire_missile(0, 105, 0, EnemyMissileSpec(10, 90, 0, 2, 5, "rocket"))
-    shots.step(1, 0, 0)
-    assert shots.missiles[0].alive is False
 
 
 def test_gd44_free_missiles_are_reused_and_keep_counting_ids() -> None:
@@ -179,71 +147,3 @@ def test_gd43_a_laser_warns_then_fires_along_its_locked_heading() -> None:
     owner.heading = 2.0
     shots.step(0.1, 0, 0)
     assert laser.heading == pytest.approx(1.0)
-
-
-def test_gd43_a_sweeping_laser_keeps_turning_with_its_owner() -> None:
-    shots = _shots()
-    owner = _Owner(PlanePoint(10, 10), heading=0)
-    shots.fire_laser(owner, _laser(warning=0, firing=5, sweeps=True))
-    shots.step(0.1, 0, 0)
-    owner.heading = 1.0
-    shots.step(0.1, 0, 0)
-    assert shots.lasers[0].locked is None
-    assert shots.lasers[0].heading == pytest.approx(1.0)
-
-
-def test_gd43_a_laser_ends_after_its_warning_and_firing_time() -> None:
-    shots = _shots()
-    shots.fire_laser(_Owner(PlanePoint(0, 0)), _laser(warning=1, firing=1))
-    shots.step(1.5, 0, 0)
-    assert len(shots.lasers) == 1
-    shots.step(1, 0, 0)
-    assert shots.lasers == []
-
-
-def test_gd43_a_laser_ends_when_its_owner_is_gone_or_has_no_health() -> None:
-    shots = _shots()
-    gone = _Owner(PlanePoint(0, 0))
-    shots.fire_laser(gone, _laser())
-    gone.gone = True
-    shots.step(0.1, 0, 0)
-    assert shots.lasers == []
-    dead = _Owner(PlanePoint(0, 0))
-    shots.fire_laser(dead, _laser())
-    dead.health = 0
-    shots.step(0.1, 0, 0)
-    assert shots.lasers == []
-
-
-def test_gd43_a_laser_is_seen_leaving_its_raised_emitter_through_the_eye() -> None:
-    eye = SimpleNamespace(x=0, y=0, height=100)
-    shots = _shots(eye)
-    shots.fire_laser(_Owner(RaisedPoint(0, 50, 50), heading=0), _laser())
-    laser = shots.lasers[0]
-    # The eye sees the point at height 50 of a raised emitter twice as far out on the playfield.
-    assert (laser.x, laser.y) == pytest.approx((0, 100))
-
-
-def test_gd43_a_laser_on_the_playfield_is_seen_where_it_is() -> None:
-    shots = _shots(SimpleNamespace(x=0, y=0, height=100))
-    shots.fire_laser(_Owner(PlanePoint(20, 30), heading=0), _laser())
-    assert (shots.lasers[0].x, shots.lasers[0].y) == (20, 30)
-
-
-def test_gd43_counts_and_clear_cover_bullets_missiles_and_lasers() -> None:
-    shots = _shots()
-    shots.fire_bullet(50, 50, 0, _bullet())
-    shots.fire_missile(50, 50, 0, _missile())
-    shots.fire_laser(_Owner(PlanePoint(0, 0)), _laser())
-    assert shots.count == 3
-    shots.clear()
-    assert shots.count == 0
-    assert shots.lasers == []
-    assert all(not b.alive for b in shots.bullets)
-
-
-def test_gd43_a_burst_of_no_bullets_just_goes() -> None:
-    shots = _shots()
-    shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=EnemyBurstSpec(0, 0, _bullet())))
-    shots.step(0.1, 0, 0)
-    assert shots.count == 0

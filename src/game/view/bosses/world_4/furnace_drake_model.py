@@ -1,4 +1,4 @@
-"""P10-R11, 4-4: the Furnace Drake. Ported from `bosses/world-4/furnace-drake-model.ts`. Logical
+"""P10-R11, 4-4: the Furnace Drake. Logical
 pixels, nose +Z, Y up (towards the camera). A dragon-shaped gunship: a heavy armoured torso with a
 furnace glowing through a grate in its back, molten seams between its soot-black plates, four clawed
 legs tucked under it, a long spiked tail lashing behind, beating wings and a horned head on a

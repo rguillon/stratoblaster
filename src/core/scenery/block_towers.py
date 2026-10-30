@@ -1,5 +1,4 @@
-"""The towers of the city blocks (phase 4 review), split out of `prop-placement.ts`. Ported from
-`core/scenery/block-towers.ts`."""
+"""The towers of the city blocks (phase 4 review)."""
 
 import math
 

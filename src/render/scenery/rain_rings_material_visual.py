@@ -1,7 +1,5 @@
-# ruff: noqa: E501 (GLSL shader source lines, kept as in the TypeScript)
-"""The material of the rain rings (P09-R05): thin rings spreading in each cell of the water. Ported
-from `render/scenery/rain-rings-material.visual.ts`.
-"""
+# ruff: noqa: E501
+"""The material of the rain rings (P09-R05): thin rings spreading in each cell of the water."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__

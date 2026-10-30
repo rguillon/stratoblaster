@@ -1,4 +1,4 @@
-"""Draws enemies on a top-down playfield (ported from `render/enemy-layer.ts`).
+"""Draws enemies on a top-down playfield ().
 
 The playfield is the XY plane at Z = 0, Y up, seen from -Z (see `game_view.ShotFrame`): one
 model per enemy, at its position, its nose along its heading. Models are kept per model key and

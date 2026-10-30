@@ -1,5 +1,5 @@
-"""P09-R09, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon). Ported from
-`view/bosses/world-3/sky-temple-parts.ts`. Logical pixels, nose +Z (its grand stair, down the
+"""P09-R09, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon). Logical pixels,
+nose +Z (its grand stair, down the
 screen), Y up (towards the camera)."""
 
 import math

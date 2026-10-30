@@ -1,5 +1,5 @@
-"""Generates levels' grounds and scenery textures in a worker (P13-R03), ported from
-`render/scenery/background-loader.ts`, so a level can be prepared while the player is still
+"""Generates levels' grounds and scenery textures in a worker (P13-R03), so a level can be prepared
+while the player is still
 choosing it, without freezing the menus. Unless stopped, every ground the game asks for is
 generated there (`generate_grounds_with`).
 """

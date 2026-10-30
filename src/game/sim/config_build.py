@@ -1,5 +1,5 @@
 """Shared helpers of the mapping layers (`game/sim/*_build.py`) that turn config records into
-`core/` objects: the config keeps the TypeScript's camelCase shape, `core/` takes snake_case
+`core/` objects: the config keeps camelCase keys, `core/` takes snake_case
 attributes and tests `is None` for an omitted optional field.
 
 Under Transcrypt an omitted field is `undefined`, not `None`, so every optional field goes through

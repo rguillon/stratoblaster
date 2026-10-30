@@ -1,5 +1,4 @@
-"""Missiles (P03-R03): turned along their heading, with flames, and explosions on impact. Ported
-from `shots/missile-renderer.ts`.
+"""Missiles (P03-R03): turned along their heading, with flames, and explosions on impact.
 
 Missiles are drawn behind the ship, which covers them as they leave its centre. Each has a bright
 motor flare and a glowing exhaust trail, so it shows on any ground (phase 5 review).

@@ -1,6 +1,6 @@
 """P08-R10, 2-2: the Harbour Kraken's crane arms: a boom on each shoulder, a jib on each elbow
-(moving limbs, D-061), and the grab cannons hanging from the jibs' tips, ported from
-`bosses/world-2/harbour-kraken-cranes.ts`. Logical pixels, nose +Z, Y up (towards the camera)."""
+(moving limbs, D-061), and the grab cannons hanging from the jibs' tips Logical pixels, nose +Z, Y
+up (towards the camera)."""
 
 import math
 

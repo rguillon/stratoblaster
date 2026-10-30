@@ -1,7 +1,12 @@
-"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models, ported from
-`enemies/vetelite-organic.ts`. Logical pixels, nose +Z, Y up."""
+"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models Logical pixels, nose +Z, Y
+up."""
 
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -31,6 +36,9 @@ LEAN_SECTION = [  # type: list[list[float]]
 
 def _with_wing(wing: Any, root: list[float], tips: list[list[float]]) -> Any:
     """`{ ...wing, root, tips }`: a copy of a membrane wing with other points."""
+    __pragma__("skip")
+    return record({**fields_of(wing), "root": root, "tips": tips})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, wing, {root: root, tips: tips});")
     return None
 

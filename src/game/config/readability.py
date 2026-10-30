@@ -1,4 +1,4 @@
-"""What keeps the playfield readable (phase 14), ported from `config/readability.ts`.
+"""What keeps the playfield readable (phase 14)
 
 Each kind of gameplay object has a colour family no other uses (P14-R02); the ground is dimmed
 under a dark veil (P14-R01); and the thresholds the readability check measures (P14-R03..R08).

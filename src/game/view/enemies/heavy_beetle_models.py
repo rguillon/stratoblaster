@@ -1,6 +1,5 @@
-"""P05-R09, P05-R10, P16-R03: the Bulwark and the Splitter, Cyber-Organic (P16-R01), ported from
-`enemies/heavy-beetle-models.ts`. Logical pixels, nose +Z, Y up.
-"""
+"""P05-R09, P05-R10, P16-R03: the Bulwark and the Splitter, Cyber-Organic (P16-R01) Logical pixels,
+nose +Z, Y up."""
 
 import math
 

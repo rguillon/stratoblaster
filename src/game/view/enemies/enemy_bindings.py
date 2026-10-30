@@ -1,5 +1,4 @@
-"""How this game's enemies (and bosses, P07), their shots and their explosions look (P05),
-ported from `enemies/enemy-bindings.ts`."""
+"""How this game's enemies (and bosses, P07), their shots and their explosions look (P05)"""
 
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
 from game.view.bosses.boss_models import BOSS_MODELS  # noqa: E402
@@ -10,7 +9,7 @@ from game.view.enemies.living_motion import set_living_motion  # noqa: E402
 
 
 class EnemyBindingsHandle:
-    """The enemy bindings (`EnemyBindings` in the TypeScript)."""
+    """The enemy bindings."""
 
     def __init__(
         self,

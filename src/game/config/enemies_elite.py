@@ -1,4 +1,4 @@
-"""Tunables of the elite enemies (P05-R19 to P05-R23), ported from `config/enemies-elite.ts`.
+"""Tunables of the elite enemies (P05-R19 to P05-R23)
 
 In the style of `enemies.py`: distances in logical pixels, speeds in px/s, times in seconds, angles
 in degrees; `...Fraction` heights are fractions of the playfield height from its bottom. Their

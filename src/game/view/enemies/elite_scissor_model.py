@@ -1,4 +1,4 @@
-"""P05-R21, P16-R04: the Scissor, ported from `enemies/elite-scissor-model.ts`. Logical pixels, nose
+"""P05-R21, P16-R04: the Scissor Logical pixels, nose
 +Z, Y up (towards the camera).
 """
 

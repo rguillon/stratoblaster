@@ -1,4 +1,4 @@
-"""One model per elite model key (P05-R19 to P05-R23), ported from `enemies/elite-models.ts`."""
+"""One model per elite model key (P05-R19 to P05-R23)"""
 
 from game.view.enemies.elite_hive_model import build_hive  # noqa: E402
 from game.view.enemies.elite_hydra_model import build_hydra  # noqa: E402

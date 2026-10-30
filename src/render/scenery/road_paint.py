@@ -2,8 +2,6 @@
 looking corners, T and X). The roadway's corners are rounded with distance fields: the sidewalk
 corners into a junction get a kerb radius, and the outside of a turn sweeps round. Junctions of
 three or four ways get zebra crossings on their arms, the lane lines stopping before them.
-
-Ported from `render/scenery/road-paint.ts`.
 """
 
 import math
@@ -41,12 +39,18 @@ INF = float("Infinity")
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 def _fround(x: float) -> float:
-    """`Math.fround(x)`: the nearest 32-bit float (the TypeScript distances are Float32Arrays)."""
+    """`Math.fround(x)`: the nearest 32-bit float."""
     __pragma__("js", "{}", "return Math.fround(x);")
+    __pragma__("skip")
+    import struct  # noqa: PLC0415 (CPython only: Transcrypt has no struct module)
+
+    rounded: float = struct.unpack("f", struct.pack("f", x))[0]
+    return rounded
+    __pragma__("noskip")
     return 0
 
 

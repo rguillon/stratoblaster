@@ -1,5 +1,4 @@
-"""The reactors and rotors of the enemy models (phase 5 review), ported from
-`enemies/enemy-engines.ts`."""
+"""The reactors and rotors of the enemy models (phase 5 review)"""
 
 import math
 

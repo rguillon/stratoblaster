@@ -1,4 +1,4 @@
-"""Tunables of the engine's menu screens (phase 01), ported from `config/menu.ts`.
+"""Tunables of the engine's menu screens (phase 01)
 
 Game-specific values are in `src/game/config/`.
 """

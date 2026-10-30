@@ -1,4 +1,4 @@
-"""The beam of a beam weapon (P03-R02), ported from `core/systems/beam.ts`."""
+"""The beam of a beam weapon (P03-R02)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

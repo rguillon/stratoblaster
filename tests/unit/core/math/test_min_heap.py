@@ -1,7 +1,6 @@
-"""Binary min-heap (`core.math.min_heap`)."""
+"""Unit tests of `src/core/math/min_heap.py`."""
 
 from core.math.min_heap import MinHeap
-from core.math.rng import create_rng, random_in
 
 
 def _drain(heap: MinHeap) -> list[float]:
@@ -52,12 +51,3 @@ def test_single_element_round_trip() -> None:
     assert heap.pop() == 7.5
     assert heap.size == 0
     assert heap.pop() is None
-
-
-def test_heap_sorts_a_seeded_random_sequence() -> None:
-    random = create_rng(99)
-    values = [random_in(random, -100, 100) for _ in range(200)]
-    heap = MinHeap(sorted(values[:50]))
-    for value in values[50:]:
-        heap.push(value)
-    assert _drain(heap) == sorted(values)

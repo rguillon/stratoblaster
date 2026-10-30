@@ -1,6 +1,5 @@
 """P09-R09, 3-1: the river growth on the Mangrove Croc and the River Leviathan (GD-61, the World
-3 theme: dark metal with neon, plus moss, vines and stone). Ported from
-`view/bosses/world-3/mangrove-croc-jungle.ts`. Logical pixels, nose +Z, Y up."""
+3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
 
 import math
 

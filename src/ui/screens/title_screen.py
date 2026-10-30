@@ -1,4 +1,4 @@
-"""Title screen (P01-R04), ported from `ui/screens/title-screen.ts`: high score, game title,
+"""Title screen (P01-R04): high score, game title,
 Start, Settings (P12-R04), controls hint and version."""
 
 from org.transcrypt.stubs.browser import __pragma__

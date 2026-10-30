@@ -1,4 +1,4 @@
-"""A level's generated ground (P13-R03), ported from `render/scenery/level-ground.ts`: its height
+"""A level's generated ground (P13-R03): its height
 field and its props' placer (with the roads), generated here or in the background worker, kept for
 reuse (the level being played, Retry, and those prefetched).
 """
@@ -271,7 +271,7 @@ def _is_pending(level: SceneryLevel, seed: int) -> bool:
     return any(p.level is level and p.seed == seed for p in _state.pending)
 
 
-def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901 (the TypeScript flow, kept as is)
+def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901
     """Asks for the ground of `level` (seed `seed`, default the level's): true when it is ready.
     With a background generator it is generated there, if not already on its way (false until it
     comes back, its runout after it); without one, now."""

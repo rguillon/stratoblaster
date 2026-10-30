@@ -1,5 +1,5 @@
-"""Builders of living shapes for low-poly, flat-shaded models (ported from
-`render/geometry/organic.ts`): bodies of segments, shells, ribs, tendrils, membrane wings,
+"""Builders of living shapes for low-poly, flat-shaded models (): bodies of segments, shells, ribs,
+tendrils, membrane wings,
 organs, veins and armour plates.
 
 Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.

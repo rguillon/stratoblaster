@@ -1,4 +1,4 @@
-"""The player ship's movement (P06-R02, GD-10), ported from `core/systems/player-flight.ts`."""
+"""The player ship's movement (P06-R02, GD-10)"""
 
 import math
 

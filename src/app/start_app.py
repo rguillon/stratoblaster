@@ -1,11 +1,10 @@
-"""Wires the layers together (ENG-11), ported from `app/start-app.ts`: loads the menu scenes
+"""Wires the layers together (ENG-11): loads the menu scenes
 behind a loading screen, then runs the menus (P01-R01..R15) and the levels (P06) in
 Babylon's render loop with a fixed-step clock (ENG-100).
 
 `start_app(engine, game, options)` is what `main.py` calls. `AppOptions` is a plain class: every
 argument is passed by position (Transcrypt has no keyword arguments); the optional ones are None
-when omitted. The build-time globals `__APP_VERSION__` and `__APP_COMMIT__` of the TypeScript are
-the `version` and `commit` options here (main.py supplies them).
+when omitted. The version and commit are the `version` and `commit` options (main.py supplies them).
 """
 
 from org.transcrypt.stubs.browser import __pragma__, window
@@ -45,7 +44,7 @@ __pragma__("noskip")
 
 
 class AppOptions(PageOptions):
-    """Browser pieces the app runs on (`AppOptions` in the TypeScript), with the page options
+    """Browser pieces the app runs on, with the page options
     (`PageOptions`) it extends."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -109,9 +108,8 @@ class AppOptions(PageOptions):
 
 
 class RunningApp:
-    """Handle on a running app, used by `main.py`, the test API and tests (`RunningApp` in the
-    TypeScript). `scenes()` and `game()` are methods, as the TypeScript's functions are.
-    """
+    """Handle on a running app, used by `main.py`, the test API and tests. `scenes()` and `game()`
+    are methods."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

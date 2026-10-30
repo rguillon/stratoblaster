@@ -1,5 +1,5 @@
 """P07-R05, P16-R06: the Mesa Fortress's destroyable parts, the lances its forelimbs cradle and the
-spore silos on its back, ported from `bosses/final-boss-mesa.ts`. Logical pixels, nose +Z, Y up.
+spore silos on its back Logical pixels, nose +Z, Y up.
 """
 
 import math

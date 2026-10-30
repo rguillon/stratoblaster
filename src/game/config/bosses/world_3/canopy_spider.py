@@ -1,5 +1,4 @@
-"""P09-R09, 3-2: the Canopy Spider, the final boss of the Rainforest level (ported from
-`config/bosses/world-3/canopy-spider.ts`).
+"""P09-R09, 3-2: the Canopy Spider, the final boss of the Rainforest level ().
 
 Offsets in px from the boss's centre, X right and Y up, its head points down, at -Y. Its four legs
 bend at the hip and the knee (D-061), stepping in turn, each out of step with the others. Stage

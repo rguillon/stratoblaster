@@ -1,6 +1,6 @@
 """P09-R09, 3-5: the Verdant Crown's city round its dome: overgrown towers with lit windows, moss
-on their roofs and vines climbing them, moss patches and vines across the deck. Ported from
-`view/bosses/world-3/verdant-crown-city.ts`. Model space: logical pixels, nose +Z (down the
+on their roofs and vines climbing them, moss patches and vines across the deck. Model space: logical
+pixels, nose +Z (down the
 screen), Y up towards the camera."""
 
 import math

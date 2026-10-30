@@ -1,4 +1,4 @@
-"""This game's levels (P01-R07, P06-R01), ported from `game/sim/levels.ts`."""
+"""This game's levels (P01-R07, P06-R01)"""
 
 from core.content.game_level import GameLevel
 from core.content.level_catalog import build_level_grid

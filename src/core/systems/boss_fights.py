@@ -1,4 +1,4 @@
-"""The boss fights of a level (P07-R03, R06), ported from `core/systems/boss-fights.ts`.
+"""The boss fights of a level (P07-R03, R06)
 
 When the level gets to a boss, it comes in, the track is held (the level's progress waits; the
 ground goes on, eased to the boss's speed), and once the boss has blown up the ground eases back

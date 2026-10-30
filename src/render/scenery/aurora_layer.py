@@ -1,5 +1,5 @@
 """The aurora of a scenery stage (P08-R04, 2-5 at night): slow green and violet curtains over the
-scene, on a sheet high above the ground. Ported from `render/scenery/aurora-layer.ts`.
+scene, on a sheet high above the ground.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

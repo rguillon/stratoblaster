@@ -1,4 +1,4 @@
-"""Tests of the movement helpers for enemies (GD-45), `core/systems/enemy_motion.py`."""
+"""Unit tests of `src/core/systems/enemy_motion.py`."""
 
 import math
 

@@ -1,4 +1,4 @@
-"""Disabled template meshes for shots (P03), ported from `shots/shot-meshes.ts`.
+"""Disabled template meshes for shots (P03)
 
 Clones of a template share its geometry; the renderers show or hide them through `NodePool`.
 """

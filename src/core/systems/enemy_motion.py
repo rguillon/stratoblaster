@@ -1,4 +1,4 @@
-"""Movement helpers for enemies (GD-45), ported from `core/systems/enemy-motion.ts`.
+"""Movement helpers for enemies (GD-45)
 
 Playfield logical pixels, Y up; headings in radians from +Y, positive to the right.
 """

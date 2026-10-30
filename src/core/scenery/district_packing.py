@@ -1,5 +1,4 @@
-"""P15-R07, R08: the buildings of the districts laid on tiles (phase 15), split out of
-`prop-placement.ts`. Ported from `core/scenery/district-packing.ts`."""
+"""P15-R07, R08: the buildings of the districts laid on tiles (phase 15), split out of"""
 
 import math
 
@@ -156,7 +155,7 @@ class RoadTilesCache:
         return self._tiles
 
 
-def pack_districts(  # noqa: C901 (mirrors the TypeScript closure structure)
+def pack_districts(  # noqa: C901
     site: DistrictSite,
     within: Callable[[float], bool],
     tiles: TileRules,

@@ -1,4 +1,4 @@
-"""The node the ground hangs from (P04-R05), ported from `render/scenery/ground-root.ts`: drawn
+"""The node the ground hangs from (P04-R05): drawn
 `scale` times as big as it is, as if flying lower (`PlayfieldCameraLook.groundScale`).
 """
 

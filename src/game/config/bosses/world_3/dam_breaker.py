@@ -1,5 +1,5 @@
 """P09-R09, 3-4: the Dam Breaker, the final boss of the swamp works, fought over the giant dam
-(ported from `config/bosses/world-3/dam-breaker.ts`).
+().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
 patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core fires

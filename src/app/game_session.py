@@ -1,4 +1,4 @@
-"""The game session of the app, ported from `app/game-session.ts`: it starts the level chosen on
+"""The game session of the app: it starts the level chosen on
 the game screen, and ends it when the menu flow leaves it (P06-R02), or starts it again from its
 checkpoint (P07-R08). The debug options' start time and boss apply to the first level played only.
 

@@ -1,4 +1,4 @@
-"""The ships the player can fly (`core.entities.player_ship`)."""
+"""Unit tests of `src/core/entities/player_ship.py`."""
 
 import pytest
 
@@ -16,6 +16,7 @@ def roster(*ships: PlayerShipDefinition, base: float = 200.0) -> PlayerShipRoste
 
 
 FAST = PlayerShipDefinition("fast", "Fast", 1.5, 3)
+
 TOUGH = PlayerShipDefinition("tough", "Tough", 0.8, 6)
 
 

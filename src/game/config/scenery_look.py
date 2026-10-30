@@ -1,4 +1,4 @@
-"""Looks of the scenery (P04), ported from `config/scenery-look.ts`.
+"""Looks of the scenery (P04)
 
 Gamma-space RGB, 0..1, unless noted; distances in world units.
 """

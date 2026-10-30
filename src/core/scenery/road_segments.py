@@ -1,5 +1,5 @@
 """The segments of the roads, indexed by buckets for distance queries, and the building slots along
-them (road network). Ported from `core/scenery/road-segments.ts`."""
+them (road network)."""
 
 import math
 

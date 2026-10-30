@@ -1,6 +1,5 @@
 """The sky of a scenery stage (P04-R03, P08-R04, R05): the level's look along its length, the sun
 and ambient light it sets, and the cloud layers, weather, aurora and lightning above the ground.
-Ported from `render/scenery/sky-layers.ts`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

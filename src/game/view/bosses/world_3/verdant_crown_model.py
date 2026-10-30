@@ -1,5 +1,5 @@
-"""P09-R09, 3-5: the Verdant Crown, World 3's last boss. Ported from
-`view/bosses/world-3/verdant-crown-model.ts`. Model space: logical pixels, nose +Z (down the
+"""P09-R09, 3-5: the Verdant Crown, World 3's last boss. Model space: logical pixels, nose +Z (down
+the
 screen), Y up towards the camera; +X is the screen's left. A city-ship: an overgrown deck carrying
 a glass garden dome over the core, a gun deck on its bow, outriggers out to the thorn cannons."""
 

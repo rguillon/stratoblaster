@@ -1,4 +1,4 @@
-"""The game's audio (P12-R05..R11), ported from `app/game-audio.ts`: which music plays on which
+"""The game's audio (P12-R05..R11): which music plays on which
 screen, the level and boss tracks following the boss bar, the jingles, the sound effects of the
 level's cues and of the menus, and pausing it all with the game. It only reads the menu and core
 state (ENG-11).
@@ -30,7 +30,7 @@ __pragma__("noskip")
 
 
 class GameAudioOptions:
-    """Browser pieces the audio needs (`GameAudioOptions` in the TypeScript)."""
+    """Browser pieces the audio needs."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

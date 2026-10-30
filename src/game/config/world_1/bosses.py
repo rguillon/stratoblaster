@@ -1,4 +1,4 @@
-"""The bosses of each World 1 level (GD-41, P07-R05, R06), ported from `config/world-1/bosses.ts`.
+"""The bosses of each World 1 level (GD-41, P07-R05, R06)
 
 Each level has a mini boss at the middle of the level and a final boss at its end, by boss kind id.
 No new wave starts in the `quietSeconds` before each of them (`quiet_before_boss`). `runout` is how

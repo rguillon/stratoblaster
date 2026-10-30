@@ -1,4 +1,4 @@
-"""What the game gives the engine to draw it (ported from `render/game-view.ts`).
+"""What the game gives the engine to draw it ().
 
 The interfaces are plain classes here, so they can be imported at run time and implemented
 structurally (no base class needed). The type aliases are for annotations only: import them

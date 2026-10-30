@@ -1,7 +1,6 @@
 """Lightning (phase 9, P09-R05): when the flashes of a storm come, drawn from the level's seed,
 and how a flash lights the scene. Pure: the renderer asks for the flash at its own clock, so the
-same level always flashes at the same times, and nothing in the simulation reads it. Ported from
-`core/scenery/lightning.ts`.
+same level always flashes at the same times, and nothing in the simulation reads it.
 """
 
 import math

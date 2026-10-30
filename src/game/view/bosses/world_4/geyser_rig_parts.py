@@ -1,5 +1,5 @@
 """P10-R11, 4-2: the Geyser Rig's parts: its two drill heads on their swinging arms (moving limbs,
-D-061), its two steam vents and its drone hangar. Ported from `bosses/world-4/geyser-rig-parts.ts`.
+D-061), its two steam vents and its drone hangar.
 Logical pixels, nose +Z, Y up.
 """
 

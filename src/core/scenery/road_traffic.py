@@ -1,7 +1,7 @@
 """Phase 4 review: where streets cross each other (the centre line stops there, and a street
-meeting another goes on under it). Ported from `core/scenery/road-traffic.ts`.
+meeting another goes on under it).
 
-The TypeScript `WeakMap` memos are kept as one-entry memos by identity (`_LineCache`,
+The memos are kept as one-entry memos by identity (`_LineCache`,
 `_IndexCache`): the same answers, since the values are pure functions of their list.
 """
 

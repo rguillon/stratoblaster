@@ -1,6 +1,4 @@
-"""The first enemy kinds (P05-R01 to P05-R12), and every enemy kind of the game, ported from
-`game/sim/enemy-kinds.ts`.
-"""
+"""The first enemy kinds (P05-R01 to P05-R12), and every enemy kind of the game"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

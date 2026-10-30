@@ -14,11 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-tags: true
       - uses: astral-sh/setup-uv@v10.3.3
       - uses: actions/setup-node@v7
         with:
-          node-version-file: .nvmrc
+          node-version-file: node/.nvmrc
           cache: npm
+          cache-dependency-path: node/package-lock.json
       # Python 3.12 (pinned by pyproject.toml) is fetched by uv; Node is for esbuild only.
       - run: make install
       # The build bundles the pinned Babylon.js (checked against its SHA-256, ENG-02).

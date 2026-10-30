@@ -1,6 +1,5 @@
 """A level's look as its data describes it (P08-R04, R05): a time of day, a cloud cover and a
-weather, turned into an `Atmosphere` with the engine's time-of-day presets. Ported from
-`core/scenery/sky-look.ts`.
+weather, turned into an `Atmosphere` with the engine's time-of-day presets.
 """
 
 import math
@@ -49,7 +48,7 @@ class SkyGlow:
 
 class SkyLook:
     """How a level looks at one place along it (P08-R04). The optional fields default to None,
-    which means the defaults of the TypeScript (see the comments)."""
+    which means the defaults (see the comments)."""
 
     def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
         self,

@@ -1,4 +1,4 @@
-"""P09-R09, 3-1: the River Leviathan. Ported from `view/bosses/world-3/river-leviathan-model.ts`.
+"""P09-R09, 3-1: the River Leviathan.
 Logical pixels, nose +Z, Y up (towards the camera). A serpent-ship: an armoured, wedge-shaped head
 (its core) with a dorsal crest, glaring teal eyes, fang guns and a laser lens on its snout; behind
 it, its swaying body (`river-leviathan-body`)."""

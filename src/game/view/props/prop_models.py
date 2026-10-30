@@ -1,5 +1,5 @@
-"""One model per prop kind of this game, keyed by its id (P04-R04), ported from
-`props/prop-models.ts`. Phase 15: every model has a footprint of whole tiles (reviewer,
+"""One model per prop kind of this game, keyed by its id (P04-R04) Phase 15: every model has a
+footprint of whole tiles (reviewer,
 2026-10-28); those made for the grid already do."""
 
 from org.transcrypt.stubs.browser import __pragma__

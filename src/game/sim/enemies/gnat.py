@@ -1,4 +1,4 @@
-"""The Gnat (P05-R01), ported from `game/sim/enemies/gnat.ts`."""
+"""The Gnat (P05-R01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""Flat-shaded prisms from a planform outline (ported from `render/geometry/prism.ts`)."""
+"""Flat-shaded prisms from a planform outline ()."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

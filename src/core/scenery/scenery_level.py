@@ -1,12 +1,11 @@
-"""Data that describes the ground of a scrolling level (P04-R01, P04-R04, P04-R06), ported from
-`core/scenery/scenery-level.ts`.
+"""Data that describes the ground of a scrolling level (P04-R01, P04-R04, P04-R06)
 
 World units are logical pixels: X across the level (0 under the middle of the playfield), Z along
 it (the level scrolls towards +Z), Y up. Heights are absolute; the sea, when there is one, sits at
 `sea.level`.
 
-The TypeScript interfaces are classes here, with the optional fields last (default None). A
-partial record (the TypeScript `Partial<T>`) is a record whose missing fields are None.
+The records are classes here, with the optional fields last (default None). A
+partial record is a record whose missing fields are None.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

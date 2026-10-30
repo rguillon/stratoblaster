@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from fakes import FakeContext, ProbeBoss  # noqa: E402
+from helpers.fakes import FakeContext, ProbeBoss  # noqa: E402
 
 from core.entities.boss import BossDeath, BossPartSpec, BossStats  # noqa: E402
 

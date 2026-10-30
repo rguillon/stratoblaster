@@ -1,5 +1,5 @@
 """P07-R05 (phase 7 review: more detail): small surface details shared by the World 1 final
-bosses, ported from `bosses/final-boss-greebles.ts`: plates, vents, rivets, hazard stripes, masts
+bosses: plates, vents, rivets, hazard stripes, masts
 and lights. Logical pixels, nose +Z, Y up.
 """
 

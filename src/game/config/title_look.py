@@ -1,4 +1,4 @@
-"""Darksynth night behind the menus (P01-R05, GD-60), ported from `config/title-look.ts`.
+"""Darksynth night behind the menus (P01-R05, GD-60)
 
 A crimson sunset glow behind a black skyline, a dark street of towers with magenta, red and violet
 windows, signs and roof trims, haze and rain (D-012). Linear RGB, 0..1. Distances in world units;

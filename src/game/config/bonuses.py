@@ -1,4 +1,4 @@
-"""Weapon bonuses (phase 6 review, GD-31), ported from `config/bonuses.ts`.
+"""Weapon bonuses (phase 6 review, GD-31)
 
 The chance a destroyed enemy drops one grows with its health: 6 % for the small ones (Gnat to
 Splitter), a Lancer 12 %, a Rocketeer 15 %, a Bulwark or a Carrier 20 %. A play-through shooting

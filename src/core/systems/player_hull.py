@@ -1,5 +1,4 @@
-"""The player's health and lives (GD-20, GD-21, GD-22), ported from
-`core/systems/player-hull.ts`."""
+"""The player's health and lives (GD-20, GD-21, GD-22)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

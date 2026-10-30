@@ -1,6 +1,6 @@
-"""The districts of a level, runs of sections with street grids (`core/scenery/districts.py`)."""
+"""Unit tests of `src/core/scenery/districts.py`."""
 
-from level_builders import flat, make_level, section, street_grid
+from helpers.level_builders import flat, make_level, section, street_grid
 
 from core.scenery.districts import (
     District,

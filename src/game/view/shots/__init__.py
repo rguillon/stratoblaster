@@ -1,1 +1,1 @@
-"""Shot renderers, ported from `shots/`."""
+"""Shot renderers."""

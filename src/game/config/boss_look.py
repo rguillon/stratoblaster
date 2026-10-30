@@ -1,4 +1,4 @@
-"""Look of the bosses (P07), ported from `config/boss-look.ts`.
+"""Look of the bosses (P07)
 
 Their neon colours (GD-61), the white flash of a part when hit, the smoke of a part under half its
 health, and the stump left by a destroyed part (P07-R01). Linear RGB 0..1, sizes in logical pixels,

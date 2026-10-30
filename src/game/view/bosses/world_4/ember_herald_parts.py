@@ -1,6 +1,5 @@
 """P10-R11, 4-5: the Ember Herald's colours, its ember lances (the parts on its turning ring), the
-spikes on its hull and the embers drifting round it. Ported from
-`bosses/world-4/ember-herald-parts.ts`. Logical pixels, nose +Z, Y up.
+spikes on its hull and the embers drifting round it. Logical pixels, nose +Z, Y up.
 """
 
 import math

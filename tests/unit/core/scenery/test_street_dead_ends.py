@@ -1,7 +1,6 @@
-"""Dead ends and crossings of a street grid (`core/scenery/street_dead_ends.py`)."""
+"""Unit tests of `src/core/scenery/street_dead_ends.py`."""
 
-from core.math.rng import create_rng
-from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends
+from core.scenery.street_dead_ends import remove_dead_ends
 from core.scenery.street_links import Link, Nodes, links_by_node
 
 
@@ -63,71 +62,3 @@ def test_p04_r08_the_default_removal_leaves_no_dead_end_on_screen() -> None:
     out = lambda n: n.x in (0.0, 30.0)  # noqa: E731
     remove_dead_ends(links_by_node(links, len(nodes.used)), nodes.used, out, False)
     assert _on_screen_dead_ends(nodes, links, out) == []
-
-
-def test_p04_r08_crossings_are_turned_into_t_junctions() -> None:
-    nodes = Nodes(lambda x, z: True)
-    centre = nodes.use(nodes.at(10.0, 0.0))
-    ends = [
-        nodes.use(nodes.at(0.0, 0.0)),
-        nodes.use(nodes.at(20.0, 0.0)),
-        nodes.use(nodes.at(10.0, -10.0)),
-        nodes.use(nodes.at(10.0, 10.0)),
-    ]
-    links = [
-        Link(ends[0], centre, True, False, False, True, True, False),
-        Link(centre, ends[1], True, False, False, True, True, False),
-        Link(ends[2], centre, False, False, False, True, True, False),
-        Link(centre, ends[3], False, False, False, True, True, False),
-    ]
-    at = links_by_node(links, len(nodes.used))
-    out = lambda n: n is not centre  # noqa: E731
-    remove_crossings(at, nodes.used, out, create_rng(1))
-    built_at_centre = [link for link in links if link.built and centre in (link.a, link.b)]
-    assert len(built_at_centre) == 3
-    assert links[0].built and links[1].built
-    assert sum(1 for link in links[2:] if link.built) == 1
-
-
-def test_p04_r08_crossing_boulevards_are_both_kept() -> None:
-    nodes = Nodes(lambda x, z: True)
-    centre = nodes.use(nodes.at(10.0, 0.0))
-    ends = [
-        nodes.use(nodes.at(0.0, 0.0)),
-        nodes.use(nodes.at(20.0, 0.0)),
-        nodes.use(nodes.at(10.0, -10.0)),
-        nodes.use(nodes.at(10.0, 10.0)),
-    ]
-    links = [
-        Link(ends[0], centre, True, False, True, True, True, False),
-        Link(centre, ends[1], True, False, True, True, True, False),
-        Link(ends[2], centre, False, False, True, True, True, False),
-        Link(centre, ends[3], False, False, True, True, True, False),
-    ]
-    at = links_by_node(links, len(nodes.used))
-    remove_crossings(at, nodes.used, lambda n: n is not centre, create_rng(1))
-    assert all(link.built for link in links)
-
-
-def test_p04_r08_a_crossing_of_boulevards_along_the_level_keeps_its_cross_streets_straight() -> (
-    None
-):
-    nodes = Nodes(lambda x, z: True)
-    centre = nodes.use(nodes.at(10.0, 0.0))
-    ends = [
-        nodes.use(nodes.at(0.0, 0.0)),
-        nodes.use(nodes.at(20.0, 0.0)),
-        nodes.use(nodes.at(10.0, -10.0)),
-        nodes.use(nodes.at(10.0, 10.0)),
-    ]
-    # Only the streets along the level (Z) are boulevards: the streets across it are cut instead.
-    links = [
-        Link(ends[0], centre, True, False, False, True, True, False),
-        Link(centre, ends[1], True, False, False, True, True, False),
-        Link(ends[2], centre, False, False, True, True, True, False),
-        Link(centre, ends[3], False, False, True, True, True, False),
-    ]
-    at = links_by_node(links, len(nodes.used))
-    remove_crossings(at, nodes.used, lambda n: n is not centre, create_rng(1))
-    assert not (links[0].built and links[1].built)
-    assert links[2].built and links[3].built

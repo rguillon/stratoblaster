@@ -1,5 +1,5 @@
-"""Generates levels' grounds and scenery textures off the main thread (P13-R03), ported from
-`render/scenery/ground-worker.ts`. The module is the worker's script: importing it installs the
+"""Generates levels' grounds and scenery textures off the main thread (P13-R03) The module is the
+worker's script: importing it installs the
 message handler on the worker's global scope.
 """
 

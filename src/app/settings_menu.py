@@ -1,4 +1,4 @@
-"""The settings screen (P12-R04), ported from `app/settings-menu.ts`: up / down pick a slider,
+"""The settings screen (P12-R04): up / down pick a slider,
 left / right change it by one step, a tap or a drag sets it. Pure: the app saves and applies the
 volumes.
 """

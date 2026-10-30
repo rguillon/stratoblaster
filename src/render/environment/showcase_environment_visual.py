@@ -1,6 +1,4 @@
-"""Image-based lighting, tone mapping and glow for a scene (ported from
-`render/environment/showcase-environment.visual.ts`).
-"""
+"""Image-based lighting, tone mapping and glow for a scene ()."""
 
 import math
 

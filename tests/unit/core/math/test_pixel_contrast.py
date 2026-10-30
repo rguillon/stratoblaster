@@ -1,5 +1,4 @@
-"""How well what is drawn stands out from what is behind it
-(`core.math.pixel_contrast`, P14-R08)."""
+"""Unit tests of `src/core/math/pixel_contrast.py`."""
 
 import pytest
 
@@ -13,6 +12,7 @@ from core.math.pixel_contrast import (
 )
 
 BLACK = [0, 0, 0, 255]
+
 WHITE = [255, 255, 255, 255]
 
 

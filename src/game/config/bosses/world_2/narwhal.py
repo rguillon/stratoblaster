@@ -1,4 +1,4 @@
-"""The Narwhal (P08-R10, 2-1's final boss), ported from `config/bosses/world-2/narwhal.ts`.
+"""The Narwhal (P08-R10, 2-1's final boss)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 1 bosses (P07-R04): the parts fire the same while they stand, the core

@@ -1,6 +1,6 @@
 """The Boreal Citadel's details (P08-R10, 2-5): armour skirts on its deck's sides, snow drifts,
 dishes and masts, lamps along its avenue, buttresses round its keep, heating pipes, the engine
-block's grilles and fins, ported from `bosses/world-2/boreal-citadel-details.ts`. Model space:
+block's grilles and fins Model space:
 logical pixels, nose +Z, Y up.
 """
 

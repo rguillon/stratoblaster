@@ -1,4 +1,4 @@
-"""Seeded 2D gradient noise and its fractal sums, ported from `core/math/noise.ts`."""
+"""Seeded 2D gradient noise and its fractal sums"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -17,7 +17,7 @@ TABLE_SIZE = 256
 PI = 3.141592653589793
 SQRT2 = 1.4142135623730951
 
-# The most a create_noise2d noise changes per unit along either axis (ported constant). Blends of
+# The most a create_noise2d noise changes per unit along either axis . Blends of
 # four unit gradients, a smootherstep of slope 15/8 and the ramps' own slope, scaled by √2.
 NOISE_SLOPE = 9
 

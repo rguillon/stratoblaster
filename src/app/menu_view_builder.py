@@ -1,4 +1,4 @@
-"""Builds what the menu overlay shows for the current state, ported from `app/menu-view-builder.ts`
+"""Builds what the menu overlay shows for the current state
 (P01-R04, R06, R07, P06-R02, R03, P12-R02, P12-R04).
 """
 

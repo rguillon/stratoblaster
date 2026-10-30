@@ -605,7 +605,7 @@ def new_glsl_material(  # noqa: PLR0917 (positional: Transcrypt has no keyword a
     return None
 
 
-# -- Helpers for the scenery port (render/scenery/) ----------------------------------------------
+# -- Helpers for the scenery (render/scenery/) ----------------------------------------------
 
 
 def uint32_array(length: int) -> Any:

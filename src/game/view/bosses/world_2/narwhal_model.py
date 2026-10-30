@@ -1,4 +1,4 @@
-"""The Narwhal (P08-R10, 2-1), ported from `bosses/world-2/narwhal-model.ts`.
+"""The Narwhal (P08-R10, 2-1)
 
 The final boss of the Ice floes level. Logical pixels, nose +Z, Y up (towards the camera). A long
 flying submarine: a round hull with a sail on its back, cruciform tail planes and a shrouded
@@ -276,7 +276,7 @@ def draw_pod(p: EnemyParts, at: list[float]) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

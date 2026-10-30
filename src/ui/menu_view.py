@@ -1,5 +1,5 @@
-"""What the menu overlay can show, ported from `ui/menu-view.ts`: one view class per screen.
-Each class has a `kind` (the TypeScript discriminant) and the fields of its interface, as
+"""What the menu overlay can show: one view class per screen.
+Each class has a `kind` and the fields of its interface, as
 positional constructor arguments in the order listed."""
 
 from org.transcrypt.stubs.browser import __pragma__

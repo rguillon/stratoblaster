@@ -1,4 +1,4 @@
-"""Plume kinds (phase 10, P10-R08), ported from `config/plumes.ts`.
+"""Plume kinds (phase 10, P10-R08)
 
 A kind of plume is a column of soft, see-through puffs rising from a prop, growing and fading as
 they rise, drifting with the wind. Only a look; kept faint so it never hides what flies above it.

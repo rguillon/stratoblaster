@@ -1,5 +1,5 @@
 """The straight streets of a district (phase 4 review), as maximal straight runs of built links,
-each a list of points every `rules.step`. Ported from `core/scenery/street-grid.ts`.
+each a list of points every `rules.step`.
 
 - every section of the district has its own random columns, from past one screen edge to past the
   other, and rows; its first and last rows are full streets, so the columns of two sections meet

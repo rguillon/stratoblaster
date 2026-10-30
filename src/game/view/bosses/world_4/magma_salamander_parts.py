@@ -1,5 +1,5 @@
 """P10-R11, 4-3: the Magma Salamander's parts (its back fins and its tail) and its molten look.
-Ported from `bosses/world-4/magma-salamander-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera).
 """
 
@@ -215,7 +215,7 @@ BULB = [
 ]
 
 
-def tail(p: Any) -> None:
+def tail(p: Any, _at: Any = None) -> None:
     """The tail's tip around its centre (P10-R11), on its knuckle joint: a tapering, plated segment,
     a glowing bulb of magma at its end and the stinger barrel on top of it, pointing forward, that
     sweeps its lines of bullets across the screen."""

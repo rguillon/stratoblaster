@@ -1,6 +1,6 @@
 """P09-R09, 3-5: the Verdant Crown's colours and its glass garden dome over the core: a lattice of
-ribs and glowing mullions, trees inside, the tallest one rising through the oculus at the top.
-Ported from `view/bosses/world-3/verdant-crown-garden.ts`. Model space: logical pixels, nose +Z
+ribs and glowing mullions, trees inside, the tallest one rising through the oculus at the top. Model
+space: logical pixels, nose +Z
 (down the screen), Y up towards the camera."""
 
 import math

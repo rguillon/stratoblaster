@@ -1,4 +1,4 @@
-"""The Weaver (P05-R05), ported from `game/sim/enemies/weaver.ts`."""
+"""The Weaver (P05-R05)"""
 
 import math
 

@@ -1,8 +1,6 @@
 """Road ribbons of the terrain chunks in view, one mesh per chunk (P04-R07). See-through meshes are
 drawn by increasing `alphaIndex`: a field of paths with a lower one than the field of roads keeps
-the roads on top where they meet.
-
-Ported from `render/scenery/road-field.ts`. A chunk span is a `(z_min, z_max)` pair.
+the roads on top where they meet. A chunk span is a `(z_min, z_max)` pair.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

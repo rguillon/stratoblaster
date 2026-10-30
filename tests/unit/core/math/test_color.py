@@ -1,4 +1,4 @@
-"""Colour helpers (`core.math.color`, phase 14)."""
+"""Unit tests of `src/core/math/color.py`."""
 
 import pytest
 
@@ -12,6 +12,7 @@ from core.math.color import (
 )
 
 RED_FAMILY = {"from": 330.0, "to": 30.0, "minSaturation": 0.2}
+
 GREEN_FAMILY = {"from": 90.0, "to": 150.0, "minSaturation": 0.2}
 
 

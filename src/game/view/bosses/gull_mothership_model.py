@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Gull Mothership, the final boss of 1-2, ported from
-`bosses/gull-mothership-model.ts`. Logical pixels, nose +Z, Y up (towards the camera). A
+"""P07-R05, P16-R06: the Gull Mothership, the final boss of 1-2 Logical pixels, nose +Z, Y up
+(towards the camera). A
 brood-mother of the sea: a wide fleshy mantle, a shelled body along its middle ending in a huge
 glowing eye (its laser), a brood pouch at each flank and two flak growths on its front.
 """

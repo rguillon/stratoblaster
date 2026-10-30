@@ -1,5 +1,4 @@
-"""The screens of the menu flow (`02-game-design.md` section 7, P01-R01), ported from
-`core/menu/menu-screen.ts`.
+"""The screens of the menu flow (`02-game-design.md` section 7, P01-R01)
 
 `pause` is the menu over a paused level, `settings` the settings screen, from the title or the
 pause menu (P12-R02, P12-R04).

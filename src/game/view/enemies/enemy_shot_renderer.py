@@ -1,5 +1,4 @@
-"""GD-43: the enemies' shots in playfield space (bullets, missiles, lasers), ported from
-`enemies/enemy-shot-renderer.ts`.
+"""GD-43: the enemies' shots in playfield space (bullets, missiles, lasers)
 
 Bullets are thin instances of a template per layer (as the blasts, D-034): one draw call however
 many bullets are flying.
@@ -8,6 +7,9 @@ many bullets are flying.
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+__pragma__("noskip")
 
 from render.geometry.solids import Placement  # noqa: E402
 
@@ -47,18 +49,27 @@ ON_TOP = ON_TOP_ALPHA_INDEX + 1
 
 def _object_keys(obj: Any) -> list[str]:
     """`Object.keys(obj)`."""
+    __pragma__("skip")
+    return list(obj.keys())
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.keys(obj);")
     return []
 
 
 def _float32_array(length: int) -> Any:
     """A zero-filled `Float32Array` of `length` values."""
+    __pragma__("skip")
+    return [0.0] * length
+    __pragma__("noskip")
     __pragma__("js", "{}", "return new Float32Array(length);")
     return None
 
 
 def _ceil_log2(n: int) -> int:
     """`Math.ceil(Math.log2(n))`."""
+    __pragma__("skip")
+    return math.ceil(math.log2(n)) if n > 0 else 0
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Math.ceil(Math.log2(n));")
     return 0
 
@@ -328,7 +339,7 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
 
 
 class ShotRendererHandle:
-    """The enemy shot renderer (`EnemyShotRenderer` in the TypeScript): its `sync`, `dispose`, and
+    """The enemy shot renderer: its `sync`, `dispose`, and
     `warm(on)` (one bullet shown in each colour's layers, or none: see `warm_bullets`)."""
 
     def __init__(self, sync: Any, dispose: Any, warm: Any) -> None:

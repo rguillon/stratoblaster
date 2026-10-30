@@ -1,6 +1,5 @@
 """The works made for the grid of tiles (Phase 15, P15-R09): outposts, mines, oil, refineries,
-factories, warehouses, docks and the foundries of heavy industry, ported from
-`props/tile-works.ts`. See `tile_kit.py`."""
+factories, warehouses, docks and the foundries of heavy industry See `tile_kit.py`."""
 
 import math
 

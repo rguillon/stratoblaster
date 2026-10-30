@@ -1,4 +1,4 @@
-"""Engine-wide tunables (ENG-17), ported from `config/engine.ts`.
+"""Engine-wide tunables (ENG-17)
 
 Game-specific values go in `src/game/config/`.
 """

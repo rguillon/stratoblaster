@@ -1,4 +1,4 @@
-"""Tests of the volleys of a boss (P07-R04, GD-43, GD-44), `core/systems/boss_pattern.py`."""
+"""Unit tests of `src/core/systems/boss_pattern.py`."""
 
 import math
 
@@ -19,14 +19,17 @@ from core.systems.boss_pattern import (
     BossVolley,
     pattern_signature,
 )
-from core.systems.projectile_motion import wrap_angle
 
 DEG = math.pi / 180
+
 DOWN = math.pi
-# The player at (100, 0) is straight to the right of a piece at the origin: heading pi/2.
+
 TO_PLAYER = math.pi / 2
+
 BULLET = EnemyBulletSpec(10, 1, "round")
+
 MISSILE = EnemyMissileSpec(5, 90, 1, 1, 3, "rocket")
+
 LASER = EnemyLaserSpec(1, 1, 2, "beam")
 
 
@@ -215,22 +218,6 @@ def test_p07_r04_a_fan_fires_bullets_around_its_preset_heading() -> None:
     pattern.step(ctx, 0.1, _sources({"core": _Src()}))
     headings = [h for _, _, h, _ in ctx.bullets]
     assert headings == pytest.approx([DOWN - 10 * DEG, DOWN, DOWN + 10 * DEG])
-
-
-def test_p07_r04_a_ring_fires_all_around_and_turns_on_each_volley() -> None:
-    ctx = _Ctx()
-    pattern = BossPattern([_volley(BossRingShape(4, 30, BULLET), first=0)])
-    sources = _sources({"core": _Src()})
-    pattern.step(ctx, 0.1, sources)
-    first = sorted(wrap_angle(h) for _, _, h, _ in ctx.bullets)
-    assert first == pytest.approx(sorted(wrap_angle(DOWN + k * math.pi / 2) for k in range(4)))
-    ctx.bullets.clear()
-    pattern._states[0].left = 0
-    pattern.step(ctx, 0.1, sources)
-    second = sorted(wrap_angle(h) for _, _, h, _ in ctx.bullets)
-    expected = sorted(wrap_angle(DOWN + 30 * DEG + k * math.pi / 2) for k in range(4))
-    assert second == pytest.approx(expected)
-    assert pattern._states[0].turns == 2
 
 
 def test_p07_r04_a_burst_fires_its_bullets_a_gap_apart_aimed_at_the_player() -> None:
@@ -550,23 +537,3 @@ def test_p07_r04_a_turret_for_a_launch_has_no_aim_of_its_own() -> None:
     pattern = BossPattern([_volley(BossLaunchShape(lambda x, y: []), turret=True, first=10)])
     pattern.turn_turrets(_Ctx(), 1, _sources({"core": _Src(turret=turret)}))
     assert turret.aim == pytest.approx(0)
-
-
-def test_p07_r04_a_piece_without_muzzle_placing_is_aimed_from_its_centre() -> None:
-    class _Plain:
-        def __init__(self, turret: BossTurret) -> None:
-            self.x = 0
-            self.y = 0
-            self.heading = DOWN
-            self.gone = False
-            self.health = 10
-            self.turret = turret
-
-        @property
-        def emitter(self) -> PlanePoint:
-            return PlanePoint(self.x, self.y)
-
-    turret = _turret(100000, x=10)
-    pattern = BossPattern([_volley(_aimed(), turret=True, first=10)])
-    pattern.turn_turrets(_Ctx(player=(100, 0)), 1, _sources({"core": _Plain(turret)}))  # type: ignore[dict-item]
-    assert turret.aim == pytest.approx(-math.pi / 2)

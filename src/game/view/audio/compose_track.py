@@ -1,4 +1,4 @@
-"""Composes a whole looping track (P12-R06..R08), ported from `audio/compose-track.ts`: a key, a
+"""Composes a whole looping track (P12-R06..R08): a key, a
 tempo and sections picked from the style by a seeded generator, each section's bars made of
 drums, bass, pad, arpeggio and melody. Pure: the same request always gives the same notes.
 """

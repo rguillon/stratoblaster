@@ -1,4 +1,4 @@
-"""Look of the player shots (P03-R01..R03), ported from `config/shot-look.ts`.
+"""Look of the player shots (P03-R01..R03)
 
 Linear RGB, 0..1. Sizes in logical pixels unless noted; durations in seconds. Shots are drawn with
 additive blending: black is transparent.

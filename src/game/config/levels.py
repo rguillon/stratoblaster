@@ -1,4 +1,4 @@
-"""Level grid of the first release, ported from `config/levels.ts`.
+"""Level grid of the first release
 
 Vision: 4 worlds of 5 levels; World 5 was dropped. The levels that exist can all be played, in any
 order (P06-R01); any other would stay locked.

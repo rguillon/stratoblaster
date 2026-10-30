@@ -1,4 +1,4 @@
-"""World 2, ported from `game/sim/world-2.ts`."""
+"""World 2"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,7 +1,7 @@
 """Stable sorts for the scenery, as JavaScript's `Array.prototype.sort` with a comparator gives.
 
 Transcrypt's `sort` takes a key without keeping the order of equal keys, and it cannot take a
-comparator, so the scenery sorts with this merge sort (not part of the TypeScript sources).
+comparator, so the scenery sorts with this merge sort.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

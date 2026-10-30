@@ -1,4 +1,4 @@
-"""The levels shown on the level select screen (`core.content.level_catalog`)."""
+"""Unit tests of `src/core/content/level_catalog.py`."""
 
 import pytest
 

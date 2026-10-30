@@ -1,4 +1,4 @@
-"""The Glacier Colossus (P08-R10, 2-4), ported from `config/bosses/world-2/glacier-colossus.ts`.
+"""The Glacier Colossus (P08-R10, 2-4)
 
 The Glacier level's final boss. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Six parts: two cutter lasers out on its beam, two ore cannons and a heat sink

@@ -1,4 +1,4 @@
-"""Materials shared by all the player ships of a scene, ported from `ship-materials.ts`."""
+"""Materials shared by all the player ships of a scene"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -14,13 +14,13 @@ Scene = Any
 
 __pragma__("noskip")
 
-# The scene's materials, by scene (a WeakMap, as in the TypeScript).
+# The scene's materials, by scene.
 __pragma__("js", "{}", "const SHIP_MATERIALS_CACHE = new WeakMap();")
 
 
 class ShipMaterials:
-    """Materials shared by all the player ships of a scene. Attribute names are the TypeScript
-    property names (they are read by the ship builders)."""
+    """Materials shared by all the player ships of a scene. Attribute names are the property names
+    the ship builders read."""
 
     def __init__(  # noqa: PLR0913, PLR0917 (one argument per material, positional)
         self,
@@ -28,7 +28,7 @@ class ShipMaterials:
         accent: Any,
         canopy: Any,
         trim: Any,
-        navLight: Any,  # noqa: N803 (TypeScript property name)
+        navLight: Any,  # noqa: N803
         nozzle: Any,
         reactorCore: Any,  # noqa: N803
         reactorExhaust: Any,  # noqa: N803

@@ -1,15 +1,23 @@
-"""Tests of the bonuses (phase 6 review, GD-31, P11-R07), `core/systems/bonus_world.py`."""
+"""Unit tests of `src/core/systems/bonus_world.py`."""
+
+from types import SimpleNamespace
 
 import pytest
 
+from core.content.game_level import GameLevel
+from core.entities.enemy import Enemy, EnemyKindDefinition, EnemyStats
+from core.entities.muzzle import PlanePoint
+from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
 from core.math.rng import create_rng
-from core.systems.bonus_world import (
-    BonusChance,
-    BonusRules,
-    BonusWorld,
-    LifeAndBomb,
-    drop_chance,
-)
+from core.systems.bonus_world import BonusChance, BonusRules, BonusWorld, LifeAndBomb, drop_chance
+from core.systems.boss_fights import BossFightRules, LevelBoss
+from core.systems.enemy_world import EnemyDifficulty
+from core.systems.level_run import LevelRun
+from core.systems.level_run_types import LevelControls, LevelRunOptions, RunShip
+from core.systems.player_bombs import BombRules
+from core.systems.player_flight import FlightInput
+from core.systems.player_hull import HullDamage, HullRules
+from core.systems.wave_runner import Wave
 
 
 class _Source:
@@ -56,6 +64,119 @@ def _rules(
 
 def _always(value: float) -> object:
     return lambda: value
+
+
+SCREEN = SimpleNamespace(width=100, height=100)
+
+SHIP = RunShip(PlanePoint(50, 10), 100, 0, 5)
+
+STILL = FlightInput(0, 0)
+
+
+class _Bounds:
+    min_y = 0
+    max_y = 100
+    center_x = 50
+
+    def half_width_at(self, y: float) -> float:
+        return 50
+
+
+class Still(Enemy):
+    """An enemy that does nothing but stand where it is put."""
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+
+class FakeBoss(Enemy):
+    """A boss as the run sees it: it stays until destroyed."""
+
+    expires = False
+    rammable = False
+
+    def __init__(self, x: float, y: float, health: float = 100, points: float = 500) -> None:
+        super().__init__(x, y, EnemyStats("boss", 6, health, points))
+        self.name = "Hulk"
+        self.ground_speed = 0.5
+        self.parts: list = []
+        self.full_health = health
+        self.breaks = 0
+
+    @property
+    def remaining_health(self) -> float:
+        return self.health
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+    def break_next(self) -> None:
+        self.breaks += 1
+
+
+class FakeBossKind:
+    id = "hulk"
+    name = "Hulk"
+
+    def spawn(self, area: object) -> FakeBoss:
+        return FakeBoss(50, 60)
+
+
+def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDefinition:
+    return EnemyKindDefinition(
+        "still",
+        "Still",
+        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+    )
+
+
+GUN = ProjectileWeaponDefinition(
+    "gun", "Gun", "muzzle", 1, 50, 0, 50, 0, 0, 1, 5, 0, [[ShotStream(0, 0)], [ShotStream(0, 0)]]
+)
+
+ENTRY = SimpleNamespace(side="top", position=0.5)
+
+
+def _level(
+    waves: list | None = None,
+    seconds: float = 10,
+    bosses: list | None = None,
+) -> GameLevel:
+    scenery = SimpleNamespace(scroll_speed=10, sections=[SimpleNamespace(seconds=seconds)])
+    return GameLevel("L1", scenery, waves or [], EnemyDifficulty(1, 1), bosses)  # type: ignore[arg-type]
+
+
+def _run(**overrides: object) -> LevelRun:
+    options: dict = dict(
+        screen=SCREEN,
+        level=_level(),
+        kinds=[_kind()],
+        weapon=GUN,
+        weapon_level=1,
+        ship=SHIP,
+        bounds=_Bounds(),
+        cull_margin=10,
+        max_enemy_age=60,
+        end_wait=1,
+        seed=1,
+    )
+    options.update(overrides)
+    return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
+
+
+def _step(
+    run: LevelRun,
+    dt: float = 0.5,
+    move: FlightInput = STILL,
+    fire: bool = False,
+    switch_weapon: bool | None = None,
+    bomb: bool | None = None,
+) -> None:
+    run.step(dt, LevelControls(move, fire, switch_weapon, bomb))
+
+
+def _wave(at: float = 0, count: int = 1) -> Wave:
+    return Wave(at, "still", count, 0, ENTRY)  # type: ignore[arg-type]
 
 
 def test_gd31_a_target_with_its_own_chance_uses_it() -> None:
@@ -195,3 +316,101 @@ def test_gd31_clearing_the_world_removes_the_bonuses_and_pickups() -> None:
     world.clear()
     assert world.bonuses == []
     assert world.picked == []
+
+
+def test_p06_r07_seeking_drops_the_bonuses_in_the_air() -> None:
+    run = _run(bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5))
+    run.bonuses.place("weapon", PlanePoint(20, 20))
+    run.seek(1)
+    assert run.bonuses.bonuses == []
+
+
+def test_p11_r07_a_weapon_bonus_raises_the_weapon_in_use() -> None:
+    run = _run(bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5))
+    run.bonuses.place("weapon", PlanePoint(50, 10))
+    _step(run, dt=0.1)
+    assert run.shots.level == 2
+    assert run.bonuses.collected == 1
+
+
+def test_p11_r07_a_life_bonus_adds_a_life_or_scores_its_points_at_the_most() -> None:
+    run = _run(
+        hull=HullRules(2, 0, 3, HullDamage(0, 0, 0, 0), 0),
+        bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, None, LifeAndBomb(7, 3)),
+    )
+    run.bonuses.place("life", PlanePoint(50, 10))
+    _step(run, dt=0.1)
+    assert run.hull.lives == 3
+    assert run.score == 0
+
+    capped = _run(
+        hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0, max_lives=3),
+        bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, None, LifeAndBomb(7, 3)),
+    )
+    capped.bonuses.place("life", PlanePoint(50, 10))
+    _step(capped, dt=0.1)
+    assert capped.hull.lives == 3
+    assert capped.score == 7
+
+
+def test_p11_r07_a_bomb_bonus_adds_a_bomb_or_scores_its_points_at_the_most() -> None:
+    run = _run(
+        bombs=BombRules(1, 50, 1, max_bombs=1),
+        bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, None, LifeAndBomb(7, 3)),
+    )
+    run.bonuses.place("bomb", PlanePoint(50, 10))
+    _step(run, dt=0.1)
+    assert run.bombs.count == 1
+    assert run.score == 3
+
+
+def test_gd31_a_destroyed_enemy_drops_a_bonus_when_bonuses_are_on() -> None:
+    run = _run(
+        level=_level([_wave(0)]),
+        kinds=[_kind(health=5)],
+        bonuses=BonusRules(BonusChance(0, 1, 1), 0, 5),
+    )
+    for _ in range(10):
+        _step(run, dt=0.1, fire=True)
+    assert run.enemies.kills == 1
+    assert run.bonuses.dropped == 1
+
+
+def test_p07_r06_a_mini_boss_comes_in_and_its_death_saves_a_checkpoint() -> None:
+    run = _run(
+        level=_level(bosses=[LevelBoss("hulk", "mini", 10)]),
+        boss_kinds=[FakeBossKind()],
+        boss_rules=BossFightRules(0, 1),
+        bonuses=BonusRules(BonusChance(0, 1, 1), 0, 5, LifeAndBomb(1, 1)),
+    )
+    for _ in range(2):
+        _step(run)
+    boss = run.fights.boss
+    assert isinstance(boss, FakeBoss)
+    assert run.fights.active is True
+    run.break_boss_part()
+    assert boss.breaks == 1
+    boss.health = 0
+    _step(run)
+    assert run.checkpoint is None
+    _step(run)
+    cp = run.checkpoint
+    assert cp is not None
+    assert cp.progress == pytest.approx(10)
+    assert cp.bosses_passed == 1
+    assert cp.score == 500
+    assert run.score == 500
+
+
+def test_p11_r07_a_mini_boss_drops_a_life_bonus_where_it_fell() -> None:
+    run = _run(
+        level=_level(bosses=[LevelBoss("hulk", "mini", 10)]),
+        boss_kinds=[FakeBossKind()],
+        boss_rules=BossFightRules(0, 1),
+        bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, LifeAndBomb(0, 0)),
+    )
+    for _ in range(2):
+        _step(run)
+    run.fights.boss.health = 0
+    _step(run)
+    assert [b.kind for b in run.bonuses.bonuses] == ["life"]

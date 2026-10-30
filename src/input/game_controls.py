@@ -1,4 +1,4 @@
-"""The player's in-game controls (P06-R02, GD §2), ported from `input/game-controls.ts`: arrows /
+"""The player's in-game controls (P06-R02, GD §2): arrows /
 WASD (by key position) or the left stick / D-pad move, Space or the gamepad button shoots while
 held, and on touch screens the ship follows the finger dragged anywhere while the on-screen button
 shoots. E switches the weapon; R, the left Shift, a gamepad button or the on-screen bomb button set
@@ -45,7 +45,7 @@ class _Stick(Protocol):
 
 
 class GameControlBindings(Protocol):
-    """Which inputs shoot and move the ship (see `config/game-controls.ts`)."""
+    """Which inputs shoot and move the ship."""
 
     @property
     def fire_keys(self) -> Sequence[str]: ...

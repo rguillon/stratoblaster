@@ -1,5 +1,5 @@
-"""The game's generated music and sound effects (P12-R05..R10, GD-70, GD-71), ported from
-`audio/game-audio.ts`: the track for each music request (composed once, then kept), and the
+"""The game's generated music and sound effects (P12-R05..R10, GD-70, GD-71): the track for each
+music request (composed once, then kept), and the
 `AudioBindings` the engine takes.
 """
 

@@ -1,5 +1,5 @@
-"""Randomly generated roads and paths of a level (P04-R07), ported from
-`core/scenery/road-network.ts`. Main roads wind along the whole level. Where the ground is under
+"""Randomly generated roads and paths of a level (P04-R07) Main roads wind along the whole level.
+Where the ground is under
 `min_height` (the sea) or steeper than `max_slope`, a main road turns off the screen before it and
 comes back from the side after it, so no road ever starts or ends on screen (beyond X =
 ±`offscreen_x`). Paths branch off the main roads at random intervals, widen where they meet them,

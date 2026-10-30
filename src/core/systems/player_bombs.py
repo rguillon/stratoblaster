@@ -1,4 +1,4 @@
-"""The player's bombs (GD-32, P11-R05), ported from `core/systems/player-bombs.ts`."""
+"""The player's bombs (GD-32, P11-R05)"""
 
 INFINITY = float("Infinity")
 

@@ -1,1 +1,1 @@
-"""Config tables of world_4 (ported from `config/world-4`)."""
+"""Config tables of world_4."""

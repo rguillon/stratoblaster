@@ -1,4 +1,4 @@
-"""Plays the sound effects (P12-R09, P12-R10), ported from `audio/sfx-player.ts`: each through the
+"""Plays the sound effects (P12-R09, P12-R10): each through the
 `VoicePool`'s limits, panned with its position, on the sound effect bus. Without a context the
 pool still decides, so the game's logic (and the e2e test API) does not depend on audio being
 available.

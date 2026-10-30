@@ -1,5 +1,4 @@
-"""P10-R11, 4-3: the Obsidian Golem, the final boss of the Lava fields level (ported from
-`config/bosses/world-4/obsidian-golem.ts`).
+"""P10-R11, 4-3: the Obsidian Golem, the final boss of the Lava fields level ().
 
 Offsets in px from the boss's centre, X right and Y up (its chest faces down the screen, at -Y).
 Its two huge fists hang on arms bending at the shoulder and the elbow (D-061), pumping in turn. The

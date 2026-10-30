@@ -1,4 +1,4 @@
-"""The veteran enemy kinds (P05-R14 to P05-R18), ported from `game/sim/veteran-kinds.ts`."""
+"""The veteran enemy kinds (P05-R14 to P05-R18)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

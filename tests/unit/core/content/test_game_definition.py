@@ -1,4 +1,4 @@
-"""The contract between the engine and a game (`core.content.game_definition`, ENG-144)."""
+"""Unit tests of `src/core/content/game_definition.py`."""
 
 from core.content.game_definition import GameDefinition, LogicalScreen
 

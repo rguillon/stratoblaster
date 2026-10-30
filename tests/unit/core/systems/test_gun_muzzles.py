@@ -1,4 +1,4 @@
-"""Tests of where a gun's shots leave from (phase 7 review), `core/systems/gun_muzzles.py`."""
+"""Unit tests of `src/core/systems/gun_muzzles.py`."""
 
 import math
 

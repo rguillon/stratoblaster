@@ -1,4 +1,4 @@
-"""Building groups of the districts on the grid of tiles, ported from `config/tile-buildings.ts`.
+"""Building groups of the districts on the grid of tiles
 
 Phase 15 (reviewer, 2026-10-28): the districts are laid on a grid of 10 m tiles. A one-lane-each-way
 street with its two sidewalks is one tile; every building stands on whole tiles.
@@ -64,7 +64,7 @@ TILE_GROUPS = record(
             ],
         },
         # Reviewer, 2026-10-28: the villages and the worker homes, one group of small homes of the
-        # future on paved plots, each model of a different silhouette (`tile-homesteads.ts`).
+        # future on paved plots, each model of a different silhouette.
         "homes": {
             "range": [[1, 1], [2, 3]],
             "models": [
@@ -138,7 +138,7 @@ TILE_GROUPS = record(
             ],
         },
         # Reviewer, 2026-10-28: the terraces and the suburbs, one group of homes of the future on
-        # paved plots, each model of a different silhouette (`tile-residences.ts`).
+        # paved plots, each model of a different silhouette.
         "residences": {
             "range": [[1, 1], [2, 4]],
             "models": [

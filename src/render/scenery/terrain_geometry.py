@@ -1,10 +1,11 @@
-"""Vertex data of the terrain grid (P04-R01, ENG-19), ported from
-`render/scenery/terrain-geometry.ts`.
+"""Vertex data of the terrain grid (P04-R01, ENG-19)
 
 Ground cover is stored in the terrain's vertex colours: red = 1 - lush x SURFACE_SCALE,
 green = 1 - sandy x SURFACE_SCALE, blue = 1 - paved x SURFACE_SCALE. The arrays are typed
-(Float32, Uint32) as in the TypeScript, so the values round the same way.
+(Float32, Uint32), so the values round the same way.
 """
+
+import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -51,9 +52,9 @@ class TerrainGeometry:
 
 
 def _hypot3(a: float, b: float, c: float) -> float:
-    """`Math.hypot(a, b, c)`: JavaScript's rounding, as the TypeScript."""
+    """`Math.hypot(a, b, c)`: JavaScript's rounding."""
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 def build_terrain_geometry(source: Any, grid: TerrainGrid) -> TerrainGeometry:

@@ -1,7 +1,7 @@
-"""The parts of a bar of generated music (P12-R06), ported from `audio/compose-parts.ts`: drums,
+"""The parts of a bar of generated music (P12-R06): drums,
 bass, pad and arpeggio, each a list of notes for one bar.
 
-`sort_by_beat` replaces the TypeScript `Array.prototype.sort` with a comparator: Transcrypt's sort
+`sort_by_beat` replaces `Array.prototype.sort` with a comparator: Transcrypt's sort
 takes none and is not stable, and the order of notes at one beat must stay as composed.
 """
 
@@ -94,7 +94,7 @@ DRUM_STEPS = 16
 
 # A drum machine pattern: the steps (of 16 per bar) each drum plays at.
 class DrumPattern:
-    """A drum machine pattern (`DrumPattern` in the TypeScript)."""
+    """A drum machine pattern."""
 
     def __init__(self, kick: list[int], snare: list[int], hat_every: int, open_: list[int]) -> None:
         self.kick = kick

@@ -1,6 +1,4 @@
-"""The damage shown on a boss's parts (P07-R01): its hit flash, its smoke, its wound (P16-R05),
-ported from `bosses/boss-damage.ts`.
-"""
+"""The damage shown on a boss's parts (P07-R01): its hit flash, its smoke, its wound (P16-R05)"""
 
 import math
 

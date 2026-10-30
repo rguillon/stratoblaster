@@ -1,6 +1,6 @@
 """Props that do not follow the roads (phase 8): floating ice on the sea, and lines of props along
 the level (a pipeline); phase 9: set pieces at given places. Pure and deterministic for a given
-seed. Ported from `core/scenery/float-placement.ts`."""
+seed."""
 
 import math
 

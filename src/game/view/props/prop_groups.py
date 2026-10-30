@@ -1,5 +1,5 @@
 """How the `props/` page groups the prop models (reviewer, 2026-10-28; phase 15: the road kit
-and the tiles), ported from `props/prop-groups.ts`."""
+and the tiles)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

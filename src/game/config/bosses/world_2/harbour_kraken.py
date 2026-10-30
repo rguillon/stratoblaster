@@ -1,5 +1,4 @@
-"""The Harbour Kraken (P08-R10, 2-2's final boss), ported from
-`config/bosses/world-2/harbour-kraken.ts`.
+"""The Harbour Kraken (P08-R10, 2-2's final boss)
 
 Its four crane arms swing at the shoulder and the elbow (D-061), each out of step with the others.
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y).

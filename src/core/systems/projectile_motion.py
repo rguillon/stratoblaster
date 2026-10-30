@@ -1,4 +1,4 @@
-"""Projectiles in flight (P03), ported from `core/systems/projectile-motion.ts`.
+"""Projectiles in flight (P03)
 
 A shot's heading is in radians from forward (+Y), positive to the right.
 """

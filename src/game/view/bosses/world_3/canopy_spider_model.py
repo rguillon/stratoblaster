@@ -1,8 +1,8 @@
-"""P09-R09, 3-2: the Canopy Spider. Ported from `view/bosses/world-3/canopy-spider-model.ts`.
+"""P09-R09, 3-2: the Canopy Spider.
 Logical pixels, nose +Z, Y up (towards the camera). A walker-ship hanging over the canopy: an
 armoured cephalothorax carrying the head, its eyes and fangs at the front and the crown emitter
-on its back; a big abdomen behind it, the egg sac (a part) at its tip; four legs stepping in turn
-(limbs on joints, see `canopy-spider-legs.ts`)."""
+on its back; a big abdomen behind it, the egg sac (a part) at its tip; four legs stepping in
+turn."""
 
 import math
 

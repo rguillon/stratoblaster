@@ -1,5 +1,5 @@
-"""The boss tracks' parts (P12-R07, GD-70 "a more stressful music"), ported from
-`audio/compose-boss.ts`: a driving drum machine with pushed kicks and snare rolls, a rolling octave
+"""The boss tracks' parts (P12-R07, GD-70 "a more stressful music"): a driving drum machine with
+pushed kicks and snare rolls, a rolling octave
 bass, chord stabs on a 3-3-2 rhythm and a noise riser into every section.
 """
 

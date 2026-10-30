@@ -1755,3 +1755,58 @@
 - **Why:** the CI on `main` called `make lint typecheck coverage build` and `make e2e` without uv, without the vendored Babylon, and with a summary read from a file the Python coverage no longer writes. A clean clone of the branch reproduces the gate: lint, typecheck and coverage (99 %) pass, and the build passes once Babylon is vendored.
 - **Consequences:** CI no longer runs any browser test. ENG-50 (Playwright e2e) returns with the port's own e2e suite (the test phase), and the job comes back with it.
 - **Status:** Accepted, temporary (e2e)
+
+### D-187 — The repository is Python first: the debug viewers are gone and the Node tooling is in `node/`
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** the five debug viewer pages (`/player_ship/`, `/player_shots/`, `/enemies/`, `/bosses/`, `/props/`, their top-level `index.html`), their start modules and the route table are deleted, with the `?debug` test API (`src/debug/`) and every module only they used (19 leaf modules, found by walking the imports from `main.py` and `worker_main.py`). Only the game page is built. The TypeScript game, its tests and every Node file (`package.json`, `package-lock.json`, `tsconfig`, `typings/`, the Vite, Vitest, ESLint, Prettier, Playwright configs, `scripts/`, `.nvmrc`) are under `node/`. Node is a build step only: `make install` runs `npm ci --prefix node`, and `make build` bundles with `node/node_modules/.bin/esbuild`. The TypeScript reference in `node/` is not built, linted or tested by the Python gate.
+- **Why:** the owner wants a Python project, with Node only where the build needs it. The viewers duplicated the game's modules for debugging the TypeScript build.
+- **Consequences:** `specs/` still describes the viewer pages (P01 to P16 viewers, the `?debug` test API for e2e) and must be updated by the owner, who owns those files. The e2e suite (ENG-50 to ENG-53) is in `node/tests/e2e/` and is not run by CI (D-186).
+- **Status:** Accepted
+
+### D-188 — The TypeScript sources are gone; the migration comments are removed from the Python sources
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `node/src/` (the TypeScript game, 564 files) is deleted. It is kept in the tag `v0.15.0`, the last release built from it. `node/tests/` stays: its unit and e2e specs are the reference for the Python tests not written yet (205 unit tests, 19 e2e specs). The Python sources and tests no longer cite the TypeScript: the "ported from `x.ts`" provenance lines, the comparisons with the TypeScript, and the notes about the port are removed. The explanations that still hold stay, in the present tense (for example, config keys are camelCase).
+- **Why:** the port is complete and is the code that runs. The TypeScript sources cost a lot of repository for no build use, and the citations pointed at paths that no longer exist.
+- **Consequences:** `node/tests/` imports `../src/` and so no longer runs: it is a reference to read, not a suite. The specs (human-owned) still cite the TypeScript files.
+- **Status:** Accepted
+
+### D-189 — The leftovers of the TypeScript setup are removed
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `.planning/` (planning output generated from the old docs) is deleted. In `node/`, only esbuild stays as a dependency (`package.json`, lock file regenerated); the Vite, Vitest, ESLint, Prettier, Playwright and TypeScript configs and `typings/` are deleted (`node/tests/` stays as the reference suite). The Transcrypt type stubs moved from `node/typings/` to `typings/` (mypy reads them). `docs/architecture.md` describes the Python layers, the worker and the build. The root `.gitignore` keeps the Python and build entries; the Node ones are in `node/.gitignore`. Dependabot watches `node/` (npm) and the Actions. `.editorconfig` uses 4 spaces for Python.
+- **Why:** these files only served the TypeScript build and the removed viewer pages, and the docs described an architecture no longer in the repository.
+- **Consequences:** `specs/` (owned by the owner) still cites the TypeScript and the viewer pages; it needs the owner's update.
+- **Status:** Accepted
+
+### D-190 — One unit test file per source file
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** each test file tests one source module and sits at the mirrored path (`tests/unit/core/math/test_color.py` for `src/core/math/color.py`). The 938 test functions were moved to the module they exercise most (the module they name, when they only use fixtures). Shared helpers are in `tests/helpers/` (`fakes`, `sample_level`, `level_builders`). Pytest runs with `--import-mode=importlib`, because source modules share basenames (`game_play`, `outline`, ...). The `tests/unit/core/scenery_props/` folder and the empty `systems` conftest are gone. The count is unchanged: 1008 passing tests.
+- **Why:** a test file that covered several modules made it unclear what a failure was about, and a module's tests were spread over two folders.
+- **Consequences:** source modules without tests have no test file (the port's `game/` views and render code have none yet). Helper definitions used by tests of several modules are copied into each file that needs them (short ones, such as `_world` or `flat`).
+- **Status:** Accepted
+
+### D-191 — Unit tests cover all of src/ (the coverage report includes every file); the game and the engine's Python-only logic are tested under CPython
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `[tool.coverage.run] source = ["src"]` makes the report read every module, including those no test imports (they show at their real coverage). `main.py`, `worker_main.py` and `build_info.py` are left out (ENG-45: the entry points). The gates: the whole of `src/` at 70 % lines (`make coverage`), and `src/core/` at 90 % (`make coverage`). Every module imports under CPython: the game's config records have CPython twins (`game/config/record.py`: attribute access, `merge`, `field`), and the JavaScript-only helpers that the tests reach have Python twins in `skip` blocks, with the browser's path unchanged. The tests cover `game/`, `render/`, `app/`, `ui/`, `audio/`, `input/`, `host/`, `config/` and `assets/`, with fakes for Babylon and the DOM (`tests/helpers/`).
+- **Result:** 83 % of lines over all of `src/` (core 99 %, game 80 %, render 72 %, app 67 %, ui 99 %, audio 98 %, input 99 %, config 100 %). Only two files are at 0 %: `game/index.py` (composes the game's definition) and `render/scenery/ground_worker.py` (the worker's message handler, run only in the worker).
+- **Defects found by the tests** (strict `xfail`, not fixed here): the joint angles of Hydra, Juggernaut and Scissor are read under camelCase keys that core does not read (`amplitudeDeg`); `volley_muzzles` on a piece without guns; `station_at` past the last station returns the tail's radii; `build_swirl` never pushes the centre vertex (the fan indices run past the end); `js_remainder` for a negative divisor; `BossBar.update` skips a notch that moves alone; `keyboard_menu_input.key_up` releases the action, not the key; `road_geometry._across` on a zero-length step; `ship_select_stage.select` with no ships. Most of the 31 other expected failures in `test_boss_models.py` are CPython limits (drawings that read object literals with attribute access), not product bugs, and they stay as xfails until the drawings are reworked.
+- **Status:** Accepted
+
+### D-192 — The defects the tests found are fixed; the joints of the elite enemies reach core as specs
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `game/sim/joints.py` converts the config's joints and parts into the core's specs (`joint_specs`, `enemy_parts`, `jointed_design`); Hydra, Juggernaut and Scissor use it, as the boss builder does. `game/sim/config_access.py` holds the record helpers shared by the sim (`opt`, `keys_of`). Fixed: the volley muzzles of a piece without guns (an empty record, not a dict); `station_at` past the nose returns the nose's radii; the swirl's centre vertex is pushed; `js_remainder` truncates the quotient for a negative divisor; the keyboard menu releases a direction only when no key bound to it is still held (and `release_all` forgets the keys); the ship stage with no ship does not index an empty list; the boss bar redraws a notch that moves alone; `_across` of a zero-length step is the road's default direction. The JavaScript-only helpers in the boss and enemy drawings have CPython twins in `skip` blocks.
+- **Still expected to fail (32 tests):** the drawings of about 20 bosses and the carrier read plain dict literals with attribute access under CPython (in the browser these are objects). Converting those literals to records in their model files would make them pass; that is a mechanical change not made here.
+- **Status:** Accepted
+
+### D-193 — The boss drawings run under CPython; the expected failures are gone
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** the drawings' object literals are records where they are read with attribute access: `build_boss_model` makes its `drawing` a record on entry (the drawing and its limbs and parts are then read the same way under CPython and the browser), and the config tables and drawing constants that are read by attribute (`SHADE`, `SPIRE`, the towers, the `boss_drawing` helpers of the world 2 models) are records. The JavaScript-only helpers of the models (`boss_drawing`, `keyed`, the `Object.assign` copies, the typed arrays and the log of `blast_renderer`, `enemy_shot_renderer`, `enemy_lasers`, `enemy_materials`, `vetelite_organic`, `boss_limbs`) have CPython twins in `skip` blocks. Parts and limb records are read as the model reads them (`limb.draw`).
+- **Defects the drawings showed in the browser's code too:** the carrier's sponson slab was given `{}` where the placement is (a JavaScript object with no `yaw`: NaN geometry), now `None`; the floe breaker's barrel count was a float (`2.0`, now `2`). Two drawings (the toucan's beak and the salamander's tail) and the ice queen's shards take the part's point, which they ignore (they are drawn in model space); they now accept it. JavaScript ignores extra arguments, so the browser was never affected by that.
+- **Result:** 3,888 tests pass, and no test is expected to fail. The levels 2-3, 3-2 and 4-3 load into their bosses (toucan, magma salamander, ice queen) with no page errors, and their meshes are in the scene with finite bounds.
+- **Status:** Accepted

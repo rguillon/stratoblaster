@@ -1,5 +1,5 @@
 """Cloud layers of a scenery stage (P04-R03, P08-R04): planes under the flight altitude that follow
-the camera and drift, each with its own material. Ported from `render/scenery/cloud-layers.ts`.
+the camera and drift, each with its own material.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

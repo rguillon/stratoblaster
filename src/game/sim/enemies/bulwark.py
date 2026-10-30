@@ -1,4 +1,4 @@
-"""The Bulwark (P05-R09), ported from `game/sim/enemies/bulwark.ts`."""
+"""The Bulwark (P05-R09)"""
 
 import math
 

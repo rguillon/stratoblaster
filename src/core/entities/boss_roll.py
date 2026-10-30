@@ -1,4 +1,4 @@
-"""How a boss rolls into its sideways moves, ported from `core/entities/boss-roll.ts`.
+"""How a boss rolls into its sideways moves
 
 See `BossStats.roll` (phase 7 review).
 """

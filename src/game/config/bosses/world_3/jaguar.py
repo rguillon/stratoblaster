@@ -1,4 +1,4 @@
-"""P09-R09, 3-5's mini boss: the Jaguar (ported from `config/bosses/world-3/jaguar.ts`).
+"""P09-R09, 3-5's mini boss: the Jaguar ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 1 and 2 mini bosses (P07-R04, D-055): its claw guns fire aimed spreads

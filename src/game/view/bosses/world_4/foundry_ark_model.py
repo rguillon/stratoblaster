@@ -1,4 +1,4 @@
-"""P10-R11, 4-4: the Foundry Ark. Ported from `bosses/world-4/foundry-ark-model.ts`. Model space:
+"""P10-R11, 4-4: the Foundry Ark. Model space:
 logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A huge
 flying foundry: an iron deck carrying a blast furnace at its heart, slag channels glowing from it to
 the crucibles aft, a chimney row on the foredeck, a missile battery on the bow and outriggers out to

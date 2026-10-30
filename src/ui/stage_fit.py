@@ -1,4 +1,4 @@
-"""Places the game stage in the window, ported from `ui/stage-fit.ts` (GD-02, GD-03)."""
+"""Places the game stage in the window (GD-02, GD-03)."""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

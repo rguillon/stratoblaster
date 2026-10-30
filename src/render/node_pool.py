@@ -1,4 +1,4 @@
-"""Reusable nodes for things drawn in varying numbers (ported from `render/node-pool.ts`).
+"""Reusable nodes for things drawn in varying numbers ().
 
 Nodes are created on demand, then shown or hidden instead of being created and disposed every
 frame (ENG-19): shots, particles, flashes.

@@ -1,4 +1,4 @@
-"""Colours of the props (P04-R04), ported from `config/prop-look.ts`.
+"""Colours of the props (P04-R04)
 
 Weathered concrete and dark metal, with small neon accents (GD-60/61), and grey dead wood.
 Gamma-space RGB, 0..1.

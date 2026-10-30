@@ -1,6 +1,5 @@
-"""The Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2 frost), ported
-from `bosses/world-2/narwhal-details.ts` (P08-R10, 2-1). Logical pixels, nose +Z, Y up.
-"""
+"""The Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2 frost) (P08-R10,
+2-1). Logical pixels, nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

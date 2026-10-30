@@ -1,5 +1,5 @@
 """P08-R10, 2-5: the Boreal Citadel's destroyable parts (aurora cannons, missile batteries, dome
-generators), ported from `bosses/world-2/boreal-citadel-parts.ts`. Each is drawn around its
+generators) Each is drawn around its
 centre (model space: logical pixels, nose +Z, Y up)."""
 
 import math

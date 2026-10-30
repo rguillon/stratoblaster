@@ -1,4 +1,4 @@
-"""Tunables of the game screen (P06-R02, R03, R09), ported from `config/game-play.ts`.
+"""Tunables of the game screen (P06-R02, R03, R09)
 
 Logical pixels, Y up, origin at the bottom left of the playfield; times in seconds.
 """

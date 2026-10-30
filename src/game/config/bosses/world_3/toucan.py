@@ -1,5 +1,4 @@
-"""P09-R09, 3-2: the Toucan, the mini boss of the Rainforest level (ported from
-`config/bosses/world-3/toucan.ts`).
+"""P09-R09, 3-2: the Toucan, the mini boss of the Rainforest level ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose, the beak, points down, at -Y).
 The stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the

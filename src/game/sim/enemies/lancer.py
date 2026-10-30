@@ -1,4 +1,4 @@
-"""The Lancer (P05-R07), ported from `game/sim/enemies/lancer.ts`."""
+"""The Lancer (P05-R07)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

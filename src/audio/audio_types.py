@@ -1,8 +1,8 @@
-"""Data the audio engine plays: synth voices, instruments, sound designs and tracks (P12-R05),
-ported from `audio/audio-types.ts`. A game describes its music and sounds with these; the engine
+"""Data the audio engine plays: synth voices, instruments, sound designs and tracks (P12-R05) A game
+describes its music and sounds with these; the engine
 turns them into Web Audio nodes.
 
-Optional TypeScript fields are `None` when absent. Attribute `from` is `from_`.
+Optional fields are `None` when absent. Attribute `from` is `from_`.
 """
 
 from core.math.bits import u32, ushr, xor
@@ -19,7 +19,7 @@ def is_finite(value: float) -> bool:
 
 def xorshift(seed: int) -> int:
     """One step of the xorshift32 the audio uses for its noise (`seed ^= seed << 13`, ...), on
-    unsigned 32-bit values. The same bits as the TypeScript, so the noise sounds the same."""
+    unsigned 32-bit values. The same bits, so the noise sounds the same."""
     seed = xor(seed, u32(seed * 8192))
     seed = xor(seed, ushr(seed, 17))
     return xor(seed, u32(seed * 32))

@@ -1,4 +1,4 @@
-"""The weapons kept between levels, ported from `app/saved-weapons.ts`. Storage key prefixed with
+"""The weapons kept between levels Storage key prefixed with
 the game's id.
 """
 
@@ -30,7 +30,7 @@ def parse_weapon_levels(raw: str | None) -> WeaponLevels | None:
 
 
 def _read_weapon_levels(raw: str) -> WeaponLevels | None:
-    # Object.entries / Object.fromEntries keep the JSON object's keys, as the TypeScript does.
+    # Object.entries / Object.fromEntries keep the JSON object's keys.
     __pragma__(
         "js",
         "{}",

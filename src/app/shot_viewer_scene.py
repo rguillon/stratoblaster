@@ -1,4 +1,4 @@
-"""The playfield scene of the shot and enemy viewers, ported from `app/shot-viewer-scene.ts`:
+"""The playfield scene of the shot and enemy viewers:
 an orthographic camera looking straight down on the playfield, and the player ship lying on it.
 """
 

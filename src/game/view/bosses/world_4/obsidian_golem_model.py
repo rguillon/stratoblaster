@@ -1,4 +1,4 @@
-"""P10-R11, 4-3: the Obsidian Golem. Ported from `bosses/world-4/obsidian-golem-model.ts`. Logical
+"""P10-R11, 4-3: the Obsidian Golem. Logical
 pixels, nose +Z, Y up (towards the camera). A massive flying fortress shaped like a hunched giant: a
 broad armoured torso of black obsidian plates split by glowing magma seams, a small helmed head
 low on

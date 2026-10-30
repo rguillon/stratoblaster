@@ -1,5 +1,4 @@
-"""P07-R05, P16-R06: the Overlord, World 1's last boss (1-5), ported from
-`bosses/overlord-model.ts`.
+"""P07-R05, P16-R06: the Overlord, World 1's last boss (1-5)
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A city-sized
 organism: a vast mantle with a city of living towers grown on its back, a shelled spine down its
 middle carrying the citadel (its brain), membrane wings out to the laser cannons.

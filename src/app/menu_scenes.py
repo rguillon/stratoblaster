@@ -1,4 +1,4 @@
-"""The 3D scenes behind the menus, ported from `app/menu-scenes.ts`: the game's backdrop, and the
+"""The 3D scenes behind the menus: the game's backdrop, and the
 ship select stage over it.
 """
 

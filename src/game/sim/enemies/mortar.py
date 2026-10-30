@@ -1,4 +1,4 @@
-"""The Mortar (P05-R15), ported from `game/sim/enemies/mortar.ts`."""
+"""The Mortar (P05-R15)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

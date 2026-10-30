@@ -1,5 +1,5 @@
 """The Boreal Citadel's polar city: its colours, the towers and heated domes on its deck, the
-icicles under its edges, ported from `bosses/world-2/boreal-citadel-city.ts` (P08-R10, 2-5).
+icicles under its edges (P08-R10, 2-5).
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the
 screen's left.
 """
@@ -61,7 +61,7 @@ def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlineP
 
 
 class Tower:
-    """A tower of the city (an interface in the TypeScript): its footprint `w` by `d` at `x`, `z`
+    """A tower of the city: its footprint `w` by `d` at `x`, `z`
     on the deck, its height `h`, a setback `tier` `[w, d, h]` on top (or None), and the colour
     `lit` of its windows."""
 

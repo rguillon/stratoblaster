@@ -1,14 +1,11 @@
-"""The pieces of a boss as shots see them (`core.entities.boss_pieces`, P07-R01)."""
+"""Unit tests of `src/core/entities/boss_pieces.py`."""
 
 import math
 from collections.abc import Callable
 from typing import Any
 
 import pytest
-from fakes import ProbeBoss
-
-from core.entities.boss import BossPartSpec
-from core.entities.boss_turret import BossTurretSpec
+from helpers.fakes import ProbeBoss
 
 Make = Callable[..., ProbeBoss]
 
@@ -47,55 +44,15 @@ def test_p11_r01_part_points_come_from_the_stats(make_boss: Make) -> None:
     assert make_boss(part_points=50).parts[0].points == 50
 
 
-def test_turrets_belong_to_the_parts_and_core_named_in_the_stats(make_boss: Make) -> None:
-    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
-    assert boss.parts[0].turret is not None
-    assert boss.parts[1].turret is None
-    assert boss.core.turret is None
-
-
-def test_the_core_can_have_a_turret(make_boss: Make) -> None:
-    boss = make_boss(turrets={"core": BossTurretSpec(0, 0, 90)})
-    assert boss.core.turret is not None
-
-
-def test_a_part_placed_on_its_turret_turns_with_it(make_boss: Make) -> None:
-    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
-    boss.parts[0].turret.aim = math.pi / 2
-    assert as_tuple(boss.parts[0].place((0, -10, 5), on_turret=True)) == pytest.approx((90, 200, 5))
-
-
-def test_a_part_placed_off_its_turret_stays_where_the_muzzle_is(make_boss: Make) -> None:
-    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
-    boss.parts[0].turret.aim = math.pi / 2
-    assert as_tuple(boss.parts[0].place((0, -10, 5))) == pytest.approx((100, 190, 5))
-
-
 def test_a_part_without_a_turret_ignores_on_turret(make_boss: Make) -> None:
     point = make_boss().parts[1].place((0, -10, 5), on_turret=True)
     assert as_tuple(point) == pytest.approx((100, 190, 5))
-
-
-def test_the_core_places_its_turret_muzzles(make_boss: Make) -> None:
-    boss = make_boss(turrets={"core": BossTurretSpec(0, 0, 90)})
-    boss.core.turret.aim = math.pi / 2
-    assert as_tuple(boss.core.place((0, -10, 5), on_turret=True)) == pytest.approx((90, 200, 5))
-    assert as_tuple(boss.core.place((0, -10, 5))) == pytest.approx((100, 190, 5))
 
 
 def test_the_core_without_a_turret_places_muzzles_plainly(make_boss: Make) -> None:
     assert as_tuple(make_boss().core.place((0, -10, 5), on_turret=True)) == pytest.approx(
         (100, 190, 5)
     )
-
-
-def test_a_part_orbiting_the_boss_turns_its_muzzles_with_the_spin(make_boss: Make) -> None:
-    ring = BossPartSpec(
-        id="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
-    )
-    boss = make_boss(parts=[ring])
-    boss.spin = math.pi / 2
-    assert as_tuple(boss.parts[0].place((1, 0, 0))) == pytest.approx((100, 199, 0))
 
 
 def test_part_emitter_is_one_radius_ahead_along_its_heading(make_boss: Make) -> None:

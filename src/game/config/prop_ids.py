@@ -1,4 +1,4 @@
-"""Ids of the props the worlds share, ported from `config/prop-ids.ts`.
+"""Ids of the props the worlds share
 
 Trees, bushes, an antenna mast and two homes (P04-R04).
 """

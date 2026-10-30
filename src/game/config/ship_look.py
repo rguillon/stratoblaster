@@ -1,4 +1,4 @@
-"""Player ship look (GD-61), ported from `config/ship-look.ts`."""
+"""Player ship look (GD-61)"""
 
 from game.config.record import record
 

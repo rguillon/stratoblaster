@@ -1,4 +1,4 @@
-"""Places props on a level (P04-R04, P04-R07), ported from `core/scenery/prop-placement.ts`.
+"""Places props on a level (P04-R04, P04-R07)
 
 Buildings stand only along the roads: each slot of the road network gets a building with the
 section's building density, set back from the road edge and facing it, if the ground under its

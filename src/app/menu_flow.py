@@ -1,4 +1,4 @@
-"""Screen state machine of the menus (P01-R01), ported from `app/menu-flow.ts`: Title → Ship
+"""Screen state machine of the menus (P01-R01): Title → Ship
 select → Level select → Game, with Back on each screen; Game ⇄ Pause, and Settings from the title
 or the pause menu (P12-R02, P12-R04). Pure: no Babylon, no DOM, time comes from `update`.
 """

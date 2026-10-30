@@ -1,4 +1,4 @@
-"""Fixed-timestep accumulator (ENG-100), ported from `core/loop/fixed-step-clock.ts`.
+"""Fixed-timestep accumulator (ENG-100)
 
 It converts variable frame times into a whole number of fixed simulation steps plus an
 interpolation factor for rendering.

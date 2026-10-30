@@ -1,7 +1,7 @@
 """P10-R11, 4-5: the Caldera Throne's keep over its core: three armoured tiers lit crimson, molten
 slits in their walls, battlements, and the throne tower crowned in gold whose crown fires the core's
-rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Ported from
-`bosses/world-4/caldera-throne-keep.ts`. Model space: logical pixels, nose +Z (down the screen),
+rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Model space: logical
+pixels, nose +Z (down the screen),
 Y up towards the camera.
 """
 

@@ -1,4 +1,4 @@
-"""The lives and bombs kept between levels, ported from `app/saved-supplies.ts`. Storage key
+"""The lives and bombs kept between levels Storage key
 prefixed with the game's id.
 """
 

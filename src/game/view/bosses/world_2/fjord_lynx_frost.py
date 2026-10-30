@@ -1,5 +1,5 @@
 """The World 2 frost on the Fjord Lynx and the Harbour Kraken: snow caps, ice crust and icicles
-over the dark metal, ported from `bosses/world-2/fjord-lynx-frost.ts`. Logical pixels, nose +Z,
+over the dark metal Logical pixels, nose +Z,
 Y up (towards the camera).
 """
 

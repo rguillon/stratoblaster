@@ -1,5 +1,5 @@
-"""Reads the debug options of the game screen from a URL query (P06-R09), ported from
-`app/debug-options.ts`: `?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy
+"""Reads the debug options of the game screen from a URL query (P06-R09):
+`?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy
 ship. `level` turns debug on; `t` (seconds, default 0) and `ship` (default: the first ship) are
 optional. `boss=mini` or `boss=final` starts at that boss's arrival instead (P07-R09).
 `weather=0` turns the weather off and `look=night` (or another time of day) forces the time of

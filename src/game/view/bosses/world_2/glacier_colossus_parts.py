@@ -1,5 +1,4 @@
-"""P08-R10, 2-4: the Glacier Colossus's parts, ported from
-`bosses/world-2/glacier-colossus-parts.ts`.
+"""P08-R10, 2-4: the Glacier Colossus's parts
 Logical pixels, nose +Z, Y up (towards the camera); each part is drawn around its centre `at`
 (model space), the left ones at +X."""
 

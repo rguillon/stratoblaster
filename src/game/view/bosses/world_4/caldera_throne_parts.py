@@ -1,6 +1,6 @@
 """P10-R11, 4-5: the Caldera Throne's colours and its destroyable parts (magma cannons, missile
 batteries, heat shield generators), each drawn around its centre `at`, each turret around its
-pivot. Ported from `bosses/world-4/caldera-throne-parts.ts`. Model space: logical pixels, nose +Z,
+pivot. Model space: logical pixels, nose +Z,
 Y up.
 """
 

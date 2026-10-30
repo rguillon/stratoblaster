@@ -1,4 +1,4 @@
-"""P09-R09, 3-2: the Toucan. Ported from `view/bosses/world-3/toucan-model.ts`. Logical pixels,
+"""P09-R09, 3-2: the Toucan. Logical pixels,
 nose +Z, Y up (towards the camera). A stubby gunship: a round black body, short wings carrying the
 fan pods, a fanned tail, and the huge bright beak (its cannon, a part) in front of its head."""
 

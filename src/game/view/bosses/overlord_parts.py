@@ -1,4 +1,4 @@
-"""P07-R05, P16-R06: the Overlord's destroyable parts, ported from `bosses/overlord-parts.ts`: wing
+"""P07-R05, P16-R06: the Overlord's destroyable parts: wing
 laser cannons, missile batteries, shield generators, each drawn around its centre `at` (model
 space: logical pixels, nose +Z, Y up).
 """

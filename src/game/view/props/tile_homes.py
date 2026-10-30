@@ -1,5 +1,5 @@
 """The homes made for the grid of tiles (Phase 15, P15-R09): houses with their gardens, terraces,
-flats, workshops, farms and desert homes, ported from `props/tile-homes.ts`. See `tile_kit.py`
+flats, workshops, farms and desert homes See `tile_kit.py`
 for the plot."""
 
 import math

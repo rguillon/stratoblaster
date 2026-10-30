@@ -1,8 +1,15 @@
-"""GD-62: explosions where enemies and missiles were destroyed, in playfield space, ported from
-`enemies/blast-renderer.ts`. Each layer (smoke, shock rings, fireballs, debris, embers) is one mesh
+"""GD-62: explosions where enemies and missiles were destroyed, in playfield space Each layer
+(smoke, shock rings, fireballs, debris, embers) is one mesh
 of thin instances, so a big blast costs no more draw calls than a small one."""
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -33,18 +40,27 @@ LOOK = ENEMY_LOOK.blasts
 
 def _object_with_colors(geo: Any, colors: list[float]) -> Any:
     """`{ ...geo, colors }`: a copy of a coloured geometry with other colours."""
+    __pragma__("skip")
+    return record({**fields_of(geo), "colors": colors})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, geo, {colors: colors});")
     return None
 
 
 def _float32_array(length: int) -> Any:
     """A zero-filled `Float32Array` of `length` values."""
+    __pragma__("skip")
+    return [0.0] * length
+    __pragma__("noskip")
     __pragma__("js", "{}", "return new Float32Array(length);")
     return None
 
 
 def _ceil_log2(n: int) -> int:
     """`Math.ceil(Math.log2(n))`."""
+    __pragma__("skip")
+    return math.ceil(math.log2(n)) if n > 0 else 0
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Math.ceil(Math.log2(n));")
     return 0
 
@@ -148,7 +164,7 @@ class LayerMesh:
 
 
 class BlastRendererHandle:
-    """The blast renderer (`BlastRenderer` in the TypeScript): its `sync` and `dispose`."""
+    """The blast renderer: its `sync` and `dispose`."""
 
     def __init__(self, sync: Any, dispose: Any) -> None:
         self.sync = sync

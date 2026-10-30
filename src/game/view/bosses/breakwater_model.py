@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-2: the Breakwater, ported from `bosses/breakwater-model.ts`. Logical pixels,
+"""P07-R05, P16-R05, 1-2: the Breakwater Logical pixels,
 nose +Z, Y up (towards the camera).
 """
 

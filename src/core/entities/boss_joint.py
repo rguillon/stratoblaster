@@ -1,4 +1,4 @@
-"""Moving limbs of a boss, ported from `core/entities/boss-joint.ts` (phase 7 review).
+"""Moving limbs of a boss (phase 7 review).
 
 A joint turns what hangs on it (parts, their hit circles and muzzles, other joints) around its
 pivot, swinging to and fro. Joints hang on other joints, so an arm can bend at the shoulder, the

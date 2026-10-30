@@ -1,6 +1,5 @@
 """The material of a weather's particles (P08-R05, phases 9-10): soft discs, streaks or sparks moved
-on the GPU in a box of air that follows the view. Ported from
-`render/scenery/weather-material.visual.ts`.
+on the GPU in a box of air that follows the view.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).

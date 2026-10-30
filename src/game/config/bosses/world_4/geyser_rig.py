@@ -1,5 +1,4 @@
-"""P10-R11, 4-2: the Geyser Rig, the final boss of the Ash plains level (ported from
-`config/bosses/world-4/geyser-rig.ts`).
+"""P10-R11, 4-2: the Geyser Rig, the final boss of the Ash plains level ().
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down, at -Y). Its two drill
 heads hang on arms swinging on their shoulder joints (D-061), out of step, as if boring. The stage
