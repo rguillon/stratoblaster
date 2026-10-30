@@ -25,12 +25,15 @@ __pragma__("noskip")
 from input.menu_action import MenuSet  # noqa: E402
 from input.pointer_menu_input import pointer_command  # noqa: E402
 from ui.menu_view import (  # noqa: E402
+    DevMenuView,
+    DevViewerView,
     GameScreenView,
     LevelSelectView,
     LoadingView,
     ShipSelectView,
     TitleView,
 )
+from ui.screens.dev_screen import render_dev_screen, render_dev_viewer_screen  # noqa: E402
 from ui.screens.game_screen import render_game_screen  # noqa: E402
 from ui.screens.level_select_screen import render_level_select_screen  # noqa: E402
 from ui.screens.loading_screen import render_loading_screen  # noqa: E402
@@ -49,19 +52,30 @@ class MenuOverlayOptions:
         self.transition_seconds = transition_seconds
 
 
+def _render_loading(doc: MenuDocument, view: Any, _handlers: ScreenHandlers) -> Any:
+    return render_loading_screen(doc, view)
+
+
+# Each view class, and its screen's renderer (`renderer(doc, view, handlers)`).
+_RENDERERS: list[Any] = [
+    [LoadingView, _render_loading],
+    [TitleView, render_title_screen],
+    [ShipSelectView, render_ship_select_screen],
+    [LevelSelectView, render_level_select_screen],
+    [GameScreenView, render_game_screen],
+    [DevMenuView, render_dev_screen],
+    [DevViewerView, render_dev_viewer_screen],
+]
+
+
 def _render_screen(doc: MenuDocument, view: MenuView, handlers: ScreenHandlers) -> Any:
-    """Renders the screen `view` shows (the view's class picks the renderer)."""
-    if isinstance(view, LoadingView):
-        return render_loading_screen(doc, view)
-    if isinstance(view, TitleView):
-        return render_title_screen(doc, view, handlers)
-    if isinstance(view, ShipSelectView):
-        return render_ship_select_screen(doc, view, handlers)
-    if isinstance(view, LevelSelectView):
-        return render_level_select_screen(doc, view, handlers)
-    if isinstance(view, GameScreenView):
-        return render_game_screen(doc, view, handlers)
-    return render_settings_screen(doc, view, handlers)
+    """Renders the screen `view` shows (the view's class picks the renderer; the settings screen
+    when none does)."""
+    for pair in _RENDERERS:
+        if isinstance(view, pair[0]):
+            return pair[1](doc, view, handlers)
+    settings: Any = view
+    return render_settings_screen(doc, settings, handlers)
 
 
 def _selected_index(view: MenuView) -> int:
@@ -80,12 +94,18 @@ class MenuOverlay:
         on_command: Callable[[Any], None],
         options: MenuOverlayOptions,
         touch: GameTouchHandlers | None = None,
+        on_wheel: Callable[[float], None] | None = None,
+        on_turn: Callable[[float, float], None] | None = None,
     ) -> None:
+        """`on_wheel(delta_y)`: the mouse wheel turned over a dev viewer; `on_turn(dx, dy)`: a drag
+        over it, in screen pixels (D-199)."""
         self._doc = doc
         self._root = root
         self._on_command = on_command
         self._options = options
         self._touch = touch
+        self._on_wheel = on_wheel
+        self._on_turn = on_turn
         self._current: Any = None
         self._view: MenuView | None = None
 
@@ -96,6 +116,11 @@ class MenuOverlay:
         shown = self._root.getBoundingClientRect().width
         laid_out = self._root.offsetWidth
         return shown / laid_out if shown > 0 and laid_out > 0 else 1
+
+    @property
+    def root(self) -> Any:
+        """The element the screens are shown in."""
+        return self._root
 
     @property
     def view(self) -> MenuView | None:
@@ -124,7 +149,9 @@ class MenuOverlay:
         def on_set(index: int, value: float) -> None:
             self._on_command(MenuSet(index, value))
 
-        return ScreenHandlers(on_tap, on_back, on_fire, on_drag, on_pause, on_set)
+        return ScreenHandlers(
+            on_tap, on_back, on_fire, on_drag, on_pause, on_set, self._on_wheel, self._on_turn
+        )
 
     def show(self, view: MenuView) -> None:
         """Replaces the overlay content with `view`. A new screen fades in."""

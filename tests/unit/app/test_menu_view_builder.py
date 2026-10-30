@@ -12,6 +12,8 @@ from app.settings_menu import Volumes
 from core.systems.level_run_types import LevelCheckpoint, LevelResult
 from core.systems.run_arsenal import WeaponLevels
 from ui.menu_view import (
+    DevMenuView,
+    DevViewerView,
     GameScreenView,
     LevelSelectView,
     LoadingView,
@@ -155,3 +157,51 @@ def test_p12_r04_settings_opened_in_a_level_are_marked_over_the_level() -> None:
 def test_p01_r01_each_screen_name_gets_its_own_view(screen: str) -> None:
     view = build_menu_view(state(screen), ctx())
     assert view.kind == ("title" if screen == "title" else "game")
+
+
+# D-199: the dev menu and its viewers.
+
+
+def dev_ctx() -> MenuViewContext:
+    labels = {
+        "ships": ["Alpha", "Beta"],
+        "enemies": ["Gnat"],
+        "bosses": [],
+        "props": ["hut"],
+        "levels": ["1-1", "1-2"],
+    }
+    return MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, labels)
+
+
+def test_d199_the_title_shows_the_dev_entry_only_with_the_dev_labels() -> None:
+    assert build_menu_view(state("title"), ctx()).dev is None
+    assert build_menu_view(state("title"), dev_ctx()).dev == "Dev"
+
+
+def test_d199_the_dev_menu_lists_the_viewers() -> None:
+    view = build_menu_view(state("dev", selection=2), dev_ctx())
+    assert isinstance(view, DevMenuView)
+    assert view.entries == ["Player ships", "Enemies", "Bosses", "Props", "Levels"]
+    assert (view.selected, view.back) == (2, "Back")
+
+
+def test_d199_a_model_viewer_shows_its_item_and_place_in_the_list() -> None:
+    view = build_menu_view(
+        state("dev-viewer", selection=1, dev_viewer="ships", dev_close_up=True), dev_ctx()
+    )
+    assert isinstance(view, DevViewerView)
+    assert (view.heading, view.item, view.position) == ("Player ships", "Beta", "2 / 2")
+    assert view.scrub is False
+
+
+def test_d199_the_levels_viewer_scrubs_with_the_wheel() -> None:
+    view = build_menu_view(state("dev-viewer", dev_viewer="levels"), dev_ctx())
+    assert isinstance(view, DevViewerView)
+    assert view.scrub is True
+    assert view.item == "1-1"
+    assert "scrub" in view.hint.lower()
+
+
+def test_d199_a_viewer_with_no_item_shows_an_empty_one() -> None:
+    view = build_menu_view(state("dev-viewer", dev_viewer="bosses"), dev_ctx())
+    assert (view.item, view.position) == ("", "1 / 0")

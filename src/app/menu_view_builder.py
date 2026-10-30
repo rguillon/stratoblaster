@@ -5,7 +5,10 @@
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.settings_menu import SETTINGS_SLIDERS
+from config.dev_viewer import DEV_VIEWER_CONFIG, DEV_VIEWERS
 from ui.menu_view import (
+    DevMenuView,
+    DevViewerView,
     GameScreenView,
     LevelChoices,
     LevelCompleteView,
@@ -44,6 +47,7 @@ class MenuViewContext:
         cards_width_percent: float,
         progress: float,
         volume_steps: int,
+        dev_labels: dict[str, list[str]] | None = None,
     ) -> None:
         self.game = game
         # The best score so far.
@@ -57,6 +61,8 @@ class MenuViewContext:
         self.progress = progress
         # The volume sliders' highest step (P12-R04).
         self.volume_steps = volume_steps
+        # The labels of each dev viewer's items (D-199); None: no dev menu.
+        self.dev_labels = dev_labels
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
@@ -149,6 +155,29 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
     )
 
 
+def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
+    """The dev menu, or the dev viewer shown (D-199)."""
+    texts = DEV_VIEWER_CONFIG.texts
+    back: str = ctx.game.texts.back
+    viewer = state.dev_viewer
+    if viewer is None:
+        entries = [texts.labels[v] for v in DEV_VIEWERS]
+        return DevMenuView(texts.heading, texts.hint, back, state.selection, entries)
+    labels = ctx.dev_labels[viewer] if ctx.dev_labels is not None else []
+    index = state.selection
+    item = labels[index] if index < len(labels) else ""
+    scrub = viewer == "levels"
+    return DevViewerView(
+        texts.labels[viewer],
+        texts.levels_hint if scrub else texts.models_hint,
+        back,
+        index,
+        item,
+        str(index + 1) + " / " + str(len(labels)),
+        scrub,
+    )
+
+
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """The view of the current screen: one of the classes of `ui/menu_view`."""
     game = ctx.game
@@ -167,6 +196,7 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
             texts.startHint,
             ctx.version,
             ctx.commit,
+            DEV_VIEWER_CONFIG.texts.entry if ctx.dev_labels is not None else None,
         )
     if screen == "ship-select":
         ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]
@@ -191,4 +221,5 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
         )
     if screen in ["game", "pause"]:
         return _game_view(state, ctx)
-    return _settings_view(state, ctx)
+    in_dev = screen in ["dev", "dev-viewer"]
+    return _dev_view(state, ctx) if in_dev else _settings_view(state, ctx)

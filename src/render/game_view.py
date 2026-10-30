@@ -131,21 +131,25 @@ class EnemyBindings:
     `models`: one model per `EnemyStats.model` key. `shots(scene, style)`: the enemy shot
     renderer, in the level's style if any. `blasts(scene)`: the explosion renderer. `glow`: a
     `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation on or off.
+    `child_models`: the models of the enemies other enemies send out (e.g. a carrier's drones),
+    built with every level's own models (P13-R03).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         models: dict[str, Any],
         shots: Any,
         blasts: Any,
         glow: GlowLook,
         set_idle_motion: Any = None,
+        child_models: list[str] | None = None,
     ) -> None:
         self.models = models
         self.shots = shots
         self.blasts = blasts
         self.glow = glow
         self.set_idle_motion = set_idle_motion
+        self.child_models = child_models if child_models is not None else []
 
 
 class PropGroup:

@@ -12,6 +12,7 @@ between the embankments of the city. Each level's `seconds` add up to 300 (P10-R
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
+from game.config.world_1.scenery_coast import smooth
 from game.config.world_2.scenery import TRANSITION
 from game.config.world_3.props import TOWN_PLANTS
 from game.config.world_3.scenery import (
@@ -42,6 +43,10 @@ def quays(half_width: float) -> Any:
     """The river between the stone embankments of the city: steep walls, `half_width` at its bed."""
     return merge(river(half_width), {"wall": 14})
 
+
+# The flat city ground, lower than World 3's `FLAT` (32): the skyscrapers' roofs (up to about 113
+# high) stay under the lowest cloud layer, and the ground stays above the props' `minHeight` (4).
+CITY_GROUND = smooth(8, 2, 600, 2)
 
 # Every block filled with buildings side by side, as in Level Zero's city centre.
 FILLED_BLOCKS = record({"podiums": [], "podiumHeight": [0, 0], "towers": [16, 16]})
@@ -355,12 +360,12 @@ DOWNTOWN = [
 
 def city_only(s: Any) -> Any:
     """`s` with only buildings and roads (reviewer, 2026-10-28): no river, flat paved ground, no
-    grass or trees.
+    grass or trees. The ground is `CITY_GROUND`, low enough for the roofs to stay under the clouds.
     """
     city = merge(
         s,
         {
-            "relief": FLAT,
+            "relief": CITY_GROUND,
             "treeDensity": 0,
             "surface": {"paved": 1, "lush": 0},
         },

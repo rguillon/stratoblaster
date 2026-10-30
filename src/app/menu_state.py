@@ -42,6 +42,8 @@ class MenuState:
         paused: bool,
         leaving: bool,
         volumes: Volumes,
+        dev_viewer: str | None = None,
+        dev_close_up: bool = False,
     ) -> None:
         self.screen = screen
         # Index of the selected entry on the current screen.
@@ -70,6 +72,11 @@ class MenuState:
         self.leaving = leaving
         # The music and sound effect volumes, in slider steps (P12-R04).
         self.volumes = volumes
+        # The dev viewer shown (D-199): one of `DEV_VIEWERS`, on the `dev-viewer` screen; None
+        # elsewhere. `selection` is then the item it shows.
+        self.dev_viewer = dev_viewer
+        # The model viewers' close-up (or game size), the levels viewer's play (or stop).
+        self.dev_close_up = dev_close_up
 
 
 class MenuFlowOptions:
@@ -84,6 +91,7 @@ class MenuFlowOptions:
         result_delay_seconds: float | None,
         volumes: Volumes | None,
         volume_steps: int | None,
+        dev_counts: list[int] | None = None,
     ) -> None:
         # Ship ids in display order; the first one is the default selection.
         self.ship_ids = ship_ids
@@ -97,3 +105,6 @@ class MenuFlowOptions:
         # The saved volumes (P12-R04); the highest step is `volume_steps`.
         self.volumes = volumes
         self.volume_steps = volume_steps
+        # The dev menu (D-199): how many items each viewer of `DEV_VIEWERS` shows. None: no dev
+        # menu (the title screen has no Dev entry).
+        self.dev_counts = dev_counts

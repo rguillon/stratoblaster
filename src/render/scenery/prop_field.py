@@ -106,6 +106,21 @@ def _geometry_of(factory: PropModelFactory) -> PropGeometry:
     return result
 
 
+def prop_extent(factory: PropModelFactory) -> float:
+    """The largest side of the prop `factory` makes (its structure), in ground units."""
+    positions = _geometry_of(factory).structure.positions
+    if len(positions) == 0:
+        return 0
+    low = [positions[0], positions[1], positions[2]]
+    high = [positions[0], positions[1], positions[2]]
+    for i in range(0, len(positions), 3):
+        for axis in range(3):
+            value = positions[i + axis]
+            low[axis] = min(low[axis], value)
+            high[axis] = max(high[axis], value)
+    return max(high[0] - low[0], high[1] - low[1], high[2] - low[2])
+
+
 def _normals_of(geo: ColoredGeometry) -> list[float]:
     """The normals of each geometry, worked out once."""
     normals = _slot_get(geo, _NORMALS_SLOT)
