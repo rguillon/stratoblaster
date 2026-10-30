@@ -87,8 +87,9 @@ typecheck: ## mypy --strict
 test: ## Unit tests (pytest, CPython over src/)
 	uv run pytest
 
-coverage: ## Unit tests with the core/ coverage report (fails below ENG-43)
+coverage: ## Unit tests with the core/ coverage report (fails below ENG-43), HTML in coverage/
 	uv run coverage run -m pytest
+	uv run coverage html -d coverage
 	uv run coverage report
 
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
@@ -96,4 +97,4 @@ check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back w
 check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
 
 clean: ## Remove build outputs and caches
-	rm -rf $(DIST) build src/__target__ .mypy_cache .ruff_cache
+	rm -rf $(DIST) build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache
