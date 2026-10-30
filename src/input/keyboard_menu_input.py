@@ -79,7 +79,7 @@ class KeyboardMenuInput:
         if event.code in self._held:
             self._held.remove(event.code)
         still_held = [code for code in self._held if self._bindings.get(code) == action]
-        if not still_held:
+        if len(still_held) == 0:
             self._repeater.release(action)
 
     def release_all(self) -> None:
