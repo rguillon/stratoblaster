@@ -4,10 +4,12 @@ living bodies grown over by the jungle, metal grafted on. Logical pixels, nose +
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+from game.config.record import record
 from render.geometry.organic import RibSpec, carapace, curve, organ, ribs, tendril, vein
 from render.geometry.solids import Placement
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -43,6 +45,7 @@ def sign_of(x: float) -> int:
 def spine(p: EnemyParts, path: list[Vec3], arches: Any, glow: Rgb) -> None:
     """A spine down a back (P16-R05): a pulsing vein along `path` and, at each of `arches.at`
     (z), a rib arch `arches.halfWidth` out over it from `arches.y`, in bone."""
+    arches = record(arches)
     vein(p.vein, path, 1.2, glow)
     ribs(
         p.flesh,

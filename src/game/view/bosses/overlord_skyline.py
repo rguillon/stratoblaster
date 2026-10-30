@@ -9,13 +9,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+from game.config.record import record
 from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON  # noqa: E402
 from game.view.bosses.world_1_organic_kit import F, graft, polygon  # noqa: E402
 from game.view.enemies.organic_parts import opt  # noqa: E402
 from render.geometry.organic import organ  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -29,25 +31,25 @@ N = OVERLORD_NEON
 # The towers, left and right: none mirrored, kept off the wing roots (|x| <= 54).
 TOWERS = [
     # Left (+X).
-    {"x": 35, "z": -9, "w": 7, "d": 8, "h": 19, "roof": "mast"},
-    {"x": 50, "z": 7, "w": 7, "d": 10, "h": 12, "roof": "ac"},
-    {"x": 51, "z": 24, "w": 6, "d": 6, "h": 8, "roof": "tank"},
-    {"x": 31, "z": -53, "w": 8, "d": 6, "h": 13, "tier": [5, 3.5, 5]},
-    {"x": 42, "z": -51, "w": 6, "d": 6, "h": 8, "roof": "ac"},
-    {"x": 22, "z": 52, "w": 7, "d": 5, "h": 6},
+    record({"x": 35, "z": -9, "w": 7, "d": 8, "h": 19, "roof": "mast"}),
+    record({"x": 50, "z": 7, "w": 7, "d": 10, "h": 12, "roof": "ac"}),
+    record({"x": 51, "z": 24, "w": 6, "d": 6, "h": 8, "roof": "tank"}),
+    record({"x": 31, "z": -53, "w": 8, "d": 6, "h": 13, "tier": [5, 3.5, 5]}),
+    record({"x": 42, "z": -51, "w": 6, "d": 6, "h": 8, "roof": "ac"}),
+    record({"x": 22, "z": 52, "w": 7, "d": 5, "h": 6}),
     # Right (-X).
-    {"x": -34, "z": -12, "w": 7, "d": 7, "h": 25, "tier": [4.5, 4, 5], "roof": "mast"},
-    {"x": -51, "z": -11, "w": 6, "d": 9, "h": 14, "roof": "tank"},
-    {"x": -33, "z": 15, "w": 7, "d": 7, "h": 10, "roof": "ac"},
-    {"x": -51, "z": 16, "w": 6, "d": 9, "h": 7, "roof": "ac"},
-    {"x": -52, "z": 27, "w": 5, "d": 5, "h": 12},
-    {"x": -36, "z": -53, "w": 7, "d": 6, "h": 19, "roof": "mast"},
-    {"x": -46, "z": -49, "w": 5, "d": 5, "h": 7},
-    {"x": -25, "z": 51, "w": 6, "d": 6, "h": 11, "roof": "tank"},
+    record({"x": -34, "z": -12, "w": 7, "d": 7, "h": 25, "tier": [4.5, 4, 5], "roof": "mast"}),
+    record({"x": -51, "z": -11, "w": 6, "d": 9, "h": 14, "roof": "tank"}),
+    record({"x": -33, "z": 15, "w": 7, "d": 7, "h": 10, "roof": "ac"}),
+    record({"x": -51, "z": 16, "w": 6, "d": 9, "h": 7, "roof": "ac"}),
+    record({"x": -52, "z": 27, "w": 5, "d": 5, "h": 12}),
+    record({"x": -36, "z": -53, "w": 7, "d": 6, "h": 19, "roof": "mast"}),
+    record({"x": -46, "z": -49, "w": 5, "d": 5, "h": 7}),
+    record({"x": -25, "z": 51, "w": 6, "d": 6, "h": 11, "roof": "tank"}),
 ]
 
 # The spire's foot on the left, and its height.
-SPIRE = {"x": 46, "z": -6, "top": 50}
+SPIRE = record({"x": 46, "z": -6, "top": 50})
 
 # A tower's flesh shades, picked by its place (uneven, not mirrored).
 SHADES = [F.purple, F.crimson, F.sinew, F.bone]

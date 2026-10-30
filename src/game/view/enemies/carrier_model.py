@@ -112,7 +112,7 @@ def draw_carrier(p: Any) -> None:
             [-3, 0, SPONSON_SLOPE[1]],
             [1, inset],
             H.base,
-            {},
+            None,
             H.panel,
         )
         # Model Z is down the screen's Y: a port `py` up the screen sits at Z = -py.

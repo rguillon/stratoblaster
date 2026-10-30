@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 from unittest.mock import MagicMock
 
+from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.enemies.enemy_mesh import collect_parts
 
@@ -123,15 +124,17 @@ def drawings_of(capture: Any) -> dict[str, dict[str, Any]]:
     `body`, `ring`, `core`, `limbs.<joint>` and `parts.<id>`."""
     if isinstance(capture, EnemyCapture):
         return {"body": drawn(capture.draw)}
-    drawing = capture.drawing
+    # `build_boss_model` makes the drawing's objects records first (`record`), as the game does.
+    drawing = record(capture.drawing)
     out: dict[str, dict[str, Any]] = {}
     body = drawing.get("body", drawing.get("core"))
     if body is not None:
         out["body"] = drawn(body)
     if drawing.get("ring") is not None:
         out["ring"] = drawn(drawing["ring"])
-    for joint, draw in (drawing.get("limbs") or {}).items():
-        out["limbs." + joint] = drawn(draw)
+    for joint, limb in (drawing.get("limbs") or {}).items():
+        # A limb is a record `{draw}` (as the models build them), or a drawing itself.
+        out["limbs." + joint] = drawn(getattr(limb, "draw", limb))
     if not isinstance(capture, BossCapture):
         # A jointed enemy's parts are drawn on their own: each takes the builder alone.
         for part_id, draw in (drawing.get("parts") or {}).items():

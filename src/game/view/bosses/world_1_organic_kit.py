@@ -7,6 +7,9 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+from game.config.record import record
 from game.view.enemies.organic_parts import opt  # noqa: E402
 from render.geometry.organic import (  # noqa: E402
     RibSpec,
@@ -22,7 +25,6 @@ from render.geometry.organic import (  # noqa: E402
 )
 from render.geometry.solids import Placement  # noqa: E402
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -46,6 +48,7 @@ def _options(options: Any) -> Any:
 def hide(parts: Any, h: Any) -> None:
     """Draws a creature's body along Z: a swollen belly in flesh, a
     carapace over it, both in `flesh`."""
+    h = record(h)
     flesh = parts.flesh
     at = opt(h, "at", [0, 0, 0])
     place = Placement(at)
@@ -79,6 +82,7 @@ def vein_line(p: Any, start: Vec3, end: Vec3, bow: Vec3, width: float, color: Rg
 
 def rib_cage(parts: Any, zs: list[Any], arch: Any, color: Any = None, place: Any = None) -> None:
     """Bone ribs arching over a back at each Z of `zs`."""
+    arch = record(arch)
     flesh = parts.flesh
     the_color = F.bone if color == None else color  # noqa: E711
     the_place = Placement() if place == None else place  # noqa: E711
@@ -93,6 +97,7 @@ def rib_cage(parts: Any, zs: list[Any], arch: Any, color: Any = None, place: Any
 
 def _rib_spec(arch: Any) -> Any:
     """The `RibSpec` of an arch object `{halfWidth, y, height, thickness}`."""
+    arch = record(arch)
     return RibSpec(arch.halfWidth, arch.y, arch.height, arch.thickness)
 
 

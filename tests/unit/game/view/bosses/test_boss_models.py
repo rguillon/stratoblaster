@@ -19,42 +19,14 @@ _RECORD_REASON = (
 
 # Bosses whose drawing is built by a Transcrypt-only `__pragma__("js")` helper: the model cannot be
 # probed under CPython, so its drawing is not checked here.
-CPYTHON_STUBBED = {
-    "floe-breaker",
-    "fjord-lynx",
-    "aurora-station",
-    "avalanche",
-    "boreal-citadel",
-    "ice-queen",
-}
+CPYTHON_STUBBED: set[str] = set()
 
 # Bosses whose whole drawing is None under CPython (the body and parts cannot be read).
-CPYTHON_NO_DRAWING = {"floe-breaker", "fjord-lynx", "aurora-station", "avalanche", "boreal-citadel"}
+CPYTHON_NO_DRAWING: set[str] = set()
 
 # Bosses whose drawings read object literals with attribute access, which Transcrypt compiles to JS
 # objects but CPython runs as dicts (or records, or calls): they cannot run on real builders here.
-CPYTHON_RECORDS = {
-    "reef-warden",
-    "storm-petrel",
-    "breakwater",
-    "gull-mothership",
-    "mesa-fortress",
-    "scorpion",
-    "refinery-titan",
-    "sentinel",
-    "overlord",
-    "harbour-kraken",
-    "mangrove-croc",
-    "river-leviathan",
-    "toucan",
-    "canopy-spider",
-    "jaguar",
-    "cinder-crab",
-    "geyser-rig",
-    "magma-salamander",
-    "obsidian-golem",
-    "furnace-drake",
-}
+CPYTHON_RECORDS = {}
 
 
 def _config_boss_ids() -> set[str]:

@@ -10,6 +10,9 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import Boss  # noqa: E402
 from game.config.boss_look import BOSS_LOOK  # noqa: E402
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+from game.config.record import record
 from game.view.bosses.boss_damage import build_smoke, build_stump, effect_materials  # noqa: E402
 from game.view.bosses.boss_limbs import (  # noqa: E402
     ORIGIN,
@@ -29,7 +32,6 @@ from render.babylon import (  # noqa: E402
     set_enabled,
 )
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -150,6 +152,8 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     parts on their own nodes (each flashing white when hit, smoking under half health, replaced by
     a burnt stump once destroyed), and an optional ring turning with the boss's spin."""
     name = design.id
+    # A drawing is an object literal of functions: its fields read as attributes (`drawing.core`).
+    drawing = record(drawing)
     flash = effect_materials(scene)["flash"]
     root = new_transform_node(name, scene)
     # P16-R07: its core, parts and limbs breathe as one creature.

@@ -215,7 +215,7 @@ BULB = [
 ]
 
 
-def tail(p: Any) -> None:
+def tail(p: Any, _at: Any = None) -> None:
     """The tail's tip around its centre (P10-R11), on its knuckle joint: a tapering, plated segment,
     a glowing bulb of magma at its end and the stinger barrel on top of it, pointing forward, that
     sweeps its lines of bullets across the screen."""

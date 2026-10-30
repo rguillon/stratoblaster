@@ -9,6 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.world_2.floe_breaker import FLOE_BEACON, FLOE_BREAKER
+from game.config.record import record
 from game.view.enemies.enemy_shapes import SIDES, side_stripe  # noqa: E402
 from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
 from render.geometry.organic import RibSpec, SegmentedBody, organ, ribs  # noqa: E402
@@ -205,7 +206,7 @@ def draw_deck(p: EnemyParts) -> None:
     lamps(neon, [[-30.0, SKIRT[2], -30.0]], 1.6, STARBOARD_GREEN)
     # The ram's guns: a metal mount grafted on the bone, two short barrels (the core's fans).
     hull.box([8.0, 2.4, 6.0], H.dark, Placement([0.0, 9.2, 22.0]), H.panel)
-    barrels(p, [0.0, 10.4, 25.0], [2.0, 6.0], [1.1, 6.0])
+    barrels(p, [0.0, 10.4, 25.0], [2, 6.0], [1.1, 6.0])
 
 
 def draw_core(p: EnemyParts) -> None:
@@ -266,17 +267,8 @@ def harpoon_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from: a plain
-    object, with `ring` and `limbs` None when absent."""
-    drawing: Any = None
-    __pragma__(
-        "js",
-        "{}",
-        """
-    drawing = {core: core, parts: parts, turrets: turrets, limbs: limbs, ring: ring};
-    """,
-    )
-    return drawing
+    """What `build_boss_model` draws a boss from."""
+    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_floe_breaker(scene: Any) -> BuiltEnemyModel:

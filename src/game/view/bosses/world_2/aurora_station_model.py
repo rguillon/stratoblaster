@@ -12,6 +12,7 @@ from game.config.bosses.world_2.aurora_station import (
     AURORA_HUB_GUNS,
     AURORA_STATION,
 )
+from game.config.record import record
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402
 from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
 from render.geometry.organic import curve, organ, tendril  # noqa: E402
@@ -246,17 +247,8 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from: a plain
-    object, with `ring` and `limbs` None when absent."""
-    drawing: Any = None
-    __pragma__(
-        "js",
-        "{}",
-        """
-    drawing = {core: core, parts: parts, turrets: turrets, limbs: limbs, ring: ring};
-    """,
-    )
-    return drawing
+    """What `build_boss_model` draws a boss from."""
+    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_aurora_station(scene: Any) -> BuiltEnemyModel:
