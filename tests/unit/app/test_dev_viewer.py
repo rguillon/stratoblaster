@@ -10,7 +10,6 @@ from app import dev_viewer
 from app.dev_catalog import DevItem
 from app.dev_viewer import DevViewer, clock_text, close_up_fov, eased_time
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
-from core.scenery.ground_boxes import PropPlacement
 
 ALTITUDE = 320.0
 
@@ -19,6 +18,17 @@ class FakeCamera:
     def __init__(self) -> None:
         self.fov = 0.8
         self.position = SimpleNamespace(x=0.0, y=ALTITUDE + 100, z=0.0)
+        self.position.set = self._set
+        self.target = SimpleNamespace(x=0.0, y=0.0, z=0.0)
+
+    def _set(self, x: float, y: float, z: float) -> None:
+        self.position.x, self.position.y, self.position.z = x, y, z
+
+    def getTarget(self) -> Any:  # noqa: N802 (Babylon's name)
+        return self.target
+
+    def setTarget(self, target: Any) -> None:  # noqa: N802 (Babylon's name)
+        self.target = target
 
 
 class FakeStage:
@@ -56,8 +66,10 @@ class FakeView:
 
     def update(self, distance: float, dt: float) -> None:
         self.updates.append((distance, dt))
-        camera = self.stage.camera.position
-        camera.z = distance + self.stage.framing.back
+        camera = self.stage.camera
+        camera.position.x = 0.0
+        camera.position.z = distance + self.stage.framing.back
+        camera.target = SimpleNamespace(x=0.0, y=ALTITUDE, z=camera.position.z + 100)
 
 
 def pivot() -> SimpleNamespace:
@@ -98,6 +110,26 @@ class FakeLayer:
         self.disposed = True
 
 
+class FakePropStage:
+    made: list["FakePropStage"] = []
+
+    def __init__(self, engine: Any, game: Any, environment: bool) -> None:
+        self.scene = SimpleNamespace(name="props-scene")
+        self.shown: list[str] = []
+        self.updates: list[tuple[list[float], bool]] = []
+        self.disposed = False
+        FakePropStage.made.append(self)
+
+    def show(self, item: DevItem) -> None:
+        self.shown.append(item.id)
+
+    def update(self, turn: list[float], close_up: bool) -> None:
+        self.updates.append((list(turn), close_up))
+
+    def dispose(self) -> None:
+        self.disposed = True
+
+
 class Env:
     """The patched module: the ground ready or not, the scenes built, the nodes disposed."""
 
@@ -118,7 +150,8 @@ class Env:
             min=SimpleNamespace(x=0, y=0, z=0), max=SimpleNamespace(x=40, y=10, z=20)
         )
         monkeypatch.setattr(dev_viewer, "get_hierarchy_bounding_vectors", lambda root: bounds)
-        monkeypatch.setattr(dev_viewer, "prop_extent", lambda factory: 30.0)
+        monkeypatch.setattr(dev_viewer, "DevPropStage", FakePropStage)
+        FakePropStage.made = []
 
     def _build(self, engine: Any, game: Any, options: Any) -> FakeView:
         view = FakeView(FakeStage(self.stage_found))
@@ -342,41 +375,6 @@ def test_d199_a_boss_is_spawned_too_and_an_unknown_kind_is_an_error(env: Env) ->
         v.frame(0)
 
 
-def test_d199_a_prop_stands_where_its_level_first_places_it(env: Env) -> None:
-    placement = SimpleNamespace(kind="hut", x=12.0, y=4.0, z=300.0)
-    env.stage_found = placement
-    v = viewer("props", [DevItem("hut", "hut", "1-2")])
-    v.show(0, True)
-    v.frame(0)
-    stage = env.views[0].stage
-    assert stage.solo == [placement]
-    assert stage.shifts == [12.0]
-    # Drawn at the middle of the view: z - (back + t dz) / scale, t = (4 * 2 - 420) / -1.
-    assert env.views[0].updates[-1][0] == pytest.approx(300 - (-50 + 412) / 2)
-    assert v.status == "1-2"
-    assert stage.camera.fov < 0.8
-
-
-def test_d199_a_prop_the_level_never_places_stands_at_the_start(env: Env) -> None:
-    v = viewer("props", [DevItem("hut", "hut", "1-1")])
-    v.frame(0)
-    stage = env.views[0].stage
-    shown = stage.solo[0]
-    assert (shown.kind, shown.x, shown.y, shown.rotation, shown.scale) == ("hut", 0, 4.0, 0, 1)
-    assert stage.shifts == []
-
-
-def test_d199_a_prop_of_another_level_builds_that_level_and_drops_the_old_one(env: Env) -> None:
-    items = [DevItem("hut", "hut", "1-1"), DevItem("hut", "hut", "2-1")]
-    v = viewer("props", items)
-    v.frame(0)
-    v.show(1, True)
-    v.frame(0)
-    assert len(env.views) == 2
-    assert env.views[0].scene.disposed
-    assert env.views[1].level.id == "2-1"
-
-
 def test_d199_the_levels_viewer_scrubs_within_the_level_and_plays(env: Env) -> None:
     v = viewer("levels", [DevItem("1-1", "1-1", "1-1")])
     v.frame(0)
@@ -434,16 +432,37 @@ def test_d199_a_drag_turns_an_enemy_on_top_of_its_heading(env: Env) -> None:
     assert v._layer.pivot.rotation.x == pytest.approx(30 * CFG.turn_per_pixel)
 
 
-def test_d199_a_drag_turns_a_prop_round_the_vertical_where_it_stands(env: Env) -> None:
-    env.stage_found = PropPlacement("hut", 12.0, 4.0, 300.0, 0.5, 1.5)
-    v = viewer("props", [DevItem("hut", "hut", "1-2")])
+def test_d205_a_prop_is_shown_on_its_own_stage_without_a_level(env: Env) -> None:
+    items = [DevItem("hut", "hut", "1-1"), DevItem("barn", "barn", "2-1")]
+    v = viewer("props", items)
     v.frame(0)
-    stage = env.views[0].stage
-    first = stage.solo
     v.frame(0)
-    assert stage.solo is first
-    v.turn(50, 80)
+    stage = FakePropStage.made[0]
+    assert env.views == []
+    assert v.scene is stage.scene
+    assert stage.shown == ["hut"]
+    assert v.status == CFG.texts.grid_note
+    v.show(1, True)
     v.frame(0)
-    turned = stage.solo[0]
-    assert turned.rotation == pytest.approx(0.5 + 50 * CFG.turn_per_pixel)
-    assert (turned.x, turned.y, turned.z, turned.scale) == (12.0, 4.0, 300.0, 1.5)
+    assert len(FakePropStage.made) == 1
+    assert stage.shown == ["hut", "barn"]
+    assert env.views == []
+
+
+def test_d205_a_drag_and_the_toggle_reach_the_props_camera(env: Env) -> None:
+    v = viewer("props", [DevItem("hut", "hut", "1-1")])
+    v.show(0, True)
+    v.turn(50, -20)
+    v.frame(0)
+    turn, close_up = FakePropStage.made[0].updates[-1]
+    step = CFG.turn_per_pixel
+    assert turn == pytest.approx([50 * step, -20 * step])
+    assert close_up is True
+
+
+def test_d205_dispose_drops_the_props_stage(env: Env) -> None:
+    v = viewer("props", [DevItem("hut", "hut", "1-1")])
+    v.frame(0)
+    v.dispose()
+    assert FakePropStage.made[0].disposed
+    assert v.scene is None

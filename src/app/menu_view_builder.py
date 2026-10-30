@@ -4,9 +4,11 @@
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from app.dev_groups import group_of, group_starts
 from app.settings_menu import SETTINGS_SLIDERS
 from config.dev_viewer import DEV_VIEWER_CONFIG, DEV_VIEWERS
 from ui.menu_view import (
+    DevChoice,
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -48,6 +50,7 @@ class MenuViewContext:
         progress: float,
         volume_steps: int,
         dev_labels: dict[str, list[str]] | None = None,
+        dev_groups: dict[str, list[str]] | None = None,
     ) -> None:
         self.game = game
         # The best score so far.
@@ -63,6 +66,8 @@ class MenuViewContext:
         self.volume_steps = volume_steps
         # The labels of each dev viewer's items (D-199); None: no dev menu.
         self.dev_labels = dev_labels
+        # The group of each dev viewer's items (D-202); None: not in groups.
+        self.dev_groups = dev_groups
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
@@ -164,17 +169,36 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         entries = [texts.labels[v] for v in DEV_VIEWERS]
         return DevMenuView(texts.heading, texts.hint, back, state.selection, entries)
     labels = ctx.dev_labels[viewer] if ctx.dev_labels is not None else []
+    groups = ctx.dev_groups[viewer] if ctx.dev_groups is not None else []
     index = state.selection
     item = labels[index] if index < len(labels) else ""
     scrub = viewer == "levels"
+    starts = group_starts(groups)
+    hint = texts.levels_hint if scrub else texts.models_hint
+    position = str(index + 1) + " / " + str(len(labels))
+    if len(starts) <= 1:
+        return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub)
+    # D-202: the item's group, and its place in it.
+    g = group_of(starts, index)
+    end = starts[g + 1] if g + 1 < len(starts) else len(groups)
+    position = groups[index] + " · " + str(index - starts[g] + 1) + " / " + str(end - starts[g])
+    # D-204: a button per group, then one per item of the item's group.
+    buttons: list[DevChoice] = []
+    for k in range(len(starts)):
+        last = starts[k + 1] if k + 1 < len(starts) else len(groups)
+        label = groups[starts[k]] + " (" + str(last - starts[k]) + ")"
+        buttons.append(DevChoice(label, starts[k], k == g))
+    choices = [DevChoice(labels[i], i, i == index) for i in range(starts[g], end)]
     return DevViewerView(
         texts.labels[viewer],
-        texts.levels_hint if scrub else texts.models_hint,
+        texts.groups_hint,
         back,
         index,
         item,
-        str(index + 1) + " / " + str(len(labels)),
+        position,
         scrub,
+        buttons,
+        choices,
     )
 
 

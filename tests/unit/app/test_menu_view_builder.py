@@ -194,6 +194,38 @@ def test_d199_a_model_viewer_shows_its_item_and_place_in_the_list() -> None:
     assert view.scrub is False
 
 
+def test_d202_a_grouped_viewer_shows_the_items_group_and_place_in_it() -> None:
+    context = dev_ctx()
+    context.dev_labels["props"] = ["hut", "barn", "tower"]
+    context.dev_groups = {"props": ["Farm", "Farm", "City"]}
+    view = build_menu_view(state("dev-viewer", selection=1, dev_viewer="props"), context)
+    assert isinstance(view, DevViewerView)
+    assert (view.item, view.position) == ("barn", "Farm · 2 / 2")
+    assert "group" in view.hint
+    view = build_menu_view(state("dev-viewer", selection=2, dev_viewer="props"), context)
+    assert view.position == "City · 1 / 1"
+
+
+def test_d204_a_grouped_viewer_has_a_button_per_group_and_per_item_of_the_group_shown() -> None:
+    context = dev_ctx()
+    context.dev_labels["props"] = ["hut", "barn", "tower"]
+    context.dev_groups = {"props": ["Farm", "Farm", "City"]}
+    view = build_menu_view(state("dev-viewer", selection=1, dev_viewer="props"), context)
+    assert isinstance(view, DevViewerView)
+    assert view.groups is not None
+    assert view.choices is not None
+    assert [(c.label, c.index, c.selected) for c in view.groups] == [
+        ("Farm (2)", 0, True),
+        ("City (1)", 2, False),
+    ]
+    assert [(c.label, c.index, c.selected) for c in view.choices] == [
+        ("hut", 0, False),
+        ("barn", 1, True),
+    ]
+    ships = build_menu_view(state("dev-viewer", dev_viewer="ships"), dev_ctx())
+    assert (ships.groups, ships.choices) == (None, None)
+
+
 def test_d199_the_levels_viewer_scrubs_with_the_wheel() -> None:
     view = build_menu_view(state("dev-viewer", dev_viewer="levels"), dev_ctx())
     assert isinstance(view, DevViewerView)

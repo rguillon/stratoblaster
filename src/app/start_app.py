@@ -9,7 +9,7 @@ when omitted. The version and commit are the `version` and `commit` options (mai
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
-from app.dev_catalog import dev_catalog, dev_labels
+from app.dev_catalog import dev_catalog, dev_groups, dev_labels
 from app.dev_session import DevSession
 from app.game_audio import GameAudio
 from app.game_session import GameSession, GameSessionOptions, SessionAudio, SessionScores
@@ -306,8 +306,8 @@ def create_menu(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
 ) -> MenuHandle:
     """The menu controller and its overlay (P01-R01): the overlay's commands go to the controller,
     and the controller's changes and feedback to the scenes and the audio. `dev`: the dev
-    viewers' item labels, wheel and drag (D-199), as (labels, on_wheel, on_turn); None: no dev
-    menu."""
+    viewers' item labels, wheel, drag and item groups (D-199, D-202), as (labels, on_wheel,
+    on_turn, groups); None: no dev menu."""
 
     def on_command(command: Any) -> None:
         menu.command(command)
@@ -337,6 +337,7 @@ def create_menu(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
         on_change,
         on_feedback,
         dev[0] if dev is not None else None,
+        dev[3] if dev is not None else None,
     )
     menu = MenuController(game, deps)
     return MenuHandle(menu, overlay)
@@ -494,8 +495,9 @@ def create_session(
 
 
 def create_dev(engine: Any, game: Any, options: AppOptions, get_menu: Any) -> Any:
-    """The dev viewers (D-199) with `options.dev`: their session and their items' labels, as
-    [session, labels]; None without. `get_menu` is read when the wheel sends a command."""
+    """The dev viewers (D-199) with `options.dev`: their session, their items' labels and groups
+    (D-202), as [session, labels, groups]; None without. `get_menu` is read when the wheel sends
+    a command."""
     if not options.dev:
         return None
     catalog = dev_catalog(game)
@@ -504,7 +506,7 @@ def create_dev(engine: Any, game: Any, options: AppOptions, get_menu: Any) -> An
         get_menu().command(action)
 
     session = DevSession(engine, game, catalog, options.environment, options.overlay, command)
-    return [session, dev_labels(catalog)]
+    return [session, dev_labels(catalog), dev_groups(catalog)]
 
 
 def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
@@ -534,7 +536,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
             dev[0].sync(state)
         audio.menu_changed(state)
 
-    dev_menu = [dev[1], dev[0].wheel, dev[0].turn] if dev is not None else None
+    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2]] if dev is not None else None
     menu_handle = create_menu(game, options, input_handle, controls, audio, on_change, dev_menu)
     menu = menu_handle.menu
     overlay = menu_handle.overlay

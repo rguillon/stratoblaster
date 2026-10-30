@@ -3,10 +3,10 @@
 Every viewer shows a level's scene built as a level is (`build_level_scene`, with the game's lights,
 glow and rims). The player ships, the enemies and the bosses stand on its playfield, at the middle
 of the view, over the first level's ground; the enemies and bosses live their own lives (their
-moves turn them, their turrets, limbs and rings move) pinned at the middle. A prop stands on the
-ground of the first level that has it, its own props and cars hidden. A level's scenery shows at
-the time the wheel scrubs to. The close-up narrows the camera's field of view: the model and the
-ground are magnified together.
+moves turn them, their turrets, limbs and rings move) pinned at the middle. A level's scenery shows
+at the time the wheel scrubs to. The close-up narrows the camera's field of view: the model and the
+ground are magnified together. The props are not shown over a level: they stand alone on a floor
+ruled in blocks (`DevPropStage`, D-205), no ground loaded.
 """
 
 import math
@@ -14,6 +14,7 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.dev_catalog import DevItem
+from app.dev_prop_stage import DevPropStage
 from app.level_prepare import level_of, prepare_level, scenery_with_runout
 from app.level_scene import LevelSceneOptions, build_level_scene
 from app.shot_viewer_scene import PlayfieldShip
@@ -22,19 +23,14 @@ from config.game_play import GAME_PLAY_CONFIG
 from core.entities.enemy import EnemySpawnArea
 from core.entities.muzzle import PlanePoint
 from core.math.rng import create_rng
-from core.scenery.ground_boxes import PropPlacement
 from render.babylon import dispose_node, get_hierarchy_bounding_vectors
 from render.enemy_layer import EnemyLayer
-from render.scenery.prop_field import prop_extent
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
 __pragma__("noskip")
-
-# Rounds of the search for the ground point at the middle of the view (the ground is not flat).
-GROUND_ROUNDS = 4
 
 # The smallest number of seconds written with two digits.
 TWO_DIGITS = 10
@@ -132,13 +128,10 @@ class DevViewer:
         self._enemy: Any = None
         self._size = 0.0
         self._fov = 0.0
-        # Where the view is along the level (props: where the prop stands), and the prop's ground
-        # point as [height, z] (ground units).
+        # Where the view is along the level.
         self._at = 0.0
-        self._prop_point: list[float] | None = None
-        # The prop shown (its placement as the level makes it), and the turn last drawn.
-        self._placement: Any = None
-        self._prop_turn = 0.0
+        # The props viewer's stage (D-205), once built.
+        self._props: DevPropStage | None = None
         # Enemies and bosses: the item, where it is drawn, the world it lives in, whether it has
         # come onto the playfield, and the time not stepped yet.
         self._item: DevItem | None = None
@@ -147,7 +140,8 @@ class DevViewer:
         self._entered = False
         self._sim_left = 0.0
         # How far the reviewer has turned the model with the mouse (radians): around its nose
-        # (props: around the vertical), and nose up or down. Kept from one item to the next.
+        # and nose up or down (props: the camera, round the prop and up or down). Kept from one
+        # item to the next.
         self._turn = [0.0, 0.0]
         # Levels viewer: the time shown, the time the wheel asked for, and the level's length.
         self._time = 0.0
@@ -157,17 +151,19 @@ class DevViewer:
     @property
     def scene(self) -> Any:
         """The scene to draw, once built."""
+        if self._props is not None:
+            return self._props.scene
         return self._view.scene if self._view is not None else None
 
     @property
     def status(self) -> str:
-        """The status line: building, the level's time, the level a prop stands on."""
+        """The status line: building, the level's time, the props' grid."""
+        if self._props is not None:
+            return CFG.texts.grid_note
         if self._view is None:
             return CFG.texts.loading
         if self.viewer == "levels":
             return clock_text(self._time) + " / " + clock_text(self._duration)
-        if self.viewer == "props" and self._host is not None:
-            return self._host
         return ""
 
     def show(self, index: int, toggle: bool) -> None:
@@ -191,6 +187,9 @@ class DevViewer:
         if len(self._items) == 0:
             return
         item = self._items[self._index]
+        if self.viewer == "props":
+            self._show_prop(item)
+            return
         if item.host != self._host:
             self._drop_scene()
             self._host = item.host
@@ -246,38 +245,7 @@ class DevViewer:
         t = (altitude - camera.y) / direction[0] if direction[0] != 0 else 0
         return [self.game.screen.width / 2, camera.z + t * direction[1]]
 
-    def _ground_middle(self) -> list[float]:
-        """The ground point (ground units) drawn at the middle of the view, as [x, height, z]."""
-        stage = self._view.stage
-        root = stage.ground_root
-        camera = stage.camera.position
-        direction = stage.framing.direction
-        height = 0.0
-        z = 0.0
-        for _ in range(GROUND_ROUNDS):
-            t = (height * root.scale - camera.y) / direction[0] if direction[0] != 0 else 0
-            z = root.to_ground(camera.z + t * direction[1])
-            height = stage.field.height(0, z)
-        return [0, height, z]
-
-    def _distance_for(self, height: float, z: float) -> float:
-        """The distance along the level at which ground point (`height`, `z`) is drawn at the
-        middle of the view."""
-        stage = self._view.stage
-        framing = stage.framing
-        scale = stage.ground_root.scale
-        camera_y = self.game.view.scenery.camera.flightAltitude + framing.height
-        dy = framing.direction[0]
-        dz = framing.direction[1]
-        t = (height * scale - camera_y) / dy if dy != 0 else 0
-        at: float = z - (framing.back + t * dz) / scale
-        return at
-
     def _drop_item(self) -> None:
-        if self._prop_point is not None:
-            self._view.stage.shift_ground(0)
-        self._prop_point = None
-        self._placement = None
         self._at = 0.0
         if self._ship is not None:
             dispose_node(self._ship.pivot)
@@ -294,9 +262,6 @@ class DevViewer:
         self._shown = self._index
         view = self._view
         middle = self._middle()
-        if self.viewer == "props":
-            self._show_prop(item)
-            return
         if self.viewer == "ships":
             model = self.game.view.player_ship_models.get(item.id)
             scale = self.game.view.player_ship_scale
@@ -337,26 +302,14 @@ class DevViewer:
         return enemy
 
     def _show_prop(self, item: DevItem) -> None:
-        """The prop alone on the level's ground, at the middle of the view: where the level places
-        it first (its ground, turn and scale), else on the ground the view starts over."""
-        stage = self._view.stage
-        # The fallback's ground point is the one at the start of the level.
-        self._view.update(0, 0)
-        found = stage.find_prop(item.id, self._view.track.length_ + stage.framing.back)
-        if found is None:
-            point = self._ground_middle()
-            found = PropPlacement(item.id, point[0], point[1], point[2], 0, 1)
-        else:
-            stage.shift_ground(found.x)
-            self._at = self._distance_for(found.y, found.z)
-        self._prop_point = [found.y, found.z]
-        self._placement = found
-        self._prop_turn = 0.0
-        stage.solo_props([found])
-        self._view.update(self._at, 0)
-        factory = self.game.view.scenery["propModels"].get(item.id)
-        extent = prop_extent(factory) if factory is not None else 0
-        self._size = extent * stage.ground_root.scale
+        """Props viewer (D-205): builds the stage once, puts the prop picked on it, and places the
+        camera as dragged."""
+        if self._props is None:
+            self._props = DevPropStage(self._engine, self.game, self._environment)
+        if self._shown != self._index:
+            self._props.show(item)
+            self._shown = self._index
+        self._props.update(self._turn, self._toggle)
 
     def _measure(self, root: Any) -> float:
         """The size of what hangs from `root`: its largest side, in world units."""
@@ -422,8 +375,7 @@ class DevViewer:
 
     def _apply_turn(self) -> None:
         """Turns the model as dragged: a ship or an enemy around its nose and nose up or down (on
-        top of the bank and heading the game gives them); a prop around the vertical, standing
-        where it is."""
+        top of the bank and heading the game gives them)."""
         pivot: Any = None
         if self._ship is not None:
             pivot = self._ship.pivot
@@ -432,30 +384,10 @@ class DevViewer:
         if pivot is not None:
             pivot.rotation.y = self._turn[0]
             pivot.rotation.x = self._turn[1]
-        placement = self._placement
-        if placement is None or self._turn[0] == self._prop_turn:
-            return
-        self._prop_turn = self._turn[0]
-        turned = PropPlacement(
-            placement.kind,
-            placement.x,
-            placement.y,
-            placement.z,
-            placement.rotation + self._turn[0],
-            placement.scale,
-            placement.size,
-        )
-        self._view.stage.solo_props([turned])
 
     def _distance(self) -> float:
         """How far the camera is from the middle of the view's subject."""
         camera = self._view.stage.camera.position
-        point = self._prop_point
-        if point is not None:
-            root = self._view.stage.ground_root
-            dy = point[0] * root.scale - camera.y
-            dz = root.to_world(point[1]) - camera.z
-            return math.sqrt(dy * dy + dz * dz)
         middle = self._middle()
         dy = self.game.view.scenery.camera.flightAltitude - camera.y
         dz = middle[1] - camera.z
@@ -469,4 +401,7 @@ class DevViewer:
 
     def dispose(self) -> None:
         self._drop_scene()
+        if self._props is not None:
+            self._props.dispose()
+        self._props = None
         self._host = None

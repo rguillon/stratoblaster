@@ -92,6 +92,7 @@ class MenuFlowOptions:
         volumes: Volumes | None,
         volume_steps: int | None,
         dev_counts: list[int] | None = None,
+        dev_groups: list[list[str]] | None = None,
     ) -> None:
         # Ship ids in display order; the first one is the default selection.
         self.ship_ids = ship_ids
@@ -108,3 +109,6 @@ class MenuFlowOptions:
         # The dev menu (D-199): how many items each viewer of `DEV_VIEWERS` shows. None: no dev
         # menu (the title screen has no Dev entry).
         self.dev_counts = dev_counts
+        # The group of each item of each viewer, in the same order (D-202): Up and Down jump from
+        # group to group. None, or one group only: they move through the items as Left and Right.
+        self.dev_groups = dev_groups

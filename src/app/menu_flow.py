@@ -7,6 +7,7 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
@@ -97,6 +98,8 @@ class MenuFlow:
         if counts is not None:
             self._title_entries.append("dev")
         self._dev_counts: list[int] = list(counts) if counts is not None else []
+        groups = options.dev_groups
+        self._dev_groups: list[list[str]] = list(groups) if groups is not None else []
         self._dev_index = 0
         self._dev_items = [0 for _ in DEV_VIEWERS]
         self._dev_toggles = [viewer != "levels" for viewer in DEV_VIEWERS]
@@ -286,7 +289,9 @@ class MenuFlow:
 
     def _on_dev_viewer(self, command: str) -> str:
         """A dev viewer (D-199): the four directions show the item before or after (round the
-        list), Confirm flips the viewer's toggle, Back and Escape return to the dev menu.
+        list), Up and Down the first item of the group before or after when the viewer's items are
+        in groups (D-202), Confirm flips the viewer's toggle, Back and Escape return to the dev
+        menu.
         """
         if is_menu_direction(command):
             counts = self._dev_counts
@@ -295,7 +300,11 @@ class MenuFlow:
                 return "none"
             step = -1 if command in ["left", "up"] else 1
             index = self._dev_items[self._dev_index]
-            self._dev_items[self._dev_index] = (index + step + count) % count
+            starts = group_starts(_at(self._dev_groups, self._dev_index) or [])
+            if command in ["up", "down"] and len(starts) > 1:
+                self._dev_items[self._dev_index] = group_jump(starts, index, step)
+            else:
+                self._dev_items[self._dev_index] = (index + step + count) % count
             self._changed()
             return "moved"
         if command == "confirm":
@@ -305,6 +314,18 @@ class MenuFlow:
         if command in ["back", "cancel"]:
             return "screen" if self.go_to("dev") else "none"
         return "none"
+
+    def _select_dev_item(self, index: int) -> str:
+        """A dev viewer's button was tapped (D-204): it shows item `index`."""
+        counts = self._dev_counts
+        count = counts[self._dev_index] if self._dev_index < len(counts) else 0
+        if not _is_integer(index) or index < 0 or index >= count:
+            return "none"
+        if index == self._dev_items[self._dev_index]:
+            return "none"
+        self._dev_items[self._dev_index] = index
+        self._changed()
+        return "moved"
 
     def _adjusted(self, feedback: str) -> str:
         if feedback != "none":
@@ -406,7 +427,7 @@ class MenuFlow:
 
     def _select(self, index: int) -> str:
         if self._screen == "dev-viewer":
-            return "none"
+            return self._select_dev_item(index)
         if self._screen == "pause":
             return self._pause_outcome(self._pause.select(index))
         if self._screen == "settings":

@@ -43,6 +43,7 @@ class MenuControllerDeps:
         on_change: Any,
         on_feedback: Any,
         dev_labels: dict[str, list[str]] | None = None,
+        dev_groups: dict[str, list[str]] | None = None,
     ) -> None:
         self.display = display
         self.input = input
@@ -59,6 +60,8 @@ class MenuControllerDeps:
         self.on_feedback = on_feedback
         # The labels of each dev viewer's items (D-199); None: no dev menu.
         self.dev_labels = dev_labels
+        # The group of each dev viewer's items (D-202); None: not in groups.
+        self.dev_groups = dev_groups
 
 
 def _with_new_high_score(result: LevelResult) -> LevelResult:
@@ -79,6 +82,13 @@ def _dev_counts(labels: dict[str, list[str]] | None) -> list[int] | None:
     if labels is None:
         return None
     return [len(labels[viewer]) for viewer in DEV_VIEWERS]
+
+
+def _dev_groups(groups: dict[str, list[str]] | None) -> list[list[str]] | None:
+    """The group of each dev viewer's items (D-202), in the order of `DEV_VIEWERS`."""
+    if groups is None:
+        return None
+    return [groups.get(viewer, []) for viewer in DEV_VIEWERS]
 
 
 class MenuController:
@@ -108,6 +118,7 @@ class MenuController:
                 self._saved_volumes,
                 volume_steps,
                 _dev_counts(deps.dev_labels),
+                _dev_groups(deps.dev_groups),
             )
         )
         self.refresh()
@@ -198,6 +209,7 @@ class MenuController:
                     self._progress,
                     int(AUDIO_CONFIG.volume_steps),
                     self.deps.dev_labels,
+                    self.deps.dev_groups,
                 ),
             )
         )

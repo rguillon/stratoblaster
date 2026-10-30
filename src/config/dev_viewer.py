@@ -16,6 +16,8 @@ class DevViewerTexts:
         models_hint: str,
         levels_hint: str,
         loading: str,
+        groups_hint: str,
+        grid_note: str,
     ) -> None:
         # The title screen's entry.
         self.entry = entry
@@ -29,6 +31,60 @@ class DevViewerTexts:
         self.levels_hint = levels_hint
         # Shown while a viewer's scene is being built.
         self.loading = loading
+        # The hint of a model viewer whose items are in groups (D-202: the props).
+        self.groups_hint = groups_hint
+        # The props viewer's status line: what a square of its grid is (D-205).
+        self.grid_note = grid_note
+
+
+class DevPropStageConfig:
+    """How the props viewer shows a prop (D-205): alone on a plain floor ruled in blocks, under
+    studio lights, no level's ground loaded.
+
+    `clear_color`: the background (RGBA). `ambient_intensity`; `key_direction`, `key_intensity`,
+    `fill_direction`, `fill_intensity`: a hemispheric light and two directional lights, the fill
+    from the other side so the faces away from the key are not black. `environment_stops`
+    ([height, r, g, b] each), `environment_intensity`, `glow` ([intensity, blur kernel size]): the
+    image-based lighting and glow, when the viewer has them. `floor_color`, `grid_color` (RGB): the
+    floor and the lines of the grid, one square per block (the game's tile), `grid_lift` above the
+    floor. `grid_reach`: blocks of grid beyond the prop's footprint, each way. `pitch`: the
+    camera's starting angle from straight up (radians); `pitch_range`: the lowest and highest it
+    is dragged to.
+    """
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        clear_color: list[float],
+        ambient_intensity: float,
+        key_direction: list[float],
+        key_intensity: float,
+        fill_direction: list[float],
+        fill_intensity: float,
+        environment_stops: list[list[float]],
+        environment_intensity: float,
+        glow: list[float],
+        floor_color: list[float],
+        grid_color: list[float],
+        grid_lift: float,
+        grid_reach: int,
+        pitch: float,
+        pitch_range: list[float],
+    ) -> None:
+        self.clear_color = clear_color
+        self.ambient_intensity = ambient_intensity
+        self.key_direction = key_direction
+        self.key_intensity = key_intensity
+        self.fill_direction = fill_direction
+        self.fill_intensity = fill_intensity
+        self.environment_stops = environment_stops
+        self.environment_intensity = environment_intensity
+        self.glow = glow
+        self.floor_color = floor_color
+        self.grid_color = grid_color
+        self.grid_lift = grid_lift
+        self.grid_reach = grid_reach
+        self.pitch = pitch
+        self.pitch_range = pitch_range
 
 
 class DevViewerConfig:
@@ -53,6 +109,7 @@ class DevViewerConfig:
         model_seed: int,
         texts: DevViewerTexts,
         turn_per_pixel: float,
+        props: DevPropStageConfig,
     ) -> None:
         self.close_up_fill = close_up_fill
         self.wheel_step = wheel_step
@@ -62,6 +119,7 @@ class DevViewerConfig:
         self.model_seed = model_seed
         self.texts = texts
         self.turn_per_pixel = turn_per_pixel
+        self.props = props
 
 
 # The viewers of the dev menu, in order (their ids).
@@ -88,6 +146,29 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "Wheel / arrows: next · Drag: turn · Enter: close-up / game size · Esc: back",
         "Wheel: scrub · Arrows: level · Enter: play / stop · Esc: back",
         "Building…",
+        "Wheel / ◀ ▶: next · ▲ ▼: group · Drag: turn · Enter: close-up / game size · Esc: back",
+        "1 square = 1 block",
     ),
     0.01,
+    DevPropStageConfig(
+        [0.12, 0.1, 0.18, 1],
+        1,
+        [-0.4, -1, 0.6],
+        1.9,
+        [0.5, -0.6, -0.7],
+        0.9,
+        [
+            [-1, 0.06, 0.05, 0.08],
+            [0, 0.5, 0.5, 0.6],
+            [1, 0.85, 0.9, 1],
+        ],
+        1.2,
+        [0.6, 32],
+        [0.07, 0.07, 0.1],
+        [0.2, 0.75, 0.9],
+        0.3,
+        8,
+        1.0,
+        [0.15, 1.45],
+    ),
 )

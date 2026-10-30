@@ -242,10 +242,12 @@ def test_d199_without_dev_there_are_no_dev_viewers() -> None:
 def test_d199_with_dev_the_session_sends_its_wheel_commands_to_the_menu(monkeypatch) -> None:
     monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
     monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
+    monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
     menu = MagicMock()
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay")
-    session, labels = start_app.create_dev("engine", "game", options, lambda: menu)
+    session, labels, groups = start_app.create_dev("engine", "game", options, lambda: menu)
     assert labels == {"ships": ["Item"]}
+    assert groups == {"ships": [""]}
     session._command("right")
     menu.command.assert_called_once_with("right")
 

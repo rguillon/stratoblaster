@@ -1870,3 +1870,39 @@
 - **Kept:** `SAND` and `DESERT_ROCK` (World 2's ground and slopes, and World 1's beaches); World 2's dunes; the dune heights in the core height field (World 2 uses them).
 - **Checked:** screenshots of 1-4 (the dry lake at 1:36, the mesas at 3:02, the dry grassland at 0:20) and 1-5 (the buttes at 0:38). e2e: 100 passed, the same 2 P14-R08 failures as before (3-1, 4-1).
 - **Status:** Accepted
+
+### D-201 — The CI e2e job is disabled for now
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "disable e2e tests for now in the CI")
+- **Conflict:** ENG-72 asks for the Playwright suite in CI. The job is kept in `.github/workflows/ci.yml` but skipped with `if: false` until the reviewer turns it back on.
+- **Why it fails today:** P14-R08 (background luminance) fails on 3-1 and 4-1 (D-195). The cause has been found but not fixed yet. `WorkerRoadSource` attaches the road atlas only to the first chunk of the worker's first reply, which covers the level's start chunks. A level started later (the test's `t=`) never takes that chunk, so the tile streets have no texture and render white.
+- **Status:** Accepted
+
+### D-202 — The dev props viewer lists the props by group
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "in the dev view, for the props, gather them by category like you did in the pure TS view")
+- **Choice:** the props viewer (D-199) still lists the props the levels stand on their ground, but in the order of the game's prop groups (`SCENERY_BINDINGS["propGroups"]`, the groups the TypeScript `props/` page had buttons for: Shared, World 1, the tile groups, Buildings…), with the props in none of them last under "Other". Groups with no prop on a level's ground (the road kit, the cars) are left out. ◀ ▶ and the wheel still step through every prop. ▲ ▼ jump to the first prop of the next or previous group, wrapping round. The caption shows the group and the prop's place in it (`Tiles: docks · 1 / 5`). The other viewers have no groups and keep their behaviour.
+- **Where:** `app/dev_catalog.py` (`DevItem.group`, `dev_groups`), `app/dev_groups.py` (the jumps), `app/menu_flow.py`, `app/menu_view_builder.py`; the groups are passed next to the labels (`MenuControllerDeps.dev_groups`, `MenuFlowOptions.dev_groups`, `MenuViewContext.dev_groups`).
+- **Status:** Accepted
+
+### D-203 — In the dev props viewer, dragging turns the camera round the prop
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "when rotating a prop, rotate the camera, not the prop on a fixed ground")
+- **Choice (`app/dev_viewer.py`, `_orbit_camera`):** the prop keeps the placement the level gives it. Each frame, after the level view has placed the camera as in game, the camera and the point it looks at are turned round the vertical through the prop, by the angle dragged (`turn_per_pixel`, as before). The prop stays at the middle of the view, at the same distance (so the close-up is unchanged), and the ground, the sun and the shadows stay put. Vertical drags still do nothing for props. Ships, enemies and bosses still turn themselves (they stand on the playfield, not the ground).
+- **Limit:** the ground is streamed for the game's view (ahead of the camera, the playfield's width). Turned far round, the camera can see past its edges, toward unbuilt ground.
+- **Status:** Accepted
+
+### D-204 — The dev props viewer has a button per group and per prop
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "in the props view, make one button per prop category, then one button for each prop")
+- **Choice:** under the 3D view, the props viewer shows two rows of buttons: one per group (D-202), labelled with the group and its number of props as on the TypeScript `props/` page (`World 1 (9)`), and one per prop of the group shown. A group button shows the group's first prop; a prop button shows that prop. A tap is a `MenuSelect` of the item's index, which the flow now takes on a dev viewer (it ignored taps before). The keys, the wheel and the drag work as before.
+- **Layout:** the rows sit at the bottom, above the hint, each on one line and scrolled sideways (the wheel over a row scrolls it; a touch drag pans it), so the prop stays in view. They were first wrapped under the caption, but the 20 groups covered the prop. Each time the item changes the rows are made anew, and each is scrolled so its selected button is in the middle (`centre_choices`, after the overlay shows the screen). A drag that starts on a row does not turn the camera.
+- **Status:** Accepted
+
+### D-205 — The dev props viewer loads no ground: the prop stands alone on a floor ruled in blocks
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port), at the reviewer's request (in chat: "dont load grounds in the props view, just a grid that shows the \"1 block\" scale")
+- **Choice (`app/dev_prop_stage.py`, `DevPropStage`):** the props viewer no longer builds a level's scene or waits for its ground. One scene, built once when the viewer opens, shows the prop picked alone on a dark floor, ruled with a line on every block's edge (the game's tile, `propTiles.tile.size`, 10 ground units). The status line says "1 square = 1 block". The prop's footprint covers whole squares (centred on a line for an even number of blocks, in a square for an odd one), and the floor reaches 8 blocks beyond it each way. The prop keeps the materials of the first level that has it (its world's tone), under studio lights (a hemispheric light, a key and a fill, plus the image-based lighting and glow when the viewer has them), as the TypeScript `props/` page lit it. The values are in `DEV_VIEWER_CONFIG.props`.
+- **Camera:** an orbiting camera round the prop. A drag across turns it round, and a drag up or down raises or lowers it, clamped to [0.15, 1.45] rad from straight up (D-203 turned only round; the vertical drag did nothing). "Game size" puts it at the game camera's distance from the ground in ground units (the flight altitude plus the framing's height, down the tilted view, over the ground scale), with the game's field of view, so the prop is as big as in game. The close-up comes closer, until the prop fills `close_up_fill` of the screen's height.
+- **Supersedes:** D-203 for the props (the camera turning round a prop on a level's ground). The ships, enemies, bosses and levels viewers still show a level's scene.
+- **Status:** Accepted

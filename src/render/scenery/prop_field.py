@@ -106,11 +106,17 @@ def _geometry_of(factory: PropModelFactory) -> PropGeometry:
     return result
 
 
-def prop_extent(factory: PropModelFactory) -> float:
-    """The largest side of the prop `factory` makes (its structure), in ground units."""
+def prop_geometry(factory: PropModelFactory) -> PropGeometry:
+    """The geometry of `factory` (made once: see `_geometry_of`)."""
+    return _geometry_of(factory)
+
+
+def prop_bounds(factory: PropModelFactory) -> list[float]:
+    """The box round the prop `factory` makes (its structure), in ground units, as
+    [x0, y0, z0, x1, y1, z1]; all 0 when it has no structure."""
     positions = _geometry_of(factory).structure.positions
     if len(positions) == 0:
-        return 0
+        return [0, 0, 0, 0, 0, 0]
     low = [positions[0], positions[1], positions[2]]
     high = [positions[0], positions[1], positions[2]]
     for i in range(0, len(positions), 3):
@@ -118,7 +124,13 @@ def prop_extent(factory: PropModelFactory) -> float:
             value = positions[i + axis]
             low[axis] = min(low[axis], value)
             high[axis] = max(high[axis], value)
-    return max(high[0] - low[0], high[1] - low[1], high[2] - low[2])
+    return [low[0], low[1], low[2], high[0], high[1], high[2]]
+
+
+def prop_extent(factory: PropModelFactory) -> float:
+    """The largest side of the prop `factory` makes (its structure), in ground units."""
+    b = prop_bounds(factory)
+    return max(b[3] - b[0], b[4] - b[1], b[5] - b[2])
 
 
 def _normals_of(geo: ColoredGeometry) -> list[float]:

@@ -181,5 +181,5 @@ def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None
     assert root.querySelector(".dev-screen") is not None
     overlay.show(DevViewerView("Ships", "hint", "Back", 0, "Alpha", "1 / 3", False))
     screen = root.querySelector(".dev-viewer-screen")
-    screen.fire("wheel", SimpleNamespace(deltaY=-100, preventDefault=lambda: None))
+    screen.fire("wheel", SimpleNamespace(deltaY=-100, target=None, preventDefault=lambda: None))
     assert wheels == [-100]

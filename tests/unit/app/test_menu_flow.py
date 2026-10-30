@@ -602,13 +602,24 @@ def test_d199_a_viewer_keeps_its_item_when_opened_again() -> None:
     assert flow.state.selection == 1
 
 
-def test_d199_taps_and_other_actions_do_nothing_in_a_viewer() -> None:
+def test_d199_other_actions_do_nothing_in_a_viewer() -> None:
     flow = at_dev_menu()
     flow.dispatch("confirm")
     settle(flow)
-    assert flow.dispatch(MenuSelect(2)) == "none"
     assert flow.dispatch("pause") == "none"
     assert flow.state.selection == 0
+
+
+def test_d204_a_tap_on_a_viewer_button_shows_its_item() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch(MenuSelect(2)) == "moved"
+    assert flow.state.selection == 2
+    assert flow.dispatch(MenuSelect(2)) == "none"
+    assert flow.dispatch(MenuSelect(DEV_COUNTS[0])) == "none"
+    assert flow.dispatch(MenuSelect(-1)) == "none"
+    assert flow.state.selection == 2
 
 
 def test_d199_a_viewer_of_one_item_does_not_move() -> None:
@@ -629,3 +640,29 @@ def test_d199_a_viewer_of_one_item_does_not_move() -> None:
     flow.dispatch("confirm")
     settle(flow)
     assert flow.dispatch("right") == "none"
+
+
+def test_d202_up_and_down_jump_between_the_groups_of_a_grouped_viewer() -> None:
+    groups = [["a", "a", "b"], [], [], [], []]
+    options = MenuFlowOptions(
+        list(SHIPS), catalog(), None, 0.25, None, None, 10, [3, 1, 1, 1, 1], groups
+    )
+    flow = MenuFlow(options)
+    flow.finish_loading()
+    settle(flow)
+    flow.dispatch("down")
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("right")
+    assert flow.state.selection == 1
+    flow.dispatch("down")
+    assert flow.state.selection == 2
+    flow.dispatch("down")
+    assert flow.state.selection == 0
+    flow.dispatch("up")
+    assert flow.state.selection == 2
+    flow.dispatch("right")
+    assert flow.state.selection == 0

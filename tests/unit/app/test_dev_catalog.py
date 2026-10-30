@@ -7,7 +7,7 @@ from helpers.menu_game import make_game
 
 from app import dev_catalog
 from app.dev_catalog import dev_catalog as catalog_of
-from app.dev_catalog import dev_items, dev_labels
+from app.dev_catalog import dev_groups, dev_items, dev_labels
 from config.dev_viewer import DEV_VIEWERS
 
 
@@ -19,6 +19,7 @@ def game() -> SimpleNamespace:
     ]
     base.enemy_kinds = [SimpleNamespace(id="gnat", name="Gnat")]
     base.boss_kinds = [SimpleNamespace(id="warden", name="Reef Warden")]
+    base.view = SimpleNamespace(scenery={"propModels": {}})
     return base
 
 
@@ -42,6 +43,26 @@ def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> N
 def test_d199_each_prop_is_listed_once_over_the_first_level_that_has_it() -> None:
     props = dev_items(game(), "props")
     assert [(i.id, i.host) for i in props] == [("buoy", "1-1"), ("hut", "1-1"), ("tower", "1-2")]
+
+
+def test_d202_the_props_are_gathered_by_the_games_prop_groups_then_the_others() -> None:
+    g = game()
+    g.view.scenery["propGroups"] = [
+        SimpleNamespace(label="Towers", ids=["tower", "spire"]),
+        SimpleNamespace(label="Sea", ids=["buoy", "tower"]),
+    ]
+    props = dev_items(g, "props")
+    assert [(i.id, i.group, i.host) for i in props] == [
+        ("tower", "Towers", "1-2"),
+        ("buoy", "Sea", "1-1"),
+        ("hut", "Other", "1-1"),
+    ]
+
+
+def test_d202_without_prop_groups_every_prop_is_in_other() -> None:
+    g = game()
+    g.view.scenery["propGroups"] = None
+    assert {i.group for i in dev_items(g, "props")} == {"Other"}
 
 
 def test_d199_the_levels_are_labelled_as_on_the_level_select() -> None:
@@ -79,3 +100,6 @@ def test_d199_the_catalog_and_its_labels_cover_every_viewer() -> None:
     labels = dev_labels(catalog)
     assert labels["props"] == ["buoy", "hut", "tower"]
     assert labels["ships"] == ["Alpha", "Beta"]
+    groups = dev_groups(catalog)
+    assert groups["props"] == ["Other", "Other", "Other"]
+    assert groups["ships"] == ["", ""]

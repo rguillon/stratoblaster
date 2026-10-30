@@ -1,5 +1,6 @@
 """What each dev viewer lists (D-199): the player ships, the enemy kinds, the boss kinds, the props
-the levels stand on their ground, and the levels, in the game's order.
+the levels stand on their ground, and the levels, in the game's order. The props are gathered by
+the game's prop groups (D-202), as the TypeScript `props/` page showed them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -14,14 +15,20 @@ from typing import Any  # noqa: E402
 __pragma__("noskip")
 
 
-class DevItem:
-    """One item of a dev viewer: its `id` (ship, kind, prop or level id), the `label` shown, and
-    the level it is shown over (`host`: a prop stands on the first level that has it)."""
+# The group of the props in none of the game's prop groups (D-202).
+OTHER_GROUP = "Other"
 
-    def __init__(self, id: str, label: str, host: str) -> None:
+
+class DevItem:
+    """One item of a dev viewer: its `id` (ship, kind, prop or level id), the `label` shown, the
+    level it is shown over (`host`: a prop stands on the first level that has it), and the `group`
+    it is listed in ("": none; D-202)."""
+
+    def __init__(self, id: str, label: str, host: str, group: str = "") -> None:
         self.id = id
         self.label = label
         self.host = host
+        self.group = group
 
 
 def _first_level(game: Any) -> str:
@@ -40,16 +47,36 @@ def _level_label(game: Any, level_id: str) -> str:
     return level_id
 
 
+def _prop_groups(game: Any) -> list[Any]:
+    """The game's prop groups (`PropGroup`s), none when its view names none."""
+    scenery = game.view.scenery
+    if "propGroups" not in scenery or scenery["propGroups"] is None:
+        return []
+    groups: list[Any] = scenery["propGroups"]
+    return groups
+
+
 def _props(game: Any) -> list[DevItem]:
     """The props of every level's ground (not their cars), each over the first level that has it,
-    so it is lit and drawn as there."""
-    items: list[DevItem] = []
-    seen: list[str] = []
+    so it is lit and drawn as there; gathered by the game's prop groups, in their order, then the
+    props in none of them (D-202)."""
+    hosts: dict[str, str] = {}
+    kinds: list[str] = []
     for level in game.game_levels:
         for kind in level_prop_kinds(level.scenery):
-            if kind not in seen:
-                seen.append(kind)
-                items.append(DevItem(kind, kind, level.id))
+            if kind not in kinds:
+                kinds.append(kind)
+                hosts[kind] = level.id
+    items: list[DevItem] = []
+    listed: list[str] = []
+    for group in _prop_groups(game):
+        for kind in group.ids:
+            if kind in kinds and kind not in listed:
+                listed.append(kind)
+                items.append(DevItem(kind, kind, hosts[kind], group.label))
+    for kind in kinds:
+        if kind not in listed:
+            items.append(DevItem(kind, kind, hosts[kind], OTHER_GROUP))
     return items
 
 
@@ -78,6 +105,14 @@ def dev_catalog(game: Any) -> dict[str, list[DevItem]]:
     for viewer in DEV_VIEWERS:
         catalog[viewer] = dev_items(game, viewer)
     return catalog
+
+
+def dev_groups(catalog: dict[str, list[DevItem]]) -> dict[str, list[str]]:
+    """The group of each viewer's items ("": none; D-202)."""
+    groups: dict[str, list[str]] = {}
+    for viewer in DEV_VIEWERS:
+        groups[viewer] = [item.group for item in catalog[viewer]]
+    return groups
 
 
 def dev_labels(catalog: dict[str, list[DevItem]]) -> dict[str, list[str]]:

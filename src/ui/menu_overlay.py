@@ -33,7 +33,11 @@ from ui.menu_view import (  # noqa: E402
     ShipSelectView,
     TitleView,
 )
-from ui.screens.dev_screen import render_dev_screen, render_dev_viewer_screen  # noqa: E402
+from ui.screens.dev_screen import (  # noqa: E402
+    centre_choices,
+    render_dev_screen,
+    render_dev_viewer_screen,
+)
 from ui.screens.game_screen import render_game_screen  # noqa: E402
 from ui.screens.level_select_screen import render_level_select_screen  # noqa: E402
 from ui.screens.loading_screen import render_loading_screen  # noqa: E402
@@ -169,6 +173,7 @@ class MenuOverlay:
         logo = screen.querySelector(".title-name")
         if logo:
             shrink_to_fit(logo)
+        centre_choices(screen)
 
     def shake_selected(self, text: str) -> None:
         """ "Locked" feedback (P01-R07): shakes the selected entry and shows `text`."""
