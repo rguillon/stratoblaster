@@ -12,11 +12,14 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Protocol  # noqa: E402
+from typing import TYPE_CHECKING, Protocol  # noqa: E402
 
-from core.entities.boss import Boss, BossPartSpec  # noqa: E402
 from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
 from core.entities.shot_target import ShotTarget  # noqa: E402
+
+# `boss` imports this module, so the names of `boss` are imported for the annotations only.
+if TYPE_CHECKING:
+    from core.entities.boss import Boss, BossPartSpec  # noqa: E402
 
 
 class BossPiece(ShotTarget, Protocol):
@@ -51,7 +54,7 @@ __pragma__("noskip")
 INFINITY = float("Infinity")
 
 
-def _turret_of(boss: Boss, id: str) -> BossTurret | None:
+def _turret_of(boss: "Boss", id: str) -> BossTurret | None:
     """The turret of the piece `id` of `boss`, if it has one."""
     turrets = boss.stats.turrets
     spec = turrets.get(id) if turrets is not None else None
@@ -68,7 +71,7 @@ def _emitter_of(x: float, y: float, radius: float, heading: float) -> PlanePoint
 class BossPart:
     """A destroyable part of a `Boss`, at its offset from the boss's centre (a `DropSource`)."""
 
-    def __init__(self, spec: BossPartSpec, index: int, boss: Boss) -> None:
+    def __init__(self, spec: "BossPartSpec", index: int, boss: "Boss") -> None:
         self.spec = spec
         self.index = index
         self._boss = boss
@@ -137,7 +140,7 @@ class BossPart:
 class BossCore:
     """The core of a `Boss` as its shots see it: shielded while its shielding parts stand."""
 
-    def __init__(self, boss: Boss) -> None:
+    def __init__(self, boss: "Boss") -> None:
         self._boss = boss
         self.heading = math.pi
         self.since_hit = INFINITY

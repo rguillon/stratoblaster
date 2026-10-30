@@ -96,6 +96,9 @@ def has_tile_key(tiles: Any, key: int) -> bool:
     """Whether the key `key` (a `tile_key`) is in `tiles`: an own property, as `str(key) in tiles`
     (the generic `in` is slow, and this runs for every tile the packing tries)."""
     found = False
+    __pragma__("skip")
+    found = key in tiles or str(key) in tiles  # Either key type: the tests use both.
+    __pragma__("noskip")
     __pragma__("js", "{}", "found = tiles.hasOwnProperty(key);")
     return found
 

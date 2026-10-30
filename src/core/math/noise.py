@@ -46,6 +46,9 @@ def _int_mod(a: int, n: int) -> int:
     """`a % n` for whole numbers, with JavaScript's `%` (Transcrypt's `%` also corrects the sign,
     which is slow here: the noise is evaluated for every texel). Equal to Python's for `a >= 0`."""
     r = 0
+    __pragma__("skip")
+    r = a - n * int(a / n)  # Truncating, as JavaScript's `%` (CPython's `%` floors).
+    __pragma__("noskip")
     __pragma__("js", "{}", "r = a % n;")
     return r
 
