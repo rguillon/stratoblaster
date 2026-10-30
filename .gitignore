@@ -1,13 +1,5 @@
-node_modules
 dist/
-dist-e2e/
 coverage/
-playwright-report/
-test-results/
-blob-report/
-*.tsbuildinfo
-.eslintcache
-.vite/
 .DS_Store
 __pycache__/
 # Babylon.js is downloaded by `make vendor` (ENG-02, D-173), not committed.

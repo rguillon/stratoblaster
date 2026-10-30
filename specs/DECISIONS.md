@@ -1771,3 +1771,11 @@
 - **Why:** the port is complete and is the code that runs. The TypeScript sources cost a lot of repository for no build use, and the citations pointed at paths that no longer exist.
 - **Consequences:** `node/tests/` imports `../src/` and so no longer runs: it is a reference to read, not a suite. The specs (human-owned) still cite the TypeScript files.
 - **Status:** Accepted
+
+### D-189 — The leftovers of the TypeScript setup are removed
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `.planning/` (planning output generated from the old docs) is deleted. In `node/`, only esbuild stays as a dependency (`package.json`, lock file regenerated); the Vite, Vitest, ESLint, Prettier, Playwright and TypeScript configs and `typings/` are deleted (`node/tests/` stays as the reference suite). The Transcrypt type stubs moved from `node/typings/` to `typings/` (mypy reads them). `docs/architecture.md` describes the Python layers, the worker and the build. The root `.gitignore` keeps the Python and build entries; the Node ones are in `node/.gitignore`. Dependabot watches `node/` (npm) and the Actions. `.editorconfig` uses 4 spaces for Python.
+- **Why:** these files only served the TypeScript build and the removed viewer pages, and the docs described an architecture no longer in the repository.
+- **Consequences:** `specs/` (owned by the owner) still cites the TypeScript and the viewer pages; it needs the owner's update.
+- **Status:** Accepted

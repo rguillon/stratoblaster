@@ -70,8 +70,8 @@ make dev       # build, then http://localhost:5173
 | `make check`      | lint + typecheck + build                                        |
 | `make clean`      | Remove build outputs, coverage and caches                       |
 
-The TypeScript game the port is based on lives in [`node/`](node/) with its own tooling
-(Vite, Vitest, ESLint, Playwright). Nothing in the Python build runs it.
+[`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
+runs it: it is the reference for the tests still to port.
 
 ## Project layout
 

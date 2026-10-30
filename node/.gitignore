@@ -1,0 +1,5 @@
+node_modules/
+# The TypeScript reference suite (node/tests) runs with Playwright and Vitest only if they are
+# installed again: their output stays out of git.
+playwright-report/
+test-results/

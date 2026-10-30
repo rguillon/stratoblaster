@@ -106,7 +106,7 @@ coverage: ## Unit tests with the core/ coverage report (fails below ENG-43), HTM
 
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
-check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
+check: lint typecheck build ## Lint, typecheck and build (the unit tests: make coverage; e2e is deferred)
 
 clean: ## Remove build outputs and caches
 	rm -rf $(DIST) build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache
