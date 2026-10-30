@@ -1,4 +1,4 @@
-"""WebGL2 support check (ENG-06), ported from `platform/webgl-support.ts`."""
+"""WebGL2 support check (ENG-06)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

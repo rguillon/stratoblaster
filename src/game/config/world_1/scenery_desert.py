@@ -1,5 +1,4 @@
-"""The dry levels of World 1 (P06-R05, R06, reworked at the reviewer's request, 2026-10-26), ported
-from `config/world-1/scenery-desert.ts`.
+"""The dry levels of World 1 (P06-R05, R06, reworked at the reviewer's request, 2026-10-26)
 
 From the dry grassland 1-3 ended on to sand and rock, dunes, an oasis, a canyon and mesas, then
 deeper into the desert, its towns bigger and denser. No factory and no city: they are for other

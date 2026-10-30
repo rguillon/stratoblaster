@@ -1,4 +1,4 @@
-"""A small debug tile with the frame rate and polygon count, ported from `ui/stats-tile.ts`."""
+"""A small debug tile with the frame rate and polygon count"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

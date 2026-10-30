@@ -1,4 +1,4 @@
-"""The shots and explosions of the enemies page, ported from `app/enemy-viewer-shots.ts`.
+"""The shots and explosions of the enemies page
 
 Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, as on
 `player_shots/`, hits included), the enemies' shots and the explosions (GD-62).

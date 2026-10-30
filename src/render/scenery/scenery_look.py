@@ -1,7 +1,6 @@
-"""How a scenery level looks: sky, light, terrain, sea, clouds and props (P04), ported from
-`render/scenery/scenery-look.ts`.
+"""How a scenery level looks: sky, light, terrain, sea, clouds and props (P04)
 
-The TypeScript interfaces are classes here (Transcrypt has no interfaces). Each takes its fields
+The interfaces are classes here (Transcrypt has no interfaces). Each takes its fields
 positionally, in the order of the interface, with the optional fields last (default None).
 """
 

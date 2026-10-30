@@ -1,14 +1,12 @@
 """Smoke and steam columns rising from props (phase 10, P10-R08): the quads of the puffs and the
 meshes that draw them. The material of each kind lifts, grows and fades the puffs frame by frame.
-
-Ported from `render/scenery/plume-layer.ts`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from config.plumes import PLUME_KINDS
 
-# `%` keeps JavaScript's rounding (the TypeScript phase of each column uses it).
+# `%` keeps JavaScript's rounding.
 __pragma__("jsmod")
 from render.babylon import apply_vertex_data, new_mesh, set_enabled, vertex_data_of  # noqa: E402
 

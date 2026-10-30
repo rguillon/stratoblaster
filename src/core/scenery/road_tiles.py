@@ -1,10 +1,9 @@
 """P15-R03, R04: the road pieces of the districts laid on tiles (phase 15), found from their
 straight streets: a junction piece where a row and a column meet, the size of the wider road, and
-straight pieces of N × N tiles along each road between them. Ported from
-`core/scenery/road-tiles.ts`.
+straight pieces of N × N tiles along each road between them.
 
 Sets of tile keys are dicts keyed by `str(tile_key(x, z))` (see `tile_has`), and a `Map` keyed by
-tile key is kept in the order its keys were first set, as the TypeScript `Map` is.
+tile key is kept in the order its keys were first set.
 """
 
 import math
@@ -251,7 +250,7 @@ def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
 
 class PieceCache:
     """The road pieces of the last list of roads asked for, found once (they are asked for every
-    chunk). Keyed by the list's identity, as the TypeScript `WeakMap` is (the tile grid is not part
+    chunk). Keyed by the list's identity
     of the key)."""
 
     def __init__(self) -> None:

@@ -1,4 +1,4 @@
-"""The Minelayer (P05-R18), ported from `game/sim/enemies/minelayer.ts`."""
+"""The Minelayer (P05-R18)"""
 
 import math
 

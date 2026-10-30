@@ -1,7 +1,5 @@
-# ruff: noqa: E501 (GLSL shader source lines, kept as in the TypeScript)
-"""Lava (P10-R05): crust plates over a glowing melt, drawn by one self-lit material. Ported from
-`render/scenery/lava-material.visual.ts`.
-"""
+# ruff: noqa: E501
+"""Lava (P10-R05): crust plates over a glowing melt, drawn by one self-lit material."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__

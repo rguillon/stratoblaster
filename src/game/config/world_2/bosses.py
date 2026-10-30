@@ -1,4 +1,4 @@
-"""The bosses of each World 2 level (P08-R10), ported from `config/world-2/bosses.ts`.
+"""The bosses of each World 2 level (P08-R10)
 
 Each level has a mini boss at the middle of the level and a final boss at its end, by boss kind id,
 and the seconds of ground drawn past the level's end for the fights (see `WORLD_1_BOSSES`).

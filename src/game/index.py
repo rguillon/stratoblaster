@@ -1,4 +1,4 @@
-"""The single entry point of this game's content (ENG-144), ported from `game/index.ts`.
+"""The single entry point of this game's content (ENG-144)
 
 `main.py` passes `GAME` to `app/`; the engine discovers all content through it.
 """

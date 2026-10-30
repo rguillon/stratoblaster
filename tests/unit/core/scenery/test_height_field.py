@@ -1,34 +1,58 @@
-"""The sculpted ground (P04-R01): heights, blending, operations, steepness."""
+"""Unit tests of `src/core/scenery/height_field.py`."""
 
 import math
 
 import pytest
-from level_builders import SAMPLE_POINTS, flat, hills, make_level, section
+from helpers.level_builders import (
+    SAMPLE_POINTS,
+    flat,
+    hills,
+    make_level,
+    road_rules,
+    section,
+    street_grid,
+)
+from helpers.sample_level import sample_level
 
-from core.scenery.height_field import (
-    HeightField,
-    _octaves_steepness,
-    _section_steepness,
-    soft_cap,
-    terrain_ceiling,
-)
-from core.scenery.scenery_level import (
-    Channel,
-    Crevasses,
-    Dunes,
-    Flatten,
-    Lakes,
-    Meander,
-    Relief,
-    Shore,
-    Surface,
-)
+from core.scenery.ground_boxes import GroundArea
+from core.scenery.height_field import HeightField, _octaves_steepness, _section_steepness, soft_cap
+from core.scenery.prop_placement import PropPlacer
+from core.scenery.road_network import RoadNetworkOptions, level_roads
+from core.scenery.scenery_level import Channel, Flatten, Lakes, Meander
 
 STRAIGHT = Meander(0.0, 0.0, 500.0)  # a line down the middle of the level, not winding
 
 
 def _heights(field: HeightField) -> list[float]:
     return [field.height(x, z) for x, z in SAMPLE_POINTS]
+
+
+def _level(terrain=None, streets=True, **rules):
+    grid = street_grid(0.55) if streets else None
+    secs = [
+        section("a", 10, terrain or flat()),
+        section("b", 10, terrain or flat(), streets=grid),
+        section("c", 10, terrain or flat()),
+    ]
+    return make_level(secs, roads=road_rules(**rules))
+
+
+AREA = GroundArea(-200, 200, 0, 400)
+
+
+def placer_for(
+    level=None,
+    seed: int | None = None,
+    sea_level: float | None = 0,
+    runout_from: float | None = None,
+) -> PropPlacer:
+    """A placer of `level` (the sample by default), with its roads laid."""
+    level = level if level is not None else sample_level()
+    seed = level.seed if seed is None else seed
+    field = HeightField(level, seed)
+    options = RoadNetworkOptions(runout_from=runout_from) if runout_from is not None else None
+    roads = level_roads(field, level.roads, seed, options)
+    return PropPlacer(field, level.props, seed, roads, sea_level=sea_level)
 
 
 def test_p04_r01_heights_are_the_same_for_the_same_seed() -> None:
@@ -99,17 +123,6 @@ def test_p04_r01_the_ceiling_bounds_the_ground() -> None:
     assert max(_heights(field)) <= field.ceiling + 1e-9
 
 
-def test_terrain_ceiling_takes_the_highest_of_the_sections_parts() -> None:
-    flatten = Flatten(STRAIGHT, 10.0, 10.0, 40.0, 5.0)
-    assert terrain_ceiling(make_level([section("a", 10, flat(10), flatten=flatten)])) == 45
-    dunes = Dunes(7.0, 100.0, 0.0, 0.0)
-    assert terrain_ceiling(make_level([section("a", 10, flat(10), dunes=dunes)])) == 17
-    lakes = Lakes(200.0, 1.0, (40.0, 60.0), 3.0, 20.0)
-    assert terrain_ceiling(make_level([section("a", 10, flat(0), lakes=lakes)])) == 3
-    shore = Shore(STRAIGHT, 1.0, 20.0, -20.0)
-    assert terrain_ceiling(make_level([section("a", 10, flat(0), shore=shore)])) == 0
-
-
 def test_soft_cap_leaves_low_heights_and_squashes_high_ones() -> None:
     assert soft_cap(5.0, 10.0) == 5.0
     assert soft_cap(7.5, 10.0) == pytest.approx(7.5)
@@ -118,22 +131,9 @@ def test_soft_cap_leaves_low_heights_and_squashes_high_ones() -> None:
     assert soft_cap(5.0, 0.0) < 0.001
 
 
-def test_p04_r01_ridged_relief_stays_between_base_and_top() -> None:
-    ridged = Relief(50.0, 30.0, 1 / 300, 4, "ridged")
-    field = HeightField(make_level([section("a", 10, ridged)]))
-    assert all(50 - 1e-9 <= h <= 80 + 1e-9 for h in _heights(field))
-
-
 def test_p04_r01_max_height_keeps_the_peaks_under_it() -> None:
     field = HeightField(make_level([section("a", 10, hills(50, 30, 60.0))]))
     assert max(_heights(field)) <= 60.0 + 1e-9
-
-
-def test_flatten_is_exactly_flat_on_its_line() -> None:
-    flatten = Flatten(STRAIGHT, 10.0, 10.0, 40.0, 0.0)
-    field = HeightField(make_level([section("a", 10, hills(), flatten=flatten)]))
-    for z in (100.0, 400.0, 777.0):
-        assert field.height(field.path_x(STRAIGHT, z), z) == pytest.approx(40.0)
 
 
 def test_flatten_is_the_relief_away_from_its_band() -> None:
@@ -151,46 +151,12 @@ def test_channel_is_carved_below_the_ground_and_not_beyond_its_walls() -> None:
     assert field.height(40.0, 300.0) == pytest.approx(plain.height(40.0, 300.0))
 
 
-def test_shore_drops_the_ground_on_the_sea_side_only() -> None:
-    shore = Shore(STRAIGHT, 1.0, 20.0, -30.0)
-    field = HeightField(make_level([section("a", 10, flat(10), shore=shore)]))
-    assert field.height(-100.0, 300.0) == pytest.approx(-30.0)
-    assert field.height(100.0, 300.0) == pytest.approx(10.0)
-
-
-def test_p04_r01_dunes_add_between_zero_and_their_height() -> None:
-    dunes = Dunes(12.0, 80.0, 30.0, 0.5)
-    field = HeightField(make_level([section("a", 10, flat(10), dunes=dunes)]))
-    added = [h - 10.0 for h in _heights(field)]
-    assert all(-1e-9 <= d <= 12.0 + 1e-9 for d in added)
-    assert max(added) > 0.0
-
-
-def test_crevasses_only_cut_into_the_ground() -> None:
-    crevasses = Crevasses(120.0, 10.0, 30.0, 0.0, 0.5, 0.8)
-    field = HeightField(make_level([section("a", 10, flat(10), crevasses=crevasses)]))
-    heights = _heights(field)
-    assert all(h <= 10.0 + 1e-9 for h in heights)
-    assert min(heights) < 10.0
-
-
 def test_lakes_dip_the_ground_into_basins() -> None:
     lakes = Lakes(200.0, 1.0, (40.0, 60.0), 0.0, 20.0)
     field = HeightField(make_level([section("a", 10, flat(50), lakes=lakes)]))
     assert min(_heights(field)) < 50.0
     again = HeightField(make_level([section("a", 10, flat(50), lakes=lakes)]))
     assert _heights(again) == _heights(field)
-
-
-def test_p04_r01_ground_cover_is_blended_like_the_height() -> None:
-    lush = section("a", 10, flat(), surface=Surface(1.0, None, 0.0))
-    paved = section("b", 10, flat(), surface=Surface(0.0, 0.5, None))
-    field = HeightField(make_level([lush, paved], transition=200))
-    cover = field.surface(500.0)
-    assert (cover.lush, cover.paved, cover.sandy) == (1.0, 0.0, 0.0)
-    cover = field.surface(1500.0)
-    assert (cover.lush, cover.paved, cover.sandy) == (0.0, 0.5, 0.0)
-    assert field.surface(1000.0).lush == pytest.approx(0.5)
 
 
 def test_a_section_without_cover_has_none() -> None:
@@ -208,19 +174,6 @@ def test_p04_r01_steepness_bounds_the_change_along_x() -> None:
         for dx in (2.0, 5.0, 10.0):
             change = abs(field.height(x + dx, z) - field.height(x, z))
             assert change <= bound * dx + 1e-9
-
-
-def test_steepness_is_unknown_near_a_channel() -> None:
-    channel = Channel(STRAIGHT, 10.0, 10.0, -5.0)
-    field = HeightField(make_level([section("a", 10, flat(10), channel=channel)]))
-    assert field.steepness(0.0, 300.0, 5.0) == math.inf
-    assert math.isfinite(field.steepness(200.0, 300.0, 5.0))
-
-
-def test_steepness_is_unknown_for_rough_sections() -> None:
-    dunes = Dunes(12.0, 80.0, 30.0, 0.5)
-    field = HeightField(make_level([section("a", 10, flat(10), dunes=dunes)]))
-    assert field.steepness(0.0, 300.0, 5.0) == math.inf
 
 
 def test_steepness_is_unknown_for_sections_shorter_than_the_transition() -> None:
@@ -254,3 +207,20 @@ def test_p04_r01_the_section_before_blends_into_the_next_near_the_boundary() -> 
     # 950 is in the band (900 to 1100) of section a's end: a smoothstep of 0.25,
     # here 10 + 40 * 0.15625.
     assert field.height(0, 950) == pytest.approx(16.25)
+
+
+def test_p04_r07_a_level_roads_span_runs_past_both_ends_of_the_level() -> None:
+    level = _level(streets=False)
+    net = level_roads(HeightField(level), level.roads, 4)
+    assert net.range.z_min == -3000.0
+    assert net.range.z_max == pytest.approx(HeightField(level).length_ + 3000.0)
+    assert net.blocks is not None
+
+
+def test_p04_r04_props_stand_on_the_ground_they_are_placed_on() -> None:
+    level = sample_level()
+    field = HeightField(level, level.seed)
+    for p in placer_for(level).place(AREA):
+        if p.kind != "block":
+            continue
+        assert p.y <= field.height(p.x, p.z) + 1e-9

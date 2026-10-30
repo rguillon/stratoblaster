@@ -1,5 +1,4 @@
-"""How a prop sits on the ground (P04-R04): pure helpers of the prop placement, ported from
-`core/scenery/ground-fit.ts`."""
+"""How a prop sits on the ground (P04-R04): pure helpers of the prop placement"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

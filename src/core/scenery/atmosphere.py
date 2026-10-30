@@ -1,8 +1,6 @@
 """The changing part of a level's look (phase 8, P08-R04, P08-R05): the time of day, the clouds,
 the haze, the ground lights and the weather, as plain numbers that blend smoothly from one look to
 another along the level. Pure; the renderer applies it to the scene every frame.
-
-Ported from `core/scenery/atmosphere.ts`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -14,11 +12,10 @@ from typing import Any, Literal  # noqa: E402
 
 Rgb = tuple[float, float, float]
 TimeOfDay = Literal["dawn", "morning", "midday", "afternoon", "dusk", "night"]
-Look = Any  # The TypeScript class is generic in its look; Transcrypt has no generic classes.
+Look = Any  # The class is generic in its look; Transcrypt has no generic classes.
 __pragma__("noskip")
 
-# `%` keeps JavaScript's sign rule (the result takes the sign of the dividend), as in the
-# TypeScript.
+# `%` keeps JavaScript's sign rule (the result takes the sign of the dividend).
 __pragma__("jsmod")
 
 # Blend point at which the kind of weather switches (halfway).

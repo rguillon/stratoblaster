@@ -1,6 +1,4 @@
-"""The levels of a game as shown on the level select screen, ported from
-`core/content/level-catalog.ts`.
-"""
+"""The levels of a game as shown on the level select screen"""
 
 import math
 

@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Refinery Titan, World 1's 1-4 final boss, ported from
-`bosses/refinery-titan-model.ts`. Model space: logical pixels, nose +Z (down the screen), Y up
+"""P07-R05, P16-R06: the Refinery Titan, World 1's 1-4 final boss Model space: logical pixels, nose
++Z (down the screen), Y up
 towards the camera. A bloated industrial beetle: a huge shelled body plumbed with grafted pipes,
 limbs cradling two glowing fuel bladders, smoking chimneys of flesh on its back, a fleshy apron in
 front carrying the two rotary turrets.

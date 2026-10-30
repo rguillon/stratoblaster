@@ -1,8 +1,6 @@
 """Centre and lane lines of the roads (phase 4 review): a yellow line along the middle of the
 streets (stopping where they cross) and of the main roads (dashed); on wider roads (2x2 to 4x4), a
 double yellow line and white dashed lines between the lanes. Painted just above the road surface.
-
-Ported from `render/scenery/road-lines.ts`.
 """
 
 import math
@@ -35,7 +33,7 @@ FLAT = 0.02
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 class CentreLineLook:

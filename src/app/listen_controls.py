@@ -1,4 +1,4 @@
-"""Keyboard listeners of the level (ported from `app/listen-controls.ts`): keys go to the level's
+"""Keyboard listeners of the level (): keys go to the level's
 debug keys first (when on), then to the in-game controls.
 """
 

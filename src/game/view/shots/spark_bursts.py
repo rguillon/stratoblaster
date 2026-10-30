@@ -1,5 +1,4 @@
-"""Bursts of metal sparks where bullets hit (P03-R01, phase 3 review), ported from
-`shots/spark-bursts.ts`.
+"""Bursts of metal sparks where bullets hit (P03-R01, phase 3 review)
 
 Each burst throws `count` sparks back from the hit, spread around straight down; they slow down
 with drag, twinkle, and shrink to nothing over their life.

@@ -1,6 +1,4 @@
-"""One model per boss, keyed by its model key (the boss kind id, P07-R05), ported from
-`bosses/boss-models.ts`.
-"""
+"""One model per boss, keyed by its model key (the boss kind id, P07-R05)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

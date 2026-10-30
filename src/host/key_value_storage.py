@@ -1,6 +1,4 @@
-"""Small string storage, so app code does not depend on cookies and tests use a fake. Ported from
-`platform/key-value-storage.ts`.
-"""
+"""Small string storage, so app code does not depend on cookies and tests use a fake."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -25,7 +23,8 @@ __pragma__("noskip")
 class MemoryStorage:
     """In-memory storage, for tests and as a fallback.
 
-    The TypeScript keeps a `Map`. A Transcrypt dict cannot hold the key `__proto__` (it writes the
+    A Map would be the natural store here. A Transcrypt dict cannot hold the key `__proto__` (it
+    writes the
     prototype), so the keys and values are kept in two parallel lists, looked up in turn.
     """
 

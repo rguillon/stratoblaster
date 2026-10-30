@@ -1,5 +1,5 @@
 """P09-R09, 3-5: the Jaguar's destroyable parts (its two claw guns and its tail cannon) and its
-spotted armour. Ported from `view/bosses/world-3/jaguar-parts.ts`. Model space: logical pixels,
+spotted armour. Model space: logical pixels,
 nose +Z, Y up; each part drawn around its centre `at`, each turret around its pivot."""
 
 import math
@@ -29,7 +29,7 @@ H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
-# Its amber neon (GD-61, `boss-look.ts`).
+# Its amber neon.
 AMBER = BOSS_LOOK.neon["jaguar"]
 # The spotted armour: a warm ochre metal, dark rosettes on it, worn steel talons.
 COAT = [0.2, 0.135, 0.06]

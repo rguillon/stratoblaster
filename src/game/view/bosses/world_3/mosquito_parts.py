@@ -1,5 +1,5 @@
 """P09-R09, 3-4: the Mosquito's parts (its buzzing wings and its proboscis) and its swamp growth.
-Ported from `view/bosses/world-3/mosquito-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera)."""
 
 import math

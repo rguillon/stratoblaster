@@ -1,4 +1,4 @@
-"""Cars on the streets and main roads (Phase 4 review), ported from `props/car-props.ts`.
+"""Cars on the streets and main roads (Phase 4 review)
 
 Sizes in model units (drawn at half size), standing on Y = 0; the front faces +Z, the way they
 drive.

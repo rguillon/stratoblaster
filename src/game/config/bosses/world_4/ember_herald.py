@@ -1,4 +1,4 @@
-"""P10-R11, 4-5's mini boss: the Ember Herald (ported from `config/bosses/world-4/ember-herald.ts`).
+"""P10-R11, 4-5's mini boss: the Ember Herald ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the earlier mini bosses (P07-R04, D-055): its three ember lances fire spirals from

@@ -41,38 +41,37 @@ The high score, the last chosen ship and the volumes are kept in cookies (`strat
 
 ## Requirements
 
-- Node.js 24 LTS (see `.nvmrc`) and npm
+- Python 3.12 and [uv](https://docs.astral.sh/uv/) (it fetches the Python version and the tools)
 - GNU Make
+- Node.js 24 LTS and npm (`node/.nvmrc`), only for the build's bundling step (esbuild)
 
 ## Getting started
 
 ```sh
-make install   # npm ci + git hooks + Playwright Chromium
-make dev       # http://localhost:5173 (player ship viewer: http://localhost:5173/player_ship/)
-# Debug pages: /player_ship/ (ships), /player_shots/ (shots), /enemies/ (enemies),
-# /bosses/ (bosses), /props/ (props)
+make install   # uv sync, npm ci for esbuild (node/), git hooks
+make vendor    # the pinned Babylon.js build into public/vendor/ (checked by SHA-256)
+make dev       # build, then http://localhost:5173
 ```
 
 ## Make targets
 
-| Target            | What it does                                         |
-| ----------------- | ---------------------------------------------------- |
-| `make help`       | List targets                                         |
-| `make install`    | Install dependencies, git hooks, Playwright browser  |
-| `make dev`        | Vite dev server with HMR (port 5173)                 |
-| `make build`      | Production build into `dist/`                        |
-| `make preview`    | Serve the production build                           |
-| `make lint`       | ESLint + Prettier check                              |
-| `make format`     | Prettier write + ESLint `--fix`                      |
-| `make typecheck`  | `tsc --noEmit`                                       |
-| `make test`       | Unit tests                                           |
-| `make test-watch` | Unit tests in watch mode                             |
-| `make coverage`   | Unit tests with coverage thresholds                  |
-| `make e2e`        | e2e build + Playwright                               |
-| `make e2e-ui`     | Playwright UI mode                                   |
-| `make check-fast` | lint + typecheck + test (pre-push hook)              |
-| `make check`      | Full gate: lint + typecheck + coverage + build + e2e |
-| `make clean`      | Remove build outputs and reports                     |
+| Target            | What it does                                                    |
+| ----------------- | --------------------------------------------------------------- |
+| `make help`       | List targets                                                    |
+| `make install`    | uv sync, npm ci (esbuild, in `node/`), git hooks                |
+| `make vendor`     | Download the pinned Babylon.js into `public/vendor/`            |
+| `make build`      | Transcrypt compiles `src/` to JavaScript, esbuild bundles it into `dist/` |
+| `make dev`        | `make build`, then serve `dist/` on port 5173                   |
+| `make lint`       | Ruff check and format check, layering contracts                 |
+| `make typecheck`  | mypy --strict                                                   |
+| `make test`       | Unit tests (pytest, CPython over `src/`)                        |
+| `make coverage`   | Unit tests with the `core/` coverage gate (HTML in `coverage/`) |
+| `make check-fast` | lint + typecheck (pre-push hook)                                |
+| `make check`      | lint + typecheck + build                                        |
+| `make clean`      | Remove build outputs, coverage and caches                       |
+
+[`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
+runs it: it is the reference for the tests still to port.
 
 ## Project layout
 

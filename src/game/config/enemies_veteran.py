@@ -1,4 +1,4 @@
-"""Tunables of the five veteran kinds (P05-R14 to P05-R18), ported from `config/enemies-veteran.ts`.
+"""Tunables of the five veteran kinds (P05-R14 to P05-R18)
 
 In the units of `enemies.py`: logical pixels, px/s, seconds, degrees; `...Fraction` heights are
 fractions of the playfield height from its bottom. `muzzles` as in `enemies.py` (offsets from the

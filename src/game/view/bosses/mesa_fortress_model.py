@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Mesa Fortress, the final boss of 1-3, ported from
-`bosses/mesa-fortress-model.ts`. Logical pixels, nose +Z, Y up (towards the camera). A colossal
+"""P07-R05, P16-R06: the Mesa Fortress, the final boss of 1-3 Logical pixels, nose +Z, Y up (towards
+the camera). A colossal
 canyon tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with
 grafted armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore
 silos on its back, red veins along its shell.

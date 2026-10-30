@@ -1,4 +1,4 @@
-"""Short glowing discs where shots hit (P03-R01, P03-R03), ported from `shots/impact-flashes.ts`."""
+"""Short glowing discs where shots hit (P03-R01, P03-R03)"""
 
 import math
 

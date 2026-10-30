@@ -1,4 +1,4 @@
-"""How far a scrolling level has gone (P04-R06, P07-R03): `core/scenery/scroll_track.py`."""
+"""Unit tests of `src/core/scenery/scroll_track.py`."""
 
 import pytest
 

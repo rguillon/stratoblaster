@@ -1,6 +1,6 @@
 """P09-R09, 3-5: the Verdant Crown's destroyable parts (thorn cannons, seed batteries, root
-generators), each drawn around its centre `at`, each turret around its pivot. Ported from
-`view/bosses/world-3/verdant-crown-parts.ts`. Model space: logical pixels, nose +Z, Y up."""
+generators), each drawn around its centre `at`, each turret around its pivot. Model space: logical
+pixels, nose +Z, Y up."""
 
 import math
 

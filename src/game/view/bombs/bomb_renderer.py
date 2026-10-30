@@ -1,4 +1,4 @@
-"""A bomb going off (P11-R05), ported from `bombs/bomb-renderer.ts`: in playfield space, a
+"""A bomb going off (P11-R05): in playfield space, a
 shockwave ring growing from where the ship was over the whole playfield, and a flash there that
 fades in a fraction of a second.
 """

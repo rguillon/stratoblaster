@@ -1,4 +1,4 @@
-"""The in-game HUD of a level, ported from `app/game-play-hud.ts` (P07-R02, P11-R02, R06).
+"""The in-game HUD of a level (P07-R02, P11-R02, R06).
 
 The HUD's frame is computed from the level run; the widgets are `ui/` classes.
 """

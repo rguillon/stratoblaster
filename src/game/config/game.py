@@ -1,4 +1,4 @@
-"""Game-specific identity values (ENG-143), ported from `config/game.ts`."""
+"""Game-specific identity values (ENG-143)"""
 
 from game.config.record import record
 

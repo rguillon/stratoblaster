@@ -1,4 +1,4 @@
-"""32-bit helpers (`core.math.bits`): the JavaScript operators in Python arithmetic."""
+"""Unit tests of `src/core/math/bits.py`."""
 
 from core.math.bits import imul, u32, ushr, xor
 

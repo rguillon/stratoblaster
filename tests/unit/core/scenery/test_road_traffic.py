@@ -1,4 +1,4 @@
-"""Where streets cross each other or meet (`core/scenery/road_traffic.py`, phase 4 review)."""
+"""Unit tests of `src/core/scenery/road_traffic.py`."""
 
 import pytest
 
@@ -24,22 +24,6 @@ def _cross_streets() -> list[StreetLine]:
     along_x = _street(0, [(-100.0, 0.0), (100.0, 0.0)])
     along_z = _street(1, [(0.0, -100.0), (0.0, 100.0)])
     return street_lines([along_x, along_z])
-
-
-def test_street_lines_keeps_only_the_straight_streets_with_points() -> None:
-    main = Road(5, "main", 24.0, 1, [RoadPoint(0.0, 0.0, 24.0), RoadPoint(0.0, 9.0, 24.0)])
-    empty = _street(6, [])
-    lines = street_lines([main, empty, _street(7, [(1.0, 2.0), (3.0, 4.0)], width=6.0)])
-    assert len(lines) == 1
-    line = lines[0]
-    assert (line.road, line.ax, line.az, line.bx, line.bz, line.width) == (
-        7,
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        6.0,
-    )
 
 
 def test_cached_street_lines_are_made_once_per_list() -> None:

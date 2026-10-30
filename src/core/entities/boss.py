@@ -1,4 +1,4 @@
-"""Bosses (P07), ported from `core/entities/boss.ts`.
+"""Bosses (P07)
 
 Bosses are big enemies made of a core and destroyable parts (GD-46). Positions are playfield
 logical pixels, X to the right, Y up. A boss faces down the screen and does not turn: its parts
@@ -96,7 +96,7 @@ class BossStats(EnemyStats):
         turrets: dict[str, BossTurretSpec] | None = None,
         joints: dict[str, BossJointSpec] | None = None,
     ) -> None:
-        """The optional fields come last, as in the TypeScript:
+        """The optional fields come last:
 
         - `core_radius`: hit radius of the core.
         - `ground_speed`: factor on the level's ground speed while it is fought (P07-R03).

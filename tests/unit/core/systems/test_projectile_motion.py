@@ -1,18 +1,89 @@
-"""Tests of projectiles in flight (P03), `core/systems/projectile_motion.py`."""
+"""Unit tests of `src/core/systems/projectile_motion.py`."""
 
 import math
 
 import pytest
 
+from core.entities.boss_turret import BossTurret
+from core.entities.enemy import EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec
+from core.entities.muzzle import PlanePoint, RaisedPoint
 from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
+from core.systems.boss_pattern import BossPattern, BossRingShape, BossVolley
+from core.systems.projectile_motion import DEG as DEG_MOTION
 from core.systems.projectile_motion import (
-    DEG,
     Projectile,
     advance_projectile,
     heading_to,
     turn_towards,
     wrap_angle,
 )
+
+DEG = math.pi / 180
+
+DOWN = math.pi
+
+BULLET = EnemyBulletSpec(10, 1, "round")
+
+
+class _Ctx:
+    """What a volley fires with: records every shot."""
+
+    def __init__(self, fire_rate: float = 1.0, player: tuple[float, float] = (100, 0)) -> None:
+        self.fire_rate = fire_rate
+        self.player_x, self.player_y = player
+        self.bullets: list[tuple[float, float, float, EnemyBulletSpec]] = []
+        self.missiles: list[tuple[float, float, float, EnemyMissileSpec]] = []
+        self.lasers: list[tuple[object, EnemyLaserSpec]] = []
+        self.spawned: list[object] = []
+
+    def seen(self, point: RaisedPoint) -> PlanePoint:
+        return PlanePoint(point.x, point.y)
+
+    def fire_bullet(self, x: float, y: float, heading: float, spec: EnemyBulletSpec) -> None:
+        self.bullets.append((x, y, heading, spec))
+
+    def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
+        self.missiles.append((x, y, heading, spec))
+
+    def fire_laser(self, owner: object, spec: EnemyLaserSpec) -> None:
+        self.lasers.append((owner, spec))
+
+    def spawn(self, enemy: object) -> None:
+        self.spawned.append(enemy)
+
+
+class _Src:
+    """A piece of a boss: where it is, its turret if any; it places its muzzles (`MuzzleSource`)."""
+
+    def __init__(
+        self,
+        x: float = 0,
+        y: float = 0,
+        heading: float = DOWN,
+        turret: BossTurret | None = None,
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.heading = heading
+        self.gone = False
+        self.health = 10
+        self.turret = turret
+
+    @property
+    def emitter(self) -> PlanePoint:
+        return PlanePoint(self.x, self.y)
+
+    def place(self, muzzle, on_turret=False):  # type: ignore[no-untyped-def]
+        mx, my, mh = muzzle
+        return RaisedPoint(self.x + mx, self.y + my, mh)
+
+
+def _sources(parts: dict[str, _Src]):  # type: ignore[no-untyped-def]
+    return parts.get
+
+
+def _volley(shape: object, from_: str = "core", every: float = 10, **kwargs: object) -> BossVolley:
+    return BossVolley(from_, every, shape, **kwargs)  # type: ignore[arg-type]
 
 
 class _Target:
@@ -50,6 +121,22 @@ def _weapon(
 
 def _shot(weapon: ProjectileWeaponDefinition, heading: float = 0, speed: float = 10) -> Projectile:
     return Projectile(True, weapon, 0, 0, heading, speed, 0)
+
+
+def test_p07_r04_a_ring_fires_all_around_and_turns_on_each_volley() -> None:
+    ctx = _Ctx()
+    pattern = BossPattern([_volley(BossRingShape(4, 30, BULLET), first=0)])
+    sources = _sources({"core": _Src()})
+    pattern.step(ctx, 0.1, sources)
+    first = sorted(wrap_angle(h) for _, _, h, _ in ctx.bullets)
+    assert first == pytest.approx(sorted(wrap_angle(DOWN + k * math.pi / 2) for k in range(4)))
+    ctx.bullets.clear()
+    pattern._states[0].left = 0
+    pattern.step(ctx, 0.1, sources)
+    second = sorted(wrap_angle(h) for _, _, h, _ in ctx.bullets)
+    expected = sorted(wrap_angle(DOWN + 30 * DEG + k * math.pi / 2) for k in range(4))
+    assert second == pytest.approx(expected)
+    assert pattern._states[0].turns == 2
 
 
 def test_p03_r01_wrap_angle_maps_into_minus_pi_to_pi() -> None:
@@ -135,4 +222,4 @@ def test_p03_r01_a_shot_without_homing_ignores_targets() -> None:
 
 
 def test_p03_r01_degrees_to_radians_constant() -> None:
-    assert pytest.approx(math.pi / 180) == DEG
+    assert pytest.approx(math.pi / 180) == DEG_MOTION

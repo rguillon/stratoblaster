@@ -1,4 +1,4 @@
-"""Cars on the streets and main roads (phase 4 review), ported from `config/cars.ts`."""
+"""Cars on the streets and main roads (phase 4 review)"""
 
 from game.config.record import record
 from game.config.tile_buildings import TILE

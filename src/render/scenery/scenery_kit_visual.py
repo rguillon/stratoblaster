@@ -1,7 +1,6 @@
 """The real scenery kit (P04, P08, P09, P10): generated terrain textures blended in the terrain
 shader, a sea with drifting generated waves that reflect the sky and the sun (or lava), generated
-cloud layers, and the sun's shadows (PCF, ENG-103). Needs a WebGL engine. Ported from
-`render/scenery/scenery-kit.visual.ts`.
+cloud layers, and the sun's shadows (PCF, ENG-103). Needs a WebGL engine.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).

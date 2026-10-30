@@ -1,15 +1,53 @@
-"""Segments of the roads, their buckets and the building slots along them (`road_segments.py`)."""
+"""Unit tests of `src/core/scenery/road_segments.py`."""
 
 import math
 
 import pytest
+from helpers.level_builders import road_rules
 
-from core.scenery.road_segments import SegmentIndex, add_slots, segment_distance
+from core.scenery.districts import ZRange
+from core.scenery.road_paths import PathGround, _path_through
+from core.scenery.road_segments import Nearest, SegmentIndex, add_slots, segment_distance
 from core.scenery.road_types import Road, RoadPoint
+from core.scenery.scenery_level import NoCrossings
+
+SPAN = ZRange(-500.0, 1500.0)
+
+
+def _main_along_z(x: float = 0.0) -> Road:
+    points = [RoadPoint(x, z, 24.0) for z in range(-500, 1501, 10)]
+    return Road(0, "main", 24.0, 1, points)
+
+
+def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathGround:
+    def no_road(x: float, z: float, which) -> Nearest:
+        return Nearest(math.inf)
+
+    return PathGround(
+        rules,
+        SPAN,
+        is_open,
+        nearest if nearest is not None else no_road,
+        laid.append,
+    )
 
 
 def _road(index: int, points: list[tuple[float, float]], width: float = 10.0, kind: str = "main"):
     return Road(index, kind, width, 1, [RoadPoint(x, z, width) for x, z in points])
+
+
+def test_p04_r07_without_crossings_a_path_across_another_road_is_blocked() -> None:
+    rules = road_rules(no_crossings=NoCrossings(20.0))
+    main = _main_along_z()
+    crossing = Road(9, "cross", 12.0, 1, [])
+
+    def other_path(x: float, z: float, which) -> Nearest:
+        if which(main):
+            return Nearest(math.inf)
+        return Nearest(0.5, crossing)
+
+    line = [RoadPoint(0.0, 0.0, 12.0), RoadPoint(10.0, 0.0, 12.0)]
+    assert _path_through(_ground(rules, [], nearest=other_path), line, main) is None
 
 
 def test_segment_distance_is_to_the_nearest_point_of_the_segment() -> None:

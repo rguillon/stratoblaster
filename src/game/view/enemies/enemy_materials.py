@@ -1,7 +1,11 @@
-"""The materials of the enemy models (P05, P14-R02, P16-R01), ported from
-`enemies/enemy-materials.ts`."""
+"""The materials of the enemy models (P05, P14-R02, P16-R01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -34,6 +38,9 @@ def enemy_color(color: Rgb) -> Sequence[float]:
 
 def _with_colors(geo: Any, colors: list[float]) -> Any:
     """`{ ...geo, colors }`: a copy of a coloured geometry with other colours."""
+    __pragma__("skip")
+    return record({**fields_of(geo), "colors": colors})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, geo, {colors: colors});")
     return None
 
@@ -72,7 +79,7 @@ class FlameMaterials:
         self.plasma = plasma
 
 
-# Per-scene caches (a WeakMap in the TypeScript): pairs of [scene, value], matched by identity.
+# Per-scene caches: pairs of [scene, value], matched by identity.
 _ENEMY_CACHE = []  # type: list[list[Any]]
 _TINTED_CACHE = []  # type: list[list[Any]]
 _FLAME_CACHE = []  # type: list[list[Any]]

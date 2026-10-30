@@ -1,4 +1,4 @@
-"""P08-R10, 2-2: the Fjord Lynx, ported from `bosses/world-2/fjord-lynx-model.ts`.
+"""P08-R10, 2-2: the Fjord Lynx
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -8,6 +8,7 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX
+from game.config.record import record
 from game.view.enemies.enemy_shapes import (  # noqa: E402
     FIGHTER_SECTION,
     POD_SECTION,
@@ -236,17 +237,8 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from (`BossDrawing` in the TypeScript): a plain
-    object, with `ring` and `limbs` None when absent."""
-    drawing: Any = None
-    __pragma__(
-        "js",
-        "{}",
-        """
-    drawing = {core: core, parts: parts, turrets: turrets, limbs: limbs, ring: ring};
-    """,
-    )
-    return drawing
+    """What `build_boss_model` draws a boss from."""
+    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:

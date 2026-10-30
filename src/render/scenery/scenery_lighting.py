@@ -1,4 +1,4 @@
-"""The lights of a scenery scene (P08-R04), ported from `render/scenery/scenery-lighting.ts`: the
+"""The lights of a scenery scene (P08-R04): the
 sun (or the moon) and the sky's ambient light, lit as an atmosphere says.
 """
 

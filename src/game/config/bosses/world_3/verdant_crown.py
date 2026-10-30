@@ -1,5 +1,4 @@
-"""P09-R09, 3-5's final boss: the Verdant Crown, World 3's last boss (ported from
-`config/bosses/world-3/verdant-crown.ts`).
+"""P09-R09, 3-5's final boss: the Verdant Crown, World 3's last boss ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 1 and 2 final bosses (P07-R04, D-055): its parts fire the same while they

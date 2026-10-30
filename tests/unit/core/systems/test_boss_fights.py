@@ -1,12 +1,17 @@
-"""Tests of the boss fights of a level (P07-R03, R06), `core/systems/boss_fights.py`."""
+"""Unit tests of `src/core/systems/boss_fights.py`."""
 
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import transcrypt
 
+from core.content.game_level import GameLevel
+from core.entities.enemy import Enemy, EnemyKindDefinition, EnemyStats
+from core.entities.muzzle import PlanePoint
+from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
 from core.scenery.scroll_track import ScrollTrack
 from core.systems.boss_fights import (
     SLACK,
@@ -17,6 +22,10 @@ from core.systems.boss_fights import (
     LevelBoss,
     validate_level_bosses,
 )
+from core.systems.enemy_world import EnemyDifficulty
+from core.systems.level_run import LevelRun
+from core.systems.level_run_types import LevelControls, LevelRunOptions, RunShip
+from core.systems.player_flight import FlightInput
 
 
 class _Part:
@@ -67,6 +76,113 @@ def _fights(
     track = ScrollTrack(10, 1000)
     fights = BossFights(bosses, [kind], rules, hooks)  # type: ignore[list-item]
     return fights, track, kind, added
+
+
+SCREEN = SimpleNamespace(width=100, height=100)
+
+SHIP = RunShip(PlanePoint(50, 10), 100, 0, 5)
+
+STILL = FlightInput(0, 0)
+
+
+class _Bounds:
+    min_y = 0
+    max_y = 100
+    center_x = 50
+
+    def half_width_at(self, y: float) -> float:
+        return 50
+
+
+class Still(Enemy):
+    """An enemy that does nothing but stand where it is put."""
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+
+class FakeBoss(Enemy):
+    """A boss as the run sees it: it stays until destroyed."""
+
+    expires = False
+    rammable = False
+
+    def __init__(self, x: float, y: float, health: float = 100, points: float = 500) -> None:
+        super().__init__(x, y, EnemyStats("boss", 6, health, points))
+        self.name = "Hulk"
+        self.ground_speed = 0.5
+        self.parts: list = []
+        self.full_health = health
+        self.breaks = 0
+
+    @property
+    def remaining_health(self) -> float:
+        return self.health
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+    def break_next(self) -> None:
+        self.breaks += 1
+
+
+class FakeBossKind:
+    id = "hulk"
+    name = "Hulk"
+
+    def spawn(self, area: object) -> FakeBoss:
+        return FakeBoss(50, 60)
+
+
+def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDefinition:
+    return EnemyKindDefinition(
+        "still",
+        "Still",
+        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+    )
+
+
+GUN = ProjectileWeaponDefinition(
+    "gun", "Gun", "muzzle", 1, 50, 0, 50, 0, 0, 1, 5, 0, [[ShotStream(0, 0)], [ShotStream(0, 0)]]
+)
+
+
+def _level(
+    waves: list | None = None,
+    seconds: float = 10,
+    bosses: list | None = None,
+) -> GameLevel:
+    scenery = SimpleNamespace(scroll_speed=10, sections=[SimpleNamespace(seconds=seconds)])
+    return GameLevel("L1", scenery, waves or [], EnemyDifficulty(1, 1), bosses)  # type: ignore[arg-type]
+
+
+def _run(**overrides: object) -> LevelRun:
+    options: dict = dict(
+        screen=SCREEN,
+        level=_level(),
+        kinds=[_kind()],
+        weapon=GUN,
+        weapon_level=1,
+        ship=SHIP,
+        bounds=_Bounds(),
+        cull_margin=10,
+        max_enemy_age=60,
+        end_wait=1,
+        seed=1,
+    )
+    options.update(overrides)
+    return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
+
+
+def _step(
+    run: LevelRun,
+    dt: float = 0.5,
+    move: FlightInput = STILL,
+    fire: bool = False,
+    switch_weapon: bool | None = None,
+    bomb: bool | None = None,
+) -> None:
+    run.step(dt, LevelControls(move, fire, switch_weapon, bomb))
 
 
 def test_p07_r06_a_boss_kind_must_be_one_of_the_kinds_of_the_game() -> None:
@@ -279,3 +395,19 @@ def test_boss_modules_import_in_a_clean_interpreter() -> None:
         [sys.executable, "-c", code], capture_output=True, text=True, check=False
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_p07_r06_a_final_boss_ends_the_level_when_it_is_destroyed() -> None:
+    run = _run(
+        level=_level(bosses=[LevelBoss("hulk", "final", 10)]),
+        boss_kinds=[FakeBossKind()],
+        boss_rules=BossFightRules(0, 1),
+    )
+    for _ in range(2):
+        _step(run)
+    assert run.fights.has_final is True
+    run.fights.boss.health = 0
+    _step(run)
+    _step(run)
+    assert run.phase == "complete"
+    assert run.checkpoint is None

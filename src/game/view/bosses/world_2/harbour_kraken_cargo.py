@@ -1,5 +1,5 @@
 """The Harbour Kraken's cargo: the container bay at its stern (a part, launching Gnats) and the
-hatch covers along its deck, ported from `bosses/world-2/harbour-kraken-cargo.ts` (P08-R10,
+hatch covers along its deck (P08-R10,
 2-2). Logical pixels, nose +Z, Y up (towards the camera).
 """
 

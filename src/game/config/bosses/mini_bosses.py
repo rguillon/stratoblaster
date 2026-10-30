@@ -1,4 +1,4 @@
-"""The World 1 mini bosses (P07-R05), ported from `config/bosses/mini-bosses.ts`.
+"""The World 1 mini bosses (P07-R05)
 
 2 or 3 destroyable parts each. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the same

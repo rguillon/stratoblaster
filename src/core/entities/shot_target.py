@@ -1,4 +1,4 @@
-"""Something shots can hit: a circle with health, ported from `core/entities/shot-target.ts`.
+"""Something shots can hit: a circle with health
 
 Positions are in logical pixels, Y up.
 """

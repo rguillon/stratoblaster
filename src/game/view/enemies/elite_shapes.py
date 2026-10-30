@@ -1,4 +1,4 @@
-"""Shapes shared by the elite models (P05-R19 to P05-R23), ported from `enemies/elite-shapes.ts`.
+"""Shapes shared by the elite models (P05-R19 to P05-R23)
 
 Logical pixels, nose +Z, Y up; a design point (x, y) facing down the screen is model
 (-x, height, -y) (`boss_point`).

@@ -1,4 +1,4 @@
-"""What touches the player's hitbox (GD-21, P11-R05), ported from `core/systems/player-hits.ts`."""
+"""What touches the player's hitbox (GD-21, P11-R05)"""
 
 import math
 

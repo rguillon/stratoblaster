@@ -1,4 +1,4 @@
-"""Building blocks of the World 1 bosses (P07-R05), ported from `config/bosses/boss-kit.ts`.
+"""Building blocks of the World 1 bosses (P07-R05)
 
 Logical pixels with X right and Y up, from the boss's centre; the boss faces down the screen, so
 its nose is at -Y and its tail at +Y. Times in seconds, angles in degrees, speeds in px/s.
@@ -62,7 +62,7 @@ def volley_muzzles(design: Any, shot: Any) -> Any:
     """The muzzles `volley` fires from, among its piece's guns (none for launches)."""
     guns = design.guns[shot["from"]]
     if _unset(guns):
-        guns = {}
+        guns = record({})
     fired = FIRED_BY[shot["shape"]["kind"]](guns)
     return [] if _unset(fired) else fired
 
@@ -124,7 +124,7 @@ BOSS_TIMING = record(
 
 
 def bullet(style: str, speed: float, radius: float = 4) -> Any:
-    """Enemy bullets in a style of `enemy-look.ts`."""
+    """Enemy bullets in a style of the enemy look."""
     return record({"speed": speed, "radius": radius, "style": style})
 
 
@@ -178,7 +178,7 @@ def part(
     options: Any = None,
 ) -> Any:
     """A part: `options` holds `shields`, `drop`, `orbits` and `joint` (all optional)."""
-    opts: Any = {} if _unset(options) else options
+    opts: Any = record({}) if _unset(options) else record(options)
     result = record(
         {
             "id": part_id,
@@ -204,6 +204,7 @@ def stats(options: Any) -> Any:
     `parts`, and optionally `coreDrop` and `joints` (its moving limbs, phase 7 review: see
     `BossStats.joints`).
     """
+    options = record(options)
     result = record(
         {
             "model": options.id,

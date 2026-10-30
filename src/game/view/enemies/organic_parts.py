@@ -1,5 +1,5 @@
-"""P16-R01: the Cyber-Organic pieces every enemy and boss model shares, ported from
-`enemies/organic-parts.ts`. Logical pixels, nose +Z, Y up."""
+"""P16-R01: the Cyber-Organic pieces every enemy and boss model shares Logical pixels, nose +Z, Y
+up."""
 
 import math
 

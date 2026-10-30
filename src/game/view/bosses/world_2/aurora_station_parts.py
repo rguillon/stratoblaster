@@ -1,5 +1,5 @@
 """P08-R10, 2-3: the Aurora Station's parts (dish emitters, cryo cannons, drone hangar), its
-turning dish and its frost, ported from `bosses/world-2/aurora-station-parts.ts`. Logical
+turning dish and its frost Logical
 pixels, nose +Z, Y up (towards the camera)."""
 
 import math

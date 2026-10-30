@@ -1,5 +1,4 @@
-"""The living motion of the enemy models (P16-R07), visual only, ported from
-`enemies/living-motion.ts`."""
+"""The living motion of the enemy models (P16-R07), visual only"""
 
 import math
 

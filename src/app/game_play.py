@@ -1,4 +1,4 @@
-"""The game screen of a level (P06-R02), ported from `app/game-play.ts`: the chosen ship flies over
+"""The game screen of a level (P06-R02): the chosen ship flies over
 the chosen level's scrolling scenery, moved and fired by the game controls, while the level's waves
 come in. It runs the level (`LevelRun`) at a fixed step and draws it on the playfield layer.
 """

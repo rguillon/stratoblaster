@@ -1,5 +1,5 @@
-"""Times the work of each frame and of each level start (P13-R01), ported from
-`app/perf-monitor.ts`: how many frames are longer than `long_frame_ms`, the longest one, and the
+"""Times the work of each frame and of each level start (P13-R01): how many frames are longer than
+`long_frame_ms`, the longest one, and the
 last loading time. `now` is the clock, in milliseconds (`performance.now` in the browser).
 
 `perf_overlay` shows the numbers on a debug overlay (dev and e2e builds only): with no

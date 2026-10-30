@@ -1,4 +1,4 @@
-"""The badges of the bonuses (P11-R07), ported from `bonuses/bonus-geometry.ts`.
+"""The badges of the bonuses (P11-R07)
 
 Each badge is radius 1 in the XY plane, facing -Z, built as coloured flat polygons.
 """

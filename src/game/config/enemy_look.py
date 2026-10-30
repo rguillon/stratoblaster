@@ -1,6 +1,6 @@
 """Look of the enemies (P05, GD-61), of their shots (GD-43) and of their explosions (GD-62).
 
-Dark metallic hulls with neon lights, colourful bullets, ported from `config/enemy-look.ts`.
+Dark metallic hulls with neon lights, colourful bullets
 Linear RGB, 0..1; sizes in logical pixels; durations in seconds.
 """
 

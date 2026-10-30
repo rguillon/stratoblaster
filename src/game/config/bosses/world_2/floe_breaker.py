@@ -1,4 +1,4 @@
-"""The Floe Breaker (P08-R10, 2-1), ported from `config/bosses/world-2/floe-breaker.ts`.
+"""The Floe Breaker (P08-R10, 2-1)
 
 The mini boss of the Ice floes level. Offsets in px from the boss's centre, X right and Y up (its
 nose points down, at -Y). The stage patterns are the agent's design (P07-R04): the harpoon guns

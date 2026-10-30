@@ -1,6 +1,6 @@
 """Each face of a volume gets its own pattern of lights (Phase 15, reviewer 2026-10-28: "make all
 buildings from offices, towers, downtown and skyscrapers asymmetrical, with a different light
-pattern on each side"), ported from `props/tile-facades.ts`."""
+pattern on each side")"""
 
 import math
 
@@ -64,8 +64,7 @@ class Face:
         self.out = out
 
 
-# The lights builders' panels left, by builder (the WeakMap of the TypeScript, kept on the
-# builder itself: Transcrypt keys cannot be objects).
+# The lights builders' panels left, by builder.
 def panels_left(lights: Any) -> float:  # noqa: ANN401
     """The panels a building (by its lights builder) has left."""
     if hasattr(lights, "panels_left"):

@@ -1,6 +1,5 @@
-"""P07-R05, P16-R05, 1-4: the Scorpion's arms and claws, moving on their joints (phase 7 review),
-ported from `bosses/scorpion-arms.ts`. Logical pixels, nose +Z, Y up (towards the camera).
-"""
+"""P07-R05, P16-R05, 1-4: the Scorpion's arms and claws, moving on their joints (phase 7 review)
+Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 

@@ -1,4 +1,4 @@
-"""A small missile with a reactor flame (P03-R03), ported from `shots/missile-model.ts`.
+"""A small missile with a reactor flame (P03-R03)
 
 The body lies along +Z like the ship models: a tube, a red nose and four fins.
 """

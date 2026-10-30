@@ -1,4 +1,4 @@
-"""P07-R05: pieces shared by the World 1 mini boss models, ported from `bosses/mini-boss-shapes.ts`.
+"""P07-R05: pieces shared by the World 1 mini boss models
 Logical pixels, nose +Z, Y up.
 """
 
@@ -7,11 +7,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+from game.config.record import record
 from game.view.enemies.organic_parts import opt  # noqa: E402
 from render.geometry.outline import reversed_copy  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -23,16 +25,18 @@ __pragma__("noskip")
 H = ENEMY_LOOK.hull
 
 # Hull shades beyond `ENEMY_LOOK.hull`: worn edges, weathered patches, hazard paint, soot.
-SHADE = {  # type: Any
-    # Worn, lighter metal: plate edges, new repair plates.
-    "edge": [0.24, 0.24, 0.27],
-    # Weathered, slightly warm metal: old patches.
-    "patch": [0.14, 0.12, 0.1],
-    # Faded hazard paint.
-    "hazard": [0.36, 0.3, 0.08],
-    # Burnt metal: scars and exhaust soot.
-    "soot": [0.025, 0.025, 0.03],
-}
+SHADE = record(
+    {
+        # Worn, lighter metal: plate edges, new repair plates.
+        "edge": [0.24, 0.24, 0.27],
+        # Weathered, slightly warm metal: old patches.
+        "patch": [0.14, 0.12, 0.1],
+        # Faded hazard paint.
+        "hazard": [0.36, 0.3, 0.08],
+        # Burnt metal: scars and exhaust soot.
+        "soot": [0.025, 0.025, 0.03],
+    }
+)
 
 # Charge lights are drawn white: their material tints them with the boss's neon colour.
 WHITE = [1, 1, 1]  # type: list[float]

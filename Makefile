@@ -2,7 +2,7 @@
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install vendor dev build lint format typecheck check check-fast clean
+.PHONY: help install build-info vendor dev build lint format typecheck test coverage check check-fast clean
 
 DIST := dist
 
@@ -18,9 +18,20 @@ SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || e
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
+# The version and the short commit shown on the title screen (ENG-83): `src/build_info.py`, written
+# from git by `make build-info` (git-ignored, so a checkout has none until then). The version is the
+# latest release tag (highest version, `v` dropped): a checkout without tags shows `unknown`.
+APP_VERSION := $(or $(patsubst v%,%,$(shell git tag --sort=-v:refname 2>/dev/null | head -n 1)),unknown)
+BUILD_INFO := src/build_info.py
+
+build-info: ## Write src/build_info.py: the version and the short commit (unknown without git)
+	@commit=$$(git rev-parse --short HEAD 2>/dev/null || echo unknown); \
+	printf 'APP_VERSION = "%s"\nAPP_COMMIT = "%s"\n' '$(APP_VERSION)' "$$commit" > $(BUILD_INFO).tmp; \
+	if cmp -s $(BUILD_INFO).tmp $(BUILD_INFO); then rm -f $(BUILD_INFO).tmp; else mv $(BUILD_INFO).tmp $(BUILD_INFO); fi
+
+install: build-info ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
 	uv sync --locked
-	npm ci
+	npm ci --prefix node
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
 vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
@@ -44,7 +55,8 @@ vendor: ## Download the pinned Babylon.js build into public/vendor/, checking it
 # game (main.py) and its ground worker (a Web Worker entry, not reached from main.py) into one
 # file each under dist/js/, so the page makes 2 requests for code instead of one per module.
 TRANSCRYPT_OUT := build
-ESBUILD := node_modules/.bin/esbuild
+# Node is only a build step: esbuild bundles the compiled game (node/ holds its package.json).
+ESBUILD := node/node_modules/.bin/esbuild
 # Transcrypt has no incremental mode here (its `-b`-less build fails), so it compiles everything
 # (about 20 s) whenever a Python source changed: the stamp file records the last compile.
 PY_SOURCES := $(shell find src -name '*.py' -not -path '*/__pycache__/*')
@@ -55,7 +67,7 @@ $(TRANSCRYPT_STAMP): $(PY_SOURCES)
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
 	touch $@
 
-build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
+build: build-info $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
 	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
 		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
 	rm -rf $(DIST)
@@ -72,7 +84,7 @@ build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed),
 dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
 	uv run python -m http.server 5173 --directory $(DIST)
 
-lint: ## Ruff check + format check + layering contracts (no auto-fix)
+lint: build-info ## Ruff check + format check + layering contracts (no auto-fix)
 	uv run ruff check src
 	uv run ruff format --check src
 	PYTHONPATH=src uv run lint-imports
@@ -81,20 +93,21 @@ format: ## Ruff format + ruff fix
 	uv run ruff format src
 	uv run ruff check --fix src
 
-typecheck: ## mypy --strict
+typecheck: build-info ## mypy --strict
 	uv run mypy
 
 test: ## Unit tests (pytest, CPython over src/)
 	uv run pytest
 
-coverage: ## Unit tests with the core/ coverage report (fails below ENG-43), HTML in coverage/
+coverage: ## Unit tests with the coverage report of src/ (70 %) and of core/ (90 %), HTML in coverage/
 	uv run coverage run -m pytest
 	uv run coverage html -d coverage
 	uv run coverage report
+	uv run coverage report --include='src/core/*' --fail-under=90
 
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
-check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
+check: lint typecheck build ## Lint, typecheck and build (the unit tests: make coverage; e2e is deferred)
 
 clean: ## Remove build outputs and caches
 	rm -rf $(DIST) build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache

@@ -1,4 +1,4 @@
-"""The Scout (P05-R03), ported from `game/sim/enemies/scout.ts`."""
+"""The Scout (P05-R03)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

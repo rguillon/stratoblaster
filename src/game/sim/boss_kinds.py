@@ -1,4 +1,4 @@
-"""The boss kinds of the game (P07-R05), ported from `game/sim/boss-kinds.ts`."""
+"""The boss kinds of the game (P07-R05)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""Farms of the green land (P06-R06, reviewer 2026-10-26), ported from `props/farm-props.ts`.
+"""Farms of the green land (P06-R06, reviewer 2026-10-26)
 Sizes in world units, on Y = 0."""
 
 import math

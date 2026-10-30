@@ -1,4 +1,4 @@
-"""Runs a level's wave script (P06-R07, GD-40), ported from `core/systems/wave-runner.ts`.
+"""Runs a level's wave script (P06-R07, GD-40)
 
 Waves start when the level scrolls past their distance, and not before; the groups of a wave come
 in one by one, so several waves can be on screen at once. The runner knows enemy kinds only by id:

@@ -1,4 +1,4 @@
-"""The Snow Owl (P08-R10, 2-3), ported from `bosses/world-2/snow-owl-model.ts`.
+"""The Snow Owl (P08-R10, 2-3)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -209,7 +209,7 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

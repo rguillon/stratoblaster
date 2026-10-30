@@ -1,8 +1,5 @@
-"""Texts of the engine's menu screens, provided by the game (ENG-140, ENG-144).
-
-Ported from `core/content/menu-texts.ts`. The fields that the TypeScript made functions (plural
-or parameterised texts) are callables.
-"""
+"""Texts of the engine's menu screens, provided by the game (ENG-140, ENG-144). Plural or
+parameterised texts are callables."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -61,7 +58,7 @@ class MenuTexts:
         no: str,
         yes: str,
     ) -> None:
-        """Fields as in the TypeScript, in the same order. The functions are: `game_level(level
+        """Fields, in the same order. The functions are: `game_level(level
         label)`, `enemies_destroyed(destroyed, spawned)`, `final_score(score)`, `hud_lives(lives)`,
         `hud_weapon(weapon name, level, levels)`, `hud_bombs(bombs)`, `hud_score(score)`,
         `hud_high_score(score)`, `hud_bomb(bombs)`.

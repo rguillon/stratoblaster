@@ -1,5 +1,4 @@
-"""The six times of day (P08-R04) and the light tunables of the sky (P08-R04, P10-R04), ported
-from `config/time-of-day.ts`.
+"""The six times of day (P08-R04) and the light tunables of the sky (P08-R04, P10-R04)
 
 Colours are gamma-space RGB, 0..1, as the scenery looks.
 """

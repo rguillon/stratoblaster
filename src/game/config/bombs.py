@@ -1,4 +1,4 @@
-"""The player's bombs (GD-32, P11-R05, D-091), ported from `config/bombs.ts`.
+"""The player's bombs (GD-32, P11-R05, D-091)
 
 3 at the start (then those kept from the level completed before, reviewer 2026-10-28), after a
 Continue, and again after a lost life if fewer are left; as many as bomb bonuses add. One deals 100

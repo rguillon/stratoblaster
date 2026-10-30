@@ -1,4 +1,4 @@
-"""Models shown side by side, each one spinning (ported from `render/model-showcase.ts`)."""
+"""Models shown side by side, each one spinning ()."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

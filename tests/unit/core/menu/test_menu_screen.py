@@ -1,4 +1,4 @@
-"""The screens of the menu flow (`core.menu.menu_screen`, P01-R01)."""
+"""Unit tests of `src/core/menu/menu_screen.py`."""
 
 import pytest
 

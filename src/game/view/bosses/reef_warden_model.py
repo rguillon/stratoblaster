@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-1: the Reef Warden, ported from `bosses/reef-warden-model.ts`. Logical
+"""P07-R05, P16-R05, 1-1: the Reef Warden Logical
 pixels, nose +Z, Y up (towards the camera).
 """
 

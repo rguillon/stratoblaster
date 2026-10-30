@@ -1,5 +1,4 @@
-"""P09-R09, 3-4: the Mosquito, the mini boss of the swamp works (ported from
-`config/bosses/world-3/mosquito.ts`).
+"""P09-R09, 3-4: the Mosquito, the mini boss of the swamp works ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two wings
 buzz on their joints (D-061: a fast, small swing) and shield the core; its proboscis aims a laser

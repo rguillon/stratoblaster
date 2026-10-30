@@ -1,4 +1,4 @@
-"""Look of a bomb going off (P11-R05), ported from `config/bomb-look.ts`.
+"""Look of a bomb going off (P11-R05)
 
 A cyan shockwave ring growing from the ship until it covers the playfield, fading as it goes, and a
 short warm flash at the ship. One bomb at a time and each lasting 1 s, there is never more than one

@@ -1,4 +1,4 @@
-"""Low-poly, flat-shaded, vertex-coloured solids (ported from `render/geometry/solids.ts`).
+"""Low-poly, flat-shaded, vertex-coloured solids ().
 
 Each face has its own vertices, so the normals computed later are per face. Vectors are
 lists of 3 numbers, outlines are `[x, z]` lists (see `outline.py`).

@@ -1,4 +1,4 @@
-"""P10-R11, 4-1: the Cinder Crab. Ported from `bosses/world-4/cinder-crab-model.ts`. Logical pixels,
+"""P10-R11, 4-1: the Cinder Crab. Logical pixels,
 nose +Z, Y up (towards the camera). A wide, low crab-ship: a soot-black carapace cracked by molten
 seams, orange neon along its rim and on its eye stalks, six short legs, arms reaching from under its
 front rim to the two claws, the ring dome on its back and the mortar behind it. P16-R05: a living

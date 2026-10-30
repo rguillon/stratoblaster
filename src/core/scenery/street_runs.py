@@ -1,5 +1,4 @@
-"""The straight runs of the street grids' built links (phase 4 review), ported from
-`core/scenery/street-runs.ts`."""
+"""The straight runs of the street grids' built links (phase 4 review)"""
 
 import math
 
@@ -52,7 +51,7 @@ def _key(n: GridNode) -> str:
 
 
 def _same(a: GridNode, b: GridNode) -> bool:
-    """Whether `a` and `b` are the same node: mostly the same object (`street-links.ts`)."""
+    """Whether `a` and `b` are the same node: mostly the same object."""
     return a is b or _key(a) == _key(b)
 
 

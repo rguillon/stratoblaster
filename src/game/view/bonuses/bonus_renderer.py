@@ -1,4 +1,4 @@
-"""The bonuses (phase 6 review, P11-R07), ported from `bonuses/bonus-renderer.ts`, in playfield
+"""The bonuses (phase 6 review, P11-R07), in playfield
 space: each one a badge of its kind swinging from side to side over a pulsing halo, and a ring
 flashing out where the ship picks one up.
 """

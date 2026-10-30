@@ -1,4 +1,4 @@
-"""Tunables of the first enemies (P05), ported from `config/enemies.ts`.
+"""Tunables of the first enemies (P05)
 
 Distances in logical pixels, speeds in px/s, times in seconds, angles in degrees. Heights given as
 `...Fraction` are fractions of the playfield height from its bottom (1 = top edge).

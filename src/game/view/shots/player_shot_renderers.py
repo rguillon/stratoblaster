@@ -1,6 +1,4 @@
-"""Shot renderer of each player weapon, keyed by weapon id, ported from
-`shots/player-shot-renderers.ts`.
-"""
+"""Shot renderer of each player weapon, keyed by weapon id"""
 
 from game.config.player_weapons import BULLET, LASER, MISSILE
 from game.view.shots.bullet_renderer import create_bullet_renderer  # noqa: E402

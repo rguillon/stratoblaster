@@ -1,5 +1,5 @@
-"""Every prop follows the block size rule (Phase 15, reviewer 2026-10-28), ported from
-`props/tile-fit.ts`: its footprint is stretched along X and Z to the nearest whole number of
+"""Every prop follows the block size rule (Phase 15, reviewer 2026-10-28): its footprint is
+stretched along X and Z to the nearest whole number of
 tiles, less the margin of the buildings, centred on the origin. Heights are kept."""
 
 import math

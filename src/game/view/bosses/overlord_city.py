@@ -1,4 +1,4 @@
-"""P07-R05: the Overlord's city, ported from `bosses/overlord-city.ts`: shared shapes, towers
+"""P07-R05: the Overlord's city: shared shapes, towers
 standing on its deck with lit windows and rooftop clutter, neon edges. Model space: logical pixels,
 nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
 """

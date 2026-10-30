@@ -1,5 +1,5 @@
-"""The launch volleys of the bosses' parts (P07-R05: hangars, drone bays), ported from
-`game/sim/bosses/boss-launches.ts`. The volley itself is built from its config record in
+"""The launch volleys of the bosses' parts (P07-R05: hangars, drone bays) The volley itself is built
+from its config record in
 `game/sim/boss_build.py`.
 """
 

@@ -1,9 +1,9 @@
-"""Buildings of whole tiles packed in the blocks of a district (P15-R07, R08; `tile_packing.py`)."""
+"""Unit tests of `src/core/scenery/tile_packing.py`."""
 
 import math
 
 import pytest
-from level_builders import flat, hills, make_level, prop_rules, section, tile_rules
+from helpers.level_builders import flat, hills, make_level, prop_rules, section, tile_rules
 
 from core.scenery.height_field import HeightField
 from core.scenery.scenery_level import PropKindRule
@@ -26,7 +26,9 @@ from core.scenery.tile_packing import (
 )
 
 BLOCK = TileBlock(0, 6, 0, 6)
+
 ONE = PropKindRule("one", 1.0, 1.0, (0.5, 1.0), tiles=(1, 1))
+
 TWO = PropKindRule("two", 1.0, 2.0, (0.5, 1.0), tiles=(2, 2))
 
 

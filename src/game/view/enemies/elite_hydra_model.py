@@ -1,4 +1,4 @@
-"""P05-R19, P16-R04: the Hydra, ported from `enemies/elite-hydra-model.ts`. Logical pixels, nose
+"""P05-R19, P16-R04: the Hydra Logical pixels, nose
 +Z, Y up (towards the camera).
 """
 

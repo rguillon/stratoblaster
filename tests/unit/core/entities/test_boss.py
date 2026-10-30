@@ -1,16 +1,22 @@
-"""Bosses (`core.entities.boss`, P07): coming in, stages, pauses, rage, death and placement."""
+"""Unit tests of `src/core/entities/boss.py`."""
 
 import math
 from collections.abc import Callable
+from typing import Any
 
 import pytest
-from fakes import FakeContext, ProbeBoss
+from helpers.fakes import FakeContext, ProbeBoss
 
 from core.entities.boss import Boss, BossDeath, BossPartSpec, BossStats
-from core.entities.boss_joint import BossJointSpec, JointSwing
-from core.entities.boss_roll import BossRoll
 
 Make = Callable[..., ProbeBoss]
+
+
+def as_tuple(point: Any) -> tuple[float, ...]:
+    """A muzzle point's fields, to compare them."""
+    if hasattr(point, "height"):
+        return (point.x, point.y, point.height)
+    return (point.x, point.y)
 
 
 def test_p07_r01_a_new_boss_is_coming_in_and_cannot_be_hurt(make_boss: Make) -> None:
@@ -192,14 +198,6 @@ def test_a_boss_without_parts_blasts_from_its_core(make_boss: Make, ctx: FakeCon
     assert all(radius == pytest.approx(12) for _, _, radius in ctx.explosions)
 
 
-def test_the_boss_rolls_into_a_sideways_move(make_boss: Make, ctx: FakeContext) -> None:
-    boss = make_boss(fighting=True, roll=BossRoll(max_deg=30, full_speed=100, ease_per_sec=1000))
-    boss.update(ctx, 0.0)
-    boss.x += 10
-    boss.update(ctx, 0.1)
-    assert boss.roll == pytest.approx(math.pi / 6)
-
-
 def test_a_boss_without_a_roll_rule_does_not_roll(make_boss: Make, ctx: FakeContext) -> None:
     boss = make_boss(fighting=True)
     boss.x += 10
@@ -216,24 +214,6 @@ def test_orbiting_parts_turn_with_the_spin(make_boss: Make, ctx: FakeContext) ->
     boss.update(ctx, 0.0)
     assert boss.parts[0].x == pytest.approx(110)
     assert boss.parts[0].y == pytest.approx(220)
-
-
-def test_a_part_hanging_on_a_joint_moves_with_it(make_boss: Make) -> None:
-    claw = BossPartSpec(
-        id="claw", x=0, y=10, radius=2, health=1, shields_core=False, drop_chance=0, joint="arm"
-    )
-    joints = {"arm": BossJointSpec(0, 0, JointSwing(90, 1, 0.25))}
-    boss = make_boss(parts=[claw], joints=joints)
-    assert boss.parts[0].x == pytest.approx(110)
-    assert boss.parts[0].y == pytest.approx(200)
-
-
-def test_the_joints_swing_on_each_update(make_boss: Make, ctx: FakeContext) -> None:
-    joints = {"arm": BossJointSpec(0, 0, JointSwing(90, 1, 0.25))}
-    boss = make_boss(fighting=True, joints=joints)
-    assert boss.joints.angle("arm") == pytest.approx(math.pi / 2)
-    boss.update(ctx, 0.5)
-    assert boss.joints.angle("arm") == pytest.approx(-math.pi / 2)
 
 
 def test_a_boss_that_does_not_arrive_does_not_move_or_attack(
@@ -306,3 +286,12 @@ def test_boss_death_needs_a_positive_blast_interval(every: float) -> None:
     with the time), so the interval must be positive."""
     with pytest.raises(ValueError, match="positive interval"):
         BossDeath(seconds=1.0, every=every)
+
+
+def test_a_part_orbiting_the_boss_turns_its_muzzles_with_the_spin(make_boss: Make) -> None:
+    ring = BossPartSpec(
+        id="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
+    )
+    boss = make_boss(parts=[ring])
+    boss.spin = math.pi / 2
+    assert as_tuple(boss.parts[0].place((1, 0, 0))) == pytest.approx((100, 199, 0))

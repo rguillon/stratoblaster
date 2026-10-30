@@ -1,6 +1,6 @@
 """Builds the core sky of a level (P08-R04, P09-R04, P10) from its config record: the sky script
 (`atmosphere`) of a scenery look, as `core/scenery/sky_look.py` reads it. The config keeps the
-TypeScript's camelCase shape; `core/` takes snake_case attributes, and an omitted optional field is
+camelCase keys; `core/` takes snake_case attributes, and an omitted optional field is
 None. Mapping rules are in `config_build.py`.
 """
 

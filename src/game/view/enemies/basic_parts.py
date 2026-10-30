@@ -1,5 +1,5 @@
 """P16-R03: the pieces the basic kinds share (grafted gun barrels, a pair of fluttering membrane
-wings, sinews and eyes), ported from `enemies/basic-parts.ts`. Logical pixels, nose +Z, Y up."""
+wings, sinews and eyes) Logical pixels, nose +Z, Y up."""
 
 import math
 

@@ -1,6 +1,5 @@
-"""P07-R05, P16-R06: the Gull Mothership's destroyable parts, its brood pouches and flak growths,
-ported from `bosses/final-boss-gull.ts`. Logical pixels, nose +Z, Y up.
-"""
+"""P07-R05, P16-R06: the Gull Mothership's destroyable parts, its brood pouches and flak growths
+Logical pixels, nose +Z, Y up."""
 
 import math
 

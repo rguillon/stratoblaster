@@ -1,5 +1,5 @@
 """P09-R09, 3-2: the Toucan's parts: its huge beak cannon and its two wing pods (ducted fans).
-Ported from `view/bosses/world-3/toucan-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera)."""
 
 import math
@@ -65,9 +65,10 @@ def beak_paint(side: int, band: int) -> Any:
     return None
 
 
-def beak(p: EnemyParts) -> None:
+def beak(p: EnemyParts, _at: Any = None) -> None:
     """The beak cannon (P09-R09): a huge, bright, faceted beak with neon along its ridge and
-    cutting edges, the laser emitter in its tip (its lens lights up as it charges)."""
+    cutting edges, the laser emitter in its tip (its lens lights up as it charges). It is drawn in
+    model space, so the point its part sits at (`_at`, as every part is handed one) is not used."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

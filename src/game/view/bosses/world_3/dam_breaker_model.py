@@ -1,4 +1,4 @@
-"""P09-R09, 3-4: the Dam Breaker. Ported from `view/bosses/world-3/dam-breaker-model.ts`. Logical
+"""P09-R09, 3-4: the Dam Breaker. Logical
 pixels, nose +Z, Y up (towards the camera). A giant armoured barge: a long, flat hull, the pump
 house amidships with its stack, two sluice gate houses either side of the bow, the armour plate
 and the drone hangar on the bow, the chemical tanks on outriggers at its sides, rust, moss and

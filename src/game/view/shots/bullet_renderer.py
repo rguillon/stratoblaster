@@ -1,6 +1,5 @@
 """Minigun tracers (P03-R01, phase 5 review): white-hot streaks cooling to red along their tail,
-flickering, and a burst of sparkling metal sparks where they hit. Ported from
-`shots/bullet-renderer.ts`.
+flickering, and a burst of sparkling metal sparks where they hit.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

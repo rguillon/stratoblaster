@@ -1,5 +1,5 @@
 """Rain rings on the water (P09-R05): faint rings spreading where raindrops land, drawn on a plane
-at the water level. Ported from `render/scenery/rain-rings.ts`.
+at the water level.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

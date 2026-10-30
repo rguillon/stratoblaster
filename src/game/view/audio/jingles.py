@@ -1,4 +1,4 @@
-"""The game's short fanfares (P12-R07), ported from `audio/jingles.ts`: "level complete",
+"""The game's short fanfares (P12-R07): "level complete",
 "game over" and "checkpoint reached", each a track played once.
 """
 

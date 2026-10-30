@@ -1,5 +1,4 @@
-"""P09-R09, 3-1: the Mangrove Croc, the River delta's mini boss (ported from
-`config/bosses/world-3/mangrove-croc.ts`).
+"""P09-R09, 3-1: the Mangrove Croc, the River delta's mini boss ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two jaws
 open and close on their hinges (D-061) around the jaw cannon, opening wide as it fires; the two

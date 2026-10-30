@@ -1,8 +1,6 @@
 """Road pieces of the districts on tiles (phase 15, P15-R02, P15-R03, P15-R04): a sidewalk over the
 whole piece, a kerb and the roadway of each open side, joined in the middle, and the lane markings
 up to the junction. Draped on the ground, so pieces meet with no step.
-
-Ported from `render/scenery/tile-road-geometry.ts`.
 """
 
 import math
@@ -34,7 +32,7 @@ ARMS = [(False, True), (True, True), (False, False), (True, False)]
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 class TileRoadLook:

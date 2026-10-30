@@ -1,6 +1,6 @@
 """P16-R05, P16-R06: the Cyber-Organic pieces of the World 4 bosses (the volcanic, ash and foundry
-world): scorched flesh swollen around metal grafts, molten veins and glands glowing ember.
-Ported from `bosses/world-4/living-forge.ts`. Logical pixels, nose +Z, Y up.
+world): scorched flesh swollen around metal grafts, molten veins and glands glowing ember. Logical
+pixels, nose +Z, Y up.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

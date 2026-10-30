@@ -1,5 +1,4 @@
-"""Merges several devices (keyboard, gamepads...) into one stream of menu actions, ported from
-`input/menu-input.ts`."""
+"""Merges several devices (keyboard, gamepads...) into one stream of menu actions"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

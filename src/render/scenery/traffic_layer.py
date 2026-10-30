@@ -1,7 +1,5 @@
 """The moving cars of a level (phase 4 review): the cars in view are placed again every frame, as
 thin instances of their own meshes, apart from the props that stay put.
-
-Ported from `render/scenery/traffic-layer.ts`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

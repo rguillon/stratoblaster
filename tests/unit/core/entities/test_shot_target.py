@@ -1,4 +1,4 @@
-"""Things shots can hit (`core.entities.shot_target`)."""
+"""Unit tests of `src/core/entities/shot_target.py`."""
 
 from dataclasses import dataclass
 

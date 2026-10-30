@@ -1,4 +1,4 @@
-"""Preparing a level's ground ahead of its play, ported from `app/level-prepare.ts` (P13-R03).
+"""Preparing a level's ground ahead of its play (P13-R03).
 
 A level's scenery with its runout is made once per level, so its generated ground is reused.
 """

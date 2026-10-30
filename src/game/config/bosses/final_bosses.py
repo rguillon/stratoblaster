@@ -1,4 +1,4 @@
-"""The World 1 final bosses (P07-R05), ported from `config/bosses/final-bosses.ts`.
+"""The World 1 final bosses (P07-R05)
 
 4 to 6 destroyable parts each. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Stage patterns as for the mini bosses (see `mini_bosses.py`); the core of a

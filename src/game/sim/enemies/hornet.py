@@ -1,4 +1,4 @@
-"""The Hornet (P05-R02), ported from `game/sim/enemies/hornet.ts`."""
+"""The Hornet (P05-R02)"""
 
 import math
 
@@ -42,7 +42,7 @@ __pragma__("noskip")
 # How fast the nose eases in on the player: turn rate per radian left to turn, per second.
 TURN_EASE = 14
 
-# A deceleration that never limits the entry (`entryBrake` default, as in the TypeScript).
+# A deceleration that never limits the entry.
 NO_BRAKE = 1.7976931348623157e308
 
 

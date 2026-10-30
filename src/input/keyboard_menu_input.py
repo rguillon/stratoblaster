@@ -1,4 +1,4 @@
-"""Keyboard -> menu actions (P01-R09), ported from `input/keyboard-menu-input.ts`. Keys are matched
+"""Keyboard -> menu actions (P01-R09) Keys are matched
 by `KeyboardEvent.code` (physical position), so WASD positions work on AZERTY. Held directions
 repeat with our own timing; the browser's auto-repeat events are ignored."""
 
@@ -57,6 +57,8 @@ class KeyboardMenuInput:
         self._bindings = bindings
         self._queue: list[MenuAction] = []
         self._repeater = HoldRepeater(timing.repeat_delay_seconds, timing.repeat_interval_seconds)
+        # The keys held down: an action keeps repeating while any key bound to it is still down.
+        self._held: list[str] = []
 
     def key_down(self, event: MenuKeyEvent) -> None:
         action = self._bindings.get(event.code)
@@ -65,17 +67,25 @@ class KeyboardMenuInput:
         event.preventDefault()
         if event.repeat:
             return
+        if is_menu_direction(action) and event.code not in self._held:
+            self._held.append(event.code)
         if not is_menu_direction(action) or self._repeater.press(action):
             self._queue.append(action)
 
     def key_up(self, event: _KeyUpEvent) -> None:
         action = self._bindings.get(event.code)
-        if action is not None and is_menu_direction(action):
+        if action is None or not is_menu_direction(action):
+            return
+        if event.code in self._held:
+            self._held.remove(event.code)
+        still_held = [code for code in self._held if self._bindings.get(code) == action]
+        if not still_held:
             self._repeater.release(action)
 
     def release_all(self) -> None:
         """Forgets held keys, e.g. when the window loses focus and key-ups would be missed."""
         self._repeater.release_all()
+        self._held.clear()
 
     def update(self, dt_seconds: float) -> list[MenuAction]:
         """Returns the actions since the last call: presses first, then the repeats due."""

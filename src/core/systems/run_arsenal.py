@@ -1,4 +1,4 @@
-"""The weapons of a run (phase 6 review), ported from `core/systems/run-arsenal.ts`.
+"""The weapons of a run (phase 6 review)
 
 The player switches between the weapons in order, each keeping its own level, and bonuses raise the
 one in use. Its `snapshot` is what a checkpoint keeps (P07-R08).

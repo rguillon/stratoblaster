@@ -1,6 +1,6 @@
 """P10-R11, 4-1: the Cinder Crab's arms (on their shoulders) and outer fingers (on their wrists),
-moving limbs (D-061), its claws and its back mortar (its parts). Ported from
-`bosses/world-4/cinder-crab-parts.ts`. Logical pixels, nose +Z, Y up; the left claw (the screen's
+moving limbs (D-061), its claws and its back mortar (its parts). Logical pixels, nose +Z, Y up; the
+left claw (the screen's
 left, -X on the playfield) is drawn at +X.
 """
 

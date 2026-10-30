@@ -1,5 +1,5 @@
-"""Rows of lit windows for the buildings of the city centre (Phase 4 review), ported from
-`props/city-props.ts` (see `city_lots.py`)."""
+"""Rows of lit windows for the buildings of the city centre (Phase 4 review) (see
+`city_lots.py`)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

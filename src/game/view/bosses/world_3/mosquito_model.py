@@ -1,4 +1,4 @@
-"""P09-R09, 3-4: the Mosquito. Ported from `view/bosses/world-3/mosquito-model.ts`. Logical pixels,
+"""P09-R09, 3-4: the Mosquito. Logical pixels,
 nose +Z, Y up (towards the camera). A thin bio-drone: a small armoured thorax, a big-eyed head, a
 long segmented abdomen behind, six thin legs hanging under it, moss grown over its back."""
 

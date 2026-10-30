@@ -1,5 +1,4 @@
-"""Shapes shared by the veteran models (P05-R14 to P05-R18), ported from
-`enemies/veteran-shapes.ts`. Logical pixels, nose +Z, Y up."""
+"""Shapes shared by the veteran models (P05-R14 to P05-R18) Logical pixels, nose +Z, Y up."""
 
 import math
 
@@ -42,6 +41,10 @@ def station_at(stations: Any, z: float) -> list[float]:
     for i, s in enumerate(stations):
         if after < 0 and s[0] >= z:
             after = i
+    if after < 0 and len(stations) > 0:
+        # Past the nose: the nose's radii.
+        last = stations[-1]
+        return [z, last[1], last[2], last[3]]
     b = stations[max(0, after)] if len(stations) > 0 else None
     a = stations[max(0, after - 1)] if len(stations) > 0 else b
     if a == None or b == None:  # noqa: E711

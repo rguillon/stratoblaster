@@ -1,6 +1,5 @@
 """The Ice Queen's details (P08-R10, 2-5): its crystal canopy, its engine nacelles, the crystal
-fins at its tail, frosted plates and lights on its wings, ported from
-`bosses/world-2/ice-queen-details.ts`. Logical pixels, nose +Z, Y up.
+fins at its tail, frosted plates and lights on its wings Logical pixels, nose +Z, Y up.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

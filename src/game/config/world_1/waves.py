@@ -1,4 +1,4 @@
-"""The wave scripts of World 1 (P06-R07, R08), ported from `config/world-1/waves.ts`.
+"""The wave scripts of World 1 (P06-R07, R08)
 
 Each beat is written in seconds from the start of the level for readability, and turned into a
 scrolled distance at the level's ground speed: waves are triggered by distance (GD-40). A beat is

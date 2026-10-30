@@ -1,4 +1,4 @@
-"""The menu flow's data, ported from `app/menu-state.ts`: the feedback of a command, the snapshot
+"""The menu flow's data: the feedback of a command, the snapshot
 of the flow (`MenuState`) and the options of a `MenuFlow`.
 
 Classes take their fields in the order listed, as positional arguments (Transcrypt drops keyword

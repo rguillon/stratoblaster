@@ -1,5 +1,4 @@
-"""Dead trees, a leafless trunk with a few bare branches (P04-R04), ported from
-`props/tree-props.ts`. Sizes in world units."""
+"""Dead trees, a leafless trunk with a few bare branches (P04-R04) Sizes in world units."""
 
 from game.config.prop_look import PROP_COLORS as C
 from render.geometry.solids import Placement, SolidBuilder

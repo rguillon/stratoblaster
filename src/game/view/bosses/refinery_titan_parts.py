@@ -1,5 +1,5 @@
 """P07-R05, P16-R06: the Refinery Titan's destroyable parts (fuel bladders, rotary turrets, missile
-brood), ported from `bosses/refinery-titan-parts.ts`, each drawn around its centre `at` (model
+brood), each drawn around its centre `at` (model
 space: logical pixels, nose +Z, Y up).
 """
 

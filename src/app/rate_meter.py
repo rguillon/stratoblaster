@@ -1,6 +1,4 @@
-"""Measures how fast a running total grows, over a sliding time window (ported from
-`app/rate-meter.ts`).
-"""
+"""Measures how fast a running total grows, over a sliding time window ()."""
 
 
 class RateMeter:

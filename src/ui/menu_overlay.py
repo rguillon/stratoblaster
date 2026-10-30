@@ -1,4 +1,4 @@
-"""The HTML/CSS menu overlay (P01-R13), ported from `ui/menu-overlay.ts`. It renders a view and
+"""The HTML/CSS menu overlay (P01-R13) It renders a view and
 turns taps and clicks into menu commands (P01-R11); it never reads raw keys or gamepad buttons."""
 
 from org.transcrypt.stubs.browser import __pragma__

@@ -1,4 +1,4 @@
-"""A world boss (P07-R05), built from its design, ported from `game/sim/bosses/world-boss.ts`."""
+"""A world boss (P07-R05), built from its design"""
 
 import math
 

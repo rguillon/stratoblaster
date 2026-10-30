@@ -1,4 +1,4 @@
-"""Glow shapes of the shots (discs, swirls, streaks and bars), ported from `shot-geometry.ts`.
+"""Glow shapes of the shots (discs, swirls, streaks and bars)
 
 Each builder returns a `ColoredGeometry`: positions, indices and vertex colours (RGBA) that the
 render layer turns into a mesh. Colours are `[r, g, b]` lists in 0..1.
@@ -20,14 +20,14 @@ from typing import Any  # noqa: E402
 Rgb = Sequence[float]
 __pragma__("noskip")
 
-# The guards of the TypeScript builders: a ring needs 3 sides, a streak 2 colours and 2 rows.
+# The guards of the builders: a ring needs 3 sides, a streak 2 colours and 2 rows.
 MIN_SEGMENTS = 3
 MIN_COLOURS = 2
 MIN_ROWS = 2
 
 
 def _range_error(message: str) -> None:
-    """Throws a JavaScript RangeError (the TypeScript code throws one)."""
+    """Throws a JavaScript RangeError."""
     __pragma__("js", "{}", "throw new RangeError(message);")
 
 
@@ -69,6 +69,7 @@ def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -
     twist = shape["twist"]
     geo = _empty_geometry()
     center = colors[0]
+    geo.positions.extend([0, 0, 0])
     geo.colors.extend(center)
     geo.colors.append(1)
     rings = len(colors) - 1

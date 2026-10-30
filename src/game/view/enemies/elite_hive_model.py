@@ -1,4 +1,4 @@
-"""P05-R23, P16-R04: the Hive, ported from `enemies/elite-hive-model.ts`. Logical pixels, nose +Z,
+"""P05-R23, P16-R04: the Hive Logical pixels, nose +Z,
 Y up (towards the camera).
 """
 

@@ -1,8 +1,11 @@
-"""The moving limbs of boss models (phase 7 review), ported from `bosses/boss-limbs.ts`: their
+"""The moving limbs of boss models (phase 7 review): their
 joints as nodes, and what is drawn on them. Model space as in `boss_model.py`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
+
+__pragma__("skip")
+__pragma__("noskip")
 
 from render.babylon import (  # noqa: E402
     new_transform_node,
@@ -14,7 +17,7 @@ __pragma__("skip")
 from typing import Any  # noqa: E402
 
 type Vec3 = list[Any]
-# A limb drawn on a joint (`LimbDrawing` in the TypeScript): its record of draw and part.
+# A limb drawn on a joint: its record of draw and part.
 type LimbDrawing = dict[str, Any]
 __pragma__("noskip")
 
@@ -25,12 +28,18 @@ ORIGIN = [0, 0, 0]
 
 def _keys(value: Any) -> list[str]:
     """`Object.keys(value)`."""
+    __pragma__("skip")
+    return list(value.keys())
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.keys(value);")
     return []
 
 
 def _entries(value: Any) -> list[Any]:
     """`Object.entries(value)`: a list of `[key, value]` pairs."""
+    __pragma__("skip")
+    return [[key, item] for key, item in value.items()]
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.entries(value);")
     return []
 

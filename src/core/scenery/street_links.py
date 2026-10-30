@@ -1,5 +1,4 @@
-"""The nodes and links of a district's street grid (phase 4 review), ported from
-`core/scenery/street-links.ts`."""
+"""The nodes and links of a district's street grid (phase 4 review)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -18,8 +17,7 @@ def to_fixed3(x: float) -> str:
 
 class Block:
     """A city block: the ground between the streets around one cell of a district's grid, up to
-    the street edges (TypeScript `street-grid.ts`; defined here to keep `tile-streets` and
-    `street-grid` free of an import cycle)."""
+    the street edges."""
 
     def __init__(self, x_min: float, x_max: float, z_min: float, z_max: float) -> None:
         self.x_min = x_min

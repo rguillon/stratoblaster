@@ -1,4 +1,4 @@
-"""A level the player can fly (`core.content.game_level`, P06)."""
+"""Unit tests of `src/core/content/game_level.py`."""
 
 from core.content.game_level import GameLevel, find_game_level
 

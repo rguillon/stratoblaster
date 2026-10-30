@@ -1,4 +1,4 @@
-"""Player weapons (GD-30, GD-31), ported from `config/player-weapons.ts`.
+"""Player weapons (GD-30, GD-31)
 
 Three weapons, five levels each. Logical pixels, Y up, angles in degrees from forward. Values
 marked "default" were not given by the phase 3 spec; they are the agent's proposal (D-015), to be

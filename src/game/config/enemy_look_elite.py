@@ -1,4 +1,4 @@
-"""Look of the elite enemies (P05-R19 to P05-R23, GD-61), ported from `config/enemy-look-elite.ts`.
+"""Look of the elite enemies (P05-R19 to P05-R23, GD-61)
 
 Each kind's own neon colour, linear RGB 0..1, in the style of `ENEMY_LOOK.neon`.
 """

@@ -1,4 +1,4 @@
-"""P09-R09, 3-3: the Stone Idol. Ported from `view/bosses/world-3/stone-idol-model.ts`. Logical
+"""P09-R09, 3-3: the Stone Idol. Logical
 pixels, nose +Z (the chin, down the screen), Y up (towards the camera): a carved head flying face
 up, so the camera sees its face."""
 

@@ -1,5 +1,4 @@
-"""Per-level factors on the phase 5 enemy values in World 4 (P10-R10, tunable values), ported from
-`config/world-4/difficulty.ts`.
+"""Per-level factors on the phase 5 enemy values in World 4 (P10-R10, tunable values)
 
 4-1 starts at least as hard as 3-3 and 4-5 is harder than 3-5. Neither ever goes down.
 """

@@ -1,5 +1,5 @@
-"""P05-R16, P16-R04: the Mantis, its arms on their shoulders (P05-R13), ported from
-`enemies/veteran-mantis-model.ts`. Logical pixels, nose +Z, Y up. A point (x, y) of the design
+"""P05-R16, P16-R04: the Mantis, its arms on their shoulders (P05-R13) Logical pixels, nose +Z, Y
+up. A point (x, y) of the design
 (X right, Y up, facing down) is at `boss_point(x, y)`.
 """
 

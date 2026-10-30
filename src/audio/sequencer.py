@@ -1,4 +1,4 @@
-"""Walks a track's notes ahead of time (P12-R05), ported from `audio/sequencer.ts`: each call
+"""Walks a track's notes ahead of time (P12-R05): each call
 hands out the notes that start before a given point of the track, once each, looping at the
 track's end. Pure: the player turns track time into audio time, so the music keeps time when
 frames are slow, and pausing is only a matter of where it stands.

@@ -1,9 +1,9 @@
-"""The streets of a district on a grid of square tiles (P15-R01, R04, R05; `tile_streets.py`)."""
+"""Unit tests of `src/core/scenery/tile_streets.py`."""
 
 from types import SimpleNamespace
 
 import pytest
-from level_builders import flat, make_level, road_rules, section, street_grid, tile_rules
+from helpers.level_builders import flat, make_level, road_rules, section, street_grid, tile_rules
 
 from core.math.rng import create_rng
 from core.scenery.districts import ZRange, find_districts
@@ -25,6 +25,7 @@ from core.scenery.tile_streets import (
 )
 
 SPAN = ZRange(-3000.0, 6000.0)
+
 TILE = tile_rules()
 
 

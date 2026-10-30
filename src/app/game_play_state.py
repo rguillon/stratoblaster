@@ -1,6 +1,6 @@
-"""A snapshot of a running level, for the test API, ported from `app/game-play-state.ts`.
+"""A snapshot of a running level, for the test API
 
-The snapshots are plain JavaScript objects with the TypeScript key names (`levelId`,
+The snapshots are plain JavaScript objects with camelCase key names (`levelId`,
 `bonusKinds`...): the test scripts read them from JavaScript (`debug/test_api.py`).
 """
 

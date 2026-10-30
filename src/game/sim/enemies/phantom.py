@@ -1,4 +1,4 @@
-"""The Phantom (P05-R17), ported from `game/sim/enemies/phantom.ts`."""
+"""The Phantom (P05-R17)"""
 
 import math
 

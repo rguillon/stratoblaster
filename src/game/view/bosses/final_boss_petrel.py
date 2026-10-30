@@ -1,6 +1,5 @@
-"""P07-R05, P16-R06: the Storm Petrel's destroyable parts, growths on its wings, tail and breast,
-ported from `bosses/final-boss-petrel.ts`. Logical pixels, nose +Z, Y up.
-"""
+"""P07-R05, P16-R06: the Storm Petrel's destroyable parts, growths on its wings, tail and breast
+Logical pixels, nose +Z, Y up."""
 
 import math
 

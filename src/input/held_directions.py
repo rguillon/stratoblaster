@@ -1,4 +1,4 @@
-"""Movement keys held down, as a direction to fly in (ported from `input/held-directions.ts`).
+"""Movement keys held down, as a direction to fly in ().
 `DIRECTION_KEYS`: `KeyboardEvent.code` -> direction; arrows and WASD by key position (AZERTY works
 too, GD §2)."""
 

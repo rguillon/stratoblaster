@@ -1,4 +1,4 @@
-"""The wave scripts of World 2 (P08-R08, R09), ported from `config/world-2/waves.ts`.
+"""The wave scripts of World 2 (P08-R08, R09)
 
 Each level cycles through its own phrases: a beat every `gap` seconds (from `gap[0]` at the start to
 `gap[1]` at the end, so the level fills up as it goes), each beat the next phrase of the cycle, its

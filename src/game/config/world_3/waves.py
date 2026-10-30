@@ -1,4 +1,4 @@
-"""The wave scripts of World 3 (P09-R07, R08), ported from `config/world-3/waves.ts`.
+"""The wave scripts of World 3 (P09-R07, R08)
 
 Composed as World 2's (`compose_beats`, D-067): a beat every `gap` seconds shrinking over the level,
 each the next phrase of the level's cycle, its groups growing over the level; the World 1 filler

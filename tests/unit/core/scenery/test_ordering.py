@@ -1,4 +1,4 @@
-"""Stable sorts of the scenery (`core/scenery/ordering.py`)."""
+"""Unit tests of `src/core/scenery/ordering.py`."""
 
 from core.scenery.ordering import stable_sort_by
 

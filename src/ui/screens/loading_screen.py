@@ -1,4 +1,4 @@
-"""Loading screen with a progress bar (P01-R02), ported from `ui/screens/loading-screen.ts`."""
+"""Loading screen with a progress bar (P01-R02)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

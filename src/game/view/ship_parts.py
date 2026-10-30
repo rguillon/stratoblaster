@@ -1,5 +1,5 @@
-"""Parts shared by the player ships: panels, plates, lights, rods, and the reactors, ported from
-`ship-parts.ts`. Each part is a Babylon mesh made by the render layer, parented to a node of the
+"""Parts shared by the player ships: panels, plates, lights, rods, and the reactors Each part is a
+Babylon mesh made by the render layer, parented to a node of the
 ship.
 """
 
@@ -9,7 +9,7 @@ from game.config.ship_look import REACTOR_FLAME
 from game.view.reactor_flame import build_reactor_flame
 from game.view.ship_materials import get_ship_materials
 
-# Not in render/babylon.py yet (unresolved, see the port report).
+# Not in render/babylon.py yet.
 from render.babylon import (
     create_disc,
     create_polyhedron,

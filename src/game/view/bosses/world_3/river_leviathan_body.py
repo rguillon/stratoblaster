@@ -1,6 +1,6 @@
 """P09-R09, 3-1: the River Leviathan's body: its four segments and its tail, each drawn on its
 hinge (D-061) so that they sway one after the other, the segments' ring turrets on their sponsons
-and the tail's missile rack. Ported from `view/bosses/world-3/river-leviathan-body.ts`. Logical
+and the tail's missile rack. Logical
 pixels, nose +Z, Y up: the playfield's +Y (the tail) is the model's -Z, and its -X (the screen's
 left) the model's +X."""
 

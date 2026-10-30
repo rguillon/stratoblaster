@@ -1,8 +1,7 @@
 """P15-R01, R05: the streets of a district laid on a grid of square tiles (phase 15). Rows (along
 X) may be wide roads (avenues and boulevards, N tiles wide); columns are one tile wide. Every line
 covers whole tiles, and the columns sit where the junction pieces of the wide rows they cross fall
-on the rows' own N-tile lattice, so every wide row is made of whole N × N pieces. Ported from
-`core/scenery/tile-streets.ts`."""
+on the rows' own N-tile lattice, so every wide row is made of whole N × N pieces."""
 
 import math
 
@@ -33,7 +32,7 @@ from core.scenery.street_links import (  # noqa: E402
 )
 from core.scenery.street_runs import Point, straight_runs  # noqa: E402
 
-# `%` keeps JavaScript's sign rule, as in the TypeScript (see `mod`).
+# `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")
 
 

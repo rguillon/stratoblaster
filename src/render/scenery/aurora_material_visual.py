@@ -1,6 +1,4 @@
-"""The aurora's material (P08-R04): curtains added on top of the scene, no depth written. Ported
-from `render/scenery/aurora-material.visual.ts`.
-"""
+"""The aurora's material (P08-R04): curtains added on top of the scene, no depth written."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__

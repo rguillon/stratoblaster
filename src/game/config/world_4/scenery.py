@@ -1,5 +1,4 @@
-"""World 4 (P10-R03; reworked at the reviewer's request, 2026-10-27), ported from
-`config/world-4/scenery.ts`.
+"""World 4 (P10-R03; reworked at the reviewer's request, 2026-10-27)
 
 The five levels are one journey from the garden villages World 3 ended on, through the suburbs and a
 town centre, the mid-rise blocks and the offices of midtown, the towers of the business district, to
@@ -366,10 +365,14 @@ def city_only(s: Any) -> Any:
             "surface": {"paved": 1, "lush": 0},
         },
     )
-    del city["channel"]
-    del city["lakes"]
-    del city["shore"]
-    del city["flatten"]
+    if "channel" in city:
+        del city["channel"]
+    if "lakes" in city:
+        del city["lakes"]
+    if "shore" in city:
+        del city["shore"]
+    if "flatten" in city:
+        del city["flatten"]
     return city
 
 

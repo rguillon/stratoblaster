@@ -1,7 +1,6 @@
 """P10-R11, 4-4: the Foundry Ark's yard, the heavy industry on its deck around the furnace: casting
-sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between the plates.
-Ported
-from `bosses/world-4/foundry-ark-yard.ts`. Model space: logical pixels, nose +Z, Y up; drawn for the
+sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between the plates. Model
+space: logical pixels, nose +Z, Y up; drawn for the
 right side (+X) and mirrored.
 """
 

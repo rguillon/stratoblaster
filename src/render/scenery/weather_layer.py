@@ -1,5 +1,5 @@
 """The weather of a scenery stage (P08-R05): particles of its kind, falling through the air between
-the ground and the flight altitude. Ported from `render/scenery/weather-layer.ts`.
+the ground and the flight altitude.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

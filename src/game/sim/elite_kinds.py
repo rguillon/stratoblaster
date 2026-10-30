@@ -1,4 +1,4 @@
-"""The elite enemy kinds (P05-R19 to P05-R23), ported from `game/sim/elite-kinds.ts`."""
+"""The elite enemy kinds (P05-R19 to P05-R23)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

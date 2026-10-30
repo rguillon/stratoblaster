@@ -1,6 +1,6 @@
 """P09-R09, 3-2: the Canopy Spider's legs: an upper leg on each hip and a lower leg on each knee
-(moving limbs, D-061), stepping in turn, and the gun pods at their feet (its parts). Ported from
-`view/bosses/world-3/canopy-spider-legs.ts`. Logical pixels, nose +Z, Y up (towards the camera)."""
+(moving limbs, D-061), stepping in turn, and the gun pods at their feet (its parts). Logical pixels,
+nose +Z, Y up (towards the camera)."""
 
 import math
 

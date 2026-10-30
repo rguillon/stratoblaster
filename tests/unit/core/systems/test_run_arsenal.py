@@ -1,8 +1,94 @@
-"""Tests of the weapons of a run (phase 6 review), `core/systems/run_arsenal.py`."""
+"""Unit tests of `src/core/systems/run_arsenal.py`."""
 
+from types import SimpleNamespace
+
+from core.content.game_level import GameLevel
+from core.entities.enemy import Enemy, EnemyKindDefinition, EnemyStats
+from core.entities.muzzle import PlanePoint
 from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
+from core.systems.enemy_world import EnemyDifficulty
+from core.systems.level_run import LevelRun
+from core.systems.level_run_types import LevelCheckpoint, LevelControls, LevelRunOptions, RunShip
+from core.systems.player_flight import FlightInput
 from core.systems.run_arsenal import RunArsenal, WeaponLevels
 from core.systems.shot_world import ShotWorld, ShotWorldOptions
+
+SCREEN = SimpleNamespace(width=100, height=100)
+
+SHIP = RunShip(PlanePoint(50, 10), 100, 0, 5)
+
+STILL = FlightInput(0, 0)
+
+
+class _Bounds:
+    min_y = 0
+    max_y = 100
+    center_x = 50
+
+    def half_width_at(self, y: float) -> float:
+        return 50
+
+
+class Still(Enemy):
+    """An enemy that does nothing but stand where it is put."""
+
+    def update(self, ctx: object, dt: float) -> None:  # type: ignore[override]
+        pass
+
+
+def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDefinition:
+    return EnemyKindDefinition(
+        "still",
+        "Still",
+        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+    )
+
+
+GUN = ProjectileWeaponDefinition(
+    "gun", "Gun", "muzzle", 1, 50, 0, 50, 0, 0, 1, 5, 0, [[ShotStream(0, 0)], [ShotStream(0, 0)]]
+)
+
+GUN2 = ProjectileWeaponDefinition(
+    "gun2", "Gun 2", "muzzle", 1, 50, 0, 50, 0, 0, 1, 5, 0, [[ShotStream(0, 0)], [ShotStream(0, 0)]]
+)
+
+
+def _level(
+    waves: list | None = None,
+    seconds: float = 10,
+    bosses: list | None = None,
+) -> GameLevel:
+    scenery = SimpleNamespace(scroll_speed=10, sections=[SimpleNamespace(seconds=seconds)])
+    return GameLevel("L1", scenery, waves or [], EnemyDifficulty(1, 1), bosses)  # type: ignore[arg-type]
+
+
+def _run(**overrides: object) -> LevelRun:
+    options: dict = dict(
+        screen=SCREEN,
+        level=_level(),
+        kinds=[_kind()],
+        weapon=GUN,
+        weapon_level=1,
+        ship=SHIP,
+        bounds=_Bounds(),
+        cull_margin=10,
+        max_enemy_age=60,
+        end_wait=1,
+        seed=1,
+    )
+    options.update(overrides)
+    return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
+
+
+def _step(
+    run: LevelRun,
+    dt: float = 0.5,
+    move: FlightInput = STILL,
+    fire: bool = False,
+    switch_weapon: bool | None = None,
+    bomb: bool | None = None,
+) -> None:
+    run.step(dt, LevelControls(move, fire, switch_weapon, bomb))
 
 
 def _weapon(id: str, levels: int = 2) -> ProjectileWeaponDefinition:
@@ -24,6 +110,7 @@ def _weapon(id: str, levels: int = 2) -> ProjectileWeaponDefinition:
 
 
 A = _weapon("a")
+
 B = _weapon("b")
 
 
@@ -31,6 +118,22 @@ def _arsenal(weapons: list[ProjectileWeaponDefinition], start_level: float = 1) 
     shots = ShotWorld(ShotWorldOptions(100, 100, 10), weapons[0] if weapons else A)
     shots.select(shots.weapon, start_level)
     return RunArsenal(shots, weapons, start_level)
+
+
+def test_p07_r08_a_run_can_start_with_the_weapons_kept_from_before() -> None:
+    run = _run(weapons=[GUN, GUN2], start_weapons=WeaponLevels("gun2", {"gun": 2}))
+    assert run.shots.weapon is GUN2
+    _step(run, switch_weapon=True)
+    assert run.shots.weapon is GUN
+    assert run.shots.level == 2
+
+
+def test_p07_r08_a_checkpoint_keeps_where_the_run_can_resume_from() -> None:
+    weapons = WeaponLevels("gun", {"gun": 2})
+    checkpoint = LevelCheckpoint(120, 1, weapons, 900)
+    assert (checkpoint.progress, checkpoint.bosses_passed) == (120, 1)
+    assert checkpoint.weapons is weapons
+    assert checkpoint.score == 900
 
 
 def test_p06_r07_switching_moves_to_the_next_weapon_at_its_start_level() -> None:

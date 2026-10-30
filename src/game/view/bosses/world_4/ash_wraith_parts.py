@@ -1,6 +1,6 @@
 """P10-R11, 4-2: the Ash Wraith's parts: its two shroud pods (ducted fans under ragged shrouds)
-and its eye cannon (a mount on the nose, the eye itself on a turret). Ported from
-`bosses/world-4/ash-wraith-parts.ts`. Logical pixels, nose +Z, Y up (towards the camera).
+and its eye cannon (a mount on the nose, the eye itself on a turret). Logical pixels, nose +Z, Y up
+(towards the camera).
 """
 
 import math

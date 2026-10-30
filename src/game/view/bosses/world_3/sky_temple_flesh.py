@@ -1,5 +1,5 @@
-"""P16-R06, 3-3: the living beast the Sky Temple grew on. Ported from
-`view/bosses/world-3/sky-temple-flesh.ts`. Logical pixels, nose +Z, Y up: a huge, swollen body
+"""P16-R06, 3-3: the living beast the Sky Temple grew on. Logical pixels, nose +Z, Y up: a huge,
+swollen body
 of moss-skinned flesh carrying the stone tiers on its back like a shell, roots of sinew hanging
 from it, veins climbing the stones to the sanctum."""
 

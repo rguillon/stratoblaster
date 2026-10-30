@@ -1,4 +1,4 @@
-"""Living trees for the green section (Phase 4 review), ported from `props/green-tree-props.ts`.
+"""Living trees for the green section (Phase 4 review)
 Sizes in world units, standing on Y = 0."""
 
 from game.config.prop_look import PROP_COLORS as C

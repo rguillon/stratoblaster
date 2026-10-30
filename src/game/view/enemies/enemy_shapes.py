@@ -1,4 +1,4 @@
-"""Shapes of the enemy models, ported from `enemies/enemy-shapes.ts`.
+"""Shapes of the enemy models
 
 The outlines are `(x, z)` pairs and the sections `(u, v)` pairs; a loft section is a list of
 those pairs (`SolidBuilder.loft`).

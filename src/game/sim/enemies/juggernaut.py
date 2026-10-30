@@ -1,4 +1,4 @@
-"""The Juggernaut (P05-R22), ported from `game/sim/enemies/juggernaut.ts`."""
+"""The Juggernaut (P05-R22)"""
 
 import math
 
@@ -9,6 +9,7 @@ from core.systems.enemy_motion import approach
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, bullet_shot, on_playfield
+from game.sim.joints import jointed_design
 
 __pragma__("skip")
 from core.entities.enemy import EnemyContext  # noqa: E402
@@ -27,7 +28,7 @@ class Juggernaut(JointedEnemy):
     """
 
     def __init__(self, center_x: float, y: float, stop_y: float) -> None:
-        super().__init__(center_x, y, CFG.stats, CFG.design)
+        super().__init__(center_x, y, CFG.stats, jointed_design(CFG.design))
         self.center_x = center_x
         self.stop_y = stop_y
         self.state = "enter"

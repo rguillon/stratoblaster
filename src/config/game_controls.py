@@ -1,4 +1,4 @@
-"""In-game controls (GD §2, GD-10, P06-R02, P11-R06), ported from `config/game-controls.ts`.
+"""In-game controls (GD §2, GD-10, P06-R02, P11-R06)
 
 Which keys and gamepad buttons shoot and set bombs off, and how the left stick and the touch drag
 move the ship. Kept in config so they can be remapped later (ENG-112). Moving uses the arrows /

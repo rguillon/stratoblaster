@@ -1,4 +1,4 @@
-"""The pause menu (P12-R02), ported from `app/pause-menu.ts`: Resume, Settings, Main menu. Main
+"""The pause menu (P12-R02): Resume, Settings, Main menu. Main
 menu asks `Leave the level?` with No (selected first) and Yes. Pure: the flow changes screens.
 """
 

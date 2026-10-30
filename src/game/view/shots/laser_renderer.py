@@ -1,6 +1,5 @@
 """The laser shots (P03-R02): a bright blue beam per segment, thinner at each lower level, a glow
-at its base and where it touches a target, and particles flowing up along it. Ported from
-`shots/laser-renderer.ts`.
+at its base and where it touches a target, and particles flowing up along it.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
