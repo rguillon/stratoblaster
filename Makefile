@@ -84,6 +84,13 @@ format: ## Ruff format + ruff fix
 typecheck: ## mypy --strict
 	uv run mypy
 
+test: ## Unit tests (pytest, CPython over src/)
+	uv run pytest
+
+coverage: ## Unit tests with the core/ coverage report (fails below ENG-43)
+	uv run coverage run -m pytest
+	uv run coverage report
+
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
 check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)

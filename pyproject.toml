@@ -14,6 +14,8 @@ dev = [
     "mypy",
     "import-linter",
     "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "coverage>=7.17.0",
 ]
 
 [tool.ruff]
@@ -24,6 +26,10 @@ src = ["src"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
 ignore = ["PLR0913"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert on literal values: a magic number there is the expected value, not a constant.
+"tests/**" = ["PLR2004"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "random".msg = "ENG-18: core/ uses the seeded RNG (core/math/rng.py), never the random module."
@@ -41,6 +47,25 @@ strict = true
 python_version = "3.12"
 files = ["src"]
 mypy_path = ["src", "typings"]
+
+[tool.pytest.ini_options]
+# Unit tests run in CPython on the modules of src/ (ENG-40). The Transcrypt stubs (`org`) are added
+# by tests/unit/conftest.py.
+testpaths = ["tests/unit"]
+python_files = ["test_*.py"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.coverage.run]
+# The thresholds of ENG-43: `core/` is measured on its own (see `make coverage`).
+source = ["src/core"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+# ENG-43: `src/core/**` lines 90 % (branches are part of the total: 85 % is measured separately).
+fail_under = 90
 
 [tool.importlinter]
 root_packages = ["core"]

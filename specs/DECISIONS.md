@@ -1732,3 +1732,11 @@
 - **Why:** a bullet layer is a thin-instanced mesh, which Babylon compiles in a variant with thin instances. The first shot of a colour compiled that variant on its frame. With the warm-up, the profile of 4-2 has one stall fewer in 25 seconds of play (two before, one now).
 - **Not fixed:** one purple-bullet variant still compiles on its first draw (about 0.5 s in headless software WebGL). Its defines include `INSTANCESCOLOR`, which Babylon sets on draw; the warm-up does not create it, and drawing during the compile wait did not either. The cause is still open.
 - **Status:** Accepted, partial
+
+### D-184 — Python unit tests run in CPython over `core/` (ENG-27, ENG-40, ENG-43)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** pytest and coverage.py are dev dependencies; `make test` runs `pytest` over `tests/unit/` (mirroring `src/`), and `make coverage` reports `src/core/` with branches and `fail_under = 90`. `tests/unit/conftest.py` puts Transcrypt's browser stubs (`org`) last on `sys.path`, so the standard library still wins. Helpers that Transcrypt compiles to JavaScript only (`bits.py`, `noise._int_mod`, `road_tiles.has_tile_key`) have a Python twin in a `skip` block, with the JavaScript's semantics (32-bit wrap, truncating `%`, own-key test), so CPython runs the same behaviour.
+- **Why:** the earlier helpers returned placeholder values under CPython, so the tests could not check them. The `boss` and `boss_pieces` modules imported each other at the top; `boss_pieces` needed `Boss` only for annotations, so that import now sits under `TYPE_CHECKING` and the annotations are quoted.
+- **Consequences:** core coverage is 99 % lines and branches. Five strict `xfail` tests record genuine defects: `street_dead_ends` (the default removal leaves an on-screen dead end, also in the TypeScript), `ground_boxes` (a building wider than two buckets is missed), `wave_runner` (an infinite count raises `OverflowError`), and two `away_placement` cases (`math.floor` of an unbounded span raises under CPython only: Transcrypt's `Math.floor` accepts it). The `src/game/**` configs do not import under CPython yet (records are plain dicts there), so the scenery tests build small levels by hand.
+- **Status:** Accepted
