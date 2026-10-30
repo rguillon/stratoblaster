@@ -1,8 +1,7 @@
 """The sculpted ground of a level (P04-R01): every section is a fractal relief, optionally
 flattened (plateau), carved (canyon) or dropped under the sea (coast), and neighbouring sections
 blend smoothly over `level.transition`. Before Z = 0 and after the end, the ground continues as
-the first and last sections. Pure and deterministic for a given seed. Ported from
-`core/scenery/height-field.ts`."""
+the first and last sections. Pure and deterministic for a given seed."""
 
 import math
 

@@ -1,4 +1,4 @@
-"""The Scorpion's look (P07-R05), ported from `bosses/scorpion-look.ts`: its yellow neon."""
+"""The Scorpion's look (P07-R05): its yellow neon."""
 
 from game.config.boss_look import BOSS_LOOK
 

@@ -1,4 +1,4 @@
-"""Builds an enemy model from its parts (P05, P07, P14, P16), ported from `enemies/enemy-mesh.ts`.
+"""Builds an enemy model from its parts (P05, P07, P14, P16)
 
 The model is a node tree: a root, a breathing body (hull, flesh, lights and wings) and, outside
 the body, reactors, rotors and muzzles (so shots leave from the same points, P16-R08).
@@ -47,7 +47,7 @@ from render.outline import set_outline  # noqa: E402
 
 
 class EnemyParts:
-    """Builders for the three parts of an enemy model (`EnemyParts` in the TypeScript)."""
+    """Builders for the three parts of an enemy model."""
 
     def __init__(  # noqa: PLR0917
         self,
@@ -115,7 +115,7 @@ class SurfaceMaterials:
 
 
 class BuiltEnemyModel:
-    """What `build_enemy_model` returns (`EnemyModel` in the TypeScript): the root node and the
+    """What `build_enemy_model` returns: the root node and the
     per-frame sync."""
 
     def __init__(self, root: Any, sync: Any) -> None:
@@ -192,7 +192,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         rotors.append(Reactor(at, radius))
 
     def muzzle(at: Vec3, kind: str) -> None:
-        # `kind` is 'gun' when the caller leaves it out (the TypeScript default).
+        # `kind` is 'gun' when the caller leaves it out.
         muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:

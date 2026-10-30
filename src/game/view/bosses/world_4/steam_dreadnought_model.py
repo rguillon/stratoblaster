@@ -1,4 +1,4 @@
-"""P10-R11, 4-1: the Steam Dreadnought. Ported from `bosses/world-4/steam-dreadnought-model.ts`.
+"""P10-R11, 4-1: the Steam Dreadnought.
 Logical
 pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A flying
 battleship: a long armoured hull under a deck with sponsons for its broadside turrets, a stepped

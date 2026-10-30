@@ -1,5 +1,5 @@
-"""The terrain as a row of chunks along Z (P04-R01, ENG-19), ported from
-`render/scenery/terrain-chunks.ts`: only the chunks under the camera exist, and the meshes of
+"""The terrain as a row of chunks along Z (P04-R01, ENG-19): only the chunks under the camera exist,
+and the meshes of
 chunks that scroll out of view are reused for new ones.
 """
 
@@ -64,7 +64,7 @@ class ChunkChanges:
 
 
 def _empty_map() -> Any:
-    """An empty JavaScript `Map` (insertion order, as the TypeScript one)."""
+    """An empty JavaScript `Map`."""
     __pragma__("js", "{}", "return new Map();")
     return None
 
@@ -73,7 +73,7 @@ class TerrainChunks:
     """The terrain as a row of chunks along Z (P04-R01): only the chunks under the camera exist,
     and the meshes of chunks that scroll out of view are reused for new ones (ENG-19).
 
-    The live chunks are kept in a JavaScript `Map` (insertion order), as the TypeScript one."""
+    The live chunks are kept in a JavaScript `Map` (insertion order)."""
 
     def __init__(
         self,

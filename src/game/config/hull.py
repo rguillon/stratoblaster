@@ -1,4 +1,4 @@
-"""What hurts the player (phase 6 review, GD-20..GD-22), ported from `config/hull.ts`.
+"""What hurts the player (phase 6 review, GD-20..GD-22)
 
 3 lives at the start (then those kept from the level completed before, reviewer 2026-10-28), as
 many as life bonuses add, each a full health bar (the ship's `maxHealth`: balanced 100, heavy 140,

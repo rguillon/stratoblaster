@@ -1,5 +1,4 @@
-"""The boxes of ground props take, and the buckets of the index of placed buildings. Ported from
-`core/scenery/ground-boxes.ts`."""
+"""The boxes of ground props take, and the buckets of the index of placed buildings."""
 
 import math
 

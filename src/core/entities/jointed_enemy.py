@@ -1,4 +1,4 @@
-"""Enemies with moving parts (P05-R13), ported from `core/entities/jointed-enemy.ts`.
+"""Enemies with moving parts (P05-R13)
 
 Parts hang on swinging joints (as a boss's limbs, D-061) or orbit the hull, each with its own hit
 circle, health and guns. A destroyed part blows up and stops; the enemy goes with its hull, taking

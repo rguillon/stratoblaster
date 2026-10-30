@@ -1,4 +1,4 @@
-"""The Strafer (P05-R04), ported from `game/sim/enemies/strafer.ts`."""
+"""The Strafer (P05-R04)"""
 
 import math
 

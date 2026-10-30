@@ -1,4 +1,4 @@
-"""Look of the bonuses, ported from `config/bonus-look.ts`.
+"""Look of the bonuses
 
 Weapon bonuses (phase 6 review): a hexagon badge with chevrons pointing up (a level up), swinging
 from side to side over a pulsing halo; a ring flashes out where the ship picks one up. P11-R07: life

@@ -1,6 +1,6 @@
 """P09-R09, 3-3: the carved stone, moss, vines and neon cracks of the Lost temples' bosses (the
 Stone Idol and the Sky Temple; World 3 theme: dark metal with neon, plus moss, vines and stone).
-Ported from `view/bosses/world-3/stone-idol-stone.ts`. Logical pixels, nose +Z, Y up."""
+Logical pixels, nose +Z, Y up."""
 
 import math
 

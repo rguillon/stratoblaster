@@ -1,4 +1,4 @@
-"""The lots a city building is made of (Phase 4 review), ported from `props/city-lots.ts`: each
+"""The lots a city building is made of (Phase 4 review): each
 one a different kind of volume (a stepped tower, a round tower, a low slab, a courtyard block or
 an L-shaped block), so the city centre reads as varied as the industrial zone."""
 

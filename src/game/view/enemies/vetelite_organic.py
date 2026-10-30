@@ -1,5 +1,5 @@
-"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models, ported from
-`enemies/vetelite-organic.ts`. Logical pixels, nose +Z, Y up."""
+"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models Logical pixels, nose +Z, Y
+up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

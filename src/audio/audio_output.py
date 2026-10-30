@@ -1,4 +1,4 @@
-"""Where all audio goes (P12-R05), ported from `audio/audio-output.ts`: a music bus and a sound
+"""Where all audio goes (P12-R05): a music bus and a sound
 effect bus, each with its volume, into a master limiter so the output never clips. Browsers only
 start audio after a user gesture, so the context is created by `unlock`, called on the first key
 press, tap, click or gamepad button: nothing is heard before, and no autoplay warning is shown.
@@ -155,7 +155,7 @@ class AudioOutput:
             if reverb is not None:
                 return AudioBuses(context, music, sfx, reverb)
             return AudioBuses(context, music, sfx)
-        except:  # noqa: E722 (a Web Audio call that throws must not stop the game, as in the TypeScript)
+        except:  # noqa: E722
             self._failed = True
             return None
 

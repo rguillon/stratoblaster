@@ -1,8 +1,6 @@
 """Centre and lane lines of the roads (phase 4 review): a yellow line along the middle of the
 streets (stopping where they cross) and of the main roads (dashed); on wider roads (2x2 to 4x4), a
 double yellow line and white dashed lines between the lanes. Painted just above the road surface.
-
-Ported from `render/scenery/road-lines.ts`.
 """
 
 import math

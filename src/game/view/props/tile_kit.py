@@ -1,5 +1,4 @@
-"""What the models made for the grid of tiles share (P15-R07, R09), ported from
-`props/tile-kit.ts`.
+"""What the models made for the grid of tiles share (P15-R07, R09)
 
 Each one fills a plot `w` × `d` world units (its tiles less the margin), centred on the origin,
 standing on Y = 0, its front towards -Z.

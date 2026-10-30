@@ -1,5 +1,4 @@
-"""P10-R11, 4-4's final boss: the Foundry Ark, fought over the forge belt (ported from
-`config/bosses/world-4/foundry-ark.ts`).
+"""P10-R11, 4-4's final boss: the Foundry Ark, fought over the forge belt ().
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 3 final bosses (P07-R04, D-055): its parts fire the same while they

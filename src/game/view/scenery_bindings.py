@@ -1,5 +1,5 @@
-"""How this game's generated levels look (P04, P06, P08, P09, P10), ported from
-`scenery-bindings.ts`: the scenery looks of every level, toned by world, and the prop models,
+"""How this game's generated levels look (P04, P06, P08, P09, P10): the scenery looks of every
+level, toned by world, and the prop models,
 groups and road tiles the scenery is built from.
 """
 

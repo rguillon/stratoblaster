@@ -1,4 +1,4 @@
-"""The Ice Queen (P08-R10, 2-5), ported from `bosses/world-2/ice-queen-model.ts`.
+"""The Ice Queen (P08-R10, 2-5)
 
 Logical pixels, nose +Z (down the screen), Y up (towards the camera); +X is the screen's left.
 """
@@ -310,7 +310,7 @@ def shard_parts() -> Any:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model (`boss-model.ts`): what the model is drawn from."""
+    """The `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 

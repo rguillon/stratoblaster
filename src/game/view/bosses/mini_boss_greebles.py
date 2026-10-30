@@ -1,5 +1,5 @@
 """P07-R05 (phase 7 review: more detail, some asymmetry): surface details of the World 1 mini
-bosses, ported from `bosses/mini-boss-greebles.ts`. Logical pixels, nose +Z, Y up. Details are
+bosses Logical pixels, nose +Z, Y up. Details are
 flat-shaded hull pieces a little proud of the surface, so they read from above under the ~35°
 camera.
 """

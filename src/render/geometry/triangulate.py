@@ -1,4 +1,4 @@
-"""Ear-clipping triangulation of a simple polygon (ported from `render/geometry/triangulate.ts`)."""
+"""Ear-clipping triangulation of a simple polygon ()."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

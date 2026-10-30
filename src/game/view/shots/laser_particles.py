@@ -1,4 +1,4 @@
-"""Particles flowing up along a beam (P03-R02), ported from `shots/laser-particles.ts`.
+"""Particles flowing up along a beam (P03-R02)
 
 Each particle runs from the start of the beam to its end, then starts again from the start, so the
 flow follows the beam as it gets shorter or longer.

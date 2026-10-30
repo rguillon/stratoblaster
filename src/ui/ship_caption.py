@@ -1,4 +1,4 @@
-"""Caption of a player ship's stats, ported from `ui/ship-caption.ts`."""
+"""Caption of a player ship's stats"""
 
 from org.transcrypt.stubs.browser import window
 

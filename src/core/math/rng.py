@@ -1,7 +1,7 @@
-"""Seeded pseudo-random numbers, ported from `core/math/rng.ts`.
+"""Seeded pseudo-random numbers
 
 The generator is mulberry32, written on unsigned 32-bit integers (see `bits.py`), so a seed
-gives the same sequence as the TypeScript version.
+gives the same sequence.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

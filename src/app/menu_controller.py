@@ -1,4 +1,4 @@
-"""Runs the menus, ported from `app/menu-controller.ts`: feeds input to the `MenuFlow`, shows the
+"""Runs the menus: feeds input to the `MenuFlow`, shows the
 matching view, gives the "locked" feedback and remembers the chosen ship (P01-R14). Free of
 Babylon.
 """

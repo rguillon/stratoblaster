@@ -1,5 +1,4 @@
-"""The data of the road network (TypeScript `road-network.ts`, `RoadPoint`, `Road`, `RoadSlot`,
-and `road-segments.ts`'s `RoadSnapshot`), split out so that `lanes`, `road-segments` and
+"""The data of the road network, split out so that `lanes`, `road-segments` and
 `road-paths` can build them at runtime without an import cycle with `road-network`.
 """
 

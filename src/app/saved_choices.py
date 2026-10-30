@@ -1,6 +1,5 @@
-"""What the menus keep between visits: the high score and the last ship, ported from
-`app/saved-choices.ts`. Keys are prefixed with the game's id so several games can share a domain.
-"""
+"""What the menus keep between visits: the high score and the last ship Keys are prefixed with the
+game's id so several games can share a domain."""
 
 import math
 
@@ -43,7 +42,7 @@ def parse_high_score(raw: str | None) -> float:
 
 
 def _plain_score(raw: str) -> float:
-    # /^\d{1,15}$/ on the trimmed text, as in the TypeScript (a regular expression is JavaScript).
+    # /^\d{1,15}$/ on the trimmed text.
     __pragma__(
         "js", "{}", "var text = raw.trim(); return /^\\d{1,15}$/.test(text) ? Number(text) : 0;"
     )

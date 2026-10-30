@@ -1,5 +1,4 @@
-"""P09-R09, 3-3: the Stone Idol, the mini boss of the Lost temples level (ported from
-`config/bosses/world-3/stone-idol.ts`).
+"""P09-R09, 3-3: the Stone Idol, the mini boss of the Lost temples level ().
 
 Offsets in px from the boss's centre, X right and Y up (its chin points down, at -Y). The stage
 patterns are the agent's design (P07-R04): the eyes and the mouth fire the same while they stand,

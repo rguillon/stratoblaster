@@ -1,4 +1,4 @@
-"""P10-R11, 4-2: the Geyser Rig. Ported from `bosses/world-4/geyser-rig-model.ts`. Logical pixels,
+"""P10-R11, 4-2: the Geyser Rig. Logical pixels,
 nose
 +Z, Y up (towards the camera). A flying drilling platform: a heavy deck, a lattice derrick in its
 middle (the core), two drill arms reaching forward from its bow corners, two steam vents at its

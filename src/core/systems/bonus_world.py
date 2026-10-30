@@ -1,4 +1,4 @@
-"""Bonuses (phase 6 review, GD-31, P11-R07), ported from `core/systems/bonus-world.ts`.
+"""Bonuses (phase 6 review, GD-31, P11-R07)
 
 Some destroyed enemies drop one, it falls down the screen, and the ship picks it up by flying over
 it.

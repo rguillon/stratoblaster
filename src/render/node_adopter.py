@@ -1,4 +1,4 @@
-"""Puts what some code creates into a layer (ported from `render/node-adopter.ts`)."""
+"""Puts what some code creates into a layer ()."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

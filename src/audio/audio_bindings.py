@@ -1,8 +1,8 @@
-"""A game's music and sounds, as the engine takes them (P12-R05..R10), ported from
-`audio/audio-bindings.ts`. The engine knows the moments (cues, see `level_cues.py`) and the music
+"""A game's music and sounds, as the engine takes them (P12-R05..R10) The engine knows the moments
+(cues, see `level_cues.py`) and the music
 wanted; the game decides how they sound.
 
-`MusicRequest` is a TypeScript union: `kind` says which of `level_id` (level, boss) or `jingle`
+`MusicRequest` is a union: `kind` says which of `level_id` (level, boss) or `jingle`
 (jingle) is set; the others are None.
 """
 

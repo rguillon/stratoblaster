@@ -1,4 +1,4 @@
-"""Rim glow round the silhouette of playfield meshes (phase 14, ported from `render/outline.ts`).
+"""Rim glow round the silhouette of playfield meshes (phase 14).
 
 A mesh asks for a rim glow by its `metadata.outline` colour (`set_outline`); an `OutlineLayer`
 draws it: each such mesh is drawn a second time, a little fatter, in its rim colour, behind

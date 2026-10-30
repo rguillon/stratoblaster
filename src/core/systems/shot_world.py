@@ -1,4 +1,4 @@
-"""Player shots of one ship (P03-R01..R03), ported from `core/systems/shot-world.ts`.
+"""Player shots of one ship (P03-R01..R03)
 
 Fires the selected weapon at the selected level from the muzzle, moves the projectiles, applies
 damage to the targets and reports impacts. Pure and deterministic: everything depends on the `dt`

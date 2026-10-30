@@ -1,4 +1,4 @@
-"""The pieces of a boss (P07-R01), ported from `core/entities/boss-pieces.ts`.
+"""The pieces of a boss (P07-R01)
 
 Its destroyable parts and its core, as shots and weapons see them.
 """

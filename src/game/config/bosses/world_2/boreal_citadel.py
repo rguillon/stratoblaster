@@ -1,5 +1,4 @@
-"""The Boreal Citadel (P08-R10, 2-5's final boss), ported from
-`config/bosses/world-2/boreal-citadel.ts`.
+"""The Boreal Citadel (P08-R10, 2-5's final boss)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 1 final bosses (`final_bosses.py`, P07-R04): its parts fire the same

@@ -1,4 +1,4 @@
-"""A row of titled text blocks, ported from `ui/caption-row.ts`."""
+"""A row of titled text blocks"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

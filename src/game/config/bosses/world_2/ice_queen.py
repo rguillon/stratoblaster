@@ -1,4 +1,4 @@
-"""The Ice Queen (P08-R10, 2-5's mini boss), ported from `config/bosses/world-2/ice-queen.ts`.
+"""The Ice Queen (P08-R10, 2-5's mini boss)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
 patterns as for the World 1 mini bosses (`mini_bosses.py`, P07-R04): the shards fire spirals while

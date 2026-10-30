@@ -1,4 +1,4 @@
-"""Game screen overlay (P06-R02, R03), ported from `ui/screens/game-screen.ts`: the level played,
+"""Game screen overlay (P06-R02, R03): the level played,
 the touch fire and pause buttons, the drag area over the playfield, the pause menu while paused
 (P12-R02) and the "Level complete" panel at the end."""
 

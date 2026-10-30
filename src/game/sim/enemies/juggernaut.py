@@ -1,4 +1,4 @@
-"""The Juggernaut (P05-R22), ported from `game/sim/enemies/juggernaut.ts`."""
+"""The Juggernaut (P05-R22)"""
 
 import math
 

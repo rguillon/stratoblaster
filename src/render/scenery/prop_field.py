@@ -1,8 +1,6 @@
 """The props standing on the terrain (P04-R04): each kind of prop is one mesh (plus one for its
 self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped by
-terrain chunk, so they come and go with the chunks.
-
-Ported from `render/scenery/prop-field.ts`. A window is a `[z_min, z_max]` pair.
+terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair.
 """
 
 import math
@@ -168,8 +166,7 @@ def _unique(ids: list[str]) -> list[str]:
 
 def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
     """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
-    sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order (a
-    set in the TypeScript)."""
+    sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order."""
     props = level.props
     sections = level.sections
     ids: list[str] = []

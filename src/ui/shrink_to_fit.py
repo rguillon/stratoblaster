@@ -1,4 +1,4 @@
-"""Lowers an element's font size until it fits its parent, ported from `ui/shrink-to-fit.ts`."""
+"""Lowers an element's font size until it fits its parent"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

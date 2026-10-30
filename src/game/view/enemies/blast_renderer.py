@@ -1,5 +1,5 @@
-"""GD-62: explosions where enemies and missiles were destroyed, in playfield space, ported from
-`enemies/blast-renderer.ts`. Each layer (smoke, shock rings, fireballs, debris, embers) is one mesh
+"""GD-62: explosions where enemies and missiles were destroyed, in playfield space Each layer
+(smoke, shock rings, fireballs, debris, embers) is one mesh
 of thin instances, so a big blast costs no more draw calls than a small one."""
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -148,7 +148,7 @@ class LayerMesh:
 
 
 class BlastRendererHandle:
-    """The blast renderer (`BlastRenderer` in the TypeScript): its `sync` and `dispose`."""
+    """The blast renderer: its `sync` and `dispose`."""
 
     def __init__(self, sync: Any, dispose: Any) -> None:
         self.sync = sync

@@ -1,5 +1,4 @@
-"""Options of a `SceneryStage` (P04, P08-R12), ported from
-`render/scenery/scenery-stage-options.ts`."""
+"""Options of a `SceneryStage` (P04, P08-R12)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""The moving limbs of boss models (phase 7 review), ported from `bosses/boss-limbs.ts`: their
+"""The moving limbs of boss models (phase 7 review): their
 joints as nodes, and what is drawn on them. Model space as in `boss_model.py`.
 """
 
@@ -14,7 +14,7 @@ __pragma__("skip")
 from typing import Any  # noqa: E402
 
 type Vec3 = list[Any]
-# A limb drawn on a joint (`LimbDrawing` in the TypeScript): its record of draw and part.
+# A limb drawn on a joint: its record of draw and part.
 type LimbDrawing = dict[str, Any]
 __pragma__("noskip")
 

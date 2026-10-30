@@ -1,5 +1,4 @@
-"""The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27), ported from
-`config/world-2/props.ts`.
+"""The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27)
 
 World 1's desert homes, outposts and plants, Level Zero's industrial buildings, the industrial
 buildings made of parts, and the oil pumpjacks; each section picks the groups that stand on it, so

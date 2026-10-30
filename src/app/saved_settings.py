@@ -1,4 +1,4 @@
-"""The volume settings kept between visits, ported from `app/saved-settings.ts` (P12-R04, D-010).
+"""The volume settings kept between visits (P12-R04, D-010).
 Keys are prefixed with the game's id.
 """
 

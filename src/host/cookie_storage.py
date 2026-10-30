@@ -1,5 +1,4 @@
-"""Cookie-backed storage (GD-51, vision: persistence uses cookies), ported from
-`platform/cookie-storage.ts`.
+"""Cookie-backed storage (GD-51, vision: persistence uses cookies)
 
 It is a `KeyValueStorage` by shape (see `key_value_storage.py`).
 """
@@ -51,7 +50,7 @@ class CookieStorage:
                 continue
             try:
                 return decode_uri_component(cookie[len(prefix) :])
-            except:  # noqa: E722 (any malformed escape gives null, as in the TypeScript)
+            except:  # noqa: E722
                 return None
         return None
 

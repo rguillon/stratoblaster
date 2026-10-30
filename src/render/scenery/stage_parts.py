@@ -1,5 +1,5 @@
-"""Pieces of a `SceneryStage` that need nothing else of it (P04), ported from
-`render/scenery/stage-parts.ts`: the lowest ground, the order of the opaque meshes, the stage
+"""Pieces of a `SceneryStage` that need nothing else of it (P04): the lowest ground, the order of
+the opaque meshes, the stage
 camera, the sea plane and the terrain-chunk watchers.
 """
 

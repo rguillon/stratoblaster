@@ -1,5 +1,5 @@
-"""The road kit, for the `props/` page (Phase 15, P15-R03, R04, R10), ported from
-`props/road-kit.ts`: a straight, a 90° turn, a T and an X for each size, the T and X adapters for
+"""The road kit, for the `props/` page (Phase 15, P15-R03, R04, R10): a straight, a 90° turn, a T
+and an X for each size, the T and X adapters for
 each pair of sizes, and a sample layout where each piece is joined to the straights of its open
 sides."""
 

@@ -1,4 +1,4 @@
-"""P07-R05: pieces shared by the World 1 mini boss models, ported from `bosses/mini-boss-shapes.ts`.
+"""P07-R05: pieces shared by the World 1 mini boss models
 Logical pixels, nose +Z, Y up.
 """
 

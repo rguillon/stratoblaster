@@ -1,5 +1,5 @@
-"""The wind turbine of the farms of Worlds 1 and 2 (P08-R07), ported from
-`props/wind-turbine.ts`: the one World 2 prop still placed (moved out of the removed polar
+"""The wind turbine of the farms of Worlds 1 and 2 (P08-R07): the one World 2 prop still placed
+(moved out of the removed polar
 outposts, D-163). Sizes in world units, standing on Y = 0."""
 
 import math

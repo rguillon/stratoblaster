@@ -1,5 +1,5 @@
 """P10-R11, 4-4: the Furnace Drake's parts (its beating wings and its jaw) and its forge colours.
-Ported from `bosses/world-4/furnace-drake-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera).
 """
 

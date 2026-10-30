@@ -1,4 +1,4 @@
-"""The Hydra (P05-R19), ported from `game/sim/enemies/hydra.ts`."""
+"""The Hydra (P05-R19)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""Night city geometry of the title screen, ported from `city-geometry.ts`: stretches of city along
+"""Night city geometry of the title screen: stretches of city along
 a street (buildings, lit windows, neon trims and blade signs, lane lines), a distant skyline,
 and rain. Everything comes from `random`, so a seeded generator gives the same city every time.
 

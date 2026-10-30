@@ -1,5 +1,5 @@
 """P10-R11, 4-3: the Magma Salamander's parts (its back fins and its tail) and its molten look.
-Ported from `bosses/world-4/magma-salamander-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera).
 """
 

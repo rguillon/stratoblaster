@@ -1,5 +1,5 @@
-"""P10-R11, 4-5: the Caldera Throne, World 4's last boss. Ported from
-`bosses/world-4/caldera-throne-model.ts`. Model space: logical pixels, nose +Z (down the screen), Y
+"""P10-R11, 4-5: the Caldera Throne, World 4's last boss. Model space: logical pixels, nose +Z (down
+the screen), Y
 up towards the camera; +X is the screen's left. A war fortress: an armoured hull carrying a stepped
 keep over the core, a prow gun deck, side bastions out to the magma cannons, missile batteries and
 smokestacks aft. P16-R06: a living tyrant of the caldera, its vast flesh back ribbed in bone and

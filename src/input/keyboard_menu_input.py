@@ -1,4 +1,4 @@
-"""Keyboard -> menu actions (P01-R09), ported from `input/keyboard-menu-input.ts`. Keys are matched
+"""Keyboard -> menu actions (P01-R09) Keys are matched
 by `KeyboardEvent.code` (physical position), so WASD positions work on AZERTY. Held directions
 repeat with our own timing; the browser's auto-repeat events are ignored."""
 

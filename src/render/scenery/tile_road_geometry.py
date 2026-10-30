@@ -1,8 +1,6 @@
 """Road pieces of the districts on tiles (phase 15, P15-R02, P15-R03, P15-R04): a sidewalk over the
 whole piece, a kerb and the roadway of each open side, joined in the middle, and the lane markings
 up to the junction. Draped on the ground, so pieces meet with no step.
-
-Ported from `render/scenery/tile-road-geometry.ts`.
 """
 
 import math

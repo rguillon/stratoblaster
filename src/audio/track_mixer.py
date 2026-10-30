@@ -1,4 +1,4 @@
-"""The mixer of one playing track (P12-R06), ported from `audio/track-mixer.ts`: an input per
+"""The mixer of one playing track (P12-R06): an input per
 instrument into the track's fader, with sends to its tempo-synced echo (a dotted eighth by
 default) and to the shared music reverb, so a track fades in and out with its echoes and reverb.
 Web Audio nodes are untyped attribute access on the context the game gives in.

@@ -1,6 +1,6 @@
 """P10-R11, 4-1: the Steam Dreadnought's parts: its two smokestacks, its two broadside turrets (each
-turning on its barbette, D-058) and the missile rack on its stern. Ported from
-`bosses/world-4/steam-dreadnought-parts.ts`. Logical pixels, nose +Z, Y up; the left ones (the
+turning on its barbette, D-058) and the missile rack on its stern. Logical pixels, nose +Z, Y up;
+the left ones (the
 screen's left, -X on the playfield) are drawn at +X.
 """
 

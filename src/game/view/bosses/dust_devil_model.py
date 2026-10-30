@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-3: the Dust Devil, ported from `bosses/dust-devil-model.ts`: a desert
+"""P07-R05, P16-R05, 1-3: the Dust Devil: a desert
 whirl-jelly with amber veins, a swollen fleshy bell and a slowly turning ring of sinew carrying
 three clinging sand rays. Logical pixels, nose +Z, Y up (towards the camera).
 """

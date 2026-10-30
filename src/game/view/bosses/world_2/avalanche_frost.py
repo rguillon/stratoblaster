@@ -1,5 +1,5 @@
 """The World 2 frost on the Avalanche and the Glacier Colossus (2-4), and the barrels drawn to
-their muzzles, ported from `bosses/world-2/avalanche-frost.ts`. Logical pixels, nose +Z, Y up
+their muzzles Logical pixels, nose +Z, Y up
 (towards the camera).
 """
 

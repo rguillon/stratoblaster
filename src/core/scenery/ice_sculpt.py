@@ -1,6 +1,5 @@
 """Sculpt operations of the frozen lands (phase 8, P08-R03, P08-R07): frozen lakes and the
-crevasses of a glacier. Pure and deterministic for a given seed. Ported from
-`core/scenery/ice-sculpt.ts`."""
+crevasses of a glacier. Pure and deterministic for a given seed."""
 
 import math
 

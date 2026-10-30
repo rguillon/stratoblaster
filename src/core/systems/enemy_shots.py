@@ -1,4 +1,4 @@
-"""The shots of all the enemies (GD-43, GD-44), ported from `core/systems/enemy-shots.ts`.
+"""The shots of all the enemies (GD-43, GD-44)
 
 Bullets, homing missiles the player can shoot down, and lasers with a warning line. Pure and
 deterministic, stepped with a fixed `dt`.

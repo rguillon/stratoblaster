@@ -1,6 +1,4 @@
-"""Sky gradient as cube-map faces (no asset download), ported from
-`render/environment/gradient-cube.ts`.
-"""
+"""Sky gradient as cube-map faces (no asset download)"""
 
 import math
 

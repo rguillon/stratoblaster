@@ -1,4 +1,4 @@
-"""P10-R11, 4-2: the Ash Wraith. Ported from `bosses/world-4/ash-wraith-model.ts`. Logical pixels,
+"""P10-R11, 4-2: the Ash Wraith. Logical pixels,
 nose +Z, Y up (towards the camera). A ragged stealth flying wing: a thin faceted wing, its trailing
 edge torn into tatters, a low fuselage with a dark canopy, the two shroud pods on the wings, the eye
 cannon on the nose. P16-R05: a living ash ray, its wing a scorched membrane veined with cyan, its

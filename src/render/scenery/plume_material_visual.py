@@ -1,6 +1,6 @@
-# ruff: noqa: E501 (GLSL shader source lines, kept as in the TypeScript)
+# ruff: noqa: E501
 """The material of a kind of plume (phase 10, P10-R08): soft puffs rising from a prop's column, drawn
-with instancing. Ported from `render/scenery/plume-material.visual.ts`.
+with instancing.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).

@@ -1,5 +1,5 @@
 """Readability of the playfield (P14): the player ships' outlines and hitbox marker, the
-toning of the scenery under them, and the shot renderers' glow, ported from `readability-view.ts`.
+toning of the scenery under them, and the shot renderers' glow
 """
 
 from org.transcrypt.stubs.browser import __pragma__, window

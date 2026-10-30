@@ -1,4 +1,4 @@
-"""Callbacks of the tappable parts of a menu screen, ported from `ui/screens/screen-handlers.ts`.
+"""Callbacks of the tappable parts of a menu screen
 A callback that does not apply to a screen is None."""
 
 from org.transcrypt.stubs.browser import __pragma__

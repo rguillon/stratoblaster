@@ -1,4 +1,4 @@
-"""The scene of a level under the playfield camera, ported from `app/level-scene.ts` (P04,
+"""The scene of a level under the playfield camera (P04,
 P05-R11, P06-R02): its generated ground, and a playfield layer above it where ships, enemies and
 shots are drawn.
 """

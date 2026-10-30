@@ -1,5 +1,5 @@
 """The enemies' lasers (GD-43): a blinking warning line, then a beam with a flare at its base, in
-the colour of their style (phase 8 review), ported from `enemies/enemy-lasers.ts`."""
+the colour of their style (phase 8 review)"""
 
 import math
 
@@ -153,7 +153,7 @@ class EnemyLasers:
         self.scene = scene
         # `contrast`: warning lines with a white core, wider (P10-R07).
         self.contrast = contrast
-        # The styles drawn so far, in order, and the pools of each (a Map in the TypeScript).
+        # The styles drawn so far, in order, and the pools of each.
         self.style_names: list[str] = []
         self.pools: dict[str, LaserPools] = {}
 

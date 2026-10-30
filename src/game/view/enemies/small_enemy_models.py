@@ -1,5 +1,5 @@
-"""P05-R01..R05, P16-R03: the lighter enemies, Cyber-Organic (P16-R01), ported from
-`enemies/small-enemy-models.ts`: swollen flesh bodies, membrane wings that flutter, metal only where
+"""P05-R01..R05, P16-R03: the lighter enemies, Cyber-Organic (P16-R01): swollen flesh bodies,
+membrane wings that flutter, metal only where
 grafted on (ducts, stingers, guns, nozzles). Logical pixels, nose +Z, Y up (towards the camera).
 """
 

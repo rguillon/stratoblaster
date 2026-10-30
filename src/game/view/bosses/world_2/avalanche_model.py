@@ -1,4 +1,4 @@
-"""P08-R10, 2-4: the Avalanche, ported from `bosses/world-2/avalanche-model.ts`.
+"""P08-R10, 2-4: the Avalanche
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -363,7 +363,7 @@ def hopper(p: EnemyParts, at: Vec3) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from (`BossDrawing` in the TypeScript): a plain
+    """What `build_boss_model` draws a boss from: a plain
     object, with `ring` and `limbs` None when absent."""
     drawing: Any = None
     __pragma__(

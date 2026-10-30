@@ -1,7 +1,5 @@
 """Road ribbons draped on the ground (phase 4 review, P04-R07): each road as one see-through
 surface, its soft shoulders fading into the ground, cut on the terrain chunks.
-
-Ported from `render/scenery/road-geometry.ts`.
 """
 
 import math

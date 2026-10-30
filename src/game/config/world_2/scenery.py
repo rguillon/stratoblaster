@@ -1,5 +1,4 @@
-"""World 2, the Industrial Desert (P08-R03; reworked at the reviewer's request, 2026-10-27), ported
-from `config/world-2/scenery.ts`.
+"""World 2, the Industrial Desert (P08-R03; reworked at the reviewer's request, 2026-10-27)
 
 The five levels are one journey from the deep desert, where World 1 ended, to dense factories. The
 changes are slow: the sand gives way to concrete in small steps, the sections blend over a long

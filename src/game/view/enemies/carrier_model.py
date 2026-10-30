@@ -1,4 +1,4 @@
-"""P05-R12, P16-R03: the Carrier, Cyber-Organic (P16-R01), ported from `enemies/carrier-model.ts`.
+"""P05-R12, P16-R03: the Carrier, Cyber-Organic (P16-R01)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """

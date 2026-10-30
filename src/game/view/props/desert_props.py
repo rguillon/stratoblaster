@@ -1,4 +1,4 @@
-"""Futuristic desert homes and outposts (P06-R06), ported from `props/desert-props.ts`. Sizes in
+"""Futuristic desert homes and outposts (P06-R06) Sizes in
 world units, standing on Y = 0."""
 
 import math

@@ -1,4 +1,4 @@
-"""Ship select screen (P01-R06), ported from `ui/screens/ship-select-screen.ts`: a card with name
+"""Ship select screen (P01-R06): a card with name
 and stats under each rotating ship."""
 
 from org.transcrypt.stubs.browser import __pragma__

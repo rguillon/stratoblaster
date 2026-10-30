@@ -1,5 +1,5 @@
 """P09-R09, 3-4: the Dam Breaker's parts (sluice cannons, chemical tanks, armour plate, drone
-hangar) and its swamp growth. Ported from `view/bosses/world-3/dam-breaker-parts.ts`. Logical
+hangar) and its swamp growth. Logical
 pixels, nose +Z, Y up (towards the camera)."""
 
 import math

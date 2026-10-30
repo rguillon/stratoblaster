@@ -1,4 +1,4 @@
-"""P05-R22, P16-R04: the Juggernaut, ported from `enemies/elite-juggernaut-model.ts`. Logical
+"""P05-R22, P16-R04: the Juggernaut Logical
 pixels, nose +Z, Y up (towards the camera).
 """
 

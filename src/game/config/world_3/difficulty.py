@@ -1,5 +1,4 @@
-"""Per-level factors on the phase 5 enemy values in World 3 (P09-R08, tunable values), ported from
-`config/world-3/difficulty.ts`.
+"""Per-level factors on the phase 5 enemy values in World 3 (P09-R08, tunable values)
 
 3-1 starts as hard as 2-3 and 3-5 is harder than 2-5. Neither ever goes down.
 """

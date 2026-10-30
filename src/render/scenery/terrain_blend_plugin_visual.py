@@ -1,7 +1,6 @@
-# ruff: noqa: E501 (GLSL shader source lines, kept as in the TypeScript)
+# ruff: noqa: E501
 """The terrain's blend plugin (P04-R01, P10-R05): turns a standard material into a terrain material,
 blending generated textures by altitude and slope, with a beach, shallows and surf (or lava).
-Ported from `render/scenery/terrain-blend-plugin.visual.ts`.
 
 Transcrypt cannot subclass a JavaScript class, so the `MaterialPluginBase` subclass is made by
 `render.babylon.new_material_plugin`, whose hooks call the methods of `TerrainBlendOwner`.
@@ -97,7 +96,7 @@ def _to_fixed_4(value: float) -> str:
     return ""
 
 
-# The GLSL text names `SURFACE_SCALE` where the TypeScript template interpolates it.
+# The GLSL text names `SURFACE_SCALE` where a template would interpolate it.
 _SURFACE_TOKEN = "@SURFACE_SCALE@"
 _SURFACE_TEXT = _to_fixed_4(SURFACE_SCALE)
 
@@ -203,7 +202,7 @@ vec3 terrainColor(vec3 p, vec3 n) {
   float lush = 0.0;
   float paved = 0.0;
 #ifdef VERTEXCOLOR
-  // Ground cover of the section, from the vertex colour (see terrain-geometry.ts).
+  // Ground cover of the section, from the vertex colour.
   float lushCover = clamp((1.0 - vColor.r) / @SURFACE_SCALE@, 0.0, 1.0);
   float pavedCover = clamp((1.0 - vColor.b) / @SURFACE_SCALE@, 0.0, 1.0);
   float sandyCover = clamp((1.0 - vColor.g) / @SURFACE_SCALE@, 0.0, 1.0);
@@ -366,7 +365,7 @@ def new_terrain_blend_plugin(
     generated textures blended by altitude and slope, with noise so the borders wander, large
     tinted patches, and a beach, shallows and surf where the ground meets the sea (phase 10: or,
     by lava, scorched rock with a glowing edge and cracks). Lighting, shadows and fog stay the
-    standard material's. Returns the plugin (TypeScript: `new TerrainBlendPlugin(...)`)."""
+    standard material's. Returns the plugin."""
     owner = TerrainBlendOwner(look, textures, state)
     return new_material_plugin(
         material, owner, "TerrainBlend", 200, "TERRAIN_BLEND", "TerrainBlendPlugin"

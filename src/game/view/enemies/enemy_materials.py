@@ -1,5 +1,4 @@
-"""The materials of the enemy models (P05, P14-R02, P16-R01), ported from
-`enemies/enemy-materials.ts`."""
+"""The materials of the enemy models (P05, P14-R02, P16-R01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -72,7 +71,7 @@ class FlameMaterials:
         self.plasma = plasma
 
 
-# Per-scene caches (a WeakMap in the TypeScript): pairs of [scene, value], matched by identity.
+# Per-scene caches: pairs of [scene, value], matched by identity.
 _ENEMY_CACHE = []  # type: list[list[Any]]
 _TINTED_CACHE = []  # type: list[list[Any]]
 _FLAME_CACHE = []  # type: list[list[Any]]

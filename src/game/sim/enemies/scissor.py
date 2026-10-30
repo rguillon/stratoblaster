@@ -1,4 +1,4 @@
-"""The Scissor (P05-R21), ported from `game/sim/enemies/scissor.ts`."""
+"""The Scissor (P05-R21)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

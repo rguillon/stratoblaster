@@ -1,6 +1,6 @@
 """Builds the core scenery of a level (P04, P06, P15) from its config record: the terrain sections,
 roads, props and sea that `core/scenery/scenery_level.py` and the road network read. The config
-keeps the TypeScript's camelCase shape; `core/` takes snake_case attributes, and an omitted optional
+keeps camelCase keys; `core/` takes snake_case attributes, and an omitted optional
 field is None. Mapping rules are in `config_build.py`.
 """
 

@@ -2,8 +2,6 @@
 looking corners, T and X). The roadway's corners are rounded with distance fields: the sidewalk
 corners into a junction get a kerb radius, and the outside of a turn sweeps round. Junctions of
 three or four ways get zebra crossings on their arms, the lane lines stopping before them.
-
-Ported from `render/scenery/road-paint.ts`.
 """
 
 import math
@@ -45,7 +43,7 @@ def _hypot(a: float, b: float) -> float:
 
 
 def _fround(x: float) -> float:
-    """`Math.fround(x)`: the nearest 32-bit float (the TypeScript distances are Float32Arrays)."""
+    """`Math.fround(x)`: the nearest 32-bit float."""
     __pragma__("js", "{}", "return Math.fround(x);")
     return 0
 

@@ -1763,3 +1763,11 @@
 - **Why:** the owner wants a Python project, with Node only where the build needs it. The viewers duplicated the game's modules for debugging the TypeScript build.
 - **Consequences:** `specs/` still describes the viewer pages (P01 to P16 viewers, the `?debug` test API for e2e) and must be updated by the owner, who owns those files. The e2e suite (ENG-50 to ENG-53) is in `node/tests/e2e/` and is not run by CI (D-186).
 - **Status:** Accepted
+
+### D-188 — The TypeScript sources are gone; the migration comments are removed from the Python sources
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `node/src/` (the TypeScript game, 564 files) is deleted. It is kept in the tag `v0.15.0`, the last release built from it. `node/tests/` stays: its unit and e2e specs are the reference for the Python tests not written yet (205 unit tests, 19 e2e specs). The Python sources and tests no longer cite the TypeScript: the "ported from `x.ts`" provenance lines, the comparisons with the TypeScript, and the notes about the port are removed. The explanations that still hold stay, in the present tense (for example, config keys are camelCase).
+- **Why:** the port is complete and is the code that runs. The TypeScript sources cost a lot of repository for no build use, and the citations pointed at paths that no longer exist.
+- **Consequences:** `node/tests/` imports `../src/` and so no longer runs: it is a reference to read, not a suite. The specs (human-owned) still cite the TypeScript files.
+- **Status:** Accepted

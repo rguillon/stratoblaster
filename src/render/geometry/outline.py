@@ -1,4 +1,4 @@
-"""2D planform outlines (ported from `render/geometry/outline.ts`).
+"""2D planform outlines ().
 
 A point is a two-element list `[x, z]`, seen from above (X right, Z forward).
 """
@@ -27,7 +27,7 @@ def _hypot3(a: float, b: float, c: float) -> float:
 
 
 def hypot2(a: float, b: float) -> float:
-    """`Math.hypot(a, b)`: JavaScript's rounding, the one the TypeScript results come from."""
+    """`Math.hypot(a, b)`: JavaScript's rounding."""
     return _hypot2(a, b)
 
 

@@ -1,4 +1,4 @@
-"""The Fjord Lynx (P08-R10, 2-2), ported from `config/bosses/world-2/fjord-lynx.ts`.
+"""The Fjord Lynx (P08-R10, 2-2)
 
 The mini boss of the Fjords. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Its radar mast aims its guns: while the mast stands, the paws and the core

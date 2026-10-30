@@ -1,5 +1,4 @@
-"""How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request, 2026-10-26),
-ported from `config/world-1/looks.ts`.
+"""How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request, 2026-10-26)
 
 One ground for the whole world, from a turquoise sea over green grass and dry earth to the sand, and
 a time of day per level, later and later: midday over the sea (1-1), early afternoon on the green

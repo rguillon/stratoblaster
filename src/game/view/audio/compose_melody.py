@@ -1,4 +1,4 @@
-"""The melody of generated music (P12-R06), ported from `audio/compose-melody.ts`: a two-bar motif
+"""The melody of generated music (P12-R06): a two-bar motif
 (a rhythm, and a walk on the scale that lands on chord tones), repeated and varied over a section.
 """
 

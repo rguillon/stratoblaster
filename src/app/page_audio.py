@@ -1,8 +1,8 @@
-"""The browser around the game (P12-R03, P12-R05, P12-R11), ported from `app/page-audio.ts`: the
+"""The browser around the game (P12-R03, P12-R05, P12-R11): the
 first gesture unlocks the audio, a hidden page pauses the level and silences the audio, and a
 timer schedules the music. `listen_to_page` returns a function that stops listening.
 
-`PageOptions` is a plain class; its fields are None when omitted (the TypeScript optionals).
+`PageOptions` is a plain class; its fields are None when omitted.
 Targets are DOM-like objects with `addEventListener` and `removeEventListener`.
 """
 
@@ -44,7 +44,7 @@ class PageVisibility:
 
 
 class PageOptions:
-    """The app's options about the page around it (`PageOptions` in the TypeScript)."""
+    """The app's options about the page around it."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

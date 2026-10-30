@@ -1,11 +1,11 @@
-"""The instruments of the generated music (P12-R06..R08, GD-70), ported from
-`audio/instruments.ts`: darksynth (reviewer, 2026-10-26), all synthesised from oscillators and
+"""The instruments of the generated music (P12-R06..R08, GD-70): darksynth (reviewer, 2026-10-26),
+all synthesised from oscillators and
 noise through filters and envelopes. An 80s drum machine (punchy kicks, big gated snares, synth
 toms), pumping and rolling saw basses, detuned saw pads, plucked arpeggios and leads sent to the
 track's echo, and the music reverb. Drums play at `DRUM_PITCH` (toms higher or lower for fills);
 their layers' pitches are ratios of it.
 
-Partial TypeScript layer objects (`Partial<ToneLayer>`) are plain dicts with snake_case keys
+Partial layer objects are plain dicts with snake_case keys
 (`glide_to`, `detune_cents`, `filter`, ...); absent keys take the defaults.
 """
 
@@ -25,7 +25,7 @@ DRUM_PITCH = 36
 
 
 def env(attack: float, decay: float, sustain: float, release: float) -> Envelope:
-    """A gain envelope (`env` in the TypeScript)."""
+    """A gain envelope."""
     return Envelope(attack, decay, sustain, release)
 
 

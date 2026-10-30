@@ -1,5 +1,5 @@
-"""P05-R06..R08, P16-R03: the bigger enemies, Cyber-Organic (P16-R01), ported from
-`enemies/heavy-enemy-models.ts`: swollen flesh bodies and organs, metal grafted on for armour,
+"""P05-R06..R08, P16-R03: the bigger enemies, Cyber-Organic (P16-R01): swollen flesh bodies and
+organs, metal grafted on for armour,
 nozzles and guns. Logical pixels, nose +Z, Y up. The Bulwark and the Splitter are in
 `heavy_beetle_models.py`.
 """

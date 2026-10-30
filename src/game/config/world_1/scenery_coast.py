@@ -1,5 +1,4 @@
-"""The first two levels of World 1 (P06-R05, reworked at the reviewer's request, 2026-10-26), ported
-from `config/world-1/scenery-coast.ts`.
+"""The first two levels of World 1 (P06-R05, reworked at the reviewer's request, 2026-10-26)
 
 Open sea with small green islands and reefs, then a green coast that gives way to meadows, groves
 and farmland. Heights in world units above the sea level (0). Each section's `seconds` add up to 240

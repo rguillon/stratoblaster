@@ -1,5 +1,5 @@
 """The Ice Queen's crystals: its shards (the parts on its crown ring), the crystals growing on its
-wings and ring, its icicles, ported from `bosses/world-2/ice-queen-shards.ts`. Logical pixels,
+wings and ring, its icicles Logical pixels,
 nose +Z, Y up.
 """
 

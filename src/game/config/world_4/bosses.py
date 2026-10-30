@@ -1,4 +1,4 @@
-"""The bosses of each World 4 level (P10-R11), ported from `config/world-4/bosses.ts`.
+"""The bosses of each World 4 level (P10-R11)
 
 Each level has a mini boss at the middle of the level and a final boss at its end, by boss kind id,
 and the seconds of ground drawn past the level's end for the fights (see `WORLD_1_BOSSES`).

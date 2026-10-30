@@ -1,5 +1,4 @@
-"""1-3, the green country of World 1 (P06-R05, reviewer, 2026-10-26), ported from
-`config/world-1/scenery-country.ts`.
+"""1-3, the green country of World 1 (P06-R05, reviewer, 2026-10-26)
 
 From the farmland 1-2 ended on, through woods, green hills and a market town, to where the grass
 turns dry and yellow. No sea. Its `seconds` add up to 240 (P06-R04).

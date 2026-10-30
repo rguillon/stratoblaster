@@ -1,10 +1,10 @@
-"""Plays the generated music (P12-R05..R08, P12-R11), ported from `audio/music-player.ts`: one
+"""Plays the generated music (P12-R05..R08, P12-R11): one
 track at a time, cross-fading into the next or fading out, plus one-shot jingles over it. Notes
 are scheduled ahead on the audio clock by `update`, so the music keeps time when frames are slow.
 Pausing keeps each track's position; resuming goes on from there.
 
 `bus` is a function returning the `MusicBus` once the context exists (None before), as in the
-TypeScript. Seconds into each paused track are kept in parallel lists (a Map keyed by slot).
+Seconds into each paused track are kept in parallel lists (a Map keyed by slot).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -47,7 +47,7 @@ class Slot:
 
 
 def _all_ended(voices: list[Voice], now: float) -> bool:
-    """Whether every voice is over (`end <= now`, false for NaN as in the TypeScript)."""
+    """Whether every voice is over."""
     return all([voice.end <= now for voice in voices])
 
 

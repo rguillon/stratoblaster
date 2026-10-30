@@ -1,5 +1,4 @@
-"""P08-R10, 2-5: the Boreal Citadel, World 2's last boss, ported from
-`bosses/world-2/boreal-citadel-model.ts`.
+"""P08-R10, 2-5: the Boreal Citadel, World 2's last boss
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A polar city on
 a flying hull: a snowed deck with towers and heated domes, an avenue down its middle carrying
@@ -298,7 +297,7 @@ def draw_core(parts: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from (`BossDrawing` in the TypeScript): a plain
+    """What `build_boss_model` draws a boss from: a plain
     object, with `ring` and `limbs` None when absent."""
     drawing: Any = None
     __pragma__(

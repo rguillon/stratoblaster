@@ -1,6 +1,6 @@
 """Phase 4 review: roads of one lane each way, and 2×2 roads (two lanes each way): the first main
 roads, and some lines of the street grids (avenues); reviewer, 2026-10-28: 3×3 and 4×4 boulevards
-in the street grids. Ported from `core/scenery/lanes.ts`."""
+in the street grids."""
 
 import math
 
@@ -23,7 +23,7 @@ class PointXZ(Protocol):
     def z(self) -> float: ...
 
 
-Lanes = int  # 1 to 4 lanes each way (the TypeScript `1 | 2 | 3 | 4`)
+Lanes = int  # 1 to 4 lanes each way
 """Lanes each way of a road."""
 __pragma__("noskip")
 

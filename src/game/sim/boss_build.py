@@ -1,7 +1,7 @@
 """Builds the core types of the bosses (P07) from their config records: the one place where the
 config layer meets `core/`.
 
-The config (`game/config/`) keeps the TypeScript's camelCase shape verbatim; `core/` is snake_case
+The config (`game/config/`) keeps camelCase keys; `core/` is snake_case
 and tests `is None` for an omitted optional field. Under Transcrypt an omitted field is `undefined`,
 not `None`, so every optional field is mapped here (`opt`), and every field is copied under its
 core name. Nothing else in `game/sim/` builds core boss types from config.

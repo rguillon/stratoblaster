@@ -1,5 +1,4 @@
-"""GD-43: the enemies' shots in playfield space (bullets, missiles, lasers), ported from
-`enemies/enemy-shot-renderer.ts`.
+"""GD-43: the enemies' shots in playfield space (bullets, missiles, lasers)
 
 Bullets are thin instances of a template per layer (as the blasts, D-034): one draw call however
 many bullets are flying.
@@ -328,7 +327,7 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
 
 
 class ShotRendererHandle:
-    """The enemy shot renderer (`EnemyShotRenderer` in the TypeScript): its `sync`, `dispose`, and
+    """The enemy shot renderer: its `sync`, `dispose`, and
     `warm(on)` (one bullet shown in each colour's layers, or none: see `warm_bullets`)."""
 
     def __init__(self, sync: Any, dispose: Any, warm: Any) -> None:

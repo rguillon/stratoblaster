@@ -1,4 +1,4 @@
-"""The 3D part of the ship select screen (P01-R06), ported from `render/ship-select-stage.ts`.
+"""The 3D part of the ship select screen (P01-R06)
 
 The ships stand side by side, rotating. The highlighted ship is scaled up, lit by its own key
 light and sits on a neon ring; the others are smaller and only get the ambient light.

@@ -1,5 +1,5 @@
-"""P08-R10, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast), ported from
-`bosses/world-2/fjord-lynx-parts.ts`. Logical pixels, nose +Z, Y up (towards the camera)."""
+"""P08-R10, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical pixels,
+nose +Z, Y up (towards the camera)."""
 
 import math
 

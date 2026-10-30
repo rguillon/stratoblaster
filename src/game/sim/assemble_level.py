@@ -1,6 +1,4 @@
-"""A playable level from its scenery and its written beats (P06, P07, P08), ported from
-`game/sim/assemble-level.ts`.
-"""
+"""A playable level from its scenery and its written beats (P06, P07, P08)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

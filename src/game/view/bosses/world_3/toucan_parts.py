@@ -1,5 +1,5 @@
 """P09-R09, 3-2: the Toucan's parts: its huge beak cannon and its two wing pods (ducted fans).
-Ported from `view/bosses/world-3/toucan-parts.ts`. Logical pixels, nose +Z, Y up (towards the
+Logical pixels, nose +Z, Y up (towards the
 camera)."""
 
 import math

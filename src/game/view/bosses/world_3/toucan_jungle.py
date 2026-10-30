@@ -1,6 +1,6 @@
 """P09-R09, 3-2: the jungle on the 3-2 bosses (the Toucan and the Canopy Spider): moss on their
 plates, vines hanging along them, leaves (GD-61, World 3: dark metal with neon, plus moss, vines
-and stone). Ported from `view/bosses/world-3/toucan-jungle.ts`. Logical pixels, nose +Z, Y up."""
+and stone). Logical pixels, nose +Z, Y up."""
 
 import math
 

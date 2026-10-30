@@ -1,6 +1,4 @@
-"""The building blocks of the game's sound effects (P12-R09), ported from
-`audio/sound-recipes.ts`: envelopes, tones and recipes.
-"""
+"""The building blocks of the game's sound effects (P12-R09): envelopes, tones and recipes."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,5 +1,5 @@
-"""The Snow Owl's parts (its radar pods and sensor eye) and its frost, ported from
-`bosses/world-2/snow-owl-parts.ts` (P08-R10, 2-3). Logical pixels, nose +Z, Y up (towards the
+"""The Snow Owl's parts (its radar pods and sensor eye) and its frost (P08-R10, 2-3). Logical
+pixels, nose +Z, Y up (towards the
 camera).
 """
 

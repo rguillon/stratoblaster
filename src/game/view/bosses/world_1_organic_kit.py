@@ -1,5 +1,5 @@
 """P16-R05, P16-R06: the Cyber-Organic pieces of the World 1 boss models (living bodies with metal
-grafts), ported from `bosses/world-1-organic-kit.ts`. Logical pixels, nose +Z, Y up.
+grafts) Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -44,7 +44,7 @@ def _options(options: Any) -> Any:
 
 
 def hide(parts: Any, h: Any) -> None:
-    """Draws a creature's body along Z (`Hide` in the TypeScript): a swollen belly in flesh, a
+    """Draws a creature's body along Z: a swollen belly in flesh, a
     carapace over it, both in `flesh`."""
     flesh = parts.flesh
     at = opt(h, "at", [0, 0, 0])

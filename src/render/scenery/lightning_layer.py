@@ -2,8 +2,6 @@
 some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it. The
 flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
 nothing in the simulation reads it.
-
-Ported from `render/scenery/lightning-layer.ts`.
 """
 
 import math

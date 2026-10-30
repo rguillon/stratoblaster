@@ -1,5 +1,5 @@
 """P07-R05 (phase 7 review: more detail, not symmetrical), P16-R06: the Overlord's skyline, a city
-grown out of its back, ported from `bosses/overlord-skyline.ts`: towers of flesh and bone lit with
+grown out of its back: towers of flesh and bone lit with
 window glands, a broadcast spire and a neon billboard on the left (+X, the screen's left), the
 command stalk on the right. Model space: logical pixels, nose +Z, Y up.
 """

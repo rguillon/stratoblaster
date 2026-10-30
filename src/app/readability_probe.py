@@ -1,7 +1,7 @@
-"""Measures how readable a level's frame is (P14-R08), ported from `app/readability-probe.ts`.
+"""Measures how readable a level's frame is (P14-R08)
 
 The frame is drawn once as it is and once without the playfield (the background alone), and the
-two are compared around each object. The report is a plain JavaScript object with the TypeScript
+two are compared around each object. The report is a plain JavaScript object with camelCase
 key names, for the test API.
 """
 

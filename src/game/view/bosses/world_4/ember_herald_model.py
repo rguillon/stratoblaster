@@ -1,5 +1,5 @@
-"""P10-R11, 4-5: the Ember Herald, the mini boss of the Caldera. Ported from
-`bosses/world-4/ember-herald-model.ts`. Model space: logical pixels, nose +Z (down the screen), Y up
+"""P10-R11, 4-5: the Ember Herald, the mini boss of the Caldera. Model space: logical pixels, nose
++Z (down the screen), Y up
 towards the camera; +X is the screen's left. P16-R05: a living fire-wasp, its long flesh body ribbed
 in bone, scorched membrane wings veined molten, bone spines and a metal spire and halo grafted on.
 """

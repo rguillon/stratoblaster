@@ -1,4 +1,4 @@
-"""The bosses of each World 3 level (P09-R09), ported from `config/world-3/bosses.ts`.
+"""The bosses of each World 3 level (P09-R09)
 
 Each level has a mini boss at the middle of the level and a final boss at its end, by boss kind id,
 and the seconds of ground drawn past the level's end for the fights (see `WORLD_1_BOSSES`).

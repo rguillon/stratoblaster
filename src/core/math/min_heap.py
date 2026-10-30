@@ -1,4 +1,4 @@
-"""Numbers taken out smallest first (a binary heap), ported from `core/math/min-heap.ts`."""
+"""Numbers taken out smallest first (a binary heap)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

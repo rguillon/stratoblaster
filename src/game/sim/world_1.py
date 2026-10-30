@@ -1,4 +1,4 @@
-"""World 1 (P06): five levels of about 4 minutes, ported from `game/sim/world-1.ts`."""
+"""World 1 (P06): five levels of about 4 minutes"""
 
 from org.transcrypt.stubs.browser import __pragma__
 

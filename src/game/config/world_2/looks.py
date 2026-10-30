@@ -1,5 +1,4 @@
-"""How the World 2 levels look (P08-R06, R07; reworked at the reviewer's request, 2026-10-27),
-ported from `config/world-2/looks.ts`.
+"""How the World 2 levels look (P08-R06, R07; reworked at the reviewer's request, 2026-10-27)
 
 World 1's desert ground, sand and red rock on dry earth, slowly covered by the stained concrete of
 the industry (the `paved` cover the sections raise level after level); and a time of day per level,

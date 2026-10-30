@@ -1,5 +1,4 @@
-"""P09-R09, 3-3: the Sky Temple, the final boss of the Lost temples level (ported from
-`config/bosses/world-3/sky-temple.ts`).
+"""P09-R09, 3-3: the Sky Temple, the final boss of the Lost temples level ().
 
 Offsets in px from the boss's centre, X right and Y up (its grand stair points down, at -Y). Stage
 patterns as for the World 1 and 2 final bosses (P07-R04): its parts fire the same while they stand,

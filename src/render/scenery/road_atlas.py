@@ -1,8 +1,6 @@
 """The road pieces painted once into one texture, an atlas (phase 15, experiment, reviewer
 2026-10-28), so each piece is drawn as one surface (no stacked layers to fight in depth). Pure: the
 atlas is an RGBA pixel array; the scenery stage uploads it.
-
-Ported from `render/scenery/road-atlas.ts`.
 """
 
 import math

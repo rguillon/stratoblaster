@@ -1,4 +1,4 @@
-"""The wave scripts of World 4 (P10-R09, R10), ported from `config/world-4/waves.ts`.
+"""The wave scripts of World 4 (P10-R09, R10)
 
 Composed as Worlds 2 and 3's (`compose_beats`, D-067): a beat every `gap` seconds shrinking over the
 level, each the next phrase of the level's cycle, its groups growing over the level; the World 1

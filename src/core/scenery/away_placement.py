@@ -1,5 +1,4 @@
-"""Lone buildings and hamlets away from the roads (phase 6 review). Ported from
-`core/scenery/away-placement.ts`."""
+"""Lone buildings and hamlets away from the roads (phase 6 review)."""
 
 import math
 

@@ -1,5 +1,5 @@
-"""P08-R10, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast pods),
-ported from `bosses/world-2/narwhal-parts.ts`. Logical pixels, nose +Z, Y up; each drawn around
+"""P08-R10, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast pods)
+Logical pixels, nose +Z, Y up; each drawn around
 its centre `at`."""
 
 import math

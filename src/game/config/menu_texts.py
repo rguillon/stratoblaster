@@ -1,4 +1,4 @@
-"""Menu texts (short words, readable by kids), ported from `config/menu-texts.ts`."""
+"""Menu texts (short words, readable by kids)"""
 
 from game.config.record import record
 

@@ -1,6 +1,5 @@
-"""P05-R14, P05-R17, P16-R04: the lighter veteran kinds, ported from
-`enemies/veteran-small-models.ts`. Logical pixels, nose +Z, Y up (to the camera).
-"""
+"""P05-R14, P05-R17, P16-R04: the lighter veteran kinds Logical pixels, nose +Z, Y up (to the
+camera)."""
 
 import math
 

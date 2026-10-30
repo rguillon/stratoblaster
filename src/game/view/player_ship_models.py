@@ -1,5 +1,4 @@
-"""Player ship models, keyed by the ids of `PLAYER_SHIPS` (src/game/config/player-ships.ts),
-ported from `player-ship-models.ts`."""
+"""Player ship models, keyed by the ids of `PLAYER_SHIPS`"""
 
 from game.view.balanced_ship import build_balanced_ship
 from game.view.heavy_ship import build_heavy_ship

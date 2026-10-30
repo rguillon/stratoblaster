@@ -1,5 +1,4 @@
-"""Shapes shared by the veteran models (P05-R14 to P05-R18), ported from
-`enemies/veteran-shapes.ts`. Logical pixels, nose +Z, Y up."""
+"""Shapes shared by the veteran models (P05-R14 to P05-R18) Logical pixels, nose +Z, Y up."""
 
 import math
 

@@ -1,4 +1,4 @@
-"""The Hive (P05-R23), ported from `game/sim/enemies/hive.ts`."""
+"""The Hive (P05-R23)"""
 
 import math
 

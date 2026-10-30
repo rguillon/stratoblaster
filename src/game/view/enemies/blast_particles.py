@@ -1,5 +1,5 @@
 """Explosions where enemies and missiles were destroyed (GD-62; phase 5 review: bigger, more
-realistic), ported from `enemies/blast-particles.ts`: a shock ring, a cluster of fireballs, dark
+realistic): a shock ring, a cluster of fireballs, dark
 smoke that lingers, and burning debris with embers and smoke wisps."""
 
 import math

@@ -1,9 +1,9 @@
-"""Bootstrap only (ENG-10), ported from `main.ts`: create the engine and start the app.
+"""Bootstrap only (ENG-10): create the engine and start the app.
 
 `index.html` calls `main()` once the page has loaded.
 
-Build-time flags of the TypeScript build (`__E2E__`, `import.meta.env.DEV`) are constants here:
-the Python port has no e2e build yet (ENG-52), and the perf overlay (ENG-111) is off.
+Build-time flags (`__E2E__`, `import.meta.env.DEV`) are constants here: there is no e2e build yet
+(ENG-52), and the perf overlay (ENG-111) is off.
 The debug viewers (ships, shots, enemies, bosses, props) are gone: only the game page is built.
 """
 
@@ -172,7 +172,7 @@ def main() -> None:
         show_fatal(GAME.texts.unsupported)
         return
     antialias = True
-    # Antialiasing on; `adaptToDeviceRatio` off and `stencil` on, as in the TypeScript (render/).
+    # Antialiasing on; `adaptToDeviceRatio` off and `stencil` on.
     engine = new_engine(canvas, antialias)
     engine.setHardwareScalingLevel(1 / pixel_ratio())
     engine.onContextLostObservable.add(

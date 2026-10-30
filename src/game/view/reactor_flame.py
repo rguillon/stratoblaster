@@ -1,4 +1,4 @@
-"""Exhaust flame of a reactor, ported from `reactor-flame.ts` (GD-61): the blue light behind each
+"""Exhaust flame of a reactor (GD-61): the blue light behind each
 reactor is a living flame: an outer exhaust cone and a hotter inner cone that flicker in length,
 width and brightness, and plasma puffs that flow from the nozzle down the exhaust.
 """

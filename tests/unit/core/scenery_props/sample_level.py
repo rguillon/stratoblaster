@@ -1,5 +1,5 @@
-"""A tiny scenery level for the placement tests: a Python port of the parts of
-`tests/fixtures/sample-scenery.ts` the placers read. Two flat sections of 10 s at 20 units/s, a sea,
+"""A tiny scenery level for the placement tests: the parts of
+the placers read. Two flat sections of 10 s at 20 units/s, a sea,
 one straight main road along X = 0, straight paths every 100 units out to X = +-100 (off screen),
 and two prop kinds."""
 

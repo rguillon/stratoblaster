@@ -1,5 +1,4 @@
-"""The props of World 3 (P09-R03, R06; reworked at the reviewer's request, 2026-10-27), ported from
-`config/world-3/props.ts`.
+"""The props of World 3 (P09-R03, R06; reworked at the reviewer's request, 2026-10-27)
 
 Level Zero's industrial buildings and those made of parts, then the workers' flats, terraces and
 houses, and the farms of World 1's green land; each section picks the groups that stand on it, so

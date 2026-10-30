@@ -1,6 +1,5 @@
 """P16-R05, P16-R06: the Cyber-Organic pieces of the World 3 bosses (the jungle and its river):
-living bodies grown over by the jungle, metal grafted on. Ported from
-`view/bosses/world-3/jungle-flesh.ts`. Logical pixels, nose +Z, Y up."""
+living bodies grown over by the jungle, metal grafted on. Logical pixels, nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -26,7 +25,7 @@ JUNGLE_FLESH = [0.05, 0.1, 0.045]
 
 
 def table(rows: Any) -> Any:
-    """A constant table of numbers, or a list handed to a ported enemy helper. Identity at run
+    """A constant table of numbers, or a list handed to an enemy helper. Identity at run
     time: mypy would join its int and float rows to `list[object]`, and the enemy helpers type
     their points as tuples where the render helpers use lists (both are JavaScript arrays)."""
     return rows

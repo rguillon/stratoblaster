@@ -1,4 +1,4 @@
-"""The Splitter (P05-R10), ported from `game/sim/enemies/splitter.ts`."""
+"""The Splitter (P05-R10)"""
 
 import math
 

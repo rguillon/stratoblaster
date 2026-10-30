@@ -1,4 +1,4 @@
-"""Technical and scientific installations (P04-R04), ported from `props/science-props.ts`.
+"""Technical and scientific installations (P04-R04)
 Sizes in world units, standing on Y = 0."""
 
 import math

@@ -1,6 +1,6 @@
 """Colour helpers for readability (phase 14): luminance, contrast ratio, hue families.
 
-Colours are linear RGB, 0..1, unless noted. Ported from `core/math/color.ts`.
+Colours are linear RGB, 0..1, unless noted.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

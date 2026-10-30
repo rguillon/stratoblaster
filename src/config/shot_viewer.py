@@ -1,5 +1,4 @@
-"""Tunables of the player shots viewer page (`player_shots/`, P03-R10), ported from
-`config/shot-viewer.ts`.
+"""Tunables of the player shots on the playfield (P03-R10)
 
 Positions in logical pixels, Y up, origin at the bottom left of the playfield.
 """
@@ -91,7 +90,7 @@ class ShotTargets:
 
 
 class ShotLights:
-    """The lights of the shot viewer."""
+    """The lights of the playfield shots."""
 
     def __init__(
         self,
@@ -113,7 +112,7 @@ class EnvironmentStop:
 
 
 class Environment:
-    """Image-based lighting of the viewer (procedural, no download)."""
+    """Image-based lighting of the playfield (procedural, no download)."""
 
     def __init__(self, cube_size: float, intensity: float, stops: list[EnvironmentStop]) -> None:
         self.cube_size = cube_size

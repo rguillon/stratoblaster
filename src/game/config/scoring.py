@@ -1,4 +1,4 @@
-"""Scoring (P11-R01, R07), ported from `config/scoring.ts`.
+"""Scoring (P11-R01, R07)
 
 Each enemy kind's points are in its data (GD-50); a boss scores its points for its core, and
 `bossPartShare` of them (rounded to `roundTo`) for each part the player destroys. Life and bomb

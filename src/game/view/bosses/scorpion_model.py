@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-4: the Scorpion, ported from `bosses/scorpion-model.ts`: a living desert
+"""P07-R05, P16-R05, 1-4: the Scorpion: a living desert
 scorpion with yellow veins, a segmented shell, two arms out to its claw cannons, and a segmented
 tail arched over its back, its stinger hanging in front of the head. Logical pixels, nose +Z, Y up
 (towards the camera).

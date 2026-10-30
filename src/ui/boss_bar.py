@@ -1,4 +1,4 @@
-"""The boss health bar (P07-R02), ported from `ui/boss-bar.ts`: a slim gauge up the left edge of
+"""The boss health bar (P07-R02): a slim gauge up the left edge of
 the playfield, with the boss's kind and name written along it and the health of its parts filling
 it from the bottom."""
 

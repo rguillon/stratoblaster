@@ -1,4 +1,4 @@
-"""Bodies of revolution around the Z axis (ported from `render/geometry/lathe-z.ts`)."""
+"""Bodies of revolution around the Z axis ()."""
 
 import math
 

@@ -1,5 +1,4 @@
-"""P15-R07, R08: buildings of whole tiles packed in the blocks of a district (phase 15). Ported
-from `core/scenery/tile-packing.ts`."""
+"""P15-R07, R08: buildings of whole tiles packed in the blocks of a district (phase 15)."""
 
 import math
 

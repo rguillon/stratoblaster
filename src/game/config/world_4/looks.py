@@ -1,5 +1,4 @@
-"""How the World 4 levels look (P10-R04, R08; reworked at the reviewer's request, 2026-10-27),
-ported from `config/world-4/looks.ts`.
+"""How the World 4 levels look (P10-R04, R08; reworked at the reviewer's request, 2026-10-27)
 
 World 3's ground where it ended, grass and gardens giving way to the concrete of the city (the
 sections raise the `paved` cover level after level), the river flowing down the screen; and for each

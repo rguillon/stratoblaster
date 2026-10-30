@@ -1,4 +1,4 @@
-"""Builds the model of a boss (P07-R05) from its drawing, ported from `bosses/boss-model.ts`: its
+"""Builds the model of a boss (P07-R05) from its drawing: its
 core body, its parts on their own nodes (each flashing white when hit, smoking under half health,
 replaced by a burnt stump once destroyed), its turrets and limbs, and an optional ring turning with
 the boss's spin.

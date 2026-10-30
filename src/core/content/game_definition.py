@@ -1,8 +1,7 @@
-"""The contract between the engine and a game built on it (ENG-144), ported from
-`core/content/game-definition.ts`.
+"""The contract between the engine and a game built on it (ENG-144)
 
-`src/game/index.ts` exports exactly one object of this type; the engine discovers all game content
-through it. The TypeScript `TView` type parameter is `object` here: the presentation bindings
+The game exports exactly one object of this type; the engine discovers all game content
+through it. The view type parameter is `object` here: the presentation bindings
 (meshes, materials...) are defined by the presentation layers, so `core/` stays free of Babylon.
 """
 
@@ -53,7 +52,7 @@ class GameDefinition:
         texts: MenuTexts,
         view: object,
     ) -> None:
-        """Fields as in the TypeScript, in the same order:
+        """Fields, in the same order:
 
         - `id`: stable identifier, used e.g. as a storage key prefix; `title`: shown by the engine.
         - `screen`: logical resolution of the screens (GD-02).
