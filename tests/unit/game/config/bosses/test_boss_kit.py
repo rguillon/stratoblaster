@@ -1,7 +1,5 @@
 """Unit tests of `src/game/config/bosses/boss_kit.py`."""
 
-import pytest
-
 from game.config.bosses.boss_kit import (
     BOSS_TIMING,
     MISSILE,
@@ -177,11 +175,6 @@ def test_p07_r05_volley_muzzles_is_empty_for_a_launch() -> None:
     assert volley_muzzles(design, launch) == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: CPython twin of volley_muzzles: `guns = {}` has no `.gun` attribute (the browser "
-    "reads undefined, so no muzzles)",
-)
 def test_p07_r05_volley_muzzles_of_a_piece_without_guns_is_empty() -> None:
     no_guns = _design({"core": None}, [])
     assert volley_muzzles(no_guns, volley.aimed("core", 1, 1, 0, bullet("x", 1))) == []

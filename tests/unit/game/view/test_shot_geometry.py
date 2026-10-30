@@ -50,20 +50,16 @@ def test_p03_r01_glow_disc_colours_the_centre_then_one_ring_per_colour():
 
 def test_p03_r01_glow_disc_rings_sit_at_the_radius_of_their_colour():
     geo = build_glow_disc(8, [WHITE, RED, BLUE])
-    # The ring vertices are the positions (the centre has none, see the bug below).
+    # Vertex 0 is the centre; the two rings follow it.
     points = [geo.positions[3 * i : 3 * i + 3] for i in range(len(geo.positions) // 3)]
-    assert len(points) == 16
-    for x, y, _ in points[:8]:
+    assert len(points) == 17
+    assert points[0] == [0, 0, 0]
+    for x, y, _ in points[1:9]:
         assert math.hypot(x, y) == pytest.approx(0.5)
-    for x, y, _ in points[8:]:
+    for x, y, _ in points[9:]:
         assert math.hypot(x, y) == pytest.approx(1.0)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: build_swirl never pushes a position for the centre vertex, so a disc has one "
-    "position less than colours and its fan indices (the centre is index 0) run past the end",
-)
 def test_p03_r01_glow_disc_has_a_position_for_every_vertex():
     geo = build_glow_disc(6, [WHITE, RED, BLUE])
     assert len(geo.positions) // 3 == len(geo.colors) // 4
@@ -93,7 +89,8 @@ def test_p03_r01_swirl_with_no_lobes_is_a_plain_disc():
 
 def test_p03_r01_swirl_arms_make_the_rim_uneven():
     arms = build_swirl(12, [WHITE, RED], {"lobes": 3, "depth": 0.5, "twist": 0})
-    points = [geo_point for geo_point in [arms.positions[3 * i : 3 * i + 3] for i in range(12)]]
+    # Vertex 0 is the centre; the 12 rim vertices follow it.
+    points = [arms.positions[3 * i : 3 * i + 3] for i in range(1, 13)]
     radii = [math.hypot(x, y) for x, y, _ in points]
     assert max(radii) == pytest.approx(1.0)
     assert min(radii) == pytest.approx(0.5)
@@ -102,9 +99,10 @@ def test_p03_r01_swirl_arms_make_the_rim_uneven():
 def test_p03_r01_swirl_twist_turns_the_rim_away_from_the_centre():
     straight = build_swirl(8, [WHITE, RED], {"lobes": 0, "depth": 0, "twist": 0})
     turned = build_swirl(8, [WHITE, RED], {"lobes": 0, "depth": 0, "twist": 0.5})
-    assert turned.positions[:2] != pytest.approx(straight.positions[:2])
-    assert math.hypot(turned.positions[0], turned.positions[1]) == pytest.approx(
-        math.hypot(straight.positions[0], straight.positions[1])
+    # The first rim vertex is after the centre (index 3, 4 in the positions).
+    assert turned.positions[3:5] != pytest.approx(straight.positions[3:5])
+    assert math.hypot(turned.positions[3], turned.positions[4]) == pytest.approx(
+        math.hypot(straight.positions[3], straight.positions[4])
     )
 
 

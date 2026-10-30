@@ -14,11 +14,6 @@ def test_p15_r07_js_remainder_takes_the_sign_of_the_dividend(a, b, expected):
     assert js_remainder(a, b) == expected
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: js_remainder truncates the quotient by the sign of the dividend only, so a "
-    "negative divisor gives JavaScript's 5 % -3 wrong (it is 2 in JavaScript)",
-)
 def test_p15_r07_js_remainder_matches_javascript_for_a_negative_divisor():
     assert js_remainder(5, -3) == 2
 

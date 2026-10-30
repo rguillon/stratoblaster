@@ -55,7 +55,13 @@ class BossBar:
 
     def update(self, frame: BossBarFrame | None) -> None:
         """Shows `frame`, or hides the bar when there is no boss."""
-        key = "|".join([frame.rank, frame.name, _percent(frame.share)]) if frame is not None else ""
+        # The notches are part of what is shown, so a notch that moves on its own is drawn too.
+        notches = ",".join([_percent(at) for at in frame.notches]) if frame is not None else ""
+        key = (
+            "|".join([frame.rank, frame.name, _percent(frame.share), notches])
+            if frame is not None
+            else ""
+        )
         if key == self._shown:
             return
         self._shown = key

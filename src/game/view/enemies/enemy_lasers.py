@@ -5,6 +5,11 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
+
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from collections.abc import Sequence  # noqa: E402
@@ -67,6 +72,9 @@ def contrast_warning(color: Sequence[float]) -> list[Rgb]:
 
 def with_warning(base: Any, warning: list[Rgb]) -> Any:
     """`{ ...base, warning }`: the palette with another warning colour."""
+    __pragma__("skip")
+    return record({**fields_of(base), "warning": warning})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, base, {warning: warning});")
     return None
 

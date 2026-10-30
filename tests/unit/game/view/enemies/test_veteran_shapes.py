@@ -22,10 +22,6 @@ def test_station_at_interpolates_between_the_two_stations_around_z():
     assert station_at(stations, 2) == pytest.approx([2, 1, 2, 4])
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: station_at past the nose takes the tail station's radii (the first station)",
-)
 def test_station_at_beyond_the_last_station_clamps_to_the_nose_station():
     stations = [[0, 1, 1, 1], [2, 3, 3, 3]]
     assert station_at(stations, 3) == pytest.approx([3, 3, 3, 3])

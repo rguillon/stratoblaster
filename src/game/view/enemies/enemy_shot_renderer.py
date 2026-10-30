@@ -8,6 +8,9 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+__pragma__("skip")
+__pragma__("noskip")
+
 from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -46,18 +49,27 @@ ON_TOP = ON_TOP_ALPHA_INDEX + 1
 
 def _object_keys(obj: Any) -> list[str]:
     """`Object.keys(obj)`."""
+    __pragma__("skip")
+    return list(obj.keys())
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.keys(obj);")
     return []
 
 
 def _float32_array(length: int) -> Any:
     """A zero-filled `Float32Array` of `length` values."""
+    __pragma__("skip")
+    return [0.0] * length
+    __pragma__("noskip")
     __pragma__("js", "{}", "return new Float32Array(length);")
     return None
 
 
 def _ceil_log2(n: int) -> int:
     """`Math.ceil(Math.log2(n))`."""
+    __pragma__("skip")
+    return math.ceil(math.log2(n)) if n > 0 else 0
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Math.ceil(Math.log2(n));")
     return 0
 

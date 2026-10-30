@@ -27,6 +27,11 @@ class _Fields(dict):  # type: ignore[type-arg]
         return self.get(key)
 
 
+def fields_of(obj: Any) -> dict[str, Any]:
+    """The fields of a record or of an object (`Object.assign({}, obj)` copies them)."""
+    return dict(obj) if isinstance(obj, dict) else dict(vars(obj))
+
+
 def _as_fields(value: Any) -> Any:
     """`value` with every dict in it a record (`_Fields`) and every list a list."""
     if isinstance(value, dict):

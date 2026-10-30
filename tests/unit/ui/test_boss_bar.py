@@ -1,6 +1,5 @@
 """Unit tests of `src/ui/boss_bar.py`."""
 
-import pytest
 from helpers.dom import FakeDocument
 
 from ui.boss_bar import BossBar, BossBarFrame
@@ -45,11 +44,6 @@ def test_p07_r02_the_notches_are_rebuilt_only_when_they_move() -> None:
     assert bar.root.querySelector(".boss-notch").style.bottom == "50.0%"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: BossBar.update returns early when the name and share are unchanged, so a "
-    "notch that moves on its own is not drawn (src/ui/boss_bar.py)",
-)
 def test_p07_r02_a_notch_that_moves_alone_is_drawn() -> None:
     bar, _ = make_bar()
     bar.update(BossBarFrame("Warden", "BOSS", 0.7, [0.25]))

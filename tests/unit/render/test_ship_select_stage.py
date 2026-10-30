@@ -61,11 +61,6 @@ def test_a_negative_selection_is_clamped_to_the_first_ship() -> None:
     assert stage.selected == 0
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: with no ship, select clamps to -1 and then indexes pivots[-1]; the guard that "
-    "is meant for an empty stage tests `>=` on the clamped value",
-)
 def test_a_stage_with_no_ship_can_select_without_error() -> None:
     stage = _stage([])
     stage.select(0)

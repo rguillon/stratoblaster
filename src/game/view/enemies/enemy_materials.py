@@ -2,6 +2,11 @@
 
 from org.transcrypt.stubs.browser import __pragma__
 
+__pragma__("skip")
+from game.config.record import fields_of, record  # noqa: E402
+
+__pragma__("noskip")
+
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
 from collections.abc import Sequence  # noqa: E402
@@ -33,6 +38,9 @@ def enemy_color(color: Rgb) -> Sequence[float]:
 
 def _with_colors(geo: Any, colors: list[float]) -> Any:
     """`{ ...geo, colors }`: a copy of a coloured geometry with other colours."""
+    __pragma__("skip")
+    return record({**fields_of(geo), "colors": colors})
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, geo, {colors: colors});")
     return None
 

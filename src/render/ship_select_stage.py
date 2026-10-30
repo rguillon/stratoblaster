@@ -154,9 +154,10 @@ class ShipSelectStage:
     def select(self, index: int) -> None:
         """Highlights ship `index` (clamped to the available ships)."""
         pivots = self.showcase.pivots
-        self._selected = min(max(0, index), len(pivots) - 1)
-        if self._selected >= len(pivots):
+        if len(pivots) == 0:
+            self._selected = 0
             return
+        self._selected = min(max(0, index), len(pivots) - 1)
         pivot = pivots[self._selected]
         for i in range(len(self._spots)):
             self._spots[i].intensity = (

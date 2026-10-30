@@ -10,7 +10,6 @@ core name. Nothing else in `game/sim/` builds core boss types from config.
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import BossDeath, BossPartSpec, BossStats
-from core.entities.boss_joint import BossJointSpec, JointSwing
 from core.entities.boss_roll import BossRoll
 from core.entities.boss_turret import BossTurretSpec
 from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyLaserSpec, EnemyMissileSpec
@@ -26,6 +25,9 @@ from core.systems.boss_pattern import (
 )
 from game.config.bosses.boss_kit import BOSS_TIMING, volley_muzzles, volley_on_turret
 from game.sim.bosses.boss_launches import launch_fire
+from game.sim.config_access import keys_of as _keys
+from game.sim.config_access import opt
+from game.sim.joints import joint_specs
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -35,13 +37,6 @@ from typing import Any  # noqa: E402
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
 __pragma__("noskip")
-
-
-def opt(value: Any) -> Any:
-    """The config's optional field `value`, or None when the config leaves it out."""
-    if value == None:  # noqa: E711 (undefined or null: Transcrypt has both)
-        return None
-    return value
 
 
 def _maybe(value: Any, convert: Callable[[Any], Any]) -> Any:
@@ -142,25 +137,6 @@ def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
     )
 
 
-def _keys(record: ConfigRecord) -> list[str]:
-    """The keys of a config record, in their order. A record is a plain JavaScript object, which
-    has no `keys()` method under Transcrypt.
-    """
-    result: list[str] = []
-    # CPython only (the unit tests): a dict's keys, as `Object.keys` gives them in the browser.
-    __pragma__("skip")
-    result = list(record.keys())
-    __pragma__("noskip")
-    __pragma__(
-        "js",
-        "{}",
-        """
-    result = Object.keys(record);
-    """,
-    )
-    return result
-
-
 def break_ring_ids(design: ConfigRecord) -> list[str]:
     """The ids of the parts that burst into a ring of bullets when destroyed, in their order."""
     rings = opt(design.breakRings)
@@ -181,24 +157,6 @@ def _part_spec(part: ConfigRecord) -> BossPartSpec:
         part.orbits is True,
         opt(part.joint),
     )
-
-
-def _joint_specs(joints: ConfigRecord) -> Any:
-    """The joints of a boss, by id."""
-    result: Any = {}
-    for joint_id in _keys(joints):
-        joint = joints[joint_id]
-        swing = joint.swing
-        phase = swing.phase
-        if phase == None:  # noqa: E711
-            phase = 0
-        result[joint_id] = BossJointSpec(
-            joint.x,
-            joint.y,
-            JointSwing(swing.amplitudeDeg, swing.period, phase),
-            opt(joint.parent),
-        )
-    return result
 
 
 def _turret_specs(design: ConfigRecord) -> Any:
@@ -251,5 +209,5 @@ def boss_stats(design: ConfigRecord) -> BossStats:
         opt(stats.partPoints),
         _maybe(stats.roll, _roll),
         _turret_specs(design),
-        _maybe(stats.joints, _joint_specs),
+        _maybe(stats.joints, joint_specs),
     )

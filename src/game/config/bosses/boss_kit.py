@@ -62,7 +62,7 @@ def volley_muzzles(design: Any, shot: Any) -> Any:
     """The muzzles `volley` fires from, among its piece's guns (none for launches)."""
     guns = design.guns[shot["from"]]
     if _unset(guns):
-        guns = {}
+        guns = record({})
     fired = FIRED_BY[shot["shape"]["kind"]](guns)
     return [] if _unset(fired) else fired
 

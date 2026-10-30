@@ -191,7 +191,8 @@ NEON_DIM = [L.cyanDim, L.pinkDim, L.whiteDim, L.yellowDim]
 
 def js_remainder(a: int, b: int) -> int:
     """JavaScript's `a % b` (the sign of `a`), which the seeds' silhouettes are picked with."""
-    quotient = math.floor(a / b) if a >= 0 else math.ceil(a / b)
+    # The quotient truncates towards zero, whatever the signs of `a` and `b`.
+    quotient = math.floor(a / b) if a / b >= 0 else math.ceil(a / b)
     return a - b * quotient
 
 

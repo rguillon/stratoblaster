@@ -1,7 +1,5 @@
 """Unit tests of `src/input/keyboard_menu_input.py`."""
 
-import pytest
-
 from config.menu_input import MENU_INPUT_CONFIG
 from input.keyboard_menu_input import KeyboardMenuInput
 
@@ -115,12 +113,6 @@ def test_p01_r09_listen_wires_keydown_keyup_and_blur_and_stop_removes_them() -> 
     assert target.listeners == {"keydown": [], "keyup": [], "blur": []}
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: KeyboardMenuInput.key_up releases the action, not the key, so releasing one of "
-    "two keys bound to the same direction (ArrowUp and KeyW) stops the repeat while the other is "
-    "still held (src/input/keyboard_menu_input.py)",
-)
 def test_p01_r09_releasing_one_of_two_keys_for_a_direction_keeps_repeating_for_the_other() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("ArrowUp"))

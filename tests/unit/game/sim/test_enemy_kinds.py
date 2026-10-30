@@ -69,24 +69,9 @@ def test_p05_r01_a_side_pass_without_an_entry_takes_its_own_height() -> None:
     assert y == pytest.approx(150)
 
 
-# BUG: the joints of hydra, juggernaut and scissor are config records (see test_juggernaut.py).
-JOINTED = {"hydra", "juggernaut", "scissor"}
-
-
 @pytest.mark.parametrize(
     "kind",
-    [
-        pytest.param(
-            k,
-            marks=pytest.mark.xfail(
-                strict=True, raises=TypeError, reason="BUG: config joints read as snake_case"
-            )
-            if k.id in JOINTED
-            else (),
-            id=k.id,
-        )
-        for k in ENEMY_KINDS
-    ],
+    [pytest.param(k, id=k.id) for k in ENEMY_KINDS],
 )
 @pytest.mark.parametrize("side", [None, "top", "left", "right"])
 def test_p05_r01_every_kind_spawns_a_group_from_any_wave_entry(kind, side) -> None:

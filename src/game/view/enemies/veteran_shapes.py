@@ -41,6 +41,10 @@ def station_at(stations: Any, z: float) -> list[float]:
     for i, s in enumerate(stations):
         if after < 0 and s[0] >= z:
             after = i
+    if after < 0 and len(stations) > 0:
+        # Past the nose: the nose's radii.
+        last = stations[-1]
+        return [z, last[1], last[2], last[3]]
     b = stations[max(0, after)] if len(stations) > 0 else None
     a = stations[max(0, after - 1)] if len(stations) > 0 else b
     if a == None or b == None:  # noqa: E711

@@ -7,17 +7,9 @@ from helpers.fakes import FakeContext
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.scissor import ArmBeam, Scissor
 
-BROKEN_JOINTS = pytest.mark.xfail(
-    strict=True,
-    raises=TypeError,
-    reason="BUG: enemies_elite joints are config records (camelCase `amplitudeDeg`), read by "
-    "core's BossJoints as `amplitude_deg`: None under CPython (NaN angles in the browser)",
-)
-
 CFG = ELITE_CONFIG.scissor
 
 
-@BROKEN_JOINTS
 def test_p05_r21_a_scissor_comes_in_to_its_stop_height_and_warns_with_two_arm_lasers() -> None:
     ctx = FakeContext()
     scissor = Scissor(200, 500, 300)
@@ -28,7 +20,6 @@ def test_p05_r21_a_scissor_comes_in_to_its_stop_height_and_warns_with_two_arm_la
     assert scissor.swinging is False
 
 
-@BROKEN_JOINTS
 def test_p05_r21_the_arms_swing_inward_only_while_the_lasers_fire() -> None:
     ctx = FakeContext()
     scissor = Scissor(200, 300, 300)
@@ -40,7 +31,6 @@ def test_p05_r21_the_arms_swing_inward_only_while_the_lasers_fire() -> None:
     assert scissor.charge == 0
 
 
-@BROKEN_JOINTS
 def test_p05_r21_the_warning_charges_up_to_the_end_of_the_warning() -> None:
     ctx = FakeContext()
     scissor = Scissor(200, 300, 300)

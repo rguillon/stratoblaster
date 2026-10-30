@@ -71,11 +71,6 @@ def test_across_is_a_unit_vector_at_right_angles_to_the_road() -> None:
     assert nx**2 + nz**2 == pytest.approx(1)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG: _across of a zero-length step returns (0, 0), so the ribbon collapses to a line; "
-    "the fallback `if not a or not b` tests the objects, never the length",
-)
 def test_across_of_a_zero_length_step_is_still_a_unit_vector() -> None:
     run = [RoadPoint(0, 0, 1), RoadPoint(0, 0, 1)]
     nx, nz = _across(run, 0)

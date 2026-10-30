@@ -69,6 +69,7 @@ def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -
     twist = shape["twist"]
     geo = _empty_geometry()
     center = colors[0]
+    geo.positions.extend([0, 0, 0])
     geo.colors.extend(center)
     geo.colors.append(1)
     rings = len(colors) - 1
