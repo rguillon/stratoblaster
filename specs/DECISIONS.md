@@ -1815,5 +1815,5 @@
 - **Date:** 2026-10-30
 - **Phase:** 18 (the Python port), at the reviewer's request (in chat)
 - **Decision:** the white dot ringed in cyan on the player ship's hitbox is removed (`build_hitbox_marker`, `READABILITY.hitboxMarker`, `GameView.hitbox_marker`, `PlayfieldShip.mark`), and so is the dark blended disc behind every enemy bullet (`ENEMY_LOOK.contrast.rim`). The player ship keeps its cyan rim glow; the bullets keep their body, aura, swirls, pulsing core and white spark. Hitboxes are unchanged.
-- **Amends:** P14-R03 (the hitbox marker) and P14-R05 / P10-R07 (the bullets' dark contrasting rim). The requirement text of those phases is left as written, as for D-154.
+- **Amends:** P14-R03 (the hitbox marker, and its acceptance criterion and manual check) and P14-R05 / P10-R07 (the bullets' dark contrasting rim): their requirement text is amended at the reviewer's request. The past implementation reports and review answers are left as they were.
 - **Status:** Accepted
