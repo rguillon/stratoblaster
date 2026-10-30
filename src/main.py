@@ -1,23 +1,17 @@
 """Bootstrap only (ENG-10), ported from `main.ts`: create the engine and start the app.
 
-`index.html` calls `main()` once the page has loaded. Each page of the game (the game itself and
-the debug viewers) is chosen by its path (`app/route.py`).
+`index.html` calls `main()` once the page has loaded.
 
 Build-time flags of the TypeScript build (`__E2E__`, `import.meta.env.DEV`) are constants here:
 the Python port has no e2e build yet (ENG-52), and the perf overlay (ENG-111) is off.
+The debug viewers (ships, shots, enemies, bosses, props) are gone: only the game page is built.
 """
 
 from org.transcrypt.stubs.browser import __pragma__, document, window
 
 from app.debug_options import parse_debug_options
 from app.page_audio import AudioOptions, PageVisibility
-from app.route import redirect_of, resolve_route
 from app.start_app import AppOptions, start_app
-from app.start_boss_viewer import start_boss_viewer
-from app.start_enemy_viewer import EnemyViewerOptions, start_enemy_viewer
-from app.start_prop_viewer import PropViewerOptions, start_prop_viewer
-from app.start_ship_viewer import ShipCaptions, ShipViewerOptions, start_ship_viewer
-from app.start_shot_viewer import ShotViewerOptions, start_shot_viewer
 from build_info import APP_COMMIT, APP_VERSION  # The version and commit on the title (ENG-83).
 from config.engine import ENGINE_CONFIG
 from config.menu import MENU_CONFIG
@@ -132,22 +126,6 @@ def fit_to_window(engine: Any, stage: Any, overlay: Any) -> None:
     fit()
 
 
-def fit_canvas_stage(engine: Any) -> None:
-    """Keeps the canvas box at the game's aspect ratio, centred in the window."""
-    stage = element("stage")
-
-    def fit() -> None:
-        box = fit_stage(window.innerWidth, window.innerHeight, GAME.screen)
-        stage.style.left = str(box.left) + "px"
-        stage.style.top = str(box.top) + "px"
-        stage.style.width = str(box.width) + "px"
-        stage.style.height = str(box.height) + "px"
-        engine.resize()
-
-    window.addEventListener("resize", fit)
-    fit()
-
-
 def start_game(engine: Any) -> None:
     """The game page: the menu, the levels and the audio."""
     document.title = GAME.title
@@ -185,86 +163,8 @@ def start_game(engine: Any) -> None:
     start_app(engine, GAME, options)
 
 
-def start_ship_viewer_page(engine: Any) -> None:
-    """The player ships page (P01 viewers)."""
-    window.addEventListener("resize", lambda: engine.resize())  # noqa: PLW0108 (keeps the receiver)
-    start_ship_viewer(
-        engine,
-        GAME,
-        ShipViewerOptions(True, ShipCaptions(document, document.body), None),
-    )
-
-
-def start_shot_viewer_page(engine: Any) -> None:
-    """The player shots page."""
-    fit_canvas_stage(engine)
-    start_shot_viewer(
-        engine,
-        GAME,
-        ShotViewerOptions(
-            True,
-            document,
-            element("panel"),
-            document.body,
-            window,
-            None,
-            not E2E,
-        ),
-    )
-
-
-def start_enemy_viewer_page(engine: Any) -> None:
-    """The enemies page."""
-    fit_canvas_stage(engine)
-    start_enemy_viewer(
-        engine,
-        GAME,
-        EnemyViewerOptions(True, document, element("panel"), document.body, window, None, not E2E),
-    )
-
-
-def start_boss_viewer_page(engine: Any) -> None:
-    """The bosses page."""
-    fit_canvas_stage(engine)
-    start_boss_viewer(
-        engine,
-        GAME,
-        EnemyViewerOptions(True, document, element("panel"), document.body, window, None, not E2E),
-    )
-
-
-def start_prop_viewer_page(engine: Any) -> None:
-    """The props page."""
-    window.addEventListener("resize", lambda: engine.resize())  # noqa: PLW0108 (keeps the receiver)
-    start_prop_viewer(
-        engine,
-        GAME,
-        PropViewerOptions(True, document, element("panel"), window, not E2E),
-    )
-
-
-def start_page(route: str, engine: Any) -> None:
-    """Starts the page `route` names (the TypeScript `START` table)."""
-    if route == "game":
-        start_game(engine)
-    elif route == "player-ship-viewer":
-        start_ship_viewer_page(engine)
-    elif route == "player-shots-viewer":
-        start_shot_viewer_page(engine)
-    elif route == "enemy-viewer":
-        start_enemy_viewer_page(engine)
-    elif route == "boss-viewer":
-        start_boss_viewer_page(engine)
-    else:
-        start_prop_viewer_page(engine)
-
-
 def main() -> None:
-    """Runs the page: redirects, the WebGL check, the engine, then the page's app."""
-    redirect = redirect_of(window.location.pathname)
-    if redirect:
-        window.location.replace(redirect + window.location.search)
-        return
+    """Runs the game page: the WebGL check, the engine, then the app."""
     canvas: Any = document.getElementById("game-canvas")
     if not is_canvas(canvas):
         raise Exception("#game-canvas not found")
@@ -278,7 +178,7 @@ def main() -> None:
     engine.onContextLostObservable.add(
         lambda: show_fatal("The graphics context was lost. Please reload the page.")
     )
-    start_page(resolve_route(window.location.pathname), engine)
+    start_game(engine)
 
 
 def is_canvas(el: Any) -> bool:

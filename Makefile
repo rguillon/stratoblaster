@@ -31,7 +31,7 @@ build-info: ## Write src/build_info.py: the version and the short commit (unknow
 
 install: build-info ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
 	uv sync --locked
-	npm ci
+	npm ci --prefix node
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
 vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
@@ -55,7 +55,8 @@ vendor: ## Download the pinned Babylon.js build into public/vendor/, checking it
 # game (main.py) and its ground worker (a Web Worker entry, not reached from main.py) into one
 # file each under dist/js/, so the page makes 2 requests for code instead of one per module.
 TRANSCRYPT_OUT := build
-ESBUILD := node_modules/.bin/esbuild
+# Node is only a build step: esbuild bundles the compiled game (node/ holds its package.json).
+ESBUILD := node/node_modules/.bin/esbuild
 # Transcrypt has no incremental mode here (its `-b`-less build fails), so it compiles everything
 # (about 20 s) whenever a Python source changed: the stamp file records the last compile.
 PY_SOURCES := $(shell find src -name '*.py' -not -path '*/__pycache__/*')

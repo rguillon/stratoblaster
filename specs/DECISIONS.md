@@ -1755,3 +1755,11 @@
 - **Why:** the CI on `main` called `make lint typecheck coverage build` and `make e2e` without uv, without the vendored Babylon, and with a summary read from a file the Python coverage no longer writes. A clean clone of the branch reproduces the gate: lint, typecheck and coverage (99 %) pass, and the build passes once Babylon is vendored.
 - **Consequences:** CI no longer runs any browser test. ENG-50 (Playwright e2e) returns with the port's own e2e suite (the test phase), and the job comes back with it.
 - **Status:** Accepted, temporary (e2e)
+
+### D-187 — The repository is Python first: the debug viewers are gone and the Node tooling is in `node/`
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** the five debug viewer pages (`/player_ship/`, `/player_shots/`, `/enemies/`, `/bosses/`, `/props/`, their top-level `index.html`), their start modules and the route table are deleted, with the `?debug` test API (`src/debug/`) and every module only they used (19 leaf modules, found by walking the imports from `main.py` and `worker_main.py`). Only the game page is built. The TypeScript game, its tests and every Node file (`package.json`, `package-lock.json`, `tsconfig`, `typings/`, the Vite, Vitest, ESLint, Prettier, Playwright configs, `scripts/`, `.nvmrc`) are under `node/`. Node is a build step only: `make install` runs `npm ci --prefix node`, and `make build` bundles with `node/node_modules/.bin/esbuild`. The TypeScript reference in `node/` is not built, linted or tested by the Python gate.
+- **Why:** the owner wants a Python project, with Node only where the build needs it. The viewers duplicated the game's modules for debugging the TypeScript build.
+- **Consequences:** `specs/` still describes the viewer pages (P01 to P16 viewers, the `?debug` test API for e2e) and must be updated by the owner, who owns those files. The e2e suite (ENG-50 to ENG-53) is in `node/tests/e2e/` and is not run by CI (D-186).
+- **Status:** Accepted

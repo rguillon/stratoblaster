@@ -46,7 +46,7 @@ max-args = 6
 strict = true
 python_version = "3.12"
 files = ["src"]
-mypy_path = ["src", "typings"]
+mypy_path = ["src", "node/typings"]
 
 [tool.pytest.ini_options]
 # Unit tests run in CPython on the modules of src/ (ENG-40). The Transcrypt stubs (`org`) are added

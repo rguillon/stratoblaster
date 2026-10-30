@@ -29,9 +29,10 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
       - uses: actions/setup-node@v7
         with:
-          node-version-file: .nvmrc
+          node-version-file: node/.nvmrc
           cache: npm
-      - run: npm ci
+          cache-dependency-path: node/package-lock.json
+      - run: npm ci --prefix node
       - run: uv sync --locked
       - run: make vendor
       - run: make build
