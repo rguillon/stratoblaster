@@ -1,76 +1,100 @@
 # Single entry point for humans, git hooks and CI (specs/01-engineering.md §3).
+# uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build lint format typecheck test test-watch coverage e2e e2e-build e2e-ui check-fast check preview clean
+.PHONY: help install vendor dev build lint format typecheck check check-fast clean
 
-NPX := npx --no-install
-# CI also needs the system libraries for Chromium (requires sudo).
-PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
-# `make install SKIP_BROWSER=1` skips Chromium: jobs without e2e, or the Playwright image that has it.
-SKIP_BROWSER ?=
-# Extra Playwright arguments, e.g. `make e2e E2E_ARGS=--grep=P09`.
-E2E_ARGS ?=
-# Tool caches (D-094). ESLint's cache is only used by `check-fast` (pre-push): it skips unchanged
-# files, whose type-aware results can change with the files they import. `lint` and `check` lint
-# everything.
-CACHE_DIR := node_modules/.cache
-ESLINT_CACHE :=
+DIST := dist
+
+# Babylon.js (ENG-02, P18-R04): the pinned UMD build, vendored under public/vendor/ by `make vendor`
+# and checked against its SHA-256 (DECISIONS D-173). Bump the version and the hash together.
+BABYLON_VERSION := 9.32.0
+BABYLON_URL := https://cdn.jsdelivr.net/npm/babylonjs@$(BABYLON_VERSION)/babylon.js
+BABYLON_SHA256 := 58c486bececb6cde67b188e6410321e72d1d051ea7a9e5f23c560b6049ab37a5
+VENDOR := public/vendor
+BABYLON_FILE := $(VENDOR)/babylon.js
+SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo "shasum -a 256")
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install dependencies, git hooks and Playwright Chromium
+install: ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
+	uv sync --locked
 	npm ci
-	$(if $(SKIP_BROWSER),,$(NPX) playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium)
+	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
-dev: ## Start the Vite dev server with HMR on port 5173
-	$(NPX) vite
-
-build: ## Production build into dist/ (fails if the e2e test API or an audio file gets into it)
-	$(NPX) vite build
-	@if grep -rlqE '__GAME_TEST__|__ENEMIES_TEST__|__BOSSES_TEST__|__SCENERY_TEST__|__SHOTS_TEST__' dist; then \
-		echo 'ENG-52: an e2e test API was found in the production bundle' >&2; exit 1; \
+vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
+	@mkdir -p $(VENDOR)
+	@if echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null; then \
+		echo 'vendor: $(BABYLON_FILE) is Babylon.js $(BABYLON_VERSION) (checksum OK)'; \
+	else \
+		tmp=$$(mktemp) && \
+		{ curl -fsSL -o "$$tmp" '$(BABYLON_URL)' || { rm -f "$$tmp"; echo 'vendor: download failed: $(BABYLON_URL)' >&2; exit 1; }; } && \
+		actual=$$($(SHA256SUM) "$$tmp" | cut -d' ' -f1) && \
+		if [ "$$actual" != '$(BABYLON_SHA256)' ]; then \
+			rm -f "$$tmp"; \
+			echo "vendor: SHA-256 mismatch for Babylon.js $(BABYLON_VERSION): expected $(BABYLON_SHA256), got $$actual" >&2; \
+			exit 1; \
+		fi && \
+		mv "$$tmp" $(BABYLON_FILE) && \
+		echo 'vendor: downloaded Babylon.js $(BABYLON_VERSION), checksum OK'; \
 	fi
-	@if find dist -type f \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.aac' -o -iname '*.flac' -o -iname '*.opus' -o -iname '*.webm' \) | grep -q .; then \
-		echo 'P12-R05: an audio file was found in the production build (audio is generated)' >&2; exit 1; \
-	fi
 
-lint: ## ESLint + Prettier check (no auto-fix)
-	$(NPX) eslint . --max-warnings 0 $(ESLINT_CACHE)
-	$(NPX) prettier --check --cache .
+# Transcrypt writes one ES module per Python module into build/transcrypt/; esbuild bundles the
+# game (main.py) and its ground worker (a Web Worker entry, not reached from main.py) into one
+# file each under dist/js/, so the page makes 2 requests for code instead of one per module.
+TRANSCRYPT_OUT := build
+ESBUILD := node_modules/.bin/esbuild
+# Transcrypt has no incremental mode here (its `-b`-less build fails), so it compiles everything
+# (about 20 s) whenever a Python source changed: the stamp file records the last compile.
+PY_SOURCES := $(shell find src -name '*.py' -not -path '*/__pycache__/*')
+TRANSCRYPT_STAMP := $(TRANSCRYPT_OUT)/.stamp
 
-format: ## Prettier write + ESLint --fix
-	$(NPX) prettier --write --cache .
-	$(NPX) eslint . --fix
+$(TRANSCRYPT_STAMP): $(PY_SOURCES)
+	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/game main.py
+	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
+	touch $@
 
-typecheck: ## TypeScript type check
-	$(NPX) tsc --noEmit --incremental --tsBuildInfoFile $(CACHE_DIR)/tsc/tsbuildinfo
+build: $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
+	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
+		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
+	rm -rf $(DIST)
+	mkdir -p $(DIST)/js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/game/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/game.js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
+	cp index.html $(DIST)/
+	@if [ -d public ]; then cp -r public/. $(DIST)/; fi
+	@if [ -d $(VENDOR) ] && [ ! -f $(DIST)/vendor/babylon.js ]; then \
+		echo 'build: vendored files were not copied to dist/' >&2; exit 1; fi
+	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
+		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
 
-test: ## Unit tests, single run
-	$(NPX) vitest run
+dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
+	uv run python -m http.server 5173 --directory $(DIST)
 
-test-watch: ## Unit tests in watch mode
-	$(NPX) vitest
+lint: ## Ruff check + format check + layering contracts (no auto-fix)
+	uv run ruff check src
+	uv run ruff format --check src
+	PYTHONPATH=src uv run lint-imports
 
-coverage: ## Unit tests with coverage; fails below thresholds
-	$(NPX) vitest run --coverage
+format: ## Ruff format + ruff fix
+	uv run ruff format src
+	uv run ruff check --fix src
 
-e2e-build:
-	$(NPX) vite build --mode e2e
+typecheck: ## mypy --strict
+	uv run mypy
 
-e2e: e2e-build ## Build in e2e mode, serve it and run Playwright
-	$(NPX) playwright test $(E2E_ARGS)
+test: ## Unit tests (pytest, CPython over src/)
+	uv run pytest
 
-e2e-ui: e2e-build ## Playwright UI mode
-	$(NPX) playwright test --ui
+coverage: ## Unit tests with the core/ coverage report (fails below ENG-43), HTML in coverage/
+	uv run coverage run -m pytest
+	uv run coverage html -d coverage
+	uv run coverage report
 
-check-fast: ESLINT_CACHE = --cache --cache-strategy content --cache-location $(CACHE_DIR)/eslint/
-check-fast: lint typecheck test ## lint + typecheck + unit tests (pre-push)
+check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
-check: lint typecheck coverage build e2e ## Full gate (CI and agent)
+check: lint typecheck build ## Full gate currently available (tests and e2e are deferred)
 
-preview: build ## Serve the production build locally
-	$(NPX) vite preview
-
-clean: ## Remove build outputs, reports and caches
-	rm -rf dist dist-e2e coverage playwright-report test-results blob-report .eslintcache node_modules/.vite $(CACHE_DIR)
+clean: ## Remove build outputs and caches
+	rm -rf $(DIST) build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache
