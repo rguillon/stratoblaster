@@ -17,7 +17,6 @@ PROP_COLORS = record(
         "white": [0.8, 0.8, 0.78],
         "glass": [0.07, 0.1, 0.14],
         "wood": [0.3, 0.25, 0.2],
-        "woodDark": [0.21, 0.17, 0.14],
         "bark": [0.27, 0.2, 0.14],
         "leaf": [0.22, 0.4, 0.15],
         "leafDark": [0.13, 0.27, 0.12],
@@ -31,23 +30,18 @@ PROP_COLORS = record(
         "sand": [0.55, 0.48, 0.38],
         "glassGreen": [0.09, 0.2, 0.19],
         "glassDark": [0.05, 0.06, 0.09],
-        # Desert homes and plants (phase 6): rammed earth, solar panels, dry and green leaves.
+        # Desert homes (phase 6): rammed earth, solar panels, thatch, dry leaves.
         "adobe": [0.74, 0.62, 0.47],
         "adobeDark": [0.56, 0.45, 0.33],
         "adobeRoof": [0.64, 0.55, 0.43],
         "solar": [0.07, 0.11, 0.24],
         "thatch": [0.52, 0.42, 0.26],
-        "palmLeaf": [0.27, 0.44, 0.16],
-        "palmTrunk": [0.42, 0.33, 0.22],
-        "cactus": [0.27, 0.4, 0.24],
         "dryLeaf": [0.46, 0.43, 0.25],
-        "dryLeafDark": [0.33, 0.3, 0.18],
         # Farms of World 1's green land (reviewer, 2026-10-26): pale panelled walls, dark roofs.
         "farmWall": [0.66, 0.64, 0.6],
         "farmRoof": [0.2, 0.21, 0.25],
-        # World 2 (phase 8): snow with a blue-grey shade on its lower faces, ice, snowy pines and
-        # pale frosted wood, painted metal of the harbours and mines, insulated panels.
-        "snow": [0.9, 0.92, 0.96],
+        # World 2 (phase 8): ice, snowy pines and pale frosted wood, painted metal of the harbours
+        # and mines, insulated panels.
         "ice": [0.8, 0.89, 0.95],
         "silver": [0.62, 0.65, 0.7],
         "signalOrange": [0.85, 0.42, 0.12],

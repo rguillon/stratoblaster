@@ -10,9 +10,7 @@ from typing import Any  # noqa: E402
 __pragma__("noskip")
 
 from game.config.cars import CAR_IDS  # noqa: E402
-from game.config.prop_ids import PROP_IDS  # noqa: E402
 from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402
-from game.config.world_1.props import WORLD_1_PROP_IDS  # noqa: E402
 from game.view.props.prop_models import PROP_MODELS  # noqa: E402
 from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402
 from render.game_view import PropGroup  # noqa: E402
@@ -71,30 +69,22 @@ def unique(items: list[str]) -> list[str]:
 
 
 def make_prop_groups() -> list[PropGroup]:
-    """The groups of the `props/` page: the named props, the tiles, the buildings, the cars."""
+    """The groups of the `props/` page: the tiles, the buildings, the cars (D-207: the shared and
+    World 1 props are gone)."""
     models = list(PROP_MODELS.keys())
-    named: list[PropGroup] = []
-    for label, ids in [
-        ["Shared", PROP_IDS],
-        ["World 1", WORLD_1_PROP_IDS],
-        ["Cars", CAR_IDS],
-    ]:
-        values = unique([ids[key] for key in ids.keys()])  # noqa: SIM118 (Transcrypt: iterate .keys())
-        named.append(PropGroup(label, [i for i in values if i in models]))
+    cars = PropGroup(
+        "Cars",
+        [i for i in unique([CAR_IDS[key] for key in CAR_IDS.keys()]) if i in models],  # noqa: SIM118 (Transcrypt: iterate .keys())
+    )
     tile_page = make_tile_page()
-    taken: list[str] = []
-    for group in named:
-        taken.extend(group.ids)
+    taken: list[str] = list(cars.ids)
     for group in tile_page:
         taken.extend(group.ids)
     buildings = [model_id for model_id in models if model_id not in taken]
-    cars = named[-1:]
-    named = named[:-1]
     result: list[PropGroup] = []
-    result.extend(named)
     result.extend(tile_page)
     result.append(PropGroup("Buildings", buildings))
-    result.extend(cars)
+    result.append(cars)
     return [g for g in result if len(g.ids) > 0]
 
 

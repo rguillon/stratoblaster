@@ -442,11 +442,27 @@ def is_raw_cube_texture(value: Any) -> bool:
 
 
 def update_raw_cube_texture(
-    texture: Any, faces: list[Any], format_: Any, texture_type: Any, mipmaps: bool
+    texture: Any, faces: list[Any], format_: Any, texture_type: Any, invert_y: bool
 ) -> None:
-    """`texture.update(faces, format, type, generateMipmaps)`. Transcrypt renames `update`, so
-    the method is called from raw JavaScript."""
-    __pragma__("js", "{}", "texture.update(faces, format_, texture_type, mipmaps);")
+    """`texture.update(faces, format, type, invertY)`. Transcrypt renames `update`, so the method
+    is called from raw JavaScript."""
+    __pragma__("js", "{}", "texture.update(faces, format_, texture_type, invert_y);")
+
+
+def set_cube_sphere_lighting(texture: Any, faces: list[Any], size: int) -> None:
+    """Gives the RGBA8 cube `texture` the spherical polynomial of its `faces` (in Babylon's order:
+    +X, -X, +Y, -Y, +Z, -Z), as `CubeMapToSphericalPolynomialTools` would from the texture's pixels
+    read back from the GPU, which waits for all the GPU's work (P13-R03: about a second). An update
+    of the texture keeps the polynomial set, so it is set again after each one."""
+    __pragma__(
+        "js",
+        "{}",
+        "texture.sphericalPolynomial = "
+        "BABYLON.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial({"
+        "size: size, right: faces[0], left: faces[1], up: faces[2], down: faces[3],"
+        " front: faces[4], back: faces[5], format: BABYLON.Constants.TEXTUREFORMAT_RGBA,"
+        " type: BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE, gammaSpace: texture.gammaSpace});",
+    )
 
 
 def dispose_texture(texture: Any) -> None:

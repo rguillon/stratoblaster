@@ -7,9 +7,11 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
+from config.dev_viewer import DEV_VIEWERS
 from core.content.level_catalog import first_unlocked_level
 from core.menu.grid_cursor import GridShape, move_cursor
 from core.menu.menu_screen import can_transition
@@ -25,7 +27,7 @@ from input.menu_action import MenuCommand  # noqa: E402
 
 __pragma__("noskip")
 
-# The title screen's entries (P01-R04, P12-R04).
+# The title screen's entries (P01-R04, P12-R04); `dev` after them with the dev menu (D-199).
 TITLE_ENTRIES = ["start", "settings"]
 
 # Volumes and slider size when the options give none.
@@ -89,6 +91,18 @@ class MenuFlow:
         )
         # The screen the settings screen was opened from, which Back goes back to.
         self._settings_from: MenuScreen = "title"
+        # The dev menu (D-199): the viewer picked, the item each viewer shows, and each viewer's
+        # toggle (close-up for the models, play for the levels).
+        counts = options.dev_counts
+        self._title_entries = list(TITLE_ENTRIES)
+        if counts is not None:
+            self._title_entries.append("dev")
+        self._dev_counts: list[int] = list(counts) if counts is not None else []
+        groups = options.dev_groups
+        self._dev_groups: list[list[str]] = list(groups) if groups is not None else []
+        self._dev_index = 0
+        self._dev_items = [0 for _ in DEV_VIEWERS]
+        self._dev_toggles = [viewer != "levels" for viewer in DEV_VIEWERS]
 
     @property
     def revision(self) -> int:
@@ -113,7 +127,16 @@ class MenuFlow:
             self.paused,
             self._screen == "pause" and self._pause.leaving,
             self._settings.volumes,
+            self._dev_viewer(),
+            self._screen == "dev-viewer" and self._dev_toggles[self._dev_index],
         )
+
+    def _dev_viewer(self) -> str | None:
+        """The dev viewer shown, on the `dev-viewer` screen (D-199)."""
+        if self._screen != "dev-viewer":
+            return None
+        viewer: str = DEV_VIEWERS[self._dev_index]
+        return viewer
 
     @property
     def paused(self) -> bool:
@@ -136,7 +159,7 @@ class MenuFlow:
             self._open_settings()
         if screen == "pause" and self._screen == "game":
             self._pause.open()
-        if screen == "title" and self._screen != "settings":
+        if screen == "title" and self._screen not in ["settings", "dev"]:
             self._title_index = 0
         self._result = None
         self._screen = screen
@@ -204,7 +227,8 @@ class MenuFlow:
         if self._screen == "loading" or self._transition_left > 0:
             return "none"
         if isinstance(command, str):
-            return self._action(command)
+            on_viewer = self._screen == "dev-viewer"
+            return self._on_dev_viewer(command) if on_viewer else self._action(command)
         if isinstance(command, MenuSelect):
             return self._select(command.select)
         return self._adjusted(self._settings.set(command.set, command.value))
@@ -263,6 +287,46 @@ class MenuFlow:
             return "none"
         return "screen" if self.go_to(self._settings_from) else "none"
 
+    def _on_dev_viewer(self, command: str) -> str:
+        """A dev viewer (D-199): the four directions show the item before or after (round the
+        list), Up and Down the first item of the group before or after when the viewer's items are
+        in groups (D-202), Confirm flips the viewer's toggle, Back and Escape return to the dev
+        menu.
+        """
+        if is_menu_direction(command):
+            counts = self._dev_counts
+            count = counts[self._dev_index] if self._dev_index < len(counts) else 0
+            if count <= 1:
+                return "none"
+            step = -1 if command in ["left", "up"] else 1
+            index = self._dev_items[self._dev_index]
+            starts = group_starts(_at(self._dev_groups, self._dev_index) or [])
+            if command in ["up", "down"] and len(starts) > 1:
+                self._dev_items[self._dev_index] = group_jump(starts, index, step)
+            else:
+                self._dev_items[self._dev_index] = (index + step + count) % count
+            self._changed()
+            return "moved"
+        if command == "confirm":
+            self._dev_toggles[self._dev_index] = not self._dev_toggles[self._dev_index]
+            self._changed()
+            return "adjusted"
+        if command in ["back", "cancel"]:
+            return "screen" if self.go_to("dev") else "none"
+        return "none"
+
+    def _select_dev_item(self, index: int) -> str:
+        """A dev viewer's button was tapped (D-204): it shows item `index`."""
+        counts = self._dev_counts
+        count = counts[self._dev_index] if self._dev_index < len(counts) else 0
+        if not _is_integer(index) or index < 0 or index >= count:
+            return "none"
+        if index == self._dev_items[self._dev_index]:
+            return "none"
+        self._dev_items[self._dev_index] = index
+        self._changed()
+        return "moved"
+
     def _adjusted(self, feedback: str) -> str:
         if feedback != "none":
             self._changed()
@@ -293,22 +357,25 @@ class MenuFlow:
         return ship if ship is not None else ""
 
     def _selection(self) -> int:
-        if self._screen == "title":
-            return self._title_index
-        if self._screen == "ship-select":
-            return self._ship_index
-        if self._screen == "level-select":
-            return self._level_index
         if self._screen == "pause":
             return self._pause.selection
         if self._screen == "settings":
             return self._settings.selection
-        return 0
+        indices = {
+            "title": self._title_index,
+            "ship-select": self._ship_index,
+            "level-select": self._level_index,
+            "dev": self._dev_index,
+            "dev-viewer": self._dev_items[self._dev_index],
+        }
+        index: int = indices.get(self._screen, 0)
+        return index
 
     def _selected_id(self, selection: int) -> str | None:
         screen = self._screen
-        if screen == "title":
-            entry: str | None = _at(TITLE_ENTRIES, selection)
+        if screen in ["title", "dev"]:
+            entries = self._title_entries if screen == "title" else DEV_VIEWERS
+            entry: str | None = _at(entries, selection)
             return entry
         if screen == "pause":
             return self._pause.selected_id
@@ -323,7 +390,9 @@ class MenuFlow:
 
     def _grid(self) -> GridShape | None:
         if self._screen == "title":
-            return GridShape(len(TITLE_ENTRIES), 1, False)
+            return GridShape(len(self._title_entries), 1, False)
+        if self._screen == "dev":
+            return GridShape(len(DEV_VIEWERS), 1, False)
         if self._screen == "ship-select":
             count = len(self._options.ship_ids)
             return GridShape(count, count, True)
@@ -339,6 +408,8 @@ class MenuFlow:
             self._title_index = index
         elif self._screen == "ship-select":
             self._ship_index = index
+        elif self._screen == "dev":
+            self._dev_index = index
         else:
             self._level_index = index
         self._changed()
@@ -355,6 +426,8 @@ class MenuFlow:
         return self._set_selection(move_cursor(self._selection(), cursor_direction, grid))
 
     def _select(self, index: int) -> str:
+        if self._screen == "dev-viewer":
+            return self._select_dev_item(index)
         if self._screen == "pause":
             return self._pause_outcome(self._pause.select(index))
         if self._screen == "settings":
@@ -367,7 +440,11 @@ class MenuFlow:
         return self._set_selection(index)
 
     def _back(self) -> str:
-        previous: dict[str, MenuScreen] = {"ship-select": "title", "level-select": "ship-select"}
+        previous: dict[str, MenuScreen] = {
+            "ship-select": "title",
+            "level-select": "ship-select",
+            "dev": "title",
+        }
         if self._screen not in previous:
             return "none"
         return "screen" if self.go_to(previous[self._screen]) else "none"
@@ -375,8 +452,11 @@ class MenuFlow:
     def _confirm(self) -> str:
         screen = self._screen
         if screen == "title":
-            target: MenuScreen = "ship-select" if self._title_index == 0 else "settings"
+            targets: list[MenuScreen] = ["ship-select", "settings", "dev"]
+            target: MenuScreen = targets[self._title_index]
             return "screen" if self.go_to(target) else "none"
+        if screen == "dev":
+            return "screen" if self.go_to("dev-viewer") else "none"
         if screen == "ship-select":
             self._chosen_ship_id = self._ship_id(self._ship_index)
             return "screen" if self.go_to("level-select") else "none"

@@ -87,6 +87,10 @@ def _plume_frame(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     return None
 
 
+# The chunk the props of `solo_props` are kept in: no terrain chunk has it.
+SOLO_CHUNK = -1000000
+
+
 class SceneryStage:
     """The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain
     in chunks, an optional sea, cloud layers and props, lit by a low sun. `update` moves everything
@@ -97,6 +101,8 @@ class SceneryStage:
         self.options = options
         self._time = 0.0
         self._with_runout = False
+        # Dev viewer (D-199): only the props given to `solo_props` are drawn, no car.
+        self._solo = False
         level = options.level
         look = options.look
         config = options.config
@@ -266,6 +272,42 @@ class SceneryStage:
         if self._sea is not None:
             self._sea.setEnabled(self._sea_enabled)
 
+    def solo_props(self, placements: list[Any]) -> None:
+        """Dev viewer (D-199): the level's own props and cars are no longer drawn, only
+        `placements` (`PropPlacement`, in ground units: kinds of this level), standing on its
+        ground as its own do."""
+        self._solo = True
+        self._props.clear()
+        self._props.set_chunk(SOLO_CHUNK, placements)
+
+    def find_prop(self, kind: str, z_end: float) -> Any:
+        """Dev viewer (D-199): where the level first places a prop of `kind` (ground units, up to
+        ground Z `z_end`), the one nearest the middle of its first chunk that has one; None if it
+        places none there. Places the level's buildings up to it."""
+        length = self.options.config.chunk_length
+        half = self._ground.half_width
+        z = 0.0
+        while z < z_end:
+            best: Any = None
+            for p in self._placer.place(GroundArea(-half, half, z, z + length)):
+                if p.kind == kind and (best is None or abs(p.x) < abs(best.x)):
+                    best = p
+            if best is not None:
+                return best
+            z += length
+        return None
+
+    def shift_ground(self, x: float) -> None:
+        """Dev viewer (D-199): moves the ground so its X `x` (ground units) is under the middle of
+        the view."""
+        root = self._ground_root
+        root.node.position.x = -x * root.scale
+
+    @property
+    def ground_root(self) -> GroundRoot:
+        """The node the ground hangs from (its scale, and where ground Z is drawn)."""
+        return self._ground_root
+
     def playfield_point(self, x: float, y: float, distance: float) -> Any:
         """World position of a playfield point (logical pixels, origin at its bottom left)."""
         screen = self.options.screen
@@ -343,7 +385,8 @@ class SceneryStage:
         # 2026-10-28): not over the whole chunks.
         x_half = min(self._x_half, self._ground.half_width + near)
         z_low = max(z_min, z_near)
-        z_high = min(z_max, z_far)
+        # Dev viewer (D-199): no car, an empty area.
+        z_high = z_low - 1 if self._solo else min(z_max, z_far)
         self._traffic.update(
             self._time,
             GroundArea(-x_half, x_half, z_low, z_high),
@@ -405,7 +448,9 @@ class SceneryStage:
             if index not in self._road_pending:
                 self._road_pending.append(index)
         area = GroundArea(-self._x_half, self._x_half, span.z_min, span.z_max)
-        self._props.set_chunk(index, self._placer.place(area))
+        placed = self._placer.place(area)
+        if not self._solo:
+            self._props.set_chunk(index, placed)
 
     def _take_roads(self) -> None:
         """Gives the street surfaces that are ready to their chunks; the others keep waiting."""

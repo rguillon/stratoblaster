@@ -6,29 +6,31 @@
     <title>Stratoblaster</title>
     <style>
       /*
-       * Darksynth look (GD-60, P01-R13; reviewer 2026-10-26, D-103): hot magenta, violet and
-       * blood red neon on black-violet, a chrome logo, sunset gradients, soft neon glows,
-       * chamfered panels. The selected entry is a solid magenta block, with its markers.
-       * System fonts only: works offline.
+       * Neon blue/green look (reviewer, 2026-10-30, D-198; was darksynth magenta, D-103):
+       * electric cyan and neon green on blue-black, a cold chrome logo, blue-to-green neon lines,
+       * soft neon glows, chamfered panels. The selected entry is a solid cyan block, with its
+       * markers. Red stays for danger (low health, game over, locked, the boss). System fonts
+       * only: works offline.
        */
       :root {
-        --hot: #ff2bd6;
-        --violet: #b15cff;
+        --neon: #00e8ff;
+        --accent: #3dff9a;
+        --deep: #0a5cff;
         --red: #ff2244;
-        --black: #07020c;
-        --paper: #f7eefc;
-        --dim: #8e7a9e;
-        --glass: rgba(14, 3, 22, 0.8);
-        --letterbox: #030006;
-        --glow: rgba(255, 43, 214, 0.55);
-        --sunset: linear-gradient(90deg, #7a1cff, #ff1fa6 55%, #ff5a3c 85%, #ffb347);
+        --black: #010a10;
+        --paper: #ecfdff;
+        --dim: #6e8f98;
+        --glass: rgba(2, 14, 22, 0.8);
+        --letterbox: #000407;
+        --glow: rgba(0, 232, 255, 0.55);
+        --neon-line: linear-gradient(90deg, #0a5cff, #00b4ff 40%, #00e8ff 65%, #3dff9a 90%, #b4ff4a);
         --chrome: linear-gradient(
           180deg,
           #ffffff 0%,
-          #ffd8f6 40%,
-          #5a1a78 50%,
-          #ff6fd2 60%,
-          #ffe3f6 100%
+          #d4fbff 40%,
+          #0b3a5a 50%,
+          #4ff0ff 60%,
+          #e4fff4 100%
         );
         --font:
           'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
@@ -101,19 +103,19 @@
         text-align: center;
         text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
       }
-      /* Screen frame: a thin neon line, magenta at the top fading to violet, softly glowing. */
+      /* Screen frame: a thin neon line, cyan at the top fading to deep blue, softly glowing. */
       .menu-screen::before {
         content: '';
         position: absolute;
         inset: 6px;
         pointer-events: none;
         border: 1px solid transparent;
-        border-image: linear-gradient(180deg, var(--hot), rgba(122, 28, 255, 0.35)) 1;
+        border-image: linear-gradient(180deg, var(--neon), rgba(10, 92, 255, 0.35)) 1;
         box-shadow:
-          0 0 14px rgba(255, 43, 214, 0.25),
-          inset 0 0 18px rgba(122, 28, 255, 0.2);
+          0 0 14px rgba(0, 232, 255, 0.25),
+          inset 0 0 18px rgba(10, 92, 255, 0.2);
       }
-      /* The sunset line along the bottom of every screen. */
+      /* The neon line along the bottom of every screen. */
       .menu-screen::after {
         content: '';
         position: absolute;
@@ -122,7 +124,7 @@
         bottom: 6px;
         height: 3px;
         pointer-events: none;
-        background: var(--sunset);
+        background: var(--neon-line);
         box-shadow: 0 0 12px var(--glow);
       }
       .menu-enter {
@@ -141,13 +143,13 @@
         box-sizing: border-box;
         min-width: 44px;
         min-height: 44px;
-        border: 2px solid rgba(177, 92, 255, 0.45);
+        border: 2px solid rgba(61, 255, 154, 0.45);
         background:
-          linear-gradient(-45deg, var(--violet) 0 7px, transparent 7px) bottom right / 16px 16px
+          linear-gradient(-45deg, var(--accent) 0 7px, transparent 7px) bottom right / 16px 16px
             no-repeat,
           var(--glass);
       }
-      /* Selected entry: solid magenta block with black text, plus its markers, so it shows
+      /* Selected entry: solid cyan block with black text, plus its markers, so it shows
          without colour too (much lighter than the dark panels in greyscale). */
       .menu-entry.selected {
         border-color: var(--paper);
@@ -156,7 +158,7 @@
         background:
           linear-gradient(-45deg, var(--black) 0 7px, transparent 7px) bottom right / 16px 16px
             no-repeat,
-          linear-gradient(180deg, #ff6ad5, var(--hot) 55%, #e0148f);
+          linear-gradient(180deg, #8ff6ff, var(--neon) 55%, #00a6c8);
         box-shadow: 0 0 22px var(--glow);
       }
       .menu-heading {
@@ -167,15 +169,15 @@
         text-transform: uppercase;
         color: var(--paper);
         text-shadow:
-          0 0 6px var(--hot),
-          0 0 18px rgba(122, 28, 255, 0.9),
+          0 0 6px var(--neon),
+          0 0 18px rgba(10, 92, 255, 0.9),
           0 0 4px rgba(0, 0, 0, 0.9);
       }
       .menu-hint {
         font-size: 15px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #e2b8ff;
+        color: #b8fff0;
         animation: hint-pulse 2.4s ease-in-out infinite;
       }
       @keyframes hint-pulse {
@@ -195,10 +197,10 @@
         justify-content: center;
         box-sizing: border-box;
         padding: 0 12px;
-        border: 2px solid var(--violet);
+        border: 2px solid var(--accent);
         clip-path: var(--chamfer);
         background: var(--glass);
-        color: var(--violet);
+        color: var(--accent);
         font-size: 18px;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -219,14 +221,14 @@
         }
       }
 
-      /* A neon grid floor under a crimson horizon glow. */
+      /* A neon grid floor under a deep blue horizon glow. */
       .loading-screen {
         justify-content: center;
         gap: 16px;
         background:
-          linear-gradient(rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
-          linear-gradient(90deg, rgba(255, 43, 214, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
-          radial-gradient(ellipse at 50% 100%, rgba(255, 34, 68, 0.35), transparent 60%),
+          linear-gradient(rgba(0, 232, 255, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(90deg, rgba(0, 232, 255, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
+          radial-gradient(ellipse at 50% 100%, rgba(10, 92, 255, 0.4), transparent 60%),
           var(--black);
       }
       .loading-text {
@@ -237,15 +239,15 @@
         text-transform: uppercase;
         color: var(--paper);
         text-shadow:
-          0 0 8px var(--hot),
-          0 0 20px rgba(122, 28, 255, 0.9);
+          0 0 8px var(--neon),
+          0 0 20px rgba(10, 92, 255, 0.9);
       }
       .loading-bar {
         width: 320px;
         height: 24px;
         box-sizing: border-box;
         padding: 3px;
-        border: 2px solid var(--hot);
+        border: 2px solid var(--neon);
         overflow: hidden;
         background: var(--glass);
       }
@@ -254,12 +256,12 @@
         height: 100%;
         background:
           repeating-linear-gradient(90deg, transparent 0 10px, var(--black) 10px 13px),
-          var(--sunset);
+          var(--neon-line);
       }
       .loading-percent {
         font-family: var(--font-tech);
         font-size: 18px;
-        color: var(--violet);
+        color: var(--accent);
       }
 
       .title-score-label {
@@ -267,14 +269,14 @@
         font-size: 15px;
         letter-spacing: 0.3em;
         text-transform: uppercase;
-        color: var(--violet);
+        color: var(--accent);
       }
       .title-high-score {
         font-family: var(--font-tech);
         font-size: 32px;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        color: var(--hot);
+        color: var(--neon);
       }
       /* 80s chrome letters (a horizon line across the middle) in a slow neon glow. */
       .title-name {
@@ -293,12 +295,12 @@
         background: var(--chrome);
         -webkit-background-clip: text;
         background-clip: text;
-        filter: drop-shadow(0 0 6px var(--hot)) drop-shadow(0 0 16px rgba(122, 28, 255, 0.8));
+        filter: drop-shadow(0 0 6px var(--neon)) drop-shadow(0 0 16px rgba(10, 92, 255, 0.8));
         animation: title-glow 3.5s ease-in-out infinite;
       }
       @keyframes title-glow {
         50% {
-          filter: drop-shadow(0 0 10px var(--hot)) drop-shadow(0 0 26px rgba(255, 34, 68, 0.8));
+          filter: drop-shadow(0 0 10px var(--neon)) drop-shadow(0 0 26px rgba(61, 255, 154, 0.8));
         }
       }
       .title-start {
@@ -346,7 +348,7 @@
         font-family: var(--font-tech);
         font-size: 11px;
         text-align: right;
-        color: var(--violet);
+        color: var(--accent);
         opacity: 0.85;
       }
 
@@ -406,18 +408,18 @@
         font-weight: 700;
       }
       .level-cell:not(.locked) {
-        border-color: var(--violet);
+        border-color: var(--accent);
       }
       .level-cell.selected:not(.locked) {
         border-color: var(--paper);
       }
-      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the magenta block. */
+      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the cyan block. */
       .level-cell.locked {
         color: var(--dim);
-        border-color: rgba(142, 122, 158, 0.3);
+        border-color: rgba(110, 143, 152, 0.3);
         background:
-          repeating-linear-gradient(-45deg, rgba(142, 122, 158, 0.1) 0 6px, transparent 6px 12px),
-          rgba(14, 14, 22, 0.85);
+          repeating-linear-gradient(-45deg, rgba(110, 143, 152, 0.1) 0 6px, transparent 6px 12px),
+          rgba(6, 16, 22, 0.85);
         text-shadow: none;
         box-shadow: none;
       }
@@ -464,7 +466,7 @@
         text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
         pointer-events: none;
       }
-      /* No sunset line over the playfield. */
+      /* No neon line over the playfield. */
       .game-screen::after {
         content: none;
       }
@@ -495,7 +497,7 @@
         gap: 12px;
         padding: 6px 12px 4px;
         background: var(--glass);
-        border-top: 1px solid rgba(255, 43, 214, 0.45);
+        border-top: 1px solid rgba(0, 232, 255, 0.45);
       }
       /* Level progress: a thin line along the top edge of the bar. */
       .hud-progress {
@@ -508,8 +510,8 @@
       }
       .hud-progress-fill {
         height: 100%;
-        background: var(--sunset);
-        box-shadow: 0 0 6px var(--hot);
+        background: var(--neon-line);
+        box-shadow: 0 0 6px var(--neon);
       }
       .hud-health {
         min-width: 0;
@@ -521,11 +523,11 @@
         white-space: nowrap;
       }
       .hud-ship {
-        color: var(--hot);
+        color: var(--neon);
         text-transform: uppercase;
       }
       .hud-lives {
-        color: var(--violet);
+        color: var(--accent);
       }
       /* Bombs left (P11-R05), next to the lives. */
       .hud-bombs {
@@ -541,13 +543,13 @@
         flex: 1;
         max-width: 110px;
         height: 7px;
-        border: 1px solid var(--violet);
+        border: 1px solid var(--accent);
         background: rgba(0, 0, 0, 0.5);
       }
       .hud-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, #7a1cff, var(--hot));
-        box-shadow: 0 0 6px var(--hot);
+        background: linear-gradient(90deg, var(--deep), var(--neon));
+        box-shadow: 0 0 6px var(--neon);
       }
       .hud-bar-fill.low {
         background: var(--red);
@@ -567,18 +569,18 @@
         font-weight: 700;
         line-height: 20px;
         color: var(--paper);
-        text-shadow: 0 0 6px var(--hot);
+        text-shadow: 0 0 6px var(--neon);
       }
       .hud-high-score {
         font-size: 10px;
         line-height: 12px;
-        color: var(--violet);
+        color: var(--accent);
       }
       .hud-weapon {
         justify-self: end;
         align-self: start;
         margin-top: 2px;
-        color: var(--hot);
+        color: var(--neon);
         white-space: nowrap;
       }
       /* Touch bomb button (P11-R06), above the fire button, only on touch screens. */
@@ -643,7 +645,7 @@
         letter-spacing: 0.15em;
       }
       .boss-name {
-        color: var(--hot);
+        color: var(--neon);
         letter-spacing: 0.08em;
       }
       .boss-track {
@@ -657,7 +659,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(0deg, #7a1cff, var(--red) 60%, #ff5a3c);
+        background: linear-gradient(0deg, #7a0016, var(--red) 60%, #ff5a3c);
         box-shadow: 0 0 6px var(--red);
       }
       .boss-notch {
@@ -686,8 +688,8 @@
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--black);
-        background: rgba(255, 43, 214, 0.55);
-        border: 3px solid var(--hot);
+        background: rgba(0, 232, 255, 0.55);
+        border: 3px solid var(--neon);
         text-shadow: none;
       }
       @media (pointer: coarse) {
@@ -708,10 +710,10 @@
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        border: 2px solid var(--violet);
+        border: 2px solid var(--accent);
         clip-path: var(--chamfer);
         background: var(--glass);
-        color: var(--violet);
+        color: var(--accent);
         font-size: 20px;
         font-weight: 700;
         cursor: pointer;
@@ -735,7 +737,7 @@
         min-width: 280px;
         padding: 24px 32px;
         clip-path: var(--chamfer);
-        border: 2px solid var(--hot);
+        border: 2px solid var(--neon);
         background: var(--glass);
       }
       .pause-heading {
@@ -745,8 +747,8 @@
         text-transform: uppercase;
         color: var(--paper);
         text-shadow:
-          0 0 6px var(--hot),
-          0 0 18px rgba(122, 28, 255, 0.9);
+          0 0 6px var(--neon),
+          0 0 18px rgba(10, 92, 255, 0.9);
       }
       .pause-entry,
       .pause-choice {
@@ -817,12 +819,12 @@
       .slider-cell {
         flex: 1;
         height: 22px;
-        background: rgba(177, 92, 255, 0.18);
-        border: 1px solid rgba(177, 92, 255, 0.45);
+        background: rgba(61, 255, 154, 0.18);
+        border: 1px solid rgba(61, 255, 154, 0.45);
       }
       .slider-cell.on {
-        background: var(--violet);
-        box-shadow: 0 0 6px var(--violet);
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
       }
       .settings-slider.selected .slider-cell {
         background: rgba(0, 0, 0, 0.15);
@@ -846,7 +848,7 @@
         gap: 12px;
         padding: 24px 32px;
         clip-path: var(--chamfer);
-        border: 2px solid var(--hot);
+        border: 2px solid var(--neon);
         background: var(--glass);
         color: var(--paper);
       }
@@ -859,13 +861,13 @@
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: var(--hot);
+        color: var(--neon);
       }
       .level-complete-level {
         font-family: var(--font-tech);
         font-size: 40px;
         font-weight: 700;
-        color: var(--violet);
+        color: var(--accent);
       }
       .level-complete-enemies {
         font-size: 22px;
@@ -874,13 +876,13 @@
       .level-complete-score {
         font-family: var(--font-tech);
         font-size: 24px;
-        color: var(--hot);
+        color: var(--neon);
       }
       .level-complete-high-score {
         font-size: 20px;
         font-weight: 700;
         text-transform: uppercase;
-        color: var(--violet);
+        color: var(--accent);
       }
       .level-complete.game-over {
         border-color: var(--red);
@@ -902,9 +904,151 @@
         color: var(--paper);
       }
       .level-complete-choice.selected {
-        border-color: var(--hot);
+        border-color: var(--neon);
         color: var(--black);
-        background: var(--hot);
+        background: var(--neon);
+      }
+
+      /* Dev entry under Settings (D-199, with ?dev in the URL). */
+      .title-dev {
+        margin-top: 14px;
+        padding: 6px 18px;
+        clip-path: var(--chamfer);
+        font-family: var(--font-tech);
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .title-dev.selected::before {
+        content: '▶ ';
+      }
+      /* The dev menu (D-199): one entry per viewer. */
+      .dev-entries {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 70%;
+        margin: 48px 0 24px;
+      }
+      .dev-entry {
+        padding: 10px 18px;
+        clip-path: var(--chamfer);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .dev-entry.selected::before {
+        content: '▶ ';
+      }
+      /* A dev viewer (D-199): its caption over the 3D view, the hint at the bottom. */
+      /* A drag turns the model: no page scroll or zoom under the finger, a grab cursor. */
+      .dev-viewer-screen {
+        touch-action: none;
+        cursor: grab;
+      }
+      .dev-viewer-screen::after {
+        content: none;
+      }
+      .dev-heading {
+        margin: 26px 0 0 128px;
+        align-self: flex-start;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .dev-caption {
+        margin-top: 10px;
+        padding: 6px 16px;
+        clip-path: var(--chamfer);
+        background: var(--glass);
+        border: 1px solid rgba(0, 232, 255, 0.45);
+        font-family: var(--font-tech);
+      }
+      .dev-item {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--paper);
+        text-shadow: 0 0 6px var(--neon);
+      }
+      .dev-position,
+      .dev-status {
+        font-size: 13px;
+        color: var(--accent);
+      }
+      .dev-status:empty {
+        display: none;
+      }
+      /* The props viewer's menu (D-206): a scrolling list down the left side, each group's
+         heading then its props, so the prop in the middle stays in view. */
+      .dev-menu {
+        position: absolute;
+        left: 14px;
+        top: 270px;
+        bottom: 70px;
+        width: 170px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--neon) transparent;
+        touch-action: pan-y;
+        background: var(--glass);
+        border: 1px solid rgba(0, 232, 255, 0.35);
+        text-align: left;
+        cursor: default;
+        z-index: 1;
+      }
+      .dev-menu .menu-entry {
+        flex: none;
+        min-height: 24px;
+        padding: 2px 8px;
+        border-width: 1px;
+        font-family: var(--font-tech);
+        font-size: 11px;
+        line-height: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
+      .dev-menu-group {
+        margin-top: 6px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .dev-menu-group:first-child {
+        margin-top: 0;
+      }
+      .dev-menu-item {
+        margin-left: 10px;
+        font-weight: 600;
+        color: var(--paper);
+      }
+      .dev-menu .menu-entry.selected {
+        color: var(--black);
+      }
+      /* The group of the prop shown: marked, not filled like the prop itself. */
+      .dev-menu .dev-menu-group.selected {
+        color: var(--neon);
+        background: var(--glass);
+        border-color: var(--neon);
+        box-shadow: none;
+      }
+      .dev-hint {
+        margin-top: auto;
+        margin-bottom: 14px;
+        padding: 4px 10px;
+        background: var(--glass);
+        font-size: 11px;
       }
 
       /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */
@@ -914,12 +1058,12 @@
         right: 8px;
         z-index: 10;
         padding: 6px 10px;
-        background: rgba(14, 3, 22, 0.85);
-        border: 1px solid rgba(255, 43, 214, 0.5);
+        background: rgba(2, 14, 22, 0.85);
+        border: 1px solid rgba(0, 232, 255, 0.5);
         font-family: var(--font-tech);
         font-size: 12px;
         line-height: 1.5;
-        color: var(--hot);
+        color: var(--neon);
         pointer-events: none;
       }
 
@@ -942,12 +1086,12 @@
         left: 8px;
         z-index: 10;
         padding: 6px 10px;
-        background: rgba(14, 3, 22, 0.85);
-        border: 1px solid rgba(255, 43, 214, 0.5);
+        background: rgba(2, 14, 22, 0.85);
+        border: 1px solid rgba(0, 232, 255, 0.5);
         font-family: var(--font-tech);
         font-size: 12px;
         line-height: 1.5;
-        color: var(--hot);
+        color: var(--neon);
         white-space: pre;
         pointer-events: none;
       }

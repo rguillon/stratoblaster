@@ -37,9 +37,12 @@ def _contains(items: list[Any], item: Any) -> bool:
 class EnemyLayer:
     """One model per enemy, shown at its position with its nose along its heading."""
 
-    def __init__(self, scene: Any, models: dict[str, Any]) -> None:
+    def __init__(self, scene: Any, models: dict[str, Any], keys: list[str] | None = None) -> None:
+        """`keys`: the models `prepare_next` builds ahead, in order (P13-R03: a level's own); every
+        model when None. A model left out is still built when its first enemy shows."""
         self._scene = scene
         self._models = models
+        self._keys = keys
         # The enemies drawn, with their slots (two parallel lists: enemies are objects).
         self._slot_enemies: list[Any] = []
         self._slot_values: list[_Slot] = []
@@ -74,6 +77,12 @@ class EnemyLayer:
             slot.pivot.rotation.z = -enemy.heading
             slot.model.sync(enemy, dt_seconds)
 
+    def pivot_of(self, enemy: Any) -> Any:
+        """The node `enemy`'s model hangs from while it is drawn (None when it is not): `sync`
+        sets its position and its turn round Z only."""
+        slot = self._find_slot(enemy)
+        return slot.pivot if slot is not None else None
+
     def prepare_next(self) -> list[Any]:
         """Builds one hidden model of the next kind not built yet, kept for reuse (P13-R04), and
         returns its meshes (e.g. to compile their shaders), or none once every kind has one.
@@ -82,8 +91,10 @@ class EnemyLayer:
         freezing a frame.
         """
         key = None
-        for k in self._models.keys():  # noqa: SIM118 (Transcrypt: iterate keys() explicitly)
-            if not _contains(self._built, k):
+        # Transcrypt: iterate keys() explicitly.
+        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118
+        for k in keys:
+            if k in self._models and not _contains(self._built, k):
                 key = k
                 break
         if key is None:

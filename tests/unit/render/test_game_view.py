@@ -61,5 +61,4 @@ def test_the_game_view_keeps_its_fields_and_leaves_the_optional_ones_out() -> No
     assert glow.blur_kernel_size == 16
     assert view.scenery.prop_groups is None and view.scenery.prop_tiles is None
     assert view.bombs is None and view.audio is None and view.outline is None
-    assert view.hitbox_marker is None
     assert enemies.set_idle_motion is None

@@ -131,21 +131,25 @@ class EnemyBindings:
     `models`: one model per `EnemyStats.model` key. `shots(scene, style)`: the enemy shot
     renderer, in the level's style if any. `blasts(scene)`: the explosion renderer. `glow`: a
     `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation on or off.
+    `child_models`: the models of the enemies other enemies send out (e.g. a carrier's drones),
+    built with every level's own models (P13-R03).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         models: dict[str, Any],
         shots: Any,
         blasts: Any,
         glow: GlowLook,
         set_idle_motion: Any = None,
+        child_models: list[str] | None = None,
     ) -> None:
         self.models = models
         self.shots = shots
         self.blasts = blasts
         self.glow = glow
         self.set_idle_motion = set_idle_motion
+        self.child_models = child_models if child_models is not None else []
 
 
 class PropGroup:
@@ -208,8 +212,7 @@ class GameView:
     `player_ship_scale` (logical pixels per model unit), `player_shot_renderers` (one per player
     weapon id), `menu_backdrop` (a `MenuBackdropFactory`), `scenery` (`SceneryBindings`),
     `enemies` (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`). Optional, None when left
-    out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`),
-    `hitbox_marker` (a `ModelFactoryOf` of the hitbox radius).
+    out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`).
     """
 
     def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -224,7 +227,6 @@ class GameView:
         bombs: Any = None,
         audio: Any = None,
         outline: Any = None,
-        hitbox_marker: Any = None,
     ) -> None:
         self.player_ship_models = player_ship_models
         self.player_ship_scale = player_ship_scale
@@ -236,4 +238,3 @@ class GameView:
         self.bombs = bombs
         self.audio = audio
         self.outline = outline
-        self.hitbox_marker = hitbox_marker

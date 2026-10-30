@@ -18,9 +18,12 @@ from app.readability_probe import probe_readability
 from app.shot_viewer_scene import PlayfieldShip
 from config.game_controls import GAME_CONTROLS_CONFIG
 from config.game_play import GAME_PLAY_CONFIG as CFG
+from core.entities.enemy import EnemySpawnArea
 from core.entities.muzzle import PlanePoint
 from core.entities.player_ship import find_player_ship, ship_max_speed_px_per_sec
 from core.loop.fixed_step_clock import FixedStepClock
+from core.math.rng import create_rng
+from core.systems.level_models import level_model_keys
 from core.systems.level_run import LevelRun
 from core.systems.level_run_types import LevelRunOptions, RunShip
 from render.babylon import js_set, set_enabled
@@ -160,14 +163,16 @@ class GamePlay:
             ship = PlayfieldShip(self.view.scene, scale, 0, 0)
             # The nose is measured on the model before it joins the playfield.
             nose = ship.show(model) if model is not None else 0
-            ship.mark(game.view.hitbox_marker, game.hull.hit_radius)
             return [ship, nose]
 
         built = playfield.run(build_ship)
         self._ship: Any = built[0]
         nose = built[1]
         self.run: LevelRun = self._new_run(level, max(0, nose - CFG.muzzle_inset))
-        self._enemies = playfield.run(lambda: EnemyLayer(self.view.scene, game.view.enemies.models))
+        keys = self._model_keys(level)
+        self._enemies = playfield.run(
+            lambda: EnemyLayer(self.view.scene, game.view.enemies.models, keys)
+        )
         self._shots = EnemyViewerShots(game, playfield, self.view.look.shotStyle)
         self._bonuses = playfield.run(lambda: game.view.bonuses(self.view.scene))
         self._bombs = playfield.run(
@@ -221,6 +226,24 @@ class GamePlay:
                 self._options.resume,
                 journey,
             )
+        )
+
+    def _model_keys(self, level: Any) -> list[str]:
+        """The enemy models `level` needs (P13-R03), built while it loads: those of its waves and
+        bosses, and the enemies they send out. The kinds are spawned with their own random numbers,
+        so the level's are untouched."""
+        game = self.game
+        screen = game.screen
+        random = create_rng(int(CFG.seed))
+
+        def area_of(entry: Any) -> EnemySpawnArea:
+            return EnemySpawnArea(screen.width, screen.height, random, entry)
+
+        bosses = level.bosses if level.bosses is not None else []
+        boss_kinds = game.boss_kinds if game.boss_kinds is not None else []
+        children: list[str] = game.view.enemies.child_models
+        return level_model_keys(
+            level.waves, bosses, game.enemy_kinds, boss_kinds, area_of, children
         )
 
     def _in_view(self) -> Any:

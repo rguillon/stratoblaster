@@ -232,3 +232,21 @@ def test_p01_r13_the_settings_screen_is_shown_when_chosen() -> None:
     finish(controller)
     go(controller, "down", "confirm")
     assert isinstance(display.last, SettingsView)
+
+
+def test_d199_the_dev_labels_give_the_flow_its_counts_and_the_views_their_items() -> None:
+    labels = {"ships": ["A", "B"], "enemies": [], "bosses": [], "props": [], "levels": ["1-1"]}
+    display = FakeDisplay()
+    deps = MenuControllerDeps(
+        display, FakeInput(), MemoryStorage(), 0.25, None, 80, "1.0", "abc", None, None, labels
+    )
+    controller = MenuController(make_game(), deps)
+    finish(controller)
+    assert display.last.dev == "Dev"
+    for command in ["down", "down", "confirm"]:
+        controller.command(command)
+    controller.tick(1.0)
+    controller.command("confirm")
+    controller.tick(1.0)
+    controller.command("left")
+    assert (display.last.item, display.last.position) == ("B", "2 / 2")

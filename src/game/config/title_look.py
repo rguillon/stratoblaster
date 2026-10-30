@@ -1,6 +1,6 @@
-"""Darksynth night behind the menus (P01-R05, GD-60)
+"""Neon night behind the menus (P01-R05; blue/green since D-198, was darksynth magenta)
 
-A crimson sunset glow behind a black skyline, a dark street of towers with magenta, red and violet
+A deep blue glow behind a black skyline, a dark street of towers with cyan, green and blue
 windows, signs and roof trims, haze and rain (D-012). Linear RGB, 0..1. Distances in world units;
 heights in gradient stops go from -1 (bottom) to 1 (top).
 """
@@ -8,16 +8,16 @@ heights in gradient stops go from -1 (bottom) to 1 (top).
 from game.config.record import record
 
 NEON = [
-    [1, 0.08, 0.55],
-    [1, 0.12, 0.22],
-    [0.6, 0.15, 1],
-    [1, 0.35, 0.75],
+    [0.05, 0.9, 1],
+    [0.15, 1, 0.5],
+    [0.1, 0.4, 1],
+    [0.55, 1, 0.85],
 ]
 
 WINDOW_COLORS = [
-    [0.95, 0.08, 0.4],
-    [0.6, 0.1, 0.9],
-    [1, 0.12, 0.18],
+    [0.05, 0.85, 1],
+    [0.15, 0.95, 0.45],
+    [0.15, 0.4, 1],
 ]
 
 TITLE_LOOK = record(
@@ -26,19 +26,19 @@ TITLE_LOOK = record(
         "seed": 2077,
         "camera": {"position": [0, 4, -8], "target": [0, 5.5, 40], "fov": 0.8},
         # Haze colour; also the clear colour, so the street melts into the distance.
-        "horizon": [0.11, 0.01, 0.07],
+        "horizon": [0.01, 0.05, 0.1],
         "fog": {"start": 30, "end": 190},
         "sky": {
             "z": 340,
             "width": 900,
             "height": 400,
             "centerY": 150,
-            # Crimson glow of the sunset near the horizon, through violet, to black higher up.
+            # Deep blue glow near the horizon, through teal, to black higher up.
             "stops": [
-                {"at": -1, "color": [0.34, 0.015, 0.15]},
-                {"at": -0.7, "color": [0.22, 0.02, 0.17]},
-                {"at": -0.2, "color": [0.05, 0.008, 0.08]},
-                {"at": 1, "color": [0.006, 0.002, 0.016]},
+                {"at": -1, "color": [0.01, 0.12, 0.3]},
+                {"at": -0.7, "color": [0.01, 0.13, 0.18]},
+                {"at": -0.2, "color": [0.004, 0.03, 0.06]},
+                {"at": 1, "color": [0.001, 0.004, 0.012]},
             ],
         },
         # Distant towers, flat, in front of the sky; not fogged.
@@ -48,7 +48,7 @@ TITLE_LOOK = record(
             "halfWidth": 420,
             "width": [10, 30],
             "height": [40, 150],
-            "color": [0.018, 0.004, 0.03],
+            "color": [0.004, 0.014, 0.024],
             "windows": {
                 "cellWidth": 3,
                 "cellHeight": 4,
@@ -85,18 +85,18 @@ TITLE_LOOK = record(
                 },
             ],
             "colors": {
-                "wall": [0.04, 0.02, 0.06],
-                "facade": [0.07, 0.03, 0.09],
-                "roof": [0.02, 0.01, 0.035],
+                "wall": [0.015, 0.035, 0.055],
+                "facade": [0.025, 0.06, 0.085],
+                "roof": [0.008, 0.02, 0.032],
             },
             "street": {
                 "halfWidth": 80,
-                "color": [0.015, 0.005, 0.025],
+                "color": [0.004, 0.012, 0.02],
                 "laneX": [-3, 3],
                 "dash": 3,
                 "dashPeriod": 8,
                 "lineWidth": 0.15,
-                "lineColor": [0.55, 0.04, 0.38],
+                "lineColor": [0.04, 0.5, 0.55],
             },
             "windows": {
                 "cellWidth": 2.2,
@@ -114,7 +114,7 @@ TITLE_LOOK = record(
                 "width": [1.4, 2.6],
                 "height": [5, 12],
                 "baseHeight": [3, 16],
-                "panel": [0.02, 0.01, 0.04],
+                "panel": [0.006, 0.02, 0.035],
                 "lines": 3,
             },
             "trim": {"chance": 0.35, "height": 0.3},
@@ -128,7 +128,7 @@ TITLE_LOOK = record(
             "z": [0, 60],
             "length": [0.8, 1.6],
             "width": 0.04,
-            "color": [0.32, 0.12, 0.3],
+            "color": [0.12, 0.26, 0.32],
             # Fall speed, in units per second.
             "speed": 30,
         },

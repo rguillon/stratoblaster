@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
-from game.config.world_2.props import DESERT_PLANTS, WORLD_2_GROUPS, WORLD_2_PROPS, WORLD_2_ROADS
+from game.config.world_2.props import WORLD_2_GROUPS, WORLD_2_PROPS, WORLD_2_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -19,7 +19,6 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-PL = DESERT_PLANTS
 G = WORLD_2_GROUPS
 
 # Sections blend over this many units: about 15 s of scrolling, World 1's 420 doubled.
@@ -48,9 +47,8 @@ def section(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(28, 10, 520),
                 "buildingDensity": 0.6,
-                "treeDensity": 0.35,
+                "treeDensity": 0,
                 "surface": {"sandy": 1},
-                "trees": PL["desert"],
                 "groups": [G.outposts],
             }
         ),
@@ -66,7 +64,6 @@ PROSPECT_MINES = section(
         "relief": smooth(30, 10, 520, 3),
         "buildingDensity": 1,
         "surface": {"sandy": 0.8, "paved": 0.05},
-        "trees": PL["rock"],
         "groups": [G.outposts, G.mines],
     },
 )
@@ -78,7 +75,7 @@ OIL_EDGE = section(
     {
         "relief": smooth(28, 5, 600, 3),
         "buildingDensity": 1,
-        "treeDensity": 0.25,
+        "treeDensity": 0,
         "surface": {"sandy": 0.55, "paved": 0.25},
         "groups": [G.oil, G.mines],
     },
@@ -91,10 +88,9 @@ INDUSTRIAL_EDGE = section(
     {
         "relief": FLAT,
         "buildingDensity": 1,
-        "treeDensity": 0.15,
+        "treeDensity": 0,
         "surface": {"sandy": 0.25, "paved": 0.55},
         "streets": STREETS,
-        "trees": PL["industry"],
         "groups": [G.refinery, G.industrial],
     },
 )
@@ -106,10 +102,9 @@ FACTORY_DISTRICT = section(
     {
         "relief": smooth(32, 3, 600, 3),
         "buildingDensity": 1,
-        "treeDensity": 0.08,
+        "treeDensity": 0,
         "surface": {"sandy": 0.1, "paved": 0.78},
         "streets": STREETS,
-        "trees": PL["industry"],
         "groups": [G.heavyIndustry, G.industrial],
     },
 )
@@ -123,22 +118,21 @@ GREAT_ERG = [
         {
             "relief": FLAT,
             "buildingDensity": 0.3,
-            "treeDensity": 0.35,
+            "treeDensity": 0,
             "surface": {"sandy": 0.85, "lush": 0.1},
-            "trees": PL["oasis"],
             "groups": [G.desertHomes, G.outposts],
         },
     ),
     section(
         "great dunes",
         50,
-        {"dunes": dunes(60, 300), "buildingDensity": 0.3, "treeDensity": 0.2},
+        {"dunes": dunes(60, 300), "buildingDensity": 0.3, "treeDensity": 0},
     ),
     section("caravan posts", 45, {"groups": [G.outposts, G.desertHomes]}),
     section(
         "dune field",
         45,
-        {"dunes": dunes(45, 240, 70), "buildingDensity": 0.45, "treeDensity": 0.2},
+        {"dunes": dunes(45, 240, 70), "buildingDensity": 0.45, "treeDensity": 0},
     ),
     section(
         "rocky desert",
@@ -154,7 +148,6 @@ GREAT_ERG = [
             },
             "buildingDensity": 0.8,
             "surface": {"sandy": 0.7},
-            "trees": PL["rock"],
         },
     ),
     section(
@@ -188,7 +181,6 @@ MINING_MESAS = [
             },
             "buildingDensity": 0.9,
             "surface": {"sandy": 0.75, "paved": 0.05},
-            "trees": PL["rock"],
             "groups": [G.mines, G.outposts],
         },
     ),
@@ -205,7 +197,6 @@ MINING_MESAS = [
             },
             "buildingDensity": 0.8,
             "surface": {"sandy": 0.7, "paved": 0.05},
-            "trees": PL["rock"],
             "groups": [G.mines],
         },
     ),
@@ -215,10 +206,9 @@ MINING_MESAS = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"sandy": 0.6, "paved": 0.2},
             "streets": SUBURB_STREETS,
-            "trees": PL["town"],
             "groups": [G.workerHomes, G.mines],
         },
     ),
@@ -229,7 +219,6 @@ MINING_MESAS = [
             "relief": smooth(26, 12, 480, 4),
             "buildingDensity": 1,
             "surface": {"sandy": 0.65, "paved": 0.15},
-            "trees": PL["rock"],
             "groups": [G.mines, G.outposts],
         },
     ),
@@ -239,7 +228,7 @@ MINING_MESAS = [
         {
             "relief": smooth(28, 6, 560, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.3,
+            "treeDensity": 0,
             "surface": {"sandy": 0.6, "paved": 0.2},
             "groups": [G.mines, G.oil],
         },
@@ -257,7 +246,7 @@ OIL_FIELDS = [
         {
             "relief": smooth(26, 5, 620, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.25,
+            "treeDensity": 0,
             "surface": {"sandy": 0.5, "paved": 0.25},
             "groups": [G.oil],
         },
@@ -268,10 +257,9 @@ OIL_FIELDS = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.35,
+            "treeDensity": 0,
             "surface": {"sandy": 0.4, "paved": 0.4},
             "streets": SUBURB_STREETS,
-            "trees": PL["town"],
             "groups": [G.workerHomes, G.oil],
         },
     ),
@@ -281,9 +269,8 @@ OIL_FIELDS = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.2,
+            "treeDensity": 0,
             "surface": {"sandy": 0.35, "paved": 0.45},
-            "trees": PL["industry"],
             "groups": [G.refinery, G.oil],
         },
     ),
@@ -293,10 +280,9 @@ OIL_FIELDS = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.15,
+            "treeDensity": 0,
             "surface": {"sandy": 0.3, "paved": 0.5},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.refinery],
         },
     ),
@@ -313,10 +299,9 @@ INDUSTRIAL_BELT = [
         {
             "relief": FLAT,
             "buildingDensity": 0.6,
-            "treeDensity": 0.3,
+            "treeDensity": 0,
             "surface": {"sandy": 0.22, "paved": 0.6},
             "streets": SUBURB_STREETS,
-            "trees": PL["town"],
             "groups": [G.workerHomes, G.industrial],
         },
     ),
@@ -326,10 +311,9 @@ INDUSTRIAL_BELT = [
         {
             "relief": FLAT,
             "buildingDensity": 0.7,
-            "treeDensity": 0.12,
+            "treeDensity": 0,
             "surface": {"sandy": 0.18, "paved": 0.65},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.industrial],
         },
     ),
@@ -339,10 +323,9 @@ INDUSTRIAL_BELT = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.12,
+            "treeDensity": 0,
             "surface": {"sandy": 0.15, "paved": 0.68},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.industrial, G.refinery],
         },
     ),
@@ -352,10 +335,9 @@ INDUSTRIAL_BELT = [
         {
             "relief": FLAT,
             "buildingDensity": 1,
-            "treeDensity": 0.1,
+            "treeDensity": 0,
             "surface": {"sandy": 0.12, "paved": 0.72},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.industrial, G.heavyIndustry],
         },
     ),
@@ -369,10 +351,9 @@ GREAT_WORKS = section(
     {
         "relief": smooth(32, 2, 600, 2),
         "buildingDensity": 1,
-        "treeDensity": 0.02,
+        "treeDensity": 0,
         "surface": {"paved": 1},
         "streets": STREETS,
-        "trees": PL["industry"],
         "groups": [G.heavyIndustry],
         # Every part of every block gets a plant or works, side by side, as in Level Zero's city.
         "blocks": {"podiums": [], "podiumHeight": [0, 0], "towers": [16, 16]},
@@ -389,10 +370,9 @@ FACTORIES = [
         {
             "relief": smooth(32, 3, 600, 3),
             "buildingDensity": 0.8,
-            "treeDensity": 0.06,
+            "treeDensity": 0,
             "surface": {"sandy": 0.08, "paved": 0.82},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.heavyIndustry, G.industrial],
         },
     ),
@@ -402,10 +382,9 @@ FACTORIES = [
         {
             "relief": smooth(32, 2, 600, 2),
             "buildingDensity": 0.85,
-            "treeDensity": 0.05,
+            "treeDensity": 0,
             "surface": {"sandy": 0.06, "paved": 0.86},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.industrial],
         },
     ),
@@ -415,10 +394,9 @@ FACTORIES = [
         {
             "relief": smooth(32, 2, 600, 2),
             "buildingDensity": 1,
-            "treeDensity": 0.04,
+            "treeDensity": 0,
             "surface": {"sandy": 0.04, "paved": 0.92},
             "streets": STREETS,
-            "trees": PL["industry"],
             "groups": [G.heavyIndustry, G.industrial],
         },
     ),

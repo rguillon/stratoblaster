@@ -4,8 +4,13 @@
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from app.dev_groups import group_of, group_starts
 from app.settings_menu import SETTINGS_SLIDERS
+from config.dev_viewer import DEV_VIEWER_CONFIG, DEV_VIEWERS
 from ui.menu_view import (
+    DevChoice,
+    DevMenuView,
+    DevViewerView,
     GameScreenView,
     LevelChoices,
     LevelCompleteView,
@@ -44,6 +49,8 @@ class MenuViewContext:
         cards_width_percent: float,
         progress: float,
         volume_steps: int,
+        dev_labels: dict[str, list[str]] | None = None,
+        dev_groups: dict[str, list[str]] | None = None,
     ) -> None:
         self.game = game
         # The best score so far.
@@ -57,6 +64,10 @@ class MenuViewContext:
         self.progress = progress
         # The volume sliders' highest step (P12-R04).
         self.volume_steps = volume_steps
+        # The labels of each dev viewer's items (D-199); None: no dev menu.
+        self.dev_labels = dev_labels
+        # The group of each dev viewer's items (D-202); None: not in groups.
+        self.dev_groups = dev_groups
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
@@ -149,6 +160,43 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
     )
 
 
+def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
+    """The dev menu, or the dev viewer shown (D-199)."""
+    texts = DEV_VIEWER_CONFIG.texts
+    back: str = ctx.game.texts.back
+    viewer = state.dev_viewer
+    if viewer is None:
+        entries = [texts.labels[v] for v in DEV_VIEWERS]
+        return DevMenuView(texts.heading, texts.hint, back, state.selection, entries)
+    labels = ctx.dev_labels[viewer] if ctx.dev_labels is not None else []
+    groups = ctx.dev_groups[viewer] if ctx.dev_groups is not None else []
+    index = state.selection
+    item = labels[index] if index < len(labels) else ""
+    scrub = viewer == "levels"
+    starts = group_starts(groups)
+    grouped = len(starts) > 1
+    hint = texts.levels_hint if scrub else texts.models_hint
+    position = str(index + 1) + " / " + str(len(labels))
+    if grouped:
+        # D-202: the item's group, and its place in it.
+        g = group_of(starts, index)
+        end = starts[g + 1] if g + 1 < len(starts) else len(groups)
+        place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
+        position = groups[index] + " · " + place
+        hint = texts.groups_hint
+    # D-206, D-208: the menu of every viewer: its items, each group's heading before its items
+    # when they are in groups.
+    menu: list[DevChoice] = []
+    for i in range(len(labels)):
+        if grouped and i in starts:
+            k = group_of(starts, i)
+            last = starts[k + 1] if k + 1 < len(starts) else len(groups)
+            label = groups[i] + " (" + str(last - i) + ")"
+            menu.append(DevChoice(label, i, k == group_of(starts, index), True))
+        menu.append(DevChoice(labels[i], i, i == index))
+    return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub, menu)
+
+
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """The view of the current screen: one of the classes of `ui/menu_view`."""
     game = ctx.game
@@ -167,6 +215,7 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
             texts.startHint,
             ctx.version,
             ctx.commit,
+            DEV_VIEWER_CONFIG.texts.entry if ctx.dev_labels is not None else None,
         )
     if screen == "ship-select":
         ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]
@@ -191,4 +240,5 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
         )
     if screen in ["game", "pause"]:
         return _game_view(state, ctx)
-    return _settings_view(state, ctx)
+    in_dev = screen in ["dev", "dev-viewer"]
+    return _dev_view(state, ctx) if in_dev else _settings_view(state, ctx)

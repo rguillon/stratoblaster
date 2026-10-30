@@ -22,6 +22,10 @@ from core.menu.menu_screen import MENU_TRANSITIONS, can_transition
         ("pause", "title"),
         ("settings", "title"),
         ("settings", "pause"),
+        ("title", "dev"),  # D-199: the dev menu and its viewers.
+        ("dev", "title"),
+        ("dev", "dev-viewer"),
+        ("dev-viewer", "dev"),
     ],
 )
 def test_p01_r01_the_flow_allows_its_transitions(source: str, target: str) -> None:
@@ -36,6 +40,8 @@ def test_p01_r01_the_flow_allows_its_transitions(source: str, target: str) -> No
         ("game", "title"),  # The level is left through the pause menu.
         ("settings", "game"),
         ("title", "title"),
+        ("dev-viewer", "title"),  # Back goes through the dev menu.
+        ("dev", "game"),
     ],
 )
 def test_p01_r01_the_flow_refuses_other_transitions(source: str, target: str) -> None:
@@ -51,6 +57,8 @@ def test_every_screen_has_its_transitions_listed() -> None:
         "game",
         "pause",
         "settings",
+        "dev",
+        "dev-viewer",
     }
 
 

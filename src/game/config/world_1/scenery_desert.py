@@ -1,14 +1,15 @@
 """The dry levels of World 1 (P06-R05, R06, reworked at the reviewer's request, 2026-10-26)
 
-From the dry grassland 1-3 ended on to sand and rock, dunes, an oasis, a canyon and mesas, then
-deeper into the desert, its towns bigger and denser. No factory and no city: they are for other
-worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up to 240 (P06-R04).
+From the dry grassland 1-3 ended on into an American desert (reviewer, 2026-10-30, D-200: dried
+land, not sand dunes): red dirt and scrub, rock, a cracked dry lake bed, an oasis, a canyon, mesas
+and buttes, then deeper into the desert, its towns bigger and denser. No factory and no city: they
+are for other worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up to 240 (P06-R04).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
-from game.config.world_1.props import PLANTS, WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
+from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_1.scenery_country import DRY_GRASSLAND, TOWN_STREETS
 
@@ -21,9 +22,24 @@ __pragma__("noskip")
 G = WORLD_1_GROUPS
 
 
-def dunes(height: float, wavelength: float, angle_deg: float = 60) -> Any:
-    """Sand dunes: crests every `wavelength`, `height` high (P06-R06)."""
-    return record({"height": height, "wavelength": wavelength, "angleDeg": angle_deg, "warp": 0.6})
+def dry_lake() -> Any:
+    """A dry lake bed: ground flat and low enough for the cracked hardpan (`lowHeight`)."""
+    return smooth(3, 2, 700, 3)
+
+
+def buttes(top: float) -> Any:
+    """Buttes and mesas standing out of a dry floor: steep, high relief whose tops are squashed
+    flat under `top` (about a fifth of the ground), its lows a fifth on the cracked hardpan."""
+    return record(
+        {
+            "base": 35,
+            "amplitude": 160,
+            "frequency": 1 / 450,
+            "octaves": 4,
+            "style": "smooth",
+            "maxHeight": top,
+        }
+    )
 
 
 def mesas(top: float) -> Any:
@@ -41,7 +57,7 @@ def mesas(top: float) -> Any:
 
 
 def desert(name: str, seconds: float, extra: Any) -> Any:
-    """A desert section: sand and scrub, with `extra` set over the defaults."""
+    """A desert section: red dirt and scrub, with `extra` set over the defaults."""
     return merge(
         record(
             {
@@ -49,9 +65,8 @@ def desert(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(28, 12, 520),
                 "buildingDensity": 0,
-                "treeDensity": 0.35,
+                "treeDensity": 0,
                 "surface": {"sandy": 1},
-                "trees": PLANTS.desert,
                 "groups": [G.outposts],
             }
         ),
@@ -66,16 +81,15 @@ DESERT_OUTSKIRTS = desert(
     {
         "relief": smooth(30, 8, 560, 3),
         "buildingDensity": 1,
-        "treeDensity": 0.45,
+        "treeDensity": 0,
         "surface": {"sandy": 0.85},
-        "trees": PLANTS.oasis,
         "groups": [G.desertHomes, G.outposts],
     },
 )
 
-# 1-4, Dry lands: dry grass and scrub, then sand and rock, dunes, an oasis town, a canyon, mesas
-# and a desert town. The bare stretches (rock, dunes, cliffs) are short, so the props keep growing
-# in number (P06-R05).
+# 1-4, Dry lands: dry grass and scrub, then rock and scrub, a dry lake, an oasis town, a canyon,
+# mesas and a desert town. The bare stretches (rock, the dry lake, cliffs) are short, so the props
+# keep growing in number (P06-R05).
 DRY_LANDS = [
     DRY_GRASSLAND,
     desert(
@@ -84,14 +98,13 @@ DRY_LANDS = [
         {
             "relief": smooth(30, 14, 520),
             "buildingDensity": 1,
-            "treeDensity": 0.6,
+            "treeDensity": 0,
             "surface": {"sandy": 0.35},
-            "trees": PLANTS.dry,
             "groups": [G.desertHomes, G.outposts],
         },
     ),
     desert(
-        "sand and rock",
+        "rock and scrub",
         20,
         {
             "relief": {
@@ -106,19 +119,18 @@ DRY_LANDS = [
         },
     ),
     desert(
-        "dunes",
+        "dry lake",
         20,
-        {"dunes": dunes(50, 260), "buildingDensity": 0.45, "treeDensity": 0.2},
+        {"relief": dry_lake(), "buildingDensity": 0.4, "treeDensity": 0},
     ),
     desert(
         "oasis town",
         45,
         {
             "buildingDensity": 1,
-            "treeDensity": 0.7,
+            "treeDensity": 0,
             "surface": {"sandy": 0.75, "lush": 0.25},
             "streets": TOWN_STREETS,
-            "trees": PLANTS.oasis,
             "groups": [G.desertHomes],
         },
     ),
@@ -150,10 +162,9 @@ DRY_LANDS = [
         {
             "relief": smooth(30, 4, 600, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"sandy": 0.8, "paved": 0.15},
             "streets": TOWN_STREETS,
-            "trees": PLANTS.town,
             "groups": [G.desertHomes],
         },
     ),
@@ -161,24 +172,23 @@ DRY_LANDS = [
 ]
 
 # 1-5, Deep desert (reviewer, 2026-10-27: the factories and the city are for other worlds): the
-# desert outskirts, great dunes, oasis villages, a rocky pass, then desert towns, bigger and denser,
-# on the sand to the end.
+# desert outskirts, buttes, oasis villages, a rocky pass, then desert towns, bigger and denser, on
+# the red land to the end.
 DEEP_DESERT = [
     DESERT_OUTSKIRTS,
     desert(
-        "great dunes",
+        "buttes",
         25,
-        {"dunes": dunes(60, 300), "buildingDensity": 0.45, "treeDensity": 0.2},
+        {"relief": buttes(70), "buildingDensity": 0.45, "treeDensity": 0},
     ),
     desert(
         "oasis villages",
         40,
         {
             "buildingDensity": 1,
-            "treeDensity": 0.7,
+            "treeDensity": 0,
             "surface": {"sandy": 0.7, "lush": 0.3},
             "streets": TOWN_STREETS,
-            "trees": PLANTS.oasis,
             "groups": [G.desertHomes, G.outposts],
         },
     ),
@@ -197,10 +207,9 @@ DEEP_DESERT = [
         {
             "relief": smooth(28, 6, 560, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"sandy": 0.85, "paved": 0.1},
             "streets": TOWN_STREETS,
-            "trees": PLANTS.town,
             "groups": [G.desertHomes, G.outposts],
         },
     ),
@@ -210,10 +219,9 @@ DEEP_DESERT = [
         {
             "relief": smooth(30, 4, 600, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.6,
+            "treeDensity": 0,
             "surface": {"sandy": 0.8, "lush": 0.1, "paved": 0.1},
             "streets": record({"rows": [45, 90], "columns": [50, 110], "links": 0.6}),
-            "trees": PLANTS.oasis,
             "groups": [G.desertHomes],
         },
     ),

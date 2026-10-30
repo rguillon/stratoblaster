@@ -139,20 +139,12 @@ class BulletLayer:
         self.mesh.dispose()
 
 
-def contrast_layers(name: str, scene: Any) -> Any:
-    """The dark rim and white spark of a bullet in the contrast style (P10-R07)."""
+def contrast_spark(name: str, scene: Any) -> Any:
+    """The white spark of a bullet in the contrast style (P10-R07). It has no dark rim any more
+    (reviewer, 2026-10-30, D-194)."""
     segments = LOOK.bullets.segments
-    rim = LOOK.contrast.rim
     spark = LOOK.contrast.spark
-    dark = [rim.color for _ in rim.fade]
-    rim_mesh = blended_template(
-        name + "-rim",
-        build_glow_disc(segments, dark),
-        disc_alphas(segments, rim.fade),
-        scene,
-    )
-    spark_mesh = additive_template(name + "-spark", build_glow_disc(segments, spark.colors), scene)
-    return {"rim": rim_mesh, "spark": spark_mesh}
+    return additive_template(name + "-spark", build_glow_disc(segments, spark.colors), scene)
 
 
 def halo_scale(age: float) -> float:
@@ -225,7 +217,7 @@ def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[
 def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
     """A ball of plasma (GD-43), back to front: a faint flickering aura, a solid body, two curled
     swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core. In the
-    contrast style (P10-R07), a dark rim behind the body and a white spark over the core."""
+    contrast style (P10-R07), a white spark over the core."""
     segments = LOOK.bullets.segments
     fade = LOOK.bullets.fade
     colors = LOOK.bullets.styles[style]
@@ -247,11 +239,8 @@ def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
         ]
     )
     if contrast:
-        extra = contrast_layers(name, scene)
-        rim = LOOK.contrast.rim
         spark = LOOK.contrast.spark
-        layers.insert(1, [extra["rim"], fixed_placement(rim.size)])
-        layers.append([extra["spark"], fixed_placement(spark.size)])
+        layers.append([contrast_spark(name, scene), fixed_placement(spark.size)])
     # Back to front, towards the camera (-Z).
     out: list[list[Any]] = []
     for order, entry in enumerate(layers):

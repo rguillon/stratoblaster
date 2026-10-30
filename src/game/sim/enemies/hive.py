@@ -10,6 +10,7 @@ from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 from game.sim.enemies.wasp import Wasp
+from game.sim.joints import jointed_design
 
 __pragma__("skip")
 from core.entities.enemy import EnemyContext  # noqa: E402
@@ -28,7 +29,7 @@ class Hive(JointedEnemy):
     """
 
     def __init__(self, x: float, y: float) -> None:
-        super().__init__(x, y, CFG.stats, CFG.design)
+        super().__init__(x, y, CFG.stats, jointed_design(CFG.design))
         self._launcher = Cadence(CFG.launchInterval, CFG.firstLaunch)
         self._ring = Cadence(CFG.ringInterval, CFG.firstRing)
         self._ring_muzzles = GunMuzzles(CFG.ringMuzzles)

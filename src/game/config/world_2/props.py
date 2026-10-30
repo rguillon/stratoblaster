@@ -5,22 +5,10 @@ buildings made of parts, and the oil pumpjacks; each section picks the groups th
 the industry slowly takes over the desert.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.cars import CAR_RULES
-from game.config.prop_ids import PROP_IDS
 from game.config.record import record
 from game.config.tile_buildings import LOT_KINDS, tile_kinds
-from game.config.world_1.props import WORLD_1_PROP_IDS, WORLD_1_ROADS
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402
-
-__pragma__("noskip")
-
-P = PROP_IDS
-W1 = WORLD_1_PROP_IDS
+from game.config.world_1.props import WORLD_1_ROADS
 
 # Building groups of World 2; each section lists the ones that stand on it.
 WORLD_2_GROUPS = record(
@@ -45,13 +33,6 @@ WORLD_2_GROUPS = record(
 )
 
 G = WORLD_2_GROUPS
-
-TREE_SCALE = [0.45, 0.75]
-
-
-def tree(prop_id: str, weight: float, footprint: float) -> Any:
-    """A plant kind of the trees, drawn at the tree scale."""
-    return record({"id": prop_id, "weight": weight, "footprint": footprint, "scale": TREE_SCALE})
 
 
 # The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27): World 1's
@@ -110,14 +91,9 @@ WORLD_2_PROPS = record(
                 "kinds": tile_kinds("heavyIndustry"),
             },
         ],
-        "trees": [
-            tree(P.deadTree, 1, 1.5),
-            tree(P.forkedTree, 0.6, 1.5),
-            tree(W1.palm, 2, 4),
-            tree(W1.dryBush, 3, 2.5),
-            tree(W1.cactus, 2, 2),
-        ],
-        "treesPerCell": 4,
+        # D-207: no plant grows.
+        "trees": [],
+        "treesPerCell": 0,
         "cars": CAR_RULES,
         "loners": {"cell": 150, "chance": 0.15, "clearance": 18},
         "hamlets": {
@@ -127,17 +103,6 @@ WORLD_2_PROPS = record(
             "gap": 2,
             "clearance": 18,
         },
-    }
-)
-
-# Plants of the sections, from the oases to the last dead trees between the factories.
-DESERT_PLANTS = record(
-    {
-        "oasis": [W1.palm, W1.dryBush, P.bush],
-        "desert": [W1.cactus, W1.dryBush, P.deadTree],
-        "rock": [W1.dryBush, P.deadTree, P.forkedTree],
-        "town": [W1.palm, W1.dryBush],
-        "industry": [P.deadTree, W1.dryBush],
     }
 )
 

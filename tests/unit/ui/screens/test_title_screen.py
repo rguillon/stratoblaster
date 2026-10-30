@@ -44,3 +44,22 @@ def test_p01_r04_start_and_settings_are_entries_that_report_their_index() -> Non
     start.fire("click")
     settings.fire("click")
     assert taps == [0, 1]
+
+
+def test_d199_the_dev_entry_follows_settings_only_when_given() -> None:
+    assert (
+        render_title_screen(
+            FakeDocument(), view(), ScreenHandlers(lambda i: None, lambda: None)
+        ).querySelector(".title-dev")
+        is None
+    )
+    taps: list[int] = []
+    dev_view = TitleView(
+        "STRATOBLASTER", "HIGH SCORE", 0, "Start", "Settings", 2, "hint", "1", "c", "Dev"
+    )
+    root = render_title_screen(FakeDocument(), dev_view, ScreenHandlers(taps.append, lambda: None))
+    dev = root.querySelector(".title-dev")
+    assert dev.textContent == "Dev"
+    assert dev.classList.contains("selected")
+    dev.fire("click")
+    assert taps == [2]

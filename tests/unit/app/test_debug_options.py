@@ -1,7 +1,7 @@
 """Unit tests of `src/app/debug_options.py`."""
 # (P06-R09, P07-R09, P08-R12, P15-R10).
 
-from app.debug_options import parse_debug_options
+from app.debug_options import dev_mode, parse_debug_options
 
 
 def test_p06_r09_the_level_in_the_query_turns_debug_on() -> None:
@@ -54,3 +54,10 @@ def test_p08_r12_the_time_of_day_is_forced_only_for_a_known_one() -> None:
 def test_p15_r10_the_tile_grid_is_drawn_only_when_asked_with_one() -> None:
     assert parse_debug_options("?level=1-1&tiles=1").tiles is True
     assert parse_debug_options("?level=1-1&tiles=yes").tiles is False
+
+
+def test_d199_dev_in_the_query_asks_for_the_dev_menu() -> None:
+    assert dev_mode("?dev")
+    assert dev_mode("?level=1-1&dev=1")
+    assert not dev_mode("")
+    assert not dev_mode("?level=1-1")

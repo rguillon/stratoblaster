@@ -2,9 +2,11 @@
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install build-info vendor dev build lint format typecheck test coverage check check-fast clean
+.PHONY: help install build-info vendor dev build e2e-build e2e lint format typecheck test coverage check check-fast clean
 
 DIST := dist
+# The e2e build (ENG-51, ENG-52): the game with its test API, served to Playwright by tests/e2e.
+E2E_DIST := dist-e2e
 
 # Babylon.js (ENG-02, P18-R04): the pinned UMD build, vendored under public/vendor/ by `make vendor`
 # and checked against its SHA-256 (DECISIONS D-173). Bump the version and the hash together.
@@ -29,9 +31,14 @@ build-info: ## Write src/build_info.py: the version and the short commit (unknow
 	printf 'APP_VERSION = "%s"\nAPP_COMMIT = "%s"\n' '$(APP_VERSION)' "$$commit" > $(BUILD_INFO).tmp; \
 	if cmp -s $(BUILD_INFO).tmp $(BUILD_INFO); then rm -f $(BUILD_INFO).tmp; else mv $(BUILD_INFO).tmp $(BUILD_INFO); fi
 
-install: build-info ## Install Python and Node dependencies (uv.lock, package-lock.json), then the git hooks (ENG-21)
+# Chromium for Playwright (ENG-21); its system libraries too on CI. `make install SKIP_BROWSER=1`
+# skips it (jobs without e2e).
+PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
+
+install: build-info ## Install Python and Node dependencies (uv.lock, package-lock.json), Chromium for Playwright, then the git hooks (ENG-21)
 	uv sync --locked
 	npm ci --prefix node
+	$(if $(SKIP_BROWSER),,uv run playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium)
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
 vendor: ## Download the pinned Babylon.js build into public/vendor/, checking its SHA-256 (ENG-02)
@@ -67,6 +74,14 @@ $(TRANSCRYPT_STAMP): $(PY_SOURCES)
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
 	touch $@
 
+# The e2e game (ENG-52): the Transcrypt symbol `e2e` keeps the `__pragma__("ifdef", "e2e")` blocks
+# of main.py (the test API, no render loop). The ground worker is the same as in production.
+TRANSCRYPT_E2E_STAMP := $(TRANSCRYPT_OUT)/.stamp-e2e
+
+$(TRANSCRYPT_E2E_STAMP): $(PY_SOURCES)
+	cd src && uv run transcrypt -b -n -s e2e -od ../$(TRANSCRYPT_OUT)/e2e main.py
+	touch $@
+
 build: build-info $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when it changed), bundle it into dist/js/, assemble dist/ (needs make vendor)
 	@echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null || { \
 		echo 'build: $(BABYLON_FILE) is missing or not the pinned Babylon.js: run make vendor' >&2; exit 1; }
@@ -80,6 +95,24 @@ build: build-info $(TRANSCRYPT_STAMP) ## Compile src/ to JavaScript (only when i
 		echo 'build: vendored files were not copied to dist/' >&2; exit 1; fi
 	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
+	@if grep -q '__GAME_TEST__' $(DIST)/js/game.js; then \
+		echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
+
+e2e-build: build ## Build the e2e game (test API, no render loop) into dist-e2e/ (ENG-51, ENG-52)
+	@$(MAKE) --no-print-directory $(TRANSCRYPT_E2E_STAMP)
+	rm -rf $(E2E_DIST)
+	cp -r $(DIST) $(E2E_DIST)
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/e2e/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(E2E_DIST)/js/game.js
+	@grep -q '__GAME_TEST__' $(E2E_DIST)/js/game.js || { \
+		echo 'ENG-52: the e2e bundle has no test API' >&2; exit 1; }
+
+# Playwright (Python) on the e2e build, served by tests/e2e/conftest.py (ENG-50, ENG-51). On a
+# failure, traces, screenshots and videos are kept in test-results/ (ENG-57).
+E2E_ARGS ?=
+# Parallel workers (pytest-xdist); each has its own browser and server.
+E2E_WORKERS ?= 4
+e2e: e2e-build ## End-to-end tests: Playwright (Chromium) on the e2e build; E2E_ARGS="-k smoke" to filter
+	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
 
 dev: build ## Build, then serve dist/ on port 5173 (rebuild to see changes)
 	uv run python -m http.server 5173 --directory $(DIST)
@@ -100,14 +133,11 @@ test: ## Unit tests (pytest, CPython over src/)
 	uv run pytest
 
 coverage: ## Unit tests with the coverage report of src/ (70 %) and of core/ (90 %), HTML in coverage/
-	uv run coverage run -m pytest
-	uv run coverage html -d coverage
-	uv run coverage report
-	uv run coverage report --include='src/core/*' --fail-under=90
+	@uv run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 
-check: lint typecheck build ## Lint, typecheck and build (the unit tests: make coverage; e2e is deferred)
+check: lint typecheck coverage build e2e ## Full gate: lint, typecheck, unit tests with coverage, build, e2e (ENG-32)
 
 clean: ## Remove build outputs and caches
-	rm -rf $(DIST) build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache
+	rm -rf $(DIST) $(E2E_DIST) test-results build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache

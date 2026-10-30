@@ -11,6 +11,7 @@ from render.babylon import (
     new_glow_layer,
     new_raw_cube_texture,
     new_weak_map,
+    set_cube_sphere_lighting,
     update_raw_cube_texture,
     weak_map_get,
     weak_map_set,
@@ -64,7 +65,7 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
     """Gives `scene` image-based lighting from a procedural sky gradient (no asset download),
     ACES tone mapping and a glow layer for emissive parts (ENG-103). Returns the glow layer."""
     faces = build_gradient_cube_faces(options.cube_size, options.stops)
-    scene.environmentTexture = new_raw_cube_texture(
+    texture = new_raw_cube_texture(
         scene,
         faces,
         options.cube_size,
@@ -72,6 +73,9 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
         babylon_constant("TEXTURETYPE_UNSIGNED_BYTE"),
         True,
     )
+    # From the faces here, not read back from the GPU (P13-R03).
+    set_cube_sphere_lighting(texture, faces, options.cube_size)
+    scene.environmentTexture = texture
     scene.environmentIntensity = options.intensity
     scene.imageProcessingConfiguration.toneMappingEnabled = True
     scene.imageProcessingConfiguration.toneMappingType = image_processing_tone_mapping_aces()
@@ -107,10 +111,14 @@ def update_sky_environment(
     if not is_raw_cube_texture(texture) or weak_map_get(LAST_SKY, scene) == key:
         return
     weak_map_set(LAST_SKY, scene, key)
+    faces = build_gradient_cube_faces(cube_size, stops)
+    # Not flipped, as when it was made (the update's 4th argument is `invertY`, not mipmaps).
     update_raw_cube_texture(
         texture,
-        build_gradient_cube_faces(cube_size, stops),
+        faces,
         babylon_constant("TEXTUREFORMAT_RGBA"),
         babylon_constant("TEXTURETYPE_UNSIGNED_BYTE"),
-        True,
+        False,
     )
+    # The update keeps the old polynomial: the lighting follows the new sky only once it is set.
+    set_cube_sphere_lighting(texture, faces, cube_size)

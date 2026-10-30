@@ -229,3 +229,46 @@ def test_p01_r13_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
     finally:
         start_app.render_menu_scenes = original
     assert drawn == [(scenes, "title")]
+
+
+# D-199: the dev viewers.
+
+
+def test_d199_without_dev_there_are_no_dev_viewers() -> None:
+    options = SimpleNamespace(dev=None)
+    assert start_app.create_dev("engine", None, options) is None
+
+
+def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch) -> None:
+    monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
+    monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
+    monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
+    options = SimpleNamespace(dev=True, environment=False, overlay="overlay")
+    session, labels, groups = start_app.create_dev("engine", "game", options)
+    assert session._catalog == {"ships": ["item"]}
+    assert labels == {"ships": ["Item"]}
+    assert groups == {"ships": [""]}
+
+
+def test_d199_the_dev_viewer_moves_on_with_the_menus_and_is_drawn_instead_of_them() -> None:
+    clock = FakeClock()
+    menu = MagicMock()
+    menu.flow.state.screen = "dev-viewer"
+    session = SimpleNamespace(play=None, load_step=MagicMock(), controls=MagicMock())
+    dev = MagicMock(active=True)
+    dev.render.return_value = True
+    drawn: list = []
+    original = start_app.render_menu_scenes
+    start_app.render_menu_scenes = lambda loaded, screen: drawn.append(screen)
+    try:
+        ticker = frame_ticker(clock, menu, lambda: None, session, MagicMock(), dev)
+        ticker.simulate(0.02)
+        ticker.render()
+        dev.frame.assert_called_once_with(0.02)
+        assert drawn == []
+        # Until its scene is built, the menu backdrop is drawn.
+        dev.render.return_value = False
+        start_app.draw_menus("scenes", "dev-viewer", dev)
+        assert drawn == ["dev-viewer"]
+    finally:
+        start_app.render_menu_scenes = original

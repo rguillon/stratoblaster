@@ -56,3 +56,29 @@ def test_p04_r04_every_prop_model_is_on_the_page_once():
 def test_p04_r04_the_cars_come_last_and_the_groups_are_built_once():
     assert PROP_GROUPS[-1].label == "Cars"
     assert [g.label for g in PROP_GROUPS] == [g.label for g in make_prop_groups()]
+
+
+REMOVED = [
+    "antenna-mast",
+    "cube-home",
+    "dome-home",
+    "dead-tree",
+    "forked-tree",
+    "conifer",
+    "broadleaf-tree",
+    "bush",
+    "desert-home",
+    "beach-hut",
+    "palm-tree",
+    "dry-bush",
+    "cactus",
+    "farmhouse",
+    "greenhouse",
+    "grain-silos",
+    "wind-turbine",
+]
+
+
+def test_d207_the_shared_and_world_1_props_are_gone():
+    assert not set(REMOVED) & set(PROP_MODELS)
+    assert not {"Shared", "World 1"} & {g.label for g in PROP_GROUPS}

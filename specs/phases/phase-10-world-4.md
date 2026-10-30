@@ -106,7 +106,7 @@ Two new weather kinds for the weather engine (P08-R05):
 
 ### P10-R07 — Readable shots over fire  · MUST
 
-World 4's ground and sky are red, orange and dark. So the player can always tell enemy shots apart, enemy bullets in World 4 keep the phase 5 colours but get a light, contrasting outline or core (e.g. a white core and a dark rim), so they stand out on the lava and the red sky as clearly as on the World 1 desert. The same applies to the boss shots and the laser warning lines.
+World 4's ground and sky are red, orange and dark. So the player can always tell enemy shots apart, enemy bullets in World 4 keep the phase 5 colours but get a light, contrasting core (e.g. a white core; no dark rim since the reviewer's change of 2026-10-30, D-194), so they stand out on the lava and the red sky as clearly as on the World 1 desert. The same applies to the boss shots and the laser warning lines.
 
 **Acceptance criteria**
 - [ ] Manual validation: in 4-3, 4-4 and 4-5, every enemy and boss bullet kind and the laser warning lines are easy to see over the lava, the furnaces and the red sky.

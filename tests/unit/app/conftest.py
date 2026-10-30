@@ -3,6 +3,7 @@ value checks, JSON, Babylon snapshot objects) are replaced by their Python twins
 `helpers.js_shims`, so the logic around them can be tested under CPython."""
 
 from types import SimpleNamespace
+from urllib.parse import parse_qs
 
 import pytest
 from helpers import js_shims, js_window
@@ -36,6 +37,11 @@ def js_twins(monkeypatch: pytest.MonkeyPatch) -> None:
     js_window.install(monkeypatch)
     monkeypatch.setattr(debug_options, "_query_text", js_shims.url_query)
     monkeypatch.setattr(debug_options, "_time_text", js_shims.time_number)
+    monkeypatch.setattr(
+        debug_options,
+        "_has_key",
+        lambda search, key: key in parse_qs(search.lstrip("?"), keep_blank_values=True),
+    )
     monkeypatch.setattr(saved_choices, "_plain_score", js_shims.plain_score)
     monkeypatch.setattr(saved_settings, "_trimmed", lambda raw: raw.strip())
     monkeypatch.setattr(saved_settings, "_is_step_text", js_shims.step_text)

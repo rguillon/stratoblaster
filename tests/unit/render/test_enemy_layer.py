@@ -141,3 +141,35 @@ def test_dispose_disposes_every_model_and_forgets_them() -> None:
     layer.dispose()
     assert made[0].root.parent.parent.disposed is True
     assert layer.count == 0
+
+
+def test_p13_r03_prepare_next_builds_only_the_kinds_it_is_given_in_their_order() -> None:
+    # A level builds the models of its own enemies, not every model of the game.
+    made: list[FakeModel] = []
+    scene = FakeScene()
+
+    def factory(s: FakeScene) -> FakeModel:
+        model = FakeModel(s)
+        made.append(model)
+        return model
+
+    layer = EnemyLayer(scene, {"drone": factory, "tank": factory}, ["tank", "missing"])
+    assert len(layer.prepare_next()) == 1
+    assert layer.prepare_next() == []
+    assert layer.model_count == 1
+    layer.sync([_enemy("drone")], 0)
+    assert layer.model_count == 2  # A kind left out is still built when it first shows.
+
+
+def test_d199_the_pivot_of_a_drawn_enemy_is_its_slot_s_and_sync_keeps_its_x_and_y_turns() -> None:
+    made: list[FakeModel] = []
+    layer, _ = _layer(made)
+    enemy = _enemy("drone")
+    assert layer.pivot_of(enemy) is None
+    layer.sync([enemy], 0)
+    pivot = layer.pivot_of(enemy)
+    assert pivot is made[0].root.parent.parent
+    pivot.rotation.x = 0.3
+    pivot.rotation.y = 0.2
+    layer.sync([enemy], 0)
+    assert (pivot.rotation.x, pivot.rotation.y) == (0.3, 0.2)
