@@ -164,10 +164,16 @@ class DevPropStage:
         root.scaling.setAll(scale)
         materials = self._materials_of(item.host)
         geometry = prop_geometry(factory)
-        parts = [[geometry.structure, materials.structure], [geometry.lights, materials.lights]]
+        parts = [
+            [geometry.structure, materials.structure],
+            [geometry.lights, materials.lights],
+            # D-210: the windows, if the look has their atlas.
+            [geometry.windows, materials.windows],
+        ]
         for part in parts:
             geo = part[0]
-            if geo is None or len(geo.indices) == 0:
+            # `== None`: a field left out is undefined in the browser.
+            if geo == None or part[1] == None or len(geo.indices) == 0:  # noqa: E711
                 continue
             mesh = mesh_of("dev-prop-" + item.id, geo, part[1], self.scene)
             mesh.parent = root
