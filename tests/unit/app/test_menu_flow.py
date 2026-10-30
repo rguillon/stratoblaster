@@ -489,3 +489,180 @@ def test_p13_r02_a_result_delay_replaces_the_transition_time() -> None:
     assert flow.state.transitioning is True
     flow.update(1.5)
     assert flow.state.transitioning is False
+
+
+# D-199: the dev menu and its viewers (`?dev`).
+
+DEV_COUNTS = [3, 4, 2, 5, 6]
+
+
+def dev_flow() -> MenuFlow:
+    flow = MenuFlow(
+        MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, list(DEV_COUNTS))
+    )
+    flow.finish_loading()
+    settle(flow)
+    return flow
+
+
+def at_dev_menu() -> MenuFlow:
+    flow = dev_flow()
+    flow.dispatch("down")
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    return flow
+
+
+def test_d199_without_dev_counts_the_title_has_no_dev_entry() -> None:
+    flow = at_title()
+    flow.dispatch("down")
+    flow.dispatch("down")
+    assert flow.state.selected_id == "settings"
+
+
+def test_d199_the_dev_entry_comes_after_settings_and_opens_the_dev_menu() -> None:
+    flow = dev_flow()
+    flow.dispatch("down")
+    flow.dispatch("down")
+    assert flow.state.selected_id == "dev"
+    assert flow.dispatch("confirm") == "screen"
+    assert flow.state.screen == "dev"
+    assert flow.state.selected_id == "ships"
+    assert flow.state.dev_viewer is None
+
+
+def test_d199_a_dev_menu_entry_opens_its_viewer_on_its_first_item() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("down")
+    assert flow.state.selected_id == "enemies"
+    flow.dispatch("confirm")
+    state = flow.state
+    assert (state.screen, state.dev_viewer, state.selection) == ("dev-viewer", "enemies", 0)
+    # The model viewers open in close-up.
+    assert state.dev_close_up is True
+
+
+def test_d199_the_arrows_move_through_the_items_round_the_list() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("left") == "moved"
+    assert flow.state.selection == DEV_COUNTS[0] - 1
+    flow.dispatch("down")
+    assert flow.state.selection == 0
+    flow.dispatch("right")
+    flow.dispatch("up")
+    flow.dispatch("right")
+    assert flow.state.selection == 1
+
+
+def test_d199_confirm_flips_the_viewer_toggle() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("confirm") == "adjusted"
+    assert flow.state.dev_close_up is False
+    flow.dispatch("confirm")
+    assert flow.state.dev_close_up is True
+
+
+def test_d199_the_levels_viewer_starts_stopped() -> None:
+    flow = at_dev_menu()
+    for _ in range(4):
+        flow.dispatch("down")
+    flow.dispatch("confirm")
+    assert flow.state.dev_viewer == "levels"
+    assert flow.state.dev_close_up is False
+
+
+def test_d199_back_goes_to_the_dev_menu_then_to_the_title_on_its_dev_entry() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("right")
+    assert flow.dispatch("cancel") == "screen"
+    assert flow.state.screen == "dev"
+    assert flow.state.selected_id == "enemies"
+    settle(flow)
+    assert flow.dispatch("back") == "screen"
+    assert flow.state.screen == "title"
+    assert flow.state.selected_id == "dev"
+
+
+def test_d199_a_viewer_keeps_its_item_when_opened_again() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("right")
+    flow.dispatch("back")
+    settle(flow)
+    flow.dispatch("confirm")
+    assert flow.state.selection == 1
+
+
+def test_d199_other_actions_do_nothing_in_a_viewer() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("pause") == "none"
+    assert flow.state.selection == 0
+
+
+def test_d204_a_tap_on_a_viewer_button_shows_its_item() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch(MenuSelect(2)) == "moved"
+    assert flow.state.selection == 2
+    assert flow.dispatch(MenuSelect(2)) == "none"
+    assert flow.dispatch(MenuSelect(DEV_COUNTS[0])) == "none"
+    assert flow.dispatch(MenuSelect(-1)) == "none"
+    assert flow.state.selection == 2
+
+
+def test_d199_a_viewer_of_one_item_does_not_move() -> None:
+    flow = MenuFlow(MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, [1]))
+    flow.finish_loading()
+    settle(flow)
+    flow.dispatch("down")
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("right") == "none"
+    # The other viewers have no count: nothing to move through either.
+    flow.dispatch("back")
+    settle(flow)
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("right") == "none"
+
+
+def test_d202_up_and_down_jump_between_the_groups_of_a_grouped_viewer() -> None:
+    groups = [["a", "a", "b"], [], [], [], []]
+    options = MenuFlowOptions(
+        list(SHIPS), catalog(), None, 0.25, None, None, 10, [3, 1, 1, 1, 1], groups
+    )
+    flow = MenuFlow(options)
+    flow.finish_loading()
+    settle(flow)
+    flow.dispatch("down")
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("confirm")
+    settle(flow)
+    flow.dispatch("right")
+    assert flow.state.selection == 1
+    flow.dispatch("down")
+    assert flow.state.selection == 2
+    flow.dispatch("down")
+    assert flow.state.selection == 0
+    flow.dispatch("up")
+    assert flow.state.selection == 2
+    flow.dispatch("right")
+    assert flow.state.selection == 0

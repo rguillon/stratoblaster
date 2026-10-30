@@ -37,6 +37,7 @@ class TitleView:
         hint: str,
         version: str,
         commit: str,
+        dev: str | None = None,
     ) -> None:
         self.title = title
         self.high_score_label = high_score_label
@@ -50,6 +51,8 @@ class TitleView:
         # Version and short commit hash (ENG-83).
         self.version = version
         self.commit = commit
+        # The Dev entry under Settings (D-199, with `?dev`); None: no such entry.
+        self.dev = dev
 
 
 class BackView:
@@ -231,9 +234,74 @@ class SettingsView(BackView):
         self.over_level = over_level
 
 
+class DevMenuView(BackView):
+    """The dev menu (D-199): one entry per viewer."""
+
+    kind = "dev"
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        heading: str,
+        hint: str,
+        back: str,
+        selected: int,
+        entries: list[str],
+    ) -> None:
+        BackView.__init__(self, heading, hint, back, selected)
+        self.entries = entries
+
+
+class DevChoice:
+    """An entry of a dev viewer's menu (D-206): its `label`, the item it shows (`index` in the
+    viewer's list), whether it is the one shown (`selected`: for a group, the shown item is in
+    it), and whether it is a group's heading (`heading`) rather than an item."""
+
+    def __init__(self, label: str, index: int, selected: bool, heading: bool = False) -> None:
+        self.label = label
+        self.index = index
+        self.selected = selected
+        self.heading = heading
+
+
+class DevViewerView(BackView):
+    """A dev viewer (D-199): the item shown over the 3D view, and where it is in the list. The
+    status line (loading, the level's time) is written by the viewer itself, each frame."""
+
+    kind = "dev-viewer"
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        heading: str,
+        hint: str,
+        back: str,
+        selected: int,
+        item: str,
+        position: str,
+        scrub: bool,
+        menu: list[DevChoice] | None = None,
+    ) -> None:
+        BackView.__init__(self, heading, hint, back, selected)
+        self.item = item
+        # E.g. `3 / 40`.
+        self.position = position
+        # True: the wheel scrubs the level's time (the levels viewer); False: it moves through
+        # the items.
+        self.scrub = scrub
+        # D-206, D-208: the scrolling menu of the items, each group's heading (to its first item)
+        # before its items when they are in groups. None: no menu.
+        self.menu = menu
+
+
 __pragma__("skip")
 # Everything the menu overlay can show.
 type MenuView = (
-    LoadingView | TitleView | ShipSelectView | LevelSelectView | GameScreenView | SettingsView
+    LoadingView
+    | TitleView
+    | ShipSelectView
+    | LevelSelectView
+    | GameScreenView
+    | SettingsView
+    | DevMenuView
+    | DevViewerView
 )
 __pragma__("noskip")

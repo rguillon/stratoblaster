@@ -89,11 +89,6 @@ class PlayfieldShip:
         self._model = holder
         return self._nose_y(holder)
 
-    def mark(self, factory: Any, radius: float) -> None:
-        """Adds a marker on the ship's hitbox (P14-R03), built by `factory` for its `radius`."""
-        if factory is not None:
-            factory(self.scene, radius).parent = self.pivot
-
     def _nose_y(self, holder: Any) -> float:
         """Highest point of the model's meshes, i.e. its nose tip (the pivot when it has none)."""
         nodes = [self.pivot, holder]

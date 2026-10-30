@@ -1,5 +1,5 @@
 """Title screen (P01-R04): high score, game title,
-Start, Settings (P12-R04), controls hint and version."""
+Start, Settings (P12-R04), Dev (D-199, with `?dev`), controls hint and version."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -12,6 +12,9 @@ from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
 __pragma__("noskip")
 
 from ui.screens.elements import element, entry  # noqa: E402
+
+# The index of the Dev entry (D-199), after Start and Settings.
+DEV_ENTRY = 2
 
 
 def render_title_screen(doc: Any, view: TitleView, handlers: ScreenHandlers) -> Any:
@@ -26,6 +29,11 @@ def render_title_screen(doc: Any, view: TitleView, handlers: ScreenHandlers) -> 
     start.textContent = view.start
     settings = entry(doc, "title-settings", 1, view.selected == 1, handlers.on_tap)
     settings.textContent = view.settings
+    entries = [start, settings]
+    if view.dev is not None:
+        dev = entry(doc, "title-dev", DEV_ENTRY, view.selected == DEV_ENTRY, handlers.on_tap)
+        dev.textContent = view.dev
+        entries.append(dev)
     version = element(doc, "div", "title-version")
     version.append(
         element(doc, "div", "version-number", "v" + view.version),
@@ -34,8 +42,10 @@ def render_title_screen(doc: Any, view: TitleView, handlers: ScreenHandlers) -> 
     root.append(
         score,
         element(doc, "h1", "title-name", view.title),
-        start,
-        settings,
+    )
+    for item in entries:
+        root.append(item)
+    root.append(
         element(doc, "div", "menu-hint title-hint", view.hint),
         version,
     )

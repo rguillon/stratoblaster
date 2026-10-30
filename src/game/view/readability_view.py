@@ -1,14 +1,12 @@
-"""Readability of the playfield (P14): the player ships' outlines and hitbox marker, the
+"""Readability of the playfield (P14): the player ships' outlines, the
 toning of the scenery under them, and the shot renderers' glow
 """
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.readability import READABILITY as LOOK
 from game.config.record import record
-from game.view.shot_geometry import build_glow_disc
-from game.view.shots.shot_meshes import blended_template
-from render.babylon import babylon_constant, new_transform_node
+from render.babylon import babylon_constant
 from render.outline import outline_model
 
 __pragma__("skip")
@@ -19,9 +17,6 @@ Scene = Any  # noqa: E402
 
 
 __pragma__("noskip")
-
-# Distance in front of the ship (towards the camera, -Z), so the marker shows over it.
-MARKER_DEPTH = -6
 
 # Colours that are not darkened: tint factors, and lava, which glows by itself.
 KEEP = ["tints", "lava"]
@@ -109,31 +104,6 @@ def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
 def outlined_ships(models: dict[str, Any]) -> dict[str, Any]:
     """The player ship models, each with a rim glow in the player colour (P14-R03)."""
     return {ship_id: _outlined(build) for ship_id, build in models.items()}
-
-
-def build_hitbox_marker(scene: Scene, radius: float) -> Any:
-    """P14-R03: a marker on the ship's hitbox, `radius` its radius: a white dot ringed in the
-    player colour, always drawn over the ship."""
-    marker = LOOK.hitboxMarker
-    color = marker.color
-    rim = marker.rim
-    segments = marker.segments
-    colors = [color, color, color, rim, rim]
-    alphas: list[float] = []
-    for ring in range(len(colors)):
-        for _ in range(1 if ring == 0 else segments):
-            alphas.append(1)
-    disc = blended_template("hitbox-marker", build_glow_disc(segments, colors), alphas, scene)
-    material = disc.material
-    if material:
-        material.depthFunction = babylon_constant("ALWAYS")
-    disc.alphaIndex = window.Number.MAX_SAFE_INTEGER
-    disc.setEnabled(True)
-    root = new_transform_node("hitbox-marker-root", scene)
-    disc.parent = root
-    disc.position.set(0, 0, MARKER_DEPTH)
-    disc.scaling.setAll(radius)
-    return root
 
 
 def toned(look: Any, tone: float) -> Any:

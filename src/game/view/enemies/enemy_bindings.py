@@ -18,8 +18,10 @@ class EnemyBindingsHandle:
         blasts: object,
         glow: object,
         set_idle: object,
+        child_models: list[str],
     ):
         self.models = models
+        self.child_models = child_models
         self.shots = shots
         self.blasts = blasts
         self.glow = glow
@@ -36,6 +38,10 @@ def merged_models() -> dict[str, object]:
     return models
 
 
+# The models of the enemies other enemies send out (P13-R03: built with every level's own): the
+# Carriers' and the bosses' Gnats, the bosses' Hornets, the Splitters' pods and the Hives' Wasps.
+CHILD_MODELS = ["gnat", "hornet", "splitter-pod", "wasp"]
+
 # How this game's enemies look (P05). P16-R10: the debug pages pause the living motion (P16-R07).
 ENEMY_BINDINGS = EnemyBindingsHandle(
     merged_models(),
@@ -43,4 +49,5 @@ ENEMY_BINDINGS = EnemyBindingsHandle(
     create_blast_renderer,
     ENEMY_LOOK.glow,
     set_living_motion,
+    CHILD_MODELS,
 )

@@ -68,3 +68,19 @@ def test_a_scene_without_a_cube_texture_is_left_alone(cube: list[Any]) -> None:
     scene = SimpleNamespace(environmentIntensity=0, environmentTexture=None)
     update_sky_environment(scene, 4, STOPS, 1)
     assert cube == []
+
+
+def test_p13_r03_the_sky_lighting_is_set_from_the_new_faces_after_each_update(
+    cube: list[Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # An update keeps the old polynomial, and reading the cube back from the GPU stalls.
+    lit: list[Any] = []
+    monkeypatch.setattr(
+        showcase_environment,
+        "set_cube_sphere_lighting",
+        lambda texture, faces, size: lit.append((texture, faces, size)),
+    )
+    texture = object()
+    scene = SimpleNamespace(environmentIntensity=0, environmentTexture=texture)
+    update_sky_environment(scene, 4, STOPS, 1)
+    assert lit == [(texture, cube[0][1], 4)]

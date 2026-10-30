@@ -2,14 +2,15 @@
 
 `index.html` calls `main()` once the page has loaded.
 
-Build-time flags (`__E2E__`, `import.meta.env.DEV`) are constants here: there is no e2e build yet
-(ENG-52), and the perf overlay (ENG-111) is off.
+`E2E` is set by the build: `make e2e-build` compiles with the Transcrypt symbol `e2e`, which keeps
+the `__pragma__("ifdef", "e2e")` blocks (the test API, ENG-52); `make build` drops them. The perf
+overlay (ENG-111) is on in e2e builds only.
 The debug viewers (ships, shots, enemies, bosses, props) are gone: only the game page is built.
 """
 
 from org.transcrypt.stubs.browser import __pragma__, document, window
 
-from app.debug_options import parse_debug_options
+from app.debug_options import dev_mode, parse_debug_options
 from app.page_audio import AudioOptions, PageVisibility
 from app.start_app import AppOptions, start_app
 from build_info import APP_COMMIT, APP_VERSION  # The version and commit on the title (ENG-83).
@@ -28,7 +29,15 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
+__pragma__("ifdef", "e2e")
+from debug.test_api import install_test_api  # noqa: E402
+
+__pragma__("endif")
+
 E2E = False
+__pragma__("ifdef", "e2e")
+E2E = True
+__pragma__("endif")
 DEV_BUILD = False
 
 
@@ -138,6 +147,7 @@ def start_game(engine: Any) -> None:
         overlay,
         CookieStorage(document, MENU_CONFIG.cookie_max_age_days),
         next_frame,
+        # e2e builds have no render loop: the tests step the app (ENG-52).
         not E2E,
         APP_VERSION,
         APP_COMMIT,
@@ -159,8 +169,13 @@ def start_game(engine: Any) -> None:
         window,
         PageVisibility(document, document_hidden),
         start_interval,
+        # D-199: the Dev entry of the title screen, with `?dev` in the URL.
+        dev_mode(window.location.search),
     )
-    start_app(engine, GAME, options)
+    app = start_app(engine, GAME, options)
+    __pragma__("ifdef", "e2e")
+    install_test_api(window, app)
+    __pragma__("endif")
 
 
 def main() -> None:
@@ -171,10 +186,12 @@ def main() -> None:
     if not has_webgl2(lambda: document.createElement("canvas")):
         show_fatal(GAME.texts.unsupported)
         return
-    antialias = True
-    # Antialiasing on; `adaptToDeviceRatio` off and `stencil` on.
+    # Antialiasing on; `adaptToDeviceRatio` off and `stencil` on. e2e builds draw fewer pixels,
+    # without multisampling (ENGINE_CONFIG.e2e, D-075).
+    e2e = ENGINE_CONFIG.e2e
+    antialias = e2e.antialias if E2E else True
     engine = new_engine(canvas, antialias)
-    engine.setHardwareScalingLevel(1 / pixel_ratio())
+    engine.setHardwareScalingLevel(1 / (pixel_ratio() * (e2e.render_scale if E2E else 1)))
     engine.onContextLostObservable.add(
         lambda: show_fatal("The graphics context was lost. Please reload the page.")
     )

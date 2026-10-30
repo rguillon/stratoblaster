@@ -12,6 +12,7 @@ from app.saved_choices import load_saved_choices, save_high_score, save_last_shi
 from app.saved_settings import load_volumes, save_volumes
 from app.settings_menu import Volumes
 from config.audio import AUDIO_CONFIG
+from config.dev_viewer import DEV_VIEWERS
 from core.systems.level_run_types import LevelResult
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -41,6 +42,8 @@ class MenuControllerDeps:
         commit: str,
         on_change: Any,
         on_feedback: Any,
+        dev_labels: dict[str, list[str]] | None = None,
+        dev_groups: dict[str, list[str]] | None = None,
     ) -> None:
         self.display = display
         self.input = input
@@ -55,6 +58,10 @@ class MenuControllerDeps:
         self.on_change = on_change
         # Called after each command with what it did, e.g. for the menu sounds (P12-R09).
         self.on_feedback = on_feedback
+        # The labels of each dev viewer's items (D-199); None: no dev menu.
+        self.dev_labels = dev_labels
+        # The group of each dev viewer's items (D-202); None: not in groups.
+        self.dev_groups = dev_groups
 
 
 def _with_new_high_score(result: LevelResult) -> LevelResult:
@@ -68,6 +75,20 @@ def _with_new_high_score(result: LevelResult) -> LevelResult:
         True,
         result.checkpoint,
     )
+
+
+def _dev_counts(labels: dict[str, list[str]] | None) -> list[int] | None:
+    """How many items each dev viewer shows (D-199), in the order of `DEV_VIEWERS`."""
+    if labels is None:
+        return None
+    return [len(labels[viewer]) for viewer in DEV_VIEWERS]
+
+
+def _dev_groups(groups: dict[str, list[str]] | None) -> list[list[str]] | None:
+    """The group of each dev viewer's items (D-202), in the order of `DEV_VIEWERS`."""
+    if groups is None:
+        return None
+    return [groups.get(viewer, []) for viewer in DEV_VIEWERS]
 
 
 class MenuController:
@@ -96,6 +117,8 @@ class MenuController:
                 deps.result_delay_seconds,
                 self._saved_volumes,
                 volume_steps,
+                _dev_counts(deps.dev_labels),
+                _dev_groups(deps.dev_groups),
             )
         )
         self.refresh()
@@ -185,6 +208,8 @@ class MenuController:
                     self.deps.cards_width_percent,
                     self._progress,
                     int(AUDIO_CONFIG.volume_steps),
+                    self.deps.dev_labels,
+                    self.deps.dev_groups,
                 ),
             )
         )

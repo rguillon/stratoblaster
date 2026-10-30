@@ -10,6 +10,7 @@ from core.systems.gun_muzzles import GunMuzzles
 from core.systems.projectile_motion import heading_to
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
+from game.sim.joints import jointed_design
 
 __pragma__("skip")
 from core.entities.enemy import EnemyContext  # noqa: E402
@@ -27,7 +28,7 @@ class Orbiter(JointedEnemy):
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
-        super().__init__(x, y, CFG.stats, CFG.design)
+        super().__init__(x, y, CFG.stats, jointed_design(CFG.design))
         self.stop_y = stop_y
         self.state = "enter"
         self._ring = Cadence(CFG.ringInterval, CFG.firstRing)

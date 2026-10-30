@@ -1,6 +1,7 @@
 """How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request, 2026-10-26)
 
-One ground for the whole world, from a turquoise sea over green grass and dry earth to the sand, and
+One ground for the whole world, from a turquoise sea over green grass and dry earth to the dried
+red land of an American desert (reviewer, 2026-10-30, D-200: not sand dunes), and
 a time of day per level, later and later: midday over the sea (1-1), early afternoon on the green
 coast (1-2), late afternoon in the green country (1-3), sunset over the dry lands (1-4) and dusk
 over the deep desert, its towns' lights on (1-5). Every look starts from Level Zero's. Gamma-space
@@ -51,7 +52,7 @@ GRASS = texture(
     {"speckle": 0.035, "speckleColor": [0.6, 0.56, 0.28]},
 )
 
-# Red-brown desert rock, layered: what the sand gives way to on slopes.
+# Red-brown desert rock, layered (World 2's slopes).
 DESERT_ROCK = texture(
     [
         [0.42, 0.28, 0.2],
@@ -60,6 +61,52 @@ DESERT_ROCK = texture(
     ],
     8,
     {"strata": 0.45},
+)
+
+# Red mesa rock, in strong layers (D-200): the walls of World 1's mesas, buttes and canyons.
+MESA_ROCK = texture(
+    [
+        [0.46, 0.22, 0.13],
+        [0.62, 0.32, 0.19],
+        [0.74, 0.44, 0.28],
+    ],
+    8,
+    {"strata": 0.6},
+)
+
+# The dried land of an American desert (D-200): red-orange dirt, scattered with dark pebbles and
+# sage-grey scrub, no sand.
+DESERT_DIRT = texture(
+    [
+        [0.56, 0.34, 0.21],
+        [0.67, 0.43, 0.28],
+        [0.76, 0.53, 0.36],
+    ],
+    14,
+    {"speckle": 0.045, "speckleColor": [0.36, 0.34, 0.26]},
+)
+
+# Dried earth (D-200): the bare ground of the dry levels, warm brown, between the dry grass and the
+# red dirt (World 1's other levels keep the olive `DRY_EARTH`).
+DRIED_EARTH = texture(
+    [
+        [0.52, 0.38, 0.26],
+        [0.62, 0.47, 0.33],
+        [0.7, 0.56, 0.4],
+    ],
+    12,
+    {"speckle": 0.04, "speckleColor": [0.4, 0.33, 0.24]},
+)
+
+# A dry lake bed (D-200): pale grey-pink hardpan, cracked into plates, on the low flats.
+HARDPAN = texture(
+    [
+        [0.64, 0.57, 0.53],
+        [0.75, 0.68, 0.63],
+        [0.85, 0.79, 0.73],
+    ],
+    10,
+    {"cracks": 0.75, "speckle": 0.01, "speckleColor": [0.48, 0.38, 0.28]},
 )
 
 # The ground of the whole world: dry earth by default, covered with grass, sand or pavement by
@@ -81,14 +128,20 @@ TERRAIN = merge(
     },
 )
 
-# The dry levels: sand below, red rock on the cliffs, a warmer tint.
+# The dry levels (D-200): dried earth, red dirt where the sections lay their "sandy" cover, cracked
+# hardpan on the low flats, red rock on the walls of the mesas, buttes and canyons, a warmer tint.
 DRY_TERRAIN = merge(
     TERRAIN,
     {
-        "low": SAND,
-        "steep": DESERT_ROCK,
-        # Only cliffs (mesas, canyon walls) are bare rock: the lee sides of the dunes stay sand.
-        "steepSlope": [0.95, 1.35],
+        "ground": DRIED_EARTH,
+        "low": HARDPAN,
+        "sand": DESERT_DIRT,
+        "steep": MESA_ROCK,
+        # No snow on the flat tops of the mesas and buttes (the heights the shader compares are the
+        # world's, twice the ground's).
+        "highHeight": 1000,
+        # Steep ground is bare rock (no dunes whose lee sides must stay covered).
+        "steepSlope": [0.55, 0.95],
         "tints": [
             [1.05, 0.98, 0.9],
             [0.9, 0.84, 0.78],

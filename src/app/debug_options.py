@@ -5,6 +5,7 @@ optional. `boss=mini` or `boss=final` starts at that boss's arrival instead (P07
 `weather=0` turns the weather off and `look=night` (or another time of day) forces the time of
 day (P08-R12). `tiles=1` draws the grid of tiles over the districts (P15-R10).
 Without `level`, or with a value that does not parse, there are no debug options.
+`dev` (any value) adds the Dev entry to the title screen (D-199): see `dev_mode`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -17,6 +18,17 @@ def _query_text(search: str, key: str) -> str | None:
     """`URLSearchParams.get`: the value of `key`, or None when it is missing."""
     __pragma__("js", "{}", "return new URLSearchParams(search).get(key);")
     return None
+
+
+def _has_key(search: str, key: str) -> bool:
+    """`URLSearchParams.has`: whether `key` is in the query, with or without a value."""
+    __pragma__("js", "{}", "return new URLSearchParams(search).has(key);")
+    return False
+
+
+def dev_mode(search: str) -> bool:
+    """Whether the query asks for the dev menu (`?dev`, D-199)."""
+    return _has_key(search, "dev")
 
 
 def _time_text(search: str) -> float:

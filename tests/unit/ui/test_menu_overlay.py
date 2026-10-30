@@ -1,10 +1,14 @@
 """Unit tests of `src/ui/menu_overlay.py`."""
 
+from types import SimpleNamespace
+
 from helpers.dom import FakeDocument, FakeEvent
 
 from input.menu_action import MenuSelect, MenuSet
 from ui.menu_overlay import MenuOverlay, MenuOverlayOptions
 from ui.menu_view import (
+    DevMenuView,
+    DevViewerView,
     GameScreenView,
     LevelOption,
     LevelSelectView,
@@ -165,3 +169,17 @@ def test_p01_r13_a_title_logo_is_fitted_to_the_page() -> None:
     logo = root.children[0].querySelector(".title-name")
     assert logo is not None
     assert logo.style.fontSize == ""
+
+
+def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None:
+    doc = FakeDocument()
+    root = doc.createElement("div")
+    wheels: list[float] = []
+    overlay = MenuOverlay(doc, root, [].append, MenuOverlayOptions(0.25), None, wheels.append)
+    assert overlay.root is root
+    overlay.show(DevMenuView("Dev", "hint", "Back", 0, ["Ships"]))
+    assert root.querySelector(".dev-screen") is not None
+    overlay.show(DevViewerView("Ships", "hint", "Back", 0, "Alpha", "1 / 3", False))
+    screen = root.querySelector(".dev-viewer-screen")
+    screen.fire("wheel", SimpleNamespace(deltaY=-100, target=None, preventDefault=lambda: None))
+    assert wheels == [-100]

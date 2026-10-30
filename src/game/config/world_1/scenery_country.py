@@ -5,7 +5,7 @@ turns dry and yellow. No sea. Its `seconds` add up to 240 (P06-R04).
 """
 
 from game.config.record import merge, record
-from game.config.world_1.props import PLANTS, WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
+from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 from game.config.world_1.scenery_coast import FARMLAND, smooth
 
 G = WORLD_1_GROUPS
@@ -20,9 +20,8 @@ DRY_GRASSLAND = record(
         "seconds": 30,
         "relief": smooth(28, 10, 560),
         "buildingDensity": 0.75,
-        "treeDensity": 0.5,
+        "treeDensity": 0,
         "surface": {"lush": 0.2},
-        "trees": PLANTS.dryGrass,
         "groups": [G.villages, G.outposts],
     }
 )
@@ -36,8 +35,7 @@ COUNTRY = [
             "seconds": 35,
             "relief": smooth(34, 18, 460, 5),
             "buildingDensity": 0.4,
-            "treeDensity": 0.65,
-            "trees": PLANTS.woods,
+            "treeDensity": 0,
             "groups": [G.farms],
         },
     ),
@@ -48,8 +46,7 @@ COUNTRY = [
             "seconds": 35,
             "relief": smooth(46, 36, 420, 5),
             "buildingDensity": 0.5,
-            "treeDensity": 0.5,
-            "trees": PLANTS.woods,
+            "treeDensity": 0,
             "groups": [G.villages],
         },
     ),
@@ -61,7 +58,7 @@ COUNTRY = [
             "seconds": 30,
             "relief": smooth(28, 4, 600, 3),
             "buildingDensity": 1,
-            "treeDensity": 0.45,
+            "treeDensity": 0,
             "surface": {"lush": 0.65, "paved": 0.3},
             "streets": TOWN_STREETS,
             "groups": [G.villages],

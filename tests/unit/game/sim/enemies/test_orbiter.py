@@ -3,6 +3,7 @@
 from helpers.enemy_steps import area, run, run_until
 from helpers.fakes import FakeContext
 
+from core.entities.jointed_enemy import EnemyPartSpec
 from game.sim.elite_kinds import ELITE_KINDS
 from game.sim.enemies.orbiter import Orbiter
 
@@ -31,3 +32,14 @@ def test_p05_r20_an_orbiter_leaves_upward_or_downward_once_it_has_stayed() -> No
     y = orbiter.y
     run(orbiter, ctx, 1.0)
     assert orbiter.y != y
+
+
+def test_p05_r20_an_orbiter_builds_its_drones_as_part_specs_not_config_records() -> None:
+    # In the browser a raw record leaves `joint` undefined, not None: the drones then hang on no
+    # joint and the Orbiter cannot spawn.
+    orbiter = Orbiter(200, 300, 300)
+    assert len(orbiter.parts) == 3
+    for part in orbiter.parts:
+        assert isinstance(part.spec, EnemyPartSpec)
+        assert part.spec.joint is None
+        assert part.spec.orbits

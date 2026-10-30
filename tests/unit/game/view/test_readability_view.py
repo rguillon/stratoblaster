@@ -5,15 +5,12 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from helpers.babylon_stub import stub_babylon
 
 from game.config.readability import READABILITY
 from game.view import readability_view
 from game.view.readability_view import (
     KEEP,
-    MARKER_DEPTH,
     all_toned,
-    build_hitbox_marker,
     outlined_ships,
     toned,
     toned_shots,
@@ -110,41 +107,6 @@ def test_p14_r03_each_ship_model_gets_an_outline_in_the_player_colour(monkeypatc
     models = outlined_ships({"light": lambda scene: root})
     assert models["light"]("scene") is root
     outline.assert_called_once_with(root, LOOK.playerOutline.color)
-
-
-def test_p14_r03_the_hitbox_marker_is_a_disc_over_the_ship(monkeypatch):
-    stub_babylon(monkeypatch, readability_view)
-    discs = []
-
-    def blended(name, geo, alphas, scene):
-        discs.append(
-            SimpleNamespace(
-                name=name,
-                geo=geo,
-                alphas=alphas,
-                material=MagicMock(),
-                parent=None,
-                position=MagicMock(),
-                scaling=MagicMock(),
-                setEnabled=MagicMock(),
-                alphaIndex=None,
-            )
-        )
-        return discs[-1]
-
-    monkeypatch.setattr(readability_view, "blended_template", blended)
-    monkeypatch.setattr(
-        readability_view, "window", SimpleNamespace(Number=SimpleNamespace(MAX_SAFE_INTEGER=9))
-    )
-    root = build_hitbox_marker(MagicMock(), 3.0)
-    disc = discs[0]
-    assert disc.name == "hitbox-marker"
-    assert disc.parent is root
-    disc.position.set.assert_called_with(0, 0, MARKER_DEPTH)
-    disc.scaling.setAll.assert_called_with(3.0)
-    # One centre disc then rings of the marker's segments: every vertex is opaque.
-    assert all(a == 1 for a in disc.alphas)
-    assert disc.alphaIndex == 9
 
 
 def test_p14_r06_the_shot_renderers_are_wrapped_one_for_each_weapon(monkeypatch):

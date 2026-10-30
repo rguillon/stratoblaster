@@ -5,21 +5,10 @@ houses, and the farms of World 1's green land; each section picks the groups tha
 the homes slowly take over the factories. Small buildings only at the end: no tower.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.cars import CAR_RULES
-from game.config.prop_ids import PROP_IDS
 from game.config.record import merge, record
 from game.config.tile_buildings import LOT_KINDS, tile_kinds
 from game.config.world_1.props import WORLD_1_ROADS
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402
-
-__pragma__("noskip")
-
-P = PROP_IDS
 
 # Building groups of World 3; each section lists the ones that stand on it.
 WORLD_3_GROUPS = record(
@@ -45,12 +34,6 @@ WORLD_3_GROUPS = record(
 G = WORLD_3_GROUPS
 
 # Plants are drawn small next to the ships, as in Worlds 1 and 2.
-TREE_SCALE = [0.45, 0.75]
-
-
-def tree(prop_id: str, weight: float, footprint: float) -> Any:
-    """A plant kind of the trees, drawn at the tree scale."""
-    return record({"id": prop_id, "weight": weight, "footprint": footprint, "scale": TREE_SCALE})
 
 
 # The props of World 3 (P09-R03, R06; reworked at the reviewer's request, 2026-10-27): Level
@@ -104,14 +87,9 @@ WORLD_3_PROPS = record(
                 "kinds": tile_kinds("homes"),
             },
         ],
-        "trees": [
-            tree(P.deadTree, 1, 1.5),
-            tree(P.forkedTree, 0.6, 1.5),
-            tree(P.bush, 2, 3.5),
-            tree(P.broadleaf, 3, 4.5),
-            tree(P.conifer, 1.5, 3.5),
-        ],
-        "treesPerCell": 4,
+        # D-207: no plant grows.
+        "trees": [],
+        "treesPerCell": 0,
         "cars": CAR_RULES,
         "loners": {"cell": 150, "chance": 0.15, "clearance": 18},
         "hamlets": {
@@ -121,17 +99,6 @@ WORLD_3_PROPS = record(
             "gap": 2,
             "clearance": 18,
         },
-    }
-)
-
-# Plants of the sections, from the last dead trees by the factories to the gardens.
-TOWN_PLANTS = record(
-    {
-        "industry": [P.deadTree, P.bush],
-        "yards": [P.deadTree, P.forkedTree, P.bush],
-        "streets": [P.broadleaf, P.bush],
-        "parks": [P.broadleaf, P.conifer, P.bush],
-        "gardens": [P.broadleaf, P.bush, P.conifer],
     }
 )
 

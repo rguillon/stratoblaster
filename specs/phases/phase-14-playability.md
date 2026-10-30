@@ -39,11 +39,10 @@ The background palette of every world leaves these hues out, or uses them only a
 - [ ] Enemy bullets and player shots never share a color.
 
 ### P14-R03 — Player ship stands out  · MUST
-The player ship gets a light outline / rim glow in the player color, visible on every background, plus a small bright marker at the hitbox center (GD-21), so the player always knows where they can be hit.
+The player ship gets a light outline / rim glow in the player color, visible on every background, so the player always knows where they are. The hitbox (GD-21) is not drawn (reviewer, 2026-10-30, D-194: no hitbox marker).
 
 **Acceptance criteria**
 - [ ] Given any level, when the ship flies over the brightest part of the ground, then its outline is still visible (contrast ratio with the surrounding background ≥ `min_object_contrast`).
-- [ ] The hitbox marker sits exactly on the hitbox center and matches its size (or is smaller).
 - [ ] While invincible (GD-22), the blinking still applies to the whole ship, outline included.
 
 ### P14-R04 — Enemies stand out  · MUST
@@ -55,7 +54,7 @@ Every enemy, mini boss and boss gets a rim light or outline in the enemy color, 
 - [ ] Enemies on the ground (turrets, tanks, etc.) are as readable as flying ones.
 
 ### P14-R05 — Enemy bullets are the most visible thing on screen  · MUST
-Enemy bullets, missiles and lasers (GD-43) use the reserved enemy-bullet family (R02): a bright core plus a darker contrasting rim, so they read on bright and dark ground alike. They have a minimum on-screen size, and they are drawn above everything else in the gameplay layer (above explosions, particles, player shots, enemies).
+Enemy bullets, missiles and lasers (GD-43) use the reserved enemy-bullet family (R02): a bright core, so they read on bright and dark ground alike; bullets have no dark rim or ring (reviewer, 2026-10-30, D-194). They have a minimum on-screen size, and they are drawn above everything else in the gameplay layer (above explosions, particles, player shots, enemies).
 
 **Acceptance criteria**
 - [ ] Given any enemy bullet kind, when it is over any world's ground, then its core has a contrast ratio ≥ `min_bullet_contrast` with the background around it.
@@ -110,7 +109,7 @@ The test API (Phase 13 tooling) exposes a way to measure readability so R01–R0
 
 ## 🧑 Manual validation checklist
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] In one level of each world, I can always see my ship and its hitbox marker, including over the brightest ground
+- [ ] In one level of each world, I can always see my ship, including over the brightest ground
 - [ ] I can tell enemy bullets from my own shots at a glance, even with a level 5 weapon
 - [ ] Enemies, ground enemies and boss parts are easy to see on every world's ground
 - [ ] Explosions and bombs don't hide incoming bullets

@@ -202,17 +202,12 @@ ENEMY_LOOK = record(
             },
         },
         # Phase 10 (P10-R07): the shot style World 4's looks name (`SceneryLook.shotStyle`), for
-        # red, orange and dark grounds and skies. Each bullet keeps its colours but gets a dark
-        # `rim` behind it (a blended disc `size` times its radius, so a dark ring shows round the
-        # ball) and a white `spark` added at its heart (`size` times its radius); laser warning
-        # lines get a white core and are `warningWidth` times as wide.
+        # red, orange and dark grounds and skies. Each bullet keeps its colours and gets a white
+        # `spark` added at its heart (`size` times its radius); it has no dark rim any more
+        # (reviewer, 2026-10-30, D-194). Laser warning lines get a white core and are
+        # `warningWidth` times as wide.
         "contrast": {
             "style": "contrast",
-            "rim": {
-                "size": 1.3,
-                "color": [0.02, 0.02, 0.04],
-                "fade": [0.92, 0.92, 0.9, 0.85, 0.55, 0],
-            },
             "spark": {
                 "size": 0.2,
                 "colors": [

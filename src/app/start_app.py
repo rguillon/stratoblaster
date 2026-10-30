@@ -9,6 +9,8 @@ when omitted. The version and commit are the `version` and `commit` options (mai
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
+from app.dev_catalog import dev_catalog, dev_groups, dev_labels
+from app.dev_session import DevSession
 from app.game_audio import GameAudio
 from app.game_session import GameSession, GameSessionOptions, SessionAudio, SessionScores
 from app.menu_controller import MenuController, MenuControllerDeps
@@ -71,6 +73,7 @@ class AppOptions(PageOptions):
         gesture_target: Any | None = None,
         visibility: PageVisibility | None = None,
         every: Any | None = None,
+        dev: bool | None = None,
     ) -> None:
         PageOptions.__init__(self, audio, gamepads, gesture_target, visibility, every)
         # Image-based lighting and glow. Needs a real WebGL engine.
@@ -105,6 +108,8 @@ class AppOptions(PageOptions):
         self.background_loading = background_loading
         # Builds the level highlighted on the level select screen ahead (P13-R03).
         self.prebuild_levels = prebuild_levels
+        # The Dev entry of the title screen and its viewers (D-199, `?dev`).
+        self.dev = dev
 
 
 class RunningApp:
@@ -290,16 +295,19 @@ def load_menu_scenes(
     return SceneLoad(run(), progress)
 
 
-def create_menu(
+def create_menu(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     game: Any,
     options: AppOptions,
     input_: InputHandle,
     controls: Any,
     audio: GameAudio,
     on_change: Any,
+    dev: Any = None,
 ) -> MenuHandle:
     """The menu controller and its overlay (P01-R01): the overlay's commands go to the controller,
-    and the controller's changes and feedback to the scenes and the audio."""
+    and the controller's changes and feedback to the scenes and the audio. `dev`: the dev
+    viewers' item labels, wheel, drag and item groups (D-199, D-202), as (labels, on_wheel,
+    on_turn, groups); None: no dev menu."""
 
     def on_command(command: Any) -> None:
         menu.command(command)
@@ -310,6 +318,8 @@ def create_menu(
         on_command,
         MenuOverlayOptions(MENU_CONFIG.transition_seconds),
         TouchHandlers(controls),
+        dev[1] if dev is not None else None,
+        dev[2] if dev is not None else None,
     )
 
     def on_feedback(command: MenuCommand, feedback: Any) -> None:
@@ -326,6 +336,8 @@ def create_menu(
         options.commit,
         on_change,
         on_feedback,
+        dev[0] if dev is not None else None,
+        dev[3] if dev is not None else None,
     )
     menu = MenuController(game, deps)
     return MenuHandle(menu, overlay)
@@ -337,9 +349,11 @@ def frame_ticker(
     get_scenes: Any,
     session: GameSession,
     perf: PerfMonitor,
+    dev: DevSession | None = None,
 ) -> Ticker:
     """One frame, split in two: the simulation (clock, menu input and state, then the level being
-    played or the menu scenes' animations), then the drawing of what it left."""
+    played, the dev viewer shown, or the menu scenes' animations), then the drawing of what it
+    left."""
 
     def simulate(dt_seconds: float) -> None:
         dt = min(max(0, dt_seconds), MENU_CONFIG.max_frame_seconds)
@@ -356,10 +370,7 @@ def frame_ticker(
             return
         # P13-R03: a step of the level being loaded, if any, each frame.
         session.load_step(dt)
-        loaded = get_scenes()
-        if loaded is not None:
-            loaded.backdrop["update"](dt)
-            loaded.stage.update(dt)
+        animate_menus(dt, get_scenes(), dev)
 
     def render() -> None:
         play = session.play
@@ -369,11 +380,26 @@ def frame_ticker(
             if perf.loading:
                 perf.load_finished(ENGINE_CONFIG.simulation_hz)
             return
-        loaded = get_scenes()
-        if loaded is not None:
-            render_menu_scenes(loaded, menu.flow.state.screen)
+        draw_menus(get_scenes(), menu.flow.state.screen, dev)
 
     return Ticker(simulate, render)
+
+
+def animate_menus(dt: float, loaded: Any, dev: DevSession | None) -> None:
+    """Moves the menu scenes (once `loaded`) and the dev viewer shown on by `dt` seconds."""
+    if dev is not None:
+        dev.frame(dt)
+    if loaded is not None:
+        loaded.backdrop["update"](dt)
+        loaded.stage.update(dt)
+
+
+def draw_menus(loaded: Any, screen: str, dev: DevSession | None) -> None:
+    """Draws the dev viewer's scene once built (D-199), else the menu scenes of `screen`."""
+    if dev is not None and dev.active and dev.render():
+        return
+    if loaded is not None:
+        render_menu_scenes(loaded, screen)
 
 
 def dispose_scenes(scenes: Any) -> None:
@@ -468,6 +494,16 @@ def create_session(
     )
 
 
+def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
+    """The dev viewers (D-199) with `options.dev`: their session, their items' labels and groups
+    (D-202), as [session, labels, groups]; None without."""
+    if not options.dev:
+        return None
+    catalog = dev_catalog(game)
+    session = DevSession(engine, game, catalog, options.environment, options.overlay)
+    return [session, dev_labels(catalog), dev_groups(catalog)]
+
+
 def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     """Starts the app (see the module doc). Returns the handle `main.py` and the test API use."""
     clock = FixedStepClock(ENGINE_CONFIG.simulation_hz, int(ENGINE_CONFIG.max_steps_per_frame))
@@ -486,13 +522,17 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
 
     session = create_session(engine, game, options, get_menu, audio, perf)
     controls = session.controls
+    dev = create_dev(engine, game, options)
 
     def on_change(state: MenuState) -> None:
         sync_scenes(scenes_box[0], state, ship_ids)
         session.sync(state)
+        if dev is not None:
+            dev[0].sync(state)
         audio.menu_changed(state)
 
-    menu_handle = create_menu(game, options, input_handle, controls, audio, on_change)
+    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2]] if dev is not None else None
+    menu_handle = create_menu(game, options, input_handle, controls, audio, on_change, dev_menu)
     menu = menu_handle.menu
     overlay = menu_handle.overlay
     stop_page = listen_to_page(options, menu, audio)
@@ -512,7 +552,11 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
         PerfOverlayOptions(options.doc, options.perf_parent, options.keyboard_target), perf
     )
     ticker = overlay_perf.wrap(
-        app_audio.with_audio(frame_ticker(clock, menu, get_scenes, session, perf))
+        app_audio.with_audio(
+            frame_ticker(
+                clock, menu, get_scenes, session, perf, dev[0] if dev is not None else None
+            )
+        )
     )
     frames = FrameControls(clock, ticker, perf)
     if options.render_loop:
@@ -523,6 +567,8 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
         input_handle.stop()
         stop_page()
         session.dispose()
+        if dev is not None:
+            dev[0].dispose()
         overlay.dispose()
         overlay_perf.dispose()
         dispose_scenes(scenes_box[0])

@@ -15,7 +15,9 @@ dev = [
     "import-linter",
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
-    "coverage>=7.17.0",
+    "pytest-playwright>=0.10.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-cov>=7.0.0"  
 ]
 
 [tool.ruff]
@@ -146,6 +148,7 @@ ignore_imports = [
     "core.systems.enemy_shots -> org",
     "core.systems.enemy_world -> org",
     "core.systems.gun_muzzles -> org",
+    "core.systems.level_models -> org",
     "core.systems.level_run -> org",
     "core.systems.level_run_types -> org",
     "core.systems.player_flight -> org",
