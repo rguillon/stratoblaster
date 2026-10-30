@@ -86,13 +86,13 @@ def _json_of(value: Any) -> str:
 def _hypot2(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 def _hypot3(a: float, b: float, c: float) -> float:
     """`Math.hypot(a, b, c)`."""
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 _kept: Any = _new_map()

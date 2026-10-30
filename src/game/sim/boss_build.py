@@ -147,6 +147,10 @@ def _keys(record: ConfigRecord) -> list[str]:
     has no `keys()` method under Transcrypt.
     """
     result: list[str] = []
+    # CPython only (the unit tests): a dict's keys, as `Object.keys` gives them in the browser.
+    __pragma__("skip")
+    result = list(record.keys())
+    __pragma__("noskip")
     __pragma__(
         "js",
         "{}",

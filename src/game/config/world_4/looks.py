@@ -10,7 +10,7 @@ contrast core (P10-R07). Gamma-space RGB, 0..1.
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK
-from game.config.record import merge, record
+from game.config.record import field, merge, record
 from game.config.world_3.looks import town
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -27,7 +27,7 @@ DAYLIGHT = record({"groundLights": 1.5, "brightness": 1.3, "plainClouds": True})
 def bright(atmosphere: Any) -> Any:
     """`atmosphere` with the World 4 daylight set on its start and on every change."""
     start = atmosphere["start"]
-    changes = atmosphere["changes"]
+    changes = field(atmosphere, "changes", None)
     result = record({"start": merge(start, DAYLIGHT)})
     if changes:
         result["changes"] = [

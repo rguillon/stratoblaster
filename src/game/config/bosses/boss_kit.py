@@ -178,7 +178,7 @@ def part(
     options: Any = None,
 ) -> Any:
     """A part: `options` holds `shields`, `drop`, `orbits` and `joint` (all optional)."""
-    opts: Any = {} if _unset(options) else options
+    opts: Any = record({}) if _unset(options) else record(options)
     result = record(
         {
             "id": part_id,
@@ -204,6 +204,7 @@ def stats(options: Any) -> Any:
     `parts`, and optionally `coreDrop` and `joints` (its moving limbs, phase 7 review: see
     `BossStats.joints`).
     """
+    options = record(options)
     result = record(
         {
             "model": options.id,

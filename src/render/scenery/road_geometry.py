@@ -33,7 +33,7 @@ MIDDLE = 1
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 class RoadOpacity:

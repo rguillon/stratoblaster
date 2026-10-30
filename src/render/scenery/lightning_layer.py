@@ -58,7 +58,7 @@ BOLT_LOOK = BoltLook
 def _hypot(a: float, b: float) -> float:
     """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return 0
+    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 def _zigzag(random: Any, start: Point, length: float, angle: float, pieces: int) -> list[Point]:

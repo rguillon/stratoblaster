@@ -365,10 +365,14 @@ def city_only(s: Any) -> Any:
             "surface": {"paved": 1, "lush": 0},
         },
     )
-    del city["channel"]
-    del city["lakes"]
-    del city["shore"]
-    del city["flatten"]
+    if "channel" in city:
+        del city["channel"]
+    if "lakes" in city:
+        del city["lakes"]
+    if "shore" in city:
+        del city["shore"]
+    if "flatten" in city:
+        del city["flatten"]
     return city
 
 

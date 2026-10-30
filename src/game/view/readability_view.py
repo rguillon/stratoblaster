@@ -5,6 +5,7 @@ toning of the scenery under them, and the shot renderers' glow
 from org.transcrypt.stubs.browser import __pragma__, window
 
 from game.config.readability import READABILITY as LOOK
+from game.config.record import record
 from game.view.shot_geometry import build_glow_disc
 from game.view.shots.shot_meshes import blended_template
 from render.babylon import babylon_constant, new_transform_node
@@ -60,6 +61,9 @@ def _from_entries(pairs: list[Any]) -> Any:
 
 def _copy_object(value: Any) -> Any:
     """A shallow copy of a plain object (`{...value}`)."""
+    __pragma__("skip")
+    return record(dict(value))
+    __pragma__("noskip")
     __pragma__("js", "{}", "return Object.assign({}, value);")
     return None
 

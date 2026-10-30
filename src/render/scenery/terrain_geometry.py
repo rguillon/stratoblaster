@@ -5,6 +5,8 @@ green = 1 - sandy x SURFACE_SCALE, blue = 1 - paved x SURFACE_SCALE. The arrays 
 (Float32, Uint32), so the values round the same way.
 """
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import float32_array, uint32_array
@@ -52,7 +54,7 @@ class TerrainGeometry:
 def _hypot3(a: float, b: float, c: float) -> float:
     """`Math.hypot(a, b, c)`: JavaScript's rounding."""
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 def build_terrain_geometry(source: Any, grid: TerrainGrid) -> TerrainGeometry:

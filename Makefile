@@ -2,7 +2,7 @@
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript.
 
 .DEFAULT_GOAL := help
-.PHONY: help install build-info vendor dev build lint format typecheck check check-fast clean
+.PHONY: help install build-info vendor dev build lint format typecheck test coverage check check-fast clean
 
 DIST := dist
 
@@ -99,10 +99,11 @@ typecheck: build-info ## mypy --strict
 test: ## Unit tests (pytest, CPython over src/)
 	uv run pytest
 
-coverage: ## Unit tests with the core/ coverage report (fails below ENG-43), HTML in coverage/
+coverage: ## Unit tests with the coverage report of src/ (70 %) and of core/ (90 %), HTML in coverage/
 	uv run coverage run -m pytest
 	uv run coverage html -d coverage
 	uv run coverage report
+	uv run coverage report --include='src/core/*' --fail-under=90
 
 check-fast: lint typecheck ## Lint + typecheck (pre-push hook; tests come back with the test phase)
 

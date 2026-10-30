@@ -46,7 +46,7 @@ def sample_gradient(stops: list[GradientStop], y: float) -> list[float]:
 def _hypot3(a: float, b: float, c: float) -> float:
     """`Math.hypot(a, b, c)`: JavaScript's rounding, not `math.hypot`."""
     __pragma__("js", "{}", "return Math.hypot(a, b, c);")
-    return 0
+    return math.hypot(a, b, c)  # Only reached outside Transcrypt (CPython).
 
 
 # Vertical component of the direction through pixel row `v` (-1 top .. 1 bottom) of each face,
