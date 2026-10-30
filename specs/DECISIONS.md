@@ -1608,3 +1608,150 @@
 - **Phase:** 16
 - **Decision:** The 61 models were reworked in six independent scopes (basic enemies, veterans and elites, then one per world's bosses), each on its own files, the shared boss helpers (`mini-boss-*`, `final-boss-*`, `boss-limbs`, `overlord-city`) left as they were. Each scope keeps its part ids, joints, turrets and muzzles as they were, so the sim and its tests are untouched.
 - **Status:** Accepted
+
+### D-169 — Python port: Python 3.12, Transcrypt, uv, Babylon.js through interop
+- **Date:** 2026-10-29
+- **Phase:** 17 (the port, requested by the owner)
+- **Decision:** The game is ported from TypeScript to Python 3.12. Transcrypt 3.9.5 compiles it to browser ES modules. uv manages the environment and the commands (`pyproject.toml`, `uv.lock`, `.python-version`). Babylon.js stays the 3D engine (D-001 still holds for the engine), used as a pinned JavaScript build vendored under `public/vendor/` by `make vendor` (SHA-256 checked), and called from Python through thin wrappers in `render/` only. Vite, Vitest, ESLint, Prettier, Husky and npm are replaced by `mypy --strict`, ruff, import-linter and the `pre-commit` tool. The TypeScript toolchain files (`package.json`, `vite.config.ts`, ...) stay on the branch until the port reaches parity, then they are removed. The requirements in `01-engineering.md` now state this (ENG-01..05, 12..14, 20..36, 40..61, 82..84, §13).
+- **Alternatives considered:** a different engine that is Python-native or has a Transcrypt binding (none is as complete as Babylon, and it would change the look, D-001); keeping TypeScript and adding a Python tool (fails the owner's request); Brython or PyScript (run Python at run time, far heavier for a 60 Hz game).
+- **Consequences:** The game is not playable on the `python-transcrypt` branch until the port reaches parity with `main`. The TypeScript code stays on `main` as the reference; it is removed from the branch when the port is complete. The unit tests are not ported yet (the test phase restores ENG-27..29, 40..48). Babylon is not vendored yet (the render phase does it).
+- **Status:** Accepted (owner request, 2026-10-29). Vendoring Babylon with `make vendor` and its SHA-256 is a proposal to confirm when the render phase starts.
+
+### D-170 — Transcrypt 3.9.5 constraints, measured
+- **Date:** 2026-10-29
+- **Phase:** 17
+- **Decision:** Measured on Python 3.12 with Transcrypt 3.9.5 and Node 26. Works: classes with inheritance, closures and mutable closure state (`state = [seed]`), list comprehensions, positional default arguments, dotted packages (`core.math.rng` compiles to `core.math.rng.js`), `from org.transcrypt.stubs.browser import document, window` (compile-time only), `window.Math.imul`, `str()`, `//` and `%` on integers, `1 << n` for small `n`, function annotations (dropped at compile time), `__pragma__('skip')` blocks, `__new__(JSConstructor)(args)` for JavaScript constructors. Does not work: keyword arguments at call sites (silently ignored: `add(4, scale=3)` returns the default result); `%` string formatting (returns `NaN`); list repetition `[x] * n` (compiles to the number `x * n`); `from typing import ...` outside a `skip` block (its runtime has no `typing` module); `from browser import ...` (compile error); Python 3.14 (the compiler fails on its own runtime). A parameter named `name` is renamed to `py_name` at run time.
+- **Consequences:** These rules are in `01-engineering.md` §13 (ENG-150..154) and in the `pyproject.toml` lint configuration. The RNG port checks its output against the TypeScript one (7000 values, zero mismatches), which is the template for porting other numeric code.
+- **Status:** Accepted
+
+### D-171 — Build and lint without Node: `dist/js` and import-linter exceptions
+- **Date:** 2026-10-29
+- **Phase:** 17
+- **Decision:** `make build` runs `transcrypt -b -n -od ../dist/js main.py` from `src/`, so package imports resolve, then copies `index.html` and `public/` into `dist/`. There is no minification (`-n`) yet; the size budget (ENG-107) is checked when the game is ported. Layering is checked with import-linter (`root_packages = ["core"]`, forbidden: `org`, `browser`). One explicit exception: `core.math.rng` imports `__pragma__` from the Transcrypt browser stub, a compile-time marker that does not touch the DOM. `typings/org/transcrypt/stubs/browser.pyi` types the browser globals for mypy.
+- **Consequences:** The exception is the only one. Any other import of `org` or `browser` from `core/` breaks `make lint` (checked with a probe file on 2026-10-29).
+- **Status:** Accepted
+
+### D-172 — The browser wrappers package is `host/`, not `platform/`
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** ENG-10's `platform/` becomes `host/` (browser storage, cookies, WebGL capability checks, loading tasks). With `src/` on the import path, a package named `platform` shadows the standard library module, which `uuid` needs. import-linter then crashes.
+- **Consequences:** The directory layout line in `01-engineering.md` changes accordingly; no requirement changes.
+- **Status:** Accepted
+
+### D-173 — Babylon.js vendored from the UMD build of `babylonjs` 9.32.0, SHA-256 pinned in the Makefile
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port, P18-R04)
+- **Decision:** `make vendor` downloads `babylon.js` from the `babylonjs@9.32.0` npm package through jsDelivr (`cdn.jsdelivr.net/npm/babylonjs@9.32.0/babylon.js`, the same bytes as unpkg), checks its SHA-256 against `BABYLON_SHA256` in the Makefile, and writes it to `public/vendor/babylon.js` only when the hash matches. A mismatch fails the target and leaves nothing behind. The version on `main` is `@babylonjs/core` 9.32.0 (`package-lock.json`); the `babylonjs` package is its UMD build. Only `babylon.js` is vendored: `main` uses no glTF loader, no materials package and no inspector (grep of `src/`), so the loaders, materials and inspector builds are not needed yet. `make build` fails early when the file is missing or wrong, and checks that `dist/vendor/babylon.js` was copied.
+- **Alternatives considered:** committing the 8.7 MB binary to git (not allowed: ENG-02 says it is vendored by `make vendor`); a `vendor.lock` file (the Makefile keeps the pin next to its use, one place to bump).
+- **Consequences:** `make build` and `make check` need `make vendor` to have run (CI must run it first). `public/vendor/` must be added to `.gitignore` (not done in this change, it is outside the render scope). `index.html` must load `vendor/babylon.js` as a classic script before the module (not done here). The bundle grows by 8.7 MB before gzip: the ENG-107 budget (initial JS ≤ 1.5 MB gzip) is checked when the port reaches the game; the file is loaded as a script, not part of the Transcrypt bundle.
+- **Status:** Accepted, to confirm at review.
+
+### D-174 — Render layer: `render/babylon.py` is the only module that names the Babylon global
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port, P18-R01, P18-R02)
+- **Decision:** Every Babylon object is built by a function of `render/babylon.py` (`vector3`, `new_standard_material`, `create_torus`, `new_raw_cube_texture`, ...). Constructors and builders with option objects are raw JavaScript in `__pragma__("js")` blocks, because Transcrypt drops keyword arguments and a dict is not a JavaScript object. Babylon names that Transcrypt renames (`name`, `update`, `from`) are read or called through raw JavaScript helpers (`node_name`, `update_raw_cube_texture`). Maps keyed by Babylon objects are JavaScript `WeakMap`s (`new_weak_map`). The TypeScript interfaces of `render/game-view.ts` and the other render modules are plain classes (importable at run time, implemented structurally); their type aliases are annotations only and are imported inside a skip block. The `.visual.ts` files become `*_visual.py` (a dot is not a valid module name).
+- **Alternatives considered:** one wrapper class per Babylon class (a large surface for no gain: the engine objects are used as handles); keeping the TypeScript interface names as Protocols inside skip blocks (they could not be imported at run time).
+- **Consequences:** Code outside `render/` gets engine objects as opaque handles (typed `Any`) and calls the render functions; adding a Babylon call means adding one helper here. Parity: the pure geometry and gradient modules (`render/geometry/*`, `render/environment/gradient_cube.py`) match the TypeScript on 27,632 values with zero mismatches; the Babylon-touching modules are smoke-tested against a recording fake of the Babylon global, not compared call by call with the TypeScript.
+- **Status:** Accepted
+
+### D-175 — `globals.d.ts` is dropped; build constants are module constants
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `src/globals.d.ts` declared the Vite-injected constants (`__APP_VERSION__`, `__APP_COMMIT__`, `__E2E__`) for the TypeScript compiler only. It has no runtime role in Python, so it is removed. `src/main.py` sets them as module constants: `E2E = False` (the Python port has no e2e build yet, ENG-52; the e2e test API hooks are not wired), `DEV_BUILD = False` (the perf overlay of ENG-111 stays off until the build is split into dev and deployed builds), `APP_VERSION = "0.0.0"` (the `pyproject.toml` version) and `APP_COMMIT = "unknown"` (the Makefile does not inject the commit yet). `app/start_app.py` takes the version and commit as `AppOptions` fields instead of globals.
+- **Alternatives considered:** keeping `globals.d.ts` as a type-only file (it is not read by Transcrypt or mypy, so it would be dead); injecting the version and commit from the Makefile into a generated module (not needed until the title screen shows a real commit).
+- **Consequences:** Pages are chosen by `app/route.py` and started from `main.py`, as in `main.ts`. Building the commit hash and the e2e build are follow-ups; the title screen shows `unknown` until then.
+- **Status:** Accepted
+
+### D-176 — Bundle the compiled game into one file with esbuild; the ground worker is a second entry
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** Opening the game made one HTTP request per Transcrypt module (567 files). `make build` now compiles two entries into `build/` (`main.py` into `build/game/`, and `worker_main.py` into `build/worker/`) and bundles them with esbuild into `dist/js/game.js` and `dist/js/ground_worker.js`, minified. esbuild is pinned as an exact dev dependency (`esbuild` 0.28.2 in `package.json`, installed by `make install` with `npm ci`). `index.html` imports `./js/game.js`.
+- **Alternatives considered:** a hand-written Python bundler (rejected: Transcrypt output has cyclic imports and per-module globals, so inlining by rewriting imports is fragile); a zip archive the page unpacks (rejected: needs a decompressor in the page, and the browser still fetches one file, with no gain over a single script). esbuild 0.25.0 was not used because vite, in the TypeScript toolchain, needs esbuild 0.27 or 0.28.
+- **Consequences:** This adds Node to the build for the bundling step only. D-171 ("build without Node") is superseded for that step; Transcrypt itself still runs under uv. The worker was never compiled before: it lives in `render/scenery/`, and Transcrypt does not compile modules that `main.py` does not reach, so `worker_main.py` is its entry and is now bundled. Transcrypt cannot write two entries into one output folder (the second run deletes the first), hence the separate folders. Browser check (headless Firefox): the page makes 3 requests (HTML, Babylon, `game.js`), with no console errors; the worker is requested when a level loads. The title screen could not be seen there, because that headless build has no WebGL2.
+- **Status:** Accepted
+
+### D-177 — The ground worker is off: grounds are generated on the main thread for now
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `main.py` passes `background_loading=False`, so the level loader makes its grounds on the main thread (the loader's existing fallback for a broken worker). P13-R03 asks for the grounds to be built in a worker; that is temporarily not met.
+- **Why:** the browser's `postMessage` throws "Function object could not be cloned" on the first ground job. Transcrypt class instances carry an own `__class__` property that is a function, and the generated grounds carry class constructors (`cls.__new__`), so neither the level sent to the worker nor the result it returns can be structured-cloned. A plain copy of the level generates the same grounds, but the result still cannot be cloned, so this needs a designed boundary (plain data both ways, and the main thread rebuilding the classes), not a patch.
+- **Alternatives considered:** leaving the worker on (the game freezes on the first level); building the level from its id inside the worker (pulls the game's sim and view modules into the worker).
+- **Consequences:** level loads take longer on the main thread (the loading screen shows the progress in steps). Reviving the worker is a follow-up: plain data both ways, with a test that checks the round trip.
+- **Status:** Accepted, temporary
+
+### D-178 — The ground worker is back: its messages carry plain data (supersedes D-177)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `host/worker_data.py` `to_plain` copies a level, a texture job or a generated ground into plain objects and arrays before `postMessage`: the fields of each object, with shared references kept (one copy per object, as a structured clone would keep them), and without functions or the `__class__` marker. The loader posts the plain level and jobs; the worker posts the plain ground and runout. `main.py` runs with the worker on again (`background_loading=True`).
+- **Why:** the first ground job failed with "Function object could not be cloned" (D-177). The worker was then off, and levels loaded on the main thread: level 4-2 took about 34 s in Chromium, against about 4 s for the TypeScript build.
+- **Alternatives considered:** building the level from its id inside the worker (pulls the game's sim and view modules into the worker); keeping the worker off and optimizing on the main thread alone (ground generation stayed on the critical path).
+- **Consequences:** the copies are plain objects: they must not rely on methods or `isinstance` (scenery code uses neither, checked by grep). Main-thread ground generation drops from about 5 s to about 1.6 s in the profile; the level still waits for the worker, whose Transcrypt code is slower than the TypeScript it replaces.
+- **Status:** Accepted
+
+### D-179 — The buildings are placed in Z chunks, on demand, in the ground worker
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `PropPlacer` places the buildings in chunks of `CHUNK_SIZE` = 200 world units along Z, in increasing order. Each chunk runs the same phases as before (blocks, road slots, hamlets, loners) over its own span; the first chunk reaches back past Z = 0 and the last one on past the level's end. `ensure_placed(z)` places the chunks up to the one containing `z` (idempotent). The ground worker places the chunks the level asks for (`want_placed` as the view moves, two screens ahead) and posts them in order; the main thread takes them with `receive`, which occupies their buildings. The main thread places a chunk itself only when a tree (`place`) needs it before the worker has sent it. The first chunks up to Z = 1600 are placed before the ground is posted, so the level starts with its first screens.
+- **Determinism:** each chunk depends only on the chunks before it and on the roads, so the buildings and the trees are identical whatever the request pattern (one chunk at a time, far jumps, random increasing requests, worker and main thread mixed). Tested for all 20 levels (`determinism` harness, 0 differences). The runout's streets are laid before the chunk `RUNOUT_GATE` (2 chunks) before its start is placed, and the chunks before that gate do not depend on them (tested by laying the runout early and late).
+- **Why 200, not about 600:** a dense district takes up to about 300 ms in one chunk of 200 (node), so 600 would make single steps of about 900 ms. The worker keeps each step short, and the main thread's fallback places small pieces. The worker is needed at all because the same chunks on the main thread froze the frame for 100 to 300 ms in dense districts.
+- **Alternatives considered:** placing the chunks on the main thread, spread over frames (rejected: the densest chunks take hundreds of milliseconds, and smaller chunks only halve them); placing every chunk in the worker before the level starts (rejected: it is the cost this decision removes from the start).
+- **Consequences:** the layout deliberately differs from the TypeScript (the TypeScript is being removed after the port, and the owner does not need the building layout to match). Roads, heights and runouts still match it exactly. Level snapshots now carry the blocks and the road slots, copied (a snapshot shares no list with the network). Trees are checked against the buildings placed around them: `place` asks for chunks up to the area's end plus `TREE_REACH` (one chunk). Building totals stay within a few buildings of the TypeScript's (with the runout) on every level, and the owner does not need them to match.
+- **Status:** Accepted
+
+### D-180 — The rim shaders are compiled before play, and the level waits for them (P13-R04)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `compile_shaders` (before play) also asks Babylon's outline renderer for the rim shader of each outlined mesh (`render/outline.py` `compile_outlines`). Babylon creates a mesh's rim effect, and starts compiling it, only when that mesh is first drawn or asked if it is ready. The loader's compile step (`game_session` `_compile_wait`) now waits for `outlines_ready` as well as `scene.isReady(True)`.
+- **Why:** the first enemy or ship with a rim drew for the first time during play, and its rim effect was compiled then, on the frame it appeared: a stall of about 300 ms in the headless software renderer (a shorter one on a GPU). Levels of world 4 show it, because their enemies have rims from the first wave. A frame profile after the change shows no shader compile during the first 8 seconds of play on 4-1, 4-2, 4-3, 4-4.
+- **Alternatives considered:** compiling the rims on the first frame of each level (still a stall on that frame); disabling the rims (changes the look, P14-R03).
+- **Consequences:** a rim mesh that is built later (an enemy model built ahead of its first appearance) still compiles its rim effect when it is made ready, which is one frame of the enemy's build step, not play. The remaining long task at about 3 s on world 4 levels is native time in the GPU pipeline of the headless software renderer (no JavaScript frames under it); it is not reproduced on a GPU and is not changed here.
+- **Status:** Accepted
+
+### D-181 — The enemy models are all built while the level loads, not one a frame in play (P13-R04)
+- **Date:** 2026-10-29
+- **Phase:** 18 (the Python port)
+- **Decision:** `GamePlay.build_enemies` builds one enemy model per call (`EnemyLayer.prepare_next`) and compiles its shaders; the level loader runs it as a step, once per loading frame, until every kind has a model (`game_session` `enemies` step, between `prepare_play` and `compile_wait`). The per-frame call in `GamePlay.frame` stays, as the fallback when stepped loading is off; it does nothing once every kind is built.
+- **Why:** the kinds were built one per frame in play. Each build (a boss-class model is the heaviest) cost 40 to 90 ms on the main thread, so from the first frames of a level the frame rate dropped every frame for several seconds, with the kinds' shaders compiled on the same frames. Every level uses every kind (`config/world_4/waves.py`), so the builds could not be limited to the kinds a level uses.
+- **Alternatives considered:** building the kinds a level uses (no help: every level uses them all); spreading the builds over more frames in play (the hitch stays, only longer).
+- **Consequences:** the level loads about 2 to 2.7 s longer (measured in headless Chromium on the same machine state: 1-1 3.7 s to 5.8 s, 4-2 5.1 s to 7.8 s). Play no longer builds enemy models. Not done here: the road surfaces of each terrain chunk are still built in play (about 0.2 to 0.7 s for dense chunks in software WebGL), and a shader variant of the hitbox marker is still compiled on its first draw; both are one-off or periodic stalls to address next.
+- **Status:** Accepted
+
+### D-182 — The street surfaces of the terrain chunks are made in the ground worker; load and play work moved off the main thread (P13-R03, P13-R04)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `render/scenery/road_chunks.py` (pure: no Babylon) makes a terrain chunk's street surfaces (textured pieces, layered fallback, tile grid) and the road atlas they point into. The ground worker makes them for the spans asked for (`roads` message, with the road look, per ground job); the main thread takes them through `road_sources` (`WorkerRoadSource`, or `LocalRoadSource` when there is no worker, which runs the same code). `RoadLayers` keeps the paths and roads ribbons and takes the surfaces with `set_tile_chunk`. The stage keeps the chunks whose surfaces are not back yet in `_road_pending`. The level loader waits for the surfaces of the first screens (`roads` step, `roads_ready`), as it waits for the textures.
+- **Why:** a profile of level 4-2 showed the level's street surfaces built on the main thread: about 1.4 s during the load and about 0.2 to 0.7 s at each new chunk in play. Two causes: the work itself (the heights are sampled at every vertex and each piece is painted into the atlas), and a bug. `ChunkSpan` was passed as a pair, so `z_min, z_max = span` read `undefined`, the street test passed every street of the level into every chunk, and each chunk built the whole network. The stage now passes the bounds explicitly.
+- **Also (main thread, load):** the colour helpers (hue of an enemy's colour) use comparisons instead of Transcrypt's slow `min`/`max`; the enemy materials are built with Babylon's dirty marking blocked (`block_material_marks`, which writes the scene's backing field: its setter marks every material dirty when it is set back to false); the bullet layers are thin-instanced from the start, so their thin variant is compiled before play. The atlas blit no longer calls `min`/`max` per pixel.
+- **Consequences:** the main thread's busy time in a load of 4-2 went from about 5.8 s to about 4.0 s (headless). The worker now does the road work in parallel with the loader. One variant of the enemy bullets (with both `INSTANCES` and `THIN_INSTANCES`) is still compiled on its first draw, about 0.5 s in headless software WebGL, once per shot kind; so is one `VERTEXALPHA` variant of the hitbox marker. A road reply that never comes (a worker that dropped its ground job) leaves its chunks waiting, and the loader stops waiting after `ROAD_WAIT_FRAMES`.
+- **Status:** Accepted
+
+### D-183 — The enemy bullets are shown while the level loads, so their shaders compile before play (P13-R04)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `warm_bullets` shows one bullet in each layer of each colour while the level loads (`GamePlay.warm_shots(True)` in the `prepare_play` step), and hides them when the level starts (`start` step). The shot renderer's handle has `warm(on)`, reached through `EnemyViewerShots.warm`.
+- **Why:** a bullet layer is a thin-instanced mesh, which Babylon compiles in a variant with thin instances. The first shot of a colour compiled that variant on its frame. With the warm-up, the profile of 4-2 has one stall fewer in 25 seconds of play (two before, one now).
+- **Not fixed:** one purple-bullet variant still compiles on its first draw (about 0.5 s in headless software WebGL). Its defines include `INSTANCESCOLOR`, which Babylon sets on draw; the warm-up does not create it, and drawing during the compile wait did not either. The cause is still open.
+- **Status:** Accepted, partial
+
+### D-184 — Python unit tests run in CPython over `core/` (ENG-27, ENG-40, ENG-43)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** pytest and coverage.py are dev dependencies; `make test` runs `pytest` over `tests/unit/` (mirroring `src/`), and `make coverage` reports `src/core/` with branches and `fail_under = 90`. `tests/unit/conftest.py` puts Transcrypt's browser stubs (`org`) last on `sys.path`, so the standard library still wins. Helpers that Transcrypt compiles to JavaScript only (`bits.py`, `noise._int_mod`, `road_tiles.has_tile_key`) have a Python twin in a `skip` block, with the JavaScript's semantics (32-bit wrap, truncating `%`, own-key test), so CPython runs the same behaviour.
+- **Why:** the earlier helpers returned placeholder values under CPython, so the tests could not check them. The `boss` and `boss_pieces` modules imported each other at the top; `boss_pieces` needed `Boss` only for annotations, so that import now sits under `TYPE_CHECKING` and the annotations are quoted.
+- **Consequences:** core coverage is 99 % lines and branches. Five strict `xfail` tests record genuine defects: `street_dead_ends` (the default removal leaves an on-screen dead end, also in the TypeScript), `ground_boxes` (a building wider than two buckets is missed), `wave_runner` (an infinite count raises `OverflowError`), and two `away_placement` cases (`math.floor` of an unbounded span raises under CPython only: Transcrypt's `Math.floor` accepts it). The `src/game/**` configs do not import under CPython yet (records are plain dicts there), so the scenery tests build small levels by hand.
+- **Status:** Accepted
+
+### D-185 — The defects the unit tests found are fixed (D-184)
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** (1) `street_dead_ends`: a link cut back stays cut by default (`keep_cut` defaults to `True`; before, it followed `tees`, so with the default flags a cut street was built again from its other end and could leave an on-screen dead end). This changes the default street layout of `street_grid`, as the owner accepted for the port: the TypeScript had the same defect. (2) `ground_boxes.BuildingIndex.clear` searches as far as the largest building reaches, not two buckets. (3) `away_placement.place_loners` clamps the span to the level before flooring (an unbounded first or last chunk is infinite). (4) `wave_runner._is_integer` tests finiteness before `floor`. (5) `level_catalog.build_level_grid` converts its whole numbers to `int`. (6) `grid_cursor.move_cursor` raises on a grid with entries and no column. (7) `BossDeath` raises on a non-positive `every` (the death never ended).
+- **Why:** each was found by a unit test (D-184). Four only failed under CPython (`math.floor` of an infinity, `range` of a float); they are fixed in the source so both runtimes agree.
+- **Status:** Accepted
+
+### D-186 — CI runs the Python port's gate, and the e2e job is out until the port has e2e tests
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** `ci.yml` installs uv (`astral-sh/setup-uv`) and the pinned Babylon.js (`make vendor`, needed by `make build`), then runs `make lint typecheck coverage build`, and writes the core/ coverage report to the job summary. The `e2e` job is removed: the Playwright specs in `tests/e2e/` are the TypeScript suite for the TypeScript build, and the Makefile has no `e2e` target on this branch. `deploy.yml` builds the same way (uv, vendor, build). `make coverage` also writes the HTML report to `coverage/` (uploaded as an artifact); `make clean` removes it.
+- **Why:** the CI on `main` called `make lint typecheck coverage build` and `make e2e` without uv, without the vendored Babylon, and with a summary read from a file the Python coverage no longer writes. A clean clone of the branch reproduces the gate: lint, typecheck and coverage (99 %) pass, and the build passes once Babylon is vendored.
+- **Consequences:** CI no longer runs any browser test. ENG-50 (Playwright e2e) returns with the port's own e2e suite (the test phase), and the job comes back with it.
+- **Status:** Accepted, temporary (e2e)

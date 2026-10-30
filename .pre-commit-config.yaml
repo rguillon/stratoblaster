@@ -1,0 +1,28 @@
+# Git hooks (ENG-60, ENG-61, ENG-63). Installed by `make install`.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format (staged files)
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: ruff-check
+        name: ruff check --fix (staged files)
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: typecheck
+        name: mypy --strict
+        entry: make typecheck
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: check-fast
+        name: make check-fast
+        entry: make check-fast
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

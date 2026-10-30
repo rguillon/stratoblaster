@@ -1,0 +1,249 @@
+"""Tests of the shots of all the enemies (GD-43, GD-44), `core/systems/enemy_shots.py`."""
+
+import math
+from types import SimpleNamespace
+
+import pytest
+
+from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyLaserSpec, EnemyMissileSpec
+from core.entities.muzzle import PlanePoint, RaisedPoint
+from core.systems.enemy_shots import (
+    EnemyBullet,
+    EnemyLaser,
+    EnemyMissile,
+    EnemyShots,
+    EnemyShotsOptions,
+    ray_to_edge,
+)
+
+BOX = SimpleNamespace(width=100, height=100)
+
+
+class _Owner:
+    """A laser owner: an emitter, a heading, and whether it still stands."""
+
+    def __init__(self, emitter: PlanePoint | RaisedPoint, heading: float = math.pi) -> None:
+        self.emitter = emitter
+        self.heading = heading
+        self.gone = False
+        self.health = 10
+
+
+def _bullet(speed: float = 10, burst: EnemyBurstSpec | None = None) -> EnemyBulletSpec:
+    return EnemyBulletSpec(speed, 2, "round", burst)
+
+
+def _missile(health: float = 5) -> EnemyMissileSpec:
+    return EnemyMissileSpec(
+        speed=10, turn_rate_deg=90, homing_seconds=1, radius=2, health=health, style="rocket"
+    )
+
+
+def _laser(warning: float = 1, firing: float = 1, sweeps: bool = False) -> EnemyLaserSpec:
+    return EnemyLaserSpec(warning, firing, 4, "beam", sweeps)
+
+
+def _shots(eye: object = None) -> EnemyShots:
+    return EnemyShots(EnemyShotsOptions(100, 100, 10, eye))  # type: ignore[arg-type]
+
+
+def test_gd43_a_ray_reaches_the_edge_in_its_direction() -> None:
+    assert ray_to_edge(50, 50, 0, BOX, 0) == pytest.approx(50)
+    assert ray_to_edge(50, 50, math.pi / 2, BOX, 0) == pytest.approx(50)
+    assert ray_to_edge(50, 50, math.pi, BOX, 0) == pytest.approx(50)
+    assert ray_to_edge(50, 50, -math.pi / 2, BOX, 0) == pytest.approx(50)
+    assert ray_to_edge(50, 50, math.pi / 4, BOX, 0) == pytest.approx(50 / math.sin(math.pi / 4))
+
+
+def test_gd43_the_margin_grows_the_edge_and_a_ray_outside_has_no_length() -> None:
+    assert ray_to_edge(50, 50, 0, BOX, 10) == pytest.approx(60)
+    assert ray_to_edge(150, 50, math.pi / 2, BOX, 0) == 0
+
+
+def test_gd43_fire_bullet_sets_its_fields() -> None:
+    shots = _shots()
+    shots.fire_bullet(1, 2, 0.5, _bullet(speed=7, burst=EnemyBurstSpec(1, 3, _bullet())))
+    bullet = shots.bullets[0]
+    assert isinstance(bullet, EnemyBullet)
+    assert (bullet.x, bullet.y, bullet.heading, bullet.speed) == (1, 2, 0.5, 7)
+    assert (bullet.radius, bullet.style, bullet.age) == (2, "round", 0)
+    assert bullet.burst is not None
+    assert bullet.burst.count == 3
+
+
+def test_gd43_a_free_bullet_is_reused() -> None:
+    shots = _shots()
+    shots.fire_bullet(0, 0, 0, _bullet())
+    shots.bullets[0].alive = False
+    shots.fire_bullet(5, 5, 0, _bullet())
+    assert len(shots.bullets) == 1
+    assert (shots.bullets[0].x, shots.bullets[0].alive) == (5, True)
+
+
+def test_gd43_bullets_fly_straight_and_leave_the_playfield_behind() -> None:
+    shots = _shots()
+    shots.fire_bullet(50, 50, 0, _bullet(speed=10))
+    shots.step(0.5, 0, 0)
+    assert shots.bullets[0].y == pytest.approx(55)
+    assert shots.bullets[0].age == pytest.approx(0.5)
+    shots.fire_bullet(0, 0, math.pi, _bullet(speed=100))
+    shots.step(1, 0, 0)
+    assert shots.bullets[1].alive is False
+
+
+def test_gd43_a_bullet_bursts_into_a_ring_once_its_time_is_up() -> None:
+    shots = _shots()
+    burst = EnemyBurstSpec(1, 4, _bullet(speed=3))
+    shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=burst))
+    shots.step(0.5, 0, 0)
+    assert len([b for b in shots.bullets if b.alive]) == 1
+    shots.step(0.5, 0, 0)
+    alive = [b for b in shots.bullets if b.alive]
+    assert len(alive) == 4
+    assert all(b.speed == 3 for b in alive)
+    assert sorted(round(b.heading, 6) for b in alive) == pytest.approx(
+        sorted([0, math.pi / 2, math.pi, 3 * math.pi / 2])
+    )
+    # The ring leaves from where the bullet was when it burst (after its last move, at y 60).
+    assert all(b.y == pytest.approx(60) for b in alive)
+
+
+def test_gd43_a_burst_at_once_fires_on_the_first_step() -> None:
+    shots = _shots()
+    shots.fire_bullet(50, 50, 0, _bullet(burst=EnemyBurstSpec(0, 2, _bullet())))
+    shots.step(0.1, 0, 0)
+    assert len([b for b in shots.bullets if b.alive]) == 2
+
+
+def test_gd44_a_missile_homes_on_the_player_for_its_homing_time() -> None:
+    shots = _shots()
+    shots.fire_missile(0, 0, math.pi / 2, _missile())
+    missile = shots.missiles[0]
+    assert isinstance(missile, EnemyMissile)
+    assert missile.id == 1
+    assert missile.turn_rate == pytest.approx(math.pi / 2)
+    # Player straight up: a 90 deg/s turn for half a second turns 45 degrees towards it.
+    shots.step(0.5, 0, 100)
+    assert missile.heading == pytest.approx(math.pi / 4)
+    assert missile.homing == pytest.approx(0.5)
+    shots.step(0.5, 0, 100)
+    assert missile.heading == pytest.approx(0)
+    assert missile.homing == pytest.approx(0)
+    shots.step(0.5, 0, 0)
+    assert missile.heading == pytest.approx(0)
+
+
+def test_gd44_a_missile_with_no_health_dies_without_moving() -> None:
+    shots = _shots()
+    shots.fire_missile(0, 0, 0, _missile())
+    shots.missiles[0].health = 0
+    shots.step(1, 0, 0)
+    assert shots.missiles[0].alive is False
+    assert shots.missiles[0].y == 0
+
+
+def test_gd44_a_missile_that_leaves_the_playfield_is_removed() -> None:
+    shots = _shots()
+    # No homing: it flies straight up out of the playfield (105 + 10 > 100 + margin).
+    shots.fire_missile(0, 105, 0, EnemyMissileSpec(10, 90, 0, 2, 5, "rocket"))
+    shots.step(1, 0, 0)
+    assert shots.missiles[0].alive is False
+
+
+def test_gd44_free_missiles_are_reused_and_keep_counting_ids() -> None:
+    shots = _shots()
+    shots.fire_missile(0, 0, 0, _missile())
+    shots.missiles[0].alive = False
+    shots.fire_missile(0, 0, 0, _missile())
+    assert len(shots.missiles) == 1
+    assert shots.missiles[0].id == 2
+    assert shots.missiles[0].max_health == 5
+
+
+def test_gd43_a_laser_warns_then_fires_along_its_locked_heading() -> None:
+    shots = _shots()
+    owner = _Owner(PlanePoint(10, 10), heading=0)
+    shots.fire_laser(owner, _laser(warning=1, firing=1))
+    laser = shots.lasers[0]
+    assert isinstance(laser, EnemyLaser)
+    assert (laser.x, laser.y, laser.heading, laser.phase) == (10, 10, 0, "warning")
+    assert laser.length == pytest.approx(100)
+    shots.step(0.5, 0, 0)
+    assert laser.phase == "warning"
+    owner.heading = 1.0
+    shots.step(0.5, 0, 0)
+    # It locks onto the heading its owner has as it starts firing (1.0), then stays on it.
+    assert laser.phase == "firing"
+    assert laser.locked == pytest.approx(1.0)
+    assert laser.heading == pytest.approx(1.0)
+    owner.heading = 2.0
+    shots.step(0.1, 0, 0)
+    assert laser.heading == pytest.approx(1.0)
+
+
+def test_gd43_a_sweeping_laser_keeps_turning_with_its_owner() -> None:
+    shots = _shots()
+    owner = _Owner(PlanePoint(10, 10), heading=0)
+    shots.fire_laser(owner, _laser(warning=0, firing=5, sweeps=True))
+    shots.step(0.1, 0, 0)
+    owner.heading = 1.0
+    shots.step(0.1, 0, 0)
+    assert shots.lasers[0].locked is None
+    assert shots.lasers[0].heading == pytest.approx(1.0)
+
+
+def test_gd43_a_laser_ends_after_its_warning_and_firing_time() -> None:
+    shots = _shots()
+    shots.fire_laser(_Owner(PlanePoint(0, 0)), _laser(warning=1, firing=1))
+    shots.step(1.5, 0, 0)
+    assert len(shots.lasers) == 1
+    shots.step(1, 0, 0)
+    assert shots.lasers == []
+
+
+def test_gd43_a_laser_ends_when_its_owner_is_gone_or_has_no_health() -> None:
+    shots = _shots()
+    gone = _Owner(PlanePoint(0, 0))
+    shots.fire_laser(gone, _laser())
+    gone.gone = True
+    shots.step(0.1, 0, 0)
+    assert shots.lasers == []
+    dead = _Owner(PlanePoint(0, 0))
+    shots.fire_laser(dead, _laser())
+    dead.health = 0
+    shots.step(0.1, 0, 0)
+    assert shots.lasers == []
+
+
+def test_gd43_a_laser_is_seen_leaving_its_raised_emitter_through_the_eye() -> None:
+    eye = SimpleNamespace(x=0, y=0, height=100)
+    shots = _shots(eye)
+    shots.fire_laser(_Owner(RaisedPoint(0, 50, 50), heading=0), _laser())
+    laser = shots.lasers[0]
+    # The eye sees the point at height 50 of a raised emitter twice as far out on the playfield.
+    assert (laser.x, laser.y) == pytest.approx((0, 100))
+
+
+def test_gd43_a_laser_on_the_playfield_is_seen_where_it_is() -> None:
+    shots = _shots(SimpleNamespace(x=0, y=0, height=100))
+    shots.fire_laser(_Owner(PlanePoint(20, 30), heading=0), _laser())
+    assert (shots.lasers[0].x, shots.lasers[0].y) == (20, 30)
+
+
+def test_gd43_counts_and_clear_cover_bullets_missiles_and_lasers() -> None:
+    shots = _shots()
+    shots.fire_bullet(50, 50, 0, _bullet())
+    shots.fire_missile(50, 50, 0, _missile())
+    shots.fire_laser(_Owner(PlanePoint(0, 0)), _laser())
+    assert shots.count == 3
+    shots.clear()
+    assert shots.count == 0
+    assert shots.lasers == []
+    assert all(not b.alive for b in shots.bullets)
+
+
+def test_gd43_a_burst_of_no_bullets_just_goes() -> None:
+    shots = _shots()
+    shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=EnemyBurstSpec(0, 0, _bullet())))
+    shots.step(0.1, 0, 0)
+    assert shots.count == 0

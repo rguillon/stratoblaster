@@ -966,6 +966,10 @@
       <div id="menu"></div>
     </div>
     <div id="fatal" role="alert" hidden></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script src="vendor/babylon.js"></script>
+    <script type="module">
+      import { main } from './js/game.js';
+      main();
+    </script>
   </body>
 </html>

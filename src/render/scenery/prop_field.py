@@ -1,0 +1,479 @@
+"""The props standing on the terrain (P04-R04): each kind of prop is one mesh (plus one for its
+self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped by
+terrain chunk, so they come and go with the chunks.
+
+Ported from `render/scenery/prop-field.ts`. A window is a `[z_min, z_max]` pair.
+"""
+
+import math
+
+from org.transcrypt.stubs.browser import __pragma__
+
+from config.plumes import PLUME_KINDS
+from core.scenery.draws import allowed
+from render.babylon import (
+    apply_vertex_data,
+    compute_normals,
+    float32_array,
+    is_enabled,
+    matrix_compose_to_ref,
+    new_matrix,
+    new_mesh,
+    new_vertex_data,
+    quaternion,
+    quaternion_yaw_pitch_roll_to_ref,
+    set_enabled,
+    vector3,
+)
+from render.scenery.plume_layer import build_plume_meshes
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+__pragma__("skip")
+from typing import Any  # noqa: E402
+
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402
+from core.scenery.scenery_level import SceneryLevel  # noqa: E402
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.scenery.plume_layer import PlumeFrame, PlumeMaterial, PlumeMaterialFactory  # noqa: E402
+from render.scenery.scenery_look import PropGeometry, PropModelFactory  # noqa: E402
+
+PropDrift = Any
+Window = list[float]
+__pragma__("noskip")
+
+MATRIX_FLOATS = 16
+
+# Keys of the objects that hold their cached results (a WeakMap keyed by the object).
+_GEOMETRY_SLOT = "render_prop_geometry"
+_NORMALS_SLOT = "render_prop_normals"
+
+
+def _slot_get(owner: Any, slot: str) -> Any:
+    """The value kept on `owner` under `slot`, or undefined (a WeakMap entry on the object)."""
+    __pragma__("js", "{}", "return owner[slot];")
+    return None
+
+
+def _slot_set(owner: Any, slot: str, value: Any) -> None:
+    __pragma__("js", "{}", "owner[slot] = value;")
+
+
+class PropMaterials:
+    """Materials of the props: the lit structure, and the self-lit accents."""
+
+    def __init__(self, structure: Any, lights: Any) -> None:
+        self.structure = structure
+        self.lights = lights
+
+
+class PropMeshes:
+    """The meshes of one kind of prop."""
+
+    def __init__(self, structure: Any, lights: Any, plumes: list[Any]) -> None:
+        self.structure = structure
+        self.lights = lights
+        """Phase 10: its smoke or steam, drawn with the same instances."""
+        self.plumes = plumes
+
+
+class KindProps:
+    """The props of one kind in a chunk, with their instance matrices, made on their first upload
+    and kept while the chunk is (reviewer, 2026-10-28: not made again each time the window
+    moves)."""
+
+    def __init__(self, placements: list[PropPlacement]) -> None:
+        self.placements = placements
+        self.matrices: Any = None
+
+
+class Drawn:
+    """The props of a kind to draw: each placement, and the chunk's props it comes from, at `at`."""
+
+    def __init__(
+        self, placements: list[PropPlacement], from_: list[KindProps], at: list[int]
+    ) -> None:
+        self.placements = placements
+        self.from_ = from_
+        self.at = at
+
+
+def _geometry_of(factory: PropModelFactory) -> PropGeometry:
+    """The geometry of `factory`, made on first use (reviewer, 2026-10-28: the models are the same
+    every time, and nothing changes a geometry once made)."""
+    geometry = _slot_get(factory, _GEOMETRY_SLOT)
+    if not geometry:
+        geometry = factory()
+        _slot_set(factory, _GEOMETRY_SLOT, geometry)
+    result: PropGeometry = geometry
+    return result
+
+
+def _normals_of(geo: ColoredGeometry) -> list[float]:
+    """The normals of each geometry, worked out once."""
+    normals = _slot_get(geo, _NORMALS_SLOT)
+    if not normals:
+        normals = compute_normals(geo.positions, geo.indices)
+        _slot_set(geo, _NORMALS_SLOT, normals)
+    values: list[float] = normals
+    return values
+
+
+def _draw_always(mesh: Any) -> None:
+    """Draws `mesh` without checking whether it is in view, so its bounds are never fitted to its
+    instances (reviewer, 2026-10-28): for the cars, placed again every frame, that was the largest
+    single cost of a frame in Worlds 3 and 4, and for the other props half of each upload. Their
+    instances are near the view anyway, and the sun's shadows have a fixed frustum
+    (`shadowFrustumSize`), which no bounds change."""
+    mesh.alwaysSelectAsActiveMesh = True
+    mesh.doNotSyncBoundingInfo = True
+
+
+def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
+    """A disabled, unpickable mesh of `geo`, drawn with `material`."""
+    mesh = new_mesh(name, scene)
+    data = new_vertex_data()
+    data.positions = geo.positions
+    data.indices = geo.indices
+    data.colors = geo.colors
+    data.normals = _normals_of(geo)
+    apply_vertex_data(data, mesh)
+    mesh.material = material
+    mesh.isPickable = False
+    set_enabled(mesh, False)
+    return mesh
+
+
+def prop_drifts(level: SceneryLevel) -> dict[str, PropDrift]:
+    """The kinds of `level` that drift, and how (phase 8: floating ice; phase 10: wagons)."""
+    floating = level.props.floating
+    kinds = floating.kinds if floating is not None else []
+    lines = level.props.lines if level.props.lines is not None else []
+    drifts: dict[str, PropDrift] = {}
+    for k in kinds:
+        if k.drift:
+            drifts[k.id] = k.drift
+    for line in lines:
+        if line.drift:
+            drifts[line.kind] = line.drift
+    return drifts
+
+
+def _unique(ids: list[str]) -> list[str]:
+    out: list[str] = []
+    for i in ids:
+        if i not in out:
+            out.append(i)
+    return out
+
+
+def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
+    """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
+    sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order (a
+    set in the TypeScript)."""
+    props = level.props
+    sections = level.sections
+    ids: list[str] = []
+    for s in sections:
+        for g in allowed(props.groups, s.groups):
+            for k in g.kinds:
+                ids.append(k.id)
+    for s in sections:
+        for t in allowed(props.trees, s.trees):
+            ids.append(t.id)
+    if props.floating is not None:
+        for k in props.floating.kinds:
+            ids.append(k.id)
+    if props.lines is not None:
+        for line in props.lines:
+            ids.append(line.kind)
+    for s in sections:
+        if s.blocks is not None and s.blocks.podiums is not None:
+            ids.extend(s.blocks.podiums)
+    if props.landmarks is not None:
+        for landmark in props.landmarks:
+            ids.append(landmark.kind)
+    # Phase 15: the lots of the districts on tiles.
+    if props.lots is not None:
+        for k in props.lots:
+            ids.append(k.id)
+    return _unique(ids)
+
+
+def level_prop_models(
+    level: SceneryLevel,
+    models: dict[str, PropModelFactory],
+) -> dict[str, PropModelFactory]:
+    """The models of the props of `level` (`level_prop_kinds`): only those are built (reviewer,
+    2026-10-28: building all the game's took about 36 ms and 841 meshes per level). Throws if one of
+    them, or one of its cars, has no model."""
+    check_prop_models(level, models)
+    kinds = level_prop_kinds(level)
+    return {k: v for k, v in models.items() if k in kinds}
+
+
+def check_prop_models(level: SceneryLevel, models: dict[str, PropModelFactory]) -> None:
+    """Throws if a prop kind of `level`, or one of its cars, has no model."""
+    for kind in level_prop_kinds(level):
+        if kind not in models:
+            raise ValueError('No model for prop "' + kind + '"')
+    cars = level.props.cars
+    if cars is not None:
+        for kind in cars.kinds:
+            if kind not in models:
+                raise ValueError('No model for prop "' + kind + '"')
+
+
+class PropField:
+    """The props standing on the terrain (P04-R04). Each kind of prop is one mesh (plus one for its
+    self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped
+    by terrain chunk, so they come and go with the chunks."""
+
+    def __init__(
+        self,
+        scene: Any,
+        models: dict[str, PropModelFactory],
+        materials: PropMaterials,
+        on_structure: Any = None,
+        plume_materials: PlumeMaterialFactory | None = None,
+    ) -> None:
+        """`on_structure(mesh)`: called with each structure mesh (optional). `plume_materials`: the
+        material factory of the plumes (phase 10, optional)."""
+        self._meshes: dict[str, PropMeshes] = {}
+        """Phase 10: one material per kind of plume, driven every frame."""
+        self._plume_materials: dict[str, PlumeMaterial] = {}
+        """The placements of each chunk, by kind (chunks in insertion order, as parallel lists)."""
+        self._chunk_indices: list[int] = []
+        self._chunk_kinds: list[dict[str, KindProps]] = []
+        """The placements uploaded last for each kind (P13-R04: unchanged kinds are kept)."""
+        self._drawn: dict[str, list[PropPlacement]] = {}
+        self._dirty = False
+        """Only the props whose Z is in this range are drawn, if set (see `set_window`)."""
+        self._window: Window | None = None
+
+        def plume_material(id: str) -> Any:
+            kind = PLUME_KINDS.get(id)
+            if plume_materials is None or not kind:
+                return None
+            material = self._plume_materials.get(id)
+            if not material:
+                material = plume_materials(scene, kind)
+                self._plume_materials[id] = material
+            return material.material
+
+        for kind, factory in models.items():
+            geometry = _geometry_of(factory)
+            structure = mesh_of("prop-" + kind, geometry.structure, materials.structure, scene)
+            structure.receiveShadows = True
+            if on_structure is not None:
+                on_structure(structure)
+            lights = None
+            if geometry.lights is not None and len(geometry.lights.indices) > 0:
+                lights = mesh_of(
+                    "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
+                )
+            plumes_of = geometry.plumes if geometry.plumes is not None else []
+            plumes = build_plume_meshes(scene, "prop-" + kind, plumes_of, plume_material)
+            _draw_always(structure)
+            if lights is not None:
+                _draw_always(lights)
+            for plume in plumes:
+                _draw_always(plume)
+            self._meshes[kind] = PropMeshes(structure, lights, plumes)
+
+    def update_plumes(self, frame: PlumeFrame) -> None:
+        """Phase 10: moves the smoke and steam of the props on to this frame."""
+        for material in self._plume_materials.values():
+            material.set(frame)
+
+    @property
+    def plume_count(self) -> int:
+        """Plume meshes drawn (phase 10)."""
+        count = 0
+        for m in self._meshes.values():
+            for p in m.plumes:
+                if is_enabled(p):
+                    count += 1
+        return count
+
+    @property
+    def count(self) -> int:
+        """Number of props in the scene."""
+        count = 0
+        for kinds in self._chunk_kinds:
+            for props in kinds.values():
+                count += len(props.placements)
+        return count
+
+    @property
+    def light_meshes(self) -> list[Any]:
+        """Meshes of the self-lit accents (e.g. for a glow layer)."""
+        out: list[Any] = []
+        for m in self._meshes.values():
+            if m.lights is not None:
+                out.append(m.lights)
+        return out
+
+    @property
+    def structure_meshes(self) -> list[Any]:
+        """Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer)."""
+        return [m.structure for m in self._meshes.values()]
+
+    def structure_of(self, kind: str) -> Any:
+        """The structure mesh of a kind of prop."""
+        m = self._meshes.get(kind)
+        return m.structure if m else None
+
+    def set_chunk(self, index: int, placements: list[PropPlacement]) -> None:
+        """Sets the placements of chunk `index`, grouped by kind."""
+        kinds: dict[str, KindProps] = {}
+        for p in placements:
+            if p.kind not in self._meshes:
+                raise ValueError('No model for prop "' + p.kind + '"')
+            props = kinds.get(p.kind)
+            if props:
+                props.placements.append(p)
+            else:
+                kinds[p.kind] = KindProps([p])
+        self._chunk_set(index, kinds)
+        self._dirty = True
+
+    def _chunk_set(self, index: int, kinds: dict[str, KindProps]) -> None:
+        for i in range(len(self._chunk_indices)):
+            if self._chunk_indices[i] == index:
+                self._chunk_kinds[i] = kinds
+                return
+        self._chunk_indices.append(index)
+        self._chunk_kinds.append(kinds)
+
+    def _chunk_delete(self, index: int) -> bool:
+        for i in range(len(self._chunk_indices)):
+            if self._chunk_indices[i] == index:
+                self._chunk_indices.pop(i)
+                self._chunk_kinds.pop(i)
+                return True
+        return False
+
+    def remove_chunk(self, index: int) -> None:
+        deleted = self._chunk_delete(index)
+        self._dirty = deleted or self._dirty
+
+    def clear(self) -> None:
+        self._chunk_indices = []
+        self._chunk_kinds = []
+        self._dirty = True
+
+    def set_window(self, z_min: float, z_max: float, step: float) -> None:
+        """Draws only the props whose Z is in [z_min, z_max] (phase 4 review): the terrain chunks
+        reach well past the view, and their props would be drawn for nothing. The instances are
+        uploaded again only when the window leaves the range drawn, which is `step` wider on both
+        sides."""
+        drawn = self._window
+        if drawn is not None and z_min >= drawn[0] and z_max <= drawn[1]:
+            return
+        # A step wider than asked, so the view can move by a step before the next upload.
+        self._window = [z_min - step, z_max + step]
+        self._dirty = True
+
+    def drift(self, drifts: dict[str, PropDrift], time: float) -> None:
+        """Moves the kinds that drift (phase 8: ice floes on the sea) to where they are `time`
+        seconds in: to and fro around where they were placed, each kind on its own course."""
+        for kind, d in drifts.items():
+            meshes = self._meshes.get(kind)
+            if not meshes:
+                continue
+            phase = (2 * math.pi * time) / d.period
+            for mesh in self._mesh_list(meshes):
+                mesh.position.set(d.x * math.sin(phase), 0, d.z * math.sin(phase * 0.7 + 1))
+
+    def _mesh_list(self, meshes: PropMeshes) -> list[Any]:
+        out: list[Any] = [meshes.structure]
+        if meshes.lights is not None:
+            out.append(meshes.lights)
+        for plume in meshes.plumes:
+            out.append(plume)
+        return out
+
+    def sync(self) -> None:
+        """Uploads the instance matrices if the placements or the window changed since the last
+        call."""
+        if not self._dirty:
+            return
+        self._dirty = False
+        by_kind = self._by_kind()
+        for kind, meshes in self._meshes.items():
+            drawn = by_kind.get(kind)
+            placements = drawn.placements if drawn else []
+            if kind in self._drawn and _same_placements(self._drawn[kind], placements):
+                continue
+            self._drawn[kind] = placements
+            matrices = _matrices_of(drawn) if drawn else float32_array(0)
+            for mesh in self._mesh_list(meshes):
+                if not mesh:
+                    continue
+                set_enabled(mesh, len(matrices) > 0)
+                if len(matrices) == 0:
+                    continue
+                mesh.thinInstanceSetBuffer("matrix", matrices, MATRIX_FLOATS, False)
+
+    def _by_kind(self) -> dict[str, Drawn]:
+        """The props to draw (in the window, if any), by kind, in the order of the chunks."""
+        window = self._window
+        by_kind: dict[str, Drawn] = {}
+        for kinds in self._chunk_kinds:
+            for kind, props in kinds.items():
+                for i in range(len(props.placements)):
+                    p = props.placements[i]
+                    if window is not None and (p.z < window[0] or p.z > window[1]):
+                        continue
+                    drawn = by_kind.get(kind)
+                    if not drawn:
+                        drawn = Drawn([], [], [])
+                        by_kind[kind] = drawn
+                    drawn.placements.append(p)
+                    drawn.from_.append(props)
+                    drawn.at.append(i)
+        return by_kind
+
+
+def _matrices_of(drawn: Drawn) -> Any:
+    """The instance matrices of `drawn`, copied from those of their chunks (made on first use)."""
+    buffer = float32_array(len(drawn.at) * MATRIX_FLOATS)
+    for j in range(len(drawn.at)):
+        i = drawn.at[j]
+        props = drawn.from_[j]
+        if props.matrices is None:
+            props.matrices = instance_matrices(props.placements)
+        start = i * MATRIX_FLOATS
+        buffer.set(props.matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS)
+    return buffer
+
+
+def _same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
+    """Whether `a` and `b` hold the same placements in the same order."""
+    if len(a) != len(b):
+        return False
+    for i in range(len(a)):  # noqa: SIM110
+        if a[i] is not b[i]:
+            return False
+    return True
+
+
+def instance_matrices(placements: list[PropPlacement]) -> Any:
+    """One world matrix per placement (scale, or per-axis size, then turn around Y and position),
+    packed for thin instances."""
+    buffer = float32_array(len(placements) * MATRIX_FLOATS)
+    scale = vector3(0, 0, 0)
+    position = vector3(0, 0, 0)
+    turn = quaternion(0, 0, 0, 1)
+    matrix = new_matrix()
+    for i in range(len(placements)):
+        p = placements[i]
+        if p.size:
+            scale.set(p.size[0], p.size[1], p.size[2])
+        else:
+            scale.setAll(p.scale)
+        position.set(p.x, p.y, p.z)
+        quaternion_yaw_pitch_roll_to_ref(p.rotation, 0, 0, turn)
+        matrix_compose_to_ref(scale, turn, position, matrix)
+        matrix.copyToArray(buffer, i * MATRIX_FLOATS)
+    return buffer

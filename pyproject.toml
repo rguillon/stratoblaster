@@ -1,0 +1,150 @@
+[project]
+name = "stratoblaster"
+version = "0.0.0"
+description = "Stratoblaster, a 3D shoot 'em up, compiled to JavaScript with Transcrypt."
+license = { text = "MIT" }
+# Transcrypt 3.9.5 cannot compile its own runtime under Python 3.13 or later (ENG-04).
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "transcrypt==3.9.5",
+    "ruff",
+    "mypy",
+    "import-linter",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "coverage>=7.17.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
+ignore = ["PLR0913"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert on literal values: a magic number there is the expected value, not a constant.
+"tests/**" = ["PLR2004"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"random".msg = "ENG-18: core/ uses the seeded RNG (core/math/rng.py), never the random module."
+"time".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
+"datetime".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
+mypy_path = ["src", "typings"]
+
+[tool.pytest.ini_options]
+# Unit tests run in CPython on the modules of src/ (ENG-40). The Transcrypt stubs (`org`) are added
+# by tests/unit/conftest.py.
+testpaths = ["tests/unit"]
+python_files = ["test_*.py"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.coverage.run]
+# The thresholds of ENG-43: `core/` is measured on its own (see `make coverage`).
+source = ["src/core"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+# ENG-43: `src/core/**` lines 90 % (branches are part of the total: 85 % is measured separately).
+fail_under = 90
+
+[tool.importlinter]
+root_packages = ["core"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core/ is pure: no browser or DOM"
+type = "forbidden"
+source_modules = ["core"]
+forbidden_modules = ["org", "browser"]
+# Each module below imports __pragma__ only as a compile-time marker for Transcrypt (it skips
+# the typing names and never touches the DOM). Any other import of org or browser fails `make lint`.
+ignore_imports = [
+    "core.content.game_definition -> org",
+    "core.content.game_level -> org",
+    "core.content.menu_texts -> org",
+    "core.entities.boss -> org",
+    "core.entities.boss_joint -> org",
+    "core.entities.boss_pieces -> org",
+    "core.entities.boss_turret -> org",
+    "core.entities.enemy -> org",
+    "core.entities.jointed_enemy -> org",
+    "core.entities.muzzle -> org",
+    "core.entities.shot_target -> org",
+    "core.entities.weapon -> org",
+    "core.math.color -> org",
+    "core.math.min_heap -> org",
+    "core.math.bits -> org",
+    "core.math.noise -> org",
+    "core.math.pixel_contrast -> org",
+    "core.math.rng -> org",
+    "core.menu.grid_cursor -> org",
+    "core.menu.menu_screen -> org",
+    "core.scenery.atmosphere -> org",
+    "core.scenery.away_placement -> org",
+    "core.scenery.block_towers -> org",
+    "core.scenery.district_packing -> org",
+    "core.scenery.districts -> org",
+    "core.scenery.draws -> org",
+    "core.scenery.float_placement -> org",
+    "core.scenery.ground_boxes -> org",
+    "core.scenery.ground_fit -> org",
+    "core.scenery.height_field -> org",
+    "core.scenery.ice_sculpt -> org",
+    "core.scenery.lanes -> org",
+    "core.scenery.lightning -> org",
+    "core.scenery.ordering -> org",
+    "core.scenery.prop_placement -> org",
+    "core.scenery.road_network -> org",
+    "core.scenery.road_paths -> org",
+    "core.scenery.road_segments -> org",
+    "core.scenery.road_tiles -> org",
+    "core.scenery.road_traffic -> org",
+    "core.scenery.road_types -> org",
+    "core.scenery.scenery_level -> org",
+    "core.scenery.sky_look -> org",
+    "core.scenery.street_dead_ends -> org",
+    "core.scenery.street_grid -> org",
+    "core.scenery.street_links -> org",
+    "core.scenery.street_runs -> org",
+    "core.scenery.tile_packing -> org",
+    "core.scenery.tile_streets -> org",
+    "core.scenery.traffic -> org",
+    "core.systems.beam -> org",
+    "core.systems.bonus_world -> org",
+    "core.systems.boss_fights -> org",
+    "core.systems.boss_pattern -> org",
+    "core.systems.enemy_motion -> org",
+    "core.systems.enemy_shots -> org",
+    "core.systems.enemy_world -> org",
+    "core.systems.gun_muzzles -> org",
+    "core.systems.level_run -> org",
+    "core.systems.level_run_types -> org",
+    "core.systems.player_flight -> org",
+    "core.systems.player_hits -> org",
+    "core.systems.player_hull -> org",
+    "core.systems.projectile_motion -> org",
+    "core.systems.run_arsenal -> org",
+    "core.systems.ship_journey -> org",
+    "core.systems.shot_world -> org",
+    "core.systems.wave_runner -> org",
+]

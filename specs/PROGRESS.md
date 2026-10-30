@@ -21,6 +21,8 @@
 | 14 | `phases/phase-14-playability.md` | ✅ Validated | `phase-14` | 99.03% lines | 2026-10-28 |
 | 15 | `phases/phase-15-urban-rework.md` | ✅ Validated | `phase-15` | 96.14% lines | 2026-10-29 |
 | 16 | `phases/phase-16-enemies-design.md` | ✅ Validated | `phase-16` | 96.74% lines | 2026-10-29 |
+| 18 | `phases/phase-18-full-python-port.md` | 🔵 In progress | `python-transcrypt` | n/a (tests come back in P18-R06) | — |
+| 17 | `phases/phase-17-python-port-foundation.md` | 🟡 Awaiting review | `python-transcrypt` | not measured (no tests yet) | — |
 
 ## Log
 <!-- Agent appends one line per event: date — phase — event -->
@@ -161,3 +163,6 @@
 - 2026-10-29 — 15 — Validated: full gate green after fixing what the first unit test run found (a building turned across its tiles when no road faced it; levels retuned for the growth checks, D-164; 8 tests updated to the grid: streets on tile middles, cars per road point, scattered homes, lanes at crossings, tile model ids): 1712 unit tests, 96.14% lines, 85.27% branches, 129 e2e (on port 4174, 4173 held by another project); squash-merged into `main`, tagged `v0.15.0`.
 - 2026-10-29 — 16 — Implemented the Cyber-Organic enemies and bosses (organic kit, flesh material, living motion, wounds, 61 models reworked, debug toggles; D-165..D-168); light verification green (typecheck, build, 131 e2e on port 4174); awaiting review.
 - 2026-10-29 — 16 — Validated: full gate green after slimming the five veterans under the P05 cap of 550 triangles (first unit test run: 5 failures): 1734 unit tests, 96.74% lines, 84.96% branches, 131 e2e (on port 4174); squash-merged into `main`, tagged `v0.16.0`.
+- 2026-10-29 — 17 — Owner request: specs rewritten for Python 3.12 + Transcrypt + uv (01-engineering ENG-01..05, 12..36, 40..61, 82..84, §13; D-169..171). Foundation implemented: uv project, Makefile, `core/math/rng.py` ported and checked against the TypeScript output (7000 values, 0 mismatches), `make lint` / `make typecheck` / `make build` green; unit tests deferred by the owner; awaiting review.
+- 2026-10-29 — 17 — Validation reverted by the owner (git revert); back to awaiting review.
+- 2026-10-29 — 18 — Owner request: the whole port in one phase. Requirements P18-R01..07 written; status In progress, not yet implemented.
