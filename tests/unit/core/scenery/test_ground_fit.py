@@ -1,4 +1,4 @@
-"""How a prop sits on the ground (P04-R04): `core/scenery/ground_fit.py`."""
+"""Unit tests of `src/core/scenery/ground_fit.py`."""
 
 import pytest
 

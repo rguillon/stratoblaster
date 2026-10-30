@@ -1779,3 +1779,11 @@
 - **Why:** these files only served the TypeScript build and the removed viewer pages, and the docs described an architecture no longer in the repository.
 - **Consequences:** `specs/` (owned by the owner) still cites the TypeScript and the viewer pages; it needs the owner's update.
 - **Status:** Accepted
+
+### D-190 — One unit test file per source file
+- **Date:** 2026-10-30
+- **Phase:** 18 (the Python port)
+- **Decision:** each test file tests one source module and sits at the mirrored path (`tests/unit/core/math/test_color.py` for `src/core/math/color.py`). The 938 test functions were moved to the module they exercise most (the module they name, when they only use fixtures). Shared helpers are in `tests/helpers/` (`fakes`, `sample_level`, `level_builders`). Pytest runs with `--import-mode=importlib`, because source modules share basenames (`game_play`, `outline`, ...). The `tests/unit/core/scenery_props/` folder and the empty `systems` conftest are gone. The count is unchanged: 1008 passing tests.
+- **Why:** a test file that covered several modules made it unclear what a failure was about, and a module's tests were spread over two folders.
+- **Consequences:** source modules without tests have no test file (the port's `game/` views and render code have none yet). Helper definitions used by tests of several modules are copied into each file that needs them (short ones, such as `_world` or `flat`).
+- **Status:** Accepted

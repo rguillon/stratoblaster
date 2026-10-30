@@ -1,10 +1,10 @@
-"""Enemies with moving parts (`core.entities.jointed_enemy`, P05-R13)."""
+"""Unit tests of `src/core/entities/jointed_enemy.py`."""
 
 import math
 from typing import Any
 
 import pytest
-from fakes import FakeContext
+from helpers.fakes import FakeContext
 
 from core.entities.boss_joint import BossJointSpec, JointSwing
 from core.entities.enemy import EnemyStats

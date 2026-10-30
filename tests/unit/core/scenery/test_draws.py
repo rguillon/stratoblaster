@@ -1,4 +1,4 @@
-"""Weighted and range draws (`core/scenery/draws.py`)."""
+"""Unit tests of `src/core/scenery/draws.py`."""
 
 from types import SimpleNamespace
 

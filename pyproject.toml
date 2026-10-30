@@ -53,8 +53,9 @@ mypy_path = ["src", "typings"]
 # by tests/unit/conftest.py.
 testpaths = ["tests/unit"]
 python_files = ["test_*.py"]
-pythonpath = ["src"]
-addopts = "-q"
+pythonpath = ["src", "tests"]
+# importlib: source modules share basenames (game_play, outline, ...), so test modules must too.
+addopts = "-q --import-mode=importlib"
 
 [tool.coverage.run]
 # The thresholds of ENG-43: `core/` is measured on its own (see `make coverage`).

@@ -1,10 +1,53 @@
-"""A turret on a boss's piece (`core.entities.boss_turret`, phase 7 review)."""
+"""Unit tests of `src/core/entities/boss_turret.py`."""
 
 import math
+from collections.abc import Callable
+from typing import Any
 
 import pytest
+from helpers.fakes import ProbeBoss
 
 from core.entities.boss_turret import BossTurret, BossTurretSpec
+
+Make = Callable[..., ProbeBoss]
+
+
+def as_tuple(point: Any) -> tuple[float, ...]:
+    """A muzzle point's fields, to compare them."""
+    if hasattr(point, "height"):
+        return (point.x, point.y, point.height)
+    return (point.x, point.y)
+
+
+def test_turrets_belong_to_the_parts_and_core_named_in_the_stats(make_boss: Make) -> None:
+    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
+    assert boss.parts[0].turret is not None
+    assert boss.parts[1].turret is None
+    assert boss.core.turret is None
+
+
+def test_the_core_can_have_a_turret(make_boss: Make) -> None:
+    boss = make_boss(turrets={"core": BossTurretSpec(0, 0, 90)})
+    assert boss.core.turret is not None
+
+
+def test_a_part_placed_on_its_turret_turns_with_it(make_boss: Make) -> None:
+    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
+    boss.parts[0].turret.aim = math.pi / 2
+    assert as_tuple(boss.parts[0].place((0, -10, 5), on_turret=True)) == pytest.approx((90, 200, 5))
+
+
+def test_a_part_placed_off_its_turret_stays_where_the_muzzle_is(make_boss: Make) -> None:
+    boss = make_boss(turrets={"gun": BossTurretSpec(0, 0, 90)})
+    boss.parts[0].turret.aim = math.pi / 2
+    assert as_tuple(boss.parts[0].place((0, -10, 5))) == pytest.approx((100, 190, 5))
+
+
+def test_the_core_places_its_turret_muzzles(make_boss: Make) -> None:
+    boss = make_boss(turrets={"core": BossTurretSpec(0, 0, 90)})
+    boss.core.turret.aim = math.pi / 2
+    assert as_tuple(boss.core.place((0, -10, 5), on_turret=True)) == pytest.approx((90, 200, 5))
+    assert as_tuple(boss.core.place((0, -10, 5))) == pytest.approx((100, 190, 5))
 
 
 def test_a_turret_spec_keeps_its_pivot_and_turn_rates() -> None:

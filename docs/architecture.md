@@ -49,7 +49,9 @@ to `src/build_info.py` by `make build-info`.
 
 ## Tests
 
-- Unit tests: `tests/unit/` (pytest, run in CPython over `src/`). `make coverage` gates `core/` at
-  90 % lines and branches.
+- Unit tests: `tests/unit/` (pytest, run in CPython over `src/`). One test file per source file, at
+  the same path: `tests/unit/core/math/test_color.py` tests `src/core/math/color.py`. Shared test
+  helpers (fakes, sample levels) are in `tests/helpers/`. `make coverage` gates `core/` at 90 %
+  lines and branches.
 - Browser checks: none in CI yet. `node/tests/` holds the TypeScript suite of the game this port
   came from, as the reference for the tests still to port (see D-186 and D-188).

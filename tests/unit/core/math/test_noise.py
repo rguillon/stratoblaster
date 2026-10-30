@@ -1,8 +1,10 @@
-"""Seeded noise and its fractal sums (`core.math.noise`)."""
+"""Unit tests of `src/core/math/noise.py`."""
 
 import pytest
 
 from core.math.noise import OctaveOptions, create_noise2d, fbm, hash_2d, ridged, smoothstep
+from core.scenery.ice_sculpt import crevasse_depth
+from core.scenery.scenery_level import Crevasses
 
 SAMPLES = [(x * 0.37 - 3.1, y * 0.53 + 0.4) for x in range(12) for y in range(12)]
 
@@ -113,3 +115,12 @@ def test_hash_2d_is_in_zero_one_and_repeatable() -> None:
 def test_hash_2d_depends_on_the_seed_and_the_coordinates() -> None:
     assert hash_2d(1, 2, 0) != hash_2d(1, 2, 1)
     assert hash_2d(1, 2, 0) != hash_2d(2, 1, 0)
+
+
+def test_crevasses_cut_in_pieces_when_their_share_is_partial() -> None:
+    noise = create_noise2d(5)
+    pieces = Crevasses(spacing=100, width=40, depth=8, angle_deg=30, warp=0.5, share=0.5)
+    depths = [crevasse_depth(pieces, noise, x * 3.0, z * 3.0) for x in range(60) for z in range(60)]
+    assert all(0 <= d <= 8 for d in depths)
+    assert any(d > 0 for d in depths)
+    assert any(d == 0 for d in depths)

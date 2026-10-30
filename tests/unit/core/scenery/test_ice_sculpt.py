@@ -1,4 +1,4 @@
-"""Frozen lakes and the crevasses of a glacier (`core.scenery.ice_sculpt`)."""
+"""Unit tests of `src/core/scenery/ice_sculpt.py`."""
 
 import pytest
 
@@ -24,11 +24,6 @@ def test_a_lake_rises_back_to_the_ground_over_its_edge() -> None:
     assert any(-5 < h < 10 for h in heights)
 
 
-def test_no_chance_means_no_lakes() -> None:
-    none = Lakes(spacing=100, chance=0, radius=(20, 20), level=-5, edge=10)
-    assert with_lakes(none, 7, 50, 50, 10) == 10
-
-
 def test_with_lakes_is_a_lake_field_once() -> None:
     assert with_lakes(LAKES, 7, 50, 50, 10) == LakeField(LAKES, 7).apply(50, 50, 10)
 
@@ -45,37 +40,12 @@ def test_lakes_are_kept_within_their_square_and_cached() -> None:
     assert field._lake(0, 0) is lake
 
 
-def test_a_lake_square_too_small_for_its_lake_is_centred() -> None:
-    big = Lakes(spacing=20, chance=1, radius=(30, 30), level=-5, edge=10)
-    lake = LakeField(big, 7)._lake(0, 0)
-    assert lake is not None
-    assert lake.cx == pytest.approx(10)
-    assert lake.cz == pytest.approx(10)
-
-
 def test_p08_r07_crevasses_cut_deepest_on_their_line() -> None:
     noise = create_noise2d(5)
     crevasses = Crevasses(spacing=100, width=20, depth=8, angle_deg=0, warp=0, share=1)
     # Along X at angle 0: the lines are at Z = 0, 100, ...
     assert crevasse_depth(crevasses, noise, 37, 0) == pytest.approx(8)
     assert crevasse_depth(crevasses, noise, 37, 50) == 0
-
-
-def test_crevasses_with_no_share_or_no_width_cut_nothing() -> None:
-    noise = create_noise2d(5)
-    nothing = Crevasses(spacing=100, width=20, depth=8, angle_deg=0, warp=0, share=0)
-    assert crevasse_depth(nothing, noise, 0, 0) == 0
-    thin = Crevasses(spacing=100, width=0, depth=8, angle_deg=0, warp=0, share=1)
-    assert crevasse_depth(thin, noise, 0, 30) == 0
-
-
-def test_crevasses_cut_in_pieces_when_their_share_is_partial() -> None:
-    noise = create_noise2d(5)
-    pieces = Crevasses(spacing=100, width=40, depth=8, angle_deg=30, warp=0.5, share=0.5)
-    depths = [crevasse_depth(pieces, noise, x * 3.0, z * 3.0) for x in range(60) for z in range(60)]
-    assert all(0 <= d <= 8 for d in depths)
-    assert any(d > 0 for d in depths)
-    assert any(d == 0 for d in depths)
 
 
 def test_crevasse_depth_follows_lines_at_an_angle() -> None:

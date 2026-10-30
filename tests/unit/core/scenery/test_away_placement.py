@@ -1,10 +1,9 @@
-"""Lone buildings and hamlets away from the roads (`core.scenery.away_placement`), placed on a fake
-site: the placer's own tests (`test_prop_placement.py`) cover them on a real level."""
+"""Unit tests of `src/core/scenery/away_placement.py`."""
 
 import math
 
 import pytest
-from sample_level import flat
+from helpers.sample_level import flat
 
 from core.scenery.away_placement import (
     AWAY_MARGIN,
@@ -17,7 +16,6 @@ from core.scenery.away_placement import (
     place_hamlets,
     place_loners,
 )
-from core.scenery.ground_boxes import PropPlacement
 from core.scenery.scenery_level import (
     HamletRules,
     Loners,
@@ -135,17 +133,6 @@ def test_hamlets_are_placed_again_the_same_way() -> None:
     ]
 
 
-def test_hamlets_skip_streets_and_sections_without_buildings() -> None:
-    grid = TerrainSection(
-        "grid", 10, flat("grid", 10, 0).relief, 1, 1, streets=StreetGrid([50, 60], [50, 60], 1)
-    )
-    empty = TerrainSection("empty", 10, flat("empty", 10, 0).relief, 0, 1)
-    for section in (grid, empty):
-        site = FakeSite(section=section)
-        place_hamlets(site, HAMLETS, ZSpan(-math.inf, math.inf))
-        assert site.added == []
-
-
 def test_hamlets_need_a_centre_clear_of_the_roads_on_flat_ground() -> None:
     place = FakeSite(clear=False)
     place_hamlets(place, HAMLETS, ZSpan(-math.inf, math.inf))
@@ -234,9 +221,3 @@ def test_loners_take_an_unbounded_span_as_the_first_chunk_does() -> None:
     site = FakeSite()
     place_loners(site, Loners(100, 1, 1), ZSpan(-math.inf, 300))
     assert site.added
-
-
-def test_placement_is_a_plain_record() -> None:
-    p = PropPlacement("house", 1, 2, 3, 0.5, 1)
-    b = Building(p, 4, 5)
-    assert (b.placement, b.half_x, b.half_z) == (p, 4, 5)

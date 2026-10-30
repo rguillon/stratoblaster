@@ -1,10 +1,9 @@
-"""Lightning of a storm (`core.scenery.lightning`, P09-R05): when its flashes come, and how a
-flash lights the scene."""
+"""Unit tests of `src/core/scenery/lightning.py`."""
 
 import pytest
-from sample_level import sample_atmosphere
+from helpers.sample_level import sample_atmosphere
 
-from config.weather import LIGHTNING, LightningRules
+from config.weather import LightningRules
 from core.scenery.lightning import (
     Bolt,
     LightningSchedule,
@@ -39,16 +38,6 @@ def test_p09_r05_the_same_seed_flashes_at_the_same_times() -> None:
     assert first == second
     assert first
     assert LightningSchedule(12).flashes_between(0, 200) != first
-
-
-def test_p09_r05_strikes_come_every_gap_seconds_at_least() -> None:
-    schedule = LightningSchedule(11)
-    strikes = schedule.strikes_before(300)
-    starts = [s.flashes[0] for s in strikes]
-    assert starts == sorted(starts)
-    gaps = [b - a for a, b in zip(starts, starts[1:], strict=False)]
-    assert gaps
-    assert all(LIGHTNING.gap[0] - 1e-9 <= g <= LIGHTNING.gap[1] + 1e-9 for g in gaps)
 
 
 def test_p09_r05_flashes_between_are_the_flashes_in_the_range() -> None:

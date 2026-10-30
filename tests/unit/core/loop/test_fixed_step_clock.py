@@ -1,4 +1,4 @@
-"""Fixed-timestep accumulator (`core.loop.fixed_step_clock`, ENG-100)."""
+"""Unit tests of `src/core/loop/fixed_step_clock.py`."""
 
 import pytest
 

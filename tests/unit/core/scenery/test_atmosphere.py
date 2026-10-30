@@ -1,8 +1,7 @@
-"""A level's changing look (`core.scenery.atmosphere`, P08-R04, P08-R05): blends of looks along
-the level and the weather."""
+"""Unit tests of `src/core/scenery/atmosphere.py`."""
 
 import pytest
-from sample_level import sample_atmosphere
+from helpers.sample_level import sample_atmosphere
 
 from core.scenery.atmosphere import (
     NO_WEATHER,
@@ -23,6 +22,7 @@ from core.scenery.atmosphere import (
     is_time_of_day,
     sorted_by_from,
 )
+from core.scenery.sky_look import SkyLook, without_weather
 
 
 def cloud(coverage: float, opacity: float = 0.5) -> CloudCover:
@@ -42,6 +42,13 @@ def with_clouds(clouds: list[CloudCover]) -> Atmosphere:
         base.aurora,
         base.lightning,
     )
+
+
+def look(**overrides: object) -> SkyLook:
+    """A midday look with clouds of 0.2 and 0.1 cover, as the level data gives it."""
+    values: dict[str, object] = {"time_of_day": "midday", "clouds": [0.2, 0.1]}
+    values.update(overrides)
+    return SkyLook(**values)  # type: ignore[arg-type]
 
 
 def test_p08_r04_the_six_times_of_day_are_names() -> None:
@@ -194,3 +201,16 @@ def test_the_atmosphere_objects_hold_their_fields() -> None:
     assert CloudCover(0.1, 0.2, (1, 1, 1), (0, 0, 0)).opacity == 0.2
     ambient = Ambient((1, 1, 1), (0, 0, 0), 2)
     assert ambient.intensity == 2
+
+
+def test_without_weather_clears_the_weather_lightning_and_second_weather() -> None:
+    stormy = look(weather=Weather("rain", 1), lightning=1, second_weather=Weather("ash", 1))
+    calm = without_weather(stormy)
+    assert calm.weather is not None
+    assert calm.weather.strength == 0
+    assert calm.lightning == 0
+    assert calm.second_weather is not None
+    assert calm.second_weather.strength == 0
+    assert stormy.weather is not None and stormy.weather.kind == "rain"
+    no_second = without_weather(look(weather=Weather("rain", 1)))
+    assert no_second.second_weather is None

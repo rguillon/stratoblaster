@@ -1,17 +1,11 @@
-"""Tests of what touches the player's hitbox (GD-21, P11-R05), `core/systems/player_hits.py`."""
+"""Unit tests of `src/core/systems/player_hits.py`."""
 
 import math
 from types import SimpleNamespace
 
 import pytest
 
-from core.entities.enemy import (
-    Enemy,
-    EnemyBulletSpec,
-    EnemyLaserSpec,
-    EnemyMissileSpec,
-    EnemyStats,
-)
+from core.entities.enemy import Enemy, EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec, EnemyStats
 from core.entities.muzzle import PlanePoint
 from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
 from core.systems.player_hits import PlayerHit, _beam_distance, find_player_hits
@@ -75,14 +69,6 @@ def test_gd21_a_bullet_touching_the_hitbox_is_a_hit_that_removes_it() -> None:
     assert world.shots.bullets[0].alive is False
 
 
-def test_gd21_a_bullet_outside_the_hitbox_or_dead_is_no_hit() -> None:
-    world = _world()
-    world.shots.fire_bullet(0, 6, 0, EnemyBulletSpec(0, 2, "s"))
-    world.shots.fire_bullet(0, 0, 0, EnemyBulletSpec(0, 2, "s"))
-    world.shots.bullets[1].alive = False
-    assert find_player_hits(_Ship(), RULES, world, set()) == []
-
-
 def test_gd21_a_missile_touching_the_hitbox_blows_up_on_the_next_step() -> None:
     world = _world()
     world.shots.fire_missile(0, 4, 0, EnemyMissileSpec(0, 0, 0, 2, 5, "m"))
@@ -90,12 +76,6 @@ def test_gd21_a_missile_touching_the_hitbox_blows_up_on_the_next_step() -> None:
     assert [(h.kind, h.damage) for h in hits] == [("missile", 20)]
     hits[0].land()
     assert world.shots.missiles[0].health == 0
-
-
-def test_gd21_a_missile_with_no_health_is_no_hit() -> None:
-    world = _world()
-    world.shots.fire_missile(0, 0, 0, EnemyMissileSpec(0, 0, 0, 2, 0, "m"))
-    assert find_player_hits(_Ship(), RULES, world, set()) == []
 
 
 def test_gd21_a_laser_beam_firing_across_the_ship_hits_once() -> None:
@@ -108,13 +88,6 @@ def test_gd21_a_laser_beam_firing_across_the_ship_hits_once() -> None:
     hits[0].land()
     assert lasers_hit == {world.shots.lasers[0]}
     assert find_player_hits(_Ship(), RULES, world, lasers_hit) == []
-
-
-def test_gd21_a_laser_still_showing_its_warning_does_not_hit() -> None:
-    world = _world()
-    world.shots.fire_laser(_Owner(PlanePoint(0, 10), math.pi), EnemyLaserSpec(1, 1, 4, "b"))
-    world.shots.step(0.1, 0, 0)
-    assert find_player_hits(_Ship(), RULES, world, set()) == []
 
 
 def test_gd21_a_laser_beam_misses_a_ship_beside_it_or_past_its_end() -> None:
@@ -186,13 +159,3 @@ def test_p07_r06_a_boss_part_that_is_out_of_reach_is_no_collision() -> None:
     world = _world()
     world.enemies = [_Boss(0, 0, [_enemy(50, 50)])]
     assert find_player_hits(_Ship(), RULES, world, set()) == []
-
-
-def test_gd21_hits_come_most_damaging_first_and_equal_ones_keep_their_order() -> None:
-    world = _world()
-    world.shots.fire_bullet(0, 0, 0, EnemyBulletSpec(0, 2, "a"))
-    world.shots.fire_bullet(0, 1, 0, EnemyBulletSpec(0, 2, "b"))
-    world.enemies = [_enemy(0, 2)]
-    hits = find_player_hits(_Ship(), RULES, world, set())
-    assert [h.kind for h in hits] == ["collision", "bullet", "bullet"]
-    assert [h.y for h in hits[1:]] == [0, 1]

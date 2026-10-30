@@ -1,4 +1,4 @@
-"""Cars driving along the streets and main roads (`core.scenery.traffic`)."""
+"""Unit tests of `src/core/scenery/traffic.py`."""
 
 import math
 
@@ -126,24 +126,3 @@ def test_two_lanes_each_way_put_cars_at_two_offsets() -> None:
     assert cars
     # Lane 0 is 0.75 from the centre line, lane 1 is 2.25 (each lane 3 wide).
     assert {round(abs(c.x), 6) for c in cars} <= {0.75, 2.25}
-
-
-def test_a_doubled_point_does_not_break_the_placement() -> None:
-    doubled = Road(
-        0,
-        "main",
-        6,
-        1,
-        [RoadPoint(0, 0, 6), RoadPoint(0, 0, 6), RoadPoint(0, 200, 6), RoadPoint(0, 400, 6)],
-    )
-    traffic = Traffic([doubled], ground, rules(), 1)
-    cars = traffic.at(1.0, FAR)
-    assert all(math.isfinite(c.z) for c in cars)
-
-
-def test_a_road_in_a_bucket_of_the_area_but_not_on_it_is_left_out() -> None:
-    near_start = Road(0, "main", 6, 1, [RoadPoint(0, z, 6) for z in range(0, 101, 20)])
-    far = Road(1, "main", 6, 1, [RoadPoint(0, z, 6) for z in range(300, 401, 20)])
-    traffic = Traffic([near_start, far], ground, rules(), 1)
-    cars = traffic.at(0.0, GroundArea(-1000, 1000, 200, 250))
-    assert cars == []

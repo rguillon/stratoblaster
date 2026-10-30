@@ -1,11 +1,16 @@
-"""Moving limbs of a boss (`core.entities.boss_joint`, phase 7 review)."""
+"""Unit tests of `src/core/entities/boss_joint.py`."""
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import pytest
+from helpers.fakes import FakeContext, ProbeBoss
 
+from core.entities.boss import BossPartSpec
 from core.entities.boss_joint import BossJoints, BossJointSpec, JointSwing
+
+Make = Callable[..., ProbeBoss]
 
 
 @dataclass
@@ -13,6 +18,24 @@ class FakePart:
     id: str
     joint: str | None = None
     orbits: bool = False
+
+
+def test_a_part_hanging_on_a_joint_moves_with_it(make_boss: Make) -> None:
+    claw = BossPartSpec(
+        id="claw", x=0, y=10, radius=2, health=1, shields_core=False, drop_chance=0, joint="arm"
+    )
+    joints = {"arm": BossJointSpec(0, 0, JointSwing(90, 1, 0.25))}
+    boss = make_boss(parts=[claw], joints=joints)
+    assert boss.parts[0].x == pytest.approx(110)
+    assert boss.parts[0].y == pytest.approx(200)
+
+
+def test_the_joints_swing_on_each_update(make_boss: Make, ctx: FakeContext) -> None:
+    joints = {"arm": BossJointSpec(0, 0, JointSwing(90, 1, 0.25))}
+    boss = make_boss(fighting=True, joints=joints)
+    assert boss.joints.angle("arm") == pytest.approx(math.pi / 2)
+    boss.update(ctx, 0.5)
+    assert boss.joints.angle("arm") == pytest.approx(-math.pi / 2)
 
 
 def test_a_swing_keeps_its_settings() -> None:
