@@ -40,6 +40,7 @@ from render.environment.showcase_environment_visual import (
 from render.scenery.playfield_framing import frame_playfield
 from render.scenery.prop_field import mesh_of, prop_bounds, prop_geometry
 from render.scenery.scenery_kit import create_prop_materials
+from render.scenery.window_material_visual import add_window_material
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -204,6 +205,7 @@ class DevPropStage:
         if materials is None:
             look = scenery_look(self._game, level_of(self._game, level_id).scenery)
             materials = create_prop_materials(self.scene, look)
+            add_window_material(materials, self.scene, look)
             self._materials[level_id] = materials
         return materials
 

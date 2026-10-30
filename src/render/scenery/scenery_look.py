@@ -14,6 +14,7 @@ from typing import Any  # noqa: E402
 
 from core.scenery.sky_look import SkyScript  # noqa: E402
 from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.geometry.textured import TexturedGeometry  # noqa: E402
 from render.scenery.road_geometry import RoadLook  # noqa: E402
 
 Rgb = tuple[float, float, float]
@@ -299,11 +300,18 @@ class AmbientLook:
 
 
 class PropsLook:
-    """The props: their specular and the brightness of their self-lit accents."""
+    """The props: their specular, the brightness of their self-lit accents and the look of the
+    atlas their windows are painted into (D-210, see `window_atlas.py`; None: plain windows)."""
 
-    def __init__(self, specular: float, light_intensity: float) -> None:
+    def __init__(
+        self,
+        specular: float,
+        light_intensity: float,
+        windows: Any = None,  # noqa: ANN401 (a config record)
+    ) -> None:
         self.specular = specular
         self.lightIntensity = light_intensity
+        self.windows = windows
 
 
 class GlowLook:
@@ -364,18 +372,21 @@ class PropPlume:
 
 
 class PropGeometry:
-    """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents and the
-    smoke or steam it sends up."""
+    """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents, the
+    smoke or steam it sends up and its windows (D-210: quads on the walls, mapped on the windows'
+    atlas)."""
 
     def __init__(
         self,
         structure: ColoredGeometry,
         lights: ColoredGeometry | None = None,
         plumes: Sequence[PropPlume] | None = None,
+        windows: TexturedGeometry | None = None,
     ) -> None:
         self.structure = structure
         self.lights = lights
         self.plumes = plumes
+        self.windows = windows
 
 
 # Builds the geometry of one kind of prop, standing on Y = 0, centred on the origin.

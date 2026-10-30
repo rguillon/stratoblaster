@@ -145,7 +145,7 @@ def pair(t: Tower) -> None:
     second = any_of(k, [C.white, C.concrete, C.glassDark, C.brick])
     volume(kit, [k.w * 0.25, k.d * 0.1, k.w * 0.45, k.d * 0.6], t.base, t.top - t.base, second)
     crown(kit, [k.w * 0.25, t.top, k.d * 0.1], min(k.w, k.d) * 0.35)
-    windows(k, [k.w * 0.55, k.d * 0.85], [t.base + 1, low - 1], any_of(k, NEON), [-k.w * 0.2, 0], 4)
+    windows(k, [k.w * 0.55, k.d * 0.85], [t.base + 1, low - 1], any_of(k, NEON), [-k.w * 0.2, 0])
 
 
 SILHOUETTES = [stepped, slab, round_tower, twin, needle, pair]

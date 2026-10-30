@@ -20,15 +20,17 @@ __pragma__("noskip")
 from core.math.rng import create_rng, pick, random_in  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
 from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.city_props import window_bands  # noqa: E402
+from game.view.props.window_facades import facade_windows  # noqa: E402
 from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
+from render.geometry.textured import QuadBuilder  # noqa: E402
 from render.scenery.scenery_look import PropGeometry  # noqa: E402
 
 
 class TileKit:
     """What a model of the grid is built with (`TileKit`): two solid builders (structure and
-    lights), the seeded random generator, the plot (`w` wide along X, `d` deep along Z), the
-    size of a tile and the model's seed (some builders pick their shape by it)."""
+    lights), the windows' quads (D-210), the seeded random generator, the plot (`w` wide along X,
+    `d` deep along Z), the size of a tile and the model's seed (some builders pick their shape by
+    it)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -42,6 +44,7 @@ class TileKit:
     ) -> None:
         self.s = s
         self.lights = lights
+        self.windows = QuadBuilder()
         self.random = random
         self.w = w
         self.d = d
@@ -63,8 +66,8 @@ def tile_kit(w: float, d: float, tile: float, seed: int) -> TileKit:
 
 
 def geometry_of(k: TileKit) -> PropGeometry:
-    """The geometry a kit's builders made: the structure and the lights."""
-    return PropGeometry(k.s.geometry, k.lights.geometry)
+    """The geometry a kit's builders made: the structure, the lights and the windows."""
+    return PropGeometry(k.s.geometry, k.lights.geometry, None, k.windows.geometry)
 
 
 def r(k: TileKit, span: list[float]) -> float:
@@ -138,24 +141,16 @@ def gable(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     )
 
 
-def windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def windows(
     k: TileKit,
     size: list[float],
     span: list[float],
     color: Rgb,
     at: list[float] = [0, 0],  # noqa: B006 (read only)
-    gap: float = 3,
 ) -> None:
-    """Lit window rows round a `w` × `d` block at (x, z), from `y0` to `y1`."""
-    window_bands(
-        k.lights,
-        size,
-        span,
-        gap,
-        min(1.2, gap / 2.5),
-        color,
-        at,
-    )
+    """Windows round a `w` × `d` block at (x, z), from `y0` to `y1` (D-210: one quad per wall),
+    tinted by `color`."""
+    facade_windows(k.windows, k.random, [at[0], at[1], size[0], size[1]], span, color)
 
 
 def tree(k: TileKit, x: float, z: float, size: float) -> None:

@@ -83,11 +83,13 @@ class SceneryKitFrame:
 
 
 class PropMaterials:
-    """Vertex-coloured materials of the props: the lit structure and the self-lit accents."""
+    """Vertex-coloured materials of the props: the lit structure, the self-lit accents and the
+    windows (D-210, set by the real kit: see `window_material_visual.py`; None: not drawn)."""
 
-    def __init__(self, structure: Any, lights: Any) -> None:
+    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:
         self.structure = structure
         self.lights = lights
+        self.windows = windows
 
 
 class SeaSize:
@@ -157,6 +159,8 @@ def set_ground_lights(materials: PropMaterials, glow: float) -> None:
     (P08-R04: off by day, on at dusk and night)."""
     if is_instance_of(materials.lights, "StandardMaterial"):
         materials.lights.emissiveColor.set(glow, glow, glow)
+    if is_instance_of(materials.windows, "StandardMaterial"):
+        materials.windows.emissiveColor.set(glow, glow, glow)
 
 
 # Depth offset of the props' self-lit accents (see `create_prop_materials`).

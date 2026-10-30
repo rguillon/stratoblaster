@@ -213,7 +213,7 @@ def build_factory(k: TileKit) -> None:
         gable(k, [w, d / teeth], h, 2.2, C.roof, [0, z - d / 2 + (d / teeth) * (i + 0.5)])
     for i in range(max(1, js_round(k.w / 12))):
         chimney(k, -w / 2 + 2 + i * 6, z + d / 2 - 2, h + r(k, [10, 16]))
-    windows(k, [w, d], [1.5, h - 1], L.windowDim, [0, z], 3.5)
+    windows(k, [w, d], [1.5, h - 1], L.windowDim, [0, z])
     front_lights(k, w, z - d / 2, h - 1.5, any_of(k, [L.pink, L.cyan]))
 
 
@@ -297,7 +297,7 @@ def build_plant(k: TileKit) -> None:
         Placement([-k.w * 0.22, 0, -k.d * 0.25], 0, 0, 0),
         C.roof,
     )
-    windows(k, [k.w * 0.5, k.d * 0.45], [2, 15], L.windowDim, [-k.w * 0.22, -k.d * 0.25], 4)
+    windows(k, [k.w * 0.5, k.d * 0.45], [2, 15], L.windowDim, [-k.w * 0.22, -k.d * 0.25])
     rad = min(k.w, k.d) * 0.16
     k.s.lathe(
         [

@@ -23,6 +23,7 @@ from render.babylon import (
     set_enabled,
     vector3,
 )
+from render.geometry.textured import TexturedGeometry
 from render.scenery.plume_layer import build_plume_meshes
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -57,21 +58,31 @@ def _slot_set(owner: Any, slot: str, value: Any) -> None:
 
 
 class PropMaterials:
-    """Materials of the props: the lit structure, and the self-lit accents."""
+    """Materials of the props: the lit structure, the self-lit accents and the windows (D-210;
+    None: the props' windows are not drawn)."""
 
-    def __init__(self, structure: Any, lights: Any) -> None:
+    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:  # noqa: ANN401
         self.structure = structure
         self.lights = lights
+        self.windows = windows
 
 
 class PropMeshes:
     """The meshes of one kind of prop."""
 
-    def __init__(self, structure: Any, lights: Any, plumes: list[Any]) -> None:
+    def __init__(
+        self,
+        structure: Any,  # noqa: ANN401
+        lights: Any,  # noqa: ANN401
+        plumes: list[Any],
+        windows: Any = None,  # noqa: ANN401
+    ) -> None:
         self.structure = structure
         self.lights = lights
         """Phase 10: its smoke or steam, drawn with the same instances."""
         self.plumes = plumes
+        """D-210: its windows (None if it has none)."""
+        self.windows = windows
 
 
 class KindProps:
@@ -161,6 +172,8 @@ def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
     data.indices = geo.indices
     data.colors = geo.colors
     data.normals = _normals_of(geo)
+    if isinstance(geo, TexturedGeometry):
+        data.uvs = geo.uvs
     apply_vertex_data(data, mesh)
     mesh.material = material
     mesh.isPickable = False
@@ -295,6 +308,17 @@ class PropField:
                 lights = mesh_of(
                     "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
                 )
+            windows = None
+            # `!= None`: a materials object made without windows has the field undefined.
+            if (
+                materials.windows != None  # noqa: E711
+                and geometry.windows != None  # noqa: E711
+                and len(geometry.windows.indices) > 0
+            ):
+                windows = mesh_of(
+                    "prop-" + kind + "-windows", geometry.windows, materials.windows, scene
+                )
+                _draw_always(windows)
             plumes_of = geometry.plumes if geometry.plumes is not None else []
             plumes = build_plume_meshes(scene, "prop-" + kind, plumes_of, plume_material)
             _draw_always(structure)
@@ -302,7 +326,7 @@ class PropField:
                 _draw_always(lights)
             for plume in plumes:
                 _draw_always(plume)
-            self._meshes[kind] = PropMeshes(structure, lights, plumes)
+            self._meshes[kind] = PropMeshes(structure, lights, plumes, windows)
 
     def update_plumes(self, frame: PlumeFrame) -> None:
         """Phase 10: moves the smoke and steam of the props on to this frame."""
@@ -330,11 +354,13 @@ class PropField:
 
     @property
     def light_meshes(self) -> list[Any]:
-        """Meshes of the self-lit accents (e.g. for a glow layer)."""
+        """Meshes of the self-lit accents and windows (e.g. for a glow layer)."""
         out: list[Any] = []
         for m in self._meshes.values():
             if m.lights is not None:
                 out.append(m.lights)
+            if m.windows is not None:
+                out.append(m.windows)
         return out
 
     @property
@@ -413,6 +439,8 @@ class PropField:
         out: list[Any] = [meshes.structure]
         if meshes.lights is not None:
             out.append(meshes.lights)
+        if meshes.windows is not None:
+            out.append(meshes.windows)
         for plume in meshes.plumes:
             out.append(plume)
         return out

@@ -16,6 +16,7 @@ __pragma__("noskip")
 
 from game.config.tile_buildings import BUILDING_MARGIN, TILE  # noqa: E402
 from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.geometry.textured import TexturedGeometry  # noqa: E402
 from render.scenery.scenery_look import PropGeometry, PropPlume  # noqa: E402
 
 
@@ -43,6 +44,19 @@ def moved(geo: ColoredGeometry, mapper: Callable[[float, float], list[float]]) -
     result.positions = positions
     result.indices = list(geo.indices)
     result.colors = list(geo.colors)
+    return result
+
+
+def moved_textured(
+    geo: TexturedGeometry, mapper: Callable[[float, float], list[float]]
+) -> TexturedGeometry:
+    """`moved(geo, mapper)`, its texture coordinates kept."""
+    plain = moved(geo, mapper)
+    result = TexturedGeometry()
+    result.positions = plain.positions
+    result.indices = plain.indices
+    result.colors = plain.colors
+    result.uvs = list(geo.uvs)
     return result
 
 
@@ -74,7 +88,10 @@ def fit_to_tiles(geometry: PropGeometry) -> PropGeometry:
         for p in geometry.plumes:
             xz = mapper(p.at[0], p.at[2])
             plumes.append(PropPlume((xz[0], p.at[1], xz[1]), p.kind, p.scale))
-    return PropGeometry(moved(geometry.structure, mapper), lights, plumes)
+    windows = None
+    if geometry.windows != None:  # noqa: E711 (no windows)
+        windows = moved_textured(geometry.windows, mapper)
+    return PropGeometry(moved(geometry.structure, mapper), lights, plumes, windows)
 
 
 def fitted_model(factory: PropModelFactory) -> PropModelFactory:

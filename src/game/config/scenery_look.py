@@ -6,6 +6,7 @@ Gamma-space RGB, 0..1, unless noted; distances in world units.
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import record
+from game.config.window_look import WINDOW_ATLAS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -241,7 +242,8 @@ BASE_SCENERY_LOOK = record(
             },
         },
         # Matte props: specular highlights on their facets flickered as the view scrolled (review).
-        "props": {"specular": 0, "lightIntensity": 1},
+        # The windows' atlas (D-210), the same for every level.
+        "props": {"specular": 0, "lightIntensity": 1, "windows": WINDOW_ATLAS},
         "glow": {"intensity": 0.3, "blurKernelSize": 16},
     }
 )

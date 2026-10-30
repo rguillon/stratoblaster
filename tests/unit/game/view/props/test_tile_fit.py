@@ -6,6 +6,7 @@ from helpers.geometry_checks import bounds, footprint
 from game.config.tile_buildings import BUILDING_MARGIN, TILE
 from game.view.props.tile_fit import fit_to_tiles, fitted, fitted_model, moved, on_tiles, tiles_for
 from render.geometry.gradient_shapes import ColoredGeometry
+from render.geometry.textured import QuadBuilder
 from render.scenery.scenery_look import PropGeometry, PropPlume
 
 
@@ -89,10 +90,22 @@ def test_p15_r07_lights_and_plumes_move_with_the_structure():
     assert fitted_prop.plumes[0].at[0] != 5.0
 
 
+def test_d210_windows_move_with_the_structure_and_keep_their_uvs():
+    windows = QuadBuilder()
+    windows.quad([[0, 0, 0], [0, 5, 0], [5, 5, 0], [5, 0, 0]], [0.1, 0.2, 0.3, 0.4], [1, 1, 1])
+    prop = PropGeometry(box(0, 5, 0, 5), None, None, windows.geometry)
+    fitted_prop = fit_to_tiles(prop)
+    assert fitted_prop.windows is not None
+    assert fitted_prop.windows.uvs == windows.geometry.uvs
+    assert fitted_prop.windows.positions[0] != 0
+    assert fitted_prop.windows.positions[1::3] == windows.geometry.positions[1::3]
+
+
 def test_p15_r07_a_prop_without_lights_or_plumes_keeps_none():
     fitted_prop = fit_to_tiles(PropGeometry(box(0, 5, 0, 5)))
     assert fitted_prop.lights is None
     assert fitted_prop.plumes is None
+    assert fitted_prop.windows is None
 
 
 def test_p15_r07_an_empty_structure_is_returned_as_it_is():

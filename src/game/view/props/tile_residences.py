@@ -43,7 +43,7 @@ def cantilever(k: TileKit) -> None:
     k.lights.box(
         [w * 0.7, 0.15, 0.3], any_of(k, NEON), Placement([k.w * 0.08, 4, -d * 0.75], 0, 0, 0)
     )
-    windows(k, [w * 0.8, d * 1.5], [4.6, 6.6], L.window, [k.w * 0.08, 0], 2.5)
+    windows(k, [w * 0.8, d * 1.5], [4.6, 6.6], L.window, [k.w * 0.08, 0])
 
 
 def pods(k: TileKit) -> None:
@@ -99,7 +99,7 @@ def modules(k: TileKit) -> None:
         )
         k.s.box([bw * 0.8, 0.12, bd * 0.8], C.solar, tilt)
         color = L.window if i % 2 == 0 else any_of(k, NEON)
-        windows(k, [bw, bd], [1, h - 0.8], color, [x, z], 2.4)
+        windows(k, [bw, bd], [1, h - 0.8], color, [x, z])
 
 
 def stepped(k: TileKit) -> None:
@@ -188,7 +188,7 @@ def wedge(k: TileKit) -> None:
     k.lights.box(
         [w * 0.9, 0.2, 0.2], any_of(k, NEON), Placement([0, low - 0.1, z0 - 0.15], 0, 0, 0)
     )
-    windows(k, [w, d], [1, low - 0.5], L.window, [0, 0], 2.5)
+    windows(k, [w, d], [1, low - 0.5], L.window, [0, 0])
 
 
 SILHOUETTES = [cantilever, pods, modules, stepped, stilts, wedge]

@@ -40,6 +40,7 @@ from render.scenery.terrain_blend_plugin_visual import (
     new_terrain_blend_plugin,
 )
 from render.scenery.weather_material_visual import create_weather_material
+from render.scenery.window_material_visual import add_window_material
 
 __pragma__("skip")
 from typing import Any  # noqa: E402
@@ -158,6 +159,7 @@ class VisualSceneryKit:
         self._shadows = shadows
         self._camera = vector3(0, 0, 0)
         self.props = create_prop_materials(scene, look)
+        add_window_material(self.props, scene, look)
         self.terrain = _terrain_material(scene, look, state, seed)
         self.sea = self._sea
         self.roads = create_road_material(scene)
