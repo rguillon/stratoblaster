@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 import pytest
-from e2e.menu_helpers import open_debug, step
+from e2e.menu_helpers import game, open_debug, step
 from playwright.sync_api import Page
 
 from game.config.readability import READABILITY
@@ -21,10 +21,15 @@ def readability(page: Page) -> dict[str, Any] | None:
 
 def full_frame(page: Page) -> dict[str, Any]:
     """Steps the level until the ship, an enemy, an enemy bullet and a player shot are all on
-    screen."""
+    screen. The frames are not drawn (`readability` draws the frames it measures), and the probe,
+    three drawn frames and two read back, runs only once the state has enemies, enemy shots and
+    player shots: under software WebGL, a probe on every check made the test last minutes."""
     last: dict[str, Any] | None = None
     for _ in range(120):
-        step(page, 5)
+        step(page, 5, False)
+        played = game(page) or {}
+        if not (played.get("enemies") and played.get("enemyShots") and played.get("shots")):
+            continue
         last = readability(page)
         if not last:
             continue

@@ -51,9 +51,9 @@ def boss_stage(page: Page) -> int:
     return fought["stage"] if fought else -1
 
 
-def step(page: Page, frames: int = 1) -> None:
-    """Runs the app by `frames` frames of 1/60 s, then renders once."""
-    page.evaluate(f"(n) => {{ {_API} api.step(n); }}", frames)
+def step(page: Page, frames: int = 1, render: bool = True) -> None:
+    """Runs the app by `frames` frames of 1/60 s, then renders once (unless `render` is False)."""
+    page.evaluate(f"([n, r]) => {{ {_API} api.step(n, r); }}", [frames, render])
 
 
 def advance(page: Page, seconds: float) -> None:
@@ -87,12 +87,14 @@ def step_until[T](
     timeout: float = LOAD_TIMEOUT,
 ) -> T:
     """Steps the app `frames` frames at a time until `check(read())` holds; returns the value read.
-    Fails after `timeout` ms of real time (each step renders a frame)."""
+    The frames are not drawn while it waits (only the game's state is read), the frame it stops
+    at is. Fails after `timeout` ms of real time."""
     deadline = time.monotonic() + timeout / 1000
     while True:
-        step(page, frames)
+        step(page, frames, False)
         value = read()
         if check(value):
+            step(page, 0)
             return value
         if time.monotonic() > deadline:
             raise AssertionError(f"step_until: timed out, last value {value!r}")
@@ -182,19 +184,26 @@ def leave_level(page: Page) -> None:
 def wait_for_load(page: Page) -> None:
     """Steps through the loading of the level chosen, if one is loading (P13-R03: a level loads in
     steps, one per frame, behind its loading screen; its ground comes from a worker, so the page
-    must get its messages between two checks)."""
+    must get its messages between two checks). The loading frames are not drawn: under software
+    WebGL a drawn frame of a level costs some 200 ms, and no test looks at them. The frame the
+    loading stopped at is drawn once."""
     script = f"""() => {{
         {_API}
         const still = () => {{
             const state = api.getState();
             return state.screen === 'game' && state.game === null && state.levelResult === null;
         }};
-        for (let i = 0; i < 5 && still(); i++) api.step(1);
+        for (let i = 0; i < 5 && still(); i++) api.step(1, false);
         return still();
     }}"""
     deadline = time.monotonic() + LOAD_TIMEOUT / 1000
-    while page.evaluate(script) and time.monotonic() < deadline:
+    loading = page.evaluate(script)
+    if not loading:
+        return
+    while loading and time.monotonic() < deadline:
         page.wait_for_timeout(20)
+        loading = page.evaluate(script)
+    step(page, 0)
 
 
 def level(page: Page) -> dict[str, Any]:
