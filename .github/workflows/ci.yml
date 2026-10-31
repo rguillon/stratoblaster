@@ -10,7 +10,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  # Code checks (ENG-71, ENG-73): ruff (lint and format), import-linter, mypy. No build: the e2e jobs
+  # build the game (`make e2e-build` runs `make build` and its checks).
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-tags: true
+      - uses: astral-sh/setup-uv@v10.3.3
+      # Python 3.12 (pinned by pyproject.toml) is fetched by uv. Node is not used here, but the
+      # Makefile checks its version before any step (node/.nvmrc).
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: node/.nvmrc
+      - run: make lint typecheck
+
+  # Unit tests in CPython (pytest, ENG-40), with the coverage gates (ENG-43): no Transcrypt build.
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -20,12 +37,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: node/.nvmrc
-          cache: npm
-          cache-dependency-path: node/package-lock.json
-      # Python 3.12 (pinned by pyproject.toml) is fetched by uv; Node is for esbuild only. The
-      # targets install what they need (Makefile), the build bundles the pinned Babylon.js (ENG-02).
-      # Unit tests run in CPython (pytest), with the core/ coverage gate (ENG-43).
-      - run: make lint typecheck tests build
+      - run: make tests
       - name: Coverage summary
         if: always()
         run: |
