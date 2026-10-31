@@ -185,6 +185,8 @@ class RoadLayers:
         self._surfaces = RoadField(scene, self._surface_material, "street-surfaces", 0, False)
         self._grid: RoadField | None = None
         self._atlas_texture: Any = None
+        # The version of the atlas pixels on the texture (D-217: each is uploaded once; 0: none).
+        self._atlas_version = 0
 
     def _show_atlas(self, pixels: Any) -> None:
         """The road atlas's pixels on the surfaces' texture: made once, then updated."""
@@ -259,9 +261,11 @@ class RoadLayers:
         self._roads.set_chunk(index, build_road_geometry(others, ground, z_min, z_max, look))
 
     def set_tile_chunk(self, index: int, chunk: RoadChunk) -> None:
-        """The street surfaces of a chunk, made by `road_chunks` (in the worker or here)."""
-        if chunk.atlas is not None:
+        """The street surfaces of a chunk, made by `road_chunks` (in the worker or here), with the
+        road atlas's latest pixels (uploaded when their version is new here)."""
+        if chunk.atlas is not None and chunk.atlas_version != self._atlas_version:
             self._show_atlas(chunk.atlas)
+            self._atlas_version = chunk.atlas_version
         self._surfaces.set_chunk(index, chunk.surfaces)
         self._streets.set_chunk(index, chunk.layered)
         if self._grid is not None and chunk.grid is not None:
@@ -289,6 +293,9 @@ class RoadLayers:
         self._streets.remove_chunk(index)
 
     def clear(self) -> None:
+        """Removes every chunk; the next atlas is uploaded whatever its version (its source may
+        be another one, whose versions count from 1 again)."""
+        self._atlas_version = 0
         if self._grid is not None:
             self._grid.clear()
         self._surfaces.clear()

@@ -38,11 +38,13 @@ from core.scenery.scenery_level import (  # noqa: E402
     PropKindRule,
     PropRules,
     TerrainSection,
+    Woods,
 )
 from core.scenery.street_links import Block  # noqa: E402
 
 __pragma__("noskip")
 
+from config.scenery_stage import SCENERY_STAGE_CONFIG  # noqa: E402
 from core.math.noise import create_noise2d, hash_2d  # noqa: E402
 from core.scenery.away_placement import (  # noqa: E402
     AWAY_MARGIN,
@@ -63,7 +65,7 @@ from core.scenery.ground_boxes import (  # noqa: E402
     inside,
     overlap,
 )
-from core.scenery.ground_fit import lowest_under, standing_height  # noqa: E402
+from core.scenery.ground_fit import SampledGround, lowest_under, standing_height  # noqa: E402
 from core.scenery.ordering import stable_sort_by  # noqa: E402
 from core.scenery.street_grid import block_parts  # noqa: E402
 
@@ -72,12 +74,21 @@ DRAW_BUILDING = 0
 DRAW_KIND = 1
 DRAW_SCALE = 2
 DRAW_TREES = 3
-# Draws per tree: position X, position Z, kind, scale, turn.
-TREE_DRAWS = 5
+# Draws per tree: position X, position Z, kind, scale, turn, whether it stands at a wood's edge,
+# whether it is kept (D-214).
+TREE_DRAWS = 7
 # Blocks are cut into parts of about this size, one tower each at most…
 PART_SIZE = 30
 # …and at most this many parts across either way.
 MAX_PARTS = 4
+# D-212: with woods, each cell tries the most trees give or take this share.
+WOODS_SPREAD = 0.2
+# D-212: the trees of a cell stand on its ground sampled on the terrain mesh's grid (its cell,
+# `SCENERY_STAGE_CONFIG.cell`, so they stand on the ground drawn), and this far past the cell (their
+# footprints reach out of it).
+TREE_GROUND_MARGIN = 8
+# Half the diagonal of a square of side 1: how far a cell's corner is from its middle.
+SQRT_HALF = math.sqrt(0.5)
 # Smaller kinds a building slot tries when its first choice does not fit.
 FALLBACKS = 3
 # Lone buildings and hamlets stand within this share of the offscreen X of the level's middle…
@@ -105,6 +116,15 @@ class ChunkBuildings:
     def __init__(self, k: int, buildings: Sequence[BuildingRecord]) -> None:
         self.k = k
         self.buildings = buildings
+
+
+def _largest_footprint(kinds: Sequence[PropKindRule]) -> float:
+    largest = 0.0
+    for k in range(len(kinds)):
+        f = kinds[k].footprint
+        if f > largest:  # noqa: PLR1730 (Transcrypt's `max` is slower)
+            largest = f
+    return largest
 
 
 class _Box:
@@ -149,6 +169,15 @@ class _AwaySite:
         return True
 
 
+def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001
+    """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
+    with them (D-214), some of a wood's trees (`keep`), a few of the others (`scatter`), by `draw`
+    (the tree's own, apart from its edge draw)."""
+    if woods is None:
+        return in_woods
+    return draw < (woods.keep if in_woods else woods.scatter)
+
+
 class PropPlacer:
     """Places the props of a level (see the module doc)."""
 
@@ -170,6 +199,8 @@ class PropPlacer:
         self.roads = roads
         self.sea_level = sea_level
         self._zones = create_noise2d(seed + 3)
+        # D-212: where the woods are.
+        self._woods = create_noise2d(seed + 5)
         self._buildings: list[BuildingRecord] = []
         self._occupied = BuildingIndex()
         # Phase 9: set pieces and lines, larger than a bucket: every placement checks them all.
@@ -331,13 +362,44 @@ class PropPlacer:
 
     def place(self, area: GroundArea) -> list[PropPlacement]:
         """Buildings and trees that lie in `area` (the buildings around it are placed first)."""
+        self._ensure_around(area)
+        placements = self._buildings_in(area)
+        placements.extend(self._trees_in(area))
+        return placements
+
+    def _ensure_around(self, area: GroundArea) -> None:
+        """Places the buildings that could stand round `area` (and lays the runout's streets)."""
         self.ensure_placed(area.z_max + TREE_REACH)
         gate = self._gate_chunk()
         if gate is not None and chunk_of(area.z_max + TREE_REACH) >= gate:
             self.lay_runout()
+
+    def place_without_trees(self, area: GroundArea) -> list[PropPlacement]:
+        """The buildings and floating props that lie in `area` (see `place`)."""
+        self._ensure_around(area)
+        return self._buildings_in(area)
+
+    def _buildings_in(self, area: GroundArea) -> list[PropPlacement]:
+        """The buildings and floating props in `area`, the buildings around it already placed."""
         placements = [
             b.placement for b in self._buildings if inside(area, b.placement.x, b.placement.z)
         ]
+        floating = self.rules.floating
+        if floating is not None and self.sea_level is not None:
+            placements.extend(floating_in(floating, self.field, self.sea_level, self.seed, area))
+        return placements
+
+    def trees_in(self, area: GroundArea) -> list[PropPlacement]:
+        """The trees of the cells whose corner lies in `area` (see `place`): areas side by side,
+        cut on the cells' edges or not, get each tree once (D-212: a chunk's trees come a row of
+        cells at a time)."""
+        self._ensure_around(area)
+        return self._trees_in(area)
+
+    def _trees_in(self, area: GroundArea) -> list[PropPlacement]:
+        """The trees of the cells whose corner lies in `area`, the buildings around it already
+        placed."""
+        placements: list[PropPlacement] = []
         cell = self.rules.cell_size
         i0 = math.ceil(area.x_min / cell)
         i1 = math.ceil(area.x_max / cell)
@@ -346,9 +408,6 @@ class PropPlacer:
         for j in range(j0, j1):
             for i in range(i0, i1):
                 placements.extend(self._trees(i, j))
-        floating = self.rules.floating
-        if floating is not None and self.sea_level is not None:
-            placements.extend(floating_in(floating, self.field, self.sea_level, self.seed, area))
         return placements
 
     def _random(self, i: int, j: int, draw: int) -> float:
@@ -517,40 +576,90 @@ class PropPlacer:
         half = kind.footprint if kind.frontage is None else kind.frontage * scale * turned
         return Building(PropPlacement(kind.id, x, y, z, rotation, scale), half, half)
 
-    def _tree_draws(self, i: int, j: int, n: int) -> Callable[[int], float]:
-        """The draws of tree `n` of cell (`i`, `j`) (a closure, not a default argument)."""
+    def _tree_count(self, i: int, j: int, density: float) -> int:
+        """The trees tried in cell (`i`, `j`) of a section of tree `density`: any number up to
+        `trees_per_cell` times the density; with `forests` (D-212), about `trees_per_cell` (give or
+        take `WOODS_SPREAD`), so the cells do not show in a wood."""
+        draw = self._random(i, j, DRAW_TREES)
+        most = self.rules.trees_per_cell
+        if density <= 0:
+            return 0
+        if self.rules.forests is None:
+            return math.floor(draw * (most + 1) * density)
+        return math.floor(most * (1 + (draw - 0.5) * 2 * WOODS_SPREAD))
 
-        def draw(k: int) -> float:
-            return self._random(i, j, DRAW_TREES + 1 + n * TREE_DRAWS + k)
+    def _woods_cover(self, j: int, density: float, woods: Woods | None) -> float:
+        """How much of the ground of row `j` of cells the woods cover (D-212): the section's tree
+        `density` times its grass share (`Surface.lush`, blended between sections as the ground's
+        cover is), so the woods grow on the grass; or times its `woods` cover (D-214)."""
+        if self.rules.forests is None:
+            return density
+        if woods is not None:
+            return density * woods.cover
+        lush = self.field.surface((j + 0.5) * self.rules.cell_size).lush
+        return density * (lush if lush is not None else 0)
 
-        return draw
+    def _in_woods(self, x: float, z: float, draw: float, cover: float) -> bool:
+        """Whether a tree at (`x`, `z`) grows (D-212): in a wood, or at its edge by `draw`. `cover`
+        (see `_woods_cover`) sets how much of the ground the woods cover: all the noise over
+        `threshold` at 1, less below (the threshold raised towards 1). Every tree grows without
+        `forests`."""
+        forests = self.rules.forests
+        if forests is None:
+            return True
+        f = forests.frequency
+        wood = (self._woods(x * f, z * f) + 1) / 2
+        full = 1 if cover > 1 else cover
+        threshold = forests.threshold + (1 - full) * (1 - forests.threshold)
+        return wood >= threshold + draw * forests.edge
 
     def _trees(self, i: int, j: int) -> list[PropPlacement]:
         cell = self.rules.cell_size
         section = self.field.section_at((j + 0.5) * cell).section
         trees = allowed(self.rules.trees, section.trees)
-        count = math.floor(
-            self._random(i, j, DRAW_TREES) * (self.rules.trees_per_cell + 1) * section.tree_density
-        )
+        density = section.tree_density
+        count = self._tree_count(i, j, density)
+        woods = section.woods if self.rules.forests is not None else None
+        cover = self._woods_cover(j, density, woods)
+        # D-214: a section's `woods` may grow trees alone, outside its woods.
+        scatter = 0 if woods is None else woods.scatter
         placements: list[PropPlacement] = []
+        if (cover <= 0 and scatter <= 0) or count <= 0 or len(trees) == 0:
+            return placements
+        # D-212: a cell far enough from every road and building spares its trees those checks
+        # (a wood tries many trees per cell).
+        reach = cell * SQRT_HALF + _largest_footprint(trees)
+        middle_x = (i + 0.5) * cell
+        middle_z = (j + 0.5) * cell
+        clear = self.roads.clear_of(middle_x, middle_z, self.rules.tree_clearance + reach)
+        empty = self.free(_Box(middle_x, middle_z, reach))
+        # Sampled once the first tree of the cell needs it (D-212).
+        ground_of: list[SampledGround] = []
+        limits = [self.rules.tree_max_slope, self.rules.min_height]
+        seed = self.seed * 31 + DRAW_TREES + 1
         for n in range(count):
-            r = self._tree_draws(i, j, n)
-
-            x = (i + r(0)) * cell
-            z = (j + r(1)) * cell
-            kind = weighted(trees, r(2))
-            if kind is None or not self.roads.clear_of(
-                x, z, self.rules.tree_clearance + kind.footprint
-            ):
+            # The draws of tree `n` (`TREE_DRAWS` each), straight from the hash: this loop is hot.
+            at = seed + n * TREE_DRAWS
+            x = (i + hash_2d(i, j, at)) * cell
+            z = (j + hash_2d(i, j, at + 1)) * cell
+            grows = cover > 0 and self._in_woods(x, z, hash_2d(i, j, at + 5), cover)
+            if not _kept(grows, woods, hash_2d(i, j, at + 6)):
+                continue
+            kind = weighted(trees, hash_2d(i, j, at + 2))
+            if kind is None:
                 continue
             ground = kind.footprint
-            if not self.free(_Box(x, z, ground)):
+            if not clear and not self.roads.clear_of(x, z, self.rules.tree_clearance + ground):
                 continue
-            y = standing_height(
-                self.field,
-                [x, z, kind.footprint],
-                [self.rules.tree_max_slope, self.rules.min_height],
-            )
+            if not empty and not self.free(_Box(x, z, ground)):
+                continue
+            if len(ground_of) == 0:
+                m = TREE_GROUND_MARGIN
+                step = SCENERY_STAGE_CONFIG.cell
+                ground_of.append(
+                    SampledGround(self.field, i * cell - m, j * cell - m, cell + 2 * m, step)
+                )
+            y = standing_height(ground_of[0], [x, z, ground], limits)
             if y is not None:
                 placements.append(
                     PropPlacement(
@@ -558,8 +667,8 @@ class PropPlacer:
                         x,
                         y,
                         z,
-                        r(4) * 2 * math.pi,
-                        between(kind.scale, r(3)),
+                        hash_2d(i, j, at + 4) * 2 * math.pi,
+                        between(kind.scale, hash_2d(i, j, at + 3)),
                     )
                 )
         return placements

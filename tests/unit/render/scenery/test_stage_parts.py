@@ -59,11 +59,11 @@ def test_with_a_sea_the_sea_level_is_the_lowest_ground() -> None:
     assert lowest_ground(level) == 2
 
 
-def test_the_stage_camera_sees_twice_the_half_field_of_view_up_to_the_far_clip() -> None:
+def test_the_stage_camera_sees_twice_the_half_field_of_view_between_its_clips() -> None:
     scene = FakeScene()
-    camera = stage_camera(scene, half_fov=0.5, far_clip=800)
+    camera = stage_camera(scene, 0.5, (150, 800))
     assert camera.fov == pytest.approx(1.0)
-    assert (camera.minZ, camera.maxZ) == (1, 800)
+    assert (camera.minZ, camera.maxZ) == (150, 800)
     assert scene.activeCamera is camera
 
 

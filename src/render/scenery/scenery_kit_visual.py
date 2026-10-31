@@ -19,6 +19,7 @@ from render.babylon import (
 )
 from render.scenery.aurora_material_visual import create_aurora_material
 from render.scenery.cloud_material_visual import create_cloud_material
+from render.scenery.imposter_bake_visual import ImposterAtlas
 from render.scenery.lava_material_visual import LavaFrame, create_lava_material
 from render.scenery.plume_material_visual import create_plume_material
 from render.scenery.procedural_textures import (
@@ -40,6 +41,7 @@ from render.scenery.terrain_blend_plugin_visual import (
     new_terrain_blend_plugin,
 )
 from render.scenery.weather_material_visual import create_weather_material
+from render.scenery.window_material_visual import add_window_material
 
 __pragma__("skip")
 from typing import Any  # noqa: E402
@@ -158,6 +160,7 @@ class VisualSceneryKit:
         self._shadows = shadows
         self._camera = vector3(0, 0, 0)
         self.props = create_prop_materials(scene, look)
+        add_window_material(self.props, scene, look)
         self.terrain = _terrain_material(scene, look, state, seed)
         self.sea = self._sea
         self.roads = create_road_material(scene)
@@ -170,6 +173,13 @@ class VisualSceneryKit:
 
     def aurora(self) -> Any:
         return create_aurora_material(self._scene)
+
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """D-211: an atlas of `look` for `kinds` kinds of prop, if there is a look."""
+        if look == None:  # noqa: E711 (absent: undefined)
+            return None
+        tone = self._look.tone if self._look.tone != None else 1  # noqa: E711
+        return ImposterAtlas(self._scene, look, kinds, tone)
 
     def add_shadow_caster(self, mesh: Any) -> None:
         self._shadows.addShadowCaster(mesh, False)

@@ -26,6 +26,9 @@ PROP_COLORS = record(
         "containerBlue": [0.14, 0.27, 0.45],
         "containerGreen": [0.2, 0.36, 0.24],
         "containerRed": [0.5, 0.17, 0.14],
+        # Paints of the bus and the tanker's cab (D-213).
+        "carOrange": [0.78, 0.42, 0.1],
+        "carTeal": [0.1, 0.4, 0.42],
         # More city facades (phase 4 review).
         "sand": [0.55, 0.48, 0.38],
         "glassGreen": [0.09, 0.2, 0.19],

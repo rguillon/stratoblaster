@@ -1,6 +1,6 @@
 """One model per prop kind of this game, keyed by its id (P04-R04): the cars, the buildings and lots
-of the grid of tiles, and the road kit. D-207: the hand-made homes, huts, masts, farms and plants
-are gone."""
+of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts, masts,
+farms and plants are gone."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -12,9 +12,11 @@ __pragma__("noskip")
 
 from game.config.cars import CAR_IDS  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
 from game.view.props.car_props import build_car  # noqa: E402
 from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402
 from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402
+from game.view.props.tree_props import TREE_MODELS  # noqa: E402
 
 
 def merged(parts: list[Any]) -> dict[str, Any]:
@@ -26,20 +28,23 @@ def merged(parts: list[Any]) -> dict[str, Any]:
     return result
 
 
-def car_model(shape: str, paint: list[float]) -> Any:
-    """A factory of one car model."""
-    return lambda: build_car(shape, paint)
+def car_model(shape: str, paint: list[float], accent: list[float]) -> Any:
+    """A factory of one car model, its neon `accent` (D-211)."""
+    return lambda: build_car(shape, paint, accent)
 
 
 def make_car_models() -> dict[str, Any]:
-    """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162)."""
+    """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162).
+    D-213: each kind has its own body."""
     return {
-        CAR_IDS.red: car_model("sedan", C.containerRed),
-        CAR_IDS.blue: car_model("sedan", C.containerBlue),
-        CAR_IDS.white: car_model("sedan", C.white),
-        CAR_IDS.grey: car_model("sedan", C.metal),
-        CAR_IDS.van: car_model("van", C.white),
-        CAR_IDS.truck: car_model("truck", C.containerGreen),
+        CAR_IDS.red: car_model("racer", C.containerRed, L.cyan),
+        CAR_IDS.blue: car_model("sedan", C.containerBlue, L.pink),
+        CAR_IDS.white: car_model("pod", C.white, L.cyan),
+        CAR_IDS.grey: car_model("cruiser", C.metal, L.violet),
+        CAR_IDS.van: car_model("van", C.white, L.pink),
+        CAR_IDS.truck: car_model("truck", C.containerGreen, L.yellow),
+        CAR_IDS.bus: car_model("bus", C.carOrange, L.cyan),
+        CAR_IDS.tanker: car_model("tanker", C.carTeal, L.molten),
     }
 
 
@@ -49,6 +54,8 @@ def make_prop_models() -> dict[str, Any]:
         [
             make_car_models(),
             TILE_PROP_MODELS,
+            # D-212: the trees of the green land.
+            TREE_MODELS,
             # The road kit, for the `props/` page (no level places it: its streets are drawn).
             ROAD_KIT_MODELS,
         ]

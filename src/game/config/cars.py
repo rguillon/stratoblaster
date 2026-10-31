@@ -11,13 +11,31 @@ CAR_IDS = record(
         "grey": "car-grey",
         "van": "van",
         "truck": "truck",
+        "bus": "bus",
+        "tanker": "tanker",
     }
+)
+
+# D-211: the cars drawn as imposters, baked from their detailed models (see
+# `render/scenery/imposters.py`): 16 headings, 128-pixel frames 12 model units across, centred
+# 1.8 up, softly shaded.
+CAR_IMPOSTERS = record(
+    {"headings": 16, "framePx": 128, "frameSize": 12, "centre": 1.8, "ambient": 0.75}
 )
 
 # Cars stand in the middle of a lane, on the road surface (`roads.lift`).
 CAR_RULES = record(
     {
-        "kinds": ["car-red", "car-blue", "car-white", "car-grey", "van", "truck"],
+        "kinds": [
+            "car-red",
+            "car-blue",
+            "car-white",
+            "car-grey",
+            "van",
+            "truck",
+            "bus",
+            "tanker",
+        ],
         "density": 0.3,
         "lift": 0.6,
         "scale": 0.6,

@@ -30,6 +30,7 @@ from render.scenery.scenery_kit import create_plain_scenery_kit
 from render.scenery.scenery_kit_visual import create_scenery_kit
 from render.scenery.scenery_stage import SceneryStage
 from render.scenery.scenery_stage_options import SceneryStageOptions
+from render.scenery.window_material_visual import glow_windows
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -128,6 +129,9 @@ def _glow_ground(glow: Any, stage: Any) -> None:
         glow.addIncludedOnlyMesh(mesh)
     for mesh in stage.glow_occluders:
         glow.addIncludedOnlyMesh(mesh)
+    # D-210: only the lit windows glow.
+    for mesh in stage.window_meshes:
+        glow_windows(glow, mesh)
 
     def add_terrain(mesh: Any) -> None:
         glow.addIncludedOnlyMesh(mesh)

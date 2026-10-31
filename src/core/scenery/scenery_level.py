@@ -196,6 +196,18 @@ class BlockFill:
         self.towers = towers
 
 
+class Woods:
+    """How the trees of a section grow, where its ground is not grass (D-214, e.g. dead trees in
+    the desert): the woods (see `Forests`) cover the ground by `cover` (0..1, in place of the grass
+    share), only `keep` (0..1) of a wood's trees grow (sparse woods), and `scatter` (0..1) of the
+    trees tried outside the woods grow alone."""
+
+    def __init__(self, cover: float, keep: float, scatter: float) -> None:
+        self.cover = cover
+        self.keep = keep
+        self.scatter = scatter
+
+
 class TerrainSection:
     """One stretch of a level, sculpted from a relief and optional operations."""
 
@@ -218,6 +230,7 @@ class TerrainSection:
         groups: Sequence[str] | None = None,
         streets: StreetGrid | None = None,
         blocks: BlockFill | None = None,
+        woods: Woods | None = None,
     ) -> None:
         """`name`: shown by debug tools, e.g. `canyon`. `seconds`: how long the section takes to fly
         over, at the level's scroll speed. `float_density`: chance (0..1) that a cell of the sea
@@ -248,6 +261,7 @@ class TerrainSection:
         self.groups = groups
         self.streets = streets
         self.blocks = blocks
+        self.woods = woods
 
 
 class Drift:
@@ -440,6 +454,18 @@ class CarRules:
         self.sidewalk = sidewalk
 
 
+class Forests:
+    """Trees gather in woods on the grass (D-212): a low-frequency noise of `frequency` cycles per
+    world unit over the ground; on full grass at full tree density, a tree stands only where it is
+    over `threshold` (0..1), surely `edge` over it, by chance in between (ragged edges). Less grass
+    or a lower density raises the threshold towards 1: fewer woods."""
+
+    def __init__(self, frequency: float, threshold: float, edge: float) -> None:
+        self.frequency = frequency
+        self.threshold = threshold
+        self.edge = edge
+
+
 class PropRules:
     """Where and which props stand on the ground (P04-R04). Buildings follow the roads (R07)."""
 
@@ -461,6 +487,7 @@ class PropRules:
         lines: Sequence[PropLine] | None = None,
         landmarks: Sequence[Landmark] | None = None,
         lots: Sequence[PropKindRule] | None = None,
+        forests: Forests | None = None,
     ) -> None:
         """`cell_size`: trees grow in the cells of a grid of this size. `tree_clearance`: trees keep
         this far from the road edges. `max_slope`: steepest ground (height difference over the
@@ -473,7 +500,8 @@ class PropRules:
         given
         places. `lots` (phase 15, P15-R08): props of whole tiles (car parks, yards, plazas, parks)
         for
-        the tiles of a district's blocks that no building of their group fits."""
+        the tiles of a district's blocks that no building of their group fits. `forests` (D-212):
+        trees gather in woods (default: they grow evenly)."""
         self.cell_size = cell_size
         self.tree_clearance = tree_clearance
         self.max_slope = max_slope
@@ -490,6 +518,7 @@ class PropRules:
         self.lines = lines
         self.landmarks = landmarks
         self.lots = lots
+        self.forests = forests
 
 
 class TileRules:
@@ -735,6 +764,7 @@ def _with_seconds(section: TerrainSection, seconds: float) -> TerrainSection:
         section.groups,
         section.streets,
         section.blocks,
+        section.woods,
     )
 
 
