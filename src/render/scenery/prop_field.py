@@ -236,6 +236,15 @@ def _unique(ids: list[str]) -> list[str]:
     return out
 
 
+def level_tree_kinds(level: SceneryLevel) -> list[str]:
+    """The kinds of tree `level`'s sections allow (D-214), unique, in order."""
+    ids: list[str] = []
+    for s in level.sections:
+        for t in allowed(level.props.trees, s.trees):
+            ids.append(t.id)
+    return _unique(ids)
+
+
 def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
     """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
     sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order."""
@@ -246,9 +255,7 @@ def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
         for g in allowed(props.groups, s.groups):
             for k in g.kinds:
                 ids.append(k.id)
-    for s in sections:
-        for t in allowed(props.trees, s.trees):
-            ids.append(t.id)
+    ids.extend(level_tree_kinds(level))
     if props.floating is not None:
         for k in props.floating.kinds:
             ids.append(k.id)

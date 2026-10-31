@@ -27,7 +27,12 @@ from render.scenery.playfield_framing import (
     visible_ground,
 )
 from render.scenery.plume_layer import plume_light
-from render.scenery.prop_field import PropField, level_prop_models, prop_drifts
+from render.scenery.prop_field import (
+    PropField,
+    level_prop_models,
+    level_tree_kinds,
+    prop_drifts,
+)
 from render.scenery.rain_rings import RainRings
 from render.scenery.road_field import RoadLayers
 from render.scenery.scenery_kit import SceneryKitContext, SceneryKitFrame, SeaSize
@@ -122,7 +127,9 @@ class SceneryStage:
         self._x_half = (
             math.ceil((self._ground.half_width + config.margin) / config.cell) * config.cell
         )
-        self.camera = stage_camera(scene, self.framing.half_fov, config.far_clip)
+        self.camera = stage_camera(
+            scene, self.framing.half_fov, (config.near_clip, config.far_clip)
+        )
         # P08-R04: the time of day, clouds and weather along the level.
         self._sky = SkyLayers(scene, look, (level.scroll_speed, options.atmosphere, level.seed))
         self.sun = self._sky.sun
@@ -524,7 +531,7 @@ class SceneryStage:
         trees = imposter_kinds(
             self.scene,
             models,
-            [tree.id for tree in level.props.trees],
+            level_tree_kinds(level),
             lambda kinds: kit.imposter_atlas(self.options.look.props.treeImposters, kinds),
             self.framing.tilt,
         )

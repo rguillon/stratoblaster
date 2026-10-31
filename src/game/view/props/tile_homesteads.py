@@ -7,7 +7,17 @@ import math
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
-from game.view.props.tile_kit import NEON, TileKit, any_of, js_remainder, r
+from game.config.window_look import DOOR_STYLES, WINDOW_STYLES
+from game.view.props.tile_kit import (
+    NEON,
+    TileKit,
+    any_of,
+    door,
+    front_windows,
+    js_remainder,
+    r,
+    windows,
+)
 from game.view.props.tile_residences import deck
 from render.geometry.solids import Placement
 
@@ -67,7 +77,8 @@ def dome(k: TileKit) -> None:
 
 
 def cubes(k: TileKit) -> None:
-    """Two or three cubes stacked off each other, glass on their fronts."""
+    """Two or three cubes stacked off each other, glass on their fronts (D-215: a quad of curtain
+    wall each)."""
     s = min(k.w, k.d) * 0.45
     n = 2 + math.floor(k.random() * 2)
     for i in range(n):
@@ -76,22 +87,25 @@ def cubes(k: TileKit) -> None:
         k.s.box(
             [s, s * 0.6, s], any_of(k, SHELLS), Placement([x, i * s * 0.6, z], 0, 0, 0), C.metalDark
         )
-        k.s.box(
-            [s * 0.7, s * 0.35, 0.15],
-            any_of(k, GLASS),
-            Placement([x, i * s * 0.6 + s * 0.12, z - s / 2 - 0.05], 0, 0, 0),
+        y = i * s * 0.6
+        front_windows(
+            k,
+            [x, z - s / 2, -1],
+            [s * 0.7, y + s * 0.12, y + s * 0.47],
+            WINDOW_STYLES.curtain,
+            L.window,
         )
     k.lights.box([s * 0.6, 0.15, 0.15], L.window, Placement([0, n * s * 0.6, 0], 0, 0, 0))
 
 
 def containers(k: TileKit) -> None:
-    """Containers stacked crosswise as a home, a lit door."""
+    """Containers stacked crosswise as a home, a door (D-215: a quad from the windows' atlas)."""
     w = min(k.w * 0.85, 12)
     d = min(k.d * 0.5, 2.6)
     colors = [C.containerRed, C.containerBlue, C.silver, C.white]
     k.s.box([w, 2.6, d], any_of(k, colors), Placement([0, 0, -d * 0.3], 0, 0, 0))
     k.s.box([d, 2.6, min(k.d * 0.85, w)], any_of(k, colors), Placement([w * 0.2, 2.6, 0], 0, 0, 0))
-    k.lights.box([1, 2, 0.15], L.window, Placement([-w * 0.3, 0, -d * 0.8 - 0.1], 0, 0, 0))
+    door(k, [-w * 0.3, 0, -d * 0.8], DOOR_STYLES.door, L.window)
     k.lights.box(
         [0.15, 0.15, min(k.d * 0.8, w)],
         any_of(k, NEON),
@@ -116,9 +130,8 @@ def grow_tower(k: TileKit) -> None:
         Placement([-k.w * 0.2, 0, -k.d * 0.15], 0, 0, 0),
         C.metalDark,
     )
-    k.lights.box(
-        [k.w * 0.3, 0.8, 0.15], L.window, Placement([-k.w * 0.2, 1.2, -k.d * 0.35 - 0.05], 0, 0, 0)
-    )
+    # D-215: its windows, one quad a wall.
+    windows(k, [k.w * 0.4, k.d * 0.4], [0.8, 2.6], L.window, [-k.w * 0.2, -k.d * 0.15])
 
 
 def solar_shed(k: TileKit) -> None:
@@ -133,11 +146,8 @@ def solar_shed(k: TileKit) -> None:
     hw = k.w * 0.4 if along else k.w * 0.6
     hd = k.d * 0.6 if along else k.d * 0.4
     k.s.box([hw, 3.4, hd], any_of(k, SHELLS), Placement(at(a), 0, 0, 0), C.metalDark)
-    k.lights.box(
-        [hw * 0.7, 0.8, 0.15],
-        L.window,
-        Placement([at(a)[0], 1.3, at(a)[2] - hd / 2 - 0.05], 0, 0, 0),
-    )
+    # D-215: the home's windows, one quad a wall.
+    windows(k, [hw, hd], [1, 2.8], L.window, [at(a)[0], at(a)[2]])
     k.s.box([hw * 0.8, 2.4, hd * 0.8], C.metalDark, Placement(at(b), 0, 0, 0))
     k.s.box([hw * 0.9, 0.12, hd * 0.9], C.solar, Placement([at(b)[0], 3, at(b)[2]], 0, -0.4, 0))
 

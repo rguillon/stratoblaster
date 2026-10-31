@@ -196,6 +196,18 @@ class BlockFill:
         self.towers = towers
 
 
+class Woods:
+    """How the trees of a section grow, where its ground is not grass (D-214, e.g. dead trees in
+    the desert): the woods (see `Forests`) cover the ground by `cover` (0..1, in place of the grass
+    share), only `keep` (0..1) of a wood's trees grow (sparse woods), and `scatter` (0..1) of the
+    trees tried outside the woods grow alone."""
+
+    def __init__(self, cover: float, keep: float, scatter: float) -> None:
+        self.cover = cover
+        self.keep = keep
+        self.scatter = scatter
+
+
 class TerrainSection:
     """One stretch of a level, sculpted from a relief and optional operations."""
 
@@ -218,6 +230,7 @@ class TerrainSection:
         groups: Sequence[str] | None = None,
         streets: StreetGrid | None = None,
         blocks: BlockFill | None = None,
+        woods: Woods | None = None,
     ) -> None:
         """`name`: shown by debug tools, e.g. `canyon`. `seconds`: how long the section takes to fly
         over, at the level's scroll speed. `float_density`: chance (0..1) that a cell of the sea
@@ -248,6 +261,7 @@ class TerrainSection:
         self.groups = groups
         self.streets = streets
         self.blocks = blocks
+        self.woods = woods
 
 
 class Drift:
@@ -750,6 +764,7 @@ def _with_seconds(section: TerrainSection, seconds: float) -> TerrainSection:
         section.groups,
         section.streets,
         section.blocks,
+        section.woods,
     )
 
 

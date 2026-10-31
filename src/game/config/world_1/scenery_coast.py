@@ -8,6 +8,7 @@ and farmland. Heights in world units above the sea level (0). Each section's `se
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
+from game.config.trees import LIVE_TREES
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -54,6 +55,7 @@ def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
             "buildingDensity": 0,
             # D-212: trees on the islands' grass.
             "treeDensity": 1,
+            "trees": LIVE_TREES,
             "surface": {"lush": 0.7},
             "groups": [G.fishing],
         }
@@ -70,6 +72,7 @@ GREEN_COAST = record(
         "buildingDensity": 0.5,
         "treeDensity": 1,
         "surface": {"lush": 0.8, "sandy": 0.2},
+        "trees": LIVE_TREES,
         "groups": [G.fishing, G.coastHomes],
     }
 )
@@ -86,6 +89,7 @@ def green(name: str, seconds: float, extra: Any) -> Any:
                 "buildingDensity": 0.5,
                 # D-212: woods on the grass (its share sets how much: see `FORESTS`).
                 "treeDensity": 1,
+                "trees": LIVE_TREES,
                 "surface": {"lush": 1},
                 "groups": [G.villages, G.farms],
             }

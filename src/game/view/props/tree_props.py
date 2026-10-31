@@ -14,6 +14,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.trees import TREE_IDS
+from game.view.props.dead_tree_props import dead_bush, dead_oak, dead_pine, snag
 from render.geometry.rough import Leaves, Roughness, leaf_cloud, leaf_cone, rough_ball, rough_lathe
 from render.geometry.solids import Placement, SolidBuilder
 from render.scenery.scenery_look import PropGeometry
@@ -193,4 +194,9 @@ TREE_MODELS = {
     TREE_IDS.poplar: _model(poplar, POPLAR),
     TREE_IDS.pine: _model(pine, NEEDLES),
     TREE_IDS.bush: _model(bush, BUSH),
+    # D-214: the dead trees of the desert.
+    TREE_IDS.deadOak: dead_oak,
+    TREE_IDS.deadPine: dead_pine,
+    TREE_IDS.snag: snag,
+    TREE_IDS.deadBush: dead_bush,
 }

@@ -18,6 +18,14 @@ WINDOW_ATLAS = record(
             {"window": [3, 1, 5, 7], "lit": 0.15},
             {"window": [1, 1, 7, 7], "lit": 0.22},
         ],
+        # D-215: the doors, each in its own band of `doorColumns` columns after the windows': a
+        # glazed door, and a wide bay (a loading or garage door), both standing on the cell's
+        # bottom (a door's quad starts at the ground). Lit more often: someone is coming in.
+        "doors": [
+            {"window": [2, 0, 6, 7], "lit": 0.5},
+            {"window": [0, 0, 8, 6], "lit": 0.45},
+        ],
+        "doorColumns": 2,
         # Warm lamps mostly, now and then a cold office light or a screen.
         "colors": [
             [1, 0.82, 0.55],
@@ -45,3 +53,10 @@ WINDOW_OFFSET = 0.08
 # How much of their own colour the windows of a building take (the rest white), over the
 # atlas' colours: warm homes, dim offices, neon towers.
 WINDOW_TINT = 0.5
+
+# D-215: the window styles by name, as they stand in `WINDOW_ATLAS.styles`, for the buildings
+# that want one (a glass front is a curtain wall, an adobe home has punched windows).
+WINDOW_STYLES = record({"punched": 0, "ribbon": 1, "tall": 2, "curtain": 3})
+
+# D-215: the doors by name, as they stand in `WINDOW_ATLAS.doors`.
+DOOR_STYLES = record({"door": 0, "bay": 1})

@@ -4,12 +4,26 @@ import pytest
 from helpers.geometry_checks import bounds, check_colored
 
 from core.math.rng import create_rng
-from game.config.window_look import WINDOW_ATLAS, WINDOW_CELL, WINDOW_OFFSET
-from game.view.props.window_facades import facade_windows, round_windows, tint_of, wall_uv
+from game.config.window_look import (
+    DOOR_STYLES,
+    WINDOW_ATLAS,
+    WINDOW_CELL,
+    WINDOW_OFFSET,
+    WINDOW_STYLES,
+)
+from game.view.props.window_facades import (
+    doorway,
+    facade_windows,
+    round_windows,
+    tint_of,
+    wall_uv,
+    wall_windows,
+)
 from render.geometry.textured import QuadBuilder
 
 CELLS = 64
-BAND = 16
+# D-215: 15 columns a window style, the doors' bands taking the last 4.
+BAND = 15
 
 
 def test_d210_the_tint_is_half_the_window_colour_over_white():
@@ -76,7 +90,7 @@ def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad():
 
 
 def test_d210_the_atlas_has_as_many_bands_as_styles():
-    assert len(WINDOW_ATLAS.styles) * BAND == CELLS
+    assert len(WINDOW_ATLAS.styles) * BAND + len(WINDOW_ATLAS.doors) * 2 == CELLS
 
 
 def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper():
@@ -96,3 +110,73 @@ def test_d210_a_round_tower_too_low_gets_no_windows():
     quads = QuadBuilder()
     round_windows(quads, create_rng(2), [0.0, 0.0, 0.0, 10.0, 3.0, 3.0, 8], [2.0, 2.5], [1, 1, 1])
     assert quads.geometry.indices == []
+
+
+def test_d215_a_box_may_have_the_style_it_asks_for():
+    for seed in range(10):
+        quads = QuadBuilder()
+        facade_windows(
+            quads, create_rng(seed), [0.0, 0.0, 10.0, 10.0], [0.0, 9.0], [1, 1, 1], False, 2
+        )
+        assert set(_bands(quads.geometry)) == {2}
+
+
+def test_d215_one_wall_gets_one_quad_of_its_style_just_off_it_facing_its_way():
+    for facing in [-1, 1]:
+        quads = QuadBuilder()
+        wall_windows(
+            quads,
+            create_rng(1),
+            [2.0, 3.0, facing],
+            [6.0, 1.0, 4.0],
+            WINDOW_STYLES.curtain,
+            [1, 1, 1],
+        )
+        geo = quads.geometry
+        check_colored(geo)
+        assert len(geo.indices) == 6
+        assert _bands(geo) == [WINDOW_STYLES.curtain]
+        low, high = bounds(geo)
+        z = 3.0 + facing * WINDOW_OFFSET
+        assert low == pytest.approx([-1.0, 1.0, z])
+        assert high == pytest.approx([5.0, 4.0, z])
+
+
+def test_d215_one_wall_faces_out():
+    for facing in [-1, 1]:
+        quads = QuadBuilder()
+        wall_windows(quads, create_rng(1), [0.0, 0.0, facing], [4.0, 0.0, 3.0], 0, [1, 1, 1])
+        p = quads.geometry.positions
+        # The quad's corners: foot, top, top, foot, its normal (c1 - c0) × (c2 - c0) along Z.
+        e1 = [p[3] - p[0], p[4] - p[1], p[5] - p[2]]
+        e2 = [p[6] - p[0], p[7] - p[1], p[8] - p[2]]
+        nz = e1[0] * e2[1] - e1[1] * e2[0]
+        assert nz * facing > 0
+
+
+def test_d215_a_wall_too_narrow_or_too_low_gets_no_quad():
+    quads = QuadBuilder()
+    wall_windows(quads, create_rng(1), [0.0, 0.0, -1], [0.5, 0.0, 3.0], 0, [1, 1, 1])
+    wall_windows(quads, create_rng(1), [0.0, 0.0, -1], [4.0, 1.0, 1.5], 0, [1, 1, 1])
+    assert quads.geometry.positions == []
+
+
+def test_d215_a_door_is_one_cell_of_its_band_standing_on_the_ground():
+    random = create_rng(4)
+    for door in [DOOR_STYLES.door, DOOR_STYLES.bay]:
+        for _ in range(20):
+            quads = QuadBuilder()
+            doorway(quads, random, [1.0, 0.5, -2.0], -1, door, [1, 1, 1])
+            geo = quads.geometry
+            uvs = geo.uvs
+            u0 = min(uvs[0::2])
+            u1 = max(uvs[0::2])
+            v0 = min(uvs[1::2])
+            v1 = max(uvs[1::2])
+            assert (u1 - u0, v1 - v0) == pytest.approx((1 / CELLS, 1 / CELLS))
+            assert int(u0 * CELLS + 0.5) in [4 * BAND + 2 * door, 4 * BAND + 2 * door + 1]
+            low, high = bounds(geo)
+            assert low == pytest.approx([1.0 - WINDOW_CELL.width / 2, 0.5, -2 - WINDOW_OFFSET])
+            assert high == pytest.approx(
+                [1.0 + WINDOW_CELL.width / 2, 0.5 + WINDOW_CELL.height, -2 - WINDOW_OFFSET]
+            )

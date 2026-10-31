@@ -5,10 +5,13 @@ import math
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
+from game.config.window_look import DOOR_STYLES, WINDOW_STYLES
 from game.view.props.tile_kit import (
     TileKit,
     any_of,
+    door,
     front_lights,
+    front_windows,
     gable,
     js_round,
     lamp,
@@ -70,7 +73,8 @@ def build_radio(k: TileKit) -> None:
     k.s.box([4, 3, 3], C.concrete, Placement([-1.5, 0, -2], 0, 0, 0), C.roof)
     k.s.cylinder(0.4, 14, 4, C.metal, Placement([2, 0, 1.5], 0, 0, 0), 0.1)
     k.lights.box([0.5, 0.5, 0.5], L.red, Placement([2, 14, 1.5], 0, 0, 0))
-    k.lights.box([2.5, 0.4, 0.2], L.window, Placement([-1.5, 1.2, -3.6], 0, 0, 0))
+    # D-215: the hut's window, a quad from the windows' atlas.
+    front_windows(k, [-1.5, -3.5, -1], [2.5, 1, 2.4], WINDOW_STYLES.ribbon, L.window)
 
 
 def build_depot(k: TileKit) -> None:
@@ -225,13 +229,10 @@ def build_warehouse(k: TileKit) -> None:
     h = r(k, [6, 9])
     k.s.box([w, h, d], any_of(k, SHEDS), Placement([0, 0, 1], 0, 0, 0))
     gable(k, [w, d], h, 1.5, C.roof, [0, 1], d > w)
+    # D-215: its loading doors, bays from the windows' atlas.
     doors = max(1, js_round(w / 5))
     for i in range(doors):
-        k.lights.box(
-            [2.5, 3, 0.2],
-            L.yellowDim,
-            Placement([-w / 2 + (w / doors) * (i + 0.5), 0, 1 - d / 2 - 0.1], 0, 0, 0),
-        )
+        door(k, [-w / 2 + (w / doors) * (i + 0.5), 0, 1 - d / 2], DOOR_STYLES.bay, L.yellowDim)
 
 
 def build_containers(k: TileKit) -> None:

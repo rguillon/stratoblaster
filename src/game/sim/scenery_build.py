@@ -39,6 +39,7 @@ from core.scenery.scenery_level import (
     Surface,
     TerrainSection,
     TileRules,
+    Woods,
 )
 from game.sim.config_build import mapped, maybe, opt
 
@@ -106,6 +107,10 @@ def _surface(surface: ConfigRecord) -> Surface:
     return Surface(opt(surface.lush), opt(surface.paved), opt(surface.sandy))
 
 
+def _woods(woods: ConfigRecord) -> Woods:
+    return Woods(woods.cover, woods.keep, woods.scatter)
+
+
 def _street_grid(streets: ConfigRecord) -> StreetGrid:
     return StreetGrid(streets.rows, streets.columns, streets.links)
 
@@ -133,6 +138,7 @@ def _section(section: ConfigRecord) -> TerrainSection:
         opt(section.groups),
         maybe(section.streets, _street_grid),
         maybe(section.blocks, _block_fill),
+        maybe(section.woods, _woods),
     )
 
 

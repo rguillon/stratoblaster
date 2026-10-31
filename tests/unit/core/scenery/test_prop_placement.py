@@ -300,3 +300,48 @@ def test_d212_trees_placed_a_strip_at_a_time_are_those_placed_at_once() -> None:
     assert len(at_once) > 0
     assert sorted(keys(by_strip)) == sorted(at_once)
     assert all(t.kind != "stick" for t in placer.place_without_trees(AREA))
+
+
+def _desert(woods, density: float = 1) -> list:
+    """The sample's two sections, no grass, its trees growing as `woods` says (D-214)."""
+    sections = _grassy(0, density)
+    for section in sections:
+        section.woods = woods
+    return sections
+
+
+def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    def count(cover: float, keep: float, scatter: float = 0) -> int:
+        level = sample_level(sections=_desert(Woods(cover, keep, scatter)), props=_woods(0.3))
+        return len(_trees(level))
+
+    full = count(1, 1)
+    sparse = count(1, 0.2)
+    assert full > 0
+    assert 0 < sparse < full / 2
+    assert count(0.5, 1) < full
+    assert count(0, 1) == 0
+
+
+def test_d214_a_sections_woods_scatter_lone_trees_outside_them() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    def count(scatter: float, density: float = 1) -> int:
+        level = sample_level(sections=_desert(Woods(0, 0, scatter), density), props=_woods(0.3))
+        return len(_trees(level))
+
+    assert count(0) == 0
+    assert 0 < count(0.05) < count(0.2)
+    assert count(0.2, 0) == 0
+
+
+def test_d214_without_forests_a_sections_woods_change_nothing() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    props = sample_props(trees_per_cell=20)
+    plain = _trees(sample_level(sections=_desert(None), props=props))
+    woods = _trees(sample_level(sections=_desert(Woods(0, 0, 0)), props=props))
+    assert len(plain) > 0
+    assert keys(woods) == keys(plain)

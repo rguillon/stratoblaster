@@ -25,7 +25,7 @@ class SceneryStageConfig:
     (how far behind the scene the sun is placed, for its shadows); `far_clip` (far clipping
     distance of the camera); `prop_reach` (how far before and past the ground in view props are
     drawn, as [near, far]); `prop_step` (how much the drawn range is widened, so it is uploaded
-    again only now and then)."""
+    again only now and then); `near_clip` (D-216: the camera's near clipping distance)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -37,6 +37,7 @@ class SceneryStageConfig:
         far_clip: float,
         prop_reach: tuple[float, float],
         prop_step: float,
+        near_clip: float,
     ) -> None:
         self.chunk_length = chunk_length
         self.cell = cell
@@ -46,6 +47,7 @@ class SceneryStageConfig:
         self.far_clip = far_clip
         self.prop_reach = prop_reach
         self.prop_step = prop_step
+        self.near_clip = near_clip
 
 
 class SceneryStageOptions:

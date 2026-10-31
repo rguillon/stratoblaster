@@ -34,14 +34,17 @@ def car_model(shape: str, paint: list[float], accent: list[float]) -> Any:
 
 
 def make_car_models() -> dict[str, Any]:
-    """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162)."""
+    """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162).
+    D-213: each kind has its own body."""
     return {
-        CAR_IDS.red: car_model("sedan", C.containerRed, L.cyan),
+        CAR_IDS.red: car_model("racer", C.containerRed, L.cyan),
         CAR_IDS.blue: car_model("sedan", C.containerBlue, L.pink),
-        CAR_IDS.white: car_model("sedan", C.white, L.cyan),
-        CAR_IDS.grey: car_model("sedan", C.metal, L.violet),
+        CAR_IDS.white: car_model("pod", C.white, L.cyan),
+        CAR_IDS.grey: car_model("cruiser", C.metal, L.violet),
         CAR_IDS.van: car_model("van", C.white, L.pink),
         CAR_IDS.truck: car_model("truck", C.containerGreen, L.yellow),
+        CAR_IDS.bus: car_model("bus", C.carOrange, L.cyan),
+        CAR_IDS.tanker: car_model("tanker", C.carTeal, L.molten),
     }
 
 

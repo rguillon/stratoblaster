@@ -20,3 +20,21 @@ def test_p04_props_show_from_a_reach_band_in_steps() -> None:
     low, high = stage.prop_reach
     assert 0 < low < high
     assert stage.prop_step > 0
+
+
+def test_d216_the_near_clip_stays_well_before_the_flight_plane() -> None:
+    import math  # noqa: PLC0415
+
+    from core.content.game_definition import LogicalScreen  # noqa: PLC0415
+    from game.config.game import GAME_CONFIG  # noqa: PLC0415
+    from game.config.scenery_look import PLAYFIELD_CAMERA  # noqa: PLC0415
+    from render.scenery.playfield_framing import frame_playfield  # noqa: PLC0415
+
+    screen = LogicalScreen(GAME_CONFIG.screen.width, GAME_CONFIG.screen.height)
+    framing = frame_playfield(screen, PLAYFIELD_CAMERA)
+    # The nearest the camera sees the flight plane: along the top edge of its view.
+    nearest = framing.height / math.cos(framing.tilt - framing.half_fov)
+    stage = SCENERY_STAGE_CONFIG
+    assert 1 < stage.near_clip < nearest / 2
+    # Far enough out that the ground, past the flight plane, keeps its depth precision.
+    assert stage.near_clip >= 100

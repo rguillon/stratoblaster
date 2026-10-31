@@ -11,6 +11,8 @@ CAR_IDS = record(
         "grey": "car-grey",
         "van": "van",
         "truck": "truck",
+        "bus": "bus",
+        "tanker": "tanker",
     }
 )
 
@@ -24,7 +26,16 @@ CAR_IMPOSTERS = record(
 # Cars stand in the middle of a lane, on the road surface (`roads.lift`).
 CAR_RULES = record(
     {
-        "kinds": ["car-red", "car-blue", "car-white", "car-grey", "van", "truck"],
+        "kinds": [
+            "car-red",
+            "car-blue",
+            "car-white",
+            "car-grey",
+            "van",
+            "truck",
+            "bus",
+            "tanker",
+        ],
         "density": 0.3,
         "lift": 0.6,
         "scale": 0.6,

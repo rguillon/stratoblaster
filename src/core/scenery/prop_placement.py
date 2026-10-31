@@ -38,6 +38,7 @@ from core.scenery.scenery_level import (  # noqa: E402
     PropKindRule,
     PropRules,
     TerrainSection,
+    Woods,
 )
 from core.scenery.street_links import Block  # noqa: E402
 
@@ -163,6 +164,15 @@ class _AwaySite:
             return False
         self._placer.occupy(building)
         return True
+
+
+def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001
+    """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
+    with them (D-214), some of a wood's trees (`keep`), a few of the others (`scatter`), by `draw`
+    (the tree's own: its edge draw with the cell's coordinates swapped)."""
+    if woods is None:
+        return in_woods
+    return draw < (woods.keep if in_woods else woods.scatter)
 
 
 class PropPlacer:
@@ -565,12 +575,14 @@ class PropPlacer:
             return math.floor(draw * (most + 1) * density)
         return math.floor(most * (1 + (draw - 0.5) * 2 * WOODS_SPREAD))
 
-    def _woods_cover(self, j: int, density: float) -> float:
+    def _woods_cover(self, j: int, density: float, woods: Woods | None) -> float:
         """How much of the ground of row `j` of cells the woods cover (D-212): the section's tree
         `density` times its grass share (`Surface.lush`, blended between sections as the ground's
-        cover is), so the woods grow on the grass."""
+        cover is), so the woods grow on the grass; or times its `woods` cover (D-214)."""
         if self.rules.forests is None:
             return density
+        if woods is not None:
+            return density * woods.cover
         lush = self.field.surface((j + 0.5) * self.rules.cell_size).lush
         return density * (lush if lush is not None else 0)
 
@@ -594,9 +606,12 @@ class PropPlacer:
         trees = allowed(self.rules.trees, section.trees)
         density = section.tree_density
         count = self._tree_count(i, j, density)
-        cover = self._woods_cover(j, density)
+        woods = section.woods if self.rules.forests is not None else None
+        cover = self._woods_cover(j, density, woods)
+        # D-214: a section's `woods` may grow trees alone, outside its woods.
+        scatter = 0 if woods is None else woods.scatter
         placements: list[PropPlacement] = []
-        if cover <= 0 or count <= 0 or len(trees) == 0:
+        if (cover <= 0 and scatter <= 0) or count <= 0 or len(trees) == 0:
             return placements
         # D-212: a cell far enough from every road and building spares its trees those checks
         # (a wood tries many trees per cell).
@@ -614,7 +629,8 @@ class PropPlacer:
             at = seed + n * TREE_DRAWS
             x = (i + hash_2d(i, j, at)) * cell
             z = (j + hash_2d(i, j, at + 1)) * cell
-            if not self._in_woods(x, z, hash_2d(i, j, at + 5), cover):
+            grows = cover > 0 and self._in_woods(x, z, hash_2d(i, j, at + 5), cover)
+            if not _kept(grows, woods, hash_2d(j, i, at + 5)):
                 continue
             kind = weighted(trees, hash_2d(i, j, at + 2))
             if kind is None:

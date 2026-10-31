@@ -4,7 +4,8 @@ From the farmland 1-2 ended on, through woods, green hills and a market town, to
 turns dry and yellow. No sea. Its `seconds` add up to 240 (P06-R04).
 """
 
-from game.config.record import merge, record
+from game.config.record import concat, merge, record
+from game.config.trees import DEAD_TREES, LIVE_TREES
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 from game.config.world_1.scenery_coast import FARMLAND, smooth
 
@@ -22,6 +23,8 @@ DRY_GRASSLAND = record(
         "buildingDensity": 0.75,
         # D-212: trees on the little grass left, few.
         "treeDensity": 1,
+        # D-214: the woods are dying, dead trees among the living.
+        "trees": concat(LIVE_TREES, DEAD_TREES),
         "surface": {"lush": 0.2},
         "groups": [G.villages, G.outposts],
     }

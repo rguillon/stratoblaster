@@ -3,9 +3,11 @@ imposters)
 
 Sizes in model units (drawn at `CAR_RULES.scale`), standing on Y = 0; the front faces +Z, the way
 they drive. The levels draw a picture of each car baked from these models (`imposter_bake_visual`),
-so their triangles cost nothing in play. They hover on pads instead of wheels: chamfered wedge
-hulls, glass canopies, fins, thrusters, neon strips. Their light bars, neon strips, the glow under
-them and the beams on the road stay real geometry (the lights), so they glow at night.
+so their triangles cost nothing in play. D-213: each kind has its own body (a racer, a coupé, a
+pod, a limousine, a van, a bus, a hauler, a tanker). They hover on pads instead of wheels:
+chamfered wedge hulls, glass canopies, fins, thrusters, neon strips. Their light bars, neon
+strips, the glow under them and the beams on the road stay real geometry (the lights), so they
+glow at night.
 """
 
 import math
@@ -23,9 +25,30 @@ BEAM_LIGHT = [0.4, 0.33, 0.18]
 # back).
 SHAPES = {
     "sedan": {"length": 7, "width": 3.2, "height": 1.3, "cabin": 3.4, "back": 1.6},
+    "racer": {"length": 7.6, "width": 3.6, "height": 1.0, "cabin": 1.4, "back": 3.4},
+    "pod": {"length": 4.8, "width": 2.8, "height": 1.8, "cabin": 2.9, "back": 0.9},
+    "cruiser": {"length": 8.6, "width": 3.4, "height": 1.5, "cabin": 4.6, "back": 2.1},
     "van": {"length": 7.6, "width": 3.4, "height": 2.8, "cabin": 1.8, "back": 5.2},
+    "bus": {"length": 10.4, "width": 3.6, "height": 2.6, "cabin": 9.2, "back": 0.2},
     "truck": {"length": 10, "width": 3.6, "height": 3.4, "cabin": 2.2, "back": 7.6},
+    "tanker": {"length": 10, "width": 3.6, "height": 3.4, "cabin": 2.2, "back": 7.6},
 }
+
+# A rounded body's cross-section (`SolidBuilder.loft`), from its bottom round to its top.
+ROUND = [
+    [0.4, 0],
+    [0.92, 0.2],
+    [1, 0.5],
+    [0.85, 0.8],
+    [0.35, 1],
+    [-0.35, 1],
+    [-0.85, 0.8],
+    [-1, 0.5],
+    [-0.92, 0.2],
+    [-0.4, 0],
+]
+# The tanker's polished tank.
+CHROME = [0.62, 0.64, 0.68]
 
 # The parts every car shares.
 PAD = [0.1, 0.1, 0.12]
@@ -209,6 +232,33 @@ def van(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[
     light_bars(lights, width - 1, length - 0.4, HOVER + 0.7)
 
 
+def cab_pod(s: SolidBuilder, frame: list[float], paint: list[float]) -> None:
+    """A hauler's pointed cab pod with a wraparound windscreen, `frame` = [half width, back Z,
+    front Z, top]."""
+    hw = frame[0]
+    c0 = frame[1]
+    f = frame[2]
+    top = frame[3]
+    cab = [
+        [-hw, c0],
+        [hw, c0],
+        [hw - 0.2, f - 0.9],
+        [0.6, f],
+        [-0.6, f],
+        [-hw + 0.2, f - 0.9],
+    ]
+    s.bevel_slab(cab, [HOVER, HOVER + 0.5, top - 0.6], [0.3, 0.6], paint)
+    glass = [
+        [-hw + 0.3, c0 + 0.6],
+        [hw - 0.3, c0 + 0.6],
+        [hw - 0.5, f - 0.9],
+        [0.4, f - 0.25],
+        [-0.4, f - 0.25],
+        [-hw + 0.5, f - 0.9],
+    ]
+    s.bevel_slab(glass, [top - 1.4, top - 1.0, top - 0.55], [0, 0.35], GLASS)
+
+
 def truck(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
     """A hover hauler: a pointed cab pod with a wraparound windscreen, a chamfered cargo pod with
     glowing seams, and three thrusters."""
@@ -221,24 +271,7 @@ def truck(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: lis
     hw = width / 2
     top = HOVER + h
     c0 = f - 2.6
-    cab = [
-        [-hw, c0],
-        [hw, c0],
-        [hw - 0.2, f - 0.9],
-        [0.6, f],
-        [-0.6, f],
-        [-hw + 0.2, f - 0.9],
-    ]
-    s.bevel_slab(cab, [HOVER, HOVER + 0.5, top - 0.6], [0.3, 0.6], C.white)
-    glass = [
-        [-hw + 0.3, c0 + 0.6],
-        [hw - 0.3, c0 + 0.6],
-        [hw - 0.5, f - 0.9],
-        [0.4, f - 0.25],
-        [-0.4, f - 0.25],
-        [-hw + 0.5, f - 0.9],
-    ]
-    s.bevel_slab(glass, [top - 1.4, top - 1.0, top - 0.55], [0, 0.35], GLASS)
+    cab_pod(s, [hw, c0, f, top], C.white)
     # The cargo pod, joined to the cab by a dark neck.
     s.box([width * 0.6, 1.6, 0.5], TRIM, Placement([0, HOVER + 0.4, c0 - 0.15]))
     pod_end = c0 - 0.4
@@ -261,7 +294,202 @@ def truck(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: lis
     light_bars(lights, 1.6, length, HOVER + 0.55)
 
 
-BODIES = {"sedan": sedan, "van": van, "truck": truck}
+def racer(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
+    """A hover racer: two long pontoons either side of a needle-nosed fuselage with a small bubble
+    canopy, joined by struts, a wide wing over the tail, a thruster at the end of each pontoon."""
+    dims = SHAPES["racer"]
+    length = dims["length"]
+    width = dims["width"]
+    b = -length / 2
+    f = length / 2
+    hw = width / 2
+    for side in [-1, 1]:
+        inner = side * (hw - 0.7)
+        outer = side * hw
+        pontoon = [[inner, b], [outer, b], [outer, f - 1.6], [(inner + outer) / 2, f - 0.4]]
+        s.bevel_slab(pontoon, [HOVER, HOVER + 0.25, HOVER + 0.6], [0.1, 0.15], paint)
+        fin = Placement([side * (hw - 0.35), HOVER + 0.55, b + 0.5])
+        s.box([0.12, 0.75, 0.8], paint, fin)
+    body = [
+        [-0.55, b + 0.4],
+        [0.55, b + 0.4],
+        [0.75, b + 2.6],
+        [0.35, f - 1],
+        [0, f],
+        [-0.35, f - 1],
+        [-0.75, b + 2.6],
+    ]
+    deck = HOVER + 0.8
+    s.bevel_slab(body, [HOVER + 0.1, HOVER + 0.35, deck], [0.15, 0.2], paint)
+    canopy = [[-0.45, -0.6], [0.45, -0.6], [0.5, 0.5], [0, 1.9], [-0.5, 0.5]]
+    s.bevel_slab(canopy, [deck, deck + 0.1, deck + 0.55], [0, 0.2], GLASS)
+    for z in [b + 1.7, f - 2.6]:
+        s.box([width - 1, 0.15, 0.5], TRIM, Placement([0, HOVER + 0.4, z]))
+    s.box([width + 0.2, 0.08, 0.8], paint, Placement([0, HOVER + 1.25, b + 0.5]), accent)
+    thrusters(s, lights, [-(hw - 0.35), hw - 0.35], HOVER + 0.35, b, accent)
+    pads(s, width, [b + 1.3, f - 2])
+    stripes(s, lights, [-(hw - 0.35), hw - 0.35], HOVER + 0.57, [b + 0.8, f - 1.8], accent)
+    stripes(s, lights, [0], deck - 0.03, [1.4, f - 1.2], accent)
+    light_bars(lights, 0.6, length, HOVER + 0.4)
+
+
+def pod(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
+    """A little city pod: a short rounded body under a big glass bubble, one thruster, a neon
+    ring round its waist."""
+    dims = SHAPES["pod"]
+    length = dims["length"]
+    width = dims["width"]
+    b = -length / 2
+    f = length / 2
+    hw = width / 2
+    top = HOVER + 1.2
+    hull = [
+        [b, hw * 0.65, HOVER + 0.15, HOVER + 1.0],
+        [b + 0.4, hw * 0.92, HOVER, top + 0.05],
+        [0.6, hw, HOVER, top],
+        [f - 0.5, hw * 0.82, HOVER + 0.05, HOVER + 0.85],
+        [f, hw * 0.42, HOVER + 0.25, HOVER + 0.55],
+    ]
+    s.loft(ROUND, hull, paint)
+    bubble = [
+        [b + 1, hw * 0.62, top - 0.1, top + 0.05],
+        [-0.6, hw * 0.75, top - 0.15, top + 0.6],
+        [0.6, hw * 0.72, top - 0.2, top + 0.5],
+        [f - 0.8, hw * 0.45, top - 0.4, top],
+    ]
+    s.loft(ROUND, bubble, GLASS)
+    thrusters(s, lights, [0], HOVER + 0.55, b, accent)
+    pads(s, width, [b + 1.1, f - 1.2])
+    strips(s, lights, width - 0.1, HOVER + 0.5, [b + 0.8, f - 1.2], accent)
+    stripes(s, lights, [0], top, [b + 0.3, b + 0.9], accent)
+    light_bars(lights, 1, length - 0.2, HOVER + 0.45)
+
+
+def cruiser(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
+    """A long hover limousine: a flat chamfered hull, a long glass greenhouse round a painted
+    roof, tail fins leaning out, four small thrusters and a stripe down the middle."""
+    dims = SHAPES["cruiser"]
+    length = dims["length"]
+    width = dims["width"]
+    b = -length / 2
+    f = length / 2
+    hw = width / 2
+    deck = HOVER + 0.8
+    hull = [
+        [-hw + 0.2, b],
+        [hw - 0.2, b],
+        [hw, b + 0.6],
+        [hw, f - 1],
+        [hw - 0.5, f],
+        [-hw + 0.5, f],
+        [-hw, f - 1],
+        [-hw, b + 0.6],
+    ]
+    s.bevel_slab(hull, [HOVER, HOVER + 0.3, deck], [0.2, 0.15], paint)
+    cabin = [[-1.2, -2.3], [1.2, -2.3], [1.25, 1.6], [0.9, 2.4], [-0.9, 2.4], [-1.25, 1.6]]
+    s.bevel_slab(cabin, [deck, deck + 0.15, deck + 0.7], [0, 0.25], GLASS)
+    roof = [[-0.95, -1.7], [0.95, -1.7], [0.95, 1.2], [-0.95, 1.2]]
+    s.bevel_slab(roof, [deck + 0.66, deck + 0.7, deck + 0.78], [0, 0.1], paint)
+    for side in [-1, 1]:
+        fin = Placement([side * (hw - 0.2), deck - 0.1, b + 0.7], 0, 0, -side * 0.35)
+        s.box([0.1, 0.9, 1.2], paint, fin)
+    thrusters(s, lights, [-1.1, -0.4, 0.4, 1.1], HOVER + 0.4, b, accent)
+    pads(s, width, [b + 1.5, f - 1.8])
+    strips(s, lights, width - 0.1, HOVER + 0.35, [b + 0.8, f - 1.2], accent)
+    stripes(s, lights, [0], deck - 0.03, [2.5, f - 0.6], accent)
+    stripes(s, lights, [0], deck - 0.03, [b + 0.3, -2.4], accent)
+    light_bars(lights, width - 0.8, length, HOVER + 0.5)
+
+
+def bus(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
+    """A hover bus: a long chamfered body, a band of windows all round it split by pillars, a white
+    roof with two cooling units and a neon stripe."""
+    dims = SHAPES["bus"]
+    length = dims["length"]
+    width = dims["width"]
+    h = dims["height"]
+    b = -length / 2
+    f = length / 2
+    hw = width / 2
+    top = HOVER + h
+    body = [[-hw, b], [hw, b], [hw, f - 1.2], [hw - 0.6, f], [-hw + 0.6, f], [-hw, f - 1.2]]
+    s.bevel_slab(body, [HOVER, HOVER + 0.35, top - 0.8], [0.25, 0.05], paint)
+    band = [
+        [-hw + 0.06, b + 0.2],
+        [hw - 0.06, b + 0.2],
+        [hw - 0.06, f - 1.2],
+        [hw - 0.62, f - 0.1],
+        [-hw + 0.62, f - 0.1],
+        [-hw + 0.06, f - 1.2],
+    ]
+    s.slab(band, [top - 0.8, top - 0.25], GLASS)
+    pillars = 6
+    for i in range(1, pillars):
+        z = b + 0.2 + (f - 1.4 - b) * i / pillars
+        s.box([width - 0.08, 0.55, 0.22], paint, Placement([0, top - 0.8, z]))
+    roof = [
+        [-hw + 0.05, b],
+        [hw - 0.05, b],
+        [hw - 0.05, f - 1.4],
+        [hw - 0.6, f - 0.4],
+        [-hw + 0.6, f - 0.4],
+        [-hw + 0.05, f - 1.4],
+    ]
+    s.bevel_slab(roof, [top - 0.25, top - 0.2, top], [0, 0.3], paint, None, C.white)
+    for z in [b + 1.6, -0.6]:
+        s.box([1.6, 0.35, 1.4], TRIM, Placement([0, top, z]))
+    thrusters(s, lights, [-1.1, 1.1], HOVER + 0.5, b, accent)
+    pads(s, width, [b + 1.4, 0, f - 1.6])
+    strips(s, lights, width, HOVER + 0.5, [b + 0.4, f - 1.4], accent)
+    stripes(s, lights, [-(hw - 0.5), hw - 0.5], top, [b + 0.4, f - 1.6], accent)
+    light_bars(lights, width - 1.2, length - 0.4, HOVER + 0.7)
+
+
+def tanker(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
+    """A hover tanker: the hauler's cab pulling a long chrome tank on a dark frame, neon bands
+    round the tank and a walkway along its top."""
+    dims = SHAPES["tanker"]
+    length = dims["length"]
+    width = dims["width"]
+    h = dims["height"]
+    b = -length / 2
+    f = length / 2
+    hw = width / 2
+    top = HOVER + h
+    c0 = f - 2.6
+    cab_pod(s, [hw, c0, f, top], paint)
+    s.box([width * 0.6, 1.6, 0.5], TRIM, Placement([0, HOVER + 0.4, c0 - 0.15]))
+    tank_end = c0 - 0.4
+    tank = tank_end - b
+    s.box([width * 0.7, 0.45, tank], TRIM, Placement([0, HOVER, (b + tank_end) / 2]))
+    radius = hw - 0.15
+    axis = top - radius
+    # A cylinder stands up Y; pitched a quarter turn this way, it lies along +Z from its foot.
+    along = Placement([0, axis, b], 0, math.pi / 2, 0)
+    s.cylinder(radius, tank, 12, CHROME, along)
+    bands = 3
+    for i in range(1, bands + 1):
+        z = b + tank * i / (bands + 1)
+        s.cylinder(radius + 0.04, 0.25, 12, accent, Placement([0, axis, z], 0, math.pi / 2, 0))
+        glow = Placement([0, axis, z + 0.02], 0, math.pi / 2, 0)
+        lights.cylinder(radius + 0.08, 0.2, 12, accent, glow)
+    s.box([0.7, 0.1, tank - 0.6], TRIM, Placement([0, top - 0.02, (b + tank_end) / 2]))
+    thrusters(s, lights, [-1.1, 1.1], HOVER + 0.6, b, accent)
+    pads(s, width, [b + 1.2, b + 3.6, f - 1.4])
+    strips(s, lights, width - 0.3, HOVER + 0.45, [c0 + 0.2, f - 1.0], accent)
+    light_bars(lights, 1.6, length, HOVER + 0.55)
+
+
+BODIES = {
+    "sedan": sedan,
+    "racer": racer,
+    "pod": pod,
+    "cruiser": cruiser,
+    "van": van,
+    "bus": bus,
+    "truck": truck,
+    "tanker": tanker,
+}
 
 
 def build_car(shape: str, paint: list[float], accent: list[float] | None = None) -> PropGeometry:

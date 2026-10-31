@@ -11,6 +11,8 @@ The look (`WindowAtlasLook`, a config record) has:
 - `styles`: the styles, each painted in its own band of columns, as many bands as styles. A style
   has `window`, the window's `[x0, y0, x1, y1]` pixels in its cell, and `lit`, the chance a window
   is lit on a floor of average activity;
+- `doors` (D-215): door styles as the window styles are, each in a band of `doorColumns` columns
+  after the windows' bands (the windows' bands share the columns left);
 - `colors`: the colours of the lit windows; `brightness`: their `[low, high]` brightness;
 - `blinds`: the chance a lit window has its blind half down (its top half dimmer);
 - `dark`: the colour of a dark window; `halo`: the opacity of the halo round a lit one;
@@ -59,8 +61,16 @@ def atlas_cells(look: Any) -> int:  # noqa: ANN401 (a config record)
 
 
 def style_columns(look: Any) -> int:  # noqa: ANN401 (a config record)
-    """Window cells across the band of columns of one style."""
-    return math.floor(atlas_cells(look) / len(look.styles))
+    """Window cells across the band of columns of one style (the doors' bands left out)."""
+    columns: int = look.doorColumns
+    doors = len(look.doors) * columns
+    return math.floor((atlas_cells(look) - doors) / len(look.styles))
+
+
+def door_column(look: Any, door: int) -> int:  # noqa: ANN401 (a config record)
+    """The first column of the band of door style `door` (D-215), after the windows' bands."""
+    columns: int = look.doorColumns
+    return len(look.styles) * style_columns(look) + door * columns
 
 
 def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401
@@ -118,12 +128,18 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
     band = style_columns(look)
     random = create_rng(look.seed)
     pixels = _uint8_array(size * size * 4)
+    # Each band: its style, its first column and its width (the windows', then the doors').
+    bands: list[list[Any]] = []
     for s in range(len(look.styles)):
-        style = look.styles[s]
+        bands.append([look.styles[s], s * band, band])
+    for d in range(len(look.doors)):
+        bands.append([look.doors[d], door_column(look, d), look.doorColumns])
+    for b in bands:
+        style = b[0]
         for row in range(cells):
             # Some floors busier than others, so the lit windows bunch as in real buildings.
             activity = random_in(random, 0.2, 1.8)
-            for col in range(band):
+            for col in range(b[2]):
                 light = None
                 blind = False
                 if random() < style.lit * activity:
@@ -132,7 +148,7 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
                         random_in(random, look.brightness[0], look.brightness[1]),
                     )
                     blind = random() < look.blinds
-                at = [(s * band + col) * cell, row * cell]
+                at = [(b[1] + col) * cell, row * cell]
                 _paint_window(pixels, look, at, style.window, light, blind)
     return pixels
 

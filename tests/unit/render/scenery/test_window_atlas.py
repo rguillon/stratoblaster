@@ -10,12 +10,13 @@ from game.config.window_look import WINDOW_ATLAS
 from render.scenery import window_atlas
 from render.scenery.window_atlas import (
     atlas_cells,
+    door_column,
     kept_window_atlas,
     style_columns,
     window_atlas_pixels,
 )
 
-# A small atlas: 2 styles of 2 columns, 4 rows of 8-pixel cells.
+# A small atlas: 2 styles of 2 columns, 4 rows of 8-pixel cells (D-215: no doors).
 LOOK = record(
     {
         "size": 32,
@@ -31,6 +32,8 @@ LOOK = record(
         "glass": [0.1, 0.1, 0.1],
         "halo": 0.5,
         "seed": 3,
+        "doors": [],
+        "doorColumns": 1,
     }
 )
 
@@ -49,7 +52,8 @@ def test_d210_the_atlas_has_cells_in_one_band_of_columns_per_style():
     assert atlas_cells(LOOK) == 4
     assert style_columns(LOOK) == 2
     assert atlas_cells(WINDOW_ATLAS) == 64
-    assert style_columns(WINDOW_ATLAS) == 16
+    # D-215: the doors' bands take 4 columns.
+    assert style_columns(WINDOW_ATLAS) == 15
 
 
 def test_d210_a_lit_window_shows_its_light_opaque():
@@ -84,3 +88,34 @@ def test_d210_a_blind_dims_the_top_half_of_a_lit_window():
 
 def test_d210_the_atlas_is_made_once_per_look():
     assert kept_window_atlas(LOOK) is kept_window_atlas(LOOK)
+
+
+# D-215: the small atlas with one door band of 1 column after its 2 window bands of 1 column.
+DOORS = record(
+    {
+        **dict(LOOK.items()),
+        "size": 24,
+        "doors": [{"window": [2, 0, 6, 7], "lit": 1}],
+        "doorColumns": 1,
+    }
+)
+
+
+def test_d215_the_doors_have_their_band_after_the_windows():
+    assert atlas_cells(DOORS) == 3
+    assert style_columns(DOORS) == 1
+    assert door_column(DOORS, 0) == 2
+    assert door_column(WINDOW_ATLAS, 1) == 62
+
+
+def test_d215_a_door_stands_on_the_bottom_of_its_cell():
+    pixels = window_atlas_pixels(DOORS)
+    # The door's cell is column 2: pixels 16 to 23; the door from pixel 18 to 21, rows 0 to 6.
+    assert _pixel_of(pixels, DOORS, 19, 0)[3] == 255
+    assert _pixel_of(pixels, DOORS, 19, 6)[3] == 255
+    assert _pixel_of(pixels, DOORS, 23, 3)[3] == 0
+
+
+def _pixel_of(pixels: Any, look: Any, x: int, y: int) -> list[int]:
+    i = (y * look.size + x) * 4
+    return list(pixels[i : i + 4])

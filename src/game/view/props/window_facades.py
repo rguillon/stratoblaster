@@ -1,6 +1,7 @@
 """The windows of a building (D-210): one quad per wall, just off it, mapped on a block of the
 windows' atlas (`game/config/window_look.py`) picked at random, so no two walls look the same.
-They replace the lit bands and panels of Phase 15 (P15-R09: each face lit differently)."""
+They replace the lit bands and panels of Phase 15 (P15-R09: each face lit differently). D-215: so
+do the windows of one wall (a glass front) and the doors, one quad each, for every building."""
 
 import math
 
@@ -21,7 +22,7 @@ from game.config.window_look import (  # noqa: E402
     WINDOW_OFFSET,
     WINDOW_TINT,
 )
-from render.scenery.window_atlas import atlas_cells, style_columns  # noqa: E402
+from render.scenery.window_atlas import atlas_cells, door_column, style_columns  # noqa: E402
 
 # Walls narrower or lower than this get no windows.
 MIN_WALL = 1
@@ -55,10 +56,12 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
     span: list[float],
     color: Rgb,
     mixed: bool = False,  # noqa: FBT001, FBT002
+    style: int | None = None,
 ) -> None:
     """The windows of a `w` × `d` box at (x, z) (`lot`: `[x, z, w, d]`), from `y0` to `y1`
-    (`span`), tinted by `color` (see `tint_of`): one style for the whole box, or with `mixed` one
-    per wall (P15-R09: the asymmetric buildings, lit differently on each side)."""
+    (`span`), tinted by `color` (see `tint_of`): one style for the whole box (`style`, or one at
+    random), or with `mixed` one per wall (P15-R09: the asymmetric buildings, lit differently on
+    each side)."""
     x = lot[0]
     z = lot[1]
     w = lot[2]
@@ -68,7 +71,8 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
     if y1 - y0 < MIN_WALL:
         return
     styles = len(WINDOW_ATLAS.styles)
-    style = math.floor(random() * styles)
+    if style is None:
+        style = math.floor(random() * styles)
     tint = tint_of(color)
     xl = x - w / 2 - WINDOW_OFFSET
     xr = x + w / 2 + WINDOW_OFFSET
@@ -142,3 +146,71 @@ def round_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
             wall_uv(random, style, facet, y1 - y0),
             tint,
         )
+
+
+def _front(face: list[float], width: float) -> list[float]:
+    """The ends `[xa, za, xb, zb]` of a quad `width` wide just off a wall facing -Z or +Z (`face`:
+    `[x, z, facing]`, the middle of the wall's foot and -1 or 1), in counter-clockwise order seen
+    from outside."""
+    x = face[0]
+    facing = -1 if face[2] < 0 else 1
+    z = face[1] + facing * WINDOW_OFFSET
+    if facing < 0:
+        return [x - width / 2, z, x + width / 2, z]
+    return [x + width / 2, z, x - width / 2, z]
+
+
+def _quad(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    windows: QuadBuilder,
+    ends: list[float],
+    span: list[float],
+    uv: list[float],
+    tint: Rgb,
+) -> None:
+    windows.quad(
+        [
+            [ends[0], span[0], ends[1]],
+            [ends[0], span[1], ends[1]],
+            [ends[2], span[1], ends[3]],
+            [ends[2], span[0], ends[3]],
+        ],
+        uv,
+        tint,
+    )
+
+
+def wall_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    windows: QuadBuilder,
+    random: Any,  # noqa: ANN401 (a seeded generator)
+    face: list[float],
+    size: list[float],
+    style: int,
+    color: Rgb,
+) -> None:
+    """The windows of one wall facing -Z or +Z (D-215: a glass front, a hut's window), one quad of
+    `style` just off it: `face` is `[x, z, facing]` (the middle of the wall's foot, -1 or 1), `size`
+    is `[width, y0, y1]`, tinted by `color`."""
+    width = size[0]
+    if width < MIN_WALL or size[2] - size[1] < MIN_WALL:
+        return
+    uv = wall_uv(random, style, width, size[2] - size[1])
+    _quad(windows, _front(face, width), [size[1], size[2]], uv, tint_of(color))
+
+
+def doorway(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    windows: QuadBuilder,
+    random: Any,  # noqa: ANN401 (a seeded generator)
+    at: list[float],
+    facing: float,
+    door: int,
+    color: Rgb,
+) -> None:
+    """A door of style `door` (`DOOR_STYLES`) on a wall facing -Z or +Z (`facing`, -1 or 1), its
+    foot's middle at `at` (`[x, y, z]`), tinted by `color` (D-215): one quad of one atlas cell, a
+    window cell's size, the door standing on its bottom, lit or not as the atlas has it."""
+    cells = atlas_cells(WINDOW_ATLAS)
+    col = door_column(WINDOW_ATLAS, door) + math.floor(random() * WINDOW_ATLAS.doorColumns)
+    row = math.floor(random() * cells)
+    uv = [col / cells, row / cells, (col + 1) / cells, (row + 1) / cells]
+    ends = _front([at[0], at[2], facing], WINDOW_CELL.width)
+    _quad(windows, ends, [at[1], at[1] + WINDOW_CELL.height], uv, tint_of(color))
