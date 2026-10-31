@@ -10,7 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -208,8 +208,9 @@ _RIVER_LEVIATHAN = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its hull bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 RIVER_LEVIATHAN = with_weapons(
     _RIVER_LEVIATHAN,
     [
@@ -218,5 +219,10 @@ RIVER_LEVIATHAN = with_weapons(
         hidden_weapon("orb-left", "orb", [-7, -21], 5, 900, 2, "green", 1.2, 10.8),
         hidden_weapon("orb-right", "orb", [7, -21], 5, 900, 2, "green", 2.0, 10.8),
     ],
-    "unfold",
+    [
+        armour_region("back", 1, [[-20, -1], [20, -1], [20, 26], [-20, 26]], "shell", None, False),
+        armour_region(
+            "spine", 2, [[-20, -33], [20, -33], [20, -1], [-20, -1]], "shell", None, False
+        ),
+    ],
 )

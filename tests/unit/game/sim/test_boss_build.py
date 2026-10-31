@@ -4,7 +4,7 @@ import pytest
 
 from core.entities.boss import BossStats
 from core.systems.boss_pattern import BossAimedShape, BossBurstShape, BossLaserShape
-from game.config.bosses.boss_kit import bullet, part, volley
+from game.config.bosses.boss_kit import BOSS_TIMING, bullet, part, volley
 from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_3.stone_idol import STONE_IDOL
 from game.config.bosses.world_4.geyser_rig import GEYSER_RIG
@@ -147,7 +147,7 @@ def test_a_final_boss_with_two_reveals_transforms_at_a_third_and_two_thirds() ->
     parts.extend([["x", [0, 0], 5, 10, {"reveal": 1}], ["y", [0, 0], 5, 10, {"reveal": 2}]])
     stats = boss_stats(_with_parts(parts))
     assert stats.transforms == [2, 4]
-    assert stats.transform_seconds == 1.5
+    assert stats.transform_seconds == BOSS_TIMING.transformSeconds
 
 
 def test_a_design_may_set_its_own_transformation_points() -> None:

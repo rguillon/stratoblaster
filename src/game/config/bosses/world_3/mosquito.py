@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -127,13 +127,17 @@ _MOSQUITO = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
 MOSQUITO = with_weapons(
     _MOSQUITO,
     [
         hidden_weapon("rack-left", "rack", [-12, -11], 10, 800, 1, "magenta", 1.2, 8.1),
         hidden_weapon("rack-right", "rack", [12, -11], 10, 800, 1, "magenta", 2.0, 8.1),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-30, -29.4], [30, -29.4], [30, 19], [-30, 19]], "shell", None, False
+        ),
+    ],
 )

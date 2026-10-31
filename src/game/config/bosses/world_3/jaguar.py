@@ -10,7 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -95,13 +95,29 @@ _JAGUAR = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
-# bursts open and they unfold.
+# Its armour (boss transformations, D-224): the spotted pelt of its right wing, from the fuselage's
+# side out (px from its centre, X right, Y up; mirrored for the left wing).
+JAGUAR_WING = [
+    [10, -30],
+    [15, -26],
+    [22, -14],
+    [40, 2],
+    [57, 18],
+    [56, 26],
+    [44, 26],
+    [36, 36],
+    [26, 32],
+    [18, 44],
+    [10, 46],
+]
+
+# Its hidden weapons: at transformation 1 its wing pelt bursts off, baring a dark metal wing frame,
+# and a laser lance unfolds on each wing.
 JAGUAR = with_weapons(
     _JAGUAR,
     [
-        hidden_weapon("rack-left", "rack", [-39, 7], 9, 880, 1, "orange", 1.2, 8.0),
-        hidden_weapon("rack-right", "rack", [39, 7], 9, 880, 1, "orange", 2.0, 8.0),
+        hidden_weapon("lance-left", "lance", [-38, 4], 10, 880, 1, "orange", 1.2, 5.0),
+        hidden_weapon("lance-right", "lance", [38, 4], 10, 880, 1, "orange", 4.9, 5.0),
     ],
-    "unfold",
+    [armour_region("wings", 1, JAGUAR_WING, "wing", [-4, 4.5])],
 )

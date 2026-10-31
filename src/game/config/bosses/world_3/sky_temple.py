@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -134,8 +134,9 @@ _SKY_TEMPLE = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of ring emitters (transformation 1), a pair of
-# gatling turrets (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
 SKY_TEMPLE = with_weapons(
     _SKY_TEMPLE,
     [
@@ -144,5 +145,8 @@ SKY_TEMPLE = with_weapons(
         hidden_weapon("gatling-left", "gatling", [-39, -33], 11, 2400, 2, "orange", 1.2, 41.0),
         hidden_weapon("gatling-right", "gatling", [39, -33], 11, 2400, 2, "orange", 2.0, 41.0),
     ],
-    "armour",
+    [
+        armour_region("back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", None, False),
+        armour_region("wings", 2, [[20, -66], [81.8, -66], [81.8, 0], [20, 0]], "wing"),
+    ],
 )

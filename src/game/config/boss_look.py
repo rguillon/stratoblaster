@@ -81,20 +81,47 @@ BOSS_LOOK = record(
             "spark": [1, 0.55, 0.15],
             "sparkChance": 0.35,
         },
-        # How hidden weapon parts come out as a boss transforms (`boss_reveal.py`). `unfold`: they
-        # swing out from `unfoldTurn` radians folded along the hull. `armour`: the weapon rises
-        # from `sink` of its radius down; the plate over it (`plateSize` of the part's half-width,
-        # `plateTop` of its height) is thrown `throw` radii out, rises `lift` radii and falls
-        # `fall` radii, turning `spin` radians.
+        # A boss's transformation (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md,
+        # D-224), in shares of its length: its armour strains (shudders `shudder` px, strobing
+        # `strobeHz`) until `burst`, then bursts off in chunks that are gone by `burstEnd`, thrown
+        # `throw` px out, rising `lift` px and falling `fall` px, tumbling `spin` radians. Its
+        # hidden weapons swing up on their hinges from `swing[0]` to `swing[1]`, rising from `sink`
+        # of their radius down, then slide their barrels out from `slide[0]` to `slide[1]`,
+        # overshooting by `overshoot` (a back-out ease).
         "reveal": {
-            "unfoldTurn": 1.4,
+            "burst": 0.15,
+            "burstEnd": 0.6,
+            "shudder": 0.8,
+            "strobeHz": 9,
+            "throw": 45,
+            "lift": 28,
+            "fall": 60,
+            "spin": 7,
+            "swing": [0.4, 0.75],
+            "slide": [0.7, 1.0],
             "sink": 0.9,
-            "throw": 3,
-            "lift": 1.2,
-            "fall": 2.5,
-            "spin": 5,
-            "plateSize": 1.05,
-            "plateTop": 0.8,
+            "overshoot": 1.7,
+        },
+        # How armour is cut out of a boss's body: faces cut down to `cut` px first, at most
+        # `chunks` chunks a region and `bossChunks` a boss.
+        "armour": {"cut": 6, "chunks": 12, "bossChunks": 24},
+        # The dark metal frame a shed region leaves (`boss_frame.py`): a `floor` where the armour
+        # was, `lift` px over its lowest point; `metal` ribs `ribWidth` wide and `ribHeight` high,
+        # `ribGap` px apart (sampled every `step` px against the floor, at least `least` px long),
+        # one in `seamEvery` with a neon seam on top; `pipe` pipes along the longest ribs.
+        "frame": {
+            "floor": [0.035, 0.037, 0.045],
+            "metal": [0.1, 0.105, 0.12],
+            "pipe": [0.09, 0.09, 0.11],
+            "lift": 0.6,
+            "ribWidth": 1.6,
+            "ribHeight": 2.2,
+            "ribGap": 9,
+            "step": 1.5,
+            "least": 3,
+            "pipeRadius": 0.9,
+            "spokes": 12,
+            "seamEvery": 3,
         },
     }
 )

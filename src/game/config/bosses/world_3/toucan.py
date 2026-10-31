@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -94,13 +94,17 @@ _TOUCAN = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
 TOUCAN = with_weapons(
     _TOUCAN,
     [
         hidden_weapon("rack-left", "rack", [-12, -9], 10, 620, 1, "orange", 1.2, 18.0),
         hidden_weapon("rack-right", "rack", [12, -9], 10, 620, 1, "orange", 2.0, 18.0),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-30, -25.8], [30, -25.8], [30, 21], [-30, 21]], "shell", None, False
+        ),
+    ],
 )

@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -163,8 +163,9 @@ _GEYSER_RIG = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1), a pair of
-# ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 GEYSER_RIG = with_weapons(
     _GEYSER_RIG,
     [
@@ -173,5 +174,8 @@ GEYSER_RIG = with_weapons(
         hidden_weapon("orb-left", "orb", [-33, -29], 11, 1300, 2, "red", 1.2, 12.4),
         hidden_weapon("orb-right", "orb", [33, -29], 11, 1300, 2, "red", 2.0, 12.4),
     ],
-    "armour",
+    [
+        armour_region("back", 1, [[-32, 26], [32, 26], [32, 72], [-32, 72]], "shell", None, False),
+        armour_region("wings", 2, [[14, -41.2], [48, -41.2], [48, 4], [14, 4]], "wing"),
+    ],
 )

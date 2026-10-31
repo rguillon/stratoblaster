@@ -39,7 +39,7 @@ WEAPON_SHAPE = record(
         "gap": 0.32,
         "bore": 0.12,
         "length": 0.9,
-        "lance": 1.3,
+        "lance": 1.9,
         "lanceBore": 0.2,
         "cell": 0.16,
         "cellX": 0.32,
@@ -124,25 +124,89 @@ def hidden_weapon(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     style: str,
     first: float,
     height: Any = None,
+    mount: Any = None,
 ) -> Any:
     """A hidden weapon part revealed by transformation `reveal`: `part` (shielding the core, a 30 %
-    bonus drop), its `guns`, its `look` (kind, radius and pod height, for its model) and its
-    `volleys` (see `weapon_volley`)."""
+    bonus drop), its `guns`, its `look` (kind, radius, pod height and `mount`, for its model) and
+    its `volleys` (see `weapon_volley`). `mount`, `[dx, dy, fold]`: the hinge it unfolds about,
+    offset in px from its centre, and its turn (radians, about the vertical) folded flat; left
+    out, the view hinges it on its inner side, folded back along the hull."""
+    look: Any = {"kind": kind, "radius": radius, "height": pod_height(radius, height)}
+    if mount != None:  # noqa: E711
+        look["mount"] = mount
     return record(
         {
             "part": part(part_id, at, radius, health, {"reveal": reveal, "drop": 0.3}),
             "guns": weapon_guns(kind, at, radius, height),
-            "look": {"kind": kind, "radius": radius, "height": pod_height(radius, height)},
+            "look": look,
             "volleys": [weapon_volley(kind, part_id, style, first)],
         }
     )
 
 
-def with_weapons(design: Any, weapons: list[Any], style: str, more: Any = None) -> Any:
+FRAMES = ["wing", "shell", "ring"]
+
+
+def armour_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    region_id: str,
+    form: int,
+    outline: list[Any],
+    frame: str,
+    heights: Any = None,
+    mirror: bool = True,
+) -> Any:
+    """An armour region a boss sheds at transformation `form` (docs/superpowers/specs/2026-10-31-
+    boss-armour-shedding-design.md): the part of its body inside `outline` (px from its centre,
+    X right, Y up; with its mirror image across the centre line when `mirror`), between `heights`
+    [low, high] above the playfield (all of them when left out). It bursts off in chunks and leaves
+    a dark metal `frame` (`wing`, `shell` or `ring`)."""
+    if frame not in FRAMES:
+        raise ValueError('Unknown armour frame "' + frame + '"')
+    outlines = [outline]
+    if mirror:
+        n = len(outline)
+        outlines.append([[-outline[n - 1 - k][0], outline[n - 1 - k][1]] for k in range(n)])
+    return record(
+        {
+            "id": region_id,
+            "form": form,
+            "outlines": outlines,
+            "frame": frame,
+            "heights": heights if heights != None else [-1000, 1000],  # noqa: E711
+        }
+    )
+
+
+def region_blasts(region: Any, most: int) -> list[list[float]]:
+    """Where a region bursts: `[x, y, radius]` blasts at the middle of each of its outlines and on
+    their corners, at most `most` in all, spread round each outline."""
+    result: list[list[float]] = []
+    per = max(1, math.floor(most / len(region.outlines)))
+    for outline in region.outlines:
+        sx = 0.0
+        sy = 0.0
+        for point in outline:
+            sx += point[0]
+            sy += point[1]
+        cx = sx / len(outline)
+        cy = sy / len(outline)
+        reach = 0.0
+        for point in outline:
+            reach = max(reach, math.hypot(point[0] - cx, point[1] - cy))
+        radius = max(8, reach * 0.45)
+        result.append([cx, cy, radius])
+        corners = per - 1
+        for k in range(corners):
+            point = outline[math.floor((k * len(outline)) / max(1, corners))]
+            result.append([(point[0] + cx) / 2, (point[1] + cy) / 2, radius * 0.7])
+    return result[:most]
+
+
+def with_weapons(design: Any, weapons: list[Any], armour: list[Any], more: Any = None) -> Any:
     """`design` with its hidden `weapons` (see `hidden_weapon`): their parts after its own, their
     guns and looks, and their volleys (and the `more` volleys given) in every stage, each firing
-    once its part is revealed, until it is destroyed. `style`: how they come out, `armour` (plates
-    blow off) or `unfold`."""
+    once its part is revealed, until it is destroyed; and the `armour` regions it sheds as they
+    come out (see `armour_region`)."""
     stats = design.stats
     parts = list(stats.parts)
     guns = merge(design.guns, {})
@@ -163,7 +227,7 @@ def with_weapons(design: Any, weapons: list[Any], style: str, more: Any = None) 
             "guns": guns,
             "weapons": looks,
             "stages": stages,
-            "revealStyle": style,
+            "armour": armour,
         },
     )
 

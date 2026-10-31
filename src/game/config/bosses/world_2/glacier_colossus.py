@@ -18,7 +18,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -143,8 +143,9 @@ _GLACIER_COLOSSUS = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 GLACIER_COLOSSUS = with_weapons(
     _GLACIER_COLOSSUS,
     [
@@ -153,5 +154,8 @@ GLACIER_COLOSSUS = with_weapons(
         hidden_weapon("orb-left", "orb", [-25, 29], 9, 1900, 2, "orange", 1.2, 23.1),
         hidden_weapon("orb-right", "orb", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[16, 39.5], [74, 39.5], [74, 79], [16, 79]], "wing"),
+        armour_region("wings", 2, [[8, -2], [74, -2], [74, 39.5], [8, 39.5]], "wing"),
+    ],
 )

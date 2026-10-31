@@ -12,7 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -144,13 +144,17 @@ _MANGROVE_CROC = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 MANGROVE_CROC = with_weapons(
     _MANGROVE_CROC,
     [
         hidden_weapon("lance-left", "lance", [-9, -15], 7, 500, 1, "orange", 1.2, 13.1),
         hidden_weapon("lance-right", "lance", [9, -15], 7, 500, 1, "orange", 2.0, 13.1),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-24, -32], [24, -32], [24, 12], [-24, 12]], "shell", None, False
+        ),
+    ],
 )

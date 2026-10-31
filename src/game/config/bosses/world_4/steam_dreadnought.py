@@ -10,7 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -138,9 +138,10 @@ _STEAM_DREADNOUGHT = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2), a laser lance (transformation 2); its armour plates blow
-# off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour and its spine plating bursts off, baring a dark metal frame, and a pair of ring emitters
+# and a laser lance unfold.
 STEAM_DREADNOUGHT = with_weapons(
     _STEAM_DREADNOUGHT,
     [
@@ -150,5 +151,9 @@ STEAM_DREADNOUGHT = with_weapons(
         hidden_weapon("orb-right", "orb", [30, -23], 8, 950, 2, "red", 2.0, 12.6),
         hidden_weapon("lance-centre", "lance", [0, 29], 8, 950, 2, "red", 1.6, 15.6),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing"),
+        armour_region("wings", 2, [[14, -53], [72, -53], [72, 7], [14, 7]], "wing"),
+        armour_region("spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", None, False),
+    ],
 )

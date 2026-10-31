@@ -8,7 +8,7 @@ left) a ring used by no earlier stage. Health values are placeholders for the P0
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 MAGENTA = bullet("magenta", 180)
@@ -81,13 +81,17 @@ _SNOW_OWL = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
 SNOW_OWL = with_weapons(
     _SNOW_OWL,
     [
         hidden_weapon("rack-left", "rack", [-12, -7], 10, 680, 1, "magenta", 1.2, 10.3),
         hidden_weapon("rack-right", "rack", [12, -7], 10, 680, 1, "magenta", 2.0, 10.3),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-30, -31.7], [30, -31.7], [30, 23], [-30, 23]], "shell", None, False
+        ),
+    ],
 )

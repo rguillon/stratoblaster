@@ -12,7 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -119,13 +119,17 @@ _EMBER_HERALD = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of ring emitters (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of ring emitters unfold.
 EMBER_HERALD = with_weapons(
     _EMBER_HERALD,
     [
         hidden_weapon("orb-left", "orb", [-10, 37], 8, 960, 1, "purple", 1.2, 14.0),
         hidden_weapon("orb-right", "orb", [10, 37], 8, 960, 1, "purple", 2.0, 14.0),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-26, 9], [26, 9], [26, 56.4], [-26, 56.4]], "shell", None, False
+        ),
+    ],
 )

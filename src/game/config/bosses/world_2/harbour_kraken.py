@@ -8,7 +8,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -185,8 +185,9 @@ _HARBOUR_KRAKEN = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1), a pair of
-# gatling turrets (transformation 2); its hull bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
 HARBOUR_KRAKEN = with_weapons(
     _HARBOUR_KRAKEN,
     [
@@ -195,5 +196,10 @@ HARBOUR_KRAKEN = with_weapons(
         hidden_weapon("gatling-left", "gatling", [-29, 29], 11, 900, 2, "red", 1.2, 16.9),
         hidden_weapon("gatling-right", "gatling", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-32, -66], [32, -66], [32, -4], [-32, -4]], "shell", None, False
+        ),
+        armour_region("wings", 2, [[10, -4], [44, -4], [44, 62], [10, 62]], "wing"),
+    ],
 )

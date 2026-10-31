@@ -10,7 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -101,13 +101,15 @@ _STONE_IDOL = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its
-# armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
 STONE_IDOL = with_weapons(
     _STONE_IDOL,
     [
         hidden_weapon("rack-left", "rack", [-23, -27], 7, 760, 1, "purple", 1.2, 15.5),
         hidden_weapon("rack-right", "rack", [23, -27], 7, 760, 1, "purple", 2.0, 15.5),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[8, -55.5], [52.4, -55.5], [52.4, 2], [8, 2]], "wing"),
+    ],
 )

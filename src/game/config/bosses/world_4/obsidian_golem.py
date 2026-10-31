@@ -20,7 +20,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -197,8 +197,9 @@ _OBSIDIAN_GOLEM = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of laser lances (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of laser lances unfold.
 OBSIDIAN_GOLEM = with_weapons(
     _OBSIDIAN_GOLEM,
     [
@@ -207,5 +208,10 @@ OBSIDIAN_GOLEM = with_weapons(
         hidden_weapon("lance-left", "lance", [-13, -11], 7, 1600, 2, "orange", 1.2, 29.2),
         hidden_weapon("lance-right", "lance", [13, -11], 7, 1600, 2, "orange", 2.0, 29.2),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[14, -25], [56.3, -25], [56.3, 35], [14, 35]], "wing"),
+        armour_region(
+            "spine", 2, [[-14, -38], [14, -38], [14, 16], [-14, 16]], "shell", None, False
+        ),
+    ],
 )

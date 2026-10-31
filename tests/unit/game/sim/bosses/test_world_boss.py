@@ -4,8 +4,9 @@ import pytest
 from helpers.enemy_steps import area
 from helpers.fakes import FakeContext
 
-from game.config.bosses.boss_kit import bullet, part, stages, volley
+from game.config.bosses.boss_kit import BOSS_TIMING, bullet, part, stages, volley
 from game.config.bosses.final_bosses import REFINERY_TITAN
+from game.config.bosses.hidden_weapons import region_blasts
 from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_4.caldera_throne import CALDERA_THRONE
 from game.config.record import merge
@@ -104,8 +105,10 @@ def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> 
             piece.destroy()
     boss.update(ctx, 0.0)
     assert boss.state == "transforming"
-    # A blast where each weapon of the transformation comes out.
-    assert len(ctx.explosions) == len([p for p in boss.parts if p.spec.reveal == 1])
+    # Its armour regions burst (D-224), and a blast where each weapon comes out.
+    bursts = [b for r in REEF_WARDEN.armour for b in region_blasts(r, BOSS_TIMING.regionBlasts)]
+    weapons = [p for p in boss.parts if p.spec.reveal == 1]
+    assert len(ctx.explosions) == len(bursts) + len(weapons)
     for _ in range(60 * 4):
         boss.update(ctx, 1 / 60)
     assert boss.form == 1

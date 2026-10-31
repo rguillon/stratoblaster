@@ -92,18 +92,43 @@ def _orb(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def weapon_drawing(look: Any, neon: Any) -> Any:
-    """The drawing of a hidden weapon part of `look` (kind, radius, pod height), `draw(p, at)`."""
+    """The drawing of a hidden weapon part's pod (`look`: kind, radius, pod height), `draw(p, at)`;
+    what slides out of it is drawn apart (`weapon_slide`)."""
 
     def draw(p: Any, at: Vec3) -> None:
         _pod(p, at, look, neon)
-        if look.kind == "lance":
-            _lance(p, at, look, neon)
-        elif look.kind == "rack":
-            _rack(p, at, look, neon)
-        elif look.kind == "orb":
-            _orb(p, at, look, neon)
 
     return draw
+
+
+def weapon_slide(look: Any, neon: Any) -> Any:
+    """What slides out of a hidden weapon's pod as it unfolds: `[draw(p, at), axis, distance]`
+    (model space), or None for a gatling (its turret rises instead, see `turret_slide`)."""
+    r = look.radius
+    if look.kind == "lance":
+
+        def lance(p: Any, at: Vec3) -> None:
+            _lance(p, at, look, neon)
+
+        return [lance, [0, 0, 1], r * WEAPON_SHAPE.lance * 0.75]
+    if look.kind == "rack":
+
+        def rack(p: Any, at: Vec3) -> None:
+            _rack(p, at, look, neon)
+
+        return [rack, [0, 1, 0], r * WEAPON_SHAPE.cellTop]
+    if look.kind == "orb":
+
+        def orb(p: Any, at: Vec3) -> None:
+            _orb(p, at, look, neon)
+
+        return [orb, [0, 1, 0], r * (WEAPON_SHAPE.orbTop + WEAPON_SHAPE.orb)]
+    return None
+
+
+def turret_slide(look: Any) -> float:
+    """How far a gatling's turret rises out of its pod as it unfolds."""
+    return float(gatling_turret(look.radius).radius * 0.9)
 
 
 def weapon_turret_drawing(look: Any, neon: Any) -> Any:

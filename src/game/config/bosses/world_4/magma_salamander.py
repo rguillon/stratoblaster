@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -159,13 +159,17 @@ _MAGMA_SALAMANDER = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 MAGMA_SALAMANDER = with_weapons(
     _MAGMA_SALAMANDER,
     [
         hidden_weapon("lance-left", "lance", [-9, 13], 7, 720, 1, "orange", 1.2, 12.4),
         hidden_weapon("lance-right", "lance", [9, 13], 7, 720, 1, "orange", 2.0, 12.4),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-24, -14], [24, -14], [24, 28], [-24, 28]], "shell", None, False
+        ),
+    ],
 )

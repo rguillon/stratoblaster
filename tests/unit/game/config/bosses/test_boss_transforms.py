@@ -5,9 +5,10 @@ from typing import Any
 
 import pytest
 
-from game.config.bosses.hidden_weapons import KINDS
+from game.config.bosses.hidden_weapons import FRAMES, KINDS, armour_region, region_blasts
 from game.sim.boss_build import default_transforms
 from game.sim.boss_kinds import BOSS_DESIGNS
+from render.geometry.shatter import inside
 
 # How much each kind of shot weighs in a boss's fire rate: a bullet 1, a homing missile 2, a laser
 # (its sweep across the screen) 8.
@@ -92,3 +93,42 @@ def test_a_boss_gets_no_easier_as_it_transforms(design: Any) -> None:
     rates = [fire_rate(design, form) for form in range(forms + 1)]
     assert rates == sorted(rates), rates
     assert rates[-1] > rates[0]
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_each_transformation_sheds_an_armour_region(design: Any) -> None:
+    # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md: it breaks open.
+    forms = {p["reveal"] for p in _hidden(design)}
+    shed = {region.form for region in design.armour}
+    assert shed == forms
+    for region in design.armour:
+        assert region.frame in FRAMES
+        assert all(len(outline) >= 3 for outline in region.outlines)
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(design: Any) -> None:
+    for p in _hidden(design):
+        regions = [r for r in design.armour if r.form == p["reveal"]]
+        assert any(inside(o, p["x"], p["y"]) for r in regions for o in r.outlines), p["id"]
+
+
+def test_a_region_is_mirrored_across_the_centre_line_unless_asked_not_to() -> None:
+    region = armour_region("wings", 1, [[10, 0], [30, 0], [30, 20]], "wing")
+    assert region.outlines[1] == [[-30, 20], [-30, 0], [-10, 0]]
+    assert region.heights == [-1000, 1000]
+    single = armour_region("back", 2, [[-5, 0], [5, 0], [0, 9]], "shell", [0, 4], False)
+    assert len(single.outlines) == 1 and single.heights == [0, 4]
+    with pytest.raises(ValueError, match="Unknown armour frame"):
+        armour_region("x", 1, [[0, 0], [1, 0], [0, 1]], "lattice")
+
+
+def test_a_region_bursts_in_blasts_spread_over_its_outlines() -> None:
+    region = armour_region("wings", 1, [[10, 0], [30, 0], [30, 20], [10, 20]], "wing")
+    blasts = region_blasts(region, 5)
+    assert 2 <= len(blasts) <= 5
+    # One on each side of the centre line.
+    assert any(b[0] > 0 for b in blasts) and any(b[0] < 0 for b in blasts)
+    assert blasts[0][:2] == [20, 10]
+    assert blasts[0][2] >= 8
+    assert all(b[2] > 0 for b in blasts)

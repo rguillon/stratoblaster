@@ -13,6 +13,7 @@ from game.config.boss_look import BOSS_LOOK  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import record
+from game.view.bosses.boss_armour import build_armour, cut_armour  # noqa: E402
 from game.view.bosses.boss_damage import build_smoke, build_stump, effect_materials  # noqa: E402
 from game.view.bosses.boss_limbs import (  # noqa: E402
     ORIGIN,
@@ -21,9 +22,11 @@ from game.view.bosses.boss_limbs import (  # noqa: E402
     boss_point,
     hang,
 )
-from game.view.bosses.boss_reveal import build_reveal  # noqa: E402
+from game.view.bosses.boss_reveal import Slide, build_reveal  # noqa: E402
 from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
+    turret_slide,
     weapon_drawing,
+    weapon_slide,
     weapon_turret_drawing,
 )
 from game.view.enemies.enemy_materials import BODY_MATERIALS  # noqa: E402
@@ -170,7 +173,11 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     root = new_transform_node(name, scene)
     # P16-R07: its core, parts and limbs breathe as one creature.
     look = {"flash": flash, "neon": neon, "breath": new_breath()}
-    body = build_body(design, drawing, root, look)
+    # Its armour regions are cut out of its core (docs/superpowers/specs/2026-10-31-boss-armour-
+    # shedding-design.md): they burst off as it transforms.
+    cut = _armour_cut(design, drawing)
+    core_draw = drawing.core if cut is None else cut.core_drawing()
+    body = build_body(design, drawing, root, look, core_draw)
     core = body["core"]
     core_turret = body["core_turret"]
     ring_node = body["ring_node"]
@@ -189,6 +196,7 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
         joints,
         _limb_builder(design, scene, neon, look),
     )
+    armour = _armour_views(design, cut, root, look)
     lit: Any = {"charge": 0}
 
     def sync(boss: Any, dt: float) -> None:
@@ -200,6 +208,8 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
             ring.model.sync(enemy, dt)
         is_boss = isinstance(boss, Boss)
         limbs.show(boss if is_boss else None, enemy, dt)
+        for region in armour:
+            region.show(boss if is_boss else None, enemy, dt)
         if not is_boss:
             show_turret(core_turret, None, enemy, dt)
             return
@@ -221,6 +231,26 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     return BuiltEnemyModel(root, sync)
 
 
+def _armour_cut(design: Any, drawing: Any) -> Any:
+    """The design's armour regions cut out of its core's drawing (`cut_armour`), if it has any."""
+    regions = _field(design, "armour")
+    if regions == None or len(regions) == 0:  # noqa: E711
+        return None
+    return cut_armour(drawing.core, regions)
+
+
+def _armour_views(design: Any, cut: Any, root: Any, look: Any) -> list[Any]:
+    """The views of the armour regions `cut` (none when it is None), flashing with the core."""
+    if cut is None:
+        return []
+    flash = look["flash"]
+
+    def flash_of(model: Any) -> FlashGroup:
+        return FlashGroup(model, flash)
+
+    return build_armour(design, cut, root, look["neon"], look["breath"], flash_of)
+
+
 def _limb_builder(design: Any, scene: Any, neon: Rgb, look: Any) -> Any:
     """The builder of a limb's model (see `BossLimbs`), flashing with its owner."""
 
@@ -233,13 +263,18 @@ def _limb_builder(design: Any, scene: Any, neon: Rgb, look: Any) -> Any:
     return build
 
 
-def build_body(design: Any, drawing: Any, root: Any, look: Any) -> dict[str, Any]:
-    """The core body (and its turret) on `root`, and the ring turning with the boss's spin."""
+def build_body(
+    design: Any, drawing: Any, root: Any, look: Any, core_draw: Any = None
+) -> dict[str, Any]:
+    """The core body (drawn by `core_draw`, else the drawing's core) and its turret on `root`, and
+    the ring turning with the boss's spin."""
+    if core_draw == None:  # noqa: E711
+        core_draw = drawing.core
     flash = look["flash"]
     neon = look["neon"]
     name = design.id
     scene = root.getScene()
-    core_model = build_enemy_model(name + "-core", scene, neon, drawing.core, look["breath"])
+    core_model = build_enemy_model(name + "-core", scene, neon, core_draw, look["breath"])
     core_model.root.parent = root
     core_turret = build_turret(design, "core", drawing, core_model.root, neon, look["breath"])
     core = FlashGroup(core_model, flash)
@@ -293,8 +328,33 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
     stump = build_stump(name + "-" + spec.id, spec.radius, scene, spot)
     reveal = None
     if opt(spec, "reveal", None) != None:  # noqa: E711
-        reveal = build_reveal(design, spec, model.root, frame, neon)
+        slides = _weapon_slides(design, spec, weapon, model.root, turret, look)
+        reveal = build_reveal(design, spec, model.root, slides)
     return PartView(FlashGroup(model, flash), turret, smoke, stump, reveal)
+
+
+def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    design: Any, spec: Any, weapon: Any, holder: Any, turret: Any, look: Any
+) -> list[Slide]:
+    """What slides out of a hidden weapon as it unfolds: its barrel, cells or orb (a model of its
+    own on `holder`), or its turret."""
+    if weapon == None:  # noqa: E711
+        return []
+    if turret != None:  # noqa: E711
+        p = turret.pivot.position
+        return [Slide(turret.pivot, [p.x, p.y, p.z], [0, 1, 0], turret_slide(weapon))]
+    slide = weapon_slide(weapon, look["neon"])
+    if slide == None:  # noqa: E711
+        return []
+    model = build_enemy_model(
+        design.id + "-" + spec.id + "-slide",
+        holder.getScene(),
+        look["neon"],
+        _part_builder(slide[0], boss_point(spec.x, spec.y)),
+        look["breath"],
+    )
+    model.root.parent = holder
+    return [Slide(model.root, [0, 0, 0], slide[1], slide[2])]
 
 
 def strobe(enemy: Any) -> Any:

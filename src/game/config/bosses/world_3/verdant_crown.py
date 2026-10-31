@@ -21,7 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -158,8 +158,9 @@ _VERDANT_CROWN = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its hull bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 VERDANT_CROWN = with_weapons(
     _VERDANT_CROWN,
     [
@@ -168,5 +169,10 @@ VERDANT_CROWN = with_weapons(
         hidden_weapon("orb-left", "orb", [-13, 69], 11, 2300, 2, "green", 1.2, 11.0),
         hidden_weapon("orb-right", "orb", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
     ],
-    "unfold",
+    [
+        armour_region("flanks", 1, [[28, -50], [104, -50], [104, 16], [28, 16]], "wing"),
+        armour_region(
+            "spine", 2, [[-32, 38], [32, 38], [32, 95.2], [-32, 95.2]], "shell", None, False
+        ),
+    ],
 )

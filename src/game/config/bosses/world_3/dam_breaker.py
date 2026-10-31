@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -127,8 +127,9 @@ _DAM_BREAKER = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of missile racks (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of missile racks unfold.
 DAM_BREAKER = with_weapons(
     _DAM_BREAKER,
     [
@@ -137,5 +138,8 @@ DAM_BREAKER = with_weapons(
         hidden_weapon("rack-left", "rack", [-34, -55], 12, 1900, 2, "green", 1.2, 9.4),
         hidden_weapon("rack-right", "rack", [34, -55], 12, 1900, 2, "green", 2.0, 9.4),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[30, 7], [66, 7], [66, 74], [30, 74]], "wing"),
+        armour_region("wings", 2, [[14, -76], [60.4, -76], [60.4, -21], [14, -21]], "wing"),
+    ],
 )

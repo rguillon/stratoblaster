@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -343,8 +343,9 @@ _OVERLORD = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1), a pair of
-# gatling turrets (transformation 2); its hull bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
 STORM_PETREL = with_weapons(
     _STORM_PETREL,
     [
@@ -353,11 +354,15 @@ STORM_PETREL = with_weapons(
         hidden_weapon("gatling-left", "gatling", [-19, -17], 5, 1010, 2, "magenta", 1.2, 12.9),
         hidden_weapon("gatling-right", "gatling", [19, -17], 5, 1010, 2, "magenta", 2.0, 12.9),
     ],
-    "unfold",
+    [
+        armour_region("flanks", 1, [[26, -36], [80.4, -36], [80.4, 18], [26, 18]], "wing"),
+        armour_region("wings", 2, [[8, -44], [26, -44], [26, 10], [8, 10]], "wing"),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1), a pair of
-# gatling turrets (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
 GULL_MOTHERSHIP = with_weapons(
     _GULL_MOTHERSHIP,
     [
@@ -366,11 +371,15 @@ GULL_MOTHERSHIP = with_weapons(
         hidden_weapon("gatling-left", "gatling", [-37, -9], 7, 1050, 2, "green", 1.2, 7.6),
         hidden_weapon("gatling-right", "gatling", [37, -9], 7, 1050, 2, "green", 2.0, 7.6),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[18, 6], [49, 6], [49, 54], [18, 54]], "wing"),
+        armour_region("wings", 2, [[22, -38], [49, -38], [49, 6], [22, 6]], "wing"),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 MESA_FORTRESS = with_weapons(
     _MESA_FORTRESS,
     [
@@ -379,11 +388,15 @@ MESA_FORTRESS = with_weapons(
         hidden_weapon("orb-left", "orb", [-32, -21], 8, 1500, 2, "red", 1.2, 10.6),
         hidden_weapon("orb-right", "orb", [32, -21], 8, 1500, 2, "red", 2.0, 10.6),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[32, -3.5], [88, -3.5], [88, 50], [32, 50]], "wing"),
+        armour_region("wings", 2, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing"),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1), a pair of
-# ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 REFINERY_TITAN = with_weapons(
     _REFINERY_TITAN,
     [
@@ -392,11 +405,19 @@ REFINERY_TITAN = with_weapons(
         hidden_weapon("orb-left", "orb", [-9, -35], 7, 1810, 2, "orange", 1.2, 18.9),
         hidden_weapon("orb-right", "orb", [9, -35], 7, 1810, 2, "orange", 2.0, 18.9),
     ],
-    "armour",
+    [
+        armour_region(
+            "back", 1, [[-24, -24], [24, -24], [24, 14], [-24, 14]], "shell", None, False
+        ),
+        armour_region(
+            "spine", 2, [[-24, -62], [24, -62], [24, -24], [-24, -24]], "shell", None, False
+        ),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 OVERLORD = with_weapons(
     _OVERLORD,
     [
@@ -405,5 +426,10 @@ OVERLORD = with_weapons(
         hidden_weapon("orb-left", "orb", [-13, -55], 11, 1940, 2, "purple", 1.2, 14.1),
         hidden_weapon("orb-right", "orb", [13, -55], 11, 1940, 2, "purple", 2.0, 14.1),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[32, -34], [106, -34], [106, 32], [32, 32]], "wing"),
+        armour_region(
+            "spine", 2, [[-32, -66], [32, -66], [32, -24], [-32, -24]], "shell", None, False
+        ),
+    ],
 )

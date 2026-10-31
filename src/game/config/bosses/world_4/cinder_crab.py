@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -150,13 +150,15 @@ _CINDER_CRAB = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 CINDER_CRAB = with_weapons(
     _CINDER_CRAB,
     [
         hidden_weapon("lance-left", "lance", [-28, 21], 8, 400, 1, "red", 1.2, 11.7),
         hidden_weapon("lance-right", "lance", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
     ],
-    "unfold",
+    [
+        armour_region("flanks", 1, [[12, -9], [56.4, -9], [56.4, 34.5], [12, 34.5]], "wing"),
+    ],
 )

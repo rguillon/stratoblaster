@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -142,8 +142,9 @@ _BOREAL_CITADEL = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 BOREAL_CITADEL = with_weapons(
     _BOREAL_CITADEL,
     [
@@ -152,5 +153,10 @@ BOREAL_CITADEL = with_weapons(
         hidden_weapon("orb-left", "orb", [-47, -7], 11, 2150, 2, "green", 1.2, 16.4),
         hidden_weapon("orb-right", "orb", [47, -7], 11, 2150, 2, "green", 2.0, 16.4),
     ],
-    "armour",
+    [
+        armour_region(
+            "back", 1, [[-32, -88], [32, -88], [32, -38], [-32, -38]], "shell", None, False
+        ),
+        armour_region("wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing"),
+    ],
 )

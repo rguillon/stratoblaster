@@ -1,0 +1,388 @@
+"""A boss's armour regions (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md):
+cut out of its core body, they burst off in chunks as it transforms and leave a dark metal frame.
+
+The cut is made on the core's drawing (`cut_armour`): its faces inside a region's outlines (and
+heights) leave the core and make the region's armour. A region is then drawn three ways: whole
+(at rest, flashing with the core), as chunks (shown only while they fly) and as its frame (hidden
+until the burst).
+
+Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
+"""
+
+import math
+
+from org.transcrypt.stubs.browser import __pragma__
+
+from game.config.boss_look import BOSS_LOOK
+from game.view.bosses.boss_frame import frame_drawings
+from game.view.bosses.boss_reveal import HIDDEN, SHOWN, ease, reveal_phase
+from game.view.enemies.enemy_mesh import EnemyParts, build_enemy_model
+from render.babylon import new_transform_node, set_enabled
+from render.edge_trim_mesh import clear_trim, set_trim_group
+from render.geometry.shatter import (
+    Carve,
+    append_triangles,
+    carve,
+    centroid,
+    chunk_cells,
+    straddles,
+    subdivide,
+    triangles,
+)
+from render.geometry.solids import SolidBuilder
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+__pragma__("skip")
+from typing import Any  # noqa: E402
+
+Vec3 = list[float]
+__pragma__("noskip")
+
+# The layers of a drawing that are cut (the solid and lit ones of `EnemyParts`).
+LAYERS = ["hull", "flesh", "neon", "vein", "charge"]
+# The layers the frame's top view is taken from.
+SOLID = ["hull", "flesh"]
+
+
+def model_outline(outline: list[Any]) -> list[list[float]]:
+    """An outline in px from the boss's centre (X right, Y up) as XZ points in model space."""
+    return [[-point[0], -point[1]] for point in outline]
+
+
+def region_carve(region: Any) -> Carve:
+    """Where `region` is cut, in model space."""
+    return Carve([model_outline(o) for o in region.outlines], region.heights)
+
+
+def _bounds_overlap(tri: list[Any], low: list[float], high: list[float]) -> bool:
+    """Whether a triangle's XZ bounds overlap the box `low`..`high`."""
+    xs = [tri[0].position[0], tri[1].position[0], tri[2].position[0]]
+    zs = [tri[0].position[2], tri[1].position[2], tri[2].position[2]]
+    return not (
+        max(xs[0], xs[1], xs[2]) < low[0]
+        or min(xs[0], xs[1], xs[2]) > high[0]
+        or max(zs[0], zs[1], zs[2]) < low[1]
+        or min(zs[0], zs[1], zs[2]) > high[1]
+    )
+
+
+def _region_box(carves: list[Carve]) -> list[list[float]]:
+    low = [math.inf, math.inf]
+    high = [-math.inf, -math.inf]
+    for c in carves:
+        for outline in c.outlines:
+            for point in outline:
+                low = [min(low[0], point[0]), min(low[1], point[1])]
+                high = [max(high[0], point[0]), max(high[1], point[1])]
+    return [low, high]
+
+
+class Recorder:
+    """A drawing's parts recorded: its layers' triangles and the calls that add nodes (wings,
+    reactors, rotors and muzzles), to be played back on the core."""
+
+    def __init__(self) -> None:
+        self.builders: dict[str, Any] = {}
+        for layer in LAYERS:
+            self.builders[layer] = SolidBuilder()
+        self.calls: list[list[Any]] = []
+
+    def parts(self) -> EnemyParts:
+        b = self.builders
+        calls = self.calls
+
+        def flap(pivot: Any, side: float, span: float, draw: Any) -> None:
+            calls.append(["flap", pivot, side, span, draw])
+
+        def reactor(at: Any, radius: float) -> None:
+            calls.append(["reactor", at, radius])
+
+        def rotor(at: Any, radius: float) -> None:
+            calls.append(["rotor", at, radius])
+
+        def muzzle(at: Any, kind: Any = None) -> None:
+            calls.append(["muzzle", at, kind])
+
+        return EnemyParts(
+            b["hull"], b["flesh"], b["vein"], flap, b["neon"], b["charge"], reactor, rotor, muzzle
+        )
+
+
+def _play(p: Any, call: list[Any]) -> None:
+    """Plays a recorded call back on the parts `p`."""
+    kind = call[0]
+    if kind == "flap":
+        p.flap(call[1], call[2], call[3], call[4])
+    elif kind == "reactor":
+        p.reactor(call[1], call[2])
+    elif kind == "rotor":
+        p.rotor(call[1], call[2])
+    else:
+        p.muzzle(call[1], call[2])
+
+
+class ArmourCut:
+    """The core's drawing with its armour cut out: what the core keeps (`kept`, triangles by
+    layer, and the recorded `calls`) and each region's armour (`regions`, triangles by layer)."""
+
+    def __init__(self, kept: dict[str, Any], calls: list[Any], regions: list[Any]) -> None:
+        self.kept = kept
+        self.calls = calls
+        self.regions = regions
+
+    def core_drawing(self) -> Any:
+        """The drawing of the core without its armour."""
+        kept = self.kept
+        calls = self.calls
+
+        def draw(p: Any) -> None:
+            for layer in LAYERS:
+                append_triangles(getattr(p, layer).geometry, kept[layer])
+            for call in calls:
+                _play(p, call)
+
+        return draw
+
+
+def _straddler(carves: list[Carve]) -> Any:
+    """Whether a triangle may cross the edge of any of `carves` (and so must be cut down)."""
+
+    def needs(tri: list[Any]) -> bool:
+        return any(straddles(tri, c) for c in carves)
+
+    return needs
+
+
+def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
+    """Cuts the `regions` (in order: a face goes to the first that holds it) out of the core's
+    drawing `draw_core`. Faces near the regions are first cut down to `BOSS_LOOK.armour.cut`."""
+    recorder = Recorder()
+    draw_core(recorder.parts())
+    carves = [region_carve(r) for r in regions]
+    box = _region_box(carves)
+    kept: dict[str, Any] = {}
+    cut: list[dict[str, Any]] = [{} for _ in regions]
+    for layer in LAYERS:
+        near: list[Any] = []
+        far: list[Any] = []
+        for tri in triangles(recorder.builders[layer].geometry):
+            if _bounds_overlap(tri, box[0], box[1]):
+                near.append(tri)
+            else:
+                far.append(tri)
+        rest = subdivide(near, BOSS_LOOK.armour.cut, _straddler(carves))
+        for k in range(len(carves)):
+            split = carve(rest, carves[k])
+            rest = split[0]
+            cut[k][layer] = split[1]
+        far.extend(rest)
+        kept[layer] = far
+    return ArmourCut(kept, recorder.calls, cut)
+
+
+class ArmourChunk:
+    """A chunk of armour: its node (at its `centre` at rest), its index among its region's."""
+
+    def __init__(self, node: Any, centre: Vec3, index: int) -> None:
+        self.node = node
+        self.centre = centre
+        self.index = index
+
+
+def chunk_pose(centre: Vec3, index: int, u: float) -> list[Any]:
+    """Where a chunk resting at `centre` is `u` of the way through its flight: `[position, turn
+    about X, turn about Z, scale]`. Thrown out from the boss's centre (each chunk a little off to
+    one side), up and falling back, tumbling and shrinking away."""
+    look = BOSS_LOOK.reveal
+    jitter = ((index * 0.618) % 1) - 0.5
+    horizontal = math.hypot(centre[0], centre[2])
+    a = math.atan2(centre[0], centre[2]) if horizontal > 0 else index * 2.4
+    a += jitter * 0.9
+    out = u * look.throw * (1 + jitter * 0.5)
+    up = 4 * u * (1 - u) * look.lift - u * u * look.fall
+    turn = u * look.spin * (1 + jitter)
+    position = [centre[0] + math.sin(a) * out, centre[1] + up, centre[2] + math.cos(a) * out]
+    return [position, turn, -turn * 0.7, max(0, 1 - u * u)]
+
+
+def _layers_drawing(layers: dict[str, Any], tris_of: Any, shift: Vec3 | None) -> Any:
+    """A drawing that adds `tris_of(layers[layer])` to each layer, moved by `shift`."""
+
+    def draw(p: Any) -> None:
+        for layer in LAYERS:
+            append_triangles(getattr(p, layer).geometry, tris_of(layers[layer]), shift)
+
+    return draw
+
+
+def _all(tris: list[Any]) -> list[Any]:
+    return tris
+
+
+def chunk_layers(layers: dict[str, Any], most: int) -> list[Any]:
+    """The region's armour (`layers`, triangles by layer) broken into at most `most` chunks on an
+    XZ grid a third of its size: a list of `[layers, centre]`."""
+    tagged: list[list[Any]] = []
+    for layer in LAYERS:
+        for tri in layers[layer]:
+            tagged.append([layer, tri, centroid(tri)])
+    if len(tagged) == 0:
+        return []
+    low = [math.inf, math.inf]
+    high = [-math.inf, -math.inf]
+    for t in tagged:
+        c = t[2]
+        low = [min(low[0], c[0]), min(low[1], c[2])]
+        high = [max(high[0], c[0]), max(high[1], c[2])]
+    cell = max(4, max(high[0] - low[0], high[1] - low[1]) / 3)
+    ids = chunk_cells([t[2] for t in tagged], cell, most)
+    count = 0
+    for i in ids:
+        count = max(count, i + 1)
+    result: list[Any] = []
+    for _ in range(count):
+        empty: dict[str, Any] = {}
+        for layer in LAYERS:
+            empty[layer] = []
+        result.append([empty, [0.0, 0.0, 0.0], 0])
+    for k in range(len(tagged)):
+        entry = result[ids[k]]
+        entry[0][tagged[k][0]].append(tagged[k][1])
+        c = tagged[k][2]
+        entry[1] = [entry[1][0] + c[0], entry[1][1] + c[1], entry[1][2] + c[2]]
+        entry[2] += 1
+    return [[e[0], [e[1][0] / e[2], e[1][1] / e[2], e[1][2] / e[2]]] for e in result]
+
+
+class ArmourView:
+    """One armour region of a boss model: `whole` (a model, with its flash group `flash`), its
+    `chunks` and its `frame` (a model)."""
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self, region: Any, whole: Any, flash: Any, chunks: list[ArmourChunk], frame: Any
+    ) -> None:
+        self.region = region
+        self.whole = whole
+        self.flash = flash
+        self.chunks = chunks
+        self.frame = frame
+
+    def show(self, boss: Any, lit: Any, dt: float) -> None:
+        """Shows the region for `boss` (None: at rest) as its transformation goes."""
+        if boss == None:  # noqa: E711
+            self._rest(lit, dt, 1000)
+            return
+        phase = reveal_phase(self.region.form, boss.form, boss.transforming_into)
+        if phase == HIDDEN:
+            self._rest(lit, dt, boss.core.since_hit)
+            return
+        if phase == SHOWN:
+            self._shed(lit, dt, 1)
+            return
+        look = BOSS_LOOK.reveal
+        t = boss.transform
+        if t < look.burst:
+            # It strains: shudders and strobes.
+            self._rest(lit, dt, 0 if math.floor(t * look.strobeHz * 4) % 2 == 0 else 1000)
+            k = t / look.burst
+            jolt = math.sin(t * 90) * look.shudder * k
+            self.whole.root.position.set(jolt, 0, -jolt * 0.6)
+            return
+        self._shed(lit, dt, (t - look.burst) / (look.burstEnd - look.burst))
+
+    def _rest(self, lit: Any, dt: float, since_hit: float) -> None:
+        set_enabled(self.whole.root, True)
+        self.whole.root.position.set(0, 0, 0)
+        set_enabled(self.frame.root, False)
+        for chunk in self.chunks:
+            set_enabled(chunk.node, False)
+        self.whole.sync(lit, dt)
+        self.flash.show(since_hit)
+
+    def _shed(self, lit: Any, dt: float, u: float) -> None:
+        set_enabled(self.whole.root, False)
+        set_enabled(self.frame.root, True)
+        self.frame.sync(lit, dt)
+        flying = u < 1
+        for chunk in self.chunks:
+            set_enabled(chunk.node, flying)
+            if not flying:
+                continue
+            pose = chunk_pose(chunk.centre, chunk.index, ease(u) * 0.3 + u * 0.7)
+            node = chunk.node
+            node.position.set(pose[0][0], pose[0][1], pose[0][2])
+            node.rotation.x = pose[1]
+            node.rotation.z = pose[2]
+            node.scaling.set(pose[3], pose[3], pose[3])
+
+
+class FrameView:
+    """A region's frame: its `root` node, its floor and ribs models."""
+
+    def __init__(self, root: Any, models: list[Any]) -> None:
+        self.root = root
+        self.models = models
+
+    def sync(self, lit: Any, dt: float) -> None:
+        for model in self.models:
+            model.sync(lit, dt)
+
+
+def _build_frame(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    name: str, scene: Any, neon: Any, breath: Any, drawings: list[Any]
+) -> FrameView:
+    """The frame of a region from its `[floor, ribs]` drawings: built under the armour, the floor
+    is trimmed along its own outline (P14-R04); the ribs are not, so it reads as dark metal."""
+    root = new_transform_node(name + "-frame", scene)
+    floor = build_enemy_model(name + "-frame-floor", scene, neon, drawings[0], breath)
+    floor.root.parent = root
+    set_trim_group(floor.root)
+    ribs = build_enemy_model(name + "-frame-ribs", scene, neon, drawings[1], breath)
+    ribs.root.parent = root
+    clear_trim(ribs.root)
+    return FrameView(root, [floor, ribs])
+
+
+def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    design: Any, cut: ArmourCut, root: Any, neon: Any, breath: Any, flash_of: Any
+) -> list[ArmourView]:
+    """The views of `design`'s armour regions, cut by `cut`, on `root`. `flash_of(model)` makes
+    the flash group of a model."""
+    regions = design.armour
+    scene = root.getScene()
+    most = min(BOSS_LOOK.armour.chunks, math.floor(BOSS_LOOK.armour.bossChunks / len(regions)))
+    result: list[ArmourView] = []
+    for k in range(len(regions)):
+        region = regions[k]
+        layers = cut.regions[k]
+        name = design.id + "-armour-" + region.id
+        whole = build_enemy_model(name, scene, neon, _layers_drawing(layers, _all, None), breath)
+        whole.root.parent = root
+        chunks: list[ArmourChunk] = []
+        pieces = chunk_layers(layers, most)
+        for i in range(len(pieces)):
+            centre = pieces[i][1]
+            node = new_transform_node(name + "-chunk-" + str(i), scene)
+            node.position.set(centre[0], centre[1], centre[2])
+            node.parent = root
+            shift = [-centre[0], -centre[1], -centre[2]]
+            model = build_enemy_model(
+                name + "-chunk-" + str(i),
+                scene,
+                neon,
+                _layers_drawing(pieces[i][0], _all, shift),
+                breath,
+            )
+            model.root.parent = node
+            # Flying off, it must not trim the frame's edges (P14-R04).
+            clear_trim(model.root)
+            set_enabled(node, False)
+            chunks.append(ArmourChunk(node, centre, i))
+        solid: list[Any] = []
+        for layer in SOLID:
+            solid.extend(layers[layer])
+        frame = _build_frame(name, scene, neon, breath, frame_drawings(solid, region.frame, neon))
+        frame.root.parent = root
+        set_enabled(frame.root, False)
+        result.append(ArmourView(region, whole, flash_of(whole), chunks, frame))
+    return result

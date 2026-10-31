@@ -1,11 +1,7 @@
-"""How a boss's hidden weapon parts come out as it transforms (docs/superpowers/specs/
-2026-10-31-ship-glow-and-boss-transform-design.md, Part B).
-
-Two styles, the design's `revealStyle`:
-
-- `armour` (the default): an armour plate covers each hidden part; as the boss transforms it blows
-  off (thrown out, spinning, falling) and the weapon beneath rises into place;
-- `unfold`: the hidden part is folded into the hull and swings out, growing, about its spot.
+"""How a boss's hidden weapon parts come out as it transforms (docs/superpowers/specs/2026-10-31-
+boss-armour-shedding-design.md, D-224): folded flat into the frame its shed armour leaves, each
+swings up on its hinge, rising, then slides its barrel out (overshooting and settling). Nothing
+grows from nothing.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
@@ -15,11 +11,8 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
-from game.config.enemy_look import ENEMY_LOOK
-from game.view.bosses.boss_limbs import ORIGIN, boss_point, hang
-from game.view.enemies.enemy_mesh import build_enemy_model
-from render.babylon import get_hierarchy_bounding_vectors, new_transform_node, set_enabled
-from render.edge_trim_mesh import clear_trim
+from game.view.bosses.boss_limbs import boss_point
+from render.babylon import set_enabled
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -34,8 +27,9 @@ SHOWN = "shown"
 
 
 def reveal_phase(reveal: int | None, form: int, transforming_into: int) -> str:
-    """Whether a part revealed by transformation `reveal` is hidden, coming out, or shown, for a
-    boss that has done `form` transformations and is doing `transforming_into` (0: none)."""
+    """Whether something revealed (or shed) by transformation `reveal` is still hidden, coming
+    out, or shown, for a boss that has done `form` transformations and is doing
+    `transforming_into` (0: none)."""
     if reveal is None or form >= reveal:
         return SHOWN
     if transforming_into == reveal:
@@ -49,178 +43,129 @@ def ease(t: float) -> float:
     return k * k * (3 - 2 * k)
 
 
-class Pose:
-    """Where a node goes: its `position`, `scale` and turn about Y (`yaw`, radians)."""
+def back_out(t: float, overshoot: float) -> float:
+    """From 0 to 1, past 1 by a little (`overshoot`: the back-out ease's constant) then back."""
+    k = min(1, max(0, t)) - 1
+    return 1 + (overshoot + 1) * k * k * k + overshoot * k * k
 
-    def __init__(self, position: Vec3, scale: float, yaw: float) -> None:
+
+def share(t: float, span: list[float]) -> float:
+    """How far `t` is through `span` [start, end], from 0 to 1."""
+    return min(1, max(0, (t - span[0]) / (span[1] - span[0])))
+
+
+class Pose:
+    """Where a node goes: its `position` and its turn about Y (`yaw`, radians)."""
+
+    def __init__(self, position: Vec3, yaw: float) -> None:
         self.position = position
-        self.scale = scale
         self.yaw = yaw
 
 
-def unfold_pose(base: Vec3, at: Vec3, t: float) -> Pose:
-    """The pose of a part's root (at `base` on its frame, its model drawn round `at`) unfolding,
-    `t` of the way: it grows from nothing about `at`, swinging out from folded along the hull."""
+def hinge_pose(base: Vec3, hinge: Vec3, fold: float, sink: float, t: float) -> Pose:
+    """The pose of a part's root (at `base` on its frame) swinging up about `hinge` (model space),
+    `t` of the way: turned by `fold` and `sink` px down at first, as it rests at the end."""
     e = ease(t)
-    side = 1 if at[0] >= 0 else -1
-    yaw = (1 - e) * BOSS_LOOK.reveal.unfoldTurn * side
+    yaw = (1 - e) * fold
     c = math.cos(yaw)
     s = math.sin(yaw)
     # Babylon's turn about Y: x' = x cos + z sin, z' = -x sin + z cos.
-    tx = (at[0] * c + at[2] * s) * e
-    tz = (-at[0] * s + at[2] * c) * e
-    ty = at[1] * e
-    return Pose([base[0] + at[0] - tx, base[1] + at[1] - ty, base[2] + at[2] - tz], e, yaw)
+    rx = hinge[0] * c + hinge[2] * s
+    rz = -hinge[0] * s + hinge[2] * c
+    return Pose([base[0] + hinge[0] - rx, base[1] - (1 - e) * sink, base[2] + hinge[2] - rz], yaw)
 
 
-def rise_pose(base: Vec3, radius: float, t: float) -> Pose:
-    """The pose of a part's root rising out of the hull from under its armour, `t` of the way."""
-    e = ease(t)
-    sunk = (1 - e) * radius * BOSS_LOOK.reveal.sink
-    return Pose([base[0], base[1] - sunk, base[2]], 1, 0)
+def slide_offset(axis: Vec3, distance: float, t: float) -> Vec3:
+    """Where a sliding barrel is from its rest, `t` of the way out: `distance` back along `axis`
+    at first, overshooting its rest a little before it settles."""
+    back = (1 - back_out(t, BOSS_LOOK.reveal.overshoot)) * distance
+    return [-axis[0] * back, -axis[1] * back, -axis[2] * back]
 
 
-def plate_pose(at: Vec3, radius: float, t: float) -> Pose:
-    """The pose of an armour plate (drawn round `at`) blown off, `t` of the way: thrown out from
-    the boss's centre and up, spinning, falling back down as it goes."""
-    look = BOSS_LOOK.reveal
-    horizontal = math.hypot(at[0], at[2])
-    dx = at[0] / horizontal if horizontal > 0 else 0
-    dz = at[2] / horizontal if horizontal > 0 else 1
-    out = t * radius * look.throw
-    up = 4 * t * (1 - t) * radius * look.lift - t * t * radius * look.fall
-    return Pose([dx * out, up, dz * out], max(0, 1 - t * t), t * look.spin)
+def weapon_hinge(at: Vec3, radius: float, mount: Any) -> list[Any]:
+    """`[hinge, fold]` of a hidden weapon drawn round `at` (model space): from its `mount`
+    `[dx, dy, fold]` (px, X right, Y up) if it has one, else on its inner side (towards the centre
+    line, or its tail for one on it), folded back along the hull."""
+    if mount != None:  # noqa: E711
+        offset = boss_point(mount[0], mount[1])
+        return [[at[0] + offset[0], 0, at[2] + offset[2]], mount[2]]
+    if abs(at[0]) < 1:
+        return [[at[0], 0, at[2] - radius * 0.9], math.pi * 0.9]
+    side = 1 if at[0] > 0 else -1
+    return [[at[0] - side * radius * 0.9, 0, at[2]], side * 2.4]
 
 
-def _plate_outline(cx: float, cz: float, half: float) -> list[list[float]]:
-    """An octagon of half-width `half` round (cx, cz)."""
-    result: list[list[float]] = []
-    for k in range(8):
-        a = (2 * math.pi * (k + 0.5)) / 8
-        result.append([cx + math.cos(a) * half, cz + math.sin(a) * half])
-    return result
+class Slide:
+    """A piece of a weapon that slides out: its `node`, its `rest` position, along `axis` by
+    `distance`."""
 
-
-def build_plate(name: str, scene: Any, neon: Any, at: Vec3, half: float, top: float) -> Any:
-    """An armour plate over a hidden part: a bevelled octagon of half-width `half` round `at`,
-    from the boss's middle up to `top`, in the hull's metal, with a neon seam."""
-    hull = ENEMY_LOOK.hull
-
-    def draw(p: Any) -> None:
-        outline = _plate_outline(at[0], at[2], half)
-        height = max(top, half * 0.3)
-        p.hull.bevel_slab(outline, [0, height * 0.7, height], [0, half * 0.2], hull.panel)
-        seam = _plate_outline(at[0], at[2], half * 0.45)
-        p.neon.bevel_slab(seam, [height, height + 0.4, height + 0.6], [0, 0.2], neon)
-
-    model = build_enemy_model(name + "-plate", scene, neon, draw)
-    # It blows off: it must not hide the edges of the weapon beneath from the trim.
-    clear_trim(model.root)
-    return model
+    def __init__(self, node: Any, rest: Vec3, axis: Vec3, distance: float) -> None:
+        self.node = node
+        self.rest = rest
+        self.axis = axis
+        self.distance = distance
 
 
 class RevealView:
     """How one hidden part of a boss model comes out: its part's root (`root`, at `base` on its
-    frame), and in the `armour` style its plate (`plate`, a node, its model drawn round `at`)."""
+    frame), its hinge and fold (`weapon_hinge`), how far it sinks, and what slides out."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         reveal: int,
-        style: str,
         root: Any,
         base: Vec3,
-        at: Vec3,
-        radius: float,
-        plate: Any,
-        plate_base: Vec3,
+        hinge: list[Any],
+        sink: float,
+        slides: list[Slide],
     ) -> None:
         self.reveal = reveal
-        self.style = style
         self.root = root
         self.base = base
-        self.at = at
-        self.radius = radius
-        self.plate = plate
-        self.plate_base = plate_base
+        self.hinge = hinge
+        self.sink = sink
+        self.slides = slides
 
     def show(self, form: int, transforming_into: int, transform: float) -> str:
-        """Poses the part (and its plate) for a boss that has done `form` transformations, doing
-        `transforming_into` `transform` of the way. Returns the part's phase (see
-        `reveal_phase`): a hidden part's model is not shown."""
+        """Poses the part for a boss that has done `form` transformations, doing
+        `transforming_into` `transform` of the way. Returns its phase (see `reveal_phase`)."""
         phase = reveal_phase(self.reveal, form, transforming_into)
+        look = BOSS_LOOK.reveal
+        if phase == REVEALING and transform < look.swing[0]:
+            # Folded away under the armour until it has burst.
+            set_enabled(self.root, False)
+            return phase
         if phase == HIDDEN:
             set_enabled(self.root, False)
-            self._pose(Pose(self.base, 1, 0))
-            self._plate(Pose([0, 0, 0], 1, 0), True)
+            self._pose(Pose(self.base, 0), 1)
             return phase
         if phase == SHOWN:
-            self._pose(Pose(self.base, 1, 0))
-            self._plate(Pose([0, 0, 0], 1, 0), False)
+            self._pose(Pose(self.base, 0), 1)
             return phase
-        if self.style == "unfold":
-            self._pose(unfold_pose(self.base, self.at, transform))
-        else:
-            self._pose(rise_pose(self.base, self.radius, transform))
-            self._plate(plate_pose(self.at, self.radius, transform), True)
+        set_enabled(self.root, True)
+        swing = share(transform, look.swing)
+        pose = hinge_pose(self.base, self.hinge[0], self.hinge[1], self.sink, swing)
+        self._pose(pose, share(transform, look.slide))
         return phase
 
-    def _pose(self, pose: Pose) -> None:
+    def _pose(self, pose: Pose, slide: float) -> None:
         root = self.root
         root.position.set(pose.position[0], pose.position[1], pose.position[2])
-        root.scaling.set(pose.scale, pose.scale, pose.scale)
         root.rotation.y = pose.yaw
-
-    def _plate(self, pose: Pose, shown: bool) -> None:
-        if self.plate is None:
-            return
-        set_enabled(self.plate, shown)
-        if not shown:
-            return
-        # The plate turns and shrinks about its own centre `at`.
-        at = self.at
-        c = math.cos(pose.yaw)
-        s = math.sin(pose.yaw)
-        k = pose.scale
-        rx = (at[0] * c + at[2] * s) * k
-        rz = (-at[0] * s + at[2] * c) * k
-        b = self.plate_base
-        self.plate.position.set(
-            b[0] + pose.position[0] + at[0] - rx,
-            b[1] + pose.position[1],
-            b[2] + pose.position[2] + at[2] - rz,
-        )
-        self.plate.scaling.set(k, k, k)
-        self.plate.rotation.y = pose.yaw
+        for piece in self.slides:
+            d = slide_offset(piece.axis, piece.distance, slide)
+            r = piece.rest
+            piece.node.position.set(r[0] + d[0], r[1] + d[1], r[2] + d[2])
 
 
-def build_reveal(design: Any, spec: Any, model_root: Any, frame: Any, neon: Any) -> RevealView:
-    """The reveal of the hidden part `spec` of a boss of `design`, its model under `model_root`
-    (hung on `frame`)."""
-    style = design.revealStyle if design.revealStyle else "armour"
+def build_reveal(design: Any, spec: Any, model_root: Any, slides: list[Slide]) -> RevealView:
+    """The reveal of the hidden part `spec` of a boss of `design`, its model under `model_root`,
+    the pieces that slide out `slides`."""
     at = boss_point(spec.x, spec.y)
+    weapons = design.weapons
+    look = weapons[spec.id] if weapons != None and spec.id in weapons else None  # noqa: E711
+    mount = look.mount if look != None and "mount" in look else None  # noqa: E711
     base = [model_root.position.x, model_root.position.y, model_root.position.z]
-    plate = None
-    plate_base = [0.0, 0.0, 0.0]
-    if style == "armour":
-        scene = model_root.getScene()
-        bounds = get_hierarchy_bounding_vectors(model_root)
-        half = max(
-            spec.radius,
-            (bounds.max.x - bounds.min.x) / 2,
-            (bounds.max.z - bounds.min.z) / 2,
-        )
-        node = new_transform_node(design.id + "-" + spec.id + "-armour", scene)
-        hang(node, ORIGIN, frame)
-        plate_base = [node.position.x, node.position.y, node.position.z]
-        model = build_enemy_model_plate(design.id + "-" + spec.id, scene, neon, at, half, bounds)
-        model.root.parent = node
-        plate = node
-    return RevealView(spec.reveal, style, model_root, base, at, spec.radius, plate, plate_base)
-
-
-def build_enemy_model_plate(
-    name: str, scene: Any, neon: Any, at: Vec3, half: float, bounds: Any
-) -> Any:
-    """The plate model over a part whose model spans `bounds` (its top is the plate's)."""
-    top = max(0, bounds.max.y * BOSS_LOOK.reveal.plateTop)
-    return build_plate(name, scene, neon, [at[0], 0, at[2]], half * BOSS_LOOK.reveal.plateSize, top)
+    hinge = weapon_hinge(at, spec.radius, mount)
+    sink = spec.radius * BOSS_LOOK.reveal.sink
+    return RevealView(spec.reveal, model_root, base, hinge, sink, slides)

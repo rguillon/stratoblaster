@@ -17,7 +17,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 BLUE = bullet("blue", 185)
@@ -99,13 +99,17 @@ _FJORD_LYNX = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 FJORD_LYNX = with_weapons(
     _FJORD_LYNX,
     [
         hidden_weapon("lance-left", "lance", [-7, -35], 5, 480, 1, "blue", 1.2, 7.2),
         hidden_weapon("lance-right", "lance", [7, -35], 5, 480, 1, "blue", 2.0, 7.2),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-20, -48], [20, -48], [20, -10], [-20, -10]], "shell", None, False
+        ),
+    ],
 )

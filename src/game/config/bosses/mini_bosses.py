@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -330,57 +330,73 @@ _SENTINEL = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 REEF_WARDEN = with_weapons(
     _REEF_WARDEN,
     [
         hidden_weapon("lance-left", "lance", [-13, -25], 11, 500, 1, "red", 1.2, 8.0),
         hidden_weapon("lance-right", "lance", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
     ],
-    "unfold",
+    [
+        armour_region("back", 1, [[-32, -40], [32, -40], [32, 6], [-32, 6]], "shell", None, False),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its armour
-# plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 BREAKWATER = with_weapons(
     _BREAKWATER,
     [
         hidden_weapon("lance-left", "lance", [-11, 33], 9, 650, 1, "orange", 1.2, 17.7),
         hidden_weapon("lance-right", "lance", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
     ],
-    "armour",
+    [
+        armour_region("back", 1, [[-28, 4], [28, 4], [28, 43], [-28, 43]], "shell", None, False),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1); its
-# hull bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold.
 DUST_DEVIL = with_weapons(
     _DUST_DEVIL,
     [
         hidden_weapon("gatling-left", "gatling", [-12, 5], 8, 500, 1, "green", 1.2, 10.2),
         hidden_weapon("gatling-right", "gatling", [12, 5], 8, 500, 1, "green", 2.0, 10.2),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-28, -20.4], [28, -20.4], [28, 24.5], [-28, 24.5]], "shell", None, False
+        ),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
-# bursts open and they unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
 SCORPION = with_weapons(
     _SCORPION,
     [
         hidden_weapon("rack-left", "rack", [-7, 23], 5, 580, 1, "blue", 1.2, 27.1),
         hidden_weapon("rack-right", "rack", [7, 23], 5, 580, 1, "blue", 2.0, 27.1),
     ],
-    "unfold",
+    [
+        armour_region(
+            "back", 1, [[-20, -2], [20, -2], [20, 35.5], [-20, 35.5]], "shell", None, False
+        ),
+    ],
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its armour
-# plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 SENTINEL = with_weapons(
     _SENTINEL,
     [
         hidden_weapon("lance-left", "lance", [-12, -7], 8, 620, 1, "blue", 1.2, 6.1),
         hidden_weapon("lance-right", "lance", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
     ],
-    "armour",
+    [
+        armour_region(
+            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", None, False
+        ),
+    ],
 )

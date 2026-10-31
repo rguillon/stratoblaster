@@ -139,3 +139,15 @@ time goes from 1.5 s to 2.0 s.
 - No new weapon kinds.
 - No change to when transformations happen (still at 1/2 for mini bosses, and at 1/3 and 2/3 for
   final bosses).
+
+## Changes made while building it (see D-224)
+
+- **The armour is cut out automatically, not redrawn.** No model got a `drawing.armour` with its own
+  `draw(p)`. Instead, the core's drawing is recorded and its faces inside a region's outline (and
+  heights) are cut out of it. Regions live wholly in config (`armour_region`): outline, mirror,
+  heights and frame style.
+- **The frame's floor is the armour's own top view**, flattened and darkened. The ribs are clipped
+  to it, and only the floor carries the glowing trim.
+- **Strain is a strobe and shudder of the whole armour**, not glowing seam lines.
+- **Weapon kinds are unchanged** except the Jaguar's, which became lances. Lances are longer
+  (1.9 radii).

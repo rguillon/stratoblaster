@@ -21,7 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -151,9 +151,10 @@ _FOUNDRY_ARK = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
-# of ring emitters (transformation 2), a laser lance (transformation 2); its armour plates blow
-# off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour and its spine plating bursts off, baring a dark metal frame, and a pair of ring emitters
+# and a laser lance unfold.
 FOUNDRY_ARK = with_weapons(
     _FOUNDRY_ARK,
     [
@@ -163,5 +164,11 @@ FOUNDRY_ARK = with_weapons(
         hidden_weapon("orb-right", "orb", [48, 13], 10, 2400, 2, "orange", 2.0, 8.8),
         hidden_weapon("lance-centre", "lance", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[20, -78], [88, -78], [88, -13.5], [20, -13.5]], "wing"),
+        armour_region("wings", 2, [[30, -13.5], [88, -13.5], [88, 45], [30, 45]], "wing"),
+        armour_region(
+            "spine", 2, [[-18, -49], [18, -49], [18, 11], [-18, 11]], "shell", None, False
+        ),
+    ],
 )

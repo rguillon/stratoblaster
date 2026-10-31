@@ -20,7 +20,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -130,8 +130,9 @@ _AURORA_STATION = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1), a pair of
-# gatling turrets (transformation 2); its armour plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
 AURORA_STATION = with_weapons(
     _AURORA_STATION,
     [
@@ -140,5 +141,8 @@ AURORA_STATION = with_weapons(
         hidden_weapon("gatling-left", "gatling", [-7, -21], 5, 1250, 2, "purple", 1.2, 9.6),
         hidden_weapon("gatling-right", "gatling", [7, -21], 5, 1250, 2, "purple", 2.0, 9.6),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[28, 2], [86.5, 2], [86.5, 58], [28, 58]], "wing"),
+        armour_region("spine", 2, [[-20, -46], [20, -46], [20, 4], [-20, 4]], "shell", None, False),
+    ],
 )

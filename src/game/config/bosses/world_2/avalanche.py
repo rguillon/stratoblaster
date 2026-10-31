@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -131,13 +131,15 @@ _AVALANCHE = record(
     }
 )
 
-# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its armour
-# plates blow off.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
 AVALANCHE = with_weapons(
     _AVALANCHE,
     [
         hidden_weapon("lance-left", "lance", [-29, 21], 11, 720, 1, "purple", 1.2, 12.2),
         hidden_weapon("lance-right", "lance", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
     ],
-    "armour",
+    [
+        armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing"),
+    ],
 )

@@ -119,9 +119,12 @@ BOSS_TIMING = record(
         "laserTurnDeg": 20,
         # Seconds a boss is angry after the pause that follows each destroyed part (phase 7).
         "rageSeconds": 3,
-        # Seconds a transformation lasts (its armour blows off, or its hidden weapons unfold): it
-        # neither fires nor takes damage meanwhile.
-        "transformSeconds": 1.5,
+        # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
+        # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, D-224): it neither
+        # fires nor takes damage meanwhile.
+        "transformSeconds": 2.0,
+        # Blasts each armour region it sheds bursts in, at most.
+        "regionBlasts": 5,
     }
 )
 
