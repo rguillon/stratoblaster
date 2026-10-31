@@ -31,10 +31,11 @@ def lights_only(factory: Any) -> Any:  # noqa: ANN401
 
 
 class ImposterKinds:
-    """The kinds of `kinds` that `models` has, drawn as imposters with `atlas` (an
-    `ImposterAtlas`) as the camera tilted by `tilt` sees them. `models`: the factories to give a
-    `PropField` (those kinds making only their lights). Their pictures are baked by `bake_once`,
-    which must run outside the ground's adoption (the bake's mesh must not hang from it)."""
+    """The kinds of `kinds` (all of them in `models`: `imposter_kinds` checks), drawn as imposters
+    with `atlas` (an `ImposterAtlas`) as the camera tilted by `tilt` sees them. `models`: the
+    factories to give a `PropField` (those kinds making only their lights). Their pictures are
+    baked by `bake_once`, which must run outside the ground's adoption (the bake's mesh must
+    not hang from it)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -44,13 +45,12 @@ class ImposterKinds:
         atlas: Any,  # noqa: ANN401
         tilt: float,
     ) -> None:
-        names = [k for k in kinds if k in models]
-        self.kinds = names
-        self.field = ImposterField(scene, names, atlas.look, tilt, atlas.material)
+        self.kinds = kinds
+        self.field = ImposterField(scene, kinds, atlas.look, tilt, atlas.material)
         self.models: dict[str, Any] = {}
         for k, factory in models.items():
-            self.models[k] = lights_only(factory) if k in names else factory
-        bodies = [prop_geometry(models[k]).structure for k in names]
+            self.models[k] = lights_only(factory) if k in kinds else factory
+        bodies = [prop_geometry(models[k]).structure for k in kinds]
 
         def bake() -> None:
             atlas.bake(bodies, tilt)

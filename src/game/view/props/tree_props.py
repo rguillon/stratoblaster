@@ -15,6 +15,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.prop_look import PROP_COLORS as C
 from game.config.trees import TREE_IDS
 from game.view.props.dead_tree_props import dead_bush, dead_oak, dead_pine, snag
+from game.view.props.tree_geometry import tree_geometry
 from render.geometry.rough import Leaves, Roughness, leaf_cloud, leaf_cone, rough_ball, rough_lathe
 from render.geometry.solids import Placement, SolidBuilder
 from render.scenery.scenery_look import PropGeometry
@@ -107,16 +108,12 @@ def stand_in(centre: list[float], radii: list[float]) -> SolidBuilder:
     return s
 
 
-def _tree(s: SolidBuilder, shadow: SolidBuilder) -> PropGeometry:
-    return PropGeometry(s.geometry, SolidBuilder().geometry, None, None, shadow.geometry)
-
-
 def broadleaf(palette: Palette) -> PropGeometry:
     """A broad tree (an oak, a copper beech): a short trunk under a wide lumpy crown."""
     s = SolidBuilder(True)
     trunk(s, 4, 0.45, C.bark)
     crown(s, [0, 5.6, 0], [2.4, 2], 6, palette, 3)
-    return _tree(s, stand_in([0, 5.6, 0], [3.2, 2.4, 3.2]))
+    return tree_geometry(s, stand_in([0, 5.6, 0], [3.2, 2.4, 3.2]))
 
 
 def birch(palette: Palette) -> PropGeometry:
@@ -132,7 +129,7 @@ def birch(palette: Palette) -> PropGeometry:
     parts.append([[0, 5.6, 0], [1.2, 1.4, 1.2]])
     for k in range(len(parts)):
         clump(s, parts[k][0], parts[k][1], palette, 7, 40 + k)
-    return _tree(s, stand_in([0, 5.2, 0], [2, 1.9, 2]))
+    return tree_geometry(s, stand_in([0, 5.2, 0], [2, 1.9, 2]))
 
 
 def poplar(palette: Palette) -> PropGeometry:
@@ -142,7 +139,7 @@ def poplar(palette: Palette) -> PropGeometry:
     parts = [[[0, 5.6, 0], [1.4, 4.4, 1.4]], [[0.5, 4, 0.3], [1, 2.2, 1]]]
     for k in range(len(parts)):
         clump(s, parts[k][0], parts[k][1], palette, 9, 17 + k * 5)
-    return _tree(s, stand_in([0, 5.4, 0], [1.6, 4.4, 1.6]))
+    return tree_geometry(s, stand_in([0, 5.4, 0], [1.6, 4.4, 1.6]))
 
 
 def pine(palette: Palette) -> PropGeometry:
@@ -164,7 +161,7 @@ def pine(palette: Palette) -> PropGeometry:
         leaf_cone(s, [0, y, 0], [r, h], _leaves(palette, count, 0.6), 60 + k)
     # One cone over all the tiers.
     shadow.lathe([[0, 1.6], [2.4, 1.9], [0, 10.6]], 5, [0, 0, 0], Placement([0, 0, 0]))
-    return _tree(s, shadow)
+    return tree_geometry(s, shadow)
 
 
 def bush(palette: Palette) -> PropGeometry:
@@ -177,7 +174,7 @@ def bush(palette: Palette) -> PropGeometry:
     ]
     for k in range(len(parts)):
         clump(s, parts[k][0], parts[k][1], palette, 10, 31 + k * 3)
-    return _tree(s, stand_in([0.1, 0.8, -0.1], [1.9, 1.1, 1.9]))
+    return tree_geometry(s, stand_in([0.1, 0.8, -0.1], [1.9, 1.1, 1.9]))
 
 
 def _model(

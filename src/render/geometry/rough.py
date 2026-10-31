@@ -10,7 +10,8 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.noise import hash_2d
-from render.geometry.solids import Placement, SolidBuilder
+from render.geometry.solids import Placement, SolidBuilder, shaded
+from render.geometry.vec3 import cross, norm, plus
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -34,10 +35,6 @@ class Roughness:
         self.shade = shade
         self.shadow = shadow
         self.seed = seed
-
-
-def _shaded(color: Rgb, k: float) -> Rgb:
-    return [min(1, color[0] * k), min(1, color[1] * k), min(1, color[2] * k)]
 
 
 def rough_lathe(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -72,7 +69,7 @@ def rough_lathe(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
         draw = hash_2d(k * 2 + half, i, rough.seed * 7 + _SHADE)
         height = (profile[k][1] + profile[k + 1][1]) / 2
         up = (height - low) / span
-        return _shaded(color, (1 - rough.shadow * (1 - up)) * (1 + (draw - 0.5) * 2 * rough.shade))
+        return shaded(color, (1 - rough.shadow * (1 - up)) * (1 + (draw - 0.5) * 2 * rough.shade))
 
     for k in range(rows - 1):
         below = rings[k]
@@ -139,21 +136,6 @@ class Leaves:
         self.shade = shade
 
 
-def _norm(v: Vec3) -> Vec3:
-    length = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
-    if length == 0:
-        return [0, 1, 0]
-    return [v[0] / length, v[1] / length, v[2] / length]
-
-
-def _cross(a: Vec3, b: Vec3) -> Vec3:
-    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
-
-
-def _plus(a: Vec3, b: Vec3, k: float) -> Vec3:
-    return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]
-
-
 def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     s: SolidBuilder,
     at: Vec3,
@@ -164,21 +146,21 @@ def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 ) -> None:
     """A tuft of leaves at `at`: a little three-sided pyramid `size` across, its tip towards `out`
     (a unit vector), turned `turn` round it; its faces face outwards."""
-    side = _norm(_cross(out, [0, 0, 1] if abs(out[1]) > NEAR_UP else [0, 1, 0]))
-    other = _cross(out, side)
+    side = norm(cross(out, [0, 0, 1] if abs(out[1]) > NEAR_UP else [0, 1, 0]))
+    other = cross(out, side)
     base: list[Vec3] = []
     for k in range(3):
         angle = turn + k * math.pi * 2 / 3
-        corner = _plus(
-            _plus(at, side, math.cos(angle) * size * 0.5), other, math.sin(angle) * size * 0.5
+        corner = plus(
+            plus(at, side, math.cos(angle) * size * 0.5), other, math.sin(angle) * size * 0.5
         )
-        base.append(_plus(corner, out, -size * 0.15))
-    tip = _plus(at, out, size * 0.45)
+        base.append(plus(corner, out, -size * 0.15))
+    tip = plus(at, out, size * 0.45)
     for k in range(3):
         a = base[k]
         b = base[(k + 1) % 3]
         # Outward: (b - a) x (tip - a) along `out` (SolidBuilder.face: counter-clockwise from out).
-        n = _cross(
+        n = cross(
             [b[0] - a[0], b[1] - a[1], b[2] - a[2]], [tip[0] - a[0], tip[1] - a[1], tip[2] - a[2]]
         )
         mid = [
@@ -200,7 +182,7 @@ def _tuft_color(leaves: Leaves, seed: int, k: int, deep: float, up: float) -> Rg
     pick = len(palette) - 1 if pick >= len(palette) else pick
     jitter = 1 + (hash_2d(k, 5, seed) - 0.5) * 2 * leaves.shade
     k_light = (1 - leaves.inner * deep) * (1 - leaves.shadow * (1 - up)) * jitter
-    return _shaded(palette[pick], k_light)
+    return shaded(palette[pick], k_light)
 
 
 def leaf_cloud(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -226,7 +208,7 @@ def leaf_cloud(  # noqa: PLR0917 (positional: Transcrypt has no keyword argument
             centre[2] + unit[2] * radii[2] * reach,
         ]
         # Out along the ellipsoid's normal, a little askew.
-        out = _norm(
+        out = norm(
             [
                 unit[0] / radii[0] + (hash_2d(k, 7, seed) - 0.5) * 0.6 / radii[0],
                 unit[1] / radii[1] + (hash_2d(k, 8, seed) - 0.5) * 0.6 / radii[1],
@@ -258,7 +240,7 @@ def leaf_cone(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
         deep = hash_2d(k, 2, seed) * leaves.depth
         r = radius * f * (1 - deep)
         at = [base[0] + math.cos(a) * r, base[1] + up * height, base[2] + math.sin(a) * r]
-        out = _norm([math.cos(a), slope - 0.35 + (hash_2d(k, 7, seed) - 0.5) * 0.5, math.sin(a)])
+        out = norm([math.cos(a), slope - 0.35 + (hash_2d(k, 7, seed) - 0.5) * 0.5, math.sin(a)])
         tuft_size = leaves.size * (0.7 + 0.6 * hash_2d(k, 3, seed))
         color = _tuft_color(leaves, seed, k, deep / max(leaves.depth, 1e-6), up)
         tuft(s, at, out, tuft_size, color, hash_2d(k, 6, seed) * math.pi * 2)

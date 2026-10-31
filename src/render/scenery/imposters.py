@@ -20,6 +20,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.geometry.textured import QuadBuilder, TexturedGeometry
+from render.geometry.vec3 import plus
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -73,11 +74,6 @@ def view_axes(tilt: float) -> list[list[float]]:
     ]
 
 
-def _plus(a: list[float], b: list[float], k: float) -> list[float]:
-    """`a + k b`."""
-    return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]
-
-
 def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[float]:  # noqa: ANN401
     """Where, round the origin of the bake, frame `at[1]` of kind `at[0]` is centred: the frames
     side by side in the camera's plane, as in the atlas."""
@@ -87,7 +83,7 @@ def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[floa
     rows = atlas_rows(kinds)
     across = (at[1] + 0.5 - headings / 2) * size
     up = (rows / 2 - at[0] - 0.5) * size
-    return _plus(_plus([0, 0, 0], axes[0], across), axes[1], up)
+    return plus(plus([0, 0, 0], axes[0], across), axes[1], up)
 
 
 def _shade(normal: list[float], ambient: float) -> float:
@@ -111,8 +107,9 @@ def _face_normal(p: list[float], i: int, j: int, k: int) -> list[float]:
     bx = p[k * 3] - p[i * 3]
     by = p[k * 3 + 1] - p[i * 3 + 1]
     bz = p[k * 3 + 2] - p[i * 3 + 2]
-    # Babylon's front faces have the normal (c - a) × (b - a).
-    return [bz * ay - by * az, bx * az - bz * ax, by * ax - bx * ay]
+    # Babylon's front faces have the normal (c - a) × (b - a), that is (b - a) × (c - a) negated:
+    # with u = b - a and v = c - a, the normal is v × u.
+    return [by * az - bz * ay, bz * ax - bx * az, bx * ay - by * ax]
 
 
 def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -189,20 +186,26 @@ def imposter_quad(look: Any, tilt: float, uv: list[float]) -> TexturedGeometry: 
     axes = view_axes(tilt)
     right = axes[0]
     up = axes[1]
-    middle = _plus([0, look.centre, 0], axes[2], quad_lift(look, tilt))
+    middle = plus([0, look.centre, 0], axes[2], quad_lift(look, tilt))
     half: float = look.frameSize / 2
-    low = _plus(middle, up, -half)
-    high = _plus(middle, up, half)
+    low = plus(middle, up, -half)
+    high = plus(middle, up, half)
     quads = QuadBuilder()
-    # Seen from the camera, right to left along the bottom is counter-clockwise.
+    # The corners run clockwise in Babylon's convention (`QuadBuilder` assumes the other way), so
+    # the quad's triangles are turned round: their front faces then look at the camera.
     quads.quad(
         [
-            _plus(low, right, half),
-            _plus(high, right, half),
-            _plus(high, right, -half),
-            _plus(low, right, -half),
+            plus(low, right, half),
+            plus(high, right, half),
+            plus(high, right, -half),
+            plus(low, right, -half),
         ],
         uv,
         [1, 1, 1],
     )
+    indices = quads.geometry.indices
+    for t in range(0, len(indices), 3):
+        swap = indices[t + 1]
+        indices[t + 1] = indices[t + 2]
+        indices[t + 2] = swap
     return quads.geometry

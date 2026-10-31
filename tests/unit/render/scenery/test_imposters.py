@@ -6,8 +6,10 @@ import pytest
 from helpers.geometry_checks import check_colored
 
 from game.config.record import record
+from helpers.render_geometry import babylon_normal, dot, triangles
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.imposters import (
+    add_baked,
     atlas_rows,
     atlas_size,
     bake_geometry,
@@ -78,6 +80,33 @@ def test_d211_a_quad_is_lifted_towards_the_camera_to_clear_the_ground():
     check_colored(quad)
     assert min(quad.positions[1::3]) == pytest.approx(0.05)
     assert sorted(set(quad.uvs)) == [0, 1]
+
+
+def test_d211_every_triangle_of_a_quad_faces_the_camera():
+    for tilt in [0.0, TILT, math.radians(80)]:
+        quad = imposter_quad(LOOK, tilt, [0, 0, 1, 1])
+        towards = view_axes(tilt)[2]
+        for tri in triangles(quad.positions, quad.indices):
+            assert dot(babylon_normal(tri), towards) > 0
+
+
+def _flat(indices: list[int]) -> ColoredGeometry:
+    # One triangle lying in the ground plane: its normal is +Y for (0, 1, 2), -Y for (0, 2, 1).
+    geo = ColoredGeometry()
+    geo.positions = [0, 0, 0, 1, 0, 0, 0, 0, 1]
+    geo.indices = indices
+    geo.colors = [1, 1, 1, 1] * 3
+    return geo
+
+
+def test_d212_a_face_turned_to_the_bake_light_is_baked_brighter():
+    up = ColoredGeometry()
+    add_baked(up, _flat([0, 1, 2]), 0, [0, 0, 0], LOOK)
+    down = ColoredGeometry()
+    add_baked(down, _flat([0, 2, 1]), 0, [0, 0, 0], LOOK)
+    # BAKE_LIGHT's cosine with +Y, 0.85 over its length, shades the lit face from `ambient`.
+    assert up.colors[0] == pytest.approx(0.75 + 0.25 * 0.85 / math.sqrt(1.005))
+    assert down.colors[0] == pytest.approx(0.75)
 
 
 def test_d211_a_frame_high_enough_needs_no_lift():

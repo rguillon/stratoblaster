@@ -1971,6 +1971,13 @@
 - **FPS / polygons tile:** the debug tile (P06-R09) can be shown in any level with F2 (`GAME_PLAY_CONFIG.stats.key`), not only in the URL's debug mode. The choice holds from level to level for the session (`STATS_SHOWN`). Without it, the tile shows in debug mode as before. The polygons are the triangles drawn in the frame, thin instances included.
 - **Status:** Proposed
 
+### D-213 — Every car kind has its own body: a bus and a tanker added
+- **Date:** 2026-10-31
+- **Phase:** outside a phase, following the cars of D-211
+- **Bodies (`game/view/props/car_props.py`, `prop_models.py`):** each car kind has its own body, from its own shape: racer, coupé (`sedan`), pod, cruiser, van, hauler (`truck`), bus and tanker. `make_car_models` maps each kind to its shape. The bus is a long chamfered body with a band of windows split by pillars, and a white roof with two cooling units. The tanker is the hauler's cab pulling a long chrome tank on a dark frame, with neon bands round the tank. Their sizes come from `SHAPES`. A test checks that every kind's body differs from the others in size or triangle count (`test_d213_every_car_kind_has_its_own_body`).
+- **Kinds and paints (`game/config/cars.py`, `game/config/prop_look.py`):** the bus and the tanker are car kinds of the traffic. The bus is painted `carOrange` with cyan neon, the tanker's cab `carTeal` with molten neon.
+- **Status:** Proposed
+
 ### D-214 — Dead trees and dead woods in the desert, drawn as imposters
 - **Date:** 2026-10-31
 - **Phase:** outside a phase, at the reviewer's request (in chat: "using imposters, create dead trees and dead tree forests in the deserts")

@@ -9,7 +9,8 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.noise import hash_2d
-from render.geometry.solids import SolidBuilder
+from render.geometry.solids import SolidBuilder, shaded
+from render.geometry.vec3 import cross, norm, plus
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -28,27 +29,12 @@ _SHADE = 5
 _STEEP = 0.9
 
 
-def _norm(v: Vec3) -> Vec3:
-    length = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
-    if length == 0:
-        return [0, 1, 0]
-    return [v[0] / length, v[1] / length, v[2] / length]
-
-
-def _cross(a: Vec3, b: Vec3) -> Vec3:
-    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
-
-
-def _plus(a: Vec3, b: Vec3, k: float) -> Vec3:
-    return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]
-
-
 def across(direction: Vec3) -> list[Vec3]:
     """Two unit vectors `u`, `v` square to `direction` and to each other, `u × v` along it."""
-    d = _norm(direction)
+    d = norm(direction)
     helper: Vec3 = [0, 1, 0] if abs(d[1]) < _STEEP else [1, 0, 0]
-    u = _norm(_cross(d, helper))
-    return [u, _cross(d, u)]
+    u = norm(cross(d, helper))
+    return [u, cross(d, u)]
 
 
 def limb(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -70,19 +56,20 @@ def limb(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         out: list[Vec3] = []
         for i in range(sides):
             a = (i / sides) * math.pi * 2
-            out.append(_plus(_plus(centre, u, r * math.cos(a)), v, r * math.sin(a)))
+            out.append(plus(plus(centre, u, r * math.cos(a)), v, r * math.sin(a)))
         return out
 
     low = ring(start, radii[0])
+    if radii[1] <= 0:
+        for i in range(sides):
+            n = (i + 1) % sides
+            s.face([low[i], low[n], end], color)
+        return
+    high = ring(end, radii[1])
     for i in range(sides):
         n = (i + 1) % sides
-        if radii[1] <= 0:
-            s.face([low[i], low[n], end], color)
-        else:
-            high = ring(end, radii[1])
-            s.face([low[i], low[n], high[n], high[i]], color)
-    if radii[1] > 0:
-        s.face(ring(end, radii[1]), color)
+        s.face([low[i], low[n], high[n], high[i]], color)
+    s.face(high, color)
 
 
 class Branching:
@@ -113,10 +100,6 @@ class Branching:
         self.shade = shade
 
 
-def _shaded(color: Rgb, k: float) -> Rgb:
-    return [min(1, color[0] * k), min(1, color[1] * k), min(1, color[2] * k)]
-
-
 def branch(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
     s: SolidBuilder,
     start: Vec3,
@@ -132,9 +115,9 @@ def branch(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arg
     the same seed gives the same limbs whatever the `depth`, so a shallower one is its outline."""
     length = size[0]
     radius = size[1]
-    d = _norm(direction)
-    end = _plus(start, d, length)
-    tint = _shaded(color, 1 + (hash_2d(seed, depth, _SHADE) - 0.5) * 2 * shape.shade)
+    d = norm(direction)
+    end = plus(start, d, length)
+    tint = shaded(color, 1 + (hash_2d(seed, depth, _SHADE) - 0.5) * 2 * shape.shade)
     sides = max(3, min(6, math.floor(radius * 14)))
     limb(s, start, end, [radius, radius * shape.taper if depth > 0 else 0], sides, tint)
     if depth <= 0:
@@ -143,14 +126,14 @@ def branch(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arg
     for k in range(shape.forks):
         turn = (k / shape.forks + hash_2d(seed, k, _TURN) * 0.3) * math.pi * 2
         angle = shape.spread * (1 + (hash_2d(seed, k, _ANGLE) - 0.5) * 0.66)
-        side = _plus(_plus([0, 0, 0], uv[0], math.cos(turn)), uv[1], math.sin(turn))
-        out = _plus(_plus(d, d, math.cos(angle) - 1), side, math.sin(angle))
-        out = _norm([out[0], out[1] + shape.rise, out[2]])
+        side = plus(plus([0, 0, 0], uv[0], math.cos(turn)), uv[1], math.sin(turn))
+        out = plus(plus(d, d, math.cos(angle) - 1), side, math.sin(angle))
+        out = norm([out[0], out[1] + shape.rise, out[2]])
         at = 1 - shape.reach * hash_2d(seed, k, _START)
         child = [
             length * shape.shrink * (1 + (hash_2d(seed, k, _LENGTH) - 0.5) * 0.4),
             radius * shape.taper * shape.thin,
         ]
         branch(
-            s, _plus(start, d, length * at), out, child, depth - 1, shape, color, seed * 5 + k + 1
+            s, plus(start, d, length * at), out, child, depth - 1, shape, color, seed * 5 + k + 1
         )

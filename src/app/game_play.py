@@ -450,11 +450,11 @@ class GamePlay:
         )
 
     def _toggle_stats(self) -> None:
-        """Shows or hides the debug tile (D-212), for this level and the next ones; only once the
-        level is in the page."""
+        """Flips the debug tile's choice (D-212), for this level and the next ones. The tile itself
+        follows only once the level is in the page: `attach` shows it as chosen."""
+        shown = STATS_SHOWN.toggle(bool(self._options.debug))
         if not self._attached:
             return
-        shown = STATS_SHOWN.toggle(bool(self._options.debug))
         if shown and self._stats is None:
             self._stats = create_stats(self._overlays())
         elif not shown and self._stats is not None:

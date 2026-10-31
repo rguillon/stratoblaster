@@ -362,8 +362,9 @@ class PropPlacer:
 
     def place(self, area: GroundArea) -> list[PropPlacement]:
         """Buildings and trees that lie in `area` (the buildings around it are placed first)."""
-        placements = self.place_without_trees(area)
-        placements.extend(self.trees_in(area))
+        self._ensure_around(area)
+        placements = self._buildings_in(area)
+        placements.extend(self._trees_in(area))
         return placements
 
     def _ensure_around(self, area: GroundArea) -> None:
@@ -376,6 +377,10 @@ class PropPlacer:
     def place_without_trees(self, area: GroundArea) -> list[PropPlacement]:
         """The buildings and floating props that lie in `area` (see `place`)."""
         self._ensure_around(area)
+        return self._buildings_in(area)
+
+    def _buildings_in(self, area: GroundArea) -> list[PropPlacement]:
+        """The buildings and floating props in `area`, the buildings around it already placed."""
         placements = [
             b.placement for b in self._buildings if inside(area, b.placement.x, b.placement.z)
         ]
@@ -389,6 +394,11 @@ class PropPlacer:
         cut on the cells' edges or not, get each tree once (D-212: a chunk's trees come a row of
         cells at a time)."""
         self._ensure_around(area)
+        return self._trees_in(area)
+
+    def _trees_in(self, area: GroundArea) -> list[PropPlacement]:
+        """The trees of the cells whose corner lies in `area`, the buildings around it already
+        placed."""
         placements: list[PropPlacement] = []
         cell = self.rules.cell_size
         i0 = math.ceil(area.x_min / cell)

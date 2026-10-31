@@ -105,6 +105,11 @@ def _is_point(station: LoftStation) -> bool:
     return station[1] == 0 and station[2] == station[3]
 
 
+def shaded(color: Rgb, k: float) -> Rgb:
+    """`color` brightened or darkened by `k`, each channel at most 1."""
+    return [min(1, color[0] * k), min(1, color[1] * k), min(1, color[2] * k)]
+
+
 class SolidBuilder:
     """Builds low-poly, flat-shaded, vertex-coloured solids into one `ColoredGeometry`.
 

@@ -8,6 +8,7 @@ stand-in, its trunk and main limbs in a few facets, that only casts its shadow.
 
 import math
 
+from game.view.props.tree_geometry import tree_geometry
 from render.geometry.branches import Branching, branch, limb
 from render.geometry.solids import SolidBuilder
 from render.scenery.scenery_look import PropGeometry
@@ -28,10 +29,6 @@ FORKED_WHORLS = 4
 TWIGS = Branching(3, 0.6, 0.6, 0.9, 0.5, 0.1, 0.6, 0.12)
 
 
-def _tree(s: SolidBuilder, shadow: SolidBuilder) -> PropGeometry:
-    return PropGeometry(s.geometry, SolidBuilder().geometry, None, None, shadow.geometry)
-
-
 def dead_oak() -> PropGeometry:
     """A dead broad tree: a short leaning trunk forking into bare limbs, up and out."""
     s = SolidBuilder()
@@ -39,7 +36,7 @@ def dead_oak() -> PropGeometry:
     branch(s, [0, 0, 0], [0.05, 1, 0.03], [3.2, 0.6], 3, SPREADING, BLEACHED, 7)
     # Its trunk and main limbs: the same seed, forking once.
     branch(shadow, [0, 0, 0], [0.05, 1, 0.03], [3.2, 0.6], 1, SPREADING, BLEACHED, 7)
-    return _tree(s, shadow)
+    return tree_geometry(s, shadow)
 
 
 def dead_pine() -> PropGeometry:
@@ -64,7 +61,7 @@ def dead_pine() -> PropGeometry:
             out = [math.cos(a), -0.25, math.sin(a)]
             depth = 1 if broken == 1 and k < FORKED_WHORLS else 0
             branch(s, at, out, [length, 0.15 * (1 - up * 0.5)], depth, WHORL, GREY, seed)
-    return _tree(s, shadow)
+    return tree_geometry(s, shadow)
 
 
 def snag() -> PropGeometry:
@@ -83,7 +80,7 @@ def snag() -> PropGeometry:
     branch(s, [0.12, 2.8, 0.05], [1, 0.9, 0.2], [2.4, 0.3], 2, SPREADING, CHARRED, 51)
     branch(shadow, [0.12, 2.8, 0.05], [1, 0.9, 0.2], [2.4, 0.3], 0, SPREADING, CHARRED, 51)
     limb(s, [0.1, 1.9, 0], [-0.7, 2.3, -0.3], [0.2, 0.12], 4, CHARRED)
-    return _tree(s, shadow)
+    return tree_geometry(s, shadow)
 
 
 def dead_bush() -> PropGeometry:
@@ -97,4 +94,4 @@ def dead_bush() -> PropGeometry:
         out = [math.cos(a) * lean, 1, math.sin(a) * lean]
         branch(s, [0, 0, 0], out, [1.5, 0.14], 2, TWIGS, BRUSH, 70 + k)
         branch(shadow, [0, 0, 0], out, [1.5, 0.14], 0, TWIGS, BRUSH, 70 + k)
-    return _tree(s, shadow)
+    return tree_geometry(s, shadow)
