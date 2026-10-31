@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -94,7 +95,7 @@ FIN_Y = SALAMANDER_PARTS.fin[1]
 # Its two back fins fire fans and shield the core; its tail, curled back to its right so it can be
 # shot past the core, lashes on its joints and sweeps lines of bullets; the core fires aimed bursts
 # from its jaws.
-MAGMA_SALAMANDER = record(
+_MAGMA_SALAMANDER = record(
     {
         "id": "magma-salamander",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -156,4 +157,15 @@ MAGMA_SALAMANDER = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
+# bursts open and they unfold.
+MAGMA_SALAMANDER = with_weapons(
+    _MAGMA_SALAMANDER,
+    [
+        hidden_weapon("lance-left", "lance", [-9, 13], 7, 720, 1, "orange", 1.2, 12.4),
+        hidden_weapon("lance-right", "lance", [9, 13], 7, 720, 1, "orange", 2.0, 12.4),
+    ],
+    "unfold",
 )

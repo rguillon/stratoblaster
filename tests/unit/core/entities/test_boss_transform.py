@@ -169,3 +169,29 @@ def test_a_boss_without_transformations_never_transforms(make_boss: Make, ctx: F
     _break(boss, ctx, "shield")
     assert boss.state == "fighting"
     assert boss.form == 0
+
+
+def test_parts_broken_as_it_comes_in_transform_it_once_in_place(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    boss = make_boss(parts=_parts(), transforms=[1, 3])
+    boss.break_next()
+    boss.update(ctx, 0.0)
+    assert boss.state == "entering"
+    boss.arrived = True
+    boss.update(ctx, 0.0)
+    assert boss.state == "transforming"
+
+
+def test_break_next_never_reaches_the_core_while_weapons_are_hidden(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    boss = make_boss(parts=_parts(), transforms=[1, 3])
+    for _ in range(4):
+        boss.break_next()
+        boss.update(ctx, 0.0)
+    assert boss.state == "entering"
+    boss.break_next()
+    assert boss.state != "dying"
+    assert boss.form == 1
+    assert _by_id(boss, "x1") in boss.hit_targets

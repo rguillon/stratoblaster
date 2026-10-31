@@ -8,6 +8,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -130,7 +131,7 @@ def sided(m: list[Any], side: float) -> list[list[Any]]:
 # 2-2: a cargo crane-ship with four crane arms swinging at the shoulder and the elbow, orange neon
 # (P08-R10). The four grab cannons shield the core; the container bay at the stern launches
 # Gnats. The ground stops: the fight is over the harbour.
-HARBOUR_KRAKEN = record(
+_HARBOUR_KRAKEN = record(
     {
         "id": "harbour-kraken",
         # Angry after each destroyed part (phase 7 review).
@@ -182,4 +183,17 @@ HARBOUR_KRAKEN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1), a pair of
+# gatling turrets (transformation 2); its hull bursts open and they unfold.
+HARBOUR_KRAKEN = with_weapons(
+    _HARBOUR_KRAKEN,
+    [
+        hidden_weapon("rack-left", "rack", [-13, -35], 11, 720, 1, "red", 1.2, 12.7),
+        hidden_weapon("rack-right", "rack", [13, -35], 11, 720, 1, "red", 2.0, 12.7),
+        hidden_weapon("gatling-left", "gatling", [-29, 29], 11, 900, 2, "red", 1.2, 16.9),
+        hidden_weapon("gatling-right", "gatling", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
+    ],
+    "unfold",
 )

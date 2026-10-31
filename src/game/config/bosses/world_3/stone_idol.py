@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -44,7 +45,7 @@ EY = IDOL_PARTS.eye[1]
 # 3-3: a flying stone head with neon cracks, glowing eyes and mouth; its two eyes turn to aim
 # lasers and shield the core, its mouth spits rings of slow boulders (P09-R09). The ground stops
 # over the temple while it fights (x0).
-STONE_IDOL = record(
+_STONE_IDOL = record(
     {
         "id": "stone-idol",
         # Angry after each destroyed part (phase 7 review).
@@ -98,4 +99,15 @@ STONE_IDOL = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its
+# armour plates blow off.
+STONE_IDOL = with_weapons(
+    _STONE_IDOL,
+    [
+        hidden_weapon("rack-left", "rack", [-23, -27], 7, 760, 1, "purple", 1.2, 15.5),
+        hidden_weapon("rack-right", "rack", [23, -27], 7, 760, 1, "purple", 2.0, 15.5),
+    ],
+    "armour",
 )

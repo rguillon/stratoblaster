@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -74,7 +75,7 @@ def ice_queen_parts() -> list[object]:
 
 # 2-5: a slender crystal interceptor under a turning crown ring; three crystal shards on the ring
 # fire spirals and shield the core, which fires aimed bursts from its nose.
-ICE_QUEEN = record(
+_ICE_QUEEN = record(
     {
         "id": "ice-queen",
         # Angry after each destroyed part (phase 7 review): a crystal bloom, the hottest mini yet.
@@ -121,4 +122,15 @@ ICE_QUEEN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1); its
+# hull bursts open and they unfold.
+ICE_QUEEN = with_weapons(
+    _ICE_QUEEN,
+    [
+        hidden_weapon("gatling-left", "gatling", [-12, 39], 10, 670, 1, "purple", 1.2, 16.5),
+        hidden_weapon("gatling-right", "gatling", [12, 39], 10, 670, 1, "purple", 2.0, 16.5),
+    ],
+    "unfold",
 )

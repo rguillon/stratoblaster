@@ -21,6 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -72,7 +73,7 @@ CY = ARK_PARTS.crucible[1]
 # at its heart; a missile battery on the bow; two glowing crucibles aft that spill into rings of
 # bullets when destroyed. The battery hangs in front of the chimneys and the crucibles stand clear
 # of the furnace, so every part can be shot.
-FOUNDRY_ARK = record(
+_FOUNDRY_ARK = record(
     {
         "id": "foundry-ark",
         # Angry after each destroyed part (phase 7 review): heat 13, on from World 3.
@@ -148,4 +149,19 @@ FOUNDRY_ARK = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2), a laser lance (transformation 2); its armour plates blow
+# off.
+FOUNDRY_ARK = with_weapons(
+    _FOUNDRY_ARK,
+    [
+        hidden_weapon("gatling-left", "gatling", [-41, -43], 13, 1920, 1, "orange", 1.2, 10.2),
+        hidden_weapon("gatling-right", "gatling", [41, -43], 13, 1920, 1, "orange", 2.0, 10.2),
+        hidden_weapon("orb-left", "orb", [-48, 13], 10, 2400, 2, "orange", 1.2, 8.8),
+        hidden_weapon("orb-right", "orb", [48, 13], 10, 2400, 2, "orange", 2.0, 8.8),
+        hidden_weapon("lance-centre", "lance", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
+    ],
+    "armour",
 )

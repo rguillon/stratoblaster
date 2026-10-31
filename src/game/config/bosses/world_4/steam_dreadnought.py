@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -61,7 +62,7 @@ TURRET_Y = DREAD_PARTS.turret[1]
 # smokestacks puffing steam (P10-R11). The smokestacks fire rings of bullets and the two broadside
 # turrets aimed bursts; the four shield the core. The missile rack on the stern fires homing
 # missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
-STEAM_DREADNOUGHT = record(
+_STEAM_DREADNOUGHT = record(
     {
         "id": "steam-dreadnought",
         # Angry after each destroyed part (D-063), heat 10: World 4 goes on from World 3's 9, up to
@@ -135,4 +136,19 @@ STEAM_DREADNOUGHT = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2), a laser lance (transformation 2); its armour plates blow
+# off.
+STEAM_DREADNOUGHT = with_weapons(
+    _STEAM_DREADNOUGHT,
+    [
+        hidden_weapon("gatling-left", "gatling", [-30, 47], 8, 760, 1, "red", 1.2, 12.6),
+        hidden_weapon("gatling-right", "gatling", [30, 47], 8, 760, 1, "red", 2.0, 12.6),
+        hidden_weapon("orb-left", "orb", [-30, -23], 8, 950, 2, "red", 1.2, 12.6),
+        hidden_weapon("orb-right", "orb", [30, -23], 8, 950, 2, "red", 2.0, 12.6),
+        hidden_weapon("lance-centre", "lance", [0, 29], 8, 950, 2, "red", 1.6, 15.6),
+    ],
+    "armour",
 )

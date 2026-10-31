@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -138,7 +139,7 @@ def leg_guns() -> Any:
     return guns
 
 
-CANOPY_SPIDER = record(
+_CANOPY_SPIDER = record(
     {
         "id": "canopy-spider",
         # Angry after each destroyed part (phase 7 review).
@@ -191,4 +192,17 @@ CANOPY_SPIDER = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1), a pair of
+# missile racks (transformation 2); its hull bursts open and they unfold.
+CANOPY_SPIDER = with_weapons(
+    _CANOPY_SPIDER,
+    [
+        hidden_weapon("lance-left", "lance", [-13, 25], 7, 1000, 1, "red", 1.2, 22.3),
+        hidden_weapon("lance-right", "lance", [13, 25], 7, 1000, 1, "red", 2.0, 22.3),
+        hidden_weapon("rack-left", "rack", [-9, -21], 7, 1250, 2, "red", 1.2, 12.8),
+        hidden_weapon("rack-right", "rack", [9, -21], 7, 1250, 2, "red", 2.0, 12.8),
+    ],
+    "unfold",
 )

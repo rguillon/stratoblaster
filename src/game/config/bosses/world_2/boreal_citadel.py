@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -64,7 +65,7 @@ dy = BOREAL_PARTS.dome[1]
 
 # 2-5: the polar city's flying fortress; two aurora cannons on turrets aim lasers, two missile
 # batteries, and two heated dome generators shield the core, which fires every kind of attack.
-BOREAL_CITADEL = record(
+_BOREAL_CITADEL = record(
     {
         "id": "boreal-citadel",
         # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
@@ -139,4 +140,17 @@ BOREAL_CITADEL = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2); its armour plates blow off.
+BOREAL_CITADEL = with_weapons(
+    _BOREAL_CITADEL,
+    [
+        hidden_weapon("gatling-left", "gatling", [-13, -69], 11, 1720, 1, "green", 1.2, 15.0),
+        hidden_weapon("gatling-right", "gatling", [13, -69], 11, 1720, 1, "green", 2.0, 15.0),
+        hidden_weapon("orb-left", "orb", [-47, -7], 11, 2150, 2, "green", 1.2, 16.4),
+        hidden_weapon("orb-right", "orb", [47, -7], 11, 2150, 2, "green", 2.0, 16.4),
+    ],
+    "armour",
 )

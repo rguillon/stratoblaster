@@ -4,9 +4,9 @@ import math
 
 import pytest
 from helpers.geometry_checks import check_colored
+from helpers.render_geometry import babylon_normal, dot, triangles
 
 from game.config.record import record
-from helpers.render_geometry import babylon_normal, dot, triangles
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.imposters import (
     add_baked,

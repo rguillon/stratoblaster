@@ -22,6 +22,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -73,7 +74,7 @@ SY = CALDERA_PARTS.shield[1]
 # hull; two magma cannons on turrets aim lasers, two missile batteries fire homing missiles, two
 # heat shield generators shield the core, which fires every kind of attack. The ground stops over
 # the magma lake (x0).
-CALDERA_THRONE = record(
+_CALDERA_THRONE = record(
     {
         "id": "caldera-throne",
         # Angry after each destroyed part (phase 7 review): the hottest bullet hell of the game.
@@ -160,4 +161,19 @@ CALDERA_THRONE = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2), a laser lance (transformation 2); its armour plates blow
+# off.
+CALDERA_THRONE = with_weapons(
+    _CALDERA_THRONE,
+    [
+        hidden_weapon("gatling-left", "gatling", [-50, -19], 12, 2080, 1, "magenta", 1.2, 14.2),
+        hidden_weapon("gatling-right", "gatling", [50, -19], 12, 2080, 1, "magenta", 2.0, 14.2),
+        hidden_weapon("orb-left", "orb", [-14, 75], 12, 2600, 2, "magenta", 1.2, 14.2),
+        hidden_weapon("orb-right", "orb", [14, 75], 12, 2600, 2, "magenta", 2.0, 14.2),
+        hidden_weapon("lance-centre", "lance", [0, -48], 12, 2600, 2, "magenta", 1.6, 13.4),
+    ],
+    "armour",
 )

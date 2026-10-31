@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -66,7 +67,7 @@ def lance_parts() -> Any:
 # 4-5: a fast, spiky interceptor wreathed in embers, gold neon (P10-R11); three ember lances on a
 # turning ring fire spirals and shield the core, which fires aimed bursts from its nose. It chases
 # the ship down the volcano's slope (ground x1.4).
-EMBER_HERALD = record(
+_EMBER_HERALD = record(
     {
         "id": "ember-herald",
         # Angry after each destroyed part (phase 7 review): the hottest mini boss so far.
@@ -116,4 +117,15 @@ EMBER_HERALD = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of ring emitters (transformation 1); its hull
+# bursts open and they unfold.
+EMBER_HERALD = with_weapons(
+    _EMBER_HERALD,
+    [
+        hidden_weapon("orb-left", "orb", [-10, 37], 8, 960, 1, "purple", 1.2, 14.0),
+        hidden_weapon("orb-right", "orb", [10, 37], 8, 960, 1, "purple", 2.0, 14.0),
+    ],
+    "unfold",
 )

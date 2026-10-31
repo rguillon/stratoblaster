@@ -20,6 +20,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -124,7 +125,7 @@ def fist(arm: str, health: float) -> Any:
 # huge fists (P10-R11). The fists throw rings of slow magma and, with the armour plate on its chest,
 # shield the core; the shoulder cannons turn to fire aimed spreads; the chest emitter on its prow
 # fires a laser straight down. The emitter hangs in front of the plate, so it can always be shot.
-OBSIDIAN_GOLEM = record(
+_OBSIDIAN_GOLEM = record(
     {
         "id": "obsidian-golem",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -194,4 +195,17 @@ OBSIDIAN_GOLEM = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of laser lances (transformation 2); its armour plates blow off.
+OBSIDIAN_GOLEM = with_weapons(
+    _OBSIDIAN_GOLEM,
+    [
+        hidden_weapon("gatling-left", "gatling", [-24, 5], 8, 1280, 1, "orange", 1.2, 29.6),
+        hidden_weapon("gatling-right", "gatling", [24, 5], 8, 1280, 1, "orange", 2.0, 29.6),
+        hidden_weapon("lance-left", "lance", [-13, -11], 7, 1600, 2, "orange", 1.2, 29.2),
+        hidden_weapon("lance-right", "lance", [13, -11], 7, 1600, 2, "orange", 2.0, 29.2),
+    ],
+    "armour",
 )

@@ -59,6 +59,23 @@ def clear_trim(root: Any) -> None:
             mesh.metadata = object_with_field(mesh.metadata, "trim", None)
 
 
+def set_trim_group(node: Any) -> None:
+    """Makes the model under `node` a trim group of its own: its meshes are trimmed along their own
+    silhouette, as if the rest of the model were not there (e.g. a boss's destroyable part, which
+    must show as one wherever it sits on the hull, P14-R04)."""
+    node.metadata = object_with_field(node.metadata, "trimGroup", True)
+
+
+def _group_of(mesh: Any, root: Any) -> Any:
+    """The trim group `mesh` belongs to: its nearest ancestor below `root` made one, else `root`."""
+    node = mesh.parent
+    while node is not None and node is not root:
+        if metadata_field(node.metadata, "trimGroup") is True:
+            return node
+        node = node.parent
+    return root
+
+
 def is_solid(mesh: Any) -> bool:
     """Whether `mesh` is solid: not added on nor see-through (glows and flames get no trim)."""
     material = mesh.material
@@ -93,16 +110,39 @@ def _material(scene: Any, color: Rgb) -> Any:
 
 def add_edge_trim(root: Any, options: TrimOptions) -> list[Any]:
     """Gives each mesh under `root` that asks for a trim its trim mesh, as a child; the meshes
-    asking for one hide each other's inner edges. Returns the trim meshes made."""
+    asking for one in a trim group (see `set_trim_group`) hide each other's inner edges. Returns
+    the trim meshes made."""
     meshes = [mesh for mesh in child_meshes(root, False) if trim_of(mesh) is not None]
     if len(meshes) == 0:
         return []
     to_root = inverse(world_matrix(root))
-    shapes = [
-        TrimShape(mesh_positions(mesh), mesh_indices(mesh), multiply(world_matrix(mesh), to_root))
-        for mesh in meshes
-    ]
-    geos = trim_model(shapes, options)
+    # The meshes of each trim group, the model's own (root) first.
+    groups: list[Any] = []
+    members: list[list[int]] = []
+    for k, mesh in enumerate(meshes):
+        group = _group_of(mesh, root)
+        found = -1
+        for g in range(len(groups)):
+            if groups[g] is group:
+                found = g
+        if found < 0:
+            groups.append(group)
+            members.append([])
+            found = len(groups) - 1
+        members[found].append(k)
+    geos: list[Any] = [None for _ in meshes]
+    for indices in members:
+        shapes = [
+            TrimShape(
+                mesh_positions(meshes[k]),
+                mesh_indices(meshes[k]),
+                multiply(world_matrix(meshes[k]), to_root),
+            )
+            for k in indices
+        ]
+        trims = trim_model(shapes, options)
+        for j, k in enumerate(indices):
+            geos[k] = trims[j]
     made: list[Any] = []
     for k, mesh in enumerate(meshes):
         geo = geos[k]

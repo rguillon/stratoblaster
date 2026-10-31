@@ -8,6 +8,7 @@ left) a ring used by no earlier stage. Health values are placeholders for the P0
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 MAGENTA = bullet("magenta", 180)
@@ -30,7 +31,7 @@ OWL_CROWN = [[0, 10, 12.5]]
 # 2-3: a wide-winged recon drone with white neon and a big round sensor eye at its front; two wing
 # radar pods fire fans and shield the core, the eye fires a laser after its warning line
 # (P08-R10). The eye sits in front of the core, so it can always be shot.
-SNOW_OWL = record(
+_SNOW_OWL = record(
     {
         "id": "snow-owl",
         # Angry after each destroyed part (phase 7 review).
@@ -78,4 +79,15 @@ SNOW_OWL = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
+# bursts open and they unfold.
+SNOW_OWL = with_weapons(
+    _SNOW_OWL,
+    [
+        hidden_weapon("rack-left", "rack", [-12, -7], 10, 680, 1, "magenta", 1.2, 10.3),
+        hidden_weapon("rack-right", "rack", [12, -7], 10, 680, 1, "magenta", 2.0, 10.3),
+    ],
+    "unfold",
 )

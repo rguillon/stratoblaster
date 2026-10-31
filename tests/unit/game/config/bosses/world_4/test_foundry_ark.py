@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_4/foundry_ark.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_4.foundry_ark import FOUNDRY_ARK
 
@@ -23,4 +23,4 @@ def test_p10_r11_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p10_r11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(FOUNDRY_ARK.rage, list) and FOUNDRY_ARK.rage
-    assert len(FOUNDRY_ARK.stages) == len(FOUNDRY_ARK.stats["parts"]) + 1
+    assert len(FOUNDRY_ARK.stages) == len(original_parts(FOUNDRY_ARK)) + 1

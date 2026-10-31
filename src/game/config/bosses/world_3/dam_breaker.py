@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -62,7 +63,7 @@ def waves(source: str, first: float) -> Any:
     ]
 
 
-DAM_BREAKER = record(
+_DAM_BREAKER = record(
     {
         "id": "dam-breaker",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -124,4 +125,17 @@ DAM_BREAKER = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of missile racks (transformation 2); its armour plates blow off.
+DAM_BREAKER = with_weapons(
+    _DAM_BREAKER,
+    [
+        hidden_weapon("gatling-left", "gatling", [-50, 41], 12, 1520, 1, "green", 1.2, 9.4),
+        hidden_weapon("gatling-right", "gatling", [50, 41], 12, 1520, 1, "green", 2.0, 9.4),
+        hidden_weapon("rack-left", "rack", [-34, -55], 12, 1900, 2, "green", 1.2, 9.4),
+        hidden_weapon("rack-right", "rack", [34, -55], 12, 1900, 2, "green", 2.0, 9.4),
+    ],
+    "armour",
 )

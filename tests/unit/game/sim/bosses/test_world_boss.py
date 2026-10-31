@@ -99,12 +99,13 @@ def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> 
     for _ in range(60):
         boss.update(ctx, 1 / 60)
     assert ctx.bullets == []
-    for part in boss.parts:
-        if part.spec.reveal is None:
-            part.destroy()
+    for piece in boss.parts:
+        if piece.spec.reveal is None:
+            piece.destroy()
     boss.update(ctx, 0.0)
     assert boss.state == "transforming"
-    assert len(ctx.explosions) == 1
+    # A blast where each weapon of the transformation comes out.
+    assert len(ctx.explosions) == len([p for p in boss.parts if p.spec.reveal == 1])
     for _ in range(60 * 4):
         boss.update(ctx, 1 / 60)
     assert boss.form == 1

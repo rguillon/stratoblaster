@@ -18,6 +18,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -62,7 +63,7 @@ COLOSSUS_CELLS = cells([-5.5, 5.5], [41, 51], 24)
 # P08-R10, 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from its
 # beam, ore cannons fire fans of big shells, a missile pod covers its stern, and a heat sink at its
 # bow (no weapon) shields the core with the ore cannons. The ground slows to ×0.3.
-GLACIER_COLOSSUS = record(
+_GLACIER_COLOSSUS = record(
     {
         "id": "glacier-colossus",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -140,4 +141,17 @@ GLACIER_COLOSSUS = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2); its armour plates blow off.
+GLACIER_COLOSSUS = with_weapons(
+    _GLACIER_COLOSSUS,
+    [
+        hidden_weapon("gatling-left", "gatling", [-36, 53], 12, 1520, 1, "orange", 1.2, 23.8),
+        hidden_weapon("gatling-right", "gatling", [36, 53], 12, 1520, 1, "orange", 2.0, 23.8),
+        hidden_weapon("orb-left", "orb", [-25, 29], 9, 1900, 2, "orange", 1.2, 23.1),
+        hidden_weapon("orb-right", "orb", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
+    ],
+    "armour",
 )

@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_4/steam_dreadnought.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_4.steam_dreadnought import STEAM_DREADNOUGHT
 
@@ -23,4 +23,4 @@ def test_p10_r11_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p10_r11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(STEAM_DREADNOUGHT.rage, list) and STEAM_DREADNOUGHT.rage
-    assert len(STEAM_DREADNOUGHT.stages) == len(STEAM_DREADNOUGHT.stats["parts"]) + 1
+    assert len(STEAM_DREADNOUGHT.stages) == len(original_parts(STEAM_DREADNOUGHT)) + 1

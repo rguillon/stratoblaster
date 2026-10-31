@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -81,7 +82,7 @@ def flame(first: float) -> Any:
 # 4-4: a dragon-shaped gunship of soot-black plates with red and orange neon and a furnace glowing
 # in its chest (P10-R11); its two beating wings fire fans and shield the core, its jaw breathes
 # flame, its core spirals. The head hangs in front of the core, so it can always be shot.
-FURNACE_DRAKE = record(
+_FURNACE_DRAKE = record(
     {
         "id": "furnace-drake",
         # Angry after each destroyed part (phase 7 review, D-063): heat 12.5, on from World 3.
@@ -140,4 +141,15 @@ FURNACE_DRAKE = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
+# bursts open and they unfold.
+FURNACE_DRAKE = with_weapons(
+    _FURNACE_DRAKE,
+    [
+        hidden_weapon("lance-left", "lance", [-11, 7], 7, 880, 1, "red", 1.2, 13.2),
+        hidden_weapon("lance-right", "lance", [11, 7], 7, 880, 1, "red", 2.0, 13.2),
+    ],
+    "unfold",
 )

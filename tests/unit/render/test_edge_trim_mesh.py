@@ -14,6 +14,7 @@ from render.edge_trim_mesh import (
     is_solid,
     request_trim,
     set_trim,
+    set_trim_group,
     trim_of,
 )
 from render.geometry.edge_trim import IDENTITY, TrimOptions
@@ -135,3 +136,19 @@ def test_a_covered_mesh_gets_no_trim_and_a_cleared_one_neither() -> None:
 def test_a_model_with_nothing_to_trim_gets_nothing() -> None:
     scene = FakeScene()
     assert add_edge_trim(_root(scene), TrimOptions(0.1, 0)) == []
+
+
+def test_a_trim_group_is_trimmed_along_its_own_outline() -> None:
+    scene = FakeScene()
+    root = _root(scene)
+    big = _box_mesh(scene, root, "hull", [4, 1, 4])
+    group = scene.add_node("part")
+    group.parent = root
+    set_trim_group(group)
+    small = _box_mesh(scene, group, "part-mesh", [1, 1, 1])
+    small.matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+    request_trim(root, CYAN)
+    trims = add_edge_trim(root, TrimOptions(0.1, 0))
+    # The part on the hull keeps its outline; the hull keeps its own.
+    assert sorted(t.parent.name for t in trims) == ["hull", "part-mesh"]
+    assert big.children and small.children

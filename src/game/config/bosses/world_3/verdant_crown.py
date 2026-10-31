@@ -21,6 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -71,7 +72,7 @@ RY = VERDANT_PARTS.root[1]
 # 3-5: the canopy city's flying crown, a city-ship carrying a glass garden dome under emerald and
 # magenta neon; two thorn cannons on turrets aim lasers, two seed batteries fire homing missiles,
 # two root generators shield the core, which fires every kind of attack.
-VERDANT_CROWN = record(
+_VERDANT_CROWN = record(
     {
         "id": "verdant-crown",
         # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
@@ -155,4 +156,17 @@ VERDANT_CROWN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2); its hull bursts open and they unfold.
+VERDANT_CROWN = with_weapons(
+    _VERDANT_CROWN,
+    [
+        hidden_weapon("gatling-left", "gatling", [-47, -17], 11, 1840, 1, "green", 1.2, 11.0),
+        hidden_weapon("gatling-right", "gatling", [47, -17], 11, 1840, 1, "green", 2.0, 11.0),
+        hidden_weapon("orb-left", "orb", [-13, 69], 11, 2300, 2, "green", 1.2, 11.0),
+        hidden_weapon("orb-right", "orb", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
+    ],
+    "unfold",
 )

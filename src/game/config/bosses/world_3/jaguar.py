@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -43,7 +44,7 @@ TY = JAGUAR_PARTS.tail[1]
 
 # 3-5: a sleek stealth interceptor with spotted armour and amber neon (P09-R09); two claw guns on
 # turrets shield the core, a tail cannon aims a laser, and the core fires spirals.
-JAGUAR = record(
+_JAGUAR = record(
     {
         "id": "jaguar",
         # Angry after each destroyed part (phase 7 review): the hottest mini boss so far.
@@ -92,4 +93,15 @@ JAGUAR = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
+# bursts open and they unfold.
+JAGUAR = with_weapons(
+    _JAGUAR,
+    [
+        hidden_weapon("rack-left", "rack", [-39, 7], 9, 880, 1, "orange", 1.2, 8.0),
+        hidden_weapon("rack-right", "rack", [39, 7], 9, 880, 1, "orange", 2.0, 8.0),
+    ],
+    "unfold",
 )

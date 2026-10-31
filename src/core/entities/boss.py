@@ -253,7 +253,8 @@ class Boss(Enemy):
 
     def break_next(self) -> None:
         """Destroys its next intact part, or its core once they are all gone (debug, P07-R09).
-        Hidden parts are skipped; a transformation going on is finished at once."""
+        Hidden parts are skipped; a transformation going on is finished at once, and one it had no
+        time for (all its parts broken as it came in) is done at once."""
         if self.state == "dying":
             return
         if self.state == "transforming":
@@ -263,6 +264,12 @@ class Boss(Enemy):
             if not part.destroyed and not part.hidden:
                 part.destroy()
                 return
+        if any([part.hidden for part in self.parts]):
+            # Its parts all broken before it could transform (coming in): it reveals its next
+            # weapons at once.
+            self.form += 1
+            self._rebuild_targets()
+            return
         self._start_dying()
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
@@ -277,6 +284,8 @@ class Boss(Enemy):
         if self.state == "entering":
             if self.enter(ctx, dt):
                 self.state = "fighting"
+                # Parts broken as it came in (a debug key) may call for a transformation.
+                self._maybe_transform(ctx)
         else:
             self.move(ctx, dt)
         self._place()

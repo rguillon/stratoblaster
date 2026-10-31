@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -66,7 +67,7 @@ def tip(pos: Any) -> Any:
 
 # 3-3: a flying stepped pyramid, gold and cyan neon; its four corner obelisks fire spirals and
 # shield the core, its summit beacon homing missiles, its core every bullet pattern (P09-R09).
-SKY_TEMPLE = record(
+_SKY_TEMPLE = record(
     {
         "id": "sky-temple",
         # Angry after each destroyed part (phase 7 review): a vortex inside a blooming flower.
@@ -131,4 +132,17 @@ SKY_TEMPLE = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of ring emitters (transformation 1), a pair of
+# gatling turrets (transformation 2); its armour plates blow off.
+SKY_TEMPLE = with_weapons(
+    _SKY_TEMPLE,
+    [
+        hidden_weapon("orb-left", "orb", [-13, 33], 11, 1920, 1, "orange", 1.2, 41.0),
+        hidden_weapon("orb-right", "orb", [13, 33], 11, 1920, 1, "orange", 2.0, 41.0),
+        hidden_weapon("gatling-left", "gatling", [-39, -33], 11, 2400, 2, "orange", 1.2, 41.0),
+        hidden_weapon("gatling-right", "gatling", [39, -33], 11, 2400, 2, "orange", 2.0, 41.0),
+    ],
+    "armour",
 )

@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -38,7 +39,7 @@ TOUCAN_CREST = [[0, -6, 17]]
 # 3-2: a stubby gunship with a huge bright beak, yellow and orange neon (P09-R09). Its beak cannon
 # fires a laser after its warning line, two wing pods fire fans and shield the core. The beak
 # hangs in front of the core, so it can always be shot.
-TOUCAN = record(
+_TOUCAN = record(
     {
         "id": "toucan",
         # Angry after each destroyed part (phase 7 review).
@@ -91,4 +92,15 @@ TOUCAN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of missile racks (transformation 1); its hull
+# bursts open and they unfold.
+TOUCAN = with_weapons(
+    _TOUCAN,
+    [
+        hidden_weapon("rack-left", "rack", [-12, -9], 10, 620, 1, "orange", 1.2, 18.0),
+        hidden_weapon("rack-right", "rack", [12, -9], 10, 620, 1, "orange", 2.0, 18.0),
+    ],
+    "unfold",
 )

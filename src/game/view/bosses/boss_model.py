@@ -21,6 +21,11 @@ from game.view.bosses.boss_limbs import (  # noqa: E402
     boss_point,
     hang,
 )
+from game.view.bosses.boss_reveal import build_reveal  # noqa: E402
+from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
+    weapon_drawing,
+    weapon_turret_drawing,
+)
 from game.view.enemies.enemy_materials import BODY_MATERIALS  # noqa: E402
 from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model  # noqa: E402
 from game.view.enemies.living_motion import new_breath  # noqa: E402
@@ -31,6 +36,7 @@ from render.babylon import (  # noqa: E402
     node_name,
     set_enabled,
 )
+from render.edge_trim_mesh import set_trim_group  # noqa: E402
 
 __pragma__("skip")
 from typing import Any  # noqa: E402
@@ -85,6 +91,10 @@ def build_turret(
     """The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one."""
     turrets = _field(drawing, "turrets")
     draw = _field(turrets, piece)
+    weapon = _field(_field(design, "weapons"), piece)
+    if draw == None and weapon != None:  # noqa: E711
+        # A hidden weapon's turret, drawn from its look (`hidden_weapon_shapes`).
+        draw = weapon_turret_drawing(weapon, neon)
     gun = _field(design.guns, piece)
     turret = _field(gun, "turret")
     if draw == None and turret == None:  # noqa: E711
@@ -140,11 +150,13 @@ class FlashGroup:
 class PartView:
     """The pieces of one part: its model (and turret), its smoke, its stump."""
 
-    def __init__(self, group: Any, turret: Any, smoke: Any, stump: Any) -> None:
+    def __init__(self, group: Any, turret: Any, smoke: Any, stump: Any, reveal: Any = None) -> None:
         self.group = group
         self.turret = turret
         self.smoke = smoke
         self.stump = stump
+        # How it comes out as the boss transforms, if it is hidden at first (`boss_reveal`).
+        self.reveal = reveal
 
 
 def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltEnemyModel:
@@ -203,6 +215,8 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
             view = parts[i] if i < len(parts) else None
             if view != None:  # noqa: E711
                 show_part(view, boss.parts[i], enemy, dt)
+                if view.reveal != None:  # noqa: E711
+                    view.reveal.show(boss.form, boss.transforming_into, boss.transform)
 
     return BuiltEnemyModel(root, sync)
 
@@ -255,6 +269,10 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
     name = design.id
     scene = frame.node.getScene()
     draw = _field(drawing.parts, spec.id)
+    weapon = _field(_field(design, "weapons"), spec.id)
+    if draw == None and weapon != None:  # noqa: E711
+        # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
+        draw = weapon_drawing(weapon, neon)
     if draw == None:  # noqa: E711
         raise ValueError('Boss "' + name + '" has no drawing for its part "' + spec.id + '"')
     at = boss_point(spec.x, spec.y)
@@ -266,12 +284,17 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
         look["breath"],
     )
     hang(model.root, ORIGIN, frame)
+    # Trimmed along its own outline, wherever it sits on the hull (P14-R04).
+    set_trim_group(model.root)
     turret = build_turret(design, spec.id, drawing, model.root, neon, look["breath"])
     spot = new_transform_node(name + "-" + spec.id + "-spot", scene)
     hang(spot, at, frame)
     smoke = build_smoke(name + "-" + spec.id, spec.radius, scene, spot)
     stump = build_stump(name + "-" + spec.id, spec.radius, scene, spot)
-    return PartView(FlashGroup(model, flash), turret, smoke, stump)
+    reveal = None
+    if opt(spec, "reveal", None) != None:  # noqa: E711
+        reveal = build_reveal(design, spec, model.root, frame, neon)
+    return PartView(FlashGroup(model, flash), turret, smoke, stump, reveal)
 
 
 def strobe(enemy: Any) -> Any:

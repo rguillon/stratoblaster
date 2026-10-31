@@ -17,6 +17,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 BLUE = bullet("blue", 185)
@@ -42,7 +43,7 @@ CHIN = [[0, -41.64, 6.68]]
 
 # 2-2: a fast, low gunship crouched like a lynx, two forward paws and tufted antennas, white and
 # cyan neon (P08-R10). Both paw cannons and the radar mast shield the core.
-FJORD_LYNX = record(
+_FJORD_LYNX = record(
     {
         "id": "fjord-lynx",
         # Angry after each destroyed part (phase 7 review).
@@ -96,4 +97,15 @@ FJORD_LYNX = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its hull
+# bursts open and they unfold.
+FJORD_LYNX = with_weapons(
+    _FJORD_LYNX,
+    [
+        hidden_weapon("lance-left", "lance", [-7, -35], 5, 480, 1, "blue", 1.2, 7.2),
+        hidden_weapon("lance-right", "lance", [7, -35], 5, 480, 1, "blue", 2.0, 7.2),
+    ],
+    "unfold",
 )

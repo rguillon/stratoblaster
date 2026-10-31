@@ -81,5 +81,20 @@ BOSS_LOOK = record(
             "spark": [1, 0.55, 0.15],
             "sparkChance": 0.35,
         },
+        # How hidden weapon parts come out as a boss transforms (`boss_reveal.py`). `unfold`: they
+        # swing out from `unfoldTurn` radians folded along the hull. `armour`: the weapon rises
+        # from `sink` of its radius down; the plate over it (`plateSize` of the part's half-width,
+        # `plateTop` of its height) is thrown `throw` radii out, rises `lift` radii and falls
+        # `fall` radii, turning `spin` radians.
+        "reveal": {
+            "unfoldTurn": 1.4,
+            "sink": 0.9,
+            "throw": 3,
+            "lift": 1.2,
+            "fall": 2.5,
+            "spin": 5,
+            "plateSize": 1.05,
+            "plateTop": 0.8,
+        },
     }
 )

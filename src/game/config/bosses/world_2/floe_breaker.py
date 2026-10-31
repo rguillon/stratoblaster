@@ -9,6 +9,7 @@ P08-R11 tuning.
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import record
 
 RED = bullet("red", 190)
@@ -27,7 +28,7 @@ FLOE_BEACON = [[0, 18, 24.6]]
 
 # 2-1: an icebreaker hovership with a sharp armoured bow and cyan neon; two side harpoon guns on
 # sponsons fire aimed bursts and shield the core (P08-R10).
-FLOE_BREAKER = record(
+_FLOE_BREAKER = record(
     {
         "id": "floe-breaker",
         # Angry after each destroyed part (phase 7 review).
@@ -70,4 +71,15 @@ FLOE_BREAKER = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of laser lances (transformation 1); its armour
+# plates blow off.
+FLOE_BREAKER = with_weapons(
+    _FLOE_BREAKER,
+    [
+        hidden_weapon("lance-left", "lance", [-12, -27], 10, 520, 1, "red", 1.2, 12.0),
+        hidden_weapon("lance-right", "lance", [12, -27], 10, 520, 1, "red", 2.0, 12.0),
+    ],
+    "armour",
 )

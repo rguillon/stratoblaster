@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_4/obsidian_golem.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_4.obsidian_golem import OBSIDIAN_GOLEM
 
@@ -23,4 +23,4 @@ def test_p10_r11_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p10_r11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(OBSIDIAN_GOLEM.rage, list) and OBSIDIAN_GOLEM.rage
-    assert len(OBSIDIAN_GOLEM.stages) == len(OBSIDIAN_GOLEM.stats["parts"]) + 1
+    assert len(OBSIDIAN_GOLEM.stages) == len(original_parts(OBSIDIAN_GOLEM)) + 1

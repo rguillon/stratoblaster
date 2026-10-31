@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -114,7 +115,7 @@ def segment_guns() -> Any:
 # spine (P09-R09). Its four segments' turrets fire rings in turn and shield the core; the tail's
 # rack fires homing missiles; the head fires its laser at every stage, with something new beside
 # it. The ground slows (x0.5).
-RIVER_LEVIATHAN = record(
+_RIVER_LEVIATHAN = record(
     {
         "id": "river-leviathan",
         # Angry after each destroyed part (D-063), heat 5 (P09-R10).
@@ -205,4 +206,17 @@ RIVER_LEVIATHAN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations): a pair of gatling turrets (transformation 1), a pair
+# of ring emitters (transformation 2); its hull bursts open and they unfold.
+RIVER_LEVIATHAN = with_weapons(
+    _RIVER_LEVIATHAN,
+    [
+        hidden_weapon("gatling-left", "gatling", [-7, 19], 5, 720, 1, "green", 1.2, 15.7),
+        hidden_weapon("gatling-right", "gatling", [7, 19], 5, 720, 1, "green", 2.0, 15.7),
+        hidden_weapon("orb-left", "orb", [-7, -21], 5, 900, 2, "green", 1.2, 10.8),
+        hidden_weapon("orb-right", "orb", [7, -21], 5, 900, 2, "green", 2.0, 10.8),
+    ],
+    "unfold",
 )

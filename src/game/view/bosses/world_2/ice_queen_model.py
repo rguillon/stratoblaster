@@ -308,6 +308,8 @@ def shard_parts() -> Any:
     names: list[str] = []
     drawings: list[Any] = []
     for part in ICE_QUEEN.stats.parts:
+        if part.reveal != None:  # noqa: E711
+            continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         names.append(part.id)
         drawings.append(shard_part(part.id))
     return keyed(names, drawings)

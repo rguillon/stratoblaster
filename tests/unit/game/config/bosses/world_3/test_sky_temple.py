@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_3/sky_temple.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_3.sky_temple import SKY_TEMPLE
 
@@ -23,4 +23,4 @@ def test_p09_r09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p09_r09_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(SKY_TEMPLE.rage, list) and SKY_TEMPLE.rage
-    assert len(SKY_TEMPLE.stages) == len(SKY_TEMPLE.stats["parts"]) + 1
+    assert len(SKY_TEMPLE.stages) == len(original_parts(SKY_TEMPLE)) + 1

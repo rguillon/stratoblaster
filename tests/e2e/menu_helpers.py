@@ -223,17 +223,28 @@ def wait_for_level_time(page: Page, seconds: float) -> None:
     assert level(page)["time"] > seconds
 
 
+def wait_out_transformation(page: Page) -> None:
+    """Steps on while the boss is transforming (it can then be neither hit nor broken by K)."""
+    step_until(
+        page, lambda: (level(page)["boss"] or {}).get("state"), lambda s: s != "transforming"
+    )
+
+
 def destroy_boss(page: Page, name: str) -> None:
     """Destroys the parts left then the core of the boss `name` with K (P07-R09), one at a time
-    (the stage goes up), and steps on to the "Level complete" overlay."""
+    (the stage goes up), waiting out its transformations (they reveal more parts), and steps on
+    to the "Level complete" overlay."""
     step_until(page, lambda: boss_name(page), lambda n: n == name)
-    fought = level(page)["boss"] or {}
-    parts: int = fought.get("parts", 0)
-    done: int = fought.get("stage", 0)
-    for stage in range(done + 1, parts + 1):
+
+    def progress() -> Any:
+        fought = level(page)["boss"]
+        return None if not fought else (fought["stage"], fought["form"], fought["state"])
+
+    while (now := progress()) is not None and now[2] != "dying":
+        wait_out_transformation(page)
+        before = progress()
         page.keyboard.press("KeyK")
-        step_until(page, lambda: boss_stage(page), lambda s, at=stage: s == at)
-    page.keyboard.press("KeyK")
+        step_until(page, progress, lambda v, b=before: v != b, frames=1)
     # The ship flies on a while, then off the top (reviewer, 2026-10-28): up to ~15 s of play.
     step_until(
         page, lambda: game_state(page)["levelResult"] is not None, lambda done: done, frames=120
