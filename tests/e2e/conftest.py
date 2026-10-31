@@ -4,7 +4,9 @@ build in `dist-e2e/` (`make e2e-build`), served on a free local port for the who
 - `base_url`: the server's address; `page.goto("./")` opens the game;
 - the Transcrypt browser stubs are on the path, so a test can read the game's config (`src/`);
 - every test fails on a browser console error or an uncaught exception (ENG-53), and on any
-  warning from the audio (an autoplay warning, a context that could not start, P12-R05).
+  warning from the audio (an autoplay warning, a context that could not start, P12-R05);
+- `--shard K/N` runs only the K-th of N slices of the tests (K from 1), so CI can spread them
+  over N jobs (`make e2e E2E_SHARD=K/N`).
 """
 
 import sys
@@ -25,6 +27,35 @@ if str(_STUBS) not in sys.path:
 
 DIST = Path(__file__).resolve().parents[2] / "dist-e2e"
 AUDIO_WARNING = ("audio", "autoplay")
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--shard",
+        default=None,
+        metavar="K/N",
+        help="run only the K-th of N slices of the tests (K from 1)",
+    )
+
+
+def shard_of(value: str) -> tuple[int, int]:
+    """`K/N` read as (K, N); fails on anything else."""
+    k, _, n = value.partition("/")
+    if not (k.isdigit() and n.isdigit() and 1 <= int(k) <= int(n)):
+        raise pytest.UsageError(f"--shard: expected K/N with 1 <= K <= N, got {value!r}")
+    return int(k), int(n)
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """With `--shard K/N`, keeps every N-th test from the K-th, in collection order: the cases of
+    one parametrised test (the levels of a world) go to different slices, which balances them."""
+    value = config.getoption("--shard")
+    if value is None:
+        return
+    k, n = shard_of(value)
+    kept = [item for i, item in enumerate(items) if i % n == k - 1]
+    config.hook.pytest_deselected(items=[item for item in items if item not in kept])
+    items[:] = kept
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
