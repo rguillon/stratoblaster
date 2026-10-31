@@ -2056,3 +2056,10 @@
 - **Look (`view/bosses/boss_reveal.py`, `BOSS_LOOK.reveal`):** machines (`armour`) cover each hidden weapon with a plate that blows off (thrown out, lifted, spinning, falling, shrinking away) as the weapon rises from under the hull; creatures (`unfold`) grow theirs out of their spot, swinging out from folded along the hull. A blast goes off where each weapon comes out (`WorldBoss.on_transform`).
 - **Debug key K (P07-R09):** skips hidden parts, finishes a transformation going on, and reveals at once the weapons of one the boss had no time for (its parts all broken as it came in), so it never reaches the core while weapons are hidden. The e2e `destroy_boss` presses K until the boss dies, waiting out transformations; the game state shows the boss's `form` and `hiddenParts`.
 - **Status:** Proposed
+
+### D-222 — Dev viewer: enemies and bosses with no ground; K breaks the boss's parts
+- **Date:** 2026-10-31
+- **Phase:** outside a phase, at the reviewer's request (in chat: "in the dev view, dont load any ground for the enemies and bosses, and add a key to the boss view to see the parts destruction animations")
+- **No ground (`app/dev_model_scene.py`):** the enemies and bosses viewers no longer build their level's scenery nor wait for its ground: their scene has the level's light (its atmosphere at the start) and sky reflections, the game's playfield camera and the playfield layer, over a plain backdrop. The ships, props and levels viewers are unchanged. `level_scene.playfield_layer` is now public for it.
+- **K (`DevViewerConfig.break_key`):** in the bosses viewer it breaks the boss's next part, as K does in a level (P07-R09, `Boss.break_next`): the part's blast, its burnt stump, the transformations (D-221) and, once only the core is left, its death; a new boss then comes in. The viewer's world keeps what blows up (`DevEnemyContext.blasts`) and draws it with the game's explosions, where the boss is shown. The dev session listens for the key on the app's keyboard target; the bosses viewer's hint says so.
+- **Status:** Proposed

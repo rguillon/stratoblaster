@@ -243,7 +243,7 @@ def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkey
     monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
     monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
     monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
-    options = SimpleNamespace(dev=True, environment=False, overlay="overlay")
+    options = SimpleNamespace(dev=True, environment=False, overlay="overlay", keyboard_target=None)
     session, labels, groups = start_app.create_dev("engine", "game", options)
     assert session._catalog == {"ships": ["item"]}
     assert labels == {"ships": ["Item"]}

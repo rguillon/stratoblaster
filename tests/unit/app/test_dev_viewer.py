@@ -5,11 +5,13 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from helpers.fakes import ProbeBoss
 
 from app import dev_viewer
 from app.dev_catalog import DevItem
 from app.dev_viewer import DevViewer, clock_text, close_up_fov, eased_time, zoomed, zoomed_fov
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
+from core.entities.boss import BossDeath, BossPartSpec, BossStats
 
 ALTITUDE = 320.0
 
@@ -110,6 +112,23 @@ class FakeLayer:
         self.disposed = True
 
 
+class FakeBlasts:
+    """The explosions' renderer: every list of blasts it drew."""
+
+    made: list["FakeBlasts"] = []
+
+    def __init__(self, scene: Any) -> None:
+        self.drawn: list[Any] = []
+        self.disposed = False
+        FakeBlasts.made.append(self)
+
+    def sync(self, blasts: list[Any], dt: float) -> None:
+        self.drawn.extend(blasts)
+
+    def dispose(self) -> None:
+        self.disposed = True
+
+
 class FakePropStage:
     made: list["FakePropStage"] = []
 
@@ -143,6 +162,9 @@ class Env:
         monkeypatch.setattr(dev_viewer, "level_of", lambda game, level: SimpleNamespace(id=level))
         monkeypatch.setattr(dev_viewer, "scenery_with_runout", lambda level: level)
         monkeypatch.setattr(dev_viewer, "build_level_scene", self._build)
+        self.groundless: list[Any] = []
+        monkeypatch.setattr(dev_viewer, "build_model_scene", self._build_groundless)
+        FakeBlasts.made = []
         monkeypatch.setattr(dev_viewer, "PlayfieldShip", FakeShip)
         monkeypatch.setattr(dev_viewer, "EnemyLayer", FakeLayer)
         monkeypatch.setattr(dev_viewer, "dispose_node", self.disposed.append)
@@ -152,6 +174,11 @@ class Env:
         monkeypatch.setattr(dev_viewer, "get_hierarchy_bounding_vectors", lambda root: bounds)
         monkeypatch.setattr(dev_viewer, "DevPropStage", FakePropStage)
         FakePropStage.made = []
+
+    def _build_groundless(self, engine: Any, game: Any, level: Any, options: Any) -> FakeView:
+        view = self._build(engine, game, options)
+        self.groundless.append(view)
+        return view
 
     def _build(self, engine: Any, game: Any, options: Any) -> FakeView:
         view = FakeView(FakeStage(self.stage_found))
@@ -193,7 +220,7 @@ def game() -> SimpleNamespace:
     scenery = SimpleNamespace(camera=SimpleNamespace(flightAltitude=ALTITUDE))
     scenery_dict = {"propModels": {"hut": "hut-factory"}}
     view = SimpleNamespace(
-        enemies=SimpleNamespace(glow="glow", models={}),
+        enemies=SimpleNamespace(glow="glow", models={}, blasts=FakeBlasts),
         outline="outline",
         player_ship_models={"alpha": "alpha-model"},
         player_ship_scale=2.0,
@@ -353,7 +380,7 @@ def test_d199_a_boss_does_not_expire(env: Env) -> None:
     assert v._enemy is boss
 
 
-def test_d199_the_enemy_world_drops_what_the_enemy_does() -> None:
+def test_d199_the_enemy_world_drops_what_the_enemy_does_but_keeps_what_blows_up() -> None:
     ctx = dev_viewer.DevEnemyContext(SimpleNamespace(width=100, height=200), "random")
     point = ctx.seen(SimpleNamespace(x=3, y=4, z=9))
     assert (point.x, point.y) == (3, 4)
@@ -361,9 +388,10 @@ def test_d199_the_enemy_world_drops_what_the_enemy_does() -> None:
     assert ctx.fire_missile(0, 0, 0, None) is None
     assert ctx.fire_laser(None, None) is None
     assert ctx.spawn(None) is None
-    assert ctx.explode(0, 0, 1) is None
-    assert ctx.break_part(None) is None
     assert ctx.random == "random"
+    ctx.explode(5, 6, 1)
+    ctx.break_part(SimpleNamespace(x=7, y=8, radius=2))
+    assert [(b.x, b.y, b.radius) for b in ctx.blasts] == [(5, 6, 1), (7, 8, 2)]
 
 
 def test_d199_a_boss_is_spawned_too_and_an_unknown_kind_is_an_error(env: Env) -> None:
@@ -495,3 +523,50 @@ def test_d208_the_wheel_zooms_a_ship_and_the_props_camera(env: Env) -> None:
     props.zoom(-200)
     props.frame(0)
     assert FakePropStage.made[0].updates[-1][2] == pytest.approx(zoomed(1, -200))
+
+
+def test_the_enemies_and_bosses_are_shown_with_no_ground_and_none_waited_for(env: Env) -> None:
+    env.ready = False
+    for name, item in [("enemies", "gnat"), ("bosses", "warden")]:
+        v = viewer(name, [DevItem(item, item, "1-1")])
+        v.frame(0)
+        assert v.scene is not None
+    assert len(env.groundless) == 2
+    ships = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
+    ships.frame(0)
+    # The other viewers still wait for their level's ground.
+    assert ships.scene is None
+
+
+def _probe_boss() -> Any:
+
+
+    parts = [BossPartSpec("gun", 30, 0, 8, 10, False, 0.0)]
+    stats = BossStats("warden", 40, 100, 1000, "Warden", 12, parts, 1, 1, BossDeath(1, 0.25))
+    boss = ProbeBoss(240, 600, stats)
+    boss.state = "fighting"
+    return boss
+
+
+def test_k_breaks_the_boss_part_and_its_blast_is_drawn_where_the_boss_is_shown(
+    env: Env,
+) -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    boss = _probe_boss()
+    v.game.boss_kinds[0].spawn = lambda area: boss
+    v.frame(0)
+    v.break_part()
+    v.frame(0.1)
+    assert boss.parts[0].destroyed
+    (blast,) = FakeBlasts.made[0].drawn
+    # Drawn at the part's place on the boss shown at the middle of the view.
+    assert blast.x - v._middle_point[0] == pytest.approx(boss.parts[0].x - boss.x)
+    assert blast.y - v._middle_point[1] == pytest.approx(boss.parts[0].y - boss.y)
+
+
+def test_k_does_nothing_to_an_enemy(env: Env) -> None:
+    v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
+    v.frame(0)
+    v.break_part()
+    v.frame(0.1)
+    assert FakeBlasts.made[0].drawn == []

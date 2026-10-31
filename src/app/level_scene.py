@@ -180,7 +180,7 @@ def _follow_sky(stage: Any, cube_size: int) -> None:
     update_sky_environment(stage.scene, cube_size, sky.stops, sky.environment_intensity)
 
 
-def _playfield_layer(scene: Any, options: LevelSceneOptions) -> NodeAdopter:
+def playfield_layer(scene: Any, options: LevelSceneOptions) -> NodeAdopter:
     """The playfield layer of a level: what is created through it is drawn above the clouds, with
     the playfield's glow and (phase 14) the rims meshes ask for.
     """
@@ -278,7 +278,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
     if ground_glow is not None:
         _glow_ground(ground_glow, stage)
         ground_glow.renderingGroupId = BELOW_CLOUDS_GROUP
-    playfield = _playfield_layer(scene, options)
+    playfield = playfield_layer(scene, options)
     return LevelScene(
         scene,
         look,
