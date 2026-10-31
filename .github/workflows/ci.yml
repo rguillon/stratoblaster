@@ -13,6 +13,7 @@ jobs:
   # Code checks (ENG-71, ENG-73): ruff (lint and format), import-linter, mypy. No build: the e2e jobs
   # build the game (`make e2e-build` runs `make build` and its checks).
   lint:
+    name: code check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,6 +29,7 @@ jobs:
 
   # Unit tests in CPython (pytest, ENG-40), with the coverage gates (ENG-43): no Transcrypt build.
   unit:
+    name: unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
