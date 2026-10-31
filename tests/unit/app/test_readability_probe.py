@@ -34,7 +34,7 @@ def test_p14_r08_the_spots_are_the_ship_and_the_first_of_each_kind_in_view() -> 
     run = SimpleNamespace(
         ship=SimpleNamespace(x=100, y=50),
         enemies=SimpleNamespace(
-            enemies=[SimpleNamespace(x=200, y=300, radius=12)],
+            enemies=[SimpleNamespace(x=200, y=300, radius=12, model="gnat")],
             shots=SimpleNamespace(
                 bullets=[
                     SimpleNamespace(alive=False, x=1, y=1, radius=2),
@@ -53,6 +53,8 @@ def test_p14_r08_the_spots_are_the_ship_and_the_first_of_each_kind_in_view() -> 
     assert (spots.player.x, spots.player.y, spots.player.radius) == (100, 50, CFG.ship_radius)
     assert spots.enemy is not None
     assert spots.enemy.radius == 12
+    # The measured enemy's model, to tell which one fails.
+    assert spots.enemy_model == "gnat"
     assert spots.enemy_bullet is not None
     assert spots.enemy_bullet.radius == 3
     assert isinstance(spots.player_shot, Spot)

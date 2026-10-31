@@ -1,9 +1,12 @@
 """Unit tests of `src/game/view/enemies/enemy_bindings.py`."""
 
+from types import SimpleNamespace
+
 from helpers.enemy_steps import run
 from helpers.fakes import FakeContext
 
 from game.config.enemy_look import ENEMY_LOOK
+from game.config.readability import READABILITY
 from game.sim.bosses.boss_launches import launch_fire
 from game.sim.enemies.carrier import Carrier
 from game.sim.enemies.hive import Hive
@@ -34,18 +37,32 @@ def test_the_glow_and_the_shot_and_blast_renderers_come_from_their_modules():
 
 def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch):
     def enemy_builder(scene):
-        return "enemy"
+        return SimpleNamespace(root="enemy")
 
     def boss_builder(scene):
-        return "boss"
+        return SimpleNamespace(root="boss")
 
+    trimmed_roots = []
+    monkeypatch.setattr(
+        enemy_bindings, "add_edge_trim", lambda root, options: trimmed_roots.append(root)
+    )
     monkeypatch.setattr(
         enemy_bindings, "ENEMY_MODELS", {"shared": enemy_builder, "only": enemy_builder}
     )
     monkeypatch.setattr(enemy_bindings, "BOSS_MODELS", {"shared": boss_builder})
     models = merged_models()
-    assert models["shared"] is boss_builder
-    assert models["only"] is enemy_builder
+    assert models["shared"]("scene").root == "boss"
+    assert models["only"]("scene").root == "enemy"
+    # Each model gets its glowing edge trim once built whole (P14-R04).
+    assert trimmed_roots == ["boss", "enemy"]
+
+
+def test_p14_r04_the_trim_options_are_the_enemy_trim_look(monkeypatch):
+    seen = []
+    monkeypatch.setattr(enemy_bindings, "add_edge_trim", lambda root, options: seen.append(options))
+    enemy_bindings.trimmed(lambda scene: SimpleNamespace(root="r"))("scene")
+    look = READABILITY.enemyTrim
+    assert (seen[0].width, seen[0].offset) == (look.width, look.offset)
 
 
 def _models_spawned(enemy):

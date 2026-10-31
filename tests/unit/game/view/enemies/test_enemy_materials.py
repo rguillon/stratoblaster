@@ -48,8 +48,8 @@ def test_p14_r02_greys_are_not_moved_by_the_family():
 
 
 def test_p14_r04_rim_is_lifted_towards_white_by_the_outline_whitening():
-    whiten = READABILITY.enemyOutline.whiten
-    strength = READABILITY.enemyOutline.strength
+    whiten = READABILITY.enemyTrim.whiten
+    strength = READABILITY.enemyTrim.strength
     rim = em.rim_of([0, 0.5, 1])
     assert rim == pytest.approx(
         [(0 + whiten) * strength, (0.5 + 0.5 * whiten) * strength, (1 + 0) * strength]

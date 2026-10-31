@@ -50,15 +50,19 @@ READABILITY = record(
         # P14-R07: an explosion's largest share of the screen, and how long it may last.
         "effectMaxScreenShare": 0.15,
         "effectMaxDuration": 0.6,
-        # P14-R03: the player ship's rim glow (no hitbox marker: reviewer, 2026-10-30, D-194).
-        "playerOutline": {"color": [0.3, 0.9, 1]},
-        # P14-R04: the enemies' rim is their neon colour `whiten` of the way to white (violet and
-        # magenta alone are too dark to stand out on a dark ground), times `strength`.
-        "enemyOutline": {"whiten": 0.5, "strength": 1},
+        # P14-R03: the player ship's glowing edge trim, its built-in rim light (no hitbox marker:
+        # reviewer, 2026-10-30, D-194): colour, and width and offset out from the edges in logical
+        # pixels.
+        "playerTrim": {"color": [0.3, 0.9, 1], "width": 0.9, "offset": 0.1},
+        # P14-R04: the enemies' trim is their neon colour `whiten` of the way to white (violet and
+        # magenta alone are too dark to stand out on a dark ground), times `strength` (above 1: the
+        # trim goes through the scene's tone mapping, which the rim it replaces skipped); width and
+        # offset in logical pixels.
+        "enemyTrim": {"whiten": 0.25, "strength": 2.6, "width": 1.4, "offset": 0.1},
         # Reviewer, 2026-10-28: the light on the ships', enemies' and bosses' metal, as factors on
         # the direct light (sun, lamps) and on the sky's reflections, so they stand out brighter.
         "hullLight": {"direct": 1.8, "environment": 1.8},
-        # Rims (P14-R03, R04): width in logical pixels, and strength.
+        # The enemy missiles' rim (P14-R05): width in logical pixels, and strength.
         "outline": {"width": 0.9, "intensity": 1.2},
     }
 )

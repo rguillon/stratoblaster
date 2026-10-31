@@ -5,8 +5,14 @@ transform-design.md)."""
 from helpers.render_geometry import babylon_normal, triangles
 
 from render.geometry.edge_trim import (
+    IDENTITY,
     TrimOptions,
+    TrimShape,
+    inverse,
+    multiply,
     silhouette_edges,
+    transformed,
+    trim_model,
     trim_ribbons,
     up_triangles,
 )
@@ -73,12 +79,12 @@ def test_ribbons_lie_outside_the_edges_and_face_up() -> None:
     edges = _edges(_box([2, 1, 2]))
     geo = trim_ribbons(edges, TrimOptions(0.1, 0.02))
     tris = triangles(geo.positions, geo.indices)
-    # 2 triangles per edge, 2 per corner.
-    assert len(tris) == 4 * 2 + 4 * 2
+    # 2 triangles per edge, 1 per corner.
+    assert len(tris) == 4 * 2 + 4
     for tri in tris:
         assert babylon_normal(tri)[1] > 0
         for p in tri:
-            assert max(abs(p[0]), abs(p[2])) >= 1 + 0.02 - 1e-9
+            assert max(abs(p[0]), abs(p[2])) >= 1 - 1e-9
             assert max(abs(p[0]), abs(p[2])) <= 1 + 0.12 + 1e-9
     assert geo.colors == [1, 1, 1, 1] * (len(geo.positions) // 3)
 
@@ -90,9 +96,41 @@ def test_straight_runs_get_no_corner() -> None:
     edges = _edges(b)
     assert len(edges) == 6
     geo = trim_ribbons(edges, TrimOptions(0.1, 0))
-    assert len(geo.indices) // 3 == 6 * 2 + 4 * 2
+    assert len(geo.indices) // 3 == 6 * 2 + 4
 
 
 def test_no_geometry_no_trim() -> None:
     assert silhouette_edges([], [], None, 0.2) == []
     assert trim_ribbons([], TrimOptions(0.1, 0)).indices == []
+
+
+def test_matrices_compose_and_invert() -> None:
+    # Scale 2, turn 90° about Y, then move by (1, 2, 3).
+    m = [0, 0, -2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 1, 2, 3, 1]
+    p = transformed([1, 1, 1], m)
+    assert p == [3, 4, 1]
+    back = transformed(p, inverse(m))
+    assert [round(v, 9) for v in back] == [1, 1, 1]
+    assert [round(v, 9) for v in multiply(m, inverse(m))] == IDENTITY
+
+
+def test_a_model_trims_each_mesh_in_its_own_space_with_the_others_as_cover() -> None:
+    big = _box([4, 1, 4]).geometry
+    small = _box([1, 1, 1]).geometry
+    # The small box sits on the big one, moved up by 1 in the model.
+    up = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+    shapes = [
+        TrimShape(big.positions, big.indices, IDENTITY),
+        TrimShape(small.positions, small.indices, up),
+    ]
+    trims = trim_model(shapes, TrimOptions(0.1, 0))
+    assert len(trims[0].indices) // 3 == 4 * 2 + 4
+    assert trims[1].indices == []
+
+
+def test_a_mirrored_mesh_still_gets_its_trim_outside() -> None:
+    box = _box([2, 1, 2]).geometry
+    mirror = [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 0, 0, 1]
+    (trim,) = trim_model([TrimShape(box.positions, box.indices, mirror)], TrimOptions(0.1, 0.02))
+    for i in range(0, len(trim.positions), 3):
+        assert max(abs(trim.positions[i]), abs(trim.positions[i + 2])) >= 1 - 1e-9

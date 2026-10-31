@@ -17,6 +17,7 @@ from render.babylon import (  # noqa: E402
     weak_map_get,
     weak_map_set,
 )
+from render.edge_trim_mesh import clear_trim  # noqa: E402
 from render.geometry.organic import organ, tendril  # noqa: E402
 from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
 
@@ -149,5 +150,7 @@ def build_stump(name: str, radius: float, scene: Any, parent: Any) -> Stump:
 
     model = build_enemy_model(name + "-stump", scene, look.spark, draw)
     model.root.parent = node
+    # A burnt wound does not glow: its part can no longer be hit (P14-R04).
+    clear_trim(model.root)
     random = create_rng(len(name) * 7919)
     return Stump(node, model, look.sparkChance, random)

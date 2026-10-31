@@ -32,9 +32,12 @@ class Spot:
 class _Spots:
     """Where each kind of object is on the playfield, if any is in view."""
 
-    def __init__(self, player: Spot, enemy: Any, enemy_bullet: Any, player_shot: Any) -> None:
+    def __init__(
+        self, player: Spot, enemy: Any, enemy_bullet: Any, player_shot: Any, enemy_model: Any
+    ) -> None:
         self.player = player
         self.enemy = enemy
+        self.enemy_model = enemy_model
         self.enemy_bullet = enemy_bullet
         self.player_shot = player_shot
 
@@ -57,11 +60,18 @@ def _spots_of(run: Any, in_view: Any) -> _Spots:
     shots = run.shots
     ahead = [p for p in shots.projectiles if p.alive and p.y > ship.y + CFG.shot_ahead]
     bullets = [b for b in enemies.shots.bullets if b.alive]
+    measured = _first_in_view(enemies.enemies, in_view, lambda e: e.radius)
+    model = None
+    for enemy in enemies.enemies:
+        if measured is not None and enemy.x == measured.x and enemy.y == measured.y:
+            model = enemy.model
+            break
     return _Spots(
         Spot(ship.x, ship.y, CFG.ship_radius),
-        _first_in_view(enemies.enemies, in_view, lambda e: e.radius),
+        measured,
         _first_in_view(bullets, in_view, lambda b: b.radius),
         _first_in_view(ahead, in_view, lambda _p: CFG.shot_radius),
+        model,
     )
 
 
@@ -125,6 +135,8 @@ async def probe_readability(
     report = js_object()
     js_set(report, "player", contrast(spots.player))
     js_set(report, "enemy", contrast(spots.enemy))
+    # Which enemy was measured (its model), to tell a failing one.
+    js_set(report, "enemyModel", spots.enemy_model)
     js_set(report, "enemyBullet", contrast(spots.enemy_bullet))
     js_set(report, "playerShot", contrast(spots.player_shot))
     js_set(report, "backgroundLuminance", brightest_but(background, bright_share))

@@ -239,6 +239,37 @@ def vertex_data_of(
     return data
 
 
+def mesh_positions(mesh: Any) -> list[float]:
+    """`mesh.getVerticesData("position")` as a plain array (empty when it has none)."""
+    __pragma__(
+        "js",
+        "{}",
+        'var p = mesh.getVerticesData("position"); return p ? Array.from(p) : [];',
+    )
+    return []
+
+
+def mesh_indices(mesh: Any) -> list[int]:
+    """`mesh.getIndices()` as a plain array (empty when it has none)."""
+    __pragma__("js", "{}", "var i = mesh.getIndices(); return i ? Array.from(i) : [];")
+    return []
+
+
+def world_matrix(node: Any) -> list[float]:
+    """The 16 numbers of `node`'s world matrix, computed afresh from its parents down."""
+    __pragma__(
+        "js",
+        "{}",
+        """
+    var chain = [];
+    for (var n = node; n; n = n.parent) chain.unshift(n);
+    for (var k = 0; k < chain.length; k++) chain[k].computeWorldMatrix(true);
+    return Array.from(node.getWorldMatrix().m);
+    """,
+    )
+    return []
+
+
 def apply_vertex_data(data: Any, mesh: Any) -> None:
     """`data.applyToMesh(mesh)`."""
     data.applyToMesh(mesh)

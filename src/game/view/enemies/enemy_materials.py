@@ -171,7 +171,7 @@ def tinted_hull(scene: Any, neon: Sequence[float], flesh: bool = False) -> Any:
 
 def rim_of(neon: Sequence[float]) -> Rgb:
     """The rim colour of an enemy whose neon is `neon` (P14-R04)."""
-    outline = READABILITY.enemyOutline
+    outline = READABILITY.enemyTrim
     whiten = outline.whiten
     strength = outline.strength
 

@@ -26,8 +26,11 @@ __pragma__("noskip")
 _SNAP = 1000
 # Below this, an edge has no length seen from above.
 _FLAT = 1e-6
-# Corners between edges whose outward directions are closer than this are straight.
-_STRAIGHT = 0.999
+# Corners between edges whose outward directions are closer than this (about 20°) need no joint:
+# the gap between their ribbons does not show.
+_STRAIGHT = 0.94
+# A corner joins the two edges that meet at it (no more: a branching point gets no joint).
+_PAIR = 2
 
 
 class TrimOptions:
@@ -123,10 +126,7 @@ class _Grid:
         key = str(self._cell(x)) + "," + str(self._cell(z))
         if key not in self._cells:
             return False
-        for i in self._cells[key]:
-            if _inside(self._cover[i], x, z):
-                return True
-        return False
+        return any([_inside(self._cover[i], x, z) for i in self._cells[key]])
 
 
 def _inside(t: Triangle, x: float, z: float) -> bool:
@@ -221,9 +221,21 @@ def _quad(geo: ColoredGeometry, corners: list[Vec3]) -> None:
         geo.indices.extend([base, base + 2, base + 1, base, base + 3, base + 2])
 
 
+def _wedge(geo: ColoredGeometry, a: Vec3, b: Vec3, c: Vec3) -> None:
+    """One triangle over 3 corners, wound to face up."""
+    base = len(geo.positions) // 3
+    for p in [a, b, c]:
+        geo.positions.extend([p[0], p[1], p[2]])
+        geo.colors.extend([1, 1, 1, 1])
+    if _up(a, b, c) >= 0:
+        geo.indices.extend([base, base + 1, base + 2])
+    else:
+        geo.indices.extend([base, base + 2, base + 1])
+
+
 def trim_ribbons(edges: list[TrimEdge], options: TrimOptions) -> ColoredGeometry:
     """A flat ribbon out from each edge (from `offset` to `offset + width`), at the edge's heights,
-    and a joint at each corner where two edges turn, in white vertex colours."""
+    and a wedge filling the gap at each corner where two edges turn, in white vertex colours."""
     geo = ColoredGeometry()
     near = options.offset
     far = options.offset + options.width
@@ -247,20 +259,111 @@ def trim_ribbons(edges: list[TrimEdge], options: TrimOptions) -> ColoredGeometry
             ends[key].append(edge)
     for key in order:
         meeting = ends[key]
-        if len(meeting) != 2:
+        if len(meeting) != _PAIR:
             continue
         e1 = meeting[0]
         e2 = meeting[1]
         if e1.out[0] * e2.out[0] + e1.out[2] * e2.out[2] > _STRAIGHT:
             continue
         p = e1.a if _key(e1.a) == key else e1.b
-        _quad(
-            geo,
-            [
-                _along(p, e1.out, near),
-                _along(p, e1.out, far),
-                _along(p, e2.out, far),
-                _along(p, e2.out, near),
-            ],
-        )
+        _wedge(geo, p, _along(p, e1.out, far), _along(p, e2.out, far))
     return geo
+
+
+# -- A whole model --------------------------------------------------------------------------------
+# Matrices are Babylon's: 16 numbers, row-vector convention (p' = p M, translation in 12..14).
+
+IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+
+
+def multiply(a: list[float], b: list[float]) -> list[float]:
+    """`a × b`: apply `a`, then `b`."""
+    result: list[float] = []
+    for r in range(4):
+        for c in range(4):
+            total = 0.0
+            for k in range(4):
+                total += a[r * 4 + k] * b[k * 4 + c]
+            result.append(total)
+    return result
+
+
+def inverse(m: list[float]) -> list[float]:
+    """The inverse of an affine matrix (last column 0, 0, 0, 1)."""
+    a, b, c = m[0], m[1], m[2]
+    d, e, f = m[4], m[5], m[6]
+    g, h, i = m[8], m[9], m[10]
+    det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
+    if det == 0:
+        return list(IDENTITY)
+    r = [
+        (e * i - f * h) / det,
+        (c * h - b * i) / det,
+        (b * f - c * e) / det,
+        (f * g - d * i) / det,
+        (a * i - c * g) / det,
+        (c * d - a * f) / det,
+        (d * h - e * g) / det,
+        (b * g - a * h) / det,
+        (a * e - b * d) / det,
+    ]
+    tx, ty, tz = m[12], m[13], m[14]
+    return [
+        r[0],
+        r[1],
+        r[2],
+        0,
+        r[3],
+        r[4],
+        r[5],
+        0,
+        r[6],
+        r[7],
+        r[8],
+        0,
+        -(tx * r[0] + ty * r[3] + tz * r[6]),
+        -(tx * r[1] + ty * r[4] + tz * r[7]),
+        -(tx * r[2] + ty * r[5] + tz * r[8]),
+        1,
+    ]
+
+
+def transformed(positions: list[float], m: list[float]) -> list[float]:
+    """`positions` (flat XYZ) moved by matrix `m`."""
+    result: list[float] = []
+    for i in range(0, len(positions) - 2, 3):
+        x = positions[i]
+        y = positions[i + 1]
+        z = positions[i + 2]
+        result.append(x * m[0] + y * m[4] + z * m[8] + m[12])
+        result.append(x * m[1] + y * m[5] + z * m[9] + m[13])
+        result.append(x * m[2] + y * m[6] + z * m[10] + m[14])
+    return result
+
+
+class TrimShape:
+    """One mesh of a model: its own `positions` and `indices`, and `matrix`, from its space to the
+    model's."""
+
+    def __init__(self, positions: list[float], indices: list[int], matrix: list[float]) -> None:
+        self.positions = positions
+        self.indices = indices
+        self.matrix = matrix
+
+
+def trim_model(shapes: list[TrimShape], options: TrimOptions) -> list[ColoredGeometry]:
+    """The trim of each mesh of a model, in that mesh's own space: its silhouette edges in the
+    model's space, left out where another of its meshes lies just outside them, seen from above."""
+    placed: list[list[float]] = []
+    cover: list[Triangle] = []
+    for shape in shapes:
+        positions = transformed(shape.positions, shape.matrix)
+        placed.append(positions)
+        cover.extend(up_triangles(positions, shape.indices, options.min_up))
+    result: list[ColoredGeometry] = []
+    for k, shape in enumerate(shapes):
+        edges = silhouette_edges(placed[k], shape.indices, cover, options.min_up)
+        geo = trim_ribbons(edges, options)
+        geo.positions = transformed(geo.positions, inverse(shape.matrix))
+        result.append(geo)
+    return result

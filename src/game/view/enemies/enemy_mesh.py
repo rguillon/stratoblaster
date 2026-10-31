@@ -38,12 +38,12 @@ from render.babylon import (  # noqa: E402
     new_transform_node,
     node_name,
 )
+from render.edge_trim_mesh import set_trim  # noqa: E402
 from render.geometry.solids import SolidBuilder  # noqa: E402
 from render.model_animation import (  # noqa: E402
     add_model_animation,
     step_model_animations,
 )
-from render.outline import set_outline  # noqa: E402
 
 
 class EnemyParts:
@@ -131,15 +131,15 @@ def wing_parts_new() -> WingParts:
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
-    """The hull (with a rim, P14-R04) and the neon lights (in the enemies' colour family,
-    P14-R02) of an enemy model whose neon is `neon_color`, under `root`."""
+    """The hull (asking for an edge trim, P14-R04), and the neon lights (in the enemies' colour
+    family, P14-R02) of an enemy model whose neon is `neon_color`, under `root`."""
     scene = root.getScene()
     for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
         if len(geo.positions) == 0:
             continue
         mesh = mesh_of(name + "-" + node_name(mat), geo, mat, scene)
         mesh.parent = root
-        set_outline(mesh, rim_of(neon_color))
+        set_trim(mesh, rim_of(neon_color))
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
