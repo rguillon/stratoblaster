@@ -41,12 +41,6 @@ def is_living_motion() -> bool:
     return _LIVING_MOTION[0]
 
 
-def breath_scale(breath: Breath, time: float) -> float:
-    """The body's scale at `time` (P16-R07)."""
-    a = ENEMY_LOOK.living.breathing.amplitude
-    return float(1 + a * math.sin((2 * math.pi * time) / breath.period + breath.phase))
-
-
 def glow_level(breath: Breath, time: float) -> float:
     """The veins' brightness at `time` (P16-R07), from `low` to 1."""
     glow = ENEMY_LOOK.living.glow

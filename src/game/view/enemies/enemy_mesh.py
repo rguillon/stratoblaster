@@ -1,6 +1,6 @@
 """Builds an enemy model from its parts (P05, P07, P14, P16)
 
-The model is a node tree: a root, a breathing body (hull, flesh, lights and wings) and, outside
+The model is a node tree: a root, a body (hull, flesh, lights and wings) and, outside
 the body, reactors, rotors and muzzles (so shots leave from the same points, P16-R08).
 """
 
@@ -28,7 +28,6 @@ from game.view.enemies.enemy_materials import (  # noqa: E402
     unlit,
 )
 from game.view.enemies.living_motion import (  # noqa: E402
-    breath_scale,
     flutter_angle,
     glow_level,
     is_living_motion,
@@ -228,7 +227,7 @@ def build_enemy_model(
     """Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
     charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
-    wings) is on a node of its own, `<name>-body`, that breathes (P16-R07); its reactors and
+    wings) is on a node of its own, `<name>-body`, its veins pulsing (P16-R07); its reactors and
     muzzles are not, so shots leave from the same points (P16-R08)."""
     if breath is None:
         breath = new_breath()
@@ -271,7 +270,6 @@ def build_enemy_model(
         else:
             clock[0] = 0
         living = is_living_motion()
-        body.scaling.setAll(breath_scale(breath, clock[0]) if living else 1)
         glow = glow_level(breath, clock[0]) if living else 1
         vein.emissiveColor.set(glow, glow, glow)
         step_model_animations(root, dt)

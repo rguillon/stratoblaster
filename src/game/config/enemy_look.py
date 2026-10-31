@@ -103,11 +103,12 @@ ENEMY_LOOK = record(
             "roughness": 0.5,
             "tint": 0.35,
         },
-        # Living motion (P16-R07), visual only: the body breathes (its scale pulses by `amplitude`
-        # over `period`, +- `spread` per enemy), its veins pulse (from `low` to full over `period`),
-        # and its wings flutter (`angle` radians at `hz`; `bigHz` for wings longer than `bigSpan`).
+        # Living motion (P16-R07), visual only: each creature's breath (`period`, +- `spread` per
+        # enemy) sets the phase of its veins' pulse (from `low` to full over `period`), and its
+        # wings flutter (`angle` radians at `hz`; `bigHz` for wings longer than `bigSpan`). The
+        # body no longer swells with the breath (reviewer, 2026-10-31).
         "living": {
-            "breathing": {"amplitude": 0.03, "period": 2.5, "spread": 0.2},
+            "breathing": {"period": 2.5, "spread": 0.2},
             "glow": {"period": 1.2, "low": 0.55},
             "flutter": {"hz": 6, "bigHz": 2, "bigSpan": 25, "angle": 0.16},
         },

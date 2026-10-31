@@ -2063,3 +2063,9 @@
 - **No ground (`app/dev_model_scene.py`):** the enemies and bosses viewers no longer build their level's scenery nor wait for its ground: their scene has the level's light (its atmosphere at the start) and sky reflections, the game's playfield camera and the playfield layer, over a plain backdrop. The ships, props and levels viewers are unchanged. `level_scene.playfield_layer` is now public for it.
 - **K (`DevViewerConfig.break_key`):** in the bosses viewer it breaks the boss's next part, as K does in a level (P07-R09, `Boss.break_next`): the part's blast, its burnt stump, the transformations (D-221) and, once only the core is left, its death; a new boss then comes in. The viewer's world keeps what blows up (`DevEnemyContext.blasts`) and draws it with the game's explosions, where the boss is shown. The dev session listens for the key on the app's keyboard target; the bosses viewer's hint says so.
 - **Status:** Proposed
+
+### D-223 — The enemies' bodies no longer swell with their breath
+- **Date:** 2026-10-31
+- **Phase:** outside a phase, at the reviewer's request (in chat, about the zoom in / out breathing animation: "remove that")
+- **What:** P16-R07's breathing scaled each creature's body up and down by 3 % (`breath_scale`), in game and in the dev viewer alike. It is gone: the body stays at its size. The breath is kept for the phase of the veins' pulse (`glow_level`), and the wings still flutter. `ENEMY_LOOK.living.breathing.amplitude` and `breath_scale` (and its tests) are removed. P16-R07's text is unchanged: read as overridden by the reviewer for the breathing scale.
+- **Status:** Proposed
