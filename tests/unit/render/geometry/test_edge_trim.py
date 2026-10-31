@@ -9,6 +9,7 @@ from render.geometry.edge_trim import (
     TrimOptions,
     TrimShape,
     inverse,
+    merged_edges,
     multiply,
     silhouette_edges,
     transformed,
@@ -89,14 +90,14 @@ def test_ribbons_lie_outside_the_edges_and_face_up() -> None:
     assert geo.colors == [1, 1, 1, 1] * (len(geo.positions) // 3)
 
 
-def test_straight_runs_get_no_corner() -> None:
-    # Two squares in a row: the long sides are two collinear edges each, joined without a corner.
+def test_straight_runs_are_one_ribbon_without_a_corner() -> None:
+    # Two squares in a row: the long sides are two collinear edges each, drawn as one ribbon.
     b = SolidBuilder().face([[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]], WHITE)
     b.face([[1, 0, 0], [1, 0, 1], [2, 0, 1], [2, 0, 0]], WHITE)
     edges = _edges(b)
     assert len(edges) == 6
     geo = trim_ribbons(edges, TrimOptions(0.1, 0))
-    assert len(geo.indices) // 3 == 6 * 2 + 4
+    assert len(geo.indices) // 3 == 4 * 2 + 4
 
 
 def test_no_geometry_no_trim() -> None:
@@ -134,3 +135,21 @@ def test_a_mirrored_mesh_still_gets_its_trim_outside() -> None:
     (trim,) = trim_model([TrimShape(box.positions, box.indices, mirror)], TrimOptions(0.1, 0.02))
     for i in range(0, len(trim.positions), 3):
         assert max(abs(trim.positions[i]), abs(trim.positions[i + 2])) >= 1 - 1e-9
+
+
+def test_a_curved_outline_is_drawn_with_fewer_ribbons_on_its_outside() -> None:
+    # A 32-sided disc: its rim turns 11.25° per edge, so runs of 2 edges merge.
+    b = SolidBuilder().cylinder(10, 1, 32, WHITE)
+    edges = _edges(b)
+    assert len(edges) == 32
+    merged = merged_edges(edges)
+    assert len(merged) <= 16
+    for edge in merged:
+        mid = [(edge.a[i] + edge.b[i]) / 2 for i in range(3)]
+        assert mid[0] * edge.out[0] + mid[2] * edge.out[2] > 0
+    geo = trim_ribbons(edges, TrimOptions(0.5, 0))
+    assert len(geo.indices) // 3 <= 16 * 3
+
+
+def test_a_square_keeps_its_four_sides() -> None:
+    assert len(merged_edges(_edges(_box([2, 1, 2])))) == 4

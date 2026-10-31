@@ -31,6 +31,8 @@ _FLAT = 1e-6
 _STRAIGHT = 0.94
 # A corner joins the two edges that meet at it (no more: a branching point gets no joint).
 _PAIR = 2
+# Edges in a row turning by less than this (cosine, about 15°) are drawn as one ribbon.
+_MERGE = 0.966
 
 
 class TrimOptions:
@@ -233,10 +235,79 @@ def _wedge(geo: ColoredGeometry, a: Vec3, b: Vec3, c: Vec3) -> None:
         geo.indices.extend([base, base + 2, base + 1])
 
 
+def _other_end(edge: TrimEdge, key: str) -> str:
+    return _key(edge.b) if _key(edge.a) == key else _key(edge.a)
+
+
+def _far_point(edge: TrimEdge, key: str) -> Vec3:
+    return edge.b if _key(edge.a) == key else edge.a
+
+
+def _run_tip(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    edges: list[TrimEdge],
+    ends: dict[str, list[int]],
+    used: list[bool],
+    i: int,
+    key: str,
+    tip: Vec3,
+) -> Vec3:
+    """The far end of the run of edges going on from edge `i` at its end `key` (`tip`), while they
+    meet two by two and turn by less than about 15° from edge `i`; marks them used."""
+    first = edges[i]
+    while key in ends and len(ends[key]) == _PAIR:
+        pair = ends[key]
+        j = pair[0] if pair[1] == i or used[pair[1]] else pair[1]
+        if used[j]:
+            break
+        nxt = edges[j]
+        if nxt.out[0] * first.out[0] + nxt.out[2] * first.out[2] < _MERGE:
+            break
+        used[j] = True
+        tip = _far_point(nxt, key)
+        key = _other_end(nxt, key)
+    return tip
+
+
+def merged_edges(edges: list[TrimEdge]) -> list[TrimEdge]:
+    """`edges` with each run of edges in a row (meeting two by two) that turns by less than about
+    15° from its first edge drawn as one, from its first point to its last: curved outlines get far
+    fewer ribbons, a little inside the curve."""
+    ends: dict[str, list[int]] = {}
+    for i, edge in enumerate(edges):
+        for p in [edge.a, edge.b]:
+            key = _key(p)
+            if key not in ends:
+                ends[key] = []
+            ends[key].append(i)
+    used = [False for _ in edges]
+    result: list[TrimEdge] = []
+    for i in range(len(edges)):
+        if used[i]:
+            continue
+        used[i] = True
+        first = edges[i]
+        # Grow the run both ways from edge i, while the edges meet two by two and stay straight.
+        tips = [
+            _run_tip(edges, ends, used, i, _key(first.a), first.a),
+            _run_tip(edges, ends, used, i, _key(first.b), first.b),
+        ]
+        a = tips[0]
+        b = tips[1]
+        out = _outward(a, b, [a[0] - first.out[0], a[1], a[2] - first.out[2]])
+        if out is None:
+            continue
+        # Keep the run's side: the chord's square points the way its first edge's did.
+        mid_a = [(a[0] + b[0]) / 2 - first.out[0], 0, (a[2] + b[2]) / 2 - first.out[2]]
+        out = _outward(a, b, mid_a) or out
+        result.append(TrimEdge(a, b, out))
+    return result
+
+
 def trim_ribbons(edges: list[TrimEdge], options: TrimOptions) -> ColoredGeometry:
     """A flat ribbon out from each edge (from `offset` to `offset + width`), at the edge's heights,
     and a wedge filling the gap at each corner where two edges turn, in white vertex colours."""
     geo = ColoredGeometry()
+    edges = merged_edges(edges)
     near = options.offset
     far = options.offset + options.width
     ends: dict[str, list[TrimEdge]] = {}
