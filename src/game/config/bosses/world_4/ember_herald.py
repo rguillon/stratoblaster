@@ -129,7 +129,7 @@ EMBER_HERALD = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-26, 9], [26, 9], [26, 56.4], [-26, 56.4]], "shell", None, False
+            "back", 1, [[-26, 9], [26, 9], [26, 56.4], [-26, 56.4]], "shell", [5.0, 1000], False
         ),
     ],
 )

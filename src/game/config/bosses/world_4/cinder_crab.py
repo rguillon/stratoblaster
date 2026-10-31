@@ -159,6 +159,8 @@ CINDER_CRAB = with_weapons(
         hidden_weapon("lance-right", "lance", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
     ],
     [
-        armour_region("flanks", 1, [[12, -9], [56.4, -9], [56.4, 34.5], [12, 34.5]], "wing"),
+        armour_region(
+            "flanks", 1, [[12, -9], [56.4, -9], [56.4, 34.5], [12, 34.5]], "wing", [2.9, 1000]
+        ),
     ],
 )

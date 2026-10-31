@@ -154,7 +154,7 @@ MANGROVE_CROC = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-24, -32], [24, -32], [24, 12], [-24, 12]], "shell", None, False
+            "back", 1, [[-24, -32], [24, -32], [24, 12], [-24, 12]], "shell", [3.3, 1000], False
         ),
     ],
 )

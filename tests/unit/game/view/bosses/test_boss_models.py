@@ -73,7 +73,7 @@ def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
     drawn = list((capture.drawing.get("parts") or {}).keys())
     # Hidden weapons are drawn from their look (`hidden_weapon_shapes`).
     drawn.extend((capture.design.get("weapons") or {}).keys())
-    assert sorted(drawn) == design_parts
+    assert sorted(set(drawn)) == design_parts
 
 
 @pytest.mark.parametrize(

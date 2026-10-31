@@ -134,7 +134,7 @@ ICE_QUEEN = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-30, 9], [30, 9], [30, 58.4], [-30, 58.4]], "shell", None, False
+            "back", 1, [[-30, 9], [30, 9], [30, 58.4], [-30, 58.4]], "shell", [3.4, 1000], False
         ),
     ],
 )

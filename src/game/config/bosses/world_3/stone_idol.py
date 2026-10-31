@@ -110,6 +110,8 @@ STONE_IDOL = with_weapons(
         hidden_weapon("rack-right", "rack", [23, -27], 7, 760, 1, "purple", 2.0, 15.5),
     ],
     [
-        armour_region("flanks", 1, [[8, -55.5], [52.4, -55.5], [52.4, 2], [8, 2]], "wing"),
+        armour_region(
+            "flanks", 1, [[8, -55.5], [52.4, -55.5], [52.4, 2], [8, 2]], "wing", [-0.7, 1000]
+        ),
     ],
 )

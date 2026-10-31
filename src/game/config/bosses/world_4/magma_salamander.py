@@ -169,7 +169,7 @@ MAGMA_SALAMANDER = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-24, -14], [24, -14], [24, 28], [-24, 28]], "shell", None, False
+            "back", 1, [[-24, -14], [24, -14], [24, 28], [-24, 28]], "shell", [5.2, 1000], False
         ),
     ],
 )

@@ -177,9 +177,16 @@ CALDERA_THRONE = with_weapons(
         hidden_weapon("lance-centre", "lance", [0, -48], 12, 2600, 2, "magenta", 1.6, 13.4),
     ],
     [
-        armour_region("flanks", 1, [[34, -53], [106, -53], [106, 15], [34, 15]], "wing"),
         armour_region(
-            "spine", 2, [[-34, -80], [34, -80], [34, 103.1], [-34, 103.1]], "shell", None, False
+            "flanks", 1, [[34, -53], [106, -53], [106, 15], [34, 15]], "wing", [2.2, 1000]
+        ),
+        armour_region(
+            "spine",
+            2,
+            [[-34, -80], [34, -80], [34, 103.1], [-34, 103.1]],
+            "shell",
+            [11.5, 1000],
+            False,
         ),
     ],
 )

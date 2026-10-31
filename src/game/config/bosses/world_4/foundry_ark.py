@@ -165,10 +165,14 @@ FOUNDRY_ARK = with_weapons(
         hidden_weapon("lance-centre", "lance", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
     ],
     [
-        armour_region("flanks", 1, [[20, -78], [88, -78], [88, -13.5], [20, -13.5]], "wing"),
-        armour_region("wings", 2, [[30, -13.5], [88, -13.5], [88, 45], [30, 45]], "wing"),
         armour_region(
-            "spine", 2, [[-18, -49], [18, -49], [18, 11], [-18, 11]], "shell", None, False
+            "flanks", 1, [[20, -78], [88, -78], [88, -13.5], [20, -13.5]], "wing", [-1.5, 1000]
+        ),
+        armour_region(
+            "wings", 2, [[30, -13.5], [88, -13.5], [88, 45], [30, 45]], "wing", [-0.2, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-18, -49], [18, -49], [18, 11], [-18, 11]], "shell", [16.8, 1000], False
         ),
     ],
 )

@@ -109,7 +109,7 @@ FJORD_LYNX = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-20, -48], [20, -48], [20, -10], [-20, -10]], "shell", None, False
+            "back", 1, [[-20, -48], [20, -48], [20, -10], [-20, -10]], "shell", [7.5, 1000], False
         ),
     ],
 )

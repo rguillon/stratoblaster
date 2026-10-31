@@ -206,7 +206,11 @@ CANOPY_SPIDER = with_weapons(
         hidden_weapon("rack-right", "rack", [9, -21], 7, 1250, 2, "red", 2.0, 12.8),
     ],
     [
-        armour_region("back", 1, [[-28, 2], [28, 2], [28, 49], [-28, 49]], "shell", None, False),
-        armour_region("spine", 2, [[-24, -42], [24, -42], [24, 2], [-24, 2]], "shell", None, False),
+        armour_region(
+            "back", 1, [[-28, 2], [28, 2], [28, 49], [-28, 49]], "shell", [7.0, 1000], False
+        ),
+        armour_region(
+            "spine", 2, [[-24, -42], [24, -42], [24, 2], [-24, 2]], "shell", [6.4, 1000], False
+        ),
     ],
 )

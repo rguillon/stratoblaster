@@ -183,8 +183,9 @@ def part(
     health: float,
     options: Any = None,
 ) -> Any:
-    """A part: `options` holds `shields`, `drop`, `orbits`, `joint` and `reveal` (all optional;
-    `reveal`: the transformation that reveals a hidden weapon part, 1 for the first)."""
+    """A part: `options` holds `shields`, `drop`, `orbits`, `joint`, `reveal` and `retire` (all
+    optional; `reveal`: the transformation that reveals a hidden weapon part, 1 for the first;
+    `retire`: the transformation it leaves the fight at, D-228)."""
     opts: Any = record({}) if _unset(options) else record(options)
     result = record(
         {
@@ -203,6 +204,8 @@ def part(
         result["joint"] = opts.joint
     if not _unset(opts.reveal):
         result["reveal"] = opts.reveal
+    if not _unset(opts.retire):
+        result["retire"] = opts.retire
     return result
 
 
@@ -315,8 +318,11 @@ def _volley_missiles(
     return _shot(source, every, first, shape)
 
 
-def _volley_laser(source: str, every: float, firing_seconds: float, first: Any = None) -> Any:
-    shape = record({"kind": "laser", "laser": laser_of(firing_seconds)})
+def _volley_laser(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    source: str, every: float, firing_seconds: float, first: Any = None, width: Any = None
+) -> Any:
+    beam = laser_of(firing_seconds) if _unset(width) else laser_of(firing_seconds, width)
+    shape = record({"kind": "laser", "laser": beam})
     return _shot(source, every, first, shape)
 
 

@@ -155,7 +155,9 @@ GLACIER_COLOSSUS = with_weapons(
         hidden_weapon("orb-right", "orb", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
     ],
     [
-        armour_region("flanks", 1, [[16, 39.5], [74, 39.5], [74, 79], [16, 79]], "wing"),
-        armour_region("wings", 2, [[8, -2], [74, -2], [74, 39.5], [8, 39.5]], "wing"),
+        armour_region(
+            "flanks", 1, [[16, 39.5], [74, 39.5], [74, 79], [16, 79]], "wing", [1.3, 1000]
+        ),
+        armour_region("wings", 2, [[8, -2], [74, -2], [74, 39.5], [8, 39.5]], "wing", [2.9, 1000]),
     ],
 )

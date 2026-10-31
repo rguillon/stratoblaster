@@ -80,11 +80,65 @@ def longest_two(segments: list[list[Any]]) -> list[list[Any]]:
     return result
 
 
-def frame_drawings(tris: list[list[Vertex]], style: str, neon: Any) -> list[Any]:
-    """The drawings (`draw(p)`) of the frame left where the armour `tris` was: `[floor, ribs]`
-    (the floor alone carries the frame's glowing outline)."""
+def draw_pylon(p: Any, floor: float, support: list[float], neon: Any) -> None:
+    """A pylon up to the base of a piece standing over the frame (`support`: `[x, z, height,
+    width]`, and the height it stands on when known, else the frame's `floor`), so it does not
+    hover (D-227): a base plate, a column, a collar and a neon band."""
     look = BOSS_LOOK.frame
-    y = floor_height(tris)
+    x = support[0]
+    z = support[1]
+    if len(support) > 4:  # noqa: PLR2004
+        floor = support[4]
+    height = support[2] - floor
+    if height <= look.lift:
+        return
+    w = min(look.pylonMost, max(look.pylonLeast, support[3] * look.pylonShare))
+    p.hull.box([w * 1.8, 0.6, w * 1.8], look.metal, Placement([x, floor, z]))
+    p.hull.box([w, height, w], look.metal, Placement([x, floor, z]))
+    p.hull.box([w * 1.4, 0.8, w * 1.4], look.pipe, Placement([x, floor + height - 0.8, z]))
+    p.neon.box([w * 1.05, 0.3, w * 1.05], neon, Placement([x, floor + height * 0.5, z]))
+
+
+def draw_bridge(p: Any, bridge: list[Any], neon: Any) -> None:
+    """A beam holding a patch of frame to the boss (D-227), `[from, to]`: along the floor from
+    `from` to under `to`, then a post up (or down) to `to`, a neon seam along the beam."""
+    look = BOSS_LOOK.frame
+    a = bridge[0]
+    b = bridge[1]
+    w = look.ribWidth * 1.5
+    dx = b[0] - a[0]
+    dz = b[2] - a[2]
+    length = math.hypot(dx, dz)
+    yaw = math.atan2(dx, dz)
+    if length > 0:
+        mid = [(a[0] + b[0]) / 2, a[1], (a[2] + b[2]) / 2]
+        p.hull.box([w, look.ribHeight, length + w], look.metal, Placement(mid, yaw))
+        p.neon.box(
+            [w * 0.3, 0.2, length * 0.8],
+            neon,
+            Placement([mid[0], a[1] + look.ribHeight, mid[2]], yaw),
+        )
+    low = min(a[1], b[1])
+    high = max(a[1], b[1])
+    p.hull.box([w, high - low + look.ribHeight, w], look.metal, Placement([b[0], low, b[2]]))
+
+
+def frame_drawings(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    tris: list[list[Vertex]],
+    style: str,
+    neon: Any,
+    supports: list[Any] | None = None,
+    floor: Any = None,
+    bridges: list[Any] | None = None,
+) -> list[Any]:
+    """The drawings (`draw(p)`) of the frame left where the armour `tris` was: `[floor, ribs]`
+    (the floor alone carries the frame's glowing outline), at height `floor` (else just over the
+    armour's lowest point); the ribs hold up the pieces standing over it (`supports`, see
+    `draw_pylon`) and beams hold its patches to the boss (`bridges`, see `draw_bridge`)."""
+    held = supports if supports is not None else []
+    beams = bridges if bridges is not None else []
+    look = BOSS_LOOK.frame
+    y = floor if floor != None else floor_height(tris)  # noqa: E711
     floor = floor_triangles(tris, y)
     segments = frame_segments(tris, style)
     longest = longest_two(segments)
@@ -120,5 +174,9 @@ def frame_drawings(tris: list[list[Vertex]], style: str, neon: Any) -> list[Any]
             r = look.pipeRadius
             place = Placement([a[0] + ox, y + r, a[1] + oz], math.atan2(dx, dz), QUARTER)
             p.hull.cylinder(r, length, 6, look.pipe, place)
+        for support in held:
+            draw_pylon(p, y, support, neon)
+        for bridge in beams:
+            draw_bridge(p, bridge, neon)
 
     return [draw_floor, draw_ribs]

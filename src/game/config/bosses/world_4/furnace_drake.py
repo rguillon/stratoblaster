@@ -153,7 +153,7 @@ FURNACE_DRAKE = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-26, -20], [26, -20], [26, 24], [-26, 24]], "shell", None, False
+            "back", 1, [[-26, -20], [26, -20], [26, 24], [-26, 24]], "shell", [2.0, 1000], False
         ),
     ],
 )

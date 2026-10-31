@@ -47,6 +47,7 @@ class BossPartSpec:
         orbits: bool = False,
         joint: str | None = None,
         reveal: int | None = None,
+        retire: int | None = None,
     ) -> None:
         """`x` and `y` are its offset from the boss's centre (X right, Y up). `shields_core`: while
         this part is there, the core takes no damage. `drop_chance` is the chance (0..1) that it
@@ -54,7 +55,10 @@ class BossPartSpec:
         boss's centre with `BossStats.spin` (e.g. on a turning ring). `joint`: the joint it hangs on
         (phase 7 review): it moves with it, see `BossStats.joints`. `reveal`: the transformation
         that reveals it (1 for the first); hidden until then, it cannot be hit, does not shield the
-        core and does not fire. None for a part there from the start.
+        core and does not fire. None for a part there from the start. `retire`: the transformation
+        it leaves the fight at (D-228: another part takes over from it), from the moment it starts:
+        hidden from then on, it is not destroyed (the boss's stage does not change) and no longer
+        counts in its health. None for a part there to the end.
         """
         self.id = id
         self.x = x
@@ -66,6 +70,7 @@ class BossPartSpec:
         self.orbits = orbits
         self.joint = joint
         self.reveal = reveal
+        self.retire = retire
 
 
 class BossDeath:
@@ -101,6 +106,8 @@ class BossStats(EnemyStats):
         joints: dict[str, BossJointSpec] | None = None,
         transforms: list[int] | None = None,
         transform_seconds: float = 1.5,
+        transform_parts: list[list[str]] | None = None,
+        turns: list[float] | None = None,
     ) -> None:
         """The optional fields come last:
 
@@ -119,6 +126,10 @@ class BossStats(EnemyStats):
         - `transforms`: how many of its original parts (those not hidden) must be destroyed for
           each of its transformations, in order (e.g. `[2, 4]`); it never transforms when None.
         - `transform_seconds`: how long a transformation lasts: it neither fires nor takes damage.
+        - `transform_parts`: for each transformation, the parts (by id) whose destruction calls for
+          it, all of them (D-228), in place of `transforms`; None to count parts.
+        - `turns`: how far (radians, clockwise on screen) the whole boss turns during each of its
+          transformations (D-228), its parts and guns with it; it does not turn when None.
         """
         super().__init__(model, radius, health, points)
         self.name = name
@@ -135,6 +146,8 @@ class BossStats(EnemyStats):
         self.joints = joints
         self.transforms = transforms
         self.transform_seconds = transform_seconds
+        self.transform_parts = transform_parts
+        self.turns = turns
 
 
 class Boss(Enemy):
@@ -181,6 +194,8 @@ class Boss(Enemy):
         self.form = 0
         self.transform = 0.0
         self._transform_for = 0.0
+        # Its heading as its transformation started (it turns from there, D-228).
+        self._heading_from = math.pi
         # Its moving limbs (phase 7 review), swinging all the time it is there.
         self.joints = BossJoints(stats.joints, stats.parts)
         self._last_x = x
@@ -264,7 +279,7 @@ class Boss(Enemy):
             if not part.destroyed and not part.hidden:
                 part.destroy()
                 return
-        if any([part.hidden for part in self.parts]):
+        if any([part.hidden and not part.retired for part in self.parts]):
             # Its parts all broken before it could transform (coming in): it reveals its next
             # weapons at once.
             self.form += 1
@@ -340,11 +355,28 @@ class Boss(Enemy):
 
     def _forms_due(self) -> int:
         """How many transformations its destroyed original parts call for."""
+        wanted = self.stats.transform_parts
+        if wanted is not None:
+            destroyed = [p.spec.id for p in self.parts if p.destroyed]
+            due = 0
+            for ids in wanted:
+                if not all([i in destroyed for i in ids]):
+                    break
+                due += 1
+            return due
         thresholds = self.stats.transforms
         if thresholds is None:
             return 0
         lost = len([p for p in self.parts if p.spec.reveal is None and p.destroyed])
         return len([t for t in thresholds if lost >= t])
+
+    def _turn_of(self, form: int) -> float:
+        """How far it turns during transformation `form` (D-228)."""
+        turns = self.stats.turns
+        if turns is None or form > len(turns):
+            return 0
+        turn: float = turns[form - 1]
+        return turn
 
     def _maybe_transform(self, ctx: EnemyContext) -> None:
         """Starts its next transformation if one is due and it is fighting."""
@@ -353,7 +385,10 @@ class Boss(Enemy):
         self.state = "transforming"
         self.transform = 0
         self._transform_for = 0
+        self._heading_from = self.heading
         self.rage = 0
+        # A part retiring at it leaves now (`BossPartSpec.retire`).
+        self._rebuild_targets()
         if self.on_transform is not None:
             self.on_transform(self.form + 1, ctx)
 
@@ -363,12 +398,15 @@ class Boss(Enemy):
         seconds = self.stats.transform_seconds
         self._transform_for += dt
         self.transform = min(1, self._transform_for / seconds) if seconds > 0 else 1
+        k = self.transform
+        self.heading = self._heading_from + self._turn_of(self.form + 1) * k * k * (3 - 2 * k)
         if self._transform_for >= seconds:
             self._end_transform()
             self._maybe_transform(ctx)
 
     def _end_transform(self) -> None:
         """Its transformation is over: its parts of that form are revealed, and it is angry."""
+        self.heading = self._heading_from + self._turn_of(self.form + 1)
         self.form += 1
         self.transform = 0
         self.state = "fighting"
@@ -420,12 +458,16 @@ class Boss(Enemy):
 
     def _place(self) -> None:
         c, s = math.cos(self.spin), math.sin(self.spin)
+        # Facing down (heading pi) the offsets are as given; turned, they turn with it (D-228).
+        hc, hs = -math.cos(self.heading), -math.sin(self.heading)
         for part in self.parts:
             orbits = part.spec.orbits
             x, y = self.joints.move(part.spec.joint, part.spec.x, part.spec.y)
             # Clockwise on screen (X right, Y up) by `spin` for the orbiting ones.
-            part.x = self.x + (x * c + y * s if orbits else x)
-            part.y = self.y + (-x * s + y * c if orbits else y)
+            ox = x * c + y * s if orbits else x
+            oy = -x * s + y * c if orbits else y
+            part.x = self.x + ox * hc + oy * hs
+            part.y = self.y - ox * hs + oy * hc
 
     def _rebuild_targets(self) -> None:
         self._intact_parts = [part for part in self.parts if not part.destroyed and not part.hidden]

@@ -159,6 +159,7 @@ def _part_spec(part: ConfigRecord) -> BossPartSpec:
         part.orbits is True,
         opt(part.joint),
         opt(part.reveal),
+        opt(part.retire),
     )
 
 
@@ -237,4 +238,6 @@ def boss_stats(design: ConfigRecord) -> BossStats:
         _maybe(stats.joints, joint_specs),
         default_transforms(design),
         BOSS_TIMING.transformSeconds,
+        opt(design.transformParts),
+        opt(design.turns),
     )

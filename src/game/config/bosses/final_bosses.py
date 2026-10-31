@@ -355,8 +355,10 @@ STORM_PETREL = with_weapons(
         hidden_weapon("gatling-right", "gatling", [19, -17], 5, 1010, 2, "magenta", 2.0, 12.9),
     ],
     [
-        armour_region("flanks", 1, [[26, -36], [80.4, -36], [80.4, 18], [26, 18]], "wing"),
-        armour_region("wings", 2, [[8, -44], [26, -44], [26, 10], [8, 10]], "wing"),
+        armour_region(
+            "flanks", 1, [[26, -36], [80.4, -36], [80.4, 18], [26, 18]], "wing", [10.6, 1000]
+        ),
+        armour_region("wings", 2, [[8, -44], [26, -44], [26, 10], [8, 10]], "wing", [4.6, 1000]),
     ],
 )
 
@@ -372,8 +374,8 @@ GULL_MOTHERSHIP = with_weapons(
         hidden_weapon("gatling-right", "gatling", [37, -9], 7, 1050, 2, "green", 2.0, 7.6),
     ],
     [
-        armour_region("flanks", 1, [[18, 6], [49, 6], [49, 54], [18, 54]], "wing"),
-        armour_region("wings", 2, [[22, -38], [49, -38], [49, 6], [22, 6]], "wing"),
+        armour_region("flanks", 1, [[18, 6], [49, 6], [49, 54], [18, 54]], "wing", [1.9, 1000]),
+        armour_region("wings", 2, [[22, -38], [49, -38], [49, 6], [22, 6]], "wing", [-0.3, 1000]),
     ],
 )
 
@@ -389,8 +391,12 @@ MESA_FORTRESS = with_weapons(
         hidden_weapon("orb-right", "orb", [32, -21], 8, 1500, 2, "red", 2.0, 10.6),
     ],
     [
-        armour_region("flanks", 1, [[32, -3.5], [88, -3.5], [88, 50], [32, 50]], "wing"),
-        armour_region("wings", 2, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing"),
+        armour_region(
+            "flanks", 1, [[32, -3.5], [88, -3.5], [88, 50], [32, 50]], "wing", [2.2, 1000]
+        ),
+        armour_region(
+            "wings", 2, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing", [4.3, 1000]
+        ),
     ],
 )
 
@@ -407,10 +413,10 @@ REFINERY_TITAN = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-24, -24], [24, -24], [24, 14], [-24, 14]], "shell", None, False
+            "back", 1, [[-24, -24], [24, -24], [24, 14], [-24, 14]], "shell", [7.3, 1000], False
         ),
         armour_region(
-            "spine", 2, [[-24, -62], [24, -62], [24, -24], [-24, -24]], "shell", None, False
+            "spine", 2, [[-24, -62], [24, -62], [24, -24], [-24, -24]], "shell", [4.3, 1000], False
         ),
     ],
 )
@@ -427,9 +433,11 @@ OVERLORD = with_weapons(
         hidden_weapon("orb-right", "orb", [13, -55], 11, 1940, 2, "purple", 2.0, 14.1),
     ],
     [
-        armour_region("flanks", 1, [[32, -34], [106, -34], [106, 32], [32, 32]], "wing"),
         armour_region(
-            "spine", 2, [[-32, -66], [32, -66], [32, -24], [-32, -24]], "shell", None, False
+            "flanks", 1, [[32, -34], [106, -34], [106, 32], [32, 32]], "wing", [15.2, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-32, -66], [32, -66], [32, -24], [-32, -24]], "shell", [2.8, 1000], False
         ),
     ],
 )

@@ -146,7 +146,11 @@ SKY_TEMPLE = with_weapons(
         hidden_weapon("gatling-right", "gatling", [39, -33], 11, 2400, 2, "orange", 2.0, 41.0),
     ],
     [
-        armour_region("back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", None, False),
-        armour_region("wings", 2, [[20, -66], [81.8, -66], [81.8, 0], [20, 0]], "wing"),
+        armour_region(
+            "back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", [1.2, 1000], False
+        ),
+        armour_region(
+            "wings", 2, [[20, -66], [81.8, -66], [81.8, 0], [20, 0]], "wing", [-5.0, 1000]
+        ),
     ],
 )

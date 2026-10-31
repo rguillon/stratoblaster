@@ -155,8 +155,10 @@ BOREAL_CITADEL = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-32, -88], [32, -88], [32, -38], [-32, -38]], "shell", None, False
+            "back", 1, [[-32, -88], [32, -88], [32, -38], [-32, -38]], "shell", [9.6, 1000], False
         ),
-        armour_region("wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing"),
+        armour_region(
+            "wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing", [8.0, 1000]
+        ),
     ],
 )

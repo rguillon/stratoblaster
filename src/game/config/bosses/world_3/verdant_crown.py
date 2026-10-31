@@ -170,9 +170,11 @@ VERDANT_CROWN = with_weapons(
         hidden_weapon("orb-right", "orb", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
     ],
     [
-        armour_region("flanks", 1, [[28, -50], [104, -50], [104, 16], [28, 16]], "wing"),
         armour_region(
-            "spine", 2, [[-32, 38], [32, 38], [32, 95.2], [-32, 95.2]], "shell", None, False
+            "flanks", 1, [[28, -50], [104, -50], [104, 16], [28, 16]], "wing", [4.7, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-32, 38], [32, 38], [32, 95.2], [-32, 95.2]], "shell", [5.5, 1000], False
         ),
     ],
 )

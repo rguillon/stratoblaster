@@ -209,9 +209,11 @@ OBSIDIAN_GOLEM = with_weapons(
         hidden_weapon("lance-right", "lance", [13, -11], 7, 1600, 2, "orange", 2.0, 29.2),
     ],
     [
-        armour_region("flanks", 1, [[14, -25], [56.3, -25], [56.3, 35], [14, 35]], "wing"),
         armour_region(
-            "spine", 2, [[-14, -38], [14, -38], [14, 16], [-14, 16]], "shell", None, False
+            "flanks", 1, [[14, -25], [56.3, -25], [56.3, 35], [14, 35]], "wing", [8.8, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-14, -38], [14, -38], [14, 16], [-14, 16]], "shell", [10.6, 1000], False
         ),
     ],
 )

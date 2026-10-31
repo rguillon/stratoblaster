@@ -12,8 +12,8 @@ from core.entities.boss import Boss  # noqa: E402
 from game.config.boss_look import BOSS_LOOK  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from game.config.record import record
-from game.view.bosses.boss_armour import build_armour, cut_armour  # noqa: E402
+from game.config.record import concat, record
+from game.view.bosses.boss_armour import LAYERS, build_armour, cut_armour  # noqa: E402
 from game.view.bosses.boss_damage import build_smoke, effect_materials  # noqa: E402
 from game.view.bosses.boss_limbs import (  # noqa: E402
     ORIGIN,
@@ -23,6 +23,7 @@ from game.view.bosses.boss_limbs import (  # noqa: E402
     hang,
 )
 from game.view.bosses.boss_reveal import Slide, build_reveal  # noqa: E402
+from game.view.bosses.boss_stems import stems_drawing, stems_for  # noqa: E402
 from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
     turret_slide,
     weapon_drawing,
@@ -30,7 +31,11 @@ from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
     weapon_turret_drawing,
 )
 from game.view.enemies.enemy_materials import BODY_MATERIALS  # noqa: E402
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model  # noqa: E402
+from game.view.enemies.enemy_mesh import (  # noqa: E402
+    BuiltEnemyModel,
+    build_enemy_model,
+    collect_parts,
+)
 from game.view.enemies.living_motion import new_breath  # noqa: E402
 from game.view.enemies.organic_parts import opt  # noqa: E402
 from render.babylon import (  # noqa: E402
@@ -40,6 +45,7 @@ from render.babylon import (  # noqa: E402
     set_enabled,
 )
 from render.edge_trim_mesh import set_trim_group  # noqa: E402
+from render.geometry.shatter import triangles  # noqa: E402
 
 __pragma__("skip")
 from typing import Any  # noqa: E402
@@ -192,7 +198,9 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
         joints,
         _limb_builder(design, scene, neon, look),
     )
-    armour = _armour_views(design, cut, root, look)
+    armour = _armour_views(design, drawing, cut, root, look)
+    rig = _rig_view(drawing, root, look)
+    _build_stems(design, drawing, cut, root, look)
     lit: Any = {"charge": 0}
 
     def sync(boss: Any, dt: float) -> None:
@@ -204,8 +212,8 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
             ring.model.sync(enemy, dt)
         is_boss = isinstance(boss, Boss)
         limbs.show(boss if is_boss else None, enemy, dt)
-        for region in armour:
-            region.show(boss if is_boss else None, enemy, dt)
+        for view in concat(armour, rig):
+            view.show(boss if is_boss else None, enemy, dt)
         if not is_boss:
             show_turret(core_turret, None, enemy, dt)
             return
@@ -227,6 +235,30 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     return BuiltEnemyModel(root, sync)
 
 
+def _rig_view(drawing: Any, root: Any, look: Any) -> list[Any]:
+    """The boss's rig of its own (D-228: the Scorpion's tail, posed as it transforms), if it has
+    one: a list of none or one view."""
+    rig = _field(drawing, "rig")
+    if rig == None:  # noqa: E711
+        return []
+    return [rig.build(root, look["neon"], look["breath"])]
+
+
+def _build_stems(design: Any, drawing: Any, cut: Any, root: Any, look: Any) -> None:
+    """The stems holding the boss's loose pieces to it (D-227), a model on `root`, if any."""
+    stems = rest_stems(design, drawing, cut, look["neon"])
+    if len(stems) == 0:
+        return
+    model = build_enemy_model(
+        design.id + "-stems",
+        root.getScene(),
+        look["neon"],
+        stems_drawing(stems, look["neon"]),
+        look["breath"],
+    )
+    model.root.parent = root
+
+
 def _armour_cut(design: Any, drawing: Any) -> Any:
     """The design's armour regions cut out of its core's drawing (`cut_armour`), if it has any."""
     regions = _field(design, "armour")
@@ -235,7 +267,7 @@ def _armour_cut(design: Any, drawing: Any) -> Any:
     return cut_armour(drawing.core, regions)
 
 
-def _armour_views(design: Any, cut: Any, root: Any, look: Any) -> list[Any]:
+def _armour_views(design: Any, drawing: Any, cut: Any, root: Any, look: Any) -> list[Any]:
     """The views of the armour regions `cut` (none when it is None), flashing with the core."""
     if cut is None:
         return []
@@ -244,7 +276,98 @@ def _armour_views(design: Any, cut: Any, root: Any, look: Any) -> list[Any]:
     def flash_of(model: Any) -> FlashGroup:
         return FlashGroup(model, flash)
 
-    return build_armour(design, cut, root, look["neon"], look["breath"], flash_of)
+    supports = part_supports(design, drawing, look["neon"])
+    return build_armour(design, cut, root, look["neon"], look["breath"], flash_of, supports)
+
+
+def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[Any]:
+    """The parts standing on the boss (not on joints, not orbiting; the hidden ones too when
+    `hidden`), each `[spec, parts]`: its drawing's parts at its spot (`collect_parts`)."""
+    result: list[Any] = []
+    weapons = _field(design, "weapons")
+    for spec in design.stats.parts:
+        if opt(spec, "joint", None) != None or opt(spec, "orbits", False):  # noqa: E711
+            continue
+        if not hidden and opt(spec, "reveal", None) != None:  # noqa: E711
+            continue
+        weapon = _field(weapons, spec.id)
+        if weapon != None and _field(weapon, "rig"):  # noqa: E711
+            # On a rig (D-228), not standing on the boss.
+            continue
+        draw = _field(drawing.parts, spec.id)
+        if draw == None and weapon != None:  # noqa: E711
+            draw = weapon_drawing(weapon, neon)
+        if draw == None:  # noqa: E711
+            continue
+        at = boss_point(spec.x, spec.y)
+        result.append([spec, collect_parts(_part_builder(draw, at))["parts"]])
+    return result
+
+
+def rest_stems(design: Any, drawing: Any, cut: Any, neon: Rgb) -> list[Any]:
+    """What holds the boss's loose pieces to it at rest (`boss_stems.stems_for`): its core (with
+    its armour on) and the parts standing on it."""
+    tris: list[Any] = []
+    lasting: list[Any] = []
+    if cut is None:
+        core = collect_parts(drawing.core)["parts"]
+        for layer in LAYERS:
+            tris.extend(triangles(getattr(core, layer).geometry))
+    else:
+        for layer in LAYERS:
+            lasting.extend(cut.kept[layer])
+            tris.extend(cut.kept[layer])
+            for region in cut.regions:
+                tris.extend(region[layer])
+    for entry in _standing_parts(design, drawing, neon, False):
+        for layer in LAYERS:
+            tris.extend(triangles(getattr(entry[1], layer).geometry))
+    rig = _field(drawing, "rig")
+    if rig != None:  # noqa: E711
+        # Its rig at rest stays on through every transformation (D-228).
+        at_rest = rig.triangles(0)
+        tris.extend(at_rest)
+        lasting.extend(at_rest)
+    return stems_for(tris, lasting)
+
+
+def part_supports(design: Any, drawing: Any, neon: Rgb) -> list[Any]:
+    """Where the parts stand on the boss (D-227), `[x, z, height, width]` in model space: under
+    each part's spot, how high a pylon must reach to meet it (into its lower half), its radius.
+    Parts on joints or orbiting are left out."""
+    result: list[Any] = []
+    for entry in _standing_parts(design, drawing, neon, True):
+        spec = entry[0]
+        parts = entry[1]
+        at = boss_point(spec.x, spec.y)
+        bottom = math.inf
+        top = -math.inf
+        for layer in [parts.hull, parts.flesh]:
+            ys = layer.geometry.positions
+            for k in range(1, len(ys), 3):
+                bottom = min(bottom, ys[k])
+                top = max(top, ys[k])
+        if bottom < math.inf:
+            # Up into the part, so it meets its underside wherever that is.
+            result.append([at[0], at[2], bottom + (top - bottom) * 0.4, spec.radius])
+    ring = _field(drawing, "ring")
+    if ring != None:  # noqa: E711
+        # The ring turns about the centre: a pylon there holds it up.
+        result.append(_ring_support(collect_parts(ring)["parts"]))
+    return result
+
+
+def _ring_support(parts: Any) -> list[Any]:
+    """The support of a ring drawn by `parts`: at the centre, under its lowest point, a third of
+    its reach wide."""
+    bottom = math.inf
+    reach = 0.0
+    for layer in [parts.hull, parts.flesh]:
+        ps = layer.geometry.positions
+        for k in range(0, len(ps), 3):
+            bottom = min(bottom, ps[k + 1])
+            reach = max(reach, math.hypot(ps[k], ps[k + 2]))
+    return [0, 0, bottom if bottom < math.inf else 0, reach / 3]
 
 
 def _limb_builder(design: Any, scene: Any, neon: Rgb, look: Any) -> Any:
@@ -369,6 +492,11 @@ def strobe(enemy: Any) -> Any:
 def show_part(view: PartView, part: Any, lit: Any, dt: float) -> None:
     """A part: its model while it stands (flashing, smoking), nothing once destroyed (D-225)."""
     destroyed = part.destroyed
+    if part.hidden and view.reveal == None:  # noqa: E711
+        # Retired (D-228): it has left the fight.
+        set_enabled(view.group.model.root, False)
+        set_enabled(view.smoke.node, False)
+        return
     set_enabled(view.group.model.root, not destroyed)
     smoking = not destroyed and part.health < part.max_health * BOSS_LOOK.smoke.below
     set_enabled(view.smoke.node, smoking)

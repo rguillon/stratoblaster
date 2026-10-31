@@ -190,7 +190,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
     def rotor(at: Vec3, radius: float) -> None:
         rotors.append(Reactor(at, radius))
 
-    def muzzle(at: Vec3, kind: str) -> None:
+    def muzzle(at: Vec3, kind: Any = None) -> None:
         # `kind` is 'gun' when the caller leaves it out.
         muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711
 

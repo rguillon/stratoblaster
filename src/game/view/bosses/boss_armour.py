@@ -14,20 +14,26 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
-from game.view.bosses.boss_frame import frame_drawings
+from game.config.record import concat
+from game.view.bosses.boss_frame import UP, floor_height, floor_triangles, frame_drawings
 from game.view.bosses.boss_reveal import HIDDEN, SHOWN, ease, reveal_phase
+from game.view.bosses.boss_stems import surface_below
 from game.view.enemies.enemy_mesh import EnemyParts, build_enemy_model
 from render.babylon import new_transform_node, set_enabled
 from render.edge_trim_mesh import clear_trim, set_trim_group
+from render.geometry.islands import bounds_of, loose_triangles, pieces
 from render.geometry.shatter import (
     Carve,
+    Vertex,
     append_triangles,
     carve,
     centroid,
     chunk_cells,
+    inside,
     straddles,
     subdivide,
     triangles,
+    up_facing,
 )
 from render.geometry.solids import SolidBuilder
 
@@ -123,12 +129,26 @@ def _play(p: Any, call: list[Any]) -> None:
 
 class ArmourCut:
     """The core's drawing with its armour cut out: what the core keeps (`kept`, triangles by
-    layer, and the recorded `calls`) and each region's armour (`regions`, triangles by layer)."""
+    layer, and the recorded `calls`), each region's armour (`regions`, triangles by layer) and
+    the solid faces of it its frame is laid under (`frames`)."""
 
-    def __init__(self, kept: dict[str, Any], calls: list[Any], regions: list[Any]) -> None:
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self,
+        kept: dict[str, Any],
+        calls: list[Any],
+        regions: list[Any],
+        frames: list[Any],
+        floors: list[float],
+        bridges: list[Any],
+    ) -> None:
         self.kept = kept
         self.calls = calls
         self.regions = regions
+        self.frames = frames
+        # The height of each frame's floor: just over its whole armour's lowest point.
+        self.floors = floors
+        # Beams holding patches of each frame to the boss (`_held_frames`).
+        self.bridges = bridges
 
     def core_drawing(self) -> Any:
         """The drawing of the core without its armour."""
@@ -177,7 +197,169 @@ def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
             cut[k][layer] = split[1]
         far.extend(rest)
         kept[layer] = far
-    return ArmourCut(kept, recorder.calls, cut)
+    _free_cut_off(kept, cut, carves, regions)
+    frames = [concat(c["hull"], c["flesh"]) for c in cut]
+    floors = [floor_height(f) for f in frames]
+    bridges = _held_frames(kept, cut, frames, floors, regions)
+    return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges)
+
+
+def _framed_state(
+    kept: dict[str, Any],
+    cut: list[dict[str, Any]],
+    frames: list[Any],
+    floors: list[float],
+    regions: list[Any],
+    form: int,
+) -> list[Any]:
+    """The boss after transformation `form`, `[triangles, sources]`: the core, the armour still
+    on, and its frames' floors (the up-facing faces of `frames`, flat at `floors`), the last
+    `len(sources)` triangles, each `[region, face]` it comes from."""
+    tris: list[Any] = []
+    for layer in LAYERS:
+        tris.extend(kept[layer])
+    for k in range(len(regions)):
+        if regions[k].form > form:
+            tris.extend(concat(cut[k]["hull"], cut[k]["flesh"]))
+    sources: list[list[int]] = []
+    for k in range(len(regions)):
+        if regions[k].form > form:
+            continue
+        for i in range(len(frames[k])):
+            tri = frames[k][i]
+            if up_facing(tri, UP):
+                tris.append(
+                    [Vertex([v.position[0], floors[k], v.position[2]], v.color) for v in tri]
+                )
+                sources.append([k, i])
+    return [tris, sources]
+
+
+def _held_frames(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    kept: dict[str, Any],
+    cut: list[dict[str, Any]],
+    frames: list[Any],
+    floors: list[float],
+    regions: list[Any],
+) -> list[list[Any]]:
+    """The bridges each frame needs to hold to the boss (D-227): a patch of frame that would hang
+    once its region is shed (it was held only through what went) gets a beam out to the nearest
+    point of the boss, `[from, to]`, by region."""
+    bridges: list[list[Any]] = [[] for _ in regions]
+    for form in sorted_forms(regions):
+        state = _framed_state(kept, cut, frames, floors, regions, form)
+        tris = state[0]
+        sources = state[1]
+        loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
+        start = len(tris) - len(sources)
+        hanging = [n for n in range(len(sources)) if loose[start + n]]
+        if len(hanging) == 0:
+            continue
+        held: list[Any] = []
+        for i in range(len(tris)):
+            if not loose[i]:
+                held.extend([v.position for v in tris[i]])
+        for patch in pieces([tris[start + n] for n in hanging]):
+            members = [tris[start + hanging[k]] for k in patch]
+            region = sources[hanging[patch[0]]][0]
+            bridges[region].append(_bridge(members, held))
+    return bridges
+
+
+def _bridge(patch: list[Any], held: list[Any]) -> list[Any]:
+    """A beam from a hanging `patch` of floor to the nearest of the `held` points: `[from, to]`."""
+    b = bounds_of(patch)
+    cx = (b[0] + b[3]) / 2
+    cz = (b[2] + b[5]) / 2
+    target = held[0]
+    best = math.inf
+    for p in held:
+        d = (p[0] - cx) * (p[0] - cx) + (p[2] - cz) * (p[2] - cz)
+        if d < best:
+            best = d
+            target = p
+    start = patch[0][0].position
+    best = math.inf
+    for tri in patch:
+        for v in tri:
+            p = v.position
+            d = (p[0] - target[0]) * (p[0] - target[0]) + (p[2] - target[2]) * (p[2] - target[2])
+            if d < best:
+                best = d
+                start = p
+    return [start, target]
+
+
+def _free_cut_off(
+    kept: dict[str, Any], cut: list[dict[str, Any]], carves: list[Carve], regions: list[Any]
+) -> None:
+    """Pieces of the core the cut leaves hanging go with a region (D-227: a boss stays one object).
+    After each transformation, what is still on (the core, the armour not yet shed) and the floors
+    of the frames shed must hold together: a piece of the core that no longer does goes with the
+    region it stands in, else with the region that held it up."""
+    for form in sorted_forms(regions):
+        _free_after(kept, cut, carves, regions, form)
+
+
+def _free_after(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    kept: dict[str, Any],
+    cut: list[dict[str, Any]],
+    carves: list[Carve],
+    regions: list[Any],
+    form: int,
+) -> None:
+    """`_free_cut_off` after transformation `form`."""
+    tagged: list[list[Any]] = []
+    for layer in LAYERS:
+        for tri in kept[layer]:
+            tagged.append([layer, tri])
+    tris = [t[1] for t in tagged]
+    count = len(tris)
+    for k in range(len(regions)):
+        solid = concat(cut[k]["hull"], cut[k]["flesh"])
+        if regions[k].form > form:
+            tris.extend(solid)
+        elif len(solid) > 0:
+            tris.extend(floor_triangles(solid, floor_height(solid)))
+    loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
+    hanging = [i for i in range(count) if loose[i]]
+    if len(hanging) == 0:
+        return
+    moved = [False for _ in range(count)]
+    for piece in pieces([tris[i] for i in hanging]):
+        members = [hanging[k] for k in piece]
+        k = _owner(tris, members, carves, regions, form)
+        for i in members:
+            cut[k][tagged[i][0]].append(tris[i])
+            moved[i] = True
+    for layer in LAYERS:
+        kept[layer] = [tagged[i][1] for i in range(count) if tagged[i][0] == layer and not moved[i]]
+
+
+def sorted_forms(regions: list[Any]) -> list[int]:
+    """The transformations that shed `regions`, in order, each once."""
+    result: list[int] = []
+    for region in regions:
+        if region.form not in result:
+            result.append(region.form)
+    return sorted(result)
+
+
+def _owner(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    tris: list[Any], members: list[int], carves: list[Carve], regions: list[Any], form: int
+) -> int:
+    """The region a hanging piece (`members` of `tris`) goes with: the one shed by `form` or
+    before that it stands in, else the first one `form` sheds."""
+    b = bounds_of([tris[i] for i in members])
+    x = (b[0] + b[3]) / 2
+    z = (b[2] + b[5]) / 2
+    for k in range(len(carves)):
+        if regions[k].form <= form and any(inside(o, x, z) for o in carves[k].outlines):
+            return k
+    for k in range(len(regions)):
+        if regions[k].form == form:
+            return k
+    return 0
 
 
 class ArmourChunk:
@@ -343,11 +525,54 @@ def _build_frame(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     return FrameView(root, [floor, ribs])
 
 
+def lasting_surfaces(cut: ArmourCut) -> list[Any]:
+    """What a boss keeps through all its transformations: its core and its frames' floors."""
+    result: list[Any] = []
+    for layer in LAYERS:
+        result.extend(cut.kept[layer])
+    for k in range(len(cut.frames)):
+        for tri in cut.frames[k]:
+            if up_facing(tri, UP):
+                y = cut.floors[k]
+                result.append([Vertex([v.position[0], y, v.position[2]], v.color) for v in tri])
+    return result
+
+
+def rooted(supports: list[Any], lasting: list[Any]) -> list[Any]:
+    """`supports` with the height each stands on: the highest lasting surface under it."""
+    result: list[Any] = []
+    for s in supports:
+        base = surface_below(lasting, s[0], s[1], s[2])
+        result.append(s if base == None else [s[0], s[1], s[2], s[3], base])  # noqa: E711
+    return result
+
+
+def supports_in(region: Any, supports: list[Any]) -> list[Any]:
+    """The `supports` (`[x, z, bottom, width]`, model space) standing over `region`, even in part:
+    their centre, or a point most of their width out from it, is in it."""
+    outlines = region_carve(region).outlines
+    result: list[Any] = []
+    for s in supports:
+        r = s[3] * 0.7
+        points = [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]]
+        if any(inside(o, s[0] + d[0], s[1] + d[1]) for o in outlines for d in points):
+            result.append(s)
+    return result
+
+
 def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    design: Any, cut: ArmourCut, root: Any, neon: Any, breath: Any, flash_of: Any
+    design: Any,
+    cut: ArmourCut,
+    root: Any,
+    neon: Any,
+    breath: Any,
+    flash_of: Any,
+    supports: list[Any] | None = None,
 ) -> list[ArmourView]:
     """The views of `design`'s armour regions, cut by `cut`, on `root`. `flash_of(model)` makes
-    the flash group of a model."""
+    the flash group of a model; `supports` are the pieces standing on the boss (see
+    `draw_pylon`), held up by the frame of the region under them."""
+    standing = rooted(supports if supports is not None else [], lasting_surfaces(cut))
     regions = design.armour
     scene = root.getScene()
     most = min(BOSS_LOOK.armour.chunks, math.floor(BOSS_LOOK.armour.bossChunks / len(regions)))
@@ -378,10 +603,11 @@ def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
             clear_trim(model.root)
             set_enabled(node, False)
             chunks.append(ArmourChunk(node, centre, i))
-        solid: list[Any] = []
-        for layer in SOLID:
-            solid.extend(layers[layer])
-        frame = _build_frame(name, scene, neon, breath, frame_drawings(solid, region.frame, neon))
+        held = supports_in(region, standing)
+        drawings = frame_drawings(
+            cut.frames[k], region.frame, neon, held, cut.floors[k], cut.bridges[k]
+        )
+        frame = _build_frame(name, scene, neon, breath, drawings)
         frame.root.parent = root
         set_enabled(frame.root, False)
         result.append(ArmourView(region, whole, flash_of(whole), chunks, frame))

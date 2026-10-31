@@ -84,9 +84,11 @@ def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
         state="fighting",
         stage=2,
         parts=[
-            SimpleNamespace(destroyed=True, hidden=False),
-            SimpleNamespace(destroyed=False, hidden=False),
-            SimpleNamespace(destroyed=False, hidden=True),
+            SimpleNamespace(destroyed=True, hidden=False, retired=False),
+            SimpleNamespace(destroyed=False, hidden=False, retired=False),
+            SimpleNamespace(destroyed=False, hidden=True, retired=False),
+            # Retired (D-228): out of the fight, but not waiting to be revealed.
+            SimpleNamespace(destroyed=False, hidden=True, retired=True),
         ],
         remaining_health=40.0,
         full_health=100.0,
@@ -98,8 +100,8 @@ def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
         "rank": "mini",
         "state": "fighting",
         "stage": 2,
-        "partsLeft": 2,
-        "parts": 3,
+        "partsLeft": 3,
+        "parts": 4,
         "health": 40.0,
         "fullHealth": 100.0,
         # Its transformations, and the weapons they have yet to reveal.

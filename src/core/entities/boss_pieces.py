@@ -99,7 +99,8 @@ class BossPart:
 
     @property
     def health(self) -> float:
-        return self._health
+        """Its health; none once it has retired (D-228)."""
+        return 0 if self.retired else self._health
 
     @health.setter
     def health(self, value: float) -> None:
@@ -117,9 +118,19 @@ class BossPart:
 
     @property
     def hidden(self) -> bool:
-        """Whether it is still hidden: the transformation that reveals it has not happened."""
+        """Whether it is out of the fight: still hidden (the transformation that reveals it has not
+        happened), or retired."""
         reveal = self.spec.reveal
-        return reveal is not None and self._boss.form < reveal
+        return (reveal is not None and self._boss.form < reveal) or self.retired
+
+    @property
+    def retired(self) -> bool:
+        """Whether it has left the fight: the transformation it retires at has started (D-228)."""
+        retire = self.spec.retire
+        if retire is None:
+            return False
+        boss = self._boss
+        return boss.form >= retire or boss.transforming_into == retire
 
     @property
     def gone(self) -> bool:

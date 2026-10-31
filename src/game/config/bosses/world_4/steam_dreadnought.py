@@ -152,8 +152,10 @@ STEAM_DREADNOUGHT = with_weapons(
         hidden_weapon("lance-centre", "lance", [0, 29], 8, 950, 2, "red", 1.6, 15.6),
     ],
     [
-        armour_region("flanks", 1, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing"),
-        armour_region("wings", 2, [[14, -53], [72, -53], [72, 7], [14, 7]], "wing"),
-        armour_region("spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", None, False),
+        armour_region("flanks", 1, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing", [2.1, 1000]),
+        armour_region("wings", 2, [[14, -53], [72, -53], [72, 7], [14, 7]], "wing", [5.7, 1000]),
+        armour_region(
+            "spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", [6.4, 1000], False
+        ),
     ],
 )

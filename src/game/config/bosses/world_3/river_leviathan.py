@@ -220,9 +220,11 @@ RIVER_LEVIATHAN = with_weapons(
         hidden_weapon("orb-right", "orb", [7, -21], 5, 900, 2, "green", 2.0, 10.8),
     ],
     [
-        armour_region("back", 1, [[-20, -1], [20, -1], [20, 26], [-20, 26]], "shell", None, False),
         armour_region(
-            "spine", 2, [[-20, -33], [20, -33], [20, -1], [-20, -1]], "shell", None, False
+            "back", 1, [[-20, -1], [20, -1], [20, 26], [-20, 26]], "shell", [5.2, 1000], False
+        ),
+        armour_region(
+            "spine", 2, [[-20, -33], [20, -33], [20, -1], [-20, -1]], "shell", [4.9, 1000], False
         ),
     ],
 )

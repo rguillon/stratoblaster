@@ -91,7 +91,7 @@ SNOW_OWL = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-30, -31.7], [30, -31.7], [30, 23], [-30, 23]], "shell", None, False
+            "back", 1, [[-30, -31.7], [30, -31.7], [30, 23], [-30, 23]], "shell", [2.5, 1000], False
         ),
     ],
 )

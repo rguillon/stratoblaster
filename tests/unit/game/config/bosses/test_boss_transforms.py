@@ -45,7 +45,7 @@ def fire_rate(design: Any, form: int) -> float:
     originals = _originals(design)
     destroyed = {p["id"] for p in originals[:lost]}
     live = {"core"}
-    live.update(p["id"] for p in originals[lost:])
+    live.update(p["id"] for p in originals[lost:] if p.get("retire") is None or p["retire"] > form)
     live.update(p["id"] for p in _hidden(design) if p["reveal"] <= form)
     stages = design.stages
     stage = stages[min(lost, len(stages) - 1)] or []
@@ -109,6 +109,9 @@ def test_each_transformation_sheds_an_armour_region(design: Any) -> None:
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
 def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(design: Any) -> None:
     for p in _hidden(design):
+        if design.weapons[p["id"]].get("rig"):
+            # At the end of a rig it unfolds (D-228: the Scorpion's tail), not in a region.
+            continue
         regions = [r for r in design.armour if r.form == p["reveal"]]
         assert any(inside(o, p["x"], p["y"]) for r in regions for o in r.outlines), p["id"]
 

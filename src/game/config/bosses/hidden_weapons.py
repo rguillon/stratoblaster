@@ -50,7 +50,11 @@ WEAPON_SHAPE = record(
     }
 )
 
-KINDS = ["gatling", "lance", "rack", "orb"]
+KINDS = ["gatling", "lance", "rack", "orb", "beam"]
+
+# A giant laser (D-228): `width` px wide (four of the usual), firing `firing` seconds every
+# `every` seconds.
+BEAM = record({"width": 44, "firing": 2.4, "every": 7})
 
 
 def pod_height(radius: float, height: Any) -> float:
@@ -99,6 +103,8 @@ def weapon_guns(kind: str, at: list[Any], radius: float, height: Any) -> Any:
     if kind == "orb":
         emitter = [[x, y, h + radius * WEAPON_SHAPE.orbTop]]
         return record({"gun": emitter, "ring": emitter})
+    if kind == "beam":
+        return record({"laser": [[x, y - radius * WEAPON_SHAPE.lance, h * 0.9]]})
     raise ValueError('Unknown hidden weapon kind "' + kind + '"')
 
 
@@ -111,6 +117,8 @@ def weapon_volley(kind: str, part_id: str, style: str, first: float) -> Any:
         return volley.laser(part_id, 7.5, 1.4, first)
     if kind == "rack":
         return volley.missiles(part_id, 6, 2, 30, first)
+    if kind == "beam":
+        return volley.laser(part_id, BEAM.every, BEAM.firing, first, BEAM.width)
     return volley.ring(part_id, 2.6, 10, 13, bullet(style, 175), first)
 
 
@@ -140,6 +148,24 @@ def hidden_weapon(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
             "guns": weapon_guns(kind, at, radius, height),
             "look": look,
             "volleys": [weapon_volley(kind, part_id, style, first)],
+        }
+    )
+
+
+def tail_cannon(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    part_id: str, at: list[Any], radius: float, health: float, reveal: int, first: float
+) -> Any:
+    """A cannon at the end of a rig the boss unfolds at transformation `reveal` (D-228: the
+    Scorpion's tail), at `at`, firing a giant laser out behind the boss (+Y: once it has turned
+    round, towards the player). Its look is a `beam` on a `rig`: the boss model draws it, and it
+    comes out of no armour region."""
+    height = radius * 0.6
+    return record(
+        {
+            "part": part(part_id, at, radius, health, {"reveal": reveal, "drop": 0.3}),
+            "guns": {"laser": [[at[0], at[1] + radius * 1.2, height]]},
+            "look": {"kind": "beam", "radius": radius, "height": height, "rig": True},
+            "volleys": [volley.laser(part_id, BEAM.every, BEAM.firing, first, BEAM.width)],
         }
     )
 

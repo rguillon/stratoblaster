@@ -168,4 +168,8 @@ def build_reveal(design: Any, spec: Any, model_root: Any, slides: list[Slide]) -
     base = [model_root.position.x, model_root.position.y, model_root.position.z]
     hinge = weapon_hinge(at, spec.radius, mount)
     sink = spec.radius * BOSS_LOOK.reveal.sink
+    if look != None and "rig" in look and look.rig:  # noqa: E711
+        # At the end of a rig (D-228): it rises into place as the rig unfolds, no swing.
+        hinge = [at, 0]
+        sink = spec.radius * 0.5
     return RevealView(spec.reveal, model_root, base, hinge, sink, slides)

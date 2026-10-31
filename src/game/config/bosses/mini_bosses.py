@@ -7,11 +7,18 @@ left) a ring or spiral used before by no stage of that boss. Health values are t
 player with guns at level 3 always on target needs the fight times of P07-R10.
 """
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import (
+    armour_region,
+    hidden_weapon,
+    tail_cannon,
+    with_weapons,
+)
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -246,7 +253,8 @@ _SCORPION = record(
                 "parts": [
                     part("claw-left", [-42, -24], 14, 730, {"joint": "wrist-left"}),
                     part("claw-right", [42, -24], 14, 730, {"joint": "wrist-right"}),
-                    part("stinger", [0, -34], 13, 730),
+                    # D-228: the tail cannon takes over from it as it turns round.
+                    part("stinger", [0, -34], 13, 730, {"retire": 1}),
                 ],
                 "joints": merge(scorpion_arm("left"), scorpion_arm("right")),
             }
@@ -339,7 +347,9 @@ REEF_WARDEN = with_weapons(
         hidden_weapon("lance-right", "lance", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
     ],
     [
-        armour_region("back", 1, [[-32, -40], [32, -40], [32, 6], [-32, 6]], "shell", None, False),
+        armour_region(
+            "back", 1, [[-32, -40], [32, -40], [32, 6], [-32, 6]], "shell", [2.2, 1000], False
+        ),
     ],
 )
 
@@ -352,7 +362,9 @@ BREAKWATER = with_weapons(
         hidden_weapon("lance-right", "lance", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
     ],
     [
-        armour_region("back", 1, [[-28, 4], [28, 4], [28, 43], [-28, 43]], "shell", None, False),
+        armour_region(
+            "back", 1, [[-28, 4], [28, 4], [28, 43], [-28, 43]], "shell", [6.2, 1000], False
+        ),
     ],
 )
 
@@ -366,22 +378,35 @@ DUST_DEVIL = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-28, -20.4], [28, -20.4], [28, 24.5], [-28, 24.5]], "shell", None, False
+            "back",
+            1,
+            [[-28, -20.4], [28, -20.4], [28, 24.5], [-28, 24.5]],
+            "shell",
+            [1.2, 1000],
+            False,
         ),
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Where its tail cannon ends up, its tail unfolded straight out behind it (D-228).
+SCORPION_TAIL_CANNON = [0, 108]
+
+# Its transformation (D-224, D-228): once both claws are gone it turns round, its back plating
+# bursts off, and its tail unfolds straight out behind it (now towards the player) into a cannon
+# firing a giant laser; the stinger it replaces leaves the fight.
 SCORPION = with_weapons(
-    _SCORPION,
-    [
-        hidden_weapon("rack-left", "rack", [-7, 23], 5, 580, 1, "blue", 1.2, 27.1),
-        hidden_weapon("rack-right", "rack", [7, 23], 5, 580, 1, "blue", 2.0, 27.1),
-    ],
+    merge(
+        _SCORPION,
+        {
+            # D-228: it transforms once both its claws are gone, turning round as it does.
+            "transformParts": [["claw-left", "claw-right"]],
+            "turns": [math.pi],
+        },
+    ),
+    [tail_cannon("tail-cannon", SCORPION_TAIL_CANNON, 15, 1100, 1, 1.5)],
     [
         armour_region(
-            "back", 1, [[-20, -2], [20, -2], [20, 35.5], [-20, 35.5]], "shell", None, False
+            "back", 1, [[-20, -2], [20, -2], [20, 35.5], [-20, 35.5]], "shell", [4, 1000], False
         ),
     ],
 )
@@ -396,7 +421,7 @@ SENTINEL = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", None, False
+            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", [4.2, 1000], False
         ),
     ],
 )

@@ -2,6 +2,7 @@
 transforms and reveals hidden weapon parts (docs/superpowers/specs/2026-10-31-ship-glow-and-boss-
 transform-design.md, Part B)."""
 
+import math
 from collections.abc import Callable
 from typing import Any
 
@@ -195,3 +196,85 @@ def test_break_next_never_reaches_the_core_while_weapons_are_hidden(
     assert boss.state != "dying"
     assert boss.form == 1
     assert _by_id(boss, "x1") in boss.hit_targets
+
+
+# D-228: a transformation called for by named parts, a boss turning round, a part retiring.
+
+
+def _scorpion_like(make_boss: Make) -> ProbeBoss:
+    parts = [
+        BossPartSpec("claw-l", -40, -20, 5, 10, False, 0.0, False, None, None),
+        BossPartSpec("claw-r", 40, -20, 5, 10, False, 0.0, False, None, None),
+        BossPartSpec("sting", 0, -30, 5, 10, False, 0.0, False, None, None, 1),
+        BossPartSpec("cannon", 0, 50, 5, 10, True, 0.0, False, None, 1),
+    ]
+    return make_boss(
+        fighting=True,
+        parts=parts,
+        transforms=[1],
+        transform_seconds=2.0,
+        transform_parts=[["claw-l", "claw-r"]],
+        turns=[math.pi],
+    )
+
+
+def test_d228_named_parts_call_for_a_transformation_whatever_else_is_lost(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    boss = _scorpion_like(make_boss)
+    # One claw is not enough, even though the count of `transforms` would be.
+    _break(boss, ctx, "claw-l")
+    assert boss.state == "fighting"
+    _break(boss, ctx, "claw-r")
+    assert boss.state == "transforming"
+
+
+def test_d228_a_part_retires_as_its_transformation_starts(make_boss: Make, ctx: FakeContext) -> None:
+    boss = _scorpion_like(make_boss)
+    sting = _by_id(boss, "sting")
+    health = boss.remaining_health
+    assert not sting.hidden and not sting.retired
+    _break(boss, ctx, "claw-l")
+    _break(boss, ctx, "claw-r")
+    stage = boss.stage
+    assert sting.retired and sting.hidden
+    assert not sting.destroyed
+    assert sting not in boss.hit_targets
+    # It no longer counts in its health; its stage is the same (it was not destroyed).
+    assert boss.remaining_health == health - 30
+    boss.update(ctx, 3.0)
+    assert boss.form == 1
+    assert boss.stage == stage
+    assert sting.retired
+
+
+def test_d228_the_boss_turns_round_as_it_transforms_its_parts_with_it(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    boss = _scorpion_like(make_boss)
+    cannon = _by_id(boss, "cannon")
+    boss.update(ctx, 0.0)
+    assert (cannon.x, cannon.y) == pytest.approx((boss.x, boss.y + 50))
+    _break(boss, ctx, "claw-l")
+    _break(boss, ctx, "claw-r")
+    boss.update(ctx, 1.0)
+    assert math.pi < boss.heading < 2 * math.pi
+    boss.update(ctx, 1.5)
+    assert boss.form == 1
+    assert boss.heading == pytest.approx(2 * math.pi)
+    boss.update(ctx, 0.0)
+    # Behind it, now below it (towards the player).
+    assert (cannon.x, cannon.y) == pytest.approx((boss.x, boss.y - 50))
+    claw = _by_id(boss, "claw-l")
+    assert (claw.x, claw.y) == pytest.approx((boss.x + 40, boss.y + 20))
+
+
+def test_d228_k_skips_a_retired_part_and_does_not_reveal_forever(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    boss = _scorpion_like(make_boss)
+    for _ in range(8):
+        boss.break_next()
+        boss.update(ctx, 0.0)
+    assert boss.form == 1
+    assert boss.state == "dying"

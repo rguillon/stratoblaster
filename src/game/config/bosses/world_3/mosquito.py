@@ -137,7 +137,7 @@ MOSQUITO = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-30, -29.4], [30, -29.4], [30, 19], [-30, 19]], "shell", None, False
+            "back", 1, [[-30, -29.4], [30, -29.4], [30, 19], [-30, 19]], "shell", [0.0, 1000], False
         ),
     ],
 )

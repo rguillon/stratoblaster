@@ -142,7 +142,11 @@ AURORA_STATION = with_weapons(
         hidden_weapon("gatling-right", "gatling", [7, -21], 5, 1250, 2, "purple", 2.0, 9.6),
     ],
     [
-        armour_region("flanks", 1, [[28, 2], [86.5, 2], [86.5, 58], [28, 58]], "wing"),
-        armour_region("spine", 2, [[-20, -46], [20, -46], [20, 4], [-20, 4]], "shell", None, False),
+        armour_region(
+            "flanks", 1, [[28, 2], [86.5, 2], [86.5, 58], [28, 58]], "wing", [-2.3, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-20, -46], [20, -46], [20, 4], [-20, 4]], "shell", [4.0, 1000], False
+        ),
     ],
 )

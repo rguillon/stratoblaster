@@ -198,8 +198,8 @@ HARBOUR_KRAKEN = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-32, -66], [32, -66], [32, -4], [-32, -4]], "shell", None, False
+            "back", 1, [[-32, -66], [32, -66], [32, -4], [-32, -4]], "shell", [3.0, 1000], False
         ),
-        armour_region("wings", 2, [[10, -4], [44, -4], [44, 62], [10, 62]], "wing"),
+        armour_region("wings", 2, [[10, -4], [44, -4], [44, 62], [10, 62]], "wing", [3.0, 1000]),
     ],
 )

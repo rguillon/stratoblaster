@@ -109,7 +109,7 @@ ASH_WRAITH = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-30, -37], [30, -37], [30, 23], [-30, 23]], "shell", None, False
+            "back", 1, [[-30, -37], [30, -37], [30, 23], [-30, 23]], "shell", [4.5, 1000], False
         ),
     ],
 )

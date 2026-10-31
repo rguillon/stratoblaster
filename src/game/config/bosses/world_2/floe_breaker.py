@@ -82,6 +82,8 @@ FLOE_BREAKER = with_weapons(
         hidden_weapon("lance-right", "lance", [12, -27], 10, 520, 1, "red", 2.0, 12.0),
     ],
     [
-        armour_region("back", 1, [[-30, -57], [30, -57], [30, 3], [-30, 3]], "shell", None, False),
+        armour_region(
+            "back", 1, [[-30, -57], [30, -57], [30, 3], [-30, 3]], "shell", [1.7, 1000], False
+        ),
     ],
 )

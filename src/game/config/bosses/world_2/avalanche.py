@@ -140,6 +140,6 @@ AVALANCHE = with_weapons(
         hidden_weapon("lance-right", "lance", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
     ],
     [
-        armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing"),
+        armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing", [4.2, 1000]),
     ],
 )

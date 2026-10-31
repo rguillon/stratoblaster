@@ -139,7 +139,9 @@ DAM_BREAKER = with_weapons(
         hidden_weapon("rack-right", "rack", [34, -55], 12, 1900, 2, "green", 2.0, 9.4),
     ],
     [
-        armour_region("flanks", 1, [[30, 7], [66, 7], [66, 74], [30, 74]], "wing"),
-        armour_region("wings", 2, [[14, -76], [60.4, -76], [60.4, -21], [14, -21]], "wing"),
+        armour_region("flanks", 1, [[30, 7], [66, 7], [66, 74], [30, 74]], "wing", [-0.2, 1000]),
+        armour_region(
+            "wings", 2, [[14, -76], [60.4, -76], [60.4, -21], [14, -21]], "wing", [-2.6, 1000]
+        ),
     ],
 )

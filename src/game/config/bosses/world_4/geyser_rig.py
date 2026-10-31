@@ -175,7 +175,11 @@ GEYSER_RIG = with_weapons(
         hidden_weapon("orb-right", "orb", [33, -29], 11, 1300, 2, "red", 2.0, 12.4),
     ],
     [
-        armour_region("back", 1, [[-32, 26], [32, 26], [32, 72], [-32, 72]], "shell", None, False),
-        armour_region("wings", 2, [[14, -41.2], [48, -41.2], [48, 4], [14, 4]], "wing"),
+        armour_region(
+            "back", 1, [[-32, 26], [32, 26], [32, 72], [-32, 72]], "shell", [8.3, 1000], False
+        ),
+        armour_region(
+            "wings", 2, [[14, -41.2], [48, -41.2], [48, 4], [14, 4]], "wing", [6.0, 1000]
+        ),
     ],
 )
