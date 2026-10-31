@@ -2080,3 +2080,9 @@
 - **Content:** the Jaguar's regions and weapons are by hand: its wing pelt from the fuselage out, and a laser lance on each wing (it had a pair of missile racks; lances fire more, so it still escalates). The 39 others got their regions from a script: a rectangle round each transformation's weapons out to the body's edge (`wing` frame, mirrored) or across the centre line for weapons near it (`shell`), split between the transformations where they overlap. Their weapon kinds are unchanged (the design allowed re-picking them; D-221's escalation test still passes). Lances are longer (1.3 → 1.9 radii) so they read as they unfold; their muzzles follow.
 - **Known limits:** a cut is straight-edged where an outline crosses the body; pods keep D-221's deck heights, so on a shed region a pod stands as a column from the playfield up (e.g. the Sky Temple's back orbs).
 - **Status:** Proposed
+
+### D-225 — A destroyed boss part leaves no stump
+- **Date:** 2026-10-31
+- **Phase:** outside a phase, at the reviewer's request (in chat: "remove the red piece you spawn when a part is destroyed")
+- **What:** P07-R01 replaced a destroyed part's model with a burnt, sparking stump (P16-R05's wound: torn flesh round a dimmed red organ, ribs and plating shards, sparks). It is gone: the part explodes (GD-62) and its model is simply hidden, so the boss is still visibly missing it. `Stump`, `build_stump`, `BOSS_LOOK.stump` and their tests are removed. P07-R01's text is unchanged: read as overridden by the reviewer for the stump.
+- **Status:** Proposed

@@ -1,7 +1,7 @@
 """Look of the bosses (P07)
 
 Their neon colours (GD-61), the white flash of a part when hit, the smoke of a part under half its
-health, and the stump left by a destroyed part (P07-R01). Linear RGB 0..1, sizes in logical pixels,
+health (P07-R01); a destroyed part leaves nothing (D-225). Linear RGB 0..1, sizes in logical pixels,
 times in seconds.
 """
 
@@ -72,14 +72,6 @@ BOSS_LOOK = record(
             "seconds": 1.1,
             "color": [0.16, 0.15, 0.15],
             "alpha": 0.55,
-        },
-        # A destroyed part's wound (P16-R05): torn plating in `char`, its organ dimmed to `organ`,
-        # and sparks flickering on `sparkChance` of frames.
-        "stump": {
-            "char": [0.05, 0.04, 0.035],
-            "organ": [0.06, 0.012, 0.018],
-            "spark": [1, 0.55, 0.15],
-            "sparkChance": 0.35,
         },
         # A boss's transformation (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md,
         # D-224), in shares of its length: its armour strains (shudders `shudder` px, strobing

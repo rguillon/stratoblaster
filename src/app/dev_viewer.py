@@ -390,7 +390,7 @@ class DevViewer:
 
     def break_part(self) -> None:
         """Bosses viewer: destroys the boss's next part, or its core once they are all gone (as K
-        does in a level, P07-R09), to watch it break: blasts, burnt stumps, transformations and
+        does in a level, P07-R09), to watch it break: blasts, transformations and
         its death. A new boss comes in once it is gone."""
         if self.viewer == "bosses" and isinstance(self._enemy, Boss):
             self._enemy.break_next()

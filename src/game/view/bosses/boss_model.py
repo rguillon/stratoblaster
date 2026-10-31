@@ -1,6 +1,6 @@
 """Builds the model of a boss (P07-R05) from its drawing: its
 core body, its parts on their own nodes (each flashing white when hit, smoking under half health,
-replaced by a burnt stump once destroyed), its turrets and limbs, and an optional ring turning with
+gone once destroyed), its turrets and limbs, and an optional ring turning with
 the boss's spin.
 """
 
@@ -14,7 +14,7 @@ from game.config.boss_look import BOSS_LOOK  # noqa: E402
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import record
 from game.view.bosses.boss_armour import build_armour, cut_armour  # noqa: E402
-from game.view.bosses.boss_damage import build_smoke, build_stump, effect_materials  # noqa: E402
+from game.view.bosses.boss_damage import build_smoke, effect_materials  # noqa: E402
 from game.view.bosses.boss_limbs import (  # noqa: E402
     ORIGIN,
     BossLimbs,
@@ -47,9 +47,6 @@ from typing import Any  # noqa: E402
 type Rgb = Any
 type Vec3 = list[Any]
 __pragma__("noskip")
-
-# The charge lights of the stumps spark on their own: a stand-in enemy for their sync.
-STUMP_STATE = {"charge": 0}
 
 
 def _field(obj: Any, key: str) -> Any:
@@ -151,13 +148,12 @@ class FlashGroup:
 
 
 class PartView:
-    """The pieces of one part: its model (and turret), its smoke, its stump."""
+    """The pieces of one part: its model (and turret) and its smoke."""
 
-    def __init__(self, group: Any, turret: Any, smoke: Any, stump: Any, reveal: Any = None) -> None:
+    def __init__(self, group: Any, turret: Any, smoke: Any, reveal: Any = None) -> None:
         self.group = group
         self.turret = turret
         self.smoke = smoke
-        self.stump = stump
         # How it comes out as the boss transforms, if it is hidden at first (`boss_reveal`).
         self.reveal = reveal
 
@@ -165,7 +161,7 @@ class PartView:
 def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltEnemyModel:
     """Builds the model of a boss (P07-R05) from `drawing`, in the colour `neon`: its core body, its
     parts on their own nodes (each flashing white when hit, smoking under half health, replaced by
-    a burnt stump once destroyed), and an optional ring turning with the boss's spin."""
+    gone once destroyed), and an optional ring turning with the boss's spin."""
     name = design.id
     # A drawing is an object literal of functions: its fields read as attributes (`drawing.core`).
     drawing = record(drawing)
@@ -297,7 +293,7 @@ def build_body(
 
 
 def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> PartView:
-    """The model, smoke and stump of one part, on `frame` (the boss, its turning ring or a
+    """The model and smoke of one part, on `frame` (the boss, its turning ring or a
     joint)."""
     flash = look["flash"]
     neon = look["neon"]
@@ -325,12 +321,11 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
     spot = new_transform_node(name + "-" + spec.id + "-spot", scene)
     hang(spot, at, frame)
     smoke = build_smoke(name + "-" + spec.id, spec.radius, scene, spot)
-    stump = build_stump(name + "-" + spec.id, spec.radius, scene, spot)
     reveal = None
     if opt(spec, "reveal", None) != None:  # noqa: E711
         slides = _weapon_slides(design, spec, weapon, model.root, turret, look)
         reveal = build_reveal(design, spec, model.root, slides)
-    return PartView(FlashGroup(model, flash), turret, smoke, stump, reveal)
+    return PartView(FlashGroup(model, flash), turret, smoke, reveal)
 
 
 def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -372,14 +367,12 @@ def strobe(enemy: Any) -> Any:
 
 
 def show_part(view: PartView, part: Any, lit: Any, dt: float) -> None:
-    """A part: its model while it stands (flashing, smoking), its stump once destroyed."""
+    """A part: its model while it stands (flashing, smoking), nothing once destroyed (D-225)."""
     destroyed = part.destroyed
     set_enabled(view.group.model.root, not destroyed)
-    set_enabled(view.stump.node, destroyed)
     smoking = not destroyed and part.health < part.max_health * BOSS_LOOK.smoke.below
     set_enabled(view.smoke.node, smoking)
     if destroyed:
-        view.stump.sync(STUMP_STATE, dt)
         return
     view.group.model.sync(lit, dt)
     show_turret(view.turret, part.turret, lit, dt)
