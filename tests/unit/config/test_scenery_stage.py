@@ -38,3 +38,19 @@ def test_d216_the_near_clip_stays_well_before_the_flight_plane() -> None:
     assert 1 < stage.near_clip < nearest / 2
     # Far enough out that the ground, past the flight plane, keeps its depth precision.
     assert stage.near_clip >= 100
+
+
+def test_d212_every_terrain_vertex_is_at_a_multiple_of_the_cell() -> None:
+    # The trees sample the ground on the multiples of the cell (`PropPlacer._trees`): the chunks
+    # start on that grid too, so the trees stand on the mesh drawn.
+    stage = SCENERY_STAGE_CONFIG
+    assert stage.chunk_length % stage.cell == 0
+
+
+def test_d212_a_chunk_comes_in_before_its_trees_can_be_seen() -> None:
+    stage = SCENERY_STAGE_CONFIG
+    # A chunk comes in `margin` past the ground in view: out of sight, so its trees can grow a row
+    # per frame unseen.
+    assert 0 < stage.tree_reach < stage.margin
+    # The trees in sight are always drawn.
+    assert stage.tree_reach <= min(stage.prop_reach)

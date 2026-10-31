@@ -21,40 +21,49 @@ __pragma__("noskip")
 
 
 class SampledGround:
-    """The heights of `field` sampled every `step` or less over the square of `size` from (`x0`,
-    `z0`), read back between the samples by bilinear interpolation (D-212: the trees of a cell ask
-    for many heights; the field's cost a few octaves of noise each). Outside the square, its
-    edge."""
+    """The heights of `field` sampled on the grid of multiples of `step` that covers the square of
+    `size` from (`x0`, `z0`), read back between the samples as the terrain's mesh draws them (D-212:
+    the trees of a cell ask for many heights; the field's cost a few octaves of noise each). The
+    mesh has a vertex at every multiple of its cell, and splits each cell into two triangles along
+    the diagonal from its (+X, -Z) corner to its (-X, +Z) corner (`build_grid_indices`): with
+    `step` its cell, a tree stands on the ground drawn. Outside the grid, its edge."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self, field: Heights, x0: float, z0: float, size: float, step: float
     ) -> None:
-        n = max(1, math.ceil(size / step))
-        self._n = n
-        self._x0 = x0
-        self._z0 = z0
-        self._step = size / n
+        i0 = math.floor(x0 / step)
+        j0 = math.floor(z0 / step)
+        self._columns = max(1, math.ceil((x0 + size) / step) - i0)
+        self._rows = max(1, math.ceil((z0 + size) / step) - j0)
+        self._x0 = i0 * step
+        self._z0 = j0 * step
+        self._step = step
         self._heights = [
-            field.height(x0 + i * self._step, z0 + j * self._step)
-            for j in range(n + 1)
-            for i in range(n + 1)
+            field.height((i0 + i) * step, (j0 + j) * step)
+            for j in range(self._rows + 1)
+            for i in range(self._columns + 1)
         ]
 
     def height(self, x: float, z: float) -> float:
-        n = self._n
-        u = _clamped((x - self._x0) / self._step, n)
-        v = _clamped((z - self._z0) / self._step, n)
+        columns = self._columns
+        rows = self._rows
+        u = _clamped((x - self._x0) / self._step, columns)
+        v = _clamped((z - self._z0) / self._step, rows)
         i = math.floor(u)
         j = math.floor(v)
-        i = n - 1 if i > n - 1 else i
-        j = n - 1 if j > n - 1 else j
+        i = columns - 1 if i > columns - 1 else i
+        j = rows - 1 if j > rows - 1 else j
         fu = u - i
         fv = v - j
         h = self._heights
-        row = n + 1
-        a = h[j * row + i] + (h[j * row + i + 1] - h[j * row + i]) * fu
-        b = h[(j + 1) * row + i] + (h[(j + 1) * row + i + 1] - h[(j + 1) * row + i]) * fu
-        return a + (b - a) * fv
+        row = columns + 1
+        h10 = h[j * row + i + 1]
+        h01 = h[(j + 1) * row + i]
+        if fu + fv <= 1:
+            h00 = h[j * row + i]
+            return h00 + (h10 - h00) * fu + (h01 - h00) * fv
+        h11 = h[(j + 1) * row + i + 1]
+        return h11 + (h01 - h11) * (1 - fu) + (h10 - h11) * (1 - fv)
 
 
 # Comparisons and index loops, not `min`, `max` and `for v in`: in JavaScript those go through
@@ -62,14 +71,16 @@ class SampledGround:
 def _min_of(values: Sequence[float]) -> float:
     low = values[0]
     for k in range(1, len(values)):
-        low = min(low, values[k])
+        if values[k] < low:  # noqa: PLR1730
+            low = values[k]
     return low
 
 
 def _max_of(values: Sequence[float]) -> float:
     high = values[0]
     for k in range(1, len(values)):
-        high = max(high, values[k])
+        if values[k] > high:  # noqa: PLR1730
+            high = values[k]
     return high
 
 

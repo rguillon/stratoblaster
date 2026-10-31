@@ -43,8 +43,6 @@ jobs:
 
   # Playwright (Python, Chromium) on the e2e build (ENG-72); traces, screenshots and videos of the
   # failed tests are kept (ENG-57).
-  # Disabled for now (reviewer, 2026-10-30): P14-R08 fails on 3-1 and 4-1 (D-195). Remove the
-  # `if: false` to turn it back on.
   e2e:
     runs-on: ubuntu-latest
     steps:

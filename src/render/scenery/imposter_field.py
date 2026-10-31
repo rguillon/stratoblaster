@@ -7,7 +7,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import float32_array, set_enabled
 from render.scenery.imposters import frame_of, frame_uv, imposter_quad
-from render.scenery.prop_field import MATRIX_FLOATS, mesh_of
+from render.scenery.prop_field import MATRIX_FLOATS, mesh_of, same_placements
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -48,7 +48,8 @@ class ImposterField:
     ) -> None:
         self._look = look
         self._meshes: dict[str, Any] = {}
-        self._drawn: dict[str, int] = {}
+        # The placements each mesh drew last (D-212: unchanged groups are not uploaded again).
+        self._drawn: dict[str, list[PropPlacement]] = {}
         headings: int = look.headings
         for k in range(len(kinds)):
             for i in range(headings):
@@ -81,9 +82,11 @@ class ImposterField:
         for key, mesh in self._meshes.items():
             group = groups.get(key)
             if not group:
-                if self._drawn.get(key, 0) > 0:
+                if len(self._drawn.get(key, [])) > 0:
                     set_enabled(mesh, False)
-                    self._drawn[key] = 0
+                    self._drawn[key] = []
+                continue
+            if key in self._drawn and same_placements(self._drawn[key], group):
                 continue
             count = len(group)
             buffer = float32_array(count * MATRIX_FLOATS)
@@ -91,4 +94,4 @@ class ImposterField:
                 placement_matrix(buffer, j * MATRIX_FLOATS, group[j])
             mesh.thinInstanceSetBuffer("matrix", buffer, MATRIX_FLOATS, False)
             set_enabled(mesh, True)
-            self._drawn[key] = count
+            self._drawn[key] = group

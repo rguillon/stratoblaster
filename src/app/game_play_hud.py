@@ -89,6 +89,12 @@ class StatsShown:
     def shown(self, debug: bool) -> bool:
         return self.chosen if self.chosen is not None else debug
 
+    def toggle(self, debug: bool) -> bool:
+        """Flips the choice (its key pressed); whether the tile is now shown. From the choice, not
+        from the tile: without a parent there is none, and the key must still flip it."""
+        self.chosen = not self.shown(debug)
+        return self.chosen
+
 
 STATS_SHOWN = StatsShown()
 

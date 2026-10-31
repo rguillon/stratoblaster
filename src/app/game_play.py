@@ -454,11 +454,10 @@ class GamePlay:
         level is in the page."""
         if not self._attached:
             return
-        shown = self._stats is None
-        STATS_SHOWN.chosen = shown
-        if shown:
+        shown = STATS_SHOWN.toggle(bool(self._options.debug))
+        if shown and self._stats is None:
             self._stats = create_stats(self._overlays())
-        else:
+        elif not shown and self._stats is not None:
             self._stats.root.remove()
             self._stats = None
 

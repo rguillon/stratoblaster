@@ -15,6 +15,7 @@ class SceneryStageConfig:
         prop_reach: tuple[float, float],
         prop_step: float,
         near_clip: float,
+        tree_reach: float,
     ) -> None:
         # Terrain chunk length along Z, and the grid cell of the terrain mesh.
         self.chunk_length = chunk_length
@@ -35,6 +36,11 @@ class SceneryStageConfig:
         # past it.
         self.prop_reach = prop_reach
         self.prop_step = prop_step
+        # D-212: how far before and past the ground in view a tree can be seen. The tallest stand
+        # under 28 high (11.5 in their imposter frame, scaled up to 2.4): seen from about 40 past
+        # the top edge. A chunk's trees in that range come at once, the others a row per frame;
+        # less than `margin`, so a chunk comes in out of sight and grows its trees unseen.
+        self.tree_reach = tree_reach
 
 
-SCENERY_STAGE_CONFIG = SceneryStageConfig(320, 8, 80, 15, 2500, 4000, (40, 120), 40, 200)
+SCENERY_STAGE_CONFIG = SceneryStageConfig(320, 8, 80, 15, 2500, 4000, (40, 120), 40, 200, 40)

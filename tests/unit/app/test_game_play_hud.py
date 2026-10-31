@@ -144,3 +144,18 @@ def test_d212_the_debug_tile_shows_as_last_chosen_with_its_key() -> None:
         assert orphan is None
     finally:
         STATS_SHOWN.chosen = None
+
+
+def test_d212_its_key_flips_the_choice_even_without_a_tile() -> None:
+    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
+
+    try:
+        # Not in debug mode: hidden, then shown, then hidden again.
+        assert STATS_SHOWN.toggle(False) is True
+        assert STATS_SHOWN.toggle(False) is False
+        assert STATS_SHOWN.shown(True) is False
+        STATS_SHOWN.chosen = None
+        # In debug mode the tile starts shown: the first press hides it.
+        assert STATS_SHOWN.toggle(True) is False
+    finally:
+        STATS_SHOWN.chosen = None

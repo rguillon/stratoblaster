@@ -446,6 +446,31 @@ class PropField:
     def set_chunk(self, index: int, placements: list[PropPlacement]) -> None:
         """Sets the placements of chunk `index`, grouped by kind."""
         kinds: dict[str, KindProps] = {}
+        self._group(kinds, placements)
+        at = self._chunk_at(index)
+        if at < 0:
+            self._chunk_indices.append(index)
+            self._chunk_kinds.append(kinds)
+        else:
+            self._chunk_kinds[at] = kinds
+        self._dirty = True
+
+    def add_to_chunk(self, index: int, placements: list[PropPlacement]) -> None:
+        """Adds `placements` to those of chunk `index` (D-212: a row of trees at a time): the
+        props already there keep their instance matrices, and nothing is uploaded again unless one
+        of `placements` is in the window. A chunk that is not set (removed meanwhile) takes none."""
+        at = self._chunk_at(index)
+        if at < 0:
+            return
+        self._group(self._chunk_kinds[at], placements)
+        window = self._window
+        for p in placements:
+            if window is None or (p.z >= window[0] and p.z <= window[1]):
+                self._dirty = True
+                return
+
+    def _group(self, kinds: dict[str, KindProps], placements: list[PropPlacement]) -> None:
+        """Adds `placements` to `kinds`, by kind (each must have a model)."""
         for p in placements:
             if p.kind not in self._meshes:
                 raise ValueError('No model for prop "' + p.kind + '"')
@@ -454,28 +479,21 @@ class PropField:
                 props.placements.append(p)
             else:
                 kinds[p.kind] = KindProps([p])
-        self._chunk_set(index, kinds)
-        self._dirty = True
 
-    def _chunk_set(self, index: int, kinds: dict[str, KindProps]) -> None:
+    def _chunk_at(self, index: int) -> int:
+        """Where chunk `index` is in the chunk lists, or -1 if it is not set."""
         for i in range(len(self._chunk_indices)):
             if self._chunk_indices[i] == index:
-                self._chunk_kinds[i] = kinds
-                return
-        self._chunk_indices.append(index)
-        self._chunk_kinds.append(kinds)
-
-    def _chunk_delete(self, index: int) -> bool:
-        for i in range(len(self._chunk_indices)):
-            if self._chunk_indices[i] == index:
-                self._chunk_indices.pop(i)
-                self._chunk_kinds.pop(i)
-                return True
-        return False
+                return i
+        return -1
 
     def remove_chunk(self, index: int) -> None:
-        deleted = self._chunk_delete(index)
-        self._dirty = deleted or self._dirty
+        at = self._chunk_at(index)
+        if at < 0:
+            return
+        self._chunk_indices.pop(at)
+        self._chunk_kinds.pop(at)
+        self._dirty = True
 
     def clear(self) -> None:
         self._chunk_indices = []
@@ -527,7 +545,7 @@ class PropField:
         for kind, meshes in self._meshes.items():
             drawn = by_kind.get(kind)
             placements = drawn.placements if drawn else []
-            if kind in self._drawn and _same_placements(self._drawn[kind], placements):
+            if kind in self._drawn and same_placements(self._drawn[kind], placements):
                 continue
             self._drawn[kind] = placements
             matrices = _matrices_of(drawn) if drawn else float32_array(0)
@@ -575,15 +593,31 @@ def _matrices_of(drawn: Drawn) -> Any:
     buffer = float32_array(len(drawn.at) * MATRIX_FLOATS)
     for j in range(len(drawn.at)):
         i = drawn.at[j]
-        props = drawn.from_[j]
-        if props.matrices is None:
-            props.matrices = instance_matrices(props.placements)
+        matrices = _matrices_for(drawn.from_[j])
         start = i * MATRIX_FLOATS
-        buffer.set(props.matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS)
+        buffer.set(matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS)
     return buffer
 
 
-def _same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
+def _matrices_for(props: KindProps) -> Any:
+    """The instance matrices of `props`, made on first use; those of placements added since are
+    made then, the others kept (D-212)."""
+    old = props.matrices
+    if old is None:
+        props.matrices = instance_matrices(props.placements)
+        return props.matrices
+    count = len(props.placements)
+    made = len(old) // MATRIX_FLOATS
+    if made == count:
+        return old
+    buffer = float32_array(count * MATRIX_FLOATS)
+    buffer.set(old, 0)
+    buffer.set(instance_matrices(props.placements[made:]), made * MATRIX_FLOATS)
+    props.matrices = buffer
+    return buffer
+
+
+def same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
     """Whether `a` and `b` hold the same placements in the same order."""
     if len(a) != len(b):
         return False

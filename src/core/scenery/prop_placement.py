@@ -44,6 +44,7 @@ from core.scenery.street_links import Block  # noqa: E402
 
 __pragma__("noskip")
 
+from config.scenery_stage import SCENERY_STAGE_CONFIG  # noqa: E402
 from core.math.noise import create_noise2d, hash_2d  # noqa: E402
 from core.scenery.away_placement import (  # noqa: E402
     AWAY_MARGIN,
@@ -73,17 +74,18 @@ DRAW_BUILDING = 0
 DRAW_KIND = 1
 DRAW_SCALE = 2
 DRAW_TREES = 3
-# Draws per tree: position X, position Z, kind, scale, turn, whether it stands at a wood's edge.
-TREE_DRAWS = 6
+# Draws per tree: position X, position Z, kind, scale, turn, whether it stands at a wood's edge,
+# whether it is kept (D-214).
+TREE_DRAWS = 7
 # Blocks are cut into parts of about this size, one tower each at most…
 PART_SIZE = 30
 # …and at most this many parts across either way.
 MAX_PARTS = 4
 # D-212: with woods, each cell tries the most trees give or take this share.
 WOODS_SPREAD = 0.2
-# D-212: the trees of a cell stand on its ground sampled this often (the terrain's mesh is sampled
-# every 8), and this far past the cell (their footprints reach out of it).
-TREE_GROUND_STEP = 8
+# D-212: the trees of a cell stand on its ground sampled on the terrain mesh's grid (its cell,
+# `SCENERY_STAGE_CONFIG.cell`, so they stand on the ground drawn), and this far past the cell (their
+# footprints reach out of it).
 TREE_GROUND_MARGIN = 8
 # Half the diagonal of a square of side 1: how far a cell's corner is from its middle.
 SQRT_HALF = math.sqrt(0.5)
@@ -120,7 +122,8 @@ def _largest_footprint(kinds: Sequence[PropKindRule]) -> float:
     largest = 0.0
     for k in range(len(kinds)):
         f = kinds[k].footprint
-        largest = max(largest, f)
+        if f > largest:  # noqa: PLR1730 (Transcrypt's `max` is slower)
+            largest = f
     return largest
 
 
@@ -169,7 +172,7 @@ class _AwaySite:
 def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001
     """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
     with them (D-214), some of a wood's trees (`keep`), a few of the others (`scatter`), by `draw`
-    (the tree's own: its edge draw with the cell's coordinates swapped)."""
+    (the tree's own, apart from its edge draw)."""
     if woods is None:
         return in_woods
     return draw < (woods.keep if in_woods else woods.scatter)
@@ -630,7 +633,7 @@ class PropPlacer:
             x = (i + hash_2d(i, j, at)) * cell
             z = (j + hash_2d(i, j, at + 1)) * cell
             grows = cover > 0 and self._in_woods(x, z, hash_2d(i, j, at + 5), cover)
-            if not _kept(grows, woods, hash_2d(j, i, at + 5)):
+            if not _kept(grows, woods, hash_2d(i, j, at + 6)):
                 continue
             kind = weighted(trees, hash_2d(i, j, at + 2))
             if kind is None:
@@ -642,10 +645,9 @@ class PropPlacer:
                 continue
             if len(ground_of) == 0:
                 m = TREE_GROUND_MARGIN
+                step = SCENERY_STAGE_CONFIG.cell
                 ground_of.append(
-                    SampledGround(
-                        self.field, i * cell - m, j * cell - m, cell + 2 * m, TREE_GROUND_STEP
-                    )
+                    SampledGround(self.field, i * cell - m, j * cell - m, cell + 2 * m, step)
                 )
             y = standing_height(ground_of[0], [x, z, ground], limits)
             if y is not None:
