@@ -4,7 +4,7 @@ makes them for the level's chunks, or the main thread does when there is no work
 `road_sources`). Both run the same code, so they give the same geometry.
 
 The road atlas that the surfaces' texture coordinates point into is kept here too: its pixels are
-sent with the chunks when they have changed.
+sent when they have changed, and handed out with the chunks (see `road_sources`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -27,7 +27,8 @@ GRID_COLOR = (0, 0.9, 1)
 class RoadChunk:
     """The street geometry of one terrain chunk: `index`; `surfaces` (textured, drawn opaque);
     `layered` (the streets the atlas has no room for); `grid` (the tile grid, or None); `atlas` (the
-    atlas pixels, when they changed, or None)."""
+    latest atlas pixels, set when the chunk is taken from its source, or None) and `atlas_version`
+    (which pixels those are: it grows each time they change, so they are uploaded once each)."""
 
     def __init__(self, index: int, surfaces: Any, layered: Any, grid: Any) -> None:
         self.index = index
@@ -35,6 +36,7 @@ class RoadChunk:
         self.layered = layered
         self.grid = grid
         self.atlas: Any = None
+        self.atlas_version = 0
 
 
 class TileRoadChunks:

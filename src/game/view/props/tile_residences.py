@@ -7,10 +7,12 @@ under a sloping metal roof."""
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
+from game.config.window_look import WINDOW_STYLES
 from game.view.props.tile_kit import (
     NEON,
     TileKit,
     any_of,
+    front_windows,
     js_remainder,
     js_round,
     plot,
@@ -43,7 +45,7 @@ def cantilever(k: TileKit) -> None:
     k.lights.box(
         [w * 0.7, 0.15, 0.3], any_of(k, NEON), Placement([k.w * 0.08, 4, -d * 0.75], 0, 0, 0)
     )
-    windows(k, [w * 0.8, d * 1.5], [4.6, 6.6], L.window, [k.w * 0.08, 0], 2.5)
+    windows(k, [w * 0.8, d * 1.5], [4.6, 6.6], L.window, [k.w * 0.08, 0])
 
 
 def pods(k: TileKit) -> None:
@@ -99,11 +101,12 @@ def modules(k: TileKit) -> None:
         )
         k.s.box([bw * 0.8, 0.12, bd * 0.8], C.solar, tilt)
         color = L.window if i % 2 == 0 else any_of(k, NEON)
-        windows(k, [bw, bd], [1, h - 0.8], color, [x, z], 2.4)
+        windows(k, [bw, bd], [1, h - 0.8], color, [x, z])
 
 
 def stepped(k: TileKit) -> None:
-    """Terraces stepping back and up, a lit band along each step's edge."""
+    """Terraces stepping back and up, a lit band along each step's edge, glass on each step's front
+    (D-215: a quad of ribbon windows)."""
     steps = 3
     light = any_of(k, NEON)
     shell = any_of(k, SHELLS)
@@ -115,15 +118,15 @@ def stepped(k: TileKit) -> None:
         k.lights.box(
             [w * 0.9, 0.15, 0.2], light, Placement([0, (i + 1) * 2.8, z - d / 2 - 0.1], 0, 0, 0)
         )
-        k.s.box(
-            [w * 0.9, 1.4, 0.2],
-            any_of(k, GLASS),
-            Placement([0, i * 2.8 + 0.8, z - d / 2 - 0.05], 0, 0, 0),
+        y = i * 2.8
+        front_windows(
+            k, [0, z - d / 2, -1], [w * 0.9, y + 0.6, y + 2.4], WINDOW_STYLES.ribbon, L.window
         )
 
 
 def stilts(k: TileKit) -> None:
-    """A glass-fronted box raised on thin legs, a car port under it."""
+    """A glass-fronted box raised on thin legs, a car port under it (D-215: the glass front a quad
+    of curtain wall)."""
     w = k.w * 0.8
     d = k.d * 0.6
     lift = 3
@@ -132,11 +135,8 @@ def stilts(k: TileKit) -> None:
             [0.35, lift, 0.35], C.metal, Placement([(sx * w) / 2.3, 0, (sz * d) / 2.3], 0, 0, 0)
         )
     k.s.box([w, 3.5, d], any_of(k, SHELLS), Placement([0, lift, 0], 0, 0, 0), C.metalDark)
-    k.s.box(
-        [w * 0.85, 2.4, 0.2], any_of(k, GLASS), Placement([0, lift + 0.5, -d / 2 - 0.05], 0, 0, 0)
-    )
-    k.lights.box(
-        [w * 0.8, 0.12, 0.12], L.window, Placement([0, lift + 2.95, -d / 2 - 0.15], 0, 0, 0)
+    front_windows(
+        k, [0, -d / 2, -1], [w * 0.85, lift + 0.5, lift + 3.2], WINDOW_STYLES.curtain, L.window
     )
     k.s.box(
         [2, 1.1, 3.6],
@@ -147,7 +147,8 @@ def stilts(k: TileKit) -> None:
 
 
 def wedge(k: TileKit) -> None:
-    """A wedge: a block under one metal roof sloping from the back down to the front, glazed end."""
+    """A wedge: a block under one metal roof sloping from the back down to the front, glazed end
+    (D-215: a glass wall under a quad of curtain wall)."""
     w = k.w * 0.8
     d = k.d * 0.7
     low = 3
@@ -185,10 +186,11 @@ def wedge(k: TileKit) -> None:
         shell,
     )
     k.s.box([w, high - low, 0.2], any_of(k, GLASS), Placement([0, low, z1 - 0.1], 0, 0, 0))
+    front_windows(k, [0, z1, 1], [w, low, high], WINDOW_STYLES.curtain, L.window)
     k.lights.box(
         [w * 0.9, 0.2, 0.2], any_of(k, NEON), Placement([0, low - 0.1, z0 - 0.15], 0, 0, 0)
     )
-    windows(k, [w, d], [1, low - 0.5], L.window, [0, 0], 2.5)
+    windows(k, [w, d], [1, low - 0.5], L.window, [0, 0])
 
 
 SILHOUETTES = [cantilever, pods, modules, stepped, stilts, wedge]

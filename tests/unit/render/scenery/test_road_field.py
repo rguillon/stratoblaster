@@ -169,6 +169,7 @@ def test_the_street_surfaces_of_a_tile_chunk_are_shown_with_the_road_atlas() -> 
     layers.show_tile_grid()
     chunk = SimpleNamespace(
         atlas=[1, 2, 3],
+        atlas_version=1,
         surfaces=_triangle(),
         layered=_triangle(),
         grid=_triangle(),
@@ -178,6 +179,33 @@ def test_the_street_surfaces_of_a_tile_chunk_are_shown_with_the_road_atlas() -> 
     assert layers._surface_material.diffuseTexture is layers._atlas_texture
     assert layers.streets_of(4) is not None
     assert layers._grid.mesh(4) is not None
+
+
+def _tile_chunk(atlas: Any, version: int) -> Any:
+    return SimpleNamespace(
+        atlas=atlas, atlas_version=version, surfaces=_triangle(), layered=_triangle(), grid=None
+    )
+
+
+def test_d217_each_version_of_the_road_atlas_is_uploaded_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    uploads: list[Any] = []
+    monkeypatch.setattr(road_field, "update_raw_texture", lambda t, p: uploads.append(p))
+    layers = RoadLayers(FakeScene(), FakeMaterial("road"))
+    layers.set_tile_chunk(0, _tile_chunk([1], 1))
+    texture = layers._atlas_texture
+    # Every chunk comes with the latest atlas: the same version is not uploaded again.
+    layers.set_tile_chunk(1, _tile_chunk([1], 1))
+    layers.set_tile_chunk(2, _tile_chunk(None, 0))
+    assert uploads == []
+    layers.set_tile_chunk(3, _tile_chunk([2], 2))
+    assert uploads == [[2]]
+    assert layers._atlas_texture is texture
+    # Cleared (a new seed: another source, counting from 1 again), the next one is uploaded.
+    layers.clear()
+    layers.set_tile_chunk(0, _tile_chunk([3], 1))
+    assert uploads == [[2], [3]]
 
 
 def test_the_tile_grid_is_drawn_over_the_ground_with_its_own_material_offset() -> None:

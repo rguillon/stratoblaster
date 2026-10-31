@@ -237,3 +237,111 @@ def test_without_a_road_it_can_be_built_there_are_no_buildings() -> None:
     level = sample_level(roads=sample_roads(min_height=1000))
     props = placer_for(level).place(AREA)
     assert all(p.kind != "block" for p in props)
+
+
+def _trees(level) -> list:
+    return [p for p in placer_for(level).place(AREA) if p.kind == "stick"]
+
+
+def _grassy(lush: float | None, density: float = 1) -> list:
+    """The sample's two sections, covered with grass by `lush`, of tree `density`."""
+    from core.scenery.scenery_level import Surface  # noqa: PLC0415
+
+    sections = [flat("low", 10, 10), flat("high", 10, 30)]
+    for section in sections:
+        section.tree_density = density
+        section.surface = Surface(lush, None, None)
+    return sections
+
+
+def _woods(threshold: float, edge: float = 0):
+    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+
+    return sample_props(trees_per_cell=20, forests=Forests(1 / 300, threshold, edge))
+
+
+def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
+    everywhere = _trees(sample_level(props=sample_props(trees_per_cell=20)))
+    nowhere = _trees(sample_level(sections=_grassy(1), props=_woods(1.1)))
+    woods = _trees(sample_level(sections=_grassy(1), props=_woods(0.5, 0.05)))
+    assert len(everywhere) > 0
+    assert nowhere == []
+    assert len(woods) > 0
+
+
+def test_d212_with_woods_every_cell_tries_about_the_most_trees() -> None:
+    placer = placer_for(sample_level(sections=_grassy(1), props=_woods(0)))
+    counts = [placer._tree_count(i, 0, 1) for i in range(50)]  # noqa: SLF001
+    assert min(counts) >= 16
+    assert max(counts) <= 24
+    assert placer._tree_count(0, 0, 0) == 0  # noqa: SLF001
+
+
+def test_d212_woods_grow_on_the_grass_and_less_with_a_lower_density() -> None:
+    def count(lush: float | None, density: float = 1) -> int:
+        return len(_trees(sample_level(sections=_grassy(lush, density), props=_woods(0.3))))
+
+    assert count(1) > count(0.6) >= 0
+    assert count(1) > count(1, 0.6)
+    assert count(None) == 0
+    assert count(0) == 0
+
+
+def test_d212_trees_placed_a_strip_at_a_time_are_those_placed_at_once() -> None:
+    level = sample_level(sections=_grassy(1), props=_woods(0.3))
+    at_once = keys(t for t in placer_for(level).place(AREA) if t.kind == "stick")
+    placer = placer_for(level)
+    strips = [0, 37, 50, 120, 333, 400]
+    by_strip: list = []
+    for k in range(len(strips) - 1):
+        by_strip.extend(
+            placer.trees_in(GroundArea(AREA.x_min, AREA.x_max, strips[k], strips[k + 1]))
+        )
+    assert len(at_once) > 0
+    assert sorted(keys(by_strip)) == sorted(at_once)
+    assert all(t.kind != "stick" for t in placer.place_without_trees(AREA))
+
+
+def _desert(woods, density: float = 1) -> list:
+    """The sample's two sections, no grass, its trees growing as `woods` says (D-214)."""
+    sections = _grassy(0, density)
+    for section in sections:
+        section.woods = woods
+    return sections
+
+
+def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    def count(cover: float, keep: float, scatter: float = 0) -> int:
+        level = sample_level(sections=_desert(Woods(cover, keep, scatter)), props=_woods(0.3))
+        return len(_trees(level))
+
+    full = count(1, 1)
+    sparse = count(1, 0.2)
+    assert full > 0
+    assert 0 < sparse < full / 2
+    assert count(0.5, 1) < full
+    assert count(0, 1) == 0
+
+
+def test_d214_a_sections_woods_scatter_lone_trees_outside_them() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    def count(scatter: float, density: float = 1) -> int:
+        level = sample_level(sections=_desert(Woods(0, 0, scatter), density), props=_woods(0.3))
+        return len(_trees(level))
+
+    assert count(0) == 0
+    assert 0 < count(0.05) < count(0.2)
+    assert count(0.2, 0) == 0
+
+
+def test_d214_without_forests_a_sections_woods_change_nothing() -> None:
+    from core.scenery.scenery_level import Woods  # noqa: PLC0415
+
+    props = sample_props(trees_per_cell=20)
+    plain = _trees(sample_level(sections=_desert(None), props=props))
+    woods = _trees(sample_level(sections=_desert(Woods(0, 0, 0)), props=props))
+    assert len(plain) > 0
+    assert keys(woods) == keys(plain)

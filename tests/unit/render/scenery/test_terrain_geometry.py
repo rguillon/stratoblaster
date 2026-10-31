@@ -1,5 +1,6 @@
 """Unit tests of `src/render/scenery/terrain_geometry.py`."""
 
+import math
 from types import SimpleNamespace
 from typing import Any
 
@@ -7,6 +8,7 @@ import pytest
 from helpers.render_fakes import patch_babylon
 from helpers.render_geometry import babylon_normal, triangles
 
+from core.scenery.ground_fit import SampledGround
 from render.scenery import terrain_geometry
 from render.scenery.terrain_geometry import (
     SURFACE_SCALE,
@@ -86,3 +88,37 @@ def test_grid_triangles_face_up() -> None:
     for tri in triangles(positions, list(indices)):
         assert babylon_normal(tri)[1] > 0
     assert flat[-1] == 8
+
+
+class Bumps:
+    """Ground that no plane fits: a sum of sines."""
+
+    def height(self, x: float, z: float) -> float:
+        return 10 * math.sin(x * 0.37) + 7 * math.cos(z * 0.23) + 0.05 * x * z
+
+
+def _height_on(tris: list[Any], x: float, z: float) -> float:
+    """The height of the triangles (seen from above) over (`x`, `z`)."""
+    for a, b, c in tris:
+        den = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2])
+        wa = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / den
+        wb = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / den
+        wc = 1 - wa - wb
+        if min(wa, wb, wc) >= -1e-9:
+            return float(wa * a[1] + wb * b[1] + wc * c[1])
+    raise AssertionError("no triangle over (" + str(x) + ", " + str(z) + ")")
+
+
+def test_d212_the_trees_stand_on_the_mesh_drawn() -> None:
+    # The terrain of a chunk on the multiples of 8, and the ground a tree cell samples there (cell
+    # 50 less the margin of 8, as `PropPlacer._trees` asks): off the grid, with the mesh's cell.
+    cell = 8
+    field = Bumps()
+    grid = TerrainGrid(-80, -96, 30, 30, cell)
+    geo = build_terrain_geometry(field, grid)
+    tris = triangles(list(geo.positions), list(build_grid_indices(grid.columns, grid.rows)))
+    ground = SampledGround(field, 42.0, -58.0, 66.0, cell)
+    for k in range(60):
+        x = 42.0 + k * 1.09
+        z = -58.0 + ((k * 7) % 60) * 1.07
+        assert ground.height(x, z) == pytest.approx(_height_on(tris, x, z))

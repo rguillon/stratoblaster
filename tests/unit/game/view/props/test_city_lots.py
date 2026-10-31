@@ -37,17 +37,20 @@ def test_p15_r08_a_volume_is_a_box_up_to_its_height():
     assert low[1] == pytest.approx(0.0)
 
 
-def test_p15_r08_a_low_volume_gets_no_window_rows():
+def test_d210_a_volume_under_a_floor_high_gets_no_windows():
     k, kit = kit_for()
-    volume(kit, LOT, 0.0, 4.0)
-    assert geometry_of(k).lights is not None
-    assert len(geometry_of(k).lights.positions) == 0
+    volume(kit, LOT, 0.0, 3.0)
+    assert geometry_of(k).windows is not None
+    assert len(geometry_of(k).windows.positions) == 0
 
 
-def test_p15_r08_a_tall_volume_gets_window_rows():
+def test_d210_a_volume_gets_one_window_quad_per_wall():
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 20.0)
-    assert len(geometry_of(k).lights.positions) > 0
+    windows = geometry_of(k).windows
+    check_colored(windows)
+    assert len(windows.indices) == 4 * 6
+    assert len(geometry_of(k).lights.positions) == 0
 
 
 def test_p15_r08_the_plinth_covers_the_lot_and_returns_its_height():

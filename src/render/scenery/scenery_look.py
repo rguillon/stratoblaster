@@ -14,6 +14,7 @@ from typing import Any  # noqa: E402
 
 from core.scenery.sky_look import SkyScript  # noqa: E402
 from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.geometry.textured import TexturedGeometry  # noqa: E402
 from render.scenery.road_geometry import RoadLook  # noqa: E402
 
 Rgb = tuple[float, float, float]
@@ -299,11 +300,18 @@ class AmbientLook:
 
 
 class PropsLook:
-    """The props: their specular and the brightness of their self-lit accents."""
+    """The props: their specular and the brightness of their self-lit accents. The looks of the
+    windows' atlas (D-210, see `window_atlas.py`) and of the cars' and the trees' imposters (D-211,
+    D-212, see `imposters.py`) are read from the config record as it is (`look.props.windows`,
+    `look.props.imposters`, `look.props.treeImposters`); these are None (drawn as they are) here,
+    which is the case for the looks built by hand."""
 
     def __init__(self, specular: float, light_intensity: float) -> None:
         self.specular = specular
         self.lightIntensity = light_intensity
+        self.windows: Any = None  # noqa: ANN401 (a config record)
+        self.imposters: Any = None  # noqa: ANN401 (a config record)
+        self.treeImposters: Any = None  # noqa: ANN401 (a config record)
 
 
 class GlowLook:
@@ -364,18 +372,24 @@ class PropPlume:
 
 
 class PropGeometry:
-    """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents and the
-    smoke or steam it sends up."""
+    """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents, the
+    smoke or steam it sends up, its windows (D-210: quads on the walls, mapped on the windows'
+    atlas) and a stand-in that only casts its shadow (D-212: a prop drawn as an imposter, whose
+    quad would cast a wrong one; a few low-poly solids round where it stands)."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         structure: ColoredGeometry,
         lights: ColoredGeometry | None = None,
         plumes: Sequence[PropPlume] | None = None,
+        windows: TexturedGeometry | None = None,
+        shadow: ColoredGeometry | None = None,
     ) -> None:
         self.structure = structure
         self.lights = lights
         self.plumes = plumes
+        self.windows = windows
+        self.shadow = shadow
 
 
 # Builds the geometry of one kind of prop, standing on Y = 0, centred on the origin.

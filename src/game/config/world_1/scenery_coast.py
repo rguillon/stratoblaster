@@ -8,6 +8,7 @@ and farmland. Heights in world units above the sea level (0). Each section's `se
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
+from game.config.trees import LIVE_TREES
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -52,7 +53,9 @@ def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
             "seconds": seconds,
             "relief": smooth(base, amplitude, 520, 5),
             "buildingDensity": 0,
-            "treeDensity": 0,
+            # D-212: trees on the islands' grass.
+            "treeDensity": 1,
+            "trees": LIVE_TREES,
             "surface": {"lush": 0.7},
             "groups": [G.fishing],
         }
@@ -67,8 +70,9 @@ GREEN_COAST = record(
         "relief": smooth(16, 10, 480),
         "shore": shore(-40, 90, 1800),
         "buildingDensity": 0.5,
-        "treeDensity": 0,
+        "treeDensity": 1,
         "surface": {"lush": 0.8, "sandy": 0.2},
+        "trees": LIVE_TREES,
         "groups": [G.fishing, G.coastHomes],
     }
 )
@@ -83,7 +87,9 @@ def green(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(24, 10, 600),
                 "buildingDensity": 0.5,
-                "treeDensity": 0,
+                # D-212: woods on the grass (its share sets how much: see `FORESTS`).
+                "treeDensity": 1,
+                "trees": LIVE_TREES,
                 "surface": {"lush": 1},
                 "groups": [G.villages, G.farms],
             }
@@ -125,7 +131,7 @@ GREEN_COAST_LEVEL = [
             "relief": smooth(22, 14, 460),
             "shore": shore(-90, 170, 1500),
             "buildingDensity": 0.55,
-            "treeDensity": 0,
+            "treeDensity": 1,
             "groups": [G.coastHomes, G.villages],
         },
     ),
@@ -139,14 +145,14 @@ GREEN_COAST_LEVEL = [
             "groups": [G.coastHomes, G.farms],
         },
     ),
-    green("meadows", 45, {"buildingDensity": 0.5, "treeDensity": 0}),
+    green("meadows", 45, {"buildingDensity": 0.5, "treeDensity": 1}),
     green(
         "groves",
         40,
         {
             "relief": smooth(30, 16, 480),
             "buildingDensity": 0.45,
-            "treeDensity": 0,
+            "treeDensity": 1,
             "groups": [G.farms],
         },
     ),

@@ -17,6 +17,7 @@ from core.scenery.scenery_level import (
     Dunes,
     Flatten,
     FloatRules,
+    Forests,
     HamletRules,
     Junction,
     Lakes,
@@ -38,6 +39,7 @@ from core.scenery.scenery_level import (
     Surface,
     TerrainSection,
     TileRules,
+    Woods,
 )
 from game.sim.config_build import mapped, maybe, opt
 
@@ -105,6 +107,10 @@ def _surface(surface: ConfigRecord) -> Surface:
     return Surface(opt(surface.lush), opt(surface.paved), opt(surface.sandy))
 
 
+def _woods(woods: ConfigRecord) -> Woods:
+    return Woods(woods.cover, woods.keep, woods.scatter)
+
+
 def _street_grid(streets: ConfigRecord) -> StreetGrid:
     return StreetGrid(streets.rows, streets.columns, streets.links)
 
@@ -132,6 +138,7 @@ def _section(section: ConfigRecord) -> TerrainSection:
         opt(section.groups),
         maybe(section.streets, _street_grid),
         maybe(section.blocks, _block_fill),
+        maybe(section.woods, _woods),
     )
 
 
@@ -234,7 +241,12 @@ def _props(props: ConfigRecord) -> PropRules:
         maybe(props.lines, _lines),
         maybe(props.landmarks, _landmarks),
         maybe(props.lots, _lots),
+        maybe(props.forests, _forests),
     )
+
+
+def _forests(forests: ConfigRecord) -> Forests:
+    return Forests(forests.frequency, forests.threshold, forests.edge)
 
 
 def _lines(lines: ConfigRecord) -> list[PropLine]:

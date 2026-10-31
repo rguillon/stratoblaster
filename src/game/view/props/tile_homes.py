@@ -6,10 +6,12 @@ import math
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
+from game.config.window_look import DOOR_STYLES, WINDOW_STYLES
 from game.view.props.tile_kit import (
     NEON,
     TileKit,
     any_of,
+    door,
     front_lights,
     gable,
     js_round,
@@ -33,7 +35,7 @@ def build_house(k: TileKit) -> None:
     h = r(k, [3.5, 5])
     k.s.box([bw, h, bd], any_of(k, WALLS), Placement([0, 0, z], 0, 0, 0))
     gable(k, [bw, bd], h, r(k, [2, 3]), any_of(k, ROOFS), [0, z])
-    windows(k, [bw, bd], [1, h - 0.5], L.window, [0, z], 2.5)
+    windows(k, [bw, bd], [1, h - 0.5], L.window, [0, z])
     back = (k.d / 2 + (z + bd / 2)) / 2
     for _i in range(max(1, js_round(k.d / 10))):
         x = r(k, [-k.w / 3, k.w / 3])
@@ -57,7 +59,7 @@ def build_villa(k: TileKit) -> None:
         [k.w * 0.35, 0.3, k.d * 0.2], C.glassBlue, Placement([k.w * 0.2, 0, k.d * 0.28], 0, 0, 0)
     )
     k.lights.box([k.w * 0.35, 0.1, 0.2], L.cyan, Placement([k.w * 0.2, 0.32, k.d * 0.18], 0, 0, 0))
-    windows(k, [w, d], [1, 3.5], L.window, [-k.w * 0.1, -k.d * 0.2], 2.5)
+    windows(k, [w, d], [1, 3.5], L.window, [-k.w * 0.1, -k.d * 0.2])
     tree(k, -k.w * 0.25, k.d * 0.25, min(3.5, k.w * 0.3))
 
 
@@ -71,9 +73,9 @@ def build_cottage(k: TileKit) -> None:
         Placement([0, 0, -k.d * 0.12], 0, 0, 0),
     )
     gable(k, [s, s * 0.8], 3, 3, any_of(k, [C.thatch, C.farmRoof, C.roof]), [0, -k.d * 0.12])
-    k.lights.box(
-        [1, 1, 0.2], L.window, Placement([s * 0.25, 1, -k.d * 0.12 - s * 0.4 - 0.1], 0, 0, 0)
-    )
+    # D-215: its windows and its door, quads from the windows' atlas.
+    windows(k, [s, s * 0.8], [0.7, 2.7], L.window, [0, -k.d * 0.12], WINDOW_STYLES.punched)
+    door(k, [-s * 0.2, 0, -k.d * 0.12 - s * 0.4], DOOR_STYLES.door, L.window)
     tree(k, k.w * 0.3, k.d * 0.3, 3)
 
 
@@ -96,7 +98,7 @@ def build_terrace(k: TileKit) -> None:
         bd = each - 0.3 if along_z else depth * 0.65
         k.s.box([bw, hh, bd], wall, Placement([x, 0, z], 0, 0, 0))
         gable(k, [bw, bd], hh, 2, C.roof, [x, z], along_z)
-        windows(k, [bw, bd], [1, hh - 0.6], L.window, [x, z], 2.6)
+        windows(k, [bw, bd], [1, hh - 0.6], L.window, [x, z])
 
 
 def build_flats(k: TileKit) -> None:
@@ -107,7 +109,7 @@ def build_flats(k: TileKit) -> None:
     h = r(k, [10, 18])
     k.s.box([w, h, d], any_of(k, [C.brick, C.concrete, C.farmWall]), Placement(), C.roof)
     k.s.box([w * 0.3, 2, d * 0.3], C.metalDark, Placement([w * 0.2, h, 0], 0, 0, 0))
-    windows(k, [w, d], [1.5, h - 1], any_of(k, [L.window, L.windowDim]), [0, 0], 3)
+    windows(k, [w, d], [1.5, h - 1], any_of(k, [L.window, L.windowDim]), [0, 0])
     front_lights(k, w, -d / 2, 1.8, any_of(k, NEON))
 
 
@@ -138,7 +140,16 @@ def build_farmhouse(k: TileKit) -> None:
         [k.w * 0.4, 4, k.d * 0.35], C.farmWall, Placement([-k.w * 0.22, 0, -k.d * 0.2], 0, 0, 0)
     )
     gable(k, [k.w * 0.4, k.d * 0.35], 4, 2.5, C.farmRoof, [-k.w * 0.22, -k.d * 0.2])
-    k.lights.box([1.2, 1, 0.2], L.window, Placement([-k.w * 0.22, 1.4, -k.d * 0.38], 0, 0, 0))
+    # D-215: its windows and its door, quads from the windows' atlas.
+    windows(
+        k,
+        [k.w * 0.4, k.d * 0.35],
+        [1, 3.8],
+        L.window,
+        [-k.w * 0.22, -k.d * 0.2],
+        WINDOW_STYLES.punched,
+    )
+    door(k, [-k.w * 0.3, 0, -k.d * 0.375], DOOR_STYLES.door, L.window)
     build_shed(k, [k.w * 0.25, k.d * 0.15], [k.w * 0.4, k.d * 0.5])
     for i in range(4):
         k.s.box(
@@ -162,9 +173,8 @@ def build_barn(k: TileKit) -> None:
     """A long barn and a pair of silos."""
     plot(k, C.dryLeaf)
     build_shed(k, [-k.w * 0.12, 0], [k.w * 0.6, k.d - 2])
-    k.lights.box(
-        [2, 2.5, 0.2], L.yellowDim, Placement([-k.w * 0.12, 0, -(k.d - 2) / 2 - 0.1], 0, 0, 0)
-    )
+    # D-215: its door, a bay from the windows' atlas.
+    door(k, [-k.w * 0.12, 0, -(k.d - 2) / 2], DOOR_STYLES.bay, L.yellowDim)
     for z in [-k.d * 0.2, k.d * 0.15]:
         k.s.cylinder(1.8, 9, 8, C.silver, Placement([k.w * 0.32, 0, z], 0, 0, 0))
         k.s.cylinder(1.8, 1.2, 8, C.metal, Placement([k.w * 0.32, 9, z], 0, 0, 0), 0.3)
@@ -198,7 +208,9 @@ def build_adobe(k: TileKit) -> None:
         k.s.box([w, 0.6, 0.4], C.adobeDark, Placement([x, h, z - d / 2 + 0.2], 0, 0, 0))
         if k.random() < 0.5:  # noqa: PLR2004 (a geometry constant)
             k.s.box([1.4, 3, 1.4], C.adobeDark, Placement([x + w / 4, h, z], 0, 0, 0))
-        k.lights.box([1, 1.4, 0.2], L.window, Placement([x, 1, z - d / 2 - 0.1], 0, 0, 0))
+        # D-215: its windows and its door, quads from the windows' atlas.
+        windows(k, [w, d], [1.2, h - 0.6], L.window, [x, z], WINDOW_STYLES.punched)
+        door(k, [x, 0, z - d / 2], DOOR_STYLES.door, L.window)
 
 
 def build_courtyard(k: TileKit) -> None:
@@ -216,4 +228,5 @@ def build_courtyard(k: TileKit) -> None:
         k.s.box([bw, 5, bd], C.adobe, Placement([x, 0, z], 0, 0, 0), C.adobeRoof)
     k.s.cylinder(1.5, 0.8, 8, C.adobeDark, Placement([0, 0, 0], 0, 0, 0))
     k.lights.ring(1.2, 0.3, 8, L.cyan, Placement([0, 0.8, 0], 0, 0, 0))
-    k.lights.box([2, 2, 0.2], L.window, Placement([0, 0, -d / 2 - 0.1], 0, 0, 0))
+    # D-215: its gate, a bay from the windows' atlas.
+    door(k, [0, 0, -d / 2], DOOR_STYLES.bay, L.window)

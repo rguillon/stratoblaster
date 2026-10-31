@@ -56,11 +56,14 @@ def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
     return compare
 
 
-def stage_camera(scene: Any, half_fov: float, far_clip: float) -> Any:
-    """The stage's camera, `half_fov` up and down, seeing up to `far_clip`; made the active one."""
+def stage_camera(scene: Any, half_fov: float, clips: tuple[float, float]) -> Any:
+    """The stage's camera, `half_fov` up and down, seeing from `clips[0]` up to `clips[1]` (D-216:
+    the near plane far out, so the depth buffer keeps its precision at the ground); made the
+    active one."""
+    near_clip, far_clip = clips
     camera = new_free_camera("scenery-camera", vector3_zero(), scene)
     camera.fov = half_fov * 2
-    camera.minZ = 1
+    camera.minZ = near_clip
     camera.maxZ = far_clip
     scene.activeCamera = camera
     return camera

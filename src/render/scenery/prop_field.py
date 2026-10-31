@@ -1,6 +1,7 @@
 """The props standing on the terrain (P04-R04): each kind of prop is one mesh (plus one for its
 self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped by
-terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair.
+terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair. D-212:
+some kinds may be drawn as imposters instead (`ImposterKinds`).
 """
 
 import math
@@ -17,17 +18,19 @@ from render.babylon import (
     matrix_compose_to_ref,
     new_matrix,
     new_mesh,
+    new_standard_material,
     new_vertex_data,
     quaternion,
     quaternion_yaw_pitch_roll_to_ref,
     set_enabled,
     vector3,
 )
+from render.geometry.textured import TexturedGeometry
 from render.scenery.plume_layer import build_plume_meshes
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
 from core.scenery.ground_boxes import PropPlacement  # noqa: E402
 from core.scenery.scenery_level import SceneryLevel  # noqa: E402
@@ -35,11 +38,17 @@ from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
 from render.scenery.plume_layer import PlumeFrame, PlumeMaterial, PlumeMaterialFactory  # noqa: E402
 from render.scenery.scenery_look import PropGeometry, PropModelFactory  # noqa: E402
 
+if TYPE_CHECKING:
+    # It imports this module.
+    from render.scenery.imposter_kinds import ImposterKinds
+
 PropDrift = Any
 Window = list[float]
 __pragma__("noskip")
 
 MATRIX_FLOATS = 16
+# D-212: the layer of the shadows' stand-ins, which no camera sees (theirs is 0x0FFFFFFF).
+SHADOW_ONLY_LAYER = 0x20000000
 
 # Keys of the objects that hold their cached results (a WeakMap keyed by the object).
 _GEOMETRY_SLOT = "render_prop_geometry"
@@ -57,21 +66,34 @@ def _slot_set(owner: Any, slot: str, value: Any) -> None:
 
 
 class PropMaterials:
-    """Materials of the props: the lit structure, and the self-lit accents."""
+    """Materials of the props: the lit structure, the self-lit accents and the windows (D-210;
+    None: the props' windows are not drawn)."""
 
-    def __init__(self, structure: Any, lights: Any) -> None:
+    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:  # noqa: ANN401
         self.structure = structure
         self.lights = lights
+        self.windows = windows
 
 
 class PropMeshes:
     """The meshes of one kind of prop."""
 
-    def __init__(self, structure: Any, lights: Any, plumes: list[Any]) -> None:
+    def __init__(
+        self,
+        structure: Any,  # noqa: ANN401
+        lights: Any,  # noqa: ANN401
+        plumes: list[Any],
+        windows: Any = None,  # noqa: ANN401
+        shadow: Any = None,  # noqa: ANN401
+    ) -> None:
         self.structure = structure
         self.lights = lights
         """Phase 10: its smoke or steam, drawn with the same instances."""
         self.plumes = plumes
+        """D-210: its windows (None if it has none)."""
+        self.windows = windows
+        """D-212: its shadow's stand-in, drawn in the shadows only (None if it has none)."""
+        self.shadow = shadow
 
 
 class KindProps:
@@ -153,6 +175,27 @@ def _draw_always(mesh: Any) -> None:
     mesh.doNotSyncBoundingInfo = True
 
 
+def _part_mesh(name: str, geo: Any, material: Any, scene: Any) -> Any:  # noqa: ANN401
+    """The mesh of a part of a prop (its lights, its windows), drawn always; None if it has no
+    such part or no material for it."""
+    # `== None`: a materials object made without windows has the field undefined.
+    if geo == None or material == None or len(geo.indices) == 0:  # noqa: E711
+        return None
+    mesh = mesh_of(name, geo, material, scene)
+    _draw_always(mesh)
+    return mesh
+
+
+def shadow_only_material(scene: Any) -> Any:  # noqa: ANN401
+    """D-212: a material that draws nothing (no colour, no depth): a mesh with it only shows in
+    the shadow maps, which draw it with their own shader."""
+    material = new_standard_material("prop-shadow-only", scene)
+    material.disableColorWrite = True
+    material.disableDepthWrite = True
+    material.disableLighting = True
+    return material
+
+
 def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
     """A disabled, unpickable mesh of `geo`, drawn with `material`."""
     mesh = new_mesh(name, scene)
@@ -161,6 +204,8 @@ def mesh_of(name: str, geo: ColoredGeometry, material: Any, scene: Any) -> Any:
     data.indices = geo.indices
     data.colors = geo.colors
     data.normals = _normals_of(geo)
+    if isinstance(geo, TexturedGeometry):
+        data.uvs = geo.uvs
     apply_vertex_data(data, mesh)
     mesh.material = material
     mesh.isPickable = False
@@ -191,6 +236,15 @@ def _unique(ids: list[str]) -> list[str]:
     return out
 
 
+def level_tree_kinds(level: SceneryLevel) -> list[str]:
+    """The kinds of tree `level`'s sections allow (D-214), unique, in order."""
+    ids: list[str] = []
+    for s in level.sections:
+        for t in allowed(level.props.trees, s.trees):
+            ids.append(t.id)
+    return _unique(ids)
+
+
 def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
     """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
     sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order."""
@@ -201,9 +255,7 @@ def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
         for g in allowed(props.groups, s.groups):
             for k in g.kinds:
                 ids.append(k.id)
-    for s in sections:
-        for t in allowed(props.trees, s.trees):
-            ids.append(t.id)
+    ids.extend(level_tree_kinds(level))
     if props.floating is not None:
         for k in props.floating.kinds:
             ids.append(k.id)
@@ -259,9 +311,14 @@ class PropField:
         materials: PropMaterials,
         on_structure: Any = None,
         plume_materials: PlumeMaterialFactory | None = None,
+        imposters: "ImposterKinds | None" = None,
     ) -> None:
         """`on_structure(mesh)`: called with each structure mesh (optional). `plume_materials`: the
-        material factory of the plumes (phase 10, optional)."""
+        material factory of the plumes (phase 10, optional). `imposters` (D-212, optional): the
+        kinds drawn as imposters (`models` then the imposters' own, making only their lights)."""
+        self._imposters = imposters
+        if imposters is not None:
+            models = imposters.models
         self._meshes: dict[str, PropMeshes] = {}
         """Phase 10: one material per kind of plume, driven every frame."""
         self._plume_materials: dict[str, PlumeMaterial] = {}
@@ -284,25 +341,47 @@ class PropField:
                 self._plume_materials[id] = material
             return material.material
 
+        self._shadow_material: Any = None
+        self._on_structure = on_structure
         for kind, factory in models.items():
             geometry = _geometry_of(factory)
-            structure = mesh_of("prop-" + kind, geometry.structure, materials.structure, scene)
-            structure.receiveShadows = True
-            if on_structure is not None:
-                on_structure(structure)
-            lights = None
-            if geometry.lights is not None and len(geometry.lights.indices) > 0:
-                lights = mesh_of(
-                    "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
-                )
+            # D-211: a model may have no structure (the cars' lights, their bodies imposters).
+            structure = None
+            if len(geometry.structure.indices) > 0:
+                structure = mesh_of("prop-" + kind, geometry.structure, materials.structure, scene)
+                structure.receiveShadows = True
+                if on_structure is not None:
+                    on_structure(structure)
+                _draw_always(structure)
+            lights = _part_mesh(
+                "prop-" + kind + "-lights", geometry.lights, materials.lights, scene
+            )
+            windows = _part_mesh(
+                "prop-" + kind + "-windows", geometry.windows, materials.windows, scene
+            )
+            # D-212: a stand-in drawn only in the shadows, with the instances: for a model with no
+            # structure (an imposter's, whose quad casts no shadow), not to cast a second one.
+            shadow = None if structure is not None else self._shadow_mesh(scene, kind, geometry)
+            if shadow is not None:
+                on_structure(shadow)
             plumes_of = geometry.plumes if geometry.plumes is not None else []
             plumes = build_plume_meshes(scene, "prop-" + kind, plumes_of, plume_material)
-            _draw_always(structure)
-            if lights is not None:
-                _draw_always(lights)
             for plume in plumes:
                 _draw_always(plume)
-            self._meshes[kind] = PropMeshes(structure, lights, plumes)
+            self._meshes[kind] = PropMeshes(structure, lights, plumes, windows, shadow)
+
+    def _shadow_mesh(self, scene: Any, kind: str, geometry: PropGeometry) -> Any:  # noqa: ANN401
+        """D-212: the mesh of the shadow's stand-in of `kind`, if it has one and there are shadows
+        (`on_structure`)."""
+        if geometry.shadow == None or self._on_structure is None:  # noqa: E711 (absent: undefined)
+            return None
+        if self._shadow_material is None:
+            self._shadow_material = shadow_only_material(scene)
+        mesh = _part_mesh("prop-" + kind + "-shadow", geometry.shadow, self._shadow_material, scene)
+        if mesh is not None:
+            # On a layer no camera sees: only the shadow map draws it.
+            mesh.layerMask = SHADOW_ONLY_LAYER
+        return mesh
 
     def update_plumes(self, frame: PlumeFrame) -> None:
         """Phase 10: moves the smoke and steam of the props on to this frame."""
@@ -330,17 +409,34 @@ class PropField:
 
     @property
     def light_meshes(self) -> list[Any]:
-        """Meshes of the self-lit accents (e.g. for a glow layer)."""
+        """Meshes of the self-lit accents and windows (e.g. for a glow layer)."""
         out: list[Any] = []
         for m in self._meshes.values():
             if m.lights is not None:
                 out.append(m.lights)
+            if m.windows is not None:
+                out.append(m.windows)
         return out
 
     @property
+    def window_meshes(self) -> list[Any]:
+        """Meshes of the windows (D-210: a glow layer draws them with their own material)."""
+        return [m.windows for m in self._meshes.values() if m.windows is not None]
+
+    @property
     def structure_meshes(self) -> list[Any]:
-        """Meshes of the lit structures (e.g. to hide the lights behind them in a glow layer)."""
-        return [m.structure for m in self._meshes.values()]
+        """Meshes of the lit structures and of the imposters (e.g. to hide the lights behind them
+        in a glow layer)."""
+        meshes = [m.structure for m in self._meshes.values() if m.structure is not None]
+        if self._imposters is not None:
+            meshes.extend(self._imposters.meshes)
+        return meshes
+
+    def bake_imposters(self) -> None:
+        """D-212: bakes the imposters' pictures (the first time only). Not while the ground adopts
+        what is made: the bake's mesh must not hang from it."""
+        if self._imposters is not None:
+            self._imposters.bake_once()
 
     def structure_of(self, kind: str) -> Any:
         """The structure mesh of a kind of prop."""
@@ -350,6 +446,31 @@ class PropField:
     def set_chunk(self, index: int, placements: list[PropPlacement]) -> None:
         """Sets the placements of chunk `index`, grouped by kind."""
         kinds: dict[str, KindProps] = {}
+        self._group(kinds, placements)
+        at = self._chunk_at(index)
+        if at < 0:
+            self._chunk_indices.append(index)
+            self._chunk_kinds.append(kinds)
+        else:
+            self._chunk_kinds[at] = kinds
+        self._dirty = True
+
+    def add_to_chunk(self, index: int, placements: list[PropPlacement]) -> None:
+        """Adds `placements` to those of chunk `index` (D-212: a row of trees at a time): the
+        props already there keep their instance matrices, and nothing is uploaded again unless one
+        of `placements` is in the window. A chunk that is not set (removed meanwhile) takes none."""
+        at = self._chunk_at(index)
+        if at < 0:
+            return
+        self._group(self._chunk_kinds[at], placements)
+        window = self._window
+        for p in placements:
+            if window is None or (p.z >= window[0] and p.z <= window[1]):
+                self._dirty = True
+                return
+
+    def _group(self, kinds: dict[str, KindProps], placements: list[PropPlacement]) -> None:
+        """Adds `placements` to `kinds`, by kind (each must have a model)."""
         for p in placements:
             if p.kind not in self._meshes:
                 raise ValueError('No model for prop "' + p.kind + '"')
@@ -358,28 +479,21 @@ class PropField:
                 props.placements.append(p)
             else:
                 kinds[p.kind] = KindProps([p])
-        self._chunk_set(index, kinds)
-        self._dirty = True
 
-    def _chunk_set(self, index: int, kinds: dict[str, KindProps]) -> None:
+    def _chunk_at(self, index: int) -> int:
+        """Where chunk `index` is in the chunk lists, or -1 if it is not set."""
         for i in range(len(self._chunk_indices)):
             if self._chunk_indices[i] == index:
-                self._chunk_kinds[i] = kinds
-                return
-        self._chunk_indices.append(index)
-        self._chunk_kinds.append(kinds)
-
-    def _chunk_delete(self, index: int) -> bool:
-        for i in range(len(self._chunk_indices)):
-            if self._chunk_indices[i] == index:
-                self._chunk_indices.pop(i)
-                self._chunk_kinds.pop(i)
-                return True
-        return False
+                return i
+        return -1
 
     def remove_chunk(self, index: int) -> None:
-        deleted = self._chunk_delete(index)
-        self._dirty = deleted or self._dirty
+        at = self._chunk_at(index)
+        if at < 0:
+            return
+        self._chunk_indices.pop(at)
+        self._chunk_kinds.pop(at)
+        self._dirty = True
 
     def clear(self) -> None:
         self._chunk_indices = []
@@ -410,9 +524,13 @@ class PropField:
                 mesh.position.set(d.x * math.sin(phase), 0, d.z * math.sin(phase * 0.7 + 1))
 
     def _mesh_list(self, meshes: PropMeshes) -> list[Any]:
-        out: list[Any] = [meshes.structure]
+        out: list[Any] = [meshes.structure] if meshes.structure is not None else []
         if meshes.lights is not None:
             out.append(meshes.lights)
+        if meshes.windows is not None:
+            out.append(meshes.windows)
+        if meshes.shadow is not None:
+            out.append(meshes.shadow)
         for plume in meshes.plumes:
             out.append(plume)
         return out
@@ -427,7 +545,7 @@ class PropField:
         for kind, meshes in self._meshes.items():
             drawn = by_kind.get(kind)
             placements = drawn.placements if drawn else []
-            if kind in self._drawn and _same_placements(self._drawn[kind], placements):
+            if kind in self._drawn and same_placements(self._drawn[kind], placements):
                 continue
             self._drawn[kind] = placements
             matrices = _matrices_of(drawn) if drawn else float32_array(0)
@@ -438,6 +556,17 @@ class PropField:
                 if len(matrices) == 0:
                     continue
                 mesh.thinInstanceSetBuffer("matrix", matrices, MATRIX_FLOATS, False)
+        if self._imposters is not None:
+            self._place_imposters(by_kind, self._imposters)
+
+    def _place_imposters(self, by_kind: dict[str, Drawn], imposters: "ImposterKinds") -> None:
+        """D-212: the imposters of the props drawn."""
+        placements: list[PropPlacement] = []
+        for kind in imposters.kinds:
+            drawn = by_kind.get(kind)
+            if drawn:
+                placements.extend(drawn.placements)
+        imposters.place(placements)
 
     def _by_kind(self) -> dict[str, Drawn]:
         """The props to draw (in the window, if any), by kind, in the order of the chunks."""
@@ -464,15 +593,31 @@ def _matrices_of(drawn: Drawn) -> Any:
     buffer = float32_array(len(drawn.at) * MATRIX_FLOATS)
     for j in range(len(drawn.at)):
         i = drawn.at[j]
-        props = drawn.from_[j]
-        if props.matrices is None:
-            props.matrices = instance_matrices(props.placements)
+        matrices = _matrices_for(drawn.from_[j])
         start = i * MATRIX_FLOATS
-        buffer.set(props.matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS)
+        buffer.set(matrices.subarray(start, start + MATRIX_FLOATS), j * MATRIX_FLOATS)
     return buffer
 
 
-def _same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
+def _matrices_for(props: KindProps) -> Any:
+    """The instance matrices of `props`, made on first use; those of placements added since are
+    made then, the others kept (D-212)."""
+    old = props.matrices
+    if old is None:
+        props.matrices = instance_matrices(props.placements)
+        return props.matrices
+    count = len(props.placements)
+    made = len(old) // MATRIX_FLOATS
+    if made == count:
+        return old
+    buffer = float32_array(count * MATRIX_FLOATS)
+    buffer.set(old, 0)
+    buffer.set(instance_matrices(props.placements[made:]), made * MATRIX_FLOATS)
+    props.matrices = buffer
+    return buffer
+
+
+def same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
     """Whether `a` and `b` hold the same placements in the same order."""
     if len(a) != len(b):
         return False

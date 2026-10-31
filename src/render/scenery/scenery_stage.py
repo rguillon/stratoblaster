@@ -18,6 +18,7 @@ from render.babylon import (
 )
 from render.scenery.cloud_layers import ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP
 from render.scenery.ground_root import GroundRoot, ground_window_of
+from render.scenery.imposter_kinds import imposter_kinds
 from render.scenery.level_ground import level_ground, road_source_of
 from render.scenery.playfield_framing import (
     GroundWindow,
@@ -26,7 +27,12 @@ from render.scenery.playfield_framing import (
     visible_ground,
 )
 from render.scenery.plume_layer import plume_light
-from render.scenery.prop_field import PropField, level_prop_models, prop_drifts
+from render.scenery.prop_field import (
+    PropField,
+    level_prop_models,
+    level_tree_kinds,
+    prop_drifts,
+)
 from render.scenery.rain_rings import RainRings
 from render.scenery.road_field import RoadLayers
 from render.scenery.scenery_kit import SceneryKitContext, SceneryKitFrame, SeaSize
@@ -121,7 +127,9 @@ class SceneryStage:
         self._x_half = (
             math.ceil((self._ground.half_width + config.margin) / config.cell) * config.cell
         )
-        self.camera = stage_camera(scene, self.framing.half_fov, config.far_clip)
+        self.camera = stage_camera(
+            scene, self.framing.half_fov, (config.near_clip, config.far_clip)
+        )
         # P08-R04: the time of day, clouds and weather along the level.
         self._sky = SkyLayers(scene, look, (level.scroll_speed, options.atmosphere, level.seed))
         self.sun = self._sky.sun
@@ -149,7 +157,14 @@ class SceneryStage:
         self._props = self._ground_root.adopt(lambda: self._build_props(models))
         prop_models = options.prop_models
         self._traffic = self._ground_root.adopt(
-            lambda: TrafficLayer(scene, prop_models, _props_of(self.kit), level.props.cars),
+            lambda: TrafficLayer(
+                scene,
+                prop_models,
+                _props_of(self.kit),
+                level.props.cars,
+                lambda kinds: self.kit.imposter_atlas(look.props.imposters, kinds),
+                self.framing.tilt,
+            ),
         )
         water = self._ground_root.adopt(
             lambda: sea_parts(scene, level, [self._x_half * 2, sea_length], self.kit),
@@ -158,6 +173,12 @@ class SceneryStage:
         self._rings: RainRings | None = water.rings if water is not None else None
         self._sea_enabled = self._sea is not None
         self._terrain = TerrainWatch()
+        # D-212: the chunks whose trees are still to come, a row of cells per frame, as
+        # `[index, z from, z to]`; the chunks of the first cover get theirs at once (the level is
+        # loading), and so do those in sight (`_sight`, the ground Z range where trees can be seen).
+        self._tree_jobs: list[list[Any]] = []
+        self._trees_later = False
+        self._sight: list[float] = []
         self.clouds: list[CloudLayerState] = self._attach_sky()
 
     def _attach_sky(self) -> list[CloudLayerState]:
@@ -230,6 +251,13 @@ class SceneryStage:
         return _concat(self._props.light_meshes, self._traffic.light_meshes)
 
     @property
+    def window_meshes(self) -> list[Any]:
+        """Meshes of the props' windows (D-210), among the glowing ones: a glow layer draws them
+        with their own material."""
+        meshes: list[Any] = self._props.window_meshes
+        return meshes
+
+    @property
     def glow_occluders(self) -> list[Any]:
         """Meshes that hide the glowing ones behind them (reviewer, 2026-10-28): the props and the
         cars. A glow layer draws them black; the terrain chunks come through `watch_terrain`."""
@@ -256,9 +284,13 @@ class SceneryStage:
         ground = level_ground(self.options.level, seed)
         self._field = ground.field
         self._placer = ground.placer
+        # The street surfaces of the new roads: the old seed's still on their way are not taken.
+        self._road_source = road_source_of(ground)
+        self._road_pending = []
 
         def rebuild() -> None:
             self._chunks.rebuild(self._field)
+            self._tree_jobs = []
             self._props.clear()
             self._roads.clear()
             for index in _map_keys(self._chunks.meshes):
@@ -277,6 +309,7 @@ class SceneryStage:
         `placements` (`PropPlacement`, in ground units: kinds of this level), standing on its
         ground as its own do."""
         self._solo = True
+        self._tree_jobs = []
         self._props.clear()
         self._props.set_chunk(SOLO_CHUNK, placements)
 
@@ -333,9 +366,7 @@ class SceneryStage:
         camera_z = ground.to_ground(camera.z)
         z_min = camera_z + self._ground.z_near - margin
         z_max = camera_z + self._ground.z_far + margin
-        # The buildings two screens ahead of the view are asked for as the view moves.
-        self._placer.want_placed(camera_z + self._ground.z_far + self._ahead)
-        ground.adopt(lambda: self._cover(z_min, z_max))
+        self._follow_ground(camera_z, z_min, z_max)
         self._update_props(camera_z, z_min, z_max)
         middle = camera_z + (self._ground.z_near + self._ground.z_far) / 2
         if self._sea is not None:
@@ -364,6 +395,16 @@ class SceneryStage:
             ),
         )
 
+    def _follow_ground(self, camera_z: float, z_min: float, z_max: float) -> None:
+        """Keeps the chunks over ground Z [z_min, z_max], around the view of the camera at ground Z
+        `camera_z`, with their roads and props; the trees still to come grow (D-212)."""
+        # The buildings two screens ahead of the view are asked for as the view moves.
+        self._placer.want_placed(camera_z + self._ground.z_far + self._ahead)
+        self._sight = tree_sight(camera_z, self._ground, self.options.config.tree_reach)
+        self._ground_root.adopt(lambda: self._cover(z_min, z_max))
+        self._trees_later = True
+        self._grow_trees()
+
     def _height(self, x: float, z: float) -> float:
         return self._field.height(x, z)
 
@@ -375,6 +416,7 @@ class SceneryStage:
         z_near = camera_z + self._ground.z_near - near
         z_far = camera_z + self._ground.z_far + far
         self._props.set_window(z_near, z_far, config.prop_step)
+        self._props.bake_imposters()
         self._props.sync()
         self._props.drift(self._drifts, self._time)
         traffic = js_object()
@@ -415,6 +457,7 @@ class SceneryStage:
         for index in changes.removed:
             self._props.remove_chunk(index)
             self._roads.remove_chunk(index)
+        self._tree_jobs = [job for job in self._tree_jobs if job[0] not in changes.removed]
         self._road_pending = [i for i in self._road_pending if i not in changes.removed]
         for span in changes.added:
             self._place_chunk(span.index)
@@ -448,9 +491,50 @@ class SceneryStage:
             if index not in self._road_pending:
                 self._road_pending.append(index)
         area = GroundArea(-self._x_half, self._x_half, span.z_min, span.z_max)
-        placed = self._placer.place(area)
-        if not self._solo:
-            self._props.set_chunk(index, placed)
+        if self._solo:
+            return
+        self._tree_jobs = [job for job in self._tree_jobs if job[0] != index]
+        # A chunk in sight (placed again by the runout or a new seed, or come after a jump) gets its
+        # trees with its buildings: they would else blink out and grow back in sight. One that
+        # comes in as the view moves on is out of sight (`tree_reach` is less than `margin`).
+        if not self._trees_later or self._in_sight(span.z_min, span.z_max):
+            self._props.set_chunk(index, self._placer.place(area))
+            return
+        # D-212: the buildings now, the trees over the next frames (see `_grow_trees`).
+        self._props.set_chunk(index, self._placer.place_without_trees(area))
+        self._tree_jobs.append([index, span.z_min, span.z_max])
+
+    def _in_sight(self, z_min: float, z_max: float) -> bool:
+        """Whether ground Z [z_min, z_max] reaches into the ground where trees can be seen."""
+        sight = self._sight
+        return len(sight) > 0 and z_max > sight[0] and z_min < sight[1]
+
+    def _grow_trees(self) -> None:
+        """D-212: the trees of one more row of cells of the first chunk still waiting for them (a
+        wood's take tens of milliseconds a chunk: placed at once, they made the frame long). A chunk
+        coming into sight gets the rest of its trees at once (after a jump, at x4 or a long frame,
+        it would else be seen bare). The others grow unseen, though they may be drawn already: the
+        props are drawn further out than trees can be seen."""
+        waiting: list[list[Any]] = []
+        for job in self._tree_jobs:
+            if self._in_sight(job[1], job[2]):
+                self._add_trees(job, job[2])
+            else:
+                waiting.append(job)
+        self._tree_jobs = waiting
+        if len(waiting) == 0:
+            return
+        job = waiting[0]
+        z_to = row_end(job[1], job[2], self._placer.rules.cell_size)
+        self._add_trees(job, z_to)
+        if z_to >= job[2]:
+            self._tree_jobs.pop(0)
+
+    def _add_trees(self, job: list[Any], z_to: float) -> None:
+        """Adds the trees of `job`'s chunk from its next row up to ground Z `z_to`."""
+        area = GroundArea(-self._x_half, self._x_half, job[1], z_to)
+        self._props.add_to_chunk(job[0], self._placer.trees_in(area))
+        job[1] = z_to
 
     def _take_roads(self) -> None:
         """Gives the street surfaces that are ready to their chunks; the others keep waiting."""
@@ -470,7 +554,16 @@ class SceneryStage:
         def shadow(mesh: Any) -> None:
             kit.add_shadow_caster(mesh)
 
-        return PropField(self.scene, models, _props_of(kit), shadow, kit.plume)
+        # D-212: the trees drawn as imposters, if the look has theirs.
+        level = self.options.level
+        trees = imposter_kinds(
+            self.scene,
+            models,
+            level_tree_kinds(level),
+            lambda kinds: kit.imposter_atlas(self.options.look.props.treeImposters, kinds),
+            self.framing.tilt,
+        )
+        return PropField(self.scene, models, _props_of(kit), shadow, kit.plume, trees)
 
     def _build_chunks(self) -> TerrainChunks:
         config = self.options.config
@@ -523,6 +616,19 @@ def _kit_context(
 def _sky_placement(window_at: Any, altitude_of: Any, flight_altitude: float, margin: float) -> Any:
     """The `SkyPlacement` of the sky layers (their window and altitude callbacks)."""
     return SkyPlacement(window_at, altitude_of, flight_altitude, margin)
+
+
+def tree_sight(camera_z: float, ground: GroundWindow, reach: float) -> list[float]:
+    """D-212: the ground Z range where trees can be seen from the camera at ground Z `camera_z`:
+    the ground in view, `reach` wider at both ends (a tree rises into the view from past them)."""
+    return [camera_z + ground.z_near - reach, camera_z + ground.z_far + reach]
+
+
+def row_end(z_from: float, z_end: float, cell: float) -> float:
+    """D-212: where the next row of cells of a chunk ends, from ground Z `z_from`, at most `z_end`:
+    the area [z_from, row_end) holds exactly one row of cell corners (`PropPlacer.trees_in`), the
+    first at or after `z_from`."""
+    return min(z_end, (math.ceil(z_from / cell) + 1) * cell)
 
 
 def _concat(first: Any, second: Any) -> list[Any]:

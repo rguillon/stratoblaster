@@ -83,11 +83,13 @@ class SceneryKitFrame:
 
 
 class PropMaterials:
-    """Vertex-coloured materials of the props: the lit structure and the self-lit accents."""
+    """Vertex-coloured materials of the props: the lit structure, the self-lit accents and the
+    windows (D-210, set by the real kit: see `window_material_visual.py`; None: not drawn)."""
 
-    def __init__(self, structure: Any, lights: Any) -> None:
+    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:
         self.structure = structure
         self.lights = lights
+        self.windows = windows
 
 
 class SeaSize:
@@ -138,6 +140,11 @@ class SceneryKit(Protocol):
 
     def aurora(self) -> Any: ...
 
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """D-211: an `ImposterAtlas` of `look` (an imposter look, see `imposters.py`) for `kinds`
+        kinds of prop, or None (no look, or no imposters: the props drawn as they are)."""
+        ...
+
     def add_shadow_caster(self, mesh: Any) -> None: ...
 
     def update(self, frame: SceneryKitFrame) -> None: ...
@@ -157,6 +164,8 @@ def set_ground_lights(materials: PropMaterials, glow: float) -> None:
     (P08-R04: off by day, on at dusk and night)."""
     if is_instance_of(materials.lights, "StandardMaterial"):
         materials.lights.emissiveColor.set(glow, glow, glow)
+    if is_instance_of(materials.windows, "StandardMaterial"):
+        materials.windows.emissiveColor.set(glow, glow, glow)
 
 
 # Depth offset of the props' self-lit accents (see `create_prop_materials`).
@@ -271,6 +280,10 @@ class PlainSceneryKit:
         return PlainCloudMaterial(
             _plain_material("cloud-" + str(look.altitude), look.color, self._scene)
         )
+
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+        """No imposters (they need a render target): the props are drawn as they are."""
+        return None
 
     def aurora(self) -> PlainMaterial:
         material = _plain_material("aurora", (0.2, 1, 0.5), self._scene)

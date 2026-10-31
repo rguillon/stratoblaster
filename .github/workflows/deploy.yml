@@ -32,9 +32,6 @@ jobs:
           node-version-file: node/.nvmrc
           cache: npm
           cache-dependency-path: node/package-lock.json
-      - run: npm ci --prefix node
-      - run: uv sync --locked
-      - run: make vendor
       - run: make build
       - uses: actions/upload-pages-artifact@v5
         with:

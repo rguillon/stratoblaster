@@ -15,14 +15,15 @@ __pragma__("noskip")
 from core.math.rng import pick, random_in  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
 from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.city_props import window_bands  # noqa: E402
-from game.view.props.tile_facades import FaceKit, face_lights  # noqa: E402
+from game.view.props.window_facades import facade_windows, round_windows  # noqa: E402
 from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
+from render.geometry.textured import QuadBuilder  # noqa: E402
 
 
 class LotKit:
-    """The structure and lights a lot is drawn into, with its facade and window colours. `faces`
-    (Phase 15, reviewer 2026-10-28): each face lit in its own pattern (`tile_facades.py`)."""
+    """The structure, lights and windows' quads (D-210) a lot is drawn into, with its facade and
+    window colours. `faces` (Phase 15, reviewer 2026-10-28): each face lit in its own pattern (its
+    own style of windows, see `window_facades.py`)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -33,6 +34,7 @@ class LotKit:
         roof: list[float],
         random: Any,  # noqa: ANN401 (a seeded generator)
         faces: bool = False,  # noqa: FBT001, FBT002
+        quads: QuadBuilder | None = None,
     ) -> None:
         self.s = s
         self.lights = lights
@@ -41,6 +43,7 @@ class LotKit:
         self.roof = roof
         self.random = random
         self.faces = faces
+        self.quads = quads if quads != None else QuadBuilder()  # noqa: E711 (absent: undefined)
 
 
 def volume(
@@ -50,7 +53,7 @@ def volume(
     h: float,
     facade: list[float] | None = None,
 ) -> None:
-    """A box with rows of lit windows, from `y` up to `y + h`."""
+    """A box with windows, from `y` up to `y + h`."""
     if facade == None:  # noqa: E711 (the default: the kit's facade)
         facade = kit.facade
     x = lot[0]
@@ -58,13 +61,10 @@ def volume(
     w = lot[2]
     d = lot[3]
     kit.s.box([w, h, d], facade, Placement([x, y, z], 0, 0, 0), kit.roof)
-    # Few rows, and none on low volumes, to keep the triangle count down (review).
-    if h < 8:  # noqa: PLR2004 (a geometry constant)
+    # A floor at least: none on the lowest volumes.
+    if h < 4:  # noqa: PLR2004 (a geometry constant)
         return
-    if kit.faces:
-        face_lights(FaceKit(kit.lights, kit.random, kit.windows), [x, z, w, d], [y + 3, y + h - 2])
-    else:
-        window_bands(kit.lights, [w, d], [y + 3, y + h - 2], 10, 2, kit.windows, [x, z])
+    facade_windows(kit.quads, kit.random, [x, z, w, d], [y + 1, y + h - 1], kit.windows, kit.faces)
 
 
 def crown(kit: LotKit, at: list[float], size: float) -> None:
@@ -149,9 +149,8 @@ def stepped_tower(kit: LotKit, lot: list[float]) -> None:
 
 
 def round_tower(kit: LotKit, lot: list[float]) -> None:
-    """A round tower in octagonal facets, with lit rings around it."""
+    """A round tower in hexagonal facets, with windows round it (D-210)."""
     s = kit.s
-    lights = kit.lights
     random = kit.random
     x = lot[0]
     z = lot[1]
@@ -160,18 +159,10 @@ def round_tower(kit: LotKit, lot: list[float]) -> None:
     radius = (min(w, d) / 2) * random_in(random, 0.6, 0.85)
     base = plinth(kit, lot)
     h = base + random_in(random, 25, 60)
-    s.cylinder(
-        radius,
-        h - base,
-        6,
-        kit.facade,
-        Placement([x, base, z], 0, 0, 0),
-        radius * random_in(random, 0.7, 1),
-    )
-    y = base + 4
-    while y + 2 < h - 4:
-        lights.ring(radius * 1.02, 2, 6, kit.windows, Placement([x, y, z], 0, 0, 0))
-        y += 12
+    top = radius * random_in(random, 0.7, 1)
+    s.cylinder(radius, h - base, 6, kit.facade, Placement([x, base, z], 0, 0, 0), top)
+    tower = [x, z, base, h - base, radius, top, 6]
+    round_windows(kit.quads, random, tower, [base + 1, h - 1], kit.windows)
     crown(kit, [x, h, z], radius)
 
 

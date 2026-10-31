@@ -20,15 +20,18 @@ __pragma__("noskip")
 from core.math.rng import create_rng, pick, random_in  # noqa: E402
 from game.config.prop_look import PROP_COLORS as C  # noqa: E402
 from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.city_props import window_bands  # noqa: E402
+from game.config.window_look import DOOR_STYLES  # noqa: E402
+from game.view.props.window_facades import doorway, facade_windows, wall_windows  # noqa: E402
 from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
+from render.geometry.textured import QuadBuilder  # noqa: E402
 from render.scenery.scenery_look import PropGeometry  # noqa: E402
 
 
 class TileKit:
     """What a model of the grid is built with (`TileKit`): two solid builders (structure and
-    lights), the seeded random generator, the plot (`w` wide along X, `d` deep along Z), the
-    size of a tile and the model's seed (some builders pick their shape by it)."""
+    lights), the windows' quads (D-210), the seeded random generator, the plot (`w` wide along X,
+    `d` deep along Z), the size of a tile and the model's seed (some builders pick their shape by
+    it)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -42,6 +45,7 @@ class TileKit:
     ) -> None:
         self.s = s
         self.lights = lights
+        self.windows = QuadBuilder()
         self.random = random
         self.w = w
         self.d = d
@@ -63,8 +67,8 @@ def tile_kit(w: float, d: float, tile: float, seed: int) -> TileKit:
 
 
 def geometry_of(k: TileKit) -> PropGeometry:
-    """The geometry a kit's builders made: the structure and the lights."""
-    return PropGeometry(k.s.geometry, k.lights.geometry)
+    """The geometry a kit's builders made: the structure, the lights and the windows."""
+    return PropGeometry(k.s.geometry, k.lights.geometry, None, k.windows.geometry)
 
 
 def r(k: TileKit, span: list[float]) -> float:
@@ -138,24 +142,35 @@ def gable(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     )
 
 
-def windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def windows(
     k: TileKit,
     size: list[float],
     span: list[float],
     color: Rgb,
     at: list[float] = [0, 0],  # noqa: B006 (read only)
-    gap: float = 3,
+    style: int | None = None,
 ) -> None:
-    """Lit window rows round a `w` × `d` block at (x, z), from `y0` to `y1`."""
-    window_bands(
-        k.lights,
-        size,
-        span,
-        gap,
-        min(1.2, gap / 2.5),
-        color,
-        at,
-    )
+    """Windows round a `w` × `d` block at (x, z), from `y0` to `y1` (D-210: one quad per wall),
+    tinted by `color`, of `style` (`WINDOW_STYLES`) or one at random."""
+    facade_windows(k.windows, k.random, [at[0], at[1], size[0], size[1]], span, color, False, style)
+
+
+def front_windows(
+    k: TileKit,
+    face: list[float],
+    size: list[float],
+    style: int,
+    color: Rgb,
+) -> None:
+    """The windows of one wall facing -Z or +Z (`face`: `[x, z, facing]`, `size`: `[width, y0,
+    y1]`), one quad of `style` (D-215: a glass front, a hut's window)."""
+    wall_windows(k.windows, k.random, face, size, style, color)
+
+
+def door(k: TileKit, at: list[float], door_style: int, color: Rgb, facing: float = -1) -> None:
+    """A door of `door_style` (`DOOR_STYLES`) on a wall facing -Z (or +Z), its foot's middle at
+    `at` (`[x, y, z]`), tinted by `color` (D-215: one quad from the windows' atlas)."""
+    doorway(k.windows, k.random, at, facing, door_style, color)
 
 
 def tree(k: TileKit, x: float, z: float, size: float) -> None:
@@ -174,8 +189,9 @@ def tree(k: TileKit, x: float, z: float, size: float) -> None:
 
 
 def front_lights(k: TileKit, w: float, z: float, y: float, neon: Rgb) -> None:
-    """A door light and a neon strip on the front of a block `w` wide whose front is at `z`."""
-    k.lights.box([min(2, w / 3), 1.4, 0.3], L.window, Placement([0, 0.2, z - 0.2], 0, 0, 0))
+    """A door and a neon strip on the front of a block `w` wide whose front is at `z` (D-215: the
+    door one quad from the windows' atlas)."""
+    door(k, [0, 0, z], DOOR_STYLES.door, L.window)
     k.lights.box([w * 0.8, 0.3, 0.3], neon, Placement([0, y, z - 0.2], 0, 0, 0))
 
 

@@ -40,6 +40,7 @@ def lot_kit(k: TileKit, facades: list[Rgb], lights: list[Rgb], faces: bool = Fal
         any_of(k, ROOFS),
         k.random,
         faces,
+        k.windows,
     )
 
 

@@ -79,9 +79,30 @@ def create_hud(
     return GameHud(doc, parent, HudSetup(ship, hud_texts, on_bomb))
 
 
+class StatsShown:
+    """Whether the debug tile is shown (D-212): as the player last chose with its key, else in
+    debug mode only. One for the whole game, so the choice holds from level to level."""
+
+    def __init__(self) -> None:
+        self.chosen: bool | None = None
+
+    def shown(self, debug: bool) -> bool:
+        return self.chosen if self.chosen is not None else debug
+
+    def toggle(self, debug: bool) -> bool:
+        """Flips the choice (its key pressed); whether the tile is now shown. From the choice, not
+        from the tile: without a parent there is none, and the key must still flip it."""
+        self.chosen = not self.shown(debug)
+        return self.chosen
+
+
+STATS_SHOWN = StatsShown()
+
+
 class LevelOverlaysOptions:
     """Where a level's HUD and debug tile go, and what they show: `doc`, `debug` (the debug tile
-    is shown only in debug mode), `stats_parent` and `hud_parent` (None: no tile, no HUD)."""
+    is shown in debug mode, or as chosen with its key: `STATS_SHOWN`), `stats_parent` and
+    `hud_parent` (None: no tile, no HUD)."""
 
     def __init__(
         self,
@@ -96,16 +117,23 @@ class LevelOverlaysOptions:
         self.hud_parent = hud_parent
 
 
+def create_stats(options: LevelOverlaysOptions) -> StatsTile | None:
+    """The debug tile, if it has a parent."""
+    if options.stats_parent is None:
+        return None
+    return StatsTile(options.doc, options.stats_parent, CFG.stats.refresh)
+
+
 def create_level_overlays(
     options: LevelOverlaysOptions,
     ship: str,
     texts: Any,
     on_bomb: Any,
 ) -> tuple[GameHud | None, StatsTile | None]:
-    """The level's HUD (with a parent) and debug tile (in debug mode, with a parent)."""
+    """The level's HUD (with a parent) and debug tile (if shown, with a parent)."""
     stats: StatsTile | None = None
-    if options.debug and options.stats_parent is not None:
-        stats = StatsTile(options.doc, options.stats_parent, CFG.stats.refresh)
+    if STATS_SHOWN.shown(bool(options.debug)):
+        stats = create_stats(options)
     hud: GameHud | None = None
     if options.hud_parent is not None:
         hud = create_hud(options.doc, options.hud_parent, ship, texts, on_bomb)

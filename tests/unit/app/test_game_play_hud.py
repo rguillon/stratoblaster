@@ -120,3 +120,42 @@ def test_p13_r01_the_overlays_build_the_hud_and_the_debug_tile_only_in_debug_mod
     )
     assert hud2 is None
     assert stats2 is None
+
+
+def test_d212_the_debug_tile_shows_as_last_chosen_with_its_key() -> None:
+    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
+
+    doc = FakeDocument()
+    parent = doc.createElement("div")
+    try:
+        STATS_SHOWN.chosen = True
+        _, stats = create_level_overlays(
+            LevelOverlaysOptions(doc, False, parent, None), "Ship A", hud_texts(), None
+        )
+        assert stats is not None
+        STATS_SHOWN.chosen = False
+        _, hidden = create_level_overlays(
+            LevelOverlaysOptions(doc, True, parent, None), "Ship A", hud_texts(), None
+        )
+        assert hidden is None
+        _, orphan = create_level_overlays(
+            LevelOverlaysOptions(doc, True, None, None), "Ship A", hud_texts(), None
+        )
+        assert orphan is None
+    finally:
+        STATS_SHOWN.chosen = None
+
+
+def test_d212_its_key_flips_the_choice_even_without_a_tile() -> None:
+    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
+
+    try:
+        # Not in debug mode: hidden, then shown, then hidden again.
+        assert STATS_SHOWN.toggle(False) is True
+        assert STATS_SHOWN.toggle(False) is False
+        assert STATS_SHOWN.shown(True) is False
+        STATS_SHOWN.chosen = None
+        # In debug mode the tile starts shown: the first press hides it.
+        assert STATS_SHOWN.toggle(True) is False
+    finally:
+        STATS_SHOWN.chosen = None

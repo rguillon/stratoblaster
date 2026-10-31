@@ -153,7 +153,8 @@ def start_game(engine: Any) -> None:
         APP_COMMIT,
         window,
         debug,
-        document.body if debug else None,
+        # The debug FPS / polygons tile: in debug mode, or shown with its key (D-212).
+        document.body,
         None,
         # The perf overlay (F3) in dev and e2e builds only (ENG-111).
         document.body if DEV_BUILD or E2E else None,

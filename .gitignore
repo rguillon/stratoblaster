@@ -13,3 +13,6 @@ build/
 src/build_info.py
 dist-e2e/
 test-results/
+
+# Stamps of the install and compile steps (Makefile)
+.make/

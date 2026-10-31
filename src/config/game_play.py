@@ -70,11 +70,13 @@ class DebugOptions:
 
 
 class DebugStats:
-    """Debug tile: FPS averaged over `fps_window` s, text refreshed every `refresh` s."""
+    """Debug tile: FPS averaged over `fps_window` s, text refreshed every `refresh` s, shown or
+    hidden in any level with `key` (D-212)."""
 
-    def __init__(self, fps_window: float, refresh: float) -> None:
+    def __init__(self, fps_window: float, refresh: float, key: str) -> None:
         self.fps_window = fps_window
         self.refresh = refresh
+        self.key = key
 
 
 class ReadabilityProbe:
@@ -168,6 +170,6 @@ GAME_PLAY_CONFIG = GamePlayConfig(
     1,
     606,
     DebugOptions(4, 10),
-    DebugStats(0.5, 0.25),
+    DebugStats(0.5, 0.25, "F2"),
     ReadabilityProbe(14, 5, 12, 60),
 )
