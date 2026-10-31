@@ -48,27 +48,20 @@ The high score, the last chosen ship and the volumes are kept in cookies (`strat
 ## Getting started
 
 ```sh
-make install   # uv sync, npm ci for esbuild (node/), git hooks
-make vendor    # the pinned Babylon.js build into public/vendor/ (checked by SHA-256)
-make dev       # build, then http://localhost:5173
+make setup     # checks the tools, installs the dependencies and the git hooks
+make serve     # builds the game and serves it on http://localhost:5173
 ```
 
 ## Make targets
 
-| Target            | What it does                                                    |
-| ----------------- | --------------------------------------------------------------- |
-| `make help`       | List targets                                                    |
-| `make install`    | uv sync, npm ci (esbuild, in `node/`), git hooks                |
-| `make vendor`     | Download the pinned Babylon.js into `public/vendor/`            |
-| `make build`      | Transcrypt compiles `src/` to JavaScript, esbuild bundles it into `dist/` |
-| `make dev`        | `make build`, then serve `dist/` on port 5173                   |
-| `make lint`       | Ruff check and format check, layering contracts                 |
-| `make typecheck`  | mypy --strict                                                   |
-| `make test`       | Unit tests (pytest, CPython over `src/`)                        |
-| `make coverage`   | Unit tests with the `core/` coverage gate (HTML in `coverage/`) |
-| `make check-fast` | lint + typecheck (pre-push hook)                                |
-| `make check`      | lint + typecheck + build                                        |
-| `make clean`      | Remove build outputs, coverage and caches                       |
+| Target        | What it does                                                          |
+| ------------- | --------------------------------------------------------------------- |
+| `make setup`  | Checks the tools, installs the dependencies and the git hooks         |
+| `make check`  | Every code check (lint, types), unit tests with coverage, build, e2e  |
+| `make tests`  | Unit tests (pytest, CPython over `src/`), coverage (HTML in `coverage/`) |
+| `make e2e`    | End-to-end tests (Playwright, Chromium) on the e2e build              |
+| `make serve`  | Builds the game and serves `dist/` on port 5173                       |
+| `make help`   | Lists these targets                                                   |
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

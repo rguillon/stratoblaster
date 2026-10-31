@@ -29,7 +29,7 @@ When the user says **"Implement phase N"**:
    - If any requirement is ambiguous, contradictory, or conflicts with an earlier spec, **list the questions and stop** before writing code. Do not guess on MUST requirements.
 3. **Plan**: write a short plan (tasks mapped to requirement IDs) in the phase file's "Implementation report" section.
 4. **Implement**, writing the unit tests alongside the code as the engineering spec requires. Every requirement ID must be traceable to code and/or tests (mention the ID in test names or comments, e.g. `it("P3-R02: enemy dies after 3 hits")`).
-5. **Verify (light)**: run `make typecheck build e2e` only. Do **not** run lint (`make lint`), unit tests (`make test`) or coverage (`make coverage`) during implementation: they run once, in the full gate of `/validate-phase` (see "Phase N validated"). Never lower thresholds or skip tests.
+5. **Verify (light)**: run `make typecheck build e2e` only. Do **not** run lint (`make lint`) or the unit tests with coverage (`make tests`) during implementation: they run once, in the full gate of `/validate-phase` (see "Phase N validated"). Never lower thresholds or skip tests.
 6. **Report**: fill the phase file "Implementation report" (what was done per requirement, deviations, how to test manually, known limitations). Append any non-trivial technical choice to `DECISIONS.md`.
 7. **Update** `PROGRESS.md`: set phase to `🟡 Awaiting review`.
 8. **Commit** on a branch `phase-NN` following the commit conventions in `01-engineering.md`. Do not merge or push unless the engineering spec says so.
