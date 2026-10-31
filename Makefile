@@ -26,7 +26,7 @@ SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || e
 NODE_MAJOR := $(shell cat node/.nvmrc)
 
 help: ## List the targets
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 # The tools the game needs. Every step below checks them first, so a missing one is named before
 # anything is installed.
@@ -59,8 +59,9 @@ $(NPM_CI): node/package.json node/package-lock.json | check-tools
 	@touch $@
 
 # Chromium for Playwright (ENG-21); its system libraries too on CI. SKIP_BROWSER=1 leaves it out
-# of `setup` (the e2e tests still install it when they run).
-PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps,)
+# of `setup` (the e2e tests still install it when they run). CI runs headless only, so it takes
+# the headless shell alone (a smaller download); a person's install keeps headed Chromium too.
+PLAYWRIGHT_INSTALL_FLAGS := $(if $(CI),--with-deps --only-shell,)
 PLAYWRIGHT := $(STAMPS)/playwright
 $(PLAYWRIGHT): $(UV_SYNC)
 	@mkdir -p $(STAMPS)
@@ -105,14 +106,15 @@ PY_SOURCES := $(shell find src -name '*.py' -not -path '*/__pycache__/*')
 TRANSCRYPT_STAMP := $(TRANSCRYPT_OUT)/.stamp
 TRANSCRYPT_E2E_STAMP := $(TRANSCRYPT_OUT)/.stamp-e2e
 
-$(TRANSCRYPT_STAMP): $(PY_SOURCES) $(UV_SYNC)
+# `build-info` is order-only: with `make -j`, src/build_info.py is written before Transcrypt reads it.
+$(TRANSCRYPT_STAMP): $(PY_SOURCES) $(UV_SYNC) | build-info
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/game main.py
 	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
 	touch $@
 
 # The e2e game (ENG-52): the Transcrypt symbol `e2e` keeps the `__pragma__("ifdef", "e2e")` blocks
 # of main.py (the test API, no render loop). The ground worker is the same as in production.
-$(TRANSCRYPT_E2E_STAMP): $(PY_SOURCES) $(UV_SYNC)
+$(TRANSCRYPT_E2E_STAMP): $(PY_SOURCES) $(UV_SYNC) | build-info
 	cd src && uv run transcrypt -b -n -s e2e -od ../$(TRANSCRYPT_OUT)/e2e main.py
 	touch $@
 
@@ -161,10 +163,13 @@ e2e-build: build $(TRANSCRYPT_E2E_STAMP) $(NPM_CI)
 # Playwright (Python) on the e2e build, served by tests/e2e/conftest.py (ENG-50, ENG-51). On a
 # failure, traces, screenshots and videos are kept in test-results/ (ENG-57).
 E2E_ARGS ?=
-# Parallel workers (pytest-xdist); each has its own browser and server.
+# Parallel workers (pytest-xdist); each has its own browser and server. Software WebGL keeps the
+# CPU busy: on a 4-core runner, more than 4 workers is no faster.
 E2E_WORKERS ?= 4
-e2e: e2e-build $(PLAYWRIGHT) $(UV_SYNC) ## End-to-end tests (Playwright, Chromium) on the e2e build; E2E_ARGS="-k smoke" to filter
-	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
+# One slice of the tests, K/N (K from 1): CI spreads them over N jobs (tests/e2e/conftest.py).
+E2E_SHARD ?=
+e2e: e2e-build $(PLAYWRIGHT) $(UV_SYNC) ## End-to-end tests (Playwright, Chromium) on the e2e build; E2E_ARGS="-k smoke" to filter, E2E_SHARD=1/4 for a slice
+	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
 
 # The port the game is served on.
 SERVE_PORT ?= 5173
