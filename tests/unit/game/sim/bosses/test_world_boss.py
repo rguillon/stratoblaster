@@ -4,9 +4,11 @@ import pytest
 from helpers.enemy_steps import area
 from helpers.fakes import FakeContext
 
+from game.config.bosses.boss_kit import bullet, part, stages, volley
 from game.config.bosses.final_bosses import REFINERY_TITAN
 from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_4.caldera_throne import CALDERA_THRONE
+from game.config.record import merge
 from game.sim.bosses.world_boss import WorldBoss, _sign, boss_half_width
 
 
@@ -71,3 +73,39 @@ def test_p07_r05_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -
     boss._by_id[part_id].destroy()
     assert boss._source(part_id) is None
     assert boss._source("core") is boss.core
+
+
+def _hidden_gun_design() -> object:
+    """The Reef Warden with one more gun, hidden until its transformation."""
+    stats = REEF_WARDEN.stats
+    parts = [*stats["parts"], part("hidden-gun", [0, -10], 8, 50, {"reveal": 1, "shields": False})]
+    guns = merge(REEF_WARDEN.guns, {"hidden-gun": {"gun": [[0, -14, 3]]}})
+    shot = volley.aimed("hidden-gun", 0.5, 1, 0, bullet("magenta", 150), 0)
+    return merge(
+        REEF_WARDEN,
+        {
+            "stats": merge(stats, {"parts": parts}),
+            "guns": guns,
+            "stages": stages([shot], [[]]),
+            "rage": None,
+        },
+    )
+
+
+def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> None:
+    ctx = FakeContext()
+    boss = WorldBoss(_hidden_gun_design(), area(width=480, height=640))
+    boss.state = "fighting"
+    for _ in range(60):
+        boss.update(ctx, 1 / 60)
+    assert ctx.bullets == []
+    for part in boss.parts:
+        if part.spec.reveal is None:
+            part.destroy()
+    boss.update(ctx, 0.0)
+    assert boss.state == "transforming"
+    assert len(ctx.explosions) == 1
+    for _ in range(60 * 4):
+        boss.update(ctx, 1 / 60)
+    assert boss.form == 1
+    assert len(ctx.bullets) > 0

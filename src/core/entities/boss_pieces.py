@@ -103,8 +103,8 @@ class BossPart:
 
     @health.setter
     def health(self, value: float) -> None:
-        """Damage only counts once the boss is in place (P07-R05)."""
-        if not self._boss.vulnerable:
+        """Damage only counts once the boss is in place (P07-R05), and the part revealed."""
+        if not self._boss.vulnerable or self.hidden:
             return
         next_health = max(0, value)
         if next_health < self._health:
@@ -114,6 +114,12 @@ class BossPart:
     @property
     def destroyed(self) -> bool:
         return self._health <= 0
+
+    @property
+    def hidden(self) -> bool:
+        """Whether it is still hidden: the transformation that reveals it has not happened."""
+        reveal = self.spec.reveal
+        return reveal is not None and self._boss.form < reveal
 
     @property
     def gone(self) -> bool:

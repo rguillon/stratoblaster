@@ -4,11 +4,11 @@ import pytest
 
 from core.entities.boss import BossStats
 from core.systems.boss_pattern import BossAimedShape, BossBurstShape, BossLaserShape
-from game.config.bosses.boss_kit import bullet, volley
+from game.config.bosses.boss_kit import bullet, part, volley
 from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_3.stone_idol import STONE_IDOL
 from game.config.bosses.world_4.geyser_rig import GEYSER_RIG
-from game.config.record import record
+from game.config.record import merge, record
 from game.sim.boss_build import (
     armed_pattern,
     armed_volley,
@@ -120,3 +120,40 @@ def test_p07_r05_a_boss_with_joints_gets_a_swing_spec_for_each_joint() -> None:
 def test_p07_r05_a_boss_with_turret_guns_gets_a_turret_spec_per_turret_piece() -> None:
     stats = boss_stats(STONE_IDOL)
     assert set(stats.turrets.keys()) == {"eye-left", "eye-right"}
+
+
+def _with_parts(parts: list, transforms: list | None = None) -> object:
+    stats = merge(REEF_WARDEN.stats, {"parts": [part(*p) for p in parts]})
+    extra = {"stats": stats}
+    if transforms is not None:
+        extra["transforms"] = transforms
+    return merge(REEF_WARDEN, extra)
+
+
+def test_hidden_parts_carry_their_reveal_and_others_none() -> None:
+    design = _with_parts([["a", [0, 0], 5, 10], ["x", [0, 0], 5, 10, {"reveal": 1}]])
+    stats = boss_stats(design)
+    assert [p.reveal for p in stats.parts] == [None, 1]
+
+
+def test_a_mini_boss_with_one_reveal_transforms_once_half_its_parts_are_gone() -> None:
+    parts = [[f"p{i}", [0, 0], 5, 10] for i in range(5)]
+    parts.append(["x", [0, 0], 5, 10, {"reveal": 1}])
+    assert boss_stats(_with_parts(parts)).transforms == [3]
+
+
+def test_a_final_boss_with_two_reveals_transforms_at_a_third_and_two_thirds() -> None:
+    parts = [[f"p{i}", [0, 0], 5, 10] for i in range(5)]
+    parts.extend([["x", [0, 0], 5, 10, {"reveal": 1}], ["y", [0, 0], 5, 10, {"reveal": 2}]])
+    stats = boss_stats(_with_parts(parts))
+    assert stats.transforms == [2, 4]
+    assert stats.transform_seconds == 1.5
+
+
+def test_a_design_may_set_its_own_transformation_points() -> None:
+    parts = [["a", [0, 0], 5, 10], ["x", [0, 0], 5, 10, {"reveal": 1}]]
+    assert boss_stats(_with_parts(parts, [1])).transforms == [1]
+
+
+def test_a_boss_without_hidden_parts_does_not_transform() -> None:
+    assert boss_stats(_with_parts([["a", [0, 0], 5, 10]])).transforms is None

@@ -119,6 +119,9 @@ BOSS_TIMING = record(
         "laserTurnDeg": 20,
         # Seconds a boss is angry after the pause that follows each destroyed part (phase 7).
         "rageSeconds": 3,
+        # Seconds a transformation lasts (its armour blows off, or its hidden weapons unfold): it
+        # neither fires nor takes damage meanwhile.
+        "transformSeconds": 1.5,
     }
 )
 
@@ -177,7 +180,8 @@ def part(
     health: float,
     options: Any = None,
 ) -> Any:
-    """A part: `options` holds `shields`, `drop`, `orbits` and `joint` (all optional)."""
+    """A part: `options` holds `shields`, `drop`, `orbits`, `joint` and `reveal` (all optional;
+    `reveal`: the transformation that reveals a hidden weapon part, 1 for the first)."""
     opts: Any = record({}) if _unset(options) else record(options)
     result = record(
         {
@@ -194,6 +198,8 @@ def part(
         result["orbits"] = True
     if not _unset(opts.joint):
         result["joint"] = opts.joint
+    if not _unset(opts.reveal):
+        result["reveal"] = opts.reveal
     return result
 
 

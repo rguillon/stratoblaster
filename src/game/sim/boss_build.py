@@ -7,6 +7,8 @@ not `None`, so every optional field is mapped here (`opt`), and every field is c
 core name. Nothing else in `game/sim/` builds core boss types from config.
 """
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import BossDeath, BossPartSpec, BossStats
@@ -156,7 +158,30 @@ def _part_spec(part: ConfigRecord) -> BossPartSpec:
         part.dropChance,
         part.orbits is True,
         opt(part.joint),
+        opt(part.reveal),
     )
+
+
+def default_transforms(design: ConfigRecord) -> list[int] | None:
+    """When a boss of `design` transforms: its design's `transforms`, or, for K transformations
+    (its hidden parts' highest `reveal`) and n original parts, the k-th once ceil(k n / (K + 1)) of
+    them are destroyed: half of them for a mini boss's one, a third and two thirds for a final
+    boss's two. None when it has no hidden part."""
+    given = opt(design.transforms)
+    if given is not None:
+        result: list[int] = given
+        return result
+    forms = 0
+    originals = 0
+    for part in design.stats.parts:
+        reveal = opt(part.reveal)
+        if reveal is None:
+            originals += 1
+        else:
+            forms = max(forms, reveal)
+    if forms == 0:
+        return None
+    return [math.ceil((k * originals) / (forms + 1)) for k in range(1, forms + 1)]
 
 
 def _turret_specs(design: ConfigRecord) -> Any:
@@ -210,4 +235,6 @@ def boss_stats(design: ConfigRecord) -> BossStats:
         _maybe(stats.roll, _roll),
         _turret_specs(design),
         _maybe(stats.joints, joint_specs),
+        default_transforms(design),
+        BOSS_TIMING.transformSeconds,
     )

@@ -168,10 +168,18 @@ class WorldBoss(Boss):
         return source
 
     def _source(self, from_: str) -> VolleySource | None:
-        """The piece a volley fires from: the core, or its part while that part stands."""
+        """The piece a volley fires from: the core, or its part while that part stands, once
+        revealed."""
         if from_ == CORE:
             return self.core
         part = self._by_id.get(from_)
-        if part is None or part.destroyed:
+        if part is None or part.destroyed or part.hidden:
             return None
         return part
+
+    def on_transform(self, form: int, ctx: EnemyContext) -> None:
+        """Its armour blows off (or its hull bursts open) where the weapons of transformation
+        `form` come out."""
+        for part in self.parts:
+            if part.spec.reveal == form:
+                ctx.explode(part.x, part.y, part.radius)
