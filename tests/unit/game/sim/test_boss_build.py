@@ -119,7 +119,7 @@ def test_p07_r05_a_boss_with_joints_gets_a_swing_spec_for_each_joint() -> None:
 
 def test_p07_r05_a_boss_with_turret_guns_gets_a_turret_spec_per_turret_piece() -> None:
     stats = boss_stats(STONE_IDOL)
-    assert set(stats.turrets.keys()) == {"eye-left", "eye-right"}
+    assert set(stats.turrets.keys()) == {"eye-left", "eye-right", "third-eye"}
 
 
 def _with_parts(parts: list, transforms: list | None = None) -> object:

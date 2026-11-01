@@ -152,17 +152,17 @@ _FOUNDRY_ARK = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour and its spine plating bursts off, baring a dark metal frame, and a pair of ring emitters
-# and a laser lance unfold.
+# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its wing
+# armour and its spine plating bursts off, baring a dark metal frame, and a pair of gatling turrets
+# and a drone hangar unfold.
 FOUNDRY_ARK = with_weapons(
     _FOUNDRY_ARK,
     [
-        hidden_weapon("gatling-left", "gatling", [-41, -43], 13, 1920, 1, "orange", 1.2, 10.2),
-        hidden_weapon("gatling-right", "gatling", [41, -43], 13, 1920, 1, "orange", 2.0, 10.2),
-        hidden_weapon("orb-left", "orb", [-48, 13], 10, 2400, 2, "orange", 1.2, 8.8),
-        hidden_weapon("orb-right", "orb", [48, 13], 10, 2400, 2, "orange", 2.0, 8.8),
-        hidden_weapon("lance-centre", "lance", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
+        hidden_weapon("battery-left", "battery", [-41, -43], 13, 1920, 1, "orange", 1.2, 10.2),
+        hidden_weapon("battery-right", "battery", [41, -43], 13, 1920, 1, "orange", 2.0, 10.2),
+        hidden_weapon("gatling-left", "gatling", [-48, 13], 10, 2400, 2, "orange", 1.2, 8.8),
+        hidden_weapon("gatling-right", "gatling", [48, 13], 10, 2400, 2, "orange", 2.0, 8.8),
+        hidden_weapon("hangar-centre", "hangar", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
     ],
     [
         armour_region(

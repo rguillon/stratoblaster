@@ -151,12 +151,12 @@ _CINDER_CRAB = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold.
 CINDER_CRAB = with_weapons(
     _CINDER_CRAB,
     [
-        hidden_weapon("lance-left", "lance", [-28, 21], 8, 400, 1, "red", 1.2, 11.7),
-        hidden_weapon("lance-right", "lance", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
+        hidden_weapon("gatling-left", "gatling", [-28, 21], 8, 400, 1, "red", 1.2, 11.7),
+        hidden_weapon("gatling-right", "gatling", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
     ],
     [
         armour_region(

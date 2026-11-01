@@ -164,17 +164,17 @@ _CALDERA_THRONE = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters and a laser lance
+# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of laser lances and a missile rack
 # unfold.
 CALDERA_THRONE = with_weapons(
     _CALDERA_THRONE,
     [
-        hidden_weapon("gatling-left", "gatling", [-50, -19], 12, 2080, 1, "magenta", 1.2, 14.2),
-        hidden_weapon("gatling-right", "gatling", [50, -19], 12, 2080, 1, "magenta", 2.0, 14.2),
-        hidden_weapon("orb-left", "orb", [-14, 75], 12, 2600, 2, "magenta", 1.2, 14.2),
-        hidden_weapon("orb-right", "orb", [14, 75], 12, 2600, 2, "magenta", 2.0, 14.2),
-        hidden_weapon("lance-centre", "lance", [0, -48], 12, 2600, 2, "magenta", 1.6, 13.4),
+        hidden_weapon("gun-deck-left", "battery", [-50, -19], 12, 2080, 1, "magenta", 1.2, 14.2),
+        hidden_weapon("gun-deck-right", "battery", [50, -19], 12, 2080, 1, "magenta", 2.0, 14.2),
+        hidden_weapon("lance-left", "lance", [-14, 75], 12, 2600, 2, "magenta", 1.2, 14.2),
+        hidden_weapon("lance-right", "lance", [14, 75], 12, 2600, 2, "magenta", 2.0, 14.2),
+        hidden_weapon("rack-centre", "rack", [0, -48], 12, 2600, 2, "magenta", 1.6, 13.4),
     ],
     [
         armour_region(

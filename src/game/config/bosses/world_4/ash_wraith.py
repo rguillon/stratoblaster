@@ -100,12 +100,12 @@ _ASH_WRAITH = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# baring a dark metal frame, and a pair of laser lances unfold.
 ASH_WRAITH = with_weapons(
     _ASH_WRAITH,
     [
-        hidden_weapon("rack-left", "rack", [-12, -7], 10, 660, 1, "blue", 1.2, 9.0),
-        hidden_weapon("rack-right", "rack", [12, -7], 10, 660, 1, "blue", 2.0, 9.0),
+        hidden_weapon("lance-left", "lance", [-12, -7], 10, 660, 1, "blue", 1.2, 9.0),
+        hidden_weapon("lance-right", "lance", [12, -7], 10, 660, 1, "blue", 2.0, 9.0),
     ],
     [
         armour_region(

@@ -132,12 +132,12 @@ _AVALANCHE = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of heavy cannons unfold.
 AVALANCHE = with_weapons(
     _AVALANCHE,
     [
-        hidden_weapon("lance-left", "lance", [-29, 21], 11, 720, 1, "purple", 1.2, 12.2),
-        hidden_weapon("lance-right", "lance", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
+        hidden_weapon("cannon-left", "cannon", [-29, 21], 11, 720, 1, "purple", 1.2, 12.2),
+        hidden_weapon("cannon-right", "cannon", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
     ],
     [
         armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing", [4.2, 1000]),

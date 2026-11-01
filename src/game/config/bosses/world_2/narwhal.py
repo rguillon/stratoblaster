@@ -111,15 +111,15 @@ _NARWHAL = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
 NARWHAL = with_weapons(
     _NARWHAL,
     [
-        hidden_weapon("gatling-left", "gatling", [-12, 11], 10, 880, 1, "green", 1.2, 21.1),
-        hidden_weapon("gatling-right", "gatling", [12, 11], 10, 880, 1, "green", 2.0, 21.1),
-        hidden_weapon("orb-left", "orb", [-9, -13], 7, 1100, 2, "green", 1.2, 26.1),
-        hidden_weapon("orb-right", "orb", [9, -13], 7, 1100, 2, "green", 2.0, 26.1),
+        hidden_weapon("lance-left", "lance", [-12, 11], 10, 880, 1, "green", 1.2, 21.1),
+        hidden_weapon("lance-right", "lance", [12, 11], 10, 880, 1, "green", 2.0, 21.1),
+        hidden_weapon("rack-left", "rack", [-9, -13], 7, 1100, 2, "green", 1.2, 26.1),
+        hidden_weapon("rack-right", "rack", [9, -13], 7, 1100, 2, "green", 2.0, 26.1),
     ],
     [
         armour_region(

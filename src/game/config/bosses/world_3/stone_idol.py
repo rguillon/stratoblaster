@@ -107,7 +107,7 @@ _STONE_IDOL = record(
 STONE_IDOL = with_weapons(
     _STONE_IDOL,
     [
-        hidden_weapon("eye", "sweeper", [0, 24], 13, 760, 1, "purple", 1.6, 12),
+        hidden_weapon("third-eye", "sweeper", [0, 24], 13, 760, 1, "purple", 1.6, 12),
         hidden_weapon("mortar-left", "mortar", [-30, 30], 8, 760, 1, "purple", 1.2, 13),
         hidden_weapon("mortar-right", "mortar", [30, 30], 8, 760, 1, "purple", 2.6, 13),
     ],

@@ -205,3 +205,65 @@ def test_a_region_bursts_in_blasts_spread_over_its_outlines() -> None:
     assert blasts[0][:2] == [20, 10]
     assert blasts[0][2] >= 8
     assert all(b[2] > 0 for b in blasts)
+
+
+# Boss weapon variety (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
+# design.md): the hidden weapons spread over the kinds.
+
+
+def _kind(design: Any, part_id: str) -> str:
+    kind: str = design.weapons[part_id]["kind"]
+    return kind
+
+
+def _world(design: Any) -> int:
+    """Ten bosses a world, a mini then a final boss for each of its five levels (P07-R05)."""
+    return BOSS_DESIGNS.index(design) // 10 + 1
+
+
+def _all_weapons() -> list[tuple[Any, Any]]:
+    return [(d, p) for d in BOSS_DESIGNS for p in _hidden(d) if _kind(d, p["id"]) != "beam"]
+
+
+def test_no_kind_of_weapon_is_more_than_a_fifth_of_them() -> None:
+    weapons = _all_weapons()
+    counts: dict[str, int] = {}
+    for d, p in weapons:
+        counts[_kind(d, p["id"])] = counts.get(_kind(d, p["id"]), 0) + 1
+    assert max(counts.values()) <= len(weapons) * 0.2, counts
+    assert set(counts) == set(KINDS) - {"beam"}
+
+
+def test_every_world_reveals_at_least_six_kinds_of_weapon() -> None:
+    for world in range(1, 5):
+        kinds = {_kind(d, p["id"]) for d, p in _all_weapons() if _world(d) == world}
+        assert len(kinds) >= 6, (world, kinds)
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_a_final_boss_reveals_new_kinds_at_its_second_transformation(design: Any) -> None:
+    hidden = _hidden(design)
+    first = {_kind(design, p["id"]) for p in hidden if p["reveal"] == 1}
+    second = {_kind(design, p["id"]) for p in hidden if p["reveal"] == 2}
+    assert not first & second
+
+
+def test_hangars_are_few_and_on_final_bosses_only() -> None:
+    hangars = [(d, p) for d, p in _all_weapons() if _kind(d, p["id"]) == "hangar"]
+    assert hangars
+    assert all(_is_final(d) for d, _ in hangars)
+    for world in range(1, 5):
+        assert len([d for d, _ in hangars if _world(d) == world]) <= 1
+
+
+def test_at_least_ten_bosses_reveal_a_weapon_on_their_centre_line() -> None:
+    centred = {d["id"] for d, p in _all_weapons() if p["x"] == 0}
+    assert len(centred) >= 10, centred
+
+
+def test_eight_bosses_change_shape_as_they_transform() -> None:
+    # D-230: two a world, each moving its own way.
+    shifting = [d for d in BOSS_DESIGNS if any(is_moving(r) for r in d.armour)]
+    assert len(shifting) == 8
+    for world in range(1, 5):
+        assert len([d for d in shifting if _world(d) == world]) == 2

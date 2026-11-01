@@ -159,15 +159,15 @@ _VERDANT_CROWN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of flak mortars unfold.
 VERDANT_CROWN = with_weapons(
     _VERDANT_CROWN,
     [
-        hidden_weapon("gatling-left", "gatling", [-47, -17], 11, 1840, 1, "green", 1.2, 11.0),
-        hidden_weapon("gatling-right", "gatling", [47, -17], 11, 1840, 1, "green", 2.0, 11.0),
-        hidden_weapon("orb-left", "orb", [-13, 69], 11, 2300, 2, "green", 1.2, 11.0),
-        hidden_weapon("orb-right", "orb", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
+        hidden_weapon("orb-left", "orb", [-47, -17], 11, 1840, 1, "green", 1.2, 11.0),
+        hidden_weapon("orb-right", "orb", [47, -17], 11, 1840, 1, "green", 2.0, 11.0),
+        hidden_weapon("mortar-left", "mortar", [-13, 69], 11, 2300, 2, "green", 1.2, 11.0),
+        hidden_weapon("mortar-right", "mortar", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
     ],
     [
         armour_region(

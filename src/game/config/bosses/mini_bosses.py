@@ -339,12 +339,12 @@ _SENTINEL = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold.
 REEF_WARDEN = with_weapons(
     _REEF_WARDEN,
     [
-        hidden_weapon("lance-left", "lance", [-13, -25], 11, 500, 1, "red", 1.2, 8.0),
-        hidden_weapon("lance-right", "lance", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
+        hidden_weapon("gatling-left", "gatling", [-13, -25], 11, 500, 1, "red", 1.2, 8.0),
+        hidden_weapon("gatling-right", "gatling", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
     ],
     [
         armour_region(
@@ -354,12 +354,12 @@ REEF_WARDEN = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of missile racks unfold.
 BREAKWATER = with_weapons(
     _BREAKWATER,
     [
-        hidden_weapon("lance-left", "lance", [-11, 33], 9, 650, 1, "orange", 1.2, 17.7),
-        hidden_weapon("lance-right", "lance", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
+        hidden_weapon("rack-left", "rack", [-11, 33], 9, 650, 1, "orange", 1.2, 17.7),
+        hidden_weapon("rack-right", "rack", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
     ],
     [
         armour_region(
@@ -369,12 +369,12 @@ BREAKWATER = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold.
 DUST_DEVIL = with_weapons(
     _DUST_DEVIL,
     [
-        hidden_weapon("gatling-left", "gatling", [-12, 5], 8, 500, 1, "green", 1.2, 10.2),
-        hidden_weapon("gatling-right", "gatling", [12, 5], 8, 500, 1, "green", 2.0, 10.2),
+        hidden_weapon("orb-left", "orb", [-12, 5], 8, 500, 1, "green", 1.2, 10.2),
+        hidden_weapon("orb-right", "orb", [12, 5], 8, 500, 1, "green", 2.0, 10.2),
     ],
     [
         armour_region(
@@ -412,12 +412,12 @@ SCORPION = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of missile racks unfold.
 SENTINEL = with_weapons(
     _SENTINEL,
     [
-        hidden_weapon("lance-left", "lance", [-12, -7], 8, 620, 1, "blue", 1.2, 6.1),
-        hidden_weapon("lance-right", "lance", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
+        hidden_weapon("rack-left", "rack", [-12, -7], 8, 620, 1, "blue", 1.2, 6.1),
+        hidden_weapon("rack-right", "rack", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
     ],
     [
         armour_region(

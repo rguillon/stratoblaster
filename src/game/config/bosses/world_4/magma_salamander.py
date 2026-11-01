@@ -160,12 +160,12 @@ _MAGMA_SALAMANDER = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of sweeping lasers unfold.
 MAGMA_SALAMANDER = with_weapons(
     _MAGMA_SALAMANDER,
     [
-        hidden_weapon("lance-left", "lance", [-9, 13], 7, 720, 1, "orange", 1.2, 12.4),
-        hidden_weapon("lance-right", "lance", [9, 13], 7, 720, 1, "orange", 2.0, 12.4),
+        hidden_weapon("sweeper-left", "sweeper", [-9, 13], 7, 720, 1, "orange", 1.2, 12.4),
+        hidden_weapon("sweeper-right", "sweeper", [9, 13], 7, 720, 1, "orange", 2.0, 12.4),
     ],
     [
         armour_region(

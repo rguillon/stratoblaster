@@ -164,13 +164,13 @@ _GEYSER_RIG = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
+# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
 # bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 GEYSER_RIG = with_weapons(
     _GEYSER_RIG,
     [
-        hidden_weapon("lance-left", "lance", [-13, 57], 11, 1040, 1, "red", 1.2, 12.4),
-        hidden_weapon("lance-right", "lance", [13, 57], 11, 1040, 1, "red", 2.0, 12.4),
+        hidden_weapon("rack-left", "rack", [-13, 57], 11, 1040, 1, "red", 1.2, 12.4),
+        hidden_weapon("rack-right", "rack", [13, 57], 11, 1040, 1, "red", 2.0, 12.4),
         hidden_weapon("orb-left", "orb", [-33, -29], 11, 1300, 2, "red", 1.2, 12.4),
         hidden_weapon("orb-right", "orb", [33, -29], 11, 1300, 2, "red", 2.0, 12.4),
     ],

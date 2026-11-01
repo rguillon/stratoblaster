@@ -144,12 +144,12 @@ _FURNACE_DRAKE = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of heavy cannons unfold.
 FURNACE_DRAKE = with_weapons(
     _FURNACE_DRAKE,
     [
-        hidden_weapon("lance-left", "lance", [-11, 7], 7, 880, 1, "red", 1.2, 13.2),
-        hidden_weapon("lance-right", "lance", [11, 7], 7, 880, 1, "red", 2.0, 13.2),
+        hidden_weapon("cannon-left", "cannon", [-11, 7], 7, 880, 1, "red", 1.2, 13.2),
+        hidden_weapon("cannon-right", "cannon", [11, 7], 7, 880, 1, "red", 2.0, 13.2),
     ],
     [
         armour_region(

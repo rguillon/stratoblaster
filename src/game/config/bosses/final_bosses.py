@@ -380,15 +380,15 @@ STORM_PETREL = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 GULL_MOTHERSHIP = with_weapons(
     _GULL_MOTHERSHIP,
     [
-        hidden_weapon("rack-left", "rack", [-35, 23], 9, 840, 1, "green", 1.2, 9.6),
-        hidden_weapon("rack-right", "rack", [35, 23], 9, 840, 1, "green", 2.0, 9.6),
-        hidden_weapon("gatling-left", "gatling", [-37, -9], 7, 1050, 2, "green", 1.2, 7.6),
-        hidden_weapon("gatling-right", "gatling", [37, -9], 7, 1050, 2, "green", 2.0, 7.6),
+        hidden_weapon("pike-left", "lance", [-35, 23], 9, 840, 1, "green", 1.2, 9.6),
+        hidden_weapon("pike-right", "lance", [35, 23], 9, 840, 1, "green", 2.0, 9.6),
+        hidden_weapon("orb-left", "orb", [-37, -9], 7, 1050, 2, "green", 1.2, 7.6),
+        hidden_weapon("orb-right", "orb", [37, -9], 7, 1050, 2, "green", 2.0, 7.6),
     ],
     [
         armour_region("flanks", 1, [[18, 6], [49, 6], [49, 54], [18, 54]], "wing", [1.9, 1000]),
@@ -435,13 +435,13 @@ MESA_FORTRESS = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
 # plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 REFINERY_TITAN = with_weapons(
     _REFINERY_TITAN,
     [
-        hidden_weapon("lance-left", "lance", [-9, -13], 7, 1450, 1, "orange", 1.2, 25.7),
-        hidden_weapon("lance-right", "lance", [9, -13], 7, 1450, 1, "orange", 2.0, 25.7),
+        hidden_weapon("gatling-left", "gatling", [-9, -13], 7, 1450, 1, "orange", 1.2, 25.7),
+        hidden_weapon("gatling-right", "gatling", [9, -13], 7, 1450, 1, "orange", 2.0, 25.7),
         hidden_weapon("orb-left", "orb", [-9, -35], 7, 1810, 2, "orange", 1.2, 18.9),
         hidden_weapon("orb-right", "orb", [9, -35], 7, 1810, 2, "orange", 2.0, 18.9),
     ],
@@ -456,15 +456,15 @@ REFINERY_TITAN = with_weapons(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of flak mortars unfold.
 OVERLORD = with_weapons(
     _OVERLORD,
     [
-        hidden_weapon("gatling-left", "gatling", [-47, -1], 11, 1550, 1, "purple", 1.2, 41.1),
-        hidden_weapon("gatling-right", "gatling", [47, -1], 11, 1550, 1, "purple", 2.0, 41.1),
-        hidden_weapon("orb-left", "orb", [-13, -55], 11, 1940, 2, "purple", 1.2, 14.1),
-        hidden_weapon("orb-right", "orb", [13, -55], 11, 1940, 2, "purple", 2.0, 14.1),
+        hidden_weapon("pike-left", "lance", [-47, -1], 11, 1550, 1, "purple", 1.2, 41.1),
+        hidden_weapon("pike-right", "lance", [47, -1], 11, 1550, 1, "purple", 2.0, 41.1),
+        hidden_weapon("mortar-left", "mortar", [-13, -55], 11, 1940, 2, "purple", 1.2, 14.1),
+        hidden_weapon("mortar-right", "mortar", [13, -55], 11, 1940, 2, "purple", 2.0, 14.1),
     ],
     [
         armour_region(

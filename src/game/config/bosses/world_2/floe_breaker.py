@@ -74,12 +74,12 @@ _FLOE_BREAKER = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold.
 FLOE_BREAKER = with_weapons(
     _FLOE_BREAKER,
     [
-        hidden_weapon("lance-left", "lance", [-12, -27], 10, 520, 1, "red", 1.2, 12.0),
-        hidden_weapon("lance-right", "lance", [12, -27], 10, 520, 1, "red", 2.0, 12.0),
+        hidden_weapon("gatling-left", "gatling", [-12, -27], 10, 520, 1, "red", 1.2, 12.0),
+        hidden_weapon("gatling-right", "gatling", [12, -27], 10, 520, 1, "red", 2.0, 12.0),
     ],
     [
         armour_region(

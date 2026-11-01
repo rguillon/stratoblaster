@@ -186,15 +186,15 @@ _HARBOUR_KRAKEN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of gun batteries unfold.
 HARBOUR_KRAKEN = with_weapons(
     _HARBOUR_KRAKEN,
     [
-        hidden_weapon("rack-left", "rack", [-13, -35], 11, 720, 1, "red", 1.2, 12.7),
-        hidden_weapon("rack-right", "rack", [13, -35], 11, 720, 1, "red", 2.0, 12.7),
-        hidden_weapon("gatling-left", "gatling", [-29, 29], 11, 900, 2, "red", 1.2, 16.9),
-        hidden_weapon("gatling-right", "gatling", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
+        hidden_weapon("gatling-left", "gatling", [-13, -35], 11, 720, 1, "red", 1.2, 12.7),
+        hidden_weapon("gatling-right", "gatling", [13, -35], 11, 720, 1, "red", 2.0, 12.7),
+        hidden_weapon("battery-left", "battery", [-29, 29], 11, 900, 2, "red", 1.2, 16.9),
+        hidden_weapon("battery-right", "battery", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
     ],
     [
         armour_region(

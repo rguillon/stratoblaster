@@ -209,13 +209,13 @@ _RIVER_LEVIATHAN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# baring a dark metal frame, and a pair of sweeping lasers unfold; at transformation 2 its spine
 # plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
 RIVER_LEVIATHAN = with_weapons(
     _RIVER_LEVIATHAN,
     [
-        hidden_weapon("gatling-left", "gatling", [-7, 19], 5, 720, 1, "green", 1.2, 15.7),
-        hidden_weapon("gatling-right", "gatling", [7, 19], 5, 720, 1, "green", 2.0, 15.7),
+        hidden_weapon("sweeper-left", "sweeper", [-7, 19], 5, 720, 1, "green", 1.2, 15.7),
+        hidden_weapon("sweeper-right", "sweeper", [7, 19], 5, 720, 1, "green", 2.0, 15.7),
         hidden_weapon("orb-left", "orb", [-7, -21], 5, 900, 2, "green", 1.2, 10.8),
         hidden_weapon("orb-right", "orb", [7, -21], 5, 900, 2, "green", 2.0, 10.8),
     ],

@@ -125,12 +125,12 @@ _ICE_QUEEN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# baring a dark metal frame, and a pair of gun batteries unfold.
 ICE_QUEEN = with_weapons(
     _ICE_QUEEN,
     [
-        hidden_weapon("gatling-left", "gatling", [-12, 39], 10, 670, 1, "purple", 1.2, 16.5),
-        hidden_weapon("gatling-right", "gatling", [12, 39], 10, 670, 1, "purple", 2.0, 16.5),
+        hidden_weapon("battery-left", "battery", [-12, 39], 10, 670, 1, "purple", 1.2, 16.5),
+        hidden_weapon("battery-right", "battery", [12, 39], 10, 670, 1, "purple", 2.0, 16.5),
     ],
     [
         armour_region(

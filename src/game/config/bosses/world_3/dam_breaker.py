@@ -128,13 +128,13 @@ _DAM_BREAKER = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its wing
 # armour bursts off, baring a dark metal frame, and a pair of missile racks unfold.
 DAM_BREAKER = with_weapons(
     _DAM_BREAKER,
     [
-        hidden_weapon("gatling-left", "gatling", [-50, 41], 12, 1520, 1, "green", 1.2, 9.4),
-        hidden_weapon("gatling-right", "gatling", [50, 41], 12, 1520, 1, "green", 2.0, 9.4),
+        hidden_weapon("battery-left", "battery", [-50, 41], 12, 1520, 1, "green", 1.2, 9.4),
+        hidden_weapon("battery-right", "battery", [50, 41], 12, 1520, 1, "green", 2.0, 9.4),
         hidden_weapon("rack-left", "rack", [-34, -55], 12, 1900, 2, "green", 1.2, 9.4),
         hidden_weapon("rack-right", "rack", [34, -55], 12, 1900, 2, "green", 2.0, 9.4),
     ],

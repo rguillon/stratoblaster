@@ -128,12 +128,12 @@ _MOSQUITO = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# baring a dark metal frame, and a pair of heavy cannons unfold.
 MOSQUITO = with_weapons(
     _MOSQUITO,
     [
-        hidden_weapon("rack-left", "rack", [-12, -11], 10, 800, 1, "magenta", 1.2, 8.1),
-        hidden_weapon("rack-right", "rack", [12, -11], 10, 800, 1, "magenta", 2.0, 8.1),
+        hidden_weapon("cannon-left", "cannon", [-12, -11], 10, 800, 1, "magenta", 1.2, 8.1),
+        hidden_weapon("cannon-right", "cannon", [12, -11], 10, 800, 1, "magenta", 2.0, 8.1),
     ],
     [
         armour_region(

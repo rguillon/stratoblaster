@@ -144,15 +144,15 @@ _GLACIER_COLOSSUS = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of sweeping lasers unfold.
 GLACIER_COLOSSUS = with_weapons(
     _GLACIER_COLOSSUS,
     [
-        hidden_weapon("gatling-left", "gatling", [-36, 53], 12, 1520, 1, "orange", 1.2, 23.8),
-        hidden_weapon("gatling-right", "gatling", [36, 53], 12, 1520, 1, "orange", 2.0, 23.8),
-        hidden_weapon("orb-left", "orb", [-25, 29], 9, 1900, 2, "orange", 1.2, 23.1),
-        hidden_weapon("orb-right", "orb", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
+        hidden_weapon("orb-left", "orb", [-36, 53], 12, 1520, 1, "orange", 1.2, 23.8),
+        hidden_weapon("orb-right", "orb", [36, 53], 12, 1520, 1, "orange", 2.0, 23.8),
+        hidden_weapon("sweeper-left", "sweeper", [-25, 29], 9, 1900, 2, "orange", 1.2, 23.1),
+        hidden_weapon("sweeper-right", "sweeper", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
     ],
     [
         armour_region(

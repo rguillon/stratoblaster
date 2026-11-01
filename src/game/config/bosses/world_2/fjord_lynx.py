@@ -100,12 +100,12 @@ _FJORD_LYNX = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold.
 FJORD_LYNX = with_weapons(
     _FJORD_LYNX,
     [
-        hidden_weapon("lance-left", "lance", [-7, -35], 5, 480, 1, "blue", 1.2, 7.2),
-        hidden_weapon("lance-right", "lance", [7, -35], 5, 480, 1, "blue", 2.0, 7.2),
+        hidden_weapon("orb-left", "orb", [-7, -35], 5, 480, 1, "blue", 1.2, 7.2),
+        hidden_weapon("orb-right", "orb", [7, -35], 5, 480, 1, "blue", 2.0, 7.2),
     ],
     [
         armour_region(
