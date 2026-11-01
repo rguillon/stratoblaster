@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import Boss  # noqa: E402
 from game.config.boss_look import BOSS_LOOK  # noqa: E402
+from game.config.bosses.moving_regions import is_moving, ridden_region  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import concat, record
@@ -18,6 +19,7 @@ from game.view.bosses.boss_damage import build_smoke, effect_materials  # noqa: 
 from game.view.bosses.boss_limbs import (  # noqa: E402
     ORIGIN,
     BossLimbs,
+    JointFrame,
     JointFrames,
     boss_point,
     hang,
@@ -30,6 +32,7 @@ from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
     weapon_slides,
     weapon_turret_drawing,
 )
+from game.view.bosses.region_motion import posed  # noqa: E402
 from game.view.enemies.enemy_materials import BODY_MATERIALS  # noqa: E402
 from game.view.enemies.enemy_mesh import (  # noqa: E402
     BuiltEnemyModel,
@@ -185,20 +188,21 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     ring_node = body["ring_node"]
     ring = body["ring"]
     joints = JointFrames(design, root)
-    parts: list[PartView] = []
-    for spec in design.stats.parts:
-        holder = joints.frame(
-            opt(spec, "joint", None),
-            ring_node if opt(spec, "orbits", False) else root,
+    # The nodes the weapons riding a moving region hang from (D-230).
+    carriers = _carriers(design, root)
+    parts = [
+        build_part(
+            design, spec, drawing, _holder(design, spec, joints, [root, ring_node], carriers), look
         )
-        parts.append(build_part(design, spec, drawing, holder, look))
+        for spec in design.stats.parts
+    ]
     limbs = BossLimbs(
         design,
         _field(drawing, "limbs"),
         joints,
         _limb_builder(design, scene, neon, look),
     )
-    armour = _armour_views(design, drawing, cut, root, look)
+    armour = _armour_views(design, drawing, cut, root, look, carriers)
     rig = _rig_view(drawing, root, look)
     _build_stems(design, drawing, cut, root, look)
     lit: Any = {"charge": 0}
@@ -267,7 +271,32 @@ def _armour_cut(design: Any, drawing: Any) -> Any:
     return cut_armour(drawing.core, regions)
 
 
-def _armour_views(design: Any, drawing: Any, cut: Any, root: Any, look: Any) -> list[Any]:
+def _holder(design: Any, spec: Any, joints: JointFrames, nodes: list[Any], carriers: Any) -> Any:
+    """The frame part `spec` hangs on: its joint's, the turning ring's (`nodes[1]`) for one that
+    orbits, the carrier of the moving region it rides (D-230), else the boss's (`nodes[0]`)."""
+    ridden = ridden_region(design, spec)
+    if ridden != None:  # noqa: E711
+        return JointFrame(carriers[ridden.id], ORIGIN)
+    return joints.frame(
+        opt(spec, "joint", None), nodes[1] if opt(spec, "orbits", False) else nodes[0]
+    )
+
+
+def _carriers(design: Any, root: Any) -> dict[str, Any]:
+    """A node on `root` for each moving region of `design` (D-230), by its id: the weapons riding
+    it hang from it (see `boss_armour.MovingView`)."""
+    result: dict[str, Any] = {}
+    for region in _field(design, "armour") or []:
+        if is_moving(region):
+            node = new_transform_node(design.id + "-" + region.id + "-carrier", root.getScene())
+            node.parent = root
+            result[region.id] = node
+    return result
+
+
+def _armour_views(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    design: Any, drawing: Any, cut: Any, root: Any, look: Any, carriers: Any = None
+) -> list[Any]:
     """The views of the armour regions `cut` (none when it is None), flashing with the core."""
     if cut is None:
         return []
@@ -277,7 +306,9 @@ def _armour_views(design: Any, drawing: Any, cut: Any, root: Any, look: Any) -> 
         return FlashGroup(model, flash)
 
     supports = part_supports(design, drawing, look["neon"])
-    return build_armour(design, cut, root, look["neon"], look["breath"], flash_of, supports)
+    return build_armour(
+        design, cut, root, look["neon"], look["breath"], flash_of, supports, carriers
+    )
 
 
 def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[Any]:
@@ -293,6 +324,9 @@ def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[
         weapon = _field(weapons, spec.id)
         if weapon != None and _field(weapon, "rig"):  # noqa: E711
             # On a rig (D-228), not standing on the boss.
+            continue
+        if ridden_region(design, spec) != None:  # noqa: E711
+            # Riding a moving region's piece (D-230).
             continue
         draw = _field(drawing.parts, spec.id)
         if draw == None and weapon != None:  # noqa: E711
@@ -317,8 +351,9 @@ def rest_stems(design: Any, drawing: Any, cut: Any, neon: Rgb) -> list[Any]:
         for layer in LAYERS:
             lasting.extend(cut.kept[layer])
             tris.extend(cut.kept[layer])
-            for region in cut.regions:
-                tris.extend(region[layer])
+            for k in range(len(cut.regions)):
+                # A moving region's piece as it rests (D-230).
+                tris.extend(posed(cut.regions[k][layer], design.armour[k], 0))
     for entry in _standing_parts(design, drawing, neon, False):
         for layer in LAYERS:
             tris.extend(triangles(getattr(entry[1], layer).geometry))

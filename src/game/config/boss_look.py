@@ -79,7 +79,8 @@ BOSS_LOOK = record(
         # `throw` px out, rising `lift` px and falling `fall` px, tumbling `spin` radians. Its
         # hidden weapons swing up on their hinges from `swing[0]` to `swing[1]`, rising from `sink`
         # of their radius down, then slide their barrels out from `slide[0]` to `slide[1]`,
-        # overshooting by `overshoot` (a back-out ease).
+        # overshooting by `overshoot` (a back-out ease). A piece that moves rather than bursting
+        # (D-230) strains as armour does, then moves into its new pose from `move[0]` to `move[1]`.
         "reveal": {
             "burst": 0.15,
             "burstEnd": 0.6,
@@ -91,6 +92,7 @@ BOSS_LOOK = record(
             "spin": 7,
             "swing": [0.4, 0.75],
             "slide": [0.7, 1.0],
+            "move": [0.15, 0.6],
             "sink": 0.9,
             "overshoot": 1.7,
         },

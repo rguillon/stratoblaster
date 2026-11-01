@@ -1,11 +1,13 @@
 """Whether a boss model holds together as one object (D-227), at rest and after each of its
-transformations: its core (what the armour cut leaves), the armour still on, the frames of the
-regions shed (with their pylons), the parts standing (with their turrets) and the hidden weapons
-revealed (with what slides out of them)."""
+transformations: its core (what the armour cut leaves), the armour still on, the pieces of the
+regions that move (D-230) as they rest or once moved, the frames of the regions shed (with their
+pylons), the parts standing (with their turrets) and the hidden weapons revealed (with what slides
+out of them)."""
 
 from typing import Any
 
 from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.moving_regions import is_moving
 from game.config.record import record
 from game.view.bosses.boss_armour import (
     LAYERS,
@@ -19,6 +21,7 @@ from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import _part_builder, part_supports, rest_stems
 from game.view.bosses.boss_models import BOSS_MODELS
 from game.view.bosses.boss_stems import stems_drawing
+from game.view.bosses.region_motion import posed
 from game.view.bosses.hidden_weapon_shapes import weapon_drawing, weapon_slides
 from game.view.enemies.enemy_mesh import collect_parts
 from helpers.view_probes import probe_builder
@@ -76,6 +79,12 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
         if spec.get("reveal") is not None:
             forms = max(forms, spec["reveal"])
     rig = drawing.get("rig")
+    named = design.get("transformParts") or []
+    gone: list[set[str]] = [set()]
+    for ids in named:
+        gone.append(gone[-1] | set(ids))
+    while len(gone) <= forms:
+        gone.append(gone[-1])
     states: list[list[Any]] = []
     for form in range(forms + 1):
         tris = list(core)
@@ -84,9 +93,11 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
             tris.extend(rig.triangles(1 if form >= 1 else 0))
         for k, region in enumerate(regions):
             layers = cut.regions[k]
-            if region.form > form:
+            if region.form > form or is_moving(region):
+                # On still, or moved into its new pose (D-230).
                 for layer in LAYERS:
-                    tris.extend(layers[layer])
+                    tris.extend(posed(layers[layer], region, form))
+            if region.form > form or region.frame is None:
                 continue
             held = supports_in(region, supports)
             drawings = frame_drawings(
@@ -102,6 +113,9 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
                 continue
             retire = spec.get("retire")
             if retire is not None and retire <= form:
+                continue
+            if spec["id"] in gone[form]:
+                # Destroyed for its transformation to come (D-228's `transformParts`).
                 continue
             tris.extend(_part_tris(design, drawing, spec))
         states.append(tris)

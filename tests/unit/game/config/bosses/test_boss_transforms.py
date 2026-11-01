@@ -6,14 +6,22 @@ from typing import Any
 import pytest
 
 from game.config.bosses.hidden_weapons import FRAMES, armour_region, region_blasts
+from game.config.bosses.moving_regions import (
+    drawn_spot,
+    is_moving,
+    motion_value,
+    move_point,
+    ridden_region,
+)
 from game.config.bosses.weapon_kinds import KINDS
 from game.sim.boss_build import default_transforms
 from game.sim.boss_kinds import BOSS_DESIGNS
 from render.geometry.shatter import inside
 
 # How much each kind of shot weighs in a boss's fire rate: a bullet 1, a homing missile 2, a laser
-# (its sweep across the screen) 8.
+# (its sweep across the screen) 8; an enemy a part launches (a hangar's Gnat, D-229) 2.
 WEIGHT = {"missiles": 2, "laser": 8}
+LAUNCHED = 2
 
 IDS = [design["id"] for design in BOSS_DESIGNS]
 
@@ -41,12 +49,22 @@ def _volley_rate(shot: Any) -> float:
 def fire_rate(design: Any, form: int) -> float:
     """The boss's fire rate (weighted shots a second) just after transformation `form` (0: as it
     comes in), the parts that brought it on being the first of its original parts destroyed."""
-    thresholds = default_transforms(design) or []
-    lost = 0 if form == 0 else thresholds[form - 1]
     originals = _originals(design)
-    destroyed = {p["id"] for p in originals[:lost]}
+    named = design.get("transformParts")
+    if named:
+        # It transforms once the parts named for each transformation are destroyed (D-228).
+        destroyed = {i for ids in named[:form] for i in ids}
+    else:
+        thresholds = default_transforms(design) or []
+        lost = 0 if form == 0 else thresholds[form - 1]
+        destroyed = {p["id"] for p in originals[:lost]}
+    lost = len(destroyed)
     live = {"core"}
-    live.update(p["id"] for p in originals[lost:] if p.get("retire") is None or p["retire"] > form)
+    live.update(
+        p["id"]
+        for p in originals
+        if p["id"] not in destroyed and (p.get("retire") is None or p["retire"] > form)
+    )
     live.update(p["id"] for p in _hidden(design) if p["reveal"] <= form)
     stages = design.stages
     stage = stages[min(lost, len(stages) - 1)] or []
@@ -59,6 +77,9 @@ def fire_rate(design: Any, form: int) -> float:
         if shot.get("after") is not None and shot["after"] not in destroyed:
             continue
         total += _volley_rate(shot)
+    for launch in design.get("launches") or []:
+        if launch["from"] in live:
+            total += LAUNCHED * launch["count"] / launch["every"]
     return total
 
 
@@ -82,6 +103,7 @@ def test_each_transformation_reveals_one_to_three_armed_weapons(design: Any) -> 
     for form in {p["reveal"] for p in hidden}:
         assert 1 <= len([p for p in hidden if p["reveal"] == form]) <= 3
     fired = {shot["from"] for stage in design.stages for shot in (stage or [])}
+    fired.update(launch["from"] for launch in design.get("launches") or [])
     for p in hidden:
         assert p["id"] in design.guns
         assert design.weapons[p["id"]]["kind"] in KINDS
@@ -103,7 +125,8 @@ def test_each_transformation_sheds_an_armour_region(design: Any) -> None:
     shed = {region.form for region in design.armour}
     assert shed == forms
     for region in design.armour:
-        assert region.frame in FRAMES
+        # A moving region may leave no frame (D-230).
+        assert region.frame in FRAMES or (is_moving(region) and region.frame is None)
         assert all(len(outline) >= 3 for outline in region.outlines)
 
 
@@ -113,8 +136,50 @@ def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(desi
         if design.weapons[p["id"]].get("rig"):
             # At the end of a rig it unfolds (D-228: the Scorpion's tail), not in a region.
             continue
-        regions = [r for r in design.armour if r.form == p["reveal"]]
+        if ridden_region(design, p) is not None:
+            # On a moving region's piece, where it ends up (D-230).
+            continue
+        regions = [r for r in design.armour if r.form == p["reveal"] and not is_moving(r)]
         assert any(inside(o, p["x"], p["y"]) for r in regions for o in r.outlines), p["id"]
+
+
+def _rest_outline(region: Any) -> list[list[float]]:
+    rest = motion_value(region.motion, 0)
+    return [move_point(region.motion, rest, [x, y, 0])[:2] for x, y in region.outlines[0]]
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_no_part_the_player_can_hit_stands_on_a_piece_as_it_moves(design: Any) -> None:
+    # D-230: positions in core/ never move; a part on a moving piece must be gone by then.
+    named = design.get("transformParts") or []
+    for region in design.armour:
+        if not is_moving(region):
+            continue
+        form = region.form
+        gone = {i for ids in named[:form] for i in ids}
+        outline = _rest_outline(region)
+        for p in design.stats.parts:
+            reveal = p.get("reveal")
+            if reveal is not None and reveal >= form:
+                continue
+            retire = p.get("retire")
+            if (retire is not None and retire <= form) or p["id"] in gone:
+                continue
+            assert not inside(outline, p["x"], p["y"]), f"{p['id']} on {region.id}"
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_a_weapon_riding_a_moving_piece_ends_up_on_it(design: Any) -> None:
+    for p in _hidden(design):
+        region = ridden_region(design, p)
+        if region is None:
+            continue
+        look = design.weapons[p["id"]]
+        spot = drawn_spot(region, [p["x"], p["y"], look["height"]])
+        # Its whole pod, not only its centre.
+        r = p["radius"] * 0.6
+        for dx, dy in [(0, 0), (r, 0), (-r, 0), (0, r), (0, -r)]:
+            assert inside(region.outlines[0], spot[0] + dx, spot[1] + dy), p["id"]
 
 
 def test_a_region_is_mirrored_across_the_centre_line_unless_asked_not_to() -> None:

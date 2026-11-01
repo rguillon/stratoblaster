@@ -14,10 +14,12 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.moving_regions import is_moving, motion_value
 from game.config.record import concat
 from game.view.bosses.boss_frame import UP, floor_height, floor_triangles, frame_drawings
 from game.view.bosses.boss_reveal import HIDDEN, SHOWN, ease, reveal_phase
 from game.view.bosses.boss_stems import surface_below
+from game.view.bosses.region_motion import node_pose, posed, progress, relative_value
 from game.view.enemies.enemy_mesh import EnemyParts, build_enemy_model
 from render.babylon import new_transform_node, set_enabled
 from render.edge_trim_mesh import clear_trim, set_trim_group
@@ -140,6 +142,7 @@ class ArmourCut:
         frames: list[Any],
         floors: list[float],
         bridges: list[Any],
+        framed: list[bool] | None = None,
     ) -> None:
         self.kept = kept
         self.calls = calls
@@ -149,6 +152,8 @@ class ArmourCut:
         self.floors = floors
         # Beams holding patches of each frame to the boss (`_held_frames`).
         self.bridges = bridges
+        # Whether each region leaves a frame (a moving one may not, D-230).
+        self.framed = framed if framed is not None else [True for _ in regions]
 
     def core_drawing(self) -> Any:
         """The drawing of the core without its armour."""
@@ -201,7 +206,8 @@ def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
     frames = [concat(c["hull"], c["flesh"]) for c in cut]
     floors = [floor_height(f) for f in frames]
     bridges = _held_frames(kept, cut, frames, floors, regions)
-    return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges)
+    framed = [r.frame != None for r in regions]  # noqa: E711
+    return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges, framed)
 
 
 def _framed_state(
@@ -219,11 +225,12 @@ def _framed_state(
     for layer in LAYERS:
         tris.extend(kept[layer])
     for k in range(len(regions)):
-        if regions[k].form > form:
-            tris.extend(concat(cut[k]["hull"], cut[k]["flesh"]))
+        if regions[k].form > form or is_moving(regions[k]):
+            # On still, or moved into its new pose (D-230).
+            tris.extend(posed(concat(cut[k]["hull"], cut[k]["flesh"]), regions[k], form))
     sources: list[list[int]] = []
     for k in range(len(regions)):
-        if regions[k].form > form:
+        if regions[k].form > form or regions[k].frame == None:  # noqa: E711
             continue
         for i in range(len(frames[k])):
             tri = frames[k][i]
@@ -317,9 +324,10 @@ def _free_after(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     count = len(tris)
     for k in range(len(regions)):
         solid = concat(cut[k]["hull"], cut[k]["flesh"])
-        if regions[k].form > form:
-            tris.extend(solid)
-        elif len(solid) > 0:
+        if regions[k].form > form or is_moving(regions[k]):
+            # On still, or moved into its new pose (D-230).
+            tris.extend(posed(solid, regions[k], form))
+        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711
             tris.extend(floor_triangles(solid, floor_height(solid)))
     loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
     hanging = [i for i in range(count) if loose[i]]
@@ -498,6 +506,61 @@ class ArmourView:
             node.scaling.set(pose[3], pose[3], pose[3])
 
 
+def place(node: Any, pose: list[Any]) -> None:
+    """Puts `node` at `pose`, `[position, rotation]` (see `region_motion.node_pose`)."""
+    p = pose[0]
+    r = pose[1]
+    node.position.set(p[0], p[1], p[2])
+    node.rotation.set(r[0], r[1], r[2])
+
+
+class MovingView:
+    """A moving region of a boss model (D-230): its piece, `whole` (a model on its `mover` node,
+    with its flash group `flash`), moved by its motion as the boss transforms; the `carrier` node
+    the weapons riding it hang from (drawn where they end up); and its `frame` (a model), if it
+    leaves one where it was drawn."""
+
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+        self, region: Any, whole: Any, flash: Any, mover: Any, carrier: Any, frame: Any
+    ) -> None:
+        self.region = region
+        self.whole = whole
+        self.flash = flash
+        self.mover = mover
+        self.carrier = carrier
+        self.frame = frame
+
+    def show(self, boss: Any, lit: Any, dt: float) -> None:
+        """Poses the piece for `boss` (None: at rest) as its transformation goes: it strains as
+        armour does, then moves into its new pose."""
+        motion = self.region.motion
+        k = progress(self.region, boss)
+        value = motion_value(motion, k)
+        place(self.mover, node_pose(motion, value))
+        place(self.carrier, node_pose(motion, relative_value(motion, value)))
+        since_hit = 1000 if boss == None else boss.core.since_hit  # noqa: E711
+        look = BOSS_LOOK.reveal
+        straining = (
+            boss != None  # noqa: E711
+            and boss.transforming_into == self.region.form
+            and boss.transform < look.burst
+        )
+        if straining:
+            t = boss.transform
+            since_hit = 0 if math.floor(t * look.strobeHz * 4) % 2 == 0 else 1000
+            jolt = math.sin(t * 90) * look.shudder * (t / look.burst)
+            self.whole.root.position.set(jolt, 0, -jolt * 0.6)
+        else:
+            self.whole.root.position.set(0, 0, 0)
+        self.whole.sync(lit, dt)
+        self.flash.show(since_hit)
+        if self.frame != None:  # noqa: E711
+            out = boss != None and (k > 0 or boss.form >= self.region.form)  # noqa: E711
+            set_enabled(self.frame.root, out)
+            if out:
+                self.frame.sync(lit, dt)
+
+
 class FrameView:
     """A region's frame: its `root` node, its floor and ribs models."""
 
@@ -531,6 +594,8 @@ def lasting_surfaces(cut: ArmourCut) -> list[Any]:
     for layer in LAYERS:
         result.extend(cut.kept[layer])
     for k in range(len(cut.frames)):
+        if not cut.framed[k]:
+            continue
         for tri in cut.frames[k]:
             if up_facing(tri, UP):
                 y = cut.floors[k]
@@ -560,6 +625,43 @@ def supports_in(region: Any, supports: list[Any]) -> list[Any]:
     return result
 
 
+def _moving_view(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    region: Any,
+    cut: ArmourCut,
+    k: int,
+    whole: Any,
+    flash_of: Any,
+    standing: list[Any],
+    carriers: Any,
+    look: list[Any],
+) -> MovingView:
+    """The view of the moving region `region` (the `k`-th cut by `cut`), its piece `whole`: on its
+    own mover node, with its carrier (from `carriers`, else a new one) and its frame if it leaves
+    one. `look` is `[neon, breath, name]`."""
+    neon = look[0]
+    breath = look[1]
+    name = look[2]
+    root = whole.root.parent
+    scene = root.getScene()
+    mover = new_transform_node(name + "-mover", scene)
+    mover.parent = root
+    whole.root.parent = mover
+    carrier = carriers[region.id] if carriers != None and region.id in carriers else None  # noqa: E711
+    if carrier == None:  # noqa: E711
+        carrier = new_transform_node(name + "-carrier", scene)
+        carrier.parent = root
+    frame = None
+    if region.frame != None:  # noqa: E711
+        held = supports_in(region, standing)
+        drawings = frame_drawings(
+            cut.frames[k], region.frame, neon, held, cut.floors[k], cut.bridges[k]
+        )
+        frame = _build_frame(name, scene, neon, breath, drawings)
+        frame.root.parent = root
+        set_enabled(frame.root, False)
+    return MovingView(region, whole, flash_of(whole), mover, carrier, frame)
+
+
 def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     design: Any,
     cut: ArmourCut,
@@ -568,21 +670,27 @@ def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     breath: Any,
     flash_of: Any,
     supports: list[Any] | None = None,
-) -> list[ArmourView]:
+    carriers: Any = None,
+) -> list[Any]:
     """The views of `design`'s armour regions, cut by `cut`, on `root`. `flash_of(model)` makes
     the flash group of a model; `supports` are the pieces standing on the boss (see
-    `draw_pylon`), held up by the frame of the region under them."""
+    `draw_pylon`), held up by the frame of the region under them; `carriers` the nodes (by region
+    id) the weapons riding a moving region hang from (see `MovingView`)."""
     standing = rooted(supports if supports is not None else [], lasting_surfaces(cut))
     regions = design.armour
     scene = root.getScene()
     most = min(BOSS_LOOK.armour.chunks, math.floor(BOSS_LOOK.armour.bossChunks / len(regions)))
-    result: list[ArmourView] = []
+    result: list[Any] = []
     for k in range(len(regions)):
         region = regions[k]
         layers = cut.regions[k]
         name = design.id + "-armour-" + region.id
         whole = build_enemy_model(name, scene, neon, _layers_drawing(layers, _all, None), breath)
         whole.root.parent = root
+        if is_moving(region):
+            look = [neon, breath, name]
+            result.append(_moving_view(region, cut, k, whole, flash_of, standing, carriers, look))
+            continue
         chunks: list[ArmourChunk] = []
         pieces = chunk_layers(layers, most)
         for i in range(len(pieces)):
