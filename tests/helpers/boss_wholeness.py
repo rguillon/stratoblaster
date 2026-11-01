@@ -21,8 +21,8 @@ from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import _part_builder, part_supports, rest_stems
 from game.view.bosses.boss_models import BOSS_MODELS
 from game.view.bosses.boss_stems import stems_drawing
-from game.view.bosses.region_motion import posed
 from game.view.bosses.hidden_weapon_shapes import weapon_drawing, weapon_slides
+from game.view.bosses.region_motion import posed
 from game.view.enemies.enemy_mesh import collect_parts
 from helpers.view_probes import probe_builder
 from render.geometry.islands import bounds_of, loose_triangles, pieces
@@ -60,12 +60,9 @@ def _part_tris(design: Any, drawing: Any, spec: Any) -> list[Any]:
     return result
 
 
-def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
-    """The triangles of the boss model at rest and after each transformation."""
-    capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
-    drawing = record(capture.drawing)
-    regions = design.armour
-    cut = cut_armour(drawing.core, regions)
+def _initial_core(design: Any, drawing: Any, cut: Any) -> list[Any]:
+    """The triangles of the boss at rest: the core's kept parts, the armour still on, the ring and
+    the stems holding the loose pieces (D-227)."""
     core: list[Any] = []
     for layer in LAYERS:
         core.extend(cut.kept[layer])
@@ -74,51 +71,89 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
         core.extend(_drawn(drawing["ring"]))
     # The stems holding its loose pieces, on its core (D-227).
     core.extend(_drawn(stems_drawing(rest_stems(design, drawing, cut, NEON), NEON)))
-    supports = rooted(part_supports(design, drawing, NEON), lasting_surfaces(cut))
+    return core
+
+
+def _reveal_count(design: Any) -> int:
+    """The most transformations a boss has: the highest `reveal` of its parts (D-227)."""
     forms = 0
     for spec in design.stats.parts:
         if spec.get("reveal") is not None:
             forms = max(forms, spec["reveal"])
-    rig = drawing.get("rig")
+    return forms
+
+
+def _destroyed_by(design: Any, forms: int) -> list[set[str]]:
+    """The sets of part ids destroyed by each transformation (D-228's `transformParts`)."""
     named = design.get("transformParts") or []
     gone: list[set[str]] = [set()]
     for ids in named:
         gone.append(gone[-1] | set(ids))
     while len(gone) <= forms:
         gone.append(gone[-1])
+    return gone
+
+
+def _region_tris(design: Any, cut: Any, supports: list[Any], form: int) -> list[Any]:
+    """The armour regions' triangles at `form`: the pose when the region is on or moving (D-230),
+    else the frame drawings when it is held."""
+    tris: list[Any] = []
+    for k, region in enumerate(design.armour):
+        layers = cut.regions[k]
+        if region.form > form or is_moving(region):
+            # On still, or moved into its new pose (D-230).
+            for layer in LAYERS:
+                tris.extend(posed(layers[layer], region, form))
+        if region.form > form or region.frame is None:
+            continue
+        held = supports_in(region, supports)
+        drawings = frame_drawings(
+            cut.frames[k], region.frame, NEON, held, cut.floors[k], cut.bridges[k]
+        )
+        tris.extend(_drawn(drawings[0]))
+        tris.extend(_drawn(drawings[1]))
+    return tris
+
+
+def _part_tris_at(design: Any, drawing: Any, form: int, gone: list[set[str]]) -> list[Any]:
+    """The triangles of the parts alive at `form`: hidden ones appear with their reveal, retired
+    ones leave at their retirement, and the destroyed ones are out (D-228)."""
+    tris: list[Any] = []
+    for spec in design.stats.parts:
+        if spec.get("joint") is not None or spec.get("orbits"):
+            continue
+        reveal = spec.get("reveal")
+        if reveal is not None and reveal > form:
+            continue
+        retire = spec.get("retire")
+        if retire is not None and retire <= form:
+            continue
+        if spec["id"] in gone[form]:
+            # Destroyed for its transformation to come (D-228's `transformParts`).
+            continue
+        tris.extend(_part_tris(design, drawing, spec))
+    return tris
+
+
+def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
+    """The triangles of the boss model at rest and after each transformation."""
+    capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
+    drawing = record(capture.drawing)
+    regions = design.armour
+    cut = cut_armour(drawing.core, regions)
+    core = _initial_core(design, drawing, cut)
+    supports = rooted(part_supports(design, drawing, NEON), lasting_surfaces(cut))
+    forms = _reveal_count(design)
+    rig = drawing.get("rig")
+    gone = _destroyed_by(design, forms)
     states: list[list[Any]] = []
     for form in range(forms + 1):
         tris = list(core)
         if rig is not None:
             # Its rig (D-228), unfolded from the first transformation on.
             tris.extend(rig.triangles(1 if form >= 1 else 0))
-        for k, region in enumerate(regions):
-            layers = cut.regions[k]
-            if region.form > form or is_moving(region):
-                # On still, or moved into its new pose (D-230).
-                for layer in LAYERS:
-                    tris.extend(posed(layers[layer], region, form))
-            if region.form > form or region.frame is None:
-                continue
-            held = supports_in(region, supports)
-            drawings = frame_drawings(
-                cut.frames[k], region.frame, NEON, held, cut.floors[k], cut.bridges[k]
-            )
-            tris.extend(_drawn(drawings[0]))
-            tris.extend(_drawn(drawings[1]))
-        for spec in design.stats.parts:
-            if spec.get("joint") is not None or spec.get("orbits"):
-                continue
-            reveal = spec.get("reveal")
-            if reveal is not None and reveal > form:
-                continue
-            retire = spec.get("retire")
-            if retire is not None and retire <= form:
-                continue
-            if spec["id"] in gone[form]:
-                # Destroyed for its transformation to come (D-228's `transformParts`).
-                continue
-            tris.extend(_part_tris(design, drawing, spec))
+        tris.extend(_region_tris(design, cut, supports, form))
+        tris.extend(_part_tris_at(design, drawing, form, gone))
         states.append(tris)
     return states
 
