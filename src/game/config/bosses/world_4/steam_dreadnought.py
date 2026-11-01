@@ -81,10 +81,10 @@ _STEAM_DREADNOUGHT = record(
                     "groundSpeed": 0.6,
                     "coreDrop": 1,
                     "parts": [
-                        fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
-                        fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
                         fpart("turret-left", [TURRET_X, TURRET_Y], 10, 950),
                         fpart("turret-right", [-TURRET_X, TURRET_Y], 10, 950),
+                        fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
+                        fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
                         fpart("rack", list(DREAD_PARTS.rack), 10, 600, {"shields": False}),
                     ],
                 }

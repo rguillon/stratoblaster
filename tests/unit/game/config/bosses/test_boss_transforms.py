@@ -267,3 +267,12 @@ def test_eight_bosses_change_shape_as_they_transform() -> None:
     assert len(shifting) == 8
     for world in range(1, 5):
         assert len([d for d in shifting if _world(d) == world]) == 2
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
+def test_the_parts_named_for_each_transformation_come_before_the_next_ones(design: Any) -> None:
+    # K breaks the parts in order (P07-R09): it calls each transformation in turn (D-230).
+    named = design.get("transformParts") or []
+    order = [p["id"] for p in design.stats.parts]
+    for earlier, later in zip(named, named[1:], strict=False):
+        assert max(order.index(i) for i in earlier) < min(order.index(i) for i in later)

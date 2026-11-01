@@ -86,10 +86,10 @@ _BOREAL_CITADEL = record(
                 "parts": [
                     fpart("cannon-left", [-cx, cy], 15, 1900, {"shields": False}),
                     fpart("cannon-right", [cx, cy], 15, 1900, {"shields": False}),
-                    fpart("battery-left", [-bx, by], 14, 1700, {"shields": False}),
-                    fpart("battery-right", [bx, by], 14, 1700, {"shields": False}),
                     fpart("dome-left", [-dx, dy], 13, 2150),
                     fpart("dome-right", [dx, dy], 13, 2150),
+                    fpart("battery-left", [-bx, by], 14, 1700, {"shields": False}),
+                    fpart("battery-right", [bx, by], 14, 1700, {"shields": False}),
                 ],
             }
         ),

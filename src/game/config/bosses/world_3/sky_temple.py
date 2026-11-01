@@ -87,10 +87,10 @@ _SKY_TEMPLE = record(
                     "groundSpeed": 0.3,
                     "coreDrop": 1,
                     "parts": [
-                        fpart("obelisk-front-left", OBELISKS["obelisk-front-left"], 13, 1000),
-                        fpart("obelisk-front-right", OBELISKS["obelisk-front-right"], 13, 1000),
                         fpart("obelisk-back-left", OBELISKS["obelisk-back-left"], 13, 1000),
                         fpart("obelisk-back-right", OBELISKS["obelisk-back-right"], 13, 1000),
+                        fpart("obelisk-front-left", OBELISKS["obelisk-front-left"], 13, 1000),
+                        fpart("obelisk-front-right", OBELISKS["obelisk-front-right"], 13, 1000),
                         fpart("beacon", TEMPLE_PARTS.beacon, 16, 2400, {"shields": False}),
                     ],
                 }
