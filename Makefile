@@ -121,8 +121,8 @@ $(TRANSCRYPT_E2E_STAMP): $(PY_SOURCES) $(UV_SYNC) | build-info
 # Lint, types and tests (the code checks).
 
 lint: build-info $(UV_SYNC)
-	uv run ruff check src
-	uv run ruff format --check src
+	uv run ruff check src tests
+	uv run ruff format --check src tests
 	PYTHONPATH=src uv run lint-imports
 
 typecheck: build-info $(UV_SYNC)

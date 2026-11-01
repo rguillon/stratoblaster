@@ -3,6 +3,7 @@ design.md, Part B): how a piece's motion moves points, mirrored and back."""
 
 import pytest
 
+from game.config.bosses.hidden_weapons import armour_region
 from game.config.bosses.moving_regions import (
     drawn_spot,
     end_spot,
@@ -14,7 +15,6 @@ from game.config.bosses.moving_regions import (
     slide,
     swing,
 )
-from game.config.bosses.hidden_weapons import armour_region
 
 
 def _approx(points: list[float]) -> object:

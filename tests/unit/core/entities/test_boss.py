@@ -516,7 +516,9 @@ def test_d228_named_parts_call_for_a_transformation_whatever_else_is_lost(
     assert boss.state == "transforming"
 
 
-def test_d228_a_part_retires_as_its_transformation_starts(make_boss: Make, ctx: FakeContext) -> None:
+def test_d228_a_part_retires_as_its_transformation_starts(
+    make_boss: Make, ctx: FakeContext
+) -> None:
     boss = _scorpion_like(make_boss)
     sting = _by_id(boss, "sting")
     health = boss.remaining_health

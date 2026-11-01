@@ -220,8 +220,8 @@ def test_a_weapon_riding_a_moving_piece_ends_up_on_it(design: Any) -> None:
             assert inside(region.outlines[0], spot[0] + dx, spot[1] + dy), p["id"]
 
 
-# Boss weapon variety (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
-# design.md): the hidden weapons spread over the kinds.
+# Boss weapon variety (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-
+# shifts design.md): the hidden weapons spread over the kinds.
 
 
 def _kind(design: Any, part_id: str) -> str:
