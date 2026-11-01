@@ -22,13 +22,13 @@
 
 **Acceptance criteria**
 - [ ] Given <context>, when <action>, then <result>.
-- [ ] 
+- [ ]
 
 ### PNN-R02 — <short title>  · MUST
 <!-- Description -->
 
 **Acceptance criteria**
-- [ ] 
+- [ ]
 
 ## 🧑 Tunable values
 <!-- Numbers you want to be able to tweak later. The agent puts them in config. -->
@@ -47,8 +47,8 @@
 ## 🧑 Manual validation checklist
 <!-- What YOU will check in the browser before validating. The agent should make these easy to check. -->
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
 
 ## 🧑 Notes, references, sketches
 <!-- Links, images, pseudo-code, example level layouts... -->
@@ -59,7 +59,7 @@
 > After the agent reports, write corrections here, then say **"Fix phase NN"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

@@ -5,4 +5,4 @@ from typing import Any
 document: Any
 window: Any
 
-def __pragma__(*args: Any) -> None: ...
+def __pragma__(*args: Any) -> None: ...  # noqa: N807 (Transcrypt compiler marker, not a dunder name)

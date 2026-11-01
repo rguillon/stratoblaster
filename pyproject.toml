@@ -21,10 +21,12 @@ dev = [
     "pytest>=9.2.0",
     "pytest-playwright>=0.10.0",
     "pytest-xdist>=3.8.0",
-    "pytest-cov>=7.0.0"  
+    "pytest-cov>=7.0.0",
+    "ty>=0.0.95",
+    "deptry>=0.25.1",
 ]
 
-# Ruff lints (ENG-12) and formats (ENG-13); `make lint` checks the format without writing.
+# Ruff lints (ENG-12) and formats (ENG-13); `make check` checks the format without writing.
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -52,7 +54,11 @@ max-complexity = 10
 [tool.ruff.lint.pylint]
 max-args = 6
 
-# ENG-14: mypy --strict over src/ (`make typecheck`); the browser globals' stubs are in typings/.
+
+[tool.ruff.format]
+preview = true
+
+# ENG-14: mypy --strict over src/ (`make check`); the browser globals' stubs are in typings/.
 [tool.mypy]
 strict = true
 python_version = "3.12"
@@ -82,11 +88,10 @@ omit = [
 ]
 
 [tool.coverage.report]
+skip_empty = false
+fail_under = 90
 show_missing = true
-skip_covered = false
-# ENG-43: the whole of src/ at 70 % lines (`make tests`); `src/core/**` at 90 % (`make tests`
-# checks it on its own).
-fail_under = 70
+skip_covered = true
 
 [tool.importlinter]
 root_packages = [
@@ -104,7 +109,7 @@ root_packages = [
 ]
 include_external_packages = true
 
-# The layering rule of ENG-11 for core/, checked by `make lint`, not just written down (the game/
+# The layering rule of ENG-11 for core/, checked by `make check`, not just written down (the game/
 # directions of ENG-142 have no contract yet).
 [[tool.importlinter.contracts]]
 name = "core/ is pure: no browser or DOM"
@@ -113,7 +118,7 @@ source_modules = ["core"]
 forbidden_modules = ["org", "browser"]
 # Each module below imports __pragma__ only as a compile-time marker for Transcrypt (it skips
 # the typing names and never touches the DOM, ENG-153). Any other import of org or browser fails
-# `make lint`.
+# `make check`.
 ignore_imports = [
     "core.content.game_definition -> org",
     "core.content.game_level -> org",
@@ -189,7 +194,7 @@ ignore_imports = [
     "config.weather -> org",
 ]
 
-# ENG-11, ENG-142: the dependency direction of the game/ split, checked by `make lint`. main.py
+# ENG-11, ENG-142: the dependency direction of the game/ split, checked by `make check`. main.py
 # and build_info.py are modules, not packages, so import-linter cannot check their imports.
 [[tool.importlinter.contracts]]
 name = "game/sim/ imports only core/, config/ and game/sim, game/config"
