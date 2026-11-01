@@ -163,7 +163,7 @@ def draw_bridge(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    organ(p.flesh, 13.0, 7, ICE_FLESH.purple, Placement([0.0, 3.0, -18.0]), 0.5)
+    organ(p.flesh, 13.0, 7, ICE_FLESH.graphite, Placement([0.0, 3.0, -18.0]), 0.5)
     ribs(
         p.flesh,
         [-26.0, -18.0, -10.0],
@@ -182,9 +182,9 @@ def draw_bridge(p: EnemyParts) -> None:
         # Spiracles breathing out of the back, a metal valve on each.
         p.flesh.cylinder(2.8, 9.0, 5, ICE_FLESH.sinew, Placement([s * 8.0, 4.0, -32.0]), 2.0)
         hull.cylinder(2.3, 0.6, 6, SHADE["soot"], Placement([s * 8.0, 13.0, -32.0]))
-        p.flesh.ring(5.6, 2.0, 7, ICE_FLESH.purple, Placement([s * 21.0, 3.6, -32.0]))
+        p.flesh.ring(5.6, 2.0, 7, ICE_FLESH.graphite, Placement([s * 21.0, 3.6, -32.0]))
         p.rotor([s * 21.0, 4.4, -32.0], 4.6)
-        reactor_sac(p, [s * 13.0, 0.5, -45.0], 3.2, CYAN, ICE_FLESH.purple, 6)
+        reactor_sac(p, [s * 13.0, 0.5, -45.0], 3.2, CYAN, ICE_FLESH.graphite, 6)
 
 
 def draw_deck(p: EnemyParts) -> None:
@@ -226,7 +226,7 @@ def sponson(p: EnemyParts, at: Vec3) -> None:
     r = 13.0 if part == None or part.radius == None else part.radius  # noqa: E711
     s = sign_of(at[0])
     # P16-R05: a muscle bulging out of the flank, a metal mount on top, the reel a gland.
-    organ(p.flesh, r * 0.85, 7, ICE_FLESH.purple, Placement(offset(at, 0.0, -2.0, 0.0)), 0.3)
+    organ(p.flesh, r * 0.85, 7, ICE_FLESH.graphite, Placement(offset(at, 0.0, -2.0, 0.0)), 0.3)
     p.hull.bevel_slab(
         scaled(MOUNT, r * 0.55),
         [3.0, 3.8, 4.5],

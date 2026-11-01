@@ -7,13 +7,14 @@ from unittest.mock import MagicMock
 import pytest
 
 from game.config.readability import READABILITY
+from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.view import readability_view
 from game.view.readability_view import (
     KEEP,
     all_toned,
-    outlined_ships,
     toned,
     toned_shots,
+    trimmed_ships,
 )
 
 LOOK = READABILITY
@@ -100,13 +101,19 @@ def test_p14_r01_all_toned_keeps_the_ids_of_its_looks():
     assert result["1-1"].tone == 0.3
 
 
-def test_p14_r03_each_ship_model_gets_an_outline_in_the_player_colour(monkeypatch):
-    outline = MagicMock(name="outline")
-    monkeypatch.setattr(readability_view, "outline_model", outline)
+def test_p14_r03_each_ship_model_gets_an_edge_trim_in_the_player_colour(monkeypatch):
+    request = MagicMock(name="request_trim")
+    add = MagicMock(name="add_edge_trim")
+    monkeypatch.setattr(readability_view, "request_trim", request)
+    monkeypatch.setattr(readability_view, "add_edge_trim", add)
     root = MagicMock(name="root")
-    models = outlined_ships({"light": lambda scene: root})
+    models = trimmed_ships({"light": lambda scene: root})
     assert models["light"]("scene") is root
-    outline.assert_called_once_with(root, LOOK.playerOutline.color)
+    request.assert_called_once_with(root, LOOK.playerTrim.color)
+    options = add.call_args.args[1]
+    # Logical pixels on the playfield, the models drawn PLAYER_SHIP_SCALE times smaller.
+    assert options.width == LOOK.playerTrim.width / PLAYER_SHIP_SCALE
+    assert options.offset == LOOK.playerTrim.offset / PLAYER_SHIP_SCALE
 
 
 def test_p14_r06_the_shot_renderers_are_wrapped_one_for_each_weapon(monkeypatch):

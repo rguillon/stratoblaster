@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -98,7 +99,7 @@ def sweep(every: float, first: float) -> Any:
 # bursts and, with the two steam vents firing spirals, shield the core; a drone hangar at the bow
 # launches Hornets (as the Dam Breaker's); the core fires fans. The hangar hangs in front of the
 # core, so it can always be shot.
-GEYSER_RIG = record(
+_GEYSER_RIG = record(
     {
         "id": "geyser-rig",
         # Angry after each destroyed part (phase 7 review, D-063): heat 9, as 3-5.
@@ -160,4 +161,25 @@ GEYSER_RIG = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
+# bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+GEYSER_RIG = with_weapons(
+    _GEYSER_RIG,
+    [
+        hidden_weapon("rack-left", "rack", [-13, 57], 11, 1040, 1, "red", 1.2, 12.4),
+        hidden_weapon("rack-right", "rack", [13, 57], 11, 1040, 1, "red", 2.0, 12.4),
+        hidden_weapon("orb-left", "orb", [-33, -29], 11, 1300, 2, "red", 1.2, 12.4),
+        hidden_weapon("orb-right", "orb", [33, -29], 11, 1300, 2, "red", 2.0, 12.4),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-32, 26], [32, 26], [32, 72], [-32, 72]], "shell", [8.3, 1000], False
+        ),
+        armour_region(
+            "wings", 2, [[14, -41.2], [48, -41.2], [48, 4], [14, 4]], "wing", [6.0, 1000]
+        ),
+    ],
 )

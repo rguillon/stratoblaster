@@ -40,6 +40,9 @@ class FakeViewer:
     def frame(self, dt: float) -> None:
         self.frames.append(dt)
 
+    def break_part(self) -> None:
+        self.broken = getattr(self, "broken", 0) + 1
+
     def dispose(self) -> None:
         self.disposed = True
 
@@ -55,7 +58,7 @@ def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> Simple
 
 
 def session(root: Any = None) -> DevSession:
-    catalog = {"ships": ["a", "b"], "levels": ["1-1"]}
+    catalog = {"ships": ["a", "b"], "levels": ["1-1"], "bosses": ["warden"]}
     return DevSession("engine", "game", catalog, True, root)
 
 
@@ -127,3 +130,47 @@ def test_d199_a_drag_turns_the_viewer_s_model() -> None:
     s.sync(state("ships"))
     s.turn(5, -2)
     assert FakeViewer.made[0].turned == (5, -2)
+
+
+class FakeTarget:
+    """An event target: its listeners by event type."""
+
+    def __init__(self) -> None:
+        self.listeners: dict[str, list[Any]] = {}
+
+    def addEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+        self.listeners.setdefault(kind, []).append(listener)
+
+    def removeEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+        self.listeners[kind].remove(listener)
+
+    def press(self, code: str) -> SimpleNamespace:
+        stopped: list[bool] = []
+        event = {"type": "keydown"}
+        key = type("Key", (), {"code": code, "__getitem__": lambda _s, k: event[k]})()
+        key.preventDefault = lambda: stopped.append(True)
+        for listener in self.listeners.get("keydown", []):
+            listener(key)
+        return SimpleNamespace(stopped=bool(stopped))
+
+
+def test_k_breaks_a_part_in_the_bosses_viewer_only() -> None:
+    target = FakeTarget()
+    s = session()
+    s.listen(target)
+    s.sync(state("bosses"))
+    assert target.press("KeyK").stopped
+    assert FakeViewer.made[0].broken == 1
+    assert not target.press("KeyJ").stopped
+    s.sync(state("ships"))
+    assert not target.press("KeyK").stopped
+    assert not hasattr(FakeViewer.made[1], "broken")
+
+
+def test_the_keys_are_no_longer_heard_once_disposed() -> None:
+    target = FakeTarget()
+    s = session()
+    s.listen(target)
+    s.dispose()
+    assert target.listeners == {"keydown": [], "keyup": []}
+    session().listen(None)

@@ -66,6 +66,9 @@ def _boss_state(run: Any) -> Any:
     js_set(result, "parts", len(boss.parts))
     js_set(result, "health", boss.remaining_health)
     js_set(result, "fullHealth", boss.full_health)
+    # Its transformations done, and the parts still hidden (revealed by the next ones).
+    js_set(result, "form", boss.form)
+    js_set(result, "hiddenParts", len([p for p in boss.parts if p.hidden and not p.retired]))
     return result
 
 

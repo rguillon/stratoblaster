@@ -33,7 +33,7 @@ H = ENEMY_LOOK.hull
 # The eggs' flesh shades (P16-R06), where the container paints were.
 PAINT = [
     ICE_FLESH.membrane,
-    ICE_FLESH.purple,
+    ICE_FLESH.graphite,
     ICE_FLESH.teal,
     ICE_FLESH.sinew,
 ]
@@ -71,7 +71,7 @@ def container_bay(p: EnemyParts, at: Vec3) -> None:
         [0, 0.8],
         ICE_FLESH.membrane,
         Placement(at),
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
     )
     floor_at = offset(at, 0, DECK_Y + 1.5, 0)
     for i in range(len(STACKS)):

@@ -133,7 +133,7 @@ def ice_shard(p: EnemyParts, muzzles: list[Muzzle], height: float) -> None:
         p.flesh,
         4.5,
         6,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         Placement([centre[0], height - 5, centre[2]], yaw),
         0.5,
     )

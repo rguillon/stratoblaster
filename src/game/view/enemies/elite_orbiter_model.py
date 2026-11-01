@@ -60,7 +60,7 @@ def body(p: Any) -> None:
     vein = p.vein
     charge = p.charge
     muzzle = p.muzzle
-    flesh.lathe(CORE, 12, F.purple)
+    flesh.lathe(CORE, 12, F.graphite)
     # P16-R04: armour bands above and below the equator, metal grafted on the heart.
     for y in [-5.2, 3.6]:
         hull.ring(CFG.coreRadius * 0.86, 1.6, 12, H.dark, Placement([0, y, 0]))
@@ -97,7 +97,7 @@ def drone(spec: Any) -> Any:
         hull = p.hull
         neon = p.neon
         vein = p.vein
-        segmented_body(p.flesh, POD, F.crimson, Placement(at, yaw))
+        segmented_body(p.flesh, POD, F.slate, Placement(at, yaw))
         hull.bevel_slab(DRONE, [0.6, 1.2, 2.6], [0.2, 1], H.panel, Placement(at, yaw), H.base)
         eye = ahead(at, yaw, -0.6)
         neon.box([4.6, 0.5, 1], NEON, Placement([eye[0], 2.6, eye[2]], yaw))

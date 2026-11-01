@@ -68,11 +68,11 @@ def draw_hangar(p: Any, at: Vec3) -> None:
         sided(HANGAR, s),
         [-6, -1, HANGAR_TOP - 3],
         [2, 4],
-        F.crimson,
+        F.slate,
         Placement(at),
-        F.purple,
+        F.graphite,
     )
-    organ(p.flesh, 16, 8, F.purple, Placement(shift(at, [0, -1, -1]), math.pi / 8), 0.32)
+    organ(p.flesh, 16, 8, F.graphite, Placement(shift(at, [0, -1, -1]), math.pi / 8), 0.32)
     hatch = shift(at, [s * 2, HANGAR_TOP, -2])
     p.charge.slab(SLIT, [HANGAR_TOP - 1.2, HANGAR_TOP - 0.4], WHITE, Placement(hatch))
     for dx in [-1, 1]:
@@ -116,12 +116,12 @@ def draw_hangar(p: Any, at: Vec3) -> None:
 def draw_flak(p: Any, at: Vec3) -> None:
     """A flak growth on the front of the mantle (P16-R06): a swollen, plated mound under its turret,
     a feeding sac behind it."""
-    growth(p, shift(at, [0, DECK_TOP - 2.5, 0]), 12, N, {"flesh": F.crimson, "height": 0.38})
+    growth(p, shift(at, [0, DECK_TOP - 2.5, 0]), 12, N, {"flesh": F.slate, "height": 0.38})
     sac(
         p,
         shift(at, [_sign_of(at[0]) * 7, DECK_TOP, -9]),
         3.5,
-        F.purple,
+        F.graphite,
         {"stretch": 0.6},
     )
 

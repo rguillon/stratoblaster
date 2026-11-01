@@ -11,6 +11,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -64,7 +66,7 @@ dy = BOREAL_PARTS.dome[1]
 
 # 2-5: the polar city's flying fortress; two aurora cannons on turrets aim lasers, two missile
 # batteries, and two heated dome generators shield the core, which fires every kind of attack.
-BOREAL_CITADEL = record(
+_BOREAL_CITADEL = record(
     {
         "id": "boreal-citadel",
         # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
@@ -84,10 +86,10 @@ BOREAL_CITADEL = record(
                 "parts": [
                     fpart("cannon-left", [-cx, cy], 15, 1900, {"shields": False}),
                     fpart("cannon-right", [cx, cy], 15, 1900, {"shields": False}),
-                    fpart("battery-left", [-bx, by], 14, 1700, {"shields": False}),
-                    fpart("battery-right", [bx, by], 14, 1700, {"shields": False}),
                     fpart("dome-left", [-dx, dy], 13, 2150),
                     fpart("dome-right", [dx, dy], 13, 2150),
+                    fpart("battery-left", [-bx, by], 14, 1700, {"shields": False}),
+                    fpart("battery-right", [bx, by], 14, 1700, {"shields": False}),
                 ],
             }
         ),
@@ -139,4 +141,36 @@ BOREAL_CITADEL = record(
             ],
         ),
     }
+)
+
+# Its transformations (D-230): once both domes are gone its bow doors swing open sideways on their
+# rear hinges, showing a drone hangar and two mortars in the dark metal of its hold; once both
+# batteries are gone its wing armour bursts off for a pair of heavy cannons.
+BOREAL_CITADEL = with_weapons(
+    merge(
+        _BOREAL_CITADEL,
+        {"transformParts": [["dome-left", "dome-right"], ["battery-left", "battery-right"]]},
+    ),
+    [
+        hidden_weapon("hangar", "hangar", [0, -68], 13, 1720, 1, "green", 3.0, 9),
+        hidden_weapon("mortar-left", "mortar", [-20, -48], 8, 1720, 1, "green", 1.2, 11),
+        hidden_weapon("mortar-right", "mortar", [20, -48], 8, 1720, 1, "green", 2.8, 11),
+        hidden_weapon("heavy-left", "cannon", [-47, -7], 12, 2150, 2, "green", 1.2, 16.4),
+        hidden_weapon("heavy-right", "cannon", [47, -7], 12, 2150, 2, "green", 2.0, 16.4),
+    ],
+    concat(
+        moving_region(
+            "bow-doors",
+            1,
+            [[0, -90], [32, -90], [32, -40], [0, -40]],
+            swing([32, -40, 10], "up", [0, 75]),
+            "shell",
+            [4, 1000],
+        ),
+        [
+            armour_region(
+                "wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing", [8.0, 1000]
+            ),
+        ],
+    ),
 )

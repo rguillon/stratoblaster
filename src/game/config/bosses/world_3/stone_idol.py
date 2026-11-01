@@ -10,6 +10,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -44,7 +46,7 @@ EY = IDOL_PARTS.eye[1]
 # 3-3: a flying stone head with neon cracks, glowing eyes and mouth; its two eyes turn to aim
 # lasers and shield the core, its mouth spits rings of slow boulders (P09-R09). The ground stops
 # over the temple while it fights (x0).
-STONE_IDOL = record(
+_STONE_IDOL = record(
     {
         "id": "stone-idol",
         # Angry after each destroyed part (phase 7 review).
@@ -98,4 +100,24 @@ STONE_IDOL = record(
             ],
         ),
     }
+)
+
+# Its transformation (D-230): the back of its head flips up and back on a hinge across its crown,
+# like a lid, showing a dark metal ring round a great sweeper eye between two mortars.
+STONE_IDOL = with_weapons(
+    _STONE_IDOL,
+    [
+        hidden_weapon("third-eye", "sweeper", [0, 24], 13, 760, 1, "purple", 1.6, 12),
+        hidden_weapon("mortar-left", "mortar", [-30, 30], 8, 760, 1, "purple", 1.2, 13),
+        hidden_weapon("mortar-right", "mortar", [30, 30], 8, 760, 1, "purple", 2.6, 13),
+    ],
+    moving_region(
+        "crown",
+        1,
+        [[-54, 4], [54, 4], [54, 56], [-54, 56]],
+        swing([0, 50, 7], "across", [0, -75]),
+        "ring",
+        [7, 1000],
+        False,
+    ),
 )

@@ -21,6 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -71,7 +72,7 @@ RY = VERDANT_PARTS.root[1]
 # 3-5: the canopy city's flying crown, a city-ship carrying a glass garden dome under emerald and
 # magenta neon; two thorn cannons on turrets aim lasers, two seed batteries fire homing missiles,
 # two root generators shield the core, which fires every kind of attack.
-VERDANT_CROWN = record(
+_VERDANT_CROWN = record(
     {
         "id": "verdant-crown",
         # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
@@ -155,4 +156,25 @@ VERDANT_CROWN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of flak mortars unfold.
+VERDANT_CROWN = with_weapons(
+    _VERDANT_CROWN,
+    [
+        hidden_weapon("orb-left", "orb", [-47, -17], 11, 1840, 1, "green", 1.2, 11.0),
+        hidden_weapon("orb-right", "orb", [47, -17], 11, 1840, 1, "green", 2.0, 11.0),
+        hidden_weapon("mortar-left", "mortar", [-13, 69], 11, 2300, 2, "green", 1.2, 11.0),
+        hidden_weapon("mortar-right", "mortar", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
+    ],
+    [
+        armour_region(
+            "flanks", 1, [[28, -50], [104, -50], [104, 16], [28, 16]], "wing", [4.7, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-32, 38], [32, 38], [32, 95.2], [-32, 95.2]], "shell", [5.5, 1000], False
+        ),
+    ],
 )

@@ -7,10 +7,18 @@ left) a ring or spiral used before by no stage of that boss. Health values are t
 player with guns at level 3 always on target needs the fight times of P07-R10.
 """
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import (
+    armour_region,
+    hidden_weapon,
+    tail_cannon,
+    with_weapons,
+)
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -35,7 +43,7 @@ CANNON = [
 ]
 
 # 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core.
-REEF_WARDEN = record(
+_REEF_WARDEN = record(
     {
         "id": "reef-warden",
         # Angry after each destroyed part (phase 7 review).
@@ -78,7 +86,7 @@ REEF_WARDEN = record(
 )
 
 # 1-2: an armoured flying barge; its front plate shields the core, two mortars lob big bullets.
-BREAKWATER = record(
+_BREAKWATER = record(
     {
         "id": "breakwater",
         # Angry after each destroyed part (phase 7 review).
@@ -123,7 +131,7 @@ BREAKWATER = record(
 )
 
 # 1-3: a gyro gunship; three blade pods on its turning ring fire spirals and shield the core.
-DUST_DEVIL = record(
+_DUST_DEVIL = record(
     {
         "id": "dust-devil",
         # Angry after each destroyed part (phase 7 review).
@@ -228,7 +236,7 @@ def scorpion_arm(side: str) -> Any:
 
 # 1-4: a gunship with a tail arched over its back, its stinger hanging in front of the core (so
 # shots from below reach it); claws spread, the stinger fires a laser.
-SCORPION = record(
+_SCORPION = record(
     {
         "id": "scorpion",
         # Angry after each destroyed part (phase 7 review).
@@ -245,7 +253,8 @@ SCORPION = record(
                 "parts": [
                     part("claw-left", [-42, -24], 14, 730, {"joint": "wrist-left"}),
                     part("claw-right", [42, -24], 14, 730, {"joint": "wrist-right"}),
-                    part("stinger", [0, -34], 13, 730),
+                    # D-228: the tail cannon takes over from it as it turns round.
+                    part("stinger", [0, -34], 13, 730, {"retire": 1}),
                 ],
                 "joints": merge(scorpion_arm("left"), scorpion_arm("right")),
             }
@@ -279,7 +288,7 @@ SCORPION = record(
 )
 
 # 1-5: a twin-hull police interceptor; two hull guns and a drone bay at its nose shield the core.
-SENTINEL = record(
+_SENTINEL = record(
     {
         "id": "sentinel",
         # Angry after each destroyed part (phase 7 review).
@@ -327,4 +336,92 @@ SENTINEL = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold.
+REEF_WARDEN = with_weapons(
+    _REEF_WARDEN,
+    [
+        hidden_weapon("gatling-left", "gatling", [-13, -25], 11, 500, 1, "red", 1.2, 8.0),
+        hidden_weapon("gatling-right", "gatling", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-32, -40], [32, -40], [32, 6], [-32, 6]], "shell", [2.2, 1000], False
+        ),
+    ],
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
+BREAKWATER = with_weapons(
+    _BREAKWATER,
+    [
+        hidden_weapon("rack-left", "rack", [-11, 33], 9, 650, 1, "orange", 1.2, 17.7),
+        hidden_weapon("rack-right", "rack", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-28, 4], [28, 4], [28, 43], [-28, 43]], "shell", [6.2, 1000], False
+        ),
+    ],
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of ring emitters unfold.
+DUST_DEVIL = with_weapons(
+    _DUST_DEVIL,
+    [
+        hidden_weapon("orb-left", "orb", [-12, 5], 8, 500, 1, "green", 1.2, 10.2),
+        hidden_weapon("orb-right", "orb", [12, 5], 8, 500, 1, "green", 2.0, 10.2),
+    ],
+    [
+        armour_region(
+            "back",
+            1,
+            [[-28, -20.4], [28, -20.4], [28, 24.5], [-28, 24.5]],
+            "shell",
+            [1.2, 1000],
+            False,
+        ),
+    ],
+)
+
+# Where its tail cannon ends up, its tail unfolded straight out behind it (D-228).
+SCORPION_TAIL_CANNON = [0, 108]
+
+# Its transformation (D-224, D-228): once both claws are gone it turns round, its back plating
+# bursts off, and its tail unfolds straight out behind it (now towards the player) into a cannon
+# firing a giant laser; the stinger it replaces leaves the fight.
+SCORPION = with_weapons(
+    merge(
+        _SCORPION,
+        {
+            # D-228: it transforms once both its claws are gone, turning round as it does.
+            "transformParts": [["claw-left", "claw-right"]],
+            "turns": [math.pi],
+        },
+    ),
+    [tail_cannon("tail-cannon", SCORPION_TAIL_CANNON, 15, 1100, 1, 1.5)],
+    [
+        armour_region(
+            "back", 1, [[-20, -2], [20, -2], [20, 35.5], [-20, 35.5]], "shell", [4, 1000], False
+        ),
+    ],
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of missile racks unfold.
+SENTINEL = with_weapons(
+    _SENTINEL,
+    [
+        hidden_weapon("rack-left", "rack", [-12, -7], 8, 620, 1, "blue", 1.2, 6.1),
+        hidden_weapon("rack-right", "rack", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", [4.2, 1000], False
+        ),
+    ],
 )

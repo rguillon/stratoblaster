@@ -58,7 +58,7 @@ def build_spinner(scene: Any) -> Any:
         neon = p.neon
         charge = p.charge
         muzzle = p.muzzle
-        organ(flesh, 5, 6, F.purple, Placement([0, -1.6, 0]), 0.35)
+        organ(flesh, 5, 6, F.graphite, Placement([0, -1.6, 0]), 0.35)
         for a in around(4):
             # Each arm leaves the core a quarter turn behind its pod: a spiral.
             arm = curve(radial(a - 0.9, 4.2, 0), radial(a, pod_radius - 3.4, 0), [0, 0.5, 0], 3)
@@ -71,7 +71,7 @@ def build_spinner(scene: Any) -> Any:
                 flesh,
                 2.4,
                 5,
-                F.crimson,
+                F.slate,
                 Placement(radial(a, pod_radius - 3.6, -0.2), a, QUARTER),
                 1.1,
             )
@@ -102,7 +102,7 @@ def build_lancer(scene: Any) -> Any:
         reactor = p.reactor
         muzzle = p.muzzle
         body = SegmentedBody(-21, 9, 4, 3.2, -1.5, 2.4)
-        segmented_body(flesh, body, F.purple, None, LOBE_SECTION)
+        segmented_body(flesh, body, F.graphite, None, LOBE_SECTION)
         hull.cylinder(1.5, nose - 6, 5, H.panel, Placement([0, 0, 5], 0, QUARTER), 0.6)
         eye_pair(p, [0, 1.6, 6], 1, 0.5, N.lancer)
         reactor([0, 0, -21], 1.6)
@@ -135,7 +135,7 @@ def build_rocketeer(scene: Any) -> Any:
         charge = p.charge
         reactor = p.reactor
         body = SegmentedBody(-15, 14, 3, 9, -2.2, 3.4)
-        segmented_body(flesh, body, F.crimson, None, LOBE_SECTION)
+        segmented_body(flesh, body, F.slate, None, LOBE_SECTION)
         hull.bevel_slab(ROCKETEER_ARMOUR, [2.4, 2.4, 3.6], [0, 1], H.panel, None, H.base)
         for eye in angry_eyes([0, 6.2], 0.8, [2.4, 0.6], 0.4):
             decal(neon, eye, 3.62, N.rocketeer)

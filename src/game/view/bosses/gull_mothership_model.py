@@ -70,7 +70,7 @@ def _draw_hull(p: Any) -> None:
     """The body (P16-R06): a teal mantle lined with a green vein, a second fold on it, a shelled
     body along its middle with ribs over its back and glands down its spine."""
     mantle(p, DECK, [-5, DECK_TOP], F.teal, N)
-    mantle(p, scale_outline(DECK, 0.72, 0, -4), [DECK_TOP - 1, DECK_TOP + 1.6], F.purple)
+    mantle(p, scale_outline(DECK, 0.72, 0, -4), [DECK_TOP - 1, DECK_TOP + 1.6], F.graphite)
     hide(
         p,
         {
@@ -80,7 +80,7 @@ def _draw_hull(p: Any) -> None:
             "bottom": DECK_TOP - 1,
             "top": 22,
             "segments": 6,
-            "shell": [F.crimson, F.membrane],
+            "shell": [F.slate, F.membrane],
             "belly": F.sinew,
         },
     )
@@ -108,7 +108,7 @@ def _draw_emitter(p: Any) -> None:
     """The laser eye at the nose: a socket of flesh, a grafted ring, the lens glowing as it
     charges."""
     at = [0, DECK_TOP + 3, 58]
-    p.flesh.cylinder(8, 6, 8, F.purple, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]
+    p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]
     p.hull.ring(7.3, 1.4, 8, M.dark, Placement(shift(at, [0, 0, 5.4]), 0, QUARTER))
     for z in [1.5, 5]:
         p.neon.ring(7.6 - z * 0.15, 1, 8, N, Placement(shift(at, [0, 0, z]), 0, QUARTER))
@@ -126,7 +126,7 @@ def _draw_engines(p: Any) -> None:
         segmented_body(
             p.flesh,
             SegmentedBody(-51, -24, 2, 5.5, 0, 9.5),
-            F.crimson,
+            F.slate,
             Placement([s * 30, DECK_TOP - 1, 0]),
         )
         reactor_sac(p, [s * 30, DECK_TOP + 3, -50], 3.4, N)

@@ -90,10 +90,10 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a living insect: a purple flesh thorax, a swollen, blood-filled abdomen ringed by
+    # P16-R05: a living insect: a dark flesh thorax, a swollen, blood-filled abdomen ringed by
     # grafted metal bands, a vein pulsing down its back.
-    flesh.loft(ROUND_SECTION, THORAX, F.purple)
-    flesh.loft(ROUND_SECTION, ABDOMEN, F.crimson)
+    flesh.loft(ROUND_SECTION, THORAX, F.graphite)
+    flesh.loft(ROUND_SECTION, ABDOMEN, F.slate)
     vein_to(p, [[0, 6.4, 12], [0, 4.2, -40]], [0, 2, 0], MOSQUITO_PINK, 1)
     for seg in SEGMENTS:
         z = seg[0]
@@ -108,7 +108,7 @@ def draw_body(p: EnemyParts) -> None:
     )
     # A strand of vine trailing from its side.
     rod(hull, [-6, 1, -22], [-10, -6, -30], 0.5, MOSS)
-    reactor_sac(p, table([0, 1.8, -44.4]), 1.6, MOSQUITO_PINK, F.purple, None)
+    reactor_sac(p, table([0, 1.8, -44.4]), 1.6, MOSQUITO_PINK, F.graphite, None)
     for s in SIDES:
         p.reactor([s * 5, 2, -9.2], 1.6)
 
@@ -120,7 +120,7 @@ def draw_head(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    flesh.lathe(HEAD, 7, F.purple, Placement(HEAD_AT, 0, QUARTER))
+    flesh.lathe(HEAD, 7, F.graphite, Placement(HEAD_AT, 0, QUARTER))
     for s in SIDES:
         neon.lathe(EYE, 6, MOSQUITO_PINK, Placement([s * 4.6, 3.4, 22.5], 0, 0, -s * QUARTER))
         # P16-R05: feathery antennae of sinew, tipped with a lit gland.

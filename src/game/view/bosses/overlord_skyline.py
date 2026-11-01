@@ -52,7 +52,7 @@ TOWERS = [
 SPIRE = record({"x": 46, "z": -6, "top": 50})
 
 # A tower's flesh shades, picked by its place (uneven, not mirrored).
-SHADES = [F.purple, F.crimson, F.sinew, F.bone]
+SHADES = [F.graphite, F.slate, F.sinew, F.bone]
 
 
 def _spire(p: Any, tower: Any) -> None:
@@ -95,7 +95,7 @@ def _draw_spire(parts: Any) -> None:
     z = SPIRE["z"]
     top = SPIRE["top"]
     base = OVERLORD_DECK["top"]
-    organ(flesh, 5.5, 6, F.crimson, Placement([x, base - 1, z]), 0.9)
+    organ(flesh, 5.5, 6, F.slate, Placement([x, base - 1, z]), 0.9)
     flesh.cylinder(2.8, top - base - 9, 4, F.bone, Placement([x, base + 9, z], math.pi / 4), 0.5)
     rings: list[Any] = [[24, 2], [34, 1.4], [43, 0.9]]
     for ring in rings:
@@ -197,9 +197,9 @@ def _draw_command_tower(p: Any) -> None:
     shaft = COMMAND["shaft"]
     base = OVERLORD_DECK["top"]
     top = base + shaft
-    organ(p.flesh, 7, 6, F.purple, Placement([x, base - 1, z]), 0.6)
+    organ(p.flesh, 7, 6, F.graphite, Placement([x, base - 1, z]), 0.6)
     p.flesh.cylinder(4.6, shaft, 6, F.sinew, Placement([x, base, z], math.pi / 6), 3.4)
-    p.flesh.lathe(CAB, 8, F.crimson, Placement([x, top, z], math.pi / 8))
+    p.flesh.lathe(CAB, 8, F.slate, Placement([x, top, z], math.pi / 8))
     p.neon.ring(8.85, 2, 8, N, Placement([x, top + 3.4, z], math.pi / 8))
     p.vein.ring(4.4, 1, 6, N, Placement([x, base + 9, z], math.pi / 6))
     roof = top + 8.5

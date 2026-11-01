@@ -186,13 +186,13 @@ def draw_hull(p: EnemyParts) -> None:
     # where the bridge tower was, eyes round it.
     flesh.bevel_slab(HULL, HULL_Y, [3, 2.5], ICE_FLESH.sinew, None, ICE_FLESH.teal)
     neon_band(neon, HULL, [-3.6, -1.2], [0.985, 1.015], N)
-    flesh.bevel_slab(UPPER, UPPER_Y, [0, 1.6], ICE_FLESH.teal, None, ICE_FLESH.purple)
+    flesh.bevel_slab(UPPER, UPPER_Y, [0, 1.6], ICE_FLESH.teal, None, ICE_FLESH.graphite)
     shell(
         flesh,
         SegmentedBody(-58, 6, 5, 26, UPPER_Y[2] - 1, 24),
         ICE_FLESH.teal,
     )
-    flesh.bevel_slab(TOWER, TOWER_Y, [0, 4], ICE_FLESH.purple, None, ICE_FLESH.rime)
+    flesh.bevel_slab(TOWER, TOWER_Y, [0, 4], ICE_FLESH.graphite, None, ICE_FLESH.rime)
     neon_band(flesh, TOWER, [22, 24.5], [1.02, 1.02], ICE_FLESH.seam)
     eyes(p, [0, 23, 28.4], record({"count": 4, "size": 1.2, "spacing": 5}), N)
     neon_band(neon, TOWER, [25, 25.8], [1.02, 1.02], N)
@@ -202,7 +202,7 @@ def draw_hull(p: EnemyParts) -> None:
         # The pylons out to the cutters (they stay when a cutter is gone).
         flesh.box([16, 5, 12], ICE_FLESH.sinew, Placement([s * 64, 1, 10]), ICE_FLESH.rime)
         hull.box([6, 6, 13], H.panel, Placement([s * 60, 1, 10]), H.base)
-        reactor_sac(p, [s * 16, 2, -78], 5, N, ICE_FLESH.purple)
+        reactor_sac(p, [s * 16, 2, -78], 5, N, ICE_FLESH.graphite)
         p.reactor([s * 38, 2, -70], 4.5)
 
 
@@ -214,7 +214,7 @@ def draw_stack(p: EnemyParts) -> None:
     top = boss_point(ring[0], ring[1], ring[2])
     foot = offset(top, 0, -16, 0)
     # A spiracle of flesh breathing heat, a metal ring grafted round its mouth.
-    p.flesh.cylinder(9, 13, 7, ICE_FLESH.crimson, Placement(foot, math.pi / 8), 7)
+    p.flesh.cylinder(9, 13, 7, ICE_FLESH.slate, Placement(foot, math.pi / 8), 7)
     p.hull.ring(7.9, 2, 8, H.panel, Placement(offset(foot, 0, 12, 0), math.pi / 8))
     p.neon.ring(7.8, 1.2, 8, N, Placement(offset(foot, 0, 10.5, 0), math.pi / 8))
     p.charge.cylinder(5.5, 3, 8, WHITE, Placement(offset(top, 0, -3, 0)), 2.5)

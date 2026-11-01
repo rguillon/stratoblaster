@@ -75,9 +75,9 @@ def build_wasp(scene: Any) -> Any:
         flesh = p.flesh
         neon = p.neon
         segmented_body(flesh, WASP_ABDOMEN, F.sinew, None, LEAN_SECTION)
-        carapace(flesh, WASP_THORAX, [F.crimson, F.membrane])
+        carapace(flesh, WASP_THORAX, [F.slate, F.membrane])
         # The head, a bulb between the eyes, capped with a metal plate.
-        organ(flesh, 1.6, 6, F.crimson, Placement([0, 0.3, 7.2], 0, QUARTER), 0.9)
+        organ(flesh, 1.6, 6, F.slate, Placement([0, 0.3, 7.2], 0, QUARTER), 0.9)
         hull.box([2.2, 0.4, 2.2], H.panel, Placement([0, 1.75, 4.2]))
         stations = segment_stations(WASP_ABDOMEN)
         for band in [[-7.2, -6.4], [-5.4, -4.6], [-3.6, -2.8]]:
@@ -148,8 +148,8 @@ def build_phantom(scene: Any) -> Any:
         neon = p.neon
         vein = p.vein
         # P16-R04: a membrane wing on bone struts, a shell of a body, a metal nose cap and gun.
-        flesh.bevel_slab(PHANTOM_WING, [-0.6, 0, 0.6], [0.5, 1.2], F.membrane, None, F.purple)
-        carapace(flesh, PHANTOM_BODY, [F.purple, F.membrane])
+        flesh.bevel_slab(PHANTOM_WING, [-0.6, 0, 0.6], [0.5, 1.2], F.membrane, None, F.graphite)
+        carapace(flesh, PHANTOM_BODY, [F.graphite, F.membrane])
         for strip in phantom_edges():
             neon.slab(strip, [-0.15, 0.3], N.phantom, None)
         for s in SIDES:

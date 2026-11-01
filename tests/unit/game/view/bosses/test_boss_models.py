@@ -70,8 +70,10 @@ def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     assert capture.design.id == boss_id
     design_parts = sorted(part.id for part in capture.design.stats.parts)
-    drawn_parts = sorted((capture.drawing.get("parts") or {}).keys())
-    assert drawn_parts == design_parts
+    drawn = list((capture.drawing.get("parts") or {}).keys())
+    # Hidden weapons are drawn from their look (`hidden_weapon_shapes`).
+    drawn.extend((capture.design.get("weapons") or {}).keys())
+    assert sorted(set(drawn)) == design_parts
 
 
 @pytest.mark.parametrize(

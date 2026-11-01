@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_4/ember_herald.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_4.ember_herald import EMBER_HERALD
 
@@ -23,4 +23,4 @@ def test_p10_r11_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p10_r11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(EMBER_HERALD.rage, list) and EMBER_HERALD.rage
-    assert len(EMBER_HERALD.stages) == len(EMBER_HERALD.stats["parts"]) + 1
+    assert len(EMBER_HERALD.stages) == len(original_parts(EMBER_HERALD)) + 1

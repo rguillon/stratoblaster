@@ -175,7 +175,7 @@ def draw_hull(p: EnemyParts) -> None:
             [1.0, 2.0],
             ICE_FLESH.membrane,
             None,
-            ICE_FLESH.purple,
+            ICE_FLESH.graphite,
         )
         sinew(
             flesh,
@@ -204,7 +204,7 @@ def draw_keep(p: EnemyParts) -> None:
     muzzle = p.muzzle
     base = CITADEL_DECK.top
     # P16-R06: the keep is the beast's heart, a stepped mound of flesh, metal bands on its ledges.
-    flesh.lathe(KEEP, 8, ICE_FLESH.purple, Placement([0.0, base, 0.0], math.pi / 8))
+    flesh.lathe(KEEP, 8, ICE_FLESH.graphite, Placement([0.0, base, 0.0], math.pi / 8))
     for ledge in LEDGES:
         inner = ledge[0]
         outer = ledge[1]
@@ -293,8 +293,8 @@ def draw_core(parts: EnemyParts) -> None:
     draw_hatches(parts)
     draw_details(parts)
     for s in SIDES:
-        reactor_sac(parts, [s * 12.0, -1.0, -92.0], 5.5, AURORA, ICE_FLESH.purple, 8)
-        reactor_sac(parts, [s * 26.0, -1.0, -92.0], 4.2, AURORA, ICE_FLESH.crimson, 6)
+        reactor_sac(parts, [s * 12.0, -1.0, -92.0], 5.5, AURORA, ICE_FLESH.graphite, 8)
+        reactor_sac(parts, [s * 26.0, -1.0, -92.0], 4.2, AURORA, ICE_FLESH.slate, 6)
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:

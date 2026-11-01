@@ -34,7 +34,7 @@ def reactor_sac(
     """A reactor set in a glowing organ (P16-R01): a flesh sac swelling around its nozzle at `at`
     (thrusting towards -Z), a gland lit on its back and a vein running from it `vein` forward."""
     if flesh is None:
-        flesh = F.crimson
+        flesh = F.slate
     if vein_length is None:
         vein_length = radius * 3
     x = at[0]

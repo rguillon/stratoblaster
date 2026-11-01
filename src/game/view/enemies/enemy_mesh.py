@@ -1,6 +1,6 @@
 """Builds an enemy model from its parts (P05, P07, P14, P16)
 
-The model is a node tree: a root, a breathing body (hull, flesh, lights and wings) and, outside
+The model is a node tree: a root, a body (hull, flesh, lights and wings) and, outside
 the body, reactors, rotors and muzzles (so shots leave from the same points, P16-R08).
 """
 
@@ -19,8 +19,10 @@ from core.entities.enemy import Enemy  # noqa: E402
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402
 from game.view.enemies.enemy_materials import (  # noqa: E402
+    body_color,
     enemy_color,
     enemy_materials,
+    in_body_shades,
     in_enemy_family,
     mesh_of,
     rim_of,
@@ -28,7 +30,6 @@ from game.view.enemies.enemy_materials import (  # noqa: E402
     unlit,
 )
 from game.view.enemies.living_motion import (  # noqa: E402
-    breath_scale,
     flutter_angle,
     glow_level,
     is_living_motion,
@@ -38,12 +39,12 @@ from render.babylon import (  # noqa: E402
     new_transform_node,
     node_name,
 )
+from render.edge_trim_mesh import set_trim  # noqa: E402
 from render.geometry.solids import SolidBuilder  # noqa: E402
 from render.model_animation import (  # noqa: E402
     add_model_animation,
     step_model_animations,
 )
-from render.outline import set_outline  # noqa: E402
 
 
 class EnemyParts:
@@ -131,15 +132,16 @@ def wing_parts_new() -> WingParts:
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
-    """The hull (with a rim, P14-R04) and the neon lights (in the enemies' colour family,
-    P14-R02) of an enemy model whose neon is `neon_color`, under `root`."""
+    """The hull and flesh (in the body shades, D-231; asking for an edge trim, P14-R04), and the
+    neon lights (in the enemies' colour family, P14-R02) of an enemy model whose neon is
+    `neon_color`, under `root`."""
     scene = root.getScene()
     for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
         if len(geo.positions) == 0:
             continue
-        mesh = mesh_of(name + "-" + node_name(mat), geo, mat, scene)
+        mesh = mesh_of(name + "-" + node_name(mat), in_body_shades(geo), mat, scene)
         mesh.parent = root
-        set_outline(mesh, rim_of(neon_color))
+        set_trim(mesh, rim_of(neon_color))
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
@@ -191,7 +193,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
     def rotor(at: Vec3, radius: float) -> None:
         rotors.append(Reactor(at, radius))
 
-    def muzzle(at: Vec3, kind: str) -> None:
+    def muzzle(at: Vec3, kind: Any = None) -> None:
         # `kind` is 'gun' when the caller leaves it out.
         muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711
 
@@ -228,7 +230,7 @@ def build_enemy_model(
     """Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
     charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
-    wings) is on a node of its own, `<name>-body`, that breathes (P16-R07); its reactors and
+    wings) is on a node of its own, `<name>-body`, its veins pulsing (P16-R07); its reactors and
     muzzles are not, so shots leave from the same points (P16-R08)."""
     if breath is None:
         breath = new_breath()
@@ -241,9 +243,12 @@ def build_enemy_model(
     wings = collected["wings"]
     muzzles = collected["muzzles"]
     vein = unlit(name + "-vein", scene)
+    # D-231: the body tinted and lit by the neon in the body shades (a green enemy's metal faintly
+    # green, a yellow one's neutral: dark metal lit yellow turns khaki).
+    body_tint = body_color(charge_color)
     mats = SurfaceMaterials(
-        tinted_hull(scene, charge_color, False),
-        tinted_hull(scene, charge_color, True),
+        tinted_hull(scene, body_tint, False),
+        tinted_hull(scene, body_tint, True),
         enemy_materials(scene).neon,
         vein,
     )
@@ -251,7 +256,7 @@ def build_enemy_model(
     body = new_transform_node(name + "-body", scene)
     body.parent = root
     clock = [0.0]
-    add_reactors(name, reactors, parts, root)
+    add_reactors(name, reactors, parts, root, neon_color)
     add_rotors(name, rotors, mats.hull, body)
     for i, entry in enumerate(muzzles):
         at = entry[0]
@@ -271,7 +276,6 @@ def build_enemy_model(
         else:
             clock[0] = 0
         living = is_living_motion()
-        body.scaling.setAll(breath_scale(breath, clock[0]) if living else 1)
         glow = glow_level(breath, clock[0]) if living else 1
         vein.emissiveColor.set(glow, glow, glow)
         step_model_animations(root, dt)

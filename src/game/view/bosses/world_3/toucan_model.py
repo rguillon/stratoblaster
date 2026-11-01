@@ -86,11 +86,11 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a round, living bird's body of dark purple flesh, a bone ribcage over its back.
+    # P16-R05: a round, living bird's body of dark flesh, a bone ribcage over its back.
     flesh.loft(
         ROUND_SECTION,
         BODY,
-        F.purple,
+        F.graphite,
         None,
         LoftOptions(False, body_paint),
     )
@@ -117,8 +117,8 @@ def draw_wings_and_tail(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     # P16-R05: short, heavy membrane wings (still, P16-R01) on bone struts, a fan of bone quills.
-    flesh.bevel_slab(WINGS, [-1.5, 0, 2], [0.8, 1], F.membrane, None, F.purple)
-    flesh.bevel_slab(TAIL, [0.5, 1.5, 3], [0.4, 0.8], F.membrane, None, F.crimson)
+    flesh.bevel_slab(WINGS, [-1.5, 0, 2], [0.8, 1], F.membrane, None, F.graphite)
+    flesh.bevel_slab(TAIL, [0.5, 1.5, 3], [0.4, 0.8], F.membrane, None, F.slate)
     for s in SIDES:
         for strut_end in [[30, 4], [30, -9], [24, -15]]:
             sinew(

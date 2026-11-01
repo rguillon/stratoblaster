@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_3/stone_idol.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_3.stone_idol import STONE_IDOL
 
@@ -23,4 +23,4 @@ def test_p09_r09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p09_r09_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(STONE_IDOL.rage, list) and STONE_IDOL.rage
-    assert len(STONE_IDOL.stages) == len(STONE_IDOL.stats["parts"]) + 1
+    assert len(STONE_IDOL.stages) == len(original_parts(STONE_IDOL)) + 1

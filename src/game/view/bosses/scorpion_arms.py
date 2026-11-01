@@ -122,7 +122,7 @@ def upper_arm(s: float) -> Any:
 
     def draw(p: Any) -> None:
         p.flesh.bevel_slab(_on_side(s, UPPER_ARM), [-1.5, -0.5, 1.5], [0.8, 1.2], F.sinew)
-        p.flesh.bevel_slab(_on_side(s, ARM_ARMOUR[0]), [-1, 0.5, 5], [0.8, 1.8], F.crimson)
+        p.flesh.bevel_slab(_on_side(s, ARM_ARMOUR[0]), [-1, 0.5, 5], [0.8, 1.8], F.slate)
         graft(
             p,
             scaled(_on_side(s, ARM_ARMOUR[0]), 0.75, s * 4.75, 3.25),
@@ -133,7 +133,7 @@ def upper_arm(s: float) -> Any:
         x = ARM_LIGHTS[0][0]
         z = ARM_LIGHTS[0][1]
         p.neon.box([1, 0.3, 7], YELLOW, Placement([s * x, 6.3, z], s * ARM_YAW))
-        sac(p, [s * 27.5, 0, 18], 3.6, F.purple, {"stretch": 0.45})
+        sac(p, [s * 27.5, 0, 18], 3.6, F.graphite, {"stretch": 0.45})
         tentacle(p, [s * 19, 2.6, 11.5], [s * 27, 2.8, 15.5], [0, 0.8, 0], [1.2, 0.9], F.sinew)
         vein_line(p, [s * 25, 1.4, 12], [s * 29.5, 1.4, 24], [0, 0.6, 0], 1.2, YELLOW)
 
@@ -150,7 +150,7 @@ def forearm(s: float) -> Any:
             _on_side(s, ARM_ARMOUR[1]),
             [-1, 0.5, 6],
             [0.8, 1.8],
-            F.crimson,
+            F.slate,
             None,
             F.membrane,
         )
@@ -220,7 +220,7 @@ def draw_jaw(p: Any, at: Vec3, jaw: list[Any]) -> None:
     placed = claw_place(at)
     k = placed[0]
     place = placed[1]
-    p.flesh.bevel_slab(scaled(jaw, k), [-1, 1, 4.5], [0.6, 1.4], F.crimson, place, F.bone)
+    p.flesh.bevel_slab(scaled(jaw, k), [-1, 1, 4.5], [0.6, 1.4], F.slate, place, F.bone)
 
 
 def claw(p: Any, at: Vec3) -> None:
@@ -232,7 +232,7 @@ def claw(p: Any, at: Vec3) -> None:
     place = placed[1]
     put = placed[2]
     p.flesh.bevel_slab(scaled(KNUCKLE, k), [-2, 1, 3], [1, 1.2], F.sinew, place)
-    organ(p.flesh, 8 * k, 7, F.crimson, Placement(put(0, 0, -4 * k)), 0.4)
+    organ(p.flesh, 8 * k, 7, F.slate, Placement(put(0, 0, -4 * k)), 0.4)
     p.hull.bevel_slab(scaled(KNUCKLE_CAP, k), [5, 5.5, 8], [0, 2.2], M.panel, place, M.base)
     for x in [-1, 1]:
         tentacle(

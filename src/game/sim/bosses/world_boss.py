@@ -8,6 +8,7 @@ from core.entities.boss import Boss
 from core.systems.boss_pattern import CORE, BossPattern
 from core.systems.enemy_motion import approach
 from game.config.bosses.boss_kit import BOSS_TIMING
+from game.config.bosses.hidden_weapons import region_blasts
 from game.sim.boss_build import (
     armed_pattern,
     boss_stats,
@@ -168,10 +169,22 @@ class WorldBoss(Boss):
         return source
 
     def _source(self, from_: str) -> VolleySource | None:
-        """The piece a volley fires from: the core, or its part while that part stands."""
+        """The piece a volley fires from: the core, or its part while that part stands, once
+        revealed."""
         if from_ == CORE:
             return self.core
         part = self._by_id.get(from_)
-        if part is None or part.destroyed:
+        if part is None or part.destroyed or part.hidden:
             return None
         return part
+
+    def on_transform(self, form: int, ctx: EnemyContext) -> None:
+        """The armour regions it sheds at transformation `form` burst (docs/superpowers/specs/
+        2026-10-31-boss-armour-shedding-design.md), and the weapons beneath come out."""
+        for region in self.design.armour or []:
+            if region.form == form:
+                for blast in region_blasts(region, BOSS_TIMING.regionBlasts):
+                    ctx.explode(self.x + blast[0], self.y + blast[1], blast[2])
+        for part in self.parts:
+            if part.spec.reveal == form:
+                ctx.explode(part.x, part.y, part.radius)

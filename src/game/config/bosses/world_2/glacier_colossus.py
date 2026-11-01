@@ -18,6 +18,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -62,7 +63,7 @@ COLOSSUS_CELLS = cells([-5.5, 5.5], [41, 51], 24)
 # P08-R10, 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from its
 # beam, ore cannons fire fans of big shells, a missile pod covers its stern, and a heat sink at its
 # bow (no weapon) shields the core with the ore cannons. The ground slows to ×0.3.
-GLACIER_COLOSSUS = record(
+_GLACIER_COLOSSUS = record(
     {
         "id": "glacier-colossus",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -140,4 +141,23 @@ GLACIER_COLOSSUS = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of sweeping lasers unfold.
+GLACIER_COLOSSUS = with_weapons(
+    _GLACIER_COLOSSUS,
+    [
+        hidden_weapon("orb-left", "orb", [-36, 53], 12, 1520, 1, "orange", 1.2, 23.8),
+        hidden_weapon("orb-right", "orb", [36, 53], 12, 1520, 1, "orange", 2.0, 23.8),
+        hidden_weapon("sweeper-left", "sweeper", [-25, 29], 9, 1900, 2, "orange", 1.2, 23.1),
+        hidden_weapon("sweeper-right", "sweeper", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
+    ],
+    [
+        armour_region(
+            "flanks", 1, [[16, 39.5], [74, 39.5], [74, 79], [16, 79]], "wing", [1.3, 1000]
+        ),
+        armour_region("wings", 2, [[8, -2], [74, -2], [74, 39.5], [8, 39.5]], "wing", [2.9, 1000]),
+    ],
 )

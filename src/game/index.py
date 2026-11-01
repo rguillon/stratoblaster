@@ -24,7 +24,7 @@ from game.view.bombs.bomb_renderer import create_bomb_renderer
 from game.view.bonuses.bonus_renderer import create_bonus_renderer
 from game.view.enemies.enemy_bindings import ENEMY_BINDINGS
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
-from game.view.readability_view import outlined_ships, toned_shots
+from game.view.readability_view import toned_shots, trimmed_ships
 from game.view.scenery_bindings import SCENERY_BINDINGS
 from game.view.shots.player_shot_renderers import PLAYER_SHOT_RENDERERS
 from game.view.title_backdrop import build_title_backdrop
@@ -76,9 +76,9 @@ GAME = GameDefinition(
     bomb_rules(BOMB_RULES),
     hull_rules(HULL_RULES),
     MENU_TEXTS,
-    # Phase 14: the ships with a rim glow (P14-R03), the shots toned down (P14-R06).
+    # Phase 14: the ships with a glowing edge trim (P14-R03), the shots toned down (P14-R06).
     GameBindings(
-        outlined_ships(PLAYER_SHIP_MODELS),
+        trimmed_ships(PLAYER_SHIP_MODELS),
         PLAYER_SHIP_SCALE,
         toned_shots(PLAYER_SHOT_RENDERERS),
         build_title_backdrop,

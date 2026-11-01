@@ -91,7 +91,7 @@ def boom(crane: str) -> Callable[[EnemyParts], None]:
         shoulder = points[0]
         elbow = points[1]
         # P16-R06: a tentacle's thick upper length, metal bands grafted round it.
-        tendril(flesh, curve(shoulder, elbow, [0, 2, 0], 3), [3.4, 2.6], 6, ICE_FLESH.crimson)
+        tendril(flesh, curve(shoulder, elbow, [0, 2, 0], 3), [3.4, 2.6], 6, ICE_FLESH.slate)
         for t in [0.35, 0.7]:
             at = offset(
                 shoulder,
@@ -117,7 +117,7 @@ def boom(crane: str) -> Callable[[EnemyParts], None]:
             [0.8, 0.3],
             [ORANGE_NEON, ORANGE_NEON],
         )
-        organ(flesh, 3.4, 6, ICE_FLESH.purple, Placement(offset(elbow, 0, -2.6, 0)), 0.7)
+        organ(flesh, 3.4, 6, ICE_FLESH.graphite, Placement(offset(elbow, 0, -2.6, 0)), 0.7)
         for q in spread(shoulder, elbow, 3):
             organ(flesh, 1.2, 5, ICE_FLESH.bone, Placement(offset(q, 0, -3, 0)), 0.5)
         icicles(flesh, spread(shoulder, elbow, 4), 3)
@@ -132,7 +132,7 @@ def jib(crane: str) -> Callable[[EnemyParts], None]:
         points = crane_points(crane, BOOM_Y + 0.4)
         elbow = points[1]
         tip = points[2]
-        tendril(p.flesh, curve(elbow, tip, [0, 1.5, 0], 3), [2.6, 1.6], 5, ICE_FLESH.crimson)
+        tendril(p.flesh, curve(elbow, tip, [0, 1.5, 0], 3), [2.6, 1.6], 5, ICE_FLESH.slate)
         beam(
             p.neon,
             offset(elbow, 0, 2.4, 0),
@@ -165,7 +165,7 @@ def pedestal(p: EnemyParts, at: Vec3) -> None:
         6.5,
         BOOM_Y - 2 - at[1],
         7,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         Placement(at, math.pi / 8),
         5,
     )
@@ -188,11 +188,11 @@ def grab(p: EnemyParts, at: Vec3) -> None:
     neon = p.neon
     charge = p.charge
     # P16-R06: a tentacle's clubbed tip, four bone hooks round a grafted cannon.
-    flesh.cylinder(1.4, BOOM_Y - 8, 4, ICE_FLESH.crimson, Placement(offset(at, 0, 8, 0)), 2)
+    flesh.cylinder(1.4, BOOM_Y - 8, 4, ICE_FLESH.slate, Placement(offset(at, 0, 8, 0)), 2)
     flesh.lathe(
         [[6.5, 0], [7.0, 2.0], [5.5, 5.0], [2.5, 6.5]],
         7,
-        ICE_FLESH.crimson,
+        ICE_FLESH.slate,
         Placement(offset(at, 0, 2, 0), math.pi / 8),
     )
     hull.cylinder(2.6, 0.6, 8, H.panel, Placement(offset(at, 0, 8.5, 0)))

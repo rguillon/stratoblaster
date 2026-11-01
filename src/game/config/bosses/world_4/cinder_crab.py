@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -80,7 +81,7 @@ CRAB_MORTAR_AT = [0, 24]
 # 4-1: a wide, low crab-ship of soot-black armour, orange neon and molten seams, with two claws
 # that open and close (P10-R11). The claws fire aimed spreads and shield the core; the back mortar
 # lobs slow, big slag; the core's dome fires rings, a spiral once alone. The ground slows (x0.5).
-CINDER_CRAB = record(
+_CINDER_CRAB = record(
     {
         "id": "cinder-crab",
         # Angry after each destroyed part (D-063), heat 9.5: World 4 goes on from World 3's 9, up to
@@ -147,4 +148,19 @@ CINDER_CRAB = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold.
+CINDER_CRAB = with_weapons(
+    _CINDER_CRAB,
+    [
+        hidden_weapon("gatling-left", "gatling", [-28, 21], 8, 400, 1, "red", 1.2, 11.7),
+        hidden_weapon("gatling-right", "gatling", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
+    ],
+    [
+        armour_region(
+            "flanks", 1, [[12, -9], [56.4, -9], [56.4, 34.5], [12, 34.5]], "wing", [2.9, 1000]
+        ),
+    ],
 )

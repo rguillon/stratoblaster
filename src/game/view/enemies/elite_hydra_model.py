@@ -64,7 +64,7 @@ def body(p: Any) -> None:
     flesh = p.flesh
     neon = p.neon
     vein = p.vein
-    carapace(flesh, SHELL, [F.teal, F.purple])
+    carapace(flesh, SHELL, [F.teal, F.graphite])
     tendril(flesh, curve([0, 5.5, -19], [0, 6, 4], [0, 2.5, 0], 3), [1.6, 0.8], 4, F.bone)
     for s in SIDES:
         for i, pl in enumerate(PLATES):

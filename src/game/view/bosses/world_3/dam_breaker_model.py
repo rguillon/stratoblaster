@@ -143,7 +143,7 @@ def draw_pump_house(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     # P16-R06: the pump house a swollen hump of flesh over bone ribs, its stack grafted on.
-    flesh.loft(ROUND_SECTION, PUMP_HOUSE, F.crimson)
+    flesh.loft(ROUND_SECTION, PUMP_HOUSE, F.slate)
     ribs(flesh, [-14, -2, 8], RibSpec(19, DECK_Y, 13.4, 0.9), F.bone)
     hull.box([30, 2.4, 1], H.dark, Placement([0, 13.6, 16.8], 0, 0.5))
     charge.box([26, 1, 0.6], WHITE, Placement([0, 14.1, 17.4], 0, 0.5))

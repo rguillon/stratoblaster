@@ -91,10 +91,10 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a living spider: a chitin-shelled cephalothorax, a swollen purple abdomen with bone
+    # P16-R06: a living spider: a chitin-shelled cephalothorax, a swollen dark abdomen with bone
     # ribs and pulsing veins, a sinew waist; metal plates and vents grafted on.
-    flesh.loft(SHELL_SECTION, THORAX, F.purple, None, None)
-    flesh.loft(ROUND_SECTION, ABDOMEN, F.purple, None, None)
+    flesh.loft(SHELL_SECTION, THORAX, F.graphite, None, None)
+    flesh.loft(ROUND_SECTION, ABDOMEN, F.graphite, None, None)
     flesh.box([12, 6, 6], F.sinew, Placement([0, 2, -8]))
     ribs(flesh, [-18, -28, -38], RibSpec(15, 6, 15.4, 0.8), F.bone)
     for s in SIDES:
@@ -134,7 +134,7 @@ def draw_head(p: EnemyParts) -> None:
                 r * 1.3,
                 0.8,
                 7,
-                F.crimson,
+                F.slate,
                 Placement(offset(eye, 0, -0.6, 0), 0, 0.7),
             )
             neon.cylinder(r, 0.7, 8, SPIDER_RED, Placement(eye, 0, 0.7))
@@ -147,7 +147,7 @@ def draw_head(p: EnemyParts) -> None:
             )
         # The fangs (chelicerae), curving down in front of the head.
         # P16-R06: flesh chelicerae, bone fangs, a metal cap grafted on each.
-        flesh.box([3.4, 4, 7], F.sinew, Placement([s * 3.6, -1, 31], 0, 0.5), F.crimson)
+        flesh.box([3.4, 4, 7], F.sinew, Placement([s * 3.6, -1, 31], 0, 0.5), F.slate)
         hull.box([3.6, 1, 3], H.panel, Placement([s * 3.6, 1.4, 29.5], 0, 0.5))
         flesh.cylinder(1.1, 5, 4, F.bone, Placement([s * 3.6, 0.5, 36], 0, 2.2), 0)
 

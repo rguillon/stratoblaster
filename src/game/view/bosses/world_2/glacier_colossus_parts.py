@@ -105,7 +105,7 @@ def cutter_mount(p: EnemyParts, at: Vec3) -> None:
     """The mount a cutter turns on (phase 8 review: the cutter, `cutter`, is its turret and
     aims its laser): a drum under its pod, ringed with neon."""
     # P16-R06: a shoulder of muscle the cutter limb turns on.
-    p.flesh.cylinder(8, 3, 7, ICE_FLESH.purple, Placement(offset(at, 0, -7.5, 0)), 7)
+    p.flesh.cylinder(8, 3, 7, ICE_FLESH.graphite, Placement(offset(at, 0, -7.5, 0)), 7)
     p.neon.ring(8.3, 0.6, 8, COLOSSUS_NEON, Placement(offset(at, 0, -5, 0)))
 
 
@@ -161,7 +161,7 @@ def ore_cannon(p: EnemyParts, at: Vec3) -> None:
     flesh = p.flesh
     neon = p.neon
     # P16-R06: an armoured growth, a swollen organ under a metal casemate.
-    organ(flesh, 13, 8, ICE_FLESH.purple, Placement(offset(at, 0, 2, 0)), 0.45)
+    organ(flesh, 13, 8, ICE_FLESH.graphite, Placement(offset(at, 0, 2, 0)), 0.45)
     hull.bevel_slab(
         scaled(OCTAGON, 9),
         [12, 13.5, 15],
@@ -200,9 +200,9 @@ def heat_sink(p: EnemyParts, at: Vec3) -> None:
         SINK_BASE,
         [8, 10, 12],
         [0, 1.2],
-        ICE_FLESH.crimson,
+        ICE_FLESH.slate,
         Placement(at),
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
     )
     for i in range(FIN_COUNT):
         z = -9 + i * 4.4
@@ -260,7 +260,7 @@ def missile_pod(p: EnemyParts, at: Vec3) -> None:
         [0, 3],
         ICE_FLESH.membrane,
         Placement(at),
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
     )
     ribs(
         flesh,

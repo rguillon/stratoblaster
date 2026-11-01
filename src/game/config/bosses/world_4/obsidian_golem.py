@@ -20,6 +20,8 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -124,7 +126,7 @@ def fist(arm: str, health: float) -> Any:
 # huge fists (P10-R11). The fists throw rings of slow magma and, with the armour plate on its chest,
 # shield the core; the shoulder cannons turn to fire aimed spreads; the chest emitter on its prow
 # fires a laser straight down. The emitter hangs in front of the plate, so it can always be shot.
-OBSIDIAN_GOLEM = record(
+_OBSIDIAN_GOLEM = record(
     {
         "id": "obsidian-golem",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -194,4 +196,41 @@ OBSIDIAN_GOLEM = record(
             ],
         ),
     }
+)
+
+# Its transformations (D-230): once both its cannons are gone its flank slabs lift on hinges along
+# its sides like gull-wing doors, over a pair of heavy cannons in the dark metal beneath; once its
+# plate and emitter are gone its spine plating bursts off for a sweeper and two mortars.
+OBSIDIAN_GOLEM = with_weapons(
+    merge(
+        _OBSIDIAN_GOLEM,
+        {"transformParts": [["cannon-left", "cannon-right"], ["plate", "emitter"]]},
+    ),
+    [
+        hidden_weapon("heavy-left", "cannon", [-34, 5], 10, 1280, 1, "orange", 1.2, 29.6),
+        hidden_weapon("heavy-right", "cannon", [34, 5], 10, 1280, 1, "orange", 2.0, 29.6),
+        hidden_weapon("sweeper", "sweeper", [0, -12], 10, 1600, 2, "orange", 1.6, 29.2),
+        hidden_weapon("mortar-left", "mortar", [-8, 7], 7, 1600, 2, "red", 1.2, 29.2),
+        hidden_weapon("mortar-right", "mortar", [8, 7], 7, 1600, 2, "red", 2.6, 29.2),
+    ],
+    concat(
+        moving_region(
+            "flanks",
+            1,
+            [[14, -25], [56.3, -25], [56.3, 35], [14, 35]],
+            swing([56.3, 5, 20], "along", [0, 70]),
+            "wing",
+            [8.8, 1000],
+        ),
+        [
+            armour_region(
+                "spine",
+                2,
+                [[-14, -38], [14, -38], [14, 16], [-14, 16]],
+                "shell",
+                [10.6, 1000],
+                False,
+            ),
+        ],
+    ),
 )

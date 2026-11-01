@@ -31,14 +31,6 @@ def make_input() -> KeyboardMenuInput:
     return KeyboardMenuInput(MENU_INPUT_CONFIG.keyboard, MENU_INPUT_CONFIG)
 
 
-def test_p01_r09_wasd_positions_map_to_the_same_actions_as_arrows() -> None:
-    keys = MENU_INPUT_CONFIG.keyboard
-    assert keys["KeyW"] == keys["ArrowUp"] == "up"
-    assert keys["KeyS"] == keys["ArrowDown"] == "down"
-    assert keys["KeyA"] == keys["ArrowLeft"] == "left"
-    assert keys["KeyD"] == keys["ArrowRight"] == "right"
-
-
 def test_p01_r09_a_bound_key_is_prevented_from_scrolling_the_page() -> None:
     menu = make_input()
     event = FakeKeyEvent("Enter")

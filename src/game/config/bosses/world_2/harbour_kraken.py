@@ -8,6 +8,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -130,7 +131,7 @@ def sided(m: list[Any], side: float) -> list[list[Any]]:
 # 2-2: a cargo crane-ship with four crane arms swinging at the shoulder and the elbow, orange neon
 # (P08-R10). The four grab cannons shield the core; the container bay at the stern launches
 # Gnats. The ground stops: the fight is over the harbour.
-HARBOUR_KRAKEN = record(
+_HARBOUR_KRAKEN = record(
     {
         "id": "harbour-kraken",
         # Angry after each destroyed part (phase 7 review).
@@ -182,4 +183,23 @@ HARBOUR_KRAKEN = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
+# armour bursts off, baring a dark metal frame, and a pair of gun batteries unfold.
+HARBOUR_KRAKEN = with_weapons(
+    _HARBOUR_KRAKEN,
+    [
+        hidden_weapon("gatling-left", "gatling", [-13, -35], 11, 720, 1, "red", 1.2, 12.7),
+        hidden_weapon("gatling-right", "gatling", [13, -35], 11, 720, 1, "red", 2.0, 12.7),
+        hidden_weapon("battery-left", "battery", [-29, 29], 11, 900, 2, "red", 1.2, 16.9),
+        hidden_weapon("battery-right", "battery", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-32, -66], [32, -66], [32, -4], [-32, -4]], "shell", [3.0, 1000], False
+        ),
+        armour_region("wings", 2, [[10, -4], [44, -4], [44, 62], [10, 62]], "wing", [3.0, 1000]),
+    ],
 )

@@ -78,10 +78,15 @@ def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> No
         add_model_animation(node, spin_animation(node, look.spinRadPerSec))
 
 
-def add_reactors(name: str, reactors: list[Reactor], parts: Any, root: Any) -> None:
-    """Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`."""
+def add_reactors(
+    name: str, reactors: list[Reactor], parts: Any, root: Any, neon: Any = None
+) -> None:
+    """Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`, in
+    the enemy's `neon` colour (D-231: a yellow enemy's flames yellow, a green one's green), or the
+    reactors' own when left out."""
     look = ENEMY_LOOK.reactor
-    color = enemy_color(look.color)
+    flame = neon if neon != None else look.color  # noqa: E711
+    color = enemy_color(flame)
     behind = -math.pi / 2
     for i, reactor in enumerate(reactors):
         x = reactor.at[0]
@@ -105,7 +110,7 @@ def add_reactors(name: str, reactors: list[Reactor], parts: Any, root: Any) -> N
                 ]
             )
         # Folded with the rest of the neon (`inEnemyFamily`): the colour of the flame.
-        parts.neon.face(core, look.color)
+        parts.neon.face(core, flame)
         node = new_transform_node(name + "-reactor-" + str(i), root.getScene())
         node.position.set(x, y, 0)
         node.parent = root

@@ -2,6 +2,7 @@
 matrices (D-212: a chunk's trees come a row at a time), on a field made without models (its
 meshes set by hand)."""
 
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -111,3 +112,11 @@ def test_d212_the_matrices_are_made_once_and_only_those_of_new_trees_after() -> 
     assert MADE == [2, 1]
     assert list(grown) == [1] * MATRIX_FLOATS + [2] * MATRIX_FLOATS + [3] * MATRIX_FLOATS
     assert props.matrices is grown
+
+
+def test_d199_a_prop_extent_is_its_largest_side() -> None:
+    positions = [0, 0, 0, 4, 1, -2, -1, 9, 3]
+    geometry = SimpleNamespace(structure=SimpleNamespace(positions=positions))
+    assert prop_field.prop_extent(lambda: geometry) == 9
+    empty = SimpleNamespace(structure=SimpleNamespace(positions=[]))
+    assert prop_field.prop_extent(lambda: empty) == 0

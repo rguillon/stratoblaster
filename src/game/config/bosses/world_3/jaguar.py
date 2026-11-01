@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -43,7 +44,7 @@ TY = JAGUAR_PARTS.tail[1]
 
 # 3-5: a sleek stealth interceptor with spotted armour and amber neon (P09-R09); two claw guns on
 # turrets shield the core, a tail cannon aims a laser, and the core fires spirals.
-JAGUAR = record(
+_JAGUAR = record(
     {
         "id": "jaguar",
         # Angry after each destroyed part (phase 7 review): the hottest mini boss so far.
@@ -92,4 +93,31 @@ JAGUAR = record(
             ],
         ),
     }
+)
+
+# Its armour (boss transformations, D-224): the spotted pelt of its right wing, from the fuselage's
+# side out (px from its centre, X right, Y up; mirrored for the left wing).
+JAGUAR_WING = [
+    [10, -30],
+    [15, -26],
+    [22, -14],
+    [40, 2],
+    [57, 18],
+    [56, 26],
+    [44, 26],
+    [36, 36],
+    [26, 32],
+    [18, 44],
+    [10, 46],
+]
+
+# Its hidden weapons: at transformation 1 its wing pelt bursts off, baring a dark metal wing frame,
+# and a laser lance unfolds on each wing.
+JAGUAR = with_weapons(
+    _JAGUAR,
+    [
+        hidden_weapon("lance-left", "lance", [-38, 4], 10, 880, 1, "orange", 1.2, 5.0),
+        hidden_weapon("lance-right", "lance", [38, 4], 10, 880, 1, "orange", 4.9, 5.0),
+    ],
+    [armour_region("wings", 1, JAGUAR_WING, "wing", [0, 4.5])],
 )

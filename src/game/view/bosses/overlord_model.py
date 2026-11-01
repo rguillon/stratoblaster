@@ -111,17 +111,17 @@ LENS = [
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (P16-R06): a vast purple mantle with a neon rim, a shelled spine down its middle
+    """The body (P16-R06): a vast dark mantle with a neon rim, a shelled spine down its middle
     (the boulevard) carrying the citadel, ribs across it, veins out to its edges, membrane
     wings out to the laser cannons on bone struts, swim bladders across its tail."""
     top = OVERLORD_DECK["top"]
     boulevard = OVERLORD_DECK["boulevard"]
-    mantle(p, DECK, [-8, top], F.purple)
+    mantle(p, DECK, [-8, top], F.graphite)
     edges: list[int] = []
     for i in range(len(DECK)):
         edges.append(i)
     edge_lights(p.neon, DECK, edges, [-2.6, -1.4], N)
-    mantle(p, BOULEVARD, [top - 1, boulevard], F.crimson, N)
+    mantle(p, BOULEVARD, [top - 1, boulevard], F.slate, N)
     rib_cage(
         p,
         [-44, -20, 20, 44],
@@ -130,7 +130,7 @@ def _draw_hull(p: Any) -> None:
     segmented_body(p.flesh, SegmentedBody(-68, -50, 3, 36, -7, 6), F.sinew)
     for s in SIDES:
         wing = WING if s > 0 else flip_x(WING)  # type: ignore[arg-type]
-        p.flesh.bevel_slab(wing, [-4, -1, WING_TOP], [1, 2], F.membrane, None, F.purple)
+        p.flesh.bevel_slab(wing, [-4, -1, WING_TOP], [1, 2], F.membrane, None, F.graphite)
         edge_lights(p.neon, wing, [0, 1, 2], [-1.5, -0.5], N)
         tentacle(p, [s * 56, 1, 20], [s * 102, 2, 2], [0, 2, 0], [2.6, 0.8], F.bone, 4)
         tentacle(p, [s * 56, 1, -30], [s * 100, 2, -16], [0, 2, 0], [2.4, 0.8], F.bone, 4)
@@ -155,7 +155,7 @@ def _draw_citadel(p: Any) -> None:
     muzzle = p.muzzle
     top = OVERLORD_DECK["top"]
     # Turned an eighth of a turn, a flat of the octagon faces the front.
-    p.flesh.lathe(CITADEL, 8, F.crimson, Placement([0, top, 0], math.pi / 8))
+    p.flesh.lathe(CITADEL, 8, F.slate, Placement([0, top, 0], math.pi / 8))
     eyes(p, [0, top + 17, 17], {"count": 3, "size": 1.3, "spacing": 4}, N)
 
     def lit(r: float, y: float, h: float) -> None:

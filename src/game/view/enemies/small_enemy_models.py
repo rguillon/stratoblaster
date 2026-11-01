@@ -59,7 +59,7 @@ def build_gnat(scene: Any) -> Any:
         neon = p.neon
         reactor = p.reactor
         rotor = p.rotor
-        organ(flesh, 3.6, 6, F.purple, Placement([0, -1.2, -0.4]), 0.42)
+        organ(flesh, 3.6, 6, F.graphite, Placement([0, -1.2, -0.4]), 0.42)
         organ(flesh, 1.5, 4, F.sinew, Placement([0, -0.2, 3.3]), 0.55)
         eye_pair(p, [0, 0.6, 4.2], 0.6, 0.45, N.gnat)
         neon.ring(3.5, 0.5, 6, N.gnat, Placement([0, -0.4, -0.4]))
@@ -85,7 +85,7 @@ def build_hornet(scene: Any) -> Any:
         hull = p.hull
         neon = p.neon
         body = SegmentedBody(-9, 10.5, 3, 2.6, -1.3, 2.4)
-        segmented_body(flesh, body, F.crimson, None, LOBE_SECTION)
+        segmented_body(flesh, body, F.slate, None, LOBE_SECTION)
         hull.cylinder(0.9, 3.2, 4, H.panel, Placement([0, 0.4, 9.3], 0, QUARTER), 0)
         vein_tube(p.vein, curve([0, 2.3, -7], [0, 2.4, 6], [0, 0.6, 0], 3), 0.6, N.hornet)
         wing_pair(
@@ -185,7 +185,7 @@ def build_strafer(scene: Any) -> Any:
         flesh = p.flesh
         reactor = p.reactor
         body = SegmentedBody(-6.5, 10.5, 2, 4.2, -1.3, 2.3)
-        segmented_body(flesh, body, F.purple, None, LOBE_SECTION)
+        segmented_body(flesh, body, F.graphite, None, LOBE_SECTION)
         eye_pair(p, [0, 1.5, 7], 1, 0.5, N.strafer)
         lights = [edge_light([3, 6], [20.5, -1.5], k / 4, 1.6, [2.4, 0.7]) for k in [1, 2, 3]]
         wing_pair(

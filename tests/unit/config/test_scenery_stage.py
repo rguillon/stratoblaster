@@ -54,3 +54,10 @@ def test_d212_a_chunk_comes_in_before_its_trees_can_be_seen() -> None:
     assert 0 < stage.tree_reach < stage.margin
     # The trees in sight are always drawn.
     assert stage.tree_reach <= min(stage.prop_reach)
+
+
+def test_p06_r09_the_stage_reach_and_clearance_are_ordered() -> None:
+    stage = SCENERY_STAGE_CONFIG
+    assert stage.prop_reach[0] < stage.prop_reach[1]
+    assert stage.far_clip > stage.sun_distance
+    assert stage.chunk_length > stage.cell > 0

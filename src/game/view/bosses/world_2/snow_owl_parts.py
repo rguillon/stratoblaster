@@ -77,7 +77,7 @@ def radar_pod(p: EnemyParts, at: Vec3) -> None:
     muzzle = p.muzzle
     s = _sign(at[0])
     # P16-R05: a swollen nacelle of flesh, the radome a metal graft on it.
-    p.flesh.loft(POD_SECTION, NACELLE, ICE_FLESH.purple, Placement([at[0], 0, at[2]]))
+    p.flesh.loft(POD_SECTION, NACELLE, ICE_FLESH.graphite, Placement([at[0], 0, at[2]]))
     gland(p, offset(at, -s * 4, 3.6, 8), 0.9, OWL_WHITE)
     hull.lathe(RADOME, 8, FROST, Placement(offset(at, 0, 0, -2), math.pi / 8))
     neon.ring(7.3, 0.6, 8, OWL_WHITE, Placement(offset(at, 0, 2, -2), math.pi / 8))
@@ -139,7 +139,7 @@ def eye(p: EnemyParts, at: Vec3) -> None:
     for s in SIDES:
         p.flesh.box(
             [1.4, 7, 8],
-            ICE_FLESH.purple,
+            ICE_FLESH.graphite,
             Placement(offset(at, s * 10.4, 2.5, 0)),
             ICE_FLESH.rime,
         )

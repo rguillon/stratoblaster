@@ -80,7 +80,7 @@ def body(p: Any) -> None:
             "ring",
         )
     for x in [-9, 9]:
-        reactor_sac(p, [x, 0, -31], 2.4, NEON, F.crimson)
+        reactor_sac(p, [x, 0, -31], 2.4, NEON, F.slate)
 
 
 def ring(p: Any) -> None:

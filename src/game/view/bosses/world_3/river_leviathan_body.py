@@ -233,7 +233,7 @@ def turret_mount(p: EnemyParts, at: Vec3) -> None:
         10,
         MOUNT,
         7,
-        F.crimson,
+        F.slate,
         Placement(offset(at, 0, 0, 0), QUARTER / 4),
         9,
     )
@@ -305,7 +305,7 @@ def missile_rack(p: EnemyParts, at: Vec3) -> None:
     # P16-R06: an egg sac swelling on the tail, a grafted rack of missile cells capping it.
     p.flesh.box(
         [16, height - 4, 18],
-        F.crimson,
+        F.slate,
         Placement(offset(at, 0, 4, 0)),
         F.sinew,
     )

@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_2/glacier_colossus.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_2.glacier_colossus import GLACIER_COLOSSUS
 
@@ -23,4 +23,4 @@ def test_p08_r10_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p08_r10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(GLACIER_COLOSSUS.rage, list) and GLACIER_COLOSSUS.rage
-    assert len(GLACIER_COLOSSUS.stages) == len(GLACIER_COLOSSUS.stats["parts"]) + 1
+    assert len(GLACIER_COLOSSUS.stages) == len(original_parts(GLACIER_COLOSSUS)) + 1

@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -65,7 +66,7 @@ POD_Y = MOSQUITO_WING.pod[1]
 # 3-4: a thin, fast bio-drone with pink neon; its two buzzing wings fire fans and shield the core,
 # its proboscis turns to aim a laser after its warning line (P09-R09). The proboscis hangs in
 # front of the core, so it can always be shot.
-MOSQUITO = record(
+_MOSQUITO = record(
     {
         "id": "mosquito",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -124,4 +125,19 @@ MOSQUITO = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of heavy cannons unfold.
+MOSQUITO = with_weapons(
+    _MOSQUITO,
+    [
+        hidden_weapon("cannon-left", "cannon", [-12, -11], 10, 800, 1, "magenta", 1.2, 8.1),
+        hidden_weapon("cannon-right", "cannon", [12, -11], 10, 800, 1, "magenta", 2.0, 8.1),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-30, -29.4], [30, -29.4], [30, 19], [-30, 19]], "shell", [0.0, 1000], False
+        ),
+    ],
 )

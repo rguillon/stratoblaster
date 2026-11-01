@@ -33,3 +33,11 @@ def test_p01_r10_the_left_stick_reads_y_as_down_positive() -> None:
 
 def test_p01_r09_key_repeat_delay_is_longer_than_its_interval() -> None:
     assert MENU_INPUT_CONFIG.repeat_delay_seconds > MENU_INPUT_CONFIG.repeat_interval_seconds > 0
+
+
+def test_p01_r09_wasd_positions_map_to_the_same_actions_as_arrows() -> None:
+    keys = MENU_INPUT_CONFIG.keyboard
+    assert keys["KeyW"] == keys["ArrowUp"] == "up"
+    assert keys["KeyS"] == keys["ArrowDown"] == "down"
+    assert keys["KeyA"] == keys["ArrowLeft"] == "left"
+    assert keys["KeyD"] == keys["ArrowRight"] == "right"

@@ -161,7 +161,7 @@ def draw_body(p: EnemyParts) -> None:
         FUSELAGE,
         COAT,
         None,
-        LoftOptions(False, table(canopy_paint([3, 4], F.crimson))),
+        LoftOptions(False, table(canopy_paint([3, 4], F.slate))),
     )
     draw_sinews(p)
     for side in [1, 6]:

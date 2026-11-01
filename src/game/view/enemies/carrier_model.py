@@ -97,7 +97,7 @@ def draw_carrier(p: Any) -> None:
     hull = p.hull
     neon = p.neon
     charge = p.charge
-    segmented_body(flesh, SegmentedBody(-28, 30, 3, 19, -4.5, 9), F.purple, None, LOBE_SECTION)
+    segmented_body(flesh, SegmentedBody(-28, 30, 3, 19, -4.5, 9), F.graphite, None, LOBE_SECTION)
     for z in CARRIER_RIBS:
         arch = curve([-16, 1, z], [16, 1, z], [0, 10, 0], 4)
         tendril(flesh, arch, [0.9, 0.9], 3, F.bone)
@@ -120,7 +120,7 @@ def draw_carrier(p: Any) -> None:
             port(hull, charge, s, -entry[1])
         # Its reactor, set in a flesh sac with a vein running into the body (P16-R01).
         nozzle = [s * 7, 0.5, -28.5]
-        organ(flesh, 3.2, 4, F.crimson, Placement([s * 7, 0.5, -28], 0, QUARTER), 0.9)
+        organ(flesh, 3.2, 4, F.slate, Placement([s * 7, 0.5, -28], 0, QUARTER), 0.9)
         p.reactor(nozzle, 2.4)
         vein(p.vein, curve([s * 7, 3, -25], [s * 5, 6, -17], [0, 1, 0], 2), 1, N.carrier)
 

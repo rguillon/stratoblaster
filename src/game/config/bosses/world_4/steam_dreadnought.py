@@ -10,7 +10,9 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.record import merge, record
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
+from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -61,7 +63,7 @@ TURRET_Y = DREAD_PARTS.turret[1]
 # smokestacks puffing steam (P10-R11). The smokestacks fire rings of bullets and the two broadside
 # turrets aimed bursts; the four shield the core. The missile rack on the stern fires homing
 # missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
-STEAM_DREADNOUGHT = record(
+_STEAM_DREADNOUGHT = record(
     {
         "id": "steam-dreadnought",
         # Angry after each destroyed part (D-063), heat 10: World 4 goes on from World 3's 9, up to
@@ -79,10 +81,10 @@ STEAM_DREADNOUGHT = record(
                     "groundSpeed": 0.6,
                     "coreDrop": 1,
                     "parts": [
-                        fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
-                        fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
                         fpart("turret-left", [TURRET_X, TURRET_Y], 10, 950),
                         fpart("turret-right", [-TURRET_X, TURRET_Y], 10, 950),
+                        fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
+                        fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
                         fpart("rack", list(DREAD_PARTS.rack), 10, 600, {"shields": False}),
                     ],
                 }
@@ -135,4 +137,40 @@ STEAM_DREADNOUGHT = record(
             ],
         ),
     }
+)
+
+# Its transformations (D-230): once both its turrets are gone its front side decks fan out forward
+# on hinges at their bows, a gun battery riding each, dark metal showing in the wedges they open;
+# once both its stacks are gone its stern and spine plating burst off for two mortars and a ring
+# emitter.
+STEAM_DREADNOUGHT = with_weapons(
+    merge(
+        _STEAM_DREADNOUGHT,
+        {"transformParts": [["turret-left", "turret-right"], ["stack-left", "stack-right"]]},
+    ),
+    [
+        hidden_weapon("battery-left", "battery", [-57, -45], 9, 760, 1, "red", 1.2, 16),
+        hidden_weapon("battery-right", "battery", [57, -45], 9, 760, 1, "red", 2.0, 16),
+        hidden_weapon("mortar-left", "mortar", [-30, 47], 8, 950, 2, "orange", 1.2, 12.6),
+        hidden_weapon("mortar-right", "mortar", [30, 47], 8, 950, 2, "orange", 2.6, 12.6),
+        hidden_weapon("orb", "orb", [0, 29], 11, 950, 2, "red", 1.6, 15.6),
+    ],
+    concat(
+        moving_region(
+            "decks",
+            1,
+            [[20, -54], [74, -54], [74, 2], [20, 2]],
+            swing([20, -54, 0], "up", [0, -25]),
+            "wing",
+            [-8, 1000],
+        ),
+        [
+            armour_region(
+                "flanks", 2, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing", [2.1, 1000]
+            ),
+            armour_region(
+                "spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", [6.4, 1000], False
+            ),
+        ],
+    ),
 )

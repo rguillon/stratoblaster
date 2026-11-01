@@ -27,3 +27,8 @@ def test_p07_r05_final_boss_is_tougher_than_a_mini_boss_and_has_an_angry_pattern
 
 def test_p07_r05_final_bosses_have_distinct_ids() -> None:
     assert len({d.id for d in FINAL_BOSSES}) == len(FINAL_BOSSES)
+
+
+def test_real_bosses_angry_patterns_are_built_from_the_rage_record() -> None:
+    assert OVERLORD.rage and STORM_PETREL.rage
+    assert all(v["from"] == "core" for v in STORM_PETREL.rage)

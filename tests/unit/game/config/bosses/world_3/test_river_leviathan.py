@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_3/river_leviathan.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_3.river_leviathan import RIVER_LEVIATHAN
 
@@ -23,4 +23,4 @@ def test_p09_r09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p09_r09_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(RIVER_LEVIATHAN.rage, list) and RIVER_LEVIATHAN.rage
-    assert len(RIVER_LEVIATHAN.stages) == len(RIVER_LEVIATHAN.stats["parts"]) + 1
+    assert len(RIVER_LEVIATHAN.stages) == len(original_parts(RIVER_LEVIATHAN)) + 1

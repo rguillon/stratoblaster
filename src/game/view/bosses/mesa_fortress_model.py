@@ -97,8 +97,8 @@ def _draw_body(p: Any) -> None:
             "bottom": BASE_TOP - 2,
             "top": 22,
             "segments": 4,
-            "shell": [F.crimson, F.membrane],
-            "belly": F.purple,
+            "shell": [F.slate, F.membrane],
+            "belly": F.graphite,
         },
     )
     hide(
@@ -110,8 +110,8 @@ def _draw_body(p: Any) -> None:
             "bottom": 14,
             "top": 30,
             "segments": 3,
-            "shell": [F.sinew, F.crimson],
-            "belly": F.crimson,
+            "shell": [F.sinew, F.slate],
+            "belly": F.slate,
         },
     )
     rib_cage(
@@ -150,8 +150,8 @@ def _draw_body(p: Any) -> None:
 def _draw_arms(p: Any) -> None:
     """The forelimbs: a scaly limb out to each lance's cradle, a bone claw at its front."""
     for s in SIDES:
-        p.flesh.bevel_slab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, None, F.crimson)
-        tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.crimson, 5)
+        p.flesh.bevel_slab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, None, F.slate)
+        tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.slate, 5)
         graft(p, polygon(4, 5, [2, 0.9]), [8.5, 9.6], [s * 56, 0, -16])
         for dx in [-3, 3]:
             tentacle(
