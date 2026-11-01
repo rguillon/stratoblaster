@@ -23,6 +23,7 @@ __pragma__("skip")
 from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 from render.environment.gradient_cube import GradientStop  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.handles import WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -86,7 +87,7 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
 
 
 # The sky key of each scene the last time its cube was built (GFX-SKY-10).
-LAST_SKY = new_weak_map()
+LAST_SKY: WeakMap[str] = new_weak_map()
 
 
 def _sky_key(stops: list[GradientStop]) -> str:

@@ -13,10 +13,12 @@ __pragma__("skip")
 from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
+from render.handles import WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
 ModelAnimation = Callable[[float], None]
 __pragma__("noskip")
 
-ANIMATIONS = new_weak_map()
+ANIMATIONS: WeakMap[list[ModelAnimation]] = new_weak_map()
 
 
 def add_model_animation(node: Any, animation: Any) -> None:

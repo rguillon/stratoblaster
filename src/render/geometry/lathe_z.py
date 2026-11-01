@@ -86,7 +86,7 @@ def _consecutive_pairs(items: list[Any]) -> list[list[Any]]:
 def build_faceted_lathe_vertex_data(
     profile: list[list[float]],
     section: int | LatheHalves,
-) -> tuple[list[float], list[float]]:
+) -> tuple[list[float], list[int]]:
     """Revolves a profile around the Z axis with a polygonal section, flat-shaded (vertices are
     not shared between faces). Same profile rules as `create_lathe_along_z`. Returns the
     positions and the indices."""
@@ -94,7 +94,7 @@ def build_faceted_lathe_vertex_data(
     ordered = _ordered_towards_nose(profile)
     angles = section_angles(section)
     positions: list[float] = []
-    indices: list[float] = []
+    indices: list[int] = []
 
     def vertex(p: list[float], angle: float) -> list[float]:
         return [p[1] * math.cos(angle), p[1] * math.sin(angle), p[0]]

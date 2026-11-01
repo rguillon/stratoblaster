@@ -34,11 +34,13 @@ from render.geometry.edge_trim import TrimOptions, TrimShape, inverse, multiply,
 __pragma__("skip")
 from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
+from render.handles import StandardMaterial, WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
 Rgb = list[float]
 __pragma__("noskip")
 
 # The trim materials of each scene, by colour.
-_MATERIALS = new_weak_map()
+_MATERIALS: WeakMap[dict[str, StandardMaterial]] = new_weak_map()
 
 
 def set_trim(mesh: Any, color: Rgb) -> None:

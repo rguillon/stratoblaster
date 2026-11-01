@@ -21,9 +21,11 @@ from render.geometry.solids import SolidBuilder  # noqa: E402
 __pragma__("skip")
 from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
+from render.handles import StandardMaterial, WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
 __pragma__("noskip")
 
-FLASH_CACHE = new_weak_map()
+FLASH_CACHE: WeakMap[dict[str, StandardMaterial]] = new_weak_map()
 
 
 def effect_materials(scene: Any) -> Any:
