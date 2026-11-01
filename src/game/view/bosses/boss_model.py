@@ -27,7 +27,7 @@ from game.view.bosses.boss_stems import stems_drawing, stems_for  # noqa: E402
 from game.view.bosses.hidden_weapon_shapes import (  # noqa: E402
     turret_slide,
     weapon_drawing,
-    weapon_slide,
+    weapon_slides,
     weapon_turret_drawing,
 )
 from game.view.enemies.enemy_materials import BODY_MATERIALS  # noqa: E402
@@ -454,25 +454,27 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
 def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     design: Any, spec: Any, weapon: Any, holder: Any, turret: Any, look: Any
 ) -> list[Slide]:
-    """What slides out of a hidden weapon as it unfolds: its barrel, cells or orb (a model of its
-    own on `holder`), or its turret."""
+    """What slides out of a hidden weapon as it unfolds: its barrel, cells, orb, tube or doors (a
+    model of its own each on `holder`), or its turret."""
     if weapon == None:  # noqa: E711
         return []
     if turret != None:  # noqa: E711
         p = turret.pivot.position
         return [Slide(turret.pivot, [p.x, p.y, p.z], [0, 1, 0], turret_slide(weapon))]
-    slide = weapon_slide(weapon, look["neon"])
-    if slide == None:  # noqa: E711
-        return []
-    model = build_enemy_model(
-        design.id + "-" + spec.id + "-slide",
-        holder.getScene(),
-        look["neon"],
-        _part_builder(slide[0], boss_point(spec.x, spec.y)),
-        look["breath"],
-    )
-    model.root.parent = holder
-    return [Slide(model.root, [0, 0, 0], slide[1], slide[2])]
+    result: list[Slide] = []
+    slides = weapon_slides(weapon, look["neon"])
+    for k in range(len(slides)):
+        slide = slides[k]
+        model = build_enemy_model(
+            design.id + "-" + spec.id + "-slide-" + str(k),
+            holder.getScene(),
+            look["neon"],
+            _part_builder(slide[0], boss_point(spec.x, spec.y)),
+            look["breath"],
+        )
+        model.root.parent = holder
+        result.append(Slide(model.root, [0, 0, 0], slide[1], slide[2]))
+    return result
 
 
 def strobe(enemy: Any) -> Any:

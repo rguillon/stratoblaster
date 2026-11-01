@@ -5,7 +5,8 @@ from typing import Any
 
 import pytest
 
-from game.config.bosses.hidden_weapons import FRAMES, KINDS, armour_region, region_blasts
+from game.config.bosses.hidden_weapons import FRAMES, armour_region, region_blasts
+from game.config.bosses.weapon_kinds import KINDS
 from game.sim.boss_build import default_transforms
 from game.sim.boss_kinds import BOSS_DESIGNS
 from render.geometry.shatter import inside

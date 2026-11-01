@@ -260,6 +260,14 @@ def only_after(shot: Any, part_id: str) -> Any:
     return merge(shot, {"after": part_id})
 
 
+def sweeping(shot: Any) -> Any:
+    """A laser `volley` whose beam sweeps after the player while it fires (its turret keeps
+    following, as slowly as through its warning line), instead of holding still."""
+    return merge(
+        shot, {"shape": merge(shot.shape, {"laser": merge(shot.shape.laser, {"sweeps": True})})}
+    )
+
+
 def _shot(source: str, every: float, first: Any, shape: Any) -> Any:
     shot = record({"from": source, "every": every, "shape": shape})
     if not _unset(first):

@@ -19,7 +19,7 @@ from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import _part_builder, part_supports, rest_stems
 from game.view.bosses.boss_models import BOSS_MODELS
 from game.view.bosses.boss_stems import stems_drawing
-from game.view.bosses.hidden_weapon_shapes import weapon_drawing, weapon_slide
+from game.view.bosses.hidden_weapon_shapes import weapon_drawing, weapon_slides
 from game.view.enemies.enemy_mesh import collect_parts
 from helpers.view_probes import probe_builder
 from render.geometry.islands import bounds_of, loose_triangles, pieces
@@ -52,8 +52,7 @@ def _part_tris(design: Any, drawing: Any, spec: Any) -> list[Any]:
     # Turrets turn on top of their part (some drawings read object literals CPython cannot run):
     # the part itself stands for them here.
     if weapon is not None:
-        slide = weapon_slide(weapon, NEON)
-        if slide is not None:
+        for slide in weapon_slides(weapon, NEON):
             result.extend(_drawn(_part_builder(slide[0], at)))
     return result
 
