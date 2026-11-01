@@ -180,7 +180,10 @@ def _straddler(carves: list[Carve]) -> Any:
     """Whether a triangle may cross the edge of any of `carves` (and so must be cut down)."""
 
     def needs(tri: list[Any]) -> bool:
-        return any(straddles(tri, c) for c in carves)
+        for c in carves:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+            if straddles(tri, c):
+                return True
+        return False
 
     return needs
 

@@ -67,7 +67,10 @@ class Footprint:
         key = _key(math.floor(x / GRID), math.floor(z / GRID))
         if key not in self.cells:
             return False
-        return any(_in_triangle(self.tris[k], x, z) for k in self.cells[key])
+        for k in self.cells[key]:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+            if _in_triangle(self.tris[k], x, z):
+                return True
+        return False
 
     def centre(self) -> list[float]:
         """The middle of its bounds."""

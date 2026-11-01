@@ -145,7 +145,11 @@ class Carve:
         """Whether the region holds `point` (x, y, z)."""
         if point[1] < self.heights[0] or point[1] > self.heights[1]:
             return False
-        return any(inside(outline, point[0], point[2]) for outline in self.outlines)
+        # The armour cut asks this of every corner: seconds of a level's load through `any`.
+        for outline in self.outlines:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+            if inside(outline, point[0], point[2]):
+                return True
+        return False
 
 
 def straddles(tri: list[Vertex], region: Carve) -> bool:
