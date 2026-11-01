@@ -92,7 +92,6 @@ class LevelRun:
     """One play of a level. `track` is the ground's scroll, `enemies` the enemies and their shots,
     `shots` the player's shots, `ship` the player's ship; `blasts`, `impacts` and `hits` are what
     the last step produced.
-    last step produced.
     """
 
     def __init__(self, options: LevelRunOptions) -> None:
