@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/boss_turret.py`."""
 
 import math
@@ -13,7 +14,7 @@ Make = Callable[..., ProbeBoss]
 
 
 def as_tuple(point: Any) -> tuple[float, ...]:
-    """A muzzle point's fields, to compare them."""
+    """Return a muzzle point's fields, to compare them."""
     if hasattr(point, "height"):
         return (point.x, point.y, point.height)
     return (point.x, point.y)

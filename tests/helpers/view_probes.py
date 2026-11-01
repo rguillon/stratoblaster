@@ -1,7 +1,10 @@
-"""Stand-ins for the view's geometry builders, so the model code runs under CPython with no
-Babylon: a recorder logs every call made on it (`rec.hull.cylinder(...)` is logged as
-`("hull.cylinder", args, kwargs)`), and `probe_builder` captures what a model builder hands to
-`build_enemy_model` / `build_boss_model` (its name, colour and drawing), with no scene built."""
+# Copyright (c) 2026 Renaud Guillon
+"""Stand-ins for the view's geometry builders, so the model code runs under CPython with no Babylon.
+
+A recorder logs every call made on it (`rec.hull.cylinder(...)` is logged as `("hull.cylinder",
+args, kwargs)`), and `probe_builder` captures what a model builder hands to `build_enemy_model` /
+`build_boss_model` (its name, colour and drawing), with no scene built.
+"""
 
 import sys
 from collections.abc import Callable
@@ -31,13 +34,16 @@ class _Call:
 
 
 def recorder() -> tuple[Any, list[tuple[str, tuple[Any, ...], dict[str, Any]]]]:
-    """A recording stand-in for a builder, and its call log (`(path, args, kwargs)` triples)."""
+    """Return a recording stand-in for a builder, and its call log.
+
+    The log holds `(path, args, kwargs)` triples.
+    """
     log: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
     return _Call("", log), log
 
 
 def paths(log: list[tuple[str, tuple[Any, ...], dict[str, Any]]]) -> list[str]:
-    """The paths of the calls in `log`, in order."""
+    """Return the paths of the calls in `log`, in order."""
     return [path for path, _args, _kwargs in log]
 
 
@@ -70,9 +76,11 @@ class JointedCapture:
 
 
 def probe_builder(monkeypatch: Any, builder: Callable[..., Any]) -> Any:
-    """Calls `builder(scene)` with the model builders of its module replaced by recorders, and
-    returns the capture (an `EnemyCapture`, `JointedCapture` or `BossCapture`). Nothing is built
-    in a scene."""
+    """Call `builder(scene)` with the model builders of its module replaced by recorders.
+
+    Returns the capture (an `EnemyCapture`, `JointedCapture` or `BossCapture`). Nothing is built in
+    a scene.
+    """
     module = sys.modules[builder.__module__]
     captured: list[Any] = []
 
@@ -100,8 +108,11 @@ def probe_builder(monkeypatch: Any, builder: Callable[..., Any]) -> Any:
 
 
 class _Parts:
-    """The parts a drawing gets, as the game's models use them: `muzzle(at)` may leave the kind out
-    (Transcrypt passes `undefined` there, which the game reads as a gun)."""
+    """The parts a drawing gets, as the game's models use them.
+
+    `muzzle(at)` may leave the kind out (Transcrypt passes `undefined` there, which the game reads
+    as a gun).
+    """
 
     def __init__(self, parts: Any) -> None:
         self._parts = parts
@@ -114,14 +125,19 @@ class _Parts:
 
 
 def drawn(draw: Callable[[Any], None]) -> dict[str, Any]:
-    """Runs a drawing on real solid builders (pure geometry): its parts, reactors, rotors, wings
-    and muzzles, as `enemy_mesh.collect_parts` gathers them."""
+    """Run a drawing on real solid builders (pure geometry).
+
+    Its parts, reactors, rotors, wings and muzzles, as `enemy_mesh.collect_parts` gathers them.
+    """
     return collect_parts(lambda parts: draw(_Parts(parts)))
 
 
 def drawings_of(capture: Any) -> dict[str, dict[str, Any]]:
-    """Runs every drawing of a capture on real solid builders, keyed by its place in the model:
-    `body`, `ring`, `core`, `limbs.<joint>` and `parts.<id>`."""
+    """Run every drawing of a capture on real solid builders.
+
+    The drawings are keyed by their place in the model: `body`, `ring`, `core`, `limbs.<joint>` and
+    `parts.<id>`.
+    """
     if isinstance(capture, EnemyCapture):
         return {"body": drawn(capture.draw)}
     # `build_boss_model` makes the drawing's objects records first (`record`), as the game does.
@@ -150,6 +166,9 @@ def drawings_of(capture: Any) -> dict[str, dict[str, Any]]:
 
 
 def jointed_design_ids(capture: Any) -> tuple[list[str], list[str]]:
-    """The part ids the design asks for, and the part ids its drawing draws (a jointed model)."""
+    """Return the part ids the design asks for, and the part ids its drawing draws.
+
+    For a jointed model.
+    """
     design_ids = [spec.id for spec in capture.design.parts]
     return design_ids, list((capture.drawing.get("parts") or {}).keys())

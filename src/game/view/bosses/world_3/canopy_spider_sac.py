@@ -1,9 +1,10 @@
+# Copyright (c) 2026 Renaud Guillon
 """FB-CANOPY-SPIDER-04, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups.
-Logical pixels, nose +Z, Y up (towards the camera)."""
+
+Logical pixels, nose +Z, Y up (towards the camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.view.bosses.final_boss_shapes import open_hatch
 from game.view.bosses.mini_boss_shapes import (
@@ -18,34 +19,36 @@ from game.view.bosses.world_3.toucan_jungle import VINE, segment
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The sac's silk: a pale, dirty grey-green webbing.
 SILK = [0.42, 0.45, 0.38]
 # The cocoon along its axis (a lathe profile: radius, then length along -Z).
 COCOON = table([[0, -9], [7, -7.5], [10.5, -3], [11, 1.5], [8.6, 6], [4.6, 8.6], [0, 9.4]])
 # The eggs glowing through the silk (around the sac's centre: x, height, z).
-EGGS = table(
-    [
-        [-4.5, 13.4, 1.5],
-        [3.8, 13.8, -1],
-        [0, 14.4, -5],
-        [-5.4, 12.6, -7],
-        [5.4, 12.6, -7.5],
-    ]
-)
+EGGS = table([
+    [-4.5, 13.4, 1.5],
+    [3.8, 13.8, -1],
+    [0, 14.4, -5],
+    [-5.4, 12.6, -7],
+    [5.4, 12.6, -7.5],
+])
 
 
 def egg_sac(p: EnemyParts, at: Vec3) -> None:
-    """The egg sac at its centre `at` (FB-CANOPY-SPIDER-04): a cocoon of silk hanging from the
-    abdomen's tip, wrapped in metal bands ringed with red neon, eggs glowing through it as the next
-    brood charges, and a hatch on top that the Gnats leave from."""
+    """Add the egg sac at its centre `at` (FB-CANOPY-SPIDER-04).
+
+    A cocoon of silk hanging from the abdomen's tip, wrapped in metal bands ringed with red neon,
+    eggs glowing through it as the next brood charges, and a hatch on top that the Gnats leave from.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

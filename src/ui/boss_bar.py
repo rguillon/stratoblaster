@@ -1,15 +1,18 @@
-"""The boss health bar (BOSS-05, UI-HUD-12): a slim gauge up the left edge of
-the playfield, with the boss's kind and name written along it and the health of its parts filling
-it from the bottom."""
+# Copyright (c) 2026 Renaud Guillon
+"""The boss health bar (BOSS-05, UI-HUD-12): a slim gauge up the left edge of the playfield,.
 
-from org.transcrypt.stubs.browser import __pragma__, window
+The boss's kind and name written along it and the health of its parts filling it from the bottom.
+"""
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from org.transcrypt.stubs.browser import window
 
-__pragma__("noskip")
+from ui.screens.elements import element, replace_children
 
-from ui.screens.elements import element, replace_children  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
 
 
 class BossBarFrame:
@@ -31,9 +34,11 @@ def _percent(share: float) -> str:
 
 
 class BossBar:
-    """The boss health bar (UI-HUD-12): the boss's kind and name written along it, and the health
-    of its core and parts together filling it from the bottom, with a notch at the end of each
-    part's share. Hidden while no boss is fought (UI-HUD-14); the page is touched only on changes.
+    """The boss health bar (UI-HUD-12): the boss's kind and name written along it,.
+
+    The health of its core and parts together filling it from the bottom, with a notch at the end of
+    each part's share. Hidden while no boss is fought (UI-HUD-14); the page is touched only on
+    changes.
     """
 
     def __init__(self, doc: Any, parent: Any) -> None:
@@ -54,7 +59,7 @@ class BossBar:
         self._notch_key = ""
 
     def update(self, frame: BossBarFrame | None) -> None:
-        """Shows `frame`, or hides the bar when there is no boss."""
+        """Show `frame`, or hide the bar when there is no boss."""
         # The notches are part of what is shown, so a notch that moves on its own is drawn too.
         notches = ",".join([_percent(at) for at in frame.notches]) if frame is not None else ""
         key = (

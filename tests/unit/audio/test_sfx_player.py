@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/sfx_player.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.audio_fakes import FakeContext, FakeVoice
@@ -18,7 +21,7 @@ def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
     """Every voice the player starts, recorded (the synth is not run)."""
     made: list[FakeVoice] = []
 
-    def fake_play_voice(context, destination, layers, options) -> FakeVoice:  # noqa: ANN001
+    def fake_play_voice(_context: Any, _destination: Any, _layers: Any, options: Any) -> FakeVoice:
         voice = FakeVoice(options.when + options.hold, "")
         made.append(voice)
         return voice
@@ -79,7 +82,8 @@ def test_aud_engine_07_a_sound_again_too_soon_is_boosted_not_played_twice(
     assert len(voices) == 1
 
 
-def test_aud_engine_07_a_boost_is_capped_at_its_square(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_07_a_boost_is_capped_at_its_square() -> None:
     context = FakeContext()
     player, _, clock = make_player(context)
     player.play(sound("shot"))
@@ -101,9 +105,8 @@ def test_aud_engine_07_when_the_voices_are_all_taken_a_higher_priority_replaces_
     assert player.voices == 1
 
 
-def test_aud_engine_07_a_lower_priority_sound_is_dropped_when_the_voices_are_taken(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_07_a_lower_priority_sound_is_dropped_when_the_voices_are_taken() -> None:
     player, _, clock = make_player(FakeContext(), max_voices=1)
     player.play(sound("boom", priority=5))
     clock[0] = 0.1
@@ -124,17 +127,15 @@ def test_aud_engine_07_a_looping_sound_plays_once_until_it_is_stopped(
     assert voices[0].stops
 
 
-def test_aud_engine_07_stopping_a_loop_that_is_not_playing_does_nothing(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_07_stopping_a_loop_that_is_not_playing_does_nothing() -> None:
     player, _, _ = make_player(FakeContext())
     player.stop_loop("laser")
     assert player.looping("laser") is False
 
 
-def test_aud_engine_08_a_positional_sound_is_panned_when_it_is_off_centre(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_08_a_positional_sound_is_panned_when_it_is_off_centre() -> None:
     context = FakeContext()
     player, _, _ = make_player(context)
     player.play(sound("hit", positional=True), pan=0.9)
@@ -145,9 +146,8 @@ def test_aud_engine_08_a_positional_sound_is_panned_when_it_is_off_centre(
     assert gain.connections == [panners[0]]
 
 
-def test_aud_engine_08_a_positional_sound_in_the_middle_is_not_panned(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_08_a_positional_sound_in_the_middle_is_not_panned() -> None:
     context = FakeContext()
     player, _, _ = make_player(context)
     player.play(sound("hit", positional=True), pan=0)
@@ -166,9 +166,8 @@ def test_aud_engine_10_stop_all_stops_every_sound_and_forgets_the_loops(
     assert all(voice.stops for voice in voices)
 
 
-def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_again(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_again() -> None:
     player, _, clock = make_player(FakeContext())
     player.play(sound("shot", hold=0.1))
     clock[0] = 5.0

@@ -1,21 +1,23 @@
-"""The moving cars of a level (phase 4 review, GFX-CAR-08): the cars in view are placed again every
-frame, as thin instances of their own meshes, apart from the props that stay put.
+# Copyright (c) 2026 Renaud Guillon
+"""The moving cars of a level (phase 4 review, GFX-CAR-08).
+
+The cars in view are placed again every frame, as thin instances of their own meshes, apart from the
+props that stay put.
 
 D-211: where the kit has imposters, a car's body is a picture of it baked from its detailed model
 (`imposters.py`), one quad facing the camera; only its lights are real geometry (GFX-CAR-05).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.scenery.traffic import Traffic
 from render.scenery.imposter_kinds import ImposterKinds, imposter_kinds
 from render.scenery.prop_field import PropField, PropMaterials
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class TrafficSource:
@@ -32,7 +34,7 @@ def _goes_on(before: list[Any], roads: list[Any]) -> bool:
     """Whether `roads` starts with `before` (the same roads, more after them)."""
     if len(roads) < len(before):
         return False
-    for i in range(len(before)):  # noqa: SIM110 (index loop: the two lists are compared at each index)
+    for i in range(len(before)):
         if roads[i] is not before[i]:
             return False
     return True
@@ -41,18 +43,20 @@ def _goes_on(before: list[Any], roads: list[Any]) -> bool:
 class TrafficLayer:
     """The cars of a level, drawn as thin instances of their models, or of their imposters."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-        models: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        scene: Any,
+        models: Any,
         materials: PropMaterials,
-        rules: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-        imposter_atlas: Any = None,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        rules: Any,
+        imposter_atlas: Any = None,
         tilt: float = 0,
     ) -> None:
-        """`models`: the prop models (only those of the cars' kinds are used). `rules`: the cars'
-        rules, or None for a level without cars. `imposter_atlas(kinds)`: an `ImposterAtlas` for
-        that many kinds, or None (D-211; the camera tilted by `tilt`)."""
+        """`models`: the prop models (only those of the cars' kinds are used).
+
+        `rules`: the cars' rules, or None for a level without cars. `imposter_atlas(kinds)`: an
+        `ImposterAtlas` for that many kinds, or None (D-211; the camera tilted by `tilt`).
+        """
         self._rules = rules
         self._traffic: Traffic | None = None
         self._roads: list[Any] | None = None
@@ -71,8 +75,11 @@ class TrafficLayer:
 
     @property
     def structure_meshes(self) -> list[Any]:
-        """Meshes of the car bodies (e.g. to hide lights behind them in a glow layer). Not their
-        imposters: a car's quad stands in front of its far half, and would hide its own lights."""
+        """Meshes of the car bodies (e.g. to hide lights behind them in a glow layer).
+
+        Not their imposters: a car's quad stands in front of its far half, and would hide its own
+        lights.
+        """
         return self._field.structure_meshes
 
     @property
@@ -81,8 +88,11 @@ class TrafficLayer:
         return self._field.count
 
     def update(self, time: float, area: Any, source: TrafficSource) -> None:
-        """Places the cars in `area` at `time`. New roads (a new seed) get new traffic; roads
-        that go on from the ones before (the runout's, reviewer 2026-10-28) only add theirs."""
+        """Places the cars in `area` at `time`.
+
+        New roads (a new seed) get new traffic; roads that go on from the ones before (the runout's,
+        reviewer 2026-10-28) only add theirs.
+        """
         if self._rules is None:
             return
         before = self._roads

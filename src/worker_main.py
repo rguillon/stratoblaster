@@ -1,7 +1,11 @@
-"""Entry point of the ground worker (PERF-14). Transcrypt compiles this file (ENG-150), and the
-Makefile bundles it to `dist/js/ground_worker.js`, the script that
-`render/scenery/background_loader.py` starts. Importing the worker module installs its message
-handler on the worker's global scope.
+# Copyright (c) 2026 Renaud Guillon
+"""Entry point of the ground worker (PERF-14).
+
+Transcrypt compiles this file (ENG-150), and the Makefile bundles it to `dist/js/ground_worker.js`,
+the script that `render/scenery/background_loader.py` starts. It installs the worker module's
+message handler on the worker's global scope.
 """
 
-import render.scenery.ground_worker  # noqa: F401 (imported for its side effect: it installs the message handler)
+from render.scenery.ground_worker import install_message_handler
+
+install_message_handler()

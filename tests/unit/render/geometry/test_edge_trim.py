@@ -1,6 +1,10 @@
-"""Unit tests of `src/render/geometry/edge_trim.py`: the self-lit trim along a model's top-view
-silhouette (replaces the rim outline, see docs/superpowers/specs/2026-10-31-ship-glow-and-boss-
-transform-design.md): GFX-TRIM-02, GFX-TRIM-03, GFX-TRIM-10."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/geometry/edge_trim.py`.
+
+The self-lit trim along a model's top-view silhouette (replaces the rim outline, see
+docs/superpowers/specs/2026-10-31-ship-glow-and-boss-transform-design.md): GFX-TRIM-02, GFX-TRIM-03,
+GFX-TRIM-10.
+"""
 
 from helpers.render_geometry import babylon_normal, triangles
 

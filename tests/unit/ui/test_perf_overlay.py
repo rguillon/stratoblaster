@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/perf_overlay.py`."""
 
 from helpers.dom import FakeDocument
@@ -34,7 +35,7 @@ def test_dev_perf_03_a_missing_load_time_is_a_dash() -> None:
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     overlay.toggle()
     overlay.update(0.0, numbers())
-    assert overlay.root.textContent.endswith("Level load: –")
+    assert overlay.root.textContent.endswith("Level load: \u2013")
 
 
 def test_dev_perf_03_the_text_changes_at_most_every_refresh_interval() -> None:

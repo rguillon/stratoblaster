@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_types.py`."""
 
 import math
+from typing import Any
 
 from helpers.level_builders import flat, make_level, road_rules, section, street_grid, tile_rules
 
@@ -27,7 +29,7 @@ from core.scenery.traffic import Traffic
 SPAN = ZRange(-3000.0, 6000.0)
 
 
-def _level(terrain=None, streets=True, **rules):
+def _level(terrain: Any = None, streets: bool = True, **rules: Any) -> Any:
     grid = street_grid(0.55) if streets else None
     secs = [
         section("a", 10, terrain or flat()),
@@ -37,12 +39,12 @@ def _level(terrain=None, streets=True, **rules):
     return make_level(secs, roads=road_rules(**rules))
 
 
-def _network(level, seed: int = 4, options=None) -> RoadNetwork:
+def _network(level: Any, seed: int = 4, options: Any = None) -> RoadNetwork:
     field = HeightField(level)
     return RoadNetwork(field, level.roads, seed, SPAN, options)
 
 
-def _shape(net: RoadNetwork):
+def _shape(net: RoadNetwork) -> Any:
     return [
         (r.index, r.kind, r.width, r.lanes, [(p.x, p.z, p.width) for p in r.points])
         for r in net.roads
@@ -57,8 +59,10 @@ def _main_along_z(x: float = 0.0) -> Road:
     return Road(0, "main", 24.0, 1, points)
 
 
-def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathGround:
-    def no_road(x: float, z: float, which) -> Nearest:
+def _ground(
+    rules: Any, laid: list, is_open: Any = lambda _x, _z: True, nearest: Any = None
+) -> PathGround:
+    def no_road(_x: float, _z: float, _which: Any) -> Nearest:
         return Nearest(math.inf)
 
     return PathGround(
@@ -94,7 +98,7 @@ def rules(**overrides: object) -> CarRules:
     return CarRules(**values)  # type: ignore[arg-type]
 
 
-def ground(x: float, z: float) -> float:
+def ground(_x: float, _z: float) -> float:
     return 2.0
 
 
@@ -137,7 +141,8 @@ def test_path_line_goes_straight_past_the_edge_without_bend() -> None:
     rules = road_rules()
     start = RoadPoint(0.0, 100.0, 24.0)
     line = _path_line(rules, start, 1, 0.0)
-    assert line[0].x == 0.0 and line[0].z == 100.0
+    assert line[0].x == 0.0
+    assert line[0].z == 100.0
     assert all(p.z == 100.0 for p in line)
     assert line[-1].x >= rules.offscreen_x
     assert [p.x for p in line] == sorted(p.x for p in line)
@@ -148,7 +153,7 @@ def test_path_through_gives_up_on_a_line_that_leaves_open_ground() -> None:
     main = _main_along_z()
     line = [RoadPoint(0.0, 0.0, 12.0), RoadPoint(10.0, 0.0, 12.0), RoadPoint(20.0, 0.0, 12.0)]
     assert _path_through(_ground(rules, []), line, main) == line
-    closed = _ground(rules, [], is_open=lambda x, z: x < 15)
+    closed = _ground(rules, [], is_open=lambda x, _z: x < 15)
     assert _path_through(closed, line, main) is None
 
 
@@ -157,7 +162,7 @@ def test_gfx_road_05_without_crossings_a_path_stops_at_a_road_it_runs_into() -> 
     main = _main_along_z()
     cross = Road(9, "main", 24.0, 1, [])
 
-    def road_ahead(x: float, z: float, which) -> Nearest:
+    def road_ahead(_x: float, _z: float, which: Any) -> Nearest:
         # The path's own road is far away; a road ahead, at the path's end, is at its edge.
         if which(main):
             return Nearest(math.inf)
@@ -172,7 +177,7 @@ def test_gfx_road_05_without_crossings_a_path_going_back_towards_its_road_is_blo
     rules = road_rules(no_crossings=NoCrossings(20.0))
     main = _main_along_z()
 
-    def own_road(x: float, z: float, which) -> Nearest:
+    def own_road(x: float, _z: float, which: Any) -> Nearest:
         if which(main):
             return Nearest(abs(x) - 5.0, main)
         return Nearest(math.inf)
@@ -190,7 +195,7 @@ def test_gfx_road_05_without_crossings_a_path_going_back_towards_its_road_is_blo
 def test_gfx_road_05_without_crossings_a_path_on_closed_ground_is_blocked() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     line = [RoadPoint(0.0, 0.0, 12.0), RoadPoint(10.0, 0.0, 12.0), RoadPoint(20.0, 0.0, 12.0)]
-    closed_at_end = _ground(rules, [], is_open=lambda x, z: x < 15.0)
+    closed_at_end = _ground(rules, [], is_open=lambda x, _z: x < 15.0)
     assert _path_through(closed_at_end, line, _main_along_z()) is None
 
 

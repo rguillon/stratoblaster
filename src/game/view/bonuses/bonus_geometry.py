@@ -1,27 +1,27 @@
-"""The badges of the bonuses: one shape per kind (GFX-FX-12), for the three kinds (GAME-BONUS-01)
+# Copyright (c) 2026 Renaud Guillon
+"""The badges of the bonuses: one shape per kind (GFX-FX-12), for the three kinds (GAME-BONUS-01).
 
 Each badge is radius 1 in the XY plane, facing -Z, built as coloured flat polygons.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from render.geometry.gradient_shapes import ColoredGeometry
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _new_geometry() -> ColoredGeometry:
-    """An empty geometry: positions, indices and colours, all flat arrays."""
+    """Return an empty geometry: positions, indices and colours, all flat arrays."""
     return ColoredGeometry()
 
 
 def _polygon(geo: Any, points: list[list[float]], z: float, color: list[float]) -> None:
-    """Adds a flat convex polygon (XY plane, at `z`) of one colour to `geo`."""
+    """Add a flat convex polygon (XY plane, at `z`) of one colour to `geo`."""
     base = len(geo.positions) // 3
     for p in points:
         geo.positions.append(p[0])
@@ -38,7 +38,7 @@ def _polygon(geo: Any, points: list[list[float]], z: float, color: list[float]) 
 
 
 def _hexagon(r: float) -> list[list[float]]:
-    """The corners of a hexagon of radius `r`, flat side down."""
+    """Return the corners of a hexagon of radius `r`, flat side down."""
     return [[math.cos((math.pi / 3) * i) * r, math.sin((math.pi / 3) * i) * r] for i in range(6)]
 
 
@@ -63,8 +63,11 @@ def _chevron(top: float, thick: float) -> list[list[list[float]]]:
 
 
 def build_bonus_badge(colors: Any) -> ColoredGeometry:
-    """The badge of a weapon bonus: a dark hexagon in a coloured frame (inner edge at `inset`),
-    with two chevrons pointing up in front of it."""
+    """Return the badge of a weapon bonus.
+
+    A dark hexagon in a coloured frame (inner edge at `inset`), with two chevrons pointing up in
+    front of it.
+    """
     geo = _new_geometry()
     outer = _hexagon(1)
     inner = _hexagon(colors.inset)
@@ -80,7 +83,7 @@ def build_bonus_badge(colors: Any) -> ColoredGeometry:
 
 
 def _circle(cx: float, cy: float, r: float, sides: int = 14) -> list[list[float]]:
-    """The corners of a regular polygon of `sides` around (`cx`, `cy`), radius `r`."""
+    """Return the corners of a regular polygon of `sides` around (`cx`, `cy`), radius `r`."""
     return [
         [
             cx + math.cos(((2 * math.pi) / sides) * i) * r,
@@ -91,7 +94,7 @@ def _circle(cx: float, cy: float, r: float, sides: int = 14) -> list[list[float]
 
 
 def _heart(geo: Any, s: float, z: float, color: list[float]) -> None:
-    """Adds a heart of size `s` (two lobes over a point, within radius `s`) at depth `z`."""
+    """Add a heart of size `s` (two lobes over a point, within radius `s`) at depth `z`."""
     lobe = 0.36 * s
     _polygon(geo, _circle(-0.34 * s, 0.24 * s, lobe), z, color)
     _polygon(geo, _circle(0.34 * s, 0.24 * s, lobe), z, color)
@@ -109,8 +112,10 @@ def _heart(geo: Any, s: float, z: float, color: list[float]) -> None:
 
 
 def build_life_badge(colors: Any) -> ColoredGeometry:
-    """The badge of a life bonus (GFX-FX-12): a heart in a coloured rim, a lighter heart in front of
-    it. A heart, so it reads without colour."""
+    """Return the badge of a life bonus (GFX-FX-12): a heart in a coloured rim.
+
+    A lighter heart in front of it. A heart, so it reads without colour.
+    """
     geo = _new_geometry()
     _heart(geo, 1, 0, colors.rim)
     _heart(geo, colors.inset, -0.02, colors.heart)
@@ -123,7 +128,7 @@ def _rect(x0: float, y0: float, x1: float, y1: float) -> list[list[float]]:
 
 
 def _letter_b(h: float) -> list[list[list[float]]]:
-    """The blocky strokes of a letter B, `h` high, centred on the origin."""
+    """Return the blocky strokes of a letter B, `h` high, centred on the origin."""
     w = 0.62 * h
     t = 0.2 * h
     left = -w / 2
@@ -141,8 +146,11 @@ def _letter_b(h: float) -> list[list[list[float]]]:
 
 
 def build_bomb_badge(colors: Any) -> ColoredGeometry:
-    """The badge of a bomb bonus (GFX-FX-12): a round shell with a highlight and a letter B in
-    front. Round and lettered, so it reads without colour."""
+    """Return the badge of a bomb bonus (GFX-FX-12).
+
+    A round shell with a highlight and a letter B in front. Round and lettered, so it reads without
+    colour.
+    """
     geo = _new_geometry()
     _polygon(geo, _circle(0, 0, 1, 18), 0, colors.shell)
     _polygon(geo, _circle(-0.38, 0.4, 0.26, 10), -0.01, colors.highlight)

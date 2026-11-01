@@ -51,11 +51,10 @@ The high score, the last chosen ship and the volumes are kept in cookies (`strat
 
 ```sh
 make setup     # installs the git hooks (pre-commit, pre-push)
-make build     # fetches Babylon.js if needed, builds the game into dist/
+make serve     # builds the game into dist/ and serves it on http://localhost:5173
 ```
 
-Then serve `dist/` with any static server, for example
-`uv run python -m http.server 5173 --directory dist`, and open http://localhost:5173.
+Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port.
 
 ## Make targets
 
@@ -68,6 +67,7 @@ Then serve `dist/` with any static server, for example
 | `make tests` | Unit tests (pytest, CPython over `src/`) with coverage (HTML in `coverage/`) |
 | `make build` | Fetches Babylon.js if needed, builds the game into `dist/`                   |
 | `make e2e`   | Builds the e2e game, then runs the end-to-end tests (Playwright, Chromium)  |
+| `make serve` | Builds the game, then serves `dist/` on http://localhost:5173 (`SERVE_PORT`) |
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

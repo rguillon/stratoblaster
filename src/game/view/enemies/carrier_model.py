@@ -1,26 +1,16 @@
-"""ENM-CARRIER-01: the Carrier, Cyber-Organic (ENM-35)
+# Copyright (c) 2026 Renaud Guillon
+"""ENM-CARRIER-01: the Carrier, Cyber-Organic (ENM-35).
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from render.geometry.solids import Placement  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.config.enemies import ENEMY_CONFIG  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x, shift_x  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemies import ENEMY_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x, shift_x
+from render.geometry.organic import (
     SegmentedBody,
     curve,
     organ,
@@ -28,6 +18,16 @@ from render.geometry.organic import (  # noqa: E402 (after the Transcrypt skip b
     tendril,
     vein,
 )
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+type Vec3 = list[float]
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -61,8 +61,10 @@ CARRIER_LARVAE = [[-5, 8.6, -9], [5, 8.6, -4], [-4, 9, 5], [4, 8.6, 10]]  # type
 
 
 def port_quad(side: float, z: float, span: list[float], lift: float) -> list[Vec3]:
-    """A quad `[across, along]` big on the right sponson's sloped wall, centred on the port at `z`,
-    `lift` off the wall; `side` -1 mirrors it to the left."""
+    """Return a quad `[across, along]` big on the right sponson's sloped wall.
+
+    Centred on the port at `z`, `lift` off the wall; `side` -1 mirrors it to the left.
+    """
     inset = SPONSON_SLOPE[0]
     rise = SPONSON_SLOPE[1]
     length = math.sqrt(inset * inset + rise * rise)
@@ -87,13 +89,16 @@ def port_quad(side: float, z: float, span: list[float], lift: float) -> list[Vec
 
 
 def port(hull: Any, charge: Any, side: float, z: float) -> None:
-    """A launch port: a dark frame on the sponson's wall and a mouth glowing as a launch comes."""
+    """Add a launch port on the sponson's wall.
+
+    A dark frame and a mouth glowing as a launch comes.
+    """
     hull.face(port_quad(side, z, PORT_FRAME, 0.08), H.dark)
     charge.face(port_quad(side, z, PORT_MOUTH, 0.16), WHITE)
 
 
 def draw_carrier(p: Any) -> None:
-    """The parts of the Carrier: its brood sac, ribs, larvae, sponsons, ports and reactors."""
+    """Draw the parts of the Carrier: its brood sac, ribs, larvae, sponsons, ports and reactors."""
     flesh = p.flesh
     hull = p.hull
     neon = p.neon
@@ -127,8 +132,10 @@ def draw_carrier(p: Any) -> None:
 
 
 def build_carrier(scene: Any) -> Any:
-    """ENM-CARRIER-01: a brood sac that releases Gnats: a fat swollen sac of three segments under
-    bone ribs, larvae glowing through its back, a metal sponson grafted on each flank with two
-    launch ports, neon bands along its spine (yellow, ENM-CARRIER-04), its reactors set in flesh
-    sacs."""
+    """ENM-CARRIER-01: a brood sac that releases Gnats.
+
+    A fat swollen sac of three segments under bone ribs, larvae glowing through its back, a metal
+    sponson grafted on each flank with two launch ports, neon bands along its spine (yellow,
+    ENM-CARRIER-04), its reactors set in flesh sacs.
+    """
     return build_enemy_model("carrier", scene, N.carrier, draw_carrier)

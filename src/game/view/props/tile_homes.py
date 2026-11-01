@@ -1,5 +1,9 @@
-"""The homes made for the grid of tiles (Phase 15, GFX-BLDG-09): houses with their gardens,
-terraces, flats, workshops, farms and desert homes See `tile_kit.py` for the plot."""
+# Copyright (c) 2026 Renaud Guillon
+"""The homes made for the grid of tiles (Phase 15, GFX-BLDG-09).
+
+Houses with their gardens, terraces, flats, workshops, farms and desert homes. See `tile_kit.py` for
+the plot.
+"""
 
 import math
 
@@ -26,7 +30,7 @@ ROOFS = [C.roof, C.farmRoof, C.brick, C.metalDark]
 
 
 def build_house(k: TileKit) -> None:
-    """A house at the front of its plot, a garden with a tree or two behind it."""
+    """Build a house at the front of its plot, a garden with a tree or two behind it."""
     plot(k, C.leafDark)
     bw = min(k.w - 2, r(k, [6, 8]))
     bd = min(k.d * 0.6, r(k, [5, 7]))
@@ -43,7 +47,7 @@ def build_house(k: TileKit) -> None:
 
 
 def build_villa(k: TileKit) -> None:
-    """A modern villa: two offset flat-roofed slabs, a pool, a lawn."""
+    """Build a modern villa: two offset flat-roofed slabs, a pool, a lawn."""
     plot(k, C.leaf)
     w = k.w * 0.7
     d = k.d * 0.45
@@ -63,7 +67,7 @@ def build_villa(k: TileKit) -> None:
 
 
 def build_cottage(k: TileKit) -> None:
-    """A small cottage: a low house under a steep roof, a garden round it."""
+    """Build a small cottage: a low house under a steep roof, a garden round it."""
     plot(k, C.leafDark)
     s = min(k.w, k.d) * 0.55
     k.s.box(
@@ -79,7 +83,7 @@ def build_cottage(k: TileKit) -> None:
 
 
 def build_terrace(k: TileKit) -> None:
-    """A row of terraced houses along the plot's long side, small back yards."""
+    """Build a row of terraced houses along the plot's long side, small back yards."""
     plot(k, C.leafDark)
     along_z = k.d > k.w
     length = k.d if along_z else k.w
@@ -101,7 +105,7 @@ def build_terrace(k: TileKit) -> None:
 
 
 def build_flats(k: TileKit) -> None:
-    """A block of flats: 3 to 6 floors, a flat roof with its plant, lit windows."""
+    """Build a block of flats: 3 to 6 floors, a flat roof with its plant, lit windows."""
     plot(k, C.concreteDark)
     w = k.w - 1.5
     d = k.d - 1.5
@@ -113,7 +117,7 @@ def build_flats(k: TileKit) -> None:
 
 
 def build_workshop(k: TileKit) -> None:
-    """A workshop: a saw-tooth roofed shed, a yard with crates at the front."""
+    """Build a workshop: a saw-tooth roofed shed, a yard with crates at the front."""
     plot(k, C.concreteDark)
     w = k.w - 1
     d = k.d * 0.7
@@ -133,7 +137,7 @@ def build_workshop(k: TileKit) -> None:
 
 
 def build_farmhouse(k: TileKit) -> None:
-    """A farmhouse with a barn beside it, a vegetable plot."""
+    """Build a farmhouse with a barn beside it, a vegetable plot."""
     plot(k, C.leaf)
     k.s.box(
         [k.w * 0.4, 4, k.d * 0.35], C.farmWall, Placement([-k.w * 0.22, 0, -k.d * 0.2], 0, 0, 0)
@@ -159,7 +163,7 @@ def build_farmhouse(k: TileKit) -> None:
 
 
 def build_shed(k: TileKit, at: list[float], size: list[float]) -> None:
-    """A red shed of `w` × `d` at (x, z), gabled along Z."""
+    """Build a red shed of `w` x `d` at (x, z), gabled along Z."""
     x = at[0]
     z = at[1]
     w = size[0]
@@ -169,7 +173,7 @@ def build_shed(k: TileKit, at: list[float], size: list[float]) -> None:
 
 
 def build_barn(k: TileKit) -> None:
-    """A long barn and a pair of silos."""
+    """Build a long barn and a pair of silos."""
     plot(k, C.dryLeaf)
     build_shed(k, [-k.w * 0.12, 0], [k.w * 0.6, k.d - 2])
     # D-215: its door, a bay from the windows' atlas.
@@ -199,13 +203,13 @@ def build_adobe(k: TileKit) -> None:
         w = k.w / min(n, 2) - 1.5
         d = k.d / math.ceil(n / 2) - 1.5
         x = ((-1 if i % 2 == 0 else 1) * (k.w / 4)) if n > 1 else 0
-        z = ((-1 if i < 2 else 1) * (k.d / 4)) if n > 2 else 0  # noqa: PLR2004, PLR2004 (a geometry constant)
+        z = ((-1 if i < 2 else 1) * (k.d / 4)) if n > 2 else 0
         h = r(k, [3.5, 6])
         k.s.box(
             [w, h, d], any_of(k, [C.adobe, C.adobeDark]), Placement([x, 0, z], 0, 0, 0), C.adobeRoof
         )
         k.s.box([w, 0.6, 0.4], C.adobeDark, Placement([x, h, z - d / 2 + 0.2], 0, 0, 0))
-        if k.random() < 0.5:  # noqa: PLR2004 (a geometry constant)
+        if k.random() < 0.5:
             k.s.box([1.4, 3, 1.4], C.adobeDark, Placement([x + w / 4, h, z], 0, 0, 0))
         # D-215: its windows and its door, quads from the windows' atlas.
         windows(k, [w, d], [1.2, h - 0.6], L.window, [x, z], WINDOW_STYLES.punched)
@@ -213,7 +217,7 @@ def build_adobe(k: TileKit) -> None:
 
 
 def build_courtyard(k: TileKit) -> None:
-    """A courtyard house: four wings round a yard with a fountain and palms."""
+    """Build a courtyard house: four wings round a yard with a fountain and palms."""
     plot(k, C.paving)
     w = k.w - 1
     d = k.d - 1

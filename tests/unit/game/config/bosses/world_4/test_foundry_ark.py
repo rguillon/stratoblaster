@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/foundry_ark.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_foundry_ark_10_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert FOUNDRY_ARK.id == FOUNDRY_ARK.id.lower()
-    assert " " not in FOUNDRY_ARK.id and "_" not in FOUNDRY_ARK.id
+    assert " " not in FOUNDRY_ARK.id
+    assert "_" not in FOUNDRY_ARK.id
 
 
 def test_fb_foundry_ark_09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_foundry_ark_09_boss_stats_are_in_the_range_the_sim_relies_on() -> No
 
 def test_fb_foundry_ark_15_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-FOUNDRY-ARK-13)."""
-    assert isinstance(FOUNDRY_ARK.rage, list) and FOUNDRY_ARK.rage
+    assert isinstance(FOUNDRY_ARK.rage, list)
+    assert FOUNDRY_ARK.rage
     assert len(FOUNDRY_ARK.stages) == len(original_parts(FOUNDRY_ARK)) + 1

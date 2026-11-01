@@ -1,10 +1,10 @@
-"""The playfield scene of the shot and enemy viewers:
-an orthographic camera looking straight down on the playfield, and the player ship lying on it.
+# Copyright (c) 2026 Renaud Guillon
+"""The playfield scene of the shot and enemy viewers.
+
+An orthographic camera looking straight down on the playfield, and the player ship lying on it.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from config.shot_viewer import SHOT_VIEWER_CONFIG as CFG
 from render.babylon import (
@@ -23,18 +23,22 @@ from render.babylon import (
 )
 from render.model_animation import step_model_animations
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CAMERA_DISTANCE = 500
 
 
 def create_playfield_scene(engine: Any, screen: Any) -> Any:
-    """A scene looking straight down on a `screen`-sized playfield: an orthographic camera shows
-    X in [0, width] and Y in [0, height] (one unit per logical pixel), from -Z.
+    """Return a scene looking straight down on a `screen`-sized playfield.
+
+    An orthographic camera shows X in [0, width] and Y in [0, height] (one unit per logical pixel),
+    from -Z.
     """
     scene = new_scene(engine)
     clear = CFG.clear_color
@@ -67,8 +71,10 @@ def create_playfield_scene(engine: Any, screen: Any) -> Any:
 
 
 class PlayfieldShip:
-    """A player ship lying on the playfield, nose up (+Y), top towards the camera (in the game,
-    and in the ships viewer: DEV-MENU-12)."""
+    """A player ship lying on the playfield, nose up (+Y), top towards the camera.
+
+    As in the game, and in the ships viewer (DEV-MENU-12).
+    """
 
     def __init__(self, scene: Any, scale: float, x: float, y: float) -> None:
         self.scene = scene
@@ -78,8 +84,10 @@ class PlayfieldShip:
         self._model: Any = None
 
     def show(self, factory: Any) -> float:
-        """Replaces the ship model and returns the height (Y) of its nose tip on the playfield
-        (where the muzzle is, GFX-SHOT-05)."""
+        """Replace the ship model and return the height (Y) of its nose tip on the playfield.
+
+        That is where the muzzle is (GFX-SHOT-05).
+        """
         if self._model is not None:
             dispose_node(self._model)
         # Models face +Z with +Y up: a holder turns the nose to +Y and the top to -Z (the camera).
@@ -106,5 +114,6 @@ class PlayfieldShip:
         return top
 
     def update(self, dt: float) -> None:
+        """Advances the model's animation by `dt` and refreshes the view."""
         if self._model is not None:
             step_model_animations(self._model, dt)

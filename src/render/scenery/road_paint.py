@@ -1,29 +1,31 @@
-"""A road piece painted pixel by pixel for the road atlas (phase 15, GFX-ROAD-20; reviewer
-2026-10-28: better looking corners, T and X). The roadway's corners are rounded with distance
-fields: the sidewalk corners into a junction get a kerb radius, and the outside of a turn sweeps
-round. Junctions of three or four ways get zebra crossings on their arms, the lane lines stopping
-before them.
+# Copyright (c) 2026 Renaud Guillon
+"""A road piece painted pixel by pixel for the road atlas (phase 15, GFX-ROAD-20).
+
+Reviewer, 2026-10-28: better looking corners, T and X. The roadway's corners are rounded with
+distance fields: the sidewalk corners into a junction get a kerb radius, and the outside of a turn
+sweeps round. Junctions of three or four ways get zebra crossings on their arms, the lane lines
+stopping before them.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.tile_road_geometry import Arm, TileRoadLook, arm_lines, piece_roadway
 
-__pragma__("noskip")
-
-from render.scenery.tile_road_geometry import Arm, TileRoadLook, arm_lines, piece_roadway  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+import struct  # CPython only, for `_fround` (Transcrypt has no struct module).
+from typing import Any
+
+from core.scenery.road_tiles import RoadPiece
+from core.scenery.scenery_level import TileRules
 
 Rgb = tuple[float, float, float]
 Rect = tuple[float, float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Radius of the sidewalk corners into a junction, in world units.
 KERB_RADIUS = 3
@@ -47,8 +49,6 @@ def _fround(x: float) -> float:
     """`Math.fround(x)`: the nearest 32-bit float."""
     __pragma__("js", "{}", "return Math.fround(x);")
     __pragma__("skip")
-    import struct  # noqa: PLC0415 (CPython only: Transcrypt has no struct module)
-
     rounded: float = struct.unpack("f", struct.pack("f", x))[0]
     return rounded
     __pragma__("noskip")
@@ -64,15 +64,20 @@ class Canvas:
     """A grid of pixels larger than the piece by `margin` on every side, where arms run on."""
 
     def __init__(self, scale: float, margin: int, side: int) -> None:
-        """`scale`: pixels per world unit. `margin`: pixels on each side. `side`: side of the
-        canvas in pixels."""
+        """`scale`: pixels per world unit.
+
+        `margin`: pixels on each side. `side`: side of the canvas in pixels.
+        """
         self.scale = scale
         self.margin = margin
         self.side = side
 
 
 def _envelope(f: list[float]) -> tuple[list[int], list[float], int]:
-    """The lower envelope of the parabolas of `f`'s finite values: their apexes and boundaries."""
+    """Return the lower envelope of the parabolas of `f`'s finite values.
+
+    It comes as their apexes and boundaries.
+    """
     n = len(f)
     v = [0 for _ in range(n)]
     z = [0.0 for _ in range(n + 1)]
@@ -144,7 +149,7 @@ def _pixel(v: float, c: Canvas) -> int:
 
 
 def _fill(mask: list[Any], c: Canvas, rect: Rect, value: object) -> None:
-    """Sets the pixels of `rect` (piece frame, world units) in `mask`."""
+    """Set the pixels of `rect` (piece frame, world units) in `mask`."""
     x0, x1, z0, z1 = rect
     if x1 <= x0 or z1 <= z0:
         return
@@ -158,7 +163,7 @@ def _fill(mask: list[Any], c: Canvas, rect: Rect, value: object) -> None:
 
 
 def _road_mask(piece: RoadPiece, tile: TileRules, c: Canvas) -> list[int]:
-    """The roadway, with the arms run on past the edges of the piece so they stay straight there."""
+    """Return the roadway, its arms run on past the edges of the piece to stay straight there."""
     mask = [0 for _ in range(c.side * c.side)]
     size = piece.size * tile.size
     out = c.margin / c.scale
@@ -186,13 +191,15 @@ def _crossing(
     along_x: bool,
     size: float,
 ) -> tuple[Rect, Rect] | None:
-    """Where the lines of an arm stop for its zebra crossing, and the crossing (line, zebra); None
-    on a through road, or an arm too short for one."""
+    """Where the lines of an arm stop for its zebra crossing, and the crossing (line, zebra).
+
+    None on a through road, or an arm too short for one.
+    """
     x0, x1, z0, z1 = line
     p0 = x0 if along_x else z0
     p1 = x1 if along_x else z1
-    at_start = p1 >= size - 1e-6 and p0 > 1e-6  # noqa: PLR2004 (an epsilon for float comparisons)
-    at_end = p0 <= 1e-6 and p1 < size - 1e-6  # noqa: PLR2004 (an epsilon for float comparisons)
+    at_start = p1 >= size - 1e-6 and p0 > 1e-6
+    at_end = p0 <= 1e-6 and p1 < size - 1e-6
     if not at_start and not at_end:
         return None
     # As deep as the arm allows, short of the edge; none on an arm too short for one.
@@ -209,7 +216,7 @@ def _crossing(
 
 
 def _span_rect(span: tuple[float, float], along_x: bool, line: Rect) -> Rect:
-    """The rectangle of `line` cut to `span` along the arm."""
+    """Return the rectangle of `line` cut to `span` along the arm."""
     x0, x1, z0, z1 = line
     a, b = span
     if along_x:
@@ -218,7 +225,7 @@ def _span_rect(span: tuple[float, float], along_x: bool, line: Rect) -> Rect:
 
 
 def _stripes(rect: Rect, along_x: bool) -> list[Rect]:
-    """The zebra stripes of `rect`, running along the arm, across its width."""
+    """Return the zebra stripes of `rect`, running along the arm, across its width."""
     x0, x1, z0, z1 = rect
     a = z0 if along_x else x0
     b = z1 if along_x else x1
@@ -240,9 +247,9 @@ def _paint_lines(
     look: TileRoadLook,
     c: Canvas,
 ) -> None:
-    """The lane lines of the arms, and zebra crossings on those of a T or an X."""
+    """Paint the lane lines of the arms, and zebra crossings on those of a T or an X."""
     size = piece.size * tile.size
-    junction = piece.kind == "tee" or piece.kind == "cross"  # noqa: PLR1714 (two kinds of junction, as written)
+    junction = piece.kind in ("tee", "cross")
     _roadway, arms = piece_roadway(piece, tile)
     for arm in arms:
         cut = _crossing(arm.line, arm.along_x, size) if junction else None
@@ -258,8 +265,10 @@ def _paint_lines(
 
 
 def _paint_turn(piece: RoadPiece, tile: TileRules, look: TileRoadLook, n: int) -> list[Any]:
-    """A turn, drawn as a quarter ring round the corner its two open sides share: the roadway
-    keeps its width round the bend, and its lines follow it as arcs."""
+    """Return a turn, drawn as a quarter ring round the corner its two open sides share.
+
+    The roadway keeps its width round the bend, and its lines follow it as arcs.
+    """
     size = piece.size * tile.size
     cx = size if piece.sides[1] else 0
     cz = size if piece.sides[0] else 0
@@ -291,7 +300,7 @@ def _paint_turn(piece: RoadPiece, tile: TileRules, look: TileRoadLook, n: int) -
 
 
 def _rounded_road(piece: RoadPiece, tile: TileRules, c: Canvas) -> list[int]:
-    """The roadway of `piece`, the sidewalk corners into its junction rounded to the kerb radius."""
+    """Return the roadway of `piece`, its junction's sidewalk corners rounded to the kerb radius."""
     return _close(_road_mask(piece, tile, c), c.side, KERB_RADIUS * c.scale)
 
 
@@ -301,8 +310,10 @@ def paint_piece(
     look: TileRoadLook,
     n: int,
 ) -> list[Any]:
-    """The colour of each pixel of `piece`, `n` x `n`, row by row along +Z: its roadway, sidewalks
-    and kerbs in the look's colours (GFX-ROAD-10)."""
+    """Return the colour of each pixel of `piece`, `n` x `n`, row by row along +Z: its roadway.
+
+    Sidewalks and kerbs in the look's colours (GFX-ROAD-10).
+    """
     if piece.kind == "turn":
         return _paint_turn(piece, tile, look, n)
     scale = n / (piece.size * tile.size)
@@ -319,5 +330,5 @@ def paint_piece(
     for j in range(n):
         for i in range(n):
             v = pixels[(j + margin) * c.side + i + margin]
-            out.append(v if v else look.sidewalk)
+            out.append(v or look.sidewalk)
     return out

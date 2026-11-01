@@ -1,7 +1,9 @@
-"""Generates levels' grounds and scenery textures in a worker (PERF-14), so a level can be prepared
-while the player is still
-choosing it, without freezing the menus. Unless stopped, every ground the game asks for is
-generated there (`generate_grounds_with`).
+# Copyright (c) 2026 Renaud Guillon
+"""Generates levels' grounds and scenery textures in a worker (PERF-14).
+
+So a level can be prepared while the player is still choosing it, without freezing the menus.
+
+Unless stopped, every ground the game asks for is generated there (`generate_grounds_with`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,21 +12,25 @@ from host.worker_data import to_plain
 from render.scenery.level_ground import GroundReplies, generate_grounds_with
 from render.scenery.procedural_textures import TextureJob, has_texture, keep_texture
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class WorkerPort:
-    """The worker's side the loader talks to (a `Worker`, or a fake in tests): `post_message(job)`,
-    `onmessage`, `onerror` and `terminate()` (optional)."""
+    """The worker's side the loader talks to.
+
+    A `Worker`, or a fake in tests: `post_message(job)`, `onmessage`, `onerror` and `terminate()`
+    (optional).
+    """
 
 
 def _new_map() -> Any:
-    """An empty JavaScript `Map`."""
+    """Return an empty JavaScript `Map`."""
     __pragma__("js", "{}", "return new Map();")
     return None
 
@@ -82,8 +88,10 @@ def _chunks_message(job_id: int, through: float) -> Any:
 
 
 def _roads_message(ground_id: int, spans: Any, look: Any, grid: bool) -> Any:
-    """`{ kind: 'roads', ground, spans, look, grid, id }`: asks for the street surfaces of chunks
-    of a ground (`spans`: `[index, z_min, z_max]` each), with its road look."""
+    """`{ kind: 'roads', ground, spans, look, grid, id }`: asks for the street surfaces of chunks.
+
+    It is for a ground (`spans`: `[index, z_min, z_max]` each), with its road look.
+    """
     __pragma__(
         "js",
         "{}",
@@ -99,8 +107,10 @@ def _worker_available() -> bool:
 
 
 def _new_game_worker() -> Any:
-    """The game's ground worker (`ground_worker.js`, next to this module): named only here, by a
-    relative URL (ENG-82, ENG-123)."""
+    """Return the game's ground worker (`ground_worker.js`, next to this module).
+
+    It is named only here, by a relative URL (ENG-82, ENG-123).
+    """
     __pragma__(
         "js",
         "{}",
@@ -118,8 +128,10 @@ class _Waiting:
 
 
 class BackgroundLoader:
-    """Generates levels' grounds and scenery textures in a worker (PERF-14). What it posts is
-    copied to plain data first (ENG-164)."""
+    """Generates levels' grounds and scenery textures in a worker (PERF-14).
+
+    What it posts is copied to plain data first (ENG-164).
+    """
 
     def __init__(self, port: Any) -> None:
         self.port = port
@@ -140,7 +152,7 @@ class BackgroundLoader:
         if done:
             _map_delete(self._waiting.handlers, data.id)
 
-    def _on_error(self, event: Any) -> None:
+    def _on_error(self, _event: Any) -> None:
         for done in _map_values(self._waiting.handlers):
             done(None)
         _map_clear(self._waiting.handlers)
@@ -181,7 +193,7 @@ class BackgroundLoader:
         job[0] = self._post_ground(level, seed, on_reply)
 
     def prefetch_textures(self, jobs: Sequence[TextureJob]) -> None:
-        """Generates the textures of `jobs` not kept yet, keeping them when they come back."""
+        """Generate the textures of `jobs` not kept yet, keeping them when they come back."""
         for job in jobs:
             key = _json_of(job)
             if has_texture(job) or _map_has(self._textures, key):
@@ -190,7 +202,10 @@ class BackgroundLoader:
             self._post_texture(job, key)
 
     def _texture_reply(self, job: TextureJob, key: str) -> Callable[[Any], bool]:
-        """The handler of a texture job's reply (a function of its own, not made in a loop)."""
+        """Return the handler of a texture job's reply.
+
+        It is a function of its own, not made in a loop.
+        """
 
         def on_reply(reply: Any) -> bool:
             _map_delete(self._textures, key)
@@ -207,8 +222,7 @@ class BackgroundLoader:
         return self._post(_ground_message(0, to_plain(level), seed), done)
 
     def stop(self) -> None:
-        """Stops generating in the background: the grounds are generated on the main thread
-        again."""
+        """Stop generating in the background: the grounds are made on the main thread again."""
         generate_grounds_with(None)
         if hasattr(self.port, "terminate"):
             self.port.terminate()
@@ -223,7 +237,7 @@ class BackgroundLoader:
 
 
 def start_background_loader() -> BackgroundLoader | None:
-    """A loader on the game's worker, if the browser has workers (none in unit tests)."""
+    """Return a loader on the game's worker, if the browser has workers (none in unit tests)."""
     if not _worker_available():
         return None
     return BackgroundLoader(_new_game_worker())

@@ -1,25 +1,25 @@
-"""The pieces of a boss (BOSS-12)
+# Copyright (c) 2026 Renaud Guillon
+"""The pieces of a boss (BOSS-12).
 
 Its destroyable parts and its core, as shots and weapons see them.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.boss_turret import BossTurret
 from core.entities.muzzle import PlanePoint, muzzle_point
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import TYPE_CHECKING, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Protocol
 
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle, RaisedPoint
+from core.entities.shot_target import ShotTarget
 
 # `boss` imports this module, so the names of `boss` are imported for the annotations only.
 if TYPE_CHECKING:
-    from core.entities.boss import Boss, BossPartSpec  # noqa: E402
+    from core.entities.boss import Boss, BossPartSpec
 
 
 class BossPiece(ShotTarget, Protocol):
@@ -49,21 +49,24 @@ class BossPiece(ShotTarget, Protocol):
         ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
-        """Where one of its guns' muzzles is now, `muzzle` given from the boss's centre (as the
-        boss is drawn, its orbiting parts at a spin of 0, its joints at rest).
+        """Where one of its guns' muzzles is now.
+
+        `muzzle` given from the boss's centre (as the boss is drawn, its orbiting parts at a spin of
+        0, its joints at rest).
         """
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 INFINITY = float("Infinity")
 
 
-def _turret_of(boss: "Boss", id: str) -> BossTurret | None:
-    """The turret of the piece `id` of `boss`, if it has one."""
+def _turret_of(boss: "Boss", item_id: str) -> BossTurret | None:
+    """Return the turret of the piece `item_id` of `boss`, if it has one."""
     turrets = boss.stats.turrets
-    spec = turrets.get(id) if turrets is not None else None
+    spec = turrets.get(item_id) if turrets is not None else None
     if spec is None:
         return None
     return BossTurret(spec)
@@ -125,15 +128,18 @@ class BossPart:
 
     @property
     def hidden(self) -> bool:
-        """Whether it is out of the fight: still hidden (the transformation that reveals it has not
-        happened, BOSS-38), or retired."""
+        """Whether it is out of the fight.
+
+        Still hidden (the transformation that reveals it has not happened, BOSS-38), or retired.
+        """
         reveal = self.spec.reveal
         return (reveal is not None and self._boss.form < reveal) or self.retired
 
     @property
     def retired(self) -> bool:
-        """Whether it has left the fight: the transformation it retires at has started
-        (D-228, BOSS-46).
+        """Whether it has left the fight (D-228, BOSS-46).
+
+        The transformation it retires at has started.
         """
         retire = self.spec.retire
         if retire is None:
@@ -152,8 +158,11 @@ class BossPart:
         return _emitter_of(self.x, self.y, self.radius, self.heading)
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
-        """Where `muzzle` (from the boss's centre, as drawn at rest) is now: through its turret if
-        `on_turret` and it has one, then moved by its joint, then turned with the boss."""
+        """Where `muzzle` (from the boss's centre, as drawn at rest) is now.
+
+        Through its turret if `on_turret` and it has one, then moved by its joint, then turned with
+        the boss.
+        """
         if on_turret and self.turret is not None:
             x, y, height = self.turret.turned(muzzle)
         else:
@@ -218,8 +227,10 @@ class BossCore:
         return _emitter_of(self.x, self.y, self.radius, self.heading)
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
-        """Where `muzzle` is now on the boss, through the core's turret when `on_turret` and it has
-        one."""
+        """Where `muzzle` is now on the boss.
+
+        Through the core's turret when `on_turret` and it has one.
+        """
         if on_turret and self.turret is not None:
             return muzzle_point(self._boss, self.turret.turned(muzzle))
         return muzzle_point(self._boss, muzzle)

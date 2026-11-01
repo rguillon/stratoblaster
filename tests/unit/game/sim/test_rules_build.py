@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/rules_build.py`."""
 
 from core.systems.bonus_world import BonusRules
@@ -48,7 +49,8 @@ def test_game_bonus_02_bonus_rules_convert_the_chances_and_the_overflow_points()
     assert rules.chance.per_health == 0.0015
     assert (rules.chance.min, rules.chance.max) == (0.06, 0.2)
     assert rules.fall_speed == 45
-    assert rules.special.life == 0.01 and rules.special.bomb == 0.03
+    assert rules.special.life == 0.01
+    assert rules.special.bomb == 0.03
     assert rules.overflow_points.life == 5000
 
 

@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/scenery/playfield_framing.py` (GFX-CAM-03, GFX-CAM-05,
-GAME-SCREEN-04)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/scenery/playfield_framing.py`.
+
+GFX-CAM-03, GFX-CAM-05, GAME-SCREEN-04.
+"""
 
 import math
 
@@ -25,9 +28,10 @@ def test_the_camera_looks_down_at_the_tilt_and_the_field_of_view() -> None:
     framing = frame_playfield(SCREEN, _camera(30, 40))
     assert framing.tilt == pytest.approx(math.radians(30))
     assert framing.half_fov == pytest.approx(math.radians(20))
-    assert framing.direction == pytest.approx(
-        (-math.cos(math.radians(30)), math.sin(math.radians(30)))
-    )
+    assert framing.direction == pytest.approx((
+        -math.cos(math.radians(30)),
+        math.sin(math.radians(30)),
+    ))
 
 
 def test_the_camera_height_makes_the_whole_screen_height_fit_the_field_of_view() -> None:

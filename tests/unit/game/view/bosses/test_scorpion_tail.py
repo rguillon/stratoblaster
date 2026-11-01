@@ -1,7 +1,11 @@
-"""Unit tests of `src/game/view/bosses/scorpion_tail.py`: the Scorpion's tail, arched over its back
-at rest, unfolding straight out behind it as it turns round (MB-SCORPION-04, MB-SCORPION-11,
-D-228)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/bosses/scorpion_tail.py`.
 
+The Scorpion's tail, arched over its back at rest, unfolding straight out behind it as it turns
+round (MB-SCORPION-04, MB-SCORPION-11, D-228).
+"""
+
+import itertools
 import math
 from types import SimpleNamespace
 
@@ -35,7 +39,7 @@ def test_unfolded_it_runs_straight_out_behind_a_little_longer() -> None:
     assert all(seg[1] == pytest.approx(TAIL[0][1]) for seg in pose)
     assert all(seg[3] == pytest.approx(STRETCH) for seg in pose)
     tip = tail_tip(1)
-    length = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(TAIL, TAIL[1:], strict=False))
+    length = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in itertools.pairwise(TAIL))
     assert tip == pytest.approx([TAIL[0][0] - length * STRETCH, TAIL[0][1]])
 
 

@@ -1,29 +1,33 @@
-"""FB-NARWHAL-03, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast
-pods) Logical pixels, nose +Z, Y up; each drawn around its centre `at`."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-NARWHAL-03, 2-1: the Narwhal's destroyable parts.
+
+Its horn lance, torpedo tubes and ballast pods. Logical pixels, nose +Z, Y up; each drawn around its
+centre `at`.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-type Rgb = list[float]
-__pragma__("noskip")
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.final_boss_shapes import barrels, shift  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.record import record
+from game.view.bosses.final_boss_shapes import barrels, shift
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     sinew,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import organ  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe
+from render.geometry.organic import organ
+from render.geometry.solids import LoftOptions, Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+
+type Vec3 = list[float]
+type Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1.0, 1.0, 1.0]
@@ -51,16 +55,14 @@ SUB_SECTION = [
 ]
 
 # The horn: segments from its root to its tip, each turned a little more (a spiral).
-HORN = record(
-    {
-        "root": 52,
-        "tip": 90,
-        "height": 4.5,
-        "radius": 4.2,
-        "segments": 7,
-        "twist": 0.55,
-    }
-)
+HORN = record({
+    "root": 52,
+    "tip": 90,
+    "height": 4.5,
+    "radius": 4.2,
+    "segments": 7,
+    "twist": 0.55,
+})
 
 
 def _sign(x: float) -> float:
@@ -73,8 +75,10 @@ def _sign(x: float) -> float:
 
 
 def horn_lance(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """The horn lance (FB-NARWHAL-03): a collar on the nose and a long spiral horn, a teal light
-    winding round it, its tip glowing as its laser charges."""
+    """Add the horn lance (FB-NARWHAL-03): a collar on the nose and a long spiral horn.
+
+    A teal light winds round the horn, its tip glowing as its laser charges.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -101,13 +105,11 @@ def horn_lance(p: EnemyParts, at: Vec3, n: Rgb) -> None:
         neon.box(
             [0.9, 0.9, step * 0.7],
             n,
-            Placement(
-                [
-                    at[0] + math.sin(a) * r,
-                    height + math.cos(a) * r - 0.45,
-                    root + (i + 0.3) * step,
-                ]
-            ),
+            Placement([
+                at[0] + math.sin(a) * r,
+                height + math.cos(a) * r - 0.45,
+                root + (i + 0.3) * step,
+            ]),
         )
     end = root + segments * step
     charge.cylinder(0.6, tip - end, 5, WHITE, Placement([at[0], height, end], 0, QUARTER), 0)
@@ -124,8 +126,11 @@ BLISTER = [
 
 
 def torpedo_tube(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """A torpedo tube (FB-NARWHAL-03): a blister on the hull's flank, two tube mouths at its front
-    (their torpedoes glowing as a salvo charges), a teal line along its outer side."""
+    """Add a torpedo tube (FB-NARWHAL-03): a blister on the hull's flank.
+
+    Two tube mouths at its front (their torpedoes glowing as a salvo charges), a teal line along its
+    outer side.
+    """
     s = _sign(at[0])
     # FB-NARWHAL-03: a swollen blister of flesh on the flank, metal tube mouths grafted at its
     # front.
@@ -136,7 +141,7 @@ def torpedo_tube(p: EnemyParts, at: Vec3, n: Rgb) -> None:
         Placement(at),
         LoftOptions(
             False,
-            lambda side, band: ICE_FLESH.rime if side == POD_BACK else None,
+            lambda side, _band: ICE_FLESH.rime if side == POD_BACK else None,
         ),
     )
     organ(p.vein, 1, 5, n, Placement(shift(at, [s * 4, 8, -6])), 0.6)
@@ -163,8 +168,11 @@ POD = [
 
 
 def ballast_pod(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """A ballast pod (FB-NARWHAL-03): a long tank on its pylon, frost on its back, a teal ring round
-    its middle, two fan guns at its front and a flood vent on top."""
+    """Add a ballast pod (FB-NARWHAL-03).
+
+    A long tank on its pylon, frost on its back, a teal ring round its middle, two fan guns at its
+    front and a flood vent on top.
+    """
     s = _sign(at[0])
     # FB-NARWHAL-03: a ballast sac of flesh, held in metal bands, a gland on its back.
     p.flesh.loft(

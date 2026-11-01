@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/tile_road_geometry.py` (GFX-ROAD-09, GFX-ROAD-11)."""
 
 import pytest
@@ -32,12 +33,12 @@ def _side(size: int = 1, offset: int = 0) -> PieceSide:
 
 
 def _piece(sides: list[PieceSide | None], size: int = 1, x: int = 0, z: int = 0) -> RoadPiece:
-    kind = "cross" if sum(s is not None for s in sides) == 4 else "straight"  # noqa: PLR2004
-    return RoadPiece(x, z, size, kind, False, sides)
+    kind = "cross" if sum(s is not None for s in sides) == 4 else "straight"
+    return RoadPiece(x, z, size, kind, adapter=False, sides=sides)
 
 
 def _layer_of(color: tuple[float, ...]) -> int:
-    """The layer a colour is painted on: sidewalk 0, kerb 1, roadway 2, lines 3."""
+    """Return the layer a colour is painted on: sidewalk 0, kerb 1, roadway 2, lines 3."""
     return {WHITE: 0, BLACK: 1, GREY: 2, RED: 3, BLUE: 3}[tuple(color[:3])]
 
 
@@ -76,8 +77,10 @@ def test_the_lines_of_each_arm_lie_within_its_roadway() -> None:
     for rect, arm in zip(roadway, arms, strict=True):
         x0, x1, z0, z1 = rect
         lx0, lx1, lz0, lz1 = arm.line
-        assert x0 <= lx0 and lx1 <= x1
-        assert z0 <= lz0 and lz1 <= z1
+        assert x0 <= lx0
+        assert lx1 <= x1
+        assert z0 <= lz0
+        assert lz1 <= z1
 
 
 def test_a_tee_has_one_arm_per_open_side_and_arms_on_x_run_along_x() -> None:
@@ -86,7 +89,7 @@ def test_a_tee_has_one_arm_per_open_side_and_arms_on_x_run_along_x() -> None:
 
 
 def test_an_arm_of_two_lanes_has_a_centre_line_and_a_lane_line_each_side() -> None:
-    arm = Arm(2, (2, 8, 8, 10), False)
+    arm = Arm(2, (2, 8, 8, 10), along_x=False)
     centre, lanes = arm_lines(arm, 0.3)
     assert len(centre) == 1
     assert (centre[0][0] + centre[0][1]) / 2 == pytest.approx(5)
@@ -98,7 +101,7 @@ def test_an_arm_of_two_lanes_has_a_centre_line_and_a_lane_line_each_side() -> No
 
 
 def test_a_one_lane_arm_has_no_lane_lines() -> None:
-    _centre, lanes = arm_lines(Arm(1, (2, 8, 0, 10), True), 0.3)
+    _centre, lanes = arm_lines(Arm(1, (2, 8, 0, 10), along_x=True), 0.3)
     assert lanes == []
 
 
@@ -117,7 +120,7 @@ def test_each_layer_is_the_ground_under_it_plus_the_lift_and_its_layer() -> None
 
 def test_every_face_of_a_piece_on_flat_ground_faces_up() -> None:
     geo = ColoredGeometry()
-    add_piece(geo, _piece([_side()] * 4), TILE, LOOK, lambda x, z: 0.0)
+    add_piece(geo, _piece([_side()] * 4), TILE, LOOK, lambda _x, _z: 0.0)
     assert geo.indices
     for tri in triangles(geo.positions, geo.indices):
         assert babylon_normal(tri)[1] > 0
@@ -125,7 +128,7 @@ def test_every_face_of_a_piece_on_flat_ground_faces_up() -> None:
 
 def test_the_sidewalk_is_drawn_first_over_the_whole_piece_in_its_colour() -> None:
     geo = ColoredGeometry()
-    add_piece(geo, _piece([_side(), None, None, None]), TILE, LOOK, lambda x, z: 0.0)
+    add_piece(geo, _piece([_side(), None, None, None]), TILE, LOOK, lambda _x, _z: 0.0)
     # The piece is cut on half-tile lines: a 3 x 3 grid of sidewalk vertices, drawn first.
     sidewalk = _colours(geo)[:9]
     assert all(c == WHITE for c in sidewalk)
@@ -134,8 +137,8 @@ def test_the_sidewalk_is_drawn_first_over_the_whole_piece_in_its_colour() -> Non
 def test_pieces_belong_to_the_chunk_of_their_middle() -> None:
     piece = _piece([_side(2), None, _side(2), None], size=2)
     # Its middle is at z = 10, the edge between the chunks [0, 10) and [10, 20).
-    before = build_tile_road_geometry([piece], TILE, LOOK, lambda x, z: 0.0, 0, 10)
-    after = build_tile_road_geometry([piece], TILE, LOOK, lambda x, z: 0.0, 10, 20)
+    before = build_tile_road_geometry([piece], TILE, LOOK, lambda _x, _z: 0.0, 0, 10)
+    after = build_tile_road_geometry([piece], TILE, LOOK, lambda _x, _z: 0.0, 10, 20)
     assert before.indices == []
     assert after.indices != []
 
@@ -144,7 +147,7 @@ def test_the_roadway_is_cut_on_the_world_lattice_shared_with_the_sidewalk() -> N
     # A piece at tile x = 1: its roadway runs over X 12..18, cut at the lattice of half a tile.
     geo = ColoredGeometry()
     piece = _piece([_side(), None, _side(), None], x=1)
-    add_piece(geo, piece, TILE, LOOK, lambda x, z: 0.0)
+    add_piece(geo, piece, TILE, LOOK, lambda _x, _z: 0.0)
     xs = {
         round(p[0], 6)
         for p, c in zip(points_of(geo.positions), _colours(geo), strict=True)
@@ -154,7 +157,7 @@ def test_the_roadway_is_cut_on_the_world_lattice_shared_with_the_sidewalk() -> N
 
 
 def test_the_tile_grid_draws_lines_on_the_edges_of_its_tiles_above_the_ground() -> None:
-    grid = build_tile_grid([_piece([_side()] * 4)], TILE, lambda x, z: 0.5 * z, 0, 100, WHITE)
+    grid = build_tile_grid([_piece([_side()] * 4)], TILE, lambda _x, z: 0.5 * z, 0, 100, WHITE)
     points = points_of(grid.positions)
     assert min(p[0] for p in points) == pytest.approx(-0.25)
     assert max(p[0] for p in points) == pytest.approx(10.25)
@@ -162,9 +165,9 @@ def test_the_tile_grid_draws_lines_on_the_edges_of_its_tiles_above_the_ground() 
     assert max(p[2] for p in points) == pytest.approx(10.25)
     for p in points:
         assert p[1] == pytest.approx(0.5 * p[2] + 1)
-    assert {c for c in _colours(grid)} == {WHITE}
+    assert set(_colours(grid)) == {WHITE}
 
 
 def test_the_tile_grid_is_empty_for_a_chunk_without_pieces() -> None:
-    grid = build_tile_grid([_piece([_side()] * 4)], TILE, lambda x, z: 0.0, 50, 60, WHITE)
+    grid = build_tile_grid([_piece([_side()] * 4)], TILE, lambda _x, _z: 0.0, 50, 60, WHITE)
     assert grid.indices == []

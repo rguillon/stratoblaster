@@ -1,8 +1,7 @@
-"""The Strafer (`specs/enemies/strafer.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Strafer (`specs/enemies/strafer.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import fan_headings
@@ -10,18 +9,21 @@ from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.strafer
 
 
 class Strafer(Enemy):
-    """ENM-STRAFER-05: crosses the top third of the screen sideways, from `side`, and fires a fan
-    of 3 bullets straight down every second (ENM-STRAFER-06; preset directions -15°, 0°, +15°,
-    ENM-20), from the gun on its side facing down.
+    """ENM-STRAFER-05: crosses the top third of the screen sideways, from `side`.
+
+    And fires a fan of 3 bullets straight down every second (ENM-STRAFER-06; preset directions -15°,
+    0°, +15°, ENM-20), from the gun on its side facing down.
     """
 
     def __init__(self, x: float, y: float, side: str) -> None:
@@ -32,6 +34,7 @@ class Strafer(Enemy):
         self.heading = (self._direction * math.pi) / 2
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.x += self._direction * CFG.speed * dt
         if not on_playfield(self, ctx):
             return

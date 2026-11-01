@@ -1,4 +1,7 @@
-"""4-2: the Ash Wraith, the mini boss of the Ash plains level, a chase over the plains
+# Copyright (c) 2026 Renaud Guillon
+"""4-2.
+
+The Ash Wraith, the mini boss of the Ash plains level, a chase over the plains
 (specs/bosses/mini/4-2-ash-wraith.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
@@ -47,61 +50,57 @@ EY = WRAITH_EYE[1]
 # shroud pods (ducted fans) fire fans and shield the core; the eye cannon under its nose, on a
 # turret, aims a laser after its warning line; the core spirals. The eye hangs in front of the
 # core, so it can always be shot.
-_ASH_WRAITH = record(
-    {
-        "id": "ash-wraith",
-        # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 10.5.
-        "rage": rage.vortex(10.5, "blue", "purple"),
-        # Its core and parts, their health, and its points (MB-ASH-WRAITH-07, MB-ASH-WRAITH-14).
-        "stats": stats(
-            record(
-                {
-                    "id": "ash-wraith",
-                    "name": "Ash Wraith",
-                    "size": 3,
-                    "coreRadius": 17,
-                    "coreHealth": 1860,
-                    "points": 7000,
-                    "groundSpeed": 1.5,
-                    "parts": [
-                        part("pod-left", [-PX, PY], 13, 820),
-                        part("pod-right", [PX, PY], 13, 820),
-                        part("eye", [EX, EY], 12, 680, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-ASH-WRAITH-06).
-        "stopFraction": 0.73,
-        "sway": {"amplitude": 60, "period": 6.5},
-        "bob": {"amplitude": 8, "period": 3.4},
-        "guns": {
-            "core": {"ring": WRAITH_VENT},
-            "pod-left": {"gun": mirror(WRAITH_POD_GUNS)},
-            "pod-right": {"gun": WRAITH_POD_GUNS},
-            "eye": {"laser": WRAITH_EYE_LENS, "turret": [EX, EY], "turretLaser": True},
-        },
-        # In every stage the pods' fans (MB-ASH-WRAITH-08) and the eye's laser (MB-ASH-WRAITH-09);
-        # then the core's spirals per stage (MB-ASH-WRAITH-10).
-        "stages": stages(
-            [
-                # The pods' fans lean outwards, sweeping the ash plains on either side of the ship.
-                volley.fan("pod-left", 2.4, 3, 14, BLUE, 0.9, -8),
-                volley.fan("pod-right", 2.4, 3, 14, BLUE, 2.1, 8),
-                volley.laser("eye", 6, 1.4, 3),
+_ASH_WRAITH = record({
+    "id": "ash-wraith",
+    # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 10.5.
+    "rage": rage.vortex(10.5, "blue", "purple"),
+    # Its core and parts, their health, and its points (MB-ASH-WRAITH-07, MB-ASH-WRAITH-14).
+    "stats": stats(
+        record({
+            "id": "ash-wraith",
+            "name": "Ash Wraith",
+            "size": 3,
+            "coreRadius": 17,
+            "coreHealth": 1860,
+            "points": 7000,
+            "groundSpeed": 1.5,
+            "parts": [
+                part("pod-left", [-PX, PY], 13, 820),
+                part("pod-right", [PX, PY], 13, 820),
+                part("eye", [EX, EY], 12, 680, {"shields": False}),
             ],
+        })
+    ),
+    # Where it stops and how it moves in place (MB-ASH-WRAITH-06).
+    "stopFraction": 0.73,
+    "sway": {"amplitude": 60, "period": 6.5},
+    "bob": {"amplitude": 8, "period": 3.4},
+    "guns": {
+        "core": {"ring": WRAITH_VENT},
+        "pod-left": {"gun": mirror(WRAITH_POD_GUNS)},
+        "pod-right": {"gun": WRAITH_POD_GUNS},
+        "eye": {"laser": WRAITH_EYE_LENS, "turret": [EX, EY], "turretLaser": True},
+    },
+    # In every stage the pods' fans (MB-ASH-WRAITH-08) and the eye's laser (MB-ASH-WRAITH-09);
+    # then the core's spirals per stage (MB-ASH-WRAITH-10).
+    "stages": stages(
+        [
+            # The pods' fans lean outwards, sweeping the ash plains on either side of the ship.
+            volley.fan("pod-left", 2.4, 3, 14, BLUE, 0.9, -8),
+            volley.fan("pod-right", 2.4, 3, 14, BLUE, 2.1, 8),
+            volley.laser("eye", 6, 1.4, 3),
+        ],
+        [
+            [volley.ring("core", 0.6, 3, 19, PURPLE, 0.6)],
+            [volley.ring("core", 0.55, 4, -23, PURPLE, 0.5)],
+            [volley.ring("core", 0.8, 6, 11, MAGENTA, 0.5)],
             [
-                [volley.ring("core", 0.6, 3, 19, PURPLE, 0.6)],
-                [volley.ring("core", 0.55, 4, -23, PURPLE, 0.5)],
-                [volley.ring("core", 0.8, 6, 11, MAGENTA, 0.5)],
-                [
-                    volley.ring("core", 0.45, 5, 14, PURPLE, 0.4),
-                    volley.ring("core", 0.45, 5, -17, BLUE, 0.62),
-                ],
+                volley.ring("core", 0.45, 5, 14, PURPLE, 0.4),
+                volley.ring("core", 0.45, 5, -17, BLUE, 0.62),
             ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-ASH-WRAITH-12): at transformation 1 its back
 # plating bursts off, baring a dark metal frame, and a pair of laser lances unfold

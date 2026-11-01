@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/district_packing.py`."""
+
+from typing import Any
 
 from helpers.level_builders import (
     flat,
@@ -27,7 +30,7 @@ TWO = PropKindRule("two", 1.0, 24.0, (0.5, 1.0), tiles=(2, 2))
 LOT = PropKindRule("lot", 1.0, 12.0, (0.5, 1.0), tiles=(3, 1))
 
 
-def _setup(group_at=None, lots=(LOT,), seed: int = 4):
+def _setup(group_at: Any = None, lots: Any = (LOT,), seed: int = 4) -> Any:
     level = make_level(
         [
             section("a", 10, flat()),
@@ -46,20 +49,20 @@ def _setup(group_at=None, lots=(LOT,), seed: int = 4):
         level.props,
         roads,
         seed,
-        group_at if group_at is not None else (lambda x, z, section: group),
+        group_at if group_at is not None else (lambda _x, _z, _section: group),
         placed.append,
     )
     return site, roads, placed
 
 
-def _pack(site, roads, within=lambda z: True):
+def _pack(site: Any, roads: Any, within: Any = lambda _z: True) -> Any:
     road = RoadTilesCache().of(roads.roads, TILE)
     pack_districts(site, within, TILE, road)
     return road
 
 
 def test_gfx_bldg_05_buildings_are_the_same_for_the_same_seed() -> None:
-    def placements(seed: int):
+    def placements(seed: int) -> Any:
         site, roads, placed = _setup(seed=seed)
         _pack(site, roads)
         return [(b.placement.kind, b.placement.x, b.placement.z) for b in placed]
@@ -69,25 +72,25 @@ def test_gfx_bldg_05_buildings_are_the_same_for_the_same_seed() -> None:
 
 def test_perf_16_no_buildings_outside_the_places_asked_for() -> None:
     site, roads, placed = _setup()
-    _pack(site, roads, within=lambda z: False)
+    _pack(site, roads, within=lambda _z: False)
     assert placed == []
 
 
 def test_gfx_bldg_05_where_no_building_fits_the_lots_are_used() -> None:
-    site, roads, placed = _setup(group_at=lambda x, z, section: None)
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None)
     _pack(site, roads)
     assert placed
     assert {b.placement.kind for b in placed} == {"lot"}
 
 
 def test_gfx_bldg_05_a_group_with_no_lots_leaves_the_ground_empty_where_nothing_fits() -> None:
-    site, roads, placed = _setup(group_at=lambda x, z, section: None, lots=())
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None, lots=())
     _pack(site, roads)
     assert placed == []
 
 
 def test_perf_11_the_road_tiles_are_worked_out_once_per_list_of_roads() -> None:
-    site, roads, _ = _setup()
+    _site, roads, _ = _setup()
     cache = RoadTilesCache()
     first = cache.of(roads.roads, TILE)
     assert cache.of(roads.roads, TILE) is first

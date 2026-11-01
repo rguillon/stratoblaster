@@ -1,6 +1,5 @@
-"""The Scissor (`specs/enemies/scissor.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Scissor (`specs/enemies/scissor.md`)."""
 
 from core.entities.enemy import EnemyLaserSpec
 from core.entities.jointed_enemy import EnemyPart, JointedEnemy
@@ -9,13 +8,15 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN
 from game.sim.joints import jointed_design
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext
+from core.entities.muzzle import Muzzle
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.scissor
 
@@ -32,33 +33,38 @@ class ArmBeam:
 
     @property
     def emitter(self) -> RaisedPoint:
+        """Where the arm's shots leave from, raised above the playfield."""
         return self._arm.place(self._muzzle)
 
     @property
     def heading(self) -> float:
+        """The direction the arm points."""
         return self._arm.heading
 
     @property
     def gone(self) -> bool:
+        """Whether the arm is gone."""
         return self._arm.gone
 
     @property
     def health(self) -> float:
+        """The health of the arm."""
         return self._arm.health
 
 
 def _sweeping(spec: Any) -> EnemyLaserSpec:
-    """The same laser, whose beam keeps turning with its arm."""
+    """Return the same laser, whose beam keeps turning with its arm."""
     return EnemyLaserSpec(spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, True)
 
 
 class Scissor(JointedEnemy):
-    """ENM-SCISSOR-08: a long, narrow hull with two laser arms hinged at its shoulders (moving
-    parts, ENM-27), 25° out from straight down (ENM-SCISSOR-09). It moves to the upper part of the
-    screen and stops; each living arm shows a warning line along it for 1 s (ENM-SCISSOR-10,
-    ENM-19), its charge lights filling (ENM-SCISSOR-06), then fires its laser along it for 2 s
-    while both arms swing 15° inward, the beams closing like scissors (ENM-SCISSOR-11); then it
-    backs away (ENM-SCISSOR-12).
+    """ENM-SCISSOR-08: a long, narrow hull with two laser arms hinged at its shoulders.
+
+    Its arms are moving parts (ENM-27), 25° out from
+    straight down (ENM-SCISSOR-09). It moves to the upper part of the screen and stops; each living
+    arm shows a warning line along it for 1 s (ENM-SCISSOR-10, ENM-19), its charge lights filling
+    (ENM-SCISSOR-06), then fires its laser along it for 2 s while both arms swing 15° inward, the
+    beams closing like scissors (ENM-SCISSOR-11); then it backs away (ENM-SCISSOR-12).
 
     The arms' joints only swing while the lasers fire, so the inward swing starts with the beams,
     which sweep with their arms (`EnemyLaserSpec.sweeps`, ENM-32). Its arms come from its config,
@@ -74,6 +80,7 @@ class Scissor(JointedEnemy):
         self.swinging = False
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self._enter(ctx, dt)
         elif self.state == "warn":

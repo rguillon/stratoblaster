@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/page_audio.py`."""
 # (UI-PAUSE-11, AUD-ENGINE-03, AUD-ENGINE-05, AUD-ENGINE-11): the page around the game.
 

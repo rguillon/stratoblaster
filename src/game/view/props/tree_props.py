@@ -1,4 +1,5 @@
-"""Trees of the green land (D-212, GFX-PROP-09), drawn as imposters
+# Copyright (c) 2026 Renaud Guillon
+"""Trees of the green land (D-212, GFX-PROP-09), drawn as imposters.
 
 Sizes in model units, standing on Y = 0. The levels draw a picture of each tree baked from these
 models (`imposter_bake_visual`), so their triangles cost nothing in play: crowns are clouds of
@@ -10,8 +11,6 @@ picture, a quad facing the camera, would cast a wrong one).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.prop_look import PROP_COLORS as C
 from game.config.trees import TREE_IDS
 from game.view.props.dead_tree_props import dead_bush, dead_oak, dead_pine, snag
@@ -20,12 +19,14 @@ from render.geometry.rough import Leaves, Roughness, leaf_cloud, leaf_cone, roug
 from render.geometry.solids import Placement, SolidBuilder
 from render.scenery.scenery_look import PropGeometry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
 Palette = list[list[float]]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 BIRCH_BARK = [0.72, 0.7, 0.64]
 # The leaves' greens, a few per tree (yellower, bluer, lighter, darker), so a crown is not one
@@ -51,11 +52,11 @@ def _core(palette: Palette) -> list[float]:
 
 
 def trunk(s: SolidBuilder, height: float, radius: float, color: list[float]) -> None:
-    """A tapering trunk."""
+    """Add a tapering trunk."""
     s.cylinder(radius, height, 6, color, Placement([0, 0, 0]), radius * 0.6)
 
 
-def clump(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def clump(
     s: SolidBuilder,
     centre: list[float],
     radii: list[float],
@@ -63,15 +64,17 @@ def clump(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     density: float,
     seed: int,
 ) -> None:
-    """A clump of leaves round `centre`: a dark core and a cloud of tufts over it, `density` tufts
-    per unit of its surface."""
+    """Add a clump of leaves round `centre`: a dark core and a cloud of tufts over it.
+
+    `density` is the number of tufts per unit of its surface.
+    """
     core = [radii[0] * 0.8, radii[1] * 0.8, radii[2] * 0.8]
     rough_ball(s, centre, core, _core(palette), Roughness(0.15, 0.1, 0.3, seed))
     area = 4 * math.pi * (radii[0] * radii[1] + radii[1] * radii[2] + radii[0] * radii[2]) / 3
     leaf_cloud(s, centre, radii, _leaves(palette, math.floor(area * density), 0.75), seed + 1)
 
 
-def crown(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def crown(
     s: SolidBuilder,
     middle: list[float],
     size: list[float],
@@ -79,8 +82,10 @@ def crown(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     palette: Palette,
     seed: int,
 ) -> None:
-    """A lumpy crown round `middle`: a big clump `size` (radius across, radius up) and `lobes`
-    smaller ones round it, high and low."""
+    """Add a lumpy crown round `middle`.
+
+    A big clump `size` (radius across, radius up) and `lobes` smaller ones round it, high and low.
+    """
     across = size[0]
     up = size[1]
     parts = [[middle, [across, up, across]]]
@@ -99,8 +104,10 @@ def crown(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 
 def stand_in(centre: list[float], radii: list[float]) -> SolidBuilder:
-    """The shadow's stand-in: one low-poly ball round the whole crown (`centre`, `radii`), 20
-    triangles (thousands of trees cast it; the trunk's thin shadow is left out)."""
+    """Return the shadow's stand-in: one low-poly ball round the whole crown (`centre`, `radii`).
+
+    It has 20 triangles (thousands of trees cast it; the trunk's thin shadow is left out).
+    """
     s = SolidBuilder()
     profile: list[list[float]] = [[0, -1], [0.9, -0.45], [0.9, 0.45], [0, 1]]
     stretched = [[p[0] * radii[0], p[1] * radii[1]] for p in profile]
@@ -109,7 +116,7 @@ def stand_in(centre: list[float], radii: list[float]) -> SolidBuilder:
 
 
 def broadleaf(palette: Palette) -> PropGeometry:
-    """A broad tree (an oak, a copper beech): a short trunk under a wide lumpy crown."""
+    """Return a broad tree (an oak, a copper beech): a short trunk under a wide lumpy crown."""
     s = SolidBuilder(True)
     trunk(s, 4, 0.45, C.bark)
     crown(s, [0, 5.6, 0], [2.4, 2], 6, palette, 3)
@@ -117,7 +124,7 @@ def broadleaf(palette: Palette) -> PropGeometry:
 
 
 def birch(palette: Palette) -> PropGeometry:
-    """A slim pale-barked tree with a light, open crown on a few branches."""
+    """Return a slim pale-barked tree with a light, open crown on a few branches."""
     s = SolidBuilder(True)
     trunk(s, 5, 0.26, BIRCH_BARK)
     parts: list[list[list[float]]] = []
@@ -133,7 +140,7 @@ def birch(palette: Palette) -> PropGeometry:
 
 
 def poplar(palette: Palette) -> PropGeometry:
-    """A tall narrow tree."""
+    """Return a tall narrow tree."""
     s = SolidBuilder(True)
     trunk(s, 2, 0.35, C.bark)
     parts = [[[0, 5.6, 0], [1.4, 4.4, 1.4]], [[0.5, 4, 0.3], [1, 2.2, 1]]]
@@ -143,7 +150,7 @@ def poplar(palette: Palette) -> PropGeometry:
 
 
 def pine(palette: Palette) -> PropGeometry:
-    """A conifer: tiers of drooping needle tufts round dark cones, narrower going up."""
+    """Return a conifer: tiers of drooping needle tufts round dark cones, narrower going up."""
     s = SolidBuilder(True)
     trunk(s, 2.4, 0.32, C.bark)
     shadow = SolidBuilder()
@@ -165,7 +172,7 @@ def pine(palette: Palette) -> PropGeometry:
 
 
 def bush(palette: Palette) -> PropGeometry:
-    """A low clump of leaves."""
+    """Return a low clump of leaves."""
     s = SolidBuilder(True)
     parts = [
         [[0, 0.9, 0], [1.4, 1, 1.4]],
@@ -180,7 +187,7 @@ def bush(palette: Palette) -> PropGeometry:
 def _model(
     build: Callable[[Palette], PropGeometry], palette: Palette
 ) -> Callable[[], PropGeometry]:
-    """A factory of the tree `build` makes with `palette`."""
+    """Return a factory of the tree `build` makes with `palette`."""
     return lambda: build(palette)
 
 

@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/tile_residences.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import check_colored, height
@@ -9,7 +12,7 @@ from game.view.props.tile_residences import build_residence
 
 
 @pytest.mark.parametrize("seed", range(1, 9))
-def test_gfx_bldg_09_a_residence_is_a_well_formed_block_of_each_shape(seed):
+def test_gfx_bldg_09_a_residence_is_a_well_formed_block_of_each_shape(seed: Any) -> None:
     k = tile_kit(20.0, 20.0, TILE.size, seed)
     build_residence(k)
     prop = geometry_of(k)
@@ -17,7 +20,7 @@ def test_gfx_bldg_09_a_residence_is_a_well_formed_block_of_each_shape(seed):
     assert height(prop.structure) > 0
 
 
-def test_gfx_bldg_09_residences_come_in_several_shapes():
+def test_gfx_bldg_09_residences_come_in_several_shapes() -> None:
     shapes = set()
     for seed in range(1, 9):
         k = tile_kit(20.0, 20.0, TILE.size, seed)

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/menu_controller.py`."""
 # (UI-SHIP-07, GAME-SCORE-05, UI-PAUSE-11, UI-SET-06).
 
@@ -70,14 +71,14 @@ def finish(controller: MenuController) -> None:
 
 
 def go(controller: MenuController, *commands: object) -> None:
-    """Sends each command, letting the screen transition of each one end."""
+    """Send each command, letting the screen transition of each one end."""
     for command in commands:
         controller.command(command)
         controller.tick(1.0)
 
 
 def level_result(score: float, outcome: str = "complete") -> LevelResult:
-    return LevelResult("1-1", 4, 5, outcome, score, False, None)
+    return LevelResult("1-1", 4, 5, outcome, score, new_high_score=False, checkpoint=None)
 
 
 def test_ui_load_03_the_menu_starts_on_the_loading_screen_and_shows_its_progress() -> None:

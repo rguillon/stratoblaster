@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/scissor.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.enemy_steps import run, run_until
@@ -45,7 +48,7 @@ def test_enm_scissor_11_the_arm_beam_follows_its_arm() -> None:
     class _Arm:
         x, y, heading, gone, health = 1.0, 2.0, 0.5, False, 9.0
 
-        def place(self, muzzle):
+        def place(self, _muzzle: Any) -> Any:
             return (self.x, self.y)
 
     beam = ArmBeam(_Arm(), CFG.arms[0].muzzle)

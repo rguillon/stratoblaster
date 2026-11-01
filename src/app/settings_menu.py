@@ -1,6 +1,8 @@
-"""The settings screen (UI-SET-03): up / down pick a slider,
-left / right change it by one step, a tap or a drag sets it. Pure: the app saves and applies the
-volumes. Only the music and sound effects volumes exist (ENG-112 asks for more).
+# Copyright (c) 2026 Renaud Guillon
+"""The settings screen (UI-SET-03): up / down pick a slider, left / right change it by one step.
+
+A tap or a drag sets it. Pure: the app saves and applies the volumes. Only the music and sound
+effects volumes exist (ENG-112 asks for more).
 """
 
 import math
@@ -22,12 +24,12 @@ SETTINGS_SLIDERS = ["music", "sfx"]
 
 
 def volume_of(volumes: Volumes, slider: str) -> int:
-    """The step of the slider `slider` (`music` or `sfx`)."""
+    """Return the step of the slider `slider` (`music` or `sfx`)."""
     return volumes.music if slider == "music" else volumes.sfx
 
 
 def with_volume(volumes: Volumes, slider: str, step: int) -> Volumes:
-    """A copy of `volumes` with the slider `slider` set to `step`."""
+    """Return a copy of `volumes` with the slider `slider` set to `step`."""
     if slider == "music":
         return Volumes(step, volumes.sfx)
     return Volumes(volumes.music, step)
@@ -44,15 +46,19 @@ def _is_finite(value: float) -> bool:
 
 
 def _slider_at(index: int) -> str | None:
-    """The id of the slider at `index`, or None (JavaScript's `undefined`) when there is none."""
+    """Return the id of the slider at `index`, or None when there is none.
+
+    That None is JavaScript's `undefined`.
+    """
     if not _is_integer(index) or index < 0 or index >= len(SETTINGS_SLIDERS):
         return None
     return SETTINGS_SLIDERS[index]
 
 
 class SettingsMenu:
-    """The settings screen (UI-SET-03): up / down pick a slider, left / right change it by one step,
-    a tap or a drag sets it.
+    """The settings screen (UI-SET-03): up / down pick a slider, left / right change it by one step.
+
+    A tap or a drag sets it.
     """
 
     def __init__(self, volumes: Volumes, max_step: int) -> None:
@@ -62,6 +68,7 @@ class SettingsMenu:
 
     @property
     def selection(self) -> int:
+        """Index of the selected slider."""
         return self._selection
 
     @property
@@ -72,19 +79,22 @@ class SettingsMenu:
 
     @property
     def volumes(self) -> Volumes:
+        """The volumes the menu edits."""
         return self._volumes
 
     def open(self) -> None:
-        """The screen opens with the first slider selected."""
+        """Open the screen with the first slider selected."""
         self._selection = 0
 
     def move(self, direction: str) -> str:
+        """Change the selected slider for left or right, or move the selection for up or down."""
         if direction in ["left", "right"]:
             current = volume_of(self._volumes, self.selected_id)
             return self.set(self._selection, current + (-1 if direction == "left" else 1))
         return self.select(self._selection + (-1 if direction == "up" else 1))
 
     def select(self, index: int) -> str:
+        """Select slider `index` if it is valid and not already selected."""
         if not _is_integer(index) or index < 0 or index >= len(SETTINGS_SLIDERS):
             return "none"
         if index == self._selection:
@@ -93,7 +103,7 @@ class SettingsMenu:
         return "moved"
 
     def set(self, index: int, value: float) -> str:
-        """Sets slider `index` to `value` (rounded and clamped to the slider) and selects it."""
+        """Set slider `index` to `value` (rounded and clamped to the slider) and select it."""
         slider = _slider_at(index)
         if slider is None or not _is_finite(value):
             return "none"

@@ -1,16 +1,22 @@
-"""Stand-ins for the Babylon objects the tests of `render/` need (ENG-47). Babylon runs only in the
+# Copyright (c) 2026 Renaud Guillon
+"""Stand-ins for the Babylon objects the tests of `render/` need (ENG-47).
+
+Babylon runs only in the
+
 browser, so `render.babylon` returns None under CPython. `patch_babylon` replaces, in one module,
 every function it imported from `render.babylon` with a Python version of it (the ones listed in
-`BABYLON_FAKES`), and leaves the others alone."""
+`BABYLON_FAKES`), and leaves the others alone.
+"""
 
 from __future__ import annotations
 
 import math
-from typing import Any
-
-import pytest
+from typing import TYPE_CHECKING, Any
 
 from render import babylon
+
+if TYPE_CHECKING:
+    import pytest
 
 # Babylon's `Number.MAX_VALUE`: the default draw order of a mesh.
 NUMBER_MAX_VALUE = 1.7976931348623157e308
@@ -44,7 +50,7 @@ class FakeVector:
     def length(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def normalizeToNew(self) -> FakeVector:  # noqa: N802 (Babylon's name)
+    def normalizeToNew(self) -> FakeVector:
         if self.length() == 0:
             return self._of(0, 0, 0)
         return self.scale(1 / self.length())
@@ -95,19 +101,19 @@ class FakeNode:
         if value is not None:
             value.children.append(self)
 
-    def setEnabled(self, on: bool) -> None:  # noqa: N802 (Babylon's name)
+    def setEnabled(self, on: bool) -> None:
         self.enabled = on
 
-    def isEnabled(self) -> bool:  # noqa: N802
+    def isEnabled(self) -> bool:
         return self.enabled
 
     def dispose(self) -> None:
         self.disposed = True
 
-    def getScene(self) -> FakeScene | None:  # noqa: N802
+    def getScene(self) -> FakeScene | None:
         return self.scene
 
-    def computeWorldMatrix(self, force: bool) -> None:  # noqa: N802
+    def computeWorldMatrix(self, _force: bool) -> None:
         return None
 
 
@@ -119,7 +125,7 @@ class FakeScene:
         self.transformNodes: list[FakeNode] = []
         self._counter = 0
 
-    def getUniqueId(self) -> float:  # noqa: N802
+    def getUniqueId(self) -> float:
         return self._counter
 
     def next_id(self) -> float:
@@ -179,7 +185,7 @@ def _walk(node: FakeNode, direct_only: bool) -> list[FakeNode]:
     for child in node.children:
         result.append(child)
         if not direct_only:
-            result.extend(_walk(child, False))
+            result.extend(_walk(child, direct_only=False))
     return result
 
 
@@ -264,7 +270,7 @@ class FakeLight:
         self.direction = direction
         self.diffuse = FakeSettable(1, 1, 1)
         self.specular = FakeSettable(1, 1, 1)
-        self.groundColor = FakeSettable(0, 0, 0)  # noqa: N815 (Babylon's name)
+        self.groundColor = FakeSettable(0, 0, 0)
         self.intensity = 1.0
 
 
@@ -284,7 +290,7 @@ def _fake_color4(r: float, g: float, b: float, a: float) -> FakeSettable:
     return FakeSettable(r, g, b, a)
 
 
-def _fake_light(label: str, direction: Any, scene: Any) -> FakeLight:
+def _fake_light(label: str, direction: Any, _scene: Any) -> FakeLight:
     return FakeLight(label, direction)
 
 
@@ -327,7 +333,7 @@ BABYLON_FAKES: dict[str, Any] = {
 
 
 def patch_babylon(monkeypatch: pytest.MonkeyPatch, module: Any) -> None:
-    """Replaces, in `module`, the `render.babylon` functions that have a fake here."""
+    """Replace, in `module`, the `render.babylon` functions that have a fake here."""
     for name, fake in BABYLON_FAKES.items():
         if getattr(module, name, None) is getattr(babylon, name, object()):
             monkeypatch.setattr(module, name, fake)

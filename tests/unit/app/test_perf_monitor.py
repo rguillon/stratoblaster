@@ -1,9 +1,9 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/perf_monitor.py`."""
 # (DEV-PERF-01, DEV-PERF-02, DEV-PERF-03, ENG-111).
 
 from unittest.mock import MagicMock
 
-import pytest
 from helpers.dom import FakeDocument, FakeEvent
 
 from app import perf_monitor
@@ -115,9 +115,7 @@ def test_eng111_without_a_perf_parent_the_overlay_does_nothing() -> None:
     handle.dispose()
 
 
-def test_eng111_the_overlay_is_toggled_by_its_key_and_refreshed_after_each_frame(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_eng111_the_overlay_is_toggled_by_its_key_and_refreshed_after_each_frame() -> None:
     """DEV-PERF-03."""
     doc = FakeDocument()
     parent = doc.createElement("div")

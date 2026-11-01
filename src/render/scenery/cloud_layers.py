@@ -1,18 +1,19 @@
-"""Cloud layers of a scenery stage (GFX-SKY-11, GFX-SKY-13): planes under the flight altitude that
-follow
-the camera and drift, each with its own material.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""Cloud layers of a scenery stage (GFX-SKY-11, GFX-SKY-13).
 
-from org.transcrypt.stubs.browser import __pragma__
+Planes under the flight altitude that follow the camera and drift, each with its own material.
+"""
 
 from render.babylon import create_ground, set_enabled
 from render.scenery.scenery_kit import CloudState, FogState
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Group of all but the clouds, drawn next: a glow composed after it stays under them (GFX-CAM-07).
 BELOW_CLOUDS_GROUP = 0
@@ -31,8 +32,11 @@ class CloudLayerState:
 
 
 class CloudLayer:
-    """One cloud layer: its look, the Z of the middle of what the camera sees at its altitude,
-    its mesh, its material and its live state."""
+    """One cloud layer.
+
+    Its look, the Z of the middle of what the camera sees at its altitude, its mesh, its material
+    and its live state.
+    """
 
     def __init__(
         self, look: Any, middle: float, mesh: Any, material: Any, state: CloudLayerState
@@ -47,9 +51,13 @@ class CloudLayer:
 def build_cloud_layer(
     scene: Any, look: Any, material: Any, index: int, placement: tuple[Any, float, float]
 ) -> CloudLayer:
-    """Cloud layer number `index` (GFX-SKY-11): a plane at `altitude` covering what the camera sees
-    there (`seen`) and `margin` more, drawn after everything else. `placement` is
-    `(seen, altitude, margin)`."""
+    """Cloud layer number `index` (GFX-SKY-11).
+
+    A plane at `altitude` covering what the camera sees there (`seen`) and `margin` more, drawn
+    after everything else.
+
+    `placement` is `(seen, altitude, margin)`.
+    """
     seen, altitude, margin = placement
     mesh = create_ground(
         "cloud-layer-" + str(index),
@@ -76,10 +84,14 @@ def build_cloud_layer(
 def update_cloud_layer(
     layer: CloudLayer, camera_time: tuple[float, float], frame: tuple[Any, Any, bool]
 ) -> None:
-    """Follows the camera at `camera_time[0]`, drifts with `camera_time[1]`, and takes the colours
-    of `cover` and the haze of `atmosphere` (GFX-SKY-13); its coverage and opacity too when `follow`
-    (a level whose look changes), otherwise they stay as set on its state (set by code).
-    `frame` is `(atmosphere, cover, follow)`; `cover` may be missing (None)."""
+    """Follows the camera at `camera_time[0]` and drifts with `camera_time[1]`.
+
+    It takes the colours of `cover` and the haze of `atmosphere` (GFX-SKY-13); its coverage and
+    opacity too when `follow` (a level whose look changes), otherwise they stay as set on its state
+    (set by code).
+
+    `frame` is `(atmosphere, cover, follow)`; `cover` may be missing (None).
+    """
     camera_z, time = camera_time
     atmosphere, cover, follow = frame
     look = layer.look

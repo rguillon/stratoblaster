@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/ship_select_stage.py` (UI-SHIP-01)."""
 
 import math
@@ -19,7 +20,10 @@ def _pivot(x: float, scale: float = 1.0) -> FakeNode:
 
 
 def _stage(pivots: list[FakeNode]) -> ShipSelectStage:
-    """A stage built by hand: the constructor makes Babylon objects, which the tests replace."""
+    """Return a stage built by hand.
+
+    The constructor makes Babylon objects, which the tests replace.
+    """
     stage = ShipSelectStage.__new__(ShipSelectStage)
     stage._options = SimpleNamespace(
         highlight_scale=1.2,
@@ -30,7 +34,7 @@ def _stage(pivots: list[FakeNode]) -> ShipSelectStage:
     stage._selected = 0
     stage.showcase = SimpleNamespace(
         pivots=pivots,
-        update=lambda dt: None,
+        update=lambda _dt: None,
     )
     stage._spots = [SimpleNamespace(intensity=0.0) for _ in pivots]
     stage.ring = SimpleNamespace(position=FakeVector())

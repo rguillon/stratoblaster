@@ -1,28 +1,32 @@
-"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry) MB-FLOE-BREAKER-02:
-glands down its flanks, an egg sac to port, a coiled tow sinew to starboard. Logical pixels, nose
-+Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry).
+
+MB-FLOE-BREAKER-02: glands down its flanks, an egg sac to port, a coiled tow sinew to
+starboard. Logical pixels, nose +Z, Y up.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.view.bosses.world_2.w2_organic import ICE_FLESH, crystals, gland, sinew
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.organic import organ
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def floe_dressing(p: EnemyParts, n: Rgb) -> None:
-    """Along the hump: glands lit `n` down its sides, an egg sac to port (+X), a coiled tow sinew
-    on the stern to starboard."""
+    """Add the dressing along the hump.
+
+    Glands lit `n` down its sides, an egg sac to port (+X), a coiled tow sinew on the stern to
+    starboard.
+    """
     for s in SIDES:
         for z in [-12, -24]:
             gland(p, [s * 12.6, 6.4, z], 0.8, n)

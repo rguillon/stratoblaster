@@ -1,9 +1,8 @@
-"""The atmosphere of a level along its length (GFX-SKY-04): a level's fixed look or its sky
-script, as the atmosphere the
-renderer applies.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The atmosphere of a level along its length (GFX-SKY-04).
 
-from org.transcrypt.stubs.browser import __pragma__
+It is a level's fixed look or its sky script, as the atmosphere the renderer applies.
+"""
 
 from core.scenery.atmosphere import (
     Ambient,
@@ -26,18 +25,23 @@ from core.scenery.sky_look import (
 )
 from render.scenery.scenery_look import SceneryLook
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class AtmosphereOptions:
-    """Debug choices on a level's look: `time_of_day` (`look=<time of day>`, every look at this
-    time of day, DEV-OPT-05), `weather` (`weather=0`: False, no weather at all, DEV-OPT-04) and
-    `tile_grid` (DEV-OPT-06, `tiles=1`: the grid of tiles drawn over the districts). None when
-    not set."""
+    """Debug choices on a level's look.
+
+    `time_of_day` (`look=<time of day>`, every look at this time of day, DEV-OPT-05), `weather`
+    (`weather=0`: False, no weather at all, DEV-OPT-04) and `tile_grid` (DEV-OPT-06, `tiles=1`: the
+    grid of tiles drawn over the districts).
+
+    None when not set.
+    """
 
     def __init__(
         self,
@@ -51,11 +55,13 @@ class AtmosphereOptions:
 
 
 def look_atmosphere(look: SceneryLook) -> Atmosphere:
-    """The fixed atmosphere of a look without a sky script (World 1): its own sky, fog, sun,
-    ambient light, clouds and lights, as they always were."""
-    clouds: list[CloudCover] = []
-    for c in look.clouds:
-        clouds.append(CloudCover(c.coverage, c.opacity, c.color, c.shade))
+    """Return the fixed atmosphere of a look without a sky script (World 1).
+
+    Its own sky, fog, sun, ambient light, clouds and lights, as they always were.
+    """
+    clouds: list[CloudCover] = [
+        CloudCover(c.coverage, c.opacity, c.color, c.shade) for c in look.clouds
+    ]
     return Atmosphere(
         Sun(
             look.sun.elevationDeg,
@@ -76,8 +82,11 @@ def look_atmosphere(look: SceneryLook) -> Atmosphere:
 
 
 def _script_of(look: SceneryLook, time_of_day: str | None) -> SkyScript | None:
-    """The sky script of `look`, or one made from its own clouds when a time of day is forced."""
-    if look.atmosphere != None:  # noqa: E711 (optional record field: undefined when absent)
+    """Return the sky script of `look`.
+
+    When a time of day is forced, it is one made from the look's own clouds.
+    """
+    if look.atmosphere != None:
         return look.atmosphere
     if time_of_day is None:
         return None
@@ -91,14 +100,18 @@ def atmosphere_track(
     scroll_speed: float,
     options: AtmosphereOptions | None = None,
 ) -> Any:
-    """The atmosphere of a level along its length (GFX-SKY-05): its sky script's looks, their
-    changes turned from seconds into distances at `scroll_speed`; or its fixed look. Returns an
-    `AtmosphereTrack` (its `at(distance)`)."""
+    """Return the atmosphere of a level along its length (GFX-SKY-05).
+
+    Its sky script's looks, their changes turned from seconds into distances at `scroll_speed`; or
+    its fixed look.
+
+    Returns an `AtmosphereTrack` (its `at(distance)`).
+    """
     if options is None:
         options = AtmosphereOptions()
     # `script` is mapped by game/sim/sky_build.py: its changes are AtmosphereChange (`from_`).
     script: Any = _script_of(look, options.time_of_day)
-    tone = 1 if look.tone == None else look.tone  # noqa: E711 (optional record field)
+    tone = 1 if look.tone == None else look.tone
     # A fixed look has no weather to turn off.
     if script is None:
         return AtmosphereTrack(
@@ -113,11 +126,10 @@ def atmosphere_track(
         # Weather off changes the look only (GFX-WEATHER-05).
         return without_weather(timed) if options.weather is False else timed
 
-    changes: list[AtmosphereChange] = []
-    for c in script.changes if script.changes != None else []:  # noqa: E711 (optional record field)
-        changes.append(
-            AtmosphereChange(c.from_ * scroll_speed, c.to * scroll_speed, adjust(c.look))
-        )
+    changes: list[AtmosphereChange] = [
+        AtmosphereChange(c.from_ * scroll_speed, c.to * scroll_speed, adjust(c.look))
+        for c in (script.changes if script.changes != None else [])
+    ]
     return AtmosphereTrack(
         adjust(script.start),
         changes,
@@ -126,17 +138,19 @@ def atmosphere_track(
 
 
 def toned(atmosphere: Atmosphere, tone: float) -> Atmosphere:
-    """`atmosphere` with its haze and clouds `tone` (0..1) as bright (`SceneryLook.tone`,
-    GFX-READ-02)."""
+    """`atmosphere` with its haze and clouds `tone` (0..1) as bright.
+
+    Its `tone` is `SceneryLook.tone` (GFX-READ-02).
+    """
     if tone == 1:
         return atmosphere
 
     def dim(c: tuple[float, float, float]) -> tuple[float, float, float]:
         return (c[0] * tone, c[1] * tone, c[2] * tone)
 
-    clouds: list[CloudCover] = []
-    for c in atmosphere.clouds:
-        clouds.append(CloudCover(c.coverage, c.opacity, dim(c.color), dim(c.shade)))
+    clouds: list[CloudCover] = [
+        CloudCover(c.coverage, c.opacity, dim(c.color), dim(c.shade)) for c in atmosphere.clouds
+    ]
     return Atmosphere(
         atmosphere.sun,
         Sky(dim(atmosphere.sky.haze), atmosphere.sky.stops, atmosphere.sky.environment_intensity),

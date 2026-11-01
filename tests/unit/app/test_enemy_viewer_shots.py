@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/enemy_viewer_shots.py`."""
 # the shots and explosions of the enemy viewer, drawn through the renderers the game provides
 # (the renderers are fakes here).

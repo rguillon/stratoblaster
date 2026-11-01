@@ -1,15 +1,15 @@
-# ruff: noqa: E501
+# Copyright (c) 2026 Renaud Guillon
 """Lava (GFX-TERRAIN-16): crust plates over a glowing melt, drawn by one self-lit material."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import color3, new_glsl_material, vector2, vector3, vector4
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 VERTEX = """
 precision highp float;
@@ -98,7 +98,8 @@ void main() {
   color = mix(color, hotColor, crack * crack * pulse);
   color *= shape.w;
   // Self-lit: the haze dims it with distance but never quite hides its glow.
-  float fog = clamp((distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
+  float fog = clamp(
+    (distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
   gl_FragColor = vec4(mix(color, fogColor, fog * 0.85), 1.0);
 }
 """
@@ -138,6 +139,7 @@ class LavaMaterialImpl:
         self._motion = vector3(0, 0, 0)
 
     def set(self, frame: LavaFrame) -> None:
+        """Set the lava material's shader parameters from `frame`."""
         material = self.material
         fog = frame.fog
         material.setVector3("motion", self._motion.set(frame.time, self._flow[0], self._flow[1]))
@@ -151,11 +153,14 @@ class LavaMaterialImpl:
 
 
 def create_lava_material(scene: Any, look: Any, flow: tuple[float, float]) -> LavaMaterialImpl:
-    """Lava (GFX-TERRAIN-16): dark crust plates over a glowing melt that shows in the cracks between
-    them, white-hot at their heart, the plates churning, parting and closing as they drift with the
-    `flow` (world units a second). Self-lit, so it shows by night and blooms in the glow layer
-    (it is drawn there with this same material); it lights nothing (no real light,
-    GFX-TERRAIN-18)."""
+    """Lava (GFX-TERRAIN-16): dark crust plates over a glowing melt.
+
+    The melt shows in the cracks between them, white-hot at their heart; the plates churn, part and
+    close as they drift with the `flow` (world units a second).
+
+    Self-lit, so it shows by night and blooms in the glow layer (it is drawn there with this same
+    material); it lights nothing (no real light, GFX-TERRAIN-18).
+    """
     material = new_glsl_material(
         "lava",
         scene,

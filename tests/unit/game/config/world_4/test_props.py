@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_4/props.py`."""
 
 from game.config.world_4.props import WORLD_4_ROADS

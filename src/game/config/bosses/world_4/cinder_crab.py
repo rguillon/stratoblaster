@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """4-1: the Cinder Crab, the Black sands' mini boss (specs/bosses/mini/4-1-cinder-crab.md).
 
 Offsets in px from the boss's centre, X right and Y up (its claws reach down the screen, at -Y).
@@ -7,18 +8,18 @@ shield the core; the back mortar lobs slow, big bullets; the core's ring dome fi
 every stage (D-055).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 ORANGE = bullet("orange", 205)
 RED = bullet("red", 200)
@@ -38,7 +39,7 @@ CRAB_SWING = record({"armDeg": 9, "armPeriod": 4.2, "fingerDeg": 13, "fingerPeri
 
 
 def claw(side: str) -> Any:
-    """The claw on `side`: its arm on the shoulder and its finger on the wrist (D-061)."""
+    """Return the claw on `side`: its arm on the shoulder and its finger on the wrist (D-061)."""
     s = 1 if side == "left" else -1
     joints: dict[str, Any] = {}
     joints["arm-" + side] = {
@@ -82,78 +83,74 @@ CRAB_MORTAR_AT = [0, 24]
 # that open and close (MB-CINDER-CRAB-01). The claws fire aimed spreads and shield the core; the
 # back mortar lobs slow, big slag; the core's dome fires rings, a spiral once alone. The ground
 # slows (x0.5).
-_CINDER_CRAB = record(
-    {
-        "id": "cinder-crab",
-        # Angry after each destroyed part (D-063, MB-CINDER-CRAB-12), heat 9.5: World 4 goes on
-        # from World 3's 9, up to 14.
-        "rage": rage.curtain(9.5, "orange", "red"),
-        # Its core and parts, their health, and its points (MB-CINDER-CRAB-08, MB-CINDER-CRAB-15).
-        "stats": stats(
-            record(
-                {
-                    "id": "cinder-crab",
-                    "name": "Cinder Crab",
-                    "size": 3,
-                    "coreRadius": 13,
-                    "coreHealth": 2300,
-                    "points": 8000,
-                    "groundSpeed": 0.5,
-                    "parts": [
-                        part(
-                            "claw-left",
-                            [CRAB_ARM.claw[0], CRAB_ARM.claw[1]],
-                            10,
-                            500,
-                            {"joint": "arm-left"},
-                        ),
-                        part(
-                            "claw-right",
-                            [-CRAB_ARM.claw[0], CRAB_ARM.claw[1]],
-                            10,
-                            500,
-                            {"joint": "arm-right"},
-                        ),
-                        part("mortar", list(CRAB_MORTAR_AT), 12, 350, {"shields": False}),
-                    ],
-                    "joints": merge(claw("left"), claw("right")),
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-CINDER-CRAB-07).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 65, "period": 7.5},
-        "bob": {"amplitude": 7, "period": 3.6},
-        "guns": {
-            "core": {"ring": CRAB_DOME},
-            "claw-left": {"gun": CRAB_PALM_GUN},
-            "claw-right": {"gun": mirror(CRAB_PALM_GUN)},
-            "mortar": {"gun": CRAB_MORTAR},
-        },
-        # The claws' spreads in every stage (MB-CINDER-CRAB-09), then the core's rings per stage
-        # (MB-CINDER-CRAB-11).
-        "stages": stages(
-            [
-                volley.aimed("claw-left", 2.6, 3, 13, RED, 0.8),
-                volley.aimed("claw-right", 2.6, 3, 13, RED, 2.1),
-                volley.aimed("mortar", 3.2, 1, 0, SLAG, 1.6),
+_CINDER_CRAB = record({
+    "id": "cinder-crab",
+    # Angry after each destroyed part (D-063, MB-CINDER-CRAB-12), heat 9.5: World 4 goes on
+    # from World 3's 9, up to 14.
+    "rage": rage.curtain(9.5, "orange", "red"),
+    # Its core and parts, their health, and its points (MB-CINDER-CRAB-08, MB-CINDER-CRAB-15).
+    "stats": stats(
+        record({
+            "id": "cinder-crab",
+            "name": "Cinder Crab",
+            "size": 3,
+            "coreRadius": 13,
+            "coreHealth": 2300,
+            "points": 8000,
+            "groundSpeed": 0.5,
+            "parts": [
+                part(
+                    "claw-left",
+                    [CRAB_ARM.claw[0], CRAB_ARM.claw[1]],
+                    10,
+                    500,
+                    {"joint": "arm-left"},
+                ),
+                part(
+                    "claw-right",
+                    [-CRAB_ARM.claw[0], CRAB_ARM.claw[1]],
+                    10,
+                    500,
+                    {"joint": "arm-right"},
+                ),
+                part("mortar", list(CRAB_MORTAR_AT), 12, 350, {"shields": False}),
             ],
+            "joints": merge(claw("left"), claw("right")),
+        })
+    ),
+    # Where it stops and how it moves in place (MB-CINDER-CRAB-07).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 65, "period": 7.5},
+    "bob": {"amplitude": 7, "period": 3.6},
+    "guns": {
+        "core": {"ring": CRAB_DOME},
+        "claw-left": {"gun": CRAB_PALM_GUN},
+        "claw-right": {"gun": mirror(CRAB_PALM_GUN)},
+        "mortar": {"gun": CRAB_MORTAR},
+    },
+    # The claws' spreads in every stage (MB-CINDER-CRAB-09), then the core's rings per stage
+    # (MB-CINDER-CRAB-11).
+    "stages": stages(
+        [
+            volley.aimed("claw-left", 2.6, 3, 13, RED, 0.8),
+            volley.aimed("claw-right", 2.6, 3, 13, RED, 2.1),
+            volley.aimed("mortar", 3.2, 1, 0, SLAG, 1.6),
+        ],
+        [
+            [volley.ring("core", 3, 10, 18, ORANGE, 1.3)],
+            [volley.ring("core", 2.4, 12, 15, ORANGE, 0.9)],
             [
-                [volley.ring("core", 3, 10, 18, ORANGE, 1.3)],
-                [volley.ring("core", 2.4, 12, 15, ORANGE, 0.9)],
-                [
-                    volley.ring("core", 2.4, 10, 0, PURPLE, 0.7),
-                    volley.ring("core", 2.4, 10, 18, ORANGE, 1.9),
-                ],
-                # Alone: a dense, slow-turning ring, and a three-armed spiral turning the other way.
-                [
-                    volley.ring("core", 2.2, 16, 6, MAGENTA, 0.6),
-                    volley.ring("core", 0.4, 3, -27, RED, 0.3),
-                ],
+                volley.ring("core", 2.4, 10, 0, PURPLE, 0.7),
+                volley.ring("core", 2.4, 10, 18, ORANGE, 1.9),
             ],
-        ),
-    }
-)
+            # Alone: a dense, slow-turning ring, and a three-armed spiral turning the other way.
+            [
+                volley.ring("core", 2.2, 16, 6, MAGENTA, 0.6),
+                volley.ring("core", 0.4, 3, -27, RED, 0.3),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-CINDER-CRAB-13): at transformation 1 its
 # flank armour bursts off, baring a dark metal frame, and a pair of gatling turrets unfold

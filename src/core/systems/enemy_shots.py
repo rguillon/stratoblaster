@@ -1,4 +1,5 @@
-"""The shots of all the enemies (ENM-16 to ENM-19)
+# Copyright (c) 2026 Renaud Guillon
+"""The shots of all the enemies (ENM-16 to ENM-19).
 
 Bullets, homing missiles the player can shoot down, and lasers with a warning line. Pure and
 deterministic, stepped with a fixed `dt`.
@@ -6,33 +7,29 @@ deterministic, stepped with a fixed `dt`.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.muzzle import RaisedPoint, seen_on_playfield
 from core.systems.projectile_motion import heading_to, turn_towards
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol, TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
-from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import (
     EnemyBulletSpec,
     EnemyBurstSpec,
     EnemyLaserSpec,
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import PlayfieldEye  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import PlayfieldEye
 
 
 class _Pooled(Protocol):
     """An entry of a pool of shots: free for reuse once not `alive`."""
 
     alive: bool
-
-
-P = TypeVar("P", bound=_Pooled)
 
 
 class _Box(Protocol):
@@ -45,7 +42,8 @@ class _Box(Protocol):
     def height(self) -> float: ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 DEG = math.pi / 180
 
@@ -55,8 +53,10 @@ EPSILON = 1e-9
 
 
 class EnemyBullet:
-    """An enemy bullet in flight (ENM-16): straight, at constant speed. `age` is the seconds since
-    it was fired; `burst` is what it bursts into (`EnemyBulletSpec.burst`).
+    """An enemy bullet in flight (ENM-16): straight, at constant speed.
+
+    `age` is the seconds since it was fired; `burst` is what it bursts into
+    (`EnemyBulletSpec.burst`).
     """
 
     def __init__(self) -> None:
@@ -72,9 +72,11 @@ class EnemyBullet:
 
 
 class EnemyMissile:
-    """An enemy missile in flight: it homes on the player for a while, and can be shot down
-    (ENM-18). It is a shot target (the player's shots can hit it). `homing` is the seconds of homing
-    left, `age` the seconds since launch.
+    """An enemy missile in flight.
+
+    It homes on the player for a while, and can be shot down (ENM-18). It is a shot target (the
+    player's shots can hit it). `homing` is the seconds of homing left, `age` the seconds since
+    launch.
     """
 
     def __init__(self) -> None:
@@ -94,10 +96,11 @@ class EnemyMissile:
 
 
 class EnemyLaser:
-    """A laser (ENM-19): a warning line first, then the beam, from its owner's emitter. The warning
-    line follows its owner's heading (a turret turning towards the player); the beam keeps the
-    heading its owner had when it started firing, straight (BOSS-30), unless its spec `sweeps`.
-    `locked` is that heading, once the beam fires.
+    """A laser (ENM-19): a warning line first, then the beam, from its owner's emitter.
+
+    The warning line follows its owner's heading (a turret turning towards the player); the beam
+    keeps the heading its owner had when it started firing, straight (BOSS-30), unless its spec
+    `sweeps`. `locked` is that heading, once the beam fires.
     """
 
     def __init__(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
@@ -118,7 +121,7 @@ class EnemyLaser:
 
     @length.setter
     def length(self, value: float) -> None:
-        """Sets the length to the edge of the playfield."""
+        """Set the length to the edge of the playfield."""
         self._length = value
 
 
@@ -144,8 +147,10 @@ class EnemyShotsOptions:
 
 
 def ray_to_edge(x: float, y: float, heading: float, box: _Box, margin: float) -> float:
-    """Length of a ray from (x, y) along `heading` to the edge of the playfield, grown by
-    `margin`."""
+    """Length of a ray from (x, y) along `heading` to the edge of the playfield.
+
+    Grown by `margin`.
+    """
     dx = math.sin(heading)
     dy = math.cos(heading)
 
@@ -160,8 +165,9 @@ def ray_to_edge(x: float, y: float, heading: float, box: _Box, margin: float) ->
 
 
 class EnemyShots:
-    """The shots of all the enemies. Its `bullets` and `missiles` are pools: entries with `alive`
-    false are free for reuse.
+    """The shots of all the enemies.
+
+    Its `bullets` and `missiles` are pools: entries with `alive` false are free for reuse.
     """
 
     def __init__(self, options: EnemyShotsOptions) -> None:
@@ -177,8 +183,10 @@ class EnemyShots:
         return self._lasers
 
     def fire_bullet(self, x: float, y: float, heading: float, spec: EnemyBulletSpec) -> None:
-        """Fires a bullet of `spec` from (x, y) along `heading`, reusing a free one from the
-        pool."""
+        """Fire a bullet of `spec` from (x, y) along `heading`.
+
+        Reusing a free one from the pool.
+        """
         bullet = _first_free(self.bullets)
         if bullet is None:
             bullet = EnemyBullet()
@@ -194,8 +202,10 @@ class EnemyShots:
         bullet.age = 0
 
     def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
-        """Launches a missile of `spec` from (x, y) along `heading`, reusing a free one from the
-        pool, with a fresh id."""
+        """Launch a missile of `spec` from (x, y) along `heading`.
+
+        Reusing a free one from the pool, with a fresh id.
+        """
         missile = _first_free(self.missiles)
         if missile is None:
             missile = EnemyMissile()
@@ -216,7 +226,7 @@ class EnemyShots:
         missile.age = 0
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
-        """Starts a laser of `spec` from `owner`, aimed at once."""
+        """Start a laser of `spec` from `owner`, aimed at once."""
         self._lasers.append(EnemyLaser(owner, spec))
         self._aim(self._lasers[len(self._lasers) - 1])
 
@@ -226,7 +236,7 @@ class EnemyShots:
         return _alive_count(self.bullets) + _alive_count(self.missiles) + len(self._lasers)
 
     def clear(self) -> None:
-        """Removes every shot (as a bomb does, GAME-BOMB-05)."""
+        """Remove every shot (as a bomb does, GAME-BOMB-05)."""
         for bullet in self.bullets:
             bullet.alive = False
         for missile in self.missiles:
@@ -234,7 +244,7 @@ class EnemyShots:
         self._lasers.clear()
 
     def step(self, dt: float, player_x: float, player_y: float) -> None:
-        """Moves the shots by `dt`; missiles home on (player_x, player_y)."""
+        """Move the shots by `dt`; missiles home on (player_x, player_y)."""
         self._move_bullets(dt)
         for missile in self.missiles:
             if missile.alive:
@@ -246,7 +256,7 @@ class EnemyShots:
             i -= 1
 
     def _move_bullets(self, dt: float) -> None:
-        """Moves the bullets straight on; those due to burst do, once all have moved."""
+        """Move the bullets straight on; those due to burst do, once all have moved."""
         bursting: list[EnemyBullet] = []
         for b in self.bullets:
             if not b.alive:
@@ -262,7 +272,7 @@ class EnemyShots:
             self._burst(b)
 
     def _burst(self, b: EnemyBullet) -> None:
-        """A bursting bullet is gone, and its ring of bullets leaves from where it was."""
+        """Remove a bursting bullet and fire its ring of bullets from where it was."""
         burst = b.burst
         b.alive = False
         if not burst:
@@ -315,8 +325,8 @@ class EnemyShots:
         return x < -m or x > self.options.width + m or y < -m or y > self.options.height + m
 
 
-def _first_free(pool: list[P]) -> P | None:  # noqa: UP047 (Transcrypt has no PEP 695)
-    """The first entry of a pool that is not alive, if any."""
+def _first_free[P: _Pooled](pool: list[P]) -> P | None:
+    """Return the first entry of a pool that is not alive, if any."""
     for entry in pool:
         if not entry.alive:
             return entry

@@ -1,4 +1,5 @@
-"""This game's levels (UI-LEVEL-02, UI-LEVEL-03)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The game's levels (UI-LEVEL-02, UI-LEVEL-03)."""
 
 from core.content.game_level import GameLevel
 from core.content.level_catalog import build_level_grid

@@ -1,28 +1,32 @@
-"""The dev viewers of the app, in the game page (DEV-MENU-02, D-199): the viewer the menu flow
-shows on its `dev-viewer` screen, built when it opens and dropped when it closes; the mouse wheel
-over it (DEV-MENU-11, D-208: it zooms, or scrubs the levels viewer's time); K in the bosses viewer
-(breaks the boss's next part, DEV-MENU-14).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The dev viewers of the app, in the game page (DEV-MENU-02, D-199).
 
-from org.transcrypt.stubs.browser import __pragma__
+The viewer the menu flow shows on its `dev-viewer` screen, built when it opens and dropped when it
+closes; the mouse wheel over it (DEV-MENU-11, D-208: it zooms, or scrubs the levels viewer's time);
+K in the bosses viewer (breaks the boss's next part, DEV-MENU-14).
+"""
 
 from app.dev_viewer import DevViewer
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from app.dev_catalog import DevItem  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.dev_catalog import DevItem
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class DevSession:
-    """Runs the dev viewer the flow shows (see the module doc). `status_root`: the element whose
-    `.dev-status` line the viewer's status is written into (None: not written)."""
+    """Runs the dev viewer the flow shows (see the module doc).
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    `status_root`: the element whose `.dev-status` line the viewer's status is written into (None:
+    not written).
+    """
+
+    def __init__(
         self,
         engine: Any,
         game: Any,
@@ -45,7 +49,7 @@ class DevSession:
         return self.viewer is not None
 
     def sync(self, state: Any) -> None:
-        """Opens, changes or closes the viewer as the flow's state says."""
+        """Open, change or close the viewer as the flow's state says."""
         name = state.dev_viewer
         if name is None:
             self._drop()
@@ -58,8 +62,10 @@ class DevSession:
         self.viewer.show(state.selection, state.dev_close_up)
 
     def wheel(self, delta_y: float) -> None:
-        """The wheel turned by `delta_y` pixels: the levels viewer scrubs; the others zoom (D-208:
-        in when it turns up, out when it turns down)."""
+        """Scrub the levels viewer, or zoom the others, as the wheel turns by `delta_y` pixels.
+
+        It zooms in when it turns up and out when it turns down (D-208).
+        """
         viewer = self.viewer
         if viewer is None:
             return
@@ -69,7 +75,7 @@ class DevSession:
         viewer.zoom(delta_y)
 
     def listen(self, target: Any) -> None:
-        """Listens for the viewer's keys (see `key`) on `target` (None: nothing listens)."""
+        """Listen for the viewer's keys (see `key`) on `target` (None: nothing listens)."""
         if target is None:
             return
 
@@ -87,8 +93,10 @@ class DevSession:
         self._stop_keys = stop
 
     def key(self, code: str, down: bool) -> bool:
-        """A key pressed over the viewer: K breaks the boss's next part in the bosses viewer.
-        Returns whether the key was used."""
+        """Return a key pressed over the viewer: K breaks the boss's next part in the bosses viewer.
+
+        Returns whether the key was used.
+        """
         viewer = self.viewer
         if viewer is None or viewer.viewer != "bosses" or code != CFG.break_key:
             return False
@@ -97,12 +105,12 @@ class DevSession:
         return True
 
     def turn(self, dx: float, dy: float) -> None:
-        """A drag over the viewer, by (`dx`, `dy`) screen pixels, turns its model (DEV-MENU-10)."""
+        """Turn the viewer's model as it is dragged by (`dx`, `dy`) screen pixels (DEV-MENU-10)."""
         if self.viewer is not None:
             self.viewer.turn(dx, dy)
 
     def frame(self, dt: float) -> None:
-        """Moves the viewer on by `dt` seconds, and shows its status (DEV-MENU-05)."""
+        """Move the viewer on by `dt` seconds, and show its status (DEV-MENU-05)."""
         viewer = self.viewer
         if viewer is None:
             return
@@ -129,6 +137,7 @@ class DevSession:
         self.viewer = None
 
     def dispose(self) -> None:
+        """Releases the viewer and the keys it listens to."""
         self._drop()
         if self._stop_keys is not None:
             self._stop_keys()

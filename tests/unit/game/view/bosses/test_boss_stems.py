@@ -1,5 +1,10 @@
-"""Unit tests of `src/game/view/bosses/boss_stems.py` and the frames' pylons and bridges: what holds
-a boss's pieces to it (BOSS-52, D-227)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/bosses/boss_stems.py` and the frames' pylons and bridges.
+
+What holds a boss's pieces to it (BOSS-52, D-227).
+"""
+
+from typing import Any
 
 import pytest
 
@@ -20,7 +25,7 @@ def _tris(*boxes: tuple[list[float], list[float]]) -> list:
     return triangles(b.geometry)
 
 
-def _drawn(draw) -> list:
+def _drawn(draw: Any) -> list:
     parts = collect_parts(draw)["parts"]
     return triangles(parts.hull.geometry) + triangles(parts.neon.geometry)
 
@@ -39,8 +44,10 @@ def test_a_piece_hanging_over_the_hull_gets_a_stem_down_to_it() -> None:
     stems = stems_for(tris)
     assert len(stems) == 1
     kind, x, z, low, high, _w = stems[0]
-    assert kind == "stem" and (x, z) == pytest.approx((18, 18))
-    assert low == pytest.approx(2) and 8 < high < 9
+    assert kind == "stem"
+    assert (x, z) == pytest.approx((18, 18))
+    assert low == pytest.approx(2)
+    assert 8 < high < 9
     held = tris + _drawn(stems_drawing(stems, GREY))
     assert not any(loose_triangles(held, BOSS_LOOK.armour.hold))
 

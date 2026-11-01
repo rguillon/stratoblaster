@@ -1,21 +1,24 @@
-"""Texts of the engine's menu screens, provided by the game (ENG-140, ENG-144). Plural or
-parameterised texts are callables."""
+# Copyright (c) 2026 Renaud Guillon
+"""Texts of the engine's menu screens, provided by the game (ENG-140, ENG-144).
 
-from org.transcrypt.stubs.browser import __pragma__
+Plural or parameterised texts are callables.
+"""
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuTexts:
-    """The texts of the menu screens, the HUD, the pause menu and the settings screen: every text
-    comes from the game (UI-LOOK-10).
+    """The texts of the menu screens, the HUD, the pause menu and the settings screen.
+
+    Every text comes from the game (UI-LOOK-10).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         loading: str,
         high_score: str,
@@ -62,10 +65,11 @@ class MenuTexts:
         no: str,
         yes: str,
     ) -> None:
-        """Fields, in the same order. The functions are: `game_level(level
-        label)`, `enemies_destroyed(destroyed, spawned)`, `final_score(score)`, `hud_lives(lives)`,
-        `hud_weapon(weapon name, level, levels)`, `hud_bombs(bombs)`, `hud_score(score)`,
-        `hud_high_score(score)`, `hud_bomb(bombs)`.
+        """Fields, in the same order.
+
+        The functions are: `game_level(level label)`, `enemies_destroyed(destroyed, spawned)`,
+        `final_score(score)`, `hud_lives(lives)`, `hud_weapon(weapon name, level, levels)`,
+        `hud_bombs(bombs)`, `hud_score(score)`, `hud_high_score(score)`, `hud_bomb(bombs)`.
         """
         self.loading = loading
         self.high_score = high_score

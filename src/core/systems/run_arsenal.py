@@ -1,20 +1,20 @@
-"""The weapons of a run (phase 6 review)
+# Copyright (c) 2026 Renaud Guillon
+"""The weapons of a run (phase 6 review).
 
 The player switches between the weapons in order, each keeping its own level (GAME-WPN-13), and
 bonuses raise the one in use (GAME-WPN-14). Its `snapshot` is what a checkpoint (GAME-LEVEL-09) and
 the next level (GAME-WPN-15) keep.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.shot_world import ShotWorld  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition
+from core.systems.shot_world import ShotWorld
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class WeaponLevels:
@@ -34,8 +34,10 @@ class _LevelEntry:
 
 
 class RunArsenal:
-    """The weapons of a run: `shots` is the ship's shot world, `weapons` the ones the player can
-    switch between, and `start_level` the level a weapon starts at when first used.
+    """The weapons of a run.
+
+    `shots` is the ship's shot world, `weapons` the ones the player can switch between, and
+    `start_level` the level a weapon starts at when first used.
     """
 
     def __init__(
@@ -51,7 +53,7 @@ class RunArsenal:
         self._levels: list[_LevelEntry] = []
 
     def switch_weapon(self) -> None:
-        """The next weapon of the list, at its own level; shots in flight keep flying."""
+        """Switch to the next weapon of the list, at its own level; shots in flight keep flying."""
         index = -1
         for i in range(len(self._weapons)):
             if self._weapons[i] is self._shots.weapon:
@@ -65,14 +67,18 @@ class RunArsenal:
         self._shots.select(next_weapon, saved if saved is not None else self._start_level)
 
     def level_up(self, count: float) -> None:
-        """`count` levels more for the weapon in use, up to its last; the new level fires at
-        once."""
+        """`count` levels more for the weapon in use, up to its last.
+
+        The new level fires at once.
+        """
         if count > 0:
             self._shots.select(self._shots.weapon, self._shots.level + count)
 
     def snapshot(self) -> WeaponLevels:
-        """The weapons now: the weapon in use and the level of each, for `restore`. Records the
-        level of the weapon in use first."""
+        """Return the weapons now: the weapon in use and the level of each, for `restore`.
+
+        Records the level of the weapon in use first.
+        """
         self._set_level(self._shots.weapon, self._shots.level)
         levels: dict[str, float] = {}
         for entry in self._levels:

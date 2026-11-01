@@ -1,5 +1,8 @@
-"""Small vector maths on plain lists of 3 numbers (the vectors of `render/geometry`, see
-`solids.py`)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Small vector maths on plain lists of 3 numbers.
+
+They are the vectors of `render/geometry` (see `solids.py`).
+"""
 
 import math
 
@@ -21,10 +24,10 @@ def norm(v: Vec3) -> Vec3:
 
 
 def cross(a: Vec3, b: Vec3) -> Vec3:
-    """`a × b`."""
+    """Return `a x b`."""
     return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
 
 
 def plus(a: Vec3, b: Vec3, k: float) -> Vec3:
-    """`a + k b`."""
+    """Return `a + k b`."""
     return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]

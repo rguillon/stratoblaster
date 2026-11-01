@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/ice_sculpt.py`."""
 
 import pytest
@@ -20,7 +21,7 @@ def test_gfx_terrain_05_a_lake_flattens_the_ground_to_its_level_and_leaves_the_r
 
 def test_a_lake_rises_back_to_the_ground_over_its_edge() -> None:
     field = LakeField(LAKES, 7)
-    heights = [field.apply(x, z, 10) for x in range(0, 100) for z in range(0, 100)]
+    heights = [field.apply(x, z, 10) for x in range(100) for z in range(100)]
     assert any(-5 < h < 10 for h in heights)
 
 

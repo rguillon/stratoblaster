@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/settings_screen.py`."""
 
 from helpers.dom import FakeDocument, FakeEvent
@@ -11,7 +12,7 @@ def render(sets: list[tuple[int, float]], selected: int = 0, over: bool = False)
     sliders = [SliderView("Music", 3, 10), SliderView("Effects", 8, 10)]
     view = SettingsView("Sound", "Drag or tap", "Back", selected, sliders, over)
     handlers = ScreenHandlers(
-        lambda index: None,
+        lambda _index: None,
         lambda: None,
         on_set=lambda index, value: sets.append((index, value)),
     )

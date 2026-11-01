@@ -1,5 +1,9 @@
-"""Moving regions (D-230, BOSS-45; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
-shape-shifts-design.md, Part B): how a piece's motion moves points, mirrored and back."""
+# Copyright (c) 2026 Renaud Guillon
+"""Moving regions (D-230, BOSS-45).
+
+The spec is `docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md`, Part
+B: how a piece's motion moves points, mirrored and back.
+"""
 
 import pytest
 
@@ -66,7 +70,8 @@ def test_an_unknown_axis_is_refused() -> None:
 def test_a_mirrored_moving_region_is_two_pieces_moving_the_mirror_way() -> None:
     m = swing([20, 0, 0], "up", [0, 30])
     right, left = moving_region("wings", 1, [[20, 0], [60, 0], [60, 20]], m)
-    assert right.id == "wings-right" and left.id == "wings-left"
+    assert right.id == "wings-right"
+    assert left.id == "wings-left"
     assert right.outlines == [[[20, 0], [60, 0], [60, 20]]]
     assert left.outlines == [[[-60, 20], [-60, 0], [-20, 0]]]
     assert right.motion == m
@@ -78,16 +83,29 @@ def test_a_mirrored_moving_region_is_two_pieces_moving_the_mirror_way() -> None:
 
 def test_a_single_moving_region_keeps_its_name_and_may_leave_a_frame() -> None:
     [piece] = moving_region(
-        "bow", 2, [[-5, 0], [5, 0], [0, 9]], slide([[0, 0, 0], [0, 5, 0]]), "shell", None, False
+        "bow",
+        2,
+        [[-5, 0], [5, 0], [0, 9]],
+        slide([[0, 0, 0], [0, 5, 0]]),
+        "shell",
+        None,
+        mirror=False,
     )
-    assert piece.id == "bow" and piece.frame == "shell"
+    assert piece.id == "bow"
+    assert piece.frame == "shell"
     with pytest.raises(ValueError, match="Unknown armour frame"):
         moving_region("bow", 2, [[-5, 0], [5, 0], [0, 9]], slide([[0, 0, 0], [0, 5, 0]]), "grid")
 
 
 def test_a_point_on_the_drawn_piece_ends_up_at_its_end_spot_and_back() -> None:
     [piece] = moving_region(
-        "arm", 1, [[0, 0], [9, 0], [9, 9]], swing([0, 0, 0], "up", [10, 75]), None, None, False
+        "arm",
+        1,
+        [[0, 0], [9, 0], [9, 9]],
+        swing([0, 0, 0], "up", [10, 75]),
+        None,
+        None,
+        mirror=False,
     )
     end = end_spot(piece, [6, 2, 1])
     assert drawn_spot(piece, end) == _approx([6, 2, 1])

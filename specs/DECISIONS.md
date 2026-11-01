@@ -53,3 +53,35 @@
   `specs_old/PROGRESS.md` still describe the phase-by-phase workflow; adapting them is left to the
   owner (owner's choice: specs only).
 - **Status:** Accepted
+
+### D-235 — Ruff `ALL` without inline `# noqa`: Transcrypt's constraints in `pyproject.toml`
+- **Date:** 2026-11-01
+- **Requirements:** ENG-12, ENG-14, ENG-15, ENG-151, ENG-153, ENG-157, ENG-159, ENG-161.
+- **Context:** owner request: Ruff now selects `ALL` rules, `make check` must pass, and the code must
+  carry no `# noqa` (there were about 1,700, most of them asked for by ENG-14, ENG-153 and ENG-161).
+- **Decision:**
+  - The rules Transcrypt makes impossible to follow are ignored in `pyproject.toml`, each with its
+    reason (owner's choice): `E711` (ENG-161), `FBT001`-`FBT003`, `PLR0913` and `PLR0917` (ENG-151),
+    `SIM118` (ENG-159), `SIM110` and `PLR1730` (ENG-157), `PLW0108`, `SIM105`, `E722`; per file, the
+    camelCase names of Babylon, the DOM and the config records (`N802`, `N803`, `N815`, ENG-15) and
+    `ARG001` in the modules whose arguments are read by `__pragma__("js", ...)` code.
+  - The module-level skip blocks became comment-form pragmas after the runtime imports (owner's
+    choice), so no import follows a statement (`E402`):
+    `# isort: split`, `# __pragma__ ("skip")`, the typing imports and aliases, `# __pragma__
+    ("noskip")`. Transcrypt reads `# __pragma__ (...)` comments as pragmas (`pragmasFromComments` in
+    its compiler); `# isort: split` keeps the sorted runtime imports out of the block, and
+    `__pragma__` is a Ruff `task-tags` entry so the comments are not commented-out code (`ERA001`).
+    The first import of the block must be the first one in isort order, so the skip comment stays
+    above it.
+  - Generic functions use PEP 695 type parameters (`UP047`): Transcrypt (run under Python 3.12)
+    compiles them and drops the annotations.
+  - Every Python file starts with `# Copyright (c) 2026 Renaud Guillon` (`CPY001`, owner's choice).
+  - Docstring summaries are one imperative line (`D401`, `D205`); the summaries an earlier autofix
+    had cut mid-sentence were rewritten.
+  - deptry ignores `DEP001` for `org`, Transcrypt's compile-time stub package.
+- **Alternatives considered:** keeping inline `# noqa` with reasons (owner: no); refactoring away
+  positional flags and long argument lists (a large refactor against ENG-151); a global `E402`
+  ignore (owner: restructure the skip blocks instead).
+- **Consequences:** the ENG-14, ENG-15, ENG-151, ENG-153, ENG-157 and ENG-161 texts still mention
+  `# noqa` comments; updating them is left to the owner (requirement sections).
+- **Status:** Proposed

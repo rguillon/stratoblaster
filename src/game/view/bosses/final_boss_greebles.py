@@ -1,24 +1,25 @@
-"""BOSS-49 (phase 7 review: more detail): small surface details shared by the World 1 final
-bosses: plates, vents, rivets, hazard stripes, masts
-and lights. Logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""Surface details shared by the World 1 final bosses (BOSS-49, phase 7 review).
+
+Plates, vents, rivets, hazard stripes, masts and lights. Logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_shapes import decal
+from render.geometry.outline import hypot3
+from render.geometry.solids import Placement
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_shapes import decal  # noqa: E402
-from render.geometry.outline import hypot3  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 
@@ -41,7 +42,7 @@ SHADE = {
 
 
 def rect(at: list[Any], size: list[Any], yaw: float = 0) -> list[Any]:
-    """A rectangle `[w, d]` big around `[cx, cz]`, turned `yaw` radians (seen from above)."""
+    """Return a rectangle `[w, d]` big around `[cx, cz]`, turned `yaw` radians (seen from above)."""
     cx = at[0]
     cz = at[1]
     w = size[0]
@@ -68,8 +69,10 @@ def plate(
     thick: float = 0.5,
     place: Any = None,
 ) -> None:
-    """An armour plate a little proud of a flat surface at height `y`: the outline, `thick` thick,
-    its top edges chamfered."""
+    """Add an armour plate a little proud of a flat surface at height `y`.
+
+    The outline, `thick` thick, its top edges chamfered.
+    """
     builder.bevel_slab(
         outline,
         [y - 0.2, y - 0.2, y + thick],
@@ -92,8 +95,11 @@ def grille(
     counts: list[Any],
     yaw: float = 0,
 ) -> None:
-    """A vent grille at height `y`: a dark frame `[w, d]` around `[cx, cz]` and `count` slats
-    across it (along X), turned `yaw`. `counts` is `[count, y]`."""
+    """Add a vent grille at height `y`.
+
+    A dark frame `[w, d]` around `[cx, cz]` and `count` slats across it (along X), turned `yaw`.
+    `counts` is `[count, y]`.
+    """
     w = size[0]
     d = size[1]
     count = counts[0]
@@ -124,15 +130,19 @@ def studs(
     y: float,
     color: Rgb,
 ) -> None:
-    """A row of small square studs from `a` to `b` at height `y`: rivets, or lights on `neon`.
-    `ends` is `[a, b]` and `counts` is `[count, size]`."""
+    """Add a row of small square studs from `a` to `b` at height `y`: rivets, or lights on `neon`.
+
+    `ends` is `[a, b]` and `counts` is `[count, size]`.
+    """
     for p in along(ends[0], ends[1], counts[0]):
         decal(builder, rect(p, [counts[1], counts[1]], 0.785), y, color)
 
 
 def hazard(builder: Any, at: list[Any], size: list[Any], count: int, y: float) -> None:
-    """Hazard stripes in a band `[w, d]` around `at` (across X) at height `y`: a dark band and
-    `count` slanted pale stripes on it."""
+    """Add hazard stripes in a band `[w, d]` around `at` (across X) at height `y`.
+
+    A dark band and `count` slanted pale stripes on it.
+    """
     cx = at[0]
     cz = at[1]
     w = size[0]
@@ -157,7 +167,7 @@ def rod(
     radius: float,
     color: Rgb = SHADE["dark"],
 ) -> None:
-    """A thin rod from `start` to `end`: a mast stay, a cable, a whip antenna."""
+    """Add a thin rod from `start` to `end`: a mast stay, a cable, a whip antenna."""
     dx = end[0] - start[0]
     dy = end[1] - start[1]
     dz = end[2] - start[2]
@@ -168,7 +178,7 @@ def rod(
 
 
 def mast(parts: Any, at: Vec3, height: float, neon: Rgb) -> None:
-    """An antenna mast `height` tall standing at `at`, a neon light on its tip."""
+    """Add an antenna mast `height` tall standing at `at`, a neon light on its tip."""
     x = at[0]
     y = at[1]
     z = at[2]
@@ -178,7 +188,10 @@ def mast(parts: Any, at: Vec3, height: float, neon: Rgb) -> None:
 
 
 def dish(parts: Any, at: Vec3, radius: float, tilt_yaw: list[Any]) -> None:
-    """A radar dish `radius` wide on a short post at `at`, tilted `tilt` radians towards `yaw`."""
+    """Add a radar dish `radius` wide on a short post at `at`.
+
+    It is tilted `tilt` radians towards `yaw`.
+    """
     x = at[0]
     y = at[1]
     z = at[2]
@@ -207,8 +220,10 @@ def greebles(
     boxes: list[Any],
     color: Rgb = SHADE["panel"],
 ) -> None:
-    """Small greeble boxes `[dx, dz, w, h, d]` around `at` (its height is their base): pipes,
-    boxes."""
+    """Small greeble boxes `[dx, dz, w, h, d]` around `at` (its height is their base): pipes.
+
+    Boxes.
+    """
     x = at[0]
     y = at[1]
     z = at[2]

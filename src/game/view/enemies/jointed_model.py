@@ -1,32 +1,37 @@
-"""How an enemy with moving parts is drawn (ENM-27)
+# Copyright (c) 2026 Renaud Guillon
+"""How an enemy with moving parts is drawn (ENM-27).
 
 Everything is in model space as at rest (logical pixels, nose +Z, Y up; a point `(x, y)` of the
 design is at `boss_point`).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.entities.jointed_enemy import JointedEnemy
+from game.config.record import field
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.living_motion import new_breath
+from render.babylon import new_transform_node
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.entities.jointed_enemy import JointedEnemy  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.record import field  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.living_motion import new_breath  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.babylon import new_transform_node  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 ORIGIN = [0, 0, 0]  # type: list[float]
 
 
 def sub(a: Vec3, b: Any) -> list[float]:
-    """`a - b`, component by component."""
+    """Return `a - b`, component by component."""
     return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
+
+
+class JointedModelError(Exception):
+    """An enemy's joint or part does not match its model."""
 
 
 class Frame:
@@ -38,7 +43,10 @@ class Frame:
 
 
 def joint_frames(name: str, design: Any, root: Any) -> dict[str, Frame]:
-    """A node per joint, hung on the joint it hangs on, its pivot where the design puts it."""
+    """Return a node per joint, hung on the joint it hangs on.
+
+    Its pivot is where the design puts it.
+    """
     specs = field(design, "joints", {})
     frames: dict[str, Frame] = {}
 
@@ -46,9 +54,9 @@ def joint_frames(name: str, design: Any, root: Any) -> dict[str, Frame]:
         if joint_id in frames:
             return frames[joint_id]
         spec = field(specs, joint_id, None)
-        if spec == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-            raise Exception('Enemy "' + name + '" has no joint "' + joint_id + '"')
-        parent = Frame(root, ORIGIN) if spec["parent"] == None else make(spec["parent"])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if spec == None:
+            raise JointedModelError('Enemy "' + name + '" has no joint "' + joint_id + '"')
+        parent = Frame(root, ORIGIN) if spec["parent"] == None else make(spec["parent"])
         origin = boss_point(spec["x"], spec["y"])
         node = new_transform_node(name + "-" + joint_id + "-joint", root.getScene())
         node.parent = parent.node
@@ -63,13 +71,14 @@ def joint_frames(name: str, design: Any, root: Any) -> dict[str, Frame]:
     return frames
 
 
-def build_jointed_model(  # noqa: C901 (the model's parts, kept whole)
-    name: str, scene: Any, color: Rgb, design: Any, drawing: Any
-) -> Any:
-    """Builds the model of an enemy with moving parts: its hull on the root, its limbs and parts on
-    their joints' nodes (or on a ring turning with the enemy's spin), each drawn by
-    `build_enemy_model` with the enemy's neon `color`. The joints turn as the enemy's do, so a part
-    is drawn where it is hit (ENM-28), and a destroyed part disappears (ENM-29)."""
+def build_jointed_model(name: str, scene: Any, color: Rgb, design: Any, drawing: Any) -> Any:
+    """Build the model of an enemy with moving parts.
+
+    Its hull is on the root, its limbs and parts on their joints' nodes (or on a ring turning with
+    the enemy's spin), each drawn by `build_enemy_model` with the enemy's neon `color`. The joints
+    turn as the enemy's do, so a part is drawn where it is hit (ENM-28), and a destroyed part
+    disappears (ENM-29).
+    """
     # ENM-44: its hull, limbs and parts breathe as one creature.
     breath = new_breath()
     body = build_enemy_model(name, scene, color, drawing["body"], breath)
@@ -88,7 +97,7 @@ def build_jointed_model(  # noqa: C901 (the model's parts, kept whole)
         return model
 
     def frame_of(joint: Any) -> Frame:
-        if joint != None and joint in frames:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if joint != None and joint in frames:
             return frames[joint]
         return Frame(root, ORIGIN)
 
@@ -100,28 +109,46 @@ def build_jointed_model(  # noqa: C901 (the model's parts, kept whole)
     parts: list[Any] = []
     for spec in design["parts"]:
         draw = drawing["parts"][spec["id"]]
-        if draw == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-            raise Exception('Enemy "' + name + '" does not draw its part "' + spec["id"] + '"')
-        if "orbits" in spec and spec["orbits"]:
-            frame = Frame(ring, ORIGIN)
-        else:
-            frame = frame_of(field(spec, "joint", None))
+        if draw == None:
+            raise JointedModelError(
+                'Enemy "' + name + '" does not draw its part "' + spec["id"] + '"'
+            )
+        frame = (
+            Frame(ring, ORIGIN)
+            if field(spec, "orbits", False)
+            else frame_of(field(spec, "joint", None))
+        )
         parts.append(hang(spec["id"], draw, frame))
 
-    def sync(enemy: Any, dt: float) -> None:
-        body.sync(enemy, dt)
-        for piece in pieces:
+    syncer = _JointedSync(body, pieces, frames, ring, parts)
+    return _Built(root, lambda enemy, dt: syncer.sync(enemy, dt))
+
+
+class _JointedSync:
+    """What keeps a jointed model in step with its enemy: its pieces, joints, ring and parts."""
+
+    def __init__(
+        self, body: Any, pieces: list[Any], frames: dict[Any, Frame], ring: Any, parts: list[Any]
+    ) -> None:
+        self._body = body
+        self._pieces = pieces
+        self._frames = frames
+        self._ring = ring
+        self._parts = parts
+
+    def sync(self, enemy: Any, dt: float) -> None:
+        """Turn the joints and the ring as the enemy's do, and hide its destroyed parts."""
+        self._body.sync(enemy, dt)
+        for piece in self._pieces:
             piece.sync(enemy, dt)
         if not isinstance(enemy, JointedEnemy):
             return
-        for joint_id, frame in frames.items():
+        for joint_id, frame in self._frames.items():
             frame.node.rotation.y = enemy.joints.angle(joint_id)
-        ring.rotation.y = enemy.spin
-        for i, model in enumerate(parts):
+        self._ring.rotation.y = enemy.spin
+        for i, model in enumerate(self._parts):
             part = enemy.parts[i] if i < len(enemy.parts) else None
-            model.root.setEnabled(not (part != None and part.destroyed is True))  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-
-    return _Built(root, sync)
+            model.root.setEnabled(not (part != None and part.destroyed is True))
 
 
 class _Built:

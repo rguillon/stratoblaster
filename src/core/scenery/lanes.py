@@ -1,16 +1,21 @@
-"""Phase 4 review: roads of one lane each way, and 2×2 roads (two lanes each way): the first main
-roads, and some lines of the street grids (avenues); reviewer, 2026-10-28: 3×3 and 4×4 boulevards
-in the street grids (GFX-ROAD-09)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Phase 4 review: roads of one lane each way, and 2x2 roads (two lanes each way).
+
+The first main roads, and some lines of the street grids (avenues); reviewer, 2026-10-28: 3x3 and
+4x4 boulevards in the street grids (GFX-ROAD-09).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.noise import hash_2d
+from core.scenery.road_types import RoadPoint
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
-from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules
 
 
 class PointXZ(Protocol):
@@ -29,10 +34,7 @@ class PointXZ(Protocol):
 
 Lanes = int  # 1 to 4 lanes each way
 """Lanes each way of a road."""
-__pragma__("noskip")
-
-from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def lanes_of(rules: RoadRules, width: float) -> Lanes:
@@ -53,14 +55,16 @@ def is_boulevard(rules: RoadRules, width: float) -> bool:
 
 
 def main_road_width(rules: RoadRules, index: int) -> float:
-    """Width of main road number `index`: the first `dual.main_roads` are 2×2 (GFX-ROAD-01)."""
+    """Width of main road number `index`: the first `dual.main_roads` are 2x2 (GFX-ROAD-01)."""
     return rules.dual.width if index < rules.dual.main_roads else rules.main_width
 
 
 def street_width(rules: RoadRules, coord: float) -> float:
-    """Width of the street along a line of a street grid (`coord`: X of a column, Z of a row),
-    decided by a hash of the line (GFX-ROAD-17): a share of the lines are boulevards, of each kind
-    in turn, then a share `dual.avenues` 2×2 avenues, the others one lane each way."""
+    """Width of the street along a line of a street grid (`coord`: X of a column, Z of a row).
+
+    Decided by a hash of the line (GFX-ROAD-17): a share of the lines are boulevards, of each kind
+    in turn, then a share `dual.avenues` 2x2 avenues, the others one lane each way.
+    """
     h = hash_2d(math.floor(coord + 0.5), 17, 101)
     total = 0.0
     if rules.boulevards is not None:
@@ -72,8 +76,10 @@ def street_width(rules: RoadRules, coord: float) -> float:
 
 
 def run_width(rules: RoadRules, run: Sequence[PointXZ]) -> float:
-    """Width of a straight run of a street grid: a row (along X) or a column, as wide as its
-    line."""
+    """Width of a straight run of a street grid.
+
+    A row (along X) or a column, as wide as its line.
+    """
     if len(run) == 0:
         return rules.main_width
     a = run[0]

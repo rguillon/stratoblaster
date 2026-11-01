@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/menu_flow.py`."""
 # (specs/ui/screen-flow.md and the screens around it).
 
@@ -18,9 +19,9 @@ def catalog(second_unlocked: bool = False) -> LevelCatalog:
     return LevelCatalog(
         2,
         [
-            LevelEntry("1-1", "1-1", 1, 1, True),
+            LevelEntry("1-1", "1-1", 1, 1, unlocked=True),
             LevelEntry("1-2", "1-2", 1, 2, second_unlocked),
-            LevelEntry("1-3", "1-3", 1, 3, False),
+            LevelEntry("1-3", "1-3", 1, 3, unlocked=False),
         ],
     )
 
@@ -71,7 +72,7 @@ def at_game(**options: object) -> MenuFlow:
 
 
 def result(outcome: str = "complete", checkpoint: LevelCheckpoint | None = None) -> LevelResult:
-    return LevelResult("1-1", 10, 10, outcome, 1234.0, False, checkpoint)
+    return LevelResult("1-1", 10, 10, outcome, 1234.0, new_high_score=False, checkpoint=checkpoint)
 
 
 def checkpoint() -> LevelCheckpoint:
@@ -467,9 +468,9 @@ def test_ui_flow_04_a_revision_goes_up_on_every_change() -> None:
 
 
 def test_ui_flow_04_a_menu_needs_at_least_one_ship_and_one_level() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="at least one ship"):
         MenuFlow(MenuFlowOptions([], catalog(), None, 0.25, None, None, None))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="at least one level"):
         MenuFlow(MenuFlowOptions(list(SHIPS), LevelCatalog(1, []), None, 0.25, None, None, None))
 
 

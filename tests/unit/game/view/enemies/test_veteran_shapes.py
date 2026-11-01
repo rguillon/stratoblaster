@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/veteran_shapes.py`."""
 
 import pytest
@@ -14,7 +15,7 @@ from game.view.enemies.veteran_shapes import (
 )
 
 
-def test_station_at_interpolates_between_the_two_stations_around_z():
+def test_station_at_interpolates_between_the_two_stations_around_z() -> None:
     stations = [[0, 0, 0, 0], [2, 1, 2, 4], [4, 1, 1, 2]]
     # Between z = 0 and z = 2 the mix is halfway.
     assert station_at(stations, 1) == pytest.approx([1, 0.5, 1, 2])
@@ -22,22 +23,22 @@ def test_station_at_interpolates_between_the_two_stations_around_z():
     assert station_at(stations, 2) == pytest.approx([2, 1, 2, 4])
 
 
-def test_station_at_beyond_the_last_station_clamps_to_the_nose_station():
+def test_station_at_beyond_the_last_station_clamps_to_the_nose_station() -> None:
     stations = [[0, 1, 1, 1], [2, 3, 3, 3]]
     assert station_at(stations, 3) == pytest.approx([3, 3, 3, 3])
 
 
-def test_station_at_with_equal_stations_does_not_divide_by_zero():
+def test_station_at_with_equal_stations_does_not_divide_by_zero() -> None:
     stations = [[1, 1, 1, 1], [1, 2, 2, 2]]
     assert station_at(stations, 1) == pytest.approx([1, 1, 1, 1])
 
 
-def test_station_at_without_stations_is_an_error():
+def test_station_at_without_stations_is_an_error() -> None:
     with pytest.raises(Exception, match="A loft needs stations"):
         station_at([], 0)
 
 
-def test_nose_gun_grafts_a_barrel_with_a_muzzle_past_its_length():
+def test_nose_gun_grafts_a_barrel_with_a_muzzle_past_its_length() -> None:
     parts, log = recorder()
     nose_gun(parts, [1, 2, 3], 4, radius=0.5)
     assert paths(log) == ["hull.cylinder", "charge.cylinder", "muzzle"]
@@ -50,7 +51,7 @@ def test_nose_gun_grafts_a_barrel_with_a_muzzle_past_its_length():
     assert log[2][1] == ([1, 2, 7.8], "gun")
 
 
-def test_back_band_lofts_an_open_strip_over_the_stations_between_span_ends():
+def test_back_band_lofts_an_open_strip_over_the_stations_between_span_ends() -> None:
     stations = [[0, 1, 1, 0], [4, 1, 1, 0]]
     builder, log = recorder()
     back_band(builder, stations, [1, 3], [1, 0, 0], lift=0.5)
@@ -65,7 +66,7 @@ def test_back_band_lofts_an_open_strip_over_the_stations_between_span_ends():
     assert [ring[1] for ring in rings] == pytest.approx([1.5, 1.5])
 
 
-def test_edge_strip_sits_just_outside_the_edge_away_from_the_centre():
+def test_edge_strip_sits_just_outside_the_edge_away_from_the_centre() -> None:
     strip = edge_strip([1, 0], [1, 2], 0.5)
     assert len(strip) == 4
     # The inner edge is the given edge, the outer one shifted 0.5 away from the origin (+x).
@@ -75,14 +76,15 @@ def test_edge_strip_sits_just_outside_the_edge_away_from_the_centre():
     assert strip[3][0] == pytest.approx(1.5)
 
 
-def test_edge_strip_flips_its_normal_to_point_outwards_for_any_edge_direction():
+def test_edge_strip_flips_its_normal_to_point_outwards_for_any_edge_direction() -> None:
     forward = edge_strip([1, 0], [1, 2], 0.5)
     backward = edge_strip([1, 2], [1, 0], 0.5)
     # Both strips lie on the outer side (x > 1).
-    assert forward[2][0] > 1 and backward[2][0] > 1
+    assert forward[2][0] > 1
+    assert backward[2][0] > 1
 
 
-def test_nose_gun_default_radius_is_half_a_unit_thicker_than_zero():
+def test_nose_gun_default_radius_is_half_a_unit_thicker_than_zero() -> None:
     parts, log = recorder()
     nose_gun(parts, [0, 0, 0], 1)
     assert log[0][1][0] == pytest.approx(0.55)

@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/reactor_flame.py` (GFX-SHIP-06, GFX-ART-11)."""
 
 import math
+from typing import Any
 
 import pytest
 
@@ -16,10 +18,10 @@ from game.view.reactor_flame import (
 
 
 @pytest.fixture(autouse=True)
-def python_bit_helpers(monkeypatch):
+def python_bit_helpers(monkeypatch: Any) -> None:
     """`Math.imul` and `charCodeAt` are JavaScript: their Python equivalents here."""
 
-    def imul(a, b):
+    def imul(a: Any, b: Any) -> Any:
         value = (a * b) & 0xFFFFFFFF
         return value - 2**32 if value >= 2**31 else value
 
@@ -27,7 +29,7 @@ def python_bit_helpers(monkeypatch):
     monkeypatch.setattr(reactor_flame, "_char_code", lambda text, index: ord(text[index]))
 
 
-def test_the_flicker_is_the_mean_of_its_sines_in_the_unit_range():
+def test_the_flicker_is_the_mean_of_its_sines_in_the_unit_range() -> None:
     value = flicker(0.37, 1.2, [1.0, 2.5, 4.0])
     assert -1 <= value <= 1
     expected = (
@@ -37,50 +39,50 @@ def test_the_flicker_is_the_mean_of_its_sines_in_the_unit_range():
     assert value == pytest.approx(expected)
 
 
-def test_a_flicker_without_frequencies_is_still():
+def test_a_flicker_without_frequencies_is_still() -> None:
     assert flicker(5.0, 1.0, []) == 0
 
 
-def test_a_flicker_with_one_frequency_is_a_sine():
+def test_a_flicker_with_one_frequency_is_a_sine() -> None:
     assert flicker(0.25, 0.0, [1.0]) == pytest.approx(1.0)
 
 
-def test_reactors_of_different_names_do_not_flicker_in_step():
+def test_reactors_of_different_names_do_not_flicker_in_step() -> None:
     a = reactor_phase("player-engine-left")
     b = reactor_phase("player-engine-right")
     assert 0 <= a < 2 * math.pi
     assert a != b
 
 
-def test_a_reactors_phase_is_stable_for_its_name():
+def test_a_reactors_phase_is_stable_for_its_name() -> None:
     assert reactor_phase("flame") == reactor_phase("flame")
 
 
-def test_a_puff_travels_down_the_exhaust_and_starts_again():
+def test_a_puff_travels_down_the_exhaust_and_starts_again() -> None:
     assert puff_progress(0.0, 0, 4, 1.0) == 0
     assert puff_progress(0.5, 0, 4, 1.0) == pytest.approx(0.5)
     assert puff_progress(0.0, 1, 4, 1.0) == pytest.approx(0.25)
     assert 0 <= puff_progress(123.456, 3, 4, 2.0) < 1
 
 
-def test_a_puff_fades_in_near_the_nozzle_and_out_at_the_tip():
+def test_a_puff_fades_in_near_the_nozzle_and_out_at_the_tip() -> None:
     assert puff_opacity(0) == 0
     assert puff_opacity(1) == 0
     assert puff_opacity(0.5) > 0
     assert puff_opacity(0.5) > puff_opacity(0.95)
 
 
-def test_a_puff_is_at_most_fully_opaque():
+def test_a_puff_is_at_most_fully_opaque() -> None:
     assert max(puff_opacity(p / 100) for p in range(101)) <= 1
 
 
-def test_the_flicker_maps_to_a_factor_around_one():
+def test_the_flicker_maps_to_a_factor_around_one() -> None:
     assert _around(0, 0.2) == 1
     assert _around(1, 0.2) == pytest.approx(1.2)
     assert _around(-1, 0.2) == pytest.approx(0.8)
 
 
-def test_the_flicker_maps_to_a_visibility_that_only_dims():
+def test_the_flicker_maps_to_a_visibility_that_only_dims() -> None:
     assert _dimmed(1, 0.5) == pytest.approx(1)
     assert _dimmed(-1, 0.5) == pytest.approx(0.5)
     assert _dimmed(0, 0.5) == pytest.approx(0.75)

@@ -1,29 +1,41 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/street_dead_ends.py`."""
+
+from typing import Any
 
 from core.scenery.street_dead_ends import remove_dead_ends
 from core.scenery.street_links import Link, Nodes, links_by_node
 
 
-def _chain(xs: list[float], built: list[bool], ground: list[bool] | None = None):
+def _chain(xs: list[float], built: list[bool], ground: list[bool] | None = None) -> Any:
     """Nodes along X at `xs`, linked in turn by across links, built as `built` says."""
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     ns = [nodes.use(nodes.at(x, 0.0)) for x in xs]
     grounds = ground if ground is not None else [True] * (len(xs) - 1)
     links = [
-        Link(ns[i], ns[i + 1], True, False, False, grounds[i], built[i], False)
+        Link(
+            ns[i],
+            ns[i + 1],
+            across=True,
+            required=False,
+            boulevard=False,
+            ground=grounds[i],
+            built=built[i],
+            cut=False,
+        )
         for i in range(len(xs) - 1)
     ]
     return nodes, links
 
 
-def _run(xs, built, out, ground=None, keep_cut=None):
+def _run(xs: Any, built: Any, out: Any, ground: Any = None, keep_cut: Any = None) -> Any:
     nodes, links = _chain(xs, built, ground)
     at = links_by_node(links, len(nodes.used))
-    remove_dead_ends(at, nodes.used, out, False, keep_cut)
+    remove_dead_ends(at, nodes.used, out, tees=False, keep_cut=keep_cut)
     return links
 
 
-def _on_screen_dead_ends(nodes, links, out) -> list[float]:
+def _on_screen_dead_ends(nodes: Any, links: Any, out: Any) -> list[float]:
     at = links_by_node(links, len(nodes.used))
     return [
         n.x for n in nodes.used if not out(n) and sum(1 for link in at[n.id] if link.built) == 1
@@ -59,6 +71,9 @@ def test_gfx_road_16_a_dead_end_is_not_extended_over_unbuildable_ground() -> Non
 def test_gfx_road_16_the_default_removal_leaves_no_dead_end_on_screen() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     nodes, links = _chain(xs, [True, True, False], [True, True, False])
-    out = lambda n: n.x in (0.0, 30.0)  # noqa: E731
-    remove_dead_ends(links_by_node(links, len(nodes.used)), nodes.used, out, False)
+
+    def out(n: Any) -> bool:
+        return n.x in (0.0, 30.0)
+
+    remove_dead_ends(links_by_node(links, len(nodes.used)), nodes.used, out, tees=False)
     assert _on_screen_dead_ends(nodes, links, out) == []

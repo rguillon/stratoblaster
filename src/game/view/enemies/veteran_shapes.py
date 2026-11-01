@@ -1,31 +1,34 @@
-"""Shapes shared by the veteran models (the five veteran kinds, specs/enemies/*.md) Logical
-pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""Shapes shared by the veteran models (the five veteran kinds, specs/enemies/*.md).
+
+Logical pixels, nose +Z, Y up.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from render.geometry.solids import LoftOptions, Placement
 
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import LoftOptions  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
 
 
 def nose_gun(parts: Any, at: Vec3, length: float, radius: float = 0.55) -> None:
-    """A gun barrel from `at` towards the nose, `length` long and `radius` thick, a charge light at
-    its mouth (ENM-WASP-04, ENM-PHANTOM-04), its muzzle marked just past it (phase 7 review: shots
-    leave from the barrels the player sees)."""
+    """Add a gun barrel from `at` towards the nose, `length` long and `radius` thick.
+
+    It has a charge light at its mouth (ENM-WASP-04, ENM-PHANTOM-04), and its muzzle is marked just
+    past it (phase 7 review: shots leave from the barrels the player sees).
+    """
     x = at[0]
     y = at[1]
     z = at[2]
@@ -36,8 +39,12 @@ def nose_gun(parts: Any, at: Vec3, length: float, radius: float = 0.55) -> None:
     parts.muzzle([x, y, z + length + 0.8], "gun")
 
 
+class LoftError(Exception):
+    """A loft was asked for with too few stations."""
+
+
 def station_at(stations: Any, z: float) -> list[float]:
-    """The station of a loft (tail to nose) at `z`, between its two nearest ones."""
+    """Return the station of a loft (tail to nose) at `z`, between its two nearest ones."""
     after = -1
     for i, s in enumerate(stations):
         if after < 0 and s[0] >= z:
@@ -48,8 +55,9 @@ def station_at(stations: Any, z: float) -> list[float]:
         return [z, last[1], last[2], last[3]]
     b = stations[max(0, after)] if len(stations) > 0 else None
     a = stations[max(0, after - 1)] if len(stations) > 0 else b
-    if a == None or b == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-        raise Exception("A loft needs stations")
+    if a == None or b == None:
+        msg = "A loft needs stations"
+        raise LoftError(msg)
     t = 0 if b[0] == a[0] else (z - a[0]) / (b[0] - a[0])
 
     def mix(i: int) -> float:
@@ -64,8 +72,10 @@ BAND_SECTION = [[1, 0.45], [0.5, 1], [-0.5, 1], [-1, 0.45]]  # type: list[list[f
 
 
 def back_band(builder: Any, stations: Any, span: Any, color: Rgb, lift: float = 0.12) -> None:
-    """A neon band painted over the back of a loft (`stations`, a POD_SECTION-like body) from `z0`
-    to `z1`, standing `lift` off it: a stripe across a wasp's abdomen."""
+    """Add a neon band painted over the back of a loft from `z0` to `z1`, standing `lift` off it.
+
+    `stations` is a POD_SECTION-like body. It makes a stripe across a wasp's abdomen.
+    """
 
     def raise_station(st: list[float]) -> list[float]:
         return [st[0], st[1] + lift, st[2], st[3] + lift]
@@ -82,8 +92,11 @@ def back_band(builder: Any, stations: Any, span: Any, color: Rgb, lift: float = 
 
 
 def edge_strip(a: Any, b: Any, width: float) -> list[list[float]]:
-    """A strip `width` wide just outside the edge from `a` to `b` of an outline around the origin:
-    a neon edge light, e.g. along a flying wing's leading edge."""
+    """Return a strip `width` wide just outside an outline's edge from `a` to `b`.
+
+    The outline is around the origin. The strip is a neon edge light, e.g. along a flying wing's
+    leading edge.
+    """
     dx = b[0] - a[0]
     dz = b[1] - a[1]
     d = math.sqrt(dx * dx + dz * dz)

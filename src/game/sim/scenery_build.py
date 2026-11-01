@@ -1,11 +1,12 @@
-"""Builds the core scenery of a level (`specs/graphics/terrain.md`, `roads.md`, `props.md`) from its
-config record: the terrain sections, roads, props and sea (its one water level, GFX-WATER-01) that
-`core/scenery/scenery_level.py` and the road network read. The config keeps camelCase keys; `core/`
+# Copyright (c) 2026 Renaud Guillon
+"""Builds the core scenery of a level from its config record.
+
+The terrain sections, roads, props and sea (its one water level, GFX-WATER-01) that
+`core/scenery/scenery_level.py` and the road network read are built from
+`specs/graphics/terrain.md`, `roads.md` and `props.md`. The config keeps camelCase keys; `core/`
 takes snake_case attributes, and an omitted optional field is None. Mapping rules are in
 `config_build.py`.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.scenery.scenery_level import (
     BlockFill,
@@ -44,12 +45,13 @@ from core.scenery.scenery_level import (
 )
 from game.sim.config_build import mapped, maybe, opt
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _meander(meander: ConfigRecord) -> Meander:
@@ -317,7 +319,7 @@ def _roads(roads: ConfigRecord) -> RoadRules:
 
 
 def scenery_level(config: ConfigRecord) -> SceneryLevel:
-    """The scenery of a level, as `core/` reads it."""
+    """Return the scenery of a level, as `core/` reads it."""
     return SceneryLevel(
         config.id,
         config["name"],

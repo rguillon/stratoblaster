@@ -1,24 +1,26 @@
-"""The engine's sound cues (AUD-ENGINE-09): what happened in a level step that a game may give
-a sound (the events of AUD-SFX-01). `fire:<weaponId>` (a volley of a projectile weapon),
-`beam-start:<weaponId>` (a beam starts; `beam:<weaponId>` names its looping hum), `weapon-switch`,
-`weapon-up`, `enemy-bullet`, `enemy-missile`, `laser-warning`, `laser-fire`, `hit`, `hit-blocked`,
-`player-hit`, `blast-small`, `blast-large`, `part-destroyed`, `boss-destroyed`, `life-lost`,
-`extra-life`, `bomb`, `bonus:<kind>`; and on the menus `menu-move`, `menu-confirm`, `menu-back`,
-`pause`, `resume`, `slider`.
+# Copyright (c) 2026 Renaud Guillon
+"""The engine's sound cues (AUD-ENGINE-09).
+
+What happened in a level step that a game may give a sound (the events of AUD-SFX-01).
+`fire:<weaponId>` (a volley of a projectile weapon), `beam-start:<weaponId>` (a beam starts;
+`beam:<weaponId>` names its looping hum), `weapon-switch`, `weapon-up`, `enemy-bullet`,
+`enemy-missile`, `laser-warning`, `laser-fire`, `hit`, `hit-blocked`, `player-hit`, `blast-small`,
+`blast-large`, `part-destroyed`, `boss-destroyed`, `life-lost`, `extra-life`, `bomb`,
+`bonus:<kind>`; and on the menus `menu-move`, `menu-confirm`, `menu-back`, `pause`, `resume`,
+`slider`.
 
 Audio only reads the core's state, it never changes it (ENG-11). The sets and maps of
 bullets and lasers are lists compared by identity (`is`), as Transcrypt has no object-keyed
 collections (ENG-159).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.systems.level_run import LevelRun
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class SoundCue:
@@ -48,9 +50,10 @@ def _contains(items: list[Any], item: Any) -> bool:
 
 
 class LevelCues:
-    """Turns the state of a `LevelRun` after each step into sound cues (AUD-ENGINE-09), by comparing
-    it with the step before: new shots, impacts, blasts, hits, bonuses picked up. One cue of a
-    kind per step: a volley of shots is one sound.
+    """Turns the state of a `LevelRun` after each step into sound cues (AUD-ENGINE-09).
+
+    It does so by comparing it with the step before: new shots, impacts, blasts, hits, bonuses
+    picked up. One cue of a kind per step: a volley of shots is one sound.
     """
 
     def __init__(self, large_blast_radius: float) -> None:
@@ -68,7 +71,7 @@ class LevelCues:
         self.beam: str | None = None
 
     def observe(self, run: LevelRun) -> list[SoundCue]:
-        """The cues of the step just run. The first call only takes the starting state."""
+        """Return the cues of the step just run. The first call only takes the starting state."""
         cues: list[SoundCue] = []
         self._player_shots(run, cues)
         self._enemy_shots(run, cues)
@@ -82,7 +85,7 @@ class LevelCues:
         return cues
 
     def _player_shots(self, run: LevelRun, cues: list[SoundCue]) -> None:
-        """A volley's first shot sounds it (its streams fire one after the other, AUD-SFX-03)."""
+        """Sound a volley on its first shot (its streams fire one after the other, AUD-SFX-03)."""
         shots = run.shots
         if shots.volleys != self._volleys:
             _add(cues, "fire:" + shots.weapon.id, run.ship.x)
@@ -108,7 +111,7 @@ class LevelCues:
             self._missile_id = max(self._missile_id, missile.id)
 
     def _laser_cues(self, run: LevelRun, cues: list[SoundCue]) -> None:
-        """A laser's warning line, then its beam."""
+        """Sound a laser's warning line, then its beam."""
         keys: list[Any] = []
         phases: list[str] = []
         for laser in run.enemies.shots.lasers:
@@ -171,7 +174,7 @@ class LevelCues:
 
 
 def _add(cues: list[SoundCue], cue: str, x: float | None) -> None:
-    """Adds a cue unless one of the same kind is already in this step (one cue per kind)."""
+    """Add a cue unless one of the same kind is already in this step (one cue per kind)."""
     for existing in cues:
         if existing.cue == cue:
             return

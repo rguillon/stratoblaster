@@ -1,7 +1,9 @@
-"""Centre and lane lines of the roads (phase 4 review, GFX-ROAD-07): a yellow line along the middle
-of the streets (stopping where they cross) and of the main roads (dashed); on wider roads (2x2 to
-4x4), a double yellow line and white dashed lines between the lanes (the boulevards', GFX-ROAD-17).
-Painted just above the road surface.
+# Copyright (c) 2026 Renaud Guillon
+"""Centre and lane lines of the roads (phase 4 review, GFX-ROAD-07).
+
+A yellow line along the middle of the streets (stopping where they cross) and of the main roads
+(dashed); on wider roads (2x2 to 4x4), a double yellow line and white dashed lines between the lanes
+(the boulevards', GFX-ROAD-17). Painted just above the road surface.
 """
 
 import math
@@ -10,18 +12,20 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.scenery.road_traffic import cached_street_lines, in_crossing, road_z_span
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import Road, RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_traffic import StreetLine
+from core.scenery.road_types import Road, RoadPoint
+from render.geometry.gradient_shapes import ColoredGeometry
+from render.scenery.terrain_geometry import HeightSource
 
 Rgb = tuple[float, float, float]
 Point = tuple[float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Lines are drawn in pieces this long, so they follow the ground and stop cleanly.
 PIECE = 2
@@ -85,7 +89,7 @@ class Stripe:
 
 
 def _stripes(road: Road, look: CentreLineLook) -> list[Stripe]:
-    """The lines painted on `road`."""
+    """Return the lines painted on `road`."""
     if road.lanes == 1:
         return [Stripe(0, look.color, road.kind == "main")]
     lane = road.width / (2 * road.lanes)
@@ -156,8 +160,10 @@ def _straight(heights: list[float], frm: int, to: int) -> bool:
 
 
 def _paint_run(paint: Painter, stripe: Stripe, at: list[Point], d: Point) -> None:
-    """Paints `stripe` over the pieces between the centre-line points `at`, one quad for as many
-    pieces in a row as the ground under them stays straight."""
+    """Paints `stripe` over the pieces between the centre-line points `at`.
+
+    One quad for as many pieces in a row as the ground under them stays straight.
+    """
     heights = [_height_under(paint, stripe, p, d) for p in at]
     frm = 0
     while frm < len(at) - 1:
@@ -223,8 +229,11 @@ def paint_centre_lines(
     z_min: float,
     z_max: float,
 ) -> None:
-    """Appends to `paint.geo` the lines of the streets and main roads whose segments start in
-    [z_min, z_max), so neighbouring terrain chunks paint each segment once."""
+    """Append to `paint.geo` the lines of the streets and main roads starting in [z_min, z_max).
+
+    Segments starting in that range are painted, so neighbouring terrain chunks paint each segment
+    once.
+    """
     lines = cached_street_lines(roads)
     for road in roads:
         if road.kind == "cross":

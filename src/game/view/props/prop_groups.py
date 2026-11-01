@@ -1,44 +1,52 @@
-"""How the `props/` page groups the prop models (reviewer, 2026-10-28; phase 15: the road kit
-and the tiles)"""
+# Copyright (c) 2026 Renaud Guillon
+"""How the `props/` page groups the prop models.
 
-from org.transcrypt.stubs.browser import __pragma__
+Reviewer, 2026-10-28; phase 15: the road kit and the tiles.
+"""
 
+from game.config.cars import CAR_IDS
+from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS
+from game.view.props.prop_models import PROP_MODELS
+from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID
+from render.game_view import PropGroup
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
-from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.prop_models import PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.game_view import PropGroup  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def tile_notes(models: list[Any]) -> dict[str, str]:
-    """The tiles a model of the grid stands on (its footprint, GFX-BLDG-03), after its name."""
+    """Return the tiles a model of the grid stands on, after its name.
+
+    The tiles are its footprint (GFX-BLDG-03).
+    """
     result: dict[str, str] = {}
     for m in models:
-        result[m.id] = str(m.tiles[0]) + "×" + str(m.tiles[1]) + " tiles"
+        result[m.id] = str(m.tiles[0]) + "\u00d7" + str(m.tiles[1]) + " tiles"
     return result
 
 
 def make_road_kit_group() -> PropGroup:
-    """The road kit and its sample, for the `props/` page."""
+    """Return the road kit and its sample, for the `props/` page."""
     ids = [kit.id for kit in ROAD_KIT]
     ids.append(ROAD_SAMPLE_ID)
     notes = {}
-    for key in ROAD_KIT_NOTES.keys():  # noqa: SIM118 (Transcrypt: `for k in dict` is broken)
+    for key in ROAD_KIT_NOTES.keys():
         notes[key] = ROAD_KIT_NOTES[key]
     notes[ROAD_SAMPLE_ID] = "every piece joined to straights"
     return PropGroup("Road kit", ids, notes)
 
 
 def make_tile_page() -> list[PropGroup]:
-    """The road kit and its sample, then the models of the grid, by building group (GFX-BLDG-08)."""
+    """Return the road kit and its sample, then the models of the grid.
+
+    The models come by building group (GFX-BLDG-08).
+    """
     page: list[PropGroup] = [make_road_kit_group()]
-    for group_id in TILE_GROUPS.keys():  # noqa: SIM118 (Transcrypt: `for k in dict` is broken)
+    for group_id in TILE_GROUPS.keys():
         group = TILE_GROUPS[group_id]
         page.append(
             PropGroup(
@@ -60,7 +68,7 @@ def make_tile_page() -> list[PropGroup]:
 
 
 def unique(items: list[str]) -> list[str]:
-    """The items once each, in their first order."""
+    """Return the items once each, in their first order."""
     result: list[str] = []
     for item in items:
         if item not in result:
@@ -69,12 +77,15 @@ def unique(items: list[str]) -> list[str]:
 
 
 def make_prop_groups() -> list[PropGroup]:
-    """The groups of the `props/` page: the tiles, the buildings, the cars (D-207: the shared and
-    World 1 props are gone). The props viewer lists its props in this order (DEV-MENU-15)."""
+    """Return the groups of the `props/` page: the tiles, the buildings, the cars.
+
+    D207: the shared and World 1 props are gone. The props viewer lists its props in this order
+    (DEV-MENU-15).
+    """
     models = list(PROP_MODELS.keys())
     cars = PropGroup(
         "Cars",
-        [i for i in unique([CAR_IDS[key] for key in CAR_IDS.keys()]) if i in models],  # noqa: SIM118 (Transcrypt: iterate .keys())
+        [i for i in unique([CAR_IDS[key] for key in CAR_IDS.keys()]) if i in models],
     )
     tile_page = make_tile_page()
     taken: list[str] = list(cars.ids)

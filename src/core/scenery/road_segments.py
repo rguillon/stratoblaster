@@ -1,18 +1,21 @@
-"""The segments of the roads, indexed by buckets for distance queries, and the building slots along
-them (road network)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The segments of the roads, indexed by buckets for distance queries.
+
+And the building slots along them (road network).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.scenery.road_types import RoadSlot
 
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.scenery.road_types import RoadSlot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -66,8 +69,10 @@ class SegmentIndex:
         """Farthest a segment reaches from its nearer end: half its length, plus half its width."""
 
     def add(self, road: Road) -> None:
-        """Adds the segments of `road` (between each pair of consecutive points) to the buckets of
-        their ends, and widens the reach."""
+        """Add the segments of `road` to the buckets of their ends, and widen the reach.
+
+        The segments are those between each pair of consecutive points.
+        """
         points = road.points
         for i in range(len(points)):
             if i + 1 >= len(points):
@@ -97,7 +102,7 @@ class SegmentIndex:
         z: float,
         which: Callable[[Road], bool],
     ) -> Nearest:
-        """The edge of the nearest road `which` accepts, within about `BUCKET` units."""
+        """Return the edge of the nearest road `which` accepts, within about `BUCKET` units."""
         bx = math.floor(x / BUCKET)
         bz = math.floor(z / BUCKET)
         distance = INFINITY
@@ -112,9 +117,10 @@ class SegmentIndex:
         return Nearest(distance, road)
 
     def clear_of(self, x: float, z: float, clearance: float) -> bool:
-        """Whether no road edge is closer than `clearance` to (`x`, `z`) among those `nearest`
-        sees. Only the buckets a road in reach can be in are searched, up to the first road in
-        reach."""
+        """Whether no road edge is closer than `clearance` to (`x`, `z`) among those `nearest` sees.
+
+        Only the buckets a road in reach can be in are searched, up to the first road in reach.
+        """
         around = clearance + self._reach
         if around > BUCKET:
             return self.nearest(x, z, lambda _road: True).distance >= clearance
@@ -133,8 +139,10 @@ class SegmentIndex:
 
 
 def add_slots(road: Road, spacing: float, slots: list[RoadSlot]) -> None:
-    """Adds to `slots` the slots every `spacing` along `road`, on both sides, numbered on from
-    them (GFX-BLDG-01)."""
+    """Add to `slots` the slots every `spacing` along `road`, on both sides.
+
+    Numbered on from them (GFX-BLDG-01).
+    """
     travelled = spacing / 2
     points = road.points
     for i in range(len(points)):

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/caption_row.py`."""
 
 from helpers.dom import FakeDocument

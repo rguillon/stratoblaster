@@ -1,60 +1,63 @@
-"""The Cyber-Organic pieces of the World 2 bosses (GFX-ART-12, BOSS-47; ice world): pale, cold flesh
-with crystals of frost grown through it, bone, and metal grafts. Logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""The Cyber-Organic pieces of the World 2 bosses (GFX-ART-12, BOSS-47; ice world).
+
+Pale, cold flesh with crystals of frost grown through it, bone, and metal grafts. Logical pixels,
+nose +Z, Y up.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
 from render.geometry.organic import carapace, curve, organ, plate, tendril, vein
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import SegmentedBody  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.organic import SegmentedBody
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 F = ENEMY_LOOK.flesh
 M = ENEMY_LOOK.hull
 
 # The World 2 flesh shades: cold teal and slate, bone, and the ice grown through them.
-ICE_FLESH = record(
-    {
-        "teal": F.teal,
-        "graphite": F.graphite,
-        "slate": F.slate,
-        "sinew": F.sinew,
-        "bone": F.bone,
-        "membrane": F.membrane,
-        # Rimed flesh: a frosted, pale teal (top faces).
-        "rime": [0.13, 0.17, 0.19],
-        # Crystals of ice grown through the flesh.
-        "crystal": [0.15, 0.19, 0.24],
-        # The seams between shell plates.
-        "seam": [0.02, 0.04, 0.05],
-    }
-)
+ICE_FLESH = record({
+    "teal": F.teal,
+    "graphite": F.graphite,
+    "slate": F.slate,
+    "sinew": F.sinew,
+    "bone": F.bone,
+    "membrane": F.membrane,
+    # Rimed flesh: a frosted, pale teal (top faces).
+    "rime": [0.13, 0.17, 0.19],
+    # Crystals of ice grown through the flesh.
+    "crystal": [0.15, 0.19, 0.24],
+    # The seams between shell plates.
+    "seam": [0.02, 0.04, 0.05],
+})
 
 # Metal shades for the grafts.
 GRAFT = record({"base": M.base, "panel": M.panel, "dark": M.dark})
 
 
 def shell(b: SolidBuilder, body: SegmentedBody, color: Rgb = ICE_FLESH.teal) -> None:
-    """A shell over a swollen body (GFX-ART-12): teal plates with dark seams."""
+    """Add a shell over a swollen body (GFX-ART-12): teal plates with dark seams."""
     carapace(b, body, [color, ICE_FLESH.seam])
 
 
 def crystals(b: SolidBuilder, at: Vec3, size: float, n: int = 3) -> None:
-    """A cluster of ice crystals grown from the flesh at `at`: `n` thin four-sided spikes, `size`
-    long, fanning out upwards, uneven."""
+    """Add a cluster of ice crystals grown from the flesh at `at`.
+
+    `n` thin four-sided spikes, `size` long, fanning out upwards, uneven.
+    """
     for k in range(n):
         a = (2 * math.pi * k) / n + size
         length = size * (0.7 + 0.3 * ((k * 7) % 3))
@@ -69,7 +72,7 @@ def crystals(b: SolidBuilder, at: Vec3, size: float, n: int = 3) -> None:
 
 
 def spine_row(b: SolidBuilder, from_: Vec3, to: Vec3, n: int, size: float) -> None:
-    """A row of spikes of ice along a back, from `from_` to `to`, `size` tall."""
+    """Add a row of spikes of ice along a back, from `from_` to `to`, `size` tall."""
     for i in range(n):
         t = 0.5 if n == 1 else i / (n - 1)
         at: Vec3 = [
@@ -95,19 +98,19 @@ def sinew(
     color: Rgb = ICE_FLESH.sinew,
     bow: Vec3 | None = None,
 ) -> None:
-    """A sinew from `from_` to `to`, bowed by `bow`, thinning from `r` to half of it."""
-    if bow == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Add a sinew from `from_` to `to`, bowed by `bow`, thinning from `r` to half of it."""
+    if bow == None:
         bow = [0, r, 0]
     tendril(b, curve(from_, to, bow, 3), [r, r * 0.5], 4, color)
 
 
 def glow_vein(p: EnemyParts, from_: Vec3, to: Vec3, width: float, glow: Rgb) -> None:
-    """A glowing vein from `from_` to `to`, bowed upwards."""
+    """Add a glowing vein from `from_` to `to`, bowed upwards."""
     vein(p.vein, curve(from_, to, [0, width, 0], 3), width, glow)
 
 
 def gland(p: EnemyParts, at: Vec3, radius: float, glow: Rgb, rim: Rgb = ICE_FLESH.graphite) -> None:
-    """A gland: a lit bulb of `radius` on `at`, in a ring of flesh."""
+    """Add a gland: a lit bulb of `radius` on `at`, in a ring of flesh."""
     p.flesh.ring(radius * 1.3, radius * 0.6, 6, rim, Placement(at))
     organ(p.vein, radius, 5, glow, Placement(at), 0.6)
 
@@ -120,8 +123,11 @@ def armoured_organ(
     color: Rgb = ICE_FLESH.graphite,
     height: float = 0.5,
 ) -> None:
-    """A destroyable growth (BOSS-48): a swollen organ of `radius` on `at`, a metal armour plate on
-    its top, crystals on its flank and a gland lit `glow`. Its outline stays clear: one bulb."""
+    """Add a destroyable growth (BOSS-48): a swollen organ of `radius` on `at`.
+
+    A metal armour plate on its top, crystals on its flank and a gland lit `glow`. Its outline stays
+    clear: one bulb.
+    """
     x = at[0]
     y = at[1]
     z = at[2]
@@ -145,8 +151,10 @@ def fringe(
     length: float,
     color: Rgb = ICE_FLESH.sinew,
 ) -> None:
-    """Flesh tendrils hanging off `at` outwards along `direction` (x, z), `n` of them, `length`
-    long."""
+    """Add flesh tendrils hanging off `at` outwards along `direction` (x, z).
+
+    There are `n` of them, `length` long.
+    """
     dx = direction[0]
     dz = direction[1]
     for i in range(n):

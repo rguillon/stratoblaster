@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/outline.py` (the missiles' rim, GFX-SHOT-15)."""
 
 from types import SimpleNamespace
@@ -88,7 +89,7 @@ class _Renderer:
         self.calls = 0
         self.ready_after = ready_after
 
-    def isReady(self, sub: Any, use_instances: bool) -> bool:  # noqa: N802
+    def isReady(self, _sub: Any, _use_instances: bool) -> bool:
         self.calls += 1
         return self.calls > self.ready_after
 

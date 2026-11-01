@@ -1,7 +1,10 @@
-"""The building windows painted once into one texture, an atlas (D-210, GFX-BLDG-12): a grid of
-window cells in a few styles, some lit (each its own colour and brightness, a soft halo round it),
-some dark. Each wall of a building is one quad mapped on a block of cells, picked at random, so the
-buildings all look different. Pure: the atlas is RGBA pixels; the scenery kit uploads them.
+# Copyright (c) 2026 Renaud Guillon
+"""The building windows, painted once into one texture (an atlas, D-210, GFX-BLDG-12).
+
+A grid of window cells in a few styles, some lit (each its own colour and brightness, a soft halo
+round it), some dark. Each wall of a building is one quad mapped on a block of cells, picked at
+random, so the buildings all look different. Pure: the atlas is RGBA pixels; the scenery kit uploads
+them.
 
 The RGB is the light (black where nothing is lit), the alpha the shape (the windows, their halos;
 0 on the wall between them, which shows through).
@@ -26,11 +29,13 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.rng import create_rng, pick, random_in
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # How bright the half of a lit window under its blind is.
 BLIND_DIM = 0.35
@@ -39,7 +44,7 @@ HALO_LIGHT = 0.6
 
 
 def _uint8_array(length: int) -> Any:
-    """A zero-filled `Uint8Array` of `length` bytes (the atlas is pure: no Babylon here)."""
+    """Return a zero-filled `Uint8Array` of `length` bytes (the atlas is pure: no Babylon here)."""
     __pragma__("js", "{}", "return new Uint8Array(length);")
     return None
 
@@ -53,28 +58,31 @@ def _byte(v: float) -> int:
     return math.floor(v * 255 + 0.5)
 
 
-def atlas_cells(look: Any) -> int:  # noqa: ANN401 (a config record)
+def atlas_cells(look: Any) -> int:
     """Window cells across the atlas (and down it)."""
     size: int = look.size
     cell: int = look.cell
     return math.floor(size / cell)
 
 
-def style_columns(look: Any) -> int:  # noqa: ANN401 (a config record)
+def style_columns(look: Any) -> int:
     """Window cells across the band of columns of one style (the doors' bands left out)."""
     columns: int = look.doorColumns
     doors = len(look.doors) * columns
     return math.floor((atlas_cells(look) - doors) / len(look.styles))
 
 
-def door_column(look: Any, door: int) -> int:  # noqa: ANN401 (a config record)
-    """The first column of the band of door style `door` (D-215), after the windows' bands."""
+def door_column(look: Any, door: int) -> int:
+    """Return the first column of the band of door style `door` (D-215).
+
+    It comes after the windows' bands.
+    """
     columns: int = look.doorColumns
     return len(look.styles) * style_columns(look) + door * columns
 
 
-def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """Sets pixel `i`, unless it already shows something more opaque (halos meet, windows win)."""
+def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:
+    """Set pixel `i`, unless it already shows something more opaque (halos meet, windows win)."""
     a = _byte(alpha)
     if pixels[i * 4 + 3] > a:
         return
@@ -88,16 +96,18 @@ def _scaled(rgb: list[float], k: float) -> list[float]:
     return [rgb[0] * k, rgb[1] * k, rgb[2] * k]
 
 
-def _paint_window(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    pixels: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    look: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+def _paint_window(
+    pixels: Any,
+    look: Any,
     at: list[int],
     window: list[int],
     light: list[float] | None,
-    blind: bool,  # noqa: FBT001 (a flag of the window's look, positional)
+    blind: bool,
 ) -> None:
-    """One window whose cell's corner is pixel `at`: lit in `light` (None: dark), with its halo
-    when lit."""
+    """Paint one window whose cell's corner is pixel `at`, lit in `light` (None: dark).
+
+    Its halo too, when lit.
+    """
     size = look.size
     x0 = at[0] + window[0]
     y0 = at[1] + window[1]
@@ -119,9 +129,11 @@ def _paint_window(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
             _put(pixels, (y % size) * size + x % size, rgb, 1)
 
 
-def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
-    """RGBA8 pixels of the atlas of `look` (see the module doc). Its rows go up the walls: row 0
-    is V = 0, the bottom of a window cell."""
+def window_atlas_pixels(look: Any) -> Any:
+    """RGBA8 pixels of the atlas of `look` (see the module doc).
+
+    Its rows go up the walls: row 0 is V = 0, the bottom of a window cell.
+    """
     size = look.size
     cell = look.cell
     cells = atlas_cells(look)
@@ -129,11 +141,10 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
     random = create_rng(look.seed)
     pixels = _uint8_array(size * size * 4)
     # Each band: its style, its first column and its width (the windows', then the doors').
-    bands: list[list[Any]] = []
-    for s in range(len(look.styles)):
-        bands.append([look.styles[s], s * band, band])
-    for d in range(len(look.doors)):
-        bands.append([look.doors[d], door_column(look, d), look.doorColumns])
+    bands: list[list[Any]] = [[look.styles[s], s * band, band] for s in range(len(look.styles))]
+    bands.extend([
+        [look.doors[d], door_column(look, d), look.doorColumns] for d in range(len(look.doors))
+    ])
     for b in bands:
         style = b[0]
         for row in range(cells):
@@ -157,14 +168,16 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
 _kept: dict[str, Any] = {}
 
 
-def _json_of(value: Any) -> str:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+def _json_of(value: Any) -> str:
     __pragma__("js", "{}", "return JSON.stringify(value);")
     return repr(value)
 
 
-def kept_window_atlas(look: Any) -> Any:  # noqa: ANN401 (a config record)
-    """The pixels of `window_atlas_pixels(look)`, made on first use and kept. Callers must not
-    change them."""
+def kept_window_atlas(look: Any) -> Any:
+    """Return the pixels of `window_atlas_pixels(look)`, made on first use and kept.
+
+    Callers must not change them.
+    """
     key = _json_of(look)
     pixels = _kept.get(key)
     if pixels is None:

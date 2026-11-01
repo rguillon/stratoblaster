@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Vertex-coloured rectangles for gradients ()."""
 
 from render.environment.gradient_cube import GradientStop
@@ -21,14 +22,16 @@ def _push_row(geo: ColoredGeometry, half_width: float, y: float, rgb: list[float
 
 
 def _join_rows(geo: ColoredGeometry, r: int) -> None:
-    """Joins row `r` (2 vertices) to the next row with two triangles."""
+    """Join row `r` (2 vertices) to the next row with two triangles."""
     a = r * 2
     geo.indices.extend([a, a + 1, a + 3, a, a + 3, a + 2])
 
 
 def _stable_sorted_by_at(stops: list[GradientStop]) -> list[GradientStop]:
-    """The stops sorted by `at`, keeping equal ones in their order (Transcrypt's sort is not
-    stable and takes no comparator)."""
+    """Return the stops sorted by `at`, keeping equal ones in their order.
+
+    Transcrypt's sort is not stable and takes no comparator.
+    """
     result: list[GradientStop] = []
     for stop in stops:
         i = len(result)
@@ -39,10 +42,15 @@ def _stable_sorted_by_at(stops: list[GradientStop]) -> list[GradientStop]:
 
 
 def build_gradient_rect(width: float, height: float, stops: list[GradientStop]) -> ColoredGeometry:
-    """A `width × height` rectangle centred on the origin whose colour goes from the bottom to
-    the top through `stops` (`at` -1 = bottom edge, 1 = top edge). One vertex row per stop."""
+    """Return a `width x height` rectangle centred on the origin, coloured from bottom to top.
+
+    It goes through `stops` (`at` -1 = bottom edge, 1 = top edge).
+
+    One vertex row per stop.
+    """
     if len(stops) < MIN_STOPS:
-        raise ValueError("A gradient rectangle needs at least 2 stops")
+        msg = "A gradient rectangle needs at least 2 stops"
+        raise ValueError(msg)
     geo = ColoredGeometry()
     for i, stop in enumerate(_stable_sorted_by_at(stops)):
         _push_row(geo, width / 2, (stop.at * height) / 2, stop.color)

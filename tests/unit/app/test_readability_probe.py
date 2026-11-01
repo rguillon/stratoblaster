@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/readability_probe.py`."""
 # adability_probe.py` (DEV-API-09): where each kind of object is on the playfield, and which of them
 # is in view. The pixel reads need the render layer and are not run here.
@@ -10,17 +11,17 @@ from config.game_play import GAME_PLAY_CONFIG
 CFG = GAME_PLAY_CONFIG.readability_probe
 
 
-def everything_in_view(x: float, y: float) -> bool:
+def everything_in_view(_x: float, _y: float) -> bool:
     return True
 
 
-def nothing_in_view(x: float, y: float) -> bool:
+def nothing_in_view(_x: float, _y: float) -> bool:
     return False
 
 
 def test_dev_api_09_the_first_item_wholly_in_view_is_the_one_measured() -> None:
     items = [SimpleNamespace(x=500, y=500, radius=5), SimpleNamespace(x=10, y=20, radius=5)]
-    spot = _first_in_view(items, lambda x, y: x < 100, lambda item: item.radius)
+    spot = _first_in_view(items, lambda x, _y: x < 100, lambda item: item.radius)
     assert spot is not None
     assert (spot.x, spot.y, spot.radius) == (10, 20, 5)
 

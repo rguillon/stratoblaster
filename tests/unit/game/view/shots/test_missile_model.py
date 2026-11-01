@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/shots/missile_model.py`."""
 
 import math
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,36 +23,37 @@ LOOK = SHOT_LOOK.missile
 
 
 @pytest.fixture
-def nodes(monkeypatch):
+def nodes(monkeypatch: Any) -> Any:
     """Babylon stand-ins; the meshes and nodes made are recorded by name."""
     stub_babylon(monkeypatch, missile_model)
     made = {}
 
-    def make(name, *args):
+    def make(name: Any, *_args: Any) -> Any:
         made[name] = MagicMock(name=name)
         return made[name]
 
-    monkeypatch.setattr(missile_model, "new_transform_node", lambda name, scene: make(name))
-    monkeypatch.setattr(missile_model, "create_cylinder", lambda name, opts, scene: make(name))
-    monkeypatch.setattr(missile_model, "create_box", lambda name, opts, scene: make(name))
-    monkeypatch.setattr(missile_model, "build_reactor_flame", lambda name, opts, parent: None)
+    monkeypatch.setattr(missile_model, "new_transform_node", lambda name, _scene: make(name))
+    monkeypatch.setattr(missile_model, "create_cylinder", lambda name, _opts, _scene: make(name))
+    monkeypatch.setattr(missile_model, "create_box", lambda name, _opts, _scene: make(name))
+    monkeypatch.setattr(missile_model, "build_reactor_flame", lambda _name, _opts, _parent: None)
     return made
 
 
-def test_gfx_shot_06_the_missile_has_a_tube_nose_and_two_crossed_fins():
+def test_gfx_shot_06_the_missile_has_a_tube_nose_and_two_crossed_fins() -> None:
     assert SIDES == 6
     assert 0 < NOSE_FRACTION < 1
     assert FIN_LENGTH_FRACTION < 1
     assert FIN_THICKNESS > 0
 
 
-def test_gfx_shot_06_materials_are_a_body_and_a_glowing_tip(nodes):
+@pytest.mark.usefixtures("nodes")
+def test_gfx_shot_06_materials_are_a_body_and_a_glowing_tip() -> None:
     body, tip = materials(MagicMock())
     assert body is not tip
     assert tip.emissiveColor is not None
 
 
-def test_gfx_shot_06_the_missile_pivot_points_up_the_playfield(nodes):
+def test_gfx_shot_06_the_missile_pivot_points_up_the_playfield(nodes: Any) -> None:
     pivot = build_missile("missile-1", MagicMock())
     assert pivot is nodes["missile-1"]
     model = nodes["missile-1-model"]
@@ -58,7 +61,7 @@ def test_gfx_shot_06_the_missile_pivot_points_up_the_playfield(nodes):
     assert model.rotation.x == pytest.approx(-math.pi / 2)
 
 
-def test_gfx_shot_06_the_body_is_built_along_z_with_its_nose_at_the_front(nodes):
+def test_gfx_shot_06_the_body_is_built_along_z_with_its_nose_at_the_front(nodes: Any) -> None:
     build_missile("missile-2", MagicMock())
     nose = nodes["missile-2-nose"]
     tube = nodes["missile-2-tube"]
@@ -68,7 +71,7 @@ def test_gfx_shot_06_the_body_is_built_along_z_with_its_nose_at_the_front(nodes)
     assert nose.rotation.x == pytest.approx(math.pi / 2)
 
 
-def test_gfx_shot_06_the_fins_are_two_boxes_crossing_at_the_tail(nodes):
+def test_gfx_shot_06_the_fins_are_two_boxes_crossing_at_the_tail(nodes: Any) -> None:
     build_missile("missile-3", MagicMock())
     fins = [nodes["missile-3-fin-0"], nodes["missile-3-fin-1"]]
     assert fins[0].rotation.z == pytest.approx(0)

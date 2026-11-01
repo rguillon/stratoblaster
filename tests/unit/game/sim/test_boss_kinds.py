@@ -1,9 +1,13 @@
-"""Unit tests of `src/game/sim/boss_kinds.py`: the game's bosses, then their transformations
-(docs/superpowers/specs/2026-10-31-ship-glow-and-boss-transform-design.md, Part B): every boss
-reveals new weapons as it loses parts and gets no easier for it, its weapons spread over the
-kinds (D-229) and some change shape (D-230). Run over every design, they check each boss file's
-transformations, hidden weapons and armour (`specs/bosses/*/*.md`)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/sim/boss_kinds.py`: the game's bosses and their transformations.
 
+Spec: docs/superpowers/specs/2026-10-31-ship-glow-and-boss-transform-design.md, Part B. Every boss
+reveals new weapons as it loses parts and gets no easier for it, its weapons spread over the kinds
+(D-229) and some change shape (D-230). Run over every design, they check each boss file's
+transformations, hidden weapons and armour (`specs/bosses/*/*.md`).
+"""
+
+import itertools
 from typing import Any
 
 import pytest
@@ -39,7 +43,7 @@ def test_boss_01_each_kind_is_named_after_its_design() -> None:
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=lambda d: d.id)
-def test_boss_07_every_design_is_well_formed(design) -> None:
+def test_boss_07_every_design_is_well_formed(design: Any) -> None:
     assert_boss_design(design)
 
 
@@ -82,8 +86,11 @@ def _volley_rate(shot: Any) -> float:
 
 
 def fire_rate(design: Any, form: int) -> float:
-    """The boss's fire rate (weighted shots a second) just after transformation `form` (0: as it
-    comes in), the parts that brought it on being the first of its original parts destroyed."""
+    """Return the boss's fire rate just after transformation `form` (weighted shots a second).
+
+    Form 0 is as it comes in; the parts that brought it on are the first of its original parts
+    destroyed.
+    """
     originals = _originals(design)
     named = design.get("transformParts")
     if named:
@@ -292,5 +299,5 @@ def test_the_parts_named_for_each_transformation_come_before_the_next_ones(desig
     # K breaks the parts in order (DEV-OPT-09): it calls each transformation in turn (D-230).
     named = design.get("transformParts") or []
     order = [p["id"] for p in design.stats.parts]
-    for earlier, later in zip(named, named[1:], strict=False):
+    for earlier, later in itertools.pairwise(named):
         assert max(order.index(i) for i in earlier) < min(order.index(i) for i in later)

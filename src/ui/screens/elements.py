@@ -1,23 +1,26 @@
-"""DOM helpers of the menu screens"""
+# Copyright (c) 2026 Renaud Guillon
+"""DOM helpers of the menu screens."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
 # The DOM is not in the type stubs, so its objects are `Any`.
 MenuDocument = Any
 HtmlElement = Any
 TapHandler = Callable[[int], None]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 SVG = "http://www.w3.org/2000/svg"
 
 
 def element(doc: MenuDocument, tag: str, class_name: str, text: str | None = None) -> HtmlElement:
-    """Creates `<tag class="class_name">text</tag>`."""
+    """Create `<tag class="class_name">text</tag>`."""
     el = doc.createElement(tag)
     el.className = class_name
     if text is not None:
@@ -26,8 +29,10 @@ def element(doc: MenuDocument, tag: str, class_name: str, text: str | None = Non
 
 
 def tap_listener(on_tap: TapHandler, index: int) -> Callable[[object], None]:
-    """A click listener that reports entry `index`. A factory, so that each listener keeps its
-    own index."""
+    """Return a click listener that reports entry `index`.
+
+    A factory, so that each listener keeps its own index.
+    """
 
     def handler(_event: object) -> None:
         on_tap(index)
@@ -42,9 +47,10 @@ def entry(
     selected: bool,
     on_tap: TapHandler,
 ) -> HtmlElement:
-    """A tappable menu entry (UI-INPUT-09). Uses `role="button"` on a `div` rather than `<button>`,
-    so the browser never turns Space / Enter into a second click (UI-INPUT-13): the keyboard goes
-    through the menu input only.
+    """Return a tappable menu entry (UI-INPUT-09).
+
+    Uses `role="button"` on a `div` rather than `<button>`, so the browser never turns Space / Enter
+    into a second click (UI-INPUT-13): the keyboard goes through the menu input only.
     """
     el = element(doc, "div", "menu-entry " + class_name)
     el.setAttribute("role", "button")
@@ -57,7 +63,7 @@ def entry(
 
 
 def back_button(doc: MenuDocument, label: str, on_back: Callable[[], None]) -> HtmlElement:
-    """The on-screen Back button of a menu screen (UI-INPUT-10)."""
+    """Return the on-screen Back button of a menu screen (UI-INPUT-10)."""
     el = element(doc, "div", "menu-back", "◀ " + label)
     el.setAttribute("role", "button")
     el.addEventListener("click", on_back)
@@ -65,7 +71,7 @@ def back_button(doc: MenuDocument, label: str, on_back: Callable[[], None]) -> H
 
 
 def padlock(doc: MenuDocument) -> HtmlElement:
-    """A small padlock icon for locked levels (UI-LEVEL-04)."""
+    """Return a small padlock icon for locked levels (UI-LEVEL-04)."""
     svg = doc.createElementNS(SVG, "svg")
     svg.setAttribute("viewBox", "0 0 16 16")
     svg.setAttribute("class", "padlock")
@@ -84,8 +90,9 @@ def padlock(doc: MenuDocument) -> HtmlElement:
 
 
 def array_from(source: Any) -> list[Any]:
-    """`Array.from(source)`: a JavaScript array copy of a NodeList or an iterable. (`from` is a
-    Python keyword, so `window.Array.from` cannot be written.)
+    """`Array.from(source)`: a JavaScript array copy of a NodeList or an iterable.
+
+    (`from` is a Python keyword, so `window.Array.from` cannot be written.)
     """
     __pragma__("js", "{}", "return Array.from(source);")
     return []

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/textured.py` (D-210, GFX-BLDG-13)."""
 
 from helpers.geometry_checks import check_colored
@@ -5,7 +6,7 @@ from helpers.geometry_checks import check_colored
 from render.geometry.textured import QuadBuilder
 
 
-def test_d210_a_quad_has_four_corners_two_triangles_and_its_uvs():
+def test_d210_a_quad_has_four_corners_two_triangles_and_its_uvs() -> None:
     quads = QuadBuilder()
     quads.quad([[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]], [0.1, 0.2, 0.3, 0.4], [1, 0.5, 0])
     geo = quads.geometry
@@ -16,7 +17,7 @@ def test_d210_a_quad_has_four_corners_two_triangles_and_its_uvs():
     assert geo.colors[:4] == [1, 0.5, 0, 1]
 
 
-def test_d210_quads_follow_each_other():
+def test_d210_quads_follow_each_other() -> None:
     quads = QuadBuilder()
     corners = [[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]
     quads.quad(corners, [0, 0, 1, 1], [1, 1, 1])

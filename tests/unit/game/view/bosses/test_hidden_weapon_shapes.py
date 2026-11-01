@@ -1,6 +1,9 @@
-"""The models of the hidden weapons (BOSS-40, D-229;
-docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md, Part A): each kind
-has its pod, and its turret or what slides out."""
+# Copyright (c) 2026 Renaud Guillon
+"""The models of the hidden weapons (BOSS-40, D-229).
+
+Spec: docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md, Part A. Each
+kind has its pod, and its turret or what slides out.
+"""
 
 from typing import Any
 
@@ -46,11 +49,13 @@ def test_every_kind_has_its_pod_and_a_turret_or_something_that_slides_out(kind: 
     turret = weapon_turret_drawing(look, NEON)
     slides = weapon_slides(look, NEON)
     if kind in TURRETS:
-        assert turret is not None and slides == []
+        assert turret is not None
+        assert slides == []
         assert len(_tris(turret, [0, 0, 0])) > 0
         assert turret_slide(look) > 0
     else:
-        assert turret is None and len(slides) >= 1
+        assert turret is None
+        assert len(slides) >= 1
         for slide in slides:
             assert len(_tris(slide[0], [0, 0, 0])) > 0
             assert slide[2] > 0

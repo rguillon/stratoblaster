@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/terrain_geometry.py` (GFX-TERRAIN-09, GFX-TERRAIN-14)."""
 
 import math
@@ -30,10 +31,10 @@ class Slope:
         self.rise = rise
         self.cover = cover
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return self.rise * x
 
-    def surface(self, z: float) -> Any:
+    def surface(self, _z: float) -> Any:
         return self.cover
 
 
@@ -57,7 +58,8 @@ def test_vertices_sit_on_the_grid_at_the_sampled_height() -> None:
 def test_the_normal_of_a_slope_tilts_against_it() -> None:
     geo = build_terrain_geometry(Slope(rise=1), TerrainGrid(0, 0, 2, 1, 1))
     nx, ny, nz = geo.normals[3:6]
-    assert nx < 0 and ny > 0
+    assert nx < 0
+    assert ny > 0
     assert nz == pytest.approx(0)
     assert nx**2 + ny**2 + nz**2 == pytest.approx(1)
 
@@ -70,7 +72,7 @@ def test_the_ground_cover_goes_into_the_vertex_colours() -> None:
 
 def test_a_source_without_cover_is_bare_ground() -> None:
     class Bare:
-        def height(self, x: float, z: float) -> float:
+        def height(self, _x: float, _z: float) -> float:
             return 0
 
     geo = build_terrain_geometry(Bare(), TerrainGrid(0, 0, 1, 1, 1))
@@ -98,7 +100,7 @@ class Bumps:
 
 
 def _height_on(tris: list[Any], x: float, z: float) -> float:
-    """The height of the triangles (seen from above) over (`x`, `z`)."""
+    """Return the height of the triangles (seen from above) over (`x`, `z`)."""
     for a, b, c in tris:
         den = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2])
         wa = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / den

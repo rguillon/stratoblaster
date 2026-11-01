@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 # Type stub for the browser globals. At compile time Transcrypt turns these names into the
 # real JavaScript globals (`from org.transcrypt.stubs.browser import *` is a compile-time no-op).
 from typing import Any
@@ -5,4 +6,4 @@ from typing import Any
 document: Any
 window: Any
 
-def __pragma__(*args: Any) -> None: ...  # noqa: N807 (Transcrypt compiler marker, not a dunder name)
+def __pragma__(*args: Any) -> None: ...

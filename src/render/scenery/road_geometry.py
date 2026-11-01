@@ -1,5 +1,8 @@
-"""Road ribbons draped on the ground (phase 4 review, GFX-ROAD-06): each road as one see-through
-surface, its soft shoulders fading into the ground, cut on the terrain chunks.
+# Copyright (c) 2026 Renaud Guillon
+"""Road ribbons draped on the ground (phase 4 review, GFX-ROAD-06).
+
+Each road as one see-through surface, its soft shoulders fading into the ground, cut on the terrain
+chunks.
 """
 
 import math
@@ -13,14 +16,16 @@ from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.road_lines import CentreLineLook, Painter, paint_centre_lines
 from render.scenery.tile_road_geometry import TileRoadLook
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.scenery.road_traffic import StreetLine
+from core.scenery.road_types import Road
+from render.scenery.terrain_geometry import HeightSource
 
 Rgb = tuple[float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Offsets across a road (in half-widths) and opacity factors of its 4 vertex rows:
 # (across, shoulder, opacity).
@@ -47,7 +52,7 @@ class RoadOpacity:
 class RoadLook:
     """How roads are drawn on the ground."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         main: Rgb,
         cross: Rgb,
@@ -59,12 +64,15 @@ class RoadLook:
         lift: float,
         tiles: TileRoadLook | None,
     ) -> None:
-        """`main`: colour of the main roads; `cross`: colour of the paths. `shoulder`: width of the
+        """Set the look of the roads.
+
+        `main`: colour of the main roads; `cross`: colour of the paths. `shoulder`: width of the
         soft edge on each side, where the road fades into the ground. `streetShoulder`: narrower
         soft edge of the streets, so their crossings and corners stay clean. `centreLine`: the
         yellow line along the streets and main roads, if any. `wear`: how much (0..1) colour and
         opacity vary along a road, so it looks worn. `lift`: height of the road surface above the
-        ground. `tiles` (phase 15): the road pieces of the districts laid on tiles."""
+        ground. `tiles` (phase 15): the road pieces of the districts laid on tiles.
+        """
         self.main = main
         self.cross = cross
         self.opacity = opacity
@@ -77,7 +85,7 @@ class RoadLook:
 
 
 def _runs(points: list[RoadPoint], z_min: float, z_max: float) -> list[list[RoadPoint]]:
-    """Runs of consecutive points whose segments start inside [z_min, z_max)."""
+    """Run of consecutive points whose segments start inside [z_min, z_max)."""
     out: list[list[RoadPoint]] = []
     run: list[RoadPoint] = []
     for i, a in enumerate(points):
@@ -95,7 +103,10 @@ def _runs(points: list[RoadPoint], z_min: float, z_max: float) -> list[list[Road
 
 
 def _across(run: list[RoadPoint], i: int) -> tuple[float, float]:
-    """Unit vector across the road at point `i` of a run (from the neighbouring points)."""
+    """Return the unit vector across the road at point `i` of a run.
+
+    It is worked out from the neighbouring points.
+    """
     a = run[max(0, i - 1)]
     b = run[min(len(run) - 1, i + 1)]
     if a is None or b is None:
@@ -108,11 +119,14 @@ def _across(run: list[RoadPoint], i: int) -> tuple[float, float]:
 
 
 def _ribbon_points(road: Road, lines: list[StreetLine]) -> list[RoadPoint]:
-    """The points of a road; a street goes on past both ends by half the width of the street it
-    meets there (its own if none), under it, so two streets meeting at a corner leave no notch and
-    an avenue does not stick out past a narrower street (phase 4 review)."""
+    """Return the points of a road.
+
+    A street goes on past both ends by half the width of the street it meets there (its own if
+    none), under it, so two streets meeting at a corner leave no notch and an avenue does not stick
+    out past a narrower street (phase 4 review).
+    """
     points = road.points
-    if road.kind != "street" or len(points) < 2:  # noqa: PLR2004 (a road needs two points)
+    if road.kind != "street" or len(points) < 2:
         return list(points)
 
     def past(end: RoadPoint, nxt: RoadPoint) -> RoadPoint:
@@ -145,7 +159,7 @@ def _worn(road: Road, p: RoadPoint, look: RoadLook) -> list[float]:
 
 
 def _quad(to: ColoredGeometry, source: ColoredGeometry, corners: list[int]) -> None:
-    """Copies the quad of `source`'s vertices `corners` into `to`, faces as the ribbons'."""
+    """Copy the quad of `source`'s vertices `corners` into `to`, faces as the ribbons'."""
     base = len(to.positions) // 3
     for v in corners:
         to.positions.extend(source.positions[v * 3 : v * 3 + 3])
@@ -153,7 +167,7 @@ def _quad(to: ColoredGeometry, source: ColoredGeometry, corners: list[int]) -> N
     to.indices.extend([base, base + 1, base + 2, base + 1, base + 3, base + 2])
 
 
-def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept whole)
+def build_road_geometry(
     roads: list[Road],
     ground: HeightSource,
     z_min: float,
@@ -161,15 +175,16 @@ def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept wh
     look: RoadLook,
     middles: ColoredGeometry | None = None,
 ) -> ColoredGeometry:
-    """Ribbons draped on the ground along the segments of `roads` that start in [z_min, z_max)
-    (GFX-ROAD-06), so neighbouring terrain chunks draw each segment once. The ribbon follows the
-    width of each point (paths widen at their junction). Each ribbon has a slightly see-through,
-    worn surface and soft shoulders that fade to nothing on both sides, so the road blends into the
-    ground (phase 4 review). Streets and main roads get a yellow centre line. With `middles`, the
-    even middles of the streets go there instead, to be drawn opaque (reviewer, 2026-10-28), their
-    soft edges staying with the rest."""
+    """Return ribbons draped on the ground along the segments of `roads` (GFX-ROAD-06).
+
+    Only the segments that start in [z_min, z_max) are drawn, so neighbouring terrain chunks draw
+    each segment once. The ribbon follows the width of each point (paths widen at their junction).
+    Each ribbon has a slightly see-through, worn surface and soft shoulders that fade to nothing on
+    both sides, so the road blends into the ground (phase 4 review). Streets and main roads get a
+    yellow centre line. With `middles`, the even middles of the streets go there instead, to be
+    drawn opaque (reviewer, 2026-10-28), their soft edges staying with the rest.
+    """
     geo = ColoredGeometry()
-    rows = len(ROWS)
     lines = cached_street_lines(roads)
     # How far past its points a street's ribbon may reach (see `_ribbon_points`).
     reach = 0.0
@@ -181,33 +196,11 @@ def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept wh
         z_low, z_high = road_z_span(road)
         if z_high < z_min - reach or z_low >= z_max + reach:
             continue
-        shoulder = look.streetShoulder if road.kind == "street" else look.shoulder
         middle = middles if road.kind == "street" else None
         for run in _runs(_ribbon_points(road, lines), z_min, z_max):
-            base = len(geo.positions) // 3
-            for i, p in enumerate(run):
-                nx, nz = _across(run, i)
-                colour = _worn(road, p, look)
-                for across, row_shoulder, row_opacity in ROWS:
-                    offset = (across * p.width) / 2 + row_shoulder * shoulder
-                    x = p.x + nx * offset
-                    z = p.z + nz * offset
-                    geo.positions.extend([x, ground.height(x, z) + look.lift, z])
-                    geo.colors.extend([colour[0], colour[1], colour[2], colour[3] * row_opacity])
-                if i == 0:
-                    continue
-                for k in range(rows - 1):
-                    l0 = base + rows * (i - 1) + k
-                    r0 = base + rows * (i - 1) + k + 1
-                    l1 = base + rows * i + k
-                    r1 = base + rows * i + k + 1
-                    # Front faces up (Babylon: normal = (c - a) x (b - a)).
-                    if middle is not None and k == MIDDLE:
-                        _quad(middle, geo, [l0, r0, l1, r1])
-                    else:
-                        geo.indices.extend([l0, r0, l1, r0, r1, l1])
+            _add_ribbon(geo, run, road, ground, look, middle)
     # Painted after the ribbons, so they draw over them.
-    if look.centreLine != None:  # noqa: E711 (optional record field: undefined when absent)
+    if look.centreLine != None:
         paint_centre_lines(
             Painter(geo, ground, look.centreLine, look.lift),
             roads,
@@ -215,3 +208,38 @@ def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept wh
             z_max,
         )
     return geo
+
+
+def _add_ribbon(
+    geo: ColoredGeometry,
+    run: list[RoadPoint],
+    road: Road,
+    ground: HeightSource,
+    look: RoadLook,
+    middle: ColoredGeometry | None,
+) -> None:
+    """Add the ribbon along one run of `road`'s points to `geo` (its even middle to `middle`)."""
+    rows = len(ROWS)
+    shoulder = look.streetShoulder if road.kind == "street" else look.shoulder
+    base = len(geo.positions) // 3
+    for i, p in enumerate(run):
+        nx, nz = _across(run, i)
+        colour = _worn(road, p, look)
+        for across, row_shoulder, row_opacity in ROWS:
+            offset = (across * p.width) / 2 + row_shoulder * shoulder
+            x = p.x + nx * offset
+            z = p.z + nz * offset
+            geo.positions.extend([x, ground.height(x, z) + look.lift, z])
+            geo.colors.extend([colour[0], colour[1], colour[2], colour[3] * row_opacity])
+        if i == 0:
+            continue
+        for k in range(rows - 1):
+            l0 = base + rows * (i - 1) + k
+            r0 = base + rows * (i - 1) + k + 1
+            l1 = base + rows * i + k
+            r1 = base + rows * i + k + 1
+            # Front faces up (Babylon: normal = (c - a) x (b - a)).
+            if middle is not None and k == MIDDLE:
+                _quad(middle, geo, [l0, r0, l1, r1])
+            else:
+                geo.indices.extend([l0, r0, l1, r0, r1, l1])

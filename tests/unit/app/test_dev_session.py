@@ -1,7 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/dev_session.py` (D-199): the dev viewer the menu shows, and the wheel."""
 
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 from helpers.dom import FakeDocument
@@ -11,9 +12,11 @@ from app.dev_session import DevSession
 
 
 class FakeViewer:
-    made: list["FakeViewer"] = []
+    made: ClassVar[list["FakeViewer"]] = []
 
-    def __init__(self, engine: Any, game: Any, viewer: str, items: Any, environment: bool) -> None:
+    def __init__(
+        self, _engine: Any, _game: Any, viewer: str, items: Any, _environment: bool
+    ) -> None:
         self.viewer = viewer
         self.items = items
         self.shown: tuple[int, bool] | None = None
@@ -59,14 +62,14 @@ def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> Simple
 
 def session(root: Any = None) -> DevSession:
     catalog = {"ships": ["a", "b"], "levels": ["1-1"], "bosses": ["warden"]}
-    return DevSession("engine", "game", catalog, True, root)
+    return DevSession("engine", "game", catalog, environment=True, status_root=root)
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
     """DEV-MENU-02."""
     s = session()
     assert not s.active
-    s.sync(state("ships", 1, False))
+    s.sync(state("ships", 1, toggle=False))
     viewer = FakeViewer.made[0]
     assert s.active
     assert (viewer.viewer, viewer.items, viewer.shown) == ("ships", ["a", "b"], (1, False))
@@ -142,10 +145,10 @@ class FakeTarget:
     def __init__(self) -> None:
         self.listeners: dict[str, list[Any]] = {}
 
-    def addEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+    def addEventListener(self, kind: str, listener: Any) -> None:
         self.listeners.setdefault(kind, []).append(listener)
 
-    def removeEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+    def removeEventListener(self, kind: str, listener: Any) -> None:
         self.listeners[kind].remove(listener)
 
     def press(self, code: str) -> SimpleNamespace:

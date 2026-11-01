@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/level_select_screen.py`."""
 
 from helpers.dom import FakeDocument
@@ -8,7 +9,11 @@ from ui.screens.screen_handlers import ScreenHandlers
 
 
 def render(selected: int, taps: list[int], backs: list[bool]) -> object:
-    levels = [LevelOption("1", False), LevelOption("2", True), LevelOption("3", False)]
+    levels = [
+        LevelOption("1", locked=False),
+        LevelOption("2", locked=True),
+        LevelOption("3", locked=False),
+    ]
     view = LevelSelectView("Pick a level", "Arrows", "Back", selected, 2, levels, "Locked")
     handlers = ScreenHandlers(taps.append, lambda: backs.append(True))
     return render_level_select_screen(FakeDocument(), view, handlers)

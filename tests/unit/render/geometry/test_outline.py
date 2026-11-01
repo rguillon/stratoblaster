@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/outline.py`."""
 
 import pytest
@@ -46,7 +47,7 @@ def test_inset_of_a_sharp_corner_is_capped_at_max_miter() -> None:
     spike = [[0, -1], [10, 0], [0, 1], [-1, 0]]
     tip_free = inset_outline(spike, 0.5)[1]
     tip_capped = inset_outline(spike, 0.5, max_miter=1)[1]
-    # Free, the tip moves 3 × distance inwards; capped at 1 × distance, it stays closer.
+    # Free, the tip moves 3 x distance inwards; capped at 1 x distance, it stays closer.
     assert tip_free[0] == pytest.approx(10 - 1.5)
     assert tip_capped[0] == pytest.approx(10 - 0.5)
 

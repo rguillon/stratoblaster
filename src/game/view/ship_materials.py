@@ -1,5 +1,8 @@
-"""Materials shared by all the player ships of a scene: shiny grey/blue metals and blue lights
-(GFX-SHIP-04, GFX-ART-04)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Materials shared by all the player ships of a scene (GFX-SHIP-04, GFX-ART-04).
+
+Shiny grey/blue metals and blue lights.
+"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,34 +10,35 @@ from game.config.readability import READABILITY
 from game.config.ship_look import SHIP_LOOK
 from render.babylon import color3, color3_black, new_pbr_material, new_standard_material
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 Scene = Any
-
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 # The scene's materials, by scene.
 __pragma__("js", "{}", "const SHIP_MATERIALS_CACHE = new WeakMap();")
 
 
 class ShipMaterials:
-    """Materials shared by all the player ships of a scene. Attribute names are the property names
-    the ship builders read."""
+    """Materials shared by all the player ships of a scene.
 
-    def __init__(  # noqa: PLR0913, PLR0917 (one argument per material, positional)
+    Attribute names are the property names the ship builders read.
+    """
+
+    def __init__(
         self,
         hull: Any,
         accent: Any,
         canopy: Any,
         trim: Any,
-        navLight: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
+        navLight: Any,
         nozzle: Any,
-        reactorCore: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
-        reactorExhaust: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
-        reactorFlame: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
-        reactorPlasma: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
+        reactorCore: Any,
+        reactorExhaust: Any,
+        reactorFlame: Any,
+        reactorPlasma: Any,
     ) -> None:
         self.hull = hull
         self.accent = accent
@@ -51,13 +55,15 @@ class ShipMaterials:
 
 
 def _rgb_color(rgb: Any) -> Any:
-    """`new Color3(...rgb)`."""
+    """Return `new Color3(...rgb)`."""
     return color3(rgb[0], rgb[1], rgb[2])
 
 
 def _metal(name: str, look: Any, scene: Scene) -> Any:
-    """A physically based metal with the look's albedo, metallic and roughness, taking the brighter
-    hull light (GFX-ART-08)."""
+    """Return a physically based metal with the look's albedo, metallic and roughness.
+
+    Its colour takes the brighter hull light (GFX-ART-08).
+    """
     mat = new_pbr_material(name, scene)
     mat.albedoColor = _rgb_color(look.albedo)
     mat.metallic = look.metallic
@@ -68,7 +74,7 @@ def _metal(name: str, look: Any, scene: Scene) -> Any:
 
 
 def _light(name: str, emissive: Any, scene: Scene) -> Any:
-    """An unlit, self-lit material of the given emissive colour."""
+    """Return an unlit, self-lit material of the given emissive colour."""
     mat = new_standard_material(name, scene)
     mat.emissiveColor = _rgb_color(emissive)
     mat.diffuseColor = color3_black()
@@ -78,7 +84,7 @@ def _light(name: str, emissive: Any, scene: Scene) -> Any:
 
 
 def _glow(name: str, look: Any, scene: Scene) -> Any:
-    """A light with its alpha, drawn from both sides."""
+    """Return a light with its alpha, drawn from both sides."""
     mat = _light(name, look.emissive, scene)
     mat.alpha = look.alpha
     mat.backFaceCulling = False
@@ -106,7 +112,7 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
 
 
 def get_ship_materials(scene: Scene) -> ShipMaterials:
-    """Returns the scene's ship materials, creating them on first use."""
+    """Return the scene's ship materials, creating them on first use."""
     found: Any = None
     __pragma__("js", "{}", "found = SHIP_MATERIALS_CACHE.get(scene);")
     if found:

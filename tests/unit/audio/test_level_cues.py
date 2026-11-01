@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/level_cues.py`: a case for each event of AUD-SFX-01."""
 
 from types import SimpleNamespace
@@ -7,7 +8,7 @@ from audio.level_cues import LevelCues
 
 
 def make_run(**overrides: Any) -> SimpleNamespace:
-    """A `LevelRun` stand-in with the fields the cues read, all quiet at the start."""
+    """Return a `LevelRun` stand-in with the fields the cues read, all quiet at the start."""
     run = SimpleNamespace(
         shots=SimpleNamespace(volleys=0, weapon=SimpleNamespace(id="blaster"), beam=[], level=1),
         ship=SimpleNamespace(x=100.0),

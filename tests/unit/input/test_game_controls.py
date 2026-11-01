@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/game_controls.py`."""
 
 import math
@@ -19,15 +20,15 @@ def make_controls(pads: list | None = None) -> GameControls:
 
 def test_game_ctrl_05_space_shoots_while_held() -> None:
     controls = make_controls()
-    assert controls.key("Space", True) is True
+    assert controls.key("Space", down=True) is True
     assert controls.read(DT, MAX_SPEED).fire is True
-    controls.key("Space", False)
+    controls.key("Space", down=False)
     assert controls.read(DT, MAX_SPEED).fire is False
 
 
 def test_game_ctrl_01_arrow_keys_move_the_ship() -> None:
     controls = make_controls()
-    controls.key("ArrowLeft", True)
+    controls.key("ArrowLeft", down=True)
     move = controls.read(DT, MAX_SPEED).move
     assert move.x == -1
     assert move.y == 0
@@ -35,28 +36,28 @@ def test_game_ctrl_01_arrow_keys_move_the_ship() -> None:
 
 def test_game_ctrl_01_keys_outside_the_controls_are_not_claimed() -> None:
     controls = make_controls()
-    assert controls.key("KeyZ", True) is False
+    assert controls.key("KeyZ", down=True) is False
 
 
 def test_game_ctrl_06_switch_weapon_counts_one_press_however_long_it_is_held() -> None:
     controls = make_controls()
-    controls.key("KeyE", True)
-    controls.key("KeyE", True)  # browser auto-repeat
+    controls.key("KeyE", down=True)
+    controls.key("KeyE", down=True)  # browser auto-repeat
     assert controls.read(DT, MAX_SPEED).switch_weapon is True
     assert controls.read(DT, MAX_SPEED).switch_weapon is False
-    controls.key("KeyE", False)
-    controls.key("KeyE", True)
+    controls.key("KeyE", down=False)
+    controls.key("KeyE", down=True)
     assert controls.read(DT, MAX_SPEED).switch_weapon is True
 
 
 def test_game_ctrl_06_bomb_keys_r_and_left_shift_set_a_bomb_off_once_per_press() -> None:
     """Also GAME-CTRL-01 (the bomb keys)."""
     controls = make_controls()
-    controls.key("ShiftLeft", True)
+    controls.key("ShiftLeft", down=True)
     assert controls.read(DT, MAX_SPEED).bomb is True
     assert controls.read(DT, MAX_SPEED).bomb is False
-    controls.key("ShiftLeft", False)
-    controls.key("KeyR", True)
+    controls.key("ShiftLeft", down=False)
+    controls.key("KeyR", down=True)
     assert controls.read(DT, MAX_SPEED).bomb is True
 
 
@@ -107,9 +108,9 @@ def test_game_ctrl_04_no_time_or_speed_means_the_drag_is_not_spent() -> None:
 def test_game_ctrl_07_clear_lets_go_of_everything() -> None:
     """Also UI-PAUSE-04 (a pause lets go of every control)."""
     controls = make_controls()
-    controls.key("ArrowUp", True)
-    controls.key("Space", True)
-    controls.key("KeyE", True)
+    controls.key("ArrowUp", down=True)
+    controls.key("Space", down=True)
+    controls.key("KeyE", down=True)
     controls.bomb()
     controls.set_touch_fire(True)
     controls.drag(10, 10)
@@ -194,5 +195,5 @@ def test_game_ctrl_02_the_strongest_gamepad_steers_and_all_of_them_fire() -> Non
 def test_game_ctrl_02_the_keys_win_over_a_weaker_gamepad() -> None:
     pad = FakeGamepad().tilt(0.3, 0)
     controls = make_controls([pad])
-    controls.key("ArrowRight", True)
+    controls.key("ArrowRight", down=True)
     assert controls.read(DT, MAX_SPEED).move.x == 1

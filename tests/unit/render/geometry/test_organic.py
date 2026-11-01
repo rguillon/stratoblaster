@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/organic.py` (GFX-ART-17)."""
 
 import math
@@ -213,4 +214,5 @@ def test_grown_is_repeatable_with_the_same_seed() -> None:
     second = grown(outline, 0.2, create_rng(7))
     assert first == second
     for p, q in zip(first, outline, strict=True):
-        assert abs(p[0] - q[0]) <= 0.2 and abs(p[1] - q[1]) <= 0.2
+        assert abs(p[0] - q[0]) <= 0.2
+        assert abs(p[1] - q[1]) <= 0.2

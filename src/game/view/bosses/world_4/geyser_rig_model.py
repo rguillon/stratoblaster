@@ -1,31 +1,31 @@
-"""FB-GEYSER-RIG-01 to FB-GEYSER-RIG-07, 4-2: the Geyser Rig. Logical pixels, nose +Z, Y up (towards
-the camera). A flying drilling platform: a heavy deck, a lattice derrick in its middle (the core),
-two drill arms reaching forward from its bow corners, two steam vents at its stern, a drone hangar
-jutting from its bow and a squat cooling tower aft. FB-GEYSER-RIG-02: a living rock-tick, its back a
-scorched flesh shell veined molten, a bone spire over its core, its drills, pipes and guns metal
-grafts.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-GEYSER-RIG-01 to FB-GEYSER-RIG-07, 4-2: the Geyser Rig.
+
+Logical pixels, nose +Z, Y up (towards the camera). A flying drilling platform: a heavy deck, a
+lattice derrick in its middle (the core), two drill arms reaching forward from its bow corners, two
+steam vents at its stern, a drone hangar jutting from its bow and a squat cooling tower aft.
+FB-GEYSER-RIG-02: a living rock-tick, its back a scorched flesh shell veined molten, a bone spire
+over its core, its drills, pipes and guns metal grafts.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.geyser_rig import GEYSER_RIG, RIG_CORE_GUNS  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_shapes import mirrored, strip  # noqa: E402
-from game.view.bosses.mini_boss_greebles import hazard, lamps, vent  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import conduit  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_3.toucan_jungle import segment  # noqa: E402
-from game.view.bosses.world_4.ash_plains_soot import (  # noqa: E402
+from game.config.bosses.world_4.geyser_rig import GEYSER_RIG, RIG_CORE_GUNS
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_shapes import mirrored, strip
+from game.view.bosses.mini_boss_greebles import hazard, lamps, vent
+from game.view.bosses.mini_boss_mechanism import conduit
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.world_3.toucan_jungle import segment
+from game.view.bosses.world_4.ash_plains_soot import (
     EMBER,
     SCORCH,
     ash_drift,
     molten_seam,
     soot_streaks,
 )
-from game.view.bosses.world_4.geyser_rig_parts import (  # noqa: E402
+from game.view.bosses.world_4.geyser_rig_parts import (
     DECK_Y,
     RIG_YELLOW,
     arm_limbs,
@@ -33,36 +33,36 @@ from game.view.bosses.world_4.geyser_rig_parts import (  # noqa: E402
     hangar,
     steam_vent,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The deck seen from above (right half, bow to stern), its stern corners cut.
-DECK = mirrored(
-    [
-        [0, 38],
-        [30, 38],
-        [44, 26],
-        [44, -54],
-        [34, -70],
-        [0, -70],
-    ]
-)
+DECK = mirrored([
+    [0, 38],
+    [30, 38],
+    [44, 26],
+    [44, -54],
+    [34, -70],
+    [0, -70],
+])
 
 # The derrick's corner posts: their foot on the deck and their top, half spread (x = z).
 DERRICK_FOOT = 9
@@ -80,7 +80,7 @@ TOWER_AT = [0.0, DECK_Y, -50.0]
 
 
 def _pipe_rack(hull: Any, s: float) -> None:
-    """The pipe rack along the `s` side of the deck: two pipes on trestles, a valve wheel."""
+    """Add the pipe rack along the `s` side of the deck: two pipes on trestles, a valve wheel."""
     for z in [16, -2, -18]:
         hull.box([7, 3, 1.6], H.dark, Placement([s * 35, DECK_Y, z]))
     for dx in [-1.8, 1.8]:
@@ -121,7 +121,10 @@ def _deck_veins(p: Any, s: float) -> None:
 
 
 def _draw_deck(p: Any) -> None:
-    """The deck: dark bevelled plates, yellow neon along its sides, hazard paint, ash and soot."""
+    """Draw the deck: dark bevelled plates, yellow neon along its sides.
+
+    It has hazard paint, ash and soot.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.bevel_slab(DECK, [0, 3, DECK_Y], [2, 1.5], SKIN.base, None, SKIN.dark)
@@ -172,14 +175,16 @@ def _draw_deck(p: Any) -> None:
 
 
 def _derrick_point(x: float, z: float, k: float) -> Vec3:
-    """A corner post's point at height fraction `k`, its spread narrowing to the top."""
+    """Return a corner post's point at height fraction `k`, its spread narrowing to the top."""
     spread = DERRICK_FOOT + (DERRICK_TOP - DERRICK_FOOT) * k
     return [x * spread, DECK_Y + 3 + DERRICK_HEIGHT * k, z * spread]
 
 
 def _draw_derrick(p: Any) -> None:
-    """The derrick (the core): a lattice tower of four posts braced crosswise, its crown block lit
-    yellow, the drill pipe glowing hot down its middle."""
+    """Draw the derrick (the core): a lattice tower of four posts braced crosswise.
+
+    Its crown block is lit yellow, the drill pipe glowing hot down its middle.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -226,7 +231,7 @@ def _draw_derrick(p: Any) -> None:
 
 
 def _draw_gun_house(p: Any) -> None:
-    """The drill floor's house at the derrick's foot, its twin fan guns pointing forward."""
+    """Draw the drill floor's house at the derrick's foot, its twin fan guns pointing forward."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -245,8 +250,10 @@ def _draw_gun_house(p: Any) -> None:
 
 
 def _draw_cooling_tower(p: Any) -> None:
-    """The cooling tower aft: a squat flared stack, hot metal glowing in its mouth, ash on its
-    rim."""
+    """Draw the cooling tower aft: a squat flared stack.
+
+    Hot metal glows in its mouth, ash on its rim.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.lathe(COOLING_TOWER, 10, SKIN.panel, Placement(TOWER_AT), False)
@@ -257,8 +264,11 @@ def _draw_cooling_tower(p: Any) -> None:
 
 
 def build_geyser_rig(scene: Any) -> Any:
-    """FB-GEYSER-RIG-01, FB-GEYSER-RIG-06: the Geyser Rig, a flying drilling rig with two drill
-    heads and steam vents, yellow neon, soot, ash and molten seams on its deck."""
+    """Build the Geyser Rig (FB-GEYSER-RIG-01, FB-GEYSER-RIG-06).
+
+    A flying drilling rig with two drill heads and steam vents, yellow neon, soot, ash and molten
+    seams on its deck.
+    """
 
     def core(p: Any) -> None:
         _draw_deck(p)

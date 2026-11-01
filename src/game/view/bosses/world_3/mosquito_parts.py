@@ -1,11 +1,11 @@
-"""MB-MOSQUITO-03, MB-MOSQUITO-05, 3-4: the Mosquito's parts (its buzzing wings and its
-proboscis) and its swamp growth.
-Logical pixels, nose +Z, Y up (towards the
-camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-MOSQUITO-03, MB-MOSQUITO-05, 3-4: the Mosquito's parts and its swamp growth.
+
+Its parts are its buzzing wings and its proboscis. Logical pixels, nose +Z, Y up (towards the
+camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -24,14 +24,16 @@ from game.view.bosses.world_3.jungle_flesh import F, sign_of, table
 from game.view.enemies.enemy_shapes import POD_SECTION
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Mosquito's pink neon (MB-MOSQUITO-06).
 MOSQUITO_PINK = BOSS_LOOK.neon["mosquito"]
@@ -50,45 +52,41 @@ def moss(hull: SolidBuilder, points: list[Vec3], size: float = 2.4) -> None:
 
 # The left wing seen from above (model +X), from its root's leading edge out and back
 # (MB-MOSQUITO-01).
-WING = table(
-    [
-        [10, 1],
-        [22, 3],
-        [36, 2],
-        [47, -1],
-        [52, -5],
-        [51, -9],
-        [44, -12],
-        [30, -13],
-        [18, -11],
-        [10, -7],
-    ]
-)
+WING = table([
+    [10, 1],
+    [22, 3],
+    [36, 2],
+    [47, -1],
+    [52, -5],
+    [51, -9],
+    [44, -12],
+    [30, -13],
+    [18, -11],
+    [10, -7],
+])
 # The membrane's neon veins, root to tip (left wing).
-VEINS = table(
-    [
-        [[12, 0], [49, -4]],
-        [[12, -4], [44, -10]],
-        [[14, -7], [30, -12]],
-    ]
-)
+VEINS = table([
+    [[12, 0], [49, -4]],
+    [[12, -4], [44, -10]],
+    [[14, -7], [30, -12]],
+])
 # Height of the membrane: a thin film over the pod.
 WING_Y = 3
 # A wing pod's nacelle under the membrane (loft stations around the pod's centre).
-NACELLE = table(
-    [
-        [-7, 2.5, -2, 2],
-        [-2, 4, -2.5, 3],
-        [5, 3.6, -2, 2.6],
-        [8, 2.2, -1, 1.6],
-    ]
-)
+NACELLE = table([
+    [-7, 2.5, -2, 2],
+    [-2, 4, -2.5, 3],
+    [5, 3.6, -2, 2.6],
+    [8, 2.2, -1, 1.6],
+])
 
 
 def wing(p: EnemyParts, at: Vec3) -> None:
-    """A wing around its pod's centre `at` (MB-MOSQUITO-03), drawn on its buzzing joint
-    (MB-MOSQUITO-04): a long, thin
-    membrane veined with pink neon, and under it the fan pod with its two barrels."""
+    """Add a wing around its pod's centre `at` (MB-MOSQUITO-03).
+
+    Drawn on its buzzing joint (MB-MOSQUITO-04): a long, thin membrane veined with pink neon, and
+    under it the fan pod with its two barrels.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -134,8 +132,10 @@ SOCKET = table([[5.5, 0], [6, 2], [4.5, 4.5], [0, 5]])
 
 
 def proboscis(p: EnemyParts, at: Vec3) -> None:
-    """The proboscis around its centre `at` (MB-MOSQUITO-03): a ringed socket the needle turns
-    in."""
+    """Add the proboscis around its centre `at` (MB-MOSQUITO-03).
+
+    A ringed socket the needle turns in.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -155,9 +155,11 @@ NEEDLE = table([[2.6, 0], [2.2, 3], [1.2, 6], [0.9, 14], [0.4, 19]])
 
 
 def needle(p: EnemyParts, at: Vec3) -> None:
-    """The proboscis's needle, turning on its socket (MB-MOSQUITO-03, D-073: it aims its laser at
-    the player during the warning line): a long, thin spike ringed in pink, its point glowing as the
-    laser charges."""
+    """Add the proboscis's needle, turning on its socket (MB-MOSQUITO-03).
+
+    It aims its laser at the player during the warning line (D-073). A long, thin spike ringed in
+    pink, its point glowing as the laser charges.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

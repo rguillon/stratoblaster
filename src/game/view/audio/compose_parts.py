@@ -1,27 +1,28 @@
-"""The parts of a bar of generated music (AUD-MUSIC-03, AUD-MUSIC-04): drums,
-bass, pad and arpeggio, each a list of notes for one bar.
+# Copyright (c) 2026 Renaud Guillon
+"""The parts of a bar of generated music (AUD-MUSIC-03, AUD-MUSIC-04): drums, bass.
+
+Pad and arpeggio, each a list of notes for one bar.
 
 `sort_by_beat` replaces `Array.prototype.sort` with a comparator: Transcrypt's sort
 takes none and is not stable, and the order of notes at one beat must stay as composed.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from audio.audio_types import Note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import pick  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.instruments import DRUM_PITCH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.music_styles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from audio.audio_types import Note
+from core.math.rng import pick
+from game.view.audio.instruments import DRUM_PITCH
+from game.view.audio.music_styles import (
     BEATS_PER_BAR,
     FULL_ENERGY,
     OCTAVE,
     MusicStyle,
 )
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from core.math.rng import Random
+
+# __pragma__ ("noskip")
 
 
 class BarContext:
@@ -43,13 +44,15 @@ class BarContext:
 
 
 def note(instrument: str, beat: float, beats: float, pitch: float, velocity: float) -> Note:
-    """A note of `instrument` at `beat` (beats), `beats` long."""
+    """Return a note of `instrument` at `beat` (beats), `beats` long."""
     return Note(beat, beats, pitch, velocity, instrument)
 
 
 def concat(groups: list[list[Note]]) -> list[Note]:
-    """The notes of several lists, one after the other (`[...a, ...b]`: Transcrypt's `+` on lists
-    concatenates strings, ENG-155)."""
+    """Return the notes of several lists.
+
+    One after the other (`[...a, ...b]`: Transcrypt's `+` on lists concatenates strings, ENG-155).
+    """
     notes: list[Note] = []
     for group in groups:
         notes.extend(group)
@@ -57,7 +60,10 @@ def concat(groups: list[list[Note]]) -> list[Note]:
 
 
 def sort_by_beat(notes: list[Note]) -> list[Note]:
-    """The notes sorted by `beat`, stable (equal beats keep their order): a bottom-up merge sort."""
+    """Return the notes sorted by `beat`, stable (equal beats keep their order).
+
+    A bottom-up merge sort.
+    """
     items = notes[:]
     width = 1
     size = len(items)
@@ -119,8 +125,10 @@ SNARE_BEATS = 0.5
 
 
 def drum_bar(style: MusicStyle, bar: BarContext, random: Random) -> list[Note]:
-    """One bar of drums (AUD-MUSIC-05): the style's pattern, hats by energy, a tom fill at
-    section ends."""
+    """One bar of drums (AUD-MUSIC-05): the style's pattern, hats by energy.
+
+    A tom fill at section ends.
+    """
     kick = style.instruments.kick
     snare = style.instruments.snare
     hat = style.instruments.hat
@@ -130,16 +138,16 @@ def drum_bar(style: MusicStyle, bar: BarContext, random: Random) -> list[Note]:
     notes = [note(kick, bar.beat + i * step, step, DRUM_PITCH, 1) for i in pattern.kick]
     if bar.energy == 0:
         return notes
-    for i in pattern.snare:
-        notes.append(note(snare, bar.beat + i * step, SNARE_BEATS, DRUM_PITCH, 0.9))
+    notes.extend([
+        note(snare, bar.beat + i * step, SNARE_BEATS, DRUM_PITCH, 0.9) for i in pattern.snare
+    ])
     every = 1 if bar.energy >= FULL_ENERGY else pattern.hat_every
     for i in range(0, DRUM_STEPS, every):
         if i in pattern.open and perc != hat:
             continue
         velocity = 0.85 if i % 4 == 0 else 0.5 + random() * 0.2
         notes.append(note(hat, bar.beat + i * step, step, DRUM_PITCH, velocity))
-    for i in pattern.open:
-        notes.append(note(perc, bar.beat + i * step, step * 2, DRUM_PITCH, 0.6))
+    notes.extend([note(perc, bar.beat + i * step, step * 2, DRUM_PITCH, 0.6) for i in pattern.open])
     if bar.fill:
         notes.extend(drum_fill(bar, random))
     return notes
@@ -150,7 +158,7 @@ TOM_FILL = [14, 10, 7, 3, 0, -4]
 
 
 def drum_fill(bar: BarContext, random: Random) -> list[Note]:
-    """The end of a section: a descending synth-tom fill over the last beat or two."""
+    """Return the end of a section: a descending synth-tom fill over the last beat or two."""
     step = BEATS_PER_BAR / DRUM_STEPS
     count = 6 if bar.energy >= FULL_ENERGY else pick(random, [3, 4])
     fill: list[Note] = []
@@ -182,8 +190,10 @@ BUSY_BASS = list(range(16))
 
 
 def bass_bar(style: MusicStyle, bar: BarContext, steps: list[int]) -> list[Note]:
-    """One bar of bass: the chord's root, the octave pumping on the off-beat eighths (outrun), a
-    passing fifth near the bar's end."""
+    """One bar of bass: the chord's root, the octave pumping on the off-beat eighths (outrun).
+
+    A passing fifth near the bar's end.
+    """
     root = bar.chord[0] if len(bar.chord) > 0 else 36
     fifth = bar.chord[FIFTH_INDEX] if len(bar.chord) > FIFTH_INDEX else root + 7
     sixteenth = BEATS_PER_BAR / DRUM_STEPS
@@ -208,12 +218,12 @@ def bass_bar(style: MusicStyle, bar: BarContext, steps: list[int]) -> list[Note]
 
 
 def bass_steps(style: MusicStyle, random: Random) -> list[int]:
-    """The bass steps of a track: one rhythm of the style, picked for the level."""
+    """Return the bass steps of a track: one rhythm of the style, picked for the level."""
     return pick(random, BASS_STEPS[style.bass])
 
 
 def pad_bar(style: MusicStyle, bar: BarContext) -> list[Note]:
-    """The pad holds the chord over the bar, voiced up `octaves`."""
+    """Return the pad holds the chord over the bar, voiced up `octaves`."""
     shift = 12 * style.octaves.pad
     return [note(style.instruments.pad, bar.beat, BEATS_PER_BAR, p + shift, 0.7) for p in bar.chord]
 
@@ -230,13 +240,15 @@ ARP_SHAPES = [
 
 
 def arp_shape(random: Random) -> list[int]:
-    """The arpeggio shape of a track."""
+    """Return the arpeggio shape of a track."""
     return pick(random, ARP_SHAPES)
 
 
 def arp_bar(style: MusicStyle, bar: BarContext, shape: list[int]) -> list[Note]:
-    """One bar of arpeggio over the chord, `rate` notes per beat (sixteenths when intense); it
-    goes on alone in the breaks, as synthwave breakdowns do."""
+    """One bar of arpeggio over the chord, `rate` notes per beat (sixteenths when intense).
+
+    It goes on alone in the breaks, as synthwave breakdowns do.
+    """
     rate = max(4, style.arp_rate) if bar.energy >= FULL_ENERGY else style.arp_rate
     shift = OCTAVE * style.octaves.arp
     tones = bar.chord[:]

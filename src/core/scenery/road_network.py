@@ -1,38 +1,41 @@
-"""Randomly generated roads and paths of a level (GFX-ROAD-01). Main roads wind along the whole
-level. Where the ground is under `min_height` (the sea) or steeper than `max_slope`, a main road
-turns off the screen before it and comes back from the side after it, so no road ever starts or
-ends on screen (beyond X = ±`offscreen_x`, GFX-ROAD-04). Paths branch off the main roads at random
-intervals, widen where they meet them, and run across to past the screen edge; a path that cannot
-reach it on buildable ground is dropped. Buildings stand only along roads, in slots every
-`slot_spacing` on both sides. The streets of the runout, past the level's end, are laid apart
-(`add_runout`). Pure and deterministic for a given seed.
+# Copyright (c) 2026 Renaud Guillon
+"""Randomly generated roads and paths of a level (GFX-ROAD-01).
+
+Main roads wind along the whole level. Where the ground is under `min_height` (the sea) or steeper
+than `max_slope`, a main road turns off the screen before it and comes back from the side after it,
+so no road ever starts or ends on screen (beyond X = ±`offscreen_x`, GFX-ROAD-04). Paths branch off
+the main roads at random intervals, widen where they meet them, and run across to past the screen
+edge; a path that cannot reach it on buildable ground is dropped. Buildings stand only along roads,
+in slots every `slot_spacing` on both sides. The streets of the runout, past the level's end, are
+laid apart (`add_runout`). Pure and deterministic for a given seed.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.noise import create_noise2d
+from core.math.rng import create_rng, random_in
+from core.scenery.districts import ZRange, find_districts, laid_districts
+from core.scenery.lanes import lanes_of, main_road_width, with_width
+from core.scenery.road_paths import PathGround, lay_paths
+from core.scenery.road_segments import SegmentIndex, add_slots
+from core.scenery.road_types import Road, RoadPoint, RoadSlot, RoadSnapshot
+from core.scenery.street_grid import street_runs
+from core.scenery.street_runs import Point
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.districts import District  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random
+from core.scenery.districts import District
+from core.scenery.height_field import HeightField
+from core.scenery.scenery_level import RoadRules, TileRules
 
-__pragma__("noskip")
+if TYPE_CHECKING:
+    from core.scenery.street_links import Block
+# __pragma__ ("noskip")
 
-from core.math.noise import create_noise2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import create_rng, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.districts import ZRange, find_districts, laid_districts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.lanes import lanes_of, main_road_width, with_width  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_paths import PathGround, lay_paths  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_segments import SegmentIndex, add_slots  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import Road, RoadPoint, RoadSlot, RoadSnapshot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_grid import street_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_runs import Point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -55,12 +58,12 @@ SQRT2 = math.sqrt(2)
 
 
 def _any_road(_road: Road) -> bool:
-    """Accepts every road."""
+    """Accept every road."""
     return True
 
 
 def _other_than(except_road: Road) -> Callable[[Road], bool]:
-    """Accepts every road but `except_road`."""
+    """Accept every road but `except_road`."""
 
     def accept(road: Road) -> bool:
         return road is not except_road
@@ -159,9 +162,9 @@ class RoadNetwork:
         ground = PathGround(
             rules,
             span,
-            lambda x, z: self._open(x, z),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
-            lambda x, z, which: self._segments.nearest(x, z, which),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
-            lambda points: self._add_road("cross", points),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
+            lambda x, z: self._open(x, z),
+            lambda x, z, which: self._segments.nearest(x, z, which),
+            lambda points: self._add_road("cross", points),
         )
         lay_paths(ground, random, [road for road in self._roads if road.kind == "main"])
         if rules.no_crossings is None:
@@ -170,7 +173,7 @@ class RoadNetwork:
             self._slots(road)
 
     def _slots(self, road: Road) -> None:
-        """Building slots along `road`; none along the streets on tiles (GFX-BLDG-05: blocks)."""
+        """Add building slots along `road`; none along streets on tiles (GFX-BLDG-05: blocks)."""
         if road.kind == "street" and self.rules.tiles is not None:
             return
         add_slots(road, self.rules.slot_spacing, self.slots)
@@ -191,10 +194,12 @@ class RoadNetwork:
         return self._roads
 
     def add_runout(self, made: RoadSnapshot | None = None) -> RoadSnapshot:
-        """Lays the streets of the runout (reviewer, 2026-10-28, PERF-15: after the rest, so the
-        level is ready sooner), or takes those `made` before (e.g. in a worker), and returns what it
-        added: its roads, blocks and slots. Their columns start on the last row laid before the
-        runout. Once only: afterwards, it adds nothing."""
+        """Lays the runout's streets (or takes those `made` before), and returns what it added.
+
+        Reviewer, 2026-10-28, PERF-15: it is laid after the rest, so the level is ready sooner (e.g.
+        in a worker). What it added is its roads, blocks and slots. Their columns start on the last
+        row laid before the runout. Once only: afterwards, it adds nothing.
+        """
         if self._runout_laid:
             return RoadSnapshot([], [], [])
         self._runout_laid = True
@@ -231,8 +236,11 @@ class RoadNetwork:
     def _follow(
         self, line: Sequence[Point], previous: Follow | None, width: float
     ) -> Follow | None:
-        """How the next main road follows `line` without crossing it (`noCrossings`, GFX-ROAD-05):
-        on the side of the screen the first main road leaves free, at least `gap` from its edge."""
+        """How the next main road follows `line` without crossing it.
+
+        It is `noCrossings` (GFX-ROAD-05): on the side of the screen the first main road leaves
+        free, at least `gap` from its edge.
+        """
         no_crossings = self.rules.no_crossings
         if no_crossings is None:
             return None
@@ -244,14 +252,19 @@ class RoadNetwork:
         return Follow(line, side, width, no_crossings.gap)
 
     def edge_distance(self, x: float, z: float, except_road: Road | None = None) -> float:
-        """Distance from (`x`, `z`) to the edge of the nearest road other than `except_road`
-        (negative on a road), or Infinity when no road is within about `BUCKET` units."""
+        """Distance from (`x`, `z`) to the edge of the nearest road other than `except_road`.
+
+        It is negative on a road, or Infinity when no road is within about `BUCKET` units.
+        """
         which = _any_road if except_road is None else _other_than(except_road)
         return self._segments.nearest(x, z, which).distance
 
     def clear_of(self, x: float, z: float, clearance: float) -> bool:
-        """Whether (`x`, `z`) is at least `clearance` from every road edge: `edge_distance(x, z) >=
-        clearance`, faster (reviewer, 2026-10-28: the props ask this a lot; GFX-ROAD-23)."""
+        """Whether (`x`, `z`) is at least `clearance` from every road edge.
+
+        `edge_distance(x, z) >= clearance`, faster (reviewer, 2026-10-28: the props ask this a lot;
+        GFX-ROAD-23).
+        """
         return self._segments.clear_of(x, z, clearance)
 
     def buildable(self, x: float, z: float) -> bool:
@@ -280,7 +293,10 @@ class RoadNetwork:
         return self._offscreen(p) or p.z <= self._streets_from
 
     def _main_line(self, random: Random, width: float, previous: Follow | None) -> list[Point]:
-        """A main road's centre line: on its own, or following the previous one (`noCrossings`)."""
+        """Return a main road's centre line.
+
+        It runs on its own, or follows the previous one (`noCrossings`).
+        """
         meander = self.rules.meander
         spread = self.rules.spread
         step = self.rules.step
@@ -300,7 +316,7 @@ class RoadNetwork:
                 previous.line[k] if (previous is not None and k < len(previous.line)) else None
             )
             if previous is not None and followed is not None:
-                # From `gap` to `gap + 2 × amplitude` beside the edge of the road it follows.
+                # From `gap` to `gap + 2 x amplitude` beside the edge of the road it follows.
                 side = previous.side
                 gap = previous.gap
                 apart = gap + (previous.width + width) / 2
@@ -317,9 +333,11 @@ class RoadNetwork:
         return points
 
     def _add_main_pieces(self, line: Sequence[Point], width: float) -> None:
-        """Lays the buildable runs of a main road line, each made to start and end off the screen:
-        an end on screen gets a turn that leaves the screen sideways (tried earlier and earlier
-        along the run when the ground does not allow it there)."""
+        """Lays the buildable runs of a main road line, each starting and ending off the screen.
+
+        An end on screen gets a turn that leaves the screen sideways (tried earlier and earlier
+        along the run when the ground does not allow it there).
+        """
         run: list[Point] = []
         # Each piece is laid at once, so the next ones keep clear of it (`noCrossings`).
         for p in line:
@@ -361,8 +379,10 @@ class RoadNetwork:
         return None
 
     def _exit_turn(self, from_: Point, start: float) -> list[Point] | None:
-        """Points turning from `from_` (heading `start`) towards the nearest side of the screen,
-        then on until off the screen; the other side is tried when that one is not buildable."""
+        """Points turning from `from_` (heading `start`) towards the nearest side of the screen.
+
+        Then on until off the screen; the other side is tried when that one is not buildable.
+        """
         nearest = 1 if from_.x >= 0 else -1
         first = self._turn_towards(from_, start, nearest)
         if first is not None:
@@ -399,9 +419,11 @@ class RoadNetwork:
         random: Random,
         out_of_view: Callable[[Any], bool] | None,
     ) -> None:
-        """The straight streets of `districts` (phase 4 review, see `street_runs`), as `street`
-        roads of the main road width, or wider avenues and boulevards. A street may end on a node
-        `out_of_view` accepts (by default, out of view: see `_street_ends`)."""
+        """Add the straight streets of `districts` (phase 4 review, see `street_runs`).
+
+        As `street` roads of the main road width, or wider avenues and boulevards. A street may end
+        on a node `out_of_view` accepts (by default, out of view: see `_street_ends`).
+        """
         if out_of_view is None:
 
             def default_out_of_view(p: Any) -> bool:
@@ -413,7 +435,7 @@ class RoadNetwork:
                 district,
                 self.rules,
                 random,
-                lambda x, z: self.buildable(x, z),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
+                lambda x, z: self.buildable(x, z),
                 out_of_view,
             )
             self.blocks.extend(blocks)
@@ -421,9 +443,11 @@ class RoadNetwork:
                 self._add_road("street", with_width(run.points, run.width))
 
     def _open(self, x: float, z: float) -> bool:
-        """Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts
-        (so none reaches a district road, GFX-ROAD-18), and clear of the other roads while a main
-        road is laid without crossings."""
+        """Whether winding roads and paths may go at (`x`, `z`).
+
+        Buildable, out of the districts (so none reaches a district road, GFX-ROAD-18), and clear of
+        the other roads while a main road is laid without crossings.
+        """
         if self._in_district(z):
             return False
         if not self.buildable(x, z):
@@ -439,12 +463,14 @@ class RoadNetwork:
         return any(z >= d.z_min and z <= d.z_max for d in self._districts)
 
     def snapshot(self) -> RoadSnapshot:
-        """What this network made (PERF-14): its roads, blocks and slots."""
+        """Return what this network made (PERF-14): its roads, blocks and slots."""
         return RoadSnapshot(list(self._roads), list(self.blocks), list(self.slots))
 
     def _restore(self, made: RoadSnapshot) -> None:
-        """The roads made before, indexed as they were when made (in order), with their blocks
-        and slots."""
+        """Restore the roads made before, indexed as they were when made (in order).
+
+        They come back with their blocks and slots.
+        """
         for road in made.roads:
             self._index(road)
         self.blocks.extend(made.blocks)
@@ -474,8 +500,11 @@ def level_roads(
     seed: int,
     options: RoadNetworkOptions | None = None,
 ) -> RoadNetwork:
-    """The roads of a whole level, a little beyond both ends (the camera sees past them). The
-    `streets_from` of `options` is ignored: the street grids start `STREETS_BEFORE` before Z = 0."""
+    """Return the roads of a whole level, a little beyond both ends (the camera sees past them).
+
+    The `streets_from` of `options` is ignored: the street grids start `STREETS_BEFORE` before Z =
+    0.
+    """
     span = ZRange(-LEVEL_MARGIN, field.length_ + LEVEL_MARGIN)
     made = options.made if options is not None else None
     runout_from = options.runout_from if options is not None else None

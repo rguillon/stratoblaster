@@ -1,6 +1,9 @@
-"""Unit tests of the chunks of `src/render/scenery/prop_field.py`: their placements and instance
-matrices (D-212: a chunk's trees come a row at a time), on a field made without models (its
-meshes set by hand): GFX-PROP-05, GFX-PROP-14, PERF-25."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of the chunks of `src/render/scenery/prop_field.py`.
+
+Their placements and instance matrices (D-212: a chunk's trees come a row at a time), on a field
+made without models (its meshes set by hand): GFX-PROP-05, GFX-PROP-14, PERF-25.
+"""
 
 from types import SimpleNamespace
 from typing import Any

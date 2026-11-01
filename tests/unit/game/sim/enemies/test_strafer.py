@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/strafer.py`."""
 
 import math
@@ -31,6 +32,7 @@ def test_enm_strafer_06_a_strafer_fires_a_fan_of_bullets_each_fire_interval() ->
     strafer = Strafer(200, 100, "left")
     run(strafer, ctx, 2.0)
     shots = len(ctx.bullets)
-    assert shots > 0 and shots % CFG.fanCount == 0
+    assert shots > 0
+    assert shots % CFG.fanCount == 0
     headings = sorted({round(h, 3) for _, _, h, _ in ctx.bullets})
     assert len(headings) == CFG.fanCount

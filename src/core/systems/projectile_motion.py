@@ -1,22 +1,23 @@
-"""Projectiles in flight (`specs/gameplay/weapons.md`)
+# Copyright (c) 2026 Renaud Guillon
+"""Projectiles in flight (`specs/gameplay/weapons.md`).
 
 A shot's heading is in radians from forward (+Y), positive to the right.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.shot_target import closest_target
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.weapon import ProjectileWeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget
+from core.entities.weapon import ProjectileWeaponDefinition
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 DEG = math.pi / 180
 
@@ -24,7 +25,7 @@ DEG = math.pi / 180
 class Projectile:
     """A shot in flight. `age` is the seconds since launch."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         alive: bool,
         weapon: ProjectileWeaponDefinition,
@@ -44,7 +45,7 @@ class Projectile:
 
 
 def wrap_angle(angle: float) -> float:
-    """Wraps an angle into (-π, π]."""
+    """Wrap an angle into (-π, π]."""
     wrapped = angle - 2 * math.pi * math.floor((angle + math.pi) / (2 * math.pi))
     return math.pi if wrapped == -math.pi else wrapped
 
@@ -64,7 +65,7 @@ def _sign(value: float) -> float:
 
 
 def turn_towards(heading: float, desired: float, max_turn: float) -> float:
-    """Turns `heading` towards `desired` by at most `max_turn` radians."""
+    """Turn `heading` towards `desired` by at most `max_turn` radians."""
     delta = wrap_angle(desired - heading)
     if abs(delta) <= max_turn:
         return desired
@@ -72,9 +73,10 @@ def turn_towards(heading: float, desired: float, max_turn: float) -> float:
 
 
 def advance_projectile(shot: Projectile, targets: Sequence[ShotTarget], dt: float) -> None:
-    """Advances a projectile by `dt` (GAME-WPN-04, GAME-WPN-08): homes on the living target closest
-    to it, within its weapon's homing range (re-chosen every step) if its weapon homes, accelerates
-    up to the speed cap, then moves along its heading.
+    """Advances a projectile by `dt` (GAME-WPN-04, GAME-WPN-08).
+
+    Homes on the living target closest to it, within its weapon's homing range (re-chosen every
+    step) if its weapon homes, accelerates up to the speed cap, then moves along its heading.
     """
     weapon = shot.weapon
     if weapon.homing_turn_rate_deg > 0:

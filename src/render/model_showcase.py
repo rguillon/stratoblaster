@@ -1,17 +1,17 @@
+# Copyright (c) 2026 Renaud Guillon
 """Models shown side by side, each one spinning (UI-SHIP-01)."""
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import new_transform_node
 from render.model_animation import step_model_animations
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
 ModelFactory = Callable[[Any], Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class ShowcaseOptions:
@@ -26,8 +26,10 @@ class ShowcaseOptions:
 
 
 class ModelShowcase:
-    """Shows models side by side along X, each one spinning around its vertical axis. Model
-    animations (`add_model_animation`) are stepped with the rotation."""
+    """Shows models side by side along X, each one spinning around its vertical axis.
+
+    Model animations (`add_model_animation`) are stepped with the rotation.
+    """
 
     def __init__(self, scene: Any, factories: list[ModelFactory], options: ShowcaseOptions) -> None:
         self._rotation_speed = options.rotation_speed_rad_per_sec
@@ -49,5 +51,6 @@ class ModelShowcase:
             step_model_animations(pivot, dt_seconds)
 
     def dispose(self) -> None:
+        """Disposes every pivot."""
         for pivot in self.pivots:
             pivot.dispose()

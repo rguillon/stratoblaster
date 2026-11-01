@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/tile_kit.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import bounds, check_colored
@@ -11,11 +14,13 @@ from game.view.props.tile_kit import geometry_of, js_remainder, js_round, tile_k
     ("a", "b", "expected"),
     [(7, 3, 1), (-7, 3, -1), (6, 3, 0), (-6, 3, 0)],
 )
-def test_gfx_bldg_09_js_remainder_takes_the_sign_of_the_dividend(a, b, expected):
+def test_gfx_bldg_09_js_remainder_takes_the_sign_of_the_dividend(
+    a: Any, b: Any, expected: Any
+) -> None:
     assert js_remainder(a, b) == expected
 
 
-def test_gfx_bldg_09_js_remainder_matches_javascript_for_a_negative_divisor():
+def test_gfx_bldg_09_js_remainder_matches_javascript_for_a_negative_divisor() -> None:
     assert js_remainder(5, -3) == 2
 
 
@@ -23,17 +28,17 @@ def test_gfx_bldg_09_js_remainder_matches_javascript_for_a_negative_divisor():
     ("x", "expected"),
     [(2.4, 2), (2.5, 3), (-2.5, -2), (0, 0), (3.49, 3)],
 )
-def test_gfx_bldg_09_js_round_rounds_halves_up(x, expected):
+def test_gfx_bldg_09_js_round_rounds_halves_up(x: Any, expected: Any) -> None:
     assert js_round(x) == expected
 
 
-def test_gfx_bldg_03_a_kit_holds_its_plot_tile_and_seed():
+def test_gfx_bldg_03_a_kit_holds_its_plot_tile_and_seed() -> None:
     k = tile_kit(18.0, 12.0, 10, 4)
     assert (k.w, k.d, k.tile, k.seed) == (18.0, 12.0, 10, 4)
     assert k.s is not k.lights
 
 
-def test_gfx_bldg_09_the_random_generator_of_a_kit_is_seeded_by_its_model():
+def test_gfx_bldg_09_the_random_generator_of_a_kit_is_seeded_by_its_model() -> None:
     a = tile_kit(18.0, 12.0, 10, 4)
     b = tile_kit(18.0, 12.0, 10, 4)
     assert [a.random() for _ in range(3)] == [b.random() for _ in range(3)]
@@ -41,7 +46,7 @@ def test_gfx_bldg_09_the_random_generator_of_a_kit_is_seeded_by_its_model():
     assert [a.random() for _ in range(3)] != [other.random() for _ in range(3)]
 
 
-def test_gfx_prop_04_geometry_of_a_kit_is_its_structure_lights_and_windows():
+def test_gfx_prop_04_geometry_of_a_kit_is_its_structure_lights_and_windows() -> None:
     k = tile_kit(10.0, 10.0, 10, 1)
     prop = geometry_of(k)
     assert prop.structure is k.s.geometry
@@ -50,7 +55,7 @@ def test_gfx_prop_04_geometry_of_a_kit_is_its_structure_lights_and_windows():
     check_colored(prop.structure)
 
 
-def test_d210_windows_put_one_quad_on_each_wall_of_the_block():
+def test_d210_windows_put_one_quad_on_each_wall_of_the_block() -> None:
     k = tile_kit(10.0, 10.0, 10, 1)
     windows(k, [6.0, 4.0], [1.0, 7.0], [1.0, 0.72, 0.38], [1.0, 2.0])
     geo = k.windows.geometry

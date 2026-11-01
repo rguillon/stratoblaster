@@ -1,25 +1,31 @@
-"""The lives and bombs kept between levels (GAME-LIFE-12, GAME-LEVEL-14). Storage key
-prefixed with the game's id.
+# Copyright (c) 2026 Renaud Guillon
+"""The lives and bombs kept between levels (GAME-LIFE-12, GAME-LEVEL-14).
+
+Storage key prefixed with the game's id.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from core.systems.level_run_types import Supplies
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from host.key_value_storage import KeyValueStorage  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from host.key_value_storage import KeyValueStorage
 
-__pragma__("noskip")
-
-from core.systems.level_run_types import Supplies  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def saved_supplies_key(game_id: str) -> str:
+    """Return the storage key of the supplies kept for `game_id`."""
     return game_id + "_supplies"
 
 
 def parse_supplies(raw: str | None) -> Supplies | None:
-    """Parses stored lives and bombs (`{"lives":4,"bombs":6}`). Anything else, or an unreadable
-    value, reads as None: the player starts with the game's starting lives and bombs.
+    """Parse stored lives and bombs (`{"lives":4,"bombs":6}`).
+
+    Anything else, or an unreadable value, reads as None: the player starts with the game's starting
+    lives and bombs.
     """
     if raw is None:
         return None
@@ -45,12 +51,12 @@ def _read_supplies(raw: str) -> Supplies | None:
 
 
 def load_saved_supplies(storage: KeyValueStorage, game_id: str) -> Supplies | None:
-    """The lives and bombs the player kept from the last level completed, or None."""
+    """Return the lives and bombs the player kept from the last level completed, or None."""
     return parse_supplies(storage.get(saved_supplies_key(game_id)))
 
 
 def save_supplies(storage: KeyValueStorage, game_id: str, supplies: Supplies) -> None:
-    """Keeps the player's lives and bombs when a level is completed, for the next levels."""
+    """Keep the player's lives and bombs when a level is completed, for the next levels."""
     storage.set(saved_supplies_key(game_id), _to_json(supplies))
 
 

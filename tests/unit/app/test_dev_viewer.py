@@ -1,8 +1,9 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/dev_viewer.py` (D-199): the dev viewers, over a fake level scene."""
 
 import math
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 from helpers.fakes import ProbeBoss
@@ -26,10 +27,10 @@ class FakeCamera:
     def _set(self, x: float, y: float, z: float) -> None:
         self.position.x, self.position.y, self.position.z = x, y, z
 
-    def getTarget(self) -> Any:  # noqa: N802 (Babylon's name)
+    def getTarget(self) -> Any:
         return self.target
 
-    def setTarget(self, target: Any) -> None:  # noqa: N802 (Babylon's name)
+    def setTarget(self, target: Any) -> None:
         self.target = target
 
 
@@ -39,7 +40,7 @@ class FakeStage:
         # Looking down at 45°: the middle of the view is 100 ahead of the camera, on the flight
         # plane.
         self.framing = SimpleNamespace(direction=[-1.0, 1.0], back=-50.0, height=100.0)
-        self.field = SimpleNamespace(height=lambda x, z: 4.0)
+        self.field = SimpleNamespace(height=lambda _x, _z: 4.0)
         self.ground_root = SimpleNamespace(
             scale=2.0, to_ground=lambda z: z / 2, to_world=lambda z: z * 2
         )
@@ -47,7 +48,7 @@ class FakeStage:
         self.solo: list[Any] = []
         self.shifts: list[float] = []
 
-    def find_prop(self, kind: str, z_end: float) -> Any:
+    def find_prop(self, _kind: str, _z_end: float) -> Any:
         return self.found
 
     def solo_props(self, placements: list[Any]) -> None:
@@ -79,9 +80,9 @@ def pivot() -> SimpleNamespace:
 
 
 class FakeShip:
-    made: list["FakeShip"] = []
+    made: ClassVar[list["FakeShip"]] = []
 
-    def __init__(self, scene: Any, scale: float, x: float, y: float) -> None:
+    def __init__(self, _scene: Any, _scale: float, x: float, y: float) -> None:
         self.at = (x, y)
         self.pivot = pivot()
         self.model: Any = None
@@ -97,7 +98,7 @@ class FakeShip:
 
 
 class FakeLayer:
-    def __init__(self, scene: Any, models: Any, keys: list[str]) -> None:
+    def __init__(self, _scene: Any, _models: Any, _keys: list[str]) -> None:
         self.synced: list[Any] = []
         self.disposed = False
         self.pivot = pivot()
@@ -105,7 +106,7 @@ class FakeLayer:
     def pivot_of(self, enemy: Any) -> Any:
         return self.pivot if enemy in self.synced else None
 
-    def sync(self, enemies: list[Any], dt: float) -> None:
+    def sync(self, enemies: list[Any], _dt: float) -> None:
         self.synced = enemies
 
     def dispose(self) -> None:
@@ -115,14 +116,14 @@ class FakeLayer:
 class FakeBlasts:
     """The explosions' renderer: every list of blasts it drew."""
 
-    made: list["FakeBlasts"] = []
+    made: ClassVar[list["FakeBlasts"]] = []
 
-    def __init__(self, scene: Any) -> None:
+    def __init__(self, _scene: Any) -> None:
         self.drawn: list[Any] = []
         self.disposed = False
         FakeBlasts.made.append(self)
 
-    def sync(self, blasts: list[Any], dt: float) -> None:
+    def sync(self, blasts: list[Any], _dt: float) -> None:
         self.drawn.extend(blasts)
 
     def dispose(self) -> None:
@@ -130,9 +131,9 @@ class FakeBlasts:
 
 
 class FakePropStage:
-    made: list["FakePropStage"] = []
+    made: ClassVar[list["FakePropStage"]] = []
 
-    def __init__(self, engine: Any, game: Any, environment: bool) -> None:
+    def __init__(self, _engine: Any, _game: Any, _environment: bool) -> None:
         self.scene = SimpleNamespace(name="props-scene")
         self.shown: list[str] = []
         self.updates: list[tuple[list[float], bool, float]] = []
@@ -158,8 +159,8 @@ class Env:
         self.views: list[FakeView] = []
         self.disposed: list[Any] = []
         FakeShip.made = []
-        monkeypatch.setattr(dev_viewer, "prepare_level", lambda game, level: self.ready)
-        monkeypatch.setattr(dev_viewer, "level_of", lambda game, level: SimpleNamespace(id=level))
+        monkeypatch.setattr(dev_viewer, "prepare_level", lambda _game, _level: self.ready)
+        monkeypatch.setattr(dev_viewer, "level_of", lambda _game, level: SimpleNamespace(id=level))
         monkeypatch.setattr(dev_viewer, "scenery_with_runout", lambda level: level)
         monkeypatch.setattr(dev_viewer, "build_level_scene", self._build)
         self.groundless: list[Any] = []
@@ -171,16 +172,16 @@ class Env:
         bounds = SimpleNamespace(
             min=SimpleNamespace(x=0, y=0, z=0), max=SimpleNamespace(x=40, y=10, z=20)
         )
-        monkeypatch.setattr(dev_viewer, "get_hierarchy_bounding_vectors", lambda root: bounds)
+        monkeypatch.setattr(dev_viewer, "get_hierarchy_bounding_vectors", lambda _root: bounds)
         monkeypatch.setattr(dev_viewer, "DevPropStage", FakePropStage)
         FakePropStage.made = []
 
-    def _build_groundless(self, engine: Any, game: Any, level: Any, options: Any) -> FakeView:
+    def _build_groundless(self, engine: Any, game: Any, _level: Any, options: Any) -> FakeView:
         view = self._build(engine, game, options)
         self.groundless.append(view)
         return view
 
-    def _build(self, engine: Any, game: Any, options: Any) -> FakeView:
+    def _build(self, _engine: Any, _game: Any, options: Any) -> FakeView:
         view = FakeView(FakeStage(self.stage_found))
         view.level = options.level
         self.views.append(view)
@@ -190,9 +191,9 @@ class Env:
 class FakeEnemy:
     """Comes in from above the playfield and flies down at `speed`, turning as it goes."""
 
-    def __init__(self, id: str, expires: bool = True, speed: float = 100.0) -> None:
-        self.id = id
-        self.model = id
+    def __init__(self, item_id: str, expires: bool = True, speed: float = 100.0) -> None:
+        self.id = item_id
+        self.model = item_id
         self.x = 240.0
         self.y = 760.0
         self.heading = math.pi
@@ -210,7 +211,7 @@ class FakeEnemy:
 
 
 def spawned(kind_id: str) -> Any:
-    def spawn(area: Any) -> list[Any]:
+    def spawn(_area: Any) -> list[Any]:
         return [FakeEnemy(kind_id)]
 
     return spawn
@@ -232,7 +233,7 @@ def game() -> SimpleNamespace:
         view=view,
         screen=SimpleNamespace(width=480, height=720),
         enemy_kinds=[SimpleNamespace(id="gnat", spawn=spawned("gnat"))],
-        boss_kinds=[SimpleNamespace(id="warden", spawn=lambda area: boss)],
+        boss_kinds=[SimpleNamespace(id="warden", spawn=lambda _area: boss)],
     )
 
 
@@ -246,7 +247,7 @@ class FakeScenery:
 
 
 def viewer(name: str, items: list[DevItem]) -> DevViewer:
-    return DevViewer("engine", game(), name, items, True)
+    return DevViewer("engine", game(), name, items, environment=True)
 
 
 @pytest.fixture
@@ -291,7 +292,7 @@ def test_d199_the_scene_waits_for_the_level_ground(env: Env) -> None:
 def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) -> None:
     """DEV-MENU-12."""
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
-    v.show(0, True)
+    v.show(0, toggle=True)
     v.frame(0.1)
     ship = FakeShip.made[0]
     # The camera is 100 above the flight plane, looking down at 45°: the middle is 100 ahead.
@@ -300,7 +301,7 @@ def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) ->
     assert ship.dt == pytest.approx(0.1)
     camera = env.views[0].stage.camera
     assert camera.fov < 0.8
-    v.show(0, False)
+    v.show(0, toggle=False)
     v.frame(0.1)
     assert camera.fov == 0.8
 
@@ -309,13 +310,13 @@ def test_d199_another_item_replaces_the_model_on_the_same_scene(env: Env) -> Non
     items = [DevItem("alpha", "Alpha", "1-1"), DevItem("beta", "Beta", "1-1")]
     v = viewer("ships", items)
     v.frame(0)
-    v.show(1, True)
+    v.show(1, toggle=True)
     v.frame(0)
     assert len(env.views) == 1
     assert env.disposed == [FakeShip.made[0].pivot]
     assert FakeShip.made[1].model is None
     # Out of range: the last item.
-    v.show(9, True)
+    v.show(9, toggle=True)
     assert v._index == 1
 
 
@@ -334,7 +335,8 @@ class Drawn:
         layer.sync = sync
 
 
-def test_d199_an_enemy_lives_its_own_life_but_is_drawn_at_the_middle(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_an_enemy_lives_its_own_life_but_is_drawn_at_the_middle() -> None:
     """DEV-MENU-13."""
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
@@ -350,7 +352,8 @@ def test_d199_an_enemy_lives_its_own_life_but_is_drawn_at_the_middle(env: Env) -
     assert ctx.fire_rate == 1.0
 
 
-def test_d199_an_enemy_that_left_the_playfield_comes_again(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_an_enemy_that_left_the_playfield_comes_again() -> None:
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
     first = v._enemy
@@ -361,7 +364,8 @@ def test_d199_an_enemy_that_left_the_playfield_comes_again(env: Env) -> None:
     assert v._enemy.y > 0
 
 
-def test_d199_an_enemy_gone_or_too_old_comes_again(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_an_enemy_gone_or_too_old_comes_again() -> None:
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
     first = v._enemy
@@ -375,7 +379,8 @@ def test_d199_an_enemy_gone_or_too_old_comes_again(env: Env) -> None:
     assert v._enemy is not second
 
 
-def test_d199_a_boss_does_not_expire(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_a_boss_does_not_expire() -> None:
     v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
     v.frame(0)
     boss = v._enemy
@@ -398,11 +403,12 @@ def test_d199_the_enemy_world_drops_what_the_enemy_does_but_keeps_what_blows_up(
     assert [(b.x, b.y, b.radius) for b in ctx.blasts] == [(5, 6, 1), (7, 8, 2)]
 
 
-def test_d199_a_boss_is_spawned_too_and_an_unknown_kind_is_an_error(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_a_boss_is_spawned_too_and_an_unknown_kind_is_an_error() -> None:
     v = viewer("bosses", [DevItem("warden", "Warden", "1-1"), DevItem("x", "X", "1-1")])
     v.frame(0)
     assert v._layer.synced[0].id == "warden"
-    v.show(1, True)
+    v.show(1, toggle=True)
     with pytest.raises(ValueError, match="No enemy kind"):
         v.frame(0)
 
@@ -421,13 +427,14 @@ def test_d199_the_levels_viewer_scrubs_within_the_level_and_plays(env: Env) -> N
     assert env.views[0].updates[-1][0] == pytest.approx(v._time * 10)
     assert v.status == clock_text(v._time) + " / 1:40"
     v.scrub(1e9)
-    v.show(0, True)
+    v.show(0, toggle=True)
     for _ in range(50):
         v.frame(1)
     assert v._time == pytest.approx(100)
 
 
-def test_d199_a_viewer_without_items_does_nothing(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_a_viewer_without_items_does_nothing() -> None:
     v = viewer("bosses", [])
     v.frame(1)
     assert v.scene is None
@@ -443,7 +450,8 @@ def test_d199_dispose_drops_the_model_and_the_scene(env: Env) -> None:
     assert v.scene is None
 
 
-def test_d199_a_drag_turns_a_ship_and_the_turn_is_kept_for_the_next(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_a_drag_turns_a_ship_and_the_turn_is_kept_for_the_next() -> None:
     """DEV-MENU-10."""
     items = [DevItem("alpha", "Alpha", "1-1"), DevItem("beta", "Beta", "1-1")]
     v = viewer("ships", items)
@@ -453,12 +461,13 @@ def test_d199_a_drag_turns_a_ship_and_the_turn_is_kept_for_the_next(env: Env) ->
     rotation = FakeShip.made[0].pivot.rotation
     step = CFG.turn_per_pixel
     assert (rotation.y, rotation.x) == pytest.approx((100 * step, -50 * step))
-    v.show(1, True)
+    v.show(1, toggle=True)
     v.frame(0)
     assert FakeShip.made[1].pivot.rotation.y == pytest.approx(100 * step)
 
 
-def test_d199_a_drag_turns_an_enemy_on_top_of_its_heading(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d199_a_drag_turns_an_enemy_on_top_of_its_heading() -> None:
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
     v.turn(0, 30)
@@ -477,17 +486,18 @@ def test_d205_a_prop_is_shown_on_its_own_stage_without_a_level(env: Env) -> None
     assert v.scene is stage.scene
     assert stage.shown == ["hut"]
     assert v.status == CFG.texts.grid_note
-    v.show(1, True)
+    v.show(1, toggle=True)
     v.frame(0)
     assert len(FakePropStage.made) == 1
     assert stage.shown == ["hut", "barn"]
     assert env.views == []
 
 
-def test_d205_a_drag_and_the_toggle_reach_the_props_camera(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d205_a_drag_and_the_toggle_reach_the_props_camera() -> None:
     """DEV-MENU-17."""
     v = viewer("props", [DevItem("hut", "hut", "1-1")])
-    v.show(0, True)
+    v.show(0, toggle=True)
     v.turn(50, -20)
     v.frame(0)
     turn, close_up, zoom = FakePropStage.made[0].updates[-1]
@@ -497,7 +507,8 @@ def test_d205_a_drag_and_the_toggle_reach_the_props_camera(env: Env) -> None:
     assert zoom == 1
 
 
-def test_d205_dispose_drops_the_props_stage(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_d205_dispose_drops_the_props_stage() -> None:
     v = viewer("props", [DevItem("hut", "hut", "1-1")])
     v.frame(0)
     v.dispose()
@@ -521,7 +532,7 @@ def test_d208_a_zoom_narrows_the_field_of_view_so_things_look_that_much_bigger()
 
 def test_d208_the_wheel_zooms_a_ship_and_the_props_camera(env: Env) -> None:
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
-    v.show(0, False)
+    v.show(0, toggle=False)
     v.frame(0)
     camera = env.views[0].stage.camera
     before = camera.fov
@@ -549,20 +560,19 @@ def test_the_enemies_and_bosses_are_shown_with_no_ground_and_none_waited_for(env
 
 def _probe_boss() -> Any:
 
-    parts = [BossPartSpec("gun", 30, 0, 8, 10, False, 0.0)]
+    parts = [BossPartSpec("gun", 30, 0, 8, 10, shields_core=False, drop_chance=0.0)]
     stats = BossStats("warden", 40, 100, 1000, "Warden", 12, parts, 1, 1, BossDeath(1, 0.25))
     boss = ProbeBoss(240, 600, stats)
     boss.state = "fighting"
     return boss
 
 
-def test_k_breaks_the_boss_part_and_its_blast_is_drawn_where_the_boss_is_shown(
-    env: Env,
-) -> None:
+@pytest.mark.usefixtures("env")
+def test_k_breaks_the_boss_part_and_its_blast_is_drawn_where_the_boss_is_shown() -> None:
     """DEV-MENU-14."""
     v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
     boss = _probe_boss()
-    v.game.boss_kinds[0].spawn = lambda area: boss
+    v.game.boss_kinds[0].spawn = lambda _area: boss
     v.frame(0)
     v.break_part()
     v.frame(0.1)
@@ -573,7 +583,8 @@ def test_k_breaks_the_boss_part_and_its_blast_is_drawn_where_the_boss_is_shown(
     assert blast.y - v._middle_point[1] == pytest.approx(boss.parts[0].y - boss.y)
 
 
-def test_k_does_nothing_to_an_enemy(env: Env) -> None:
+@pytest.mark.usefixtures("env")
+def test_k_does_nothing_to_an_enemy() -> None:
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
     v.break_part()

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/audio_bindings.py`."""
 
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
@@ -14,7 +15,7 @@ def test_aud_engine_13_a_music_request_names_a_level_a_boss_or_a_jingle() -> Non
 def test_aud_engine_13_the_bindings_keep_the_game_s_music_sounds_and_mix() -> None:
     mix = AudioMix(0.6, 1.0)
 
-    def music(request: MusicRequest) -> None:
+    def music(_request: MusicRequest) -> None:
         return None
 
     bindings = AudioBindings(music, {}, {}, 40, mix)

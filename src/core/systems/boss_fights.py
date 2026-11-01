@@ -1,4 +1,5 @@
-"""The boss fights of a level, one at a time (BOSS-02)
+# Copyright (c) 2026 Renaud Guillon
+"""The boss fights of a level, one at a time (BOSS-02).
 
 When the level gets to a boss, it comes in, the track is held (the level's progress waits,
 GAME-LEVEL-06; the ground goes on, eased to the boss's speed, GAME-LEVEL-07), and once the boss has
@@ -7,28 +8,30 @@ blown up the ground eases back and the level goes on. Pure and deterministic.
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Literal, Protocol
 
-from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scroll_track import ScrollTrack  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss import Boss
+from core.entities.enemy import EnemySpawnArea
+from core.scenery.scroll_track import ScrollTrack
 
 # The two bosses of a level (GAME-LEVEL-04): one around its middle, one at its end.
 BossRank = Literal["mini", "final"]
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 # Slack on distances (seeking to a boss's distance in seconds may round).
 SLACK = 1e-6
 
 
 class LevelBoss:
-    """A boss of a level (GAME-LEVEL-04): its kind (the id of a `BossKindDefinition`), its rank, and
-    how far into the level it comes: the level progress (world units, `ScrollTrack.progress`) where
-    it arrives.
+    """A boss of a level (GAME-LEVEL-04).
+
+    Its kind (the id of a `BossKindDefinition`), its rank, and how far into the level it comes: the
+    level progress (world units, `ScrollTrack.progress`) where it arrives.
     """
 
     def __init__(self, kind: str, rank: "BossRank", at: float) -> None:
@@ -54,7 +57,7 @@ class BossKindDefinition(Protocol):
         ...
 
     def spawn(self, area: EnemySpawnArea) -> Boss:
-        """Creates the boss just above the playfield."""
+        """Create the boss just above the playfield."""
         ...
 
 
@@ -62,9 +65,11 @@ __pragma__("noskip")
 
 
 class BossFightRules:
-    """How fights go (engine timings, given by the game): `speed_ease_seconds` is the seconds the
-    ground takes to change to the fight's speed, and back (GAME-LEVEL-07); `bar_fill_seconds` the
-    seconds the health bar takes to fill up when a boss arrives (UI-HUD-14).
+    """How fights go (engine timings, given by the game).
+
+    `speed_ease_seconds` is the seconds the ground takes to change to the fight's speed, and back
+    (GAME-LEVEL-07); `bar_fill_seconds` the seconds the health bar takes to fill up when a boss
+    arrives (UI-HUD-14).
     """
 
     def __init__(self, speed_ease_seconds: float, bar_fill_seconds: float) -> None:
@@ -73,12 +78,14 @@ class BossFightRules:
 
 
 class BossBar:
-    """What the boss health bar shows (BOSS-05, UI-HUD-13). `share` is the part of the bar filled,
-    0..1: the health left over the full health, as it fills up. `notches` are where each
-    destroyable part's share ends along the bar, 0..1 from the left (UI-HUD-15).
+    """What the boss health bar shows (BOSS-05, UI-HUD-13).
+
+    `share` is the part of the bar filled, 0..1: the health left over the full health, as it fills
+    up. `notches` are where each destroyable part's share ends along the bar, 0..1 from the left
+    (UI-HUD-15).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         name: str,
         rank: "BossRank",
@@ -105,8 +112,9 @@ def validate_level_bosses(bosses: Sequence[LevelBoss], kind_ids: Sequence[str]) 
 
 
 class BossFightHooks:
-    """What `BossFights` needs from the level it runs in: `area` gives where bosses appear, `add`
-    adds the boss to the level's enemies.
+    """What `BossFights` needs from the level it runs in: `area` gives where bosses appear.
+
+    `add` adds the boss to the level's enemies.
     """
 
     def __init__(self, area: Callable[[], EnemySpawnArea], add: Callable[[Boss], None]) -> None:
@@ -124,10 +132,8 @@ class _Fight:
 
 
 def _sorted_by_at(bosses: Sequence[LevelBoss]) -> list[LevelBoss]:
-    """A copy sorted by distance: a stable insertion sort (as `Array.sort` is stable)."""
-    sorted_bosses: list[LevelBoss] = []
-    for boss in bosses:
-        sorted_bosses.append(boss)
+    """Return a copy sorted by distance: a stable insertion sort (as `Array.sort` is stable)."""
+    sorted_bosses: list[LevelBoss] = list(bosses)
     for i in range(1, len(sorted_bosses)):
         j = i
         while j > 0 and sorted_bosses[j - 1].at > sorted_bosses[j].at:
@@ -137,8 +143,10 @@ def _sorted_by_at(bosses: Sequence[LevelBoss]) -> list[LevelBoss]:
 
 
 class BossFights:
-    """The boss fights of a level. `defeated` are the bosses destroyed so far, in order;
-    `just_defeated` the boss destroyed during the last step, if any.
+    """The boss fights of a level.
+
+    `defeated` are the bosses destroyed so far, in order; `just_defeated` the boss destroyed during
+    the last step, if any.
     """
 
     def __init__(
@@ -148,9 +156,7 @@ class BossFights:
         rules: BossFightRules,
         hooks: BossFightHooks,
     ) -> None:
-        kind_ids: list[str] = []
-        for kind in kinds:
-            kind_ids.append(kind.id)
+        kind_ids: list[str] = [kind.id for kind in kinds]
         validate_level_bosses(bosses, kind_ids)
         self.defeated: list[LevelBoss] = []
         self.just_defeated: LevelBoss | None = None
@@ -199,7 +205,7 @@ class BossFights:
         return self._bosses
 
     def step(self, dt: float, track: ScrollTrack) -> None:
-        """Starts the next boss once the level has got to it; ends the fight once it is gone."""
+        """Start the next boss once the level has got to it; end the fight once it is gone."""
         self.just_defeated = None
         fight = self._fight
         if fight is not None:
@@ -213,9 +219,11 @@ class BossFights:
                 self._start(following, track)
 
     def skip_to(self, track: ScrollTrack, passed: int | None = None) -> None:
-        """After a seek or a restart at `progress` (DEV-OPT-02, GAME-LIFE-11): the boss being fought
-        (if any) is dropped, the ground goes back to its speed, and the next boss is the first one
-        at or after `progress`, or the one after the first `passed` when given.
+        """After a seek or a restart at `progress` (DEV-OPT-02, GAME-LIFE-11).
+
+        The boss being fought (if any) is dropped, the ground goes back to its speed, and the next
+        boss is the first one at or after `progress`, or the one after the first `passed` when
+        given.
         """
         self._fight = None
         track.held = False

@@ -1,4 +1,5 @@
-"""Boss volleys (BOSS-23)
+# Copyright (c) 2026 Renaud Guillon
+"""Boss volleys (BOSS-23).
 
 What volleys fire, from which piece, on which timer. Angles in degrees in the data; a preset heading
 of 0 is straight down, positive towards the right of the screen. Pure and deterministic.
@@ -12,13 +13,14 @@ from core.systems.enemy_motion import fan_headings
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Protocol
 
-from core.entities.boss_turret import BossTurret  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss_turret import BossTurret
+from core.entities.enemy import (
     Enemy,
     EnemyBulletSpec,
     EnemyContext,
@@ -26,10 +28,11 @@ from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.gun_muzzles import MuzzleSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle, PlanePoint, RaisedPoint
+from core.systems.gun_muzzles import MuzzleSource
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 DEG = math.pi / 180
 # Straight down the screen.
@@ -122,7 +125,7 @@ class BossVolley:
     before the first one, from the start of the stage; `every` when None.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         from_: str,
         every: float,
@@ -159,8 +162,9 @@ BossPatternSpec = Sequence[BossVolley]
 
 
 class VolleySource(MuzzleSource, Protocol):
-    """What volleys fire from: the playfield position of a piece, its muzzles, the laser owner it
-    is, and the turret its guns are on, if any.
+    """What volleys fire from: the playfield position of a piece, its muzzles.
+
+    The laser owner it is, and the turret its guns are on, if any.
     """
 
     turret: BossTurret | None
@@ -228,7 +232,7 @@ def _bullet_key(spec: EnemyBulletSpec) -> str:
 def _missile_key(spec: EnemyMissileSpec) -> str:
     return (
         "{"
-        + '"speed":'
+        '"speed":'
         + str(spec.speed)
         + ',"turnRateDeg":'
         + str(spec.turn_rate_deg)
@@ -247,7 +251,7 @@ def _missile_key(spec: EnemyMissileSpec) -> str:
 def _laser_key(spec: EnemyLaserSpec) -> str:
     key = (
         "{"
-        + '"warningSeconds":'
+        '"warningSeconds":'
         + str(spec.warning_seconds)
         + ',"firingSeconds":'
         + str(spec.firing_seconds)
@@ -262,8 +266,9 @@ def _laser_key(spec: EnemyLaserSpec) -> str:
 
 
 def _shape_key(shape: BossVolleyShape) -> str:
-    """The shape's fields, as `JSON.stringify` would name them; a launch's function is not part of
-    the text (it is not serialized).
+    """Return the shape's fields, as `JSON.stringify` would name them.
+
+    A launch's function is not part of the text (it is not serialized).
     """
     key = '{"kind":' + _q(shape.kind)
     if isinstance(shape, BossLaserShape):
@@ -286,8 +291,9 @@ def _shape_key(shape: BossVolleyShape) -> str:
 
 
 def _volley_key(volley: BossVolley) -> str:
-    """The text naming one volley: its fields, the ones that are set only (`JSON.stringify` drops
-    the undefined ones).
+    """Return the text naming one volley.
+
+    Its fields, the ones that are set only (`JSON.stringify` drops the undefined ones).
     """
     key = '{"from":' + _q(volley.from_) + ',"every":' + str(volley.every)
     if volley.muzzles is not None:
@@ -305,13 +311,12 @@ def _volley_key(volley: BossVolley) -> str:
 
 
 def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -> str:
-    """A short text naming the volleys of `pattern` that still fire when only the pieces for which
-    `intact` is true remain: two stages fire the same pattern when these are equal (BOSS-21).
+    """Return a short text naming the volleys of `pattern` that still fire.
+
+    They fire with only the `intact` pieces left. Two stages fire the same pattern when these texts
+    are equal (BOSS-21).
     """
-    keys: list[str] = []
-    for volley in pattern:
-        if _live(volley, intact):
-            keys.append(_volley_key(volley))
+    keys: list[str] = [_volley_key(volley) for volley in pattern if _live(volley, intact)]
     # A plain insertion sort: the order only has to be the same for equal patterns.
     for i in range(1, len(keys)):
         j = i
@@ -322,9 +327,10 @@ def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -
 
 
 class BossPattern:
-    """Fires one stage's pattern (BOSS-21): each volley on its own timer, from its piece, as long as
-    that piece is there. Timers run `ctx.fire_rate` times faster (a level's difficulty, BOSS-26).
-    Pure and deterministic.
+    """Fires one stage's pattern (BOSS-21).
+
+    Each volley on its own timer, from its piece, as long as that piece is there. Timers run
+    `ctx.fire_rate` times faster (a level's difficulty, BOSS-26). Pure and deterministic.
     """
 
     def __init__(self, volleys: BossPatternSpec) -> None:
@@ -356,8 +362,11 @@ class BossPattern:
         return best
 
     def step(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
-        """Advances the volleys by `dt` seconds, scaled by the fire rate: fires those that are due
-        from their sources and steps their bursts. A volley without a live source waits."""
+        """Advances the volleys by `dt` seconds, scaled by the fire rate.
+
+        Fires those that are due from their sources and steps their bursts. A volley without a live
+        source waits.
+        """
         time = dt * ctx.fire_rate
         for i in range(len(self.volleys)):
             volley = self.volleys[i]
@@ -372,11 +381,12 @@ class BossPattern:
             self._step_burst(ctx, volley, state, source, time)
 
     def turn_turrets(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
-        """Turns the turrets its volleys fire from for `dt` seconds (BOSS-29), the way their
-        next volley goes (a burst under way first): at the player for aimed shots and bursts, along
-        a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
-        A laser's turret aims at the player until its beam fires (slowly while its warning line
-        shows, `laser_turn_rate_deg`), then holds still (BOSS-31).
+        """Turn the turrets its volleys fire from for `dt` seconds (BOSS-29).
+
+        The way their next volley goes (a burst under way first): at the player for aimed shots and
+        bursts, along a fan's heading, and with a ring's turn, so a turret firing a spiral spins.
+        Pauses included. A laser's turret aims at the player until its beam fires (slowly while its
+        warning line shows, `laser_turn_rate_deg`), then holds still (BOSS-31).
         """
         for group in self._turrets:
             source = sources(group.from_)
@@ -410,9 +420,10 @@ class BossPattern:
         source: VolleySource,
         turret: BossTurret,
     ) -> float | None:
-        """Where `turret` points while one of its `volleys`' lasers shows: at the player during its
-        warning line, where it is while the beam fires (still at the player for a beam that
-        `sweeps`). None when none shows.
+        """Where `turret` points while one of its `volleys`' lasers shows.
+
+        At the player during its warning line, where it is while the beam fires (still at the player
+        for a beam that `sweeps`). None when none shows.
         """
         for i in volleys:
             shape = self.volleys[i].shape
@@ -506,7 +517,10 @@ class BossPattern:
         source: VolleySource,
         time: float,
     ) -> None:
-        """The bullets of a burst, `gap` seconds apart, each aimed at the player when it leaves."""
+        """Fire the bullets of a burst, `gap` seconds apart.
+
+        Each is aimed at the player when it leaves.
+        """
         shape = volley.shape
         if not isinstance(shape, BossBurstShape):
             return
@@ -531,7 +545,7 @@ def _find_turret_group(groups: list[_TurretGroup], from_: str) -> _TurretGroup |
 
 
 def _preset_headings(shape: BossFanShape | BossRingShape, state: _VolleyState) -> list[float]:
-    """The headings of one volley of bullets in a preset fan, or a ring that turns."""
+    """Return the headings of one volley of bullets in a preset fan, or a ring that turns."""
     if isinstance(shape, BossFanShape):
         return fan_headings(DOWN - shape.heading_deg * DEG, shape.count, shape.spacing_deg * DEG)
     turn = state.turns * shape.turn_deg * DEG
@@ -571,7 +585,7 @@ class _TurnedLaserOwner:
         self._turret = turret
 
     @property
-    def emitter(self):  # type: ignore[no-untyped-def]  # a Transcrypt-compiled method, left untyped
+    def emitter(self) -> PlanePoint | RaisedPoint:
         return self._owner.emitter
 
     @property
@@ -588,8 +602,9 @@ class _TurnedLaserOwner:
 
 
 def _laser_owner(volley: BossVolley, state: _VolleyState, source: VolleySource) -> LaserOwner:
-    """What a laser of `volley` leaves from and follows: its piece, from a muzzle; turned with the
-    piece's turret when the volley is on it (phase 8 review).
+    """Return what a laser of `volley` leaves from and follows: its piece, from a muzzle.
+
+    Turned with the piece's turret when the volley is on it (phase 8 review).
     """
     owner = state.guns.laser(source)
     turret = source.turret if volley.turret and hasattr(source, "turret") else None

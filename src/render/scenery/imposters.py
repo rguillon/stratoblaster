@@ -1,7 +1,11 @@
-"""Imposters (D-211, GFX-PROP-10): models drawn as a picture of themselves, baked once into an
-atlas, one frame per heading, as the tilted playfield camera sees them. Pure: the atlas' layout, the
-geometry the pictures are baked from and the quads that show them. The bake itself needs WebGL
-(`imposter_bake_visual.py`).
+# Copyright (c) 2026 Renaud Guillon
+"""Imposters (D-211, GFX-PROP-10).
+
+Models drawn as a picture of themselves, baked once into an atlas, one frame per heading, as the
+tilted playfield camera sees them.
+
+Pure: the atlas' layout, the geometry the pictures are baked from and the quads that show them. The
+bake itself needs WebGL (`imposter_bake_visual.py`).
 
 The camera looks down the playfield at `tilt` from straight down, towards +Z, never turning: so a
 model's picture only depends on its heading. Frame `i` of a kind shows it turned `i / headings` of a
@@ -16,17 +20,17 @@ light are, 0..1: D-212).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.geometry.textured import QuadBuilder, TexturedGeometry
 from render.geometry.vec3 import plus
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # How the bake shades the models (their colours are drawn unlit): towards this light, from the
 # look's `ambient` (D-212).
@@ -36,37 +40,39 @@ QUAD_CLEARANCE = 0.05
 
 
 def atlas_rows(kinds: int) -> int:
-    """The rows of the atlas of `kinds` kinds: a power of two, so its texture is too."""
+    """Return the rows of the atlas of `kinds` kinds: a power of two, so its texture is too."""
     rows = 1
     while rows < kinds:
         rows *= 2
     return rows
 
 
-def atlas_size(look: Any, kinds: int) -> list[int]:  # noqa: ANN401 (a config record)
-    """The atlas' `[width, height]` in pixels."""
+def atlas_size(look: Any, kinds: int) -> list[int]:
+    """Return the atlas' `[width, height]` in pixels."""
     px: int = look.framePx
     headings: int = look.headings
     return [headings * px, atlas_rows(kinds) * px]
 
 
 def frame_of(rotation: float, headings: int) -> int:
-    """The frame (0..headings-1) nearest to the heading `rotation` (radians)."""
+    """Return the frame (0..headings-1) nearest to the heading `rotation` (radians)."""
     turns = rotation / (math.pi * 2)
     i = math.floor((turns - math.floor(turns)) * headings + 0.5)
     return 0 if i >= headings else i
 
 
-def frame_uv(look: Any, kinds: int, kind: int, frame: int) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The `[u0, v0, u1, v1]` of frame `frame` of kind `kind` (V up: row 0 at the top)."""
+def frame_uv(look: Any, kinds: int, kind: int, frame: int) -> list[float]:
+    """Return the `[u0, v0, u1, v1]` of frame `frame` of kind `kind` (V up: row 0 at the top)."""
     headings: int = look.headings
     rows = atlas_rows(kinds)
     return [frame / headings, 1 - (kind + 1) / rows, (frame + 1) / headings, 1 - kind / rows]
 
 
 def view_axes(tilt: float) -> list[list[float]]:
-    """The camera's `[right, up, towards]` unit vectors: across the screen, up it, and from the
-    ground towards the camera."""
+    """Return the camera's `[right, up, towards]` unit vectors.
+
+    Across the screen, up it, and from the ground towards the camera.
+    """
     return [
         [1, 0, 0],
         [0, math.sin(tilt), math.cos(tilt)],
@@ -74,9 +80,11 @@ def view_axes(tilt: float) -> list[list[float]]:
     ]
 
 
-def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """Where, round the origin of the bake, frame `at[1]` of kind `at[0]` is centred: the frames
-    side by side in the camera's plane, as in the atlas."""
+def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[float]:
+    """Where, round the origin of the bake, frame `at[1]` of kind `at[0]` is centred.
+
+    The frames are side by side in the camera's plane, as in the atlas.
+    """
     axes = view_axes(tilt)
     size: float = look.frameSize
     headings: int = look.headings
@@ -100,28 +108,33 @@ def _shade(normal: list[float], ambient: float) -> float:
 
 
 def _face_normal(p: list[float], i: int, j: int, k: int) -> list[float]:
-    """The normal of the triangle `i, j, k` of positions `p`, as Babylon's front face sees it."""
+    """Return the normal of the triangle `i, j, k` of positions `p`.
+
+    It is the normal as Babylon's front face sees it.
+    """
     ax = p[j * 3] - p[i * 3]
     ay = p[j * 3 + 1] - p[i * 3 + 1]
     az = p[j * 3 + 2] - p[i * 3 + 2]
     bx = p[k * 3] - p[i * 3]
     by = p[k * 3 + 1] - p[i * 3 + 1]
     bz = p[k * 3 + 2] - p[i * 3 + 2]
-    # Babylon's front faces have the normal (c - a) × (b - a), that is (b - a) × (c - a) negated:
-    # with u = b - a and v = c - a, the normal is v × u.
+    # Babylon's front faces have the normal (c - a) x (b - a), that is (b - a) x (c - a) negated:
+    # with u = b - a and v = c - a, the normal is v x u.
     return [by * az - bz * ay, bz * ax - bx * az, bx * ay - by * ax]
 
 
-def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def add_baked(
     out: ColoredGeometry,
     model: ColoredGeometry,
     yaw: float,
     centre: list[float],
-    look: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    look: Any,
 ) -> None:
-    """Adds `model` to `out`, turned `yaw` round Y and moved so its point at height
-    `look.centre` lies at `centre`, its colours shaded by the bake's light (each face has its own
-    vertices: `SolidBuilder`'s flat shading)."""
+    """Add `model` to `out`, turned `yaw` round Y and moved to `centre`.
+
+    Its point at height `look.centre` lies at `centre`; its colours are shaded by the bake's light
+    (each face has its own vertices: `SolidBuilder`'s flat shading).
+    """
     c = math.cos(yaw)
     s = math.sin(yaw)
     base = len(out.positions) // 3
@@ -132,13 +145,11 @@ def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
         x = positions[v * 3]
         z = positions[v * 3 + 2]
         # The yaw of `Placement` and of the instances (`RotationYawPitchRoll`).
-        turned.extend(
-            [
-                centre[0] + x * c + z * s,
-                centre[1] + positions[v * 3 + 1] - look.centre,
-                centre[2] - x * s + z * c,
-            ]
-        )
+        turned.extend([
+            centre[0] + x * c + z * s,
+            centre[1] + positions[v * 3 + 1] - look.centre,
+            centre[2] - x * s + z * c,
+        ])
     # A loop: Transcrypt has no list repetition (`[1.0] * count`).
     shades: list[float] = [1.0 for _ in range(count)]
     indices = model.indices
@@ -156,9 +167,11 @@ def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
         out.indices.append(base + i)
 
 
-def bake_geometry(models: list[ColoredGeometry], look: Any, tilt: float) -> ColoredGeometry:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """Every frame of every model (`models`, by kind) side by side round the origin, as the bake
-    camera draws them into the atlas."""
+def bake_geometry(models: list[ColoredGeometry], look: Any, tilt: float) -> ColoredGeometry:
+    """Every frame of every model (`models`, by kind) side by side round the origin.
+
+    This is how the bake camera draws them into the atlas.
+    """
     out = ColoredGeometry()
     headings: int = look.headings
     for k in range(len(models)):
@@ -168,9 +181,11 @@ def bake_geometry(models: list[ColoredGeometry], look: Any, tilt: float) -> Colo
     return out
 
 
-def quad_lift(look: Any, tilt: float) -> float:  # noqa: ANN401 (a config record)
-    """How far towards the camera a quad is moved (model units), so its bottom stays over the
-    ground: on the line of sight, which does not move it on screen."""
+def quad_lift(look: Any, tilt: float) -> float:
+    """How far towards the camera a quad is moved (model units), keeping its bottom over the ground.
+
+    That is on the line of sight, which does not move it on screen.
+    """
     half: float = look.frameSize / 2
     centre: float = look.centre
     low = centre - half * math.sin(tilt)
@@ -179,10 +194,12 @@ def quad_lift(look: Any, tilt: float) -> float:  # noqa: ANN401 (a config record
     return (QUAD_CLEARANCE - low) / math.cos(tilt)
 
 
-def imposter_quad(look: Any, tilt: float, uv: list[float]) -> TexturedGeometry:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The quad that shows the frame at `uv`, in model units round a model standing at the
-    origin: facing the camera, through the frame's centre point, moved towards the camera by
-    `quad_lift`."""
+def imposter_quad(look: Any, tilt: float, uv: list[float]) -> TexturedGeometry:
+    """Return the quad that shows the frame at `uv`.
+
+    In model units round a model standing at the origin. It faces the camera, through the frame's
+    centre point, moved towards the camera by `quad_lift`.
+    """
     axes = view_axes(tilt)
     right = axes[0]
     up = axes[1]

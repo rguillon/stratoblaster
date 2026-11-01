@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/imposter_kinds.py` (D-211, D-212; GFX-PROP-10, GFX-PROP-11)."""
 
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -11,16 +13,16 @@ from render.scenery.scenery_look import PropGeometry
 
 
 class _Field:
-    def __init__(self, scene, kinds, look, tilt, material) -> None:  # noqa: PLR0917
+    def __init__(self, _scene: Any, kinds: Any, _look: Any, _tilt: Any, _material: Any) -> None:
         self.kinds = kinds
         self.meshes = ["quad-" + k for k in kinds]
         self.placed: list = []
 
-    def place(self, placements) -> None:
+    def place(self, placements: Any) -> None:
         self.placed = placements
 
 
-def _model(lit: bool):
+def _model(lit: bool) -> Any:
     def make() -> PropGeometry:
         body = ColoredGeometry()
         body.positions.extend([0, 0, 0, 1, 0, 0, 0, 1, 0])
@@ -42,20 +44,20 @@ class _Atlas:
         self.material = "material"
         self.baked: list = []
 
-    def bake(self, bodies, tilt) -> None:
+    def bake(self, bodies: Any, tilt: Any) -> None:
         self.baked.append((bodies, tilt))
 
 
 @pytest.fixture(autouse=True)
-def _fake_field(monkeypatch) -> None:
+def _fake_field(monkeypatch: Any) -> None:
     monkeypatch.setattr(module, "ImposterField", _Field)
 
 
 def test_d212_no_kind_or_no_atlas_means_no_imposters() -> None:
-    models = {"tree": _model(False)}
-    assert imposter_kinds(None, models, ["rock"], lambda n: _Atlas(), 0.6) is None
+    models = {"tree": _model(lit=False)}
+    assert imposter_kinds(None, models, ["rock"], lambda _n: _Atlas(), 0.6) is None
     assert imposter_kinds(None, models, ["tree"], None, 0.6) is None
-    assert imposter_kinds(None, models, ["tree"], lambda n: None, 0.6) is None
+    assert imposter_kinds(None, models, ["tree"], lambda _n: None, 0.6) is None
 
 
 def test_d212_imposter_kinds_keep_only_their_lights_and_bake_once() -> None:
@@ -66,7 +68,7 @@ def test_d212_imposter_kinds_keep_only_their_lights_and_bake_once() -> None:
         asked.append(n)
         return atlas
 
-    models = {"tree": _model(True), "house": _model(False)}
+    models = {"tree": _model(lit=True), "house": _model(lit=False)}
     kinds = imposter_kinds(None, models, ["tree", "rock"], atlas_of, 0.6)
     assert kinds is not None
     assert asked == [1]

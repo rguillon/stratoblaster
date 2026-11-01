@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/mangrove_croc.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_mangrove_croc_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert MANGROVE_CROC.id == MANGROVE_CROC.id.lower()
-    assert " " not in MANGROVE_CROC.id and "_" not in MANGROVE_CROC.id
+    assert " " not in MANGROVE_CROC.id
+    assert "_" not in MANGROVE_CROC.id
 
 
 def test_mb_mangrove_croc_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_mangrove_croc_08_boss_stats_are_in_the_range_the_sim_relies_on() -> 
 
 def test_mb_mangrove_croc_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-MANGROVE-CROC-11)."""
-    assert isinstance(MANGROVE_CROC.rage, list) and MANGROVE_CROC.rage
+    assert isinstance(MANGROVE_CROC.rage, list)
+    assert MANGROVE_CROC.rage
     assert len(MANGROVE_CROC.stages) == len(original_parts(MANGROVE_CROC)) + 1

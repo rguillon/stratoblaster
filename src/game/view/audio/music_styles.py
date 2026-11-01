@@ -1,5 +1,8 @@
-"""Scales, styles and the drum, bass and tempo choices of the generated music (AUD-MUSIC-05,
-AUD-MUSIC-11). A world's style says its key, tempo, chords and rhythm."""
+# Copyright (c) 2026 Renaud Guillon
+"""Scales, styles and the drum, bass and tempo choices of the generated music.
+
+AUD-MUSIC-05, AUD-MUSIC-11: a world's style says its key, tempo, chords and rhythm.
+"""
 
 # Scales, as semitones above their root: minor, phrygian, harmonic minor (AUD-MUSIC-03).
 SCALES = {
@@ -12,7 +15,7 @@ SCALES = {
 class StyleInstruments:
     """The instrument of each part (keys of `INSTRUMENTS`)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         kick: str,
         snare: str,
@@ -44,10 +47,12 @@ class Octaves:
 
 
 class MusicStyle:
-    """A world's musical style (AUD-MUSIC-02): its levels share it but differ in key, tempo,
-    chords, melody and rhythm. `drums` is one of four, `bass` one of three."""
+    """A world's musical style (AUD-MUSIC-02): its levels share it but differ in key, tempo.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    Chords, melody and rhythm. `drums` is one of four, `bass` one of three.
+    """
+
+    def __init__(
         self,
         tempo: list[int],
         boss_boost: list[int],
@@ -86,7 +91,7 @@ class MusicStyle:
         self.octaves = octaves
 
 
-def _world(  # noqa: PLR0917 (positional: a table of styles)
+def _world(
     tempo: list[int],
     scales: list[list[int]],
     boss_scale: list[int],
@@ -97,7 +102,7 @@ def _world(  # noqa: PLR0917 (positional: a table of styles)
     bass: str,
     octaves: Octaves,
 ) -> MusicStyle:
-    """A level style: boss boost 20–30 BPM, four-note arpeggios (the shared defaults)."""
+    """Return a level style: boss boost 20-30 BPM, four-note arpeggios (the shared defaults)."""
     return MusicStyle(
         tempo,
         [20, 30],
@@ -204,7 +209,7 @@ WORLD_STYLES = {
 }
 
 # The menu theme's style (AUD-MUSIC-11, synthwave reviews): mid-tempo darksynth in a minor key,
-# with the classic i–VI–III–VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and
+# with the classic i-VI-III-VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and
 # a supersaw lead; slower than every level.
 MENU_STYLE = MusicStyle(
     [100, 100],

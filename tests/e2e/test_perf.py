@@ -1,5 +1,8 @@
-"""e2e: level loading in steps and the perf overlay (specs/performance.md,
-specs/dev/perf-tools.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: level loading in steps.
+
+The perf overlay (specs/performance.md, specs/dev/perf-tools.md).
+"""
 
 import pytest
 from e2e.menu_helpers import (
@@ -23,8 +26,10 @@ E2E_SLOWDOWN = 10
 def test_dev_perf_07_a_world_s_first_level_loads_in_steps_its_loading_time_in_budget(
     page: Page, world: int
 ) -> None:
-    """Also PERF-08 (the load time), PERF-09 (in steps), UI-LOAD-06 (behind its loading screen)
-    and DEV-API-06 (the perf numbers)."""
+    """Also PERF-08 (the load time), PERF-09 (in steps), UI-LOAD-06 (behind its loading screen).
+
+    DEV-API-06 (the perf numbers).
+    """
     level_id = f"{world}-1"
     open_game(page)
     send_action(page, "confirm")

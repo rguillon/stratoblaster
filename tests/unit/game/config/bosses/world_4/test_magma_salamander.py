@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/magma_salamander.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_magma_salamander_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert MAGMA_SALAMANDER.id == MAGMA_SALAMANDER.id.lower()
-    assert " " not in MAGMA_SALAMANDER.id and "_" not in MAGMA_SALAMANDER.id
+    assert " " not in MAGMA_SALAMANDER.id
+    assert "_" not in MAGMA_SALAMANDER.id
 
 
 def test_mb_magma_salamander_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_magma_salamander_08_boss_stats_are_in_the_range_the_sim_relies_on() 
 
 def test_mb_magma_salamander_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-MAGMA-SALAMANDER-11)."""
-    assert isinstance(MAGMA_SALAMANDER.rage, list) and MAGMA_SALAMANDER.rage
+    assert isinstance(MAGMA_SALAMANDER.rage, list)
+    assert MAGMA_SALAMANDER.rage
     assert len(MAGMA_SALAMANDER.stages) == len(original_parts(MAGMA_SALAMANDER)) + 1

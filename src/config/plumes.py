@@ -1,4 +1,5 @@
-"""Plume kinds (phase 10, GFX-PROP-18)
+# Copyright (c) 2026 Renaud Guillon
+"""Plume kinds (phase 10, GFX-PROP-18).
 
 A kind of plume is a column of soft, see-through puffs rising from a prop, growing and fading as
 they rise, drifting with the wind. Only a look; kept faint so it never hides what flies above it.
@@ -8,7 +9,7 @@ they rise, drifting with the wind. Only a look; kept faint so it never hides wha
 class PlumeKind:
     """A kind of plume."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         puffs: float,
         seconds: float,

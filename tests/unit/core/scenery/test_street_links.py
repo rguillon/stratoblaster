@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/street_links.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -23,11 +26,11 @@ def _link(
 ) -> Link:
     na = nodes.use(nodes.at(*a))
     nb = nodes.use(nodes.at(*b))
-    return Link(na, nb, across, False, False, True, True, False)
+    return Link(na, nb, across, required=False, boulevard=False, ground=True, built=True, cut=False)
 
 
 def test_crossings_are_turned_into_t_junctions() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
         nodes.use(nodes.at(0.0, 0.0)),
@@ -36,22 +39,62 @@ def test_crossings_are_turned_into_t_junctions() -> None:
         nodes.use(nodes.at(10.0, 10.0)),
     ]
     links = [
-        Link(ends[0], centre, True, False, False, True, True, False),
-        Link(centre, ends[1], True, False, False, True, True, False),
-        Link(ends[2], centre, False, False, False, True, True, False),
-        Link(centre, ends[3], False, False, False, True, True, False),
+        Link(
+            ends[0],
+            centre,
+            across=True,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[1],
+            across=True,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            ends[2],
+            centre,
+            across=False,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[3],
+            across=False,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
     ]
     at = links_by_node(links, len(nodes.used))
-    out = lambda n: n is not centre  # noqa: E731
+
+    def out(n: Any) -> bool:
+        return n is not centre
+
     remove_crossings(at, nodes.used, out, create_rng(1))
     built_at_centre = [link for link in links if link.built and centre in (link.a, link.b)]
     assert len(built_at_centre) == 3
-    assert links[0].built and links[1].built
+    assert links[0].built
+    assert links[1].built
     assert sum(1 for link in links[2:] if link.built) == 1
 
 
 def test_gfx_road_17_crossing_boulevards_are_both_kept() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
         nodes.use(nodes.at(0.0, 0.0)),
@@ -60,10 +103,46 @@ def test_gfx_road_17_crossing_boulevards_are_both_kept() -> None:
         nodes.use(nodes.at(10.0, 10.0)),
     ]
     links = [
-        Link(ends[0], centre, True, False, True, True, True, False),
-        Link(centre, ends[1], True, False, True, True, True, False),
-        Link(ends[2], centre, False, False, True, True, True, False),
-        Link(centre, ends[3], False, False, True, True, True, False),
+        Link(
+            ends[0],
+            centre,
+            across=True,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[1],
+            across=True,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            ends[2],
+            centre,
+            across=False,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[3],
+            across=False,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
     ]
     at = links_by_node(links, len(nodes.used))
     remove_crossings(at, nodes.used, lambda n: n is not centre, create_rng(1))
@@ -71,7 +150,7 @@ def test_gfx_road_17_crossing_boulevards_are_both_kept() -> None:
 
 
 def test_gfx_road_17_boulevards_along_the_level_keep_their_cross_streets_straight() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
         nodes.use(nodes.at(0.0, 0.0)),
@@ -81,15 +160,52 @@ def test_gfx_road_17_boulevards_along_the_level_keep_their_cross_streets_straigh
     ]
     # Only the streets along the level (Z) are boulevards: the streets across it are cut instead.
     links = [
-        Link(ends[0], centre, True, False, False, True, True, False),
-        Link(centre, ends[1], True, False, False, True, True, False),
-        Link(ends[2], centre, False, False, True, True, True, False),
-        Link(centre, ends[3], False, False, True, True, True, False),
+        Link(
+            ends[0],
+            centre,
+            across=True,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[1],
+            across=True,
+            required=False,
+            boulevard=False,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            ends[2],
+            centre,
+            across=False,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
+        Link(
+            centre,
+            ends[3],
+            across=False,
+            required=False,
+            boulevard=True,
+            ground=True,
+            built=True,
+            cut=False,
+        ),
     ]
     at = links_by_node(links, len(nodes.used))
     remove_crossings(at, nodes.used, lambda n: n is not centre, create_rng(1))
     assert not (links[0].built and links[1].built)
-    assert links[2].built and links[3].built
+    assert links[2].built
+    assert links[3].built
 
 
 def test_to_fixed3_writes_three_decimals() -> None:
@@ -105,11 +221,12 @@ def test_block_and_node_hold_their_fields() -> None:
 
 
 def test_nodes_make_one_object_per_place_and_number_them_on_first_use() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     a = nodes.at(10.0, 20.0)
     assert nodes.at(10.0, 20.0) is a
     assert a.id == -1
-    assert nodes.use(a) is a and a.id == 0
+    assert nodes.use(a) is a
+    assert a.id == 0
     b = nodes.use(nodes.at(0.0, 0.0))
     assert b.id == 1
     assert nodes.use(a).id == 0
@@ -132,7 +249,7 @@ def test_nodes_ask_the_ground_once_per_place() -> None:
 
 
 def test_pair_numbers_a_link_from_its_two_nodes() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     a = nodes.use(nodes.at(0.0, 0.0))
     b = nodes.use(nodes.at(1.0, 0.0))
     assert pair(a, b) == 0 * NODE_LIMIT + 1
@@ -141,23 +258,49 @@ def test_pair_numbers_a_link_from_its_two_nodes() -> None:
 
 
 def test_dedupe_keeps_the_first_of_each_link() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     a = nodes.use(nodes.at(0.0, 0.0))
     b = nodes.use(nodes.at(1.0, 0.0))
-    first = Link(a, b, True, True, False, True, True, False)
-    again = Link(a, b, True, False, False, True, False, False)
-    other = Link(b, nodes.use(nodes.at(2.0, 0.0)), True, False, False, True, True, False)
+    first = Link(
+        a, b, across=True, required=True, boulevard=False, ground=True, built=True, cut=False
+    )
+    again = Link(
+        a, b, across=True, required=False, boulevard=False, ground=True, built=False, cut=False
+    )
+    other = Link(
+        b,
+        nodes.use(nodes.at(2.0, 0.0)),
+        across=True,
+        required=False,
+        boulevard=False,
+        ground=True,
+        built=True,
+        cut=False,
+    )
     assert dedupe([first, again, other]) == [first, other]
 
 
 def test_links_by_node_lists_each_link_at_both_its_ends() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     a = nodes.use(nodes.at(0.0, 0.0))
     b = nodes.use(nodes.at(1.0, 0.0))
     c = nodes.use(nodes.at(2.0, 0.0))
-    ab = Link(a, b, True, False, False, True, True, False)
-    bc = Link(b, c, True, False, False, True, True, False)
-    stray = Link(Node(9.0, 9.0, -1), a, True, False, False, True, True, False)
+    ab = Link(
+        a, b, across=True, required=False, boulevard=False, ground=True, built=True, cut=False
+    )
+    bc = Link(
+        b, c, across=True, required=False, boulevard=False, ground=True, built=True, cut=False
+    )
+    stray = Link(
+        Node(9.0, 9.0, -1),
+        a,
+        across=True,
+        required=False,
+        boulevard=False,
+        ground=True,
+        built=True,
+        cut=False,
+    )
     at = links_by_node([ab, bc, stray], 3)
     assert at[0] == [ab, stray]
     assert at[1] == [ab, bc]
@@ -165,7 +308,7 @@ def test_links_by_node_lists_each_link_at_both_its_ends() -> None:
 
 
 def test_gfx_road_14_built_links_in_a_line_make_one_straight_run() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     links = [
         _link(nodes, (20.0, 0.0), (30.0, 0.0)),
         _link(nodes, (0.0, 0.0), (10.0, 0.0)),
@@ -178,7 +321,7 @@ def test_gfx_road_14_built_links_in_a_line_make_one_straight_run() -> None:
 
 
 def test_a_gap_in_the_line_starts_another_run() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     links = [
         _link(nodes, (0.0, 0.0), (10.0, 0.0)),
         _link(nodes, (30.0, 0.0), (40.0, 0.0)),
@@ -188,7 +331,7 @@ def test_a_gap_in_the_line_starts_another_run() -> None:
 
 
 def test_runs_across_and_along_are_separate_lines() -> None:
-    nodes = Nodes(lambda x, z: True)
+    nodes = Nodes(lambda _x, _z: True)
     runs = straight_runs(
         [
             _link(nodes, (0.0, 0.0), (10.0, 0.0), across=True),

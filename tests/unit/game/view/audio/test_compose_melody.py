@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/audio/compose_melody.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -18,19 +21,19 @@ from game.view.audio.music_styles import BEATS_PER_BAR, WORLD_STYLES
 MAJOR_ISH = [0, 2, 4, 5, 7, 9, 11]
 
 
-def test_scale_pitch_walks_the_scale_by_octaves():
+def test_scale_pitch_walks_the_scale_by_octaves() -> None:
     assert scale_pitch(MAJOR_ISH, 0) == 0
     assert scale_pitch(MAJOR_ISH, 6) == 11
     assert scale_pitch(MAJOR_ISH, 7) == 12
     assert scale_pitch(MAJOR_ISH, 14) == 24
 
 
-def test_scale_pitch_wraps_below_zero():
+def test_scale_pitch_wraps_below_zero() -> None:
     assert scale_pitch(MAJOR_ISH, -1) == -1
     assert scale_pitch(MAJOR_ISH, -7) == -12
 
 
-def test_scale_pitch_of_an_empty_scale_is_zero():
+def test_scale_pitch_of_an_empty_scale_is_zero() -> None:
     assert scale_pitch([], 5) == 0
 
 
@@ -48,11 +51,11 @@ def test_scale_pitch_of_an_empty_scale_is_zero():
         (20, 9),
     ],
 )
-def test_aud_music_02_nearest_chord_step(degree, expected):
+def test_aud_music_02_nearest_chord_step(degree: Any, expected: Any) -> None:
     assert nearest_chord_step(degree) == expected
 
 
-def test_aud_music_02_make_motif_has_the_rhythm_and_the_clamped_walk():
+def test_aud_music_02_make_motif_has_the_rhythm_and_the_clamped_walk() -> None:
     for seed in range(20):
         motif = make_motif(create_rng(seed))
         steps = [[m.step, m.length_] for m in motif]
@@ -61,26 +64,26 @@ def test_aud_music_02_make_motif_has_the_rhythm_and_the_clamped_walk():
         assert motif[0].degree in CHORD_STEPS
 
 
-def test_aud_music_01_make_motif_is_repeatable_for_a_seed():
+def test_aud_music_01_make_motif_is_repeatable_for_a_seed() -> None:
     a = make_motif(create_rng(42))
     b = make_motif(create_rng(42))
     assert [(m.step, m.length_, m.degree) for m in a] == [(m.step, m.length_, m.degree) for m in b]
 
 
-def test_motif_note_stores_its_fields():
+def test_motif_note_stores_its_fields() -> None:
     m = MotifNote(2, 3, 4)
     assert (m.step, m.length_, m.degree) == (2, 3, 4)
 
 
-def test_aud_music_02_motif_bars_are_silent_without_energy():
-    ctx = BarContext(0.0, [36, 39, 43], MAJOR_ISH, 0, False)
+def test_aud_music_02_motif_bars_are_silent_without_energy() -> None:
+    ctx = BarContext(0.0, [36, 39, 43], MAJOR_ISH, 0, fill=False)
     motif = [MotifNote(0, 2, 0)]
     assert motif_bars(WORLD_STYLES[1], motif, ctx, 0, 0) == []
 
 
-def test_aud_music_02_motif_bars_play_each_note_on_the_chord_in_the_lead_register():
+def test_aud_music_02_motif_bars_play_each_note_on_the_chord_in_the_lead_register() -> None:
     style = WORLD_STYLES[1]
-    ctx = BarContext(8.0, [36, 39, 43], MAJOR_ISH, 2, False)
+    ctx = BarContext(8.0, [36, 39, 43], MAJOR_ISH, 2, fill=False)
     motif = [MotifNote(0, 2, 0), MotifNote(4, 4, 2)]
     notes = motif_bars(style, motif, ctx, 0, 0)
     assert len(notes) == 2
@@ -95,9 +98,9 @@ def test_aud_music_02_motif_bars_play_each_note_on_the_chord_in_the_lead_registe
     assert all(n.instrument == style.instruments.lead for n in notes)
 
 
-def test_aud_music_02_motif_variation_shifts_the_pitches_up_a_step():
+def test_aud_music_02_motif_variation_shifts_the_pitches_up_a_step() -> None:
     style = WORLD_STYLES[1]
-    ctx = BarContext(0.0, [36, 39, 43], MAJOR_ISH, 1, False)
+    ctx = BarContext(0.0, [36, 39, 43], MAJOR_ISH, 1, fill=False)
     motif = [MotifNote(0, 2, 0)]
     plain = motif_bars(style, motif, ctx, 0, 0)[0].pitch
     shifted = motif_bars(style, motif, ctx, 0, 1)[0].pitch

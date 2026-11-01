@@ -1,4 +1,5 @@
-"""World 4 (WLD-4-03; reworked at the reviewer's request, 2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""World 4 (WLD-4-03; reworked at the reviewer's request, 2026-10-27).
 
 The five levels are one journey from the garden villages World 3 ended on, through the suburbs and a
 town centre, the mid-rise blocks and the offices of midtown, the towers of the business district, to
@@ -9,8 +10,6 @@ very section the previous one ended on (WLD-4-04). No sea, no lava, no river and
 `city_only` strips every channel and lake (WLD-4-09). Each level's `seconds` add up to 300
 (WLD-4-02).
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
@@ -29,18 +28,22 @@ from game.config.world_3.scenery import (
 from game.config.world_4.city_props import WORLD_4_GROUPS, WORLD_4_PROPS
 from game.config.world_4.props import WORLD_4_ROADS
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 G = WORLD_4_GROUPS
 
 
 def quays(half_width: float) -> Any:
-    """The river between the stone embankments of the city (quays, GFX-WATER-08): steep walls,
-    `half_width` at its bed."""
+    """Return the river between the stone embankments of the city (quays, GFX-WATER-08).
+
+    Steep walls, `half_width` at its bed.
+    """
     return merge(river(half_width), {"wall": 14})
 
 
@@ -54,21 +57,22 @@ FILLED_BLOCKS = record({"podiums": [], "podiumHeight": [0, 0], "towers": [16, 16
 
 
 def section(name: str, seconds: float, extra: Any) -> Any:
-    """A section of World 4: paved streets and offices, with `extra` set over the defaults."""
+    """Return a section of World 4: paved streets and offices.
+
+    `extra` is set over the defaults.
+    """
     return merge(
-        record(
-            {
-                "name": name,
-                "seconds": seconds,
-                "relief": FLAT,
-                "channel": quays(30),
-                "buildingDensity": 1,
-                "treeDensity": 0,
-                "surface": {"paved": 0.7, "lush": 0.2},
-                "streets": STREETS,
-                "groups": [G["offices"]],
-            }
-        ),
+        record({
+            "name": name,
+            "seconds": seconds,
+            "relief": FLAT,
+            "channel": quays(30),
+            "buildingDensity": 1,
+            "treeDensity": 0,
+            "surface": {"paved": 0.7, "lush": 0.2},
+            "streets": STREETS,
+            "groups": [G["offices"]],
+        }),
         extra,
     )
 
@@ -356,8 +360,9 @@ DOWNTOWN = [
 
 
 def city_only(s: Any) -> Any:
-    """`s` with only buildings and roads (WLD-4-08; reviewer, 2026-10-28): no river (WLD-4-09),
-    flat paved ground, no grass or trees. The ground is `CITY_GROUND`, low enough for the roofs to
+    """`s` with only buildings and roads (WLD-4-08; reviewer, 2026-10-28): no river (WLD-4-09).
+
+    Flat paved ground, no grass or trees. The ground is `CITY_GROUND`, low enough for the roofs to
     stay under the clouds.
     """
     city = merge(
@@ -380,20 +385,21 @@ def city_only(s: Any) -> Any:
 
 
 def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
-    """A World 4 level: its `[id, name, seed]`, its scroll speed and its sections, without water."""
-    return record(
-        {
-            "id": meta[0],
-            "name": meta[1],
-            "seed": meta[2],
-            "scrollSpeed": scroll_speed,
-            "transition": TRANSITION,
-            # No sea (reviewer, 2026-10-28): one under the flat ground never showed, but was drawn.
-            "sections": [city_only(s) for s in sections],
-            "roads": WORLD_4_ROADS,
-            "props": WORLD_4_PROPS,
-        }
-    )
+    """Return a World 4 level: its `[id, name, seed]`, its scroll speed and its sections.
+
+    It has no water.
+    """
+    return record({
+        "id": meta[0],
+        "name": meta[1],
+        "seed": meta[2],
+        "scrollSpeed": scroll_speed,
+        "transition": TRANSITION,
+        # No sea (reviewer, 2026-10-28): one under the flat ground never showed, but was drawn.
+        "sections": [city_only(s) for s in sections],
+        "roads": WORLD_4_ROADS,
+        "props": WORLD_4_PROPS,
+    })
 
 
 # 4-1 (LVL-4-1-01): the garden town, from the garden villages 3-5 ended on.

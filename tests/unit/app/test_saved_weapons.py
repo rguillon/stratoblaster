@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_weapons.py`."""
 # (the weapons kept between levels: GAME-WPN-15, GAME-LEVEL-14).
 

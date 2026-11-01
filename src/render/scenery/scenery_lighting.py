@@ -1,10 +1,10 @@
-"""The lights of a scenery scene (GFX-SKY-01): the
-sun (or the moon) and the sky's ambient light, lit as an atmosphere says.
+# Copyright (c) 2026 Renaud Guillon
+"""The lights of a scenery scene (GFX-SKY-01): the sun (or the moon) and the sky's ambient light.
+
+Lit as an atmosphere says.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import (
     color3,
@@ -20,17 +20,15 @@ from render.babylon import (
     vector3_up,
 )
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import Atmosphere
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 DEG = math.pi / 180
 
@@ -55,7 +53,7 @@ class SceneryLights:
 
 
 def light_scenery(scene: Any, atmosphere: Atmosphere) -> SceneryLights:
-    """Creates the sun and the ambient light, then lights the scene as `atmosphere` says."""
+    """Create the sun and the ambient light, then lights the scene as `atmosphere` says."""
     scene.fogMode = fog_mode_linear()
     scene.clearColor = color4(0, 0, 0, 1)
     scene.fogColor = color3(0, 0, 0)
@@ -68,8 +66,10 @@ def light_scenery(scene: Any, atmosphere: Atmosphere) -> SceneryLights:
 
 
 def apply_atmosphere(scene: Any, lights: SceneryLights, atmosphere: Atmosphere) -> None:
-    """Lights the scene as `atmosphere` says (GFX-SKY-07): haze (clear colour and linear fog), sky
-    and ground ambient light, and the sun's direction, colour and strength. Called every frame."""
+    """Lights the scene as `atmosphere` says (GFX-SKY-07): haze (clear colour and linear fog).
+
+    Sky and ground ambient light, and the sun's direction, colour and strength. Called every frame.
+    """
     haze = atmosphere.sky.haze
     scene.clearColor.set(haze[0], haze[1], haze[2], 1)
     scene.fogColor.set(haze[0], haze[1], haze[2])
@@ -90,10 +90,12 @@ def apply_atmosphere(scene: Any, lights: SceneryLights, atmosphere: Atmosphere) 
 
 
 def snapped_light_position(direction: Any, target: Any, distance: float, texel: float) -> Any:
-    """Where to put a directional light of direction `direction` that looks at `target` from
-    `distance` away, with `target` moved to the nearest whole shadow texel (`texel` world units)
-    across the light: the shadow map then slides by whole texels as the view scrolls, and the
-    shadows stay still instead of shimmering (phase 4 review, GFX-SKY-02)."""
+    """Where to put a directional light (`direction`) looking at `target` from `distance` away.
+
+    With `target` moved to the nearest whole shadow texel (`texel` world units) across the light:
+    the shadow map then slides by whole texels as the view scrolls, and the shadows stay still
+    instead of shimmering (phase 4 review, GFX-SKY-02).
+    """
     forward = direction.normalizeToNew()
     right = vector3_cross(vector3_up(), forward).normalize()
     up = vector3_cross(forward, right)

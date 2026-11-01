@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/boss_look.py`."""
 
 from game.config.boss_look import BOSS_LOOK

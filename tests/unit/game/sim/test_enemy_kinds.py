@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemy_kinds.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.enemy_steps import area
@@ -75,7 +78,7 @@ def test_enm_08_a_side_pass_without_an_entry_takes_its_own_height() -> None:
     [pytest.param(k, id=k.id) for k in ENEMY_KINDS],
 )
 @pytest.mark.parametrize("side", [None, "top", "left", "right"])
-def test_enm_07_every_kind_spawns_a_group_from_any_wave_entry(kind, side) -> None:
+def test_enm_07_every_kind_spawns_a_group_from_any_wave_entry(kind: Any, side: Any) -> None:
     """Also ENM-08: from any wave entry."""
     group = kind.spawn(area(width=400, height=600, side=side, position=0.4))
     assert group

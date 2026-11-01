@@ -1,4 +1,5 @@
-"""How a boss rolls into its sideways moves
+# Copyright (c) 2026 Renaud Guillon
+"""How a boss rolls into its sideways moves.
 
 See `BossStats.roll` (BOSS-11).
 """
@@ -16,8 +17,9 @@ class BossRoll:
 
 
 def roll_towards(rule: BossRoll, roll: float, vx: float, dt: float) -> float:
-    """Its roll after `dt` seconds moving across at `vx` px/s: easing from `roll` towards
-    `rule.max_deg` at `rule.full_speed`, in proportion below it.
+    """Its roll after `dt` seconds moving across at `vx` px/s.
+
+    Easing from `roll` towards `rule.max_deg` at `rule.full_speed`, in proportion below it.
     """
     limit = (rule.max_deg * math.pi) / 180
     target = max(-limit, min(limit, (vx / rule.full_speed) * limit))

@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/keyboard_menu_input.py`."""
+
+from typing import Any
 
 from config.menu_input import MENU_INPUT_CONFIG
 from input.keyboard_menu_input import KeyboardMenuInput
@@ -10,7 +13,7 @@ class FakeKeyEvent:
         self.repeat = repeat
         self.prevented = 0
 
-    def preventDefault(self) -> None:  # noqa: N802 (DOM name)
+    def preventDefault(self) -> None:
         self.prevented += 1
 
 
@@ -20,10 +23,10 @@ class FakeTarget:
     def __init__(self) -> None:
         self.listeners: dict[str, list] = {}
 
-    def addEventListener(self, kind: str, listener) -> None:  # noqa: N802
+    def addEventListener(self, kind: str, listener: Any) -> None:
         self.listeners.setdefault(kind, []).append(listener)
 
-    def removeEventListener(self, kind: str, listener) -> None:  # noqa: N802
+    def removeEventListener(self, kind: str, listener: Any) -> None:
         self.listeners[kind].remove(listener)
 
 

@@ -1,6 +1,10 @@
-"""Rough bodies of revolution (D-212, the tree crowns of GFX-PROP-09): a lathe whose vertices are
-pushed in and out at random and whose facets each get a slightly different shade, so a ball reads
-as a clump of leaves, a cone as a tier of needles. Seeded: the same seed gives the same shape.
+# Copyright (c) 2026 Renaud Guillon
+"""Rough bodies of revolution (D-212, the tree crowns of GFX-PROP-09).
+
+A lathe whose vertices are pushed in and out at random and whose facets each get a slightly
+different shade, so a ball reads as a clump of leaves, a cone as a tier of needles.
+
+Seeded: the same seed gives the same shape.
 
 Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.
 """
@@ -26,9 +30,11 @@ _SHADE = 2
 
 
 class Roughness:
-    """How rough a body is: vertices pushed in or out by up to `push` of their radius, facets
-    shaded up to `shade` lighter or darker, and darker by `shadow` at the bottom of the body than at
-    its top (as leaves inside a crown are)."""
+    """How rough a body is: vertices pushed in or out by up to `push` of their radius.
+
+    Facets are shaded up to `shade` lighter or darker, and darker by `shadow` at the bottom of the
+    body than at its top (as leaves inside a crown are).
+    """
 
     def __init__(self, push: float, shade: float, shadow: float, seed: int) -> None:
         self.push = push
@@ -37,7 +43,7 @@ class Roughness:
         self.seed = seed
 
 
-def rough_lathe(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def rough_lathe(
     s: SolidBuilder,
     profile: list[ProfilePoint],
     sides: int,
@@ -45,9 +51,11 @@ def rough_lathe(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     rough: Roughness,
     place: Placement,
 ) -> None:
-    """A body of revolution around Y (`profile`: `[radius, y]` points from bottom to top; a radius
-    of 0 closes it to a point there), each vertex pushed along its ring's radius and each facet
-    shaded by `rough`, all of it one triangle per facet half."""
+    """Add a body of revolution around Y (`profile`: `[radius, y]` points from bottom to top).
+
+    A radius of 0 closes it to a point there. Each vertex is pushed along its ring's radius and each
+    facet shaded by `rough`, all of it one triangle per facet half.
+    """
     rows = len(profile)
     low = profile[0][1]
     high = profile[rows - 1][1]
@@ -85,7 +93,10 @@ def rough_lathe(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
 
 
 def ball_profile(rings: int) -> list[ProfilePoint]:
-    """The profile of a ball of radius 1 centred at 0, `rings` rows of facets from pole to pole."""
+    """Return the profile of a ball of radius 1 centred at 0.
+
+    It has `rings` rows of facets from pole to pole.
+    """
     # The poles exactly on the axis (`sin(pi)` is not quite 0), so they close the ball.
     return [
         [0 if k in (0, rings) else math.sin(math.pi * k / rings), -math.cos(math.pi * k / rings)]
@@ -93,14 +104,14 @@ def ball_profile(rings: int) -> list[ProfilePoint]:
     ]
 
 
-def rough_ball(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def rough_ball(
     s: SolidBuilder,
     centre: Vec3,
     radii: Vec3,
     color: Rgb,
     rough: Roughness,
 ) -> None:
-    """A rough ball (an ellipsoid of `radii` across X, up Y and across Z) around `centre`."""
+    """Add a rough ball (an ellipsoid of `radii` across X, up Y and across Z) around `centre`."""
     profile = ball_profile(6)
     # Made with radius 1 on its axis and stretched: the profile's radius by X (Z alike), its
     # height by Y.
@@ -113,11 +124,14 @@ NEAR_UP = 0.9
 
 
 class Leaves:
-    """How a cloud of leaves looks: `palette` (colours picked at random), `count` tufts of about
-    `size` across, laid from the surface down to `depth` of the way in (the deeper, the darker, by
-    `inner`; the lower, the darker, by `shadow`), each shaded up to `shade` lighter or darker."""
+    """How a cloud of leaves looks: its colours, its tufts and their shading.
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    `palette` (colours picked at random), `count` tufts of about `size` across, laid from the
+    surface down to `depth` of the way in (the deeper, the darker, by `inner`; the lower, the
+    darker, by `shadow`), each shaded up to `shade` lighter or darker.
+    """
+
+    def __init__(
         self,
         palette: list[Rgb],
         count: int,
@@ -136,7 +150,7 @@ class Leaves:
         self.shade = shade
 
 
-def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def tuft(
     s: SolidBuilder,
     at: Vec3,
     out: Vec3,
@@ -144,8 +158,10 @@ def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     color: Rgb,
     turn: float,
 ) -> None:
-    """A tuft of leaves at `at`: a little three-sided pyramid `size` across, its tip towards `out`
-    (a unit vector), turned `turn` round it; its faces face outwards."""
+    """Add a tuft of leaves at `at`: a little three-sided pyramid `size` across.
+
+    Its tip towards `out` (a unit vector), turned `turn` round it; its faces face outwards.
+    """
     side = norm(cross(out, [0, 0, 1] if abs(out[1]) > NEAR_UP else [0, 1, 0]))
     other = cross(out, side)
     base: list[Vec3] = []
@@ -175,8 +191,11 @@ def tuft(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 
 def _tuft_color(leaves: Leaves, seed: int, k: int, deep: float, up: float) -> Rgb:
-    """The colour of tuft `k`: from the palette, darker the deeper (`deep`, 0 at the surface to 1)
-    and the lower (`up`, 0 at the bottom to 1 at the top), jittered."""
+    """Return the colour of tuft `k`: from the palette, darker the deeper and the lower.
+
+    Depth is `deep` (0 at the surface to 1) and height is `up` (0 at the bottom to 1 at the top);
+    the colour is jittered.
+    """
     palette = leaves.palette
     pick = math.floor(hash_2d(k, 4, seed) * len(palette))
     pick = len(palette) - 1 if pick >= len(palette) else pick
@@ -185,15 +204,18 @@ def _tuft_color(leaves: Leaves, seed: int, k: int, deep: float, up: float) -> Rg
     return shaded(palette[pick], k_light)
 
 
-def leaf_cloud(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def leaf_cloud(
     s: SolidBuilder,
     centre: Vec3,
     radii: Vec3,
     leaves: Leaves,
     seed: int,
 ) -> None:
-    """A clump of leaves: `leaves.count` tufts in the shell of an ellipsoid of `radii` round
-    `centre` (D-212: a crown that reads as leaves, not as one smooth ball)."""
+    """Add a clump of leaves: `leaves.count` tufts in the shell of an ellipsoid.
+
+    The ellipsoid is of `radii` round `centre` (D-212: a crown that reads as leaves, not as one
+    smooth ball).
+    """
     for k in range(leaves.count):
         # A direction spread evenly over the sphere, and how deep in the shell.
         y = hash_2d(k, 0, seed) * 2 - 1
@@ -208,27 +230,28 @@ def leaf_cloud(  # noqa: PLR0917 (positional: Transcrypt has no keyword argument
             centre[2] + unit[2] * radii[2] * reach,
         ]
         # Out along the ellipsoid's normal, a little askew.
-        out = norm(
-            [
-                unit[0] / radii[0] + (hash_2d(k, 7, seed) - 0.5) * 0.6 / radii[0],
-                unit[1] / radii[1] + (hash_2d(k, 8, seed) - 0.5) * 0.6 / radii[1],
-                unit[2] / radii[2] + (hash_2d(k, 9, seed) - 0.5) * 0.6 / radii[2],
-            ]
-        )
+        out = norm([
+            unit[0] / radii[0] + (hash_2d(k, 7, seed) - 0.5) * 0.6 / radii[0],
+            unit[1] / radii[1] + (hash_2d(k, 8, seed) - 0.5) * 0.6 / radii[1],
+            unit[2] / radii[2] + (hash_2d(k, 9, seed) - 0.5) * 0.6 / radii[2],
+        ])
         size = leaves.size * (0.7 + 0.6 * hash_2d(k, 3, seed))
         color = _tuft_color(leaves, seed, k, deep / max(leaves.depth, 1e-6), (y + 1) / 2)
         tuft(s, at, out, size, color, hash_2d(k, 6, seed) * math.pi * 2)
 
 
-def leaf_cone(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def leaf_cone(
     s: SolidBuilder,
     base: Vec3,
     size: list[float],
     leaves: Leaves,
     seed: int,
 ) -> None:
-    """A tier of needles: `leaves.count` tufts on and just under a cone of `size` (radius, height)
-    standing at `base`, pointing out and a little down (D-212: a pine's)."""
+    """Add a tier of needles: `leaves.count` tufts on and just under a cone of `size`.
+
+    The cone is `size` (radius, height), standing at `base` and pointing out and a little down
+    (D-212: a pine's).
+    """
     radius = size[0]
     height = size[1]
     slope = radius / height

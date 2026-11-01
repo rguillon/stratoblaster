@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/enemy_world.py`."""
 
 from collections.abc import Callable
@@ -111,7 +112,7 @@ def test_enm_14_a_destroyed_enemy_runs_its_on_destroyed_hook_with_the_context() 
 
 def test_enm_10_an_enemy_that_flies_off_the_playfield_after_entering_is_removed() -> None:
     world = _world()
-    enemy = Walker(50, 50, action=lambda e, ctx, dt: setattr(e, "y", e.y - 100 * dt))
+    enemy = Walker(50, 50, action=lambda e, _ctx, dt: setattr(e, "y", e.y - 100 * dt))
     world.add(enemy)
     world.step(0.1)
     assert enemy in world.enemies
@@ -139,7 +140,7 @@ def test_enm_10_an_enemy_too_old_is_removed_whatever_it_does() -> None:
 
 def test_boss_04_an_enemy_that_does_not_expire_stays_until_destroyed() -> None:
     world = _world()
-    boss_like = Walker(50, 50, action=lambda e, ctx, dt: setattr(e, "y", -500))
+    boss_like = Walker(50, 50, action=lambda e, _ctx, _dt: setattr(e, "y", -500))
     boss_like.expires = False
     world.add(boss_like)
     world.step(1)
@@ -151,7 +152,7 @@ def test_boss_04_an_enemy_that_does_not_expire_stays_until_destroyed() -> None:
 
 
 def test_an_enemy_can_spawn_new_enemies_that_join_from_the_next_step() -> None:
-    def spawn(e: Walker, ctx: object, dt: float) -> None:
+    def spawn(_e: Walker, ctx: object, _dt: float) -> None:
         ctx.spawn(Walker(10, 10))  # type: ignore[attr-defined]
 
     world = _world()
@@ -166,7 +167,7 @@ def test_enm_29_an_enemy_can_explode_and_break_its_parts() -> None:
     part_points = _Part(20, 20, points=30)
     free_part = _Part(40, 40, points=None)
 
-    def wreck(e: Walker, ctx: object, dt: float) -> None:
+    def wreck(_e: Walker, ctx: object, _dt: float) -> None:
         ctx.explode(1, 1, 5)  # type: ignore[attr-defined]
         ctx.break_part(part_points)  # type: ignore[attr-defined]
         ctx.break_part(free_part)  # type: ignore[attr-defined]

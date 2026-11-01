@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/orbiter.py`."""
 
 from helpers.enemy_steps import area, run, run_until

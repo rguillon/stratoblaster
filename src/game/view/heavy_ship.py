@@ -1,8 +1,9 @@
-"""The heavy player ship (GFX-SHIP-02): inspired by modern flying-wing
-stealth bombers (B-2 / B-21): no fuselage and no tail, swept leading edges with accent bands,
-sawtooth trailing edge with elevons, a raised cockpit with a dark visor, dorsal intakes feeding 2
-reactors, bomb bay doors underneath. Wingspan 6 units. Low-poly and polygonal like the other
-ships: faceted hump and visor.
+# Copyright (c) 2026 Renaud Guillon
+"""The heavy player ship (GFX-SHIP-02): inspired by modern flying-wing stealth bombers (B-2 / B-21).
+
+No fuselage and no tail, swept leading edges with accent bands, sawtooth trailing edge with elevons,
+a raised cockpit with a dark visor, dorsal intakes feeding 2 reactors, bomb bay doors underneath.
+Wingspan 6 units. Low-poly and polygonal like the other ships: faceted hump and visor.
 """
 
 import math
@@ -30,6 +31,13 @@ from render.babylon import (
 )
 from render.geometry.lathe_z import create_faceted_lathe_along_z
 
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
+
+
 # Right half of the planform (X >= 0), nose to wing tip to centre line.
 HALF_WING = [
     [0, 1.7],
@@ -46,7 +54,7 @@ def _heavy_planform() -> list[list[float]]:
     """Full planform, clockwise from the nose: the right half, then the left half reversed."""
     mirrored = mirror_x(HALF_WING[1:-1])
     mirrored.reverse()
-    planform = [point for point in HALF_WING]
+    planform = list(HALF_WING)
     planform.extend(mirrored)
     return planform
 
@@ -87,7 +95,6 @@ REACTOR_OFFSET_X = 0.7
 REACTOR = {"radius": 0.2, "length": 1.1}
 
 __pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
@@ -96,12 +103,12 @@ SIDES = [("right", 1), ("left", -1)]
 
 
 def _for_side(sign: float, outline: list[list[float]]) -> list[list[float]]:
-    """The outline as it stands for the right side (sign > 0), mirrored for the left."""
+    """Return the outline as it stands for the right side (sign > 0), mirrored for the left."""
     return outline if sign > 0 else mirror_x(outline)
 
 
 def _build_wing(root: Any, scene: Any) -> None:
-    """The flying wing: its planform, accent bands, elevons and bay doors."""
+    """Build the flying wing: its planform, accent bands, elevons and bay doors."""
     mats = get_ship_materials(scene)
     wing = tag_part(new_transform_node("heavy-wing", scene), "wing")
     wing.parent = root
@@ -122,7 +129,7 @@ def _build_wing(root: Any, scene: Any) -> None:
 
 
 def _build_cockpit(root: Any, scene: Any) -> None:
-    """The raised cockpit hump with its dark visor and dorsal light."""
+    """Build the raised cockpit hump with its dark visor and dorsal light."""
     mats = get_ship_materials(scene)
     frame = create_faceted_lathe_along_z(
         "heavy-cockpit",
@@ -163,7 +170,7 @@ def _build_cockpit(root: Any, scene: Any) -> None:
 
 
 def _build_centre_body(root: Any, scene: Any) -> None:
-    """The lens-shaped centre body that joins the wing to the cockpit."""
+    """Build the lens-shaped centre body that joins the wing to the cockpit."""
     mats = get_ship_materials(scene)
     body = create_faceted_lathe_along_z(
         "heavy-body",
@@ -184,7 +191,7 @@ def _build_centre_body(root: Any, scene: Any) -> None:
 
 
 def _build_intake(side: str, sign: float, root: Any, scene: Any) -> None:
-    """A dorsal intake hump with its dark mouth, facing forward."""
+    """Build a dorsal intake hump with its dark mouth, facing forward."""
     mats = get_ship_materials(scene)
     hump = create_faceted_lathe_along_z(
         "heavy-intake-" + side,
@@ -217,7 +224,7 @@ def _build_intake(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def build_heavy_ship(scene: Any) -> Any:
-    """Builds the heavy player ship (GFX-SHIP-02)."""
+    """Build the heavy player ship (GFX-SHIP-02)."""
     root = new_transform_node("ship-heavy", scene)
     _build_wing(root, scene)
     _build_centre_body(root, scene)

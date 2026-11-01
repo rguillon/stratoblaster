@@ -1,13 +1,12 @@
-"""The game session of the app: it starts the level chosen on
-the game screen, and ends it when the menu flow leaves it (UI-FLOW-06), or starts it again from its
-checkpoint (GAME-LIFE-11). The debug options' start time and boss apply to the first level played
-only.
+# Copyright (c) 2026 Renaud Guillon
+"""The game session of the app: it starts the level chosen on the game screen.
+
+And ends it when the menu flow leaves it (UI-FLOW-06), or starts it again from its checkpoint
+(GAME-LIFE-11). The debug options' start time and boss apply to the first level played only.
 
 Levels load in steps, one per frame, behind a loading screen (PERF-09, PERF-10), and the level the
 level select highlight rests on is built ahead (PERF-13).
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from app.game_play import GameChoice, GamePlay, GamePlayOptions
 from app.level_prepare import LevelPrefetcher, prepare_level, roads_ready, textures_ready
@@ -21,11 +20,13 @@ from render.scenery.atmosphere_of import AtmosphereOptions
 from render.scenery.background_loader import start_background_loader
 from ui.level_loading import LevelLoadingScreen
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Most frames a level's loading waits for its shaders to compile in parallel (PERF-20).
 COMPILE_FRAMES = 60
@@ -36,17 +37,17 @@ BUILD_AHEAD_AFTER = 0.6
 
 
 class GameDebugOptions:
-    """Debug options from the URL (DEV-OPT-01), e.g. `?level=1-3&t=120&ship=heavy`: start a level
-    straight away, at a given time, with the playback keys and the FPS / polygons tile.
+    """Debug options from the URL (DEV-OPT-01), e.g.
 
-    `level_id`; `time` (seconds into the level to start at, DEV-OPT-02); `ship_id` (None: the
-    game's first ship); `boss` (the rank of the mini or final boss to start at instead, DEV-OPT-03,
-    or None); `weather` (False: no weather, DEV-OPT-04; None: the level's own); `time_of_day` (the
-    level at that time of day, DEV-OPT-05, or None); `tiles` (True: the grid of tiles over the
-    districts, DEV-OPT-06).
+    `?level=1-3&t=120&ship=heavy`: start a level straight away, at a given time, with the playback
+    keys and the FPS / polygons tile. `level_id`; `time` (seconds into the level to start at,
+    DEV-OPT-02); `ship_id` (None: the game's first ship); `boss` (the rank of the mini or final boss
+    to start at instead, DEV-OPT-03, or None); `weather` (False: no weather, DEV-OPT-04; None: the
+    level's own); `time_of_day` (the level at that time of day, DEV-OPT-05, or None); `tiles` (True:
+    the grid of tiles over the districts, DEV-OPT-06).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         level_id: str,
         time: float,
@@ -66,8 +67,10 @@ class GameDebugOptions:
 
 
 def atmosphere_of(debug: GameDebugOptions | None) -> AtmosphereOptions:
-    """The debug choices on the level's look (DEV-OPT-04, DEV-OPT-05, DEV-OPT-06): none without
-    debug options."""
+    """Return the debug choices on the level's look (DEV-OPT-04, DEV-OPT-05, DEV-OPT-06).
+
+    None without debug options.
+    """
     if debug is None:
         return AtmosphereOptions(None, None, None)
     weather = False if debug.weather is False else None
@@ -76,16 +79,17 @@ def atmosphere_of(debug: GameDebugOptions | None) -> AtmosphereOptions:
 
 
 class GameSessionOptions:
-    """What a `GameSession` needs from the app's options, positional. `None` stands for an
-    omitted option: `debug` (GameDebugOptions), `stats_parent` (the debug tile's), `overlay` (where
-    the in-game HUD and the loading screen go), `keyboard_target` (no keyboard when None),
-    `gamepads`, `storage` (where the weapons and supplies are kept; not kept when None),
-    `on_load_start` (DEV-PERF-01), `stepped_loading` (PERF-09), `precompile_shaders` (PERF-20;
-    None: on), `background_loading` (PERF-12: the worker), `prebuild_levels` (PERF-13),
+    """What a `GameSession` needs from the app's options, positional.
+
+    `None` stands for an omitted option: `debug` (GameDebugOptions), `stats_parent` (the debug
+    tile's), `overlay` (where the in-game HUD and the loading screen go), `keyboard_target` (no
+    keyboard when None), `gamepads`, `storage` (where the weapons and supplies are kept; not kept
+    when None), `on_load_start` (DEV-PERF-01), `stepped_loading` (PERF-09), `precompile_shaders`
+    (PERF-20; None: on), `background_loading` (PERF-12: the worker), `prebuild_levels` (PERF-13),
     `on_draw_calls` (ENG-106: the draw calls of each frame drawn).
     """
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         environment: bool,
         doc: Any,
@@ -119,7 +123,8 @@ class GameSessionOptions:
 
 
 class SessionScores:
-    """Where a `GameSession` reads the high score from and records its scores (GAME-SCORE-05):
+    """Where a `GameSession` reads the high score from and records its scores (GAME-SCORE-05).
+
     `high_score()` (the saved one, for the HUD) and `record(score)` (a level attempt ended, with
     `score`: completed, lost or left).
     """
@@ -130,9 +135,10 @@ class SessionScores:
 
 
 class SessionAudio:
-    """What the audio hears of the levels played: `started(level_id)` (a level starts, or starts
-    again from its checkpoint: its music, AUD-MUSIC-08) and `step(run)` (a step of the level was
-    run: its sounds, AUD-ENGINE-09).
+    """What the audio hears of the levels played.
+
+    `started(level_id)` (a level starts, or starts again from its checkpoint: its music,
+    AUD-MUSIC-08) and `step(run)` (a step of the level was run: its sounds, AUD-ENGINE-09).
     """
 
     def __init__(self, started: Any, step: Any) -> None:
@@ -141,9 +147,11 @@ class SessionAudio:
 
 
 class LevelLoad:
-    """A level being loaded in steps (PERF-09). `state` is the flow's state the level was confirmed
-    in (None while it is built ahead); `steps` return False when they are not over (they run again
-    on the next frame); `tries` counts the frames the step being run has taken so far.
+    """A level being loaded in steps (PERF-09).
+
+    `state` is the flow's state the level was confirmed in (None while it is built ahead); `steps`
+    return False when they are not over (they run again on the next frame); `tries` counts the
+    frames the step being run has taken so far.
     """
 
     def __init__(self, level_id: str, ship_id: str, state: Any) -> None:
@@ -158,7 +166,7 @@ class LevelLoad:
 
 
 def highlighted_level(state: Any) -> str | None:
-    """The cell highlighted on the level select screen, if it shows (PERF-12: prefetched)."""
+    """Return the cell highlighted on the level select screen, if it shows (PERF-12: prefetched)."""
     if state.screen == "level-select":
         selected: str | None = state.selected_id
         return selected
@@ -166,7 +174,10 @@ def highlighted_level(state: Any) -> str | None:
 
 
 def ship_of(state: Any) -> str:
-    """The ship the flow's levels are flown with: the one chosen, or else the one highlighted."""
+    """Return the ship the flow's levels are flown with.
+
+    The one chosen, or else the one highlighted.
+    """
     if state.chosen_ship_id is not None:
         chosen: str = state.chosen_ship_id
         return chosen
@@ -175,12 +186,13 @@ def ship_of(state: Any) -> str:
 
 
 class GameSession:
-    """Starts the level chosen on the game screen, and ends it when the flow leaves it
-    (UI-FLOW-06), or starts it again from its checkpoint (GAME-LIFE-11). The debug options' start
+    """Starts the level chosen on the game screen, and ends it when the flow leaves it (UI-FLOW-06).
+
+    Or starts it again from its checkpoint (GAME-LIFE-11). The debug options' start
     time and boss apply to the first level played only.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         engine: Any,
         game: Any,
@@ -224,7 +236,7 @@ class GameSession:
         self._stop_listening = listen_controls(options.keyboard_target, self.controls, current_play)
 
     def dispose(self) -> None:
-        """Ends the level being played and stops listening to the keys."""
+        """End the level being played and stop listening to the keys."""
         self.end()
         self._drop_ahead()
         self._stop_listening()
@@ -257,9 +269,10 @@ class GameSession:
         return self._load is not None
 
     def load_step(self, dt: float = 0) -> None:
-        """Runs the next step of the level being loaded, if any (PERF-09), one per frame of `dt`
-        seconds, and prefetches the level highlighted on the level select screen once it rests
-        there (PERF-12).
+        """Run the next step of the level being loaded, if any (PERF-09).
+
+        One per frame of `dt` seconds, and prefetches the level highlighted on the level select
+        screen once it rests there (PERF-12).
         """
         self._prefetcher.update(dt, self._highlighted)
         load = self._load
@@ -270,7 +283,7 @@ class GameSession:
             self._load = None
 
     def _run_step(self, load: LevelLoad) -> bool:
-        """Runs the next step of `load`; true once its last step has run."""
+        """Run the next step of `load`; true once its last step has run."""
         load.tries += 1
         if load.steps[load.done]() is False:
             return False
@@ -285,9 +298,10 @@ class GameSession:
         return True
 
     def _build_ahead(self) -> None:
-        """Builds the level the level select highlight rests on, one step per frame (PERF-13; the
-        menus' one allowed stutter, PERF-06), short of starting it; drops the one built for another
-        level or ship.
+        """Build the level the level select highlight rests on, one step per frame (PERF-13).
+
+        Each step is the menus' one allowed stutter (PERF-06). It stops short of starting the level,
+        and drops the one built for another level or ship.
         """
         if not self.options.prebuild_levels or not self.options.stepped_loading:
             return
@@ -318,8 +332,9 @@ class GameSession:
         self._ahead = None
 
     def _start(self, state: Any, level_id: str) -> None:
-        """Starts `level_id` for the flow's attempt (from its checkpoint when it has one): at once,
-        or in steps (PERF-09), in the frames after the confirmation (PERF-05): the level's ground,
+        """Start `level_id` for the flow's attempt (from its checkpoint when it has one): at once.
+
+        Or in steps (PERF-09), in the frames after the confirmation (PERF-05): the level's ground,
         its scene, a first drawing that compiles its shaders.
         """
         if self.options.on_load_start is not None:
@@ -344,7 +359,7 @@ class GameSession:
             load.screen.show(load.done / len(load.steps))
 
     def _take_ahead(self, state: Any, level_id: str) -> LevelLoad | None:
-        """The level built ahead on the level select screen, if it is the one confirmed."""
+        """Return the level built ahead on the level select screen, if it is the one confirmed."""
         usable = self._is_ahead(level_id, ship_of(state)) and not state.resume
         if not usable:
             self._drop_ahead()
@@ -353,8 +368,10 @@ class GameSession:
         return ahead
 
     def _compile_wait(self, load: LevelLoad) -> bool:
-        """Hidden by the loading screen (or the menus), the shaders compile (in parallel where
-        WebGL can, over a few frames), then a first drawing finishes them (PERF-20).
+        """Hidden by the loading screen (or the menus).
+
+        The shaders compile (in parallel where WebGL can, over a few frames), then a first drawing
+        finishes them (PERF-20).
         """
         scene = load.play.view.scene if load.play is not None else None
         if not self.options.stepped_loading or scene is None:
@@ -363,7 +380,7 @@ class GameSession:
             return True
         # `!= None` also catches the undefined of a missing WebGL capability.
         caps = scene.getEngine().getCaps()
-        parallel = caps.parallelShaderCompile != None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        parallel = caps.parallelShaderCompile != None
         ready = scene.isReady(True) and outlines_ready(scene.meshes)
         if not ready and parallel and load.tries < COMPILE_FRAMES:
             return False
@@ -371,17 +388,19 @@ class GameSession:
         return True
 
     def _road_grid(self) -> bool:
-        """Whether the tile grid is drawn (the debug option, DEV-OPT-06), so the roads are made
-        with it."""
+        """Whether the tile grid is drawn (the debug option, DEV-OPT-06).
+
+        So the roads are made with it.
+        """
         debug = self.options.debug
         return debug is not None and debug.tiles is True
 
     def _roads_step(self, level_id: str, load: LevelLoad) -> bool:
-        """The street surfaces of the first screens, made by the worker (PERF-17)."""
+        """Return the street surfaces of the first screens, made by the worker (PERF-17)."""
         return roads_ready(self.game, level_id, self._road_grid(), load.tries)
 
     def _enemies_step(self, load: LevelLoad) -> bool:
-        """The enemy models, one a frame, here rather than in play (PERF-21)."""
+        """Return the enemy models, one a frame, here rather than in play (PERF-21)."""
         if not self.options.stepped_loading or load.play is None:
             return True
         precompile = self.options.precompile_shaders
@@ -389,9 +408,10 @@ class GameSession:
         return built
 
     def _new_load(self, level_id: str, ship_id: str, state: Any) -> LevelLoad:
-        """The steps loading `level_id` flown by `ship_id` (PERF-09): the level's ground, its
-        scene, a first drawing that compiles its shaders, then its start (for the flow's state when
-        it is confirmed).
+        """Return the steps loading `level_id` flown by `ship_id` (PERF-09): the level's ground.
+
+        Its scene, a first drawing that compiles its shaders, then its start (for the flow's state
+        when it is confirmed).
         """
         load = LevelLoad(level_id, ship_id, state)
 
@@ -432,10 +452,11 @@ class GameSession:
         return load
 
     def _kept(self, state: Any) -> tuple[Any, Any]:
-        """What the player kept from the levels completed before: the weapons (GAME-WPN-15,
-        D-071), the lives and bombs (GAME-LIFE-12; reviewer, 2026-10-28). A Continue, after a game
-        over, starts again with the starting lives and bombs (GAME-LIFE-11). Returns (weapons,
-        supplies), None for those not kept.
+        """Return what the player kept from the levels completed before.
+
+        The weapons (GAME-WPN-15, D-071), the lives and bombs (GAME-LIFE-12; reviewer, 2026-10-28).
+        A Continue, after a game over, starts again with the starting lives and bombs
+        (GAME-LIFE-11). Returns (weapons, supplies), None for those not kept.
         """
         storage = self.options.storage
         if storage is None:
@@ -486,7 +507,7 @@ class GameSession:
         return play
 
     def _started(self, play: GamePlay, state: Any, level_id: str) -> None:
-        """The level is loaded: it is played from now on."""
+        """Start playing the level, now that it is loaded."""
         # Presses made while it loaded do not carry into it either.
         self.controls.clear()
         play.attach()
@@ -498,8 +519,9 @@ class GameSession:
         self.play = play
 
     def _completed(self, play: GamePlay) -> None:
-        """The level is over: a completed one keeps its weapons (D-071), lives and bombs (reviewer,
-        2026-10-28) for the next (GAME-LEVEL-14).
+        """Finish the level, saving what a completed one keeps for the next (GAME-LEVEL-14).
+
+        Its weapons (D-071), lives and bombs (reviewer, 2026-10-28).
         """
         storage = self.options.storage
         if storage is not None and play.run.phase == "complete":
@@ -510,8 +532,11 @@ class GameSession:
         self._on_complete(play)
 
     def end(self) -> None:
-        """Ends the level being played, or drops the one being loaded (its score counts for the
-        high score, GAME-SCORE-05, also when it is left from the pause menu, UI-PAUSE-10)."""
+        """End the level being played.
+
+        Or drops the one being loaded (its score counts for the high score, GAME-SCORE-05, also when
+        it is left from the pause menu, UI-PAUSE-10).
+        """
         load = self._load
         if load is not None:
             if load.play is not None:

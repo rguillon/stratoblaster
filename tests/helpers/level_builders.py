@@ -1,6 +1,11 @@
-"""Hand-made scenery levels for the tests of `core/scenery/` (ENG-145). The game's own configs do
+# Copyright (c) 2026 Renaud Guillon
+"""Hand-made scenery levels for the tests of `core/scenery/` (ENG-145).
+
+The game's own configs do
+
 not import under CPython (their records are plain dicts), so the tests build the small levels they
-need here. Every default is a neutral value: flat ground, no slope limit, no sea."""
+need here. Every default is a neutral value: flat ground, no slope limit, no sea.
+"""
 
 from core.scenery.scenery_level import (
     Dual,
@@ -22,7 +27,7 @@ def flat(base: float = 10.0) -> Relief:
 
 
 def hills(base: float = 50.0, amplitude: float = 30.0, max_height: float | None = None) -> Relief:
-    """Rolling smooth ground from `base - amplitude` to `base + amplitude`."""
+    """Return rolling smooth ground from `base - amplitude` to `base + amplitude`."""
     return Relief(base, amplitude, 1 / 400, 3, "smooth", max_height)
 
 
@@ -36,7 +41,10 @@ def section(
     relief: Relief | None = None,
     **options: object,
 ) -> TerrainSection:
-    """A terrain section; `options` are the optional fields of `TerrainSection` (`streets`, ...)."""
+    """Return a terrain section.
+
+    `options` are the optional fields of `TerrainSection` (`streets`, ...).
+    """
     return TerrainSection(
         name,
         seconds,

@@ -1,7 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/traffic_layer.py` (GFX-CAR-05, GFX-CAR-08, PERF-27)."""
 
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -12,10 +13,10 @@ from render.scenery.traffic_layer import TrafficLayer, TrafficSource, _goes_on
 class _Field:
     """A prop field of the cars: the chunks it was given, and the syncs."""
 
-    instances: list["_Field"] = []
+    instances: ClassVar[list["_Field"]] = []
 
     def __init__(
-        self, scene: Any, models: Any, materials: Any, on_structure: Any, plumes: Any
+        self, _scene: Any, models: Any, _materials: Any, _on_structure: Any, _plumes: Any
     ) -> None:
         self.models = models
         self.chunks: list[tuple[int, list[Any]]] = []
@@ -35,7 +36,7 @@ class _Field:
 class _Traffic:
     """The traffic of some roads: the cars it places, and the roads it was given later."""
 
-    made: list["_Traffic"] = []
+    made: ClassVar[list["_Traffic"]] = []
 
     def __init__(self, roads: list[Any], height: Any, rules: Any, seed: int) -> None:
         self.roads = roads

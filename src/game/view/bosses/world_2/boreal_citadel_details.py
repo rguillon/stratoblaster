@@ -1,11 +1,12 @@
-"""The Boreal Citadel's details (FB-BOREAL-CITADEL-02, 2-5): armour skirts on its deck's sides, snow
-drifts, dishes and masts, lamps along its avenue, buttresses round its keep, heating pipes, the
-engine block's grilles and fins Model space: logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""The Boreal Citadel's details (FB-BOREAL-CITADEL-02, 2-5).
+
+Armour skirts on its deck's sides, snow drifts, dishes and masts, lamps along its avenue, buttresses
+round its keep, heating pipes, the engine block's grilles and fins. Model space: logical pixels,
+nose +Z, Y up.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.final_boss_greebles import dish, grille, mast, rod, studs
@@ -14,13 +15,18 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH, sinew
 from game.view.enemies.enemy_shapes import SIDES, decal
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING
 
+from game.view.enemies.enemy_mesh import EnemyParts
+
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 
@@ -59,8 +65,10 @@ BUTTRESS = [4, 13, 7]
 
 
 def _draw_deck_edges(p: EnemyParts) -> None:
-    """Armour skirts lit by violet slits, and snow drifts piled on the deck
-    (FB-BOREAL-CITADEL-06)."""
+    """Draw the deck's edges (FB-BOREAL-CITADEL-06).
+
+    Armour skirts lit by violet slits, and snow drifts piled on the deck.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -127,7 +135,7 @@ def _draw_roofs(p: EnemyParts) -> None:
 
 
 def _draw_engine_block(p: EnemyParts) -> None:
-    """The engine block's grilles and heat-sink fins."""
+    """Draw the engine block's grilles and heat-sink fins."""
     hull = p.hull
     flesh = p.flesh
     for s in SIDES:
@@ -143,7 +151,7 @@ def _draw_engine_block(p: EnemyParts) -> None:
 
 
 def draw_details(p: EnemyParts) -> None:
-    """The Boreal Citadel's details (FB-BOREAL-CITADEL-02), on its core body."""
+    """Draw the Boreal Citadel's details (FB-BOREAL-CITADEL-02), on its core body."""
     _draw_deck_edges(p)
     _draw_keep_detail(p)
     _draw_roofs(p)

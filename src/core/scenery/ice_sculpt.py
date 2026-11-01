@@ -1,17 +1,20 @@
-"""Sculpt operations of the frozen lands (phase 8, GFX-TERRAIN-05): frozen lakes and the
-crevasses of a glacier. Pure and deterministic for a given seed."""
+# Copyright (c) 2026 Renaud Guillon
+"""Sculpt operations of the frozen lands (phase 8, GFX-TERRAIN-05).
+
+Frozen lakes and the crevasses of a glacier. Pure and deterministic for a given seed.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.noise import hash_2d, smoothstep
 
-__pragma__("skip")
-from core.math.noise import Noise2D  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import Crevasses, Lakes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.math.noise import Noise2D
+from core.scenery.scenery_level import Crevasses, Lakes
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.math.noise import hash_2d, smoothstep  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Hash streams of a lake's square: whether it has one, where, how big.
 LAKE_HAS = 0
@@ -68,7 +71,7 @@ class LakeField:
         return height
 
     def _lake(self, i: int, j: int) -> Lake | None:
-        """The lake of square (`i`, `j`), if it has one (|j| stays far below a million)."""
+        """Return the lake of square (`i`, `j`), if it has one (|j| stays far below a million)."""
         key = str(i * 1000003 + j)
         if key not in self._squares:
             self._squares[key] = _square_lake(self._lakes, self._seed, i, j)
@@ -76,7 +79,7 @@ class LakeField:
 
 
 def _square_lake(lakes: Lakes, seed: int, i: int, j: int) -> Lake | None:
-    """The lake of square (`i`, `j`) of `lakes`, or None."""
+    """Return the lake of square (`i`, `j`) of `lakes`, or None."""
     spacing = lakes.spacing
     edge = lakes.edge
 
@@ -94,16 +97,20 @@ def _square_lake(lakes: Lakes, seed: int, i: int, j: int) -> Lake | None:
 
 
 def with_lakes(lakes: Lakes, seed: int, x: float, z: float, h: float) -> float:
-    """`h` with the frozen lakes of `lakes` flattened into it at (`x`, `z`): each square of
-    `spacing` may hold one lake, round, at its level within `radius`, its shore rising back to the
-    ground over `edge`."""
+    """`h` with the frozen lakes of `lakes` flattened into it at (`x`, `z`).
+
+    Each square of `spacing` may hold one lake, round, at its level within `radius`, its shore
+    rising back to the ground over `edge`.
+    """
     return LakeField(lakes, seed).apply(x, z, h)
 
 
 def crevasse_depth(crevasses: Crevasses, noise: Noise2D, x: float, z: float) -> float:
-    """How deep the crevasses of `crevasses` cut the ground at (`x`, `z`): 0 between them, up to
-    `depth` at the bottom of one. The lines run at `angle_deg`, bent by `noise`, and are broken
-    into pieces by it."""
+    """How deep the crevasses of `crevasses` cut the ground at (`x`, `z`).
+
+    0 between them, up to `depth` at the bottom of one. The lines run at `angle_deg`, bent by
+    `noise`, and are broken into pieces by it.
+    """
     spacing = crevasses.spacing
     width = crevasses.width
     depth = crevasses.depth

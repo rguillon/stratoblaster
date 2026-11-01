@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/city_lots.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import bounds, check_colored, height
@@ -22,12 +25,12 @@ LIGHTS = [[1.0, 0.9, 0.5]]
 LOT = [0.0, 0.0, 16.0, 16.0]
 
 
-def kit_for(seed=2):
+def kit_for(seed: Any = 2) -> Any:
     k = tile_kit(16.0, 16.0, TILE.size, seed)
     return k, lot_kit(k, FACADES, LIGHTS)
 
 
-def test_gfx_bldg_10_a_volume_is_a_box_up_to_its_height():
+def test_gfx_bldg_10_a_volume_is_a_box_up_to_its_height() -> None:
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 12.0)
     prop = geometry_of(k)
@@ -37,14 +40,14 @@ def test_gfx_bldg_10_a_volume_is_a_box_up_to_its_height():
     assert low[1] == pytest.approx(0.0)
 
 
-def test_d210_a_volume_under_a_floor_high_gets_no_windows():
+def test_d210_a_volume_under_a_floor_high_gets_no_windows() -> None:
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 3.0)
     assert geometry_of(k).windows is not None
     assert len(geometry_of(k).windows.positions) == 0
 
 
-def test_d210_a_volume_gets_one_window_quad_per_wall():
+def test_d210_a_volume_gets_one_window_quad_per_wall() -> None:
     """GFX-BLDG-13."""
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 20.0)
@@ -54,7 +57,7 @@ def test_d210_a_volume_gets_one_window_quad_per_wall():
     assert len(geometry_of(k).lights.positions) == 0
 
 
-def test_gfx_bldg_10_the_plinth_covers_the_lot_and_returns_its_height():
+def test_gfx_bldg_10_the_plinth_covers_the_lot_and_returns_its_height() -> None:
     k, kit = kit_for()
     base = plinth(kit, LOT)
     assert 3 <= base <= 6
@@ -62,14 +65,14 @@ def test_gfx_bldg_10_the_plinth_covers_the_lot_and_returns_its_height():
 
 
 @pytest.mark.parametrize("shape", [stepped_tower, round_tower, slab, courtyard, l_block])
-def test_gfx_bldg_10_each_lot_shape_is_a_well_formed_volume(shape):
+def test_gfx_bldg_10_each_lot_shape_is_a_well_formed_volume(shape: Any) -> None:
     k, kit = kit_for()
     shape(kit, LOT)
     check_colored(geometry_of(k).structure)
     assert height(geometry_of(k).structure) > 0
 
 
-def test_gfx_bldg_10_a_crown_sits_on_the_roof_at_the_given_point():
+def test_gfx_bldg_10_a_crown_sits_on_the_roof_at_the_given_point() -> None:
     k, kit = kit_for()
     # The point is (x, y, z): the crown stands at the top of its tower.
     crown(kit, [8.0, 12.0, 8.0], 2.0)

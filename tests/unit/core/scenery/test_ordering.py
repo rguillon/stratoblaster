@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/ordering.py`."""
 
 from core.scenery.ordering import stable_sort_by
@@ -16,7 +17,8 @@ def test_equal_keys_keep_their_original_order() -> None:
 def test_short_lists_are_copied_not_sorted_in_place() -> None:
     items = [5]
     result = stable_sort_by(items, lambda v: v)
-    assert result == [5] and result is not items
+    assert result == [5]
+    assert result is not items
     assert stable_sort_by([], lambda v: v) == []
     original = [2, 1]
     assert stable_sort_by(original, lambda v: v) == [1, 2]

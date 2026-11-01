@@ -34,13 +34,100 @@ src = ["src"]
 
 # The rule sets of ENG-12: N checks the naming (ENG-15), C90 and PL the size of the code (ENG-16).
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
-ignore = ["PLR0913"]
+fixable = ["ALL"]
+select = ["ALL"]
+# `# __pragma__ (...)` comments are Transcrypt directives (the skip blocks, ENG-153), not commented-out
+# code (ERA001).
+task-tags = ["TODO", "FIXME", "XXX", "__pragma__"]
+ignore = [  "COM812",   # cause incompatibility with the formatter
+            "ISC001",   # cause incompatibility with the formatter
+            "D203",     # conflict with another rule
+            "D213",     # conflict with another rule
+            "D107",     # __init__ is documented by its class docstring
+            "PLR2004",  # magic values ok
+            "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `*args`
+            # What Transcrypt 3.9.5 imposes (specs/01-engineering.md, "Transcrypt"):
+            "E711",     # `== None` also catches JavaScript's `undefined` (ENG-161)
+            "FBT001",   # Transcrypt drops keyword arguments: flags are passed by position (ENG-151)
+            "FBT002",   # same as FBT001
+            "FBT003",   # same as FBT001
+            "PLR0913",  # constructors take their many fields by position (ENG-151)
+            "PLR0917",  # same as PLR0913
+            "SIM118",   # Transcrypt cannot iterate a dict directly: `for k in d.keys()` (ENG-159)
+            "SIM110",   # hot loops are plain loops: `any()`/`all()` over a generator are slow (ENG-157)
+            "PLR1730",  # hot loops compare: Transcrypt's `min()`/`max()` are slow (ENG-157)
+            "PLW0108",  # a bound method passed as a value loses `self`: keep the lambda
+            "SIM105",   # Transcrypt has no `contextlib`
+            "E722",     # a JavaScript error is no Python `Exception`: only a bare `except` catches it
+            ]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests assert on literal values: a magic number there is the expected value, not a constant
 # (ENG-17).
-"tests/**" = ["PLR2004"]
+"tests/*" = [ "S101",     # Allow assert in tests
+              "D100",     # No docstring in tests
+              "D101",     # No docstring in tests
+              "D102",     # No docstring in tests
+              "D103",     # No docstring in tests
+              "D105",     # No docstring in tests
+              "D107",     # No docstring in tests
+              "INP001",   # tests is not a package
+              "SLF001",   # tests inspect the internal state of what they test
+              "N802",     # fakes mirror the camelCase names of Babylon and the DOM
+              "N803",     # same as N802
+              "N815",     # same as N802
+              ]
+# The ENG-18 ban on `time` is for core/: the e2e helpers wait in real time.
+"tests/e2e/*" = ["TID251"]
+# Imports a module in a fresh interpreter (`sys.executable`, a fixed command).
+"tests/unit/core/systems/test_boss_fights.py" = ["S603"]
+# Babylon's own camelCase names (ENG-113).
+"src/render/handles.py" = ["N802", "N803", "N815"]
+# The DOM's method names, called on real browser objects.
+"src/host/webgl_support.py" = ["N802"]
+"src/input/keyboard_menu_input.py" = ["N802"]
+# Config record keys stay camelCase: the browser reads them as object fields (ENG-15).
+"src/game/sim/enemies/hornet.py" = ["N802"]
+"src/game/view/ship_materials.py" = ["N803"]
+# Arguments read by the JavaScript of `__pragma__("js", ...)` bodies, where ruff cannot see them.
+"src/main.py" = ["ARG001"]
+"src/app/debug_options.py" = ["ARG001"]
+"src/app/saved_choices.py" = ["ARG001"]
+"src/app/saved_settings.py" = ["ARG001"]
+"src/app/saved_supplies.py" = ["ARG001"]
+"src/app/saved_weapons.py" = ["ARG001"]
+"src/game/view/audio/game_audio.py" = ["ARG001"]
+"src/game/view/reactor_flame.py" = ["ARG001"]
+"src/game/view/readability_view.py" = ["ARG001"]
+"src/game/view/ship_parts.py" = ["ARG001"]
+"src/game/view/shot_geometry.py" = ["ARG001"]
+"src/game/view/shots/bullet_renderer.py" = ["ARG001"]
+"src/game/view/shots/impact_flashes.py" = ["ARG001"]
+"src/game/view/shots/laser_renderer.py" = ["ARG001"]
+"src/game/view/shots/missile_exhaust.py" = ["ARG001"]
+"src/game/view/shots/missile_model.py" = ["ARG001"]
+"src/game/view/shots/missile_renderer.py" = ["ARG001"]
+"src/host/cookie_storage.py" = ["ARG001"]
+"src/host/worker_data.py" = ["ARG001"]
+"src/render/babylon.py" = ["ARG001"]
+"src/render/scenery/background_loader.py" = ["ARG001"]
+"src/render/scenery/ground_worker.py" = ["ARG001"]
+"src/render/scenery/imposter_bake_visual.py" = ["ARG001"]
+"src/render/scenery/level_ground.py" = ["ARG001"]
+"src/render/scenery/procedural_textures.py" = ["ARG001"]
+"src/render/scenery/prop_field.py" = ["ARG001"]
+"src/render/scenery/road_atlas.py" = ["ARG001"]
+"src/render/scenery/road_field.py" = ["ARG001"]
+"src/render/scenery/road_sources.py" = ["ARG001"]
+"src/render/scenery/scenery_stage.py" = ["ARG001"]
+"src/render/scenery/terrain_blend_plugin_visual.py" = ["ARG001"]
+"src/render/scenery/terrain_chunks.py" = ["ARG001"]
+"src/render/scenery/window_atlas.py" = ["ARG001"]
+"src/ui/screens/elements.py" = ["ARG001"]
+# A node stopped earlier throws when stopped again: ignored, as Transcrypt has no `contextlib`.
+"src/audio/synth.py" = ["S110"]
+# `__pragma__` is Transcrypt's compiler marker, not a dunder of ours.
+"typings/*" = ["N807"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "random".msg = "ENG-18: core/ uses the seeded RNG (core/math/rng.py), never the random module."
@@ -57,6 +144,11 @@ max-args = 6
 
 [tool.ruff.format]
 preview = true
+
+# deptry (`make check`): `org` is Transcrypt's compile-time stub package (`transcrypt/modules/org`,
+# ENG-153), not an installed module; the game has no runtime Python dependency (ENG-05).
+[tool.deptry.per_rule_ignores]
+DEP001 = ["org"]
 
 # ENG-14: mypy --strict over src/ (`make check`); the browser globals' stubs are in typings/.
 [tool.mypy]

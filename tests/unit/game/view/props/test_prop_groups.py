@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/prop_groups.py`."""
 
 from game.config.tile_buildings import LOT_MODELS, TILE_GROUP_IDS, TILE_GROUPS
@@ -13,25 +14,25 @@ from game.view.props.prop_models import PROP_MODELS
 from game.view.props.road_kit import ROAD_SAMPLE_ID
 
 
-def test_dev_menu_15_unique_keeps_the_first_order_of_each_item():
+def test_dev_menu_15_unique_keeps_the_first_order_of_each_item() -> None:
     assert unique(["b", "a", "b", "c", "a"]) == ["b", "a", "c"]
     assert unique([]) == []
 
 
-def test_dev_menu_15_tile_notes_give_the_tiles_of_each_model():
+def test_dev_menu_15_tile_notes_give_the_tiles_of_each_model() -> None:
     models = [TILE_GROUPS["homes"].models[0]]
     notes = tile_notes(models)
-    assert notes == {models[0].id: f"{models[0].tiles[0]}×{models[0].tiles[1]} tiles"}
+    assert notes == {models[0].id: f"{models[0].tiles[0]}\u00d7{models[0].tiles[1]} tiles"}
 
 
-def test_gfx_road_11_the_road_kit_group_lists_the_kit_then_its_sample():
+def test_gfx_road_11_the_road_kit_group_lists_the_kit_then_its_sample() -> None:
     group = make_road_kit_group()
     assert group.label == "Road kit"
     assert group.ids[-1] == ROAD_SAMPLE_ID
     assert group.notes[ROAD_SAMPLE_ID] == "every piece joined to straights"
 
 
-def test_dev_menu_15_the_tile_page_is_the_road_kit_then_each_group_and_the_lots():
+def test_dev_menu_15_the_tile_page_is_the_road_kit_then_each_group_and_the_lots() -> None:
     page = make_tile_page()
     labels = [g.label for g in page]
     assert labels[0] == "Road kit"
@@ -40,7 +41,7 @@ def test_dev_menu_15_the_tile_page_is_the_road_kit_then_each_group_and_the_lots(
     assert [m.id for m in LOT_MODELS] == page[-1].ids
 
 
-def test_dev_menu_15_the_prop_groups_name_only_known_models_once_each():
+def test_dev_menu_15_the_prop_groups_name_only_known_models_once_each() -> None:
     groups = make_prop_groups()
     ids = [i for g in groups for i in g.ids]
     assert len(ids) == len(set(ids))
@@ -48,12 +49,12 @@ def test_dev_menu_15_the_prop_groups_name_only_known_models_once_each():
     assert all(len(g.ids) > 0 for g in groups)
 
 
-def test_dev_menu_15_every_prop_model_is_on_the_page_once():
+def test_dev_menu_15_every_prop_model_is_on_the_page_once() -> None:
     ids = [i for g in make_prop_groups() for i in g.ids]
     assert set(ids) == set(PROP_MODELS)
 
 
-def test_dev_menu_15_the_cars_come_last_and_the_groups_are_built_once():
+def test_dev_menu_15_the_cars_come_last_and_the_groups_are_built_once() -> None:
     assert PROP_GROUPS[-1].label == "Cars"
     assert [g.label for g in PROP_GROUPS] == [g.label for g in make_prop_groups()]
 
@@ -79,7 +80,7 @@ REMOVED = [
 ]
 
 
-def test_d207_the_shared_and_world_1_props_are_gone():
+def test_d207_the_shared_and_world_1_props_are_gone() -> None:
     """GFX-PROP-02: there is no other hand-made prop."""
     assert not set(REMOVED) & set(PROP_MODELS)
     assert not {"Shared", "World 1"} & {g.label for g in PROP_GROUPS}

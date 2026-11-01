@@ -1,18 +1,23 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/elite_orbiter_model.py`."""
+
+from typing import Any
 
 from helpers.view_probes import drawings_of, jointed_design_ids, probe_builder
 
 from game.view.enemies import elite_orbiter_model as module
 
 
-def test_enm_orbiter_05_orbiter_draws_one_part_per_drone_its_design_lists(monkeypatch):
+def test_enm_orbiter_05_orbiter_draws_one_part_per_drone_its_design_lists(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_orbiter)
     design_ids, drawn_ids = jointed_design_ids(capture)
     assert capture.name == "orbiter"
     assert sorted(design_ids) == sorted(drawn_ids) == ["drone-0", "drone-1", "drone-2"]
 
 
-def test_enm_orbiter_05_each_drone_has_its_gun_and_the_heart_has_a_dozen_mouths(monkeypatch):
+def test_enm_orbiter_05_each_drone_has_its_gun_and_the_heart_has_a_dozen_mouths(
+    monkeypatch: Any,
+) -> None:
     capture = probe_builder(monkeypatch, module.build_orbiter)
     drawn = drawings_of(capture)
     for i in range(3):

@@ -1,20 +1,23 @@
-"""GFX-BLDG-03, GFX-BLDG-05: buildings of whole tiles packed in the blocks of a district
-(phase 15)."""
+# Copyright (c) 2026 Renaud Guillon
+"""GFX-BLDG-03, GFX-BLDG-05.
+
+Buildings of whole tiles packed in the blocks of a district (phase 15).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.scenery.ordering import stable_sort_by
+from core.scenery.road_tiles import has_tile_key, tile_key
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
-from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.height_field import HeightField
+from core.scenery.scenery_level import PropKindRule, PropRules, TileRules
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -32,7 +35,7 @@ LONGEST = 6
 
 
 class TileSpot:
-    """A building's tiles: from tile (`x`, `z`), `w` × `d` of them in world X and Z."""
+    """A building's tiles: from tile (`x`, `z`), `w` x `d` of them in world X and Z."""
 
     def __init__(self, kind: PropKindRule, x: int, z: int, w: int, d: int, rotation: float) -> None:
         self.kind = kind
@@ -45,7 +48,7 @@ class TileSpot:
 
 
 class TileBlock:
-    """A block in tiles: [x0, x1) × [z0, z1)."""
+    """A block in tiles: [x0, x1) x [z0, z1)."""
 
     def __init__(self, x0: int, x1: int, z0: int, z1: int) -> None:
         self.x0 = x0
@@ -92,12 +95,12 @@ def _faces(site: PackSite, x: int, z: int, w: int, d: int, facing: tuple[int, in
     dx, dz, _ = facing
     if dz != 0:
         row = z - 1 if dz < 0 else z + d
-        for i in range(w):  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        for i in range(w):
             if site.road(x + i, row):
                 return True
         return False
     column = x - 1 if dx < 0 else x + w
-    for j in range(d):  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+    for j in range(d):
         if site.road(column, z + j):
             return True
     return False
@@ -126,25 +129,27 @@ def _room_for(kw: int, kd: int, across: int, along: int) -> bool:
 
 
 def _corners_at(x: int, z: int, w: int, d: int) -> list[tuple[int, int]]:
-    """The spots `w` × `d` with tile (x, z) as one of their corners."""
+    """Return the spots `w` x `d` with tile (x, z) as one of their corners."""
     return [(x, z), (x - w + 1, z), (x, z - d + 1), (x - w + 1, z - d + 1)]
 
 
 def _away_from_roads(site: PackSite, x: int, z: int, w: int, d: int) -> bool:
-    """Whether no road runs along any side of the spot `w` × `d` at (`x`, `z`)."""
-    for g in FACINGS:  # noqa: SIM110 (Transcrypt: all() over a generator is slow)
+    """Whether no road runs along any side of the spot `w` x `d` at (`x`, `z`)."""
+    for g in FACINGS:
         if _faces(site, x, z, w, d, g):
             return False
     return True
 
 
 def _turn_of(r: float, facing: tuple[int, int, float]) -> float:
-    """A random turn (draw `r`): that of `facing` or the half turn from it, so the footprint stays
-    the facing's."""
+    """Return a random turn (draw `r`).
+
+    That of `facing` or the half turn from it, so the footprint stays the facing's.
+    """
     return facing[2] if r < HALF else facing[2] + math.pi
 
 
-def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+def _spot_for(
     site: PackSite,
     block: TileBlock,
     kind: PropKindRule,
@@ -153,9 +158,11 @@ def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
     r: float,
     room: tuple[int, int],
 ) -> TileSpot | None:
-    """The spot for `kind` with tile (`x`, `z`) as one of its corners, facing a road if it can
-    (front on a road side, GFX-BLDG-06), or else any way the draw `r` picks. `room` is the free
-    tiles in a line through (x, z) along X, and along Z."""
+    """Return the spot for `kind` with tile (`x`, `z`) as one of its corners.
+
+    Facing a road if it can (front on a road side, GFX-BLDG-06), or else any way the draw `r` picks.
+    `room` is the free tiles in a line through (x, z) along X, and along Z.
+    """
     tiles = kind.tiles if kind.tiles is not None else (1, 1)
     kw = tiles[0]
     kd = tiles[1]
@@ -177,7 +184,7 @@ def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
 
 
 def _free_tiles(site: PackSite, block: TileBlock) -> list[tuple[int, int]]:
-    """The free tiles of `block`, in a random order."""
+    """Return the free tiles of `block`, in a random order."""
     tiles: list[tuple[int, int, float]] = []
     for x in range(block.x0, block.x1):
         for z in range(block.z0, block.z1):
@@ -187,7 +194,7 @@ def _free_tiles(site: PackSite, block: TileBlock) -> list[tuple[int, int]]:
     return [(t[0], t[1]) for t in ordered]
 
 
-def _spot_at(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+def _spot_at(
     site: PackSite,
     block: TileBlock,
     x: int,
@@ -196,9 +203,11 @@ def _spot_at(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword
     left: float,
     first: bool,
 ) -> TileSpot | None:
-    """The first kind `kinds_at` gives for free tile (x, z) (the `n`th drawn) that fits there, not
-    much over the `left` tiles still to cover (the last building may overshoot a little), so the
-    footprints mix (GFX-BLDG-07)."""
+    """Return the first kind `kinds_at` gives for free tile (x, z) (the `n`th drawn) that fits.
+
+    It fits there and not much over the `left` tiles still to cover (the last building may overshoot
+    a little), so the footprints mix (GFX-BLDG-07).
+    """
     room = (_run(site, block, x, z, 1, 0), _run(site, block, x, z, 0, 1))
     for kind in site.kinds_at(x, z, n):
         spot = _spot_for(site, block, kind, x, z, site.random(n * 3 + 2), room)
@@ -213,9 +222,11 @@ def pack_block(
     density: float,
     take: Callable[[TileSpot], None],
 ) -> None:
-    """Packs `block` with buildings until about `density` of its free tiles are covered
-    (GFX-BLDG-05): tiles are taken in a random order; each gets the first kind `kinds_at` gives that
-    fits there. `take` marks the tiles of each building placed."""
+    """Packs `block` with buildings until about `density` of its free tiles are covered.
+
+    It follows GFX-BLDG-05: tiles are taken in a random order; each gets the first kind `kinds_at`
+    gives that fits there. `take` marks the tiles of each building placed.
+    """
     tiles = _free_tiles(site, block)
     target = density * len(tiles)
     covered = 0.0
@@ -232,9 +243,12 @@ def pack_block(
 
 
 class TileGround:
-    """The ground of the tiles, from the heights at their corners (each asked once, shared by the
-    four tiles around it): a tile is fit to build on when its lowest corner is at least
-    `min_height` and its corners differ by at most `max_slope` over half a tile (GFX-BLDG-04)."""
+    """The ground of the tiles.
+
+    From the heights at their corners (each asked once, shared by the four tiles around it): a tile
+    is fit to build on when its lowest corner is at least `min_height` and its corners differ by at
+    most `max_slope` over half a tile (GFX-BLDG-04).
+    """
 
     def __init__(self, field: HeightField, tiles: TileRules, rules: PropRules) -> None:
         self._field = field
@@ -255,9 +269,9 @@ class TileGround:
         high = low
         for h in (self._corner(x + 1, z), self._corner(x, z + 1), self._corner(x + 1, z + 1)):
             # Plain comparisons: the same choice as min and max, NaN included.
-            if h < low:  # noqa: PLR1730 (Transcrypt: min() and max() are slow here)
+            if h < low:
                 low = h
-            if h > high:  # noqa: PLR1730 (Transcrypt: min() and max() are slow here)
+            if h > high:
                 high = h
         return low, high
 

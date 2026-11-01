@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/debug/test_api.py` (ENG-52: the e2e test API, `window.__GAME_TEST__`)."""
 
 from types import SimpleNamespace
@@ -166,15 +167,15 @@ def test_eng_52_send_action_rejects_an_unknown_action() -> None:
 def test_eng_52_step_renders_unless_render_is_false() -> None:
     app = FakeApp()
     step_test_frames(app, 3, None)
-    step_test_frames(app, 1, False)
-    step_test_frames(app, 0, True)
+    step_test_frames(app, 1, render=False)
+    step_test_frames(app, 0, render=True)
     assert app.steps == [(3, True), (1, False), (0, True)]
 
 
 @pytest.mark.parametrize("frames", [-1, 1.5])
 def test_eng_52_step_rejects_negative_or_partial_frames(frames: float) -> None:
     with pytest.raises(ValueError, match="Cannot step"):
-        step_test_frames(FakeApp(), frames, True)
+        step_test_frames(FakeApp(), frames, render=True)
 
 
 def test_eng_52_advance_rounds_up_to_whole_frames() -> None:

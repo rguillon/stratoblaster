@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/districts.py`."""
+
+from typing import Any
 
 from helpers.level_builders import flat, make_level, section, street_grid
 
@@ -15,18 +18,16 @@ from core.scenery.scenery_level import layout_sections
 SPAN = ZRange(-100.0, 4100.0)
 
 
-def _placed():
+def _placed() -> Any:
     """Four sections of 1000 units: streets in the first two and the last, none in the third."""
     grid = street_grid()
     return layout_sections(
-        make_level(
-            [
-                section("a", 10, flat(), streets=grid),
-                section("b", 10, flat(), streets=grid),
-                section("c", 10, flat()),
-                section("d", 10, flat(), streets=grid),
-            ]
-        )
+        make_level([
+            section("a", 10, flat(), streets=grid),
+            section("b", 10, flat(), streets=grid),
+            section("c", 10, flat()),
+            section("d", 10, flat(), streets=grid),
+        ])
     )
 
 

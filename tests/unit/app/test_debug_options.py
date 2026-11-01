@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/debug_options.py`."""
 # (DEV-OPT-01 to DEV-OPT-06, DEV-MENU-01).
 

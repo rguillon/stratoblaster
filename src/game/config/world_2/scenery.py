@@ -1,5 +1,7 @@
-"""World 2, the Industrial Desert (WLD-2-01, WLD-2-05; reworked at the reviewer's request,
-2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""World 2, the Industrial Desert (WLD-2-01, WLD-2-05).
+
+Reworked at the reviewer's request, 2026-10-27.
 
 The five levels are one journey from the deep desert, where World 1 ended, to dense factories, the
 industry in its order (WLD-2-09). The changes are slow (WLD-2-08): the sand gives way to concrete
@@ -9,17 +11,17 @@ the previous one ended on (WLD-2-10). No sea (WLD-2-06; rivers would be fine, re
 2026-10-27). Each level's `seconds` add up to 300 (WLD-2-03).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_2.props import WORLD_2_GROUPS, WORLD_2_PROPS, WORLD_2_ROADS
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 G = WORLD_2_GROUPS
 
@@ -42,19 +44,17 @@ SUBURB_STREETS = record({"rows": [60, 110], "columns": [70, 130], "links": 0.55}
 
 
 def section(name: str, seconds: float, extra: Any) -> Any:
-    """A section of World 2: sand and desert outposts, with `extra` set over the defaults."""
+    """Return a section of World 2: sand and desert outposts, with `extra` set over the defaults."""
     return merge(
-        record(
-            {
-                "name": name,
-                "seconds": seconds,
-                "relief": smooth(28, 10, 520),
-                "buildingDensity": 0.6,
-                "treeDensity": 0,
-                "surface": {"sandy": 1},
-                "groups": [G.outposts],
-            }
-        ),
+        record({
+            "name": name,
+            "seconds": seconds,
+            "relief": smooth(28, 10, 520),
+            "buildingDensity": 0.6,
+            "treeDensity": 0,
+            "surface": {"sandy": 1},
+            "groups": [G.outposts],
+        }),
         extra,
     )
 
@@ -167,9 +167,9 @@ GREAT_ERG = [
     PROSPECT_MINES,
 ]
 
-# 2-2, Mining mesas (LVL-2-2-04): the mines spread over mesas and along a canyon (LVL-2-2-05), a
-# mining town with streets, open pits, then the first oil wells among the mines. Buildings and
-# roads: LVL-2-2-06.
+# Level 2-2, mining mesas (LVL-2-2-04): the mines spread over mesas and along a canyon
+# (LVL-2-2-05), a mining town with streets, open pits, then the first oil wells among the
+# mines. Buildings and roads: LVL-2-2-06.
 MINING_MESAS = [
     merge(PROSPECT_MINES, {"seconds": 40}),
     section(
@@ -412,19 +412,20 @@ FACTORIES = [
 
 
 def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
-    """A World 2 level: its `[id, name, seed]`, its own scroll speed (WLD-2-04) and its sections."""
-    return record(
-        {
-            "id": meta[0],
-            "name": meta[1],
-            "seed": meta[2],
-            "scrollSpeed": scroll_speed,
-            "transition": TRANSITION,
-            "sections": sections,
-            "roads": WORLD_2_ROADS,
-            "props": WORLD_2_PROPS,
-        }
-    )
+    """Return a World 2 level from its `[id, name, seed]`, its scroll speed and its sections.
+
+    Each World 2 level has its own scroll speed (WLD-2-04).
+    """
+    return record({
+        "id": meta[0],
+        "name": meta[1],
+        "seed": meta[2],
+        "scrollSpeed": scroll_speed,
+        "transition": TRANSITION,
+        "sections": sections,
+        "roads": WORLD_2_ROADS,
+        "props": WORLD_2_PROPS,
+    })
 
 
 # 2-1 (LVL-2-1-01, LVL-2-1-02): the great erg, from an oasis to the first mines.

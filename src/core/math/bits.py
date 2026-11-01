@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """32-bit integer helpers: JavaScript's `>>>`, `Math.imul` and `^` in pure arithmetic.
 
 JavaScript bit operators work on signed 32-bit values. The helpers below take any integer
 and return the unsigned 32-bit result, so the results match JavaScript bit by bit.
 """
 
-from org.transcrypt.stubs.browser import __pragma__  # noqa: E402
+from org.transcrypt.stubs.browser import __pragma__
 
 U32 = 4294967296
 
@@ -25,7 +26,7 @@ def u32(value: int) -> int:
 
 
 def xor(a: int, b: int) -> int:
-    """`a ^ b` as an unsigned 32-bit integer."""
+    """Return `a ^ b` as an unsigned 32-bit integer."""
     r = 0
     __pragma__("skip")
     r = (a ^ b) & 0xFFFFFFFF
@@ -45,14 +46,17 @@ def ushr(value: int, shift: int) -> int:
 
 
 def _signed(value: int) -> int:
-    """The signed 32-bit value of the pattern `value` (as JavaScript's `|0` reads it)."""
+    """Return the signed 32-bit value of the pattern `value` (as JavaScript's `|0` reads it)."""
     v = value & 0xFFFFFFFF
     return v - U32 if v >= U32 // 2 else v
 
 
 def imul(a: int, b: int) -> int:
-    """`Math.imul(a, b)` as an unsigned 32-bit integer: JavaScript's own, exact on whole numbers
-    (the hash runs for every random number, so Transcrypt's arithmetic is too slow here)."""
+    """Return `Math.imul(a, b)` as an unsigned 32-bit integer.
+
+    JavaScript's own, exact on whole numbers (the hash runs for every random number, so
+    Transcrypt's arithmetic is too slow here).
+    """
     r = 0
     __pragma__("skip")
     r = (_signed(a) * _signed(b)) & 0xFFFFFFFF

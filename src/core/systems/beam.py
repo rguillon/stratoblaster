@@ -1,27 +1,26 @@
-"""The beam of a beam weapon (GAME-WPN-06)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The beam of a beam weapon (GAME-WPN-06)."""
 
 from core.entities.shot_target import is_alive
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.weapon import BeamLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget
+from core.entities.weapon import BeamLevel
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class BeamSegment:
-    """A straight piece of beam, from `y0` up to `y1`, at a given level (1-based). `hit` says
-    whether the segment ends on a target (otherwise it runs to the top).
+    """A straight piece of beam, from `y0` up to `y1`, at a given level (1-based).
+
+    `hit` says whether the segment ends on a target (otherwise it runs to the top).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-        self, x: float, y0: float, y1: float, level: int, width: float, hit: bool
-    ) -> None:
+    def __init__(self, x: float, y0: float, y1: float, level: int, width: float, hit: bool) -> None:
         self.x = x
         self.y0 = y0
         self.y1 = y1
@@ -50,8 +49,9 @@ class BeamTrace:
 def _first_target_above(
     targets: Sequence[ShotTarget], x: float, from_y: float, width: float, done: set[ShotTarget]
 ) -> ShotTarget | None:
-    """The lowest living target above `from_y`, not yet hit, that a beam of `width` at `x`
-    touches.
+    """Return the lowest living target above `from_y`, not yet hit.
+
+    That a beam of `width` at `x` touches.
     """
     best: ShotTarget | None = None
     for target in targets:
@@ -72,9 +72,10 @@ def trace_beam(
     top: float,
     targets: Sequence[ShotTarget],
 ) -> BeamTrace:
-    """Traces a beam fired straight up from (x, y) at `level` (GAME-WPN-07). At level 1 the beam
-    stops at the first target it touches. Above, it goes through the target and continues from it
-    one level lower, so a level-N beam touches at most N targets.
+    """Traces a beam fired straight up from (x, y) at `level` (GAME-WPN-07).
+
+    At level 1 the beam stops at the first target it touches. Above, it goes through the target and
+    continues from it one level lower, so a level-N beam touches at most N targets.
     """
     segments: list[BeamSegment] = []
     hits: list[BeamHit] = []

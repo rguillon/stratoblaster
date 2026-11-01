@@ -1,4 +1,5 @@
-"""World 3 (WLD-3-03; reworked at the reviewer's request, 2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""World 3 (WLD-3-03; reworked at the reviewer's request, 2026-10-27).
 
 The five levels are one journey from the great works World 2 ended on, along canals and docks,
 through the workers' quarters and the terraces, to garden suburbs and villages of small houses (no
@@ -9,18 +10,18 @@ the previous one ended on (WLD-3-04). No water (reviewer, 2026-10-28): no sea (W
 river or pond. Each level's `seconds` add up to 300 (WLD-3-02).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_2.scenery import GREAT_WORKS, TRANSITION
 from game.config.world_3.props import WORLD_3_GROUPS, WORLD_3_PROPS, WORLD_3_ROADS
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 G = WORLD_3_GROUPS
 
@@ -30,7 +31,10 @@ RIVER_PATH = record({"x": -40, "amplitude": 120, "wavelength": 2400})
 
 
 def river(half_width: float) -> Any:
-    """The river of `half_width` at its bed, between grassy banks (a channel, GFX-WATER-08)."""
+    """Return the river (a channel, GFX-WATER-08) of `half_width` at its bed.
+
+    It runs between grassy banks.
+    """
     return record({"path": RIVER_PATH, "halfWidth": half_width, "wall": 45, "floor": -8})
 
 
@@ -59,21 +63,21 @@ LANES = record({"rows": [35, 60], "columns": [40, 80], "links": 0.7})
 
 
 def section(name: str, seconds: float, extra: Any) -> Any:
-    """A section of World 3: factories and yards on a street grid (WLD-3-13), no tree (WLD-3-12),
-    with `extra` set over the defaults."""
+    """Return a section of World 3: factories and yards on a street grid (WLD-3-13).
+
+    No tree (WLD-3-12). `extra` is set over the defaults.
+    """
     return merge(
-        record(
-            {
-                "name": name,
-                "seconds": seconds,
-                "relief": FLAT,
-                "buildingDensity": 1,
-                "treeDensity": 0,
-                "surface": {"paved": 0.9},
-                "streets": STREETS,
-                "groups": [G.industrial],
-            }
-        ),
+        record({
+            "name": name,
+            "seconds": seconds,
+            "relief": FLAT,
+            "buildingDensity": 1,
+            "treeDensity": 0,
+            "surface": {"paved": 0.9},
+            "streets": STREETS,
+            "groups": [G.industrial],
+        }),
         extra,
     )
 
@@ -367,19 +371,17 @@ GARDEN_VILLAGES = [
 
 
 def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
-    """A World 3 level: its `[id, name, seed]`, its scroll speed and its sections."""
-    return record(
-        {
-            "id": meta[0],
-            "name": meta[1],
-            "seed": meta[2],
-            "scrollSpeed": scroll_speed,
-            "transition": TRANSITION,
-            "sections": sections,
-            "roads": WORLD_3_ROADS,
-            "props": WORLD_3_PROPS,
-        }
-    )
+    """Return a World 3 level: its `[id, name, seed]`, its scroll speed and its sections."""
+    return record({
+        "id": meta[0],
+        "name": meta[1],
+        "seed": meta[2],
+        "scrollSpeed": scroll_speed,
+        "transition": TRANSITION,
+        "sections": sections,
+        "roads": WORLD_3_ROADS,
+        "props": WORLD_3_PROPS,
+    })
 
 
 # 3-1 (LVL-3-1-01): the canal works, from the great works 2-5 ended on.

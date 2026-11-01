@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/enemy_lasers.py`."""
 
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -12,7 +14,7 @@ from game.config.readability import READABILITY
 from game.view.enemies import enemy_lasers as el
 
 
-def test_gfx_shot_18_a_laser_colour_is_its_boss_neon_folded_into_the_shots_family():
+def test_gfx_shot_18_a_laser_colour_is_its_boss_neon_folded_into_the_shots_family() -> None:
     """Also GFX-READ-06 and BOSS-32: each boss's lasers in its own colour."""
     color = el.color_of("scorpion")
     assert len(color) == 3
@@ -21,13 +23,13 @@ def test_gfx_shot_18_a_laser_colour_is_its_boss_neon_folded_into_the_shots_famil
     assert max(color) == pytest.approx(max(neon), abs=1e-6)
 
 
-def test_a_style_without_a_boss_neon_takes_the_laser_look_colour(monkeypatch):
+def test_a_style_without_a_boss_neon_takes_the_laser_look_colour(monkeypatch: Any) -> None:
     monkeypatch.setitem(BOSS_LOOK.neon, "bare-style", None)
     folded = fold_into_family(el.LOOK.color, READABILITY.families.enemyShot)
     assert el.color_of("bare-style") == pytest.approx(folded)
 
 
-def test_gfx_shot_16_contrast_warning_is_a_white_core_then_the_colour_then_dark_edges():
+def test_gfx_shot_16_contrast_warning_is_a_white_core_then_the_colour_then_dark_edges() -> None:
     color = [0.5, 0.0, 1.0]
     t = ENEMY_LOOK.contrast.warningCore
     warning = el.contrast_warning(color)
@@ -39,7 +41,7 @@ def test_gfx_shot_16_contrast_warning_is_a_white_core_then_the_colour_then_dark_
     assert warning[3] == pytest.approx([0, 0, 0])
 
 
-def test_sync_warnings_shows_one_line_per_warning_and_blinks_its_width(monkeypatch):
+def test_sync_warnings_shows_one_line_per_warning_and_blinks_its_width(monkeypatch: Any) -> None:
     monkeypatch.setattr(el.LOOK.warning, "blinkHz", 1.0, raising=False)
     meshes = [MagicMock() for _ in range(2)]
     pool = MagicMock()
@@ -57,7 +59,9 @@ def test_sync_warnings_shows_one_line_per_warning_and_blinks_its_width(monkeypat
     meshes[1].scaling.set.assert_called_once_with(2.0, 5.0, 1)
 
 
-def test_sync_warnings_draws_the_lines_at_half_width_while_the_blink_is_off(monkeypatch):
+def test_sync_warnings_draws_the_lines_at_half_width_while_the_blink_is_off(
+    monkeypatch: Any,
+) -> None:
     monkeypatch.setattr(el.LOOK.warning, "blinkHz", 1.0, raising=False)
     mesh = MagicMock()
     pool = MagicMock()
@@ -66,7 +70,7 @@ def test_sync_warnings_draws_the_lines_at_half_width_while_the_blink_is_off(monk
     mesh.scaling.set.assert_called_once_with(1.0, 4, 1)
 
 
-def test_sync_warnings_leaves_spare_pooled_lines_alone():
+def test_sync_warnings_leaves_spare_pooled_lines_alone() -> None:
     mesh = MagicMock()
     pool = MagicMock()
     pool.show.return_value = [mesh]

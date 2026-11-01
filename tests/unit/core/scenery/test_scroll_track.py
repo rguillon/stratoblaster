@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/scroll_track.py`."""
 
 import pytest
@@ -24,7 +25,8 @@ def test_game_level_02_the_ground_scrolls_at_the_speed_until_the_level_ends() ->
 def test_game_screen_03_negative_time_does_not_move_the_track() -> None:
     track = ScrollTrack(10.0, 100.0)
     track.step(-5.0)
-    assert track.progress == 0.0 and track.distance == 0.0
+    assert track.progress == 0.0
+    assert track.distance == 0.0
 
 
 def test_game_screen_03_time_scale_speeds_up_or_pauses_the_track() -> None:
@@ -83,8 +85,11 @@ def test_game_level_07_speed_factor_eases_over_its_seconds() -> None:
 
 
 def test_game_level_07_the_ground_eases_back_after_the_final_boss_at_the_level_end() -> None:
-    """The final boss sits at the end: the progress is at the end and not held, yet the ground
-    still eases from the boss's speed back to the level's speed over 2 s, and keeps moving."""
+    """The final boss sits at the end: the progress is at the end and not held.
+
+    Yet the ground still eases from the boss's speed back to the level's speed over 2 s, and keeps
+    moving.
+    """
     track = ScrollTrack(60.0, 100.0)
     track.step(10.0)  # the level reaches its end
     assert track.ended
@@ -104,12 +109,12 @@ def test_game_level_07_the_ground_eases_back_after_the_final_boss_at_the_level_e
 
 
 def test_speed_factor_and_speed_must_not_be_negative() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="scroll speed must be positive"):
         ScrollTrack(0.0, 10.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="length cannot be negative"):
         ScrollTrack(10.0, -1.0)
     track = ScrollTrack(10.0, 10.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="speed factor cannot be negative"):
         track.set_speed_factor(-1.0, 1.0)
 
 

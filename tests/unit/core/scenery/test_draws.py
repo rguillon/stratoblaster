@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/draws.py`."""
 
 from types import SimpleNamespace
@@ -5,8 +6,8 @@ from types import SimpleNamespace
 from core.scenery.draws import allowed, between, weighted
 
 
-def _item(id: str, weight: float) -> SimpleNamespace:
-    return SimpleNamespace(id=id, weight=weight)
+def _item(item_id: str, weight: float) -> SimpleNamespace:
+    return SimpleNamespace(id=item_id, weight=weight)
 
 
 def test_weighted_gives_each_item_a_share_as_big_as_its_weight() -> None:

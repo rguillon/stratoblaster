@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bonus_look.py`."""
 
 from core.math.color import in_family

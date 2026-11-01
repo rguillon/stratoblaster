@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/menu/grid_cursor.py`."""
 
 import pytest

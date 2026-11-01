@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/enemy_layer.py`."""
 
 import math
@@ -57,7 +58,8 @@ def test_an_enemy_is_drawn_at_its_position_with_its_nose_along_its_heading() -> 
 
     layer.sync([enemy], 0.1)
 
-    assert layer.count == 1 and layer.model_count == 1
+    assert layer.count == 1
+    assert layer.model_count == 1
     slot_pivot = made[0].root.parent.parent
     assert (slot_pivot.position.x, slot_pivot.position.y, slot_pivot.position.z) == (10, 20, 0)
     assert slot_pivot.rotation.z == pytest.approx(-math.pi / 2)

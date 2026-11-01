@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/pixel_contrast.py`."""
 
 import pytest

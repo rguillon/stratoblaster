@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/player_ships.py`."""
 
 from game.config.player_ships import PLAYER_SHIPS

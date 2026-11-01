@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/boss_pieces.py`."""
 
 import math
@@ -11,7 +12,7 @@ Make = Callable[..., ProbeBoss]
 
 
 def as_tuple(point: Any) -> tuple[float, ...]:
-    """A muzzle point's fields, to compare them."""
+    """Return a muzzle point's fields, to compare them."""
     if hasattr(point, "height"):
         return (point.x, point.y, point.height)
     return (point.x, point.y)
@@ -50,9 +51,11 @@ def test_a_part_without_a_turret_ignores_on_turret(make_boss: Make) -> None:
 
 
 def test_the_core_without_a_turret_places_muzzles_plainly(make_boss: Make) -> None:
-    assert as_tuple(make_boss().core.place((0, -10, 5), on_turret=True)) == pytest.approx(
-        (100, 190, 5)
-    )
+    assert as_tuple(make_boss().core.place((0, -10, 5), on_turret=True)) == pytest.approx((
+        100,
+        190,
+        5,
+    ))
 
 
 def test_part_emitter_is_one_radius_ahead_along_its_heading(make_boss: Make) -> None:

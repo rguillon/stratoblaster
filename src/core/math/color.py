@@ -1,17 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """Colour helpers for readability (phase 14): luminance, contrast ratio, hue families.
 
 Colours are linear RGB, 0..1, unless noted.
 """
 
+import math
+
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import TypedDict
 
 Rgb = Sequence[float]
-__pragma__("noskip")
-
-import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def relative_luminance(color: Rgb) -> float:
@@ -24,7 +27,7 @@ SRGB_LINEAR_THRESHOLD = 0.04045
 
 
 def srgb_byte_to_linear(byte: float) -> float:
-    """A gamma-encoded (sRGB) channel byte, 0..255, as linear 0..1."""
+    """Return a gamma-encoded (sRGB) channel byte, 0..255, as linear 0..1."""
     c = byte / 255
     if c <= SRGB_LINEAR_THRESHOLD:
         return c / 12.92
@@ -38,19 +41,17 @@ def contrast_ratio(a: float, b: float) -> float:
 
 
 def _high_of(r: float, g: float, b: float) -> float:
-    """The largest of three (plain comparisons: Transcrypt's max is slow here)."""
+    """Return the largest of three (plain comparisons: Transcrypt's max is slow here)."""
     high = r
     high = max(high, g)
-    high = max(high, b)
-    return high
+    return max(high, b)
 
 
 def _low_of(r: float, g: float, b: float) -> float:
-    """The smallest of three (plain comparisons: Transcrypt's min is slow here)."""
+    """Return the smallest of three (plain comparisons: Transcrypt's min is slow here)."""
     low = r
     low = min(low, g)
-    low = min(low, b)
-    return low
+    return min(low, b)
 
 
 def hue_saturation(color: Rgb) -> tuple[float, float]:
@@ -71,7 +72,6 @@ def hue_saturation(color: Rgb) -> tuple[float, float]:
 
 
 __pragma__("skip")
-from typing import TypedDict  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A family of colours: those whose hue lies in `from`..`to` degrees (`from` > `to` wraps past 0),
 # saturated at least `minSaturation`. Greys and whites belong to no family. It is a plain record
@@ -101,7 +101,7 @@ def _with_hue(color: Rgb, hue: float) -> Rgb:
     def channel(n: float) -> float:
         k = (n + hue / 60) % 6
         # The middle of 0, min(k, 4 - k) and 1 (plain comparisons, as above).
-        share = k if k < 4 - k else 4 - k
+        share = min(4 - k, k)
         share = min(share, 1)
         share = max(share, 0)
         return high - (high - low) * share
@@ -110,8 +110,11 @@ def _with_hue(color: Rgb, hue: float) -> Rgb:
 
 
 def fold_into_family(color: Rgb, family: ColorFamily) -> Rgb:
-    """`color` moved into `family` (GFX-READ-06): its hue squeezed from the whole wheel
-    into the family's range, in the same order, keeping brightness and saturation. Greys stay."""
+    """`color` moved into `family` (GFX-READ-06).
+
+    Its hue squeezed from the whole wheel into the family's range, in the same order, keeping
+    brightness and saturation. Greys stay.
+    """
     hue, saturation = hue_saturation(color)
     if saturation == 0:
         return color
@@ -123,9 +126,11 @@ HALF_WHEEL = 180
 
 
 def snap_to_hues(color: Rgb, hues: Sequence[float]) -> Rgb:
-    """`color` with its hue set to the nearest of `hues` (degrees, round the wheel), keeping its
-    brightness and saturation: a set of distinct shades in place of every hue (the enemies' hues,
-    ENM-38, GFX-ART-05). Greys stay."""
+    """`color` with its hue set to the nearest of `hues` (degrees, round the wheel).
+
+    Keeping its brightness and saturation: a set of distinct shades in place of every hue (the
+    enemies' hues, ENM-38, GFX-ART-05). Greys stay.
+    """
     hue, saturation = hue_saturation(color)
     if saturation == 0:
         return color
@@ -142,9 +147,11 @@ def snap_to_hues(color: Rgb, hues: Sequence[float]) -> Rgb:
 
 
 def capped_saturation(color: Rgb, most: float) -> Rgb:
-    """`color` with its saturation (HSV) at most `most`, keeping its hue and brightness: greyed
-    towards a grey as bright as its brightest channel (the enemy body shades, ENM-39,
-    GFX-ART-06)."""
+    """`color` with its saturation (HSV) at most `most`, keeping its hue and brightness.
+
+    Greyed towards a grey as bright as its brightest channel (the enemy body shades, ENM-39,
+    GFX-ART-06).
+    """
     high = _high_of(color[0], color[1], color[2])
     low = _low_of(color[0], color[1], color[2])
     if high <= 0 or (high - low) / high <= most:

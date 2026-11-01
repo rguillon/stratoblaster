@@ -1,5 +1,7 @@
-"""How the World 2 levels look (WLD-2-12, WLD-2-15; reworked at the reviewer's request,
-2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""How the World 2 levels look (WLD-2-12, WLD-2-15; reworked at the reviewer's request,.
+
+2026-10-27).
 
 World 1's desert ground, sand and red rock on dry earth, slowly covered by the stained concrete of
 the industry (the `paved` cover the sections raise level after level); and a time of day per level,
@@ -7,17 +9,17 @@ fixed within it: morning (2-1), midday (2-2), afternoon (2-3), dusk through the 
 over the lit factories (2-5). Gamma-space RGB, 0..1.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.scenery_look import BASE_SCENERY_LOOK, texture
 from game.config.world_1.looks import DESERT_ROCK, DRY_EARTH, SAND
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Industrial concrete: grey, stained with oil and soot, sand blown into its cracks.
 INDUSTRIAL_PAVING = texture(
@@ -50,8 +52,10 @@ TERRAIN = merge(
 
 
 def industrial(sky: Any) -> Any:
-    """A World 2 look: the desert and industrial ground, under `sky` for the whole level, with no
-    weather (WLD-2-16)."""
+    """Return a World 2 look: the desert and industrial ground, under `sky` for the whole level.
+
+    With no weather (WLD-2-16).
+    """
     return record(
         merge(
             BASE_SCENERY_LOOK,

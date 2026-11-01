@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/host/key_value_storage.py`."""
 
 from host.key_value_storage import MemoryStorage

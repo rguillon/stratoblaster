@@ -1,7 +1,7 @@
-# Five targets: setup, check, tests, build, e2e. uv runs the Python tools (ENG-04); Transcrypt
+# Six targets: setup, check, tests, build, e2e, serve. uv runs the Python tools (ENG-04); Transcrypt
 # compiles src/ to JavaScript and esbuild bundles it. The first target, `setup`, is the default.
 
-.PHONY: setup check tests build e2e FORCE
+.PHONY: setup check tests build e2e serve FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -104,3 +104,10 @@ e2e: build
 		echo 'ENG-52: the e2e bundle has no test API' >&2; exit 1; }
 	uv run playwright install $(if $(CI),--with-deps --only-shell,) chromium
 	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
+
+# The production game served locally (ENG-22): rebuilt, then dist/ on SERVE_PORT. No hot reload:
+# run it again to see a change.
+SERVE_PORT ?= 5173
+serve: build
+	@echo 'serving $(DIST)/ on http://localhost:$(SERVE_PORT) (Ctrl-C to stop)'
+	uv run python -m http.server $(SERVE_PORT) --directory $(DIST)

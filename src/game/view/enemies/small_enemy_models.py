@@ -1,33 +1,31 @@
-"""The lighter enemies (Gnat, Hornet, Scout, Strafer, Weaver), Cyber-Organic (ENM-35): swollen
-flesh bodies, membrane wings that flutter, metal only where
-grafted on (ducts, stingers, guns, nozzles): one body with a few grafts, a basic kind's look
-(GFX-ART-16). Logical pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The lighter enemies (Gnat, Hornet, Scout, Strafer, Weaver), Cyber-Organic (ENM-35).
 
-As every basic model (here, in `heavy_enemy_models.py`, `heavy_beetle_models.py` and
-`carrier_model.py`): the size of its kind (ENM-12), nothing placed where only its underside would
-show (ENM-41), and a silhouette that tells its kind apart (ENM-48).
+Swollen flesh bodies, membrane wings that flutter, metal only where grafted on (ducts, stingers,
+guns, nozzles): one body with a few grafts, a basic kind's look (GFX-ART-16). Logical pixels, nose
++Z, Y up (towards the camera).
+
+As every basic model (here, in `heavy_enemy_models.py`, `heavy_beetle_models.py`
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.basic_parts import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.basic_parts import (
     eye_pair,
     gun_barrel,
     sinew,
     wing_pair,
 )
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import (  # noqa: E402
-    LOBE_SECTION,  # noqa: E402
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.enemy_shapes import (
+    LOBE_SECTION,
     SIDES,
     around,
     radial,
 )
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     curve,
     organ,
@@ -37,12 +35,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -54,9 +54,11 @@ GNAT_DUCT = [[2.3, -0.6], [3, 0], [2.3, 0.6], [2.3, -0.6]]  # type: list[list[fl
 
 
 def build_gnat(scene: Any) -> Any:
-    """ENM-GNAT-01: a small insect drone: a swollen flesh bulb with a head and two eyes, three
-    metal-ducted fans on sinews at 120 degrees (ENM-GNAT-02), a neon ring around its middle and a
-    feeler on its back, green with one reactor (ENM-GNAT-03)."""
+    """ENM-GNAT-01: a small insect drone, a swollen flesh bulb with a head and two eyes.
+
+    Three metal-ducted fans on sinews at 120 degrees (ENM-GNAT-02), a neon ring around its middle
+    and a feeler on its back, green with one reactor (ENM-GNAT-03).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -82,9 +84,11 @@ def build_gnat(scene: Any) -> Any:
 
 
 def build_hornet(scene: Any) -> Any:
-    """ENM-HORNET-01: a stinger diver: a wasp of three swollen segments, a metal stinger at its
-    nose under a single eye, and swept, serrated membrane wings that flutter (ENM-HORNET-02); one
-    reactor in a flesh sac, yellow (ENM-HORNET-03)."""
+    """ENM-HORNET-01: a stinger diver, a wasp of three swollen segments.
+
+    A metal stinger at its nose under a single eye, and swept, serrated membrane wings that flutter
+    (ENM-HORNET-02); one reactor in a flesh sac, yellow (ENM-HORNET-03).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -116,9 +120,11 @@ SCOUT_STRIP = [[-0.35, -14], [0.35, -14], [0.35, -5], [-0.35, -5]]  # type: list
 
 
 def build_scout(scene: Any) -> Any:
-    """ENM-SCOUT-01: a light winged scout: a slim flesh body, broad membrane wings that flutter,
-    two bone tail booms with a neon strip and a reactor each (ENM-SCOUT-02), and a nose gun grafted
-    on (ENM-SCOUT-03); green (ENM-SCOUT-04)."""
+    """ENM-SCOUT-01: a light winged scout with a slim flesh body.
+
+    Broad membrane wings that flutter, two bone tail booms with a neon strip and a reactor each
+    (ENM-SCOUT-02), and a nose gun grafted on (ENM-SCOUT-03); green (ENM-SCOUT-04).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -156,7 +162,10 @@ def build_scout(scene: Any) -> Any:
 def edge_light(
     a: list[float], b: list[float], t: float, inward: float, span: list[float]
 ) -> list[list[float]]:
-    """A light along an edge from `a` to `b`, `inward` away from it, `length` long at `t` of it."""
+    """Return a light along an edge from `a` to `b`, at `t` of it.
+
+    The light is `inward` away from the edge and `length` long (`span` is `[length, width]`).
+    """
     length = span[0]
     width = span[1]
     dx = b[0] - a[0]
@@ -185,9 +194,11 @@ STRAFER_INNER_X = 4
 
 
 def build_strafer(scene: Any) -> Any:
-    """ENM-STRAFER-01: a fan shooter: a wide pair of membrane wings out of a squat flesh body, a
-    row of neon glands along each leading edge (ENM-STRAFER-02), four reactors and a gun on each
-    flank (ENM-STRAFER-03); yellow (ENM-STRAFER-04)."""
+    """ENM-STRAFER-01: a fan shooter, a wide pair of membrane wings out of a squat flesh body.
+
+    A row of neon glands runs along each leading edge (ENM-STRAFER-02), with four reactors and a gun
+    on each flank (ENM-STRAFER-03); yellow (ENM-STRAFER-04).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -229,9 +240,11 @@ WEAVER_WEB = [  # type: list[list[float]]
 
 
 def build_weaver(scene: Any) -> Any:
-    """ENM-WEAVER-01: a sine flyer: two serpents side by side, each a swollen head and a wavy
-    tail, joined by a web of flesh under a glowing neon bar, a gun grafted on each snout and a
-    reactor at each tail (ENM-WEAVER-02); green (ENM-WEAVER-03)."""
+    """ENM-WEAVER-01: a sine flyer, two serpents side by side.
+
+    Each has a swollen head and a wavy tail, joined by a web of flesh under a glowing neon bar, a
+    gun grafted on each snout and a reactor at each tail (ENM-WEAVER-02); green (ENM-WEAVER-03).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/procedural_textures.py` (GFX-TERRAIN-07, PERF-11)."""
 
 import json
@@ -28,7 +29,7 @@ SIZE = 8
 
 @pytest.fixture(autouse=True)
 def _js(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The JavaScript `Map` of the kept textures and its JSON keys, as plain Python."""
+    """Replace the JavaScript `Map` of the kept textures and its JSON keys with plain Python."""
     patch_babylon(monkeypatch, procedural_textures)
     monkeypatch.setattr(procedural_textures, "_kept", {})
     monkeypatch.setattr(procedural_textures, "_map_has", lambda c, k: k in c)
@@ -105,8 +106,10 @@ def test_a_noise_texture_holds_fine_and_coarse_noise_in_red_and_green() -> None:
     pixels = build_noise_texture(SIZE, 4, 9)
     reds = [pixels[i] for i in range(0, len(pixels), 4)]
     greens = [pixels[i] for i in range(1, len(pixels), 4)]
-    assert min(reds) == 0 and max(reds) == 255
-    assert min(greens) == 0 and max(greens) == 255
+    assert min(reds) == 0
+    assert max(reds) == 255
+    assert min(greens) == 0
+    assert max(greens) == 255
     assert all(pixels[i] == 0 for i in range(2, len(pixels), 4))
 
 

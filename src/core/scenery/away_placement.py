@@ -1,14 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """Lone buildings and hamlets away from the roads (phase 6 review, GFX-BLDG-02)."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import hash_2d
+from core.scenery.draws import between, weighted
+from core.scenery.ground_boxes import PropPlacement
 
-from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Protocol
+
+from core.scenery.scenery_level import (
     HamletRules,
     Loners,
     PropGroupRule,
@@ -17,11 +23,8 @@ from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt ski
 )
 
 Draw = Callable[[int], float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.draws import between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Lone buildings and hamlets stand within this share of `offscreen_x` of the level's middle…
 AWAY_SPREAD = 0.5
@@ -67,11 +70,11 @@ class AwaySite(Protocol):
         ...
 
     def section_at(self, z: float) -> TerrainSection:
-        """The section under `z`."""
+        """Return the section under `z`."""
         ...
 
     def group_at(self, x: float, z: float, section: TerrainSection) -> PropGroupRule | None:
-        """The building group of the area around (`x`, `z`), among those `section` allows."""
+        """Return the building group of the area around (`x`, `z`), among those `section` allows."""
         ...
 
     def clear_of_roads(self, x: float, z: float, clearance: float) -> bool:
@@ -83,7 +86,7 @@ class AwaySite(Protocol):
         ...
 
     def add(self, building: Building, gap: float | None) -> bool:
-        """Adds `building` if it keeps `gap` (None: the road setback) from the others."""
+        """Add `building` if it keeps `gap` (None: the road setback) from the others."""
         ...
 
 
@@ -123,8 +126,10 @@ def _round(v: float) -> int:
 
 
 def _standalone(site: AwaySite, c: Candidate, clearance: float) -> Building | None:
-    """`c` standing on its own, at least `clearance` from every road edge, or None when the roads
-    or the ground do not allow it."""
+    """`c` standing on its own, at least `clearance` from every road edge.
+
+    Or None when the roads or the ground do not allow it.
+    """
     kind = c.kind
     reach = kind.footprint if kind.frontage is None else kind.frontage * c.scale
     if not site.clear_of_roads(c.x, c.z, reach + clearance):
@@ -148,8 +153,10 @@ def _try_place(site: AwaySite, c: Candidate, clearance: float, gap: float | None
 
 
 def place_hamlets(site: AwaySite, hamlets: HamletRules, span: ZSpan) -> None:
-    """Hamlets every `spacing` along the level (phase 6 review, see `HamletRules`), those in
-    `span` (reviewer, 2026-10-28: the runout's are placed apart)."""
+    """Hamlets every `spacing` along the level (phase 6 review, see `HamletRules`).
+
+    Those in `span` (reviewer, 2026-10-28: the runout's are placed apart).
+    """
 
     def r(n: int, draw: int) -> float:
         return hash_2d(n, draw, site.seed * 47 + 13)
@@ -164,7 +171,7 @@ def place_hamlets(site: AwaySite, hamlets: HamletRules, span: ZSpan) -> None:
 
 
 def _draws(r: Callable[[int, int], float], n: int) -> Draw:
-    """The draws of hamlet `n`: `r` with its number fixed."""
+    """Return the draws of hamlet `n`: `r` with its number fixed."""
 
     def draw(d: int) -> float:
         return r(n, d)
@@ -182,14 +189,13 @@ def _hamlet_centre(
     radius = hamlets.radius
     clearance = hamlets.clearance
     half = site.offscreen_x * AWAY_SPREAD - radius
-    candidates: list[_Centre] = []
-    for t in range(HAMLET_TRIES):
-        candidates.append(
-            _Centre(
-                (2 * r(1 + t) - 1) * half,
-                z + (r(1 + HAMLET_TRIES + t) - 0.5) * radius,
-            )
+    candidates: list[_Centre] = [
+        _Centre(
+            (2 * r(1 + t) - 1) * half,
+            z + (r(1 + HAMLET_TRIES + t) - 0.5) * radius,
         )
+        for t in range(HAMLET_TRIES)
+    ]
     for c in candidates:
         if site.clear_of_roads(c.x, c.z, radius + clearance) and (
             site.ground(c.x, c.z, radius / 2) is not None
@@ -199,7 +205,10 @@ def _hamlet_centre(
 
 
 def _building_draws(r: Draw, k: int) -> Callable[[int], float]:
-    """The draws of hamlet building `k`: `r` with its stream fixed (a closure, not a default)."""
+    """Return the draws of hamlet building `k`: `r` with its stream fixed.
+
+    It is a closure, not a default.
+    """
 
     def draw(d: int) -> float:
         return r(30 + k * BUILDING_DRAWS + d)
@@ -208,7 +217,7 @@ def _building_draws(r: Draw, k: int) -> Callable[[int], float]:
 
 
 def _hamlet(site: AwaySite, hamlets: HamletRules, z: float, r: Draw) -> None:
-    """A hamlet about `z`, if its section has buildings and a place away from the roads."""
+    """Place a hamlet about `z`, if its section has buildings and a place away from the roads."""
     section = site.section_at(z)
     if section.streets is not None or section.building_density <= 0:
         return
@@ -244,8 +253,10 @@ def _hamlet(site: AwaySite, hamlets: HamletRules, z: float, r: Draw) -> None:
 
 
 def place_loners(site: AwaySite, loners: Loners, span: ZSpan) -> None:
-    """A few lone buildings away from the roads (phase 6 review, see `PropRules.loners`), those in
-    `span`."""
+    """Place a few lone buildings away from the roads (phase 6 review, see `PropRules.loners`).
+
+    Those in `span`.
+    """
     cell = loners.cell
     half = site.offscreen_x * AWAY_SPREAD
     i0 = math.floor(-half / cell)
@@ -259,7 +270,7 @@ def place_loners(site: AwaySite, loners: Loners, span: ZSpan) -> None:
 
 
 def _loner(site: AwaySite, loners: Loners, i: int, j: int, span: ZSpan) -> None:
-    """The lone building of cell (`i`, `j`), if it gets one."""
+    """Place the lone building of cell (`i`, `j`), if it gets one."""
     cell = loners.cell
 
     def r(draw: int) -> float:

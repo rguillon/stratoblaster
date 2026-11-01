@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/weapon.py`."""
 
 from typing import Any
@@ -18,7 +19,7 @@ from core.systems.shot_world import ShotWorld, ShotWorldOptions
 
 def bullet(**overrides: Any) -> ProjectileWeaponDefinition:
     values: dict[str, Any] = {
-        "id": "gun",
+        "id_": "gun",
         "name": "Gun",
         "launch_point": "muzzle",
         "shots_per_second": 5,
@@ -37,7 +38,7 @@ def bullet(**overrides: Any) -> ProjectileWeaponDefinition:
 
 
 def beam(**overrides: Any) -> BeamWeaponDefinition:
-    values: dict[str, Any] = {"id": "laser", "name": "Laser", "levels": [BeamLevel(10, 2)]}
+    values: dict[str, Any] = {"id_": "laser", "name": "Laser", "levels": [BeamLevel(10, 2)]}
     values.update(overrides)
     return BeamWeaponDefinition(**values)
 
@@ -52,7 +53,7 @@ class _Target:
         self.max_health = health
 
 
-def _weapon(  # noqa: PLR0917 (positional fixtures)
+def _weapon(
     levels: list[list[ShotStream]] | None = None,
     sps: float = 5,
     damage: float = 5,

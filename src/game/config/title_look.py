@@ -1,4 +1,5 @@
-"""Neon night behind the menus (UI-TITLE-07)
+# Copyright (c) 2026 Renaud Guillon
+"""Neon night behind the menus (UI-TITLE-07).
 
 UI-TITLE-08: blue/green since D-198, was darksynth magenta. A deep blue glow behind a black
 skyline, a dark street of towers with cyan, green and blue windows, signs and roof trims, haze and
@@ -21,129 +22,127 @@ WINDOW_COLORS = [
     [0.15, 0.4, 1],
 ]
 
-TITLE_LOOK = record(
-    {
-        # Seed of the city generator: the same city on every run.
-        "seed": 2077,
-        "camera": {"position": [0, 4, -8], "target": [0, 5.5, 40], "fov": 0.8},
-        # Haze colour; also the clear colour, so the street melts into the distance.
-        "horizon": [0.01, 0.05, 0.1],
-        "fog": {"start": 30, "end": 190},
-        "sky": {
-            "z": 340,
-            "width": 900,
-            "height": 400,
-            "centerY": 150,
-            # Deep blue glow near the horizon, through teal, to black higher up.
-            "stops": [
-                {"at": -1, "color": [0.01, 0.12, 0.3]},
-                {"at": -0.7, "color": [0.01, 0.13, 0.18]},
-                {"at": -0.2, "color": [0.004, 0.03, 0.06]},
-                {"at": 1, "color": [0.001, 0.004, 0.012]},
-            ],
+TITLE_LOOK = record({
+    # Seed of the city generator: the same city on every run.
+    "seed": 2077,
+    "camera": {"position": [0, 4, -8], "target": [0, 5.5, 40], "fov": 0.8},
+    # Haze colour; also the clear colour, so the street melts into the distance.
+    "horizon": [0.01, 0.05, 0.1],
+    "fog": {"start": 30, "end": 190},
+    "sky": {
+        "z": 340,
+        "width": 900,
+        "height": 400,
+        "centerY": 150,
+        # Deep blue glow near the horizon, through teal, to black higher up.
+        "stops": [
+            {"at": -1, "color": [0.01, 0.12, 0.3]},
+            {"at": -0.7, "color": [0.01, 0.13, 0.18]},
+            {"at": -0.2, "color": [0.004, 0.03, 0.06]},
+            {"at": 1, "color": [0.001, 0.004, 0.012]},
+        ],
+    },
+    # Distant towers, flat, in front of the sky; not fogged.
+    "skyline": {
+        "z": 300,
+        "y": -10,
+        "halfWidth": 420,
+        "width": [10, 30],
+        "height": [40, 150],
+        "color": [0.004, 0.014, 0.024],
+        "windows": {
+            "cellWidth": 3,
+            "cellHeight": 4,
+            "width": 1.4,
+            "height": 1.8,
+            "groundFloor": 12,
+            "litChance": 0.12,
+            "brightness": [0.35, 0.7],
+            "colors": WINDOW_COLORS,
         },
-        # Distant towers, flat, in front of the sky; not fogged.
-        "skyline": {
-            "z": 300,
-            "y": -10,
-            "halfWidth": 420,
-            "width": [10, 30],
-            "height": [40, 150],
-            "color": [0.004, 0.014, 0.024],
-            "windows": {
-                "cellWidth": 3,
-                "cellHeight": 4,
-                "width": 1.4,
-                "height": 1.8,
-                "groundFloor": 12,
-                "litChance": 0.12,
-                "brightness": [0.35, 0.7],
-                "colors": WINDOW_COLORS,
+    },
+    "city": {
+        # Length of one city chunk; two chunks scroll end to end.
+        "length": 200,
+        "streetHalfWidth": 9,
+        # `title_city_scroll_speed`, in units per second.
+        "scrollSpeed": 8,
+        "rows": [
+            {
+                "facadeOffset": 0,
+                "width": [6, 14],
+                "gap": [1, 3],
+                "depth": [8, 16],
+                "height": [14, 55],
+                "signs": True,
             },
+            {
+                "facadeOffset": 22,
+                "width": [10, 22],
+                "gap": [2, 6],
+                "depth": [10, 20],
+                "height": [45, 115],
+                "signs": False,
+            },
+        ],
+        "colors": {
+            "wall": [0.015, 0.035, 0.055],
+            "facade": [0.025, 0.06, 0.085],
+            "roof": [0.008, 0.02, 0.032],
         },
-        "city": {
-            # Length of one city chunk; two chunks scroll end to end.
-            "length": 200,
-            "streetHalfWidth": 9,
-            # `title_city_scroll_speed`, in units per second.
-            "scrollSpeed": 8,
-            "rows": [
-                {
-                    "facadeOffset": 0,
-                    "width": [6, 14],
-                    "gap": [1, 3],
-                    "depth": [8, 16],
-                    "height": [14, 55],
-                    "signs": True,
-                },
-                {
-                    "facadeOffset": 22,
-                    "width": [10, 22],
-                    "gap": [2, 6],
-                    "depth": [10, 20],
-                    "height": [45, 115],
-                    "signs": False,
-                },
-            ],
-            "colors": {
-                "wall": [0.015, 0.035, 0.055],
-                "facade": [0.025, 0.06, 0.085],
-                "roof": [0.008, 0.02, 0.032],
-            },
-            "street": {
-                "halfWidth": 80,
-                "color": [0.004, 0.012, 0.02],
-                "laneX": [-3, 3],
-                "dash": 3,
-                "dashPeriod": 8,
-                "lineWidth": 0.15,
-                "lineColor": [0.04, 0.5, 0.55],
-            },
-            "windows": {
-                "cellWidth": 2.2,
-                "cellHeight": 2.8,
-                "width": 1.1,
-                "height": 1.5,
-                "groundFloor": 3,
-                "litChance": 0.3,
-                "brightness": [0.3, 0.75],
-                "colors": WINDOW_COLORS,
-            },
-            "neonColors": NEON,
-            "signs": {
-                "chance": 0.5,
-                "width": [1.4, 2.6],
-                "height": [5, 12],
-                "baseHeight": [3, 16],
-                "panel": [0.006, 0.02, 0.035],
-                "lines": 3,
-            },
-            "trim": {"chance": 0.35, "height": 0.3},
+        "street": {
+            "halfWidth": 80,
+            "color": [0.004, 0.012, 0.02],
+            "laneX": [-3, 3],
+            "dash": 3,
+            "dashPeriod": 8,
+            "lineWidth": 0.15,
+            "lineColor": [0.04, 0.5, 0.55],
         },
-        "rain": {
-            "count": 260,
-            "halfWidth": 30,
-            "height": 30,
-            # Bottom of the rain box.
-            "y": -2,
-            "z": [0, 60],
-            "length": [0.8, 1.6],
-            "width": 0.04,
-            "color": [0.12, 0.26, 0.32],
-            # Fall speed, in units per second.
-            "speed": 30,
+        "windows": {
+            "cellWidth": 2.2,
+            "cellHeight": 2.8,
+            "width": 1.1,
+            "height": 1.5,
+            "groundFloor": 3,
+            "litChance": 0.3,
+            "brightness": [0.3, 0.75],
+            "colors": WINDOW_COLORS,
         },
-        "ship": {
-            "position": [0, 1.6, 8],
-            # `title_ship_rotation_speed`.
-            "rotationSpeedRadPerSec": 0.3,
-            # Gentle up-and-down float.
-            "bobAmplitude": 0.25,
-            "bobHz": 0.35,
+        "neonColors": NEON,
+        "signs": {
+            "chance": 0.5,
+            "width": [1.4, 2.6],
+            "height": [5, 12],
+            "baseHeight": [3, 16],
+            "panel": [0.006, 0.02, 0.035],
+            "lines": 3,
         },
-        "lights": {"ambient": 0.7, "key": 2, "keyDirection": [-0.3, -1, 0.5]},
-        # Brightness of the neon meshes; the glow layer and tone mapping wash them out above this
-        # (UI-TITLE-10).
-        "neonIntensity": 0.45,
-    }
-)
+        "trim": {"chance": 0.35, "height": 0.3},
+    },
+    "rain": {
+        "count": 260,
+        "halfWidth": 30,
+        "height": 30,
+        # Bottom of the rain box.
+        "y": -2,
+        "z": [0, 60],
+        "length": [0.8, 1.6],
+        "width": 0.04,
+        "color": [0.12, 0.26, 0.32],
+        # Fall speed, in units per second.
+        "speed": 30,
+    },
+    "ship": {
+        "position": [0, 1.6, 8],
+        # `title_ship_rotation_speed`.
+        "rotationSpeedRadPerSec": 0.3,
+        # Gentle up-and-down float.
+        "bobAmplitude": 0.25,
+        "bobHz": 0.35,
+    },
+    "lights": {"ambient": 0.7, "key": 2, "keyDirection": [-0.3, -1, 0.5]},
+    # Brightness of the neon meshes; the glow layer and tone mapping wash them out above this
+    # (UI-TITLE-10).
+    "neonIntensity": 0.45,
+})

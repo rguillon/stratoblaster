@@ -1,16 +1,17 @@
-"""The data of the road network, split out so that `lanes`, `road-segments` and
-`road-paths` can build them at runtime without an import cycle with `road-network`.
+# Copyright (c) 2026 Renaud Guillon
+"""The data of the road network, split out so that `lanes`.
+
+`road-segments` and `road-paths` can build them at runtime without an import cycle with
+`road-network`.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
 
 Lanes = int  # Lanes each way of a road: 1 to 4 (also `lanes.Lanes`).
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class RoadPoint:
@@ -24,9 +25,11 @@ class RoadPoint:
 
 
 class Road:
-    """A piece of winding road (`main`, along the level), a path (`cross`, branching off a main
-    road) or a straight street of a district (`street`). Every point of it is on buildable ground,
-    and it starts and ends off the screen or at another road."""
+    """A piece of winding road (`main`, along the level).
+
+    A path (`cross`, branching off a main road) or a straight street of a district (`street`). Every
+    point of it is on buildable ground, and it starts and ends off the screen or at another road.
+    """
 
     def __init__(
         self,
@@ -42,7 +45,7 @@ class Road:
         self.width = width
         """Nominal width (paths are wider near their junction, see `RoadPoint.width`)."""
         self.lanes = lanes
-        """Lanes each way: 2 on 2×2 roads (phase 4 review), 3 or 4 on boulevards."""
+        """Lanes each way: 2 on 2x2 roads (phase 4 review), 3 or 4 on boulevards."""
         self.points = points
 
 
@@ -70,9 +73,12 @@ class RoadSlot:
 
 
 class RoadSnapshot:
-    """What a `RoadNetwork` made (or what its runout added): enough to draw it and to place the
-    buildings by it without generating it again (PERF-14). The blocks and the slots are kept too,
-    so the buildings can be placed where the roads were not made (chunk by chunk, PERF-16)."""
+    """What a `RoadNetwork` made (or what its runout added).
+
+    Enough to draw it and to place the buildings by it without generating it again (PERF-14). The
+    blocks and the slots are kept too, so the buildings can be placed where the roads were not made
+    (chunk by chunk, PERF-16).
+    """
 
     def __init__(self, roads: Sequence[Road], blocks: Sequence[Any], slots: Sequence[Any]) -> None:
         self.roads = roads

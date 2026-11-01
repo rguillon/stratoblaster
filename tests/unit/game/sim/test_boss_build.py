@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/boss_build.py`."""
 
 import pytest
@@ -27,14 +28,12 @@ def test_boss_23_a_bullet_spec_carries_its_speed_radius_and_style() -> None:
 
 def test_enm_17_a_bullet_with_a_burst_keeps_its_ring_of_small_bullets() -> None:
     spec = bullet_spec(
-        record(
-            {
-                "speed": 40,
-                "radius": 9,
-                "style": "cryo",
-                "burst": {"after": 1.5, "count": 6, "bullet": bullet("small", 60, 2)},
-            }
-        )
+        record({
+            "speed": 40,
+            "radius": 9,
+            "style": "cryo",
+            "burst": {"after": 1.5, "count": 6, "bullet": bullet("small", 60, 2)},
+        })
     )
     assert spec.burst.after == 1.5
     assert spec.burst.count == 6

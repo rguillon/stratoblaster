@@ -1,6 +1,10 @@
-"""The simulation does not read the look: weather (GFX-WEATHER-05) and lava (GFX-TERRAIN-18) are
-only looks. Checked over the import statements of `src/core/`: the simulation modules import none
-of the sky, weather, terrain, lava or lightning looks."""
+# Copyright (c) 2026 Renaud Guillon
+"""The simulation does not read the look.
+
+Weather (GFX-WEATHER-05) and lava (GFX-TERRAIN-18) are only looks. Checked over the import
+statements of `src/core/`: the simulation modules import none of the sky, weather, terrain, lava or
+lightning looks.
+"""
 
 import ast
 from pathlib import Path
@@ -24,8 +28,10 @@ def _module_name(path: Path) -> str:
 
 
 def _imports(path: Path) -> list[str]:
-    """The absolute modules a file imports, in its import statements (also those under a
-    `__pragma__` skip block: they are still imports)."""
+    """Return the absolute modules a file imports, in its import statements.
+
+    Those under a `__pragma__` skip block are included too: they are still imports.
+    """
     names: list[str] = []
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.Import):

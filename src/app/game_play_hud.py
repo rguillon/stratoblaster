@@ -1,24 +1,27 @@
+# Copyright (c) 2026 Renaud Guillon
 """The in-game HUD of a level (specs/ui/hud.md).
 
 The HUD's frame is computed from the level run; the widgets are `ui/` classes.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from config.game_play import GAME_PLAY_CONFIG as CFG
 from ui.boss_bar import BossBarFrame
 from ui.game_hud import GameHud, HudFrame, HudSetup, HudTexts
 from ui.stats_tile import StatsTile
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def boss_bar_frame(run: Any, texts: Any) -> BossBarFrame | None:
-    """The boss health bar of `run`'s fight (UI-HUD-13, UI-HUD-16), if a boss is being fought."""
+    """Return the boss health bar of `run`'s fight (UI-HUD-13, UI-HUD-16).
+
+    None unless a boss is being fought.
+    """
     bar = run.fights.bar
     if bar is None:
         return None
@@ -32,7 +35,8 @@ def hud_frame(
     texts: Any,
     high_score: int = 0,
 ) -> HudFrame:
-    """What the HUD shows of `run` (UI-HUD-02 to UI-HUD-06, the score: GAME-SCORE-07);
+    """Return what the HUD shows of `run` (UI-HUD-02 to UI-HUD-06, the score: GAME-SCORE-07).
+
     `max_health` stands for no hull, `high_score` is the saved one.
     """
     shots = run.shots
@@ -64,8 +68,10 @@ def create_hud(
     texts: Any,
     on_bomb: Any,
 ) -> GameHud:
-    """The in-game HUD in `parent` (one bar at the bottom, taking no input: UI-HUD-01, UI-HUD-11),
-    for the ship named `ship`, with the game's `texts`; `on_bomb` is the touch bomb button's.
+    """Return the in-game HUD in `parent`, for the ship named `ship`, with the game's `texts`.
+
+    One bar at the bottom, taking no input (UI-HUD-01, UI-HUD-11); `on_bomb` is the touch bomb
+    button's.
     """
     hud_texts = HudTexts(
         texts.hudHealth,
@@ -80,19 +86,24 @@ def create_hud(
 
 
 class StatsShown:
-    """Whether the debug tile is shown (DEV-PERF-05, D-212): as the player last chose with its
-    key, else in debug mode only. One for the whole game, so the choice holds from level to
-    level."""
+    """Whether the debug tile is shown (DEV-PERF-05, D-212): as the player last chose with its key.
+
+    Else in debug mode only. One for the whole game, so the choice holds from level to level.
+    """
 
     def __init__(self) -> None:
         self.chosen: bool | None = None
 
     def shown(self, debug: bool) -> bool:
+        """Whether the debug HUD shows: the player's choice, else `debug`."""
         return self.chosen if self.chosen is not None else debug
 
     def toggle(self, debug: bool) -> bool:
-        """Flips the choice (its key pressed); whether the tile is now shown. From the choice, not
-        from the tile: without a parent there is none, and the key must still flip it."""
+        """Flips the choice (its key pressed); whether the tile is now shown.
+
+        From the choice, not from the tile: without a parent there is none, and the key must still
+        flip it.
+        """
         self.chosen = not self.shown(debug)
         return self.chosen
 
@@ -101,9 +112,11 @@ STATS_SHOWN = StatsShown()
 
 
 class LevelOverlaysOptions:
-    """Where a level's HUD and debug tile go, and what they show: `doc`, `debug` (the debug tile
-    is shown in debug mode, or as chosen with its key: `STATS_SHOWN`), `stats_parent` and
-    `hud_parent` (None: no tile, no HUD)."""
+    """Where a level's HUD and debug tile go, and what they show.
+
+    `doc`, `debug` (the debug tile is shown in debug mode, or as chosen with its key:
+    `STATS_SHOWN`), `stats_parent` and `hud_parent` (None: no tile, no HUD).
+    """
 
     def __init__(
         self,
@@ -119,7 +132,7 @@ class LevelOverlaysOptions:
 
 
 def create_stats(options: LevelOverlaysOptions) -> StatsTile | None:
-    """The debug tile, if it has a parent."""
+    """Return the debug tile, if it has a parent."""
     if options.stats_parent is None:
         return None
     return StatsTile(options.doc, options.stats_parent, CFG.stats.refresh)
@@ -131,7 +144,7 @@ def create_level_overlays(
     texts: Any,
     on_bomb: Any,
 ) -> tuple[GameHud | None, StatsTile | None]:
-    """The level's HUD (with a parent) and debug tile (if shown, with a parent)."""
+    """Return the level's HUD (with a parent) and debug tile (if shown, with a parent)."""
     stats: StatsTile | None = None
     if STATS_SHOWN.shown(bool(options.debug)):
         stats = create_stats(options)

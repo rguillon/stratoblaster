@@ -1,32 +1,36 @@
-"""The browser around the game: the first gesture unlocks the audio (AUD-ENGINE-03), a hidden
-page pauses the level (UI-PAUSE-11, GAME-CTRL-08) and silences the audio (AUD-ENGINE-11), and a
-timer schedules the music (AUD-ENGINE-05). `listen_to_page` returns a function that stops
+# Copyright (c) 2026 Renaud Guillon
+"""The browser around the game: the first gesture unlocks the audio (AUD-ENGINE-03).
+
+A hidden page pauses the level (UI-PAUSE-11, GAME-CTRL-08) and silences the audio (AUD-ENGINE-11),
+and a timer schedules the music (AUD-ENGINE-05). `listen_to_page` returns a function that stops
 listening.
 
 `PageOptions` is a plain class; its fields are None when omitted.
 Targets are DOM-like objects with `addEventListener` and `removeEventListener`.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from app.game_audio import GameAudio, GameAudioOptions
 from config.audio import AUDIO_CONFIG
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from app.menu_controller import MenuController  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from input.gamepad_menu_input import GamepadSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.menu_controller import MenuController
+from input.gamepad_menu_input import GamepadSource
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The page's gesture events: any of them unlocks the audio (AUD-ENGINE-03).
 GESTURE_EVENTS = ["keydown", "pointerdown", "pointerup", "touchend"]
 
 
 class AudioOptions:
-    """`PageOptions.audio`: how to create the Web Audio context (`GameAudioOptions` without the
-    screen width and clock, which the app supplies)."""
+    """`PageOptions.audio`: how to create the Web Audio context.
+
+    The `GameAudioOptions` without the screen width and clock, which the app supplies.
+    """
 
     def __init__(self, create_context: Any | None, can_start: Any | None) -> None:
         # Creates the Web Audio context. Silent when None.
@@ -36,8 +40,10 @@ class AudioOptions:
 
 
 class PageVisibility:
-    """`PageOptions.visibility`: the target whose `visibilitychange` event is heard, and whether
-    the page is hidden now (ENG-110)."""
+    """`PageOptions.visibility`: the target whose `visibilitychange` event is heard.
+
+    And whether the page is hidden now (ENG-110).
+    """
 
     def __init__(self, target: Any, hidden: Any) -> None:
         self.target = target
@@ -47,7 +53,7 @@ class PageVisibility:
 class PageOptions:
     """The app's options about the page around it."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         audio: AudioOptions | None,
         gamepads: GamepadSource | None,
@@ -91,7 +97,7 @@ def gamepad_pressed(gamepads: GamepadSource | None) -> bool:
 
 
 def listen_to_page(options: PageOptions, menu: MenuController, audio: GameAudio) -> Any:
-    """Listens to the page (see the module doc). Returns the function that stops listening."""
+    """Listen to the page (see the module doc). Returns the function that stops listening."""
     stops: list[Any] = []
 
     def unlock() -> None:
@@ -119,7 +125,7 @@ def listen_to_page(options: PageOptions, menu: MenuController, audio: GameAudio)
 
 
 def _remover(target: Any | None, event_type: str, listener: Any) -> Any:
-    """A function that removes `listener` from `target`, if there is one."""
+    """Return a function that removes `listener` from `target`, if there is one."""
 
     def remove() -> None:
         if target is not None:
@@ -146,10 +152,11 @@ def _updater(audio: GameAudio) -> Any:
 
 
 def create_app_audio(game: Any, options: PageOptions) -> "AppAudio":
-    """The game's audio (specs/audio/), on the app's own clock (the sound effect voices' limits
-    count in game time, AUD-ENGINE-07), and the frame wrapper that unlocks it on a gamepad button
-    and schedules the music after each frame. Returns an object with `audio` and
-    `with_audio(ticker)`.
+    """Return the game's audio (specs/audio/).
+
+    On the app's own clock (the sound effect voices' limits count in game time, AUD-ENGINE-07), and
+    the frame wrapper that unlocks it on a gamepad button and schedules the music after each frame.
+    Returns an object with `audio` and `with_audio(ticker)`.
     """
     # One-element list: the clock's state, read and written by the closures (no `nonlocal`).
     elapsed = [0.0]

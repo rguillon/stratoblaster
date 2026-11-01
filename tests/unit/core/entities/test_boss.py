@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/boss.py`."""
 
 import math
@@ -13,7 +14,7 @@ Make = Callable[..., ProbeBoss]
 
 
 def as_tuple(point: Any) -> tuple[float, ...]:
-    """A muzzle point's fields, to compare them."""
+    """Return a muzzle point's fields, to compare them."""
     if hasattr(point, "height"):
         return (point.x, point.y, point.height)
     return (point.x, point.y)
@@ -207,7 +208,7 @@ def test_a_boss_without_a_roll_rule_does_not_roll(make_boss: Make, ctx: FakeCont
 
 def test_orbiting_parts_turn_with_the_spin(make_boss: Make, ctx: FakeContext) -> None:
     ring = BossPartSpec(
-        id="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
+        id_="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
     )
     boss = make_boss(parts=[ring])
     boss.spin = math.pi / 2
@@ -282,15 +283,17 @@ def test_boss_death_keeps_its_timing() -> None:
 
 @pytest.mark.parametrize("every", [0.0, -1.0, float("nan")])
 def test_boss_death_needs_a_positive_blast_interval(every: float) -> None:
-    """A death blast every `every` seconds never ends for `every` of zero (the blasts never catch up
-    with the time), so the interval must be positive."""
+    """A death blast every `every` seconds never ends for `every` of zero.
+
+    The blasts never catch up with the time, so the interval must be positive.
+    """
     with pytest.raises(ValueError, match="positive interval"):
         BossDeath(seconds=1.0, every=every)
 
 
 def test_a_part_orbiting_the_boss_turns_its_muzzles_with_the_spin(make_boss: Make) -> None:
     ring = BossPartSpec(
-        id="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
+        id_="ring", x=-20, y=10, radius=5, health=3, shields_core=False, drop_chance=0, orbits=True
     )
     boss = make_boss(parts=[ring])
     boss.spin = math.pi / 2
@@ -302,7 +305,7 @@ def test_a_part_orbiting_the_boss_turns_its_muzzles_with_the_spin(make_boss: Mak
 
 
 def _part(part_id: str, reveal: int | None = None, shields: bool = False) -> BossPartSpec:
-    return BossPartSpec(part_id, 0, 0, 5, 10, shields, 0.0, False, None, reveal)
+    return BossPartSpec(part_id, 0, 0, 5, 10, shields, 0.0, orbits=False, joint=None, reveal=reveal)
 
 
 def _parts() -> list[BossPartSpec]:
@@ -312,8 +315,8 @@ def _parts() -> list[BossPartSpec]:
         _part("b"),
         _part("c"),
         _part("d"),
-        _part("x1", 1, True),
-        _part("x2", 2, True),
+        _part("x1", 1, shields=True),
+        _part("x2", 2, shields=True),
     ]
 
 
@@ -490,10 +493,55 @@ def test_break_next_never_reaches_the_core_while_weapons_are_hidden(
 
 def _scorpion_like(make_boss: Make) -> ProbeBoss:
     parts = [
-        BossPartSpec("claw-l", -40, -20, 5, 10, False, 0.0, False, None, None),
-        BossPartSpec("claw-r", 40, -20, 5, 10, False, 0.0, False, None, None),
-        BossPartSpec("sting", 0, -30, 5, 10, False, 0.0, False, None, None, 1),
-        BossPartSpec("cannon", 0, 50, 5, 10, True, 0.0, False, None, 1),
+        BossPartSpec(
+            "claw-l",
+            -40,
+            -20,
+            5,
+            10,
+            shields_core=False,
+            drop_chance=0.0,
+            orbits=False,
+            joint=None,
+            reveal=None,
+        ),
+        BossPartSpec(
+            "claw-r",
+            40,
+            -20,
+            5,
+            10,
+            shields_core=False,
+            drop_chance=0.0,
+            orbits=False,
+            joint=None,
+            reveal=None,
+        ),
+        BossPartSpec(
+            "sting",
+            0,
+            -30,
+            5,
+            10,
+            shields_core=False,
+            drop_chance=0.0,
+            orbits=False,
+            joint=None,
+            reveal=None,
+            retire=1,
+        ),
+        BossPartSpec(
+            "cannon",
+            0,
+            50,
+            5,
+            10,
+            shields_core=True,
+            drop_chance=0.0,
+            orbits=False,
+            joint=None,
+            reveal=1,
+        ),
     ]
     return make_boss(
         fighting=True,
@@ -522,11 +570,13 @@ def test_d228_a_part_retires_as_its_transformation_starts(
     boss = _scorpion_like(make_boss)
     sting = _by_id(boss, "sting")
     health = boss.remaining_health
-    assert not sting.hidden and not sting.retired
+    assert not sting.hidden
+    assert not sting.retired
     _break(boss, ctx, "claw-l")
     _break(boss, ctx, "claw-r")
     stage = boss.stage
-    assert sting.retired and sting.hidden
+    assert sting.retired
+    assert sting.hidden
     assert not sting.destroyed
     assert sting not in boss.hit_targets
     # It no longer counts in its health; its stage is the same (it was not destroyed).

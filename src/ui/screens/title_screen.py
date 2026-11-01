@@ -1,25 +1,31 @@
-"""Title screen (UI-TITLE-01): high score, game title,
-Start, Settings (UI-SET-01), Dev (DEV-MENU-01, D-199, with `?dev`), controls hint and version."""
+# Copyright (c) 2026 Renaud Guillon
+"""Title screen (UI-TITLE-01).
 
-from org.transcrypt.stubs.browser import __pragma__
+High score, game title, Start, Settings (UI-SET-01), Dev (DEV-MENU-01, D-199, with `?dev`), controls
+hint and version.
+"""
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import element, entry
 
-from ui.menu_view import TitleView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from ui.menu_view import TitleView
+from ui.screens.screen_handlers import ScreenHandlers
 
-from ui.screens.elements import element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
+
 
 # The index of the Dev entry (D-199), after Start and Settings.
 DEV_ENTRY = 2
 
 
 def render_title_screen(doc: Any, view: TitleView, handlers: ScreenHandlers) -> Any:
-    """Renders the title screen: the high score (UI-TITLE-03), the game's name (UI-TITLE-02), the
-    entries, the controls hint (UI-TITLE-05) and the version and commit (UI-TITLE-04)."""
+    """Render the title screen: the high score (UI-TITLE-03), the game's name (UI-TITLE-02).
+
+    The entries, the controls hint (UI-TITLE-05) and the version and commit (UI-TITLE-04).
+    """
     root = element(doc, "div", "menu-screen title-screen")
     score = element(doc, "div", "title-score")
     score.append(

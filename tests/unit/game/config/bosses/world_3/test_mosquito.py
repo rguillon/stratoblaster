@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/mosquito.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_mosquito_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert MOSQUITO.id == MOSQUITO.id.lower()
-    assert " " not in MOSQUITO.id and "_" not in MOSQUITO.id
+    assert " " not in MOSQUITO.id
+    assert "_" not in MOSQUITO.id
 
 
 def test_mb_mosquito_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_mosquito_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_mb_mosquito_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-MOSQUITO-10)."""
-    assert isinstance(MOSQUITO.rage, list) and MOSQUITO.rage
+    assert isinstance(MOSQUITO.rage, list)
+    assert MOSQUITO.rage
     assert len(MOSQUITO.stages) == len(original_parts(MOSQUITO)) + 1

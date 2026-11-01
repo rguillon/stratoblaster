@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/beam.py`."""
 
 import pytest
@@ -102,7 +103,7 @@ def test_game_wpn_06_level_0_traces_nothing() -> None:
 
 def test_game_wpn_06_segment_and_hit_records_keep_their_fields() -> None:
     target = _Target(0, 50)
-    seg = BeamSegment(1, 2, 3, 4, 5, True)
+    seg = BeamSegment(1, 2, 3, 4, 5, hit=True)
     hit = BeamHit(target, 2, 9)
     assert (seg.x, seg.y0, seg.y1, seg.level, seg.width, seg.hit) == (1, 2, 3, 4, 5, True)
     assert (hit.target, hit.level, hit.y) == (target, 2, 9)

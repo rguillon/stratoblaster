@@ -1,24 +1,14 @@
-"""Builds an enemy model from its parts, generated in code (ENM-34)
+# Copyright (c) 2026 Renaud Guillon
+"""Builds an enemy model from its parts, generated in code (ENM-34).
 
-The model is a node tree: a root, a body (hull, flesh, lights and wings) and, outside
-the body, reactors, rotors and muzzles (so shots leave from the same points, GFX-ART-18).
+The model is a node tree: a root, a body (hull, flesh, lights and wings) and, outside the body,
+reactors, rotors and muzzles (so shots leave from the same points, GFX-ART-18).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Rgb = list[float]
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from core.entities.enemy import Enemy  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import Enemy
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors
+from game.view.enemies.enemy_materials import (
     body_color,
     enemy_color,
     enemy_materials,
@@ -29,28 +19,38 @@ from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcr
     tinted_hull,
     unlit,
 )
-from game.view.enemies.living_motion import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.living_motion import (
     flutter_angle,
     glow_level,
     is_living_motion,
     new_breath,
 )
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (
     new_transform_node,
     node_name,
 )
-from render.edge_trim_mesh import set_trim  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.model_animation import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.edge_trim_mesh import set_trim
+from render.geometry.solids import SolidBuilder
+from render.model_animation import (
     add_model_animation,
     step_model_animations,
 )
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
+
+type Rgb = list[float]
+type Vec3 = list[float]
+# __pragma__ ("noskip")
 
 
 class EnemyParts:
     """Builders for the three parts of an enemy model."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         hull: Any,
         flesh: Any,
@@ -116,8 +116,7 @@ class SurfaceMaterials:
 
 
 class BuiltEnemyModel:
-    """What `build_enemy_model` returns: the root node and the
-    per-frame sync."""
+    """What `build_enemy_model` returns: the root node and the per-frame sync."""
 
     def __init__(self, root: Any, sync: Any) -> None:
         self.root = root
@@ -125,16 +124,18 @@ class BuiltEnemyModel:
 
 
 def wing_parts_new() -> WingParts:
-    """A set of empty builders for one wing (or the body's parts)."""
+    """Return a set of empty builders for one wing (or the body's parts)."""
     return WingParts(SolidBuilder(), SolidBuilder(), SolidBuilder(), SolidBuilder())
 
 
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
-    """The hull and flesh (in the body shades, D-231; asking for an edge trim, GFX-TRIM-06), and the
-    neon lights (in the enemies' colour family, ENM-38) of an enemy model whose neon is
-    `neon_color`, under `root`."""
+    """Add the hull and flesh, and the neon lights, of an enemy model whose neon is `neon_color`.
+
+    The hull and flesh use the body shades (D-231) and ask for an edge trim (GFX-TRIM-06); the neon
+    lights use the enemies' colour family (ENM-38). Everything goes under `root`.
+    """
     scene = root.getScene()
     for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
         if len(geo.positions) == 0:
@@ -149,9 +150,9 @@ def add_surfaces(
 
 
 def flutter_animation(node: Any, side: float, span: float, clock: list[float]) -> Any:
-    """The wing's animation: rolls the node as the clock says (ENM-42)."""
+    """Return the wing's animation: rolls the node as the clock says (ENM-42)."""
 
-    def animate(dt: float) -> None:
+    def animate(_dt: float) -> None:
         node.rotation.z = flutter_angle(side, span, clock[0])
 
     return animate
@@ -165,7 +166,7 @@ def add_wings(
     body: Any,
     clock: list[float],
 ) -> None:
-    """The wings, each on a node at its pivot rolling as it flutters (ENM-42), under `body`."""
+    """Add the wings, each on a node at its pivot rolling as it flutters (ENM-42), under `body`."""
     scene = body.getScene()
     for i, wing in enumerate(wings):
         pivot = wing.pivot
@@ -181,8 +182,10 @@ def add_wings(
 
 
 def collect_parts(build: Any) -> dict[str, Any]:
-    """The parts `build` draws, and the reactors, rotors, wings and muzzles it adds (the muzzles
-    the shots leave from, ENM-21)."""
+    """Return the parts `build` draws, and the reactors, rotors, wings and muzzles it adds.
+
+    The muzzles are where the shots leave from (ENM-21).
+    """
     reactors: list[Reactor] = []
     rotors: list[Reactor] = []
     wings: list[Wing] = []
@@ -196,7 +199,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
 
     def muzzle(at: Vec3, kind: Any = None) -> None:
         # `kind` is 'gun' when the caller leaves it out.
-        muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        muzzles.append([at, kind if kind != None else "gun"])
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:
         wing = Wing(pivot, side, span, wing_parts_new())
@@ -228,11 +231,13 @@ def collect_parts(build: Any) -> dict[str, Any]:
 def build_enemy_model(
     name: str, scene: Any, neon_color: Rgb, build: Any, breath: Any = None
 ) -> BuiltEnemyModel:
-    """Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
-    charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
+    """Build an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up).
+
+    The charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
     wings) is on a node of its own, `<name>-body`, its veins pulsing (ENM-42; it never swells,
-    ENM-43); its reactors and muzzles are not, so shots leave from the same points (ENM-45)."""
+    ENM-43); its reactors and muzzles are not, so shots leave from the same points (ENM-45).
+    """
     if breath is None:
         breath = new_breath()
     # GFX-ART-05: every enemy's lights in the enemies' colour family.

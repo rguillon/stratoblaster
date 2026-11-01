@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/dev_screen.py` (D-199)."""
 
 from types import SimpleNamespace
@@ -29,8 +30,8 @@ def test_d199_the_dev_menu_lists_one_tappable_entry_per_viewer() -> None:
 def test_d199_a_viewer_shows_its_item_and_passes_the_wheel_on() -> None:
     """DEV-MENU-05: a viewer's screen."""
     wheels: list[float] = []
-    view = DevViewerView("Enemies", "Wheel", "Back", 2, "Hornet", "3 / 21", False)
-    handlers = ScreenHandlers(lambda i: None, lambda: None, None, None, None, None, wheels.append)
+    view = DevViewerView("Enemies", "Wheel", "Back", 2, "Hornet", "3 / 21", scrub=False)
+    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, None, wheels.append)
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
     assert root.querySelector(".dev-item").textContent == "Hornet"
     assert root.querySelector(".dev-position").textContent == "3 / 21"
@@ -45,9 +46,9 @@ def test_d199_a_viewer_shows_its_item_and_passes_the_wheel_on() -> None:
 
 
 def test_d199_without_a_wheel_handler_the_wheel_is_only_kept_from_the_page() -> None:
-    view = DevViewerView("Levels", "Wheel", "Back", 0, "1-1", "1 / 20", True)
+    view = DevViewerView("Levels", "Wheel", "Back", 0, "1-1", "1 / 20", scrub=True)
     root = render_dev_viewer_screen(
-        FakeDocument(), view, ScreenHandlers(lambda i: None, lambda: None)
+        FakeDocument(), view, ScreenHandlers(lambda _i: None, lambda: None)
     )
     prevented: list[bool] = []
     root.fire(
@@ -61,7 +62,7 @@ class Target:
     def __init__(self, back: bool) -> None:
         self.back = back
 
-    def closest(self, selector: str) -> bool:
+    def closest(self, _selector: str) -> bool:
         return self.back
 
 
@@ -72,9 +73,9 @@ def pointer(x: float, y: float, back: bool = False) -> SimpleNamespace:
 def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() -> None:
     """DEV-MENU-10: dragging turns the model."""
     turns: list[tuple[float, float]] = []
-    view = DevViewerView("Ships", "Drag", "Back", 0, "Alpha", "1 / 3", False)
+    view = DevViewerView("Ships", "Drag", "Back", 0, "Alpha", "1 / 3", scrub=False)
     handlers = ScreenHandlers(
-        lambda i: None,
+        lambda _i: None,
         lambda: None,
         None,
         None,
@@ -84,7 +85,7 @@ def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() 
         lambda dx, dy: turns.append((dx, dy)),
     )
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
-    root.setPointerCapture = lambda pointer_id: None
+    root.setPointerCapture = lambda _pointer_id: None
     root.fire("pointermove", pointer(5, 5))
     root.fire("pointerdown", pointer(10, 20))
     root.fire("pointermove", pointer(15, 18))
@@ -100,12 +101,14 @@ def test_d206_a_grouped_viewer_has_a_menu_of_tappable_headings_and_items() -> No
     """DEV-MENU-07: the scrolling menu."""
     taps: list[int] = []
     menu = [
-        DevChoice("Farm (2)", 0, True, True),
-        DevChoice("hut", 0, False),
-        DevChoice("barn", 1, True),
-        DevChoice("City (1)", 2, False, True),
+        DevChoice("Farm (2)", 0, selected=True, heading=True),
+        DevChoice("hut", 0, selected=False),
+        DevChoice("barn", 1, selected=True),
+        DevChoice("City (1)", 2, selected=False, heading=True),
     ]
-    view = DevViewerView("Props", "Wheel", "Back", 1, "barn", "Farm · 2 / 2", False, menu)
+    view = DevViewerView(
+        "Props", "Wheel", "Back", 1, "barn", "Farm · 2 / 2", scrub=False, menu=menu
+    )
     root = render_dev_viewer_screen(FakeDocument(), view, ScreenHandlers(taps.append, lambda: None))
     panel = root.querySelector(".dev-menu")
     headings = panel.querySelectorAll(".dev-menu-group")
@@ -120,9 +123,9 @@ def test_d206_a_grouped_viewer_has_a_menu_of_tappable_headings_and_items() -> No
 
 
 def test_d206_a_viewer_without_groups_has_no_menu() -> None:
-    view = DevViewerView("Ships", "Wheel", "Back", 0, "Alpha", "1 / 2", False)
+    view = DevViewerView("Ships", "Wheel", "Back", 0, "Alpha", "1 / 2", scrub=False)
     root = render_dev_viewer_screen(
-        FakeDocument(), view, ScreenHandlers(lambda i: None, lambda: None)
+        FakeDocument(), view, ScreenHandlers(lambda _i: None, lambda: None)
     )
     assert root.querySelector(".dev-menu") is None
 
@@ -133,23 +136,23 @@ class Menu:
         self.scrollTop = 0.0
         self.clientHeight = 300.0
 
-    def querySelector(self, selector: str) -> object:  # noqa: N802 (the DOM's name)
+    def querySelector(self, _selector: str) -> object:
         return self.selected
 
 
 def test_d206_the_wheel_over_the_menu_scrolls_it() -> None:
     wheels: list[float] = []
-    view = DevViewerView("Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", False, [])
-    handlers = ScreenHandlers(lambda i: None, lambda: None, None, None, None, None, wheels.append)
+    view = DevViewerView("Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", scrub=False, menu=[])
+    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, None, wheels.append)
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
     menu = Menu(None)
-    target = SimpleNamespace(closest=lambda selector: menu)
+    target = SimpleNamespace(closest=lambda _selector: menu)
     root.fire("wheel", SimpleNamespace(deltaY=40, target=target, preventDefault=lambda: None))
     assert (menu.scrollTop, wheels) == (40, [])
 
 
 def test_d206_the_menu_is_scrolled_to_put_the_item_shown_in_its_middle() -> None:
     menu = Menu(SimpleNamespace(offsetTop=500.0, offsetHeight=20.0))
-    centre_menu(SimpleNamespace(querySelector=lambda selector: menu))
+    centre_menu(SimpleNamespace(querySelector=lambda _selector: menu))
     assert menu.scrollTop == 360
-    centre_menu(SimpleNamespace(querySelector=lambda selector: None))
+    centre_menu(SimpleNamespace(querySelector=lambda _selector: None))

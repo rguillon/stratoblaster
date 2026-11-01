@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/host/webgl_support.py`."""
 
 from unittest.mock import MagicMock
@@ -20,6 +21,7 @@ def test_eng06_no_webgl2_context_means_unsupported() -> None:
 
 def test_eng06_a_failure_while_creating_the_canvas_means_unsupported() -> None:
     def fail() -> object:
-        raise RuntimeError("no canvas")
+        msg = "no canvas"
+        raise RuntimeError(msg)
 
     assert has_webgl2(fail) is False  # type: ignore[arg-type]

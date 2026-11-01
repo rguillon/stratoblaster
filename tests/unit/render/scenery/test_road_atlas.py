@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_atlas.py` (GFX-ROAD-20)."""
 
 from types import SimpleNamespace
@@ -11,12 +12,12 @@ from render.scenery.road_atlas import ATLAS_PX, ATLAS_SIZE, PAD, SLOT, SLOT_TILE
 
 
 @pytest.fixture(autouse=True)
-def _painter(monkeypatch: pytest.MonkeyPatch) -> list[tuple[Any, int]]:
+def painter(monkeypatch: pytest.MonkeyPatch) -> list[tuple[Any, int]]:
     patch_babylon(monkeypatch, road_atlas)
     monkeypatch.setattr(road_atlas, "_uint8_array", FakeTypedArray)
     painted: list[tuple[Any, int]] = []
 
-    def paint(piece: Any, tile: Any, look: Any, n: int) -> list[Any]:
+    def paint(piece: Any, _tile: Any, _look: Any, n: int) -> list[Any]:
         painted.append((piece, n))
         # A piece of one colour everywhere, so its pixels are easy to find.
         return [(1.0, 0.0, 0.0)] * (n * n)
@@ -26,8 +27,10 @@ def _painter(monkeypatch: pytest.MonkeyPatch) -> list[tuple[Any, int]]:
 
 
 def _piece(size: int, tag: int | None = None) -> Any:
-    """A piece of `size` tiles. Pieces with different `tag`s have different looks (their open
-    side is `tag` long)."""
+    """Return a piece of `size` tiles.
+
+    Pieces with different `tag`s have different looks (their open side is `tag` long).
+    """
     side = None if tag is None else SimpleNamespace(size=tag, offset=0)
     return SimpleNamespace(size=size, sides=[side, None, None, None])
 
@@ -45,31 +48,29 @@ def test_the_atlas_is_a_square_of_slots_of_padded_tiles() -> None:
 
 
 def test_a_new_piece_is_painted_into_the_first_slot_and_its_rect_is_returned(
-    _painter: list[tuple[Any, int]],
+    painter: list[tuple[Any, int]],
 ) -> None:
     atlas = RoadAtlas(SimpleNamespace(), _look())
     rect = atlas.rect_of(_piece(2))
-    assert rect == pytest.approx(
-        (
-            PAD / ATLAS_SIZE,
-            PAD / ATLAS_SIZE,
-            (PAD + 2 * ATLAS_PX) / ATLAS_SIZE,
-            (PAD + 2 * ATLAS_PX) / ATLAS_SIZE,
-        )
-    )
-    assert _painter[0][1] == 2 * ATLAS_PX
+    assert rect == pytest.approx((
+        PAD / ATLAS_SIZE,
+        PAD / ATLAS_SIZE,
+        (PAD + 2 * ATLAS_PX) / ATLAS_SIZE,
+        (PAD + 2 * ATLAS_PX) / ATLAS_SIZE,
+    ))
+    assert painter[0][1] == 2 * ATLAS_PX
     assert atlas.dirty is True
 
 
 def test_a_piece_of_the_same_look_is_not_painted_twice(
-    _painter: list[tuple[Any, int]],
+    painter: list[tuple[Any, int]],
 ) -> None:
     atlas = RoadAtlas(SimpleNamespace(), _look())
     first = atlas.rect_of(_piece(1))
     atlas.dirty = False
     second = atlas.rect_of(_piece(1))
     assert second == first
-    assert len(_painter) == 1
+    assert len(painter) == 1
     assert atlas.dirty is False
 
 
@@ -99,9 +100,8 @@ def test_a_full_atlas_has_no_room_for_a_new_piece() -> None:
     assert atlas.rect_of(_piece(1, -1)) is None
 
 
-def test_the_painted_pixels_are_written_with_their_edges_repeated_into_the_pad(
-    _painter: list[tuple[Any, int]],
-) -> None:
+@pytest.mark.usefixtures("painter")
+def test_the_painted_pixels_are_written_with_their_edges_repeated_into_the_pad() -> None:
     atlas = RoadAtlas(SimpleNamespace(), _look())
     atlas.rect_of(_piece(1))
     data = atlas.data
@@ -116,7 +116,7 @@ def test_the_painted_pixels_are_written_with_their_edges_repeated_into_the_pad(
 def test_a_transparent_pixel_takes_the_sidewalk_colour(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(road_atlas, "paint_piece", lambda p, t, look, n: [None] * (n * n))
+    monkeypatch.setattr(road_atlas, "paint_piece", lambda _p, _t, _look, n: [None] * (n * n))
     atlas = RoadAtlas(SimpleNamespace(), _look())
     atlas.rect_of(_piece(1))
     origin = (PAD * ATLAS_SIZE + PAD) * 4

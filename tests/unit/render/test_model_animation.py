@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/model_animation.py` (GFX-ART-11)."""
 
 import pytest
@@ -38,8 +39,8 @@ def test_a_step_runs_the_animations_of_the_root_and_all_its_descendants() -> Non
 def test_several_animations_on_one_node_all_run_in_order() -> None:
     root, _, _ = _tree()
     seen: list[str] = []
-    add_model_animation(root, lambda dt: seen.append("first"))
-    add_model_animation(root, lambda dt: seen.append("second"))
+    add_model_animation(root, lambda _dt: seen.append("first"))
+    add_model_animation(root, lambda _dt: seen.append("second"))
     step_model_animations(root, 1)
     assert seen == ["first", "second"]
 
@@ -53,6 +54,6 @@ def test_animations_of_other_trees_are_not_run() -> None:
     root, _, _ = _tree()
     other = FakeNode("other")
     seen: list[str] = []
-    add_model_animation(other, lambda dt: seen.append("other"))
+    add_model_animation(other, lambda _dt: seen.append("other"))
     step_model_animations(root, 1)
     assert seen == []

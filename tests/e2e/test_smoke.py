@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: the game page opens, loads, and the menus lead to a level and back (ENG-54, specs/ui/)."""
 
 import re
@@ -23,7 +24,7 @@ BUILD_INFO = Path(__file__).resolve().parents[2] / "src" / "build_info.py"
 
 
 def app_version() -> str:
-    """The version `make build-info` wrote for the title screen (ENG-83)."""
+    """Return the version `make build-info` wrote for the title screen (ENG-83)."""
     found = re.search(r'APP_VERSION = "([^"]*)"', BUILD_INFO.read_text())
     assert found, "src/build_info.py has no APP_VERSION"
     return found.group(1)
@@ -32,9 +33,11 @@ def app_version() -> str:
 def test_eng_54_loading_title_ships_levels_game_pause_resume_back_to_title(
     page: Page,
 ) -> None:
-    """ENG-54, ENG-109: the Python build runs from the title to a level and back, without console
-    errors (checked by `console_errors` in conftest.py). Also UI-FLOW-02 (the screens on the way)
-    and DEV-API-02 (the app's state read)."""
+    """ENG-54, ENG-109: the Python build runs from the title to a level and back.
+
+    Without console errors (checked by `console_errors` in conftest.py). Also UI-FLOW-02 (the
+    screens on the way) and DEV-API-02 (the app's state read).
+    """
     page.goto("./")
     expect(page).to_have_title("Stratoblaster")
     expect(page.locator("#game-canvas")).to_be_visible()

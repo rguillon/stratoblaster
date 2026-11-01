@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/color.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -122,7 +125,7 @@ def test_gfx_read_06_fold_into_family_maps_the_hue_start_to_the_family_start() -
         ((0.6, 1, 0), 60),  # Lime, 84: just on yellow's side of half way, 92.5.
     ],
 )
-def test_d231_snap_to_hues_takes_the_nearest_hue_round_the_wheel(colour, hue) -> None:
+def test_d231_snap_to_hues_takes_the_nearest_hue_round_the_wheel(colour: Any, hue: Any) -> None:
     assert hue_saturation(snap_to_hues(colour, [60, 125]))[0] == pytest.approx(hue)
 
 

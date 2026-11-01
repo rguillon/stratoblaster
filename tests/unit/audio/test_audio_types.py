@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/audio_types.py`."""
 
 import math
@@ -47,7 +48,7 @@ def test_aud_engine_06_xorshift_is_deterministic_and_stays_32_bit() -> None:
 
 def test_aud_engine_05_beat_seconds_and_track_seconds() -> None:
     assert beat_seconds(120) == pytest.approx(0.5)
-    track = Track("menu", 120, 8, [], True)
+    track = Track("menu", 120, 8, [], loop=True)
     assert track_seconds(track) == pytest.approx(4.0)
 
 

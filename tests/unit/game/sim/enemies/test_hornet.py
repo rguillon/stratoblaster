@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/hornet.py`."""
 
 import pytest
@@ -50,4 +51,5 @@ def test_enm_hornet_06_a_hornet_dives_at_the_player_after_its_pause() -> None:
 def test_enm_hornet_07_a_hornet_does_not_shoot() -> None:
     ctx = FakeContext()
     run(Hornet(100, 300, _options(stop_y=None, pause=0.2)), ctx, 3.0)
-    assert ctx.bullets == [] and ctx.missiles == []
+    assert ctx.bullets == []
+    assert ctx.missiles == []

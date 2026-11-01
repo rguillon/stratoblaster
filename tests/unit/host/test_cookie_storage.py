@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/host/cookie_storage.py`."""
 
 from urllib.parse import quote, unquote
@@ -15,8 +16,11 @@ class FakeDocument:
 
 @pytest.fixture(autouse=True)
 def uri_component_codec(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The `encodeURIComponent` / `decodeURIComponent` calls are JavaScript only: CPython gets
-    the standard library's percent-encoding, which is the same for the characters used here."""
+    """Replace the JavaScript-only `encodeURIComponent` / `decodeURIComponent` calls.
+
+    CPython gets the standard library's percent-encoding, which is the same for the characters used
+    here.
+    """
     monkeypatch.setattr(cookie_storage, "encode_uri_component", lambda text: quote(text, safe=""))
     monkeypatch.setattr(cookie_storage, "decode_uri_component", unquote)
 
@@ -58,8 +62,9 @@ def test_eng_07_a_key_that_only_shares_a_prefix_is_not_a_match() -> None:
 
 
 def test_eng_07_an_unreadable_value_reads_as_none(monkeypatch: pytest.MonkeyPatch) -> None:
-    def broken(text: str) -> str:
-        raise ValueError("URIError")
+    def broken(_text: str) -> str:
+        msg = "URIError"
+        raise ValueError(msg)
 
     monkeypatch.setattr(cookie_storage, "decode_uri_component", broken)
     assert CookieStorage(FakeDocument("ship=%E0%A4%A"), 1).get("ship") is None

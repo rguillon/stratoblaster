@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/veteran_small_models.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.view_probes import drawings_of, probe_builder
@@ -8,8 +11,8 @@ from game.view.enemies import veteran_small_models as module
 
 
 @pytest.fixture
-def probe(monkeypatch):
-    def run(builder):
+def probe(monkeypatch: Any) -> Any:
+    def run(builder: Any) -> Any:
         # The wings are copied with `Object.assign` in the game; under CPython that copy is a
         # plain dict merge (the Transcrypt stub returns None here).
         monkeypatch.setattr(
@@ -23,7 +26,7 @@ def probe(monkeypatch):
     return run
 
 
-def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe):
+def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe: Any) -> None:
     capture, body = probe(module.build_wasp)
     assert capture.name == "wasp"
     # Two membrane pairs of wings: four flaps in all.
@@ -32,7 +35,7 @@ def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(pro
     assert len(body["muzzles"]) == 1
 
 
-def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(probe):
+def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(probe: Any) -> None:
     capture, body = probe(module.build_phantom)
     assert capture.name == "phantom"
     assert len(body["reactors"]) == 2
@@ -53,13 +56,13 @@ class _Enemy:
         self.opacity = opacity
 
 
-def test_enm_phantom_06_the_edge_trim_fades_with_the_phantom(monkeypatch):
+def test_enm_phantom_06_the_edge_trim_fades_with_the_phantom(monkeypatch: Any) -> None:
     """The trim meshes are added after the builder returns, so they must be listed at sync."""
     body = _Mesh()
     trims: list[_Mesh] = []
     root = object()
 
-    def children(node, direct_only):
+    def children(node: Any, _direct_only: Any) -> Any:
         assert node is root
         return [body, *trims]
 
@@ -79,8 +82,8 @@ def test_enm_phantom_06_the_edge_trim_fades_with_the_phantom(monkeypatch):
 
 
 class _Built:
-    def __init__(self, root) -> None:
+    def __init__(self, root: Any) -> None:
         self.root = root
 
-    def sync(self, enemy, dt) -> None:
+    def sync(self, _enemy: Any, _dt: Any) -> None:
         return None

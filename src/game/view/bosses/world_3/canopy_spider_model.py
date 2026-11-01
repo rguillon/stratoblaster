@@ -1,12 +1,13 @@
+# Copyright (c) 2026 Renaud Guillon
 """FB-CANOPY-SPIDER-01 to FB-CANOPY-SPIDER-06, 3-2: the Canopy Spider.
+
 Logical pixels, nose +Z, Y up (towards the camera). A walker-ship hanging over the canopy: an
 armoured cephalothorax carrying the head, its eyes and fangs at the front and the crown emitter
 on its back; a big abdomen behind it, the egg sac (a part) at its tip; four legs stepping in
-turn."""
+turn.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_3.canopy_spider import CANOPY_SPIDER, SPIDER_CROWN
 from game.view.bosses.boss_limbs import boss_point
@@ -33,61 +34,58 @@ from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.organic import ROUND_SECTION, SHELL_SECTION, RibSpec, ribs
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The cephalothorax, back to front (loft stations: z, half width, bottom, top).
-THORAX = table(
-    [
-        [-10, 12, -1, 11],
-        [0, 17, -3, 15],
-        [12, 16, -3, 15],
-        [22, 12, -2, 12.5],
-        [30, 7, 0, 8.5],
-    ]
-)
+THORAX = table([
+    [-10, 12, -1, 11],
+    [0, 17, -3, 15],
+    [12, 16, -3, 15],
+    [22, 12, -2, 12.5],
+    [30, 7, 0, 8.5],
+])
 # The abdomen, from its tip (where the egg sac hangs) to its waist.
-ABDOMEN = table(
-    [
-        [-47, 5, 3, 9],
-        [-40, 14, -1, 19],
-        [-34, 18, -2, 21],
-        [-20, 18, -2, 21],
-        [-12, 14, 0, 18],
-        [-7, 8, 3, 12],
-    ]
-)
+ABDOMEN = table([
+    [-47, 5, 3, 9],
+    [-40, 14, -1, 19],
+    [-34, 18, -2, 21],
+    [-20, 18, -2, 21],
+    [-12, 14, 0, 18],
+    [-7, 8, 3, 12],
+])
 # The red hourglass on the abdomen's back (right half, front to back).
-HOURGLASS = table(
-    [
-        [0, -20],
-        [5, -21],
-        [1, -27],
-        [5, -33],
-        [0, -34],
-        [-5, -33],
-        [-1, -27],
-        [-5, -21],
-    ]
-)
+HOURGLASS = table([
+    [0, -20],
+    [5, -21],
+    [1, -27],
+    [5, -33],
+    [0, -34],
+    [-5, -33],
+    [-1, -27],
+    [-5, -21],
+])
 # The eyes: the two big ones at the front, then the smaller ones (x, height, z, radius).
-EYES = table(
-    [
-        [3.6, 6.8, 28.6, 2.3],
-        [5.6, 7.4, 24, 1.5],
-        [2.4, 11, 22.4, 1.2],
-    ]
-)
+EYES = table([
+    [3.6, 6.8, 28.6, 2.3],
+    [5.6, 7.4, 24, 1.5],
+    [2.4, 11, 22.4, 1.2],
+])
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The cephalothorax and the abdomen: dark armour, the red hourglass, moss on the plates."""
+    """Draw the cephalothorax and the abdomen.
+
+    Dark armour, the red hourglass, moss on the plates.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -118,7 +116,7 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head: the red neon eyes, the fangs under them, the hips' sockets on the thorax."""
+    """Draw the head: the red neon eyes, the fangs under them, the hips' sockets on the thorax."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -153,7 +151,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_crown(p: EnemyParts) -> None:
-    """The hips' sockets, and the crown emitter on the thorax's back (the core's spirals)."""
+    """Draw the hips' sockets, and the crown emitter on the thorax's back (the core's spirals)."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -185,16 +183,18 @@ def draw_crown(p: EnemyParts) -> None:
 
 
 def canopy_spider_core(p: EnemyParts) -> None:
-    """The core of the Canopy Spider: its body, head and crown."""
+    """Add the core of the Canopy Spider: its body, head and crown."""
     draw_body(p)
     draw_head(p)
     draw_crown(p)
 
 
 def build_canopy_spider(scene: Any) -> Any:
-    """FB-CANOPY-SPIDER-01, FB-CANOPY-SPIDER-06: the Canopy Spider, a four-legged walker-ship
-    hanging over the canopy, its legs stepping in turn, red neon eyes, moss and vines on its
-    armour."""
+    """FB-CANOPY-SPIDER-01, FB-CANOPY-SPIDER-06: the Canopy Spider.
+
+    A four-legged walker-ship hanging over the canopy, its legs stepping in turn, red neon eyes,
+    moss and vines on its armour.
+    """
     parts: dict[str, Any] = {
         "leg-fore-left": leg_gun_pod,
         "leg-fore-right": leg_gun_pod,

@@ -1,18 +1,17 @@
-"""The Spinner, the Lancer and the Rocketeer, Cyber-Organic (ENM-35): swollen flesh bodies and
-organs, metal grafted on for armour,
-nozzles and guns. Logical pixels, nose +Z, Y up. The Bulwark and the Splitter are in
-`heavy_beetle_models.py`.
+# Copyright (c) 2026 Renaud Guillon
+"""The Spinner, the Lancer and the Rocketeer, Cyber-Organic (ENM-35).
+
+Swollen flesh bodies and organs, metal grafted on for armour, nozzles and guns. Logical pixels, nose
++Z, Y up. The Bulwark and the Splitter are in `heavy_beetle_models.py`.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies import ENEMY_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.basic_parts import eye_pair, sinew  # noqa: E402
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import (  # noqa: E402
+from game.config.enemies import ENEMY_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.basic_parts import eye_pair, sinew
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.enemy_shapes import (
     LOBE_SECTION,
     SIDES,
     angry_eyes,
@@ -20,7 +19,7 @@ from game.view.enemies.enemy_shapes import (  # noqa: E402
     decal,
     radial,
 )
-from render.geometry.organic import (  # noqa: E402
+from render.geometry.organic import (
     SegmentedBody,
     curve,
     organ,
@@ -30,12 +29,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -48,9 +49,11 @@ SPINNER_MUZZLE = [[-1.5, 2.2], [1.5, 2.2], [1.3, 3.1], [-1.3, 3.1]]  # type: lis
 
 
 def build_spinner(scene: Any) -> Any:
-    """ENM-SPINNER-01: a spiral turret: an organic core spinning four sinew arms curled the same
-    way round, a flesh pod at the end of each with a metal muzzle collar, a neon heart (yellow,
-    ENM-SPINNER-03)."""
+    """ENM-SPINNER-01: a spiral turret, an organic core spinning four sinew arms.
+
+    The arms are curled the same way round, with a flesh pod at the end of each with a metal muzzle
+    collar, and a neon heart (yellow, ENM-SPINNER-03).
+    """
     pod_radius = ENEMY_CONFIG.spinner.podRadius
 
     def draw(p: Any) -> None:
@@ -91,9 +94,11 @@ LANCER_FIN = [[2.5, -6], [10, -17], [9.5, -20], [2.5, -15]]  # type: list[list[f
 
 
 def build_lancer(scene: Any) -> Any:
-    """ENM-LANCER-01: a laser lance: a long body of swollen segments, a metal lance grafted on its
-    head ending in the glowing emitter, two flesh fins and three reactors (ENM-LANCER-02), veins
-    along its back (yellow, ENM-LANCER-04)."""
+    """ENM-LANCER-01: a laser lance, a long body of swollen segments.
+
+    A metal lance is grafted on its head, ending in the glowing emitter; two flesh fins and three
+    reactors (ENM-LANCER-02); veins run along its back (yellow, ENM-LANCER-04).
+    """
     nose = ENEMY_CONFIG.lancer.emitterOffset
 
     def draw(p: Any) -> None:
@@ -126,9 +131,11 @@ ROCKETEER_ARMOUR = [[0, 9], [4.5, 5], [4.5, -8], [-4.5, -8], [-4.5, 5]]  # type:
 
 
 def build_rocketeer(scene: Any) -> Any:
-    """ENM-ROCKETEER-01: a bulky flesh body with an armour plate on its back, carrying on sinews a
-    long egg sac on each side: its missiles, their tips glowing when loaded (ENM-ROCKETEER-02). Two
-    reactors (ENM-ROCKETEER-03), in yellow (ENM-ROCKETEER-04)."""
+    """ENM-ROCKETEER-01: a bulky flesh body with an armour plate on its back.
+
+    On sinews it carries a long egg sac on each side: its missiles, their tips glowing when loaded
+    (ENM-ROCKETEER-02). Two reactors (ENM-ROCKETEER-03), in yellow (ENM-ROCKETEER-04).
+    """
     pod = ENEMY_CONFIG.rocketeer.podOffset
 
     def draw(p: Any) -> None:

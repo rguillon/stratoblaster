@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """4-4: the Furnace Drake, the mini boss of the forge belt (specs/bosses/mini/4-4-furnace-drake.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two wings
@@ -8,18 +9,18 @@ stand, the core fires a spiral that changes at every stage, and twin spirals of 
 earlier stage, once it stands alone. Health (MB-FURNACE-DRAKE-08) tuned for WLD-4-22.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 RED = bullet("red", 215)
 ORANGE = bullet("orange", 210)
@@ -55,7 +56,7 @@ LASH = record({"amplitudeDeg": 12, "period": 2.6, "phase": 0.6})
 
 
 def wing_joint(side: str) -> Any:
-    """A wing's joint at its root, the left one at -X; the right one mirrors it."""
+    """Return a wing's joint at its root, the left one at -X; the right one mirrors it."""
     s = 1 if side == "left" else -1
     x = DRAKE_WING.root[0]
     y = DRAKE_WING.root[1]
@@ -73,7 +74,10 @@ POD_Y = DRAKE_WING.pod[1]
 
 
 def flame(first: float) -> Any:
-    """The jaw's flame: a stream of sparks at the player, a spray of slower ones around it."""
+    """Return the jaw's flame.
+
+    A stream of sparks at the player, a spray of slower ones around it.
+    """
     return [
         volley.burst("jaw", 3.2, 9, 0.045, FLAME, first),
         volley.aimed("jaw", 3.2, 4, 9, FLAME_EDGE, first + 0.2),
@@ -83,72 +87,68 @@ def flame(first: float) -> Any:
 # 4-4: a dragon-shaped gunship of soot-black plates with red and orange neon and a furnace glowing
 # in its chest (MB-FURNACE-DRAKE-01); its two beating wings fire fans and shield the core, its jaw
 # breathes flame, its core spirals. The head hangs in front of the core, so it can always be shot.
-_FURNACE_DRAKE = record(
-    {
-        "id": "furnace-drake",
-        # Angry after each destroyed part (phase 7 review, D-063, MB-FURNACE-DRAKE-12): heat 12.5,
-        # on from World 3.
-        "rage": rage.flower(12.5, "orange", "red"),
-        # Its core and parts, their health, and its points (MB-FURNACE-DRAKE-08,
-        # MB-FURNACE-DRAKE-15).
-        "stats": stats(
-            record(
-                {
-                    "id": "furnace-drake",
-                    "name": "Furnace Drake",
-                    "size": 3.5,
-                    "coreRadius": 16,
-                    "coreHealth": 2150,
-                    "points": 8500,
-                    "groundSpeed": 0.5,
-                    "parts": [
-                        part("wing-left", [POD_X, POD_Y], 14, 1100, {"joint": "wing-left"}),
-                        part("wing-right", [-POD_X, POD_Y], 14, 1100, {"joint": "wing-right"}),
-                        part("jaw", list(DRAKE_JAW), 11, 800, {"shields": False, "joint": "neck"}),
-                    ],
-                    "joints": merge(
-                        merge(wing_joint("left"), wing_joint("right")),
-                        {
-                            "neck": {"x": DRAKE_NECK[0], "y": DRAKE_NECK[1], "swing": SWAY},
-                            "tail": {"x": DRAKE_TAIL[0], "y": DRAKE_TAIL[1], "swing": LASH},
-                        },
-                    ),
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-FURNACE-DRAKE-07).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 60, "period": 6.4},
-        "bob": {"amplitude": 8, "period": 2.9},
-        "guns": {
-            "core": {"ring": DRAKE_HEART},
-            "wing-left": {"gun": DRAKE_WING_GUNS},
-            "wing-right": {"gun": mirror(DRAKE_WING_GUNS)},
-            "jaw": {"gun": DRAKE_MAW},
-        },
-        # In every stage the wings' fans (MB-FURNACE-DRAKE-09) and the jaw's flame; then the core's
-        # spirals per stage (MB-FURNACE-DRAKE-11).
-        "stages": stages(
-            concat(
-                [
-                    # The wings' fans lean outwards, one after the other, on each down stroke.
-                    volley.fan("wing-left", 2.4, 3, 14, RED, 0.9, -12),
-                    volley.fan("wing-right", 2.4, 3, 14, RED, 2.1, 12),
-                ],
-                flame(1.6),
-            ),
-            [
-                [volley.ring("core", 0.5, 3, 17, ORANGE, 0.6)],
-                [volley.ring("core", 0.48, 4, -21, ORANGE, 0.5)],
-                [volley.ring("core", 0.46, 5, 25, PURPLE, 0.5)],
-                [
-                    volley.ring("core", 0.44, 5, 14, ORANGE, 0.4),
-                    volley.ring("core", 0.44, 6, -16, RED, 0.62),
-                ],
+_FURNACE_DRAKE = record({
+    "id": "furnace-drake",
+    # Angry after each destroyed part (phase 7 review, D-063, MB-FURNACE-DRAKE-12): heat 12.5,
+    # on from World 3.
+    "rage": rage.flower(12.5, "orange", "red"),
+    # Its core and parts, their health, and its points (MB-FURNACE-DRAKE-08,
+    # MB-FURNACE-DRAKE-15).
+    "stats": stats(
+        record({
+            "id": "furnace-drake",
+            "name": "Furnace Drake",
+            "size": 3.5,
+            "coreRadius": 16,
+            "coreHealth": 2150,
+            "points": 8500,
+            "groundSpeed": 0.5,
+            "parts": [
+                part("wing-left", [POD_X, POD_Y], 14, 1100, {"joint": "wing-left"}),
+                part("wing-right", [-POD_X, POD_Y], 14, 1100, {"joint": "wing-right"}),
+                part("jaw", list(DRAKE_JAW), 11, 800, {"shields": False, "joint": "neck"}),
             ],
+            "joints": merge(
+                merge(wing_joint("left"), wing_joint("right")),
+                {
+                    "neck": {"x": DRAKE_NECK[0], "y": DRAKE_NECK[1], "swing": SWAY},
+                    "tail": {"x": DRAKE_TAIL[0], "y": DRAKE_TAIL[1], "swing": LASH},
+                },
+            ),
+        })
+    ),
+    # Where it stops and how it moves in place (MB-FURNACE-DRAKE-07).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 60, "period": 6.4},
+    "bob": {"amplitude": 8, "period": 2.9},
+    "guns": {
+        "core": {"ring": DRAKE_HEART},
+        "wing-left": {"gun": DRAKE_WING_GUNS},
+        "wing-right": {"gun": mirror(DRAKE_WING_GUNS)},
+        "jaw": {"gun": DRAKE_MAW},
+    },
+    # In every stage the wings' fans (MB-FURNACE-DRAKE-09) and the jaw's flame; then the core's
+    # spirals per stage (MB-FURNACE-DRAKE-11).
+    "stages": stages(
+        concat(
+            [
+                # The wings' fans lean outwards, one after the other, on each down stroke.
+                volley.fan("wing-left", 2.4, 3, 14, RED, 0.9, -12),
+                volley.fan("wing-right", 2.4, 3, 14, RED, 2.1, 12),
+            ],
+            flame(1.6),
         ),
-    }
-)
+        [
+            [volley.ring("core", 0.5, 3, 17, ORANGE, 0.6)],
+            [volley.ring("core", 0.48, 4, -21, ORANGE, 0.5)],
+            [volley.ring("core", 0.46, 5, 25, PURPLE, 0.5)],
+            [
+                volley.ring("core", 0.44, 5, 14, ORANGE, 0.4),
+                volley.ring("core", 0.44, 6, -16, RED, 0.62),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-FURNACE-DRAKE-13): at transformation 1 its
 # back plating bursts off, baring a dark metal frame, and a pair of heavy cannons unfold

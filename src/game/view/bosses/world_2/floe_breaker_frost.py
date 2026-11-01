@@ -1,38 +1,38 @@
-"""The frost on the 2-1 bosses (MB-FLOE-BREAKER-05, FB-NARWHAL-05; World 2 theme: dark metal with
-neon, plus frost, ice and snow) Logical pixels, nose +Z, Y up. Pale vertex colours on the hull's top
-faces.
+# Copyright (c) 2026 Renaud Guillon
+"""The frost on the 2-1 bosses (MB-FLOE-BREAKER-05, FB-NARWHAL-05).
+
+World 2 theme: dark metal with neon, plus frost, ice and snow. Logical pixels, nose +Z, Y up. Pale
+vertex colours on the hull's top faces.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import record
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Frost shades: snow caps, frosted panels, clear blue ice.
-FROST = record(
-    {
-        # Snow and ice crust on top faces.
-        "snow": [0.75, 0.82, 0.9],
-        # A frosted panel: hull metal under a thin rime.
-        "panel": [0.42, 0.48, 0.56],
-        # Clear ice: icicles, chunks of floe stuck on the hull.
-        "ice": [0.5, 0.66, 0.82],
-    }
-)
+FROST = record({
+    # Snow and ice crust on top faces.
+    "snow": [0.75, 0.82, 0.9],
+    # A frosted panel: hull metal under a thin rime.
+    "panel": [0.42, 0.48, 0.56],
+    # Clear ice: icicles, chunks of floe stuck on the hull.
+    "ice": [0.5, 0.66, 0.82],
+})
 
 
 def icicle(hull: SolidBuilder, at: Vec3, length: float) -> None:
-    """An icicle hanging from `at`, `length` long: a thin four-sided cone pointing down."""
+    """Add an icicle hanging from `at`, `length` long: a thin four-sided cone pointing down."""
     hull.cylinder(length * 0.22, length, 4, FROST.ice, Placement(at, 0, math.pi), 0)
 
 
@@ -44,7 +44,7 @@ def icicles(hull: SolidBuilder, outline: list[OutlinePoint], y: float, every: in
 
 
 def ice_chunk(hull: SolidBuilder, at: Vec3, size: float) -> None:
-    """A chunk of floe ice stuck on the hull at `at`, `size` across: a low faceted lump."""
+    """Add a chunk of floe ice stuck on the hull at `at`, `size` across: a low faceted lump."""
     lump = [
         [size, 0],
         [size * 1.1, size * 0.35],

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/environment/gradient_cube.py` (GFX-SKY-10, GFX-ART-02)."""
 
 import math

@@ -1,6 +1,9 @@
-"""GFX-ROAD-11, GFX-ROAD-12: the road pieces of the districts laid on tiles (phase 15), found from
-their straight streets: a junction piece where a row and a column meet, the size of the wider road,
-and straight pieces of N × N tiles along each road between them.
+# Copyright (c) 2026 Renaud Guillon
+"""GFX-ROAD-11, GFX-ROAD-12.
+
+The road pieces of the districts laid on tiles (phase 15), found from their straight streets: a
+junction piece where a row and a column meet, the size of the wider road, and straight pieces of N x
+N tiles along each road between them.
 
 Sets of tile keys are dicts keyed by `str(tile_key(x, z))` (see `tile_has`), and a `Map` keyed by
 tile key is kept in the order its keys were first set.
@@ -10,14 +13,16 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
 
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road
+from core.scenery.scenery_level import TileRules
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 EPSILON = 1e-6
 # Open sides of a junction with all four, and with three (a tee).
@@ -36,7 +41,7 @@ class PieceSide:
 
 
 class RoadPiece:
-    """A road piece: `size` × `size` tiles from tile (`x`, `z`), with its open sides."""
+    """A road piece: `size` x `size` tiles from tile (`x`, `z`), with its open sides."""
 
     def __init__(
         self,
@@ -92,8 +97,11 @@ def tile_has(tiles: dict[str, bool], x: int, z: int) -> bool:
 
 
 def has_tile_key(tiles: Any, key: int) -> bool:
-    """Whether the key `key` (a `tile_key`) is in `tiles`: an own property, as `str(key) in tiles`
-    (the generic `in` is slow, and this runs for every tile the packing tries)."""
+    """Whether the key `key` (a `tile_key`) is in `tiles`.
+
+    An own property, as `str(key) in tiles` (the generic `in` is slow, and this runs for every tile
+    the packing tries).
+    """
     found = False
     __pragma__("skip")
     found = key in tiles or str(key) in tiles  # Either key type: the tests use both.
@@ -117,7 +125,7 @@ def _line_of(road: Road, tile: TileRules) -> _TileLine | None:
 
 
 def _kind_of(sides: Sequence[PieceSide | None]) -> str:
-    """The kind of a piece by its open sides."""
+    """Return the kind of a piece by its open sides."""
     open_sides = [s is not None for s in sides]
     count = 0
     for o in open_sides:
@@ -147,8 +155,11 @@ def _ways(row: _TileLine, column: _TileLine) -> list[bool]:
 
 
 def _junction(row: _TileLine, column: _TileLine) -> RoadPiece | None:
-    """The junction piece where `row` and `column` meet, or None. It is the wider road's size; the
-    narrower road enters it on whole tiles, the piece starting on a multiple of its size."""
+    """Return the junction piece where `row` and `column` meet, or None.
+
+    It is the wider road's size; the narrower road enters it on whole tiles, the piece starting on a
+    multiple of its size.
+    """
     if not _meet(row, column):
         return None
     size = max(row.size, column.size)
@@ -167,9 +178,11 @@ def _junction(row: _TileLine, column: _TileLine) -> RoadPiece | None:
 
 
 def _junctions(rows: Sequence[_TileLine], columns: Sequence[_TileLine]) -> list[RoadPiece]:
-    """The junctions of `rows` and `columns`. Two streets of one line may meet at a junction
-    (where the runout's streets go on from those before it): one piece, with the open sides of
-    both."""
+    """Return the junctions of `rows` and `columns`.
+
+    Two streets of one line may meet at a junction (where the runout's streets go on from those
+    before it): one piece, with the open sides of both.
+    """
     # The pieces in the order their keys were first set (a Map keeps that order).
     found: list[RoadPiece] = []
     position: dict[str, int] = {}
@@ -198,7 +211,7 @@ def _junctions(rows: Sequence[_TileLine], columns: Sequence[_TileLine]) -> list[
 
 
 def _straights(line: _TileLine, tile: TileRules, taken: dict[str, bool]) -> list[RoadPiece]:
-    """Straight pieces of `line`, N × N tiles on its own N-tile lattice, where nothing is taken."""
+    """Straight pieces of `line`, N x N tiles on its own N-tile lattice, where nothing is taken."""
     n = line.size
     side = PieceSide(n, 0)
     sides: list[PieceSide | None] = (
@@ -216,8 +229,10 @@ def _straights(line: _TileLine, tile: TileRules, taken: dict[str, bool]) -> list
 
 
 def road_pieces(roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
-    """The road pieces of the streets of `roads` (phase 15, GFX-ROAD-14): the junctions, then
-    straight pieces of N × N tiles over the rest of each street."""
+    """Return the road pieces of the streets of `roads` (phase 15, GFX-ROAD-14).
+
+    The junctions, then straight pieces of N x N tiles over the rest of each street.
+    """
     lines: list[_TileLine] = []
     for r in roads:
         if r.kind == "street":
@@ -239,7 +254,7 @@ def road_pieces(roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
 
 
 def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
-    """The tiles the pieces cover, as a set of keys (see the module doc; GFX-ROAD-08)."""
+    """Return the tiles the pieces cover, as a set of keys (see the module doc; GFX-ROAD-08)."""
     tiles: dict[str, bool] = {}
     for p in pieces:
         for i in range(p.size):
@@ -249,15 +264,18 @@ def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
 
 
 class PieceCache:
-    """The road pieces of the last list of roads asked for, found once (they are asked for every
-    chunk). Keyed by the identity of that list: a different list is worked out again."""
+    """The road pieces of the last list of roads asked for, found once.
+
+    They are asked for every chunk, and keyed by the identity of that list: a different list is
+    worked out again.
+    """
 
     def __init__(self) -> None:
         self._roads: Sequence[Road] | None = None
         self._pieces: list[RoadPiece] = []
 
     def get(self, roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
-        """The road pieces of `roads`, worked out on first use."""
+        """Return the road pieces of `roads`, worked out on first use."""
         if self._roads is None or self._roads is not roads:
             self._pieces = road_pieces(roads, tile)
             self._roads = roads

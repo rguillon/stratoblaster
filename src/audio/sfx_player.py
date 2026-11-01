@@ -1,18 +1,19 @@
-"""Plays the sound effects: each through the `VoicePool`'s limits (AUD-ENGINE-07), panned with
-its position (AUD-ENGINE-08), on the sound effect bus. Without a context the pool still decides,
-so the game's logic (and the e2e test API) does not depend on audio being available.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""Plays the sound effects: each through the `VoicePool`'s limits (AUD-ENGINE-07).
 
-from org.transcrypt.stubs.browser import __pragma__
+Panned with its position (AUD-ENGINE-08), on the sound effect bus. Without a context the pool still
+decides, so the game's logic (and the e2e test API) does not depend on audio being available.
+"""
 
 from audio.audio_types import INFINITY, SoundDesign, sound_seconds
 from audio.synth import Voice, VoiceOptions, play_voice
 from audio.voice_pool import VoicePool
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class SfxBus:
@@ -26,7 +27,7 @@ class SfxBus:
 class SfxSettings:
     """Mixing settings of an `SfxPlayer` (`config/audio.py`)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         max_voices: float,
         retrigger_seconds: float,
@@ -45,8 +46,10 @@ class SfxSettings:
 
 
 def pan_at(x: float, width: float, pan_max: float) -> float:
-    """Pan of a sound at `x` on a playfield `width` wide: -`pan_max` at the left edge, 0 in the
-    middle."""
+    """Pan of a sound at `x` on a playfield `width` wide: -`pan_max` at the left edge.
+
+    0 in the middle.
+    """
     if not (width > 0):
         return 0
     share = min(1, max(0, x / width))
@@ -81,8 +84,10 @@ class SfxPlayer:
         return len(self._pool.voices)
 
     def play(self, sound: SoundDesign, pan: float = 0) -> bool:
-        """Plays `sound`, panned to `pan` (-1..1) when it is positional. Returns whether it plays
-        (the pool may drop it)."""
+        """Play `sound`, panned to `pan` (-1..1) when it is positional; return whether it plays.
+
+        The pool may drop it.
+        """
         if sound.loop and self._loop_index(sound.name) >= 0:
             return False
         decision = self._pool.request(
@@ -103,7 +108,7 @@ class SfxPlayer:
         return True
 
     def stop_loop(self, name: str) -> None:
-        """Stops the looping sound `name` (the laser is let go)."""
+        """Stop the looping sound `name` (the laser is let go)."""
         index = self._loop_index(name)
         if index < 0:
             return
@@ -117,7 +122,7 @@ class SfxPlayer:
         return self._loop_index(name) >= 0
 
     def stop_all(self) -> None:
-        """Stops every sound (the game pauses, AUD-ENGINE-10)."""
+        """Stop every sound (the game pauses, AUD-ENGINE-10)."""
         for voice_id in [playing.id for playing in self._playing]:
             self._stop_voice(voice_id)
         self._loop_names = []
@@ -156,8 +161,10 @@ class SfxPlayer:
         return voice, gain
 
     def _boost(self, name: str) -> None:
-        """The same sound again too soon: the one playing gets a little louder instead
-        (AUD-ENGINE-07)."""
+        """Boost the playing sound when the same one comes again too soon (AUD-ENGINE-07).
+
+        The one playing gets a little louder instead.
+        """
         voices = self._pool.voices
         voice = None
         i = len(voices) - 1
@@ -178,8 +185,10 @@ class SfxPlayer:
         gain.gain.setValueAtTime(boosted, bus.context.currentTime)
 
     def _forget_ended(self) -> None:
-        """Forgets the sounds that are over (the pool let them go), so the work stays small
-        (AUD-ENGINE-12)."""
+        """Forget the sounds that are over, so the work stays small (AUD-ENGINE-12).
+
+        The pool let them go.
+        """
         alive = [voice.id for voice in self._pool.voices]
         self._playing = [playing for playing in self._playing if playing.id in alive]
 

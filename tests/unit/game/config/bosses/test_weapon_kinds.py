@@ -1,5 +1,9 @@
-"""The kinds of hidden weapon (BOSS-40; D-229; docs/superpowers/specs/2026-11-01-boss-weapon-
-variety-and-shape-shifts-design.md, Part A): their muzzles, volleys and launches."""
+# Copyright (c) 2026 Renaud Guillon
+"""The kinds of hidden weapon: their muzzles, volleys and launches.
+
+Specs: BOSS-40, D-229, docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
+design.md, Part A.
+"""
 
 import pytest
 
@@ -42,13 +46,15 @@ def test_the_cannon_fires_spreads_of_three_large_shells_at_the_player() -> None:
     assert shot.shape.kind == "aimed"
     assert shot.shape.count == 3
     assert shot.shape.bullet.radius > 4
-    assert shot["from"] == "cannon-left" and shot.first == 1.5
+    assert shot["from"] == "cannon-left"
+    assert shot.first == 1.5
 
 
 def test_the_mortar_lobs_flak_from_its_tube_mouth() -> None:
     guns = weapon_guns("mortar", [0, 0], 10, 5)
     [mouth] = guns.gun
-    assert mouth[1] < 0 and mouth[2] > 5
+    assert mouth[1] < 0
+    assert mouth[2] > 5
     assert guns.turret is None
     [shot] = weapon_volleys("mortar", "mortar", "orange", 1)
     assert shot.shape.kind == "aimed"
@@ -85,4 +91,5 @@ def test_a_hangar_fires_nothing_but_launches_gnats() -> None:
     [launch] = weapon_launches("hangar", "bay", 3)
     assert launch["from"] == "bay"
     assert launch["kind"] == "gnats"
-    assert launch["count"] == 2 and launch["first"] == 3
+    assert launch["count"] == 2
+    assert launch["first"] == 3

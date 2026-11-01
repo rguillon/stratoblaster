@@ -1,26 +1,29 @@
-"""MB-SCORPION-03, 1-4: the Scorpion's arms and claws, moving on their joints (MB-SCORPION-07)
-Logical pixels, nose +Z, Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-SCORPION-03, 1-4: the Scorpion's arms and claws, moving on their joints (MB-SCORPION-07).
+
+Logical pixels, nose +Z, Y up (towards the camera).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.bosses.mini_bosses import SCORPION
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset, scaled, socket
+from game.view.bosses.scorpion_look import YELLOW
+from game.view.bosses.world_1_organic_kit import F, graft, sac, tentacle, vein_line
+from game.view.enemies.enemy_shapes import flip_x
+from render.geometry.organic import organ
+from render.geometry.solids import Placement
 
-from game.config.bosses.mini_bosses import SCORPION  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset, scaled, socket  # noqa: E402
-from game.view.bosses.scorpion_look import YELLOW  # noqa: E402
-from game.view.bosses.world_1_organic_kit import F, graft, sac, tentacle, vein_line  # noqa: E402
-from game.view.enemies.enemy_shapes import flip_x  # noqa: E402
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 M = ENEMY_LOOK.hull
 
@@ -91,7 +94,7 @@ CLAW_BARREL = 13
 
 
 def _knuckle() -> list[Any]:
-    """The knuckle: an octagon of radius 9 by 8, shifted back by 4."""
+    """Return the knuckle: an octagon of radius 9 by 8, shifted back by 4."""
     result: list[Any] = []
     for k in range(8):
         a = (2 * math.pi * (k + 0.5)) / 8
@@ -117,8 +120,10 @@ def _on_side(s: float, outline: list[Any]) -> list[Any]:
 
 
 def upper_arm(s: float) -> Any:
-    """An upper arm (side `s`), on its shoulder joint: its bed and armour plate, its light, and the
-    machinery seen at the elbow (its cog, a ram and a lit conduit)."""
+    """Return an upper arm (side `s`), on its shoulder joint: its bed and armour plate, its light.
+
+    And the machinery seen at the elbow (its cog, a ram and a lit conduit).
+    """
 
     def draw(p: Any) -> None:
         p.flesh.bevel_slab(_on_side(s, UPPER_ARM), [-1.5, -0.5, 1.5], [0.8, 1.2], F.sinew)
@@ -141,8 +146,10 @@ def upper_arm(s: float) -> Any:
 
 
 def forearm(s: float) -> Any:
-    """A forearm (side `s`), on its elbow joint: its bed, armour plate, light, ram and claw
-    socket."""
+    """Return a forearm (side `s`), on its elbow joint.
+
+    Its bed, armour plate, light, ram and claw socket.
+    """
 
     def draw(p: Any) -> None:
         p.flesh.bevel_slab(_on_side(s, FOREARM), [-1.5, -0.5, 1.5], [0.8, 1.2], F.sinew)
@@ -164,8 +171,10 @@ def forearm(s: float) -> Any:
 
 
 def arm_limbs(side: str) -> Any:
-    """The limbs of the arm on `side` (phase 7 review): the upper arm on the shoulder, the forearm
-    on the elbow, and the claw's jaws on their hinges, going with the claw."""
+    """Return the limbs of the arm on `side` (phase 7 review): the upper arm on the shoulder.
+
+    The forearm on the elbow, and the claw's jaws on their hinges, going with the claw.
+    """
     s = 1 if side == "left" else -1
     claw_id = "claw-" + side
     at = boss_point(0, 0)
@@ -187,7 +196,7 @@ def arm_limbs(side: str) -> Any:
 
 
 def _jaw_drawing(at: Vec3, jaw: list[Any]) -> Any:
-    """A jaw of the claw at `at`, as a limb's drawing."""
+    """Return a jaw of the claw at `at`, as a limb's drawing."""
 
     def draw(p: Any) -> None:
         draw_jaw(p, at, jaw)
@@ -196,8 +205,11 @@ def _jaw_drawing(at: Vec3, jaw: list[Any]) -> Any:
 
 
 def claw_place(at: Vec3) -> list[Any]:
-    """How a claw centred on `at` (side from its X) is drawn: its scale, its placement (scaled,
-    turned a little towards the head) and `put`, a point of its own frame in model space."""
+    """How a claw centred on `at` (side from its X) is drawn: its scale.
+
+    Its placement (scaled, turned a little towards the head) and `put`, a point of its own frame in
+    model space.
+    """
     s = _sign(at[0])
     k = CLAW_SCALE["left"] if s > 0 else CLAW_SCALE["right"]
     # Turned a little towards the centre line, so the claws close in front of the head.
@@ -224,9 +236,12 @@ def draw_jaw(p: Any, at: Vec3, jaw: list[Any]) -> None:
 
 
 def claw(p: Any, at: Vec3) -> None:
-    """A claw cannon (MB-SCORPION-03), on its wrist joint: a swollen knuckle under a grafted cap,
-    a cannon between its two pincers (drawn on their own hinges, `draw_jaw`), and the sinews that
-    work them. The left (+X) claw is the bigger one, a fiddler crab's (MB-SCORPION-02)."""
+    """Add a claw cannon (MB-SCORPION-03), on its wrist joint.
+
+    A swollen knuckle under a grafted cap, a cannon between its two pincers (drawn on their own
+    hinges, `draw_jaw`), and the sinews that work them. The left (+X) claw is the bigger one, a
+    fiddler crab's (MB-SCORPION-02).
+    """
     placed = claw_place(at)
     k = placed[0]
     place = placed[1]

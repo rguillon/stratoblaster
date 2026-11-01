@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_4/bosses.py`."""
 
 from helpers.config_checks import assert_world_bosses

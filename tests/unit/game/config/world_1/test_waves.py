@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_1/waves.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
@@ -22,7 +25,7 @@ SCRIPTS = [WAVES_1_1, WAVES_1_2, WAVES_1_3, WAVES_1_4, WAVES_1_5]
 
 
 @pytest.mark.parametrize("beats", SCRIPTS)
-def test_wld_1_19_each_beat_names_a_kind_and_a_side_in_order(beats) -> None:
+def test_wld_1_19_each_beat_names_a_kind_and_a_side_in_order(beats: Any) -> None:
     """Each level's written beats (LVL-1-1-09 … LVL-1-5-09), of known kinds (WLD-1-17)."""
     assert_beats_well_formed(beats, KINDS)
 

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/lightning.py`."""
 
 import pytest
@@ -16,7 +17,7 @@ from core.scenery.lightning import (
 
 
 def rules(**overrides: object) -> LightningRules:
-    """The engine's lightning, with some values replaced."""
+    """Return the engine's lightning, with some values replaced."""
     values: dict[str, object] = {
         "gap": [4, 10],
         "flash": 0.15,

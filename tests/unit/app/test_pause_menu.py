@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/pause_menu.py`."""
 # (UI-PAUSE-07, UI-PAUSE-08, UI-PAUSE-10).
 
@@ -113,5 +114,5 @@ def test_ui_pause_07_opening_the_menu_again_resets_the_question_and_selection() 
 
 def test_ui_pause_07_a_selection_past_the_entries_reads_as_resume() -> None:
     menu = PauseMenu()
-    menu._selection = 9  # noqa: SLF001 (the guard of an out-of-range selection)
+    menu._selection = 9
     assert menu.selected_id == "resume"

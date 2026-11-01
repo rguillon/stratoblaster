@@ -1,8 +1,10 @@
-"""Unit tests of `src/render/scenery/scenery_stage.py`: its small pure helpers, then the dev
-viewer's parts (D-199) and the chunks' trees and street sources (D-212, GFX-PROP-14; D-217), on a
-stage made
-without Babylon (its fields set by hand) and the game's stage settings. The stage itself builds
-Babylon meshes and runs in the browser."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/scenery/scenery_stage.py`.
+
+Its small pure helpers, then the dev viewer's parts (D-199) and the chunks' trees and street sources
+(D-212, GFX-PROP-14; D-217), on a stage made without Babylon (its fields set by hand) and the game's
+stage settings. The stage itself builds Babylon meshes and runs in the browser.
+"""
 
 import math
 from types import SimpleNamespace
@@ -227,10 +229,10 @@ class FakeSource:
     def __init__(self) -> None:
         self.asked: list[int] = []
 
-    def request(self, spans: list[Any], look: Any, grid: bool) -> None:
+    def request(self, spans: list[Any], _look: Any, _grid: bool) -> None:
         self.asked.extend(span[0] for span in spans)
 
-    def take(self, index: int) -> Any:
+    def take(self, _index: int) -> Any:
         return None
 
 
@@ -265,7 +267,7 @@ def stage(placer: FakePlacer | None = None, tile_look: Any = None) -> ScenerySta
 
 
 def frame(s: SceneryStage, camera_z: float) -> None:
-    """What `update` does for the ground with the camera at ground Z `camera_z`."""
+    """Do what `update` does for the ground with the camera at ground Z `camera_z`."""
     margin = SCENERY_STAGE_CONFIG.margin
     s._follow_ground(camera_z, camera_z + GROUND.z_near - margin, camera_z + GROUND.z_far + margin)
 
@@ -349,8 +351,8 @@ def test_d217_a_new_seed_takes_its_street_surfaces_from_its_own_ground(
     s._road_pending.append(99)
     new_source = FakeSource()
     new_ground = SimpleNamespace(field="new field", placer=FakePlacer(tiles="tiles"))
-    monkeypatch.setattr(scenery_stage, "level_ground", lambda level, seed: new_ground)
-    monkeypatch.setattr(scenery_stage, "road_source_of", lambda ground: new_source)
+    monkeypatch.setattr(scenery_stage, "level_ground", lambda _level, _seed: new_ground)
+    monkeypatch.setattr(scenery_stage, "road_source_of", lambda _ground: new_source)
     monkeypatch.setattr(scenery_stage, "_map_keys", list)
     s.options.level = "level"
     asked_before = list(old.asked)

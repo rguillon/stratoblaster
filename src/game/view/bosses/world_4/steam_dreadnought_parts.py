@@ -1,26 +1,26 @@
-"""FB-STEAM-DREADNOUGHT-03 to FB-STEAM-DREADNOUGHT-05, 4-1: the Steam Dreadnought's parts: its two
-smokestacks, its two broadside turrets (each turning on its barbette, D-058) and the missile rack on
-its stern. Logical pixels, nose +Z, Y up; the left ones (the screen's left, -X on the playfield) are
-drawn at +X.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-STEAM-DREADNOUGHT-03 to FB-STEAM-DREADNOUGHT-05, 4-1: the Steam Dreadnought's parts.
+
+Its two smokestacks, its two broadside turrets (each turning on its barbette, D-058) and the missile
+rack on its stern. Logical pixels, nose +Z, Y up; the left ones (the screen's left, -X on the
+playfield) are drawn at +X.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.steam_dreadnought import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.steam_dreadnought import (
     DREAD_HEIGHTS,
     DREAD_RACK,
     DREAD_STACK,
     DREAD_TURRET_GUNS,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_shapes import missile_tips  # noqa: E402
-from game.view.bosses.mini_boss_greebles import hazard  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_shapes import missile_tips
+from game.view.bosses.mini_boss_greebles import hazard
+from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset
+from game.view.bosses.world_4.black_sands_kit import (
     FORGE,
     barrel_to,
     blot,
@@ -28,23 +28,24 @@ from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
     soot,
     steam,
 )
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.world_4.living_forge import SKIN
+from render.geometry.organic import organ
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -69,7 +70,7 @@ DECK = DREAD_HEIGHTS.deck
 
 
 def side_at(at: list[float]) -> float:
-    """The side of a part drawn at `at`: +1 for a left one (at +X), -1 for a right one."""
+    """Return the side of a part drawn at `at`: +1 for a left one (at +X), -1 for a right one."""
     s = _sign(at[0])
     if s == 0:
         return 1
@@ -89,9 +90,11 @@ STACK = [
 
 
 def smokestack(p: Any, at: Vec3) -> None:
-    """A smokestack (FB-STEAM-DREADNOUGHT-03) around its centre `at`: a tall casing banded with worn
-    metal and a red neon ring, sooted at the top, its mouth glowing as the next ring loads, steam
-    puffing back from it."""
+    """Add a smokestack (FB-STEAM-DREADNOUGHT-03) around its centre `at`.
+
+    A tall casing banded with worn metal and a red neon ring, sooted at the top, its mouth glowing
+    as the next ring loads, steam puffing back from it.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -130,8 +133,10 @@ DOME = [
 
 
 def barbette(p: Any, at: Vec3) -> None:
-    """A broadside turret's mount (FB-STEAM-DREADNOUGHT-04): its armoured barbette with a red ring,
-    on the sponson."""
+    """Add a broadside turret's mount (FB-STEAM-DREADNOUGHT-04).
+
+    Its armoured barbette with a red ring, on the sponson.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -142,9 +147,11 @@ def barbette(p: Any, at: Vec3) -> None:
 
 
 def broadside(p: Any, at: Vec3) -> None:
-    """A broadside turret (FB-STEAM-DREADNOUGHT-04) around its pivot `at`: a faceted dome with a
-    mantlet, a rangefinder across its roof, twin barrels pointing down the screen at rest (they turn
-    with the turret, D-058), a molten seam on its roof."""
+    """Add a broadside turret (FB-STEAM-DREADNOUGHT-04) around its pivot `at`.
+
+    A faceted dome with a mantlet, a rangefinder across its roof, twin barrels pointing down the
+    screen at rest (they turn with the turret, D-058), a molten seam on its roof.
+    """
     hull = p.hull
     neon = p.neon
     s = side_at(at)
@@ -172,9 +179,11 @@ TUBE = 1.8
 
 
 def missile_rack(p: Any, at: Vec3) -> None:
-    """The missile rack (FB-STEAM-DREADNOUGHT-05) around its centre `at`, on the stern: an armoured
-    launcher box, red lights along its sides, four missile tips in their tubes, soot from the
-    launches."""
+    """Add the missile rack (FB-STEAM-DREADNOUGHT-05) around its centre `at`, on the stern.
+
+    An armoured launcher box, red lights along its sides, four missile tips in their tubes, soot
+    from the launches.
+    """
     hull = p.hull
     neon = p.neon
     cell_height = DREAD_RACK[0][2] if len(DREAD_RACK) > 0 else DREAD_HEIGHTS.rack

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/game_session.py`."""
 # /app/game_session.py` (DEV-OPT-04 to DEV-OPT-06, PERF-12): the debug choices on the look, the
 # level and ship a menu state names. The session itself (the level loading in steps, the Babylon
@@ -49,7 +50,7 @@ def test_dev_opt_04_without_debug_options_the_look_is_the_levels_own() -> None:
 
 def test_dev_opt_05_debug_options_force_the_time_of_day_and_weather_off_and_the_tiles() -> None:
     """Also DEV-OPT-04 and DEV-OPT-06."""
-    debug = GameDebugOptions("1-1", 0, None, None, False, "night", True)
+    debug = GameDebugOptions("1-1", 0, None, None, weather=False, time_of_day="night", tiles=True)
     options = atmosphere_of(debug)
     assert options.time_of_day == "night"
     assert options.weather is False
@@ -57,14 +58,14 @@ def test_dev_opt_05_debug_options_force_the_time_of_day_and_weather_off_and_the_
 
 
 def test_dev_opt_06_the_tile_grid_is_left_to_the_level_when_not_asked() -> None:
-    debug = GameDebugOptions("1-1", 0, None, None, None, None, False)
+    debug = GameDebugOptions("1-1", 0, None, None, None, None, tiles=False)
     options = atmosphere_of(debug)
     assert options.weather is None
     assert options.tile_grid is None
 
 
 def _session(storage: MemoryStorage | None, completed: list[object]) -> GameSession:
-    """A game session with only what its carry-over reads: the storage and the game's id."""
+    """Return a game session with only what its carry-over reads: the storage and the game's id."""
     session = GameSession.__new__(GameSession)
     session.options = SimpleNamespace(storage=storage)
     session.game = SimpleNamespace(id="game")
@@ -73,7 +74,7 @@ def _session(storage: MemoryStorage | None, completed: list[object]) -> GameSess
 
 
 def _played(phase: str, weapons: WeaponLevels, supplies: Supplies) -> SimpleNamespace:
-    """A level as its run ends: its phase, its weapons (arsenal), lives and bombs."""
+    """Return a level as its run ends: its phase, its weapons (arsenal), lives and bombs."""
     run = SimpleNamespace(
         phase=phase,
         arsenal=SimpleNamespace(snapshot=lambda: weapons),
@@ -90,9 +91,11 @@ def test_game_level_14_a_completed_level_keeps_its_weapons_lives_and_bombs() -> 
     _session(storage, completed)._completed(play)
     kept_weapons = load_saved_weapons(storage, "game")
     kept_supplies = load_saved_supplies(storage, "game")
-    assert kept_weapons is not None and kept_weapons.weapon == "laser"
+    assert kept_weapons is not None
+    assert kept_weapons.weapon == "laser"
     assert kept_weapons.levels == {"guns": 2.0, "laser": 3.0}
-    assert kept_supplies is not None and (kept_supplies.lives, kept_supplies.bombs) == (5, 7)
+    assert kept_supplies is not None
+    assert (kept_supplies.lives, kept_supplies.bombs) == (5, 7)
     assert completed == [play]
 
 
@@ -106,9 +109,11 @@ def test_game_level_14_a_game_over_keeps_nothing_new() -> None:
     _session(storage, completed)._completed(play)
     kept_weapons = load_saved_weapons(storage, "game")
     kept_supplies = load_saved_supplies(storage, "game")
-    assert kept_weapons is not None and kept_weapons.weapon == "guns"
+    assert kept_weapons is not None
+    assert kept_weapons.weapon == "guns"
     assert kept_weapons.levels == {"guns": 1.0}
-    assert kept_supplies is not None and (kept_supplies.lives, kept_supplies.bombs) == (3, 3)
+    assert kept_supplies is not None
+    assert (kept_supplies.lives, kept_supplies.bombs) == (3, 3)
     assert completed == [play]
 
 
@@ -119,10 +124,12 @@ def test_game_life_12_a_continue_keeps_the_weapons_but_not_the_supplies() -> Non
     save_supplies(storage, "game", Supplies(5, 7))
     session = _session(storage, [])
     weapons, supplies = session._kept(SimpleNamespace(resume=True))
-    assert weapons is not None and weapons.levels == {"guns": 2.0}
+    assert weapons is not None
+    assert weapons.levels == {"guns": 2.0}
     assert supplies is None
     weapons, supplies = session._kept(SimpleNamespace(resume=None))
-    assert supplies is not None and (supplies.lives, supplies.bombs) == (5, 7)
+    assert supplies is not None
+    assert (supplies.lives, supplies.bombs) == (5, 7)
 
 
 def test_game_life_12_an_unreadable_saved_supply_is_kept_as_none() -> None:

@@ -1,6 +1,8 @@
-"""Road ribbons of the terrain chunks in view, one mesh per chunk (GFX-ROAD-06). See-through meshes
-are drawn by increasing `alphaIndex`: a field of paths with a lower one than the field of roads
-keeps the roads on top where they meet. A chunk span is a `(z_min, z_max)` pair.
+# Copyright (c) 2026 Renaud Guillon
+"""Road ribbons of the terrain chunks in view, one mesh per chunk (GFX-ROAD-06).
+
+See-through meshes are drawn by increasing `alphaIndex`: a field of paths with a lower one than the
+field of roads keeps the roads on top where they meet. A chunk span is a `(z_min, z_max)` pair.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -21,16 +23,18 @@ from render.scenery.road_atlas import ATLAS_SIZE
 from render.scenery.road_chunks import RoadChunk
 from render.scenery.road_geometry import RoadLook, build_road_geometry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
 
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road
+from core.scenery.scenery_level import TileRules
+from render.scenery.terrain_geometry import HeightSource
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Depth offset of the opaque middles of the streets (GFX-ROAD-22): pulled towards the camera less
 # than the see-through ribbons and lane markings (-2), which stay on top of them.
@@ -46,7 +50,10 @@ _WINDING_SLOT = "render_road_winding"
 
 
 def _slot_get(owner: Any, slot: str) -> Any:
-    """The value kept on `owner` under `slot`, or undefined (a WeakMap entry keyed by the list)."""
+    """Return the value kept on `owner` under `slot`, or undefined.
+
+    A WeakMap entry keyed by the list.
+    """
     __pragma__("js", "{}", "return owner[slot];")
     return None
 
@@ -56,8 +63,7 @@ def _slot_set(owner: Any, slot: str, value: Any) -> None:
 
 
 class RoadField:
-    """Road ribbons of one kind, one mesh per terrain chunk (by chunk index, in insertion
-    order)."""
+    """Road ribbons of one kind, one mesh per terrain chunk (by index, in insertion order)."""
 
     def __init__(
         self,
@@ -68,8 +74,10 @@ class RoadField:
         see_through: bool = True,
     ) -> None:
         """`alpha_index`: draw order among the see-through meshes (the sea is 0, clouds above).
+
         `see_through`: whether the ribbons fade with their vertex alpha (else they are drawn
-        opaque)."""
+        opaque).
+        """
         self._scene = scene
         self._material = material
         self._name = name
@@ -90,12 +98,12 @@ class RoadField:
         return -1
 
     def mesh(self, index: int) -> Any:
-        """The mesh of chunk `index`, if it has one."""
+        """Return the mesh of chunk `index`, if it has one."""
         i = self._position(index)
         return self._meshes[i] if i >= 0 else None
 
     def set_chunk(self, index: int, geometry: ColoredGeometry) -> None:
-        """Makes (or replaces) the mesh of chunk `index` from `geometry`."""
+        """Make (or replace) the mesh of chunk `index` from `geometry`."""
         self.remove_chunk(index)
         if len(geometry.indices) == 0:
             return
@@ -119,6 +127,7 @@ class RoadField:
         self._meshes.append(mesh)
 
     def remove_chunk(self, index: int) -> None:
+        """Remove chunk."""
         i = self._position(index)
         if i >= 0:
             dispose_node(self._meshes[i])
@@ -126,6 +135,7 @@ class RoadField:
             self._meshes.pop(i)
 
     def clear(self) -> None:
+        """Clear."""
         for index in list(self._indices):
             self.remove_chunk(index)
 
@@ -140,7 +150,7 @@ class SplitRoads:
 
 
 def _split_roads(roads: Sequence[Road]) -> SplitRoads:
-    """The roads split once per list (PERF-24)."""
+    """Return the roads split once per list (PERF-24)."""
     split = _slot_get(roads, _SPLIT_SLOT)
     if not split:
         paths = [r for r in roads if r.kind == "cross"]
@@ -156,17 +166,18 @@ def _split_roads(roads: Sequence[Road]) -> SplitRoads:
 
 
 def _opaque_of(material: Any) -> Any:
-    """The road material, opaque: written in depth, so the terrain under it is not shaded."""
+    """Return the road material, opaque: written in depth, so the terrain under it is not shaded."""
     cloned = material.clone(node_name(material) + "-opaque")
-    opaque = cloned if cloned else material
+    opaque = cloned or material
     opaque.disableDepthWrite = False
     opaque.zOffset = STREET_Z_OFFSET
     return opaque
 
 
 class RoadLayers:
-    """The ribbons of the paths and of the main roads, in two fields: the paths are drawn first, so
-    the roads stay on top where they meet (phase 4 review). Where all the roads are streets, the
+    """The ribbons of the paths and of the main roads, in two fields: the paths are drawn first.
+
+    So the roads stay on top where they meet (phase 4 review). Where all the roads are streets, the
     even middles of the streets are a third field, drawn opaque before the see-through ones and
     hiding the terrain under them (reviewer, 2026-10-28); their soft edges and markings stay in the
     roads' field, drawn over them. Elsewhere a street drawn before a road or a path would end up
@@ -174,7 +185,8 @@ class RoadLayers:
 
     Phase 15 (experiment): the street pieces are textured surfaces, one atlas per road look, each
     version uploaded once (GFX-ROAD-21), and `show_tile_grid` draws the grid of tiles over the
-    districts."""
+    districts.
+    """
 
     def __init__(self, scene: Any, material: Any) -> None:
         self._scene = scene
@@ -190,7 +202,7 @@ class RoadLayers:
         self._atlas_version = 0
 
     def _show_atlas(self, pixels: Any) -> None:
-        """The road atlas's pixels on the surfaces' texture: made once, then updated."""
+        """Show the road atlas's pixels on the surfaces' texture: made once, then updated."""
         if self._atlas_texture is None:
             texture = raw_rgba_texture(
                 pixels,
@@ -212,7 +224,7 @@ class RoadLayers:
         return max(self._roads.count, self._paths.count)
 
     def streets_of(self, index: int) -> Any:
-        """The opaque middles of the streets of a chunk, if drawn apart."""
+        """Return the opaque middles of the streets of a chunk, if drawn apart."""
         return self._streets.mesh(index)
 
     def set_chunk(
@@ -224,8 +236,10 @@ class RoadLayers:
         look: RoadLook,
         tiles: TileRules | None = None,
     ) -> None:
-        """Ribbons of the segments of `roads` that start in the chunk's Z range (`span`); with
-        `tiles` (phase 15), the streets are road pieces on the grid instead, opaque."""
+        """Ribbons of the segments of `roads` that start in the chunk's Z range (`span`).
+
+        With `tiles` (phase 15), the streets are road pieces on the grid instead, opaque.
+        """
         if tiles is not None and look.tiles is not None:
             self._set_tile_ribbons(index, roads, ground, span, look)
             return
@@ -250,8 +264,10 @@ class RoadLayers:
         span: tuple[float, float],
         look: RoadLook,
     ) -> None:
-        """The paths and the other roads of a chunk (the tile path's ribbons); its street surfaces
-        come with `set_tile_chunk`."""
+        """Set the paths and the other roads of a chunk (the tile path's ribbons).
+
+        Its street surfaces come with `set_tile_chunk`.
+        """
         split = _split_roads(roads)
         others = _slot_get(roads, _WINDING_SLOT)
         if not others:
@@ -262,8 +278,11 @@ class RoadLayers:
         self._roads.set_chunk(index, build_road_geometry(others, ground, z_min, z_max, look))
 
     def set_tile_chunk(self, index: int, chunk: RoadChunk) -> None:
-        """The street surfaces of a chunk, made by `road_chunks` (in the worker or here), with the
-        road atlas's latest pixels (uploaded when their version is new here)."""
+        """Set the street surfaces of a chunk and the road atlas's latest pixels.
+
+        The surfaces are made by `road_chunks` (in the worker or here); the atlas's pixels are
+        uploaded when their version is new here.
+        """
         if chunk.atlas is not None and chunk.atlas_version != self._atlas_version:
             self._show_atlas(chunk.atlas)
             self._atlas_version = chunk.atlas_version
@@ -273,8 +292,7 @@ class RoadLayers:
             self._grid.set_chunk(index, chunk.grid)
 
     def show_tile_grid(self) -> None:
-        """Phase 15 (DEV-OPT-06, `tiles=1`): draws the grid of tiles over the districts from now
-        on."""
+        """Phase 15 (DEV-OPT-06, `tiles=1`): draws the tile grid over the districts from now on."""
         if self._grid is None:
             self._grid = RoadField(self._scene, self._grid_material(), "tile-grid", 0, False)
 
@@ -287,6 +305,7 @@ class RoadLayers:
         return material
 
     def remove_chunk(self, index: int) -> None:
+        """Remove chunk."""
         if self._grid is not None:
             self._grid.remove_chunk(index)
         self._surfaces.remove_chunk(index)
@@ -295,8 +314,10 @@ class RoadLayers:
         self._streets.remove_chunk(index)
 
     def clear(self) -> None:
-        """Removes every chunk; the next atlas is uploaded whatever its version (its source may
-        be another one, whose versions count from 1 again)."""
+        """Remove every chunk; the next atlas is uploaded whatever its version.
+
+        Its source may be another one, whose versions count from 1 again.
+        """
         self._atlas_version = 0
         if self._grid is not None:
             self._grid.clear()

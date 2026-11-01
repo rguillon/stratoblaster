@@ -1,6 +1,10 @@
-"""A small fake DOM for the UI tests (ENG-47): elements with a class list, attributes, listeners
-and children, enough to read what a screen renders and to fire the events its handlers listen to.
-Only the calls the game makes are modelled (the browser is not run)."""
+# Copyright (c) 2026 Renaud Guillon
+"""A small fake DOM for the UI tests (ENG-47).
+
+Elements with a class list, attributes, listeners and children, enough to read what a screen renders
+and to fire the events its handlers listen to. Only the calls the game makes are modelled (the
+browser is not run).
+"""
 
 import inspect
 from collections.abc import Callable
@@ -57,7 +61,9 @@ class FakeClassList:
 
 
 class FakeRect:
-    def __init__(self, left: float = 0, top: float = 0, width: float = 0, height: float = 0):
+    def __init__(
+        self, left: float = 0, top: float = 0, width: float = 0, height: float = 0
+    ) -> None:
         self.left = left
         self.top = top
         self.width = width
@@ -66,38 +72,40 @@ class FakeRect:
 
 class FakeComputedStyle:
     def __init__(self, font_size: str = "16px") -> None:
-        self.fontSize = font_size  # noqa: N815 (DOM name)
+        self.fontSize = font_size
 
 
 class FakeView:
-    """The `defaultView` of the document: `getComputedStyle`, which reports the element's own
-    font size when one was set (or 16 px)."""
+    """The `defaultView` of the document: `getComputedStyle`.
 
-    def getComputedStyle(self, element: "FakeElement") -> FakeComputedStyle:  # noqa: N802
+    It reports the element's own font size when one was set (or 16 px).
+    """
+
+    def getComputedStyle(self, element: "FakeElement") -> FakeComputedStyle:
         size = element.style.fontSize
-        return FakeComputedStyle(size if size else "16px")
+        return FakeComputedStyle(size or "16px")
 
 
 class FakeElement:
     """An element: tag, class name, text, style, attributes, children, listeners."""
 
     def __init__(self, doc: "FakeDocument", tag: str, namespace: str | None = None) -> None:
-        self.ownerDocument = doc  # noqa: N815 (DOM name)
+        self.ownerDocument = doc
         self.tagName = tag
         self.namespace = namespace
         self.className = ""
         self.textContent = ""
         self.style = FakeStyle()
         self.dataset = FakeStyle()
-        self.classList = FakeClassList(self)  # noqa: N815 (DOM name)
+        self.classList = FakeClassList(self)
         self.hidden = False
         self.value: Any = None
-        self.clientWidth = 0  # noqa: N815
-        self.scrollWidth = 0  # noqa: N815
-        self.offsetWidth = 0  # noqa: N815
-        self.clientX = 0  # noqa: N815
-        self.clientY = 0  # noqa: N815
-        self.parentElement: FakeElement | None = None  # noqa: N815
+        self.clientWidth = 0
+        self.scrollWidth = 0
+        self.offsetWidth = 0
+        self.clientX = 0
+        self.clientY = 0
+        self.parentElement: FakeElement | None = None
         self.children: list[FakeElement] = []
         self.attributes: dict[str, str] = {}
         self.listeners: dict[str, list[Callable[..., Any]]] = {}
@@ -105,7 +113,7 @@ class FakeElement:
         self.stopped = 0
 
     @property
-    def childNodes(self) -> list["FakeElement"]:  # noqa: N802
+    def childNodes(self) -> list["FakeElement"]:
         return list(self.children)
 
     def append(self, *nodes: "FakeElement") -> None:
@@ -115,7 +123,7 @@ class FakeElement:
             node.parentElement = self
             self.children.append(node)
 
-    def replaceChildren(self, *nodes: "FakeElement") -> None:  # noqa: N802
+    def replaceChildren(self, *nodes: "FakeElement") -> None:
         for child in self.children:
             child.parentElement = None
         self.children = []
@@ -126,21 +134,21 @@ class FakeElement:
             self.parentElement.children.remove(self)
             self.parentElement = None
 
-    def setAttribute(self, name: str, value: Any) -> None:  # noqa: N802
+    def setAttribute(self, name: str, value: Any) -> None:
         self.attributes[name] = str(value)
         if name == "class":
             self.className = str(value)
 
-    def getAttribute(self, name: str) -> str | None:  # noqa: N802
+    def getAttribute(self, name: str) -> str | None:
         return self.attributes.get(name)
 
-    def getBoundingClientRect(self) -> FakeRect:  # noqa: N802
+    def getBoundingClientRect(self) -> FakeRect:
         return self.rect
 
-    def addEventListener(self, kind: str, listener: Callable[..., Any]) -> None:  # noqa: N802
+    def addEventListener(self, kind: str, listener: Callable[..., Any]) -> None:
         self.listeners.setdefault(kind, []).append(listener)
 
-    def removeEventListener(self, kind: str, listener: Callable[..., Any]) -> None:  # noqa: N802
+    def removeEventListener(self, kind: str, listener: Callable[..., Any]) -> None:
         self.listeners.get(kind, []).remove(listener)
 
     def listener_count(self, kind: str) -> int:
@@ -160,8 +168,11 @@ class FakeElement:
             found.extend(child.descendants())
         return found
 
-    def querySelector(self, selector: str) -> "FakeElement | None":  # noqa: N802
-        """A selector of one simple part: `.class`, `.a.b` or `tag`, or `.a .b` (descendant)."""
+    def querySelector(self, selector: str) -> "FakeElement | None":
+        """Return the first descendant matching `selector`, or None.
+
+        The selector is of one simple part: `.class`, `.a.b` or `tag`, or `.a .b` (descendant).
+        """
         parts = selector.split()
         if len(parts) > 1:
             head = self.querySelector(parts[0])
@@ -171,13 +182,16 @@ class FakeElement:
                 return node
         return None
 
-    def querySelectorAll(self, selector: str) -> list["FakeElement"]:  # noqa: N802
+    def querySelectorAll(self, selector: str) -> list["FakeElement"]:
         return [node for node in self.descendants() if _matches(node, selector)]
 
 
 def _call_listener(listener: Callable[..., Any], event: Any) -> None:
-    """Calls a listener with the event, as the browser does. A JavaScript function ignores the
-    arguments it does not name, so a listener that takes none is called with none."""
+    """Call a listener with the event, as the browser does.
+
+    A JavaScript function ignores the arguments it does not name, so a listener that takes none is
+    called with none.
+    """
     if len(inspect.signature(listener).parameters) == 0:
         listener()
     else:
@@ -196,11 +210,11 @@ class FakeEvent:
 
     def __init__(self, target: FakeElement | None = None, x: float = 0, y: float = 0) -> None:
         self.target = target
-        self.clientX = x  # noqa: N815
-        self.clientY = y  # noqa: N815
+        self.clientX = x
+        self.clientY = y
         self.stopped = False
 
-    def stopPropagation(self) -> None:  # noqa: N802
+    def stopPropagation(self) -> None:
         self.stopped = True
 
 
@@ -208,15 +222,15 @@ class FakeDocument:
     """The document: element factories and the default view."""
 
     def __init__(self) -> None:
-        self.defaultView = FakeView()  # noqa: N815
+        self.defaultView = FakeView()
         self.created: list[FakeElement] = []
 
-    def createElement(self, tag: str) -> FakeElement:  # noqa: N802
+    def createElement(self, tag: str) -> FakeElement:
         element = FakeElement(self, tag)
         self.created.append(element)
         return element
 
-    def createElementNS(self, namespace: str, tag: str) -> FakeElement:  # noqa: N802
+    def createElementNS(self, namespace: str, tag: str) -> FakeElement:
         element = FakeElement(self, tag, namespace)
         self.created.append(element)
         return element

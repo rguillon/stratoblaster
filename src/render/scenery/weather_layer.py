@@ -1,5 +1,7 @@
-"""The weather of a scenery stage (GFX-WEATHER-02): particles of its kind, falling through the air
-between the ground and the flight altitude.
+# Copyright (c) 2026 Renaud Guillon
+"""The weather of a scenery stage (GFX-WEATHER-02): particles of its kind.
+
+Falling through the air between the ground and the flight altitude.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -11,12 +13,14 @@ from render.babylon import apply_vertex_data, babylon_class, new_mesh, set_enabl
 from render.scenery.cloud_layers import BELOW_CLOUDS_GROUP
 from render.scenery.scenery_kit import FogState
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, Protocol
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Draw order among the see-through meshes above the ground: after both cloud layers.
 WEATHER_ALPHA_INDEX = 4
@@ -30,8 +34,10 @@ class WeatherView:
     def __init__(
         self, time: float, camera_position: Any, right: Any, up: Any, start: float
     ) -> None:
-        """`right` and `up`: the camera's directions, to face the particles to it. `start`: Z where
-        the box of air they fill starts (it follows the view, they stay put)."""
+        """`right` and `up` are the camera's directions, used to face the particles.
+
+        `start`: Z where the box of air they fill starts (it follows the view, they stay put).
+        """
         self.time = time
         self.camera_position = camera_position
         self.right = right
@@ -42,7 +48,7 @@ class WeatherView:
 class WeatherFrame:
     """What the particles of a weather show on one frame (GFX-WEATHER-03)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         time: float,
         strength: float,
@@ -70,7 +76,8 @@ class WeatherMaterial(Protocol):
 
     material: Any
 
-    def set(self, frame: WeatherFrame) -> None: ...
+    def set(self, frame: WeatherFrame) -> None:
+        """Set."""
 
 
 WeatherMaterialFactory = Callable[[Any, Any], WeatherMaterial]
@@ -87,10 +94,12 @@ def _draw_first(mesh: Any, count: int) -> None:
 
 
 def _build_particles(scene: Any, kind_id: str, kind: Any, material: Any) -> Any:
-    """The particles of a weather kind (GFX-WEATHER-02): one mesh of `max_particles` small quads,
-    each with its own random place in the box of air, depth, size and fall speed (the `flake`
-    attribute); the material moves them on the GPU, so nothing is uploaded per frame. Only the
-    first `weather_particles` of them are drawn."""
+    """Return the particles of a weather kind (GFX-WEATHER-02).
+
+    One mesh of `max_particles` small quads, each with its own random place in the box of air,
+    depth, size and fall speed (the `flake` attribute); the material moves them on the GPU, so
+    nothing is uploaded per frame. Only the first `weather_particles` of them are drawn.
+    """
     count = kind.max_particles
     random = create_rng(len(kind_id) * 7919 + count)
     positions: list[float] = []
@@ -103,8 +112,7 @@ def _build_particles(scene: Any, kind_id: str, kind: Any, material: Any) -> Any:
             positions.append(corner[0])
             positions.append(corner[1])
             positions.append(0)
-            for value in flake:
-                flakes.append(value)
+            flakes.extend(flake)
         v = i * 4
         indices.extend([v, v + 1, v + 2, v, v + 2, v + 3])
     mesh = new_mesh("weather-" + kind_id, scene)
@@ -129,10 +137,13 @@ class _ParticleLayer:
 
 
 class WeatherLayer:
-    """The weather of a level: the particles of its kind (phase 10: of both its kinds,
-    GFX-WEATHER-15), as many as its strength asks (GFX-WEATHER-03), falling through the air between
-    the ground and the flight altitude, behind everything on the playfield (GFX-WEATHER-04). It is
-    only a look: nothing in the simulation reads it."""
+    """The weather of a level: the particles of its kind, falling through the air.
+
+    The particles of its kind (phase 10: of both its kinds, GFX-WEATHER-15), as many as its strength
+    asks (GFX-WEATHER-03), falling through the air between the ground and the flight altitude,
+    behind everything on the playfield (GFX-WEATHER-04). It is only a look: nothing in the
+    simulation reads it.
+    """
 
     def __init__(
         self, scene: Any, materials: WeatherMaterialFactory, kinds: Any = WEATHER_KINDS
@@ -149,11 +160,12 @@ class WeatherLayer:
         return self._drawn
 
     def update(self, atmosphere: Any, view: WeatherView) -> None:
-        """Shows the weather of `atmosphere` for this frame (phase 10: its second weather too)."""
-        weathers = []
-        for weather in [atmosphere.weather, atmosphere.second_weather]:
-            if weather and weather_particles(weather) > 0 and self._kinds.get(weather.kind):
-                weathers.append(weather)
+        """Show the weather of `atmosphere` for this frame (phase 10: its second weather too)."""
+        weathers = [
+            weather
+            for weather in [atmosphere.weather, atmosphere.second_weather]
+            if weather and weather_particles(weather) > 0 and self._kinds.get(weather.kind)
+        ]
         for layer_id, layer in self._layers.items():
             shown = False
             for weather in weathers:

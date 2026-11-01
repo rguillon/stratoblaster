@@ -1,24 +1,24 @@
-"""Moves a selection index in a grid of entries (UI-SHIP-04, UI-LEVEL-05)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Moves a selection index in a grid of entries (UI-SHIP-04, UI-LEVEL-05)."""
 
-from org.transcrypt.stubs.browser import __pragma__
+import math
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal
 
 CursorDirection = Literal["up", "down", "left", "right"]
-
-__pragma__("noskip")
-
-import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class GridShape:
     """Layout of selectable entries, filled row by row."""
 
     def __init__(self, count: int, columns: int, wrap: bool) -> None:
-        """`count` is the number of entries; `columns` the entries per row; `wrap`: when true,
-        moving past an edge comes back on the other side of the row or column.
+        """`count` is the number of entries; `columns` the entries per row; `wrap`: when true.
+
+        Moving past an edge comes back on the other side of the row or column.
         """
         self.count = count
         self.columns = columns
@@ -33,13 +33,15 @@ def _step(value: int, delta: int, size: int, wrap: bool) -> int:
 
 
 def move_cursor(index: int, direction: CursorDirection, shape: GridShape) -> int:
-    """Moves a selection index in a grid of entries. A move that would land on a missing entry
-    (short last row) leaves the selection where it is.
+    """Move a selection index in a grid of entries.
+
+    A move that would land on a missing entry (short last row) leaves the selection where it is.
     """
     if shape.count <= 0:
         return 0
     if shape.columns <= 0:
-        raise ValueError("A grid with entries needs at least one column")
+        msg = "A grid with entries needs at least one column"
+        raise ValueError(msg)
     rows = math.ceil(shape.count / shape.columns)
     row = math.floor(index / shape.columns)
     column = index % shape.columns

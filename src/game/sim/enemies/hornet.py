@@ -1,43 +1,50 @@
-"""The Hornet (`specs/enemies/hornet.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Hornet (`specs/enemies/hornet.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal, Protocol
 
-from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext, EnemyStats
 
 
 class HornetConfig(Protocol):
     """The entry of the tunables a Hornet is built from (see `hornet_options`)."""
 
     @property
-    def stats(self) -> EnemyStats: ...
+    def stats(self) -> EnemyStats:
+        """The Hornet's stats block."""
 
     @property
-    def entrySpeed(self) -> float | None: ...  # noqa: N802 (config field, as in TS)
+    def entrySpeed(self) -> float | None:
+        """The entry speed, when set."""
 
     @property
-    def entryBrake(self) -> float | None: ...  # noqa: N802 (config field, as in TS)
+    def entryBrake(self) -> float | None:
+        """The braking on entry, when set."""
 
     @property
-    def pause(self) -> float: ...
+    def pause(self) -> float:
+        """The pause before the dive, in seconds."""
 
     @property
-    def diveAcceleration(self) -> float: ...  # noqa: N802 (config field, as in TS)
+    def diveAcceleration(self) -> float:
+        """The acceleration of the dive."""
 
     @property
-    def diveMaxSpeed(self) -> float: ...  # noqa: N802 (config field, as in TS)
+    def diveMaxSpeed(self) -> float:
+        """The top speed of the dive."""
 
 
 HornetState = Literal["enter", "aim", "dive"]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # How fast the nose eases in on the player: turn rate per radian left to turn, per second.
 TURN_EASE = 14
@@ -47,13 +54,14 @@ NO_BRAKE = 1.7976931348623157e308
 
 
 class HornetOptions:
-    """How a `Hornet` moves. `stop_y` is the height where it stops before the dive; None means it
-    starts with the pause. `entry_brake` is the deceleration into the stop, so it slows down
-    instead of halting at once. The dive starts from rest and gathers speed at
-    `dive_acceleration` (phase 5 review: no jolt).
+    """How a `Hornet` moves.
+
+    `stop_y` is the height where it stops before the dive; None means it starts with the pause.
+    `entry_brake` is the deceleration into the stop, so it slows down instead of halting at once.
+    The dive starts from rest and gathers speed at `dive_acceleration` (phase 5 review: no jolt).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         stats: EnemyStats,
         stop_y: float | None,
@@ -73,9 +81,10 @@ class HornetOptions:
 
 
 def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
-    """The options of a Hornet built from a config entry (its `stats`, `pause`, dive and entry
-    values), with `stop_y` (None: it starts with the pause, as a launched Hornet does,
-    ENM-HORNET-08).
+    """Return the options of a Hornet built from a config entry.
+
+    Its `stats`, `pause`, dive and entry values, with `stop_y` (None: it starts with the pause, as a
+    launched Hornet does, ENM-HORNET-08).
     """
     return HornetOptions(
         cfg.stats,
@@ -89,7 +98,10 @@ def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
 
 
 class Hornet(Enemy):
-    """A diver. It flies down to its stop height, braking into it (ENM-HORNET-04), stops for
+    """A diver.
+
+    It flies down to its stop height, braking into it (ENM-HORNET-04), stops for.
+
     `pause` seconds while turning its nose to the player (ENM-HORNET-05), then dives in a straight
     line towards where the player was at the end of the pause, accelerating from rest, until it
     leaves the screen (ENM-HORNET-06). It does not shoot (ENM-HORNET-07). Splitter pods
@@ -106,6 +118,7 @@ class Hornet(Enemy):
         self._speed = 0.0
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self._enter(ctx, dt)
         elif self.state == "aim":
@@ -127,7 +140,7 @@ class Hornet(Enemy):
             self.state = "aim"
 
     def _turn_to_player(self, ctx: EnemyContext, dt: float) -> float:
-        """Turns the nose to the player, easing in as it gets there; returns its heading."""
+        """Turn the nose to the player, easing in as it gets there; return its heading."""
         target = heading_to(self.x, self.y, ctx.player_x, ctx.player_y)
         left = abs(wrap_angle(target - self.heading))
         # Fast enough to turn all the way round during the pause, slowing down near the end.

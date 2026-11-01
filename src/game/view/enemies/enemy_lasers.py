@@ -1,39 +1,42 @@
-"""The enemies' lasers: a blinking warning line (GFX-SHOT-16), then a beam with a flare at its
-base (GFX-SHOT-17), in the colour of their style (phase 8 review)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The enemies' lasers: a blinking warning line, then a beam with a flare at its base.
+
+A warning line blinks (GFX-SHOT-16), then the beam is drawn (GFX-SHOT-17), in the colour of their
+style (phase 8 review).
+"""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Rgb = list[float]
-__pragma__("noskip")
-
-from core.math.color import fold_into_family  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.color import fold_into_family
+from game.config.boss_look import BOSS_LOOK
+from game.config.enemy_look import (
     ENEMY_LOOK,
     laser_palette,
 )
-from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.reactor_flame import flicker  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shot_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.readability import READABILITY
+from game.view.reactor_flame import flicker
+from game.view.shot_geometry import (
     build_glow_bar,
     build_glow_disc,
 )
-from game.view.shots.shot_meshes import additive_template  # noqa: E402, E501 (after the Transcrypt skip block, ENG-153)
-from render.babylon import node_name  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template
+from render.babylon import node_name
+from render.node_adopter import ON_TOP_ALPHA_INDEX
+from render.node_pool import NodePool
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
+
+from game.config.record import fields_of, record
+
+type Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 LOOK = ENEMY_LOOK.laser
 
@@ -49,15 +52,18 @@ class LaserPools:
 
 
 def color_of(style: str) -> Sequence[float]:
-    """The colour of the lasers of `style` (GFX-SHOT-18): a boss's neon (BOSS-32), or the Lancer's
-    (phase 8 review), moved into the enemy shots' colour family (GFX-READ-06)."""
+    """Return the colour of the lasers of `style` (GFX-SHOT-18).
+
+    A boss's neon (BOSS-32), or the Lancer's (phase 8 review), moved into the enemy shots' colour
+    family (GFX-READ-06).
+    """
     neon = BOSS_LOOK.neon[style]
-    color = neon if neon != None else LOOK.color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    color = neon if neon != None else LOOK.color
     return fold_into_family(color, READABILITY.families.enemyShot)
 
 
 def contrast_warning(color: Sequence[float]) -> list[Rgb]:
-    """A warning line with a white core, standing out over red grounds (GFX-READ-11)."""
+    """Return a warning line with a white core, standing out over red grounds (GFX-READ-11)."""
     r = color[0]
     g = color[1]
     b = color[2]
@@ -80,13 +86,15 @@ def with_warning(base: Any, warning: list[Rgb]) -> Any:
 
 
 def pool_of(template: Any) -> Any:
-    """A pool of clones of `template`, named after it and their index (factory: no loop
-    closure)."""
+    """Return a pool of clones of `template`, named after it and their index.
+
+    It is a factory: no loop closure.
+    """
     return NodePool(lambda i: template.clone(node_name(template) + "-" + str(i)))
 
 
 def lasers_of(scene: Any, style: str, contrast: bool) -> LaserPools:
-    """The pools of the lasers of one style (their templates, clones and warning colour)."""
+    """Return the pools of the lasers of one style (their templates, clones and warning colour)."""
     base = laser_palette(color_of(style))
     palette = with_warning(base, contrast_warning(color_of(style))) if contrast else base
 
@@ -116,8 +124,10 @@ def lasers_of(scene: Any, style: str, contrast: bool) -> LaserPools:
 
 
 def sync_warnings(pool: Any, warnings: list[Any], time: float, width: float) -> None:
-    """The warning lines, blinking: drawn at full or half width (a thin blinking line, not taken
-    for a bullet, GFX-READ-12)."""
+    """Add the warning lines, blinking: drawn at full or half width.
+
+    A thin blinking line, not taken for a bullet (GFX-READ-12).
+    """
     blink = 1 if math.sin(2 * math.pi * LOOK.warning.blinkHz * time) > 0 else 0.5
     shown = pool.show(len(warnings))
     for i, mesh in enumerate(shown):
@@ -130,8 +140,10 @@ def sync_warnings(pool: Any, warnings: list[Any], time: float, width: float) -> 
 
 
 def sync_beams(pools: LaserPools, beams: list[Any], time: float) -> None:
-    """The beams, and a pulsing flare where each leaves, as the player's laser's: bigger for wider
-    beams, stretched along the beam."""
+    """Add the beams, each with a pulsing flare where it leaves, as the player's laser's.
+
+    Bigger for wider beams, and stretched along the beam.
+    """
     wobble = 1 + LOOK.beam.flicker * flicker(time, 0, [LOOK.beam.flickerHz])
     shown = pools.beam.show(len(beams))
     for i, mesh in enumerate(shown):
@@ -155,9 +167,11 @@ def sync_beams(pools: LaserPools, beams: list[Any], time: float) -> None:
 
 
 class EnemyLasers:
-    """The enemies' lasers (GFX-SHOT-16, GFX-SHOT-17): a blinking warning line, then a beam with a
-    flare at its base, in the colour of their style (phase 8 review: each boss's lasers in its neon
-    colour)."""
+    """The enemies' lasers (GFX-SHOT-16, GFX-SHOT-17): a blinking warning line, then a beam.
+
+    The beam has a flare at its base, in the colour of their style (phase 8 review: each boss's
+    lasers in its neon colour).
+    """
 
     def __init__(self, scene: Any, contrast: bool = False) -> None:
         self.scene = scene
@@ -168,6 +182,7 @@ class EnemyLasers:
         self.pools: dict[str, LaserPools] = {}
 
     def sync(self, lasers: list[Any], time: float) -> None:
+        """Draws the lasers of this frame, one warning or beam per laser."""
         for laser in lasers:
             style = laser.spec.style
             if style not in self.style_names:
@@ -190,6 +205,7 @@ class EnemyLasers:
             )
 
     def dispose(self) -> None:
+        """Disposes the pooled meshes of every style."""
         for style in self.style_names:
             pools = self.pools[style]
             for pool in [pools.warning, pools.beam, pools.emitter]:

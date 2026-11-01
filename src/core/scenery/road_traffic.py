@@ -1,5 +1,8 @@
-"""Phase 4 review: where streets cross each other (the centre line stops there, GFX-ROAD-07, and a
-street meeting another goes on under it).
+# Copyright (c) 2026 Renaud Guillon
+"""Phase 4 review.
+
+Where streets cross each other (the centre line stops there, GFX-ROAD-07, and a street meeting
+another goes on under it).
 
 The memos are kept as one-entry memos by identity (`_LineCache`,
 `_IndexCache`): the same answers, since the values are pure functions of their list.
@@ -7,14 +10,14 @@ The memos are kept as one-entry memos by identity (`_LineCache`,
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road
 
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 INFINITY = float("Infinity")
 
@@ -40,7 +43,7 @@ class StreetLine:
 
 
 def street_lines(roads: Sequence[Road]) -> list[StreetLine]:
-    """The streets of `roads` as straight lines (streets are straight, see `street_runs`)."""
+    """Return the streets of `roads` as straight lines (streets are straight, see `street_runs`)."""
     lines: list[StreetLine] = []
     for road in roads:
         if road.kind != "street" or len(road.points) == 0:
@@ -74,7 +77,7 @@ def cached_street_lines(roads: Sequence[Road]) -> list[StreetLine]:
 
 
 def road_z_span(road: Road) -> tuple[float, float]:
-    """The lowest and highest Z of the points of `road` (PERF-24)."""
+    """Return the lowest and highest Z of the points of `road` (PERF-24)."""
     low = INFINITY
     high = -INFINITY
     for p in road.points:
@@ -94,8 +97,11 @@ def _distance(line: StreetLine, x: float, z: float) -> float:
 
 
 class StreetIndex:
-    """The streets of a list of lines by bands of Z (PERF-24): each band holds the streets within
-    `width / 2 + BUCKET_REACH` of it, so a point only checks the streets near it."""
+    """The streets of a list of lines by bands of Z (PERF-24).
+
+    Each band holds the streets within `width / 2 + BUCKET_REACH` of it, so a point only checks the
+    streets near it.
+    """
 
     def __init__(self, lines: Sequence[StreetLine]) -> None:
         self._bands: dict[str, list[StreetLine]] = {}
@@ -111,7 +117,7 @@ class StreetIndex:
                     self._bands[k] = [line]
 
     def near(self, z: float) -> Sequence[StreetLine]:
-        """The streets in the band of `z`: the only ones that can be near it."""
+        """Return the streets in the band of `z`: the only ones that can be near it."""
         return self._bands.get(str(math.floor(z / BUCKET)), [])
 
 
@@ -133,9 +139,12 @@ _INDEX_CACHE = _IndexCache()
 
 
 def _lines_near(lines: Sequence[StreetLine], z: float, margin: float) -> Sequence[StreetLine]:
-    """The lines that may be within `margin` of the edge of a street at (_, z): those of its band
-    when `margin` is within the bands' reach (the same answers as all of them, faster), all of them
-    otherwise. The index of `lines` is built on the first query and kept with them."""
+    """Return the lines that may be within `margin` of the edge of a street at (_, z).
+
+    Those of its band when `margin` is within the bands' reach (the same answers as all of them,
+    faster), all of them otherwise. The index of `lines` is built on the first query and kept with
+    them.
+    """
     if margin > BUCKET_REACH:
         return lines
     return _INDEX_CACHE.get(lines).near(z)

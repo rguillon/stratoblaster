@@ -1,4 +1,5 @@
-"""The bosses' angry patterns (phase 7 review, BOSS-28)
+# Copyright (c) 2026 Renaud Guillon
+"""The bosses' angry patterns (phase 7 review, BOSS-28).
 
 The bullet hell a boss fires from its core for `BOSS_TIMING.rageSeconds` after the pause that
 follows each destroyed part. `heat` goes from 0 (1-1's mini boss) to 4.5 (1-5's final boss): about
@@ -9,16 +10,15 @@ the part of that rate a pattern fires, for a boss firing two of them.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, volley
 from game.config.record import concat, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def rate(heat: float, share: float) -> float:
@@ -32,7 +32,7 @@ def arms(heat: float) -> int:
 
 
 def angry(style: str, heat: float) -> Any:
-    """A slow bullet of `style` for the angry patterns, at `heat`."""
+    """Return a slow bullet of `style` for the angry patterns, at `heat`."""
     return bullet(style, 120 + 8 * heat, 4)
 
 
@@ -46,7 +46,7 @@ def _spirals(heat: float, a: str, b: str, share: float = 1) -> Any:
 
 
 def _flower(heat: float, a: str, b: str, share: float = 1) -> Any:
-    """A dense, slowly turning ring blooming from the core, and small fans at the player."""
+    """Return a dense, slowly turning ring blooming from the core, and small fans at the player."""
     petals = arms(heat) * 2 + 2
     every = (petals + 1.5) / rate(heat, share)
     return [
@@ -76,11 +76,9 @@ def _vortex(heat: float, a: str, b: str, share: float = 1) -> Any:
     ]
 
 
-rage = record(
-    {
-        "spirals": _spirals,
-        "flower": _flower,
-        "curtain": _curtain,
-        "vortex": _vortex,
-    }
-)
+rage = record({
+    "spirals": _spirals,
+    "flower": _flower,
+    "curtain": _curtain,
+    "vortex": _vortex,
+})

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/levels.py`."""
 
 from helpers.config_checks import LEVEL_IDS, LEVELS_PER_WORLD, WORLDS

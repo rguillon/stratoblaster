@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/enemy_look.py`."""
 
 import pytest
@@ -50,8 +51,12 @@ def test_gfx_shot_11_every_bullet_style_is_in_the_enemy_shots_family(style: str)
 
 
 def test_enm_mortar_03_every_basic_neon_and_the_mortar_are_as_bright_as_the_bright_family() -> None:
-    """The bright yellow and green of GFX-ART-05 have a largest channel of 1 (HSV value 1). Each
-    basic kind's neon and the Mortar's, once drawn at the enemy hues, keep that brightness."""
+    """The bright yellow and green of GFX-ART-05 have a largest channel of 1 (HSV value 1).
+
+    Each
+
+        basic kind's neon and the Mortar's, once drawn at the enemy hues, keep that brightness.
+    """
     bright = 1.0
     neons = [(kind, color) for kind, color in ENEMY_LOOK.neon.items()]
     neons.append(("mortar", VETERAN_NEON.mortar))

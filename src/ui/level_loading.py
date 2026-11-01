@@ -1,21 +1,24 @@
-"""The loading screen of a level (UI-LOAD-06): the menus' loading
-screen over the game screen, with the level's real progress."""
+# Copyright (c) 2026 Renaud Guillon
+"""The loading screen of a level (UI-LOAD-06): the menus' loading screen over the game screen.
 
-from org.transcrypt.stubs.browser import __pragma__
+With the level's real progress.
+"""
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.menu_view import LoadingView
+from ui.screens.elements import array_from, replace_children
+from ui.screens.loading_screen import render_loading_screen
 
-__pragma__("noskip")
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from ui.menu_view import LoadingView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.elements import array_from, replace_children  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.loading_screen import render_loading_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class LevelLoadingScreen:
-    """The loading screen of a level (UI-LOAD-06). It fades in only after a short delay (CSS), so
-    a quick load does not flash it (PERF-10).
+    """The loading screen of a level (UI-LOAD-06).
+
+    It fades in only after a short delay (CSS), so a quick load does not flash it (PERF-10).
     """
 
     def __init__(self, doc: Any, parent: Any, text: str) -> None:
@@ -25,9 +28,10 @@ class LevelLoadingScreen:
         self._root: Any = None
 
     def show(self, progress: float) -> None:
-        """Shows `progress` (0..1). Later calls update the screen in place: a new element would
-        start its fade-in again, transparent, and the menus drawn behind it would show for a few
-        frames.
+        """Show `progress` (0..1).
+
+        Later calls update the screen in place: a new element would start its fade-in again,
+        transparent, and the menus drawn behind it would show for a few frames.
         """
         root = render_loading_screen(self._doc, LoadingView(self._text, progress))
         if self._root is not None:
@@ -38,6 +42,7 @@ class LevelLoadingScreen:
         self._root = root
 
     def dispose(self) -> None:
+        """Dispose."""
         if self._root is not None:
             self._root.remove()
         self._root = None

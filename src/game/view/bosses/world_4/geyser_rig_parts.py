@@ -1,15 +1,15 @@
-"""FB-GEYSER-RIG-03 to FB-GEYSER-RIG-05, 4-2: the Geyser Rig's parts: its two drill heads on their
-swinging arms (moving limbs, FB-GEYSER-RIG-07, D-061), its two steam vents and its drone hangar.
-Logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-GEYSER-RIG-03 to FB-GEYSER-RIG-05, 4-2: the Geyser Rig's parts.
+
+Its two drill heads on their swinging arms (moving limbs, FB-GEYSER-RIG-07, D-061), its two steam
+vents and its drone hangar. Logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.geyser_rig import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.geyser_rig import (
     DRILL_HEIGHT,
     DRILL_REACH,
     RIG_DRILL,
@@ -19,30 +19,31 @@ from game.config.bosses.world_4.geyser_rig import (  # noqa: E402
     RIG_VENT_TOP,
     side_sign,
 )
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, rect, vent  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import conduit, ram  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_3.toucan_jungle import segment  # noqa: E402
-from game.view.bosses.world_4.ash_plains_soot import EMBER, SOOT, ash_drift  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN, glands  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_greebles import lamps, rect, vent
+from game.view.bosses.mini_boss_mechanism import conduit, ram
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.world_3.toucan_jungle import segment
+from game.view.bosses.world_4.ash_plains_soot import EMBER, SOOT, ash_drift
+from game.view.bosses.world_4.living_forge import SKIN, glands
+from game.view.enemies.enemy_shapes import SIDES
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -63,7 +64,10 @@ DECK_Y = 7
 
 
 def _arm_points(side: str) -> list[Vec3]:
-    """The model-space points of the `side` drill arm at rest: its shoulder and its drill head."""
+    """Return the model-space points of the `side` drill arm at rest.
+
+    Its shoulder and its drill head.
+    """
     s = side_sign(side)
     return [
         boss_point(s * RIG_SHOULDER[0], RIG_SHOULDER[1], DRILL_HEIGHT.shoulder),
@@ -72,7 +76,10 @@ def _arm_points(side: str) -> list[Vec3]:
 
 
 def _drill_arm(side: str) -> Any:
-    """The `side` drill arm, on its shoulder joint: a heavy boom, a ram along it, a yellow line."""
+    """Return the `side` drill arm, on its shoulder joint.
+
+    A heavy boom, a ram along it, a yellow line.
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -117,7 +124,10 @@ def _drill_arm(side: str) -> Any:
 
 
 def arm_limbs() -> Any:
-    """The limbs of the two drill arms (FB-GEYSER-RIG-07): each boom on its shoulder joint."""
+    """Return the limbs of the two drill arms (FB-GEYSER-RIG-07).
+
+    Each boom is on its shoulder joint.
+    """
     limbs = {}
     for side in RIG_SIDES:
         limbs["arm-" + side] = record({"draw": _drill_arm(side)})
@@ -125,8 +135,11 @@ def arm_limbs() -> Any:
 
 
 def drill_head(p: Any, at: Vec3) -> None:
-    """A drill head around its centre `at` (FB-GEYSER-RIG-03): a ribbed motor housing, a long fluted
-    bit glowing hot at its root, and the gun on top of the housing that fires aimed bursts."""
+    """Add a drill head around its centre `at` (FB-GEYSER-RIG-03).
+
+    A ribbed motor housing, a long fluted bit glowing hot at its root, and the gun on top of the
+    housing that fires aimed bursts.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -174,9 +187,11 @@ STACK = [
 
 
 def steam_vent(p: Any, at: Vec3) -> None:
-    """A steam vent around its centre `at` (FB-GEYSER-RIG-04): a scorched stack rising from a valve
-    block, its flared mouth ringed with yellow neon, hot metal glowing in it, ash settled round its
-    foot."""
+    """Add a steam vent around its centre `at` (FB-GEYSER-RIG-04).
+
+    A scorched stack rising from a valve block, its flared mouth ringed with yellow neon, hot metal
+    glowing in it, ash settled round its foot.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -215,8 +230,11 @@ def steam_vent(p: Any, at: Vec3) -> None:
 
 
 def hangar(p: Any, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (FB-GEYSER-RIG-05): a bay jutting from the bow, its
-    open door framed in yellow, where its Hornets leave from; warning lamps either side."""
+    """Add the drone hangar around its centre `at` (FB-GEYSER-RIG-05).
+
+    A bay jutting from the bow, its open door framed in yellow, where its Hornets leave from;
+    warning lamps either side.
+    """
     hull = p.hull
     neon = p.neon
     # FB-GEYSER-RIG-05: a brood sac jutting from the bow, its mouth framed in metal.

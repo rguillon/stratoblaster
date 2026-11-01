@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/babylon.py`: the wrappers that take a Python value and do one thing
-with it. The rest of the module is JavaScript, run only in the browser."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/babylon.py`: wrappers that take a Python value and do one thing.
+
+The rest of the module is JavaScript, run only in the browser.
+"""
 
 from types import SimpleNamespace
 
@@ -13,10 +16,10 @@ class _Node:
         self.enabled = True
         self.disposed = False
 
-    def setEnabled(self, on: bool) -> None:  # noqa: N802 (Babylon's name)
+    def setEnabled(self, on: bool) -> None:
         self.enabled = on
 
-    def isEnabled(self) -> int:  # noqa: N802
+    def isEnabled(self) -> int:
         return 1 if self.enabled else 0
 
     def dispose(self) -> None:

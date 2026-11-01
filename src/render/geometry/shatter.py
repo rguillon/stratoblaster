@@ -1,5 +1,7 @@
-"""Carves a region out of vertex-coloured geometry and breaks it into chunks (a boss's armour
-bursting off: docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md).
+# Copyright (c) 2026 Renaud Guillon
+"""Carves a region out of vertex-coloured geometry and breaks it into chunks.
+
+For a boss's armour bursting off: docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md.
 
 Pure: no Babylon. Geometry is a `ColoredGeometry` (XYZ positions, RGBA colours, triangle indices);
 the outlines are polygons in the XZ plane, `[x, z]` points. Triangles are sorted whole, by their
@@ -8,15 +10,14 @@ centroid, so big faces are first cut down (`subdivide`) to follow an outline clo
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.gradient_shapes import ColoredGeometry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class Vertex:
@@ -36,18 +37,21 @@ def _vertex(geo: Any, i: int) -> Vertex:
 
 
 def triangles(geo: Any) -> list[list[Vertex]]:
-    """The triangles of `geo`, each as its three vertices (in index order)."""
-    result: list[list[Vertex]] = []
+    """Return the triangles of `geo`, each as its three vertices (in index order)."""
     ix = geo.indices
-    for t in range(len(ix) // 3):
-        result.append(
-            [_vertex(geo, ix[3 * t]), _vertex(geo, ix[3 * t + 1]), _vertex(geo, ix[3 * t + 2])]
-        )
+    result: list[list[Vertex]] = [
+        [
+            _vertex(geo, ix[3 * t]),
+            _vertex(geo, ix[3 * t + 1]),
+            _vertex(geo, ix[3 * t + 2]),
+        ]
+        for t in range(len(ix) // 3)
+    ]
     return result
 
 
 def append_triangles(geo: Any, tris: list[list[Vertex]], shift: list[float] | None = None) -> None:
-    """Adds `tris` to `geo` (no shared vertices), each moved by `shift` if given."""
+    """Add `tris` to `geo` (no shared vertices), each moved by `shift` if given."""
     d = shift if shift is not None else [0, 0, 0]
     for tri in tris:
         base = len(geo.positions) // 3
@@ -59,7 +63,7 @@ def append_triangles(geo: Any, tris: list[list[Vertex]], shift: list[float] | No
 
 
 def geometry_of(tris: list[list[Vertex]], shift: list[float] | None = None) -> ColoredGeometry:
-    """A geometry of `tris` (no shared vertices), each moved by `shift` if given."""
+    """Return a geometry of `tris` (no shared vertices), each moved by `shift` if given."""
     geo = ColoredGeometry()
     append_triangles(geo, tris, shift)
     return geo
@@ -83,14 +87,17 @@ def _length(a: Vertex, b: Vertex) -> float:
 
 
 def subdivide(tris: list[list[Vertex]], longest: float, needs: Any = None) -> list[list[Vertex]]:
-    """`tris` with every triangle (each that `needs(tri)`, if given) halved across its longest
-    edge until no edge is over `longest`. The halves keep the winding (and so the facing) of the
-    triangle they come from."""
+    """`tris` with each triangle that `needs(tri)` (if given) halved across its longest edge.
+
+    This goes on until no edge is over `longest`.
+
+    The halves keep the winding (and so the facing) of the triangle they come from.
+    """
     result: list[list[Vertex]] = []
     todo = list(tris)
     while len(todo) > 0:
         tri = todo.pop()
-        if needs != None and not needs(tri):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if needs != None and not needs(tri):
             result.append(tri)
             continue
         lengths = [_length(tri[0], tri[1]), _length(tri[1], tri[2]), _length(tri[2], tri[0])]
@@ -111,7 +118,7 @@ def subdivide(tris: list[list[Vertex]], longest: float, needs: Any = None) -> li
 
 
 def centroid(tri: list[Vertex]) -> list[float]:
-    """The centroid of a triangle."""
+    """Return the centroid of a triangle."""
     a = tri[0].position
     b = tri[1].position
     c = tri[2].position
@@ -146,15 +153,18 @@ class Carve:
         if point[1] < self.heights[0] or point[1] > self.heights[1]:
             return False
         # The armour cut asks this of every corner: seconds of a level's load through `any`.
-        for outline in self.outlines:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        for outline in self.outlines:
             if inside(outline, point[0], point[2]):
                 return True
         return False
 
 
 def straddles(tri: list[Vertex], region: Carve) -> bool:
-    """Whether a triangle may cross the edge of `region`: its corners or centroid are not all on
-    the same side, or a corner of an outline lies within its XZ bounds."""
+    """Whether a triangle may cross the edge of `region`.
+
+    Its corners or centroid are not all on the same side, or a corner of an outline lies within its
+    XZ bounds.
+    """
     inner = region.holds(centroid(tri))
     for v in tri:
         if region.holds(v.position) != inner:
@@ -189,7 +199,7 @@ def _cell_key(i: int, j: int) -> str:
 
 
 def _bins(points: list[list[float]], cell: float) -> list[list[int]]:
-    """The indices of `points` binned on an XZ grid of `cell`, a list per occupied cell."""
+    """Return the indices of `points` binned on an XZ grid of `cell`, a list per occupied cell."""
     cells: dict[str, int] = {}
     result: list[list[int]] = []
     for k in range(len(points)):
@@ -203,7 +213,7 @@ def _bins(points: list[list[float]], cell: float) -> list[list[int]]:
 
 
 def _centre(points: list[list[float]], members: list[int]) -> list[float]:
-    """The mean XZ of the `members` of `points`."""
+    """Return the mean XZ of the `members` of `points`."""
     sx = 0.0
     sz = 0.0
     for k in members:
@@ -214,7 +224,7 @@ def _centre(points: list[list[float]], members: list[int]) -> list[float]:
 
 
 def _nearest(points: list[list[float]], groups: list[list[int]], small: int) -> int:
-    """The group (other than `small`) whose centre is nearest `small`'s."""
+    """Return the group (other than `small`) whose centre is nearest `small`'s."""
     cs = _centre(points, groups[small])
     best = -1
     best_d = 0.0
@@ -230,9 +240,13 @@ def _nearest(points: list[list[float]], groups: list[list[int]], small: int) -> 
 
 
 def chunk_cells(points: list[list[float]], cell: float, most: int) -> list[int]:
-    """The chunk each of `points` (x, y, z) falls in: points are binned on an XZ grid of `cell`,
-    then the smallest chunks are merged into their nearest neighbour until there are at most
-    `most`. Chunks are numbered from 0, with no gaps."""
+    """Return the chunk each of `points` (x, y, z) falls in.
+
+    Points are binned on an XZ grid of `cell`, then the smallest chunks are merged into their
+    nearest neighbour until there are at most `most`.
+
+    Chunks are numbered from 0, with no gaps.
+    """
     groups = _bins(points, cell)
     while len(groups) > max(1, most):
         small = 0
@@ -258,8 +272,10 @@ class Chunk:
 
 
 def shatter(tris: list[list[Vertex]], cell: float, most: int) -> list[Chunk]:
-    """`tris` broken into at most `most` chunks by their centroids on an XZ grid of `cell`. Each
-    chunk's triangles keep their place; its `centre` is the mean of their centroids."""
+    """`tris` broken into at most `most` chunks by their centroids on an XZ grid of `cell`.
+
+    Each chunk's triangles keep their place; its `centre` is the mean of their centroids.
+    """
     centres = [centroid(t) for t in tris]
     ids = chunk_cells(centres, cell, most)
     count = 0
@@ -280,8 +296,10 @@ def shatter(tris: list[list[Vertex]], cell: float, most: int) -> list[Chunk]:
 
 
 def up_facing(tri: list[Vertex], least: float) -> bool:
-    """Whether a triangle faces up: the Y of its unit front normal is at least `least`. Babylon's
-    front normal of (a, b, c) is (c - a) × (b - a)."""
+    """Whether a triangle faces up: the Y of its unit front normal is at least `least`.
+
+    Babylon's front normal of (a, b, c) is (c - a) x (b - a).
+    """
     a = tri[0].position
     b = tri[1].position
     c = tri[2].position

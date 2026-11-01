@@ -1,29 +1,23 @@
-"""The bonuses (GFX-FX-11, GFX-FX-13), in playfield
-space: each one a badge of its kind swinging from side to side over a pulsing halo, and a ring
-flashing out where the ship picks one up.
+# Copyright (c) 2026 Renaud Guillon
+"""The bonuses (GFX-FX-11, GFX-FX-13), in playfield space.
+
+Each one a badge of its kind swinging from side to side over a pulsing halo, and a ring flashing out
+where the ship picks one up.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.systems.bonus_world import Bonus  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.game_view import BonusRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.config.bonus_look import BONUS_LOOK as LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bonuses.bonus_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bonus_look import BONUS_LOOK as LOOK
+from game.view.bonuses.bonus_geometry import (
     build_bomb_badge,
     build_bonus_badge,
     build_life_badge,
 )
-from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc
+from game.view.shots.shot_meshes import additive_template
+from render.babylon import (
     apply_vertex_data,
     color3,
     color3_black,
@@ -32,13 +26,24 @@ from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG
     node_name,
     vertex_data_of,
 )
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool
+
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+from core.systems.bonus_world import Bonus
+from render.game_view import BonusRenderer
+
+# __pragma__ ("noskip")
+
 
 KINDS = ["weapon", "life", "bomb"]
 
 
 def _bonus_renderer(sync: Any, dispose: Any) -> Any:
-    """A `BonusRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    """Return a `BonusRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    _ = (sync, dispose)
     __pragma__("js", "{}", "return {sync: sync, dispose: dispose};")
     return None
 
@@ -46,7 +51,11 @@ def _bonus_renderer(sync: Any, dispose: Any) -> Any:
 def _badge_colors(
     frame: list[float], face: list[float], chevrons: list[float], inset: float
 ) -> Any:
-    """The colours of a weapon badge with its inset (`{ ...colors, inset }`), as a JS object."""
+    """Return the colours of a weapon badge with its inset, as a JS object.
+
+    The object is `{ ...colors, inset }`.
+    """
+    _ = (frame, face, chevrons, inset)
     __pragma__(
         "js",
         "{}",
@@ -73,7 +82,10 @@ class KindPools:
 
 
 def opaque_template(name: str, geo: Any, scene: Any) -> Any:
-    """A disabled template showing its vertex colours, unlit and opaque (so it glows, GFX-FX-11)."""
+    """Return a disabled template showing its vertex colours, unlit and opaque.
+
+    Unlit, so it glows (GFX-FX-11).
+    """
     mesh = new_mesh(name, scene)
     data = vertex_data_of(geo.positions, geo.indices, None, geo.colors)
     apply_vertex_data(data, mesh)
@@ -91,7 +103,7 @@ def opaque_template(name: str, geo: Any, scene: Any) -> Any:
 
 
 def ring(segments: int, color: list[float]) -> Any:
-    """A thin ring at the rim of a disc, black (nothing, added on) inside and out."""
+    """Return a thin ring at the rim of a disc, black (nothing, added on) inside and out."""
     rings: list[list[float]] = [[0, 0, 0] for _ in range(6)]
     rings.append([0.4, 0.4, 0.4])
     rings.append(color)
@@ -100,7 +112,7 @@ def ring(segments: int, color: list[float]) -> Any:
 
 
 def pool(template: Any) -> NodePool:
-    """A pool of clones of `template`, each enabled."""
+    """Return a pool of clones of `template`, each enabled."""
 
     def make(i: int) -> Any:
         mesh = template.clone(node_name(template) + "-" + str(i))
@@ -117,13 +129,11 @@ def sync_flashes(rings: NodePool, flashes: list[Flash], picked: list[Any], dt: f
     flash = LOOK.flash
     for f in flashes:
         f.age += dt
-    for p in picked:
-        flashes.append(Flash(p.x, p.y, 0))
+    flashes.extend([Flash(p.x, p.y, 0) for p in picked])
     live = [f for f in flashes if f.age < flash.life]
     while len(flashes) > 0:
         flashes.pop()
-    for f in live:
-        flashes.append(f)
+    flashes.extend(live)
     for i, mesh in enumerate(rings.show(len(flashes))):
         f = flashes[i]
         if not f:
@@ -136,7 +146,7 @@ def sync_flashes(rings: NodePool, flashes: list[Flash], picked: list[Any], dt: f
 
 
 def kind_templates(scene: Any) -> dict[str, list[Any]]:
-    """The badge and halo templates of each bonus kind (GFX-FX-12)."""
+    """Return the badge and halo templates of each bonus kind (GFX-FX-12)."""
     halo = LOOK.halo
     life = LOOK.life
     bomb = LOOK.bomb
@@ -184,7 +194,7 @@ def sync_kind(kind_pools: KindPools, bonuses: list[Bonus]) -> None:
 
 
 def create_bonus_renderer(scene: Any) -> BonusRenderer:
-    """The bonuses and their pickup flashes, drawn in `scene` (GFX-FX-11, GFX-FX-13)."""
+    """Return the bonuses and their pickup flashes, drawn in `scene` (GFX-FX-11, GFX-FX-13)."""
     flash = LOOK.flash
     by_kind = kind_templates(scene)
     flash_template = additive_template("bonus-flash", ring(flash.segments, flash.color), scene)

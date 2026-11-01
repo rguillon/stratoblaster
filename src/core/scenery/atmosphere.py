@@ -1,22 +1,26 @@
-"""The changing part of a level's look (phase 8, GFX-SKY-05, GFX-WEATHER-06): the time of day, the
-clouds, the haze, the ground lights and the weather, as plain numbers that blend smoothly from one
-look to another along the level. Pure; the renderer applies it to the scene every frame.
+# Copyright (c) 2026 Renaud Guillon
+"""The changing part of a level's look (phase 8, GFX-SKY-05, GFX-WEATHER-06): the time of day.
+
+The clouds, the haze, the ground lights and the weather, as plain numbers that blend smoothly from
+one look to another along the level. Pure; the renderer applies it to the scene every frame.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any, Literal
 
 Rgb = tuple[float, float, float]
 TimeOfDay = Literal["dawn", "morning", "midday", "afternoon", "dusk", "night"]
 Look = Any  # The class is generic in its look; Transcrypt has no generic classes.
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 # `%` keeps JavaScript's sign rule (the result takes the sign of the dividend).
 __pragma__("jsmod")
+
 
 # Blend point at which the kind of weather switches (halfway).
 HALF = 0.5
@@ -41,8 +45,10 @@ class CloudCover:
     """One cloud layer as the atmosphere shows it."""
 
     def __init__(self, coverage: float, opacity: float, color: Rgb, shade: Rgb) -> None:
-        """`coverage`: share (0..1) of the sky the layer covers. `opacity`: 0 = invisible,
-        1 = opaque. `shade`: colour of the thin edges."""
+        """`coverage`: share (0..1) of the sky the layer covers.
+
+        `opacity`: 0 = invisible, 1 = opaque. `shade`: colour of the thin edges.
+        """
         self.coverage = coverage
         self.opacity = opacity
         self.color = color
@@ -50,8 +56,11 @@ class CloudCover:
 
 
 class Weather:
-    """Weather (GFX-WEATHER-01): a kind (e.g. `snow`, a key of the engine's weather kinds) and its
-    strength (0 = none, 1 = the heaviest)."""
+    """Weather (GFX-WEATHER-01): a kind and its strength.
+
+    Its kind (e.g. `snow`, a key of the engine's weather kinds), and its strength (0 = none, 1 = the
+    heaviest).
+    """
 
     def __init__(self, kind: str, strength: float) -> None:
         self.kind = kind
@@ -69,8 +78,10 @@ class Sun:
         intensity: float,
         shadow_darkness: float,
     ) -> None:
-        """`azimuth_deg`: 0 = straight ahead (+Z), positive towards +X. `shadow_darkness`: 0 =
-        black shadows, 1 = no shadows."""
+        """`azimuth_deg`: 0 = straight ahead (+Z), positive towards +X.
+
+        `shadow_darkness`: 0 = black shadows, 1 = no shadows.
+        """
         self.elevation_deg = elevation_deg
         self.azimuth_deg = azimuth_deg
         self.color = color
@@ -87,8 +98,11 @@ class Sky:
         stops: Sequence[SkyStop],
         environment_intensity: float,
     ) -> None:
-        """`haze`: clear and fog colour. `stops`: sky gradient for reflections (sea, metal);
-        every atmosphere of a level has as many stops."""
+        """`haze`: clear and fog colour.
+
+        `stops`: sky gradient for reflections (sea, metal) every atmosphere of a level has as many
+        stops.
+        """
         self.haze = haze
         self.stops = stops
         self.environment_intensity = environment_intensity
@@ -114,7 +128,7 @@ class Fog:
 class Atmosphere:
     """Everything about a level's look that changes with the time of day and the weather."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         sun: Sun,
         sky: Sky,
@@ -127,9 +141,12 @@ class Atmosphere:
         lightning: float,
         second_weather: Weather | None = None,
     ) -> None:
-        """`aurora`: strength (0..1) of the aurora's curtains in the haze. `lightning`: strength
-        (0..1) of a storm's lightning flashes (GFX-WEATHER-10). `second_weather`: phase 10, a second
-        weather at the same time (ash and embers together, GFX-WEATHER-15)."""
+        """`aurora`: strength (0..1) of the aurora's curtains in the haze.
+
+        `lightning`: strength (0..1) of a storm's lightning flashes (GFX-WEATHER-10).
+        `second_weather`: phase 10, a second weather at the same time (ash and embers together,
+        GFX-WEATHER-15).
+        """
         self.sun = sun
         self.sky = sky
         self.ambient = ambient
@@ -153,7 +170,7 @@ def _lerp_rgb(a: Rgb, b: Rgb, t: float) -> Rgb:
 
 
 def _lerp_angle(a: float, b: float, t: float) -> float:
-    """Turns `a` towards `b` the short way round, by `t` (degrees)."""
+    """Turn `a` towards `b` the short way round, by `t` (degrees)."""
     turn = ((((b - a) % 360) + 540) % 360) - 180
     return a + turn * t
 
@@ -174,8 +191,10 @@ def _blend_clouds(a: Sequence[CloudCover], b: Sequence[CloudCover], t: float) ->
 
 
 def _blend_weather(a: Weather, b: Weather, t: float) -> Weather:
-    """Weather between `a` and `b`: the strength blends; the kind is the one that is there
-    (GFX-WEATHER-06)."""
+    """Return the weather between `a` and `b` (GFX-WEATHER-06).
+
+    The strength blends; the kind is the one that is there.
+    """
     if a.strength <= 0:
         kind = b.kind
     elif b.strength <= 0 or t < HALF:
@@ -190,8 +209,10 @@ NO_WEATHER = Weather("snow", 0)
 
 
 def _blend_second_weather(a: Atmosphere, b: Atmosphere, t: float) -> Weather | None:
-    """The second weathers of `a` and `b` blended, if either has one (phase 10,
-    GFX-WEATHER-15)."""
+    """Return the second weathers of `a` and `b` blended, if either has one.
+
+    Phase 10, GFX-WEATHER-15.
+    """
     if a.second_weather is None and b.second_weather is None:
         return None
     wa = a.second_weather if a.second_weather is not None else NO_WEATHER
@@ -200,8 +221,10 @@ def _blend_second_weather(a: Atmosphere, b: Atmosphere, t: float) -> Weather | N
 
 
 def blend_atmosphere(a: Atmosphere, b: Atmosphere, t: float) -> Atmosphere:
-    """The atmosphere `t` of the way from `a` to `b` (0 = `a`, 1 = `b`): every number halfway at
-    0.5."""
+    """Return the atmosphere `t` of the way from `a` to `b` (0 = `a`, 1 = `b`).
+
+    Every number halfway at 0.5.
+    """
     if t <= 0:
         return a
     if t >= 1:
@@ -239,8 +262,10 @@ def blend_atmosphere(a: Atmosphere, b: Atmosphere, t: float) -> Atmosphere:
 
 
 class AtmosphereChange:
-    """A change of look over a stretch of the level: from distance `from_` to `to` it becomes
-    `look`."""
+    """A change of look over a stretch of the level.
+
+    From distance `from_` to `to` it becomes `look`.
+    """
 
     def __init__(self, from_: float, to: float, look: Look) -> None:
         self.from_ = from_
@@ -258,14 +283,15 @@ class _Stretch:
 
 
 def _smooth(t: float) -> float:
-    """An eased 0..1 ramp that stays at one half halfway (smoothstep)."""
+    """Return an eased 0..1 ramp that stays at one half halfway (smoothstep)."""
     return t * t * (3 - 2 * t)
 
 
 class AtmosphereTrack:
-    """A level's look along its length (GFX-SKY-05): `start`, then each change in turn, blending
-    every number smoothly over its stretch. It follows the distance, so a jump along the level
-    shows the look of where it lands. `resolve` turns a look description into an atmosphere.
+    """A level's look along its length (GFX-SKY-05): `start`, then each change in turn.
+
+    Blending every number smoothly over its stretch. It follows the distance, so a jump along the
+    level shows the look of where it lands. `resolve` turns a look description into an atmosphere.
     """
 
     def __init__(
@@ -279,11 +305,12 @@ class AtmosphereTrack:
         self._changes: list[_Stretch] = []
         for c in ordered:
             if not (c.to >= c.from_):
-                raise ValueError("A look change must end after it starts")
+                msg = "A look change must end after it starts"
+                raise ValueError(msg)
             self._changes.append(_Stretch(c.from_, c.to, resolve(c.look)))
 
     def at(self, distance: float) -> Atmosphere:
-        """The atmosphere at `distance` along the level."""
+        """Return the atmosphere at `distance` along the level."""
         now = self._start
         for stretch in self._changes:
             if distance <= stretch.from_:
@@ -296,7 +323,7 @@ class AtmosphereTrack:
 
 
 def sorted_by_from(changes: Sequence[AtmosphereChange]) -> list[AtmosphereChange]:
-    """The changes in order of their `from_` (a stable sort, as JavaScript's)."""
+    """Return the changes in order of their `from_` (a stable sort, as JavaScript's)."""
     result = list(changes)
     # Insertion sort: stable, and the lists are short (one entry per look change of a level).
     for i in range(1, len(result)):

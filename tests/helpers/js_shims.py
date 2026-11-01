@@ -1,7 +1,11 @@
-"""Python twins of the JavaScript-only helpers of `src/app/` (`__pragma__("js")` bodies, which
-CPython does not run): the URL query, the number and regular-expression checks of the stored
-values, the JSON reads and writes, and plain objects for the Babylon snapshots. The tests of those
-modules install them with monkeypatch, so the logic around them is what is tested."""
+# Copyright (c) 2026 Renaud Guillon
+"""Python twins of the JavaScript-only helpers of `src/app/`.
+
+They are the `__pragma__("js")` bodies, which CPython does not run: the URL query, the number and
+regular-expression checks of the stored values, the JSON reads and writes, and plain objects for the
+Babylon snapshots. The tests of those modules install them with monkeypatch, so the logic around
+them is what is tested.
+"""
 
 import json
 import math
@@ -11,7 +15,7 @@ from urllib.parse import parse_qs
 
 
 def url_query(search: str, key: str) -> str | None:
-    """`new URLSearchParams(search).get(key)`: the first value of `key`, or None."""
+    """Return `new URLSearchParams(search).get(key)`: the first value of `key`, or None."""
     values = parse_qs(search.lstrip("?"), keep_blank_values=True).get(key)
     return values[0] if values else None
 
@@ -30,13 +34,13 @@ def time_number(search: str) -> float:
 
 
 def plain_score(raw: str) -> float:
-    """`/^\\d{1,15}$/` on the trimmed text, read as a number; anything else is 0."""
+    r"""`/^\\d{1,15}$/` on the trimmed text, read as a number; anything else is 0."""
     text = raw.strip()
     return float(text) if re.fullmatch(r"\d{1,15}", text) else 0
 
 
 def step_text(text: str) -> bool:
-    """`/^\\d{1,2}$/`."""
+    r"""`/^\\d{1,2}$/`."""
     return re.fullmatch(r"\d{1,2}", text) is not None
 
 

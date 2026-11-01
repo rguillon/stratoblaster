@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_paint.py` (GFX-ROAD-20)."""
 
 import math
@@ -27,7 +28,7 @@ LOOK = TileRoadLook(GREY, WHITE, BLACK, 0.5, RED, BLUE, 0.3, 0.1)
 
 
 def _piece(sides: list[PieceSide | None], kind: str, size: int = 1) -> RoadPiece:
-    return RoadPiece(0, 0, size, kind, False, sides)
+    return RoadPiece(0, 0, size, kind, adapter=False, sides=sides)
 
 
 def _straight() -> RoadPiece:
@@ -43,7 +44,10 @@ def _turn() -> RoadPiece:
 
 
 def _pixel(pixels: list, n: int, i: int, j: int) -> tuple[float, ...]:
-    """The colour of the pixel in column `i` (along X) and row `j` (along Z) of an n x n piece."""
+    """Return the colour of the pixel in column `i` (along X) and row `j` (along Z).
+
+    The piece is n x n.
+    """
     return pixels[j * n + i]
 
 

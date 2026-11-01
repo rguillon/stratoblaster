@@ -1,22 +1,16 @@
-"""The light player ship (GFX-SHIP-03): a faceted tandem-wing interceptor,
-like a dragonfly. A small front wing pair sits low (anhedral) and a larger swept rear pair sits
-high (dihedral); each of the 4 wings carries a hexagonal reactor at its tip, so the front flames
-stream under the rear wings. Everything is polygonal: fuselage with a smooth top and a faceted
-belly, hexagonal canopy and nacelles, diamond-section cannons.
+# Copyright (c) 2026 Renaud Guillon
+"""The light player ship (GFX-SHIP-03): a faceted tandem-wing interceptor, like a dragonfly.
+
+A small front wing pair sits low (anhedral) and a larger swept rear pair sits high (dihedral); each
+of the 4 wings carries a hexagonal reactor at its tip, so the front flames stream under the rear
+wings. Everything is polygonal: fuselage with a smooth top and a faceted belly, hexagonal canopy and
+nacelles, diamond-section cannons.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-Scene = Any
-__pragma__("noskip")
-
-from game.view.ship_materials import get_ship_materials  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.ship_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.ship_materials import get_ship_materials
+from game.view.ship_parts import (
     BODY_SECTION,
     PART_FACETS,
     build_reactor,
@@ -27,8 +21,16 @@ from game.view.ship_parts import (  # noqa: E402 (after the Transcrypt skip bloc
     plate,
     tag_part,
 )
-from render.babylon import new_transform_node, vector3  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.lathe_z import create_faceted_lathe_along_z  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import new_transform_node, vector3
+from render.geometry.lathe_z import create_faceted_lathe_along_z
+
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+Scene = Any
+# __pragma__ ("noskip")
+
 
 # Right front wing (X > 0): short, swept back.
 FRONT_WING = [
@@ -83,32 +85,32 @@ CANNON = {"length": 0.9, "radius": 0.035}
 
 
 def _light_wings() -> list[dict[str, Any]]:
-    """The 4 wings: front or rear pair, side, tilt around the nose axis and tip reactor."""
+    """Return the 4 wings: front or rear pair, side, tilt around the nose axis and tip reactor."""
     wings: list[dict[str, Any]] = []
-    for side in ["right", "left"]:
-        wings.append(
-            {
-                "name": "front-" + side,
-                "pair": "front",
-                "side": 1 if side == "right" else -1,
-                "outline": FRONT_WING,
-                "stripe": FRONT_STRIPE,
-                "tilt": -0.22,  # anhedral: tips down
-                "reactor": {"radius": 0.1, "length": 0.7, "x": 0.92, "z": 0.42},
-            }
-        )
-    for side in ["right", "left"]:
-        wings.append(
-            {
-                "name": "rear-" + side,
-                "pair": "rear",
-                "side": 1 if side == "right" else -1,
-                "outline": REAR_WING,
-                "stripe": REAR_STRIPE,
-                "tilt": 0.16,  # dihedral: tips up
-                "reactor": {"radius": 0.13, "length": 1.0, "x": 1.76, "z": -0.78},
-            }
-        )
+    wings.extend([
+        {
+            "name": "front-" + side,
+            "pair": "front",
+            "side": 1 if side == "right" else -1,
+            "outline": FRONT_WING,
+            "stripe": FRONT_STRIPE,
+            "tilt": -0.22,  # anhedral: tips down
+            "reactor": {"radius": 0.1, "length": 0.7, "x": 0.92, "z": 0.42},
+        }
+        for side in ["right", "left"]
+    ])
+    wings.extend([
+        {
+            "name": "rear-" + side,
+            "pair": "rear",
+            "side": 1 if side == "right" else -1,
+            "outline": REAR_WING,
+            "stripe": REAR_STRIPE,
+            "tilt": 0.16,  # dihedral: tips up
+            "reactor": {"radius": 0.13, "length": 1.0, "x": 1.76, "z": -0.78},
+        }
+        for side in ["right", "left"]
+    ])
     return wings
 
 
@@ -116,7 +118,7 @@ LIGHT_WINGS = _light_wings()
 
 
 def _build_body(root: Any, scene: Any) -> None:
-    """The fuselage, with its accent collar between the cockpit and the wings."""
+    """Build the fuselage, with its accent collar between the cockpit and the wings."""
     mats = get_ship_materials(scene)
     body_root = tag_part(new_transform_node("light-body-root", scene), "body")
     body_root.parent = root
@@ -185,7 +187,7 @@ def _build_fin_and_cannons(root: Any, scene: Any) -> None:
 
 
 def _build_cockpit(root: Any, scene: Any) -> None:
-    """The cockpit: a dark frame and the canopy."""
+    """Build the cockpit: a dark frame and the canopy."""
     mats = get_ship_materials(scene)
 
     def profile(scale: float) -> list[list[float]]:
@@ -256,7 +258,7 @@ def _build_wing(wing_def: dict[str, Any], root: Any, scene: Any) -> None:
 
 
 def build_light_ship(scene: Any) -> Any:
-    """Builds the light player ship (GFX-SHIP-03)."""
+    """Build the light player ship (GFX-SHIP-03)."""
     root = new_transform_node("ship-light", scene)
     _build_body(root, scene)
     _build_fin_and_cannons(root, scene)

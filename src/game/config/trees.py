@@ -1,23 +1,24 @@
-"""Trees of the green land (D-212) and dead trees of the desert (D-214): their ids, how they are
-placed, how their imposters are baked and how they gather in woods."""
+# Copyright (c) 2026 Renaud Guillon
+"""Trees of the green land (D-212) and dead trees of the desert (D-214): their ids.
+
+How they are placed, how their imposters are baked and how they gather in woods.
+"""
 
 from game.config.record import record
 
-TREE_IDS = record(
-    {
-        "pine": "tree-pine",
-        "oak": "tree-oak",
-        "poplar": "tree-poplar",
-        "birch": "tree-birch",
-        "copper": "tree-copper",
-        "bush": "tree-bush",
-        # D-214: the dead trees of the desert.
-        "deadOak": "tree-dead-oak",
-        "deadPine": "tree-dead-pine",
-        "snag": "tree-snag",
-        "deadBush": "tree-dead-bush",
-    }
-)
+TREE_IDS = record({
+    "pine": "tree-pine",
+    "oak": "tree-oak",
+    "poplar": "tree-poplar",
+    "birch": "tree-birch",
+    "copper": "tree-copper",
+    "bush": "tree-bush",
+    # D-214: the dead trees of the desert.
+    "deadOak": "tree-dead-oak",
+    "deadPine": "tree-dead-pine",
+    "snag": "tree-snag",
+    "deadBush": "tree-dead-bush",
+})
 
 # The trees as the placement picks them (GFX-PROP-07): weight, radius of ground (at their largest),
 # scales.
@@ -53,9 +54,13 @@ DEAD_TREES = [TREE_IDS.deadOak, TREE_IDS.deadPine, TREE_IDS.snag, TREE_IDS.deadB
 # (a tree turned is another tree), 256-pixel frames (their leaves are small) 13 model units across,
 # centred 5 up (the middle of a tree seen from the playfield camera), shaded hard (soft, they looked
 # like plastic).
-TREE_IMPOSTERS = record(
-    {"headings": 4, "framePx": 256, "frameSize": 13, "centre": 5, "ambient": 0.6}
-)
+TREE_IMPOSTERS = record({
+    "headings": 4,
+    "framePx": 256,
+    "frameSize": 13,
+    "centre": 5,
+    "ambient": 0.6,
+})
 
 # D-212, GFX-PROP-07: woods almost everywhere on the grass (the noise is over 0.27 on about 93 % of
 # the ground), clearings about 300 units apart, ragged edges.

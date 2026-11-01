@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/organic_parts.py`."""
 
 import pytest
@@ -7,8 +8,10 @@ from render.geometry.solids import SolidBuilder
 
 
 class _Parts:
-    """The parts a model draws: real solid builders for the flesh and the veins, and a reactor hook
-    that records where it was asked for."""
+    """The parts a model draws come from real solid builders and a reactor hook.
+
+    The builders make the flesh and the veins; the hook records where it was asked for.
+    """
 
     def __init__(self) -> None:
         self.flesh = SolidBuilder()
@@ -23,14 +26,14 @@ def _xs(builder: SolidBuilder) -> list[float]:
     return builder.geometry.positions[0::3]
 
 
-def test_opt_returns_the_option_or_the_default_when_it_is_left_out():
+def test_opt_returns_the_option_or_the_default_when_it_is_left_out() -> None:
     assert opt({"size": 2}, "size", 5) == 2
     assert opt({}, "size", 5) == 5
     # Only a missing key takes the default: a key set to 0 is an answer.
     assert opt({"size": 0}, "size", 5) == 0
 
 
-def test_enm_40_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor():
+def test_enm_40_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor() -> None:
     parts = _Parts()
     reactor_sac(parts, [1, 2, 3], 2.0, [0.5, 0.5, 0.5])
     assert parts.reactors == [([1, 2, 3], 2.0)]
@@ -39,7 +42,7 @@ def test_enm_40_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor(
     assert len(parts.flesh.geometry.indices) > 0
 
 
-def test_enm_40_reactor_sac_runs_a_glowing_vein_from_its_back():
+def test_enm_40_reactor_sac_runs_a_glowing_vein_from_its_back() -> None:
     parts = _Parts()
     glow = [0.5, 1.0, 0.5]
     reactor_sac(parts, [0, 0, 0], 2.0, glow)
@@ -49,7 +52,7 @@ def test_enm_40_reactor_sac_runs_a_glowing_vein_from_its_back():
     assert colors[0:3] == pytest.approx(glow)
 
 
-def test_enm_40_reactor_sac_takes_its_flesh_and_vein_length_when_given():
+def test_enm_40_reactor_sac_takes_its_flesh_and_vein_length_when_given() -> None:
     parts = _Parts()
     short = _Parts()
     reactor_sac(parts, [0, 0, 0], 1.0, [1, 1, 1], vein_length=2)
@@ -58,7 +61,7 @@ def test_enm_40_reactor_sac_takes_its_flesh_and_vein_length_when_given():
     assert max(parts.vein.geometry.positions[2::3]) < max(short.vein.geometry.positions[2::3])
 
 
-def test_gfx_art_14_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacing():
+def test_gfx_art_14_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacing() -> None:
     builder = SolidBuilder()
 
     class _Eyes:
@@ -72,7 +75,7 @@ def test_gfx_art_14_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacin
     assert 4.8 <= max(xs) - min(xs) <= 5.0
 
 
-def test_gfx_art_14_eyes_default_to_two_eyes_spaced_one_point_four_apart():
+def test_gfx_art_14_eyes_default_to_two_eyes_spaced_one_point_four_apart() -> None:
     builder = SolidBuilder()
 
     class _Eyes:

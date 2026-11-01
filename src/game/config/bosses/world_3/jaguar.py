@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """3-5's mini boss: the Jaguar (specs/bosses/mini/3-5-jaguar.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage patterns
@@ -45,60 +46,56 @@ TY = JAGUAR_PARTS.tail[1]
 
 # 3-5: a sleek stealth interceptor with spotted armour and amber neon; two claw guns on turrets
 # shield the core, a tail cannon aims a laser (MB-JAGUAR-08), and the core fires spirals.
-_JAGUAR = record(
-    {
-        "id": "jaguar",
-        # Angry after each destroyed part (phase 7 review, MB-JAGUAR-10): the hottest mini boss so
-        # far.
-        "rage": rage.curtain(8.5, "orange", "red"),
-        # Its core and parts, and its points (MB-JAGUAR-13).
-        "stats": stats(
-            record(
-                {
-                    "id": "jaguar",
-                    "name": "Jaguar",
-                    "size": 3.5,
-                    "coreRadius": 20,
-                    "coreHealth": 2000,
-                    "points": 8000,
-                    "groundSpeed": 0.6,
-                    "parts": [
-                        part("claw-left", [-KX, KY], 15, 1100),
-                        part("claw-right", [KX, KY], 15, 1100),
-                        part("tail-cannon", [TX, TY], 14, 900, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-JAGUAR-06).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 60, "period": 6},
-        "bob": {"amplitude": 8, "period": 3},
-        "guns": {
-            "core": {"gun": JAGUAR_FANGS, "ring": [JAGUAR_EYE]},
-            "claw-left": {"gun": mirror(JAGUAR_CLAW), "turret": [-KX, KY]},
-            "claw-right": {"gun": JAGUAR_CLAW, "turret": [KX, KY]},
-            "tail-cannon": {"laser": JAGUAR_TAIL, "turret": [TX, TY], "turretLaser": True},
-        },
-        # The parts' volleys, then the core's pattern per stage (MB-JAGUAR-09).
-        "stages": stages(
-            [
-                volley.aimed("claw-left", 2.1, 3, 11, ORANGE, 1),
-                volley.aimed("claw-right", 2.1, 3, 11, ORANGE, 2.05),
-                volley.laser("tail-cannon", 6, 1.4, 3),
+_JAGUAR = record({
+    "id": "jaguar",
+    # Angry after each destroyed part (phase 7 review, MB-JAGUAR-10): the hottest mini boss so
+    # far.
+    "rage": rage.curtain(8.5, "orange", "red"),
+    # Its core and parts, and its points (MB-JAGUAR-13).
+    "stats": stats(
+        record({
+            "id": "jaguar",
+            "name": "Jaguar",
+            "size": 3.5,
+            "coreRadius": 20,
+            "coreHealth": 2000,
+            "points": 8000,
+            "groundSpeed": 0.6,
+            "parts": [
+                part("claw-left", [-KX, KY], 15, 1100),
+                part("claw-right", [KX, KY], 15, 1100),
+                part("tail-cannon", [TX, TY], 14, 900, {"shields": False}),
             ],
+        })
+    ),
+    # Where it stops and how it moves in place (MB-JAGUAR-06).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 60, "period": 6},
+    "bob": {"amplitude": 8, "period": 3},
+    "guns": {
+        "core": {"gun": JAGUAR_FANGS, "ring": [JAGUAR_EYE]},
+        "claw-left": {"gun": mirror(JAGUAR_CLAW), "turret": [-KX, KY]},
+        "claw-right": {"gun": JAGUAR_CLAW, "turret": [KX, KY]},
+        "tail-cannon": {"laser": JAGUAR_TAIL, "turret": [TX, TY], "turretLaser": True},
+    },
+    # The parts' volleys, then the core's pattern per stage (MB-JAGUAR-09).
+    "stages": stages(
+        [
+            volley.aimed("claw-left", 2.1, 3, 11, ORANGE, 1),
+            volley.aimed("claw-right", 2.1, 3, 11, ORANGE, 2.05),
+            volley.laser("tail-cannon", 6, 1.4, 3),
+        ],
+        [
+            [volley.ring("core", 0.55, 3, 17, RED, 0.6)],
+            [volley.ring("core", 0.5, 4, -21, RED, 0.5)],
+            [volley.ring("core", 0.5, 5, 25, PURPLE, 0.5)],
             [
-                [volley.ring("core", 0.55, 3, 17, RED, 0.6)],
-                [volley.ring("core", 0.5, 4, -21, RED, 0.5)],
-                [volley.ring("core", 0.5, 5, 25, PURPLE, 0.5)],
-                [
-                    volley.ring("core", 0.45, 5, 13, RED, 0.4),
-                    volley.ring("core", 0.45, 5, -15, PURPLE, 0.62),
-                ],
+                volley.ring("core", 0.45, 5, 13, RED, 0.4),
+                volley.ring("core", 0.45, 5, -15, PURPLE, 0.62),
             ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its armour (boss transformations, D-224, MB-JAGUAR-11): the spotted pelt of its right wing, from
 # the fuselage's side out (px from its centre, X right, Y up; mirrored for the left wing).

@@ -1,27 +1,31 @@
-"""The road kit, for the `props/` page (phase 15): a straight, a 90° turn, a T and an X for each
-size (GFX-ROAD-11), the T and X adapters for each pair of sizes (GFX-ROAD-12), and a sample layout
-where each piece is joined to the straights of its open sides."""
+# Copyright (c) 2026 Renaud Guillon
+"""The road kit, for the `props/` page (phase 15).
+
+A straight, a 90° turn, a T and an X for each size (GFX-ROAD-11), the T and X adapters for each pair
+of sizes (GFX-ROAD-12), and a sample layout where each piece is joined to the straights of its open
+sides.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.scenery.road_tiles import PieceSide, RoadPiece
+from game.config.scenery_look import BASE_SCENERY_LOOK
+from game.config.tile_buildings import TILE
+from render.geometry.gradient_shapes import ColoredGeometry
+from render.scenery.scenery_look import PropGeometry
+from render.scenery.tile_road_geometry import add_piece
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.scenery_look import BASE_SCENERY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.tile_buildings import TILE  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.tile_road_geometry import add_piece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The render code reads the look's camelCase fields, so the config record is the look itself.
 LOOK = BASE_SCENERY_LOOK.roads.tiles
-# Road sizes of the kit: up to 3 × 3 (the 4 × 4 roads dropped, reviewer 2026-10-28).
+# Road sizes of the kit: up to 3 x 3 (the 4 x 4 roads dropped, reviewer 2026-10-28).
 SIZES = [1, 2, 3]
 
 # Id of the sample layout.
@@ -40,21 +44,24 @@ class KitPiece:
 
 
 def side(size: int, offset: int = 0) -> PieceSide:
-    """An open side of a piece `size` tiles wide, `offset` tiles from the low edge."""
+    """Return an open side of a piece `size` tiles wide, `offset` tiles from the low edge."""
     return PieceSide(size, offset)
 
 
 def kit_piece(piece_id: str, size: int, sides: list[Any], kind: str) -> KitPiece:
-    """A kit piece of `size` tiles, with the open `sides` (None where closed)."""
+    """Return a kit piece of `size` tiles, with the open `sides` (None where closed)."""
     adapter = False
     for s in sides:
-        if s != None and s.size != size:  # noqa: E711 (undefined or null: a closed side)
+        if s != None and s.size != size:
             adapter = True
     return KitPiece(piece_id, RoadPiece(0, 0, size, kind, adapter, sides))
 
 
 def make_pieces() -> list[KitPiece]:
-    """The 12 pieces of the sizes (4 each): straight (along Z), turn, T and X, for each size."""
+    """Return the 12 pieces of the sizes, 4 each.
+
+    Straight (along Z), turn, T and X, for each size.
+    """
     pieces: list[KitPiece] = []
     for n in SIZES:
         s = side(n)
@@ -66,8 +73,11 @@ def make_pieces() -> list[KitPiece]:
 
 
 def make_adapters() -> list[KitPiece]:
-    """The adapters: for each pair N > M, the size-M road ending on (T) or crossing (X) the
-    size-N road, which runs along X; the narrow road as close to the middle as the grid allows."""
+    """Return the adapters, for each pair of sizes N > M.
+
+    The size-M road ends on (T) or crosses (X) the size-N road, which runs along X; the narrow road
+    is as close to the middle as the grid allows.
+    """
     adapters: list[KitPiece] = []
     for n in SIZES:
         for m in SIZES:
@@ -83,7 +93,7 @@ def make_adapters() -> list[KitPiece]:
 
 
 def make_kit() -> list[KitPiece]:
-    """The pieces of the kit, then its adapters (`list + list` would concatenate strings)."""
+    """Return the pieces of the kit, then its adapters (`list + list` would concatenate strings)."""
     kit = make_pieces()
     kit.extend(make_adapters())
     return kit
@@ -119,11 +129,11 @@ def geometry_of(pieces: list[RoadPiece]) -> PropGeometry:
 
 
 def with_stubs(piece: RoadPiece, x: int, z: int) -> list[RoadPiece]:
-    """The straight pieces joined to each open side of `piece`, at (x, z)."""
+    """Return the straight pieces joined to each open side of `piece`, at (x, z)."""
     placed = RoadPiece(x, z, piece.size, piece.kind, piece.adapter, piece.sides)
     result: list[RoadPiece] = [placed]
     for i, s in enumerate(piece.sides):
-        if s == None:  # noqa: E711 (undefined or null: a closed side)
+        if s == None:
             continue
         step = STEPS[i]
         dx = step[0]
@@ -146,7 +156,10 @@ def with_stubs(piece: RoadPiece, x: int, z: int) -> list[RoadPiece]:
 
 
 def sample_pieces() -> list[RoadPiece]:
-    """The sample layout's pieces: every piece of the kit with straights on its open sides."""
+    """Return the sample layout's pieces.
+
+    Every piece of the kit with straights on its open sides.
+    """
     cell = 4 + 2 * max(SIZES)
     columns = 7
     result: list[RoadPiece] = []
@@ -174,13 +187,18 @@ def centred(pieces: list[RoadPiece]) -> list[RoadPiece]:
 
 
 def build_sample() -> PropGeometry:
-    """The sample layout (GFX-ROAD-11): every piece of the kit with straights on its open sides."""
+    """Return the sample layout (GFX-ROAD-11).
+
+    Every piece of the kit with straights on its open sides.
+    """
     return geometry_of(sample_pieces())
 
 
 def make_kit_pieces_map() -> dict[str, list[RoadPiece]]:
-    """The pieces of each model of the kit, centred as the models are: the `props/` page draws
-    them as textured surfaces, like the levels (phase 15)."""
+    """Return the pieces of each model of the kit, centred as the models are.
+
+    The `props/` page draws them as textured surfaces, like the levels (phase 15).
+    """
     result: dict[str, list[RoadPiece]] = {}
     for kit in ROAD_KIT:
         result[kit.id] = centred([kit.piece])
@@ -191,8 +209,8 @@ def make_kit_pieces_map() -> dict[str, list[RoadPiece]]:
 ROAD_KIT_PIECES = make_kit_pieces_map()
 
 
-def piece_model(piece: RoadPiece) -> Any:  # noqa: ANN401 (a model factory)
-    """A model factory for one kit piece, drawn on flat ground."""
+def piece_model(piece: RoadPiece) -> Any:
+    """Return a model factory for one kit piece, drawn on flat ground."""
 
     def make() -> PropGeometry:
         return geometry_of([piece])
@@ -201,7 +219,7 @@ def piece_model(piece: RoadPiece) -> Any:  # noqa: ANN401 (a model factory)
 
 
 def make_kit_models() -> dict[str, Any]:
-    """The road kit and its sample layout, as models for the `props/` page."""
+    """Return the road kit and its sample layout, as models for the `props/` page."""
     result: dict[str, Any] = {}
     for kit in ROAD_KIT:
         result[kit.id] = piece_model(kit.piece)
@@ -213,11 +231,11 @@ ROAD_KIT_MODELS = make_kit_models()
 
 
 def make_kit_notes() -> dict[str, str]:
-    """What each piece is, shown after its name."""
+    """Return what each piece is, shown after its name."""
     result: dict[str, str] = {}
     for kit in ROAD_KIT:
         size = str(kit.piece.size)
-        result[kit.id] = size + "×" + size + (" adapter" if kit.piece.adapter else "")
+        result[kit.id] = size + "\u00d7" + size + (" adapter" if kit.piece.adapter else "")
     return result
 
 

@@ -1,5 +1,9 @@
-"""Fakes of the entity tests (ENG-145): the world an enemy sees (`EnemyContext`) and a boss whose
-hooks only record what they are asked to do. Imported by the test modules of this folder."""
+# Copyright (c) 2026 Renaud Guillon
+"""Fakes of the entity tests (ENG-145).
+
+The world an enemy sees (`EnemyContext`), and a boss whose hooks only record what they are asked to
+do. Imported by the test modules of this folder.
+"""
 
 from typing import Any
 
@@ -56,11 +60,11 @@ class ProbeBoss(Boss):
         self.moves = 0
         self.patterns: list[float] = []
 
-    def enter(self, ctx: Any, dt: float) -> bool:
+    def enter(self, _ctx: Any, _dt: float) -> bool:
         return self.arrived
 
-    def move(self, ctx: Any, dt: float) -> None:
+    def move(self, _ctx: Any, _dt: float) -> None:
         self.moves += 1
 
-    def update_pattern(self, ctx: Any, dt: float) -> None:
+    def update_pattern(self, _ctx: Any, dt: float) -> None:
         self.patterns.append(dt)

@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/audio/music_styles.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -19,7 +22,7 @@ from game.view.audio.music_styles import (
 
 
 @pytest.mark.parametrize("name", list(SCALES))
-def test_aud_music_03_scales_are_seven_notes_inside_an_octave(name):
+def test_aud_music_03_scales_are_seven_notes_inside_an_octave(name: Any) -> None:
     steps = SCALES[name]
     assert len(steps) == 7
     assert steps[0] == 0
@@ -27,7 +30,7 @@ def test_aud_music_03_scales_are_seven_notes_inside_an_octave(name):
     assert steps[-1] < OCTAVE
 
 
-def test_aud_music_05_the_four_worlds_have_a_style_each():
+def test_aud_music_05_the_four_worlds_have_a_style_each() -> None:
     """Also WLD-1-30, WLD-2-28, WLD-3-21 and WLD-4-23: each world's style."""
     assert set(WORLD_STYLES) == {1, 2, 3, 4}
     for style in WORLD_STYLES.values():
@@ -36,21 +39,22 @@ def test_aud_music_05_the_four_worlds_have_a_style_each():
         assert style.drums in PATTERNS
         assert style.bass in BASS_STEPS
         assert all(len(p) == 4 for p in style.progressions)
-        assert style.roots and style.scales
+        assert style.roots
+        assert style.scales
 
 
-def test_aud_music_07_boss_tracks_are_faster_than_the_levels():
+def test_aud_music_07_boss_tracks_are_faster_than_the_levels() -> None:
     for style in WORLD_STYLES.values():
         assert style.boss_boost[0] <= style.boss_boost[1]
 
 
-def test_aud_music_11_menu_theme_is_slower_than_every_level():
+def test_aud_music_11_menu_theme_is_slower_than_every_level() -> None:
     slowest_level = min(style.tempo[0] for style in WORLD_STYLES.values())
     assert MENU_STYLE.tempo[0] < slowest_level
     assert MENU_STYLE.energies == [[1, 2, 1, 2, 2]]
 
 
-def test_aud_music_06_timing_constants():
+def test_aud_music_06_timing_constants() -> None:
     assert BEATS_PER_BAR == 4
     assert SECTION_BARS == 8
     assert FULL_ENERGY == 2
@@ -59,7 +63,7 @@ def test_aud_music_06_timing_constants():
     assert DRUM_STEPS == 16
 
 
-def test_style_instruments_and_octaves_store_their_fields():
+def test_style_instruments_and_octaves_store_their_fields() -> None:
     inst = StyleInstruments("k", "s", "h", "p", "b", "pad", "arp", "lead")
     assert (inst.kick, inst.snare, inst.hat, inst.perc) == ("k", "s", "h", "p")
     assert (inst.bass, inst.pad, inst.arp, inst.lead) == ("b", "pad", "arp", "lead")

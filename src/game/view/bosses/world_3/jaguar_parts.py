@@ -1,10 +1,11 @@
-"""MB-JAGUAR-04, 3-5: the Jaguar's destroyable parts (its two claw guns and its tail cannon) and
-its spotted armour (MB-JAGUAR-03). Model space: logical pixels,
-nose +Z, Y up; each part drawn around its centre `at`, each turret around its pivot."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-JAGUAR-04, 3-5: the Jaguar's destroyable parts and its spotted armour (MB-JAGUAR-03).
+
+The parts are its two claw guns and its tail cannon. Model space: logical pixels, nose +Z, Y up;
+each part drawn around its centre `at`, each turret around its pivot.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -15,15 +16,17 @@ from game.view.bosses.world_3.jungle_flesh import F, sign_of, table, vein_to
 from game.view.enemies.enemy_shapes import POD_SECTION, decal
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -38,8 +41,10 @@ ROSETTE_HEART = [0.13, 0.08, 0.03]
 
 
 def rosette(hull: SolidBuilder, at: list[float], r: float, y: float) -> None:
-    """A jaguar's rosette painted at height `y` around `[x, z]`: five dark blotches in a ring,
-    `r` from its centre, round a darker heart."""
+    """Add a jaguar's rosette painted at height `y` around `[x, z]`.
+
+    Five dark blotches in a ring, `r` from its centre, round a darker heart.
+    """
     x = at[0]
     z = at[1]
     heart: list[OutlinePoint] = []
@@ -65,17 +70,15 @@ def rosette(hull: SolidBuilder, at: list[float], r: float, y: float) -> None:
 
 
 # A claw's armoured pad around its centre, and the arm reaching back to the wing root.
-PAD = table(
-    [
-        [0, 9],
-        [7, 6],
-        [8, -3],
-        [5, -9],
-        [-5, -9],
-        [-8, -3],
-        [-7, 6],
-    ]
-)
+PAD = table([
+    [0, 9],
+    [7, 6],
+    [8, -3],
+    [5, -9],
+    [-5, -9],
+    [-8, -3],
+    [-7, 6],
+])
 PAD_TOP = 2.5
 
 
@@ -85,8 +88,11 @@ def moved(outline: list[OutlinePoint], at: Vec3) -> list[OutlinePoint]:
 
 
 def claw_mount(p: EnemyParts, at: Vec3) -> None:
-    """A claw gun's mount (MB-JAGUAR-04): an armoured pad on an arm reaching forward from the wing
-    root, spotted on top, amber lights along its flank (its gun turns on it, {@link clawTurret})."""
+    """Add a claw gun's mount (MB-JAGUAR-04).
+
+    An armoured pad on an arm reaching forward from the wing root, spotted on top, amber lights
+    along its flank (its gun turns on it, {@link clawTurret}).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -120,7 +126,7 @@ BLADE = table([[-1.5, 0], [1.5, 0], [0.9, 7], [-0.3, 10]])
 
 
 def barrel(parts: EnemyParts, tip: Vec3, dims: list[float], kind: str = "gun") -> None:
-    """A barrel along +Z from `dims[0]` to the muzzle `tip`, its charge light at the tip."""
+    """Add a barrel along +Z from `dims[0]` to the muzzle `tip`, its charge light at the tip."""
     start = dims[0]
     bore = dims[1]
     hull = parts.hull
@@ -144,8 +150,10 @@ def barrel(parts: EnemyParts, tip: Vec3, dims: list[float], kind: str = "gun") -
 
 
 def claw_turret(p: EnemyParts, at: Vec3) -> None:
-    """A claw gun (MB-JAGUAR-04), turning on its pad: a low housing, twin barrels between three
-    steel talons curving forward like a paw's claws."""
+    """Add a claw gun (MB-JAGUAR-04), turning on its pad.
+
+    A low housing, twin barrels between three steel talons curving forward like a paw's claws.
+    """
     hull = p.hull
     neon = p.neon
     source = JAGUAR_CLAW if at[0] < 0 else mirror(JAGUAR_CLAW)
@@ -170,8 +178,10 @@ PYLON_TOP = 13
 
 
 def tail_mount(p: EnemyParts, at: Vec3) -> None:
-    """The tail cannon's mount (MB-JAGUAR-04): a spotted pod at the tail's tip, a pylon, a lit
-    ring."""
+    """Add the tail cannon's mount (MB-JAGUAR-04).
+
+    A spotted pod at the tail's tip, a pylon, a lit ring.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -187,19 +197,20 @@ def tail_mount(p: EnemyParts, at: Vec3) -> None:
 
 
 # The tail cannon's body along Z around its pivot (loft stations: z, half width, bottom, top).
-CANNON = table(
-    [
-        [-9, 2.5, -1.5, 2.5],
-        [-4, 4.5, -2.5, 4],
-        [4, 4.5, -2.5, 4],
-        [8, 3, -1.5, 3],
-    ]
-)
+CANNON = table([
+    [-9, 2.5, -1.5, 2.5],
+    [-4, 4.5, -2.5, 4],
+    [4, 4.5, -2.5, 4],
+    [8, 3, -1.5, 3],
+])
 
 
 def tail_turret(p: EnemyParts, at: Vec3) -> None:
-    """The tail cannon (MB-JAGUAR-04), turning on its pylon high over the tail: a spotted pod, a
-    long barrel reaching forward over the wing, its lens glowing as the laser charges."""
+    """Add the tail cannon (MB-JAGUAR-04), turning on its pylon high over the tail.
+
+    A spotted pod, a long barrel reaching forward over the wing, its lens glowing as the laser
+    charges.
+    """
     if len(JAGUAR_TAIL) > 0:
         m = JAGUAR_TAIL[0]
         tip = boss_point(m[0], m[1], m[2])

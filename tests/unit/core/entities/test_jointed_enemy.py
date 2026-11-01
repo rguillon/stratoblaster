@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/jointed_enemy.py`."""
 
 import math
@@ -32,7 +33,7 @@ class Hull(JointedEnemy):
         super().__init__(x, y, stats, design)
         self.acts: list[float] = []
 
-    def act(self, ctx: Any, dt: float) -> None:
+    def act(self, _ctx: Any, dt: float) -> None:
         self.acts.append(dt)
 
 
@@ -40,8 +41,8 @@ def make_hull(design: JointedDesign = DESIGN) -> Hull:
     return Hull(100, 200, EnemyStats("hull", 30, 50, 500), design)
 
 
-def part_by_id(hull: JointedEnemy, id: str) -> Any:
-    found = [part for part in hull.parts if part.spec.id == id]
+def part_by_id(hull: JointedEnemy, item_id: str) -> Any:
+    found = [part for part in hull.parts if part.spec.id == item_id]
     assert len(found) == 1
     return found[0]
 

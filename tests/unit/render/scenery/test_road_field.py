@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_field.py` (GFX-ROAD-06, GFX-ROAD-22)."""
 
 from types import SimpleNamespace
@@ -22,9 +23,9 @@ class FakeMaterial:
 
     def __init__(self, name: str) -> None:
         self.name = name
-        self.disableDepthWrite = True  # noqa: N815 (Babylon's name)
-        self.zOffset = 0.0  # noqa: N815
-        self.diffuseTexture: Any = None  # noqa: N815
+        self.disableDepthWrite = True
+        self.zOffset = 0.0
+        self.diffuseTexture: Any = None
 
     def clone(self, name: str) -> "FakeMaterial":
         return FakeMaterial(name)
@@ -32,23 +33,25 @@ class FakeMaterial:
 
 class FakeTexture:
     def __init__(self) -> None:
-        self.anisotropicFilteringLevel = 1  # noqa: N815
+        self.anisotropicFilteringLevel = 1
 
 
 @pytest.fixture(autouse=True)
 def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The Babylon calls of the road meshes and textures, as plain Python, and the slots that
-    keep the split of a list of roads (JavaScript properties in the browser)."""
+    """Replace the Babylon calls of the road meshes and textures with plain Python.
+
+    The slots keep the split of a list of roads (JavaScript properties in the browser).
+    """
     patch_babylon(monkeypatch, road_field)
     SLOTS.clear()
     monkeypatch.setattr(road_field, "_slot_get", lambda o, s: SLOTS.get((id(o), s)))
     monkeypatch.setattr(road_field, "_slot_set", lambda o, s, v: SLOTS.__setitem__((id(o), s), v))
-    monkeypatch.setattr(road_field, "compute_normals", lambda p, i: [0.0] * len(p))
+    monkeypatch.setattr(road_field, "compute_normals", lambda p, _i: [0.0] * len(p))
     monkeypatch.setattr(road_field, "new_vertex_data", SimpleNamespace)
-    monkeypatch.setattr(road_field, "apply_vertex_data", lambda data, mesh: None)
+    monkeypatch.setattr(road_field, "apply_vertex_data", lambda _data, _mesh: None)
     monkeypatch.setattr(road_field, "texture_trilinear_sampling_mode", lambda: 0)
-    monkeypatch.setattr(road_field, "raw_rgba_texture", lambda *a: FakeTexture())
-    monkeypatch.setattr(road_field, "update_raw_texture", lambda t, p: None)
+    monkeypatch.setattr(road_field, "raw_rgba_texture", lambda *_a: FakeTexture())
+    monkeypatch.setattr(road_field, "update_raw_texture", lambda _t, _p: None)
 
 
 def _triangle() -> ColoredGeometry:
@@ -142,7 +145,7 @@ def test_the_opaque_road_material_is_a_clone_written_in_depth_with_the_street_of
 
 def test_the_middles_of_all_street_chunks_are_drawn_apart_and_mixed_roads_are_not() -> None:
     look = make_look().roads
-    flat = SimpleNamespace(height=lambda x, z: 0.0)
+    flat = SimpleNamespace(height=lambda _x, _z: 0.0)
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     layers.set_chunk(0, [_road(1, "street")], flat, (0, 100), look)
     assert layers.streets_of(0) is not None
@@ -152,7 +155,7 @@ def test_the_middles_of_all_street_chunks_are_drawn_apart_and_mixed_roads_are_no
 
 def test_the_count_of_the_layers_is_the_chunks_with_ribbons_and_clear_empties_them() -> None:
     look = make_look().roads
-    flat = SimpleNamespace(height=lambda x, z: 0.0)
+    flat = SimpleNamespace(height=lambda _x, _z: 0.0)
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     roads = [_road(1, "main"), _road(2, "cross")]
     layers.set_chunk(0, roads, flat, (0, 100), look)
@@ -192,7 +195,7 @@ def test_d217_each_version_of_the_road_atlas_is_uploaded_once(
 ) -> None:
     """GFX-ROAD-21."""
     uploads: list[Any] = []
-    monkeypatch.setattr(road_field, "update_raw_texture", lambda t, p: uploads.append(p))
+    monkeypatch.setattr(road_field, "update_raw_texture", lambda _t, p: uploads.append(p))
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     layers.set_tile_chunk(0, _tile_chunk([1], 1))
     texture = layers._atlas_texture
@@ -230,7 +233,7 @@ def test_on_a_tile_path_the_streets_are_not_made_in_the_road_chunk() -> None:
         0.3,
         0.1,
     )
-    flat = SimpleNamespace(height=lambda x, z: 0.0)
+    flat = SimpleNamespace(height=lambda _x, _z: 0.0)
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     roads = [_road(1, "street"), _road(2, "cross"), _road(3, "main")]
     layers.set_chunk(0, roads, flat, (0, 100), look, TileRules(10, 2))

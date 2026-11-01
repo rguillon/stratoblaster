@@ -1,21 +1,22 @@
-"""Which pieces of a model hold together (docs/superpowers/specs/2026-10-31-boss-armour-shedding-
-design.md, D-227: a boss stays one object).
+# Copyright (c) 2026 Renaud Guillon
+"""Which pieces of a model hold together (a boss stays one object, D-227).
 
-Pure: no Babylon. Triangles are lists of three `shatter.Vertex`. Two triangles are in the same
-piece when they share a corner position; two pieces hold together when their surfaces come within
-about `cell` of each other (sampled into cubes of `cell` px), as solids standing on or sunk into
-each other do. Bounds alone would not do: a hull's bounds hold the whole model.
+Design: docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md.
+
+Pure: no Babylon. Triangles are lists of three `shatter.Vertex`. Two triangles are in the same piece
+when they share a corner position; two pieces hold together when their surfaces come within about
+`cell` of each other (sampled into cubes of `cell` px), as solids standing on or sunk into each
+other do. Bounds alone would not do: a hull's bounds hold the whole model.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _find(parent: list[int], a: int) -> int:
@@ -37,7 +38,7 @@ def _key(p: list[float]) -> str:
 
 
 def bounds_of(tris: list[Any]) -> list[float]:
-    """The bounds of `tris`: `[x0, y0, z0, x1, y1, z1]`."""
+    """Return the bounds of `tris`: `[x0, y0, z0, x1, y1, z1]`."""
     b = [math.inf, math.inf, math.inf, -math.inf, -math.inf, -math.inf]
     for tri in tris:
         for v in tri:
@@ -55,8 +56,8 @@ def touch(a: list[float], b: list[float], tolerance: float) -> bool:
 
 
 def pieces(tris: list[Any]) -> list[list[int]]:
-    """The indices of `tris` by piece: triangles sharing a corner position are one piece."""
-    parent = [i for i in range(len(tris))]
+    """Return the indices of `tris` by piece: triangles sharing a corner position are one piece."""
+    parent = list(range(len(tris)))
     first: dict[str, int] = {}
     for i in range(len(tris)):
         for v in tris[i]:
@@ -78,7 +79,7 @@ def pieces(tris: list[Any]) -> list[list[int]]:
 
 
 def _by_left(boxes: list[list[float]], indices: list[int]) -> list[int]:
-    """`indices` sorted by the left edge (X) of their box (a merge sort)."""
+    """Return `indices` sorted by the left edge (X) of their box (a merge sort)."""
     if len(indices) <= 1:
         return indices
     half = len(indices) // 2
@@ -100,11 +101,13 @@ def _by_left(boxes: list[list[float]], indices: list[int]) -> list[int]:
 
 
 def holding(boxes: list[list[float]], tolerance: float) -> list[int]:
-    """The group of each of `boxes`: boxes that touch (directly or through others) share one.
-    Groups are numbered from 0 in order of their first box."""
-    parent = [i for i in range(len(boxes))]
+    """Return the group of each of `boxes`: boxes that touch (directly or through others) share one.
+
+    Groups are numbered from 0 in order of their first box.
+    """
+    parent = list(range(len(boxes)))
     # Sweep along X: only boxes whose X spans meet are compared.
-    order = _by_left(boxes, [i for i in range(len(boxes))])
+    order = _by_left(boxes, list(range(len(boxes))))
     for a in range(len(order)):
         i = order[a]
         reach = boxes[i][3] + tolerance
@@ -118,7 +121,10 @@ def holding(boxes: list[list[float]], tolerance: float) -> list[int]:
 
 
 def _numbered(parent: list[int]) -> list[int]:
-    """The group of each element joined in `parent`, numbered from 0 in order of first element."""
+    """Return the group of each element joined in `parent`, numbered from 0.
+
+    The groups are numbered in order of their first element.
+    """
     number = [-1 for _ in parent]
     count = 0
     result: list[int] = []
@@ -145,8 +151,10 @@ _CELL_MEMO: list[Any] = [{}, 0]
 
 
 def _surface_cells(tri: Any, cell: float) -> list[int]:
-    """The cubes of `cell` px a triangle's surface falls in, from points spread over it about
-    `0.8 * cell` apart (its corners included)."""
+    """Return the cubes of `cell` px a triangle's surface falls in.
+
+    They are found from points spread over it about `0.8 * cell` apart (its corners included).
+    """
     a = tri[0].position
     b = tri[1].position
     c = tri[2].position
@@ -188,12 +196,16 @@ def _surface_cells(tri: Any, cell: float) -> list[int]:
 
 
 def holding_surfaces(tris: list[Any], groups: list[list[int]], cell: float) -> list[int]:
-    """The object each piece (`groups`, indices of `tris`) belongs to: pieces whose surfaces fall
-    in the same or neighbouring cubes of `cell` hold together (`_surface_cells`). Objects numbered
-    from 0. Two pieces are joined only where a cube is another piece's: a boss's surfaces fall in
-    hundreds of thousands of cubes (the unit tests went from minutes to seconds,
-    ENG-48)."""
-    parent = [g for g in range(len(groups))]
+    """Return the object each piece (`groups`, indices of `tris`) belongs to.
+
+    Pieces whose surfaces fall in the same or neighbouring cubes of `cell` hold together
+    (`_surface_cells`).
+
+    Objects numbered from 0. Two pieces are joined only where a cube is another piece's: a boss's
+    surfaces fall in hundreds of thousands of cubes (the unit tests went from minutes to seconds,
+    ENG-48).
+    """
+    parent = list(range(len(groups)))
     owner: dict[int, int] = {}
     owned: list[int] = []
     for g in range(len(groups)):
@@ -211,7 +223,7 @@ def holding_surfaces(tris: list[Any], groups: list[list[int]], cell: float) -> l
 
 
 def _join_neighbours(parent: list[int], owner: dict[int, int], owned: list[int]) -> None:
-    """Joins the pieces owning neighbouring cubes: a surface just over another one."""
+    """Join the pieces owning neighbouring cubes: a surface just over another one."""
     for key in owned:
         mine = owner[key]
         for near in [key + CELL_PLANE, key + CELL_STRIDE, key + 1]:
@@ -226,8 +238,11 @@ CENTRE = 12.0
 
 
 def main_object(tris: list[Any], groups: list[list[int]], held: list[int]) -> int:
-    """The main object: of those reaching within `CENTRE` of the model's centre seen from above
-    (a boss's core is there), the one with the most triangles; else the biggest."""
+    """Return the main object: near the model's centre, the one with the most triangles.
+
+    Of those reaching within `CENTRE` of the model's centre seen from above (a boss's core is
+    there), the one with the most triangles; else the biggest.
+    """
     sizes = [0 for _ in groups]
     near = [False for _ in groups]
     for k in range(len(groups)):

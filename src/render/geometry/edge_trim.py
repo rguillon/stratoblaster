@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Self-lit edge trim along a model's top-view silhouette.
 
 The trim replaces the rim outline (GFX-TRIM-01, read as a built-in rim light): thin ribbons, lying
@@ -5,9 +6,9 @@ just outside the edges a model shows from above, so its silhouette stands out fr
 from straight above, those edges are the same whatever the model's heading (enemies and bosses only
 turn about the vertical axis), and the playfield camera is close enough to that.
 
-Y is up. Triangles are index triples whose Babylon front normal is `(p2 - p0) × (p1 - p0)`.
-Vertices are matched by position, so both flat-shaded solids (each face its own vertices) and
-meshes with shared vertices work. Pure maths, unit-tested without Babylon (GFX-TRIM-10).
+Y is up. Triangles are index triples whose Babylon front normal is `(p2 - p0) x (p1 - p0)`. Vertices
+are matched by position, so both flat-shaded solids (each face its own vertices) and meshes with
+shared vertices work. Pure maths, unit-tested without Babylon (GFX-TRIM-10).
 """
 
 import math
@@ -36,8 +37,10 @@ _MERGE = 0.966
 
 
 class TrimOptions:
-    """How the trim looks: its `width` and its `offset` out from the edge, in model units; edges of
-    triangles facing less up than `min_up` (the Y of their unit normal) are not traced."""
+    """How the trim looks: its `width` and its `offset` out from the edge, in model units.
+
+    Edges of triangles facing less up than `min_up` (the Y of their unit normal) are not traced.
+    """
 
     def __init__(self, width: float, offset: float, min_up: float = 0.2) -> None:
         self.width = width
@@ -46,8 +49,7 @@ class TrimOptions:
 
 
 class TrimEdge:
-    """A silhouette edge from `a` to `b`, and `out`, the unit horizontal vector away from the
-    shape."""
+    """A silhouette edge from `a` to `b`, and `out`, the unit horizontal vector away from it."""
 
     def __init__(self, a: Vec3, b: Vec3, out: Vec3) -> None:
         self.a = a
@@ -60,7 +62,7 @@ def _point(positions: list[float], i: int) -> Vec3:
 
 
 def _up(p0: Vec3, p1: Vec3, p2: Vec3) -> float:
-    """The Y of the unit Babylon normal of the triangle (0 for a degenerate one)."""
+    """Return the Y of the unit Babylon normal of the triangle (0 for a degenerate one)."""
     u = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]]
     v = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]]
     nx = u[1] * v[2] - u[2] * v[1]
@@ -73,7 +75,7 @@ def _up(p0: Vec3, p1: Vec3, p2: Vec3) -> float:
 
 
 def up_triangles(positions: list[float], indices: list[int], min_up: float) -> list[Triangle]:
-    """The triangles facing up (unit normal Y at least `min_up`), as lists of 3 points."""
+    """Return the triangles facing up (unit normal Y at least `min_up`), as lists of 3 points."""
     result: list[Triangle] = []
     for t in range(0, len(indices) - 2, 3):
         p0 = _point(positions, indices[t])
@@ -128,7 +130,7 @@ class _Grid:
         key = str(self._cell(x)) + "," + str(self._cell(z))
         if key not in self._cells:
             return False
-        return any([_inside(self._cover[i], x, z) for i in self._cells[key]])
+        return any(_inside(self._cover[i], x, z) for i in self._cells[key])
 
 
 def _inside(t: Triangle, x: float, z: float) -> bool:
@@ -141,8 +143,10 @@ def _inside(t: Triangle, x: float, z: float) -> bool:
 
 
 def _outward(a: Vec3, b: Vec3, inner: Vec3) -> Vec3 | None:
-    """The unit horizontal vector square to edge `a`-`b`, away from `inner` (None for an edge
-    with no length seen from above)."""
+    """Return the unit horizontal vector square to edge `a`-`b`, away from `inner`.
+
+    It is None for an edge with no length seen from above.
+    """
     dx = b[0] - a[0]
     dz = b[2] - a[2]
     length = math.sqrt(dx * dx + dz * dz)
@@ -164,9 +168,12 @@ def silhouette_edges(
     cover: list[Triangle] | None,
     min_up: float,
 ) -> list[TrimEdge]:
-    """The edges of the up-facing triangles (see `up_triangles`) that border no other up-facing
-    triangle, and that no triangle of `cover` lies just outside of, seen from above (`cover`: the
-    up-facing triangles of the whole model, those of this geometry when None; GFX-TRIM-02)."""
+    """Return the edges of up-facing triangles bordering no other up-facing triangle.
+
+    Up-facing as in `up_triangles`. Of those, the edges that no triangle of `cover` lies just
+    outside of, seen from above (`cover`: the up-facing triangles of the whole model, those of this
+    geometry when None; GFX-TRIM-02).
+    """
     ups = up_triangles(positions, indices, min_up)
     grid = _Grid(cover if cover is not None else ups)
     counts: dict[str, int] = {}
@@ -243,7 +250,7 @@ def _far_point(edge: TrimEdge, key: str) -> Vec3:
     return edge.b if _key(edge.a) == key else edge.a
 
 
-def _run_tip(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def _run_tip(
     edges: list[TrimEdge],
     ends: dict[str, list[int]],
     used: list[bool],
@@ -251,8 +258,10 @@ def _run_tip(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     key: str,
     tip: Vec3,
 ) -> Vec3:
-    """The far end of the run of edges going on from edge `i` at its end `key` (`tip`), while they
-    meet two by two and turn by less than about 15° from edge `i`; marks them used."""
+    """Return the far end of the run of edges going on from edge `i` at its end `key` (`tip`).
+
+    They meet two by two and turn by less than about 15° from edge `i`; marks them used.
+    """
     first = edges[i]
     while key in ends and len(ends[key]) == _PAIR:
         pair = ends[key]
@@ -269,9 +278,12 @@ def _run_tip(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 
 def merged_edges(edges: list[TrimEdge]) -> list[TrimEdge]:
-    """`edges` with each run of edges in a row (meeting two by two) that turns by less than about
-    15° from its first edge drawn as one, from its first point to its last: curved outlines get far
-    fewer ribbons, a little inside the curve."""
+    """Return `edges` with each nearly straight run of edges merged into one.
+
+    Each run of edges in a row (meeting two by two) that turns by less than about 15° from its
+    first edge is drawn as one, from its first point to its last: curved outlines get far fewer
+    ribbons, a little inside the curve.
+    """
     ends: dict[str, list[int]] = {}
     for i, edge in enumerate(edges):
         for p in [edge.a, edge.b]:
@@ -304,9 +316,11 @@ def merged_edges(edges: list[TrimEdge]) -> list[TrimEdge]:
 
 
 def trim_ribbons(edges: list[TrimEdge], options: TrimOptions) -> ColoredGeometry:
-    """A flat ribbon out from each edge (from `offset` to `offset + width`), at the edge's heights,
-    and a wedge filling the gap at each corner where two edges turn, in white vertex colours
-    (GFX-TRIM-03)."""
+    """Return a flat ribbon out from each edge, at the edge's heights.
+
+    Each runs from `offset` to `offset + width`, and a wedge fills the gap at each corner where two
+    edges turn, in white vertex colours (GFX-TRIM-03).
+    """
     geo = ColoredGeometry()
     edges = merged_edges(edges)
     near = options.offset
@@ -349,7 +363,7 @@ IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 
 
 def multiply(a: list[float], b: list[float]) -> list[float]:
-    """`a × b`: apply `a`, then `b`."""
+    """Return `a x b`: apply `a`, then `b`."""
     result: list[float] = []
     for r in range(4):
         for c in range(4):
@@ -361,7 +375,7 @@ def multiply(a: list[float], b: list[float]) -> list[float]:
 
 
 def inverse(m: list[float]) -> list[float]:
-    """The inverse of an affine matrix (last column 0, 0, 0, 1)."""
+    """Return the inverse of an affine matrix (last column 0, 0, 0, 1)."""
     a, b, c = m[0], m[1], m[2]
     d, e, f = m[4], m[5], m[6]
     g, h, i = m[8], m[9], m[10]
@@ -414,8 +428,10 @@ def transformed(positions: list[float], m: list[float]) -> list[float]:
 
 
 class TrimShape:
-    """One mesh of a model: its own `positions` and `indices`, and `matrix`, from its space to the
-    model's."""
+    """One mesh of a model: its own `positions` and `indices`, and `matrix`.
+
+    `matrix` is from its space to the model's.
+    """
 
     def __init__(self, positions: list[float], indices: list[int], matrix: list[float]) -> None:
         self.positions = positions
@@ -424,8 +440,11 @@ class TrimShape:
 
 
 def trim_model(shapes: list[TrimShape], options: TrimOptions) -> list[ColoredGeometry]:
-    """The trim of each mesh of a model, in that mesh's own space: its silhouette edges in the
-    model's space, left out where another of its meshes lies just outside them, seen from above."""
+    """Return the trim of each mesh of a model, in that mesh's own space.
+
+    Its silhouette edges in the model's space are left out where another of its meshes lies just
+    outside them, seen from above.
+    """
     placed: list[list[float]] = []
     cover: list[Triangle] = []
     for shape in shapes:

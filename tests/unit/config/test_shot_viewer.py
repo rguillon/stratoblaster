@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/shot_viewer.py`."""
 
 from config.shot_viewer import SHOT_VIEWER_CONFIG

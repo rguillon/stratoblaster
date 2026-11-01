@@ -1,11 +1,10 @@
-"""The Glacier Colossus (2-4's final boss, specs/bosses/final/2-4-glacier-colossus.md)
+# Copyright (c) 2026 Renaud Guillon
+"""The Glacier Colossus (2-4's final boss, specs/bosses/final/2-4-glacier-colossus.md).
 
 The final boss of 2-4. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Six parts: two cutter lasers out on its beam, two ore cannons and a heat sink
 at its bow (these three shield the core), and a missile pod on its stern.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import (
     bullet,
@@ -21,17 +20,20 @@ from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-GLACIER-COLOSSUS-17,
-    `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return a final boss's part.
+
+    Drops a bonus 60 % of the time (FB-GLACIER-COLOSSUS-17, `part_drop_chance`).
+    """
+    extra = {} if options == None else options
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 
@@ -65,89 +67,85 @@ COLOSSUS_CELLS = cells([-5.5, 5.5], [41, 51], 24)
 # 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from its beam
 # (FB-GLACIER-COLOSSUS-09), ore cannons fire fans of big shells, a missile pod covers its stern, and
 # a heat sink at its bow (no weapon) shields the core with the ore cannons. The ground slows to
-# ×0.3.
-_GLACIER_COLOSSUS = record(
-    {
+# x0.3.
+_GLACIER_COLOSSUS = record({
+    "id": "glacier-colossus",
+    # Angry after each destroyed part (phase 7 review, D-063, FB-GLACIER-COLOSSUS-14).
+    "rage": rage.flower(6, "red", "magenta"),
+    # Its core, six parts and points (FB-GLACIER-COLOSSUS-17).
+    "stats": stats({
         "id": "glacier-colossus",
-        # Angry after each destroyed part (phase 7 review, D-063, FB-GLACIER-COLOSSUS-14).
-        "rage": rage.flower(6, "red", "magenta"),
-        # Its core, six parts and points (FB-GLACIER-COLOSSUS-17).
-        "stats": stats(
-            {
-                "id": "glacier-colossus",
-                "name": "Glacier Colossus",
-                "size": 5.5,
-                "coreRadius": 22,
-                "coreHealth": 4400,
-                "points": 14000,
-                "groundSpeed": 0.3,
-                "coreDrop": 1,
-                "parts": [
-                    fpart("cutter-left", list(COLOSSUS_CUTTER), 15, 1200, {"shields": False}),
-                    fpart(
-                        "cutter-right",
-                        [-COLOSSUS_CUTTER[0], COLOSSUS_CUTTER[1]],
-                        15,
-                        1200,
-                        {"shields": False},
-                    ),
-                    fpart("ore-left", list(COLOSSUS_ORE), 15, 1700),
-                    fpart("ore-right", [-COLOSSUS_ORE[0], COLOSSUS_ORE[1]], 15, 1700),
-                    fpart("heat-sink", list(COLOSSUS_HEAT_SINK), 16, 1900),
-                    fpart("missile-pod", list(COLOSSUS_POD), 14, 900, {"shields": False}),
-                ],
-            }
-        ),
-        # Where it stops and how it moves in place (FB-GLACIER-COLOSSUS-08).
-        "stopFraction": 0.75,
-        "sway": {"amplitude": 30, "period": 10},
-        "bob": {"amplitude": 6, "period": 5},
-        "guns": {
-            "core": {"gun": COLOSSUS_CORE_GUNS, "ring": COLOSSUS_STACK},
-            "cutter-left": {
-                "laser": COLOSSUS_CUTTER_LASER,
-                "turret": list(COLOSSUS_CUTTER),
-                "turretLaser": True,
-            },
-            "cutter-right": {
-                "laser": mirror(COLOSSUS_CUTTER_LASER),
-                "turret": [-COLOSSUS_CUTTER[0], COLOSSUS_CUTTER[1]],
-                "turretLaser": True,
-            },
-            "ore-left": {"gun": COLOSSUS_ORE_GUNS},
-            "ore-right": {"gun": mirror(COLOSSUS_ORE_GUNS)},
-            "missile-pod": {"missile": COLOSSUS_CELLS},
+        "name": "Glacier Colossus",
+        "size": 5.5,
+        "coreRadius": 22,
+        "coreHealth": 4400,
+        "points": 14000,
+        "groundSpeed": 0.3,
+        "coreDrop": 1,
+        "parts": [
+            fpart("cutter-left", list(COLOSSUS_CUTTER), 15, 1200, {"shields": False}),
+            fpart(
+                "cutter-right",
+                [-COLOSSUS_CUTTER[0], COLOSSUS_CUTTER[1]],
+                15,
+                1200,
+                {"shields": False},
+            ),
+            fpart("ore-left", list(COLOSSUS_ORE), 15, 1700),
+            fpart("ore-right", [-COLOSSUS_ORE[0], COLOSSUS_ORE[1]], 15, 1700),
+            fpart("heat-sink", list(COLOSSUS_HEAT_SINK), 16, 1900),
+            fpart("missile-pod", list(COLOSSUS_POD), 14, 900, {"shields": False}),
+        ],
+    }),
+    # Where it stops and how it moves in place (FB-GLACIER-COLOSSUS-08).
+    "stopFraction": 0.75,
+    "sway": {"amplitude": 30, "period": 10},
+    "bob": {"amplitude": 6, "period": 5},
+    "guns": {
+        "core": {"gun": COLOSSUS_CORE_GUNS, "ring": COLOSSUS_STACK},
+        "cutter-left": {
+            "laser": COLOSSUS_CUTTER_LASER,
+            "turret": list(COLOSSUS_CUTTER),
+            "turretLaser": True,
         },
-        # The parts' volleys, then the core's pattern per stage (FB-GLACIER-COLOSSUS-13).
-        "stages": stages(
+        "cutter-right": {
+            "laser": mirror(COLOSSUS_CUTTER_LASER),
+            "turret": [-COLOSSUS_CUTTER[0], COLOSSUS_CUTTER[1]],
+            "turretLaser": True,
+        },
+        "ore-left": {"gun": COLOSSUS_ORE_GUNS},
+        "ore-right": {"gun": mirror(COLOSSUS_ORE_GUNS)},
+        "missile-pod": {"missile": COLOSSUS_CELLS},
+    },
+    # The parts' volleys, then the core's pattern per stage (FB-GLACIER-COLOSSUS-13).
+    "stages": stages(
+        [
+            volley.laser("cutter-left", 6.5, 1.4, 2),
+            volley.laser("cutter-right", 6.5, 1.4, 5.25),
+            volley.fan("ore-left", 2.6, 3, 18, ORE, 0.9),
+            volley.fan("ore-right", 2.6, 3, 18, ORE, 2.2),
+            volley.missiles("missile-pod", 5.5, 2, 30, 3),
+        ],
+        [
+            [volley.aimed("core", 2.8, 1, 0, RED, 1.4)],
+            [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
+            [volley.burst("core", 2.4, 4, 0.13, RED, 0.6)],
+            [volley.ring("core", 2.2, 8, 0, MAGENTA, 0.6)],
             [
-                volley.laser("cutter-left", 6.5, 1.4, 2),
-                volley.laser("cutter-right", 6.5, 1.4, 5.25),
-                volley.fan("ore-left", 2.6, 3, 18, ORE, 0.9),
-                volley.fan("ore-right", 2.6, 3, 18, ORE, 2.2),
-                volley.missiles("missile-pod", 5.5, 2, 30, 3),
+                volley.fan("core", 2.4, 7, 12, RED, 0.6),
+                volley.burst("core", 2.8, 3, 0.13, RED, 1.2),
             ],
             [
-                [volley.aimed("core", 2.8, 1, 0, RED, 1.4)],
-                [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
-                [volley.burst("core", 2.4, 4, 0.13, RED, 0.6)],
-                [volley.ring("core", 2.2, 8, 0, MAGENTA, 0.6)],
-                [
-                    volley.fan("core", 2.4, 7, 12, RED, 0.6),
-                    volley.burst("core", 2.8, 3, 0.13, RED, 1.2),
-                ],
-                [
-                    volley.ring("core", 1.8, 10, 7, MAGENTA, 0.5),
-                    volley.aimed("core", 2.6, 1, 0, RED, 1.2),
-                ],
-                [
-                    volley.ring("core", 1.3, 14, 9, MAGENTA, 0.4),
-                    volley.ring("core", 1.3, 14, -11, RED, 1.05),
-                ],
+                volley.ring("core", 1.8, 10, 7, MAGENTA, 0.5),
+                volley.aimed("core", 2.6, 1, 0, RED, 1.2),
             ],
-        ),
-    }
-)
+            [
+                volley.ring("core", 1.3, 14, 9, MAGENTA, 0.4),
+                volley.ring("core", 1.3, 14, -11, RED, 1.05),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
 # baring a dark metal frame, and a pair of ring emitters unfold (FB-GLACIER-COLOSSUS-15); at

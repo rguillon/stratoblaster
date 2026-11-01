@@ -1,18 +1,19 @@
-"""The Spinner (`specs/enemies/spinner.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Spinner (`specs/enemies/spinner.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, Cadence
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.spinner
 
@@ -27,10 +28,11 @@ class SpinnerPod:
 
 
 class Spinner(Enemy):
-    """ENM-SPINNER-04: descends to its stop height in the upper half, stops, then spins for 3 s
-    firing a spiral of bullets from its four pods (ENM-SPINNER-05; each bullet leaves outwards, so
-    the directions turn with the ring), then leaves upward (ENM-SPINNER-06). Its heading is the
-    ring's rotation.
+    """ENM-SPINNER-04: descends to its stop height in the upper half, stops.
+
+    Then spins for 3 s firing a spiral of bullets from its four pods (ENM-SPINNER-05; each bullet
+    leaves outwards, so the directions turn with the ring), then leaves upward (ENM-SPINNER-06). Its
+    heading is the ring's rotation.
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -56,6 +58,7 @@ class Spinner(Enemy):
         return result
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         spin = CFG.firingSpin if self.state == "fire" else CFG.idleSpin
         self.heading += spin * DEG * dt
         if self.state == "enter":

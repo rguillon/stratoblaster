@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/edge_trim_mesh.py`: models get their glowing edge trim as child
-meshes (GFX-TRIM-01)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/edge_trim_mesh.py`: models get their glowing edge trim as child meshes.
+
+Covers GFX-TRIM-01.
+"""
 
 from types import SimpleNamespace
 from typing import Any
@@ -30,11 +33,11 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(edge_trim_mesh, "mesh_positions", lambda mesh: mesh.positions)
     monkeypatch.setattr(edge_trim_mesh, "mesh_indices", lambda mesh: mesh.indices)
     monkeypatch.setattr(edge_trim_mesh, "world_matrix", lambda node: node.matrix)
-    monkeypatch.setattr(edge_trim_mesh, "compute_normals", lambda p, i: [])
+    monkeypatch.setattr(edge_trim_mesh, "compute_normals", lambda _p, _i: [])
     monkeypatch.setattr(
         edge_trim_mesh,
         "vertex_data_of",
-        lambda p, i, n, c: SimpleNamespace(positions=p, indices=i, colors=c),
+        lambda p, i, _n, c: SimpleNamespace(positions=p, indices=i, colors=c),
     )
 
     def apply(data: Any, mesh: Any) -> None:
@@ -42,7 +45,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(edge_trim_mesh, "apply_vertex_data", apply)
     monkeypatch.setattr(
-        edge_trim_mesh, "new_standard_material", lambda label, scene: SimpleNamespace(name=label)
+        edge_trim_mesh, "new_standard_material", lambda label, _scene: SimpleNamespace(name=label)
     )
 
 
@@ -117,7 +120,8 @@ def test_meshes_of_one_colour_share_a_material() -> None:
     trims = add_edge_trim(root, TrimOptions(0.1, 0))
     assert len(trims) == 2
     assert trims[0].material is trims[1].material
-    assert a.children and b.children
+    assert a.children
+    assert b.children
 
 
 def test_a_covered_mesh_gets_no_trim_and_a_cleared_one_neither() -> None:
@@ -156,4 +160,5 @@ def test_a_trim_group_is_trimmed_along_its_own_outline() -> None:
     trims = add_edge_trim(root, TrimOptions(0.1, 0))
     # The part on the hull keeps its outline; the hull keeps its own.
     assert sorted(t.parent.name for t in trims) == ["hull", "part-mesh"]
-    assert big.children and small.children
+    assert big.children
+    assert small.children

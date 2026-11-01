@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/terrain_chunks.py` (GFX-TERRAIN-13, GFX-TERRAIN-14)."""
 
 from types import SimpleNamespace
@@ -11,10 +12,10 @@ from render.scenery.terrain_chunks import TerrainChunkOptions, TerrainChunks
 
 
 class Slope:
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, z: float) -> float:
         return z * 0.1
 
-    def surface(self, z: float) -> Any:
+    def surface(self, _z: float) -> Any:
         return None
 
 
@@ -35,10 +36,10 @@ def rec(monkeypatch: pytest.MonkeyPatch) -> _Recorder:
         node.refreshBoundingInfo = lambda: None  # type: ignore[attr-defined]
         return node
 
-    def apply_updatable(data: Any, mesh: FakeNode) -> None:
+    def apply_updatable(_data: Any, mesh: FakeNode) -> None:
         recorder.updatable.append(mesh)
 
-    def update(mesh: FakeNode, kind: str, values: Any) -> None:
+    def update(mesh: FakeNode, kind: str, _values: Any) -> None:
         recorder.updates.append((kind, mesh))
 
     monkeypatch.setattr(terrain_chunks, "new_mesh", new_mesh)
@@ -65,18 +66,21 @@ def _chunks(**overrides: Any) -> TerrainChunks:
     return TerrainChunks(FakeScene(), "material", options, Slope())
 
 
-def test_a_chunk_spans_its_length_along_z(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_a_chunk_spans_its_length_along_z() -> None:
     chunks = _chunks()
     span = chunks.span(3)
     assert (span.index, span.z_min, span.z_max) == (3, 30, 40)
 
 
-def test_the_rows_of_a_chunk_follow_its_length_and_cell_size(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_the_rows_of_a_chunk_follow_its_length_and_cell_size() -> None:
     chunks = _chunks(length=10, cell=2)
     assert chunks._rows == 5
 
 
-def test_covering_a_stretch_adds_the_chunks_it_touches(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_covering_a_stretch_adds_the_chunks_it_touches() -> None:
     chunks = _chunks()
     changes = chunks.cover(0, 25)
     assert [s.index for s in changes.added] == [0, 1, 2]
@@ -84,9 +88,8 @@ def test_covering_a_stretch_adds_the_chunks_it_touches(rec: _Recorder) -> None:
     assert chunks.count == 3
 
 
-def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused(
-    rec: _Recorder,
-) -> None:
+@pytest.mark.usefixtures("rec")
+def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused() -> None:
     chunks = _chunks()
     chunks.cover(0, 25)
     first_mesh = chunks.meshes[0]
@@ -101,7 +104,8 @@ def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused(
     assert chunks.meshes[4].enabled is True
 
 
-def test_a_new_mesh_is_an_unpickable_shadow_receiver_with_the_material(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_a_new_mesh_is_an_unpickable_shadow_receiver_with_the_material() -> None:
     seen: list[FakeNode] = []
     options = TerrainChunkOptions(10, 2, 0, 2)
     chunks = TerrainChunks(FakeScene(), "terrain", options, Slope(), on_mesh=seen.append)

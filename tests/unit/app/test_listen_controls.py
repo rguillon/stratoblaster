@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/listen_controls.py`."""
 # keys go to the level's debug keys first.
 

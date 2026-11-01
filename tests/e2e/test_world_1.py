@@ -1,5 +1,8 @@
-"""e2e: World 1, its levels, the debug options and the end of a level (specs/worlds/world-1/,
-specs/dev/debug-options.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: World 1, its levels, the debug options.
+
+The end of a level (specs/worlds/world-1/, specs/dev/debug-options.md).
+"""
 
 import re
 
@@ -57,8 +60,10 @@ def test_wld_1_02_the_world_1_row_shows_1_1_to_1_5_all_unlocked(page: Page) -> N
 def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
-    """Also UI-LEVEL-03 (none is locked), WLD-1-03 (about four minutes) and each level's duration
-    (LVL-1-1-02, LVL-1-2-02, LVL-1-3-02, LVL-1-4-02, LVL-1-5-02)."""
+    """Also UI-LEVEL-03 (none is locked) and WLD-1-03 (about four minutes).
+
+    Also each level's duration (LVL-1-1-02, LVL-1-2-02, LVL-1-3-02, LVL-1-4-02, LVL-1-5-02).
+    """
     play_level(page, index)
     played = game_state(page)["game"]
     assert played["levelId"] == level_id
@@ -79,8 +84,10 @@ def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
 def test_game_screen_05_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen(
     page: Page,
 ) -> None:
-    """Also GAME-CTRL-01 (arrows, Space, E), GAME-CTRL-05 (shooting is held), GAME-LEVEL-11 (the
-    ship rises in) and ENG-54 (the player moves and shoots)."""
+    """Also GAME-CTRL-01 (arrows, Space, E), GAME-CTRL-05 (shooting is held).
+
+    GAME-LEVEL-11 (the ship rises in) and ENG-54 (the player moves and shoots).
+    """
     play_level(page, 0, 1)
     assert game_state(page)["chosenShipId"] == "heavy"
     # The ship rises into the level first (reviewer, 2026-10-28).
@@ -130,8 +137,10 @@ def test_dev_opt_10_without_debug_options_f_and_the_arrows_do_not_change_the_tim
 
 
 def test_dev_opt_02_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(page: Page) -> None:
-    """Also DEV-OPT-01 (`?level=`), DEV-PERF-04 (the FPS / polygons tile) and DEV-OPT-08 (F and
-    the arrows)."""
+    """Also DEV-OPT-01 (`?level=`), DEV-PERF-04 (the FPS / polygons tile).
+
+    DEV-OPT-08 (F and the arrows).
+    """
     open_debug(page, "?level=1-3&t=120")
     state = game_state(page)
     played = state["game"]
@@ -155,8 +164,10 @@ def test_dev_opt_02_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(p
 
 
 def test_lvl_1_1_13_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> None:
-    """Also GAME-LEVEL-10 (the level ends), UI-OVER-01 (the "Level complete" panel), UI-LEVEL-07
-    (1-2 is highlighted next) and DEV-OPT-09 (K)."""
+    """Also GAME-LEVEL-10 (the level ends) and UI-OVER-01 (the "Level complete" panel).
+
+    Also UI-LEVEL-07 (1-2 is highlighted next) and DEV-OPT-09 (K).
+    """
     open_debug(page, "?level=1-1&boss=final&ship=light")
     assert game_state(page)["chosenShipId"] == "light"
     step_until(page, lambda: boss_name(page), lambda n: n == "Storm Petrel")

@@ -1,8 +1,7 @@
-"""The Mantis (`specs/enemies/mantis.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Mantis (`specs/enemies/mantis.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss_joint import BossJointSpec, JointSwing
 from core.entities.jointed_enemy import EnemyPartSpec, JointedDesign, JointedEnemy
@@ -10,11 +9,16 @@ from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, bullet_shot, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING
 
-__pragma__("noskip")
+from core.entities.enemy import EnemyContext
+
+if TYPE_CHECKING:
+    from core.entities.muzzle import Muzzle
+# __pragma__ ("noskip")
+
 
 CFG = VETERAN_CONFIG.mantis
 ARM = CFG.arm
@@ -24,13 +28,15 @@ CREEP = 20
 
 
 def _side_name(s: int) -> str:
-    """The name of the arm on the side `s` (-1 left, 1 right)."""
+    """Return the name of the arm on the side `s` (-1 left, 1 right)."""
     return "left" if s == -1 else "right"
 
 
 def _arm_design(s: int) -> tuple[str, BossJointSpec, EnemyPartSpec]:
-    """The arm on the side `s` (1 right, -1 left): its shoulder joint and its blade, a part with
-    its own hit circle and health (ENM-MANTIS-12)."""
+    """Return the arm on the side `s` (1 right, -1 left): its shoulder joint and its blade.
+
+    A part with its own hit circle and health (ENM-MANTIS-12).
+    """
     side = _side_name(s)
     out = s * ARM.outDeg * DEG
     sx = s * CFG.shoulder[0]
@@ -67,12 +73,13 @@ MANTIS_DESIGN = _mantis_design()
 
 
 class Mantis(JointedEnemy):
-    """ENM-MANTIS-08: an insect-like hull with two scythe arms (moving parts, ENM-27) swinging out
-    and in, out of step (ENM-MANTIS-09). It comes down to the upper half, stops for 6 s, then
-    leaves downward. While it is stopped, each standing arm fires a pair of bullets straight along
-    its blade every 1.2 s (ENM-MANTIS-10), so its shots sweep as the arm swings, its charge lights
-    following them (ENM-MANTIS-04); its head fires a bullet aimed at the player every 2 s
-    (ENM-MANTIS-11).
+    """ENM-MANTIS-08: an insect-like hull with two scythe arms swinging out and in.
+
+    The arms are moving parts (ENM-27) and swing out of step (ENM-MANTIS-09). It comes down to the
+    upper half, stops for 6 s, then leaves downward. While it is stopped, each standing arm fires a
+    pair of bullets straight along its blade every 1.2 s (ENM-MANTIS-10), so its shots sweep as the
+    arm swings, its charge lights following them (ENM-MANTIS-04); its head fires a bullet aimed at
+    the player every 2 s (ENM-MANTIS-11).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -86,6 +93,7 @@ class Mantis(JointedEnemy):
         self.heading = DOWN
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self._enter(dt)
         elif self.state == "stay":
@@ -115,7 +123,7 @@ class Mantis(JointedEnemy):
         self.charge = 0
 
     def _fire_arm(self, ctx: EnemyContext, s: int) -> None:
-        """The arm on side `s` fires its pair straight along its blade, if it still stands."""
+        """Fire the pair of the arm on side `s`, straight along its blade, if it still stands."""
         arm = self.part(_side_name(s) + "-arm")
         if arm is None:
             return

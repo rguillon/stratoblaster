@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bomb_look.py`."""
 
 from game.config.bomb_look import BOMB_LOOK

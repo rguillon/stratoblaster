@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_choices.py`."""
 # (UI-TITLE-03, UI-SHIP-07, GAME-SCORE-05).
 

@@ -1,5 +1,7 @@
-"""The aurora of a scenery stage (GFX-SKY-17, 2-5 at night): slow green and violet curtains over the
-scene, on a sheet high above the ground.
+# Copyright (c) 2026 Renaud Guillon
+"""The aurora of a scenery stage (GFX-SKY-17).
+
+Slow green and violet curtains over the scene, on a sheet high above the ground (2-5 at night).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -7,11 +9,13 @@ from org.transcrypt.stubs.browser import __pragma__
 from render.babylon import create_ground, set_enabled
 from render.scenery.cloud_layers import BELOW_CLOUDS_GROUP
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any, Protocol
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Draw order: after the clouds and the weather.
 AURORA_ALPHA_INDEX = 5
@@ -35,16 +39,21 @@ class AuroraMaterial(Protocol):
 
     material: Any
 
-    def set(self, frame: AuroraFrame) -> None: ...
+    def set(self, frame: AuroraFrame) -> None:
+        """Set the aurora's shader parameters from `frame`."""
 
 
 __pragma__("noskip")
 
 
 class AuroraLayer:
-    """An aurora (GFX-SKY-17): slow green and violet curtains added over the scene from a sheet high
-    above the ground, faint near the camera and strongest in the far haze at the top of the
-    screen. Shown only while the atmosphere has one; it never flashes."""
+    """An aurora (GFX-SKY-17).
+
+    Slow green and violet curtains added over the scene from a sheet high above the ground, faint
+    near the camera and strongest in the far haze at the top of the screen.
+
+    Shown only while the atmosphere has one; it never flashes.
+    """
 
     def __init__(self, scene: Any, material: Any, placement: tuple[Any, float, float]) -> None:
         """`material` is an `AuroraMaterial`; `placement` is `(seen, altitude, margin)`."""

@@ -1,9 +1,12 @@
-"""The homes of the residential districts (Phase 15, reviewer 2026-10-28: "gather the terraces
-and suburbs into the same category, remove the green, make it more diverse, this is the future, no
-need for tile roofs"): flat or metal roofed, on paved plots. Each model takes the silhouette its
-seed names, so a group's models all differ (GFX-BLDG-09): cantilevered slabs, pods, a row of
-modules under solar panels, stepped terraces, a house on stilts and a wedge under a sloping metal
-roof."""
+# Copyright (c) 2026 Renaud Guillon
+"""The homes of the residential districts (Phase 15, reviewer 2026-10-28).
+
+Quoted from the reviewer: "gather the terraces and suburbs into the same category, remove the green,
+make it more diverse, this is the future, no need for tile roofs". Flat or metal roofed, on paved
+plots. Each model takes the silhouette its seed names, so a group's models all differ (GFX-BLDG-09):
+cantilevered slabs, pods, a row of modules under solar panels, stepped terraces, a house on stilts
+and a wedge under a sloping metal roof.
+"""
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
@@ -27,7 +30,7 @@ DECKS = [C.concrete, C.concreteDark, C.metalDark]
 
 
 def deck(k: TileKit) -> None:
-    """The paved plot, a lit strip along the path to the door at the front."""
+    """Add the paved plot, a lit strip along the path to the door at the front."""
     plot(k, any_of(k, DECKS))
     k.lights.box(
         [0.3, 0.05, k.d * 0.3], any_of(k, NEON), Placement([k.w * 0.3, 0.2, -k.d * 0.3], 0, 0, 0)
@@ -80,7 +83,7 @@ def pods(k: TileKit) -> None:
 
 
 def modules(k: TileKit) -> None:
-    """A row of modules of different heights along the long side, solar panels tilted on top."""
+    """Add a row of modules of different heights along the long side, solar panels tilted on top."""
     along_z = k.d > k.w
     length = k.d if along_z else k.w
     depth = k.w if along_z else k.d
@@ -105,8 +108,10 @@ def modules(k: TileKit) -> None:
 
 
 def stepped(k: TileKit) -> None:
-    """Terraces stepping back and up, a lit band along each step's edge, glass on each step's front
-    (D-215: a quad of ribbon windows)."""
+    """Terraces stepping back and up, with a lit band along each step's edge.
+
+    Glass on each step's front (D-215: a quad of ribbon windows).
+    """
     steps = 3
     light = any_of(k, NEON)
     shell = any_of(k, SHELLS)
@@ -125,8 +130,10 @@ def stepped(k: TileKit) -> None:
 
 
 def stilts(k: TileKit) -> None:
-    """A glass-fronted box raised on thin legs, a car port under it (D-215: the glass front a quad
-    of curtain wall)."""
+    """Add a glass-fronted box raised on thin legs, with a car port under it.
+
+    The glass front is a quad of curtain wall (D-215).
+    """
     w = k.w * 0.8
     d = k.d * 0.6
     lift = 3
@@ -147,8 +154,10 @@ def stilts(k: TileKit) -> None:
 
 
 def wedge(k: TileKit) -> None:
-    """A wedge: a block under one metal roof sloping from the back down to the front, glazed end
-    (D-215: a glass wall under a quad of curtain wall)."""
+    """Add a wedge: a block under one metal roof sloping from the back down to the front.
+
+    Glazed at the end (D-215: a glass wall under a quad of curtain wall).
+    """
     w = k.w * 0.8
     d = k.d * 0.7
     low = 3
@@ -200,7 +209,10 @@ RESIDENCE_COUNT = len(SILHOUETTES)
 
 
 def build_residence(k: TileKit) -> None:
-    """A home of the residential districts, of the silhouette its seed names, on a paved plot."""
+    """Build a home of the residential districts on a paved plot.
+
+    Its silhouette is the one its seed names.
+    """
     deck(k)
     index = js_remainder(k.seed - 1, len(SILHOUETTES))
     build = SILHOUETTES[index] if 0 <= index < len(SILHOUETTES) else cantilever

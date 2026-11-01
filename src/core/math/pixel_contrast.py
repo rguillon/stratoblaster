@@ -1,16 +1,18 @@
+# Copyright (c) 2026 Renaud Guillon
 """How well what is drawn stands out from what is behind it (the readability probe, DEV-API-09).
-Pixels are RGBA sRGB bytes, four per pixel, row by row."""
+
+Pixels are RGBA sRGB bytes, four per pixel, row by row.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.color import contrast_ratio, relative_luminance, srgb_byte_to_linear
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-__pragma__("noskip")
-
-from core.math.color import contrast_ratio, relative_luminance, srgb_byte_to_linear  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class Pixels:
@@ -57,9 +59,7 @@ def _box_luminances(image: Pixels, box: PixelBox) -> list[float]:
     x1 = min(image.width - 1, _js_round(box.x + box.radius))
     y0 = max(0, _js_round(box.y - box.radius))
     y1 = min(image.height - 1, _js_round(box.y + box.radius))
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            out.append(luminance_at(image, x, y))
+    out.extend([luminance_at(image, x, y) for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)])
     return out
 
 
@@ -71,8 +71,11 @@ def _median(values: Sequence[float]) -> float:
 
 
 def box_contrast(frame: Pixels, background: Pixels, box: PixelBox) -> float:
-    """How well what is drawn in `box` stands out: the contrast between its brightest pixel on
-    `frame` and the median of the same pixels on `background`. 1 when the box is off the image."""
+    """How well what is drawn in `box` stands out.
+
+    The contrast between its brightest pixel on `frame` and the median of the same pixels on
+    `background`. 1 when the box is off the image.
+    """
     drawn = _box_luminances(frame, box)
     if len(drawn) == 0:
         return 1.0
@@ -80,25 +83,27 @@ def box_contrast(frame: Pixels, background: Pixels, box: PixelBox) -> float:
 
 
 def brightest_but(image: Pixels, share: float) -> float:
-    """The luminance only `share` (0..1) of the image's pixels are brighter than (GFX-READ-01).
+    """Return the luminance only `share` (0..1) of the image's pixels exceed (GFX-READ-01).
 
-    The luminances are kept as 64-bit floats (a 32-bit store would round the result by about
-    1e-7 relative at most).
+    The luminances are kept as 64-bit floats (a 32-bit store would round the result by about 1e-7
+    relative at most).
     """
     n = image.width * image.height
     if n == 0:
         return 0.0
-    values: list[float] = []
-    for y in range(image.height):
-        for x in range(image.width):
-            values.append(luminance_at(image, x, y))
+    values: list[float] = [
+        luminance_at(image, x, y) for y in range(image.height) for x in range(image.width)
+    ]
     values.sort()
     return values[math.floor((1 - share) * (n - 1))]
 
 
 class ReadabilityReport:
-    """How readable the frame is: the contrast of each kind of object with what is behind it
-    (None when none is on screen), and the luminance of the background's brightest pixels."""
+    """How readable the frame is.
+
+    The contrast of each kind of object with what is behind it (None when none is on screen), and
+    the luminance of the background's brightest pixels.
+    """
 
     def __init__(
         self,

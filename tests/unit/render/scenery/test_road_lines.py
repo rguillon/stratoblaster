@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_lines.py` (GFX-ROAD-07)."""
 
 import pytest
@@ -24,14 +25,14 @@ LOOK = CentreLineLook(RED, WHITE, 0.5, 4, 0.1)
 class Flat:
     """Flat ground at height 0."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, _z: float) -> float:
         return 0.0
 
 
 class Sloped:
     """Ground that rises along X."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return 0.2 * x
 
 
@@ -100,7 +101,7 @@ def test_a_run_over_a_straight_slope_is_one_quad() -> None:
 class Step:
     """Flat ground that steps up at X = 10."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return 0.0 if x < 10 else 1.0
 
 

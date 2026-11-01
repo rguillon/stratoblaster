@@ -1,8 +1,11 @@
-"""Whether a boss model holds together as one object (BOSS-52, D-227), at rest and after each of its
-transformations: its core (what the armour cut leaves), the armour still on, the pieces of the
-regions that move (D-230) as they rest or once moved, the frames of the regions shed (with their
-pylons), the parts standing (with their turrets) and the hidden weapons revealed (with what slides
-out of them)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Whether a boss model holds together as one object (BOSS-52, D-227).
+
+At rest and after each of its transformations: its core (what the armour cut leaves), the armour
+still on, the pieces of the regions that move (D-230) as they rest or once moved, the frames of the
+regions shed (with their pylons), the parts standing (with their turrets) and the hidden weapons
+revealed (with what slides out of them).
+"""
 
 from typing import Any
 
@@ -61,7 +64,7 @@ def _part_tris(design: Any, drawing: Any, spec: Any) -> list[Any]:
 
 
 def _core_triangles(design: Any, drawing: Any, cut: Any) -> list[Any]:
-    """The core left by the armour cut, its ring, and the stems holding its loose pieces."""
+    """Return the core left by the armour cut, its ring, and the stems holding its loose pieces."""
     core: list[Any] = []
     for layer in LAYERS:
         core.extend(cut.kept[layer])
@@ -74,7 +77,7 @@ def _core_triangles(design: Any, drawing: Any, cut: Any) -> list[Any]:
 
 
 def _last_form(design: Any) -> int:
-    """The highest form at which a part is revealed (0 when none is)."""
+    """Return the highest form at which a part is revealed (0 when none is)."""
     forms = 0
     for spec in design.stats.parts:
         if spec.get("reveal") is not None:
@@ -83,7 +86,7 @@ def _last_form(design: Any) -> int:
 
 
 def _gone_by_form(design: Any, forms: int) -> list[set[str]]:
-    """The ids of the parts destroyed before each form (D-228's `transformParts`)."""
+    """Return the ids of the parts destroyed before each form (D-228's `transformParts`)."""
     gone: list[set[str]] = [set()]
     for ids in design.get("transformParts") or []:
         gone.append(gone[-1] | set(ids))
@@ -93,7 +96,7 @@ def _gone_by_form(design: Any, forms: int) -> list[set[str]]:
 
 
 def _armour_triangles(design: Any, cut: Any, supports: Any, form: int) -> list[Any]:
-    """The regions still on or moved into their new pose, and the frames of the regions shed."""
+    """Return the regions still on or moved into their new pose, and the shed regions' frames."""
     tris: list[Any] = []
     for k, region in enumerate(design.armour):
         layers = cut.regions[k]
@@ -127,7 +130,7 @@ def _part_shown(spec: Any, form: int, gone: set[str]) -> bool:
 
 
 def _parts_triangles(design: Any, drawing: Any, gone: set[str], form: int) -> list[Any]:
-    """The parts standing at `form`, with their turrets."""
+    """Return the parts standing at `form`, with their turrets."""
     tris: list[Any] = []
     for spec in design.stats.parts:
         if _part_shown(spec, form, gone):
@@ -136,7 +139,7 @@ def _parts_triangles(design: Any, drawing: Any, gone: set[str], form: int) -> li
 
 
 def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
-    """The triangles of the boss model at rest and after each transformation."""
+    """Return the triangles of the boss model at rest and after each transformation."""
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     drawing = record(capture.drawing)
     cut = cut_armour(drawing.core, design.armour)
@@ -158,7 +161,10 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
 
 
 def loose_pieces(tris: list[Any], least: float) -> list[list[float]]:
-    """The bounds of the pieces of `tris` not held to the rest, at least `least` px across."""
+    """Return the bounds of the pieces of `tris` not held to the rest.
+
+    Only those at least `least` px across.
+    """
     loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
     hanging = [tris[i] for i in range(len(tris)) if loose[i]]
     result: list[list[float]] = []

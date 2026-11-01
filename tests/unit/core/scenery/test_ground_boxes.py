@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/ground_boxes.py`."""
 
 import math
+from typing import Any
 
 from helpers.sample_level import flat, sample_level, sample_props
 
@@ -34,12 +36,12 @@ AREA = GroundArea(-200, 200, 0, 400)
 
 
 def placer_for(
-    level=None,
+    level: Any = None,
     seed: int | None = None,
     sea_level: float | None = 0,
     runout_from: float | None = None,
 ) -> PropPlacer:
-    """A placer of `level` (the sample by default), with its roads laid."""
+    """Return a placer of `level` (the sample by default), with its roads laid."""
     level = level if level is not None else sample_level()
     seed = level.seed if seed is None else seed
     field = HeightField(level, seed)
@@ -48,13 +50,16 @@ def placer_for(
     return PropPlacer(field, level.props, seed, roads, sea_level=sea_level)
 
 
-def keys(placements) -> list[tuple]:
-    """The placements as plain tuples (PropPlacement has no equality)."""
+def keys(placements: Any) -> list[tuple]:
+    """Return the placements as plain tuples (PropPlacement has no equality)."""
     return [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in placements]
 
 
-def dense_level():
-    """The sample with a dense grid of streets over the whole level: many buildings to pack."""
+def dense_level() -> Any:
+    """Return the sample with a dense grid of streets over the whole level.
+
+    Many buildings to pack.
+    """
     flat_section = flat("grid", 20, 10)
     flat_section.streets = StreetGrid([20, 25], [20, 30], 0.8)
     return sample_level(sections=[flat_section])
@@ -64,7 +69,6 @@ class _Ground:
     """A box of ground for the overlap checks: a tree's box is `half` each way."""
 
     def __init__(self, x: float, z: float, half: float) -> None:
-        from core.scenery.ground_boxes import PropPlacement  # noqa: PLC0415
 
         self.placement = PropPlacement("", x, 0, z, 0, 1)
         self.half_x = half

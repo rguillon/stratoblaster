@@ -1,28 +1,31 @@
-"""Kinds of prop drawn as imposters (D-211, D-212; GFX-PROP-10, the trees GFX-PROP-11, the cars
-GFX-CAR-05): their pictures baked into one atlas, their quads drawn by an `ImposterField`; only
-their lights (if any) stay real geometry, drawn by a `PropField` from the lights-only factories of
-`models`.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""Kinds of prop drawn as imposters (D-211, D-212; GFX-PROP-10).
 
-from org.transcrypt.stubs.browser import __pragma__
+The trees (GFX-PROP-11) and the cars (GFX-CAR-05) among them: their pictures baked into one atlas,
+their quads drawn by an `ImposterField`; only their lights (if any) stay real geometry, drawn by a
+`PropField` from the lights-only factories of `models`.
+"""
 
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.imposter_field import ImposterField
 from render.scenery.prop_field import prop_geometry
 from render.scenery.scenery_look import PropGeometry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import PropPlacement
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
-def lights_only(factory: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """A model factory making only the lights of what `factory` makes, and its shadow's stand-in
-    (D-212)."""
+def lights_only(factory: Any) -> Any:
+    """Return a model factory making only the lights of what `factory` makes (D-212).
+
+    It also makes its shadow's stand-in.
+    """
 
     def make() -> PropGeometry:
         geometry = prop_geometry(factory)
@@ -32,18 +35,21 @@ def lights_only(factory: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or co
 
 
 class ImposterKinds:
-    """The kinds of `kinds` (all of them in `models`: `imposter_kinds` checks), drawn as imposters
-    with `atlas` (an `ImposterAtlas`) as the camera tilted by `tilt` sees them. `models`: the
-    factories to give a `PropField` (those kinds making only their lights). Their pictures are
-    baked by `bake_once`, which must run outside the ground's adoption (the bake's mesh must
-    not hang from it)."""
+    """The kinds of `kinds` (all of them in `models`: `imposter_kinds` checks), drawn as imposters.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    With `atlas` (an `ImposterAtlas`) as the camera tilted by `tilt` sees them.
+
+    `models`: the factories to give a `PropField` (those kinds making only their lights). Their
+    pictures are baked by `bake_once`, which must run outside the ground's adoption (the bake's mesh
+    must not hang from it).
+    """
+
+    def __init__(
         self,
-        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        scene: Any,
         models: dict[str, Any],
         kinds: list[str],
-        atlas: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        atlas: Any,
         tilt: float,
     ) -> None:
         self.kinds = kinds
@@ -74,15 +80,17 @@ class ImposterKinds:
         self.field.place(placements)
 
 
-def imposter_kinds(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+def imposter_kinds(
+    scene: Any,
     models: dict[str, Any],
     kinds: list[str],
-    atlas_of: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    atlas_of: Any,
     tilt: float,
 ) -> ImposterKinds | None:
-    """The `ImposterKinds` of `kinds`, if `models` has any of them and `atlas_of(count)` gives an
-    atlas for them (not None)."""
+    """Return the `ImposterKinds` of `kinds`.
+
+    It is made if `models` has any of them and `atlas_of(count)` gives an atlas for them (not None).
+    """
     names = [k for k in kinds if k in models]
     if len(names) == 0 or atlas_of is None:
         return None

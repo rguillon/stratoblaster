@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/track_mixer.py`."""
 
 from unittest.mock import MagicMock
@@ -9,7 +10,7 @@ from audio.track_mixer import SILENT, MusicBus, TrackMixer
 
 
 def make_context() -> MagicMock:
-    """A Web Audio context whose gain nodes have a real `value` to fade from."""
+    """Return a Web Audio context whose gain nodes have a real `value` to fade from."""
     context = MagicMock()
 
     def new_gain() -> MagicMock:

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/lightning_layer.py` (GFX-WEATHER-11, GFX-WEATHER-12)."""
 
 import math
@@ -30,10 +31,10 @@ class _Schedule:
         self.flash = flash
         self.strike = strike
 
-    def flash_at(self, time: float) -> float:
+    def flash_at(self, _time: float) -> float:
         return self.flash
 
-    def strike_at(self, time: float) -> Strike | None:
+    def strike_at(self, _time: float) -> Strike | None:
         return self.strike
 
 
@@ -50,7 +51,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(lightning_layer, "apply_vertex_data", _apply)
 
 
-def _material(label: str, scene: Any) -> SimpleNamespace:
+def _material(label: str, _scene: Any) -> SimpleNamespace:
     return SimpleNamespace(name=label, alpha=0.0)
 
 
@@ -107,7 +108,9 @@ def test_hypot_is_the_length_of_a_segment() -> None:
 
 
 def test_a_zigzag_has_its_pieces_plus_one_points_from_its_start() -> None:
-    random = lambda: 0.5  # noqa: E731 (a jag of none)
+    def random() -> float:
+        return 0.5
+
     points = _zigzag(random, (1.0, 2.0), 10.0, 0.0, 4)
     assert len(points) == 5
     assert points[0] == (1.0, 2.0)

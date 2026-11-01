@@ -1,5 +1,7 @@
-"""3-3: the Stone Idol, the mini boss of the Lost temples level
-(specs/bosses/mini/3-3-stone-idol.md).
+# Copyright (c) 2026 Renaud Guillon
+"""3-3.
+
+The Stone Idol, the mini boss of the Lost temples level (specs/bosses/mini/3-3-stone-idol.md).
 
 Offsets in px from the boss's centre, X right and Y up (its chin points down, at -Y). The stage
 patterns are the agent's design (MB-STONE-IDOL-09): the eyes and the mouth fire the same while they
@@ -47,64 +49,60 @@ EY = IDOL_PARTS.eye[1]
 # 3-3: a flying stone head with neon cracks, glowing eyes and mouth; its two eyes turn to aim
 # lasers and shield the core, its mouth spits rings of slow boulders (MB-STONE-IDOL-08). The ground
 # stops over the temple while it fights (x0).
-_STONE_IDOL = record(
-    {
-        "id": "stone-idol",
-        # Angry after each destroyed part (phase 7 review, MB-STONE-IDOL-10).
-        "rage": rage.flower(6.5, "magenta", "orange"),
-        # Its core and parts, and its points (MB-STONE-IDOL-13).
-        "stats": stats(
-            record(
-                {
-                    "id": "stone-idol",
-                    "name": "Stone Idol",
-                    "size": 3,
-                    "coreRadius": 22,
-                    "coreHealth": 1550,
-                    "points": 7500,
-                    "groundSpeed": 0,
-                    "parts": [
-                        part("eye-left", [-EX, EY], 13, 950),
-                        part("eye-right", [EX, EY], 13, 950),
-                        part("mouth", list(IDOL_PARTS.mouth), 13, 750, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place, the ground stopped (MB-STONE-IDOL-06).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 60, "period": 7.5},
-        "bob": {"amplitude": 8, "period": 3.6},
-        "guns": {
-            "core": {"gun": IDOL_NOSTRILS, "ring": IDOL_JEWEL},
-            # The eyeballs turn to aim at the player during the warning line, and hold still while
-            # their beam fires (D-073).
-            "eye-left": {"laser": mirror(IDOL_EYE), "turret": [-EX, EY], "turretLaser": True},
-            "eye-right": {"laser": IDOL_EYE, "turret": [EX, EY], "turretLaser": True},
-            "mouth": {"ring": IDOL_THROAT},
-        },
-        # The parts' volleys, then the core's pattern per stage (MB-STONE-IDOL-09).
-        "stages": stages(
+_STONE_IDOL = record({
+    "id": "stone-idol",
+    # Angry after each destroyed part (phase 7 review, MB-STONE-IDOL-10).
+    "rage": rage.flower(6.5, "magenta", "orange"),
+    # Its core and parts, and its points (MB-STONE-IDOL-13).
+    "stats": stats(
+        record({
+            "id": "stone-idol",
+            "name": "Stone Idol",
+            "size": 3,
+            "coreRadius": 22,
+            "coreHealth": 1550,
+            "points": 7500,
+            "groundSpeed": 0,
+            "parts": [
+                part("eye-left", [-EX, EY], 13, 950),
+                part("eye-right", [EX, EY], 13, 950),
+                part("mouth", list(IDOL_PARTS.mouth), 13, 750, {"shields": False}),
+            ],
+        })
+    ),
+    # Where it stops and how it moves in place, the ground stopped (MB-STONE-IDOL-06).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 60, "period": 7.5},
+    "bob": {"amplitude": 8, "period": 3.6},
+    "guns": {
+        "core": {"gun": IDOL_NOSTRILS, "ring": IDOL_JEWEL},
+        # The eyeballs turn to aim at the player during the warning line, and hold still while
+        # their beam fires (D-073).
+        "eye-left": {"laser": mirror(IDOL_EYE), "turret": [-EX, EY], "turretLaser": True},
+        "eye-right": {"laser": IDOL_EYE, "turret": [EX, EY], "turretLaser": True},
+        "mouth": {"ring": IDOL_THROAT},
+    },
+    # The parts' volleys, then the core's pattern per stage (MB-STONE-IDOL-09).
+    "stages": stages(
+        [
+            volley.laser("eye-left", 6.5, 1.5, 2),
+            volley.laser("eye-right", 6.5, 1.5, 5.25),
+            volley.ring("mouth", 3, 9, 20, BOULDER, 1.4),
+        ],
+        [
+            [volley.fan("core", 2.6, 3, 16, MAGENTA, 1.2)],
+            [volley.fan("core", 2.4, 5, 13, MAGENTA, 0.8)],
             [
-                volley.laser("eye-left", 6.5, 1.5, 2),
-                volley.laser("eye-right", 6.5, 1.5, 5.25),
-                volley.ring("mouth", 3, 9, 20, BOULDER, 1.4),
+                volley.fan("core", 2.6, 5, 12, ORANGE, 0.6, -18),
+                volley.fan("core", 2.6, 5, 12, ORANGE, 1.9, 18),
             ],
             [
-                [volley.fan("core", 2.6, 3, 16, MAGENTA, 1.2)],
-                [volley.fan("core", 2.4, 5, 13, MAGENTA, 0.8)],
-                [
-                    volley.fan("core", 2.6, 5, 12, ORANGE, 0.6, -18),
-                    volley.fan("core", 2.6, 5, 12, ORANGE, 1.9, 18),
-                ],
-                [
-                    volley.ring("core", 0.45, 5, 17, PURPLE, 0.3),
-                    volley.fan("core", 2.2, 7, 11, MAGENTA, 1),
-                ],
+                volley.ring("core", 0.45, 5, 17, PURPLE, 0.3),
+                volley.fan("core", 2.2, 7, 11, MAGENTA, 1),
             ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its transformation (D-230, MB-STONE-IDOL-11): the back of its head flips up and back on a hinge
 # across its crown, like a lid, showing a dark metal ring round a great sweeper eye between two

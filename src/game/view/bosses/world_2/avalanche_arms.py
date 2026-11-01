@@ -1,54 +1,56 @@
-"""MB-AVALANCHE-03, 2-4: the Avalanche's drill arms, moving on their joints (MB-AVALANCHE-06,
-D-061), and its drills Logical
-pixels, nose +Z, Y up (towards the
-camera); the left arm is drawn at +X."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-AVALANCHE-03, 2-4: the Avalanche's drill arms and its drills.
+
+The arms move on their joints (MB-AVALANCHE-06, D-061). Logical pixels, nose +Z, Y up (towards the
+camera); the left arm is drawn at +X.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-type Rgb = list[float]
-type Flat = list[float]
-__pragma__("noskip")
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.world_2.avalanche import AVALANCHE_DRILL_GUN  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_mechanism import glow_line  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_2.avalanche import AVALANCHE_DRILL_GUN
+from game.config.record import record
+from game.view.bosses.mini_boss_mechanism import glow_line
+from game.view.bosses.mini_boss_shapes import (
     QUARTER,
     SHADE,
     H,
     offset,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.avalanche_frost import (
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     glow_vein,
     sinew,
 )
-from render.geometry.organic import organ  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import hypot2  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import organ
+from render.geometry.outline import hypot2
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from game.view.bosses.boss_limbs import LimbDrawing
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
+
+type Vec3 = list[float]
+type Rgb = list[float]
+type Flat = list[float]
+# __pragma__ ("noskip")
+
 
 # The Avalanche's yellow neon (MB-AVALANCHE-04).
 _AVALANCHE_NEON = BOSS_LOOK.neon["avalanche"]
-AVALANCHE_YELLOW = [1.0, 0.85, 0.1] if _AVALANCHE_NEON == None else _AVALANCHE_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+AVALANCHE_YELLOW = [1.0, 0.85, 0.1] if _AVALANCHE_NEON == None else _AVALANCHE_NEON
 
 # The drill bit along +Z from its root (a lathe profile: radius, distance along).
 BIT = [
@@ -72,7 +74,10 @@ def _sign(x: float) -> float:
 
 
 def beam_outline(a: Flat, b: Flat, width: float) -> list[OutlinePoint]:
-    """A beam's outline (seen from above) from `a` to `b`, `width` wide, its ends cut square."""
+    """Return a beam's outline (seen from above) from `a` to `b`, `width` wide.
+
+    Its ends are cut square.
+    """
     length = hypot2(b[0] - a[0], b[1] - a[1]) or 1
     nx = ((a[1] - b[1]) / length) * (width / 2)
     nz = ((b[0] - a[0]) / length) * (width / 2)
@@ -85,8 +90,11 @@ def beam_outline(a: Flat, b: Flat, width: float) -> list[OutlinePoint]:
 
 
 def segment(parts: EnemyParts, s: float, ends: Sequence[Flat], width: float) -> None:
-    """One arm segment from `a` to `b` (side `s` applied to X): a dark bed of machinery under a
-    fat armour plate, frost on its top, a yellow light along it and a ram working it."""
+    """Add an arm segment from `a` to `b` (side `s` applied to X).
+
+    A dark bed of machinery under a fat armour plate, frost on its top, a yellow light along it and
+    a ram working it.
+    """
     hull = parts.hull
     flesh = parts.flesh
     neon = parts.neon
@@ -137,8 +145,10 @@ def segment(parts: EnemyParts, s: float, ends: Sequence[Flat], width: float) -> 
 
 
 def upper_arm(s: float) -> Callable[[EnemyParts], None]:
-    """The upper arm (side `s`, +1 left at +X), on its shoulder: its segment and the elbow's
-    cog."""
+    """Return the upper arm (side `s`, +1 left at +X), on its shoulder.
+
+    Its segment and the elbow's cog.
+    """
 
     def draw(p: EnemyParts) -> None:
         segment(p, s, [[18, 10], [36, 26]], 9)
@@ -148,7 +158,7 @@ def upper_arm(s: float) -> Callable[[EnemyParts], None]:
 
 
 def forearm(s: float) -> Callable[[EnemyParts], None]:
-    """The forearm (side `s`), on its elbow: its segment, out to the drill's housing."""
+    """Return the forearm (side `s`), on its elbow: its segment, out to the drill's housing."""
 
     def draw(p: EnemyParts) -> None:
         segment(p, s, [[32, 22], [42, 32]], 8)
@@ -162,8 +172,10 @@ def forearm(s: float) -> Callable[[EnemyParts], None]:
 
 
 def arm_limbs(side: str) -> dict[str, LimbDrawing]:
-    """The limbs of the arm on `side` (MB-AVALANCHE-06, D-061): the upper arm on the shoulder, the
-    forearm on the elbow."""
+    """Return the limbs of the arm on `side` (MB-AVALANCHE-06, D-061).
+
+    The upper arm on the shoulder, the forearm on the elbow.
+    """
     s = 1 if side == "left" else -1
     limbs: dict[str, LimbDrawing] = {}
     limbs["shoulder-" + side] = record({"draw": upper_arm(s)})
@@ -190,9 +202,11 @@ def flutes(hull: SolidBuilder, root: Vec3, color: Rgb) -> None:
 
 
 def drill(p: EnemyParts, at: Vec3) -> None:
-    """A drill (MB-AVALANCHE-03), on its arm's elbow joint: a housing with a yellow neon collar, a
-    fluted bit pointing down the screen, its gun along the outer side, frost on top and icicles
-    under it."""
+    """Add a drill (MB-AVALANCHE-03), on its arm's elbow joint.
+
+    A housing with a yellow neon collar, a fluted bit pointing down the screen, its gun along the
+    outer side, frost on top and icicles under it.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

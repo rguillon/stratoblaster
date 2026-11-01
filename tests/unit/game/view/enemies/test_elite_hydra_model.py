@@ -1,11 +1,14 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/elite_hydra_model.py`."""
+
+from typing import Any
 
 from helpers.view_probes import drawings_of, jointed_design_ids, probe_builder
 
 from game.view.enemies import elite_hydra_model as module
 
 
-def test_enm_hydra_05_hydra_draws_every_head_its_design_asks_for(monkeypatch):
+def test_enm_hydra_05_hydra_draws_every_head_its_design_asks_for(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_hydra)
     design_ids, drawn_ids = jointed_design_ids(capture)
     assert capture.name == "hydra"
@@ -13,7 +16,9 @@ def test_enm_hydra_05_hydra_draws_every_head_its_design_asks_for(monkeypatch):
     assert len(design_ids) == 3
 
 
-def test_enm_hydra_05_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(monkeypatch):
+def test_enm_hydra_05_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(
+    monkeypatch: Any,
+) -> None:
     capture = probe_builder(monkeypatch, module.build_hydra)
     drawn = drawings_of(capture)
     for joint in ("neck-left", "neck-middle", "neck-right"):
@@ -22,6 +27,6 @@ def test_enm_hydra_05_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(m
         assert len(drawn["parts." + head]["muzzles"]) == 1
 
 
-def test_enm_hydra_04_body_has_two_reactors(monkeypatch):
+def test_enm_hydra_04_body_has_two_reactors(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_hydra)
     assert len(drawings_of(capture)["body"]["reactors"]) == 2

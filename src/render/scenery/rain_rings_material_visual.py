@@ -1,16 +1,18 @@
-# ruff: noqa: E501
-"""The material of the rain rings (GFX-WEATHER-09): thin rings spreading in each cell of the
-water."""
+# Copyright (c) 2026 Renaud Guillon
+"""The material of the rain rings (GFX-WEATHER-09).
+
+Thin rings spreading in each cell of the water.
+"""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import color3, new_glsl_material, vector2, vector3, vector4
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # rings: cell size, rings per cell (at strength 1), largest radius, seconds a ring lives.
 # state: time, strength, ring opacity.
@@ -55,7 +57,8 @@ void main() {
   float r = age * radius;
   float ring = 1.0 - smoothstep(0.0, 0.18 + 0.12 * age, abs(d - r));
   float fade = (1.0 - age) * lit;
-  float fog = clamp((distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
+  float fog = clamp(
+    (distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
   gl_FragColor = vec4(mix(ringColor, fogColor, fog), ring * fade * state.z * (1.0 - fog));
 }
 """
@@ -73,6 +76,7 @@ class RingsMaterialImpl:
         self._fog_range = vector2(0, 0)
 
     def set(self, frame: Any) -> None:
+        """Set."""
         material = self.material
         fog = frame.fog
         material.setVector3("state", self._state.set(frame.time, frame.strength, self._rings.alpha))
@@ -86,9 +90,11 @@ class RingsMaterialImpl:
 
 
 def create_rain_rings_material(scene: Any, rings: Any) -> RingsMaterialImpl:
-    """The material of the rain rings (GFX-WEATHER-09): in each cell of the water, a thin ring
-    spreading from where a drop landed and fading, one after another at random places; blended,
-    without writing depth, so the terrain above the water hides them."""
+    """Return the material of the rain rings (GFX-WEATHER-09): in each cell of the water.
+
+    A thin ring spreading from where a drop landed and fading, one after another at random places;
+    blended, without writing depth, so the terrain above the water hides them.
+    """
     material = new_glsl_material(
         "rain-rings",
         scene,

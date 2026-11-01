@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/bosses/boss_launches.py`."""
 
 from helpers.enemy_steps import run

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """A turret on a boss's piece (BOSS-29).
 
 Its guns' muzzles turn with it around its pivot, so that the barrels the player sees point the
@@ -6,13 +7,12 @@ way it aims.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.muzzle import Muzzle
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class BossTurretSpec:
@@ -26,6 +26,7 @@ class BossTurretSpec:
         laser_turn_rate_deg: float | None = None,
     ) -> None:
         """`x` and `y` are its pivot, from the boss's centre (X right, Y up), as the boss is drawn.
+
         `turn_rate_deg` is how many degrees a second it turns at, at most. `laser_turn_rate_deg`
         is how many degrees a second it follows the player at while a laser's warning line shows
         (phase 8 review: slow enough to outrun); `turn_rate_deg` when None.

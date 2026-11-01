@@ -1,6 +1,9 @@
-"""Unit tests of `src/game/view/bosses/boss_armour.py` and `boss_frame.py`: a boss's armour cut
-out of its body (BOSS-42), bursting off in chunks (BOSS-43) and leaving a dark metal frame
-(BOSS-44; docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/bosses/boss_armour.py` and `boss_frame.py`.
+
+A boss's armour is cut out of its body (BOSS-42), bursts off in chunks (BOSS-43) and leaves a dark
+metal frame (BOSS-44; docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md).
+"""
 
 import math
 from types import SimpleNamespace
@@ -41,7 +44,7 @@ WING = armour_region("wings", 1, [[10, -20], [50, -20], [50, 20], [10, 20]], "wi
 
 
 def _plane(p: Any) -> None:
-    """A wide, flat delta: a slab 120 x 60, a fuselage box on it, a muzzle and a reactor."""
+    """Add a wide, flat delta: a slab 120 x 60, a fuselage box on it, a muzzle and a reactor."""
     p.hull.box([120, 4, 60], GREY, Placement([0, -2, 0]))
     p.flesh.box([12, 10, 60], GREY, Placement([0, 2, 0]))
     p.neon.box([2, 1, 50], GREY, Placement([40, 2, 0]))
@@ -77,7 +80,8 @@ def test_the_cut_moves_the_faces_inside_a_region_out_of_the_core() -> None:
     for t in region["hull"]:
         assert 10 - 4 <= abs(centroid(t)[0]) <= 50 + 4
     # The neon strip at x = 40 goes with the left wing; the fuselage stays.
-    assert region["neon"] and not region["flesh"]
+    assert region["neon"]
+    assert not region["flesh"]
     kept = collect_parts(cut.core_drawing())
     kept_tops = [t for t in triangles(kept["parts"].hull.geometry) if up_facing(t, 0.9)]
     assert _area_xz(kept_tops) == pytest.approx(120 * 60 - 2 * 40 * 40, rel=0.05)
@@ -96,7 +100,9 @@ def test_a_face_goes_to_the_first_region_that_holds_it() -> None:
 
 
 def test_heights_keep_what_is_above_or_below_a_region() -> None:
-    low = armour_region("low", 1, [[0, -40], [70, -40], [70, 40], [0, 40]], "wing", [-10, 1], False)
+    low = armour_region(
+        "low", 1, [[0, -40], [70, -40], [70, 40], [0, 40]], "wing", [-10, 1], mirror=False
+    )
     cut = cut_armour(_plane, [low])
     assert not cut.regions[0]["flesh"] or all(centroid(t)[1] <= 1 for t in cut.regions[0]["flesh"])
 
@@ -114,7 +120,8 @@ def test_a_chunk_flies_out_up_then_down_tumbling_and_shrinking_away() -> None:
     centre = [30.0, 2.0, 10.0]
     rest = chunk_pose(centre, 0, 0)
     assert rest[0] == pytest.approx(centre)
-    assert rest[1] == 0 and rest[3] == 1
+    assert rest[1] == 0
+    assert rest[3] == 1
     mid = chunk_pose(centre, 0, 0.3)
     assert math.hypot(mid[0][0], mid[0][2]) > math.hypot(centre[0], centre[2])
     assert mid[0][1] > centre[1]
@@ -132,7 +139,7 @@ def _node() -> SimpleNamespace:
 
     position.set = set_
     scaling = SimpleNamespace(x=1.0)
-    scaling.set = lambda x, y, z: setattr(scaling, "x", x)
+    scaling.set = lambda x, _y, _z: setattr(scaling, "x", x)
     return SimpleNamespace(position=position, scaling=scaling, rotation=SimpleNamespace(x=0, z=0))
 
 
@@ -141,7 +148,7 @@ class _Model:
         self.root = _node()
         self.synced = 0
 
-    def sync(self, lit: Any, dt: float) -> None:
+    def sync(self, _lit: Any, _dt: float) -> None:
         self.synced += 1
 
 

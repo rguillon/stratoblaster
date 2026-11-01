@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/enemy_mesh.py`."""
 
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -16,7 +18,7 @@ from game.view.enemies.living_motion import flutter_angle
 from render.geometry.solids import SolidBuilder
 
 
-def _draw_everything(p) -> None:
+def _draw_everything(p: Any) -> None:
     p.hull.box([1, 1, 1], [0, 0, 0])
     p.flesh.box([1, 1, 1], [0, 0, 0])
     p.neon.box([1, 1, 1], [1, 0, 0])
@@ -29,7 +31,7 @@ def _draw_everything(p) -> None:
     p.flap([1, 0, 0], 1, 3.0, lambda w: w.flesh.box([1, 1, 1], [0, 0, 0]))
 
 
-def test_collect_parts_gathers_the_reactors_rotors_muzzles_and_wings_of_a_drawing():
+def test_collect_parts_gathers_the_reactors_rotors_muzzles_and_wings_of_a_drawing() -> None:
     collected = collect_parts(_draw_everything)
     assert [r.at for r in collected["reactors"]] == [[0, 0, -4]]
     assert [r.radius for r in collected["reactors"]] == [1.0]
@@ -38,7 +40,7 @@ def test_collect_parts_gathers_the_reactors_rotors_muzzles_and_wings_of_a_drawin
     assert collected["muzzles"] == [[[0, 0, 5], "gun"], [[1, 0, 5], "cannon"], [[2, 0, 5], "gun"]]
 
 
-def test_collect_parts_keeps_the_body_builders_with_their_geometry():
+def test_collect_parts_keeps_the_body_builders_with_their_geometry() -> None:
     parts = collect_parts(_draw_everything)["parts"]
     assert len(parts.hull.geometry.positions) > 0
     assert len(parts.flesh.geometry.positions) > 0
@@ -48,7 +50,7 @@ def test_collect_parts_keeps_the_body_builders_with_their_geometry():
     assert len(parts.vein.geometry.positions) == 0
 
 
-def test_collect_parts_draws_a_wing_on_its_own_builders_with_its_hinge_and_span():
+def test_collect_parts_draws_a_wing_on_its_own_builders_with_its_hinge_and_span() -> None:
     collected = collect_parts(_draw_everything)
     wing = collected["wings"][0]
     assert isinstance(wing, Wing)
@@ -58,8 +60,8 @@ def test_collect_parts_draws_a_wing_on_its_own_builders_with_its_hinge_and_span(
     assert len(wing.parts.flesh.geometry.positions) > 0
 
 
-def test_collect_parts_of_an_empty_drawing_is_empty():
-    collected = collect_parts(lambda p: None)
+def test_collect_parts_of_an_empty_drawing_is_empty() -> None:
+    collected = collect_parts(lambda _p: None)
     assert collected["reactors"] == []
     assert collected["rotors"] == []
     assert collected["wings"] == []
@@ -67,7 +69,7 @@ def test_collect_parts_of_an_empty_drawing_is_empty():
     assert len(collected["parts"].charge.geometry.positions) == 0
 
 
-def test_wing_parts_new_is_four_empty_solid_builders():
+def test_wing_parts_new_is_four_empty_solid_builders() -> None:
     parts = wing_parts_new()
     assert isinstance(parts, WingParts)
     for builder in (parts.hull, parts.flesh, parts.neon, parts.vein):
@@ -75,7 +77,7 @@ def test_wing_parts_new_is_four_empty_solid_builders():
         assert len(builder.geometry.positions) == 0
 
 
-def test_enm_42_flutter_animation_rolls_the_wing_node_as_the_clock_says():
+def test_enm_42_flutter_animation_rolls_the_wing_node_as_the_clock_says() -> None:
     node = SimpleNamespace(rotation=SimpleNamespace(z=0.0))
     clock = [0.0]
     animate = flutter_animation(node, -1, 5.0, clock)
@@ -84,7 +86,7 @@ def test_enm_42_flutter_animation_rolls_the_wing_node_as_the_clock_says():
     assert node.rotation.z == pytest.approx(flutter_angle(-1, 5.0, 0.3))
 
 
-def test_enm_42_the_flutter_clock_is_read_at_each_frame_not_when_made():
+def test_enm_42_the_flutter_clock_is_read_at_each_frame_not_when_made() -> None:
     node = SimpleNamespace(rotation=SimpleNamespace(z=0.0))
     clock = [0.0]
     animate = flutter_animation(node, 1, 0.5, clock)
@@ -95,7 +97,7 @@ def test_enm_42_the_flutter_clock_is_read_at_each_frame_not_when_made():
     assert node.rotation.z == pytest.approx(flutter_angle(1, 0.5, 0.1))
 
 
-def test_enemy_parts_store_the_builders_they_are_given():
+def test_enemy_parts_store_the_builders_they_are_given() -> None:
     builders = [object() for _ in range(9)]
     parts = enemy_mesh.EnemyParts(*builders)
     assert parts.hull is builders[0]

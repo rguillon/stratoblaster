@@ -1,6 +1,8 @@
-"""Data the audio engine plays: synth voices, instruments, sound designs and tracks
-(AUD-ENGINE-13). A game describes its music and sounds with these; the engine turns them into Web
-Audio nodes.
+# Copyright (c) 2026 Renaud Guillon
+"""Data the audio engine plays (AUD-ENGINE-13).
+
+Synth voices, instruments, sound designs and tracks. A game describes its music and sounds with
+these; the engine turns them into Web Audio nodes.
 
 Optional fields are `None` when absent. Attribute `from` is `from_`.
 """
@@ -12,14 +14,18 @@ INFINITY = float("Infinity")
 
 
 def is_finite(value: float) -> bool:
-    """`Number.isFinite`: false for Infinity and NaN (NaN never equals itself, Infinity minus
-    Infinity is NaN)."""
+    """`Number.isFinite`: false for Infinity and NaN.
+
+    NaN never equals itself, and Infinity minus Infinity is NaN.
+    """
     return value - value == 0
 
 
 def xorshift(seed: int) -> int:
-    """One step of the xorshift32 the audio uses for its noise (`seed ^= seed << 13`, ...), on
-    unsigned 32-bit values. The same bits, so the noise sounds the same."""
+    """One step of the xorshift32 the audio uses for its noise (`seed ^= seed << 13`, ...).
+
+    On unsigned 32-bit values. The same bits, so the noise sounds the same.
+    """
     seed = xor(seed, u32(seed * 8192))
     seed = xor(seed, ushr(seed, 17))
     return xor(seed, u32(seed * 32))
@@ -56,12 +62,14 @@ class FilterSpec:
 
 
 class ToneLayer:
-    """One oscillator (or noise) of a voice. For an instrument, `pitch` is a ratio of the note's
-    frequency (1 = the note, 0.5 an octave down); for a sound effect it is in Hz. Noise ignores
-    it, unless it glides (it then sets the noise's playback rate).
+    """One oscillator (or noise) of a voice.
+
+    For an instrument, `pitch` is a ratio of the note's frequency (1 = the note, 0.5 an octave
+    down); for a sound effect it is in Hz. Noise ignores it, unless it glides (it then sets the
+    noise's playback rate).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         wave: str,
         gain: float,
@@ -118,7 +126,7 @@ class MusicEffects:
 class SoundDesign:
     """A sound effect (AUD-SFX-01)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         name: str,
         layers: list[ToneLayer],

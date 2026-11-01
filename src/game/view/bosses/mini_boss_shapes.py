@@ -1,42 +1,42 @@
-"""BOSS-47: pieces shared by the World 1 mini boss models
+# Copyright (c) 2026 Renaud Guillon
+"""BOSS-47: pieces shared by the World 1 mini boss models.
+
 Logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import record
-from game.view.enemies.organic_parts import opt  # noqa: E402
-from render.geometry.outline import reversed_copy  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.organic_parts import opt
+from render.geometry.outline import reversed_copy
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Hull shades (dark metal, tinted towards the boss's neon colour by its material).
 H = ENEMY_LOOK.hull
 
 # Hull shades beyond `ENEMY_LOOK.hull`: worn edges, weathered patches, hazard paint, soot.
-SHADE = record(
-    {
-        # Worn, lighter metal: plate edges, new repair plates.
-        "edge": [0.24, 0.24, 0.27],
-        # Weathered, slightly warm metal: old patches.
-        "patch": [0.14, 0.12, 0.1],
-        # Faded hazard paint.
-        "hazard": [0.36, 0.3, 0.08],
-        # Burnt metal: scars and exhaust soot.
-        "soot": [0.025, 0.025, 0.03],
-    }
-)
+SHADE = record({
+    # Worn, lighter metal: plate edges, new repair plates.
+    "edge": [0.24, 0.24, 0.27],
+    # Weathered, slightly warm metal: old patches.
+    "patch": [0.14, 0.12, 0.1],
+    # Faded hazard paint.
+    "hazard": [0.36, 0.3, 0.08],
+    # Burnt metal: scars and exhaust soot.
+    "soot": [0.025, 0.025, 0.03],
+})
 
 # Charge lights are drawn white: their material tints them with the boss's neon colour.
 WHITE = [1, 1, 1]  # type: list[float]
@@ -50,10 +50,8 @@ def offset(at: Any, dx: float, dy: float, dz: float) -> Vec3:
 
 
 def scaled(outline: list[Any], k: float, dx: float = 0, dz: float = 0) -> list[Any]:
-    """The outline scaled by `k` around the origin, then moved by `[dx, dz]`."""
-    result: list[Any] = []
-    for q in outline:
-        result.append([q[0] * k + dx, q[1] * k + dz])
+    """Return the outline scaled by `k` around the origin, then moved by `[dx, dz]`."""
+    result: list[Any] = [[q[0] * k + dx, q[1] * k + dz] for q in outline]
     return result
 
 
@@ -76,10 +74,11 @@ def neon_band(
     color: Rgb,
     place: Any = None,
 ) -> None:
-    """An open band of light around an outline (centred on the origin): from the outline scaled
-    `scales[0]` at height `heights[0]` to the outline scaled `scales[1]` at `heights[1]`, facing
-    out. A neon ring under a rim that, unlike a slab, hides nothing inside the hull (glow layers
-    draw lights without occluders).
+    """Add an open band of light around an outline (centred on the origin).
+
+    It runs from the outline scaled `scales[0]` at height `heights[0]` to the outline scaled
+    `scales[1]` at `heights[1]`, facing out. A neon ring under a rim that, unlike a slab, hides
+    nothing inside the hull (glow layers draw lights without occluders).
     """
     y0 = heights[0]
     y1 = heights[1]
@@ -117,10 +116,11 @@ TURRET_DOME = [
 
 
 def turret(parts: Any, at: Vec3, spec: Any) -> None:
-    """A gun turret centred on `at` (BOSS-29): a faceted dome, a neon ring around its foot and its
-    barrels pointing along `yaw`, a charge light at every muzzle. `spec` is a `TurretSpec`:
-    `radius`, `barrels`, `gap`, `bore`, `length`, `neon`, and optionally `yaw`, `elevation`,
-    `hatch` and `fires`.
+    """Add a gun turret centred on `at` (BOSS-29): a faceted dome.
+
+    A neon ring around its foot and its barrels pointing along `yaw`, a charge light at every
+    muzzle. `spec` is a `TurretSpec`: `radius`, `barrels`, `gap`, `bore`, `length`, `neon`, and
+    optionally `yaw`, `elevation`, `hatch` and `fires`.
     """
     hull = parts.hull
     neon = parts.neon
@@ -128,9 +128,7 @@ def turret(parts: Any, at: Vec3, spec: Any) -> None:
     muzzle = parts.muzzle
     r = spec.radius
     yaw = opt(spec, "yaw", 0)
-    dome = []
-    for point in TURRET_DOME:
-        dome.append([point[0] * r * 0.8, point[1] * r])
+    dome = [[point[0] * r * 0.8, point[1] * r] for point in TURRET_DOME]
     hull.lathe(dome, 8, H.panel, Placement(at, yaw + math.pi / 8))
     neon.ring(
         r * 0.84,
@@ -167,7 +165,10 @@ def turret(parts: Any, at: Vec3, spec: Any) -> None:
 
 
 def dressing(hull: Any, at: Vec3, spec: Any) -> None:
-    """The turret's dressing: a mantlet over the barrels' roots, a hatch off to one side, a vent."""
+    """Add the turret's dressing.
+
+    A mantlet over the barrels' roots, a hatch off to one side, a vent.
+    """
     r = spec.radius
     yaw = opt(spec, "yaw", 0)
     width = (spec.barrels - 1) * spec.gap + spec.bore * 4
@@ -198,13 +199,13 @@ def dressing(hull: Any, at: Vec3, spec: Any) -> None:
 
 
 def put(at: Vec3, x: float, y: float, z: float, yaw: float) -> Vec3:
-    """The point `[x, y, z]` turned by `yaw`, then moved to `at`."""
+    """Return the point `[x, y, z]` turned by `yaw`, then moved to `at`."""
     d = yawed([x, y, z], yaw)
     return offset(at, d[0], d[1], d[2])
 
 
 def yawed(p: Any, yaw: float) -> Vec3:
-    """Turns `[x, y, z]` by `yaw` around +Y."""
+    """Turn `[x, y, z]` by `yaw` around +Y."""
     x = p[0]
     y = p[1]
     z = p[2]
@@ -216,8 +217,9 @@ def yawed(p: Any, yaw: float) -> Vec3:
 
 
 def turned(at: Vec3, foot: Any, along: float, pitch: float, yaw: float) -> Vec3:
-    """Where a barrel standing on `foot` (around the turret's centre `at`), pitched and yawed, is
-    `along` its axis: its base (0) or its muzzle (its length).
+    """Return where a barrel standing on `foot`, pitched and yawed, is `along` its axis.
+
+    `foot` is around the turret's centre `at`; `along` is its base (0) or its muzzle (its length).
     """
     axis = yawed([0, along * math.cos(pitch), along * math.sin(pitch)], yaw)
     f = yawed(foot, yaw)
@@ -225,7 +227,7 @@ def turned(at: Vec3, foot: Any, along: float, pitch: float, yaw: float) -> Vec3:
 
 
 def socket(hull: Any, at: Vec3, radius: float, height: float) -> None:
-    """A dark round socket on the core where a part was mounted (left once the part is gone)."""
+    """Add a dark round socket on the core where a part was mounted (left once the part is gone)."""
     hull.cylinder(radius, height, 8, H.dark, Placement(at, math.pi / 8), radius * 0.85)
 
 
@@ -240,6 +242,6 @@ def sign_of(x: float) -> float:
 
 def radius_of(parts: Any, index: int, fallback: float) -> Any:
     """`parts[index]?.radius ?? fallback`: the radius of a config part, or `fallback`."""
-    if index < len(parts) and parts[index] != None and parts[index].radius != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if index < len(parts) and parts[index] != None and parts[index].radius != None:
         return parts[index].radius
     return fallback

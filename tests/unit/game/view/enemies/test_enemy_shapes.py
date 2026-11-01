@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/enemy_shapes.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.view_probes import recorder
@@ -24,23 +26,23 @@ from game.view.enemies.enemy_shapes import (
 )
 
 
-def test_radial_puts_the_angle_zero_on_the_nose():
+def test_radial_puts_the_angle_zero_on_the_nose() -> None:
     assert radial(0, 2, 1) == pytest.approx([0, 1, 2])
 
 
-def test_radial_quarter_turn_points_along_plus_x():
+def test_radial_quarter_turn_points_along_plus_x() -> None:
     x, y, z = radial(math.pi / 2, 3, 0.5)
     assert (x, y) == pytest.approx((3, 0.5))
     assert z == pytest.approx(0, abs=1e-12)
 
 
-def test_around_spreads_count_angles_evenly_from_the_nose():
+def test_around_spreads_count_angles_evenly_from_the_nose() -> None:
     angles = around(4)
     assert angles == pytest.approx([0, math.pi / 2, math.pi, 3 * math.pi / 2])
     assert len(around(7)) == 7
 
 
-def test_shift_and_flip_move_the_outline_across():
+def test_shift_and_flip_move_the_outline_across() -> None:
     outline = [[1.0, 2.0], [-3.0, 4.0]]
     assert shift_x(outline, 0.5) == [[1.5, 2.0], [-2.5, 4.0]]
     assert flip_x(outline) == [[-1.0, 2.0], [3.0, 4.0]]
@@ -48,11 +50,11 @@ def test_shift_and_flip_move_the_outline_across():
     assert outline == [[1.0, 2.0], [-3.0, 4.0]]
 
 
-def test_sides_are_left_then_right():
+def test_sides_are_left_then_right() -> None:
     assert SIDES == [-1, 1]
 
 
-def test_angry_eyes_are_two_slits_mirrored_about_the_centre():
+def test_angry_eyes_are_two_slits_mirrored_about_the_centre() -> None:
     slits = angry_eyes([0, 5], gap=2, size=[3, 1], slant=0)
     assert len(slits) == 2
     for slit in slits:
@@ -67,7 +69,7 @@ def test_angry_eyes_are_two_slits_mirrored_about_the_centre():
     assert left[3] == pytest.approx([-1, 4])
 
 
-def test_angry_eyes_outer_ends_swing_back_by_the_slant():
+def test_angry_eyes_outer_ends_swing_back_by_the_slant() -> None:
     slant = math.pi / 6
     left, _ = angry_eyes([0, 0], gap=0, size=[2, 0.5], slant=slant)
     outer = left[1]
@@ -75,11 +77,11 @@ def test_angry_eyes_outer_ends_swing_back_by_the_slant():
     assert outer[1] == pytest.approx(-2 * math.sin(slant))
 
 
-def _flat(points):
+def _flat(points: Any) -> Any:
     return [v for point in points for v in point]
 
 
-def _shoelace(outline):
+def _shoelace(outline: Any) -> Any:
     total = 0.0
     for i in range(len(outline)):
         x1, z1 = outline[i]
@@ -88,7 +90,7 @@ def _shoelace(outline):
     return total / 2
 
 
-def test_decal_faces_up_and_is_clockwise_whichever_way_the_outline_winds():
+def test_decal_faces_up_and_is_clockwise_whichever_way_the_outline_winds() -> None:
     square_ccw = [[1, 1], [-1, 1], [-1, -1], [1, -1]]
     for outline in (square_ccw, list(reversed(square_ccw))):
         builder, log = recorder()
@@ -102,27 +104,27 @@ def test_decal_faces_up_and_is_clockwise_whichever_way_the_outline_winds():
         assert args[1] == [1, 0, 0]
 
 
-def test_side_stripe_runs_along_one_side_of_the_section_with_its_lift():
+def test_side_stripe_runs_along_one_side_of_the_section_with_its_lift() -> None:
     section = [[0, 0], [2, 0], [2, 2], [0, 2]]
     stripe = side_stripe(section, 0, [0, 1], lift=1.5)
     # From the first to the second point of side 0, the u is lifted and the v is not.
     assert _flat(stripe) == pytest.approx(_flat([[0, 0], [3, 0]]))
 
 
-def test_side_stripe_spans_a_fraction_of_the_side_and_wraps_at_the_end():
+def test_side_stripe_spans_a_fraction_of_the_side_and_wraps_at_the_end() -> None:
     section = [[0, 0], [2, 0], [2, 2], [0, 2]]
     stripe = side_stripe(section, 3, [0.25, 0.75], lift=1)
     # Side 3 goes from (0, 2) back to (0, 0): the wrap uses point 0.
     assert _flat(stripe) == pytest.approx(_flat([[0, 1.5], [0, 0.5]]))
 
 
-def test_side_stripe_out_of_range_start_is_the_origin_and_the_end_wraps():
+def test_side_stripe_out_of_range_start_is_the_origin_and_the_end_wraps() -> None:
     stripe = side_stripe([[1, 1], [2, 2]], 9, [0, 1], lift=1.04)
     # Side 9 is not on the 2-point section: its start is the origin, its end the wrapped point 0.
     assert _flat(stripe) == pytest.approx([0, 0, 1.04, 1])
 
 
-def test_canopy_paint_colours_only_the_canopy_sides_in_the_given_bands():
+def test_canopy_paint_colours_only_the_canopy_sides_in_the_given_bands() -> None:
     color = [0.1, 0.2, 0.3]
     paint = canopy_paint([1, 2], color)
     for side in CANOPY_SIDES:
@@ -133,7 +135,7 @@ def test_canopy_paint_colours_only_the_canopy_sides_in_the_given_bands():
     assert paint(6, 1) is None
 
 
-def test_section_shapes_have_the_facets_their_models_expect():
+def test_section_shapes_have_the_facets_their_models_expect() -> None:
     assert len(HULL_SECTION) == 6
     assert len(FIGHTER_SECTION) == 9
     assert CANOPY_SIDES == [2, 3, 4, 5]

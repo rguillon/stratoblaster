@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/start_app.py`."""
 # p/start_app.py`: the frame split (simulate, then render), the input set-up, the scene sync and
 # the debug start (DEV-PERF-01, DEV-API-08, DEV-OPT-01, UI-INPUT-01). The Babylon engine and the
@@ -5,6 +6,7 @@
 # the start-up itself is run by the browser.
 
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock
 
 from helpers.gamepads import FakeGamepad
@@ -57,7 +59,7 @@ def test_dev_api_08_whole_steps_draw_only_the_last_one_when_asked() -> None:
     )
     perf = MagicMock()
     clock = FakeClock(step_seconds=0.1)
-    FrameControls(clock, ticker, perf).step(3, True)
+    FrameControls(clock, ticker, perf).step(3, render=True)
     assert simulated == [0.1, 0.1, 0.1]
     assert renders == ["render"]
     assert perf.frame_started.call_count == 3
@@ -65,15 +67,15 @@ def test_dev_api_08_whole_steps_draw_only_the_last_one_when_asked() -> None:
 
 def test_dev_api_08_steps_without_drawing_draw_nothing() -> None:
     renders: list[str] = []
-    ticker = SimpleNamespace(simulate=lambda dt: None, render=lambda: renders.append("r"))
-    FrameControls(FakeClock(), ticker, MagicMock()).step(2, False)
+    ticker = SimpleNamespace(simulate=lambda _dt: None, render=lambda: renders.append("r"))
+    FrameControls(FakeClock(), ticker, MagicMock()).step(2, render=False)
     assert renders == []
 
 
 def test_dev_api_08_zero_steps_with_drawing_still_draw_once() -> None:
     renders: list[str] = []
-    ticker = SimpleNamespace(simulate=lambda dt: None, render=lambda: renders.append("r"))
-    FrameControls(FakeClock(), ticker, MagicMock()).step(0, True)
+    ticker = SimpleNamespace(simulate=lambda _dt: None, render=lambda: renders.append("r"))
+    FrameControls(FakeClock(), ticker, MagicMock()).step(0, render=True)
     assert renders == ["r"]
 
 
@@ -243,11 +245,11 @@ def test_d199_without_dev_there_are_no_dev_viewers() -> None:
     assert start_app.create_dev("engine", None, options) is None
 
 
-def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch) -> None:
+def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch: Any) -> None:
     """DEV-MENU-02."""
-    monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
-    monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
-    monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
+    monkeypatch.setattr(start_app, "dev_catalog", lambda _game: {"ships": ["item"]})
+    monkeypatch.setattr(start_app, "dev_labels", lambda _catalog: {"ships": ["Item"]})
+    monkeypatch.setattr(start_app, "dev_groups", lambda _catalog: {"ships": [""]})
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay", keyboard_target=None)
     session, labels, groups = start_app.create_dev("engine", "game", options)
     assert session._catalog == {"ships": ["item"]}
@@ -265,7 +267,7 @@ def test_d199_the_dev_viewer_moves_on_with_the_menus_and_is_drawn_instead_of_the
     dev.render.return_value = True
     drawn: list = []
     original = start_app.render_menu_scenes
-    start_app.render_menu_scenes = lambda loaded, screen: drawn.append(screen)
+    start_app.render_menu_scenes = lambda _loaded, screen: drawn.append(screen)
     try:
         ticker = frame_ticker(clock, menu, lambda: None, session, MagicMock(), dev)
         ticker.simulate(0.02)

@@ -1,14 +1,14 @@
-"""The Scorpion's tail (MB-SCORPION-04, D-228): a chain of shelled beads arched over its back, its
-stinger hanging from the tip in front of the head. As the Scorpion turns round (its transformation,
-MB-SCORPION-11), the tail unfolds straight out behind it, now towards the player, a little longer,
-its new cannon at the end.
+# Copyright (c) 2026 Renaud Guillon
+"""The Scorpion's tail (MB-SCORPION-04, D-228): a chain of shelled beads arched over its back.
+
+Its stinger hanging from the tip in front of the head. As the Scorpion turns round (its
+transformation, MB-SCORPION-11), the tail unfolds straight out behind it, now towards the player, a
+little longer, its new cannon at the end.
 
 Model space: logical pixels, nose +Z, Y up. A tail point is `(z, y)`.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses.boss_reveal import ease, share
@@ -22,11 +22,13 @@ from render.geometry.outline import hypot2
 from render.geometry.shatter import Vertex, triangles
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The tail's spine, from its root on the abdomen (z, y), up and back, then over the body, its last
 # joint above the head, where the stinger hangs: each pair of points is a segment.
@@ -47,6 +49,7 @@ LAYERS = ["hull", "flesh", "neon", "vein", "charge"]
 
 
 def segment_count() -> int:
+    """Return the number of segments in the tail (one fewer than its joints)."""
     return len(TAIL) - 1
 
 
@@ -57,7 +60,10 @@ def _length(i: int) -> float:
 
 
 def _rest_angle(i: int) -> float:
-    """The direction of segment `i` at rest, in the (z, y) plane: atan2(dy, dz), at most pi."""
+    """Return the direction of segment `i` at rest, in the (z, y) plane.
+
+    It is atan2(dy, dz), at most pi.
+    """
     a = TAIL[i]
     b = TAIL[i + 1]
     angle = math.atan2(b[1] - a[1], b[0] - a[0])
@@ -65,8 +71,11 @@ def _rest_angle(i: int) -> float:
 
 
 def tail_pose(unfold: float) -> list[list[float]]:
-    """Each segment `[z, y, angle, stretch]`, `unfold` of the way from arched to straight out
-    behind: it swings back over the top, each segment turning towards pi."""
+    """Each segment `[z, y, angle, stretch]`.
+
+    `unfold` of the way from arched to straight out behind: it swings back over the top, each
+    segment turning towards pi.
+    """
     e = ease(unfold)
     result: list[list[float]] = []
     z: float = TAIL[0][0]
@@ -94,8 +103,10 @@ def _width(i: int) -> float:
 
 
 def segment_drawing(i: int) -> Any:
-    """Segment `i` drawn along +Z from its root: a ridged bead of shell, a sinew ring at its root,
-    yellow lights along its back and belly (it turns over as it unfolds)."""
+    """Segment `i` drawn along +Z from its root: a ridged bead of shell, a sinew ring at its root.
+
+    Yellow lights along its back and belly (it turns over as it unfolds).
+    """
     length = _length(i)
     w = _width(i)
 
@@ -136,7 +147,7 @@ def _placed(tris: list[Any], pose: list[float]) -> list[Any]:
 
 
 def tail_triangles(unfold: float) -> list[Any]:
-    """The tail's triangles (model space), `unfold` of the way out."""
+    """Return the tail's triangles (model space), `unfold` of the way out."""
     pose = tail_pose(unfold)
     result: list[Any] = []
     for i in range(segment_count()):
@@ -149,9 +160,11 @@ def tail_triangles(unfold: float) -> list[Any]:
 
 
 def unfolding(boss: Any) -> float:
-    """How far the tail has unfolded for `boss` (None: at rest): from the burst of its armour to
-    its weapons swinging up (`BOSS_LOOK.reveal`), then out for good."""
-    if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """How far the tail has unfolded for `boss` (None: at rest).
+
+    From the burst of its armour to its weapons swinging up (`BOSS_LOOK.reveal`), then out for good.
+    """
+    if boss == None:
         return 0
     if boss.form >= 1:
         return 1
@@ -169,6 +182,7 @@ class TailRig:
         self.models = models
 
     def show(self, boss: Any, lit: Any, dt: float) -> None:
+        """Pose the tail's nodes for the boss and sync its models."""
         pose = tail_pose(unfolding(boss))
         for i in range(len(self.nodes)):
             node = self.nodes[i]
@@ -179,7 +193,7 @@ class TailRig:
 
 
 def build_tail_rig(root: Any, neon: Any, breath: Any) -> TailRig:
-    """The tail on `root` (the boss model's)."""
+    """Return the tail on `root` (the boss model's)."""
     scene = root.getScene()
     nodes: list[Any] = []
     models: list[Any] = []

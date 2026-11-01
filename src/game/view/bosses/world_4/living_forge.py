@@ -1,24 +1,26 @@
-"""BOSS-47, GFX-ART-12: the Cyber-Organic pieces of the World 4 bosses (the volcanic, ash and
-foundry world): scorched flesh swollen around metal grafts, molten veins and glands glowing ember.
-Logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""BOSS-47, GFX-ART-12: the Cyber-Organic pieces of the World 4 bosses.
+
+For the volcanic, ash and foundry world: scorched flesh swollen around metal grafts, molten veins
+and glands glowing ember. Logical pixels, nose +Z, Y up.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.record import record
+from game.view.bosses.world_4.black_sands_kit import FORGE
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import curve, organ, ribs, tendril, vein
+from render.geometry.solids import LoftOptions, Placement
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.world_4.black_sands_kit import FORGE  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import curve, organ, ribs, tendril, vein  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The flesh shades (GFX-ART-15).
 FL = ENEMY_LOOK.flesh
@@ -31,7 +33,10 @@ MAGMA = FORGE.molten
 def sinew(
     b: Any, ends: list[Vec3], radii: list[float], color: Rgb = SKIN.panel, bow: float = 1.5
 ) -> None:
-    """A muscle or sinew from `a` to `b`, bowed up by `bow`, `r` thick at `a` thinning to `rb`."""
+    """Add a muscle or sinew from `a` to `b`, bowed up by `bow`.
+
+    It is `r` thick at `a`, thinning to `rb`.
+    """
     a = ends[0]
     c = ends[1]
     tendril(b, curve(a, c, [0, bow, 0], 3), [radii[0], radii[1]], 5, color)
@@ -57,7 +62,7 @@ def lumps(
 
 
 def magma_vein(p: Any, points: list[Vec3], width: float, glow: Rgb = MAGMA) -> None:
-    """A molten vein (pulsing) through `points`, `width` across."""
+    """Add a molten vein (pulsing) through `points`, `width` across."""
     for i in range(1, len(points)):
         a = points[i - 1]
         b = points[i]
@@ -84,8 +89,10 @@ def _band_paint(seam: Rgb) -> Any:
 def flesh_shell(
     b: Any, section: list[Any], stations: list[Any], colors: list[Rgb] | None = None
 ) -> None:
-    """A fleshy shell lofted through `stations` on `section`, its bands alternately `color`,
-    `seam`."""
+    """Add a fleshy shell lofted through `stations` on `section`.
+
+    Its bands are alternately `color`, `seam`.
+    """
     if colors is None:
         colors = [SKIN.base, SKIN.dark]
     b.loft(section, stations, colors[0], None, LoftOptions(False, _band_paint(colors[1])))

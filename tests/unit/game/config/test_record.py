@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/record.py`."""
 
 from game.config.record import concat, field, merge, record

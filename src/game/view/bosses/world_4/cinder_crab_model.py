@@ -1,19 +1,19 @@
-"""MB-CINDER-CRAB-01 to MB-CINDER-CRAB-06, 4-1: the Cinder Crab. Logical pixels, nose +Z, Y up
-(towards the camera). A wide, low crab-ship: a soot-black carapace cracked by molten seams, orange
-neon along its rim and on its eye stalks, six short legs, arms reaching from under its front rim to
-the two claws, the ring dome on its back and the mortar behind it. MB-CINDER-CRAB-02: a living crab,
-a scorched flesh shell banded in darker seams, bony legs, glowing eyes on fleshy stalks, metal
-grafted on as its belly plate, dome, joints and guns.
+# Copyright (c) 2026 Renaud Guillon
+"""MB-CINDER-CRAB-01 to MB-CINDER-CRAB-06, 4-1: the Cinder Crab.
+
+Logical pixels, nose +Z, Y up (towards the camera). A wide, low crab-ship: a soot-black carapace
+cracked by molten seams, orange neon along its rim and on its eye stalks, six short legs, arms
+reaching from under its front rim to the two claws, the ring dome on its back and the mortar behind
+it. MB-CINDER-CRAB-02: a living crab, a scorched flesh shell banded in darker seams, bony legs,
+glowing eyes on fleshy stalks, metal grafted on as its belly plate, dome, joints and guns.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.cinder_crab import CINDER_CRAB, CRAB_DOME  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
+from game.config.bosses.world_4.cinder_crab import CINDER_CRAB, CRAB_DOME
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import vent
+from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset
+from game.view.bosses.world_4.black_sands_kit import (
     FORGE,
     blot,
     bolts,
@@ -21,13 +21,13 @@ from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
     soot,
     strut,
 )
-from game.view.bosses.world_4.cinder_crab_parts import (  # noqa: E402
+from game.view.bosses.world_4.cinder_crab_parts import (
     CRAB_LIMBS,
     CRAB_ORANGE,
     claw,
     mortar,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     MAGMA,
     SKIN,
     back_ribs,
@@ -36,16 +36,18 @@ from game.view.bosses.world_4.living_forge import (  # noqa: E402
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES, side_stripe  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES, side_stripe
+from render.geometry.organic import RibSpec
+from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The carapace (loft stations, tail to front: z, half width, bottom, top): wide and low.
 CARAPACE = [
@@ -90,17 +92,17 @@ def _station_at(z: float, k: int) -> float:
 
 
 def top_at(z: float) -> float:
-    """The carapace's height at `z` (the top of its loft there), for things laid on it."""
+    """Return the carapace's height at `z` (the top of its loft there), for things laid on it."""
     return _station_at(z, 3)
 
 
 def _width_at(z: float) -> float:
-    """The carapace's half width at `z`."""
+    """Return the carapace's half width at `z`."""
     return _station_at(z, 1)
 
 
 def _draw_carapace(p: Any) -> None:
-    """The carapace, its orange neon flanks, the belly plate and the reactors."""
+    """Draw the carapace, its orange neon flanks, the belly plate and the reactors."""
     hull = p.hull
     neon = p.neon
     flesh_shell(p.flesh, HULL_SECTION, CARAPACE, [SKIN.base, SKIN.dark])
@@ -140,7 +142,10 @@ def _draw_legs(p: Any) -> None:
 
 
 def _draw_front(p: Any) -> None:
-    """The front: two eye stalks with orange neon tips, a brow plate, the arms' shoulder sockets."""
+    """Draw the front.
+
+    Two eye stalks with orange neon tips, a brow plate, the arms' shoulder sockets.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -219,15 +224,20 @@ def _draw_back(p: Any) -> None:
 
 
 def _mortar_part(p: Any, at: Vec3) -> None:
-    """The mortar on the carapace (MB-CINDER-CRAB-04), standing where the carapace is at its z."""
+    """Add the mortar on the carapace (MB-CINDER-CRAB-04).
+
+    It stands where the carapace is at its z.
+    """
     mortar(p, at, top_at(at[2]) - 0.4)
 
 
 def build_cinder_crab(scene: Any) -> Any:
-    """MB-CINDER-CRAB-01, MB-CINDER-CRAB-05: the Cinder Crab, a wide, low crab-ship 3 L across,
-    orange neon: a soot-black carapace cracked by molten seams on six short legs, eye stalks, two
-    claws on swinging arms whose outer fingers snap open and shut, the ring dome on its back and a
-    mortar behind it."""
+    """MB-CINDER-CRAB-01, MB-CINDER-CRAB-05: the Cinder Crab, a wide, low crab-ship 3 L across.
+
+    It has orange neon: a soot-black carapace cracked by molten seams on six short legs, eye stalks,
+    two claws on swinging arms whose outer fingers snap open and shut, the ring dome on its back and
+    a mortar behind it.
+    """
 
     def core(p: Any) -> None:
         _draw_carapace(p)

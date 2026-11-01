@@ -1,6 +1,5 @@
-"""A playable level from its scenery and its written beats (GAME-LEVEL-16)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""A playable level from its scenery and its written beats (GAME-LEVEL-16)."""
 
 from core.content.game_level import GameLevel
 from core.scenery.scenery_level import level_length
@@ -10,26 +9,25 @@ from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS
 from game.config.world_1.waves import fill, quiet_before, wave_script
 from game.sim.scenery_build import scenery_level
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
+# __pragma__ ("skip")
+from typing import Any
 
 # Config records (`game/config/record.py`), typed as Any there: a level's scenery, beats, filler,
 # difficulty and bosses.
-__pragma__("skip")
 Beat = Any
 Filler = Any
 LevelBosses = Any
 Difficulty = Any
 ScenerySource = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class WorldTables:
-    """What a world gives each of its levels, by level id: its difficulty, its filler and its
-    bosses (`dict`s keyed by the level id).
+    """What a world gives each of its levels, by level id: its difficulty.
+
+    Its filler and its bosses (`dict`s keyed by the level id).
     """
 
     def __init__(
@@ -44,31 +42,33 @@ class WorldTables:
 
 
 def _difficulty(config: Difficulty) -> EnemyDifficulty:
-    """A level's enemy difficulty, as `core/` reads it: its bullet speed and fire rate factors
-    (ENM-22), which its bosses' bullets follow too (WLD-1-23, WLD-1-28, WLD-2-26; each level's in
-    its level file's "Difficulty").
+    """Return a level's enemy difficulty, as `core/` reads it.
+
+    Its bullet speed and fire rate factors (ENM-22), which its bosses' bullets follow too
+    (WLD-1-23, WLD-1-28, WLD-2-26; each level's in its level file's "Difficulty").
     """
     return EnemyDifficulty(config.bulletSpeed, config.fireRate)
 
 
 def assemble_level(
-    id: str,
+    level_id: str,
     scenery: ScenerySource,
     beats: list[Beat],
     tables: WorldTables,
 ) -> GameLevel:
-    """A playable level, as data (GAME-LEVEL-16): its scenery (`scenery` is its config record,
-    mapped to the core's `SceneryLevel` here), its written beats with light groups filling their
-    lulls (WLD-1-21) and nothing new in the stretch before each boss (GAME-LEVEL-05), its
-    difficulty, and its mini boss at the middle and final boss at the end (GAME-LEVEL-04), then its
-    runout. Which bosses and runout are each level's own (the "Mini boss", "Final boss" and
-    "Runout" of each level file in `specs/worlds/`).
+    """Return a playable level, as data (GAME-LEVEL-16).
+
+    Its scenery (`scenery` is its config record, mapped to the core's `SceneryLevel` here), its
+    written beats with light groups filling their lulls (WLD-1-21) and nothing new in the stretch
+    before each boss (GAME-LEVEL-05), its difficulty, and its mini boss at the middle and final boss
+    at the end (GAME-LEVEL-04), then its runout. Which bosses and runout are each level's own (the
+    "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`).
     """
-    difficulty_config = tables.difficulty.get(id)
-    filler = tables.fillers.get(id)
-    bosses = tables.bosses.get(id)
+    difficulty_config = tables.difficulty.get(level_id)
+    filler = tables.fillers.get(level_id)
+    bosses = tables.bosses.get(level_id)
     if difficulty_config is None or filler is None or bosses is None:
-        raise ValueError('No difficulty, filler or boss for "' + id + '"')
+        raise ValueError('No difficulty, filler or boss for "' + level_id + '"')
     level = scenery_level(scenery)
     length = level_length(level)
     fights = [
@@ -79,7 +79,7 @@ def assemble_level(
     quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
     waves = quiet_before(script, [fight.at for fight in fights], quiet)
     return GameLevel(
-        id,
+        level_id,
         level,
         waves,
         _difficulty(difficulty_config),

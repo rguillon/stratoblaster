@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/level_run_types.py`."""
 
 from types import SimpleNamespace
@@ -32,7 +33,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -47,7 +48,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -66,19 +67,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -102,7 +103,7 @@ def test_game_ship_03_a_run_ship_has_a_health_only_when_given_one() -> None:
 
 def test_game_wpn_13_the_controls_switch_weapon_and_bomb_are_optional() -> None:
     """GAME-WPN-13 (switch weapon) and GAME-BOMB-03 (bomb): both optional controls."""
-    controls = LevelControls(FlightInput(1, 0), True)
+    controls = LevelControls(FlightInput(1, 0), fire=True)
     assert (controls.move.x, controls.fire) == (1, True)
     assert controls.switch_weapon is None
     assert controls.bomb is None

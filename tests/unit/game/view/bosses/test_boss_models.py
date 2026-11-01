@@ -1,8 +1,10 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/bosses/boss_models.py`."""
 
 import importlib
 import math
 import pathlib
+from typing import Any
 
 import pytest
 from helpers.view_probes import drawings_of, probe_builder
@@ -30,12 +32,14 @@ CPYTHON_RECORDS = {}
 
 
 def _config_boss_ids() -> set[str]:
-    """The ids of every boss design in `game/config/bosses`."""
+    """Return the ids of every boss design in `game/config/bosses`."""
     modules = ["mini_bosses", "final_bosses"]
     for world in ("world_2", "world_3", "world_4"):
-        for path in sorted((CONFIG_ROOT / world).glob("*.py")):
-            if path.name != "__init__.py":
-                modules.append(f"{world}.{path.stem}")
+        modules.extend(
+            f"{world}.{path.stem}"
+            for path in sorted((CONFIG_ROOT / world).glob("*.py"))
+            if path.name != "__init__.py"
+        )
     ids: set[str] = set()
     for name in modules:
         module = importlib.import_module(f"game.config.bosses.{name}")
@@ -47,7 +51,7 @@ def _config_boss_ids() -> set[str]:
 
 
 # ENG-163: a known CPython-only gap is a strict xfail with its reason, never a skip.
-def _with_reason(boss_id: str, reason: str):
+def _with_reason(boss_id: str, reason: str) -> Any:
     return pytest.param(
         boss_id,
         marks=pytest.mark.xfail(strict=True, reason=reason),
@@ -55,7 +59,7 @@ def _with_reason(boss_id: str, reason: str):
     )
 
 
-def test_every_boss_design_has_its_model_and_no_model_is_orphaned():
+def test_every_boss_design_has_its_model_and_no_model_is_orphaned() -> None:
     """BOSS-01: every boss design has its own model, and every model a design."""
     assert set(BOSS_MODELS) == _config_boss_ids()
     assert len(BOSS_MODELS) == 40
@@ -68,7 +72,7 @@ def test_every_boss_design_has_its_model_and_no_model_is_orphaned():
         for key in sorted(BOSS_MODELS)
     ],
 )
-def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
+def test_each_boss_model_draws_every_part_its_design_has(monkeypatch: Any, boss_id: Any) -> None:
     """BOSS-47, and each boss file's parts requirement (e.g. MB-REEF-WARDEN-03)."""
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     assert capture.design.id == boss_id
@@ -90,7 +94,9 @@ def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
         for key in sorted(BOSS_MODELS)
     ],
 )
-def test_each_boss_model_builds_geometry_for_its_body_and_parts(monkeypatch, boss_id):
+def test_each_boss_model_builds_geometry_for_its_body_and_parts(
+    monkeypatch: Any, boss_id: Any
+) -> None:
     """BOSS-47: each model builds geometry for its body and parts."""
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     drawings = drawings_of(capture)
@@ -106,8 +112,12 @@ def test_each_boss_model_builds_geometry_for_its_body_and_parts(monkeypatch, bos
             assert not any(math.isnan(v) for v in coords), f"{boss_id} {name}: NaN in geometry"
 
 
-def test_mb_scorpion_03_the_scorpion_model_has_jointed_arms_and_a_jaw_on_each_side(monkeypatch):
+def test_mb_scorpion_03_the_scorpion_model_has_jointed_arms_and_a_jaw_on_each_side(
+    monkeypatch: Any,
+) -> None:
     capture = probe_builder(monkeypatch, BOSS_MODELS["scorpion"])
     limbs = sorted(capture.drawing["limbs"].keys())
-    assert "shoulder-left" in limbs and "shoulder-right" in limbs
-    assert "jaw-left-outer" in limbs and "jaw-right-outer" in limbs
+    assert "shoulder-left" in limbs
+    assert "shoulder-right" in limbs
+    assert "jaw-left-outer" in limbs
+    assert "jaw-right-outer" in limbs

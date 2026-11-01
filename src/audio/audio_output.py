@@ -1,6 +1,8 @@
-"""Where all audio goes: a music bus and a sound effect bus, each with its volume, into a
-master limiter so the output never clips (AUD-ENGINE-02). Browsers only start audio after a user
-gesture, so the context is created by `unlock`, called on the first key press, tap, click or
+# Copyright (c) 2026 Renaud Guillon
+"""Where all audio goes: a music bus and a sound effect bus, each with its volume.
+
+Into a master limiter so the output never clips (AUD-ENGINE-02). Browsers only start audio after a
+user gesture, so the context is created by `unlock`, called on the first key press, tap, click or
 gamepad button: nothing is heard before, and no autoplay warning is shown (AUD-ENGINE-03). Without
 Web Audio, or if it fails, everything stays silent and nothing throws (AUD-ENGINE-04).
 
@@ -9,16 +11,16 @@ The context comes from `create_context` (`new AudioContext()` in the browser), n
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from audio.audio_bindings import AudioMix
 from audio.audio_types import xorshift
 from config.audio import AudioLimiter
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Gain ramps on the buses last this long, so a volume change does not click.
 BUS_RAMP_SECONDS = 0.03
@@ -40,7 +42,7 @@ class AudioBuses:
 class AudioOutputOptions:
     """Settings of an `AudioOutput`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         create_context: Any | None,
         mix: AudioMix,
@@ -68,8 +70,10 @@ def volume_gain(step: float, steps: float) -> float:
 
 
 def reverb_impulse(context: Any, seconds: float) -> Any:
-    """A stereo reverb impulse: decaying noise, the same on every run (no `Math.random`,
-    AUD-ENGINE-06)."""
+    """Return a stereo reverb impulse: decaying noise, the same on every run.
+
+    No `Math.random` (AUD-ENGINE-06).
+    """
     length = max(1, math.floor(context.sampleRate * seconds + 0.5))
     buffer = context.createBuffer(2, length, context.sampleRate)
     seed = REVERB_SEED
@@ -106,7 +110,7 @@ class AudioOutput:
         return state
 
     def unlock(self) -> AudioBuses | None:
-        """Creates (or resumes) the context, after a user gesture. Returns the buses, if any."""
+        """Create (or resume) the context, after a user gesture. Return the buses, if any."""
         if self._buses is None and not self._failed:
             self._buses = self._create()
         if self._buses is not None and self._buses.context.state == "suspended":
@@ -123,7 +127,7 @@ class AudioOutput:
         _quietly(context.suspend() if hidden else context.resume())
 
     def set_volumes(self, music: float, sfx: float) -> None:
-        """Sets the bus gains from 0..1 volume gains (see `volume_gain`)."""
+        """Set the bus gains from 0..1 volume gains (see `volume_gain`)."""
         self._music = music
         self._sfx = sfx
         buses = self._buses
@@ -156,12 +160,12 @@ class AudioOutput:
             if reverb is not None:
                 return AudioBuses(context, music, sfx, reverb)
             return AudioBuses(context, music, sfx)
-        except:  # noqa: E722 (any failure of the Web Audio graph falls back to silence)
+        except:
             self._failed = True
             return None
 
     def _reverb(self, context: Any, music: Any) -> Any | None:
-        """A convolver into the music bus, so the music volume applies to its tail too."""
+        """Return a convolver into the music bus, so the music volume applies to its tail too."""
         seconds = self.options.reverb_seconds
         if seconds is None:
             return None
@@ -179,4 +183,4 @@ def _ramp(param: Any, value: float, now: float) -> None:
 
 def _quietly(promise: Any) -> None:
     """Audio promises that fail are not errors of the game."""
-    promise.catch(lambda error: None)
+    promise.catch(lambda _error: None)

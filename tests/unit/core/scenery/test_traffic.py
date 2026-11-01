@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/traffic.py`."""
 
 import math
@@ -18,7 +19,7 @@ def straight(
     lanes: int = 1,
     step: float = 20,
 ) -> Road:
-    """A road along Z at X = 0, one point every `step` units."""
+    """Return a road along Z at X = 0, one point every `step` units."""
     count = int(length / step) + 1
     points = [RoadPoint(0, i * step, width) for i in range(count)]
     return Road(index, kind, width, lanes, points)
@@ -38,7 +39,7 @@ def rules(**overrides: object) -> CarRules:
     return CarRules(**values)  # type: ignore[arg-type]
 
 
-def ground(x: float, z: float) -> float:
+def ground(_x: float, _z: float) -> float:
     return 2.0
 
 

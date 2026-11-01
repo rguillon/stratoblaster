@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/menu_input.py` (bindings in config, UI-INPUT-03)."""
 
 from config.menu_input import MENU_INPUT_CONFIG

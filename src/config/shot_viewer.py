@@ -1,4 +1,5 @@
-"""Tunables of the player shots on the playfield (the shots page was removed by D-187)
+# Copyright (c) 2026 Renaud Guillon
+"""Tunables of the player shots on the playfield (the shots page was removed by D-187).
 
 Only `clear_color` and `lights` are read, by the playfield ship in `app/shot_viewer_scene.py`; the
 other fields have no reader in `src/` (`tests/unit/config/test_shot_viewer.py` reads a few of them).
@@ -50,7 +51,7 @@ class TargetRing:
 class TargetHealthBar:
     """The health bar above a dummy target."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         width: float,
         height: float,
@@ -66,11 +67,13 @@ class TargetHealthBar:
 
 
 class ShotTargets:
-    """Dummy targets. A column above the ship shows the laser going through ships; the side
-    targets pull the homing missiles sideways. They sway together and come back after
-    `respawn_seconds` once destroyed."""
+    """Dummy targets.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    A column above the ship shows the laser going through ships; the side targets pull the homing
+    missiles sideways. They sway together and come back after `respawn_seconds` once destroyed.
+    """
+
+    def __init__(
         self,
         radius: float,
         max_health: float,
@@ -131,8 +134,10 @@ class GlowSettings:
 
 
 class ShotViewerStats:
-    """Debug tile (phase 3 review): FPS averaged over `fps_window` s, text refreshed every
-    `refresh` s."""
+    """Debug tile (phase 3 review).
+
+    FPS averaged over `fps_window` s, text refreshed every `refresh` s.
+    """
 
     def __init__(self, fps_window: float, refresh: float) -> None:
         self.fps_window = fps_window
@@ -142,7 +147,7 @@ class ShotViewerStats:
 class ShotViewerConfig:
     """The tunables of the playfield shots, in the order of `SHOT_VIEWER_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         step_hz: float,
         max_steps_per_frame: float,

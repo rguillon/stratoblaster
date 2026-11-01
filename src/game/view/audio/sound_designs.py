@@ -1,23 +1,16 @@
-"""The game's sound effects (AUD-SFX-01), all
-synthesised, keyed by the engine's cue (`SoundCue`), made to fit the darksynth music and to suit
-a child (AUD-SFX-07). Priorities (AUD-SFX-05): the player's and the bombs' sounds highest, the
-enemy shots lowest. The player's gun shots and the laser hum are mixed quieter than hits and
-explosions (AUD-SFX-06).
+# Copyright (c) 2026 Renaud Guillon
+"""The game's sound effects (AUD-SFX-01), all synthesised, keyed by the engine's cue (`SoundCue`).
+
+Made to fit the darksynth music and to suit a child (AUD-SFX-07). Priorities (AUD-SFX-05): the
+player's and the bombs' sounds highest, the enemy shots lowest. The player's gun shots and the laser
+hum are mixed quieter than hits and explosions (AUD-SFX-06).
 
 `sound(...)` takes its optional fields (`positional`, `loop`, `hold`) as a dict, as the
 The layers take a partial object.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from audio.audio_types import FilterSpec, SoundDesign  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.sound_recipes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from audio.audio_types import FilterSpec, SoundDesign
+from game.view.audio.sound_recipes import (
     MINIGUN,
     ExplosionSize,
     chime,
@@ -27,6 +20,14 @@ from game.view.audio.sound_recipes import (  # noqa: E402 (after the Transcrypt 
     minigun,
     tone,
 )
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
+
 
 # Priorities (AUD-SFX-05).
 PRIORITY = {
@@ -48,7 +49,7 @@ def sound(
     layers: list[Any],
     rest: dict[str, Any],
 ) -> SoundDesign:
-    """A sound effect; `rest` holds `positional`, `loop` or `hold` (default 0)."""
+    """Return a sound effect; `rest` holds `positional`, `loop` or `hold` (default 0)."""
     return SoundDesign(
         name,
         flatten_layers(layers),
@@ -473,8 +474,7 @@ MENUS = {
 def _all_sounds() -> dict[str, SoundDesign]:
     sounds: dict[str, SoundDesign] = {}
     for group in [PLAYER_WEAPONS, ENEMY_WEAPONS, HITS, DESTRUCTION, PLAYER, MENUS]:
-        for key, value in group.items():
-            sounds[key] = value
+        sounds.update(group)
     return sounds
 
 

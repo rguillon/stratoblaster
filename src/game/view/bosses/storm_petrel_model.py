@@ -1,19 +1,19 @@
-"""FB-STORM-PETREL-01 to FB-STORM-PETREL-04: the Storm Petrel, the final boss of 1-1 Logical
-pixels, nose +Z, Y up (towards the camera). A colossal
-sea-bird creature: a long shelled body, broad membrane wings on bone struts with an engine sac on
-each, magenta veins along the wing edges; its parts are growths on its wings, tail and breast.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-STORM-PETREL-01 to FB-STORM-PETREL-04: the Storm Petrel, the final boss of 1-1.
+
+Logical pixels, nose +Z, Y up (towards the camera). A colossal sea-bird creature: a long shelled
+body, broad membrane wings on bone struts with an engine sac on each, magenta veins along the wing
+edges; its parts are growths on its wings, tail and breast.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.final_bosses import STORM_PETREL  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_petrel import draw_plate, draw_pod, draw_rack  # noqa: E402
-from game.view.bosses.final_boss_shapes import edge_strips, shift, sided, turret  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.final_bosses import STORM_PETREL
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_petrel import draw_plate, draw_pod, draw_rack
+from game.view.bosses.final_boss_shapes import edge_strips, shift, sided, turret
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -26,17 +26,19 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import SegmentedBody, segmented_body  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, flip_x
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import SegmentedBody, segmented_body
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = BOSS_LOOK.neon["storm-petrel"]
 
@@ -87,9 +89,11 @@ WING_Y = [6, 7.5, 9.5]
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (FB-STORM-PETREL-02): a long shelled body from tail to beak, plated grafts on its
-    back, ribs across its shoulders, a magenta vein down its spine, eyes over its beak, and the
-    barbette of the cockpit turret growing out of its back."""
+    """Draw the body (FB-STORM-PETREL-02): a long shelled body from tail to beak.
+
+    Plated grafts on its back, ribs across its shoulders, a magenta vein down its spine, eyes over
+    its beak, and the barbette of the cockpit turret growing out of its back.
+    """
     hide(
         p,
         {
@@ -115,15 +119,19 @@ def _draw_hull(p: Any) -> None:
 
 
 def _cockpit_turret(p: Any, at: Vec3) -> None:
-    """The cockpit turret on its barbette (the core's gun, FB-STORM-PETREL-03), turning around
-    its pivot `at`."""
+    """Add the cockpit turret on its barbette (the core's gun, FB-STORM-PETREL-03).
+
+    It turns around its pivot `at`.
+    """
     turret(p, shift(at, [0, 14.5, 0]), 8.5, [2, N])
 
 
 def _draw_wings(p: Any) -> None:
-    """Both wings (FB-STORM-PETREL-02): a membrane on bone struts (big, heavy wings: they stay
-    still), neon along their leading edges, veins across them, an engine sac on each with its
-    reactor, a float of flesh under each root."""
+    """Draw both wings (FB-STORM-PETREL-02): a membrane on bone struts.
+
+    Big, heavy wings: they stay still. Neon along their leading edges, veins across them, an engine
+    sac on each with its reactor, a float of flesh under each root.
+    """
     for s in SIDES:
         p.flesh.bevel_slab(sided(WING, s), WING_Y, [1.2, 1.8], F.membrane, None, F.graphite)
         edge_strips(p.neon, sided(WING_LEAD, s), 1.2, [6.9, 8.1], N)
@@ -160,7 +168,7 @@ def _draw_wings(p: Any) -> None:
 
 
 def _draw_tail(p: Any) -> None:
-    """The tailplanes: membrane on bone, their fins of bone, neon on their leading edges."""
+    """Draw the tailplanes: membrane on bone, their fins of bone, neon on their leading edges."""
     for s in SIDES:
         plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         p.flesh.bevel_slab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, None, F.graphite)
@@ -182,9 +190,12 @@ def _draw_tail(p: Any) -> None:
 
 
 def build_storm_petrel(scene: Any) -> Any:
-    """FB-STORM-PETREL-01, FB-STORM-PETREL-04: the Storm Petrel, a colossal sea-bird creature 4.5 L
-    across its wings, magenta veins along the wing edges; a gun growth on each wing, a missile brood
-    on its tail, a bony shell over its breast, and a cockpit turret on its back (the core)."""
+    """FB-STORM-PETREL-01, FB-STORM-PETREL-04: the Storm Petrel.
+
+    A colossal sea-bird creature 4.5 L across its wings, magenta veins along the wing edges; a gun
+    growth on each wing, a missile brood on its tail, a bony shell over its breast, and a cockpit
+    turret on its back (the core).
+    """
 
     def core(p: Any) -> None:
         _draw_hull(p)

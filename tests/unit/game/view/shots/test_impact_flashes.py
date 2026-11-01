@@ -1,7 +1,9 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/shots/impact_flashes.py`."""
 
 import math
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -14,10 +16,10 @@ LOOK = SimpleNamespace(segments=6, colors=[[1, 1, 1], [1, 0, 0]])
 
 
 @pytest.fixture
-def flashes(monkeypatch):
+def flashes(monkeypatch: Any) -> Any:
     stub_babylon(monkeypatch, impact_flashes)
     template = MagicMock(name="template")
-    monkeypatch.setattr(impact_flashes, "additive_template", lambda *a: template)
+    monkeypatch.setattr(impact_flashes, "additive_template", lambda *_a: template)
     monkeypatch.setattr(impact_flashes, "NodePool", _Pool)
     return ImpactFlashes(MagicMock(), "blast", LOOK, 0.5, lambda impact: impact.r)
 
@@ -25,20 +27,20 @@ def flashes(monkeypatch):
 class _Pool:
     """A pool that gives back `count` plain mesh objects, enabled or not."""
 
-    def __init__(self, create):
+    def __init__(self, create: Any) -> None:
         self.create = create
         self.meshes = []
 
-    def show(self, count):
+    def show(self, count: Any) -> Any:
         while len(self.meshes) < count:
             self.meshes.append(MagicMock(name="mesh"))
         return self.meshes[:count]
 
-    def dispose(self):
+    def dispose(self) -> None:
         self.meshes.clear()
 
 
-def test_gfx_fx_03_the_flash_grows_then_shrinks():
+def test_gfx_fx_03_the_flash_grows_then_shrinks() -> None:
     assert flash_scale(0, 1.0) == 0
     assert flash_scale(1.0, 1.0) == 0
     # Peaks a quarter of the way through (sin of pi times the root of the age).
@@ -48,12 +50,12 @@ def test_gfx_fx_03_the_flash_grows_then_shrinks():
     assert flash_scale(0.9, 1.0) < flash_scale(0.5, 1.0)
 
 
-def test_gfx_fx_03_a_flash_is_a_position_radius_and_age():
+def test_gfx_fx_03_a_flash_is_a_position_radius_and_age() -> None:
     f = Flash(1.0, 2.0, 3.0, 0.5)
     assert (f.x, f.y, f.radius, f.age) == (1.0, 2.0, 3.0, 0.5)
 
 
-def test_gfx_fx_03_each_impact_starts_a_flash_at_its_point(flashes):
+def test_gfx_fx_03_each_impact_starts_a_flash_at_its_point(flashes: Any) -> None:
     impacts = [SimpleNamespace(x=5.0, y=6.0, r=2.0)]
     flashes.sync(impacts, 0.0)
     assert len(flashes.flashes) == 1
@@ -61,7 +63,7 @@ def test_gfx_fx_03_each_impact_starts_a_flash_at_its_point(flashes):
     assert (f.x, f.y, f.radius, f.age) == (5.0, 6.0, 2.0, 0)
 
 
-def test_gfx_fx_03_flashes_age_and_expire_after_their_duration(flashes):
+def test_gfx_fx_03_flashes_age_and_expire_after_their_duration(flashes: Any) -> None:
     flashes.sync([SimpleNamespace(x=0, y=0, r=1)], 0.0)
     flashes.sync([], 0.25)
     assert len(flashes.flashes) == 1
@@ -70,7 +72,7 @@ def test_gfx_fx_03_flashes_age_and_expire_after_their_duration(flashes):
     assert flashes.flashes == []
 
 
-def test_gfx_fx_03_a_new_flash_shows_at_a_minimum_size(flashes):
+def test_gfx_fx_03_a_new_flash_shows_at_a_minimum_size(flashes: Any) -> None:
     flashes.sync([SimpleNamespace(x=0, y=0, r=10)], 0.0)
     mesh = flashes._pool.show(1)[0]
     size = 10 * max(0.3, flash_scale(0, 0.5))
@@ -78,7 +80,7 @@ def test_gfx_fx_03_a_new_flash_shows_at_a_minimum_size(flashes):
     mesh.position.set.assert_called_with(0, 0, -1)
 
 
-def test_gfx_fx_03_dispose_releases_the_pool(flashes):
+def test_gfx_fx_03_dispose_releases_the_pool(flashes: Any) -> None:
     flashes.sync([SimpleNamespace(x=0, y=0, r=1)], 0.0)
     flashes.dispose()
     assert flashes._pool.meshes == []

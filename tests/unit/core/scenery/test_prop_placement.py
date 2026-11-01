@@ -1,14 +1,16 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/prop_placement.py`."""
 
 import math
+from typing import Any
 
 from helpers.sample_level import flat, sample_level, sample_props, sample_roads
 
-from core.scenery.ground_boxes import GroundArea
+from core.scenery.ground_boxes import GroundArea, PropPlacement
 from core.scenery.height_field import HeightField
 from core.scenery.prop_placement import CHUNK_SIZE, PropPlacer, chunk_of
 from core.scenery.road_network import RoadNetworkOptions, level_roads
-from core.scenery.scenery_level import StreetGrid
+from core.scenery.scenery_level import Forests, StreetGrid, Surface, Woods
 
 AREA = GroundArea(-200, 200, 0, 400)
 
@@ -16,12 +18,12 @@ SETBACK = 1
 
 
 def placer_for(
-    level=None,
+    level: Any = None,
     seed: int | None = None,
     sea_level: float | None = 0,
     runout_from: float | None = None,
 ) -> PropPlacer:
-    """A placer of `level` (the sample by default), with its roads laid."""
+    """Return a placer of `level` (the sample by default), with its roads laid."""
     level = level if level is not None else sample_level()
     seed = level.seed if seed is None else seed
     field = HeightField(level, seed)
@@ -30,18 +32,21 @@ def placer_for(
     return PropPlacer(field, level.props, seed, roads, sea_level=sea_level)
 
 
-def keys(placements) -> list[tuple]:
-    """The placements as plain tuples (PropPlacement has no equality)."""
+def keys(placements: Any) -> list[tuple]:
+    """Return the placements as plain tuples (PropPlacement has no equality)."""
     return [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in placements]
 
 
-def record_key(record) -> tuple:
-    """A building record as a plain tuple of its prop's kind and place."""
+def record_key(record: Any) -> tuple:
+    """Return a building record as a plain tuple of its prop's kind and place."""
     return (record.placement.kind, record.placement.x, record.placement.y, record.placement.z)
 
 
-def dense_level():
-    """The sample with a dense grid of streets over the whole level: many buildings to pack."""
+def dense_level() -> Any:
+    """Return the sample with a dense grid of streets over the whole level.
+
+    Many buildings to pack.
+    """
     flat_section = flat("grid", 20, 10)
     flat_section.streets = StreetGrid([20, 25], [20, 30], 0.8)
     return sample_level(sections=[flat_section])
@@ -51,7 +56,6 @@ class _Ground:
     """A box of ground for the overlap checks: a tree's box is `half` each way."""
 
     def __init__(self, x: float, z: float, half: float) -> None:
-        from core.scenery.ground_boxes import PropPlacement  # noqa: PLC0415
 
         self.placement = PropPlacement("", x, 0, z, 0, 1)
         self.half_x = half
@@ -181,7 +185,7 @@ def test_a_worker_hands_its_chunks_over_and_they_are_taken_as_they_are() -> None
     worker = placer_for()
     chunks = worker.ensure_placed_chunks(1000)
     main = placer_for()
-    main.ask = lambda z: None
+    main.ask = lambda _z: None
     main.receive(chunks)
     assert main.placed_to == worker.placed_to
     assert keys(main.place(AREA)) == keys(worker.place(AREA))
@@ -240,14 +244,12 @@ def test_without_a_road_it_can_be_built_there_are_no_buildings() -> None:
     assert all(p.kind != "block" for p in props)
 
 
-def _trees(level) -> list:
+def _trees(level: Any) -> list:
     return [p for p in placer_for(level).place(AREA) if p.kind == "stick"]
 
 
 def _grassy(lush: float | None, density: float = 1) -> list:
-    """The sample's two sections, covered with grass by `lush`, of tree `density`."""
-    from core.scenery.scenery_level import Surface  # noqa: PLC0415
-
+    """Return the sample's two sections, covered with grass by `lush`, of tree `density`."""
     sections = [flat("low", 10, 10), flat("high", 10, 30)]
     for section in sections:
         section.tree_density = density
@@ -255,8 +257,7 @@ def _grassy(lush: float | None, density: float = 1) -> list:
     return sections
 
 
-def _woods(threshold: float, edge: float = 0):
-    from core.scenery.scenery_level import Forests  # noqa: PLC0415
+def _woods(threshold: float, edge: float = 0) -> Any:
 
     return sample_props(trees_per_cell=20, forests=Forests(1 / 300, threshold, edge))
 
@@ -273,10 +274,10 @@ def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
 
 def test_d212_with_woods_every_cell_tries_about_the_most_trees() -> None:
     placer = placer_for(sample_level(sections=_grassy(1), props=_woods(0)))
-    counts = [placer._tree_count(i, 0, 1) for i in range(50)]  # noqa: SLF001
+    counts = [placer._tree_count(i, 0, 1) for i in range(50)]
     assert min(counts) >= 16
     assert max(counts) <= 24
-    assert placer._tree_count(0, 0, 0) == 0  # noqa: SLF001
+    assert placer._tree_count(0, 0, 0) == 0
 
 
 def test_d212_woods_grow_on_the_grass_and_less_with_a_lower_density() -> None:
@@ -307,8 +308,8 @@ def test_d212_trees_placed_a_strip_at_a_time_are_those_placed_at_once() -> None:
     assert all(t.kind != "stick" for t in placer.place_without_trees(AREA))
 
 
-def _desert(woods, density: float = 1) -> list:
-    """The sample's two sections, no grass, its trees growing as `woods` says (D-214)."""
+def _desert(woods: Any, density: float = 1) -> list:
+    """Return the sample's two sections, no grass, its trees growing as `woods` says (D-214)."""
     sections = _grassy(0, density)
     for section in sections:
         section.woods = woods
@@ -317,7 +318,6 @@ def _desert(woods, density: float = 1) -> list:
 
 def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees() -> None:
     """GFX-PROP-08."""
-    from core.scenery.scenery_level import Woods  # noqa: PLC0415
 
     def count(cover: float, keep: float, scatter: float = 0) -> int:
         level = sample_level(sections=_desert(Woods(cover, keep, scatter)), props=_woods(0.3))
@@ -333,7 +333,6 @@ def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees()
 
 def test_d214_a_sections_woods_scatter_lone_trees_outside_them() -> None:
     """GFX-PROP-08."""
-    from core.scenery.scenery_level import Woods  # noqa: PLC0415
 
     def count(scatter: float, density: float = 1) -> int:
         level = sample_level(sections=_desert(Woods(0, 0, scatter), density), props=_woods(0.3))
@@ -345,7 +344,6 @@ def test_d214_a_sections_woods_scatter_lone_trees_outside_them() -> None:
 
 
 def test_d214_without_forests_a_sections_woods_change_nothing() -> None:
-    from core.scenery.scenery_level import Woods  # noqa: PLC0415
 
     props = sample_props(trees_per_cell=20)
     plain = _trees(sample_level(sections=_desert(None), props=props))

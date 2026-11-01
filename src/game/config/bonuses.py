@@ -1,4 +1,5 @@
-"""Weapon bonuses (phase 6 review; they level the weapon up, GAME-WPN-14)
+# Copyright (c) 2026 Renaud Guillon
+"""Weapon bonuses (phase 6 review; they level the weapon up, GAME-WPN-14).
 
 The chance a destroyed enemy drops one grows with its health (GAME-BONUS-02): 6 % for the small
 ones (Gnat to Splitter), a Lancer 12 %, a Rocketeer 15 %, a Bulwark or a Carrier 20 %. A
@@ -14,12 +15,10 @@ points (GAME-BONUS-10).
 from game.config.record import record
 from game.config.scoring import SCORING
 
-BONUS_RULES = record(
-    {
-        "chance": {"perHealth": 0.0015, "min": 0.06, "max": 0.2},
-        "fallSpeed": 45,
-        "pickupRadius": 22,
-        "special": {"life": 0.01, "bomb": 0.03},
-        "overflowPoints": SCORING.overflow,
-    }
-)
+BONUS_RULES = record({
+    "chance": {"perHealth": 0.0015, "min": 0.06, "max": 0.2},
+    "fallSpeed": 45,
+    "pickupRadius": 22,
+    "special": {"life": 0.01, "bomb": 0.03},
+    "overflowPoints": SCORING.overflow,
+})

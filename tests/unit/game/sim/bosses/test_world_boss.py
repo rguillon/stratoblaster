@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/bosses/world_boss.py`."""
 
 import pytest
@@ -79,7 +80,7 @@ def test_boss_21_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -
 
 
 def _hidden_gun_design() -> object:
-    """The Reef Warden with one more gun, hidden until its transformation."""
+    """Return the Reef Warden with one more gun, hidden until its transformation."""
     stats = REEF_WARDEN.stats
     parts = [*stats["parts"], part("hidden-gun", [0, -10], 8, 50, {"reveal": 1, "shields": False})]
     guns = merge(REEF_WARDEN.guns, {"hidden-gun": {"gun": [[0, -14, 3]]}})

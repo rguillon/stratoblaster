@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/loop/fixed_step_clock.py`."""
 
 import pytest
@@ -11,7 +12,7 @@ def test_step_seconds_is_the_inverse_of_the_rate() -> None:
 
 @pytest.mark.parametrize(("hz", "max_steps"), [(0, 5), (-1, 5), (10, 0), (10, -2)])
 def test_bad_settings_raise(hz: float, max_steps: int) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="hz must be > 0"):
         FixedStepClock(hz=hz, max_steps_per_frame=max_steps)
 
 

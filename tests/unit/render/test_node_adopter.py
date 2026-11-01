@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/node_adopter.py`."""
 
 import pytest
@@ -92,7 +93,8 @@ def test_meshes_are_adopted_even_when_create_fails() -> None:
 
     def create() -> None:
         scene.add_node("half-built")
-        raise RuntimeError("boom")
+        msg = "boom"
+        raise RuntimeError(msg)
 
     with pytest.raises(RuntimeError, match="boom"):
         adopter.run(create)

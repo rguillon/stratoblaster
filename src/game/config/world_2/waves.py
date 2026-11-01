@@ -1,4 +1,5 @@
-"""The wave scripts of World 2 (WLD-2-17, WLD-2-19)
+# Copyright (c) 2026 Renaud Guillon
+"""The wave scripts of World 2 (WLD-2-17, WLD-2-19).
 
 Each level cycles through its own phrases: a beat every `gap` seconds (from `gap[0]` at the start to
 `gap[1]` at the end, so the level fills up as it goes), each beat the next phrase of the cycle, its
@@ -10,15 +11,14 @@ side, position (0..1), spread]`.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import concat, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 # A phrase is `[kind, groups, seconds between groups, side, position, spread]`.
@@ -26,7 +26,7 @@ PHRASE_LENGTH = 5
 
 
 def compose_beats(plan: Any) -> list[Any]:
-    """The beats of `plan`, deterministic."""
+    """Return the beats of `plan`, deterministic."""
     beats = []
     span = plan["to"] - plan["from"]
     t = plan["from"]
@@ -51,141 +51,129 @@ def compose_beats(plan: Any) -> list[Any]:
 
 
 # 2-1 (LVL-2-1-07, LVL-2-1-08): Gnats, Hornets, Scouts, Strafers and Weavers over the dunes.
-PLAN_2_1 = record(
-    {
-        "from": 4,
-        "to": 292,
-        "gap": [6.5, 4.8],
-        "growth": 0.6,
-        "phrases": [
-            ["scout", 3, 1.2, "top", 0.25, 0.25],
-            ["weaver", 3, 1.4, "top", 0.3, 0.2],
-            ["strafer", 2, 1.6, "left", 0.8],
-            ["hornet", 4, 0.8, "top", 0.15, 0.23],
-            ["gnat", 2, 2, "top", 0.3, 0.4],
-            ["scout", 4, 1, "top", 0.2, 0.2],
-            ["strafer", 2, 1.6, "right", 0.78],
-            ["weaver", 3, 1.2, "top", 0.6, -0.2],
-        ],
-    }
-)
+PLAN_2_1 = record({
+    "from": 4,
+    "to": 292,
+    "gap": [6.5, 4.8],
+    "growth": 0.6,
+    "phrases": [
+        ["scout", 3, 1.2, "top", 0.25, 0.25],
+        ["weaver", 3, 1.4, "top", 0.3, 0.2],
+        ["strafer", 2, 1.6, "left", 0.8],
+        ["hornet", 4, 0.8, "top", 0.15, 0.23],
+        ["gnat", 2, 2, "top", 0.3, 0.4],
+        ["scout", 4, 1, "top", 0.2, 0.2],
+        ["strafer", 2, 1.6, "right", 0.78],
+        ["weaver", 3, 1.2, "top", 0.6, -0.2],
+    ],
+})
 
 # 2-2 (LVL-2-2-07, LVL-2-2-08): the 2-1 kinds plus Splitters and Lancers, over the mines and
 # mesas.
-PLAN_2_2 = record(
-    {
-        "from": 4,
-        "to": 292,
-        "gap": [5.4, 3.9],
-        "growth": 0.6,
-        "phrases": [
-            ["scout", 3, 1.2, "top", 0.25, 0.25],
-            ["splitter", 2, 2, "top", 0.3, 0.4],
-            ["weaver", 3, 1.2, "top", 0.3, 0.2],
-            ["lancer", 2, 2.5, "top", 0.25, 0.5],
-            ["strafer", 2, 1.5, "left", 0.8],
-            ["hornet", 4, 0.8, "top", 0.15, 0.23],
-            ["splitter", 2, 2, "top", 0.7, -0.4],
-            ["gnat", 2, 2, "top", 0.3, 0.4],
-            ["lancer", 2, 2, "top", 0.3, 0.4],
-            ["strafer", 2, 1.5, "right", 0.78],
-        ],
-    }
-)
+PLAN_2_2 = record({
+    "from": 4,
+    "to": 292,
+    "gap": [5.4, 3.9],
+    "growth": 0.6,
+    "phrases": [
+        ["scout", 3, 1.2, "top", 0.25, 0.25],
+        ["splitter", 2, 2, "top", 0.3, 0.4],
+        ["weaver", 3, 1.2, "top", 0.3, 0.2],
+        ["lancer", 2, 2.5, "top", 0.25, 0.5],
+        ["strafer", 2, 1.5, "left", 0.8],
+        ["hornet", 4, 0.8, "top", 0.15, 0.23],
+        ["splitter", 2, 2, "top", 0.7, -0.4],
+        ["gnat", 2, 2, "top", 0.3, 0.4],
+        ["lancer", 2, 2, "top", 0.3, 0.4],
+        ["strafer", 2, 1.5, "right", 0.78],
+    ],
+})
 
 # 2-3 (LVL-2-3-07, LVL-2-3-08): every kind, with Carrier and Spinner groups over the tundra.
-PLAN_2_3 = record(
-    {
-        "from": 4,
-        "to": 292,
-        "gap": [6.6, 5],
-        "growth": 0.6,
-        "phrases": [
-            ["spinner", 2, 2.5, "top", 0.3, 0.4],
-            ["scout", 4, 1, "top", 0.15, 0.23],
-            ["carrier", 1, 0, "top", 0.5],
-            ["weaver", 3, 1.2, "top", 0.3, 0.2],
-            ["spinner", 2, 2.5, "top", 0.7, -0.4],
-            ["splitter", 2, 2, "top", 0.3, 0.4],
-            ["lancer", 2, 2, "top", 0.25, 0.5],
-            ["spinner", 1, 0, "top", 0.5],
-            ["rocketeer", 1, 0, "top", 0.5],
-            ["strafer", 2, 1.5, "left", 0.8],
-            ["hornet", 4, 0.7, "top", 0.1, 0.2],
-            ["bulwark", 1, 0, "top", 0.5],
-            ["gnat", 2, 2, "top", 0.3, 0.4],
-        ],
-    }
-)
+PLAN_2_3 = record({
+    "from": 4,
+    "to": 292,
+    "gap": [6.6, 5],
+    "growth": 0.6,
+    "phrases": [
+        ["spinner", 2, 2.5, "top", 0.3, 0.4],
+        ["scout", 4, 1, "top", 0.15, 0.23],
+        ["carrier", 1, 0, "top", 0.5],
+        ["weaver", 3, 1.2, "top", 0.3, 0.2],
+        ["spinner", 2, 2.5, "top", 0.7, -0.4],
+        ["splitter", 2, 2, "top", 0.3, 0.4],
+        ["lancer", 2, 2, "top", 0.25, 0.5],
+        ["spinner", 1, 0, "top", 0.5],
+        ["rocketeer", 1, 0, "top", 0.5],
+        ["strafer", 2, 1.5, "left", 0.8],
+        ["hornet", 4, 0.7, "top", 0.1, 0.2],
+        ["bulwark", 1, 0, "top", 0.5],
+        ["gnat", 2, 2, "top", 0.3, 0.4],
+    ],
+})
 
 # 2-4 (LVL-2-4-07, LVL-2-4-08): every kind, with Rocketeers and Bulwarks in the blizzard.
-PLAN_2_4 = record(
-    {
-        "from": 4,
-        "to": 292,
-        "gap": [4.8, 3.4],
-        "growth": 0.6,
-        "phrases": [
-            ["rocketeer", 2, 2.5, "top", 0.3, 0.4],
-            ["scout", 4, 1, "top", 0.15, 0.23],
-            ["bulwark", 1, 0, "top", 0.5],
-            ["weaver", 3, 1.2, "top", 0.3, 0.2],
-            ["rocketeer", 2, 2, "top", 0.7, -0.4],
-            ["spinner", 2, 2.5, "top", 0.3, 0.4],
-            ["bulwark", 1, 0, "top", 0.35],
-            ["lancer", 2, 2, "top", 0.25, 0.5],
-            ["splitter", 2, 2, "top", 0.3, 0.4],
-            ["carrier", 1, 0, "top", 0.5],
-            ["strafer", 3, 1.5, "right", 0.8],
-            ["hornet", 5, 0.7, "top", 0.1, 0.2],
-            ["gnat", 2, 2, "top", 0.3, 0.4],
-        ],
-    }
-)
+PLAN_2_4 = record({
+    "from": 4,
+    "to": 292,
+    "gap": [4.8, 3.4],
+    "growth": 0.6,
+    "phrases": [
+        ["rocketeer", 2, 2.5, "top", 0.3, 0.4],
+        ["scout", 4, 1, "top", 0.15, 0.23],
+        ["bulwark", 1, 0, "top", 0.5],
+        ["weaver", 3, 1.2, "top", 0.3, 0.2],
+        ["rocketeer", 2, 2, "top", 0.7, -0.4],
+        ["spinner", 2, 2.5, "top", 0.3, 0.4],
+        ["bulwark", 1, 0, "top", 0.35],
+        ["lancer", 2, 2, "top", 0.25, 0.5],
+        ["splitter", 2, 2, "top", 0.3, 0.4],
+        ["carrier", 1, 0, "top", 0.5],
+        ["strafer", 3, 1.5, "right", 0.8],
+        ["hornet", 5, 0.7, "top", 0.1, 0.2],
+        ["gnat", 2, 2, "top", 0.3, 0.4],
+    ],
+})
 
 # 2-5 (LVL-2-5-07, LVL-2-5-08): every kind, the heaviest mixes: Bulwarks and Carriers together.
-PLAN_2_5 = record(
-    {
-        "from": 4,
-        "to": 292,
-        "gap": [5, 3.6],
-        "growth": 0.6,
-        "phrases": [
-            ["bulwark", 1, 0, "top", 0.35],
-            ["carrier", 1, 0, "top", 0.65],
-            ["scout", 4, 1, "top", 0.15, 0.23],
-            ["rocketeer", 2, 2, "top", 0.3, 0.4],
-            ["lancer", 3, 1.5, "top", 0.2, 0.3],
-            ["spinner", 2, 2.5, "top", 0.7, -0.4],
-            ["bulwark", 2, 3, "top", 0.3, 0.4],
-            ["weaver", 4, 1, "top", 0.2, 0.2],
-            ["splitter", 3, 1.5, "top", 0.2, 0.3],
-            ["carrier", 1, 0, "top", 0.4],
-            ["strafer", 3, 1.5, "left", 0.8],
-            ["hornet", 5, 0.6, "top", 0.1, 0.2],
-            ["gnat", 3, 1.5, "top", 0.2, 0.3],
-        ],
-    }
-)
+PLAN_2_5 = record({
+    "from": 4,
+    "to": 292,
+    "gap": [5, 3.6],
+    "growth": 0.6,
+    "phrases": [
+        ["bulwark", 1, 0, "top", 0.35],
+        ["carrier", 1, 0, "top", 0.65],
+        ["scout", 4, 1, "top", 0.15, 0.23],
+        ["rocketeer", 2, 2, "top", 0.3, 0.4],
+        ["lancer", 3, 1.5, "top", 0.2, 0.3],
+        ["spinner", 2, 2.5, "top", 0.7, -0.4],
+        ["bulwark", 2, 3, "top", 0.3, 0.4],
+        ["weaver", 4, 1, "top", 0.2, 0.2],
+        ["splitter", 3, 1.5, "top", 0.2, 0.3],
+        ["carrier", 1, 0, "top", 0.4],
+        ["strafer", 3, 1.5, "left", 0.8],
+        ["hornet", 5, 0.6, "top", 0.1, 0.2],
+        ["gnat", 3, 1.5, "top", 0.2, 0.3],
+    ],
+})
 
 # The filler of each level (D-051; LVL-2-1-09, LVL-2-2-09, LVL-2-3-09, LVL-2-4-09, LVL-2-5-09),
 # from the basic kinds the level may use (WLD-2-18); each level is fuller per minute than the one
 # before (WLD-2-20).
-WORLD_2_FILLERS = record(
-    {
-        "2-1": {"kinds": ["hornet", "scout", "gnat", "weaver"], "maxGap": [3.4, 2.3]},
-        "2-2": {"kinds": ["hornet", "gnat", "weaver", "scout", "splitter"], "maxGap": [3.2, 2.1]},
-        "2-3": {
-            "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-            "maxGap": [3, 2],
-        },
-        "2-4": {
-            "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-            "maxGap": [2.9, 1.8],
-        },
-        "2-5": {
-            "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-            "maxGap": [2.8, 1.6],
-        },
-    }
-)
+WORLD_2_FILLERS = record({
+    "2-1": {"kinds": ["hornet", "scout", "gnat", "weaver"], "maxGap": [3.4, 2.3]},
+    "2-2": {"kinds": ["hornet", "gnat", "weaver", "scout", "splitter"], "maxGap": [3.2, 2.1]},
+    "2-3": {
+        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
+        "maxGap": [3, 2],
+    },
+    "2-4": {
+        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
+        "maxGap": [2.9, 1.8],
+    },
+    "2-5": {
+        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
+        "maxGap": [2.8, 1.6],
+    },
+})

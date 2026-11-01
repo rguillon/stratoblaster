@@ -1,24 +1,26 @@
-"""BOSS-47: shapes shared by the World 1 final bosses (Storm Petrel, Gull Mothership, Mesa
-Fortress) Logical pixels, nose +Z, Y up (towards the
-camera).
+# Copyright (c) 2026 Renaud Guillon
+"""BOSS-47: shapes shared by the World 1 final bosses.
+
+The Storm Petrel, the Gull Mothership and the Mesa Fortress. Logical pixels, nose +Z, Y up (towards
+the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_shapes import flip_x
+from render.geometry.outline import hypot2, reversed_copy
+from render.geometry.solids import Placement
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_shapes import flip_x  # noqa: E402
-from render.geometry.outline import hypot2, reversed_copy  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -31,8 +33,11 @@ def shift(at: Any, d: Any) -> Vec3:
 
 
 def mirrored(right: list[Any]) -> list[Any]:
-    """A whole symmetric outline from its right half (+X), which runs from a point on the axis at
-    the front to a point on the axis at the back: the left half is its mirror image."""
+    """Return a whole symmetric outline from its right half (+X).
+
+    Which runs from a point on the axis at the front to a point on the axis at the back: the left
+    half is its mirror image.
+    """
     left = reversed_copy(flip_x(right))
     result: list[Any] = []
     result.extend(right)
@@ -41,7 +46,7 @@ def mirrored(right: list[Any]) -> list[Any]:
 
 
 def sided(outline: list[Any], side: float) -> list[Any]:
-    """The outline mirrored left to right when `side` is -1, as it is when `side` is 1."""
+    """Return the outline mirrored left to right when `side` is -1, as it is when `side` is 1."""
     return outline if side > 0 else flip_x(outline)
 
 
@@ -53,8 +58,11 @@ def strip(
     heights: list[Any],
     color: Rgb,
 ) -> None:
-    """A light strip `width` wide from `a` to `b` (seen from above), between heights `heights[0]`
-    and `heights[1]`: neon along a wing's edge or a slit in an armour plate."""
+    """Add a light strip `width` wide from `a` to `b` (seen from above).
+
+    Between heights `heights[0]` and `heights[1]`: neon along a wing's edge or a slit in an armour
+    plate.
+    """
     ax = a[0]
     az = a[1]
     bx = b[0]
@@ -78,8 +86,10 @@ def edge_strips(
     heights: list[Any],
     color: Rgb,
 ) -> None:
-    """Strips along the edges of a polyline `points` (open: the last point does not join the
-    first)."""
+    """Strip along the edges of a polyline `points`.
+
+    The polyline is open: the last point does not join the first.
+    """
     for i in range(len(points) - 1):
         strip(builder, points[i], points[i + 1], width, heights, color)
 
@@ -91,8 +101,9 @@ def barrels(
     sizes: list[Any],
     fires: Any = "gun",
 ) -> None:
-    """Gun barrels pointing forward (+Z) from `at`, `counts[1]` apart, `sizes[1]` long, with a
-    charge light at each muzzle (it brightens as the next shot charges); they fire `fires`
+    """Gun barrels pointing forward (+Z) from `at`, `counts[1]` apart, `sizes[1]` long.
+
+    With a charge light at each muzzle (it brightens as the next shot charges); they fire `fires`
     (`EnemyParts.muzzle`). `counts` is `[count, gap]` and `sizes` is `[radius, length]`.
     """
     hull = parts.hull
@@ -139,15 +150,16 @@ def turret(
     neon_spec: list[Any],
     fires: Any = "gun",
 ) -> None:
-    """A gun turret `radius` wide on its base at `at`: a faceted dome, a neon ring around its base,
-    and `count` barrels pointing forward from its front. `neon_spec` is `[count, neon]`."""
+    """Add a gun turret `radius` wide on its base at `at`: a faceted dome.
+
+    A neon ring around its base, and `count` barrels pointing forward from its front. `neon_spec` is
+    `[count, neon]`.
+    """
     count = neon_spec[0]
     neon = neon_spec[1]
     height = radius * 0.55
-    dome: list[Any] = []
     turret_dome: list[Any] = TURRET_DOME
-    for point in turret_dome:
-        dome.append([point[0] * radius, point[1] * height])
+    dome: list[Any] = [[point[0] * radius, point[1] * height] for point in turret_dome]
     p.hull.lathe(dome, 8, H.panel, Placement(at))
     p.neon.ring(radius * 1.02, radius * 0.1, 8, neon, Placement(shift(at, [0, height * 0.2, 0])))
     p.hull.box(
@@ -165,9 +177,11 @@ def missile_tips(
     grid: list[Any],
     spacing_radius: list[Any],
 ) -> None:
-    """Missile tips standing in a launcher at `at`, `grid` is `[rows, cols]` of them `spacing`
-    apart, pointing up (towards the camera) out of their tubes; the tips light up as a salvo
-    charges. `spacing_radius` is `[spacing, radius]`."""
+    """Missile tips standing in a launcher at `at`.
+
+    `grid` is `[rows, cols]` of them `spacing` apart, pointing up (towards the camera) out of their
+    tubes; the tips light up as a salvo charges. `spacing_radius` is `[spacing, radius]`.
+    """
     hull = parts.hull
     charge = parts.charge
     muzzle = parts.muzzle
@@ -193,8 +207,11 @@ def missile_tips(
 
 
 def open_hatch(parts: Any, at: Vec3, size: list[Any]) -> None:
-    """An open hatch at `at` in a deck: a dark well `[w, d]` big, its two doors swung up on either
-    side (along Z), and a glowing floor that brightens as the next launch charges."""
+    """Add an open hatch at `at` in a deck: a dark well `[w, d]` big.
+
+    Its two doors swung up on either side (along Z), and a glowing floor that brightens as the next
+    launch charges.
+    """
     hull = parts.hull
     charge = parts.charge
     w = size[0]

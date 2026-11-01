@@ -1,5 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/light_ship.py` (GFX-SHIP-03)."""
 
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,13 +12,15 @@ from game.view.light_ship import _light_wings, build_light_ship
 
 
 @pytest.fixture
-def scene(monkeypatch):
+def scene(monkeypatch: Any) -> Any:
     stub_babylon(monkeypatch, light_ship)
-    monkeypatch.setattr(light_ship, "get_ship_materials", lambda scene: MagicMock(name="materials"))
+    monkeypatch.setattr(
+        light_ship, "get_ship_materials", lambda _scene: MagicMock(name="materials")
+    )
     return MagicMock(name="scene")
 
 
-def test_the_light_ship_has_a_front_and_a_rear_wing_on_each_side():
+def test_the_light_ship_has_a_front_and_a_rear_wing_on_each_side() -> None:
     wings = _light_wings()
     assert len(wings) == 4
     assert sorted((w["pair"], w["side"]) for w in wings) == [
@@ -27,6 +31,6 @@ def test_the_light_ship_has_a_front_and_a_rear_wing_on_each_side():
     ]
 
 
-def test_the_light_ship_is_built_under_a_root_node(scene):
+def test_the_light_ship_is_built_under_a_root_node(scene: Any) -> None:
     root = build_light_ship(scene)
     assert root is not None

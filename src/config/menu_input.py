@@ -1,18 +1,18 @@
-"""Menu input mapping and feel (UI-INPUT-03, UI-INPUT-04, UI-INPUT-07; pause GAME-CTRL-08)
+# Copyright (c) 2026 Renaud Guillon
+"""Menu input mapping and feel (UI-INPUT-03, UI-INPUT-04, UI-INPUT-07; pause GAME-CTRL-08).
 
 Kept in config so it can be remapped later (GAME-CTRL-09, ENG-112).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal
 
 # The abstract menu actions; it is only
 # used to type the mappings here, so it is defined here rather than on its own.
 MenuAction = Literal["up", "down", "left", "right", "confirm", "back", "cancel", "pause", "resume"]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuGamepadStick:
@@ -26,7 +26,7 @@ class MenuGamepadStick:
 class MenuInputConfig:
     """The menu input tunables, in the order of `MENU_INPUT_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         keyboard: dict[str, MenuAction],
         gamepad_buttons: dict[int, MenuAction],

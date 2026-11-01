@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """World 4's own rules (WLD-4-12, WLD-4-13).
 
 Its buildings are the city's (`city_props.py`); the volcanic props of the first World 4 were removed

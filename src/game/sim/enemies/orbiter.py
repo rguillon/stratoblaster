@@ -1,8 +1,7 @@
-"""The Orbiter (`specs/enemies/orbiter.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Orbiter (`specs/enemies/orbiter.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
@@ -12,21 +11,24 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 from game.sim.joints import jointed_design
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.orbiter
 
 
 class Orbiter(JointedEnemy):
-    """ENM-ORBITER-07: a spherical core with three armoured drones orbiting it (ENM-ORBITER-08;
-    moving parts, ENM-27), close enough to catch the shots aimed at the core. It comes down to the
-    upper half, stays 8 s, then leaves upward. Every 3 s the core fires a ring of 12 bullets from
-    its equator (ENM-ORBITER-09), its charge lights following it (ENM-ORBITER-04); each drone fires
-    a bullet aimed at the player every 2 s, in turn (ENM-ORBITER-10). Its drones come from its
-    config, as the engine's specs (ENM-ORBITER-13).
+    """ENM-ORBITER-07: a spherical core with three armoured drones orbiting it.
+
+    The drones are moving parts (ENM-ORBITER-08, ENM-27), close enough to catch the shots aimed at
+    the core. It comes down to the upper half, stays 8 s, then leaves upward. Every 3 s the core
+    fires a ring of 12 bullets from its equator (ENM-ORBITER-09), its charge lights following it
+    (ENM-ORBITER-04); each drone fires a bullet aimed at the player every 2 s, in turn
+    (ENM-ORBITER-10). Its drones come from its config, as the engine's specs (ENM-ORBITER-13).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -40,6 +42,7 @@ class Orbiter(JointedEnemy):
         self.heading = DOWN
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.spin += CFG.spin * DEG * dt
         if self.state == "enter":
             self.y = approach(self.y, self.stop_y, CFG.entrySpeed * dt)

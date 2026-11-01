@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/tile_homesteads.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import check_colored, height
@@ -9,7 +12,7 @@ from game.view.props.tile_kit import geometry_of, tile_kit
 
 
 @pytest.mark.parametrize("seed", range(1, 9))
-def test_gfx_bldg_09_a_homestead_is_a_well_formed_outpost_of_each_silhouette(seed):
+def test_gfx_bldg_09_a_homestead_is_a_well_formed_outpost_of_each_silhouette(seed: Any) -> None:
     k = tile_kit(20.0, 20.0, TILE.size, seed)
     build_homestead(k)
     prop = geometry_of(k)
@@ -17,7 +20,7 @@ def test_gfx_bldg_09_a_homestead_is_a_well_formed_outpost_of_each_silhouette(see
     assert height(prop.structure) > 0
 
 
-def test_gfx_bldg_09_homesteads_come_in_several_silhouettes():
+def test_gfx_bldg_09_homesteads_come_in_several_silhouettes() -> None:
     heights = set()
     for seed in range(1, 9):
         k = tile_kit(20.0, 20.0, TILE.size, seed)

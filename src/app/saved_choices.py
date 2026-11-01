@@ -1,15 +1,20 @@
-"""What the menus keep between visits: the high score and the last ship Keys are prefixed with the
-game's id so several games can share a domain."""
+# Copyright (c) 2026 Renaud Guillon
+"""What the menus keep between visits.
+
+The high score and the last ship Keys are prefixed with the game's id so several games can share a
+domain.
+"""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from host.key_value_storage import KeyValueStorage  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from host.key_value_storage import KeyValueStorage
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class SavedChoices:
@@ -31,11 +36,12 @@ class ChoiceKeys:
 
 
 def saved_choice_keys(game_id: str) -> ChoiceKeys:
+    """Return the storage keys of the high score and last ship of `game_id`."""
     return ChoiceKeys(game_id + "_high_score", game_id + "_last_ship")
 
 
 def parse_high_score(raw: str | None) -> float:
-    """Parses a stored high score. Anything but a plain non-negative integer reads as 0."""
+    """Parse a stored high score. Anything but a plain non-negative integer reads as 0."""
     if raw is None:
         return 0
     return _plain_score(raw)
@@ -50,14 +56,16 @@ def _plain_score(raw: str) -> float:
 
 
 def load_saved_choices(storage: KeyValueStorage, game_id: str) -> SavedChoices:
+    """Return the saved high score and last ship of `game_id`."""
     keys = saved_choice_keys(game_id)
     return SavedChoices(parse_high_score(storage.get(keys.high_score)), storage.get(keys.last_ship))
 
 
 def save_last_ship(storage: KeyValueStorage, game_id: str, ship_id: str) -> None:
+    """Keep the ship the player last chose for `game_id`."""
     storage.set(saved_choice_keys(game_id).last_ship, ship_id)
 
 
 def save_high_score(storage: KeyValueStorage, game_id: str, score: float) -> None:
-    """Saves `score` as the new high score (GAME-SCORE-05)."""
+    """Save `score` as the new high score (GAME-SCORE-05)."""
     storage.set(saved_choice_keys(game_id).high_score, str(max(0, math.floor(score))))

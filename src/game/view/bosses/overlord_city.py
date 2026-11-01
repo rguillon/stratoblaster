@@ -1,25 +1,27 @@
-"""FB-OVERLORD-02: the Overlord's city: shared shapes, towers
-standing on its deck with lit windows and rooftop clutter, neon edges. Model space: logical pixels,
-nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OVERLORD-02: the Overlord's city: shared shapes.
+
+Towers standing on its deck with lit windows and rooftop clutter, neon edges. Model space: logical
+pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_shapes import decal, flip_x
+from game.view.enemies.organic_parts import opt
+from render.geometry.solids import Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_shapes import decal, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import opt  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -30,9 +32,9 @@ OVERLORD_DECK = {"top": 6, "boulevard": 10}
 
 
 def box2d(w: float, d: float, at: Any = None) -> list[Any]:
-    """A rectangle `w` wide and `d` long around (x, z)."""
-    x = 0 if at == None else at[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    z = 0 if at == None else at[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return a rectangle `w` wide and `d` long around (x, z)."""
+    x = 0 if at == None else at[0]
+    z = 0 if at == None else at[1]
     return [
         [x - w / 2, z - d / 2],
         [x + w / 2, z - d / 2],
@@ -42,15 +44,16 @@ def box2d(w: float, d: float, at: Any = None) -> list[Any]:
 
 
 def symmetric(half: list[Any], nose: Any = None) -> list[Any]:
-    """A symmetric outline from its right half (x > 0, from the front to the tail), closed across
-    the nose at `nose` on the axis."""
+    """Return a symmetric outline from its right half (x > 0, from the front to the tail).
+
+    Closed across the nose at `nose` on the axis.
+    """
     result: list[Any] = []
-    if nose != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if nose != None:
         result.append([0, nose])
     result.extend(half)
     mirror = flip_x(half)
-    for i in range(len(mirror) - 1, -1, -1):
-        result.append(mirror[i])
+    result.extend([mirror[i] for i in range(len(mirror) - 1, -1, -1)])
     return result
 
 
@@ -66,7 +69,7 @@ def _area(outline: list[Any]) -> float:
 
 
 def _lifted(p: Any, y: float, nx: float, nz: float) -> Vec3:
-    """The point `p` at height `y`, moved by `[nx, nz]`."""
+    """Return the point `p` at height `y`, moved by `[nx, nz]`."""
     return [p[0] + nx, y, p[1] + nz]
 
 
@@ -78,9 +81,11 @@ def edge_lights(
     color: Rgb,
     lift: float = 0.35,
 ) -> None:
-    """Neon walls along the edges `edges` of `outline` (edge i from point i to the next), from
-    `heights[0]` to `heights[1]`, stood `lift` outside the outline: lit edges with nothing hidden
-    inside the hull."""
+    """Add neon walls along the edges `edges` of `outline` (edge i from point i to the next).
+
+    They run from `heights[0]` to `heights[1]`, stood `lift` outside the outline: lit edges with
+    nothing hidden inside the hull.
+    """
     y0 = heights[0]
     y1 = heights[1]
     area = _area(outline)
@@ -120,14 +125,16 @@ WINDOW = {"w": 1.3, "h": 1.1, "rows": 4.2}
 
 
 def _pane(cx: float, dx: float, y: float, base: float, h: float, front: float) -> Vec3:
-    """A point of a window's pane, sloping back with the front of its block."""
+    """Return a point of a window's pane, sloping back with the front of its block."""
     t = (y - base) / h
     return [cx + dx, y, front - TOWER_INSET * t + 0.12]
 
 
 def _front_windows(neon: Any, at: Vec3, w: float, h: float) -> None:
-    """Lit windows on the front of a block `w` wide standing at (x, base, z + d / 2), `h` high,
-    its front sloping back by the inset as it rises: a grid of panes, a few dark."""
+    """Lit windows on the front of a block `w` wide standing at (x, base, z + d / 2), `h` high.
+
+    Its front sloping back by the inset as it rises: a grid of panes, a few dark.
+    """
     x = at[0]
     base = at[1]
     front = at[2]
@@ -151,7 +158,7 @@ def _front_windows(neon: Any, at: Vec3, w: float, h: float) -> None:
 
 
 def _draw_roof(parts: Any, roof: str, at: Vec3) -> None:
-    """The clutter on a roof at height `y` around (x, z)."""
+    """Draw the clutter on a roof at height `y` around (x, z)."""
     hull = parts.hull
     neon = parts.neon
     charge = parts.charge
@@ -171,8 +178,11 @@ def _draw_roof(parts: Any, roof: str, at: Vec3) -> None:
 
 
 def draw_tower(parts: Any, tower: Any) -> None:
-    """A tower: a chamfered block, lit windows on its front, a lit roof edge, a tier and its roof.
-    `tower` is a `Tower`: `x`, `z`, `w`, `d`, `h`, and optionally `tier` and `roof`."""
+    """Draw a tower.
+
+    A chamfered block, lit windows on its front, a lit roof edge, a tier and its roof. `tower` is a
+    `Tower`: `x`, `z`, `w`, `d`, `h`, and optionally `tier` and `roof`.
+    """
     hull = parts.hull
     neon = parts.neon
     x = tower.x
@@ -193,7 +203,7 @@ def draw_tower(parts: Any, tower: Any) -> None:
     )
     _front_windows(neon, [x, base, z + d / 2], w, h)
     top = base + h
-    if tier != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if tier != None:
         tw = tier[0]
         td = tier[1]
         th = tier[2]
@@ -214,5 +224,5 @@ def draw_tower(parts: Any, tower: Any) -> None:
             top + 0.05,
             OVERLORD_NEON,
         )
-    if roof != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if roof != None:
         _draw_roof(parts, roof, [x, top, z - 0.5])

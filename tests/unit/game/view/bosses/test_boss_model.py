@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/bosses/boss_model.py`."""
 
 from types import SimpleNamespace
@@ -13,18 +14,18 @@ from game.view.bosses import boss_model
 from game.view.bosses.boss_model import FlashGroup, _field, _point_of, strobe
 
 
-def test_field_reads_a_present_key_and_is_none_for_a_missing_one_or_no_object():
+def test_field_reads_a_present_key_and_is_none_for_a_missing_one_or_no_object() -> None:
     assert _field({"a": 1}, "a") == 1
     assert _field({"a": 1}, "b") is None
     assert _field(None, "a") is None
 
 
-def test_point_of_is_a_playfield_point_in_model_space_with_an_optional_height():
+def test_point_of_is_a_playfield_point_in_model_space_with_an_optional_height() -> None:
     assert _point_of([3, 4]) == [-3, 0, -4]
     assert _point_of([3, 4, 2]) == [-3, 2, -4]
 
 
-def test_strobe_of_a_plain_stand_in_is_its_own_charge():
+def test_strobe_of_a_plain_stand_in_is_its_own_charge() -> None:
     assert strobe(SimpleNamespace(charge=0.7)) == 0.7
 
 
@@ -37,16 +38,16 @@ class _FakeBoss(Boss):
         self.charge = charge
 
 
-def _boss(pause=0.0, rage=0.0, charge=0.25):
+def _boss(pause: Any = 0.0, rage: Any = 0.0, charge: Any = 0.25) -> Any:
     return _FakeBoss(pause, rage, charge)
 
 
-def test_boss_22_a_calm_boss_shows_its_own_charge():
+def test_boss_22_a_calm_boss_shows_its_own_charge() -> None:
     boss = _boss(charge=0.25)
     assert strobe(boss) == 0.25
 
 
-def test_stage_change_strobes_the_lights_at_the_stage_strobe_rate():
+def test_stage_change_strobes_the_lights_at_the_stage_strobe_rate() -> None:
     """BOSS-22: the charge lights strobe through the pause after a lost part."""
     hz = BOSS_LOOK.stageStrobeHz
     boss = _boss(pause=1.0)
@@ -58,7 +59,7 @@ def test_stage_change_strobes_the_lights_at_the_stage_strobe_rate():
     assert off == 0
 
 
-def test_rage_flickers_between_full_and_the_dim_level():
+def test_rage_flickers_between_full_and_the_dim_level() -> None:
     """BOSS-27: an angry boss's charge lights flicker down to their dim level."""
     hz = BOSS_LOOK.rageFlicker.hz
     dim = BOSS_LOOK.rageFlicker.dim
@@ -69,7 +70,7 @@ def test_rage_flickers_between_full_and_the_dim_level():
     assert strobe(boss) == dim
 
 
-def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkeypatch):
+def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkeypatch: Any) -> None:
     """BOSS-17: a part or the core that is hit flashes white for a moment."""
     body = SimpleNamespace(material="body-mat", useVertexColors=True)
     other = SimpleNamespace(material="other", useVertexColors=True)
@@ -77,16 +78,18 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
     other_material = SimpleNamespace(name="charge")
     body.material = body_material
     other.material = other_material
-    monkeypatch.setattr(boss_model, "child_meshes", lambda root, direct: [body, other])
+    monkeypatch.setattr(boss_model, "child_meshes", lambda _root, _direct: [body, other])
     monkeypatch.setattr(boss_model, "node_name", lambda node: node.name)
     model = SimpleNamespace(root=object())
     group = FlashGroup(model, flash="FLASH")
     group.show(since_hit=0.0)
-    assert body.material == "FLASH" and body.useVertexColors is False
+    assert body.material == "FLASH"
+    assert body.useVertexColors is False
     # Only the body's hulls are flashed.
     assert other.material is other_material
     group.show(since_hit=BOSS_LOOK.flash.seconds + 1)
-    assert body.material is body_material and body.useVertexColors is True
+    assert body.material is body_material
+    assert body.useVertexColors is True
 
 
 # BOSS-52 (D-227): every boss model is one object, at rest and after each of its transformations: no

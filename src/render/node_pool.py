@@ -1,19 +1,19 @@
+# Copyright (c) 2026 Renaud Guillon
 """Reusable nodes for things drawn in varying numbers (ENG-105).
 
-Nodes are created on demand, then shown or hidden instead of being created and disposed every
-frame (ENG-19): shots, particles, flashes.
+Nodes are created on demand, then shown or hidden instead of being created and disposed every frame
+(ENG-19): shots, particles, flashes.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import dispose_node, set_enabled
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class NodePool:
@@ -24,7 +24,7 @@ class NodePool:
         self._create = create
 
     def show(self, count: int) -> list[Any]:
-        """Enables the first `count` nodes, creating missing ones, and disables the others."""
+        """Enable the first `count` nodes, creating missing ones, and disable the others."""
         while len(self.nodes) < count:
             self.nodes.append(self._create(len(self.nodes)))
         for i in range(len(self.nodes)):
@@ -32,6 +32,7 @@ class NodePool:
         return self.nodes[0:count]
 
     def dispose(self) -> None:
+        """Disposes every node of the pool."""
         for node in self.nodes:
             dispose_node(node)
         while len(self.nodes) > 0:

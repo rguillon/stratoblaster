@@ -1,5 +1,7 @@
-"""3-1: the River Leviathan, the River delta's final boss
-(specs/bosses/final/3-1-river-leviathan.md).
+# Copyright (c) 2026 Renaud Guillon
+"""3-1.
+
+The River Leviathan, the River delta's final boss (specs/bosses/final/3-1-river-leviathan.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its head is
 the core, at the centre; its body trails behind it (+Y) in four segments and a tail, each hinged on
@@ -7,18 +9,18 @@ the one before (D-061, chained joints). Every hinge swings the same way a little
 before, so a wave runs down the body from the head to the tail, as a swimming snake's.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 TEAL = bullet("green", 195)
 BLUE = bullet("blue", 205)
@@ -27,8 +29,10 @@ PURPLE = bullet("purple", 210)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-RIVER-LEVIATHAN-15,
-    `part_drop_chance`)."""
+    """Return a final boss's part.
+
+    Drops a bonus 60 % of the time (FB-RIVER-LEVIATHAN-15, `part_drop_chance`).
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -38,16 +42,14 @@ SEGMENTS = [1, 2, 3, 4]
 # The body (rest pose, straight behind the head): the hinge of each segment (`neck` for the first)
 # and of the tail, along the spine; each segment's middle; the side of its turret's sponson (they
 # alternate, so that none hides right behind the head) and how far out it is.
-LEVIATHAN_BODY = record(
-    {
-        "hinges": [20, 52, 84, 116, 148],
-        "middles": [36, 68, 100, 132],
-        "sides": [-1, 1, -1, 1],
-        "turretOut": 28,
-        # The missile rack's middle, on the tail.
-        "rack": 166,
-    }
-)
+LEVIATHAN_BODY = record({
+    "hinges": [20, 52, 84, 116, 148],
+    "middles": [36, 68, 100, 132],
+    "sides": [-1, 1, -1, 1],
+    "turretOut": 28,
+    # The missile rack's middle, on the tail.
+    "rack": 166,
+})
 
 # How each hinge swings (D-061, FB-RIVER-LEVIATHAN-05): degrees either way, growing towards the
 # tail, all over one `period`, each `lag` of a period behind the one before (the wave running down
@@ -59,7 +61,7 @@ LEVIATHAN_JOINTS = ["neck", "spine-1", "spine-2", "spine-3", "tail"]
 
 
 def spine() -> Any:
-    """The chain of joints, each hanging on the one before it."""
+    """Return the chain of joints, each hanging on the one before it."""
     joints: dict[str, Any] = {}
     for i, joint_id in enumerate(LEVIATHAN_JOINTS):
         entry: dict[str, Any] = {
@@ -92,7 +94,7 @@ TURRET_EMITTER_HEIGHT = 15.5
 
 
 def turret_emitter(k: int) -> Any:
-    """The ring emitter of segment `k`'s turret."""
+    """Return the ring emitter of segment `k`'s turret."""
     return [concat(turret_at(k), [TURRET_EMITTER_HEIGHT])]
 
 
@@ -107,7 +109,7 @@ LEVIATHAN_RACK = cells([-4.5, 4.5], [160, 170], 10)
 
 
 def segment_guns() -> Any:
-    """The guns of the four segment turrets, keyed by part id."""
+    """Return the guns of the four segment turrets, keyed by part id."""
     guns: dict[str, Any] = {}
     for k in SEGMENTS:
         guns["segment-" + str(k)] = {"gun": turret_emitter(k), "turret": turret_at(k)}
@@ -118,101 +120,97 @@ def segment_guns() -> Any:
 # spine. Its four segments' turrets fire rings in turn and shield the core; the tail's rack fires
 # homing missiles (FB-RIVER-LEVIATHAN-10); the head fires its laser at every stage, with
 # something new beside it. The ground slows (x0.5).
-_RIVER_LEVIATHAN = record(
-    {
-        "id": "river-leviathan",
-        # Angry after each destroyed part (D-063), heat 5 (FB-RIVER-LEVIATHAN-12).
-        "rage": rage.spirals(5, "blue", "green"),
-        # Its head (the core), segment turrets and tail rack (FB-RIVER-LEVIATHAN-09).
-        "stats": stats(
-            record(
-                {
-                    "id": "river-leviathan",
-                    "name": "River Leviathan",
-                    "size": 6,
-                    "coreRadius": 22,
-                    "coreHealth": 2500,
-                    "points": 20000,
-                    "groundSpeed": 0.5,
-                    "coreDrop": 1,
-                    "parts": concat(
-                        [
-                            fpart(
-                                "segment-" + str(k),
-                                turret_at(k),
-                                14,
-                                900,
-                                {"joint": LEVIATHAN_JOINTS[k - 1]},
-                            )
-                            for k in SEGMENTS
-                        ],
-                        [
-                            fpart(
-                                "tail-rack",
-                                [0, LEVIATHAN_BODY.rack],
-                                13,
-                                700,
-                                {"shields": False, "joint": "tail"},
-                            )
-                        ],
-                    ),
-                    "joints": spine(),
+_RIVER_LEVIATHAN = record({
+    "id": "river-leviathan",
+    # Angry after each destroyed part (D-063), heat 5 (FB-RIVER-LEVIATHAN-12).
+    "rage": rage.spirals(5, "blue", "green"),
+    # Its head (the core), segment turrets and tail rack (FB-RIVER-LEVIATHAN-09).
+    "stats": stats(
+        record({
+            "id": "river-leviathan",
+            "name": "River Leviathan",
+            "size": 6,
+            "coreRadius": 22,
+            "coreHealth": 2500,
+            "points": 20000,
+            "groundSpeed": 0.5,
+            "coreDrop": 1,
+            "parts": concat(
+                [
+                    fpart(
+                        "segment-" + str(k),
+                        turret_at(k),
+                        14,
+                        900,
+                        {"joint": LEVIATHAN_JOINTS[k - 1]},
+                    )
+                    for k in SEGMENTS
+                ],
+                [
+                    fpart(
+                        "tail-rack",
+                        [0, LEVIATHAN_BODY.rack],
+                        13,
+                        700,
+                        {"shields": False, "joint": "tail"},
+                    )
+                ],
+            ),
+            "joints": spine(),
+        })
+    ),
+    # Stops high enough to be in place within 6.5 s, its tail still on screen
+    # (FB-RIVER-LEVIATHAN-08).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 55, "period": 9.6},
+    "bob": {"amplitude": 6, "period": 4.8},
+    "guns": merge(
+        merge(
+            {
+                "core": {
+                    "gun": LEVIATHAN_FANGS,
+                    "laser": LEVIATHAN_LENS,
+                    "ring": LEVIATHAN_CREST,
                 }
-            )
+            },
+            segment_guns(),
         ),
-        # Stops high enough to be in place within 6.5 s, its tail still on screen
-        # (FB-RIVER-LEVIATHAN-08).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 55, "period": 9.6},
-        "bob": {"amplitude": 6, "period": 4.8},
-        "guns": merge(
-            merge(
-                {
-                    "core": {
-                        "gun": LEVIATHAN_FANGS,
-                        "laser": LEVIATHAN_LENS,
-                        "ring": LEVIATHAN_CREST,
-                    }
-                },
-                segment_guns(),
-            ),
-            {"tail-rack": {"missile": LEVIATHAN_RACK}},
+        {"tail-rack": {"missile": LEVIATHAN_RACK}},
+    ),
+    # The parts' volleys, then the head's pattern per stage (FB-RIVER-LEVIATHAN-11).
+    "stages": stages(
+        concat(
+            # The segments' rings in turn, from the neck to the tail, one a second.
+            [volley.ring("segment-" + str(k), 4.4, 8, 11, TEAL, 1.1 * k) for k in SEGMENTS],
+            [volley.missiles("tail-rack", 6, 2, 30, 3)],
         ),
-        # The parts' volleys, then the head's pattern per stage (FB-RIVER-LEVIATHAN-11).
-        "stages": stages(
-            concat(
-                # The segments' rings in turn, from the neck to the tail, one a second.
-                [volley.ring("segment-" + str(k), 4.4, 8, 11, TEAL, 1.1 * k) for k in SEGMENTS],
-                [volley.missiles("tail-rack", 6, 2, 30, 3)],
-            ),
+        [
+            [volley.laser("core", 7, 1.5, 4)],
             [
-                [volley.laser("core", 7, 1.5, 4)],
-                [
-                    volley.laser("core", 6.5, 1.5, 2),
-                    volley.aimed("core", 2.8, 3, 12, MAGENTA, 1),
-                ],
-                [
-                    volley.laser("core", 6, 1.5, 2),
-                    volley.fan("core", 2.6, 5, 14, MAGENTA, 0.8),
-                ],
-                [
-                    volley.laser("core", 6, 1.6, 2),
-                    volley.burst("core", 2.6, 4, 0.14, BLUE, 0.6),
-                ],
-                [
-                    volley.laser("core", 5.5, 1.6, 2),
-                    volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
-                ],
-                # Alone: two spirals turning opposite ways from its crest, under the laser.
-                [
-                    volley.laser("core", 5, 1.6, 1.5),
-                    volley.ring("core", 0.5, 4, 19, BLUE, 0.4),
-                    volley.ring("core", 0.5, 4, -23, PURPLE, 0.65),
-                ],
+                volley.laser("core", 6.5, 1.5, 2),
+                volley.aimed("core", 2.8, 3, 12, MAGENTA, 1),
             ],
-        ),
-    }
-)
+            [
+                volley.laser("core", 6, 1.5, 2),
+                volley.fan("core", 2.6, 5, 14, MAGENTA, 0.8),
+            ],
+            [
+                volley.laser("core", 6, 1.6, 2),
+                volley.burst("core", 2.6, 4, 0.14, BLUE, 0.6),
+            ],
+            [
+                volley.laser("core", 5.5, 1.6, 2),
+                volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
+            ],
+            # Alone: two spirals turning opposite ways from its crest, under the laser.
+            [
+                volley.laser("core", 5, 1.6, 1.5),
+                volley.ring("core", 0.5, 4, 19, BLUE, 0.4),
+                volley.ring("core", 0.5, 4, -23, PURPLE, 0.65),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
 # baring a dark metal frame, and a pair of sweeping lasers unfold (FB-RIVER-LEVIATHAN-13); at

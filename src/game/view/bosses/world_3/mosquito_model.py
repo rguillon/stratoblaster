@@ -1,8 +1,10 @@
-"""MB-MOSQUITO-01 to MB-MOSQUITO-06, 3-4: the Mosquito. Logical pixels,
-nose +Z, Y up (towards the camera). A thin bio-drone: a small armoured thorax, a big-eyed head, a
-long segmented abdomen behind, six thin legs hanging under it, moss grown over its back."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-MOSQUITO-01 to MB-MOSQUITO-06, 3-4: the Mosquito.
 
-from org.transcrypt.stubs.browser import __pragma__
+Logical pixels, nose +Z, Y up (towards the camera). A thin bio-drone: a small armoured thorax, a
+big-eyed head, a long segmented abdomen behind, six thin legs hanging under it, moss grown over its
+back.
+"""
 
 from game.config.bosses.world_3.mosquito import MOSQUITO, MOSQUITO_MANDIBLES, MOSQUITO_SAC
 from game.view.bosses.boss_limbs import boss_point
@@ -32,62 +34,58 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION, tendril
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The thorax along the centre line (loft stations: z, half width, bottom, top).
-THORAX = table(
-    [
-        [-9, 5, -2, 6],
-        [0, 9, -3, 9],
-        [10, 8, -3, 8],
-        [16, 5, -1, 5],
-    ]
-)
+THORAX = table([
+    [-9, 5, -2, 6],
+    [0, 9, -3, 9],
+    [10, 8, -3, 8],
+    [16, 5, -1, 5],
+])
 # The abdomen, tail to waist: long and segmented.
-ABDOMEN = table(
-    [
-        [-44, 1.2, 1, 2.6],
-        [-38, 4.5, -1, 5.5],
-        [-26, 6.5, -2, 7.5],
-        [-14, 6.5, -2, 7.5],
-        [-8, 4, -1, 5],
-    ]
-)
+ABDOMEN = table([
+    [-44, 1.2, 1, 2.6],
+    [-38, 4.5, -1, 5.5],
+    [-26, 6.5, -2, 7.5],
+    [-14, 6.5, -2, 7.5],
+    [-8, 4, -1, 5],
+])
 # Where the abdomen's segments meet: a pink band across its back at each.
-SEGMENTS = table(
-    [
-        [-20, 6.4, 7.8],
-        [-27, 6.2, 7.6],
-        [-34, 5, 6.6],
-    ]
-)
+SEGMENTS = table([
+    [-20, 6.4, 7.8],
+    [-27, 6.2, 7.6],
+    [-34, 5, 6.6],
+])
 # The head: a rounded capsule (a lathe profile along its axis, Y up).
 HEAD = table([[0, -4.5], [4, -3.8], [6, -1], [5.6, 2], [3.6, 4.4], [0, 5.2]])
 HEAD_AT = [0, 2.5, 21]
 # A compound eye: a low neon dome, turned to face its side.
 EYE = table([[3.2, 0], [2.7, 1.6], [1.4, 2.5], [0, 2.8]])
 # The legs, front to back (left side, +X): hip, knee and foot.
-LEGS = table(
-    [
-        [[6, 0, 9], [19, 5, 15], [25, -7, 22]],
-        [[7, 0, 3], [22, 5, 2], [29, -8, 0]],
-        [[6, 0, -4], [20, 5, -12], [26, -8, -20]],
-    ]
-)
+LEGS = table([
+    [[6, 0, 9], [19, 5, 15], [25, -7, 22]],
+    [[7, 0, 3], [22, 5, 2], [29, -8, 0]],
+    [[6, 0, -4], [20, 5, -12], [26, -8, -20]],
+])
 # The blood sac on its back (a lathe dome), lighting up as its next ring charges.
 SAC = table([[3.6, 0], [3.1, 1.5], [1.6, 2.3], [0, 2.5]])
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The thorax and the segmented abdomen, pink bands between the segments, moss on its back
-    (MB-MOSQUITO-05)."""
+    """Draw the thorax and the segmented abdomen, pink bands between the segments.
+
+    Moss on its back (MB-MOSQUITO-05).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -115,7 +113,10 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head: big pink compound eyes and the mandible guns under them (the core's bursts)."""
+    """Draw the head: big pink compound eyes and the mandible guns under them.
+
+    The mandible guns are the core's bursts.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -160,7 +161,7 @@ def draw_legs(p: EnemyParts) -> None:
 
 
 def draw_sac(p: EnemyParts) -> None:
-    """The blood sac on its back, where its last-stage rings leave from."""
+    """Draw the blood sac on its back, where its last-stage rings leave from."""
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
@@ -179,7 +180,7 @@ def draw_sac(p: EnemyParts) -> None:
 
 
 def mosquito_core(p: EnemyParts) -> None:
-    """The core of the Mosquito: its body, head, legs and sac."""
+    """Add the core of the Mosquito: its body, head, legs and sac."""
     draw_body(p)
     draw_head(p)
     draw_legs(p)
@@ -187,9 +188,11 @@ def mosquito_core(p: EnemyParts) -> None:
 
 
 def build_mosquito(scene: Any) -> Any:
-    """MB-MOSQUITO-01, MB-MOSQUITO-06: the Mosquito, a thin, fast bio-drone with pink neon: long
-    buzzing wings with a fan pod under each, a big-eyed head and a needle-like proboscis that aims
-    its laser."""
+    """MB-MOSQUITO-01, MB-MOSQUITO-06: the Mosquito, a thin, fast bio-drone with pink neon.
+
+    Long buzzing wings with a fan pod under each, a big-eyed head and a needle-like proboscis that
+    aims its laser.
+    """
     parts: dict[str, Any] = {"wing-left": wing, "wing-right": wing, "proboscis": proboscis}
     turrets: dict[str, Any] = {"proboscis": needle}
     return build_boss_model(

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/ship_caption.py`."""
 
 import pytest
@@ -17,7 +18,7 @@ ROSTER = PlayerShipRoster(
 def test_ui_ship_02_the_caption_names_the_ship_with_its_speed_and_health() -> None:
     caption = ship_caption(ROSTER, "alpha")
     assert caption.title == "Alpha"
-    assert caption.lines == ["Speed ×1.25 (125 px/s)", "HP 5"]
+    assert caption.lines == ["Speed \u00d71.25 (125 px/s)", "HP 5"]
 
 
 def test_ui_ship_02_the_caption_gives_the_model_polygon_count_when_known() -> None:
@@ -27,5 +28,5 @@ def test_ui_ship_02_the_caption_gives_the_model_polygon_count_when_known() -> No
 
 
 def test_ui_ship_02_an_unknown_ship_is_an_error() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unknown player ship"):
         ship_caption(ROSTER, "gamma")

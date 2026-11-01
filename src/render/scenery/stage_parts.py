@@ -1,9 +1,8 @@
-"""Pieces of a `SceneryStage` that need nothing else of it (phase 4): the lowest ground, the order
-of the opaque meshes, the stage
-camera, the sea plane and the terrain-chunk watchers.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""Pieces of a `SceneryStage` that need nothing else of it (phase 4): the lowest ground.
 
-from org.transcrypt.stubs.browser import __pragma__
+The order of the opaque meshes, the stage camera, the sea plane and the terrain-chunk watchers.
+"""
 
 from render.babylon import (
     create_ground,
@@ -13,14 +12,15 @@ from render.babylon import (
 )
 from render.scenery.rain_rings import RainRings
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any
 
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import SceneryLevel
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _min_of(values: Sequence[float]) -> float:
@@ -40,9 +40,11 @@ def lowest_ground(level: SceneryLevel) -> float:
 
 
 def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
-    """The order of the opaque meshes (reviewer, 2026-10-28, PERF-28): the terrain last, so its
-    costly shading is skipped where the props and cars in front of it were drawn first; the others
-    by material, as Babylon does."""
+    """Return the order of the opaque meshes (reviewer, 2026-10-28, PERF-28): the terrain last.
+
+    So its costly shading is skipped where the props and cars in front of it were drawn first; the
+    others by material, as Babylon does.
+    """
 
     def last(s: Any) -> float:
         return 1 if s.getMaterial() is terrain else 0
@@ -57,9 +59,11 @@ def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
 
 
 def stage_camera(scene: Any, half_fov: float, clips: tuple[float, float]) -> Any:
-    """The stage's camera (GFX-CAM-02), `half_fov` up and down, seeing from `clips[0]` up to
-    `clips[1]` (D-216, GFX-CAM-06: the near plane far out, so the depth buffer keeps its precision
-    at the ground); made the active one."""
+    """Return the camera (GFX-CAM-02), made the active one.
+
+    It sees `half_fov` up and down, from `clips[0]` to `clips[1]` (D-216, GFX-CAM-06: the near plane
+    far out, so the depth buffer keeps its precision at the ground).
+    """
     near_clip, far_clip = clips
     camera = new_free_camera("scenery-camera", vector3_zero(), scene)
     camera.fov = half_fov * 2
@@ -78,8 +82,10 @@ class SeaParts:
 
 
 def sea_parts(scene: Any, level: SceneryLevel, size: Sequence[float], kit: Any) -> SeaParts | None:
-    """The sea plane of `level` (GFX-WATER-01; phase 10: or lava, GFX-TERRAIN-16) and the rain
-    rings on it (GFX-WEATHER-09), `width` x `length` (`size`), if it has a sea."""
+    """Return the sea plane of `level` (GFX-WATER-01; phase 10: or lava, GFX-TERRAIN-16).
+
+    The rain rings on it (GFX-WEATHER-09), `width` x `length` (`size`), if it has a sea.
+    """
     if level.sea is None:
         return None
     width = size[0]
@@ -92,8 +98,10 @@ def sea_parts(scene: Any, level: SceneryLevel, size: Sequence[float], kit: Any) 
 
 
 def sea_plane(scene: Any, size: Sequence[float], material: Any) -> Any:
-    """The sea plane (GFX-WATER-03; phase 10: or lava), `width` x `length` (`size[0]`, `size[1]`),
-    at `size[2]`, the level."""
+    """Return the sea plane (GFX-WATER-03; phase 10: or lava).
+
+    It is `width` x `length` (`size[0]`, `size[1]`), at `size[2]`, the level.
+    """
     sea = create_ground("sea", size[0], size[1], 1, scene)
     sea.position.y = size[2]
     sea.material = material
@@ -104,21 +112,23 @@ def sea_plane(scene: Any, size: Sequence[float], material: Any) -> Any:
 
 
 class TerrainWatch:
-    """The terrain chunk meshes made so far, and who wants to know about each new one (phase 10: a
-    glow layer hiding the lava under the hills)."""
+    """The terrain chunk meshes made so far, and who wants.
+
+    Know about each new one (phase 10: a glow layer hiding the lava under the hills).
+    """
 
     def __init__(self) -> None:
         self._meshes: list[Any] = []
         self._watchers: list[Callable[[Any], None]] = []
 
     def add(self, mesh: Any) -> None:
-        """A new terrain chunk mesh."""
+        """Add a new terrain chunk mesh."""
         self._meshes.append(mesh)
         for watch in self._watchers:
             watch(mesh)
 
     def watch(self, watch: Callable[[Any], None]) -> None:
-        """Calls `watch` with every mesh, now and as new ones are made."""
+        """Call `watch` with every mesh, now and as new ones are made."""
         for mesh in self._meshes:
             watch(mesh)
         self._watchers.append(watch)

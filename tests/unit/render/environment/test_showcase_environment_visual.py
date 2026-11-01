@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/environment/showcase_environment_visual.py`."""
 
 from types import SimpleNamespace
@@ -22,12 +23,12 @@ def cube(monkeypatch: pytest.MonkeyPatch) -> list[Any]:
     monkeypatch.setattr(
         showcase_environment,
         "update_raw_cube_texture",
-        lambda texture, faces, fmt, kind, flag: calls.append((texture, faces)),
+        lambda texture, faces, _fmt, _kind, _flag: calls.append((texture, faces)),
     )
     monkeypatch.setattr(
         showcase_environment,
         "build_gradient_cube_faces",
-        lambda size, stops: [size] * 6,
+        lambda size, _stops: [size] * 6,
     )
     return calls
 

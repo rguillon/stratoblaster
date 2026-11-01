@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/islands.py`: which pieces of a model hold together (D-227)."""
 
 import pytest

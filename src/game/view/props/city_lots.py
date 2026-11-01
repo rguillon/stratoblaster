@@ -1,39 +1,43 @@
-"""The lots a city building is made of (Phase 4 review): each
-one a different kind of volume (a stepped tower, a round tower, a low slab, a courtyard block or
-an L-shaped block), so the city centre reads as varied as the industrial zone."""
+# Copyright (c) 2026 Renaud Guillon
+"""The lots a city building is made of (Phase 4 review).
+
+Each is a different kind of volume (a stepped tower, a round tower, a low slab, a courtyard block or
+an L-shaped block), so the city centre reads as varied as the industrial zone.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import pick, random_in
+from game.config.prop_look import PROP_COLORS as C
+from game.config.prop_look import PROP_LIGHTS as L
+from game.view.props.window_facades import facade_windows, round_windows
+from render.geometry.solids import Placement, SolidBuilder
+from render.geometry.textured import QuadBuilder
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
-from core.math.rng import pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.window_facades import facade_windows, round_windows  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import Placement, SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.textured import QuadBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class LotKit:
-    """The structure, lights and windows' quads (D-210) a lot is drawn into, with its facade and
-    window colours. `faces` (Phase 15, reviewer 2026-10-28): each face lit in its own pattern (its
-    own style of windows, see `window_facades.py`)."""
+    """The structure, lights and windows' quads (D-210) a lot is drawn into.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    It is drawn with its facade and window colours. `faces` (Phase 15, reviewer 2026-10-28): each
+    face lit in its own pattern (its own style of windows, see `window_facades.py`).
+    """
+
+    def __init__(
         self,
         s: SolidBuilder,
         lights: SolidBuilder,
         facade: list[float],
         windows: list[float],
         roof: list[float],
-        random: Any,  # noqa: ANN401 (a seeded generator)
-        faces: bool = False,  # noqa: FBT001, FBT002 (positional: Transcrypt has no keyword arguments)
+        random: Any,
+        faces: bool = False,
         quads: QuadBuilder | None = None,
     ) -> None:
         self.s = s
@@ -43,7 +47,7 @@ class LotKit:
         self.roof = roof
         self.random = random
         self.faces = faces
-        self.quads = quads if quads != None else QuadBuilder()  # noqa: E711 (absent: undefined)
+        self.quads = quads if quads != None else QuadBuilder()
 
 
 def volume(
@@ -53,8 +57,8 @@ def volume(
     h: float,
     facade: list[float] | None = None,
 ) -> None:
-    """A box with windows, from `y` up to `y + h`."""
-    if facade == None:  # noqa: E711 (the default: the kit's facade)
+    """Add a box with windows, from `y` up to `y + h`."""
+    if facade == None:
         facade = kit.facade
     x = lot[0]
     z = lot[1]
@@ -62,7 +66,7 @@ def volume(
     d = lot[3]
     kit.s.box([w, h, d], facade, Placement([x, y, z], 0, 0, 0), kit.roof)
     # A floor at least: none on the lowest volumes.
-    if h < 4:  # noqa: PLR2004 (a geometry constant)
+    if h < 4:
         return
     facade_windows(kit.quads, kit.random, [x, z, w, d], [y + 1, y + h - 1], kit.windows, kit.faces)
 
@@ -90,7 +94,7 @@ def crown(kit: LotKit, at: list[float], size: float) -> None:
         h = random_in(random, 8, 14)
         s.cylinder(0.4, h, 4, C.metal, Placement([x, y, z], 0, 0, 0))
         lights.box([1, 1, 1], L.red, Placement([x, y + h, z], 0, 0, 0))
-    elif style == 2:  # noqa: PLR2004 (a geometry constant)
+    elif style == 2:
         s.lathe(
             [
                 [size * 0.6, y],
@@ -110,7 +114,10 @@ def crown(kit: LotKit, at: list[float], size: float) -> None:
 
 
 def plinth(kit: LotKit, lot: list[float]) -> float:
-    """A low base covering the whole lot, so no bare ground shows around a tower; its height."""
+    """Add a low base covering the whole lot and return its height.
+
+    So no bare ground shows around a tower.
+    """
     x = lot[0]
     z = lot[1]
     w = lot[2]
@@ -127,7 +134,7 @@ def plinth(kit: LotKit, lot: list[float]) -> float:
 
 
 def stepped_tower(kit: LotKit, lot: list[float]) -> None:
-    """A tower in 1 to 3 tiers stepping back, on a base covering its lot."""
+    """Add a tower in 1 to 3 tiers stepping back, on a base covering its lot."""
     random = kit.random
     x = lot[0]
     z = lot[1]
@@ -149,7 +156,7 @@ def stepped_tower(kit: LotKit, lot: list[float]) -> None:
 
 
 def round_tower(kit: LotKit, lot: list[float]) -> None:
-    """A round tower in hexagonal facets, with windows round it (D-210)."""
+    """Add a round tower in hexagonal facets, with windows round it (D-210)."""
     s = kit.s
     random = kit.random
     x = lot[0]
@@ -167,7 +174,7 @@ def round_tower(kit: LotKit, lot: list[float]) -> None:
 
 
 def slab(kit: LotKit, lot: list[float]) -> None:
-    """A low slab filling its lot, with roof units and now and then a neon sign."""
+    """Add a low slab filling its lot, with roof units and now and then a neon sign."""
     s = kit.s
     lights = kit.lights
     random = kit.random
@@ -178,12 +185,12 @@ def slab(kit: LotKit, lot: list[float]) -> None:
     h = random_in(random, 6, 14)
     volume(kit, lot, 0, h, pick(random, [C.concrete, C.concreteDark, C.brick]))
     s.box([w * 0.3, 1.5, d * 0.25], C.metalDark, Placement([x - w * 0.15, h, z + d * 0.1], 0, 0, 0))
-    if random() < 0.5:  # noqa: PLR2004 (a geometry constant)
+    if random() < 0.5:
         lights.box([w * 0.5, 1.4, 0.3], L.pinkDim, Placement([x, 3, z - d / 2 - 0.3], 0, 0, 0))
 
 
 def courtyard(kit: LotKit, lot: list[float]) -> None:
-    """A block of four wings around a courtyard."""
+    """Add a block of four wings around a courtyard."""
     x = lot[0]
     z = lot[1]
     w = lot[2]
@@ -197,7 +204,7 @@ def courtyard(kit: LotKit, lot: list[float]) -> None:
 
 
 def l_block(kit: LotKit, lot: list[float]) -> None:
-    """An L-shaped block along two sides of its lot, with a taller wing at the corner."""
+    """Add an L-shaped block along two sides of its lot, with a taller wing at the corner."""
     random = kit.random
     x = lot[0]
     z = lot[1]

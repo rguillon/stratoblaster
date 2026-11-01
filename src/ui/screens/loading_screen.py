@@ -1,19 +1,21 @@
-"""Loading screen with a progress bar (UI-LOAD-03)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Loading screen with a progress bar (UI-LOAD-03)."""
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import element
 
-from ui.menu_view import LoadingView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from ui.menu_view import LoadingView
 
-from ui.screens.elements import element  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def render_loading_screen(doc: Any, view: LoadingView) -> Any:
-    """Loading screen with a progress bar (UI-LOAD-05)."""
+    """Return the loading screen with a progress bar (UI-LOAD-05)."""
     root = element(doc, "div", "menu-screen loading-screen")
     percent = window.Math.round(window.Math.min(1, window.Math.max(0, view.progress)) * 100)
     bar = element(doc, "div", "loading-bar")

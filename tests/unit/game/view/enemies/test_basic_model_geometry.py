@@ -1,5 +1,10 @@
-"""Unit tests of the basic enemies' models against their config: the footprint against the size
-(ENM-12) and the muzzles against the config's muzzles (ENM-21)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of the basic enemies' models against their config.
+
+The footprint against the size (ENM-12), and the muzzles against the config's muzzles (ENM-21).
+"""
+
+from typing import Any
 
 import pytest
 from helpers.view_probes import drawings_of, probe_builder
@@ -15,17 +20,20 @@ FOOTPRINT_TOLERANCE = 0.10
 
 
 @pytest.fixture
-def probe(monkeypatch):
-    def run(builder):
+def probe(monkeypatch: Any) -> Any:
+    def run(builder: Any) -> Any:
         capture = probe_builder(monkeypatch, builder)
         return drawings_of(capture)["body"]
 
     return run
 
 
-def _footprint(body) -> float:
-    """The model's footprint seen from above, in logical pixels: its longest extent across or
-    along, its rotors included, its reactors as their nozzles (their flames are not drawn here)."""
+def _footprint(body: Any) -> float:
+    """Return the model's footprint seen from above, in logical pixels.
+
+    Its longest extent across or along, its rotors included, its reactors as their nozzles (their
+    flames are not drawn here).
+    """
     xs: list[float] = []
     zs: list[float] = []
     parts = body["parts"]
@@ -43,7 +51,10 @@ def _footprint(body) -> float:
 
 
 def _config_muzzles(kind: dict) -> list[list[float]]:
-    """The config's muzzles of a kind: `muzzles` (a list), or `muzzle` (one of the lancer's)."""
+    """Return the config's muzzles of a kind.
+
+    Its `muzzles` (a list), or its `muzzle` (one of the lancer's).
+    """
     if kind.get("muzzles") is not None:
         return [list(m) for m in kind["muzzles"]]
     if kind.get("muzzle") is not None:
@@ -57,7 +68,9 @@ def test_enm_12_the_basic_kinds_are_the_twelve_of_the_config() -> None:
 
 
 @pytest.mark.parametrize("model", sorted(BASIC_BY_MODEL))
-def test_enm_12_each_basic_model_footprint_is_within_10_percent_of_its_size(probe, model) -> None:
+def test_enm_12_each_basic_model_footprint_is_within_10_percent_of_its_size(
+    probe: Any, model: Any
+) -> None:
     """The footprint from above, in L (ENEMY_UNIT logical pixels), against the kind's size."""
     body = probe(ENEMY_MODELS[model])
     size = BASIC_BY_MODEL[model]["size"]
@@ -66,9 +79,13 @@ def test_enm_12_each_basic_model_footprint_is_within_10_percent_of_its_size(prob
 
 
 @pytest.mark.parametrize("model", sorted(BASIC_BY_MODEL))
-def test_enm_21_each_basic_model_marks_the_config_muzzles(probe, model) -> None:
-    """The model's marked muzzles are the config's muzzles. A config muzzle is (X right, Y up
-    when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y)."""
+def test_enm_21_each_basic_model_marks_the_config_muzzles(probe: Any, model: Any) -> None:
+    """The model's marked muzzles are the config's muzzles.
+
+    A config muzzle is (X right, Y up
+
+        when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y).
+    """
     body = probe(ENEMY_MODELS[model])
     expected = [[x, height, -y] for x, y, height in _config_muzzles(BASIC_BY_MODEL[model])]
     marked = [list(at) for at, _kind in body["muzzles"]]

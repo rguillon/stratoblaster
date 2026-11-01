@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """How a moving region's piece is posed in a boss model (BOSS-45, D-230)."""
 
 import math
@@ -28,8 +29,10 @@ MOTIONS = [
 
 
 def _babylon(point: list[float], pose: list[Any]) -> list[float]:
-    """`point` placed by a node at `pose` (Babylon's rotation matrices, X then Y then Z turns:
-    only one is ever set)."""
+    """`point` placed by a node at `pose`.
+
+    Babylon's rotation matrices, X then Y then Z turns: only one is ever set.
+    """
     x, y, z = point
     rx, ry, rz = pose[1]
     c, s = math.cos(rx), math.sin(rx)
@@ -68,7 +71,7 @@ def _boss(form: int, into: int, transform: float) -> Any:
 
 def test_a_piece_rests_until_its_transformation_then_moves_and_stays_moved() -> None:
     [region] = moving_region(
-        "arm", 2, [[0, 0], [9, 0], [9, 9]], slide([[0, 0, 0], [5, 0, 0]]), None, None, False
+        "arm", 2, [[0, 0], [9, 0], [9, 9]], slide([[0, 0, 0], [5, 0, 0]]), None, None, mirror=False
     )
     assert progress(region, None) == 0
     assert progress(region, _boss(0, 1, 0.5)) == 0
@@ -81,7 +84,7 @@ def test_a_piece_rests_until_its_transformation_then_moves_and_stays_moved() -> 
 
 def test_a_piece_s_triangles_are_at_rest_before_its_transformation_and_moved_after() -> None:
     [region] = moving_region(
-        "arm", 1, [[0, 0], [9, 0], [9, 9]], slide([[1, 0, 0], [5, 0, 0]]), None, None, False
+        "arm", 1, [[0, 0], [9, 0], [9, 9]], slide([[1, 0, 0], [5, 0, 0]]), None, None, mirror=False
     )
     tri = [Vertex([0, 0, 0], [1, 1, 1])] * 3
     assert posed([tri], region, 0)[0][0].position == [-1, 0, 0]

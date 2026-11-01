@@ -1,7 +1,9 @@
-"""The lightning of a storm (phase 9, GFX-WEATHER-10): the flashes drawn from the level's seed and,
-for some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it.
-The flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
-nothing in the simulation reads it.
+# Copyright (c) 2026 Renaud Guillon
+"""The lightning of a storm (phase 9, GFX-WEATHER-10).
+
+The flashes drawn from the level's seed and, for some strikes, a bolt drawn in the clouds while its
+flashes last, added over what is behind it. The flash itself lights the scene through the atmosphere
+(`flashed`), not here. It is only a look: nothing in the simulation reads it.
 """
 
 import math
@@ -23,21 +25,24 @@ from render.babylon import (
 )
 from render.scenery.cloud_layers import BELOW_CLOUDS_GROUP
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.lightning import Bolt, Strike  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.playfield_framing import GroundWindow  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import Atmosphere
+from core.scenery.lightning import Bolt, Strike
+from render.scenery.playfield_framing import GroundWindow
 
 Point = tuple[float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class BoltLook:
-    """How a bolt is drawn in the clouds (GFX-WEATHER-12): a pale violet-white zigzag with a few
-    forks."""
+    """How a bolt is drawn in the clouds (GFX-WEATHER-12): a pale violet-white zigzag.
+
+    A few forks.
+    """
 
     color = (0.86, 0.86, 1)
     # Length of the main bolt, and of its forks, as shares of the view's width. (`length_`: a
@@ -63,7 +68,10 @@ def _hypot(a: float, b: float) -> float:
 
 
 def _zigzag(random: Any, start: Point, length: float, angle: float, pieces: int) -> list[Point]:
-    """A jagged line of `pieces` from `start`, `length` long, heading `angle` (radians from +X)."""
+    """Return a jagged line of `pieces` from `start`, `length` long, heading `angle`.
+
+    `angle` is in radians from +X.
+    """
     n = pieces
     step = length / n
     dx = math.cos(angle)
@@ -71,12 +79,10 @@ def _zigzag(random: Any, start: Point, length: float, angle: float, pieces: int)
     points: list[Point] = [start]
     for i in range(1, n + 1):
         jag = (random() - 0.5) * 2 * BOLT_LOOK.jag * (0.3 if i == n else 1)
-        points.append(
-            (
-                start[0] + dx * step * i - dz * jag,
-                start[1] + dz * step * i + dx * jag,
-            )
-        )
+        points.append((
+            start[0] + dx * step * i - dz * jag,
+            start[1] + dz * step * i + dx * jag,
+        ))
     return points
 
 
@@ -101,14 +107,14 @@ def _ribbons(lines: list[list[Point]], width: float) -> Any:
 
 
 def bolt_lines(seed: float, span: float) -> list[list[Point]]:
-    """The lines of the bolt of seed `seed`, across a view `span` wide, from its centre."""
+    """Return the lines of the bolt of seed `seed`, across a view `span` wide, from its centre."""
     random = create_rng(int(seed))
     angle = random() * math.pi * 2
     main = _zigzag(random, (0, 0), span * BOLT_LOOK.length_, angle, BOLT_LOOK.pieces)
     forks: list[list[Point]] = []
     for _ in range(BOLT_LOOK.forks):
         origin = main[1 + math.floor(random() * (len(main) - 2))]
-        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)  # noqa: PLR2004 (a fair coin flip and the fork's turn range)
+        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)
         forks.append(_zigzag(random, origin, span * BOLT_LOOK.fork, turn, BOLT_LOOK.pieces // 2))
     out = [main]
     out.extend(forks)
@@ -116,8 +122,10 @@ def bolt_lines(seed: float, span: float) -> list[list[Point]]:
 
 
 class LightningLayer:
-    """The lightning of a storm: the flashes from the level's seed, and the bolts drawn in the
-    clouds while they last."""
+    """The lightning of a storm.
+
+    The flashes from the level's seed, the bolts drawn in the clouds while they last.
+    """
 
     def __init__(self, scene: Any, seed: int, place: tuple[GroundWindow, float]) -> None:
         """`place`: the ground window the bolts are drawn in, and the altitude of the clouds."""
@@ -146,8 +154,10 @@ class LightningLayer:
         return self._bolt is not None and is_enabled(self._bolt)
 
     def update(self, atmosphere: Atmosphere, time: float, z: float) -> float:
-        """The flash at `time` for `atmosphere`'s lightning (GFX-WEATHER-11); the bolt is drawn
-        near `z`."""
+        """Return the flash at `time` for `atmosphere`'s lightning (GFX-WEATHER-11).
+
+        The bolt is drawn near `z`.
+        """
         strength = atmosphere.lightning
         self._flash = self.schedule.flash_at(time) if strength > 0 else 0
         strike = self.schedule.strike_at(time) if self._flash > 0 else None

@@ -1,16 +1,21 @@
-"""The in-game HUD: one bar along the bottom of the playfield (UI-HUD-01), the
-level's progress along its top edge, the ship's health, lives and bombs, the score and the weapon.
+# Copyright (c) 2026 Renaud Guillon
+"""The in-game HUD: one bar along the bottom of the playfield (UI-HUD-01).
+
+The level's progress along its top edge, the ship's health, lives and bombs, the score and the
+weapon.
 """
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.boss_bar import BossBar, BossBarFrame
+from ui.screens.elements import element
 
-__pragma__("noskip")
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from ui.boss_bar import BossBar, BossBarFrame  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.elements import element  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
+
 
 # Under this share of its health the bar turns red (UI-HUD-04).
 LOW_HEALTH = 0.3
@@ -19,7 +24,7 @@ LOW_HEALTH = 0.3
 class HudTexts:
     """Texts of the in-game HUD, provided by the game. Each is a function of the values it shows."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         health: str,
         weapon: Any,
@@ -47,7 +52,7 @@ class HudTexts:
 class HudFrame:
     """What the HUD shows on one frame."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         health: float,
         max_health: float,
@@ -95,7 +100,7 @@ def _percent(share: float) -> str:
 
 
 def _bomb_press(on_bomb: Any) -> Any:
-    """A pointer-down listener of the touch bomb button: stops the event, then bombs."""
+    """Return a pointer-down listener of the touch bomb button: stops the event, then bombs."""
 
     def handler(event: Any) -> None:
         event.stopPropagation()
@@ -105,9 +110,10 @@ def _bomb_press(on_bomb: Any) -> Any:
 
 
 class GameHud:
-    """The in-game HUD. Laid out at the logical resolution over the playfield; it takes no clicks
-    or taps but on its touch bomb button. Text and bars change only when their value does
-    (UI-HUD-11).
+    """The in-game HUD.
+
+    Laid out at the logical resolution over the playfield; it takes no clicks or taps but on its
+    touch bomb button. Text and bars change only when their value does (UI-HUD-11).
     """
 
     def __init__(self, doc: Any, parent: Any, setup: HudSetup) -> None:
@@ -146,7 +152,7 @@ class GameHud:
         self._shown_score = ""
 
     def _new_bomb_button(self, doc: Any, on_bomb: Any) -> Any:
-        """The touch bomb button (UI-HUD-10): the only part of the HUD that takes taps."""
+        """Return the touch bomb button (UI-HUD-10): the only part of the HUD that takes taps."""
         button = element(doc, "div", "hud-bomb-button")
         button.setAttribute("role", "button")
         button.addEventListener("pointerdown", _bomb_press(on_bomb))
@@ -154,7 +160,7 @@ class GameHud:
         return button
 
     def update(self, frame: HudFrame) -> None:
-        """Shows `frame`, touching the page only when something visible changed."""
+        """Show `frame`, touching the page only when something visible changed."""
         self._boss.update(frame.boss)
         self._update_score(frame)
         texts = self._setup.texts
@@ -182,7 +188,10 @@ class GameHud:
         self._progress_bar.style.width = shown[3]
 
     def _update_score(self, frame: HudFrame) -> None:
-        """The score, the high score, and the bombs left, by the lives and on the touch button."""
+        """Show the score, the high score, and the bombs left.
+
+        The bombs left are shown by the lives and on the touch button.
+        """
         bombs_key = "undefined" if frame.bombs is None else str(frame.bombs)
         key = str(frame.score) + "|" + str(frame.high_score) + "|" + bombs_key
         if key == self._shown_score:
@@ -202,4 +211,5 @@ class GameHud:
         button.classList.toggle("empty", bombs <= 0)
 
     def dispose(self) -> None:
+        """Dispose."""
         self.root.remove()

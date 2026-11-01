@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/gradient_shapes.py`."""
 
 import pytest
@@ -44,4 +45,6 @@ def test_fewer_than_two_stops_is_an_error() -> None:
 
 def test_coloured_geometry_starts_empty() -> None:
     geo = ColoredGeometry()
-    assert geo.positions == [] and geo.indices == [] and geo.colors == []
+    assert geo.positions == []
+    assert geo.indices == []
+    assert geo.colors == []

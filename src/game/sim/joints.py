@@ -1,29 +1,30 @@
-"""The joints of the enemies and bosses, from their config records (ENM-33, BOSS-33): the core
-reads `BossJointSpec`s, the config keeps the records as written (camelCase). Each boss's own limbs
-are its boss file's (`specs/bosses/`).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The joints of the enemies and bosses, from their config records (ENM-33, BOSS-33).
 
-from org.transcrypt.stubs.browser import __pragma__
+The core reads `BossJointSpec`s, the config keeps the records as written (camelCase). Each boss's
+own limbs are its boss file's (`specs/bosses/`).
+"""
 
 from core.entities.boss_joint import BossJointSpec, JointSwing
 from core.entities.jointed_enemy import EnemyPartSpec, JointedDesign
 from game.sim.config_access import keys_of, opt
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def joint_specs(joints: Any) -> Any:
-    """The joints of a boss or enemy record, by id, as the core's specs."""
+    """Return the joints of a boss or enemy record, by id, as the core's specs."""
     result: Any = {}
     for joint_id in keys_of(joints):
         joint = joints[joint_id]
         swing = joint.swing
         phase = swing.phase
-        if phase == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if phase == None:
             phase = 0
         result[joint_id] = BossJointSpec(
             joint.x,
@@ -35,11 +36,13 @@ def joint_specs(joints: Any) -> Any:
 
 
 def enemy_parts(parts: Any) -> list[EnemyPartSpec]:
-    """The parts of a jointed enemy from its config records: an omitted `aim` is 0, and an omitted
-    `orbits` or `shields` is off."""
+    """Return the parts of a jointed enemy from its config records.
+
+    An omitted `aim` is 0, and an omitted `orbits` or `shields` is off.
+    """
     result: list[EnemyPartSpec] = []
     for part in parts:
-        aim = 0 if part.aim == None else part.aim  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        aim = 0 if part.aim == None else part.aim
         result.append(
             EnemyPartSpec(
                 part.id,
@@ -57,7 +60,9 @@ def enemy_parts(parts: Any) -> list[EnemyPartSpec]:
 
 
 def jointed_design(design: Any) -> JointedDesign:
-    """A jointed enemy's design from its config: its parts on joints or in orbit (ENM-27), and its
-    joints as the core's specs."""
-    joints = None if design.joints == None else joint_specs(design.joints)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return a jointed enemy's design from its config: its parts on joints or in orbit (ENM-27).
+
+    And its joints as the core's specs.
+    """
+    joints = None if design.joints == None else joint_specs(design.joints)
     return JointedDesign(enemy_parts(design.parts), joints)

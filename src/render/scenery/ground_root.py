@@ -1,8 +1,8 @@
-"""The node the ground hangs from (GFX-CAM-04): drawn
-`scale` times as big as it is, as if flying lower (`PlayfieldCameraLook.groundScale`).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The node the ground hangs from (GFX-CAM-04).
 
-from org.transcrypt.stubs.browser import __pragma__
+Drawn `scale` times as big as it is, as if flying lower (`PlayfieldCameraLook.groundScale`).
+"""
 
 from render.babylon import (
     new_transform_node,
@@ -15,19 +15,22 @@ from render.scenery.playfield_framing import GroundWindow, PlayfieldFraming, vis
 from render.scenery.scenery_kit import GroundTransform
 from render.scenery.stage_parts import lowest_ground
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class GroundRoot:
-    """The node the ground hangs from, drawn `scale` times as big as it is, as if flying lower
-    (`PlayfieldCameraLook.groundScale`). As the view moves `distance` along the level, the node is
-    moved so the ground point under the view is still `distance` in: the level covers the same
-    ground a second, which passes `scale` times as fast."""
+    """The node the ground hangs from, drawn `scale` times as big as it is, as if flying lower.
+
+    The scale is `PlayfieldCameraLook.groundScale`. As the view moves `distance` along the level,
+    the node is moved so the ground point under the view is still `distance` in: the level covers
+    the same ground a second, which passes `scale` times as fast.
+    """
 
     def __init__(self, scene: Any, scale: float) -> None:
         self.scene = scene
@@ -36,7 +39,7 @@ class GroundRoot:
         self.node.scaling.setAll(scale)
 
     def adopt(self, create: Callable[[], Any]) -> Any:
-        """Runs `create`, then hangs what it made from the ground (unless it has a parent)."""
+        """Run `create`, then hangs what it made from the ground (unless it has a parent)."""
         before = scene_unique_id(self.scene)
         try:
             return create()
@@ -47,16 +50,16 @@ class GroundRoot:
                 self._hang(mesh)
 
     def move_to(self, distance: float) -> None:
-        """Moves the ground for the view `distance` along the level."""
+        """Move the ground for the view `distance` along the level."""
         self.node.position.z = (1 - self.scale) * distance
 
     def to_ground(self, z: float) -> float:
-        """The ground Z drawn at world Z `z`."""
+        """Return the ground Z drawn at world Z `z`."""
         offset: float = self.node.position.z
         return (z - offset) / self.scale
 
     def to_world(self, z: float) -> float:
-        """The world Z where ground Z `z` is drawn."""
+        """Return the world Z where ground Z `z` is drawn."""
         offset: float = self.node.position.z
         return z * self.scale + offset
 
@@ -71,9 +74,13 @@ class GroundRoot:
 
 
 def ground_window_of(options: Any, framing: PlayfieldFraming, scale: float) -> GroundWindow:
-    """The ground the camera sees over a level (GFX-CAM-05; relative to the camera's ground Z,
-    in ground units) when the ground is drawn `scale` times as big. `options` has `screen`, `camera`
-    and `level`."""
+    """Return the ground the camera sees over a level (GFX-CAM-05).
+
+    Relative to the camera's ground Z, in ground units, when the ground is drawn `scale` times as
+    big.
+
+    `options` has `screen`, `camera` and `level`.
+    """
     screen = options.screen
     camera = options.camera
     world = visible_ground(

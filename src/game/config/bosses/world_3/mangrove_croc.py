@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """3-1: the Mangrove Croc, the River delta's mini boss (specs/bosses/mini/3-1-mangrove-croc.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two jaws
@@ -8,18 +9,18 @@ side pontoons fire fans and shield the core, whose ring dome fires something new
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 GREEN = bullet("green", 205)
 ORANGE = bullet("orange", 195)
@@ -51,7 +52,7 @@ JAW_PHASE = (
 
 
 def jaw(side: str) -> Any:
-    """The jaw on `side` (D-061): it opens outwards (the left one clockwise on screen)."""
+    """Return the jaw on `side` (D-061): it opens outwards (the left one clockwise on screen)."""
     s = 1 if side == "left" else -1
     amplitude_deg = CROC_JAW_SWING.amplitudeDeg
     period = CROC_JAW_SWING.period
@@ -83,71 +84,67 @@ CROC_PARTS = record({"jaw": [0, -37], "pontoon": [27, 4]})
 # cannon fires aimed bursts as the jaws open; the side pontoons fire fans and shield the core
 # (MB-MANGROVE-CROC-09); the core's ring dome fires rings, a spiral once alone. The fight is a
 # chase up the delta (ground x1.4).
-_MANGROVE_CROC = record(
-    {
-        "id": "mangrove-croc",
-        # Angry after each destroyed part (D-063), heat 4.5 (MB-MANGROVE-CROC-12).
-        "rage": rage.vortex(4.5, "green", "orange"),
-        # Its core and parts (MB-MANGROVE-CROC-08), and its points (MB-MANGROVE-CROC-15).
-        "stats": stats(
-            record(
-                {
-                    "id": "mangrove-croc",
-                    "name": "Mangrove Croc",
-                    "size": 3,
-                    "coreRadius": 15,
-                    "coreHealth": 1450,
-                    "points": 7500,
-                    "groundSpeed": 1.4,
-                    "parts": [
-                        part(
-                            "pontoon-left",
-                            [-CROC_PARTS.pontoon[0], CROC_PARTS.pontoon[1]],
-                            12,
-                            625,
-                        ),
-                        part("pontoon-right", list(CROC_PARTS.pontoon), 12, 625),
-                        part("jaw-cannon", list(CROC_PARTS.jaw), 10, 500, {"shields": False}),
-                    ],
-                    "joints": {"jaw-left": jaw("left"), "jaw-right": jaw("right")},
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-MANGROVE-CROC-07).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 70, "period": 7},
-        "bob": {"amplitude": 8, "period": 3.4},
-        "guns": {
-            "core": {"ring": CROC_DOME},
-            "jaw-cannon": {"gun": CROC_JAW_CANNON},
-            "pontoon-left": {"gun": mirror(CROC_PONTOON_GUNS)},
-            "pontoon-right": {"gun": CROC_PONTOON_GUNS},
-        },
-        # The parts' volleys, then the core's pattern per stage (MB-MANGROVE-CROC-11).
-        "stages": stages(
-            [
-                volley.burst(
-                    "jaw-cannon", CROC_JAW_SWING.period, BURST.count, BURST.gap, GREEN, BURST.first
+_MANGROVE_CROC = record({
+    "id": "mangrove-croc",
+    # Angry after each destroyed part (D-063), heat 4.5 (MB-MANGROVE-CROC-12).
+    "rage": rage.vortex(4.5, "green", "orange"),
+    # Its core and parts (MB-MANGROVE-CROC-08), and its points (MB-MANGROVE-CROC-15).
+    "stats": stats(
+        record({
+            "id": "mangrove-croc",
+            "name": "Mangrove Croc",
+            "size": 3,
+            "coreRadius": 15,
+            "coreHealth": 1450,
+            "points": 7500,
+            "groundSpeed": 1.4,
+            "parts": [
+                part(
+                    "pontoon-left",
+                    [-CROC_PARTS.pontoon[0], CROC_PARTS.pontoon[1]],
+                    12,
+                    625,
                 ),
-                volley.fan("pontoon-left", 2.8, 3, 14, ORANGE, 0.7, -12),
-                volley.fan("pontoon-right", 2.8, 3, 14, ORANGE, 2.1, 12),
+                part("pontoon-right", list(CROC_PARTS.pontoon), 12, 625),
+                part("jaw-cannon", list(CROC_PARTS.jaw), 10, 500, {"shields": False}),
             ],
+            "joints": {"jaw-left": jaw("left"), "jaw-right": jaw("right")},
+        })
+    ),
+    # Where it stops and how it moves in place (MB-MANGROVE-CROC-07).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 70, "period": 7},
+    "bob": {"amplitude": 8, "period": 3.4},
+    "guns": {
+        "core": {"ring": CROC_DOME},
+        "jaw-cannon": {"gun": CROC_JAW_CANNON},
+        "pontoon-left": {"gun": mirror(CROC_PONTOON_GUNS)},
+        "pontoon-right": {"gun": CROC_PONTOON_GUNS},
+    },
+    # The parts' volleys, then the core's pattern per stage (MB-MANGROVE-CROC-11).
+    "stages": stages(
+        [
+            volley.burst(
+                "jaw-cannon", CROC_JAW_SWING.period, BURST.count, BURST.gap, GREEN, BURST.first
+            ),
+            volley.fan("pontoon-left", 2.8, 3, 14, ORANGE, 0.7, -12),
+            volley.fan("pontoon-right", 2.8, 3, 14, ORANGE, 2.1, 12),
+        ],
+        [
+            [volley.ring("core", 3, 10, 18, BLUE, 1.6)],
+            [volley.ring("core", 2.5, 12, 15, BLUE, 1)],
             [
-                [volley.ring("core", 3, 10, 18, BLUE, 1.6)],
-                [volley.ring("core", 2.5, 12, 15, BLUE, 1)],
-                [
-                    volley.ring("core", 2.4, 10, 0, BLUE, 0.8),
-                    volley.ring("core", 2.4, 10, 18, PURPLE, 2),
-                ],
-                # Alone: a spiral, and a slow-turning ring under it.
-                [
-                    volley.ring("core", 0.42, 4, 23, GREEN, 0.4),
-                    volley.ring("core", 2.6, 14, 7, PURPLE, 1),
-                ],
+                volley.ring("core", 2.4, 10, 0, BLUE, 0.8),
+                volley.ring("core", 2.4, 10, 18, PURPLE, 2),
             ],
-        ),
-    }
-)
+            # Alone: a spiral, and a slow-turning ring under it.
+            [
+                volley.ring("core", 0.42, 4, 23, GREEN, 0.4),
+                volley.ring("core", 2.6, 14, 7, PURPLE, 1),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-MANGROVE-CROC-14): at transformation 1 its
 # back plating bursts off, baring a dark metal frame (MB-MANGROVE-CROC-13), and a pair of gatling

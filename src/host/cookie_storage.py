@@ -1,4 +1,5 @@
-"""Cookie-backed storage (ENG-07: persistence uses cookies, not `localStorage`)
+# Copyright (c) 2026 Renaud Guillon
+"""Cookie-backed storage (ENG-07: persistence uses cookies, not `localStorage`).
 
 It is a `KeyValueStorage` by shape (see `key_value_storage.py`).
 """
@@ -7,9 +8,10 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Protocol
 
 
 class CookieDocument(Protocol):
@@ -18,7 +20,8 @@ class CookieDocument(Protocol):
     cookie: str
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 SECONDS_PER_DAY = 86400
 
@@ -43,6 +46,7 @@ class CookieStorage:
         self._max_age_days = max_age_days
 
     def get(self, key: str) -> str | None:
+        """Return the stored value of `key`, or None when missing."""
         prefix = encode_uri_component(key) + "="
         for part in self._doc.cookie.split(";"):
             cookie = part.strip()
@@ -50,11 +54,12 @@ class CookieStorage:
                 continue
             try:
                 return decode_uri_component(cookie[len(prefix) :])
-            except:  # noqa: E722 (a malformed cookie value reads as absent)
+            except:
                 return None
         return None
 
     def set(self, key: str, value: str) -> None:
+        """Store `value` under `key`, for the configured number of days."""
         max_age = math.floor(self._max_age_days * SECONDS_PER_DAY + 0.5)
         self._doc.cookie = (
             encode_uri_component(key)

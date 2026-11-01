@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/sequencer.py`."""
 
 import pytest
@@ -64,6 +65,6 @@ def test_aud_engine_10_seeking_negative_time_starts_from_the_top() -> None:
 
 
 def test_aud_engine_05_an_empty_track_hands_out_nothing() -> None:
-    seq = Sequencer(Track("silence", 120, 4, [], True))
+    seq = Sequencer(Track("silence", 120, 4, [], loop=True))
     assert seq.advance(10) == []
     assert seq.position == 10

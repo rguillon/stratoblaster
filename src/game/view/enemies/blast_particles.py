@@ -1,22 +1,25 @@
-"""Explosions where enemies and missiles were destroyed (GFX-FX-05; phase 5 review: bigger, more
-realistic): a shock ring, a cluster of fireballs, dark
-smoke that lingers, and burning debris with embers and smoke wisps. The game's own seeded
-particles, drawn as meshes, not Babylon particle systems (ENG-103)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Explosions where enemies and missiles were destroyed (GFX-FX-05).
+
+Bigger and more realistic (phase 5 review): a shock ring, a cluster of fireballs, dark smoke that
+lingers, and burning debris with embers and smoke wisps. The game's own seeded particles, drawn as
+meshes, not Babylon particle systems (ENG-103).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import random_in
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.organic_parts import opt
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.organic_parts import opt  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = ENEMY_LOOK.blasts
 # Debris stops dropping embers and smoke after this share of its life.
@@ -27,7 +30,7 @@ BLAST_LAYERS = ["smoke", "rings", "fireballs", "debris", "embers"]
 
 
 def ramp(colors: list[Rgb], t: float) -> Rgb:
-    """The colour at `t` (0..1) along `colors`."""
+    """Return the colour at `t` (0..1) along `colors`."""
     last = len(colors) - 1
     at = min(max(t, 0), 1) * last
     i = min(math.floor(at), last - 1)
@@ -53,7 +56,7 @@ class BlastSpot:
 class Particle:
     """One particle of a layer. `age` is negative until the particle appears."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         x: float,
         y: float,
@@ -83,18 +86,20 @@ class Particle:
 
 
 def spot(p: Particle, radius: float, color: Rgb, a: float = 1) -> BlastSpot:
-    """A spot at the particle's place."""
+    """Return a spot at the particle's place."""
     return BlastSpot(p.x, p.y, radius, color, a)
 
 
 def grown(p: Particle, k: float) -> float:
-    """The particle's size grown by `k` of the way to its end size."""
+    """Return the particle's size grown by `k` of the way to its end size."""
     return p.size * (1 + (p.growth - 1) * k)
 
 
 def look_rings(p: Particle, t: float) -> BlastSpot:
-    """Laid over the ground, not added on: an explosion does not light the ground (reviewer,
-    2026-10-28)."""
+    """Return the shock ring's look: laid over the ground, not added on.
+
+    An explosion does not light the ground (reviewer, 2026-10-28).
+    """
     return spot(p, p.size * math.sqrt(t), LOOK.ring.color, (1 - t) ** 2)
 
 
@@ -131,8 +136,11 @@ LOOKS = {
 
 
 class BlastParticles:
-    """Explosions where enemies and missiles were destroyed (GFX-FX-05): every layer's particles,
-    all gone within `effectMaxDuration` of the blast (GFX-FX-08, GFX-READ-15)."""
+    """Explosions where enemies and missiles were destroyed (GFX-FX-05).
+
+    Every layer's particles, all gone within `effectMaxDuration` of the blast (GFX-FX-08,
+    GFX-READ-15).
+    """
 
     def __init__(self, random: Any) -> None:
         self.random = random
@@ -152,7 +160,7 @@ class BlastParticles:
         return total
 
     def emit(self, blast: Any) -> None:
-        """Starts the explosion of `blast`."""
+        """Start the explosion of `blast`."""
         scale = LOOK.missileScale if blast.kind == "missile" else 1
         # GFX-FX-06: sized from the hit radius, never bigger than for `maxRadius`.
         radius = min(blast.radius, LOOK.maxRadius) * scale
@@ -165,7 +173,7 @@ class BlastParticles:
         )
         f = LOOK.fireball
         fireballs = self.count_of(radius * f.perRadius, f.count, scale)
-        for i in range(fireballs):  # noqa: B007 (the first fireball is at the centre)
+        for i in range(fireballs):
             # The first one at the centre, at once; the others around it, later.
             k = 0 if i == 0 else 1
             d = self.direction(self.random() * radius * f.spread * k)
@@ -233,7 +241,7 @@ class BlastParticles:
                 )
 
     def fireball(self, fire: dict[str, Any], radius: float) -> None:
-        """A fireball and the smoke it leaves, a little behind it."""
+        """Add a fireball and the smoke it leaves, a little behind it."""
         f = LOOK.fireball
         s = LOOK.smoke
         dx = fire["dir"][0]
@@ -284,7 +292,7 @@ class BlastParticles:
         drag: float,
         small: float,
     ) -> None:
-        """A piece of `layer` thrown out from `at` in a random direction."""
+        """Add a piece of `layer` thrown out from `at` in a random direction."""
         speed = look["speed"]
         size_range = look["size"]
         life_range = look["life"]
@@ -306,7 +314,7 @@ class BlastParticles:
         )
 
     def add(self, layer: str, p: Any) -> None:
-        """Adds a particle to `layer`, unless the layer is full (`cap`: GFX-FX-09, ENG-105)."""
+        """Add a particle to `layer`, unless the layer is full (`cap`: GFX-FX-09, ENG-105)."""
         items = self.layers[layer]
         if len(items) >= LOOK.cap:
             return
@@ -329,7 +337,7 @@ class BlastParticles:
         )
 
     def direction(self, length: float) -> list[float]:
-        """A vector `length` long in a random direction."""
+        """Return a vector `length` long in a random direction."""
         angle = self.random() * 2 * math.pi
         return [math.sin(angle) * length, math.cos(angle) * length]
 

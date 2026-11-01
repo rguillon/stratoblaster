@@ -1,6 +1,5 @@
-"""The Carrier (`specs/enemies/carrier.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Carrier (`specs/enemies/carrier.md`)."""
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import Path
@@ -8,20 +7,24 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 from game.sim.enemies.gnat import Gnat
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.carrier
 GROUP_DELAY = ENEMY_CONFIG.gnat.groupDelay
 
 
 class Carrier(Enemy):
-    """ENM-CARRIER-05: a fat flying carrier. It descends slowly and never shoots (ENM-CARRIER-06);
-    every 3 s a Gnat comes out of each of its side ports (two a side, ENM-CARRIER-07), flying out
-    sideways and then down the screen (ENM-CARRIER-08). It stops launching in the lower part of the
-    screen (ENM-CARRIER-09). Its `charge` is how close the next launch is (the ports glow).
+    """ENM-CARRIER-05: a fat flying carrier.
+
+    It descends slowly and never shoots (ENM-CARRIER-06); every 3 s a Gnat comes out of each of its
+    side ports (two a side, ENM-CARRIER-07), flying out sideways and then down the screen
+    (ENM-CARRIER-08). It stops launching in the lower part of the screen (ENM-CARRIER-09). Its
+    `charge` is how close the next launch is (the ports glow).
     """
 
     def __init__(self, x: float, y: float) -> None:
@@ -30,6 +33,7 @@ class Carrier(Enemy):
         self.heading = DOWN
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.y -= CFG.speed * dt
         if not on_playfield(self, ctx) or self.y < CFG.lastLaunchFraction * ctx.height:
             self.charge = 0

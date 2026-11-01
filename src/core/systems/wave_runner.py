@@ -1,4 +1,5 @@
-"""Runs a level's wave script (GAME-LEVEL-01)
+# Copyright (c) 2026 Renaud Guillon
+"""Runs a level's wave script (GAME-LEVEL-01).
 
 Waves start when the level scrolls past their distance, and not before; the groups of a wave come
 in one by one, so several waves can be on screen at once. The runner knows enemy kinds only by id:
@@ -7,31 +8,32 @@ the spawner brings the groups in. Pure and deterministic.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.enemy import EnemyEntry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
 WaveScript = Sequence["Wave"]
 WaveSpawner = Callable[[str, EnemyEntry], None]
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 INFINITY = float("Infinity")
 
 
 class Wave:
-    """One wave of a level's script: when the level has scrolled `at` world units, `count` groups of
-    the enemy kind `kind` come in at `entry`, one every `interval` seconds.
+    """One wave of a level's script.
+
+    When the level has scrolled `at` world units, `count` groups of the enemy kind `kind` come in at
+    `entry`, one every `interval` seconds.
 
     `spread`: added to the entry position for each group after the first (e.g. a line of Scouts
     coming in across the screen), wrapped back into 0..1.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         at: float,
         kind: str,
@@ -79,10 +81,10 @@ def validate_wave_script(script: Sequence[Wave], kind_ids: Sequence[str]) -> Non
 
 
 def _group_entry(wave: Wave, index: int) -> EnemyEntry:
-    """The entry of group `index` of `wave`."""
+    """Return the entry of group `index` of `wave`."""
     # `!= None`: a config record leaves an absent spread undefined, which `is not None` takes for
     # a value (the strafers then entered at NaN, clamped to the bottom of the playfield).
-    spread = wave.spread if wave.spread != None else 0  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    spread = wave.spread if wave.spread != None else 0
     shifted = wave.entry.position + spread * index
     return EnemyEntry(wave.entry.side, shifted - math.floor(shifted))
 
@@ -109,8 +111,9 @@ class WaveRunner:
         return self._stopped or (self._next >= len(self._waves) and len(self._queue) == 0)
 
     def step(self, dt: float, distance: float) -> None:
-        """Advances by `dt` seconds, the level having scrolled `distance`: triggers the waves passed
-        and brings in the groups due.
+        """Advances by `dt` seconds, the level having scrolled `distance`.
+
+        Triggers the waves passed and brings in the groups due.
         """
         if self._stopped:
             return
@@ -132,9 +135,10 @@ class WaveRunner:
         self._queue.clear()
 
     def skip_to(self, distance: float) -> None:
-        """Starts again at `distance`, as if the level began there: the waves before it are skipped,
-        the groups waiting are dropped, and the later waves trigger as usual (DEV-OPT-02,
-        GAME-LIFE-11).
+        """Start again at `distance`, as if the level began there.
+
+        The waves before it are skipped, the groups waiting are dropped, and the later waves trigger
+        as usual (DEV-OPT-02, GAME-LIFE-11).
         """
         self._queue.clear()
         self._stopped = False
@@ -147,10 +151,8 @@ class WaveRunner:
 
 
 def _sorted_by_at(script: Sequence[Wave]) -> list[Wave]:
-    """A copy sorted by distance: a stable insertion sort (as `Array.sort` is stable)."""
-    waves: list[Wave] = []
-    for wave in script:
-        waves.append(wave)
+    """Return a copy sorted by distance: a stable insertion sort (as `Array.sort` is stable)."""
+    waves: list[Wave] = list(script)
     for i in range(1, len(waves)):
         j = i
         while j > 0 and waves[j - 1].at > waves[j].at:

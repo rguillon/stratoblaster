@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/settings_menu.py`."""
 # (UI-SET-02, UI-SET-03).
 
@@ -119,5 +120,5 @@ def test_ui_set_03_a_direct_pick_moves_the_selection_or_is_refused() -> None:
 
 def test_ui_set_03_the_selected_id_falls_back_to_music_for_a_bad_selection() -> None:
     menu = make()
-    menu._selection = 5  # noqa: SLF001 (the guard of an out-of-range selection)
+    menu._selection = 5
     assert menu.selected_id == "music"

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/elements.py`."""
 
 from helpers.dom import FakeDocument, FakeEvent
@@ -38,7 +39,7 @@ def test_ui_input_13_an_entry_is_a_button_div_that_reports_its_tap() -> None:
     """Also UI-INPUT-09 (the tap)."""
     doc = FakeDocument()
     taps: list[int] = []
-    el = entry(doc, "level-cell", 3, False, taps.append)
+    el = entry(doc, "level-cell", 3, selected=False, on_tap=taps.append)
     assert el.tagName == "div"
     assert el.className == "menu-entry level-cell"
     assert el.getAttribute("role") == "button"
@@ -51,7 +52,7 @@ def test_ui_input_13_an_entry_is_a_button_div_that_reports_its_tap() -> None:
 
 def test_ui_look_08_a_selected_entry_is_marked_as_current() -> None:
     doc = FakeDocument()
-    el = entry(doc, "title-start", 0, True, lambda index: None)
+    el = entry(doc, "title-start", 0, selected=True, on_tap=lambda _index: None)
     assert el.classList.contains("selected")
     assert el.getAttribute("aria-current") == "true"
 

@@ -1,11 +1,11 @@
-"""A row of titled text blocks"""
+# Copyright (c) 2026 Renaud Guillon
+"""A row of titled text blocks."""
 
-from org.transcrypt.stubs.browser import __pragma__
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class Caption:
@@ -17,8 +17,9 @@ class Caption:
 
 
 def render_caption_row(doc: Any, parent: Any, captions: list[Caption], width_percent: float) -> Any:
-    """Renders captions side by side in a row (styled by the page's `.caption-row` CSS) and
-    appends it to `parent`. `width_percent` sets the row width, centred on the page.
+    """Render captions side by side in a row (styled by the page's `.caption-row` CSS).
+
+    Appends it to `parent`. `width_percent` sets the row width, centred on the page.
     """
     row = doc.createElement("div")
     row.className = "caption-row"

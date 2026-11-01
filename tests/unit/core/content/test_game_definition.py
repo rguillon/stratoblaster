@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/content/game_definition.py`."""
 
 from core.content.game_definition import GameDefinition, LogicalScreen
@@ -29,6 +30,7 @@ def test_game_definition_keeps_every_field_in_order() -> None:
     values = {name: object() for name in names}
     values["id"] = "stratoblaster"
     values["title"] = "Stratoblaster"
-    definition = GameDefinition(**values)  # type: ignore[arg-type]
+    # By position, in the order of the fields (ENG-151).
+    definition = GameDefinition(*[values[name] for name in names])  # type: ignore[arg-type]
     for name in names:
         assert getattr(definition, name) is values[name]

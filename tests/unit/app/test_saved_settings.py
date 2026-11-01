@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_settings.py`."""
 # (UI-SET-06, D-010).
 

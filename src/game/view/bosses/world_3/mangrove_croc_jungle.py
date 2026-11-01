@@ -1,49 +1,52 @@
-"""MB-MANGROVE-CROC-05, FB-RIVER-LEVIATHAN-06, 3-1: the river growth on the Mangrove Croc and the
-River Leviathan (BOSS-50, the World
-3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-MANGROVE-CROC-05, FB-RIVER-LEVIATHAN-06, 3-1: the river growth.
+
+It grows on the Mangrove Croc and the River Leviathan (BOSS-50, the World 3 theme: dark metal with
+neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Swamp shades: moss, vines, river stone, old bone-white teeth. D-231: clear greens and a grey mud,
 # not olive and brown (no khaki with the enemies' yellow and green).
-SWAMP = record(
-    {
-        "moss": [0.035, 0.15, 0.045],
-        "mossLight": [0.05, 0.2, 0.06],
-        "vine": [0.02, 0.1, 0.03],
-        "stone": [0.17, 0.16, 0.14],
-        "tooth": [0.42, 0.4, 0.34],
-        "mud": [0.08, 0.08, 0.075],
-    }
-)
+SWAMP = record({
+    "moss": [0.035, 0.15, 0.045],
+    "mossLight": [0.05, 0.2, 0.06],
+    "vine": [0.02, 0.1, 0.03],
+    "stone": [0.17, 0.16, 0.14],
+    "tooth": [0.42, 0.4, 0.34],
+    "mud": [0.08, 0.08, 0.075],
+})
 
 
 def moss(hull: SolidBuilder, outline: list[OutlinePoint], y: float) -> None:
-    """A patch of moss lying on a hull at height `y`: a thin, lumpy slab over `outline`."""
+    """Add a patch of moss lying on a hull at height `y`: a thin, lumpy slab over `outline`."""
     hull.slab(outline, [y - 0.3, y + 0.6], SWAMP.moss, None, SWAMP.mossLight)
 
 
 def vine(hull: SolidBuilder, start: Vec3, end: Vec3, sag: float) -> None:
-    """A vine hanging from `start` to `end`, sagging `sag` below the line between them: two thin
-    stems meeting at the low point, a leaf there."""
+    """Add a vine hanging from `start` to `end`, sagging `sag` below the line between them.
+
+    Two thin stems meeting at the low point, a leaf there.
+    """
     low: Vec3 = [
         (start[0] + end[0]) / 2,
         (start[1] + end[1]) / 2 - sag,
@@ -68,7 +71,7 @@ def scutes(hull: SolidBuilder, points: list[Vec3], size: float) -> None:
 
 
 def stone(hull: SolidBuilder, at: Vec3, size: float, turn: float = 0) -> None:
-    """A mossy river stone set into a hull: a squat, faceted lump."""
+    """Add a mossy river stone set into a hull: a squat, faceted lump."""
     hull.cylinder(size, size * 0.55, 5, SWAMP.stone, Placement(at, turn), size * 0.6)
     hull.cylinder(
         size * 0.6,
@@ -85,8 +88,11 @@ def barrel_to(
     dims: list[float],
     kind: str = "gun",
 ) -> None:
-    """A barrel along +Z ending at the muzzle `tip` (playfield, `boss_point`), `[radius, length]`:
-    its dark tube, a charge light at its mouth, and the muzzle's mark (of `kind`)."""
+    """Add a barrel along +Z ending at the muzzle `tip` (playfield, `boss_point`).
+
+    `dims` is `[radius, length]`. Its dark tube, a charge light at its mouth, and the muzzle's mark
+    (of `kind`).
+    """
     x, y, z = boss_point(tip[0], tip[1], tip[2])
     radius = dims[0]
     length = dims[1]

@@ -1,4 +1,8 @@
-"""Abstract menu actions every input device is translated into (UI-INPUT-01, UI-INPUT-02):
+# Copyright (c) 2026 Renaud Guillon
+"""Abstract menu actions every input device is translated into (UI-INPUT-01, UI-INPUT-02).
+
+The actions are:
+
 - `back`: Back on the menu screens (Backspace, gamepad B); nothing in a level (UI-PAUSE-05);
 - `cancel`: the Escape key: Back on the menu screens, pause in a level (UI-PAUSE-01);
 - `pause`: pauses a level, or resumes it from the pause menu (P, gamepad Start / Select, the
@@ -10,12 +14,14 @@ An action is a plain string; `MENU_ACTIONS` lists them all.
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import TypeGuard  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import TypeGuard
 
 MenuAction = str
 MenuDirection = str
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Every menu action, e.g. to validate actions coming from outside (test API).
 MENU_ACTIONS = ["up", "down", "left", "right", "confirm", "back", "cancel", "pause", "resume"]
@@ -46,10 +52,10 @@ __pragma__("noskip")
 
 
 def is_menu_direction(action: MenuAction) -> TypeGuard[MenuDirection]:
-    """True for the four selection moves."""
+    """Return True for the four selection moves."""
     return action in DIRECTIONS
 
 
 def is_menu_action(value: object) -> TypeGuard[MenuAction]:
-    """True when `value` is one of `MENU_ACTIONS`."""
+    """Return True when `value` is one of `MENU_ACTIONS`."""
     return isinstance(value, str) and value in MENU_ACTIONS
