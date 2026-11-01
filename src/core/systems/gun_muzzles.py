@@ -1,4 +1,4 @@
-"""Where a gun's shots leave from (phase 7 review)
+"""Where a gun's shots leave from (ENM-21)
 
 A gun fires from its muzzles: the one furthest along each shot's way, the ones side by side in
 turn, as the camera sees them.
@@ -131,7 +131,7 @@ def fire_aimed(
     count_and_spacing: tuple[int, float],
     fire: Callable[[float, float, float], None],
 ) -> None:
-    """Fires a fan of `count` shots `spacing_deg` apart around the player's direction (GD-44),
+    """Fires a fan of `count` shots `spacing_deg` apart around the player's direction (ENM-20),
     each from the muzzle facing its way and aimed from where it leaves.
     """
     count, spacing_deg = count_and_spacing

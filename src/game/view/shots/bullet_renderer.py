@@ -1,5 +1,5 @@
-"""Minigun tracers (P03-R01, phase 5 review): white-hot streaks cooling to red along their tail,
-flickering, and a burst of sparkling metal sparks where they hit.
+"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to red along their tail,
+flickering, and a burst of sparkling metal sparks where they hit (GFX-FX-02).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -28,7 +28,7 @@ def _shot_renderer(sync: Any, dispose: Any) -> Any:
 
 
 def create_bullet_renderer(scene: Any) -> ShotRenderer:
-    """The minigun's tracers and sparks, drawn in `scene`."""
+    """The minigun's tracers and the sparks of their hits (GFX-FX-01), drawn in `scene`."""
     look = SHOT_LOOK.bullet
     template = additive_template("bullet", build_tracer(look.colors, look.rows), scene)
     pool = NodePool(lambda i: template.clone("bullet-" + str(i)))
@@ -44,6 +44,8 @@ def create_bullet_renderer(scene: Any) -> ShotRenderer:
             shot = frame.projectiles[i]
             if not shot:
                 continue
+            # `depth` behind the playfield plane: the ship is drawn over a bullet leaving it
+            # (GFX-SHOT-02).
             mesh.position.set(shot.x, shot.y, look.depth)
             mesh.rotation.z = -shot.heading
             # Grows out of the muzzle, then keeps its length; its width flickers.

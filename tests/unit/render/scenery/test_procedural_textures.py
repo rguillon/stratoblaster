@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/procedural_textures.py`."""
+"""Unit tests of `src/render/scenery/procedural_textures.py` (GFX-TERRAIN-07, PERF-11)."""
 
 import json
 from types import SimpleNamespace

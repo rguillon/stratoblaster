@@ -1,4 +1,4 @@
-"""Lowers an element's font size until it fits its parent"""
+"""Lowers an element's font size until it fits its parent (UI-LOOK-13: the logo fits)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

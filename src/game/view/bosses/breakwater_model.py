@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-2: the Breakwater Logical pixels,
+"""MB-BREAKWATER-01 to MB-BREAKWATER-04, 1-2: the Breakwater Logical pixels,
 nose +Z, Y up (towards the camera).
 """
 
@@ -80,8 +80,9 @@ PLATE = [
 
 
 def _draw_body(p: Any) -> None:
-    """The crab's body (P16-R05): a wide mantle under a domed, plated shell, ribs over its back, an
-    orange vein along its spine, eyes on stalks at its front over its mouth (the bow gun)."""
+    """The crab's body (MB-BREAKWATER-02): a wide mantle under a domed, plated shell, ribs over its
+    back, an orange vein along its spine, eyes on stalks at its front over its mouth (the bow
+    gun)."""
     deck = HULL_Y[2]
     mantle(p, BARGE_HULL, [HULL_Y[0], deck], F.sinew, ORANGE)
     neon_band(p.neon, BARGE_HULL, [-1.4, -0.4], [1.02, 1.02], ORANGE)
@@ -139,7 +140,7 @@ def _bow_gun(p: Any, at: Vec3) -> None:
 
 
 def _ram_plate(p: Any, at: Vec3) -> None:
-    """The ram plate (P07-R05, P16-R05): no weapon, the crab's thick bony brow shield, a V of
+    """The ram plate (MB-BREAKWATER-03): no weapon, the crab's thick bony brow shield, a V of
     grafted armour on it, orange veins along its edge."""
     top = 9
     p.flesh.bevel_slab(PLATE, [-3, 1, top - 1.5], [1.5, 4], F.bone, Placement(at), F.sinew)
@@ -152,8 +153,8 @@ def _ram_plate(p: Any, at: Vec3) -> None:
 
 
 def _mortar(p: Any, at: Vec3) -> None:
-    """A mortar (P07-R05, P16-R05): a swollen barnacle growth on the flank under its turret, a spawn
-    sac beside it."""
+    """A mortar (MB-BREAKWATER-03): a swollen barnacle growth on the flank under its turret, a
+    spawn sac beside it."""
     r = radius_of(BREAKWATER.stats.parts, 1, 13)
     growth(p, offset(at, 0, HULL_Y[2] - 2, 0), r, ORANGE, {"flesh": F.graphite, "height": 0.4})
     sac(p, offset(at, sign_of(at[0]) * 8, HULL_Y[2], 6), 3.5, F.slate, {"stretch": 0.7})
@@ -179,9 +180,9 @@ def _mortar_turret(p: Any, at: Vec3) -> None:
 
 
 def build_breakwater(scene: Any) -> Any:
-    """P07-R05, P16-R05: the Breakwater, a huge armoured shore crab with orange veins: a wide plated
-    shell over jointed legs, a bony V-shaped ram plate over its snout, a gun in its mouth and two
-    barnacle mortars on its flanks."""
+    """MB-BREAKWATER-01, MB-BREAKWATER-04: the Breakwater, a huge armoured shore crab with orange
+    veins: a wide plated shell over jointed legs, a bony V-shaped ram plate over its snout, a gun
+    in its mouth and two barnacle mortars on its flanks."""
 
     def core(p: Any) -> None:
         _draw_body(p)

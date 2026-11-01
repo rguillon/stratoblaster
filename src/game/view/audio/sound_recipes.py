@@ -1,4 +1,4 @@
-"""The building blocks of the game's sound effects (P12-R09): envelopes, tones and recipes."""
+"""The building blocks of the game's sound effects (AUD-SFX-01): envelopes, tones and recipes."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -42,7 +42,7 @@ class ExplosionSize:
 def flatten_layers(items: list[Any]) -> list[ToneLayer]:
     """The layers of `items`, where an item is a layer or a list of layers (a recipe such as
     `explosion(...)`). Transcrypt drops the `*` spread in a list literal, so recipes are
-    flattened here instead."""
+    flattened here instead (ENG-155)."""
     layers: list[ToneLayer] = []
     for item in items:
         if isinstance(item, ToneLayer):
@@ -80,9 +80,9 @@ def tone(
 
 
 def minigun(burst: MinigunBurst) -> list[ToneLayer]:
-    """A minigun burst (reviewer, 2026-10-26): rounds `gap` apart, each a gritty crack over a
-    short thump. A volley's burst lasts until the next volley (the gun fires 8 a second), so
-    holding fire rattles on without a break: BRRRT."""
+    """A minigun burst (AUD-SFX-02, reviewer 2026-10-26): rounds `gap` apart, each a gritty crack
+    over a short thump. A volley's burst lasts until the next volley (the gun fires 8 a second),
+    so holding fire rattles on without a break: BRRRT."""
     layers: list[ToneLayer] = []
     for i in range(burst.rounds):
         delay = i * burst.gap
@@ -119,8 +119,8 @@ DEBRIS_PITCHES = [2400, 1700, 3100, 2000, 2700, 1500, 3500, 2200]
 
 
 def explosion(size: ExplosionSize, delay: float = 0) -> list[ToneLayer]:
-    """A realistic explosion (reviewer, 2026-10-26), layer by layer: a few milliseconds of
-    broadband crack (the shock front), a body of noise whose brightness closes fast (the
+    """A realistic explosion (AUD-SFX-04, reviewer 2026-10-26), layer by layer: a few milliseconds
+    of broadband crack (the shock front), a body of noise whose brightness closes fast (the
     fireball), a sub-bass thump, a low rumble rolling on for the big ones, and debris crackling
     after it. Most of its energy is low, so a busy wave does not turn into a hiss. Starts `delay`
     seconds in."""

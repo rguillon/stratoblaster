@@ -41,13 +41,13 @@ def test_luminance_of_missing_data_is_black() -> None:
     assert luminance_at(image, 0, 0) == pytest.approx(0.0)
 
 
-def test_p14_r08_box_contrast_of_white_on_black_is_twenty_one() -> None:
+def test_dev_api_09_box_contrast_of_white_on_black_is_twenty_one() -> None:
     frame = _image(2, 1, [WHITE, WHITE])
     background = _image(2, 1, [BLACK, BLACK])
     assert box_contrast(frame, background, PixelBox(0.5, 0, 0.5)) == pytest.approx(21.0)
 
 
-def test_p14_r08_box_contrast_is_one_when_the_box_is_off_the_image() -> None:
+def test_dev_api_09_box_contrast_is_one_when_the_box_is_off_the_image() -> None:
     image = _image(2, 1, [WHITE, WHITE])
     assert box_contrast(image, image, PixelBox(50, 50, 2)) == pytest.approx(1.0)
 

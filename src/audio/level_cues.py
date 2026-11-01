@@ -1,5 +1,5 @@
-"""The engine's sound cues (P12-R09): what happened in a level
-step that a game may give a sound. `fire:<weaponId>` (a volley of a projectile weapon),
+"""The engine's sound cues (AUD-ENGINE-09): what happened in a level step that a game may give
+a sound (the events of AUD-SFX-01). `fire:<weaponId>` (a volley of a projectile weapon),
 `beam-start:<weaponId>` (a beam starts; `beam:<weaponId>` names its looping hum), `weapon-switch`,
 `weapon-up`, `enemy-bullet`, `enemy-missile`, `laser-warning`, `laser-fire`, `hit`, `hit-blocked`,
 `player-hit`, `blast-small`, `blast-large`, `part-destroyed`, `boss-destroyed`, `life-lost`,
@@ -8,7 +8,7 @@ step that a game may give a sound. `fire:<weaponId>` (a volley of a projectile w
 
 Audio only reads the core's state, it never changes it (ENG-11). The sets and maps of
 bullets and lasers are lists compared by identity (`is`), as Transcrypt has no object-keyed
-collections.
+collections (ENG-159).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -48,9 +48,9 @@ def _contains(items: list[Any], item: Any) -> bool:
 
 
 class LevelCues:
-    """Turns the state of a `LevelRun` after each step into sound cues (P12-R09), by comparing it
-    with the step before: new shots, impacts, blasts, hits, bonuses picked up. One cue of a kind
-    per step: a volley of shots is one sound.
+    """Turns the state of a `LevelRun` after each step into sound cues (AUD-ENGINE-09), by comparing
+    it with the step before: new shots, impacts, blasts, hits, bonuses picked up. One cue of a
+    kind per step: a volley of shots is one sound.
     """
 
     def __init__(self, large_blast_radius: float) -> None:
@@ -82,7 +82,7 @@ class LevelCues:
         return cues
 
     def _player_shots(self, run: LevelRun, cues: list[SoundCue]) -> None:
-        """A volley's first shot sounds it (its streams fire one after the other)."""
+        """A volley's first shot sounds it (its streams fire one after the other, AUD-SFX-03)."""
         shots = run.shots
         if shots.volleys != self._volleys:
             _add(cues, "fire:" + shots.weapon.id, run.ship.x)

@@ -30,7 +30,7 @@ def test_opt_returns_the_option_or_the_default_when_it_is_left_out():
     assert opt({"size": 0}, "size", 5) == 0
 
 
-def test_p16_r01_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor():
+def test_enm_40_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor():
     parts = _Parts()
     reactor_sac(parts, [1, 2, 3], 2.0, [0.5, 0.5, 0.5])
     assert parts.reactors == [([1, 2, 3], 2.0)]
@@ -39,7 +39,7 @@ def test_p16_r01_reactor_sac_swells_flesh_round_its_nozzle_and_hooks_the_reactor
     assert len(parts.flesh.geometry.indices) > 0
 
 
-def test_p16_r01_reactor_sac_runs_a_glowing_vein_from_its_back():
+def test_enm_40_reactor_sac_runs_a_glowing_vein_from_its_back():
     parts = _Parts()
     glow = [0.5, 1.0, 0.5]
     reactor_sac(parts, [0, 0, 0], 2.0, glow)
@@ -49,7 +49,7 @@ def test_p16_r01_reactor_sac_runs_a_glowing_vein_from_its_back():
     assert colors[0:3] == pytest.approx(glow)
 
 
-def test_p16_r01_reactor_sac_takes_its_flesh_and_vein_length_when_given():
+def test_enm_40_reactor_sac_takes_its_flesh_and_vein_length_when_given():
     parts = _Parts()
     short = _Parts()
     reactor_sac(parts, [0, 0, 0], 1.0, [1, 1, 1], vein_length=2)
@@ -58,7 +58,7 @@ def test_p16_r01_reactor_sac_takes_its_flesh_and_vein_length_when_given():
     assert max(parts.vein.geometry.positions[2::3]) < max(short.vein.geometry.positions[2::3])
 
 
-def test_p16_r01_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacing():
+def test_gfx_art_14_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacing():
     builder = SolidBuilder()
 
     class _Eyes:
@@ -72,7 +72,7 @@ def test_p16_r01_eyes_are_lit_organs_spread_across_at_by_the_count_and_spacing()
     assert 4.8 <= max(xs) - min(xs) <= 5.0
 
 
-def test_p16_r01_eyes_default_to_two_eyes_spaced_one_point_four_apart():
+def test_gfx_art_14_eyes_default_to_two_eyes_spaced_one_point_four_apart():
     builder = SolidBuilder()
 
     class _Eyes:

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/road_paint.py`."""
+"""Unit tests of `src/render/scenery/road_paint.py` (GFX-ROAD-20)."""
 
 import math
 

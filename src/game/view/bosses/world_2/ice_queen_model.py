@@ -1,4 +1,4 @@
-"""The Ice Queen (P08-R10, 2-5)
+"""The Ice Queen (MB-ICE-QUEEN-01 to MB-ICE-QUEEN-06, 2-5)
 
 Logical pixels, nose +Z (down the screen), Y up (towards the camera); +X is the screen's left.
 """
@@ -134,7 +134,7 @@ def draw_fuselage(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a slender body of violet flesh, ribbed, closing to a bone needle at the nose.
+    # MB-ICE-QUEEN-02: a slender body of violet flesh, ribbed, closing to a bone needle at the nose.
     flesh.loft(
         FIGHTER_SECTION,
         FUSELAGE,
@@ -163,7 +163,7 @@ def draw_wings(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:
-        # P16-R05: swept membrane wings stretched on bone struts, too long to flutter.
+        # MB-ICE-QUEEN-02: swept membrane wings stretched on bone struts, too long to flutter.
         if s > 0:
             wing: Any = WING
             canard: Any = CANARD
@@ -201,7 +201,8 @@ def draw_wings(p: EnemyParts) -> None:
 
 
 def draw_nose_guns(p: EnemyParts) -> None:
-    """The twin crystal cannons by the nose, their tips at the design's muzzles."""
+    """The twin crystal cannons by the nose (MB-ICE-QUEEN-03), their tips at the design's
+    muzzles."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -217,12 +218,13 @@ def draw_nose_guns(p: EnemyParts) -> None:
 
 
 def draw_spire(p: EnemyParts) -> None:
-    """The crystal spire over the core, glowing at its tip where its spiral leaves from."""
+    """The crystal spire over the core, glowing at its tip where its spiral leaves from
+    (MB-ICE-QUEEN-03)."""
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    # P16-R05: the spire is a crystal grown out of a swollen gland on the back.
+    # MB-ICE-QUEEN-02: the spire is a crystal grown out of a swollen gland on the back.
     organ(flesh, 7, 6, ICE_FLESH.membrane, Placement([0, 4, 0]), 0.45)
     flesh.lathe(SPIRE, 6, FROST.ice, Placement([0, SPIRE_BASE, 0]))
     neon.ring(5.7, 0.7, 6, VIOLET, Placement([0, SPIRE_BASE + 0.4, 0]))
@@ -243,11 +245,12 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def draw_ring(p: EnemyParts) -> None:
-    """The crown ring (P08-R10): a frosted rim lit violet, held by three spokes from the hub."""
+    """The crown ring (MB-ICE-QUEEN-03; it turns, MB-ICE-QUEEN-06): a frosted rim lit violet,
+    held by three spokes from the hub."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a crown of bone and sinew around the body, metal only at its hub.
+    # MB-ICE-QUEEN-03: a crown of bone and sinew around the body, metal only at its hub.
     flesh.lathe(RIM, 18, ICE_FLESH.sinew, None, False)
     flesh.ring(43.4, 0.25, 18, ICE_FLESH.bone, Placement([0, 12, 0]))
     neon.ring(44.8, 0.7, 18, VIOLET, Placement([0, 10.2, 0]))
@@ -321,11 +324,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_ice_queen(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Ice Queen, a slender crystal interceptor (3.5 L) with pale blue and violet
-    neon: swept frosted wings, a crystal spire over the core, and a crown ring turning over it
-    carrying three crystal shards. P16-R05: now a living ice-wraith of violet flesh, membrane
-    wings on bone and crystals grown through it, its crown of bone carrying three crystals grown
-    from flesh sacs.
+    """MB-ICE-QUEEN-01, MB-ICE-QUEEN-04: the Ice Queen, a slender crystal interceptor (3.5 L) with
+    pale blue and violet neon: swept frosted wings, a crystal spire over the core, and a crown ring
+    turning over it carrying three crystal shards. MB-ICE-QUEEN-02: now a living ice-wraith of
+    violet flesh, membrane wings on bone and crystals grown through it, its crown of bone carrying
+    three crystals grown from flesh sacs.
     """
     return build_boss_model(
         ICE_QUEEN,

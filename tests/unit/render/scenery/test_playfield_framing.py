@@ -1,4 +1,5 @@
-"""Unit tests of `src/render/scenery/playfield_framing.py`."""
+"""Unit tests of `src/render/scenery/playfield_framing.py` (GFX-CAM-03, GFX-CAM-05,
+GAME-SCREEN-04)."""
 
 import math
 

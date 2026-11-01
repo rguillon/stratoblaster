@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/terrain_geometry.py`."""
+"""Unit tests of `src/render/scenery/terrain_geometry.py` (GFX-TERRAIN-09, GFX-TERRAIN-14)."""
 
 import math
 from types import SimpleNamespace
@@ -110,6 +110,7 @@ def _height_on(tris: list[Any], x: float, z: float) -> float:
 
 
 def test_d212_the_trees_stand_on_the_mesh_drawn() -> None:
+    """GFX-PROP-13."""
     # The terrain of a chunk on the multiples of 8, and the ground a tree cell samples there (cell
     # 50 less the margin of 8, as `PropPlacer._trees` asks): off the grid, with the mesh's cell.
     cell = 8

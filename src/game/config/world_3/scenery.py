@@ -1,12 +1,12 @@
-"""World 3 (P09-R03; reworked at the reviewer's request, 2026-10-27)
+"""World 3 (WLD-3-03; reworked at the reviewer's request, 2026-10-27)
 
 The five levels are one journey from the great works World 2 ended on, along canals and docks,
 through the workers' quarters and the terraces, to garden suburbs and villages of small houses (no
-tower). The changes are slow, as in World 2: the concrete gives way to grass in small steps, the
-sections blend over World 2's long stretch (`TRANSITION`), and each new building group first comes
-in mixed with the one before it. Each level starts on the very section the previous one ended on. No
-water (reviewer, 2026-10-28): no sea, canal, river or pond. Each level's `seconds` add up to 300
-(P09-R02).
+tower). The changes are slow, as in World 2 (WLD-3-05): the concrete gives way to grass in small
+steps (WLD-3-06), the sections blend over World 2's long stretch (`TRANSITION`), and each new
+building group first comes in mixed with the one before it. Each level starts on the very section
+the previous one ended on (WLD-3-04). No water (reviewer, 2026-10-28): no sea (WLD-3-09), canal,
+river or pond. Each level's `seconds` add up to 300 (WLD-3-02).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -29,7 +29,7 @@ RIVER_PATH = record({"x": -40, "amplitude": 120, "wavelength": 2400})
 
 
 def river(half_width: float) -> Any:
-    """The river of `half_width` at its bed, between grassy banks."""
+    """The river of `half_width` at its bed, between grassy banks (a channel, GFX-WATER-08)."""
     return record({"path": RIVER_PATH, "halfWidth": half_width, "wall": 45, "floor": -8})
 
 
@@ -57,7 +57,8 @@ LANES = record({"rows": [35, 60], "columns": [40, 80], "links": 0.7})
 
 
 def section(name: str, seconds: float, extra: Any) -> Any:
-    """A section of World 3: factories and yards, with `extra` set over the defaults."""
+    """A section of World 3: factories and yards on a street grid (WLD-3-13), no tree (WLD-3-12),
+    with `extra` set over the defaults."""
     return merge(
         record(
             {
@@ -123,8 +124,8 @@ VILLAGE_EDGE = section(
     },
 )
 
-# 3-1, Canal works: from the great works 2-5 ended on, foundries along a canal, rail yards, the
-# canal docks and factory yards, to the first workshops.
+# 3-1, Canal works (LVL-3-1-02): from the great works 2-5 ended on, foundries along a canal, rail
+# yards, the canal docks and factory yards, to the first workshops.
 CANAL_WORKS = [
     merge(GREAT_WORKS, {"seconds": 40, "groups": [G.heavyIndustry]}),
     section(
@@ -168,8 +169,8 @@ CANAL_WORKS = [
     CANAL_WORKSHOPS,
 ]
 
-# 3-2, Docklands: warehouses on the canal docks, the workshops' streets, old mills, then the first
-# workers' flats.
+# 3-2, Docklands (LVL-3-2-02): warehouses on the canal docks, the workshops' streets, old mills,
+# then the first workers' flats.
 DOCKLANDS = [
     merge(CANAL_WORKSHOPS, {"seconds": 40}),
     section(
@@ -212,8 +213,8 @@ DOCKLANDS = [
     FIRST_FLATS,
 ]
 
-# 3-3, Workers' quarter: blocks of flats, terraced streets, a park along the canal, brick terraces,
-# then the first houses by the river.
+# 3-3, Workers' quarter (LVL-3-3-02): blocks of flats, terraced streets, a park along the canal,
+# brick terraces, then the first houses by the river.
 WORKERS_QUARTER = [
     merge(FIRST_FLATS, {"seconds": 40}),
     section(
@@ -258,8 +259,8 @@ WORKERS_QUARTER = [
     SUBURB_EDGE,
 ]
 
-# 3-4, Suburbs: garden suburbs, houses along the river, a park, leafy avenues, then the first garden
-# villages.
+# 3-4, Suburbs (LVL-3-4-02): garden suburbs, houses along the river, a park, leafy avenues, then
+# the first garden villages.
 SUBURBS = [
     merge(SUBURB_EDGE, {"seconds": 40}),
     section(
@@ -322,8 +323,8 @@ GARDEN_VILLAGE_END = section(
     },
 )
 
-# 3-5, Garden villages: a village green with its ponds, allotments and greenhouses, cottages along
-# the river, then garden villages of small houses to the end.
+# 3-5, Garden villages (LVL-3-5-02): a village green with its ponds, allotments and greenhouses,
+# cottages along the river, then garden villages of small houses to the end.
 GARDEN_VILLAGES = [
     merge(VILLAGE_EDGE, {"seconds": 40}),
     section(
@@ -379,13 +380,13 @@ def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
     )
 
 
-# 3-1 (P09-R03): the canal works, from the great works 2-5 ended on.
+# 3-1 (LVL-3-1-01): the canal works, from the great works 2-5 ended on.
 LEVEL_3_1 = level(["world-3-1", "3-1 Canal works", 3101], 70, CANAL_WORKS)
-# 3-2: the docklands, starting on the canal workshops 3-1 ended on.
+# 3-2 (LVL-3-2-01): the docklands, starting on the canal workshops 3-1 ended on.
 LEVEL_3_2 = level(["world-3-2", "3-2 Docklands", 3201], 60, DOCKLANDS)
-# 3-3: the workers' quarter, starting on the first flats 3-2 ended on.
+# 3-3 (LVL-3-3-01): the workers' quarter, starting on the first flats 3-2 ended on.
 LEVEL_3_3 = level(["world-3-3", "3-3 Workers' quarter", 3301], 55, WORKERS_QUARTER)
-# 3-4: the suburbs, starting on the suburb edge 3-3 ended on.
+# 3-4 (LVL-3-4-01): the suburbs, starting on the suburb edge 3-3 ended on.
 LEVEL_3_4 = level(["world-3-4", "3-4 Suburbs", 3401], 60, SUBURBS)
-# 3-5: the garden villages, starting on the village edge 3-4 ended on.
+# 3-5 (LVL-3-5-01): the garden villages, starting on the village edge 3-4 ended on.
 LEVEL_3_5 = level(["world-3-5", "3-5 Garden villages", 3501], 60, GARDEN_VILLAGES)

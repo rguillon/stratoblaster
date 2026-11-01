@@ -1,7 +1,8 @@
-"""The game's sound effects (P12-R09, GD-71), all
-synthesised, keyed by the engine's cue (`SoundCue`). Priorities (P12-R10): the player's and the
-bombs' sounds highest, the enemy shots lowest. The player's gun shots and the laser hum are mixed
-quieter than hits and explosions.
+"""The game's sound effects (AUD-SFX-01), all
+synthesised, keyed by the engine's cue (`SoundCue`), made to fit the darksynth music and to suit
+a child (AUD-SFX-07). Priorities (AUD-SFX-05): the player's and the bombs' sounds highest, the
+enemy shots lowest. The player's gun shots and the laser hum are mixed quieter than hits and
+explosions (AUD-SFX-06).
 
 `sound(...)` takes its optional fields (`positional`, `loop`, `hold`) as a dict, as the
 The layers take a partial object.
@@ -27,7 +28,7 @@ from game.view.audio.sound_recipes import (  # noqa: E402
     tone,
 )
 
-# Priorities (P12-R10).
+# Priorities (AUD-SFX-05).
 PRIORITY = {
     "enemyShot": 0,
     "enemy": 1,
@@ -265,7 +266,8 @@ HITS = {
     ),
 }
 
-# Explosion sizes (D-108): enemies small and large, boss parts and the player, the bomb and bosses.
+# Explosion sizes (AUD-SFX-04, D-108): enemies small and large, boss parts and the player, the
+# bomb and bosses.
 BLAST_SMALL = ExplosionSize(0.3, 2600, 120, 0, 3)
 BLAST_LARGE = ExplosionSize(0.6, 3000, 90, 0.9, 5)
 BLAST_HUGE = ExplosionSize(1.1, 3400, 70, 2, 8)

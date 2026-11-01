@@ -1,4 +1,4 @@
-"""P10-R11, 4-1: the Cinder Crab, the Black sands' mini boss ().
+"""4-1: the Cinder Crab, the Black sands' mini boss (specs/bosses/mini/4-1-cinder-crab.md).
 
 Offsets in px from the boss's centre, X right and Y up (its claws reach down the screen, at -Y).
 Each claw hangs on an arm that swings from its shoulder (D-061), and its outer finger opens and
@@ -24,16 +24,16 @@ ORANGE = bullet("orange", 205)
 RED = bullet("red", 200)
 PURPLE = bullet("purple", 195)
 MAGENTA = bullet("magenta", 210)
-# The mortar's shells: slow, big balls of slag the player sidesteps (P10-R11).
+# The mortar's shells: slow, big balls of slag the player sidesteps (MB-CINDER-CRAB-10).
 SLAG = bullet("orange", 120, 7)
 
 # Where a left claw (at -X) is: its arm's shoulder on the carapace, its wrist (the finger's hinge),
 # the claw's middle (the part's centre). The right claw mirrors them.
 CRAB_ARM = record({"shoulder": [-16, -14], "wrist": [-24, -40], "claw": [-24, -36]})
 
-# How the arms and fingers swing (D-061): an arm `armDeg` either way every `armPeriod` seconds, the
-# two out of step; a finger, drawn half open, `fingerDeg` either way (shut to wide open) every
-# `fingerPeriod` seconds, snapping faster than the arms.
+# How the arms and fingers swing (D-061, MB-CINDER-CRAB-06): an arm `armDeg` either way every
+# `armPeriod` seconds, the two out of step; a finger, drawn half open, `fingerDeg` either way (shut
+# to wide open) every `fingerPeriod` seconds, snapping faster than the arms.
 CRAB_SWING = record({"armDeg": 9, "armPeriod": 4.2, "fingerDeg": 13, "fingerPeriod": 1.5})
 
 
@@ -79,14 +79,16 @@ CRAB_DOME = [[0, -2, 15.5]]
 CRAB_MORTAR_AT = [0, 24]
 
 # 4-1: a wide, low crab-ship of soot-black armour, orange neon and molten seams, with two claws
-# that open and close (P10-R11). The claws fire aimed spreads and shield the core; the back mortar
-# lobs slow, big slag; the core's dome fires rings, a spiral once alone. The ground slows (x0.5).
+# that open and close (MB-CINDER-CRAB-01). The claws fire aimed spreads and shield the core; the
+# back mortar lobs slow, big slag; the core's dome fires rings, a spiral once alone. The ground
+# slows (x0.5).
 _CINDER_CRAB = record(
     {
         "id": "cinder-crab",
-        # Angry after each destroyed part (D-063), heat 9.5: World 4 goes on from World 3's 9, up to
-        # 14.
+        # Angry after each destroyed part (D-063, MB-CINDER-CRAB-12), heat 9.5: World 4 goes on
+        # from World 3's 9, up to 14.
         "rage": rage.curtain(9.5, "orange", "red"),
+        # Its core and parts, their health, and its points (MB-CINDER-CRAB-08, MB-CINDER-CRAB-15).
         "stats": stats(
             record(
                 {
@@ -118,6 +120,7 @@ _CINDER_CRAB = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-CINDER-CRAB-07).
         "stopFraction": 0.72,
         "sway": {"amplitude": 65, "period": 7.5},
         "bob": {"amplitude": 7, "period": 3.6},
@@ -127,6 +130,8 @@ _CINDER_CRAB = record(
             "claw-right": {"gun": mirror(CRAB_PALM_GUN)},
             "mortar": {"gun": CRAB_MORTAR},
         },
+        # The claws' spreads in every stage (MB-CINDER-CRAB-09), then the core's rings per stage
+        # (MB-CINDER-CRAB-11).
         "stages": stages(
             [
                 volley.aimed("claw-left", 2.6, 3, 13, RED, 0.8),
@@ -150,8 +155,9 @@ _CINDER_CRAB = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its hidden weapons (boss transformations, D-224, MB-CINDER-CRAB-13): at transformation 1 its
+# flank armour bursts off, baring a dark metal frame, and a pair of gatling turrets unfold
+# (MB-CINDER-CRAB-14).
 CINDER_CRAB = with_weapons(
     _CINDER_CRAB,
     [

@@ -1,5 +1,5 @@
-"""How well what is drawn stands out from what is behind it (phase 14, P14-R08). Pixels are RGBA
-sRGB bytes, four per pixel, row by row."""
+"""How well what is drawn stands out from what is behind it (the readability probe, DEV-API-09).
+Pixels are RGBA sRGB bytes, four per pixel, row by row."""
 
 import math
 
@@ -80,7 +80,7 @@ def box_contrast(frame: Pixels, background: Pixels, box: PixelBox) -> float:
 
 
 def brightest_but(image: Pixels, share: float) -> float:
-    """The luminance only `share` (0..1) of the image's pixels are brighter than.
+    """The luminance only `share` (0..1) of the image's pixels are brighter than (GFX-READ-01).
 
     The luminances are kept as 64-bit floats (a 32-bit store would round the result by about
     1e-7 relative at most).

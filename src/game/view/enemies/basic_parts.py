@@ -1,4 +1,4 @@
-"""P16-R03: the pieces the basic kinds share (grafted gun barrels, a pair of fluttering membrane
+"""ENM-35: the pieces the basic kinds share (grafted gun barrels, a pair of fluttering membrane
 wings, sinews and eyes) Logical pixels, nose +Z, Y up."""
 
 import math
@@ -27,7 +27,7 @@ QUARTER = math.pi / 2
 
 
 def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:  # noqa: PLR0917
-    """A small gun barrel grafted on (P16-R01: metal), from `at` along `yaw` (0: to the nose),
+    """A small gun barrel grafted on (ENM-36: metal), from `at` along `yaw` (0: to the nose),
     `length` long, a charge light at its muzzle (phase 7 review), marked there."""
 
     def along(d: float) -> list[float]:
@@ -66,8 +66,8 @@ def wing_draw(  # noqa: PLR0917
 
 
 def wing_pair(parts: Any, shape: Any, glow: Rgb) -> None:
-    """P16-R01, P16-R07: a pair of membrane wings, each fluttering from its root: a `membrane` skin
-    spread from the root to its tips, a lean `bone` strut out to each tip, and either a steady
+    """GFX-ART-13, ENM-42: a pair of membrane wings, each fluttering from its root: a `membrane`
+    skin spread from the root to its tips, a lean `bone` strut out to each tip, and either a steady
     neon light on it or a vein along its leading strut."""
     root = shape["root"]
     tips = shape["tips"]
@@ -87,7 +87,7 @@ def sinew(parts: Any, start: Vec3, end: Vec3, bow: Vec3, radius: float) -> None:
 
 
 def eye_pair(parts: Any, at: Vec3, gap: float, size: float, glow: Rgb) -> None:
-    """A pair of small glowing eyes, `gap` apart across `at` (P16-R01: lit as veins): 8 triangles
+    """A pair of small glowing eyes, `gap` apart across `at` (ENM-37: lit as veins): 8 triangles
     each."""
     bead = [[0, -size * 0.5], [size, 0], [0, size * 0.5]]
     for s in SIDES:

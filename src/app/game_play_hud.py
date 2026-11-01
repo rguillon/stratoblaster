@@ -1,4 +1,4 @@
-"""The in-game HUD of a level (P07-R02, P11-R02, R06).
+"""The in-game HUD of a level (specs/ui/hud.md).
 
 The HUD's frame is computed from the level run; the widgets are `ui/` classes.
 """
@@ -18,7 +18,7 @@ __pragma__("noskip")
 
 
 def boss_bar_frame(run: Any, texts: Any) -> BossBarFrame | None:
-    """The boss health bar of `run`'s fight (P07-R02), if a boss is being fought."""
+    """The boss health bar of `run`'s fight (UI-HUD-13, UI-HUD-16), if a boss is being fought."""
     bar = run.fights.bar
     if bar is None:
         return None
@@ -32,8 +32,8 @@ def hud_frame(
     texts: Any,
     high_score: int = 0,
 ) -> HudFrame:
-    """What the HUD shows of `run` (phase 6 review, P07-R02, P11-R02); `max_health` stands for no
-    hull, `high_score` is the saved one.
+    """What the HUD shows of `run` (UI-HUD-02 to UI-HUD-06, the score: GAME-SCORE-07);
+    `max_health` stands for no hull, `high_score` is the saved one.
     """
     shots = run.shots
     track = run.track
@@ -64,8 +64,8 @@ def create_hud(
     texts: Any,
     on_bomb: Any,
 ) -> GameHud:
-    """The in-game HUD in `parent`, for the ship named `ship`, with the game's `texts`; `on_bomb`
-    is the touch bomb button's.
+    """The in-game HUD in `parent` (one bar at the bottom, taking no input: UI-HUD-01, UI-HUD-11),
+    for the ship named `ship`, with the game's `texts`; `on_bomb` is the touch bomb button's.
     """
     hud_texts = HudTexts(
         texts.hudHealth,
@@ -80,8 +80,9 @@ def create_hud(
 
 
 class StatsShown:
-    """Whether the debug tile is shown (D-212): as the player last chose with its key, else in
-    debug mode only. One for the whole game, so the choice holds from level to level."""
+    """Whether the debug tile is shown (DEV-PERF-05, D-212): as the player last chose with its
+    key, else in debug mode only. One for the whole game, so the choice holds from level to
+    level."""
 
     def __init__(self) -> None:
         self.chosen: bool | None = None

@@ -1,15 +1,16 @@
-"""The wave scripts of World 4 (P10-R09, R10)
+"""The wave scripts of World 4 (WLD-4-18, WLD-4-19)
 
 Composed as Worlds 2 and 3's (`compose_beats`, D-067): a beat every `gap` seconds shrinking over the
 level, each the next phrase of the level's cycle, its groups growing over the level; the World 1
 filler (D-051) fills the lulls. A phrase is `[kind, groups, seconds between groups, side, position
-(0..1), spread]`. Every level uses the eleven first kinds and the five veteran kinds; the elite
-kinds come in two in 4-1, then one more a level (P05-R24, D-090).
+(0..1), spread]`. Every level uses the eleven first kinds and the five veteran kinds (ENM-WASP-12,
+ENM-MORTAR-11, ENM-MINELAYER-11, ENM-MANTIS-14, ENM-PHANTOM-14); the elite kinds come in two in
+4-1, then one more a level (WLD-4-17, D-090).
 """
 
 from game.config.record import record
 
-# 4-1: every kind, Weavers and Strafers low over the garden town.
+# 4-1 (LVL-4-1-04): every kind, Weavers and Strafers low over the garden town.
 PLAN_4_1 = record(
     {
         "from": 4,
@@ -32,7 +33,7 @@ PLAN_4_1 = record(
             ["bulwark", 1, 0, "top", 0.5],
             ["carrier", 1, 0, "top", 0.4],
             ["gnat", 3, 1.6, "top", 0.3, 0.4],
-            # P05-R24: a new kind.
+            # The veteran kinds, then the first two elite kinds (ENM-HYDRA-13, ENM-ORBITER-14).
             ["wasp", 2, 1.6, "top", 0.4, 0.3],
             ["mortar", 1, 0, "top", 0.6],
             ["minelayer", 1, 0, "left", 0.74],
@@ -44,7 +45,7 @@ PLAN_4_1 = record(
     }
 )
 
-# 4-2: every kind, Splitters and Spinners over the inner town.
+# 4-2 (LVL-4-2-04): every kind, Splitters and Spinners over the inner town.
 PLAN_4_2 = record(
     {
         "from": 4,
@@ -69,7 +70,7 @@ PLAN_4_2 = record(
             ["gnat", 3, 1.5, "top", 0.3, 0.4],
             ["splitter", 3, 1.5, "top", 0.6, -0.3],
             ["spinner", 2, 2, "top", 0.5, 0.3],
-            # P05-R24: a new kind.
+            # The veteran kinds, then the elite kinds, the Scissor new (ENM-SCISSOR-16).
             ["wasp", 2, 1.6, "top", 0.6, -0.3],
             ["mortar", 1, 0, "top", 0.4],
             ["minelayer", 1, 0, "right", 0.74],
@@ -82,7 +83,7 @@ PLAN_4_2 = record(
     }
 )
 
-# 4-3: every kind, Lancers and Rocketeers along the river quays of midtown.
+# 4-3 (LVL-4-3-04): every kind, Lancers and Rocketeers along the river quays of midtown.
 PLAN_4_3 = record(
     {
         "from": 4,
@@ -105,7 +106,7 @@ PLAN_4_3 = record(
             ["strafer", 3, 1.4, "left", 0.8],
             ["hornet", 5, 0.6, "top", 0.1, 0.2],
             ["gnat", 3, 1.5, "top", 0.3, 0.4],
-            # P05-R24: a new kind.
+            # The veteran kinds, then the elite kinds, the Hive new (ENM-HIVE-14).
             ["wasp", 2, 1.6, "top", 0.3, 0.3],
             ["mortar", 1, 0, "top", 0.65],
             ["minelayer", 1, 0, "left", 0.74],
@@ -119,7 +120,7 @@ PLAN_4_3 = record(
     }
 )
 
-# 4-4: every kind, Carriers and Bulwarks between the towers.
+# 4-4 (LVL-4-4-04): every kind, Carriers and Bulwarks between the towers.
 PLAN_4_4 = record(
     {
         "from": 4,
@@ -141,7 +142,7 @@ PLAN_4_4 = record(
             ["strafer", 3, 1.4, "right", 0.8],
             ["hornet", 6, 0.55, "top", 0.1, 0.2],
             ["gnat", 3, 1.4, "top", 0.2, 0.3],
-            # P05-R24: a new kind.
+            # The veteran kinds, then the five elite kinds, the Juggernaut new (ENM-JUGGERNAUT-16).
             ["wasp", 2, 1.6, "top", 0.7, -0.3],
             ["mortar", 1, 0, "top", 0.35],
             ["minelayer", 1, 0, "right", 0.74],
@@ -156,7 +157,7 @@ PLAN_4_4 = record(
     }
 )
 
-# 4-5: every kind, the heaviest mixes of the game so far.
+# 4-5 (LVL-4-5-04): every kind, the heaviest mixes of the game so far.
 PLAN_4_5 = record(
     {
         "from": 4,
@@ -180,7 +181,7 @@ PLAN_4_5 = record(
             ["carrier", 1, 0, "top", 0.6],
             ["hornet", 7, 0.45, "top", 0.1, 0.2],
             ["gnat", 5, 1.1, "top", 0.2, 0.3],
-            # P05-R24: a new kind.
+            # The veteran kinds, then the five elite kinds.
             ["wasp", 3, 1.4, "top", 0.3, 0.4],
             ["mortar", 2, 2, "top", 0.3, 0.4],
             ["minelayer", 1, 0, "left", 0.74],

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/model_animation.py`."""
+"""Unit tests of `src/render/model_animation.py` (GFX-ART-11)."""
 
 import pytest
 from helpers.render_fakes import FakeNode, FakeWeakMap, patch_babylon

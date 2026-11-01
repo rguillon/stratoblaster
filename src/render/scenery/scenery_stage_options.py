@@ -1,4 +1,4 @@
-"""Options of a `SceneryStage` (P04, P08-R12)"""
+"""Options of a `SceneryStage` (phase 4)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -56,7 +56,7 @@ class SceneryStageConfig:
 class SceneryStageOptions:
     """What a `SceneryStage` is built from: the `screen`, the `camera` look, the `level`, its
     `look`, the `prop_models` (by kind), the scenery `kit` factory, the stage `config` and the
-    debug `atmosphere` choices (P08-R12, optional)."""
+    debug `atmosphere` choices (DEV-OPT-04, DEV-OPT-05, optional)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

@@ -1,8 +1,8 @@
 """Object literals of the game's config tables (`src/game/config/`).
 
 A TS object literal is a plain object whose fields are read as `CONFIG.field`. `record` keeps that
-shape at run time (a Transcrypt dict is a plain JavaScript object) and types it as `Any` for mypy,
-because the config's own types live in `core/` and are not repeated for every table.
+shape at run time (a Transcrypt dict is a plain JavaScript object) and types it as `Any` for mypy
+(ENG-14), because the config's own types live in `core/` and are not repeated for every table.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -14,8 +14,8 @@ from typing import Any  # noqa: E402
 __pragma__("noskip")
 
 
-# CPython only (the unit tests): Transcrypt skips these, and the browser's objects read their fields
-# as attributes already.
+# CPython only (the unit tests, ENG-160): Transcrypt skips these, and the browser's objects read
+# their fields as attributes already.
 __pragma__("skip")
 
 

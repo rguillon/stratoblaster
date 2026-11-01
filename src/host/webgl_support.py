@@ -21,7 +21,8 @@ __pragma__("noskip")
 def has_webgl2(create_canvas: Callable[[], CanvasLike]) -> bool:
     """Returns true when the browser can create a WebGL2 context (ENG-06)."""
     try:
-        # `!= None` is JavaScript's `!= null`: a context of `undefined` counts as missing too.
+        # `!= None` is JavaScript's `!= null`: a context of `undefined` counts as missing too
+        # (ENG-161).
         return create_canvas().getContext("webgl2") != None  # noqa: E711
     except:  # noqa: E722 (a failure while creating the canvas means no WebGL2)
         return False

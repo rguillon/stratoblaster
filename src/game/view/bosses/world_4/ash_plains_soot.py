@@ -1,5 +1,6 @@
-"""P10-R11: the ash and heavy industry on the 4-2 bosses (the Ash Wraith and the Geyser Rig):
-drifts of grey ash on their plates, soot streaks, glowing molten seams (GD-61, World 4: dark
+"""MB-ASH-WRAITH-02, FB-GEYSER-RIG-02: the ash and heavy industry on the 4-2 bosses (the Ash
+Wraith and the Geyser Rig): drifts of grey ash on their plates, soot streaks, glowing molten
+seams (BOSS-50, World 4: dark
 metal with neon, plus soot, heat glow, molten seams).
 Logical pixels, nose +Z, Y up.
 """

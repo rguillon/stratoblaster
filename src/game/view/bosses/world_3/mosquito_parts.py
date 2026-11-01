@@ -1,4 +1,5 @@
-"""P09-R09, 3-4: the Mosquito's parts (its buzzing wings and its proboscis) and its swamp growth.
+"""MB-MOSQUITO-03, MB-MOSQUITO-05, 3-4: the Mosquito's parts (its buzzing wings and its
+proboscis) and its swamp growth.
 Logical pixels, nose +Z, Y up (towards the
 camera)."""
 
@@ -32,7 +33,7 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Mosquito's pink neon.
+# The Mosquito's pink neon (MB-MOSQUITO-06).
 MOSQUITO_PINK = BOSS_LOOK.neon["mosquito"]
 # Swamp moss on its back and the dark, oily sheen of its wing membranes (World 3 growth).
 # D-231: clear greens, not olive (no khaki with the enemies' yellow and green).
@@ -47,7 +48,8 @@ def moss(hull: SolidBuilder, points: list[Vec3], size: float = 2.4) -> None:
         hull.cylinder(r, r * 0.5, 5, MOSS, Placement(points[i], i * 0.7), r * 0.45)
 
 
-# The left wing seen from above (model +X), from its root's leading edge out and back.
+# The left wing seen from above (model +X), from its root's leading edge out and back
+# (MB-MOSQUITO-01).
 WING = table(
     [
         [10, 1],
@@ -84,7 +86,8 @@ NACELLE = table(
 
 
 def wing(p: EnemyParts, at: Vec3) -> None:
-    """A wing around its pod's centre `at` (P09-R09), drawn on its buzzing joint: a long, thin
+    """A wing around its pod's centre `at` (MB-MOSQUITO-03), drawn on its buzzing joint
+    (MB-MOSQUITO-04): a long, thin
     membrane veined with pink neon, and under it the fan pod with its two barrels."""
     hull = p.hull
     flesh = p.flesh
@@ -92,8 +95,8 @@ def wing(p: EnemyParts, at: Vec3) -> None:
     charge = p.charge
     muzzle = p.muzzle
     s = sign_of(at[0])
-    # P16-R05: a living membrane wing on a bone spar, its fan pod a grafted metal nacelle in a
-    # flesh sheath.
+    # MB-MOSQUITO-03: a living membrane wing on a bone spar, its fan pod a grafted metal nacelle in
+    # a flesh sheath.
     flesh.bevel_slab(
         sided(WING, s),
         [WING_Y - 0.3, WING_Y, WING_Y + 0.5],
@@ -131,11 +134,12 @@ SOCKET = table([[5.5, 0], [6, 2], [4.5, 4.5], [0, 5]])
 
 
 def proboscis(p: EnemyParts, at: Vec3) -> None:
-    """The proboscis around its centre `at` (P09-R09): a ringed socket the needle turns in."""
+    """The proboscis around its centre `at` (MB-MOSQUITO-03): a ringed socket the needle turns
+    in."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a fleshy mouthpart sheath, metal blades grafted either side of it.
+    # MB-MOSQUITO-03: a fleshy mouthpart sheath, metal blades grafted either side of it.
     flesh.lathe(SOCKET, 8, F.slate, Placement(offset(at, 0, -1, 0), math.pi / 8))
     neon.ring(6.1, 0.6, 8, MOSQUITO_PINK, Placement(offset(at, 0, 1, 0), math.pi / 8))
     for s in [-1, 1]:
@@ -151,8 +155,8 @@ NEEDLE = table([[2.6, 0], [2.2, 3], [1.2, 6], [0.9, 14], [0.4, 19]])
 
 
 def needle(p: EnemyParts, at: Vec3) -> None:
-    """The proboscis's needle, turning on its socket (P09-R09, D-073: it aims its laser at the
-    player during the warning line): a long, thin spike ringed in pink, its point glowing as the
+    """The proboscis's needle, turning on its socket (MB-MOSQUITO-03, D-073: it aims its laser at
+    the player during the warning line): a long, thin spike ringed in pink, its point glowing as the
     laser charges."""
     hull = p.hull
     neon = p.neon

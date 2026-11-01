@@ -1,8 +1,9 @@
-"""The first two levels of World 1 (P06-R05, reworked at the reviewer's request, 2026-10-26)
+"""The first two levels of World 1 (WLD-1-01, WLD-1-05; reworked at the reviewer's request,
+2026-10-26)
 
 Open sea with small green islands and reefs, then a green coast that gives way to meadows, groves
 and farmland. Heights in world units above the sea level (0). Each section's `seconds` add up to 240
-(P06-R04).
+(WLD-1-03).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -53,7 +54,7 @@ def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
             "seconds": seconds,
             "relief": smooth(base, amplitude, 520, 5),
             "buildingDensity": 0,
-            # D-212: trees on the islands' grass.
+            # D-212: woods on the islands' grass (LVL-1-1-07).
             "treeDensity": 1,
             "trees": LIVE_TREES,
             "surface": {"lush": 0.7},
@@ -62,7 +63,8 @@ def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
     )
 
 
-# The green coast where 1-1 ends and 1-2 begins: a sandy shore, then grass.
+# The green coast where 1-1 ends and 1-2 begins (WLD-1-08): a sandy shore, then grass
+# (LVL-1-1-05).
 GREEN_COAST = record(
     {
         "name": "green coast",
@@ -87,7 +89,7 @@ def green(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(24, 10, 600),
                 "buildingDensity": 0.5,
-                # D-212: woods on the grass (its share sets how much: see `FORESTS`).
+                # D-212: woods on the grass (WLD-1-14; its share sets how much: see `FORESTS`).
                 "treeDensity": 1,
                 "trees": LIVE_TREES,
                 "surface": {"lush": 1},
@@ -109,18 +111,21 @@ FARMLAND = green(
     },
 )
 
-# 1-1, Open sea: sea almost all the way, small green islands and reefs, a coast at the end.
+# 1-1, Open sea (LVL-1-1-04): sea almost all the way, small green islands and reefs, a coast at
+# the end.
 OPEN_SEA = [
     water("open sea", 35, -70, 30),
     water("reefs", 40, -24, 48),
     water("islands", 45, -12, 50),
     water("deep water", 30, -70, 30),
     water("archipelago", 60, -10, 50),
-    # The first coast comes in the last 30 s: a green shore with a fishing village.
+    # The first coast comes in the last 30 s: a green shore with a fishing village, 1-1's only
+    # buildings (LVL-1-1-06).
     GREEN_COAST,
 ]
 
-# 1-2, Green coast: beaches and bays along a coast road, then meadows, groves and farms.
+# 1-2, Green coast (LVL-1-2-04): beaches and bays along a coast road, then meadows, groves and
+# farms (LVL-1-2-06), all wooded (LVL-1-2-07).
 GREEN_COAST_LEVEL = [
     merge(GREEN_COAST, {"name": "coast road", "seconds": 40}),
     merge(
@@ -159,7 +164,8 @@ GREEN_COAST_LEVEL = [
     FARMLAND,
 ]
 
-# 1-1 (P06-R05): open sea, the first coast in the last 30 s.
+# 1-1 (LVL-1-1-01, LVL-1-1-02): open sea, the first coast in the last 30 s, at World 1's fastest
+# ground speed (WLD-1-04); a sea level (LVL-1-1-05) and one main road only (LVL-1-1-06).
 LEVEL_1_1 = record(
     {
         "id": "world-1-1",
@@ -174,7 +180,8 @@ LEVEL_1_1 = record(
     }
 )
 
-# 1-2 (P06-R05): starts on the green coast where 1-1 ended; the sea is gone after 110 s.
+# 1-2 (LVL-1-2-01, LVL-1-2-02): starts on the green coast where 1-1 ended; the sea is gone after
+# 110 s (WLD-1-06, LVL-1-2-05).
 LEVEL_1_2 = record(
     {
         "id": "world-1-2",

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/node_pool.py`."""
+"""Unit tests of `src/render/node_pool.py` (ENG-19)."""
 
 from typing import Any
 

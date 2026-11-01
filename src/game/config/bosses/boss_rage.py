@@ -1,4 +1,4 @@
-"""The bosses' angry patterns (phase 7 review)
+"""The bosses' angry patterns (phase 7 review, BOSS-28)
 
 The bullet hell a boss fires from its core for `BOSS_TIMING.rageSeconds` after the pause that
 follows each destroyed part. `heat` goes from 0 (1-1's mini boss) to 4.5 (1-5's final boss): about

@@ -46,6 +46,7 @@ def _config_boss_ids() -> set[str]:
     return ids
 
 
+# ENG-163: a known CPython-only gap is a strict xfail with its reason, never a skip.
 def _with_reason(boss_id: str, reason: str):
     return pytest.param(
         boss_id,
@@ -55,6 +56,7 @@ def _with_reason(boss_id: str, reason: str):
 
 
 def test_every_boss_design_has_its_model_and_no_model_is_orphaned():
+    """BOSS-01: every boss design has its own model, and every model a design."""
     assert set(BOSS_MODELS) == _config_boss_ids()
     assert len(BOSS_MODELS) == 40
 
@@ -67,6 +69,7 @@ def test_every_boss_design_has_its_model_and_no_model_is_orphaned():
     ],
 )
 def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
+    """BOSS-47, and each boss file's parts requirement (e.g. MB-REEF-WARDEN-03)."""
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     assert capture.design.id == boss_id
     design_parts = sorted(part.id for part in capture.design.stats.parts)
@@ -88,6 +91,7 @@ def test_each_boss_model_draws_every_part_its_design_has(monkeypatch, boss_id):
     ],
 )
 def test_each_boss_model_builds_geometry_for_its_body_and_parts(monkeypatch, boss_id):
+    """BOSS-47: each model builds geometry for its body and parts."""
     capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
     drawings = drawings_of(capture)
     assert "body" in drawings
@@ -102,7 +106,7 @@ def test_each_boss_model_builds_geometry_for_its_body_and_parts(monkeypatch, bos
             assert not any(math.isnan(v) for v in coords), f"{boss_id} {name}: NaN in geometry"
 
 
-def test_p07_r05_the_scorpion_model_has_jointed_arms_and_a_jaw_on_each_side(monkeypatch):
+def test_mb_scorpion_03_the_scorpion_model_has_jointed_arms_and_a_jaw_on_each_side(monkeypatch):
     capture = probe_builder(monkeypatch, BOSS_MODELS["scorpion"])
     limbs = sorted(capture.drawing["limbs"].keys())
     assert "shoulder-left" in limbs and "shoulder-right" in limbs

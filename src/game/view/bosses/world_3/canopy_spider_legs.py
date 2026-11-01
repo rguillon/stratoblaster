@@ -1,6 +1,6 @@
-"""P09-R09, 3-2: the Canopy Spider's legs: an upper leg on each hip and a lower leg on each knee
-(moving limbs, D-061), stepping in turn, and the gun pods at their feet (its parts). Logical pixels,
-nose +Z, Y up (towards the camera)."""
+"""FB-CANOPY-SPIDER-03, 3-2: the Canopy Spider's legs: an upper leg on each hip and a lower leg on
+each knee (moving limbs, D-061), stepping in turn, and the gun pods at their feet (its parts).
+Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
@@ -35,7 +35,7 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Spider's red neon (its eyes, the lines along its legs).
+# The Spider's red neon (its eyes, the lines along its legs; FB-CANOPY-SPIDER-06).
 SPIDER_RED = BOSS_LOOK.neon["canopy-spider"]
 QUARTER = math.pi / 2
 
@@ -75,7 +75,8 @@ def upper_leg(leg: str) -> Any:
         points = leg_points(leg)
         hip = points[0]
         knee = points[1]
-        # P16-R06: a jointed leg of dark chitin over sinew, a metal knee joint grafted on.
+        # FB-CANOPY-SPIDER-03: a jointed leg of dark chitin over sinew, a metal knee joint grafted
+        # on.
         segment(flesh, [hip, knee], [3.4, 2.6], F.graphite, 6)
         segment(
             flesh,
@@ -99,7 +100,8 @@ def upper_leg(leg: str) -> Any:
 
 
 def lower_leg(leg: str) -> Any:
-    """`leg`'s lower leg, on its knee: a tapering shin dropping to its foot, a vine around it."""
+    """`leg`'s lower leg, on its knee: a tapering shin dropping to its foot, a vine around it
+    (FB-CANOPY-SPIDER-05)."""
 
     def draw(p: EnemyParts) -> None:
         hull = p.hull
@@ -135,7 +137,8 @@ def lower_leg(leg: str) -> Any:
 
 
 def leg_limbs() -> dict[str, Any]:
-    """The limbs of the four legs: an upper leg on each hip and a lower leg on each knee."""
+    """The limbs of the four legs (FB-CANOPY-SPIDER-03): an upper leg on each hip and a lower leg
+    on each knee."""
     limbs: dict[str, Any] = {}
     for leg in LEGS:
         limbs["hip-" + leg] = {"draw": upper_leg(leg)}
@@ -148,15 +151,16 @@ FOOT = table([[4, 0], [6.4, 1.6], [6, 4.4], [3.6, 6.6], [0, 7.2]])
 
 
 def leg_gun_pod(p: EnemyParts, at: Vec3) -> None:
-    """A leg's gun pod at its foot `at` (P09-R09): an armoured foot gripping the canopy with three
-    claws, a red ring around it, and a gun pointing forward that fires aimed spreads."""
+    """A leg's gun pod at its foot `at` (FB-CANOPY-SPIDER-04): an armoured foot gripping the canopy
+    with three claws, a red ring around it, and a gun pointing forward that fires aimed spreads."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     s = sign_of(at[0])
     foot = offset(at, 0, LEG_HEIGHT.foot - 3, 0)
-    # P16-R06: a swollen flesh foot gripping with bone claws, its gun a grafted metal pod.
+    # FB-CANOPY-SPIDER-04: a swollen flesh foot gripping with bone claws, its gun a grafted metal
+    # pod.
     p.flesh.lathe(FOOT, 7, F.slate, Placement(foot))
     gland(p, offset(foot, 0, 5.2, 0), 2, SPIDER_RED)
     neon.ring(6.5, 0.7, 7, SPIDER_RED, Placement(offset(foot, 0, 1.8, 0)))

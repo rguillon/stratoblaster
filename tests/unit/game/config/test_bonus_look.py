@@ -5,13 +5,13 @@ from game.config.bonus_look import BONUS_LOOK
 from game.config.readability import READABILITY
 
 
-def test_p11_r07_life_and_bomb_bonuses_have_their_own_look() -> None:
+def test_gfx_fx_12_life_and_bomb_bonuses_have_their_own_look() -> None:
     assert BONUS_LOOK.life is not None
     assert BONUS_LOOK.bomb is not None
     assert BONUS_LOOK.life != BONUS_LOOK.bomb
 
 
-def test_p11_r07_the_frame_is_inset_inside_the_bonus() -> None:
+def test_gfx_fx_11_the_frame_is_inset_inside_the_bonus() -> None:
     assert 0 < BONUS_LOOK.frameInset < 1
     assert BONUS_LOOK.size > 0
 
@@ -22,6 +22,7 @@ def _saturated(color: list[float]) -> bool:
 
 
 def test_d231_the_bonuses_colours_are_in_the_pickups_violet_family() -> None:
+    """GFX-ART-07, GFX-READ-04."""
     colours = [
         BONUS_LOOK.frame,
         BONUS_LOOK.chevrons,

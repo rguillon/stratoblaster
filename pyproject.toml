@@ -10,7 +10,7 @@ requires-python = ">=3.12,<3.13"
 # No runtime Python dependency: the browser runs Transcrypt's output (ENG-05).
 dependencies = []
 
-# uv installs the tools from uv.lock (P17-R01); Transcrypt is pinned (ENG-03).
+# uv installs the tools from uv.lock (ENG-04); Transcrypt is pinned (ENG-03).
 [dependency-groups]
 dev = [
     "transcrypt==3.9.5",
@@ -36,7 +36,8 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
 ignore = ["PLR0913"]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests assert on literal values: a magic number there is the expected value, not a constant.
+# Tests assert on literal values: a magic number there is the expected value, not a constant
+# (ENG-17).
 "tests/**" = ["PLR2004"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
@@ -64,7 +65,8 @@ mypy_path = ["src", "typings"]
 testpaths = ["tests/unit"]
 python_files = ["test_*.py"]
 pythonpath = ["src", "tests"]
-# importlib: source modules share basenames (game_play, outline, ...), so test modules must too.
+# importlib: source modules share basenames (game_play, outline, ...), so test modules must too
+# (ENG-49).
 addopts = "-q --import-mode=importlib"
 
 [tool.coverage.run]
@@ -90,14 +92,16 @@ fail_under = 70
 root_packages = ["core"]
 include_external_packages = true
 
-# The layering rule of ENG-11 for core/, checked by `make lint`, not just written down (P17-R04).
+# The layering rule of ENG-11 for core/, checked by `make lint`, not just written down (the game/
+# directions of ENG-142 have no contract yet).
 [[tool.importlinter.contracts]]
 name = "core/ is pure: no browser or DOM"
 type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = ["org", "browser"]
 # Each module below imports __pragma__ only as a compile-time marker for Transcrypt (it skips
-# the typing names and never touches the DOM). Any other import of org or browser fails `make lint`.
+# the typing names and never touches the DOM, ENG-153). Any other import of org or browser fails
+# `make lint`.
 ignore_imports = [
     "core.content.game_definition -> org",
     "core.content.game_level -> org",

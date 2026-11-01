@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""A cloud layer's material (P04-R03): a generated noise texture cut at a threshold set by the
+"""A cloud layer's material (GFX-SKY-11): a generated noise texture cut at a threshold set by the
 coverage.
 """
 
@@ -83,7 +83,7 @@ class CloudMaterialImpl:
         material = self.material
         self._params.set(state.coverage, state.opacity, look.softness, 1 / look.tileSize)
         self._offset.set(state.offset_x, state.offset_z)
-        # P08-R04: the clouds' colours follow the time of day, and fade into its haze.
+        # GFX-SKY-13: the clouds' colours follow the time of day, and fade into its haze.
         material.setColor3(
             "cloudColor", self._color.set(state.color[0], state.color[1], state.color[2])
         )
@@ -103,7 +103,7 @@ class CloudMaterialImpl:
 def create_cloud_material(
     scene: Any, look: Any, texture: Any, camera_position: Any
 ) -> CloudMaterialImpl:
-    """A cloud layer material (P04-R03): a generated noise texture cut at a threshold set by the
+    """A cloud layer material (GFX-SKY-11): a generated noise texture cut at a threshold set by the
     coverage, with soft edges, faded by the opacity and the fog. Drawn blended, without writing
     depth. `camera_position` is a function giving the camera's position."""
     material = new_glsl_material(

@@ -1,4 +1,5 @@
-"""P08-R10, 2-4: the Avalanche's drill arms, moving on their joints (D-061), and its drills Logical
+"""MB-AVALANCHE-03, 2-4: the Avalanche's drill arms, moving on their joints (MB-AVALANCHE-06,
+D-061), and its drills Logical
 pixels, nose +Z, Y up (towards the
 camera); the left arm is drawn at +X."""
 
@@ -45,7 +46,7 @@ from render.geometry.organic import organ  # noqa: E402
 from render.geometry.outline import hypot2  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
-# The Avalanche's yellow neon (P08-R10).
+# The Avalanche's yellow neon (MB-AVALANCHE-04).
 _AVALANCHE_NEON = BOSS_LOOK.neon["avalanche"]
 AVALANCHE_YELLOW = [1.0, 0.85, 0.1] if _AVALANCHE_NEON == None else _AVALANCHE_NEON  # noqa: E711
 
@@ -93,7 +94,7 @@ def segment(parts: EnemyParts, s: float, ends: Sequence[Flat], width: float) -> 
     b = ends[1]
     pa = [s * a[0], a[1]]
     pb = [s * b[0], b[1]]
-    # P16-R05: a muscle of flesh along the bone, an armour plate grafted on top of it.
+    # MB-AVALANCHE-03: a muscle of flesh along the bone, an armour plate grafted on top of it.
     flesh.bevel_slab(beam_outline(pa, pb, width), [0, 1.5, 4], [0.6, 1], ICE_FLESH.sinew)
 
     def inset(t: float) -> Flat:
@@ -161,8 +162,8 @@ def forearm(s: float) -> Callable[[EnemyParts], None]:
 
 
 def arm_limbs(side: str) -> dict[str, LimbDrawing]:
-    """The limbs of the arm on `side` (D-061): the upper arm on the shoulder, the forearm on the
-    elbow."""
+    """The limbs of the arm on `side` (MB-AVALANCHE-06, D-061): the upper arm on the shoulder, the
+    forearm on the elbow."""
     s = 1 if side == "left" else -1
     limbs: dict[str, LimbDrawing] = {}
     limbs["shoulder-" + side] = record({"draw": upper_arm(s)})
@@ -189,7 +190,7 @@ def flutes(hull: SolidBuilder, root: Vec3, color: Rgb) -> None:
 
 
 def drill(p: EnemyParts, at: Vec3) -> None:
-    """A drill (P08-R10), on its arm's elbow joint: a housing with a yellow neon collar, a
+    """A drill (MB-AVALANCHE-03), on its arm's elbow joint: a housing with a yellow neon collar, a
     fluted bit pointing down the screen, its gun along the outer side, frost on top and icicles
     under it."""
     hull = p.hull
@@ -198,7 +199,7 @@ def drill(p: EnemyParts, at: Vec3) -> None:
     s = _sign(at[0])
     axis = offset(at, 0, HOUSING.axis, 0)
     back = offset(axis, 0, 0, -HOUSING.length / 2)
-    # P16-R05: a swollen fist of flesh, the bit a metal graft driven into it.
+    # MB-AVALANCHE-03: a swollen fist of flesh, the bit a metal graft driven into it.
     organ(flesh, HOUSING.radius, 7, ICE_FLESH.graphite, Placement(back, 0, QUARTER), 0.8)
     flesh.cylinder(
         HOUSING.radius * 0.7,

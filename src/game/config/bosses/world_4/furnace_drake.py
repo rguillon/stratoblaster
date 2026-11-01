@@ -1,11 +1,11 @@
-"""P10-R11, 4-4: the Furnace Drake, the mini boss of the forge belt ().
+"""4-4: the Furnace Drake, the mini boss of the forge belt (specs/bosses/mini/4-4-furnace-drake.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two wings
 beat on their joints (D-061) and shield the core, each firing fans from the gun pod under it; its
 head sways on its neck and breathes a short flame of dense bullets at the player from its jaw. The
-stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core
-fires a spiral that changes at every stage, and twin spirals of its own, used by no earlier stage,
-once it stands alone. Health tuned for P10-R12.
+stage patterns are the agent's design (MB-FURNACE-DRAKE-11): the parts fire the same while they
+stand, the core fires a spiral that changes at every stage, and twin spirals of its own, used by no
+earlier stage, once it stands alone. Health (MB-FURNACE-DRAKE-08) tuned for WLD-4-22.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -24,7 +24,7 @@ __pragma__("noskip")
 RED = bullet("red", 215)
 ORANGE = bullet("orange", 210)
 PURPLE = bullet("purple", 205)
-# The flame's sparks: small, fast and close together.
+# The flame's sparks: small, fast and close together (MB-FURNACE-DRAKE-10).
 FLAME = bullet("orange", 240, 3)
 FLAME_EDGE = bullet("red", 215, 3)
 
@@ -46,7 +46,8 @@ DRAKE_MAW = [[0, -57, 4]]
 # The furnace heart on its back, its grate open to the sky (the core's spirals).
 DRAKE_HEART = [[0, 4, 14]]
 
-# How the wings beat (D-061): a wide, slow stroke, the two together, as a bird's.
+# How the wings beat (D-061, MB-FURNACE-DRAKE-06): a wide, slow stroke, the two together, as a
+# bird's.
 BEAT = record({"amplitudeDeg": 13, "period": 1.3, "phase": 0})
 # How the head sways on its neck, and the tail at the hips (out of step with each other).
 SWAY = record({"amplitudeDeg": 9, "period": 3.4, "phase": 0.1})
@@ -80,13 +81,16 @@ def flame(first: float) -> Any:
 
 
 # 4-4: a dragon-shaped gunship of soot-black plates with red and orange neon and a furnace glowing
-# in its chest (P10-R11); its two beating wings fire fans and shield the core, its jaw breathes
-# flame, its core spirals. The head hangs in front of the core, so it can always be shot.
+# in its chest (MB-FURNACE-DRAKE-01); its two beating wings fire fans and shield the core, its jaw
+# breathes flame, its core spirals. The head hangs in front of the core, so it can always be shot.
 _FURNACE_DRAKE = record(
     {
         "id": "furnace-drake",
-        # Angry after each destroyed part (phase 7 review, D-063): heat 12.5, on from World 3.
+        # Angry after each destroyed part (phase 7 review, D-063, MB-FURNACE-DRAKE-12): heat 12.5,
+        # on from World 3.
         "rage": rage.flower(12.5, "orange", "red"),
+        # Its core and parts, their health, and its points (MB-FURNACE-DRAKE-08,
+        # MB-FURNACE-DRAKE-15).
         "stats": stats(
             record(
                 {
@@ -112,6 +116,7 @@ _FURNACE_DRAKE = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-FURNACE-DRAKE-07).
         "stopFraction": 0.74,
         "sway": {"amplitude": 60, "period": 6.4},
         "bob": {"amplitude": 8, "period": 2.9},
@@ -121,6 +126,8 @@ _FURNACE_DRAKE = record(
             "wing-right": {"gun": mirror(DRAKE_WING_GUNS)},
             "jaw": {"gun": DRAKE_MAW},
         },
+        # In every stage the wings' fans (MB-FURNACE-DRAKE-09) and the jaw's flame; then the core's
+        # spirals per stage (MB-FURNACE-DRAKE-11).
         "stages": stages(
             concat(
                 [
@@ -143,8 +150,9 @@ _FURNACE_DRAKE = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of heavy cannons unfold.
+# Its hidden weapons (boss transformations, D-224, MB-FURNACE-DRAKE-13): at transformation 1 its
+# back plating bursts off, baring a dark metal frame, and a pair of heavy cannons unfold
+# (MB-FURNACE-DRAKE-14).
 FURNACE_DRAKE = with_weapons(
     _FURNACE_DRAKE,
     [

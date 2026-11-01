@@ -1,4 +1,5 @@
-"""P10-R11, 4-4: the Furnace Drake's parts (its beating wings and its jaw) and its forge colours.
+"""MB-FURNACE-DRAKE-03, MB-FURNACE-DRAKE-04, 4-4: the Furnace Drake's parts (its beating wings
+and its jaw) and its forge colours.
 Logical pixels, nose +Z, Y up (towards the
 camera).
 """
@@ -44,7 +45,8 @@ def _sign(v: float) -> float:
     return 0
 
 
-# The Drake's red neon, and the orange of its molten seams and flame (World 4: heat glow).
+# The Drake's red neon, and the orange of its molten seams and flame (World 4: heat glow;
+# MB-FURNACE-DRAKE-05).
 DRAKE_RED = _neon_or("furnace-drake", [1, 0.22, 0.05])
 DRAKE_ORANGE = [1.0, 0.55, 0.08]
 # Soot-blackened plates, and the dark, heat-stained hide of its wing membranes.
@@ -103,7 +105,7 @@ def _membrane(p: Any, s: float) -> None:
     """The membrane and its bones, lit along their length by molten seams."""
     hull = p.flesh
     neon = p.neon
-    # P16-R05: a membrane stretched on bone, veined molten.
+    # MB-FURNACE-DRAKE-03: a membrane stretched on bone, veined molten.
     hull.bevel_slab(sided(WING, s), [WING_Y - 0.4, WING_Y, WING_Y + 0.5], [0.3, 0.3], FL.membrane)
     for i in range(len(BONES)):
         a = BONES[i][0]
@@ -128,7 +130,8 @@ def _membrane(p: Any, s: float) -> None:
 
 
 def wing(p: Any, at: Vec3) -> None:
-    """A wing around its pod's centre `at` (P10-R11), drawn on its beating joint: a scalloped hide
+    """A wing around its pod's centre `at` (MB-FURNACE-DRAKE-03), drawn on its beating joint
+    (MB-FURNACE-DRAKE-06): a scalloped hide
     membrane on heavy bones, molten seams along them, and under it the gun pod with its two fan
     barrels."""
     hull = p.hull
@@ -193,7 +196,8 @@ def _skull(p: Any) -> None:
 
 
 def jaw(p: Any, at: Vec3) -> None:
-    """The drake's jaw around the head's centre `at` (P10-R11), on its swaying neck: the neck and
+    """The drake's jaw around the head's centre `at` (MB-FURNACE-DRAKE-04), on its swaying neck
+    (MB-FURNACE-DRAKE-06): the neck and
     skull, the open maw glowing as the flame charges, and the flame nozzle in its throat."""
     hull = p.hull
     neon = p.neon

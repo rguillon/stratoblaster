@@ -1,5 +1,5 @@
-"""Title screen (P01-R04): high score, game title,
-Start, Settings (P12-R04), Dev (D-199, with `?dev`), controls hint and version."""
+"""Title screen (UI-TITLE-01): high score, game title,
+Start, Settings (UI-SET-01), Dev (DEV-MENU-01, D-199, with `?dev`), controls hint and version."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -18,7 +18,8 @@ DEV_ENTRY = 2
 
 
 def render_title_screen(doc: Any, view: TitleView, handlers: ScreenHandlers) -> Any:
-    """Renders the title screen (P01-R04)."""
+    """Renders the title screen: the high score (UI-TITLE-03), the game's name (UI-TITLE-02), the
+    entries, the controls hint (UI-TITLE-05) and the version and commit (UI-TITLE-04)."""
     root = element(doc, "div", "menu-screen title-screen")
     score = element(doc, "div", "title-score")
     score.append(

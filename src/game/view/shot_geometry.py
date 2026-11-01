@@ -57,7 +57,7 @@ def build_glow_disc(segments: int, colors: Sequence[Rgb]) -> ColoredGeometry:
 def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -> ColoredGeometry:
     """A `build_glow_disc` bent into curled arms, like a spiral galaxy: each ring's radius swells
     on the arms and shrinks between them, and each ring is turned by `twist` × its radius, so the
-    arms curl outwards. Spun, it churns like plasma.
+    arms curl outwards. Spun, it churns like plasma (the enemy bullets' swirls, GFX-SHOT-10).
 
     `shape` holds `lobes` (number of arms, 0: a round disc), `depth` (0..1: how far the gaps
     between the arms reach, relative to the radius) and `twist` (radians each arm turns by, from
@@ -100,7 +100,8 @@ def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -
 def build_tracer(colors: Sequence[Rgb], rows: Sequence[dict[str, Any]]) -> ColoredGeometry:
     """A streak along Y, X in [-0.5, 0.5]: across its width `colors` go from the centre line to
     both edges (like `build_glow_bar`); along it, each row at Y = `at` multiplies them by `tint`.
-    With additive blending, a black row fades the streak out there."""
+    With additive blending, a black row fades the streak out there (the minigun tracer,
+    GFX-SHOT-01)."""
     if len(colors) < MIN_COLOURS or len(rows) < MIN_ROWS:
         _range_error("Need 2 colours and 2 rows")
     geo = _empty_geometry()

@@ -1,4 +1,4 @@
-"""Bodies of revolution around the Z axis ()."""
+"""Bodies of revolution around the Z axis (faceted lathes: GFX-ART-09)."""
 
 import math
 

@@ -1,6 +1,6 @@
 """How a boss's hidden weapon parts come out as it transforms (docs/superpowers/specs/2026-10-31-
-boss-armour-shedding-design.md, D-224): folded flat into the frame its shed armour leaves, each
-swings up on its hinge, rising, then slides its barrel out (overshooting and settling). Nothing
+boss-armour-shedding-design.md, BOSS-43, D-224): folded flat into the frame its shed armour leaves,
+each swings up on its hinge, rising, then slides its barrel out (overshooting and settling). Nothing
 grows from nothing.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.

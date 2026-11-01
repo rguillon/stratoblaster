@@ -17,10 +17,11 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# P15-R01, R02: tiles of 10 world units, sidewalks of 2 (a 6-unit roadway, two 3-unit lanes).
+# GFX-ROAD-08, GFX-ROAD-09: tiles of 10 world units, sidewalks of 2 (a 6-unit roadway, two 3-unit
+# lanes).
 TILE = record({"size": 10, "sidewalk": 2})
 
-# P15-R07: gap from a model to the edges of its tiles.
+# GFX-BLDG-03: gap from a model to the edges of its tiles.
 BUILDING_MARGIN = 0.5
 
 HOMES = [[1, 1], [2, 2]]
@@ -28,8 +29,10 @@ FLATS = [[1, 2], [2, 3]]
 CITY = [[2, 2], [3, 3]]
 WORKS = [[1, 1], [3, 4]]
 
-# The building groups of the districts and their models (P15-R09, footprint table). Each group has
-# `range`, its smallest and largest footprints either way round, and its `models`.
+# The building groups of the districts and their models (GFX-BLDG-08, footprint table; mixed
+# footprints, GFX-BLDG-07). Each group has `range`, its smallest and largest footprints either way
+# round, and its `models`. The worlds pick theirs from them (WLD-1-13, WLD-2-13, WLD-3-07,
+# WLD-4-07).
 TILE_GROUPS = record(
     {
         "heavyIndustry": {
@@ -234,7 +237,7 @@ TILE_GROUP_IDS = [
     "downtown",
 ]
 
-# P15-R09: the lots, for the tiles no building fits, in every world.
+# GFX-BLDG-11: the lots, for the tiles no building fits, in every world.
 LOT_MODELS = [
     model("carPark", 1, 2),
     model("yard", 1, 1),
@@ -269,7 +272,7 @@ TILE_MODELS = unique_by_id(all_models())
 
 
 def tile_kind(m: Any, weight: float) -> Any:
-    """The placement rule of a model made for the grid (P15-R07: scale 1, its tiles)."""
+    """The placement rule of a model made for the grid (GFX-BLDG-03: scale 1, its tiles)."""
     w = m.tiles[0]
     d = m.tiles[1]
     return record(
@@ -289,5 +292,5 @@ def tile_kinds(group_id: str, weight: float = 1) -> list[Any]:
     return [tile_kind(m, weight / len(models)) for m in models]
 
 
-# P15-R08: the lots of every world.
+# GFX-BLDG-05, GFX-BLDG-11: the lots of every world, filling the free tiles.
 LOT_KINDS = [tile_kind(m, 1) for m in LOT_MODELS]

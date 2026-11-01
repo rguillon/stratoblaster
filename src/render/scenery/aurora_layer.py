@@ -1,4 +1,4 @@
-"""The aurora of a scenery stage (P08-R04, 2-5 at night): slow green and violet curtains over the
+"""The aurora of a scenery stage (GFX-SKY-17, 2-5 at night): slow green and violet curtains over the
 scene, on a sheet high above the ground.
 """
 
@@ -42,7 +42,7 @@ __pragma__("noskip")
 
 
 class AuroraLayer:
-    """An aurora (P08-R04): slow green and violet curtains added over the scene from a sheet high
+    """An aurora (GFX-SKY-17): slow green and violet curtains added over the scene from a sheet high
     above the ground, faint near the camera and strongest in the far haze at the top of the
     screen. Shown only while the atmosphere has one; it never flashes."""
 

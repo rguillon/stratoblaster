@@ -1,10 +1,12 @@
-"""P10-R11, 4-4's final boss: the Foundry Ark, fought over the forge belt ().
+"""4-4's final boss: the Foundry Ark, fought over the forge belt
+(specs/bosses/final/4-4-foundry-ark.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 3 final bosses (P07-R04, D-055): its parts fire the same while they
-stand, its blast furnace (the core) fires something new at every stage (slag blobs bursting into
-rings among them), and spirals and rings of its own, used by no earlier stage, once it stands
-alone. Its core always drops a bonus (P07-R07). Health tuned for P10-R12.
+patterns as for the World 3 final bosses (FB-FOUNDRY-ARK-13, D-055): its parts fire the same while
+they stand, its blast furnace (the core) fires something new at every stage (slag blobs bursting
+into rings among them), and spirals and rings of its own, used by no earlier stage, once it stands
+alone. Its core always drops a bonus (FB-FOUNDRY-ARK-20). Health (FB-FOUNDRY-ARK-09) tuned for
+WLD-4-22.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -32,7 +34,8 @@ __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-FOUNDRY-ARK-20,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -42,11 +45,12 @@ MAGENTA = bullet("magenta", 205)
 PURPLE = bullet("purple", 200)
 # A glob of slag poured from the furnace: slow and big, it bursts into a ring on its way down.
 SLAG = bursting("orange", 115, 7, [1.1, 9, bullet("red", 195)])
-# The molten metal a destroyed crucible spills: a ring of bullets (as the Dam Breaker's tanks).
+# The molten metal a destroyed crucible spills: a ring of bullets (as the Dam Breaker's tanks,
+# FB-FOUNDRY-ARK-12).
 SPILL = bullet("orange", 185)
 
-# Where its parts stand (P10-R11): the rail cannons on the outriggers, the chimney row on the
-# foredeck, the missile battery on the bow, the crucibles aft either side of the furnace.
+# Where its parts stand (FB-FOUNDRY-ARK-09): the rail cannons on the outriggers, the chimney row on
+# the foredeck, the missile battery on the bow, the crucibles aft either side of the furnace.
 ARK_PARTS = record(
     {"rail": [72, -12], "chimneys": [0, -50], "battery": [0, -82], "crucible": [60, 42]}
 )
@@ -69,17 +73,19 @@ CX = ARK_PARTS.crucible[0]
 CY = ARK_PARTS.crucible[1]
 
 # 4-4: a huge flying foundry of sooty iron under orange neon, molten seams glowing between its
-# plates; two rail cannons on turrets aim lasers and, with the chimney row, shield the blast furnace
-# at its heart; a missile battery on the bow; two glowing crucibles aft that spill into rings of
-# bullets when destroyed. The battery hangs in front of the chimneys and the crucibles stand clear
-# of the furnace, so every part can be shot.
+# plates (FB-FOUNDRY-ARK-01); two rail cannons on turrets aim lasers and, with the chimney row,
+# shield the blast furnace at its heart; a missile battery on the bow; two glowing crucibles aft
+# that spill into rings of bullets when destroyed. The battery hangs in front of the chimneys and
+# the crucibles stand clear of the furnace, so every part can be shot.
 _FOUNDRY_ARK = record(
     {
         "id": "foundry-ark",
-        # Angry after each destroyed part (phase 7 review): heat 13, on from World 3.
+        # Angry after each destroyed part (phase 7 review, FB-FOUNDRY-ARK-15): heat 13, on from
+        # World 3.
         "rage": concat(
             rage.curtain(13, "orange", "red", 0.5), rage.spirals(13, "red", "orange", 0.5)
         ),
+        # Its core and parts, their health, and its points (FB-FOUNDRY-ARK-09).
         "stats": stats(
             record(
                 {
@@ -102,6 +108,7 @@ _FOUNDRY_ARK = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-FOUNDRY-ARK-08).
         "stopFraction": 0.75,
         "sway": {"amplitude": 28, "period": 12},
         "bob": {"amplitude": 5, "period": 5.5},
@@ -115,6 +122,8 @@ _FOUNDRY_ARK = record(
             "rail-right": {"laser": ARK_RAIL, "turret": [RX, RY], "turretLaser": True},
             "battery": {"missile": ARK_CELLS},
         },
+        # In every stage the rails' lasers (FB-FOUNDRY-ARK-10) and the battery's missiles
+        # (FB-FOUNDRY-ARK-11); then the core's pattern per stage (FB-FOUNDRY-ARK-13).
         "stages": stages(
             [
                 volley.laser("rail-left", 6.5, 1.6, 2),
@@ -151,10 +160,11 @@ _FOUNDRY_ARK = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its wing
-# armour and its spine plating bursts off, baring a dark metal frame, and a pair of gatling turrets
-# and a drone hangar unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off
+# (FB-FOUNDRY-ARK-16), baring a dark metal frame, and a pair of gun batteries unfold
+# (FB-FOUNDRY-ARK-17); at transformation 2 its wing armour and its spine plating bursts off
+# (FB-FOUNDRY-ARK-18), baring a dark metal frame, and a pair of gatling turrets and a drone hangar
+# unfold (FB-FOUNDRY-ARK-19).
 FOUNDRY_ARK = with_weapons(
     _FOUNDRY_ARK,
     [

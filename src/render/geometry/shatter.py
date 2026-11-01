@@ -142,7 +142,7 @@ class Carve:
         self.heights = heights
 
     def holds(self, point: list[float]) -> bool:
-        """Whether the region holds `point` (x, y, z)."""
+        """Whether the region holds `point` (x, y, z), in a plain loop (ENG-157)."""
         if point[1] < self.heights[0] or point[1] > self.heights[1]:
             return False
         # The armour cut asks this of every corner: seconds of a level's load through `any`.

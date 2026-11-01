@@ -1,6 +1,6 @@
-"""Bosses (P07)
+"""Bosses (BOSS-07)
 
-Bosses are big enemies made of a core and destroyable parts (GD-46). Positions are playfield
+Bosses are big enemies made of a core and destroyable parts (BOSS-12). Positions are playfield
 logical pixels, X to the right, Y up. A boss faces down the screen and does not turn: its parts
 keep their offsets from its centre, unless they hang on one of its joints.
 
@@ -33,7 +33,7 @@ __pragma__("noskip")
 
 
 class BossPartSpec:
-    """A destroyable part of a boss (P07-R01): a turret, a pod, an armour plate..."""
+    """A destroyable part of a boss (BOSS-12): a turret, a pod, an armour plate..."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -51,14 +51,14 @@ class BossPartSpec:
     ) -> None:
         """`x` and `y` are its offset from the boss's centre (X right, Y up). `shields_core`: while
         this part is there, the core takes no damage. `drop_chance` is the chance (0..1) that it
-        drops a bonus when the player destroys it (P07-R07). `orbits`: whether it turns around the
+        drops a bonus when the player destroys it (BOSS-57). `orbits`: whether it turns around the
         boss's centre with `BossStats.spin` (e.g. on a turning ring). `joint`: the joint it hangs on
         (phase 7 review): it moves with it, see `BossStats.joints`. `reveal`: the transformation
         that reveals it (1 for the first); hidden until then, it cannot be hit, does not shield the
-        core and does not fire. None for a part there from the start. `retire`: the transformation
-        it leaves the fight at (D-228: another part takes over from it), from the moment it starts:
-        hidden from then on, it is not destroyed (the boss's stage does not change) and no longer
-        counts in its health. None for a part there to the end.
+        core and does not fire (BOSS-38). None for a part there from the start. `retire`: the
+        transformation it leaves the fight at (D-228: another part takes over from it), from the
+        moment it starts: hidden from then on, it is not destroyed (the boss's stage does not
+        change) and no longer counts in its health. None for a part there to the end.
         """
         self.id = id
         self.x = x
@@ -74,7 +74,7 @@ class BossPartSpec:
 
 
 class BossDeath:
-    """A boss's death (P07-R06): a blast every `every` seconds over its hull for `seconds`."""
+    """A boss's death (BOSS-19): a blast every `every` seconds over its hull for `seconds`."""
 
     def __init__(self, seconds: float, every: float) -> None:
         if not every > 0:
@@ -112,20 +112,22 @@ class BossStats(EnemyStats):
         """The optional fields come last:
 
         - `core_radius`: hit radius of the core.
-        - `ground_speed`: factor on the level's ground speed while it is fought (P07-R03).
-        - `stage_pause`: seconds it does not fire after one of its parts is destroyed (P07-R04).
-        - `rage_seconds`: seconds it is angry after that pause (phase 7 review): it fires its
+        - `ground_speed`: factor on the level's ground speed while it is fought (BOSS-03).
+        - `stage_pause`: seconds it does not fire after one of its parts is destroyed (BOSS-22).
+        - `rage_seconds`: seconds it is angry after that pause (BOSS-27): it fires its
           angry pattern (`Boss.update_rage`) instead of its stage's. Never angry when None.
         - `core_drop_chance`: chance its core drops a bonus when destroyed; the game's rule when
           None.
-        - `part_points`: points scored for each of its parts the player destroys (P11-R01); none
-          when None.
-        - `roll`: it rolls into its sideways moves (phase 7 review); it does not roll when None.
+        - `part_points`: points scored for each of its parts the player destroys
+          (GAME-SCORE-04); none when None.
+        - `roll`: it rolls into its sideways moves (BOSS-11); it does not roll when None.
         - `turrets`: the turrets of its pieces, by part id (`core` for the core's).
-        - `joints`: its moving limbs' joints, by id (phase 7 review).
+        - `joints`: its moving limbs' joints, by id (BOSS-33).
         - `transforms`: how many of its original parts (those not hidden) must be destroyed for
-          each of its transformations, in order (e.g. `[2, 4]`); it never transforms when None.
-        - `transform_seconds`: how long a transformation lasts: it neither fires nor takes damage.
+          each of its transformations (BOSS-36), in order (e.g. `[2, 4]`); it never transforms
+          when None.
+        - `transform_seconds`: how long a transformation lasts: it neither fires nor takes damage
+          (BOSS-37).
         - `transform_parts`: for each transformation, the parts (by id) whose destruction calls for
           it, all of them (D-228), in place of `transforms`; None to count parts.
         - `turns`: how far (radians, clockwise on screen) the whole boss turns during each of its
@@ -151,7 +153,7 @@ class BossStats(EnemyStats):
 
 
 class Boss(Enemy):
-    """Base of every boss (P07-R01, R04, GD-46): a core and destroyable parts that the player's
+    """Base of every boss (BOSS-12, BOSS-20): a core and destroyable parts that the player's
     shots hit one by one. It goes through stages, one more each time a part is destroyed, pausing
     its fire for `stage_pause` at each; it blows up over `death.seconds` once its core has no health
     left; after each pause it may be angry for `rage_seconds`. Concrete bosses (in the game) say how
@@ -163,6 +165,7 @@ class Boss(Enemy):
     blasts are over, and the enemy world then removes it as destroyed.
     """
 
+    # It stays until it is destroyed (BOSS-04) and takes no ramming damage (BOSS-16).
     expires = False
     rammable = False
     # Optional hooks (ENG-148); a subclass defines them as methods to enable them.
@@ -179,7 +182,7 @@ class Boss(Enemy):
         self.ground_speed = stats.ground_speed
         self.drop_chance = stats.core_drop_chance
         self.state: BossState = "entering"
-        # Number of parts destroyed so far (P07-R04).
+        # Number of parts destroyed so far (BOSS-20).
         self.stage = 0
         # Seconds left without firing, after a stage change.
         self.pause = 0.0
@@ -221,7 +224,7 @@ class Boss(Enemy):
 
     @property
     def core_shielded(self) -> bool:
-        """Whether some part that shields the core is still there (and not hidden)."""
+        """Whether some part that shields the core is still there (and not hidden, BOSS-14)."""
         return any(
             [part.shields_core and not part.destroyed and not part.hidden for part in self.parts]
         )
@@ -232,7 +235,9 @@ class Boss(Enemy):
 
     @property
     def full_health(self) -> float:
-        """Health of the core and every part when it arrives (its health bar's full length)."""
+        """Health of the core and every part when it arrives (its health bar's full length,
+        BOSS-54).
+        """
         total = self.stats.health
         for part in self.parts:
             total += part.max_health
@@ -251,9 +256,9 @@ class Boss(Enemy):
         return self._targets
 
     def _shot_targets(self) -> list[ShotTarget]:
-        """Its intact parts, and its core unless it is fighting with its core shielded (phase 7
-        review): shots then go through the core to the parts behind it. Coming in, shots spark on
-        all of it (P07-R05).
+        """Its intact parts, and its core unless it is fighting with its core shielded
+        (BOSS-15): shots then go through the core to the parts behind it. Coming in, shots spark on
+        all of it (BOSS-09).
         """
         if self.vulnerable and self.core_shielded:
             return self._intact_parts
@@ -267,7 +272,7 @@ class Boss(Enemy):
             self._start_dying()
 
     def break_next(self) -> None:
-        """Destroys its next intact part, or its core once they are all gone (debug, P07-R09).
+        """Destroys its next intact part, or its core once they are all gone (debug, DEV-OPT-09).
         Hidden parts are skipped; a transformation going on is finished at once, and one it had no
         time for (all its parts broken as it came in) is done at once."""
         if self.state == "dying":
@@ -371,7 +376,7 @@ class Boss(Enemy):
         return len([t for t in thresholds if lost >= t])
 
     def _turn_of(self, form: int) -> float:
-        """How far it turns during transformation `form` (D-228)."""
+        """How far it turns during transformation `form` (D-228, BOSS-46)."""
         turns = self.stats.turns
         if turns is None or form > len(turns):
             return 0
@@ -463,7 +468,7 @@ class Boss(Enemy):
         for part in self.parts:
             orbits = part.spec.orbits
             x, y = self.joints.move(part.spec.joint, part.spec.x, part.spec.y)
-            # Clockwise on screen (X right, Y up) by `spin` for the orbiting ones.
+            # Clockwise on screen (X right, Y up) by `spin` for the orbiting ones (BOSS-34).
             ox = x * c + y * s if orbits else x
             oy = -x * s + y * c if orbits else y
             part.x = self.x + ox * hc + oy * hs

@@ -98,7 +98,7 @@ def _wave(at: float = 0, count: int = 1) -> Wave:
     return Wave(at, "still", count, 0, ENTRY)  # type: ignore[arg-type]
 
 
-def test_p06_r03_a_new_run_is_playing_with_nothing_scored() -> None:
+def test_game_score_01_a_new_run_is_playing_with_nothing_scored() -> None:
     run = _run()
     assert run.phase == "playing"
     assert run.score == 0
@@ -108,7 +108,7 @@ def test_p06_r03_a_new_run_is_playing_with_nothing_scored() -> None:
     assert run.result.level_id == "L1"
 
 
-def test_p06_r07_the_wave_script_brings_enemies_in_as_the_level_scrolls() -> None:
+def test_game_level_01_the_wave_script_brings_enemies_in_as_the_level_scrolls() -> None:
     run = _run(level=_level([_wave(0), _wave(50)]))
     _step(run)
     assert len(run.enemies.enemies) == 1
@@ -118,7 +118,7 @@ def test_p06_r07_the_wave_script_brings_enemies_in_as_the_level_scrolls() -> Non
     assert run.waves.triggered == 2
 
 
-def test_p06_r02_firing_destroys_an_enemy_in_the_line_of_fire_and_scores_it() -> None:
+def test_game_score_02_firing_destroys_an_enemy_in_the_line_of_fire_and_scores_it() -> None:
     # One shot a second, 5 damage a shot: a 5-health enemy falls to the first one.
     run = _run(level=_level([_wave(0)]), kinds=[_kind(health=5)])
     for _ in range(10):
@@ -129,7 +129,7 @@ def test_p06_r02_firing_destroys_an_enemy_in_the_line_of_fire_and_scores_it() ->
     assert run.result.spawned == 1
 
 
-def test_p06_r02_nothing_is_shot_while_the_player_holds_fire_back() -> None:
+def test_game_ctrl_05_nothing_is_shot_while_the_player_holds_fire_back() -> None:
     run = _run(level=_level([_wave(0)]))
     for _ in range(10):
         _step(run, dt=0.1, fire=False)
@@ -137,14 +137,15 @@ def test_p06_r02_nothing_is_shot_while_the_player_holds_fire_back() -> None:
     assert run.shots.active_count == 0
 
 
-def test_p06_r02_only_what_is_in_view_can_be_hit() -> None:
+def test_enm_13_only_what_is_in_view_can_be_hit() -> None:
+    """ENM-13, and GAME-WPN-16 for the player's shots."""
     run = _run(level=_level([_wave(0)]), in_view=lambda x, y: False)
     for _ in range(10):
         _step(run, dt=0.1, fire=True)
     assert run.enemies.kills == 0
 
 
-def test_p06_r03_a_level_whose_scroll_ends_is_cleared_at_once_when_empty() -> None:
+def test_game_level_10_a_level_whose_scroll_ends_is_cleared_at_once_when_empty() -> None:
     run = _run()
     for _ in range(19):
         _step(run)
@@ -157,7 +158,7 @@ def test_p06_r03_a_level_whose_scroll_ends_is_cleared_at_once_when_empty() -> No
     assert run.track.progress == before
 
 
-def test_p06_r03_a_level_with_enemies_left_completes_after_its_end_wait() -> None:
+def test_game_level_12_a_level_with_enemies_left_completes_after_its_end_wait() -> None:
     run = _run(level=_level([_wave(0)]))
     for _ in range(20):
         _step(run)
@@ -166,7 +167,7 @@ def test_p06_r03_a_level_with_enemies_left_completes_after_its_end_wait() -> Non
     assert run.phase == "complete"
 
 
-def test_p06_r07_the_waves_stop_once_the_level_is_clearing() -> None:
+def test_game_level_10_the_waves_stop_once_the_level_is_clearing() -> None:
     run = _run(level=_level([_wave(0), _wave(10000)]))
     for _ in range(20):
         _step(run)
@@ -174,7 +175,7 @@ def test_p06_r07_the_waves_stop_once_the_level_is_clearing() -> None:
     assert run.waves.finished is True
 
 
-def test_p06_r09_seeking_clears_the_playfield_and_skips_the_waves_before() -> None:
+def test_dev_opt_02_seeking_clears_the_playfield_and_skips_the_waves_before() -> None:
     run = _run(level=_level([_wave(0), _wave(80)]))
     _step(run)
     run.seek(5)
@@ -186,19 +187,19 @@ def test_p06_r09_seeking_clears_the_playfield_and_skips_the_waves_before() -> No
     assert len(run.enemies.enemies) == 1
 
 
-def test_p06_r03_the_run_switches_the_weapon_in_use_when_asked() -> None:
+def test_game_wpn_13_the_run_switches_the_weapon_in_use_when_asked() -> None:
     run = _run(weapons=[GUN, GUN2])
     _step(run, switch_weapon=True)
     assert run.shots.weapon is GUN2
 
 
-def test_p06_r02_the_break_key_does_nothing_without_a_boss() -> None:
+def test_dev_opt_09_the_break_key_does_nothing_without_a_boss() -> None:
     run = _run()
     run.break_boss_part()
     assert run.fights.boss is None
 
 
-def test_p06_r09_seeking_clears_the_shots_in_flight() -> None:
+def test_dev_opt_02_seeking_clears_the_shots_in_flight() -> None:
     run = _run()
     _step(run, dt=0.1, fire=True)
     assert run.shots.active_count == 1

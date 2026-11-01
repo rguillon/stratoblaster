@@ -1,4 +1,4 @@
-"""P08-R10, 2-2: the Fjord Lynx
+"""MB-FJORD-LYNX-01 to MB-FJORD-LYNX-05, 2-2: the Fjord Lynx
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -143,7 +143,7 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a crouched, muscled cat of cold flesh; metal only on its haunches' armour.
+    # MB-FJORD-LYNX-02: a crouched, muscled cat of cold flesh; metal only on its haunches' armour.
     flesh.bevel_slab(BODY, HULL, [2.0, 2.5], ICE_FLESH.teal, None, ICE_FLESH.rime)
     flesh.loft(
         FIGHTER_SECTION,
@@ -204,7 +204,8 @@ def draw_ears(p: EnemyParts) -> None:
 
 
 def draw_deck(p: EnemyParts) -> None:
-    """Deck details: vents, seams, the sponson for the radar mast, frost and icicles, the eyes."""
+    """Deck details: vents, seams, the sponson for the radar mast, frost and icicles
+    (MB-FJORD-LYNX-05), the eyes."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -244,10 +245,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Fjord Lynx, a fast, low gunship crouched like a lynx: two forward paws with
-    cannons, tufted antennas over its head, a radar mast on its left flank, white and cyan neon,
-    snow on its back. P16-R05: now a living cyber-lynx of cold flesh, ribs and ice spines down
-    its back, sinews to its paws, metal plates on its haunches and grafted guns."""
+    """MB-FJORD-LYNX-01, MB-FJORD-LYNX-04: the Fjord Lynx, a fast, low gunship crouched like a lynx:
+    two forward paws with cannons, tufted antennas over its head, a radar mast on its left flank,
+    white and cyan neon, snow on its back. MB-FJORD-LYNX-02: now a living cyber-lynx of cold flesh,
+    ribs and ice spines down its back, sinews to its paws, metal plates on its haunches and grafted
+    guns."""
     model: BuiltEnemyModel = build_boss_model(
         FJORD_LYNX,
         scene,

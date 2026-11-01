@@ -1,4 +1,4 @@
-"""Lone buildings and hamlets away from the roads (phase 6 review)."""
+"""Lone buildings and hamlets away from the roads (phase 6 review, GFX-BLDG-02)."""
 
 import math
 

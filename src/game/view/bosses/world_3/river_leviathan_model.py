@@ -1,4 +1,4 @@
-"""P09-R09, 3-1: the River Leviathan.
+"""FB-RIVER-LEVIATHAN-01 to FB-RIVER-LEVIATHAN-07, 3-1: the River Leviathan.
 Logical pixels, nose +Z, Y up (towards the camera). A serpent-ship: an armoured, wedge-shaped head
 (its core) with a dorsal crest, glaring teal eyes, fang guns and a laser lens on its snout; behind
 it, its swaying body (`river-leviathan-body`)."""
@@ -69,7 +69,8 @@ def draw_head(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a living serpent's head of teal flesh, its scutes and jaw line grafted armour.
+    # FB-RIVER-LEVIATHAN-02: a living serpent's head of teal flesh, its scutes and jaw line grafted
+    # armour.
     flesh.loft(SUB_SECTION, HEAD, F.teal)
     for s in SIDES:
         gland(p, [s * 9, 10.6, 10], 2.2, N)
@@ -104,7 +105,7 @@ def draw_crest(p: EnemyParts) -> None:
         return
     tip = LEVIATHAN_CREST[0]
     top = boss_point(tip[0], tip[1], tip[2])
-    # P16-R06: a membrane fin on its back, the emitter grafted at its top.
+    # FB-RIVER-LEVIATHAN-03: a membrane fin on its back, the emitter grafted at its top.
     flesh.slab(
         CREST,
         [-1.4, 1.4],
@@ -162,9 +163,10 @@ def river_leviathan_core(p: EnemyParts) -> None:
 
 
 def build_river_leviathan(scene: Any) -> Any:
-    """P09-R09: the River Leviathan, a segmented serpent-ship 6 L long, teal neon along its spine:
-    an armoured head with a crest, its four segments with their ring turrets and its tail with a
-    missile rack swaying one after the other behind it, moss and vines from the river."""
+    """FB-RIVER-LEVIATHAN-01, FB-RIVER-LEVIATHAN-07: the River Leviathan, a segmented serpent-ship 6
+    L long, teal neon along its spine: an armoured head with a crest, its four segments with their
+    ring turrets and its tail with a missile rack swaying one after the other behind it, moss and
+    vines from the river."""
     parts: dict[str, Any] = {}
     turrets: dict[str, Any] = {}
     for k in SEGMENTS:

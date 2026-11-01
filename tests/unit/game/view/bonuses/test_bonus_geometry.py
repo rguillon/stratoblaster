@@ -28,7 +28,7 @@ def points_of(geo):
     return [tuple(geo.positions[3 * i : 3 * i + 3]) for i in range(len(geo.positions) // 3)]
 
 
-def test_p11_r07_hexagon_has_six_corners_on_its_radius_flat_side_down():
+def test_gfx_fx_12_hexagon_has_six_corners_on_its_radius_flat_side_down():
     corners = _hexagon(2.0)
     assert len(corners) == 6
     for x, y in corners:
@@ -67,7 +67,7 @@ def test_letter_b_is_six_strokes_inside_its_box():
     assert max(xs) == pytest.approx(0.31)
 
 
-def test_p11_r07_the_weapon_badge_is_a_hexagon_frame_and_two_chevrons():
+def test_gfx_fx_12_the_weapon_badge_is_a_hexagon_frame_and_two_chevrons():
     geo = build_bonus_badge(BADGE)
     # Face: 6 corners, frame: 6 quads of 4 corners, chevrons: 2 arms of 4 corners each, twice.
     assert len(geo.positions) // 3 == 6 + 6 * 4 + 2 * 2 * 4
@@ -75,7 +75,7 @@ def test_p11_r07_the_weapon_badge_is_a_hexagon_frame_and_two_chevrons():
     assert max(geo.indices) == len(geo.positions) // 3 - 1
 
 
-def test_p11_r07_the_weapon_badge_draws_the_face_frame_and_chevrons_in_their_colours():
+def test_gfx_fx_12_the_weapon_badge_draws_the_face_frame_and_chevrons_in_their_colours():
     geo = build_bonus_badge(BADGE)
     rgb = [tuple(geo.colors[4 * i : 4 * i + 3]) for i in range(len(geo.colors) // 4)]
     assert rgb[0] == tuple(FACE)
@@ -84,13 +84,13 @@ def test_p11_r07_the_weapon_badge_draws_the_face_frame_and_chevrons_in_their_col
     assert all(geo.colors[4 * i + 3] == 1 for i in range(len(geo.colors) // 4))
 
 
-def test_p11_r07_the_weapon_badge_chevrons_stand_in_front_of_the_plate():
+def test_gfx_fx_12_the_weapon_badge_chevrons_stand_in_front_of_the_plate():
     geo = build_bonus_badge(BADGE)
     depths = {round(z, 3) for _, _, z in points_of(geo)}
     assert depths == {0, -0.02}
 
 
-def test_p11_r07_life_badge_is_a_heart_in_a_rim_with_a_lighter_heart_in_front():
+def test_gfx_fx_12_life_badge_is_a_heart_in_a_rim_with_a_lighter_heart_in_front():
     geo = build_life_badge(LIFE)
     rgb = {tuple(geo.colors[4 * i : 4 * i + 3]) for i in range(len(geo.colors) // 4)}
     assert tuple(LIFE.rim) in rgb
@@ -99,14 +99,14 @@ def test_p11_r07_life_badge_is_a_heart_in_a_rim_with_a_lighter_heart_in_front():
     assert depths == {0, -0.02}
 
 
-def test_p11_r07_the_heart_is_two_lobes_over_a_point():
+def test_gfx_fx_12_the_heart_is_two_lobes_over_a_point():
     geo = build_life_badge(LIFE)
     rim_points = [p for p in points_of(geo) if p[2] == 0]
     assert max(y for _, y, _ in rim_points) > 0
     assert min(y for _, y, _ in rim_points) == pytest.approx(-0.8)
 
 
-def test_p11_r07_bomb_badge_is_a_round_shell_with_a_highlight_and_a_letter_b():
+def test_gfx_fx_12_bomb_badge_is_a_round_shell_with_a_highlight_and_a_letter_b():
     geo = build_bomb_badge(BOMB)
     rgb = {tuple(geo.colors[4 * i : 4 * i + 3]) for i in range(len(geo.colors) // 4)}
     assert {tuple(BOMB.shell), tuple(BOMB.highlight), tuple(BOMB.letter)} <= rgb

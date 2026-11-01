@@ -1,7 +1,7 @@
-"""P09-R09, 3-5: the Verdant Crown, World 3's last boss. Model space: logical pixels, nose +Z (down
-the
-screen), Y up towards the camera; +X is the screen's left. A city-ship: an overgrown deck carrying
-a glass garden dome over the core, a gun deck on its bow, outriggers out to the thorn cannons."""
+"""FB-VERDANT-CROWN-01 to FB-VERDANT-CROWN-06, 3-5: the Verdant Crown, World 3's last boss. Model
+space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
+A city-ship: an overgrown deck carrying a glass garden dome over the core, a gun deck on its bow,
+outriggers out to the thorn cannons."""
 
 import math
 
@@ -94,8 +94,9 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a colossal living plant-beast: its back a broad body of moss-skinned flesh, the
-    # city grafted on it, its outriggers fleshy limbs, veins pulsing out from under the dome.
+    # FB-VERDANT-CROWN-02: a colossal living plant-beast: its back a broad body of moss-skinned
+    # flesh, the city grafted on it, its outriggers fleshy limbs, veins pulsing out from under the
+    # dome.
     flesh.bevel_slab(DECK, [-8, -2, DECK_TOP], [3, 3], F.sinew, None, JUNGLE_FLESH)
     for a in [0.5, 1.6, 2.6, 3.7, 4.7, 5.8]:
         out: Vec3 = [math.sin(a) * 74, DECK_TOP + 0.3, math.cos(a) * 74]
@@ -122,7 +123,8 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_bow(p: EnemyParts) -> None:
-    """The gun deck on the bow: twin cannons and a laser lens, charging before they fire."""
+    """The gun deck on the bow (FB-VERDANT-CROWN-04): twin cannons and a laser lens, charging
+    before they fire."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -163,7 +165,8 @@ def draw_bow(p: EnemyParts) -> None:
 
 
 def draw_hatches(p: EnemyParts) -> None:
-    """The missile hatches in their block behind the dome, lit as missiles load."""
+    """The missile hatches in their block behind the dome, lit as missiles load
+    (FB-VERDANT-CROWN-04)."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -199,9 +202,10 @@ def verdant_crown_core(p: EnemyParts) -> None:
 
 
 def build_verdant_crown(scene: Any) -> Any:
-    """P09-R09: the Verdant Crown, a city-ship (6 L) under emerald and magenta neon: an overgrown
-    city round a glass garden dome over its core, two thorn cannons on its outriggers, two seed
-    batteries aft, two root generators ahead, and a bow carrying twin cannons and a laser."""
+    """FB-VERDANT-CROWN-01, FB-VERDANT-CROWN-06: the Verdant Crown, a city-ship (6 L) under emerald
+    and magenta neon: an overgrown city round a glass garden dome over its core, two thorn cannons
+    on its outriggers, two seed batteries aft, two root generators ahead, and a bow carrying twin
+    cannons and a laser."""
     parts: dict[str, Any] = {
         "thorn-left": thorn_mount,
         "thorn-right": thorn_mount,

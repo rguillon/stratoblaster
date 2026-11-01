@@ -67,7 +67,8 @@ def create_playfield_scene(engine: Any, screen: Any) -> Any:
 
 
 class PlayfieldShip:
-    """A player ship lying on the playfield, nose up (+Y), top towards the camera."""
+    """A player ship lying on the playfield, nose up (+Y), top towards the camera (in the game,
+    and in the ships viewer: DEV-MENU-12)."""
 
     def __init__(self, scene: Any, scale: float, x: float, y: float) -> None:
         self.scene = scene
@@ -77,7 +78,8 @@ class PlayfieldShip:
         self._model: Any = None
 
     def show(self, factory: Any) -> float:
-        """Replaces the ship model and returns the height (Y) of its nose tip on the playfield."""
+        """Replaces the ship model and returns the height (Y) of its nose tip on the playfield
+        (where the muzzle is, GFX-SHOT-05)."""
         if self._model is not None:
             dispose_node(self._model)
         # Models face +Z with +Y up: a holder turns the nose to +Y and the top to -Z (the camera).

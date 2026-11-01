@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/window_atlas.py` (D-210)."""
+"""Unit tests of `src/render/scenery/window_atlas.py` (D-210, GFX-BLDG-12)."""
 
 from typing import Any
 
@@ -102,6 +102,7 @@ DOORS = record(
 
 
 def test_d215_the_doors_have_their_band_after_the_windows():
+    """GFX-BLDG-14."""
     assert atlas_cells(DOORS) == 3
     assert style_columns(DOORS) == 1
     assert door_column(DOORS, 0) == 2

@@ -1,4 +1,4 @@
-"""Player ships and their stats (P02-R01..R03)
+"""Player ships and their stats (GAME-SHIP-01; top speed GAME-SHIP-02, health GAME-SHIP-03)
 
 Speeds are multiples of the base speed, raised from 100 to 150 px/s, then to 225 px/s, at the
 reviewer's requests in phase 6 (D-044, D-047).

@@ -1,9 +1,10 @@
-"""The Snow Owl (P08-R10, 2-3's mini boss)
+"""The Snow Owl (2-3's mini boss, specs/bosses/mini/2-3-snow-owl.md)
 
 The mini boss of the Tundra level. Offsets in px from the boss's centre, X right and Y up (its nose
-points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the same
-while they stand, the core fires something new at every stage, and its last stage (only the core
-left) a ring used by no earlier stage. Health values are placeholders for the P08-R11 tuning.
+points down, at -Y). The stage patterns are the agent's design (MB-SNOW-OWL-11): the parts fire the
+same while they stand, the core fires something new at every stage, and its last stage (only the
+core left) a ring used by no earlier stage. Health values (MB-SNOW-OWL-14) are placeholders for the
+World 2 tuning (WLD-2-25, WLD-2-27).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
@@ -17,8 +18,8 @@ RED = bullet("red", 190)
 BLUE = bullet("blue", 185)
 PURPLE = bullet("purple", 195)
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (phase 7 review, MB-SNOW-OWL-03): the tips of the barrels its model draws, from
+# the boss's centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
 # The right wing radar pod's two fan barrels, under the pod's front.
 OWL_POD_GUNS = twin(38, -17, 1.5, 2.5)
@@ -30,13 +31,14 @@ OWL_CHIN_GUNS = twin(13, -27, 1.5)
 OWL_CROWN = [[0, 10, 12.5]]
 
 # 2-3: a wide-winged recon drone with white neon and a big round sensor eye at its front; two wing
-# radar pods fire fans and shield the core, the eye fires a laser after its warning line
-# (P08-R10). The eye sits in front of the core, so it can always be shot.
+# radar pods fire fans and shield the core (MB-SNOW-OWL-09), the eye fires a laser after its
+# warning line (MB-SNOW-OWL-10). The eye sits in front of the core, so it can always be shot.
 _SNOW_OWL = record(
     {
         "id": "snow-owl",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-SNOW-OWL-12).
         "rage": rage.flower(4.5, "blue", "magenta"),
+        # Its core, wing pods, eye and points (MB-SNOW-OWL-14).
         "stats": stats(
             {
                 "id": "snow-owl",
@@ -53,6 +55,7 @@ _SNOW_OWL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-SNOW-OWL-08).
         "stopFraction": 0.73,
         "sway": {"amplitude": 65, "period": 7.5},
         "bob": {"amplitude": 9, "period": 3.4},
@@ -62,6 +65,7 @@ _SNOW_OWL = record(
             "pod-right": {"gun": OWL_POD_GUNS},
             "eye": {"laser": OWL_EYE_LENS},
         },
+        # The pods' fans and the eye's laser, then the core's pattern per stage (MB-SNOW-OWL-11).
         "stages": stages(
             [
                 # The pods' fans cross under the drone, each leaning towards the other side.
@@ -82,8 +86,9 @@ _SNOW_OWL = record(
     }
 )
 
-# Its transformation (D-230): once both wing pods are gone its outer wing panels slide out, their
-# dark metal spars showing, a sweeper riding each new tip; its back plating bursts off for a mortar.
+# Its transformation (D-230, MB-SNOW-OWL-13): once both wing pods are gone its outer wing panels
+# slide out, their dark metal spars showing, a sweeper riding each new tip; its back plating bursts
+# off for a mortar (its change of shape, MB-SNOW-OWL-07).
 SNOW_OWL = with_weapons(
     merge(_SNOW_OWL, {"transformParts": [["pod-left", "pod-right"]]}),
     [

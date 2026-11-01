@@ -1,7 +1,8 @@
 """The weapons of a run (phase 6 review)
 
-The player switches between the weapons in order, each keeping its own level, and bonuses raise the
-one in use. Its `snapshot` is what a checkpoint keeps (P07-R08).
+The player switches between the weapons in order, each keeping its own level (GAME-WPN-13), and
+bonuses raise the one in use (GAME-WPN-14). Its `snapshot` is what a checkpoint (GAME-LEVEL-09) and
+the next level (GAME-WPN-15) keep.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

@@ -1,4 +1,4 @@
-"""How an enemy with moving parts is drawn (P05-R13)
+"""How an enemy with moving parts is drawn (ENM-27)
 
 Everything is in model space as at rest (logical pixels, nose +Z, Y up; a point `(x, y)` of the
 design is at `boss_point`).
@@ -66,11 +66,11 @@ def joint_frames(name: str, design: Any, root: Any) -> dict[str, Frame]:
 def build_jointed_model(  # noqa: C901
     name: str, scene: Any, color: Rgb, design: Any, drawing: Any
 ) -> Any:
-    """Builds the model of an enemy with moving parts (P05-R13): its hull on the root, its limbs and
-    parts on their joints' nodes (or on a ring turning with the enemy's spin), each drawn by
-    `build_enemy_model` with the enemy's neon `color`. The joints turn as the enemy's do, and a
-    destroyed part disappears."""
-    # P16-R07: its hull, limbs and parts breathe as one creature.
+    """Builds the model of an enemy with moving parts: its hull on the root, its limbs and parts on
+    their joints' nodes (or on a ring turning with the enemy's spin), each drawn by
+    `build_enemy_model` with the enemy's neon `color`. The joints turn as the enemy's do, so a part
+    is drawn where it is hit (ENM-28), and a destroyed part disappears (ENM-29)."""
+    # ENM-44: its hull, limbs and parts breathe as one creature.
     breath = new_breath()
     body = build_enemy_model(name, scene, color, drawing["body"], breath)
     root = body.root

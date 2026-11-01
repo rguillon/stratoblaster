@@ -1,12 +1,14 @@
-"""Weapon bonuses (phase 6 review, GD-31)
+"""Weapon bonuses (phase 6 review; they level the weapon up, GAME-WPN-14)
 
-The chance a destroyed enemy drops one grows with its health: 6 % for the small ones (Gnat to
-Splitter), a Lancer 12 %, a Rocketeer 15 %, a Bulwark or a Carrier 20 %. A play-through shooting
-most enemies gets about 8 (1-1) to 23 (1-5), the first within about a minute and a half (D-049).
-They fall a little slower than the ground scrolls, so there is time to fly over them.
+The chance a destroyed enemy drops one grows with its health (GAME-BONUS-02): 6 % for the small
+ones (Gnat to Splitter), a Lancer 12 %, a Rocketeer 15 %, a Bulwark or a Carrier 20 %. A
+play-through shooting most enemies gets about 8 (1-1) to 23 (1-5), the first within about a minute
+and a half (D-049). They fall a little slower than the ground scrolls, so there is time to fly over
+them (GAME-BONUS-07); the ship picks one up within `pickupRadius` (GAME-BONUS-08).
 
-P11-R07: a destroyed enemy may drop a life (1 %) or a bomb (3 %) bonus instead, drawn first, so it
-never drops two; a mini boss always drops a life. At the most, they score points.
+GAME-BONUS-03: a destroyed enemy may drop a life (1 %) or a bomb (3 %) bonus instead, drawn first,
+so it never drops two; a mini boss always drops a life (GAME-BONUS-04). At the most, they score
+points (GAME-BONUS-10).
 """
 
 from game.config.record import record

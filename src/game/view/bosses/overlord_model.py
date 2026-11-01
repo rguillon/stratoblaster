@@ -1,4 +1,4 @@
-"""P07-R05, P16-R06: the Overlord, World 1's last boss (1-5)
+"""FB-OVERLORD-01 to FB-OVERLORD-04: the Overlord, World 1's last boss (1-5)
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A city-sized
 organism: a vast mantle with a city of living towers grown on its back, a shelled spine down its
 middle carrying the citadel (its brain), membrane wings out to the laser cannons.
@@ -111,8 +111,8 @@ LENS = [
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (P16-R06): a vast dark mantle with a neon rim, a shelled spine down its middle
-    (the boulevard) carrying the citadel, ribs across it, veins out to its edges, membrane
+    """The body (FB-OVERLORD-02): a vast dark mantle with a neon rim, a shelled spine down its
+    middle (the boulevard) carrying the citadel, ribs across it, veins out to its edges, membrane
     wings out to the laser cannons on bone struts, swim bladders across its tail."""
     top = OVERLORD_DECK["top"]
     boulevard = OVERLORD_DECK["boulevard"]
@@ -147,8 +147,8 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_citadel(p: Any) -> None:
-    """The citadel over the core (P16-R06): a swollen, tiered brain-head ringed with neon, eyes on
-    its front, a ring emitter on top, the grafted weapon array before it."""
+    """The citadel over the core (FB-OVERLORD-03): a swollen, tiered brain-head ringed with neon,
+    eyes on its front, a ring emitter on top, the grafted weapon array before it."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -215,7 +215,8 @@ def _draw_core(parts: Any) -> None:
 
 
 def build_overlord(scene: Any) -> Any:
-    """P07-R05, P16-R06: the Overlord, a city-sized organism (6 L) under purple neon: living towers
+    """FB-OVERLORD-01, FB-OVERLORD-04: the Overlord, a city-sized organism (6 L) under purple
+    neon: living towers
     lit with window glands grown out of its vast mantle, two wing laser cannons, two missile
     batteries at the back, two shield generators in front, and a citadel over the core carrying a
     laser, twin cannons, a ring emitter and missile hatches."""

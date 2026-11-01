@@ -15,7 +15,7 @@ def run(coroutine: Coroutine[Any, Any, None]) -> None:
     asyncio.run(coroutine)
 
 
-def test_eng108_progress_starts_at_zero_then_reaches_one_step_by_step() -> None:
+def test_ui_load_03_progress_starts_at_zero_then_reaches_one_step_by_step() -> None:
     progress: list[float] = []
     steps: list[str] = []
 
@@ -30,7 +30,7 @@ def test_eng108_progress_starts_at_zero_then_reaches_one_step_by_step() -> None:
     assert progress == [0, 0.5, 1]
 
 
-def test_eng108_an_awaitable_step_is_awaited_before_its_progress_is_reported() -> None:
+def test_ui_load_03_an_awaitable_step_is_awaited_before_its_progress_is_reported() -> None:
     order: list[str] = []
 
     async def slow() -> None:
@@ -44,7 +44,7 @@ def test_eng108_an_awaitable_step_is_awaited_before_its_progress_is_reported() -
     assert order == ["progress 0", "slow done", "progress 1.0"]
 
 
-def test_eng108_the_browser_gets_a_turn_before_every_step() -> None:
+def test_ui_load_03_the_browser_gets_a_turn_before_every_step() -> None:
     turns: list[str] = []
 
     async def yield_to_browser() -> None:
@@ -57,7 +57,7 @@ def test_eng108_the_browser_gets_a_turn_before_every_step() -> None:
     assert turns == ["yield", "task", "yield", "task"]
 
 
-def test_eng108_no_task_reports_done_at_once() -> None:
+def test_ui_load_03_no_task_reports_done_at_once() -> None:
     progress: list[float] = []
     run(run_loading_tasks([], progress.append, _no_yield))
     assert progress == [0, 1]

@@ -1,4 +1,4 @@
-"""The Strafer (P05-R04)"""
+"""The Strafer (`specs/enemies/strafer.md`)"""
 
 import math
 
@@ -19,9 +19,9 @@ CFG = ENEMY_CONFIG.strafer
 
 
 class Strafer(Enemy):
-    """P05-R04: crosses the top third of the screen sideways, from `side`, and fires a fan of 3
-    bullets straight down every second (preset directions -15°, 0°, +15°, GD-44), from the gun on
-    its side facing down.
+    """ENM-STRAFER-05: crosses the top third of the screen sideways, from `side`, and fires a fan
+    of 3 bullets straight down every second (ENM-STRAFER-06; preset directions -15°, 0°, +15°,
+    ENM-20), from the gun on its side facing down.
     """
 
     def __init__(self, x: float, y: float, side: str) -> None:

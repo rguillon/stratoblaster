@@ -1,4 +1,4 @@
-"""Loading screen with a progress bar (P01-R02)"""
+"""Loading screen with a progress bar (UI-LOAD-03)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
@@ -13,7 +13,7 @@ from ui.screens.elements import element  # noqa: E402
 
 
 def render_loading_screen(doc: Any, view: LoadingView) -> Any:
-    """Loading screen with a progress bar (P01-R02)."""
+    """Loading screen with a progress bar (UI-LOAD-05)."""
     root = element(doc, "div", "menu-screen loading-screen")
     percent = window.Math.round(window.Math.min(1, window.Math.max(0, view.progress)) * 100)
     bar = element(doc, "div", "loading-bar")

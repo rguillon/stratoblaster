@@ -7,7 +7,7 @@ from ui.screens.pause_panel import pause_panel
 from ui.screens.screen_handlers import ScreenHandlers
 
 
-def test_p12_r02_the_pause_menu_lists_its_entries_with_the_selection_and_hint() -> None:
+def test_ui_pause_07_the_pause_menu_lists_its_entries_with_the_selection_and_hint() -> None:
     taps: list[int] = []
     view = PauseView("Paused", ["Resume", "Leave"], "P to resume")
     dim = pause_panel(FakeDocument(), view, 1, ScreenHandlers(taps.append, lambda: None))
@@ -22,7 +22,7 @@ def test_p12_r02_the_pause_menu_lists_its_entries_with_the_selection_and_hint() 
     assert taps == [0]
 
 
-def test_p12_r02_the_leave_question_has_its_text_and_choices() -> None:
+def test_ui_pause_10_the_leave_question_has_its_text_and_choices() -> None:
     taps: list[int] = []
     question = PauseQuestion("Leave the level?", ["No", "Yes"], 0)
     view = PauseView("Paused", ["Resume", "Leave"], "hint", question)

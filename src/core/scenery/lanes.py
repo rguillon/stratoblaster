@@ -1,6 +1,6 @@
 """Phase 4 review: roads of one lane each way, and 2×2 roads (two lanes each way): the first main
 roads, and some lines of the street grids (avenues); reviewer, 2026-10-28: 3×3 and 4×4 boulevards
-in the street grids."""
+in the street grids (GFX-ROAD-09)."""
 
 import math
 
@@ -49,14 +49,14 @@ def is_boulevard(rules: RoadRules, width: float) -> bool:
 
 
 def main_road_width(rules: RoadRules, index: int) -> float:
-    """Width of main road number `index`: the first `dual.main_roads` are 2×2."""
+    """Width of main road number `index`: the first `dual.main_roads` are 2×2 (GFX-ROAD-01)."""
     return rules.dual.width if index < rules.dual.main_roads else rules.main_width
 
 
 def street_width(rules: RoadRules, coord: float) -> float:
     """Width of the street along a line of a street grid (`coord`: X of a column, Z of a row),
-    decided by a hash of the line: a share of the lines are boulevards, of each kind in turn, then
-    a share `dual.avenues` 2×2 avenues, the others one lane each way."""
+    decided by a hash of the line (GFX-ROAD-17): a share of the lines are boulevards, of each kind
+    in turn, then a share `dual.avenues` 2×2 avenues, the others one lane each way."""
     h = hash_2d(math.floor(coord + 0.5), 17, 101)
     total = 0.0
     if rules.boulevards is not None:

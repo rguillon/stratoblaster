@@ -1,7 +1,6 @@
-"""P16-R06, 3-3: the living beast the Sky Temple grew on. Logical pixels, nose +Z, Y up: a huge,
-swollen body
-of moss-skinned flesh carrying the stone tiers on its back like a shell, roots of sinew hanging
-from it, veins climbing the stones to the sanctum."""
+"""FB-SKY-TEMPLE-02, 3-3: the living beast the Sky Temple grew on. Logical pixels, nose +Z, Y up: a
+huge, swollen body of moss-skinned flesh carrying the stone tiers on its back like a shell, roots of
+sinew hanging from it, veins climbing the stones to the sanctum."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -34,7 +33,7 @@ def body_stations() -> list[list[float]]:
 
 
 def temple_body(p: EnemyParts) -> None:
-    """The body of the beast (P16-R06), in place of the lowest stone tier."""
+    """The body of the beast (FB-SKY-TEMPLE-02), in place of the lowest stone tier."""
     p.flesh.loft(ROUND_SECTION, body_stations(), JUNGLE_FLESH)
     half = TIERS.halves[0]
     for s in SIDES:
@@ -60,6 +59,6 @@ def temple_body(p: EnemyParts) -> None:
 
 
 def temple_reactors(p: EnemyParts, z: float, nozzles: list[float]) -> None:
-    """Its reactors (P16-R01): each in a flesh sac at the back of the beast."""
+    """Its reactors (GFX-ART-13, FB-SKY-TEMPLE-02): each in a flesh sac at the back of the beast."""
     for x in nozzles:
         reactor_sac(p, table([x, 0, z]), 4.5, table(TEMPLE_CYAN), F.sinew, None)

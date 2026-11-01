@@ -1,5 +1,5 @@
 """Unit tests of `src/app/saved_supplies.py`."""
-# (lives and bombs kept between levels).
+# (lives and bombs kept between levels: GAME-LIFE-12, GAME-LEVEL-14).
 
 import pytest
 
@@ -13,11 +13,11 @@ from core.systems.level_run_types import Supplies
 from host.key_value_storage import MemoryStorage
 
 
-def test_p11_r05_the_supplies_are_kept_under_the_game_id() -> None:
+def test_game_life_12_the_supplies_are_kept_under_the_game_id() -> None:
     assert saved_supplies_key("game") == "game_supplies"
 
 
-def test_p11_r05_stored_lives_and_bombs_are_read_back() -> None:
+def test_game_life_12_stored_lives_and_bombs_are_read_back() -> None:
     supplies = parse_supplies('{"lives":4,"bombs":6}')
     assert supplies is not None
     assert (supplies.lives, supplies.bombs) == (4, 6)
@@ -37,11 +37,11 @@ def test_p11_r05_stored_lives_and_bombs_are_read_back() -> None:
         '{"lives":2}',
     ],
 )
-def test_p11_r05_anything_else_starts_with_the_game_s_own_supplies(raw: str | None) -> None:
+def test_game_life_12_anything_else_starts_with_the_game_s_own_supplies(raw: str | None) -> None:
     assert parse_supplies(raw) is None
 
 
-def test_p11_r05_saving_then_loading_gives_the_same_supplies() -> None:
+def test_game_life_12_saving_then_loading_gives_the_same_supplies() -> None:
     storage = MemoryStorage()
     save_supplies(storage, "game", Supplies(3, 2))
     loaded = load_saved_supplies(storage, "game")
@@ -49,5 +49,5 @@ def test_p11_r05_saving_then_loading_gives_the_same_supplies() -> None:
     assert (loaded.lives, loaded.bombs) == (3, 2)
 
 
-def test_p11_r05_nothing_saved_loads_as_none() -> None:
+def test_game_life_12_nothing_saved_loads_as_none() -> None:
     assert load_saved_supplies(MemoryStorage(), "game") is None

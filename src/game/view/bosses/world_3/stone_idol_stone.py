@@ -1,6 +1,6 @@
-"""P09-R09, 3-3: the carved stone, moss, vines and neon cracks of the Lost temples' bosses (the
-Stone Idol and the Sky Temple; World 3 theme: dark metal with neon, plus moss, vines and stone).
-Logical pixels, nose +Z, Y up."""
+"""MB-STONE-IDOL-04, FB-SKY-TEMPLE-05, 3-3: the carved stone, moss, vines and neon cracks of the
+Lost temples' bosses (the Stone Idol and the Sky Temple; World 3 theme: dark metal with neon, plus
+moss, vines and stone). Logical pixels, nose +Z, Y up."""
 
 import math
 

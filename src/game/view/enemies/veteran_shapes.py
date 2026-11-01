@@ -1,4 +1,5 @@
-"""Shapes shared by the veteran models (P05-R14 to P05-R18) Logical pixels, nose +Z, Y up."""
+"""Shapes shared by the veteran models (the five veteran kinds, specs/enemies/*.md) Logical
+pixels, nose +Z, Y up."""
 
 import math
 
@@ -23,8 +24,8 @@ QUARTER = math.pi / 2
 
 def nose_gun(parts: Any, at: Vec3, length: float, radius: float = 0.55) -> None:
     """A gun barrel from `at` towards the nose, `length` long and `radius` thick, a charge light at
-    its mouth, its muzzle marked just past it (phase 7 review: shots leave from the barrels the
-    player sees)."""
+    its mouth (ENM-WASP-04, ENM-PHANTOM-04), its muzzle marked just past it (phase 7 review: shots
+    leave from the barrels the player sees)."""
     x = at[0]
     y = at[1]
     z = at[2]

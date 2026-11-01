@@ -1,5 +1,6 @@
-"""P10-R11, 4-3: the Obsidian Golem's parts (its fists, shoulder cannons, chest emitter and armour
-plate), its arms and its obsidian look.
+"""FB-OBSIDIAN-GOLEM-03 to FB-OBSIDIAN-GOLEM-05, 4-3: the Obsidian Golem's parts (its fists,
+shoulder cannons, chest emitter and armour plate), its arms (FB-OBSIDIAN-GOLEM-07) and its
+obsidian look.
 Logical
 pixels, nose +Z, Y up (towards the camera).
 """
@@ -56,7 +57,7 @@ def _sign(v: float) -> float:
     return 0
 
 
-# The Golem's neon: the deep orange of its magma seams.
+# The Golem's neon: the deep orange of its magma seams (FB-OBSIDIAN-GOLEM-06).
 GOLEM_NEON = _neon_or("obsidian-golem", [1, 0.32, 0.04])
 # Molten rock glowing in its seams and cracks, hotter than its neon.
 MAGMA = [1.0, 0.55, 0.1]
@@ -81,7 +82,8 @@ def arm_points(arm: str) -> list[Vec3]:
 
 
 def upper_arm(arm: str) -> Any:
-    """`arm`'s upper arm, on its shoulder: a thick, plated strut down to the elbow's joint."""
+    """`arm`'s upper arm, on its shoulder (FB-OBSIDIAN-GOLEM-02): a thick, plated strut down to
+    the elbow's joint."""
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -112,7 +114,8 @@ def upper_arm(arm: str) -> Any:
 
 
 def forearm(arm: str) -> Any:
-    """`arm`'s forearm, on its elbow: a massive tapering block of armour down to the wrist."""
+    """`arm`'s forearm, on its elbow (FB-OBSIDIAN-GOLEM-02): a massive tapering block of armour
+    down to the wrist."""
 
     def draw(p: Any) -> None:
         neon = p.neon
@@ -134,7 +137,8 @@ def forearm(arm: str) -> Any:
 
 
 def arm_limbs() -> Any:
-    """The limbs of the two arms: an upper arm on each shoulder and a forearm on each elbow."""
+    """The limbs of the two arms (FB-OBSIDIAN-GOLEM-07): an upper arm on each shoulder and a
+    forearm on each elbow."""
     limbs = {}
     for arm in ARMS:
         limbs["shoulder-" + arm] = record({"draw": upper_arm(arm)})
@@ -143,10 +147,9 @@ def arm_limbs() -> Any:
 
 
 def fist(p: Any, at: Vec3) -> None:
-    """A fist around its centre `at` (P10-R11), on its elbow: a huge block of obsidian, four
-    knuckles
-    with magma glowing between them, a thumb on the inside, and the magma vent in the middle of its
-    knuckles that throws rings of slow, big globs."""
+    """A fist around its centre `at` (FB-OBSIDIAN-GOLEM-03), on its elbow: a huge block of obsidian,
+    four knuckles with magma glowing between them, a thumb on the inside, and the magma vent in the
+    middle of its knuckles that throws rings of slow, big globs."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -179,9 +182,8 @@ def fist(p: Any, at: Vec3) -> None:
 
 
 def cannon_mount(p: Any, at: Vec3) -> None:
-    """A shoulder cannon's mount around its centre `at` (P10-R11): a low armoured ring on the back
-    of
-    its shoulder, its turret turning on it."""
+    """A shoulder cannon's mount around its centre `at` (FB-OBSIDIAN-GOLEM-04): a low armoured ring
+    on the back of its shoulder, its turret turning on it."""
     hull = p.hull
     neon = p.neon
     p.flesh.cylinder(11, 11, 8, SKIN.base, Placement(offset(at, 0, 0, 0), math.pi / 8), 9.6)
@@ -200,9 +202,8 @@ DOME = [
 
 
 def cannon_turret(p: Any, at: Vec3) -> None:
-    """A shoulder cannon's turret around its pivot `at` (P10-R11, D-060): a faceted dome on its
-    mount
-    and two heavy barrels, turning the way their aimed spreads fire."""
+    """A shoulder cannon's turret around its pivot `at` (FB-OBSIDIAN-GOLEM-04, D-060): a faceted
+    dome on its mount and two heavy barrels, turning the way their aimed spreads fire."""
     hull = p.hull
     hull.lathe(DOME, 8, OBSIDIAN, Placement(offset(at, 0, 11, 0), math.pi / 8))
     hull.box([9, 4, 6], H.dark, Placement(offset(at, 0, 13, 7)), H.panel)
@@ -225,8 +226,8 @@ PLATE = mirrored(
 
 
 def plate(p: Any, at: Vec3) -> None:
-    """The armour plate around its centre `at` (P10-R11, no weapon): a thick chevron of obsidian on
-    its chest, cracked with magma, bolted on with dark studs."""
+    """The armour plate around its centre `at` (FB-OBSIDIAN-GOLEM-05, no weapon): a thick chevron of
+    obsidian on its chest, cracked with magma, bolted on with dark studs."""
     hull = p.hull
     neon = p.neon
     x = at[0]
@@ -266,8 +267,9 @@ HOUSING = [
 
 
 def emitter(p: Any, at: Vec3) -> None:
-    """The chest emitter around its centre `at` (P10-R11): a heavy housing on the prow under the
-    plate, ringed in orange, its lens glowing as the laser charges; the beam fires straight down."""
+    """The chest emitter around its centre `at` (FB-OBSIDIAN-GOLEM-05): a heavy housing on the prow
+    under the plate, ringed in orange, its lens glowing as the laser charges; the beam fires
+    straight down."""
     hull = p.hull
     neon = p.neon
     charge = p.charge

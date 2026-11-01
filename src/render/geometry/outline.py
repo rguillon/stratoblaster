@@ -1,4 +1,4 @@
-"""2D planform outlines ().
+"""2D planform outlines (the outlines of the shaping primitives, GFX-ART-10).
 
 A point is a two-element list `[x, z]`, seen from above (X right, Z forward).
 """

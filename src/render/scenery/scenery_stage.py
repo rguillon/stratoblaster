@@ -1,5 +1,5 @@
-"""The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain in
-chunks, an optional sea, cloud layers and
+"""The ground of a scrolling level seen by the tilted playfield camera (phase 4): sculpted terrain
+in chunks, an optional sea, cloud layers and
 props, lit by a low sun. `update` moves everything to a distance along the level.
 """
 
@@ -98,9 +98,9 @@ SOLO_CHUNK = -1000000
 
 
 class SceneryStage:
-    """The ground of a scrolling level seen by the tilted playfield camera (P04): sculpted terrain
-    in chunks, an optional sea, cloud layers and props, lit by a low sun. `update` moves everything
-    to a distance along the level."""
+    """The ground of a scrolling level seen by the tilted playfield camera (phase 4): sculpted
+    terrain in chunks, an optional sea, cloud layers and props, lit by a low sun. `update` moves
+    everything to a distance along the level."""
 
     def __init__(self, scene: Any, options: SceneryStageOptions) -> None:
         self.scene = scene
@@ -119,6 +119,8 @@ class SceneryStage:
         self._placer = ground.placer
         self._drifts = prop_drifts(level)
         self.framing: PlayfieldFraming = frame_playfield(options.screen, options.camera)
+        # The ground drawn `groundScale` times as big (GFX-CAM-04), generated over what the camera
+        # sees of it (GFX-CAM-05).
         scale = options.camera.groundScale if options.camera.groundScale is not None else 1
         self._ground_root = GroundRoot(scene, scale)
         self._ground: GroundWindow = ground_window_of(
@@ -130,7 +132,7 @@ class SceneryStage:
         self.camera = stage_camera(
             scene, self.framing.half_fov, (config.near_clip, config.far_clip)
         )
-        # P08-R04: the time of day, clouds and weather along the level.
+        # GFX-SKY-04, GFX-SKY-05: the time of day, clouds and weather along the level.
         self._sky = SkyLayers(scene, look, (level.scroll_speed, options.atmosphere, level.seed))
         self.sun = self._sky.sun
         # One more wave tile: the sea plane moves by whole tiles (see `update`).
@@ -182,7 +184,8 @@ class SceneryStage:
         self.clouds: list[CloudLayerState] = self._attach_sky()
 
     def _attach_sky(self) -> list[CloudLayerState]:
-        """The clouds, weather and aurora above the ground, drawn keeping the ground's depth."""
+        """The clouds, weather and aurora above the ground, drawn keeping the ground's depth
+        (GFX-CAM-07)."""
         for group in [BELOW_CLOUDS_GROUP + 1, ABOVE_CLOUDS_GROUP]:
             self.scene.setRenderingAutoClearDepthStencil(group, False, False)
         options = self.options
@@ -199,24 +202,25 @@ class SceneryStage:
 
     @property
     def atmosphere(self) -> Atmosphere:
-        """The level's look where the view is now (P08-R04)."""
+        """The level's look where the view is now (GFX-SKY-04)."""
         atmosphere: Atmosphere = self._sky.atmosphere
         return atmosphere
 
     @property
     def weather_particles(self) -> int:
-        """Weather particles drawn on the last frame (P08-R05)."""
+        """Weather particles drawn on the last frame (GFX-WEATHER-03)."""
         count: int = self._sky.weather_particles
         return count
 
     @property
     def rain_rings(self) -> float:
-        """Strength of the rain rings drawn on the water on the last frame (P09-R05; 0 = none)."""
+        """Strength of the rain rings drawn on the water on the last frame (GFX-WEATHER-09; 0 =
+        none)."""
         return self._rings.shown if self._rings is not None else 0
 
     @property
     def lightning_flash(self) -> float:
-        """How bright the lightning was on the last frame (P09-R05; 0 = no flash)."""
+        """How bright the lightning was on the last frame (GFX-WEATHER-11; 0 = no flash)."""
         return self._sky.flash
 
     @property
@@ -247,7 +251,8 @@ class SceneryStage:
 
     @property
     def glowing_meshes(self) -> list[Any]:
-        """Meshes of the props' self-lit accents (for a glow layer)."""
+        """Meshes of the props' self-lit accents (for the ground's glow, GFX-TERRAIN-15), the cars'
+        lights among them (GFX-CAR-09)."""
         return _concat(self._props.light_meshes, self._traffic.light_meshes)
 
     @property
@@ -265,7 +270,7 @@ class SceneryStage:
 
     @property
     def lava(self) -> Any:
-        """Phase 10: the lava (P10-R05), when the level's liquid is lava, else None."""
+        """Phase 10: the lava (GFX-TERRAIN-18), when the level's liquid is lava, else None."""
         return self._sea if self.options.look.sea.lava != None else None  # noqa: E711 (absent: undefined)
 
     @property
@@ -284,7 +289,8 @@ class SceneryStage:
         ground = level_ground(self.options.level, seed)
         self._field = ground.field
         self._placer = ground.placer
-        # The street surfaces of the new roads: the old seed's still on their way are not taken.
+        # The street surfaces of the new roads: the old seed's still on their way are not taken
+        # (GFX-ROAD-21).
         self._road_source = road_source_of(ground)
         self._road_pending = []
 
@@ -299,7 +305,7 @@ class SceneryStage:
         self._ground_root.adopt(rebuild)
 
     def set_sea_enabled(self, enabled: bool) -> None:
-        """Shows or hides the sea; a level without a sea stays without one (P04-R02)."""
+        """Shows or hides the sea; a level without a sea stays without one (GFX-WATER-02)."""
         self._sea_enabled = enabled and self._sea is not None
         if self._sea is not None:
             self._sea.setEnabled(self._sea_enabled)
@@ -348,7 +354,9 @@ class SceneryStage:
         return vector3(x - screen.width / 2, camera.flightAltitude, distance + y)
 
     def update(self, distance: float, dt: float) -> None:
-        """Moves the camera, the terrain, the sea and the clouds to `distance` along the level."""
+        """Moves the camera (GFX-CAM-02), the terrain, the sea (its waves kept on the ground,
+        GFX-WATER-03) and the clouds to `distance` along the level, and the sun by whole shadow
+        texels (GFX-SKY-02)."""
         self._time += dt
         margin = self.options.config.margin
         camera = self.camera.position
@@ -409,7 +417,8 @@ class SceneryStage:
         return self._field.height(x, z)
 
     def _update_props(self, camera_z: float, z_min: float, z_max: float) -> None:
-        """The props in view near the camera at `camera_z`, drifting, and the cars on the ground."""
+        """The props in view near the camera at `camera_z` (GFX-PROP-05, PERF-25), drifting, and the
+        cars on the ground (GFX-CAR-08)."""
         config = self.options.config
         near = config.prop_reach[0]
         far = config.prop_reach[1]
@@ -424,7 +433,7 @@ class SceneryStage:
         js_set(traffic, "height", self._height)
         js_set(traffic, "seed", self._seed)
         # The cars, placed again every frame, only near the ground in view, as the props (reviewer,
-        # 2026-10-28): not over the whole chunks.
+        # 2026-10-28, PERF-27): not over the whole chunks.
         x_half = min(self._x_half, self._ground.half_width + near)
         z_low = max(z_min, z_near)
         # Dev viewer (D-199): no car, an empty area.
@@ -510,11 +519,11 @@ class SceneryStage:
         return len(sight) > 0 and z_max > sight[0] and z_min < sight[1]
 
     def _grow_trees(self) -> None:
-        """D-212: the trees of one more row of cells of the first chunk still waiting for them (a
-        wood's take tens of milliseconds a chunk: placed at once, they made the frame long). A chunk
-        coming into sight gets the rest of its trees at once (after a jump, at x4 or a long frame,
-        it would else be seen bare). The others grow unseen, though they may be drawn already: the
-        props are drawn further out than trees can be seen."""
+        """D-212, GFX-PROP-14, PERF-23: the trees of one more row of cells of the first chunk still
+        waiting for them (a wood's take tens of milliseconds a chunk: placed at once, they made the
+        frame long). A chunk coming into sight gets the rest of its trees at once (after a jump, at
+        x4 or a long frame, it would else be seen bare). The others grow unseen, though they may be
+        drawn already: the props are drawn further out than trees can be seen."""
         waiting: list[list[Any]] = []
         for job in self._tree_jobs:
             if self._in_sight(job[1], job[2]):
@@ -548,7 +557,8 @@ class SceneryStage:
         self._road_pending = waiting
 
     def _build_props(self, models: Any) -> PropField:
-        """The props of the level, of `models`, casting shadows."""
+        """The props of the level, of `models`, casting shadows (the trees' through their stand-ins,
+        GFX-PROP-12)."""
         kit = self.kit
 
         def shadow(mesh: Any) -> None:
@@ -567,6 +577,8 @@ class SceneryStage:
 
     def _build_chunks(self) -> TerrainChunks:
         config = self.options.config
+        # The terrain drawn last; a look may say its terrain casts no shadows (GFX-TERRAIN-13,
+        # PERF-28).
         self.scene.setRenderingOrder(BELOW_CLOUDS_GROUP, terrain_last(self.kit.terrain))
         options = TerrainChunkOptions(
             config.chunk_length,
@@ -584,7 +596,8 @@ class SceneryStage:
 
     def cloud_altitude(self, look: CloudLayerLook) -> float:
         """Height of a cloud layer: its look's altitude, raised if needed to stay `cloud_clearance`
-        above the highest ground, so clouds never pass through the terrain (phase 4 review)."""
+        above the highest ground, so clouds never pass through the terrain (phase 4 review,
+        GFX-SKY-12)."""
         ceiling = self._field.ceiling * self._ground_root.scale
         return max(look.altitude, ceiling + self.options.config.cloud_clearance)
 

@@ -1,5 +1,6 @@
 # ruff: noqa: E501
-"""The material of the rain rings (P09-R05): thin rings spreading in each cell of the water."""
+"""The material of the rain rings (GFX-WEATHER-09): thin rings spreading in each cell of the
+water."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__
@@ -85,9 +86,9 @@ class RingsMaterialImpl:
 
 
 def create_rain_rings_material(scene: Any, rings: Any) -> RingsMaterialImpl:
-    """The material of the rain rings (P09-R05): in each cell of the water, a thin ring spreading
-    from where a drop landed and fading, one after another at random places; blended, without
-    writing depth, so the terrain above the water hides them."""
+    """The material of the rain rings (GFX-WEATHER-09): in each cell of the water, a thin ring
+    spreading from where a drop landed and fading, one after another at random places; blended,
+    without writing depth, so the terrain above the water hides them."""
     material = new_glsl_material(
         "rain-rings",
         scene,

@@ -1,4 +1,4 @@
-"""Tunables of the player shots on the playfield (P03-R10)
+"""Tunables of the player shots on the playfield (the old shots page, removed by D-187)
 
 Positions in logical pixels, Y up, origin at the bottom left of the playfield.
 """

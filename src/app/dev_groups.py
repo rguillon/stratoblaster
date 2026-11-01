@@ -1,5 +1,5 @@
-"""The groups of a dev viewer's items (D-202): runs of items of the same group, which Up and Down
-jump between and the caption counts in.
+"""The groups of a dev viewer's items (DEV-MENU-06, D-202): runs of items of the same group,
+which Up and Down jump between and the caption counts in.
 """
 
 

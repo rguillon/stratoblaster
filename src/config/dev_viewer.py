@@ -5,7 +5,7 @@ the bosses, the props and the levels, drawn as in game.
 
 
 class DevViewerTexts:
-    """Texts of the dev menu and viewers (a developer tool: not the game's texts)."""
+    """Texts of the dev menu and viewers (a developer tool: not the game's texts, DEV-MENU-04)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -41,8 +41,8 @@ class DevViewerTexts:
 
 
 class DevPropStageConfig:
-    """How the props viewer shows a prop (D-205): alone on a plain floor ruled in blocks, under
-    studio lights, no level's ground loaded.
+    """How the props viewer shows a prop (DEV-MENU-16, D-205): alone on a plain floor ruled in
+    blocks, under studio lights, no level's ground loaded.
 
     `clear_color`: the background (RGBA). `ambient_intensity`; `key_direction`, `key_intensity`,
     `fill_direction`, `fill_intensity`: a hemispheric light and two directional lights, the fill
@@ -131,11 +131,12 @@ class DevViewerConfig:
         self.texts = texts
         self.turn_per_pixel = turn_per_pixel
         self.props = props
-        # The key that breaks the boss's next part in the bosses viewer (as K in a level, P07-R09).
+        # The key that breaks the boss's next part in the bosses viewer (DEV-MENU-14; as K in a
+        # level, DEV-OPT-09).
         self.break_key = break_key
 
 
-# The viewers of the dev menu, in order (their ids).
+# The viewers of the dev menu, in order (their ids, DEV-MENU-03).
 DEV_VIEWERS = ["ships", "enemies", "bosses", "props", "levels"]
 
 DEV_VIEWER_CONFIG = DevViewerConfig(

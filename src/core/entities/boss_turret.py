@@ -1,4 +1,4 @@
-"""A turret on a boss's piece (phase 7 review).
+"""A turret on a boss's piece (BOSS-29).
 
 Its guns' muzzles turn with it around its pivot, so that the barrels the player sees point the
 way it aims.

@@ -1,5 +1,5 @@
-"""P08-R10, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical pixels,
-nose +Z, Y up (towards the camera)."""
+"""MB-FJORD-LYNX-03, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical
+pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
@@ -103,13 +103,13 @@ def at2(outline: Sequence[OutlinePoint], at: Vec3) -> list[OutlinePoint]:
 
 
 def paw(p: EnemyParts, at: Vec3) -> None:
-    """A paw (P08-R10): an armoured pad with three toe claws, frosted on top, its cannon on a
-    turret (`paw_turret`); a ram from the foreleg works it."""
+    """A paw (MB-FJORD-LYNX-03): an armoured pad with three toe claws, frosted on top, its cannon on
+    a turret (`paw_turret`); a ram from the foreleg works it."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = _sign(at[0]) or 1
-    # P16-R05: a fleshy paw, bone claws, a metal armour plate where the cannon is grafted.
+    # MB-FJORD-LYNX-03: a fleshy paw, bone claws, a metal armour plate where the cannon is grafted.
     flesh.bevel_slab(
         at2(PAD, at),
         [-2.5, 0.0, PAD_TOP - 1],
@@ -169,12 +169,12 @@ def chin_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def radar_mast(p: EnemyParts, at: Vec3) -> None:
-    """The radar mast (P08-R10): a mount on the sponson, a tapered mast, a scanner bar with a
-    dish and white lights at its ends; while it stands, the guns aim at the player."""
+    """The radar mast (MB-FJORD-LYNX-03): a mount on the sponson, a tapered mast, a scanner bar with
+    a dish and white lights at its ends; while it stands, the guns aim at the player."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
-    # P16-R05: a metal mast grafted in a swollen mound of flesh, crystals around it.
+    # MB-FJORD-LYNX-03: a metal mast grafted in a swollen mound of flesh, crystals around it.
     p.flesh.bevel_slab(
         at2(MOUNT, at),
         [-1.0, 0.0, 2.5],

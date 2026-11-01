@@ -1,6 +1,5 @@
-"""P08-R10, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast pods)
-Logical pixels, nose +Z, Y up; each drawn around
-its centre `at`."""
+"""FB-NARWHAL-03, 2-1: the Narwhal's destroyable parts (its horn lance, torpedo tubes and ballast
+pods) Logical pixels, nose +Z, Y up; each drawn around its centre `at`."""
 
 import math
 
@@ -74,14 +73,14 @@ def _sign(x: float) -> float:
 
 
 def horn_lance(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """The horn lance (P08-R10): a collar on the nose and a long spiral horn, a teal light
+    """The horn lance (FB-NARWHAL-03): a collar on the nose and a long spiral horn, a teal light
     winding round it, its tip glowing as its laser charges."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    # P16-R06: a spiral horn of bone, a metal collar grafted where it leaves the head.
+    # FB-NARWHAL-03: a spiral horn of bone, a metal collar grafted where it leaves the head.
     root = HORN.root
     tip = HORN.tip
     height = HORN.height
@@ -125,10 +124,11 @@ BLISTER = [
 
 
 def torpedo_tube(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """A torpedo tube (P08-R10): a blister on the hull's flank, two tube mouths at its front
+    """A torpedo tube (FB-NARWHAL-03): a blister on the hull's flank, two tube mouths at its front
     (their torpedoes glowing as a salvo charges), a teal line along its outer side."""
     s = _sign(at[0])
-    # P16-R06: a swollen blister of flesh on the flank, metal tube mouths grafted at its front.
+    # FB-NARWHAL-03: a swollen blister of flesh on the flank, metal tube mouths grafted at its
+    # front.
     p.flesh.loft(
         POD_SECTION,
         BLISTER,
@@ -163,10 +163,10 @@ POD = [
 
 
 def ballast_pod(p: EnemyParts, at: Vec3, n: Rgb) -> None:
-    """A ballast pod (P08-R10): a long tank on its pylon, frost on its back, a teal ring round
+    """A ballast pod (FB-NARWHAL-03): a long tank on its pylon, frost on its back, a teal ring round
     its middle, two fan guns at its front and a flood vent on top."""
     s = _sign(at[0])
-    # P16-R06: a ballast sac of flesh, held in metal bands, a gland on its back.
+    # FB-NARWHAL-03: a ballast sac of flesh, held in metal bands, a gland on its back.
     p.flesh.loft(
         POD_SECTION,
         POD,

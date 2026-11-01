@@ -3,8 +3,8 @@
 attributes and tests `is None` for an omitted optional field.
 
 Under Transcrypt an omitted field is `undefined`, not `None`, so every optional field goes through
-`opt` or `maybe`. Config keys that Transcrypt renames (`name`, `length`, `from`) are read by
-subscript (`raw["name"]`) in the mapping modules, not by attribute.
+`opt` or `maybe` (ENG-161). Config keys that Transcrypt renames (`name`, `length`, `from`) are read
+by subscript (`raw["name"]`) in the mapping modules, not by attribute (ENG-156).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

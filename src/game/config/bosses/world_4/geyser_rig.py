@@ -1,10 +1,12 @@
-"""P10-R11, 4-2: the Geyser Rig, the final boss of the Ash plains level ().
+"""4-2: the Geyser Rig, the final boss of the Ash plains level
+(specs/bosses/final/4-2-geyser-rig.md).
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down, at -Y). Its two drill
 heads hang on arms swinging on their shoulder joints (D-061), out of step, as if boring. The stage
-patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core fires
-new fans at every stage, and its last stage (only the core left) sweeping fans used by no earlier
-stage. Health tuned with the D-055 bot for P10-R12 (fight 90-112.5 s, full health 9 200-10 200).
+patterns are the agent's design (FB-GEYSER-RIG-13): the parts fire the same while they stand, the
+core fires new fans at every stage, and its last stage (only the core left) sweeping fans used by no
+earlier stage. Health (FB-GEYSER-RIG-09) tuned with the D-055 bot for WLD-4-22 (fight 90-112.5 s,
+full health 9 200-10 200).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -22,7 +24,8 @@ __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-GEYSER-RIG-19,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -43,7 +46,7 @@ DRILL_HEIGHT = record({"shoulder": 12, "head": 6})
 # How far ahead of the drill head's centre its bit ends (screen px, towards -Y).
 DRILL_REACH = 28
 
-# The boring swing of the arms: degrees either way and seconds of one swing.
+# The boring swing of the arms (FB-GEYSER-RIG-07): degrees either way and seconds of one swing.
 BORE = record({"amplitudeDeg": 13, "period": 3.6})
 
 # The sides, by part id suffix: `left` at -X (as the constants above), `right` mirrored.
@@ -95,15 +98,16 @@ def sweep(every: float, first: float) -> Any:
     ]
 
 
-# 4-2: a flying drilling rig, yellow neon (P10-R11): two drill heads on swinging arms fire aimed
-# bursts and, with the two steam vents firing spirals, shield the core; a drone hangar at the bow
-# launches Hornets (as the Dam Breaker's); the core fires fans. The hangar hangs in front of the
+# 4-2: a flying drilling rig, yellow neon (FB-GEYSER-RIG-01): two drill heads on swinging arms fire
+# aimed bursts and, with the two steam vents firing spirals, shield the core; a drone hangar at the
+# bow launches Hornets (as the Dam Breaker's); the core fires fans. The hangar hangs in front of the
 # core, so it can always be shot.
 _GEYSER_RIG = record(
     {
         "id": "geyser-rig",
-        # Angry after each destroyed part (phase 7 review, D-063): heat 9, as 3-5.
+        # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 9, as 3-5.
         "rage": rage.curtain(11, "orange", "red"),
+        # Its core and parts, their health, and its points (FB-GEYSER-RIG-09).
         "stats": stats(
             record(
                 {
@@ -126,9 +130,11 @@ _GEYSER_RIG = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-GEYSER-RIG-08).
         "stopFraction": 0.74,
         "sway": {"amplitude": 30, "period": 11},
         "bob": {"amplitude": 5, "period": 5.5},
+        # The hangar's Hornets (FB-GEYSER-RIG-12).
         "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 7, "first": 3.5}],
         "guns": {
             "core": {"gun": RIG_CORE_GUNS},
@@ -137,6 +143,8 @@ _GEYSER_RIG = record(
             "vent-left": {"ring": RIG_VENT_TOP},
             "vent-right": {"ring": mirror(RIG_VENT_TOP)},
         },
+        # In every stage the drills' bursts (FB-GEYSER-RIG-10) and the vents' spirals
+        # (FB-GEYSER-RIG-11); then the core's fans per stage (FB-GEYSER-RIG-13).
         "stages": stages(
             [
                 volley.burst("drill-left", 3.2, 4, 0.12, RED, 1),
@@ -163,9 +171,10 @@ _GEYSER_RIG = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off
+# (FB-GEYSER-RIG-15), baring a dark metal frame, and a pair of missile racks unfold
+# (FB-GEYSER-RIG-16); at transformation 2 its wing armour bursts off (FB-GEYSER-RIG-17), baring a
+# dark metal frame, and a pair of ring emitters unfold (FB-GEYSER-RIG-18).
 GEYSER_RIG = with_weapons(
     _GEYSER_RIG,
     [

@@ -1,4 +1,4 @@
-"""Per-frame animations attached to the nodes of a model ().
+"""Per-frame animations attached to the nodes of a model (GFX-ART-11).
 
 A `ModelAnimation` is a function of the elapsed seconds. It is kept per node in a JavaScript
 `WeakMap`, so it is dropped with the node.

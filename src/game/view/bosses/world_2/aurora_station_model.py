@@ -1,4 +1,4 @@
-"""P08-R10, 2-3: the Aurora Station
+"""FB-AURORA-STATION-01 to FB-AURORA-STATION-06, 2-3: the Aurora Station
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -98,7 +98,8 @@ def draw_hub(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    # P16-R06: the bell of a great ice jellyfish, a metal collar grafted round its crown.
+    # FB-AURORA-STATION-02: the bell of a great ice jellyfish, a metal collar grafted round its
+    # crown.
     flesh.lathe(HUB, 8, ICE_FLESH.graphite, Placement(None, EIGHTH))
     flesh.cylinder(20.5, 0.3, 8, ICE_FLESH.rime, Placement([0.0, 7.0, 0.0], EIGHTH))
     neon.ring(25.1, 1.0, 8, AURORA_GREEN, Placement([0.0, -0.5, 0.0], EIGHTH))
@@ -134,7 +135,8 @@ def draw_truss(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a spine of bone across to the cryo bladders, arms of sinew out to the emitters.
+    # FB-AURORA-STATION-02: a spine of bone across to the cryo bladders, arms of sinew out to the
+    # emitters.
     flesh.box([10.0, 5.0, 26.0], ICE_FLESH.sinew, Placement([0.0, -1.0, 33.0]), ICE_FLESH.rime)
     for s in SIDES:
         tendril(
@@ -197,7 +199,7 @@ def draw_radiators(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:
-        # P16-R06: frilled membrane fins on bone rays, where the radiators were.
+        # FB-AURORA-STATION-02: frilled membrane fins on bone rays, where the radiators were.
         outline: list[OutlinePoint] = [[s * p0[0], p0[1]] for p0 in RADIATOR]
         flesh.bevel_slab(
             outline,
@@ -222,7 +224,8 @@ def draw_radiators(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The hub guns either side of the hangar's spine (the core's aimed shots, bursts and fans)."""
+    """The hub guns either side of the hangar's spine (the core's aimed shots, bursts and fans;
+    FB-AURORA-STATION-03)."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -252,11 +255,13 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_aurora_station(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Aurora Station, a flying research station in green and violet neon: a hub under
-    a slowly turning dish, two dish emitters and a drone hangar at its nose, two cryo cannons at
-    the ends of its truss, habitat modules and iced radiator wings behind.
-    P16-R06: now a living ice jellyfish, a bell of cold flesh under a frilled crown, a bone spine
-    out to its cryo bladders, egg sacs and membrane fins behind, metal grafts on its guns."""
+    """FB-AURORA-STATION-01, FB-AURORA-STATION-04: the Aurora Station, a flying research station in
+    green and violet neon: a hub under a slowly turning dish, two dish emitters and a drone hangar
+    at its nose, two cryo cannons at the ends of its truss, habitat modules and iced radiator wings
+    behind.
+    FB-AURORA-STATION-02: now a living ice jellyfish, a bell of cold flesh under a frilled crown, a
+    bone spine out to its cryo bladders, egg sacs and membrane fins behind, metal grafts on its
+    guns."""
     model: BuiltEnemyModel = build_boss_model(
         AURORA_STATION,
         scene,

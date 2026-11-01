@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-3: the Dust Devil: a desert
+"""MB-DUST-DEVIL-01 to MB-DUST-DEVIL-04, 1-3: the Dust Devil: a desert
 whirl-jelly with amber veins, a swollen fleshy bell and a slowly turning ring of sinew carrying
 three clinging sand rays. Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -112,9 +112,9 @@ POD_SCALE = 1.15
 
 
 def _draw_core(p: Any) -> None:
-    """The core (P16-R05): a swollen fleshy bell (the gyro disc grown over), plated ribs radiating
-    across it, the amber charge gland on its crown (the ring emitter), eyes at its front, its
-    reactors in sacs behind."""
+    """The core (MB-DUST-DEVIL-02): a swollen fleshy bell (the gyro disc grown over), plated ribs
+    radiating across it, the amber charge gland on its crown (the ring emitter), eyes at its front,
+    its reactors in sacs behind."""
     p.flesh.lathe(GYRO_DISC, 10, F.sinew, Placement(None, math.pi / 10))
     p.neon.ring(18.2, 1.2, 10, AMBER, Placement([0, -0.4, 0], math.pi / 10))
     organ(p.flesh, 9, 8, F.slate, Placement([0, 4, 0]), 0.25)
@@ -142,7 +142,7 @@ def _draw_core(p: Any) -> None:
 
 
 def _draw_ring(p: Any) -> None:
-    """The turning ring (P07-R05, P16-R05): a sinew collar round the bell, a fleshy rim, three
+    """The turning ring (MB-DUST-DEVIL-02): a sinew collar round the bell, a fleshy rim, three
     tentacle spokes out to the pods and membrane fins between them."""
     p.flesh.lathe(HUB, 10, F.graphite, None, False)
     p.flesh.lathe(RIM, 15, F.sinew, None, False)
@@ -172,7 +172,7 @@ def _draw_ring(p: Any) -> None:
 
 
 def _blade_pod(p: Any, at: Vec3) -> None:
-    """A blade pod on the ring (P07-R05, P16-R05): a sand ray clinging to the rim, its wide fleshy
+    """A blade pod on the ring (MB-DUST-DEVIL-03): a sand ray clinging to the rim, its wide fleshy
     wings plated at the front, a bone barb at each wing tip carrying a muzzle."""
     yaw = math.atan2(at[0], at[2])
     place = Placement(at, yaw)
@@ -205,8 +205,8 @@ def _blade_pod(p: Any, at: Vec3) -> None:
 
 
 def build_dust_devil(scene: Any) -> Any:
-    """P07-R05, P16-R05: the Dust Devil, a desert whirl-jelly with amber veins: a swollen fleshy
-    bell, and a slowly turning ring of sinew carrying three clinging sand rays."""
+    """MB-DUST-DEVIL-01, MB-DUST-DEVIL-04: the Dust Devil, a desert whirl-jelly with amber veins: a
+    swollen fleshy bell, and a slowly turning ring of sinew carrying three clinging sand rays."""
     return build_boss_model(
         DUST_DEVIL,
         scene,

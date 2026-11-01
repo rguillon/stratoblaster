@@ -191,7 +191,8 @@ def holding_surfaces(tris: list[Any], groups: list[list[int]], cell: float) -> l
     """The object each piece (`groups`, indices of `tris`) belongs to: pieces whose surfaces fall
     in the same or neighbouring cubes of `cell` hold together (`_surface_cells`). Objects numbered
     from 0. Two pieces are joined only where a cube is another piece's: a boss's surfaces fall in
-    hundreds of thousands of cubes (the unit tests went from minutes to seconds)."""
+    hundreds of thousands of cubes (the unit tests went from minutes to seconds,
+    ENG-48)."""
     parent = [g for g in range(len(groups))]
     owner: dict[int, int] = {}
     owned: list[int] = []

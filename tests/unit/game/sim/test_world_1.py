@@ -4,6 +4,7 @@ from game.sim.world_1 import WORLD_1
 
 
 def test_world_1_is_five_levels_in_order() -> None:
+    """WLD-1-01."""
     assert [level.id for level in WORLD_1] == ["1-1", "1-2", "1-3", "1-4", "1-5"]
 
 

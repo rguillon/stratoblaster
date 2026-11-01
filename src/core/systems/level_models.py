@@ -1,4 +1,4 @@
-"""The enemy models a level needs (P13-R03): those of the enemies its waves and bosses bring, so
+"""The enemy models a level needs (PERF-21): those of the enemies its waves and bosses bring, so
 a level builds its own models while it loads, not every model of the game.
 """
 

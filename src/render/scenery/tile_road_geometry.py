@@ -1,6 +1,7 @@
-"""Road pieces of the districts on tiles (phase 15, P15-R02, P15-R03, P15-R04): a sidewalk over the
-whole piece, a kerb and the roadway of each open side, joined in the middle, and the lane markings
-up to the junction. Draped on the ground, so pieces meet with no step.
+"""Road pieces of the districts on tiles (phase 15; GFX-ROAD-09, GFX-ROAD-11, GFX-ROAD-12): a
+sidewalk over the whole piece, a kerb and the roadway of each open side, joined in the middle, and
+the lane markings up to the junction. Draped on the ground, so pieces meet with no step. These are
+the layers of the pieces the road atlas has no room for (GFX-ROAD-20).
 """
 
 import math
@@ -284,8 +285,8 @@ def build_tile_grid(
     z_max: float,
     color: Rgb,
 ) -> ColoredGeometry:
-    """P15-R10 (`tiles=1`): thin lines along the tile edges over the districts whose pieces are in
-    [z_min, z_max), from one end of their pieces to the other."""
+    """DEV-OPT-06 (`tiles=1`): thin lines along the tile edges over the districts whose pieces are
+    in [z_min, z_max), from one end of their pieces to the other."""
     geo = ColoredGeometry()
     in_chunk: list[RoadPiece] = []
     for p in pieces:

@@ -1,24 +1,24 @@
-"""Places props on a level (P04-R04, P04-R07)
+"""Places props on a level (scenery only, GFX-PROP-01)
 
-Buildings stand only along the roads: each slot of the road network gets a building with the
-section's building density, set back from the road edge and facing it, if the ground under its
-footprint is flat enough, above `min_height`, clear of the other roads and of the buildings already
-placed. Slots of main roads are served first, so they get the street fronts. A low-frequency zone
-noise picks the building group of each area among the groups the section allows, so industrial
-buildings, labs and homes gather in clusters. With `loners` and `hamlets` (phase 6 review), a few
-lone buildings and bunches of buildings also stand away from the roads. Trees of the kinds the
-section allows grow on a grid of cells, away from the roads and the buildings, on rougher ground
-too.
+Buildings stand only along the roads (GFX-BLDG-01): each slot of the road network gets a building
+with the section's building density, set back from the road edge and facing it, if the ground under
+its footprint is flat enough, above `min_height`, clear of the other roads and of the buildings
+already placed. Slots of main roads are served first, so they get the street fronts. A low-frequency
+zone noise picks the building group of each area among the groups the section allows, so industrial
+buildings, labs and homes gather in clusters. With `loners` and `hamlets` (phase 6 review,
+GFX-BLDG-02), a few lone buildings and bunches of buildings also stand away from the roads. Trees of
+the kinds the section allows grow on a grid of cells, away from the roads and the buildings, on
+rougher ground too.
 
-Buildings are placed in chunks: the Z chunks of `CHUNK_SIZE`, in increasing order, each one with
-the same phases (blocks, road slots, hamlets, loners) over its own span. `ensure_placed` places the
-chunks up to a Z, so the level's buildings come as it scrolls, not all before it starts. Each
-chunk depends only on the chunks before it, so the buildings are the same whatever the order and
-the distance the chunks are asked for in (only the first chunk not placed yet moves). Trees come
+Buildings are placed in chunks (PERF-16): the Z chunks of `CHUNK_SIZE`, in increasing order, each
+one with the same phases (blocks, road slots, hamlets, loners) over its own span. `ensure_placed`
+places the chunks up to a Z, so the level's buildings come as it scrolls, not all before it starts.
+Each chunk depends only on the chunks before it, so the buildings are the same whatever the order
+and the distance the chunks are asked for in (only the first chunk not placed yet moves). Trees come
 from a hash of their cell and are checked against the buildings `place` has placed around them. A
 building belongs to the chunk that contains its centre; a cell to the area that contains its corner.
 The runout's streets are laid (`RoadNetwork.add_runout`) before the chunk `RUNOUT_GATE` before its
-start is placed, so the chunks before it never see them.
+start is placed, so the chunks before it never see them (PERF-15).
 """
 
 import math
@@ -171,8 +171,8 @@ class _AwaySite:
 
 def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001
     """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
-    with them (D-214), some of a wood's trees (`keep`), a few of the others (`scatter`), by `draw`
-    (the tree's own, apart from its edge draw)."""
+    with them (D-214, GFX-PROP-08), some of a wood's trees (`keep`), a few of the others
+    (`scatter`), by `draw` (the tree's own, apart from its edge draw)."""
     if woods is None:
         return in_woods
     return draw < (woods.keep if in_woods else woods.scatter)
@@ -192,7 +192,7 @@ class PropPlacer:
     ) -> None:
         """`sea_level`: the level's sea level, if it has a sea: floating props float on it (phase
         8).
-        `made`: the buildings placed before (e.g. in a worker, P13-R03): taken as they are."""
+        `made`: the buildings placed before (e.g. in a worker, PERF-14): taken as they are."""
         self.field = field
         self.rules = rules
         self.seed = seed
@@ -391,8 +391,8 @@ class PropPlacer:
 
     def trees_in(self, area: GroundArea) -> list[PropPlacement]:
         """The trees of the cells whose corner lies in `area` (see `place`): areas side by side,
-        cut on the cells' edges or not, get each tree once (D-212: a chunk's trees come a row of
-        cells at a time)."""
+        cut on the cells' edges or not, get each tree once (D-212, GFX-PROP-14, PERF-23: a chunk's
+        trees come a row of cells at a time)."""
         self._ensure_around(area)
         return self._trees_in(area)
 
@@ -431,7 +431,7 @@ class PropPlacer:
         self._asked_to = made.placed_to
 
     def snapshot(self) -> PlacerSnapshot:
-        """What this placer placed so far (P13-R03)."""
+        """What this placer placed so far (PERF-14)."""
         return PlacerSnapshot(list(self._buildings), len(self._fixed), self._placed_to)
 
     def occupy(self, building: BuildingRecord) -> None:
@@ -600,10 +600,10 @@ class PropPlacer:
         return density * (lush if lush is not None else 0)
 
     def _in_woods(self, x: float, z: float, draw: float, cover: float) -> bool:
-        """Whether a tree at (`x`, `z`) grows (D-212): in a wood, or at its edge by `draw`. `cover`
-        (see `_woods_cover`) sets how much of the ground the woods cover: all the noise over
-        `threshold` at 1, less below (the threshold raised towards 1). Every tree grows without
-        `forests`."""
+        """Whether a tree at (`x`, `z`) grows (D-212, GFX-PROP-07): in a wood, or at its edge by
+        `draw`. `cover` (see `_woods_cover`) sets how much of the ground the woods cover: all the
+        noise over `threshold` at 1, less below (the threshold raised towards 1). Every tree grows
+        without `forests`."""
         forests = self.rules.forests
         if forests is None:
             return True

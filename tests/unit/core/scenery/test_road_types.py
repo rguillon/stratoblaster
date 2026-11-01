@@ -98,7 +98,7 @@ def ground(x: float, z: float) -> float:
     return 2.0
 
 
-def test_p13_r03_a_snapshot_restores_the_same_roads_without_making_them_again() -> None:
+def test_perf_14_a_snapshot_restores_the_same_roads_without_making_them_again() -> None:
     level = _level()
     net = _network(level)
     snapshot = net.snapshot()
@@ -108,7 +108,7 @@ def test_p13_r03_a_snapshot_restores_the_same_roads_without_making_them_again() 
     assert len(restored.slots) == len(net.slots)
 
 
-def test_p04_r07_without_crossings_a_road_running_across_gives_no_paths() -> None:
+def test_gfx_road_05_without_crossings_a_road_running_across_gives_no_paths() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     across = Road(0, "main", 24.0, 1, [RoadPoint(x, 500.0, 24.0) for x in range(-300, 301, 10)])
     laid: list = []
@@ -152,7 +152,7 @@ def test_path_through_gives_up_on_a_line_that_leaves_open_ground() -> None:
     assert _path_through(closed, line, main) is None
 
 
-def test_p04_r07_without_crossings_a_path_stops_at_a_road_it_runs_into() -> None:
+def test_gfx_road_05_without_crossings_a_path_stops_at_a_road_it_runs_into() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     main = _main_along_z()
     cross = Road(9, "main", 24.0, 1, [])
@@ -168,7 +168,7 @@ def test_p04_r07_without_crossings_a_path_stops_at_a_road_it_runs_into() -> None
     assert cut == line[0:2]
 
 
-def test_p04_r07_without_crossings_a_path_going_back_towards_its_road_is_blocked() -> None:
+def test_gfx_road_05_without_crossings_a_path_going_back_towards_its_road_is_blocked() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     main = _main_along_z()
 
@@ -187,7 +187,7 @@ def test_p04_r07_without_crossings_a_path_going_back_towards_its_road_is_blocked
     assert _path_through(_ground(rules, [], nearest=own_road), line, main) is None
 
 
-def test_p04_r07_without_crossings_a_path_on_closed_ground_is_blocked() -> None:
+def test_gfx_road_05_without_crossings_a_path_on_closed_ground_is_blocked() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     line = [RoadPoint(0.0, 0.0, 12.0), RoadPoint(10.0, 0.0, 12.0), RoadPoint(20.0, 0.0, 12.0)]
     closed_at_end = _ground(rules, [], is_open=lambda x, z: x < 15.0)

@@ -1,5 +1,6 @@
-"""The sky of a scenery stage (P04-R03, P08-R04, R05): the level's look along its length, the sun
-and ambient light it sets, and the cloud layers, weather, aurora and lightning above the ground.
+"""The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11, GFX-WEATHER-02): the level's look along
+its length, the sun and ambient light it sets, and the cloud layers, weather, aurora and lightning
+above the ground.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -57,12 +58,12 @@ def _min_of(values: list[float], start: float) -> float:
 
 
 class SkyLayers:
-    """The sky of a scenery stage (P04-R03, P08-R04, R05): the level's look along its length, the
+    """The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11): the level's look along its length, the
     sun and ambient light it sets, and the cloud layers, the weather and the aurora above the
     ground. Built in two steps, as the scenery kit needs the sun first (`attach`).
 
     `setup` is `(scroll_speed, options, seed)`: `options` is the `AtmosphereOptions` (or None) and
-    `seed` the level's seed (its lightning strikes are drawn from it, P09-R05)."""
+    `seed` the level's seed (its lightning strikes are drawn from it, GFX-WEATHER-10)."""
 
     def __init__(self, scene: Any, look: Any, setup: tuple[float, Any, int]) -> None:
         scroll_speed, options, seed = setup
@@ -100,7 +101,8 @@ class SkyLayers:
 
     @property
     def flash(self) -> float:
-        """How bright the lightning was on the last frame (0..1, its strength included; P09-R05)."""
+        """How bright the lightning was on the last frame (0..1, its strength included;
+        GFX-WEATHER-11)."""
         return self._flash
 
     @property
@@ -127,15 +129,15 @@ class SkyLayers:
         altitude = min(place.flight_altitude - 4, top + AURORA_ABOVE_CLOUDS)
         window = place.window_at(altitude)
         self._aurora = AuroraLayer(self._scene, kit.aurora(), (window, altitude, place.margin))
-        # P09-R05: bolts flash inside the lowest cloud layer.
+        # GFX-WEATHER-12: bolts flash inside the lowest cloud layer.
         low = _min_of(altitudes, top)
         self._lightning = LightningLayer(self._scene, self._seed, (place.window_at(low), low))
 
     def update(self, distance: float, frame: tuple[float, Any, float]) -> Any:
         """The look at `distance` along the level, seen from `camera` at `time`: light, haze,
-        clouds, weather (in the box of air from `z_min`), aurora and lightning (P09-R05: a flash
-        lights the scene). `frame` is `(time, camera, z_min)`. Returns the atmosphere as lit on
-        this frame."""
+        clouds, weather (in the box of air from `z_min`), aurora and lightning (GFX-WEATHER-11: a
+        flash lights the scene). `frame` is `(time, camera, z_min)`. Returns the atmosphere as lit
+        on this frame."""
         time, camera, z_min = frame
         at = camera.position
         self._atmosphere = self._track.at(distance)

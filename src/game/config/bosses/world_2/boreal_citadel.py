@@ -1,10 +1,10 @@
-"""The Boreal Citadel (P08-R10, 2-5's final boss)
+"""The Boreal Citadel (2-5's final boss, specs/bosses/final/2-5-boreal-citadel.md)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 1 final bosses (`final_bosses.py`, P07-R04): its parts fire the same
-while they stand, its core fires every kind of attack, a new one at each stage, and all of them at
-once with a spiral of its own, used by no earlier stage, once it stands alone. Its core always
-drops a bonus (P07-R07).
+patterns as for the World 1 final bosses (`final_bosses.py`, FB-BOREAL-CITADEL-13): its parts fire
+the same while they stand, its core fires every kind of attack, a new one at each stage, and all of
+them at once with a spiral of its own, used by no earlier stage, once it stands alone. Its core
+always drops a bonus (FB-BOREAL-CITADEL-17).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -23,7 +23,8 @@ __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-BOREAL-CITADEL-17,
+    `part_drop_chance`)."""
     extra = {} if options == None else options  # noqa: E711
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
@@ -32,7 +33,8 @@ GREEN = bullet("green", 185)
 PURPLE = bullet("purple", 195)
 MAGENTA = bullet("magenta", 190)
 
-# Where its parts stand (P08-R10): aurora cannons on the outriggers, batteries aft, domes ahead.
+# Where its parts stand (FB-BOREAL-CITADEL-10, FB-BOREAL-CITADEL-11, FB-BOREAL-CITADEL-12): aurora
+# cannons on the outriggers, batteries aft, domes ahead.
 BOREAL_PARTS = record(
     {
         "cannon": [80, -8],
@@ -41,8 +43,9 @@ BOREAL_PARTS = record(
     }
 )
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (phase 7 review, FB-BOREAL-CITADEL-04): the tips of the barrels its model
+# draws, from the boss's centre, X right, Y up, and height above the playfield (see
+# `BossDesign.guns`).
 
 # The right aurora cannon's lens, at the front of its long barrel.
 BOREAL_CANNON = [[80, -40, 7]]
@@ -69,7 +72,8 @@ dy = BOREAL_PARTS.dome[1]
 _BOREAL_CITADEL = record(
     {
         "id": "boreal-citadel",
-        # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
+        # Angry after each destroyed part (phase 7 review, FB-BOREAL-CITADEL-14): the hottest
+        # bullet hell so far.
         "rage": concat(
             rage.curtain(7, "green", "purple", 0.5), rage.spirals(7, "purple", "magenta", 0.5)
         ),
@@ -93,6 +97,7 @@ _BOREAL_CITADEL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-BOREAL-CITADEL-09).
         "stopFraction": 0.75,
         "sway": {"amplitude": 25, "period": 11},
         "bob": {"amplitude": 6, "period": 5},
@@ -112,6 +117,7 @@ _BOREAL_CITADEL = record(
             "battery-left": {"missile": mirror(BOREAL_BATTERY)},
             "battery-right": {"missile": BOREAL_BATTERY},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-BOREAL-CITADEL-13).
         "stages": stages(
             [
                 volley.laser("cannon-left", 6.5, 1.6, 2),
@@ -144,8 +150,9 @@ _BOREAL_CITADEL = record(
 )
 
 # Its transformations (D-230): once both domes are gone its bow doors swing open sideways on their
-# rear hinges, showing a drone hangar and two mortars in the dark metal of its hold; once both
-# batteries are gone its wing armour bursts off for a pair of heavy cannons.
+# rear hinges, showing a drone hangar and two mortars in the dark metal of its hold
+# (FB-BOREAL-CITADEL-15); once both batteries are gone its wing armour bursts off for a pair of
+# heavy cannons (FB-BOREAL-CITADEL-16). Its change of shape: FB-BOREAL-CITADEL-08.
 BOREAL_CITADEL = with_weapons(
     merge(
         _BOREAL_CITADEL,

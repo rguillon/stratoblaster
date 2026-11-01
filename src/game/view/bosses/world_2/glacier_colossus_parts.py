@@ -1,4 +1,4 @@
-"""P08-R10, 2-4: the Glacier Colossus's parts
+"""FB-GLACIER-COLOSSUS-03, 2-4: the Glacier Colossus's parts
 Logical pixels, nose +Z, Y up (towards the camera); each part is drawn around its centre `at`
 (model space), the left ones at +X."""
 
@@ -48,7 +48,7 @@ from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E40
 from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402
 from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
-# The Glacier Colossus's red-orange neon (P08-R10).
+# The Glacier Colossus's red-orange neon (FB-GLACIER-COLOSSUS-04).
 _COLOSSUS_NEON = BOSS_LOOK.neon["glacier-colossus"]
 COLOSSUS_NEON = [1.0, 0.35, 0.08] if _COLOSSUS_NEON == None else _COLOSSUS_NEON  # noqa: E711
 
@@ -102,22 +102,23 @@ def sided(at: Vec3, left: list[Any]) -> list[Any]:
 
 
 def cutter_mount(p: EnemyParts, at: Vec3) -> None:
-    """The mount a cutter turns on (phase 8 review: the cutter, `cutter`, is its turret and
-    aims its laser): a drum under its pod, ringed with neon."""
-    # P16-R06: a shoulder of muscle the cutter limb turns on.
+    """The mount a cutter turns on (FB-GLACIER-COLOSSUS-06: the cutter, `cutter`, is its turret
+    and aims its laser): a drum under its pod, ringed with neon."""
+    # FB-GLACIER-COLOSSUS-03: a shoulder of muscle the cutter limb turns on.
     p.flesh.cylinder(8, 3, 7, ICE_FLESH.graphite, Placement(offset(at, 0, -7.5, 0)), 7)
     p.neon.ring(8.3, 0.6, 8, COLOSSUS_NEON, Placement(offset(at, 0, -5, 0)))
 
 
 def cutter(p: EnemyParts, at: Vec3) -> None:
-    """A cutter laser (P08-R10), turning on its mount (its turret): a long pod out on the beam,
-    a red-orange stripe along its sides, its emitter at the front, a saw disc at its flank,
-    frost on its back."""
+    """A cutter laser (FB-GLACIER-COLOSSUS-03), turning on its mount (its turret): a long pod out on
+    the beam, a red-orange stripe along its sides, its emitter at the front, a saw disc at its
+    flank, frost on its back."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = _sign(at[0])
-    # P16-R06: a limb of flesh, an armour plate on its back, the laser and saw grafted on.
+    # FB-GLACIER-COLOSSUS-03: a limb of flesh, an armour plate on its back, the laser and saw
+    # grafted on.
     flesh.loft(
         POD_SECTION,
         CUTTER_POD,
@@ -155,12 +156,12 @@ def cutter(p: EnemyParts, at: Vec3) -> None:
 
 
 def ore_cannon(p: EnemyParts, at: Vec3) -> None:
-    """An ore cannon (P08-R10): an armoured octagonal barbette, its housing with two fat barrels
-    that fire fans of big shells, a red-orange ring round its foot, snow on its roof."""
+    """An ore cannon (FB-GLACIER-COLOSSUS-03): an armoured octagonal barbette, its housing with two
+    fat barrels that fire fans of big shells, a red-orange ring round its foot, snow on its roof."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: an armoured growth, a swollen organ under a metal casemate.
+    # FB-GLACIER-COLOSSUS-03: an armoured growth, a swollen organ under a metal casemate.
     organ(flesh, 13, 8, ICE_FLESH.graphite, Placement(offset(at, 0, 2, 0)), 0.45)
     hull.bevel_slab(
         scaled(OCTAGON, 9),
@@ -189,13 +190,14 @@ def ore_cannon(p: EnemyParts, at: Vec3) -> None:
 
 
 def heat_sink(p: EnemyParts, at: Vec3) -> None:
-    """The heat sink (P08-R10, no weapon): a radiator block at the bow, its fins glowing
-    red-orange between them; the ice around it has melted, the frost only on its outer rims."""
+    """The heat sink (FB-GLACIER-COLOSSUS-03, no weapon): a radiator block at the bow, its fins
+    glowing red-orange between them; the ice around it has melted, the frost only on its outer
+    rims."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
-    # P16-R06: a gill organ, its fleshy lamellae glowing between them.
+    # FB-GLACIER-COLOSSUS-03: a gill organ, its fleshy lamellae glowing between them.
     flesh.bevel_slab(
         SINK_BASE,
         [8, 10, 12],
@@ -239,8 +241,8 @@ def heat_sink(p: EnemyParts, at: Vec3) -> None:
 
 
 def missile_pod(p: EnemyParts, at: Vec3) -> None:
-    """The missile pod (P08-R10): an armoured box on the stern, four missile tips standing in
-    their tubes (they light up as a salvo charges), vents and frost on its back."""
+    """The missile pod (FB-GLACIER-COLOSSUS-03): an armoured box on the stern, four missile tips
+    standing in their tubes (they light up as a salvo charges), vents and frost on its back."""
     hull = p.hull
     flesh = p.flesh
     charge = p.charge
@@ -253,7 +255,8 @@ def missile_pod(p: EnemyParts, at: Vec3) -> None:
         [-9.0, 12.0],
         [-13.0, 8.0],
     ]
-    # P16-R06: a brood sac on the stern, four metal tubes grafted in it, missiles growing inside.
+    # FB-GLACIER-COLOSSUS-03: a brood sac on the stern, four metal tubes grafted in it, missiles
+    # growing inside.
     flesh.bevel_slab(
         box_outline,
         [15, 17, 22],

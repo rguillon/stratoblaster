@@ -1,4 +1,4 @@
-"""Moving limbs of a boss (phase 7 review).
+"""Moving limbs of a boss (BOSS-33).
 
 A joint turns what hangs on it (parts, their hit circles and muzzles, other joints) around its
 pivot, swinging to and fro. Joints hang on other joints, so an arm can bend at the shoulder, the
@@ -72,7 +72,7 @@ def _check_joints(specs: dict[str, BossJointSpec], parts: Sequence[JointedPart])
             raise ValueError('Part "' + part.id + '" hangs on no joint "' + joint + '"')
         if part.orbits:
             raise ValueError('Part "' + part.id + '" both orbits and hangs on a joint')
-    # Transcrypt cannot iterate a dict directly: the keys are listed.
+    # Transcrypt cannot iterate a dict directly: the keys are listed (ENG-159).
     for joint_id in specs.keys():  # noqa: SIM118
         seen: list[str] = []
         j: str | None = joint_id

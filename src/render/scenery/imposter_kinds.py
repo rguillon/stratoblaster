@@ -1,6 +1,7 @@
-"""Kinds of prop drawn as imposters (D-211, D-212): their pictures baked into one atlas, their quads
-drawn by an `ImposterField`; only their lights (if any) stay real geometry, drawn by a `PropField`
-from the lights-only factories of `models`.
+"""Kinds of prop drawn as imposters (D-211, D-212; GFX-PROP-10, the trees GFX-PROP-11, the cars
+GFX-CAR-05): their pictures baked into one atlas, their quads drawn by an `ImposterField`; only
+their lights (if any) stay real geometry, drawn by a `PropField` from the lights-only factories of
+`models`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

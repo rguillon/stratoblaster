@@ -1,6 +1,6 @@
-"""P09-R09, 3-4: the Dam Breaker's parts (sluice cannons, chemical tanks, armour plate, drone
-hangar) and its swamp growth. Logical
-pixels, nose +Z, Y up (towards the camera)."""
+"""FB-DAM-BREAKER-03, FB-DAM-BREAKER-04, 3-4: the Dam Breaker's parts (sluice cannons, chemical
+tanks, armour plate, drone hangar) and its swamp growth. Logical pixels, nose +Z, Y up (towards the
+camera)."""
 
 import math
 
@@ -38,7 +38,7 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Dam Breaker's toxic green neon.
+# The Dam Breaker's toxic green neon (FB-DAM-BREAKER-05).
 TOXIC = BOSS_LOOK.neon["dam-breaker"]
 # Swamp moss on its ledges, the vines hanging over its sides, and rust (World 3 growth).
 # D-231: clear greens, not olive (no khaki with the enemies' yellow and green).
@@ -68,8 +68,9 @@ def vines(hull: SolidBuilder, points: list[Vec3], drop: float = 7) -> None:
 
 
 def sluice(p: EnemyParts, at: Vec3) -> None:
-    """A sluice cannon around its centre `at` (P09-R09): a gate house on the deck, its sluice gate
-    raised over a chute whose lip lets out the sludge, a hand wheel on top, a green glow inside."""
+    """A sluice cannon around its centre `at` (FB-DAM-BREAKER-03): a gate house on the deck, its
+    sluice gate raised over a chute whose lip lets out the sludge, a hand wheel on top, a green glow
+    inside."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -79,7 +80,8 @@ def sluice(p: EnemyParts, at: Vec3) -> None:
     if len(spouts) == 0:
         return
     lip = boss_point(spouts[0][0], spouts[0][1], spouts[0][2])
-    # P16-R06: a gland swelling out of the beast's back, a metal sluice gate grafted in its mouth.
+    # FB-DAM-BREAKER-03: a gland swelling out of the beast's back, a metal sluice gate grafted in
+    # its mouth.
     p.flesh.box([22, 12, 14], F.slate, Placement(offset(at, 0, DECK_Y, -2)), F.sinew)
     gland(p, offset(at, 0, DECK_Y + 12, -5), 3, TOXIC)
     # The gate, raised in its frame, and the dark culvert under it.
@@ -126,13 +128,14 @@ TANK = table(
 
 
 def tank(p: EnemyParts, at: Vec3) -> None:
-    """A chemical tank around its centre `at` (P09-R09): a fat capsule on cradles at the barge's
-    side, glowing green through bands of glass, hooped with rusty straps, vines hanging off it."""
+    """A chemical tank around its centre `at` (FB-DAM-BREAKER-03): a fat capsule on cradles at the
+    barge's side, glowing green through bands of glass, hooped with rusty straps, vines hanging off
+    it."""
     hull = p.hull
     neon = p.neon
     s = sign_of(at[0])
     axis = offset(at, 0, 12, 0)
-    # P16-R06: a bloated toxin bladder of teal flesh, hooped by rusty grafted straps.
+    # FB-DAM-BREAKER-03: a bloated toxin bladder of teal flesh, hooped by rusty grafted straps.
     p.flesh.lathe(TANK, 7, F.teal, Placement(axis, math.pi / 8, QUARTER))
     for dz in [-9, 0, 9]:
         neon.ring(12.2, 3, 8, TOXIC, Placement(offset(axis, 0, 0, dz - 1.5), 0, QUARTER))
@@ -160,8 +163,8 @@ PLATE = table([[-22, -6], [-18, 9], [18, 9], [22, -6], [14, -12], [-14, -12]])
 
 
 def plate(p: EnemyParts, at: Vec3) -> None:
-    """The armour plate around its centre `at` (P09-R09): a thick, sloped slab bolted over the
-    bow, no weapon, hazard stripes along its front edge, green slits, moss in its seams."""
+    """The armour plate around its centre `at` (FB-DAM-BREAKER-03): a thick, sloped slab bolted over
+    the bow, no weapon, hazard stripes along its front edge, green slits, moss in its seams."""
     hull = p.hull
     neon = p.neon
     top = DECK_Y + 9
@@ -183,11 +186,11 @@ def plate(p: EnemyParts, at: Vec3) -> None:
 
 
 def hangar(p: EnemyParts, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (P09-R09): a bay at the bow, its open door framed
-    in green, where its Hornets leave from."""
+    """The drone hangar around its centre `at` (FB-DAM-BREAKER-03): a bay at the bow, its open door
+    framed in green, where its Hornets leave from."""
     hull = p.hull
     neon = p.neon
-    # P16-R06: a brood pouch of flesh on the bow, its drone hatch a grafted metal door.
+    # FB-DAM-BREAKER-03: a brood pouch of flesh on the bow, its drone hatch a grafted metal door.
     p.flesh.bevel_slab(
         rect(26, 20),
         [DECK_Y - 4, DECK_Y, DECK_Y + 7],

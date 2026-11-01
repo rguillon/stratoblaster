@@ -1,5 +1,5 @@
-"""The enemies' lasers (GD-43): a blinking warning line, then a beam with a flare at its base, in
-the colour of their style (phase 8 review)"""
+"""The enemies' lasers: a blinking warning line (GFX-SHOT-16), then a beam with a flare at its
+base (GFX-SHOT-17), in the colour of their style (phase 8 review)"""
 
 import math
 
@@ -49,15 +49,15 @@ class LaserPools:
 
 
 def color_of(style: str) -> Sequence[float]:
-    """The colour of the lasers of `style`: a boss's neon, or the Lancer's (phase 8 review), moved
-    into the enemy shots' colour family (P14-R02)."""
+    """The colour of the lasers of `style` (GFX-SHOT-18): a boss's neon (BOSS-32), or the Lancer's
+    (phase 8 review), moved into the enemy shots' colour family (GFX-READ-06)."""
     neon = BOSS_LOOK.neon[style]
     color = neon if neon != None else LOOK.color  # noqa: E711
     return fold_into_family(color, READABILITY.families.enemyShot)
 
 
 def contrast_warning(color: Sequence[float]) -> list[Rgb]:
-    """A warning line with a white core, standing out over red grounds (P10-R07)."""
+    """A warning line with a white core, standing out over red grounds (GFX-READ-11)."""
     r = color[0]
     g = color[1]
     b = color[2]
@@ -104,7 +104,7 @@ def lasers_of(scene: Any, style: str, contrast: bool) -> LaserPools:
             True,
         ),
     ]
-    # P14-R05: over the player's shots and the blasts, under the bullets (their clones too).
+    # GFX-READ-13: over the player's shots and the blasts, under the bullets (their clones too).
     for template in templates:
         template.alphaIndex = ON_TOP_ALPHA_INDEX
     return LaserPools(
@@ -116,7 +116,8 @@ def lasers_of(scene: Any, style: str, contrast: bool) -> LaserPools:
 
 
 def sync_warnings(pool: Any, warnings: list[Any], time: float, width: float) -> None:
-    """The warning lines, blinking: drawn at full or half width."""
+    """The warning lines, blinking: drawn at full or half width (a thin blinking line, not taken
+    for a bullet, GFX-READ-12)."""
     blink = 1 if math.sin(2 * math.pi * LOOK.warning.blinkHz * time) > 0 else 0.5
     shown = pool.show(len(warnings))
     for i, mesh in enumerate(shown):
@@ -154,12 +155,13 @@ def sync_beams(pools: LaserPools, beams: list[Any], time: float) -> None:
 
 
 class EnemyLasers:
-    """The enemies' lasers (GD-43): a blinking warning line, then a beam with a flare at its base,
-    in the colour of their style (phase 8 review: each boss's lasers in its neon colour)."""
+    """The enemies' lasers (GFX-SHOT-16, GFX-SHOT-17): a blinking warning line, then a beam with a
+    flare at its base, in the colour of their style (phase 8 review: each boss's lasers in its neon
+    colour)."""
 
     def __init__(self, scene: Any, contrast: bool = False) -> None:
         self.scene = scene
-        # `contrast`: warning lines with a white core, wider (P10-R07).
+        # `contrast`: warning lines with a white core, wider (GFX-READ-11).
         self.contrast = contrast
         # The styles drawn so far, in order, and the pools of each.
         self.style_names: list[str] = []

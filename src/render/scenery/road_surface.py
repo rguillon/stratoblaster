@@ -1,5 +1,5 @@
 """Each road piece as one surface draped on the ground, cut on a world lattice, its markings from
-the road atlas (phase 15, experiment, reviewer 2026-10-28).
+the road atlas (phase 15, experiment, reviewer 2026-10-28; GFX-ROAD-20).
 """
 
 import math

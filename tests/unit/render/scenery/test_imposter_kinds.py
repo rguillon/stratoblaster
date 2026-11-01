@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/imposter_kinds.py` (D-211, D-212)."""
+"""Unit tests of `src/render/scenery/imposter_kinds.py` (D-211, D-212; GFX-PROP-10, GFX-PROP-11)."""
 
 from types import SimpleNamespace
 

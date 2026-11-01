@@ -1,6 +1,6 @@
-"""P10-R11, 4-4: the Foundry Ark's destroyable parts (rail cannons, chimney row, missile battery,
-crucibles), each drawn around its centre `at`, each turret around its pivot, and its forge colours.
-Model space: logical pixels, nose +Z, Y up.
+"""FB-FOUNDRY-ARK-03 to FB-FOUNDRY-ARK-06, 4-4: the Foundry Ark's destroyable parts (rail cannons,
+chimney row, missile battery, crucibles), each drawn around its centre `at`, each turret around its
+pivot, and its forge colours. Model space: logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -36,7 +36,8 @@ def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     return colour
 
 
-# The Ark's orange neon, its molten metal (hotter, yellower), and its red warning lamps.
+# The Ark's orange neon, its molten metal (hotter, yellower), and its red warning lamps
+# (FB-FOUNDRY-ARK-07).
 ARK_ORANGE = _neon_or("foundry-ark", [1, 0.55, 0.12])
 MOLTEN = [1.0, 0.78, 0.25]
 ARK_RED = [1.0, 0.12, 0.05]
@@ -46,8 +47,9 @@ RUST = [0.18, 0.08, 0.04]
 # Height of the deck, and of the outriggers' top, where the rail cannons turn.
 DECK_TOP = 4
 
-# P16-R06: its parts are flesh growths with metal grafted on: a flesh drum under each rail cannon, a
-# flesh mound under the chimneys, crucibles as swollen sacs brimming with slag.
+# FB-FOUNDRY-ARK-03 to FB-FOUNDRY-ARK-06: its parts are flesh growths with metal grafted on: a flesh
+# drum under each rail cannon, a flesh mound under the chimneys, crucibles as swollen sacs brimming
+# with slag.
 
 
 def rail_mount(p: Any, centre: Vec3) -> None:
@@ -64,10 +66,9 @@ COILS = [22.0, 30.0, 38.0]
 
 
 def rail_cannon(p: Any, centre: Vec3) -> None:
-    """A rail cannon (P10-R11), turning on its outrigger's turntable (D-073): an armoured breech,
-    two
-    long rails out to the emitter between their tips, glowing coils along them, the emitter lit as
-    the laser charges."""
+    """A rail cannon (FB-FOUNDRY-ARK-03), turning on its outrigger's turntable (D-073): an armoured
+    breech, two long rails out to the emitter between their tips, glowing coils along them, the
+    emitter lit as the laser charges."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -99,8 +100,8 @@ CHIMNEY_TOP = 32
 
 
 def chimney_row(p: Any, centre: Vec3) -> None:
-    """The chimney row (P10-R11; no weapon, it shields the core): four tall stacks on a brick-dark
-    plinth, sooty at the top with a heat glow under their lips, a red lamp on each."""
+    """The chimney row (FB-FOUNDRY-ARK-04; no weapon, it shields the core): four tall stacks on a
+    brick-dark plinth, sooty at the top with a heat glow under their lips, a red lamp on each."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -131,8 +132,8 @@ HATCH = [8.0, 7.0]
 
 
 def battery(p: Any, centre: Vec3) -> None:
-    """The missile battery on the bow (P10-R11): an armoured block, four hatches lit as missiles
-    load, hazard-orange strips down its sides."""
+    """The missile battery on the bow (FB-FOUNDRY-ARK-05): an armoured block, four hatches lit as
+    missiles load, hazard-orange strips down its sides."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -172,11 +173,9 @@ BUCKET_FOOT = DECK_TOP + 2
 
 
 def crucible(p: Any, centre: Vec3) -> None:
-    """A crucible (P10-R11): a heavy bucket brimming with glowing molten metal, hung from a gantry
-    on
-    chains, a pouring lip on its inboard side, a hot band round its belly. Destroyed, it spills
-    into a
-    ring of bullets."""
+    """A crucible (FB-FOUNDRY-ARK-06): a heavy bucket brimming with glowing molten metal, hung from
+    a gantry on chains, a pouring lip on its inboard side, a hot band round its belly. Destroyed, it
+    spills into a ring of bullets."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh

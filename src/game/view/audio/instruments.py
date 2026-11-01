@@ -1,4 +1,4 @@
-"""The instruments of the generated music (P12-R06..R08, GD-70): darksynth (reviewer, 2026-10-26),
+"""The instruments of the generated music (AUD-MUSIC-03): darksynth (reviewer, 2026-10-26),
 all synthesised from oscillators and
 noise through filters and envelopes. An 80s drum machine (punchy kicks, big gated snares, synth
 toms), pumping and rolling saw basses, detuned saw pads, plucked arpeggios and leads sent to the

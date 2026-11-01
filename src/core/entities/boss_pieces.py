@@ -1,4 +1,4 @@
-"""The pieces of a boss (P07-R01)
+"""The pieces of a boss (BOSS-12)
 
 Its destroyable parts and its core, as shots and weapons see them.
 """
@@ -39,7 +39,7 @@ class BossPiece(ShotTarget, Protocol):
 
     @property
     def turret(self) -> BossTurret | None:
-        """The turret its guns are on, if any (phase 7 review): its weapons turn it."""
+        """The turret its guns are on, if any (BOSS-29): its weapons turn it."""
         ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
@@ -87,7 +87,7 @@ class BossPart:
         self.drop_chance = spec.drop_chance
         self.shields_core = spec.shields_core
         self.turret = _turret_of(boss, spec.id)
-        # Points scored when the player destroys it (P11-R01).
+        # Points scored when the player destroys it (GAME-SCORE-04).
         part_points = boss.stats.part_points
         self.points = part_points if part_points is not None else 0
         self._health = spec.health
@@ -104,7 +104,7 @@ class BossPart:
 
     @health.setter
     def health(self, value: float) -> None:
-        """Damage only counts once the boss is in place (P07-R05), and the part revealed."""
+        """Damage only counts once the boss is in place (BOSS-09), and the part revealed."""
         if not self._boss.vulnerable or self.hidden:
             return
         next_health = max(0, value)
@@ -119,13 +119,15 @@ class BossPart:
     @property
     def hidden(self) -> bool:
         """Whether it is out of the fight: still hidden (the transformation that reveals it has not
-        happened), or retired."""
+        happened, BOSS-38), or retired."""
         reveal = self.spec.reveal
         return (reveal is not None and self._boss.form < reveal) or self.retired
 
     @property
     def retired(self) -> bool:
-        """Whether it has left the fight: the transformation it retires at has started (D-228)."""
+        """Whether it has left the fight: the transformation it retires at has started
+        (D-228, BOSS-46).
+        """
         retire = self.spec.retire
         if retire is None:
             return False
@@ -183,7 +185,7 @@ class BossCore:
 
     @health.setter
     def health(self, value: float) -> None:
-        """Shots that hit a shielded core (or one coming in) spark but do no damage (P07-R01)."""
+        """Shots that hit a shielded core (or one coming in) spark but do no damage (BOSS-14)."""
         if not self._boss.vulnerable or self._boss.core_shielded:
             return
         if value < self._boss.core_health:

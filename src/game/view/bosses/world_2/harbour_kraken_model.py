@@ -1,4 +1,4 @@
-"""The Harbour Kraken (P08-R10, 2-2)
+"""The Harbour Kraken (FB-HARBOUR-KRAKEN-01 to FB-HARBOUR-KRAKEN-06, 2-2)
 
 Logical pixels, nose +Z, Y up (towards the camera). A cargo ship flying over the harbour: a long
 hull, a forecastle with its laser emitter and twin guns, a bridge tower amidships, four crane
@@ -97,11 +97,12 @@ GUNS = [9.0, 9.5, 58.0]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its orange-lit rim, the forecastle, frost and icicles along its sides."""
+    """The hull, its orange-lit rim, the forecastle, frost and icicles along its sides
+    (FB-HARBOUR-KRAKEN-05)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: the mantle of a great kraken, cold dark flesh under a ridged shell.
+    # FB-HARBOUR-KRAKEN-02: the mantle of a great kraken, cold dark flesh under a ridged shell.
     flesh.bevel_slab(HULL, HULL_Y, [3, 2], ICE_FLESH.slate, None, ICE_FLESH.graphite)
     shell(flesh, SegmentedBody(-64, 46, 6, 22, DECK_Y - 1, 11), ICE_FLESH.graphite)
     flesh.bevel_slab(
@@ -164,7 +165,8 @@ def draw_bridge(p: EnemyParts) -> None:
 
 
 def draw_bow(p: EnemyParts) -> None:
-    """The bow: the laser emitter, its neon rings, and the twin guns either side of it."""
+    """The bow (FB-HARBOUR-KRAKEN-03): the laser emitter, its neon rings, and the twin guns either
+    side of it."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -220,10 +222,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_harbour_kraken(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Harbour Kraken, a cargo crane-ship with four crane arms swinging at the
-    shoulder and the elbow, a grab cannon hanging from each, orange neon, frost over its deck.
-    P16-R06: now a living kraken, a shelled mantle of cold flesh with a head and beak amidships,
-    four tentacles ending in clawed gun-fists, a brood sac of eggs at its stern.
+    """FB-HARBOUR-KRAKEN-01, FB-HARBOUR-KRAKEN-04: the Harbour Kraken, a cargo crane-ship with four
+    crane arms swinging at the shoulder and the elbow, a grab cannon hanging from each, orange neon,
+    frost over its deck.
+    FB-HARBOUR-KRAKEN-02: now a living kraken, a shelled mantle of cold flesh with a head and beak
+    amidships, four tentacles ending in clawed gun-fists, a brood sac of eggs at its stern.
     """
     parts = record(
         {

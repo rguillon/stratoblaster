@@ -1,6 +1,6 @@
-"""The Scorpion's look (P07-R05): its yellow neon."""
+"""The Scorpion's look (MB-SCORPION-05): its yellow neon."""
 
 from game.config.boss_look import BOSS_LOOK
 
-# The Scorpion's yellow neon (P07-R05).
+# The Scorpion's yellow neon (MB-SCORPION-05).
 YELLOW = BOSS_LOOK.neon["scorpion"]

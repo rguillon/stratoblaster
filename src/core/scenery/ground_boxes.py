@@ -99,7 +99,8 @@ def inside(area: GroundArea, x: float, z: float) -> bool:
 
 
 def overlap(a: GroundBox, b: GroundBox, gap: float) -> bool:
-    """Whether the ground boxes of `a` and `b` come closer than `gap`."""
+    """Whether the ground boxes of `a` and `b` come closer than `gap` (no two buildings overlap,
+    GFX-BLDG-01)."""
     apart_x = abs(a.placement.x - b.placement.x) >= a.half_x + b.half_x + gap
     apart_z = abs(a.placement.z - b.placement.z) >= a.half_z + b.half_z + gap
     return not apart_x and not apart_z
@@ -175,7 +176,7 @@ class BuildingIndex:
 
 class PlacerSnapshot:
     """What a `PropPlacer` placed, in order: enough to make it again without placing them
-    (P13-R03). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
+    (PERF-14). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
     chunk not placed yet (see `PropPlacer.ensure_placed`)."""
 
     def __init__(self, buildings: Sequence[BuildingRecord], fixed: int, placed_to: int) -> None:

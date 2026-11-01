@@ -5,7 +5,7 @@
 The game is Python 3.12 (`src/`), compiled to JavaScript by Transcrypt and bundled by esbuild. The
 3D engine is Babylon.js, called through the JavaScript interop of the Python modules. The
 requirements are in [`specs/`](../specs/): `01-engineering.md` §2 is the layout rule this page
-summarises.
+summarises (ENG-10).
 
 ## Layers
 

@@ -1,4 +1,4 @@
-"""The lives and bombs kept between levels Storage key
+"""The lives and bombs kept between levels (GAME-LIFE-12, GAME-LEVEL-14). Storage key
 prefixed with the game's id.
 """
 

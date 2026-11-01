@@ -1,5 +1,5 @@
-"""The damage shown on a boss's parts (P07-R01): its hit flash and its smoke. A destroyed part
-leaves nothing behind (D-225)."""
+"""The damage shown on a boss's parts (BOSS-17): its hit flash and its smoke. A destroyed part
+leaves nothing behind (BOSS-18, D-225)."""
 
 import math
 
@@ -48,7 +48,7 @@ def effect_materials(scene: Any) -> Any:
 
 
 class Smoke:
-    """The smoke rising from a damaged part (P07-R01): its node, and `step` to drift its puffs."""
+    """The smoke rising from a damaged part (BOSS-17): its node, and `step` to drift its puffs."""
 
     def __init__(self, node: Any, puffs: list[Any], radius: float) -> None:
         self.node = node
@@ -70,7 +70,7 @@ class Smoke:
 
 
 def build_smoke(name: str, radius: float, scene: Any, parent: Any) -> Smoke:
-    """The smoke rising from a damaged part (P07-R01): a few puffs drifting back and fading."""
+    """The smoke rising from a damaged part (BOSS-17): a few puffs drifting back and fading."""
     look = BOSS_LOOK.smoke
     node = new_transform_node(name + "-smoke", scene)
     node.parent = parent

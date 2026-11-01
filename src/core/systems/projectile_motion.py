@@ -1,4 +1,4 @@
-"""Projectiles in flight (P03)
+"""Projectiles in flight (`specs/gameplay/weapons.md`)
 
 A shot's heading is in radians from forward (+Y), positive to the right.
 """
@@ -72,9 +72,9 @@ def turn_towards(heading: float, desired: float, max_turn: float) -> float:
 
 
 def advance_projectile(shot: Projectile, targets: Sequence[ShotTarget], dt: float) -> None:
-    """Advances a projectile by `dt` (P03-R01, P03-R03): homes on the living target closest to it,
-    within its weapon's homing range (re-chosen every step) if its weapon homes, accelerates up to
-    the speed cap, then moves along its heading.
+    """Advances a projectile by `dt` (GAME-WPN-04, GAME-WPN-08): homes on the living target closest
+    to it, within its weapon's homing range (re-chosen every step) if its weapon homes, accelerates
+    up to the speed cap, then moves along its heading.
     """
     weapon = shot.weapon
     if weapon.homing_turn_rate_deg > 0:

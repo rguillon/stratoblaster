@@ -1,4 +1,4 @@
-"""The parts of a bar of generated music (P12-R06): drums,
+"""The parts of a bar of generated music (AUD-MUSIC-03, AUD-MUSIC-04): drums,
 bass, pad and arpeggio, each a list of notes for one bar.
 
 `sort_by_beat` replaces `Array.prototype.sort` with a comparator: Transcrypt's sort
@@ -49,7 +49,7 @@ def note(instrument: str, beat: float, beats: float, pitch: float, velocity: flo
 
 def concat(groups: list[list[Note]]) -> list[Note]:
     """The notes of several lists, one after the other (`[...a, ...b]`: Transcrypt's `+` on lists
-    concatenates strings)."""
+    concatenates strings, ENG-155)."""
     notes: list[Note] = []
     for group in groups:
         notes.extend(group)
@@ -119,8 +119,8 @@ SNARE_BEATS = 0.5
 
 
 def drum_bar(style: MusicStyle, bar: BarContext, random: Random) -> list[Note]:
-    """One bar of drums (P12-R06): the style's pattern, hats by energy, a tom fill at section
-    ends."""
+    """One bar of drums (AUD-MUSIC-05): the style's pattern, hats by energy, a tom fill at
+    section ends."""
     kick = style.instruments.kick
     snare = style.instruments.snare
     hat = style.instruments.hat

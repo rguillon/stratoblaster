@@ -104,7 +104,9 @@ def _props(game: Any) -> list[DevItem]:
 
 
 def dev_items(game: Any, viewer: str) -> list[DevItem]:
-    """The items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows."""
+    """The items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows: the ships (DEV-MENU-12),
+    the enemy kinds (DEV-MENU-13), the boss kinds (DEV-MENU-14), the props of the levels' ground
+    (DEV-MENU-15) and the levels (DEV-MENU-18)."""
     host = _first_level(game)
     if viewer == "ships":
         return [DevItem(ship.id, ship.name, host) for ship in game.player_ships.ships]

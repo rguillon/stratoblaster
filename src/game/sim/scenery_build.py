@@ -1,7 +1,8 @@
-"""Builds the core scenery of a level (P04, P06, P15) from its config record: the terrain sections,
-roads, props and sea that `core/scenery/scenery_level.py` and the road network read. The config
-keeps camelCase keys; `core/` takes snake_case attributes, and an omitted optional
-field is None. Mapping rules are in `config_build.py`.
+"""Builds the core scenery of a level (`specs/graphics/terrain.md`, `roads.md`, `props.md`) from its
+config record: the terrain sections, roads, props and sea (its one water level, GFX-WATER-01) that
+`core/scenery/scenery_level.py` and the road network read. The config keeps camelCase keys; `core/`
+takes snake_case attributes, and an omitted optional field is None. Mapping rules are in
+`config_build.py`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -316,7 +317,7 @@ def _roads(roads: ConfigRecord) -> RoadRules:
 
 
 def scenery_level(config: ConfigRecord) -> SceneryLevel:
-    """The scenery of a level, as `core/` reads it (P04)."""
+    """The scenery of a level, as `core/` reads it."""
     return SceneryLevel(
         config.id,
         config["name"],

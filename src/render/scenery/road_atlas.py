@@ -42,7 +42,7 @@ def _uint8_array(length: int) -> Any:
 
 
 def _clamp_index(v: int, n: int) -> int:
-    """`v` kept to 0..n-1 (plain comparisons: Transcrypt's min and max are slow)."""
+    """`v` kept to 0..n-1 (plain comparisons: Transcrypt's min and max are slow, ENG-157)."""
     if v < 0:
         return 0
     if v > n - 1:
@@ -63,7 +63,7 @@ def _key_of(p: RoadPiece) -> str:
 
 class RoadAtlas:
     """The road pieces of one look, painted into the slots of an atlas as they are first asked
-    for."""
+    for (GFX-ROAD-20)."""
 
     def __init__(self, tile: TileRules, look: TileRoadLook) -> None:
         self.data = _uint8_array(ATLAS_SIZE * ATLAS_SIZE * 4)

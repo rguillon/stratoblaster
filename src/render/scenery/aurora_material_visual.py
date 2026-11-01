@@ -1,4 +1,4 @@
-"""The aurora's material (P08-R04): curtains added on top of the scene, no depth written."""
+"""The aurora's material (GFX-SKY-17): curtains added on top of the scene, no depth written."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__
@@ -61,7 +61,7 @@ class AuroraMaterialImpl:
 
 
 def create_aurora_material(scene: Any) -> AuroraMaterialImpl:
-    """The aurora's material (P08-R04): curtains added on top of the scene, no depth written."""
+    """The aurora's material (GFX-SKY-17): curtains added on top of the scene, no depth written."""
     material = new_glsl_material(
         "aurora",
         scene,

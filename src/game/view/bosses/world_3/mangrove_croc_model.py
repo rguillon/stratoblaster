@@ -1,4 +1,4 @@
-"""P09-R09, 3-1: the Mangrove Croc.
+"""MB-MANGROVE-CROC-01 to MB-MANGROVE-CROC-06, 3-1: the Mangrove Croc.
 Logical pixels, nose +Z, Y up (towards the camera). A long, low hover-gunboat shaped like a
 crocodile: a scaly armoured back, a broad head with raised green neon eyes, jaws that open and
 close around the jaw cannon, and two side pontoons."""
@@ -98,7 +98,8 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a living croc's swollen, moss-skinned body; its hover skirt a grafted metal belly.
+    # MB-MANGROVE-CROC-02: a living croc's swollen, moss-skinned body; its hover skirt a grafted
+    # metal belly.
     flesh.loft(ROUND_SECTION, HULL, JUNGLE_FLESH)
     hull.bevel_slab(SKIRT, [-4.5, -3.5, -2.5], [0.5, 0.5], H.dark, None, SWAMP.mud)
     path: list[Vec3] = []
@@ -128,7 +129,7 @@ def draw_head(p: EnemyParts) -> None:
     charge = p.charge
     for s in SIDES:
         at: Vec3 = [s * EYE.x, top_at(EYE.z) - 1, EYE.z]
-        # P16-R05: a bulging flesh eye socket, its eye a gland under the neon slit.
+        # MB-MANGROVE-CROC-02: a bulging flesh eye socket, its eye a gland under the neon slit.
         organ(
             flesh,
             EYE.radius,
@@ -151,8 +152,8 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_back(p: EnemyParts) -> None:
-    """Its scaly back: rows of scutes, moss in the hollows, river stones, a vent and the ring
-    dome."""
+    """Its scaly back (MB-MANGROVE-CROC-05): rows of scutes, moss in the hollows, river stones, a
+    vent and the ring dome."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -200,9 +201,10 @@ def mangrove_croc_core(p: EnemyParts) -> None:
 
 
 def build_mangrove_croc(scene: Any) -> Any:
-    """P09-R09: the Mangrove Croc, a long, low hover-gunboat, green neon: a crocodile's scaly
-    armoured hull on a hover skirt, raised neon eyes, jaws opening and closing around the jaw
-    cannon in its throat, two side pontoons with fan guns, moss and vines from the delta."""
+    """MB-MANGROVE-CROC-01, MB-MANGROVE-CROC-06: the Mangrove Croc, a long, low hover-gunboat, green
+    neon: a crocodile's scaly armoured hull on a hover skirt, raised neon eyes, jaws opening and
+    closing around the jaw cannon in its throat, two side pontoons with fan guns, moss and vines
+    from the delta."""
     parts: dict[str, Any] = {
         "jaw-cannon": jaw_cannon,
         "pontoon-left": pontoon,

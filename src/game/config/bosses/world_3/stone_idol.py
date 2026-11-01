@@ -1,9 +1,10 @@
-"""P09-R09, 3-3: the Stone Idol, the mini boss of the Lost temples level ().
+"""3-3: the Stone Idol, the mini boss of the Lost temples level
+(specs/bosses/mini/3-3-stone-idol.md).
 
 Offsets in px from the boss's centre, X right and Y up (its chin points down, at -Y). The stage
-patterns are the agent's design (P07-R04): the eyes and the mouth fire the same while they stand,
-the core fires something new at every stage, and its last stage (only the core left) a spiral used
-by no earlier stage. Health tuned for P09-R10 with the D-055 bot.
+patterns are the agent's design (MB-STONE-IDOL-09): the eyes and the mouth fire the same while they
+stand, the core fires something new at every stage, and its last stage (only the core left) a spiral
+used by no earlier stage. Health (MB-STONE-IDOL-07) tuned for WLD-3-20 with the D-055 bot.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -22,10 +23,10 @@ __pragma__("noskip")
 MAGENTA = bullet("magenta", 205)
 ORANGE = bullet("orange", 210)
 PURPLE = bullet("purple", 200)
-# The mouth's boulders (P09-R09): slow and big.
+# The mouth's boulders (MB-STONE-IDOL-08): slow and big.
 BOULDER = bullet("purple", 115, 9)
 
-# Where its parts stand (P09-R09): the eyes either side of the nose, the mouth under it.
+# Where its parts stand (MB-STONE-IDOL-07): the eyes either side of the nose, the mouth under it.
 IDOL_PARTS = record({"eye": [32, -4], "mouth": [0, -34]})
 
 # The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
@@ -44,13 +45,14 @@ EX = IDOL_PARTS.eye[0]
 EY = IDOL_PARTS.eye[1]
 
 # 3-3: a flying stone head with neon cracks, glowing eyes and mouth; its two eyes turn to aim
-# lasers and shield the core, its mouth spits rings of slow boulders (P09-R09). The ground stops
-# over the temple while it fights (x0).
+# lasers and shield the core, its mouth spits rings of slow boulders (MB-STONE-IDOL-08). The ground
+# stops over the temple while it fights (x0).
 _STONE_IDOL = record(
     {
         "id": "stone-idol",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-STONE-IDOL-10).
         "rage": rage.flower(6.5, "magenta", "orange"),
+        # Its core and parts, and its points (MB-STONE-IDOL-13).
         "stats": stats(
             record(
                 {
@@ -69,6 +71,7 @@ _STONE_IDOL = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place, the ground stopped (MB-STONE-IDOL-06).
         "stopFraction": 0.72,
         "sway": {"amplitude": 60, "period": 7.5},
         "bob": {"amplitude": 8, "period": 3.6},
@@ -80,6 +83,7 @@ _STONE_IDOL = record(
             "eye-right": {"laser": IDOL_EYE, "turret": [EX, EY], "turretLaser": True},
             "mouth": {"ring": IDOL_THROAT},
         },
+        # The parts' volleys, then the core's pattern per stage (MB-STONE-IDOL-09).
         "stages": stages(
             [
                 volley.laser("eye-left", 6.5, 1.5, 2),
@@ -102,8 +106,9 @@ _STONE_IDOL = record(
     }
 )
 
-# Its transformation (D-230): the back of its head flips up and back on a hinge across its crown,
-# like a lid, showing a dark metal ring round a great sweeper eye between two mortars.
+# Its transformation (D-230, MB-STONE-IDOL-11): the back of its head flips up and back on a hinge
+# across its crown, like a lid, showing a dark metal ring round a great sweeper eye between two
+# mortars (MB-STONE-IDOL-12).
 STONE_IDOL = with_weapons(
     _STONE_IDOL,
     [

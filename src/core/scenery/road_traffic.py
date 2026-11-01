@@ -1,5 +1,5 @@
-"""Phase 4 review: where streets cross each other (the centre line stops there, and a street
-meeting another goes on under it).
+"""Phase 4 review: where streets cross each other (the centre line stops there, GFX-ROAD-07, and a
+street meeting another goes on under it).
 
 The memos are kept as one-entry memos by identity (`_LineCache`,
 `_IndexCache`): the same answers, since the values are pure functions of their list.
@@ -69,12 +69,12 @@ _LINE_CACHE = _LineCache()
 
 
 def cached_street_lines(roads: Sequence[Road]) -> list[StreetLine]:
-    """`street_lines` of `roads`, made once per list of roads (P13-R04)."""
+    """`street_lines` of `roads`, made once per list of roads (PERF-24)."""
     return _LINE_CACHE.get(roads)
 
 
 def road_z_span(road: Road) -> tuple[float, float]:
-    """The lowest and highest Z of the points of `road` (P13-R04)."""
+    """The lowest and highest Z of the points of `road` (PERF-24)."""
     low = INFINITY
     high = -INFINITY
     for p in road.points:
@@ -94,7 +94,7 @@ def _distance(line: StreetLine, x: float, z: float) -> float:
 
 
 class StreetIndex:
-    """The streets of a list of lines by bands of Z (P13-R04): each band holds the streets within
+    """The streets of a list of lines by bands of Z (PERF-24): each band holds the streets within
     `width / 2 + BUCKET_REACH` of it, so a point only checks the streets near it."""
 
     def __init__(self, lines: Sequence[StreetLine]) -> None:

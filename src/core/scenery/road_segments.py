@@ -58,7 +58,7 @@ def segment_distance(x: float, z: float, s: Segment) -> float:
 
 
 class SegmentIndex:
-    """The segments of roads, in buckets `BUCKET` wide by where their ends are."""
+    """The segments of roads, in buckets `BUCKET` wide by where their ends are (GFX-ROAD-23)."""
 
     def __init__(self) -> None:
         self._buckets: dict[str, list[Segment]] = {}
@@ -132,7 +132,7 @@ class SegmentIndex:
 
 def add_slots(road: Road, spacing: float, slots: list[RoadSlot]) -> None:
     """Adds to `slots` the slots every `spacing` along `road`, on both sides, numbered on from
-    them."""
+    them (GFX-BLDG-01)."""
     travelled = spacing / 2
     points = road.points
     for i in range(len(points)):

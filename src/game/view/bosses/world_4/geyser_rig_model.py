@@ -1,11 +1,9 @@
-"""P10-R11, 4-2: the Geyser Rig. Logical pixels,
-nose
-+Z, Y up (towards the camera). A flying drilling platform: a heavy deck, a lattice derrick in its
-middle (the core), two drill arms reaching forward from its bow corners, two steam vents at its
-stern,
-a drone hangar jutting from its bow and a squat cooling tower aft. P16-R06: a living rock-tick, its
-back a scorched flesh shell veined molten, a bone spire over its core, its drills, pipes and guns
-metal grafts.
+"""FB-GEYSER-RIG-01 to FB-GEYSER-RIG-07, 4-2: the Geyser Rig. Logical pixels, nose +Z, Y up (towards
+the camera). A flying drilling platform: a heavy deck, a lattice derrick in its middle (the core),
+two drill arms reaching forward from its bow corners, two steam vents at its stern, a drone hangar
+jutting from its bow and a squat cooling tower aft. FB-GEYSER-RIG-02: a living rock-tick, its back a
+scorched flesh shell veined molten, a bone spire over its core, its drills, pipes and guns metal
+grafts.
 """
 
 import math
@@ -101,7 +99,7 @@ PLATES = [
 
 
 def _deck_veins(p: Any, s: float) -> None:
-    """P16-R05, P16-R06: its living flesh: veins, glands and ribs."""
+    """FB-GEYSER-RIG-02: its living flesh: veins, glands and ribs."""
     magma_vein(
         p,
         [
@@ -186,7 +184,7 @@ def _draw_derrick(p: Any) -> None:
     neon = p.neon
     flesh = p.flesh
     hull.box([26, 3, 26], H.panel, Placement([0, DECK_Y, 0]), SCORCH)
-    # P16-R06: a spire of bone, braced by sinews.
+    # FB-GEYSER-RIG-02: a spire of bone, braced by sinews.
     corners = [
         [1, 1],
         [1, -1],
@@ -259,8 +257,8 @@ def _draw_cooling_tower(p: Any) -> None:
 
 
 def build_geyser_rig(scene: Any) -> Any:
-    """P10-R11: the Geyser Rig, a flying drilling rig with two drill heads and steam vents, yellow
-    neon, soot, ash and molten seams on its deck."""
+    """FB-GEYSER-RIG-01, FB-GEYSER-RIG-06: the Geyser Rig, a flying drilling rig with two drill
+    heads and steam vents, yellow neon, soot, ash and molten seams on its deck."""
 
     def core(p: Any) -> None:
         _draw_deck(p)

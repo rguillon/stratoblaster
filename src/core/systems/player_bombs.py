@@ -1,4 +1,4 @@
-"""The player's bombs (GD-32, P11-R05)"""
+"""The player's bombs (`specs/gameplay/bombs.md`)"""
 
 INFINITY = float("Infinity")
 
@@ -10,7 +10,7 @@ class BombRules:
     `damage`: damage each enemy and boss piece on screen takes, once, when a bomb goes off.
     `seconds`: seconds a bomb lasts: no other bomb can go off meanwhile, the enemy shots keep
     being cleared and the player cannot be hurt.
-    `max`: most bombs the player can have with bomb bonuses (P11-R07); no limit when None.
+    `max`: most bombs the player can have with bomb bonuses (GAME-BONUS-10); no limit when None.
     """
 
     def __init__(
@@ -48,8 +48,9 @@ class _BombState:
 
 
 class PlayerBombs:
-    """The bombs left and the bomb going off (P11-R05): one goes off per press while some are left
-    and none is active; lives lost top them back up to the starting count. Pure.
+    """The bombs left (GAME-BOMB-01) and the bomb going off: one goes off per press while some are
+    left and none is active (GAME-BOMB-03); lives lost top them back up to the starting count
+    (GAME-BOMB-02). Pure.
     """
 
     def __init__(self, rules: BombRules, count: float | None = None) -> None:
@@ -79,8 +80,8 @@ class PlayerBombs:
         return True
 
     def add(self) -> bool:
-        """A bomb bonus (P11-R07): one more bomb, up to the most if any. Returns whether it was
-        added.
+        """A bomb bonus (GAME-BONUS-09): one more bomb, up to the most if any. Returns whether it
+        was added.
         """
         most = self.rules.max if self.rules.max is not None else INFINITY
         if self.count >= most:

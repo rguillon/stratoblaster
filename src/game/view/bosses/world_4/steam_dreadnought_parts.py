@@ -1,7 +1,7 @@
-"""P10-R11, 4-1: the Steam Dreadnought's parts: its two smokestacks, its two broadside turrets (each
-turning on its barbette, D-058) and the missile rack on its stern. Logical pixels, nose +Z, Y up;
-the left ones (the
-screen's left, -X on the playfield) are drawn at +X.
+"""FB-STEAM-DREADNOUGHT-03 to FB-STEAM-DREADNOUGHT-05, 4-1: the Steam Dreadnought's parts: its two
+smokestacks, its two broadside turrets (each turning on its barbette, D-058) and the missile rack on
+its stern. Logical pixels, nose +Z, Y up; the left ones (the screen's left, -X on the playfield) are
+drawn at +X.
 """
 
 import math
@@ -58,12 +58,12 @@ def _sign(v: float) -> float:
     return 0
 
 
-# The Steam Dreadnought's red neon (P10-R11).
+# The Steam Dreadnought's red neon (FB-STEAM-DREADNOUGHT-06).
 DREAD_RED = _neon_or("steam-dreadnought", [1, 0.08, 0.1])
 
-# P16-R06: the stacks are steaming blowholes of flesh banded in metal, the rack a fleshy growth
-# cased
-# in a metal launcher, the turrets metal grafts on flesh mounts.
+# FB-STEAM-DREADNOUGHT-03 to FB-STEAM-DREADNOUGHT-05: the stacks are steaming blowholes of flesh
+# banded in metal, the rack a fleshy growth cased in a metal launcher, the turrets metal grafts on
+# flesh mounts.
 
 DECK = DREAD_HEIGHTS.deck
 
@@ -89,9 +89,9 @@ STACK = [
 
 
 def smokestack(p: Any, at: Vec3) -> None:
-    """A smokestack (P10-R11) around its centre `at`: a tall casing banded with worn metal and a red
-    neon ring, sooted at the top, its mouth glowing as the next ring loads, steam puffing back
-    from it."""
+    """A smokestack (FB-STEAM-DREADNOUGHT-03) around its centre `at`: a tall casing banded with worn
+    metal and a red neon ring, sooted at the top, its mouth glowing as the next ring loads, steam
+    puffing back from it."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -130,8 +130,8 @@ DOME = [
 
 
 def barbette(p: Any, at: Vec3) -> None:
-    """A broadside turret's mount (P10-R11): its armoured barbette with a red ring, on the
-    sponson."""
+    """A broadside turret's mount (FB-STEAM-DREADNOUGHT-04): its armoured barbette with a red ring,
+    on the sponson."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -142,9 +142,9 @@ def barbette(p: Any, at: Vec3) -> None:
 
 
 def broadside(p: Any, at: Vec3) -> None:
-    """A broadside turret (P10-R11) around its pivot `at`: a faceted dome with a mantlet, a
-    rangefinder across its roof, twin barrels pointing down the screen at rest (they turn with the
-    turret, D-058), a molten seam on its roof."""
+    """A broadside turret (FB-STEAM-DREADNOUGHT-04) around its pivot `at`: a faceted dome with a
+    mantlet, a rangefinder across its roof, twin barrels pointing down the screen at rest (they turn
+    with the turret, D-058), a molten seam on its roof."""
     hull = p.hull
     neon = p.neon
     s = side_at(at)
@@ -172,9 +172,9 @@ TUBE = 1.8
 
 
 def missile_rack(p: Any, at: Vec3) -> None:
-    """The missile rack (P10-R11) around its centre `at`, on the stern: an armoured launcher box,
-    red
-    lights along its sides, four missile tips in their tubes, soot from the launches."""
+    """The missile rack (FB-STEAM-DREADNOUGHT-05) around its centre `at`, on the stern: an armoured
+    launcher box, red lights along its sides, four missile tips in their tubes, soot from the
+    launches."""
     hull = p.hull
     neon = p.neon
     cell_height = DREAD_RACK[0][2] if len(DREAD_RACK) > 0 else DREAD_HEIGHTS.rack

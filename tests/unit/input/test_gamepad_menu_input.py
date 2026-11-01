@@ -16,7 +16,7 @@ def make_input(pads: list) -> GamepadMenuInput:
     return GamepadMenuInput(lambda: pads, MENU_INPUT_CONFIG)
 
 
-def test_p01_r10_axis_value_reads_inside_the_list_and_defaults_to_zero() -> None:
+def test_ui_input_08_axis_value_reads_inside_the_list_and_defaults_to_zero() -> None:
     assert axis_value([0.5, -0.25], 1) == -0.25
     assert axis_value([0.5], 3) == 0
     assert axis_value([0.5], -1) == 0
@@ -35,13 +35,13 @@ def test_p01_r10_axis_value_reads_inside_the_list_and_defaults_to_zero() -> None
         (-0.4, 0.9, "down"),
     ],
 )
-def test_p01_r10_stick_direction_picks_the_dominant_axis(
+def test_ui_input_08_stick_direction_picks_the_dominant_axis(
     x: float, y: float, expected: str | None
 ) -> None:
     assert stick_direction(x, y, 0.35) == expected
 
 
-def test_p01_r10_buttons_fire_once_on_press() -> None:
+def test_ui_input_07_buttons_fire_once_on_press() -> None:
     pad = FakeGamepad().press(0)
     menu = make_input([pad])
     assert menu.update(0.016) == ["confirm"]
@@ -52,7 +52,7 @@ def test_p01_r10_buttons_fire_once_on_press() -> None:
     assert menu.update(0.016) == ["confirm"]
 
 
-def test_p01_r10_dpad_direction_repeats_while_held() -> None:
+def test_ui_input_06_dpad_direction_repeats_while_held() -> None:
     pad = FakeGamepad().press(12)
     menu = make_input([pad])
     assert menu.update(0) == ["up"]
@@ -60,7 +60,7 @@ def test_p01_r10_dpad_direction_repeats_while_held() -> None:
     assert menu.update(0.2) == ["up"]
 
 
-def test_p01_r10_left_stick_repeats_while_tilted_inside_the_dead_zone_is_ignored() -> None:
+def test_ui_input_08_left_stick_repeats_while_tilted_inside_the_dead_zone_is_ignored() -> None:
     pad = FakeGamepad().tilt(0, 0.2)
     menu = make_input([pad])
     assert menu.update(0) == []
@@ -68,7 +68,7 @@ def test_p01_r10_left_stick_repeats_while_tilted_inside_the_dead_zone_is_ignored
     assert menu.update(0) == ["down"]
 
 
-def test_p01_r10_releasing_the_stick_stops_its_repeat() -> None:
+def test_ui_input_06_releasing_the_stick_stops_its_repeat() -> None:
     pad = FakeGamepad().tilt(1, 0)
     menu = make_input([pad])
     menu.update(0)
@@ -76,25 +76,26 @@ def test_p01_r10_releasing_the_stick_stops_its_repeat() -> None:
     assert menu.update(5.0) == []
 
 
-def test_p01_r10_all_connected_gamepads_are_merged_and_empty_slots_skipped() -> None:
+def test_ui_input_07_all_connected_gamepads_are_merged_and_empty_slots_skipped() -> None:
     first = FakeGamepad().press(0)
     second = FakeGamepad().press(1)
     menu = GamepadMenuInput(lambda: [None, first, second], MENU_INPUT_CONFIG)
     assert menu.update(0) == ["confirm", "back"]
 
 
-def test_p01_r10_a_direction_held_on_the_dpad_and_the_stick_is_emitted_once() -> None:
+def test_ui_input_06_a_direction_held_on_the_dpad_and_the_stick_is_emitted_once() -> None:
     pad = FakeGamepad().press(13).tilt(0, 1)
     menu = make_input([pad])
     assert menu.update(0) == ["down"]
 
 
-def test_p01_r10_start_button_pauses() -> None:
+def test_ui_pause_01_start_button_pauses() -> None:
+    """The gamepad's pause binding (UI-INPUT-07)."""
     menu = make_input([FakeGamepad().press(9)])
     assert menu.update(0) == ["pause"]
 
 
-def test_p01_r10_browser_gamepads_reads_navigator_or_gives_nothing() -> None:
+def test_ui_input_07_browser_gamepads_reads_navigator_or_gives_nothing() -> None:
     pad = FakeGamepad()
 
     class Nav:

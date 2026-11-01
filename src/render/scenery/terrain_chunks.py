@@ -1,5 +1,5 @@
-"""The terrain as a row of chunks along Z (P04-R01, ENG-19): only the chunks under the camera exist,
-and the meshes of
+"""The terrain as a row of chunks along Z (GFX-TERRAIN-14, ENG-19): only the chunks under the camera
+exist, and the meshes of
 chunks that scroll out of view are reused for new ones.
 """
 
@@ -70,8 +70,8 @@ def _empty_map() -> Any:
 
 
 class TerrainChunks:
-    """The terrain as a row of chunks along Z (P04-R01): only the chunks under the camera exist,
-    and the meshes of chunks that scroll out of view are reused for new ones (ENG-19).
+    """The terrain as a row of chunks along Z (GFX-TERRAIN-14): only the chunks under the camera
+    exist, and the meshes of chunks that scroll out of view are reused for new ones (ENG-19).
 
     The live chunks are kept in a JavaScript `Map` (insertion order)."""
 

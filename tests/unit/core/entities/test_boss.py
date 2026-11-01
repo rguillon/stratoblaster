@@ -19,7 +19,7 @@ def as_tuple(point: Any) -> tuple[float, ...]:
     return (point.x, point.y)
 
 
-def test_p07_r01_a_new_boss_is_coming_in_and_cannot_be_hurt(make_boss: Make) -> None:
+def test_boss_09_a_new_boss_is_coming_in_and_cannot_be_hurt(make_boss: Make) -> None:
     boss = make_boss()
     assert boss.state == "entering"
     assert not boss.vulnerable
@@ -27,28 +27,28 @@ def test_p07_r01_a_new_boss_is_coming_in_and_cannot_be_hurt(make_boss: Make) -> 
     assert boss.rammable is False
 
 
-def test_p07_r01_parts_sit_at_their_offsets_from_the_centre(make_boss: Make) -> None:
+def test_boss_12_parts_sit_at_their_offsets_from_the_centre(make_boss: Make) -> None:
     boss = make_boss()
     assert boss.parts[0].x == pytest.approx(80)
     assert boss.parts[0].y == pytest.approx(210)
     assert boss.core.x == pytest.approx(100)
 
 
-def test_p07_r05_shots_spark_on_all_of_it_while_it_comes_in(make_boss: Make) -> None:
+def test_boss_09_shots_spark_on_all_of_it_while_it_comes_in(make_boss: Make) -> None:
     boss = make_boss()
     assert boss.shot_targets == boss.hit_targets
     assert boss.core in boss.shot_targets
     assert len(boss.shot_targets) == 3
 
 
-def test_p07_r01_a_shielded_core_is_passed_through(make_boss: Make) -> None:
+def test_boss_15_a_shielded_core_is_passed_through(make_boss: Make) -> None:
     boss = make_boss(fighting=True)
     assert boss.core_shielded
     assert boss.shot_targets == [boss.parts[0], boss.parts[1]]
     assert boss.core not in boss.shot_targets
 
 
-def test_p07_r01_once_the_shield_is_gone_shots_reach_the_core(
+def test_boss_14_once_the_shield_is_gone_shots_reach_the_core(
     make_boss: Make, ctx: FakeContext
 ) -> None:
     boss = make_boss(fighting=True)
@@ -59,7 +59,7 @@ def test_p07_r01_once_the_shield_is_gone_shots_reach_the_core(
     assert boss.parts[1] not in boss.hit_targets
 
 
-def test_p07_r04_breaking_a_part_starts_a_stage_with_a_pause(
+def test_boss_20_breaking_a_part_starts_a_stage_with_a_pause(
     make_boss: Make, ctx: FakeContext
 ) -> None:
     boss = make_boss(fighting=True)
@@ -72,7 +72,7 @@ def test_p07_r04_breaking_a_part_starts_a_stage_with_a_pause(
     assert boss.parts[0] not in boss.hit_targets
 
 
-def test_p07_r04_a_broken_part_is_counted_once(make_boss: Make, ctx: FakeContext) -> None:
+def test_boss_20_a_broken_part_is_counted_once(make_boss: Make, ctx: FakeContext) -> None:
     boss = make_boss(fighting=True)
     boss.parts[0].destroy()
     boss.update(ctx, 0.0)
@@ -81,7 +81,7 @@ def test_p07_r04_a_broken_part_is_counted_once(make_boss: Make, ctx: FakeContext
     assert len(ctx.broken) == 1
 
 
-def test_p07_r04_the_stage_hook_is_called_with_each_new_stage(
+def test_boss_21_the_stage_hook_is_called_with_each_new_stage(
     make_boss: Make, ctx: FakeContext
 ) -> None:
     boss = make_boss(fighting=True)
@@ -94,7 +94,7 @@ def test_p07_r04_the_stage_hook_is_called_with_each_new_stage(
     assert boss.stage == 2
 
 
-def test_p07_r04_no_attack_during_the_stage_pause(make_boss: Make, ctx: FakeContext) -> None:
+def test_boss_22_no_attack_during_the_stage_pause(make_boss: Make, ctx: FakeContext) -> None:
     boss = make_boss(fighting=True)
     boss.parts[0].destroy()
     for _ in range(3):
@@ -127,7 +127,7 @@ def test_without_an_angry_hook_the_stage_pattern_goes_on(make_boss: Make, ctx: F
     assert boss.patterns == [0.5]
 
 
-def test_p07_r06_hurt_core_to_zero_starts_the_death(make_boss: Make) -> None:
+def test_boss_19_hurt_core_to_zero_starts_the_death(make_boss: Make) -> None:
     boss = make_boss(fighting=True)
     boss.hurt_core(0)
     assert boss.state == "dying"
@@ -165,7 +165,7 @@ def test_break_next_destroys_the_parts_then_the_core(make_boss: Make) -> None:
     assert boss.state == "dying"
 
 
-def test_p07_r06_the_hull_blasts_one_by_one_then_it_is_gone(
+def test_boss_19_the_hull_blasts_one_by_one_then_it_is_gone(
     make_boss: Make, ctx: FakeContext
 ) -> None:
     boss = make_boss(fighting=True)

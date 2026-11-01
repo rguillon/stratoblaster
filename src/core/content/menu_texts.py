@@ -11,7 +11,9 @@ __pragma__("noskip")
 
 
 class MenuTexts:
-    """The texts of the menu screens, the HUD, the pause menu and the settings screen."""
+    """The texts of the menu screens, the HUD, the pause menu and the settings screen: every text
+    comes from the game (UI-LOOK-10).
+    """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -44,7 +46,7 @@ class MenuTexts:
         hud_bomb: Callable[[int], str],
         hud_mini_boss: str,
         hud_boss: str,
-        unsupported: str,
+        unsupported: str,  # Shown in place of the game without WebGL2 (ENG-06).
         settings: str,
         settings_hint: str,
         music_volume: str,

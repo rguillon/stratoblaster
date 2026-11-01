@@ -20,7 +20,8 @@ def opt(value: Any) -> Any:
 
 def keys_of(record: Any) -> list[str]:
     """The keys of a config record, in their order. A record is a plain JavaScript object, which
-    has no `keys()` method under Transcrypt.
+    has no `keys()` method under Transcrypt (ENG-159); a Python twin gives the same keys under
+    CPython (ENG-160).
     """
     result: list[str] = []
     # CPython only (the unit tests): a dict's keys, as `Object.keys` gives them in the browser.

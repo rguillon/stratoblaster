@@ -262,6 +262,7 @@ def test_d199_the_clock_reads_minutes_and_seconds() -> None:
 
 
 def test_d199_the_close_up_fills_its_share_of_the_screen_and_never_widens() -> None:
+    """DEV-MENU-09."""
     fov = close_up_fov(10, 100, 0.5, 1.0)
     assert math.isclose(2 * 100 * math.tan(fov / 2) * 0.5, 10)
     assert close_up_fov(1000, 100, 0.5, 1.0) == 1.0
@@ -274,6 +275,7 @@ def test_d199_the_time_eases_towards_the_wheel_without_overshooting() -> None:
 
 
 def test_d199_the_scene_waits_for_the_level_ground(env: Env) -> None:
+    """DEV-MENU-08."""
     env.ready = False
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
     v.frame(0.1)
@@ -287,6 +289,7 @@ def test_d199_the_scene_waits_for_the_level_ground(env: Env) -> None:
 
 
 def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) -> None:
+    """DEV-MENU-12."""
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
     v.show(0, True)
     v.frame(0.1)
@@ -332,6 +335,7 @@ class Drawn:
 
 
 def test_d199_an_enemy_lives_its_own_life_but_is_drawn_at_the_middle(env: Env) -> None:
+    """DEV-MENU-13."""
     v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
     v.frame(0)
     drawn = Drawn(v._layer)
@@ -404,6 +408,7 @@ def test_d199_a_boss_is_spawned_too_and_an_unknown_kind_is_an_error(env: Env) ->
 
 
 def test_d199_the_levels_viewer_scrubs_within_the_level_and_plays(env: Env) -> None:
+    """DEV-MENU-18."""
     v = viewer("levels", [DevItem("1-1", "1-1", "1-1")])
     v.frame(0)
     v.scrub(-500)
@@ -439,6 +444,7 @@ def test_d199_dispose_drops_the_model_and_the_scene(env: Env) -> None:
 
 
 def test_d199_a_drag_turns_a_ship_and_the_turn_is_kept_for_the_next(env: Env) -> None:
+    """DEV-MENU-10."""
     items = [DevItem("alpha", "Alpha", "1-1"), DevItem("beta", "Beta", "1-1")]
     v = viewer("ships", items)
     v.frame(0)
@@ -461,6 +467,7 @@ def test_d199_a_drag_turns_an_enemy_on_top_of_its_heading(env: Env) -> None:
 
 
 def test_d205_a_prop_is_shown_on_its_own_stage_without_a_level(env: Env) -> None:
+    """DEV-MENU-16."""
     items = [DevItem("hut", "hut", "1-1"), DevItem("barn", "barn", "2-1")]
     v = viewer("props", items)
     v.frame(0)
@@ -478,6 +485,7 @@ def test_d205_a_prop_is_shown_on_its_own_stage_without_a_level(env: Env) -> None
 
 
 def test_d205_a_drag_and_the_toggle_reach_the_props_camera(env: Env) -> None:
+    """DEV-MENU-17."""
     v = viewer("props", [DevItem("hut", "hut", "1-1")])
     v.show(0, True)
     v.turn(50, -20)
@@ -498,6 +506,7 @@ def test_d205_dispose_drops_the_props_stage(env: Env) -> None:
 
 
 def test_d208_the_wheel_zooms_in_up_and_out_down_within_its_range() -> None:
+    """DEV-MENU-11."""
     assert zoomed(1, -100) == pytest.approx(math.exp(100 * CFG.zoom_per_pixel))
     assert zoomed(1, 100) == pytest.approx(math.exp(-100 * CFG.zoom_per_pixel))
     assert zoomed(1, -1e6) == pytest.approx(CFG.zoom_range[1])
@@ -551,6 +560,7 @@ def _probe_boss() -> Any:
 def test_k_breaks_the_boss_part_and_its_blast_is_drawn_where_the_boss_is_shown(
     env: Env,
 ) -> None:
+    """DEV-MENU-14."""
     v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
     boss = _probe_boss()
     v.game.boss_kinds[0].spawn = lambda area: boss

@@ -37,7 +37,7 @@ BUILDERS = [
 
 @pytest.mark.parametrize("builder", BUILDERS, ids=lambda b: b.__name__)
 @pytest.mark.parametrize("seed", [1, 2])
-def test_p15_r09_each_home_is_a_well_formed_building_on_the_ground(builder, seed):
+def test_gfx_bldg_09_each_home_is_a_well_formed_building_on_the_ground(builder, seed):
     k = tile_kit(20.0, 20.0, TILE.size, seed)
     builder(k)
     prop = geometry_of(k)
@@ -45,7 +45,7 @@ def test_p15_r09_each_home_is_a_well_formed_building_on_the_ground(builder, seed
     assert height(prop.structure) > 0
 
 
-def test_p15_r09_a_shed_is_a_red_box_of_its_size_at_its_place():
+def test_gfx_bldg_09_a_shed_is_a_red_box_of_its_size_at_its_place():
     k = tile_kit(20.0, 20.0, TILE.size, 1)
     build_shed(k, [2.0, -3.0], [4.0, 6.0])
     low, high = bounds(geometry_of(k).structure)
@@ -56,7 +56,7 @@ def test_p15_r09_a_shed_is_a_red_box_of_its_size_at_its_place():
     assert high[2] - low[2] == pytest.approx(6.0)
 
 
-def test_p15_r09_flats_stand_taller_than_a_cottage():
+def test_gfx_bldg_09_flats_stand_taller_than_a_cottage():
     flats = tile_kit(20.0, 20.0, TILE.size, 1)
     build_flats(flats)
     cottage = tile_kit(20.0, 20.0, TILE.size, 1)

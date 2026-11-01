@@ -1,5 +1,5 @@
 """The Harbour Kraken's cargo: the container bay at its stern (a part, launching Gnats) and the
-hatch covers along its deck (P08-R10,
+hatch covers along its deck (FB-HARBOUR-KRAKEN-03, FB-HARBOUR-KRAKEN-02,
 2-2). Logical pixels, nose +Z, Y up (towards the camera).
 """
 
@@ -30,7 +30,7 @@ __pragma__("noskip")
 
 H = ENEMY_LOOK.hull
 
-# The eggs' flesh shades (P16-R06), where the container paints were.
+# The eggs' flesh shades (FB-HARBOUR-KRAKEN-03), where the container paints were.
 PAINT = [
     ICE_FLESH.membrane,
     ICE_FLESH.graphite,
@@ -54,17 +54,18 @@ STACKS = [  # type: Stacks
 
 def _container(p: EnemyParts, at: Vec3, paint: Rgb) -> None:
     """A container at `at` (its base), painted `paint`, its doors' end hatched, snow on its roof."""
-    # P16-R06: an egg lying in the brood sac where a container was, a gland lit in it.
+    # FB-HARBOUR-KRAKEN-03: an egg lying in the brood sac where a container was, a gland lit in it.
     organ(p.flesh, BOX[0] / 2, 6, paint, Placement(at, 0, math.pi / 2), BOX[2] / BOX[0])
     organ(p.vein, 0.9, 4, ORANGE_NEON, Placement(offset(at, 0, BOX[1] * 0.8, 0)), 0.6)
 
 
 def container_bay(p: EnemyParts, at: Vec3) -> None:
-    """The container bay (P08-R10): stacks of frosted containers either side of an open launch
-    hatch, an orange-lit gantry over it; its Gnats leave through the hatch."""
+    """The container bay (FB-HARBOUR-KRAKEN-03): stacks of frosted containers either side of an open
+    launch hatch, an orange-lit gantry over it; its Gnats leave through the hatch."""
     hull = p.hull
     neon = p.neon
-    # P16-R06: the brood sac, a cradle of membrane full of eggs, its mouth held open by metal.
+    # FB-HARBOUR-KRAKEN-03: the brood sac, a cradle of membrane full of eggs, its mouth held open by
+    # metal.
     p.flesh.bevel_slab(
         rect(38, 32),
         [DECK_Y - 1, DECK_Y, DECK_Y + 1.5],
@@ -99,7 +100,8 @@ def container_bay(p: EnemyParts, at: Vec3) -> None:
 
 
 def hatch_covers(p: EnemyParts) -> None:
-    """The hatch covers on the deck between the cranes: frosted lids with seams and a vent."""
+    """The hatch covers on the deck between the cranes (FB-HARBOUR-KRAKEN-02): frosted lids with
+    seams and a vent."""
     hull = p.hull
     flesh = p.flesh
     for z in [-20, 40]:

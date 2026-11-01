@@ -1,5 +1,5 @@
-"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4), and the barrels drawn to
-their muzzles Logical pixels, nose +Z, Y up
+"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4; MB-AVALANCHE-05,
+FB-GLACIER-COLOSSUS-05), and the barrels drawn to their muzzles Logical pixels, nose +Z, Y up
 (towards the camera).
 """
 

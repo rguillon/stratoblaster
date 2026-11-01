@@ -1,4 +1,4 @@
-"""How a moving region's piece is posed in a boss model (D-230)."""
+"""How a moving region's piece is posed in a boss model (BOSS-45, D-230)."""
 
 import math
 from types import SimpleNamespace

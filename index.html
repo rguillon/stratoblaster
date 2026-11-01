@@ -7,10 +7,11 @@
     <style>
       /*
        * Neon blue/green look (reviewer, 2026-10-30, D-198; was darksynth magenta, D-103):
-       * electric cyan and neon green on blue-black, a cold chrome logo, blue-to-green neon lines,
-       * soft neon glows, chamfered panels. The selected entry is a solid cyan block, with its
-       * markers. Red stays for danger (low health, game over, locked, the boss). System fonts
-       * only: works offline.
+       * electric cyan and neon green on blue-black (UI-LOOK-03), a cold chrome logo, blue-to-green
+       * neon lines, soft neon glows, chamfered glass panels (UI-LOOK-06). The selected entry is a
+       * solid cyan block, with its markers. Red stays for danger (low health, game over, locked,
+       * the boss), orange for the bombs (UI-LOOK-04). Large type for kids (UI-LOOK-09). System
+       * fonts only: works offline (UI-LOOK-11).
        */
       :root {
         --neon: #00e8ff;
@@ -56,6 +57,8 @@
         color: var(--paper);
         font-family: var(--font);
       }
+      /* No screen overlay on the stage (UI-LOOK-07); #menu, laid out at the logical resolution,
+         is scaled over it (UI-LOOK-01). */
       #stage {
         position: fixed;
         overflow: hidden;
@@ -76,6 +79,7 @@
         -webkit-user-select: none;
         touch-action: manipulation;
       }
+      /* The message shown when the game cannot run (UI-LOAD-02). */
       #fatal {
         position: fixed;
         inset: 0;
@@ -127,6 +131,7 @@
         background: var(--neon-line);
         box-shadow: 0 0 12px var(--glow);
       }
+      /* Short screen transitions (UI-FLOW-08). */
       .menu-enter {
         animation-name: menu-fade;
         animation-timing-function: ease-out;
@@ -150,7 +155,7 @@
           var(--glass);
       }
       /* Selected entry: solid cyan block with black text, plus its markers, so it shows
-         without colour too (much lighter than the dark panels in greyscale). */
+         without colour too (much lighter than the dark panels in greyscale, UI-LOOK-08). */
       .menu-entry.selected {
         border-color: var(--paper);
         color: var(--black);
@@ -173,6 +178,7 @@
           0 0 18px rgba(10, 92, 255, 0.9),
           0 0 4px rgba(0, 0, 0, 0.9);
       }
+      /* Hints pulse gently; not with reduced motion (UI-LOOK-14). */
       .menu-hint {
         font-size: 15px;
         letter-spacing: 0.12em;
@@ -185,11 +191,12 @@
           opacity: 0.55;
         }
       }
+      /* The on-screen Back button (UI-INPUT-10). */
       .menu-back {
         position: absolute;
         left: 12px;
         top: 12px;
-        /* ≥ 44 CSS px even on a 390 px wide phone (scale 0.81). */
+        /* ≥ 44 CSS px even on a 390 px wide phone (scale 0.81, UI-INPUT-11). */
         min-width: 96px;
         min-height: 56px;
         display: flex;
@@ -207,6 +214,7 @@
         text-transform: uppercase;
         cursor: pointer;
       }
+      /* A locked level shakes when confirmed (UI-LEVEL-04). */
       .shake {
         animation: menu-shake 0.3s linear;
       }
@@ -221,7 +229,7 @@
         }
       }
 
-      /* A neon grid floor under a deep blue horizon glow. */
+      /* The loading screen (UI-LOAD-05): a neon grid floor under a deep blue horizon glow. */
       .loading-screen {
         justify-content: center;
         gap: 16px;
@@ -264,6 +272,7 @@
         color: var(--accent);
       }
 
+      /* The title: high score, logo, Start, Settings, the hint and the version (UI-TITLE-01). */
       .title-score-label {
         font-family: var(--font-tech);
         font-size: 15px;
@@ -278,12 +287,12 @@
         font-variant-numeric: tabular-nums;
         color: var(--neon);
       }
-      /* 80s chrome letters (a horizon line across the middle) in a slow neon glow. */
+      /* 80s chrome letters (a horizon line across the middle) in a slow neon glow (UI-LOOK-12). */
       .title-name {
         margin: 40px 0 0;
         padding: 6px 24px;
         /* Sized so the 13-letter "Stratoblaster" fits the 480 px wide screen; shrinkToFit()
-           lowers it when the system falls back to a wider font. */
+           lowers it when the system falls back to a wider font (UI-LOOK-13). */
         font-size: 46px;
         font-weight: 900;
         font-style: italic;
@@ -318,7 +327,7 @@
       .title-start.selected::after {
         content: ' ◀';
       }
-      /* Settings entry under Start (P12-R04). */
+      /* Settings entry under Start (UI-TITLE-01). */
       .title-settings {
         margin-top: 18px;
         padding: 8px 22px;
@@ -341,6 +350,7 @@
         margin-top: auto;
         margin-bottom: 28px;
       }
+      /* Version and commit (UI-TITLE-04). */
       .title-version {
         position: absolute;
         right: 16px;
@@ -365,6 +375,7 @@
         line-height: 1.5;
         opacity: 0.6;
       }
+      /* The highlighted ship's marker (UI-SHIP-03). */
       .ship-card::before {
         content: '▲';
         display: block;
@@ -389,6 +400,7 @@
         margin: 12px 0 8px;
       }
 
+      /* The level grid (UI-LEVEL-09). */
       .level-grid {
         display: grid;
         gap: 10px;
@@ -447,12 +459,13 @@
         color: var(--red);
       }
 
-      /* Game screen (P06-R02): the playfield shows through; drag anywhere to fly (touch). */
+      /* Game screen: the playfield shows through; drag anywhere to fly (touch, GAME-CTRL-04). */
       .game-screen {
         justify-content: center;
         touch-action: none;
       }
-      /* The level played: in the HUD's bar at the bottom, under the weapon (reviewer, 2026-10-28). */
+      /* The level played: in the HUD's bar at the bottom, under the weapon (reviewer, 2026-10-28,
+         UI-HUD-06). */
       .game-level {
         position: absolute;
         right: 12px;
@@ -466,14 +479,15 @@
         text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
         pointer-events: none;
       }
-      /* No neon line over the playfield. */
+      /* No neon line over the playfield (UI-LOOK-05). */
       .game-screen::after {
         content: none;
       }
       /* In-game HUD (reworked at the reviewer's request, 2026-10-28): one bar along the bottom of
          the playfield, 48 px high (the ship stays above it: `shipMargin` in game-play.ts), the
          level's progress along its top edge; the ship, lives, bombs and health on the left, the
-         score in the middle, the weapon and the level on the right. Never takes clicks. */
+         score in the middle, the weapon and the level on the right (UI-HUD-01, laid out without
+         overlap, UI-HUD-08). Never takes clicks (UI-HUD-11). */
       .game-hud {
         position: absolute;
         inset: 0;
@@ -499,7 +513,7 @@
         background: var(--glass);
         border-top: 1px solid rgba(0, 232, 255, 0.45);
       }
-      /* Level progress: a thin line along the top edge of the bar. */
+      /* Level progress: a thin line along the top edge of the bar (UI-HUD-02). */
       .hud-progress {
         position: absolute;
         top: -1px;
@@ -522,6 +536,7 @@
         align-items: baseline;
         white-space: nowrap;
       }
+      /* The ship, its lives and its bombs (UI-HUD-03). */
       .hud-ship {
         color: var(--neon);
         text-transform: uppercase;
@@ -529,7 +544,7 @@
       .hud-lives {
         color: var(--accent);
       }
-      /* Bombs left (P11-R05), next to the lives. */
+      /* Bombs left, next to the lives. */
       .hud-bombs {
         color: #ff8a1e;
       }
@@ -539,6 +554,7 @@
         align-items: center;
         margin-top: 4px;
       }
+      /* Health (UI-HUD-04). */
       .hud-bar {
         flex: 1;
         max-width: 110px;
@@ -559,7 +575,7 @@
         font-size: 10px;
         white-space: nowrap;
       }
-      /* Score and high score (P11-R02), in the middle of the bar. */
+      /* Score and high score (UI-HUD-05), in the middle of the bar. */
       .hud-score {
         text-align: center;
         white-space: nowrap;
@@ -583,7 +599,7 @@
         color: var(--neon);
         white-space: nowrap;
       }
-      /* Touch bomb button (P11-R06), above the fire button, only on touch screens. */
+      /* Touch bomb button (UI-HUD-10), above the fire button, only on touch screens. */
       .hud-bomb-button {
         display: none;
         position: absolute;
@@ -614,9 +630,10 @@
           display: flex;
         }
       }
-      /* Boss health bar (P07-R02): a slim gauge down the left edge from the top (the player's HUD
-         is at the bottom since 2026-10-28), so it never hides the boss (reviewer, 2026-10-26);
-         kind and name written along it, bottom to top; a notch at the end of each part's share. */
+      /* Boss health bar (UI-HUD-12): a slim gauge down the left edge from the top (the player's
+         HUD is at the bottom since 2026-10-28), so it never hides the boss (reviewer, 2026-10-26);
+         kind and name written along it, bottom to top (UI-HUD-16); a notch at the end of each
+         part's share (UI-HUD-15); red for the danger (UI-HUD-17). */
       .boss-bar {
         position: absolute;
         top: 14px;
@@ -697,8 +714,8 @@
           display: flex;
         }
       }
-      /* Pause button (P12-R01): top right, under the weapon readout, clear of the HUD; at least
-         44 CSS px even on a 390 px wide phone (scale 0.81). */
+      /* Pause button (UI-PAUSE-02): top right, under the weapon readout, clear of the HUD; at
+         least 44 CSS px even on a 390 px wide phone (scale 0.81). */
       .game-pause {
         position: absolute;
         z-index: 5;
@@ -719,7 +736,8 @@
         cursor: pointer;
         touch-action: none;
       }
-      /* Pause menu (P12-R02): the last frame dimmed (pause_dim, 50 % black) under a panel. */
+      /* Pause menu (UI-PAUSE-07): the last frame dimmed (pause_dim, 50 % black, UI-PAUSE-03) under
+         a panel. */
       .pause-dim {
         position: absolute;
         inset: 0;
@@ -784,7 +802,8 @@
         margin-top: 4px;
       }
 
-      /* Settings screen (P12-R04): one slider per volume; over a paused level, dimmed. */
+      /* Settings screen (UI-SET-08): one slider per volume; over a paused level, dimmed
+         (UI-SET-07). */
       .settings-screen.over-level {
         background: rgba(0, 0, 0, 0.5);
       }
@@ -840,7 +859,7 @@
         text-align: right;
       }
 
-      /* "Level complete" overlay (P06-R03). */
+      /* "Level complete" overlay (UI-OVER-01), in the panels' look (UI-OVER-09). */
       .level-complete {
         display: flex;
         flex-direction: column;
@@ -872,7 +891,7 @@
       .level-complete-enemies {
         font-size: 22px;
       }
-      /* The attempt's score, and a new high score (P11-R03). */
+      /* The attempt's score, and a new high score (UI-OVER-02). */
       .level-complete-score {
         font-family: var(--font-tech);
         font-size: 24px;
@@ -884,13 +903,15 @@
         text-transform: uppercase;
         color: var(--accent);
       }
+      /* The "Game over" panel (UI-OVER-05). */
       .level-complete.game-over {
         border-color: var(--red);
       }
       .game-over .level-complete-heading {
         color: var(--red);
       }
-      /* Game over after the mini boss (P07-R08): Continue from the checkpoint, or level select. */
+      /* Game over after the mini boss: Continue from the checkpoint, or level select
+         (UI-OVER-06). */
       .level-complete-choices {
         display: flex;
         gap: 12px;
@@ -982,9 +1003,9 @@
       .dev-status:empty {
         display: none;
       }
-      /* A dev viewer's menu (D-206): a scrolling panel along the bottom, under the model (it hid
-         the models down the left side), three items a row, each group's heading on a row of its
-         own before its items, so the item shown stays in view. */
+      /* A dev viewer's menu (D-206, DEV-MENU-07): a scrolling panel along the bottom, under the
+         model (it hid the models down the left side), three items a row, each group's heading on
+         a row of its own before its items, so the item shown stays in view. */
       .dev-menu {
         position: absolute;
         left: 14px;
@@ -1053,7 +1074,7 @@
         font-size: 11px;
       }
 
-      /* Debug tile (P06-R09): frame rate and polygons drawn, top right of the window. */
+      /* Debug tile (DEV-PERF-04): frame rate and polygons drawn, top right of the window. */
       .stats-tile {
         position: fixed;
         top: 8px;
@@ -1069,7 +1090,8 @@
         pointer-events: none;
       }
 
-      /* A level's loading screen (P13-R03): shown only if loading takes longer than 300 ms. */
+      /* A level's loading screen (UI-LOAD-06): shown only if loading takes longer than 300 ms
+         (PERF-10). */
       .level-loading {
         z-index: 5;
         opacity: 0;
@@ -1081,7 +1103,7 @@
         }
       }
 
-      /* Debug perf overlay (P13-R01, F3): long frames, longest frame, level loading time. */
+      /* Debug perf overlay (DEV-PERF-03, F3): long frames, longest frame, level loading time. */
       .perf-overlay {
         position: fixed;
         top: 8px;
@@ -1112,7 +1134,9 @@
       <div id="menu"></div>
     </div>
     <div id="fatal" role="alert" hidden></div>
-    <!-- ENG-82: relative URLs, so the game works under the GitHub Pages sub-path. -->
+    <!-- ENG-82: relative URLs, so the game works under the GitHub Pages sub-path. The only files
+         named here (ENG-123): the vendored Babylon build (ENG-02) and the bundled game
+         (ENG-150). -->
     <script src="vendor/babylon.js"></script>
     <script type="module">
       import { main } from './js/game.js';

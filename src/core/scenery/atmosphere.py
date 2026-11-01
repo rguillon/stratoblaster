@@ -1,6 +1,6 @@
-"""The changing part of a level's look (phase 8, P08-R04, P08-R05): the time of day, the clouds,
-the haze, the ground lights and the weather, as plain numbers that blend smoothly from one look to
-another along the level. Pure; the renderer applies it to the scene every frame.
+"""The changing part of a level's look (phase 8, GFX-SKY-05, GFX-WEATHER-06): the time of day, the
+clouds, the haze, the ground lights and the weather, as plain numbers that blend smoothly from one
+look to another along the level. Pure; the renderer applies it to the scene every frame.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -25,7 +25,7 @@ TIMES_OF_DAY = ["dawn", "morning", "midday", "afternoon", "dusk", "night"]
 
 
 def is_time_of_day(value: str) -> bool:
-    """Whether `value` names a time of day."""
+    """Whether `value` names a time of day (GFX-SKY-03; the `look=` debug option, DEV-OPT-05)."""
     return value in TIMES_OF_DAY
 
 
@@ -50,7 +50,7 @@ class CloudCover:
 
 
 class Weather:
-    """Weather (P08-R05): a kind (e.g. `snow`, a key of the engine's weather kinds) and its
+    """Weather (GFX-WEATHER-01): a kind (e.g. `snow`, a key of the engine's weather kinds) and its
     strength (0 = none, 1 = the heaviest)."""
 
     def __init__(self, kind: str, strength: float) -> None:
@@ -59,7 +59,7 @@ class Weather:
 
 
 class Sun:
-    """Where and how the sun (or the moon) lights the level."""
+    """Where and how the sun (or the moon) lights the level (GFX-SKY-01)."""
 
     def __init__(
         self,
@@ -128,8 +128,8 @@ class Atmosphere:
         second_weather: Weather | None = None,
     ) -> None:
         """`aurora`: strength (0..1) of the aurora's curtains in the haze. `lightning`: strength
-        (0..1) of a storm's lightning flashes (P09-R05). `second_weather`: phase 10, a second
-        weather at the same time (ash and embers together)."""
+        (0..1) of a storm's lightning flashes (GFX-WEATHER-10). `second_weather`: phase 10, a second
+        weather at the same time (ash and embers together, GFX-WEATHER-15)."""
         self.sun = sun
         self.sky = sky
         self.ambient = ambient
@@ -174,7 +174,8 @@ def _blend_clouds(a: Sequence[CloudCover], b: Sequence[CloudCover], t: float) ->
 
 
 def _blend_weather(a: Weather, b: Weather, t: float) -> Weather:
-    """Weather between `a` and `b`: the strength blends; the kind is the one that is there."""
+    """Weather between `a` and `b`: the strength blends; the kind is the one that is there
+    (GFX-WEATHER-06)."""
     if a.strength <= 0:
         kind = b.kind
     elif b.strength <= 0 or t < HALF:
@@ -189,7 +190,8 @@ NO_WEATHER = Weather("snow", 0)
 
 
 def _blend_second_weather(a: Atmosphere, b: Atmosphere, t: float) -> Weather | None:
-    """The second weathers of `a` and `b` blended, if either has one (phase 10)."""
+    """The second weathers of `a` and `b` blended, if either has one (phase 10,
+    GFX-WEATHER-15)."""
     if a.second_weather is None and b.second_weather is None:
         return None
     wa = a.second_weather if a.second_weather is not None else NO_WEATHER
@@ -261,7 +263,7 @@ def _smooth(t: float) -> float:
 
 
 class AtmosphereTrack:
-    """A level's look along its length (P08-R04): `start`, then each change in turn, blending
+    """A level's look along its length (GFX-SKY-05): `start`, then each change in turn, blending
     every number smoothly over its stretch. It follows the distance, so a jump along the level
     shows the look of where it lands. `resolve` turns a look description into an atmosphere.
     """

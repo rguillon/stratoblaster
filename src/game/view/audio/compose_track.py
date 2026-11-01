@@ -1,6 +1,7 @@
-"""Composes a whole looping track (P12-R06..R08): a key, a
-tempo and sections picked from the style by a seeded generator, each section's bars made of
-drums, bass, pad, arpeggio and melody. Pure: the same request always gives the same notes.
+"""Composes a whole looping track for a level, a boss or the menu (AUD-MUSIC-02, AUD-MUSIC-07,
+AUD-MUSIC-11): a key, a tempo and sections picked from the style by a seeded generator, each
+section's bars made of drums, bass, pad, arpeggio and melody. Pure: the same request always gives
+the same notes.
 """
 
 import math
@@ -51,9 +52,9 @@ class TrackRequest:
         # Its id, as the track reports it (`level-2-3`, `boss-2`, `menu`).
         self.id = track_id
         self.style = style
-        # Seeds the choices: the same seed always gives the same track (P12-R06).
+        # Seeds the choices: the same seed always gives the same track (AUD-MUSIC-01).
         self.seed = seed
-        # Faster and more intense (P12-R07).
+        # Faster and more intense (AUD-MUSIC-07).
         self.boss = boss
 
 
@@ -82,7 +83,8 @@ class Section:
 
 
 def tempo_of(request: TrackRequest, random: Random) -> int:
-    """The tempo of a track: in its style's range, or 20–30 BPM above it for a boss (P12-R07)."""
+    """The tempo of a track: in its style's range (AUD-MUSIC-05), or 20–30 BPM above it for a
+    boss (AUD-MUSIC-07)."""
     tempo = request.style.tempo
     if request.boss:
         return math.floor(
@@ -94,7 +96,7 @@ def tempo_of(request: TrackRequest, random: Random) -> int:
 
 
 def section_count(bpm: int) -> int:
-    """Whole sections, enough for the track to last at least `music_loop_min` (P12-R06)."""
+    """Whole sections, enough for the track to last at least `music_loop_min` (AUD-MUSIC-06)."""
     bars = (MUSIC_LOOP_MIN_SECONDS * bpm) / 60 / BEATS_PER_BAR
     return math.ceil(bars / SECTION_BARS)
 
@@ -112,8 +114,8 @@ LEVEL_ENERGIES = [
 
 
 def energies(request: TrackRequest, count: int, random: Random) -> list[int]:
-    """The energy of each section: the level's shape; a boss fight is intense all along, with one
-    breath."""
+    """The energy of each section (AUD-MUSIC-04): the level's shape; a boss fight is intense all
+    along, with one breath."""
     if request.boss:
         return [1 if i == count - 2 else 2 for i in range(count)]
     shape = pick(
@@ -192,9 +194,9 @@ def section_notes(
 
 
 def compose_track(request: TrackRequest) -> Track:
-    """Composes a looping track (P12-R06..R08): a key, a tempo and sections picked from the style
-    by a seeded generator, each section's bars made of drums, bass, pad, arpeggio and melody.
-    Pure: the same request always gives the same notes."""
+    """Composes a looping track (AUD-MUSIC-01, AUD-MUSIC-02): a key, a tempo and sections picked
+    from the style by a seeded generator, each section's bars made of drums, bass, pad, arpeggio
+    and melody. Pure: the same request always gives the same notes."""
     random = create_rng(request.seed)
     style = request.style
     bpm = tempo_of(request, random)

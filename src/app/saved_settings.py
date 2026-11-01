@@ -1,4 +1,4 @@
-"""The volume settings kept between visits (P12-R04, D-010).
+"""The volume settings kept between visits (UI-SET-06, D-010).
 Keys are prefixed with the game's id.
 """
 
@@ -55,7 +55,7 @@ def _number_of(text: str) -> int:
 def load_volumes(
     storage: KeyValueStorage, game_id: str, max_step: int, defaults: Volumes
 ) -> Volumes:
-    """The saved volumes, or the defaults where nothing valid is saved (P12-R04)."""
+    """The saved volumes, or the defaults where nothing valid is saved (UI-SET-06)."""
     keys = saved_setting_keys(game_id)
     return Volumes(
         parse_volume(storage.get(keys.music), max_step, defaults.music),
@@ -64,7 +64,7 @@ def load_volumes(
 
 
 def save_volumes(storage: KeyValueStorage, game_id: str, volumes: Volumes) -> None:
-    """Saves both volumes (on every change, P12-R04)."""
+    """Saves both volumes (on every change, UI-SET-06)."""
     keys = saved_setting_keys(game_id)
     storage.set(keys.music, str(volumes.music))
     storage.set(keys.sfx, str(volumes.sfx))

@@ -1,10 +1,11 @@
-"""The World 1 mini bosses (P07-R05)
+"""The World 1 mini bosses (specs/bosses/mini/1-1-reef-warden.md to 1-5-sentinel.md)
 
-2 or 3 destroyable parts each. Offsets in px from the boss's centre, X right and Y up (its nose
-points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the same
-while they stand, the core fires something new at every stage, and the last stage (only the core
-left) a ring or spiral used before by no stage of that boss. Health values are tuned so that a
-player with guns at level 3 always on target needs the fight times of P07-R10.
+2 or 3 destroyable parts each (BOSS-13). Offsets in px from the boss's centre, X right and Y up
+(its nose points down, at -Y). The stage patterns are the agent's design (BOSS-21): the parts fire
+the same while they stand, the core fires something new at every stage, and the last stage (only
+the core left) a ring or spiral used before by no stage of that boss. Health values are tuned so
+that a player with guns at level 3 always on target needs the fight times of BOSS-56 (World 1's:
+WLD-1-29), their full health going up from 1-1 to 1-5 (BOSS-55, WLD-1-27).
 """
 
 import math
@@ -36,18 +37,20 @@ PURPLE = bullet("purple", 195)
 # The guns' muzzles (phase 7 review): the tips of the barrels their models draw, from the boss's
 # centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
-# The Reef Warden's right side cannon's two barrels.
+# The Reef Warden's right side cannon's two barrels (MB-REEF-WARDEN-03).
 CANNON = [
     [38.5, -23.2, 7.9],
     [33.5, -23.2, 7.9],
 ]
 
-# 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core.
+# 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core
+# (MB-REEF-WARDEN-07).
 _REEF_WARDEN = record(
     {
         "id": "reef-warden",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-REEF-WARDEN-09).
         "rage": rage.spirals(0, "orange", "red"),
+        # Its points and its parts' drops (MB-REEF-WARDEN-11).
         "stats": stats(
             {
                 "id": "reef-warden",
@@ -63,6 +66,7 @@ _REEF_WARDEN = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-REEF-WARDEN-06).
         "stopFraction": 0.72,
         "sway": {"amplitude": 70, "period": 7},
         "bob": {"amplitude": 8, "period": 3.5},
@@ -71,6 +75,7 @@ _REEF_WARDEN = record(
             "cannon-left": {"gun": mirror(CANNON), "turret": [-36, -2]},
             "cannon-right": {"gun": CANNON, "turret": [36, -2]},
         },
+        # Its parts' volleys, then the core's pattern per stage (MB-REEF-WARDEN-08).
         "stages": stages(
             [
                 volley.burst("cannon-left", 2.6, 3, 0.18, RED, 1),
@@ -85,12 +90,14 @@ _REEF_WARDEN = record(
     }
 )
 
-# 1-2: an armoured flying barge; its front plate shields the core, two mortars lob big bullets.
+# 1-2: an armoured flying barge; its front plate shields the core, two mortars lob big bullets
+# (MB-BREAKWATER-07).
 _BREAKWATER = record(
     {
         "id": "breakwater",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-BREAKWATER-09).
         "rage": rage.curtain(1, "red", "orange"),
+        # Its points and its parts' drops (MB-BREAKWATER-11).
         "stats": stats(
             {
                 "id": "breakwater",
@@ -107,14 +114,17 @@ _BREAKWATER = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-BREAKWATER-06).
         "stopFraction": 0.72,
         "sway": {"amplitude": 60, "period": 8},
         "bob": {"amplitude": 6, "period": 4},
+        # Its guns' muzzles (MB-BREAKWATER-03).
         "guns": {
             "core": {"gun": twin(1.5, -33.3, 6.4), "turret": [0, -21]},
             "mortar-left": {"gun": [[-34, -1.5, 17.2]], "turret": [-34, 12]},
             "mortar-right": {"gun": [[34, -1.5, 17.2]], "turret": [34, 12]},
         },
+        # Its parts' volleys, then the core's pattern per stage (MB-BREAKWATER-08).
         "stages": stages(
             [
                 volley.aimed("mortar-left", 2.4, 1, 0, bullet("orange", 110, 7), 1.2),
@@ -130,12 +140,14 @@ _BREAKWATER = record(
     }
 )
 
-# 1-3: a gyro gunship; three blade pods on its turning ring fire spirals and shield the core.
+# 1-3: a gyro gunship; three blade pods on its turning ring fire spirals and shield the core
+# (MB-DUST-DEVIL-07).
 _DUST_DEVIL = record(
     {
         "id": "dust-devil",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-DUST-DEVIL-09).
         "rage": rage.vortex(2, "green", "purple"),
+        # Its points and its parts' drops (MB-DUST-DEVIL-11).
         "stats": stats(
             {
                 "id": "dust-devil",
@@ -152,10 +164,12 @@ _DUST_DEVIL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-DUST-DEVIL-06).
         "stopFraction": 0.72,
         "sway": {"amplitude": 60, "period": 9},
         "bob": {"amplitude": 10, "period": 3},
         "spinRate": 0.7,
+        # Its guns' muzzles (MB-DUST-DEVIL-03).
         "guns": {
             "core": {"gun": [[0, 0, 10]]},
             "blade-1": {
@@ -177,6 +191,7 @@ _DUST_DEVIL = record(
                 ],
             },
         },
+        # Its parts' volleys, then the core's pattern per stage (MB-DUST-DEVIL-08).
         "stages": stages(
             [
                 volley.ring("blade-1", 1, 2, 23, GREEN, 0.4),
@@ -195,9 +210,10 @@ _DUST_DEVIL = record(
 
 
 def scorpion_arm(side: str) -> Any:
-    """A Scorpion's arm (phase 7 review), the left one drawn at -X: it swings at the shoulder,
-    bends at the elbow and turns its claw at the wrist, while the claw's jaws open and close. The
-    right arm is its mirror image, a little out of step, so the two arms never move together.
+    """A Scorpion's arm (phase 7 review, MB-SCORPION-07), the left one drawn at -X: it swings at
+    the shoulder, bends at the elbow and turns its claw at the wrist, while the claw's jaws open
+    and close. The right arm is its mirror image, a little out of step, so the two arms never move
+    together.
     """
     s = 1 if side == "left" else -1
     late = 0 if side == "left" else 0.37
@@ -235,12 +251,13 @@ def scorpion_arm(side: str) -> Any:
 
 
 # 1-4: a gunship with a tail arched over its back, its stinger hanging in front of the core (so
-# shots from below reach it); claws spread, the stinger fires a laser.
+# shots from below reach it); claws spread, the stinger fires a laser (MB-SCORPION-08).
 _SCORPION = record(
     {
         "id": "scorpion",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-SCORPION-10).
         "rage": rage.flower(3, "purple", "blue"),
+        # Its points and its parts' drops (MB-SCORPION-13).
         "stats": stats(
             {
                 "id": "scorpion",
@@ -259,6 +276,7 @@ _SCORPION = record(
                 "joints": merge(scorpion_arm("left"), scorpion_arm("right")),
             }
         ),
+        # Where it stops and how it moves in place (MB-SCORPION-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 60, "period": 7.5},
         "bob": {"amplitude": 8, "period": 3.2},
@@ -268,6 +286,7 @@ _SCORPION = record(
             "claw-right": {"gun": [[39.3, -38.8, 5.5]]},
             "stinger": {"laser": [[0, -49.3, 8.9]]},
         },
+        # Its parts' volleys, then the core's pattern per stage (MB-SCORPION-09).
         "stages": stages(
             [
                 volley.aimed("claw-left", 2.2, 3, 10, BLUE, 1),
@@ -287,12 +306,14 @@ _SCORPION = record(
     }
 )
 
-# 1-5: a twin-hull police interceptor; two hull guns and a drone bay at its nose shield the core.
+# 1-5: a twin-hull police interceptor; two hull guns and a drone bay at its nose shield the core
+# (MB-SENTINEL-07).
 _SENTINEL = record(
     {
         "id": "sentinel",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-SENTINEL-09).
         "rage": rage.curtain(4, "blue", "red"),
+        # Its points and its parts' drops (MB-SENTINEL-11).
         "stats": stats(
             {
                 "id": "sentinel",
@@ -309,17 +330,20 @@ _SENTINEL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-SENTINEL-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 70, "period": 6.5},
         "bob": {"amplitude": 8, "period": 3},
         "launches": [
             {"from": "drone-bay", "kind": "hornets", "count": 2, "every": 5.5, "first": 3}
         ],
+        # Its guns' muzzles (MB-SENTINEL-03).
         "guns": {
             "core": {"gun": twin(15, -12.5, 1)},
             "gun-left": {"gun": twin(-40, -24.6, 7.1, 1.8), "turret": [-40, -8]},
             "gun-right": {"gun": twin(40, -24.6, 7.1, 1.8), "turret": [40, -8]},
         },
+        # Its parts' volleys, then the core's pattern per stage (MB-SENTINEL-08).
         "stages": stages(
             [
                 volley.aimed("gun-left", 1.7, 2, 8, BLUE, 0.8),
@@ -338,8 +362,9 @@ _SENTINEL = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its hidden weapons (boss transformations, D-224, MB-REEF-WARDEN-10): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-REEF-WARDEN-05), and a pair of gatling turrets
+# unfold.
 REEF_WARDEN = with_weapons(
     _REEF_WARDEN,
     [
@@ -353,8 +378,9 @@ REEF_WARDEN = with_weapons(
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Its hidden weapons (boss transformations, D-224, MB-BREAKWATER-10): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-BREAKWATER-05), and a pair of missile racks
+# unfold.
 BREAKWATER = with_weapons(
     _BREAKWATER,
     [
@@ -368,8 +394,9 @@ BREAKWATER = with_weapons(
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224, MB-DUST-DEVIL-10): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-DUST-DEVIL-05), and a pair of ring emitters
+# unfold.
 DUST_DEVIL = with_weapons(
     _DUST_DEVIL,
     [
@@ -391,9 +418,9 @@ DUST_DEVIL = with_weapons(
 # Where its tail cannon ends up, its tail unfolded straight out behind it (D-228).
 SCORPION_TAIL_CANNON = [0, 108]
 
-# Its transformation (D-224, D-228): once both claws are gone it turns round, its back plating
-# bursts off, and its tail unfolds straight out behind it (now towards the player) into a cannon
-# firing a giant laser; the stinger it replaces leaves the fight.
+# Its transformation (D-224, D-228, MB-SCORPION-11): once both claws are gone it turns round, its
+# back plating bursts off, and its tail unfolds straight out behind it (now towards the player) into
+# a cannon firing a giant laser; the stinger it replaces leaves the fight.
 SCORPION = with_weapons(
     merge(
         _SCORPION,
@@ -411,8 +438,9 @@ SCORPION = with_weapons(
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Its hidden weapons (boss transformations, D-224, MB-SENTINEL-10): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-SENTINEL-05), and a pair of missile racks
+# unfold.
 SENTINEL = with_weapons(
     _SENTINEL,
     [

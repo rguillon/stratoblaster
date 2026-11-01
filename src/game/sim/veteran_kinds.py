@@ -1,4 +1,4 @@
-"""The veteran enemy kinds (P05-R14 to P05-R18)"""
+"""The veteran enemy kinds (ENM-01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -29,7 +29,7 @@ def _top(area: EnemySpawnArea) -> float:
 
 
 def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
-    """X where a kind comes in from the top: the wave's entry (P06-R07), or random in `range_`."""
+    """X where a kind comes in from the top: the wave's entry (ENM-08), or random in `range_`."""
     entry = area.entry
     if entry is not None and entry.side == "top":
         return top_x(area, clamp_entry(entry.position))
@@ -45,7 +45,8 @@ def _side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, floa
 
 
 def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:
-    """A group of Wasps side by side, kept inside the range coming in from the top."""
+    """A group of Wasps side by side (ENM-WASP-07), kept inside the range coming in from the top
+    (ENM-09)."""
     group_size = C.wasp.groupSize
     group_spacing = C.wasp.groupSpacing
     stop_y = C.wasp.stopFraction * area.height
@@ -78,7 +79,7 @@ def _spawn_minelayer(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _all_kinds() -> list[EnemyKindDefinition]:
-    """The five veteran kinds (P05-R14 to P05-R18), in the order of the spec."""
+    """The five veteran kinds (ENM-01), in the order of the spec."""
     return [
         EnemyKindDefinition("wasp", "Wasp", _wasp_group),
         EnemyKindDefinition("mortar", "Mortar", _spawn_mortar),

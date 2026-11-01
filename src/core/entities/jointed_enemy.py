@@ -1,8 +1,8 @@
-"""Enemies with moving parts (P05-R13)
+"""Enemies with moving parts (ENM-27 to ENM-33)
 
-Parts hang on swinging joints (as a boss's limbs, D-061) or orbit the hull, each with its own hit
-circle, health and guns. A destroyed part blows up and stops; the enemy goes with its hull, taking
-its parts with it.
+Parts hang on swinging joints (as a boss's limbs, D-061) or orbit the hull (ENM-27), each with its
+own hit circle, health and guns (ENM-28). A destroyed part blows up and stops (ENM-29); the enemy
+goes with its hull, taking its parts with it (ENM-30).
 """
 
 import math
@@ -44,7 +44,7 @@ class EnemyPartSpec:
         right, Y up). `joint` is the joint it hangs on, if any: it moves with it. `orbits`: whether
         it turns around the centre with the enemy's `spin` (it cannot hang on a joint). `aim` is in
         radians, clockwise on screen, from the enemy's nose to the way the part points at rest.
-        `shields`: whether the hull cannot be hit while it stands (a shield, as a boss's, P07-R01).
+        `shields`: whether the hull cannot be hit while it stands (a shield, ENM-31).
         """
         self.id = id
         self.x = x
@@ -74,7 +74,7 @@ class EnemyPart:
     `LaserOwner`.
     """
 
-    # Parts never drop a bonus (P05-R13).
+    # Parts never drop a bonus (ENM-29).
     drop_chance = 0
     # Parts have no points of their own (none scored when destroyed).
     points = None
@@ -141,7 +141,7 @@ class EnemyPart:
 
 
 class JointedEnemy(Enemy):
-    """Base of the enemies with moving parts (P05-R13). Each step swings the joints, runs the
+    """Base of the enemies with moving parts (ENM-33). Each step swings the joints, runs the
     kind's `act`, then puts the parts where they are now; parts the player destroyed blow up.
     """
 
@@ -149,7 +149,7 @@ class JointedEnemy(Enemy):
         super().__init__(x, y, stats)
         # Radians, clockwise on screen, the orbiting parts are turned by.
         self.spin = 0.0
-        # Whether the joints swing on; a kind holds them still while this is false.
+        # Whether the joints swing on; a kind holds them still while this is false (ENM-32).
         self.swinging = True
         self._specs: dict[str, BossJointSpec] = design.joints if design.joints is not None else {}
         self.joints = BossJoints(self._specs, design.parts)
@@ -177,7 +177,7 @@ class JointedEnemy(Enemy):
         return targets
 
     def _shot_targets(self) -> list[ShotTarget]:
-        """Shots pass through a shielded hull (as a boss's core, P07-R01)."""
+        """Shots pass through a shielded hull (as a boss's core, ENM-31)."""
         targets = self.hit_targets
         if self.shielded:
             return [target for target in targets if target is not self]

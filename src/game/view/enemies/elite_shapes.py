@@ -1,4 +1,4 @@
-"""Shapes shared by the elite models (P05-R19 to P05-R23)
+"""Shapes shared by the elite models (the five elite kinds, specs/enemies/*.md)
 
 Logical pixels, nose +Z, Y up; a design point (x, y) facing down the screen is model
 (-x, height, -y) (`boss_point`).
@@ -32,7 +32,8 @@ def ahead(at: Vec3, yaw: float, d: float) -> list[float]:
 
 def barrel(p: Any, tip: Vec3, yaw: float, size: Any, kind: str = "gun") -> None:
     """A gun barrel pointing `yaw`, ending at `tip`, `radius` thick and `length` long: dark steel,
-    a charge light at its mouth, the muzzle (`kind`) marked at the tip."""
+    a charge light at its mouth (the drones' and the cannons' charge lights, ENM-ORBITER-04,
+    ENM-JUGGERNAUT-04), the muzzle (`kind`) marked at the tip."""
     radius = size[0]
     length = size[1]
 

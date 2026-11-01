@@ -1,10 +1,10 @@
-"""The Narwhal (P08-R10, 2-1's final boss)
+"""The Narwhal (2-1's final boss, specs/bosses/final/2-1-narwhal.md)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 1 bosses (P07-R04): the parts fire the same while they stand, the core
-fires something new at every stage, and its last stage (only the core left) spirals used by no
-earlier stage. Its core always drops a bonus (P07-R07). Health values are placeholders for the
-P08-R11 tuning.
+patterns as for the World 1 bosses (FB-NARWHAL-11): the parts fire the same while they stand, the
+core fires something new at every stage, and its last stage (only the core left) spirals used by no
+earlier stage. Its core always drops a bonus (FB-NARWHAL-15). Health values (FB-NARWHAL-15) are
+placeholders for the World 2 tuning (WLD-2-25, WLD-2-27).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -22,7 +22,7 @@ __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-NARWHAL-15, `part_drop_chance`)."""
     extra = {} if options == None else options  # noqa: E711
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
@@ -32,8 +32,8 @@ GREEN = bullet("green", 180)
 BLUE = bullet("blue", 190)
 PURPLE = bullet("purple", 195)
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (phase 7 review, FB-NARWHAL-03): the tips of the barrels its model draws, from
+# the boss's centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
 # The tip of the spiral horn, where the lance's laser leaves from.
 NARWHAL_HORN = [[0, -90, 4.5]]
@@ -47,12 +47,13 @@ NARWHAL_DECK_GUN = twin(1.33, -43.77, 18.42)
 NARWHAL_EMITTER = [[0, -10, 31]]
 
 # 2-1: a long flying submarine with a spiral horn and teal neon along its back. Its horn lance
-# fires a laser, two torpedo tubes homing missiles, and two ballast pods fans; the ballast pods
-# shield the core (P08-R10). It chases the ground over the ice floes (×1.5).
+# fires a laser (FB-NARWHAL-08), two torpedo tubes homing missiles (FB-NARWHAL-09), and two ballast
+# pods fans; the ballast pods shield the core (FB-NARWHAL-10). It chases the ground over the ice
+# floes (×1.5).
 _NARWHAL = record(
     {
         "id": "narwhal",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-NARWHAL-12).
         "rage": rage.vortex(3, "magenta", "blue"),
         "stats": stats(
             {
@@ -73,6 +74,7 @@ _NARWHAL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place; its ground speed is a chase (FB-NARWHAL-07).
         "stopFraction": 0.74,
         "sway": {"amplitude": 45, "period": 8},
         "bob": {"amplitude": 10, "period": 4},
@@ -84,6 +86,7 @@ _NARWHAL = record(
             "pod-left": {"gun": mirror(NARWHAL_POD)},
             "pod-right": {"gun": NARWHAL_POD},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-NARWHAL-11).
         "stages": stages(
             [
                 volley.laser("lance", 6.5, 1.4, 2.5),
@@ -111,8 +114,9 @@ _NARWHAL = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
+# baring a dark metal frame, and a pair of laser lances unfold (FB-NARWHAL-13); at transformation 2
+# its spine plating bursts off, baring a dark metal frame, and a pair of missile racks unfold
+# (FB-NARWHAL-14). The regions it sheds: FB-NARWHAL-06.
 NARWHAL = with_weapons(
     _NARWHAL,
     [

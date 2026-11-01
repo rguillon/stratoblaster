@@ -27,7 +27,7 @@ def make_title(doc: FakeDocument, text: str, room: float) -> Text:
     return el
 
 
-def test_p01_r13_a_title_wider_than_its_parent_is_shrunk_one_pixel_at_a_time() -> None:
+def test_ui_look_13_a_title_wider_than_its_parent_is_shrunk_one_pixel_at_a_time() -> None:
     doc = FakeDocument()
     el = make_title(doc, "STRATOBLASTER", 200)
     shrink_to_fit(el)
@@ -40,21 +40,21 @@ def test_p01_r13_a_title_wider_than_its_parent_is_shrunk_one_pixel_at_a_time() -
     assert fitted < 16
 
 
-def test_p01_r13_the_font_never_goes_below_its_minimum() -> None:
+def test_ui_look_13_the_font_never_goes_below_its_minimum() -> None:
     doc = FakeDocument()
     el = make_title(doc, "X" * 500, 100)
     shrink_to_fit(el, min_px=12)
     assert float(el.style.fontSize.rstrip("px")) == 12
 
 
-def test_p01_r13_an_element_not_laid_out_is_left_alone() -> None:
+def test_ui_look_13_an_element_not_laid_out_is_left_alone() -> None:
     doc = FakeDocument()
     el = make_title(doc, "STRATOBLASTER", 0)
     shrink_to_fit(el)
     assert el.style.fontSize == ""
 
 
-def test_p01_r13_an_element_without_a_parent_is_left_alone() -> None:
+def test_ui_look_13_an_element_without_a_parent_is_left_alone() -> None:
     doc = FakeDocument()
     el = Text(doc, "h1")
     el.textContent = "X" * 100

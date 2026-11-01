@@ -1,4 +1,4 @@
-"""What the models made for the grid of tiles share (P15-R07, R09)
+"""What the models made for the grid of tiles share (GFX-BLDG-03, GFX-BLDG-09)
 
 Each one fills a plot `w` × `d` world units (its tiles less the margin), centred on the origin,
 standing on Y = 0, its front towards -Z.
@@ -67,7 +67,8 @@ def tile_kit(w: float, d: float, tile: float, seed: int) -> TileKit:
 
 
 def geometry_of(k: TileKit) -> PropGeometry:
-    """The geometry a kit's builders made: the structure, the lights and the windows."""
+    """The geometry a kit's builders made: the structure, the lights and the windows (the parts of
+    a model, GFX-PROP-04)."""
     return PropGeometry(k.s.geometry, k.lights.geometry, None, k.windows.geometry)
 
 
@@ -163,7 +164,7 @@ def front_windows(
     color: Rgb,
 ) -> None:
     """The windows of one wall facing -Z or +Z (`face`: `[x, z, facing]`, `size`: `[width, y0,
-    y1]`), one quad of `style` (D-215: a glass front, a hut's window)."""
+    y1]`), one quad of `style` (D-215, GFX-BLDG-14: a glass front, a hut's window)."""
     wall_windows(k.windows, k.random, face, size, style, color)
 
 
@@ -190,7 +191,7 @@ def tree(k: TileKit, x: float, z: float, size: float) -> None:
 
 def front_lights(k: TileKit, w: float, z: float, y: float, neon: Rgb) -> None:
     """A door and a neon strip on the front of a block `w` wide whose front is at `z` (D-215: the
-    door one quad from the windows' atlas)."""
+    door one quad from the windows' atlas; the strip one of the lights, GFX-BLDG-16)."""
     door(k, [0, 0, z], DOOR_STYLES.door, L.window)
     k.lights.box([w * 0.8, 0.3, 0.3], neon, Placement([0, y, z - 0.2], 0, 0, 0))
 

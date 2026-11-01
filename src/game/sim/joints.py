@@ -1,5 +1,6 @@
-"""The joints of the enemies and bosses, from their config records (P05-R13, P07): the core reads
-`BossJointSpec`s, the config keeps the records as written (camelCase).
+"""The joints of the enemies and bosses, from their config records (ENM-33, BOSS-33): the core
+reads `BossJointSpec`s, the config keeps the records as written (camelCase). Each boss's own limbs
+are its boss file's (`specs/bosses/`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -56,6 +57,7 @@ def enemy_parts(parts: Any) -> list[EnemyPartSpec]:
 
 
 def jointed_design(design: Any) -> JointedDesign:
-    """A jointed enemy's design from its config: its parts, and its joints as the core's specs."""
+    """A jointed enemy's design from its config: its parts on joints or in orbit (ENM-27), and its
+    joints as the core's specs."""
     joints = None if design.joints == None else joint_specs(design.joints)  # noqa: E711
     return JointedDesign(enemy_parts(design.parts), joints)

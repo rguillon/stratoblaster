@@ -1,4 +1,4 @@
-"""The loading screen of a level (P13-R03): the menus' loading
+"""The loading screen of a level (UI-LOAD-06): the menus' loading
 screen over the game screen, with the level's real progress."""
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -14,8 +14,8 @@ from ui.screens.loading_screen import render_loading_screen  # noqa: E402
 
 
 class LevelLoadingScreen:
-    """The loading screen of a level (P13-R03). It fades in only after a short delay (CSS), so a
-    quick load does not flash it.
+    """The loading screen of a level (UI-LOAD-06). It fades in only after a short delay (CSS), so
+    a quick load does not flash it (PERF-10).
     """
 
     def __init__(self, doc: Any, parent: Any, text: str) -> None:

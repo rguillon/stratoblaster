@@ -6,13 +6,13 @@ from game.config.world_2.scenery import LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2
 SCENERY_LEVELS = [LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2_4, LEVEL_2_5]
 
 
-def test_p08_r03_each_group_name_points_at_a_group_of_the_props_table() -> None:
+def test_wld_2_13_each_group_name_points_at_a_group_of_the_props_table() -> None:
     group_ids = {group.id for group in WORLD_2_PROPS.groups}
     for name, group_id in WORLD_2_GROUPS.items():
         assert group_id in group_ids, name
 
 
-def test_p08_r03_each_group_is_a_non_empty_set_of_weighted_props() -> None:
+def test_wld_2_13_each_group_is_a_non_empty_set_of_weighted_props() -> None:
     for group in WORLD_2_PROPS.groups:
         assert group.kinds, group.id
         for kind in group.kinds:
@@ -20,7 +20,8 @@ def test_p08_r03_each_group_is_a_non_empty_set_of_weighted_props() -> None:
             assert 0 < kind.scale[0] <= kind.scale[1], kind.id
 
 
-def test_p08_r03_every_section_of_the_world_draws_from_a_known_group() -> None:
+def test_wld_2_13_every_section_of_the_world_draws_from_a_known_group() -> None:
+    """Each level's buildings (WLD-2-13) come from the world's groups."""
     group_ids = {group.id for group in WORLD_2_PROPS.groups}
     for level in SCENERY_LEVELS:
         for section in level.sections:
@@ -28,6 +29,7 @@ def test_p08_r03_every_section_of_the_world_draws_from_a_known_group() -> None:
                 assert group_id in group_ids, (level.id, group_id)
 
 
-def test_p08_r03_the_props_table_has_lots_and_positive_spacing() -> None:
+def test_gfx_bldg_11_the_props_table_has_lots_and_positive_spacing() -> None:
+    """Also WLD-2-14: World 1's lone buildings and hamlets on a props table of their own."""
     assert WORLD_2_PROPS.lots
     assert WORLD_2_PROPS.cellSize > 0

@@ -1,4 +1,4 @@
-"""The lights of a scenery scene (P08-R04): the
+"""The lights of a scenery scene (GFX-SKY-01): the
 sun (or the moon) and the sky's ambient light, lit as an atmosphere says.
 """
 
@@ -68,8 +68,8 @@ def light_scenery(scene: Any, atmosphere: Atmosphere) -> SceneryLights:
 
 
 def apply_atmosphere(scene: Any, lights: SceneryLights, atmosphere: Atmosphere) -> None:
-    """Lights the scene as `atmosphere` says (P08-R04): haze (clear colour and linear fog), sky and
-    ground ambient light, and the sun's direction, colour and strength. Called every frame."""
+    """Lights the scene as `atmosphere` says (GFX-SKY-07): haze (clear colour and linear fog), sky
+    and ground ambient light, and the sun's direction, colour and strength. Called every frame."""
     haze = atmosphere.sky.haze
     scene.clearColor.set(haze[0], haze[1], haze[2], 1)
     scene.fogColor.set(haze[0], haze[1], haze[2])
@@ -93,7 +93,7 @@ def snapped_light_position(direction: Any, target: Any, distance: float, texel: 
     """Where to put a directional light of direction `direction` that looks at `target` from
     `distance` away, with `target` moved to the nearest whole shadow texel (`texel` world units)
     across the light: the shadow map then slides by whole texels as the view scrolls, and the
-    shadows stay still instead of shimmering (phase 4 review)."""
+    shadows stay still instead of shimmering (phase 4 review, GFX-SKY-02)."""
     forward = direction.normalizeToNew()
     right = vector3_cross(vector3_up(), forward).normalize()
     up = vector3_cross(forward, right)

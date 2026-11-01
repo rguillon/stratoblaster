@@ -1,6 +1,7 @@
-"""The real scenery kit (P04, P08, P09, P10): generated terrain textures blended in the terrain
-shader, a sea with drifting generated waves that reflect the sky and the sun (or lava), generated
-cloud layers, and the sun's shadows (PCF, ENG-103). Needs a WebGL engine.
+"""The real scenery kit (phases 4, 8-10): generated terrain textures blended in the terrain
+shader, a sea with drifting generated waves that reflect the sky and the sun (or lava;
+GFX-WATER-03, GFX-WATER-07), generated cloud layers, and the sun's shadows (PCF, ENG-103). Needs a
+WebGL engine.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -80,6 +81,7 @@ def _terrain_material(scene: Any, look: Any, state: TerrainBlendState, seed: int
 
     material = new_standard_material("terrain", scene)
     material.diffuseColor = color3(1, 1, 1)
+    # The look's specular: 0, a matte ground (GFX-TERRAIN-12).
     material.specularColor = color3(t.specular, t.specular, t.specular)
     textures = TerrainTextures(
         ground(t.low, 1),
@@ -121,7 +123,7 @@ def _sea_material(scene: Any, look: Any, size: Any, seed: int) -> Any:
 
 
 def _liquid_of(scene: Any, context: Any) -> tuple[TerrainBlendState, Any]:
-    """The terrain's live state and, for a lava level (P10-R05), the lava's material."""
+    """The terrain's live state and, for a lava level (GFX-TERRAIN-16), the lava's material."""
     look = context.look
     lava = look.sea.lava
     state = TerrainBlendState(context.sea_level, True, 0, lava if lava else None, None)
@@ -154,7 +156,7 @@ class VisualSceneryKit:
         shadows.normalBias = look.sun.shadow.normalBias
         shadows.setDarkness(look.sun.shadow.darkness)
         # A fixed shadow frustum: re-fitting it to the scene every frame made the shadows shimmer
-        # (the stage moves the sun by whole texels, phase 4 review).
+        # (the stage moves the sun by whole texels, phase 4 review; GFX-SKY-02, PERF-26).
         sun.autoUpdateExtends = False
         sun.shadowFrustumSize = look.sun.shadow.frustum
         self._shadows = shadows
@@ -187,7 +189,8 @@ class VisualSceneryKit:
     def update(self, frame: Any) -> None:
         self._camera = frame.camera_position
         self._state.time = frame.time
-        # P08-R04: softer shadows under a heavy cover, ground lights by the time of day.
+        # GFX-SKY-06, GFX-SKY-08: softer shadows under a heavy cover, ground lights by the time of
+        # day.
         self._shadows.setDarkness(frame.atmosphere.sun.shadow_darkness)
         set_ground_lights(self.props, frame.atmosphere.ground_lights)
         self._state.sea_enabled = frame.sea_enabled

@@ -1,5 +1,6 @@
-"""P09-R09, 3-3: the Sky Temple's dressing (phase 7 review: detail and some asymmetry; World 3
-theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
+"""FB-SKY-TEMPLE-02, FB-SKY-TEMPLE-05, 3-3: the Sky Temple's dressing (phase 7 review: detail and
+some asymmetry; World 3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels,
+nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

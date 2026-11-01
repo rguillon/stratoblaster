@@ -1,4 +1,4 @@
-"""Short glowing discs where shots hit (P03-R01, P03-R03)"""
+"""Short glowing discs where shots hit (GFX-FX-03)"""
 
 import math
 
@@ -41,7 +41,7 @@ def flash_scale(age: float, duration: float) -> float:
 
 
 class ImpactFlashes:
-    """Short glowing discs where shots hit (P03-R01, P03-R03), kept in a pool."""
+    """Short glowing discs where shots hit (GFX-FX-03), kept in a pool."""
 
     def __init__(
         self,

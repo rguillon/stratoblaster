@@ -1,8 +1,9 @@
-"""The props viewer's stage (D-205): the prop picked alone on a plain floor ruled in blocks (one
-square per tile of the game's grid), under studio lights, with no level's ground loaded. The
-camera turns round the prop as dragged; it is either at the game's distance with the game's field
-of view (the prop as big as in game) or close enough for the prop to fill the close-up's share of
-the screen. The prop's materials are those of the first level that has it (its world's tone).
+"""The props viewer's stage (DEV-MENU-16, D-205): the prop picked alone on a plain floor ruled in
+blocks (one square per tile of the game's grid), under studio lights, with no level's ground
+loaded. The camera turns round the prop as dragged; it is either at the game's distance with the
+game's field of view (the prop as big as in game) or close enough for the prop to fill the
+close-up's share of the screen (DEV-MENU-17). The prop's materials are those of the first level
+that has it (its world's tone).
 """
 
 import math
@@ -80,7 +81,7 @@ def game_distance(game: Any) -> float:
 
 def close_up_distance(size: float, fov: float, fill: float) -> float:
     """How far something `size` across is when it fills `fill` of the screen's height, seen with
-    the vertical field of view `fov`."""
+    the vertical field of view `fov` (the close-up, DEV-MENU-09)."""
     return size / (2 * math.tan(fov / 2) * fill)
 
 
@@ -191,7 +192,7 @@ class DevPropStage:
     def update(self, turn: list[float], close_up: bool, zoom: float) -> None:
         """Turns the camera round the prop as far as dragged (`turn`: radians across and up or
         down, as Babylon's own orbiting camera turns), at the close-up's distance or the game's,
-        divided by `zoom` (D-208)."""
+        divided by `zoom` (DEV-MENU-11, D-208)."""
         props = CFG.props
         camera = self.camera
         camera.alpha = -math.pi / 2 - turn[0]

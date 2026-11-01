@@ -1,4 +1,4 @@
-"""P07-R05: shapes shared by the World 1 final bosses (Storm Petrel, Gull Mothership, Mesa
+"""BOSS-47: shapes shared by the World 1 final bosses (Storm Petrel, Gull Mothership, Mesa
 Fortress) Logical pixels, nose +Z, Y up (towards the
 camera).
 """

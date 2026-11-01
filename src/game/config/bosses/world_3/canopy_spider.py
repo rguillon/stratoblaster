@@ -1,10 +1,12 @@
-"""P09-R09, 3-2: the Canopy Spider, the final boss of the Rainforest level ().
+"""3-2: the Canopy Spider, the final boss of the Rainforest level
+(specs/bosses/final/3-2-canopy-spider.md).
 
 Offsets in px from the boss's centre, X right and Y up, its head points down, at -Y. Its four legs
 bend at the hip and the knee (D-061), stepping in turn, each out of step with the others. Stage
-patterns as for the World 1 and 2 bosses (P07-R04): the legs fire the same while they stand, the
-core spirals in a new way at every stage, and its last stage (only the core left) is a double
-spiral used by no earlier stage. Health tuned with the D-055 bot for P09-R10.
+patterns as for the World 1 and 2 bosses (FB-CANOPY-SPIDER-10): the legs fire the same while they
+stand, the core spirals in a new way at every stage, and its last stage (only the core left) is a
+double spiral used by no earlier stage. Health (FB-CANOPY-SPIDER-08) tuned with the D-055 bot for
+WLD-3-20.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -27,7 +29,8 @@ GREEN = bullet("green", 190)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-CANOPY-SPIDER-14,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -49,8 +52,9 @@ LEG_HEIGHT = record({"hip": 8, "knee": 22, "foot": 4})
 # The stepping cycle: degrees at the hip and the knee, and the seconds of one step.
 STEP = record({"hipDeg": 11, "kneeDeg": 15, "period": 3.2})
 
-# Each leg's phase in the stepping cycle (phase 7 review, D-061): a walking order (fore-left,
-# aft-right, fore-right, aft-left), so that the four legs step in turn and never together.
+# Each leg's phase in the stepping cycle (phase 7 review, D-061, FB-CANOPY-SPIDER-03): a walking
+# order (fore-left, aft-right, fore-right, aft-left), so that the four legs step in turn and never
+# together.
 PHASE = record({"fore-left": 0, "aft-right": 0.25, "fore-right": 0.5, "aft-left": 0.75})
 
 
@@ -142,8 +146,9 @@ def leg_guns() -> Any:
 _CANOPY_SPIDER = record(
     {
         "id": "canopy-spider",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-CANOPY-SPIDER-11).
         "rage": rage.flower(6, "red", "purple"),
+        # Its core, leg gun pods and egg sac (FB-CANOPY-SPIDER-08).
         "stats": stats(
             record(
                 {
@@ -163,11 +168,14 @@ _CANOPY_SPIDER = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-CANOPY-SPIDER-07).
         "stopFraction": 0.74,
         "sway": {"amplitude": 30, "period": 11},
         "bob": {"amplitude": 6, "period": 5},
+        # The egg sac launches Gnats, the legs fire aimed shots (FB-CANOPY-SPIDER-09).
         "launches": [{"from": "egg-sac", "kind": "gnats", "count": 3, "every": 7, "first": 3}],
         "guns": merge({"core": {"ring": SPIDER_CROWN}}, leg_guns()),
+        # The legs' volleys, then the core's pattern per stage (FB-CANOPY-SPIDER-10).
         "stages": stages(
             [
                 volley.aimed("leg-" + leg, 3.4, 3, 12, RED, 1 + 0.85 * i)
@@ -195,8 +203,9 @@ _CANOPY_SPIDER = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of laser lances unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold (FB-CANOPY-SPIDER-12); at
+# transformation 2 its spine plating bursts off, baring a dark metal frame, and a pair of laser
+# lances unfold (FB-CANOPY-SPIDER-13).
 CANOPY_SPIDER = with_weapons(
     _CANOPY_SPIDER,
     [

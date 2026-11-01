@@ -1,4 +1,5 @@
-"""P09-R09, 3-1: the River Leviathan, the River delta's final boss ().
+"""3-1: the River Leviathan, the River delta's final boss
+(specs/bosses/final/3-1-river-leviathan.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its head is
 the core, at the centre; its body trails behind it (+Y) in four segments and a tail, each hinged on
@@ -26,7 +27,8 @@ PURPLE = bullet("purple", 210)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-RIVER-LEVIATHAN-15,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -47,8 +49,9 @@ LEVIATHAN_BODY = record(
     }
 )
 
-# How each hinge swings (D-061): degrees either way, growing towards the tail, all over one
-# `period`, each `lag` of a period behind the one before (the wave running down the body).
+# How each hinge swings (D-061, FB-RIVER-LEVIATHAN-05): degrees either way, growing towards the
+# tail, all over one `period`, each `lag` of a period behind the one before (the wave running down
+# the body).
 SWAY = record({"degrees": [8, 9, 10, 12, 14], "period": 4.8, "lag": 0.11})
 
 # The joint ids, head to tail: the neck, three spine hinges, the tail's.
@@ -93,7 +96,7 @@ def turret_emitter(k: int) -> Any:
     return [concat(turret_at(k), [TURRET_EMITTER_HEIGHT])]
 
 
-# The head's laser lens, at the tip of its snout.
+# The head's laser lens, at the tip of its snout (FB-RIVER-LEVIATHAN-03: the head's guns).
 LEVIATHAN_LENS = [[0, -31, 5]]
 # The head's twin fang guns either side of its jaw (the core's aimed shots and fans).
 LEVIATHAN_FANGS = twin(9, -24, 3.5)
@@ -112,14 +115,15 @@ def segment_guns() -> Any:
 
 
 # 3-1: a segmented serpent-ship 6 L long, its body swaying from side to side, teal neon along its
-# spine (P09-R09). Its four segments' turrets fire rings in turn and shield the core; the tail's
-# rack fires homing missiles; the head fires its laser at every stage, with something new beside
-# it. The ground slows (x0.5).
+# spine. Its four segments' turrets fire rings in turn and shield the core; the tail's rack fires
+# homing missiles (FB-RIVER-LEVIATHAN-10); the head fires its laser at every stage, with
+# something new beside it. The ground slows (x0.5).
 _RIVER_LEVIATHAN = record(
     {
         "id": "river-leviathan",
-        # Angry after each destroyed part (D-063), heat 5 (P09-R10).
+        # Angry after each destroyed part (D-063), heat 5 (FB-RIVER-LEVIATHAN-12).
         "rage": rage.spirals(5, "blue", "green"),
+        # Its head (the core), segment turrets and tail rack (FB-RIVER-LEVIATHAN-09).
         "stats": stats(
             record(
                 {
@@ -156,7 +160,8 @@ _RIVER_LEVIATHAN = record(
                 }
             )
         ),
-        # Stops high enough to be in place within 6.5 s (P07-R05), its tail still on screen.
+        # Stops high enough to be in place within 6.5 s, its tail still on screen
+        # (FB-RIVER-LEVIATHAN-08).
         "stopFraction": 0.72,
         "sway": {"amplitude": 55, "period": 9.6},
         "bob": {"amplitude": 6, "period": 4.8},
@@ -173,6 +178,7 @@ _RIVER_LEVIATHAN = record(
             ),
             {"tail-rack": {"missile": LEVIATHAN_RACK}},
         ),
+        # The parts' volleys, then the head's pattern per stage (FB-RIVER-LEVIATHAN-11).
         "stages": stages(
             concat(
                 # The segments' rings in turn, from the neck to the tail, one a second.
@@ -209,8 +215,9 @@ _RIVER_LEVIATHAN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of sweeping lasers unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# baring a dark metal frame, and a pair of sweeping lasers unfold (FB-RIVER-LEVIATHAN-13); at
+# transformation 2 its spine plating bursts off, baring a dark metal frame, and a pair of ring
+# emitters unfold (FB-RIVER-LEVIATHAN-14).
 RIVER_LEVIATHAN = with_weapons(
     _RIVER_LEVIATHAN,
     [

@@ -10,7 +10,8 @@ U32 = 4294967296
 
 
 # Each helper has its Python twin in a `skip` block: Transcrypt compiles the JavaScript only, and
-# CPython (the unit tests) runs the twin. The two agree on 32-bit values (tests/unit, ENG-152).
+# CPython (the unit tests) runs the twin. The two agree on 32-bit values (tests/unit, ENG-152,
+# ENG-160).
 
 
 def u32(value: int) -> int:

@@ -56,6 +56,8 @@ make serve     # builds the game and serves it on http://localhost:5173
 
 ## Make targets
 
+<!-- ENG-37: the public targets, the only ones `make help` lists. -->
+
 | Target        | What it does                                                          |
 | ------------- | --------------------------------------------------------------------- |
 | `make setup`  | Checks the tools, installs the dependencies and the git hooks         |

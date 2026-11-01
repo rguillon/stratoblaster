@@ -1,6 +1,6 @@
-"""Generated textures of a scenery level (P04-R01, P04-R02, P13-R03): fractal noise, ground, noise
-and water normal maps as
-RGBA8 pixels, pure functions of their arguments, made here or in the worker, and kept for reuse.
+"""Generated textures of a scenery level (GFX-TERRAIN-07, GFX-WATER-03, PERF-11): fractal noise,
+ground, noise and water normal maps as RGBA8 pixels, pure functions of their arguments, made here
+or in the worker, and kept for reuse.
 """
 
 import math
@@ -20,7 +20,7 @@ __pragma__("noskip")
 # Largest lattice period the noise supports (its permutation table size).
 MAX_PERIOD = 256
 
-# How many generated textures are kept for reuse (P13-R03).
+# How many generated textures are kept for reuse (PERF-11).
 KEPT_TEXTURES = 48
 
 # Noise cycles across the terrain blending and cloud noise textures (the scenery kit's).
@@ -35,7 +35,7 @@ GROUND_CONTRAST = 1.2
 
 
 class TextureJob:
-    """A texture to generate: its `name` ('ground', 'noise' or 'water') and its `args` (P13-R03:
+    """A texture to generate: its `name` ('ground', 'noise' or 'water') and its `args` (PERF-14:
     made in a worker)."""
 
     def __init__(self, name: str, args: Sequence[Any]) -> None:
@@ -175,7 +175,7 @@ def scenery_texture_jobs(look: Any, seed: int) -> list[TextureJob]:
 def _kept_pixels(name: str, args: Sequence[Any], build: Callable[[], Any]) -> Any:
     """The pixels `build` makes for `args`, made once and kept (the most recent KEPT_TEXTURES), so
     starting a level again, or another level with the same look, does not generate them again
-    (P13-R03). The textures are pure functions of their arguments; callers must not change them."""
+    (PERF-11). The textures are pure functions of their arguments; callers must not change them."""
     key = name + ":" + _json_of(args)
     if _map_has(_kept, key):
         pixels = _map_get(_kept, key)
@@ -270,7 +270,7 @@ def crack_lines(size: int, cells: float, seed: int) -> Any:
 
 
 def build_ground_texture(size: int, look: Any, seed: int) -> Any:
-    """RGBA8 pixels of a tiling ground texture (P04-R01)."""
+    """RGBA8 pixels of a tiling ground texture (GFX-TERRAIN-07)."""
     return _kept_pixels("ground", [size, look, seed], lambda: _ground_pixels(size, look, seed))
 
 
@@ -323,9 +323,9 @@ def _noise_pixels(size: int, frequency: float, seed: int) -> Any:
 
 
 def build_water_normal_map(size: int, options: Any, seed: int) -> Any:
-    """RGBA8 pixels of a tiling normal map of small waves (P04-R02): the slope of a fractal height
-    map, `strength` times steeper, encoded as tangent-space normals. `options` has `frequency`,
-    `octaves` and `strength`."""
+    """RGBA8 pixels of a tiling normal map of small waves (GFX-WATER-03): the slope of a fractal
+    height map, `strength` times steeper, encoded as tangent-space normals. `options` has
+    `frequency`, `octaves` and `strength`."""
     return _kept_pixels("water", [size, options, seed], lambda: _water_pixels(size, options, seed))
 
 

@@ -1,4 +1,4 @@
-"""The in-game HUD: one bar along the bottom of the playfield, the
+"""The in-game HUD: one bar along the bottom of the playfield (UI-HUD-01), the
 level's progress along its top edge, the ship's health, lives and bombs, the score and the weapon.
 """
 
@@ -12,7 +12,7 @@ __pragma__("noskip")
 from ui.boss_bar import BossBar, BossBarFrame  # noqa: E402
 from ui.screens.elements import element  # noqa: E402
 
-# Under this share of its health the bar turns red.
+# Under this share of its health the bar turns red (UI-HUD-04).
 LOW_HEALTH = 0.3
 
 
@@ -33,14 +33,14 @@ class HudTexts:
         self.health = health
         # The weapon and its level, e.g. `Bullet · Lv 1/5`: (name, level, levels).
         self.weapon = weapon
-        # The lives left (GD-20).
+        # The lives left (UI-HUD-03).
         self.lives = lives
-        # The bombs left (P11-R05).
+        # The bombs left (UI-HUD-03).
         self.bombs = bombs
-        # The score, and the high score line under it (P11-R02).
+        # The score, and the high score line under it (UI-HUD-05).
         self.score = score
         self.high_score = high_score
-        # Label of the touch bomb button, with the bombs left (P11-R06).
+        # Label of the touch bomb button, with the bombs left (UI-HUD-10).
         self.bomb = bomb
 
 
@@ -64,18 +64,18 @@ class HudFrame:
         self.health = health
         self.max_health = max_health
         self.lives = lives
-        # The weapon fired (it can be switched) and its level, out of `weapon_levels`.
+        # The weapon fired (it can be switched) and its level, out of `weapon_levels` (UI-HUD-06).
         self.weapon = weapon
         self.weapon_level = weapon_level
         self.weapon_levels = weapon_levels
-        # Share of the level flown, 0..1.
+        # Share of the level flown, 0..1 (UI-HUD-02).
         self.progress = progress
-        # The score, and the best of it and the saved high score (P11-R02).
+        # The score, and the best of it and the saved high score (GAME-SCORE-07, UI-HUD-05).
         self.score = score
         self.high_score = high_score
-        # The bombs left (P11-R05); no bombs shown when None.
+        # The bombs left (UI-HUD-03); no bombs shown when None.
         self.bombs = bombs
-        # The boss being fought, for its health bar (P07-R02); none when None.
+        # The boss being fought, for its health bar (UI-HUD-12); none when None.
         self.boss = boss
 
 
@@ -85,7 +85,7 @@ class HudSetup:
     def __init__(self, ship: str, texts: HudTexts, on_bomb: Any = None) -> None:
         self.ship = ship
         self.texts = texts
-        # The touch bomb button was pressed (P11-R06). No button when None.
+        # The touch bomb button was pressed (UI-HUD-10). No button when None.
         self.on_bomb = on_bomb
 
 
@@ -106,8 +106,8 @@ def _bomb_press(on_bomb: Any) -> Any:
 
 class GameHud:
     """The in-game HUD. Laid out at the logical resolution over the playfield; it takes no clicks
-    or taps but on its touch bomb button (P11-R06). Text and bars change only when their value
-    does.
+    or taps but on its touch bomb button. Text and bars change only when their value does
+    (UI-HUD-11).
     """
 
     def __init__(self, doc: Any, parent: Any, setup: HudSetup) -> None:
@@ -146,7 +146,7 @@ class GameHud:
         self._shown_score = ""
 
     def _new_bomb_button(self, doc: Any, on_bomb: Any) -> Any:
-        """The touch bomb button (P11-R06): the only part of the HUD that takes taps."""
+        """The touch bomb button (UI-HUD-10): the only part of the HUD that takes taps."""
         button = element(doc, "div", "hud-bomb-button")
         button.setAttribute("role", "button")
         button.addEventListener("pointerdown", _bomb_press(on_bomb))

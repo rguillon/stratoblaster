@@ -1,6 +1,6 @@
-"""One model per prop kind of this game, keyed by its id (P04-R04): the cars, the buildings and lots
-of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts, masts,
-farms and plants are gone."""
+"""One model per prop kind of this game, keyed by its id (GFX-PROP-02): the cars, the buildings and
+lots of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts,
+masts, farms and plants are gone."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -49,7 +49,8 @@ def make_car_models() -> dict[str, Any]:
 
 
 def make_prop_models() -> dict[str, Any]:
-    """One model per prop kind of this game, keyed by its id (P04-R04)."""
+    """One model per prop kind of this game, keyed by its id: only kinds some level places, the
+    road kit apart (GFX-PROP-03)."""
     return merged(
         [
             make_car_models(),

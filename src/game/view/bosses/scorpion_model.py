@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-4: the Scorpion: a living desert
+"""MB-SCORPION-01 to MB-SCORPION-05, 1-4: the Scorpion: a living desert
 scorpion with yellow veins, a segmented shell, two arms out to its claw cannons, and a segmented
 tail arched over its back, its stinger hanging in front of the head. Logical pixels, nose +Z, Y up
 (towards the camera).
@@ -90,8 +90,8 @@ def _along(at: Vec3, pitch: float, y: float, z: float) -> Vec3:
 
 
 def _draw_body(p: Any) -> None:
-    """The body (P16-R05): a swollen, segmented abdomen under a ridged shell, the head plated with
-    grafted armour, bone legs, glowing eyes, and the tail of shelled beads."""
+    """The body (MB-SCORPION-02): a swollen, segmented abdomen under a ridged shell, the head plated
+    with grafted armour, bone legs, glowing eyes, and the tail of shelled beads."""
     flesh = p.flesh
     hide(
         p,
@@ -120,8 +120,8 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_machinery(p: Any) -> None:
-    """The living works (P16-R05): the torn stump of the missing right hind leg, a plate grafted
-    on the abdomen (the tail is a rig of its own, `scorpion_tail`)."""
+    """The living works (MB-SCORPION-02): the torn stump of the missing right hind leg, a plate
+    grafted on the abdomen (the tail is a rig of its own, `scorpion_tail`)."""
     # The missing right hind leg: a torn stump.
     p.flesh.cylinder(1.6, 2.4, 6, F.wound, Placement([-15, -0.5, -13], 0, 0, QUARTER))
     graft(p, PATCH, [5.5, 6.6], [0, 0, 0], {"color": M.base})
@@ -129,7 +129,7 @@ def _draw_machinery(p: Any) -> None:
 
 
 def _stinger(p: Any, at: Vec3) -> None:
-    """The stinger (P07-R05, P16-R05): a venom bulb hanging from the tail's tip, its emitter in
+    """The stinger (MB-SCORPION-04): a venom bulb hanging from the tail's tip, its emitter in
     front."""
     place_at = offset(at, 0, STINGER_Y, 0)
     place = Placement(place_at, 0, STINGER_TILT)
@@ -162,7 +162,7 @@ def _tail_cannon(p: Any, at: Vec3) -> None:
 
 
 def build_scorpion(scene: Any) -> Any:
-    """P07-R05, P16-R05: the Scorpion, a living desert scorpion with yellow veins: a segmented
+    """MB-SCORPION-01: the Scorpion, a living desert scorpion with yellow veins: a segmented
     shell, two arms out to its claw cannons, and a segmented tail arched over its back, its stinger
     hanging in front of the head, between the claws."""
 

@@ -32,16 +32,17 @@ TABLES = WorldTables(WORLD_3_DIFFICULTY, WORLD_3_FILLERS, WORLD_3_BOSSES)
 
 
 def _level(id: str, scenery: Any, plan: WavePlan) -> GameLevel:
+    # Its waves composed from its plan (WLD-3-16).
     return assemble_level(id, scenery, compose_beats(plan), TABLES)
 
 
-# World 3 (P09; reworked at the reviewer's request, 2026-10-27): five levels of about 5 minutes,
-# from the factories World 2 ended on to garden villages of small houses, each with a mini boss and
-# a final boss.
+# World 3 (WLD-3-01; reworked at the reviewer's request, 2026-10-27): five levels of about 5
+# minutes, from the factories World 2 ended on to garden villages of small houses, each with a mini
+# boss and a final boss.
 WORLD_3 = [
-    _level("3-1", LEVEL_3_1, PLAN_3_1),
-    _level("3-2", LEVEL_3_2, PLAN_3_2),
-    _level("3-3", LEVEL_3_3, PLAN_3_3),
-    _level("3-4", LEVEL_3_4, PLAN_3_4),
-    _level("3-5", LEVEL_3_5, PLAN_3_5),
+    _level("3-1", LEVEL_3_1, PLAN_3_1),  # LVL-3-1-04
+    _level("3-2", LEVEL_3_2, PLAN_3_2),  # LVL-3-2-04
+    _level("3-3", LEVEL_3_3, PLAN_3_3),  # LVL-3-3-04
+    _level("3-4", LEVEL_3_4, PLAN_3_4),  # LVL-3-4-04
+    _level("3-5", LEVEL_3_5, PLAN_3_5),  # LVL-3-5-04
 ]

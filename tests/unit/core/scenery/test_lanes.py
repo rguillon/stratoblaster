@@ -12,7 +12,7 @@ def _point(x: float, z: float) -> SimpleNamespace:
     return SimpleNamespace(x=x, z=z)
 
 
-def test_p04_r07_roads_are_one_lane_each_way_unless_they_are_dual() -> None:
+def test_gfx_road_01_roads_are_one_lane_each_way_unless_they_are_dual() -> None:
     rules = road_rules()
     assert lanes_of(rules, rules.main_width) == 1
     assert lanes_of(rules, rules.dual.width) == 2
@@ -26,7 +26,7 @@ def test_boulevards_have_their_own_lanes() -> None:
     assert is_boulevard(rules, 24.0) is False
 
 
-def test_p04_r07_every_street_line_has_one_of_the_widths_of_the_grid() -> None:
+def test_gfx_road_17_every_street_line_has_one_of_the_widths_of_the_grid() -> None:
     rules = road_rules(boulevards=[Boulevard(4, 60.0, 0.2)])
     widths = {street_width(rules, float(c)) for c in range(-200, 200, 7)}
     assert widths <= {60.0, rules.dual.width, rules.main_width}

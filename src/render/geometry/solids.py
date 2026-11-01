@@ -1,4 +1,4 @@
-"""Low-poly, flat-shaded, vertex-coloured solids ().
+"""Low-poly, flat-shaded, vertex-coloured solids (GFX-ART-10; the props' too, GFX-PROP-04).
 
 Each face has its own vertices, so the normals computed later are per face. Vectors are
 lists of 3 numbers, outlines are `[x, z]` lists (see `outline.py`).

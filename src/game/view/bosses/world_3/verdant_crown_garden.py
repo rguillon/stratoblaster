@@ -1,4 +1,5 @@
-"""P09-R09, 3-5: the Verdant Crown's colours and its glass garden dome over the core: a lattice of
+"""FB-VERDANT-CROWN-03, FB-VERDANT-CROWN-06, 3-5: the Verdant Crown's colours and its glass
+garden dome over the core: a lattice of
 ribs and glowing mullions, trees inside, the tallest one rising through the oculus at the top. Model
 space: logical pixels, nose +Z
 (down the screen), Y up towards the camera."""
@@ -28,7 +29,8 @@ __pragma__("noskip")
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
 
-# Emerald, its registered neon (GD-61), and magenta, its second neon colour (P09-R09).
+# Emerald, its registered neon (BOSS-50), and magenta, its second neon colour
+# (FB-VERDANT-CROWN-06).
 EMERALD = BOSS_LOOK.neon["verdant-crown"]
 MAGENTA = [1, 0.15, 0.75]
 # The World 3 jungle over the dark metal: moss, bark, leaves, old stone.
@@ -95,7 +97,7 @@ def draw_lattice(p: EnemyParts) -> None:
         for k in range(steps):
             e0 = (oculus * k) / steps
             e1 = (oculus * (k + 1)) / steps
-            # P16-R06: the dome's ribs are bone, a ribcage over the garden.
+            # FB-VERDANT-CROWN-03: the dome's ribs are bone, a ribcage over the garden.
             strut(flesh, [on_dome(turn, e0), on_dome(turn, e1)], [1, 1], F.bone)
     for e in DOME.mullions:
         y = on_dome(0, e)[1]
@@ -189,7 +191,8 @@ def great_tree(p: EnemyParts) -> None:
 
 
 def draw_garden(p: EnemyParts) -> None:
-    """The glass garden dome over the core (P09-R09): its lattice, its garden, its great tree."""
+    """The glass garden dome over the core (FB-VERDANT-CROWN-03): its lattice, its garden, its great
+    tree."""
     p.hull.cylinder(DOME.radius, 0.4, 16, JUNGLE.moss, Placement([0, DECK_TOP, 0]))
     draw_lattice(p)
     for i in range(len(TREES)):

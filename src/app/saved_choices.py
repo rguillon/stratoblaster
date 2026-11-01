@@ -16,9 +16,9 @@ class SavedChoices:
     """What the menus read from storage at start-up."""
 
     def __init__(self, high_score: float, last_ship_id: str | None) -> None:
-        # Best score so far, 0 when none or unreadable (P01-R04).
+        # Best score so far, 0 when none or unreadable (UI-TITLE-03).
         self.high_score = high_score
-        # Ship chosen last time (P01-R14), or None.
+        # Ship chosen last time (UI-SHIP-07), or None.
         self.last_ship_id = last_ship_id
 
 
@@ -59,5 +59,5 @@ def save_last_ship(storage: KeyValueStorage, game_id: str, ship_id: str) -> None
 
 
 def save_high_score(storage: KeyValueStorage, game_id: str, score: float) -> None:
-    """Saves `score` as the new high score (GD-51, P11-R03)."""
+    """Saves `score` as the new high score (GAME-SCORE-05)."""
     storage.set(saved_choice_keys(game_id).high_score, str(max(0, math.floor(score))))

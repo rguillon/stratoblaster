@@ -1,8 +1,8 @@
-"""The World 1 final bosses (P07-R05)
+"""The World 1 final bosses (specs/bosses/final/1-1-storm-petrel.md to 1-5-overlord.md)
 
-4 to 6 destroyable parts each. Offsets in px from the boss's centre, X right and Y up (its nose
-points down, at -Y). Stage patterns as for the mini bosses (see `mini_bosses.py`); the core of a
-final boss always drops a bonus (P07-R07).
+4 to 6 destroyable parts each (BOSS-13). Offsets in px from the boss's centre, X right and Y up
+(its nose points down, at -Y). Stage patterns as for the mini bosses (see `mini_bosses.py`); the
+core of a final boss always drops a bonus (BOSS-57).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -21,7 +21,7 @@ __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (BOSS-57, `part_drop_chance`)."""
     extra = {} if options == None else options  # noqa: E711
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
@@ -43,12 +43,14 @@ ROTARY = [
     [29.8, -46.6, 15.8],
 ]
 
-# 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate.
+# 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate
+# (FB-STORM-PETREL-07).
 _STORM_PETREL = record(
     {
         "id": "storm-petrel",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-STORM-PETREL-09).
         "rage": rage.flower(0.5, "magenta", "red"),
+        # Its points, its core's drop and its parts' drops (FB-STORM-PETREL-13).
         "stats": stats(
             {
                 "id": "storm-petrel",
@@ -67,15 +69,18 @@ _STORM_PETREL = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-STORM-PETREL-06).
         "stopFraction": 0.72,
         "sway": {"amplitude": 45, "period": 8},
         "bob": {"amplitude": 10, "period": 4},
+        # Its guns' muzzles (FB-STORM-PETREL-03).
         "guns": {
             "core": {"gun": twin(1.6, -19.3, 16.8), "turret": [0, -5]},
             "pod-left": {"gun": twin(-56, -18.8, 14.3, 2.5)},
             "pod-right": {"gun": twin(56, -18.8, 14.3, 2.5)},
             "missile-rack": {"missile": cells([-6.2, 0, 6.2], [36.9, 43.1], 17.3)},
         },
+        # Its parts' volleys, then the core's pattern per stage (FB-STORM-PETREL-08).
         "stages": stages(
             [
                 volley.fan("pod-left", 2, 3, 15, MAGENTA, 0.8),
@@ -93,12 +98,14 @@ _STORM_PETREL = record(
     }
 )
 
-# 1-2: a wide carrier; two hangar bays launch Gnats, two flak turrets; all four shield the core.
+# 1-2: a wide carrier; two hangar bays launch Gnats, two flak turrets; all four shield the core
+# (FB-GULL-MOTHERSHIP-07).
 _GULL_MOTHERSHIP = record(
     {
         "id": "gull-mothership",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-GULL-MOTHERSHIP-09).
         "rage": rage.vortex(1.5, "green", "orange"),
+        # Its points, its core's drop and its parts' drops (FB-GULL-MOTHERSHIP-13).
         "stats": stats(
             {
                 "id": "gull-mothership",
@@ -117,6 +124,7 @@ _GULL_MOTHERSHIP = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-GULL-MOTHERSHIP-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 40, "period": 9},
         "bob": {"amplitude": 8, "period": 4.5},
@@ -124,11 +132,13 @@ _GULL_MOTHERSHIP = record(
             {"from": "hangar-left", "kind": "gnats", "count": 3, "every": 7, "first": 2.5},
             {"from": "hangar-right", "kind": "gnats", "count": 3, "every": 7, "first": 6},
         ],
+        # Its guns' muzzles (FB-GULL-MOTHERSHIP-03).
         "guns": {
             "core": {"gun": [[0, -69.9, 7]], "laser": [[0, -69.9, 7]]},
             "flak-left": {"gun": twin(-28, -46.3, 8.8, 1.6), "turret": [-28, -32]},
             "flak-right": {"gun": twin(28, -46.3, 8.8, 1.6), "turret": [28, -32]},
         },
+        # Its parts' volleys, then the core's pattern per stage (FB-GULL-MOTHERSHIP-08).
         "stages": stages(
             [
                 volley.aimed("flak-left", 1.9, 2, 8, GREEN, 0.9),
@@ -145,12 +155,14 @@ _GULL_MOTHERSHIP = record(
     }
 )
 
-# 1-3: a flying fortress; two laser lances and two missile silos shield the core.
+# 1-3: a flying fortress; two laser lances and two missile silos shield the core
+# (FB-MESA-FORTRESS-07).
 _MESA_FORTRESS = record(
     {
         "id": "mesa-fortress",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-MESA-FORTRESS-09).
         "rage": rage.curtain(2.5, "red", "orange"),
+        # Its points, its core's drop and its parts' drops (FB-MESA-FORTRESS-13).
         "stats": stats(
             {
                 "id": "mesa-fortress",
@@ -169,9 +181,11 @@ _MESA_FORTRESS = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-MESA-FORTRESS-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 35, "period": 10},
         "bob": {"amplitude": 6, "period": 5},
+        # Its guns' muzzles (FB-MESA-FORTRESS-03).
         "guns": {
             "core": {
                 "gun": [
@@ -188,6 +202,7 @@ _MESA_FORTRESS = record(
             "silo-left": {"missile": cells([-30.8, -25.2], [29.2, 34.8], 17.3)},
             "silo-right": {"missile": cells([25.2, 30.8], [29.2, 34.8], 17.3)},
         },
+        # Its parts' volleys, then the core's pattern per stage (FB-MESA-FORTRESS-08).
         "stages": stages(
             [
                 volley.laser("lance-left", 6, 1.4, 2),
@@ -212,12 +227,14 @@ _MESA_FORTRESS = record(
     }
 )
 
-# 1-4: a heavy tanker-gunship; fuel tanks burst into bullet rings, rotary turrets spiral.
+# 1-4: a heavy tanker-gunship; fuel tanks burst into bullet rings, rotary turrets spiral
+# (FB-REFINERY-TITAN-07).
 _REFINERY_TITAN = record(
     {
         "id": "refinery-titan",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-REFINERY-TITAN-09).
         "rage": rage.spirals(3.5, "orange", "green"),
+        # Its points, its core's drop and its parts' drops (FB-REFINERY-TITAN-12).
         "stats": stats(
             {
                 "id": "refinery-titan",
@@ -237,6 +254,7 @@ _REFINERY_TITAN = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-REFINERY-TITAN-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 30, "period": 10},
         "bob": {"amplitude": 6, "period": 5},
@@ -244,12 +262,14 @@ _REFINERY_TITAN = record(
             "tank-left": {"count": 12, "bullet": ORANGE},
             "tank-right": {"count": 12, "bullet": ORANGE},
         },
+        # Its guns' muzzles (FB-REFINERY-TITAN-03).
         "guns": {
             "core": {"gun": twin(4.5, -35.8, 19)},
             "turret-left": {"gun": mirror(ROTARY), "turret": [-32, -24]},
             "turret-right": {"gun": ROTARY, "turret": [32, -24]},
             "missile-battery": {"missile": cells([-5.5, 5.5], [30.5, 38, 45.5], 21.1)},
         },
+        # Its parts' volleys, then the core's pattern per stage (FB-REFINERY-TITAN-08).
         "stages": stages(
             [
                 volley.ring("turret-left", 0.7, 3, 19, ORANGE, 0.5),
@@ -274,14 +294,16 @@ _REFINERY_TITAN = record(
     }
 )
 
-# 1-5: a city-ship; wing lasers, missile batteries, and two shield generators guard the core.
+# 1-5: a city-ship; wing lasers, missile batteries, and two shield generators guard the core
+# (FB-OVERLORD-07).
 _OVERLORD = record(
     {
         "id": "overlord",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-OVERLORD-09).
         "rage": concat(
             rage.spirals(4.5, "purple", "blue", 0.6), rage.flower(4.5, "magenta", "purple", 0.4)
         ),
+        # Its points, its core's drop and its parts' drops (FB-OVERLORD-13).
         "stats": stats(
             {
                 "id": "overlord",
@@ -302,9 +324,11 @@ _OVERLORD = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-OVERLORD-06).
         "stopFraction": 0.75,
         "sway": {"amplitude": 25, "period": 11},
         "bob": {"amplitude": 6, "period": 5},
+        # Its guns' muzzles (FB-OVERLORD-03).
         "guns": {
             "core": {
                 "gun": twin(7, -39.6, 15.5),
@@ -317,6 +341,7 @@ _OVERLORD = record(
             "battery-left": {"missile": cells([-51, -41], [22.5, 30, 37.5], 14.1)},
             "battery-right": {"missile": cells([41, 51], [22.5, 30, 37.5], 14.1)},
         },
+        # Its parts' volleys, then the core's pattern per stage (FB-OVERLORD-08).
         "stages": stages(
             [
                 volley.laser("laser-left", 6.5, 1.4, 2),
@@ -344,9 +369,10 @@ _OVERLORD = record(
     }
 )
 
-# Its transformations (D-230): once both wing pods are gone its outer wings swing 30 degrees
-# forward about their leading edges' roots, a gun battery riding each; once its rack and plate are
-# gone its tail plating bursts off for a heavy cannon and its wing roots' for a pair of sweepers.
+# Its transformations (D-230; what it sheds and moves, FB-STORM-PETREL-05): once both wing pods are
+# gone its outer wings swing 30 degrees forward about their leading edges' roots, a gun battery
+# riding each (FB-STORM-PETREL-10); once its rack and plate are gone its tail plating bursts off for
+# a heavy cannon and its wing roots' for a pair of sweepers (FB-STORM-PETREL-11).
 STORM_PETREL = with_weapons(
     merge(
         _STORM_PETREL,
@@ -379,9 +405,10 @@ STORM_PETREL = with_weapons(
     ),
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224; what it sheds, FB-GULL-MOTHERSHIP-05): at
+# transformation 1 its flank armour bursts off, baring a dark metal frame, and a pair of laser
+# lances unfold (FB-GULL-MOTHERSHIP-10); at transformation 2 its wing armour bursts off, baring a
+# dark metal frame, and a pair of ring emitters unfold (FB-GULL-MOTHERSHIP-11).
 GULL_MOTHERSHIP = with_weapons(
     _GULL_MOTHERSHIP,
     [
@@ -396,10 +423,11 @@ GULL_MOTHERSHIP = with_weapons(
     ],
 )
 
-# Its transformations (D-230): once both lances are gone its wing fronts burst off for a pair of
-# gun batteries; once both silos are gone its keep splits along its ridge, the two halves of its
-# roof sliding apart over a dark metal lattice as a heavy cannon rises between them, and its flank
-# armour bursts off for a pair of sweepers.
+# Its transformations (D-230; what it sheds and moves, FB-MESA-FORTRESS-05): once both lances are
+# gone its wing fronts burst off for a pair of gun batteries (FB-MESA-FORTRESS-10); once both silos
+# are gone its keep splits along its ridge, the two halves of its roof sliding apart over a dark
+# metal lattice as a heavy cannon rises between them, and its flank armour bursts off for a pair of
+# sweepers (FB-MESA-FORTRESS-11).
 MESA_FORTRESS = with_weapons(
     merge(
         _MESA_FORTRESS,
@@ -434,9 +462,10 @@ MESA_FORTRESS = with_weapons(
     ),
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224; what it sheds, FB-REFINERY-TITAN-05): at
+# transformation 1 its back plating bursts off, baring a dark metal frame, and a pair of gatling
+# turrets unfold (FB-REFINERY-TITAN-10); at transformation 2 its spine plating bursts off, baring a
+# dark metal frame, and a pair of ring emitters unfold (FB-REFINERY-TITAN-11).
 REFINERY_TITAN = with_weapons(
     _REFINERY_TITAN,
     [
@@ -455,9 +484,10 @@ REFINERY_TITAN = with_weapons(
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of flak mortars unfold.
+# Its hidden weapons (boss transformations, D-224; what it sheds, FB-OVERLORD-05): at
+# transformation 1 its flank armour bursts off, baring a dark metal frame, and a pair of laser
+# lances unfold (FB-OVERLORD-10); at transformation 2 its spine plating bursts off, baring a dark
+# metal frame, and a pair of flak mortars unfold (FB-OVERLORD-11).
 OVERLORD = with_weapons(
     _OVERLORD,
     [

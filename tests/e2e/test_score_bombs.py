@@ -1,4 +1,5 @@
-"""e2e: the score, the high score, the lives and the bombs (phase 11)."""
+"""e2e: the score, the high score, the lives and the bombs (specs/gameplay/scoring.md, bombs.md,
+lives-and-damage.md)."""
 
 import re
 
@@ -30,9 +31,11 @@ def wait_for_boss(page: Page, name: str) -> None:
     step_until(page, lambda: boss_name(page), lambda n: n == name)
 
 
-def test_p11_r01_r02_r03_r08_boss_parts_score_a_new_high_score_is_saved_and_shown(
+def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
     page: Page,
 ) -> None:
+    """Also GAME-SCORE-05 (the high score is saved), UI-HUD-05 (the score lines), UI-OVER-02
+    ("New high score!"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`)."""
     open_debug(page, "?level=1-1&boss=final&ship=light")
     wait_for_boss(page, "Storm Petrel")
     expect(page.locator(".hud-score-value")).to_have_text("0000000")
@@ -64,7 +67,8 @@ def test_p11_r01_r02_r03_r08_boss_parts_score_a_new_high_score_is_saved_and_show
     expect(page.locator(".title-high-score")).to_have_text(str(score))
 
 
-def test_p11_r03_p12_r02_leaving_a_level_from_the_pause_menu_saves_its_score(page: Page) -> None:
+def test_game_score_05_leaving_a_level_from_the_pause_menu_saves_its_score(page: Page) -> None:
+    """Also UI-PAUSE-10: the level is left through the pause menu."""
     open_debug(page, "?level=1-1&boss=final")
     wait_for_boss(page, "Storm Petrel")
     page.keyboard.press("KeyK")
@@ -76,9 +80,11 @@ def test_p11_r03_p12_r02_leaving_a_level_from_the_pause_menu_saves_its_score(pag
     expect(page.locator(".title-high-score")).to_have_text("800")
 
 
-def test_p11_r05_r06_r08_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
+def test_game_bomb_04_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
     page: Page,
 ) -> None:
+    """Also GAME-BOMB-05 (the enemy shots go), GAME-CTRL-01 (R and E), DEV-API-03 (`bombs`,
+    `enemyShots`) and DEV-API-07 (`bomb`)."""
     open_debug(page, "?level=1-2&boss=mini")
     step_until(page, lambda: boss_name(page), lambda n: n is not None)
     expect(page.locator(".hud-bombs")).to_have_text("● 3")
@@ -103,9 +109,11 @@ def test_p11_r05_r06_r08_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
     assert (game(page) or {})["bombs"] == 1
 
 
-def test_p11_r04_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_checkpoint(
+def test_game_score_06_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_checkpoint(
     page: Page,
 ) -> None:
+    """Also GAME-LIFE-11 (Continue with 3 bombs), UI-OVER-02, UI-OVER-07 (Continue) and ENG-54
+    (a game over)."""
     open_debug(page, "?level=1-1&boss=mini&ship=light")
     wait_for_boss(page, "Reef Warden")
 
@@ -133,7 +141,7 @@ def test_p11_r04_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_checkp
 
 
 @pytest.mark.parametrize(("width", "height"), [(800, 600), (390, 844)])
-def test_p11_r02_the_score_lines_show_and_cover_no_other_hud_part(
+def test_ui_hud_08_the_score_lines_show_and_cover_no_other_hud_part(
     page: Page, width: int, height: int
 ) -> None:
     page.set_viewport_size({"width": width, "height": height})
@@ -151,9 +159,10 @@ def test_p11_r02_the_score_lines_show_and_cover_no_other_hud_part(
 
 
 @pytest.mark.browser_context_args(**TOUCH_PHONE)
-def test_p11_r06_the_bomb_button_sets_a_bomb_off_the_fire_button_still_shows(
+def test_ui_hud_10_the_bomb_button_sets_a_bomb_off_the_fire_button_still_shows(
     page: Page,
 ) -> None:
+    """Also GAME-CTRL-02: the touch fire and bomb buttons work together."""
     open_debug(page, "?level=1-1&t=10")
     button = page.locator(".hud-bomb-button")
     expect(button).to_be_visible()

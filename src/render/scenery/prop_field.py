@@ -1,7 +1,7 @@
-"""The props standing on the terrain (P04-R04): each kind of prop is one mesh (plus one for its
+"""The props standing on the terrain (GFX-PROP-01): each kind of prop is one mesh (plus one for its
 self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped by
 terrain chunk, so they come and go with the chunks. A window is a `[z_min, z_max]` pair. D-212:
-some kinds may be drawn as imposters instead (`ImposterKinds`).
+some kinds may be drawn as imposters instead (`ImposterKinds`, GFX-PROP-11).
 """
 
 import math
@@ -47,7 +47,8 @@ Window = list[float]
 __pragma__("noskip")
 
 MATRIX_FLOATS = 16
-# D-212: the layer of the shadows' stand-ins, which no camera sees (theirs is 0x0FFFFFFF).
+# D-212, GFX-PROP-12: the layer of the shadows' stand-ins, which no camera sees (theirs is
+# 0x0FFFFFFF).
 SHADOW_ONLY_LAYER = 0x20000000
 
 # Keys of the objects that hold their cached results (a WeakMap keyed by the object).
@@ -129,7 +130,7 @@ def _geometry_of(factory: PropModelFactory) -> PropGeometry:
 
 
 def prop_geometry(factory: PropModelFactory) -> PropGeometry:
-    """The geometry of `factory` (made once: see `_geometry_of`)."""
+    """The geometry of `factory` (made once: see `_geometry_of`; PERF-11, PERF-22)."""
     return _geometry_of(factory)
 
 
@@ -167,9 +168,9 @@ def _normals_of(geo: ColoredGeometry) -> list[float]:
 
 def _draw_always(mesh: Any) -> None:
     """Draws `mesh` without checking whether it is in view, so its bounds are never fitted to its
-    instances (reviewer, 2026-10-28): for the cars, placed again every frame, that was the largest
-    single cost of a frame in Worlds 3 and 4, and for the other props half of each upload. Their
-    instances are near the view anyway, and the sun's shadows have a fixed frustum
+    instances (reviewer, 2026-10-28, PERF-26): for the cars, placed again every frame, that was the
+    largest single cost of a frame in Worlds 3 and 4, and for the other props half of each upload.
+    Their instances are near the view anyway, and the sun's shadows have a fixed frustum
     (`shadowFrustumSize`), which no bounds change."""
     mesh.alwaysSelectAsActiveMesh = True
     mesh.doNotSyncBoundingInfo = True
@@ -237,7 +238,8 @@ def _unique(ids: list[str]) -> list[str]:
 
 
 def level_tree_kinds(level: SceneryLevel) -> list[str]:
-    """The kinds of tree `level`'s sections allow (D-214), unique, in order."""
+    """The kinds of tree `level`'s sections allow (D-214), unique, in order: those the imposters
+    are baked for (GFX-PROP-10)."""
     ids: list[str] = []
     for s in level.sections:
         for t in allowed(level.props.trees, s.trees):
@@ -247,7 +249,8 @@ def level_tree_kinds(level: SceneryLevel) -> list[str]:
 
 def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
     """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
-    sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order."""
+    sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order
+    (GFX-PROP-03)."""
     props = level.props
     sections = level.sections
     ids: list[str] = []
@@ -279,9 +282,9 @@ def level_prop_models(
     level: SceneryLevel,
     models: dict[str, PropModelFactory],
 ) -> dict[str, PropModelFactory]:
-    """The models of the props of `level` (`level_prop_kinds`): only those are built (reviewer,
-    2026-10-28: building all the game's took about 36 ms and 841 meshes per level). Throws if one of
-    them, or one of its cars, has no model."""
+    """The models of the props of `level` (`level_prop_kinds`): only those are built (PERF-22;
+    reviewer, 2026-10-28: building all the game's took about 36 ms and 841 meshes per level). Throws
+    if one of them, or one of its cars, has no model."""
     check_prop_models(level, models)
     kinds = level_prop_kinds(level)
     return {k: v for k, v in models.items() if k in kinds}
@@ -300,9 +303,9 @@ def check_prop_models(level: SceneryLevel, models: dict[str, PropModelFactory]) 
 
 
 class PropField:
-    """The props standing on the terrain (P04-R04). Each kind of prop is one mesh (plus one for its
-    self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are grouped
-    by terrain chunk, so they come and go with the chunks."""
+    """The props standing on the terrain (GFX-PROP-05). Each kind of prop is one mesh (plus one for
+    its self-lit accents) drawn once per placement with thin instances (ENG-104). Placements are
+    grouped by terrain chunk, so they come and go with the chunks."""
 
     def __init__(
         self,
@@ -325,7 +328,7 @@ class PropField:
         """The placements of each chunk, by kind (chunks in insertion order, as parallel lists)."""
         self._chunk_indices: list[int] = []
         self._chunk_kinds: list[dict[str, KindProps]] = []
-        """The placements uploaded last for each kind (P13-R04: unchanged kinds are kept)."""
+        """The placements uploaded last for each kind (PERF-25: unchanged kinds are kept)."""
         self._drawn: dict[str, list[PropPlacement]] = {}
         self._dirty = False
         """Only the props whose Z is in this range are drawn, if set (see `set_window`)."""
@@ -384,7 +387,7 @@ class PropField:
         return mesh
 
     def update_plumes(self, frame: PlumeFrame) -> None:
-        """Phase 10: moves the smoke and steam of the props on to this frame."""
+        """Phase 10 (GFX-PROP-18): moves the smoke and steam of the props on to this frame."""
         for material in self._plume_materials.values():
             material.set(frame)
 
@@ -409,7 +412,7 @@ class PropField:
 
     @property
     def light_meshes(self) -> list[Any]:
-        """Meshes of the self-lit accents and windows (e.g. for a glow layer)."""
+        """Meshes of the self-lit accents and windows (e.g. for a glow layer, GFX-BLDG-16)."""
         out: list[Any] = []
         for m in self._meshes.values():
             if m.lights is not None:
@@ -456,9 +459,10 @@ class PropField:
         self._dirty = True
 
     def add_to_chunk(self, index: int, placements: list[PropPlacement]) -> None:
-        """Adds `placements` to those of chunk `index` (D-212: a row of trees at a time): the
-        props already there keep their instance matrices, and nothing is uploaded again unless one
-        of `placements` is in the window. A chunk that is not set (removed meanwhile) takes none."""
+        """Adds `placements` to those of chunk `index` (D-212, GFX-PROP-14: a row of trees at a
+        time): the props already there keep their instance matrices, and nothing is uploaded again
+        unless one of `placements` is in the window. A chunk that is not set (removed meanwhile)
+        takes none."""
         at = self._chunk_at(index)
         if at < 0:
             return
@@ -501,10 +505,10 @@ class PropField:
         self._dirty = True
 
     def set_window(self, z_min: float, z_max: float, step: float) -> None:
-        """Draws only the props whose Z is in [z_min, z_max] (phase 4 review): the terrain chunks
-        reach well past the view, and their props would be drawn for nothing. The instances are
-        uploaded again only when the window leaves the range drawn, which is `step` wider on both
-        sides."""
+        """Draws only the props whose Z is in [z_min, z_max] (phase 4 review, PERF-25): the terrain
+        chunks reach well past the view, and their props would be drawn for nothing. The instances
+        are uploaded again only when the window leaves the range drawn, which is `step` wider on
+        both sides."""
         drawn = self._window
         if drawn is not None and z_min >= drawn[0] and z_max <= drawn[1]:
             return
@@ -513,7 +517,8 @@ class PropField:
         self._dirty = True
 
     def drift(self, drifts: dict[str, PropDrift], time: float) -> None:
-        """Moves the kinds that drift (phase 8: ice floes on the sea) to where they are `time`
+        """Moves the kinds that drift (phase 8: ice floes on the sea, GFX-PROP-15,
+        GFX-PROP-16) to where they are `time`
         seconds in: to and fro around where they were placed, each kind on its own course."""
         for kind, d in drifts.items():
             meshes = self._meshes.get(kind)

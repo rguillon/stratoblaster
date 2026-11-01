@@ -1,4 +1,8 @@
-"""Sky gradient as cube-map faces (no asset download)"""
+"""Sky gradient as cube-map faces (no asset download, ENG-126)
+
+The pure part of the sky reflections (GFX-SKY-10), unit-tested on its numbers; the Babylon
+wiring is in `showcase_environment_visual.py`.
+"""
 
 import math
 

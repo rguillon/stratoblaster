@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Refinery Titan, World 1's 1-4 final boss Model space: logical pixels, nose
-+Z (down the screen), Y up
+"""FB-REFINERY-TITAN-01 to FB-REFINERY-TITAN-04: the Refinery Titan, World 1's 1-4 final boss
+Model space: logical pixels, nose +Z (down the screen), Y up
 towards the camera. A bloated industrial beetle: a huge shelled body plumbed with grafted pipes,
 limbs cradling two glowing fuel bladders, smoking chimneys of flesh on its back, a fleshy apron in
 front carrying the two rotary turrets.
@@ -74,7 +74,8 @@ COLUMN = [
 
 
 def _draw_structure(p: Any) -> None:
-    """The body (P16-R06): a huge shelled abdomen, ribs, a spine vein, armour plates grafted on."""
+    """The body (FB-REFINERY-TITAN-02): a huge shelled abdomen, ribs, a spine vein, armour plates
+    grafted on."""
     hide(
         p,
         {
@@ -101,8 +102,8 @@ def _draw_structure(p: Any) -> None:
 
 
 def _draw_cradles(p: Any) -> None:
-    """The limbs holding the fuel bladders (P16-R06): a jointed bone-and-sinew limb out to each, its
-    claw curled round the bladder's outer side, lit along its top."""
+    """The limbs holding the fuel bladders (FB-REFINERY-TITAN-02): a jointed bone-and-sinew limb
+    out to each, its claw curled round the bladder's outer side, lit along its top."""
     for s in SIDES:
         for z in [-30, -6]:
             elbow = [s * 86, 14, z]
@@ -134,8 +135,9 @@ def _draw_columns(p: Any) -> None:
 
 
 def _draw_bridge(p: Any) -> None:
-    """The head over the core (P16-R06): a plated skull with clustered eyes, two smoking spiracles,
-    the twin cannon grafted under its brow (the core's weapon), mandibles at its front."""
+    """The head over the core (FB-REFINERY-TITAN-02): a plated skull with clustered eyes, two
+    smoking spiracles, the twin cannon grafted under its brow (the core's weapon,
+    FB-REFINERY-TITAN-03), mandibles at its front."""
     organ(p.flesh, 17, 8, F.slate, Placement([0, 12, 2], math.pi / 8), 0.38)
     graft(p, polygon(6, 11, [1, 1.3]), [23, 24.5], [0, 0, 0])
     eyes(p, [0, 22, 15], {"count": 4, "size": 1.2, "spacing": 3.4}, TITAN_NEON)
@@ -171,9 +173,10 @@ def _draw_core(p: Any) -> None:
 
 
 def build_refinery_titan(scene: Any) -> Any:
-    """P07-R05, P16-R06: the Refinery Titan, a bloated industrial beetle (5.5 L) with orange veins:
-    two big fuel bladders glowing in its limbs, two rotary turrets on its front apron, a missile
-    brood on its back, and its plated head with a twin cannon over the core."""
+    """FB-REFINERY-TITAN-01, FB-REFINERY-TITAN-04: the Refinery Titan, a bloated industrial beetle
+    (5.5 L) with orange veins: two big fuel bladders glowing in its limbs, two rotary turrets on
+    its front apron, a missile brood on its back, and its plated head with a twin cannon over the
+    core."""
     return build_boss_model(
         REFINERY_TITAN,
         scene,

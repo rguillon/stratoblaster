@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Gull Mothership's destroyable parts, its brood pouches and flak growths
-Logical pixels, nose +Z, Y up."""
+"""FB-GULL-MOTHERSHIP-03: the Gull Mothership's destroyable parts, its brood pouches and flak
+growths Logical pixels, nose +Z, Y up."""
 
 import math
 
@@ -60,8 +60,9 @@ def _sign_or_one(x: float) -> float:
 
 
 def draw_hangar(p: Any, at: Vec3) -> None:
-    """A hangar bay (P16-R06): a swollen brood pouch on the mantle's flank, a glowing birth slit in
-    its top between fleshy lips, green glands down both sides, a grafted brace on its outer side.
+    """A hangar bay (FB-GULL-MOTHERSHIP-03): a swollen brood pouch on the mantle's flank, a glowing
+    birth slit in its top between fleshy lips, green glands down both sides, a grafted brace on its
+    outer side.
     """
     s = _sign_or_one(at[0])
     p.flesh.bevel_slab(
@@ -114,8 +115,8 @@ def draw_hangar(p: Any, at: Vec3) -> None:
 
 
 def draw_flak(p: Any, at: Vec3) -> None:
-    """A flak growth on the front of the mantle (P16-R06): a swollen, plated mound under its turret,
-    a feeding sac behind it."""
+    """A flak growth on the front of the mantle (FB-GULL-MOTHERSHIP-03): a swollen, plated mound
+    under its turret, a feeding sac behind it."""
     growth(p, shift(at, [0, DECK_TOP - 2.5, 0]), 12, N, {"flesh": F.slate, "height": 0.38})
     sac(
         p,

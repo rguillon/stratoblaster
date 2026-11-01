@@ -33,7 +33,7 @@ def _in_view(node) -> bool:
     return abs(node.x) >= 300.0
 
 
-def test_p04_r07_with_no_chance_of_links_only_the_rows_at_the_ends_are_laid() -> None:
+def test_gfx_road_14_with_no_chance_of_links_only_the_rows_at_the_ends_are_laid() -> None:
     district = _district(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.0))
     runs, _ = street_runs(district, road_rules(), create_rng(4), _ground, _in_view)
     z_rows = {round(run.points[0].z, 6) for run in runs}

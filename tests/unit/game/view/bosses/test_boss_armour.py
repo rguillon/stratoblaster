@@ -1,6 +1,6 @@
 """Unit tests of `src/game/view/bosses/boss_armour.py` and `boss_frame.py`: a boss's armour cut
-out of its body, bursting off in chunks and leaving a dark metal frame (docs/superpowers/specs/
-2026-10-31-boss-armour-shedding-design.md)."""
+out of its body (BOSS-42), bursting off in chunks (BOSS-43) and leaving a dark metal frame
+(BOSS-44; docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
 
 import math
 from types import SimpleNamespace

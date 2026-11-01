@@ -1,4 +1,4 @@
-"""P07-R05 (phase 7 review: fat armour over a complex mechanism): chunky armour plates and the
+"""BOSS-49 (phase 7 review: fat armour over a complex mechanism): chunky armour plates and the
 machinery seen through the gaps between them: cogs, rams, cable bundles, ribbed conduits Logical
 pixels, nose +Z, Y up (towards the camera).
 """

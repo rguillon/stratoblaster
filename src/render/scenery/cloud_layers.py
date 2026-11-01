@@ -1,4 +1,5 @@
-"""Cloud layers of a scenery stage (P04-R03, P08-R04): planes under the flight altitude that follow
+"""Cloud layers of a scenery stage (GFX-SKY-11, GFX-SKY-13): planes under the flight altitude that
+follow
 the camera and drift, each with its own material.
 """
 
@@ -13,7 +14,7 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# Group of all but the clouds, drawn next: a glow composed after it stays under them.
+# Group of all but the clouds, drawn next: a glow composed after it stays under them (GFX-CAM-07).
 BELOW_CLOUDS_GROUP = 0
 # Group of what flies above the clouds (the ships), drawn last and keeping the depth: neither the
 # clouds nor a glow composed after the ground draw over it (phase 4 review).
@@ -21,7 +22,7 @@ ABOVE_CLOUDS_GROUP = BELOW_CLOUDS_GROUP + 2
 
 
 class CloudLayerState:
-    """A cloud layer's live settings (P04-R03)."""
+    """A cloud layer's live settings (GFX-SKY-11)."""
 
     def __init__(self, enabled: bool, coverage: float, opacity: float) -> None:
         self.enabled = enabled
@@ -46,7 +47,7 @@ class CloudLayer:
 def build_cloud_layer(
     scene: Any, look: Any, material: Any, index: int, placement: tuple[Any, float, float]
 ) -> CloudLayer:
-    """Cloud layer number `index` (P04-R03): a plane at `altitude` covering what the camera sees
+    """Cloud layer number `index` (GFX-SKY-11): a plane at `altitude` covering what the camera sees
     there (`seen`) and `margin` more, drawn after everything else. `placement` is
     `(seen, altitude, margin)`."""
     seen, altitude, margin = placement
@@ -76,7 +77,7 @@ def update_cloud_layer(
     layer: CloudLayer, camera_time: tuple[float, float], frame: tuple[Any, Any, bool]
 ) -> None:
     """Follows the camera at `camera_time[0]`, drifts with `camera_time[1]`, and takes the colours
-    of `cover` and the haze of `atmosphere` (P08-R04); its coverage and opacity too when `follow`
+    of `cover` and the haze of `atmosphere` (GFX-SKY-13); its coverage and opacity too when `follow`
     (a level whose look changes), otherwise they stay as set on its state (set by code).
     `frame` is `(atmosphere, cover, follow)`; `cover` may be missing (None)."""
     camera_z, time = camera_time

@@ -1,7 +1,7 @@
-"""P10-R11, 4-5: the Ember Herald, the mini boss of the Caldera. Model space: logical pixels, nose
-+Z (down the screen), Y up
-towards the camera; +X is the screen's left. P16-R05: a living fire-wasp, its long flesh body ribbed
-in bone, scorched membrane wings veined molten, bone spines and a metal spire and halo grafted on.
+"""MB-EMBER-HERALD-01 to MB-EMBER-HERALD-04, 4-5: the Ember Herald, the mini boss of the Caldera.
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
+left. MB-EMBER-HERALD-02: a living fire-wasp, its long flesh body ribbed in bone, scorched membrane
+wings veined molten, bone spines and a metal spire and halo grafted on.
 """
 
 import math
@@ -275,7 +275,8 @@ def _draw_core(p: Any) -> None:
 
 
 def _draw_ring(p: Any) -> None:
-    """The turning ring (P10-R11): a soot-black rim lit gold, held by three spokes from the hub."""
+    """The turning ring (MB-EMBER-HERALD-03, MB-EMBER-HERALD-06): a soot-black rim lit gold, held by
+    three spokes from the hub."""
     hull = p.hull
     neon = p.neon
     r = ORBIT
@@ -302,7 +303,7 @@ def _gun_muzzles(part_id: str) -> list[Any]:
 
 
 def _lance_part(muzzles: list[Any]) -> Any:
-    """A lance on the ring, drawn from its design's muzzles (`muzzles`)."""
+    """A lance on the ring (MB-EMBER-HERALD-03), drawn from its design's muzzles (`muzzles`)."""
 
     def draw(parts: Any, at: Vec3) -> None:
         ember_lance(parts, muzzles, at)
@@ -311,9 +312,9 @@ def _lance_part(muzzles: list[Any]) -> Any:
 
 
 def build_ember_herald(scene: Any) -> Any:
-    """P10-R11: the Ember Herald, a fast, spiky interceptor (3.5 L) wreathed in embers, gold neon:
-    spiked wings cracked with molten seams, a spire over the core, and a ring turning over it
-    carrying three ember lances."""
+    """MB-EMBER-HERALD-01, MB-EMBER-HERALD-04: the Ember Herald, a fast, spiky interceptor (3.5 L)
+    wreathed in embers, gold neon: spiked wings cracked with molten seams, a spire over the core,
+    and a ring turning over it carrying three ember lances."""
     lances = {}
     for part in EMBER_HERALD.stats.parts:
         if part.reveal != None:  # noqa: E711

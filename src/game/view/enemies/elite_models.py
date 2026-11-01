@@ -1,4 +1,5 @@
-"""One model per elite model key (P05-R19 to P05-R23)"""
+"""One model per elite model key: the Hydra, Orbiter, Scissor, Juggernaut and Hive
+(specs/enemies/*.md), more armoured and complex than the veterans (ENM-02, GFX-ART-16)"""
 
 from game.view.enemies.elite_hive_model import build_hive  # noqa: E402
 from game.view.enemies.elite_hydra_model import build_hydra  # noqa: E402

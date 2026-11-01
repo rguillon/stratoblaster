@@ -1,4 +1,4 @@
-"""Bursts of metal sparks where bullets hit (P03-R01, phase 3 review)
+"""Bursts of metal sparks where bullets hit (GFX-FX-02)
 
 Each burst throws `count` sparks back from the hit, spread around straight down; they slow down
 with drag, twinkle, and shrink to nothing over their life.
@@ -58,7 +58,7 @@ class SparkSpot:
 
 
 class SparkBursts:
-    """Bursts of metal sparks where bullets hit (P03-R01, phase 3 review)."""
+    """Bursts of metal sparks where bullets hit (GFX-FX-02)."""
 
     def __init__(self, options: Any, random: Random) -> None:
         self._options = options

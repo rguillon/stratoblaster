@@ -1,7 +1,7 @@
 """Seeded pseudo-random numbers
 
-The generator is mulberry32 (P17-R03), written on unsigned 32-bit integers (see `bits.py`), so a
-seed gives the same sequence.
+The generator is mulberry32 (ENG-18), written on unsigned 32-bit integers (see `bits.py`), so a
+seed gives the same sequence, in the game and in the tests (ENG-46).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

@@ -1,4 +1,4 @@
-"""The Juggernaut (P05-R22)"""
+"""The Juggernaut (`specs/enemies/juggernaut.md`)"""
 
 import math
 
@@ -20,11 +20,14 @@ CFG = ELITE_CONFIG.juggernaut
 
 
 class Juggernaut(JointedEnemy):
-    """P05-R22: an armoured brute. It comes down slowly to the upper third, drifts left and right
-    for 10 s, then leaves downward. Its two shoulder cannons swing to and fro (moving parts,
-    P05-R13), each firing a burst of 3 bullets along its barrel every 1.6 s; its two front plates
-    are parts too, and while one stands the core cannot be hit (a shield, as a boss's, P07-R01).
-    The core's turret fires a spread of 7 bullets 9° apart centred on the player every 2.5 s.
+    """ENM-JUGGERNAUT-08: an armoured brute. It comes down slowly to the upper third, drifts left
+    and right for 10 s, then leaves downward. Its two shoulder cannons swing to and fro
+    (ENM-JUGGERNAUT-09; moving parts, ENM-27), each firing a burst of 3 bullets along its barrel
+    every 1.6 s (ENM-JUGGERNAUT-10); its two front plates are parts too, and while one stands the
+    core cannot be hit (a shield, as a boss's, ENM-JUGGERNAUT-12). The core's turret fires a spread
+    of 7 bullets 9° apart centred on the player every 2.5 s (ENM-JUGGERNAUT-11), its charge lights
+    following it (ENM-JUGGERNAUT-04). Its cannons and plates come from its config, as the engine's
+    specs (ENM-JUGGERNAUT-15).
     """
 
     def __init__(self, center_x: float, y: float, stop_y: float) -> None:

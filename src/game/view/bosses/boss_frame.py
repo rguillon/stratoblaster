@@ -1,6 +1,7 @@
 """The dark metal frame a boss's shed armour leaves (docs/superpowers/specs/2026-10-31-boss-armour-
 shedding-design.md): a dark floor in the armour's own top-view shape, metal ribs across it (wing,
-shell or ring), neon seams on every other rib and pipes along the longest.
+shell or ring), neon seams on every other rib and pipes along the longest (BOSS-44). Its pylons
+and bridges hold pieces up so the boss stays one object (BOSS-52).
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """

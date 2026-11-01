@@ -1,4 +1,4 @@
-"""The Bulwark (P05-R09)"""
+"""The Bulwark (`specs/enemies/bulwark.md`)"""
 
 import math
 
@@ -19,9 +19,10 @@ CFG = ENEMY_CONFIG.bulwark
 
 
 class Bulwark(Enemy):
-    """P05-R09: a heavy gunship. It comes down slowly to the upper third, drifts left and right for
-    8 s, then leaves downward. Every 2 s it fires a spread of 5 bullets 10° apart, the middle one
-    aimed at the player (GD-44), from the twin cannon on its tower.
+    """ENM-BULWARK-05: a heavy gunship. It comes down slowly to the upper third, drifts left and
+    right for 8 s, then leaves downward (ENM-BULWARK-06). Every 2 s it fires a spread of 5 bullets
+    10° apart, the middle one aimed at the player (ENM-BULWARK-07, ENM-20), from the twin cannon on
+    its tower.
     """
 
     def __init__(self, center_x: float, y: float, stop_y: float) -> None:

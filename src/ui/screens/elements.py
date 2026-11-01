@@ -42,9 +42,9 @@ def entry(
     selected: bool,
     on_tap: TapHandler,
 ) -> HtmlElement:
-    """A tappable menu entry (P01-R11). Uses `role="button"` on a `div` rather than `<button>`,
-    so the browser never turns Space / Enter into a second click: the keyboard goes through
-    the menu input only.
+    """A tappable menu entry (UI-INPUT-09). Uses `role="button"` on a `div` rather than `<button>`,
+    so the browser never turns Space / Enter into a second click (UI-INPUT-13): the keyboard goes
+    through the menu input only.
     """
     el = element(doc, "div", "menu-entry " + class_name)
     el.setAttribute("role", "button")
@@ -57,7 +57,7 @@ def entry(
 
 
 def back_button(doc: MenuDocument, label: str, on_back: Callable[[], None]) -> HtmlElement:
-    """The on-screen Back button of a menu screen (P01-R11)."""
+    """The on-screen Back button of a menu screen (UI-INPUT-10)."""
     el = element(doc, "div", "menu-back", "◀ " + label)
     el.setAttribute("role", "button")
     el.addEventListener("click", on_back)
@@ -65,7 +65,7 @@ def back_button(doc: MenuDocument, label: str, on_back: Callable[[], None]) -> H
 
 
 def padlock(doc: MenuDocument) -> HtmlElement:
-    """A small padlock icon for locked levels."""
+    """A small padlock icon for locked levels (UI-LEVEL-04)."""
     svg = doc.createElementNS(SVG, "svg")
     svg.setAttribute("viewBox", "0 0 16 16")
     svg.setAttribute("class", "padlock")

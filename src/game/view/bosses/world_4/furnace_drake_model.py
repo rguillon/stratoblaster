@@ -1,9 +1,9 @@
-"""P10-R11, 4-4: the Furnace Drake. Logical
-pixels, nose +Z, Y up (towards the camera). A dragon-shaped gunship: a heavy armoured torso with a
-furnace glowing through a grate in its back, molten seams between its soot-black plates, four clawed
-legs tucked under it, a long spiked tail lashing behind, beating wings and a horned head on a
-swaying neck. P16-R05: a living dragon, its flesh torso ribbed in bone, a furnace heart grafted in
-its back, magma veins under its hide, bone spines and claws.
+"""MB-FURNACE-DRAKE-01 to MB-FURNACE-DRAKE-06, 4-4: the Furnace Drake. Logical pixels, nose +Z, Y up
+(towards the camera). A dragon-shaped gunship: a heavy armoured torso with a furnace glowing through
+a grate in its back, molten seams between its soot-black plates, four clawed legs tucked under it, a
+long spiked tail lashing behind, beating wings and a horned head on a swaying neck.
+MB-FURNACE-DRAKE-02: a living dragon, its flesh torso ribbed in bone, a furnace heart grafted in its
+back, magma veins under its hide, bone spines and claws.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -188,14 +188,14 @@ def _draw_tail(p: Any) -> None:
         seam(neon, [s * 2, -48], [s * 3.6, -55], [2.4, 0.4, 0.4], DRAKE_ORANGE)
 
 
-# The tail on its joint at the hips.
+# The tail on its joint at the hips (MB-FURNACE-DRAKE-06).
 TAIL_LIMB = record({"draw": _draw_tail})
 
 
 def build_furnace_drake(scene: Any) -> Any:
-    """P10-R11: the Furnace Drake, a dragon-shaped gunship (3.5 L) of soot-black plates with red and
-    orange neon: beating wings with a fan pod under each, a horned head breathing flame, a furnace
-    glowing in its back and a spiked tail lashing behind."""
+    """MB-FURNACE-DRAKE-01, MB-FURNACE-DRAKE-05: the Furnace Drake, a dragon-shaped gunship (3.5 L)
+    of soot-black plates with red and orange neon: beating wings with a fan pod under each, a horned
+    head breathing flame, a furnace glowing in its back and a spiked tail lashing behind."""
 
     def core(p: Any) -> None:
         _draw_torso(p)

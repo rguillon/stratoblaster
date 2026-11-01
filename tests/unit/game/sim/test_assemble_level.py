@@ -13,7 +13,8 @@ from game.sim.scenery_build import scenery_level
 TABLES = WorldTables(WORLD_1_DIFFICULTY, WORLD_1_FILLERS, WORLD_1_BOSSES)
 
 
-def test_p06_r08_a_level_is_assembled_with_its_scenery_difficulty_and_two_bosses() -> None:
+def test_game_level_16_a_level_is_assembled_with_its_scenery_difficulty_and_two_bosses() -> None:
+    """Also GAME-LEVEL-04: its two bosses."""
     level = assemble_level("1-1", LEVEL_1_1, WAVES_1_1, TABLES)
     assert level.id == "1-1"
     assert len(level.bosses) == 2
@@ -21,7 +22,7 @@ def test_p06_r08_a_level_is_assembled_with_its_scenery_difficulty_and_two_bosses
     assert level.runout == WORLD_1_BOSSES["1-1"]["runout"]
 
 
-def test_p06_r08_the_mini_boss_comes_at_the_middle_and_the_final_boss_at_the_end() -> None:
+def test_game_level_04_the_mini_boss_comes_at_the_middle_and_the_final_boss_at_the_end() -> None:
     level = assemble_level("1-1", LEVEL_1_1, WAVES_1_1, TABLES)
     length = level_length(scenery_level(LEVEL_1_1))
     mini, final = level.bosses
@@ -29,7 +30,7 @@ def test_p06_r08_the_mini_boss_comes_at_the_middle_and_the_final_boss_at_the_end
     assert final.at == pytest.approx(length)
 
 
-def test_p06_r08_no_wave_starts_in_the_quiet_stretch_before_a_boss() -> None:
+def test_game_level_05_no_wave_starts_in_the_quiet_stretch_before_a_boss() -> None:
     level = assemble_level("1-1", LEVEL_1_1, WAVES_1_1, TABLES)
     quiet = QUIET_BEFORE_BOSS * LEVEL_1_1.scrollSpeed
     for fight in level.bosses:
@@ -37,13 +38,14 @@ def test_p06_r08_no_wave_starts_in_the_quiet_stretch_before_a_boss() -> None:
             assert not (fight.at - quiet < wave["at"] <= fight.at)
 
 
-def test_p06_r08_a_level_without_its_difficulty_filler_or_bosses_is_an_error() -> None:
+def test_game_level_16_a_level_without_its_difficulty_filler_or_bosses_is_an_error() -> None:
     lonely = WorldTables({}, WORLD_1_FILLERS, WORLD_1_BOSSES)
     with pytest.raises(ValueError, match='No difficulty, filler or boss for "1-1"'):
         assemble_level("1-1", LEVEL_1_1, WAVES_1_1, lonely)
 
 
-def test_p06_r08_the_difficulty_of_a_level_becomes_the_enemy_difficulty() -> None:
+def test_enm_22_the_difficulty_of_a_level_becomes_the_enemy_difficulty() -> None:
+    """Also WLD-1-28: the bosses' bullets follow it too."""
     level = assemble_level("1-2", LEVEL_1_1, WAVES_1_1, TABLES)
     assert level.difficulty.bullet_speed == WORLD_1_DIFFICULTY["1-2"]["bulletSpeed"]
     assert level.difficulty.fire_rate == WORLD_1_DIFFICULTY["1-2"]["fireRate"]

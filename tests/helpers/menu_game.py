@@ -1,5 +1,5 @@
-"""A small game definition for the menu tests: the texts the menus read, two ships and a level
-catalog of three levels (the second and third locked)."""
+"""A small game definition for the menu tests (ENG-145): the texts the menus read, two ships and a
+level catalog of three levels (the second and third locked)."""
 
 from types import SimpleNamespace
 

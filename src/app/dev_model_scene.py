@@ -1,7 +1,8 @@
-"""The scene of the enemies and bosses viewers (D-199): no level's ground (no terrain, roads, props,
-sea nor clouds, and no wait for the ground worker), only the level's light and sky reflections, the
-game's playfield camera and the playfield layer the models are drawn on. The models are lit and
-framed as in the level, over a plain dark backdrop.
+"""The scene of the enemies and bosses viewers (DEV-MENU-13, DEV-MENU-14, D-199): no level's
+ground (no terrain, roads, props, sea nor clouds, and no wait for the ground worker), only the
+level's light and sky reflections, the game's playfield camera and the playfield layer the models
+are drawn on. The models are lit and framed as in the level (DEV-MENU-08), over a plain dark
+backdrop.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

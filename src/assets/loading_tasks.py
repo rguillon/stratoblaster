@@ -1,4 +1,4 @@
-"""Loading tasks (ENG-108)"""
+"""Loading tasks (UI-LOAD-03). `src/assets/` holds no file asset and no manifest (ENG-123)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -17,7 +17,7 @@ async def run_loading_tasks(
     on_progress: Callable[[float], None],
     yield_to_browser: Callable[[], Awaitable[None]],
 ) -> None:
-    """Runs `tasks` in order and reports real progress (ENG-108): 0 before the first task, then
+    """Runs `tasks` in order and reports real progress (UI-LOAD-03): 0 before the first task, then
     `done / total` after each one. `yield_to_browser` runs before each task so the progress bar
     can be painted between steps.
 

@@ -1,6 +1,7 @@
-"""The imposters' bake (D-211): every frame of every model drawn once into an atlas (a render target
-texture) by an orthographic camera looking the way the playfield camera does, then the material
-that shows them. Needs a WebGL engine. See `imposters.py` for the layout.
+"""The imposters' bake (D-211, GFX-PROP-10): every frame of every model drawn once into an atlas (a
+render target texture) by an orthographic camera looking the way the playfield camera does, then the
+material that shows them. Needs a WebGL engine (a `*_visual` module, ENG-114). See `imposters.py`
+for the layout.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

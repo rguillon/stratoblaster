@@ -1,4 +1,4 @@
-"""The weapons kept between levels Storage key prefixed with
+"""The weapons kept between levels (GAME-WPN-15, GAME-LEVEL-14). Storage key prefixed with
 the game's id.
 """
 

@@ -10,21 +10,21 @@ PHANTOM = next(kind for kind in ENEMY_KINDS if kind.id == "phantom")
 SOLID = VETERAN_CONFIG.phantom.solidOpacity
 
 
-def test_p05_r17_a_phantom_is_cloaked_below_its_solid_opacity_and_shots_pass_through_it() -> None:
+def test_enm_phantom_12_a_faded_phantom_is_cloaked_and_shots_pass_through_it() -> None:
     (phantom,) = PHANTOM.spawn(area(width=400, height=600))
     phantom.opacity = 0.0
     assert phantom.cloaked is True
     assert phantom._hit_targets() == []
 
 
-def test_p05_r17_a_phantom_solid_enough_can_be_hit() -> None:
+def test_enm_phantom_12_a_phantom_solid_enough_can_be_hit() -> None:
     (phantom,) = PHANTOM.spawn(area(width=400, height=600))
     phantom.opacity = SOLID + 0.01
     assert phantom.cloaked is False
     assert phantom._hit_targets() != []
 
 
-def test_p05_r17_a_phantom_runs_its_fade_cycle_with_its_opacity_in_range() -> None:
+def test_enm_phantom_09_a_phantom_runs_its_fade_cycle_with_its_opacity_in_range() -> None:
     ctx = FakeContext()
     (phantom,) = PHANTOM.spawn(area(width=400, height=600))
     run(phantom, ctx, 12.0)

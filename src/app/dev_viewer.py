@@ -1,12 +1,12 @@
-"""A dev viewer (D-199): the item picked in the dev menu, drawn as in game.
+"""A dev viewer (D-199): the item picked in the dev menu, drawn as in game (DEV-MENU-08).
 
 Every viewer shows a level's scene built as a level is (`build_level_scene`, with the game's lights,
 glow and rims). The player ships, the enemies and the bosses stand on its playfield, at the middle
 of the view, over the first level's ground; the enemies and bosses live their own lives (their
 moves turn them, their turrets, limbs and rings move) pinned at the middle. A level's scenery shows
 at the time the wheel scrubs to. The close-up narrows the camera's field of view: the model and the
-ground are magnified together. The props are not shown over a level: they stand alone on a floor
-ruled in blocks (`DevPropStage`, D-205), no ground loaded.
+ground are magnified together (DEV-MENU-09). The props are not shown over a level: they stand
+alone on a floor ruled in blocks (`DevPropStage`, D-205), no ground loaded.
 """
 
 import math
@@ -55,8 +55,8 @@ def close_up_fov(size: float, distance: float, fill: float, widest: float) -> fl
 
 
 def zoomed_fov(fov: float, zoom: float) -> float:
-    """The field of view `fov` narrowed `zoom` times (D-208: what is seen looks `zoom` times as
-    big)."""
+    """The field of view `fov` narrowed `zoom` times (DEV-MENU-11, D-208: what is seen looks
+    `zoom` times as big)."""
     return 2 * math.atan(math.tan(fov / 2) / zoom)
 
 
@@ -82,9 +82,9 @@ def _within(enemy: Any, screen: Any, margin: float) -> bool:
 
 
 class DevEnemyContext:
-    """The world an enemy of a dev viewer lives in (`EnemyContext`): the playfield, the player at
-    the bottom middle, nothing it fires or sends out kept; what blows up is kept for the viewer to
-    draw (`blasts`)."""
+    """The world an enemy of the enemies viewer (DEV-MENU-13) lives in (`EnemyContext`): the
+    playfield, the player at the bottom middle, nothing it fires or sends out kept; what blows up
+    is kept for the viewer to draw (`blasts`)."""
 
     def __init__(self, screen: Any, random: Any) -> None:
         self.width = screen.width
@@ -183,7 +183,7 @@ class DevViewer:
 
     @property
     def status(self) -> str:
-        """The status line: building, the level's time, the props' grid."""
+        """The status line (DEV-MENU-05): building, the level's time, the props' grid."""
         if self._props is not None:
             return CFG.texts.grid_note
         if self._view is None:
@@ -202,7 +202,7 @@ class DevViewer:
         self._zoom = zoomed(self._zoom, delta_y)
 
     def turn(self, dx: float, dy: float) -> None:
-        """A drag of (`dx`, `dy`) screen pixels turns the model (see `_turn`)."""
+        """A drag of (`dx`, `dy`) screen pixels turns the model (see `_turn`, DEV-MENU-10)."""
         self._turn[0] += dx * CFG.turn_per_pixel
         self._turn[1] += dy * CFG.turn_per_pixel
 
@@ -263,8 +263,8 @@ class DevViewer:
         self._view.update(0, 0)
 
     def _play(self, dt: float) -> None:
-        """Levels viewer: the time eases to the wheel's, and goes on at the level's pace while
-        playing."""
+        """Levels viewer (DEV-MENU-18): the time eases to the wheel's, and goes on at the level's
+        pace while playing."""
         if self._toggle:
             self._target = min(self._duration, self._target + dt)
         self._time = eased_time(self._time, self._target, CFG.scrub_ease, dt)
@@ -296,7 +296,8 @@ class DevViewer:
         self._shown = -1
 
     def _show_item(self, item: DevItem) -> None:
-        """Builds the model of `item` at the middle of the view, and measures it."""
+        """Builds the model of `item` at the middle of the view, and measures it (the ships
+        viewer's ship, DEV-MENU-12, and the enemies' and bosses')."""
         self._drop_item()
         self._shown = self._index
         view = self._view
@@ -389,8 +390,8 @@ class DevViewer:
         self._context.blasts = []
 
     def break_part(self) -> None:
-        """Bosses viewer: destroys the boss's next part, or its core once they are all gone (as K
-        does in a level, P07-R09), to watch it break: blasts, transformations and
+        """Bosses viewer (DEV-MENU-14): destroys the boss's next part, or its core once they are
+        all gone (as K does in a level, DEV-OPT-09), to watch it break: blasts, transformations and
         its death. A new boss comes in once it is gone."""
         if self.viewer == "bosses" and isinstance(self._enemy, Boss):
             self._enemy.break_next()

@@ -1,11 +1,11 @@
-"""P10-R11, 4-2: the Ash Wraith, the mini boss of the Ash plains level, a chase over the plains
-().
+"""4-2: the Ash Wraith, the mini boss of the Ash plains level, a chase over the plains
+(specs/bosses/mini/4-2-ash-wraith.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
-patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core
-spirals in a new way at every stage, and its last stage (only the core left) twin spirals used by
-no earlier stage. Health tuned with the D-055 bot for P10-R12 (fight 43.75-53.75 s, full health
-3 800-4 200).
+patterns are the agent's design (MB-ASH-WRAITH-10): the parts fire the same while they stand, the
+core spirals in a new way at every stage, and its last stage (only the core left) twin spirals used
+by no earlier stage. Health (MB-ASH-WRAITH-07) tuned with the D-055 bot for WLD-4-22 (fight
+43.75-53.75 s, full health 3 800-4 200).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -43,15 +43,16 @@ PY = WRAITH_POD[1]
 EX = WRAITH_EYE[0]
 EY = WRAITH_EYE[1]
 
-# 4-2: a ragged, grey stealth gunship trailing ash, pale cyan neon (P10-R11). Its two shroud pods
-# (ducted fans) fire fans and shield the core; the eye cannon under its nose, on a turret, aims a
-# laser after its warning line; the core spirals. The eye hangs in front of the core, so it can
-# always be shot.
+# 4-2: a ragged, grey stealth gunship trailing ash, pale cyan neon (MB-ASH-WRAITH-01). Its two
+# shroud pods (ducted fans) fire fans and shield the core; the eye cannon under its nose, on a
+# turret, aims a laser after its warning line; the core spirals. The eye hangs in front of the
+# core, so it can always be shot.
 _ASH_WRAITH = record(
     {
         "id": "ash-wraith",
-        # Angry after each destroyed part (phase 7 review, D-063): heat 9, as 3-5.
+        # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 9, as 3-5.
         "rage": rage.vortex(10.5, "blue", "purple"),
+        # Its core and parts, their health, and its points (MB-ASH-WRAITH-07, MB-ASH-WRAITH-14).
         "stats": stats(
             record(
                 {
@@ -70,6 +71,7 @@ _ASH_WRAITH = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-ASH-WRAITH-06).
         "stopFraction": 0.73,
         "sway": {"amplitude": 60, "period": 6.5},
         "bob": {"amplitude": 8, "period": 3.4},
@@ -79,6 +81,8 @@ _ASH_WRAITH = record(
             "pod-right": {"gun": WRAITH_POD_GUNS},
             "eye": {"laser": WRAITH_EYE_LENS, "turret": [EX, EY], "turretLaser": True},
         },
+        # In every stage the pods' fans (MB-ASH-WRAITH-08) and the eye's laser (MB-ASH-WRAITH-09);
+        # then the core's spirals per stage (MB-ASH-WRAITH-10).
         "stages": stages(
             [
                 # The pods' fans lean outwards, sweeping the ash plains on either side of the ship.
@@ -99,8 +103,9 @@ _ASH_WRAITH = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold.
+# Its hidden weapons (boss transformations, D-224, MB-ASH-WRAITH-12): at transformation 1 its back
+# plating bursts off, baring a dark metal frame, and a pair of laser lances unfold
+# (MB-ASH-WRAITH-13).
 ASH_WRAITH = with_weapons(
     _ASH_WRAITH,
     [

@@ -1,7 +1,7 @@
-"""The street surfaces of a terrain chunk (phase 15): each street piece as a textured surface draped
-on the ground, its layered fallback, and the grid of tiles. Pure (no Babylon): the ground worker
-makes them for the level's chunks, or the main thread does when there is no worker (see
-`road_sources`). Both run the same code, so they give the same geometry.
+"""The street surfaces of a terrain chunk (phase 15, GFX-ROAD-20): each street piece as a textured
+surface draped on the ground, its layered fallback, and the grid of tiles. Pure (no Babylon): the
+ground worker makes them for the level's chunks (PERF-17), or the main thread does when there is no
+worker (see `road_sources`). Both run the same code, so they give the same geometry.
 
 The road atlas that the surfaces' texture coordinates point into is kept here too: its pixels are
 sent when they have changed, and handed out with the chunks (see `road_sources`).

@@ -1,7 +1,8 @@
-"""Builds the model of a boss (P07-R05) from its drawing: its
+"""Builds the model of a boss (BOSS-47, GFX-ART-16) from its drawing: its
 core body, its parts on their own nodes (each flashing white when hit, smoking under half health,
 gone once destroyed), its turrets and limbs, and an optional ring turning with
-the boss's spin.
+the boss's spin. A new look keeps the parts, joints, turrets and muzzles of the design
+(GFX-ART-18).
 """
 
 import math
@@ -97,7 +98,8 @@ def build_turret(
     neon: Rgb,
     breath: Any,
 ) -> TurretView | None:
-    """The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one."""
+    """The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one: a
+    piece of its own on its pivot (BOSS-29)."""
     turrets = _field(drawing, "turrets")
     draw = _field(turrets, piece)
     weapon = _field(_field(design, "weapons"), piece)
@@ -149,7 +151,7 @@ class FlashGroup:
                 self._hulls.append([mesh, material])
 
     def show(self, since_hit: float) -> None:
-        """Flashes white for a moment after a hit (P07-R01)."""
+        """Flashes white for a moment after a hit (BOSS-17)."""
         on = since_hit < BOSS_LOOK.flash.seconds
         for hull in self._hulls:
             hull[0].material = self._flash if on else hull[1]
@@ -168,7 +170,7 @@ class PartView:
 
 
 def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltEnemyModel:
-    """Builds the model of a boss (P07-R05) from `drawing`, in the colour `neon`: its core body, its
+    """Builds the model of a boss (BOSS-47) from `drawing`, in the colour `neon`: its core body, its
     parts on their own nodes (each flashing white when hit, smoking under half health, replaced by
     gone once destroyed), and an optional ring turning with the boss's spin."""
     name = design.id
@@ -176,7 +178,7 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     drawing = record(drawing)
     flash = effect_materials(scene)["flash"]
     root = new_transform_node(name, scene)
-    # P16-R07: its core, parts and limbs breathe as one creature.
+    # BOSS-51: its core, parts and limbs breathe as one creature.
     look = {"flash": flash, "neon": neon, "breath": new_breath()}
     # Its armour regions are cut out of its core (docs/superpowers/specs/2026-10-31-boss-armour-
     # shedding-design.md): they burst off as it transforms.
@@ -208,7 +210,7 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     lit: Any = {"charge": 0}
 
     def sync(boss: Any, dt: float) -> None:
-        # After a part is destroyed, its lights strobe while it holds its fire (P07-R04).
+        # After a part is destroyed, its lights strobe while it holds its fire (BOSS-22).
         lit["charge"] = strobe(boss)
         enemy = lit
         core.model.sync(enemy, dt)
@@ -222,7 +224,7 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
             show_turret(core_turret, None, enemy, dt)
             return
         show_turret(core_turret, boss.core.turret, enemy, dt)
-        # It rolls into its sideways moves (phase 7 review). Screen right is the model's -X (its
+        # It rolls into its sideways moves (BOSS-11). Screen right is the model's -X (its
         # nose points down the screen): +Z rolls -X down.
         root.rotation.z = boss.roll
         ring_node.rotation.y = boss.spin
@@ -422,7 +424,7 @@ def build_body(
     design: Any, drawing: Any, root: Any, look: Any, core_draw: Any = None
 ) -> dict[str, Any]:
     """The core body (drawn by `core_draw`, else the drawing's core) and its turret on `root`, and
-    the ring turning with the boss's spin."""
+    the ring turning with the boss's spin (BOSS-34)."""
     if core_draw == None:  # noqa: E711
         core_draw = drawing.core
     flash = look["flash"]
@@ -474,7 +476,8 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
         look["breath"],
     )
     hang(model.root, ORIGIN, frame)
-    # Trimmed along its own outline, wherever it sits on the hull (P14-R04).
+    # Trimmed along its own outline, wherever it sits on the hull (BOSS-48, GFX-TRIM-08,
+    # GFX-READ-09).
     set_trim_group(model.root)
     turret = build_turret(design, spec.id, drawing, model.root, neon, look["breath"])
     spot = new_transform_node(name + "-" + spec.id + "-spot", scene)
@@ -515,7 +518,7 @@ def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
 
 def strobe(enemy: Any) -> Any:
     """The brightness of a boss's charge lights: its own, a strobe during a stage change, and a fast
-    flicker while it is angry (phase 7 review)."""
+    flicker while it is angry (BOSS-22, BOSS-27)."""
     if not isinstance(enemy, Boss):
         return enemy.charge
     if enemy.pause > 0:
@@ -528,7 +531,8 @@ def strobe(enemy: Any) -> Any:
 
 
 def show_part(view: PartView, part: Any, lit: Any, dt: float) -> None:
-    """A part: its model while it stands (flashing, smoking), nothing once destroyed (D-225)."""
+    """A part: its model while it stands (flashing, smoking: BOSS-17), nothing once destroyed
+    (BOSS-18, D-225)."""
     destroyed = part.destroyed
     if part.hidden and view.reveal == None:  # noqa: E711
         # Retired (D-228): it has left the fight.

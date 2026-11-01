@@ -1,4 +1,4 @@
-"""The node the ground hangs from (P04-R05): drawn
+"""The node the ground hangs from (GFX-CAM-04): drawn
 `scale` times as big as it is, as if flying lower (`PlayfieldCameraLook.groundScale`).
 """
 
@@ -71,9 +71,9 @@ class GroundRoot:
 
 
 def ground_window_of(options: Any, framing: PlayfieldFraming, scale: float) -> GroundWindow:
-    """The ground the camera sees over a level (relative to the camera's ground Z, in ground
-    units) when the ground is drawn `scale` times as big. `options` has `screen`, `camera` and
-    `level`."""
+    """The ground the camera sees over a level (GFX-CAM-05; relative to the camera's ground Z,
+    in ground units) when the ground is drawn `scale` times as big. `options` has `screen`, `camera`
+    and `level`."""
     screen = options.screen
     camera = options.camera
     world = visible_ground(

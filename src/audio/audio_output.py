@@ -1,8 +1,8 @@
-"""Where all audio goes (P12-R05): a music bus and a sound
-effect bus, each with its volume, into a master limiter so the output never clips. Browsers only
-start audio after a user gesture, so the context is created by `unlock`, called on the first key
-press, tap, click or gamepad button: nothing is heard before, and no autoplay warning is shown.
-Without Web Audio, or if it fails, everything stays silent and nothing throws.
+"""Where all audio goes: a music bus and a sound effect bus, each with its volume, into a
+master limiter so the output never clips (AUD-ENGINE-02). Browsers only start audio after a user
+gesture, so the context is created by `unlock`, called on the first key press, tap, click or
+gamepad button: nothing is heard before, and no autoplay warning is shown (AUD-ENGINE-03). Without
+Web Audio, or if it fails, everything stays silent and nothing throws (AUD-ENGINE-04).
 
 The context comes from `create_context` (`new AudioContext()` in the browser), never a global.
 """
@@ -27,7 +27,7 @@ REVERB_SEED = 0x2545F491
 
 
 class AudioBuses:
-    """The music and sound effect buses (P12-R05)."""
+    """The music and sound effect buses (AUD-ENGINE-02)."""
 
     def __init__(self, context: Any, music: Any, sfx: Any, reverb: Any | None = None) -> None:
         self.context = context
@@ -60,7 +60,7 @@ class AudioOutputOptions:
 
 
 def volume_gain(step: float, steps: float) -> float:
-    """Bus gain of a volume `step` out of `steps`: (step / steps)^2, 0 silent (P12-R04)."""
+    """Bus gain of a volume `step` out of `steps`: (step / steps)^2, 0 silent (AUD-ENGINE-02)."""
     if not (steps > 0):
         return 0
     share = min(1, max(0, step / steps))
@@ -68,7 +68,8 @@ def volume_gain(step: float, steps: float) -> float:
 
 
 def reverb_impulse(context: Any, seconds: float) -> Any:
-    """A stereo reverb impulse: decaying noise, the same on every run (no `Math.random`)."""
+    """A stereo reverb impulse: decaying noise, the same on every run (no `Math.random`,
+    AUD-ENGINE-06)."""
     length = max(1, math.floor(context.sampleRate * seconds + 0.5))
     buffer = context.createBuffer(2, length, context.sampleRate)
     seed = REVERB_SEED
@@ -113,7 +114,7 @@ class AudioOutput:
         return self._buses
 
     def set_hidden(self, hidden: bool) -> None:
-        """Silences everything while the page is hidden (P12-R11), and brings it back."""
+        """Silences everything while the page is hidden (AUD-ENGINE-11), and brings it back."""
         if self._buses is None:
             return
         context = self._buses.context

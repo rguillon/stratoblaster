@@ -1,6 +1,7 @@
-"""Moving regions (D-230; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
-design.md, Part B): armour regions whose piece stays on the boss and moves into a new pose as it
-transforms (a wing swings forward, a hull splits and slides apart), instead of bursting off.
+"""Moving regions (D-230, BOSS-45; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
+shape-shifts-design.md, Part B): armour regions whose piece stays on the boss and moves into a new
+pose as it transforms (a wing swings forward, a hull splits and slides apart), instead of bursting
+off.
 
 A region's piece is cut out of the core's drawing as any armour region's is; its `motion` takes it
 from its rest pose to its end pose. The drawn geometry is the pose at angle 0 or offset 0: a piece

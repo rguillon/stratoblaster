@@ -1,12 +1,11 @@
-"""Randomly generated roads and paths of a level (P04-R07) Main roads wind along the whole level.
-Where the ground is under
-`min_height` (the sea) or steeper than `max_slope`, a main road turns off the screen before it and
-comes back from the side after it, so no road ever starts or ends on screen (beyond X =
-±`offscreen_x`). Paths branch off the main roads at random intervals, widen where they meet them,
-and run across to past the screen edge; a path that cannot reach it on buildable ground is dropped.
-Buildings stand only along roads, in slots every `slot_spacing` on both sides. The streets of the
-runout, past the level's end, are laid apart (`add_runout`). Pure and deterministic for a given
-seed.
+"""Randomly generated roads and paths of a level (GFX-ROAD-01). Main roads wind along the whole
+level. Where the ground is under `min_height` (the sea) or steeper than `max_slope`, a main road
+turns off the screen before it and comes back from the side after it, so no road ever starts or
+ends on screen (beyond X = ±`offscreen_x`, GFX-ROAD-04). Paths branch off the main roads at random
+intervals, widen where they meet them, and run across to past the screen edge; a path that cannot
+reach it on buildable ground is dropped. Buildings stand only along roads, in slots every
+`slot_spacing` on both sides. The streets of the runout, past the level's end, are laid apart
+(`add_runout`). Pure and deterministic for a given seed.
 """
 
 import math
@@ -47,9 +46,10 @@ MAX_RETREATS = 40
 SLOPE_SLACK = 1e-9
 # World units of road generated before the start and after the end of a level.
 LEVEL_MARGIN = 3000
-# …but a street grid the level starts in only begins this far before it (reviewer, 2026-10-28): the
-# camera sees the ground from Z = 0 at the start, and street grids are the costliest roads to lay.
-# The winding roads and paths still begin `LEVEL_MARGIN` before (they cost little).
+# …but a street grid the level starts in only begins this far before it (reviewer, 2026-10-28,
+# GFX-ROAD-19): the camera sees the ground from Z = 0 at the start, and street grids are the
+# costliest roads to lay. The winding roads and paths still begin `LEVEL_MARGIN` before (they cost
+# little).
 STREETS_BEFORE = 400
 SQRT2 = math.sqrt(2)
 
@@ -98,7 +98,7 @@ class RoadNetworkOptions:
         streets_from: float | None = None,
     ) -> None:
         self.made = made
-        """The roads made before (e.g. in a worker, P13-R03): taken as they are, not generated."""
+        """The roads made before (e.g. in a worker, PERF-14): taken as they are, not generated."""
         self.runout_from = runout_from
         """Where the level's runout starts, if it has one: its streets are laid by `add_runout`."""
         self.streets_from = streets_from
@@ -170,7 +170,7 @@ class RoadNetwork:
             self._slots(road)
 
     def _slots(self, road: Road) -> None:
-        """Building slots along `road`; none along the streets on tiles (P15-R08: blocks)."""
+        """Building slots along `road`; none along the streets on tiles (GFX-BLDG-05: blocks)."""
         if road.kind == "street" and self.rules.tiles is not None:
             return
         add_slots(road, self.rules.slot_spacing, self.slots)
@@ -191,10 +191,10 @@ class RoadNetwork:
         return self._roads
 
     def add_runout(self, made: RoadSnapshot | None = None) -> RoadSnapshot:
-        """Lays the streets of the runout (reviewer, 2026-10-28: after the rest, so the level is
-        ready sooner), or takes those `made` before (e.g. in a worker), and returns what it added:
-        its roads, blocks and slots. Their columns start on the last row laid before the runout.
-        Once only: afterwards, it adds nothing."""
+        """Lays the streets of the runout (reviewer, 2026-10-28, PERF-15: after the rest, so the
+        level is ready sooner), or takes those `made` before (e.g. in a worker), and returns what it
+        added: its roads, blocks and slots. Their columns start on the last row laid before the
+        runout. Once only: afterwards, it adds nothing."""
         if self._runout_laid:
             return RoadSnapshot([], [], [])
         self._runout_laid = True
@@ -231,8 +231,8 @@ class RoadNetwork:
     def _follow(
         self, line: Sequence[Point], previous: Follow | None, width: float
     ) -> Follow | None:
-        """How the next main road follows `line` without crossing it (`noCrossings`): on the side
-        of the screen the first main road leaves free, at least `gap` from its edge."""
+        """How the next main road follows `line` without crossing it (`noCrossings`, GFX-ROAD-05):
+        on the side of the screen the first main road leaves free, at least `gap` from its edge."""
         no_crossings = self.rules.no_crossings
         if no_crossings is None:
             return None
@@ -251,11 +251,11 @@ class RoadNetwork:
 
     def clear_of(self, x: float, z: float, clearance: float) -> bool:
         """Whether (`x`, `z`) is at least `clearance` from every road edge: `edge_distance(x, z) >=
-        clearance`, faster (reviewer, 2026-10-28: the props ask this a lot)."""
+        clearance`, faster (reviewer, 2026-10-28: the props ask this a lot; GFX-ROAD-23)."""
         return self._segments.clear_of(x, z, clearance)
 
     def buildable(self, x: float, z: float) -> bool:
-        """Whether a road can be built at (`x`, `z`)."""
+        """Whether a road can be built at (`x`, `z`) (GFX-ROAD-03)."""
         min_height = self.rules.min_height
         max_slope = self.rules.max_slope
         step = self.rules.step
@@ -422,8 +422,8 @@ class RoadNetwork:
 
     def _open(self, x: float, z: float) -> bool:
         """Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts
-        (so none reaches a district road, P15-R06), and clear of the other roads while a main road
-        is laid without crossings."""
+        (so none reaches a district road, GFX-ROAD-18), and clear of the other roads while a main
+        road is laid without crossings."""
         if self._in_district(z):
             return False
         if not self.buildable(x, z):
@@ -439,7 +439,7 @@ class RoadNetwork:
         return any(z >= d.z_min and z <= d.z_max for d in self._districts)
 
     def snapshot(self) -> RoadSnapshot:
-        """What this network made (P13-R03): its roads, blocks and slots."""
+        """What this network made (PERF-14): its roads, blocks and slots."""
         return RoadSnapshot(list(self._roads), list(self.blocks), list(self.slots))
 
     def _restore(self, made: RoadSnapshot) -> None:

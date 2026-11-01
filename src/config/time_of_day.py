@@ -1,4 +1,4 @@
-"""The six times of day (P08-R04) and the light tunables of the sky (P08-R04, P10-R04)
+"""The six times of day (GFX-SKY-03) and the light tunables of the sky (GFX-SKY-06, GFX-SKY-14)
 
 Colours are gamma-space RGB, 0..1, as the scenery looks.
 """
@@ -57,7 +57,7 @@ class CloudColors:
 
 
 class TimeOfDayPreset:
-    """How a time of day lights a level (P08-R04), before its clouds and weather."""
+    """How a time of day lights a level (GFX-SKY-03), before its clouds and weather."""
 
     def __init__(
         self,
@@ -68,9 +68,9 @@ class TimeOfDayPreset:
         ground_lights: float,
         fog: float,
     ) -> None:
-        """`clouds`: colour of the clouds and of their thin edges (P08-R04). `ground_lights`:
-        brightness of the ground's window, street, neon and car lights. `fog`: factor on the level's
-        fog distances (the haze comes closer at night)."""
+        """`clouds`: colour of the clouds and of their thin edges (GFX-SKY-13). `ground_lights`:
+        brightness of the ground's window, street, neon and car lights (GFX-SKY-08). `fog`: factor
+        on the level's fog distances (the haze comes closer at night, GFX-SKY-07)."""
         self.sun = sun
         self.sky = sky
         self.ambient = ambient
@@ -82,7 +82,7 @@ class TimeOfDayPreset:
 # Heights of the sky gradient's stops (see `PresetSky.gradient`).
 SKY_STOPS = [-1, 0, 0.35, 1]
 
-# The six times of day (P08-R04). At night the sun is a dim, cold moon.
+# The six times of day (GFX-SKY-03). At night the sun is a dim, cold moon (GFX-SKY-01).
 TIME_OF_DAY = {
     "dawn": TimeOfDayPreset(
         PresetSun(9, -62, (1, 0.66, 0.46), 1.45),
@@ -149,7 +149,7 @@ TIME_OF_DAY = {
         PresetSun(42, -28, (0.62, 0.74, 1), 0.6),
         PresetSky(
             (0.07, 0.09, 0.17),
-            # Moonlit: the ships' metal still catches some light (readability, P08-R04).
+            # Moonlit: the ships' metal still catches some light (GFX-SKY-09).
             [(0.08, 0.09, 0.14), (0.34, 0.4, 0.56), (0.26, 0.32, 0.5), (0.14, 0.18, 0.34)],
             0.6,
         ),
@@ -162,11 +162,11 @@ TIME_OF_DAY = {
 
 
 class Overcast:
-    """How clouds and storms change the light (P08-R04): a heavy low cover (from `overcast[0]` to
+    """How clouds and storms change the light (GFX-SKY-06): a heavy low cover (from `overcast[0]` to
     full at `overcast[1]`) dims the sun by up to `sun_dim`, softens the shadows towards
     `soft_shadows`, brightens the ambient light by up to `ambient_gain` and greys the haze by up to
     `haze_grey`; heavy layers turn see-through by up to `thinning` so the ground still shows. A
-    storm turns the clouds towards `storm`."""
+    storm turns the clouds towards `storm` (GFX-SKY-13)."""
 
     def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
         self,
@@ -190,7 +190,7 @@ class Overcast:
 
 
 class Underglow:
-    """Phase 10: a glow from below (P10-R04: fire and lava lighting the clouds, the haze and the
+    """Phase 10: a glow from below (GFX-SKY-14: fire and lava lighting the clouds, the haze and the
     ambient light from the ground): at strength 1 the clouds' edges turn `shade` of the way to its
     colour, their body `cloud` of the way (dark smoke stays dark), the haze `haze` and the ambient
     light from the ground `ground` of the way."""

@@ -1,5 +1,5 @@
-"""Moving regions (D-230; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
-design.md, Part B): how a piece's motion moves points, mirrored and back."""
+"""Moving regions (D-230, BOSS-45; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
+shape-shifts-design.md, Part B): how a piece's motion moves points, mirrored and back."""
 
 import pytest
 

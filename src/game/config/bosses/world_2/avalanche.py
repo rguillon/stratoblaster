@@ -1,8 +1,8 @@
-"""The Avalanche (P08-R10, 2-4)
+"""The Avalanche (2-4's mini boss, specs/bosses/mini/2-4-avalanche.md)
 
 The Glacier level's mini boss. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Its two drill arms swing on their joints (D-061) and shield the core; a rock
-hopper on its back drops lines of slow big rocks.
+hopper on its back drops lines of slow big rocks (MB-AVALANCHE-10).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -32,8 +32,8 @@ AVALANCHE_ARM = record(
     }
 )
 
-# The guns' muzzles: the tips of the barrels its model draws, from the boss's centre, X right,
-# Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (MB-AVALANCHE-03): the tips of the barrels its model draws, from the boss's
+# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
 # The left drill's gun, along the drill's outer side (mirrored on the right).
 AVALANCHE_DRILL_GUN = [[-51, -50, 8]]
@@ -44,8 +44,9 @@ AVALANCHE_CHUTE = [[0, 15, 12]]
 
 
 def drill_arm(side: str) -> Any:
-    """A drill arm's joints (D-061), the left one at -X: it swings at the shoulder and bends at the
-    elbow, the drill hanging on the elbow. The right arm is its mirror image, a little out of step.
+    """A drill arm's joints (D-061, MB-AVALANCHE-06), the left one at -X: it swings at the shoulder
+    and bends at the elbow, the drill hanging on the elbow. The right arm is its mirror image, a
+    little out of step.
     """
     s = 1 if side == "left" else -1
     late = 0 if side == "left" else 0.37
@@ -75,14 +76,15 @@ def drill_arm(side: str) -> Any:
 DRILL_X = AVALANCHE_ARM.drill[0]
 DRILL_Y = AVALANCHE_ARM.drill[1]
 
-# P08-R10, 2-4: a heavy drilling machine with two drill arms swinging in front of it (they fire
-# aimed bursts and shield the core) and a rock hopper on its back; the fight is a chase down the
-# glacier (ground ×1.4).
+# 2-4: a heavy drilling machine with two drill arms swinging in front of it (they fire aimed
+# bursts and shield the core, MB-AVALANCHE-09) and a rock hopper on its back; the fight is a chase
+# down the glacier (ground ×1.4).
 _AVALANCHE = record(
     {
         "id": "avalanche",
-        # Angry after each destroyed part (phase 7 review, D-063).
+        # Angry after each destroyed part (phase 7 review, D-063, MB-AVALANCHE-12).
         "rage": rage.spirals(5.5, "orange", "red"),
+        # Its core, drills, hopper and points (MB-AVALANCHE-14).
         "stats": stats(
             {
                 "id": "avalanche",
@@ -100,6 +102,7 @@ _AVALANCHE = record(
                 "joints": merge(drill_arm("left"), drill_arm("right")),
             }
         ),
+        # Where it stops and how it moves in place; its ground speed is a chase (MB-AVALANCHE-08).
         "stopFraction": 0.74,
         "sway": {"amplitude": 60, "period": 7.5},
         "bob": {"amplitude": 8, "period": 3.2},
@@ -109,6 +112,8 @@ _AVALANCHE = record(
             "drill-right": {"gun": mirror(AVALANCHE_DRILL_GUN)},
             "hopper": {"gun": AVALANCHE_CHUTE},
         },
+        # The drills' bursts and the hopper's rocks, then the core's pattern per stage
+        # (MB-AVALANCHE-11).
         "stages": stages(
             [
                 volley.burst("drill-left", 2.4, 3, 0.16, RED, 1),
@@ -131,8 +136,9 @@ _AVALANCHE = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of heavy cannons unfold.
+# Its hidden weapons (boss transformations, D-224, MB-AVALANCHE-13): at transformation 1 its flank
+# armour bursts off, baring a dark metal frame (MB-AVALANCHE-07), and a pair of heavy cannons
+# unfold.
 AVALANCHE = with_weapons(
     _AVALANCHE,
     [

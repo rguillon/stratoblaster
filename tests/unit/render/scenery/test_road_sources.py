@@ -1,5 +1,5 @@
-"""Unit tests of `src/render/scenery/road_sources.py` (D-217: the road atlas reaches every chunk
-taken, from every stage on the same ground)."""
+"""Unit tests of `src/render/scenery/road_sources.py` (D-217, GFX-ROAD-21: the road atlas reaches
+every chunk taken, from every stage on the same ground; PERF-17)."""
 
 from types import SimpleNamespace
 from typing import Any

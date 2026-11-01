@@ -1,7 +1,7 @@
-"""The building windows painted once into one texture, an atlas (D-210): a grid of window cells in a
-few styles, some lit (each its own colour and brightness, a soft halo round it), some dark. Each
-wall of a building is one quad mapped on a block of cells, picked at random, so the buildings all
-look different. Pure: the atlas is RGBA pixels; the scenery kit uploads them.
+"""The building windows painted once into one texture, an atlas (D-210, GFX-BLDG-12): a grid of
+window cells in a few styles, some lit (each its own colour and brightness, a soft halo round it),
+some dark. Each wall of a building is one quad mapped on a block of cells, picked at random, so the
+buildings all look different. Pure: the atlas is RGBA pixels; the scenery kit uploads them.
 
 The RGB is the light (black where nothing is lit), the alpha the shape (the windows, their halos;
 0 on the wall between them, which shows through).
@@ -11,8 +11,8 @@ The look (`WindowAtlasLook`, a config record) has:
 - `styles`: the styles, each painted in its own band of columns, as many bands as styles. A style
   has `window`, the window's `[x0, y0, x1, y1]` pixels in its cell, and `lit`, the chance a window
   is lit on a floor of average activity;
-- `doors` (D-215): door styles as the window styles are, each in a band of `doorColumns` columns
-  after the windows' bands (the windows' bands share the columns left);
+- `doors` (D-215, GFX-BLDG-14): door styles as the window styles are, each in a band of
+  `doorColumns` columns after the windows' bands (the windows' bands share the columns left);
 - `colors`: the colours of the lit windows; `brightness`: their `[low, high]` brightness;
 - `blinds`: the chance a lit window has its blind half down (its top half dimmer);
 - `dark`: the colour of a dark window; `halo`: the opacity of the halo round a lit one;

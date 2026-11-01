@@ -1,6 +1,6 @@
-"""Rough bodies of revolution (D-212): a lathe whose vertices are pushed in and out at random and
-whose facets each get a slightly different shade, so a ball reads as a clump of leaves, a cone as a
-tier of needles. Seeded: the same seed gives the same shape.
+"""Rough bodies of revolution (D-212, the tree crowns of GFX-PROP-09): a lathe whose vertices are
+pushed in and out at random and whose facets each get a slightly different shade, so a ball reads
+as a clump of leaves, a cone as a tier of needles. Seeded: the same seed gives the same shape.
 
 Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.
 """

@@ -1,7 +1,7 @@
-"""Walks a track's notes ahead of time (P12-R05): each call
-hands out the notes that start before a given point of the track, once each, looping at the
-track's end. Pure: the player turns track time into audio time, so the music keeps time when
-frames are slow, and pausing is only a matter of where it stands.
+"""Walks a track's notes ahead of time (AUD-ENGINE-05): each call hands out the notes that start
+before a given point of the track, once each, looping at the track's end. Pure: the player turns
+track time into audio time, so the music keeps time when frames are slow, and pausing is only a
+matter of where it stands.
 """
 
 import math
@@ -42,7 +42,8 @@ class Sequencer:
         return not self.track.loop and self._position >= self._length
 
     def advance(self, until: float) -> list[ScheduledNote]:
-        """The notes starting before `until` seconds into the track that were not handed out yet."""
+        """The notes starting before `until` seconds into the track that were not handed out yet.
+        A looping track starts again at its end without a gap (AUD-MUSIC-06)."""
         out: list[ScheduledNote] = []
         if until <= self._position or self._length <= 0:
             return out
@@ -66,7 +67,8 @@ class Sequencer:
 
     def seek(self, seconds: float) -> None:
         """Goes back (or on) to `seconds` into the track: the notes from there are handed out
-        again. Used when the game pauses, as the notes scheduled ahead are cancelled (P12-R11).
+        again. Used when the game pauses, as the notes scheduled ahead are cancelled
+        (AUD-ENGINE-10).
         """
         time = max(0, seconds)
         length = self._length

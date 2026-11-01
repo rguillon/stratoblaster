@@ -19,7 +19,7 @@ class LevelEntry:
 
 
 class LevelCatalog:
-    """The levels of a game, laid out as one row per world."""
+    """The levels of a game, laid out as one row per world (the game's data, UI-LEVEL-02)."""
 
     def __init__(self, columns: int, levels: list[LevelEntry]) -> None:
         """`columns` is the levels per world, i.e. entries per row of the level select grid;
@@ -36,7 +36,9 @@ def _is_integer(value: float) -> bool:
 
 
 def build_level_grid(worlds: int, levels_per_world: int, unlocked_ids: list[str]) -> LevelCatalog:
-    """Builds a catalog of `worlds` x `levels_per_world` levels labelled `world-level`."""
+    """Builds a catalog of `worlds` x `levels_per_world` levels labelled `world-level`
+    (UI-LEVEL-01).
+    """
     if not _is_integer(worlds) or not _is_integer(levels_per_world):
         raise ValueError("worlds and levels_per_world must be integers")
     if worlds < 1 or levels_per_world < 1:
@@ -52,7 +54,7 @@ def build_level_grid(worlds: int, levels_per_world: int, unlocked_ids: list[str]
 
 
 def first_unlocked_level(catalog: LevelCatalog) -> int:
-    """Index of the first unlocked level, or 0 when every level is locked."""
+    """Index of the first unlocked level, or 0 when every level is locked (UI-LEVEL-06)."""
     for index, entry in enumerate(catalog.levels):
         if entry.unlocked:
             return index

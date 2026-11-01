@@ -83,7 +83,7 @@ def _run(**overrides: object) -> LevelRun:
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
 
-def test_p07_r08_a_run_resumes_from_its_checkpoint() -> None:
+def test_game_life_11_a_run_resumes_from_its_checkpoint() -> None:
     checkpoint = LevelCheckpoint(50, 0, WeaponLevels("gun", {"gun": 2}), 300)
     run = _run(checkpoint=checkpoint, weapon_level=1)
     assert run.track.progress == pytest.approx(50)
@@ -92,7 +92,7 @@ def test_p07_r08_a_run_resumes_from_its_checkpoint() -> None:
     assert run.checkpoint is checkpoint
 
 
-def test_p06_r03_a_run_ship_has_a_health_only_when_given_one() -> None:
+def test_game_ship_03_a_run_ship_has_a_health_only_when_given_one() -> None:
     ship = RunShip(PlanePoint(1, 2), 100, 0.5, 6)
     assert (ship.start.x, ship.start.y, ship.max_speed) == (1, 2, 100)
     assert (ship.acceleration_seconds, ship.muzzle_offset) == (0.5, 6)
@@ -100,14 +100,15 @@ def test_p06_r03_a_run_ship_has_a_health_only_when_given_one() -> None:
     assert RunShip(PlanePoint(0, 0), 1, 0, 0, 80).max_health == 80
 
 
-def test_p06_r03_the_controls_switch_weapon_and_bomb_are_optional() -> None:
+def test_game_wpn_13_the_controls_switch_weapon_and_bomb_are_optional() -> None:
+    """GAME-WPN-13 (switch weapon) and GAME-BOMB-03 (bomb): both optional controls."""
     controls = LevelControls(FlightInput(1, 0), True)
     assert (controls.move.x, controls.fire) == (1, True)
     assert controls.switch_weapon is None
     assert controls.bomb is None
 
 
-def test_p06_r03_a_level_result_is_complete_without_a_checkpoint_or_high_score() -> None:
+def test_game_level_13_a_level_result_is_complete_without_a_checkpoint_or_high_score() -> None:
     result = LevelResult("L1", 3, 5, "complete", 200)
     assert (result.level_id, result.destroyed, result.spawned) == ("L1", 3, 5)
     assert (result.outcome, result.score) == ("complete", 200)
@@ -115,17 +116,17 @@ def test_p06_r03_a_level_result_is_complete_without_a_checkpoint_or_high_score()
     assert result.checkpoint is None
 
 
-def test_p06_r03_a_landed_hit_records_what_it_did() -> None:
+def test_game_life_08_a_landed_hit_records_what_it_did() -> None:
     hit = LandedHit("laser", 1, 2, "hit")
     assert (hit.kind, hit.x, hit.y, hit.event) == ("laser", 1, 2, "hit")
 
 
-def test_p06_r03_supplies_carry_lives_and_bombs_between_levels() -> None:
+def test_game_life_12_supplies_carry_lives_and_bombs_between_levels() -> None:
     supplies = Supplies(2, 1)
     assert (supplies.lives, supplies.bombs) == (2, 1)
 
 
-def test_p06_r03_the_options_default_their_optional_parts_to_none() -> None:
+def test_the_options_default_their_optional_parts_to_none() -> None:
     options = LevelRunOptions(
         screen=None,  # type: ignore[arg-type]
         level=None,  # type: ignore[arg-type]

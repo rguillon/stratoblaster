@@ -62,7 +62,7 @@ class ShipSelectRing:
 
 
 class ShipSelect:
-    """The ship select screen's tunables."""
+    """The ship select screen's tunables (UI-SHIP-01)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -79,7 +79,7 @@ class ShipSelect:
         self.spacing = spacing
         # `ship_select_rotation_speed`.
         self.rotation_speed_rad_per_sec = rotation_speed_rad_per_sec
-        # Scale of the highlighted ship and of the others (P01-R06).
+        # Scale of the highlighted ship and of the others (UI-SHIP-03).
         self.highlight_scale = highlight_scale
         self.dim_scale = dim_scale
         # How fast the scales ease towards their target (1/s).
@@ -126,7 +126,7 @@ class MenuConfig:
         environment: Environment,
         glow: GlowSettings,
     ) -> None:
-        # `menu_transition_duration`: screen fade, input ignored meanwhile (P01-R15).
+        # `menu_transition_duration`: screen fade, input ignored meanwhile (UI-FLOW-08).
         self.transition_seconds = transition_seconds
         # `cookie_max_age`: lifetime of the high score and last ship cookies.
         self.cookie_max_age_days = cookie_max_age_days

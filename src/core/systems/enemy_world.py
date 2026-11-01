@@ -1,6 +1,6 @@
-"""The enemies and their shots (P05)
+"""The enemies and their shots (`specs/enemies/common.md`)
 
-Updates every enemy, removes the destroyed ones (scoring them, GD-50, and letting them spawn
+Updates every enemy, removes the destroyed ones (scoring them, ENM-14, and letting them spawn
 parts) and the ones that left, and moves their shots. Its `targets` are what the player's shots
 can hit. Pure and deterministic.
 """
@@ -29,7 +29,7 @@ __pragma__("noskip")
 
 
 class EnemyBlast:
-    """Something that blew up during the last step, for the explosions (GD-62). `kind` is
+    """Something that blew up during the last step, for the explosions (GFX-FX-05). `kind` is
     "enemy" or "missile"; `radius` is the size of what blew up (its hit radius).
     """
 
@@ -62,7 +62,7 @@ class EnemyWorldOptions(EnemyShotsOptions):
 
 class EnemyDifficulty:
     """How hard the enemies are, as factors on each kind's own values (1 = as tuned): their
-    bullets' speed and how fast their attacks come (P06-R08).
+    bullets' speed and how fast their attacks come (ENM-22).
     """
 
     def __init__(self, bullet_speed: float, fire_rate: float) -> None:
@@ -131,9 +131,9 @@ class _WorldContext:
 
 
 class EnemyWorld:
-    """The enemies and their shots (P05). `enemies` are updated every step; `targets` are rebuilt
-    every step (the living enemies' shot targets and the living missiles): the player's shots aim
-    at these.
+    """The enemies and their shots (ENM-04). `enemies` are updated every step; `targets` are rebuilt
+    every step (the living enemies' shot targets and the living missiles, ENM-18): the player's
+    shots aim at these.
     """
 
     def __init__(
@@ -154,8 +154,9 @@ class EnemyWorld:
         self.destroyed: list[Enemy] = []
         # Pieces of enemies (a boss's parts) the player's shots destroyed during the last step.
         self.broken_parts: list[DropSource] = []
-        # Enemies destroyed and points scored since the world was created: each enemy's points,
-        # and each boss part's (P11-R01). The run adds its bonus points to the score.
+        # Enemies destroyed and points scored since the world was created: each enemy's points, and
+        # each boss part's (GAME-SCORE-02, GAME-SCORE-04). The run adds its bonus points to the
+        # score.
         self.kills = 0
         self.score = 0.0
         # Enemies added (their parts and launches included) and their total health, since then.
@@ -220,7 +221,9 @@ class EnemyWorld:
         self.add(*spawned)
 
     def _collect_destroyed(self) -> None:
-        """Scores the enemies the player's shots destroyed and lets them spawn their parts."""
+        """Scores the enemies the player's shots destroyed and lets them spawn their parts. An enemy
+        counts, and drops its bonus, however it lost its health (GAME-BONUS-06).
+        """
         for enemy in self.enemies:
             if enemy.gone or is_alive(enemy):
                 continue
@@ -244,8 +247,8 @@ class EnemyWorld:
         )
 
     def _check_gone(self, enemy: Enemy) -> None:
-        """Marks an enemy gone once it has been on the playfield and then left it, or is too old;
-        one that does not expire (a boss) only goes once destroyed.
+        """Marks an enemy gone once it has been on the playfield and then left it, or is too old
+        (ENM-10); one that does not expire (a boss) only goes once destroyed.
         """
         if not enemy.expires:
             return

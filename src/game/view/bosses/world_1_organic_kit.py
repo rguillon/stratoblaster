@@ -1,5 +1,5 @@
-"""P16-R05, P16-R06: the Cyber-Organic pieces of the World 1 boss models (living bodies with metal
-grafts) Logical pixels, nose +Z, Y up.
+"""BOSS-47, GFX-ART-12: the Cyber-Organic pieces of the World 1 boss models (living bodies with
+metal grafts) Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -32,9 +32,9 @@ type Rgb = list[Any]
 type Vec3 = list[Any]
 __pragma__("noskip")
 
-# Flesh shades (P16-R01).
+# Flesh shades (GFX-ART-15).
 F = ENEMY_LOOK.flesh
-# Hull shades of the grafts (P16-R01).
+# Hull shades of the grafts (GFX-ART-15).
 M = ENEMY_LOOK.hull
 # Rivets on the grafted plates: worn metal.
 RIVET = [0.24, 0.24, 0.27]
@@ -133,7 +133,7 @@ def sac(p: Any, at: Vec3, r: float, color: Rgb, options: Any = None) -> None:
 
 
 def graft(p: Any, outline: list[Any], heights: list[Any], at: Vec3, options: Any = None) -> None:
-    """A grafted armour plate of `outline` (around `at`), `heights` thick, riveted."""
+    """A grafted armour plate of `outline` (around `at`), `heights` thick, riveted (BOSS-49)."""
     opts = _options(options)
     color = opt(opts, "color", M.panel)
     yaw = opt(opts, "yaw", 0)
@@ -153,7 +153,7 @@ def polygon(n: int, r: float, scale: Any = None) -> list[Any]:
 
 
 def growth(p: Any, at: Vec3, r: float, glow: Rgb, options: Any = None) -> None:
-    """An armoured growth (P16-R05): a swollen flesh mound of `r` around `at`, a vein ring at its
+    """An armoured growth (BOSS-48): a swollen flesh mound of `r` around `at`, a vein ring at its
     foot and grafted armour on its crown, so it reads as one clear target."""
     opts = _options(options)
     flesh = opt(opts, "flesh", F.slate)

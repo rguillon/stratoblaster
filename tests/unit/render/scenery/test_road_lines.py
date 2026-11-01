@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/road_lines.py`."""
+"""Unit tests of `src/render/scenery/road_lines.py` (GFX-ROAD-07)."""
 
 import pytest
 from helpers.render_geometry import babylon_normal, triangles

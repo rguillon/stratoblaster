@@ -1,6 +1,6 @@
-"""The lightning of a storm (phase 9, P09-R05): the flashes drawn from the level's seed and, for
-some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it. The
-flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
+"""The lightning of a storm (phase 9, GFX-WEATHER-10): the flashes drawn from the level's seed and,
+for some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it.
+The flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
 nothing in the simulation reads it.
 """
 
@@ -36,7 +36,8 @@ __pragma__("noskip")
 
 
 class BoltLook:
-    """How a bolt is drawn in the clouds (P09-R05): a pale violet-white zigzag with a few forks."""
+    """How a bolt is drawn in the clouds (GFX-WEATHER-12): a pale violet-white zigzag with a few
+    forks."""
 
     color = (0.86, 0.86, 1)
     # Length of the main bolt, and of its forks, as shares of the view's width. (`length_`: a
@@ -145,7 +146,8 @@ class LightningLayer:
         return self._bolt is not None and is_enabled(self._bolt)
 
     def update(self, atmosphere: Atmosphere, time: float, z: float) -> float:
-        """The flash at `time` for `atmosphere`'s lightning; the bolt is drawn near `z`."""
+        """The flash at `time` for `atmosphere`'s lightning (GFX-WEATHER-11); the bolt is drawn
+        near `z`."""
         strength = atmosphere.lightning
         self._flash = self.schedule.flash_at(time) if strength > 0 else 0
         strike = self.schedule.strike_at(time) if self._flash > 0 else None

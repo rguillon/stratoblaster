@@ -1,4 +1,4 @@
-"""Seeded 2D gradient noise and its fractal sums"""
+"""Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -69,7 +69,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         j = math.floor(random() * (i + 1))
         perm[i], perm[j] = perm[j], perm[i]
     angles = [random() * PI * 2 for _ in range(TABLE_SIZE)]
-    # Each angle's cosine and sine are worked out once (the same values, every call).
+    # Each angle's cosine and sine are worked out once (the same values, every call, PERF-11).
     cos_table = [math.cos(a) for a in angles]
     sin_table = [math.sin(a) for a in angles]
     p = max(1, math.floor(period))

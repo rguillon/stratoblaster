@@ -1,4 +1,4 @@
-"""The Carrier (P05-R12)"""
+"""The Carrier (`specs/enemies/carrier.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -18,10 +18,10 @@ GROUP_DELAY = ENEMY_CONFIG.gnat.groupDelay
 
 
 class Carrier(Enemy):
-    """P05-R12: a fat flying carrier. It descends slowly and never shoots; every 3 s a Gnat comes
-    out of each of its side ports (two a side), flying out sideways and then down the screen. It
-    stops launching in the lower part of the screen. Its `charge` is how close the next launch is
-    (the ports glow).
+    """ENM-CARRIER-05: a fat flying carrier. It descends slowly and never shoots (ENM-CARRIER-06);
+    every 3 s a Gnat comes out of each of its side ports (two a side, ENM-CARRIER-07), flying out
+    sideways and then down the screen (ENM-CARRIER-08). It stops launching in the lower part of the
+    screen (ENM-CARRIER-09). Its `charge` is how close the next launch is (the ports glow).
     """
 
     def __init__(self, x: float, y: float) -> None:

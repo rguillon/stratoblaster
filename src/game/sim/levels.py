@@ -1,4 +1,4 @@
-"""This game's levels (P01-R07, P06-R01)"""
+"""This game's levels (UI-LEVEL-02, UI-LEVEL-03)"""
 
 from core.content.game_level import GameLevel
 from core.content.level_catalog import build_level_grid
@@ -10,7 +10,7 @@ from game.sim.world_4 import WORLD_4
 
 
 def _all_levels() -> list[GameLevel]:
-    """Every playable level of this game, Worlds 1 to 4 in order (P06, P08, P09, P10)."""
+    """Every playable level of this game, Worlds 1 to 4 in order."""
     levels: list[GameLevel] = []
     levels.extend(WORLD_1)
     levels.extend(WORLD_2)
@@ -19,10 +19,11 @@ def _all_levels() -> list[GameLevel]:
     return levels
 
 
-# Every playable level of this game, Worlds 1 to 4 in order (P06, P08, P09, P10).
+# Every playable level of this game, Worlds 1 to 4 in order (WLD-3-01, WLD-4-01).
 GAME_LEVELS = _all_levels()
 
-# This game's levels (P01-R07): every level that exists is unlocked (P06-R01).
+# This game's levels, a row of the level select a world (WLD-1-02, WLD-2-02), from the game's data
+# (UI-LEVEL-02): every level that exists is unlocked (UI-LEVEL-03).
 LEVELS = build_level_grid(
     LEVELS_CONFIG.worlds,
     LEVELS_CONFIG.levelsPerWorld,

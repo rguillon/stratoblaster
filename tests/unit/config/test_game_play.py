@@ -4,23 +4,24 @@ from config.game_play import GAME_PLAY_CONFIG
 from config.scenery_stage import SCENERY_STAGE_CONFIG
 
 
-def test_p06_r02_the_ship_flies_inside_the_playfield_above_the_hud() -> None:
+def test_game_screen_05_the_ship_flies_inside_the_playfield_above_the_hud() -> None:
+    """Also UI-HUD-07: the bottom margin keeps the ship above the HUD's bar."""
     margin = GAME_PLAY_CONFIG.ship_margin
     assert margin.side > 0
     assert margin.bottom > 48  # the HUD's bar is 48 px high
     assert margin.top > margin.bottom
 
 
-def test_p06_r03_the_ship_banks_by_at_most_its_maximum() -> None:
+def test_game_ship_05_the_ship_banks_by_at_most_its_maximum() -> None:
     assert GAME_PLAY_CONFIG.roll.max_deg > 0
     assert GAME_PLAY_CONFIG.roll.max_deg < 90
 
 
-def test_p06_r09_the_simulation_steps_are_bounded_per_frame() -> None:
+def test_eng_100_the_simulation_steps_are_bounded_per_frame() -> None:
     assert GAME_PLAY_CONFIG.step_hz == 60
     assert GAME_PLAY_CONFIG.max_steps_per_frame >= 1
     assert GAME_PLAY_CONFIG.max_frame_seconds > 0
 
 
-def test_p06_r09_the_stage_is_the_scenery_stage_config() -> None:
+def test_the_stage_is_the_scenery_stage_config() -> None:
     assert GAME_PLAY_CONFIG.stage is SCENERY_STAGE_CONFIG

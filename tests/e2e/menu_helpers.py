@@ -2,7 +2,7 @@
 and step it (ENG-52).
 
 e2e builds have no render loop: the game only moves when a test steps it, so no test waits on game
-time. `getState()` returns plain objects with camelCase keys, read here as dicts.
+time (ENG-58). `getState()` returns plain objects with camelCase keys, read here as dicts.
 """
 
 # Real time, for the timeouts only: the game's own time is stepped (ENG-52).
@@ -88,7 +88,7 @@ def step_until[T](
 ) -> T:
     """Steps the app `frames` frames at a time until `check(read())` holds; returns the value read.
     The frames are not drawn while it waits (only the game's state is read), the frame it stops
-    at is. Fails after `timeout` ms of real time."""
+    at is (DEV-API-11). Fails after `timeout` ms of real time."""
     deadline = time.monotonic() + timeout / 1000
     while True:
         step(page, frames, False)
@@ -111,13 +111,13 @@ def matches(actual: Any, expected: Any) -> bool:
 
 
 def wait_idle(page: Page) -> None:
-    """Steps the app until no screen transition runs (input is ignored during one, P01-R15), then
+    """Steps the app until no screen transition runs (input is ignored during one, UI-FLOW-08), then
     renders the frame it stopped at."""
     page.evaluate(
         f"""() => {{
             {_API}
             // At least one frame, so input sent before is read. A fade lasts 15 frames; the result
-            // overlay ignores input for a second (P06-R03).
+            // overlay ignores input for a second (UI-OVER-04).
             api.step(1, false);
             for (let i = 0; i < 600 && api.getState().transitioning; i++) api.step(1, false);
             api.step(0);
@@ -135,7 +135,7 @@ def open_game(page: Page) -> None:
 
 
 def open_debug(page: Page, query: str) -> None:
-    """Opens the game with debug options (P06-R09) and waits for their level to be playing."""
+    """Opens the game with debug options (DEV-OPT-01) and waits for their level to be playing."""
     page.goto(f"./{query}")
     page.wait_for_function(
         "() => window.__GAME_TEST__?.getState().screen === 'game'", timeout=LOAD_TIMEOUT
@@ -172,8 +172,8 @@ def expect_state(page: Page, expected: dict[str, Any]) -> None:
 
 
 def leave_level(page: Page) -> None:
-    """Leaves the level being played through the pause menu (P12-R02): pause, Main menu, Yes. The
-    title screen shows."""
+    """Leaves the level being played through the pause menu (UI-PAUSE-10): pause, Main menu, Yes.
+    The title screen shows."""
     send_action(page, "pause")
     expect_state(page, {"screen": "pause", "paused": True})
     for action in ["down", "down", "confirm", "right", "confirm"]:
@@ -182,11 +182,11 @@ def leave_level(page: Page) -> None:
 
 
 def wait_for_load(page: Page) -> None:
-    """Steps through the loading of the level chosen, if one is loading (P13-R03: a level loads in
-    steps, one per frame, behind its loading screen; its ground comes from a worker, so the page
-    must get its messages between two checks). The loading frames are not drawn: under software
-    WebGL a drawn frame of a level costs some 200 ms, and no test looks at them. The frame the
-    loading stopped at is drawn once."""
+    """Steps through the loading of the level chosen, if one is loading (DEV-API-11; PERF-09: a
+    level loads in steps, one per frame, behind its loading screen; its ground comes from a worker,
+    so the page must get its messages between two checks). The loading frames are not drawn:
+    under software WebGL a drawn frame of a level costs some 200 ms, and no test looks at them.
+    The frame the loading stopped at is drawn once."""
     script = f"""() => {{
         {_API}
         const still = () => {{
@@ -231,9 +231,9 @@ def wait_out_transformation(page: Page) -> None:
 
 
 def destroy_boss(page: Page, name: str) -> None:
-    """Destroys the parts left then the core of the boss `name` with K (P07-R09), one at a time
-    (the stage goes up), waiting out its transformations (they reveal more parts), and steps on
-    to the "Level complete" overlay."""
+    """Destroys the parts left then the core of the boss `name` with K (DEV-OPT-09), one at a time
+    (the stage goes up, read from the boss's state, DEV-API-04), waiting out its transformations
+    (they reveal more parts), and steps on to the "Level complete" overlay."""
     step_until(page, lambda: boss_name(page), lambda n: n == name)
 
     def progress() -> Any:

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/prism.py`."""
+"""Unit tests of `src/render/geometry/prism.py` (GFX-ART-02, GFX-ART-09)."""
 
 from types import SimpleNamespace
 from typing import Any

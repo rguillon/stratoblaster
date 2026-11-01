@@ -1,4 +1,5 @@
-"""Materials shared by all the player ships of a scene"""
+"""Materials shared by all the player ships of a scene: shiny grey/blue metals and blue lights
+(GFX-SHIP-04, GFX-ART-04)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -55,7 +56,8 @@ def _rgb_color(rgb: Any) -> Any:
 
 
 def _metal(name: str, look: Any, scene: Scene) -> Any:
-    """A physically based metal with the look's albedo, metallic and roughness."""
+    """A physically based metal with the look's albedo, metallic and roughness, taking the brighter
+    hull light (GFX-ART-08)."""
     mat = new_pbr_material(name, scene)
     mat.albedoColor = _rgb_color(look.albedo)
     mat.metallic = look.metallic

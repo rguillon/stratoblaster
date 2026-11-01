@@ -1,13 +1,13 @@
-"""Where the street surfaces of a level's terrain chunks come from (phase 15): the ground worker
-(`WorkerRoadSource`, asynchronous: the chunks arrive as the worker makes them) or the main thread
-(`LocalRoadSource`, at once). Both are asked with `request(spans, look, grid)`, where a span is
-`[index, z_min, z_max]`, and given up with `take(index)`, which is None until the chunk is ready.
+"""Where the street surfaces of a level's terrain chunks come from (phase 15, PERF-17): the ground
+worker (`WorkerRoadSource`, asynchronous: the chunks arrive as the worker makes them) or the main
+thread (`LocalRoadSource`, at once). Both are asked with `request(spans, look, grid)`, where a span
+is `[index, z_min, z_max]`, and given up with `take(index)`, which is None until the chunk is ready.
 
 The road atlas's latest pixels are kept by the source and given with every chunk taken, with
 their version (`atlas_version`, which grows each time they change), so a road field uploads each
-version once (D-217). Given with one chunk only, they were lost with it when that chunk left the
-view before it was taken (after a jump ahead), and never reached the next stage on the same ground
-(a Retry, or a level built ahead): the streets stayed untextured, white.
+version once (D-217, GFX-ROAD-21). Given with one chunk only, they were lost with it when that chunk
+left the view before it was taken (after a jump ahead), and never reached the next stage on the same
+ground (a Retry, or a level built ahead): the streets stayed untextured, white.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

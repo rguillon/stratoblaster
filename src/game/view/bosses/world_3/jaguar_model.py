@@ -1,6 +1,5 @@
-"""P09-R09, 3-5: the Jaguar, the mini boss of the canopy city. Model space: logical pixels, nose +Z
-(down the screen),
-Y up towards the camera; +X is the screen's left."""
+"""MB-JAGUAR-01 to MB-JAGUAR-05, 3-5: the Jaguar, the mini boss of the canopy city. Model space:
+logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left."""
 
 import math
 
@@ -121,7 +120,7 @@ def segment(p: EnemyParts, ends: list[Vec3], radius: float, end: float) -> None:
 
 
 def draw_sinews(p: EnemyParts) -> None:
-    """P16-R05: its bone spine, the sinews and veins under its pelt."""
+    """MB-JAGUAR-02: its bone spine, the sinews and veins under its pelt."""
     path: list[Vec3] = []
     for st in FUSELAGE[1:5]:
         path.append([0, st[3] + 0.3, st[0]])
@@ -152,8 +151,8 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a living big cat: a spotted pelt stretched over its delta like a flying squirrel's,
-    # a muscular body with a bone spine, metal fins and nozzles grafted on.
+    # MB-JAGUAR-02, MB-JAGUAR-03: a living big cat: a spotted pelt stretched over its delta like a
+    # flying squirrel's, a muscular body with a bone spine, metal fins and nozzles grafted on.
     flesh.bevel_slab(WING, WING_Y, [1.5, 2], F.sinew, None, COAT)
     edge_lights(neon, WING, LEADING, [-1.4, -0.3], AMBER)
     flesh.loft(
@@ -247,9 +246,9 @@ def jaguar_core(p: EnemyParts) -> None:
 
 
 def build_jaguar(scene: Any) -> Any:
-    """P09-R09: the Jaguar, a sleek stealth interceptor with spotted armour and amber neon: a cat's
-    head with ears and fang guns, claw guns reaching forward from its wing roots, and a tail
-    curling out to a cannon held high over its left wing."""
+    """MB-JAGUAR-01, MB-JAGUAR-05: the Jaguar, a sleek stealth interceptor with spotted armour and
+    amber neon: a cat's head with ears and fang guns, claw guns reaching forward from its wing
+    roots, and a tail curling out to a cannon held high over its left wing."""
     parts: dict[str, Any] = {
         "claw-left": claw_mount,
         "claw-right": claw_mount,

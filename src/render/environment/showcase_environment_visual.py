@@ -1,4 +1,4 @@
-"""Image-based lighting, tone mapping and glow for a scene ()."""
+"""Image-based lighting, tone mapping and glow for a scene (GFX-ART-02, ENG-114, ENG-126)."""
 
 import math
 
@@ -30,7 +30,7 @@ __pragma__("noskip")
 class ShowcaseGlow:
     """Glow settings: `intensity`, `blur_kernel_size`, and optionally the resolution of the glow
     image as a share of the screen's (`ratio`, Babylon's 0.5 when None) and its samples per pixel
-    (`samples`, Babylon's 1 when None)."""
+    (`samples`, Babylon's 1 when None; the ground's glow sets both, GFX-TERRAIN-15)."""
 
     def __init__(
         self,
@@ -73,7 +73,7 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
         babylon_constant("TEXTURETYPE_UNSIGNED_BYTE"),
         True,
     )
-    # From the faces here, not read back from the GPU (P13-R03).
+    # From the faces here, not read back from the GPU (PERF-30).
     set_cube_sphere_lighting(texture, faces, options.cube_size)
     scene.environmentTexture = texture
     scene.environmentIntensity = options.intensity
@@ -85,7 +85,7 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
     return layer
 
 
-# The sky key of each scene the last time its cube was built (P08-R04).
+# The sky key of each scene the last time its cube was built (GFX-SKY-10).
 LAST_SKY = new_weak_map()
 
 
@@ -103,8 +103,9 @@ def update_sky_environment(
     stops: list[GradientStop],
     intensity: float,
 ) -> None:
-    """Gives the scene's sky lighting the gradient `stops` and `intensity` (P08-R04: they follow
-    the time of day). The cube is only rebuilt when the gradient changed since the last call."""
+    """Gives the scene's sky lighting the gradient `stops` and `intensity` (GFX-SKY-10: they
+    follow the time of day). The cube is only rebuilt when the gradient changed since the last
+    call."""
     scene.environmentIntensity = intensity
     texture = scene.environmentTexture
     key = _sky_key(stops)

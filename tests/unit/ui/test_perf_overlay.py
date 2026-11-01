@@ -9,7 +9,7 @@ def numbers(last_load: float | None = None) -> PerfNumbers:
     return PerfNumbers(3, 42.4, 600, last_load, None)
 
 
-def test_p13_r01_the_overlay_is_hidden_until_toggled() -> None:
+def test_dev_perf_03_the_overlay_is_hidden_until_toggled() -> None:
     doc = FakeDocument()
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     assert overlay.root.hidden is True
@@ -18,7 +18,7 @@ def test_p13_r01_the_overlay_is_hidden_until_toggled() -> None:
     assert overlay.root.textContent == ""
 
 
-def test_p13_r01_toggling_shows_the_overlay_and_its_numbers_at_once() -> None:
+def test_dev_perf_03_toggling_shows_the_overlay_and_its_numbers_at_once() -> None:
     doc = FakeDocument()
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     overlay.toggle()
@@ -27,7 +27,7 @@ def test_p13_r01_toggling_shows_the_overlay_and_its_numbers_at_once() -> None:
     assert overlay.root.textContent == ("Long frames: 3\nLongest frame: 42 ms\nLevel load: 812 ms")
 
 
-def test_p13_r01_a_missing_load_time_is_a_dash() -> None:
+def test_dev_perf_03_a_missing_load_time_is_a_dash() -> None:
     doc = FakeDocument()
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     overlay.toggle()
@@ -35,7 +35,7 @@ def test_p13_r01_a_missing_load_time_is_a_dash() -> None:
     assert overlay.root.textContent.endswith("Level load: –")
 
 
-def test_p13_r01_the_text_changes_at_most_every_refresh_interval() -> None:
+def test_dev_perf_03_the_text_changes_at_most_every_refresh_interval() -> None:
     doc = FakeDocument()
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     overlay.toggle()
@@ -47,7 +47,7 @@ def test_p13_r01_the_text_changes_at_most_every_refresh_interval() -> None:
     assert "Long frames: 9" in overlay.root.textContent
 
 
-def test_p13_r01_toggling_twice_hides_it_again() -> None:
+def test_dev_perf_03_toggling_twice_hides_it_again() -> None:
     doc = FakeDocument()
     overlay = PerfOverlay(doc, doc.createElement("div"), 0.25)
     overlay.toggle()
@@ -55,7 +55,7 @@ def test_p13_r01_toggling_twice_hides_it_again() -> None:
     assert overlay.shown is False
 
 
-def test_p13_r01_dispose_removes_the_overlay_from_the_page() -> None:
+def test_dev_perf_03_dispose_removes_the_overlay_from_the_page() -> None:
     doc = FakeDocument()
     parent = doc.createElement("div")
     overlay = PerfOverlay(doc, parent, 0.25)

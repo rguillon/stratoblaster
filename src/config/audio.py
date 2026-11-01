@@ -1,4 +1,4 @@
-"""Engine tunables of the audio layer and the volume settings (P12-R04, P12-R05, P12-R10)
+"""Engine tunables of the audio layer and the volume settings (audio/engine.md, ui/settings.md)
 
 The music, the sounds and their own levels are game data (`src/game/view/audio/`).
 """
@@ -44,14 +44,15 @@ class AudioConfig:
         pan_max: float,
         recent_sounds: float,
     ) -> None:
-        # `volume_steps`: the sliders go from 0 (silent) to this step.
+        # `volume_steps`: the sliders go from 0 (silent) to this step (UI-SET-02).
         self.volume_steps = volume_steps
-        # `music_volume_default`, `sfx_volume_default`: before anything is saved.
+        # `music_volume_default`, `sfx_volume_default`: before anything is saved (UI-SET-05).
         self.default_volumes = default_volumes
-        # `master_peak`: the limiter keeps the output under this level, in dBFS.
+        # `master_peak`: the limiter keeps the output under this level, in dBFS (AUD-ENGINE-02).
         self.master_peak_db = master_peak_db
         self.limiter = limiter
-        # `scheduler lookahead`: notes are scheduled this far ahead, checked this often (D-120).
+        # `scheduler lookahead`: notes are scheduled this far ahead, checked this often
+        # (AUD-ENGINE-05, D-120).
         self.lookahead_seconds = lookahead_seconds
         self.schedule_interval_seconds = schedule_interval_seconds
         # `music_fade`, `music_crossfade`.
@@ -59,14 +60,14 @@ class AudioConfig:
         self.crossfade_seconds = crossfade_seconds
         # How fast the music goes quiet when the game pauses, and comes back.
         self.pause_fade_seconds = pause_fade_seconds
-        # `sfx_voices_max`, `sfx_retrigger_min`.
+        # `sfx_voices_max`, `sfx_retrigger_min` (AUD-ENGINE-07).
         self.max_voices = max_voices
         self.retrigger_seconds = retrigger_seconds
         # A sound started again within `retrigger_seconds` is made this much louder instead (x).
         self.retrigger_boost = retrigger_boost
         # `sfx_pan_max`: sounds at the playfield's edges are panned this far.
         self.pan_max = pan_max
-        # How many sound effect names the e2e test API keeps (P12-R12).
+        # How many sound effect names the e2e test API keeps (DEV-API-02).
         self.recent_sounds = recent_sounds
 
 

@@ -1,4 +1,4 @@
-"""The moving limbs of boss models (phase 7 review): their
+"""The moving limbs of boss models (BOSS-33, phase 7 review): their
 joints as nodes, and what is drawn on them. Model space as in `boss_model.py`.
 """
 
@@ -65,7 +65,7 @@ def _sub(a: list[Any], b: list[Any]) -> list[Any]:
 
 
 class JointFrames:
-    """The joints of a boss as nodes (phase 7 review), each at its pivot on the one it hangs on."""
+    """The joints of a boss as nodes (BOSS-33), each at its pivot on the one it hangs on."""
 
     def __init__(self, design: Any, root: Any) -> None:
         self._design = design

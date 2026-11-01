@@ -1,4 +1,4 @@
-"""A small missile with a reactor flame (P03-R03)
+"""A small missile with a reactor flame (GFX-SHOT-06)
 
 The body lies along +Z like the ship models: a tube, a red nose and four fins.
 """
@@ -105,7 +105,7 @@ def build_body(name: str, scene: Any, parent: Any) -> None:
 
 def build_missile(name: str, scene: Any) -> Any:
     """A small missile with a reactor flame, seen from above on the playfield: the returned pivot
-    lies in the XY plane and points to +Y; turn it about Z to follow the heading (P03-R03).
+    lies in the XY plane and points to +Y; turn it about Z to follow the heading (GFX-SHOT-06).
     """
     pivot = new_transform_node(name, scene)
     model = new_transform_node(name + "-model", scene)

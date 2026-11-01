@@ -1,4 +1,4 @@
-"""The Narwhal (P08-R10, 2-1)
+"""The Narwhal (FB-NARWHAL-01 to FB-NARWHAL-05, 2-1)
 
 The final boss of the Ice floes level. Logical pixels, nose +Z, Y up (towards the camera). A long
 flying submarine: a round hull with a sail on its back, cruciform tail planes and a shrouded
@@ -113,7 +113,7 @@ EMITTER = [  # type: list[list[float]]
 
 
 def hull_paint(side: int, band: int) -> Any:
-    """Snow lies in patches along its back, between the neon lines."""
+    """Snow lies in patches along its back, between the neon lines (FB-NARWHAL-05)."""
     if side == BACK and band % 2 == 1:
         return ICE_FLESH.rime
     if band == 0:
@@ -122,7 +122,7 @@ def hull_paint(side: int, band: int) -> Any:
 
 
 def sail_paint(side: int, band: int) -> Any:
-    """The sail's flat top under its snow cap."""
+    """The sail's flat top under its snow cap (FB-NARWHAL-05)."""
     if side == BACK:
         return ICE_FLESH.rime
     return None
@@ -133,7 +133,7 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a whale's body of cold teal flesh, ribbed, metal bands grafted round it.
+    # FB-NARWHAL-02: a whale's body of cold teal flesh, ribbed, metal bands grafted round it.
     flesh.loft(SUB_SECTION, HULL, ICE_FLESH.teal, None, LoftOptions(False, hull_paint))
     ribs(
         flesh,
@@ -245,7 +245,8 @@ def draw_deck(p: EnemyParts) -> None:
 
 
 def deck_gun(p: EnemyParts, at: list[float]) -> None:
-    """The deck gun on the forward deck (the core's turret), around its pivot `at`."""
+    """The deck gun on the forward deck (the core's turret, FB-NARWHAL-03), around its pivot
+    `at`."""
     p.hull.cylinder(6.5, 2, 8, H.dark, Placement(shift(at, [0, 15, 0])))
     turret(p, shift(at, [0, 16.5, 0]), 7, [2, N])
 
@@ -281,12 +282,12 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_narwhal(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Narwhal, a long flying submarine 5 L from its tail to the tip of its spiral
-    horn, teal neon along its back; its horn lance, two torpedo tubes on its flanks and two
-    ballast pods on pylons are its parts, its deck gun and the emitter on its sail the core's
-    guns.
-    P16-R06: now a living cyber-narwhal, a whale of cold flesh, ribbed, with fins and flukes, its
-    horn of bone; its torpedo tubes and ballast sacs swell from its flanks, metal grafted on.
+    """FB-NARWHAL-01, FB-NARWHAL-04: the Narwhal, a long flying submarine 5 L from its tail to the
+    tip of its spiral horn, teal neon along its back; its horn lance, two torpedo tubes on its
+    flanks and two ballast pods on pylons are its parts, its deck gun and the emitter on its sail
+    the core's guns.
+    FB-NARWHAL-02: now a living cyber-narwhal, a whale of cold flesh, ribbed, with fins and flukes,
+    its horn of bone; its torpedo tubes and ballast sacs swell from its flanks, metal grafted on.
     """
     parts = record(
         {

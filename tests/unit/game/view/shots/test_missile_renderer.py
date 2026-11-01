@@ -42,7 +42,7 @@ def parts(monkeypatch):
     return SimpleNamespace(exhaust=exhaust, flashes=flashes)
 
 
-def test_p03_r03_each_missile_is_placed_and_turned_to_its_heading(parts):
+def test_gfx_shot_06_each_missile_is_placed_and_turned_to_its_heading(parts):
     handle = create_missile_renderer(MagicMock())
     shots = [SimpleNamespace(x=10.0, y=20.0, heading=0.5), None]
     frame = SimpleNamespace(projectiles=shots, impacts=[], dt_seconds=0.016)
@@ -51,7 +51,7 @@ def test_p03_r03_each_missile_is_placed_and_turned_to_its_heading(parts):
     parts.flashes.sync.assert_called_once_with([], 0.016)
 
 
-def test_p03_r03_missiles_animate_their_models_and_skip_empty_slots(parts, monkeypatch):
+def test_gfx_shot_06_missiles_animate_their_models_and_skip_empty_slots(parts, monkeypatch):
     animate = MagicMock()
     monkeypatch.setattr(missile_renderer, "step_model_animations", animate)
     handle = create_missile_renderer(MagicMock())
@@ -66,7 +66,7 @@ def test_p03_r03_missiles_animate_their_models_and_skip_empty_slots(parts, monke
     assert animate.call_args.args[1] == 0.5
 
 
-def test_p03_r03_dispose_releases_the_missiles_and_their_trails(parts):
+def test_gfx_shot_06_dispose_releases_the_missiles_and_their_trails(parts):
     handle = create_missile_renderer(MagicMock())
     handle["dispose"]()
     parts.exhaust.dispose.assert_called_once()

@@ -59,7 +59,7 @@ def make(context: FakeContext | None) -> tuple[MusicPlayer, Stage]:
     return player, stage
 
 
-def test_p12_r05_nothing_is_scheduled_before_the_audio_context_exists(
+def test_aud_engine_03_nothing_is_scheduled_before_the_audio_context_exists(
     voices: list[FakeVoice],
 ) -> None:
     player, _ = make(None)
@@ -69,7 +69,7 @@ def test_p12_r05_nothing_is_scheduled_before_the_audio_context_exists(
     assert player.position == 0
 
 
-def test_p12_r05_notes_inside_the_lookahead_are_scheduled_on_the_clock(
+def test_aud_engine_05_notes_inside_the_lookahead_are_scheduled_on_the_clock(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -82,7 +82,7 @@ def test_p12_r05_notes_inside_the_lookahead_are_scheduled_on_the_clock(
     assert player.track.id == "menu"
 
 
-def test_p12_r05_the_notes_of_an_unknown_instrument_are_skipped(
+def test_aud_engine_05_the_notes_of_an_unknown_instrument_are_skipped(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -93,7 +93,7 @@ def test_p12_r05_the_notes_of_an_unknown_instrument_are_skipped(
     assert voices == []
 
 
-def test_p12_r05_the_position_follows_the_audio_clock(voices: list[FakeVoice]) -> None:
+def test_aud_engine_05_the_position_follows_the_audio_clock(voices: list[FakeVoice]) -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("menu"), 0)
@@ -104,7 +104,7 @@ def test_p12_r05_the_position_follows_the_audio_clock(voices: list[FakeVoice]) -
     assert player.position == pytest.approx(2.5)
 
 
-def test_p12_r11_pausing_keeps_the_position_and_resuming_goes_on_from_it(
+def test_aud_engine_10_pausing_keeps_the_position_and_resuming_goes_on_from_it(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -123,7 +123,7 @@ def test_p12_r11_pausing_keeps_the_position_and_resuming_goes_on_from_it(
     assert player.position == pytest.approx(2.0)
 
 
-def test_p12_r11_pause_and_resume_are_idempotent(voices: list[FakeVoice]) -> None:
+def test_aud_engine_10_pause_and_resume_are_idempotent(voices: list[FakeVoice]) -> None:
     context = FakeContext()
     player, _ = make(context)
     player.resume()  # not paused: nothing to do
@@ -136,7 +136,9 @@ def test_p12_r11_pause_and_resume_are_idempotent(voices: list[FakeVoice]) -> Non
     assert player.position == pytest.approx(0)
 
 
-def test_p12_r11_pausing_before_the_context_exists_is_harmless(voices: list[FakeVoice]) -> None:
+def test_aud_engine_10_pausing_before_the_context_exists_is_harmless(
+    voices: list[FakeVoice],
+) -> None:
     player, _ = make(None)
     player.play(track("menu"), 0)
     player.pause()
@@ -144,7 +146,7 @@ def test_p12_r11_pausing_before_the_context_exists_is_harmless(voices: list[Fake
     assert player.position == 0
 
 
-def test_p12_r06_a_new_track_cross_fades_the_old_one_out(voices: list[FakeVoice]) -> None:
+def test_aud_music_08_a_new_track_cross_fades_the_old_one_out(voices: list[FakeVoice]) -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("level-1"), 0)
@@ -161,7 +163,7 @@ def test_p12_r06_a_new_track_cross_fades_the_old_one_out(voices: list[FakeVoice]
     assert player.track is not None
 
 
-def test_p12_r06_playing_none_fades_the_music_out(voices: list[FakeVoice]) -> None:
+def test_aud_music_08_playing_none_fades_the_music_out(voices: list[FakeVoice]) -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("menu"), 0)
@@ -171,7 +173,7 @@ def test_p12_r06_playing_none_fades_the_music_out(voices: list[FakeVoice]) -> No
     assert player.position == 0
 
 
-def test_p12_r07_a_jingle_plays_over_the_music_and_is_dropped_when_over(
+def test_aud_music_10_a_jingle_plays_over_the_music_and_is_dropped_when_over(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -186,7 +188,7 @@ def test_p12_r07_a_jingle_plays_over_the_music_and_is_dropped_when_over(
     assert player.track is not None  # the jingle does not replace the track
 
 
-def test_p12_r11_stop_silences_everything_and_clears_the_track(
+def test_aud_engine_10_stop_silences_everything_and_clears_the_track(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -199,14 +201,14 @@ def test_p12_r11_stop_silences_everything_and_clears_the_track(
     assert all(voice.stops for voice in voices)
 
 
-def test_p12_r11_stop_without_a_context_clears_the_track(voices: list[FakeVoice]) -> None:
+def test_aud_engine_10_stop_without_a_context_clears_the_track(voices: list[FakeVoice]) -> None:
     player, _ = make(None)
     player.play(track("menu"), 0)
     player.stop()
     assert player.track is None
 
 
-def test_p12_r05_update_without_a_context_does_nothing(voices: list[FakeVoice]) -> None:
+def test_aud_engine_04_update_without_a_context_does_nothing(voices: list[FakeVoice]) -> None:
     player, _ = make(None)
     player.update()
     assert voices == []

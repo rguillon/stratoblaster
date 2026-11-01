@@ -8,7 +8,7 @@ LIME = (0.5, 1, 0)
 GREEN = (0, 1, 0)
 
 
-def test_p14_r02_each_gameplay_family_has_a_hue_window_and_a_saturation_floor() -> None:
+def test_gfx_read_04_each_gameplay_family_has_a_hue_window_and_a_saturation_floor() -> None:
     families = READABILITY.families
     assert set(families.keys()) == {"player", "enemy", "enemyShot", "pickup"}
     for name, family in families.items():
@@ -31,6 +31,7 @@ def test_d231_enemies_and_bosses_are_yellow_to_green_with_no_pink() -> None:
 
 
 def test_d231_the_enemies_two_hues_are_a_yellow_and_a_green_in_their_family() -> None:
+    """GFX-ART-05."""
     yellow, green = READABILITY.enemyHues
     assert 55 <= yellow <= 65
     assert 115 <= green <= 135
@@ -39,7 +40,7 @@ def test_d231_the_enemies_two_hues_are_a_yellow_and_a_green_in_their_family() ->
         assert (hue - family["from"]) % 360 <= (family["to"] - family["from"]) % 360
 
 
-def test_p14_r02_families_do_not_share_their_hues() -> None:
+def test_gfx_read_04_families_do_not_share_their_hues() -> None:
     families = READABILITY.families
     names = list(families.keys())
     for i, a in enumerate(names):
@@ -47,12 +48,14 @@ def test_p14_r02_families_do_not_share_their_hues() -> None:
             assert not _hues(families[a]) & _hues(families[b]), (a, b)
 
 
-def test_p14_r02_tones_are_fractions_and_the_background_is_dark() -> None:
+def test_gfx_read_02_tones_are_fractions_and_the_background_is_dark() -> None:
+    """Also GFX-READ-01 (the background's brightness cap)."""
     assert all(0 < tone <= 1 for tone in READABILITY.tones.values())
     assert 0 < READABILITY.backgroundMaxLuminance < 0.5
 
 
-def test_p14_r02_contrast_thresholds_are_positive() -> None:
+def test_gfx_read_07_contrast_thresholds_are_positive() -> None:
+    """Also GFX-READ-09, GFX-READ-10 (contrasts) and GFX-READ-15 (effects)."""
     assert READABILITY.minObjectContrast > 0
     assert READABILITY.minBulletContrast >= READABILITY.minObjectContrast
     assert 0 < READABILITY.effectMaxScreenShare <= 1

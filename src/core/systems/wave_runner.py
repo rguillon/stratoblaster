@@ -1,4 +1,4 @@
-"""Runs a level's wave script (P06-R07, GD-40)
+"""Runs a level's wave script (GAME-LEVEL-01)
 
 Waves start when the level scrolls past their distance, and not before; the groups of a wave come
 in one by one, so several waves can be on screen at once. The runner knows enemy kinds only by id:
@@ -127,13 +127,14 @@ class WaveRunner:
             self._spawn(group.kind, group.entry)
 
     def stop(self) -> None:
-        """No group comes in after this, not even the rest of a started wave (P06-R03)."""
+        """No group comes in after this, not even the rest of a started wave (GAME-LEVEL-10)."""
         self._stopped = True
         self._queue.clear()
 
     def skip_to(self, distance: float) -> None:
         """Starts again at `distance`, as if the level began there: the waves before it are skipped,
-        the groups waiting are dropped, and the later waves trigger as usual (P06-R09).
+        the groups waiting are dropped, and the later waves trigger as usual (DEV-OPT-02,
+        GAME-LIFE-11).
         """
         self._queue.clear()
         self._stopped = False

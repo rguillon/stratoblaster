@@ -1,7 +1,7 @@
-"""How boss fights go (P07, tunable values)
+"""How boss fights go (tunable values)
 
-The ground eases to the fight's speed and back over 2 s (`boss_speed_ease`), and the health bar
-fills up over 1 s (`health_bar_fill`).
+The ground eases to the fight's speed and back over 2 s (`boss_speed_ease`, GAME-LEVEL-07), and
+the health bar fills up over 1 s (`health_bar_fill`, UI-HUD-14).
 """
 
 from game.config.record import record

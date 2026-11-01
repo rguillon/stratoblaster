@@ -1,7 +1,6 @@
-"""The road kit, for the `props/` page (Phase 15, P15-R03, R04, R10): a straight, a 90° turn, a T
-and an X for each size, the T and X adapters for
-each pair of sizes, and a sample layout where each piece is joined to the straights of its open
-sides."""
+"""The road kit, for the `props/` page (phase 15): a straight, a 90° turn, a T and an X for each
+size (GFX-ROAD-11), the T and X adapters for each pair of sizes (GFX-ROAD-12), and a sample layout
+where each piece is joined to the straights of its open sides."""
 
 import math
 
@@ -175,7 +174,7 @@ def centred(pieces: list[RoadPiece]) -> list[RoadPiece]:
 
 
 def build_sample() -> PropGeometry:
-    """The sample layout (P15-R10): every piece of the kit with straights on its open sides."""
+    """The sample layout (GFX-ROAD-11): every piece of the kit with straights on its open sides."""
     return geometry_of(sample_pieces())
 
 

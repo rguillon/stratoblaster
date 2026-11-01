@@ -1,4 +1,4 @@
-"""The Scissor (P05-R21)"""
+"""The Scissor (`specs/enemies/scissor.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -53,13 +53,16 @@ def _sweeping(spec: Any) -> EnemyLaserSpec:
 
 
 class Scissor(JointedEnemy):
-    """P05-R21: a long, narrow hull with two laser arms hinged at its shoulders (moving parts,
-    P05-R13), 25° out from straight down. It moves to the upper part of the screen and stops; each
-    living arm shows a warning line along it for 1 s (GD-43), then fires its laser along it for 2 s
-    while both arms swing 15° inward, the beams closing like scissors; then it backs away.
+    """ENM-SCISSOR-08: a long, narrow hull with two laser arms hinged at its shoulders (moving
+    parts, ENM-27), 25° out from straight down (ENM-SCISSOR-09). It moves to the upper part of the
+    screen and stops; each living arm shows a warning line along it for 1 s (ENM-SCISSOR-10,
+    ENM-19), its charge lights filling (ENM-SCISSOR-06), then fires its laser along it for 2 s
+    while both arms swing 15° inward, the beams closing like scissors (ENM-SCISSOR-11); then it
+    backs away (ENM-SCISSOR-12).
 
     The arms' joints only swing while the lasers fire, so the inward swing starts with the beams,
-    which sweep with their arms (`EnemyLaserSpec.sweeps`).
+    which sweep with their arms (`EnemyLaserSpec.sweeps`, ENM-32). Its arms come from its config,
+    as the engine's specs (ENM-SCISSOR-15).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

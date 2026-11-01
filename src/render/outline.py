@@ -1,5 +1,5 @@
 """Rim glow round the silhouette of playfield meshes (phase 14): now only the enemy missiles'
-(P14-R05); the ships, enemies and bosses have a glowing edge trim in their geometry instead
+(GFX-SHOT-15); the ships, enemies and bosses have a glowing edge trim in their geometry instead
 (`render/edge_trim_mesh.py`).
 
 A mesh asks for a rim glow by its `metadata.outline` colour (`set_outline`); an `OutlineLayer`
@@ -67,7 +67,7 @@ class OutlineLayer:
 
 
 def compile_outlines(meshes: Any) -> None:
-    """Makes the rim shaders of the outlined `meshes` (P13-R04): Babylon creates each one, and
+    """Makes the rim shaders of the outlined `meshes` (PERF-20): Babylon creates each one, and
     starts compiling it, when it is first asked if it is ready. Done before play, the first ship or
     enemy with a rim does not stall the frame it appears in."""
     for mesh in meshes:

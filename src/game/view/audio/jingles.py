@@ -1,4 +1,4 @@
-"""The game's short fanfares (P12-R07): "level complete",
+"""The game's short fanfares (AUD-MUSIC-10): "level complete",
 "game over" and "checkpoint reached", each a track played once.
 """
 
@@ -20,7 +20,7 @@ def line(instrument: str, notes: list[list[float]], velocity: float) -> list[Not
 
 
 def jingle(track_id: str, bpm: float, beats: float, notes: list[Note]) -> Track:
-    """A short fanfare played once (P12-R07): its notes sorted by beat, not looping."""
+    """A short fanfare played once (AUD-MUSIC-10): its notes sorted by beat, not looping."""
     return Track(track_id, bpm, beats, sort_by_beat(notes[:]), False)
 
 

@@ -1,9 +1,9 @@
-"""The Ice Queen (P08-R10, 2-5's mini boss)
+"""The Ice Queen (2-5's mini boss, specs/bosses/mini/2-5-ice-queen.md)
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 1 mini bosses (`mini_bosses.py`, P07-R04): the shards fire spirals while
-they stand, the core fires aimed bursts that change at every stage, and a spiral of its own, used
-by no earlier stage, once it stands alone.
+patterns as for the World 1 mini bosses (`mini_bosses.py`, MB-ICE-QUEEN-10): the shards fire
+spirals while they stand, the core fires aimed bursts that change at every stage, and a spiral of
+its own, used by no earlier stage, once it stands alone.
 """
 
 import math
@@ -25,9 +25,9 @@ PURPLE = bullet("purple", 190)
 MAGENTA = bullet("magenta", 195)
 BLUE = bullet("blue", 185)
 
-# The crown ring's crystal shards (P08-R10): their centres turn `orbit` px from the core, `height`
-# above the playfield; each shard lies along the ring, a muzzle at both its tips, `reach` px from
-# its centre (it fires both ways along the ring). The model draws them from these numbers.
+# The crown ring's crystal shards (MB-ICE-QUEEN-03): their centres turn `orbit` px from the core,
+# `height` above the playfield; each shard lies along the ring, a muzzle at both its tips, `reach`
+# px from its centre (it fires both ways along the ring). The model draws them from these numbers.
 ICE_QUEEN_SHARD = record({"orbit": 42, "reach": 13, "height": 13})
 
 # The shards' turns around the core at a spin of 0, from the nose (radians, clockwise on screen).
@@ -74,12 +74,14 @@ def ice_queen_parts() -> list[object]:
 
 
 # 2-5: a slender crystal interceptor under a turning crown ring; three crystal shards on the ring
-# fire spirals and shield the core, which fires aimed bursts from its nose.
+# fire spirals and shield the core (MB-ICE-QUEEN-09), which fires aimed bursts from its nose.
 _ICE_QUEEN = record(
     {
         "id": "ice-queen",
-        # Angry after each destroyed part (phase 7 review): a crystal bloom, the hottest mini yet.
+        # Angry after each destroyed part (phase 7 review, MB-ICE-QUEEN-11): a crystal bloom, the
+        # hottest mini yet.
         "rage": rage.flower(6.5, "purple", "blue"),
+        # Its core, shards and points (MB-ICE-QUEEN-13).
         "stats": stats(
             {
                 "id": "ice-queen",
@@ -92,9 +94,11 @@ _ICE_QUEEN = record(
                 "parts": ice_queen_parts(),
             }
         ),
+        # Where it stops and how it moves in place (MB-ICE-QUEEN-08).
         "stopFraction": 0.74,
         "sway": {"amplitude": 65, "period": 6.5},
         "bob": {"amplitude": 8, "period": 3},
+        # The crown ring turns, carrying the shards round the core (MB-ICE-QUEEN-06).
         "spinRate": 0.85,
         "guns": {
             "core": {"gun": ICE_QUEEN_NOSE_GUNS, "ring": [ICE_QUEEN_SPIRE]},
@@ -102,6 +106,7 @@ _ICE_QUEEN = record(
             "shard-2": {"gun": shard_muzzles(SHARD_TURNS[1])},
             "shard-3": {"gun": shard_muzzles(SHARD_TURNS[2])},
         },
+        # The shards' spirals, then the core's pattern per stage (MB-ICE-QUEEN-10).
         "stages": stages(
             [
                 volley.ring("shard-1", 0.9, 2, 21, PURPLE, 0.4),
@@ -124,8 +129,9 @@ _ICE_QUEEN = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gun batteries unfold.
+# Its hidden weapons (boss transformations, D-224, MB-ICE-QUEEN-12): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-ICE-QUEEN-07), and a pair of gun batteries
+# unfold.
 ICE_QUEEN = with_weapons(
     _ICE_QUEEN,
     [

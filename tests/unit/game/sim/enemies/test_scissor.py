@@ -10,7 +10,8 @@ from game.sim.enemies.scissor import ArmBeam, Scissor
 CFG = ELITE_CONFIG.scissor
 
 
-def test_p05_r21_a_scissor_comes_in_to_its_stop_height_and_warns_with_two_arm_lasers() -> None:
+def test_enm_scissor_08_a_scissor_stops_at_its_height_and_warns_with_two_arm_lasers() -> None:
+    """Also ENM-SCISSOR-09 (the arms held still) and ENM-SCISSOR-10 (the warning lines)."""
     ctx = FakeContext()
     scissor = Scissor(200, 500, 300)
     run_until(scissor, ctx, lambda: scissor.state == "warn", limit=10.0)
@@ -20,7 +21,8 @@ def test_p05_r21_a_scissor_comes_in_to_its_stop_height_and_warns_with_two_arm_la
     assert scissor.swinging is False
 
 
-def test_p05_r21_the_arms_swing_inward_only_while_the_lasers_fire() -> None:
+def test_enm_scissor_11_the_arms_swing_inward_only_while_the_lasers_fire() -> None:
+    """Also ENM-SCISSOR-12: then it leaves."""
     ctx = FakeContext()
     scissor = Scissor(200, 300, 300)
     run_until(scissor, ctx, lambda: scissor.state == "warn", limit=10.0)
@@ -31,7 +33,7 @@ def test_p05_r21_the_arms_swing_inward_only_while_the_lasers_fire() -> None:
     assert scissor.charge == 0
 
 
-def test_p05_r21_the_warning_charges_up_to_the_end_of_the_warning() -> None:
+def test_enm_scissor_06_the_warning_charges_up_to_the_end_of_the_warning() -> None:
     ctx = FakeContext()
     scissor = Scissor(200, 300, 300)
     run_until(scissor, ctx, lambda: scissor.state == "warn", limit=10.0)
@@ -39,7 +41,7 @@ def test_p05_r21_the_warning_charges_up_to_the_end_of_the_warning() -> None:
     assert scissor.charge == pytest.approx(0.5, abs=0.02)
 
 
-def test_p05_r21_the_arm_beam_follows_its_arm() -> None:
+def test_enm_scissor_11_the_arm_beam_follows_its_arm() -> None:
     class _Arm:
         x, y, heading, gone, health = 1.0, 2.0, 0.5, False, 9.0
 

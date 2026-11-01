@@ -1,4 +1,4 @@
-"""P15-R07, R08: the buildings of the districts laid on tiles (phase 15), split out of"""
+"""GFX-BLDG-05: the buildings of the districts laid on tiles (phase 15), split out of"""
 
 import math
 
@@ -162,8 +162,9 @@ def pack_districts(  # noqa: C901
     road: dict[str, bool],
 ) -> None:
     """Packs the blocks of the districts whose middle `within` accepts with buildings of whole tiles
-    (P15-R07, R08): at scale 1, turned by quarter turns to face a street, then lots where no
-    building of the area's group fits. `road`: the tiles the roads cover (see `RoadTilesCache`)."""
+    (GFX-BLDG-03, GFX-BLDG-06): at scale 1, turned by quarter turns to face a street, then lots
+    where no building of the area's group fits. `road`: the tiles the roads cover (see
+    `RoadTilesCache`)."""
     t = tiles.size
     taken: dict[str, bool] = {}
     grounds = TileGround(site.field, tiles, site.rules)

@@ -1,4 +1,4 @@
-"""The Mantis (P05-R16)"""
+"""The Mantis (`specs/enemies/mantis.md`)"""
 
 import math
 
@@ -29,7 +29,8 @@ def _side_name(s: int) -> str:
 
 
 def _arm_design(s: int) -> tuple[str, BossJointSpec, EnemyPartSpec]:
-    """The arm on the side `s` (1 right, -1 left): its shoulder joint and its blade."""
+    """The arm on the side `s` (1 right, -1 left): its shoulder joint and its blade, a part with
+    its own hit circle and health (ENM-MANTIS-12)."""
     side = _side_name(s)
     out = s * ARM.outDeg * DEG
     sx = s * CFG.shoulder[0]
@@ -66,10 +67,12 @@ MANTIS_DESIGN = _mantis_design()
 
 
 class Mantis(JointedEnemy):
-    """P05-R16: an insect-like hull with two scythe arms (moving parts, P05-R13) swinging out and
-    in, out of step. It comes down to the upper half, stops for 6 s, then leaves downward. While
-    it is stopped, each standing arm fires a pair of bullets straight along its blade every 1.2 s,
-    so its shots sweep as the arm swings; its head fires a bullet aimed at the player every 2 s.
+    """ENM-MANTIS-08: an insect-like hull with two scythe arms (moving parts, ENM-27) swinging out
+    and in, out of step (ENM-MANTIS-09). It comes down to the upper half, stops for 6 s, then
+    leaves downward. While it is stopped, each standing arm fires a pair of bullets straight along
+    its blade every 1.2 s (ENM-MANTIS-10), so its shots sweep as the arm swings, its charge lights
+    following them (ENM-MANTIS-04); its head fires a bullet aimed at the player every 2 s
+    (ENM-MANTIS-11).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

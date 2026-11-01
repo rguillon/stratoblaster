@@ -1,9 +1,8 @@
-"""P10-R11, 4-2: the Ash Wraith. Logical pixels,
-nose +Z, Y up (towards the camera). A ragged stealth flying wing: a thin faceted wing, its trailing
-edge torn into tatters, a low fuselage with a dark canopy, the two shroud pods on the wings, the eye
-cannon on the nose. P16-R05: a living ash ray, its wing a scorched membrane veined with cyan, its
-body flesh under ribs, a great eye on its brow, metal only on its grafts (vents, plates, guns,
-reactors).
+"""MB-ASH-WRAITH-01 to MB-ASH-WRAITH-05, 4-2: the Ash Wraith. Logical pixels, nose +Z, Y up (towards
+the camera). A ragged stealth flying wing: a thin faceted wing, its trailing edge torn into tatters,
+a low fuselage with a dark canopy, the two shroud pods on the wings, the eye cannon on the nose.
+MB-ASH-WRAITH-02: a living ash ray, its wing a scorched membrane veined with cyan, its body flesh
+under ribs, a great eye on its brow, metal only on its grafts (vents, plates, guns, reactors).
 """
 
 import math
@@ -82,7 +81,7 @@ CANOPY_GLASS = [0.03, 0.05, 0.06]
 
 
 def _wing_veins(p: Any, s: float) -> None:
-    """P16-R05, P16-R06: its living flesh: veins, glands and ribs."""
+    """MB-ASH-WRAITH-02: its living flesh: veins, glands and ribs."""
     magma_vein(
         p,
         [
@@ -252,8 +251,8 @@ def _draw_vent(p: Any) -> None:
 
 
 def build_ash_wraith(scene: Any) -> Any:
-    """P10-R11: the Ash Wraith, a ragged grey stealth gunship trailing ash, pale cyan neon, soot and
-    molten seams on its torn wing."""
+    """MB-ASH-WRAITH-01, MB-ASH-WRAITH-05: the Ash Wraith, a ragged grey stealth gunship trailing
+    ash, pale cyan neon, soot and molten seams on its torn wing."""
 
     def core(p: Any) -> None:
         _draw_wing(p)

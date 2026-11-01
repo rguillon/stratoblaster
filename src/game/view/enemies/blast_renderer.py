@@ -1,6 +1,7 @@
-"""GD-62: explosions where enemies and missiles were destroyed, in playfield space Each layer
+"""GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space Each layer
 (smoke, shock rings, fireballs, debris, embers) is one mesh
-of thin instances, so a big blast costs no more draw calls than a small one."""
+of thin instances, so a big blast costs no more draw calls than a small one (GFX-FX-09,
+ENG-104)."""
 
 import math
 
@@ -89,8 +90,8 @@ def puff(segments: int) -> Any:
     return _object_with_colors(geo, colors)
 
 
-# Each layer: its disc (a function), whether it is added on (fire) or laid over (smoke), and its
-# depth.
+# Each layer: its disc (a function), whether it is added on (fire) or laid over (smoke; the rings
+# too, so a blast does not light up the ground, GFX-FX-07), and its depth.
 LAYERS = {  # type: LayerTable
     "smoke": (lambda: puff(LOOK.smoke.segments), False, -2.8),
     "rings": (lambda: ring(LOOK.ring.segments), False, -3),
@@ -123,13 +124,15 @@ class LayerMesh:
         self.mesh.material = material
         self.mesh.hasVertexAlpha = not add
         self.mesh.isPickable = False
-        # Drawn in layer order (smoke under fire), and never culled: instances spread anywhere.
+        # Drawn in layer order (smoke under fire, the lowest of the playfield, GFX-READ-13), and
+        # never culled: instances spread anywhere.
         self.mesh.alphaIndex = order
         self.mesh.alwaysSelectAsActiveMesh = True
         self.mesh.setEnabled(False)
 
     def show(self, spots: list[Any]) -> None:
-        """Draws one thin instance per spot, tinted by the spot's colour."""
+        """Draws one thin instance per spot, tinted by the spot's colour, into buffers that grow by
+        powers of two and are reused (ENG-19)."""
         n = len(spots)
         self.mesh.setEnabled(n > 0)
         if n == 0:
@@ -172,7 +175,7 @@ class BlastRendererHandle:
 
 
 def create_blast_renderer(scene: Any) -> BlastRendererHandle:
-    """GD-62: explosions where enemies and missiles were destroyed, in playfield space."""
+    """GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space."""
     layers: list[list[Any]] = []
     for order, layer in enumerate(BLAST_LAYERS):
         geo_of, add, z = LAYERS[layer]

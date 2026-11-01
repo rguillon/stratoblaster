@@ -19,7 +19,7 @@ from game.view.audio.music_styles import (
 
 
 @pytest.mark.parametrize("name", list(SCALES))
-def test_p12_r06_scales_are_seven_notes_inside_an_octave(name):
+def test_aud_music_03_scales_are_seven_notes_inside_an_octave(name):
     steps = SCALES[name]
     assert len(steps) == 7
     assert steps[0] == 0
@@ -27,7 +27,8 @@ def test_p12_r06_scales_are_seven_notes_inside_an_octave(name):
     assert steps[-1] < OCTAVE
 
 
-def test_p12_r06_the_four_worlds_have_a_style_each():
+def test_aud_music_05_the_four_worlds_have_a_style_each():
+    """Also WLD-1-30, WLD-2-28, WLD-3-21 and WLD-4-23: each world's style."""
     assert set(WORLD_STYLES) == {1, 2, 3, 4}
     for style in WORLD_STYLES.values():
         assert isinstance(style, MusicStyle)
@@ -38,18 +39,18 @@ def test_p12_r06_the_four_worlds_have_a_style_each():
         assert style.roots and style.scales
 
 
-def test_p12_r07_boss_tracks_are_faster_than_the_levels():
+def test_aud_music_07_boss_tracks_are_faster_than_the_levels():
     for style in WORLD_STYLES.values():
         assert style.boss_boost[0] <= style.boss_boost[1]
 
 
-def test_p12_r08_menu_theme_is_slower_than_every_level():
+def test_aud_music_11_menu_theme_is_slower_than_every_level():
     slowest_level = min(style.tempo[0] for style in WORLD_STYLES.values())
     assert MENU_STYLE.tempo[0] < slowest_level
     assert MENU_STYLE.energies == [[1, 2, 1, 2, 2]]
 
 
-def test_p12_r06_timing_constants():
+def test_aud_music_06_timing_constants():
     assert BEATS_PER_BAR == 4
     assert SECTION_BARS == 8
     assert FULL_ENERGY == 2

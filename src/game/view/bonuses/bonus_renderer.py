@@ -1,4 +1,4 @@
-"""The bonuses (phase 6 review, P11-R07), in playfield
+"""The bonuses (GFX-FX-11, GFX-FX-13), in playfield
 space: each one a badge of its kind swinging from side to side over a pulsing halo, and a ring
 flashing out where the ship picks one up.
 """
@@ -73,7 +73,7 @@ class KindPools:
 
 
 def opaque_template(name: str, geo: Any, scene: Any) -> Any:
-    """A disabled template showing its vertex colours, unlit and opaque (so it glows, GD-61)."""
+    """A disabled template showing its vertex colours, unlit and opaque (so it glows, GFX-FX-11)."""
     mesh = new_mesh(name, scene)
     data = vertex_data_of(geo.positions, geo.indices, None, geo.colors)
     apply_vertex_data(data, mesh)
@@ -136,7 +136,7 @@ def sync_flashes(rings: NodePool, flashes: list[Flash], picked: list[Any], dt: f
 
 
 def kind_templates(scene: Any) -> dict[str, list[Any]]:
-    """The badge and halo templates of each bonus kind (P11-R07)."""
+    """The badge and halo templates of each bonus kind (GFX-FX-12)."""
     halo = LOOK.halo
     life = LOOK.life
     bomb = LOOK.bomb
@@ -184,7 +184,7 @@ def sync_kind(kind_pools: KindPools, bonuses: list[Bonus]) -> None:
 
 
 def create_bonus_renderer(scene: Any) -> BonusRenderer:
-    """The bonuses and their pickup flashes, drawn in `scene` (phase 6 review, P11-R07)."""
+    """The bonuses and their pickup flashes, drawn in `scene` (GFX-FX-11, GFX-FX-13)."""
     flash = LOOK.flash
     by_kind = kind_templates(scene)
     flash_template = additive_template("bonus-flash", ring(flash.segments, flash.color), scene)

@@ -1,4 +1,4 @@
-"""Cookie-backed storage (GD-51, vision: persistence uses cookies)
+"""Cookie-backed storage (ENG-07: persistence uses cookies, not `localStorage`)
 
 It is a `KeyValueStorage` by shape (see `key_value_storage.py`).
 """

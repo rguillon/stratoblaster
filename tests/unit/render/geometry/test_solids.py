@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/solids.py`."""
+"""Unit tests of `src/render/geometry/solids.py` (GFX-ART-10, GFX-PROP-04)."""
 
 import math
 

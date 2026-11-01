@@ -1,5 +1,6 @@
-"""P10-R11, 4-5: the Ember Herald's colours, its ember lances (the parts on its turning ring), the
-spikes on its hull and the embers drifting round it. Logical pixels, nose +Z, Y up.
+"""MB-EMBER-HERALD-03, MB-EMBER-HERALD-04, 4-5: the Ember Herald's colours, its ember lances (the
+parts on its turning ring), the spikes on its hull and the embers drifting round it. Logical pixels,
+nose +Z, Y up.
 """
 
 import math
@@ -31,9 +32,9 @@ def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     return colour
 
 
-# Gold: the Ember Herald's registered neon (GD-61).
+# Gold: the Ember Herald's registered neon (MB-EMBER-HERALD-04, BOSS-50).
 GOLD = _neon_or("ember-herald", [1, 1, 1])
-# World 4 heat (P10-R11): molten seams, glowing embers, soot-black and heat-blued metal.
+# World 4 heat (MB-EMBER-HERALD-02): molten seams, glowing embers, soot-black and heat-blued metal.
 HEAT = {
     "molten": [1, 0.38, 0.05],
     "ember": [1, 0.6, 0.14],
@@ -81,7 +82,7 @@ def spike(parts: Any, at: Vec3, angles: list[float], dims: list[float]) -> None:
     place = Placement(at, angles[2], angles[0], angles[1])
     radius = dims[0]
     length = dims[1]
-    # P16-R05: a bone spike, a molten glow at its root.
+    # MB-EMBER-HERALD-02: a bone spike, a molten glow at its root.
     parts.flesh.lathe(
         [[r[0] * radius, r[1] * length] for r in SPIKE],
         4,
@@ -141,8 +142,9 @@ EMBER_COLOURS = [GOLD, HEAT["ember"], HEAT["molten"]]
 
 
 def embers(neon: Any) -> None:
-    """The embers wreathing the Ember Herald (P10-R11): small glowing motes scattered round the hull
-    and up past its ring, some molten orange, some bright gold, the same every time."""
+    """The embers wreathing the Ember Herald (MB-EMBER-HERALD-02): small glowing motes scattered
+    round the hull and up past its ring, some molten orange, some bright gold, the same every
+    time."""
     random = create_rng(4505)
     for i in range(EMBERS_COUNT):
         a = random() * math.pi * 2

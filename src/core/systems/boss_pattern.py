@@ -1,4 +1,4 @@
-"""Boss volleys (P07-R04, GD-43, GD-44)
+"""Boss volleys (BOSS-23)
 
 What volleys fire, from which piece, on which timer. Angles in degrees in the data; a preset heading
 of 0 is straight down, positive towards the right of the screen. Pure and deterministic.
@@ -94,7 +94,7 @@ class BossMissilesShape:
 
 
 class BossLaserShape:
-    """A laser straight down from the piece: warning line first (GD-43)."""
+    """A laser straight down from the piece: warning line first (BOSS-30)."""
 
     def __init__(self, laser: EnemyLaserSpec) -> None:
         self.kind = "laser"
@@ -110,7 +110,7 @@ class BossLaunchShape:
 
 
 class BossVolley:
-    """One weapon of a stage's pattern (P07-R04).
+    """One weapon of a stage's pattern (BOSS-21).
 
     `from_`: what fires it: the id of a part (it stops for good once that part is destroyed) or
     `core`. `muzzles`: the muzzles of that piece's gun its shots leave from (see
@@ -196,7 +196,7 @@ class _TurretGroup:
 
 
 def _live(volley: BossVolley, intact: Callable[[str], bool]) -> bool:
-    """Whether `volley` fires when only the pieces for which `intact` is true remain."""
+    """Whether `volley` fires when only the pieces for which `intact` is true remain (BOSS-24)."""
     return (
         intact(volley.from_)
         and (volley.needs is None or intact(volley.needs))
@@ -306,7 +306,7 @@ def _volley_key(volley: BossVolley) -> str:
 
 def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -> str:
     """A short text naming the volleys of `pattern` that still fire when only the pieces for which
-    `intact` is true remain: two stages fire the same pattern when these are equal (P07-R04).
+    `intact` is true remain: two stages fire the same pattern when these are equal (BOSS-21).
     """
     keys: list[str] = []
     for volley in pattern:
@@ -322,8 +322,8 @@ def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -
 
 
 class BossPattern:
-    """Fires one stage's pattern (P07-R04): each volley on its own timer, from its piece, as long as
-    that piece is there. Timers run `ctx.fire_rate` times faster (a level's difficulty, P06-R08).
+    """Fires one stage's pattern (BOSS-21): each volley on its own timer, from its piece, as long as
+    that piece is there. Timers run `ctx.fire_rate` times faster (a level's difficulty, BOSS-26).
     Pure and deterministic.
     """
 
@@ -370,11 +370,11 @@ class BossPattern:
             self._step_burst(ctx, volley, state, source, time)
 
     def turn_turrets(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
-        """Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
+        """Turns the turrets its volleys fire from for `dt` seconds (BOSS-29), the way their
         next volley goes (a burst under way first): at the player for aimed shots and bursts, along
         a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
         A laser's turret aims at the player until its beam fires (slowly while its warning line
-        shows, `laser_turn_rate_deg`), then holds still (phase 8 review).
+        shows, `laser_turn_rate_deg`), then holds still (BOSS-31).
         """
         for group in self._turrets:
             source = sources(group.from_)

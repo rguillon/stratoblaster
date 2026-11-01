@@ -1,8 +1,8 @@
-"""Where enemy shots leave from (phase 7 review).
+"""Where enemy shots leave from (ENM-21).
 
 A gun's muzzle is a point of the enemy as it is drawn, above the playfield; the tilted camera
 sees it in front of another point of the playfield, where its shots (flying on the playfield)
-start.
+start (GFX-SHOT-09).
 """
 
 import math

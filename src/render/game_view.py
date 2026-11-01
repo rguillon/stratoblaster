@@ -132,7 +132,7 @@ class EnemyBindings:
     renderer, in the level's style if any. `blasts(scene)`: the explosion renderer. `glow`: a
     `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation on or off.
     `child_models`: the models of the enemies other enemies send out (e.g. a carrier's drones),
-    built with every level's own models (P13-R03).
+    built with every level's own models (PERF-21).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)

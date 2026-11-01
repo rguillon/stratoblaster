@@ -24,7 +24,7 @@ def bursts(seed: int = 1) -> SparkBursts:
     return SparkBursts(OPTIONS, create_rng(seed))
 
 
-def test_p03_r01_a_burst_throws_count_sparks_from_the_hit():
+def test_gfx_fx_02_a_burst_throws_count_sparks_from_the_hit():
     b = bursts()
     b.emit(10.0, 20.0)
     assert b.count == OPTIONS.count
@@ -33,7 +33,7 @@ def test_p03_r01_a_burst_throws_count_sparks_from_the_hit():
     assert all(s.x == pytest.approx(10.0) and s.y == pytest.approx(20.0) for s in spots)
 
 
-def test_p03_r01_sparks_fly_back_from_the_hit_within_the_spread():
+def test_gfx_fx_02_sparks_fly_back_from_the_hit_within_the_spread():
     b = bursts(seed=3)
     b.emit(0.0, 0.0)
     spread = math.radians(OPTIONS.spreadDeg)
@@ -42,7 +42,7 @@ def test_p03_r01_sparks_fly_back_from_the_hit_within_the_spread():
         assert abs(s.heading) >= math.pi - spread - 1e-9
 
 
-def test_p03_r01_sparks_move_and_slow_down_with_drag():
+def test_gfx_fx_02_sparks_move_and_slow_down_with_drag():
     b = bursts()
     b.emit(0.0, 0.0)
     before = [(s.vx, s.vy) for s in b._sparks]
@@ -54,7 +54,7 @@ def test_p03_r01_sparks_move_and_slow_down_with_drag():
         assert vx1 == pytest.approx(vx0 * math.exp(-OPTIONS.drag * 0.1))
 
 
-def test_p03_r01_a_spark_fades_and_shrinks_over_its_life():
+def test_gfx_fx_02_a_spark_fades_and_shrinks_over_its_life():
     b = bursts()
     b.emit(0.0, 0.0)
     early = b.step(0.01)
@@ -63,14 +63,14 @@ def test_p03_r01_a_spark_fades_and_shrinks_over_its_life():
     assert max(s.length_ for s in late) < max(s.length_ for s in early)
 
 
-def test_p03_r01_sparks_die_after_their_life_and_are_removed():
+def test_gfx_fx_02_sparks_die_after_their_life_and_are_removed():
     b = bursts()
     b.emit(0.0, 0.0)
     assert b.step(OPTIONS.life[1] + 1) == []
     assert b.count == 0
 
 
-def test_p03_r01_bursts_accumulate_until_their_sparks_die():
+def test_gfx_fx_02_bursts_accumulate_until_their_sparks_die():
     b = bursts()
     b.emit(0.0, 0.0)
     b.emit(5.0, 5.0)
@@ -79,7 +79,7 @@ def test_p03_r01_bursts_accumulate_until_their_sparks_die():
     assert b.count == 2 * OPTIONS.count
 
 
-def test_p03_r01_a_spark_is_a_streak_along_its_motion():
+def test_gfx_fx_02_a_spark_is_a_streak_along_its_motion():
     b = bursts()
     b.emit(0.0, 0.0)
     spot = b.step(0.0)[0]

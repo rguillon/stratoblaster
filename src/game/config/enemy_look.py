@@ -1,6 +1,7 @@
-"""Look of the enemies (P05, GD-61), of their shots (GD-43) and of their explosions (GD-62).
+"""Look of the enemies (specs/enemies/), of their shots and of their explosions.
 
-Dark metallic hulls with neon lights, colourful bullets
+Dark metallic hulls with neon lights, colourful bullets (GFX-ART-03; the shots and explosions are
+specs/graphics/shots.md and effects.md).
 Linear RGB, 0..1; sizes in logical pixels; durations in seconds.
 """
 
@@ -31,7 +32,7 @@ def whiter(color: Any, t: float) -> list[Any]:
 
 
 def bullet(core: Any, color: Any) -> Any:
-    """An enemy bullet's colours, centre to edge (phase 8 review).
+    """An enemy bullet's colours, centre to edge (GFX-SHOT-10; phase 8 review).
 
     Its body's, a deep shade of its `color`, darker at the rim so it reads as a ball, fading out
     (`bullets.fade`), dark enough for the swirls added over it to show; its faint aura's; its two
@@ -54,7 +55,8 @@ def bullet(core: Any, color: Any) -> Any:
 def laser_palette(color: Any) -> Any:
     """A laser in `color` (phase 8 review): a white-hot beam core, its colour around it, fading out.
 
-    Returns its warning line, beam and base flare colours.
+    Returns its warning line, beam and base flare colours (GFX-SHOT-17; a boss's in its own colour,
+    BOSS-32).
     """
     return record(
         {
@@ -76,11 +78,11 @@ def laser_palette(color: Any) -> Any:
 
 ENEMY_LOOK = record(
     {
-        # Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white
-        # to the enemy's neon colour, and glows `selfLight` of it (phase 5 review: enemies easier
-        # to tell from the ground and its shadows). D-231: 0.3 (was 0.6), towards the neon in the
-        # body shades (`READABILITY.enemyBody`): a yellow enemy's metal stays neutral, as dark
-        # metal tinted or lit yellow turns khaki.
+        # Hull shades (ENM-36, GFX-ART-06), multiplied into a dark PBR metal. The metal is `tint`
+        # of the way from white to the enemy's neon colour, and glows `selfLight` of it (phase 5
+        # review: enemies easier to tell from the ground and its shadows). D-231: 0.3 (was 0.6),
+        # towards the neon in the body shades (`READABILITY.enemyBody`): a yellow enemy's metal
+        # stays neutral, as dark metal tinted or lit yellow turns khaki.
         "hull": {
             "base": [0.1, 0.105, 0.12],
             "panel": [0.16, 0.16, 0.19],
@@ -90,9 +92,10 @@ ENEMY_LOOK = record(
             "tint": 0.3,
             "selfLight": 0.04,
         },
-        # Cyber-Organic bodies (P16-R01): dark flesh shades, multiplied into a less metallic, waxy
-        # material (`metallic`, `roughness`) tinted `tint` of the way towards the enemy's neon.
-        # Kept dark (under 0.2) so the enemies still stand out from the darkened ground (P14-R04).
+        # Cyber-Organic bodies (ENM-35, ENM-36): dark flesh shades, multiplied into a less
+        # metallic, waxy material (`metallic`, `roughness`) tinted `tint` of the way towards the
+        # enemy's neon. Kept dark (under 0.2) so the enemies still stand out from the darkened
+        # ground (ENM-47).
         # Reviewer, 2026-11-01 (D-231): neutral slates and greys, so an enemy reads as its neon,
         # bright yellow or bright green, and never khaki (were crimson, purple, teal and plum); the
         # tint 0.15 (was 0.35).
@@ -108,16 +111,19 @@ ENEMY_LOOK = record(
             "roughness": 0.5,
             "tint": 0.15,
         },
-        # Living motion (P16-R07), visual only: each creature's breath (`period`, +- `spread` per
-        # enemy) sets the phase of its veins' pulse (from `low` to full over `period`), and its
-        # wings flutter (`angle` radians at `hz`; `bigHz` for wings longer than `bigSpan`). The
-        # body no longer swells with the breath (reviewer, 2026-10-31).
+        # Living motion (ENM-42), visual only (ENM-45): each creature's breath (`period`, +-
+        # `spread` per enemy, ENM-44) sets the phase of its veins' pulse (from `low` to full over
+        # `period`), and its wings flutter (`angle` radians at `hz`; `bigHz` for wings longer than
+        # `bigSpan`). The body no longer swells with the breath (ENM-43; reviewer, 2026-10-31).
         "living": {
             "breathing": {"period": 2.5, "spread": 0.2},
             "glow": {"period": 1.2, "low": 0.55},
             "flutter": {"hz": 6, "bigHz": 2, "bigSpan": 25, "angle": 0.16},
         },
-        # Triangle budgets per tier (P16-R09).
+        # Triangle budgets per tier (ENM-03, BOSS-53, PERF-33). The veteran and elite kinds
+        # restate theirs: ENM-WASP-06, ENM-MORTAR-06, ENM-MANTIS-07, ENM-PHANTOM-07,
+        # ENM-MINELAYER-06; ENM-HYDRA-06, ENM-ORBITER-06, ENM-SCISSOR-07, ENM-JUGGERNAUT-07,
+        # ENM-HIVE-07.
         "budget": {
             "basic": 400,
             "veteran": 700,
@@ -125,29 +131,30 @@ ENEMY_LOOK = record(
             "miniBoss": 4000,
             "finalBoss": 10000,
         },
-        # Neon colours of each enemy (P05-R01..R10, P05-R12).
+        # Neon colours of each basic kind (its colour requirement in specs/enemies/<kind>.md),
+        # each moved to bright yellow or bright green where it is drawn (GFX-ART-05).
         "neon": {
-            "gnat": [0.1, 0.95, 1],
-            "hornet": [1, 0.08, 0.1],
-            "scout": [0.05, 0.9, 1],
-            "strafer": [1, 0.1, 0.85],
-            "weaver": [0.2, 1, 0.3],
-            "spinner": [1, 0.5, 0.05],
-            "lancer": [1, 0.25, 0.35],
-            "rocketeer": [1, 0.12, 0.08],
-            "bulwark": [0.15, 0.4, 1],
-            "splitter": [0.65, 0.2, 1],
-            "carrier": [1, 0.7, 0.1],
+            "gnat": [0.1, 0.95, 1],  # ENM-GNAT-03
+            "hornet": [1, 0.08, 0.1],  # ENM-HORNET-03
+            "scout": [0.05, 0.9, 1],  # ENM-SCOUT-04
+            "strafer": [1, 0.1, 0.85],  # ENM-STRAFER-04
+            "weaver": [0.2, 1, 0.3],  # ENM-WEAVER-03
+            "spinner": [1, 0.5, 0.05],  # ENM-SPINNER-03
+            "lancer": [1, 0.25, 0.35],  # ENM-LANCER-04
+            "rocketeer": [1, 0.12, 0.08],  # ENM-ROCKETEER-04
+            "bulwark": [0.15, 0.4, 1],  # ENM-BULWARK-04
+            "splitter": [0.65, 0.2, 1],  # ENM-SPLITTER-04
+            "carrier": [1, 0.7, 0.1],  # ENM-CARRIER-04
         },
-        # Reactors (phase 5 review): a dark nozzle with a glowing core, and the player ships'
-        # animated flame, in the enemy's neon colour (D-231; was the same light blue `color` on
-        # every enemy). Sizes relative to the nozzle radius; the inner flame is `whiten` of the way
-        # from its colour to white. Kept light (phase 5 review): an open nozzle, a flat core,
+        # Reactors (ENM-40; phase 5 review): a dark nozzle with a glowing core, and the player
+        # ships' animated flame, in the enemy's neon colour (D-231; was the same light blue `color`
+        # on every enemy). Sizes relative to the nozzle radius; the inner flame is `whiten` of the
+        # way from its colour to white. Kept light (phase 5 review): an open nozzle, a flat core,
         # 4-sided flame cones without caps and 2 tetrahedron puffs, about 40 triangles a reactor
         # (about 150 before).
         "reactor": {
-            # Saturated enough (0.52) to be folded into the enemy family when drawn (P14-R02); for
-            # reactors drawn with no neon colour given.
+            # Saturated enough (0.52) to be folded into the enemy family when drawn (GFX-READ-06);
+            # for reactors drawn with no neon colour given.
             "color": [0.48, 0.82, 1],
             "flameSides": 4,
             "puffs": 2,
@@ -162,7 +169,8 @@ ENEMY_LOOK = record(
             "plasmaAlpha": 0.6,
             "whiten": 0.55,
         },
-        # Rotors (the Gnat's ducted fans): blades, hub radius relative to the blades, spin.
+        # Rotors (the Gnat's ducted fans, ENM-GNAT-02): blades, hub radius relative to the blades,
+        # spin.
         "rotor": {
             "blades": 2,
             "hub": 0.22,
@@ -198,7 +206,7 @@ ENEMY_LOOK = record(
             # The swirls' arms need more sides to curl smoothly.
             "swirlSegments": 24,
             "styles": {
-                # Phase 14 (P14-R02, reviewer): every style in the enemy shots' warm family,
+                # Phase 14 (GFX-SHOT-11, reviewer): every style in the enemy shots' warm family,
                 # white-hot cores round orange to amber (D-231: no yellow, the enemies' colour);
                 # the style names are kept for the enemy specs.
                 "red": bullet([1, 0.95, 0.88], [1, 0.36, 0.04]),
@@ -209,7 +217,7 @@ ENEMY_LOOK = record(
                 "purple": bullet([1, 0.95, 0.88], [1, 0.42, 0.1]),
             },
         },
-        # Phase 10 (P10-R07): the shot style World 4's looks name (`SceneryLook.shotStyle`), for
+        # Phase 10 (WLD-4-16, GFX-READ-11): the shot style World 4's looks name (`shotStyle`), for
         # red, orange and dark grounds and skies. Each bullet keeps its colours and gets a white
         # `spark` added at its heart (`size` times its radius); it has no dark rim any more
         # (reviewer, 2026-10-30, D-194). Laser warning lines get a white core and are
@@ -232,7 +240,7 @@ ENEMY_LOOK = record(
             # Body length and radius.
             "length": 11,
             "radius": 1.8,
-            # Phase 14 (P14-R02): an orange tip, in the enemy shots' family.
+            # Phase 14 (GFX-SHOT-15): an orange tip, in the enemy shots' family.
             "tip": [1, 0.5, 0.04],
             "flame": glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.12, 0]),
             "flameSize": [2.6, 6],
@@ -241,7 +249,7 @@ ENEMY_LOOK = record(
             # Colour of the lasers of a style (`EnemyLaserSpec.style`) that is not a boss's: the
             # Lancer's red. A boss's lasers take its neon colour (`BOSS_LOOK.neon`, phase 8 review).
             "color": [1, 0.3, 0.4],
-            # Phase 14 (P14-R02): every laser colour is moved into the enemy shots' family when
+            # Phase 14 (GFX-SHOT-18): every laser colour is moved into the enemy shots' family when
             # drawn.
             # The thin warning line, blinking at `blinkHz`, then the beam.
             "warning": {"width": 2, "blinkHz": 8},
@@ -264,8 +272,9 @@ ENEMY_LOOK = record(
                 "segments": 24,
             },
         },
-        # Explosions (GD-62; phase 5 review: bigger, with burning debris; phase 14, P14-R07:
-        # smaller, over in `READABILITY.effectMaxDuration`, so they never hide the shots for long).
+        # Explosions (GFX-FX-05; phase 5 review: bigger, with burning debris; phase 14, GFX-FX-08:
+        # smaller, over in `READABILITY.effectMaxDuration`, so they never hide the shots for long,
+        # GFX-READ-15).
         # Sizes are relative to the hit radius of what blew up, `[min, max)` ranges are picked at
         # random per particle, `life` and `delay` in seconds, speeds in logical pixels a second,
         # `drag` per second.
@@ -273,9 +282,9 @@ ENEMY_LOOK = record(
             "seed": 11,
             # Missiles blow up smaller, with fewer particles.
             "missileScale": 0.6,
-            # Phase 14 (P14-R07): blasts are drawn no bigger than for this hit radius, so one covers
-            # at most `READABILITY.effectMaxScreenShare` of the screen (a boss part's was up to a
-            # third).
+            # Phase 14 (GFX-FX-06): blasts are drawn no bigger than for this hit radius, so one
+            # covers at most `READABILITY.effectMaxScreenShare` of the screen (a boss part's was up
+            # to a third).
             "maxRadius": 22,
             # Debris, embers and smoke wisps are full size for blasts this big (a hit radius,
             # logical pixels) and up, smaller for smaller ones (phase 5 review: small booms for tiny
@@ -353,7 +362,7 @@ ENEMY_LOOK = record(
                 "life": [0.12, 0.25],
                 "drag": 4,
             },
-            # At most this many particles in each layer; new ones are dropped beyond.
+            # At most this many particles in each layer; new ones are dropped beyond (ENG-105).
             "cap": 1200,
         },
     }

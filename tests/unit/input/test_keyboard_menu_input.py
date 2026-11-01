@@ -31,7 +31,7 @@ def make_input() -> KeyboardMenuInput:
     return KeyboardMenuInput(MENU_INPUT_CONFIG.keyboard, MENU_INPUT_CONFIG)
 
 
-def test_p01_r09_a_bound_key_is_prevented_from_scrolling_the_page() -> None:
+def test_ui_input_05_a_bound_key_is_prevented_from_scrolling_the_page() -> None:
     menu = make_input()
     event = FakeKeyEvent("Enter")
     menu.key_down(event)
@@ -39,7 +39,7 @@ def test_p01_r09_a_bound_key_is_prevented_from_scrolling_the_page() -> None:
     assert menu.update(0) == ["confirm"]
 
 
-def test_p01_r09_unbound_keys_are_ignored() -> None:
+def test_ui_input_01_unbound_keys_are_ignored() -> None:
     menu = make_input()
     event = FakeKeyEvent("KeyZ")
     menu.key_down(event)
@@ -47,14 +47,15 @@ def test_p01_r09_unbound_keys_are_ignored() -> None:
     assert menu.update(1.0) == []
 
 
-def test_p01_r09_escape_is_cancel_and_p_is_pause() -> None:
+def test_ui_input_04_escape_is_cancel_and_p_is_pause() -> None:
+    """Also UI-PAUSE-01 (the pause keys)."""
     menu = make_input()
     menu.key_down(FakeKeyEvent("Escape"))
     menu.key_down(FakeKeyEvent("KeyP"))
     assert menu.update(0) == ["cancel", "pause"]
 
 
-def test_p01_r09_a_held_direction_repeats_with_our_own_timing() -> None:
+def test_ui_input_06_a_held_direction_repeats_with_our_own_timing() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("ArrowDown"))
     assert menu.update(0) == ["down"]
@@ -62,14 +63,14 @@ def test_p01_r09_a_held_direction_repeats_with_our_own_timing() -> None:
     assert menu.update(0.2) == ["down"]
 
 
-def test_p01_r09_browser_auto_repeat_events_are_ignored() -> None:
+def test_ui_input_05_browser_auto_repeat_events_are_ignored() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("ArrowDown"))
     menu.key_down(FakeKeyEvent("ArrowDown", repeat=True))
     assert menu.update(0) == ["down"]
 
 
-def test_p01_r09_key_up_stops_the_repeats() -> None:
+def test_ui_input_06_key_up_stops_the_repeats() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("ArrowUp"))
     menu.update(0)
@@ -77,14 +78,14 @@ def test_p01_r09_key_up_stops_the_repeats() -> None:
     assert menu.update(5.0) == []
 
 
-def test_p01_r09_a_confirm_key_is_not_a_hold_so_key_up_is_harmless() -> None:
+def test_ui_input_06_a_confirm_key_is_not_a_hold_so_key_up_is_harmless() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("Space"))
     menu.key_up(FakeKeyEvent("Space"))
     assert menu.update(5.0) == ["confirm"]
 
 
-def test_p01_r09_release_all_forgets_held_keys() -> None:
+def test_ui_input_05_release_all_forgets_held_keys() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("KeyD"))
     menu.update(0)
@@ -92,7 +93,7 @@ def test_p01_r09_release_all_forgets_held_keys() -> None:
     assert menu.update(5.0) == []
 
 
-def test_p01_r09_listen_wires_keydown_keyup_and_blur_and_stop_removes_them() -> None:
+def test_ui_input_05_listen_wires_keydown_keyup_and_blur_and_stop_removes_them() -> None:
     menu = make_input()
     target = FakeTarget()
     stop = menu.listen(target)
@@ -105,7 +106,7 @@ def test_p01_r09_listen_wires_keydown_keyup_and_blur_and_stop_removes_them() -> 
     assert target.listeners == {"keydown": [], "keyup": [], "blur": []}
 
 
-def test_p01_r09_releasing_one_of_two_keys_for_a_direction_keeps_repeating_for_the_other() -> None:
+def test_ui_input_06_one_of_two_keys_still_held_keeps_the_direction_repeating() -> None:
     menu = make_input()
     menu.key_down(FakeKeyEvent("ArrowUp"))
     menu.key_down(FakeKeyEvent("KeyW"))

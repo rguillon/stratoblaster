@@ -1,11 +1,11 @@
-"""The wave scripts of World 2 (P08-R08, R09)
+"""The wave scripts of World 2 (WLD-2-17, WLD-2-19)
 
 Each level cycles through its own phrases: a beat every `gap` seconds (from `gap[0]` at the start to
 `gap[1]` at the end, so the level fills up as it goes), each beat the next phrase of the cycle, its
-groups growing by `growth` over the level (so the second half carries more enemy HP). Beats are
-written in seconds, as World 1's, and turned into distances at the level's ground speed; the World 1
-filler (D-051) fills the lulls. A phrase is `[kind, groups, seconds between groups, side, position
-(0..1), spread]`.
+groups growing by `growth` over the level (so the second half carries more enemy HP, WLD-2-22).
+Beats are written in seconds, as World 1's, and turned into distances at the level's ground speed;
+the World 1 filler (D-051) fills the lulls. A phrase is `[kind, groups, seconds between groups,
+side, position (0..1), spread]`.
 """
 
 import math
@@ -50,7 +50,7 @@ def compose_beats(plan: Any) -> list[Any]:
     return beats
 
 
-# 2-1: Gnats, Hornets, Scouts, Strafers and Weavers over the dunes (P08-R08).
+# 2-1 (LVL-2-1-07, LVL-2-1-08): Gnats, Hornets, Scouts, Strafers and Weavers over the dunes.
 PLAN_2_1 = record(
     {
         "from": 4,
@@ -70,7 +70,8 @@ PLAN_2_1 = record(
     }
 )
 
-# 2-2: the 2-1 kinds plus Splitters and Lancers, over the mines and mesas.
+# 2-2 (LVL-2-2-07, LVL-2-2-08): the 2-1 kinds plus Splitters and Lancers, over the mines and
+# mesas.
 PLAN_2_2 = record(
     {
         "from": 4,
@@ -92,7 +93,7 @@ PLAN_2_2 = record(
     }
 )
 
-# 2-3: every kind, with Carrier and Spinner groups over the tundra.
+# 2-3 (LVL-2-3-07, LVL-2-3-08): every kind, with Carrier and Spinner groups over the tundra.
 PLAN_2_3 = record(
     {
         "from": 4,
@@ -117,7 +118,7 @@ PLAN_2_3 = record(
     }
 )
 
-# 2-4: every kind, with Rocketeers and Bulwarks in the blizzard.
+# 2-4 (LVL-2-4-07, LVL-2-4-08): every kind, with Rocketeers and Bulwarks in the blizzard.
 PLAN_2_4 = record(
     {
         "from": 4,
@@ -142,7 +143,7 @@ PLAN_2_4 = record(
     }
 )
 
-# 2-5: every kind, the heaviest mixes: Bulwarks and Carriers together.
+# 2-5 (LVL-2-5-07, LVL-2-5-08): every kind, the heaviest mixes: Bulwarks and Carriers together.
 PLAN_2_5 = record(
     {
         "from": 4,
@@ -167,7 +168,9 @@ PLAN_2_5 = record(
     }
 )
 
-# The filler of each level (D-051), from the kinds the level may use (P08-R08).
+# The filler of each level (D-051; LVL-2-1-09, LVL-2-2-09, LVL-2-3-09, LVL-2-4-09, LVL-2-5-09),
+# from the basic kinds the level may use (WLD-2-18); each level is fuller per minute than the one
+# before (WLD-2-20).
 WORLD_2_FILLERS = record(
     {
         "2-1": {"kinds": ["hornet", "scout", "gnat", "weaver"], "maxGap": [3.4, 2.3]},

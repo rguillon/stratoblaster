@@ -1,10 +1,10 @@
-"""How the World 4 levels look (P10-R04, R08; reworked at the reviewer's request, 2026-10-27)
+"""How the World 4 levels look (WLD-4-14, WLD-4-15; reworked at the reviewer's request, 2026-10-27)
 
 World 3's ground where it ended, grass and gardens giving way to the concrete of the city (the
 sections raise the `paved` cover level after level), the river flowing down the screen; and for each
 level its time of day, clouds (back at the reviewer's request, 2026-10-29), weather and the glow of
 the city from below along its length, as before the rework. Every look draws the enemy shots with a
-contrast core (P10-R07). Gamma-space RGB, 0..1.
+contrast core (WLD-4-16). Gamma-space RGB, 0..1.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -19,8 +19,8 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# Reviewer, 2026-10-28: World 4 at midday, brighter, the windows and the cars lit as at night;
-# 2026-10-29: its clouds white on every level, whatever the storm, tint or glow.
+# Reviewer, 2026-10-28: World 4 at midday, brighter, the windows and the cars lit as at night
+# (GFX-SKY-08); 2026-10-29: its clouds white on every level, whatever the storm, tint or glow.
 DAYLIGHT = record({"groundLights": 1.5, "brightness": 1.3, "plainClouds": True})
 
 
@@ -37,9 +37,10 @@ def bright(atmosphere: Any) -> Any:
 
 
 def city(atmosphere: Any) -> Any:
-    """A World 4 look: World 3's town ground and water, the sky script, contrast shots (P10-R07).
+    """A World 4 look: World 3's town ground and water (WLD-4-11), the sky script, contrast shots.
 
-    The flat ground casts no shadows (reviewer, 2026-10-28: it has nothing to shade).
+    The flat ground casts no shadows (GFX-TERRAIN-13, PERF-28; reviewer, 2026-10-28: it has nothing
+    to shade).
     """
     look = town(bright(atmosphere))
     return merge(
@@ -66,7 +67,7 @@ ASH_PINK = [0.95, 0.84, 0.86]
 # The smoke haze and steam of 4-1: the haze close, a little paler.
 SMOKE_HAZE = record({"fog": 0.75, "white": 0.2})
 
-# 4-1: a red dawn behind a smoke haze over the garden town.
+# 4-1 (LVL-4-1-03): a red dawn behind a smoke haze over the garden town.
 LEVEL_4_1_LOOK = city(
     {
         "start": {
@@ -83,7 +84,7 @@ ASH_BROWN = [0.8, 0.72, 0.62]
 # The dim, flat, yellowish light under the ash cloud.
 ASH_LIGHT = [1.04, 0.96, 0.74]
 
-# 4-2: midday under an ash cloud, ash falling.
+# 4-2 (LVL-4-2-03): midday under an ash cloud, ash falling.
 LEVEL_4_2_LOOK = city(
     {
         "start": {
@@ -99,7 +100,7 @@ LEVEL_4_2_LOOK = city(
 # The orange glow of the town's lights under the clouds of 4-3.
 LAVA_GLOW = [1, 0.42, 0.12]
 
-# 4-3: the sunset fades while the glow of midtown's lights takes over.
+# 4-3 (LVL-4-3-03): the sunset fades while the glow of midtown's lights takes over.
 LEVEL_4_3_LOOK = city(
     {
         "start": {
@@ -128,7 +129,7 @@ LEVEL_4_3_LOOK = city(
 # The glow of the business district under the smoke of 4-4.
 FURNACE_GLOW = [1, 0.5, 0.15]
 
-# 4-4: a night lit by the towers, ash and embers falling and rising.
+# 4-4 (LVL-4-4-03): a night lit by the towers, ash and embers falling and rising.
 LEVEL_4_4_LOOK = city(
     {
         "start": {
@@ -145,8 +146,8 @@ LEVEL_4_4_LOOK = city(
 # The deep red of the eruption over 4-5.
 ERUPTION_RED = [1, 0.16, 0.08]
 
-# 4-5: a volcano erupts beyond downtown, the sky turning deep red and the embers growing to the
-# final boss.
+# 4-5 (LVL-4-5-03): a volcano erupts beyond downtown, the sky turning deep red and the embers
+# growing to the final boss.
 LEVEL_4_5_LOOK = city(
     {
         "start": {

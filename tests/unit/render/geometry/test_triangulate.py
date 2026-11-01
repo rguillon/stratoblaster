@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/triangulate.py`."""
+"""Unit tests of `src/render/geometry/triangulate.py` (GFX-ART-02)."""
 
 import pytest
 

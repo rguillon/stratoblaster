@@ -1,4 +1,4 @@
-"""The props of World 1 (P06-R05, R06): the building groups the sections pick from (D-207: the
+"""The props of World 1 (WLD-1-13): the building groups the sections pick from (D-207: the
 buildings of the grid of tiles only; no plant grows any more)
 """
 
@@ -18,11 +18,12 @@ WORLD_1_GROUPS = record(
         "villages": "villages",
         # Farms of the green land (D-207: the outposts' water towers, solar farms and depots).
         "farms": "farms",
-        # Futuristic desert homes (P06-R06).
+        # Futuristic desert homes (WLD-1-13).
         "desertHomes": "desert-homes",
         # Desert outposts: water towers, solar farms, antennas.
         "outposts": "outposts",
-        # Mines, refinery, tanks: the desert industry (1-4).
+        # Mines, refinery, tanks: once the desert industry of 1-4; no section uses them now
+        # (WLD-1-11).
         "industrial": "industrial",
         "heavyIndustry": "heavy-industry",
     }
@@ -30,12 +31,12 @@ WORLD_1_GROUPS = record(
 
 G = WORLD_1_GROUPS
 
-# The props of World 1 (P06-R05, R06): the building groups the sections pick from. D-207: the
-# hand-made huts, homes, masts and farms are gone, their groups drawing from the grid's buildings,
-# and so are the plants.
+# The props of World 1 (WLD-1-09, WLD-1-13): the building groups the sections pick from. D-207:
+# the hand-made huts, homes, masts and farms are gone, their groups drawing from the grid's
+# buildings, and so are the plants.
 WORLD_1_PROPS = record(
     {
-        # Phase 15 (P15-R08): lots for the tiles of the districts no building fits.
+        # Phase 15 (GFX-BLDG-05): lots for the tiles of the districts no building fits.
         "lots": LOT_KINDS,
         "cellSize": 50,
         "treeClearance": 3,
@@ -85,13 +86,14 @@ WORLD_1_PROPS = record(
                 "kinds": tile_kinds("heavyIndustry"),
             },
         ],
-        # D-212: trees on the green land, gathered in woods, drawn as imposters (D-207: the plants
-        # of before are gone).
+        # D-212 (WLD-1-14): trees on the green land, gathered in woods, drawn as imposters (D-207:
+        # the plants of before are gone).
         "trees": TREE_KINDS,
         "treesPerCell": TREES_PER_CELL,
         "forests": FORESTS,
         "cars": CAR_RULES,
-        # Phase 6 review: a few buildings away from the roads, and hamlets from time to time.
+        # Phase 6 review (WLD-1-15): a few buildings away from the roads, and hamlets from time to
+        # time.
         "loners": {"cell": 150, "chance": 0.15, "clearance": 18},
         "hamlets": {
             "spacing": [700, 1400],
@@ -103,9 +105,9 @@ WORLD_1_PROPS = record(
     }
 )
 
-# Roads of World 1 (P04-R07): one winding 2x2 highway and a second road, paths every 260-560 units,
-# starting and ending off screen, as in Level Zero; unlike there, no road crosses another (phase 6
-# review).
+# Roads of World 1 (WLD-1-15; GFX-ROAD-01, GFX-ROAD-04): one winding 2x2 highway and a second road,
+# paths every 260-560 units, starting and ending off screen, as in Level Zero; unlike there, no road
+# crosses another (phase 6 review).
 WORLD_1_ROADS = record(
     {
         "mainRoads": 2,
@@ -123,6 +125,7 @@ WORLD_1_ROADS = record(
         "maxSlope": 0.5,
         "minRun": 6,
         "step": 8,
+        # Buildings in slots along the roads, set back from them (GFX-BLDG-01).
         "slotSpacing": 24,
         "setback": 2,
         # Phase 6 review: roads never cross; paths only join roads.

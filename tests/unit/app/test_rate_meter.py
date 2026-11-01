@@ -5,17 +5,17 @@ import pytest
 from app.rate_meter import RateMeter
 
 
-def test_p13_r01_no_samples_means_no_rate() -> None:
+def test_dev_perf_04_no_samples_means_no_rate() -> None:
     assert RateMeter(1.0).rate == 0
 
 
-def test_p13_r01_a_single_sample_has_no_span_to_measure() -> None:
+def test_dev_perf_04_a_single_sample_has_no_span_to_measure() -> None:
     meter = RateMeter(1.0)
     meter.add(0.5, 10)
     assert meter.rate == 0
 
 
-def test_p13_r01_the_rate_is_the_growth_per_second_over_the_samples() -> None:
+def test_dev_perf_04_the_rate_is_the_growth_per_second_over_the_samples() -> None:
     meter = RateMeter(10.0)
     meter.add(1.0, 0)
     meter.add(1.0, 30)
@@ -24,7 +24,7 @@ def test_p13_r01_the_rate_is_the_growth_per_second_over_the_samples() -> None:
     assert meter.rate == pytest.approx(30.0)
 
 
-def test_p13_r01_old_samples_fall_out_of_the_window() -> None:
+def test_dev_perf_04_old_samples_fall_out_of_the_window() -> None:
     meter = RateMeter(1.0)
     for step in range(10):
         meter.add(0.5, step * 10.0)
@@ -32,7 +32,7 @@ def test_p13_r01_old_samples_fall_out_of_the_window() -> None:
     assert meter.rate == pytest.approx(20.0)
 
 
-def test_p13_r01_a_zero_time_span_reads_as_zero() -> None:
+def test_dev_perf_04_a_zero_time_span_reads_as_zero() -> None:
     meter = RateMeter(1.0)
     meter.add(0.0, 5)
     meter.add(0.0, 9)

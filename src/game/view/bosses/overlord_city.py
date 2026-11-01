@@ -1,4 +1,4 @@
-"""P07-R05: the Overlord's city: shared shapes, towers
+"""FB-OVERLORD-02: the Overlord's city: shared shapes, towers
 standing on its deck with lit windows and rooftop clutter, neon edges. Model space: logical pixels,
 nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
 """
@@ -23,7 +23,7 @@ __pragma__("noskip")
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
-# Purple: the boss's neon (GD-61).
+# Purple: the boss's neon (BOSS-50, FB-OVERLORD-04).
 OVERLORD_NEON = BOSS_LOOK.neon["overlord"]
 # Heights of the deck's top and of the raised boulevard along its middle.
 OVERLORD_DECK = {"top": 6, "boulevard": 10}

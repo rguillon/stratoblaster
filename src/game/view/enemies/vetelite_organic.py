@@ -1,5 +1,5 @@
-"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models Logical pixels, nose +Z, Y
-up."""
+"""Cyber-Organic pieces shared by the veteran and elite models: the extra limbs and grafts that
+show their tier (ENM-02) Logical pixels, nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -69,15 +69,15 @@ def membrane_draw(w: Any, span: float) -> Any:
 
 
 def membrane_pair(p: Any, wing: Any, span: float) -> None:
-    """P16-R04: a pair of membrane wings (`wing` is the right one), a `membrane` skin on a `bone`
-    strut, each fluttering on its root (P16-R07)."""
+    """A pair of membrane wings (`wing` is the right one), a `membrane` skin on a `bone` strut,
+    each fluttering on its root (ENM-42): the Wasp's wings (ENM-WASP-05)."""
     for s in SIDES:
         w = sided(wing, s)
         p.flap([w["root"][0], w["y"], w["root"][1]], s, span, membrane_draw(w, span))
 
 
 def mandibles(b: Any, at: Vec3, size: Any) -> None:
-    """A pair of mandibles hooking forward and in from `at`, in bone."""
+    """A pair of mandibles hooking forward and in from `at`, in bone (ENM-WASP-02)."""
     x = at[0]
     y = at[1]
     z = at[2]

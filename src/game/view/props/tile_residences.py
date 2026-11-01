@@ -1,9 +1,9 @@
 """The homes of the residential districts (Phase 15, reviewer 2026-10-28: "gather the terraces
 and suburbs into the same category, remove the green, make it more diverse, this is the future, no
-need for tile roofs"): flat or metal roofed, on paved
-plots. Each model takes the silhouette its seed names, so a group's models all differ: cantilevered
-slabs, pods, a row of modules under solar panels, stepped terraces, a house on stilts and a wedge
-under a sloping metal roof."""
+need for tile roofs"): flat or metal roofed, on paved plots. Each model takes the silhouette its
+seed names, so a group's models all differ (GFX-BLDG-09): cantilevered slabs, pods, a row of
+modules under solar panels, stepped terraces, a house on stilts and a wedge under a sloping metal
+roof."""
 
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L

@@ -1,6 +1,5 @@
-"""The models made for the grid of tiles (Phase 15, P15-R07, R09): one per entry of `TILE_MODELS`,
-each built to fill its tiles less the
-margin."""
+"""The models made for the grid of tiles (Phase 15, GFX-BLDG-03, GFX-BLDG-09): one per entry of
+`TILE_MODELS`, each built to fill its tiles less the margin."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

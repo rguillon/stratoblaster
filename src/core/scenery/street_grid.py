@@ -10,8 +10,8 @@ each a list of points every `rules.step`.
 - without crossings (`rules.no_crossings`, phase 6 review), every crossing then becomes a
   T-junction: one of its two stretches along the level goes, and the dead ends that leaves are
   removed again, without making new crossings;
-- boulevards (`rules.boulevards`, reviewer 2026-10-28) are built along their whole line and run
-  straight: at a crossing, the street across them is cut instead.
+- boulevards (`rules.boulevards`, reviewer 2026-10-28, GFX-ROAD-17) are built along their whole line
+  and run straight: at a crossing, the street across them is cut instead.
 """
 
 from org.transcrypt.stubs.browser import __pragma__

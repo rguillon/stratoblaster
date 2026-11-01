@@ -1,7 +1,7 @@
-"""1-3, the green country of World 1 (P06-R05, reviewer, 2026-10-26)
+"""1-3, the green country of World 1 (WLD-1-07; reviewer, 2026-10-26)
 
 From the farmland 1-2 ended on, through woods, green hills and a market town, to where the grass
-turns dry and yellow. No sea. Its `seconds` add up to 240 (P06-R04).
+turns dry and yellow. No sea. Its `seconds` add up to 240 (LVL-1-3-02).
 """
 
 from game.config.record import concat, merge, record
@@ -11,7 +11,7 @@ from game.config.world_1.scenery_coast import FARMLAND, smooth
 
 G = WORLD_1_GROUPS
 
-# Streets of a market town: wide blocks, few crossings.
+# Streets of a market town: wide blocks, few crossings (LVL-1-3-05).
 TOWN_STREETS = record({"rows": [60, 110], "columns": [70, 130], "links": 0.55})
 
 # Dry grassland, where 1-3 ends and 1-4 begins: a little grass left on the dry earth.
@@ -23,13 +23,15 @@ DRY_GRASSLAND = record(
         "buildingDensity": 0.75,
         # D-212: trees on the little grass left, few.
         "treeDensity": 1,
-        # D-214: the woods are dying, dead trees among the living.
+        # D-214: the woods are dying, dead trees among the living (LVL-1-3-07).
         "trees": concat(LIVE_TREES, DEAD_TREES),
         "surface": {"lush": 0.2},
         "groups": [G.villages, G.outposts],
     }
 )
 
+# 1-3's sections (LVL-1-3-04): farmland, woods, green hills and a market town, with their farms
+# and villages (LVL-1-3-06), then the yellowing and the dry grass.
 COUNTRY = [
     merge(FARMLAND, {"seconds": 30}),
     merge(
@@ -81,7 +83,7 @@ COUNTRY = [
     DRY_GRASSLAND,
 ]
 
-# 1-3 (P06-R05): the green country, starting on the farmland 1-2 ended on.
+# 1-3 (LVL-1-3-01): the green country, starting on the farmland 1-2 ended on.
 LEVEL_1_3 = record(
     {
         "id": "world-1-3",

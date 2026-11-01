@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/textured.py` (D-210)."""
+"""Unit tests of `src/render/geometry/textured.py` (D-210, GFX-BLDG-13)."""
 
 from helpers.geometry_checks import check_colored
 

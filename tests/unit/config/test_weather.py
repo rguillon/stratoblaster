@@ -4,7 +4,7 @@ from config.weather import LIGHTNING
 from core.scenery.lightning import LightningSchedule
 
 
-def test_p09_r05_strikes_come_every_gap_seconds_at_least() -> None:
+def test_gfx_weather_10_strikes_come_every_gap_seconds_at_least() -> None:
     schedule = LightningSchedule(11)
     strikes = schedule.strikes_before(300)
     starts = [s.flashes[0] for s in strikes]

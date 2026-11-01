@@ -1,12 +1,12 @@
-"""How far a scrolling level has gone (P04-R06)
+"""How far a scrolling level has gone (GAME-SCREEN-03, GAME-LEVEL-02)
 
 The ground scrolls at `speed` world units per second from distance 0 to `length`, then the level
 has ended and the track stops.
 
-Two distances are kept (P07-R03): `distance`, the ground flown over (what the scenery shows), and
-`progress`, how far the level has got (what its waves and bosses are placed by). They move
-together, except while the track is `held` (a boss fight): the ground goes on, the level does not.
-The ground's speed is `speed` times a factor that eases from one value to another
+Two distances are kept (GAME-LEVEL-06, GAME-LEVEL-07): `distance`, the ground flown over (what the
+scenery shows), and `progress`, how far the level has got (what its waves and bosses are placed by).
+They move together, except while the track is `held` (a boss fight): the ground goes on, the level
+does not. The ground's speed is `speed` times a factor that eases from one value to another
 (`set_speed_factor`).
 """
 

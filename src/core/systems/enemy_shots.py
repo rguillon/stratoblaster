@@ -1,4 +1,4 @@
-"""The shots of all the enemies (GD-43, GD-44)
+"""The shots of all the enemies (ENM-16 to ENM-19)
 
 Bullets, homing missiles the player can shoot down, and lasers with a warning line. Pure and
 deterministic, stepped with a fixed `dt`.
@@ -55,7 +55,7 @@ EPSILON = 1e-9
 
 
 class EnemyBullet:
-    """An enemy bullet in flight (GD-43): straight, at constant speed. `age` is the seconds since
+    """An enemy bullet in flight (ENM-16): straight, at constant speed. `age` is the seconds since
     it was fired; `burst` is what it bursts into (`EnemyBulletSpec.burst`).
     """
 
@@ -72,9 +72,9 @@ class EnemyBullet:
 
 
 class EnemyMissile:
-    """An enemy missile in flight: it homes on the player for a while, and can be shot down. It is
-    a shot target (the player's shots can hit it). `homing` is the seconds of homing left, `age`
-    the seconds since launch.
+    """An enemy missile in flight: it homes on the player for a while, and can be shot down
+    (ENM-18). It is a shot target (the player's shots can hit it). `homing` is the seconds of homing
+    left, `age` the seconds since launch.
     """
 
     def __init__(self) -> None:
@@ -94,9 +94,9 @@ class EnemyMissile:
 
 
 class EnemyLaser:
-    """A laser: a warning line first, then the beam, from its owner's emitter. The warning line
-    follows its owner's heading (a turret turning towards the player); the beam keeps the heading
-    its owner had when it started firing, straight (phase 8 review), unless its spec `sweeps`.
+    """A laser (ENM-19): a warning line first, then the beam, from its owner's emitter. The warning
+    line follows its owner's heading (a turret turning towards the player); the beam keeps the
+    heading its owner had when it started firing, straight (BOSS-30), unless its spec `sweeps`.
     `locked` is that heading, once the beam fires.
     """
 
@@ -124,8 +124,9 @@ class EnemyLaser:
 class EnemyShotsOptions:
     """The playfield and what its shots are culled by.
 
-    `cull_margin`: shots this far outside the playfield are removed. `eye`: the camera's eye, from
-    which lasers are seen leaving their raised emitters; straight below them when None.
+    `cull_margin`: shots this far outside the playfield are removed (GAME-SCREEN-07). `eye`: the
+    camera's eye, from which lasers are seen leaving their raised emitters; straight below them when
+    None.
     """
 
     def __init__(
@@ -218,7 +219,7 @@ class EnemyShots:
         return _alive_count(self.bullets) + _alive_count(self.missiles) + len(self._lasers)
 
     def clear(self) -> None:
-        """Removes every shot."""
+        """Removes every shot (as a bomb does, GAME-BOMB-05)."""
         for bullet in self.bullets:
             bullet.alive = False
         for missile in self.missiles:

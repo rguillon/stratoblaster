@@ -1,7 +1,8 @@
-"""A road piece painted pixel by pixel for the road atlas (phase 15, reviewer 2026-10-28: better
-looking corners, T and X). The roadway's corners are rounded with distance fields: the sidewalk
-corners into a junction get a kerb radius, and the outside of a turn sweeps round. Junctions of
-three or four ways get zebra crossings on their arms, the lane lines stopping before them.
+"""A road piece painted pixel by pixel for the road atlas (phase 15, GFX-ROAD-20; reviewer
+2026-10-28: better looking corners, T and X). The roadway's corners are rounded with distance
+fields: the sidewalk corners into a junction get a kerb radius, and the outside of a turn sweeps
+round. Junctions of three or four ways get zebra crossings on their arms, the lane lines stopping
+before them.
 """
 
 import math
@@ -300,7 +301,8 @@ def paint_piece(
     look: TileRoadLook,
     n: int,
 ) -> list[Any]:
-    """The colour of each pixel of `piece`, `n` x `n`, row by row along +Z."""
+    """The colour of each pixel of `piece`, `n` x `n`, row by row along +Z: its roadway, sidewalks
+    and kerbs in the look's colours (GFX-ROAD-10)."""
     if piece.kind == "turn":
         return _paint_turn(piece, tile, look, n)
     scale = n / (piece.size * tile.size)

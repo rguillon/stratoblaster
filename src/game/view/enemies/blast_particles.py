@@ -1,6 +1,7 @@
-"""Explosions where enemies and missiles were destroyed (GD-62; phase 5 review: bigger, more
+"""Explosions where enemies and missiles were destroyed (GFX-FX-05; phase 5 review: bigger, more
 realistic): a shock ring, a cluster of fireballs, dark
-smoke that lingers, and burning debris with embers and smoke wisps."""
+smoke that lingers, and burning debris with embers and smoke wisps. The game's own seeded
+particles, drawn as meshes, not Babylon particle systems (ENG-103)."""
 
 import math
 
@@ -21,7 +22,7 @@ LOOK = ENEMY_LOOK.blasts
 # Debris stops dropping embers and smoke after this share of its life.
 BURN_LIMIT = 0.7
 
-# The layers of an explosion, each drawn in one go.
+# The layers of an explosion, each drawn in one go; no flash layer (GFX-FX-07).
 BLAST_LAYERS = ["smoke", "rings", "fireballs", "debris", "embers"]
 
 
@@ -130,7 +131,8 @@ LOOKS = {
 
 
 class BlastParticles:
-    """Explosions where enemies and missiles were destroyed (GD-62): every layer's particles."""
+    """Explosions where enemies and missiles were destroyed (GFX-FX-05): every layer's particles,
+    all gone within `effectMaxDuration` of the blast (GFX-FX-08, GFX-READ-15)."""
 
     def __init__(self, random: Any) -> None:
         self.random = random
@@ -152,7 +154,7 @@ class BlastParticles:
     def emit(self, blast: Any) -> None:
         """Starts the explosion of `blast`."""
         scale = LOOK.missileScale if blast.kind == "missile" else 1
-        # P14-R07: never bigger than for `maxRadius`.
+        # GFX-FX-06: sized from the hit radius, never bigger than for `maxRadius`.
         radius = min(blast.radius, LOOK.maxRadius) * scale
         # Pieces, embers and wisps shrink with blasts smaller than `fullRadius`.
         small = min(1, radius / LOOK.fullRadius)
@@ -304,7 +306,7 @@ class BlastParticles:
         )
 
     def add(self, layer: str, p: Any) -> None:
-        """Adds a particle to `layer`, unless the layer is full (`cap`)."""
+        """Adds a particle to `layer`, unless the layer is full (`cap`: GFX-FX-09, ENG-105)."""
         items = self.layers[layer]
         if len(items) >= LOOK.cap:
             return

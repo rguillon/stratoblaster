@@ -44,7 +44,7 @@ def make_player(
     return player, context, now
 
 
-def test_p12_r09_pan_is_zero_in_the_middle_and_reaches_the_maximum_at_the_edges() -> None:
+def test_aud_engine_08_pan_is_zero_in_the_middle_and_reaches_the_maximum_at_the_edges() -> None:
     assert pan_at(50, 100, 0.6) == pytest.approx(0)
     assert pan_at(0, 100, 0.6) == pytest.approx(-0.6)
     assert pan_at(100, 100, 0.6) == pytest.approx(0.6)
@@ -52,21 +52,21 @@ def test_p12_r09_pan_is_zero_in_the_middle_and_reaches_the_maximum_at_the_edges(
     assert pan_at(10, 0, 0.6) == 0
 
 
-def test_p12_r10_a_sound_plays_and_is_counted_by_the_pool(voices: list[FakeVoice]) -> None:
+def test_aud_engine_07_a_sound_plays_and_is_counted_by_the_pool(voices: list[FakeVoice]) -> None:
     player, _, _ = make_player(FakeContext())
     assert player.play(sound("shot")) is True
     assert player.voices == 1
     assert len(voices) == 1
 
 
-def test_p12_r10_without_a_context_the_pool_still_decides(voices: list[FakeVoice]) -> None:
+def test_aud_engine_07_without_a_context_the_pool_still_decides(voices: list[FakeVoice]) -> None:
     player, _, _ = make_player(None)
     assert player.play(sound("shot")) is True
     assert player.voices == 1
     assert voices == []
 
 
-def test_p12_r10_a_sound_again_too_soon_is_boosted_not_played_twice(
+def test_aud_engine_07_a_sound_again_too_soon_is_boosted_not_played_twice(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -79,7 +79,7 @@ def test_p12_r10_a_sound_again_too_soon_is_boosted_not_played_twice(
     assert len(voices) == 1
 
 
-def test_p12_r10_a_boost_is_capped_at_its_square(voices: list[FakeVoice]) -> None:
+def test_aud_engine_07_a_boost_is_capped_at_its_square(voices: list[FakeVoice]) -> None:
     context = FakeContext()
     player, _, clock = make_player(context)
     player.play(sound("shot"))
@@ -90,7 +90,7 @@ def test_p12_r10_a_boost_is_capped_at_its_square(voices: list[FakeVoice]) -> Non
     assert gain.gain.value == pytest.approx(1.25**2)
 
 
-def test_p12_r10_when_the_voices_are_all_taken_a_higher_priority_replaces_the_oldest(
+def test_aud_engine_07_when_the_voices_are_all_taken_a_higher_priority_replaces_the_oldest(
     voices: list[FakeVoice],
 ) -> None:
     player, _, clock = make_player(FakeContext(), max_voices=1)
@@ -101,7 +101,7 @@ def test_p12_r10_when_the_voices_are_all_taken_a_higher_priority_replaces_the_ol
     assert player.voices == 1
 
 
-def test_p12_r10_a_lower_priority_sound_is_dropped_when_the_voices_are_taken(
+def test_aud_engine_07_a_lower_priority_sound_is_dropped_when_the_voices_are_taken(
     voices: list[FakeVoice],
 ) -> None:
     player, _, clock = make_player(FakeContext(), max_voices=1)
@@ -110,7 +110,9 @@ def test_p12_r10_a_lower_priority_sound_is_dropped_when_the_voices_are_taken(
     assert player.play(sound("tick", priority=1)) is False
 
 
-def test_p12_r09_a_looping_sound_plays_once_until_it_is_stopped(voices: list[FakeVoice]) -> None:
+def test_aud_engine_07_a_looping_sound_plays_once_until_it_is_stopped(
+    voices: list[FakeVoice],
+) -> None:
     player, _, clock = make_player(FakeContext())
     laser = sound("laser", hold=INFINITY, loop=True)
     assert player.play(laser) is True
@@ -122,7 +124,7 @@ def test_p12_r09_a_looping_sound_plays_once_until_it_is_stopped(voices: list[Fak
     assert voices[0].stops
 
 
-def test_p12_r09_stopping_a_loop_that_is_not_playing_does_nothing(
+def test_aud_engine_07_stopping_a_loop_that_is_not_playing_does_nothing(
     voices: list[FakeVoice],
 ) -> None:
     player, _, _ = make_player(FakeContext())
@@ -130,7 +132,7 @@ def test_p12_r09_stopping_a_loop_that_is_not_playing_does_nothing(
     assert player.looping("laser") is False
 
 
-def test_p12_r09_a_positional_sound_is_panned_when_it_is_off_centre(
+def test_aud_engine_08_a_positional_sound_is_panned_when_it_is_off_centre(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -143,7 +145,7 @@ def test_p12_r09_a_positional_sound_is_panned_when_it_is_off_centre(
     assert gain.connections == [panners[0]]
 
 
-def test_p12_r09_a_positional_sound_in_the_middle_is_not_panned(
+def test_aud_engine_08_a_positional_sound_in_the_middle_is_not_panned(
     voices: list[FakeVoice],
 ) -> None:
     context = FakeContext()
@@ -152,7 +154,7 @@ def test_p12_r09_a_positional_sound_in_the_middle_is_not_panned(
     assert context.of_kind("panner") == []
 
 
-def test_p12_r11_stop_all_stops_every_sound_and_forgets_the_loops(
+def test_aud_engine_10_stop_all_stops_every_sound_and_forgets_the_loops(
     voices: list[FakeVoice],
 ) -> None:
     player, _, _ = make_player(FakeContext())
@@ -164,7 +166,7 @@ def test_p12_r11_stop_all_stops_every_sound_and_forgets_the_loops(
     assert all(voice.stops for voice in voices)
 
 
-def test_p12_r10_a_sound_that_is_over_is_forgotten_so_its_name_can_play_again(
+def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_again(
     voices: list[FakeVoice],
 ) -> None:
     player, _, clock = make_player(FakeContext())

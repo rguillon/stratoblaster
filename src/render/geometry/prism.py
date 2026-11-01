@@ -1,4 +1,4 @@
-"""Flat-shaded prisms from a planform outline ()."""
+"""Flat-shaded prisms from a planform outline (GFX-ART-09)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

@@ -1,4 +1,4 @@
-"""Builds the core sky of a level (P08-R04, P09-R04, P10) from its config record: the sky script
+"""Builds the core sky of a level (GFX-SKY-04, GFX-SKY-05) from its config record: the sky script
 (`atmosphere`) of a scenery look, as `core/scenery/sky_look.py` reads it. The config keeps the
 camelCase keys; `core/` takes snake_case attributes, and an omitted optional field is
 None. Mapping rules are in `config_build.py`.
@@ -31,7 +31,8 @@ def _glow(glow: ConfigRecord) -> SkyGlow:
 
 
 def sky_look(config: ConfigRecord) -> SkyLook:
-    """A level's look at one place along it (P08-R04, R05)."""
+    """A level's look at one place along it (GFX-SKY-04), with its weather (GFX-WEATHER-01) and its
+    ground lights and brightness (GFX-SKY-08), as World 4's bright midday sets them (WLD-4-14)."""
     return SkyLook(
         config.timeOfDay,
         config.clouds,

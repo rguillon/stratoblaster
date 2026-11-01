@@ -1,5 +1,5 @@
 """Vertex-coloured, textured quads (D-210: one quad per building wall, mapped on the windows'
-atlas)."""
+atlas, GFX-BLDG-13)."""
 
 from render.geometry.gradient_shapes import ColoredGeometry
 

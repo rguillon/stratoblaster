@@ -35,22 +35,22 @@ def built(builder, w=20.0, d=20.0, seed=3):
 
 
 @pytest.mark.parametrize("name", list(BUILDERS))
-def test_p15_r09_each_city_building_stands_on_the_ground(name):
+def test_gfx_bldg_09_each_city_building_stands_on_the_ground(name):
     prop = built(BUILDERS[name])
     check_colored(prop.structure)
     assert height(prop.structure) > 0
 
 
-def test_p15_r09_the_city_towers_rise_above_the_midrise_blocks():
+def test_gfx_bldg_10_the_city_towers_rise_above_the_midrise_blocks():
     assert height(built(build_skyscraper).structure) > height(built(build_midrise).structure)
 
 
-def test_p15_r09_the_open_lots_are_low_compared_with_the_towers():
+def test_gfx_bldg_11_the_open_lots_are_low_compared_with_the_towers():
     assert height(built(build_park).structure) < height(built(build_tower).structure)
     assert height(built(build_plaza).structure) < height(built(build_skyscraper).structure)
 
 
-def test_p15_r09_a_building_fills_the_plot_it_is_given():
+def test_gfx_bldg_03_a_building_fills_the_plot_it_is_given():
     width, depth = footprint(built(build_office, w=16.0, d=24.0).structure)
     assert width == pytest.approx(16.0, abs=0.5)
     assert depth == pytest.approx(24.0, abs=0.5)

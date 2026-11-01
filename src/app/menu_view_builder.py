@@ -1,5 +1,6 @@
-"""Builds what the menu overlay shows for the current state
-(P01-R04, R06, R07, P06-R02, R03, P12-R02, P12-R04).
+"""Builds what the menu overlay shows for the current state: the screens of specs/ui/ (title, ship
+select, level select, game, pause, settings) and the dev menu, every text from the game
+(UI-LOOK-10).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -55,14 +56,14 @@ class MenuViewContext:
         self.game = game
         # The best score so far.
         self.high_score = high_score
-        # Version and short commit hash (ENG-83).
+        # Version and short commit hash (ENG-83, UI-TITLE-04).
         self.version = version
         self.commit = commit
         # Width of the row of ship cards, in % of the screen.
         self.cards_width_percent = cards_width_percent
         # Loading progress, 0..1.
         self.progress = progress
-        # The volume sliders' highest step (P12-R04).
+        # The volume sliders' highest step (UI-SET-02).
         self.volume_steps = volume_steps
         # The labels of each dev viewer's items (D-199); None: no dev menu.
         self.dev_labels = dev_labels
@@ -71,7 +72,8 @@ class MenuViewContext:
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
-    """The pause menu (P12-R02), and its `Leave the level?` question when it shows."""
+    """The pause menu (UI-PAUSE-07), and its `Leave the level?` question when it shows
+    (UI-PAUSE-10)."""
     texts: Any = ctx.game.texts
     question = None
     if state.leaving:
@@ -85,7 +87,8 @@ def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
 
 
 def _settings_view(state: MenuState, ctx: MenuViewContext) -> SettingsView:
-    """The settings screen (P12-R04): one slider per volume."""
+    """The settings screen (UI-SET-02): one slider per volume; over the paused level when opened
+    from the pause menu (UI-SET-07)."""
     texts: Any = ctx.game.texts
     labels = {"music": texts.musicVolume, "sfx": texts.sfxVolume}
     sliders: list[SliderView] = []
@@ -108,7 +111,8 @@ def _complete_view(
     ctx: MenuViewContext,
     label: Any,
 ) -> LevelCompleteView:
-    """The "Level complete" (or "Game over") panel (P06-R03), with its choices (P07-R08)."""
+    """The "Level complete" (or "Game over") panel (UI-OVER-01, UI-OVER-05), with its choices
+    (UI-OVER-06; none without a checkpoint, UI-OVER-08)."""
     texts: Any = ctx.game.texts
     choices = None
     if result.checkpoint is not None:
@@ -161,7 +165,7 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
 
 
 def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
-    """The dev menu, or the dev viewer shown (D-199)."""
+    """The dev menu (DEV-MENU-03), or the screen of the dev viewer shown (DEV-MENU-05, D-199)."""
     texts = DEV_VIEWER_CONFIG.texts
     back: str = ctx.game.texts.back
     viewer = state.dev_viewer
@@ -186,8 +190,8 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
         position = groups[index] + " · " + place
         hint = texts.groups_hint
-    # D-206, D-208: the menu of every viewer: its items, each group's heading before its items
-    # when they are in groups.
+    # DEV-MENU-07 (D-206, D-208): the menu of every viewer: its items, each group's heading before
+    # its items when they are in groups.
     menu: list[DevChoice] = []
     for i in range(len(labels)):
         if grouped and i in starts:
@@ -200,7 +204,8 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
 
 
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
-    """The view of the current screen: one of the classes of `ui/menu_view`."""
+    """The view of the current screen: one of the classes of `ui/menu_view`: the title's
+    (UI-TITLE-01, with the Dev entry under `?dev`: DEV-MENU-01), the ships' cards (UI-SHIP-02)..."""
     game = ctx.game
     texts: Any = game.texts
     screen = state.screen

@@ -223,7 +223,7 @@ def test_a_body_without_a_roll_is_not_rolled() -> None:
     assert point.height == pytest.approx(10)
 
 
-def test_p07_r04_a_piece_without_muzzle_placing_is_aimed_from_its_centre() -> None:
+def test_boss_29_a_piece_without_muzzle_placing_is_aimed_from_its_centre() -> None:
     class _Plain:
         def __init__(self, turret: BossTurret) -> None:
             self.x = 0
@@ -243,7 +243,7 @@ def test_p07_r04_a_piece_without_muzzle_placing_is_aimed_from_its_centre() -> No
     assert turret.aim == pytest.approx(-math.pi / 2)
 
 
-def test_gd43_a_sweeping_laser_keeps_turning_with_its_owner() -> None:
+def test_enm_32_a_sweeping_laser_keeps_turning_with_its_owner() -> None:
     shots = _shots()
     owner = _Owner(PlanePoint(10, 10), heading=0)
     shots.fire_laser(owner, _laser(warning=0, firing=5, sweeps=True))
@@ -254,7 +254,7 @@ def test_gd43_a_sweeping_laser_keeps_turning_with_its_owner() -> None:
     assert shots.lasers[0].heading == pytest.approx(1.0)
 
 
-def test_gd43_a_laser_ends_after_its_warning_and_firing_time() -> None:
+def test_enm_19_a_laser_ends_after_its_warning_and_firing_time() -> None:
     shots = _shots()
     shots.fire_laser(_Owner(PlanePoint(0, 0)), _laser(warning=1, firing=1))
     shots.step(1.5, 0, 0)
@@ -263,7 +263,7 @@ def test_gd43_a_laser_ends_after_its_warning_and_firing_time() -> None:
     assert shots.lasers == []
 
 
-def test_gd43_a_laser_ends_when_its_owner_is_gone_or_has_no_health() -> None:
+def test_enm_19_a_laser_ends_when_its_owner_is_gone_or_has_no_health() -> None:
     shots = _shots()
     gone = _Owner(PlanePoint(0, 0))
     shots.fire_laser(gone, _laser())
@@ -277,7 +277,7 @@ def test_gd43_a_laser_ends_when_its_owner_is_gone_or_has_no_health() -> None:
     assert shots.lasers == []
 
 
-def test_gd43_a_laser_is_seen_leaving_its_raised_emitter_through_the_eye() -> None:
+def test_gfx_shot_09_a_laser_is_seen_leaving_its_raised_emitter_through_the_eye() -> None:
     eye = SimpleNamespace(x=0, y=0, height=100)
     shots = _shots(eye)
     shots.fire_laser(_Owner(RaisedPoint(0, 50, 50), heading=0), _laser())
@@ -286,13 +286,13 @@ def test_gd43_a_laser_is_seen_leaving_its_raised_emitter_through_the_eye() -> No
     assert (laser.x, laser.y) == pytest.approx((0, 100))
 
 
-def test_gd43_a_laser_on_the_playfield_is_seen_where_it_is() -> None:
+def test_gfx_shot_09_a_laser_on_the_playfield_is_seen_where_it_is() -> None:
     shots = _shots(SimpleNamespace(x=0, y=0, height=100))
     shots.fire_laser(_Owner(PlanePoint(20, 30), heading=0), _laser())
     assert (shots.lasers[0].x, shots.lasers[0].y) == (20, 30)
 
 
-def test_gd43_counts_and_clear_cover_bullets_missiles_and_lasers() -> None:
+def test_game_bomb_05_counts_and_clear_cover_bullets_missiles_and_lasers() -> None:
     shots = _shots()
     shots.fire_bullet(50, 50, 0, _bullet())
     shots.fire_missile(50, 50, 0, _missile())
@@ -304,7 +304,7 @@ def test_gd43_counts_and_clear_cover_bullets_missiles_and_lasers() -> None:
     assert all(not b.alive for b in shots.bullets)
 
 
-def test_gd45_the_context_gives_enemies_the_playfield_the_player_and_the_random_source() -> None:
+def test_enm_04_the_context_gives_enemies_the_playfield_the_player_and_the_random_source() -> None:
     seen: dict[str, object] = {}
 
     def look(e: Walker, ctx: object, dt: float) -> None:
@@ -330,7 +330,7 @@ def test_gd45_the_context_gives_enemies_the_playfield_the_player_and_the_random_
     assert (seen_point.x, seen_point.y) == (5, 6)
 
 
-def test_gd45_a_seen_point_is_moved_by_the_eye_when_raised() -> None:
+def test_gfx_shot_09_a_seen_point_is_moved_by_the_eye_when_raised() -> None:
     eye = SimpleNamespace(x=0, y=0, height=100)
     world = _world(eye=eye)
     from core.entities.muzzle import RaisedPoint  # noqa: PLC0415

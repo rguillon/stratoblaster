@@ -1,7 +1,8 @@
-"""The sculpted ground of a level (P04-R01): every section is a fractal relief, optionally
-flattened (plateau), carved (canyon) or dropped under the sea (coast), and neighbouring sections
-blend smoothly over `level.transition`. Before Z = 0 and after the end, the ground continues as
-the first and last sections. Pure and deterministic for a given seed."""
+"""The sculpted ground of a level (GFX-TERRAIN-01): every section is a fractal relief
+(GFX-TERRAIN-02), optionally flattened (plateau), carved (canyon) or dropped under the sea (coast)
+(GFX-TERRAIN-03), and neighbouring sections blend smoothly over `level.transition`. Before Z = 0
+and after the end, the ground continues as the first and last sections. Pure and deterministic
+for a given seed."""
 
 import math
 
@@ -136,16 +137,17 @@ def _section_steepness(placed: PlacedSection, transition: float) -> Steepness | 
 
 
 def soft_cap(h: float, max_height: float) -> float:
-    """`h`, squashed smoothly so it never exceeds `max_height`."""
+    """`h`, squashed smoothly so it never exceeds `max_height` (GFX-TERRAIN-02)."""
     knee = _or_one(abs(max_height) * PEAK_KNEE)
     start = max_height - knee
     return h if h <= start else start + knee * math.tanh((h - start) / knee)
 
 
 def terrain_ceiling(level: SceneryLevel) -> float:
-    """A height the ground of `level` never exceeds, whatever the seed: the top of each section's
-    relief (or its peak cap), of its flattened band and of its sea bed. Carving only lowers the
-    ground, and blending stays between the heights of the blended sections."""
+    """A height the ground of `level` never exceeds, whatever the seed (GFX-TERRAIN-06; the clouds
+    fly above it, GFX-SKY-12): the top of each section's relief (or its peak cap), of its flattened
+    band and of its sea bed. Carving only lowers the ground, and blending stays between the heights
+    of the blended sections."""
     tops: list[float] = []
     for section in level.sections:
         relief = section.relief
@@ -202,7 +204,7 @@ class HeightField:
         return _blend_height(self, z, lambda i: _height_of_section(self, i, x, z))
 
     def surface(self, z: float) -> Surface:
-        """Ground cover at `z`, blended between sections like the height."""
+        """Ground cover at `z`, blended between sections like the height (GFX-TERRAIN-09)."""
         return Surface(
             _blend_height(self, z, lambda i: _surface_share(self.sections, i, "lush")),
             _blend_height(self, z, lambda i: _surface_share(self.sections, i, "paved")),
@@ -288,7 +290,8 @@ def _path_x_at(field: HeightField, path: Meander, z: float) -> float:
 
 
 def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -> float:
-    """`value` of the section under `z`, blended with its neighbour near their boundary."""
+    """`value` of the section under `z`, blended with its neighbour near their boundary
+    (GFX-TERRAIN-10)."""
     i = _section_index(field, z)
     here = value(i)
     half = field._transition / 2
@@ -336,7 +339,8 @@ def _relief_of(field: HeightField, index: int, x: float, z: float) -> float:
 
 
 def _dune_of(field: HeightField, section: TerrainSection, x: float, z: float) -> float:
-    """Height of the dunes over the relief at (`x`, `z`): 0 in the troughs, up to `height`."""
+    """Height of the dunes over the relief at (`x`, `z`) (GFX-TERRAIN-04): 0 in the troughs, up to
+    `height`."""
     dunes = section.dunes
     if dunes is None:
         return 0

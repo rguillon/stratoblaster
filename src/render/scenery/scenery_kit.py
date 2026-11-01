@@ -1,4 +1,4 @@
-"""Materials, textures and shadows of a scenery scene (P04, P08, P09, P10): the kit's interfaces,
+"""Materials, textures and shadows of a scenery scene (phases 4, 8-10): the kit's interfaces,
 and the plain stand-in kit that needs no WebGL.
 
 The interfaces are classes here. The materials are plain Python objects with a `material` attribute
@@ -41,7 +41,7 @@ class CloudState:
         offset_x: float,
         offset_z: float,
     ) -> None:
-        """`color` follows the time of day (P08-R04) and `fog` is the haze it fades into. The
+        """`color` follows the time of day (GFX-SKY-13) and `fog` is the haze it fades into. The
         offsets are the drift of the pattern, in world units along X and Z."""
         self.coverage = coverage
         self.opacity = opacity
@@ -73,8 +73,8 @@ class SceneryKitFrame:
         ground: GroundTransform | None = None,
     ) -> None:
         """`time`: seconds since the scene started (animations, not the level time).
-        `atmosphere`: the level's look here (P08-R04): shadows' darkness, ground lights. `ground`:
-        see {@link GroundTransform}; None when drawn as it is."""
+        `atmosphere`: the level's look here (GFX-SKY-04): shadows' darkness, ground lights.
+        `ground`: see {@link GroundTransform}; None when drawn as it is."""
         self.time = time
         self.camera_position = camera_position
         self.sea_enabled = sea_enabled
@@ -161,19 +161,20 @@ def _or_default(value: Any, fallback: Any) -> Any:
 
 def set_ground_lights(materials: PropMaterials, glow: float) -> None:
     """Sets how bright the props' self-lit accents (windows, neon, street and car lights) are
-    (P08-R04: off by day, on at dusk and night)."""
+    (GFX-SKY-08: off by day, on at dusk and night)."""
     if is_instance_of(materials.lights, "StandardMaterial"):
         materials.lights.emissiveColor.set(glow, glow, glow)
     if is_instance_of(materials.windows, "StandardMaterial"):
         materials.windows.emissiveColor.set(glow, glow, glow)
 
 
-# Depth offset of the props' self-lit accents (see `create_prop_materials`).
+# Depth offset of the props' self-lit accents (see `create_prop_materials`, GFX-BLDG-16).
 LIGHTS_Z_OFFSET = -2
 
 
 def create_prop_materials(scene: Any, look: Any) -> PropMaterials:
-    """Vertex-coloured materials of the props: lit structure, and self-lit accents."""
+    """Vertex-coloured materials of the props: lit structure, toned by the world (GFX-READ-02),
+    and self-lit accents."""
     structure = new_standard_material("prop-structure", scene)
     tone = _or_default(look.tone, 1)
     structure.diffuseColor = color3(tone, tone, tone)

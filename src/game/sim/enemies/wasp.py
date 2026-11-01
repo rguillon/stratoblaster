@@ -1,4 +1,4 @@
-"""The Wasp (P05-R14)"""
+"""The Wasp (`specs/enemies/wasp.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -16,10 +16,10 @@ CFG = VETERAN_CONFIG.wasp
 
 
 class Wasp(Hornet):
-    """P05-R14: an armed diver. It flies down to its stop height, pauses 0.4 s turning its nose to
-    the player, fires a fan of 3 bullets 12° apart aimed at the player (GD-44) once, then dives at
-    where the player was at that moment, like a Hornet (P05-R02). The Hive launches them too
-    (P05-R23).
+    """ENM-WASP-08: an armed diver. It flies down to its stop height, pauses 0.4 s turning its nose
+    to the player, fires a fan of 3 bullets 12° apart aimed at the player once (ENM-WASP-09,
+    ENM-20), then dives at where the player was at that moment, like a Hornet (ENM-WASP-10). The
+    Hive launches them too (ENM-HIVE-09).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

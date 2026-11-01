@@ -1,9 +1,9 @@
-"""Abstract menu actions every input device is translated into (P01-R12):
-- `back`: Back on the menu screens (Backspace, gamepad B); nothing in a level (P12-R01);
-- `cancel`: the Escape key: Back on the menu screens (P01-R09), pause in a level (P12-R01);
+"""Abstract menu actions every input device is translated into (UI-INPUT-01, UI-INPUT-02):
+- `back`: Back on the menu screens (Backspace, gamepad B); nothing in a level (UI-PAUSE-05);
+- `cancel`: the Escape key: Back on the menu screens, pause in a level (UI-PAUSE-01);
 - `pause`: pauses a level, or resumes it from the pause menu (P, gamepad Start / Select, the
   on-screen pause button);
-- `resume`: resumes a paused level (test API, P12-R12).
+- `resume`: resumes a paused level (test API, DEV-API-07).
 
 An action is a plain string; `MENU_ACTIONS` lists them all.
 """
@@ -32,7 +32,7 @@ class MenuSelect:
 
 
 class MenuSet:
-    """Sets slider `set` of the settings screen to `value` (tap or drag on it, P12-R04)."""
+    """Sets slider `set` of the settings screen to `value` (tap or drag on it, UI-SET-03)."""
 
     def __init__(self, set_index: int, value: float) -> None:
         self.set = set_index

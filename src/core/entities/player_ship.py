@@ -37,7 +37,7 @@ def find_player_ship(roster: PlayerShipRoster, id: str) -> PlayerShipDefinition:
 
 
 def ship_max_speed_px_per_sec(roster: PlayerShipRoster, id: str) -> float:
-    """Maximal speed of a ship, in logical pixels per second."""
+    """Maximal speed of a ship, in logical pixels per second (GAME-SHIP-02)."""
     return roster.base_speed_px_per_sec * find_player_ship(roster, id).max_speed_factor
 
 
@@ -48,7 +48,9 @@ def _is_integer(value: float) -> bool:
 
 
 def validate_player_ship_roster(roster: PlayerShipRoster) -> None:
-    """Raises a descriptive error if the roster is empty, has duplicate ids or invalid stats."""
+    """Raises a descriptive error if the roster is empty, has duplicate ids or invalid stats
+    (GAME-SHIP-08).
+    """
     if len(roster.ships) == 0:
         raise ValueError("A roster needs at least one player ship")
     # `not (x > 0)` (rather than `x <= 0`) also rejects NaN.

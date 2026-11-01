@@ -1,4 +1,4 @@
-"""Models shown side by side, each one spinning ()."""
+"""Models shown side by side, each one spinning (UI-SHIP-01)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

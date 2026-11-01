@@ -1,11 +1,11 @@
-"""Player ship look (GD-61)"""
+"""Player ship look (GFX-ART-04, GFX-SHIP-04; darksynth, GFX-ART-03)"""
 
 from game.config.record import record
 
-# Logical pixels per model unit when the player ships are drawn on the playfield.
+# Logical pixels per model unit when the player ships are drawn on the playfield (GFX-SHIP-07).
 PLAYER_SHIP_SCALE = 7
 
-# Player ship look (GD-61: shiny grey/blue, blue light behind each reactor). Linear RGB, 0..1.
+# Player ship look (GFX-SHIP-04: shiny grey/blue, blue light behind each reactor). Linear RGB, 0..1.
 SHIP_LOOK = record(
     {
         "hull": {"albedo": [0.56, 0.63, 0.74], "metallic": 0.9, "roughness": 0.25},
@@ -28,7 +28,8 @@ SHIP_LOOK = record(
     }
 )
 
-# Reactor flame animation. Lengths are relative to the exhaust cone; frequencies in Hz.
+# Reactor flame animation (GFX-SHIP-06). Lengths are relative to the exhaust cone; frequencies in
+# Hz.
 REACTOR_FLAME = record(
     {
         # Flicker amplitude (+- fraction) of the flame length, width and brightness.

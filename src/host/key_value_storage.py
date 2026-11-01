@@ -24,8 +24,8 @@ class MemoryStorage:
     """In-memory storage, for tests and as a fallback.
 
     A Map would be the natural store here. A Transcrypt dict cannot hold the key `__proto__` (it
-    writes the
-    prototype), so the keys and values are kept in two parallel lists, looked up in turn.
+    writes the prototype, ENG-159), so the keys and values are kept in two parallel lists, looked
+    up in turn.
     """
 
     def __init__(self) -> None:

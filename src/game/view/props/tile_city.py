@@ -1,5 +1,5 @@
-"""The city made for the grid of tiles (Phase 15, P15-R09): mid-rise blocks, offices, towers and
-skyscrapers, and the lots (car parks, yards, plazas, parks)
+"""The city made for the grid of tiles (Phase 15): mid-rise blocks, offices, towers and skyscrapers
+(GFX-BLDG-10), and the lots (car parks, yards, plazas, parks; GFX-BLDG-11)
 See `tile_kit.py`."""
 
 from org.transcrypt.stubs.browser import __pragma__

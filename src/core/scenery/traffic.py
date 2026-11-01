@@ -1,7 +1,8 @@
-"""Phase 4 review: cars driving along the streets and main roads (not the paths), right-hand
-traffic, in one lane each way (two on 2×2 roads). All the cars of one lane drive at the same speed,
-so they never catch up with each other. A car that reaches the end of its road goes round to its
-start, hidden near both ends: streets end in the crossing street, main roads off the screen.
+"""Phase 4 review (GFX-CAR-06): cars driving along the streets and main roads (not the paths),
+right-hand traffic, in one lane each way (two on 2×2 roads). All the cars of one lane drive at the
+same speed, so they never catch up with each other. A car that reaches the end of its road goes
+round to its start, hidden near both ends: streets end in the crossing street, main roads off the
+screen.
 """
 
 import math
@@ -115,7 +116,7 @@ class _TrackEntry:
 class Traffic:
     """The cars of `rules` on all the streets and main roads of a level, and where they are. The
     roads with cars are indexed by the buckets of Z they span, so finding the cars in an area only
-    looks at the roads near it."""
+    looks at the roads near it (GFX-CAR-08, PERF-24)."""
 
     def __init__(
         self,
@@ -169,7 +170,8 @@ class Traffic:
         return self._count
 
     def _roadway(self, road: Road) -> float:
-        """Width of the part of `road` cars drive on: P15-R11, streets without their sidewalks."""
+        """Width of the part of `road` cars drive on: streets without their sidewalks
+        (GFX-CAR-07)."""
         if road.kind == "street":
             sidewalk = self._rules.sidewalk if self._rules.sidewalk is not None else 0
             return road.width - 2 * sidewalk
@@ -246,7 +248,7 @@ class Traffic:
         return s
 
     def _heights_of(self, track: Track) -> list[float]:
-        """The road surface heights at the points of `track`, worked out on first use."""
+        """The road surface heights at the points of `track`, worked out on first use (PERF-27)."""
         if track.heights is None:
             track.heights = [self._height(p.x, p.z) + self._rules.lift for p in track.road.points]
         return track.heights

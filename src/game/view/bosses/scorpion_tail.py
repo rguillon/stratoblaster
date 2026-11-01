@@ -1,6 +1,6 @@
-"""The Scorpion's tail (P07-R05, P16-R05, D-228): a chain of shelled beads arched over its back,
-its stinger hanging from the tip in front of the head. As the Scorpion turns round (its
-transformation), the tail unfolds straight out behind it, now towards the player, a little longer,
+"""The Scorpion's tail (MB-SCORPION-04, D-228): a chain of shelled beads arched over its back, its
+stinger hanging from the tip in front of the head. As the Scorpion turns round (its transformation,
+MB-SCORPION-11), the tail unfolds straight out behind it, now towards the player, a little longer,
 its new cannon at the end.
 
 Model space: logical pixels, nose +Z, Y up. A tail point is `(z, y)`.

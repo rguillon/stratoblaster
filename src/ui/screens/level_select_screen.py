@@ -1,5 +1,5 @@
-"""Level select screen (P01-R07): a grid of
-levels, locked ones greyed out with a padlock."""
+"""Level select screen (UI-LEVEL-01): a grid of
+levels, locked ones greyed out with a padlock (UI-LEVEL-04)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -15,7 +15,7 @@ from ui.screens.elements import back_button, element, entry, padlock  # noqa: E4
 
 
 def render_level_select_screen(doc: Any, view: LevelSelectView, handlers: ScreenHandlers) -> Any:
-    """Renders the level select screen (P01-R07)."""
+    """Renders the level select screen (UI-LEVEL-09)."""
     root = element(doc, "div", "menu-screen level-select-screen")
     grid = element(doc, "div", "level-grid")
     grid.style.gridTemplateColumns = "repeat(" + str(view.columns) + ", 1fr)"

@@ -55,24 +55,24 @@ def placer_for(
     return PropPlacer(field, level.props, seed, roads, sea_level=sea_level)
 
 
-def test_p04_r01_heights_are_the_same_for_the_same_seed() -> None:
+def test_gfx_terrain_01_heights_are_the_same_for_the_same_seed() -> None:
     level = make_level([section("a", 10, hills()), section("b", 10, hills(80))], seed=3)
     assert _heights(HeightField(level)) == _heights(HeightField(level))
 
 
-def test_p04_r01_heights_change_with_the_seed() -> None:
+def test_gfx_terrain_01_heights_change_with_the_seed() -> None:
     a = HeightField(make_level([section("a", 10, hills())], seed=3))
     b = HeightField(make_level([section("a", 10, hills())], seed=4))
     assert _heights(a) != _heights(b)
 
 
-def test_p04_r01_an_explicit_seed_overrides_the_level_seed() -> None:
+def test_gfx_terrain_01_an_explicit_seed_overrides_the_level_seed() -> None:
     level = make_level([section("a", 10, hills())], seed=3)
     other = make_level([section("a", 10, hills())], seed=9)
     assert _heights(HeightField(level, seed=9)) == _heights(HeightField(other))
 
 
-def test_p04_r01_sections_are_placed_end_to_end_and_found_by_z() -> None:
+def test_gfx_terrain_01_sections_are_placed_end_to_end_and_found_by_z() -> None:
     level = make_level([section("a", 10, flat(10)), section("b", 20, flat(50))])
     field = HeightField(level)
     assert field.length_ == pytest.approx(3000.0)
@@ -83,13 +83,13 @@ def test_p04_r01_sections_are_placed_end_to_end_and_found_by_z() -> None:
     assert field.section_at(1500).section.name == "b"
 
 
-def test_p04_r01_before_the_level_and_after_it_the_ends_continue() -> None:
+def test_gfx_terrain_01_before_the_level_and_after_it_the_ends_continue() -> None:
     field = HeightField(make_level([section("a", 10, flat(10)), section("b", 10, flat(50))]))
     assert field.height(0, -500) == pytest.approx(10)
     assert field.height(0, 99999) == pytest.approx(50)
 
 
-def test_p04_r01_sections_blend_over_the_transition() -> None:
+def test_gfx_terrain_10_sections_blend_over_the_transition() -> None:
     level = make_level([section("a", 10, flat(10)), section("b", 10, flat(50))], transition=200)
     field = HeightField(level)
     assert field.height(0, 900) == pytest.approx(10)
@@ -98,7 +98,7 @@ def test_p04_r01_sections_blend_over_the_transition() -> None:
     assert field.height(0, 1050) == pytest.approx(43.75)  # still in the blend band
 
 
-def test_p04_r01_without_transition_the_change_is_sudden() -> None:
+def test_gfx_terrain_10_without_transition_the_change_is_sudden() -> None:
     field = HeightField(make_level([section("a", 10, flat(10)), section("b", 10, flat(50))]))
     assert field.height(0, 999) == pytest.approx(10)
     assert field.height(0, 1000) == pytest.approx(50)
@@ -116,7 +116,7 @@ def test_flat_ground_has_no_slope_and_no_steepness() -> None:
     assert field.steepness(12.0, 40.0, 30.0) == pytest.approx(0.0)
 
 
-def test_p04_r01_the_ceiling_bounds_the_ground() -> None:
+def test_gfx_terrain_06_the_ceiling_bounds_the_ground() -> None:
     level = make_level([section("a", 10, hills(50, 30, 60.0)), section("b", 10, hills(70, 20))])
     field = HeightField(level)
     assert field.ceiling == pytest.approx(max(60.0, 90.0))
@@ -131,7 +131,7 @@ def test_soft_cap_leaves_low_heights_and_squashes_high_ones() -> None:
     assert soft_cap(5.0, 0.0) < 0.001
 
 
-def test_p04_r01_max_height_keeps_the_peaks_under_it() -> None:
+def test_gfx_terrain_02_max_height_keeps_the_peaks_under_it() -> None:
     field = HeightField(make_level([section("a", 10, hills(50, 30, 60.0))]))
     assert max(_heights(field)) <= 60.0 + 1e-9
 
@@ -144,6 +144,7 @@ def test_flatten_is_the_relief_away_from_its_band() -> None:
 
 
 def test_channel_is_carved_below_the_ground_and_not_beyond_its_walls() -> None:
+    """GFX-TERRAIN-03."""
     channel = Channel(STRAIGHT, 10.0, 10.0, -5.0)
     plain = HeightField(make_level([section("a", 10, flat(10))]))
     field = HeightField(make_level([section("a", 10, flat(10), channel=channel)]))
@@ -165,7 +166,9 @@ def test_a_section_without_cover_has_none() -> None:
     assert (cover.lush, cover.paved, cover.sandy) == (0, 0, 0)
 
 
-def test_p04_r01_steepness_bounds_the_change_along_x() -> None:
+def test_perf_03_steepness_bounds_the_change_along_x() -> None:
+    """The bound `RoadNetwork.buildable` uses to skip the slope holds, so the shortcut gives the
+    same answers."""
     field = HeightField(make_level([section("a", 10, hills())]))
     reach = 20.0
     for x, z in [(0.0, 50.0), (33.0, 300.0), (-120.0, 700.0)]:
@@ -189,7 +192,7 @@ def test_steepness_blends_with_the_next_section_near_their_boundary() -> None:
     assert field.steepness(0.0, 500.0, 10.0) == pytest.approx(0.0)
 
 
-def test_p04_r01_slope_is_at_most_root_two_times_the_steepness() -> None:
+def test_perf_03_slope_is_at_most_root_two_times_the_steepness() -> None:
     field = HeightField(make_level([section("a", 10, hills())]))
     for x, z in [(0.0, 50.0), (33.0, 300.0)]:
         assert field.slope(x, z, 1) <= math.sqrt(2) * field.steepness(x, z, 1) + 1e-9
@@ -201,7 +204,7 @@ def test_octaves_steepness_grows_with_the_octaves() -> None:
     assert _octaves_steepness(2) == pytest.approx(4 / 3)
 
 
-def test_p04_r01_the_section_before_blends_into_the_next_near_the_boundary() -> None:
+def test_gfx_terrain_10_the_section_before_blends_into_the_next_near_the_boundary() -> None:
     level = make_level([section("a", 10, flat(10)), section("b", 10, flat(50))], transition=200)
     field = HeightField(level)
     # 950 is in the band (900 to 1100) of section a's end: a smoothstep of 0.25,
@@ -209,7 +212,7 @@ def test_p04_r01_the_section_before_blends_into_the_next_near_the_boundary() -> 
     assert field.height(0, 950) == pytest.approx(16.25)
 
 
-def test_p04_r07_a_level_roads_span_runs_past_both_ends_of_the_level() -> None:
+def test_gfx_road_01_a_level_roads_span_runs_past_both_ends_of_the_level() -> None:
     level = _level(streets=False)
     net = level_roads(HeightField(level), level.roads, 4)
     assert net.range.z_min == -3000.0
@@ -217,7 +220,7 @@ def test_p04_r07_a_level_roads_span_runs_past_both_ends_of_the_level() -> None:
     assert net.blocks is not None
 
 
-def test_p04_r04_props_stand_on_the_ground_they_are_placed_on() -> None:
+def test_gfx_prop_06_props_stand_on_the_ground_they_are_placed_on() -> None:
     level = sample_level()
     field = HeightField(level, level.seed)
     for p in placer_for(level).place(AREA):

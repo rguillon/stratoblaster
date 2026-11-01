@@ -3,11 +3,11 @@
 from config.plumes import PLUME_KINDS
 
 
-def test_p10_r08_there_are_smoke_and_steam_plumes() -> None:
+def test_gfx_prop_18_there_are_smoke_and_steam_plumes() -> None:
     assert set(PLUME_KINDS) == {"smoke", "steam"}
 
 
-def test_p10_r08_every_plume_rises_with_growing_puffs_that_stay_faint() -> None:
+def test_gfx_prop_18_every_plume_rises_with_growing_puffs_that_stay_faint() -> None:
     for kind in PLUME_KINDS.values():
         assert kind.puffs > 0
         assert kind.seconds > 0
@@ -18,7 +18,7 @@ def test_p10_r08_every_plume_rises_with_growing_puffs_that_stay_faint() -> None:
         assert all(0 <= channel <= 1 for channel in kind.color)
 
 
-def test_p10_r08_smoke_is_taller_and_slower_than_steam() -> None:
+def test_gfx_prop_18_smoke_is_taller_and_slower_than_steam() -> None:
     smoke = PLUME_KINDS["smoke"]
     steam = PLUME_KINDS["steam"]
     assert smoke.height > steam.height

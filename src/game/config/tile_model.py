@@ -1,7 +1,7 @@
 """What a model made for the grid of tiles is
 
-Phase 15 (P15-R09): split out of `tile_buildings.py`. The kinds of models made for the grid are
-the archetypes named in the TS `TileArchetype` type; each is built for any W x D tiles.
+Phase 15: split out of `tile_buildings.py`. The kinds of models made for the grid are the
+archetypes named in the TS `TileArchetype` type; each is built for any W x D tiles (GFX-BLDG-03).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

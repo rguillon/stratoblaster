@@ -1,6 +1,6 @@
-"""Movement keys held down, as a direction to fly in ().
+"""Movement keys held down, as a direction to fly in (GAME-CTRL-03).
 `DIRECTION_KEYS`: `KeyboardEvent.code` -> direction; arrows and WASD by key position (AZERTY works
-too, GD §2)."""
+too, GAME-CTRL-01)."""
 
 import math
 

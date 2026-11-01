@@ -1,4 +1,4 @@
-"""P09-R09, 3-2: the Canopy Spider.
+"""FB-CANOPY-SPIDER-01 to FB-CANOPY-SPIDER-06, 3-2: the Canopy Spider.
 Logical pixels, nose +Z, Y up (towards the camera). A walker-ship hanging over the canopy: an
 armoured cephalothorax carrying the head, its eyes and fangs at the front and the crown emitter
 on its back; a big abdomen behind it, the egg sac (a part) at its tip; four legs stepping in
@@ -91,8 +91,8 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a living spider: a chitin-shelled cephalothorax, a swollen dark abdomen with bone
-    # ribs and pulsing veins, a sinew waist; metal plates and vents grafted on.
+    # FB-CANOPY-SPIDER-02: a living spider: a chitin-shelled cephalothorax, a swollen dark abdomen
+    # with bone ribs and pulsing veins, a sinew waist; metal plates and vents grafted on.
     flesh.loft(SHELL_SECTION, THORAX, F.graphite, None, None)
     flesh.loft(ROUND_SECTION, ABDOMEN, F.graphite, None, None)
     flesh.box([12, 6, 6], F.sinew, Placement([0, 2, -8]))
@@ -146,7 +146,7 @@ def draw_head(p: EnemyParts) -> None:
                 Placement(offset(eye, 0, 0.45, 0.35), 0, 0.7),
             )
         # The fangs (chelicerae), curving down in front of the head.
-        # P16-R06: flesh chelicerae, bone fangs, a metal cap grafted on each.
+        # FB-CANOPY-SPIDER-02: flesh chelicerae, bone fangs, a metal cap grafted on each.
         flesh.box([3.4, 4, 7], F.sinew, Placement([s * 3.6, -1, 31], 0, 0.5), F.slate)
         hull.box([3.6, 1, 3], H.panel, Placement([s * 3.6, 1.4, 29.5], 0, 0.5))
         flesh.cylinder(1.1, 5, 4, F.bone, Placement([s * 3.6, 0.5, 36], 0, 2.2), 0)
@@ -192,8 +192,9 @@ def canopy_spider_core(p: EnemyParts) -> None:
 
 
 def build_canopy_spider(scene: Any) -> Any:
-    """P09-R09: the Canopy Spider, a four-legged walker-ship hanging over the canopy, its legs
-    stepping in turn, red neon eyes, moss and vines on its armour."""
+    """FB-CANOPY-SPIDER-01, FB-CANOPY-SPIDER-06: the Canopy Spider, a four-legged walker-ship
+    hanging over the canopy, its legs stepping in turn, red neon eyes, moss and vines on its
+    armour."""
     parts: dict[str, Any] = {
         "leg-fore-left": leg_gun_pod,
         "leg-fore-right": leg_gun_pod,

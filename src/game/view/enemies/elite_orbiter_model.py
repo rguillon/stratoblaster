@@ -1,4 +1,4 @@
-"""P05-R20, P16-R04: the Orbiter Logical pixels,
+"""The Orbiter (specs/enemies/orbiter.md) Logical pixels,
 nose +Z, Y up (towards the camera).
 """
 
@@ -53,7 +53,8 @@ def _vein_point(a: float, r: float, y: float) -> list[float]:
 
 
 def body(p: Any) -> None:
-    """The core: a flesh heart in metal bands, its glowing equator, veins and its pole light."""
+    """The core: a flesh heart in metal bands, its glowing equator and veins (ENM-ORBITER-03) and
+    its pole light."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -61,7 +62,7 @@ def body(p: Any) -> None:
     charge = p.charge
     muzzle = p.muzzle
     flesh.lathe(CORE, 12, F.graphite)
-    # P16-R04: armour bands above and below the equator, metal grafted on the heart.
+    # ENM-ORBITER-02: armour bands above and below the equator, metal grafted on the heart.
     for y in [-5.2, 3.6]:
         hull.ring(CFG.coreRadius * 0.86, 1.6, 12, H.dark, Placement([0, y, 0]))
     neon.ring(CFG.coreRadius + 0.3, 1.8, 12, NEON, Placement([0, -0.9, 0]))
@@ -80,7 +81,7 @@ def body(p: Any) -> None:
             0.9,
             NEON,
         )
-    # A light on top, brightening as the next ring of bullets comes.
+    # A light on top, brightening as the next ring of bullets comes (ENM-ORBITER-04).
     pole = [[0, 0], [3.2, 0.4], [0, 1.6]]
     charge.lathe(pole, 8, WHITE, Placement([0, top - 0.4, 0]))
     for m in CFG.ringMuzzles:
@@ -88,7 +89,8 @@ def body(p: Any) -> None:
 
 
 def drone(spec: Any) -> Any:
-    """A drone: a flesh pod under a metal shell, an eye slit and a gun on its nose."""
+    """A drone (ENM-ORBITER-05): a flesh pod under a metal shell, an eye slit and a gun on its
+    nose."""
     at = boss_point(spec.centre[0], spec.centre[1], 0)
     yaw = spec.aim
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
@@ -110,8 +112,8 @@ def drone(spec: Any) -> Any:
 
 
 def build_orbiter(scene: Any) -> Any:
-    """P05-R20, P16-R04: a flesh heart in armour bands with a white-gold equator, three armoured
-    drone pods orbiting it."""
+    """ENM-ORBITER-01: a flesh heart in armour bands with a white-gold equator, three armoured
+    drone pods orbiting it, within the elite triangle budget (ENM-ORBITER-06)."""
     parts = {}
     for d in CFG.drones:
         parts[d.id] = drone(d)

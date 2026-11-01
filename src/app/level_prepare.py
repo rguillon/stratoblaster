@@ -1,6 +1,7 @@
-"""Preparing a level's ground ahead of its play (P13-R03).
+"""Preparing a level's ground ahead of its play (PERF-08).
 
-A level's scenery with its runout is made once per level, so its generated ground is reused.
+A level's scenery with its runout is made once per level, so its generated ground is reused
+(PERF-11).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -17,7 +18,7 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# Each level's scenery with its runout (P13-R03): the levels, and their scenery at the same index.
+# Each level's scenery with its runout (PERF-11): the levels, and their scenery at the same index.
 _runout_levels = []  # type: list[Any]
 _runout_scenery = []  # type: list[Any]
 
@@ -30,7 +31,8 @@ def _runout_index(level: Any) -> int:
 
 
 def scenery_with_runout(level: Any) -> Any:
-    """The scenery of `level` with its runout, made once (P13-R03)."""
+    """The scenery of `level` with its runout, made once (PERF-11). The runout is the ground past
+    the level's end, so the ground never runs out in the final fight (GAME-LEVEL-08)."""
     index = _runout_index(level)
     if index >= 0:
         return _runout_scenery[index]
@@ -50,14 +52,14 @@ def level_of(game: Any, level_id: str) -> Any:
 
 
 def prepare_level(game: Any, level_id: str) -> bool:
-    """Asks for the ground of level `level_id` ahead of its `GamePlay` (P13-R03): true once it is
+    """Asks for the ground of level `level_id` ahead of its `GamePlay` (PERF-14): true once it is
     ready (generated in the background when a worker does it, false until then).
     """
     return request_level_ground(scenery_with_runout(level_of(game, level_id)))
 
 
 def prefetch_level(game: Any, level_id: str | None, loader: Any) -> None:
-    """Starts preparing level `level_id` in the background, if it is one (P13-R03): its ground and
+    """Starts preparing level `level_id` in the background, if it is one (PERF-12): its ground and
     its scenery textures, while the player is still choosing it. Nothing without a background
     loader.
     """
@@ -75,9 +77,9 @@ TEXTURE_WAIT_FRAMES = 60
 
 
 def textures_ready(game: Any, level_id: str, loader: Any, tries: int) -> bool:
-    """Whether the scenery textures of `level_id` are made (P13-R03): the worker is asked for those
+    """Whether the scenery textures of `level_id` are made (PERF-09): the worker is asked for those
     not made yet, and the loading waits for it, so the level's scene is not built here with them.
-    Without a worker, or after TEXTURE_WAIT_FRAMES, the scene makes them itself.
+    Without a worker, or after TEXTURE_WAIT_FRAMES, the scene makes them itself (PERF-18).
     """
     level = find_game_level(game.game_levels, level_id)
     if loader is None or level is None or tries > TEXTURE_WAIT_FRAMES:
@@ -99,9 +101,9 @@ ROAD_WAIT_FRAMES = 120
 
 
 def roads_ready(game: Any, level_id: str, grid: bool, tries: int) -> bool:
-    """Whether the street surfaces of the first screens of `level_id` are made (P13-R03): the
+    """Whether the street surfaces of the first screens of `level_id` are made (PERF-17): the
     worker makes them while the loading goes on, so the scene does not make them on the main
-    thread. Without a worker, or after ROAD_WAIT_FRAMES, the scene makes them itself.
+    thread. Without a worker, or after ROAD_WAIT_FRAMES, the scene makes them itself (PERF-18).
     """
     level = find_game_level(game.game_levels, level_id)
     if level is None or tries > ROAD_WAIT_FRAMES:
@@ -125,7 +127,7 @@ PREFETCH_AFTER = 0.25
 
 class LevelPrefetcher:
     """Prefetches the level highlighted on the level select screen once the highlight rests on it
-    (P13-R03), so that moving across the grid does not queue every level passed over.
+    (PERF-12), so that moving across the grid does not queue every level passed over.
     """
 
     def __init__(self, game: Any, loader: Any) -> None:

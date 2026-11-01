@@ -1,5 +1,5 @@
 """Unit tests of `src/app/saved_weapons.py`."""
-# (the weapons kept between levels).
+# (the weapons kept between levels: GAME-WPN-15, GAME-LEVEL-14).
 
 import pytest
 
@@ -13,11 +13,11 @@ from core.systems.run_arsenal import WeaponLevels
 from host.key_value_storage import MemoryStorage
 
 
-def test_p07_r08_the_weapons_are_kept_under_the_game_id() -> None:
+def test_game_wpn_15_the_weapons_are_kept_under_the_game_id() -> None:
     assert saved_weapons_key("game") == "game_weapons"
 
 
-def test_p07_r08_stored_weapons_and_their_levels_are_read_back() -> None:
+def test_game_wpn_15_stored_weapons_and_their_levels_are_read_back() -> None:
     weapons = parse_weapon_levels('{"weapon":"guns","levels":{"guns":3,"spread":1}}')
     assert weapons is not None
     assert weapons.weapon == "guns"
@@ -37,11 +37,13 @@ def test_p07_r08_stored_weapons_and_their_levels_are_read_back() -> None:
         '{"weapon":"guns"}',
     ],
 )
-def test_p07_r08_anything_else_starts_with_the_first_level_of_each_weapon(raw: str | None) -> None:
+def test_game_wpn_15_anything_else_starts_with_the_first_level_of_each_weapon(
+    raw: str | None,
+) -> None:
     assert parse_weapon_levels(raw) is None
 
 
-def test_p07_r08_saving_then_loading_keeps_the_weapon_levels() -> None:
+def test_game_wpn_15_saving_then_loading_keeps_the_weapon_levels() -> None:
     storage = MemoryStorage()
     save_weapons(storage, "game", WeaponLevels("spread", {"guns": 2.0, "spread": 4.0}))
     loaded = load_saved_weapons(storage, "game")
@@ -50,5 +52,5 @@ def test_p07_r08_saving_then_loading_keeps_the_weapon_levels() -> None:
     assert loaded.levels == {"guns": 2, "spread": 4}
 
 
-def test_p07_r08_nothing_saved_loads_as_none() -> None:
+def test_game_wpn_15_nothing_saved_loads_as_none() -> None:
     assert load_saved_weapons(MemoryStorage(), "game") is None

@@ -1,6 +1,6 @@
-"""The imposters in view (D-211): one quad per placement, facing the camera, showing the atlas frame
-of its kind nearest its heading (`imposters.py`). One mesh per kind and frame, its quads as thin
-instances (moved and scaled, never turned: the frame shows the turn).
+"""The imposters in view (D-211, GFX-PROP-10): one quad per placement, facing the camera, showing
+the atlas frame of its kind nearest its heading (`imposters.py`). One mesh per kind and frame, its
+quads as thin instances (moved and scaled, never turned: the frame shows the turn; ENG-104).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -57,6 +57,7 @@ class ImposterField:
                 mesh = mesh_of("imposter-" + _mesh_key(kinds[k], i), quad, material, scene)
                 # Lit as the ground round it, not as a wall facing the camera: normals up.
                 mesh.setVerticesData("normal", UP_NORMALS, False)
+                # Always drawn, its bounds never fitted to its instances (PERF-26).
                 mesh.alwaysSelectAsActiveMesh = True
                 mesh.doNotSyncBoundingInfo = True
                 self._meshes[_mesh_key(kinds[k], i)] = mesh

@@ -1,4 +1,4 @@
-"""P07-R05: pieces shared by the World 1 mini boss models
+"""BOSS-47: pieces shared by the World 1 mini boss models
 Logical pixels, nose +Z, Y up.
 """
 
@@ -117,7 +117,7 @@ TURRET_DOME = [
 
 
 def turret(parts: Any, at: Vec3, spec: Any) -> None:
-    """A gun turret centred on `at` (P07-R05): a faceted dome, a neon ring around its foot and its
+    """A gun turret centred on `at` (BOSS-29): a faceted dome, a neon ring around its foot and its
     barrels pointing along `yaw`, a charge light at every muzzle. `spec` is a `TurretSpec`:
     `radius`, `barrels`, `gap`, `bore`, `length`, `neon`, and optionally `yaw`, `elevation`,
     `hatch` and `fires`.

@@ -23,7 +23,7 @@ def probe(monkeypatch):
     return run
 
 
-def test_p05_r14_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe):
+def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe):
     capture, body = probe(module.build_wasp)
     assert capture.name == "wasp"
     # Two membrane pairs of wings: four flaps in all.
@@ -32,7 +32,7 @@ def test_p05_r14_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe):
     assert len(body["muzzles"]) == 1
 
 
-def test_p05_r17_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(probe):
+def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(probe):
     capture, body = probe(module.build_phantom)
     assert capture.name == "phantom"
     assert len(body["reactors"]) == 2

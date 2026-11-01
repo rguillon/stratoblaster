@@ -1,4 +1,4 @@
-"""Debug perf overlay (P13-R01, ENG-111)"""
+"""Debug perf overlay (DEV-PERF-03, ENG-111)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
@@ -9,7 +9,7 @@ __pragma__("noskip")
 
 
 class PerfNumbers:
-    """What the perf monitor has measured (P13-R01). Times in milliseconds."""
+    """What the perf monitor has measured (DEV-PERF-01). Times in milliseconds."""
 
     def __init__(
         self,
@@ -27,7 +27,7 @@ class PerfNumbers:
         self.frames = frames
         # How long the last level took from its confirmation to its first drawn frame, if any.
         self.last_load = last_load
-        # Longest frame of the last level loading (P13-R03: the longest frozen step), if any.
+        # Longest frame of the last level loading (PERF-10: the longest frozen step), if any.
         self.longest_load_step = longest_load_step
 
 
@@ -39,9 +39,9 @@ def _ms(value: float | None) -> str:
 
 
 class PerfOverlay:
-    """The debug perf overlay (P13-R01, ENG-111; dev and e2e builds only): long frames, the longest
-    frame and the last level loading time. Hidden until toggled (F3); the text changes at most
-    every `refresh_seconds`, so the numbers stay readable.
+    """The debug perf overlay (DEV-PERF-03, ENG-111; dev and e2e builds only): long frames, the
+    longest frame and the last level loading time. Hidden until toggled (F3); the text changes at
+    most every `refresh_seconds`, so the numbers stay readable.
     """
 
     def __init__(self, doc: Any, parent: Any, refresh_seconds: float) -> None:

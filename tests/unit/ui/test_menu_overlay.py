@@ -47,7 +47,7 @@ def make_overlay(
     return overlay, doc, root, commands
 
 
-def test_p01_r15_a_new_screen_fades_in_over_the_transition_time() -> None:
+def test_ui_flow_08_a_new_screen_fades_in_over_the_transition_time() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(title())
     screen = root.children[0]
@@ -56,13 +56,13 @@ def test_p01_r15_a_new_screen_fades_in_over_the_transition_time() -> None:
     assert screen.style.animationDuration == "0.25s"
 
 
-def test_p01_r15_a_loading_screen_does_not_fade_in() -> None:
+def test_ui_flow_08_a_loading_screen_does_not_fade_in() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(LoadingView("Loading", 0.1))
     assert not root.children[0].classList.contains("menu-enter")
 
 
-def test_p01_r13_showing_a_new_view_replaces_the_old_screen() -> None:
+def test_ui_look_01_showing_a_new_view_replaces_the_old_screen() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(title())
     overlay.show(title(selected=1))
@@ -72,7 +72,7 @@ def test_p01_r13_showing_a_new_view_replaces_the_old_screen() -> None:
     assert overlay.view.selected == 1
 
 
-def test_p01_r15_the_same_screen_again_does_not_fade_in_again() -> None:
+def test_ui_flow_08_the_same_screen_again_does_not_fade_in_again() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(title())
     root.children[0].classList.remove("menu-enter")
@@ -80,7 +80,7 @@ def test_p01_r15_the_same_screen_again_does_not_fade_in_again() -> None:
     assert not root.children[0].classList.contains("menu-enter")
 
 
-def test_p01_r11_tapping_the_selected_entry_confirms_and_another_selects_it() -> None:
+def test_ui_input_09_tapping_the_selected_entry_confirms_and_another_selects_it() -> None:
     overlay, _, root, commands = make_overlay()
     overlay.show(title(selected=0))
     root.children[0].querySelector(".title-start").fire("click")
@@ -90,7 +90,7 @@ def test_p01_r11_tapping_the_selected_entry_confirms_and_another_selects_it() ->
     assert commands[1].select == 1
 
 
-def test_p01_r11_the_back_button_sends_back() -> None:
+def test_ui_input_10_the_back_button_sends_back() -> None:
     overlay, _, root, commands = make_overlay()
     overlay.show(
         LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("1", False)], "Locked")
@@ -99,7 +99,7 @@ def test_p01_r11_the_back_button_sends_back() -> None:
     assert commands == ["back"]
 
 
-def test_p06_r02_the_touch_fire_button_reports_press_and_release() -> None:
+def test_game_ctrl_05_the_touch_fire_button_reports_press_and_release() -> None:
     touch = FakeTouch()
     overlay, _, root, _ = make_overlay(touch)
     overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
@@ -109,7 +109,7 @@ def test_p06_r02_the_touch_fire_button_reports_press_and_release() -> None:
     assert touch.fired == [True, False]
 
 
-def test_p06_r02_a_drag_is_passed_on_in_logical_pixels_with_y_up() -> None:
+def test_game_ctrl_04_a_drag_is_passed_on_in_logical_pixels_with_y_up() -> None:
     touch = FakeTouch()
     overlay, _, root, _ = make_overlay(touch)
     root.rect.width = 200  # the overlay is drawn at twice its logical size
@@ -120,14 +120,14 @@ def test_p06_r02_a_drag_is_passed_on_in_logical_pixels_with_y_up() -> None:
     assert touch.drags == [(10.0, 5.0)]
 
 
-def test_p01_r07_the_game_pause_button_sends_pause() -> None:
+def test_ui_pause_02_the_game_pause_button_sends_pause() -> None:
     overlay, _, root, commands = make_overlay()
     overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
     root.children[0].querySelector(".game-pause").fire("click")
     assert commands == ["pause"]
 
 
-def test_p12_r04_a_slider_is_set_by_its_value_under_the_pointer() -> None:
+def test_ui_set_03_a_slider_is_set_by_its_value_under_the_pointer() -> None:
     overlay, _, root, commands = make_overlay()
     overlay.show(SettingsView("Settings", "hint", "Back", 0, [SliderView("Music", 0, 10)], False))
     bar = root.children[0].querySelector(".slider-bar")
@@ -139,7 +139,7 @@ def test_p12_r04_a_slider_is_set_by_its_value_under_the_pointer() -> None:
     assert (commands[0].set, commands[0].value) == (0, 5)
 
 
-def test_p01_r07_a_locked_pick_shakes_the_selected_entry_and_shows_the_text() -> None:
+def test_ui_level_04_a_locked_pick_shakes_the_selected_entry_and_shows_the_text() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(
         LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("2", True)], "Locked")
@@ -150,12 +150,12 @@ def test_p01_r07_a_locked_pick_shakes_the_selected_entry_and_shows_the_text() ->
     assert screen.querySelector(".menu-status").textContent == "Locked: finish level 1"
 
 
-def test_p01_r07_shaking_with_nothing_shown_does_nothing() -> None:
+def test_ui_level_04_shaking_with_nothing_shown_does_nothing() -> None:
     overlay, _, _, _ = make_overlay()
     overlay.shake_selected("Locked")
 
 
-def test_p13_r01_dispose_removes_the_screen_and_forgets_the_view() -> None:
+def test_ui_look_01_dispose_removes_the_screen_and_forgets_the_view() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(title())
     overlay.dispose()
@@ -163,7 +163,7 @@ def test_p13_r01_dispose_removes_the_screen_and_forgets_the_view() -> None:
     assert overlay.view is None
 
 
-def test_p01_r13_a_title_logo_is_fitted_to_the_page() -> None:
+def test_ui_look_13_a_title_logo_is_fitted_to_the_page() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(title())
     logo = root.children[0].querySelector(".title-name")

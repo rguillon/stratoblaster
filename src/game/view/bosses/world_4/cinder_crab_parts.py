@@ -1,7 +1,7 @@
-"""P10-R11, 4-1: the Cinder Crab's arms (on their shoulders) and outer fingers (on their wrists),
-moving limbs (D-061), its claws and its back mortar (its parts). Logical pixels, nose +Z, Y up; the
-left claw (the screen's
-left, -X on the playfield) is drawn at +X.
+"""MB-CINDER-CRAB-03, MB-CINDER-CRAB-04, 4-1: the Cinder Crab's arms (on their shoulders) and outer
+fingers (on their wrists), moving limbs (MB-CINDER-CRAB-06, D-061), its claws and its back mortar
+(its parts). Logical pixels, nose +Z, Y up; the left claw (the screen's left, -X on the playfield)
+is drawn at +X.
 """
 
 import math
@@ -59,7 +59,7 @@ def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     return colour
 
 
-# The Cinder Crab's orange neon (P10-R11).
+# The Cinder Crab's orange neon (MB-CINDER-CRAB-05).
 CRAB_ORANGE = _neon_or("cinder-crab", [1, 0.45, 0.05])
 
 # The claw's palm seen from above, around the claw's centre (x across, z along).
@@ -119,14 +119,14 @@ def _sided(outline: Any, s: float) -> Any:
 
 
 def claw(p: Any, at: Vec3) -> None:
-    """The claw on side `s` (P10-R11), around its centre `at`: an armoured palm with a molten seam
-    across it, an orange light along its outer side, the fixed finger on its inner side and the palm
-    gun between the fingers."""
+    """The claw on side `s` (MB-CINDER-CRAB-03), around its centre `at`: an armoured palm with a
+    molten seam across it, an orange light along its outer side, the fixed finger on its inner side
+    and the palm gun between the fingers."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
     s = side_at(at)
-    # P16-R05: a swollen flesh palm, bone pincers, a molten gland.
+    # MB-CINDER-CRAB-03: a swollen flesh palm, bone pincers, a molten gland.
     flesh.bevel_slab(PALM, PALM_Y, [1, 1.6], SKIN.base, Placement(at), SKIN.panel)
     glands(p, [offset(at, -s * 2.5, PALM_Y[2] - 0.4, 3)], 1.6, FORGE["molten"])
     fixed = offset(at, -s * FINGER_OUT, 0, 5)
@@ -250,7 +250,8 @@ def finger(s: float) -> Any:
     return draw
 
 
-# The arms and moving fingers (D-061): each drawn on its joint, they go and flash with their claw.
+# The arms and moving fingers (MB-CINDER-CRAB-06, D-061): each drawn on its joint, they go and flash
+# with their claw.
 CRAB_LIMBS = {
     "arm-left": record({"draw": arm(1), "part": "claw-left"}),
     "arm-right": record({"draw": arm(-1), "part": "claw-right"}),
@@ -269,9 +270,9 @@ BORE = 3.2
 
 
 def mortar(p: Any, at: Vec3, base: float) -> None:
-    """The back mortar (P10-R11) around its centre `at`, standing on the carapace at height `base`:
-    a squat turntable with an orange ring, a fat barrel leaning forward over the carapace on its
-    trunnions, its mouth glowing as it loads."""
+    """The back mortar (MB-CINDER-CRAB-04) around its centre `at`, standing on the carapace at
+    height `base`: a squat turntable with an orange ring, a fat barrel leaning forward over the
+    carapace on its trunnions, its mouth glowing as it loads."""
     hull = p.hull
     neon = p.neon
     charge = p.charge

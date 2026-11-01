@@ -19,7 +19,7 @@ T = TypeVar("T")
 __pragma__("noskip")
 
 # Draw order from which a layer's see-through meshes are drawn over all those that set none
-# (P14-R05: the enemy shots). Babylon draws a mesh left at its default order
+# (GFX-READ-10, GFX-READ-13: the enemy shots). Babylon draws a mesh left at its default order
 # (`Number.MAX_VALUE`) after every other, so a layer gives such meshes the one just below.
 ON_TOP_ALPHA_INDEX = 1000000
 

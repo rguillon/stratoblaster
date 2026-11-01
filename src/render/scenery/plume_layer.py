@@ -1,5 +1,6 @@
-"""Smoke and steam columns rising from props (phase 10, P10-R08): the quads of the puffs and the
-meshes that draw them. The material of each kind lifts, grows and fades the puffs frame by frame.
+"""Smoke and steam columns rising from props (phase 10, GFX-PROP-18): the quads of the puffs and
+the meshes that draw them. The material of each kind lifts, grows and fades the puffs frame by
+frame.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -147,9 +148,9 @@ def build_plume_meshes(
     material: Callable[[str], Any],
     kinds: Any = None,
 ) -> list[Any]:
-    """The plume meshes of a prop kind (phase 10, P10-R08): one per plume kind it has, drawn with
-    the prop's own thin instances (so every placed prop smokes), always selected (the puffs rise
-    far above the prop's bounds), see-through and never writing depth."""
+    """The plume meshes of a prop kind (phase 10, GFX-PROP-18): one per plume kind it has, drawn
+    with the prop's own thin instances (so every placed prop smokes), always selected (the puffs
+    rise far above the prop's bounds), see-through and never writing depth."""
     table = PLUME_KINDS if kinds is None else kinds
     ids: list[str] = []
     for p in plumes:

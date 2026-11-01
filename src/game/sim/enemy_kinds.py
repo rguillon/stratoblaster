@@ -1,4 +1,8 @@
-"""The first enemy kinds (P05-R01 to P05-R12), and every enemy kind of the game"""
+"""The basic enemy kinds, and every enemy kind of the game (ENM-01)
+
+The kinds live in the game, the engine knows enemies only as abstractions (ENM-04); none of their
+gameplay depends on their look (ENM-46).
+"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -35,7 +39,7 @@ __pragma__("noskip")
 
 
 def _top(area: EnemySpawnArea) -> float:
-    """Just above the top edge."""
+    """Just above the top edge, where a kind's group comes in (ENM-07)."""
     return area.height + MARGIN
 
 
@@ -44,7 +48,7 @@ def _coin(area: EnemySpawnArea) -> bool:
 
 
 def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
-    """X where a kind comes in from the top: the wave's entry (P06-R07), or random in `range_`,
+    """X where a kind comes in from the top: the wave's entry (ENM-08), or random in `range_`,
     both taken across the area's `top_range` (phase 6 review).
     """
     entry = area.entry
@@ -132,7 +136,7 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _first_kinds() -> list[EnemyKindDefinition]:
-    """The 11 first enemy kinds of P05 (P05-R01 to P05-R12), in the order of the spec."""
+    """The 11 basic enemy kinds, in the order of the spec (ENM-01)."""
     return [
         EnemyKindDefinition("gnat", "Gnat", _spawn_gnat),
         EnemyKindDefinition("hornet", "Hornet", _spawn_hornet),
@@ -152,7 +156,7 @@ FIRST_KINDS = _first_kinds()
 
 
 def _all_kinds() -> list[EnemyKindDefinition]:
-    """Every enemy kind of P05: the first eleven, then the veteran and elite kinds (P05-R24)."""
+    """Every enemy kind of the game: the eleven basic ones, then the veteran and elite kinds."""
     kinds: list[EnemyKindDefinition] = []
     kinds.extend(FIRST_KINDS)
     kinds.extend(VETERAN_KINDS)

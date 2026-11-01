@@ -1,5 +1,7 @@
 """The models of the hidden weapon parts a boss reveals as it transforms (see
-`game/config/bosses/weapon_kinds.py`, which works out their muzzles from the same sizes; D-229).
+`game/config/bosses/weapon_kinds.py`, which works out their muzzles from the same sizes;
+BOSS-40, D-229). Which weapons each boss hides is its own boss file's (its hidden weapons
+requirements, specs/bosses/mini/*.md and specs/bosses/final/*.md).
 
 Model space of a boss: logical pixels, +Y up, its nose at +Z (`boss_limbs.boss_point`).
 """

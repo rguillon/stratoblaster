@@ -1,5 +1,5 @@
-"""The laser shots (P03-R02): a bright blue beam per segment, thinner at each lower level, a glow
-at its base and where it touches a target, and particles flowing up along it.
+"""The laser shots (GFX-SHOT-03, GFX-SHOT-04): a bright blue beam per segment, thinner at each
+lower level, a glow at its base and where it touches a target, and particles flowing up along it.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -51,7 +51,7 @@ def place_bars(bars: NodePool, beam: list[BeamSegment], wobble: float) -> None:
 
 
 def place_contacts(contacts: NodePool, beam: list[BeamSegment], wobble: float) -> None:
-    """A glow at the end of each segment that stops on a target."""
+    """A glow at the end of each segment that stops on a target (GFX-FX-01)."""
     hits = [s for s in beam if s.hit]
     for i, mesh in enumerate(contacts.show(len(hits))):
         s = hits[i]
@@ -87,7 +87,7 @@ def place_sparks(sparks: NodePool, spots: list[Any]) -> None:
 
 
 def create_laser_renderer(scene: Any) -> ShotRenderer:
-    """The laser shots (P03-R02), drawn in `scene`."""
+    """The laser shots (GFX-SHOT-03), drawn in `scene`."""
     bars_template, bars = glow_pool(scene, "laser", build_glow_bar(LOOK.colors))
     contacts_template, contacts = glow_pool(
         scene, "laser-contact", build_glow_disc(DISC_SEGMENTS, LOOK.contact.colors)

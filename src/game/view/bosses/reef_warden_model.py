@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-1: the Reef Warden Logical
+"""MB-REEF-WARDEN-01 to MB-REEF-WARDEN-04, 1-1: the Reef Warden Logical
 pixels, nose +Z, Y up (towards the camera).
 """
 
@@ -71,8 +71,8 @@ SKIRT = [-5, 3]
 
 
 def _draw_body(p: Any) -> None:
-    """The reef creature's body (P16-R05): a teal ray-like mantle lined with a cyan vein, a dark
-    shelled back along its spine, bone ribs and coral barbs, gill glands either side."""
+    """The reef creature's body (MB-REEF-WARDEN-02): a teal ray-like mantle lined with a cyan vein,
+    a dark shelled back along its spine, bone ribs and coral barbs, gill glands either side."""
     mantle(p, MANTLE, SKIRT, F.teal, CYAN)
     neon_band(p.neon, MANTLE, [-3.4, -1.1], [0.97, 1], CYAN)
     mantle(p, scale_outline(MANTLE, 0.7, 0, -3), [SKIRT[1] - 1, SKIRT[1] + 1.5], F.graphite)
@@ -134,7 +134,7 @@ def _prow_turret(p: Any, at: Vec3) -> None:
 
 
 def _cannon(p: Any, at: Vec3) -> None:
-    """A side cannon (P07-R05, P16-R05): an armoured coral growth on the flank under its
+    """A side cannon (MB-REEF-WARDEN-03): an armoured coral growth on the flank under its
     twin-barrelled turret, a feeding sac behind it, barbs before it."""
     r = radius_of(REEF_WARDEN.stats.parts, 0, 14)
     growth(p, offset(at, 0, -1, 0), r * 0.95, CYAN, {"flesh": F.graphite, "height": 0.32})
@@ -160,8 +160,9 @@ def _cannon_turret(p: Any, at: Vec3) -> None:
 
 
 def build_reef_warden(scene: Any) -> Any:
-    """P07-R05, P16-R05: the Reef Warden, a wide ray-like reef creature, a cyan vein ring round its
-    mantle and a prow cannon grafted on its snout; its two side cannons grow from its flanks."""
+    """MB-REEF-WARDEN-01, MB-REEF-WARDEN-04: the Reef Warden, a wide ray-like reef creature, a
+    cyan vein ring round its mantle and a prow cannon grafted on its snout; its two side cannons
+    grow from its flanks."""
 
     def core(p: Any) -> None:
         _draw_body(p)

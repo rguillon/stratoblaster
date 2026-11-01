@@ -1,6 +1,5 @@
-"""The Cyber-Organic pieces of the World 2 bosses (ice world): pale, cold flesh with crystals of
-frost grown through it, bone,
-and metal grafts. Logical pixels, nose +Z, Y up.
+"""The Cyber-Organic pieces of the World 2 bosses (GFX-ART-12, BOSS-47; ice world): pale, cold flesh
+with crystals of frost grown through it, bone, and metal grafts. Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -49,7 +48,7 @@ GRAFT = record({"base": M.base, "panel": M.panel, "dark": M.dark})
 
 
 def shell(b: SolidBuilder, body: SegmentedBody, color: Rgb = ICE_FLESH.teal) -> None:
-    """A shell over a swollen body (P16-R01): teal plates with dark seams."""
+    """A shell over a swollen body (GFX-ART-12): teal plates with dark seams."""
     carapace(b, body, [color, ICE_FLESH.seam])
 
 
@@ -121,7 +120,7 @@ def armoured_organ(
     color: Rgb = ICE_FLESH.graphite,
     height: float = 0.5,
 ) -> None:
-    """A destroyable growth (P16-R05): a swollen organ of `radius` on `at`, a metal armour plate on
+    """A destroyable growth (BOSS-48): a swollen organ of `radius` on `at`, a metal armour plate on
     its top, crystals on its flank and a gland lit `glow`. Its outline stays clear: one bulb."""
     x = at[0]
     y = at[1]

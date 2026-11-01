@@ -1,9 +1,9 @@
-"""P10-R11, 4-5's mini boss: the Ember Herald ().
+"""4-5's mini boss: the Ember Herald (specs/bosses/mini/4-5-ember-herald.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the earlier mini bosses (P07-R04, D-055): its three ember lances fire spirals from
-their tips while they stand, the core fires aimed bursts that change at every stage, and twin
-spirals of its own, used by no earlier stage, once it stands alone.
+patterns as for the earlier mini bosses (MB-EMBER-HERALD-09, D-055): its three ember lances fire
+spirals from their tips while they stand, the core fires aimed bursts that change at every stage,
+and twin spirals of its own, used by no earlier stage, once it stands alone.
 """
 
 import math
@@ -25,9 +25,9 @@ MAGENTA = bullet("magenta", 215)
 PURPLE = bullet("purple", 190)
 BLUE = bullet("blue", 205)
 
-# The turning ring's ember lances (P10-R11): each points out of the ring, its centre `orbit` px
-# from the core, its tip (where its spiral leaves from) `tip` px out, `height` above the playfield.
-# The model draws them from these numbers.
+# The turning ring's ember lances (MB-EMBER-HERALD-03): each points out of the ring, its centre
+# `orbit` px from the core, its tip (where its spiral leaves from) `tip` px out, `height` above the
+# playfield. The model draws them from these numbers.
 EMBER_LANCE = record({"orbit": 40, "tip": 61, "height": 12})
 
 # The lances' turns around the core at a spin of 0, from the nose (radians, clockwise on screen).
@@ -64,14 +64,16 @@ def lance_parts() -> Any:
     ]
 
 
-# 4-5: a fast, spiky interceptor wreathed in embers, gold neon (P10-R11); three ember lances on a
-# turning ring fire spirals and shield the core, which fires aimed bursts from its nose. It chases
-# the ship down the volcano's slope (ground x1.4).
+# 4-5: a fast, spiky interceptor wreathed in embers, gold neon (MB-EMBER-HERALD-01); three ember
+# lances on a turning ring fire spirals and shield the core, which fires aimed bursts from its nose.
+# It chases the ship down the volcano's slope (ground x1.4).
 _EMBER_HERALD = record(
     {
         "id": "ember-herald",
-        # Angry after each destroyed part (phase 7 review): the hottest mini boss so far.
+        # Angry after each destroyed part (phase 7 review, MB-EMBER-HERALD-10): the hottest mini
+        # boss so far.
         "rage": rage.spirals(13.5, "magenta", "purple"),
+        # Its core and parts, their health, and its points (MB-EMBER-HERALD-07, MB-EMBER-HERALD-13).
         "stats": stats(
             record(
                 {
@@ -86,9 +88,11 @@ _EMBER_HERALD = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-EMBER-HERALD-05).
         "stopFraction": 0.74,
         "sway": {"amplitude": 60, "period": 6},
         "bob": {"amplitude": 8, "period": 2.8},
+        # How fast the lances' ring turns (MB-EMBER-HERALD-06).
         "spinRate": 0.9,
         "guns": {
             "core": {"gun": EMBER_GUNS, "ring": [EMBER_CROWN]},
@@ -96,6 +100,8 @@ _EMBER_HERALD = record(
             "lance-2": {"gun": lance_tip(LANCE_TURNS[1])},
             "lance-3": {"gun": lance_tip(LANCE_TURNS[2])},
         },
+        # In every stage the lances' spirals (MB-EMBER-HERALD-08); then the core's bursts per stage
+        # (MB-EMBER-HERALD-09).
         "stages": stages(
             [
                 volley.ring("lance-1", 0.85, 3, 23, PURPLE, 0.4),
@@ -119,8 +125,9 @@ _EMBER_HERALD = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224, MB-EMBER-HERALD-11): at transformation 1 its
+# back plating bursts off, baring a dark metal frame, and a pair of ring emitters unfold
+# (MB-EMBER-HERALD-12).
 EMBER_HERALD = with_weapons(
     _EMBER_HERALD,
     [

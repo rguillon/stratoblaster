@@ -1,6 +1,6 @@
-"""P08-R10, 2-2: the Harbour Kraken's crane arms: a boom on each shoulder, a jib on each elbow
-(moving limbs, D-061), and the grab cannons hanging from the jibs' tips Logical pixels, nose +Z, Y
-up (towards the camera)."""
+"""FB-HARBOUR-KRAKEN-03, 2-2: the Harbour Kraken's crane arms: a boom on each shoulder, a jib on
+each elbow (moving limbs, FB-HARBOUR-KRAKEN-06, D-061), and the grab cannons hanging from the jibs'
+tips Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
@@ -90,7 +90,7 @@ def boom(crane: str) -> Callable[[EnemyParts], None]:
         points = crane_points(crane, BOOM_Y)
         shoulder = points[0]
         elbow = points[1]
-        # P16-R06: a tentacle's thick upper length, metal bands grafted round it.
+        # FB-HARBOUR-KRAKEN-03: a tentacle's thick upper length, metal bands grafted round it.
         tendril(flesh, curve(shoulder, elbow, [0, 2, 0], 3), [3.4, 2.6], 6, ICE_FLESH.slate)
         for t in [0.35, 0.7]:
             at = offset(
@@ -149,7 +149,8 @@ def jib(crane: str) -> Callable[[EnemyParts], None]:
 
 
 def crane_limbs() -> dict[str, LimbDrawing]:
-    """The limbs of the four cranes: a boom on each shoulder and a jib on each elbow."""
+    """The limbs of the four cranes (FB-HARBOUR-KRAKEN-06): a boom on each shoulder and a jib on
+    each elbow."""
     limbs: dict[str, LimbDrawing] = {}
     for crane in CRANES:
         limbs["shoulder-" + crane] = record({"draw": boom(crane)})
@@ -160,7 +161,7 @@ def crane_limbs() -> dict[str, LimbDrawing]:
 def pedestal(p: EnemyParts, at: Vec3) -> None:
     """A crane's pedestal on the deck at `at` (its shoulder): a drum, a neon ring, a slewing
     cog."""
-    # P16-R06: the root of a tentacle, a swollen ring of muscle with a metal collar.
+    # FB-HARBOUR-KRAKEN-03: the root of a tentacle, a swollen ring of muscle with a metal collar.
     p.flesh.cylinder(
         6.5,
         BOOM_Y - 2 - at[1],
@@ -181,13 +182,13 @@ def pedestal(p: EnemyParts, at: Vec3) -> None:
 
 
 def grab(p: EnemyParts, at: Vec3) -> None:
-    """A grab cannon (P08-R10): a clamshell grab hanging from its jib on a cable, its four tines
-    frosted, a cannon between them firing bursts at the player."""
+    """A grab cannon (FB-HARBOUR-KRAKEN-03): a clamshell grab hanging from its jib on a cable, its
+    four tines frosted, a cannon between them firing bursts at the player."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
-    # P16-R06: a tentacle's clubbed tip, four bone hooks round a grafted cannon.
+    # FB-HARBOUR-KRAKEN-03: a tentacle's clubbed tip, four bone hooks round a grafted cannon.
     flesh.cylinder(1.4, BOOM_Y - 8, 4, ICE_FLESH.slate, Placement(offset(at, 0, 8, 0)), 2)
     flesh.lathe(
         [[6.5, 0], [7.0, 2.0], [5.5, 5.0], [2.5, 6.5]],

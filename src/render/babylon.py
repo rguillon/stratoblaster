@@ -1,15 +1,17 @@
-"""The only place that touches the Babylon.js global (ENG-02, D-169).
+"""The only place that touches the Babylon.js global (ENG-02, ENG-113, D-169).
 
-Babylon is the UMD build vendored under `public/vendor/` (`make vendor`): it sets the global
-`BABYLON`. Every other module of `render/` builds its objects through the functions below, and
-the rest of the game reaches the engine only through `render/`. Objects are returned as plain
-JavaScript handles (typed `Any`); their methods and properties are used by attribute access.
+Babylon is the UMD build vendored under `public/vendor/` (`make vendor`), the game's only
+rendering library (ENG-103): it sets the global `BABYLON`. Every other module of `render/` builds
+its objects through the functions below, and the rest of the game reaches the engine only through
+`render/`. Objects are returned as plain JavaScript handles (typed `Any`); their methods and
+properties are used by attribute access.
 
 Rules that come from Transcrypt (see `01-engineering.md` §13):
 - Babylon names that are Python keywords or special to Transcrypt (`name`, `from`...) are read and
-  written in raw JavaScript, through the helpers below.
+  written in raw JavaScript, through the helpers below (ENG-156).
 - Constructor calls and builder calls with option objects are raw JavaScript (`new BABYLON.X`),
-  because a Python dict is not a JavaScript object and keyword arguments are dropped (ENG-151).
+  because a Python dict is not a JavaScript object and keyword arguments are dropped (ENG-151,
+  ENG-158).
 - Optional options are passed as `None` and left out of the JavaScript object.
 """
 
@@ -110,7 +112,8 @@ def get_hierarchy_bounding_vectors(node: Any) -> Any:
 
 
 def new_engine(canvas: Any, antialias: bool) -> Any:
-    """`new Engine(canvas, antialias, {adaptToDeviceRatio: false, stencil: true})`, as in the TS."""
+    """`new Engine(canvas, antialias, {adaptToDeviceRatio: false, stencil: true})`, as in the TS.
+    Always WebGL: no WebGPU backend (ENG-08, MAY, not implemented)."""
     __pragma__(
         "js",
         "{}",
@@ -181,7 +184,8 @@ def scene_transform_nodes(scene: Any) -> list[Any]:
 def block_material_marks(scene: Any, block: bool) -> bool:
     """Sets whether Babylon re-marks the meshes using a material each time one of its properties is
     set (a scan of the whole scene per set). Materials made and set before any mesh uses them need
-    no marks: block them while they are built. Returns the previous setting, to put back.
+    no marks: block them while they are built (PERF-31). Returns the previous setting, to put
+    back.
 
     The scene's setter, when it is set back to false, marks every material dirty (a scan of all
     of them), so the backing field is written instead: the vendored Babylon is pinned (D-173).
@@ -483,7 +487,7 @@ def update_raw_cube_texture(
 def set_cube_sphere_lighting(texture: Any, faces: list[Any], size: int) -> None:
     """Gives the RGBA8 cube `texture` the spherical polynomial of its `faces` (in Babylon's order:
     +X, -X, +Y, -Y, +Z, -Z), as `CubeMapToSphericalPolynomialTools` would from the texture's pixels
-    read back from the GPU, which waits for all the GPU's work (P13-R03: about a second). An update
+    read back from the GPU, which waits for all the GPU's work (PERF-30: about a second). An update
     of the texture keeps the polynomial set, so it is set again after each one."""
     __pragma__(
         "js",
@@ -545,7 +549,8 @@ def new_material_plugin(
     class_name: str,
 ) -> Any:
     """A `BABYLON.MaterialPluginBase` subclass whose hooks call the methods of `owner`: Transcrypt
-    cannot subclass a JavaScript class, so the subclass is written here. `owner` provides
+    cannot subclass a JavaScript class, so the subclass is written here (ENG-158). `owner`
+    provides
     `prepare_defines(defines)`, `get_samplers(samplers)`,
     `get_uniforms()` (a JavaScript object), `bind_for_sub_mesh(ubo)` and
     `get_custom_code(shader_type)` (a JavaScript object or None). `define_name` is the define
@@ -717,7 +722,8 @@ def render_painter_sort_compare(a: Any, b: Any) -> float:
 
 
 def new_weak_map() -> Any:
-    """`new WeakMap()`: state keyed by Babylon objects (a Python dict only takes string keys)."""
+    """`new WeakMap()`: state keyed by Babylon objects (a Python dict only takes string keys,
+    ENG-159)."""
     __pragma__("js", "{}", "return new WeakMap();")
     return None
 

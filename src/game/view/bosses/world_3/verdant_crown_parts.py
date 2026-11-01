@@ -1,6 +1,6 @@
-"""P09-R09, 3-5: the Verdant Crown's destroyable parts (thorn cannons, seed batteries, root
-generators), each drawn around its centre `at`, each turret around its pivot. Model space: logical
-pixels, nose +Z, Y up."""
+"""FB-VERDANT-CROWN-05, 3-5: the Verdant Crown's destroyable parts (thorn cannons, seed batteries,
+root generators), each drawn around its centre `at`, each turret around its pivot. Model space:
+logical pixels, nose +Z, Y up."""
 
 import math
 
@@ -79,9 +79,9 @@ def pod_paint(side: int, band: int) -> Any:
 
 
 def thorn_cannon(p: EnemyParts, pos: Vec3) -> None:
-    """A thorn cannon (P09-R09), turning on its outrigger's turntable (D-073): a mossy pod crowned
-    with magenta spikes, a long barrel bristling with thorns, its lens glowing as the laser
-    charges."""
+    """A thorn cannon (FB-VERDANT-CROWN-05), turning on its outrigger's turntable (D-073): a mossy
+    pod crowned with magenta spikes, a long barrel bristling with thorns, its lens glowing as the
+    laser charges."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -136,7 +136,8 @@ def thorn_mount(p: EnemyParts, pos: Vec3) -> None:
     """The turntable a thorn cannon turns on: a low drum on the outrigger, ringed with magenta."""
     x = pos[0]
     z = pos[2]
-    # P16-R06: a swollen knuckle of flesh at the limb's end, a metal turntable grafted on top.
+    # FB-VERDANT-CROWN-02: a swollen knuckle of flesh at the limb's end, a metal turntable grafted
+    # on top.
     p.flesh.cylinder(10, OUTRIGGER_TOP - 1, 7, F.slate, Placement([x, 0, z]), 8.4)
     p.hull.cylinder(8.8, 1, 8, H.dark, Placement([x, OUTRIGGER_TOP - 1, z]))
     p.neon.ring(10.3, 0.6, 8, MAGENTA, Placement([x, OUTRIGGER_TOP - 0.4, z]))
@@ -154,8 +155,8 @@ HATCH = [7, 5.6]
 
 
 def seed_battery(p: EnemyParts, pos: Vec3) -> None:
-    """A seed battery (P09-R09): a mossy armoured seed pod on the deck, six hatches lit as its
-    missiles load, magenta strips down its sides, leaves sprouting at its ends."""
+    """A seed battery (FB-VERDANT-CROWN-05): a mossy armoured seed pod on the deck, six hatches lit
+    as its missiles load, magenta strips down its sides, leaves sprouting at its ends."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -168,7 +169,7 @@ def seed_battery(p: EnemyParts, pos: Vec3) -> None:
     height = cells[0][1] if len(cells) > 0 else 0
     top = height - 0.08
     pod: list[OutlinePoint] = [[x + pt[0], z + pt[1]] for pt in SEED_POD]
-    # P16-R06: a living seed pod of dark flesh, its hatches grafted metal.
+    # FB-VERDANT-CROWN-05: a living seed pod of dark flesh, its hatches grafted metal.
     flesh.bevel_slab(
         pod,
         [DECK_TOP - 1, DECK_TOP + 2, top],
@@ -195,8 +196,9 @@ ROOT_REACH = 12
 
 
 def root_generator(p: EnemyParts, pos: Vec3) -> None:
-    """A root generator (P09-R09; no weapon, it shields the core): a glowing magenta seed on a stone
-    pedestal, gnarled roots arching from it into the deck, an emerald ring round its foot."""
+    """A root generator (FB-VERDANT-CROWN-05; no weapon, it shields the core): a glowing magenta
+    seed on a stone pedestal, gnarled roots arching from it into the deck, an emerald ring round its
+    foot."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -223,7 +225,7 @@ def root_generator(p: EnemyParts, pos: Vec3) -> None:
             DECK_TOP,
             z + math.cos(a) * ROOT_REACH,
         ]
-        # P16-R06: roots of living sinew arching from the seed into the beast's flesh.
+        # FB-VERDANT-CROWN-05: roots of living sinew arching from the seed into the beast's flesh.
         strut(flesh, [top, knee], [1.7, 1.5], F.sinew, 5)
         strut(
             flesh,

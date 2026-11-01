@@ -75,6 +75,7 @@ def test_cars_drive_in_their_lane_on_the_road_and_face_the_way_they_drive() -> N
 
 
 def test_cars_are_hidden_near_the_ends_of_their_road() -> None:
+    """GFX-CAR-06."""
     cars = Traffic([straight(0)], ground, rules(), 1).at(7.0, FAR)
     assert cars
     assert all(10 - 1e-9 <= car.z <= 370 + 1e-9 for car in cars)
@@ -100,6 +101,7 @@ def test_cars_stay_out_of_areas_without_roads() -> None:
 
 
 def test_a_car_in_a_long_road_is_listed_once_across_buckets() -> None:
+    """PERF-24: the cars are looked up by the buckets of Z their roads span."""
     long_road = straight(0, length=1000)
     traffic = Traffic([long_road], ground, rules(), 1)
     cars = traffic.at(0.0, FAR)
@@ -111,7 +113,7 @@ def test_a_car_in_a_long_road_is_listed_once_across_buckets() -> None:
     assert len({(c.x, c.z) for c in narrow}) == len(narrow)
 
 
-def test_p15_r11_streets_keep_their_cars_off_the_sidewalks() -> None:
+def test_gfx_car_07_streets_keep_their_cars_off_the_sidewalks() -> None:
     street = straight(0, kind="street", width=10)
     with_walk = Traffic([street], ground, rules(sidewalk=2), 1).at(3.0, FAR)
     assert with_walk

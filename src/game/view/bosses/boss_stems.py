@@ -1,6 +1,7 @@
-"""Stems holding a boss's loose pieces to it at rest (D-227: a boss stays one object): a piece of
-its core or of a part that touches nothing (a light over a hull, a blade under a wing) gets a dark
-metal stem down to the surface beneath it, or a beam out to the nearest point of the boss.
+"""Stems holding a boss's loose pieces to it at rest (BOSS-52, D-227: a boss stays one object): a
+piece of its core or of a part that touches nothing (a light over a hull, a blade under a wing)
+gets a dark metal stem down to the surface beneath it, or a beam out to the nearest point of the
+boss.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """

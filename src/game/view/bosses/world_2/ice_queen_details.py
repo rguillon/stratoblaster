@@ -1,5 +1,5 @@
-"""The Ice Queen's details (P08-R10, 2-5): its crystal canopy, its engine nacelles, the crystal
-fins at its tail, frosted plates and lights on its wings Logical pixels, nose +Z, Y up.
+"""The Ice Queen's details (MB-ICE-QUEEN-02, 2-5): its crystal canopy, its engine nacelles, the
+crystal fins at its tail, frosted plates and lights on its wings Logical pixels, nose +Z, Y up.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -100,7 +100,7 @@ def _draw_nacelles(p: EnemyParts) -> None:
     neon = p.neon
     for s in SIDES:
         at: Vec3 = [s * NACELLE_X, 0, 0]
-        # P16-R05: swollen engine sacs of flesh on the wing roots.
+        # MB-ICE-QUEEN-02: swollen engine sacs of flesh on the wing roots.
         flesh.loft(
             POD_SECTION,
             NACELLE,
@@ -141,7 +141,7 @@ def _draw_wing_detail(p: EnemyParts) -> None:
 
 
 def draw_details(p: EnemyParts) -> None:
-    """The Ice Queen's details (P08-R10), on its core body."""
+    """The Ice Queen's details (MB-ICE-QUEEN-02), on its core body."""
     _draw_canopy(p)
     _draw_nacelles(p)
     _draw_crystals(p)

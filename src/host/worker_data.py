@@ -1,4 +1,4 @@
-"""Plain data for the browser's worker messages (P13-R03).
+"""Plain data for the browser's worker messages (PERF-14, ENG-164).
 
 `postMessage` copies its message (structured clone), and a function cannot be copied: Transcrypt
 class instances carry their class as an own function property (`__class__`), so a level or a

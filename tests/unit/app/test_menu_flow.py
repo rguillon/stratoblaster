@@ -1,5 +1,5 @@
 """Unit tests of `src/app/menu_flow.py`."""
-# (P01-R01 and the screens around it).
+# (specs/ui/screen-flow.md and the screens around it).
 
 import pytest
 
@@ -78,7 +78,8 @@ def checkpoint() -> LevelCheckpoint:
     return LevelCheckpoint(0.5, 1, WeaponLevels("guns", {"guns": 2.0}), 900.0)
 
 
-def test_p01_r01_the_flow_starts_on_the_loading_screen_and_ignores_input_there() -> None:
+def test_ui_flow_01_the_flow_starts_on_the_loading_screen_and_ignores_input_there() -> None:
+    """Also UI-LOAD-04 (the title follows the loading by itself)."""
     flow = make_flow()
     assert flow.state.screen == "loading"
     assert flow.dispatch("down") == "none"
@@ -86,7 +87,7 @@ def test_p01_r01_the_flow_starts_on_the_loading_screen_and_ignores_input_there()
     assert flow.state.screen == "title"
 
 
-def test_p01_r15_input_is_ignored_during_a_screen_transition() -> None:
+def test_ui_flow_08_input_is_ignored_during_a_screen_transition() -> None:
     flow = make_flow()
     flow.finish_loading()
     assert flow.state.transitioning is True
@@ -96,7 +97,7 @@ def test_p01_r15_input_is_ignored_during_a_screen_transition() -> None:
     assert flow.dispatch("down") == "moved"
 
 
-def test_p01_r04_the_title_entries_move_with_up_and_down_and_confirm_goes_on() -> None:
+def test_ui_title_06_the_title_entries_move_with_up_and_down_and_confirm_goes_on() -> None:
     flow = at_title()
     assert flow.state.selected_id == "start"
     assert flow.dispatch("down") == "moved"
@@ -107,7 +108,8 @@ def test_p01_r04_the_title_entries_move_with_up_and_down_and_confirm_goes_on() -
     assert flow.state.screen == "ship-select"
 
 
-def test_p12_r04_settings_from_the_title_and_back_returns_to_the_title() -> None:
+def test_ui_set_01_settings_from_the_title_and_back_returns_to_the_title() -> None:
+    """Also UI-TITLE-06 and UI-FLOW-05."""
     flow = at_title()
     flow.dispatch(MenuSelect(1))
     assert flow.dispatch("confirm") == "screen"
@@ -119,7 +121,7 @@ def test_p12_r04_settings_from_the_title_and_back_returns_to_the_title() -> None
     assert flow.state.screen == "title"
 
 
-def test_p01_r11_selecting_an_entry_directly_and_bad_indexes() -> None:
+def test_ui_input_09_selecting_an_entry_directly_and_bad_indexes() -> None:
     flow = at_title()
     assert flow.dispatch(MenuSelect(1)) == "moved"
     assert flow.dispatch(MenuSelect(1)) == "none"
@@ -127,7 +129,8 @@ def test_p01_r11_selecting_an_entry_directly_and_bad_indexes() -> None:
     assert flow.dispatch(MenuSelect(-1)) == "none"
 
 
-def test_p01_r06_the_ship_select_wraps_around_and_confirm_chooses_the_ship() -> None:
+def test_ui_ship_04_the_ship_select_wraps_around_and_confirm_chooses_the_ship() -> None:
+    """Also UI-SHIP-06."""
     flow = at_title()
     flow.dispatch("confirm")
     settle(flow)
@@ -139,7 +142,7 @@ def test_p01_r06_the_ship_select_wraps_around_and_confirm_chooses_the_ship() -> 
     assert flow.state.screen == "level-select"
 
 
-def test_p01_r14_the_highlighted_ship_starts_as_the_saved_one() -> None:
+def test_ui_ship_07_the_highlighted_ship_starts_as_the_saved_one() -> None:
     flow = make_flow(initial_ship="beta")
     flow.finish_loading()
     settle(flow)
@@ -148,7 +151,7 @@ def test_p01_r14_the_highlighted_ship_starts_as_the_saved_one() -> None:
     assert flow.state.highlighted_ship_id == "beta"
 
 
-def test_p01_r14_an_unknown_saved_ship_falls_back_to_the_first() -> None:
+def test_ui_ship_05_an_unknown_saved_ship_falls_back_to_the_first() -> None:
     flow = make_flow(initial_ship="nope")
     flow.finish_loading()
     settle(flow)
@@ -157,7 +160,8 @@ def test_p01_r14_an_unknown_saved_ship_falls_back_to_the_first() -> None:
     assert flow.state.highlighted_ship_id == "alpha"
 
 
-def test_p01_r01_back_walks_the_menus_in_reverse() -> None:
+def test_ui_flow_05_back_walks_the_menus_in_reverse() -> None:
+    """Also UI-SHIP-06."""
     flow = at_title()
     flow.dispatch("confirm")
     settle(flow)
@@ -173,7 +177,7 @@ def test_p01_r01_back_walks_the_menus_in_reverse() -> None:
     assert flow.dispatch("back") == "none"
 
 
-def test_p01_r07_a_locked_level_gives_the_locked_feedback_and_stays() -> None:
+def test_ui_level_04_a_locked_level_gives_the_locked_feedback_and_stays() -> None:
     flow = at_title()
     flow.dispatch("confirm")
     settle(flow)
@@ -186,7 +190,7 @@ def test_p01_r07_a_locked_level_gives_the_locked_feedback_and_stays() -> None:
     assert flow.state.screen == "level-select"
 
 
-def test_p01_r07_the_level_select_starts_on_the_first_unlocked_level() -> None:
+def test_ui_level_06_the_level_select_starts_on_the_first_unlocked_level() -> None:
     flow = make_flow(second_unlocked=False)
     flow.finish_loading()
     settle(flow)
@@ -198,7 +202,7 @@ def test_p01_r07_the_level_select_starts_on_the_first_unlocked_level() -> None:
     assert flow.state.selected_id == "1-1"
 
 
-def test_p06_r02_a_level_starts_with_a_new_attempt_and_pauses_in_game() -> None:
+def test_ui_level_08_a_level_starts_with_a_new_attempt_and_pauses_in_game() -> None:
     flow = at_game()
     assert flow.state.screen == "game"
     assert flow.state.chosen_level_id == "1-1"
@@ -206,7 +210,8 @@ def test_p06_r02_a_level_starts_with_a_new_attempt_and_pauses_in_game() -> None:
     assert flow.paused is False
 
 
-def test_p12_r01_escape_pauses_a_level_and_back_does_nothing_in_it() -> None:
+def test_ui_pause_01_escape_pauses_a_level_and_back_does_nothing_in_it() -> None:
+    """Also UI-PAUSE-05 and UI-FLOW-06."""
     flow = at_game()
     assert flow.dispatch("back") == "none"
     assert flow.dispatch("resume") == "none"
@@ -216,7 +221,7 @@ def test_p12_r01_escape_pauses_a_level_and_back_does_nothing_in_it() -> None:
     assert flow.paused is True
 
 
-def test_p12_r02_the_pause_menu_resume_entry_goes_back_to_the_same_attempt() -> None:
+def test_ui_pause_08_the_pause_menu_resume_entry_goes_back_to_the_same_attempt() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -226,7 +231,8 @@ def test_p12_r02_the_pause_menu_resume_entry_goes_back_to_the_same_attempt() -> 
     assert flow.state.attempt == 1
 
 
-def test_p12_r01_start_or_back_on_the_pause_menu_resumes_the_level() -> None:
+def test_ui_pause_08_start_or_back_on_the_pause_menu_resumes_the_level() -> None:
+    """Also UI-INPUT-02."""
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -238,7 +244,7 @@ def test_p12_r01_start_or_back_on_the_pause_menu_resumes_the_level() -> None:
     assert flow.dispatch("pause") == "resumed"
 
 
-def test_p12_r02_the_pause_menu_moves_between_its_entries() -> None:
+def test_ui_pause_07_the_pause_menu_moves_between_its_entries() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -249,7 +255,8 @@ def test_p12_r02_the_pause_menu_moves_between_its_entries() -> None:
     assert flow.dispatch("left") == "none"
 
 
-def test_p12_r04_settings_opened_from_the_pause_menu_keep_the_level_paused() -> None:
+def test_ui_pause_09_settings_opened_from_the_pause_menu_keep_the_level_paused() -> None:
+    """Also UI-SET-07."""
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -263,7 +270,7 @@ def test_p12_r04_settings_opened_from_the_pause_menu_keep_the_level_paused() -> 
     assert flow.state.screen == "pause"
 
 
-def test_p12_r02_leaving_the_level_asks_first_and_yes_goes_to_the_title() -> None:
+def test_ui_pause_10_leaving_the_level_asks_first_and_yes_goes_to_the_title() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -279,7 +286,7 @@ def test_p12_r02_leaving_the_level_asks_first_and_yes_goes_to_the_title() -> Non
     assert flow.paused is False
 
 
-def test_p12_r02_answering_no_closes_the_question_and_back_closes_it_too() -> None:
+def test_ui_pause_10_answering_no_closes_the_question_and_back_closes_it_too() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -295,7 +302,7 @@ def test_p12_r02_answering_no_closes_the_question_and_back_closes_it_too() -> No
     assert flow.state.leaving is False
 
 
-def test_p12_r02_the_question_takes_a_direct_pick_of_no_or_yes() -> None:
+def test_ui_pause_10_the_question_takes_a_direct_pick_of_no_or_yes() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -307,7 +314,7 @@ def test_p12_r02_the_question_takes_a_direct_pick_of_no_or_yes() -> None:
     assert flow.dispatch(MenuSelect(4)) == "none"
 
 
-def test_p12_r02_the_pause_menu_ignores_a_direct_pick_out_of_range() -> None:
+def test_ui_pause_07_the_pause_menu_ignores_a_direct_pick_out_of_range() -> None:
     flow = at_game()
     flow.dispatch("pause")
     settle(flow)
@@ -315,7 +322,8 @@ def test_p12_r02_the_pause_menu_ignores_a_direct_pick_out_of_range() -> None:
     assert flow.dispatch(MenuSelect(2)) == "moved"
 
 
-def test_p06_r03_a_completed_level_shows_its_result_and_confirm_goes_to_the_next() -> None:
+def test_ui_over_03_a_completed_level_shows_its_result_and_confirm_goes_to_the_next() -> None:
+    """Also UI-OVER-01 and UI-LEVEL-07."""
     flow = at_game(second_unlocked=True)
     flow.complete_level(result())
     settle(flow)
@@ -326,7 +334,7 @@ def test_p06_r03_a_completed_level_shows_its_result_and_confirm_goes_to_the_next
     assert flow.state.selection == 1
 
 
-def test_p06_r03_no_next_level_when_the_next_one_is_locked() -> None:
+def test_ui_level_07_no_next_level_when_the_next_one_is_locked() -> None:
     flow = at_game()
     flow.complete_level(result())
     settle(flow)
@@ -335,7 +343,8 @@ def test_p06_r03_no_next_level_when_the_next_one_is_locked() -> None:
     assert flow.state.selection == 0
 
 
-def test_p06_r03_a_lost_level_goes_back_to_the_same_level() -> None:
+def test_ui_flow_07_a_lost_level_goes_back_to_the_same_level() -> None:
+    """Also UI-LEVEL-07 and UI-OVER-05."""
     flow = at_game(second_unlocked=True)
     flow.complete_level(result(outcome="over"))
     settle(flow)
@@ -344,7 +353,8 @@ def test_p06_r03_a_lost_level_goes_back_to_the_same_level() -> None:
     assert flow.state.selection == 0
 
 
-def test_p06_r03_pausing_and_commands_are_ignored_on_the_result_panel() -> None:
+def test_ui_pause_06_pausing_and_commands_are_ignored_on_the_result_panel() -> None:
+    """Also UI-OVER-04."""
     flow = at_game()
     flow.complete_level(result())
     settle(flow)
@@ -354,14 +364,14 @@ def test_p06_r03_pausing_and_commands_are_ignored_on_the_result_panel() -> None:
     assert flow.dispatch("down") == "none"
 
 
-def test_p11_r03_a_result_is_ignored_on_other_screens() -> None:
+def test_ui_over_01_a_result_is_ignored_on_other_screens() -> None:
     flow = at_title()
     flow.complete_level(result())
     settle(flow)
     assert flow.state.level_result is None
 
 
-def test_p07_r08_a_game_over_with_a_checkpoint_offers_two_choices() -> None:
+def test_ui_over_06_a_game_over_with_a_checkpoint_offers_two_choices() -> None:
     flow = at_game()
     flow.complete_level(result(outcome="over", checkpoint=checkpoint()))
     settle(flow)
@@ -374,7 +384,8 @@ def test_p07_r08_a_game_over_with_a_checkpoint_offers_two_choices() -> None:
     assert flow.dispatch(MenuSelect(2)) == "none"
 
 
-def test_p07_r08_continue_starts_the_level_again_from_its_checkpoint() -> None:
+def test_ui_over_07_continue_starts_the_level_again_from_its_checkpoint() -> None:
+    """Also GAME-LIFE-11 and UI-FLOW-07."""
     flow = at_game()
     flow.complete_level(result(outcome="over", checkpoint=checkpoint()))
     settle(flow)
@@ -388,7 +399,7 @@ def test_p07_r08_continue_starts_the_level_again_from_its_checkpoint() -> None:
     assert state.resume.bosses_passed == 1
 
 
-def test_p07_r08_level_select_from_the_game_over_panel_leaves_the_level() -> None:
+def test_ui_over_07_level_select_from_the_game_over_panel_leaves_the_level() -> None:
     flow = at_game()
     flow.complete_level(result(outcome="over", checkpoint=checkpoint()))
     settle(flow)
@@ -398,7 +409,7 @@ def test_p07_r08_level_select_from_the_game_over_panel_leaves_the_level() -> Non
     assert flow.state.screen == "level-select"
 
 
-def test_p01_r11_a_directly_started_level_skips_the_menus() -> None:
+def test_dev_opt_01_a_directly_started_level_skips_the_menus() -> None:
     flow = make_flow(second_unlocked=True)
     assert flow.play_direct("beta", "1-2") is True
     state = flow.state
@@ -417,7 +428,7 @@ def test_p01_r11_a_directly_started_level_skips_the_menus() -> None:
         ("alpha", "1-2", False),
     ],
 )
-def test_p06_r09_a_direct_start_is_refused_for_unknown_or_locked_choices(
+def test_dev_opt_01_a_direct_start_is_refused_for_unknown_or_locked_choices(
     ship: str, level: str, unlocked: bool
 ) -> None:
     flow = make_flow(second_unlocked=unlocked)
@@ -425,7 +436,7 @@ def test_p06_r09_a_direct_start_is_refused_for_unknown_or_locked_choices(
     assert flow.state.screen == "loading"
 
 
-def test_p12_r04_a_slider_command_changes_the_volume_and_redraws() -> None:
+def test_ui_set_03_a_slider_command_changes_the_volume_and_redraws() -> None:
     flow = make_flow(volumes=Volumes(4, 6))
     flow.finish_loading()
     settle(flow)
@@ -439,12 +450,12 @@ def test_p12_r04_a_slider_command_changes_the_volume_and_redraws() -> None:
     assert flow.revision > before
 
 
-def test_p12_r04_the_default_volumes_are_used_when_none_are_given() -> None:
+def test_ui_set_05_the_default_volumes_are_used_when_none_are_given() -> None:
     flow = make_flow()
     assert (flow.state.volumes.music, flow.state.volumes.sfx) == (10, 10)
 
 
-def test_p01_r01_a_revision_goes_up_on_every_change() -> None:
+def test_ui_flow_04_a_revision_goes_up_on_every_change() -> None:
     flow = make_flow()
     start = flow.revision
     flow.finish_loading()
@@ -455,14 +466,14 @@ def test_p01_r01_a_revision_goes_up_on_every_change() -> None:
     assert flow.revision > before
 
 
-def test_p01_r01_a_menu_needs_at_least_one_ship_and_one_level() -> None:
+def test_ui_flow_04_a_menu_needs_at_least_one_ship_and_one_level() -> None:
     with pytest.raises(ValueError):
         MenuFlow(MenuFlowOptions([], catalog(), None, 0.25, None, None, None))
     with pytest.raises(ValueError):
         MenuFlow(MenuFlowOptions(list(SHIPS), LevelCatalog(1, []), None, 0.25, None, None, None))
 
 
-def test_p01_r01_the_selected_id_of_each_screen() -> None:
+def test_ui_flow_01_the_selected_id_of_each_screen() -> None:
     flow = make_flow()
     assert flow.state.selected_id is None
     flow.finish_loading()
@@ -473,7 +484,7 @@ def test_p01_r01_the_selected_id_of_each_screen() -> None:
     assert flow.state.selected_id == "alpha"
 
 
-def test_p13_r02_a_result_delay_replaces_the_transition_time() -> None:
+def test_ui_over_04_a_result_delay_replaces_the_transition_time() -> None:
     flow = make_flow(result_delay=2.0)
     flow.finish_loading()
     settle(flow)
@@ -515,6 +526,7 @@ def at_dev_menu() -> MenuFlow:
 
 
 def test_d199_without_dev_counts_the_title_has_no_dev_entry() -> None:
+    """DEV-MENU-01."""
     flow = at_title()
     flow.dispatch("down")
     flow.dispatch("down")
@@ -522,6 +534,7 @@ def test_d199_without_dev_counts_the_title_has_no_dev_entry() -> None:
 
 
 def test_d199_the_dev_entry_comes_after_settings_and_opens_the_dev_menu() -> None:
+    """DEV-MENU-01, DEV-MENU-03."""
     flow = dev_flow()
     flow.dispatch("down")
     flow.dispatch("down")
@@ -533,6 +546,7 @@ def test_d199_the_dev_entry_comes_after_settings_and_opens_the_dev_menu() -> Non
 
 
 def test_d199_a_dev_menu_entry_opens_its_viewer_on_its_first_item() -> None:
+    """DEV-MENU-03."""
     flow = at_dev_menu()
     flow.dispatch("down")
     assert flow.state.selected_id == "enemies"
@@ -544,6 +558,7 @@ def test_d199_a_dev_menu_entry_opens_its_viewer_on_its_first_item() -> None:
 
 
 def test_d199_the_arrows_move_through_the_items_round_the_list() -> None:
+    """DEV-MENU-06."""
     flow = at_dev_menu()
     flow.dispatch("confirm")
     settle(flow)
@@ -568,6 +583,7 @@ def test_d199_confirm_flips_the_viewer_toggle() -> None:
 
 
 def test_d199_the_levels_viewer_starts_stopped() -> None:
+    """DEV-MENU-06, DEV-MENU-18."""
     flow = at_dev_menu()
     for _ in range(4):
         flow.dispatch("down")
@@ -611,6 +627,7 @@ def test_d199_other_actions_do_nothing_in_a_viewer() -> None:
 
 
 def test_d204_a_tap_on_a_viewer_button_shows_its_item() -> None:
+    """DEV-MENU-07."""
     flow = at_dev_menu()
     flow.dispatch("confirm")
     settle(flow)

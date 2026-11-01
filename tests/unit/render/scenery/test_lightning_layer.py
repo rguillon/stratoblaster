@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/lightning_layer.py`."""
+"""Unit tests of `src/render/scenery/lightning_layer.py` (GFX-WEATHER-11, GFX-WEATHER-12)."""
 
 import math
 from types import SimpleNamespace

@@ -1,4 +1,4 @@
-"""Bonuses (phase 6 review, GD-31, P11-R07)
+"""Bonuses (`specs/gameplay/bonuses.md`)
 
 Some destroyed enemies drop one, it falls down the screen, and the ship picks it up by flying over
 it.
@@ -16,8 +16,8 @@ from typing import Literal, Protocol  # noqa: E402
 from core.entities.enemy import DropSource  # noqa: E402
 from core.math.rng import Random  # noqa: E402
 
-# What a bonus gives when picked up: a weapon level (phase 6 review, GD-31), a life (GD-20) or a
-# bomb (GD-32, P11-R07).
+# What a bonus gives when picked up (GAME-BONUS-01, GAME-BONUS-09): a weapon level, a life or a
+# bomb.
 BonusKind = Literal["weapon", "life", "bomb"]
 
 
@@ -34,7 +34,7 @@ __pragma__("noskip")
 
 class BonusChance:
     """Chance that a destroyed enemy drops a bonus: `per_health` × maxHealth, kept within
-    [`min`, `max`], so tougher enemies drop one more often.
+    [`min`, `max`], so tougher enemies drop one more often (GAME-BONUS-02).
     """
 
     def __init__(self, per_health: float, min_chance: float, max_chance: float) -> None:
@@ -44,8 +44,8 @@ class BonusChance:
 
 
 class LifeAndBomb:
-    """A pair of numbers, one for a life and one for a bomb (P11-R07): the chances of the special
-    drops, or the points of their overflows.
+    """A pair of numbers, one for a life and one for a bomb (GAME-BONUS-03): the chances of the
+    special drops, or the points of their overflows.
     """
 
     def __init__(self, life: float, bomb: float) -> None:
@@ -59,9 +59,9 @@ class BonusRules:
     `chance`: see `BonusChance`. `fall_speed`: speed it falls down the screen at, in logical pixels
     a second. `pickup_radius`: the ship picks a bonus up when their centres are this close.
     `special`: chances that a destroyed enemy (not a boss or one of its parts) drops a life or a
-    bomb bonus (P11-R07), drawn in that order before the weapon bonus's chance: an enemy drops at
-    most one bonus. Weapon bonuses only when None. `overflow_points`: points scored for a life or
-    bomb bonus picked up when the player has the most (P11-R07).
+    bomb bonus (GAME-BONUS-03), drawn in that order before the weapon bonus's chance: an enemy drops
+    at most one bonus. Weapon bonuses only when None. `overflow_points`: points scored for a life or
+    bomb bonus picked up when the player has the most (GAME-BONUS-10).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -94,7 +94,7 @@ class Bonus:
 
 def drop_chance(rules: BonusRules, target: DropSource) -> float:
     """The chance (0..1) that destroying `target` drops a bonus: its own chance if it has one (a
-    boss's part, P07-R07), the rules' otherwise.
+    boss's part, BOSS-57), the rules' otherwise.
     """
     if target.drop_chance is not None:
         return target.drop_chance
@@ -105,7 +105,7 @@ def drop_chance(rules: BonusRules, target: DropSource) -> float:
 class BonusWorld:
     """The bonuses of a level: dropped where enemies blew up (moved in sideways to where the ship
     can reach), falling, picked up by the ship or gone past the bottom edge. Pure and deterministic
-    for a given random source.
+    for a given random source (GAME-BONUS-05).
     """
 
     def __init__(
@@ -118,8 +118,8 @@ class BonusWorld:
     ) -> None:
         """`reach`: the X range the ship can reach: bonuses drop within it. `cull_margin`: bonuses
         this far under the bottom edge are removed. `special_random`: where the life and bomb draws
-        come from (P11-R07): a source of their own, so the weapon bonuses drop as they did without
-        them. `random` when None.
+        come from (GAME-BONUS-03): a source of their own, so the weapon bonuses drop as they did
+        without them. `random` when None.
         """
         self.rules = rules
         self._random = random
@@ -140,7 +140,7 @@ class BonusWorld:
     ) -> None:
         """Each of the destroyed `targets` drops a weapon bonus with its `drop_chance`; those that
         are `special` (enemies, not bosses or their parts) may drop a life or a bomb bonus instead
-        (P11-R07).
+        (GAME-BONUS-03).
         """
         for target in targets:
             is_special = special(target) if special is not None else False
@@ -149,7 +149,7 @@ class BonusWorld:
                 self.place(kind, target)
 
     def place(self, kind: str, at: _Point) -> None:
-        """Drops a bonus of `kind` where `at` is, within the ship's reach."""
+        """Drops a bonus of `kind` where `at` is, within the ship's reach (GAME-BONUS-07)."""
         x_min, x_max = self._reach
         x = min(x_max, max(x_min, at.x))
         self.bonuses.append(Bonus(self._next_id, x, at.y, 0, kind))
@@ -171,7 +171,7 @@ class BonusWorld:
 
     def step(self, dt: float, ship: _Point | None = None) -> None:
         """Moves the bonuses by `dt` seconds; the ship at `ship` (if any) picks up those it
-        touches."""
+        touches (GAME-BONUS-08); those past the bottom edge go (GAME-SCREEN-07)."""
         fall_speed = self.rules.fall_speed
         pickup_radius = self.rules.pickup_radius
         self.picked = []

@@ -30,7 +30,7 @@ def _placed():
     )
 
 
-def test_p04_r07_runs_of_sections_with_streets_make_one_district() -> None:
+def test_gfx_road_08_runs_of_sections_with_streets_make_one_district() -> None:
     districts = find_districts(_placed(), SPAN)
     assert len(districts) == 2
     first, second = districts
@@ -47,7 +47,7 @@ def test_a_range_cut_to_a_stretch() -> None:
     assert [(p.z_min, p.z_max) for p in cut[0].parts] == [(500.0, 1000.0), (1000.0, 2000.0)]
 
 
-def test_p04_r07_districts_split_at_the_runout_go_on_from_its_row() -> None:
+def test_gfx_road_08_districts_split_at_the_runout_go_on_from_its_row() -> None:
     districts = find_districts(_placed(), SPAN)
     before, after = split_districts(districts, 1500.0)
     assert [(d.z_min, d.z_max) for d in before] == [(-100.0, 1500.0)]

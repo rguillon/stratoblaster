@@ -1,4 +1,4 @@
-"""P05-R22, P16-R04: the Juggernaut Logical
+"""The Juggernaut (specs/enemies/juggernaut.md) Logical
 pixels, nose +Z, Y up (towards the camera).
 """
 
@@ -40,7 +40,7 @@ def _body_girth(t: float) -> float:
     return 0.7 + 0.3 * math.sin(math.pi * t)
 
 
-# P16-R04: the massive, wide body (tail to front) and the ridged shell over it.
+# ENM-JUGGERNAUT-01: the massive, wide body (tail to front) and the ridged shell over it.
 BODY = SegmentedBody(-24, 12, 3, 24, -4, 3, None, _body_girth, [False, False])
 SHELL = SegmentedBody(-23, 11, 3, 19, 0, 4.8, None, None, [False, False])
 # The metal plate bolted on its back, under the turret.
@@ -61,12 +61,13 @@ PLATE = [  # type: list[list[float]]
 
 
 def body(p: Any) -> None:
-    """The armoured beast: a flesh body under a plated shell, the turret, its eyes, reactor sacs."""
+    """The armoured beast: a flesh body under a plated shell, the turret, its eyes and strips
+    (ENM-JUGGERNAUT-03), reactor sacs (ENM-JUGGERNAUT-05)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     vein = p.vein
-    # P16-R04: the swollen body, and the metal shell bolted over its back.
+    # ENM-JUGGERNAUT-02: the swollen body, and the metal shell bolted over its back.
     segmented_body(flesh, BODY, F.sinew)
     carapace(flesh, SHELL, [F.slate, F.sinew])
     plate(hull, BACK_PLATE, [3.6, 5.2], [H.base, H.dark])
@@ -97,7 +98,8 @@ def shoulder(cannon: Any) -> Any:
 
 
 def cannon(spec: Any) -> Any:
-    """A shoulder cannon: a flesh pod in a metal band, a steel-blue gland and a long barrel."""
+    """A shoulder cannon (ENM-JUGGERNAUT-06): a flesh pod in a metal band, a steel-blue gland and
+    a long barrel."""
     at = boss_point(spec.centre[0], spec.centre[1], 0)
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
 
@@ -127,8 +129,8 @@ def front_plate(spec: Any) -> Any:
 
 
 def build_juggernaut(scene: Any) -> Any:
-    """P05-R22, P16-R04: a massive, armoured beast with two riveted front plates and a flesh cannon
-    pod on each shoulder."""
+    """ENM-JUGGERNAUT-01: a massive, armoured beast with two riveted front plates and a flesh
+    cannon pod on each shoulder, within the elite triangle budget (ENM-JUGGERNAUT-07)."""
     limbs = {}
     parts = {}
     for c in CFG.cannons:

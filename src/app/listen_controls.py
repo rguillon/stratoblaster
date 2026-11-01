@@ -1,5 +1,6 @@
-"""Keyboard listeners of the level (): keys go to the level's
-debug keys first (when on), then to the in-game controls.
+"""Keyboard listeners of the level: keys go to the level's
+debug keys first (when on, DEV-OPT-08), then to the in-game controls. Losing the focus lets every
+key go (GAME-CTRL-07).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

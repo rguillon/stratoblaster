@@ -1,5 +1,5 @@
-"""P10-R11, 4-2: the Geyser Rig's parts: its two drill heads on their swinging arms (moving limbs,
-D-061), its two steam vents and its drone hangar.
+"""FB-GEYSER-RIG-03 to FB-GEYSER-RIG-05, 4-2: the Geyser Rig's parts: its two drill heads on their
+swinging arms (moving limbs, FB-GEYSER-RIG-07, D-061), its two steam vents and its drone hangar.
 Logical pixels, nose +Z, Y up.
 """
 
@@ -56,7 +56,7 @@ def _sign(v: float) -> float:
     return 0
 
 
-# The Rig's yellow neon (P10-R11).
+# The Rig's yellow neon (FB-GEYSER-RIG-06).
 RIG_YELLOW = _neon_or("geyser-rig", [1, 0.88, 0.1])
 # Height of the rig's deck.
 DECK_Y = 7
@@ -90,7 +90,7 @@ def _drill_arm(side: str) -> Any:
             Placement(offset(shoulder, 0, DECK_Y - DRILL_HEIGHT.shoulder, 0)),
         )
         hull.cylinder(4.4, 2.6, 8, H.panel, Placement(offset(shoulder, 0, 2, 0)), 3.6)
-        # P16-R06: a muscled flesh arm, a sinew along its back.
+        # FB-GEYSER-RIG-03: a muscled flesh arm, a sinew along its back.
         segment(flesh, [shoulder, back], [3.6, 3], SKIN.base, 6)
         segment(
             flesh,
@@ -117,7 +117,7 @@ def _drill_arm(side: str) -> Any:
 
 
 def arm_limbs() -> Any:
-    """The limbs of the two drill arms: each boom on its shoulder joint."""
+    """The limbs of the two drill arms (FB-GEYSER-RIG-07): each boom on its shoulder joint."""
     limbs = {}
     for side in RIG_SIDES:
         limbs["arm-" + side] = record({"draw": _drill_arm(side)})
@@ -125,8 +125,8 @@ def arm_limbs() -> Any:
 
 
 def drill_head(p: Any, at: Vec3) -> None:
-    """A drill head around its centre `at` (P10-R11): a ribbed motor housing, a long fluted bit
-    glowing hot at its root, and the gun on top of the housing that fires aimed bursts."""
+    """A drill head around its centre `at` (FB-GEYSER-RIG-03): a ribbed motor housing, a long fluted
+    bit glowing hot at its root, and the gun on top of the housing that fires aimed bursts."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -174,9 +174,9 @@ STACK = [
 
 
 def steam_vent(p: Any, at: Vec3) -> None:
-    """A steam vent around its centre `at` (P10-R11): a scorched stack rising from a valve block,
-    its
-    flared mouth ringed with yellow neon, hot metal glowing in it, ash settled round its foot."""
+    """A steam vent around its centre `at` (FB-GEYSER-RIG-04): a scorched stack rising from a valve
+    block, its flared mouth ringed with yellow neon, hot metal glowing in it, ash settled round its
+    foot."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -189,7 +189,7 @@ def steam_vent(p: Any, at: Vec3) -> None:
     else:
         top = offset(at, 0, 24, 0)
     hull.box([15, 3, 15], H.base, Placement(offset(at, 0, DECK_Y - 1, 0)), H.panel)
-    # P16-R06: a steaming flesh blowhole on a metal valve block.
+    # FB-GEYSER-RIG-04: a steaming flesh blowhole on a metal valve block.
     p.flesh.lathe(
         STACK,
         8,
@@ -215,11 +215,11 @@ def steam_vent(p: Any, at: Vec3) -> None:
 
 
 def hangar(p: Any, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (P10-R11): a bay jutting from the bow, its open door
-    framed in yellow, where its Hornets leave from; warning lamps either side."""
+    """The drone hangar around its centre `at` (FB-GEYSER-RIG-05): a bay jutting from the bow, its
+    open door framed in yellow, where its Hornets leave from; warning lamps either side."""
     hull = p.hull
     neon = p.neon
-    # P16-R06: a brood sac jutting from the bow, its mouth framed in metal.
+    # FB-GEYSER-RIG-05: a brood sac jutting from the bow, its mouth framed in metal.
     p.flesh.bevel_slab(
         rect(28, 24),
         [DECK_Y - 5, DECK_Y, DECK_Y + 6],

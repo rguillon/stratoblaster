@@ -1,4 +1,4 @@
-"""How the World 3 levels look (P09-R04, R06; reworked at the reviewer's request, 2026-10-27)
+"""How the World 3 levels look (WLD-3-14; reworked at the reviewer's request, 2026-10-27)
 
 World 2's stained industrial concrete where it ended, slowly giving way to the grass of gardens and
 parks (the `lush` cover the sections raise level after level), damp dark earth between them, grey
@@ -88,12 +88,12 @@ TOWN_TERRAIN = merge(
     },
 )
 
-# The water flows down the screen, the way the player came from (P09-R06).
+# The water flows down the screen, the way the player came from (GFX-WATER-07).
 RIVER_FLOW = [0, 16]
 
 
 def town(atmosphere: Any) -> Any:
-    """A World 3 look: the town ground, its water and the sky script (P09-R04)."""
+    """A World 3 look: the town ground (WLD-3-11), its water and the sky script."""
     return record(
         merge(
             BASE_SCENERY_LOOK,
@@ -125,7 +125,7 @@ MORNING = record({"timeOfDay": "morning", "clouds": [0.3, 0.2]})
 # The morning mist of 3-1 (`morning_mist`): the haze close and white over the factories.
 MORNING_MIST = record({"fog": 0.4, "white": 0.8})
 
-# 3-1: a morning mist over the factories and canals, lifting over the first half.
+# 3-1 (LVL-3-1-03): a morning mist over the factories and canals, lifting over the first half.
 LEVEL_3_1_LOOK = town(
     record(
         {
@@ -138,7 +138,7 @@ LEVEL_3_1_LOOK = town(
 # Bright, humid midday light under tall white cumulus.
 MIDDAY = record({"timeOfDay": "midday", "clouds": [0.5, 0.3]})
 
-# 3-2: a rain shower over the middle third, then clearing.
+# 3-2 (LVL-3-2-03): a rain shower over the middle third, then clearing.
 LEVEL_3_2_LOOK = town(
     record(
         {
@@ -162,7 +162,8 @@ THUNDERSTORM = record(
     }
 )
 
-# 3-3: the storm builds over the first quarter, from half-covered skies without rain.
+# 3-3 (LVL-3-3-03): the storm builds over the first quarter, from half-covered skies without
+# rain.
 LEVEL_3_3_LOOK = town(
     record(
         {
@@ -172,13 +173,13 @@ LEVEL_3_3_LOOK = town(
     )
 )
 
-# 3-4: a rainy dusk over the terraces and suburbs, their windows and streets lit.
+# 3-4 (LVL-3-4-03): a rainy dusk over the terraces and suburbs, their windows and streets lit.
 LEVEL_3_4_LOOK = town(
     record({"start": {"timeOfDay": "dusk", "clouds": [0.6, 0.4], "weather": rain(0.3)}})
 )
 
-# 3-5: a rainy night over the lit garden villages, the rain stopping and the clouds opening before
-# the final boss.
+# 3-5 (LVL-3-5-03): a rainy night over the lit garden villages, the rain stopping and the clouds
+# opening before the final boss.
 LEVEL_3_5_LOOK = town(
     record(
         {

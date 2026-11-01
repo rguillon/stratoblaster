@@ -1,5 +1,5 @@
-"""The blasts of the hits a step landed on the player (): a spark
-where a hit landed; a blast at the ship when it cost a life (phase 6 review).
+"""The blasts of the hits a step landed on the player (GFX-FX-01, GFX-FX-04): a spark
+where a hit landed; a blast at the ship when it cost a life (GAME-LIFE-08).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

@@ -1,5 +1,6 @@
-"""P10-R11, 4-1: the heavy industry on the Black sands' bosses (the Cinder Crab and the Steam
-Dreadnought): soot, molten seams glowing between the plates, steam, struts and barrels (GD-61,
+"""MB-CINDER-CRAB-02, FB-STEAM-DREADNOUGHT-02, 4-1: the heavy industry on the Black sands'
+bosses (the Cinder Crab and the Steam Dreadnought): soot, molten seams glowing between the
+plates, steam, struts and barrels (BOSS-50,
 World 4: dark metal with neon, plus soot, heat glow and molten seams). Logical pixels, nose +Z, Y up
 (towards the camera).
 """
@@ -101,8 +102,9 @@ def blot(centre: OutlinePoint, radius: float, stretch: float = 1, seed: float = 
 
 
 def steam(neon: Any, origin: Vec3, count: int, size: float) -> None:
-    """Puffs of steam trailing back (towards -Z) and rising from `from`: low-poly lumps growing as
-    they go, faintly lit by the furnaces below (drawn as lights, so the hull's tint leaves them)."""
+    """Puffs of steam (FB-STEAM-DREADNOUGHT-03) trailing back (towards -Z) and rising from `from`:
+    low-poly lumps growing as they go, faintly lit by the furnaces below (drawn as lights, so the
+    hull's tint leaves them)."""
     for i in range(count):
         r = size * (1 + 0.45 * i)
         at = [

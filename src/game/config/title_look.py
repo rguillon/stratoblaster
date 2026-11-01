@@ -1,8 +1,9 @@
-"""Neon night behind the menus (P01-R05; blue/green since D-198, was darksynth magenta)
+"""Neon night behind the menus (UI-TITLE-07)
 
-A deep blue glow behind a black skyline, a dark street of towers with cyan, green and blue
-windows, signs and roof trims, haze and rain (D-012). Linear RGB, 0..1. Distances in world units;
-heights in gradient stops go from -1 (bottom) to 1 (top).
+UI-TITLE-08: blue/green since D-198, was darksynth magenta. A deep blue glow behind a black
+skyline, a dark street of towers with cyan, green and blue windows, signs and roof trims, haze and
+rain (D-012). Linear RGB, 0..1. Distances in world units; heights in gradient stops go from -1
+(bottom) to 1 (top).
 """
 
 from game.config.record import record
@@ -141,7 +142,8 @@ TITLE_LOOK = record(
             "bobHz": 0.35,
         },
         "lights": {"ambient": 0.7, "key": 2, "keyDirection": [-0.3, -1, 0.5]},
-        # Brightness of the neon meshes; the glow layer and tone mapping wash them out above this.
+        # Brightness of the neon meshes; the glow layer and tone mapping wash them out above this
+        # (UI-TITLE-10).
         "neonIntensity": 0.45,
     }
 )

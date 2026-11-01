@@ -30,33 +30,33 @@ def _on_screen_dead_ends(nodes, links, out) -> list[float]:
     ]
 
 
-def test_p04_r08_a_dead_end_on_screen_goes_on_when_the_ground_allows() -> None:
+def test_gfx_road_16_a_dead_end_on_screen_goes_on_when_the_ground_allows() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     links = _run(xs, [True, True, False], lambda n: n.x in (0.0, 30.0))
     assert [link.built for link in links] == [True, True, True]
 
 
-def test_p04_r08_a_dead_end_on_screen_is_cut_back_when_nothing_goes_on() -> None:
+def test_gfx_road_16_a_dead_end_on_screen_is_cut_back_when_nothing_goes_on() -> None:
     xs = [0.0, 10.0, 20.0]
     links = _run(xs, [True, True], lambda n: n.x in (0.0, 10.0))
     assert [link.built for link in links] == [True, False]
     assert links[1].cut is True
 
 
-def test_p04_r08_with_cut_kept_a_cut_link_is_never_built_again() -> None:
+def test_gfx_road_16_with_cut_kept_a_cut_link_is_never_built_again() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     links = _run(xs, [True, True, False], lambda n: n.x == 0.0, keep_cut=True)
     assert [link.built for link in links] == [False, False, False]
     assert links[1].cut is True
 
 
-def test_p04_r08_a_dead_end_is_not_extended_over_unbuildable_ground() -> None:
+def test_gfx_road_16_a_dead_end_is_not_extended_over_unbuildable_ground() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     links = _run(xs, [True, True, False], lambda n: n.x in (0.0, 30.0), ground=[True, True, False])
     assert links[2].built is False
 
 
-def test_p04_r08_the_default_removal_leaves_no_dead_end_on_screen() -> None:
+def test_gfx_road_16_the_default_removal_leaves_no_dead_end_on_screen() -> None:
     xs = [0.0, 10.0, 20.0, 30.0]
     nodes, links = _chain(xs, [True, True, False], [True, True, False])
     out = lambda n: n.x in (0.0, 30.0)  # noqa: E731

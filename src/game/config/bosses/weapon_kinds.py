@@ -1,5 +1,6 @@
-"""The kinds of hidden weapon a boss reveals as it transforms (D-221, D-229; docs/superpowers/specs/
-2026-11-01-boss-weapon-variety-and-shape-shifts-design.md): their sizes, muzzles and volleys.
+"""The kinds of hidden weapon a boss reveals as it transforms (BOSS-40; D-221, D-229;
+docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md): their sizes,
+muzzles and volleys.
 
 - `gatling`: a three-barrelled turret that follows the player (bursts);
 - `lance`: a laser lance pointing down the screen (lasers);

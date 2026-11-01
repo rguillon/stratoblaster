@@ -1,10 +1,12 @@
 """A boss's armour regions (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md):
-cut out of its core body, they burst off in chunks as it transforms and leave a dark metal frame.
+cut out of its core body, they burst off in chunks as it transforms and leave a dark metal frame
+(BOSS-42, BOSS-43).
 
 The cut is made on the core's drawing (`cut_armour`): its faces inside a region's outlines (and
 heights) leave the core and make the region's armour. A region is then drawn three ways: whole
 (at rest, flashing with the core), as chunks (shown only while they fly) and as its frame (hidden
-until the burst).
+until the burst). Which regions each boss sheds, and when, is its own boss file's (its shedding
+and transformation requirements, specs/bosses/mini/*.md and specs/bosses/final/*.md).
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
@@ -180,7 +182,7 @@ def _straddler(carves: list[Carve]) -> Any:
     """Whether a triangle may cross the edge of any of `carves` (and so must be cut down)."""
 
     def needs(tri: list[Any]) -> bool:
-        for c in carves:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        for c in carves:  # noqa: SIM110 (ENG-157: any() over a generator is slow)
             if straddles(tri, c):
                 return True
         return False
@@ -633,9 +635,9 @@ def place(node: Any, pose: list[Any]) -> None:
 
 
 class MovingView:
-    """A moving region of a boss model (D-230): its piece, `whole` (a model on its `mover` node,
-    with its flash group `flash`), moved by its motion as the boss transforms; the `carrier` node
-    the weapons riding it hang from (drawn where they end up); and its `frame` (a model), if it
+    """A moving region of a boss model (BOSS-45, D-230): its piece, `whole` (a model on its `mover`
+    node, with its flash group `flash`), moved by its motion as the boss transforms; the `carrier`
+    node the weapons riding it hang from (drawn where they end up); and its `frame` (a model), if it
     leaves one where it was drawn."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -695,7 +697,7 @@ def _build_frame(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     name: str, scene: Any, neon: Any, breath: Any, drawings: list[Any]
 ) -> FrameView:
     """The frame of a region from its `[floor, ribs]` drawings: built under the armour, the floor
-    is trimmed along its own outline (P14-R04); the ribs are not, so it reads as dark metal."""
+    is trimmed along its own outline (GFX-TRIM-09); the ribs are not, so it reads as dark metal."""
     root = new_transform_node(name + "-frame", scene)
     floor = build_enemy_model(name + "-frame-floor", scene, neon, drawings[0], breath)
     floor.root.parent = root
@@ -825,7 +827,7 @@ def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
                 breath,
             )
             model.root.parent = node
-            # Flying off, it must not trim the frame's edges (P14-R04).
+            # Flying off, it must not trim the frame's edges (GFX-TRIM-09).
             clear_trim(model.root)
             set_enabled(node, False)
             chunks.append(ArmourChunk(node, centre, i))

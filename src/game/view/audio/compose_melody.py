@@ -1,4 +1,4 @@
-"""The melody of generated music (P12-R06): a two-bar motif
+"""The melody of generated music (AUD-MUSIC-02): a two-bar motif
 (a rhythm, and a walk on the scale that lands on chord tones), repeated and varied over a section.
 """
 
@@ -46,8 +46,8 @@ CHORD_STEPS = [0, 2, 4, 7]
 
 
 def make_motif(random: Random) -> Motif:
-    """A motif for a section (P12-R06): one of the rhythms, its pitches a walk on the scale that
-    starts and ends on chord tones, so every level gets its own melody."""
+    """A motif for a section (AUD-MUSIC-02): one of the rhythms, its pitches a walk on the scale
+    that starts and ends on chord tones, so every level gets its own melody."""
     rhythm = pick(random, RHYTHMS)
     degree = pick(random, CHORD_STEPS)
     motif: Motif = []

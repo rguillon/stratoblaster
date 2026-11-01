@@ -1,4 +1,4 @@
-"""The missile motor flares and exhaust trails (phase 5 review): a bright, flickering flare at each
+"""The missile motor flares and exhaust trails (GFX-SHOT-07): a bright, flickering flare at each
 missile's nozzle and a glowing
 exhaust trail behind it, added on, so the missiles show on any ground.
 """

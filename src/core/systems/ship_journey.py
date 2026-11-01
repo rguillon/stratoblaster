@@ -1,4 +1,4 @@
-"""How the ship comes into a level and leaves it (reviewer, 2026-10-28)
+"""How the ship comes into a level and leaves it (GAME-LEVEL-11, GAME-LEVEL-12)
 
 It rises from below the screen to its start, the player flies it freely for a while once the level
 is cleared, then it flies off the top of the screen. Logical pixels and seconds.

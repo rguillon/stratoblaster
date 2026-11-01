@@ -1,4 +1,5 @@
-"""One model per enemy model key (`EnemyStats.model`, P05-R01..R10, P05-R12 to P05-R23)"""
+"""One model per enemy model key (`EnemyStats.model`): the kinds of specs/enemies/*.md, each
+generated in code (ENM-34, GFX-ART-01)"""
 
 from game.view.enemies.carrier_model import build_carrier  # noqa: E402
 from game.view.enemies.elite_models import ELITE_MODELS  # noqa: E402

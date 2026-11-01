@@ -1,4 +1,4 @@
-"""P07-R05 (phase 7 review: more detail, some asymmetry): surface details of the World 1 mini
+"""BOSS-49, BOSS-47 (phase 7 review: more detail, some asymmetry): surface details of the World 1
 bosses Logical pixels, nose +Z, Y up. Details are
 flat-shaded hull pieces a little proud of the surface, so they read from above under the ~35°
 camera.

@@ -1,6 +1,6 @@
-"""P08-R10, 2-5: the Boreal Citadel's destroyable parts (aurora cannons, missile batteries, dome
-generators) Each is drawn around its
-centre (model space: logical pixels, nose +Z, Y up)."""
+"""FB-BOREAL-CITADEL-04, 2-5: the Boreal Citadel's destroyable parts (aurora cannons, missile
+batteries, dome generators) Each is drawn around its centre (model space: logical pixels, nose +Z, Y
+up)."""
 
 import math
 
@@ -76,9 +76,9 @@ DOME = [
 
 
 def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
-    """P08-R10: an aurora cannon on an outrigger, turning on its turntable (its turret, phase 8
-    review): a frosted pod, a long barrel with charge coils, a lens where its laser leaves, and
-    lit aurora curtains rippling along its back."""
+    """FB-BOREAL-CITADEL-04: an aurora cannon on an outrigger, turning on its turntable (its turret,
+    FB-BOREAL-CITADEL-07): a frosted pod, a long barrel with charge coils, a lens where its laser
+    leaves, and lit aurora curtains rippling along its back."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -87,7 +87,8 @@ def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
     x = pos[0]
     z = pos[2]
     at: Vec3 = [x, OUTRIGGER_TOP, z]
-    # P16-R06: a swollen gun organ, its barrel a metal graft, its curtains lit fins on its back.
+    # FB-BOREAL-CITADEL-04: a swollen gun organ, its barrel a metal graft, its curtains lit fins on
+    # its back.
     flesh.loft(
         POD_SECTION,
         CANNON_POD,
@@ -127,18 +128,18 @@ def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
 
 
 def draw_cannon_mount(p: EnemyParts, pos: Vec3) -> None:
-    """The turntable an aurora cannon turns on (phase 8 review: its turret, drawn by
+    """The turntable an aurora cannon turns on (FB-BOREAL-CITADEL-07: its turret, drawn by
     `draw_cannon`, aims its laser): a low drum on the outrigger, ringed with violet neon."""
     x = pos[0]
     z = pos[2]
-    # P16-R06: a shoulder of muscle on the fin.
+    # FB-BOREAL-CITADEL-04: a shoulder of muscle on the fin.
     p.flesh.cylinder(10, OUTRIGGER_TOP, 8, ICE_FLESH.sinew, Placement([x, 0, z]), 9)
     p.neon.ring(10.3, 0.6, 8, VIOLET, Placement([x, OUTRIGGER_TOP - 0.4, z]))
 
 
 def draw_battery(p: EnemyParts, pos: Vec3) -> None:
-    """P08-R10: a missile battery on the deck: a snowed-over armoured block, six hatches lit as
-    its missiles load, violet strips down its sides, icicles under its front."""
+    """FB-BOREAL-CITADEL-04: a missile battery on the deck: a snowed-over armoured block, six
+    hatches lit as its missiles load, violet strips down its sides, icicles under its front."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -151,7 +152,7 @@ def draw_battery(p: EnemyParts, pos: Vec3) -> None:
     height = cells[0][1] if len(cells) > 0 else 0
     top = height - 0.08
     base = CITADEL_DECK.top
-    # P16-R06: an armoured growth, a mound of flesh under a metal hatch plate.
+    # FB-BOREAL-CITADEL-04: an armoured growth, a mound of flesh under a metal hatch plate.
     flesh.bevel_slab(
         BATTERY,
         [base - 1, base, top - 1.2],
@@ -186,15 +187,15 @@ def draw_battery(p: EnemyParts, pos: Vec3) -> None:
 
 
 def draw_dome(p: EnemyParts, pos: Vec3) -> None:
-    """P08-R10: a dome generator (no weapon; it shields the core): a heated glass dome glowing
-    aurora green through its ring of ice, three pylons with violet lights."""
+    """FB-BOREAL-CITADEL-04: a dome generator (no weapon; it shields the core): a heated glass dome
+    glowing aurora green through its ring of ice, three pylons with violet lights."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     x = pos[0]
     z = pos[2]
     base = CITADEL_DECK.top
-    # P16-R06: a glowing blister swelling from the flesh, held by bone spikes.
+    # FB-BOREAL-CITADEL-04: a glowing blister swelling from the flesh, held by bone spikes.
     flesh.lathe(PEDESTAL, 8, ICE_FLESH.graphite, Placement([x, base, z], math.pi / 8))
     hull.ring(12.6, 1, 8, H.panel, Placement([x, base + 1.2, z], math.pi / 8))
     neon.ring(12.7, 0.6, 8, VIOLET, Placement([x, base + 0.4, z], math.pi / 8))

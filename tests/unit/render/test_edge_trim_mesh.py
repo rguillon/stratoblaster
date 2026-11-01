@@ -1,5 +1,5 @@
 """Unit tests of `src/render/edge_trim_mesh.py`: models get their glowing edge trim as child
-meshes."""
+meshes (GFX-TRIM-01)."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -73,6 +73,7 @@ def test_a_mesh_asks_for_a_trim_and_keeps_its_metadata() -> None:
 
 
 def test_only_solid_meshes_are_asked_to_trim() -> None:
+    """GFX-TRIM-04."""
     scene = FakeScene()
     root = _root(scene)
     solid = _box_mesh(scene, root, "solid", [1, 1, 1])
@@ -88,6 +89,7 @@ def test_only_solid_meshes_are_asked_to_trim() -> None:
 
 
 def test_each_trimmed_mesh_gets_a_child_trim_in_its_colour() -> None:
+    """GFX-TRIM-04: the trim is a child of its mesh."""
     scene = FakeScene()
     root = _root(scene)
     mesh = _box_mesh(scene, root, "hull", [2, 1, 2])
@@ -105,6 +107,7 @@ def test_each_trimmed_mesh_gets_a_child_trim_in_its_colour() -> None:
 
 
 def test_meshes_of_one_colour_share_a_material() -> None:
+    """GFX-TRIM-07."""
     scene = FakeScene()
     root = _root(scene)
     a = _box_mesh(scene, root, "a", [1, 1, 1])
@@ -118,6 +121,7 @@ def test_meshes_of_one_colour_share_a_material() -> None:
 
 
 def test_a_covered_mesh_gets_no_trim_and_a_cleared_one_neither() -> None:
+    """GFX-TRIM-09."""
     scene = FakeScene()
     root = _root(scene)
     big = _box_mesh(scene, root, "big", [4, 1, 4])
@@ -139,6 +143,7 @@ def test_a_model_with_nothing_to_trim_gets_nothing() -> None:
 
 
 def test_a_trim_group_is_trimmed_along_its_own_outline() -> None:
+    """GFX-TRIM-08."""
     scene = FakeScene()
     root = _root(scene)
     big = _box_mesh(scene, root, "hull", [4, 1, 4])

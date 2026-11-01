@@ -1,6 +1,6 @@
-"""The frost on the 2-1 bosses (World 2 theme: dark metal with neon, plus frost, ice and snow)
-Logical pixels, nose +Z, Y up. Pale vertex
-colours on the hull's top faces.
+"""The frost on the 2-1 bosses (MB-FLOE-BREAKER-05, FB-NARWHAL-05; World 2 theme: dark metal with
+neon, plus frost, ice and snow) Logical pixels, nose +Z, Y up. Pale vertex colours on the hull's top
+faces.
 """
 
 import math

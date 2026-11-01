@@ -1,10 +1,10 @@
-"""P09-R09, 3-4: the Dam Breaker, the final boss of the swamp works, fought over the giant dam
-().
+"""3-4: the Dam Breaker, the final boss of the swamp works, fought over the giant dam
+(specs/bosses/final/3-4-dam-breaker.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
-patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core fires
-something new at every stage, and its last stage (only the core left) spirals used by no earlier
-stage. Health tuned for P09-R10.
+patterns are the agent's design (FB-DAM-BREAKER-09): the parts fire the same while they stand, the
+core fires something new at every stage, and its last stage (only the core left) spirals used by no
+earlier stage. Health (FB-DAM-BREAKER-07) tuned for WLD-3-20.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -24,12 +24,14 @@ RED = bullet("red", 205)
 MAGENTA = bullet("magenta", 200)
 ORANGE = bullet("orange", 195)
 GREEN = bullet("green", 190)
-# A sluice's sludge: slow, big globs let out in waves the player weaves through (P09-R09).
+# A sluice's sludge: slow, big globs let out in waves the player weaves through
+# (FB-DAM-BREAKER-08).
 SLUDGE = bullet("green", 125, 7)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-DAM-BREAKER-13,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -66,7 +68,7 @@ def waves(source: str, first: float) -> Any:
 _DAM_BREAKER = record(
     {
         "id": "dam-breaker",
-        # Angry after each destroyed part (phase 7 review, D-063).
+        # Angry after each destroyed part (phase 7 review, D-063, FB-DAM-BREAKER-10).
         "rage": rage.curtain(8, "green", "orange"),
         "stats": stats(
             record(
@@ -90,6 +92,7 @@ _DAM_BREAKER = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-DAM-BREAKER-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 32, "period": 11},
         "bob": {"amplitude": 5, "period": 5.5},
@@ -103,6 +106,7 @@ _DAM_BREAKER = record(
             "sluice-left": {"gun": DAM_SPOUT},
             "sluice-right": {"gun": mirror(DAM_SPOUT)},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-DAM-BREAKER-09).
         "stages": stages(
             concat(waves("sluice-left", 1), waves("sluice-right", 3)),
             [
@@ -128,8 +132,9 @@ _DAM_BREAKER = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of missile racks unfold.
+# baring a dark metal frame, and a pair of gun batteries unfold (FB-DAM-BREAKER-11); at
+# transformation 2 its wing armour bursts off, baring a dark metal frame, and a pair of missile
+# racks unfold (FB-DAM-BREAKER-12).
 DAM_BREAKER = with_weapons(
     _DAM_BREAKER,
     [

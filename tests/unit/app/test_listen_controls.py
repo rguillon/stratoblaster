@@ -14,12 +14,12 @@ class FakeKeyEvent(dict):
         self.code = code
 
 
-def test_p06_r02_with_no_target_nothing_listens_and_stopping_is_harmless() -> None:
+def test_game_ctrl_01_with_no_target_nothing_listens_and_stopping_is_harmless() -> None:
     stop = listen_controls(None, MagicMock(), lambda: None)
     stop()
 
 
-def test_p06_r02_keys_go_to_the_controls_when_no_debug_key_takes_them() -> None:
+def test_game_ctrl_01_keys_go_to_the_controls_when_no_debug_key_takes_them() -> None:
     controls = MagicMock()
     target = MagicMock()
     listen_controls(target, controls, lambda: None)
@@ -28,7 +28,7 @@ def test_p06_r02_keys_go_to_the_controls_when_no_debug_key_takes_them() -> None:
     controls.key.assert_called_once_with("Space", True)
 
 
-def test_p06_r02_a_key_up_is_passed_on_as_released() -> None:
+def test_game_ctrl_01_a_key_up_is_passed_on_as_released() -> None:
     controls = MagicMock()
     target = MagicMock()
     listen_controls(target, controls, lambda: None)
@@ -37,7 +37,7 @@ def test_p06_r02_a_key_up_is_passed_on_as_released() -> None:
     controls.key.assert_called_once_with("KeyE", False)
 
 
-def test_p06_r02_a_debug_key_of_the_level_takes_its_keys_first() -> None:
+def test_dev_opt_08_a_debug_key_of_the_level_takes_its_keys_first() -> None:
     controls = MagicMock()
     level = MagicMock()
     level.debug_key.return_value = True
@@ -49,7 +49,7 @@ def test_p06_r02_a_debug_key_of_the_level_takes_its_keys_first() -> None:
     controls.key.assert_not_called()
 
 
-def test_p06_r02_the_debug_key_refusal_falls_through_to_the_controls() -> None:
+def test_dev_opt_10_the_debug_key_refusal_falls_through_to_the_controls() -> None:
     controls = MagicMock()
     level = MagicMock()
     level.debug_key.return_value = False
@@ -60,7 +60,7 @@ def test_p06_r02_the_debug_key_refusal_falls_through_to_the_controls() -> None:
     controls.key.assert_called_once_with("KeyT", True)
 
 
-def test_p06_r02_losing_the_focus_lets_go_of_the_controls() -> None:
+def test_game_ctrl_07_losing_the_focus_lets_go_of_the_controls() -> None:
     controls = MagicMock()
     target = MagicMock()
     listen_controls(target, controls, lambda: None)
@@ -69,7 +69,7 @@ def test_p06_r02_losing_the_focus_lets_go_of_the_controls() -> None:
     controls.clear.assert_called_once()
 
 
-def test_p06_r02_stopping_removes_the_three_listeners() -> None:
+def test_game_ctrl_01_stopping_removes_the_three_listeners() -> None:
     target = MagicMock()
     stop = listen_controls(target, MagicMock(), lambda: None)
     stop()

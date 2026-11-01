@@ -1,4 +1,5 @@
-"""P10-R11, 4-3: the Magma Salamander's parts (its back fins and its tail) and its molten look.
+"""MB-MAGMA-SALAMANDER-03, MB-MAGMA-SALAMANDER-04, 4-3: the Magma Salamander's parts (its back
+fins and its tail) and its molten look.
 Logical pixels, nose +Z, Y up (towards the
 camera).
 """
@@ -51,7 +52,7 @@ def _sign(v: float) -> float:
     return 0
 
 
-# The Salamander's orange-yellow neon.
+# The Salamander's orange-yellow neon (MB-MAGMA-SALAMANDER-05).
 SALAMANDER_NEON = _neon_or("magma-salamander", [1, 0.62, 0.08])
 # The molten glow between its plates (World 4: magma seams), hotter and redder than its neon.
 MOLTEN = [1.0, 0.36, 0.04]
@@ -118,13 +119,14 @@ POD = [
 
 
 def fin(p: Any, at: Vec3) -> None:
-    """A back fin around its centre `at` (P10-R11): a spiny frill of soot-black armour, its spines
-    lit orange, a molten glow at its root, and under its leading edge a pod with two fan barrels."""
+    """A back fin around its centre `at` (MB-MAGMA-SALAMANDER-03): a spiny frill of soot-black
+    armour, its spines lit orange, a molten glow at its root, and under its leading edge a pod with
+    two fan barrels."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
     s = _sign(at[0])
-    # P16-R05: a membrane frill on bone spines, a gland at its root.
+    # MB-MAGMA-SALAMANDER-03: a membrane frill on bone spines, a gland at its root.
     flesh.bevel_slab(
         sided(FIN, s),
         [FIN_Y - 1.4, FIN_Y, FIN_Y + 1.2],
@@ -201,7 +203,8 @@ def _tail_root(p: Any) -> None:
 
 
 def tail_limbs() -> Any:
-    """The limbs on its tail's joints: the root segment (the tip is the tail part itself)."""
+    """The limbs on its tail's joints (MB-MAGMA-SALAMANDER-06): the root segment (the tip is the
+    tail part itself)."""
     return {"tail-root": record({"draw": _tail_root})}
 
 
@@ -216,9 +219,9 @@ BULB = [
 
 
 def tail(p: Any, _at: Any = None) -> None:
-    """The tail's tip around its centre (P10-R11), on its knuckle joint: a tapering, plated segment,
-    a glowing bulb of magma at its end and the stinger barrel on top of it, pointing forward, that
-    sweeps its lines of bullets across the screen."""
+    """The tail's tip around its centre (MB-MAGMA-SALAMANDER-04), on its knuckle joint: a tapering,
+    plated segment, a glowing bulb of magma at its end and the stinger barrel on top of it, pointing
+    forward, that sweeps its lines of bullets across the screen."""
     hull = p.hull
     neon = p.neon
     charge = p.charge

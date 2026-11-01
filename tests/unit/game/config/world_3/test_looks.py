@@ -14,18 +14,19 @@ LOOKS = [LEVEL_3_1_LOOK, LEVEL_3_2_LOOK, LEVEL_3_3_LOOK, LEVEL_3_4_LOOK, LEVEL_3
 SECTIONS = ("sky", "fog", "sun", "ambient", "terrain", "clouds", "roads", "props", "glow")
 
 
-def test_p09_r04_every_level_of_the_world_has_a_look() -> None:
+def test_wld_3_14_every_level_of_the_world_has_a_look() -> None:
+    """Each level has its own look (WLD-3-14)."""
     assert len(LOOKS) == 5
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p09_r04_a_look_has_every_section_the_scenery_reads(look) -> None:
+def test_wld_3_11_a_look_has_every_section_the_scenery_reads(look) -> None:
     for section in SECTIONS:
         assert look[section] is not None, section
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p09_r04_sky_stops_are_colours_in_range(look) -> None:
+def test_wld_3_14_sky_stops_are_colours_in_range(look) -> None:
     assert look.sky.stops
     for stop in look.sky.stops:
         assert len(stop.color) == 3
@@ -33,5 +34,5 @@ def test_p09_r04_sky_stops_are_colours_in_range(look) -> None:
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p09_r04_fog_fades_out_between_its_start_and_end(look) -> None:
+def test_wld_3_14_fog_fades_out_between_its_start_and_end(look) -> None:
     assert 0 < look.fog.start < look.fog.end

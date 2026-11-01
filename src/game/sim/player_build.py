@@ -1,5 +1,6 @@
-"""Builds the core types of the player's ships and weapons (P02, P03) from their config records:
-the one place where the config meets `core/` for them. Mapping rules are in `config_build.py`.
+"""Builds the core types of the player's ships and weapons from their config records: the one
+place where the config meets `core/` for them, the weapons staying data (GAME-WPN-19). Mapping
+rules are in `config_build.py`.
 
 `PLAYER_SHIPS` and `PLAYER_WEAPONS` keep camelCase keys; `core/` dispatches
 projectile and beam weapons with `isinstance`, so a weapon is built as its class here.
@@ -36,7 +37,7 @@ def _ship(ship: ConfigRecord) -> PlayerShipDefinition:
 
 
 def player_roster(config: ConfigRecord) -> PlayerShipRoster:
-    """The ships the player can fly, as `core/` reads them (P02-R01..R03)."""
+    """The ships the player can fly, as `core/` reads them (GAME-SHIP-01)."""
     return PlayerShipRoster(config.baseSpeedPxPerSec, mapped(config.ships, _ship))
 
 
@@ -88,7 +89,7 @@ def _weapon(weapon: ConfigRecord) -> WeaponDefinition:
 
 
 def player_weapons(configs: list[ConfigRecord]) -> list[WeaponDefinition]:
-    """The weapons every player ship can fire, as `core/` reads them (P03)."""
+    """The weapons every player ship can fire, as `core/` reads them (GAME-WPN-01)."""
     result: list[WeaponDefinition] = []
     for weapon in configs:
         result.append(_weapon(weapon))

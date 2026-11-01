@@ -1,4 +1,4 @@
-"""The player ship's movement (P06-R02, GD-10)"""
+"""The player ship's movement (GAME-SHIP-04)"""
 
 import math
 
@@ -84,7 +84,8 @@ class PlayerFlight:
         self._keep_inside(bounds)
 
     def _keep_inside(self, bounds: FlightBounds) -> None:
-        """Puts the ship back inside `bounds`, stopping it against the edge it hit."""
+        """Puts the ship back inside `bounds`, stopping it against the edge it hit
+        (GAME-SCREEN-05)."""
         y = min(bounds.max_y, max(bounds.min_y, self.y))
         if y != self.y:
             self.vy = 0

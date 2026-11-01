@@ -1,6 +1,6 @@
-"""The material of the props' windows (D-210): the windows' atlas (`window_atlas.py`) uploaded once
-per scene, its light glowing by the time of day as the other self-lit accents, its shape cut out
-of the quads so the walls show between the windows. Needs a WebGL engine.
+"""The material of the props' windows (D-210, GFX-BLDG-15): the windows' atlas (`window_atlas.py`)
+uploaded once per scene, its light glowing by the time of day as the other self-lit accents, its
+shape cut out of the quads so the walls show between the windows. Needs a WebGL engine.
 
 The atlas is the diffuse texture, not the emissive one: Babylon adds an emissive texture to the
 emissive colour, so the dark windows would glow as much as the lit ones. As the diffuse texture

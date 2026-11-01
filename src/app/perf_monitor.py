@@ -1,6 +1,7 @@
-"""Times the work of each frame and of each level start (P13-R01): how many frames are longer than
-`long_frame_ms`, the longest one, and the
-last loading time. `now` is the clock, in milliseconds (`performance.now` in the browser).
+"""Times the work of each frame and of each level start (DEV-PERF-01): how many frames are longer
+than `long_frame_ms`, the longest one, and the last loading time. `now` is the clock, in
+milliseconds (`performance.now` in the browser). These numbers check the frame-rate target
+(ENG-101) and the freezes (PERF-19), and are taken before anything is optimised (PERF-02).
 
 `perf_overlay` shows the numbers on a debug overlay (dev and e2e builds only): with no
 `perf_parent` it returns the ticker unchanged and does nothing.
@@ -34,7 +35,7 @@ class PerfMonitor:
         self._loading_step = 0.0
         self._frame_start: float | None = None
         self._load_start: float | None = None
-        # Frames left to skip before counting again (a level's first second, P13-R04).
+        # Frames left to skip before counting again (a level's first second, DEV-PERF-02).
         self._skip: float = 0
 
     @property
@@ -121,7 +122,8 @@ class PerfOverlayOptions:
 
 
 def perf_overlay(options: PerfOverlayOptions, perf: PerfMonitor) -> PerfOverlayHandle:
-    """The perf overlay (P13-R01), toggled by its key, refreshed after each frame's simulation."""
+    """The perf overlay (DEV-PERF-03, ENG-111), toggled by its key, refreshed after each frame's
+    simulation."""
     perf_parent = options.perf_parent
     keyboard_target = options.keyboard_target
     if perf_parent is None:

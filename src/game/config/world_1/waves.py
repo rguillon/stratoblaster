@@ -1,9 +1,9 @@
-"""The wave scripts of World 1 (P06-R07, R08)
+"""The wave scripts of World 1 (WLD-1-17, WLD-1-18, WLD-1-19)
 
 Each beat is written in seconds from the start of the level for readability, and turned into a
-scrolled distance at the level's ground speed: waves are triggered by distance (GD-40). A beat is
-`[seconds, kind, groups, seconds between groups, side, position (0..1), spread]`. Gnats come in
-groups of five; every other kind one by one.
+scrolled distance at the level's ground speed: waves are triggered by distance (GAME-LEVEL-01). A
+beat is `[seconds, kind, groups, seconds between groups, side, position (0..1), spread]`. Gnats come
+in groups of five; every other kind one by one.
 """
 
 import math
@@ -18,9 +18,9 @@ from typing import Any  # noqa: E402
 
 __pragma__("noskip")
 
-# Enemy density (phase 6 review: +50 %): each beat brings this many times its groups, rounded.
-# A beat of one group gets its extra groups `DENSITY_GAP` seconds apart and, from the top,
-# `DENSITY_SPREAD` across the screen, so they do not come in on top of each other.
+# Enemy density (WLD-1-20; phase 6 review: +50 %): each beat brings this many times its groups,
+# rounded. A beat of one group gets its extra groups `DENSITY_GAP` seconds apart and, from the
+# top, `DENSITY_SPREAD` across the screen, so they do not come in on top of each other.
 WAVE_DENSITY = 1.5
 DENSITY_GAP = 1.5
 DENSITY_SPREAD = 0.3
@@ -73,7 +73,7 @@ def wave_script(speed: float, beats: list[Any], density: float = WAVE_DENSITY) -
 
 def quiet_before(script: list[Any], bosses: list[float], quiet: float) -> Any:
     """`script` without the waves that would start in the `quiet` world units before each of the
-    distances `bosses` (P07-R06: the stretch before a boss is left free).
+    distances `bosses` (GAME-LEVEL-05: the stretch before a boss is left free).
     """
     kept = []
     for wave in script:
@@ -87,9 +87,9 @@ def quiet_before(script: list[Any], bosses: list[float], quiet: float) -> Any:
 
 
 def fill(beats: list[Any], filler: Any) -> list[Any]:
-    """`beats` with filler groups in their lulls (phase 6 review): after each beat, a group of the
-    filler's kinds in turn every `maxGap` seconds, as long as the next beat is more than one and a
-    half gaps away.
+    """`beats` with filler groups in their lulls (WLD-1-21, phase 6 review): after each beat, a
+    group of the filler's kinds in turn every `maxGap` seconds, as long as the next beat is more
+    than one and a half gaps away.
     """
     # A stable insertion sort by seconds: Transcrypt's sort is not stable and takes no comparator.
     ordered = [beat for beat in beats]
@@ -131,7 +131,8 @@ def fill(beats: list[Any], filler: Any) -> list[Any]:
     return out
 
 
-# 1-1: Gnats, Hornets, Scouts and Strafers, a few at a time (easy, even for a kid).
+# 1-1 (LVL-1-1-08, LVL-1-1-09): Gnats, Hornets, Scouts and Strafers, a few at a time (easy, even
+# for a kid).
 WAVES_1_1 = [
     [4, "scout", 1, 0, "top", 0.5],
     [12, "scout", 2, 2.5, "top", 0.3, 0.4],
@@ -157,7 +158,7 @@ WAVES_1_1 = [
     [226, "gnat", 1, 0, "top", 0.6],
 ]
 
-# 1-2: the 1-1 kinds, plus Weavers and Splitters.
+# 1-2 (LVL-1-2-08, LVL-1-2-09): the 1-1 kinds, plus Weavers and Splitters.
 WAVES_1_2 = [
     [4, "scout", 2, 2, "top", 0.35, 0.3],
     [12, "gnat", 1, 0, "top", 0.3],
@@ -189,7 +190,7 @@ WAVES_1_2 = [
     [226, "hornet", 4, 0.8, "top", 0.15, 0.23],
 ]
 
-# 1-3: the 1-2 kinds, plus Carriers and Spinners.
+# 1-3 (LVL-1-3-08, LVL-1-3-09): the 1-2 kinds, plus Carriers and Spinners.
 WAVES_1_3 = [
     [4, "scout", 3, 1.5, "top", 0.25, 0.25],
     [12, "gnat", 1, 0, "top", 0.3],
@@ -220,7 +221,7 @@ WAVES_1_3 = [
     [224, "splitter", 2, 2, "top", 0.3, 0.4],
 ]
 
-# 1-4: the 1-3 kinds, plus Lancers and Rocketeers.
+# 1-4 (LVL-1-4-08, LVL-1-4-09): the 1-3 kinds, plus Lancers and Rocketeers.
 WAVES_1_4 = [
     [4, "scout", 3, 1.2, "top", 0.25, 0.25],
     [10, "gnat", 2, 2.5, "top", 0.3, 0.4],
@@ -253,7 +254,7 @@ WAVES_1_4 = [
     [224, "spinner", 2, 2, "top", 0.3, 0.4],
 ]
 
-# 1-5: every kind, Bulwarks included.
+# 1-5 (LVL-1-5-08, LVL-1-5-09): every kind, Bulwarks included.
 WAVES_1_5 = [
     [4, "scout", 4, 1, "top", 0.15, 0.23],
     [10, "gnat", 2, 2, "top", 0.3, 0.4],
@@ -291,9 +292,10 @@ WAVES_1_5 = [
     [226, "bulwark", 1, 0, "top", 0.5],
 ]
 
-# The filler of each level (phase 6 review: the levels felt empty), in level order. 1-1 gets only
-# Hornets and Gnats, which do not shoot, so it stays easy; later levels fill up sooner and tighter
-# (D-051).
+# The filler of each level (phase 6 review: the levels felt empty), in level order: LVL-1-1-10,
+# LVL-1-2-10, LVL-1-3-10, LVL-1-4-10, LVL-1-5-10. 1-1 gets only Hornets and Gnats, which do not
+# shoot, so it stays easy (WLD-1-25); later levels fill up sooner and tighter (D-051), so each is
+# harder than the one before (WLD-1-22) and its second half than its first (WLD-1-24).
 WORLD_1_FILLERS = record(
     {
         "1-1": {"kinds": ["hornet", "hornet", "gnat", "hornet"], "maxGap": [4.5, 3]},

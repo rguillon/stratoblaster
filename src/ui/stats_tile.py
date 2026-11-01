@@ -1,4 +1,4 @@
-"""A small debug tile with the frame rate and polygon count"""
+"""A small debug tile with the frame rate and polygon count (DEV-PERF-04)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 

@@ -10,7 +10,7 @@ from game.sim.enemy_kinds import ENEMY_KINDS
 KIND = next(kind for kind in ENEMY_KINDS if kind.id == "hive")
 
 
-def test_p05_r23_the_kind_spawns_live_enemies_just_above_the_playfield() -> None:
+def test_enm_hive_08_the_kind_spawns_live_enemies_just_above_the_playfield() -> None:
     enemies = KIND.spawn(area(width=400, height=600))
     assert enemies
     for enemy in enemies:
@@ -18,7 +18,7 @@ def test_p05_r23_the_kind_spawns_live_enemies_just_above_the_playfield() -> None
         assert math.isfinite(enemy.x) and math.isfinite(enemy.y)
 
 
-def test_p05_r23_a_spawned_enemy_moves_and_stays_finite_over_a_long_run() -> None:
+def test_enm_hive_08_a_spawned_enemy_moves_and_stays_finite_over_a_long_run() -> None:
     ctx = FakeContext()
     enemy = KIND.spawn(area(width=400, height=600))[0]
     start = (enemy.x, enemy.y)

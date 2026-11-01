@@ -1,6 +1,7 @@
 # Single entry point for people, git hooks and CI (specs/01-engineering.md §3).
 # Public targets: setup, check, tests, e2e, serve, help. The other targets are steps the public
-# ones and the git hooks call: they work on their own too, but they are not listed by `make help`.
+# ones and the git hooks call: they work on their own too, but they are not listed by `make help`
+# (ENG-37).
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript; esbuild bundles it.
 
 # `make help` is the default target (ENG-20).
@@ -11,10 +12,11 @@
 DIST := dist
 # The e2e build (ENG-51, ENG-52): the game with its test API, served to Playwright by tests/e2e.
 E2E_DIST := dist-e2e
-# Stamp files: what each install or compile step last did (git-ignored).
+# Stamp files: what each install or compile step last did (git-ignored), so a step runs again only
+# when its inputs change (ENG-39).
 STAMPS := .make
 
-# Babylon.js (ENG-02, P18-R04, D-173): the pinned UMD build, vendored under public/vendor/ and
+# Babylon.js (ENG-02, D-173): the pinned UMD build, vendored under public/vendor/ and
 # checked against its SHA-256. Bump the version and the hash together.
 BABYLON_VERSION := 9.32.0
 BABYLON_URL := https://cdn.jsdelivr.net/npm/babylonjs@$(BABYLON_VERSION)/babylon.js
@@ -30,7 +32,7 @@ help: ## List the targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 # The tools the game needs. Every step below checks them first, so a missing one is named before
-# anything is installed.
+# anything is installed (ENG-38).
 check-tools:
 	@missing=""; \
 	for t in uv node npm curl git; do command -v $$t >/dev/null 2>&1 || missing="$$missing $$t"; done; \
@@ -45,7 +47,7 @@ check-tools:
 		echo "node is $$major, but node/.nvmrc asks for $(NODE_MAJOR)" >&2; exit 1; \
 	fi
 
-# Python: the locked environment (.venv, uv: P17-R01), made again when pyproject.toml or uv.lock
+# Python: the locked environment (.venv, uv: ENG-04), made again when pyproject.toml or uv.lock
 # change.
 UV_SYNC := $(STAMPS)/uv-sync
 $(UV_SYNC): pyproject.toml uv.lock | check-tools
@@ -89,7 +91,8 @@ babylon: | check-tools
 	fi
 
 # The version and the short commit shown on the title screen (ENG-83): `src/build_info.py`, written
-# from git (git-ignored). The version is the latest release tag (`v` dropped): `unknown` without one.
+# from git (git-ignored). The version is the latest release tag (`v` dropped, ENG-93): `unknown`
+# without one.
 APP_VERSION := $(or $(patsubst v%,%,$(shell git tag --sort=-v:refname 2>/dev/null | head -n 1)),unknown)
 BUILD_INFO := src/build_info.py
 
@@ -146,15 +149,17 @@ check-fast: lint typecheck
 # ENG-48).
 UNIT_WORKERS ?= auto
 
-# ENG-27, ENG-29, P18-R06: the unit tests and the coverage gates of ENG-43, in one target.
+# ENG-29: the unit tests and the coverage gates of ENG-43, in one target (src/game/sim/ has no
+# gate of its own yet: ENG-146).
 tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ at 90 %; HTML in coverage/
 	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
 	uv run coverage report --include='src/core/*' --fail-under=90
 
 # The game: build, end-to-end tests, serving.
 
-# ENG-23, P17-R02: Transcrypt, then esbuild into dist/js/; index.html and public/ (the vendored
-# Babylon.js, P18-R04) copied into dist/. Fails if a compiler pragma leaks into the bundle.
+# ENG-23, ENG-150: Transcrypt, then esbuild into dist/js/; index.html (the only page, DEV-MENU-02)
+# and public/ (the vendored Babylon.js, ENG-02) copied into dist/. Fails if a compiler pragma or
+# the test API (DEV-API-01) leaks into the bundle.
 build: build-info $(TRANSCRYPT_STAMP) $(NPM_CI) babylon
 	rm -rf $(DIST)
 	mkdir -p $(DIST)/js
@@ -185,8 +190,7 @@ E2E_SHARD ?=
 e2e: e2e-build $(PLAYWRIGHT) $(UV_SYNC) ## End-to-end tests (Playwright, Chromium) on the e2e build; E2E_ARGS="-k smoke" to filter, E2E_SHARD=1/4 for a slice
 	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
 
-# The production build served locally (ENG-33; also ENG-22's `make dev`, by another name), on
-# this port.
+# The production build served locally (ENG-22), on this port.
 SERVE_PORT ?= 5173
 serve: build $(UV_SYNC) ## Serve the game (dist/, production build) on http://localhost:5173
 	@echo 'serving $(DIST)/ on http://localhost:$(SERVE_PORT) (Ctrl-C to stop)'
@@ -194,6 +198,7 @@ serve: build $(UV_SYNC) ## Serve the game (dist/, production build) on http://lo
 
 # Everything at once: setup and the full gate.
 
+# ENG-21: the tools checked, then everything installed, the git hooks too (ENG-60).
 setup: check-tools $(UV_SYNC) $(NPM_CI) babylon $(if $(SKIP_BROWSER),,$(PLAYWRIGHT)) ## Check the tools, install the dependencies and the git hooks (pre-commit, pre-push)
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 	@echo 'setup: done'
@@ -201,6 +206,6 @@ setup: check-tools $(UV_SYNC) $(NPM_CI) babylon $(if $(SKIP_BROWSER),,$(PLAYWRIG
 # ENG-32: the full gate.
 check: lint typecheck tests build e2e ## Every code check, the unit tests with coverage, the build and the e2e tests
 
-# ENG-34: removes the builds, the coverage and test reports and the caches.
+# ENG-34: removes the builds, the coverage and test reports and the caches (ENG-66).
 clean:
 	rm -rf $(DIST) $(E2E_DIST) test-results build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache

@@ -15,13 +15,15 @@ LEVELS = [LEVEL_4_1, LEVEL_4_2, LEVEL_4_3, LEVEL_4_4, LEVEL_4_5]
 
 
 @pytest.mark.parametrize("level", LEVELS)
-def test_p10_r03_level_scenery_names_its_level_and_scrolls(level) -> None:
+def test_wld_4_01_level_scenery_names_its_level_and_scrolls(level) -> None:
+    """Each level's identity and ground speed (LVL-4-1-01 … LVL-4-5-01)."""
     assert level.id.startswith("world-4-")
     assert_scenery_level(level, level.id.removeprefix("world-"))
 
 
 @pytest.mark.parametrize("level", LEVELS)
-def test_p10_r03_level_sections_have_positive_lengths(level) -> None:
+def test_wld_4_02_level_sections_have_positive_lengths(level) -> None:
+    """The sections of each level (LVL-4-1-02 … LVL-4-5-02)."""
     assert level.sections
     for section in level.sections:
         assert section["seconds"] > 0
@@ -32,7 +34,8 @@ def _tallest_building() -> float:
 
 
 @pytest.mark.parametrize("level", LEVELS)
-def test_p10_r08_the_tallest_roof_stays_under_the_lowest_cloud_layer(level) -> None:
+def test_wld_4_10_the_tallest_roof_stays_under_the_lowest_cloud_layer(level) -> None:
+    """Also GFX-SKY-12."""
     # The skyscrapers poked through the clouds, or met them and z-fought: the city ground is low
     # enough that the tallest roof stays the clouds' clearance under the lowest layer.
     scale = PLAYFIELD_CAMERA.groundScale

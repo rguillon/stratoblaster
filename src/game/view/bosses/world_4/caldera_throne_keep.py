@@ -1,8 +1,7 @@
-"""P10-R11, 4-5: the Caldera Throne's keep over its core: three armoured tiers lit crimson, molten
-slits in their walls, battlements, and the throne tower crowned in gold whose crown fires the core's
-rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Model space: logical
-pixels, nose +Z (down the screen),
-Y up towards the camera.
+"""FB-CALDERA-THRONE-02, 4-5: the Caldera Throne's keep over its core: three armoured tiers lit
+crimson, molten slits in their walls, battlements, and the throne tower crowned in gold whose crown
+fires the core's rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Model
+space: logical pixels, nose +Z (down the screen), Y up towards the camera.
 """
 
 import math
@@ -33,8 +32,8 @@ type OutlinePoint = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# P16-R06: the keep's lowest tier is the flesh of its back swelling up, the upper ones armour
-# grafted on; its stacks are flesh spiracles, its watchtowers bone horns.
+# FB-CALDERA-THRONE-02: the keep's lowest tier is the flesh of its back swelling up, the upper ones
+# armour grafted on; its stacks are flesh spiracles, its watchtowers bone horns.
 
 
 def _octagon(radius: float, centre: OutlinePoint) -> list[OutlinePoint]:
@@ -205,7 +204,8 @@ def _draw_watch(p: Any) -> None:
 
 
 def draw_keep(p: Any) -> None:
-    """The keep over the core, its throne tower, the smokestacks and watchtowers (P10-R11)."""
+    """The keep over the core, its throne tower, the smokestacks and watchtowers
+    (FB-CALDERA-THRONE-02)."""
     _draw_tiers(p)
     _draw_tower(p)
     _draw_stacks(p)

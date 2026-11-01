@@ -1,10 +1,9 @@
-"""P10-R11, 4-3: the Magma Salamander.
-Logical
-pixels, nose +Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped head, a
-body of overlapping armour plates with magma glowing in the seams between them, four clawed legs
-splayed out, a spiny fin on each side of its back (its parts) and a tail curling back to its right
-(on two joints). P16-R05: a living lizard, its scorched flesh body under bony scale plates and metal
-grafts, magma glands along its spine, its reactors set in flesh sacs.
+"""MB-MAGMA-SALAMANDER-01 to MB-MAGMA-SALAMANDER-06, 4-3: the Magma Salamander. Logical pixels, nose
++Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped head, a body of
+overlapping armour plates with magma glowing in the seams between them, four clawed legs splayed
+out, a spiny fin on each side of its back (its parts) and a tail curling back to its right (on two
+joints). MB-MAGMA-SALAMANDER-02: a living lizard, its scorched flesh body under bony scale plates
+and metal grafts, magma glands along its spine, its reactors set in flesh sacs.
 """
 
 import math
@@ -221,7 +220,8 @@ def _draw_back(p: Any) -> None:
 
 
 def build_magma_salamander(scene: Any) -> Any:
-    """P10-R11: the Magma Salamander, a segmented lizard-ship with a molten glow between its plates,
+    """MB-MAGMA-SALAMANDER-01, MB-MAGMA-SALAMANDER-05: the Magma Salamander, a segmented
+    lizard-ship with a molten glow between its plates,
     orange-yellow neon, spiny back fins and a lashing tail."""
 
     def core(p: Any) -> None:

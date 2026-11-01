@@ -1,4 +1,4 @@
-"""The Hydra (P05-R19)"""
+"""The Hydra (`specs/enemies/hydra.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -18,10 +18,11 @@ CFG = ELITE_CONFIG.hydra
 
 
 class Hydra(JointedEnemy):
-    """P05-R19: a broad hull with three long necks swaying out of step (moving parts, P05-R13). It
-    comes down to the upper third, stays 7 s, then leaves downward. Its heads fire in turn, one
-    every 0.5 s, each a bullet aimed at the player from its eye; with every head gone it no longer
-    fires, but its hull can still be destroyed.
+    """ENM-HYDRA-07: a broad hull with three long necks swaying out of step (ENM-HYDRA-08; moving
+    parts, ENM-27). It comes down to the upper third, stays 7 s, then leaves downward. Its heads
+    fire in turn, one every 0.5 s, each a bullet aimed at the player from its eye (ENM-HYDRA-09);
+    with every head gone it no longer fires, but its hull can still be destroyed (ENM-HYDRA-10).
+    Its necks and heads come from its config, as the engine's specs (ENM-HYDRA-12).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

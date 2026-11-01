@@ -1,6 +1,6 @@
-"""Imposters (D-211): models drawn as a picture of themselves, baked once into an atlas, one frame
-per heading, as the tilted playfield camera sees them. Pure: the atlas' layout, the geometry the
-pictures are baked from and the quads that show them. The bake itself needs WebGL
+"""Imposters (D-211, GFX-PROP-10): models drawn as a picture of themselves, baked once into an
+atlas, one frame per heading, as the tilted playfield camera sees them. Pure: the atlas' layout, the
+geometry the pictures are baked from and the quads that show them. The bake itself needs WebGL
 (`imposter_bake_visual.py`).
 
 The camera looks down the playfield at `tilt` from straight down, towards +Z, never turning: so a

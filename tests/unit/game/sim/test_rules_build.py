@@ -12,7 +12,8 @@ from game.config.record import record
 from game.sim.rules_build import bomb_rules, bonus_rules, boss_fight_rules, hull_rules
 
 
-def test_p11_r05_hull_rules_take_the_lives_and_damage_of_the_config() -> None:
+def test_game_life_03_hull_rules_take_the_lives_and_damage_of_the_config() -> None:
+    """Also GAME-LIFE-02 (the lives) and GAME-LIFE-07 (the invincibility)."""
     rules = hull_rules(HULL_RULES)
     assert isinstance(rules, HullRules)
     assert rules.lives == 3
@@ -22,24 +23,26 @@ def test_p11_r05_hull_rules_take_the_lives_and_damage_of_the_config() -> None:
     assert rules.hit_radius == 5
 
 
-def test_p11_r05_hull_rules_leave_an_omitted_life_cap_as_none() -> None:
+def test_game_life_02_hull_rules_leave_an_omitted_life_cap_as_none() -> None:
     rules = hull_rules(HULL_RULES)
     assert rules.max_lives is None
 
 
-def test_p11_r05_hull_rules_keep_a_life_cap_when_the_config_has_one() -> None:
+def test_game_life_02_hull_rules_keep_a_life_cap_when_the_config_has_one() -> None:
     capped = record({**HULL_RULES, "maxLives": 5})
     assert hull_rules(capped).max_lives == 5
 
 
-def test_p11_r05_bomb_rules_take_the_start_damage_and_seconds() -> None:
+def test_game_bomb_01_bomb_rules_take_the_start_damage_and_seconds() -> None:
+    """Also GAME-BOMB-04: the damage."""
     rules = bomb_rules(BOMB_RULES)
     assert isinstance(rules, BombRules)
     assert (rules.start, rules.damage, rules.seconds) == (3, 100, 1)
     assert rules.max is None
 
 
-def test_p11_r05_bonus_rules_convert_the_chances_and_the_overflow_points() -> None:
+def test_game_bonus_02_bonus_rules_convert_the_chances_and_the_overflow_points() -> None:
+    """Also GAME-BONUS-03 (life and bomb chances) and GAME-BONUS-10 (overflow points)."""
     rules = bonus_rules(BONUS_RULES)
     assert isinstance(rules, BonusRules)
     assert rules.chance.per_health == 0.0015
@@ -49,14 +52,15 @@ def test_p11_r05_bonus_rules_convert_the_chances_and_the_overflow_points() -> No
     assert rules.overflow_points.life == 5000
 
 
-def test_p11_r05_bonus_rules_leave_an_omitted_special_drop_as_none() -> None:
+def test_game_bonus_03_bonus_rules_leave_an_omitted_special_drop_as_none() -> None:
     plain = record({**BONUS_RULES, "special": None, "overflowPoints": None})
     rules = bonus_rules(plain)
     assert rules.special is None
     assert rules.overflow_points is None
 
 
-def test_p11_r05_boss_fight_rules_take_the_ease_and_bar_fill_seconds() -> None:
+def test_game_level_07_boss_fight_rules_take_the_ease_and_bar_fill_seconds() -> None:
+    """Also UI-HUD-14: the gauge's fill."""
     rules = boss_fight_rules(BOSS_FIGHT_RULES)
     assert isinstance(rules, BossFightRules)
     assert (rules.speed_ease_seconds, rules.bar_fill_seconds) == (2, 1)

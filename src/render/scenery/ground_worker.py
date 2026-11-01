@@ -1,6 +1,6 @@
-"""Generates levels' grounds and scenery textures off the main thread (P13-R03) The module is the
+"""Generates levels' grounds and scenery textures off the main thread (PERF-14) The module is the
 worker's script: importing it installs the
-message handler on the worker's global scope.
+message handler on the worker's global scope. What it posts back is plain data (ENG-164).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -101,7 +101,7 @@ def _job_of(job_id: int) -> Any:
 def _on_message(event: Any) -> None:
     data = event.data
     if data.kind == "chunks":
-        # The worker places the chunks the level asks for, in order (P04-R04).
+        # The worker places the chunks the level asks for, in order (PERF-16).
         made = _job_of(data.id)
         if made is None:
             _post_chunks(data.id, _no_chunks())
@@ -122,8 +122,8 @@ def _on_message(event: Any) -> None:
         _keep_job(data.id, made)
         _post_ground(data.id, to_plain(made.ground))
 
-        # Reviewer, 2026-10-28: the runout after the jobs already waiting (the level's textures),
-        # as the level can start without it.
+        # Reviewer, 2026-10-28 (PERF-15): the runout after the jobs already waiting (the level's
+        # textures), as the level can start without it.
         def send_runout() -> None:
             _post_runout(data.id, to_plain(made.runout()))
 

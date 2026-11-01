@@ -1,4 +1,4 @@
-"""P08-R10, 2-4: the Avalanche
+"""MB-AVALANCHE-01 to MB-AVALANCHE-06, 2-4: the Avalanche
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -168,7 +168,8 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a burrowing beast, a squat body of flesh under a ridged shell, its head in front.
+    # MB-AVALANCHE-02: a burrowing beast, a squat body of flesh under a ridged shell, its head in
+    # front.
     flesh.bevel_slab(CHASSIS, DECK, [2.0, 2.2], ICE_FLESH.sinew, None, ICE_FLESH.graphite)
     neon_band(neon, CHASSIS, [-2.2, -0.6], [0.985, 1.02], YELLOW)
     shell(flesh, SegmentedBody(-36.0, 6.0, 4, 21.0, 4.0, 13.0))
@@ -208,7 +209,8 @@ def draw_track(p: EnemyParts, s: float) -> None:
     hull = p.hull
     flesh = p.flesh
     x = s * TRACK_X
-    # P16-R05: a crawling flank of swollen segments where the track was, a metal fender over it.
+    # MB-AVALANCHE-02: a crawling flank of swollen segments where the track was, a metal fender over
+    # it.
     segmented_body(
         flesh,
         SegmentedBody(
@@ -264,7 +266,8 @@ def draw_track(p: EnemyParts, s: float) -> None:
 
 
 def draw_frost(p: EnemyParts) -> None:
-    """Frost over the deck, icicles under the nose and along the flanks, hazard paint, sockets."""
+    """Frost over the deck, icicles under the nose and along the flanks (MB-AVALANCHE-05), hazard
+    paint, sockets."""
     hull = p.hull
     flesh = p.flesh
     for item in SNOW:
@@ -288,7 +291,7 @@ def draw_frost(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The core's twin guns under the cab's chin, on a mount."""
+    """The core's twin guns under the cab's chin, on a mount (MB-AVALANCHE-03)."""
     p.hull.box([18.0, 4.0, 7.0], H.dark, Placement([0.0, 3.0, 28.0]), H.panel)
     for tip in AVALANCHE_CORE_GUNS:
         barrel_to(p, tip, [1.7, 9.0])
@@ -305,13 +308,14 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def hopper(p: EnemyParts, at: Vec3) -> None:
-    """The rock hopper (P08-R10): a bin on struts, heaped with rocks and snow, a yellow band round
-    its rim and a chute at its front, where its rocks drop from."""
+    """The rock hopper (MB-AVALANCHE-03): a bin on struts, heaped with rocks and snow, a yellow band
+    round its rim and a chute at its front, where its rocks drop from."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
-    # P16-R05: a crop sac of flesh, its mouth gaping with rocks and ice, a metal rim grafted on.
+    # MB-AVALANCHE-03: a crop sac of flesh, its mouth gaping with rocks and ice, a metal rim grafted
+    # on.
     bin_at: list[OutlinePoint] = [[x + at[0], z + at[2]] for x, z in BIN]
     flesh.bevel_slab(bin_at, BIN_Y, [2.5, 0.8], ICE_FLESH.membrane, None, ICE_FLESH.graphite)
     flesh.box([22.0, 1.0, 22.0], ICE_FLESH.seam, Placement(offset(at, 0.0, BIN_Y[2] - 1.0, 0.0)))
@@ -369,11 +373,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_avalanche(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Avalanche, a heavy drilling machine 3.5 L across, yellow neon: a tracked chassis
-    crusted with snow and icicles, a cab at its nose, two drill arms swinging in front of it and a
-    rock hopper heaped with ice and stone on its back. P16-R05: now a burrowing beast of flesh
-    under a ridged shell, crawling on segmented flanks, a crop sac of rock and ice on its back and
-    fleshy arms ending in grafted drills."""
+    """MB-AVALANCHE-01, MB-AVALANCHE-04: the Avalanche, a heavy drilling machine 3.5 L across,
+    yellow neon: a tracked chassis crusted with snow and icicles, a cab at its nose, two drill arms
+    swinging in front of it and a rock hopper heaped with ice and stone on its back.
+    MB-AVALANCHE-02: now a burrowing beast of flesh under a ridged shell, crawling on segmented
+    flanks, a crop sac of rock and ice on its back and fleshy arms ending in grafted drills."""
     limbs = merge(arm_limbs("left"), arm_limbs("right"))
     model: BuiltEnemyModel = build_boss_model(
         AVALANCHE,

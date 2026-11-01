@@ -1,6 +1,5 @@
-"""P09-R09, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth). Logical
-pixels, nose +Z (the chin), Y up (towards the
-camera); the face looks up at the camera."""
+"""MB-STONE-IDOL-03, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth).
+Logical pixels, nose +Z (the chin), Y up (towards the camera); the face looks up at the camera."""
 
 import math
 
@@ -29,7 +28,7 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Stone Idol's neon: the light glowing through its cracks, eyes and mouth.
+# The Stone Idol's neon: the light glowing through its cracks, eyes and mouth (MB-STONE-IDOL-05).
 IDOL_NEON = BOSS_LOOK.neon["stone-idol"]
 # Height of the face's carved surface.
 FACE = 12
@@ -43,13 +42,14 @@ LIPS = record({"width": 15, "depth": 8})
 
 
 def eye_socket(p: EnemyParts, at: Vec3) -> None:
-    """An eye's socket around its centre `at` (P09-R09): a deep, round hollow in the face, its rim
-    cracked and lit, moss on its lower lid. Its eyeball (`eyeball`) turns in it."""
+    """An eye's socket around its centre `at` (MB-STONE-IDOL-03): a deep, round hollow in the face,
+    its rim cracked and lit, moss on its lower lid. Its eyeball (`eyeball`) turns in it."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = sign_of(at[0])
-    # P16-R05: a raw flesh eyelid ringed by a stone growth, veins spreading from its corner.
+    # MB-STONE-IDOL-03: a raw flesh eyelid ringed by a stone growth, veins spreading from its
+    # corner.
     hull.cylinder(10.5, 1.6, 10, STONE.dark, Placement(offset(at, 0, FACE - 0.4, 0)), 9.5)
     flesh.cylinder(9, 0.3, 10, F.slate, Placement(offset(at, 0, FACE + 1, 0)))
     vein_to(
@@ -96,7 +96,7 @@ def eyeball(p: EnemyParts, at: Vec3) -> None:
     y = tip[1]
     z = tip[2]
     centre: Vec3 = [at[0], y, at[2]]
-    # P16-R05: a living, wet eyeball of bone-white flesh, its iris a pulsing gland.
+    # MB-STONE-IDOL-03: a living, wet eyeball of bone-white flesh, its iris a pulsing gland.
     flesh.lathe(EYEBALL, 8, F.bone, Placement(centre))
     # The glowing iris looks up and forward, half at the camera, half where the eye aims.
     vein.cylinder(4.4, 0.8, 8, IDOL_NEON, Placement(iris_point(centre, y, 6.1), 0, IRIS_TILT), 4)
@@ -106,8 +106,8 @@ def eyeball(p: EnemyParts, at: Vec3) -> None:
 
 
 def mouth(p: EnemyParts, at: Vec3) -> None:
-    """The mouth around its centre `at` (P09-R09): thick carved lips open on a deep throat, stone
-    teeth, a neon lining; its rings of boulders leave from the throat's glow."""
+    """The mouth around its centre `at` (MB-STONE-IDOL-03): thick carved lips open on a deep throat,
+    stone teeth, a neon lining; its rings of boulders leave from the throat's glow."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -115,7 +115,8 @@ def mouth(p: EnemyParts, at: Vec3) -> None:
     muzzle = p.muzzle
     w = LIPS.width
     d = LIPS.depth
-    # P16-R05: a living maw: a red throat, swollen flesh lips, the stone grown over them as armour.
+    # MB-STONE-IDOL-03: a living maw: a red throat, swollen flesh lips, the stone grown over them as
+    # armour.
     flesh.box([w * 2, 0.6, d * 2], F.wound, Placement(offset(at, 0, FACE - 0.2, 0)))
     # Upper lip (towards the nose, -Z), lower lip, and the corners.
     flesh.box(

@@ -1,4 +1,4 @@
-"""Ear-clipping triangulation of a simple polygon ()."""
+"""Ear-clipping triangulation of a simple polygon (no triangulation package: GFX-ART-02)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 

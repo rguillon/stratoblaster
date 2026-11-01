@@ -46,7 +46,8 @@ def spin_animation(node: Any, spin_rad_per_sec: float) -> Any:
 
 
 def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> None:
-    """The rotors' blades and hubs, each on a node spun by a model animation."""
+    """The rotors' blades and hubs, each on a node spun by a model animation (rotors spin,
+    ENM-42)."""
     look = ENEMY_LOOK.rotor
     scene = root.getScene()
     blade = [(-0.12, 0.3), (0.12, 0.3), (0.22, 0.92), (-0.08, 0.95)]
@@ -81,8 +82,9 @@ def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> No
 def add_reactors(
     name: str, reactors: list[Reactor], parts: Any, root: Any, neon: Any = None
 ) -> None:
-    """Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`, in
-    the enemy's `neon` colour (D-231: a yellow enemy's flames yellow, a green one's green), or the
+    """Nozzles in the hull, cores in the neon, and an animated flame per reactor (ENM-40) under
+    `root`, outside the body, so the living motion never moves it (ENM-45), in the enemy's `neon`
+    colour (D-231, GFX-ART-05: a yellow enemy's flames yellow, a green one's green), or the
     reactors' own when left out."""
     look = ENEMY_LOOK.reactor
     flame = neon if neon != None else look.color  # noqa: E711

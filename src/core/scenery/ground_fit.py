@@ -1,4 +1,4 @@
-"""How a prop sits on the ground (P04-R04): pure helpers of the prop placement"""
+"""How a prop sits on the ground (GFX-PROP-06): pure helpers of the prop placement"""
 
 import math
 
@@ -26,7 +26,7 @@ class SampledGround:
     the trees of a cell ask for many heights; the field's cost a few octaves of noise each). The
     mesh has a vertex at every multiple of its cell, and splits each cell into two triangles along
     the diagonal from its (+X, -Z) corner to its (-X, +Z) corner (`build_grid_indices`): with
-    `step` its cell, a tree stands on the ground drawn. Outside the grid, its edge."""
+    `step` its cell, a tree stands on the ground drawn (GFX-PROP-13). Outside the grid, its edge."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self, field: Heights, x0: float, z0: float, size: float, step: float
@@ -106,7 +106,8 @@ def standing_height(
     limits: Sequence[float],
 ) -> float | None:
     """Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or None when
-    the ground there is steeper than `max_slope` or lower than `min_height`.
+    the ground there is steeper than `max_slope` or lower than `min_height` (so it never floats at a
+    corner, GFX-BLDG-04).
 
     `spot` is (x, z, radius); `limits` is (max_slope, min_height).
     """

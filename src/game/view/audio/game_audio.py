@@ -1,4 +1,4 @@
-"""The game's generated music and sound effects (P12-R05..R10, GD-70, GD-71): the track for each
+"""The game's generated music and sound effects (AUD-MUSIC-01, AUD-SFX-01): the track for each
 music request (composed once, then kept), and the
 `AudioBindings` the engine takes.
 """
@@ -22,11 +22,11 @@ from game.view.audio.sound_designs import SOUND_DESIGNS  # noqa: E402
 # Explosions of enemies at least this big (hit radius, logical pixels) sound large.
 LARGE_BLAST_RADIUS = 18
 
-# Levels of the music and sound effect buses at full volume: the loudest sound effects stay
-# within `loudest_sfx` (+6 dB) of the music at equal volume settings (P12-R10).
+# Levels of the music and sound effect buses at full volume (AUD-ENGINE-02): the loudest sound
+# effects stay within `loudest_sfx` (+6 dB) of the music at equal volume settings (AUD-SFX-06).
 MIX = AudioMix(0.8, 1)
 
-# The synthwave echo (a dotted eighth) and reverb the instruments send to.
+# The synthwave echo (a dotted eighth) and reverb the instruments send to (AUD-ENGINE-06).
 EFFECTS = MusicEffects(0.75, 0.35, 2.2)
 
 # The made tracks, by id: a track is a few thousand notes.
@@ -45,7 +45,7 @@ def style_of(level_id: str) -> MusicStyle | None:
 
 
 def cached(track_id: str, style: MusicStyle | None, boss: bool) -> Track | None:
-    """Composes a track once, then keeps it."""
+    """Composes a track once, then keeps it (AUD-MUSIC-01)."""
     if not style:
         return None
     track = made.get(track_id)
@@ -56,8 +56,8 @@ def cached(track_id: str, style: MusicStyle | None, boss: bool) -> Track | None:
 
 
 def game_music(request: MusicRequest) -> Track | None:
-    """The track for a request (P12-R06..R08): each level its own, from its id; one boss track
-    per world; the menu theme; the jingles."""
+    """The track for a request: each level its own, from its id (AUD-MUSIC-02); one boss track
+    per world (AUD-MUSIC-07); the menu theme (AUD-MUSIC-11); the jingles (AUD-MUSIC-10)."""
     if request.kind == "menu":
         return cached("menu", MENU_STYLE, False)
     level = request.level_id or ""
@@ -71,7 +71,8 @@ def game_music(request: MusicRequest) -> Track | None:
     return None
 
 
-# The game's generated music and sound effects (P12-R05..R10, GD-70, GD-71).
+# The game's generated music and sound effects, the data the game-agnostic engine plays
+# (AUD-ENGINE-13).
 GAME_AUDIO = AudioBindings(
     game_music,
     INSTRUMENTS,

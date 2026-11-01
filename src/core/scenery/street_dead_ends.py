@@ -104,10 +104,10 @@ def remove_dead_ends(
     tees: bool,
     keep_cut: bool | None = None,
 ) -> None:
-    """Fixes the dead ends, pass after pass over the nodes in order, until a pass changes nothing.
-    Reviewer, 2026-10-28: a pass only looks at the nodes whose links changed since they were last
-    looked at (those it would have fixed); the others would be left as they are. Same passes, same
-    fixes in the same order, without going through every node each time.
+    """Fixes the dead ends (GFX-ROAD-16), pass after pass over the nodes in order, until a pass
+    changes nothing. Reviewer, 2026-10-28: a pass only looks at the nodes whose links changed since
+    they were last looked at (those it would have fixed); the others would be left as they are.
+    Same passes, same fixes in the same order, without going through every node each time.
 
     `keep_cut`: a link cut back is never built again, so a street cannot keep being cut from one
     end and built again from the other (the default; the removal flips until `MAX_PASSES`

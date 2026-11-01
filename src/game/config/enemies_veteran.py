@@ -1,4 +1,4 @@
-"""Tunables of the five veteran kinds (P05-R14 to P05-R18)
+"""Tunables of the five veteran kinds (ENM-06; each kind's file in specs/enemies/)
 
 In the units of `enemies.py`: logical pixels, px/s, seconds, degrees; `...Fraction` heights are
 fractions of the playfield height from its bottom. `muzzles` as in `enemies.py` (offsets from the
@@ -20,7 +20,7 @@ __pragma__("noskip")
 
 
 def radius(size: float) -> float:
-    """Hit radius of an enemy `size` L across (as `enemies.py`: about as big as the model)."""
+    """Hit radius of an enemy `size` L across, about as big as the model (ENM-11, as enemies.py)."""
     return (size * ENEMY_UNIT * 0.85) / 2
 
 
@@ -45,7 +45,10 @@ def mantis_tip(s: float, reach: float) -> list[float]:
 
 
 def mantis_muzzles(s: float) -> list[list[float]]:
-    """The pair of muzzles at the tip of the Mantis's arm on the side `s`, across the blade."""
+    """The pair of muzzles at the tip of the Mantis's arm on the side `s`, across the blade.
+
+    ENM-MANTIS-10: the arm's pairs of shots leave from there.
+    """
     a = (MANTIS_ARM.outDeg * math.pi) / 180
     tip = mantis_tip(s, MANTIS_ARM.length)
     x = tip[0]
@@ -61,6 +64,7 @@ def mantis_muzzles(s: float) -> list[list[float]]:
 
 VETERAN_CONFIG = record(
     {
+        # ENM-WASP-11: health, points and hit circle.
         "wasp": {
             "stats": {"model": "wasp", "radius": radius(0.6), "health": 30, "points": 150},
             "size": 0.6,
@@ -84,13 +88,15 @@ VETERAN_CONFIG = record(
             # Range of X of the group's middle Wasp, as fractions of the width.
             "xRange": [0.25, 0.75],
         },
+        # ENM-MORTAR-10: health, points and hit circle.
         "mortar": {
             "stats": {"model": "mortar", "radius": radius(1.2) * 0.8, "health": 140, "points": 400},
             "size": 1.2,
             "speed": 40,
             "fireInterval": 2.5,
             "firstShot": 1,
-            # A big, slow shell aimed at the player, bursting into a ring of 8 bullets after 1.2 s.
+            # A big, slow shell aimed at the player (ENM-MORTAR-08), bursting into a ring of 8
+            # bullets after 1.2 s (ENM-MORTAR-09); drawn as a bigger ball of plasma (GFX-SHOT-14).
             "shell": merge(
                 bullet("green", 110, 7),
                 {"burst": {"after": 1.2, "count": 8, "bullet": bullet("green", 150)}},
@@ -99,6 +105,7 @@ VETERAN_CONFIG = record(
             "muzzles": [[0, -12.5, 7]],
             "xRange": [0.2, 0.8],
         },
+        # ENM-MANTIS-13: health, points and hit circle.
         "mantis": {
             "stats": {"model": "mantis", "radius": radius(1.4) * 0.5, "health": 160, "points": 500},
             "size": 1.4,
@@ -117,10 +124,10 @@ VETERAN_CONFIG = record(
                     "radius": 6,
                     "centre": 13,
                     # Each arm swings out and back every `period` s, a quarter period after the
-                    # other.
+                    # other (ENM-MANTIS-09).
                     "swing": {"amplitudeDeg": 24, "period": 2.4},
                     "fireInterval": 1.2,
-                    # Each arm's pair of bullets, straight along the blade.
+                    # Each arm's pair of bullets, straight along the blade (ENM-MANTIS-10).
                     "bullet": bullet("green", 210),
                     # The tip of the arm's blade: the pair leaves from either side of it.
                     "muzzles": {"left": mantis_muzzles(-1), "right": mantis_muzzles(1)},
@@ -135,6 +142,7 @@ VETERAN_CONFIG = record(
             },
             "xRange": [0.25, 0.75],
         },
+        # ENM-PHANTOM-13: health, points and hit circle.
         "phantom": {
             "stats": {"model": "phantom", "radius": radius(1) * 0.8, "health": 90, "points": 450},
             "size": 1,
@@ -150,7 +158,7 @@ VETERAN_CONFIG = record(
             "jumps": 3,
             # How long it stays in view before it fades out again (or leaves).
             "hold": 0.6,
-            # Shots go through it while it is less visible than this (P05-R17).
+            # Shots go through it while it is less visible than this (ENM-PHANTOM-12).
             "solidOpacity": 0.5,
             "exitSpeed": 170,
             # The spread fired as it reappears: 5 bullets 12 degrees apart, centred on the player.
@@ -161,6 +169,7 @@ VETERAN_CONFIG = record(
             "muzzles": [[0, -14.6, 0.6]],
             "xRange": [0.25, 0.75],
         },
+        # ENM-MINELAYER-10: health, points and hit circle.
         "minelayer": {
             "stats": {
                 "model": "minelayer",
@@ -176,7 +185,8 @@ VETERAN_CONFIG = record(
             "lowestFraction": 0.55,
             "dropInterval": 0.8,
             "firstDrop": 0.4,
-            # A mine: a slow bullet drifting down that bursts into a ring of 6 after 1.5 s.
+            # A mine: a slow bullet drifting down that bursts into a ring of 6 after 1.5 s
+            # (ENM-MINELAYER-09).
             "mine": merge(
                 bullet("red", 45, 6),
                 {"burst": {"after": 1.5, "count": 6, "bullet": bullet("red", 140)}},
@@ -191,18 +201,18 @@ VETERAN_CONFIG = record(
     }
 )
 
-# Neon colours of the veteran kinds, one each (P05-R14 to P05-R18, GD-61). Linear RGB.
+# Neon colours of the veteran kinds, one each (ENM-06; drawn yellow or green, ENM-38). Linear RGB.
 VETERAN_NEON = record(
     {
-        # P05-R14: yellow.
+        # ENM-WASP-03: yellow.
         "wasp": [1, 0.85, 0.05],
-        # P05-R15: olive green.
+        # ENM-MORTAR-03: olive green (drawn yellow, keeping its brightness).
         "mortar": [0.55, 0.7, 0.12],
-        # P05-R16: lime.
+        # ENM-MANTIS-03: lime (drawn yellow).
         "mantis": [0.6, 1, 0.1],
-        # P05-R17: pale violet.
+        # ENM-PHANTOM-03: pale violet (drawn green).
         "phantom": [0.75, 0.6, 1],
-        # P05-R18: red-orange.
+        # ENM-MINELAYER-03: red-orange (drawn yellow).
         "minelayer": [1, 0.3, 0.05],
     }
 )

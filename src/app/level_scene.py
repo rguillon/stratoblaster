@@ -1,6 +1,5 @@
-"""The scene of a level under the playfield camera (P04,
-P05-R11, P06-R02): its generated ground, and a playfield layer above it where ships, enemies and
-shots are drawn.
+"""The scene of a level under the playfield camera (specs/graphics/): its generated ground, and a
+playfield layer above it where ships, enemies and shots are drawn.
 """
 
 import math
@@ -49,7 +48,8 @@ class LevelSceneOptions:
     """What `build_level_scene` shows and how: `level` (the scenery), `environment` (generated
     textures, sky lighting, shadows and glow; needs a real WebGL engine), `glow` (of the
     playfield's self-lit parts), `environment_cube_size`, `stage` (its config), `atmosphere`
-    (debug choices on the level's look, P08-R12, or None) and `outline` (rims, P14-R03, or None).
+    (debug choices on the level's look, DEV-OPT-04, DEV-OPT-05, or None) and `outline` (rims,
+    GFX-TRIM-01, or None).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -72,7 +72,7 @@ class LevelSceneOptions:
 
 
 def compile_shaders(meshes: Any) -> None:
-    """Compiles the shaders of `meshes`, and their rims' (in parallel where WebGL can, P13-R04)."""
+    """Compiles the shaders of `meshes`, and their rims' (in parallel where WebGL can, PERF-20)."""
     for mesh in meshes:
         material = mesh.material
         if material is not None and len(mesh.subMeshes) > 0:
@@ -89,7 +89,8 @@ def scenery_look(game: Any, level: Any) -> Any:
 
 
 def _playfield_glow(scene: Any, look: Any) -> Any:
-    """A glow layer for the playfield's self-lit parts (enemy neon, shots), above the clouds."""
+    """A glow layer for the playfield's self-lit parts (enemy neon, shots: GFX-ART-02), above the
+    clouds (GFX-CAM-07)."""
     glow = new_glow_layer("playfield-glow", scene, look.blurKernelSize, None, None)
     glow.intensity = look.intensity
     glow.renderingGroupId = ABOVE_CLOUDS_GROUP
@@ -97,8 +98,8 @@ def _playfield_glow(scene: Any, look: Any) -> Any:
 
 
 def ground_glow_look(glow: Any) -> Any:
-    """The ground's glow drawn at full resolution and antialiased (reviewer, 2026-10-28: small
-    lights blinked as the ground scrolled), its blur as wide on screen as before.
+    """The ground's glow (GFX-TERRAIN-15) drawn at full resolution and antialiased (reviewer,
+    2026-10-28: small lights blinked as the ground scrolled), its blur as wide on screen as before.
     """
     ratio = 1
     return ShowcaseGlow(
@@ -110,8 +111,8 @@ def ground_glow_look(glow: Any) -> Any:
 
 
 def _glow_lava(glow: Any, stage: Any) -> None:
-    """Phase 10 (P10-R05): the lava blooms in the ground's glow layer with its own material, the
-    terrain drawn there too, black, so hills hide the lava under them.
+    """The lava glows (GFX-TERRAIN-18): it blooms in the ground's glow layer with its own material,
+    the terrain drawn there too, black, so hills hide the lava under them.
     """
     lava = stage.lava
     if lava is None:
@@ -129,7 +130,7 @@ def _glow_ground(glow: Any, stage: Any) -> None:
         glow.addIncludedOnlyMesh(mesh)
     for mesh in stage.glow_occluders:
         glow.addIncludedOnlyMesh(mesh)
-    # D-210: only the lit windows glow.
+    # GFX-BLDG-15 (D-210): only the lit windows glow.
     for mesh in stage.window_meshes:
         glow_windows(glow, mesh)
 
@@ -141,7 +142,7 @@ def _glow_ground(glow: Any, stage: Any) -> None:
 
 
 def sky_state(view: Any, sea: Any, middle: float) -> Any:
-    """How the level looks where the view is, for the test API (P08 ... P10): its weathers,
+    """How the level looks where the view is, for the test API (DEV-API-05): its weathers,
     lightning, aurora, light and fog, and (phase 10) whether its liquid (`sea`) is lava, how deep
     it is under the playfield at `middle` (<= 0: ground), the plumes drawn and the shot style.
     """
@@ -175,7 +176,8 @@ def sky_state(view: Any, sea: Any, middle: float) -> Any:
 
 
 def _follow_sky(stage: Any, cube_size: int) -> None:
-    """The sky lighting of `stage`'s scene, as its look is now (P08-R04)."""
+    """The sky lighting of `stage`'s scene, as its look is now (GFX-SKY-05): the reflections of
+    its sky gradient (GFX-SKY-10)."""
     sky = stage.atmosphere.sky
     update_sky_environment(stage.scene, cube_size, sky.stops, sky.environment_intensity)
 
@@ -228,7 +230,7 @@ class LevelScene:
         cube_size: int,
     ) -> None:
         self.scene = scene
-        # The level's look (phase 10: its shot style, P10-R07).
+        # The level's look (with its shot style, GFX-READ-11).
         self.look = look
         self.stage = stage
         self.track = track
@@ -245,8 +247,9 @@ class LevelScene:
 
 
 def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> LevelScene:
-    """Builds the scene of a level (P04, P05-R11, P06-R02): its generated ground under the tilted
-    playfield camera, and the playfield layer above it where ships, enemies and shots are drawn.
+    """Builds the scene of a level (as in game, for the dev viewers too: DEV-MENU-08): its
+    generated ground under the tilted playfield camera, and the playfield layer above it where
+    ships, enemies and shots are drawn.
     """
     level = options.level
     look = scenery_look(game, level)

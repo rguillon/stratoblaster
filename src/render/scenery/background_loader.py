@@ -1,4 +1,4 @@
-"""Generates levels' grounds and scenery textures in a worker (P13-R03), so a level can be prepared
+"""Generates levels' grounds and scenery textures in a worker (PERF-14), so a level can be prepared
 while the player is still
 choosing it, without freezing the menus. Unless stopped, every ground the game asks for is
 generated there (`generate_grounds_with`).
@@ -99,7 +99,8 @@ def _worker_available() -> bool:
 
 
 def _new_game_worker() -> Any:
-    """The game's ground worker (`ground_worker.js`, next to this module)."""
+    """The game's ground worker (`ground_worker.js`, next to this module): named only here, by a
+    relative URL (ENG-82, ENG-123)."""
     __pragma__(
         "js",
         "{}",
@@ -117,7 +118,8 @@ class _Waiting:
 
 
 class BackgroundLoader:
-    """Generates levels' grounds and scenery textures in a worker (P13-R03)."""
+    """Generates levels' grounds and scenery textures in a worker (PERF-14). What it posts is
+    copied to plain data first (ENG-164)."""
 
     def __init__(self, port: Any) -> None:
         self.port = port

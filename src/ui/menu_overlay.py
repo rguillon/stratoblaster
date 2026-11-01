@@ -1,5 +1,6 @@
-"""The HTML/CSS menu overlay (P01-R13) It renders a view and
-turns taps and clicks into menu commands (P01-R11); it never reads raw keys or gamepad buttons."""
+"""The HTML/CSS menu overlay (UI-LOOK-01) It renders a view and
+turns taps and clicks into menu commands (UI-INPUT-09); it never reads raw keys or gamepad
+buttons."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -13,7 +14,7 @@ from ui.screens.elements import MenuDocument  # noqa: E402
 
 
 class GameTouchHandlers(Protocol):
-    """Touch controls of the game screen (P06-R02), in logical pixels with Y up."""
+    """Touch controls of the game screen (GAME-CTRL-04), in logical pixels with Y up."""
 
     def fire(self, held: bool) -> None: ...
 
@@ -52,7 +53,7 @@ class MenuOverlayOptions:
     """Settings of a `MenuOverlay`."""
 
     def __init__(self, transition_seconds: float) -> None:
-        # Fade-in time of a new screen, in seconds (P01-R15).
+        # Fade-in time of a new screen, in seconds (UI-FLOW-08).
         self.transition_seconds = transition_seconds
 
 
@@ -87,8 +88,8 @@ def _selected_index(view: MenuView) -> int:
 
 
 class MenuOverlay:
-    """The HTML/CSS menu overlay (P01-R13), laid out at the logical resolution. A new screen fades
-    in; `shake_selected` gives the "locked" feedback (P01-R07).
+    """The HTML/CSS menu overlay (UI-LOOK-01), laid out at the logical resolution. A new screen
+    fades in (UI-FLOW-08); `shake_selected` gives the "locked" feedback (UI-LEVEL-04).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -158,7 +159,7 @@ class MenuOverlay:
         )
 
     def show(self, view: MenuView) -> None:
-        """Replaces the overlay content with `view`. A new screen fades in."""
+        """Replaces the overlay content with `view`, at once (PERF-04). A new screen fades in."""
         is_new_screen = self._view is None or self._view.kind != view.kind
         self._view = view
         screen = _render_screen(self._doc, view, self._handlers_for(view))
@@ -176,7 +177,7 @@ class MenuOverlay:
         centre_menu(screen)
 
     def shake_selected(self, text: str) -> None:
-        """ "Locked" feedback (P01-R07): shakes the selected entry and shows `text`."""
+        """ "Locked" feedback (UI-LEVEL-04): shakes the selected entry and shows `text`."""
         if self._current is None:
             return
         selected = self._current.querySelector(".menu-entry.selected")

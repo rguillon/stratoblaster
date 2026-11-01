@@ -1,4 +1,4 @@
-"""The beam of a beam weapon (P03-R02)"""
+"""The beam of a beam weapon (GAME-WPN-06)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -72,9 +72,9 @@ def trace_beam(
     top: float,
     targets: Sequence[ShotTarget],
 ) -> BeamTrace:
-    """Traces a beam fired straight up from (x, y) at `level` (P03-R02). At level 1 the beam stops
-    at the first target it touches. Above, it goes through the target and continues from it one
-    level lower, so a level-N beam touches at most N targets.
+    """Traces a beam fired straight up from (x, y) at `level` (GAME-WPN-07). At level 1 the beam
+    stops at the first target it touches. Above, it goes through the target and continues from it
+    one level lower, so a level-N beam touches at most N targets.
     """
     segments: list[BeamSegment] = []
     hits: list[BeamHit] = []

@@ -1,4 +1,4 @@
-"""P08-R10, 2-5: the Boreal Citadel, World 2's last boss
+"""FB-BOREAL-CITADEL-01 to FB-BOREAL-CITADEL-07, 2-5: the Boreal Citadel, World 2's last boss
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A polar city on
 a flying hull: a snowed deck with towers and heated domes, an avenue down its middle carrying
@@ -142,7 +142,8 @@ def draw_hull(p: EnemyParts) -> None:
     neon = p.neon
     top = CITADEL_DECK.top
     avenue = CITADEL_DECK.avenue
-    # P16-R06: the back of a colossal beast, rimed flesh, its spine (the avenue) a ridge of bone.
+    # FB-BOREAL-CITADEL-02: the back of a colossal beast, rimed flesh, its spine (the avenue) a
+    # ridge of bone.
     flesh.bevel_slab(DECK, [-8.0, -2.0, top], [3.0, 3.0], ICE_FLESH.teal, None, ICE_FLESH.rime)
     edge_lights(
         neon,
@@ -203,7 +204,8 @@ def draw_keep(p: EnemyParts) -> None:
     charge = p.charge
     muzzle = p.muzzle
     base = CITADEL_DECK.top
-    # P16-R06: the keep is the beast's heart, a stepped mound of flesh, metal bands on its ledges.
+    # FB-BOREAL-CITADEL-02: the keep is the beast's heart, a stepped mound of flesh, metal bands on
+    # its ledges.
     flesh.lathe(KEEP, 8, ICE_FLESH.graphite, Placement([0.0, base, 0.0], math.pi / 8))
     for ledge in LEDGES:
         inner = ledge[0]
@@ -228,7 +230,8 @@ def draw_keep(p: EnemyParts) -> None:
 
 
 def draw_gun_deck(p: EnemyParts) -> None:
-    """The gun deck on the keep's front: twin cannons and a laser lens, charging to fire."""
+    """The gun deck on the keep's front (FB-BOREAL-CITADEL-04): twin cannons and a laser lens,
+    charging to fire."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -270,7 +273,8 @@ def draw_gun_deck(p: EnemyParts) -> None:
 
 
 def draw_hatches(p: EnemyParts) -> None:
-    """The missile hatches on the avenue behind the keep, lit as missiles load."""
+    """The missile hatches on the avenue behind the keep, lit as missiles load
+    (FB-BOREAL-CITADEL-04)."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -303,11 +307,13 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_boreal_citadel(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Boreal Citadel, the polar city's flying fortress (6 L) under aurora green and
+    """FB-BOREAL-CITADEL-01, FB-BOREAL-CITADEL-05: the Boreal Citadel, the polar city's flying
+    fortress (6 L) under aurora green and
     violet neon: towers and heated domes on a snowed deck, two aurora cannons on its outriggers,
     two missile batteries aft, two dome generators ahead, and a keep over the core carrying a
     laser, twin cannons, a ring emitter and missile hatches.
-    P16-R06: now a colossal living beast carrying its city on its back: rimed flesh, a spine of
+    FB-BOREAL-CITADEL-02, FB-BOREAL-CITADEL-03: now a colossal living beast carrying its city on
+    its back: rimed flesh, a spine of
     bone, spires of crystal and flesh where the towers were, its heart (the keep) banded in metal,
     membrane fins out to its cannons, glowing blisters for domes."""
     model: BuiltEnemyModel = build_boss_model(

@@ -280,7 +280,7 @@ def test_shot_targets_follow_the_hit_target_hook() -> None:
     assert gunner.hit_targets == [gunner, "extra"]
 
 
-def test_p06_r07_an_entry_is_an_edge_and_a_position_along_it() -> None:
+def test_enm_08_an_entry_is_an_edge_and_a_position_along_it() -> None:
     entry = EnemyEntry("left", 0.25)
     assert (entry.side, entry.position) == ("left", 0.25)
     area = EnemySpawnArea(400, 600, create_rng(1), entry=entry, top_range=(10, 300))
@@ -329,7 +329,7 @@ def test_bullet_missile_and_laser_specs_keep_their_fields() -> None:
     assert laser.sweeps is False
 
 
-def test_gd43_a_bullet_bursts_into_a_ring_once_its_time_is_up() -> None:
+def test_enm_17_a_bullet_bursts_into_a_ring_once_its_time_is_up() -> None:
     shots = _shots()
     burst = EnemyBurstSpec(1, 4, _bullet(speed=3))
     shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=burst))
@@ -346,14 +346,14 @@ def test_gd43_a_bullet_bursts_into_a_ring_once_its_time_is_up() -> None:
     assert all(b.y == pytest.approx(60) for b in alive)
 
 
-def test_gd43_a_burst_at_once_fires_on_the_first_step() -> None:
+def test_enm_17_a_burst_at_once_fires_on_the_first_step() -> None:
     shots = _shots()
     shots.fire_bullet(50, 50, 0, _bullet(burst=EnemyBurstSpec(0, 2, _bullet())))
     shots.step(0.1, 0, 0)
     assert len([b for b in shots.bullets if b.alive]) == 2
 
 
-def test_gd44_a_missile_that_leaves_the_playfield_is_removed() -> None:
+def test_game_screen_07_a_missile_that_leaves_the_playfield_is_removed() -> None:
     shots = _shots()
     # No homing: it flies straight up out of the playfield (105 + 10 > 100 + margin).
     shots.fire_missile(0, 105, 0, EnemyMissileSpec(10, 90, 0, 2, 5, "rocket"))
@@ -361,14 +361,14 @@ def test_gd44_a_missile_that_leaves_the_playfield_is_removed() -> None:
     assert shots.missiles[0].alive is False
 
 
-def test_gd43_a_burst_of_no_bullets_just_goes() -> None:
+def test_enm_17_a_burst_of_no_bullets_just_goes() -> None:
     shots = _shots()
     shots.fire_bullet(50, 50, 0, _bullet(speed=10, burst=EnemyBurstSpec(0, 0, _bullet())))
     shots.step(0.1, 0, 0)
     assert shots.count == 0
 
 
-def test_p05_the_targets_are_the_living_enemies_and_missiles() -> None:
+def test_enm_18_the_targets_are_the_living_enemies_and_missiles() -> None:
     world = _world()
     alive = WalkerEnemyWorld(10, 10)
     gone = WalkerEnemyWorld(20, 20)
@@ -380,7 +380,7 @@ def test_p05_the_targets_are_the_living_enemies_and_missiles() -> None:
     assert world.targets == []
 
 
-def test_p05_a_missile_with_no_health_leaves_a_missile_blast() -> None:
+def test_enm_18_a_missile_with_no_health_leaves_a_missile_blast() -> None:
     world = _world()
     world.shots.fire_missile(30, 40, 0, EnemyMissileSpec(1, 1, 0, 3, 5, "m"))
     world.shots.missiles[0].health = 0
@@ -388,7 +388,7 @@ def test_p05_a_missile_with_no_health_leaves_a_missile_blast() -> None:
     assert _fields(world.blasts) == [("missile", 30, 40, 3)]
 
 
-def test_gd43_an_enemy_fires_bullets_faster_by_the_difficulty_factor() -> None:
+def test_enm_22_an_enemy_fires_bullets_faster_by_the_difficulty_factor() -> None:
     def fire(e: WalkerEnemyWorld, ctx: object, dt: float) -> None:
         ctx.fire_bullet(1, 2, 0.5, EnemyBulletSpec(5, 2, "s", EnemyBurstSpec(1, 2, BULLET)))  # type: ignore[attr-defined]
 
@@ -401,7 +401,7 @@ def test_gd43_an_enemy_fires_bullets_faster_by_the_difficulty_factor() -> None:
     assert bullet.burst.bullet.speed == 20
 
 
-def test_p06_r08_faster_scales_a_bullet_and_the_bullets_it_bursts_into() -> None:
+def test_enm_22_faster_scales_a_bullet_and_the_bullets_it_bursts_into() -> None:
     spec = EnemyBulletSpec(5, 2, "s", EnemyBurstSpec(1, 3, EnemyBulletSpec(4, 1, "t")))
     faster = _faster(spec, 3)
     assert faster.speed == 15
@@ -413,7 +413,8 @@ def test_p06_r08_faster_scales_a_bullet_and_the_bullets_it_bursts_into() -> None
     assert plain.burst is None
 
 
-def test_gd43_an_enemy_can_fire_missiles_and_lasers() -> None:
+def test_enm_18_an_enemy_can_fire_missiles_and_lasers() -> None:
+    """ENM-18 and ENM-19: its missiles and lasers go into the shot world."""
     laser = EnemyLaserSpec(0, 1, 4, "b")
 
     def fire(e: WalkerEnemyWorld, ctx: object, dt: float) -> None:
@@ -427,7 +428,7 @@ def test_gd43_an_enemy_can_fire_missiles_and_lasers() -> None:
     assert len(world.shots.lasers) == 1
 
 
-def test_gd43_a_laser_fired_by_a_walker_is_in_the_shot_world() -> None:
+def test_enm_19_a_laser_fired_by_a_walker_is_in_the_shot_world() -> None:
     world = _world()
     world.shots.fire_laser(WalkerEnemyWorld(50, 50), EnemyLaserSpec(0, 1, 2, "b"))
     world.step(0.1)
@@ -435,7 +436,8 @@ def test_gd43_a_laser_fired_by_a_walker_is_in_the_shot_world() -> None:
     assert math.isfinite(world.shots.lasers[0].length)
 
 
-def test_p06_r02_the_hull_takes_the_most_damaging_hit_and_then_is_invincible() -> None:
+def test_game_life_06_the_hull_takes_the_most_damaging_hit_and_then_is_invincible() -> None:
+    """GAME-LIFE-06, then the invincibility of GAME-LIFE-07."""
     run = _run(hull=HullRules(3, 1, 3, HullDamage(30, 0, 0, 0), 0))
     run.enemies.shots.fire_bullet(50, 10, 0, EnemyBulletSpec(0, 1, "s"))
     _step(run, dt=0.1)
@@ -447,7 +449,8 @@ def test_p06_r02_the_hull_takes_the_most_damaging_hit_and_then_is_invincible() -
     assert run.hull.health == 70
 
 
-def test_p11_r05_a_bomb_damages_everything_on_screen_once_and_clears_the_enemy_shots() -> None:
+def test_game_bomb_04_a_bomb_damages_everything_on_screen_once_and_clears_the_enemy_shots() -> None:
+    """GAME-BOMB-04, and the shots cleared of GAME-BOMB-05."""
     run = _run(
         level=_level([_wave(0)]),
         kinds=[_kind(health=100)],
@@ -462,7 +465,7 @@ def test_p11_r05_a_bomb_damages_everything_on_screen_once_and_clears_the_enemy_s
     assert run.enemies.enemies[0].health == 50
 
 
-def test_gd21_a_bullet_outside_the_hitbox_or_dead_is_no_hit() -> None:
+def test_game_life_04_a_bullet_outside_the_hitbox_or_dead_is_no_hit() -> None:
     world = _world_hits()
     world.shots.fire_bullet(0, 6, 0, EnemyBulletSpec(0, 2, "s"))
     world.shots.fire_bullet(0, 0, 0, EnemyBulletSpec(0, 2, "s"))
@@ -470,20 +473,20 @@ def test_gd21_a_bullet_outside_the_hitbox_or_dead_is_no_hit() -> None:
     assert find_player_hits(_Ship(), RULES, world, set()) == []
 
 
-def test_gd21_a_missile_with_no_health_is_no_hit() -> None:
+def test_game_life_04_a_missile_with_no_health_is_no_hit() -> None:
     world = _world_hits()
     world.shots.fire_missile(0, 0, 0, EnemyMissileSpec(0, 0, 0, 2, 0, "m"))
     assert find_player_hits(_Ship(), RULES, world, set()) == []
 
 
-def test_gd21_a_laser_still_showing_its_warning_does_not_hit() -> None:
+def test_game_life_03_a_laser_still_showing_its_warning_does_not_hit() -> None:
     world = _world_hits()
     world.shots.fire_laser(_Owner(PlanePoint(0, 10), math.pi), EnemyLaserSpec(1, 1, 4, "b"))
     world.shots.step(0.1, 0, 0)
     assert find_player_hits(_Ship(), RULES, world, set()) == []
 
 
-def test_gd21_hits_come_most_damaging_first_and_equal_ones_keep_their_order() -> None:
+def test_game_life_06_hits_come_most_damaging_first_and_equal_ones_keep_their_order() -> None:
     world = _world_hits()
     world.shots.fire_bullet(0, 0, 0, EnemyBulletSpec(0, 2, "a"))
     world.shots.fire_bullet(0, 1, 0, EnemyBulletSpec(0, 2, "b"))

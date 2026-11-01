@@ -112,7 +112,7 @@ def test_eng_52_the_state_has_the_level_being_played() -> None:
     assert game_test_state(app)["game"] == {"levelId": "1-1"}
 
 
-def test_p11_r03_p11_r04_the_level_result_has_its_high_score_and_checkpoint() -> None:
+def test_dev_api_02_the_level_result_has_its_high_score_and_checkpoint() -> None:
     checkpoint = SimpleNamespace(progress=0.5, bosses_passed=1, score=3000)
     result = SimpleNamespace(
         level_id="1-1",
@@ -134,7 +134,7 @@ def test_p11_r03_p11_r04_the_level_result_has_its_high_score_and_checkpoint() ->
     }
 
 
-def test_p06_r03_a_result_without_high_score_or_checkpoint_leaves_them_out() -> None:
+def test_dev_api_02_a_result_without_high_score_or_checkpoint_leaves_them_out() -> None:
     result = SimpleNamespace(
         level_id="1-2",
         destroyed=0,
@@ -149,7 +149,7 @@ def test_p06_r03_a_result_without_high_score_or_checkpoint_leaves_them_out() -> 
     assert state["checkpoint"] is None
 
 
-def test_p01_r12_p11_r08_send_action_sends_menu_actions_and_sets_bombs_off() -> None:
+def test_dev_api_07_send_action_sends_menu_actions_and_sets_bombs_off() -> None:
     app = FakeApp()
     send_test_action(app, "confirm")
     send_test_action(app, "pause")
@@ -202,6 +202,6 @@ def test_eng_52_install_puts_the_api_on_the_target() -> None:
         api["readability"](2)
 
 
-def test_p14_r08_readability_is_a_promise_of_null_off_a_level() -> None:
+def test_dev_api_09_readability_is_a_promise_of_null_off_a_level() -> None:
     api = install_test_api({}, FakeApp())
     assert api["readability"](0.5) == ("resolved", None)

@@ -1,4 +1,4 @@
-"""P09-R09, 3-3: the Stone Idol. Logical
+"""MB-STONE-IDOL-01 to MB-STONE-IDOL-05, 3-3: the Stone Idol. Logical
 pixels, nose +Z (the chin, down the screen), Y up (towards the camera): a carved head flying face
 up, so the camera sees its face."""
 
@@ -109,8 +109,8 @@ def draw_head(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a living head of grey-green flesh, the carved stone grown over it as armour (its
-    # helmet, brows, nose and ear spools), roots of sinew trailing from its chin.
+    # MB-STONE-IDOL-02: a living head of grey-green flesh, the carved stone grown over it as armour
+    # (its helmet, brows, nose and ear spools), roots of sinew trailing from its chin.
     flesh.bevel_slab(HEAD, [-10, 2, FACE], [6, 5], F.sinew, None, JUNGLE_FLESH)
     neon_band(neon, HEAD, [-4.5, -1.5], [0.92, 0.975], IDOL_NEON)
     hull.bevel_slab(HELMET, [FACE - 1, FACE + 2, FACE + 5], [0, 1.5], STONE.base, None, STONE.light)
@@ -154,7 +154,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_roots(p: EnemyParts) -> None:
-    """P16-R05: the sinew roots trailing from its chin, its veins and glands."""
+    """MB-STONE-IDOL-02: the sinew roots trailing from its chin, its veins and glands."""
     for root in [[-16, -3], [14, 4], [28, 2]]:
         x = root[0]
         bow = root[1]
@@ -177,8 +177,8 @@ def draw_roots(p: EnemyParts) -> None:
 
 
 def draw_jungle(p: EnemyParts) -> None:
-    """Its cracks, the moss in its hollows, the vines over its crown, and the thrusters it flies
-    on."""
+    """Its cracks, the moss in its hollows, the vines over its crown (MB-STONE-IDOL-04), and the
+    thrusters it flies on."""
     hull = p.hull
     neon = p.neon
     for path in CRACKS:
@@ -216,7 +216,7 @@ MOUTH_AT = IDOL_PARTS.mouth
 
 
 def stone_idol_core(p: EnemyParts) -> None:
-    """The core of the Stone Idol: its head, guns and carved jungle."""
+    """The core of the Stone Idol: its head, guns (MB-STONE-IDOL-03) and carved jungle."""
     draw_head(p)
     draw_guns(p)
     draw_jungle(p)
@@ -226,8 +226,9 @@ def stone_idol_core(p: EnemyParts) -> None:
 
 
 def build_stone_idol(scene: Any) -> Any:
-    """P09-R09: the Stone Idol, a flying stone head with neon cracks, glowing eyes and mouth; moss
-    and vines over its crown, an Olmec helmet, a jewel on its forehead."""
+    """MB-STONE-IDOL-01, MB-STONE-IDOL-05: the Stone Idol, a flying stone head with neon cracks,
+    glowing eyes and mouth; moss and vines over its crown, an Olmec helmet, a jewel on its
+    forehead."""
     parts: dict[str, Any] = {
         "eye-left": eye_socket,
         "eye-right": eye_socket,

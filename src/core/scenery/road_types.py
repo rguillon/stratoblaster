@@ -71,8 +71,8 @@ class RoadSlot:
 
 class RoadSnapshot:
     """What a `RoadNetwork` made (or what its runout added): enough to draw it and to place the
-    buildings by it without generating it again (P13-R03). The blocks and the slots are kept too,
-    so the buildings can be placed where the roads were not made (chunk by chunk, P04-R04)."""
+    buildings by it without generating it again (PERF-14). The blocks and the slots are kept too,
+    so the buildings can be placed where the roads were not made (chunk by chunk, PERF-16)."""
 
     def __init__(self, roads: Sequence[Road], blocks: Sequence[Any], slots: Sequence[Any]) -> None:
         self.roads = roads

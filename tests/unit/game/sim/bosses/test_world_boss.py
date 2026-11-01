@@ -13,17 +13,18 @@ from game.config.record import merge
 from game.sim.bosses.world_boss import WorldBoss, _sign, boss_half_width
 
 
-def test_p07_r05_sign_is_minus_one_zero_or_one() -> None:
+def test_boss_25_sign_is_minus_one_zero_or_one() -> None:
+    """Which side a part's launches go out to."""
     assert (_sign(3.5), _sign(-2), _sign(0)) == (1, -1, 0)
 
 
-def test_p07_r05_the_half_width_reaches_the_farthest_part_or_the_core() -> None:
+def test_boss_10_the_half_width_reaches_the_farthest_part_or_the_core() -> None:
     assert boss_half_width(REEF_WARDEN) >= REEF_WARDEN.stats["coreRadius"]
     widest = max(abs(p["x"]) + p["radius"] for p in REEF_WARDEN.stats["parts"])
     assert boss_half_width(REEF_WARDEN) >= widest - 1e-9
 
 
-def test_p07_r05_a_boss_comes_in_from_above_the_top_edge_and_brakes_into_place() -> None:
+def test_boss_08_a_boss_comes_in_from_above_the_top_edge_and_brakes_into_place() -> None:
     boss = WorldBoss(REEF_WARDEN, area(width=480, height=640))
     assert boss.y > 640
     ctx = FakeContext()
@@ -35,19 +36,19 @@ def test_p07_r05_a_boss_comes_in_from_above_the_top_edge_and_brakes_into_place()
     assert boss.y == pytest.approx(REEF_WARDEN.stopFraction * 640)
 
 
-def test_p07_r05_a_boss_sways_only_as_far_as_its_parts_keep_within_the_ship_reach() -> None:
+def test_boss_10_a_boss_sways_only_as_far_as_its_parts_keep_within_the_ship_reach() -> None:
     wide = WorldBoss(REEF_WARDEN, area(width=480, height=640))
     assert 0 <= wide.sway_amplitude <= REEF_WARDEN.sway.amplitude
     narrow = WorldBoss(CALDERA_THRONE, area(width=480, height=640, top_range=(200, 260)))
     assert narrow.sway_amplitude == 0
 
 
-def test_p07_r05_a_boss_starts_at_the_middle_of_its_top_range() -> None:
+def test_boss_08_a_boss_starts_at_the_middle_of_its_top_range() -> None:
     boss = WorldBoss(REEF_WARDEN, area(width=480, height=640, top_range=(100, 300)))
     assert boss.center_x == pytest.approx(200)
 
 
-def test_p07_r05_a_destroyed_ring_part_bursts_into_its_ring_of_bullets_once() -> None:
+def test_boss_23_a_destroyed_ring_part_bursts_into_its_ring_of_bullets_once() -> None:
     ctx = FakeContext()
     boss = WorldBoss(REFINERY_TITAN, area(width=480, height=640))
     for ring_id in ("tank-left", "tank-right"):
@@ -59,7 +60,7 @@ def test_p07_r05_a_destroyed_ring_part_bursts_into_its_ring_of_bullets_once() ->
     assert len(ctx.bullets) == before
 
 
-def test_p07_r05_an_angry_boss_fires_its_rage_pattern_and_lights_up_full() -> None:
+def test_boss_27_an_angry_boss_fires_its_rage_pattern_and_lights_up_full() -> None:
     ctx = FakeContext()
     boss = WorldBoss(REEF_WARDEN, area(width=480, height=640))
     boss.on_stage_change(0, ctx)
@@ -67,7 +68,8 @@ def test_p07_r05_an_angry_boss_fires_its_rage_pattern_and_lights_up_full() -> No
     assert boss.charge == 1
 
 
-def test_p07_r05_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -> None:
+def test_boss_21_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -> None:
+    """Also BOSS-29: its turret follows nothing then."""
     boss = WorldBoss(REEF_WARDEN, area(width=480, height=640))
     part_id = REEF_WARDEN.stats["parts"][0]["id"]
     assert boss._source(part_id) is not None
@@ -94,6 +96,7 @@ def _hidden_gun_design() -> object:
 
 
 def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> None:
+    """BOSS-38; also BOSS-37: the blasts as it transforms."""
     ctx = FakeContext()
     boss = WorldBoss(_hidden_gun_design(), area(width=480, height=640))
     boss.state = "fighting"

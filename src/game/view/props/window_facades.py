@@ -1,7 +1,8 @@
 """The windows of a building (D-210): one quad per wall, just off it, mapped on a block of the
 windows' atlas (`game/config/window_look.py`) picked at random, so no two walls look the same.
-They replace the lit bands and panels of Phase 15 (P15-R09: each face lit differently). D-215: so
-do the windows of one wall (a glass front) and the doors, one quad each, for every building."""
+They replace the lit bands and panels of Phase 15 (GFX-BLDG-13; GFX-BLDG-10: each face lit
+differently). D-215: so do the windows of one wall (a glass front) and the doors, one quad each, for
+every building (GFX-BLDG-14)."""
 
 import math
 
@@ -60,7 +61,7 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
 ) -> None:
     """The windows of a `w` × `d` box at (x, z) (`lot`: `[x, z, w, d]`), from `y0` to `y1`
     (`span`), tinted by `color` (see `tint_of`): one style for the whole box (`style`, or one at
-    random), or with `mixed` one per wall (P15-R09: the asymmetric buildings, lit differently on
+    random), or with `mixed` one per wall (GFX-BLDG-10: the asymmetric buildings, lit differently on
     each side)."""
     x = lot[0]
     z = lot[1]

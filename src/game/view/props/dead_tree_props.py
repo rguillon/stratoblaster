@@ -1,9 +1,9 @@
-"""Dead trees of the desert (D-214), drawn as imposters
+"""Dead trees of the desert (D-214, GFX-PROP-09), drawn as imposters
 
 Sizes in model units, standing on Y = 0. Bare, bleached wood: limbs forking into smaller ones
 (`render/geometry/branches.py`), each shaded its own way. The levels draw a picture of each baked
 from these models (`imposter_bake_visual`), as they do the living trees (D-212). Each also has a
-stand-in, its trunk and main limbs in a few facets, that only casts its shadow.
+stand-in, its trunk and main limbs in a few facets, that only casts its shadow (GFX-PROP-12).
 """
 
 import math

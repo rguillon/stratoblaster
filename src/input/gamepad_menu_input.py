@@ -1,6 +1,6 @@
-"""Gamepad -> menu actions (P01-R10), polled once per
-frame. Buttons fire on press; the D-pad and the left stick repeat while held. All connected
-gamepads are merged."""
+"""Gamepad -> menu actions (UI-INPUT-07), polled once per
+frame. Buttons fire on press; the D-pad and the left stick repeat while held (UI-INPUT-06). All
+connected gamepads are merged."""
 
 import math
 
@@ -66,7 +66,7 @@ def axis_value(axes: Sequence[float], index: int) -> float:
 
 
 def stick_direction(x: float, y: float, dead_zone: float) -> MenuDirection | None:
-    """Direction of a stick tilt, or None inside the dead zone (P01-R10)."""
+    """Direction of a stick tilt, or None inside the dead zone (UI-INPUT-08)."""
     if math.hypot(x, y) < dead_zone:
         return None
     if abs(x) >= abs(y):

@@ -32,7 +32,8 @@ def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathG
     )
 
 
-def test_p04_r07_paths_run_from_the_main_road_past_the_screen_edge() -> None:
+def test_gfx_road_02_paths_run_from_the_main_road_past_the_screen_edge() -> None:
+    """Also GFX-ROAD-04."""
     rules = road_rules()
     laid: list = []
     lay_paths(_ground(rules, laid), create_rng(5), [_main_along_z()])
@@ -42,7 +43,7 @@ def test_p04_r07_paths_run_from_the_main_road_past_the_screen_edge() -> None:
         assert abs(path[-1].x) >= rules.offscreen_x
 
 
-def test_p04_r07_paths_are_the_same_for_the_same_seed() -> None:
+def test_gfx_road_02_paths_are_the_same_for_the_same_seed() -> None:
     def run(seed: int) -> list:
         laid: list = []
         lay_paths(_ground(road_rules(), laid), create_rng(seed), [_main_along_z()])
@@ -73,7 +74,7 @@ def test_path_line_bends_by_its_bend_at_the_far_end() -> None:
     assert line[-1].z == pytest.approx(130.0)
 
 
-def test_p04_r07_the_path_widens_at_the_junction() -> None:
+def test_gfx_road_02_the_path_widens_at_the_junction() -> None:
     rules = road_rules()
     assert _path_width(rules, 0.0) == rules.junction.width
     assert _path_width(rules, 10 * rules.junction.length_) == rules.cross_width

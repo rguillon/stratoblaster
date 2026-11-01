@@ -1,4 +1,4 @@
-"""The Scout (P05-R03)"""
+"""The Scout (`specs/enemies/scout.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -16,8 +16,8 @@ CFG = ENEMY_CONFIG.scout
 
 
 class Scout(Enemy):
-    """P05-R03: flies straight down slowly and fires one bullet aimed at the player every 1.5 s
-    (GD-44) from its nose gun while it is over the playfield.
+    """ENM-SCOUT-05: flies straight down slowly and fires one bullet aimed at the player every
+    1.5 s (ENM-SCOUT-06, ENM-20) from its nose gun while it is over the playfield.
     """
 
     def __init__(self, x: float, y: float) -> None:

@@ -1,4 +1,4 @@
-"""Whether a boss model holds together as one object (D-227), at rest and after each of its
+"""Whether a boss model holds together as one object (BOSS-52, D-227), at rest and after each of its
 transformations: its core (what the armour cut leaves), the armour still on, the pieces of the
 regions that move (D-230) as they rest or once moved, the frames of the regions shed (with their
 pylons), the parts standing (with their turrets) and the hidden weapons revealed (with what slides

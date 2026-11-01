@@ -1,8 +1,8 @@
-"""The moving cars of a level (phase 4 review): the cars in view are placed again every frame, as
-thin instances of their own meshes, apart from the props that stay put.
+"""The moving cars of a level (phase 4 review, GFX-CAR-08): the cars in view are placed again every
+frame, as thin instances of their own meshes, apart from the props that stay put.
 
 D-211: where the kit has imposters, a car's body is a picture of it baked from its detailed model
-(`imposters.py`), one quad facing the camera; only its lights are real geometry.
+(`imposters.py`), one quad facing the camera; only its lights are real geometry (GFX-CAR-05).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

@@ -1,6 +1,6 @@
-"""The launch volleys of the bosses' parts (P07-R05: hangars, drone bays) The volley itself is built
-from its config record in
-`game/sim/boss_build.py`.
+"""The launch volleys of the bosses' parts (BOSS-25: hangars, drone bays). The volley itself is
+built from its config record in `game/sim/boss_build.py`; which parts of each boss launch is its
+boss file's (`specs/bosses/`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -32,7 +32,7 @@ def _gnats(count: int, side: int) -> Callable[[float, float], list[Enemy]]:
 
 
 def _hornets(count: int) -> Callable[[float, float], list[Enemy]]:
-    """Hornets leaving a bay: they pause, turn to the player and dive (P05-R02)."""
+    """Hornets leaving a bay: they pause, turn to the player and dive (ENM-HORNET-08)."""
 
     def launch(x: float, y: float) -> list[Enemy]:
         return [

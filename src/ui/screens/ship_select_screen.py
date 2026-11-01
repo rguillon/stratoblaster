@@ -1,4 +1,4 @@
-"""Ship select screen (P01-R06): a card with name
+"""Ship select screen (UI-SHIP-02): a card with name
 and stats under each rotating ship."""
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -15,7 +15,7 @@ from ui.screens.elements import back_button, element, entry  # noqa: E402
 
 
 def render_ship_select_screen(doc: Any, view: ShipSelectView, handlers: ScreenHandlers) -> Any:
-    """Renders the ship select screen (P01-R06)."""
+    """Renders the ship select screen (UI-SHIP-02)."""
     root = element(doc, "div", "menu-screen ship-select-screen")
     cards = element(doc, "div", "ship-cards")
     cards.style.width = str(view.cards_width_percent) + "%"

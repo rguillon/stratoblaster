@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/imposters.py` (D-211)."""
+"""Unit tests of `src/render/scenery/imposters.py` (D-211; GFX-PROP-10, GFX-CAR-05)."""
 
 import math
 

@@ -1,7 +1,8 @@
-"""Missiles (P03-R03): turned along their heading, with flames, and explosions on impact.
+"""Missiles (GFX-SHOT-06): turned along their heading, with flames, and explosions on impact
+(GFX-FX-03).
 
-Missiles are drawn behind the ship, which covers them as they leave its centre. Each has a bright
-motor flare and a glowing exhaust trail, so it shows on any ground (phase 5 review).
+Missiles are drawn behind the ship, which covers them as they leave its centre (GFX-SHOT-08). Each
+has a bright motor flare and a glowing exhaust trail, so it shows on any ground (GFX-SHOT-07).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

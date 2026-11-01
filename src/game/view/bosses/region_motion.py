@@ -1,4 +1,4 @@
-"""How a moving region's piece is posed in a boss model (D-230; see
+"""How a moving region's piece is posed in a boss model (BOSS-45, D-230; see
 `game/config/bosses/moving_regions.py`): its node's place and turn, its triangles moved, and where
 it is as the boss transforms.
 

@@ -1,4 +1,5 @@
-"""The World 2 frost on the Fjord Lynx and the Harbour Kraken: snow caps, ice crust and icicles
+"""The World 2 frost on the Fjord Lynx and the Harbour Kraken (MB-FJORD-LYNX-05,
+FB-HARBOUR-KRAKEN-05): snow caps, ice crust and icicles
 over the dark metal Logical pixels, nose +Z,
 Y up (towards the camera).
 """

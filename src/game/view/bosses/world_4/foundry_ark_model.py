@@ -1,10 +1,9 @@
-"""P10-R11, 4-4: the Foundry Ark. Model space:
-logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A huge
-flying foundry: an iron deck carrying a blast furnace at its heart, slag channels glowing from it to
-the crucibles aft, a chimney row on the foredeck, a missile battery on the bow and outriggers out to
-the rail cannons. P16-R06: a living colossus, its broad back scorched flesh ribbed in bone, its
-furnace a swollen heart, slag running in its veins, its stacks, engines, rails and guns metal
-grafts.
+"""FB-FOUNDRY-ARK-01 to FB-FOUNDRY-ARK-07, 4-4: the Foundry Ark. Model space: logical pixels, nose
++Z (down the screen), Y up towards the camera; +X is the screen's left. A huge flying foundry: an
+iron deck carrying a blast furnace at its heart, slag channels glowing from it to the crucibles aft,
+a chimney row on the foredeck, a missile battery on the bow and outriggers out to the rail cannons.
+FB-FOUNDRY-ARK-02: a living colossus, its broad back scorched flesh ribbed in bone, its furnace a
+swollen heart, slag running in its veins, its stacks, engines, rails and guns metal grafts.
 """
 
 import math
@@ -205,10 +204,10 @@ def _draw_stern(p: Any) -> None:
 
 
 def build_foundry_ark(scene: Any) -> Any:
-    """P10-R11: the Foundry Ark, a huge flying foundry (6 L) of sooty iron under orange neon: a
-    blast
-    furnace at its heart, slag channels glowing out to two crucibles hung in gantries aft, a chimney
-    row on the foredeck, a missile battery on the bow and two rail cannons on outriggers."""
+    """FB-FOUNDRY-ARK-01, FB-FOUNDRY-ARK-07: the Foundry Ark, a huge flying foundry (6 L) of sooty
+    iron under orange neon: a blast furnace at its heart, slag channels glowing out to two crucibles
+    hung in gantries aft, a chimney row on the foredeck, a missile battery on the bow and two rail
+    cannons on outriggers."""
 
     def core(p: Any) -> None:
         _draw_hull(p)

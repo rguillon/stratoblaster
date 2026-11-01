@@ -1,4 +1,4 @@
-"""How a scenery level looks: sky, light, terrain, sea, clouds and props (P04)
+"""How a scenery level looks: sky, light, terrain, sea, clouds and props (phase 4)
 
 The interfaces are classes here (Transcrypt has no interfaces). Each takes its fields
 positionally, in the order of the interface, with the optional fields last (default None).
@@ -56,9 +56,10 @@ class Jitter:
 
 
 class TerrainLook:
-    """Generated ground textures blended by altitude and slope (P04-R01): `low` under
+    """Generated ground textures blended by altitude and slope (GFX-TERRAIN-08): `low` under
     `lowHeight` (shores, sea bed), `ground` in between, `high` above `highHeight` (snow),
-    `steep` on slopes. `lush`, `paved` and `sand` are the covers of the terrain sections."""
+    `steep` on slopes. `lush`, `paved` and `sand` are the covers of the terrain sections
+    (GFX-TERRAIN-09)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -83,7 +84,8 @@ class TerrainLook:
         specular: float,
         casts_shadows: bool | None = None,
     ) -> None:
-        """`castsShadows`: whether the terrain casts the sun's shadows (default: yes)."""
+        """`castsShadows`: whether the terrain casts the sun's shadows (default: yes;
+        GFX-TERRAIN-13, PERF-28)."""
         self.textureSize = texture_size
         self.tileSize = tile_size
         self.low = low
@@ -156,8 +158,8 @@ class LavaEdge:
 
 
 class LavaLook:
-    """Lava (P10-R05): a self-lit liquid at the sea level, dark crust plates drifting and breaking
-    over a glowing melt. Only a look."""
+    """Lava (GFX-TERRAIN-16): a self-lit liquid at the sea level, dark crust plates drifting and
+    breaking over a glowing melt. Only a look."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -187,7 +189,7 @@ class LavaLook:
 
 
 class SeaLook:
-    """Water with a generated, drifting normal map that catches the sun (P04-R02)."""
+    """Water with a generated, drifting normal map that catches the sun (GFX-WATER-03)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -202,7 +204,7 @@ class SeaLook:
     ) -> None:
         """`sunGlint`: strength of the sun's direct light on the water (above 1, brighter glint).
         `drift`: world units per second the waves drift along X and Z. `lava` (phase 10): the
-        liquid is lava (P10-R05), not water."""
+        liquid is lava (GFX-TERRAIN-16), not water."""
         self.color = color
         self.alpha = alpha
         self.roughness = roughness
@@ -214,7 +216,7 @@ class SeaLook:
 
 
 class CloudLayerLook:
-    """A layer of clouds under the flight altitude (P04-R03)."""
+    """A layer of clouds under the flight altitude (GFX-SKY-11)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -360,8 +362,9 @@ class SceneryLook:
 
 
 class PropPlume:
-    """A column of smoke or steam rising from a prop (phase 10, P10-R08): from `at` (model space,
-    at scale 1), of a kind of the engine's `PLUME_KINDS`, `scale` times as big as the kind's."""
+    """A column of smoke or steam rising from a prop (phase 10, GFX-PROP-18): from `at` (model
+    space, at scale 1), of a kind of the engine's `PLUME_KINDS`, `scale` times as big as the
+    kind's."""
 
     def __init__(
         self, at: tuple[float, float, float], kind: str, scale: float | None = None
@@ -372,10 +375,10 @@ class PropPlume:
 
 
 class PropGeometry:
-    """Raw geometry of a prop: its lit structure (casts shadows), its self-lit accents, the
-    smoke or steam it sends up, its windows (D-210: quads on the walls, mapped on the windows'
-    atlas) and a stand-in that only casts its shadow (D-212: a prop drawn as an imposter, whose
-    quad would cast a wrong one; a few low-poly solids round where it stands)."""
+    """Raw geometry of a prop (GFX-PROP-04): its lit structure (casts shadows), its self-lit
+    accents, the smoke or steam it sends up, its windows (D-210: quads on the walls, mapped on the
+    windows' atlas) and a stand-in that only casts its shadow (D-212: a prop drawn as an imposter,
+    whose quad would cast a wrong one; a few low-poly solids round where it stands)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -399,7 +402,7 @@ __pragma__("noskip")
 
 
 class PlayfieldCameraLook:
-    """The camera above the playfield (P04-R05): its tilt from straight down, vertical field of
+    """The camera above the playfield (GFX-CAM-02): its tilt from straight down, vertical field of
     view, the height of the playfield plane, and `groundScale` (how much bigger the ground is
     drawn, as if flying lower; 1 when None)."""
 

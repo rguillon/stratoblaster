@@ -1,4 +1,5 @@
-"""How the World 2 levels look (P08-R06, R07; reworked at the reviewer's request, 2026-10-27)
+"""How the World 2 levels look (WLD-2-12, WLD-2-15; reworked at the reviewer's request,
+2026-10-27)
 
 World 1's desert ground, sand and red rock on dry earth, slowly covered by the stained concrete of
 the industry (the `paved` cover the sections raise level after level); and a time of day per level,
@@ -49,7 +50,8 @@ TERRAIN = merge(
 
 
 def industrial(sky: Any) -> Any:
-    """A World 2 look: the desert and industrial ground, under `sky` for the whole level."""
+    """A World 2 look: the desert and industrial ground, under `sky` for the whole level, with no
+    weather (WLD-2-16)."""
     return record(
         merge(
             BASE_SCENERY_LOOK,
@@ -63,17 +65,18 @@ def industrial(sky: Any) -> Any:
     )
 
 
-# 2-1: a clear desert morning over the great erg.
+# 2-1 (LVL-2-1-03): a clear desert morning over the great erg.
 LEVEL_2_1_LOOK = industrial({"timeOfDay": "morning", "clouds": [0.15, 0.1]})
 
-# 2-2: a high, hard midday sun over the mesas and the mines.
+# 2-2 (LVL-2-2-03): a high, hard midday sun over the mesas and the mines.
 LEVEL_2_2_LOOK = industrial({"timeOfDay": "midday", "clouds": [0.2, 0.15]})
 
-# 2-3: golden afternoon over the oil fields, the clouds a little greyed by their smoke.
+# 2-3 (LVL-2-3-03): golden afternoon over the oil fields, the clouds a little greyed by their
+# smoke.
 LEVEL_2_3_LOOK = industrial({"timeOfDay": "afternoon", "clouds": [0.25, 0.2], "storm": 0.15})
 
-# 2-4: dusk through the smog of the industrial belt, its lights coming on.
+# 2-4 (LVL-2-4-03): dusk through the smog of the industrial belt, its lights coming on.
 LEVEL_2_4_LOOK = industrial({"timeOfDay": "dusk", "clouds": [0.35, 0.25], "storm": 0.3})
 
-# 2-5: night over the factories, lit by their windows, neon, streets and cars.
+# 2-5 (LVL-2-5-03): night over the factories, lit by their windows, neon, streets and cars.
 LEVEL_2_5_LOOK = industrial({"timeOfDay": "night", "clouds": [0.4, 0.3], "storm": 0.35})

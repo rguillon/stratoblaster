@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/outline.py`."""
+"""Unit tests of `src/render/outline.py` (the missiles' rim, GFX-SHOT-15)."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -103,6 +103,7 @@ def _outlined(renderer: _Renderer, subs: int = 2) -> FakeNode:
 
 
 def test_compile_asks_the_rim_shader_of_each_sub_mesh_once() -> None:
+    """PERF-20."""
     renderer = _Renderer(ready_after=0)
     compile_outlines([_outlined(renderer, subs=3)])
     assert renderer.calls == 3

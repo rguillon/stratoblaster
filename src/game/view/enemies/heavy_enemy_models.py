@@ -1,4 +1,4 @@
-"""P05-R06..R08, P16-R03: the bigger enemies, Cyber-Organic (P16-R01): swollen flesh bodies and
+"""The Spinner, the Lancer and the Rocketeer, Cyber-Organic (ENM-35): swollen flesh bodies and
 organs, metal grafted on for armour,
 nozzles and guns. Logical pixels, nose +Z, Y up. The Bulwark and the Splitter are in
 `heavy_beetle_models.py`.
@@ -43,13 +43,14 @@ N = ENEMY_LOOK.neon
 WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
 
-# P05-R06: the Spinner's pod muzzles, lit while it fires.
+# ENM-SPINNER-02: the Spinner's pod muzzles, lit while it fires.
 SPINNER_MUZZLE = [[-1.5, 2.2], [1.5, 2.2], [1.3, 3.1], [-1.3, 3.1]]  # type: list[list[float]]
 
 
 def build_spinner(scene: Any) -> Any:
-    """P05-R06, P16-R03: a spiral turret: an organic core spinning four sinew arms curled the same
-    way round, a flesh pod at the end of each with a metal muzzle collar, an orange neon heart."""
+    """ENM-SPINNER-01: a spiral turret: an organic core spinning four sinew arms curled the same
+    way round, a flesh pod at the end of each with a metal muzzle collar, a neon heart (yellow,
+    ENM-SPINNER-03)."""
     pod_radius = ENEMY_CONFIG.spinner.podRadius
 
     def draw(p: Any) -> None:
@@ -85,13 +86,14 @@ def build_spinner(scene: Any) -> Any:
     return build_enemy_model("spinner", scene, N.spinner, draw)
 
 
-# P05-R07: the Lancer's right fin, a flesh blade at its tail.
+# ENM-LANCER-02: the Lancer's right fin, a flesh blade at its tail.
 LANCER_FIN = [[2.5, -6], [10, -17], [9.5, -20], [2.5, -15]]  # type: list[list[float]]
 
 
 def build_lancer(scene: Any) -> Any:
-    """P05-R07, P16-R03: a laser lance: a long body of swollen segments, a metal lance grafted on
-    its head ending in the glowing emitter, two flesh fins and violet veins along its back."""
+    """ENM-LANCER-01: a laser lance: a long body of swollen segments, a metal lance grafted on its
+    head ending in the glowing emitter, two flesh fins and three reactors (ENM-LANCER-02), veins
+    along its back (yellow, ENM-LANCER-04)."""
     nose = ENEMY_CONFIG.lancer.emitterOffset
 
     def draw(p: Any) -> None:
@@ -112,20 +114,21 @@ def build_lancer(scene: Any) -> Any:
             flesh.bevel_slab(fin, [-0.5, 0, 0.5], [0.3, 0.5], F.membrane, None, F.sinew)
             reactor([s * 6.5, 0, -17.8], 0.9)
         emitter = [[0, -1.4], [1.8, 0], [0, 1.4]]
-        # Brightens through the warning (its `charge`), full while the laser fires.
+        # Brightens through the warning (its `charge`), full while the laser fires (ENM-LANCER-03).
         charge.lathe(emitter, 6, WHITE, Placement([0, 0, nose]))
         muzzle([0, 0, nose + 1.8], "laser")
 
     return build_enemy_model("lancer", scene, N.lancer, draw)
 
 
-# P05-R08: the Rocketeer's armour plate, grafted on its back.
+# ENM-ROCKETEER-01: the Rocketeer's armour plate, grafted on its back.
 ROCKETEER_ARMOUR = [[0, 9], [4.5, 5], [4.5, -8], [-4.5, -8], [-4.5, 5]]  # type: list[list[float]]
 
 
 def build_rocketeer(scene: Any) -> Any:
-    """P05-R08, P16-R03: a bulky flesh body with an armour plate on its back, carrying on sinews a
-    long egg sac on each side: its missiles, their tips glowing when loaded."""
+    """ENM-ROCKETEER-01: a bulky flesh body with an armour plate on its back, carrying on sinews a
+    long egg sac on each side: its missiles, their tips glowing when loaded (ENM-ROCKETEER-02). Two
+    reactors (ENM-ROCKETEER-03), in yellow (ENM-ROCKETEER-04)."""
     pod = ENEMY_CONFIG.rocketeer.podOffset
 
     def draw(p: Any) -> None:

@@ -1,4 +1,4 @@
-"""World 1 (P06): five levels of about 4 minutes"""
+"""World 1 (WLD-1-01): five levels of about 4 minutes"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -37,11 +37,11 @@ def _level(id: str, scenery: Any, beats: list[Beat]) -> GameLevel:
 
 
 # World 1: five levels of about 4 minutes, from the open sea over green grassland to the deep
-# desert, each with a mini boss and a final boss (P07).
+# desert, each with a mini boss and a final boss (WLD-1-26).
 WORLD_1 = [
-    _level("1-1", LEVEL_1_1, WAVES_1_1),
-    _level("1-2", LEVEL_1_2, WAVES_1_2),
-    _level("1-3", LEVEL_1_3, WAVES_1_3),
-    _level("1-4", LEVEL_1_4, WAVES_1_4),
-    _level("1-5", LEVEL_1_5, WAVES_1_5),
+    _level("1-1", LEVEL_1_1, WAVES_1_1),  # LVL-1-1-01
+    _level("1-2", LEVEL_1_2, WAVES_1_2),  # LVL-1-2-01
+    _level("1-3", LEVEL_1_3, WAVES_1_3),  # LVL-1-3-01
+    _level("1-4", LEVEL_1_4, WAVES_1_4),  # LVL-1-4-01
+    _level("1-5", LEVEL_1_5, WAVES_1_5),  # LVL-1-5-01
 ]

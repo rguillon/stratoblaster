@@ -63,7 +63,7 @@ class Footprint:
         return len(self.tris) == 0
 
     def holds(self, x: float, z: float) -> bool:
-        """Whether (x, z) is under one of its triangles."""
+        """Whether (x, z) is under one of its triangles (a plain loop: ENG-157)."""
         key = _key(math.floor(x / GRID), math.floor(z / GRID))
         if key not in self.cells:
             return False

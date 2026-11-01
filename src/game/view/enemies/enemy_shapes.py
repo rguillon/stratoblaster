@@ -166,7 +166,7 @@ def side_stripe(
     return [at(t0), at(t1)]
 
 
-# P16-R03: a lean rounded section for the basic kinds' swollen bodies (`segmentedBody`): a flat
+# ENM-35: a lean rounded section for the basic kinds' swollen bodies (`segmentedBody`): a flat
 # belly, round flanks and a soft back, in seven facets.
 LOBE_SECTION = [  # type: list[SectionPoint]
     [0.4, 0],

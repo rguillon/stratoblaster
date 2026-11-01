@@ -1,6 +1,6 @@
-"""Paths from points of the main roads to past the screen edge, every `cross_spacing` (P04-R07).
+"""Paths from points of the main roads to past the screen edge, every `cross_spacing` (GFX-ROAD-02).
 Each one tries both directions and a few bends, and is dropped if none stays on buildable ground
-(and, without crossings, clear of the roads and the paths laid before it)."""
+(and, without crossings, GFX-ROAD-05, clear of the roads and the paths laid before it)."""
 
 import math
 
@@ -54,7 +54,7 @@ class PathGround:
         self.span = span
         """Z range covered by the roads."""
         self.open = open_
-        """Whether a path may go at (`x`, `z`): buildable, out of the districts."""
+        """Whether a path may go at (`x`, `z`): buildable, out of the districts (GFX-ROAD-18)."""
         self.nearest = nearest
         """The edge of the nearest road `which` accepts, within about 64 units."""
         self.lay = lay
@@ -192,7 +192,8 @@ def _path_point(ground: PathGround, walk: _Walk, p: RoadPoint, from_: Road) -> s
 
 
 def _path_line(rules: RoadRules, start: RoadPoint, direction: int, bend: float) -> list[RoadPoint]:
-    """A path from `start` to past the screen edge on the `direction` side, bending by `bend`."""
+    """A path from `start` to past the screen edge on the `direction` side (GFX-ROAD-04), bending
+    by `bend`."""
     step = rules.step
     count = math.ceil((rules.offscreen_x - direction * start.x) / step) + 1
     return [

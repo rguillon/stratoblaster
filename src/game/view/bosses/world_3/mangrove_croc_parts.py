@@ -1,4 +1,5 @@
-"""P09-R09, 3-1: the Mangrove Croc's jaws (on their hinges, D-061), its jaw cannon and its side
+"""MB-MANGROVE-CROC-03, 3-1: the Mangrove Croc's jaws (on their hinges, MB-MANGROVE-CROC-04,
+D-061), its jaw cannon and its side
 pontoons. Logical pixels, nose +Z,
 Y up; the left jaw and pontoon (the screen's left, -X on the playfield) are drawn at +X."""
 
@@ -46,7 +47,7 @@ from render.geometry.outline import OutlinePoint  # noqa: E402
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Mangrove Croc's green neon (P09-R09).
+# The Mangrove Croc's green neon (MB-MANGROVE-CROC-06).
 CROC_GREEN = BOSS_LOOK.neon["mangrove-croc"]
 
 # The left jaw seen from above, from its hinge (x across, z along), as it is shut: wide at the
@@ -95,7 +96,7 @@ def draw_jaw(s: float) -> Any:
         at = boss_point(s * -abs(hinge[0]), hinge[1], 0)
         place = Placement(at, (s * CROC_JAW_SWING.amplitudeDeg * math.pi) / 180)
         outline = JAW if s > 0 else flip_x(JAW)
-        # P16-R05: a fleshy jaw, bone fangs along it, a metal plate grafted on its back.
+        # MB-MANGROVE-CROC-04: a fleshy jaw, bone fangs along it, a metal plate grafted on its back.
         flesh.bevel_slab(outline, JAW_Y, [0.8, 1.2], F.sinew, place, JUNGLE_FLESH)
         hull.box(
             [5, 0.8, 8],
@@ -133,7 +134,8 @@ def draw_jaw(s: float) -> Any:
     return draw
 
 
-# The jaws (D-061): each drawn on its hinge, they open and close with it; they go with the core.
+# The jaws (MB-MANGROVE-CROC-04, D-061): each drawn on its hinge, they open and close with it; they
+# go with the core.
 CROC_JAWS = {
     "jaw-left": {"draw": draw_jaw(1)},
     "jaw-right": {"draw": draw_jaw(-1)},
@@ -141,8 +143,9 @@ CROC_JAWS = {
 
 
 def jaw_cannon(p: EnemyParts, at: Vec3) -> None:
-    """The jaw cannon (P09-R09) in the croc's throat between the jaws: a ribbed housing with a neon
-    collar, its barrel reaching for the jaws' tips, a charge light glowing in its maw."""
+    """The jaw cannon (MB-MANGROVE-CROC-03) in the croc's throat between the jaws: a ribbed housing
+    with a neon collar, its barrel reaching for the jaws' tips, a charge light glowing in its
+    maw."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -151,7 +154,7 @@ def jaw_cannon(p: EnemyParts, at: Vec3) -> None:
     tip = CROC_JAW_CANNON[0]
     axis = boss_point(tip[0], tip[1], tip[2])[1]
     back = offset(at, 0, axis, -8)
-    # P16-R05: a throat gland swelling behind the grafted cannon, veins feeding it.
+    # MB-MANGROVE-CROC-03: a throat gland swelling behind the grafted cannon, veins feeding it.
     sac(p, offset(back, 0, 0, -2), 5, F.slate)
     gland(p, offset(back, 0, 2.6, -2), 1.8, CROC_GREEN)
     hull.cylinder(4.4, 9, 8, H.panel, Placement(back, 0, QUARTER), 3.4)
@@ -174,15 +177,15 @@ FLOAT = table(
 
 
 def pontoon(p: EnemyParts, at: Vec3) -> None:
-    """A side pontoon (P09-R09): a long armoured float with its twin fan guns at its bow, a green
-    light along its outer side, moss on its back and a vine trailing from it."""
+    """A side pontoon (MB-MANGROVE-CROC-03): a long armoured float with its twin fan guns at its
+    bow, a green light along its outer side, moss on its back and a vine trailing from it."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = sign_of(at[0])
     stations = [[z + at[2], w, b, t] for z, w, b, t in FLOAT]
     origin: Vec3 = [at[0], 0, 0]
-    # P16-R05: a swollen float-bladder, ridged like a croc's flank, plated at its bow.
+    # MB-MANGROVE-CROC-03: a swollen float-bladder, ridged like a croc's flank, plated at its bow.
     flesh.loft(POD_SECTION, stations, JUNGLE_FLESH, Placement(origin))
     ribs(
         flesh,

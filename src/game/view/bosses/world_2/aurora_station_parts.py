@@ -1,6 +1,6 @@
-"""P08-R10, 2-3: the Aurora Station's parts (dish emitters, cryo cannons, drone hangar), its
-turning dish and its frost Logical
-pixels, nose +Z, Y up (towards the camera)."""
+"""FB-AURORA-STATION-03, FB-AURORA-STATION-05, 2-3: the Aurora Station's parts (dish emitters, cryo
+cannons, drone hangar), its turning dish and its frost Logical pixels, nose +Z, Y up (towards the
+camera)."""
 
 import math
 
@@ -69,7 +69,8 @@ def _sign(x: float) -> float:
 
 
 def icicles(hull: SolidBuilder, points: Sequence[Vec3], side: float = 1) -> None:
-    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice."""
+    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice
+    (FB-AURORA-STATION-05)."""
     for i, point in enumerate(points):
         length = 3.5 + (i % 3) * 1.3
         hull.cylinder(
@@ -93,15 +94,17 @@ def bowl(r: float) -> list[Vec3]:
 
 
 def emitter(p: EnemyParts, at: Vec3) -> None:
-    """A dish emitter's pylon around its centre `at` (P08-R10): its dish turns on it."""
-    # P16-R06: a swollen node of flesh at the end of its arm, a metal socket for the dish.
+    """A dish emitter's pylon around its centre `at` (FB-AURORA-STATION-03): its dish turns on
+    it."""
+    # FB-AURORA-STATION-03: a swollen node of flesh at the end of its arm, a metal socket for the
+    # dish.
     organ(p.flesh, 7, 6, ICE_FLESH.graphite, Placement(offset(at, 0, -2, -3)), 0.5)
     p.hull.box([4, 6, 5], H.panel, Placement(offset(at, 0, 2, -3)), H.base)
     gland(p, offset(at, _sign(at[0]) * 5, 2, -6), 1, AURORA_GREEN)
 
 
 def emitter_turret(p: EnemyParts, at: Vec3) -> None:
-    """A dish emitter's turret, turning on its pylon (phase 8 review: it aims its laser): an
+    """A dish emitter's turret, turning on its pylon (FB-AURORA-STATION-06: it aims its laser): an
     upright dish facing down the screen, struts holding its projector at the focus, where the
     laser leaves from."""
     hull = p.hull
@@ -143,7 +146,7 @@ TANK = [
 
 
 def iced(side: float) -> Rgb | None:
-    """Ice on the top of a `POD_SECTION` loft (its side 2)."""
+    """Ice on the top of a `POD_SECTION` loft (its side 2; FB-AURORA-STATION-05)."""
     if side == POD_BACK:
         rime: Rgb = ICE_FLESH.rime
         return rime
@@ -151,11 +154,12 @@ def iced(side: float) -> Rgb | None:
 
 
 def cryo_cannon(p: EnemyParts, at: Vec3) -> None:
-    """A cryo cannon's body around its centre `at` (P08-R10): a cryogenic tank on the station's
-    truss, iced over, two coolant flasks behind its turret (`cryo_turret`)."""
+    """A cryo cannon's body around its centre `at` (FB-AURORA-STATION-03): a cryogenic tank on the
+    station's truss, iced over, two coolant flasks behind its turret (`cryo_turret`)."""
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a cryo bladder of flesh, rimed over, two glands of coolant behind its gun.
+    # FB-AURORA-STATION-03: a cryo bladder of flesh, rimed over, two glands of coolant behind its
+    # gun.
     flesh.loft(
         POD_SECTION,
         TANK,
@@ -182,7 +186,8 @@ def cryo_cannon(p: EnemyParts, at: Vec3) -> None:
 
 
 def cryo_turret(p: EnemyParts, at: Vec3) -> None:
-    """A cryo cannon's turret: a single wide-bored barrel, a violet ring round its foot."""
+    """A cryo cannon's turret, turning as it aims (FB-AURORA-STATION-06): a single wide-bored
+    barrel, a violet ring round its foot."""
     turret(
         p,
         offset(at, 0, 6, 0),
@@ -201,12 +206,12 @@ def cryo_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def hangar(p: EnemyParts, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (P08-R10): a snow-roofed bay at the station's
-    nose, its open door framed in violet, where its Hornets leave from."""
+    """The drone hangar around its centre `at` (FB-AURORA-STATION-03): a snow-roofed bay at the
+    station's nose, its open door framed in violet, where its Hornets leave from."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a brood pouch of flesh at the nose, its mouth framed in violet.
+    # FB-AURORA-STATION-03: a brood pouch of flesh at the nose, its mouth framed in violet.
     flesh.bevel_slab(
         rect(26, 24),
         [-3, 0, 8],
@@ -234,7 +239,8 @@ def hangar(p: EnemyParts, at: Vec3) -> None:
 
 
 def dish(p: EnemyParts) -> None:
-    """The big dish on top (P08-R10), drawn on the model's ring so that it turns slowly: a
+    """The big dish on top (FB-AURORA-STATION-03), drawn on the model's ring so that it turns
+    slowly (FB-AURORA-STATION-06): a
     snow-filled bowl on a turntable, a violet rim, and its feed horn lit green at the focus."""
     hull = p.hull
     flesh = p.flesh
@@ -243,7 +249,7 @@ def dish(p: EnemyParts) -> None:
     def axis(along: float) -> Vec3:
         return [0, 19 + along * math.cos(DISH_TILT), along * math.sin(DISH_TILT)]
 
-    # P16-R06: the crown, a frilled bowl of membrane turning on its stalk.
+    # FB-AURORA-STATION-03: the crown, a frilled bowl of membrane turning on its stalk.
     hull.cylinder(4, 2, 8, H.panel, Placement([0, 17, 0]))
     flesh.lathe(bowl(15), 12, ICE_FLESH.membrane, Placement(axis(0), 0, DISH_TILT))
     neon.ring(15.1, 0.6, 12, AURORA_VIOLET, Placement(axis(4.9), 0, DISH_TILT))

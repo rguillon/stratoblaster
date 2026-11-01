@@ -1,4 +1,4 @@
-"""The Lancer (P05-R07)"""
+"""The Lancer (`specs/enemies/lancer.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -46,9 +46,9 @@ class LancerBeam:
 
 
 class Lancer(Enemy):
-    """P05-R07: moves to a fixed point in the top part of the screen and stops. A warning line shows
-    straight down from its emitter for 1 s, then it fires a laser along that line for 1.5 s (GD-43),
-    without moving; then it backs away upward.
+    """ENM-LANCER-05: moves to a fixed point in the top part of the screen and stops. A warning
+    line shows straight down from its emitter for 1 s, then it fires a laser along that line for
+    1.5 s, without moving (ENM-LANCER-06, ENM-19); then it backs away upward (ENM-LANCER-07).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -79,6 +79,7 @@ class Lancer(Enemy):
         warning_seconds = CFG.laser.warningSeconds
         firing_seconds = CFG.laser.firingSeconds
         self._attack_for += dt
+        # Its emitter charges up through the warning (ENM-LANCER-03).
         self.charge = min(1, self._attack_for / warning_seconds)
         if self._attack_for < warning_seconds + firing_seconds:
             return

@@ -1,5 +1,5 @@
-"""P05-R15, P05-R18, P16-R04: the heavier veteran kinds Logical pixels, nose +Z, Y up (to the
-camera)."""
+"""The heavier veteran kinds, the Mortar and the Minelayer (specs/enemies/mortar.md,
+minelayer.md) Logical pixels, nose +Z, Y up (to the camera)."""
 
 import math
 
@@ -43,22 +43,23 @@ def _minelayer_girth(t: float) -> float:
     return 0.6 + 0.4 * math.sin(math.pi * t)
 
 
-# P05-R15, P16-R04: the Mortar's squat, ridged shell, wider than long (tail to front).
+# ENM-MORTAR-01: the Mortar's squat, ridged shell, wider than long (tail to front).
 MORTAR_SHELL = SegmentedBody(-14, 12, 3, 17.5, -2.2, 3.4, None, _mortar_girth, [False, False])
 # The armour plates grafted on its front shoulders (right side).
 MORTAR_PLATE = [[6, 11], [12, 8], [12.5, 4], [7, 6]]  # type: list[list[float]]
 
 
 def mortar_sac(p: Any, s: float) -> None:
-    """A side sac on side `s`, swollen with shells, a running light along it."""
+    """A side sac on side `s`, swollen with shells, a running light along it (ENM-MORTAR-03)."""
     organ(p.flesh, 3, 5, F.slate, Placement([s * 18, 0.6, -9], 0, QUARTER), 0.95)
     p.neon.box([0.8, 0.3, 4], N.mortar, Placement([s * 18.2, 3.6, -4]))
 
 
 def build_mortar(scene: Any) -> Any:
-    """P05-R15, P16-R04: a squat, armoured beetle with a short, wide barrel grafted on a raised
-    mount in its middle, shell sacs on its flanks and olive-green neon. The barrel's mouth glows
-    as the next shell charges."""
+    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide barrel grafted on a raised mount
+    in its middle, shell sacs on its flanks and olive-green neon (ENM-MORTAR-03), two reactors at
+    its back (ENM-MORTAR-05), within the veteran triangle budget (ENM-MORTAR-06). The barrel's
+    mouth glows as the next shell charges (ENM-MORTAR-04)."""
     muzzle_cfg = VETERAN_CONFIG.mortar.muzzles[0]
     mouth_height = muzzle_cfg[2]
     mouth = -muzzle_cfg[1]
@@ -88,7 +89,7 @@ def build_mortar(scene: Any) -> Any:
     return build_enemy_model("mortar", scene, N.mortar, draw)
 
 
-# P05-R18, P16-R04: the Minelayer's long, flat, segmented body, tail to nose.
+# ENM-MINELAYER-01: the Minelayer's long, flat, segmented body, tail to nose.
 MINELAYER_BODY = SegmentedBody(-21, 22, 4, 6.8, -1.8, 2.5, 0.2, _minelayer_girth)
 # A mine's egg, a lathe profile bottom to top.
 MINE = [[0, -1.6], [1.6, -0.8], [1.6, 0.8], [0, 1.6]]  # type: list[list[float]]
@@ -97,8 +98,10 @@ MINELAYER_FIN = [[5, -12], [9.8, -17], [9.8, -20.5], [4.5, -18.5]]  # type: list
 
 
 def build_minelayer(scene: Any) -> Any:
-    """P05-R18, P16-R04: a long, flat, segmented grub with a rack of egg-mines along its belly (each
-    lit as the next drop charges), metal tail fins and red-orange neon running lights."""
+    """ENM-MINELAYER-02: a long, flat, segmented grub with a rack of egg-mines along its belly
+    (each lit as the next drop charges, ENM-MINELAYER-04), metal tail fins, red-orange neon running
+    lights (ENM-MINELAYER-03) and two reactors at its tail (ENM-MINELAYER-05), within the veteran
+    triangle budget (ENM-MINELAYER-06)."""
     hatches = VETERAN_CONFIG.minelayer.muzzles
 
     def draw(p: Any) -> None:
