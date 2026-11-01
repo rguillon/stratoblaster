@@ -351,6 +351,7 @@ def rest_stems(design: Any, drawing: Any, cut: Any, neon: Rgb) -> list[Any]:
         for layer in LAYERS:
             lasting.extend(cut.kept[layer])
             tris.extend(cut.kept[layer])
+            tris.extend(cut.floating.get(layer, []))
             for k in range(len(cut.regions)):
                 # A moving region's piece as it rests (D-230).
                 tris.extend(posed(cut.regions[k][layer], design.armour[k], 0))

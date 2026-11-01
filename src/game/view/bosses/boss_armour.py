@@ -23,7 +23,7 @@ from game.view.bosses.region_motion import node_pose, posed, progress, relative_
 from game.view.enemies.enemy_mesh import EnemyParts, build_enemy_model
 from render.babylon import new_transform_node, set_enabled
 from render.edge_trim_mesh import clear_trim, set_trim_group
-from render.geometry.islands import bounds_of, loose_triangles, pieces
+from render.geometry.islands import bounds_of, holding_surfaces, loose_triangles, pieces
 from render.geometry.shatter import (
     Carve,
     Vertex,
@@ -143,6 +143,7 @@ class ArmourCut:
         floors: list[float],
         bridges: list[Any],
         framed: list[bool] | None = None,
+        floating: dict[str, Any] | None = None,
     ) -> None:
         self.kept = kept
         self.calls = calls
@@ -154,15 +155,21 @@ class ArmourCut:
         self.bridges = bridges
         # Whether each region leaves a frame (a moving one may not, D-230).
         self.framed = framed if framed is not None else [True for _ in regions]
+        # What of the core is loose at rest (held by a stem or a part standing on it), by layer:
+        # drawn with the core, but nothing is held by it.
+        self.floating = floating if floating is not None else {}
 
     def core_drawing(self) -> Any:
         """The drawing of the core without its armour."""
         kept = self.kept
         calls = self.calls
+        floating = self.floating
 
         def draw(p: Any) -> None:
             for layer in LAYERS:
                 append_triangles(getattr(p, layer).geometry, kept[layer])
+                if layer in floating:
+                    append_triangles(getattr(p, layer).geometry, floating[layer])
             for call in calls:
                 _play(p, call)
 
@@ -202,12 +209,13 @@ def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
             cut[k][layer] = split[1]
         far.extend(rest)
         kept[layer] = far
-    _free_cut_off(kept, cut, carves, regions)
+    _settle_moving(kept, cut, regions)
+    floating = _free_cut_off(kept, cut, carves, regions)
     frames = [concat(c["hull"], c["flesh"]) for c in cut]
     floors = [floor_height(f) for f in frames]
     bridges = _held_frames(kept, cut, frames, floors, regions)
     framed = [r.frame != None for r in regions]  # noqa: E711
-    return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges, framed)
+    return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges, framed, floating)
 
 
 def _framed_state(
@@ -297,15 +305,88 @@ def _bridge(patch: list[Any], held: list[Any]) -> list[Any]:
     return [start, target]
 
 
+def _tagged(layers: dict[str, Any]) -> list[list[Any]]:
+    """The triangles of `layers` (by layer), each `[layer, triangle]`."""
+    result: list[list[Any]] = []
+    for layer in LAYERS:
+        for tri in layers[layer]:
+            result.append([layer, tri])
+    return result
+
+
+def _split(
+    tagged: list[list[Any]], keep: list[bool], into: dict[str, Any], out: dict[str, Any]
+) -> None:
+    """Puts each of `tagged` (`[layer, triangle]`) in `into` (by layer) where `keep` says so, else
+    in `out`; `into` is emptied first."""
+    for layer in LAYERS:
+        into[layer] = []
+    for i in range(len(tagged)):
+        layer = tagged[i][0]
+        if keep[i]:
+            into[layer].append(tagged[i][1])
+        else:
+            out[layer].append(tagged[i][1])
+
+
+def _settle_moving(kept: dict[str, Any], cut: list[dict[str, Any]], regions: list[Any]) -> None:
+    """A moving region's piece is one body (D-230): what the cut gave it apart from its biggest
+    body holding together (a light hanging over it, held by a stem on the core) stays with the
+    core."""
+    for k in range(len(regions)):
+        if not is_moving(regions[k]):
+            continue
+        tagged = _tagged(cut[k])
+        tris = [t[1] for t in tagged]
+        groups = pieces(tris)
+        held = holding_surfaces(tris, groups, BOSS_LOOK.armour.hold)
+        sizes = [0 for _ in groups]
+        for g in range(len(groups)):
+            sizes[held[g]] += len(groups[g])
+        main = 0
+        for h in range(len(sizes)):
+            if sizes[h] > sizes[main]:
+                main = h
+        keep = [False for _ in tagged]
+        for g in range(len(groups)):
+            if held[g] == main:
+                for i in groups[g]:
+                    keep[i] = True
+        _split(tagged, keep, cut[k], kept)
+
+
 def _free_cut_off(
     kept: dict[str, Any], cut: list[dict[str, Any]], carves: list[Carve], regions: list[Any]
-) -> None:
+) -> dict[str, list[Any]]:
     """Pieces of the core the cut leaves hanging go with a region (D-227: a boss stays one object).
     After each transformation, what is still on (the core, the armour not yet shed) and the floors
     of the frames shed must hold together: a piece of the core that no longer does goes with the
-    region it stands in, else with the region that held it up."""
+    region it stands in, else with the region that held it up. A piece already loose at rest (held
+    by a part standing on it, or by a stem) stays off `kept`: returned by layer, its stem holds it
+    whatever is shed."""
+    floating = _floating_at_rest(kept, cut, regions)
     for form in sorted_forms(regions):
         _free_after(kept, cut, carves, regions, form)
+    return floating
+
+
+def _floating_at_rest(
+    kept: dict[str, Any], cut: list[dict[str, Any]], regions: list[Any]
+) -> dict[str, list[Any]]:
+    """Takes out of `kept` (by layer) the pieces of the core loose at rest, with all its armour on,
+    and returns them."""
+    tagged = _tagged(kept)
+    tris = [t[1] for t in tagged]
+    count = len(tris)
+    for k in range(len(regions)):
+        for layer in LAYERS:
+            tris.extend(posed(cut[k][layer], regions[k], 0))
+    loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
+    floating: dict[str, list[Any]] = {}
+    for layer in LAYERS:
+        floating[layer] = []
+    _split(tagged, [not loose[i] for i in range(count)], kept, floating)
+    return floating
 
 
 def _free_after(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -316,19 +397,10 @@ def _free_after(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     form: int,
 ) -> None:
     """`_free_cut_off` after transformation `form`."""
-    tagged: list[list[Any]] = []
-    for layer in LAYERS:
-        for tri in kept[layer]:
-            tagged.append([layer, tri])
+    tagged = _tagged(kept)
     tris = [t[1] for t in tagged]
     count = len(tris)
-    for k in range(len(regions)):
-        solid = concat(cut[k]["hull"], cut[k]["flesh"])
-        if regions[k].form > form or is_moving(regions[k]):
-            # On still, or moved into its new pose (D-230).
-            tris.extend(posed(solid, regions[k], form))
-        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711
-            tris.extend(floor_triangles(solid, floor_height(solid)))
+    tris.extend(_regions_after(cut, regions, form))
     loose = loose_triangles(tris, BOSS_LOOK.armour.hold)
     hanging = [i for i in range(count) if loose[i]]
     if len(hanging) == 0:
@@ -337,11 +409,27 @@ def _free_after(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     for piece in pieces([tris[i] for i in hanging]):
         members = [hanging[k] for k in piece]
         k = _owner(tris, members, carves, regions, form)
+        if k < 0:
+            continue
         for i in members:
             cut[k][tagged[i][0]].append(tris[i])
             moved[i] = True
     for layer in LAYERS:
         kept[layer] = [tagged[i][1] for i in range(count) if tagged[i][0] == layer and not moved[i]]
+
+
+def _regions_after(cut: list[dict[str, Any]], regions: list[Any], form: int) -> list[Any]:
+    """What the regions make of the boss after transformation `form`: the armour still on and the
+    pieces moved into their new pose (D-230), and the floors of the frames shed."""
+    tris: list[Any] = []
+    for k in range(len(regions)):
+        if regions[k].form > form or is_moving(regions[k]):
+            for layer in LAYERS:
+                tris.extend(posed(cut[k][layer], regions[k], form))
+        solid = concat(cut[k]["hull"], cut[k]["flesh"])
+        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711
+            tris.extend(floor_triangles(solid, floor_height(solid)))
+    return tris
 
 
 def sorted_forms(regions: list[Any]) -> list[int]:
@@ -357,17 +445,44 @@ def _owner(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     tris: list[Any], members: list[int], carves: list[Carve], regions: list[Any], form: int
 ) -> int:
     """The region a hanging piece (`members` of `tris`) goes with: the one shed by `form` or
-    before that it stands in, else the first one `form` sheds."""
+    before (or moved by `form`: a piece moved before cannot take it now) that it stands in, else
+    the nearest one `form` sheds or moves (the one that held it up)."""
     b = bounds_of([tris[i] for i in members])
     x = (b[0] + b[3]) / 2
     z = (b[2] + b[5]) / 2
     for k in range(len(carves)):
-        if regions[k].form <= form and any(inside(o, x, z) for o in carves[k].outlines):
+        if regions[k].form > form or (is_moving(regions[k]) and regions[k].form < form):
+            continue
+        if any(inside(o, x, z) for o in carves[k].outlines):
             return k
+    best = -1
+    near = math.inf
     for k in range(len(regions)):
-        if regions[k].form == form:
-            return k
-    return 0
+        if regions[k].form != form:
+            continue
+        for outline in carves[k].outlines:
+            d = _distance_to(outline, x, z)
+            if d < near:
+                near = d
+                best = k
+    return best
+
+
+def _distance_to(outline: list[list[float]], x: float, z: float) -> float:
+    """How far `(x, z)` is from the edge of `outline` (XZ, model space)."""
+    best = math.inf
+    n = len(outline)
+    for i in range(n):
+        a = outline[i]
+        b = outline[(i + 1) % n]
+        dx = b[0] - a[0]
+        dz = b[1] - a[1]
+        length = dx * dx + dz * dz
+        t = 0.0 if length == 0 else max(0, min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / length))
+        px = a[0] + t * dx - x
+        pz = a[1] + t * dz - z
+        best = min(best, math.hypot(px, pz))
+    return best
 
 
 class ArmourChunk:

@@ -10,7 +10,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -101,17 +102,22 @@ _STONE_IDOL = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Its transformation (D-230): the back of its head flips up and back on a hinge across its crown,
+# like a lid, showing a dark metal ring round a great sweeper eye between two mortars.
 STONE_IDOL = with_weapons(
     _STONE_IDOL,
     [
-        hidden_weapon("rack-left", "rack", [-23, -27], 7, 760, 1, "purple", 1.2, 15.5),
-        hidden_weapon("rack-right", "rack", [23, -27], 7, 760, 1, "purple", 2.0, 15.5),
+        hidden_weapon("eye", "sweeper", [0, 24], 13, 760, 1, "purple", 1.6, 12),
+        hidden_weapon("mortar-left", "mortar", [-30, 30], 8, 760, 1, "purple", 1.2, 13),
+        hidden_weapon("mortar-right", "mortar", [30, 30], 8, 760, 1, "purple", 2.6, 13),
     ],
-    [
-        armour_region(
-            "flanks", 1, [[8, -55.5], [52.4, -55.5], [52.4, 2], [8, 2]], "wing", [-0.7, 1000]
-        ),
-    ],
+    moving_region(
+        "crown",
+        1,
+        [[-54, 4], [54, 4], [54, 56], [-54, 56]],
+        swing([0, 50, 7], "across", [0, -75]),
+        "ring",
+        [7, 1000],
+        False,
+    ),
 )

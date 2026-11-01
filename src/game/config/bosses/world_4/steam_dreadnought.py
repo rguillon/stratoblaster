@@ -11,7 +11,8 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
-from game.config.record import merge, record
+from game.config.bosses.moving_regions import moving_region, swing
+from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -138,24 +139,38 @@ _STEAM_DREADNOUGHT = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour and its spine plating bursts off, baring a dark metal frame, and a pair of ring emitters
-# and a laser lance unfold.
+# Its transformations (D-230): once both its turrets are gone its front side decks fan out forward
+# on hinges at their bows, a gun battery riding each, dark metal showing in the wedges they open;
+# once both its stacks are gone its stern and spine plating burst off for two mortars and a ring
+# emitter.
 STEAM_DREADNOUGHT = with_weapons(
-    _STEAM_DREADNOUGHT,
+    merge(
+        _STEAM_DREADNOUGHT,
+        {"transformParts": [["turret-left", "turret-right"], ["stack-left", "stack-right"]]},
+    ),
     [
-        hidden_weapon("gatling-left", "gatling", [-30, 47], 8, 760, 1, "red", 1.2, 12.6),
-        hidden_weapon("gatling-right", "gatling", [30, 47], 8, 760, 1, "red", 2.0, 12.6),
-        hidden_weapon("orb-left", "orb", [-30, -23], 8, 950, 2, "red", 1.2, 12.6),
-        hidden_weapon("orb-right", "orb", [30, -23], 8, 950, 2, "red", 2.0, 12.6),
-        hidden_weapon("lance-centre", "lance", [0, 29], 8, 950, 2, "red", 1.6, 15.6),
+        hidden_weapon("battery-left", "battery", [-57, -45], 9, 760, 1, "red", 1.2, 16),
+        hidden_weapon("battery-right", "battery", [57, -45], 9, 760, 1, "red", 2.0, 16),
+        hidden_weapon("mortar-left", "mortar", [-30, 47], 8, 950, 2, "orange", 1.2, 12.6),
+        hidden_weapon("mortar-right", "mortar", [30, 47], 8, 950, 2, "orange", 2.6, 12.6),
+        hidden_weapon("orb", "orb", [0, 29], 11, 950, 2, "red", 1.6, 15.6),
     ],
-    [
-        armour_region("flanks", 1, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing", [2.1, 1000]),
-        armour_region("wings", 2, [[14, -53], [72, -53], [72, 7], [14, 7]], "wing", [5.7, 1000]),
-        armour_region(
-            "spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", [6.4, 1000], False
+    concat(
+        moving_region(
+            "decks",
+            1,
+            [[20, -54], [74, -54], [74, 2], [20, 2]],
+            swing([20, -54, 0], "up", [0, -25]),
+            "wing",
+            [-8, 1000],
         ),
-    ],
+        [
+            armour_region(
+                "flanks", 2, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing", [2.1, 1000]
+            ),
+            armour_region(
+                "spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", [6.4, 1000], False
+            ),
+        ],
+    ),
 )

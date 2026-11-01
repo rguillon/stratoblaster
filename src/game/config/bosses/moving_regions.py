@@ -167,7 +167,7 @@ def _inside(outline: list[Any], x: float, y: float) -> bool:
 
 def ridden_region(design: Any, part: Any) -> Any:
     """The moving region the hidden part `part` rides (D-230), if any: one moving at the
-    transformation that reveals it, its piece under the part once moved. None otherwise."""
+    transformation that reveals it, its piece under the part's pod once moved. None otherwise."""
     reveal = part.reveal
     if reveal == None:  # noqa: E711
         return None
@@ -177,7 +177,8 @@ def ridden_region(design: Any, part: Any) -> Any:
     for region in design.armour or []:
         if not is_moving(region) or region.form != reveal:
             continue
+        # On its piece: over it, and no lower than where it was cut (not beneath a lifted one).
         spot = drawn_spot(region, [part.x, part.y, height])
-        if _inside(region.outlines[0], spot[0], spot[1]):
+        if _inside(region.outlines[0], spot[0], spot[1]) and spot[2] >= region.heights[0]:
             return region
     return None

@@ -9,7 +9,8 @@ left) a ring used by no earlier stage. Health values are placeholders for the P0
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
-from game.config.record import record
+from game.config.bosses.moving_regions import moving_region, slide
+from game.config.record import concat, merge, record
 
 MAGENTA = bullet("magenta", 180)
 RED = bullet("red", 190)
@@ -81,17 +82,28 @@ _SNOW_OWL = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Its transformation (D-230): once both wing pods are gone its outer wing panels slide out, their
+# dark metal spars showing, a sweeper riding each new tip; its back plating bursts off for a mortar.
 SNOW_OWL = with_weapons(
-    _SNOW_OWL,
+    merge(_SNOW_OWL, {"transformParts": [["pod-left", "pod-right"]]}),
     [
-        hidden_weapon("rack-left", "rack", [-12, -7], 10, 680, 1, "magenta", 1.2, 10.3),
-        hidden_weapon("rack-right", "rack", [12, -7], 10, 680, 1, "magenta", 2.0, 10.3),
+        hidden_weapon("sweeper-left", "sweeper", [-61, -1], 6, 680, 1, "magenta", 1.2, 7),
+        hidden_weapon("sweeper-right", "sweeper", [61, -1], 6, 680, 1, "magenta", 3.8, 7),
+        hidden_weapon("mortar", "mortar", [0, 8], 9, 680, 1, "purple", 2.0, 14),
     ],
-    [
-        armour_region(
-            "back", 1, [[-30, -31.7], [30, -31.7], [30, 23], [-30, 23]], "shell", [2.5, 1000], False
+    concat(
+        moving_region(
+            "wingtips",
+            1,
+            [[30, -12], [56, -12], [56, 12], [30, 12]],
+            slide([[0, 0, 0], [16, 0, 0]]),
+            "wing",
+            [-3, 1000],
         ),
-    ],
+        [
+            armour_region(
+                "back", 1, [[-16, -6], [16, -6], [16, 22], [-16, 22]], "shell", [6, 1000], False
+            ),
+        ],
+    ),
 )

@@ -139,8 +139,12 @@ def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(desi
         if ridden_region(design, p) is not None:
             # On a moving region's piece, where it ends up (D-230).
             continue
-        regions = [r for r in design.armour if r.form == p["reveal"] and not is_moving(r)]
-        assert any(inside(o, p["x"], p["y"]) for r in regions for o in r.outlines), p["id"]
+        # Where armour bursts off, or where a moving piece was drawn (it leaves the spot open); a
+        # centre weapon may sit on the seam between two mirrored pieces.
+        regions = [r for r in design.armour if r.form == p["reveal"]]
+        assert any(
+            inside(o, p["x"] + dx, p["y"]) for r in regions for o in r.outlines for dx in [0, 0.5]
+        ), p["id"]
 
 
 def _rest_outline(region: Any) -> list[list[float]]:

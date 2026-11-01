@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, slide
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -134,23 +135,47 @@ _SKY_TEMPLE = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its transformations (D-230): once its back obelisks are gone its back corner wedges slide out
+# diagonally, a gun battery riding each, and its back terrace bursts off for a mortar; once its
+# front obelisks are gone its front corner wedges slide out, a heavy cannon riding each.
 SKY_TEMPLE = with_weapons(
-    _SKY_TEMPLE,
+    merge(
+        _SKY_TEMPLE,
+        {
+            "transformParts": [
+                ["obelisk-back-left", "obelisk-back-right"],
+                ["obelisk-front-left", "obelisk-front-right"],
+            ]
+        },
+    ),
     [
-        hidden_weapon("orb-left", "orb", [-13, 33], 11, 1920, 1, "orange", 1.2, 41.0),
-        hidden_weapon("orb-right", "orb", [13, 33], 11, 1920, 1, "orange", 2.0, 41.0),
-        hidden_weapon("gatling-left", "gatling", [-39, -33], 11, 2400, 2, "orange", 1.2, 41.0),
-        hidden_weapon("gatling-right", "gatling", [39, -33], 11, 2400, 2, "orange", 2.0, 41.0),
+        hidden_weapon("mortar", "mortar", [0, 36], 13, 1920, 1, "orange", 1.6, 41.0),
+        hidden_weapon("battery-left", "battery", [-70, 50], 10, 1920, 1, "orange", 1.2, 24),
+        hidden_weapon("battery-right", "battery", [70, 50], 10, 1920, 1, "orange", 2.0, 24),
+        hidden_weapon("cannon-left", "cannon", [-66, -52], 10, 2400, 2, "orange", 1.2, 24),
+        hidden_weapon("cannon-right", "cannon", [66, -52], 10, 2400, 2, "orange", 2.4, 24),
     ],
-    [
-        armour_region(
-            "back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", [1.2, 1000], False
+    concat(
+        moving_region(
+            "back-corners",
+            1,
+            [[34, 20], [88, 20], [88, 72], [34, 72]],
+            slide([[0, 0, 0], [15, 15, 0]]),
+            "wing",
+            [-8, 1000],
         ),
-        armour_region(
-            "wings", 2, [[20, -66], [81.8, -66], [81.8, 0], [20, 0]], "wing", [-5.0, 1000]
+        [
+            armour_region(
+                "back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", [1.2, 1000], False
+            ),
+        ],
+        moving_region(
+            "front-corners",
+            2,
+            [[34, -72], [88, -72], [88, -20], [34, -20]],
+            slide([[0, 0, 0], [14, -14, 0]]),
+            "wing",
+            [-8, 1000],
         ),
-    ],
+    ),
 )

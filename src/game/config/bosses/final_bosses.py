@@ -10,6 +10,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, slide, swing
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -343,23 +344,39 @@ _OVERLORD = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its wing armour
-# bursts off, baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its transformations (D-230): once both wing pods are gone its outer wings swing 30 degrees
+# forward about their leading edges' roots, a gun battery riding each; once its rack and plate are
+# gone its tail plating bursts off for a heavy cannon and its wing roots' for a pair of sweepers.
 STORM_PETREL = with_weapons(
-    _STORM_PETREL,
+    merge(
+        _STORM_PETREL,
+        {"transformParts": [["pod-left", "pod-right"], ["missile-rack", "belly-plate"]]},
+    ),
     [
-        hidden_weapon("lance-left", "lance", [-33, -9], 5, 810, 1, "magenta", 1.2, 13.1),
-        hidden_weapon("lance-right", "lance", [33, -9], 5, 810, 1, "magenta", 2.0, 13.1),
-        hidden_weapon("gatling-left", "gatling", [-19, -17], 5, 1010, 2, "magenta", 1.2, 12.9),
-        hidden_weapon("gatling-right", "gatling", [19, -17], 5, 1010, 2, "magenta", 2.0, 12.9),
+        hidden_weapon("battery-left", "battery", [-52, -13], 8, 810, 1, "magenta", 1.2, 13),
+        hidden_weapon("battery-right", "battery", [52, -13], 8, 810, 1, "magenta", 2.0, 13),
+        hidden_weapon("cannon", "cannon", [0, 32], 11, 1010, 2, "red", 1.4, 14.5),
+        hidden_weapon("sweeper-left", "sweeper", [-19, -12], 6, 1010, 2, "magenta", 2.2, 12.9),
+        hidden_weapon("sweeper-right", "sweeper", [19, -12], 6, 1010, 2, "magenta", 4.6, 12.9),
     ],
-    [
-        armour_region(
-            "flanks", 1, [[26, -36], [80.4, -36], [80.4, 18], [26, 18]], "wing", [10.6, 1000]
+    concat(
+        moving_region(
+            "outer-wings",
+            1,
+            [[31, -24], [84, -24], [84, 20], [31, 20]],
+            swing([31, -13.4, 8], "up", [0, -30]),
+            None,
+            [4, 1000],
         ),
-        armour_region("wings", 2, [[8, -44], [26, -44], [26, 10], [8, 10]], "wing", [4.6, 1000]),
-    ],
+        [
+            armour_region(
+                "tail", 2, [[-14, 18], [14, 18], [14, 48], [-14, 48]], "shell", [9, 1000], False
+            ),
+            armour_region(
+                "wing-roots", 2, [[13, -24], [26, -24], [26, 2], [13, 2]], "wing", [4.6, 1000]
+            ),
+        ],
+    ),
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
@@ -379,25 +396,42 @@ GULL_MOTHERSHIP = with_weapons(
     ],
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# Its transformations (D-230): once both lances are gone its wing fronts burst off for a pair of
+# gun batteries; once both silos are gone its keep splits along its ridge, the two halves of its
+# roof sliding apart over a dark metal lattice as a heavy cannon rises between them, and its flank
+# armour bursts off for a pair of sweepers.
 MESA_FORTRESS = with_weapons(
-    _MESA_FORTRESS,
+    merge(
+        _MESA_FORTRESS,
+        {"transformParts": [["lance-left", "lance-right"], ["silo-left", "silo-right"]]},
+    ),
     [
-        hidden_weapon("gatling-left", "gatling", [-51, 17], 11, 1200, 1, "red", 1.2, 17.8),
-        hidden_weapon("gatling-right", "gatling", [51, 17], 11, 1200, 1, "red", 2.0, 17.8),
-        hidden_weapon("orb-left", "orb", [-32, -21], 8, 1500, 2, "red", 1.2, 10.6),
-        hidden_weapon("orb-right", "orb", [32, -21], 8, 1500, 2, "red", 2.0, 10.6),
+        hidden_weapon("battery-left", "battery", [-44, -26], 10, 1200, 1, "red", 1.2, 14),
+        hidden_weapon("battery-right", "battery", [44, -26], 10, 1200, 1, "red", 2.2, 14),
+        hidden_weapon("cannon", "cannon", [0, 14], 14, 1500, 2, "orange", 1.4, 22),
+        hidden_weapon("sweeper-left", "sweeper", [-60, 22], 8, 1500, 2, "red", 2.4, 14),
+        hidden_weapon("sweeper-right", "sweeper", [60, 22], 8, 1500, 2, "red", 6.4, 14),
     ],
-    [
-        armour_region(
-            "flanks", 1, [[32, -3.5], [88, -3.5], [88, 50], [32, 50]], "wing", [2.2, 1000]
+    concat(
+        [
+            armour_region(
+                "wings", 1, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing", [4.3, 1000]
+            ),
+        ],
+        moving_region(
+            "roof",
+            2,
+            [[0, -6], [23, -6], [23, 46], [0, 46]],
+            slide([[0, 0, 0], [16, 0, 0]]),
+            "shell",
+            [16, 1000],
         ),
-        armour_region(
-            "wings", 2, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing", [4.3, 1000]
-        ),
-    ],
+        [
+            armour_region(
+                "flanks", 2, [[34, -3.5], [88, -3.5], [88, 50], [34, 50]], "wing", [2.2, 1000]
+            ),
+        ],
+    ),
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,

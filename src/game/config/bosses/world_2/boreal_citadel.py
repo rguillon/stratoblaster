@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -142,23 +143,34 @@ _BOREAL_CITADEL = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of ring emitters unfold.
+# Its transformations (D-230): once both domes are gone its bow doors swing open sideways on their
+# rear hinges, showing a drone hangar and two mortars in the dark metal of its hold; once both
+# batteries are gone its wing armour bursts off for a pair of heavy cannons.
 BOREAL_CITADEL = with_weapons(
-    _BOREAL_CITADEL,
+    merge(
+        _BOREAL_CITADEL,
+        {"transformParts": [["dome-left", "dome-right"], ["battery-left", "battery-right"]]},
+    ),
     [
-        hidden_weapon("gatling-left", "gatling", [-13, -69], 11, 1720, 1, "green", 1.2, 15.0),
-        hidden_weapon("gatling-right", "gatling", [13, -69], 11, 1720, 1, "green", 2.0, 15.0),
-        hidden_weapon("orb-left", "orb", [-47, -7], 11, 2150, 2, "green", 1.2, 16.4),
-        hidden_weapon("orb-right", "orb", [47, -7], 11, 2150, 2, "green", 2.0, 16.4),
+        hidden_weapon("hangar", "hangar", [0, -68], 13, 1720, 1, "green", 3.0, 9),
+        hidden_weapon("mortar-left", "mortar", [-20, -48], 8, 1720, 1, "green", 1.2, 11),
+        hidden_weapon("mortar-right", "mortar", [20, -48], 8, 1720, 1, "green", 2.8, 11),
+        hidden_weapon("heavy-left", "cannon", [-47, -7], 12, 2150, 2, "green", 1.2, 16.4),
+        hidden_weapon("heavy-right", "cannon", [47, -7], 12, 2150, 2, "green", 2.0, 16.4),
     ],
-    [
-        armour_region(
-            "back", 1, [[-32, -88], [32, -88], [32, -38], [-32, -38]], "shell", [9.6, 1000], False
+    concat(
+        moving_region(
+            "bow-doors",
+            1,
+            [[0, -90], [32, -90], [32, -40], [0, -40]],
+            swing([32, -40, 10], "up", [0, 75]),
+            "shell",
+            [4, 1000],
         ),
-        armour_region(
-            "wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing", [8.0, 1000]
-        ),
-    ],
+        [
+            armour_region(
+                "wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing", [8.0, 1000]
+            ),
+        ],
+    ),
 )

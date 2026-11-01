@@ -69,6 +69,7 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
     core: list[Any] = []
     for layer in LAYERS:
         core.extend(cut.kept[layer])
+        core.extend(cut.floating.get(layer, []))
     if drawing.get("ring") is not None:
         core.extend(_drawn(drawing["ring"]))
     # The stems holding its loose pieces, on its core (D-227).
