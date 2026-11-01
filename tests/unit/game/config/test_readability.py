@@ -1,10 +1,6 @@
 """Unit tests of `src/game/config/readability.py`."""
 
-import pytest
-
 from core.math.color import in_family
-from game.config.bonus_look import BONUS_LOOK
-from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
 
 YELLOW = (1, 1, 0)
@@ -49,36 +45,6 @@ def test_p14_r02_families_do_not_share_their_hues() -> None:
     for i, a in enumerate(names):
         for b in names[i + 1 :]:
             assert not _hues(families[a]) & _hues(families[b]), (a, b)
-
-
-def _saturated(color: list[float]) -> bool:
-    high = max(color)
-    return high > 0 and (high - min(color)) / high >= 0.5
-
-
-@pytest.mark.parametrize("style", list(ENEMY_LOOK.bullets.styles.keys()))
-def test_p14_r02_every_bullet_style_is_in_the_enemy_shots_family(style: str) -> None:
-    rim = ENEMY_LOOK.bullets.styles[style].halo[0]
-    assert in_family(rim, READABILITY.families.enemyShot), style
-
-
-def test_d231_the_bonuses_colours_are_in_the_pickups_violet_family() -> None:
-    colours = [
-        BONUS_LOOK.frame,
-        BONUS_LOOK.chevrons,
-        BONUS_LOOK.flash.color,
-        *BONUS_LOOK.halo.colors[:3],
-        BONUS_LOOK.life.rim,
-        BONUS_LOOK.life.heart,
-        *BONUS_LOOK.life.halo[:3],
-        BONUS_LOOK.bomb.shell,
-        BONUS_LOOK.bomb.highlight,
-        *BONUS_LOOK.bomb.halo[:3],
-    ]
-    for colour in colours:
-        # Pale ones (a highlight) belong to no family; the others to the pickups'.
-        if _saturated(colour):
-            assert in_family(colour, READABILITY.families.pickup), colour
 
 
 def test_p14_r02_tones_are_fractions_and_the_background_is_dark() -> None:

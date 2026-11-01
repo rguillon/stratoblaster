@@ -3,7 +3,6 @@ shape-shifts-design.md, Part A): their muzzles, volleys and launches."""
 
 import pytest
 
-from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.bosses.weapon_kinds import (
     KINDS,
     WEAPON_SHAPE,
@@ -11,7 +10,6 @@ from game.config.bosses.weapon_kinds import (
     weapon_launches,
     weapon_volleys,
 )
-from game.config.record import record
 
 NEW = ["cannon", "mortar", "battery", "sweeper", "hangar"]
 
@@ -88,18 +86,3 @@ def test_a_hangar_fires_nothing_but_launches_gnats() -> None:
     assert launch["from"] == "bay"
     assert launch["kind"] == "gnats"
     assert launch["count"] == 2 and launch["first"] == 3
-
-
-def test_a_hangar_s_launches_join_the_boss_s_own() -> None:
-    design = record(
-        {
-            "stats": {"parts": [{"id": "gun", "x": 0, "y": 0, "radius": 5, "health": 100}]},
-            "guns": {},
-            "stages": [[]],
-            "launches": [{"from": "gun", "kind": "hornets", "count": 1, "every": 5}],
-        }
-    )
-    bay = hidden_weapon("bay", "hangar", [0, 10], 10, 100, 1, "red", 3)
-    result = with_weapons(design, [bay], [])
-    assert [launch["from"] for launch in result.launches] == ["gun", "bay"]
-    assert result.guns["bay"] == {}

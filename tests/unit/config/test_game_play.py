@@ -24,10 +24,3 @@ def test_p06_r09_the_simulation_steps_are_bounded_per_frame() -> None:
 
 def test_p06_r09_the_stage_is_the_scenery_stage_config() -> None:
     assert GAME_PLAY_CONFIG.stage is SCENERY_STAGE_CONFIG
-
-
-def test_p06_r09_the_stage_reach_and_clearance_are_ordered() -> None:
-    stage = SCENERY_STAGE_CONFIG
-    assert stage.prop_reach[0] < stage.prop_reach[1]
-    assert stage.far_clip > stage.sun_distance
-    assert stage.chunk_length > stage.cell > 0

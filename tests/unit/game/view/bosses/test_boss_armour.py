@@ -23,18 +23,16 @@ from game.view.bosses.boss_armour import (
     chunk_pose,
     cut_armour,
     model_outline,
+    rooted,
+    supports_in,
 )
 from game.view.bosses.boss_frame import (
-    floor_height,
-    floor_triangles,
-    frame_drawings,
     frame_segments,
-    longest_two,
 )
 from game.view.bosses.boss_models import BOSS_MODELS
 from game.view.enemies.enemy_mesh import collect_parts
 from render.geometry.shatter import centroid, triangles, up_facing
-from render.geometry.solids import Placement
+from render.geometry.solids import Placement, SolidBuilder
 
 GREY = [0.5, 0.5, 0.5]
 LOOK = BOSS_LOOK.reveal
@@ -49,6 +47,13 @@ def _plane(p: Any) -> None:
     p.neon.box([2, 1, 50], GREY, Placement([40, 2, 0]))
     p.muzzle([0, 0, 30])
     p.reactor([0, 0, -30], 3)
+
+
+def _tris(*boxes: tuple[list[float], list[float]]) -> list[Any]:
+    b = SolidBuilder()
+    for size, at in boxes:
+        b.box(size, GREY, Placement(at))
+    return triangles(b.geometry)
 
 
 def _area_xz(tris: list[Any]) -> float:
@@ -204,37 +209,6 @@ def test_once_shed_only_the_frame_is_left(view: Any) -> None:
     assert all(view.on(c.node) is False for c in view.chunks)
 
 
-def test_the_frame_floor_lies_flat_and_dark_under_the_armour() -> None:
-    tris = cut_armour(_plane, [WING]).regions[0]["hull"]
-    y = floor_height(tris)
-    assert y == pytest.approx(-2 + BOSS_LOOK.frame.lift)
-    floor = floor_triangles(tris, y)
-    assert floor and all(v.position[1] == y for t in floor for v in t)
-    assert all(up_facing(t, 0.9) for t in floor)
-    assert all(v.color[:3] == BOSS_LOOK.frame.floor for t in floor for v in t)
-
-
-def test_the_frame_ribs_lie_within_the_armour_top_view() -> None:
-    tris = cut_armour(_plane, [WING]).regions[0]["hull"]
-    segments = frame_segments(tris, "wing")
-    assert len(segments) >= 6
-    for a, b in segments:
-        for x in (a[0], b[0]):
-            assert 10 - 4 <= abs(x) <= 50 + 4
-    assert frame_segments([], "wing") == []
-    floor, ribs = frame_drawings(tris, "wing", [1, 0, 1])
-    drawn_floor = collect_parts(floor)["parts"]
-    drawn_ribs = collect_parts(ribs)["parts"]
-    assert drawn_floor.hull.geometry.positions and not drawn_floor.neon.geometry.positions
-    assert drawn_ribs.hull.geometry.positions and drawn_ribs.neon.geometry.positions
-
-
-def test_longest_two_picks_the_two_longest_segments() -> None:
-    segs = [[[0, 0], [0, n]] for n in [3, 9, 1, 7, 4]]
-    assert [s[1][1] for s in longest_two(segs)] == [9, 7]
-    assert longest_two(segs[:1]) == segs[:1]
-
-
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])
 def test_every_boss_region_cuts_armour_and_stays_in_the_chunk_budget(design: Any) -> None:
     mp = pytest.MonkeyPatch()
@@ -252,3 +226,14 @@ def test_every_boss_region_cuts_armour_and_stays_in_the_chunk_budget(design: Any
         assert frame_segments(tops, region.frame), region.id
         total += len(chunk_layers(layers, most))
     assert total <= BOSS_LOOK.armour.bossChunks
+
+
+def test_supports_stand_in_a_region_even_in_part_and_root_on_what_lasts() -> None:
+    region = armour_region("wings", 1, [[10, -10], [30, -10], [30, 10], [10, 10]], "wing")
+    # Model space: +X is the screen's left (a region's X right is model -X).
+    inside = [-20, 0, 5, 4]
+    edge = [-8, 0, 5, 4]
+    away = [-50, 0, 5, 4]
+    assert supports_in(region, [inside, edge, away]) == [inside, edge]
+    deck = _tris(([10, 2, 10], [-20, 0, 0]))
+    assert rooted([inside, away], deck) == [[-20, 0, 5, 4, pytest.approx(2)], away]

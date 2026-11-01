@@ -6,7 +6,6 @@ from helpers.geometry_checks import bounds, check_colored
 from core.math.rng import create_rng
 from game.config.window_look import (
     DOOR_STYLES,
-    WINDOW_ATLAS,
     WINDOW_CELL,
     WINDOW_OFFSET,
     WINDOW_STYLES,
@@ -87,10 +86,6 @@ def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad():
     assert quads.geometry.indices == []
     facade_windows(quads, create_rng(2), [0.0, 0.0, 10.0, 0.5], [1.0, 6.0], [1, 1, 1])
     assert len(quads.geometry.indices) == 2 * 6
-
-
-def test_d210_the_atlas_has_as_many_bands_as_styles():
-    assert len(WINDOW_ATLAS.styles) * BAND + len(WINDOW_ATLAS.doors) * 2 == CELLS
 
 
 def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper():

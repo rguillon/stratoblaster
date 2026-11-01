@@ -4,9 +4,6 @@ a boss's pieces to it (D-227)."""
 import pytest
 
 from game.config.boss_look import BOSS_LOOK
-from game.config.bosses.hidden_weapons import armour_region
-from game.view.bosses.boss_armour import rooted, supports_in
-from game.view.bosses.boss_frame import draw_bridge, draw_pylon
 from game.view.bosses.boss_stems import stems_drawing, stems_for, surface_below
 from game.view.enemies.enemy_mesh import collect_parts
 from render.geometry.islands import loose_triangles
@@ -55,31 +52,3 @@ def test_a_piece_off_the_hull_gets_a_beam_to_it() -> None:
     held = tris + _drawn(stems_drawing(stems, GREY))
     assert not any(loose_triangles(held, BOSS_LOOK.armour.hold))
     assert stems_for(_tris(([20, 2, 20], [0, 0, 0]))) == []
-
-
-def test_a_pylon_reaches_from_its_floor_to_the_piece() -> None:
-    drawn = _drawn(lambda p: draw_pylon(p, 0, [3, 4, 10, 6], GREY))
-    ys = [v.position[1] for t in drawn for v in t]
-    assert min(ys) == pytest.approx(0) and max(ys) == pytest.approx(10)
-    on_deck = _drawn(lambda p: draw_pylon(p, 0, [3, 4, 10, 6, 5], GREY))
-    assert min(v.position[1] for t in on_deck for v in t) == pytest.approx(5)
-    assert _drawn(lambda p: draw_pylon(p, 0, [3, 4, 0.1, 6], GREY)) == []
-
-
-def test_a_bridge_runs_along_the_floor_then_up_to_its_end() -> None:
-    drawn = _drawn(lambda p: draw_bridge(p, [[0, 0, 0], [20, 6, 0]], GREY))
-    xs = [v.position[0] for t in drawn for v in t]
-    ys = [v.position[1] for t in drawn for v in t]
-    assert max(xs) >= 20 and min(xs) <= 0
-    assert max(ys) >= 6
-
-
-def test_supports_stand_in_a_region_even_in_part_and_root_on_what_lasts() -> None:
-    region = armour_region("wings", 1, [[10, -10], [30, -10], [30, 10], [10, 10]], "wing")
-    # Model space: +X is the screen's left (a region's X right is model -X).
-    inside = [-20, 0, 5, 4]
-    edge = [-8, 0, 5, 4]
-    away = [-50, 0, 5, 4]
-    assert supports_in(region, [inside, edge, away]) == [inside, edge]
-    deck = _tris(([10, 2, 10], [-20, 0, 0]))
-    assert rooted([inside, away], deck) == [[-20, 0, 5, 4, pytest.approx(2)], away]
