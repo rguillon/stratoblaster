@@ -148,4 +148,8 @@ def capped_saturation(color: Rgb, most: float) -> Rgb:
     if high <= 0 or (high - low) / high <= most:
         return color
     k = most * high / (high - low)
-    return [high - (high - color[0]) * k, high - (high - color[1]) * k, high - (high - color[2]) * k]
+    return [
+        high - (high - color[0]) * k,
+        high - (high - color[1]) * k,
+        high - (high - color[2]) * k,
+    ]
