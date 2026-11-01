@@ -118,7 +118,7 @@ def tentacle(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 def gland(p: Any, at: Vec3, r: float, glow: Rgb, bed: Any = None) -> None:
     """A gland: a lit bulb on a flesh bed, `r` across, at `at`."""
-    the_bed = F.crimson if bed == None else bed  # noqa: E711
+    the_bed = F.slate if bed == None else bed  # noqa: E711
     organ(p.flesh, r * 1.5, 6, the_bed, Placement(at), 0.35)
     organ(p.vein, r, 5, glow, Placement([at[0], at[1] + r * 0.6, at[2]]), 0.6)
 
@@ -156,7 +156,7 @@ def growth(p: Any, at: Vec3, r: float, glow: Rgb, options: Any = None) -> None:
     """An armoured growth (P16-R05): a swollen flesh mound of `r` around `at`, a vein ring at its
     foot and grafted armour on its crown, so it reads as one clear target."""
     opts = _options(options)
-    flesh = opt(opts, "flesh", F.crimson)
+    flesh = opt(opts, "flesh", F.slate)
     height = opt(opts, "height", 0.45)
     armour = opt(opts, "armour", True)
     organ(p.flesh, r, 8, flesh, Placement(at, math.pi / 8), height)

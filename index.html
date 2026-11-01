@@ -982,16 +982,18 @@
       .dev-status:empty {
         display: none;
       }
-      /* The props viewer's menu (D-206): a scrolling list down the left side, each group's
-         heading then its props, so the prop in the middle stays in view. */
+      /* A dev viewer's menu (D-206): a scrolling panel along the bottom, under the model (it hid
+         the models down the left side), three items a row, each group's heading on a row of its
+         own before its items, so the item shown stays in view. */
       .dev-menu {
         position: absolute;
         left: 14px;
-        top: 270px;
+        right: 14px;
         bottom: 70px;
-        width: 170px;
-        display: flex;
-        flex-direction: column;
+        height: 106px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-content: start;
         gap: 2px;
         padding: 4px;
         box-sizing: border-box;
@@ -1019,6 +1021,7 @@
         cursor: pointer;
       }
       .dev-menu-group {
+        grid-column: 1 / -1;
         margin-top: 6px;
         font-weight: 800;
         letter-spacing: 0.06em;
@@ -1029,7 +1032,6 @@
         margin-top: 0;
       }
       .dev-menu-item {
-        margin-left: 10px;
         font-weight: 600;
         color: var(--paper);
       }

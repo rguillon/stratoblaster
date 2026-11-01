@@ -1,6 +1,6 @@
 """Unit tests of `src/game/config/bosses/world_2/boreal_citadel.py`."""
 
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import assert_boss_design, original_parts
 
 from game.config.bosses.world_2.boreal_citadel import BOREAL_CITADEL
 
@@ -23,4 +23,4 @@ def test_p08_r10_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_p08_r10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     assert isinstance(BOREAL_CITADEL.rage, list) and BOREAL_CITADEL.rage
-    assert len(BOREAL_CITADEL.stages) == len(BOREAL_CITADEL.stats["parts"]) + 1
+    assert len(BOREAL_CITADEL.stages) == len(original_parts(BOREAL_CITADEL)) + 1

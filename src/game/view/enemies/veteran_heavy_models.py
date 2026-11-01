@@ -51,7 +51,7 @@ MORTAR_PLATE = [[6, 11], [12, 8], [12.5, 4], [7, 6]]  # type: list[list[float]]
 
 def mortar_sac(p: Any, s: float) -> None:
     """A side sac on side `s`, swollen with shells, a running light along it."""
-    organ(p.flesh, 3, 5, F.crimson, Placement([s * 18, 0.6, -9], 0, QUARTER), 0.95)
+    organ(p.flesh, 3, 5, F.slate, Placement([s * 18, 0.6, -9], 0, QUARTER), 0.95)
     p.neon.box([0.8, 0.3, 4], N.mortar, Placement([s * 18.2, 3.6, -4]))
 
 
@@ -69,7 +69,7 @@ def build_mortar(scene: Any) -> Any:
         neon = p.neon
         charge = p.charge
         muzzle = p.muzzle
-        carapace(flesh, MORTAR_SHELL, [F.sinew, F.crimson])
+        carapace(flesh, MORTAR_SHELL, [F.sinew, F.slate])
         # The raised mount: a squat drum, a cradle on it, then the barrel.
         hull.cylinder(7, 3, 8, H.panel, Placement([0, 2.4, 0]), 6)
         hull.box([6, 2.6, 9], H.dark, Placement([0, 5.4, 1.5]))
@@ -108,7 +108,7 @@ def build_minelayer(scene: Any) -> Any:
         charge = p.charge
         vein = p.vein
         muzzle = p.muzzle
-        segmented_body(flesh, MINELAYER_BODY, F.purple, None, LEAN_SECTION)
+        segmented_body(flesh, MINELAYER_BODY, F.graphite, None, LEAN_SECTION)
         # The egg rack along its belly, a metal graft.
         hull.box([4, 1, 26], H.dark, Placement([0, -2.6, 0]))
         for hatch in hatches:

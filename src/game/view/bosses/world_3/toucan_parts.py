@@ -133,7 +133,7 @@ def wing_pod(p: EnemyParts, at: Vec3) -> None:
     muzzle = p.muzzle
     s = sign_of(at[0])
     # P16-R05: the grafted fan duct grows out of a swollen flesh root at the wing's end.
-    sac(p, offset(at, -s * 9, 1.5, -2), 5.5, F.crimson, 0.6)
+    sac(p, offset(at, -s * 9, 1.5, -2), 5.5, F.slate, 0.6)
     vein_to(
         p,
         [offset(at, -s * 12, 3.4, -2), offset(at, -s * 6, 4.4, 5)],

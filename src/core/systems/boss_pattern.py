@@ -409,7 +409,8 @@ class BossPattern:
         turret: BossTurret,
     ) -> float | None:
         """Where `turret` points while one of its `volleys`' lasers shows: at the player during its
-        warning line, where it is while the beam fires. None when none shows.
+        warning line, where it is while the beam fires (still at the player for a beam that
+        `sweeps`). None when none shows.
         """
         for i in volleys:
             shape = self.volleys[i].shape
@@ -421,6 +422,8 @@ class BossPattern:
             if age < warning:
                 return _aim_at_player(ctx, source, turret)
             if age < warning + firing:
+                if shape.laser.sweeps is True:
+                    return _aim_at_player(ctx, source, turret)
                 return turret.aim
         return None
 

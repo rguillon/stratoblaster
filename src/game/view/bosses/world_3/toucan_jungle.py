@@ -17,12 +17,13 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# Moss: a deep green, and a lighter one where the light catches it.
-MOSS = [0.13, 0.24, 0.08]
-MOSS_LIT = [0.22, 0.36, 0.1]
+# Moss: a deep green, and a lighter one where the light catches it (D-231: clear greens, not
+# olive, so no khaki with the enemies' yellow and green).
+MOSS = [0.05, 0.24, 0.07]
+MOSS_LIT = [0.1, 0.36, 0.1]
 # Vines and their leaves.
-VINE = [0.1, 0.17, 0.06]
-LEAF = [0.16, 0.32, 0.09]
+VINE = [0.04, 0.17, 0.05]
+LEAF = [0.07, 0.32, 0.08]
 
 
 def segment(

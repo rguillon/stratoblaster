@@ -4,14 +4,13 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from helpers.render_fakes import FakeNode, FakeScene, patch_babylon
+from helpers.render_fakes import FakeNode, patch_babylon
 
 from render import outline
 from render.outline import (
     OutlineLayer,
     OutlineLook,
     compile_outlines,
-    outline_model,
     outline_of,
     outlines_ready,
     set_outline,
@@ -46,31 +45,6 @@ def test_setting_an_outline_keeps_the_other_metadata() -> None:
 
 def test_a_mesh_without_an_outline_has_none() -> None:
     assert outline_of(_mesh()) is None
-
-
-def test_outline_model_outlines_only_the_solid_meshes() -> None:
-    scene = FakeScene()
-    root = scene.add_node("root")
-    solid = scene.add_node("solid", is_mesh=True)
-    solid.material = SimpleNamespace(alpha=1, alphaMode=0)
-    glass = scene.add_node("glass", is_mesh=True)
-    glass.material = SimpleNamespace(alpha=0.5, alphaMode=0)
-    flame = scene.add_node("flame", is_mesh=True)
-    flame.material = SimpleNamespace(alpha=1, alphaMode="ALPHA_ADD")
-    vertex_alpha = scene.add_node("veined", is_mesh=True)
-    vertex_alpha.material = SimpleNamespace(alpha=1, alphaMode=0)
-    vertex_alpha.hasVertexAlpha = True
-    no_material = scene.add_node("bare", is_mesh=True)
-    no_material.material = None
-    root.children = [solid, glass, flame, vertex_alpha, no_material]
-
-    outline_model(root, [0, 0, 1])
-
-    assert outline_of(solid) == [0, 0, 1]
-    assert outline_of(glass) is None
-    assert outline_of(flame) is None
-    assert outline_of(vertex_alpha) is None
-    assert outline_of(no_material) is None
 
 
 def test_the_layer_gives_a_rim_only_to_a_mesh_that_asks_for_one() -> None:

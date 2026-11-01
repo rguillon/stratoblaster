@@ -34,8 +34,9 @@ MAGENTA = [1, 0.15, 0.75]
 # The World 3 jungle over the dark metal: moss, bark, leaves, old stone.
 JUNGLE = record(
     {
-        "moss": [0.1, 0.19, 0.07],
-        "bark": [0.13, 0.085, 0.05],
+        # D-231: a clear green moss and a grey bark (no khaki with the enemies' yellow and green).
+        "moss": [0.04, 0.19, 0.06],
+        "bark": [0.09, 0.08, 0.07],
         "leaf": [0.07, 0.24, 0.09],
         "stone": [0.2, 0.2, 0.17],
     }

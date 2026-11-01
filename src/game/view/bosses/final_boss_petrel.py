@@ -38,12 +38,12 @@ N = BOSS_LOOK.neon["storm-petrel"]
 def draw_pod(p: Any, at: Vec3) -> None:
     """A wing gun pod (P16-R06): a swollen gun gland on the wing, a grafted collar at its front and
     twin barrels at its nose, a vein along each flank."""
-    growth(p, shift(at, [0, 8, -2]), 13, N, {"flesh": F.crimson, "height": 0.3, "armour": False})
+    growth(p, shift(at, [0, 8, -2]), 13, N, {"flesh": F.slate, "height": 0.3, "armour": False})
     pod = shift(at, [0, 10, 0])
     segmented_body(
         p.flesh,
         SegmentedBody(-16, 14, 3, 7, 0, 9),
-        F.purple,
+        F.graphite,
         Placement(pod),
     )
     graft(p, polygon(6, 5), [7.5, 9.3], shift(pod, [0, 0, 10]))
@@ -56,8 +56,8 @@ def draw_pod(p: Any, at: Vec3) -> None:
 def draw_rack(p: Any, at: Vec3) -> None:
     """The tail missile rack (P16-R06): a brood sac on the tail, a grafted rim round six missile
     tips standing in it like eggs, a neon lip along its front."""
-    organ(p.flesh, 13, 8, F.crimson, Placement(shift(at, [0, 6, 0]), math.pi / 8), 0.25)
-    sac(p, shift(at, [0, 8, -2]), 10, F.purple, {"stretch": 0.25})
+    organ(p.flesh, 13, 8, F.slate, Placement(shift(at, [0, 6, 0]), math.pi / 8), 0.25)
+    sac(p, shift(at, [0, 8, -2]), 10, F.graphite, {"stretch": 0.25})
     graft(p, polygon(8, 11, [1, 1.1]), [11.6, 12.6], at, {"color": M.base})
     missile_tips(p, shift(at, [0, 12.6, 0]), [2, 3], [6.2, 1.8])
     x = at[0]

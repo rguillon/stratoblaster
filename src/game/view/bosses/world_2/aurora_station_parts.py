@@ -95,7 +95,7 @@ def bowl(r: float) -> list[Vec3]:
 def emitter(p: EnemyParts, at: Vec3) -> None:
     """A dish emitter's pylon around its centre `at` (P08-R10): its dish turns on it."""
     # P16-R06: a swollen node of flesh at the end of its arm, a metal socket for the dish.
-    organ(p.flesh, 7, 6, ICE_FLESH.purple, Placement(offset(at, 0, -2, -3)), 0.5)
+    organ(p.flesh, 7, 6, ICE_FLESH.graphite, Placement(offset(at, 0, -2, -3)), 0.5)
     p.hull.box([4, 6, 5], H.panel, Placement(offset(at, 0, 2, -3)), H.base)
     gland(p, offset(at, _sign(at[0]) * 5, 2, -6), 1, AURORA_GREEN)
 

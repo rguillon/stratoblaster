@@ -176,6 +176,8 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     starts = group_starts(groups)
     grouped = len(starts) > 1
     hint = texts.levels_hint if scrub else texts.models_hint
+    if viewer == "bosses":
+        hint = texts.bosses_hint
     position = str(index + 1) + " / " + str(len(labels))
     if grouped:
         # D-202: the item's group, and its place in it.

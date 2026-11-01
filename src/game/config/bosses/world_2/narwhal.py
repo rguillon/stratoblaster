@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -48,7 +49,7 @@ NARWHAL_EMITTER = [[0, -10, 31]]
 # 2-1: a long flying submarine with a spiral horn and teal neon along its back. Its horn lance
 # fires a laser, two torpedo tubes homing missiles, and two ballast pods fans; the ballast pods
 # shield the core (P08-R10). It chases the ground over the ice floes (×1.5).
-NARWHAL = record(
+_NARWHAL = record(
     {
         "id": "narwhal",
         # Angry after each destroyed part (phase 7 review).
@@ -107,4 +108,30 @@ NARWHAL = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
+NARWHAL = with_weapons(
+    _NARWHAL,
+    [
+        hidden_weapon("lance-left", "lance", [-12, 11], 10, 880, 1, "green", 1.2, 21.1),
+        hidden_weapon("lance-right", "lance", [12, 11], 10, 880, 1, "green", 2.0, 21.1),
+        hidden_weapon("rack-left", "rack", [-9, -13], 7, 1100, 2, "green", 1.2, 26.1),
+        hidden_weapon("rack-right", "rack", [9, -13], 7, 1100, 2, "green", 2.0, 26.1),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-30, -2.5], [30, -2.5], [30, 41], [-30, 41]], "shell", [5.3, 1000], False
+        ),
+        armour_region(
+            "spine",
+            2,
+            [[-24, -40], [24, -40], [24, -2.5], [-24, -2.5]],
+            "shell",
+            [7.8, 1000],
+            False,
+        ),
+    ],
 )

@@ -169,13 +169,13 @@ def draw_body(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     # P16-R05: a burrowing beast, a squat body of flesh under a ridged shell, its head in front.
-    flesh.bevel_slab(CHASSIS, DECK, [2.0, 2.2], ICE_FLESH.sinew, None, ICE_FLESH.purple)
+    flesh.bevel_slab(CHASSIS, DECK, [2.0, 2.2], ICE_FLESH.sinew, None, ICE_FLESH.graphite)
     neon_band(neon, CHASSIS, [-2.2, -0.6], [0.985, 1.02], YELLOW)
     shell(flesh, SegmentedBody(-36.0, 6.0, 4, 21.0, 4.0, 13.0))
     flesh.loft(
         FIGHTER_SECTION,
         CAB,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         None,
         LoftOptions(False, canopy_paint([1, 2], ICE_FLESH.seam)),
     )
@@ -301,7 +301,7 @@ def draw_core(p: EnemyParts) -> None:
     draw_frost(p)
     draw_guns(p)
     for s in SIDES:
-        reactor_sac(p, [s * 16.0, 2.0, -36.5], 3.4, YELLOW, ICE_FLESH.purple)
+        reactor_sac(p, [s * 16.0, 2.0, -36.5], 3.4, YELLOW, ICE_FLESH.graphite)
 
 
 def hopper(p: EnemyParts, at: Vec3) -> None:
@@ -313,7 +313,7 @@ def hopper(p: EnemyParts, at: Vec3) -> None:
     charge = p.charge
     # P16-R05: a crop sac of flesh, its mouth gaping with rocks and ice, a metal rim grafted on.
     bin_at: list[OutlinePoint] = [[x + at[0], z + at[2]] for x, z in BIN]
-    flesh.bevel_slab(bin_at, BIN_Y, [2.5, 0.8], ICE_FLESH.membrane, None, ICE_FLESH.purple)
+    flesh.bevel_slab(bin_at, BIN_Y, [2.5, 0.8], ICE_FLESH.membrane, None, ICE_FLESH.graphite)
     flesh.box([22.0, 1.0, 22.0], ICE_FLESH.seam, Placement(offset(at, 0.0, BIN_Y[2] - 1.0, 0.0)))
     glow_vein(
         p,

@@ -99,7 +99,7 @@ def draw_hub(p: EnemyParts) -> None:
     charge = p.charge
     muzzle = p.muzzle
     # P16-R06: the bell of a great ice jellyfish, a metal collar grafted round its crown.
-    flesh.lathe(HUB, 8, ICE_FLESH.purple, Placement(None, EIGHTH))
+    flesh.lathe(HUB, 8, ICE_FLESH.graphite, Placement(None, EIGHTH))
     flesh.cylinder(20.5, 0.3, 8, ICE_FLESH.rime, Placement([0.0, 7.0, 0.0], EIGHTH))
     neon.ring(25.1, 1.0, 8, AURORA_GREEN, Placement([0.0, -0.5, 0.0], EIGHTH))
     hull.cylinder(11.0, 6.0, 8, H.panel, Placement([0.0, 7.0, 0.0], EIGHTH), 10.0)
@@ -180,7 +180,7 @@ def draw_habitats(p: EnemyParts) -> None:
             1.2,
             AURORA_VIOLET,
         )
-        reactor_sac(p, [s * 12.0, 2.5, -56.0], 3.4, AURORA_GREEN, ICE_FLESH.purple)
+        reactor_sac(p, [s * 12.0, 2.5, -56.0], 3.4, AURORA_GREEN, ICE_FLESH.graphite)
     tendril(
         p.flesh,
         curve([0.0, 0.0, -20.0], [0.0, 0.0, -52.0], [0.0, 2.0, 0.0], 3),

@@ -1,11 +1,22 @@
 """How this game's enemies (and bosses, P07), their shots and their explosions look (P05)"""
 
+from org.transcrypt.stubs.browser import __pragma__
+
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+from game.config.readability import READABILITY  # noqa: E402
 from game.view.bosses.boss_models import BOSS_MODELS  # noqa: E402
 from game.view.enemies.blast_renderer import create_blast_renderer  # noqa: E402
 from game.view.enemies.enemy_models import ENEMY_MODELS  # noqa: E402
 from game.view.enemies.enemy_shot_renderer import create_enemy_shot_renderer  # noqa: E402
 from game.view.enemies.living_motion import set_living_motion  # noqa: E402
+from render.edge_trim_mesh import add_edge_trim  # noqa: E402
+from render.geometry.edge_trim import TrimOptions  # noqa: E402
+
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+__pragma__("skip")
+from typing import Any  # noqa: E402
+
+__pragma__("noskip")
 
 
 class EnemyBindingsHandle:
@@ -28,13 +39,29 @@ class EnemyBindingsHandle:
         self.setIdleMotion = set_idle
 
 
+def trimmed(build: Any) -> Any:
+    """A model factory that gives the whole model `build` makes its glowing edge trim (P14-R04):
+    each hull asks for one in its rim colour, and the model's meshes hide each other's inner
+    edges."""
+    look = READABILITY.enemyTrim
+    options = TrimOptions(look.width, look.offset)
+
+    def build_trimmed(scene: Any) -> Any:
+        model = build(scene)
+        add_edge_trim(model.root, options)
+        return model
+
+    return build_trimmed
+
+
 def merged_models() -> dict[str, object]:
-    """`{ ...ENEMY_MODELS, ...BOSS_MODELS }`: a boss model wins over an enemy with the same key."""
+    """`{ ...ENEMY_MODELS, ...BOSS_MODELS }`, each trimmed: a boss model wins over an enemy with the
+    same key."""
     models: dict[str, object] = {}
     for key, model in ENEMY_MODELS.items():
-        models[key] = model
+        models[key] = trimmed(model)
     for key, model in BOSS_MODELS.items():
-        models[key] = model
+        models[key] = trimmed(model)
     return models
 
 

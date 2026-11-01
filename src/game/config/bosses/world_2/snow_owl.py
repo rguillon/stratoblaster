@@ -8,7 +8,9 @@ left) a ring used by no earlier stage. Health values are placeholders for the P0
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
-from game.config.record import record
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
+from game.config.bosses.moving_regions import moving_region, slide
+from game.config.record import concat, merge, record
 
 MAGENTA = bullet("magenta", 180)
 RED = bullet("red", 190)
@@ -30,7 +32,7 @@ OWL_CROWN = [[0, 10, 12.5]]
 # 2-3: a wide-winged recon drone with white neon and a big round sensor eye at its front; two wing
 # radar pods fire fans and shield the core, the eye fires a laser after its warning line
 # (P08-R10). The eye sits in front of the core, so it can always be shot.
-SNOW_OWL = record(
+_SNOW_OWL = record(
     {
         "id": "snow-owl",
         # Angry after each destroyed part (phase 7 review).
@@ -78,4 +80,30 @@ SNOW_OWL = record(
             ],
         ),
     }
+)
+
+# Its transformation (D-230): once both wing pods are gone its outer wing panels slide out, their
+# dark metal spars showing, a sweeper riding each new tip; its back plating bursts off for a mortar.
+SNOW_OWL = with_weapons(
+    merge(_SNOW_OWL, {"transformParts": [["pod-left", "pod-right"]]}),
+    [
+        hidden_weapon("sweeper-left", "sweeper", [-61, -1], 6, 680, 1, "magenta", 1.2, 7),
+        hidden_weapon("sweeper-right", "sweeper", [61, -1], 6, 680, 1, "magenta", 3.8, 7),
+        hidden_weapon("mortar", "mortar", [0, 8], 9, 680, 1, "purple", 2.0, 14),
+    ],
+    concat(
+        moving_region(
+            "wingtips",
+            1,
+            [[30, -12], [56, -12], [56, 12], [30, 12]],
+            slide([[0, 0, 0], [16, 0, 0]]),
+            "wing",
+            [-3, 1000],
+        ),
+        [
+            armour_region(
+                "back", 1, [[-16, -6], [16, -6], [16, 22], [-16, 22]], "shell", [6, 1000], False
+            ),
+        ],
+    ),
 )

@@ -1,9 +1,14 @@
 """Unit tests of `src/game/view/bosses/boss_model.py`."""
 
 from types import SimpleNamespace
+from typing import Any
+
+import pytest
+from helpers.boss_wholeness import boss_states, loose_pieces
 
 from core.entities.boss import Boss
 from game.config.boss_look import BOSS_LOOK
+from game.sim.boss_kinds import BOSS_DESIGNS
 from game.view.bosses import boss_model
 from game.view.bosses.boss_model import FlashGroup, _field, _point_of, strobe
 
@@ -79,3 +84,19 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
     assert other.material is other_material
     group.show(since_hit=BOSS_LOOK.flash.seconds + 1)
     assert body.material is body_material and body.useVertexColors is True
+
+
+# D-227: every boss model is one object, at rest and after each of its transformations: no piece
+# of it hangs in the air (its parts and weapons, its frames, its rig, its stems and pylons, the
+# pieces its armour cut leaves).
+
+
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])
+def test_d227_the_boss_holds_together_in_every_state(design: Any) -> None:
+    mp = pytest.MonkeyPatch()
+    try:
+        states = boss_states(design.id, design, mp)
+    finally:
+        mp.undo()
+    for form, tris in enumerate(states):
+        assert loose_pieces(tris, 0) == [], f"after transformation {form}"

@@ -14,15 +14,18 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.dev_catalog import DevItem
+from app.dev_model_scene import build_model_scene
 from app.dev_prop_stage import DevPropStage
 from app.level_prepare import level_of, prepare_level, scenery_with_runout
 from app.level_scene import LevelSceneOptions, build_level_scene
 from app.shot_viewer_scene import PlayfieldShip
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 from config.game_play import GAME_PLAY_CONFIG
+from core.entities.boss import Boss
 from core.entities.enemy import EnemySpawnArea
 from core.entities.muzzle import PlanePoint
 from core.math.rng import create_rng
+from core.systems.enemy_world import EnemyBlast
 from render.babylon import dispose_node, get_hierarchy_bounding_vectors
 from render.enemy_layer import EnemyLayer
 
@@ -80,7 +83,8 @@ def _within(enemy: Any, screen: Any, margin: float) -> bool:
 
 class DevEnemyContext:
     """The world an enemy of a dev viewer lives in (`EnemyContext`): the playfield, the player at
-    the bottom middle, nothing it fires or sends out kept."""
+    the bottom middle, nothing it fires or sends out kept; what blows up is kept for the viewer to
+    draw (`blasts`)."""
 
     def __init__(self, screen: Any, random: Any) -> None:
         self.width = screen.width
@@ -89,6 +93,8 @@ class DevEnemyContext:
         self.player_y = GAME_PLAY_CONFIG.ship_start_y
         self.random = random
         self.fire_rate = 1.0
+        # What blew up since the viewer last drew it (a boss's parts, its death).
+        self.blasts: list[EnemyBlast] = []
 
     def seen(self, point: Any) -> PlanePoint:
         return PlanePoint(point.x, point.y)
@@ -106,10 +112,10 @@ class DevEnemyContext:
         return None
 
     def explode(self, x: float, y: float, radius: float) -> None:
-        return None
+        self.blasts.append(EnemyBlast("enemy", x, y, radius))
 
     def break_part(self, part: Any) -> None:
-        return None
+        self.blasts.append(EnemyBlast("enemy", part.x, part.y, part.radius))
 
 
 class DevViewer:
@@ -153,6 +159,9 @@ class DevViewer:
         self._context: Any = None
         self._entered = False
         self._sim_left = 0.0
+        # Enemies and bosses: the explosions' renderer, and the explosions to draw next.
+        self._blasts: Any = None
+        self._new_blasts: list[EnemyBlast] = []
         # How far the reviewer has turned the model with the mouse (radians): around its nose
         # and nose up or down (props: the camera, round the prop and up or down). Kept from one
         # item to the next.
@@ -215,7 +224,8 @@ class DevViewer:
             self._drop_scene()
             self._host = item.host
         if self._view is None:
-            if not prepare_level(self.game, item.host):
+            # The enemies and bosses are shown with no ground: nothing to wait for.
+            if not self._groundless() and not prepare_level(self.game, item.host):
                 return
             self._build_scene(item.host)
         if self.viewer == "levels":
@@ -225,24 +235,28 @@ class DevViewer:
             self._show_item(item)
         self._animate(dt)
 
+    def _groundless(self) -> bool:
+        """Whether the viewer shows its models with no level's ground (enemies and bosses)."""
+        return self.viewer in ("enemies", "bosses")
+
     def _build_scene(self, level_id: str) -> None:
         level = level_of(self.game, level_id)
         view = self.game.view
-        self._view = build_level_scene(
-            self._engine,
-            self.game,
-            LevelSceneOptions(
-                scenery_with_runout(level),
-                self._environment,
-                view.enemies.glow,
-                int(GAME_PLAY_CONFIG.environment_cube_size),
-                GAME_PLAY_CONFIG.stage,
-                None,
-                view.outline if self._environment else None,
-            ),
+        options = LevelSceneOptions(
+            scenery_with_runout(level),
+            self._environment,
+            view.enemies.glow,
+            int(GAME_PLAY_CONFIG.environment_cube_size),
+            GAME_PLAY_CONFIG.stage,
+            None,
+            view.outline if self._environment else None,
         )
+        if self._groundless():
+            self._view = build_model_scene(self._engine, self.game, options.level, options)
+        else:
+            self._view = build_level_scene(self._engine, self.game, options)
         self._fov = self._view.stage.camera.fov
-        self._duration = self._view.track.duration
+        self._duration = self._view.track.duration if not self._groundless() else 0.0
         self._time = 0.0
         self._target = 0.0
         self._shown = -1
@@ -272,8 +286,12 @@ class DevViewer:
             dispose_node(self._ship.pivot)
         if self._layer is not None:
             self._layer.dispose()
+        if self._blasts is not None:
+            self._blasts.dispose()
         self._ship = None
         self._layer = None
+        self._blasts = None
+        self._new_blasts = []
         self._enemy = None
         self._shown = -1
 
@@ -299,6 +317,8 @@ class DevViewer:
             self._enemy = self._spawn(item)
             models = self.game.view.enemies.models
             self._layer = view.playfield.run(lambda: EnemyLayer(view.scene, models, []))
+            blasts = self.game.view.enemies.blasts
+            self._blasts = view.playfield.run(lambda: blasts(view.scene))
             self._sync(0)
         self._size = self._measure(view.playfield.root)
 
@@ -353,8 +373,27 @@ class DevViewer:
             self._sim_left -= step
             enemy.age += step
             enemy.update(self._context, step)
+            self._take_blasts(enemy)
         if self._ended(enemy):
             self._enemy = self._spawn(self._item)
+
+    def _take_blasts(self, enemy: Any) -> None:
+        """The explosions of the last step, moved as the enemy is: it is drawn at the middle of the
+        view (see `_sync`)."""
+        dx = self._middle_point[0] - enemy.x
+        dy = self._middle_point[1] - enemy.y
+        for blast in self._context.blasts:
+            self._new_blasts.append(
+                EnemyBlast(blast.kind, blast.x + dx, blast.y + dy, blast.radius)
+            )
+        self._context.blasts = []
+
+    def break_part(self) -> None:
+        """Bosses viewer: destroys the boss's next part, or its core once they are all gone (as K
+        does in a level, P07-R09), to watch it break: blasts, transformations and
+        its death. A new boss comes in once it is gone."""
+        if self.viewer == "bosses" and isinstance(self._enemy, Boss):
+            self._enemy.break_next()
 
     def _ended(self, enemy: Any) -> bool:
         """Whether the enemy is gone as the game's world would say (`EnemyWorld._check_gone`)."""
@@ -380,6 +419,10 @@ class DevViewer:
         self._view.playfield.run(lambda: layer.sync([enemy], dt))
         enemy.x = x
         enemy.y = y
+        if self._blasts is not None:
+            blasts = self._new_blasts
+            self._new_blasts = []
+            self._view.playfield.run(lambda: self._blasts.sync(blasts, dt))
 
     def _animate(self, dt: float) -> None:
         """Steps the model's animations and sets the camera's field of view (the close-up's)."""

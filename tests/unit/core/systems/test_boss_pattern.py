@@ -336,6 +336,22 @@ def test_p07_r04_a_laser_turret_holds_still_while_the_beam_fires() -> None:
     assert turret.aim == pytest.approx(held)
 
 
+def test_a_sweeping_laser_turret_keeps_following_the_player_while_the_beam_fires() -> None:
+    # Boss weapon variety (docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
+    # design.md): a sweeper's beam sweeps after the player, as slowly as its warning line.
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(1000, laser_rate=10)
+    sweeping = EnemyLaserSpec(1, 1, 2, "beam", True)
+    pattern = BossPattern([_volley(BossLaserShape(sweeping), turret=True, first=0)])
+    sources = _sources({"core": _Src(turret=turret)})
+    pattern.step(ctx, 0.5, sources)
+    pattern.turn_turrets(ctx, 0.5, sources)
+    pattern.turn_turrets(ctx, 0.5, sources)
+    firing = turret.aim
+    pattern.turn_turrets(ctx, 0.5, sources)
+    assert turret.aim == pytest.approx(firing - 5 * DEG)
+
+
 def test_p07_r04_a_laser_turret_without_a_laser_rate_uses_its_normal_rate() -> None:
     ctx = _Ctx(player=(100, 0))
     turret = _turret(20)

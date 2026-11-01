@@ -8,7 +8,6 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies import living_motion
 from game.view.enemies.living_motion import (
     Breath,
-    breath_scale,
     flutter_angle,
     glow_level,
     is_living_motion,
@@ -49,21 +48,6 @@ def test_p16_r07_the_breath_sequence_restarts_when_its_state_is_reset(monkeypatc
     monkeypatch.setattr(living_motion, "_BREATHS", [0])
     again = [new_breath().phase for _ in range(3)]
     assert first == pytest.approx(again)
-
-
-def test_p16_r07_breath_scale_swells_by_the_amplitude_at_a_quarter_period():
-    amplitude = ENEMY_LOOK.living.breathing.amplitude
-    breath = Breath(phase=0, period=4.0)
-    assert breath_scale(breath, 0) == pytest.approx(1)
-    assert breath_scale(breath, 1.0) == pytest.approx(1 + amplitude)
-    assert breath_scale(breath, 3.0) == pytest.approx(1 - amplitude)
-
-
-def test_p16_r07_breath_scale_follows_the_phase():
-    amplitude = ENEMY_LOOK.living.breathing.amplitude
-    # A half turn of phase is a half turn of the swell: at time 0 the scale is at its peak.
-    breath = Breath(phase=math.pi / 2, period=2.0)
-    assert breath_scale(breath, 0) == pytest.approx(1 + amplitude)
 
 
 def test_p16_r07_glow_stays_between_low_and_full_brightness():

@@ -72,7 +72,3 @@ def test_sync_warnings_leaves_spare_pooled_lines_alone():
     el.sync_warnings(pool, [], time=0.0, width=1.0)
     mesh.position.set.assert_not_called()
     mesh.scaling.set.assert_not_called()
-
-
-def test_the_readability_families_used_for_lasers_exist():
-    assert "enemyShot" in READABILITY.families

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from core.math.color import hue_saturation
+from core.math.color import hue_saturation, in_family
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
 from game.view.enemies import enemy_materials as em
@@ -37,10 +37,24 @@ def babylon(monkeypatch):
 
 def test_p14_r02_enemy_colour_is_moved_into_the_enemies_hue_family():
     family = READABILITY.families.enemy
-    for color in ([1, 0, 0], [0, 1, 0], [0.2, 0.4, 0.9]):
-        hue, _sat = hue_saturation(em.enemy_color(color))
-        # The family runs from `from` degrees, through the top of the wheel, to `to`.
-        assert hue >= family["from"] or hue <= family["to"]
+    for color in ([1, 0, 0], [0, 1, 0], [0.2, 0.4, 0.9], [1, 0.1, 0.85]):
+        assert in_family(em.enemy_color(color), family), color
+
+
+def test_d231_an_enemy_is_bright_yellow_or_bright_green_never_in_between():
+    yellow, green = READABILITY.enemyHues
+    # Red, orange and magenta neon turns yellow; green, cyan and blue green.
+    for color, hue in [
+        ([1, 0.08, 0.1], yellow),
+        ([1, 0.5, 0.05], yellow),
+        ([1, 0.1, 0.85], yellow),
+        ([0.2, 1, 0.3], green),
+        ([0.1, 0.95, 1], green),
+        ([0.15, 0.4, 1], green),
+    ]:
+        snapped = em.enemy_color(color)
+        assert hue_saturation(snapped)[0] == pytest.approx(hue), color
+        assert max(snapped) == pytest.approx(max(color))
 
 
 def test_p14_r02_greys_are_not_moved_by_the_family():
@@ -48,8 +62,8 @@ def test_p14_r02_greys_are_not_moved_by_the_family():
 
 
 def test_p14_r04_rim_is_lifted_towards_white_by_the_outline_whitening():
-    whiten = READABILITY.enemyOutline.whiten
-    strength = READABILITY.enemyOutline.strength
+    whiten = READABILITY.enemyTrim.whiten
+    strength = READABILITY.enemyTrim.strength
     rim = em.rim_of([0, 0.5, 1])
     assert rim == pytest.approx(
         [(0 + whiten) * strength, (0.5 + 0.5 * whiten) * strength, (1 + 0) * strength]
@@ -158,3 +172,47 @@ def test_p05_flame_is_a_whiter_core_than_its_exhaust(babylon):
     flame = em.flame_materials(object(), [0, 0, 0])
     assert flame.flame.emissiveColor.r == pytest.approx(ENEMY_LOOK.reactor.whiten)
     assert flame.exhaust.emissiveColor.r == 0
+
+
+@pytest.mark.parametrize(
+    "shade",
+    [
+        [0.2, 0.1, 0.05],  # Rust.
+        [0.6, 0.45, 0.14],  # Gilding.
+        [0.1, 0.11, 0.025],  # Olive.
+        [0.17, 0.16, 0.12],  # Sandstone.
+        [0.13, 0.035, 0.045],  # Crimson flesh.
+        [0.1, 0.04, 0.07],  # Plum.
+    ],
+)
+def test_d231_warm_and_pink_body_shades_are_greyed(shade):
+    greyed = em.body_color(shade)
+    assert hue_saturation(greyed)[1] == pytest.approx(READABILITY.enemyBody.maxSaturation)
+    assert max(greyed) == pytest.approx(max(shade))
+
+
+@pytest.mark.parametrize(
+    "shade",
+    [
+        [0.05, 0.2, 0.06],  # Moss.
+        [0.03, 0.09, 0.095],  # Teal.
+        [0.15, 0.19, 0.24],  # Ice.
+        [0.1, 0.105, 0.12],  # Blue-grey metal.
+        [0.18, 0.18, 0.17],  # Bone: already near grey.
+    ],
+)
+def test_d231_green_teal_blue_and_grey_body_shades_are_kept(shade):
+    assert em.body_color(shade) == shade
+
+
+def test_d231_in_body_shades_greys_each_vertex_colour_and_keeps_alpha(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(em, "_with_colors", lambda geo, colors: seen.setdefault("c", colors))
+    geo = MagicMock()
+    geo.colors = [0.2, 0.1, 0.05, 0.5, 0.05, 0.2, 0.06, 1]
+    em.in_body_shades(geo)
+    greyed = seen["c"]
+    assert greyed[3] == 0.5
+    assert greyed[4:] == [0.05, 0.2, 0.06, 1]
+    most = READABILITY.enemyBody.maxSaturation
+    assert hue_saturation(greyed[0:3])[1] == pytest.approx(most)

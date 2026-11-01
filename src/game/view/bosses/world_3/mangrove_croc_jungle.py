@@ -21,15 +21,16 @@ type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# Swamp shades: moss, vines, river stone, old bone-white teeth.
+# Swamp shades: moss, vines, river stone, old bone-white teeth. D-231: clear greens and a grey mud,
+# not olive and brown (no khaki with the enemies' yellow and green).
 SWAMP = record(
     {
-        "moss": [0.09, 0.15, 0.05],
-        "mossLight": [0.14, 0.2, 0.07],
-        "vine": [0.05, 0.1, 0.035],
+        "moss": [0.035, 0.15, 0.045],
+        "mossLight": [0.05, 0.2, 0.06],
+        "vine": [0.02, 0.1, 0.03],
         "stone": [0.17, 0.16, 0.14],
         "tooth": [0.42, 0.4, 0.34],
-        "mud": [0.1, 0.08, 0.05],
+        "mud": [0.08, 0.08, 0.075],
     }
 )
 

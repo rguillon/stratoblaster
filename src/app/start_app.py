@@ -501,6 +501,7 @@ def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
         return None
     catalog = dev_catalog(game)
     session = DevSession(engine, game, catalog, options.environment, options.overlay)
+    session.listen(options.keyboard_target)
     return [session, dev_labels(catalog), dev_groups(catalog)]
 
 

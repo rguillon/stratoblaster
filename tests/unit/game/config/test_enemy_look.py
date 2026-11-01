@@ -2,7 +2,9 @@
 
 import pytest
 
+from core.math.color import in_family
 from game.config.enemy_look import ENEMY_LOOK, glow, laser_palette, times, whiter
+from game.config.readability import READABILITY
 
 
 def test_p16_r01_times_scales_each_channel() -> None:
@@ -33,3 +35,9 @@ def test_p16_r01_laser_palette_has_warning_beam_and_emitter_colours() -> None:
 def test_p16_r01_enemy_look_has_the_effect_sections_the_renderer_reads() -> None:
     for section in ("hull", "neon", "bullets", "laser", "missile", "blasts"):
         assert ENEMY_LOOK[section] is not None, section
+
+
+@pytest.mark.parametrize("style", list(ENEMY_LOOK.bullets.styles.keys()))
+def test_p14_r02_every_bullet_style_is_in_the_enemy_shots_family(style: str) -> None:
+    rim = ENEMY_LOOK.bullets.styles[style].halo[0]
+    assert in_family(rim, READABILITY.families.enemyShot), style

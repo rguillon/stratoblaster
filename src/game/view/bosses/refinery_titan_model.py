@@ -84,11 +84,11 @@ def _draw_structure(p: Any) -> None:
             "bottom": -8,
             "top": 18,
             "segments": 6,
-            "shell": [F.sinew, F.crimson],
-            "belly": F.purple,
+            "shell": [F.sinew, F.slate],
+            "belly": F.graphite,
         },
     )
-    mantle(p, SPONSON, [-4, TITAN_DECK["sponson"]], F.crimson, TITAN_NEON)
+    mantle(p, SPONSON, [-4, TITAN_DECK["sponson"]], F.slate, TITAN_NEON)
     p.neon.box([72, 1.2, 0.8], TITAN_NEON, Placement([0, -0.6, 40.2]))
     rib_cage(p, [-46, -36, 50], {"halfWidth": 33, "y": 0, "height": 15, "thickness": 1.5})
     spine(p, [0, 18.5, -55], [0, 18.5, 25], {"color": TITAN_NEON, "width": 1.8})
@@ -126,7 +126,7 @@ def _draw_columns(p: Any) -> None:
     """Two chimneys of flesh behind the body, ringed with neon, joined by a grafted pipe."""
     for s in SIDES:
         at = [s * 42, TITAN_DECK["beam"] - 0.5, -34]
-        p.flesh.lathe(COLUMN, 7, F.crimson, Placement(at))
+        p.flesh.lathe(COLUMN, 7, F.slate, Placement(at))
         for dy in [5, 10]:
             p.neon.ring(4, 1, 7, TITAN_NEON, Placement([at[0], at[1] + dy, at[2]]))
         p.vein.ring(2.6, 0.8, 7, TITAN_NEON, Placement([at[0], at[1] + 16.6, at[2]]))
@@ -136,7 +136,7 @@ def _draw_columns(p: Any) -> None:
 def _draw_bridge(p: Any) -> None:
     """The head over the core (P16-R06): a plated skull with clustered eyes, two smoking spiracles,
     the twin cannon grafted under its brow (the core's weapon), mandibles at its front."""
-    organ(p.flesh, 17, 8, F.crimson, Placement([0, 12, 2], math.pi / 8), 0.38)
+    organ(p.flesh, 17, 8, F.slate, Placement([0, 12, 2], math.pi / 8), 0.38)
     graft(p, polygon(6, 11, [1, 1.3]), [23, 24.5], [0, 0, 0])
     eyes(p, [0, 22, 15], {"count": 4, "size": 1.2, "spacing": 3.4}, TITAN_NEON)
     for s in SIDES:
@@ -163,7 +163,7 @@ def _draw_core(p: Any) -> None:
         segmented_body(
             p.flesh,
             SegmentedBody(-62, -30, 2, 8, -3, 12),
-            F.crimson,
+            F.slate,
             Placement([s * 11, 0, 0]),
         )
         reactor_sac(p, [s * 11, 4, -62], 6, TITAN_NEON)

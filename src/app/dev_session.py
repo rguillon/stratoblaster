@@ -1,11 +1,12 @@
 """The dev viewers of the app (D-199): the viewer the menu flow shows on its `dev-viewer` screen,
 built when it opens and dropped when it closes; the mouse wheel over it (D-208: it zooms, or
-scrubs the levels viewer's time).
+scrubs the levels viewer's time); K in the bosses viewer (breaks the boss's next part).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from app.dev_viewer import DevViewer
+from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
@@ -34,6 +35,8 @@ class DevSession:
         self._environment = environment
         self._status_root = status_root
         self.viewer: DevViewer | None = None
+        # Stops listening to the keyboard (see `listen`).
+        self._stop_keys: Any = None
 
     @property
     def active(self) -> bool:
@@ -63,6 +66,34 @@ class DevSession:
             viewer.scrub(delta_y)
             return
         viewer.zoom(delta_y)
+
+    def listen(self, target: Any) -> None:
+        """Listens for the viewer's keys (see `key`) on `target` (None: nothing listens)."""
+        if target is None:
+            return
+
+        def on_key(event: Any) -> None:
+            if self.key(event.code, event["type"] == "keydown"):
+                event.preventDefault()
+
+        target.addEventListener("keydown", on_key)
+        target.addEventListener("keyup", on_key)
+
+        def stop() -> None:
+            target.removeEventListener("keydown", on_key)
+            target.removeEventListener("keyup", on_key)
+
+        self._stop_keys = stop
+
+    def key(self, code: str, down: bool) -> bool:
+        """A key pressed over the viewer: K breaks the boss's next part in the bosses viewer.
+        Returns whether the key was used."""
+        viewer = self.viewer
+        if viewer is None or viewer.viewer != "bosses" or code != CFG.break_key:
+            return False
+        if down:
+            viewer.break_part()
+        return True
 
     def turn(self, dx: float, dy: float) -> None:
         """A drag over the viewer, by (`dx`, `dy`) screen pixels, turns its model."""
@@ -98,3 +129,6 @@ class DevSession:
 
     def dispose(self) -> None:
         self._drop()
+        if self._stop_keys is not None:
+            self._stop_keys()
+        self._stop_keys = None

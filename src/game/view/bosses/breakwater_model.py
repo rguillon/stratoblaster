@@ -94,8 +94,8 @@ def _draw_body(p: Any) -> None:
             "bottom": deck - 1,
             "top": 16,
             "segments": 4,
-            "shell": [F.crimson, F.membrane],
-            "belly": F.purple,
+            "shell": [F.slate, F.membrane],
+            "belly": F.graphite,
         },
     )
     rib_cage(p, [-30, -20, -10, 0], {"halfWidth": 22, "y": deck, "height": 10, "thickness": 1.1})
@@ -155,8 +155,8 @@ def _mortar(p: Any, at: Vec3) -> None:
     """A mortar (P07-R05, P16-R05): a swollen barnacle growth on the flank under its turret, a spawn
     sac beside it."""
     r = radius_of(BREAKWATER.stats.parts, 1, 13)
-    growth(p, offset(at, 0, HULL_Y[2] - 2, 0), r, ORANGE, {"flesh": F.purple, "height": 0.4})
-    sac(p, offset(at, sign_of(at[0]) * 8, HULL_Y[2], 6), 3.5, F.crimson, {"stretch": 0.7})
+    growth(p, offset(at, 0, HULL_Y[2] - 2, 0), r, ORANGE, {"flesh": F.graphite, "height": 0.4})
+    sac(p, offset(at, sign_of(at[0]) * 8, HULL_Y[2], 6), 3.5, F.slate, {"stretch": 0.7})
 
 
 def _mortar_turret(p: Any, at: Vec3) -> None:

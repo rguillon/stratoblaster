@@ -18,10 +18,15 @@ def piece_ids(design: Any) -> set[str]:
     return {"core"} | {part["id"] for part in design.stats["parts"]}
 
 
+def original_parts(design: Any) -> list[Any]:
+    """A boss's parts there from the start (not its hidden weapons, revealed as it transforms)."""
+    return [part for part in design.stats["parts"] if part.get("reveal") is None]
+
+
 def assert_boss_design(design: Any) -> None:
-    """A boss design is well formed: unique part ids, one stage more than it has parts (each part
-    destroyed moves it on, P07-R04), guns and volleys that name pieces of the boss, and volleys of
-    a known kind."""
+    """A boss design is well formed: unique part ids, one stage more than it has original parts
+    (each part destroyed moves it on, P07-R04; its hidden weapons, revealed later, keep it on its
+    last), guns and volleys that name pieces of the boss, and volleys of a known kind."""
     stats = design.stats
     assert design.id and design.id == stats["model"]
     assert stats["name"]
@@ -30,7 +35,7 @@ def assert_boss_design(design: Any) -> None:
     parts = stats["parts"]
     ids = [part["id"] for part in parts]
     assert len(ids) == len(set(ids))
-    assert len(design.stages) == len(parts) + 1
+    assert len(design.stages) == len(original_parts(design)) + 1
     known = piece_ids(design)
     for piece in design.guns:
         assert piece in known, piece

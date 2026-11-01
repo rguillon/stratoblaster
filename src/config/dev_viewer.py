@@ -18,6 +18,7 @@ class DevViewerTexts:
         loading: str,
         groups_hint: str,
         grid_note: str,
+        bosses_hint: str = "",
     ) -> None:
         # The title screen's entry.
         self.entry = entry
@@ -35,6 +36,8 @@ class DevViewerTexts:
         self.groups_hint = groups_hint
         # The props viewer's status line: what a square of its grid is (D-205).
         self.grid_note = grid_note
+        # The hint of the bosses viewer (its K key breaks the boss's next part).
+        self.bosses_hint = bosses_hint
 
 
 class DevPropStageConfig:
@@ -100,7 +103,8 @@ class DevViewerConfig:
     `zoom_range`: in the model viewers the wheel zooms (D-208), by e^(`zoom_per_pixel`) per pixel,
     within `zoom_range` (times the view without zoom). `model_seed`: the random
     numbers the enemies and bosses are spawned with (their look only). `turn_per_pixel`: radians a
-    model turns per pixel dragged.
+    model turns per pixel dragged. `break_key`: the key code that breaks the boss's next part in
+    the bosses viewer.
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -115,6 +119,7 @@ class DevViewerConfig:
         turn_per_pixel: float,
         props: DevPropStageConfig,
         zoom_range: list[float],
+        break_key: str = "KeyK",
     ) -> None:
         self.close_up_fill = close_up_fill
         self.wheel_step = wheel_step
@@ -126,6 +131,8 @@ class DevViewerConfig:
         self.texts = texts
         self.turn_per_pixel = turn_per_pixel
         self.props = props
+        # The key that breaks the boss's next part in the bosses viewer (as K in a level, P07-R09).
+        self.break_key = break_key
 
 
 # The viewers of the dev menu, in order (their ids).
@@ -155,6 +162,8 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "Wheel: zoom · ◀ ▶ or menu: next · ▲ ▼: group · Drag: turn · Enter: close-up / game size"
         " · Esc: back",
         "1 square = 1 block",
+        "Wheel: zoom · ◀ ▶ or menu: next · Drag: turn · Enter: close-up / game size"
+        " · K: break a part · Esc: back",
     ),
     0.01,
     DevPropStageConfig(

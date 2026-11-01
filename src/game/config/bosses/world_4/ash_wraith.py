@@ -12,6 +12,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -46,7 +47,7 @@ EY = WRAITH_EYE[1]
 # (ducted fans) fire fans and shield the core; the eye cannon under its nose, on a turret, aims a
 # laser after its warning line; the core spirals. The eye hangs in front of the core, so it can
 # always be shot.
-ASH_WRAITH = record(
+_ASH_WRAITH = record(
     {
         "id": "ash-wraith",
         # Angry after each destroyed part (phase 7 review, D-063): heat 9, as 3-5.
@@ -96,4 +97,19 @@ ASH_WRAITH = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold.
+ASH_WRAITH = with_weapons(
+    _ASH_WRAITH,
+    [
+        hidden_weapon("lance-left", "lance", [-12, -7], 10, 660, 1, "blue", 1.2, 9.0),
+        hidden_weapon("lance-right", "lance", [12, -7], 10, 660, 1, "blue", 2.0, 9.0),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-30, -37], [30, -37], [30, 23], [-30, 23]], "shell", [4.5, 1000], False
+        ),
+    ],
 )

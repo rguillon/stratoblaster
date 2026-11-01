@@ -152,7 +152,7 @@ def jaw_cannon(p: EnemyParts, at: Vec3) -> None:
     axis = boss_point(tip[0], tip[1], tip[2])[1]
     back = offset(at, 0, axis, -8)
     # P16-R05: a throat gland swelling behind the grafted cannon, veins feeding it.
-    sac(p, offset(back, 0, 0, -2), 5, F.crimson)
+    sac(p, offset(back, 0, 0, -2), 5, F.slate)
     gland(p, offset(back, 0, 2.6, -2), 1.8, CROC_GREEN)
     hull.cylinder(4.4, 9, 8, H.panel, Placement(back, 0, QUARTER), 3.4)
     hull.cylinder(5, 1.6, 8, H.dark, Placement(offset(back, 0, 0, 1), 0, QUARTER))

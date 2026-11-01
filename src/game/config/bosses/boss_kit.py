@@ -119,6 +119,12 @@ BOSS_TIMING = record(
         "laserTurnDeg": 20,
         # Seconds a boss is angry after the pause that follows each destroyed part (phase 7).
         "rageSeconds": 3,
+        # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
+        # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, D-224): it neither
+        # fires nor takes damage meanwhile.
+        "transformSeconds": 2.0,
+        # Blasts each armour region it sheds bursts in, at most.
+        "regionBlasts": 5,
     }
 )
 
@@ -177,7 +183,9 @@ def part(
     health: float,
     options: Any = None,
 ) -> Any:
-    """A part: `options` holds `shields`, `drop`, `orbits` and `joint` (all optional)."""
+    """A part: `options` holds `shields`, `drop`, `orbits`, `joint`, `reveal` and `retire` (all
+    optional; `reveal`: the transformation that reveals a hidden weapon part, 1 for the first;
+    `retire`: the transformation it leaves the fight at, D-228)."""
     opts: Any = record({}) if _unset(options) else record(options)
     result = record(
         {
@@ -194,6 +202,10 @@ def part(
         result["orbits"] = True
     if not _unset(opts.joint):
         result["joint"] = opts.joint
+    if not _unset(opts.reveal):
+        result["reveal"] = opts.reveal
+    if not _unset(opts.retire):
+        result["retire"] = opts.retire
     return result
 
 
@@ -246,6 +258,14 @@ def only_while(shot: Any, part_id: str) -> Any:
 def only_after(shot: Any, part_id: str) -> Any:
     """`volley` fired only once the part `part` is destroyed (`after`)."""
     return merge(shot, {"after": part_id})
+
+
+def sweeping(shot: Any) -> Any:
+    """A laser `volley` whose beam sweeps after the player while it fires (its turret keeps
+    following, as slowly as through its warning line), instead of holding still."""
+    return merge(
+        shot, {"shape": merge(shot.shape, {"laser": merge(shot.shape.laser, {"sweeps": True})})}
+    )
 
 
 def _shot(source: str, every: float, first: Any, shape: Any) -> Any:
@@ -306,8 +326,11 @@ def _volley_missiles(
     return _shot(source, every, first, shape)
 
 
-def _volley_laser(source: str, every: float, firing_seconds: float, first: Any = None) -> Any:
-    shape = record({"kind": "laser", "laser": laser_of(firing_seconds)})
+def _volley_laser(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    source: str, every: float, firing_seconds: float, first: Any = None, width: Any = None
+) -> Any:
+    beam = laser_of(firing_seconds) if _unset(width) else laser_of(firing_seconds, width)
+    shape = record({"kind": "laser", "laser": beam})
     return _shot(source, every, first, shape)
 
 

@@ -41,8 +41,9 @@ __pragma__("noskip")
 # The Dam Breaker's toxic green neon.
 TOXIC = BOSS_LOOK.neon["dam-breaker"]
 # Swamp moss on its ledges, the vines hanging over its sides, and rust (World 3 growth).
-MOSS = [0.13, 0.2, 0.07]
-VINE = [0.08, 0.14, 0.05]
+# D-231: clear greens, not olive (no khaki with the enemies' yellow and green).
+MOSS = [0.05, 0.2, 0.06]
+VINE = [0.03, 0.14, 0.04]
 RUST = [0.2, 0.1, 0.05]
 # Height of the barge's deck.
 DECK_Y = 4
@@ -79,7 +80,7 @@ def sluice(p: EnemyParts, at: Vec3) -> None:
         return
     lip = boss_point(spouts[0][0], spouts[0][1], spouts[0][2])
     # P16-R06: a gland swelling out of the beast's back, a metal sluice gate grafted in its mouth.
-    p.flesh.box([22, 12, 14], F.crimson, Placement(offset(at, 0, DECK_Y, -2)), F.sinew)
+    p.flesh.box([22, 12, 14], F.slate, Placement(offset(at, 0, DECK_Y, -2)), F.sinew)
     gland(p, offset(at, 0, DECK_Y + 12, -5), 3, TOXIC)
     # The gate, raised in its frame, and the dark culvert under it.
     hull.box([16, 6, 1.6], SHADE["edge"], Placement(offset(at, 0, DECK_Y + 8, 5.6)))
@@ -191,9 +192,9 @@ def hangar(p: EnemyParts, at: Vec3) -> None:
         rect(26, 20),
         [DECK_Y - 4, DECK_Y, DECK_Y + 7],
         [1, 1.5],
-        F.purple,
+        F.graphite,
         Placement(at),
-        F.crimson,
+        F.slate,
     )
     vein_to(
         p,

@@ -316,6 +316,8 @@ def build_ember_herald(scene: Any) -> Any:
     carrying three ember lances."""
     lances = {}
     for part in EMBER_HERALD.stats.parts:
+        if part.reveal != None:  # noqa: E711
+            continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         lances[part.id] = _lance_part(_gun_muzzles(part.id))
     return build_boss_model(
         EMBER_HERALD,

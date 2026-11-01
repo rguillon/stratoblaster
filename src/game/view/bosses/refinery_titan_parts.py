@@ -76,7 +76,7 @@ def draw_tank(parts: Any, at_point: Vec3) -> None:
     def along(dz: float) -> Any:
         return Placement([x, axis, z + dz], 0, QUARTER, math.pi / 8)
 
-    flesh.lathe(TANK_PROFILE, 8, F.crimson, along(0))
+    flesh.lathe(TANK_PROFILE, 8, F.slate, along(0))
     for dz in TANK_BANDS:
         neon.ring(TANK_RADIUS * 1.04, 2.4, 8, TITAN_NEON, along(dz))
     # The top flat of the octagon, a little above it: two lit windows and a valve.
@@ -117,7 +117,7 @@ def draw_turret(p: Any, at_point: Vec3) -> None:
     y = at_point[1]
     z = at_point[2]
     base = y + TITAN_DECK["sponson"]
-    p.flesh.lathe(TURRET_BASE, 8, F.purple, Placement([x, base, z]))
+    p.flesh.lathe(TURRET_BASE, 8, F.graphite, Placement([x, base, z]))
     p.neon.ring(13.3, 0.9, 8, TITAN_NEON, Placement([x, base + 1, z]))
     graft(p, polygon(8, 9), [base + 5.6, base + 7], [x, 0, z], {"color": H.base})
 
@@ -180,7 +180,7 @@ def draw_missile_battery(p: Any, at_point: Vec3) -> None:
         BLOCK,
         [base - 2, base, top - 1],
         [0, 3],
-        F.crimson,
+        F.slate,
         Placement([x, 0, z]),
         F.sinew,
     )

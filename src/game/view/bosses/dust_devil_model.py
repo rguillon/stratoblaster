@@ -117,7 +117,7 @@ def _draw_core(p: Any) -> None:
     reactors in sacs behind."""
     p.flesh.lathe(GYRO_DISC, 10, F.sinew, Placement(None, math.pi / 10))
     p.neon.ring(18.2, 1.2, 10, AMBER, Placement([0, -0.4, 0], math.pi / 10))
-    organ(p.flesh, 9, 8, F.crimson, Placement([0, 4, 0]), 0.25)
+    organ(p.flesh, 9, 8, F.slate, Placement([0, 4, 0]), 0.25)
     for a in around(8):
         x = math.sin(a)
         z = math.cos(a)
@@ -133,7 +133,7 @@ def _draw_core(p: Any) -> None:
     for s in SIDES:
         vein_line(p, [s * 4, 7.5, -3], [s * 15, 3, -10], [0, 1.5, 0], 0.9, AMBER)
         reactor_sac(p, [s * 6, 4, -23], 2.6, AMBER)
-        tentacle(p, [s * 5, 3, -14], [s * 6, 4, -21], [0, 1, 0], [3, 2.6], F.crimson, 5)
+        tentacle(p, [s * 5, 3, -14], [s * 6, 4, -21], [0, 1, 0], [3, 2.6], F.slate, 5)
     eyes(p, [0, 4.5, 16], {"count": 3, "size": 1, "spacing": 3}, AMBER)
     graft(p, polygon(5, 4, [1.2, 0.8]), [3, 4.4], [0, 0, 13])
     # Brightens as the core's next volley charges; its bullets leave from its top.
@@ -144,13 +144,13 @@ def _draw_core(p: Any) -> None:
 def _draw_ring(p: Any) -> None:
     """The turning ring (P07-R05, P16-R05): a sinew collar round the bell, a fleshy rim, three
     tentacle spokes out to the pods and membrane fins between them."""
-    p.flesh.lathe(HUB, 10, F.purple, None, False)
+    p.flesh.lathe(HUB, 10, F.graphite, None, False)
     p.flesh.lathe(RIM, 15, F.sinew, None, False)
     p.neon.ring(43.1, 0.8, 15, AMBER, Placement([0, -0.4, 0]))
     for a in around(3):
         x = math.sin(a)
         z = math.cos(a)
-        tentacle(p, [x * 20, 0, z * 20], [x * 39, 0, z * 39], [0, 1.5, 0], [2.2, 1.6], F.crimson, 4)
+        tentacle(p, [x * 20, 0, z * 20], [x * 39, 0, z * 39], [0, 1.5, 0], [2.2, 1.6], F.slate, 4)
         p.flesh.bevel_slab(
             BLADE,
             [-0.6, 0, 0.6],
@@ -182,9 +182,9 @@ def _blade_pod(p: Any, at: Vec3) -> None:
         [1, 2.4],
         F.sinew,
         place,
-        F.crimson,
+        F.slate,
     )
-    organ(p.flesh, 5, 6, F.crimson, Placement([at[0], POD_TOP - 2.5, at[2]]), 0.45)
+    organ(p.flesh, 5, 6, F.slate, Placement([at[0], POD_TOP - 2.5, at[2]]), 0.45)
     p.vein.slab(POD_LIGHT, [POD_TOP - 0.6, POD_TOP - 0.3], AMBER, place)
     p.neon.lathe(POD_DOME, 5, AMBER, Placement([at[0], POD_TOP + 1.6, at[2]]))
     for muzzle in MUZZLES:

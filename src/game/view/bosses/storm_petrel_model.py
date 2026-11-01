@@ -99,8 +99,8 @@ def _draw_hull(p: Any) -> None:
             "bottom": -4,
             "top": 15,
             "segments": 7,
-            "shell": [F.purple, F.membrane],
-            "belly": F.crimson,
+            "shell": [F.graphite, F.membrane],
+            "belly": F.slate,
         },
     )
     rib_cage(p, [-22, -12, 14], {"halfWidth": 15, "y": 3, "height": 12, "thickness": 1.1})
@@ -124,7 +124,7 @@ def _draw_wings(p: Any) -> None:
     along their leading edges, veins across them, an engine sac on each with its reactor, a float
     of flesh under each root."""
     for s in SIDES:
-        p.flesh.bevel_slab(sided(WING, s), WING_Y, [1.2, 1.8], F.membrane, None, F.purple)
+        p.flesh.bevel_slab(sided(WING, s), WING_Y, [1.2, 1.8], F.membrane, None, F.graphite)
         edge_strips(p.neon, sided(WING_LEAD, s), 1.2, [6.9, 8.1], N)
         for strut in STRUTS:
             start = strut[0]
@@ -143,7 +143,7 @@ def _draw_wings(p: Any) -> None:
         segmented_body(
             p.flesh,
             SegmentedBody(-19, 19, 3, 5.5, -1, 9),
-            F.crimson,
+            F.slate,
             Placement(nacelle),  # type: ignore[arg-type]
         )
         graft(p, polygon(5, 3.4), [9, 10], shift(nacelle, [0, 0, 12]))
@@ -162,7 +162,7 @@ def _draw_tail(p: Any) -> None:
     """The tailplanes: membrane on bone, their fins of bone, neon on their leading edges."""
     for s in SIDES:
         plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]
-        p.flesh.bevel_slab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, None, F.purple)
+        p.flesh.bevel_slab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, None, F.graphite)
         tentacle(p, [s * 4, 9, -50], [s * 30, 9, -57], [0, 1, 0], [1.4, 0.4], F.bone, 4)
         tentacle(p, [s * 28, 9, -55], [s * 28, 19, -63], [0, 0, 2], [1.4, 0.2], F.bone, 4)
         edge_strips(

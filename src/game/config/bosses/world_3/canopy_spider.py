@@ -11,6 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -138,7 +139,7 @@ def leg_guns() -> Any:
     return guns
 
 
-CANOPY_SPIDER = record(
+_CANOPY_SPIDER = record(
     {
         "id": "canopy-spider",
         # Angry after each destroyed part (phase 7 review).
@@ -191,4 +192,25 @@ CANOPY_SPIDER = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
+# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of laser lances unfold.
+CANOPY_SPIDER = with_weapons(
+    _CANOPY_SPIDER,
+    [
+        hidden_weapon("gatling-left", "gatling", [-13, 25], 7, 1000, 1, "red", 1.2, 22.3),
+        hidden_weapon("gatling-right", "gatling", [13, 25], 7, 1000, 1, "red", 2.0, 22.3),
+        hidden_weapon("lance-left", "lance", [-9, -21], 7, 1250, 2, "red", 1.2, 12.8),
+        hidden_weapon("lance-right", "lance", [9, -21], 7, 1250, 2, "red", 2.0, 12.8),
+    ],
+    [
+        armour_region(
+            "back", 1, [[-28, 2], [28, 2], [28, 49], [-28, 49]], "shell", [7.0, 1000], False
+        ),
+        armour_region(
+            "spine", 2, [[-24, -42], [24, -42], [24, 2], [-24, 2]], "shell", [6.4, 1000], False
+        ),
+    ],
 )

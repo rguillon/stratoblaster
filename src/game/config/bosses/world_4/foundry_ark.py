@@ -21,6 +21,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -72,7 +73,7 @@ CY = ARK_PARTS.crucible[1]
 # at its heart; a missile battery on the bow; two glowing crucibles aft that spill into rings of
 # bullets when destroyed. The battery hangs in front of the chimneys and the crucibles stand clear
 # of the furnace, so every part can be shot.
-FOUNDRY_ARK = record(
+_FOUNDRY_ARK = record(
     {
         "id": "foundry-ark",
         # Angry after each destroyed part (phase 7 review): heat 13, on from World 3.
@@ -148,4 +149,30 @@ FOUNDRY_ARK = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its wing
+# armour and its spine plating bursts off, baring a dark metal frame, and a pair of gatling turrets
+# and a drone hangar unfold.
+FOUNDRY_ARK = with_weapons(
+    _FOUNDRY_ARK,
+    [
+        hidden_weapon("battery-left", "battery", [-41, -43], 13, 1920, 1, "orange", 1.2, 10.2),
+        hidden_weapon("battery-right", "battery", [41, -43], 13, 1920, 1, "orange", 2.0, 10.2),
+        hidden_weapon("gatling-left", "gatling", [-48, 13], 10, 2400, 2, "orange", 1.2, 8.8),
+        hidden_weapon("gatling-right", "gatling", [48, 13], 10, 2400, 2, "orange", 2.0, 8.8),
+        hidden_weapon("hangar-centre", "hangar", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
+    ],
+    [
+        armour_region(
+            "flanks", 1, [[20, -78], [88, -78], [88, -13.5], [20, -13.5]], "wing", [-1.5, 1000]
+        ),
+        armour_region(
+            "wings", 2, [[30, -13.5], [88, -13.5], [88, 45], [30, 45]], "wing", [-0.2, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-18, -49], [18, -49], [18, 11], [-18, 11]], "shell", [16.8, 1000], False
+        ),
+    ],
 )

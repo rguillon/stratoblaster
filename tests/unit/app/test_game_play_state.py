@@ -83,9 +83,16 @@ def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
         name="Warden",
         state="fighting",
         stage=2,
-        parts=[SimpleNamespace(destroyed=True), SimpleNamespace(destroyed=False)],
+        parts=[
+            SimpleNamespace(destroyed=True, hidden=False, retired=False),
+            SimpleNamespace(destroyed=False, hidden=False, retired=False),
+            SimpleNamespace(destroyed=False, hidden=True, retired=False),
+            # Retired (D-228): out of the fight, but not waiting to be revealed.
+            SimpleNamespace(destroyed=False, hidden=True, retired=True),
+        ],
         remaining_health=40.0,
         full_health=100.0,
+        form=0,
     )
     state = level_state(run(fights=SimpleNamespace(boss=boss, rank="mini", defeated=[])), 1.0, 1)
     assert state["boss"] == {
@@ -93,10 +100,13 @@ def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
         "rank": "mini",
         "state": "fighting",
         "stage": 2,
-        "partsLeft": 1,
-        "parts": 2,
+        "partsLeft": 3,
+        "parts": 4,
         "health": 40.0,
         "fullHealth": 100.0,
+        # Its transformations, and the weapons they have yet to reveal.
+        "form": 0,
+        "hiddenParts": 1,
     }
 
 

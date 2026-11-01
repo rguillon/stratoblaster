@@ -3,7 +3,7 @@
 import math
 
 import pytest
-from helpers.view_probes import paths, recorder
+from helpers.view_probes import recorder
 
 from game.view.enemies.enemy_shapes import (
     CANOPY_SECTION,
@@ -144,10 +144,3 @@ def test_section_shapes_have_the_facets_their_models_expect():
     for section in (HULL_SECTION, FIGHTER_SECTION, POD_SECTION, LOBE_SECTION):
         us = sorted(round(p[0], 6) for p in section)
         assert us == sorted(round(-p[0], 6) for p in section)
-
-
-def test_paths_helper_lists_recorded_calls_in_order():
-    builder, log = recorder()
-    builder.face([1], [0, 0, 0])
-    builder.hull.box()
-    assert paths(log) == ["face", "hull.box"]

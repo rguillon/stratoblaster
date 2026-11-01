@@ -2,9 +2,7 @@
 
 import pytest
 
-from game.config.bosses.boss_kit import volley
 from game.config.bosses.boss_rage import angry, arms, rage, rate
-from game.config.bosses.final_bosses import OVERLORD, STORM_PETREL
 
 PATTERNS = ["spirals", "flower", "curtain", "vortex"]
 
@@ -70,9 +68,3 @@ def test_vortex_has_a_spiral_and_bursts_at_the_player() -> None:
     assert spiral["shape"]["count"] == max(3, arms(0) - 2)
     assert bursts["shape"]["kind"] == "burst"
     assert bursts["shape"]["count"] == 3
-
-
-def test_real_bosses_angry_patterns_are_built_from_the_rage_record() -> None:
-    assert OVERLORD.rage and STORM_PETREL.rage
-    assert all(v["from"] == "core" for v in STORM_PETREL.rage)
-    assert volley.aimed  # the builders the patterns use are the kit's

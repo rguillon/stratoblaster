@@ -20,6 +20,7 @@ from game.config.bosses.boss_kit import (
     volley,
 )
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -57,7 +58,7 @@ AURORA_COLLAR = [[0, 0, 14]]
 # 2-3: a flying research station with green and violet neon and a slowly turning dish on top;
 # two dish emitters aim lasers from turrets and two cryo cannons fire shells that burst into
 # rings, all four shielding the core; a drone hangar at its nose launches Hornets (P08-R10).
-AURORA_STATION = record(
+_AURORA_STATION = record(
     {
         "id": "aurora-station",
         # Angry after each destroyed part (phase 7 review).
@@ -127,4 +128,25 @@ AURORA_STATION = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
+# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
+AURORA_STATION = with_weapons(
+    _AURORA_STATION,
+    [
+        hidden_weapon("lance-left", "lance", [-47, 35], 11, 1000, 1, "purple", 1.2, 6.0),
+        hidden_weapon("lance-right", "lance", [47, 35], 11, 1000, 1, "purple", 2.0, 6.0),
+        hidden_weapon("rack-left", "rack", [-7, -21], 5, 1250, 2, "purple", 1.2, 9.6),
+        hidden_weapon("rack-right", "rack", [7, -21], 5, 1250, 2, "purple", 2.0, 9.6),
+    ],
+    [
+        armour_region(
+            "flanks", 1, [[28, 2], [86.5, 2], [86.5, 58], [28, 58]], "wing", [-2.3, 1000]
+        ),
+        armour_region(
+            "spine", 2, [[-20, -46], [20, -46], [20, 4], [-20, 4]], "shell", [4.0, 1000], False
+        ),
+    ],
 )

@@ -132,7 +132,7 @@ def torpedo_tube(p: EnemyParts, at: Vec3, n: Rgb) -> None:
     p.flesh.loft(
         POD_SECTION,
         BLISTER,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         Placement(at),
         LoftOptions(
             False,

@@ -102,7 +102,7 @@ def _draw_keep_detail(p: EnemyParts) -> None:
                 ),
             )
         # Arteries from the blisters to the heart, a metal pipe grafted along them.
-        sinew(flesh, [s * 30, top + 1, 32], [s * 17, top + 1, 15], 1.2, ICE_FLESH.crimson)
+        sinew(flesh, [s * 30, top + 1, 32], [s * 17, top + 1, 15], 1.2, ICE_FLESH.slate)
         rod(hull, [s * 27, top + 1, 35], [s * 14, top + 1, 18], 0.6, H.dark)
 
 

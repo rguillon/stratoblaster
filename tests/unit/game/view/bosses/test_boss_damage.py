@@ -1,13 +1,12 @@
 """Unit tests of `src/game/view/bosses/boss_damage.py`."""
 
-from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses import boss_damage
-from game.view.bosses.boss_damage import Smoke, Stump, build_smoke, build_stump
+from game.view.bosses.boss_damage import Smoke, build_smoke
 
 
 class _Puff:
@@ -76,28 +75,3 @@ def test_p07_r01_build_smoke_puts_its_puffs_on_a_node_under_the_parent(monkeypat
     assert node.parent is parent
     assert len(meshes) == look.puffs
     assert all(m.parent is node for m in meshes)
-
-
-def test_p07_r01_a_stump_flickers_its_sparks_at_the_spark_chance():
-    model = MagicMock()
-    randoms = iter([0.0, 0.999])
-    stump = Stump(node=None, model=model, spark_chance=0.5, random=lambda: next(randoms))
-    enemy = SimpleNamespace(charge=0)
-    stump.sync(enemy, 0.1)
-    assert enemy.charge == 1
-    stump.sync(enemy, 0.1)
-    assert enemy.charge == 0
-    assert model.sync.call_count == 2
-
-
-def test_p16_r05_a_stump_is_a_wound_node_with_its_model_under_it(monkeypatch):
-    node = MagicMock(name="stump-node")
-    monkeypatch.setattr(boss_damage, "new_transform_node", lambda label, scene: node)
-    model = MagicMock()
-    monkeypatch.setattr(boss_damage, "build_enemy_model", lambda *args, **kwargs: model)
-    parent = object()
-    stump = build_stump("boss", 3.0, scene=object(), parent=parent)
-    assert stump.node is node
-    assert node.parent is parent
-    assert model.root.parent is node
-    assert stump._spark_chance == pytest.approx(BOSS_LOOK.stump.sparkChance)

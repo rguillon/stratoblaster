@@ -9,6 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
+from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -77,7 +78,7 @@ DRILL_Y = AVALANCHE_ARM.drill[1]
 # P08-R10, 2-4: a heavy drilling machine with two drill arms swinging in front of it (they fire
 # aimed bursts and shield the core) and a rock hopper on its back; the fight is a chase down the
 # glacier (ground ×1.4).
-AVALANCHE = record(
+_AVALANCHE = record(
     {
         "id": "avalanche",
         # Angry after each destroyed part (phase 7 review, D-063).
@@ -128,4 +129,17 @@ AVALANCHE = record(
             ],
         ),
     }
+)
+
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
+# baring a dark metal frame, and a pair of heavy cannons unfold.
+AVALANCHE = with_weapons(
+    _AVALANCHE,
+    [
+        hidden_weapon("cannon-left", "cannon", [-29, 21], 11, 720, 1, "purple", 1.2, 12.2),
+        hidden_weapon("cannon-right", "cannon", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
+    ],
+    [
+        armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing", [4.2, 1000]),
+    ],
 )

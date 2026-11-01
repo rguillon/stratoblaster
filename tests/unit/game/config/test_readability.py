@@ -1,6 +1,11 @@
 """Unit tests of `src/game/config/readability.py`."""
 
+from core.math.color import in_family
 from game.config.readability import READABILITY
+
+YELLOW = (1, 1, 0)
+LIME = (0.5, 1, 0)
+GREEN = (0, 1, 0)
 
 
 def test_p14_r02_each_gameplay_family_has_a_hue_window_and_a_saturation_floor() -> None:
@@ -12,16 +17,34 @@ def test_p14_r02_each_gameplay_family_has_a_hue_window_and_a_saturation_floor() 
         assert 0 < family.minSaturation <= 1, name
 
 
-def test_p14_r02_the_enemy_family_wraps_round_red() -> None:
+def _hues(family: dict[str, float]) -> set[int]:
+    """The whole degrees `family`'s hue range covers."""
+    span = (family["to"] - family["from"] + 360) % 360
+    return {(family["from"] + d) % 360 for d in range(int(span) + 1)}
+
+
+def test_d231_enemies_and_bosses_are_yellow_to_green_with_no_pink() -> None:
     enemy = READABILITY.families.enemy
-    assert enemy["from"] > enemy["to"]
+    assert all(in_family(color, enemy) for color in (YELLOW, LIME, GREEN))
+    for pink in ((1, 0, 1), (1, 0.2, 0.6), (0.6, 0.2, 1), (1, 0, 0.1)):
+        assert not in_family(pink, enemy)
+
+
+def test_d231_the_enemies_two_hues_are_a_yellow_and_a_green_in_their_family() -> None:
+    yellow, green = READABILITY.enemyHues
+    assert 55 <= yellow <= 65
+    assert 115 <= green <= 135
+    family = READABILITY.families.enemy
+    for hue in (yellow, green):
+        assert (hue - family["from"]) % 360 <= (family["to"] - family["from"]) % 360
 
 
 def test_p14_r02_families_do_not_share_their_hues() -> None:
-    windows = {
-        name: (family["from"], family["to"]) for name, family in READABILITY.families.items()
-    }
-    assert windows["player"] != windows["enemy"] != windows["pickup"]
+    families = READABILITY.families
+    names = list(families.keys())
+    for i, a in enumerate(names):
+        for b in names[i + 1 :]:
+            assert not _hues(families[a]) & _hues(families[b]), (a, b)
 
 
 def test_p14_r02_tones_are_fractions_and_the_background_is_dark() -> None:

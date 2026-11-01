@@ -68,7 +68,7 @@ def body(p: Any) -> None:
     vein = p.vein
     # P16-R04: the swollen body, and the metal shell bolted over its back.
     segmented_body(flesh, BODY, F.sinew)
-    carapace(flesh, SHELL, [F.crimson, F.sinew])
+    carapace(flesh, SHELL, [F.slate, F.sinew])
     plate(hull, BACK_PLATE, [3.6, 5.2], [H.base, H.dark])
     for slit in angry_eyes([0, 6], 6, [8, 1.4], 0.25):
         neon.slab(slit, [4.5, 4.9], NEON)
@@ -102,7 +102,7 @@ def cannon(spec: Any) -> Any:
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
 
     def draw(p: Any) -> None:
-        segmented_body(p.flesh, POD, F.crimson, Placement(at))
+        segmented_body(p.flesh, POD, F.slate, Placement(at))
         p.hull.ring(4.9, 1.4, 6, H.panel, Placement([at[0], at[1] + 0.8, at[2] - 0.5], 0, QUARTER))
         p.vein.box([1.2, 0.5, 6], NEON, Placement([at[0], at[1] + 4.4, at[2]]))
         p.neon.box([0.6, 0.4, 3], NEON, Placement([at[0], at[1] + 4.6, at[2] - 4]))

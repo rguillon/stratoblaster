@@ -1,7 +1,7 @@
 """Look of the bosses (P07)
 
 Their neon colours (GD-61), the white flash of a part when hit, the smoke of a part under half its
-health, and the stump left by a destroyed part (P07-R01). Linear RGB 0..1, sizes in logical pixels,
+health (P07-R01); a destroyed part leaves nothing (D-225). Linear RGB 0..1, sizes in logical pixels,
 times in seconds.
 """
 
@@ -40,7 +40,8 @@ BOSS_LOOK = record(
             "stone-idol": [0.95, 0.2, 1],
             "sky-temple": [1, 0.8, 0.2],
             "mosquito": [1, 0.3, 0.7],
-            "dam-breaker": [0.6, 1, 0.1],
+            # D-231: on the green side (was lime, 0.6), as its hull is overgrown with moss.
+            "dam-breaker": [0.3, 1, 0.1],
             "jaguar": [1, 0.6, 0.05],
             "verdant-crown": [0.1, 1, 0.45],
             # World 4 (P10-R11).
@@ -73,13 +74,55 @@ BOSS_LOOK = record(
             "color": [0.16, 0.15, 0.15],
             "alpha": 0.55,
         },
-        # A destroyed part's wound (P16-R05): torn plating in `char`, its organ dimmed to `organ`,
-        # and sparks flickering on `sparkChance` of frames.
-        "stump": {
-            "char": [0.05, 0.04, 0.035],
-            "organ": [0.06, 0.012, 0.018],
-            "spark": [1, 0.55, 0.15],
-            "sparkChance": 0.35,
+        # A boss's transformation (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md,
+        # D-224), in shares of its length: its armour strains (shudders `shudder` px, strobing
+        # `strobeHz`) until `burst`, then bursts off in chunks that are gone by `burstEnd`, thrown
+        # `throw` px out, rising `lift` px and falling `fall` px, tumbling `spin` radians. Its
+        # hidden weapons swing up on their hinges from `swing[0]` to `swing[1]`, rising from `sink`
+        # of their radius down, then slide their barrels out from `slide[0]` to `slide[1]`,
+        # overshooting by `overshoot` (a back-out ease). A piece that moves rather than bursting
+        # (D-230) strains as armour does, then moves into its new pose from `move[0]` to `move[1]`.
+        "reveal": {
+            "burst": 0.15,
+            "burstEnd": 0.6,
+            "shudder": 0.8,
+            "strobeHz": 9,
+            "throw": 45,
+            "lift": 28,
+            "fall": 60,
+            "spin": 7,
+            "swing": [0.4, 0.75],
+            "slide": [0.7, 1.0],
+            "move": [0.15, 0.6],
+            "sink": 0.9,
+            "overshoot": 1.7,
+        },
+        # How armour is cut out of a boss's body: faces cut down to `cut` px first, at most
+        # `chunks` chunks a region and `bossChunks` a boss; surfaces within about `hold` px hold
+        # together (D-227).
+        "armour": {"cut": 6, "chunks": 12, "bossChunks": 24, "hold": 1.2},
+        # The dark metal frame a shed region leaves (`boss_frame.py`): a `floor` where the armour
+        # was, `lift` px over its lowest point; `metal` ribs `ribWidth` wide and `ribHeight` high,
+        # `ribGap` px apart (sampled every `step` px against the floor, at least `least` px long),
+        # one in `seamEvery` with a neon seam on top; `pipe` pipes along the longest ribs.
+        "frame": {
+            "floor": [0.035, 0.037, 0.045],
+            "metal": [0.1, 0.105, 0.12],
+            "pipe": [0.09, 0.09, 0.11],
+            "lift": 0.6,
+            "ribWidth": 1.6,
+            "ribHeight": 2.2,
+            "ribGap": 9,
+            "step": 1.5,
+            "least": 3,
+            "pipeRadius": 0.9,
+            "spokes": 12,
+            "seamEvery": 3,
+            # Pylons holding up the pieces over it (D-227): `pylonShare` of the piece's radius
+            # wide, between `pylonLeast` and `pylonMost` px.
+            "pylonShare": 0.7,
+            "pylonLeast": 3,
+            "pylonMost": 10,
         },
     }
 )

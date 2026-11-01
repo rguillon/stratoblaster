@@ -1,4 +1,4 @@
-"""Readability of the playfield (P14): the player ships' outlines, the
+"""Readability of the playfield (P14): the player ships' edge trim, the
 toning of the scenery under them, and the shot renderers' glow
 """
 
@@ -6,8 +6,10 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.readability import READABILITY as LOOK
 from game.config.record import record
+from game.config.ship_look import PLAYER_SHIP_SCALE
 from render.babylon import babylon_constant
-from render.outline import outline_model
+from render.edge_trim_mesh import add_edge_trim, request_trim
+from render.geometry.edge_trim import TrimOptions
 
 __pragma__("skip")
 from collections.abc import Callable  # noqa: E402
@@ -76,15 +78,19 @@ def _range_scale(value: Any, k: float, skip: list[str]) -> Any:
     )
 
 
-def _outlined(build: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """A model factory that outlines what `build` makes in the player colour (P14-R03)."""
+def _trimmed(build: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    """A model factory that gives what `build` makes a glowing edge trim in the player colour
+    (P14-R03): widths are in logical pixels, the models drawn `PLAYER_SHIP_SCALE` times smaller."""
+    look = LOOK.playerTrim
+    options = TrimOptions(look.width / PLAYER_SHIP_SCALE, look.offset / PLAYER_SHIP_SCALE)
 
-    def outlined(scene: Scene) -> Any:
+    def trimmed(scene: Scene) -> Any:
         root = build(scene)
-        outline_model(root, LOOK.playerOutline.color)
+        request_trim(root, look.color)
+        add_edge_trim(root, options)
         return root
 
-    return outlined
+    return trimmed
 
 
 def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
@@ -101,9 +107,9 @@ def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return toned_shot
 
 
-def outlined_ships(models: dict[str, Any]) -> dict[str, Any]:
-    """The player ship models, each with a rim glow in the player colour (P14-R03)."""
-    return {ship_id: _outlined(build) for ship_id, build in models.items()}
+def trimmed_ships(models: dict[str, Any]) -> dict[str, Any]:
+    """The player ship models, each with a glowing edge trim in the player colour (P14-R03)."""
+    return {ship_id: _trimmed(build) for ship_id, build in models.items()}
 
 
 def toned(look: Any, tone: float) -> Any:
