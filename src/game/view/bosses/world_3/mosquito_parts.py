@@ -35,7 +35,8 @@ __pragma__("noskip")
 # The Mosquito's pink neon.
 MOSQUITO_PINK = BOSS_LOOK.neon["mosquito"]
 # Swamp moss on its back and the dark, oily sheen of its wing membranes (World 3 growth).
-MOSS = [0.13, 0.2, 0.07]
+# D-231: clear greens, not olive (no khaki with the enemies' yellow and green).
+MOSS = [0.05, 0.2, 0.06]
 MEMBRANE = [0.11, 0.08, 0.13]
 
 
@@ -111,7 +112,7 @@ def wing(p: EnemyParts, at: Vec3) -> None:
         )
     seam(flesh, [s * 10, 1], [s * 47, -1], [WING_Y + 0.4, 1.2, 0.8], F.bone)
     neon.box([1.4, 0.8, 1.4], MOSQUITO_PINK, Placement([s * 51, WING_Y + 0.6, -7]))
-    flesh.loft(POD_SECTION, NACELLE, F.purple, Placement([at[0], -1, at[2]]))
+    flesh.loft(POD_SECTION, NACELLE, F.graphite, Placement([at[0], -1, at[2]]))
     hull.cylinder(3, 2, 6, H.panel, Placement([at[0], 0, at[2] + 2], 0, QUARTER))
     # The left wing (screen left) is on the model's +X side.
     guns = MOSQUITO_WING_GUNS if s > 0 else mirror(MOSQUITO_WING_GUNS)
@@ -135,7 +136,7 @@ def proboscis(p: EnemyParts, at: Vec3) -> None:
     flesh = p.flesh
     neon = p.neon
     # P16-R05: a fleshy mouthpart sheath, metal blades grafted either side of it.
-    flesh.lathe(SOCKET, 8, F.crimson, Placement(offset(at, 0, -1, 0), math.pi / 8))
+    flesh.lathe(SOCKET, 8, F.slate, Placement(offset(at, 0, -1, 0), math.pi / 8))
     neon.ring(6.1, 0.6, 8, MOSQUITO_PINK, Placement(offset(at, 0, 1, 0), math.pi / 8))
     for s in [-1, 1]:
         hull.box(

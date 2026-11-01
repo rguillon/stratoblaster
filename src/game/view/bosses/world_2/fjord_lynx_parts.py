@@ -179,7 +179,7 @@ def radar_mast(p: EnemyParts, at: Vec3) -> None:
         at2(MOUNT, at),
         [-1.0, 0.0, 2.5],
         [0.5, 1.0],
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         None,
         ICE_FLESH.rime,
     )

@@ -115,7 +115,7 @@ def pod(flesh: Any, hull: Any, neon: Any, veins: Any, place: Any) -> None:
     offset = ENEMY_CONFIG.splitter.podOffset
     inner = 8.3
     body = splitter_pod_outline(offset, inner, 16.4)
-    flesh.bevel_slab(body, [-2.2, 0.4, 2.4], [0.8, 1.6], F.crimson, place, F.purple)
+    flesh.bevel_slab(body, [-2.2, 0.4, 2.4], [0.8, 1.6], F.slate, place, F.graphite)
     hull.bevel_slab(
         splitter_pod_outline(offset, 10.4, 14.4), [2.2, 2.2, 3], [0, 0.6], H.panel, place
     )
@@ -144,7 +144,7 @@ def build_splitter(scene: Any) -> Any:
         charge = p.charge
         reactor = p.reactor
         muzzle = p.muzzle
-        organ(flesh, 8.6, 6, F.purple, Placement([0, -3, 0]), 0.4)
+        organ(flesh, 8.6, 6, F.graphite, Placement([0, -3, 0]), 0.4)
         neon.ring(8.4, 0.7, 6, N.splitter, Placement([0, 0.6, 0]))
         for a in around(3):
             pod(flesh, hull, neon, p.vein, Placement(radial(a, offset, 0), a))

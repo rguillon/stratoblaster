@@ -105,7 +105,7 @@ def segment(parts: EnemyParts, s: float, ends: Sequence[Flat], width: float) -> 
         beam_outline(ia, ib, width * 1.15),
         [3, 5, 7.5],
         [0.8, 1.8],
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         None,
         ICE_FLESH.teal,
     )
@@ -199,7 +199,7 @@ def drill(p: EnemyParts, at: Vec3) -> None:
     axis = offset(at, 0, HOUSING.axis, 0)
     back = offset(axis, 0, 0, -HOUSING.length / 2)
     # P16-R05: a swollen fist of flesh, the bit a metal graft driven into it.
-    organ(flesh, HOUSING.radius, 7, ICE_FLESH.purple, Placement(back, 0, QUARTER), 0.8)
+    organ(flesh, HOUSING.radius, 7, ICE_FLESH.graphite, Placement(back, 0, QUARTER), 0.8)
     flesh.cylinder(
         HOUSING.radius * 0.7,
         3,

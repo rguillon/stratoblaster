@@ -23,7 +23,7 @@ __pragma__("noskip")
 # The flesh shades (P16-R01).
 FL = ENEMY_LOOK.flesh
 # Scorched flesh: the World 4 bodies, by role (base body, sinews and muscles, folds).
-SKIN = record({"base": FL.crimson, "panel": FL.sinew, "dark": FL.membrane, "bone": FL.bone})
+SKIN = record({"base": FL.slate, "panel": FL.sinew, "dark": FL.membrane, "bone": FL.bone})
 # The molten glow of their veins and glands.
 MAGMA = FORGE.molten
 

@@ -207,7 +207,7 @@ def draw_jungle(p: EnemyParts) -> None:
     leaf(hull, [-40, FACE - 4, 25], 4, 3)
     draw_roots(p)
     for s in SIDES:
-        reactor_sac(p, table([s * 16, -3, -48.5]), 4.5, IDOL_NEON, F.purple, None)
+        reactor_sac(p, table([s * 16, -3, -48.5]), 4.5, IDOL_NEON, F.graphite, None)
         hull.cylinder(5.4, 3, 8, H.dark, Placement([s * 16, -3, -50], 0, -QUARTER))
 
 

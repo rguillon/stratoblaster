@@ -107,7 +107,7 @@ def draw_wings(p: EnemyParts) -> None:
         [0.8, 1.2],
         ICE_FLESH.membrane,
         None,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
     )
     flesh.bevel_slab(
         scaled(WING, 0.86, 0, 2),
@@ -164,7 +164,7 @@ def draw_body(p: EnemyParts) -> None:
         # Ear tufts, swept back over the head, a white light on each tip.
         flesh.box(
             [2.4, 9, 4],
-            ICE_FLESH.purple,
+            ICE_FLESH.graphite,
             Placement([s * 6.5, 8, 15], 0, -0.5, -s * 0.45),
             ICE_FLESH.rime,
         )
@@ -172,7 +172,7 @@ def draw_body(p: EnemyParts) -> None:
         gland(p, [s * 7, 9.4, -10], 1.2, OWL_WHITE)
         crystals(flesh, [s * 5, 9, -20], 2.6)
         neon.box([0.6, 0.4, 14], OWL_WHITE, Placement([s * 10.6, 6.2, -8], s * 0.05))
-        reactor_sac(p, [s * 4, 2.5, -27.2], 2.6, OWL_WHITE, ICE_FLESH.purple)
+        reactor_sac(p, [s * 4, 2.5, -27.2], 2.6, OWL_WHITE, ICE_FLESH.graphite)
     spine_row(flesh, [0, 12, 4], [0, 9, -18], 4, 2.6)
 
 

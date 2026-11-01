@@ -3,8 +3,9 @@
 Weapon bonuses (phase 6 review): a hexagon badge with chevrons pointing up (a level up), swinging
 from side to side over a pulsing halo; a ring flashes out where the ship picks one up. P11-R07: life
 bonuses are a heart, bomb bonuses a ball marked B, so each kind reads by its shape. Phase 14
-(P14-R02): all in the pickups' green family (acid green badge, mint heart, green ball; were yellow,
-pink and orange).
+(P14-R02): all in the pickups' family, violet since D-231 (reviewer, 2026-11-01: the enemies took
+the yellow and green; were an acid green badge, a mint heart and a green ball, and before phase 14
+yellow, pink and orange).
 
 Linear RGB, 0..1; sizes in logical pixels; times in seconds.
 """
@@ -18,11 +19,12 @@ BONUS_LOOK = record(
         # In front of the ships and the explosions (towards the camera, -Z).
         "depth": -4,
         # Below full strength: the playfield's glow would wash them out to white.
-        # Phase 14 (P14-R02, reviewer): every bonus in the pickups' green family, the kinds told
-        # apart by their shapes (was acid yellow with cyan chevrons).
-        "frame": [0.45, 0.85, 0.05],
+        # Phase 14 (P14-R02, reviewer): every bonus in the pickups' family, the kinds told apart by
+        # their shapes (D-231: a blue violet, not pink; was acid green, and acid yellow with cyan
+        # chevrons before).
+        "frame": [0.55, 0.3, 1],
         "face": [0.06, 0.04, 0.1],
-        "chevrons": [0.05, 0.75, 0.35],
+        "chevrons": [0.75, 0.6, 1],
         # Inner edge of the frame, as a share of the size.
         "frameInset": 0.78,
         # It swings around its upright axis, up to `amplitude` radians each way, `hz` times a
@@ -30,9 +32,9 @@ BONUS_LOOK = record(
         "swing": {"amplitude": 0.9, "hz": 0.7},
         "halo": {
             "colors": [
-                [0.28, 0.5, 0.04],
-                [0.12, 0.22, 0.02],
-                [0.03, 0.06, 0.01],
+                [0.28, 0.14, 0.52],
+                [0.12, 0.06, 0.23],
+                [0.035, 0.015, 0.06],
                 [0, 0, 0],
             ],
             # Radius, as a multiple of the badge size.
@@ -42,28 +44,28 @@ BONUS_LOOK = record(
             "pulseHz": 2.5,
             "segments": 20,
         },
-        "flash": {"size": 4, "life": 0.35, "color": [0.35, 1, 0.55], "segments": 32},
+        "flash": {"size": 4, "life": 0.35, "color": [0.7, 0.5, 1], "segments": 32},
         # A life bonus (P11-R07): the heart's rim, the heart, how far in the heart is, its halo.
         "life": {
-            "rim": [0.1, 0.7, 0.3],
-            "heart": [0.55, 1, 0.6],
+            "rim": [0.4, 0.15, 0.85],
+            "heart": [0.72, 0.5, 1],
             "inset": 0.72,
             "halo": [
-                [0.08, 0.45, 0.2],
-                [0.03, 0.2, 0.09],
-                [0.01, 0.05, 0.02],
+                [0.22, 0.09, 0.46],
+                [0.1, 0.04, 0.2],
+                [0.025, 0.01, 0.05],
                 [0, 0, 0],
             ],
         },
         # A bomb bonus (P11-R07): its shell, highlight, letter and halo.
         "bomb": {
-            "shell": [0.2, 0.75, 0.1],
-            "highlight": [0.7, 1, 0.45],
+            "shell": [0.45, 0.2, 0.95],
+            "highlight": [0.8, 0.65, 1],
             "letter": [0.05, 0.02, 0.01],
             "halo": [
-                [0.2, 0.48, 0.06],
-                [0.09, 0.22, 0.03],
-                [0.02, 0.06, 0.01],
+                [0.25, 0.1, 0.5],
+                [0.11, 0.045, 0.22],
+                [0.03, 0.012, 0.06],
                 [0, 0, 0],
             ],
         },

@@ -96,3 +96,12 @@ def test_a_reactor_is_a_nozzle_and_a_flame_on_a_node_at_its_place(babylon):
     # The nozzle is a hull ring and its core lies in the neon.
     assert len(parts.hull.geometry.positions) > 0
     assert len(parts.neon.geometry.positions) > 0
+
+
+def test_d231_a_reactor_flame_takes_the_enemy_s_neon_colour(babylon, monkeypatch):
+    seen = []
+    monkeypatch.setattr(ee, "flame_materials", lambda scene, color: seen.append(color))
+    parts = SimpleNamespace(hull=SolidBuilder(), neon=SolidBuilder())
+    add_reactors("gnat", [Reactor([0, 1, -4], 1.0)], parts, _scene_root(), [1, 0.9, 0.1])
+    add_reactors("gnat", [Reactor([0, 1, -4], 1.0)], parts, _scene_root())
+    assert seen == [[1, 0.9, 0.1], ee.ENEMY_LOOK.reactor.color]

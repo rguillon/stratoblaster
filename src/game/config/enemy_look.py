@@ -78,30 +78,35 @@ ENEMY_LOOK = record(
     {
         # Hull shades, multiplied into a dark PBR metal. The metal is `tint` of the way from white
         # to the enemy's neon colour, and glows `selfLight` of it (phase 5 review: enemies easier
-        # to tell from the ground and its shadows).
+        # to tell from the ground and its shadows). D-231: 0.3 (was 0.6), towards the neon in the
+        # body shades (`READABILITY.enemyBody`): a yellow enemy's metal stays neutral, as dark
+        # metal tinted or lit yellow turns khaki.
         "hull": {
             "base": [0.1, 0.105, 0.12],
             "panel": [0.16, 0.16, 0.19],
             "dark": [0.045, 0.045, 0.055],
             "metallic": 0.85,
             "roughness": 0.38,
-            "tint": 0.6,
+            "tint": 0.3,
             "selfLight": 0.04,
         },
         # Cyber-Organic bodies (P16-R01): dark flesh shades, multiplied into a less metallic, waxy
         # material (`metallic`, `roughness`) tinted `tint` of the way towards the enemy's neon.
         # Kept dark (under 0.2) so the enemies still stand out from the darkened ground (P14-R04).
+        # Reviewer, 2026-11-01 (D-231): neutral slates and greys, so an enemy reads as its neon,
+        # bright yellow or bright green, and never khaki (were crimson, purple, teal and plum); the
+        # tint 0.15 (was 0.35).
         "flesh": {
-            "crimson": [0.13, 0.035, 0.045],
-            "purple": [0.085, 0.04, 0.12],
-            "teal": [0.03, 0.09, 0.095],
-            "sinew": [0.17, 0.08, 0.075],
-            "bone": [0.19, 0.17, 0.15],
-            "membrane": [0.1, 0.04, 0.07],
-            "wound": [0.2, 0.02, 0.03],
+            "slate": [0.06, 0.065, 0.075],
+            "graphite": [0.045, 0.05, 0.055],
+            "teal": [0.035, 0.06, 0.065],
+            "sinew": [0.1, 0.105, 0.11],
+            "bone": [0.18, 0.18, 0.17],
+            "membrane": [0.06, 0.065, 0.07],
+            "wound": [0.14, 0.14, 0.13],
             "metallic": 0.25,
             "roughness": 0.5,
-            "tint": 0.35,
+            "tint": 0.15,
         },
         # Living motion (P16-R07), visual only: each creature's breath (`period`, +- `spread` per
         # enemy) sets the phase of its veins' pulse (from `low` to full over `period`), and its
@@ -135,12 +140,14 @@ ENEMY_LOOK = record(
             "carrier": [1, 0.7, 0.1],
         },
         # Reactors (phase 5 review): a dark nozzle with a glowing core, and the player ships'
-        # animated flame, all in the same light blue `color` on every enemy. Sizes relative to the
-        # nozzle radius; the inner flame is `whiten` of the way from `color` to white. Kept light
-        # (phase 5 review): an open nozzle, a flat core, 4-sided flame cones without caps and 2
-        # tetrahedron puffs, about 40 triangles a reactor (about 150 before).
+        # animated flame, in the enemy's neon colour (D-231; was the same light blue `color` on
+        # every enemy). Sizes relative to the nozzle radius; the inner flame is `whiten` of the way
+        # from its colour to white. Kept light (phase 5 review): an open nozzle, a flat core,
+        # 4-sided flame cones without caps and 2 tetrahedron puffs, about 40 triangles a reactor
+        # (about 150 before).
         "reactor": {
-            # Saturated enough (0.52) to be folded into the enemy family when drawn (P14-R02).
+            # Saturated enough (0.52) to be folded into the enemy family when drawn (P14-R02); for
+            # reactors drawn with no neon colour given.
             "color": [0.48, 0.82, 1],
             "flameSides": 4,
             "puffs": 2,
@@ -192,11 +199,11 @@ ENEMY_LOOK = record(
             "swirlSegments": 24,
             "styles": {
                 # Phase 14 (P14-R02, reviewer): every style in the enemy shots' warm family,
-                # white-hot
-                # cores round orange to yellow; the style names are kept for the enemy specs.
+                # white-hot cores round orange to amber (D-231: no yellow, the enemies' colour);
+                # the style names are kept for the enemy specs.
                 "red": bullet([1, 0.95, 0.88], [1, 0.36, 0.04]),
                 "magenta": bullet([1, 0.95, 0.88], [1, 0.55, 0.05]),
-                "green": bullet([1, 1, 0.88], [1, 0.88, 0.1]),
+                "green": bullet([1, 0.98, 0.88], [1, 0.78, 0.08]),
                 "orange": bullet([1, 0.95, 0.85], [1, 0.48, 0.02]),
                 "blue": bullet([1, 0.97, 0.88], [1, 0.7, 0.08]),
                 "purple": bullet([1, 0.95, 0.88], [1, 0.42, 0.1]),

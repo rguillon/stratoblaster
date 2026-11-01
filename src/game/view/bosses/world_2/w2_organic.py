@@ -26,12 +26,12 @@ __pragma__("noskip")
 F = ENEMY_LOOK.flesh
 M = ENEMY_LOOK.hull
 
-# The World 2 flesh shades: cold teal and purple, bone, and the ice grown through them.
+# The World 2 flesh shades: cold teal and slate, bone, and the ice grown through them.
 ICE_FLESH = record(
     {
         "teal": F.teal,
-        "purple": F.purple,
-        "crimson": F.crimson,
+        "graphite": F.graphite,
+        "slate": F.slate,
         "sinew": F.sinew,
         "bone": F.bone,
         "membrane": F.membrane,
@@ -107,7 +107,7 @@ def glow_vein(p: EnemyParts, from_: Vec3, to: Vec3, width: float, glow: Rgb) -> 
     vein(p.vein, curve(from_, to, [0, width, 0], 3), width, glow)
 
 
-def gland(p: EnemyParts, at: Vec3, radius: float, glow: Rgb, rim: Rgb = ICE_FLESH.purple) -> None:
+def gland(p: EnemyParts, at: Vec3, radius: float, glow: Rgb, rim: Rgb = ICE_FLESH.graphite) -> None:
     """A gland: a lit bulb of `radius` on `at`, in a ring of flesh."""
     p.flesh.ring(radius * 1.3, radius * 0.6, 6, rim, Placement(at))
     organ(p.vein, radius, 5, glow, Placement(at), 0.6)
@@ -118,7 +118,7 @@ def armoured_organ(
     at: Vec3,
     radius: float,
     glow: Rgb,
-    color: Rgb = ICE_FLESH.purple,
+    color: Rgb = ICE_FLESH.graphite,
     height: float = 0.5,
 ) -> None:
     """A destroyable growth (P16-R05): a swollen organ of `radius` on `at`, a metal armour plate on

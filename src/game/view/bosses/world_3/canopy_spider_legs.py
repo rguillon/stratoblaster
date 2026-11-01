@@ -75,8 +75,8 @@ def upper_leg(leg: str) -> Any:
         points = leg_points(leg)
         hip = points[0]
         knee = points[1]
-        # P16-R06: a jointed leg of purple chitin over sinew, a metal knee joint grafted on.
-        segment(flesh, [hip, knee], [3.4, 2.6], F.purple, 6)
+        # P16-R06: a jointed leg of dark chitin over sinew, a metal knee joint grafted on.
+        segment(flesh, [hip, knee], [3.4, 2.6], F.graphite, 6)
         segment(
             flesh,
             [offset(hip, 0, 2.6, 0), offset(knee, 0, 2.2, 0)],
@@ -109,7 +109,7 @@ def lower_leg(leg: str) -> Any:
         knee = points[1]
         foot = points[2]
         ankle = offset(foot, 0, 5, 0)
-        segment(flesh, [knee, ankle], [2.6, 1.7], F.purple, 6)
+        segment(flesh, [knee, ankle], [2.6, 1.7], F.graphite, 6)
         segment(
             neon,
             [offset(knee, 0, 2.2, 0), offset(ankle, 0, 1.4, 0)],
@@ -157,7 +157,7 @@ def leg_gun_pod(p: EnemyParts, at: Vec3) -> None:
     s = sign_of(at[0])
     foot = offset(at, 0, LEG_HEIGHT.foot - 3, 0)
     # P16-R06: a swollen flesh foot gripping with bone claws, its gun a grafted metal pod.
-    p.flesh.lathe(FOOT, 7, F.crimson, Placement(foot))
+    p.flesh.lathe(FOOT, 7, F.slate, Placement(foot))
     gland(p, offset(foot, 0, 5.2, 0), 2, SPIDER_RED)
     neon.ring(6.5, 0.7, 7, SPIDER_RED, Placement(offset(foot, 0, 1.8, 0)))
     for yaw in [s * 1.2, s * 2.2, math.pi]:

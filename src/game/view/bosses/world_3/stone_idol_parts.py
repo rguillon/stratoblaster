@@ -51,7 +51,7 @@ def eye_socket(p: EnemyParts, at: Vec3) -> None:
     s = sign_of(at[0])
     # P16-R05: a raw flesh eyelid ringed by a stone growth, veins spreading from its corner.
     hull.cylinder(10.5, 1.6, 10, STONE.dark, Placement(offset(at, 0, FACE - 0.4, 0)), 9.5)
-    flesh.cylinder(9, 0.3, 10, F.crimson, Placement(offset(at, 0, FACE + 1, 0)))
+    flesh.cylinder(9, 0.3, 10, F.slate, Placement(offset(at, 0, FACE + 1, 0)))
     vein_to(
         p,
         [offset(at, -s * 9, FACE + 0.6, -2), offset(at, -s * 15, FACE + 0.4, -9)],
@@ -100,7 +100,7 @@ def eyeball(p: EnemyParts, at: Vec3) -> None:
     flesh.lathe(EYEBALL, 8, F.bone, Placement(centre))
     # The glowing iris looks up and forward, half at the camera, half where the eye aims.
     vein.cylinder(4.4, 0.8, 8, IDOL_NEON, Placement(iris_point(centre, y, 6.1), 0, IRIS_TILT), 4)
-    flesh.cylinder(2, 0.5, 6, F.purple, Placement(iris_point(centre, y, 6.8), 0, IRIS_TILT))
+    flesh.cylinder(2, 0.5, 6, F.graphite, Placement(iris_point(centre, y, 6.8), 0, IRIS_TILT))
     charge.cylinder(2.2, 1.6, 8, WHITE, Placement([x, y, z - 1.6], 0, QUARTER), 1.4)
     muzzle(tip, "laser")
 
@@ -122,13 +122,13 @@ def mouth(p: EnemyParts, at: Vec3) -> None:
         [w * 2 + 4, 4, 4],
         F.sinew,
         Placement(offset(at, 0, FACE - 1, -d - 1)),
-        F.crimson,
+        F.slate,
     )
     flesh.box(
         [w * 2, 4.5, 5],
         F.sinew,
         Placement(offset(at, 0, FACE - 1, d + 1.5)),
-        F.crimson,
+        F.slate,
     )
     hull.box(
         [w * 1.2, 1, 2.4],

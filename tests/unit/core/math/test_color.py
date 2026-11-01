@@ -3,11 +3,13 @@
 import pytest
 
 from core.math.color import (
+    capped_saturation,
     contrast_ratio,
     fold_into_family,
     hue_saturation,
     in_family,
     relative_luminance,
+    snap_to_hues,
     srgb_byte_to_linear,
 )
 
@@ -108,3 +110,45 @@ def test_p14_r02_fold_into_family_leaves_greys_alone() -> None:
 def test_p14_r02_fold_into_family_maps_the_hue_start_to_the_family_start() -> None:
     folded = fold_into_family((1, 0, 0), GREEN_FAMILY)
     assert hue_saturation(folded)[0] == pytest.approx(90.0)
+
+
+@pytest.mark.parametrize(
+    ("colour", "hue"),
+    [
+        ((1, 0, 0), 60),  # Red, 0: 60 away from yellow, 125 from green.
+        ((1, 0, 0.6), 60),  # Pink, 324: nearest yellow round the top of the wheel.
+        ((0, 1, 1), 125),  # Cyan, 180.
+        ((0.2, 0.4, 0.9), 125),  # Blue, 223.
+        ((0.6, 1, 0), 60),  # Lime, 84: just on yellow's side of half way, 92.5.
+    ],
+)
+def test_d231_snap_to_hues_takes_the_nearest_hue_round_the_wheel(colour, hue) -> None:
+    assert hue_saturation(snap_to_hues(colour, [60, 125]))[0] == pytest.approx(hue)
+
+
+def test_d231_snap_to_hues_keeps_brightness_and_saturation() -> None:
+    colour = (0.8, 0.2, 0.5)
+    snapped = snap_to_hues(colour, [60, 125])
+    assert max(snapped) == pytest.approx(max(colour))
+    assert min(snapped) == pytest.approx(min(colour))
+
+
+def test_d231_snap_to_hues_leaves_greys_alone() -> None:
+    grey = (0.3, 0.3, 0.3)
+    assert snap_to_hues(grey, [60, 125]) is grey
+
+
+def test_d231_capped_saturation_greys_a_colour_keeping_its_hue_and_brightness() -> None:
+    rust = (0.2, 0.1, 0.05)
+    greyed = capped_saturation(rust, 0.1)
+    hue, saturation = hue_saturation(greyed)
+    assert saturation == pytest.approx(0.1)
+    assert hue == pytest.approx(hue_saturation(rust)[0])
+    assert max(greyed) == pytest.approx(0.2)
+
+
+def test_d231_capped_saturation_leaves_paler_colours_and_black_alone() -> None:
+    pale = (0.5, 0.48, 0.47)
+    assert capped_saturation(pale, 0.1) is pale
+    black = (0, 0, 0)
+    assert capped_saturation(black, 0.1) is black

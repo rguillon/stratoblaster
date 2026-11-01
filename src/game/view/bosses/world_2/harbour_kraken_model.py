@@ -101,9 +101,9 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: the mantle of a great kraken, cold crimson flesh under a ridged shell.
-    flesh.bevel_slab(HULL, HULL_Y, [3, 2], ICE_FLESH.crimson, None, ICE_FLESH.purple)
-    shell(flesh, SegmentedBody(-64, 46, 6, 22, DECK_Y - 1, 11), ICE_FLESH.purple)
+    # P16-R06: the mantle of a great kraken, cold dark flesh under a ridged shell.
+    flesh.bevel_slab(HULL, HULL_Y, [3, 2], ICE_FLESH.slate, None, ICE_FLESH.graphite)
+    shell(flesh, SegmentedBody(-64, 46, 6, 22, DECK_Y - 1, 11), ICE_FLESH.graphite)
     flesh.bevel_slab(
         FORECASTLE,
         [DECK_Y - 1, DECK_Y, FORECASTLE_TOP],
@@ -136,7 +136,7 @@ def draw_hull(p: EnemyParts) -> None:
             ORANGE_NEON,
         )
         glow_vein(p, [s * 8, 11, 30], [s * 26, DECK_Y, -50], 1.2, ORANGE_NEON)
-        fringe(flesh, [s * 29, -2, -30], [s, -0.3], 3, 9, ICE_FLESH.crimson)
+        fringe(flesh, [s * 29, -2, -30], [s, -0.3], 3, 9, ICE_FLESH.slate)
         icicles(flesh, spread([s * 30.5, -1, 20], [s * 30.5, -1, -50], 7), 5)
         icicles(flesh, spread([s * 21, -1, 58], [s * 11, -1, 71], 3), 4)
         crystals(flesh, [s * 16, 10, -40], 4)
@@ -149,7 +149,7 @@ def draw_bridge(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     # The head amidships, its great eyes across its brow.
-    flesh.loft(HULL_SECTION, BRIDGE, ICE_FLESH.purple, None, None)
+    flesh.loft(HULL_SECTION, BRIDGE, ICE_FLESH.graphite, None, None)
     snow_cap(flesh, rect(16, 12), 17, Placement([0, 0, -1]))
     flesh.box([22, 2.4, 1], ICE_FLESH.seam, Placement([0, 13.4, 15.6], 0, 0.4))
     for s in SIDES:
@@ -194,9 +194,9 @@ def draw_bow(p: EnemyParts) -> None:
 def draw_stern(p: EnemyParts) -> None:
     """The stern: the reactors and the hull's rudder fins."""
     for s in SIDES:
-        reactor_sac(p, [s * 12, 1.5, -66], 4, ORANGE_NEON, ICE_FLESH.purple)
+        reactor_sac(p, [s * 12, 1.5, -66], 4, ORANGE_NEON, ICE_FLESH.graphite)
         p.flesh.box([1.4, 6, 8], ICE_FLESH.sinew, Placement([s * 21, -6, -62]))
-    reactor_sac(p, [0, 1.5, -66], 3, ORANGE_NEON, ICE_FLESH.crimson)
+    reactor_sac(p, [0, 1.5, -66], 3, ORANGE_NEON, ICE_FLESH.slate)
 
 
 def draw_core(p: EnemyParts) -> None:

@@ -71,11 +71,11 @@ SKIRT = [-5, 3]
 
 
 def _draw_body(p: Any) -> None:
-    """The reef creature's body (P16-R05): a teal ray-like mantle lined with a cyan vein, a crimson
+    """The reef creature's body (P16-R05): a teal ray-like mantle lined with a cyan vein, a dark
     shelled back along its spine, bone ribs and coral barbs, gill glands either side."""
     mantle(p, MANTLE, SKIRT, F.teal, CYAN)
     neon_band(p.neon, MANTLE, [-3.4, -1.1], [0.97, 1], CYAN)
-    mantle(p, scale_outline(MANTLE, 0.7, 0, -3), [SKIRT[1] - 1, SKIRT[1] + 1.5], F.purple)
+    mantle(p, scale_outline(MANTLE, 0.7, 0, -3), [SKIRT[1] - 1, SKIRT[1] + 1.5], F.graphite)
     hide(
         p,
         {
@@ -85,7 +85,7 @@ def _draw_body(p: Any) -> None:
             "bottom": 3,
             "top": 13,
             "segments": 5,
-            "shell": [F.crimson, F.membrane],
+            "shell": [F.slate, F.membrane],
             "belly": F.sinew,
         },
     )
@@ -137,8 +137,8 @@ def _cannon(p: Any, at: Vec3) -> None:
     """A side cannon (P07-R05, P16-R05): an armoured coral growth on the flank under its
     twin-barrelled turret, a feeding sac behind it, barbs before it."""
     r = radius_of(REEF_WARDEN.stats.parts, 0, 14)
-    growth(p, offset(at, 0, -1, 0), r * 0.95, CYAN, {"flesh": F.purple, "height": 0.32})
-    sac(p, offset(at, sign_of(at[0]) * 5, 1, -9), 4, F.crimson, {"stretch": 0.5})
+    growth(p, offset(at, 0, -1, 0), r * 0.95, CYAN, {"flesh": F.graphite, "height": 0.32})
+    sac(p, offset(at, sign_of(at[0]) * 5, 1, -9), 4, F.slate, {"stretch": 0.5})
     barbs(p, offset(at, 0, 2, 9), {"count": 3, "spacing": 4, "size": 3, "dir": [0, 0.3, 1]})
 
 

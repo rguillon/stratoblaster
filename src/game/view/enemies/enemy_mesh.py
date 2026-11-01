@@ -19,8 +19,10 @@ from core.entities.enemy import Enemy  # noqa: E402
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402
 from game.view.enemies.enemy_materials import (  # noqa: E402
+    body_color,
     enemy_color,
     enemy_materials,
+    in_body_shades,
     in_enemy_family,
     mesh_of,
     rim_of,
@@ -130,13 +132,14 @@ def wing_parts_new() -> WingParts:
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
-    """The hull (asking for an edge trim, P14-R04), and the neon lights (in the enemies' colour
-    family, P14-R02) of an enemy model whose neon is `neon_color`, under `root`."""
+    """The hull and flesh (in the body shades, D-231; asking for an edge trim, P14-R04), and the
+    neon lights (in the enemies' colour family, P14-R02) of an enemy model whose neon is
+    `neon_color`, under `root`."""
     scene = root.getScene()
     for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
         if len(geo.positions) == 0:
             continue
-        mesh = mesh_of(name + "-" + node_name(mat), geo, mat, scene)
+        mesh = mesh_of(name + "-" + node_name(mat), in_body_shades(geo), mat, scene)
         mesh.parent = root
         set_trim(mesh, rim_of(neon_color))
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
@@ -240,9 +243,12 @@ def build_enemy_model(
     wings = collected["wings"]
     muzzles = collected["muzzles"]
     vein = unlit(name + "-vein", scene)
+    # D-231: the body tinted and lit by the neon in the body shades (a green enemy's metal faintly
+    # green, a yellow one's neutral: dark metal lit yellow turns khaki).
+    body_tint = body_color(charge_color)
     mats = SurfaceMaterials(
-        tinted_hull(scene, charge_color, False),
-        tinted_hull(scene, charge_color, True),
+        tinted_hull(scene, body_tint, False),
+        tinted_hull(scene, body_tint, True),
         enemy_materials(scene).neon,
         vein,
     )
@@ -250,7 +256,7 @@ def build_enemy_model(
     body = new_transform_node(name + "-body", scene)
     body.parent = root
     clock = [0.0]
-    add_reactors(name, reactors, parts, root)
+    add_reactors(name, reactors, parts, root, neon_color)
     add_rotors(name, rotors, mats.hull, body)
     for i, entry in enumerate(muzzles):
         at = entry[0]

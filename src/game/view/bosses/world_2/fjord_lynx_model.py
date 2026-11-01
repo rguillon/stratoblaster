@@ -148,7 +148,7 @@ def draw_body(p: EnemyParts) -> None:
     flesh.loft(
         FIGHTER_SECTION,
         BACK,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         None,
         LoftOptions(False, canopy_paint([3, 4], ICE_FLESH.seam)),
     )
@@ -214,7 +214,9 @@ def draw_deck(p: EnemyParts) -> None:
     mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711
     at: Vec3 = [-mast_x, 0.0, -mast_y]
     sponson = [[x + at[0], z + at[2]] for x, z in SPONSON]
-    flesh.bevel_slab(sponson, [-2.0, 0.0, 2.5], [0.6, 1.0], ICE_FLESH.purple, None, ICE_FLESH.rime)
+    flesh.bevel_slab(
+        sponson, [-2.0, 0.0, 2.5], [0.6, 1.0], ICE_FLESH.graphite, None, ICE_FLESH.rime
+    )
     socket(hull, offset(at, 0.0, 2.5, 0.0), 6, 0.6)
     for s in SIDES:
         gland(p, [s * 13.0, HULL[2] + 0.3, 20.0], 1.2, CYAN)
@@ -233,7 +235,7 @@ def draw_core(p: EnemyParts) -> None:
     draw_ears(p)
     draw_deck(p)
     for s in SIDES:
-        reactor_sac(p, [s * 7.0, 2.5, -46.0], 3, CYAN, ICE_FLESH.purple)
+        reactor_sac(p, [s * 7.0, 2.5, -46.0], 3, CYAN, ICE_FLESH.graphite)
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:

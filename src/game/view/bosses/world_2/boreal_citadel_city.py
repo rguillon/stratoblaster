@@ -83,7 +83,7 @@ class Tower:
         self.lit = lit
 
 
-# A spire taller than this is grown of purple flesh, a shorter one of sinew.
+# A spire taller than this is grown of slate flesh, a shorter one of sinew.
 TALL_SPIRE = 12
 
 # The towers of the right half of the deck (+X), mirrored on the left (some swapped in colour).
@@ -137,7 +137,7 @@ def _draw_tower(p: EnemyParts, t: Tower, s: float) -> None:
         rect(t.w, t.d, [x, t.z]),
         [base, base, base + t.h],
         [0, t.w * 0.3],
-        ICE_FLESH.purple if t.h > TALL_SPIRE else ICE_FLESH.sinew,
+        ICE_FLESH.graphite if t.h > TALL_SPIRE else ICE_FLESH.sinew,
         None,
         ICE_FLESH.rime,
     )
@@ -177,7 +177,7 @@ def draw_city(p: EnemyParts) -> None:
         for t in TOWERS:
             _draw_tower(p, t, s)
         at: Vec3 = [s * 15, CITADEL_DECK.top, 77]
-        p.flesh.cylinder(5.6, 1.2, 7, ICE_FLESH.purple, Placement(at))
+        p.flesh.cylinder(5.6, 1.2, 7, ICE_FLESH.graphite, Placement(at))
         p.neon.lathe(
             CITY_DOME,
             8,

@@ -62,8 +62,8 @@ def body(p: Any) -> None:
     flesh = p.flesh
     neon = p.neon
     vein = p.vein
-    segmented_body(flesh, BODY, F.crimson)
-    carapace(flesh, SHELL, [F.sinew, F.crimson])
+    segmented_body(flesh, BODY, F.slate)
+    carapace(flesh, SHELL, [F.sinew, F.slate])
     hull.loft(
         FIGHTER_SECTION,
         NOSE,

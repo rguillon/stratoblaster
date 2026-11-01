@@ -55,7 +55,7 @@ def draw_laser(p: Any, at_point: Vec3) -> None:
     y = at_point[1]
     z = at_point[2]
     at = [x, y + WING_TOP - 1, z]
-    p.flesh.loft(ROUND_SECTION, LASER_POD, F.crimson, Placement(at))
+    p.flesh.loft(ROUND_SECTION, LASER_POD, F.slate, Placement(at))
     graft(p, polygon(6, 4, [1.2, 1.4]), [at[1] + 6.6, at[1] + 7.6], [x, 0, z + 8])
     for side in [1, 3]:
         stripe = side_stripe(ROUND_SECTION, side, [0.25, 0.55])
@@ -118,7 +118,7 @@ def draw_battery(p: Any, at_point: Vec3) -> None:
         BATTERY,
         [base - 1, base, top - 1],
         [0, 3],
-        F.crimson,
+        F.slate,
         Placement([x, 0, z]),
         F.sinew,
     )
@@ -165,7 +165,7 @@ def draw_generator(p: Any, at_point: Vec3) -> None:
     y = at_point[1]
     z = at_point[2]
     base = y + OVERLORD_DECK["top"]
-    p.flesh.lathe(PEDESTAL, 8, F.purple, Placement([x, base, z], math.pi / 8))
+    p.flesh.lathe(PEDESTAL, 8, F.graphite, Placement([x, base, z], math.pi / 8))
     neon.ring(12.6, 0.8, 8, OVERLORD_NEON, Placement([x, base + 0.6, z], math.pi / 8))
     neon.lathe(DOME, 8, OVERLORD_NEON, Placement([x, base + 4, z]))
     hull.ring(9.2, 1.6, 8, H.dark, Placement([x, base + 5.2, z]))

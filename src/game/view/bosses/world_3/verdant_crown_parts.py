@@ -137,7 +137,7 @@ def thorn_mount(p: EnemyParts, pos: Vec3) -> None:
     x = pos[0]
     z = pos[2]
     # P16-R06: a swollen knuckle of flesh at the limb's end, a metal turntable grafted on top.
-    p.flesh.cylinder(10, OUTRIGGER_TOP - 1, 7, F.crimson, Placement([x, 0, z]), 8.4)
+    p.flesh.cylinder(10, OUTRIGGER_TOP - 1, 7, F.slate, Placement([x, 0, z]), 8.4)
     p.hull.cylinder(8.8, 1, 8, H.dark, Placement([x, OUTRIGGER_TOP - 1, z]))
     p.neon.ring(10.3, 0.6, 8, MAGENTA, Placement([x, OUTRIGGER_TOP - 0.4, z]))
 
@@ -168,12 +168,12 @@ def seed_battery(p: EnemyParts, pos: Vec3) -> None:
     height = cells[0][1] if len(cells) > 0 else 0
     top = height - 0.08
     pod: list[OutlinePoint] = [[x + pt[0], z + pt[1]] for pt in SEED_POD]
-    # P16-R06: a living seed pod of purple flesh, its hatches grafted metal.
+    # P16-R06: a living seed pod of dark flesh, its hatches grafted metal.
     flesh.bevel_slab(
         pod,
         [DECK_TOP - 1, DECK_TOP + 2, top],
         [0, 3],
-        F.purple,
+        F.graphite,
         None,
         JUNGLE["moss"],
     )
@@ -229,7 +229,7 @@ def root_generator(p: EnemyParts, pos: Vec3) -> None:
             flesh,
             [knee, foot],
             [1.5, 1.1],
-            JUNGLE["moss"] if i % 2 == 0 else F.crimson,
+            JUNGLE["moss"] if i % 2 == 0 else F.slate,
             5,
         )
     neon.ring(ROOT_REACH + 0.6, 0.6, 10, EMERALD, Placement([x, DECK_TOP + 0.1, z]))

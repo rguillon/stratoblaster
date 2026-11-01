@@ -91,7 +91,7 @@ def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
     flesh.loft(
         POD_SECTION,
         CANNON_POD,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         Placement(at),
         LoftOptions(
             False,
@@ -156,9 +156,9 @@ def draw_battery(p: EnemyParts, pos: Vec3) -> None:
         BATTERY,
         [base - 1, base, top - 1.2],
         [0, 3],
-        ICE_FLESH.crimson,
+        ICE_FLESH.slate,
         Placement([x, 0, z]),
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
     )
     hull.bevel_slab(
         rect(18, 20),
@@ -195,7 +195,7 @@ def draw_dome(p: EnemyParts, pos: Vec3) -> None:
     z = pos[2]
     base = CITADEL_DECK.top
     # P16-R06: a glowing blister swelling from the flesh, held by bone spikes.
-    flesh.lathe(PEDESTAL, 8, ICE_FLESH.purple, Placement([x, base, z], math.pi / 8))
+    flesh.lathe(PEDESTAL, 8, ICE_FLESH.graphite, Placement([x, base, z], math.pi / 8))
     hull.ring(12.6, 1, 8, H.panel, Placement([x, base + 1.2, z], math.pi / 8))
     neon.ring(12.7, 0.6, 8, VIOLET, Placement([x, base + 0.4, z], math.pi / 8))
     neon.lathe(DOME, 8, AURORA, Placement([x, base + 4.5, z]))

@@ -103,7 +103,7 @@ def segment_drawing(i: int) -> Any:
         body = SegmentedBody(
             length * 0.14 - w * 0.4, length * 0.86 + w * 0.4, 1, w, -w * 0.9, w * 0.9
         )
-        carapace(p.flesh, body, [F.crimson, F.membrane], Placement([0, 0, 0]))
+        carapace(p.flesh, body, [F.slate, F.membrane], Placement([0, 0, 0]))
         ring = w * 0.8
         p.flesh.cylinder(ring, ring * 2, 6, F.sinew, Placement([ring, 0, 0], 0, 0, QUARTER))
         p.vein.cylinder(ring * 1.04, 0.8, 6, YELLOW, Placement([0.4, 0, 0], 0, 0, QUARTER))

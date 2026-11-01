@@ -40,7 +40,8 @@ BOSS_LOOK = record(
             "stone-idol": [0.95, 0.2, 1],
             "sky-temple": [1, 0.8, 0.2],
             "mosquito": [1, 0.3, 0.7],
-            "dam-breaker": [0.6, 1, 0.1],
+            # D-231: on the green side (was lime, 0.6), as its hull is overgrown with moss.
+            "dam-breaker": [0.3, 1, 0.1],
             "jaguar": [1, 0.6, 0.05],
             "verdant-crown": [0.1, 1, 0.45],
             # World 4 (P10-R11).

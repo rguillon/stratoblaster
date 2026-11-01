@@ -102,11 +102,11 @@ def _draw_body(p: Any) -> None:
             "bottom": -3,
             "top": 8,
             "segments": 4,
-            "shell": [F.crimson, F.membrane],
+            "shell": [F.slate, F.membrane],
             "belly": F.sinew,
         },
     )
-    flesh.bevel_slab(HEAD, [-3, 0, 6], [1.5, 3], F.sinew, None, F.crimson)
+    flesh.bevel_slab(HEAD, [-3, 0, 6], [1.5, 3], F.sinew, None, F.slate)
     graft(p, scale_outline(HEAD, 0.7, 0, 5), [6, 7], [0, 0, 0])
     eyes(p, [0, 7, 19], {"count": 4, "size": 0.8, "spacing": 2.2}, YELLOW)
     for s in SIDES:
@@ -133,7 +133,7 @@ def _stinger(p: Any, at: Vec3) -> None:
     front."""
     place_at = offset(at, 0, STINGER_Y, 0)
     place = Placement(place_at, 0, STINGER_TILT)
-    p.flesh.loft(ROUND_SECTION, STINGER, F.purple, place)
+    p.flesh.loft(ROUND_SECTION, STINGER, F.graphite, place)
     p.vein.box(
         [7.5, 0.6, 1],
         YELLOW,
@@ -151,7 +151,7 @@ def _tail_cannon(p: Any, at: Vec3) -> None:
     h = STINGER_Y * 0.6
     base = offset(at, 0, h, 12)
     back = Placement(base, 0, -QUARTER)
-    p.flesh.lathe([[5, 0], [8.5, 5], [9, 11], [6.5, 18], [7.5, 22], [7.5, 24]], 8, F.purple, back)
+    p.flesh.lathe([[5, 0], [8.5, 5], [9, 11], [6.5, 18], [7.5, 22], [7.5, 24]], 8, F.graphite, back)
     rings: list[list[float]] = [[6, 8.6], [12, 8.6], [18, 7]]
     for ring in rings:
         place = Placement(offset(base, 0, 0, -ring[0]), 0, -QUARTER)

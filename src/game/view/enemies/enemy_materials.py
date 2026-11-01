@@ -15,7 +15,7 @@ from typing import Any  # noqa: E402
 type Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.color import fold_into_family  # noqa: E402
+from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402
 from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
 from game.config.readability import READABILITY  # noqa: E402
 from render.babylon import (  # noqa: E402
@@ -32,8 +32,21 @@ from render.babylon import (  # noqa: E402
 
 
 def enemy_color(color: Rgb) -> Sequence[float]:
-    """`color` moved into the enemies' colour family (P14-R02)."""
-    return fold_into_family(color, READABILITY.families.enemy)
+    """`color` moved into the enemies' colour family (P14-R02): to the nearest of its hues, bright
+    yellow or bright green (D-231)."""
+    return snap_to_hues(color, READABILITY.enemyHues)
+
+
+def body_color(color: Sequence[float]) -> Sequence[float]:
+    """A shade of an enemy's body (hull, flesh): kept in the window of `READABILITY.enemyBody`,
+    greyed out of it (D-231: no khaki, no pink)."""
+    body = READABILITY.enemyBody
+    hue, saturation = hue_saturation(color)
+    if saturation <= body.maxSaturation:
+        return color
+    if (hue - body["from"] + 360) % 360 <= (body["to"] - body["from"] + 360) % 360:
+        return color
+    return capped_saturation(color, body.maxSaturation)
 
 
 def _with_colors(geo: Any, colors: list[float]) -> Any:
@@ -51,6 +64,19 @@ def in_enemy_family(geo: Any) -> Any:
     i = 0
     while i + 3 < len(colors):
         rgb = enemy_color([colors[i] or 0, colors[i + 1] or 0, colors[i + 2] or 0])
+        colors[i] = rgb[0]
+        colors[i + 1] = rgb[1]
+        colors[i + 2] = rgb[2]
+        i += 4
+    return _with_colors(geo, colors)
+
+
+def in_body_shades(geo: Any) -> Any:
+    """`geo` with its vertex colours greyed out of the enemies' body shades (`body_color`)."""
+    colors = list(geo.colors)
+    i = 0
+    while i + 3 < len(colors):
+        rgb = body_color([colors[i] or 0, colors[i + 1] or 0, colors[i + 2] or 0])
         colors[i] = rgb[0]
         colors[i + 1] = rgb[1]
         colors[i + 2] = rgb[2]

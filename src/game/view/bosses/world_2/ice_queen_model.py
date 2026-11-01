@@ -138,7 +138,7 @@ def draw_fuselage(p: EnemyParts) -> None:
     flesh.loft(
         FIGHTER_SECTION,
         FUSELAGE,
-        ICE_FLESH.purple,
+        ICE_FLESH.graphite,
         None,
         LoftOptions(False, fuselage_paint),
     )
@@ -176,7 +176,7 @@ def draw_wings(p: EnemyParts) -> None:
             [0.6, 1.4],
             ICE_FLESH.membrane,
             None,
-            ICE_FLESH.purple,
+            ICE_FLESH.graphite,
         )
         sinew(flesh, [s * 7, WING_TOP, 14], [s * 46, WING_TOP, -28], 1, ICE_FLESH.bone, [0, 0.8, 6])
         sinew(

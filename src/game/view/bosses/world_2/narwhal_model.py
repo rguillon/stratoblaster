@@ -164,7 +164,7 @@ def draw_sail(p: EnemyParts) -> None:
     neon = p.neon
     charge = p.charge
     # The dorsal hump where the sail was, its planes now fins.
-    flesh.loft(SUB_SECTION, SAIL, ICE_FLESH.purple, None, LoftOptions(False, sail_paint))
+    flesh.loft(SUB_SECTION, SAIL, ICE_FLESH.graphite, None, LoftOptions(False, sail_paint))
     edge_strips(
         neon,
         [
@@ -178,7 +178,7 @@ def draw_sail(p: EnemyParts) -> None:
     for s in SIDES:
         plane = SAIL_PLANE if s > 0 else flip_x(SAIL_PLANE)
         flesh.bevel_slab(
-            plane, [21, 22, 23], [0.3, 0.6], ICE_FLESH.membrane, None, ICE_FLESH.purple
+            plane, [21, 22, 23], [0.3, 0.6], ICE_FLESH.membrane, None, ICE_FLESH.graphite
         )
         crystals(flesh, [s * 12, 22, 9], 2.6, 2)
         # Feelers on the hump, of different heights.
@@ -221,7 +221,7 @@ def draw_tail(p: EnemyParts) -> None:
         ICE_FLESH.sinew,
         Placement([0, 1, 0], 0, 0, -QUARTER),
     )
-    organ(flesh, 6.5, 7, ICE_FLESH.purple, Placement([0, 5, -72], 0, QUARTER), 0.6)
+    organ(flesh, 6.5, 7, ICE_FLESH.graphite, Placement([0, 5, -72], 0, QUARTER), 0.6)
     hull.lathe(SHROUD, 8, H.dark, Placement([0, 5, -73], 0, QUARTER), False)
     neon.ring(7.2, 0.8, 8, N, Placement([0, 5, -70], 0, QUARTER))
     p.reactor([0, 5, -67], 3.6)

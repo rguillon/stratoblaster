@@ -141,8 +141,8 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
             "bottom": -4,
             "top": BACK,
             "segments": 4,
-            "shell": [F.purple, F.membrane],
-            "belly": F.crimson,
+            "shell": [F.graphite, F.membrane],
+            "belly": F.slate,
             "at": at,
         },
     )
@@ -199,7 +199,7 @@ def _draw_body(p: Any) -> None:
     segmented_body(
         p.flesh,
         SegmentedBody(-28, 24, 3, 11, -3, 10),
-        F.crimson,
+        F.slate,
     )
     eyes(p, [0, 7, 18], {"count": 2, "size": 1.2, "spacing": 4}, BLUE)
     # The light bar on the thorax's back: a red gland and a blue one.
@@ -223,13 +223,13 @@ def _hull_gun(p: Any, at: Vec3) -> None:
     """A hull gun (P07-R05, P16-R05): an armoured growth on the body's outer flank under its
     turret."""
     sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]
-    p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.crimson, Placement(at), F.sinew)
+    p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.slate, Placement(at), F.sinew)
     growth(
         p,
         offset(at, 0, 1, 0),
         9,
         BLUE if at[0] > 0 else POLICE_RED,
-        {"flesh": F.purple, "height": 0.35},
+        {"flesh": F.graphite, "height": 0.35},
     )
 
 
@@ -256,8 +256,8 @@ def _hull_gun_turret(p: Any, at: Vec3) -> None:
 def _drone_bay(p: Any, at: Vec3) -> None:
     """The drone bay (P07-R05, P16-R05): a swollen brood pouch at the nose, its slit lit, launch
     glands at its corners, two drones hatching from it; a grafted rim plate behind."""
-    p.flesh.bevel_slab(BAY, [-3, 1, BAY_TOP - 1], [1, 3], F.crimson, Placement(at), F.purple)
-    organ(p.flesh, 10, 7, F.purple, Placement(offset(at, 0, 0, 1)), 0.35)
+    p.flesh.bevel_slab(BAY, [-3, 1, BAY_TOP - 1], [1, 3], F.slate, Placement(at), F.graphite)
+    organ(p.flesh, 10, 7, F.graphite, Placement(offset(at, 0, 0, 1)), 0.35)
     p.neon.box([0.5, 0.3, 16], BLUE, Placement(offset(at, 0, BAY_TOP + 0.4, 1.5)))
     for cell in scaled(HATCH, 1.12):
         p.charge.box([2, 0.8, 2], WHITE, Placement(offset(at, cell[0], BAY_TOP - 1.5, cell[1])))

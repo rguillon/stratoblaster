@@ -116,3 +116,36 @@ def fold_into_family(color: Rgb, family: ColorFamily) -> Rgb:
     if saturation == 0:
         return color
     return _with_hue(color, (family["from"] + (hue / 360) * _span(family)) % 360)
+
+
+# Half the hue wheel, in degrees: no two hues are further apart.
+HALF_WHEEL = 180
+
+
+def snap_to_hues(color: Rgb, hues: Sequence[float]) -> Rgb:
+    """`color` with its hue set to the nearest of `hues` (degrees, round the wheel), keeping its
+    brightness and saturation: a set of distinct shades in place of every hue. Greys stay."""
+    hue, saturation = hue_saturation(color)
+    if saturation == 0:
+        return color
+    best = hues[0]
+    best_distance = 361.0
+    for target in hues:
+        distance = abs(hue - target) % 360
+        if distance > HALF_WHEEL:
+            distance = 360 - distance
+        if distance < best_distance:
+            best = target
+            best_distance = distance
+    return _with_hue(color, best)
+
+
+def capped_saturation(color: Rgb, most: float) -> Rgb:
+    """`color` with its saturation (HSV) at most `most`, keeping its hue and brightness: greyed
+    towards a grey as bright as its brightest channel."""
+    high = _high_of(color[0], color[1], color[2])
+    low = _low_of(color[0], color[1], color[2])
+    if high <= 0 or (high - low) / high <= most:
+        return color
+    k = most * high / (high - low)
+    return [high - (high - color[0]) * k, high - (high - color[1]) * k, high - (high - color[2]) * k]
