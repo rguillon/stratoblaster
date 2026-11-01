@@ -1,6 +1,6 @@
-"""The Glacier Colossus (P08-R10, 2-4)
+"""The Glacier Colossus (2-4's final boss, specs/bosses/final/2-4-glacier-colossus.md)
 
-The Glacier level's final boss. Offsets in px from the boss's centre, X right and Y up (its nose
+The final boss of 2-4. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Six parts: two cutter lasers out on its beam, two ore cannons and a heat sink
 at its bow (these three shield the core), and a missile pod on its stern.
 """
@@ -23,31 +23,33 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711
+    """A final boss's part: drops a bonus 60 % of the time (FB-GLACIER-COLOSSUS-17,
+    `part_drop_chance`)."""
+    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 
 RED = bullet("red", 190)
 MAGENTA = bullet("magenta", 185)
-# The ore cannons' shells: big, a little slower than the stage bullets.
+# The ore cannons' shells: big, a little slower than the stage bullets (FB-GLACIER-COLOSSUS-10).
 ORE = bullet("orange", 160, 6)
 
 # Where the left (-X) cutter and ore cannon sit (mirrored on the right).
 COLOSSUS_CUTTER = [-80, -10]
 COLOSSUS_ORE = [-44, -28]
-# The heat sink at the bow and the missile pod on the stern.
+# The heat sink at the bow (FB-GLACIER-COLOSSUS-11) and the missile pod on the stern
+# (FB-GLACIER-COLOSSUS-12).
 COLOSSUS_HEAT_SINK = [0, -48]
 COLOSSUS_POD = [0, 46]
 
-# The guns' muzzles: the tips of the barrels its model draws, from the boss's centre, X right,
-# Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (FB-GLACIER-COLOSSUS-03): the tips of the barrels its model draws, from the
+# boss's centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
 # The left cutter's laser emitter (mirrored on the right).
 COLOSSUS_CUTTER_LASER = [[-80, -42, 6]]
@@ -60,14 +62,16 @@ COLOSSUS_STACK = [[0, 6, 32]]
 # The missile pod's four cells.
 COLOSSUS_CELLS = cells([-5.5, 5.5], [41, 51], 24)
 
-# P08-R10, 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from its
-# beam, ore cannons fire fans of big shells, a missile pod covers its stern, and a heat sink at its
-# bow (no weapon) shields the core with the ore cannons. The ground slows to ×0.3.
+# 2-4: a giant mining ship with glowing heat vents; cutter lasers on turrets aim from its beam
+# (FB-GLACIER-COLOSSUS-09), ore cannons fire fans of big shells, a missile pod covers its stern, and
+# a heat sink at its bow (no weapon) shields the core with the ore cannons. The ground slows to
+# ×0.3.
 _GLACIER_COLOSSUS = record(
     {
         "id": "glacier-colossus",
-        # Angry after each destroyed part (phase 7 review, D-063).
+        # Angry after each destroyed part (phase 7 review, D-063, FB-GLACIER-COLOSSUS-14).
         "rage": rage.flower(6, "red", "magenta"),
+        # Its core, six parts and points (FB-GLACIER-COLOSSUS-17).
         "stats": stats(
             {
                 "id": "glacier-colossus",
@@ -94,6 +98,7 @@ _GLACIER_COLOSSUS = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-GLACIER-COLOSSUS-08).
         "stopFraction": 0.75,
         "sway": {"amplitude": 30, "period": 10},
         "bob": {"amplitude": 6, "period": 5},
@@ -113,6 +118,7 @@ _GLACIER_COLOSSUS = record(
             "ore-right": {"gun": mirror(COLOSSUS_ORE_GUNS)},
             "missile-pod": {"missile": COLOSSUS_CELLS},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-GLACIER-COLOSSUS-13).
         "stages": stages(
             [
                 volley.laser("cutter-left", 6.5, 1.4, 2),
@@ -144,8 +150,9 @@ _GLACIER_COLOSSUS = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of sweeping lasers unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold (FB-GLACIER-COLOSSUS-15); at
+# transformation 2 its wing armour bursts off, baring a dark metal frame, and a pair of sweeping
+# lasers unfold (FB-GLACIER-COLOSSUS-16). The regions it sheds: FB-GLACIER-COLOSSUS-07.
 GLACIER_COLOSSUS = with_weapons(
     _GLACIER_COLOSSUS,
     [

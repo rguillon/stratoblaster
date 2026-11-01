@@ -10,14 +10,15 @@ from game.sim.enemies.bulwark import Bulwark
 CFG = ENEMY_CONFIG.bulwark
 
 
-def test_p05_r09_a_bulwark_comes_down_to_its_stop_height_then_drifts() -> None:
+def test_enm_bulwark_05_a_bulwark_comes_down_to_its_stop_height_then_drifts() -> None:
+    """Also ENM-BULWARK-06: then it drifts."""
     ctx = FakeContext()
     bulwark = Bulwark(200, 700, 300)
     run_until(bulwark, ctx, lambda: bulwark.state == "drift", limit=30.0)
     assert bulwark.y == pytest.approx(300)
 
 
-def test_p05_r09_a_bulwark_leaves_downward_when_its_drift_is_over() -> None:
+def test_enm_bulwark_06_a_bulwark_leaves_downward_when_its_drift_is_over() -> None:
     ctx = FakeContext()
     bulwark = Bulwark(200, 300, 300)
     run_until(bulwark, ctx, lambda: bulwark.state == "exit", limit=60.0)

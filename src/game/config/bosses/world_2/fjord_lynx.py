@@ -1,9 +1,9 @@
-"""The Fjord Lynx (P08-R10, 2-2)
+"""The Fjord Lynx (2-2's mini boss, specs/bosses/mini/2-2-fjord-lynx.md)
 
-The mini boss of the Fjords. Offsets in px from the boss's centre, X right and Y up (its nose
-points down, at -Y). Its radar mast aims its guns: while the mast stands, the paws and the core
-fire at the player; once it is destroyed, they fire fans at preset headings instead
-(`only_while` / `only_after`).
+The mini boss of 2-2. Offsets in px from the boss's centre, X right and Y up (its nose
+points down, at -Y). Its radar mast aims its guns (MB-FJORD-LYNX-09): while the mast stands, the
+paws and the core fire at the player; once it is destroyed, they fire fans at preset headings
+instead (`only_while` / `only_after`).
 """
 
 from game.config.bosses.boss_kit import (
@@ -30,8 +30,9 @@ RADAR = "radar-mast"
 # The left paw's centre (the right one mirrors it).
 PAW = [-30, -26]
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`), at rest.
+# The guns' muzzles (phase 7 review, MB-FJORD-LYNX-03): the tips of the barrels its model draws,
+# from the boss's centre, X right, Y up, and height above the playfield (see `BossDesign.guns`), at
+# rest.
 
 # The right paw cannon's two barrels.
 PAW_CANNON = [
@@ -42,12 +43,13 @@ PAW_CANNON = [
 CHIN = [[0, -41.64, 6.68]]
 
 # 2-2: a fast, low gunship crouched like a lynx, two forward paws and tufted antennas, white and
-# cyan neon (P08-R10). Both paw cannons and the radar mast shield the core.
+# cyan neon. Both paw cannons (MB-FJORD-LYNX-08) and the radar mast shield the core.
 _FJORD_LYNX = record(
     {
         "id": "fjord-lynx",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-FJORD-LYNX-11).
         "rage": rage.vortex(3.5, "blue", "magenta"),
+        # Its core, paws, radar mast and points (MB-FJORD-LYNX-13).
         "stats": stats(
             {
                 "id": "fjord-lynx",
@@ -64,6 +66,7 @@ _FJORD_LYNX = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-FJORD-LYNX-07).
         "stopFraction": 0.72,
         "sway": {"amplitude": 75, "period": 6},
         "bob": {"amplitude": 8, "period": 3},
@@ -72,6 +75,7 @@ _FJORD_LYNX = record(
             "paw-left": {"gun": mirror(PAW_CANNON), "turret": PAW},
             "paw-right": {"gun": PAW_CANNON, "turret": [-PAW[0], PAW[1]]},
         },
+        # The paws' volleys, then the core's pattern per stage (MB-FJORD-LYNX-10).
         "stages": stages(
             [
                 # Aimed spreads while the radar stands, then fans crossing in front of the nose.
@@ -99,8 +103,9 @@ _FJORD_LYNX = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold.
+# Its hidden weapons (boss transformations, D-224, MB-FJORD-LYNX-12): at transformation 1 its back
+# plating bursts off, baring a dark metal frame (MB-FJORD-LYNX-06), and a pair of ring emitters
+# unfold.
 FJORD_LYNX = with_weapons(
     _FJORD_LYNX,
     [

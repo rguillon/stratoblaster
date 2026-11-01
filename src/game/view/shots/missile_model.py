@@ -1,6 +1,6 @@
-"""A small missile with a reactor flame (P03-R03)
+"""A small missile with a reactor flame (GFX-SHOT-06)
 
-The body lies along +Z like the ship models: a tube, a red nose and four fins.
+The body lies along +Z like the ship models: a tube, a cyan nose and four fins.
 """
 
 import math
@@ -8,14 +8,14 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.ship_look import PLAYER_SHIP_SCALE  # noqa: E402
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.reactor_flame import build_reactor_flame  # noqa: E402
-from render.babylon import (  # noqa: E402
+from game.config.ship_look import PLAYER_SHIP_SCALE  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.reactor_flame import build_reactor_flame  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     color3,
     create_box,
     create_cylinder,
@@ -71,7 +71,7 @@ def materials(scene: Any) -> tuple[Any, Any]:
 
 
 def build_body(name: str, scene: Any, parent: Any) -> None:
-    """Builds the missile body (along +Z, like the ship models): tube, red nose, four fins."""
+    """Builds the missile body (along +Z, like the ship models): tube, cyan nose, four fins."""
     body_mat, tip_mat = materials(scene)
     nose_length = LOOK.length * NOSE_FRACTION
     tube_length = LOOK.length - nose_length
@@ -105,7 +105,7 @@ def build_body(name: str, scene: Any, parent: Any) -> None:
 
 def build_missile(name: str, scene: Any) -> Any:
     """A small missile with a reactor flame, seen from above on the playfield: the returned pivot
-    lies in the XY plane and points to +Y; turn it about Z to follow the heading (P03-R03).
+    lies in the XY plane and points to +Y; turn it about Z to follow the heading (GFX-SHOT-06).
     """
     pivot = new_transform_node(name, scene)
     model = new_transform_node(name + "-model", scene)

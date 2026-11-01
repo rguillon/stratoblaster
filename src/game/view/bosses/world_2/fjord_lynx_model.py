@@ -1,4 +1,4 @@
-"""P08-R10, 2-2: the Fjord Lynx
+"""MB-FJORD-LYNX-01 to MB-FJORD-LYNX-05, 2-2: the Fjord Lynx
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -24,29 +24,29 @@ from render.geometry.solids import LoftOptions, Placement, place_at  # noqa: E40
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import plate  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import plate  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     H,
     offset,
     scaled,
     socket,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     RIME,
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     CYAN,
     WHITE_NEON,
     chin_turret,
@@ -55,7 +55,7 @@ from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402
     paw_turret,
     radar_mast,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,
@@ -143,7 +143,7 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a crouched, muscled cat of cold flesh; metal only on its haunches' armour.
+    # MB-FJORD-LYNX-02: a crouched, muscled cat of cold flesh; metal only on its haunches' armour.
     flesh.bevel_slab(BODY, HULL, [2.0, 2.5], ICE_FLESH.teal, None, ICE_FLESH.rime)
     flesh.loft(
         FIGHTER_SECTION,
@@ -204,14 +204,15 @@ def draw_ears(p: EnemyParts) -> None:
 
 
 def draw_deck(p: EnemyParts) -> None:
-    """Deck details: vents, seams, the sponson for the radar mast, frost and icicles, the eyes."""
+    """Deck details: vents, seams, the sponson for the radar mast, frost and icicles
+    (MB-FJORD-LYNX-05), the eyes."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     mast = FJORD_LYNX.stats.parts[2]
     # `mast?.x ?? -25` and `mast?.y ?? 22`.
-    mast_x = -25.0 if mast == None or mast.x == None else mast.x  # noqa: E711
-    mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711
+    mast_x = -25.0 if mast == None or mast.x == None else mast.x  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     at: Vec3 = [-mast_x, 0.0, -mast_y]
     sponson = [[x + at[0], z + at[2]] for x, z in SPONSON]
     flesh.bevel_slab(
@@ -244,10 +245,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Fjord Lynx, a fast, low gunship crouched like a lynx: two forward paws with
-    cannons, tufted antennas over its head, a radar mast on its left flank, white and cyan neon,
-    snow on its back. P16-R05: now a living cyber-lynx of cold flesh, ribs and ice spines down
-    its back, sinews to its paws, metal plates on its haunches and grafted guns."""
+    """MB-FJORD-LYNX-01, MB-FJORD-LYNX-04: the Fjord Lynx, a fast, low gunship crouched like a lynx:
+    two forward paws with cannons, tufted antennas over its head, a radar mast on its left flank,
+    white and cyan neon, snow on its back. MB-FJORD-LYNX-02: now a living cyber-lynx of cold flesh,
+    ribs and ice spines down its back, sinews to its paws, metal plates on its haunches and grafted
+    guns."""
     model: BuiltEnemyModel = build_boss_model(
         FJORD_LYNX,
         scene,

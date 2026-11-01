@@ -7,12 +7,13 @@ JavaScript, and Playwright copies them out of the page.
 
 - `getState()`: the menus, the level being played (`app/game_play_state.py`), the audio and the
   perf numbers;
-- `sendAction(action)`: a menu action as an input device would send it (P01-R12; `pause` and
-  `resume`, P12-R12), or `bomb`, as the bomb key (P11-R08);
+- `sendAction(action)`: a menu action as an input device would send it (UI-INPUT-01; `pause`
+  and `resume` included), or `bomb`, as the bomb key (DEV-API-07);
 - `step(frames, render)`: runs `frames` frames of 1/60 s at once, then renders once unless
-  `render` is false. The app has no render loop in e2e builds: nothing moves between two calls;
+  `render` is false. The app has no render loop in e2e builds: nothing moves between two calls
+  (ENG-46: no real timers);
 - `advance(seconds)`: steps by `seconds`, rounded up to whole frames;
-- `readability(share)`: how readable the level's frame is (P14-R08), a promise; null off the game
+- `readability(share)`: how readable the level's frame is (DEV-API-09), a promise; null off the game
   screen.
 """
 
@@ -25,13 +26,13 @@ from render.babylon import js_object, js_set
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def _checkpoint(checkpoint: Any) -> Any:
-    """Where a Continue starts from (P07-R08, P11-R04), or None."""
+    """Where a Continue starts from (GAME-LEVEL-09; its score, GAME-SCORE-06), or None."""
     if checkpoint is None:
         return None
     result = js_object()
@@ -42,7 +43,7 @@ def _checkpoint(checkpoint: Any) -> Any:
 
 
 def level_result_state(result: Any) -> Any:
-    """The "Level complete" / "Game over" result (P06-R03, P11-R03), or None."""
+    """The "Level complete" / "Game over" result (UI-OVER-01, UI-OVER-02), or None."""
     if result is None:
         return None
     state = js_object()
@@ -65,7 +66,7 @@ def _volumes(volumes: Any) -> Any:
 
 
 def _perf(numbers: Any) -> Any:
-    """What the perf monitor measured (P13-R01), in ms."""
+    """What the perf monitor measured (DEV-API-06), in ms."""
     result = js_object()
     js_set(result, "longFrames", numbers.long_frames)
     js_set(result, "longestFrame", numbers.longest_frame)
@@ -76,7 +77,7 @@ def _perf(numbers: Any) -> Any:
 
 
 def game_test_state(app: Any) -> Any:
-    """What `__GAME_TEST__.getState()` returns for the running `app` (`RunningApp`)."""
+    """What `__GAME_TEST__.getState()` returns for the running `app` (`RunningApp`, DEV-API-02)."""
     menu = app.menu
     flow = menu.flow.state
     audio = app.audio.state
@@ -106,8 +107,8 @@ def game_test_state(app: Any) -> Any:
 
 
 def send_test_action(app: Any, action: str) -> None:
-    """`__GAME_TEST__.sendAction`: `bomb` sets a bomb off (P11-R08); any other action is a menu
-    action (P01-R12)."""
+    """`__GAME_TEST__.sendAction` (DEV-API-07): `bomb` sets a bomb off; any other action is a menu
+    action (UI-INPUT-01)."""
     if action == "bomb":
         app.controls.bomb()
         return
@@ -117,7 +118,7 @@ def send_test_action(app: Any, action: str) -> None:
 
 
 def step_test_frames(app: Any, frames: Any, render: Any) -> None:
-    """`__GAME_TEST__.step`: `render` left out (undefined in JavaScript) renders."""
+    """`__GAME_TEST__.step` (DEV-API-08): `render` left out (undefined in JavaScript) renders."""
     if not (frames >= 0 and int(frames) == frames):
         raise ValueError("Cannot step by " + str(frames) + " frames")
     app.step(frames, render is not False)
@@ -131,7 +132,7 @@ def frames_in(seconds: float, step_seconds: float) -> int:
 
 
 def measure_readability(app: Any, bright_share: float) -> Any:
-    """`__GAME_TEST__.readability`: a promise of the report (P14-R08), or of null off a level."""
+    """`__GAME_TEST__.readability`: a promise of the report (DEV-API-09), or of null off a level."""
     if not (bright_share >= 0 and bright_share <= 1):
         raise ValueError("Cannot measure with a share of " + str(bright_share))
     play = app.game()
@@ -147,7 +148,7 @@ def _resolved(value: Any) -> Any:
 
 
 def install_test_api(target: Any, app: Any) -> Any:
-    """Installs `__GAME_TEST__` on `target` (the window) for `app`. Returns the API."""
+    """Installs `__GAME_TEST__` on `target` (the window) for `app` (DEV-API-01). Returns the API."""
     api = js_object()
 
     def get_state() -> Any:

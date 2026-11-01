@@ -1,4 +1,4 @@
-"""Flat-shaded prisms from a planform outline ()."""
+"""Flat-shaded prisms from a planform outline (GFX-ART-09)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -8,9 +8,9 @@ from render.geometry.triangulate import triangulate_polygon
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -22,7 +22,7 @@ MIN_OUTLINE_POINTS = 3
 class PrismGeometry:
     """Raw geometry of a prism, before it is turned into a Babylon mesh."""
 
-    def __init__(self, positions: list[float], indices: list[float]) -> None:
+    def __init__(self, positions: list[float], indices: list[int]) -> None:
         self.positions = positions
         self.indices = indices
 
@@ -46,7 +46,7 @@ def build_prism_vertex_data(outline: list[OutlinePoint], thickness: float) -> Pr
     pts = reversed_copy(outline) if _signed_area(outline) < 0 else list(outline)
     h = thickness / 2
     positions: list[float] = []
-    indices: list[float] = []
+    indices: list[int] = []
 
     def tri(a: list[float], b: list[float], c: list[float]) -> None:
         base = len(positions) // 3

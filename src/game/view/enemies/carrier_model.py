@@ -1,4 +1,4 @@
-"""P05-R12, P16-R03: the Carrier, Cyber-Organic (P16-R01)
+"""ENM-CARRIER-01: the Carrier, Cyber-Organic (ENM-35)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -11,16 +11,16 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.config.enemies import ENEMY_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x, shift_x  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies import ENEMY_CONFIG  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x, shift_x  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SegmentedBody,
     curve,
     organ,
@@ -36,7 +36,8 @@ WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
 
 # The right sponson along the hull's side. Its outer wall slopes from `SPONSON_EDGE` at the waist
-# up to its top, inset `SPONSON_SLOPE`, so the launch ports in it face out and up, to the camera.
+# up to its top, inset `SPONSON_SLOPE`, so the launch ports in it face out and up, to the camera
+# (ENM-CARRIER-02, ENM-41).
 CARRIER_SPONSON = [  # type: list[list[float]]
     [12, 16],
     [21, 12],
@@ -51,7 +52,7 @@ SPONSON_SLOPE = [5.5, 5]  # type: list[float]
 PORT_FRAME = [5.2, 7]  # type: list[float]
 PORT_MOUTH = [3.4, 5.2]  # type: list[float]
 
-# P16-R03: the brood sac's ribs, arched over its back.
+# ENM-CARRIER-01: the brood sac's ribs, arched over its back.
 CARRIER_RIBS = [-10, 10]  # type: list[float]
 # A larva glowing through the sac (8 triangles), and the neon band along each side of its spine.
 LARVA = [[0, -0.6], [1.4, 0], [0, 0.8]]  # type: list[list[float]]
@@ -118,7 +119,7 @@ def draw_carrier(p: Any) -> None:
         # Model Z is down the screen's Y: a port `py` up the screen sits at Z = -py.
         for entry in ENEMY_CONFIG.carrier.ports:
             port(hull, charge, s, -entry[1])
-        # Its reactor, set in a flesh sac with a vein running into the body (P16-R01).
+        # Its reactor, set in a flesh sac with a vein running into the body (ENM-CARRIER-03).
         nozzle = [s * 7, 0.5, -28.5]
         organ(flesh, 3.2, 4, F.slate, Placement([s * 7, 0.5, -28], 0, QUARTER), 0.9)
         p.reactor(nozzle, 2.4)
@@ -126,7 +127,8 @@ def draw_carrier(p: Any) -> None:
 
 
 def build_carrier(scene: Any) -> Any:
-    """P05-R12, P16-R03: a brood sac that releases Gnats: a fat swollen sac of three segments under
+    """ENM-CARRIER-01: a brood sac that releases Gnats: a fat swollen sac of three segments under
     bone ribs, larvae glowing through its back, a metal sponson grafted on each flank with two
-    launch ports, amber neon bands along its spine, its reactors set in flesh sacs."""
+    launch ports, neon bands along its spine (yellow, ENM-CARRIER-04), its reactors set in flesh
+    sacs."""
     return build_enemy_model("carrier", scene, N.carrier, draw_carrier)

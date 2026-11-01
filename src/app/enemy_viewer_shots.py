@@ -1,7 +1,7 @@
-"""The shots and explosions of the enemies page
+"""The shots and explosions of the enemy viewer (Dev menu)
 
-Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, as on
-`player_shots/`, hits included), the enemies' shots and the explosions (GD-62).
+Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, hits
+included: GFX-FX-01), the enemies' shots and the explosions (GFX-FX-05).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,7 +10,7 @@ from render.game_view import EnemyShotFrame, ShotFrame
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -28,10 +28,10 @@ class ShotsToDraw:
 
 
 class EnemyViewerShots:
-    """The shots and explosions of the enemies page, all drawn on the playfield layer."""
+    """The shots and explosions of the enemy viewer, all drawn on the playfield layer."""
 
     def __init__(self, game: Any, playfield: Any, shot_style: str | None = None) -> None:
-        """`shot_style`: the level's style for the enemy shots (phase 10, P10-R07), if any."""
+        """`shot_style`: the level's style for the enemy shots (GFX-READ-11), if any."""
         self.playfield = playfield
         scene = playfield.root.getScene()
 
@@ -84,7 +84,7 @@ class EnemyViewerShots:
 
     def warm(self, on: bool) -> None:
         """Shows (or hides) one enemy bullet of each colour, so their shaders compile (see
-        `warm_bullets`)."""
+        `warm_bullets`, PERF-20)."""
         self._enemy.warm(on)
 
     def dispose(self) -> None:

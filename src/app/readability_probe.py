@@ -1,8 +1,9 @@
-"""Measures how readable a level's frame is (P14-R08)
+"""Measures how readable a level's frame is (DEV-API-09)
 
 The frame is drawn once as it is and once without the playfield (the background alone), and the
 two are compared around each object. The report is a plain JavaScript object with camelCase
-key names, for the test API.
+key names, for the test API; the e2e test checks the readability thresholds with it (the
+background's bright pixels: GFX-READ-01).
 """
 
 from org.transcrypt.stubs.browser import __pragma__, window
@@ -13,7 +14,7 @@ from render.babylon import babylon_class, js_object, js_set, set_enabled, vector
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -115,7 +116,7 @@ async def probe_readability(
     in_view: Any,
     bright_share: float,
 ) -> Any:
-    """Measures how readable the level's current frame is (P14-R08): draws it once as it is and
+    """Measures how readable the level's current frame is (DEV-API-09): draws it once as it is and
     once without the playfield (the background alone), and compares the two around each object.
     """
     spots = _spots_of(run, in_view)

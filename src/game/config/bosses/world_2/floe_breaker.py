@@ -1,10 +1,10 @@
-"""The Floe Breaker (P08-R10, 2-1)
+"""The Floe Breaker (2-1's mini boss, specs/bosses/mini/2-1-floe-breaker.md)
 
-The mini boss of the Ice floes level. Offsets in px from the boss's centre, X right and Y up (its
-nose points down, at -Y). The stage patterns are the agent's design (P07-R04): the harpoon guns
-fire the same while they stand, the core fires something new at every stage, and its last stage
-(only the core left) a ring used by no earlier stage. Health values are placeholders for the
-P08-R11 tuning.
+The mini boss of 2-1 (Great erg). Offsets in px from the boss's centre, X right and Y up (its
+nose points down, at -Y). The stage patterns are the agent's design (MB-FLOE-BREAKER-10): the
+harpoon guns fire the same while they stand, the core fires something new at every stage, and its
+last stage (only the core left) a ring used by no earlier stage. Health values
+(MB-FLOE-BREAKER-13) are set for World 2 (WLD-2-25, WLD-2-27).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
@@ -16,8 +16,9 @@ RED = bullet("red", 190)
 MAGENTA = bullet("magenta", 180)
 BLUE = bullet("blue", 185)
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (phase 7 review, MB-FLOE-BREAKER-03): the tips of the barrels its model
+# draws, from the boss's centre, X right, Y up, and height above the playfield (see
+# `BossDesign.guns`).
 
 # The right harpoon gun's barrel tip, as its turret rests (barrel down the screen).
 FLOE_HARPOON = [[30, -23.88, 7.58]]
@@ -27,12 +28,13 @@ FLOE_CHASERS = twin(3, -32.54, 10.4)
 FLOE_BEACON = [[0, 18, 24.6]]
 
 # 2-1: an icebreaker hovership with a sharp armoured bow and cyan neon; two side harpoon guns on
-# sponsons fire aimed bursts and shield the core (P08-R10).
+# sponsons fire aimed bursts and shield the core (MB-FLOE-BREAKER-09).
 _FLOE_BREAKER = record(
     {
         "id": "floe-breaker",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-FLOE-BREAKER-11).
         "rage": rage.curtain(2.5, "blue", "magenta"),
+        # Its core, harpoon guns and points (MB-FLOE-BREAKER-13).
         "stats": stats(
             {
                 "id": "floe-breaker",
@@ -48,6 +50,7 @@ _FLOE_BREAKER = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (MB-FLOE-BREAKER-08).
         "stopFraction": 0.72,
         "sway": {"amplitude": 65, "period": 7},
         "bob": {"amplitude": 8, "period": 3.5},
@@ -56,6 +59,7 @@ _FLOE_BREAKER = record(
             "harpoon-left": {"gun": mirror(FLOE_HARPOON), "turret": [-30, -4]},
             "harpoon-right": {"gun": FLOE_HARPOON, "turret": [30, -4]},
         },
+        # The harpoon guns' bursts, then the core's pattern per stage (MB-FLOE-BREAKER-10).
         "stages": stages(
             [
                 volley.burst("harpoon-left", 2.6, 3, 0.16, RED, 1),
@@ -73,8 +77,9 @@ _FLOE_BREAKER = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its hidden weapons (boss transformations, D-224, MB-FLOE-BREAKER-12): at transformation 1 its
+# back plating bursts off, baring a dark metal frame (MB-FLOE-BREAKER-07), and a pair of gatling
+# turrets unfold.
 FLOE_BREAKER = with_weapons(
     _FLOE_BREAKER,
     [

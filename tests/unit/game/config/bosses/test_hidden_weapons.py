@@ -13,6 +13,7 @@ from game.config.record import record
 
 
 def test_a_region_is_mirrored_across_the_centre_line_unless_asked_not_to() -> None:
+    """BOSS-42: a region's outline is mirrored across the centre line unless asked not to."""
     region = armour_region("wings", 1, [[10, 0], [30, 0], [30, 20]], "wing")
     assert region.outlines[1] == [[-30, 20], [-30, 0], [-10, 0]]
     assert region.heights == [-1000, 1000]
@@ -23,6 +24,7 @@ def test_a_region_is_mirrored_across_the_centre_line_unless_asked_not_to() -> No
 
 
 def test_a_region_bursts_in_blasts_spread_over_its_outlines() -> None:
+    """BOSS-37: each shed region bursts in up to `boss_region_blasts` blasts."""
     region = armour_region("wings", 1, [[10, 0], [30, 0], [30, 20], [10, 20]], "wing")
     blasts = region_blasts(region, 5)
     assert 2 <= len(blasts) <= 5

@@ -1,6 +1,6 @@
-"""P15-R03, R04: the road pieces of the districts laid on tiles (phase 15), found from their
-straight streets: a junction piece where a row and a column meet, the size of the wider road, and
-straight pieces of N × N tiles along each road between them.
+"""GFX-ROAD-11, GFX-ROAD-12: the road pieces of the districts laid on tiles (phase 15), found from
+their straight streets: a junction piece where a row and a column meet, the size of the wider road,
+and straight pieces of N × N tiles along each road between them.
 
 Sets of tile keys are dicts keyed by `str(tile_key(x, z))` (see `tile_has`), and a `Map` keyed by
 tile key is kept in the order its keys were first set.
@@ -11,11 +11,11 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -53,7 +53,7 @@ class RoadPiece:
         self.kind = kind
         """`straight`, `turn`, `tee` or `cross`."""
         self.adapter = adapter
-        """Whether roads of two sizes meet in it (P15-R04)."""
+        """Whether roads of two sizes meet in it (GFX-ROAD-12)."""
         self.sides = sides
 
 
@@ -216,8 +216,8 @@ def _straights(line: _TileLine, tile: TileRules, taken: dict[str, bool]) -> list
 
 
 def road_pieces(roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
-    """The road pieces of the streets of `roads` (phase 15): the junctions, then straight pieces of
-    N × N tiles over the rest of each street."""
+    """The road pieces of the streets of `roads` (phase 15, GFX-ROAD-14): the junctions, then
+    straight pieces of N × N tiles over the rest of each street."""
     lines: list[_TileLine] = []
     for r in roads:
         if r.kind == "street":
@@ -239,7 +239,7 @@ def road_pieces(roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
 
 
 def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
-    """The tiles the pieces cover, as a set of keys (see the module doc)."""
+    """The tiles the pieces cover, as a set of keys (see the module doc; GFX-ROAD-08)."""
     tiles: dict[str, bool] = {}
     for p in pieces:
         for i in range(p.size):
@@ -250,8 +250,7 @@ def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
 
 class PieceCache:
     """The road pieces of the last list of roads asked for, found once (they are asked for every
-    chunk). Keyed by the list's identity
-    of the key)."""
+    chunk). Keyed by the identity of that list: a different list is worked out again."""
 
     def __init__(self) -> None:
         self._roads: Sequence[Road] | None = None

@@ -1,4 +1,4 @@
-"""Draws enemies on a top-down playfield ().
+"""Draws enemies on a top-down playfield (ENM-26).
 
 The playfield is the XY plane at Z = 0, Y up, seen from -Z (see `game_view.ShotFrame`): one
 model per enemy, at its position, its nose along its heading. Models are kept per model key and
@@ -13,8 +13,8 @@ from render.babylon import child_meshes, dispose_node, new_transform_node, node_
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 EnemyModelFactory = Callable[[Any], Any]
 __pragma__("noskip")
@@ -38,7 +38,7 @@ class EnemyLayer:
     """One model per enemy, shown at its position with its nose along its heading."""
 
     def __init__(self, scene: Any, models: dict[str, Any], keys: list[str] | None = None) -> None:
-        """`keys`: the models `prepare_next` builds ahead, in order (P13-R03: a level's own); every
+        """`keys`: the models `prepare_next` builds ahead, in order (PERF-21: a level's own); every
         model when None. A model left out is still built when its first enemy shows."""
         self._scene = scene
         self._models = models
@@ -79,12 +79,13 @@ class EnemyLayer:
 
     def pivot_of(self, enemy: Any) -> Any:
         """The node `enemy`'s model hangs from while it is drawn (None when it is not): `sync`
-        sets its position and its turn round Z only."""
+        sets its position and its turn round Z only, so a viewer may turn it about the others
+        (DEV-MENU-10)."""
         slot = self._find_slot(enemy)
         return slot.pivot if slot is not None else None
 
     def prepare_next(self) -> list[Any]:
-        """Builds one hidden model of the next kind not built yet, kept for reuse (P13-R04), and
+        """Builds one hidden model of the next kind not built yet, kept for reuse (PERF-23), and
         returns its meshes (e.g. to compile their shaders), or none once every kind has one.
 
         Called once per frame, it gets every kind ready before its first appearance without
@@ -92,7 +93,7 @@ class EnemyLayer:
         """
         key = None
         # Transcrypt: iterate keys() explicitly.
-        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118
+        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118 (Transcrypt iterates keys() explicitly)
         for k in keys:
             if k in self._models and not _contains(self._built, k):
                 key = k

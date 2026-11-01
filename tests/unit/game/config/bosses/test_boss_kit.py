@@ -29,23 +29,24 @@ def _design(guns: dict, shots: list) -> object:
     return record({"id": "test-boss", "guns": guns, "stages": [shots], "rage": None})
 
 
-def test_p07_r05_twin_puts_two_muzzles_either_side_of_the_centre_line() -> None:
+def test_boss_23_twin_puts_two_muzzles_either_side_of_the_centre_line() -> None:
     assert twin(10, 0, 3) == [[10, 0, 3], [-10, 0, 3]]
 
 
-def test_p07_r05_twin_with_a_gap_spreads_the_pair_around_x() -> None:
+def test_boss_23_twin_with_a_gap_spreads_the_pair_around_x() -> None:
     assert twin(10, 0, 3, gap=4) == [[6, 0, 3], [14, 0, 3]]
 
 
-def test_p07_r05_mirror_flips_every_muzzle_left_to_right() -> None:
+def test_boss_23_mirror_flips_every_muzzle_left_to_right() -> None:
     assert mirror([[1, 2, 3], [-4, 5, 6]]) == [[-1, 2, 3], [4, 5, 6]]
 
 
-def test_p07_r05_cells_is_a_grid_of_missile_cells_in_x_then_y_order() -> None:
+def test_boss_23_cells_is_a_grid_of_missile_cells_in_x_then_y_order() -> None:
     assert cells([1, 2], [5, 6], 7) == [[1, 5, 7], [1, 6, 7], [2, 5, 7], [2, 6, 7]]
 
 
-def test_p07_r05_part_takes_its_position_and_defaults_its_options() -> None:
+def test_boss_12_part_takes_its_position_and_defaults_its_options() -> None:
+    """By default a part shields the core (BOSS-14) and drops as a mini boss part (BOSS-57)."""
     p = part("wing", [1.5, -2], 5, 100)
     assert (p["id"], p["x"], p["y"], p["radius"], p["health"]) == ("wing", 1.5, -2, 5, 100)
     assert p["shieldsCore"] is True
@@ -53,7 +54,8 @@ def test_p07_r05_part_takes_its_position_and_defaults_its_options() -> None:
     assert "orbits" not in p and "joint" not in p
 
 
-def test_p07_r05_part_takes_its_given_options() -> None:
+def test_boss_12_part_takes_its_given_options() -> None:
+    """Also BOSS-14 (shields), BOSS-57 (drop), BOSS-34 (orbits) and BOSS-33 (joint)."""
     p = part("arm", [0, 0], 4, 50, {"shields": False, "drop": 0.1, "orbits": True, "joint": "j"})
     assert p["shieldsCore"] is False
     assert p["dropChance"] == 0.1
@@ -61,7 +63,8 @@ def test_p07_r05_part_takes_its_given_options() -> None:
     assert p["joint"] == "j"
 
 
-def test_p07_r05_stats_sizes_the_boss_from_its_size_in_enemy_units() -> None:
+def test_boss_07_stats_sizes_the_boss_from_its_size_in_enemy_units() -> None:
+    """Also GAME-SCORE-04 (a part's share of the points) and BOSS-22 (the stage pause)."""
     s = stats(
         {
             "id": "b",
@@ -81,7 +84,8 @@ def test_p07_r05_stats_sizes_the_boss_from_its_size_in_enemy_units() -> None:
     assert "coreDropChance" not in s and "joints" not in s
 
 
-def test_p07_r05_stats_adds_the_optional_core_drop_and_joints() -> None:
+def test_boss_57_stats_adds_the_optional_core_drop_and_joints() -> None:
+    """Also BOSS-33: its moving limbs' joints."""
     s = stats(
         {
             "id": "b",
@@ -100,7 +104,7 @@ def test_p07_r05_stats_adds_the_optional_core_drop_and_joints() -> None:
     assert s["joints"] == {"j": 1}
 
 
-def test_p07_r05_stages_fires_each_stage_with_the_parts_volleys_and_its_own_core_volleys() -> None:
+def test_boss_21_stages_fires_each_stage_with_the_parts_volleys_and_its_own_core_volleys() -> None:
     parts = [{"from": "p"}]
     core = [[{"from": "core", "n": 1}], [{"from": "core", "n": 2}]]
     out = stages(parts, core)
@@ -110,14 +114,15 @@ def test_p07_r05_stages_fires_each_stage_with_the_parts_volleys_and_its_own_core
     ]
 
 
-def test_p07_r05_only_while_and_only_after_tag_a_volley_with_its_part() -> None:
+def test_boss_24_only_while_and_only_after_tag_a_volley_with_its_part() -> None:
     shot = {"from": "core"}
     assert only_while(shot, "mast") == {"from": "core", "needs": "mast"}
     assert only_after(shot, "mast") == {"from": "core", "after": "mast"}
     assert shot == {"from": "core"}
 
 
-def test_p07_r05_bullet_and_missile_and_laser_carry_their_style() -> None:
+def test_boss_23_bullet_and_missile_and_laser_carry_their_style() -> None:
+    """Also BOSS-30: a laser's 1 s warning line."""
     assert bullet("dart", 90) == {"speed": 90, "radius": 4, "style": "dart"}
     assert bullet("dart", 90, 7)["radius"] == 7
     assert MISSILE["style"] == "rocketeer" and MISSILE["homingSeconds"] == 3
@@ -125,14 +130,14 @@ def test_p07_r05_bullet_and_missile_and_laser_carry_their_style() -> None:
     assert laser == {"warningSeconds": 1, "firingSeconds": 2.5, "width": 9, "style": "lancer"}
 
 
-def test_p07_r05_bursting_splits_the_spec_into_after_count_and_small_bullet() -> None:
+def test_boss_23_bursting_splits_the_spec_into_after_count_and_small_bullet() -> None:
     small = bullet("small", 60, 2)
     b = bursting("cryo", 40, 9, [1.5, 6, small])
     assert b["speed"] == 40 and b["radius"] == 9 and b["style"] == "cryo"
     assert b["burst"] == {"after": 1.5, "count": 6, "bullet": small}
 
 
-def test_p07_r05_volley_builders_set_the_shape_kind_and_the_optional_first_shot() -> None:
+def test_boss_23_volley_builders_set_the_shape_kind_and_the_optional_first_shot() -> None:
     b = bullet("x", 1)
     aimed = volley.aimed("core", 2, 3, 10, b)
     assert aimed["from"] == "core" and aimed["every"] == 2
@@ -152,7 +157,7 @@ def test_p07_r05_volley_builders_set_the_shape_kind_and_the_optional_first_shot(
     assert laser["shape"]["laser"]["firingSeconds"] == 1.5
 
 
-def test_p07_r05_volley_muzzles_picks_the_guns_its_kind_fires_from() -> None:
+def test_boss_23_volley_muzzles_picks_the_guns_its_kind_fires_from() -> None:
     guns = {"gun": [[0, 0, 1]], "ring": [[1, 1, 1]], "missile": [[2, 2, 1]], "laser": [[3, 3, 1]]}
     b = bullet("x", 1)
     design = _design({"core": guns}, [])
@@ -163,24 +168,24 @@ def test_p07_r05_volley_muzzles_picks_the_guns_its_kind_fires_from() -> None:
     assert volley_muzzles(design, volley.burst("core", 1, 1, 0, b)) == [[0, 0, 1]]
 
 
-def test_p07_r05_volley_muzzles_fires_a_ring_from_the_gun_when_it_has_no_ring() -> None:
+def test_boss_23_volley_muzzles_fires_a_ring_from_the_gun_when_it_has_no_ring() -> None:
     design = _design({"core": {"gun": [[0, 0, 1]]}}, [])
     ring = volley.ring("core", 1, 1, 0, bullet("x", 1))
     assert volley_muzzles(design, ring) == [[0, 0, 1]]
 
 
-def test_p07_r05_volley_muzzles_is_empty_for_a_launch() -> None:
+def test_boss_23_volley_muzzles_is_empty_for_a_launch() -> None:
     design = _design({"core": {"gun": [[0, 0, 1]]}}, [])
     launch = {"from": "core", "shape": {"kind": "launch"}}
     assert volley_muzzles(design, launch) == []
 
 
-def test_p07_r05_volley_muzzles_of_a_piece_without_guns_is_empty() -> None:
+def test_boss_23_volley_muzzles_of_a_piece_without_guns_is_empty() -> None:
     no_guns = _design({"core": None}, [])
     assert volley_muzzles(no_guns, volley.aimed("core", 1, 1, 0, bullet("x", 1))) == []
 
 
-def test_p07_r05_volley_on_turret_needs_a_turret_on_the_firing_piece() -> None:
+def test_boss_29_volley_on_turret_needs_a_turret_on_the_firing_piece() -> None:
     b = bullet("x", 1)
     aimed = volley.aimed("p", 1, 1, 0, b)
     on = _design({"p": {"turret": [0, 0], "gun": [[0, 0, 1]]}}, [])
@@ -190,7 +195,7 @@ def test_p07_r05_volley_on_turret_needs_a_turret_on_the_firing_piece() -> None:
     assert volley_on_turret(_design({"p": None}, []), aimed) is False
 
 
-def test_p07_r05_volley_on_turret_counts_lasers_only_when_the_turret_carries_them() -> None:
+def test_boss_31_volley_on_turret_counts_lasers_only_when_the_turret_carries_them() -> None:
     laser = volley.laser("p", 1, 1)
     carried = _design({"p": {"turret": [0, 0], "turretLaser": True, "laser": [[0, 0, 1]]}}, [])
     not_carried = _design({"p": {"turret": [0, 0], "laser": [[0, 0, 1]]}}, [])
@@ -198,7 +203,7 @@ def test_p07_r05_volley_on_turret_counts_lasers_only_when_the_turret_carries_the
     assert volley_on_turret(not_carried, laser) is False
 
 
-def test_p07_r05_with_own_lasers_recolours_every_laser_volley_with_the_design_id() -> None:
+def test_boss_32_with_own_lasers_recolours_every_laser_volley_with_the_design_id() -> None:
     laser = volley.laser("core", 5, 1)
     aimed = volley.aimed("core", 1, 1, 0, bullet("x", 1))
     design = record({"id": "boss-x", "guns": {}, "stages": [[laser, aimed]], "rage": [laser]})
@@ -210,7 +215,7 @@ def test_p07_r05_with_own_lasers_recolours_every_laser_volley_with_the_design_id
     assert laser["shape"]["laser"]["style"] == "lancer"
 
 
-def test_p07_r05_with_own_lasers_leaves_a_design_without_rage_alone() -> None:
+def test_boss_32_with_own_lasers_leaves_a_design_without_rage_alone() -> None:
     design = record({"id": "boss-y", "guns": {}, "stages": [[]], "rage": None})
     own = with_own_lasers(design)
     assert own["stages"] == [[]]

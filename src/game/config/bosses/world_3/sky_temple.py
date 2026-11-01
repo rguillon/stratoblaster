@@ -1,10 +1,12 @@
-"""P09-R09, 3-3: the Sky Temple, the final boss of the Lost temples level ().
+"""3-3: the Sky Temple, the final boss of the Lost temples level
+(specs/bosses/final/3-3-sky-temple.md).
 
 Offsets in px from the boss's centre, X right and Y up (its grand stair points down, at -Y). Stage
-patterns as for the World 1 and 2 final bosses (P07-R04): its parts fire the same while they stand,
-its core fires every bullet pattern, a new one at each stage (aimed shots, spreads, bursts, fans,
-rings), and twin spirals used by no earlier stage once it stands alone. Its core always drops a
-bonus (P07-R07). Health tuned for P09-R10 with the D-055 bot.
+patterns as for the World 1 and 2 final bosses (FB-SKY-TEMPLE-10): its parts fire the same while
+they stand, its core fires every bullet pattern, a new one at each stage (aimed shots, spreads,
+bursts, fans, rings), and twin spirals used by no earlier stage once it stands alone. Its core
+always drops a bonus (FB-SKY-TEMPLE-15). Health (FB-SKY-TEMPLE-08) tuned for WLD-3-20 with the D-055
+bot.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -17,7 +19,7 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -29,11 +31,12 @@ GREEN = bullet("green", 190)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-SKY-TEMPLE-15,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
-# Where its parts stand (P09-R09): an obelisk on each corner, the beacon on the summit.
+# Where its parts stand (FB-SKY-TEMPLE-08): an obelisk on each corner, the beacon on the summit.
 TEMPLE_PARTS = record({"obelisk": [60, 62], "beacon": [0, -28]})
 
 # The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
@@ -43,7 +46,8 @@ TEMPLE_PARTS = record({"obelisk": [60, 62], "beacon": [0, -28]})
 TEMPLE_HEIGHTS = record({"obelisk": 56, "beacon": 54.1, "guns": 41, "crystal": 64})
 # The beacon's four missile cells, on its lantern's roof.
 TEMPLE_BEACON = cells([-3, 3], [-31, -25], TEMPLE_HEIGHTS.beacon)
-# The twin cannons either side of the sanctum's door (the core's shots, spreads, bursts, fans).
+# The twin cannons either side of the sanctum's door (the core's shots, spreads, bursts, fans;
+# FB-SKY-TEMPLE-03).
 TEMPLE_GUNS = twin(8, -11, TEMPLE_HEIGHTS.guns)
 # The crystal on the sanctum's roof (the core's rings and spirals).
 TEMPLE_CRYSTAL = [[0, 10, TEMPLE_HEIGHTS.crystal]]
@@ -67,11 +71,13 @@ def tip(pos: Any) -> Any:
 
 
 # 3-3: a flying stepped pyramid, gold and cyan neon; its four corner obelisks fire spirals and
-# shield the core, its summit beacon homing missiles, its core every bullet pattern (P09-R09).
+# shield the core, its summit beacon homing missiles (FB-SKY-TEMPLE-09), its core every bullet
+# pattern.
 _SKY_TEMPLE = record(
     {
         "id": "sky-temple",
-        # Angry after each destroyed part (phase 7 review): a vortex inside a blooming flower.
+        # Angry after each destroyed part (phase 7 review, FB-SKY-TEMPLE-11): a vortex inside a
+        # blooming flower.
         "rage": concat(
             rage.vortex(7, "orange", "blue", 0.5), rage.flower(7, "blue", "orange", 0.5)
         ),
@@ -96,6 +102,7 @@ _SKY_TEMPLE = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-SKY-TEMPLE-07).
         "stopFraction": 0.74,
         "sway": {"amplitude": 30, "period": 11},
         "bob": {"amplitude": 6, "period": 5},
@@ -107,6 +114,7 @@ _SKY_TEMPLE = record(
             "obelisk-back-right": {"ring": tip(OBELISKS["obelisk-back-right"])},
             "beacon": {"missile": TEMPLE_BEACON},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-SKY-TEMPLE-10).
         "stages": stages(
             [
                 # Each obelisk turns its own spiral: front ones one way, back ones the other.
@@ -135,9 +143,10 @@ _SKY_TEMPLE = record(
     }
 )
 
-# Its transformations (D-230): once its back obelisks are gone its back corner wedges slide out
-# diagonally, a gun battery riding each, and its back terrace bursts off for a mortar; once its
-# front obelisks are gone its front corner wedges slide out, a heavy cannon riding each.
+# Its transformations (D-230, FB-SKY-TEMPLE-12): once its back obelisks are gone its back corner
+# wedges slide out diagonally, a gun battery riding each, and its back terrace bursts off for a
+# mortar (FB-SKY-TEMPLE-13); once its front obelisks are gone its front corner wedges slide out, a
+# heavy cannon riding each (FB-SKY-TEMPLE-14).
 SKY_TEMPLE = with_weapons(
     merge(
         _SKY_TEMPLE,

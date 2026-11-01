@@ -1,5 +1,6 @@
 """Unit tests of `src/game/view/bosses/scorpion_tail.py`: the Scorpion's tail, arched over its back
-at rest, unfolding straight out behind it as it turns round (D-228)."""
+at rest, unfolding straight out behind it as it turns round (MB-SCORPION-04, MB-SCORPION-11,
+D-228)."""
 
 import math
 from types import SimpleNamespace

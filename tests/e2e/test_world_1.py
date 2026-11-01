@@ -1,4 +1,5 @@
-"""e2e: World 1, its levels, the debug options and the end of a level (phases 6 and 7)."""
+"""e2e: World 1, its levels, the debug options and the end of a level (specs/worlds/world-1/,
+specs/dev/debug-options.md)."""
 
 import re
 
@@ -40,7 +41,8 @@ def play_level(page: Page, index: int, ship: int = 0) -> None:
     wait_for_level_time(page, 0.2)
 
 
-def test_p06_r01_the_world_1_row_shows_1_1_to_1_5_all_unlocked(page: Page) -> None:
+def test_wld_1_02_the_world_1_row_shows_1_1_to_1_5_all_unlocked(page: Page) -> None:
+    """Also UI-LEVEL-01: the grid's first row."""
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -52,9 +54,11 @@ def test_p06_r01_the_world_1_row_shows_1_1_to_1_5_all_unlocked(page: Page) -> No
 
 
 @pytest.mark.parametrize(("index", "level_id"), list(enumerate(WORLD_1)))
-def test_p06_r01_p06_r02_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
+def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
+    """Also UI-LEVEL-03 (none is locked), WLD-1-03 (about four minutes) and each level's duration
+    (LVL-1-1-02, LVL-1-2-02, LVL-1-3-02, LVL-1-4-02, LVL-1-5-02)."""
     play_level(page, index)
     played = game_state(page)["game"]
     assert played["levelId"] == level_id
@@ -72,7 +76,11 @@ def test_p06_r01_p06_r02_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     expect_state(page, {"screen": "title", "game": None})
 
 
-def test_p06_r02_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen(page: Page) -> None:
+def test_game_screen_05_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen(
+    page: Page,
+) -> None:
+    """Also GAME-CTRL-01 (arrows, Space, E), GAME-CTRL-05 (shooting is held), GAME-LEVEL-11 (the
+    ship rises in) and ENG-54 (the player moves and shoots)."""
     play_level(page, 0, 1)
     assert game_state(page)["chosenShipId"] == "heavy"
     # The ship rises into the level first (reviewer, 2026-10-28).
@@ -106,9 +114,10 @@ def test_p06_r02_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen(page: 
     assert second["player"]["x"] < 240 - 100
 
 
-def test_p06_r09_without_debug_options_f_and_the_arrows_do_not_change_the_time(
+def test_dev_opt_10_without_debug_options_f_and_the_arrows_do_not_change_the_time(
     page: Page,
 ) -> None:
+    """Also DEV-PERF-05: no stats tile without debug mode."""
     play_level(page, 0)
     page.keyboard.press("KeyF")
     page.keyboard.press("ArrowRight")
@@ -120,7 +129,9 @@ def test_p06_r09_without_debug_options_f_and_the_arrows_do_not_change_the_time(
     expect(page.locator(".stats-tile")).to_have_count(0)
 
 
-def test_p06_r09_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(page: Page) -> None:
+def test_dev_opt_02_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(page: Page) -> None:
+    """Also DEV-OPT-01 (`?level=`), DEV-PERF-04 (the FPS / polygons tile) and DEV-OPT-08 (F and
+    the arrows)."""
     open_debug(page, "?level=1-3&t=120")
     state = game_state(page)
     played = state["game"]
@@ -129,7 +140,7 @@ def test_p06_r09_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(page
     assert played["levelId"] == "1-3"
     assert 120 <= played["time"] < 121
     # The first wave after 2:00 comes at 2:10: nothing before it came in. At 2:00, the middle of
-    # the level, its mini boss arrives (P07-R06), and only it.
+    # the level, its mini boss arrives (GAME-LEVEL-04), and only it (GAME-LEVEL-06).
     assert played["boss"]["name"] == "Dust Devil"
     assert played["spawned"] == 1
     # The debug tile: one simulated second of frames, then the polygons of the frame drawn.
@@ -143,11 +154,13 @@ def test_p06_r09_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(page
     assert level(page)["time"] >= before + 10
 
 
-def test_p06_r03_p07_r06_p07_r09_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> None:
+def test_lvl_1_1_13_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> None:
+    """Also GAME-LEVEL-10 (the level ends), UI-OVER-01 (the "Level complete" panel), UI-LEVEL-07
+    (1-2 is highlighted next) and DEV-OPT-09 (K)."""
     open_debug(page, "?level=1-1&boss=final&ship=light")
     assert game_state(page)["chosenShipId"] == "light"
     step_until(page, lambda: boss_name(page), lambda n: n == "Storm Petrel")
-    # P07-R02: its health bar shows.
+    # BOSS-05: its health bar shows, with its name (UI-HUD-16).
     expect(page.locator(".boss-bar")).to_be_visible()
     expect(page.locator(".boss-name")).to_have_text("Storm Petrel")
     assert level(page)["phase"] == "playing"

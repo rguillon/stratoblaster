@@ -1,6 +1,6 @@
-"""P09-R09, 3-2: the jungle on the 3-2 bosses (the Toucan and the Canopy Spider): moss on their
-plates, vines hanging along them, leaves (GD-61, World 3: dark metal with neon, plus moss, vines
-and stone). Logical pixels, nose +Z, Y up."""
+"""MB-TOUCAN-05, FB-CANOPY-SPIDER-05, 3-2: the jungle on the 3-2 bosses (the Toucan and the Canopy
+Spider): moss on their plates, vines hanging along them, leaves (BOSS-50, World 3: dark metal with
+neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
 
 import math
 
@@ -10,8 +10,8 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]

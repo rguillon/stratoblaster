@@ -1,7 +1,7 @@
-"""Scales, styles and the drum, bass and tempo choices of the generated music (P12-R06, P12-R08) A
-world's style says its key, tempo, chords and rhythm."""
+"""Scales, styles and the drum, bass and tempo choices of the generated music (AUD-MUSIC-05,
+AUD-MUSIC-11). A world's style says its key, tempo, chords and rhythm."""
 
-# Scales, as semitones above their root.
+# Scales, as semitones above their root: minor, phrygian, harmonic minor (AUD-MUSIC-03).
 SCALES = {
     "minor": [0, 2, 3, 5, 7, 8, 10],
     "phrygian": [0, 1, 3, 5, 7, 8, 10],
@@ -44,8 +44,8 @@ class Octaves:
 
 
 class MusicStyle:
-    """A world's musical style (P12-R06): its levels share it but differ in key, tempo, chords,
-    melody and rhythm. `drums` is one of four, `bass` one of three."""
+    """A world's musical style (AUD-MUSIC-02): its levels share it but differ in key, tempo,
+    chords, melody and rhythm. `drums` is one of four, `bass` one of three."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -114,11 +114,12 @@ def _world(  # noqa: PLR0917 (positional: a table of styles)
     )
 
 
-# The four worlds' styles (P12-R06, tempo ranges from the phase's tunables), all energetic
+# The four worlds' styles (AUD-MUSIC-05, tempo ranges from the phase's tunables), all energetic
 # darksynth (reviewer, 2026-10-26): minor and phrygian keys, heavy kicks, growling basses, dark
-# pads. World 1 (desert and sea) the outrun drive (four on the floor, pumping bass, supersaw
-# lead); World 2 (Frozen North) cold, with glassy bells on a driving beat; World 3 (Jungle) on
-# toms and shakers; World 4 (Volcanic Lands) the heaviest.
+# pads. World 1 (desert and sea, WLD-1-30) the outrun drive (four on the floor, pumping bass,
+# supersaw lead); World 2 (Frozen North, WLD-2-28) cold, with glassy bells on a driving beat;
+# World 3 (Jungle, WLD-3-21) on toms and shakers; World 4 (Volcanic Lands, WLD-4-23) the
+# heaviest.
 WORLD_STYLES = {
     1: _world(
         [128, 140],
@@ -202,9 +203,9 @@ WORLD_STYLES = {
     ),
 }
 
-# The menu theme's style (P12-R08, synthwave reviews): mid-tempo darksynth in a minor key, with
-# the classic i–VI–III–VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and a
-# supersaw lead; slower than every level.
+# The menu theme's style (AUD-MUSIC-11, synthwave reviews): mid-tempo darksynth in a minor key,
+# with the classic i–VI–III–VII chords, a backbeat, a pumping octave bass, a plucked arpeggio and
+# a supersaw lead; slower than every level.
 MENU_STYLE = MusicStyle(
     [100, 100],
     [0, 0],

@@ -1,4 +1,4 @@
-"""The atmosphere of a level along its length (P08-R04, P08-R12): a level's fixed look or its sky
+"""The atmosphere of a level along its length (GFX-SKY-04): a level's fixed look or its sky
 script, as the atmosphere the
 renderer applies.
 """
@@ -28,15 +28,16 @@ from render.scenery.scenery_look import SceneryLook
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 class AtmosphereOptions:
-    """Debug choices on a level's look (P08-R12): `time_of_day` (`look=<time of day>`, every look
-    at this time of day), `weather` (`weather=0`: False, no weather at all) and `tile_grid`
-    (P15-R10, `tiles=1`: the grid of tiles drawn over the districts). None when not set."""
+    """Debug choices on a level's look: `time_of_day` (`look=<time of day>`, every look at this
+    time of day, DEV-OPT-05), `weather` (`weather=0`: False, no weather at all, DEV-OPT-04) and
+    `tile_grid` (DEV-OPT-06, `tiles=1`: the grid of tiles drawn over the districts). None when
+    not set."""
 
     def __init__(
         self,
@@ -90,8 +91,8 @@ def atmosphere_track(
     scroll_speed: float,
     options: AtmosphereOptions | None = None,
 ) -> Any:
-    """The atmosphere of a level along its length (P08-R04): its sky script's looks, their changes
-    turned from seconds into distances at `scroll_speed`; or its fixed look. Returns an
+    """The atmosphere of a level along its length (GFX-SKY-05): its sky script's looks, their
+    changes turned from seconds into distances at `scroll_speed`; or its fixed look. Returns an
     `AtmosphereTrack` (its `at(distance)`)."""
     if options is None:
         options = AtmosphereOptions()
@@ -109,6 +110,7 @@ def atmosphere_track(
 
     def adjust(sky: SkyLook) -> SkyLook:
         timed = at_time_of_day(sky, options.time_of_day)
+        # Weather off changes the look only (GFX-WEATHER-05).
         return without_weather(timed) if options.weather is False else timed
 
     changes: list[AtmosphereChange] = []
@@ -124,7 +126,8 @@ def atmosphere_track(
 
 
 def toned(atmosphere: Atmosphere, tone: float) -> Atmosphere:
-    """`atmosphere` with its haze and clouds `tone` (0..1) as bright (`SceneryLook.tone`)."""
+    """`atmosphere` with its haze and clouds `tone` (0..1) as bright (`SceneryLook.tone`,
+    GFX-READ-02)."""
     if tone == 1:
         return atmosphere
 

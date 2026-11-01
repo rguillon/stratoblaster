@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/cloud_layers.py`."""
+"""Unit tests of `src/render/scenery/cloud_layers.py` (GFX-SKY-11)."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -72,6 +72,7 @@ def test_a_cloud_layer_is_drawn_after_the_ground_and_lower_layers_first() -> Non
 
 
 def test_the_clouds_group_is_one_group_above_the_ground_group() -> None:
+    """GFX-CAM-07."""
     assert BELOW_CLOUDS_GROUP == 0
     assert ABOVE_CLOUDS_GROUP == 2
 

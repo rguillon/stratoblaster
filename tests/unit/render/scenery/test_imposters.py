@@ -1,12 +1,12 @@
-"""Unit tests of `src/render/scenery/imposters.py` (D-211)."""
+"""Unit tests of `src/render/scenery/imposters.py` (D-211; GFX-PROP-10, GFX-CAR-05)."""
 
 import math
 
 import pytest
+from fixtures.sample_game import record
 from helpers.geometry_checks import check_colored
 from helpers.render_geometry import babylon_normal, dot, triangles
 
-from game.config.record import record
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.imposters import (
     add_baked,

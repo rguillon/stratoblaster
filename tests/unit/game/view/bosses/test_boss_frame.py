@@ -1,5 +1,6 @@
 """Unit tests of `src/game/view/bosses/boss_frame.py`: the frame a shed armour region leaves (its
-floor and ribs, D-224), and the pylons and bridges that hold pieces up (D-227)."""
+floor and ribs, BOSS-44, D-224), and the pylons and bridges that hold pieces up (BOSS-52,
+D-227)."""
 
 from typing import Any
 

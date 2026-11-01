@@ -1,5 +1,6 @@
-"""The Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2 frost) (P08-R10,
-2-1). Logical pixels, nose +Z, Y up."""
+"""The Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2 frost)
+(FB-NARWHAL-02,
+FB-NARWHAL-05, 2-1). Logical pixels, nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -11,7 +12,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")
@@ -46,7 +47,7 @@ def hull_dressing(p: EnemyParts, n: Rgb) -> None:
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:
-        # P16-R06: gill slits down the flanks.
+        # FB-NARWHAL-02: gill slits down the flanks.
         for z in range(-44, 35, 8):
             if z > _SLIT_GAP_FROM and z < _SLIT_GAP_TO:
                 continue
@@ -73,8 +74,8 @@ def hull_dressing(p: EnemyParts, n: Rgb) -> None:
 
 
 def deck_dressing(p: EnemyParts, n: Rgb) -> None:
-    """On its back: a frozen crust on the forward deck, a railing, a capstan, an escape hatch,
-    whip antennas off-centre, navigation lamps on the sail."""
+    """On its back (FB-NARWHAL-05): a frozen crust on the forward deck, a railing, a capstan, an
+    escape hatch, whip antennas off-centre, navigation lamps on the sail."""
     hull = p.hull
     neon = p.neon
     crust = [

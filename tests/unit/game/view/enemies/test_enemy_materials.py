@@ -35,13 +35,14 @@ def babylon(monkeypatch):
     monkeypatch.setattr(em, "_FLAME_CACHE", [])
 
 
-def test_p14_r02_enemy_colour_is_moved_into_the_enemies_hue_family():
+def test_enm_38_enemy_colour_is_moved_into_the_enemies_hue_family():
     family = READABILITY.families.enemy
     for color in ([1, 0, 0], [0, 1, 0], [0.2, 0.4, 0.9], [1, 0.1, 0.85]):
         assert in_family(em.enemy_color(color), family), color
 
 
 def test_d231_an_enemy_is_bright_yellow_or_bright_green_never_in_between():
+    """ENM-38, GFX-ART-05: warm neon turns yellow, cool neon green."""
     yellow, green = READABILITY.enemyHues
     # Red, orange and magenta neon turns yellow; green, cyan and blue green.
     for color, hue in [
@@ -57,11 +58,11 @@ def test_d231_an_enemy_is_bright_yellow_or_bright_green_never_in_between():
         assert max(snapped) == pytest.approx(max(color))
 
 
-def test_p14_r02_greys_are_not_moved_by_the_family():
+def test_gfx_read_06_greys_are_not_moved_by_the_family():
     assert list(em.enemy_color([0.5, 0.5, 0.5])) == pytest.approx([0.5, 0.5, 0.5])
 
 
-def test_p14_r04_rim_is_lifted_towards_white_by_the_outline_whitening():
+def test_enm_47_rim_is_lifted_towards_white_by_the_outline_whitening():
     whiten = READABILITY.enemyTrim.whiten
     strength = READABILITY.enemyTrim.strength
     rim = em.rim_of([0, 0.5, 1])
@@ -70,7 +71,7 @@ def test_p14_r04_rim_is_lifted_towards_white_by_the_outline_whitening():
     )
 
 
-def test_p14_r02_in_enemy_family_folds_each_vertex_colour_and_keeps_alpha(monkeypatch):
+def test_gfx_read_06_in_enemy_family_folds_each_vertex_colour_and_keeps_alpha(monkeypatch):
     seen = {}
 
     def keep(geo, colors):
@@ -89,7 +90,7 @@ def test_p14_r02_in_enemy_family_folds_each_vertex_colour_and_keeps_alpha(monkey
     assert result[1] is geo
 
 
-def test_p14_r02_in_enemy_family_reads_missing_channels_as_zero(monkeypatch):
+def test_gfx_read_06_in_enemy_family_reads_missing_channels_as_zero(monkeypatch):
     seen = {}
     monkeypatch.setattr(em, "_with_colors", lambda geo, colors: seen.setdefault("c", colors))
     geo = MagicMock()
@@ -106,7 +107,8 @@ def test_p05_unlit_material_is_white_light_with_no_shading(babylon):
     assert mat.disableLighting is True
 
 
-def test_p16_r01_metal_takes_the_hull_settings_of_the_enemy_look(babylon):
+def test_gfx_art_08_metal_takes_the_hull_settings_of_the_enemy_look(babylon):
+    """Also GFX-ART-15: the hull metal's settings."""
     mat = em.metal("hull", Col(1, 1, 1), scene=object())
     assert mat.metallic == ENEMY_LOOK.hull.metallic
     assert mat.roughness == ENEMY_LOOK.hull.roughness
@@ -114,7 +116,7 @@ def test_p16_r01_metal_takes_the_hull_settings_of_the_enemy_look(babylon):
     assert mat.environmentIntensity == READABILITY.hullLight.environment
 
 
-def test_p16_r01_flesh_is_waxy_and_barely_metallic(babylon):
+def test_gfx_art_15_flesh_is_waxy_and_barely_metallic(babylon):
     mat = em.flesh_of("flesh", Col(1, 1, 1), scene=object())
     assert mat.metallic == ENEMY_LOOK.flesh.metallic
     assert mat.roughness == ENEMY_LOOK.flesh.roughness
@@ -186,6 +188,7 @@ def test_p05_flame_is_a_whiter_core_than_its_exhaust(babylon):
     ],
 )
 def test_d231_warm_and_pink_body_shades_are_greyed(shade):
+    """ENM-39, GFX-ART-06: no khaki, no pink body."""
     greyed = em.body_color(shade)
     assert hue_saturation(greyed)[1] == pytest.approx(READABILITY.enemyBody.maxSaturation)
     assert max(greyed) == pytest.approx(max(shade))

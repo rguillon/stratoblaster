@@ -1,4 +1,4 @@
-"""The Weaver (P05-R05)"""
+"""The Weaver (`specs/enemies/weaver.md`)"""
 
 import math
 
@@ -10,7 +10,7 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import Cadence, bullet_shot, on_playfield
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -18,8 +18,9 @@ CFG = ENEMY_CONFIG.weaver
 
 
 class Weaver(Enemy):
-    """P05-R05: moves down along a sine wave: its X is a sine of the distance it has come down.
-    Every 2 s it fires a pair of bullets aimed at the player, one from each hull.
+    """ENM-WEAVER-04: moves down along a sine wave: its X is a sine of the distance it has come
+    down. Every 2 s it fires a pair of bullets aimed at the player, one from each hull
+    (ENM-WEAVER-05).
     """
 
     def __init__(self, center_x: float, y: float) -> None:

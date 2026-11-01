@@ -1,27 +1,27 @@
-"""The boss health bar (P07-R02): a slim gauge up the left edge of
+"""The boss health bar (BOSS-05, UI-HUD-12): a slim gauge up the left edge of
 the playfield, with the boss's kind and name written along it and the health of its parts filling
 it from the bottom."""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import element, replace_children  # noqa: E402
+from ui.screens.elements import element, replace_children  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class BossBarFrame:
-    """What the boss health bar shows on one frame (P07-R02)."""
+    """What the boss health bar shows on one frame (UI-HUD-13)."""
 
     def __init__(self, name: str, rank: str, share: float, notches: list[float]) -> None:
         self.name = name
-        # Its kind, e.g. `MINI BOSS` or `BOSS`.
+        # Its kind, e.g. `MINI BOSS` or `BOSS` (UI-HUD-16).
         self.rank = rank
         # Share of the bar filled, 0..1.
         self.share = share
-        # Where each destroyable part's share ends along the bar, 0..1.
+        # Where each destroyable part's share ends along the bar, 0..1 (UI-HUD-15).
         self.notches = notches
 
 
@@ -31,9 +31,9 @@ def _percent(share: float) -> str:
 
 
 class BossBar:
-    """The boss health bar (P07-R02): the boss's kind and name written along it, and the health of
-    its core and parts together filling it from the bottom, with a notch at the end of each part's
-    share. Hidden while no boss is fought; the page is touched only on changes.
+    """The boss health bar (UI-HUD-12): the boss's kind and name written along it, and the health
+    of its core and parts together filling it from the bottom, with a notch at the end of each
+    part's share. Hidden while no boss is fought (UI-HUD-14); the page is touched only on changes.
     """
 
     def __init__(self, doc: Any, parent: Any) -> None:

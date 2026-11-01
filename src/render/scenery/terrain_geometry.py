@@ -1,8 +1,8 @@
-"""Vertex data of the terrain grid (P04-R01, ENG-19)
+"""Vertex data of the terrain grid (GFX-TERRAIN-14, ENG-19)
 
-Ground cover is stored in the terrain's vertex colours: red = 1 - lush x SURFACE_SCALE,
-green = 1 - sandy x SURFACE_SCALE, blue = 1 - paved x SURFACE_SCALE. The arrays are typed
-(Float32, Uint32), so the values round the same way.
+Ground cover is stored in the terrain's vertex colours (GFX-TERRAIN-09): red = 1 - lush x
+SURFACE_SCALE, green = 1 - sandy x SURFACE_SCALE, blue = 1 - paved x SURFACE_SCALE. The arrays are
+typed (Float32, Uint32), so the values round the same way.
 """
 
 import math
@@ -13,7 +13,7 @@ from render.babylon import float32_array, uint32_array
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any, Protocol  # noqa: E402
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class HeightSource(Protocol):

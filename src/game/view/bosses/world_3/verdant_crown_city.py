@@ -1,7 +1,6 @@
-"""P09-R09, 3-5: the Verdant Crown's city round its dome: overgrown towers with lit windows, moss
-on their roofs and vines climbing them, moss patches and vines across the deck. Model space: logical
-pixels, nose +Z (down the
-screen), Y up towards the camera."""
+"""FB-VERDANT-CROWN-03, 3-5: the Verdant Crown's city round its dome: overgrown towers with lit
+windows, moss on their roofs and vines climbing them, moss patches and vines across the deck. Model
+space: logical pixels, nose +Z (down the screen), Y up towards the camera."""
 
 import math
 
@@ -17,8 +16,8 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -144,7 +143,8 @@ def vine(p: EnemyParts, points: list[OutlinePoint]) -> None:
 
 
 def draw_city(p: EnemyParts) -> None:
-    """The city round the dome (P09-R09): towers, moss and vines, on both sides of the deck."""
+    """The city round the dome (FB-VERDANT-CROWN-03): towers, moss and vines, on both sides of the
+    deck."""
     for s in SIDES:
         for i in range(len(TOWERS)):
             t = TOWERS[i]

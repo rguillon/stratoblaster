@@ -1,6 +1,6 @@
 """How a boss rolls into its sideways moves
 
-See `BossStats.roll` (phase 7 review).
+See `BossStats.roll` (BOSS-11).
 """
 
 import math

@@ -1,4 +1,4 @@
-"""Caption of a player ship's stats"""
+"""Caption of a player ship's stats (UI-SHIP-02)"""
 
 from org.transcrypt.stubs.browser import window
 

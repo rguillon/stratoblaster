@@ -1,8 +1,7 @@
-"""P09-R09, 3-1: the River Leviathan's body: its four segments and its tail, each drawn on its
-hinge (D-061) so that they sway one after the other, the segments' ring turrets on their sponsons
-and the tail's missile rack. Logical
-pixels, nose +Z, Y up: the playfield's +Y (the tail) is the model's -Z, and its -X (the screen's
-left) the model's +X."""
+"""FB-RIVER-LEVIATHAN-02, 3-1: the River Leviathan's body: its four segments and its tail, each
+drawn on its hinge (FB-RIVER-LEVIATHAN-05, D-061) so that they sway one after the other, the
+segments' ring turrets on their sponsons and the tail's missile rack. Logical pixels, nose +Z, Y up:
+the playfield's +Y (the tail) is the model's -Z, and its -X (the screen's left) the model's +X."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -33,20 +32,20 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The River Leviathan's teal neon (P09-R09).
+# The River Leviathan's teal neon (FB-RIVER-LEVIATHAN-07).
 LEVIATHAN_TEAL = BOSS_LOOK.neon["river-leviathan"]
 N = LEVIATHAN_TEAL
 
-# The segments' half widths and their heights (bottom, top), head to tail.
+# The segments' half widths and their heights (bottom, top), head to tail (FB-RIVER-LEVIATHAN-01).
 SEGMENT_WIDTH = [15, 14, 13, 12]
 SEGMENT_Y = [-3, 10]
 # The tail (loft stations from its hinge, along -Z: z, half width, bottom, top).
@@ -123,8 +122,8 @@ def sponson(p: EnemyParts, k: int) -> None:
 
 def draw_segment(k: int) -> Any:
     """Segment `k`, on its hinge: its collar, an armoured hull plate along the spine with scutes
-    and a teal light down its back, its turret's sponson out to one side, moss and a hanging
-    vine."""
+    and a teal light down its back, its turret's sponson out to one side, moss and a hanging vine
+    (FB-RIVER-LEVIATHAN-06)."""
     i = k - 1
     w = SEGMENT_WIDTH[i] or 12
     front = hinge_z(i) - 2
@@ -137,8 +136,8 @@ def draw_segment(k: int) -> Any:
         collar(p, i, w * 0.85)
         b = SEGMENT_Y[0]
         t = SEGMENT_Y[1]
-        # P16-R06: a living serpent's segment: swollen teal flesh, bone ribs over it, a vein along
-        # its spine; the scutes and the sponson its grafted armour.
+        # FB-RIVER-LEVIATHAN-02: a living serpent's segment: swollen teal flesh, bone ribs over it,
+        # a vein along its spine; the scutes and the sponson its grafted armour.
         stations = [
             [back, w * 0.8, b + 1, t - 1.5],
             [back + 6, w, b, t],
@@ -190,13 +189,15 @@ def draw_segment(k: int) -> Any:
 
 
 def draw_tail(p: EnemyParts) -> None:
-    """The tail, on its hinge: its collar, a tapering hull, two flukes with reactors, moss."""
+    """The tail, on its hinge: its collar, a tapering hull, two flukes with reactors, moss
+    (FB-RIVER-LEVIATHAN-06)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     z0 = hinge_z(4)
     collar(p, 4, 9.5)
-    # P16-R06: a tapering flesh tail, membrane flukes on bone, its reactors in flesh sacs.
+    # FB-RIVER-LEVIATHAN-02: a tapering flesh tail, membrane flukes on bone, its reactors in flesh
+    # sacs.
     tail_stations = [[z0 + row[0], row[1], row[2], row[3]] for row in reversed_copy(TAIL)]
     flesh.loft(ROUND_SECTION, tail_stations, F.teal)
     tip = z0 + TAIL[len(TAIL) - 1][0]
@@ -224,11 +225,13 @@ def leviathan_body() -> dict[str, Any]:
 
 
 def turret_mount(p: EnemyParts, at: Vec3) -> None:
-    """A segment's turret mount (the part, P09-R09): a round armoured base with a teal ring."""
+    """A segment's turret mount (the part, FB-RIVER-LEVIATHAN-04): a round armoured base with a teal
+    ring."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a swollen gland on the serpent's flank, the turret's metal ring grafted on top.
+    # FB-RIVER-LEVIATHAN-04: a swollen gland on the serpent's flank, the turret's metal ring grafted
+    # on top.
     flesh.cylinder(
         10,
         MOUNT,
@@ -248,8 +251,9 @@ def turret_mount(p: EnemyParts, at: Vec3) -> None:
 
 
 def ring_turret(p: EnemyParts, at: Vec3) -> None:
-    """A segment's ring turret (P09-R09), turning with its rings (D-060): a dome ringed with four
-    stubby vanes, the ring emitter glowing on its axis at the top, where its rings leave from."""
+    """A segment's ring turret (FB-RIVER-LEVIATHAN-04), turning with its rings (D-060): a dome
+    ringed with four stubby vanes, the ring emitter glowing on its axis at the top, where its rings
+    leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -295,14 +299,15 @@ def ring_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def missile_rack(p: EnemyParts, at: Vec3) -> None:
-    """The tail's missile rack (P09-R09): an armoured box on the tail's back, four cells open at
-    its top, each with a charge light round its mouth, a teal band round it."""
+    """The tail's missile rack (FB-RIVER-LEVIATHAN-04): an armoured box on the tail's back, four
+    cells open at its top, each with a charge light round its mouth, a teal band round it."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     height = LEVIATHAN_RACK[0][2] if len(LEVIATHAN_RACK) > 0 else 10
-    # P16-R06: an egg sac swelling on the tail, a grafted rack of missile cells capping it.
+    # FB-RIVER-LEVIATHAN-04: an egg sac swelling on the tail, a grafted rack of missile cells
+    # capping it.
     p.flesh.box(
         [16, height - 4, 18],
         F.slate,

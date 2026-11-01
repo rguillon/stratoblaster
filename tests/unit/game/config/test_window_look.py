@@ -8,4 +8,5 @@ BAND = 15
 
 
 def test_d210_the_atlas_has_as_many_bands_as_styles():
+    """GFX-BLDG-12."""
     assert len(WINDOW_ATLAS.styles) * BAND + len(WINDOW_ATLAS.doors) * 2 == CELLS

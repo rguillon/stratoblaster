@@ -5,13 +5,15 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 class MenuTexts:
-    """The texts of the menu screens, the HUD, the pause menu and the settings screen."""
+    """The texts of the menu screens, the HUD, the pause menu and the settings screen: every text
+    comes from the game (UI-LOOK-10).
+    """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -44,7 +46,9 @@ class MenuTexts:
         hud_bomb: Callable[[int], str],
         hud_mini_boss: str,
         hud_boss: str,
-        unsupported: str,
+        unsupported: str,  # Shown in place of the game without WebGL2 (ENG-06).
+        context_lost: str,  # Shown when the graphics context is lost while playing (UI-LOAD-07).
+        reload: str,  # The button of that message, reloading the page (UI-LOAD-07).
         settings: str,
         settings_hint: str,
         music_volume: str,
@@ -93,6 +97,8 @@ class MenuTexts:
         self.hud_mini_boss = hud_mini_boss
         self.hud_boss = hud_boss
         self.unsupported = unsupported
+        self.context_lost = context_lost
+        self.reload = reload
         self.settings = settings
         self.settings_hint = settings_hint
         self.music_volume = music_volume

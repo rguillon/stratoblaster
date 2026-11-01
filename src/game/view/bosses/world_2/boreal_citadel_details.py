@@ -1,7 +1,6 @@
-"""The Boreal Citadel's details (P08-R10, 2-5): armour skirts on its deck's sides, snow drifts,
-dishes and masts, lamps along its avenue, buttresses round its keep, heating pipes, the engine
-block's grilles and fins Model space:
-logical pixels, nose +Z, Y up.
+"""The Boreal Citadel's details (FB-BOREAL-CITADEL-02, 2-5): armour skirts on its deck's sides, snow
+drifts, dishes and masts, lamps along its avenue, buttresses round its keep, heating pipes, the
+engine block's grilles and fins Model space: logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -17,8 +16,8 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
@@ -60,7 +59,8 @@ BUTTRESS = [4, 13, 7]
 
 
 def _draw_deck_edges(p: EnemyParts) -> None:
-    """Armour skirts lit by violet slits, and snow drifts piled on the deck."""
+    """Armour skirts lit by violet slits, and snow drifts piled on the deck
+    (FB-BOREAL-CITADEL-06)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -107,7 +107,7 @@ def _draw_keep_detail(p: EnemyParts) -> None:
 
 
 def _draw_roofs(p: EnemyParts) -> None:
-    """Masts and dishes over the city, lamps along the avenue."""
+    """Masts and dishes over the city (FB-BOREAL-CITADEL-03), lamps along the avenue."""
     top = CITADEL_DECK.top
     avenue = CITADEL_DECK.avenue
     for s in SIDES:
@@ -143,7 +143,7 @@ def _draw_engine_block(p: EnemyParts) -> None:
 
 
 def draw_details(p: EnemyParts) -> None:
-    """The Boreal Citadel's details (P08-R10), on its core body."""
+    """The Boreal Citadel's details (FB-BOREAL-CITADEL-02), on its core body."""
     _draw_deck_edges(p)
     _draw_keep_detail(p)
     _draw_roofs(p)

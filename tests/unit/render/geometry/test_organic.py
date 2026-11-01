@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/organic.py`."""
+"""Unit tests of `src/render/geometry/organic.py` (GFX-ART-17)."""
 
 import math
 

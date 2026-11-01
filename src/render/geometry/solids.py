@@ -1,4 +1,4 @@
-"""Low-poly, flat-shaded, vertex-coloured solids ().
+"""Low-poly, flat-shaded, vertex-coloured solids (GFX-ART-10; the props' too, GFX-PROP-04).
 
 Each face has its own vertices, so the normals computed later are per face. Vectors are
 lists of 3 numbers, outlines are `[x, z]` lists (see `outline.py`).
@@ -14,10 +14,10 @@ from render.geometry.triangulate import triangulate_polygon
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 Vec3 = list[float]

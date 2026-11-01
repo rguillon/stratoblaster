@@ -185,23 +185,23 @@ def _step(
     run.step(dt, LevelControls(move, fire, switch_weapon, bomb))
 
 
-def test_p07_r06_a_boss_kind_must_be_one_of_the_kinds_of_the_game() -> None:
+def test_boss_07_a_boss_kind_must_be_one_of_the_kinds_of_the_game() -> None:
     with pytest.raises(ValueError, match='Unknown boss kind "ghost"'):
         validate_level_bosses([LevelBoss("ghost", "mini", 10)], ["hulk"])
 
 
-def test_p07_r06_a_boss_must_come_at_a_non_negative_distance() -> None:
+def test_game_level_04_a_boss_must_come_at_a_non_negative_distance() -> None:
     with pytest.raises(ValueError, match="bad distance"):
         validate_level_bosses([LevelBoss("hulk", "mini", -1)], ["hulk"])
     validate_level_bosses([LevelBoss("hulk", "mini", 0)], ["hulk"])
 
 
-def test_p07_r06_creating_the_fights_validates_the_bosses() -> None:
+def test_game_level_04_creating_the_fights_validates_the_bosses() -> None:
     with pytest.raises(ValueError):
         _fights([LevelBoss("ghost", "final", 10)])
 
 
-def test_p07_r06_a_boss_comes_in_once_the_level_gets_to_it() -> None:
+def test_game_level_04_a_boss_comes_in_once_the_level_gets_to_it() -> None:
     fights, track, kind, added = _fights([LevelBoss("hulk", "final", 50)])
     _seek(track, 40)
     fights.step(0.1, track)
@@ -217,14 +217,15 @@ def test_p07_r06_a_boss_comes_in_once_the_level_gets_to_it() -> None:
     assert fights.passed == 1
 
 
-def test_p07_r06_a_boss_starts_within_the_slack_of_its_distance() -> None:
+def test_game_level_04_a_boss_starts_within_the_slack_of_its_distance() -> None:
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 50)])
     _seek(track, 50 - SLACK / 2)
     fights.step(0.1, track)
     assert fights.active is True
 
 
-def test_p07_r03_the_track_is_held_and_the_ground_slows_to_the_boss_speed() -> None:
+def test_boss_03_the_track_is_held_and_the_ground_slows_to_the_boss_speed() -> None:
+    """BOSS-03, with the track held (GAME-LEVEL-06) and the ground eased (GAME-LEVEL-07)."""
     boss = _Boss([10], ground_speed=0.25)
     fights, track, _, _ = _fights(
         [LevelBoss("hulk", "mini", 0)], boss=boss, rules=BossFightRules(2, 1)
@@ -236,14 +237,14 @@ def test_p07_r03_the_track_is_held_and_the_ground_slows_to_the_boss_speed() -> N
     assert track.speed_factor == pytest.approx(0.25)
 
 
-def test_p07_r03_with_no_ease_time_the_ground_changes_speed_at_once() -> None:
+def test_game_level_07_with_no_ease_time_the_ground_changes_speed_at_once() -> None:
     boss = _Boss([10], ground_speed=0.25)
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 0)], boss=boss)
     fights.step(0.1, track)
     assert track.speed_factor == 0.25
 
 
-def test_p07_r06_no_other_boss_comes_in_while_one_is_fought() -> None:
+def test_boss_02_no_other_boss_comes_in_while_one_is_fought() -> None:
     boss = _Boss([10])
     fights, track, kind, added = _fights(
         [LevelBoss("hulk", "mini", 10), LevelBoss("hulk", "final", 20)], boss=boss
@@ -256,7 +257,7 @@ def test_p07_r06_no_other_boss_comes_in_while_one_is_fought() -> None:
     assert fights.passed == 1
 
 
-def test_p07_r06_the_next_boss_comes_once_the_fight_is_over() -> None:
+def test_boss_02_the_next_boss_comes_once_the_fight_is_over() -> None:
     first = _Boss([10])
     second = _Boss([10])
     fights, track, kind, added = _fights(
@@ -273,7 +274,7 @@ def test_p07_r06_the_next_boss_comes_once_the_fight_is_over() -> None:
     assert fights.passed == 2
 
 
-def test_p07_r06_a_boss_defeated_is_recorded_and_the_ground_goes_back() -> None:
+def test_game_level_07_a_boss_defeated_is_recorded_and_the_ground_goes_back() -> None:
     boss = _Boss([10], ground_speed=0.25)
     fights, track, _, _ = _fights(
         [LevelBoss("hulk", "final", 0)], boss=boss, rules=BossFightRules(0, 1)
@@ -293,7 +294,7 @@ def test_p07_r06_a_boss_defeated_is_recorded_and_the_ground_goes_back() -> None:
     assert fights.just_defeated is None
 
 
-def test_p07_r06_the_level_knows_whether_it_has_a_final_boss() -> None:
+def test_game_level_10_the_level_knows_whether_it_has_a_final_boss() -> None:
     fights, _, _, _ = _fights([LevelBoss("hulk", "mini", 5)])
     assert fights.has_final is False
     assert fights.bosses[0].rank == "mini"
@@ -301,12 +302,12 @@ def test_p07_r06_the_level_knows_whether_it_has_a_final_boss() -> None:
     assert fights.has_final is True
 
 
-def test_p07_r06_bosses_come_in_by_distance_whatever_the_order_given() -> None:
+def test_game_level_04_bosses_come_in_by_distance_whatever_the_order_given() -> None:
     fights, _, _, _ = _fights([LevelBoss("hulk", "final", 9), LevelBoss("hulk", "mini", 5)])
     assert [b.rank for b in fights.bosses] == ["mini", "final"]
 
 
-def test_p07_r02_the_health_bar_fills_as_the_boss_arrives() -> None:
+def test_ui_hud_14_the_health_bar_fills_as_the_boss_arrives() -> None:
     boss = _Boss([10, 10], core=10)
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 0)], boss=boss)
     assert fights.bar is None
@@ -324,14 +325,15 @@ def test_p07_r02_the_health_bar_fills_as_the_boss_arrives() -> None:
     assert fights.bar.share == pytest.approx(1.0)
 
 
-def test_p07_r02_the_health_bar_notches_mark_the_end_of_each_part() -> None:
+def test_ui_hud_15_the_health_bar_notches_mark_the_end_of_each_part() -> None:
+    """UI-HUD-15: the notches, from the parts' shares of the health (BOSS-54)."""
     boss = _Boss([10, 5], core=5)
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 0)], boss=boss)
     fights.step(0.1, track)
     assert fights.bar.notches == pytest.approx([10 / 20, 15 / 20])
 
 
-def test_p07_r06_skipping_drops_the_fight_and_restores_the_ground() -> None:
+def test_dev_opt_02_skipping_drops_the_fight_and_restores_the_ground() -> None:
     boss = _Boss([10], ground_speed=0.25)
     fights, track, _, _ = _fights(
         [LevelBoss("hulk", "mini", 10), LevelBoss("hulk", "final", 50)],
@@ -353,7 +355,7 @@ def test_p07_r06_skipping_drops_the_fight_and_restores_the_ground() -> None:
     assert fights.rank == "mini"
 
 
-def test_p06_r09_skipping_to_a_distance_makes_the_next_boss_the_first_one_after_it() -> None:
+def test_dev_opt_02_skipping_to_a_distance_makes_the_next_boss_the_first_one_after_it() -> None:
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 10), LevelBoss("hulk", "final", 50)])
     _seek(track, 20)
     fights.skip_to(track)
@@ -363,7 +365,7 @@ def test_p06_r09_skipping_to_a_distance_makes_the_next_boss_the_first_one_after_
     assert fights.rank == "final"
 
 
-def test_p06_r09_skipping_past_every_boss_leaves_none_to_come() -> None:
+def test_dev_opt_02_skipping_past_every_boss_leaves_none_to_come() -> None:
     fights, track, _, added = _fights([LevelBoss("hulk", "mini", 10)])
     _seek(track, 100)
     fights.skip_to(track)
@@ -372,7 +374,7 @@ def test_p06_r09_skipping_past_every_boss_leaves_none_to_come() -> None:
     assert added == []
 
 
-def test_p06_r09_skipping_with_a_count_passes_that_many_bosses() -> None:
+def test_game_life_11_skipping_with_a_count_passes_that_many_bosses() -> None:
     fights, track, _, _ = _fights([LevelBoss("hulk", "mini", 10), LevelBoss("hulk", "final", 50)])
     _seek(track, 0)
     fights.skip_to(track, passed=1)
@@ -397,7 +399,7 @@ def test_boss_modules_import_in_a_clean_interpreter() -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_p07_r06_a_final_boss_ends_the_level_when_it_is_destroyed() -> None:
+def test_game_level_10_a_final_boss_ends_the_level_when_it_is_destroyed() -> None:
     run = _run(
         level=_level(bosses=[LevelBoss("hulk", "final", 10)]),
         boss_kinds=[FakeBossKind()],

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/atmosphere_of.py`."""
+"""Unit tests of `src/render/scenery/atmosphere_of.py` (GFX-SKY-04; the tone, GFX-READ-02)."""
 
 import pytest
 from helpers.render_looks import GREY, cloud, make_look
@@ -80,6 +80,7 @@ def test_a_time_of_day_option_replaces_the_scripted_time_of_day() -> None:
 
 
 def test_weather_off_takes_the_weather_out_of_the_script() -> None:
+    """GFX-WEATHER-05 (DEV-OPT-04)."""
     stormy = SkyLook("dusk", [0.2, 0.2], weather=Weather("rain", 1))
     look = make_look(atmosphere=SkyScript(stormy))
     atmosphere = atmosphere_track(look, 1, AtmosphereOptions(weather=False)).at(0)

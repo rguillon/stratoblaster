@@ -1,6 +1,6 @@
-"""Movement keys held down, as a direction to fly in ().
+"""Movement keys held down, as a direction to fly in (GAME-CTRL-03).
 `DIRECTION_KEYS`: `KeyboardEvent.code` -> direction; arrows and WASD by key position (AZERTY works
-too, GD §2)."""
+too, GAME-CTRL-01)."""
 
 import math
 
@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from core.systems.player_flight import FlightInput
 
 __pragma__("skip")
-from input.menu_action import MenuDirection  # noqa: E402
+from input.menu_action import MenuDirection  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

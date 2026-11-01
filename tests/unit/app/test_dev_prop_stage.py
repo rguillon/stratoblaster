@@ -9,6 +9,7 @@ from app.dev_prop_stage import block_centre, blocks_of, close_up_distance, game_
 
 
 def test_d205_a_footprint_covers_whole_blocks_at_least_one() -> None:
+    """DEV-MENU-16."""
     assert blocks_of(0, 10) == 1
     assert blocks_of(10, 10) == 1
     assert blocks_of(10.000000001, 10) == 1
@@ -23,6 +24,7 @@ def test_d205_an_even_footprint_is_centred_on_a_line_an_odd_one_in_a_square() ->
 
 
 def test_d205_the_game_distance_is_the_cameras_down_its_view_in_ground_units() -> None:
+    """DEV-MENU-17."""
     camera = SimpleNamespace(tiltDeg=0.0, fovDeg=60.0, flightAltitude=100.0, groundScale=2.0)
     game = SimpleNamespace(
         screen=SimpleNamespace(width=480, height=720),
@@ -34,6 +36,7 @@ def test_d205_the_game_distance_is_the_cameras_down_its_view_in_ground_units() -
 
 
 def test_d205_a_close_up_fills_its_share_of_the_screen() -> None:
+    """DEV-MENU-09."""
     fov = math.pi / 2
     distance = close_up_distance(10, fov, 0.5)
     assert 10 / (2 * distance * math.tan(fov / 2)) == pytest.approx(0.5)

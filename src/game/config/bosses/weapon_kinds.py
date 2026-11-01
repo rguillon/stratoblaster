@@ -1,5 +1,6 @@
-"""The kinds of hidden weapon a boss reveals as it transforms (D-221, D-229; docs/superpowers/specs/
-2026-11-01-boss-weapon-variety-and-shape-shifts-design.md): their sizes, muzzles and volleys.
+"""The kinds of hidden weapon a boss reveals as it transforms (BOSS-40; D-221, D-229;
+docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md): their sizes,
+muzzles and volleys.
 
 - `gatling`: a three-barrelled turret that follows the player (bursts);
 - `lance`: a laser lance pointing down the screen (lasers);
@@ -26,7 +27,7 @@ from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -119,7 +120,7 @@ WEAPON_FIRE = record(
 
 def pod_height(radius: float, height: Any) -> float:
     """The height of a weapon's pod: `height` when given, else its share of the radius."""
-    if height == None:  # noqa: E711
+    if height == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         value: float = radius * WEAPON_SHAPE.height
         return value
     given: float = height

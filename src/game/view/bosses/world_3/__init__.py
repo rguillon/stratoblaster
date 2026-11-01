@@ -1,1 +1,1 @@
-"""The World 3 bosses' models (P09-R09)."""
+"""The World 3 bosses' models (specs/bosses/*/3-*.md)."""

@@ -66,6 +66,7 @@ def test_the_root_is_never_parented_to_itself() -> None:
 
 
 def test_new_meshes_get_the_rendering_group_and_the_on_top_draw_order() -> None:
+    """GFX-READ-13."""
     scene = FakeScene()
     adopted: list[FakeNode] = []
     adopter = NodeAdopter(scene, FakeNode("root"), 3, on_mesh=adopted.append)

@@ -1,6 +1,6 @@
-"""P08-R10, 2-3: the Aurora Station's parts (dish emitters, cryo cannons, drone hangar), its
-turning dish and its frost Logical
-pixels, nose +Z, Y up (towards the camera)."""
+"""FB-AURORA-STATION-03, FB-AURORA-STATION-05, 2-3: the Aurora Station's parts (dish emitters, cryo
+cannons, drone hangar), its turning dish and its frost Logical pixels, nose +Z, Y up (towards the
+camera)."""
 
 import math
 
@@ -8,27 +8,27 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_2.aurora_station import AURORA_EMITTER  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_greebles import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.aurora_station import AURORA_EMITTER  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     lamps,
     plate,
     rect,
 )
-from game.view.bosses.mini_boss_mechanism import conduit  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.mini_boss_mechanism import conduit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     QUARTER,
     SHADE,
     WHITE,
@@ -36,18 +36,18 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     offset,
     turret,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402
-from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The Aurora Station's green neon, and the violet one it shares its lights with.
 _AURORA_NEON = BOSS_LOOK.neon["aurora-station"]
-AURORA_GREEN = [0.3, 1.0, 0.55] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711
+AURORA_GREEN = [0.3, 1.0, 0.55] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 AURORA_VIOLET = [0.62, 0.3, 1.0]
 # Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost).
 FROST = [0.75, 0.82, 0.9]
@@ -69,7 +69,8 @@ def _sign(x: float) -> float:
 
 
 def icicles(hull: SolidBuilder, points: Sequence[Vec3], side: float = 1) -> None:
-    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice."""
+    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice
+    (FB-AURORA-STATION-05)."""
     for i, point in enumerate(points):
         length = 3.5 + (i % 3) * 1.3
         hull.cylinder(
@@ -93,15 +94,17 @@ def bowl(r: float) -> list[Vec3]:
 
 
 def emitter(p: EnemyParts, at: Vec3) -> None:
-    """A dish emitter's pylon around its centre `at` (P08-R10): its dish turns on it."""
-    # P16-R06: a swollen node of flesh at the end of its arm, a metal socket for the dish.
+    """A dish emitter's pylon around its centre `at` (FB-AURORA-STATION-03): its dish turns on
+    it."""
+    # FB-AURORA-STATION-03: a swollen node of flesh at the end of its arm, a metal socket for the
+    # dish.
     organ(p.flesh, 7, 6, ICE_FLESH.graphite, Placement(offset(at, 0, -2, -3)), 0.5)
     p.hull.box([4, 6, 5], H.panel, Placement(offset(at, 0, 2, -3)), H.base)
     gland(p, offset(at, _sign(at[0]) * 5, 2, -6), 1, AURORA_GREEN)
 
 
 def emitter_turret(p: EnemyParts, at: Vec3) -> None:
-    """A dish emitter's turret, turning on its pylon (phase 8 review: it aims its laser): an
+    """A dish emitter's turret, turning on its pylon (FB-AURORA-STATION-06: it aims its laser): an
     upright dish facing down the screen, struts holding its projector at the focus, where the
     laser leaves from."""
     hull = p.hull
@@ -143,7 +146,7 @@ TANK = [
 
 
 def iced(side: float) -> Rgb | None:
-    """Ice on the top of a `POD_SECTION` loft (its side 2)."""
+    """Ice on the top of a `POD_SECTION` loft (its side 2; FB-AURORA-STATION-05)."""
     if side == POD_BACK:
         rime: Rgb = ICE_FLESH.rime
         return rime
@@ -151,11 +154,12 @@ def iced(side: float) -> Rgb | None:
 
 
 def cryo_cannon(p: EnemyParts, at: Vec3) -> None:
-    """A cryo cannon's body around its centre `at` (P08-R10): a cryogenic tank on the station's
-    truss, iced over, two coolant flasks behind its turret (`cryo_turret`)."""
+    """A cryo cannon's body around its centre `at` (FB-AURORA-STATION-03): a cryogenic tank on the
+    station's truss, iced over, two coolant flasks behind its turret (`cryo_turret`)."""
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a cryo bladder of flesh, rimed over, two glands of coolant behind its gun.
+    # FB-AURORA-STATION-03: a cryo bladder of flesh, rimed over, two glands of coolant behind its
+    # gun.
     flesh.loft(
         POD_SECTION,
         TANK,
@@ -182,7 +186,8 @@ def cryo_cannon(p: EnemyParts, at: Vec3) -> None:
 
 
 def cryo_turret(p: EnemyParts, at: Vec3) -> None:
-    """A cryo cannon's turret: a single wide-bored barrel, a violet ring round its foot."""
+    """A cryo cannon's turret, turning as it aims (FB-AURORA-STATION-06): a single wide-bored
+    barrel, a violet ring round its foot."""
     turret(
         p,
         offset(at, 0, 6, 0),
@@ -201,12 +206,12 @@ def cryo_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def hangar(p: EnemyParts, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (P08-R10): a snow-roofed bay at the station's
-    nose, its open door framed in violet, where its Hornets leave from."""
+    """The drone hangar around its centre `at` (FB-AURORA-STATION-03): a snow-roofed bay at the
+    station's nose, its open door framed in violet, where its Hornets leave from."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a brood pouch of flesh at the nose, its mouth framed in violet.
+    # FB-AURORA-STATION-03: a brood pouch of flesh at the nose, its mouth framed in violet.
     flesh.bevel_slab(
         rect(26, 24),
         [-3, 0, 8],
@@ -234,7 +239,8 @@ def hangar(p: EnemyParts, at: Vec3) -> None:
 
 
 def dish(p: EnemyParts) -> None:
-    """The big dish on top (P08-R10), drawn on the model's ring so that it turns slowly: a
+    """The big dish on top (FB-AURORA-STATION-03), drawn on the model's ring so that it turns
+    slowly (FB-AURORA-STATION-06): a
     snow-filled bowl on a turntable, a violet rim, and its feed horn lit green at the focus."""
     hull = p.hull
     flesh = p.flesh
@@ -243,7 +249,7 @@ def dish(p: EnemyParts) -> None:
     def axis(along: float) -> Vec3:
         return [0, 19 + along * math.cos(DISH_TILT), along * math.sin(DISH_TILT)]
 
-    # P16-R06: the crown, a frilled bowl of membrane turning on its stalk.
+    # FB-AURORA-STATION-03: the crown, a frilled bowl of membrane turning on its stalk.
     hull.cylinder(4, 2, 8, H.panel, Placement([0, 17, 0]))
     flesh.lathe(bowl(15), 12, ICE_FLESH.membrane, Placement(axis(0), 0, DISH_TILT))
     neon.ring(15.1, 0.6, 12, AURORA_VIOLET, Placement(axis(4.9), 0, DISH_TILT))

@@ -38,7 +38,7 @@ def test_moves_without_wrapping(index: int, direction: str, expected: int) -> No
         (1, "up", 1),  # Wraps to row 2 column 1, which is missing: stays.
     ],
 )
-def test_p01_r01_moves_wrap_around_when_asked(index: int, direction: str, expected: int) -> None:
+def test_ui_ship_04_moves_wrap_around_when_asked(index: int, direction: str, expected: int) -> None:
     assert move_cursor(index, direction, WRAP) == expected  # type: ignore[arg-type]
 
 

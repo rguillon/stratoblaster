@@ -1,6 +1,7 @@
-"""The dev viewers of the app (D-199): the viewer the menu flow shows on its `dev-viewer` screen,
-built when it opens and dropped when it closes; the mouse wheel over it (D-208: it zooms, or
-scrubs the levels viewer's time); K in the bosses viewer (breaks the boss's next part).
+"""The dev viewers of the app, in the game page (DEV-MENU-02, D-199): the viewer the menu flow
+shows on its `dev-viewer` screen, built when it opens and dropped when it closes; the mouse wheel
+over it (DEV-MENU-11, D-208: it zooms, or scrubs the levels viewer's time); K in the bosses viewer
+(breaks the boss's next part, DEV-MENU-14).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,9 +11,9 @@ from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.dev_catalog import DevItem  # noqa: E402
+from app.dev_catalog import DevItem  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -96,12 +97,12 @@ class DevSession:
         return True
 
     def turn(self, dx: float, dy: float) -> None:
-        """A drag over the viewer, by (`dx`, `dy`) screen pixels, turns its model."""
+        """A drag over the viewer, by (`dx`, `dy`) screen pixels, turns its model (DEV-MENU-10)."""
         if self.viewer is not None:
             self.viewer.turn(dx, dy)
 
     def frame(self, dt: float) -> None:
-        """Moves the viewer on by `dt` seconds, and shows its status."""
+        """Moves the viewer on by `dt` seconds, and shows its status (DEV-MENU-05)."""
         viewer = self.viewer
         if viewer is None:
             return

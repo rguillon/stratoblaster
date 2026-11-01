@@ -1,8 +1,9 @@
-"""Builders of living shapes for low-poly, flat-shaded models (): bodies of segments, shells, ribs,
-tendrils, membrane wings,
-organs, veins and armour plates.
+"""Builders of living shapes for low-poly, flat-shaded models (GFX-ART-17): bodies of segments,
+shells, ribs, tendrils, membrane wings, organs, veins and armour plates, of which the game builds
+its Cyber-Organic bodies (GFX-ART-12, ENM-35), in code (GFX-ART-01).
 
-Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.
+Game-agnostic (ENG-140): they draw into a `SolidBuilder` and know nothing of what they are used
+for.
 """
 
 import math
@@ -14,9 +15,9 @@ from render.geometry.solids import LoftOptions, Placement, SolidBuilder, place_a
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 Vec3 = list[float]
@@ -366,8 +367,8 @@ def membrane_wing(
     colors: list[Rgb],
     place: Placement | None = None,
 ) -> None:
-    """Draws a `MembraneWing`: its membrane in `colors[0]` (from the root along the tips and
-    back), a strut along each tip in `colors[1]`, thinning out to it."""
+    """Draws a `MembraneWing` (a living wing, GFX-ART-13): its membrane in `colors[0]` (from the
+    root along the tips and back), a strut along each tip in `colors[1]`, thinning out to it."""
     if place is None:
         place = Placement()
     root = wing.root
@@ -397,7 +398,7 @@ def vein(
     color: Rgb,
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """A glowing vein along `path`: a thin three-sided tube, `width` across."""
+    """A glowing vein along `path` (GFX-ART-14): a thin three-sided tube, `width` across."""
     return tendril(b, path, [width / 2, width / 4], 3, color, place)
 
 

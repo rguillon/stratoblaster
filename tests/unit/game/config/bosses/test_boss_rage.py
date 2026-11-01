@@ -1,4 +1,4 @@
-"""Unit tests of `src/game/config/bosses/boss_rage.py`."""
+"""Unit tests of `src/game/config/bosses/boss_rage.py`: the angry patterns (BOSS-28)."""
 
 import pytest
 

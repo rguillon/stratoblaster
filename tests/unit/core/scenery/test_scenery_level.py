@@ -282,7 +282,7 @@ class _Ground:
         self.half_z = half
 
 
-def test_p04_r07_the_largest_kind_that_fits_stands_on_the_part() -> None:
+def test_the_largest_kind_that_fits_stands_on_the_part() -> None:
     big = PropKindRule("big", 1.0, 10.0, (0.5, 1.0), frontage=10.0)
     small = PropKindRule("small", 1.0, 3.0, (0.5, 1.0), frontage=3.0)
     part = Block(0.0, 40.0, 0.0, 40.0)
@@ -302,7 +302,7 @@ def test_a_smaller_kind_is_taken_when_only_it_fits() -> None:
     assert building.placement.kind == "small"
 
 
-def test_p04_r07_a_kind_without_frontage_is_fitted_by_its_footprint() -> None:
+def test_a_kind_without_frontage_is_fitted_by_its_footprint() -> None:
     kind = PropKindRule("plain", 1.0, 5.0, (0.5, 1.0))
     building = tower_in(Block(0.0, 40.0, 0.0, 40.0), [_group(kind)], 0.0, 0.2)
     assert building is not None
@@ -310,14 +310,14 @@ def test_p04_r07_a_kind_without_frontage_is_fitted_by_its_footprint() -> None:
     assert building.half_x == 5.0
 
 
-def test_p15_r08_a_group_without_tile_kinds_leaves_the_lots() -> None:
+def test_gfx_bldg_05_a_group_without_tile_kinds_leaves_the_lots() -> None:
     empty = PropGroupRule("empty", 1.0, [])
     site, roads, placed = _setup(group_at=lambda x, z, section: empty)
     _pack(site, roads)
     assert {b.placement.kind for b in placed} == {"lot"}
 
 
-def test_p15_r08_areas_of_different_groups_pack_with_their_own_kinds() -> None:
+def test_gfx_bldg_05_areas_of_different_groups_pack_with_their_own_kinds() -> None:
     other = PropGroupRule("other", 1.0, [ONE])
     group = PropGroupRule("g", 1.0, [TWO])
     site, roads, placed = _setup(group_at=lambda x, z, section: group if x < 0.0 else other)
@@ -339,7 +339,7 @@ def test_terrain_ceiling_takes_the_highest_of_the_sections_parts() -> None:
     assert terrain_ceiling(make_level([section("a", 10, flat(0), shore=shore)])) == 0
 
 
-def test_p04_r01_ridged_relief_stays_between_base_and_top() -> None:
+def test_gfx_terrain_02_ridged_relief_stays_between_base_and_top() -> None:
     ridged = Relief(50.0, 30.0, 1 / 300, 4, "ridged")
     field = HeightField(make_level([section("a", 10, ridged)]))
     assert all(50 - 1e-9 <= h <= 80 + 1e-9 for h in _heights(field))
@@ -359,7 +359,7 @@ def test_shore_drops_the_ground_on_the_sea_side_only() -> None:
     assert field.height(100.0, 300.0) == pytest.approx(10.0)
 
 
-def test_p04_r01_dunes_add_between_zero_and_their_height() -> None:
+def test_gfx_terrain_04_dunes_add_between_zero_and_their_height() -> None:
     dunes = Dunes(12.0, 80.0, 30.0, 0.5)
     field = HeightField(make_level([section("a", 10, flat(10), dunes=dunes)]))
     added = [h - 10.0 for h in _heights(field)]
@@ -375,7 +375,7 @@ def test_crevasses_only_cut_into_the_ground() -> None:
     assert min(heights) < 10.0
 
 
-def test_p04_r01_ground_cover_is_blended_like_the_height() -> None:
+def test_gfx_terrain_09_ground_cover_is_blended_like_the_height() -> None:
     lush = section("a", 10, flat(), surface=Surface(1.0, None, 0.0))
     paved = section("b", 10, flat(), surface=Surface(0.0, 0.5, None))
     field = HeightField(make_level([lush, paved], transition=200))
@@ -409,7 +409,7 @@ def test_the_first_main_roads_are_dual() -> None:
     ]
 
 
-def test_p04_r07_without_crossings_each_main_road_keeps_its_gap_from_the_ones_before() -> None:
+def test_gfx_road_05_without_crossings_each_main_road_keeps_its_gap_from_the_ones_before() -> None:
     gap = 20.0
     net = _network(_level(streets=False, no_crossings=NoCrossings(gap), main_roads=3))
     mains = _mains(net)
@@ -421,20 +421,20 @@ def test_p04_r07_without_crossings_each_main_road_keeps_its_gap_from_the_ones_be
                 assert edge >= mains[k].width / 2 + gap - 1e-6
 
 
-def test_p04_r07_boulevards_have_their_lanes() -> None:
+def test_gfx_road_17_boulevards_have_their_lanes() -> None:
     level = _level(boulevards=[Boulevard(3, 36.0, 0.5)])
     net = _network(level)
     assert any(r.width == 36.0 and r.lanes == 3 for r in net.roads if r.kind == "street")
 
 
-def test_p04_r01_sections_are_laid_end_to_end_from_zero() -> None:
+def test_gfx_terrain_01_sections_are_laid_end_to_end_from_zero() -> None:
     level = make_level([section("a", 10, flat()), section("b", 5, flat())], speed=100.0)
     placed = layout_sections(level)
     assert [(p.start, p.end) for p in placed] == [(0.0, 1000.0), (1000.0, 1500.0)]
     assert placed[1].section.name == "b"
 
 
-def test_p04_r01_a_level_needs_sections_speed_and_lengths() -> None:
+def test_gfx_terrain_01_a_level_needs_sections_speed_and_lengths() -> None:
     with pytest.raises(ValueError):
         layout_sections(make_level([]))
     with pytest.raises(ValueError):
@@ -443,13 +443,13 @@ def test_p04_r01_a_level_needs_sections_speed_and_lengths() -> None:
         layout_sections(make_level([section("a", 0.0, flat())]))
 
 
-def test_p04_r06_the_duration_and_length_add_up_the_sections() -> None:
+def test_game_level_03_the_duration_and_length_add_up_the_sections() -> None:
     level = make_level([section("a", 10, flat()), section("b", 5, flat())], speed=100.0)
     assert level_duration(level) == pytest.approx(15.0)
     assert level_length(level) == pytest.approx(1500.0)
 
 
-def test_p07_r03_a_runout_extends_the_last_section_and_adds_up() -> None:
+def test_game_level_08_a_runout_extends_the_last_section_and_adds_up() -> None:
     level = make_level([section("a", 10, flat()), section("b", 5, flat())], speed=100.0)
     assert with_runout(level, 0.0) is level
     extended = with_runout(level, 30.0)
@@ -462,7 +462,7 @@ def test_p07_r03_a_runout_extends_the_last_section_and_adds_up() -> None:
     assert level.runout is None and level.sections[1].seconds == 5.0
 
 
-def test_p07_r03_the_runout_starts_where_its_seconds_begin() -> None:
+def test_game_level_08_the_runout_starts_where_its_seconds_begin() -> None:
     level = make_level([section("a", 10, flat()), section("b", 5, flat())], speed=100.0)
     assert runout_start(level) is None
     assert runout_start(with_runout(level, 0.0)) is None
@@ -526,7 +526,7 @@ def test_the_terrain_and_prop_data_records_keep_their_fields() -> None:
     assert (block.podiums, block.podium_height, block.towers) == (["p1"], (1.0, 2.0), (3.0, 4.0))
 
 
-def test_p04_r07_streets_are_straight_runs_across_and_along() -> None:
+def test_gfx_road_14_streets_are_straight_runs_across_and_along() -> None:
     runs, _ = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.55), road_rules())
     assert runs
     for run in runs:
@@ -535,7 +535,7 @@ def test_p04_r07_streets_are_straight_runs_across_and_along() -> None:
         assert len(xs) == 1 or len(zs) == 1
 
 
-def test_p04_r07_the_streets_are_the_same_for_the_same_seed() -> None:
+def test_gfx_road_14_the_streets_are_the_same_for_the_same_seed() -> None:
     def shape(seed: int):
         runs, blocks = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.55), road_rules(), seed)
         return (
@@ -547,27 +547,27 @@ def test_p04_r07_the_streets_are_the_same_for_the_same_seed() -> None:
     assert shape(4) != shape(5)
 
 
-def test_p04_r07_the_blocks_between_streets_have_room() -> None:
+def test_gfx_road_14_the_blocks_between_streets_have_room() -> None:
     _, blocks = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.55), road_rules())
     assert blocks
     assert all(b.x_max > b.x_min and b.z_max > b.z_min for b in blocks)
 
 
-def test_p04_r07_unbuildable_ground_gets_no_streets() -> None:
+def test_gfx_road_14_unbuildable_ground_gets_no_streets() -> None:
     runs, blocks = _runs(
         StreetGrid((60.0, 110.0), (70.0, 130.0), 1.0), road_rules(), buildable=lambda x, z: False
     )
     assert runs == [] and blocks == []
 
 
-def test_p04_r07_a_boulevard_is_built_along_its_line() -> None:
+def test_gfx_road_17_a_boulevard_is_built_along_its_line() -> None:
     rules = road_rules(boulevards=[Boulevard(3, 36.0, 0.5)])
     runs, _ = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.0), rules)
     widths = {run.width for run in runs}
     assert 36.0 in widths
 
 
-def test_p04_r07_without_crossings_the_streets_are_still_straight() -> None:
+def test_gfx_road_14_without_crossings_the_streets_are_still_straight() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     runs, _ = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.8), rules)
     assert runs
@@ -578,7 +578,7 @@ def test_p04_r07_without_crossings_the_streets_are_still_straight() -> None:
         )
 
 
-def test_p15_r01_on_tiles_the_streets_are_whole_tiles_wide() -> None:
+def test_gfx_road_08_on_tiles_the_streets_are_whole_tiles_wide() -> None:
     rules = road_rules(tiles=tile_rules(), main_width=24.0, dual=road_rules().dual)
     runs, blocks = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.8), rules)
     assert runs and blocks
@@ -765,7 +765,7 @@ def test_p04_review_blocks_without_podiums_stand_on_the_ground() -> None:
     assert any(p.kind == "block" for p in props)
 
 
-def test_p04_r04_a_section_with_no_groups_or_a_group_without_kinds_has_no_buildings() -> None:
+def test_gfx_bldg_01_a_section_with_no_groups_or_a_group_without_kinds_has_no_buildings() -> None:
     sections = [flat_props("low", 10, 10), flat_props("high", 10, 30)]
     for sect in sections:
         sect.groups = []
@@ -785,7 +785,7 @@ def test_the_group_of_an_area_is_one_of_those_its_section_allows() -> None:
     assert p.group_at(0, 10, section_none) is None
 
 
-def test_p08_r03_a_line_of_props_stands_along_the_level_before_the_buildings() -> None:
+def test_gfx_prop_16_a_line_of_props_stands_along_the_level_before_the_buildings() -> None:
     level = sample_level(
         props=sample_props(lines=[PropLine("pipe", Meander(0, 0, 100), 50, 1, 10)])
     )
@@ -798,7 +798,7 @@ def test_p08_r03_a_line_of_props_stands_along_the_level_before_the_buildings() -
     assert len(buildings) == len(pipes)
 
 
-def test_p08_r07_floating_props_float_on_the_sea() -> None:
+def test_gfx_prop_15_floating_props_float_on_the_sea() -> None:
     deep = TerrainSection(
         "sea",
         20,
@@ -826,7 +826,7 @@ def test_a_set_piece_keeps_the_buildings_off_its_ground() -> None:
     assert p.free(_Ground(50, 100, 1), 0)
 
 
-def test_p04_r04_a_level_with_loners_places_its_first_chunk() -> None:
+def test_gfx_bldg_02_a_level_with_loners_places_its_first_chunk() -> None:
     level = sample_level(props=sample_props(loners=Loners(40, 1, 2)))
     placer_for(level).place(AREA)
 

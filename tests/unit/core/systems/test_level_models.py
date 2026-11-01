@@ -27,7 +27,7 @@ KINDS = [_kind("scout", ["scout"]), _kind("swarm", ["gnat", "gnat"]), _kind("tan
 BOSSES = [_boss("dreadnought", "dreadnought-model"), _boss("other", "other")]
 
 
-def test_p13_r03_the_models_of_a_level_are_those_of_its_waves_bosses_and_extras_once_each() -> None:
+def test_perf_21_the_models_of_a_level_are_those_of_its_waves_bosses_and_extras_once_each() -> None:
     waves = [
         Wave(0, "swarm", 2, 1, TOP),
         Wave(10, "scout", 1, 0, TOP),
@@ -38,7 +38,7 @@ def test_p13_r03_the_models_of_a_level_are_those_of_its_waves_bosses_and_extras_
     assert keys == ["gnat", "scout", "dreadnought-model", "pod"]
 
 
-def test_p13_r03_unknown_kinds_and_bosses_give_no_model() -> None:
+def test_perf_21_unknown_kinds_and_bosses_give_no_model() -> None:
     keys = level_model_keys(
         [Wave(0, "ghost", 1, 0, TOP)], [LevelBoss("x", "mini", 1)], KINDS, BOSSES, _area, []
     )

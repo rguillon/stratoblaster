@@ -1,4 +1,4 @@
-"""The game's short fanfares (P12-R07): "level complete",
+"""The game's short fanfares (AUD-MUSIC-10): "level complete",
 "game over" and "checkpoint reached", each a track played once.
 """
 
@@ -9,9 +9,9 @@ __pragma__("skip")
 
 __pragma__("noskip")
 
-from audio.audio_types import Note, Track  # noqa: E402
-from game.view.audio.compose_parts import concat, note, sort_by_beat  # noqa: E402
-from game.view.audio.instruments import DRUM_PITCH  # noqa: E402
+from audio.audio_types import Note, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_parts import concat, note, sort_by_beat  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.instruments import DRUM_PITCH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def line(instrument: str, notes: list[list[float]], velocity: float) -> list[Note]:
@@ -20,7 +20,7 @@ def line(instrument: str, notes: list[list[float]], velocity: float) -> list[Not
 
 
 def jingle(track_id: str, bpm: float, beats: float, notes: list[Note]) -> Track:
-    """A short fanfare played once (P12-R07): its notes sorted by beat, not looping."""
+    """A short fanfare played once (AUD-MUSIC-10): its notes sorted by beat, not looping."""
     return Track(track_id, bpm, beats, sort_by_beat(notes[:]), False)
 
 

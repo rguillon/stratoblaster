@@ -1,4 +1,4 @@
-"""The Minelayer (P05-R18)"""
+"""The Minelayer (`specs/enemies/minelayer.md`)"""
 
 import math
 
@@ -10,7 +10,7 @@ from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -18,9 +18,10 @@ CFG = VETERAN_CONFIG.minelayer
 
 
 class Minelayer(Enemy):
-    """P05-R18: crosses the top half of the screen sideways from `side`, like a Strafer (P05-R04).
-    Every 0.8 s it drops a mine from its belly rack: a slow bullet drifting down that bursts into a
-    ring of 6 bullets 1.5 s later (`EnemyBulletSpec.burst`).
+    """ENM-MINELAYER-07: crosses the top half of the screen sideways from `side`, like a Strafer
+    (ENM-STRAFER-05). Every 0.8 s it drops a mine from its belly rack (ENM-MINELAYER-08): a slow
+    bullet drifting down that bursts into a ring of 6 bullets 1.5 s later (ENM-MINELAYER-09,
+    `EnemyBulletSpec.burst`). Its `charge` lights its charge lights (ENM-MINELAYER-04).
     """
 
     def __init__(self, x: float, y: float, side: str) -> None:

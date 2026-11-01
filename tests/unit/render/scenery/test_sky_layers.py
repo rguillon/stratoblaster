@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/sky_layers.py`."""
+"""Unit tests of `src/render/scenery/sky_layers.py` (GFX-SKY-11)."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -170,6 +170,7 @@ def test_the_clouds_state_is_the_state_of_each_cloud_layer() -> None:
 
 
 def test_the_aurora_flies_eight_above_the_highest_cloud_when_that_is_below_the_ships() -> None:
+    """GFX-SKY-17."""
     sky, _ = _sky(clouds=[_cloud(100), _cloud(160)])
     sky.attach(_Kit(), _placement(flight=200))
     assert sky._aurora.args[2][1] == 160 + AURORA_ABOVE_CLOUDS
@@ -182,6 +183,7 @@ def test_the_aurora_stays_four_below_the_flight_altitude_when_the_clouds_are_hig
 
 
 def test_the_lightning_flashes_inside_the_lowest_cloud_layer() -> None:
+    """GFX-WEATHER-12."""
     sky, _ = _sky(clouds=[_cloud(160), _cloud(100)])
     sky.attach(_Kit(), _placement(flight=200))
     _scene, seed, placement = sky._lightning.args

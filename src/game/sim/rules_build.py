@@ -1,6 +1,7 @@
-"""Builds the core rules of the player's hull, bombs and bonuses, and of the boss fights (GD-20,
-GD-32, P07, P11) from their config records. The config keeps camelCase keys;
-`core/` takes snake_case attributes. Mapping rules are in `config_build.py`.
+"""Builds the core rules of the player's hull, bombs and bonuses, and of the boss fights
+(`specs/gameplay/lives-and-damage.md`, `bombs.md`, `bonuses.md`, `level-flow.md`) from their config
+records. The config keeps camelCase keys; `core/` takes snake_case attributes. Mapping rules are in
+`config_build.py`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -12,7 +13,7 @@ from core.systems.player_hull import HullDamage, HullRules
 from game.sim.config_build import opt
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
@@ -20,7 +21,7 @@ __pragma__("noskip")
 
 
 def hull_rules(config: ConfigRecord) -> HullRules:
-    """What hurts the player, and its lives (GD-20..GD-22)."""
+    """What hurts the player, and its lives (GAME-LIFE-02, GAME-LIFE-03, GAME-LIFE-07)."""
     damage = config.damage
     return HullRules(
         config.lives,
@@ -33,7 +34,7 @@ def hull_rules(config: ConfigRecord) -> HullRules:
 
 
 def bomb_rules(config: ConfigRecord) -> BombRules:
-    """The player's bombs (GD-32, P11-R05)."""
+    """The player's bombs (GAME-BOMB-01, GAME-BOMB-04)."""
     return BombRules(config.start, config.damage, config.seconds, opt(config.max))
 
 
@@ -42,7 +43,7 @@ def _life_and_bomb(pair: ConfigRecord) -> LifeAndBomb:
 
 
 def bonus_rules(config: ConfigRecord) -> BonusRules:
-    """Bonuses dropped by destroyed enemies (GD-31, P11-R07)."""
+    """Bonuses dropped by destroyed enemies (GAME-BONUS-02, GAME-BONUS-03)."""
     chance = config.chance
     special = opt(config.special)
     overflow = opt(config.overflowPoints)
@@ -56,5 +57,5 @@ def bonus_rules(config: ConfigRecord) -> BonusRules:
 
 
 def boss_fight_rules(config: ConfigRecord) -> BossFightRules:
-    """How boss fights go: the speed ease and the health bar fill (P07-R02, R03)."""
+    """How boss fights go: the speed ease and the health bar fill (GAME-LEVEL-07, UI-HUD-14)."""
     return BossFightRules(config.speedEaseSeconds, config.barFillSeconds)

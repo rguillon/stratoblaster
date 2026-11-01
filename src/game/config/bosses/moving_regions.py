@@ -1,6 +1,7 @@
-"""Moving regions (D-230; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
-design.md, Part B): armour regions whose piece stays on the boss and moves into a new pose as it
-transforms (a wing swings forward, a hull splits and slides apart), instead of bursting off.
+"""Moving regions (D-230, BOSS-45; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
+shape-shifts-design.md, Part B): armour regions whose piece stays on the boss and moves into a new
+pose as it transforms (a wing swings forward, a hull splits and slides apart), instead of bursting
+off.
 
 A region's piece is cut out of the core's drawing as any armour region's is; its `motion` takes it
 from its rest pose to its end pose. The drawn geometry is the pose at angle 0 or offset 0: a piece
@@ -21,7 +22,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -110,7 +111,7 @@ def moving_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     with `mirror` its mirror image moving the mirror way (two regions, `region_id` + `-right` and
     `-left`). `frame` (`wing`, `shell` or `ring`): what shows where a piece was drawn once it has
     moved; nothing when left out."""
-    if frame != None and frame not in FRAMES:  # noqa: E711
+    if frame != None and frame not in FRAMES:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         raise ValueError('Unknown armour frame "' + frame + '"')
     first = armour_region(region_id, form, outline, "wing", heights, mirror)
     result: list[Any] = []
@@ -136,7 +137,7 @@ def moving_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 def is_moving(region: Any) -> bool:
     """Whether `region` moves (see `moving_region`) rather than bursting off."""
-    return bool(region.motion != None)  # noqa: E711
+    return bool(region.motion != None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def end_spot(region: Any, point: list[float]) -> list[float]:
@@ -169,11 +170,11 @@ def ridden_region(design: Any, part: Any) -> Any:
     """The moving region the hidden part `part` rides (D-230), if any: one moving at the
     transformation that reveals it, its piece under the part's pod once moved. None otherwise."""
     reveal = part.reveal
-    if reveal == None:  # noqa: E711
+    if reveal == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     weapons = design.weapons
-    look = weapons[part.id] if weapons != None and part.id in weapons else None  # noqa: E711
-    height = look.height if look != None else 0  # noqa: E711
+    look = weapons[part.id] if weapons != None and part.id in weapons else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    height = look.height if look != None else 0  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     for region in design.armour or []:
         if not is_moving(region) or region.form != reveal:
             continue

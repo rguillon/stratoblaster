@@ -1,9 +1,11 @@
 # ruff: noqa: E501
-"""The terrain's blend plugin (P04-R01, P10-R05): turns a standard material into a terrain material,
-blending generated textures by altitude and slope, with a beach, shallows and surf (or lava).
+"""The terrain's blend plugin (GFX-TERRAIN-08, GFX-TERRAIN-17): turns a standard material into a
+terrain material, blending generated textures by altitude and slope, with a beach, shallows and
+surf (or lava).
 
 Transcrypt cannot subclass a JavaScript class, so the `MaterialPluginBase` subclass is made by
-`render.babylon.new_material_plugin`, whose hooks call the methods of `TerrainBlendOwner`.
+`render.babylon.new_material_plugin` (ENG-158), whose hooks call the methods of
+`TerrainBlendOwner`. The Babylon wiring stays in this `*_visual` module (ENG-114).
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -13,7 +15,7 @@ from render.babylon import js_object, js_set, new_material_plugin
 from render.scenery.terrain_geometry import SURFACE_SCALE
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -44,8 +46,8 @@ class TerrainTextures:
 
 class TerrainBlendState:
     """Values that change while the scene runs. `lava` (phase 10): the sea is lava, and the rock by
-    it glows (P10-R05). `ground` (None when drawn as it is): how the ground is drawn, its colours
-    following the ground, not the world (`GroundTransform`)."""
+    it glows (GFX-TERRAIN-17). `ground` (None when drawn as it is): how the ground is drawn, its
+    colours following the ground, not the world (`GroundTransform`)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -111,12 +113,13 @@ uniform sampler2D terrainPaved;
 uniform sampler2D terrainSandy;
 uniform sampler2D terrainNoise;
 
-// Planes and layers weighing less than this are not read (reviewer, 2026-10-28): they would change
-// the colour by less than half a step. On flat paved ground, one texture read instead of 21.
+// Planes and layers weighing less than this are not read (reviewer, 2026-10-28, PERF-29): they
+// would change the colour by less than half a step. On flat paved ground, one texture read
+// instead of 21.
 const float TERRAIN_SKIP = 1.0 / 512.0;
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
-// slopes are not stretched.
+// slopes are not stretched (GFX-TERRAIN-07).
 vec3 terrainTriplanar(sampler2D tex, vec3 p, vec3 w) {
   float s = terrainScale.x;
   vec3 color = vec3(0.0);
@@ -161,14 +164,16 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
   return mix(color, terrainFoam.rgb, clamp(edge * 0.9 + band * 0.7, 0.0, 1.0));
 }
 
-// Phase 10: where the rock meets lava (P10-R05), it is scorched dark under a hot glowing edge.
+// Phase 10: where the rock meets lava (GFX-TERRAIN-17), it is scorched dark under a hot glowing
+// edge.
 vec3 terrainScorch(vec3 color, vec3 p) {
   float above = p.y - terrainSea.x;
   return color * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));
 }
 
 // The glow of the rock by the lava: a bright edge at its level and glowing cracks a little above.
-// The ground point drawn at world point `p` (the ground may be drawn scaled and moved).
+// The ground point drawn at world point `p` (the ground may be drawn scaled and moved,
+// GFX-CAM-04).
 vec3 groundPoint(vec3 p) {
   return vec3(p.x, p.y, p.z - terrainGroundFrame.y) / terrainGroundFrame.x;
 }
@@ -361,11 +366,13 @@ class TerrainBlendOwner:
 def new_terrain_blend_plugin(
     material: Any, look: Any, textures: TerrainTextures, state: TerrainBlendState
 ) -> Any:
-    """Turns a `StandardMaterial` into a terrain material (P04-R01): the colour comes from four
-    generated textures blended by altitude and slope, with noise so the borders wander, large
-    tinted patches, and a beach, shallows and surf where the ground meets the sea (phase 10: or,
-    by lava, scorched rock with a glowing edge and cracks). Lighting, shadows and fog stay the
-    standard material's. Returns the plugin."""
+    """Turns a `StandardMaterial` into a terrain material: the colour comes from four generated
+    textures blended by altitude and slope (GFX-TERRAIN-08), with noise so the borders wander,
+    large tinted patches, the sections' covers from the vertex colours (GFX-TERRAIN-09), and a
+    beach, shallows and surf where the ground meets the sea (GFX-WATER-04, GFX-WATER-05,
+    GFX-WATER-06; none without water, GFX-WATER-02; phase 10: or, by lava, scorched rock with a
+    glowing edge and cracks). Lighting, shadows and fog stay the standard material's. Returns the
+    plugin."""
     owner = TerrainBlendOwner(look, textures, state)
     return new_material_plugin(
         material, owner, "TerrainBlend", 200, "TERRAIN_BLEND", "TerrainBlendPlugin"

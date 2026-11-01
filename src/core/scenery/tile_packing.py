@@ -1,19 +1,20 @@
-"""P15-R07, R08: buildings of whole tiles packed in the blocks of a district (phase 15)."""
+"""GFX-BLDG-03, GFX-BLDG-05: buildings of whole tiles packed in the blocks of a district
+(phase 15)."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -86,7 +87,8 @@ def _fits(site: PackSite, block: TileBlock, x: int, z: int, w: int, d: int) -> b
 
 def _faces(site: PackSite, x: int, z: int, w: int, d: int, facing: tuple[int, int, float]) -> bool:
     """Whether a road runs along the side of a spot that `facing` looks at."""
-    # Plain loops: Transcrypt runs `any(...)` over a generator through its slow iterator protocol.
+    # Plain loops (ENG-157): Transcrypt runs `any(...)` over a generator through its slow iterator
+    # protocol.
     dx, dz, _ = facing
     if dz != 0:
         row = z - 1 if dz < 0 else z + d
@@ -152,8 +154,8 @@ def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
     room: tuple[int, int],
 ) -> TileSpot | None:
     """The spot for `kind` with tile (`x`, `z`) as one of its corners, facing a road if it can
-    (front on a road side, P15-R08), or else any way the draw `r` picks. `room` is the free tiles in
-    a line through (x, z) along X, and along Z."""
+    (front on a road side, GFX-BLDG-06), or else any way the draw `r` picks. `room` is the free
+    tiles in a line through (x, z) along X, and along Z."""
     tiles = kind.tiles if kind.tiles is not None else (1, 1)
     kw = tiles[0]
     kd = tiles[1]
@@ -167,7 +169,7 @@ def _spot_for(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
                 continue
             if _faces(site, sx, sz, w, d, facing):
                 return TileSpot(kind, sx, sz, w, d, facing[2])
-            # Standing there with a road along a side it cannot face is not allowed (P15-R08).
+            # Standing there with a road along a side it cannot face is not allowed (GFX-BLDG-06).
             if fallback is None and _away_from_roads(site, sx, sz, w, d):
                 fallback = TileSpot(kind, sx, sz, w, d, _turn_of(r, facing))
     # No way of standing there faces a road: only away from the streets, any way.
@@ -195,7 +197,8 @@ def _spot_at(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword
     first: bool,
 ) -> TileSpot | None:
     """The first kind `kinds_at` gives for free tile (x, z) (the `n`th drawn) that fits there, not
-    much over the `left` tiles still to cover (the last building may overshoot a little)."""
+    much over the `left` tiles still to cover (the last building may overshoot a little), so the
+    footprints mix (GFX-BLDG-07)."""
     room = (_run(site, block, x, z, 1, 0), _run(site, block, x, z, 0, 1))
     for kind in site.kinds_at(x, z, n):
         spot = _spot_for(site, block, kind, x, z, site.random(n * 3 + 2), room)
@@ -210,9 +213,9 @@ def pack_block(
     density: float,
     take: Callable[[TileSpot], None],
 ) -> None:
-    """Packs `block` with buildings until about `density` of its free tiles are covered (P15-R08):
-    tiles are taken in a random order; each gets the first kind `kinds_at` gives that fits there.
-    `take` marks the tiles of each building placed."""
+    """Packs `block` with buildings until about `density` of its free tiles are covered
+    (GFX-BLDG-05): tiles are taken in a random order; each gets the first kind `kinds_at` gives that
+    fits there. `take` marks the tiles of each building placed."""
     tiles = _free_tiles(site, block)
     target = density * len(tiles)
     covered = 0.0
@@ -231,7 +234,7 @@ def pack_block(
 class TileGround:
     """The ground of the tiles, from the heights at their corners (each asked once, shared by the
     four tiles around it): a tile is fit to build on when its lowest corner is at least
-    `min_height` and its corners differ by at most `max_slope` over half a tile."""
+    `min_height` and its corners differ by at most `max_slope` over half a tile (GFX-BLDG-04)."""
 
     def __init__(self, field: HeightField, tiles: TileRules, rules: PropRules) -> None:
         self._field = field

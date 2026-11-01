@@ -1,4 +1,4 @@
-"""One model per boss, keyed by its model key (the boss kind id, P07-R05)"""
+"""One model per boss, keyed by its model key (the boss kind id, BOSS-01, BOSS-47)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -48,7 +48,7 @@ __pragma__("skip")
 
 __pragma__("noskip")
 
-# One model per boss, keyed by its model key (the boss kind id, P07-R05).
+# One model per boss, keyed by its model key (the boss kind id, BOSS-01).
 BOSS_MODELS = {
     "reef-warden": build_reef_warden,
     "storm-petrel": build_storm_petrel,
@@ -60,7 +60,7 @@ BOSS_MODELS = {
     "refinery-titan": build_refinery_titan,
     "sentinel": build_sentinel,
     "overlord": build_overlord,
-    # World 2 (P08-R10).
+    # World 2 (specs/bosses/*/2-*.md).
     "floe-breaker": build_floe_breaker,
     "narwhal": build_narwhal,
     "fjord-lynx": build_fjord_lynx,
@@ -71,7 +71,7 @@ BOSS_MODELS = {
     "glacier-colossus": build_glacier_colossus,
     "ice-queen": build_ice_queen,
     "boreal-citadel": build_boreal_citadel,
-    # World 3 (P09-R09).
+    # World 3 (specs/bosses/*/3-*.md).
     "mangrove-croc": build_mangrove_croc,
     "river-leviathan": build_river_leviathan,
     "toucan": build_toucan,
@@ -82,7 +82,7 @@ BOSS_MODELS = {
     "dam-breaker": build_dam_breaker,
     "jaguar": build_jaguar,
     "verdant-crown": build_verdant_crown,
-    # World 4 (P10-R11).
+    # World 4 (specs/bosses/*/4-*.md).
     "cinder-crab": build_cinder_crab,
     "steam-dreadnought": build_steam_dreadnought,
     "ash-wraith": build_ash_wraith,

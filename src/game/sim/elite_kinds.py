@@ -1,4 +1,4 @@
-"""The elite enemy kinds (P05-R19 to P05-R23)"""
+"""The elite enemy kinds (ENM-01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -15,7 +15,7 @@ from game.sim.enemies.scissor import Scissor
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402
+from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -26,7 +26,7 @@ def _top(area: EnemySpawnArea) -> float:
 
 
 def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
-    """X where a kind comes in from the top: the wave's entry (P06-R07), or random in `range_`,
+    """X where a kind comes in from the top: the wave's entry (ENM-08), or random in `range_`,
     both taken across the area's `top_range` (as in `enemy_kinds.py`).
     """
     entry = area.entry
@@ -60,7 +60,7 @@ def _spawn_hive(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _all_kinds() -> list[EnemyKindDefinition]:
-    """The five elite kinds (P05-R19 to P05-R23), in the order of the spec."""
+    """The five elite kinds (ENM-01), in the order of the spec."""
     return [
         EnemyKindDefinition("hydra", "Hydra", _spawn_hydra),
         EnemyKindDefinition("orbiter", "Orbiter", _spawn_orbiter),

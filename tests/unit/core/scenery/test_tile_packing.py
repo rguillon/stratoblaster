@@ -42,7 +42,7 @@ def _site(free=None, road=None, kinds=(ONE,), random=lambda k: 0.3) -> PackSite:
     return PackSite(is_free, is_road, lambda x, z, n: list(kinds), random)
 
 
-def test_p15_r08_a_block_is_packed_to_about_its_density() -> None:
+def test_gfx_bldg_05_a_block_is_packed_to_about_its_density() -> None:
     spots: list[TileSpot] = []
     pack_block(_site(), BLOCK, 0.5, spots.append)
     covered = [(s.x, s.z) for s in spots]
@@ -50,14 +50,14 @@ def test_p15_r08_a_block_is_packed_to_about_its_density() -> None:
     assert all(BLOCK.x0 <= x < BLOCK.x1 and BLOCK.z0 <= z < BLOCK.z1 for x, z in covered)
 
 
-def test_p15_r08_only_free_tiles_are_built_on() -> None:
+def test_gfx_bldg_05_only_free_tiles_are_built_on() -> None:
     spots: list[TileSpot] = []
     pack_block(_site(free=lambda x, z: x < 2), BLOCK, 1.0, spots.append)
     assert spots
     assert all(s.x < 2 for s in spots)
 
 
-def test_p15_r08_packing_is_the_same_for_the_same_draws() -> None:
+def test_gfx_bldg_05_packing_is_the_same_for_the_same_draws() -> None:
     def pack() -> list[tuple[int, int]]:
         spots: list[TileSpot] = []
         pack_block(_site(random=lambda k: (k * 0.37) % 1.0), BLOCK, 0.6, spots.append)
@@ -66,7 +66,7 @@ def test_p15_r08_packing_is_the_same_for_the_same_draws() -> None:
     assert pack() == pack()
 
 
-def test_p15_r08_a_spot_turns_to_face_the_road_beside_it() -> None:
+def test_gfx_bldg_06_a_spot_turns_to_face_the_road_beside_it() -> None:
     # A road along the -X side of tile column 0 (outside the block): the spot faces it.
     site = _site(road=lambda x, z: x == -1)
     spot = _spot_for(site, BLOCK, ONE, 0, 2, 0.3, (6, 6))
@@ -74,24 +74,24 @@ def test_p15_r08_a_spot_turns_to_face_the_road_beside_it() -> None:
     assert spot.rotation == pytest.approx(math.pi / 2)
 
 
-def test_p15_r08_without_a_road_the_spot_turns_by_its_draw() -> None:
+def test_gfx_bldg_06_without_a_road_the_spot_turns_by_its_draw() -> None:
     site = _site()
     assert _spot_for(site, BLOCK, ONE, 2, 2, 0.3, (6, 6)).rotation == pytest.approx(0.0)
     assert _spot_for(site, BLOCK, ONE, 2, 2, 0.7, (6, 6)).rotation == pytest.approx(math.pi)
 
 
-def test_p15_r08_no_spot_where_the_room_or_the_tiles_do_not_allow() -> None:
+def test_gfx_bldg_05_no_spot_where_the_room_or_the_tiles_do_not_allow() -> None:
     assert _spot_for(_site(), BLOCK, ONE, 2, 2, 0.3, (0, 0)) is None
     assert _spot_for(_site(free=lambda x, z: False), BLOCK, ONE, 2, 2, 0.3, (6, 6)) is None
 
 
-def test_p15_r08_a_big_kind_is_not_put_over_the_left_tiles() -> None:
+def test_gfx_bldg_05_a_big_kind_is_not_put_over_the_left_tiles() -> None:
     site = _site(kinds=(TWO,))
     assert _spot_at(site, BLOCK, 2, 2, 0, 0.5, first=False) is None
     assert _spot_at(site, BLOCK, 2, 2, 0, 0.5, first=True) is not None
 
 
-def test_p15_r08_faces_and_away_from_roads() -> None:
+def test_gfx_bldg_06_faces_and_away_from_roads() -> None:
     site = _site(road=lambda x, z: z == 1)
     assert _faces(site, 0, 2, 1, 1, FACINGS[0]) is True
     assert _faces(site, 0, 2, 1, 1, FACINGS[1]) is False
@@ -123,7 +123,7 @@ def test_tile_ground_fit_follows_the_height_and_slope_limits() -> None:
     assert all(loose.fit(x, z) for x, z in tiles)
 
 
-def test_p15_r08_a_spot_stands_at_the_lowest_ground_under_it() -> None:
+def test_gfx_bldg_04_a_spot_stands_at_the_lowest_ground_under_it() -> None:
     rough = HeightField(make_level([section("a", 10, hills())]))
     ground = TileGround(rough, tile_rules(), prop_rules())
     spot = TileSpot(ONE, 3, 4, 2, 2, 0.0)

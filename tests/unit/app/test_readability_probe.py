@@ -1,5 +1,5 @@
 """Unit tests of `src/app/readability_probe.py`."""
-# adability_probe.py` (P14-R08): where each kind of object is on the playfield, and which of them
+# adability_probe.py` (DEV-API-09): where each kind of object is on the playfield, and which of them
 # is in view. The pixel reads need the render layer and are not run here.
 
 from types import SimpleNamespace
@@ -18,19 +18,19 @@ def nothing_in_view(x: float, y: float) -> bool:
     return False
 
 
-def test_p14_r08_the_first_item_wholly_in_view_is_the_one_measured() -> None:
+def test_dev_api_09_the_first_item_wholly_in_view_is_the_one_measured() -> None:
     items = [SimpleNamespace(x=500, y=500, radius=5), SimpleNamespace(x=10, y=20, radius=5)]
     spot = _first_in_view(items, lambda x, y: x < 100, lambda item: item.radius)
     assert spot is not None
     assert (spot.x, spot.y, spot.radius) == (10, 20, 5)
 
 
-def test_p14_r08_an_item_with_its_margin_outside_the_view_is_skipped() -> None:
+def test_dev_api_09_an_item_with_its_margin_outside_the_view_is_skipped() -> None:
     items = [SimpleNamespace(x=0, y=0, radius=5)]
     assert _first_in_view(items, nothing_in_view, lambda item: item.radius) is None
 
 
-def test_p14_r08_the_spots_are_the_ship_and_the_first_of_each_kind_in_view() -> None:
+def test_dev_api_09_the_spots_are_the_ship_and_the_first_of_each_kind_in_view() -> None:
     run = SimpleNamespace(
         ship=SimpleNamespace(x=100, y=50),
         enemies=SimpleNamespace(
@@ -61,7 +61,7 @@ def test_p14_r08_the_spots_are_the_ship_and_the_first_of_each_kind_in_view() -> 
     assert spots.player_shot.radius == CFG.shot_radius
 
 
-def test_p14_r08_nothing_is_measured_when_nothing_is_in_view() -> None:
+def test_dev_api_09_nothing_is_measured_when_nothing_is_in_view() -> None:
     run = SimpleNamespace(
         ship=SimpleNamespace(x=0, y=0),
         enemies=SimpleNamespace(

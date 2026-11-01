@@ -1,4 +1,4 @@
-"""P09-R09, 3-2: the Toucan's parts: its huge beak cannon and its two wing pods (ducted fans).
+"""MB-TOUCAN-04, 3-2: the Toucan's parts: its huge beak cannon and its two wing pods (ducted fans).
 Logical pixels, nose +Z, Y up (towards the
 camera)."""
 
@@ -26,22 +26,23 @@ from render.geometry.solids import LoftOptions, Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Toucan's yellow neon, and the orange one of its accents (P09-R09).
+# The Toucan's yellow neon, and the orange one of its accents (MB-TOUCAN-06).
 TOUCAN_YELLOW = BOSS_LOOK.neon["toucan"]
 TOUCAN_ORANGE = [1, 0.36, 0.04]
 
 # The beak's bright paint: yellow along most of it, orange towards the tip, a dark root.
 BEAK_YELLOW = [0.95, 0.66, 0.1]
 BEAK_ORANGE = [0.95, 0.34, 0.05]
-# The beak along Z, from its root on the head to just behind the emitter (loft stations).
+# The beak along Z, from its root on the head to just behind the emitter (loft stations;
+# MB-TOUCAN-01).
 BEAK = table(
     [
         [20, 10, -1, 12],
@@ -66,7 +67,7 @@ def beak_paint(side: int, band: int) -> Any:
 
 
 def beak(p: EnemyParts, _at: Any = None) -> None:
-    """The beak cannon (P09-R09): a huge, bright, faceted beak with neon along its ridge and
+    """The beak cannon (MB-TOUCAN-04): a huge, bright, faceted beak with neon along its ridge and
     cutting edges, the laser emitter in its tip (its lens lights up as it charges). It is drawn in
     model space, so the point its part sits at (`_at`, as every part is handed one) is not used."""
     hull = p.hull
@@ -74,7 +75,8 @@ def beak(p: EnemyParts, _at: Any = None) -> None:
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    # P16-R05: a living, horny beak (its bright paint the toucan's mark), a metal band at its root.
+    # MB-TOUCAN-04: a living, horny beak (its bright paint the toucan's mark), a metal band at its
+    # root.
     flesh.loft(
         ROUND_SECTION,
         BEAK,
@@ -125,14 +127,14 @@ DUCT = table([[9.6, -1.5], [11.2, -0.5], [11.4, 3.5], [10.2, 5.2]])
 
 
 def wing_pod(p: EnemyParts, at: Vec3) -> None:
-    """A wing pod around its centre `at` (P09-R09): a ducted fan, its lip ringed with neon, a gun
-    housing under its front with the two barrels of its fans, moss on its back."""
+    """A wing pod around its centre `at` (MB-TOUCAN-04): a ducted fan, its lip ringed with neon, a
+    gun housing under its front with the two barrels of its fans, moss on its back."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     s = sign_of(at[0])
-    # P16-R05: the grafted fan duct grows out of a swollen flesh root at the wing's end.
+    # MB-TOUCAN-04: the grafted fan duct grows out of a swollen flesh root at the wing's end.
     sac(p, offset(at, -s * 9, 1.5, -2), 5.5, F.slate, 0.6)
     vein_to(
         p,

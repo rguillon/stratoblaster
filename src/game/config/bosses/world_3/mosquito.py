@@ -1,10 +1,11 @@
-"""P09-R09, 3-4: the Mosquito, the mini boss of the swamp works ().
+"""3-4: the Mosquito, the mini boss of the swamp works (specs/bosses/mini/3-4-mosquito.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two wings
 buzz on their joints (D-061: a fast, small swing) and shield the core; its proboscis aims a laser
-from a turret (D-073). The stage patterns are the agent's design (P07-R04): the parts fire the same
-while they stand, the core fires aimed bursts that change at every stage, and its last stage (only
-the core left) a ring used by no earlier stage. Health tuned for P09-R10.
+from a turret (D-073). The stage patterns are the agent's design (MB-MOSQUITO-10): the parts fire
+the same while they stand, the core fires aimed bursts that change at every stage, and its last
+stage (only the core left) a ring used by no earlier stage. Health (MB-MOSQUITO-08) tuned for
+WLD-3-20.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -16,7 +17,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -42,7 +43,8 @@ MOSQUITO_MANDIBLES = twin(6.5, -28, 2)
 # The glowing blood sac on its back (the core's last-stage rings).
 MOSQUITO_SAC = [[0, 16, 10]]
 
-# How the wings buzz (D-061): a few degrees, five times a second, the two beating together.
+# How the wings buzz (D-061, MB-MOSQUITO-04): a few degrees, five times a second, the two beating
+# together.
 BUZZ = record({"amplitudeDeg": 7, "period": 0.2, "phase": 0.2})
 
 
@@ -64,13 +66,14 @@ POD_X = MOSQUITO_WING.pod[0]
 POD_Y = MOSQUITO_WING.pod[1]
 
 # 3-4: a thin, fast bio-drone with pink neon; its two buzzing wings fire fans and shield the core,
-# its proboscis turns to aim a laser after its warning line (P09-R09). The proboscis hangs in
+# its proboscis turns to aim a laser after its warning line (MB-MOSQUITO-09). The proboscis hangs in
 # front of the core, so it can always be shot.
 _MOSQUITO = record(
     {
         "id": "mosquito",
-        # Angry after each destroyed part (phase 7 review, D-063).
+        # Angry after each destroyed part (phase 7 review, D-063, MB-MOSQUITO-11).
         "rage": rage.vortex(7.5, "magenta", "purple"),
+        # Its core and parts, and its points (MB-MOSQUITO-13).
         "stats": stats(
             record(
                 {
@@ -90,6 +93,7 @@ _MOSQUITO = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-MOSQUITO-07).
         "stopFraction": 0.74,
         # Fast: it darts from side to side.
         "sway": {"amplitude": 72, "period": 5.6},
@@ -104,6 +108,7 @@ _MOSQUITO = record(
                 "turretLaser": True,
             },
         },
+        # The parts' volleys, then the core's pattern per stage (MB-MOSQUITO-10).
         "stages": stages(
             [
                 # The wings' fans cross under the drone, each leaning towards the other side.
@@ -127,8 +132,8 @@ _MOSQUITO = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of heavy cannons unfold.
+# Its hidden weapons (boss transformations, D-224, MB-MOSQUITO-12): at transformation 1 its back
+# plating bursts off, baring a dark metal frame, and a pair of heavy cannons unfold.
 MOSQUITO = with_weapons(
     _MOSQUITO,
     [

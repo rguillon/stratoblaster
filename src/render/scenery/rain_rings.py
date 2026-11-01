@@ -1,5 +1,5 @@
-"""Rain rings on the water (P09-R05): faint rings spreading where raindrops land, drawn on a plane
-at the water level.
+"""Rain rings on the water (GFX-WEATHER-09): faint rings spreading where raindrops land, drawn on a
+plane at the water level.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,8 +10,8 @@ from render.scenery.scenery_kit import FogState
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -22,7 +22,7 @@ LIFT = 0.05
 
 
 class RingsFrame:
-    """What the rain rings show on one frame (P09-R05)."""
+    """What the rain rings show on one frame (GFX-WEATHER-09)."""
 
     def __init__(self, time: float, strength: float, fog: FogState) -> None:
         """`strength` (0..1): how many rings there are and how strong they show."""
@@ -47,8 +47,8 @@ __pragma__("noskip")
 
 
 class RainRings:
-    """Faint rings spreading on the water where raindrops land (P09-R05): a plane at the water
-    level that follows the view, the rings drawn by its material in cells of the ground. The
+    """Faint rings spreading on the water where raindrops land (GFX-WEATHER-09): a plane at the
+    water level that follows the view, the rings drawn by its material in cells of the ground. The
     terrain above the water hides it, so the rings only show on the sea, the rivers, the swamps
     and the lakes. It shows the rings of the weather kind of the atmosphere, if it has any."""
 

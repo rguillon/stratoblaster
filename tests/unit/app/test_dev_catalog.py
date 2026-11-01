@@ -31,6 +31,7 @@ def prop_kinds(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> None:
+    """DEV-MENU-12."""
     g = game()
     ships = dev_items(g, "ships")
     assert [(i.id, i.label, i.host) for i in ships] == [
@@ -42,6 +43,7 @@ def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> N
 
 
 def test_d199_each_prop_is_listed_once_over_the_first_level_that_has_it() -> None:
+    """DEV-MENU-15."""
     props = dev_items(game(), "props")
     assert [(i.id, i.host) for i in props] == [("buoy", "1-1"), ("hut", "1-1"), ("tower", "1-2")]
 

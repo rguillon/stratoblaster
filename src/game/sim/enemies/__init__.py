@@ -1,1 +1,1 @@
-"""Concrete enemies (P05): one module per kind, and the helpers they share."""
+"""Concrete enemies (`specs/enemies/`): one module per kind, and the helpers they share."""

@@ -1,6 +1,7 @@
-"""Centre and lane lines of the roads (phase 4 review): a yellow line along the middle of the
-streets (stopping where they cross) and of the main roads (dashed); on wider roads (2x2 to 4x4), a
-double yellow line and white dashed lines between the lanes. Painted just above the road surface.
+"""Centre and lane lines of the roads (phase 4 review, GFX-ROAD-07): a yellow line along the middle
+of the streets (stopping where they cross) and of the main roads (dashed); on wider roads (2x2 to
+4x4), a double yellow line and white dashed lines between the lanes (the boulevards', GFX-ROAD-17).
+Painted just above the road surface.
 """
 
 import math
@@ -11,12 +12,12 @@ from core.scenery.road_traffic import cached_street_lines, in_crossing, road_z_s
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_traffic import StreetLine  # noqa: E402
-from core.scenery.road_types import Road, RoadPoint  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road, RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 Point = tuple[float, float]
@@ -228,7 +229,7 @@ def paint_centre_lines(
     for road in roads:
         if road.kind == "cross":
             continue
-        # P13-R04: a road with no point in the range has no segment starting there.
+        # PERF-24: a road with no point in the range has no segment starting there.
         z_low, z_high = road_z_span(road)
         if z_high < z_min or z_low >= z_max:
             continue

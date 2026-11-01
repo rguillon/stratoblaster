@@ -1,17 +1,16 @@
-"""The models made for the grid of tiles (Phase 15, P15-R07, R09): one per entry of `TILE_MODELS`,
-each built to fill its tiles less the
-margin."""
+"""The models made for the grid of tiles (Phase 15, GFX-BLDG-03, GFX-BLDG-09): one per entry of
+`TILE_MODELS`, each built to fill its tiles less the margin."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.tile_buildings import BUILDING_MARGIN, TILE, TILE_MODELS  # noqa: E402
-from game.view.props.tile_city import (  # noqa: E402
+from game.config.tile_buildings import BUILDING_MARGIN, TILE, TILE_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_car_park,
     build_midrise,
     build_office,
@@ -21,7 +20,7 @@ from game.view.props.tile_city import (  # noqa: E402
     build_tower,
     build_yard,
 )
-from game.view.props.tile_homes import (  # noqa: E402
+from game.view.props.tile_homes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_adobe,
     build_barn,
     build_cottage,
@@ -34,10 +33,10 @@ from game.view.props.tile_homes import (  # noqa: E402
     build_villa,
     build_workshop,
 )
-from game.view.props.tile_homesteads import build_homestead  # noqa: E402
-from game.view.props.tile_kit import geometry_of, tile_kit  # noqa: E402
-from game.view.props.tile_residences import build_residence  # noqa: E402
-from game.view.props.tile_works import (  # noqa: E402
+from game.view.props.tile_homesteads import build_homestead  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_kit import geometry_of, tile_kit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_residences import build_residence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_works import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_containers,
     build_cooling_tower,
     build_depot,
@@ -58,7 +57,7 @@ from game.view.props.tile_works import (  # noqa: E402
     build_warehouse,
     build_water_tower,
 )
-from render.scenery.scenery_look import PropGeometry  # noqa: E402
+from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def make_builders() -> dict[str, Any]:

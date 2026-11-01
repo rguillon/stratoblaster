@@ -1,4 +1,4 @@
-"""The heavy player ship (P02-R02): inspired by modern flying-wing
+"""The heavy player ship (GFX-SHIP-02): inspired by modern flying-wing
 stealth bombers (B-2 / B-21): no fuselage and no tail, swept leading edges with accent bands,
 sawtooth trailing edge with elevons, a raised cockpit with a dark visor, dorsal intakes feeding 2
 reactors, bomb bay doors underneath. Wingspan 6 units. Low-poly and polygonal like the other
@@ -87,7 +87,7 @@ REACTOR_OFFSET_X = 0.7
 REACTOR = {"radius": 0.2, "length": 1.1}
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
@@ -217,7 +217,7 @@ def _build_intake(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def build_heavy_ship(scene: Any) -> Any:
-    """Builds the heavy player ship (P02-R02)."""
+    """Builds the heavy player ship (GFX-SHIP-02)."""
     root = new_transform_node("ship-heavy", scene)
     _build_wing(root, scene)
     _build_centre_body(root, scene)

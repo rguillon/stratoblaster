@@ -1,5 +1,5 @@
-"""P09-R09, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups. Logical
-pixels, nose +Z, Y up (towards the camera)."""
+"""FB-CANOPY-SPIDER-04, 3-2: the Canopy Spider's egg sac, the part that launches its Gnat groups.
+Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
@@ -20,7 +20,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -43,14 +43,15 @@ EGGS = table(
 
 
 def egg_sac(p: EnemyParts, at: Vec3) -> None:
-    """The egg sac at its centre `at` (P09-R09): a cocoon of silk hanging from the abdomen's tip,
-    wrapped in metal bands ringed with red neon, eggs glowing through it as the next brood
-    charges, and a hatch on top that the Gnats leave from."""
+    """The egg sac at its centre `at` (FB-CANOPY-SPIDER-04): a cocoon of silk hanging from the
+    abdomen's tip, wrapped in metal bands ringed with red neon, eggs glowing through it as the next
+    brood charges, and a hatch on top that the Gnats leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     centre = offset(at, 0, 4, -3)
-    # P16-R06: a living egg sac of pale membrane in grafted metal bands, veined with red.
+    # FB-CANOPY-SPIDER-04: a living egg sac of pale membrane in grafted metal bands, veined with
+    # red.
     p.flesh.lathe(COCOON, 8, SILK, Placement(centre, math.pi / 8, -QUARTER))
     for dz in [-4, 3]:
         hull.cylinder(11.2, 1.6, 8, H.base, Placement(offset(centre, 0, 0, dz), 0, QUARTER))

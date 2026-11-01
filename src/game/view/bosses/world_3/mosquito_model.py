@@ -1,4 +1,4 @@
-"""P09-R09, 3-4: the Mosquito. Logical pixels,
+"""MB-MOSQUITO-01 to MB-MOSQUITO-06, 3-4: the Mosquito. Logical pixels,
 nose +Z, Y up (towards the camera). A thin bio-drone: a small armoured thorax, a big-eyed head, a
 long segmented abdomen behind, six thin legs hanging under it, moss grown over its back."""
 
@@ -34,9 +34,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
@@ -86,12 +86,13 @@ SAC = table([[3.6, 0], [3.1, 1.5], [1.6, 2.3], [0, 2.5]])
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The thorax and the segmented abdomen, pink bands between the segments, moss on its back."""
+    """The thorax and the segmented abdomen, pink bands between the segments, moss on its back
+    (MB-MOSQUITO-05)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a living insect: a dark flesh thorax, a swollen, blood-filled abdomen ringed by
-    # grafted metal bands, a vein pulsing down its back.
+    # MB-MOSQUITO-02: a living insect: a dark flesh thorax, a swollen, blood-filled abdomen ringed
+    # by grafted metal bands, a vein pulsing down its back.
     flesh.loft(ROUND_SECTION, THORAX, F.graphite)
     flesh.loft(ROUND_SECTION, ABDOMEN, F.slate)
     vein_to(p, [[0, 6.4, 12], [0, 4.2, -40]], [0, 2, 0], MOSQUITO_PINK, 1)
@@ -123,7 +124,7 @@ def draw_head(p: EnemyParts) -> None:
     flesh.lathe(HEAD, 7, F.graphite, Placement(HEAD_AT, 0, QUARTER))
     for s in SIDES:
         neon.lathe(EYE, 6, MOSQUITO_PINK, Placement([s * 4.6, 3.4, 22.5], 0, 0, -s * QUARTER))
-        # P16-R05: feathery antennae of sinew, tipped with a lit gland.
+        # MB-MOSQUITO-02: feathery antennae of sinew, tipped with a lit gland.
         sinew(
             p,
             [[s * 2, 7, 22], [s * 6, 12, 15]],
@@ -152,7 +153,7 @@ def draw_legs(p: EnemyParts) -> None:
             hip_s = [s * hip[0], hip[1], hip[2]]
             knee_s = [s * knee[0], knee[1], knee[2]]
             foot_s = [s * foot[0], foot[1], foot[2]]
-            # P16-R05: thin legs of sinew, a metal knee joint grafted where they bend.
+            # MB-MOSQUITO-02: thin legs of sinew, a metal knee joint grafted where they bend.
             tendril(p.flesh, [hip_s, knee_s], [0.8, 0.6], 4, F.sinew)
             tendril(p.flesh, [knee_s, foot_s], [0.55, 0.15], 3, F.bone)
             p.hull.box([1.4, 1.4, 1.4], H.panel, Placement(knee_s))
@@ -170,7 +171,7 @@ def draw_sac(p: EnemyParts) -> None:
     x = top[0]
     y = top[1]
     z = top[2]
-    # P16-R05: the blood sac swelling out of the abdomen's flesh.
+    # MB-MOSQUITO-02: the blood sac swelling out of the abdomen's flesh.
     flesh.cylinder(4.4, 1.6, 7, F.wound, Placement([x, y - 4.2, z]))
     neon.ring(4.5, 0.4, 8, MOSQUITO_PINK, Placement([x, y - 3, z]))
     charge.lathe(SAC, 8, WHITE, Placement([x, y - 2.5, z]))
@@ -186,8 +187,9 @@ def mosquito_core(p: EnemyParts) -> None:
 
 
 def build_mosquito(scene: Any) -> Any:
-    """P09-R09: the Mosquito, a thin, fast bio-drone with pink neon: long buzzing wings with a fan
-    pod under each, a big-eyed head and a needle-like proboscis that aims its laser."""
+    """MB-MOSQUITO-01, MB-MOSQUITO-06: the Mosquito, a thin, fast bio-drone with pink neon: long
+    buzzing wings with a fan pod under each, a big-eyed head and a needle-like proboscis that aims
+    its laser."""
     parts: dict[str, Any] = {"wing-left": wing, "wing-right": wing, "proboscis": proboscis}
     turrets: dict[str, Any] = {"proboscis": needle}
     return build_boss_model(

@@ -1,5 +1,5 @@
 """Unit tests of `src/game/view/bosses/boss_reveal.py`: hidden weapon parts unfolding as a boss
-transforms (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
+transforms (BOSS-43; docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
 
 import math
 from types import SimpleNamespace

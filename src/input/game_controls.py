@@ -1,8 +1,8 @@
-"""The player's in-game controls (P06-R02, GD §2): arrows /
+"""The player's in-game controls (GAME-CTRL-01): arrows /
 WASD (by key position) or the left stick / D-pad move, Space or the gamepad button shoots while
 held, and on touch screens the ship follows the finger dragged anywhere while the on-screen button
 shoots. E switches the weapon; R, the left Shift, a gamepad button or the on-screen bomb button set
-a bomb off (P11-R06). All devices are merged."""
+a bomb off. All devices are merged (GAME-CTRL-02)."""
 
 import math
 
@@ -13,10 +13,10 @@ from input.gamepad_menu_input import axis_value
 from input.held_directions import HeldDirections
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.gamepad_menu_input import GamepadLike, GamepadSource  # noqa: E402
+from input.gamepad_menu_input import GamepadLike, GamepadSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Dpad(Protocol):
@@ -55,7 +55,7 @@ class GameControlBindings(Protocol):
 
     @property
     def bomb_keys(self) -> Sequence[str]:
-        """Keys that set a bomb off, once per press (P11-R06)."""
+        """Keys that set a bomb off, once per press (GAME-CTRL-06)."""
         ...
 
     @property
@@ -63,7 +63,7 @@ class GameControlBindings(Protocol):
 
     @property
     def bomb_buttons(self) -> Sequence[int]:
-        """Gamepad buttons that set a bomb off, once per press (P11-R06)."""
+        """Gamepad buttons that set a bomb off, once per press (GAME-CTRL-06)."""
         ...
 
     @property
@@ -84,7 +84,7 @@ class ControlState:
         self.fire = fire
         # Switch to the next weapon (once per press).
         self.switch_weapon = switch_weapon
-        # Set a bomb off (once per press, P11-R06).
+        # Set a bomb off (once per press, GAME-CTRL-06).
         self.bomb = bomb
 
 
@@ -144,7 +144,8 @@ def _any_held(gamepad: GamepadLike, indices: Sequence[int]) -> bool:
 
 
 def _pad_input(gamepad: GamepadLike, bindings: GameControlBindings) -> _PadInput:
-    """One gamepad's direction (the stronger of the stick and the D-pad, Y up) and buttons."""
+    """One gamepad's direction (the stronger of the stick and the D-pad, Y up, GAME-CTRL-03) and
+    buttons."""
     stick = bindings.stick
     dpad = bindings.dpad
     sx = axis_value(gamepad.axes, stick.x_axis)
@@ -185,7 +186,7 @@ class GameControls:
         # Drag distance not flown yet, in logical pixels.
         self._drag_x = 0.0
         self._drag_y = 0.0
-        # Slot of the gamepad last used to play, if any (P12-R03).
+        # Slot of the gamepad last used to play, if any (UI-PAUSE-11).
         self._pad_in_use: int | None = None
         self._pad_lost = False
 
@@ -207,20 +208,22 @@ class GameControls:
         return True
 
     def set_touch_fire(self, held: bool) -> None:
-        """The on-screen fire button is held (`True`) or let go."""
+        """The on-screen fire button is held (`True`) or let go (GAME-CTRL-05)."""
         self._touch_fire = held
 
     def bomb(self) -> None:
-        """The on-screen bomb button was tapped (P11-R06)."""
+        """The on-screen bomb button was tapped: one press per tap (GAME-CTRL-06)."""
         self._bombs.count += 1
 
     def drag(self, dx: float, dy: float) -> None:
-        """The finger moved by (`dx`, `dy`) logical pixels, Y up: the ship follows it."""
+        """The finger moved by (`dx`, `dy`) logical pixels, Y up: the ship follows it
+        (GAME-CTRL-04)."""
         self._drag_x += dx
         self._drag_y += dy
 
     def clear(self) -> None:
-        """Lets go of everything (e.g. the window lost the focus, so key-ups would be missed)."""
+        """Lets go of everything (GAME-CTRL-07, UI-PAUSE-04; e.g. the window lost the focus, so
+        key-ups would be missed)."""
         self.keys.clear()
         self._fire_keys.clear()
         self._switches.clear()
@@ -230,8 +233,8 @@ class GameControls:
         self._drag_y = 0
 
     def take_disconnect(self) -> bool:
-        """Whether the gamepad that was in use has been disconnected since the last call (P12-R03:
-        the level pauses). Reported once."""
+        """Whether the gamepad that was in use has been disconnected since the last call
+        (GAME-CTRL-08, UI-PAUSE-11: the level pauses). Reported once."""
         lost = self._pad_lost
         self._pad_lost = False
         return lost
@@ -283,7 +286,7 @@ class GameControls:
         return _PadInput(best.x * scale, best.y * scale, fire, bomb)
 
     def _check_pad_in_use(self, gamepads: Sequence[GamepadLike | None]) -> None:
-        """The gamepad in use is gone from its slot: it was disconnected (P12-R03)."""
+        """The gamepad in use is gone from its slot: it was disconnected (UI-PAUSE-11)."""
         if self._pad_in_use is None:
             return
         if self._pad_in_use < len(gamepads) and gamepads[self._pad_in_use]:

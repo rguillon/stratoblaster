@@ -1,4 +1,4 @@
-"""Bursts of metal sparks where bullets hit (P03-R01, phase 3 review)
+"""Bursts of metal sparks where bullets hit (GFX-FX-02)
 
 Each burst throws `count` sparks back from the hit, spread around straight down; they slow down
 with drag, twinkle, and shrink to nothing over their life.
@@ -9,13 +9,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import random_in  # noqa: E402
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Spark:
@@ -58,7 +58,7 @@ class SparkSpot:
 
 
 class SparkBursts:
-    """Bursts of metal sparks where bullets hit (P03-R01, phase 3 review)."""
+    """Bursts of metal sparks where bullets hit (GFX-FX-02)."""
 
     def __init__(self, options: Any, random: Random) -> None:
         self._options = options

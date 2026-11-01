@@ -1,5 +1,6 @@
 """Stand-ins for Babylon.js in the view tests: Babylon runs only in the browser, so the view modules
-that build meshes are tested with `MagicMock` objects in place of the `render.babylon` helpers.
+that build meshes are tested with `MagicMock` objects in place of the `render.babylon` helpers
+(ENG-47).
 
 `stub_babylon` replaces, in one module, every helper it imported from `render.babylon` (each call
 then gives a fresh `MagicMock`) and the few JavaScript-only twins the module calls (a plain object

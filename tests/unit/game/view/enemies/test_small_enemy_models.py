@@ -18,7 +18,8 @@ def probe(monkeypatch):
     return run
 
 
-def test_p05_r01_gnat_is_a_drone_with_three_ducted_fans_and_a_reactor(probe):
+def test_enm_gnat_01_gnat_is_a_drone_with_three_ducted_fans_and_a_reactor(probe):
+    """Also ENM-GNAT-02 (three fans) and ENM-GNAT-03 (one reactor)."""
     capture, body = probe(module.build_gnat)
     assert capture.name == "gnat"
     assert capture.neon == ENEMY_LOOK.neon.gnat
@@ -29,7 +30,7 @@ def test_p05_r01_gnat_is_a_drone_with_three_ducted_fans_and_a_reactor(probe):
     assert len(body["parts"].flesh.geometry.positions) > 0
 
 
-def test_p05_r01_gnat_fans_stand_on_a_ring_120_degrees_apart(probe):
+def test_enm_gnat_02_gnat_fans_stand_on_a_ring_120_degrees_apart(probe):
     _capture, body = probe(module.build_gnat)
     angles = sorted(math.atan2(r.at[0], r.at[2]) % (2 * math.pi) for r in body["rotors"])
     radii = [math.hypot(r.at[0], r.at[2]) for r in body["rotors"]]
@@ -39,7 +40,8 @@ def test_p05_r01_gnat_fans_stand_on_a_ring_120_degrees_apart(probe):
     assert gaps == pytest.approx([2 * math.pi / 3] * 2)
 
 
-def test_p05_r02_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(probe):
+def test_enm_hornet_01_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(probe):
+    """Also ENM-HORNET-02: its two wings."""
     capture, body = probe(module.build_hornet)
     assert capture.name == "hornet"
     assert len(body["wings"]) == 2
@@ -47,7 +49,8 @@ def test_p05_r02_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(probe):
     assert len(body["parts"].neon.geometry.positions) > 0
 
 
-def test_p05_r03_scout_has_two_reactors_two_wings_and_one_gun(probe):
+def test_enm_scout_01_scout_has_two_reactors_two_wings_and_one_gun(probe):
+    """Also ENM-SCOUT-02 (a reactor on each boom) and ENM-SCOUT-03 (the nose gun)."""
     capture, body = probe(module.build_scout)
     assert capture.name == "scout"
     assert len(body["reactors"]) == 2
@@ -55,7 +58,8 @@ def test_p05_r03_scout_has_two_reactors_two_wings_and_one_gun(probe):
     assert len(body["muzzles"]) == 1
 
 
-def test_p05_r04_strafer_has_four_reactors_and_two_guns_on_two_wings(probe):
+def test_enm_strafer_03_strafer_has_four_reactors_and_two_guns_on_two_wings(probe):
+    """Also ENM-STRAFER-01: its wide pair of wings."""
     capture, body = probe(module.build_strafer)
     assert capture.name == "strafer"
     assert len(body["reactors"]) == 4
@@ -63,7 +67,8 @@ def test_p05_r04_strafer_has_four_reactors_and_two_guns_on_two_wings(probe):
     assert len(body["muzzles"]) == 2
 
 
-def test_p05_r05_weaver_has_two_reactors_and_two_guns_and_no_wings(probe):
+def test_enm_weaver_02_weaver_has_two_reactors_and_two_guns_and_no_wings(probe):
+    """Also ENM-WEAVER-01: two serpents, no wings."""
     capture, body = probe(module.build_weaver)
     assert capture.name == "weaver"
     assert len(body["reactors"]) == 2
@@ -71,7 +76,7 @@ def test_p05_r05_weaver_has_two_reactors_and_two_guns_and_no_wings(probe):
     assert body["wings"] == []
 
 
-def test_p16_r03_every_small_kind_is_a_flesh_body_with_its_own_neon(probe):
+def test_enm_35_every_small_kind_is_a_flesh_body_with_its_own_neon(probe):
     for builder in (
         module.build_gnat,
         module.build_hornet,

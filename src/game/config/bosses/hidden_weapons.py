@@ -23,7 +23,7 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -40,14 +40,14 @@ def hidden_weapon(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     height: Any = None,
     mount: Any = None,
 ) -> Any:
-    """A hidden weapon part revealed by transformation `reveal`: `part` (shielding the core, a 30 %
-    bonus drop), its `guns`, its `look` (kind, radius, pod height and `mount`, for its model), its
-    `volleys` (see `weapon_volleys`) and its `launches` (a hangar's, see `weapon_launches`).
-    `mount`, `[dx, dy, fold]`: the hinge it unfolds about, offset in px from its centre, and its
-    turn (radians, about the vertical) folded flat; left out, the view hinges it on its inner
-    side, folded back along the hull."""
+    """A hidden weapon part revealed by transformation `reveal` (BOSS-38): `part` (shielding the
+    core, a 30 % bonus drop), its `guns`, its `look` (kind, radius, pod height and `mount`, for its
+    model), its `volleys` (see `weapon_volleys`) and its `launches` (a hangar's, see
+    `weapon_launches`). `mount`, `[dx, dy, fold]`: the hinge it unfolds about, offset in px from
+    its centre, and its turn (radians, about the vertical) folded flat; left out, the view hinges
+    it on its inner side, folded back along the hull."""
     look: Any = {"kind": kind, "radius": radius, "height": pod_height(radius, height)}
-    if mount != None:  # noqa: E711
+    if mount != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         look["mount"] = mount
     return record(
         {
@@ -63,8 +63,8 @@ def hidden_weapon(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 def tail_cannon(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     part_id: str, at: list[Any], radius: float, health: float, reveal: int, first: float
 ) -> Any:
-    """A cannon at the end of a rig the boss unfolds at transformation `reveal` (D-228: the
-    Scorpion's tail), at `at`, firing a giant laser out behind the boss (+Y: once it has turned
+    """A cannon at the end of a rig the boss unfolds at transformation `reveal` (D-228, BOSS-46:
+    the Scorpion's tail), at `at`, firing a giant laser out behind the boss (+Y: once it has turned
     round, towards the player). Its look is a `beam` on a `rig`: the boss model draws it, and it
     comes out of no armour region."""
     height = radius * 0.6
@@ -90,11 +90,11 @@ def armour_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     heights: Any = None,
     mirror: bool = True,
 ) -> Any:
-    """An armour region a boss sheds at transformation `form` (docs/superpowers/specs/2026-10-31-
-    boss-armour-shedding-design.md): the part of its body inside `outline` (px from its centre,
-    X right, Y up; with its mirror image across the centre line when `mirror`), between `heights`
-    [low, high] above the playfield (all of them when left out). It bursts off in chunks and leaves
-    a dark metal `frame` (`wing`, `shell` or `ring`)."""
+    """An armour region a boss sheds at transformation `form` (BOSS-42, docs/superpowers/specs/
+    2026-10-31-boss-armour-shedding-design.md): the part of its body inside `outline` (px from its
+    centre, X right, Y up; with its mirror image across the centre line when `mirror`), between
+    `heights` [low, high] above the playfield (all of them when left out). It bursts off in chunks
+    and leaves a dark metal `frame` (`wing`, `shell` or `ring`)."""
     if frame not in FRAMES:
         raise ValueError('Unknown armour frame "' + frame + '"')
     outlines = [outline]
@@ -107,14 +107,14 @@ def armour_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
             "form": form,
             "outlines": outlines,
             "frame": frame,
-            "heights": heights if heights != None else [-1000, 1000],  # noqa: E711
+            "heights": heights if heights != None else [-1000, 1000],  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         }
     )
 
 
 def region_blasts(region: Any, most: int) -> list[list[float]]:
-    """Where a region bursts: `[x, y, radius]` blasts at the middle of each of its outlines and on
-    their corners, at most `most` in all, spread round each outline."""
+    """Where a region bursts (BOSS-37): `[x, y, radius]` blasts at the middle of each of its
+    outlines and on their corners, at most `most` in all, spread round each outline."""
     result: list[list[float]] = []
     per = max(1, math.floor(most / len(region.outlines)))
     for outline in region.outlines:
@@ -141,20 +141,21 @@ def with_weapons(design: Any, weapons: list[Any], armour: list[Any], more: Any =
     """`design` with its hidden `weapons` (see `hidden_weapon`): their parts after its own, their
     guns and looks, their volleys (and the `more` volleys given) in every stage and their launches
     with its own, each firing once its part is revealed, until it is destroyed; and the `armour`
-    regions it sheds as they come out (see `armour_region`)."""
+    regions it sheds as they come out (see `armour_region`). A mini boss's transformation reveals
+    a pair, a final boss's two transformations a pair each (BOSS-35)."""
     stats = design.stats
     parts = list(stats.parts)
     guns = merge(design.guns, {})
     looks: Any = record({})
     volleys: list[Any] = []
-    launches: list[Any] = list(design.launches) if design.launches != None else []  # noqa: E711
+    launches: list[Any] = list(design.launches) if design.launches != None else []  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     for weapon in weapons:
         parts.append(weapon.part)
         guns[weapon.part.id] = weapon.guns
         looks[weapon.part.id] = weapon.look
         volleys.extend(weapon.volleys)
         launches.extend(weapon.launches)
-    if more != None:  # noqa: E711
+    if more != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         volleys.extend(more)
     stages = [concat(stage, volleys) for stage in design.stages]
     return merge(

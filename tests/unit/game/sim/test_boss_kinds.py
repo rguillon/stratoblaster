@@ -1,7 +1,8 @@
 """Unit tests of `src/game/sim/boss_kinds.py`: the game's bosses, then their transformations
 (docs/superpowers/specs/2026-10-31-ship-glow-and-boss-transform-design.md, Part B): every boss
 reveals new weapons as it loses parts and gets no easier for it, its weapons spread over the
-kinds (D-229) and some change shape (D-230)."""
+kinds (D-229) and some change shape (D-230). Run over every design, they check each boss file's
+transformations, hidden weapons and armour (`specs/bosses/*/*.md`)."""
 
 from typing import Any
 
@@ -25,24 +26,24 @@ from game.sim.bosses.world_boss import WorldBoss
 from render.geometry.shatter import inside
 
 
-def test_p07_r05_every_boss_design_of_the_game_is_a_kind_once() -> None:
+def test_boss_01_every_boss_design_of_the_game_is_a_kind_once() -> None:
     ids = [kind.id for kind in BOSS_KINDS]
     assert len(ids) == len(BOSS_DESIGNS) == 40
     assert len(ids) == len(set(ids))
     assert ids == [design.id for design in BOSS_DESIGNS]
 
 
-def test_p07_r05_each_kind_is_named_after_its_design() -> None:
+def test_boss_01_each_kind_is_named_after_its_design() -> None:
     for kind, design in zip(BOSS_KINDS, BOSS_DESIGNS, strict=True):
         assert kind.name == design.stats["name"]
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=lambda d: d.id)
-def test_p07_r05_every_design_is_well_formed(design) -> None:
+def test_boss_07_every_design_is_well_formed(design) -> None:
     assert_boss_design(design)
 
 
-def test_p07_r05_a_spawned_boss_is_a_world_boss_that_comes_in_from_the_top() -> None:
+def test_boss_08_a_spawned_boss_is_a_world_boss_that_comes_in_from_the_top() -> None:
     kind = BOSS_KINDS[0]
     boss = kind.spawn(area(width=480, height=640))
     assert isinstance(boss, WorldBoss)
@@ -61,7 +62,7 @@ IDS = [design["id"] for design in BOSS_DESIGNS]
 
 
 def _is_final(design: Any) -> bool:
-    """Mini boss then final boss of each level, in order (P07-R05)."""
+    """Mini boss then final boss of each level, in order (BOSS-01)."""
     return BOSS_DESIGNS.index(design) % 2 == 1
 
 
@@ -119,6 +120,7 @@ def fire_rate(design: Any, form: int) -> float:
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
 def test_a_mini_boss_transforms_once_and_a_final_boss_twice(design: Any) -> None:
+    """BOSS-35."""
     hidden = _hidden(design)
     forms = 2 if _is_final(design) else 1
     assert sorted({p["reveal"] for p in hidden}) == list(range(1, forms + 1))
@@ -146,6 +148,7 @@ def test_each_transformation_reveals_one_to_three_armed_weapons(design: Any) -> 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
 def test_a_boss_gets_no_easier_as_it_transforms(design: Any) -> None:
+    """BOSS-39."""
     forms = 2 if _is_final(design) else 1
     rates = [fire_rate(design, form) for form in range(forms + 1)]
     assert rates == sorted(rates), rates
@@ -154,6 +157,7 @@ def test_a_boss_gets_no_easier_as_it_transforms(design: Any) -> None:
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
 def test_each_transformation_sheds_an_armour_region(design: Any) -> None:
+    """BOSS-42."""
     # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md: it breaks open.
     forms = {p["reveal"] for p in _hidden(design)}
     shed = {region.form for region in design.armour}
@@ -220,8 +224,8 @@ def test_a_weapon_riding_a_moving_piece_ends_up_on_it(design: Any) -> None:
             assert inside(region.outlines[0], spot[0] + dx, spot[1] + dy), p["id"]
 
 
-# Boss weapon variety (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-
-# design.md): the hidden weapons spread over the kinds.
+# Boss weapon variety (BOSS-41; D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
+# shape-shifts-design.md): the hidden weapons spread over the kinds.
 
 
 def _kind(design: Any, part_id: str) -> str:
@@ -230,7 +234,7 @@ def _kind(design: Any, part_id: str) -> str:
 
 
 def _world(design: Any) -> int:
-    """Ten bosses a world, a mini then a final boss for each of its five levels (P07-R05)."""
+    """Ten bosses a world, a mini then a final boss for each of its five levels (BOSS-01)."""
     return BOSS_DESIGNS.index(design) // 10 + 1
 
 
@@ -275,6 +279,7 @@ def test_at_least_ten_bosses_reveal_a_weapon_on_their_centre_line() -> None:
 
 
 def test_eight_bosses_change_shape_as_they_transform() -> None:
+    """BOSS-45."""
     # D-230: two a world, each moving its own way.
     shifting = [d for d in BOSS_DESIGNS if any(is_moving(r) for r in d.armour)]
     assert len(shifting) == 8
@@ -284,7 +289,7 @@ def test_eight_bosses_change_shape_as_they_transform() -> None:
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
 def test_the_parts_named_for_each_transformation_come_before_the_next_ones(design: Any) -> None:
-    # K breaks the parts in order (P07-R09): it calls each transformation in turn (D-230).
+    # K breaks the parts in order (DEV-OPT-09): it calls each transformation in turn (D-230).
     named = design.get("transformParts") or []
     order = [p["id"] for p in design.stats.parts]
     for earlier, later in zip(named, named[1:], strict=False):

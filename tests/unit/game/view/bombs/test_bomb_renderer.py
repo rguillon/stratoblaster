@@ -15,17 +15,17 @@ from game.view.bombs.bomb_renderer import create_bomb_renderer, flash_strength, 
     ("t", "expected"),
     [(0, 0), (1, 1), (0.5, 0.75), (-1, 0), (2, 1)],
 )
-def test_p11_r05_the_shockwave_is_fast_then_slows(t, expected):
+def test_gfx_fx_10_the_shockwave_is_fast_then_slows(t, expected):
     assert wave_reach(t) == pytest.approx(expected)
 
 
-def test_p11_r05_the_shockwave_covers_more_ground_early_than_late():
+def test_gfx_fx_10_the_shockwave_covers_more_ground_early_than_late():
     early = wave_reach(0.25) - wave_reach(0)
     late = wave_reach(1) - wave_reach(0.75)
     assert early > late
 
 
-def test_p11_r05_the_flash_is_full_at_once_then_gone_after_its_time():
+def test_gfx_fx_10_the_flash_is_full_at_once_then_gone_after_its_time():
     assert flash_strength(0) == pytest.approx(1)
     assert flash_strength(BOMB_LOOK.flash.seconds) == pytest.approx(0)
     assert flash_strength(BOMB_LOOK.flash.seconds * 10) == 0
@@ -47,14 +47,14 @@ def renderer(monkeypatch):
     return create_bomb_renderer(scene), templates
 
 
-def test_p11_r05_no_bomb_hides_the_wave_and_the_flash(renderer):
+def test_gfx_fx_10_no_bomb_hides_the_wave_and_the_flash(renderer):
     handle, (ring, glow) = renderer[0], renderer[1]
     handle["sync"](SimpleNamespace(bomb=None))
     ring.setEnabled.assert_called_with(False)
     glow.setEnabled.assert_called_with(False)
 
 
-def test_p11_r05_a_bomb_grows_its_wave_from_where_the_ship_was(renderer):
+def test_gfx_fx_10_a_bomb_grows_its_wave_from_where_the_ship_was(renderer):
     handle, (ring, glow) = renderer[0], renderer[1]
     bomb = SimpleNamespace(x=30.0, y=40.0, age=0.0, seconds=2.0)
     handle["sync"](SimpleNamespace(bomb=bomb))
@@ -68,7 +68,7 @@ def test_p11_r05_a_bomb_grows_its_wave_from_where_the_ship_was(renderer):
     assert glow.visibility == pytest.approx(1)
 
 
-def test_p11_r05_the_wave_spreads_and_fades_as_the_bomb_ages(renderer):
+def test_gfx_fx_10_the_wave_spreads_and_fades_as_the_bomb_ages(renderer):
     handle, (ring, glow) = renderer[0], renderer[1]
     seconds = 2.0
     bomb = SimpleNamespace(x=0.0, y=0.0, age=seconds / 2, seconds=seconds)
@@ -80,7 +80,7 @@ def test_p11_r05_the_wave_spreads_and_fades_as_the_bomb_ages(renderer):
     assert glow.visibility == pytest.approx(flash_strength(seconds / 2))
 
 
-def test_p11_r05_the_flash_is_hidden_once_it_has_faded(renderer):
+def test_gfx_fx_10_the_flash_is_hidden_once_it_has_faded(renderer):
     handle, (ring, glow) = renderer[0], renderer[1]
     bomb = SimpleNamespace(x=0.0, y=0.0, age=BOMB_LOOK.flash.seconds * 2, seconds=10.0)
     handle["sync"](SimpleNamespace(bomb=bomb))
@@ -88,7 +88,7 @@ def test_p11_r05_the_flash_is_hidden_once_it_has_faded(renderer):
     ring.setEnabled.assert_called_with(True)
 
 
-def test_p11_r05_dispose_releases_both_templates(renderer):
+def test_gfx_fx_10_dispose_releases_both_templates(renderer):
     handle, (ring, glow) = renderer[0], renderer[1]
     handle["dispose"]()
     ring.dispose.assert_called_once()

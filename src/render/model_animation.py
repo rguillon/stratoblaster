@@ -1,4 +1,4 @@
-"""Per-frame animations attached to the nodes of a model ().
+"""Per-frame animations attached to the nodes of a model (GFX-ART-11).
 
 A `ModelAnimation` is a function of the elapsed seconds. It is kept per node in a JavaScript
 `WeakMap`, so it is dropped with the node.
@@ -10,13 +10,15 @@ from render.babylon import descendants, new_weak_map, weak_map_get, weak_map_set
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
+from render.handles import WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 ModelAnimation = Callable[[float], None]
 __pragma__("noskip")
 
-ANIMATIONS = new_weak_map()
+ANIMATIONS: WeakMap[list[ModelAnimation]] = new_weak_map()
 
 
 def add_model_animation(node: Any, animation: Any) -> None:

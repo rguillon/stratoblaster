@@ -1,4 +1,4 @@
-"""2D planform outlines ().
+"""2D planform outlines (the outlines of the shaping primitives, GFX-ART-10).
 
 A point is a two-element list `[x, z]`, seen from above (X right, Z forward).
 """
@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 OutlinePoint = list[float]
 __pragma__("noskip")

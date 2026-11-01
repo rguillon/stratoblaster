@@ -1,5 +1,5 @@
 """Unit tests of `src/app/enemy_viewer_shots.py`."""
-# the shots and explosions of the enemies page, drawn through the renderers the game provides
+# the shots and explosions of the enemy viewer, drawn through the renderers the game provides
 # (the renderers are fakes here).
 
 from types import SimpleNamespace
@@ -36,7 +36,7 @@ def make_playfield() -> SimpleNamespace:
     )
 
 
-def test_p10_r07_the_shot_renderers_are_built_once_on_the_playfield() -> None:
+def test_gfx_read_11_the_shot_renderers_are_built_once_on_the_playfield() -> None:
     game, enemy_renderer, blasts = make_game()
     shots = EnemyViewerShots(game, make_playfield(), "laser")
     assert shots._enemy is enemy_renderer
@@ -45,14 +45,15 @@ def test_p10_r07_the_shot_renderers_are_built_once_on_the_playfield() -> None:
     game.view.enemies.shots.assert_called_once()
 
 
-def test_p10_r07_a_weapon_without_a_shot_renderer_is_an_error() -> None:
+def test_gfx_read_11_a_weapon_without_a_shot_renderer_is_an_error() -> None:
     game, _, _ = make_game()
     game.view.player_shot_renderers = {}
     with pytest.raises(ValueError, match="guns"):
         EnemyViewerShots(game, make_playfield())
 
 
-def test_gd62_each_frame_draws_the_player_shots_the_enemy_shots_and_the_blasts() -> None:
+def test_gfx_fx_05_each_frame_draws_the_player_shots_the_enemy_shots_and_the_blasts() -> None:
+    """Also GFX-FX-01 (the hits are drawn with the player's shots)."""
     game, enemy_renderer, blasts = make_game()
     shots = EnemyViewerShots(game, make_playfield())
     player_renderer = shots._player["guns"]

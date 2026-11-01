@@ -1,6 +1,6 @@
 """What each dev viewer lists (D-199): the player ships, the enemy kinds, the boss kinds, the props
 the levels stand on their ground and their cars (D-209), and the levels, in the game's order. The
-props are gathered by the game's prop groups (D-202), as the TypeScript `props/` page showed them.
+props are gathered by the game's prop groups (D-202), as the Dev menu's props viewer shows them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,7 +10,7 @@ from render.scenery.prop_field import level_prop_kinds
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -104,7 +104,9 @@ def _props(game: Any) -> list[DevItem]:
 
 
 def dev_items(game: Any, viewer: str) -> list[DevItem]:
-    """The items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows."""
+    """The items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows: the ships (DEV-MENU-12),
+    the enemy kinds (DEV-MENU-13), the boss kinds (DEV-MENU-14), the props of the levels' ground
+    (DEV-MENU-15) and the levels (DEV-MENU-18)."""
     host = _first_level(game)
     if viewer == "ships":
         return [DevItem(ship.id, ship.name, host) for ship in game.player_ships.ships]

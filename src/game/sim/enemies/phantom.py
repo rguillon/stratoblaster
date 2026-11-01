@@ -1,4 +1,4 @@
-"""The Phantom (P05-R17)"""
+"""The Phantom (`specs/enemies/phantom.md`)"""
 
 import math
 
@@ -12,8 +12,8 @@ from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, bullet_shot, range_in
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -26,11 +26,12 @@ TRIES = 8
 
 
 class Phantom(Enemy):
-    """P05-R17: a cloaker. It comes in from the top to a place in the upper half, then three times:
-    fades out over 0.4 s, stays invisible for 0.8 s, reappears at another place in the upper half
-    (fading in over 0.4 s, its nose to the player) and fires a spread of 5 bullets 12° apart
-    centred on the player (GD-44). Then it leaves upward. While it is faded out (less than half
-    visible), shots pass through it and it cannot ram the player.
+    """ENM-PHANTOM-08: a cloaker. It comes in from the top to a place in the upper half, then three
+    times (ENM-PHANTOM-09): fades out over 0.4 s, stays invisible for 0.8 s, reappears at another
+    place in the upper half (fading in over 0.4 s, its nose to the player) and fires a spread of 5
+    bullets 12° apart centred on the player (ENM-PHANTOM-10, ENM-20). Then it leaves upward
+    (ENM-PHANTOM-11). While it is faded out (less than half visible), shots pass through it and it
+    cannot ram the player (ENM-PHANTOM-12).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -38,7 +39,7 @@ class Phantom(Enemy):
         self.stop_y = stop_y
         # What it is doing: enter, hold, fadeOut, hidden, fadeIn or exit.
         self.state = "enter"
-        # How visible it is, 0 (gone) to 1, for the model.
+        # How visible it is, 0 (gone) to 1, for the model, which fades with it (ENM-PHANTOM-06).
         self.opacity = 1.0
         # Reappearances so far.
         self.jumps = 0
@@ -63,7 +64,7 @@ class Phantom(Enemy):
         if self.state == "enter":
             self._enter(dt)
         elif self.state == "hold":
-            # Its attacks come faster with the level's fire rate (P06-R08).
+            # Its attacks come faster with the level's fire rate (ENM-22).
             self._after(CFG.hold / ctx.fire_rate, "fadeOut" if self.jumps < CFG.jumps else "exit")
         elif self.state == "fadeOut":
             self.opacity = max(0, 1 - self._timer / CFG.fade)
@@ -73,6 +74,7 @@ class Phantom(Enemy):
                 self._reappear(ctx)
         elif self.state == "fadeIn":
             self.opacity = min(1, self._timer / CFG.fade)
+            # Its charge light follows the fade-in (ENM-PHANTOM-04).
             self.charge = self.opacity
             if self._timer >= CFG.fade:
                 self._fire(ctx)

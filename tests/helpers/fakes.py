@@ -1,5 +1,5 @@
-"""Fakes of the entity tests: the world an enemy sees (`EnemyContext`) and a boss whose hooks only
-record what they are asked to do. Imported by the test modules of this folder."""
+"""Fakes of the entity tests (ENG-145): the world an enemy sees (`EnemyContext`) and a boss whose
+hooks only record what they are asked to do. Imported by the test modules of this folder."""
 
 from typing import Any
 

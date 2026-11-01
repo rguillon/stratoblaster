@@ -1,7 +1,6 @@
-"""A tiny scenery level for the placement tests: the parts of
-the placers read. Two flat sections of 10 s at 20 units/s, a sea,
-one straight main road along X = 0, straight paths every 100 units out to X = +-100 (off screen),
-and two prop kinds."""
+"""A tiny scenery level for the placement tests, made by hand (ENG-145): only the parts the placers
+read. Two flat sections of 10 s at 20 units/s, a sea, one straight main road along X = 0, straight
+paths every 100 units out to X = +-100 (off screen), and two prop kinds."""
 
 from core.scenery.scenery_level import (
     Dual,

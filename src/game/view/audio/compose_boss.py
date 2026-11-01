@@ -1,4 +1,4 @@
-"""The boss tracks' parts (P12-R07, GD-70 "a more stressful music"): a driving drum machine with
+"""The boss tracks' parts (AUD-MUSIC-07, "a more stressful music"): a driving drum machine with
 pushed kicks and snare rolls, a rolling octave
 bass, chord stabs on a 3-3-2 rhythm and a noise riser into every section.
 """
@@ -113,5 +113,5 @@ def stab_bar(bar: BarContext) -> list[Note]:
 
 
 def riser_bar(bar: BarContext) -> list[Note]:
-    """A rising noise sweep over a section's last bar, into the next section."""
+    """A rising noise sweep over a section's last bar, into the next section (AUD-MUSIC-04)."""
     return [note("riser", bar.beat, BEATS_PER_BAR, DRUM_PITCH, 0.8)] if bar.fill else []

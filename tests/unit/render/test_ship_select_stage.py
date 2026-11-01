@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/ship_select_stage.py`."""
+"""Unit tests of `src/render/ship_select_stage.py` (UI-SHIP-01)."""
 
 import math
 from types import SimpleNamespace
@@ -38,6 +38,7 @@ def _stage(pivots: list[FakeNode]) -> ShipSelectStage:
 
 
 def test_selecting_a_ship_lights_its_spot_only_and_moves_the_ring() -> None:
+    """UI-SHIP-03; PERF-07: one light per ship, only turned on and off."""
     pivots = [_pivot(-5), _pivot(0), _pivot(5)]
     stage = _stage(pivots)
     stage.select(1)

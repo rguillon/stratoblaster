@@ -52,7 +52,7 @@ def _world(weapon: ProjectileWeaponDefinition | BeamWeaponDefinition) -> ShotWor
     return world
 
 
-def test_p03_r01_a_projectile_weapon_fires_at_its_rate() -> None:
+def test_game_wpn_03_a_projectile_weapon_fires_at_its_rate() -> None:
     world = _world(_weapon(sps=5))
     world.step(0.3)
     # Two shots fall due in 0.3 s at 5 a second: one 0.3 s ago, one 0.1 s ago.
@@ -61,7 +61,8 @@ def test_p03_r01_a_projectile_weapon_fires_at_its_rate() -> None:
     assert world.volleys == 2
 
 
-def test_p03_r01_shots_leave_from_the_muzzle_or_the_centre() -> None:
+def test_game_wpn_05_shots_leave_from_the_muzzle_or_the_centre() -> None:
+    """GAME-WPN-05 (the muzzle), and GFX-SHOT-08 (missiles from the centre)."""
     world = _world(_weapon(sps=5, launch_point="center", launch_back=2))
     world.center_x = 30
     world.center_y = 40
@@ -71,7 +72,7 @@ def test_p03_r01_shots_leave_from_the_muzzle_or_the_centre() -> None:
     assert shot.y == pytest.approx(38.5)
 
 
-def test_p03_r01_a_level_without_streams_fires_nothing_but_counts_its_volleys() -> None:
+def test_game_wpn_03_a_level_without_streams_fires_nothing_but_counts_its_volleys() -> None:
     weapon = _weapon([[]], sps=5)
     world = _world(weapon)
     world.step(0.3)
@@ -79,7 +80,7 @@ def test_p03_r01_a_level_without_streams_fires_nothing_but_counts_its_volleys() 
     assert world.volleys == 2
 
 
-def test_p03_r01_stopping_fire_clears_the_pending_shots_but_not_those_in_flight() -> None:
+def test_game_ctrl_05_stopping_fire_clears_the_pending_shots_but_not_those_in_flight() -> None:
     world = _world(_weapon(sps=5))
     world.step(0.3)
     world.firing = False
@@ -89,7 +90,7 @@ def test_p03_r01_stopping_fire_clears_the_pending_shots_but_not_those_in_flight(
     assert world.beam == []
 
 
-def test_p03_r01_a_shot_that_leaves_the_playfield_is_removed() -> None:
+def test_game_screen_07_a_shot_that_leaves_the_playfield_is_removed() -> None:
     world = _world(_weapon(sps=1))
     world.muzzle_y = 100
     world.step(0.1)
@@ -98,7 +99,7 @@ def test_p03_r01_a_shot_that_leaves_the_playfield_is_removed() -> None:
     assert world.active_count == 0
 
 
-def test_p03_r01_a_dead_shot_is_reused_for_the_next_one() -> None:
+def test_eng_19_a_dead_shot_is_reused_for_the_next_one() -> None:
     world = _world(_weapon(sps=1))
     world.step(0.5)
     shot = world.projectiles[0]
@@ -109,7 +110,7 @@ def test_p03_r01_a_dead_shot_is_reused_for_the_next_one() -> None:
     assert shot.alive is True
 
 
-def test_p03_r01_a_shot_hitting_a_target_damages_it_and_dies() -> None:
+def test_game_wpn_04_a_shot_hitting_a_target_damages_it_and_dies() -> None:
     world = _world(_weapon(sps=5, damage=5))
     target = _Target(50, 20.5)
     world.targets = [target]
@@ -122,7 +123,7 @@ def test_p03_r01_a_shot_hitting_a_target_damages_it_and_dies() -> None:
     assert (impact.weapon_id, impact.blast_radius, impact.blocked) == ("w", 0, False)
 
 
-def test_p03_r02_a_blast_damages_every_target_within_its_radius() -> None:
+def test_game_wpn_09_a_blast_damages_every_target_within_its_radius() -> None:
     world = _world(_weapon(sps=5, damage=4, blast=10, radius=1))
     direct = _Target(50, 20.5)
     near = _Target(61, 20.5)
@@ -134,7 +135,7 @@ def test_p03_r02_a_blast_damages_every_target_within_its_radius() -> None:
     assert world.impacts[0].blast_radius == 10
 
 
-def test_p03_r02_a_target_is_not_hit_by_a_shot_that_misses_its_radius() -> None:
+def test_eng_09_a_target_is_not_hit_by_a_shot_that_misses_its_radius() -> None:
     world = _world(_weapon(sps=5))
     world.targets = [_Target(60, 20.5)]
     world.step(0.05)
@@ -143,14 +144,14 @@ def test_p03_r02_a_target_is_not_hit_by_a_shot_that_misses_its_radius() -> None:
     assert world.projectiles[0].alive is True
 
 
-def test_p03_r02_dead_targets_are_not_hit() -> None:
+def test_game_wpn_04_dead_targets_are_not_hit() -> None:
     world = _world(_weapon(sps=5))
     world.targets = [_Target(50, 20.5, health=0)]
     world.step(0.05)
     assert world.impacts == []
 
 
-def test_p03_r01_the_shot_world_options_and_defaults_are_kept() -> None:
+def test_the_shot_world_options_and_defaults_are_kept() -> None:
     options = ShotWorldOptions(100, 200, 15)
     assert (options.width, options.height, options.cull_margin) == (100, 200, 15)
     world = ShotWorld(options, _weapon())

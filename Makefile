@@ -1,8 +1,10 @@
 # Single entry point for people, git hooks and CI (specs/01-engineering.md §3).
 # Public targets: setup, check, tests, e2e, serve, help. The other targets are steps the public
-# ones and the git hooks call: they work on their own too, but they are not listed by `make help`.
+# ones and the git hooks call: they work on their own too, but they are not listed by `make help`
+# (ENG-37).
 # uv manages the Python toolchain; Transcrypt compiles src/ to JavaScript; esbuild bundles it.
 
+# `make help` is the default target (ENG-20).
 .DEFAULT_GOAL := help
 .PHONY: help setup check tests e2e serve lint typecheck format check-fast build e2e-build \
 	build-info babylon check-tools clean
@@ -10,11 +12,12 @@
 DIST := dist
 # The e2e build (ENG-51, ENG-52): the game with its test API, served to Playwright by tests/e2e.
 E2E_DIST := dist-e2e
-# Stamp files: what each install or compile step last did (git-ignored).
+# Stamp files: what each install or compile step last did (git-ignored), so a step runs again only
+# when its inputs change (ENG-39).
 STAMPS := .make
 
-# Babylon.js (ENG-02, D-173): the pinned UMD build, vendored under public/vendor/ and checked
-# against its SHA-256. Bump the version and the hash together.
+# Babylon.js (ENG-02, D-173): the pinned UMD build, vendored under public/vendor/ and
+# checked against its SHA-256. Bump the version and the hash together.
 BABYLON_VERSION := 9.32.0
 BABYLON_URL := https://cdn.jsdelivr.net/npm/babylonjs@$(BABYLON_VERSION)/babylon.js
 BABYLON_SHA256 := 58c486bececb6cde67b188e6410321e72d1d051ea7a9e5f23c560b6049ab37a5
@@ -29,7 +32,7 @@ help: ## List the targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 # The tools the game needs. Every step below checks them first, so a missing one is named before
-# anything is installed.
+# anything is installed (ENG-38).
 check-tools:
 	@missing=""; \
 	for t in uv node npm curl git; do command -v $$t >/dev/null 2>&1 || missing="$$missing $$t"; done; \
@@ -44,7 +47,8 @@ check-tools:
 		echo "node is $$major, but node/.nvmrc asks for $(NODE_MAJOR)" >&2; exit 1; \
 	fi
 
-# Python: the locked environment (.venv), made again when pyproject.toml or uv.lock change.
+# Python: the locked environment (.venv, uv: ENG-04), made again when pyproject.toml or uv.lock
+# change.
 UV_SYNC := $(STAMPS)/uv-sync
 $(UV_SYNC): pyproject.toml uv.lock | check-tools
 	@mkdir -p $(STAMPS)
@@ -87,17 +91,21 @@ babylon: | check-tools
 	fi
 
 # The version and the short commit shown on the title screen (ENG-83): `src/build_info.py`, written
-# from git (git-ignored). The version is the latest release tag (`v` dropped): `unknown` without one.
+# from git (git-ignored). The version is the latest release tag (`v` dropped, ENG-93): `unknown`
+# without one.
 APP_VERSION := $(or $(patsubst v%,%,$(shell git tag --sort=-v:refname 2>/dev/null | head -n 1)),unknown)
 BUILD_INFO := src/build_info.py
+# The short commit, the cache-busting query of the script URLs (ENG-84).
+GIT_COMMIT := $(or $(shell git rev-parse --short HEAD 2>/dev/null),unknown)
 
 build-info:
 	@commit=$$(git rev-parse --short HEAD 2>/dev/null || echo unknown); \
 	printf 'APP_VERSION = "%s"\nAPP_COMMIT = "%s"\n' '$(APP_VERSION)' "$$commit" > $(BUILD_INFO).tmp; \
 	if cmp -s $(BUILD_INFO).tmp $(BUILD_INFO); then rm -f $(BUILD_INFO).tmp; else mv $(BUILD_INFO).tmp $(BUILD_INFO); fi
 
-# Transcrypt writes one ES module per Python module; esbuild bundles the game (main.py) and its
-# ground worker (a Web Worker entry, not reached from main.py) into one file each under dist/js/.
+# Transcrypt (ENG-03) writes one ES module per Python module; esbuild bundles the game (main.py)
+# and its ground worker (a Web Worker entry, not reached from main.py) into one file each under
+# dist/js/.
 # Transcrypt has no incremental mode here, so it compiles everything (about 20 s) whenever a Python
 # source changed: the stamp file records the last compile.
 TRANSCRYPT_OUT := build
@@ -120,30 +128,40 @@ $(TRANSCRYPT_E2E_STAMP): $(PY_SOURCES) $(UV_SYNC) | build-info
 
 # Lint, types and tests (the code checks).
 
+# ENG-24: ruff check, ruff format --check (ENG-13) and import-linter, with no auto-fix.
 lint: build-info $(UV_SYNC)
 	uv run ruff check src
 	uv run ruff format --check src
 	PYTHONPATH=src uv run lint-imports
 
+# ENG-26: mypy --strict (its settings are in pyproject.toml, ENG-14).
 typecheck: build-info $(UV_SYNC)
 	uv run mypy
 
+# ENG-25: ruff format, then ruff check --fix.
 format: $(UV_SYNC)
 	uv run ruff format src
 	uv run ruff check --fix src
 
+# ENG-31: lint and typecheck, run by the pre-push hook (ENG-63).
 check-fast: lint typecheck
 	@true
 
-# Unit test workers (pytest-xdist): one per core; the boss checks alone take minutes on one (D-232).
+# Unit test workers (pytest-xdist): one per core; the boss checks alone take minutes on one (D-232,
+# ENG-48).
 UNIT_WORKERS ?= auto
 
-tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ at 90 %; HTML in coverage/
+# ENG-29: the unit tests and the coverage gates of ENG-43 and ENG-146, in one target.
+tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ and game/sim/ at 90 %; HTML in coverage/
 	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
 	uv run coverage report --include='src/core/*' --fail-under=90
+	uv run coverage report --include='src/game/sim/*' --fail-under=90
 
 # The game: build, end-to-end tests, serving.
 
+# ENG-23, ENG-150: Transcrypt, then esbuild into dist/js/; index.html (the only page, DEV-MENU-02)
+# and public/ (the vendored Babylon.js, ENG-02) copied into dist/. Fails if a compiler pragma or
+# the test API (DEV-API-01) leaks into the bundle.
 build: build-info $(TRANSCRYPT_STAMP) $(NPM_CI) babylon
 	rm -rf $(DIST)
 	mkdir -p $(DIST)/js
@@ -151,8 +169,16 @@ build: build-info $(TRANSCRYPT_STAMP) $(NPM_CI) babylon
 	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
 	cp index.html $(DIST)/
 	cp -r public/. $(DIST)/
+	# ENG-84: the script URLs carry the short commit, so a new deploy is never served stale from a
+	# cache: index.html (the game and Babylon.js) and the ground worker's URL in the bundle.
+	sed -e 's|js/game\.js|js/game.js?v=$(GIT_COMMIT)|' -e 's|vendor/babylon\.js|vendor/babylon.js?v=$(GIT_COMMIT)|' $(DIST)/index.html > $(DIST)/index.html.tmp && mv $(DIST)/index.html.tmp $(DIST)/index.html
+	sed -e 's|\./ground_worker\.js|./ground_worker.js?v=$(GIT_COMMIT)|g' $(DIST)/js/game.js > $(DIST)/js/game.js.tmp && mv $(DIST)/js/game.js.tmp $(DIST)/js/game.js
 	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
+	# AUD-ENGINE-01: the game ships no audio file; they are synthesized (Web Audio).
+	@if find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) | grep -q .; then \
+		echo 'AUD-ENGINE-01: audio files in $(DIST)/:' >&2; \
+		find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) >&2; exit 1; fi
 	@if grep -q '__GAME_TEST__' $(DIST)/js/game.js; then \
 		echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
 
@@ -163,8 +189,8 @@ e2e-build: build $(TRANSCRYPT_E2E_STAMP) $(NPM_CI)
 	@grep -q '__GAME_TEST__' $(E2E_DIST)/js/game.js || { \
 		echo 'ENG-52: the e2e bundle has no test API' >&2; exit 1; }
 
-# Playwright (Python) on the e2e build, served by tests/e2e/conftest.py (ENG-50, ENG-51). On a
-# failure, traces, screenshots and videos are kept in test-results/ (ENG-57).
+# Playwright (Python) on the e2e build, served by tests/e2e/conftest.py (ENG-30, ENG-50, ENG-51).
+# On a failure, traces, screenshots and videos are kept in test-results/ (ENG-57).
 E2E_ARGS ?=
 # Parallel workers (pytest-xdist); each has its own browser and server. Software WebGL keeps the
 # CPU busy: on a 4-core runner, more than 4 workers is no faster.
@@ -174,7 +200,7 @@ E2E_SHARD ?=
 e2e: e2e-build $(PLAYWRIGHT) $(UV_SYNC) ## End-to-end tests (Playwright, Chromium) on the e2e build; E2E_ARGS="-k smoke" to filter, E2E_SHARD=1/4 for a slice
 	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
 
-# The port the game is served on.
+# The production build served locally (ENG-22), on this port.
 SERVE_PORT ?= 5173
 serve: build $(UV_SYNC) ## Serve the game (dist/, production build) on http://localhost:5173
 	@echo 'serving $(DIST)/ on http://localhost:$(SERVE_PORT) (Ctrl-C to stop)'
@@ -182,11 +208,14 @@ serve: build $(UV_SYNC) ## Serve the game (dist/, production build) on http://lo
 
 # Everything at once: setup and the full gate.
 
+# ENG-21: the tools checked, then everything installed, the git hooks too (ENG-60).
 setup: check-tools $(UV_SYNC) $(NPM_CI) babylon $(if $(SKIP_BROWSER),,$(PLAYWRIGHT)) ## Check the tools, install the dependencies and the git hooks (pre-commit, pre-push)
 	uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 	@echo 'setup: done'
 
+# ENG-32: the full gate.
 check: lint typecheck tests build e2e ## Every code check, the unit tests with coverage, the build and the e2e tests
 
+# ENG-34: removes the builds, the coverage and test reports and the caches (ENG-66).
 clean:
 	rm -rf $(DIST) $(E2E_DIST) test-results build coverage .coverage src/__target__ .mypy_cache .ruff_cache .pytest_cache

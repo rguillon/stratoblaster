@@ -1,6 +1,6 @@
-"""The frost on the 2-1 bosses (World 2 theme: dark metal with neon, plus frost, ice and snow)
-Logical pixels, nose +Z, Y up. Pale vertex
-colours on the hull's top faces.
+"""The frost on the 2-1 bosses (MB-FLOE-BREAKER-05, FB-NARWHAL-05; World 2 theme: dark metal with
+neon, plus frost, ice and snow) Logical pixels, nose +Z, Y up. Pale vertex colours on the hull's top
+faces.
 """
 
 import math
@@ -12,8 +12,8 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")

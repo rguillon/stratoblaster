@@ -1,4 +1,4 @@
-"""The pieces of a boss (P07-R01)
+"""The pieces of a boss (BOSS-12)
 
 Its destroyable parts and its core, as shots and weapons see them.
 """
@@ -12,10 +12,10 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import TYPE_CHECKING, Protocol  # noqa: E402
+from typing import TYPE_CHECKING, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # `boss` imports this module, so the names of `boss` are imported for the annotations only.
 if TYPE_CHECKING:
@@ -29,17 +29,23 @@ class BossPiece(ShotTarget, Protocol):
     since_hit: float
 
     @property
-    def heading(self) -> float: ...
+    def heading(self) -> float:
+        """Direction its nose points, in radians from +Y."""
+        ...
 
     @property
-    def gone(self) -> bool: ...
+    def gone(self) -> bool:
+        """Whether it is done and the world should remove it."""
+        ...
 
     @property
-    def emitter(self) -> PlanePoint: ...
+    def emitter(self) -> PlanePoint:
+        """Where its lasers leave from: one radius ahead of its centre, along its heading."""
+        ...
 
     @property
     def turret(self) -> BossTurret | None:
-        """The turret its guns are on, if any (phase 7 review): its weapons turn it."""
+        """The turret its guns are on, if any (BOSS-29): its weapons turn it."""
         ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
@@ -87,7 +93,7 @@ class BossPart:
         self.drop_chance = spec.drop_chance
         self.shields_core = spec.shields_core
         self.turret = _turret_of(boss, spec.id)
-        # Points scored when the player destroys it (P11-R01).
+        # Points scored when the player destroys it (GAME-SCORE-04).
         part_points = boss.stats.part_points
         self.points = part_points if part_points is not None else 0
         self._health = spec.health
@@ -104,7 +110,7 @@ class BossPart:
 
     @health.setter
     def health(self, value: float) -> None:
-        """Damage only counts once the boss is in place (P07-R05), and the part revealed."""
+        """Damage only counts once the boss is in place (BOSS-09), and the part revealed."""
         if not self._boss.vulnerable or self.hidden:
             return
         next_health = max(0, value)
@@ -114,18 +120,21 @@ class BossPart:
 
     @property
     def destroyed(self) -> bool:
+        """Whether its health is used up."""
         return self._health <= 0
 
     @property
     def hidden(self) -> bool:
         """Whether it is out of the fight: still hidden (the transformation that reveals it has not
-        happened), or retired."""
+        happened, BOSS-38), or retired."""
         reveal = self.spec.reveal
         return (reveal is not None and self._boss.form < reveal) or self.retired
 
     @property
     def retired(self) -> bool:
-        """Whether it has left the fight: the transformation it retires at has started (D-228)."""
+        """Whether it has left the fight: the transformation it retires at has started
+        (D-228, BOSS-46).
+        """
         retire = self.spec.retire
         if retire is None:
             return False
@@ -134,13 +143,17 @@ class BossPart:
 
     @property
     def gone(self) -> bool:
+        """Whether its boss is gone or it is destroyed."""
         return self._boss.gone or self.destroyed
 
     @property
     def emitter(self) -> PlanePoint:
+        """Where its lasers leave from: one radius ahead of its centre, along its heading."""
         return _emitter_of(self.x, self.y, self.radius, self.heading)
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
+        """Where `muzzle` (from the boss's centre, as drawn at rest) is now: through its turret if
+        `on_turret` and it has one, then moved by its joint, then turned with the boss."""
         if on_turret and self.turret is not None:
             x, y, height = self.turret.turned(muzzle)
         else:
@@ -167,23 +180,27 @@ class BossCore:
 
     @property
     def id(self) -> int:
+        """The id of the boss: the core shares it."""
         return self._boss.id
 
     @property
     def x(self) -> float:
+        """X of the boss's centre."""
         return self._boss.x
 
     @property
     def y(self) -> float:
+        """Y of the boss's centre."""
         return self._boss.y
 
     @property
     def health(self) -> float:
+        """Health the core has left: 0 while the boss is dying."""
         return self._boss.core_health
 
     @health.setter
     def health(self, value: float) -> None:
-        """Shots that hit a shielded core (or one coming in) spark but do no damage (P07-R01)."""
+        """Shots that hit a shielded core (or one coming in) spark but do no damage (BOSS-14)."""
         if not self._boss.vulnerable or self._boss.core_shielded:
             return
         if value < self._boss.core_health:
@@ -192,13 +209,17 @@ class BossCore:
 
     @property
     def gone(self) -> bool:
+        """Whether the boss is gone or dying."""
         return self._boss.gone or self._boss.state == "dying"
 
     @property
     def emitter(self) -> PlanePoint:
+        """Where its lasers leave from: one radius ahead of its centre, along its heading."""
         return _emitter_of(self.x, self.y, self.radius, self.heading)
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
+        """Where `muzzle` is now on the boss, through the core's turret when `on_turret` and it has
+        one."""
         if on_turret and self.turret is not None:
             return muzzle_point(self._boss, self.turret.turned(muzzle))
         return muzzle_point(self._boss, muzzle)

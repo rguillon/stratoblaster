@@ -58,7 +58,7 @@ def _world(difficulty: EnemyDifficulty | None = None, eye: object = None) -> Ene
 BULLET = EnemyBulletSpec(10, 2, "round")
 
 
-def test_p05_enemies_added_get_ids_and_count_towards_the_spawned_totals() -> None:
+def test_enm_04_enemies_added_get_ids_and_count_towards_the_spawned_totals() -> None:
     world = _world()
     world.add(Walker(10, 10, health=10), Walker(20, 20, health=5))
     assert [e.id for e in world.enemies] == [1, 2]
@@ -66,13 +66,13 @@ def test_p05_enemies_added_get_ids_and_count_towards_the_spawned_totals() -> Non
     assert world.spawned_health == 15
 
 
-def test_p05_on_screen_counts_enemies_whose_centre_is_on_the_playfield() -> None:
+def test_on_screen_counts_enemies_whose_centre_is_on_the_playfield() -> None:
     world = _world()
     world.add(Walker(50, 50), Walker(-5, 50), Walker(50, 105), Walker(100, 0))
     assert world.on_screen == 2
 
 
-def test_p05_each_enemy_is_updated_every_step_and_ages() -> None:
+def test_enm_04_each_enemy_is_updated_every_step_and_ages() -> None:
     world = _world()
     enemy = Walker(50, 50)
     world.add(enemy)
@@ -82,7 +82,7 @@ def test_p05_each_enemy_is_updated_every_step_and_ages() -> None:
     assert enemy.age == pytest.approx(0.75)
 
 
-def test_p05_a_destroyed_enemy_scores_once_and_leaves_a_blast() -> None:
+def test_enm_14_a_destroyed_enemy_scores_once_and_leaves_a_blast() -> None:
     world = _world()
     enemy = Walker(50, 50, health=0, points=75)
     world.add(enemy)
@@ -98,7 +98,7 @@ def test_p05_a_destroyed_enemy_scores_once_and_leaves_a_blast() -> None:
     assert world.destroyed == []
 
 
-def test_p05_a_destroyed_enemy_runs_its_on_destroyed_hook_with_the_context() -> None:
+def test_enm_14_a_destroyed_enemy_runs_its_on_destroyed_hook_with_the_context() -> None:
     world = _world()
     calls: list[object] = []
     enemy = Walker(50, 50, health=0)
@@ -109,7 +109,7 @@ def test_p05_a_destroyed_enemy_runs_its_on_destroyed_hook_with_the_context() -> 
     assert calls[0] is world._context  # type: ignore[attr-defined]
 
 
-def test_gd45_an_enemy_that_flies_off_the_playfield_after_entering_is_removed() -> None:
+def test_enm_10_an_enemy_that_flies_off_the_playfield_after_entering_is_removed() -> None:
     world = _world()
     enemy = Walker(50, 50, action=lambda e, ctx, dt: setattr(e, "y", e.y - 100 * dt))
     world.add(enemy)
@@ -121,7 +121,7 @@ def test_gd45_an_enemy_that_flies_off_the_playfield_after_entering_is_removed() 
     assert world.kills == 0
 
 
-def test_gd45_an_enemy_that_has_not_yet_entered_stays_while_off_screen() -> None:
+def test_enm_10_an_enemy_that_has_not_yet_entered_stays_while_off_screen() -> None:
     world = _world()
     enemy = Walker(50, 200)
     world.add(enemy)
@@ -129,7 +129,7 @@ def test_gd45_an_enemy_that_has_not_yet_entered_stays_while_off_screen() -> None
     assert enemy in world.enemies
 
 
-def test_gd45_an_enemy_too_old_is_removed_whatever_it_does() -> None:
+def test_enm_10_an_enemy_too_old_is_removed_whatever_it_does() -> None:
     world = _world()
     enemy = Walker(50, 50)
     world.add(enemy)
@@ -137,7 +137,7 @@ def test_gd45_an_enemy_too_old_is_removed_whatever_it_does() -> None:
     assert enemy not in world.enemies
 
 
-def test_p05_an_enemy_that_does_not_expire_stays_until_destroyed() -> None:
+def test_boss_04_an_enemy_that_does_not_expire_stays_until_destroyed() -> None:
     world = _world()
     boss_like = Walker(50, 50, action=lambda e, ctx, dt: setattr(e, "y", -500))
     boss_like.expires = False
@@ -150,7 +150,7 @@ def test_p05_an_enemy_that_does_not_expire_stays_until_destroyed() -> None:
     assert world.kills == 1
 
 
-def test_p05_an_enemy_can_spawn_new_enemies_that_join_from_the_next_step() -> None:
+def test_an_enemy_can_spawn_new_enemies_that_join_from_the_next_step() -> None:
     def spawn(e: Walker, ctx: object, dt: float) -> None:
         ctx.spawn(Walker(10, 10))  # type: ignore[attr-defined]
 
@@ -162,7 +162,7 @@ def test_p05_an_enemy_can_spawn_new_enemies_that_join_from_the_next_step() -> No
     assert world.spawned_enemies == []
 
 
-def test_p05_an_enemy_can_explode_and_break_its_parts() -> None:
+def test_enm_29_an_enemy_can_explode_and_break_its_parts() -> None:
     part_points = _Part(20, 20, points=30)
     free_part = _Part(40, 40, points=None)
 
@@ -180,7 +180,7 @@ def test_p05_an_enemy_can_explode_and_break_its_parts() -> None:
     assert ("enemy", 20, 20, 3) in _fields(world.blasts)
 
 
-def test_p05_clearing_the_world_removes_enemies_shots_and_blasts() -> None:
+def test_clearing_the_world_removes_enemies_shots_and_blasts() -> None:
     world = _world()
     world.add(Walker(50, 50, health=0))
     world.shots.fire_bullet(1, 1, 0, BULLET)

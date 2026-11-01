@@ -1,31 +1,32 @@
-"""GD-62: explosions where enemies and missiles were destroyed, in playfield space Each layer
+"""GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space Each layer
 (smoke, shock rings, fireballs, debris, embers) is one mesh
-of thin instances, so a big blast costs no more draw calls than a small one."""
+of thin instances, so a big blast costs no more draw calls than a small one (GFX-FX-09,
+ENG-104)."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 # The table of the blast layers: each disc, whether it is added on, and its depth.
 type LayerTable = dict[str, tuple[Callable[[], Any], bool, float]]
 __pragma__("noskip")
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles  # noqa: E402
-from game.view.shot_geometry import build_glow_disc  # noqa: E402
-from render.babylon import (  # noqa: E402
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     babylon_constant,
     color3,
@@ -89,8 +90,8 @@ def puff(segments: int) -> Any:
     return _object_with_colors(geo, colors)
 
 
-# Each layer: its disc (a function), whether it is added on (fire) or laid over (smoke), and its
-# depth.
+# Each layer: its disc (a function), whether it is added on (fire) or laid over (smoke; the rings
+# too, so a blast does not light up the ground, GFX-FX-07), and its depth.
 LAYERS = {  # type: LayerTable
     "smoke": (lambda: puff(LOOK.smoke.segments), False, -2.8),
     "rings": (lambda: ring(LOOK.ring.segments), False, -3),
@@ -123,13 +124,15 @@ class LayerMesh:
         self.mesh.material = material
         self.mesh.hasVertexAlpha = not add
         self.mesh.isPickable = False
-        # Drawn in layer order (smoke under fire), and never culled: instances spread anywhere.
+        # Drawn in layer order (smoke under fire, the lowest of the playfield, GFX-READ-13), and
+        # never culled: instances spread anywhere.
         self.mesh.alphaIndex = order
         self.mesh.alwaysSelectAsActiveMesh = True
         self.mesh.setEnabled(False)
 
     def show(self, spots: list[Any]) -> None:
-        """Draws one thin instance per spot, tinted by the spot's colour."""
+        """Draws one thin instance per spot, tinted by the spot's colour, into buffers that grow by
+        powers of two and are reused (ENG-19)."""
         n = len(spots)
         self.mesh.setEnabled(n > 0)
         if n == 0:
@@ -172,7 +175,7 @@ class BlastRendererHandle:
 
 
 def create_blast_renderer(scene: Any) -> BlastRendererHandle:
-    """GD-62: explosions where enemies and missiles were destroyed, in playfield space."""
+    """GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space."""
     layers: list[list[Any]] = []
     for order, layer in enumerate(BLAST_LAYERS):
         geo_of, add, z = LAYERS[layer]

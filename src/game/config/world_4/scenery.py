@@ -1,12 +1,13 @@
-"""World 4 (P10-R03; reworked at the reviewer's request, 2026-10-27)
+"""World 4 (WLD-4-03; reworked at the reviewer's request, 2026-10-27)
 
 The five levels are one journey from the garden villages World 3 ended on, through the suburbs and a
 town centre, the mid-rise blocks and the offices of midtown, the towers of the business district, to
-a downtown of skyscrapers. The changes are slow, as in Worlds 2 and 3: the grass gives way to
-concrete in small steps, the sections blend over World 2's long stretch (`TRANSITION`), and each
-taller kind of building first comes in mixed with the one before it. Each level starts on the very
-section the previous one ended on. No sea and no lava: World 3's river runs on through the town and
-between the embankments of the city. Each level's `seconds` add up to 300 (P10-R02).
+a downtown of skyscrapers. The changes are slow, as in Worlds 2 and 3 (WLD-4-05): the grass gives
+way to concrete in small steps, the sections blend over World 2's long stretch (`TRANSITION`), and
+each taller kind of building first comes in mixed with the one before it. Each level starts on the
+very section the previous one ended on (WLD-4-04). No sea, no lava, no river and no pond:
+`city_only` strips every channel and lake (WLD-4-09). Each level's `seconds` add up to 300
+(WLD-4-02).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -30,7 +31,7 @@ from game.config.world_4.props import WORLD_4_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -38,15 +39,17 @@ G = WORLD_4_GROUPS
 
 
 def quays(half_width: float) -> Any:
-    """The river between the stone embankments of the city: steep walls, `half_width` at its bed."""
+    """The river between the stone embankments of the city (quays, GFX-WATER-08): steep walls,
+    `half_width` at its bed."""
     return merge(river(half_width), {"wall": 14})
 
 
 # The flat city ground, lower than World 3's `FLAT` (32): the skyscrapers' roofs (up to about 113
-# high) stay under the lowest cloud layer, and the ground stays above the props' `minHeight` (4).
+# high) stay under the lowest cloud layer (WLD-4-10, GFX-SKY-12), and the ground stays above the
+# props' `minHeight` (4).
 CITY_GROUND = smooth(8, 2, 600, 2)
 
-# Every block filled with buildings side by side, as in Level Zero's city centre.
+# Every block filled with buildings side by side, as in Level Zero's city centre (WLD-4-13).
 FILLED_BLOCKS = record({"podiums": [], "podiumHeight": [0, 0], "towers": [16, 16]})
 
 
@@ -114,10 +117,11 @@ SKYLINE_EDGE = section(
     },
 )
 
-# 4-1, Garden town: from the garden villages 3-5 ended on, suburban lanes, suburbs, terraced streets
-# and flats, to the town centre.
+# 4-1, Garden town (LVL-4-1-02): from the garden villages 3-5 ended on, suburban lanes, suburbs,
+# terraced streets and flats, to the town centre.
 GARDEN_TOWN = [
-    # World 3 has no water (reviewer, 2026-10-28); World 4 keeps its river and ponds.
+    # World 3 has no water (reviewer, 2026-10-28); this river and these ponds are stripped by
+    # `city_only` (WLD-4-09).
     merge(GARDEN_VILLAGE_END, {"channel": river(26), "lakes": PONDS, "seconds": 40}),
     section(
         "suburban lanes",
@@ -166,8 +170,8 @@ GARDEN_TOWN = [
     TOWN_CENTRE,
 ]
 
-# 4-2, Inner town: town streets, the ring road, mid-rise flats, a city park, then mid-rise blocks
-# among the first offices.
+# 4-2, Inner town (LVL-4-2-02): town streets, the ring road, mid-rise flats, a city park, then
+# mid-rise blocks among the first offices.
 INNER_TOWN = [
     merge(TOWN_CENTRE, {"seconds": 40}),
     section(
@@ -212,7 +216,8 @@ INNER_TOWN = [
     MIDRISE_EDGE,
 ]
 
-# 4-3, Midtown: offices among the mid-rise blocks, the river quays, plazas, the first towers.
+# 4-3, Midtown (LVL-4-3-02): offices among the mid-rise blocks, the river quays, plazas, the first
+# towers.
 MIDTOWN = [
     merge(MIDRISE_EDGE, {"seconds": 40}),
     section(
@@ -253,8 +258,8 @@ MIDTOWN = [
     TOWER_EDGE,
 ]
 
-# 4-4, Business district: city towers, a park among them, the financial district with the first
-# skyscrapers, high rise, then the first skyline.
+# 4-4, Business district (LVL-4-4-02): city towers, a park among them, the financial district with
+# the first skyscrapers, high rise, then the first skyline.
 BUSINESS_DISTRICT = [
     merge(TOWER_EDGE, {"seconds": 40}),
     section(
@@ -298,7 +303,8 @@ BUSINESS_DISTRICT = [
     SKYLINE_EDGE,
 ]
 
-# 4-5, Downtown: the skyline, a central park, then skyscrapers filling every block to the end.
+# 4-5, Downtown (LVL-4-5-02): the skyline, a central park, then skyscrapers filling every block to
+# the end.
 DOWNTOWN = [
     merge(SKYLINE_EDGE, {"seconds": 40}),
     section(
@@ -350,8 +356,9 @@ DOWNTOWN = [
 
 
 def city_only(s: Any) -> Any:
-    """`s` with only buildings and roads (reviewer, 2026-10-28): no river, flat paved ground, no
-    grass or trees. The ground is `CITY_GROUND`, low enough for the roofs to stay under the clouds.
+    """`s` with only buildings and roads (WLD-4-08; reviewer, 2026-10-28): no river (WLD-4-09),
+    flat paved ground, no grass or trees. The ground is `CITY_GROUND`, low enough for the roofs to
+    stay under the clouds.
     """
     city = merge(
         s,
@@ -389,13 +396,13 @@ def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
     )
 
 
-# 4-1 (P10-R03): the garden town, from the garden villages 3-5 ended on.
+# 4-1 (LVL-4-1-01): the garden town, from the garden villages 3-5 ended on.
 LEVEL_4_1 = level(["world-4-1", "4-1 Garden town", 4101], 70, GARDEN_TOWN)
-# 4-2: the inner town, starting on the town centre 4-1 ended on.
+# 4-2 (LVL-4-2-01): the inner town, starting on the town centre 4-1 ended on.
 LEVEL_4_2 = level(["world-4-2", "4-2 Inner town", 4201], 65, INNER_TOWN)
-# 4-3: midtown, starting on the mid-rise blocks 4-2 ended on.
+# 4-3 (LVL-4-3-01): midtown, starting on the mid-rise blocks 4-2 ended on.
 LEVEL_4_3 = level(["world-4-3", "4-3 Midtown", 4301], 60, MIDTOWN)
-# 4-4: the business district, starting on the towers 4-3 ended on.
+# 4-4 (LVL-4-4-01): the business district, starting on the towers 4-3 ended on.
 LEVEL_4_4 = level(["world-4-4", "4-4 Business district", 4401], 55, BUSINESS_DISTRICT)
-# 4-5: downtown, starting on the skyline 4-4 ended on.
+# 4-5 (LVL-4-5-01): downtown, starting on the skyline 4-4 ended on.
 LEVEL_4_5 = level(["world-4-5", "4-5 Downtown", 4501], 55, DOWNTOWN)

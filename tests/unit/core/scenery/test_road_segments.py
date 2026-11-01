@@ -36,7 +36,7 @@ def _road(index: int, points: list[tuple[float, float]], width: float = 10.0, ki
     return Road(index, kind, width, 1, [RoadPoint(x, z, width) for x, z in points])
 
 
-def test_p04_r07_without_crossings_a_path_across_another_road_is_blocked() -> None:
+def test_gfx_road_05_without_crossings_a_path_across_another_road_is_blocked() -> None:
     rules = road_rules(no_crossings=NoCrossings(20.0))
     main = _main_along_z()
     crossing = Road(9, "cross", 12.0, 1, [])
@@ -61,7 +61,7 @@ def test_segment_distance_is_to_the_nearest_point_of_the_segment() -> None:
     assert segment_distance(5.0, 6.0, degenerate) == pytest.approx(5.0)
 
 
-def test_p04_r07_nearest_reports_the_edge_of_the_road() -> None:
+def test_gfx_road_23_nearest_reports_the_edge_of_the_road() -> None:
     index = SegmentIndex()
     road = _road(0, [(0.0, 0.0), (100.0, 0.0), (100.0, 100.0)])
     index.add(road)
@@ -91,7 +91,7 @@ def test_a_single_point_road_has_no_segment() -> None:
     assert index.nearest(0.0, 0.0, lambda r: True).distance == math.inf
 
 
-def test_p04_r07_clear_of_agrees_with_the_nearest_road() -> None:
+def test_gfx_road_23_clear_of_agrees_with_the_nearest_road() -> None:
     index = SegmentIndex()
     index.add(_road(0, [(0.0, 0.0), (120.0, 0.0), (120.0, 90.0)], width=16.0))
     index.add(_road(1, [(-40.0, 150.0), (60.0, 150.0)], width=8.0))

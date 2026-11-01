@@ -1,6 +1,7 @@
-"""Keyboard -> menu actions (P01-R09) Keys are matched
+"""Keyboard -> menu actions (UI-INPUT-04) Keys are matched
 by `KeyboardEvent.code` (physical position), so WASD positions work on AZERTY. Held directions
-repeat with our own timing; the browser's auto-repeat events are ignored."""
+repeat with our own timing (UI-INPUT-06); the browser's auto-repeat events are ignored, and a
+bound key's browser default is cancelled (UI-INPUT-05)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -8,10 +9,10 @@ from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
 __pragma__("skip")
-from collections.abc import Callable, Mapping  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Mapping  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.menu_action import MenuAction  # noqa: E402
+from input.menu_action import MenuAction  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MenuKeyEvent(Protocol):
@@ -42,9 +43,9 @@ class _KeyUpEvent(Protocol):
 
 
 class _Target(Protocol):
-    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802
+    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
 
-    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802
+    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
 
 
 __pragma__("noskip")
@@ -79,7 +80,8 @@ class KeyboardMenuInput:
         if event.code in self._held:
             self._held.remove(event.code)
         still_held = [code for code in self._held if self._bindings.get(code) == action]
-        # len(): an empty list is truthy in JavaScript, so `not still_held` would never release.
+        # len(): an empty list is truthy in JavaScript, so `not still_held` would never release
+        # (ENG-162).
         if len(still_held) == 0:
             self._repeater.release(action)
 

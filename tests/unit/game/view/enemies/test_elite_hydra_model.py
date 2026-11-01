@@ -5,7 +5,7 @@ from helpers.view_probes import drawings_of, jointed_design_ids, probe_builder
 from game.view.enemies import elite_hydra_model as module
 
 
-def test_p05_r19_hydra_draws_every_head_its_design_asks_for(monkeypatch):
+def test_enm_hydra_05_hydra_draws_every_head_its_design_asks_for(monkeypatch):
     capture = probe_builder(monkeypatch, module.build_hydra)
     design_ids, drawn_ids = jointed_design_ids(capture)
     assert capture.name == "hydra"
@@ -13,7 +13,7 @@ def test_p05_r19_hydra_draws_every_head_its_design_asks_for(monkeypatch):
     assert len(design_ids) == 3
 
 
-def test_p05_r19_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(monkeypatch):
+def test_enm_hydra_05_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(monkeypatch):
     capture = probe_builder(monkeypatch, module.build_hydra)
     drawn = drawings_of(capture)
     for joint in ("neck-left", "neck-middle", "neck-right"):
@@ -22,6 +22,6 @@ def test_p05_r19_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(monkey
         assert len(drawn["parts." + head]["muzzles"]) == 1
 
 
-def test_p05_r19_body_has_two_reactors(monkeypatch):
+def test_enm_hydra_04_body_has_two_reactors(monkeypatch):
     capture = probe_builder(monkeypatch, module.build_hydra)
     assert len(drawings_of(capture)["body"]["reactors"]) == 2

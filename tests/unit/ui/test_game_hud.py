@@ -41,14 +41,14 @@ def make_hud(on_bomb: object = None) -> tuple[GameHud, FakeDocument]:
     return GameHud(doc, doc.createElement("div"), setup), doc
 
 
-def test_p11_r02_the_hud_shows_the_health_as_a_rounded_up_count_and_a_bar() -> None:
+def test_ui_hud_04_the_hud_shows_the_health_as_a_rounded_up_count_and_a_bar() -> None:
     hud, _ = make_hud()
     hud.update(frame())
     assert hud.root.querySelector(".hud-health-text").textContent == "HEALTH 3 / 10"
     assert hud.root.querySelector(".hud-bar-fill").style.width == "25.0%"
 
 
-def test_p11_r02_the_low_health_warning_shows_under_30_percent() -> None:
+def test_ui_hud_04_the_low_health_warning_shows_under_30_percent() -> None:
     hud, _ = make_hud()
     hud.update(frame(health=2.5))
     bar = hud.root.querySelector(".hud-bar-fill")
@@ -57,7 +57,8 @@ def test_p11_r02_the_low_health_warning_shows_under_30_percent() -> None:
     assert not bar.classList.contains("low")
 
 
-def test_p11_r02_the_weapon_lives_progress_and_score_are_written() -> None:
+def test_ui_hud_01_the_weapon_lives_progress_and_score_are_written() -> None:
+    """Each part of the bar: UI-HUD-02, UI-HUD-03, UI-HUD-05, UI-HUD-06."""
     hud, _ = make_hud()
     hud.update(frame())
     assert hud.root.querySelector(".hud-weapon").textContent == "Bullet Lv 1/5"
@@ -67,13 +68,13 @@ def test_p11_r02_the_weapon_lives_progress_and_score_are_written() -> None:
     assert hud.root.querySelector(".hud-high-score").textContent == "HI 100"
 
 
-def test_p11_r02_the_high_score_line_is_the_best_of_the_two() -> None:
+def test_ui_hud_05_the_high_score_line_is_the_best_of_the_two() -> None:
     hud, _ = make_hud()
     hud.update(frame(score=10, high_score=50))
     assert hud.root.querySelector(".hud-high-score").textContent == "HI 50"
 
 
-def test_p11_r05_the_bombs_left_are_shown_beside_the_lives() -> None:
+def test_ui_hud_03_the_bombs_left_are_shown_beside_the_lives() -> None:
     hud, _ = make_hud()
     hud.update(frame(bombs=2))
     assert hud.root.querySelector(".hud-bombs").textContent == "B2"
@@ -81,7 +82,7 @@ def test_p11_r05_the_bombs_left_are_shown_beside_the_lives() -> None:
     assert hud.root.querySelector(".hud-bombs").textContent == ""
 
 
-def test_p11_r06_the_touch_bomb_button_bombs_once_per_tap_and_stops_the_event() -> None:
+def test_ui_hud_10_the_touch_bomb_button_bombs_once_per_tap_and_stops_the_event() -> None:
     fired: list[bool] = []
     hud, _ = make_hud(on_bomb=lambda: fired.append(True))
     hud.update(frame(bombs=2))
@@ -94,7 +95,7 @@ def test_p11_r06_the_touch_bomb_button_bombs_once_per_tap_and_stops_the_event() 
     assert event.stopped is True
 
 
-def test_p11_r06_an_empty_bomb_button_is_marked_empty() -> None:
+def test_ui_hud_10_an_empty_bomb_button_is_marked_empty() -> None:
     hud, _ = make_hud(on_bomb=lambda: None)
     hud.update(frame(bombs=0))
     button = hud.root.querySelector(".hud-bomb-button")
@@ -102,13 +103,13 @@ def test_p11_r06_an_empty_bomb_button_is_marked_empty() -> None:
     assert button.textContent == "BOMB 0"
 
 
-def test_p11_r06_without_a_bomb_handler_there_is_no_bomb_button() -> None:
+def test_ui_hud_10_without_a_bomb_handler_there_is_no_bomb_button() -> None:
     hud, _ = make_hud()
     hud.update(frame())
     assert hud.root.querySelector(".hud-bomb-button") is None
 
 
-def test_p07_r02_the_boss_bar_follows_the_boss_of_the_frame() -> None:
+def test_ui_hud_14_the_boss_bar_follows_the_boss_of_the_frame() -> None:
     hud, _ = make_hud()
     hud.update(frame(boss=BossBarFrame("Warden", "BOSS", 0.4, [])))
     assert hud.root.querySelector(".boss-name").textContent == "Warden"
@@ -116,12 +117,12 @@ def test_p07_r02_the_boss_bar_follows_the_boss_of_the_frame() -> None:
     assert hud.root.querySelector(".boss-bar").hidden is True
 
 
-def test_p12_r01_the_hud_takes_no_clicks_and_is_hidden_from_assistive_tech() -> None:
+def test_ui_hud_11_the_hud_takes_no_clicks_and_is_hidden_from_assistive_tech() -> None:
     hud, _ = make_hud()
     assert hud.root.getAttribute("aria-hidden") == "true"
 
 
-def test_p11_r02_an_unchanged_frame_does_not_rewrite_the_text() -> None:
+def test_ui_hud_11_an_unchanged_frame_does_not_rewrite_the_text() -> None:
     hud, _ = make_hud()
     hud.update(frame())
     lives = hud.root.querySelector(".hud-lives")
@@ -130,7 +131,7 @@ def test_p11_r02_an_unchanged_frame_does_not_rewrite_the_text() -> None:
     assert lives.textContent == "edited"
 
 
-def test_p11_r02_dispose_removes_the_hud() -> None:
+def test_ui_hud_01_dispose_removes_the_hud() -> None:
     hud, _ = make_hud()
     hud.dispose()
     assert hud.root.parentElement is None

@@ -1,10 +1,10 @@
-"""Self-lit edge trim on a model's meshes (replaces the rim outline of the ships, P14-R03 / R04 read
-as a built-in rim light).
+"""Self-lit edge trim on a model's meshes (replaces the rim outline of the ships, GFX-TRIM-01,
+read as a built-in rim light).
 
 A mesh asks for a trim by its `metadata.trim` colour (`set_trim`, or `request_trim` for every solid
 mesh of a model); once the whole model is built, `add_edge_trim` gives each such mesh a child mesh:
 glowing ribbons along the edges the model shows from above (`render/geometry/edge_trim.py`). The
-trim is part of the model: it moves, blinks and hides with its mesh.
+trim is part of the model: it moves, blinks and hides with its mesh (GFX-TRIM-04).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -32,17 +32,20 @@ from render.geometry.edge_trim import TrimOptions, TrimShape, inverse, multiply,
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
+from render.handles import StandardMaterial, WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 __pragma__("noskip")
 
 # The trim materials of each scene, by colour.
-_MATERIALS = new_weak_map()
+_MATERIALS: WeakMap[dict[str, StandardMaterial]] = new_weak_map()
 
 
 def set_trim(mesh: Any, color: Rgb) -> None:
-    """Asks for a trim of `color` along `mesh`'s silhouette. Keeps the mesh's other metadata."""
+    """Asks for a trim of `color` along `mesh`'s silhouette (e.g. an enemy's, in its colour:
+    ENM-47). Keeps the mesh's other metadata."""
     mesh.metadata = object_with_field(mesh.metadata, "trim", color)
 
 
@@ -53,7 +56,8 @@ def trim_of(mesh: Any) -> Rgb | None:
 
 
 def clear_trim(root: Any) -> None:
-    """Takes back the trim requests of every mesh under `root` (e.g. a burnt stump)."""
+    """Takes back the trim requests of every mesh under `root` (e.g. a burnt stump,
+    GFX-TRIM-09)."""
     for mesh in child_meshes(root, False):
         if trim_of(mesh) is not None:
             mesh.metadata = object_with_field(mesh.metadata, "trim", None)
@@ -62,7 +66,7 @@ def clear_trim(root: Any) -> None:
 def set_trim_group(node: Any) -> None:
     """Makes the model under `node` a trim group of its own: its meshes are trimmed along their own
     silhouette, as if the rest of the model were not there (e.g. a boss's destroyable part, which
-    must show as one wherever it sits on the hull, P14-R04)."""
+    must show as one wherever it sits on the hull, GFX-TRIM-08)."""
     node.metadata = object_with_field(node.metadata, "trimGroup", True)
 
 
@@ -93,9 +97,9 @@ def request_trim(root: Any, color: Rgb) -> None:
 
 
 def _material(scene: Any, color: Rgb) -> Any:
-    """The scene's unlit, two-sided material of `color`, made on first use."""
+    """The scene's unlit, two-sided material of `color`, made on first use (GFX-TRIM-07)."""
     by_color = weak_map_get(_MATERIALS, scene)
-    if by_color == None:  # noqa: E711
+    if by_color == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         by_color = {}
         weak_map_set(_MATERIALS, scene, by_color)
     key = str(color[0]) + "," + str(color[1]) + "," + str(color[2])

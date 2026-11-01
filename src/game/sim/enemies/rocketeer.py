@@ -1,4 +1,4 @@
-"""The Rocketeer (P05-R08)"""
+"""The Rocketeer (`specs/enemies/rocketeer.md`)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -8,7 +8,7 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -16,9 +16,10 @@ CFG = ENEMY_CONFIG.rocketeer
 
 
 class Rocketeer(Enemy):
-    """P05-R08: descends slowly and every 3 s launches one missile from each side pod. The missiles
-    turn towards the player at a limited rate and can be shot down (GD-43). Its `charge` is how far
-    the pods are reloaded (the tips glow when loaded).
+    """ENM-ROCKETEER-05: descends slowly and every 3 s launches one missile from each side pod
+    (ENM-ROCKETEER-06). The missiles turn towards the player at a limited rate (ENM-ROCKETEER-07)
+    and can be shot down (ENM-18). Its `charge` is how far the pods are reloaded (the tips glow when
+    loaded, ENM-ROCKETEER-02).
     """
 
     def __init__(self, x: float, y: float) -> None:

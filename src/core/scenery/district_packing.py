@@ -1,40 +1,41 @@
-"""P15-R07, R08: the buildings of the districts laid on tiles (phase 15), split out of"""
+"""GFX-BLDG-05: the buildings of the districts laid on tiles (phase 15), packed by
+`pack_districts` for `prop_placement`."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.road_network import RoadNetwork  # noqa: E402
-from core.scenery.road_types import Road  # noqa: E402
-from core.scenery.scenery_level import (  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_network import RoadNetwork  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     PropGroupRule,
     PropKindRule,
     PropRules,
     TerrainSection,
     TileRules,
 )  # noqa: E402
-from core.scenery.street_links import Block  # noqa: E402
-from core.scenery.tile_packing import TileSpot  # noqa: E402
+from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.tile_packing import TileSpot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.away_placement import Building  # noqa: E402
-from core.scenery.draws import weighted  # noqa: E402
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import (  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.draws import weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_tiles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     has_tile_key,
     road_pieces,
     road_tiles,
     tile_has,
     tile_key,
 )
-from core.scenery.tile_packing import PackSite, TileBlock, TileGround, pack_block  # noqa: E402
+from core.scenery.tile_packing import PackSite, TileBlock, TileGround, pack_block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class DistrictSite:
@@ -155,15 +156,16 @@ class RoadTilesCache:
         return self._tiles
 
 
-def pack_districts(  # noqa: C901
+def pack_districts(  # noqa: C901 (one algorithm, kept in one function)
     site: DistrictSite,
     within: Callable[[float], bool],
     tiles: TileRules,
     road: dict[str, bool],
 ) -> None:
     """Packs the blocks of the districts whose middle `within` accepts with buildings of whole tiles
-    (P15-R07, R08): at scale 1, turned by quarter turns to face a street, then lots where no
-    building of the area's group fits. `road`: the tiles the roads cover (see `RoadTilesCache`)."""
+    (GFX-BLDG-03, GFX-BLDG-06): at scale 1, turned by quarter turns to face a street, then lots
+    where no building of the area's group fits. `road`: the tiles the roads cover (see
+    `RoadTilesCache`)."""
     t = tiles.size
     taken: dict[str, bool] = {}
     grounds = TileGround(site.field, tiles, site.rules)

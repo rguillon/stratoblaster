@@ -47,29 +47,29 @@ def python_json_helpers(monkeypatch):
     monkeypatch.setattr(readability_view, "_copy_object", copy.copy)
 
 
-def test_p14_r01_a_colour_is_darkened_by_the_tone():
+def test_gfx_read_02_a_colour_is_darkened_by_the_tone():
     scaled = readability_view._range_scale([0.8, 0.4, 0.2], 0.5, [])
     assert scaled == pytest.approx([0.4, 0.2, 0.1])
 
 
-def test_p14_r01_colours_under_the_skip_keys_keep_their_brightness():
+def test_gfx_read_02_colours_under_the_skip_keys_keep_their_brightness():
     look = {"tints": [1.0, 1.0, 1.0], "ground": [0.5, 0.5, 0.5]}
     scaled = readability_view._range_scale(look, 0.5, KEEP)
     assert scaled["tints"] == [1.0, 1.0, 1.0]
     assert scaled["ground"] == pytest.approx([0.25, 0.25, 0.25])
 
 
-def test_p14_r01_numbers_that_are_not_colours_are_left_alone():
+def test_gfx_read_02_numbers_that_are_not_colours_are_left_alone():
     assert readability_view._range_scale(3.0, 0.5, []) == 3.0
     assert readability_view._range_scale("text", 0.5, []) == "text"
 
 
-def test_p14_r01_nested_colour_lists_are_darkened_one_by_one():
+def test_gfx_read_02_nested_colour_lists_are_darkened_one_by_one():
     scaled = readability_view._range_scale([[1.0, 1.0, 1.0], [0.0, 0.0, 0.0]], 0.5, [])
     assert scaled == [[0.5, 0.5, 0.5], [0.0, 0.0, 0.0]]
 
 
-def test_p14_r01_toning_a_look_darkens_its_ground_sea_and_roads_only():
+def test_gfx_read_02_toning_a_look_darkens_its_ground_sea_and_roads_only():
     look = SimpleNamespace(
         terrain={"a": [1.0, 1.0, 1.0]},
         sea=[0.2, 0.4, 0.6],
@@ -85,7 +85,7 @@ def test_p14_r01_toning_a_look_darkens_its_ground_sea_and_roads_only():
     assert result.tone == 0.5
 
 
-def test_p14_r01_toning_leaves_the_original_look_as_it_was():
+def test_gfx_read_02_toning_leaves_the_original_look_as_it_was():
     look = SimpleNamespace(
         terrain=[1.0, 1.0, 1.0], sea=[1.0, 1.0, 1.0], roads=[1.0, 1.0, 1.0], tone=1
     )
@@ -94,14 +94,15 @@ def test_p14_r01_toning_leaves_the_original_look_as_it_was():
     assert look.tone == 1
 
 
-def test_p14_r01_all_toned_keeps_the_ids_of_its_looks():
+def test_gfx_read_02_all_toned_keeps_the_ids_of_its_looks():
     looks = {"1-1": SimpleNamespace(terrain=[1, 1, 1], sea=[1, 1, 1], roads=[1, 1, 1], tone=1)}
     result = all_toned(looks, 0.3)
     assert list(result) == ["1-1"]
     assert result["1-1"].tone == 0.3
 
 
-def test_p14_r03_each_ship_model_gets_an_edge_trim_in_the_player_colour(monkeypatch):
+def test_gfx_trim_05_each_ship_model_gets_an_edge_trim_in_the_player_colour(monkeypatch):
+    """Also GFX-TRIM-01 and GFX-READ-07: the player ship stands out by its trim."""
     request = MagicMock(name="request_trim")
     add = MagicMock(name="add_edge_trim")
     monkeypatch.setattr(readability_view, "request_trim", request)
@@ -116,7 +117,7 @@ def test_p14_r03_each_ship_model_gets_an_edge_trim_in_the_player_colour(monkeypa
     assert options.offset == LOOK.playerTrim.offset / PLAYER_SHIP_SCALE
 
 
-def test_p14_r06_the_shot_renderers_are_wrapped_one_for_each_weapon(monkeypatch):
+def test_gfx_read_14_the_shot_renderers_are_wrapped_one_for_each_weapon(monkeypatch):
     renderers = {"bullet": MagicMock(name="create-bullet")}
     wrapped = toned_shots(renderers)
     assert list(wrapped) == ["bullet"]

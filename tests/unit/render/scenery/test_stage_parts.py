@@ -1,4 +1,5 @@
-"""Unit tests of `src/render/scenery/stage_parts.py`."""
+"""Unit tests of `src/render/scenery/stage_parts.py` (GFX-CAM-02, GFX-CAM-05, GFX-WATER-02,
+PERF-28)."""
 
 from types import SimpleNamespace
 from typing import Any

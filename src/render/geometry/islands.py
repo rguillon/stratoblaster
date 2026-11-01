@@ -13,7 +13,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -191,7 +191,8 @@ def holding_surfaces(tris: list[Any], groups: list[list[int]], cell: float) -> l
     """The object each piece (`groups`, indices of `tris`) belongs to: pieces whose surfaces fall
     in the same or neighbouring cubes of `cell` hold together (`_surface_cells`). Objects numbered
     from 0. Two pieces are joined only where a cube is another piece's: a boss's surfaces fall in
-    hundreds of thousands of cubes (the unit tests went from minutes to seconds)."""
+    hundreds of thousands of cubes (the unit tests went from minutes to seconds,
+    ENG-48)."""
     parent = [g for g in range(len(groups))]
     owner: dict[int, int] = {}
     owned: list[int] = []

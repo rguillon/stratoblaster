@@ -1,5 +1,5 @@
-"""P09-R09, 3-5: the Jaguar's destroyable parts (its two claw guns and its tail cannon) and its
-spotted armour. Model space: logical pixels,
+"""MB-JAGUAR-04, 3-5: the Jaguar's destroyable parts (its two claw guns and its tail cannon) and
+its spotted armour (MB-JAGUAR-03). Model space: logical pixels,
 nose +Z, Y up; each part drawn around its centre `at`, each turret around its pivot."""
 
 import math
@@ -17,9 +17,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -29,7 +29,7 @@ H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
-# Its amber neon.
+# Its amber neon (MB-JAGUAR-05).
 AMBER = BOSS_LOOK.neon["jaguar"]
 # The spotted armour: a warm ochre metal, dark rosettes on it, worn steel talons.
 COAT = [0.2, 0.135, 0.06]
@@ -85,15 +85,15 @@ def moved(outline: list[OutlinePoint], at: Vec3) -> list[OutlinePoint]:
 
 
 def claw_mount(p: EnemyParts, at: Vec3) -> None:
-    """A claw gun's mount (P09-R09): an armoured pad on an arm reaching forward from the wing root,
-    spotted on top, amber lights along its flank (its gun turns on it, {@link clawTurret})."""
+    """A claw gun's mount (MB-JAGUAR-04): an armoured pad on an arm reaching forward from the wing
+    root, spotted on top, amber lights along its flank (its gun turns on it, {@link clawTurret})."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = sign_of(at[0])
     if s == 0:
         s = 1
-    # P16-R05: a muscled paw of spotted flesh, a metal ring grafted where its gun turns.
+    # MB-JAGUAR-04: a muscled paw of spotted flesh, a metal ring grafted where its gun turns.
     flesh.bevel_slab(moved(PAD, at), [-2, 0, PAD_TOP], [1, 1.4], F.sinew, None, COAT)
     flesh.box([7, 3.5, 14], F.sinew, Placement([at[0] - s * 2, -1.5, at[2] - 14]), COAT)
     hull.cylinder(
@@ -144,8 +144,8 @@ def barrel(parts: EnemyParts, tip: Vec3, dims: list[float], kind: str = "gun") -
 
 
 def claw_turret(p: EnemyParts, at: Vec3) -> None:
-    """A claw gun (P09-R09), turning on its pad: a low housing, twin barrels between three steel
-    talons curving forward like a paw's claws."""
+    """A claw gun (MB-JAGUAR-04), turning on its pad: a low housing, twin barrels between three
+    steel talons curving forward like a paw's claws."""
     hull = p.hull
     neon = p.neon
     source = JAGUAR_CLAW if at[0] < 0 else mirror(JAGUAR_CLAW)
@@ -170,11 +170,12 @@ PYLON_TOP = 13
 
 
 def tail_mount(p: EnemyParts, at: Vec3) -> None:
-    """The tail cannon's mount (P09-R09): a spotted pod at the tail's tip, a pylon, a lit ring."""
+    """The tail cannon's mount (MB-JAGUAR-04): a spotted pod at the tail's tip, a pylon, a lit
+    ring."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a swollen tail tip of spotted flesh, the cannon's metal pylon grafted into it.
+    # MB-JAGUAR-04: a swollen tail tip of spotted flesh, the cannon's metal pylon grafted into it.
     flesh.lathe(
         [[7, -2], [8, 1], [6, 3.5], [3.5, 4]],
         8,
@@ -197,8 +198,8 @@ CANNON = table(
 
 
 def tail_turret(p: EnemyParts, at: Vec3) -> None:
-    """The tail cannon (P09-R09), turning on its pylon high over the tail: a spotted pod, a long
-    barrel reaching forward over the wing, its lens glowing as the laser charges."""
+    """The tail cannon (MB-JAGUAR-04), turning on its pylon high over the tail: a spotted pod, a
+    long barrel reaching forward over the wing, its lens glowing as the laser charges."""
     if len(JAGUAR_TAIL) > 0:
         m = JAGUAR_TAIL[0]
         tip = boss_point(m[0], m[1], m[2])

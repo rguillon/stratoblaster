@@ -1,16 +1,16 @@
-"""Moves a selection index in a grid of entries"""
+"""Moves a selection index in a grid of entries (UI-SHIP-04, UI-LEVEL-05)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 CursorDirection = Literal["up", "down", "left", "right"]
 
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class GridShape:

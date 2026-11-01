@@ -1,4 +1,4 @@
-"""Look of a bomb going off (P11-R05)
+"""Look of a bomb going off (GFX-FX-10, the feedback of GAME-BOMB-07)
 
 A cyan shockwave ring growing from the ship until it covers the playfield, fading as it goes, and a
 short warm flash at the ship. One bomb at a time and each lasting 1 s, there is never more than one
@@ -32,8 +32,8 @@ BOMB_LOOK = record(
             # Seconds it fades over, and its radius.
             "seconds": 0.3,
             "radius": 320,
-            # Phase 14 (P14-R07): dimmer (was 0.7 at its heart), so the ship and the enemy bullets
-            # that survive the bomb stay visible through it; the bullets are drawn over it.
+            # Phase 14 (GFX-READ-15): dimmer (was 0.7 at its heart), so the ship and the enemy
+            # bullets that survive the bomb stay visible through it; the bullets are drawn over it.
             "colors": [
                 [0.4, 0.34, 0.22],
                 [0.22, 0.17, 0.1],

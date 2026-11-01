@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Storm Petrel's destroyable parts, growths on its wings, tail and breast
-Logical pixels, nose +Z, Y up."""
+"""FB-STORM-PETREL-03: the Storm Petrel's destroyable parts, growths on its wings, tail and
+breast Logical pixels, nose +Z, Y up."""
 
 import math
 
@@ -27,7 +27,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -36,8 +36,8 @@ N = BOSS_LOOK.neon["storm-petrel"]
 
 
 def draw_pod(p: Any, at: Vec3) -> None:
-    """A wing gun pod (P16-R06): a swollen gun gland on the wing, a grafted collar at its front and
-    twin barrels at its nose, a vein along each flank."""
+    """A wing gun pod (FB-STORM-PETREL-03): a swollen gun gland on the wing, a grafted collar at its
+    front and twin barrels at its nose, a vein along each flank."""
     growth(p, shift(at, [0, 8, -2]), 13, N, {"flesh": F.slate, "height": 0.3, "armour": False})
     pod = shift(at, [0, 10, 0])
     segmented_body(
@@ -54,8 +54,8 @@ def draw_pod(p: Any, at: Vec3) -> None:
 
 
 def draw_rack(p: Any, at: Vec3) -> None:
-    """The tail missile rack (P16-R06): a brood sac on the tail, a grafted rim round six missile
-    tips standing in it like eggs, a neon lip along its front."""
+    """The tail missile rack (FB-STORM-PETREL-03): a brood sac on the tail, a grafted rim round six
+    missile tips standing in it like eggs, a neon lip along its front."""
     organ(p.flesh, 13, 8, F.slate, Placement(shift(at, [0, 6, 0]), math.pi / 8), 0.25)
     sac(p, shift(at, [0, 8, -2]), 10, F.graphite, {"stretch": 0.25})
     graft(p, polygon(8, 11, [1, 1.1]), [11.6, 12.6], at, {"color": M.base})
@@ -77,8 +77,8 @@ def draw_rack(p: Any, at: Vec3) -> None:
 
 
 def draw_plate(p: Any, at: Vec3) -> None:
-    """The belly plate (P16-R06): a bony breast shell wrapped over the body's front, its plates
-    seamed, magenta veins along its shoulders, a riveted plate and bone barbs on its keel."""
+    """The belly plate (FB-STORM-PETREL-03): a bony breast shell wrapped over the body's front, its
+    plates seamed, magenta veins along its shoulders, a riveted plate and bone barbs on its keel."""
     z = at[2]
     shell = SegmentedBody(z - 17, z + 18, 4, 15, -1, 16.5)
     carapace(p.flesh, shell, [F.bone, F.sinew], Placement([at[0], 0, 0]))

@@ -15,17 +15,19 @@ FINAL_BOSSES = [STORM_PETREL, GULL_MOTHERSHIP, MESA_FORTRESS, REFINERY_TITAN, OV
 
 
 @pytest.mark.parametrize("design", FINAL_BOSSES, ids=lambda d: d.id)
-def test_p07_r05_final_boss_design_is_well_formed(design) -> None:
+def test_boss_20_final_boss_design_is_well_formed(design) -> None:
+    """One stage more than its parts; parts, guns and volleys that fit (BOSS-12, BOSS-23)."""
     assert_boss_design(design)
 
 
 @pytest.mark.parametrize("design", FINAL_BOSSES, ids=lambda d: d.id)
-def test_p07_r05_final_boss_is_tougher_than_a_mini_boss_and_has_an_angry_pattern(design) -> None:
+def test_boss_55_final_boss_is_tougher_than_a_mini_boss_and_has_an_angry_pattern(design) -> None:
+    """Also BOSS-28: it has an angry pattern."""
     assert design.stats["health"] >= 2000
     assert design.rage
 
 
-def test_p07_r05_final_bosses_have_distinct_ids() -> None:
+def test_boss_01_final_bosses_have_distinct_ids() -> None:
     assert len({d.id for d in FINAL_BOSSES}) == len(FINAL_BOSSES)
 
 

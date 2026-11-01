@@ -1,6 +1,6 @@
-"""Hand-made scenery levels for the tests of `core/scenery/`. The game's own configs do not import
-under CPython (their records are plain dicts), so the tests build the small levels they need here.
-Every default is a neutral value: flat ground, no slope limit, no sea."""
+"""Hand-made scenery levels for the tests of `core/scenery/` (ENG-145). The game's own configs do
+not import under CPython (their records are plain dicts), so the tests build the small levels they
+need here. Every default is a neutral value: flat ground, no slope limit, no sea."""
 
 from core.scenery.scenery_level import (
     Dual,

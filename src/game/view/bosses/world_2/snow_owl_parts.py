@@ -1,6 +1,5 @@
-"""The Snow Owl's parts (its radar pods and sensor eye) and its frost (P08-R10, 2-3). Logical
-pixels, nose +Z, Y up (towards the
-camera).
+"""The Snow Owl's parts (its radar pods and sensor eye) and its frost (MB-SNOW-OWL-03,
+MB-SNOW-OWL-05, 2-3). Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
@@ -18,8 +17,8 @@ from render.geometry.solids import Placement, place_at
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -27,7 +26,7 @@ __pragma__("noskip")
 
 _OWL_NEON = BOSS_LOOK.neon["snow-owl"]
 # The Snow Owl's white neon.
-OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON  # noqa: E711
+OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost).
 FROST = [0.75, 0.82, 0.9]
 ICE = ICE_FLESH.crystal
@@ -59,7 +58,8 @@ def _sign(x: float) -> float:
 
 
 def icicles(hull: SolidBuilder, points: list[Vec3], side: float = 1) -> None:
-    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice."""
+    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice
+    (MB-SNOW-OWL-05)."""
     for i in range(len(points)):
         x = points[i][0]
         y = points[i][1]
@@ -69,14 +69,15 @@ def icicles(hull: SolidBuilder, points: list[Vec3], side: float = 1) -> None:
 
 
 def radar_pod(p: EnemyParts, at: Vec3) -> None:
-    """A wing radar pod around its centre `at` (P08-R10): a nacelle under an iced radome with a
-    turning antenna on top, and two fan barrels poking out of the nacelle's front."""
+    """A wing radar pod around its centre `at` (MB-SNOW-OWL-03): a nacelle under an iced radome with
+    a turning antenna on top (MB-SNOW-OWL-06), and two fan barrels poking out of the nacelle's
+    front."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     s = _sign(at[0])
-    # P16-R05: a swollen nacelle of flesh, the radome a metal graft on it.
+    # MB-SNOW-OWL-03: a swollen nacelle of flesh, the radome a metal graft on it.
     p.flesh.loft(POD_SECTION, NACELLE, ICE_FLESH.graphite, Placement([at[0], 0, at[2]]))
     gland(p, offset(at, -s * 4, 3.6, 8), 0.9, OWL_WHITE)
     hull.lathe(RADOME, 8, FROST, Placement(offset(at, 0, 0, -2), math.pi / 8))
@@ -97,8 +98,8 @@ def radar_pod(p: EnemyParts, at: Vec3) -> None:
 
 
 def eye(p: EnemyParts, at: Vec3) -> None:
-    """The sensor eye around its centre `at` (P08-R10): a big round housing facing forward, its
-    lens ringed with white neon, the iris lighting up as its laser charges, under a snow-capped
+    """The sensor eye around its centre `at` (MB-SNOW-OWL-03): a big round housing facing forward,
+    its lens ringed with white neon, the iris lighting up as its laser charges, under a snow-capped
     brow."""
     hull = p.hull
     neon = p.neon
@@ -112,7 +113,7 @@ def eye(p: EnemyParts, at: Vec3) -> None:
     y = lens[1]
     z = lens[2]
     forward = Placement(None, 0, QUARTER, 0)
-    # P16-R05: a real eye, its lid of flesh, a bone brow over it.
+    # MB-SNOW-OWL-03: a real eye, its lid of flesh, a bone brow over it.
     p.flesh.cylinder(
         9.5,
         9,

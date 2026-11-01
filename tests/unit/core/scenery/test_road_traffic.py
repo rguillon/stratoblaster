@@ -44,6 +44,7 @@ def test_distance_to_a_street_and_to_a_degenerate_one() -> None:
 
 
 def test_street_index_finds_the_streets_of_a_band_of_z() -> None:
+    """PERF-24: a point only checks the streets near it."""
     near = StreetLine(0, 0.0, 10.0, 0.0, 60.0, 10.0)
     far = StreetLine(1, 0.0, 900.0, 0.0, 950.0, 10.0)
     index = StreetIndex([near, far])
@@ -52,7 +53,7 @@ def test_street_index_finds_the_streets_of_a_band_of_z() -> None:
     assert list(index.near(5000.0)) == []
 
 
-def test_p04_r07_a_street_crosses_a_street_it_runs_into() -> None:
+def test_gfx_road_07_a_street_crosses_a_street_it_runs_into() -> None:
     lines = _cross_streets()
     assert in_crossing(lines, 0, 0.0, 0.0, 0.0)
     assert not in_crossing(lines, 0, 50.0, 30.0, 0.0)
@@ -61,7 +62,7 @@ def test_p04_r07_a_street_crosses_a_street_it_runs_into() -> None:
     assert not in_crossing(lines, 0, 50.0, 30.0, 10.0)
 
 
-def test_p04_r07_in_crossing_ignores_the_street_itself() -> None:
+def test_gfx_road_07_in_crossing_ignores_the_street_itself() -> None:
     lines = street_lines([_street(0, [(-100.0, 0.0), (100.0, 0.0)])])
     assert not in_crossing(lines, 0, 0.0, 0.0, 0.0)
 

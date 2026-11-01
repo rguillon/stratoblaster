@@ -1,4 +1,5 @@
-"""e2e: the pause menu, the settings and the audio (phase 12)."""
+"""e2e: the pause menu, the settings and the audio (specs/ui/pause-menu.md, specs/ui/settings.md,
+specs/audio/), read through the app's state (DEV-API-02)."""
 
 import re
 
@@ -41,11 +42,11 @@ def play_first_level(page: Page) -> None:
         expect_state(page, {"screen": screen})
 
 
-# -- P12: pause --------------------------------------------------------------------------------
+# -- Pause -------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(("width", "height"), [(390, 844), (800, 600)])
-def test_p12_r01_the_pause_button_shows_is_at_least_44_px_and_covers_no_hud_part(
+def test_ui_pause_02_the_pause_button_shows_is_at_least_44_px_and_covers_no_hud_part(
     page: Page, width: int, height: int
 ) -> None:
     page.set_viewport_size({"width": width, "height": height})
@@ -62,9 +63,10 @@ def test_p12_r01_the_pause_button_shows_is_at_least_44_px_and_covers_no_hud_part
         assert not overlap(button, page.locator(other)), other
 
 
-def test_p12_r01_p12_r02_p_pauses_nothing_moves_resume_goes_on_from_the_same_point(
+def test_ui_pause_03_p_pauses_nothing_moves_resume_goes_on_from_the_same_point(
     page: Page,
 ) -> None:
+    """Also GAME-CTRL-08 (P pauses), UI-PAUSE-07 (the pause menu) and UI-PAUSE-08 (Resume)."""
     open_debug(page, "?level=1-2&t=20")
     advance(page, 1)
     page.keyboard.press("KeyP")
@@ -84,9 +86,10 @@ def test_p12_r01_p12_r02_p_pauses_nothing_moves_resume_goes_on_from_the_same_poi
     assert (game(page) or {})["time"] > before["time"]
 
 
-def test_p12_r02_back_resumes_no_and_back_on_the_question_go_back_to_the_paused_menu(
+def test_ui_pause_08_back_resumes_no_and_back_on_the_question_go_back_to_the_paused_menu(
     page: Page,
 ) -> None:
+    """Also UI-PAUSE-10: No and Back on the question."""
     open_debug(page, "?level=1-1&t=10")
     send_action(page, "pause")
     expect_state(page, {"screen": "pause"})
@@ -107,9 +110,10 @@ def test_p12_r02_back_resumes_no_and_back_on_the_question_go_back_to_the_paused_
     assert game(page) is not None
 
 
-def test_p12_r02_p11_r03_main_menu_then_yes_saves_a_score_above_the_saved_high_score(
+def test_ui_pause_10_main_menu_then_yes_saves_a_score_above_the_saved_high_score(
     page: Page, base_url: str
 ) -> None:
+    """Also GAME-SCORE-05 (the high score is saved) and UI-TITLE-03 (the title shows it)."""
     add_cookie(page, base_url, "stratoblaster_high_score", "1000")
     open_debug(page, "?level=1-1&boss=final")
     step_until(page, lambda: boss_name(page), lambda n: n == "Storm Petrel")
@@ -123,9 +127,10 @@ def test_p12_r02_p11_r03_main_menu_then_yes_saves_a_score_above_the_saved_high_s
     expect(page.locator(".title-high-score")).to_have_text(str(score))
 
 
-def test_p12_r02_settings_from_the_pause_menu_then_back_keeps_the_level_paused(
+def test_ui_pause_09_settings_from_the_pause_menu_then_back_keeps_the_level_paused(
     page: Page,
 ) -> None:
+    """Also UI-SET-07: the settings show over the paused level."""
     open_debug(page, "?level=1-1&t=10")
     send_action(page, "pause")
     expect_state(page, {"screen": "pause"})
@@ -140,9 +145,10 @@ def test_p12_r02_settings_from_the_pause_menu_then_back_keeps_the_level_paused(
     assert (game(page) or {}).get("time") == time
 
 
-def test_p12_r03_p12_r11_a_hidden_page_pauses_the_level_and_suspends_the_audio(
+def test_ui_pause_11_a_hidden_page_pauses_the_level_and_suspends_the_audio(
     page: Page,
 ) -> None:
+    """Also AUD-ENGINE-11: the audio is suspended while the page is hidden."""
     play_first_level(page)
     poll(lambda: audio_state(page), lambda a: a == "running")
     set_hidden(page, True)
@@ -160,12 +166,13 @@ def test_p12_r03_p12_r11_a_hidden_page_pauses_the_level_and_suspends_the_audio(
     assert game_state(page)["paused"] is True
 
 
-# -- P12: settings -----------------------------------------------------------------------------
+# -- Settings ----------------------------------------------------------------------------------
 
 
-def test_p12_r04_from_the_title_music_shows_6_and_sound_effects_8_back_returns(
+def test_ui_set_01_from_the_title_music_shows_6_and_sound_effects_8_back_returns(
     page: Page,
 ) -> None:
+    """Also UI-SET-05: the default volumes."""
     open_game(page)
     expect(page.locator(".title-settings")).to_have_text("Settings")
     page.keyboard.press("ArrowDown")
@@ -177,7 +184,7 @@ def test_p12_r04_from_the_title_music_shows_6_and_sound_effects_8_back_returns(
     expect_state(page, {"screen": "title", "selectedId": "settings"})
 
 
-def test_p12_r04_music_set_to_3_is_kept_after_a_reload(page: Page) -> None:
+def test_ui_set_06_music_set_to_3_is_kept_after_a_reload(page: Page) -> None:
     open_game(page)
     send_action(page, "down")
     send_action(page, "confirm")
@@ -194,7 +201,7 @@ def test_p12_r04_music_set_to_3_is_kept_after_a_reload(page: Page) -> None:
 
 
 @pytest.mark.parametrize("value", ["banana", "42"])
-def test_p12_r04_a_bad_volume_cookie_reads_as_the_default(
+def test_ui_set_06_a_bad_volume_cookie_reads_as_the_default(
     page: Page, base_url: str, value: str
 ) -> None:
     add_cookie(page, base_url, "stratoblaster_music_volume", value)
@@ -204,7 +211,8 @@ def test_p12_r04_a_bad_volume_cookie_reads_as_the_default(
 
 
 @pytest.mark.browser_context_args(**TOUCH_PHONE)
-def test_p12_r04_taps_set_the_sliders_every_target_is_at_least_44_px(page: Page) -> None:
+def test_ui_set_03_taps_set_the_sliders_every_target_is_at_least_44_px(page: Page) -> None:
+    """Also UI-SET-08 and UI-INPUT-11: every target is at least 44 px."""
     open_game(page)
     page.locator(".title-settings").tap()
     page.locator(".title-settings").tap()
@@ -222,12 +230,13 @@ def test_p12_r04_taps_set_the_sliders_every_target_is_at_least_44_px(page: Page)
     expect_state(page, {"screen": "title"})
 
 
-# -- P12: audio --------------------------------------------------------------------------------
+# -- Audio -------------------------------------------------------------------------------------
 
 
-def test_p12_r05_no_audio_before_the_first_input_and_no_autoplay_warning(
+def test_aud_engine_03_no_audio_before_the_first_input_and_no_autoplay_warning(
     page: Page, base_url: str
 ) -> None:
+    """Also AUD-ENGINE-01: no audio file is fetched."""
     warnings: list[str] = []
     media: list[str] = []
 
@@ -251,9 +260,10 @@ def test_p12_r05_no_audio_before_the_first_input_and_no_autoplay_warning(
     assert media == [], f"audio files fetched from {base_url}"
 
 
-def test_p12_r08_p12_r12_the_menu_theme_plays_in_the_menus_the_level_track_in_the_level(
+def test_aud_music_11_the_menu_theme_plays_in_the_menus_the_level_track_in_the_level(
     page: Page,
 ) -> None:
+    """Also AUD-MUSIC-08: the level's track plays in the level."""
     open_game(page)
     assert game_state(page)["music"] == "menu"
     send_action(page, "confirm")
@@ -263,14 +273,16 @@ def test_p12_r08_p12_r12_the_menu_theme_plays_in_the_menus_the_level_track_in_th
     assert game_state(page)["music"] == "level-2-3"
 
 
-def test_p12_r08_p12_r12_the_boss_track_plays_in_its_fight(page: Page) -> None:
+def test_aud_music_09_the_boss_track_plays_in_its_fight(page: Page) -> None:
     open_debug(page, "?level=2-3&boss=mini")
     step_until(page, lambda: game_state(page)["music"], lambda m: m == "boss-2")
 
 
-def test_p12_r09_p12_r12_a_gun_shot_and_a_menu_move_are_among_the_last_sounds(
+def test_aud_engine_10_a_gun_shot_and_a_menu_move_are_among_the_last_sounds(
     page: Page,
 ) -> None:
+    """The menu sounds still play while paused. Also AUD-SFX-01 (the gun's sound) and DEV-API-02
+    (the last sounds)."""
     open_debug(page, "?level=1-1&t=5")
     page.keyboard.down("Space")
     step_until(page, lambda: "gun-shot" in game_state(page)["sounds"], lambda heard: heard)

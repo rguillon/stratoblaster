@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -63,7 +63,7 @@ class Footprint:
         return len(self.tris) == 0
 
     def holds(self, x: float, z: float) -> bool:
-        """Whether (x, z) is under one of its triangles."""
+        """Whether (x, z) is under one of its triangles (a plain loop: ENG-157)."""
         key = _key(math.floor(x / GRID), math.floor(z / GRID))
         if key not in self.cells:
             return False

@@ -1,9 +1,11 @@
-"""The dry levels of World 1 (P06-R05, R06, reworked at the reviewer's request, 2026-10-26)
+"""The dry levels of World 1 (WLD-1-07, WLD-1-10; reworked at the reviewer's request,
+2026-10-26)
 
 From the dry grassland 1-3 ended on into an American desert (reviewer, 2026-10-30, D-200: dried
 land, not sand dunes): red dirt and scrub, rock, a cracked dry lake bed, an oasis, a canyon, mesas
-and buttes, then deeper into the desert, its towns bigger and denser. No factory and no city: they
-are for other worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up to 240 (P06-R04).
+and buttes, then deeper into the desert, its towns bigger and denser. No factory and no city
+(WLD-1-11): they are for other worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up
+to 240 (WLD-1-03).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -16,7 +18,7 @@ from game.config.world_1.scenery_country import DRY_GRASSLAND, TOWN_STREETS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -29,8 +31,9 @@ def dry_lake() -> Any:
 
 
 def buttes(top: float) -> Any:
-    """Buttes and mesas standing out of a dry floor: steep, high relief whose tops are squashed
-    flat under `top` (about a fifth of the ground), its lows a fifth on the cracked hardpan."""
+    """Buttes and mesas standing out of a dry floor (GFX-TERRAIN-11): steep, high relief whose
+    tops are squashed flat under `top` (about a fifth of the ground), its lows a fifth on the
+    cracked hardpan."""
     return record(
         {
             "base": 35,
@@ -66,7 +69,7 @@ def desert(name: str, seconds: float, extra: Any) -> Any:
                 "seconds": seconds,
                 "relief": smooth(28, 12, 520),
                 "buildingDensity": 0,
-                # D-214: sparse woods of dead trees, and dead trees alone between them.
+                # D-214 (WLD-1-14): sparse woods of dead trees, and dead trees alone between them.
                 "treeDensity": 1,
                 "trees": DEAD_TREES,
                 "woods": DESERT_WOODS,
@@ -90,9 +93,10 @@ DESERT_OUTSKIRTS = desert(
     },
 )
 
-# 1-4, Dry lands: dry grass and scrub, then rock and scrub, a dry lake, an oasis town, a canyon,
-# mesas and a desert town. The bare stretches (rock, the dry lake, cliffs) are short, so the props
-# keep growing in number (P06-R05).
+# 1-4, Dry lands (LVL-1-4-04): dry grass and scrub, then rock and scrub, a dry lake, an oasis town,
+# a canyon, mesas and a desert town (LVL-1-4-05), with their villages, homes and outposts
+# (LVL-1-4-06), dying woods, then dead trees (LVL-1-4-07). The bare stretches (rock, the dry lake,
+# cliffs) are short, so the props keep growing in number (WLD-1-09).
 DRY_LANDS = [
     DRY_GRASSLAND,
     desert(
@@ -171,9 +175,10 @@ DRY_LANDS = [
     merge(DESERT_OUTSKIRTS, {"seconds": 20}),
 ]
 
-# 1-5, Deep desert (reviewer, 2026-10-27: the factories and the city are for other worlds): the
-# desert outskirts, buttes, oasis villages, a rocky pass, then desert towns, bigger and denser, on
-# the red land to the end.
+# 1-5, Deep desert (LVL-1-5-04; reviewer, 2026-10-27: the factories and the city are for other
+# worlds): the desert outskirts, buttes, oasis villages, a rocky pass, then desert towns, bigger
+# and denser, on the red land to the end (LVL-1-5-05), their homes and outposts (LVL-1-5-06), dead
+# trees all along (LVL-1-5-07).
 DEEP_DESERT = [
     DESERT_OUTSKIRTS,
     desert(
@@ -226,7 +231,8 @@ DEEP_DESERT = [
 
 
 def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
-    """A World 1 desert level: its sections on the World 1 roads and props."""
+    """A World 1 desert level: its sections on the World 1 roads and props, at 60 units/s
+    (WLD-1-04)."""
     return record(
         {
             "id": level_id,
@@ -241,7 +247,7 @@ def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
     )
 
 
-# 1-4 (P06-R05): the dry lands, starting on the dry grassland 1-3 ended on.
+# 1-4 (LVL-1-4-01, LVL-1-4-02): the dry lands, starting on the dry grassland 1-3 ended on.
 LEVEL_1_4 = level("world-1-4", "1-4 Dry lands", 1401, DRY_LANDS)
-# 1-5: the deep desert, starting on the desert outskirts 1-4 ended on.
+# 1-5 (LVL-1-5-01, LVL-1-5-02): the deep desert, starting on the desert outskirts 1-4 ended on.
 LEVEL_1_5 = level("world-1-5", "1-5 Deep desert", 1501, DEEP_DESERT)

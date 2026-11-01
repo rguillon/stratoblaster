@@ -10,7 +10,7 @@ from game.sim.enemies.juggernaut import Juggernaut
 CFG = ELITE_CONFIG.juggernaut
 
 
-def test_p05_r22_a_juggernaut_comes_down_to_its_stop_height_then_drifts() -> None:
+def test_enm_juggernaut_08_a_juggernaut_comes_down_to_its_stop_height_then_drifts() -> None:
     ctx = FakeContext()
     jug = Juggernaut(200, 500, 300)
     run_until(jug, ctx, lambda: jug.state == "drift", limit=30.0)
@@ -20,7 +20,7 @@ def test_p05_r22_a_juggernaut_comes_down_to_its_stop_height_then_drifts() -> Non
     assert jug.x != pytest.approx(200)
 
 
-def test_p05_r22_a_juggernaut_leaves_downward_after_it_has_drifted_for_its_stay() -> None:
+def test_enm_juggernaut_08_a_juggernaut_leaves_downward_after_it_has_drifted_for_its_stay() -> None:
     ctx = FakeContext()
     jug = Juggernaut(200, 300, 300)
     run_until(jug, ctx, lambda: jug.state == "exit", limit=30.0)
@@ -29,7 +29,7 @@ def test_p05_r22_a_juggernaut_leaves_downward_after_it_has_drifted_for_its_stay(
     assert jug.y < y
 
 
-def test_p05_r22_a_juggernaut_fires_its_spread_from_the_core_when_on_the_playfield() -> None:
+def test_enm_juggernaut_11_a_juggernaut_fires_its_core_spread_on_the_playfield() -> None:
     ctx = FakeContext()
     jug = Juggernaut(200, 300, 300)
     run(jug, ctx, 3.0)

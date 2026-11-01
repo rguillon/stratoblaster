@@ -40,6 +40,7 @@ def test_the_city_chunk_spans_its_length_along_z():
 
 
 def test_two_chunks_of_the_same_seed_are_the_same_city():
+    """UI-TITLE-07: the same seed gives the same city."""
     a = build_city_chunk(LOOK.city, create_rng(4))
     b = build_city_chunk(LOOK.city, create_rng(4))
     assert a["structure"].positions == b["structure"].positions

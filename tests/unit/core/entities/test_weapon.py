@@ -179,7 +179,7 @@ def test_find_weapon_raises_for_an_unknown_id() -> None:
         find_weapon([bullet()], "nope")
 
 
-def test_p03_r01_selecting_a_weapon_clamps_its_level_to_the_levels_it_has() -> None:
+def test_game_wpn_02_selecting_a_weapon_clamps_its_level_to_the_levels_it_has() -> None:
     weapon = _weapon([[ShotStream(0, 0)], [ShotStream(0, 0)]])
     world = _world(weapon)
     world.select(weapon, 0)
@@ -193,7 +193,7 @@ def test_p03_r01_selecting_a_weapon_clamps_its_level_to_the_levels_it_has() -> N
     assert world.weapon is weapon
 
 
-def test_p03_r01_streams_of_a_level_fire_one_after_another_in_order() -> None:
+def test_game_wpn_11_streams_of_a_level_fire_one_after_another_in_order() -> None:
     weapon = _weapon(
         [[ShotStream(-5, 0), ShotStream(5, 0)]],
         sps=1,
@@ -205,7 +205,7 @@ def test_p03_r01_streams_of_a_level_fire_one_after_another_in_order() -> None:
     assert offsets == [-5, 5]
 
 
-def test_p03_r01_a_zero_damage_hit_is_reported_as_blocked() -> None:
+def test_game_wpn_17_a_zero_damage_hit_is_reported_as_blocked() -> None:
     weapon = ProjectileWeaponDefinition(
         "z", "Z", "muzzle", 5, 10, 0, 100, 0, 0, 1, 0, 0, [[ShotStream(0, 0)]]
     )
@@ -216,7 +216,7 @@ def test_p03_r01_a_zero_damage_hit_is_reported_as_blocked() -> None:
     assert world.total_damage == 0
 
 
-def test_p03_r01_a_beam_damages_what_it_touches_and_reports_its_segments() -> None:
+def test_game_wpn_06_a_beam_damages_what_it_touches_and_reports_its_segments() -> None:
     beam = BeamWeaponDefinition("b", "B", [BeamLevel(10, 4), BeamLevel(20, 8)])
     world = _world(beam)
     target = _Target(50, 30, radius=5)
@@ -229,7 +229,7 @@ def test_p03_r01_a_beam_damages_what_it_touches_and_reports_its_segments() -> No
     assert world.projectiles == []
 
 
-def test_p03_r02_a_beam_stops_firing_when_the_weapon_is_off() -> None:
+def test_game_wpn_06_a_beam_stops_firing_when_the_weapon_is_off() -> None:
     beam = BeamWeaponDefinition("b", "B", [BeamLevel(10, 4)])
     world = _world(beam)
     world.targets = [_Target(50, 30, radius=5)]
@@ -239,7 +239,7 @@ def test_p03_r02_a_beam_stops_firing_when_the_weapon_is_off() -> None:
     assert world.total_damage == 0
 
 
-def test_p03_r02_a_beam_with_nothing_in_its_way_runs_to_the_top() -> None:
+def test_game_wpn_06_a_beam_with_nothing_in_its_way_runs_to_the_top() -> None:
     beam = BeamWeaponDefinition("b", "B", [BeamLevel(10, 4)])
     world = _world(beam)
     world.step(0.5)

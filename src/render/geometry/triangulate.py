@@ -1,14 +1,14 @@
-"""Ear-clipping triangulation of a simple polygon ()."""
+"""Ear-clipping triangulation of a simple polygon (no triangulation package: GFX-ART-02)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # OutlinePoint is a type alias, imported for annotations only (Transcrypt skips this block).
 __pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from render.geometry.outline import ring_at  # noqa: E402
+from render.geometry.outline import ring_at  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A polygon left with fewer corners than this has no triangle to clip.
 MIN_TRIANGLE_POINTS = 3

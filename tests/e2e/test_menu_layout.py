@@ -1,5 +1,5 @@
-"""e2e: the menu fits the window, marks the selection and has large touch targets (P01-R11,
-P01-R13)."""
+"""e2e: the menu fits the window, marks the selection and has large touch targets (UI-LOOK-02,
+UI-LOOK-08, UI-INPUT-11)."""
 
 import pytest
 from e2e.menu_helpers import expect_state, open_game, poll
@@ -7,9 +7,10 @@ from playwright.sync_api import Page, expect
 
 
 @pytest.mark.parametrize(("width", "height"), [(800, 600), (1920, 1080), (390, 844)])
-def test_p01_r13_the_menu_is_fully_visible_not_cropped_not_stretched(
+def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
     page: Page, width: int, height: int
 ) -> None:
+    """Also GAME-SCREEN-02 (the stage fitted) and UI-TITLE-04 (the version is in view)."""
     page.set_viewport_size({"width": width, "height": height})
     open_game(page)
     for selector in ["#stage", "#menu"]:
@@ -24,7 +25,7 @@ def test_p01_r13_the_menu_is_fully_visible_not_cropped_not_stretched(
     expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
 
 
-def test_p01_r13_the_menu_follows_window_resizes(page: Page) -> None:
+def test_ui_look_02_the_menu_follows_window_resizes(page: Page) -> None:
     page.set_viewport_size({"width": 800, "height": 600})
     open_game(page)
     page.set_viewport_size({"width": 390, "height": 844})
@@ -36,7 +37,8 @@ def test_p01_r13_the_menu_follows_window_resizes(page: Page) -> None:
     poll(width, lambda w: abs(w - 390) < 0.5, timeout=5000)
 
 
-def test_p01_r13_the_selected_entry_is_marked_by_more_than_colour(page: Page) -> None:
+def test_ui_look_08_the_selected_entry_is_marked_by_more_than_colour(page: Page) -> None:
+    """Also UI-SHIP-03: the highlighted ship card has its marker."""
     open_game(page)
 
     def marker(selector: str, pseudo: str, prop: str) -> str:
@@ -56,7 +58,7 @@ def test_p01_r13_the_selected_entry_is_marked_by_more_than_colour(page: Page) ->
     assert marker(".level-cell.selected", "", "outline-style") == "dashed"
 
 
-def test_p01_r11_touch_targets_are_at_least_44_css_px_on_a_phone(page: Page) -> None:
+def test_ui_input_11_touch_targets_are_at_least_44_css_px_on_a_phone(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     open_game(page)
     page.locator(".title-start").click()

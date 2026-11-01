@@ -13,7 +13,7 @@ class FakeSource:
         return list(self.actions)
 
 
-def test_p01_r12_actions_of_every_device_are_merged_in_source_order() -> None:
+def test_ui_input_01_actions_of_every_device_are_merged_in_source_order() -> None:
     keyboard = FakeSource(["up"])
     pad = FakeSource(["confirm", "back"])
     menu = MenuInput([keyboard, pad])
@@ -22,5 +22,5 @@ def test_p01_r12_actions_of_every_device_are_merged_in_source_order() -> None:
     assert pad.dts == [0.5]
 
 
-def test_p01_r12_no_source_gives_no_action() -> None:
+def test_ui_input_01_no_source_gives_no_action() -> None:
     assert MenuInput([]).update(1.0) == []

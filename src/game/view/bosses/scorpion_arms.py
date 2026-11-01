@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-4: the Scorpion's arms and claws, moving on their joints (phase 7 review)
+"""MB-SCORPION-03, 1-4: the Scorpion's arms and claws, moving on their joints (MB-SCORPION-07)
 Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
@@ -17,7 +17,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -180,7 +180,7 @@ def arm_limbs(side: str) -> Any:
     limbs["elbow-" + side] = {"draw": forearm(s)}
     limbs["jaw-" + side + "-" + plus_x] = {"draw": _jaw_drawing(at, JAW), "part": claw_id}
     limbs["jaw-" + side + "-" + minus_x] = {
-        "draw": _jaw_drawing(at, flip_x(JAW)),  # type: ignore[arg-type]
+        "draw": _jaw_drawing(at, flip_x(JAW)),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         "part": claw_id,
     }
     return limbs
@@ -224,9 +224,9 @@ def draw_jaw(p: Any, at: Vec3, jaw: list[Any]) -> None:
 
 
 def claw(p: Any, at: Vec3) -> None:
-    """A claw cannon (P07-R05, P16-R05), on its wrist joint: a swollen knuckle under a grafted cap,
+    """A claw cannon (MB-SCORPION-03), on its wrist joint: a swollen knuckle under a grafted cap,
     a cannon between its two pincers (drawn on their own hinges, `draw_jaw`), and the sinews that
-    work them. The left (+X) claw is the bigger one, a fiddler crab's."""
+    work them. The left (+X) claw is the bigger one, a fiddler crab's (MB-SCORPION-02)."""
     placed = claw_place(at)
     k = placed[0]
     place = placed[1]

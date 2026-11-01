@@ -58,7 +58,7 @@ class _Ground:
         self.half_z = half
 
 
-def test_p04_r04_the_same_seed_places_the_same_props() -> None:
+def test_gfx_prop_06_the_same_seed_places_the_same_props() -> None:
     props = placer_for().place(AREA)
     assert len(props) > 20
     assert keys(placer_for().place(AREA)) == keys(props)
@@ -66,7 +66,7 @@ def test_p04_r04_the_same_seed_places_the_same_props() -> None:
     assert keys(placer_for(seed=99).place(AREA)) != keys(props)
 
 
-def test_p04_r07_buildings_stand_along_the_roads_set_back_and_facing_them() -> None:
+def test_gfx_bldg_01_buildings_stand_along_the_roads_set_back_and_facing_them() -> None:
     p = placer_for()
     buildings = [b for b in p.place(AREA) if b.kind == "block"]
     assert len(buildings) > 5
@@ -89,7 +89,7 @@ def test_p04_review_street_grids_without_blocks_keep_their_street_fronts() -> No
     assert all(p.size is None for p in buildings)
 
 
-def test_p04_r04_steep_ground_has_no_buildings() -> None:
+def test_gfx_prop_06_steep_ground_has_no_buildings() -> None:
     level = sample_level(props=sample_props(max_slope=1e-9, trees=[]))
     assert all(p.kind != "block" for p in placer_for(level).place(AREA))
 
@@ -115,7 +115,7 @@ def test_trees_need_a_kind_a_count_a_density_and_flat_ground() -> None:
     assert all(p.kind != "stick" for p in placer_for(sample_level(sections=unknown)).place(AREA))
 
 
-def test_p04_r04_no_building_density_no_buildings() -> None:
+def test_gfx_bldg_01_no_building_density_no_buildings() -> None:
     sections = [flat("low", 10, 10), flat("high", 10, 30)]
     for section in sections:
         section.building_density = 0
@@ -131,7 +131,8 @@ def test_chunk_of_is_the_floor_of_z_over_the_chunk_size() -> None:
     assert chunk_of(200) == 1
 
 
-def test_p04_r04_chunks_give_the_same_buildings_whatever_the_order_they_are_asked_for() -> None:
+def test_perf_16_chunks_give_the_same_buildings_whatever_the_order_they_are_asked_for() -> None:
+    """Also GFX-PROP-06 and PERF-03."""
     all_at_once = placer_for()
     chunks = all_at_once.ensure_placed_chunks(1000)
     assert [c.k for c in chunks] == sorted(c.k for c in chunks)
@@ -144,7 +145,7 @@ def test_p04_r04_chunks_give_the_same_buildings_whatever_the_order_they_are_aske
     assert [record_key(b) for b in made] == [record_key(b) for b in flat_chunks]
 
 
-def test_p04_r04_placing_is_idempotent_and_a_chunk_is_placed_once() -> None:
+def test_perf_16_placing_is_idempotent_and_a_chunk_is_placed_once() -> None:
     p = placer_for()
     first = p.ensure_placed(500)
     assert first
@@ -152,7 +153,7 @@ def test_p04_r04_placing_is_idempotent_and_a_chunk_is_placed_once() -> None:
     assert p.ensure_placed(-1000) == []
 
 
-def test_p04_r04_the_chunks_of_the_level_are_all_placed_at_its_end() -> None:
+def test_perf_16_the_chunks_of_the_level_are_all_placed_at_its_end() -> None:
     p = placer_for()
     assert not p.chunks_done
     p.ensure_placed(10_000)
@@ -223,7 +224,7 @@ def test_a_level_without_a_runout_has_no_gate() -> None:
     assert not p.runout_laid
 
 
-def test_p04_r04_free_keeps_the_gap_clear_of_the_placed_buildings() -> None:
+def test_gfx_bldg_01_free_keeps_the_gap_clear_of_the_placed_buildings() -> None:
     p = placer_for()
     p.ensure_placed(1000)
     assert p.free(_Ground(0, 0, 0.5), 0) is True
@@ -261,6 +262,7 @@ def _woods(threshold: float, edge: float = 0):
 
 
 def test_d212_woods_keep_the_trees_where_their_noise_is_high() -> None:
+    """GFX-PROP-07."""
     everywhere = _trees(sample_level(props=sample_props(trees_per_cell=20)))
     nowhere = _trees(sample_level(sections=_grassy(1), props=_woods(1.1)))
     woods = _trees(sample_level(sections=_grassy(1), props=_woods(0.5, 0.05)))
@@ -278,6 +280,8 @@ def test_d212_with_woods_every_cell_tries_about_the_most_trees() -> None:
 
 
 def test_d212_woods_grow_on_the_grass_and_less_with_a_lower_density() -> None:
+    """GFX-PROP-07."""
+
     def count(lush: float | None, density: float = 1) -> int:
         return len(_trees(sample_level(sections=_grassy(lush, density), props=_woods(0.3))))
 
@@ -288,6 +292,7 @@ def test_d212_woods_grow_on_the_grass_and_less_with_a_lower_density() -> None:
 
 
 def test_d212_trees_placed_a_strip_at_a_time_are_those_placed_at_once() -> None:
+    """GFX-PROP-14."""
     level = sample_level(sections=_grassy(1), props=_woods(0.3))
     at_once = keys(t for t in placer_for(level).place(AREA) if t.kind == "stick")
     placer = placer_for(level)
@@ -311,6 +316,7 @@ def _desert(woods, density: float = 1) -> list:
 
 
 def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees() -> None:
+    """GFX-PROP-08."""
     from core.scenery.scenery_level import Woods  # noqa: PLC0415
 
     def count(cover: float, keep: float, scatter: float = 0) -> int:
@@ -326,6 +332,7 @@ def test_d214_a_sections_woods_grow_without_grass_and_keep_some_of_their_trees()
 
 
 def test_d214_a_sections_woods_scatter_lone_trees_outside_them() -> None:
+    """GFX-PROP-08."""
     from core.scenery.scenery_level import Woods  # noqa: PLC0415
 
     def count(scatter: float, density: float = 1) -> int:

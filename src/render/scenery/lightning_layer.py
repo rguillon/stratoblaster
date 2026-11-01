@@ -1,6 +1,6 @@
-"""The lightning of a storm (phase 9, P09-R05): the flashes drawn from the level's seed and, for
-some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it. The
-flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
+"""The lightning of a storm (phase 9, GFX-WEATHER-10): the flashes drawn from the level's seed and,
+for some strikes, a bolt drawn in the clouds while its flashes last, added over what is behind it.
+The flash itself lights the scene through the atmosphere (`flashed`), not here. It is only a look:
 nothing in the simulation reads it.
 """
 
@@ -25,18 +25,19 @@ from render.scenery.cloud_layers import BELOW_CLOUDS_GROUP
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.atmosphere import Atmosphere  # noqa: E402
-from core.scenery.lightning import Bolt, Strike  # noqa: E402
-from render.scenery.playfield_framing import GroundWindow  # noqa: E402
+from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.lightning import Bolt, Strike  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.playfield_framing import GroundWindow  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Point = tuple[float, float]
 __pragma__("noskip")
 
 
 class BoltLook:
-    """How a bolt is drawn in the clouds (P09-R05): a pale violet-white zigzag with a few forks."""
+    """How a bolt is drawn in the clouds (GFX-WEATHER-12): a pale violet-white zigzag with a few
+    forks."""
 
     color = (0.86, 0.86, 1)
     # Length of the main bolt, and of its forks, as shares of the view's width. (`length_`: a
@@ -107,7 +108,7 @@ def bolt_lines(seed: float, span: float) -> list[list[Point]]:
     forks: list[list[Point]] = []
     for _ in range(BOLT_LOOK.forks):
         origin = main[1 + math.floor(random() * (len(main) - 2))]
-        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)  # noqa: PLR2004
+        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)  # noqa: PLR2004 (a fair coin flip and the fork's turn range)
         forks.append(_zigzag(random, origin, span * BOLT_LOOK.fork, turn, BOLT_LOOK.pieces // 2))
     out = [main]
     out.extend(forks)
@@ -145,7 +146,8 @@ class LightningLayer:
         return self._bolt is not None and is_enabled(self._bolt)
 
     def update(self, atmosphere: Atmosphere, time: float, z: float) -> float:
-        """The flash at `time` for `atmosphere`'s lightning; the bolt is drawn near `z`."""
+        """The flash at `time` for `atmosphere`'s lightning (GFX-WEATHER-11); the bolt is drawn
+        near `z`."""
         strength = atmosphere.lightning
         self._flash = self.schedule.flash_at(time) if strength > 0 else 0
         strike = self.schedule.strike_at(time) if self._flash > 0 else None

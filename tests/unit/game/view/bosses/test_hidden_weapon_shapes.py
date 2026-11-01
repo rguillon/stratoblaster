@@ -1,5 +1,6 @@
-"""The models of the hidden weapons (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-
-and-shape-shifts-design.md, Part A): each kind has its pod, and its turret or what slides out."""
+"""The models of the hidden weapons (BOSS-40, D-229;
+docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md, Part A): each kind
+has its pod, and its turret or what slides out."""
 
 from typing import Any
 

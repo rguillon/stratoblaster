@@ -8,7 +8,7 @@ from ui.screens.screen_handlers import ScreenHandlers
 from ui.screens.ship_select_screen import render_ship_select_screen
 
 
-def test_p01_r06_one_card_per_ship_with_its_name_and_stats() -> None:
+def test_ui_ship_02_one_card_per_ship_with_its_name_and_stats() -> None:
     taps: list[int] = []
     ships = [Caption("Alpha", ["Speed x1", "HP 5"]), Caption("Beta", ["HP 9"])]
     view = ShipSelectView("Choose", "Hint", "Back", 1, ships, 70)
@@ -29,7 +29,8 @@ def test_p01_r06_one_card_per_ship_with_its_name_and_stats() -> None:
     assert taps == [0]
 
 
-def test_p01_r11_the_ship_select_has_a_back_button_heading_and_hint() -> None:
+def test_ui_input_10_the_ship_select_has_a_back_button_heading_and_hint() -> None:
+    """Also UI-SHIP-02 (the heading and the hint)."""
     backs: list[bool] = []
     view = ShipSelectView("Choose", "Hint", "Back", 0, [], 50)
     root = render_ship_select_screen(

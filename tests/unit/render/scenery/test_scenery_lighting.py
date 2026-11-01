@@ -46,6 +46,7 @@ def _scene() -> SimpleNamespace:
 
 
 def test_the_sun_shines_from_its_elevation_and_azimuth() -> None:
+    """GFX-SKY-01."""
     down = sun_direction(90, 0)
     assert (down.x, down.y, down.z) == pytest.approx((0, -1, 0), abs=1e-9)
     # On the horizon, straight ahead: the light travels towards -Z.
@@ -99,6 +100,7 @@ def test_a_snapped_light_sits_back_from_its_target_by_the_distance() -> None:
 
 
 def test_targets_that_differ_only_along_the_light_keep_the_same_shadow_grid() -> None:
+    """GFX-SKY-02."""
     # Moving the target along the light changes nothing across it, so the light only slides
     # along its own direction: the shadow map does not move by a texel.
     direction = FakeVector(0.3, -1, 0.2)

@@ -1,4 +1,4 @@
-"""Unit tests of `src/audio/level_cues.py`."""
+"""Unit tests of `src/audio/level_cues.py`: a case for each event of AUD-SFX-01."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -32,7 +32,7 @@ def names(cues: list) -> list[str]:
     return [cue.cue for cue in cues]
 
 
-def test_p12_r09_the_first_step_only_takes_the_starting_state() -> None:
+def test_aud_engine_09_the_first_step_only_takes_the_starting_state() -> None:
     cues = LevelCues(40)
     run = make_run()
     run.shots.volleys = 1
@@ -41,7 +41,7 @@ def test_p12_r09_the_first_step_only_takes_the_starting_state() -> None:
     assert names(cues.observe(run)) == ["fire:blaster"]
 
 
-def test_p12_r09_a_volley_is_one_cue_at_the_ship() -> None:
+def test_aud_sfx_03_a_volley_is_one_cue_at_the_ship() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -51,7 +51,7 @@ def test_p12_r09_a_volley_is_one_cue_at_the_ship() -> None:
     assert found[0].x == 100.0
 
 
-def test_p12_r09_a_beam_sounds_when_it_starts_and_not_while_it_goes_on() -> None:
+def test_aud_sfx_03_a_beam_sounds_when_it_starts_and_not_while_it_goes_on() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -64,7 +64,7 @@ def test_p12_r09_a_beam_sounds_when_it_starts_and_not_while_it_goes_on() -> None
     assert cues.beam is None
 
 
-def test_p12_r09_a_new_enemy_bullet_sounds_once() -> None:
+def test_aud_engine_09_a_new_enemy_bullet_sounds_once() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -74,7 +74,7 @@ def test_p12_r09_a_new_enemy_bullet_sounds_once() -> None:
     assert cues.observe(run) == []
 
 
-def test_p12_r09_a_dead_bullet_is_not_tracked() -> None:
+def test_aud_engine_09_a_dead_bullet_is_not_tracked() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -82,7 +82,7 @@ def test_p12_r09_a_dead_bullet_is_not_tracked() -> None:
     assert cues.observe(run) == []
 
 
-def test_p12_r09_a_new_enemy_missile_sounds_by_its_id() -> None:
+def test_aud_engine_09_a_new_enemy_missile_sounds_by_its_id() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -93,7 +93,7 @@ def test_p12_r09_a_new_enemy_missile_sounds_by_its_id() -> None:
     assert names(cues.observe(run)) == ["enemy-missile"]
 
 
-def test_p12_r09_a_laser_warns_then_fires_once_when_its_phase_changes() -> None:
+def test_aud_engine_09_a_laser_warns_then_fires_once_when_its_phase_changes() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -105,7 +105,7 @@ def test_p12_r09_a_laser_warns_then_fires_once_when_its_phase_changes() -> None:
     assert cues.observe(run) == []
 
 
-def test_p12_r09_impacts_blasts_and_broken_parts_each_have_a_cue() -> None:
+def test_aud_engine_09_impacts_blasts_and_broken_parts_each_have_a_cue() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -123,7 +123,7 @@ def test_p12_r09_impacts_blasts_and_broken_parts_each_have_a_cue() -> None:
     assert "part-destroyed" in found
 
 
-def test_p12_r09_one_cue_of_a_kind_per_step() -> None:
+def test_aud_engine_09_one_cue_of_a_kind_per_step() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -131,7 +131,7 @@ def test_p12_r09_one_cue_of_a_kind_per_step() -> None:
     assert names(cues.observe(run)).count("hit") == 1
 
 
-def test_p12_r09_a_player_hit_or_a_lost_life_or_an_ignored_hit() -> None:
+def test_aud_engine_09_a_player_hit_or_a_lost_life_or_an_ignored_hit() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -144,7 +144,7 @@ def test_p12_r09_a_player_hit_or_a_lost_life_or_an_ignored_hit() -> None:
     assert names(cues.observe(run)) == ["life-lost"]
 
 
-def test_p12_r09_picked_bonuses_sound_by_their_kind() -> None:
+def test_aud_engine_09_picked_bonuses_sound_by_their_kind() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -152,14 +152,14 @@ def test_p12_r09_picked_bonuses_sound_by_their_kind() -> None:
     assert names(cues.observe(run)) == ["bonus:shield"]
 
 
-def test_p12_r09_no_bonus_system_means_nothing_picked() -> None:
+def test_aud_engine_09_no_bonus_system_means_nothing_picked() -> None:
     cues = LevelCues(40)
     run = make_run(bonuses=None)
     cues.observe(run)
     assert cues.observe(run) == []
 
 
-def test_p12_r09_a_weapon_switch_is_reported_over_a_level_up() -> None:
+def test_aud_engine_09_a_weapon_switch_is_reported_over_a_level_up() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -168,7 +168,7 @@ def test_p12_r09_a_weapon_switch_is_reported_over_a_level_up() -> None:
     assert names(cues.observe(run)) == ["weapon-switch"]
 
 
-def test_p12_r09_a_weapon_level_up_on_the_same_weapon() -> None:
+def test_aud_engine_09_a_weapon_level_up_on_the_same_weapon() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -176,7 +176,7 @@ def test_p12_r09_a_weapon_level_up_on_the_same_weapon() -> None:
     assert names(cues.observe(run)) == ["weapon-up"]
 
 
-def test_p12_r09_an_extra_life_a_bomb_and_a_boss_kill() -> None:
+def test_aud_engine_09_an_extra_life_a_bomb_and_a_boss_kill() -> None:
     cues = LevelCues(40)
     run = make_run()
     cues.observe(run)
@@ -186,7 +186,7 @@ def test_p12_r09_an_extra_life_a_bomb_and_a_boss_kill() -> None:
     assert names(cues.observe(run)) == ["extra-life", "bomb", "boss-destroyed"]
 
 
-def test_p12_r09_a_level_without_a_hull_or_bombs_counts_zero() -> None:
+def test_aud_engine_09_a_level_without_a_hull_or_bombs_counts_zero() -> None:
     cues = LevelCues(40)
     run = make_run(hull=None, bombs=None)
     cues.observe(run)

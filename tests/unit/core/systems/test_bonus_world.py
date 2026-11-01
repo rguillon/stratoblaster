@@ -179,32 +179,32 @@ def _wave(at: float = 0, count: int = 1) -> Wave:
     return Wave(at, "still", count, 0, ENTRY)  # type: ignore[arg-type]
 
 
-def test_gd31_a_target_with_its_own_chance_uses_it() -> None:
+def test_game_bonus_04_a_target_with_its_own_chance_uses_it() -> None:
     assert drop_chance(_rules(), _Source(drop=0.7)) == 0.7
 
 
-def test_gd31_the_chance_grows_with_health_within_its_limits() -> None:
+def test_game_bonus_02_the_chance_grows_with_health_within_its_limits() -> None:
     rules = _rules(per_health=0.1, lo=0.2, hi=0.6)
     assert drop_chance(rules, _Source(max_health=1)) == pytest.approx(0.2)
     assert drop_chance(rules, _Source(max_health=4)) == pytest.approx(0.4)
     assert drop_chance(rules, _Source(max_health=100)) == pytest.approx(0.6)
 
 
-def test_gd31_a_destroyed_enemy_drops_a_weapon_bonus_when_the_draw_succeeds() -> None:
+def test_game_bonus_02_a_destroyed_enemy_drops_a_weapon_bonus_when_the_draw_succeeds() -> None:
     world = BonusWorld(_rules(), create_rng(1), (0, 100), 10)
     world.drop([_Source(drop=1.0)])
     assert [b.kind for b in world.bonuses] == ["weapon"]
     assert world.dropped == 1
 
 
-def test_gd31_no_bonus_drops_when_the_draw_fails() -> None:
+def test_game_bonus_02_no_bonus_drops_when_the_draw_fails() -> None:
     world = BonusWorld(_rules(), _always(0.99), (0, 100), 10)  # type: ignore[arg-type]
     world.drop([_Source(drop=0.5)])
     assert world.bonuses == []
     assert world.dropped == 0
 
 
-def test_p11_r07_a_special_enemy_may_drop_a_life_before_a_bomb_or_weapon() -> None:
+def test_game_bonus_03_a_special_enemy_may_drop_a_life_before_a_bomb_or_weapon() -> None:
     odds = LifeAndBomb(0.5, 0.5)
     world = BonusWorld(
         _rules(special=odds),
@@ -217,7 +217,7 @@ def test_p11_r07_a_special_enemy_may_drop_a_life_before_a_bomb_or_weapon() -> No
     assert [b.kind for b in world.bonuses] == ["life"]
 
 
-def test_p11_r07_a_special_enemy_drops_a_bomb_when_the_life_draw_fails() -> None:
+def test_game_bonus_03_a_special_enemy_drops_a_bomb_when_the_life_draw_fails() -> None:
     odds = LifeAndBomb(0.1, 0.5)
     world = BonusWorld(
         _rules(special=odds),
@@ -230,7 +230,7 @@ def test_p11_r07_a_special_enemy_drops_a_bomb_when_the_life_draw_fails() -> None
     assert [b.kind for b in world.bonuses] == ["bomb"]
 
 
-def test_p11_r07_the_weapon_draw_always_happens_even_when_a_special_bonus_is_dropped() -> None:
+def test_game_bonus_03_the_weapon_draw_always_happens_even_when_a_special_bonus_drops() -> None:
     calls: list[float] = []
 
     def weapon_draw() -> float:
@@ -244,7 +244,7 @@ def test_p11_r07_the_weapon_draw_always_happens_even_when_a_special_bonus_is_dro
     assert [b.kind for b in world.bonuses] == ["life"]
 
 
-def test_p11_r07_an_ordinary_enemy_never_drops_a_special_bonus() -> None:
+def test_game_bonus_04_an_ordinary_enemy_never_drops_a_special_bonus() -> None:
     odds = LifeAndBomb(1.0, 1.0)
     # The weapon draw (0.99) succeeds against a 100% chance; the special draws are never made.
     world = BonusWorld(
@@ -258,18 +258,18 @@ def test_p11_r07_an_ordinary_enemy_never_drops_a_special_bonus() -> None:
     assert [b.kind for b in world.bonuses] == ["weapon"]
 
 
-def test_p11_r07_a_special_draw_on_a_rules_without_special_odds_is_skipped() -> None:
+def test_game_bonus_03_a_special_draw_on_a_rules_without_special_odds_is_skipped() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10, _always(0.0))  # type: ignore[arg-type]
     world.drop([_Source()], special=lambda t: True)
     assert [b.kind for b in world.bonuses] == ["weapon"]
 
 
-def test_gd31_the_special_draw_defaults_to_the_weapon_draw() -> None:
+def test_game_bonus_05_the_special_draw_defaults_to_the_weapon_draw() -> None:
     world = BonusWorld(_rules(), create_rng(3), (0, 100), 10)
     assert world._special_random is world._random
 
 
-def test_gd31_a_bonus_falls_and_is_removed_below_the_playfield() -> None:
+def test_game_bonus_07_a_bonus_falls_and_is_removed_below_the_playfield() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10)  # type: ignore[arg-type]
     world.place("weapon", _Point(50, 0))
     world.step(1)
@@ -279,7 +279,7 @@ def test_gd31_a_bonus_falls_and_is_removed_below_the_playfield() -> None:
     assert world.bonuses == []
 
 
-def test_gd31_a_bonus_is_kept_within_the_ships_reach_when_it_drops() -> None:
+def test_game_bonus_07_a_bonus_is_kept_within_the_ships_reach_when_it_drops() -> None:
     world = BonusWorld(_rules(), _always(0.0), (20, 80), 10)  # type: ignore[arg-type]
     world.place("life", _Point(5, 30))
     world.place("bomb", _Point(99, 30))
@@ -288,7 +288,7 @@ def test_gd31_a_bonus_is_kept_within_the_ships_reach_when_it_drops() -> None:
     assert [b.id for b in world.bonuses] == [1, 2]
 
 
-def test_gd31_the_ship_picks_up_the_bonuses_it_touches() -> None:
+def test_game_bonus_08_the_ship_picks_up_the_bonuses_it_touches() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10)  # type: ignore[arg-type]
     world.place("weapon", _Point(50, 50))
     world.place("life", _Point(90, 50))
@@ -301,7 +301,7 @@ def test_gd31_the_ship_picks_up_the_bonuses_it_touches() -> None:
     assert world.collected == 1
 
 
-def test_gd31_without_a_ship_nothing_is_picked_up() -> None:
+def test_game_bonus_08_without_a_ship_nothing_is_picked_up() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10)  # type: ignore[arg-type]
     world.place("weapon", _Point(50, 50))
     world.step(0.0, None)
@@ -309,7 +309,7 @@ def test_gd31_without_a_ship_nothing_is_picked_up() -> None:
     assert len(world.bonuses) == 1
 
 
-def test_gd31_clearing_the_world_removes_the_bonuses_and_pickups() -> None:
+def test_game_bonus_07_clearing_the_world_removes_the_bonuses_and_pickups() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10)  # type: ignore[arg-type]
     world.place("weapon", _Point(50, 50))
     world.step(0, _Point(50, 50))
@@ -318,14 +318,14 @@ def test_gd31_clearing_the_world_removes_the_bonuses_and_pickups() -> None:
     assert world.picked == []
 
 
-def test_p06_r07_seeking_drops_the_bonuses_in_the_air() -> None:
+def test_dev_opt_02_seeking_drops_the_bonuses_in_the_air() -> None:
     run = _run(bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5))
     run.bonuses.place("weapon", PlanePoint(20, 20))
     run.seek(1)
     assert run.bonuses.bonuses == []
 
 
-def test_p11_r07_a_weapon_bonus_raises_the_weapon_in_use() -> None:
+def test_game_wpn_14_a_weapon_bonus_raises_the_weapon_in_use() -> None:
     run = _run(bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5))
     run.bonuses.place("weapon", PlanePoint(50, 10))
     _step(run, dt=0.1)
@@ -333,7 +333,8 @@ def test_p11_r07_a_weapon_bonus_raises_the_weapon_in_use() -> None:
     assert run.bonuses.collected == 1
 
 
-def test_p11_r07_a_life_bonus_adds_a_life_or_scores_its_points_at_the_most() -> None:
+def test_game_bonus_10_a_life_bonus_adds_a_life_or_scores_its_points_at_the_most() -> None:
+    """GAME-BONUS-09 below the most, GAME-BONUS-10 at it."""
     run = _run(
         hull=HullRules(2, 0, 3, HullDamage(0, 0, 0, 0), 0),
         bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, None, LifeAndBomb(7, 3)),
@@ -353,7 +354,8 @@ def test_p11_r07_a_life_bonus_adds_a_life_or_scores_its_points_at_the_most() -> 
     assert capped.score == 7
 
 
-def test_p11_r07_a_bomb_bonus_adds_a_bomb_or_scores_its_points_at_the_most() -> None:
+def test_game_bonus_10_a_bomb_bonus_adds_a_bomb_or_scores_its_points_at_the_most() -> None:
+    """GAME-BONUS-09 below the most, GAME-BONUS-10 at it."""
     run = _run(
         bombs=BombRules(1, 50, 1, max_bombs=1),
         bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5, None, LifeAndBomb(7, 3)),
@@ -364,7 +366,7 @@ def test_p11_r07_a_bomb_bonus_adds_a_bomb_or_scores_its_points_at_the_most() -> 
     assert run.score == 3
 
 
-def test_gd31_a_destroyed_enemy_drops_a_bonus_when_bonuses_are_on() -> None:
+def test_game_bonus_06_a_destroyed_enemy_drops_a_bonus_when_bonuses_are_on() -> None:
     run = _run(
         level=_level([_wave(0)]),
         kinds=[_kind(health=5)],
@@ -376,7 +378,8 @@ def test_gd31_a_destroyed_enemy_drops_a_bonus_when_bonuses_are_on() -> None:
     assert run.bonuses.dropped == 1
 
 
-def test_p07_r06_a_mini_boss_comes_in_and_its_death_saves_a_checkpoint() -> None:
+def test_boss_06_a_mini_boss_comes_in_and_its_death_saves_a_checkpoint() -> None:
+    """BOSS-06, and what the checkpoint keeps (GAME-LEVEL-09, GAME-SCORE-06)."""
     run = _run(
         level=_level(bosses=[LevelBoss("hulk", "mini", 10)]),
         boss_kinds=[FakeBossKind()],
@@ -402,7 +405,7 @@ def test_p07_r06_a_mini_boss_comes_in_and_its_death_saves_a_checkpoint() -> None
     assert run.score == 500
 
 
-def test_p11_r07_a_mini_boss_drops_a_life_bonus_where_it_fell() -> None:
+def test_game_bonus_04_a_mini_boss_drops_a_life_bonus_where_it_fell() -> None:
     run = _run(
         level=_level(bosses=[LevelBoss("hulk", "mini", 10)]),
         boss_kinds=[FakeBossKind()],

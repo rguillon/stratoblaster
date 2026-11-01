@@ -1,24 +1,25 @@
-"""Missiles (P03-R03): turned along their heading, with flames, and explosions on impact.
+"""Missiles (GFX-SHOT-06): turned along their heading, with flames, and explosions on impact
+(GFX-FX-03).
 
-Missiles are drawn behind the ship, which covers them as they leave its centre. Each has a bright
-motor flare and a glowing exhaust trail, so it shows on any ground (phase 5 review).
+Missiles are drawn behind the ship, which covers them as they leave its centre (GFX-SHOT-08). Each
+has a bright motor flare and a glowing exhaust trail, so it shows on any ground (GFX-SHOT-07).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.game_view import ShotRenderer  # noqa: E402
+from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.shots.impact_flashes import ImpactFlashes, flash_look  # noqa: E402
-from game.view.shots.missile_exhaust import create_missile_exhaust  # noqa: E402
-from game.view.shots.missile_model import build_missile  # noqa: E402
-from render.model_animation import step_model_animations  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.impact_flashes import ImpactFlashes, flash_look  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.missile_exhaust import create_missile_exhaust  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.missile_model import build_missile  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.model_animation import step_model_animations  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _shot_renderer(sync: Any, dispose: Any) -> Any:

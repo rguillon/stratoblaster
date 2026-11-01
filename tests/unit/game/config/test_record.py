@@ -4,6 +4,7 @@ from game.config.record import concat, field, merge, record
 
 
 def test_record_fields_read_as_attributes_and_missing_fields_read_as_none() -> None:
+    """ENG-160: read by attribute in CPython as in the browser."""
     r = record({"a": 1, "nested": {"b": 2}})
     assert r.a == 1
     assert r.nested.b == 2

@@ -1,4 +1,4 @@
-"""The building windows (D-210): the atlas they are painted into (see
+"""The building windows (D-210, GFX-BLDG-12): the atlas they are painted into (see
 `render/scenery/window_atlas.py`) and how big a window cell is on a wall.
 
 Linear RGB, 0..1; sizes in pixels for the atlas, in world units on the walls.
@@ -44,7 +44,7 @@ WINDOW_ATLAS = record(
     }
 )
 
-# The wall a window cell covers: its width and its height (one floor).
+# The wall a window cell covers: its width and its height (one floor), GFX-BLDG-13.
 WINDOW_CELL = record({"width": 2.5, "height": 3})
 
 # How far off its wall the windows' quad stands, so the two never fight in depth.

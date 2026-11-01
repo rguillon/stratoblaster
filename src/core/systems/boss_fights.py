@@ -1,22 +1,22 @@
-"""The boss fights of a level (P07-R03, R06)
+"""The boss fights of a level, one at a time (BOSS-02)
 
-When the level gets to a boss, it comes in, the track is held (the level's progress waits; the
-ground goes on, eased to the boss's speed), and once the boss has blown up the ground eases back
-and the level goes on. Pure and deterministic.
+When the level gets to a boss, it comes in, the track is held (the level's progress waits,
+GAME-LEVEL-06; the ground goes on, eased to the boss's speed, GAME-LEVEL-07), and once the boss has
+blown up the ground eases back and the level goes on. Pure and deterministic.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss import Boss  # noqa: E402
-from core.entities.enemy import EnemySpawnArea  # noqa: E402
-from core.scenery.scroll_track import ScrollTrack  # noqa: E402
+from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scroll_track import ScrollTrack  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-# The two bosses of a level (GD-41): one around its middle, one at its end.
+# The two bosses of a level (GAME-LEVEL-04): one around its middle, one at its end.
 BossRank = Literal["mini", "final"]
 
 __pragma__("noskip")
@@ -26,9 +26,9 @@ SLACK = 1e-6
 
 
 class LevelBoss:
-    """A boss of a level (P07-R06): its kind (the id of a `BossKindDefinition`), its rank, and how
-    far into the level it comes: the level progress (world units, `ScrollTrack.progress`) where it
-    arrives.
+    """A boss of a level (GAME-LEVEL-04): its kind (the id of a `BossKindDefinition`), its rank, and
+    how far into the level it comes: the level progress (world units, `ScrollTrack.progress`) where
+    it arrives.
     """
 
     def __init__(self, kind: str, rank: "BossRank", at: float) -> None:
@@ -41,7 +41,7 @@ __pragma__("skip")
 
 
 class BossKindDefinition(Protocol):
-    """A kind of boss a game offers (P07-R05)."""
+    """A kind of boss a game offers (BOSS-07)."""
 
     @property
     def id(self) -> str:
@@ -49,7 +49,9 @@ class BossKindDefinition(Protocol):
         ...
 
     @property
-    def name(self) -> str: ...
+    def name(self) -> str:
+        """The kind's display name."""
+        ...
 
     def spawn(self, area: EnemySpawnArea) -> Boss:
         """Creates the boss just above the playfield."""
@@ -61,8 +63,8 @@ __pragma__("noskip")
 
 class BossFightRules:
     """How fights go (engine timings, given by the game): `speed_ease_seconds` is the seconds the
-    ground takes to change to the fight's speed, and back (P07-R03); `bar_fill_seconds` the seconds
-    the health bar takes to fill up when a boss arrives (P07-R02).
+    ground takes to change to the fight's speed, and back (GAME-LEVEL-07); `bar_fill_seconds` the
+    seconds the health bar takes to fill up when a boss arrives (UI-HUD-14).
     """
 
     def __init__(self, speed_ease_seconds: float, bar_fill_seconds: float) -> None:
@@ -71,9 +73,9 @@ class BossFightRules:
 
 
 class BossBar:
-    """What the boss health bar shows (P07-R02). `share` is the part of the bar filled, 0..1: the
-    health left over the full health, as it fills up. `notches` are where each destroyable part's
-    share ends along the bar, 0..1 from the left.
+    """What the boss health bar shows (BOSS-05, UI-HUD-13). `share` is the part of the bar filled,
+    0..1: the health left over the full health, as it fills up. `notches` are where each
+    destroyable part's share ends along the bar, 0..1 from the left (UI-HUD-15).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -167,6 +169,7 @@ class BossFights:
 
     @property
     def rank(self) -> BossRank | None:
+        """The rank of the boss fight in progress, or None when no boss is being fought."""
         fight = self._fight
         return fight.level.rank if fight is not None else None
 
@@ -182,10 +185,12 @@ class BossFights:
 
     @property
     def has_final(self) -> bool:
+        """Whether one of the level's bosses is the final one."""
         return any(boss.rank == "final" for boss in self._bosses)
 
     @property
     def final_defeated(self) -> bool:
+        """Whether the final boss has been defeated."""
         return any(boss.rank == "final" for boss in self.defeated)
 
     @property
@@ -208,9 +213,9 @@ class BossFights:
                 self._start(following, track)
 
     def skip_to(self, track: ScrollTrack, passed: int | None = None) -> None:
-        """After a seek or a restart at `progress` (P06-R09, P07-R08): the boss being fought (if
-        any) is dropped, the ground goes back to its speed, and the next boss is the first one at or
-        after `progress`, or the one after the first `passed` when given.
+        """After a seek or a restart at `progress` (DEV-OPT-02, GAME-LIFE-11): the boss being fought
+        (if any) is dropped, the ground goes back to its speed, and the next boss is the first one
+        at or after `progress`, or the one after the first `passed` when given.
         """
         self._fight = None
         track.held = False

@@ -1,4 +1,5 @@
-"""e2e: World 3, its weather and its final bosses (phase 9, and the way into World 4)."""
+"""e2e: World 3, its weather and its final bosses (specs/worlds/world-3/, and the way into World
+4)."""
 
 import re
 
@@ -18,7 +19,8 @@ from playwright.sync_api import Page, expect
 WORLD_3 = ["3-1", "3-2", "3-3", "3-4", "3-5"]
 
 
-def test_p09_r01_the_world_3_row_shows_3_1_to_3_5_all_unlocked(page: Page) -> None:
+def test_wld_3_01_the_world_3_row_shows_3_1_to_3_5_all_unlocked(page: Page) -> None:
+    """Also UI-LEVEL-01: the grid's third row."""
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -30,9 +32,11 @@ def test_p09_r01_the_world_3_row_shows_3_1_to_3_5_all_unlocked(page: Page) -> No
 
 
 @pytest.mark.parametrize(("index", "level_id"), list(enumerate(WORLD_3)))
-def test_p09_r01_a_level_can_be_confirmed_from_the_menu_and_plays(
+def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
+    """Also WLD-3-02 (five-minute levels) and each level's identity and duration (LVL-3-1-01,
+    LVL-3-2-01, LVL-3-3-01, LVL-3-4-01, LVL-3-5-01)."""
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -52,17 +56,18 @@ def test_p09_r01_a_level_can_be_confirmed_from_the_menu_and_plays(
     expect(page.locator(".game-level")).to_have_text(f"Level {level_id}")
 
 
-def test_p09_r11_level_3_3_t_120_starts_at_2_00_in_its_thunderstorm(page: Page) -> None:
+def test_dev_opt_02_level_3_3_t_120_starts_at_2_00_in_its_thunderstorm(page: Page) -> None:
     open_debug(page, "?level=3-3&t=120")
     wait_for_level_time(page, 120.1)
     played = game_state(page)["game"]
     assert played["levelId"] == "3-3"
     assert 120 <= played["time"] < 126
-    # P09-R04: rain 0.8 (1 600 of the 2 000 streaks) with lightning.
+    # LVL-3-3-03: rain 0.8 (1 600 of the 2 000 streaks) with lightning, read from the sky's state
+    # (DEV-API-05).
     assert matches(played["sky"], {"weather": "rain", "weatherParticles": 1600, "lightning": 1})
 
 
-def test_p09_r11_weather_0_shows_no_rain_and_no_lightning(page: Page) -> None:
+def test_dev_opt_04_weather_0_shows_no_rain_and_no_lightning(page: Page) -> None:
     open_debug(page, "?level=3-3&t=120&weather=0")
     wait_for_level_time(page, 120.1)
     sky = game_state(page)["game"]["sky"]
@@ -70,7 +75,8 @@ def test_p09_r11_weather_0_shows_no_rain_and_no_lightning(page: Page) -> None:
     assert matches(sky, {**expected, "flash": 0})
 
 
-def test_p09_r04_3_5_rains_at_night_over_the_lit_villages(page: Page) -> None:
+def test_lvl_3_5_03_3_5_rains_at_night_over_the_lit_villages(page: Page) -> None:
+    """Also WLD-3-14: the day over World 3 ends at night."""
     open_debug(page, "?level=3-5&t=60")
     wait_for_level_time(page, 60.1)
     sky = game_state(page)["game"]["sky"]
@@ -78,7 +84,8 @@ def test_p09_r04_3_5_rains_at_night_over_the_lit_villages(page: Page) -> None:
     assert sky["groundLights"] > 1
 
 
-def test_p09_r09_k_destroys_the_river_leviathan_and_the_level_is_complete(page: Page) -> None:
+def test_lvl_3_1_07_k_destroys_the_river_leviathan_and_the_level_is_complete(page: Page) -> None:
+    """Also DEV-OPT-09: K breaks the boss."""
     open_debug(page, "?level=3-1&boss=final")
     destroy_boss(page, "River Leviathan")
     expect(page.locator(".level-complete-level")).to_have_text("3-1")
@@ -86,14 +93,16 @@ def test_p09_r09_k_destroys_the_river_leviathan_and_the_level_is_complete(page: 
     expect_state(page, {"screen": "level-select", "selectedId": "3-2", "game": None})
 
 
-def test_p09_r01_after_2_5_the_level_select_highlights_3_1(page: Page) -> None:
+def test_ui_level_07_after_2_5_the_level_select_highlights_3_1(page: Page) -> None:
+    """Also WLD-3-01: 3-1 comes after 2-5."""
     open_debug(page, "?level=2-5&boss=final")
     destroy_boss(page, "Boreal Citadel")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "3-1", "game": None})
 
 
-def test_p10_r01_after_3_5_the_level_select_highlights_4_1(page: Page) -> None:
+def test_ui_level_07_after_3_5_the_level_select_highlights_4_1(page: Page) -> None:
+    """Also WLD-3-01 and LVL-3-5-07: 4-1 comes after 3-5."""
     open_debug(page, "?level=3-5&boss=final")
     destroy_boss(page, "Verdant Crown")
     send_action(page, "confirm")

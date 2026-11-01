@@ -1,8 +1,8 @@
-"""P10-R11, 4-1: the Cinder Crab. Logical pixels,
-nose +Z, Y up (towards the camera). A wide, low crab-ship: a soot-black carapace cracked by molten
-seams, orange neon along its rim and on its eye stalks, six short legs, arms reaching from under its
-front rim to the two claws, the ring dome on its back and the mortar behind it. P16-R05: a living
-crab, a scorched flesh shell banded in darker seams, bony legs, glowing eyes on fleshy stalks, metal
+"""MB-CINDER-CRAB-01 to MB-CINDER-CRAB-06, 4-1: the Cinder Crab. Logical pixels, nose +Z, Y up
+(towards the camera). A wide, low crab-ship: a soot-black carapace cracked by molten seams, orange
+neon along its rim and on its eye stalks, six short legs, arms reaching from under its front rim to
+the two claws, the ring dome on its back and the mortar behind it. MB-CINDER-CRAB-02: a living crab,
+a scorched flesh shell banded in darker seams, bony legs, glowing eyes on fleshy stalks, metal
 grafted on as its belly plate, dome, joints and guns.
 """
 
@@ -42,7 +42,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
@@ -156,7 +156,7 @@ def _draw_front(p: Any) -> None:
 
 
 def _back_flesh(p: Any) -> None:
-    """P16-R05, P16-R06: its living flesh: veins, glands and ribs."""
+    """MB-CINDER-CRAB-02: its living flesh: veins, glands and ribs."""
     back_ribs(p, [-20, 1], RibSpec(30, 4, 6.5, 0.9))
     magma_vein(
         p,
@@ -219,14 +219,15 @@ def _draw_back(p: Any) -> None:
 
 
 def _mortar_part(p: Any, at: Vec3) -> None:
-    """The mortar on the carapace, standing where the carapace is at its z."""
+    """The mortar on the carapace (MB-CINDER-CRAB-04), standing where the carapace is at its z."""
     mortar(p, at, top_at(at[2]) - 0.4)
 
 
 def build_cinder_crab(scene: Any) -> Any:
-    """P10-R11: the Cinder Crab, a wide, low crab-ship 3 L across, orange neon: a soot-black
-    carapace cracked by molten seams on six short legs, eye stalks, two claws on swinging arms whose
-    outer fingers snap open and shut, the ring dome on its back and a mortar behind it."""
+    """MB-CINDER-CRAB-01, MB-CINDER-CRAB-05: the Cinder Crab, a wide, low crab-ship 3 L across,
+    orange neon: a soot-black carapace cracked by molten seams on six short legs, eye stalks, two
+    claws on swinging arms whose outer fingers snap open and shut, the ring dome on its back and a
+    mortar behind it."""
 
     def core(p: Any) -> None:
         _draw_carapace(p)

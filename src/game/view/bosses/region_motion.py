@@ -1,4 +1,4 @@
-"""How a moving region's piece is posed in a boss model (D-230; see
+"""How a moving region's piece is posed in a boss model (BOSS-45, D-230; see
 `game/config/bosses/moving_regions.py`): its node's place and turn, its triangles moved, and where
 it is as the boss transforms.
 
@@ -25,7 +25,7 @@ from render.geometry.shatter import Vertex
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Vec3 = list[float]
 __pragma__("noskip")
@@ -83,7 +83,7 @@ def progress(region: Any, boss: Any) -> float:
     """How far `region`'s piece has moved for `boss` (None: at rest), from its rest pose (0) to its
     end pose (1): during its transformation, from the armour's burst on (`BOSS_LOOK.reveal.move`),
     eased."""
-    if boss == None:  # noqa: E711
+    if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return 0
     phase = reveal_phase(region.form, boss.form, boss.transforming_into)
     if phase == HIDDEN:

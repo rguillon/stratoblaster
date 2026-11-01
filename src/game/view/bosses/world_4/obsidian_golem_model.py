@@ -1,14 +1,11 @@
-"""P10-R11, 4-3: the Obsidian Golem. Logical
-pixels, nose +Z, Y up (towards the camera). A massive flying fortress shaped like a hunched giant: a
-broad armoured torso of black obsidian plates split by glowing magma seams, a small helmed head
-low on
-its chest, a furnace stack on its back, heavy pauldrons, two arms bending at the shoulder and elbow
-down to huge fists (limbs on joints), the shoulder cannons behind the pauldrons, the armour plate
-and
-the chest emitter on its front. P16-R06: a living hunched giant, its flesh torso and hump ribbed in
-bone and veined with magma, obsidian growths for pauldrons, knuckles and chest plate, a metal helm
-and
-guns grafted on.
+"""FB-OBSIDIAN-GOLEM-01 to FB-OBSIDIAN-GOLEM-07, 4-3: the Obsidian Golem. Logical pixels, nose +Z, Y
+up (towards the camera). A massive flying fortress shaped like a hunched giant: a broad armoured
+torso of black obsidian plates split by glowing magma seams, a small helmed head low on its chest, a
+furnace stack on its back, heavy pauldrons, two arms bending at the shoulder and elbow down to huge
+fists (limbs on joints), the shoulder cannons behind the pauldrons, the armour plate and the chest
+emitter on its front. FB-OBSIDIAN-GOLEM-02: a living hunched giant, its flesh torso and hump ribbed
+in bone and veined with magma, obsidian growths for pauldrons, knuckles and chest plate, a metal
+helm and guns grafted on.
 """
 
 import math
@@ -52,7 +49,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
@@ -211,9 +208,8 @@ def _draw_underside(p: Any) -> None:
 
 
 def build_obsidian_golem(scene: Any) -> Any:
-    """P10-R11: the Obsidian Golem, a massive armoured flying fortress of black obsidian with
-    glowing
-    magma seams and two huge fists on bending arms."""
+    """FB-OBSIDIAN-GOLEM-01, FB-OBSIDIAN-GOLEM-06: the Obsidian Golem, a massive armoured flying
+    fortress of black obsidian with glowing magma seams and two huge fists on bending arms."""
 
     def core(p: Any) -> None:
         _draw_torso(p)

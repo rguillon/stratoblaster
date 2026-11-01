@@ -1,5 +1,6 @@
-"""P10-R11: the ash and heavy industry on the 4-2 bosses (the Ash Wraith and the Geyser Rig):
-drifts of grey ash on their plates, soot streaks, glowing molten seams (GD-61, World 4: dark
+"""MB-ASH-WRAITH-02, FB-GEYSER-RIG-02: the ash and heavy industry on the 4-2 bosses (the Ash
+Wraith and the Geyser Rig): drifts of grey ash on their plates, soot streaks, glowing molten
+seams (BOSS-50, World 4: dark
 metal with neon, plus soot, heat glow, molten seams).
 Logical pixels, nose +Z, Y up.
 """
@@ -12,14 +13,14 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.final_boss_shapes import strip  # noqa: E402
+from game.view.bosses.final_boss_shapes import strip  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Ash: a pale grey, and a darker one where it lies thin over the metal.
 ASH = [0.3, 0.29, 0.28]

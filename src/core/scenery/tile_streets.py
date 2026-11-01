@@ -1,26 +1,27 @@
-"""P15-R01, R05: the streets of a district laid on a grid of square tiles (phase 15). Rows (along
-X) may be wide roads (avenues and boulevards, N tiles wide); columns are one tile wide. Every line
-covers whole tiles, and the columns sit where the junction pieces of the wide rows they cross fall
-on the rows' own N-tile lattice, so every wide row is made of whole N × N pieces."""
+"""GFX-ROAD-08, GFX-ROAD-14: the streets of a district laid on a grid of square tiles (phase 15).
+Rows (along X) may be wide roads (avenues and boulevards, N tiles wide); columns are one tile wide
+(GFX-ROAD-13). Every line covers whole tiles, and the columns sit where the junction pieces of the
+wide rows they cross fall on the rows' own N-tile lattice, so every wide row is made of whole N × N
+pieces."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.districts import District, DistrictPart  # noqa: E402
-from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import District, DistrictPart  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.math.rng import random_in  # noqa: E402
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.street_dead_ends import remove_dead_ends  # noqa: E402
-from core.scenery.street_links import (  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_dead_ends import remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Block,
     Link,
     Node,
@@ -30,7 +31,7 @@ from core.scenery.street_links import (  # noqa: E402
     pair,
     to_fixed3,
 )
-from core.scenery.street_runs import Point, straight_runs  # noqa: E402
+from core.scenery.street_runs import Point, straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")
@@ -109,14 +110,15 @@ def _unique_nodes(values: Sequence[Node]) -> list[Node]:
 
 def column_fits(s: int, size: int) -> bool:
     """Whether a one-tile column at tile `s` crosses a row of `size` tiles on that row's lattice
-    (P15-R04): its junction piece, `size` wide, starts on a multiple of `size` with the column in
-    it as close to its middle as the grid allows."""
+    (GFX-ROAD-12): its junction piece, `size` wide, starts on a multiple of `size` with the column
+    in it as close to its middle as the grid allows."""
     offset = _mod(s, size)
     return offset == math.floor((size - 1) / 2) or offset == math.ceil((size - 1) / 2)
 
 
 def _row_size(rules: RoadRules, t: int) -> int:
-    """Size in tiles of a row starting at tile `t`: a share of them are avenues or boulevards."""
+    """Size in tiles of a row starting at tile `t` (GFX-ROAD-09): a share of them are avenues or
+    boulevards (GFX-ROAD-17)."""
     h = hash_2d(t, 29, 211)
     total = 0.0
     for b in rules.boulevards if rules.boulevards is not None else []:
@@ -202,7 +204,7 @@ def tile_street_runs(
     """The streets of a district on the tile grid (phase 15), as `street_runs` lays them
     otherwise: random links (rows of two tiles or more, the avenues and boulevards, are built along
     their whole line, and become one-tile streets where their ground does not allow it), then no
-    dead end on screen. Streets cross: there is no T-junction-only rule here (P15-R05).
+    dead end on screen. Streets cross: there is no T-junction-only rule here (GFX-ROAD-15).
 
     Returns (runs, blocks)."""
     layout = _TileLayout(rules, tile, random, buildable)

@@ -1,5 +1,5 @@
 """Runs the menus: feeds input to the `MenuFlow`, shows the
-matching view, gives the "locked" feedback and remembers the chosen ship (P01-R14). Free of
+matching view, gives the "locked" feedback and remembers the chosen ship (UI-SHIP-07). Free of
 Babylon.
 """
 
@@ -17,9 +17,9 @@ from core.systems.level_run_types import LevelResult
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import GameDefinition  # noqa: E402
+from core.content.game_definition import GameDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -49,14 +49,14 @@ class MenuControllerDeps:
         self.input = input
         self.storage = storage
         self.transition_seconds = transition_seconds
-        # Input is ignored this long after the "Level complete" overlay shows (P06-R03).
+        # Input is ignored this long after the "Level complete" overlay shows (UI-OVER-04).
         self.result_delay_seconds = result_delay_seconds
         self.cards_width_percent = cards_width_percent
         self.version = version
         self.commit = commit
         # Called after every state change, e.g. to update the 3D scenes.
         self.on_change = on_change
-        # Called after each command with what it did, e.g. for the menu sounds (P12-R09).
+        # Called after each command with what it did, e.g. for the menu sounds (AUD-ENGINE-09).
         self.on_feedback = on_feedback
         # The labels of each dev viewer's items (D-199); None: no dev menu.
         self.dev_labels = dev_labels
@@ -65,7 +65,7 @@ class MenuControllerDeps:
 
 
 def _with_new_high_score(result: LevelResult) -> LevelResult:
-    """A copy of `result` that says it beat the high score (P11-R03)."""
+    """A copy of `result` that says it beat the high score (UI-OVER-02)."""
     return LevelResult(
         result.level_id,
         result.destroyed,
@@ -101,6 +101,7 @@ class MenuController:
         self._high_score = saved.high_score
         self._saved_ship_id: str | None = saved.last_ship_id
         volume_steps = int(AUDIO_CONFIG.volume_steps)
+        # The default volumes, where none is saved (UI-SET-05).
         defaults = AUDIO_CONFIG.default_volumes
         self._saved_volumes: Volumes = load_volumes(
             deps.storage, game.id, volume_steps, Volumes(int(defaults.music), int(defaults.sfx))
@@ -124,7 +125,7 @@ class MenuController:
         self.refresh()
 
     def set_progress(self, progress: float) -> None:
-        """Loading progress shown on the loading screen, 0..1."""
+        """Loading progress shown on the loading screen, 0..1 (UI-LOAD-03)."""
         self._progress = progress
         self.refresh()
 
@@ -134,12 +135,13 @@ class MenuController:
 
     @property
     def high_score(self) -> float:
-        """The best score saved so far (P01-R04, P11-R03)."""
+        """The best score saved so far (UI-TITLE-03)."""
         return self._high_score
 
     def record_score(self, score: float) -> bool:
-        """A level attempt ended with `score` (P11-R03): above the high score, it is saved as the
-        new one, and the title screen shows it. Returns whether it beat the high score.
+        """A level attempt ended with `score` (GAME-SCORE-05): above the high score, it is saved as
+        the new one, and the title screen shows it (UI-TITLE-03). Returns whether it beat the high
+        score.
         """
         if not score > self._high_score:
             return False
@@ -148,30 +150,31 @@ class MenuController:
         return True
 
     def complete_level(self, result: LevelResult) -> None:
-        """Shows the "Level complete" (or "Game over") overlay (P06-R03), after saving its score if
-        it beat the high score (P11-R03): the overlay then says so.
+        """Shows the "Level complete" (or "Game over") overlay (UI-OVER-01), after saving its score
+        if it beat the high score: the overlay then says so (UI-OVER-02).
         """
         beaten = self.record_score(result.score)
         self.flow.complete_level(_with_new_high_score(result) if beaten else result)
         self.refresh()
 
     def play_direct(self, ship_id: str, level_id: str) -> bool:
-        """Starts a level straight away (P06-R09 debug options); see `MenuFlow.play_direct`."""
+        """Starts a level straight away (DEV-OPT-01 debug options); see `MenuFlow.play_direct`."""
         started = self.flow.play_direct(ship_id, level_id)
         self.refresh()
         return started
 
     def command(self, command: Any) -> None:
-        """Applies one command (from any device, or the test API)."""
+        """Applies one command (from any device, or the test API) and shows its result at once
+        (PERF-04)."""
         feedback = self.flow.dispatch(command)
-        if feedback == "locked":
+        if feedback == "locked":  # The locked level's shake (UI-LEVEL-04).
             self.deps.display.shake_selected(self.game.texts.locked)
         if self.deps.on_feedback is not None:
             self.deps.on_feedback(command, feedback)
         self.refresh()
 
     def pause(self) -> bool:
-        """Pauses the level being played (P12-R03: the page is hidden, the gamepad in use is
+        """Pauses the level being played (UI-PAUSE-11: the page is hidden, the gamepad in use is
         disconnected). Returns whether it paused.
         """
         paused = self.flow.pause()
@@ -217,7 +220,7 @@ class MenuController:
             self.deps.on_change(state)
 
     def _remember_volumes(self, volumes: Volumes) -> None:
-        """Saves the volumes on every change (P12-R04)."""
+        """Saves the volumes on every change (UI-SET-06)."""
         saved = self._saved_volumes
         if volumes.music == saved.music and volumes.sfx == saved.sfx:
             return

@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Gull Mothership, the final boss of 1-2 Logical pixels, nose +Z, Y up
-(towards the camera). A
+"""FB-GULL-MOTHERSHIP-01 to FB-GULL-MOTHERSHIP-04: the Gull Mothership, the final boss of 1-2
+Logical pixels, nose +Z, Y up (towards the camera). A
 brood-mother of the sea: a wide fleshy mantle, a shelled body along its middle ending in a huge
 glowing eye (its laser), a brood pouch at each flank and two flak growths on its front.
 """
@@ -35,7 +35,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -67,8 +67,8 @@ LENS = [
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (P16-R06): a teal mantle lined with a green vein, a second fold on it, a shelled
-    body along its middle with ribs over its back and glands down its spine."""
+    """The body (FB-GULL-MOTHERSHIP-02): a teal mantle lined with a green vein, a second fold on it,
+    a shelled body along its middle with ribs over its back and glands down its spine."""
     mantle(p, DECK, [-5, DECK_TOP], F.teal, N)
     mantle(p, scale_outline(DECK, 0.72, 0, -4), [DECK_TOP - 1, DECK_TOP + 1.6], F.graphite)
     hide(
@@ -105,10 +105,10 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_emitter(p: Any) -> None:
-    """The laser eye at the nose: a socket of flesh, a grafted ring, the lens glowing as it
-    charges."""
+    """The laser eye at the nose (FB-GULL-MOTHERSHIP-03): a socket of flesh, a grafted ring, the
+    lens glowing as it charges."""
     at = [0, DECK_TOP + 3, 58]
-    p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]
+    p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.hull.ring(7.3, 1.4, 8, M.dark, Placement(shift(at, [0, 0, 5.4]), 0, QUARTER))
     for z in [1.5, 5]:
         p.neon.ring(7.6 - z * 0.15, 1, 8, N, Placement(shift(at, [0, 0, z]), 0, QUARTER))
@@ -134,14 +134,14 @@ def _draw_engines(p: Any) -> None:
 
 
 def _flak_turret(p: Any, at: Vec3) -> None:
-    """A flak growth's twin guns, on its crown."""
+    """A flak growth's twin guns, on its crown (FB-GULL-MOTHERSHIP-03)."""
     turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N])
 
 
 def build_gull_mothership(scene: Any) -> Any:
-    """P07-R05, P16-R06: the Gull Mothership, a brood-mother of the sea 5 L across: green veins and
-    glands, a brood pouch on each flank (they launch the Gnats), two flak growths on its front, and
-    a huge laser eye at the nose of its body (the core)."""
+    """FB-GULL-MOTHERSHIP-01, FB-GULL-MOTHERSHIP-04: the Gull Mothership, a brood-mother of the
+    sea 5 L across: green veins and glands, a brood pouch on each flank (they launch the Gnats),
+    two flak growths on its front, and a huge laser eye at the nose of its body (the core)."""
 
     def core(p: Any) -> None:
         _draw_hull(p)

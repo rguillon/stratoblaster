@@ -1,4 +1,4 @@
-"""The balanced player ship (P02-R01): inspired by the Macross
+"""The balanced player ship (GFX-SHIP-01): inspired by the Macross
 Delta VF-31J: long pointed nose, framed bubble canopy, canards, dual reactors fed by side intakes,
 forward-swept wings, canted twin tails and ventral fins, a gun pod under the belly. Model units:
 nose towards +Z, about 4.8 units long. Low-poly and polygonal like the other ships: fuselage with
@@ -32,7 +32,7 @@ from render.babylon import (
 from render.geometry.lathe_z import create_faceted_lathe_along_z
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
@@ -253,7 +253,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def build_balanced_ship(scene: Any) -> Any:
-    """Builds the balanced player ship (P02-R01)."""
+    """Builds the balanced player ship (GFX-SHIP-01)."""
     root = new_transform_node("ship-balanced", scene)
     _build_body(root, scene)
     _build_cockpit(root, scene)

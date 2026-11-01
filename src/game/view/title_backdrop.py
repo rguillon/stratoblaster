@@ -1,8 +1,8 @@
-"""The darksynth backdrop of the menus (P01-R05, D-103): a night
+"""The darksynth backdrop of the menus (UI-TITLE-07, UI-TITLE-08 for its colours, D-103): a night
 street between dark towers with lit windows, neon signs and roof trims, scrolling towards the
 camera, a distant skyline, haze, rain, and the balanced ship floating and turning above the
 street. Everything is generated in code from a fixed seed. The ship is hidden on the ship select
-screen, which shows the ships itself.
+screen, which shows the ships itself (UI-TITLE-09).
 """
 
 import math
@@ -37,7 +37,7 @@ from render.model_animation import step_model_animations
 __pragma__("jsmod")
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
@@ -90,7 +90,8 @@ def _build_sky(scene: Any, random: Any) -> list[Any]:
 
 
 def _build_city(scene: Any, random: Any) -> dict[str, Any]:
-    """Two copies of a city chunk, end to end, under one node that scrolls towards the camera."""
+    """Two copies of a city chunk, end to end, under one node that scrolls towards the camera: two
+    merged meshes each, the lights at the neon intensity (UI-TITLE-10)."""
     chunk = build_city_chunk(LOOK.city, random)
     city = new_transform_node("title-city", scene)
     structure = _colored_mesh("title-city-structure", chunk["structure"], scene, True)

@@ -41,12 +41,13 @@ def _boss(pause=0.0, rage=0.0, charge=0.25):
     return _FakeBoss(pause, rage, charge)
 
 
-def test_p07_r04_a_calm_boss_shows_its_own_charge():
+def test_boss_22_a_calm_boss_shows_its_own_charge():
     boss = _boss(charge=0.25)
     assert strobe(boss) == 0.25
 
 
 def test_stage_change_strobes_the_lights_at_the_stage_strobe_rate():
+    """BOSS-22: the charge lights strobe through the pause after a lost part."""
     hz = BOSS_LOOK.stageStrobeHz
     boss = _boss(pause=1.0)
     # The light is on in the first half of each strobe period and off in the second.
@@ -58,6 +59,7 @@ def test_stage_change_strobes_the_lights_at_the_stage_strobe_rate():
 
 
 def test_rage_flickers_between_full_and_the_dim_level():
+    """BOSS-27: an angry boss's charge lights flicker down to their dim level."""
     hz = BOSS_LOOK.rageFlicker.hz
     dim = BOSS_LOOK.rageFlicker.dim
     boss = _boss(rage=0.0)
@@ -68,6 +70,7 @@ def test_rage_flickers_between_full_and_the_dim_level():
 
 
 def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkeypatch):
+    """BOSS-17: a part or the core that is hit flashes white for a moment."""
     body = SimpleNamespace(material="body-mat", useVertexColors=True)
     other = SimpleNamespace(material="other", useVertexColors=True)
     body_material = SimpleNamespace(name="enemy-hull")
@@ -86,9 +89,9 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
     assert body.material is body_material and body.useVertexColors is True
 
 
-# D-227: every boss model is one object, at rest and after each of its transformations: no piece
-# of it hangs in the air (its parts and weapons, its frames, its rig, its stems and pylons, the
-# pieces its armour cut leaves).
+# BOSS-52 (D-227): every boss model is one object, at rest and after each of its transformations: no
+# piece of it hangs in the air (its parts and weapons, its frames, its rig, its stems and pylons,
+# the pieces its armour cut leaves).
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])

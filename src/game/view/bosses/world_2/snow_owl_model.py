@@ -1,4 +1,4 @@
-"""The Snow Owl (P08-R10, 2-3)
+"""The Snow Owl (MB-SNOW-OWL-01 to MB-SNOW-OWL-06, 2-3)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -33,9 +33,9 @@ from render.geometry.solids import LoftOptions, Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -96,11 +96,12 @@ WING_ICICLES = [  # type: list[list[float]]
 
 
 def draw_wings(p: EnemyParts) -> None:
-    """The wings: dark metal under a crust of snow, white neon along their leading edges."""
+    """The wings: dark metal under a crust of snow (MB-SNOW-OWL-05), white neon along their
+    leading edges."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: broad membrane wings on bone struts, rime on their fronts; too big to flutter.
+    # MB-SNOW-OWL-02: broad membrane wings on bone struts, rime on their fronts; too big to flutter.
     flesh.bevel_slab(
         WING,
         [-1.2, 0, 1.6],
@@ -144,7 +145,7 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a plump body of cold flesh, ribbed, a sinewy neck holding the great eye.
+    # MB-SNOW-OWL-02: a plump body of cold flesh, ribbed, a sinewy neck holding the great eye.
     hull.ring(6.4, 1.2, 8, H.panel, Placement([0, 5, 21], 0, QUARTER))
     flesh.loft(
         FIGHTER_SECTION,
@@ -177,7 +178,8 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The crown emitter on the back (its rings) and the chin guns either side of the eye."""
+    """The crown emitter on the back (its rings) and the chin guns either side of the eye
+    (MB-SNOW-OWL-03)."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -214,10 +216,11 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_snow_owl(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Snow Owl, a wide-winged recon drone with white neon: snow on its broad wings,
-    two radar pods with turning antennas on them and a big round sensor eye at its front.
-    P16-R05: now a living owl of cold flesh with membrane wings on bone, its radomes grafted on
-    swollen nacelles, its eye a real eye in a lid of flesh.
+    """MB-SNOW-OWL-01, MB-SNOW-OWL-04: the Snow Owl, a wide-winged recon drone with white neon: snow
+    on its broad wings, two radar pods with turning antennas on them and a big round sensor eye at
+    its front.
+    MB-SNOW-OWL-02: now a living owl of cold flesh with membrane wings on bone, its radomes grafted
+    on swollen nacelles, its eye a real eye in a lid of flesh.
     """
     parts = record({"pod-left": radar_pod, "pod-right": radar_pod, "eye": eye})
     return build_boss_model(

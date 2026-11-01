@@ -19,18 +19,19 @@ LOOKS = [LEVEL_1_1_LOOK, LEVEL_1_2_LOOK, LEVEL_1_3_LOOK, LEVEL_1_4_LOOK, LEVEL_1
 SECTIONS = ("sky", "fog", "sun", "ambient", "terrain", "clouds", "roads", "props", "glow")
 
 
-def test_p06_r05_every_level_of_the_world_has_a_look() -> None:
+def test_wld_1_16_every_level_of_the_world_has_a_look() -> None:
+    """Each level has its own light (WLD-1-16)."""
     assert len(LOOKS) == 5
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p06_r05_a_look_has_every_section_the_scenery_reads(look) -> None:
+def test_wld_1_12_a_look_has_every_section_the_scenery_reads(look) -> None:
     for section in SECTIONS:
         assert look[section] is not None, section
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p06_r05_sky_stops_are_colours_in_range(look) -> None:
+def test_wld_1_16_sky_stops_are_colours_in_range(look) -> None:
     assert look.sky.stops
     for stop in look.sky.stops:
         assert len(stop.color) == 3
@@ -38,11 +39,12 @@ def test_p06_r05_sky_stops_are_colours_in_range(look) -> None:
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_p06_r05_fog_fades_out_between_its_start_and_end(look) -> None:
+def test_wld_1_16_fog_fades_out_between_its_start_and_end(look) -> None:
     assert 0 < look.fog.start < look.fog.end
 
 
 def test_d200_the_dry_levels_lie_on_dried_land_cracked_in_the_flats_without_snow() -> None:
+    """WLD-1-10, GFX-TERRAIN-11: dried earth, desert dirt, cracked hardpan, mesa rock, no snow."""
     for look in (LEVEL_1_4_LOOK, LEVEL_1_5_LOOK):
         terrain = look.terrain
         assert terrain.sand == DESERT_DIRT

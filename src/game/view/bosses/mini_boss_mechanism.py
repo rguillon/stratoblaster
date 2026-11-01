@@ -1,4 +1,4 @@
-"""P07-R05 (phase 7 review: fat armour over a complex mechanism): the machinery seen through the
+"""BOSS-49 (phase 7 review: fat armour over a complex mechanism): the machinery seen through the
 gaps between the World 1 mini bosses' armour plates
 Logical pixels, nose +Z, Y up. Darker than the armour, and set a little lower, so it reads in the
 gaps under the ~35° camera.
@@ -14,7 +14,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]

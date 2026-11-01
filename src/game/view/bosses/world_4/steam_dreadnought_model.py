@@ -1,11 +1,9 @@
-"""P10-R11, 4-1: the Steam Dreadnought.
-Logical
-pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A flying
-battleship: a long armoured hull under a deck with sponsons for its broadside turrets, a stepped
-bridge over the core, two smokestacks amidships, a laser ram at the bow and a missile rack on the
-stern. P16-R06: a living sky-leviathan, its flesh belly banded and ribbed in bone, its back a
-scorched
-hide, a metal bridge, guns and ram grafted on, steaming blowholes for stacks.
+"""FB-STEAM-DREADNOUGHT-01 to FB-STEAM-DREADNOUGHT-06, 4-1: the Steam Dreadnought. Logical pixels,
+nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A flying battleship: a
+long armoured hull under a deck with sponsons for its broadside turrets, a stepped bridge over the
+core, two smokestacks amidships, a laser ram at the bow and a missile rack on the stern.
+FB-STEAM-DREADNOUGHT-02: a living sky-leviathan, its flesh belly banded and ribbed in bone, its back
+a scorched hide, a metal bridge, guns and ram grafted on, steaming blowholes for stacks.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -52,7 +50,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
@@ -105,7 +103,7 @@ LENS = [
 
 
 def _deck_flesh(p: Any, s: float) -> None:
-    """P16-R05, P16-R06: its living flesh: veins, glands and ribs."""
+    """FB-STEAM-DREADNOUGHT-02: its living flesh: veins, glands and ribs."""
     magma_vein(
         p,
         [
@@ -252,7 +250,8 @@ def _draw_bow(p: Any) -> None:
 
 
 def build_steam_dreadnought(scene: Any) -> Any:
-    """P10-R11: the Steam Dreadnought, a flying battleship 5 L long, red neon: a soot-black armoured
+    """FB-STEAM-DREADNOUGHT-01, FB-STEAM-DREADNOUGHT-06: the Steam Dreadnought, a flying
+    battleship 5 L long, red neon: a soot-black armoured
     hull with glowing seams, a stepped bridge over its core, two smokestacks puffing steam, two
     broadside turrets on sponsons, a laser ram at the bow and a missile rack on the stern."""
 

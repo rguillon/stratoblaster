@@ -6,12 +6,12 @@ Colours are linear RGB, 0..1, unless noted.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = Sequence[float]
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def relative_luminance(color: Rgb) -> float:
@@ -71,7 +71,7 @@ def hue_saturation(color: Rgb) -> tuple[float, float]:
 
 
 __pragma__("skip")
-from typing import TypedDict  # noqa: E402
+from typing import TypedDict  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A family of colours: those whose hue lies in `from`..`to` degrees (`from` > `to` wraps past 0),
 # saturated at least `minSaturation`. Greys and whites belong to no family. It is a plain record
@@ -87,7 +87,7 @@ def _span(family: ColorFamily) -> float:
 
 
 def in_family(color: Rgb, family: ColorFamily) -> bool:
-    """Whether `color` is in `family`."""
+    """Whether `color` is in `family` (the reserved colour families, GFX-READ-04)."""
     hue, saturation = hue_saturation(color)
     offset = (hue - family["from"] + 360) % 360
     return saturation >= family["minSaturation"] and offset <= _span(family)
@@ -110,7 +110,7 @@ def _with_hue(color: Rgb, hue: float) -> Rgb:
 
 
 def fold_into_family(color: Rgb, family: ColorFamily) -> Rgb:
-    """`color` moved into `family` (phase 14, P14-R02): its hue squeezed from the whole wheel
+    """`color` moved into `family` (GFX-READ-06): its hue squeezed from the whole wheel
     into the family's range, in the same order, keeping brightness and saturation. Greys stay."""
     hue, saturation = hue_saturation(color)
     if saturation == 0:
@@ -124,7 +124,8 @@ HALF_WHEEL = 180
 
 def snap_to_hues(color: Rgb, hues: Sequence[float]) -> Rgb:
     """`color` with its hue set to the nearest of `hues` (degrees, round the wheel), keeping its
-    brightness and saturation: a set of distinct shades in place of every hue. Greys stay."""
+    brightness and saturation: a set of distinct shades in place of every hue (the enemies' hues,
+    ENM-38, GFX-ART-05). Greys stay."""
     hue, saturation = hue_saturation(color)
     if saturation == 0:
         return color
@@ -142,7 +143,8 @@ def snap_to_hues(color: Rgb, hues: Sequence[float]) -> Rgb:
 
 def capped_saturation(color: Rgb, most: float) -> Rgb:
     """`color` with its saturation (HSV) at most `most`, keeping its hue and brightness: greyed
-    towards a grey as bright as its brightest channel."""
+    towards a grey as bright as its brightest channel (the enemy body shades, ENM-39,
+    GFX-ART-06)."""
     high = _high_of(color[0], color[1], color[2])
     low = _low_of(color[0], color[1], color[2])
     if high <= 0 or (high - low) / high <= most:

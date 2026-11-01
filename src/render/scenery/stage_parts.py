@@ -1,5 +1,5 @@
-"""Pieces of a `SceneryStage` that need nothing else of it (P04): the lowest ground, the order of
-the opaque meshes, the stage
+"""Pieces of a `SceneryStage` that need nothing else of it (phase 4): the lowest ground, the order
+of the opaque meshes, the stage
 camera, the sea plane and the terrain-chunk watchers.
 """
 
@@ -15,10 +15,10 @@ from render.scenery.rain_rings import RainRings
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
+from core.scenery.scenery_level import SceneryLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -32,7 +32,7 @@ def _min_of(values: Sequence[float]) -> float:
 
 
 def lowest_ground(level: SceneryLevel) -> float:
-    """Lowest ground of a level: its sea, or the lowest relief."""
+    """Lowest ground of a level: its sea, or the lowest relief (GFX-CAM-05, GFX-WATER-02)."""
     lows = [s.relief.base - s.relief.amplitude for s in level.sections]
     if level.sea is not None:
         return level.sea.level
@@ -40,9 +40,9 @@ def lowest_ground(level: SceneryLevel) -> float:
 
 
 def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
-    """The order of the opaque meshes (reviewer, 2026-10-28): the terrain last, so its costly
-    shading is skipped where the props and cars in front of it were drawn first; the others by
-    material, as Babylon does."""
+    """The order of the opaque meshes (reviewer, 2026-10-28, PERF-28): the terrain last, so its
+    costly shading is skipped where the props and cars in front of it were drawn first; the others
+    by material, as Babylon does."""
 
     def last(s: Any) -> float:
         return 1 if s.getMaterial() is terrain else 0
@@ -57,9 +57,9 @@ def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
 
 
 def stage_camera(scene: Any, half_fov: float, clips: tuple[float, float]) -> Any:
-    """The stage's camera, `half_fov` up and down, seeing from `clips[0]` up to `clips[1]` (D-216:
-    the near plane far out, so the depth buffer keeps its precision at the ground); made the
-    active one."""
+    """The stage's camera (GFX-CAM-02), `half_fov` up and down, seeing from `clips[0]` up to
+    `clips[1]` (D-216, GFX-CAM-06: the near plane far out, so the depth buffer keeps its precision
+    at the ground); made the active one."""
     near_clip, far_clip = clips
     camera = new_free_camera("scenery-camera", vector3_zero(), scene)
     camera.fov = half_fov * 2
@@ -70,7 +70,7 @@ def stage_camera(scene: Any, half_fov: float, clips: tuple[float, float]) -> Any
 
 
 class SeaParts:
-    """The sea plane and the rain rings on it (P09-R05)."""
+    """The sea plane and the rain rings on it (GFX-WEATHER-09)."""
 
     def __init__(self, sea: Any, rings: RainRings) -> None:
         self.sea = sea
@@ -78,8 +78,8 @@ class SeaParts:
 
 
 def sea_parts(scene: Any, level: SceneryLevel, size: Sequence[float], kit: Any) -> SeaParts | None:
-    """The sea plane of `level` (P04-R02; phase 10: or lava) and the rain rings on it (P09-R05),
-    `width` x `length` (`size`), if it has a sea."""
+    """The sea plane of `level` (GFX-WATER-01; phase 10: or lava, GFX-TERRAIN-16) and the rain
+    rings on it (GFX-WEATHER-09), `width` x `length` (`size`), if it has a sea."""
     if level.sea is None:
         return None
     width = size[0]
@@ -92,8 +92,8 @@ def sea_parts(scene: Any, level: SceneryLevel, size: Sequence[float], kit: Any) 
 
 
 def sea_plane(scene: Any, size: Sequence[float], material: Any) -> Any:
-    """The sea plane (P04-R02; phase 10: or lava), `width` x `length` (`size[0]`, `size[1]`), at
-    `size[2]`, the level."""
+    """The sea plane (GFX-WATER-03; phase 10: or lava), `width` x `length` (`size[0]`, `size[1]`),
+    at `size[2]`, the level."""
     sea = create_ground("sea", size[0], size[1], 1, scene)
     sea.position.y = size[2]
     sea.material = material

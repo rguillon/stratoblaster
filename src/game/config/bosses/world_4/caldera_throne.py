@@ -1,11 +1,11 @@
-"""P10-R11, 4-5's final boss: the Caldera Throne, World 4's last boss and the hardest of the game
-so far ().
+"""4-5's final boss: the Caldera Throne, World 4's last boss and the hardest of the game so far
+(specs/bosses/final/4-5-caldera-throne.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the earlier final bosses (P07-R04, D-055): its parts fire the same while they
-stand, its core fires every kind of attack, a new one at each stage (magma bombs bursting into rings
-among them), and all of them at once with a spiral of its own, used by no earlier stage, once it
-stands alone. Its core always drops a bonus (P07-R07).
+patterns as for the earlier final bosses (FB-CALDERA-THRONE-11, D-055): its parts fire the same
+while they stand, its core fires every kind of attack, a new one at each stage (magma bombs bursting
+into rings among them), and all of them at once with a spiral of its own, used by no earlier stage,
+once it stands alone. Its core always drops a bonus (FB-CALDERA-THRONE-18).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -27,13 +27,14 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-CALDERA-THRONE-18,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -43,8 +44,8 @@ PURPLE = bullet("purple", 205)
 # A slow, big magma bomb that bursts into a ring of small bullets on its way down.
 MAGMA_BOMB = bursting("magenta", 115, 7, [1.05, 9, bullet("blue", 195)])
 
-# Where its parts stand (P10-R11): magma cannons on the side bastions, missile batteries aft,
-# heat shield generators ahead of the keep.
+# Where its parts stand (FB-CALDERA-THRONE-08): magma cannons on the side bastions, missile
+# batteries aft, heat shield generators ahead of the keep.
 CALDERA_PARTS = record({"magma": [88, -8], "battery": [56, 46], "shield": [34, -52]})
 
 # The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
@@ -71,16 +72,18 @@ SX = CALDERA_PARTS.shield[0]
 SY = CALDERA_PARTS.shield[1]
 
 # 4-5: the enemy's war fortress rising from the magma lake, crimson and gold neon over its whole
-# hull; two magma cannons on turrets aim lasers, two missile batteries fire homing missiles, two
-# heat shield generators shield the core, which fires every kind of attack. The ground stops over
-# the magma lake (x0).
+# hull (FB-CALDERA-THRONE-01); two magma cannons on turrets aim lasers, two missile batteries fire
+# homing missiles, two heat shield generators shield the core, which fires every kind of attack.
+# The ground stops over the magma lake (x0).
 _CALDERA_THRONE = record(
     {
         "id": "caldera-throne",
-        # Angry after each destroyed part (phase 7 review): the hottest bullet hell of the game.
+        # Angry after each destroyed part (phase 7 review, FB-CALDERA-THRONE-13): the hottest bullet
+        # hell of the game.
         "rage": concat(
             rage.spirals(14, "magenta", "purple", 0.5), rage.vortex(14, "blue", "magenta", 0.5)
         ),
+        # Its core and parts, their health, and its points (FB-CALDERA-THRONE-08).
         "stats": stats(
             record(
                 {
@@ -103,6 +106,7 @@ _CALDERA_THRONE = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-CALDERA-THRONE-07).
         "stopFraction": 0.75,
         "sway": {"amplitude": 22, "period": 12},
         "bob": {"amplitude": 5, "period": 5.5},
@@ -122,6 +126,8 @@ _CALDERA_THRONE = record(
             "battery-left": {"missile": mirror(CALDERA_CELLS)},
             "battery-right": {"missile": CALDERA_CELLS},
         },
+        # In every stage the magma cannons' lasers (FB-CALDERA-THRONE-09) and the batteries'
+        # missiles (FB-CALDERA-THRONE-10); then the core's attacks per stage (FB-CALDERA-THRONE-11).
         "stages": stages(
             [
                 volley.laser("magma-left", 5.5, 1.6, 2),
@@ -163,10 +169,11 @@ _CALDERA_THRONE = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of gun batteries unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of laser lances and a missile rack
-# unfold.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off
+# (FB-CALDERA-THRONE-14), baring a dark metal frame, and a pair of gun batteries unfold
+# (FB-CALDERA-THRONE-15); at transformation 2 its spine plating bursts off (FB-CALDERA-THRONE-16),
+# baring a dark metal frame, and a pair of laser lances and a missile rack unfold
+# (FB-CALDERA-THRONE-17).
 CALDERA_THRONE = with_weapons(
     _CALDERA_THRONE,
     [

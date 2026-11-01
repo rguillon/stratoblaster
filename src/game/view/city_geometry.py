@@ -1,4 +1,4 @@
-"""Night city geometry of the title screen: stretches of city along
+"""Night city geometry of the title screen (UI-TITLE-07): stretches of city along
 a street (buildings, lit windows, neon trims and blade signs, lane lines), a distant skyline,
 and rain. Everything comes from `random`, so a seeded generator gives the same city every time.
 
@@ -10,15 +10,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import pick, random_in  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from core.math.rng import pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _empty_geometry() -> ColoredGeometry:

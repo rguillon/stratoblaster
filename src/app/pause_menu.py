@@ -1,10 +1,10 @@
-"""The pause menu (P12-R02): Resume, Settings, Main menu. Main
-menu asks `Leave the level?` with No (selected first) and Yes. Pure: the flow changes screens.
+"""The pause menu (UI-PAUSE-07): Resume, Settings, Main menu. Main menu asks `Leave the level?`
+with No (selected first) and Yes (UI-PAUSE-10). Pure: the flow changes screens.
 """
 
 import math
 
-# The entries of the pause menu, in display order (P12-R02).
+# The entries of the pause menu, in display order (UI-PAUSE-07).
 PAUSE_ENTRIES = ["resume", "settings", "main-menu"]
 
 
@@ -14,7 +14,7 @@ def _is_integer(value: float) -> bool:
 
 
 class PauseMenu:
-    """The pause menu (P12-R02). The outcomes of its commands are `none`, `moved`, `ask`,
+    """The pause menu (UI-PAUSE-07). The outcomes of its commands are `none`, `moved`, `ask`,
     `resume`, `settings` and `leave`: the flow carries out the last three.
     """
 
@@ -80,7 +80,7 @@ class PauseMenu:
         return "ask"
 
     def back(self) -> str:
-        """Back: closes the question, or resumes the level."""
+        """Back: closes the question, or resumes the level (UI-PAUSE-08)."""
         if not self._leaving:
             return "resume"
         self._leaving = False

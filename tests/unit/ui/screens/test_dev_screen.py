@@ -10,6 +10,7 @@ from ui.screens.screen_handlers import ScreenHandlers
 
 
 def test_d199_the_dev_menu_lists_one_tappable_entry_per_viewer() -> None:
+    """DEV-MENU-03: the dev menu."""
     taps: list[int] = []
     backs: list[bool] = []
     view = DevMenuView("Dev tools", "Pick", "Back", 1, ["Ships", "Enemies"])
@@ -26,6 +27,7 @@ def test_d199_the_dev_menu_lists_one_tappable_entry_per_viewer() -> None:
 
 
 def test_d199_a_viewer_shows_its_item_and_passes_the_wheel_on() -> None:
+    """DEV-MENU-05: a viewer's screen."""
     wheels: list[float] = []
     view = DevViewerView("Enemies", "Wheel", "Back", 2, "Hornet", "3 / 21", False)
     handlers = ScreenHandlers(lambda i: None, lambda: None, None, None, None, None, wheels.append)
@@ -68,6 +70,7 @@ def pointer(x: float, y: float, back: bool = False) -> SimpleNamespace:
 
 
 def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() -> None:
+    """DEV-MENU-10: dragging turns the model."""
     turns: list[tuple[float, float]] = []
     view = DevViewerView("Ships", "Drag", "Back", 0, "Alpha", "1 / 3", False)
     handlers = ScreenHandlers(
@@ -94,6 +97,7 @@ def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() 
 
 
 def test_d206_a_grouped_viewer_has_a_menu_of_tappable_headings_and_items() -> None:
+    """DEV-MENU-07: the scrolling menu."""
     taps: list[int] = []
     menu = [
         DevChoice("Farm (2)", 0, True, True),

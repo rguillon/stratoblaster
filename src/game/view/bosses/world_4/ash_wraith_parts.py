@@ -1,6 +1,6 @@
-"""P10-R11, 4-2: the Ash Wraith's parts: its two shroud pods (ducted fans under ragged shrouds)
-and its eye cannon (a mount on the nose, the eye itself on a turret). Logical pixels, nose +Z, Y up
-(towards the camera).
+"""MB-ASH-WRAITH-03, MB-ASH-WRAITH-04, 4-2: the Ash Wraith's parts: its two shroud pods (ducted fans
+under ragged shrouds) and its eye cannon (a mount on the nose, the eye itself on a turret). Logical
+pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
@@ -18,7 +18,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -37,12 +37,12 @@ def _sign(v: float) -> float:
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711
+    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return fallback
     return colour
 
 
-# The Wraith's pale cyan neon (P10-R11).
+# The Wraith's pale cyan neon (MB-ASH-WRAITH-05).
 WRAITH_CYAN = _neon_or("ash-wraith", [0.55, 0.95, 1])
 
 # A pod's duct around its fan: an open lathe, wider at its lip (around the pod's centre).
@@ -73,15 +73,15 @@ def _tatters(flesh: Any, at: Vec3, s: float) -> None:
 
 
 def shroud_pod(p: Any, at: Vec3) -> None:
-    """A shroud pod around its centre `at` (P10-R11): a ducted fan, its lip ringed with pale cyan
-    neon, torn grey shroud strips trailing off it, ash on its lip, a gun housing under its front
-    with the two barrels of its fans."""
+    """A shroud pod around its centre `at` (MB-ASH-WRAITH-03): a ducted fan, its lip ringed with
+    pale cyan neon, torn grey shroud strips trailing off it, ash on its lip, a gun housing under its
+    front with the two barrels of its fans."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     s = _sign(at[0])
-    # P16-R05: a flesh gill ringing its fan, torn membrane trailing off it.
+    # MB-ASH-WRAITH-03: a flesh gill ringing its fan, torn membrane trailing off it.
     p.flesh.lathe(DUCT, 10, SKIN.base, Placement(at, math.pi / 10), False)
     hull.cylinder(9.4, 0.5, 10, H.dark, Placement(offset(at, 0, 0.2, 0)))
     hull.cylinder(2.4, 3, 6, H.base, Placement(offset(at, 0, 0.6, 0)))
@@ -113,7 +113,8 @@ COLLAR = [
 
 
 def eye_mount(p: Any, at: Vec3) -> None:
-    """The eye cannon's mount around its pivot `at` (P10-R11): a collar on the nose, a cyan ring."""
+    """The eye cannon's mount around its pivot `at` (MB-ASH-WRAITH-04): a collar on the nose, a cyan
+    ring."""
     p.flesh.lathe(COLLAR, 9, SKIN.panel, Placement(at, math.pi / 9))
     p.neon.ring(9.5, 0.5, 9, WRAITH_CYAN, Placement(offset(at, 0, 1.2, 0), math.pi / 9))
     p.hull.cylinder(6.2, 3.3, 9, H.dark, Placement(at))
@@ -137,8 +138,8 @@ BALL = [
 
 
 def eye_turret(p: Any, at: Vec3) -> None:
-    """The eye cannon (P10-R11), turning on its mount: a dark armoured ball, a heavy lid over it,
-    the lens barrel reaching forward, its pale iris and lens lit as the laser charges."""
+    """The eye cannon (MB-ASH-WRAITH-04), turning on its mount: a dark armoured ball, a heavy lid
+    over it, the lens barrel reaching forward, its pale iris and lens lit as the laser charges."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -149,7 +150,7 @@ def eye_turret(p: Any, at: Vec3) -> None:
         tip = boss_point(m[0], m[1], m[2])
     else:
         tip = at
-    # P16-R05: a living eyeball under a metal lid.
+    # MB-ASH-WRAITH-04: a living eyeball under a metal lid.
     p.flesh.lathe(BALL, 9, SKIN.bone, Placement(at))
     hull.box([7, 1.2, 5], H.dark, Placement(offset(at, 0, 8.2, -1.5), 0, -0.18), ASH_THIN)
     hull.cylinder(2.6, 6, 8, H.dark, Placement([tip[0], tip[1], at[2] + 3.2], 0, QUARTER), 2.2)

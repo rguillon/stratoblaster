@@ -105,7 +105,7 @@ def _rules(lives: float = 3, max_lives: float | None = None) -> HullRules:
     )
 
 
-def test_p06_r09_seeking_after_the_game_is_over_does_nothing() -> None:
+def test_dev_opt_02_seeking_after_the_game_is_over_does_nothing() -> None:
     run = _run(hull=HullRules(1, 0, 3, HullDamage(200, 0, 0, 0), 0))
     run.enemies.shots.fire_bullet(50, 10, 0, EnemyBulletSpec(0, 1, "s"))
     _step(run)
@@ -115,7 +115,7 @@ def test_p06_r09_seeking_after_the_game_is_over_does_nothing() -> None:
     assert run.track.progress == before
 
 
-def test_p06_r02_the_ship_cannot_fly_once_the_game_is_over() -> None:
+def test_game_life_09_the_ship_cannot_fly_once_the_game_is_over() -> None:
     run = _run(hull=HullRules(1, 0, 3, HullDamage(200, 0, 0, 0), 0))
     run.enemies.shots.fire_bullet(50, 10, 0, EnemyBulletSpec(0, 1, "s"))
     _step(run)
@@ -124,7 +124,7 @@ def test_p06_r02_the_ship_cannot_fly_once_the_game_is_over() -> None:
     assert run.ship.x == x
 
 
-def test_p06_r02_running_out_of_lives_ends_the_game_and_keeps_the_checkpoint_empty() -> None:
+def test_game_life_09_running_out_of_lives_ends_the_game_and_keeps_the_checkpoint_empty() -> None:
     run = _run(hull=HullRules(1, 0, 3, HullDamage(200, 0, 0, 0), 0))
     run.enemies.shots.fire_bullet(50, 10, 0, EnemyBulletSpec(0, 1, "s"))
     _step(run)
@@ -135,7 +135,7 @@ def test_p06_r02_running_out_of_lives_ends_the_game_and_keeps_the_checkpoint_emp
     assert _supplies(run) == (0, 0)
 
 
-def test_p11_r05_a_lost_life_tops_the_bombs_back_up() -> None:
+def test_game_bomb_02_a_lost_life_tops_the_bombs_back_up() -> None:
     run = _run(
         hull=HullRules(3, 0, 3, HullDamage(100, 0, 0, 0), 0),
         bombs=BombRules(1, 50, 1),
@@ -149,7 +149,7 @@ def test_p11_r05_a_lost_life_tops_the_bombs_back_up() -> None:
     assert _supplies(run) == (2, 1)
 
 
-def test_p11_r03_the_run_starts_with_the_lives_and_bombs_kept_before() -> None:
+def test_game_life_12_the_run_starts_with_the_lives_and_bombs_kept_before() -> None:
     run = _run(
         hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0),
         bombs=BombRules(1, 50, 1),
@@ -160,7 +160,7 @@ def test_p11_r03_the_run_starts_with_the_lives_and_bombs_kept_before() -> None:
     assert _supplies(run) == (2, 0)
 
 
-def test_p11_r05_no_hit_lands_while_a_bomb_is_going_off() -> None:
+def test_game_bomb_06_no_hit_lands_while_a_bomb_is_going_off() -> None:
     run = _run(
         hull=HullRules(3, 0, 3, HullDamage(30, 0, 0, 0), 0),
         bombs=BombRules(1, 0, 5),
@@ -172,7 +172,7 @@ def test_p11_r05_no_hit_lands_while_a_bomb_is_going_off() -> None:
     assert run.hull.health == 100
 
 
-def test_p06_r02_no_hit_lands_while_the_journey_scripts_the_ship() -> None:
+def test_game_life_10_no_hit_lands_while_the_journey_scripts_the_ship() -> None:
     run = _run(
         hull=HullRules(3, 0, 3, HullDamage(30, 0, 0, 0), 0),
         journey=JourneyRules(10, 5, 1, 50, 50, 10),
@@ -183,7 +183,7 @@ def test_p06_r02_no_hit_lands_while_the_journey_scripts_the_ship() -> None:
     assert run.hits == []
 
 
-def test_p11_r07_a_life_bonus_without_overflow_points_scores_nothing_at_the_most() -> None:
+def test_game_bonus_10_a_life_bonus_without_overflow_points_scores_nothing_at_the_most() -> None:
     run = _run(
         hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0, max_lives=3),
         bonuses=BonusRules(BonusChance(0, 0, 0), 0, 5),
@@ -194,31 +194,32 @@ def test_p11_r07_a_life_bonus_without_overflow_points_scores_nothing_at_the_most
     assert run.score == 0
 
 
-def test_gd20_a_new_hull_starts_with_full_health_and_the_rule_lives() -> None:
+def test_game_life_01_a_new_hull_starts_with_full_health_and_the_rule_lives() -> None:
+    """GAME-LIFE-01 (full health) and GAME-LIFE-02 (the starting lives)."""
     hull = PlayerHull(_rules(), 100)
     assert (hull.health, hull.max_health, hull.lives, hull.invincible) == (100, 100, 3, 0)
     assert hull.out is False
 
 
-def test_gd20_lives_kept_from_the_level_before_override_the_rules() -> None:
+def test_game_life_12_lives_kept_from_the_level_before_override_the_rules() -> None:
     assert PlayerHull(_rules(), 100, lives=1).lives == 1
 
 
-def test_gd22_a_hit_takes_health_and_makes_the_ship_invincible() -> None:
+def test_game_life_07_a_hit_takes_health_and_makes_the_ship_invincible() -> None:
     hull = PlayerHull(_rules(), 100)
     assert hull.hit(40) == "hit"
     assert hull.health == 60
     assert hull.invincible == 2
 
 
-def test_gd22_hits_are_ignored_while_invincible() -> None:
+def test_game_life_07_hits_are_ignored_while_invincible() -> None:
     hull = PlayerHull(_rules(), 100)
     hull.hit(40)
     assert hull.hit(40) == "ignored"
     assert hull.health == 60
 
 
-def test_gd22_invincibility_counts_down_and_stops_at_zero() -> None:
+def test_game_life_07_invincibility_counts_down_and_stops_at_zero() -> None:
     hull = PlayerHull(_rules(), 100)
     hull.hit(10)
     hull.step(0.5)
@@ -228,7 +229,7 @@ def test_gd22_invincibility_counts_down_and_stops_at_zero() -> None:
     assert hull.hit(10) == "hit"
 
 
-def test_gd20_running_out_of_health_loses_a_life_and_refills_health() -> None:
+def test_game_life_08_running_out_of_health_loses_a_life_and_refills_health() -> None:
     hull = PlayerHull(_rules(), 100)
     assert hull.hit(100) == "lifeLost"
     assert hull.lives == 2
@@ -237,7 +238,7 @@ def test_gd20_running_out_of_health_loses_a_life_and_refills_health() -> None:
     assert hull.invincible == 2
 
 
-def test_gd20_losing_the_last_life_ends_the_game() -> None:
+def test_game_life_09_losing_the_last_life_ends_the_game() -> None:
     hull = PlayerHull(_rules(lives=1), 100)
     assert hull.hit(100) == "gameOver"
     assert hull.lives == 0
@@ -245,27 +246,27 @@ def test_gd20_losing_the_last_life_ends_the_game() -> None:
     assert hull.health == 0
 
 
-def test_gd20_a_hit_on_a_ship_that_is_out_is_ignored() -> None:
+def test_game_life_09_a_hit_on_a_ship_that_is_out_is_ignored() -> None:
     hull = PlayerHull(_rules(lives=0), 100)
     assert hull.out is True
     assert hull.hit(10) == "ignored"
     assert hull.health == 100
 
 
-def test_gd20_damage_never_takes_health_below_zero() -> None:
+def test_game_life_01_damage_never_takes_health_below_zero() -> None:
     hull = PlayerHull(_rules(), 10)
     hull.hit(500)
     assert hull.lives == 2
     assert hull.health == 10
 
 
-def test_p11_r07_a_life_bonus_adds_one_life_without_a_limit() -> None:
+def test_game_bonus_09_a_life_bonus_adds_one_life_without_a_limit() -> None:
     hull = PlayerHull(_rules(), 100)
     assert hull.add_life() is True
     assert hull.lives == 4
 
 
-def test_p11_r07_a_life_bonus_stops_at_the_most_lives() -> None:
+def test_game_bonus_10_a_life_bonus_stops_at_the_most_lives() -> None:
     hull = PlayerHull(_rules(lives=2, max_lives=3), 100)
     assert hull.add_life() is True
     assert hull.lives == 3
@@ -273,7 +274,7 @@ def test_p11_r07_a_life_bonus_stops_at_the_most_lives() -> None:
     assert hull.lives == 3
 
 
-def test_p11_r07_a_life_bonus_does_nothing_once_the_game_is_over() -> None:
+def test_game_bonus_09_a_life_bonus_does_nothing_once_the_game_is_over() -> None:
     hull = PlayerHull(_rules(lives=0), 100)
     assert hull.add_life() is False
     assert hull.lives == 0

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/road_geometry.py`."""
+"""Unit tests of `src/render/scenery/road_geometry.py` (GFX-ROAD-06)."""
 
 from typing import Any
 

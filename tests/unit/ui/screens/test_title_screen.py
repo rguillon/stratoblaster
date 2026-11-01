@@ -21,7 +21,8 @@ def view(selected: int = 0) -> TitleView:
     )
 
 
-def test_p01_r04_the_title_screen_shows_the_title_the_high_score_and_the_version() -> None:
+def test_ui_title_01_the_title_screen_shows_the_title_the_high_score_and_the_version() -> None:
+    """Also UI-TITLE-02, UI-TITLE-03, UI-TITLE-04 and UI-TITLE-05."""
     root = render_title_screen(FakeDocument(), view(), ScreenHandlers(lambda i: None, lambda: None))
     assert root.className == "menu-screen title-screen"
     assert root.querySelector(".title-name").textContent == "STRATOBLASTER"
@@ -32,7 +33,7 @@ def test_p01_r04_the_title_screen_shows_the_title_the_high_score_and_the_version
     assert root.querySelector(".title-hint").textContent == "Arrows fly"
 
 
-def test_p01_r04_start_and_settings_are_entries_that_report_their_index() -> None:
+def test_ui_title_01_start_and_settings_are_entries_that_report_their_index() -> None:
     taps: list[int] = []
     root = render_title_screen(FakeDocument(), view(1), ScreenHandlers(taps.append, lambda: None))
     start = root.querySelector(".title-start")
@@ -47,6 +48,7 @@ def test_p01_r04_start_and_settings_are_entries_that_report_their_index() -> Non
 
 
 def test_d199_the_dev_entry_follows_settings_only_when_given() -> None:
+    """DEV-MENU-01: the Dev entry, only with `?dev`."""
     assert (
         render_title_screen(
             FakeDocument(), view(), ScreenHandlers(lambda i: None, lambda: None)

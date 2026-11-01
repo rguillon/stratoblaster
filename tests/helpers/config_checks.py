@@ -25,7 +25,7 @@ def original_parts(design: Any) -> list[Any]:
 
 def assert_boss_design(design: Any) -> None:
     """A boss design is well formed: unique part ids, one stage more than it has original parts
-    (each part destroyed moves it on, P07-R04; its hidden weapons, revealed later, keep it on its
+    (each part destroyed moves it on, BOSS-20; its hidden weapons, revealed later, keep it on its
     last), guns and volleys that name pieces of the boss, and volleys of a known kind."""
     stats = design.stats
     assert design.id and design.id == stats["model"]
@@ -49,8 +49,9 @@ def assert_boss_design(design: Any) -> None:
 
 def assert_world_bosses(table: Any, bosses: set[str]) -> None:
     """A world's boss table: one entry per level, each naming a mini boss and a final boss that
-    are two different bosses of the game (`bosses`, the ids of every boss design), with a
-    non-negative run-out."""
+    are two different bosses of the game (`bosses`, the ids of every boss design, BOSS-01), with a
+    non-negative run-out (the levels' runouts: LVL-1-1-14, LVL-1-2-14, LVL-1-3-14, LVL-1-4-14,
+    LVL-1-5-14; LVL-2-1-13, LVL-2-2-13, LVL-2-3-13, LVL-2-4-13, LVL-2-5-13)."""
     assert len(table) == LEVELS_PER_WORLD
     for level_id, entry in table.items():
         assert entry["mini"] in bosses, level_id
@@ -61,7 +62,7 @@ def assert_world_bosses(table: Any, bosses: set[str]) -> None:
 
 def assert_level_difficulty(table: Any) -> None:
     """Enemy factors per level: positive, no higher than twice the base, and never going down
-    from one level to the next (P06-R08)."""
+    from one level to the next (ENM-22; per world WLD-1-23, WLD-2-21, WLD-3-17, WLD-4-19)."""
     previous = None
     for level_id in sorted(table.keys()):
         factors = table[level_id]
@@ -104,5 +105,5 @@ def assert_beats_well_formed(beats: Any, kinds: set[str]) -> None:
 
 
 def enemy_kind_ids() -> set[str]:
-    """The ids of every enemy kind of the game (the sim's list of kinds, P05-R24)."""
+    """The ids of every enemy kind of the game (the sim's list of kinds, ENM-01)."""
     return {kind.id for kind in ENEMY_KINDS}

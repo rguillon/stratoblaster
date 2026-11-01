@@ -1,19 +1,20 @@
-"""Particles flowing up along a beam (P03-R02)
+"""Particles flowing up along a beam (GFX-SHOT-03)
 
 Each particle runs from the start of the beam to its end, then starts again from the start, so the
-flow follows the beam as it gets shorter or longer.
+flow follows the beam as it gets shorter or longer. They are the game's own seeded particles drawn
+as meshes, not a Babylon particle system (ENG-103).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import random_in  # noqa: E402
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Particle:
@@ -38,7 +39,7 @@ class ParticleSpot:
 
 
 class LaserParticles:
-    """Particles flowing up along a beam (P03-R02)."""
+    """Particles flowing up along a beam (GFX-SHOT-03)."""
 
     def __init__(self, options: Any, random: Random, initial_length: float) -> None:
         self._options = options

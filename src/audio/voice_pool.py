@@ -1,7 +1,6 @@
-"""Mixing limits of the sound effects (P12-R10): at most
-`max_voices` at once; when they are all taken, a new sound replaces the oldest one of lower or
-equal priority (or is dropped); the same sound started again within `retrigger_seconds` is not
-played twice. Pure: time is given.
+"""Mixing limits of the sound effects (AUD-ENGINE-07): at most `max_voices` at once; when they
+are all taken, a new sound replaces the oldest one of lower or equal priority (or is dropped); the
+same sound started again within `retrigger_seconds` is not played twice. Pure: time is given.
 """
 
 
@@ -72,7 +71,7 @@ class VoicePool:
             self._voices.pop(index)
 
     def clear(self) -> None:
-        """Forgets every voice (the game paused: they were all stopped, P12-R11)."""
+        """Forgets every voice (the game paused: they were all stopped, AUD-ENGINE-10)."""
         self._voices = []
         self._last_names = []
         self._last_starts = []

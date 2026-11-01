@@ -1,4 +1,4 @@
-"""Look of the player shots (P03-R01..R03)
+"""Look of the player shots (GFX-SHOT-01 to GFX-SHOT-08)
 
 Linear RGB, 0..1. Sizes in logical pixels unless noted; durations in seconds. Shots are drawn with
 additive blending: black is transparent.
@@ -8,11 +8,11 @@ from game.config.record import record
 
 SHOT_LOOK = record(
     {
-        # Minigun tracer (phase 5 review, was a green blob): a long thin streak, white-hot at its
-        # head, cooling to cyan then deep blue along its tail (phase 14, P14-R02: was orange then
-        # red, the enemy shots' colours).
+        # Minigun tracer (GFX-SHOT-01; phase 5 review, was a green blob): a long thin streak,
+        # white-hot at its head, cooling to cyan then deep blue along its tail (phase 14,
+        # GFX-ART-04: was orange then red, the enemy shots' colours).
         "bullet": {
-            # Phase 14: a little wider (was 3.4), so it still shows toned down (P14-R06).
+            # Phase 14: a little wider (was 3.4), so it still shows toned down (GFX-READ-14).
             "width": 4.2,
             # Length of the streak behind the bullet; a new one grows to it from the muzzle.
             "length": 34,
@@ -175,7 +175,7 @@ SHOT_LOOK = record(
             "missile": {
                 "radiusFactor": 1.6,
                 "duration": 0.3,
-                # Phase 14 (P14-R02): in the player's cyan, not the enemy shots' orange.
+                # Phase 14 (GFX-FX-03): in the player's cyan, not the enemy shots' orange.
                 "colors": [
                     [0.75, 0.95, 1],
                     [0.2, 0.6, 1],

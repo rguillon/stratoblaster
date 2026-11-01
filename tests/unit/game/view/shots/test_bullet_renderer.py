@@ -52,7 +52,7 @@ def frame(projectiles=(), impacts=(), dt=0.0):
     return SimpleNamespace(projectiles=list(projectiles), impacts=list(impacts), dt_seconds=dt)
 
 
-def test_p03_r01_a_bullet_sits_at_its_position_and_faces_its_heading(renderer):
+def test_gfx_shot_01_a_bullet_sits_at_its_position_and_faces_its_heading(renderer):
     shot = SimpleNamespace(x=2.0, y=3.0, heading=0.4, age=1.0, speed=100.0)
     renderer.handle["sync"](frame([shot]))
     mesh = renderer.bullets.meshes[0]
@@ -60,28 +60,28 @@ def test_p03_r01_a_bullet_sits_at_its_position_and_faces_its_heading(renderer):
     assert mesh.rotation.z == pytest.approx(-0.4)
 
 
-def test_p03_r01_a_new_bullet_grows_out_of_the_muzzle_at_its_width(renderer):
+def test_gfx_shot_01_a_new_bullet_grows_out_of_the_muzzle_at_its_width(renderer):
     shot = SimpleNamespace(x=0.0, y=0.0, heading=0.0, age=0.0, speed=500.0)
     renderer.handle["sync"](frame([shot]))
     # Just fired: the streak is only as long as its width (no flicker at x = 0).
     renderer.bullets.meshes[0].scaling.set.assert_called_with(LOOK.width, LOOK.width, 1)
 
 
-def test_p03_r01_an_old_bullet_keeps_the_length_of_the_look(renderer):
+def test_gfx_shot_01_an_old_bullet_keeps_the_length_of_the_look(renderer):
     shot = SimpleNamespace(x=0.0, y=0.0, heading=0.0, age=100.0, speed=500.0)
     renderer.handle["sync"](frame([shot]))
     length = renderer.bullets.meshes[0].scaling.set.call_args.args[1]
     assert length == pytest.approx(LOOK.length)
 
 
-def test_p03_r01_each_impact_throws_sparks_where_it_hit(renderer):
+def test_gfx_fx_01_each_impact_throws_sparks_where_it_hit(renderer):
     impacts = [SimpleNamespace(x=1.0, y=2.0), SimpleNamespace(x=3.0, y=4.0)]
     renderer.handle["sync"](frame(impacts=impacts, dt=0.016))
     assert renderer.source.emit.call_args_list == [((1.0, 2.0),), ((3.0, 4.0),)]
     renderer.source.step.assert_called_with(0.016)
 
 
-def test_p03_r01_a_spark_is_a_thinner_streak_scaled_by_its_brightness(renderer):
+def test_gfx_fx_02_a_spark_is_a_thinner_streak_scaled_by_its_brightness(renderer):
     spark = SimpleNamespace(x=1.0, y=2.0, heading=0.3, length_=10.0, brightness=0.5)
     renderer.source.step.return_value = [spark]
     renderer.handle["sync"](frame())
@@ -92,6 +92,6 @@ def test_p03_r01_a_spark_is_a_thinner_streak_scaled_by_its_brightness(renderer):
     mesh.scaling.set.assert_called_with(width, max(width, 10.0 / 2), 1)
 
 
-def test_p03_r01_dispose_releases_the_pools_and_templates(renderer):
+def test_gfx_shot_01_dispose_releases_the_pools_and_templates(renderer):
     renderer.handle["dispose"]()
     assert renderer.bullets.disposed and renderer.sparks.disposed

@@ -26,7 +26,7 @@ def _link(
     return Link(na, nb, across, False, False, True, True, False)
 
 
-def test_p04_r08_crossings_are_turned_into_t_junctions() -> None:
+def test_crossings_are_turned_into_t_junctions() -> None:
     nodes = Nodes(lambda x, z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
@@ -50,7 +50,7 @@ def test_p04_r08_crossings_are_turned_into_t_junctions() -> None:
     assert sum(1 for link in links[2:] if link.built) == 1
 
 
-def test_p04_r08_crossing_boulevards_are_both_kept() -> None:
+def test_gfx_road_17_crossing_boulevards_are_both_kept() -> None:
     nodes = Nodes(lambda x, z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
@@ -70,9 +70,7 @@ def test_p04_r08_crossing_boulevards_are_both_kept() -> None:
     assert all(link.built for link in links)
 
 
-def test_p04_r08_a_crossing_of_boulevards_along_the_level_keeps_its_cross_streets_straight() -> (
-    None
-):
+def test_gfx_road_17_boulevards_along_the_level_keep_their_cross_streets_straight() -> None:
     nodes = Nodes(lambda x, z: True)
     centre = nodes.use(nodes.at(10.0, 0.0))
     ends = [
@@ -166,7 +164,7 @@ def test_links_by_node_lists_each_link_at_both_its_ends() -> None:
     assert at[2] == [bc]
 
 
-def test_p04_r08_built_links_in_a_line_make_one_straight_run() -> None:
+def test_gfx_road_14_built_links_in_a_line_make_one_straight_run() -> None:
     nodes = Nodes(lambda x, z: True)
     links = [
         _link(nodes, (20.0, 0.0), (30.0, 0.0)),

@@ -1,6 +1,6 @@
 # ruff: noqa: E501
-"""The material of a kind of plume (phase 10, P10-R08): soft puffs rising from a prop's column, drawn
-with instancing.
+"""The material of a kind of plume (phase 10, GFX-PROP-18): soft puffs rising from a prop's
+column, drawn with instancing.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from render.babylon import color3, new_glsl_material, vector2, vector4
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -120,10 +120,11 @@ class PlumeMaterialImpl:
 
 
 def create_plume_material(scene: Any, kind: Any) -> PlumeMaterialImpl:
-    """The material of a kind of plume (phase 10, P10-R08): soft puffs facing the camera, rising
-    from the column's foot, growing, bending with the wind and fading out at the top, lit by the
-    scene (a little self-lit, as if from the fire below at night). Blended without writing depth,
-    so the ground in front hides it but it never hides what is drawn after it (the playfield)."""
+    """The material of a kind of plume (phase 10, GFX-PROP-18): soft puffs facing the camera,
+    rising from the column's foot, growing, bending with the wind and fading out at the top, lit by
+    the scene (a little self-lit, as if from the fire below at night). Blended without writing
+    depth, so the ground in front hides it but it never hides what is drawn after it (the
+    playfield)."""
     material = new_glsl_material(
         "plume",
         scene,

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/tile_road_geometry.py`."""
+"""Unit tests of `src/render/scenery/tile_road_geometry.py` (GFX-ROAD-09, GFX-ROAD-11)."""
 
 import pytest
 from helpers.render_geometry import babylon_normal, points_of, triangles

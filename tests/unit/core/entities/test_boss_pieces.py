@@ -17,7 +17,7 @@ def as_tuple(point: Any) -> tuple[float, ...]:
     return (point.x, point.y)
 
 
-def test_p07_r01_part_ids_are_unique_and_below_zero(make_boss: Make) -> None:
+def test_boss_12_part_ids_are_unique_and_below_zero(make_boss: Make) -> None:
     boss = make_boss()
     boss.id = 3
     assert boss.parts[0].id == -(3 * 64 + 1)
@@ -40,7 +40,7 @@ def test_part_points_default_to_zero(make_boss: Make) -> None:
     assert make_boss().parts[0].points == 0
 
 
-def test_p11_r01_part_points_come_from_the_stats(make_boss: Make) -> None:
+def test_game_score_04_part_points_come_from_the_stats(make_boss: Make) -> None:
     assert make_boss(part_points=50).parts[0].points == 50
 
 
@@ -66,7 +66,7 @@ def test_core_emitter_is_one_radius_ahead_of_the_core(make_boss: Make) -> None:
     assert (emitter.x, emitter.y) == pytest.approx((100, 188))
 
 
-def test_p07_r01_damage_to_a_part_only_counts_once_in_place(make_boss: Make) -> None:
+def test_boss_09_damage_to_a_part_only_counts_once_in_place(make_boss: Make) -> None:
     boss = make_boss()
     part = boss.parts[0]
     part.health = 1  # Coming in: ignored.

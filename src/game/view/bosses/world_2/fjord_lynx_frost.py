@@ -1,4 +1,5 @@
-"""The World 2 frost on the Fjord Lynx and the Harbour Kraken: snow caps, ice crust and icicles
+"""The World 2 frost on the Fjord Lynx and the Harbour Kraken (MB-FJORD-LYNX-05,
+FB-HARBOUR-KRAKEN-05): snow caps, ice crust and icicles
 over the dark metal Logical pixels, nose +Z,
 Y up (towards the camera).
 """
@@ -11,8 +12,8 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]

@@ -1,7 +1,6 @@
-"""Plays the sound effects (P12-R09, P12-R10): each through the
-`VoicePool`'s limits, panned with its position, on the sound effect bus. Without a context the
-pool still decides, so the game's logic (and the e2e test API) does not depend on audio being
-available.
+"""Plays the sound effects: each through the `VoicePool`'s limits (AUD-ENGINE-07), panned with
+its position (AUD-ENGINE-08), on the sound effect bus. Without a context the pool still decides,
+so the game's logic (and the e2e test API) does not depend on audio being available.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -11,7 +10,7 @@ from audio.synth import Voice, VoiceOptions, play_voice
 from audio.voice_pool import VoicePool
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -118,7 +117,7 @@ class SfxPlayer:
         return self._loop_index(name) >= 0
 
     def stop_all(self) -> None:
-        """Stops every sound (the game pauses, P12-R11)."""
+        """Stops every sound (the game pauses, AUD-ENGINE-10)."""
         for voice_id in [playing.id for playing in self._playing]:
             self._stop_voice(voice_id)
         self._loop_names = []
@@ -158,7 +157,7 @@ class SfxPlayer:
 
     def _boost(self, name: str) -> None:
         """The same sound again too soon: the one playing gets a little louder instead
-        (P12-R10)."""
+        (AUD-ENGINE-07)."""
         voices = self._pool.voices
         voice = None
         i = len(voices) - 1
@@ -179,7 +178,8 @@ class SfxPlayer:
         gain.gain.setValueAtTime(boosted, bus.context.currentTime)
 
     def _forget_ended(self) -> None:
-        """Forgets the sounds that are over (the pool let them go)."""
+        """Forgets the sounds that are over (the pool let them go), so the work stays small
+        (AUD-ENGINE-12)."""
         alive = [voice.id for voice in self._pool.voices]
         self._playing = [playing for playing in self._playing if playing.id in alive]
 

@@ -1,6 +1,6 @@
-"""Stand-ins for the Babylon objects the tests of `render/` need. Babylon runs only in the browser,
-so `render.babylon` returns None under CPython. `patch_babylon` replaces, in one module, every
-function it imported from `render.babylon` with a Python version of it (the ones listed in
+"""Stand-ins for the Babylon objects the tests of `render/` need (ENG-47). Babylon runs only in the
+browser, so `render.babylon` returns None under CPython. `patch_babylon` replaces, in one module,
+every function it imported from `render.babylon` with a Python version of it (the ones listed in
 `BABYLON_FAKES`), and leaves the others alone."""
 
 from __future__ import annotations

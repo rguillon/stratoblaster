@@ -1,4 +1,4 @@
-"""What the models made for the grid of tiles share (P15-R07, R09)
+"""What the models made for the grid of tiles share (GFX-BLDG-03, GFX-BLDG-09)
 
 Each one fills a plot `w` × `d` world units (its tiles less the margin), centred on the origin,
 standing on Y = 0, its front towards -Z.
@@ -10,21 +10,21 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.rng import create_rng, pick, random_in  # noqa: E402
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.config.window_look import DOOR_STYLES  # noqa: E402
-from game.view.props.window_facades import doorway, facade_windows, wall_windows  # noqa: E402
-from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
-from render.geometry.textured import QuadBuilder  # noqa: E402
-from render.scenery.scenery_look import PropGeometry  # noqa: E402
+from core.math.rng import create_rng, pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.window_look import DOOR_STYLES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.window_facades import doorway, facade_windows, wall_windows  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement, SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.textured import QuadBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class TileKit:
@@ -67,7 +67,8 @@ def tile_kit(w: float, d: float, tile: float, seed: int) -> TileKit:
 
 
 def geometry_of(k: TileKit) -> PropGeometry:
-    """The geometry a kit's builders made: the structure, the lights and the windows."""
+    """The geometry a kit's builders made: the structure, the lights and the windows (the parts of
+    a model, GFX-PROP-04)."""
     return PropGeometry(k.s.geometry, k.lights.geometry, None, k.windows.geometry)
 
 
@@ -163,7 +164,7 @@ def front_windows(
     color: Rgb,
 ) -> None:
     """The windows of one wall facing -Z or +Z (`face`: `[x, z, facing]`, `size`: `[width, y0,
-    y1]`), one quad of `style` (D-215: a glass front, a hut's window)."""
+    y1]`), one quad of `style` (D-215, GFX-BLDG-14: a glass front, a hut's window)."""
     wall_windows(k.windows, k.random, face, size, style, color)
 
 
@@ -190,7 +191,7 @@ def tree(k: TileKit, x: float, z: float, size: float) -> None:
 
 def front_lights(k: TileKit, w: float, z: float, y: float, neon: Rgb) -> None:
     """A door and a neon strip on the front of a block `w` wide whose front is at `z` (D-215: the
-    door one quad from the windows' atlas)."""
+    door one quad from the windows' atlas; the strip one of the lights, GFX-BLDG-16)."""
     door(k, [0, 0, z], DOOR_STYLES.door, L.window)
     k.lights.box([w * 0.8, 0.3, 0.3], neon, Placement([0, y, z - 0.2], 0, 0, 0))
 

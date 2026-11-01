@@ -1,9 +1,9 @@
-"""P09-R09, 3-5's mini boss: the Jaguar ().
+"""3-5's mini boss: the Jaguar (specs/bosses/mini/3-5-jaguar.md).
 
-Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 1 and 2 mini bosses (P07-R04, D-055): its claw guns fire aimed spreads
-and its tail cannon a laser while they stand, the core fires a spiral that changes at every stage,
-and twin spirals of its own, used by no earlier stage, once it stands alone.
+Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage patterns
+as for the World 1 and 2 mini bosses (MB-JAGUAR-09, D-055): its claw guns fire aimed spreads and its
+tail cannon a laser while they stand, the core fires a spiral that changes at every stage, and twin
+spirals of its own, used by no earlier stage, once it stands alone.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -22,7 +22,8 @@ ORANGE = bullet("orange", 205)
 RED = bullet("red", 200)
 PURPLE = bullet("purple", 195)
 
-# Where its parts stand: the claw guns at the front of the wing roots, the tail cannon aft.
+# Where its parts stand (MB-JAGUAR-07): the claw guns at the front of the wing roots, the tail
+# cannon aft.
 JAGUAR_PARTS = record({"claw": [34, -22], "tail": [-30, 42]})
 
 # The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
@@ -42,13 +43,15 @@ KY = JAGUAR_PARTS.claw[1]
 TX = JAGUAR_PARTS.tail[0]
 TY = JAGUAR_PARTS.tail[1]
 
-# 3-5: a sleek stealth interceptor with spotted armour and amber neon (P09-R09); two claw guns on
-# turrets shield the core, a tail cannon aims a laser, and the core fires spirals.
+# 3-5: a sleek stealth interceptor with spotted armour and amber neon; two claw guns on turrets
+# shield the core, a tail cannon aims a laser (MB-JAGUAR-08), and the core fires spirals.
 _JAGUAR = record(
     {
         "id": "jaguar",
-        # Angry after each destroyed part (phase 7 review): the hottest mini boss so far.
+        # Angry after each destroyed part (phase 7 review, MB-JAGUAR-10): the hottest mini boss so
+        # far.
         "rage": rage.curtain(8.5, "orange", "red"),
+        # Its core and parts, and its points (MB-JAGUAR-13).
         "stats": stats(
             record(
                 {
@@ -67,6 +70,7 @@ _JAGUAR = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-JAGUAR-06).
         "stopFraction": 0.74,
         "sway": {"amplitude": 60, "period": 6},
         "bob": {"amplitude": 8, "period": 3},
@@ -76,6 +80,7 @@ _JAGUAR = record(
             "claw-right": {"gun": JAGUAR_CLAW, "turret": [KX, KY]},
             "tail-cannon": {"laser": JAGUAR_TAIL, "turret": [TX, TY], "turretLaser": True},
         },
+        # The parts' volleys, then the core's pattern per stage (MB-JAGUAR-09).
         "stages": stages(
             [
                 volley.aimed("claw-left", 2.1, 3, 11, ORANGE, 1),
@@ -95,8 +100,8 @@ _JAGUAR = record(
     }
 )
 
-# Its armour (boss transformations, D-224): the spotted pelt of its right wing, from the fuselage's
-# side out (px from its centre, X right, Y up; mirrored for the left wing).
+# Its armour (boss transformations, D-224, MB-JAGUAR-11): the spotted pelt of its right wing, from
+# the fuselage's side out (px from its centre, X right, Y up; mirrored for the left wing).
 JAGUAR_WING = [
     [10, -30],
     [15, -26],
@@ -111,8 +116,8 @@ JAGUAR_WING = [
     [10, 46],
 ]
 
-# Its hidden weapons: at transformation 1 its wing pelt bursts off, baring a dark metal wing frame,
-# and a laser lance unfolds on each wing.
+# Its hidden weapons (MB-JAGUAR-12): at transformation 1 its wing pelt bursts off, baring a dark
+# metal wing frame, and a laser lance unfolds on each wing.
 JAGUAR = with_weapons(
     _JAGUAR,
     [

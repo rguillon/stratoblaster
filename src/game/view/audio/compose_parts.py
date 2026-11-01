@@ -1,4 +1,4 @@
-"""The parts of a bar of generated music (P12-R06): drums,
+"""The parts of a bar of generated music (AUD-MUSIC-03, AUD-MUSIC-04): drums,
 bass, pad and arpeggio, each a list of notes for one bar.
 
 `sort_by_beat` replaces `Array.prototype.sort` with a comparator: Transcrypt's sort
@@ -9,14 +9,14 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import Note  # noqa: E402
-from core.math.rng import pick  # noqa: E402
-from game.view.audio.instruments import DRUM_PITCH  # noqa: E402
-from game.view.audio.music_styles import (  # noqa: E402
+from audio.audio_types import Note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import pick  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.instruments import DRUM_PITCH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.music_styles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BEATS_PER_BAR,
     FULL_ENERGY,
     OCTAVE,
@@ -49,7 +49,7 @@ def note(instrument: str, beat: float, beats: float, pitch: float, velocity: flo
 
 def concat(groups: list[list[Note]]) -> list[Note]:
     """The notes of several lists, one after the other (`[...a, ...b]`: Transcrypt's `+` on lists
-    concatenates strings)."""
+    concatenates strings, ENG-155)."""
     notes: list[Note] = []
     for group in groups:
         notes.extend(group)
@@ -119,8 +119,8 @@ SNARE_BEATS = 0.5
 
 
 def drum_bar(style: MusicStyle, bar: BarContext, random: Random) -> list[Note]:
-    """One bar of drums (P12-R06): the style's pattern, hats by energy, a tom fill at section
-    ends."""
+    """One bar of drums (AUD-MUSIC-05): the style's pattern, hats by energy, a tom fill at
+    section ends."""
     kick = style.instruments.kick
     snare = style.instruments.snare
     hat = style.instruments.hat

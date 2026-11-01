@@ -1,4 +1,4 @@
-"""A playable level from its scenery and its written beats (P06, P07, P08)"""
+"""A playable level from its scenery and its written beats (GAME-LEVEL-16)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -12,7 +12,7 @@ from game.sim.scenery_build import scenery_level
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -44,7 +44,10 @@ class WorldTables:
 
 
 def _difficulty(config: Difficulty) -> EnemyDifficulty:
-    """A level's enemy difficulty, as `core/` reads it (P06-R08)."""
+    """A level's enemy difficulty, as `core/` reads it: its bullet speed and fire rate factors
+    (ENM-22), which its bosses' bullets follow too (WLD-1-23, WLD-1-28, WLD-2-26; each level's in
+    its level file's "Difficulty").
+    """
     return EnemyDifficulty(config.bulletSpeed, config.fireRate)
 
 
@@ -54,10 +57,12 @@ def assemble_level(
     beats: list[Beat],
     tables: WorldTables,
 ) -> GameLevel:
-    """A playable level (P06, P07, P08): its scenery (`scenery` is its config record, mapped to the
-    core's `SceneryLevel` here), its written beats with light groups filling their lulls (phase 6
-    review) and nothing new in the stretch before each boss (P07-R06), its difficulty, and its mini
-    boss at the middle and final boss at the end.
+    """A playable level, as data (GAME-LEVEL-16): its scenery (`scenery` is its config record,
+    mapped to the core's `SceneryLevel` here), its written beats with light groups filling their
+    lulls (WLD-1-21) and nothing new in the stretch before each boss (GAME-LEVEL-05), its
+    difficulty, and its mini boss at the middle and final boss at the end (GAME-LEVEL-04), then its
+    runout. Which bosses and runout are each level's own (the "Mini boss", "Final boss" and
+    "Runout" of each level file in `specs/worlds/`).
     """
     difficulty_config = tables.difficulty.get(id)
     filler = tables.fillers.get(id)

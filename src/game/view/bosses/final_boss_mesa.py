@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Mesa Fortress's destroyable parts, the lances its forelimbs cradle and the
-spore silos on its back Logical pixels, nose +Z, Y up.
+"""FB-MESA-FORTRESS-03: the Mesa Fortress's destroyable parts, the lances its forelimbs cradle
+and the spore silos on its back Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -23,7 +23,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -45,8 +45,8 @@ LENS = [
 
 
 def draw_lance(p: Any, at: Vec3) -> None:
-    """A laser lance (P16-R06): a swollen gland in the forelimb's cradle, a long grafted barrel out
-    of it ringed with neon, sinews binding it, its lens glowing as it charges."""
+    """A laser lance (FB-MESA-FORTRESS-03): a swollen gland in the forelimb's cradle, a long grafted
+    barrel out of it ringed with neon, sinews binding it, its lens glowing as it charges."""
     organ(p.flesh, 12, 8, F.slate, Placement(shift(at, [0, -2, -4]), math.pi / 8), 0.5)
     graft(p, polygon(6, 7, [1, 1.4]), [10, 11.4], shift(at, [0, 0, -6]))
     x = at[0]
@@ -83,8 +83,9 @@ def draw_lance(p: Any, at: Vec3) -> None:
 
 
 def draw_silo(p: Any, at: Vec3) -> None:
-    """A missile silo (P16-R06): a swollen spore pod on the shell's rear, a grafted collar round its
-    mouth and four missile tips standing in it like seeds, a vein ring at its foot."""
+    """A missile silo (FB-MESA-FORTRESS-03): a swollen spore pod on the shell's rear, a grafted
+    collar round its mouth and four missile tips standing in it like seeds, a vein ring at its
+    foot."""
     base = shift(at, [0, BASE_TOP, 0])
     organ(p.flesh, 12.5, 7, F.graphite, Placement(shift(base, [0, -4, 0])), 0.4)
     p.neon.ring(12.7, 0.8, 7, N, Placement(shift(base, [0, 0.6, 0])))

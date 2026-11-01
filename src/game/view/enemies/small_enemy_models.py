@@ -1,6 +1,11 @@
-"""P05-R01..R05, P16-R03: the lighter enemies, Cyber-Organic (P16-R01): swollen flesh bodies,
-membrane wings that flutter, metal only where
-grafted on (ducts, stingers, guns, nozzles). Logical pixels, nose +Z, Y up (towards the camera).
+"""The lighter enemies (Gnat, Hornet, Scout, Strafer, Weaver), Cyber-Organic (ENM-35): swollen
+flesh bodies, membrane wings that flutter, metal only where
+grafted on (ducts, stingers, guns, nozzles): one body with a few grafts, a basic kind's look
+(GFX-ART-16). Logical pixels, nose +Z, Y up (towards the camera).
+
+As every basic model (here, in `heavy_enemy_models.py`, `heavy_beetle_models.py` and
+`carrier_model.py`): the size of its kind (ENM-12), nothing placed where only its underside would
+show (ENM-41), and a silhouette that tells its kind apart (ENM-48).
 """
 
 import math
@@ -35,7 +40,7 @@ from render.geometry.organic import (
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -44,14 +49,14 @@ F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
 
-# P05-R01: the duct around each of the Gnat's fans (a metal graft, lathe profile).
+# ENM-GNAT-02: the duct around each of the Gnat's fans (a metal graft, lathe profile).
 GNAT_DUCT = [[2.3, -0.6], [3, 0], [2.3, 0.6], [2.3, -0.6]]  # type: list[list[float]]
 
 
 def build_gnat(scene: Any) -> Any:
-    """P05-R01, P16-R03: a small insect drone: a swollen flesh bulb with a head and two eyes, three
-    metal-ducted fans on sinews at 120 degrees, a neon ring around its middle and a feeler on its
-    back."""
+    """ENM-GNAT-01: a small insect drone: a swollen flesh bulb with a head and two eyes, three
+    metal-ducted fans on sinews at 120 degrees (ENM-GNAT-02), a neon ring around its middle and a
+    feeler on its back, green with one reactor (ENM-GNAT-03)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -77,8 +82,9 @@ def build_gnat(scene: Any) -> Any:
 
 
 def build_hornet(scene: Any) -> Any:
-    """P05-R02, P16-R03: a stinger diver: a wasp of three swollen segments, a metal stinger at its
-    nose under a single red eye, and swept, serrated membrane wings that flutter."""
+    """ENM-HORNET-01: a stinger diver: a wasp of three swollen segments, a metal stinger at its
+    nose under a single eye, and swept, serrated membrane wings that flutter (ENM-HORNET-02); one
+    reactor in a flesh sac, yellow (ENM-HORNET-03)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -105,13 +111,14 @@ def build_hornet(scene: Any) -> Any:
     return build_enemy_model("hornet", scene, N.hornet, draw)
 
 
-# P05-R03: the Scout's neon strip along each tail boom.
+# ENM-SCOUT-02: the Scout's neon strip along each tail boom.
 SCOUT_STRIP = [[-0.35, -14], [0.35, -14], [0.35, -5], [-0.35, -5]]  # type: list[list[float]]
 
 
 def build_scout(scene: Any) -> Any:
-    """P05-R03, P16-R03: a light winged scout: a slim flesh body, broad membrane wings that flutter,
-    two bone tail booms with a cyan neon strip and a reactor each, and a nose gun grafted on."""
+    """ENM-SCOUT-01: a light winged scout: a slim flesh body, broad membrane wings that flutter,
+    two bone tail booms with a neon strip and a reactor each (ENM-SCOUT-02), and a nose gun grafted
+    on (ENM-SCOUT-03); green (ENM-SCOUT-04)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -173,13 +180,14 @@ def edge_light(
     return [along(-1, 0), along(1, 0), along(1, width), along(-1, width)]
 
 
-# The strafer's reactors at this distance out sit a little further back (P05-R04).
+# The strafer's reactors at this distance out sit a little further back (ENM-STRAFER-03).
 STRAFER_INNER_X = 4
 
 
 def build_strafer(scene: Any) -> Any:
-    """P05-R04, P16-R03: a fan shooter: a wide pair of membrane wings out of a squat flesh body, a
-    row of magenta neon glands along each leading edge, four reactors and a gun on each flank."""
+    """ENM-STRAFER-01: a fan shooter: a wide pair of membrane wings out of a squat flesh body, a
+    row of neon glands along each leading edge (ENM-STRAFER-02), four reactors and a gun on each
+    flank (ENM-STRAFER-03); yellow (ENM-STRAFER-04)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -209,7 +217,7 @@ def build_strafer(scene: Any) -> Any:
     return build_enemy_model("strafer", scene, N.strafer, draw)
 
 
-# P05-R05: the Weaver's web of sinew between its two serpents, under the neon bar.
+# ENM-WEAVER-01: the Weaver's web of sinew between its two serpents, under the neon bar.
 WEAVER_WEB = [  # type: list[list[float]]
     [-9, 0.5],
     [0, 2.5],
@@ -221,8 +229,9 @@ WEAVER_WEB = [  # type: list[list[float]]
 
 
 def build_weaver(scene: Any) -> Any:
-    """P05-R05, P16-R03: a sine flyer: two serpents side by side, each a swollen head and a wavy
-    tail, joined by a web of flesh under a glowing green neon bar, a gun grafted on each snout."""
+    """ENM-WEAVER-01: a sine flyer: two serpents side by side, each a swollen head and a wavy
+    tail, joined by a web of flesh under a glowing neon bar, a gun grafted on each snout and a
+    reactor at each tail (ENM-WEAVER-02); green (ENM-WEAVER-03)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh

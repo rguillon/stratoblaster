@@ -1,4 +1,4 @@
-"""The props of World 3 (P09-R03, R06; reworked at the reviewer's request, 2026-10-27)
+"""The props of World 3 (WLD-3-07; reworked at the reviewer's request, 2026-10-27)
 
 Level Zero's industrial buildings and those made of parts, then the workers' flats, terraces and
 houses, and the farms of World 1's green land; each section picks the groups that stand on it, so
@@ -33,16 +33,14 @@ WORLD_3_GROUPS = record(
 
 G = WORLD_3_GROUPS
 
-# Plants are drawn small next to the ships, as in Worlds 1 and 2.
 
-
-# The props of World 3 (P09-R03, R06; reworked at the reviewer's request, 2026-10-27): Level
+# The props of World 3 (WLD-3-07, WLD-3-08; reworked at the reviewer's request, 2026-10-27): Level
 # Zero's industrial buildings and those made of parts, then the workers' flats, terraces and
 # houses, and the farms of World 1's green land; each section picks the groups that stand on it,
 # so the homes slowly take over the factories. Small buildings only at the end: no tower.
 WORLD_3_PROPS = record(
     {
-        # Phase 15 (P15-R08): lots for the tiles of the districts no building fits.
+        # Phase 15 (GFX-BLDG-05): lots for the tiles of the districts no building fits.
         "lots": LOT_KINDS,
         "cellSize": 50,
         "treeClearance": 3,
@@ -87,7 +85,7 @@ WORLD_3_PROPS = record(
                 "kinds": tile_kinds("homes"),
             },
         ],
-        # D-207: no plant grows.
+        # D-207: no plant grows (WLD-3-12).
         "trees": [],
         "treesPerCell": 0,
         "cars": CAR_RULES,
@@ -102,7 +100,8 @@ WORLD_3_PROPS = record(
     }
 )
 
-# Roads of World 3: as in World 1 (no crossings, phase 6 review), but the street grids stop closer
-# to the screen edges (reviewer, 2026-10-28): the ground is drawn twice as big, so only about +/-195
-# of it shows, and the streets and buildings generated out to +/-420 were never seen.
+# Roads of World 3: as in World 1 (WLD-3-13; no crossings, phase 6 review), but the street grids
+# stop closer to the screen edges (GFX-ROAD-19; reviewer, 2026-10-28): the ground is drawn twice as
+# big, so only about +/-195 of it shows, and the streets and buildings generated out to +/-420 were
+# never seen. The roads still start and end off screen (GFX-ROAD-04).
 WORLD_3_ROADS = merge(WORLD_1_ROADS, {"offscreenX": 240})

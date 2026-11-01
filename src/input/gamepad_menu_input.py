@@ -1,6 +1,6 @@
-"""Gamepad -> menu actions (P01-R10), polled once per
-frame. Buttons fire on press; the D-pad and the left stick repeat while held. All connected
-gamepads are merged."""
+"""Gamepad -> menu actions (UI-INPUT-07), polled once per
+frame. Buttons fire on press; the D-pad and the left stick repeat while held (UI-INPUT-06). All
+connected gamepads are merged."""
 
 import math
 
@@ -10,11 +10,11 @@ from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
 __pragma__("skip")
-from collections.abc import Callable, Mapping, Sequence  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable, Mapping, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.keyboard_menu_input import RepeatTiming  # noqa: E402
-from input.menu_action import MenuAction, MenuDirection  # noqa: E402
+from input.keyboard_menu_input import RepeatTiming  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuAction, MenuDirection  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Button(Protocol):
@@ -66,7 +66,7 @@ def axis_value(axes: Sequence[float], index: int) -> float:
 
 
 def stick_direction(x: float, y: float, dead_zone: float) -> MenuDirection | None:
-    """Direction of a stick tilt, or None inside the dead zone (P01-R10)."""
+    """Direction of a stick tilt, or None inside the dead zone (UI-INPUT-08)."""
     if math.hypot(x, y) < dead_zone:
         return None
     if abs(x) >= abs(y):

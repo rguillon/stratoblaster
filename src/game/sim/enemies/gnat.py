@@ -1,4 +1,4 @@
-"""The Gnat (P05-R01)"""
+"""The Gnat (`specs/enemies/gnat.md`), a concrete enemy class of the game (ENG-141)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,7 +7,7 @@ from core.systems.enemy_motion import Path
 from game.config.enemies import ENEMY_CONFIG
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -15,8 +15,9 @@ CFG = ENEMY_CONFIG.gnat
 
 
 class Gnat(Enemy):
-    """P05-R01: a small swarm drone. It waits `delay` seconds, then follows its group's predefined
-    S-shaped path at a constant speed, from the top of the screen to the bottom. It does not shoot.
+    """ENM-GNAT-04: a small swarm drone. It waits `delay` seconds, then follows its group's
+    predefined S-shaped path at a constant speed, from the top of the screen to the bottom. It does
+    not shoot (ENM-GNAT-05).
     """
 
     def __init__(self, path: Path, delay: float) -> None:

@@ -1,18 +1,18 @@
-"""The city made for the grid of tiles (Phase 15, P15-R09): mid-rise blocks, offices, towers and
-skyscrapers, and the lots (car parks, yards, plazas, parks)
+"""The city made for the grid of tiles (Phase 15): mid-rise blocks, offices, towers and skyscrapers
+(GFX-BLDG-10), and the lots (car parks, yards, plazas, parks; GFX-BLDG-11)
 See `tile_kit.py`."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.props.tile_kit import Rgb  # noqa: E402
+from game.view.props.tile_kit import Rgb  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.view.props.city_lots import LotKit  # noqa: E402
-from game.view.props.tile_kit import (  # noqa: E402
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.city_lots import LotKit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_kit import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     NEON,
     NEON_DIM,
     TileKit,
@@ -23,8 +23,8 @@ from game.view.props.tile_kit import (  # noqa: E402
     r,
     tree,
 )
-from game.view.props.tile_towers import city_building  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.props.tile_towers import city_building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 FACADES = [C.glassBlue, C.glassDark, C.glassGreen, C.concrete, C.white]
 ROOFS = [C.roof, C.metal, C.metalDark]

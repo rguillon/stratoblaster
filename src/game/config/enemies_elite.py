@@ -1,10 +1,10 @@
-"""Tunables of the elite enemies (P05-R19 to P05-R23)
+"""Tunables of the elite enemies (ENM-06; each kind's file in specs/enemies/)
 
 In the style of `enemies.py`: distances in logical pixels, speeds in px/s, times in seconds, angles
 in degrees; `...Fraction` heights are fractions of the playfield height from its bottom. Their
-moving parts (P05-R13) are given as drawn facing down the screen at rest, from the enemy's centre
-(X right, Y up); `aim` is in radians, clockwise on screen from the nose. Muzzles as in `enemies.py`
-(x, y, height).
+moving parts (ENM-27, ENM-28) are given as drawn facing down the screen at rest, from the enemy's
+centre (X right, Y up); `aim` is in radians, clockwise on screen from the nose. Muzzles as in
+`enemies.py` (x, y, height).
 """
 
 import math
@@ -16,13 +16,13 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 DEG = math.pi / 180
 
-# Hit radius relative to half the model size (GD-21), as for the first kinds.
+# Hit radius relative to half the model size (ENM-11), as for the first kinds.
 HITBOX = 0.85
 
 
@@ -32,7 +32,7 @@ def radius(size: float) -> float:
 
 
 def bullet(style: str, speed: float) -> Any:
-    """Enemy bullets: colourful glowing balls (GD-43), styles of `enemy_look`."""
+    """Enemy bullets: colourful glowing balls (ENM-16), styles of `enemy_look`."""
     return record({"speed": speed, "radius": 4, "style": style})
 
 
@@ -47,7 +47,10 @@ def aim_from(frm: Any, to: Any) -> float:
 
 
 def around(count: int, r: float, height: float) -> list[list[float]]:
-    """`count` points `r` from the centre, evenly all around, the first one ahead of the nose."""
+    """`count` points `r` from the centre, evenly all around, the first one ahead of the nose.
+
+    Where the Orbiter's and the Hive's rings leave from (ENM-ORBITER-09, ENM-HIVE-10).
+    """
     return [
         [r * math.sin((2 * math.pi * k) / count), -r * math.cos((2 * math.pi * k) / count), height]
         for k in range(count)
@@ -67,7 +70,7 @@ def swing(amplitude_deg: float, period: float, phase: float) -> Any:
     return record({"amplitudeDeg": amplitude_deg, "period": period, "phase": phase})
 
 
-# P05-R19: the Hydra's necks: each a joint at the hull's front, its head at the end.
+# ENM-HYDRA-08: the Hydra's necks: each a joint at the hull's front, its head at the end.
 HYDRA_NECKS = [
     record({"side": "left", "pivot": [-8, -5], "head": [-19, -21]}),
     record({"side": "middle", "pivot": [0, -7], "head": [0, -25]}),
@@ -104,7 +107,8 @@ def hydra_heads() -> list[Any]:
 
 HYDRA_HEADS = hydra_heads()
 
-# P05-R21: the Scissor's arms: hinged at the shoulders, 25 degrees out from straight down at rest.
+# ENM-SCISSOR-09: the Scissor's arms: hinged at the shoulders, 25 degrees out from straight down
+# at rest.
 SCISSOR_ARM = record({"length": 30, "spread": 25, "partAt": 16, "height": 2})
 
 
@@ -137,7 +141,7 @@ def scissor_arms() -> list[Any]:
 
 SCISSOR_ARMS = scissor_arms()
 
-# P05-R22: the Juggernaut's shoulder cannons and front plates.
+# ENM-JUGGERNAUT-09, ENM-JUGGERNAUT-12: the Juggernaut's shoulder cannons and front plates.
 JUGGERNAUT_CANNONS = [
     record(
         {
@@ -156,7 +160,7 @@ JUGGERNAUT_PLATES = [
     record({"id": "plate-left" if s < 0 else "plate-right", "x": s * 10, "y": -17}) for s in [-1, 1]
 ]
 
-# P05-R20: the Orbiter's drones, evenly around its core.
+# ENM-ORBITER-08, ENM-ORBITER-11: the Orbiter's drones, evenly around its core.
 ORBITER_DRONE = record({"orbit": 15.5, "radius": 5.5, "health": 40, "muzzleOut": 4.5, "height": 2})
 
 
@@ -188,6 +192,7 @@ ORBITER_DRONES = orbiter_drones()
 
 ELITE_CONFIG = record(
     {
+        # ENM-HYDRA-11: health, points and hit circle.
         "hydra": {
             "stats": {"model": "hydra", "radius": 17, "health": 220, "points": 700},
             "size": 1.6,
@@ -230,6 +235,7 @@ ELITE_CONFIG = record(
             },
             "xRange": [0.3, 0.7],
         },
+        # ENM-ORBITER-12: health, points and hit circle.
         "orbiter": {
             "stats": {"model": "orbiter", "radius": 12, "health": 160, "points": 650},
             "size": 1.1,
@@ -267,6 +273,7 @@ ELITE_CONFIG = record(
             },
             "xRange": [0.25, 0.75],
         },
+        # ENM-SCISSOR-14: health, points and hit circle.
         "scissor": {
             "stats": {"model": "scissor", "radius": 14, "health": 240, "points": 800},
             "size": 1.8,
@@ -286,7 +293,7 @@ ELITE_CONFIG = record(
                         [
                             a["joint"],
                             # A quarter of a period is the firing time: the arm closes by `sweep`
-                            # (P05-R21).
+                            # (ENM-SCISSOR-11).
                             {
                                 "x": a["pivot"][0],
                                 "y": a["pivot"][1],
@@ -296,6 +303,7 @@ ELITE_CONFIG = record(
                         for a in SCISSOR_ARMS
                     ]
                 ),
+                # The arms as parts (ENM-SCISSOR-13).
                 "parts": [
                     {
                         "id": a["id"],
@@ -311,6 +319,7 @@ ELITE_CONFIG = record(
             },
             "xRange": [0.25, 0.75],
         },
+        # ENM-JUGGERNAUT-14: health, points and hit circle.
         "juggernaut": {
             "stats": {"model": "juggernaut", "radius": 20, "health": 320, "points": 1000},
             "size": 2,
@@ -353,7 +362,8 @@ ELITE_CONFIG = record(
                         for c in JUGGERNAUT_CANNONS
                     ]
                 ),
-                # While a plate stands, the core cannot be hit (P05-R22).
+                # The cannons as parts (ENM-JUGGERNAUT-13); while a plate stands, the core cannot
+                # be hit (ENM-JUGGERNAUT-12).
                 "parts": concat(
                     [
                         {
@@ -374,6 +384,7 @@ ELITE_CONFIG = record(
             },
             "xRange": [0.3, 0.7],
         },
+        # ENM-HIVE-12: health, points and hit circle.
         "hive": {
             "stats": {"model": "hive", "radius": radius(2) * 0.8, "health": 420, "points": 900},
             "size": 2,

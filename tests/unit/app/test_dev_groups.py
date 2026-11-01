@@ -1,4 +1,4 @@
-"""Unit tests of `src/app/dev_groups.py` (D-202: a dev viewer's items in groups)."""
+"""Unit tests of `src/app/dev_groups.py` (DEV-MENU-06, D-202: a dev viewer's items in groups)."""
 
 from app.dev_groups import group_jump, group_of, group_starts
 

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/terrain_chunks.py`."""
+"""Unit tests of `src/render/scenery/terrain_chunks.py` (GFX-TERRAIN-13, GFX-TERRAIN-14)."""
 
 from types import SimpleNamespace
 from typing import Any

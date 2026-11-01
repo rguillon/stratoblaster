@@ -1,4 +1,4 @@
-"""P07-R05, P16-R05, 1-5: the Sentinel: a twin-bodied city
+"""MB-SENTINEL-01 to MB-SENTINEL-04, 1-5: the Sentinel: a twin-bodied city
 hunter, a blue body and a red one joined by a membrane through its thorax. Logical pixels, nose +Z,
 Y up (towards the camera).
 """
@@ -45,7 +45,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -129,8 +129,8 @@ def _sign_of(x: float) -> float:
 
 
 def _draw_hull(p: Any, x: float, color: Any) -> None:
-    """A body at `x` (P16-R05): a long segmented worm along Z, a shell plated on its back, lit veins
-    along its flanks in `color`, its tail fin a membrane on bone struts."""
+    """A body at `x` (MB-SENTINEL-02): a long segmented worm along Z, a shell plated on its back,
+    lit veins along its flanks in `color`, its tail fin a membrane on bone struts."""
     at = [x, 0, 0]
     hide(
         p,
@@ -150,13 +150,13 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
     for side in SIDES:
         vein_line(p, [x + side * 9, 2.5, -24], [x + side * 9, 2.5, 30], [side, 0.5, 0], 1.1, color)
     p.neon.box([0.6, 0.3, 30], color, Placement([x, BACK + 0.2, -4]))
-    fin = FIN if x > 0 else flip_x(FIN)  # type: ignore[arg-type]
+    fin = FIN if x > 0 else flip_x(FIN)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     root = fin[0]
     tips = fin[1:]
     membrane_wing(
         p.flesh,
         p.flesh,
-        MembraneWing(root, tips, 2, 1, 1.2),  # type: ignore[arg-type]
+        MembraneWing(root, tips, 2, 1, 1.2),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         [F.membrane, F.bone],
     )
     lamps(p.neon, [[s * 56, 3.2, -32]], 1.4, color)
@@ -165,8 +165,8 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
 
 
 def _draw_gear(p: Any) -> None:
-    """Grafts on the bodies (P16-R05): a radome and mast on the red one, a searchlight and an extra
-    plate on the blue one, a whip antenna off-centre on the thorax."""
+    """Grafts on the bodies (MB-SENTINEL-02): a radome and mast on the red one, a searchlight and an
+    extra plate on the blue one, a whip antenna off-centre on the thorax."""
     mast(p, [-HULL_X - 3, BACK, 10], 9, POLICE_RED)
     graft(p, PATCH, [BACK, BACK + 0.8], [0, 0, 0], {"color": M.base})
     p.hull.cylinder(2.2, 2, 6, M.panel, Placement([HULL_X, BACK, 20]))
@@ -220,9 +220,9 @@ def _draw_body(p: Any) -> None:
 
 
 def _hull_gun(p: Any, at: Vec3) -> None:
-    """A hull gun (P07-R05, P16-R05): an armoured growth on the body's outer flank under its
+    """A hull gun (MB-SENTINEL-03): an armoured growth on the body's outer flank under its
     turret."""
-    sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]
+    sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.slate, Placement(at), F.sinew)
     growth(
         p,
@@ -254,7 +254,7 @@ def _hull_gun_turret(p: Any, at: Vec3) -> None:
 
 
 def _drone_bay(p: Any, at: Vec3) -> None:
-    """The drone bay (P07-R05, P16-R05): a swollen brood pouch at the nose, its slit lit, launch
+    """The drone bay (MB-SENTINEL-03): a swollen brood pouch at the nose, its slit lit, launch
     glands at its corners, two drones hatching from it; a grafted rim plate behind."""
     p.flesh.bevel_slab(BAY, [-3, 1, BAY_TOP - 1], [1, 3], F.slate, Placement(at), F.graphite)
     organ(p.flesh, 10, 7, F.graphite, Placement(offset(at, 0, 0, 1)), 0.35)
@@ -286,9 +286,9 @@ def _drone_bay(p: Any, at: Vec3) -> None:
 
 
 def build_sentinel(scene: Any) -> Any:
-    """P07-R05, P16-R05: the Sentinel, a twin-bodied city hunter: a blue body and a red one joined
-    by a membrane through its thorax, police-light glands on its back, a gun growth on each body's
-    outer flank and a brood pouch at the nose, between the bodies."""
+    """MB-SENTINEL-01, MB-SENTINEL-04: the Sentinel, a twin-bodied city hunter: a blue body and a
+    red one joined by a membrane through its thorax, police-light glands on its back, a gun growth
+    on each body's outer flank and a brood pouch at the nose, between the bodies."""
 
     def core(p: Any) -> None:
         _draw_body(p)

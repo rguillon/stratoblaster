@@ -1,6 +1,6 @@
-"""Colours of the props (P04-R04)
+"""Colours of the props (GFX-PROP-04)
 
-Weathered concrete and dark metal, with small neon accents (GD-60/61), and grey dead wood.
+Weathered concrete and dark metal, with small neon accents (GFX-ART-03), and grey dead wood.
 Gamma-space RGB, 0..1.
 """
 
@@ -26,7 +26,7 @@ PROP_COLORS = record(
         "containerBlue": [0.14, 0.27, 0.45],
         "containerGreen": [0.2, 0.36, 0.24],
         "containerRed": [0.5, 0.17, 0.14],
-        # Paints of the bus and the tanker's cab (D-213).
+        # Paints of the bus and the tanker's cab (GFX-CAR-03, D-213).
         "carOrange": [0.78, 0.42, 0.1],
         "carTeal": [0.1, 0.4, 0.42],
         # More city facades (phase 4 review).
@@ -74,7 +74,7 @@ PROP_COLORS = record(
     }
 )
 
-# Self-lit accents.
+# Self-lit accents (GFX-BLDG-16).
 PROP_LIGHTS = record(
     {
         "cyan": [0, 0.94, 1],

@@ -1,10 +1,12 @@
-"""P10-R11, 4-3: the Obsidian Golem, the final boss of the Lava fields level ().
+"""4-3: the Obsidian Golem, the final boss of the Lava fields level
+(specs/bosses/final/4-3-obsidian-golem.md).
 
 Offsets in px from the boss's centre, X right and Y up (its chest faces down the screen, at -Y).
 Its two huge fists hang on arms bending at the shoulder and the elbow (D-061), pumping in turn. The
-stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core
-fires something new at every stage, and its last stage (only the core left) magma bombs and spirals
-used by no earlier stage. Health tuned for P10-R12 with the D-055 bot.
+stage patterns are the agent's design (FB-OBSIDIAN-GOLEM-13): the parts fire the same while they
+stand, the core fires something new at every stage, and its last stage (only the core left) magma
+bombs and spirals used by no earlier stage. Health (FB-OBSIDIAN-GOLEM-09) tuned for WLD-4-22 with
+the D-055 bot.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -26,13 +28,14 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-OBSIDIAN-GOLEM-20,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -40,7 +43,7 @@ RED = bullet("red", 215)
 ORANGE = bullet("orange", 205)
 MAGENTA = bullet("magenta", 210)
 PURPLE = bullet("purple", 200)
-# The fists' magma: slow, big globs thrown out in rings (P10-R11).
+# The fists' magma: slow, big globs thrown out in rings (FB-OBSIDIAN-GOLEM-10).
 MAGMA = bullet("orange", 110, 9)
 # The last stage's magma bomb: a slow glob bursting into a ring of small drops.
 BOMB = bursting("red", 120, 8, [1.1, 10, bullet("orange", 170)])
@@ -55,7 +58,8 @@ GOLEM_ARM = record({"shoulder": [-40, -2], "elbow": [-60, -16], "fist": [-72, -4
 # Where its other parts stand: the left shoulder cannon (mirrored), the plate, the emitter.
 GOLEM_PARTS = record({"cannon": [-46, 20], "plate": [0, -34], "emitter": [0, -58]})
 
-# How the arms pump (D-061): degrees at the shoulder and the elbow, seconds of one swing.
+# How the arms pump (D-061, FB-OBSIDIAN-GOLEM-07): degrees at the shoulder and the elbow, seconds
+# of one swing.
 PUMP = record({"shoulderDeg": 9, "elbowDeg": 14, "period": 4.2, "lag": 0.25})
 
 
@@ -112,7 +116,7 @@ CANNON_Y = GOLEM_PARTS.cannon[1]
 
 
 def fist(arm: str, health: float) -> Any:
-    """`arm`'s fist, on its elbow (P10-R11): it shields the core."""
+    """`arm`'s fist, on its elbow (FB-OBSIDIAN-GOLEM-09): it shields the core."""
     return fpart(
         "fist-" + arm,
         [side_of(arm) * FIST_X, FIST_Y],
@@ -123,16 +127,18 @@ def fist(arm: str, health: float) -> Any:
 
 
 # 4-3: a massive armoured flying fortress of black obsidian plates with glowing magma seams and two
-# huge fists (P10-R11). The fists throw rings of slow magma and, with the armour plate on its chest,
-# shield the core; the shoulder cannons turn to fire aimed spreads; the chest emitter on its prow
-# fires a laser straight down. The emitter hangs in front of the plate, so it can always be shot.
+# huge fists (FB-OBSIDIAN-GOLEM-01). The fists throw rings of slow magma and, with the armour plate
+# on its chest, shield the core; the shoulder cannons turn to fire aimed spreads; the chest emitter
+# on its prow fires a laser straight down. The emitter hangs in front of the plate, so it can always
+# be shot.
 _OBSIDIAN_GOLEM = record(
     {
         "id": "obsidian-golem",
-        # Angry after each destroyed part (phase 7 review, D-063).
+        # Angry after each destroyed part (phase 7 review, D-063, FB-OBSIDIAN-GOLEM-15).
         "rage": concat(
             rage.flower(12, "orange", "red", 0.5), rage.vortex(12, "red", "magenta", 0.5)
         ),
+        # Its core and parts, their health, and its points (FB-OBSIDIAN-GOLEM-09).
         "stats": stats(
             record(
                 {
@@ -156,6 +162,7 @@ _OBSIDIAN_GOLEM = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-OBSIDIAN-GOLEM-08).
         "stopFraction": 0.74,
         "sway": {"amplitude": 24, "period": 12},
         "bob": {"amplitude": 5, "period": 6},
@@ -167,6 +174,9 @@ _OBSIDIAN_GOLEM = record(
             "cannon-right": {"gun": mirror(GOLEM_CANNON_GUNS), "turret": [-CANNON_X, CANNON_Y]},
             "emitter": {"laser": GOLEM_LENS},
         },
+        # In every stage the fists' magma rings (FB-OBSIDIAN-GOLEM-10), the cannons' spreads
+        # (FB-OBSIDIAN-GOLEM-11) and the emitter's laser (FB-OBSIDIAN-GOLEM-12); then the core's
+        # pattern per stage (FB-OBSIDIAN-GOLEM-13).
         "stages": stages(
             [
                 volley.ring("fist-left", 4.4, 8, 11, MAGMA, 1.6),
@@ -199,8 +209,9 @@ _OBSIDIAN_GOLEM = record(
 )
 
 # Its transformations (D-230): once both its cannons are gone its flank slabs lift on hinges along
-# its sides like gull-wing doors, over a pair of heavy cannons in the dark metal beneath; once its
-# plate and emitter are gone its spine plating bursts off for a sweeper and two mortars.
+# its sides like gull-wing doors (FB-OBSIDIAN-GOLEM-16), over a pair of heavy cannons in the dark
+# metal beneath (FB-OBSIDIAN-GOLEM-17); once its plate and emitter are gone its spine plating bursts
+# off (FB-OBSIDIAN-GOLEM-18) for a sweeper and two mortars (FB-OBSIDIAN-GOLEM-19).
 OBSIDIAN_GOLEM = with_weapons(
     merge(
         _OBSIDIAN_GOLEM,

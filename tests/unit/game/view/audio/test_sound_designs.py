@@ -18,7 +18,7 @@ from game.view.audio.sound_designs import (
 from game.view.audio.sound_recipes import env, tone
 
 
-def test_p12_r10_priorities_put_the_player_top_and_enemy_shots_lowest():
+def test_aud_sfx_05_priorities_put_the_player_top_and_enemy_shots_lowest():
     assert PRIORITY["enemyShot"] == min(PRIORITY.values())
     assert PRIORITY["top"] == max(PRIORITY.values())
     assert PRIORITY["player"] > PRIORITY["weapon"] > PRIORITY["enemy"]
@@ -41,7 +41,8 @@ def test_sound_defaults_its_hold_and_optional_flags():
     assert design.positional is None and design.loop is None
 
 
-def test_p12_r09_the_player_gun_is_a_positional_quiet_burst():
+def test_aud_sfx_02_the_player_gun_is_a_positional_quiet_burst():
+    """Also AUD-SFX-06 (the guns mixed quiet) and AUD-ENGINE-08 (panned by position)."""
     gun = PLAYER_WEAPONS["fire:bullet"]
     assert gun.name == "gun-shot"
     assert gun.positional is True
@@ -49,12 +50,12 @@ def test_p12_r09_the_player_gun_is_a_positional_quiet_burst():
     assert len(gun.layers) == 12
 
 
-def test_p12_r09_the_laser_hum_loops_until_stopped():
+def test_aud_sfx_01_the_laser_hum_loops_until_stopped():
     assert PLAYER_WEAPONS["beam:laser"].loop is True
     assert PLAYER_WEAPONS["beam:laser"].gain < PLAYER_WEAPONS["beam-start:laser"].gain
 
 
-def test_p12_r09_every_group_is_in_the_merged_sound_table():
+def test_aud_sfx_01_every_group_is_in_the_merged_sound_table():
     groups = [PLAYER_WEAPONS, ENEMY_WEAPONS, HITS, DESTRUCTION, PLAYER, MENUS]
     keys = [key for group in groups for key in group]
     assert len(keys) == len(set(keys))
@@ -62,21 +63,21 @@ def test_p12_r09_every_group_is_in_the_merged_sound_table():
     assert SOUND_DESIGNS["enemy-bullet"] is ENEMY_WEAPONS["enemy-bullet"]
 
 
-def test_p12_r10_enemy_shots_are_the_lowest_priority_sounds():
+def test_aud_sfx_05_enemy_shots_are_the_lowest_priority_sounds():
     assert ENEMY_WEAPONS["enemy-bullet"].priority == PRIORITY["enemyShot"]
     assert ENEMY_WEAPONS["enemy-missile"].priority == PRIORITY["enemyShot"]
     assert ENEMY_WEAPONS["laser-warning"].priority == PRIORITY["enemy"]
     assert ENEMY_WEAPONS["laser-fire"].priority == PRIORITY["enemy"]
 
 
-def test_p12_r09_explosion_sizes_grow_from_small_to_huge():
+def test_aud_sfx_04_explosion_sizes_grow_from_small_to_huge():
     assert BLAST_SMALL.seconds < BLAST_LARGE.seconds < BLAST_HUGE.seconds
     assert BLAST_SMALL.debris < BLAST_LARGE.debris < BLAST_HUGE.debris
     assert BLAST_SMALL.tail == 0 < BLAST_LARGE.tail < BLAST_HUGE.tail
     assert BLAST_HUGE.thump < BLAST_SMALL.thump
 
 
-def test_p12_r09_the_blast_cues_name_their_explosions():
+def test_aud_sfx_04_the_blast_cues_name_their_explosions():
     assert DESTRUCTION["blast-large"].name == "explosion-large"
     assert DESTRUCTION["blast-small"].name == "explosion-small"
     assert DESTRUCTION["blast-large"].layers

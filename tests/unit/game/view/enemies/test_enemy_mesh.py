@@ -75,7 +75,7 @@ def test_wing_parts_new_is_four_empty_solid_builders():
         assert len(builder.geometry.positions) == 0
 
 
-def test_p16_r07_flutter_animation_rolls_the_wing_node_as_the_clock_says():
+def test_enm_42_flutter_animation_rolls_the_wing_node_as_the_clock_says():
     node = SimpleNamespace(rotation=SimpleNamespace(z=0.0))
     clock = [0.0]
     animate = flutter_animation(node, -1, 5.0, clock)
@@ -84,7 +84,7 @@ def test_p16_r07_flutter_animation_rolls_the_wing_node_as_the_clock_says():
     assert node.rotation.z == pytest.approx(flutter_angle(-1, 5.0, 0.3))
 
 
-def test_p16_r07_the_flutter_clock_is_read_at_each_frame_not_when_made():
+def test_enm_42_the_flutter_clock_is_read_at_each_frame_not_when_made():
     node = SimpleNamespace(rotation=SimpleNamespace(z=0.0))
     clock = [0.0]
     animate = flutter_animation(node, 1, 0.5, clock)

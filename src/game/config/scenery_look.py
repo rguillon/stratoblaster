@@ -1,4 +1,4 @@
-"""Looks of the scenery (P04)
+"""Looks of the scenery (specs/graphics/: terrain.md, water.md, sky-and-light.md, roads.md)
 
 Gamma-space RGB, 0..1, unless noted; distances in world units.
 """
@@ -12,12 +12,13 @@ from game.config.window_look import WINDOW_ATLAS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# The playfield camera; the ground drawn twice as big, as if flying lower (reviewer, 2026-10-28).
-# P04-R05: the camera above the playfield, tilted 35 degrees from straight down, looking forward.
+# The playfield camera; the ground drawn twice as big, as if flying lower (GFX-CAM-04; reviewer,
+# 2026-10-28). GFX-CAM-01, GFX-CAM-02: the camera above the playfield (at `flightAltitude`), tilted
+# 35 degrees from straight down, looking forward.
 PLAYFIELD_CAMERA = record(
     {
         "tiltDeg": 35,
@@ -31,8 +32,8 @@ PLAYFIELD_CAMERA = record(
 def texture(colors: Any, frequency: float, extra: Any = None) -> Any:
     """A generated ground texture: three colours and a noise frequency, plus extras.
 
-    `extra` may hold `speckle`, `speckleColor`, `strata`, `octaves` and `cracks`; `cracks` is only
-    set on the texture when given.
+    GFX-TERRAIN-07: `extra` may hold `speckle`, `speckleColor`, `strata`, `octaves` and `cracks`;
+    `cracks` is only set on the texture when given.
     """
     e: Any = {} if extra is None else extra
     result = record(
@@ -82,6 +83,7 @@ BASE_SCENERY_LOOK = record(
             },
         },
         "ambient": {"sky": [0.62, 0.68, 0.8], "ground": [0.36, 0.3, 0.24], "intensity": 0.6},
+        # The ground's layers by height and slope (GFX-TERRAIN-08).
         "terrain": {
             "textureSize": 256,
             "tileSize": 150,
@@ -165,12 +167,14 @@ BASE_SCENERY_LOOK = record(
                 [0.82, 0.8, 0.78],
             ],
             "tintTileSize": 1600,
+            # The ground under the water coloured by its depth (GFX-WATER-04).
             "shore": {
                 "sand": [0.72, 0.62, 0.45],
                 "beach": 4,
                 "shallow": [0.1, 0.5, 0.48],
                 "deep": [0.03, 0.17, 0.2],
                 "depth": 30,
+                # The surf (GFX-WATER-06).
                 "foam": {
                     "color": [0.92, 0.94, 0.92],
                     "width": 0.7,
@@ -179,8 +183,10 @@ BASE_SCENERY_LOOK = record(
                     "reach": 7,
                 },
             },
+            # Matte ground (GFX-TERRAIN-12).
             "specular": 0,
         },
+        # The water's surface (GFX-WATER-03).
         "sea": {
             "color": [0.03, 0.17, 0.2],
             "alpha": 0.4,
@@ -190,7 +196,7 @@ BASE_SCENERY_LOOK = record(
             "tileSize": 320,
             "drift": [3, 7],
         },
-        # Both layers fly above the highest peaks (250) and under the ships (320).
+        # Both layers fly above the highest peaks (250) and under the ships (320) (GFX-SKY-11).
         "clouds": [
             {
                 "altitude": 265,
@@ -213,7 +219,7 @@ BASE_SCENERY_LOOK = record(
                 "shade": [0.8, 0.78, 0.8],
             },
         ],
-        # P04-R07: worn dusty asphalt for the roads, packed dust for the paths, both slightly
+        # GFX-ROAD-06: worn dusty asphalt for the roads, packed dust for the paths, both slightly
         # see-through with soft edges, so they blend with the ground (phase 4 review).
         "roads": {
             "main": [0.36, 0.33, 0.3],
@@ -231,7 +237,7 @@ BASE_SCENERY_LOOK = record(
                 "dash": 4,
                 "lift": 0.05,
             },
-            # Phase 15 (P15-R02): dark asphalt, grey sidewalks and pale kerbs on the tiles.
+            # Phase 15 (GFX-ROAD-10): dark asphalt, grey sidewalks and pale kerbs on the tiles.
             "tiles": {
                 "roadway": [0.2, 0.2, 0.22],
                 "sidewalk": [0.38, 0.37, 0.38],

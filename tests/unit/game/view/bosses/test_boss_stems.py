@@ -1,5 +1,5 @@
 """Unit tests of `src/game/view/bosses/boss_stems.py` and the frames' pylons and bridges: what holds
-a boss's pieces to it (D-227)."""
+a boss's pieces to it (BOSS-52, D-227)."""
 
 import pytest
 

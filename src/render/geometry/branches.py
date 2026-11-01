@@ -1,5 +1,6 @@
-"""Branches (D-214): tapered limbs between two points, and limbs forking into smaller ones, as bare
-wood does. Seeded: the same seed gives the same branches.
+"""Branches (D-214, the dead trees and the birch of GFX-PROP-09): tapered limbs between two
+points, and limbs forking into smaller ones, as bare wood does. Seeded: the same seed gives the
+same branches.
 
 Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.
 """

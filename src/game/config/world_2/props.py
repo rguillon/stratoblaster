@@ -1,4 +1,4 @@
-"""The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27)
+"""The props of World 2 (WLD-2-11, WLD-2-13; reworked at the reviewer's request, 2026-10-27)
 
 World 1's desert homes, outposts and plants, Level Zero's industrial buildings, the industrial
 buildings made of parts, and the oil pumpjacks; each section picks the groups that stand on it, so
@@ -35,13 +35,13 @@ WORLD_2_GROUPS = record(
 G = WORLD_2_GROUPS
 
 
-# The props of World 2 (P08-R03, R07; reworked at the reviewer's request, 2026-10-27): World 1's
-# desert homes, outposts and plants, Level Zero's industrial buildings, the industrial buildings
+# The props of World 2 (WLD-2-11, WLD-2-13; reworked at the reviewer's request, 2026-10-27): World
+# 1's desert homes, outposts and plants, Level Zero's industrial buildings, the industrial buildings
 # made of parts, and the oil pumpjacks; each section picks the groups that stand on it, so the
 # industry slowly takes over the desert.
 WORLD_2_PROPS = record(
     {
-        # Phase 15 (P15-R08): lots for the tiles of the districts no building fits.
+        # Phase 15 (GFX-BLDG-05): lots for the tiles of the districts no building fits.
         "lots": LOT_KINDS,
         "cellSize": 50,
         "treeClearance": 3,
@@ -106,5 +106,5 @@ WORLD_2_PROPS = record(
     }
 )
 
-# Roads of World 2: as in World 1 (no crossings, phase 6 review).
+# Roads of World 2: as in World 1 (WLD-2-14; no crossings, phase 6 review).
 WORLD_2_ROADS = WORLD_1_ROADS

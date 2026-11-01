@@ -1,7 +1,8 @@
-"""Builds the model of a boss (P07-R05) from its drawing: its
+"""Builds the model of a boss (BOSS-47, GFX-ART-16) from its drawing: its
 core body, its parts on their own nodes (each flashing white when hit, smoking under half health,
 gone once destroyed), its turrets and limbs, and an optional ring turning with
-the boss's spin.
+the boss's spin. A new look keeps the parts, joints, turrets and muzzles of the design
+(GFX-ART-18).
 """
 
 import math
@@ -51,7 +52,7 @@ from render.edge_trim_mesh import set_trim_group  # noqa: E402
 from render.geometry.shatter import triangles  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = Any
 type Vec3 = list[Any]
@@ -60,14 +61,14 @@ __pragma__("noskip")
 
 def _field(obj: Any, key: str) -> Any:
     """`obj?.[key]`: the field `key` of `obj`, or None when `obj` or the field is missing."""
-    if obj == None or key not in obj:  # noqa: E711
+    if obj == None or key not in obj:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     return obj[key]
 
 
 def _point_of(spot: Any) -> list[Any]:
     """`bossPoint(...spot)`: a playfield point `[x, y]` or `[x, y, height]`, in model space."""
-    if len(spot) > 2:  # noqa: PLR2004
+    if len(spot) > 2:  # noqa: PLR2004 (a count of points, not a tunable)
         return boss_point(spot[0], spot[1], spot[2])
     return boss_point(spot[0], spot[1])
 
@@ -97,18 +98,19 @@ def build_turret(
     neon: Rgb,
     breath: Any,
 ) -> TurretView | None:
-    """The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one."""
+    """The turret of `piece` on `holder` (its piece's model), if the boss's drawing has one: a
+    piece of its own on its pivot (BOSS-29)."""
     turrets = _field(drawing, "turrets")
     draw = _field(turrets, piece)
     weapon = _field(_field(design, "weapons"), piece)
-    if draw == None and weapon != None:  # noqa: E711
+    if draw == None and weapon != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # A hidden weapon's turret, drawn from its look (`hidden_weapon_shapes`).
         draw = weapon_turret_drawing(weapon, neon)
     gun = _field(design.guns, piece)
     turret = _field(gun, "turret")
-    if draw == None and turret == None:  # noqa: E711
+    if draw == None and turret == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
-    if draw == None or turret == None:  # noqa: E711
+    if draw == None or turret == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         raise ValueError('Boss "' + design.id + '": "' + piece + '" needs a turret and its drawing')
     scene = holder.getScene()
     at = _point_of(turret)
@@ -129,9 +131,9 @@ def build_turret(
 
 def show_turret(view: Any, turret: Any, lit: Any, dt: float) -> None:
     """Shows a turret turned by its aim (+Y turns the nose, down the screen, clockwise)."""
-    if view == None:  # noqa: E711
+    if view == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return
-    view.pivot.rotation.y = 0 if turret == None else turret.aim  # noqa: E711
+    view.pivot.rotation.y = 0 if turret == None else turret.aim  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     view.model.sync(lit, dt)
 
 
@@ -144,12 +146,12 @@ class FlashGroup:
         self._hulls: list[Any] = []
         for mesh in child_meshes(model.root, False):
             material = mesh.material
-            name = node_name(material) if material != None else ""  # noqa: E711
+            name = node_name(material) if material != None else ""  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             if name in BODY_MATERIALS:
                 self._hulls.append([mesh, material])
 
     def show(self, since_hit: float) -> None:
-        """Flashes white for a moment after a hit (P07-R01)."""
+        """Flashes white for a moment after a hit (BOSS-17)."""
         on = since_hit < BOSS_LOOK.flash.seconds
         for hull in self._hulls:
             hull[0].material = self._flash if on else hull[1]
@@ -168,7 +170,7 @@ class PartView:
 
 
 def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltEnemyModel:
-    """Builds the model of a boss (P07-R05) from `drawing`, in the colour `neon`: its core body, its
+    """Builds the model of a boss (BOSS-47) from `drawing`, in the colour `neon`: its core body, its
     parts on their own nodes (each flashing white when hit, smoking under half health, replaced by
     gone once destroyed), and an optional ring turning with the boss's spin."""
     name = design.id
@@ -176,7 +178,7 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     drawing = record(drawing)
     flash = effect_materials(scene)["flash"]
     root = new_transform_node(name, scene)
-    # P16-R07: its core, parts and limbs breathe as one creature.
+    # BOSS-51: its core, parts and limbs breathe as one creature.
     look = {"flash": flash, "neon": neon, "breath": new_breath()}
     # Its armour regions are cut out of its core (docs/superpowers/specs/2026-10-31-boss-armour-
     # shedding-design.md): they burst off as it transforms.
@@ -208,11 +210,11 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
     lit: Any = {"charge": 0}
 
     def sync(boss: Any, dt: float) -> None:
-        # After a part is destroyed, its lights strobe while it holds its fire (P07-R04).
+        # After a part is destroyed, its lights strobe while it holds its fire (BOSS-22).
         lit["charge"] = strobe(boss)
         enemy = lit
         core.model.sync(enemy, dt)
-        if ring != None:  # noqa: E711
+        if ring != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             ring.model.sync(enemy, dt)
         is_boss = isinstance(boss, Boss)
         limbs.show(boss if is_boss else None, enemy, dt)
@@ -222,18 +224,18 @@ def build_boss_model(design: Any, scene: Any, neon: Rgb, drawing: Any) -> BuiltE
             show_turret(core_turret, None, enemy, dt)
             return
         show_turret(core_turret, boss.core.turret, enemy, dt)
-        # It rolls into its sideways moves (phase 7 review). Screen right is the model's -X (its
+        # It rolls into its sideways moves (BOSS-11). Screen right is the model's -X (its
         # nose points down the screen): +Z rolls -X down.
         root.rotation.z = boss.roll
         ring_node.rotation.y = boss.spin
         core.show(boss.core.since_hit)
-        if ring != None:  # noqa: E711
+        if ring != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             ring.show(boss.core.since_hit)
         for i in range(len(boss.parts)):
             view = parts[i] if i < len(parts) else None
-            if view != None:  # noqa: E711
+            if view != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 show_part(view, boss.parts[i], enemy, dt)
-                if view.reveal != None:  # noqa: E711
+                if view.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                     view.reveal.show(boss.form, boss.transforming_into, boss.transform)
 
     return BuiltEnemyModel(root, sync)
@@ -243,7 +245,7 @@ def _rig_view(drawing: Any, root: Any, look: Any) -> list[Any]:
     """The boss's rig of its own (D-228: the Scorpion's tail, posed as it transforms), if it has
     one: a list of none or one view."""
     rig = _field(drawing, "rig")
-    if rig == None:  # noqa: E711
+    if rig == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return []
     return [rig.build(root, look["neon"], look["breath"])]
 
@@ -266,7 +268,7 @@ def _build_stems(design: Any, drawing: Any, cut: Any, root: Any, look: Any) -> N
 def _armour_cut(design: Any, drawing: Any) -> Any:
     """The design's armour regions cut out of its core's drawing (`cut_armour`), if it has any."""
     regions = _field(design, "armour")
-    if regions == None or len(regions) == 0:  # noqa: E711
+    if regions == None or len(regions) == 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     return cut_armour(drawing.core, regions)
 
@@ -275,7 +277,7 @@ def _holder(design: Any, spec: Any, joints: JointFrames, nodes: list[Any], carri
     """The frame part `spec` hangs on: its joint's, the turning ring's (`nodes[1]`) for one that
     orbits, the carrier of the moving region it rides (D-230), else the boss's (`nodes[0]`)."""
     ridden = ridden_region(design, spec)
-    if ridden != None:  # noqa: E711
+    if ridden != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return JointFrame(carriers[ridden.id], ORIGIN)
     return joints.frame(
         opt(spec, "joint", None), nodes[1] if opt(spec, "orbits", False) else nodes[0]
@@ -317,21 +319,21 @@ def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[
     result: list[Any] = []
     weapons = _field(design, "weapons")
     for spec in design.stats.parts:
-        if opt(spec, "joint", None) != None or opt(spec, "orbits", False):  # noqa: E711
+        if opt(spec, "joint", None) != None or opt(spec, "orbits", False):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue
-        if not hidden and opt(spec, "reveal", None) != None:  # noqa: E711
+        if not hidden and opt(spec, "reveal", None) != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue
         weapon = _field(weapons, spec.id)
-        if weapon != None and _field(weapon, "rig"):  # noqa: E711
+        if weapon != None and _field(weapon, "rig"):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             # On a rig (D-228), not standing on the boss.
             continue
-        if ridden_region(design, spec) != None:  # noqa: E711
+        if ridden_region(design, spec) != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             # Riding a moving region's piece (D-230).
             continue
         draw = _field(drawing.parts, spec.id)
-        if draw == None and weapon != None:  # noqa: E711
+        if draw == None and weapon != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             draw = weapon_drawing(weapon, neon)
-        if draw == None:  # noqa: E711
+        if draw == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue
         at = boss_point(spec.x, spec.y)
         result.append([spec, collect_parts(_part_builder(draw, at))["parts"]])
@@ -359,7 +361,7 @@ def rest_stems(design: Any, drawing: Any, cut: Any, neon: Rgb) -> list[Any]:
         for layer in LAYERS:
             tris.extend(triangles(getattr(entry[1], layer).geometry))
     rig = _field(drawing, "rig")
-    if rig != None:  # noqa: E711
+    if rig != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # Its rig at rest stays on through every transformation (D-228).
         at_rest = rig.triangles(0)
         tris.extend(at_rest)
@@ -387,7 +389,7 @@ def part_supports(design: Any, drawing: Any, neon: Rgb) -> list[Any]:
             # Up into the part, so it meets its underside wherever that is.
             result.append([at[0], at[2], bottom + (top - bottom) * 0.4, spec.radius])
     ring = _field(drawing, "ring")
-    if ring != None:  # noqa: E711
+    if ring != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # The ring turns about the centre: a pylon there holds it up.
         result.append(_ring_support(collect_parts(ring)["parts"]))
     return result
@@ -422,8 +424,8 @@ def build_body(
     design: Any, drawing: Any, root: Any, look: Any, core_draw: Any = None
 ) -> dict[str, Any]:
     """The core body (drawn by `core_draw`, else the drawing's core) and its turret on `root`, and
-    the ring turning with the boss's spin."""
-    if core_draw == None:  # noqa: E711
+    the ring turning with the boss's spin (BOSS-34)."""
+    if core_draw == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         core_draw = drawing.core
     flash = look["flash"]
     neon = look["neon"]
@@ -437,7 +439,7 @@ def build_body(
     ring_node.parent = root
     ring_draw = _field(drawing, "ring")
     ring = None
-    if ring_draw != None:  # noqa: E711
+    if ring_draw != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         ring = FlashGroup(
             build_enemy_model(name + "-ringbody", scene, neon, ring_draw, look["breath"]),
             flash,
@@ -460,10 +462,10 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
     scene = frame.node.getScene()
     draw = _field(drawing.parts, spec.id)
     weapon = _field(_field(design, "weapons"), spec.id)
-    if draw == None and weapon != None:  # noqa: E711
+    if draw == None and weapon != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         draw = weapon_drawing(weapon, neon)
-    if draw == None:  # noqa: E711
+    if draw == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         raise ValueError('Boss "' + name + '" has no drawing for its part "' + spec.id + '"')
     at = boss_point(spec.x, spec.y)
     model = build_enemy_model(
@@ -474,14 +476,15 @@ def build_part(design: Any, spec: Any, drawing: Any, frame: Any, look: Any) -> P
         look["breath"],
     )
     hang(model.root, ORIGIN, frame)
-    # Trimmed along its own outline, wherever it sits on the hull (P14-R04).
+    # Trimmed along its own outline, wherever it sits on the hull (BOSS-48, GFX-TRIM-08,
+    # GFX-READ-09).
     set_trim_group(model.root)
     turret = build_turret(design, spec.id, drawing, model.root, neon, look["breath"])
     spot = new_transform_node(name + "-" + spec.id + "-spot", scene)
     hang(spot, at, frame)
     smoke = build_smoke(name + "-" + spec.id, spec.radius, scene, spot)
     reveal = None
-    if opt(spec, "reveal", None) != None:  # noqa: E711
+    if opt(spec, "reveal", None) != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         slides = _weapon_slides(design, spec, weapon, model.root, turret, look)
         reveal = build_reveal(design, spec, model.root, slides)
     return PartView(FlashGroup(model, flash), turret, smoke, reveal)
@@ -492,9 +495,9 @@ def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
 ) -> list[Slide]:
     """What slides out of a hidden weapon as it unfolds: its barrel, cells, orb, tube or doors (a
     model of its own each on `holder`), or its turret."""
-    if weapon == None:  # noqa: E711
+    if weapon == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return []
-    if turret != None:  # noqa: E711
+    if turret != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         p = turret.pivot.position
         return [Slide(turret.pivot, [p.x, p.y, p.z], [0, 1, 0], turret_slide(weapon))]
     result: list[Slide] = []
@@ -515,7 +518,7 @@ def _weapon_slides(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
 
 def strobe(enemy: Any) -> Any:
     """The brightness of a boss's charge lights: its own, a strobe during a stage change, and a fast
-    flicker while it is angry (phase 7 review)."""
+    flicker while it is angry (BOSS-22, BOSS-27)."""
     if not isinstance(enemy, Boss):
         return enemy.charge
     if enemy.pause > 0:
@@ -528,9 +531,10 @@ def strobe(enemy: Any) -> Any:
 
 
 def show_part(view: PartView, part: Any, lit: Any, dt: float) -> None:
-    """A part: its model while it stands (flashing, smoking), nothing once destroyed (D-225)."""
+    """A part: its model while it stands (flashing, smoking: BOSS-17), nothing once destroyed
+    (BOSS-18, D-225)."""
     destroyed = part.destroyed
-    if part.hidden and view.reveal == None:  # noqa: E711
+    if part.hidden and view.reveal == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # Retired (D-228): it has left the fight.
         set_enabled(view.group.model.root, False)
         set_enabled(view.smoke.node, False)

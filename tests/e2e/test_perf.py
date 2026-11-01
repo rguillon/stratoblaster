@@ -1,4 +1,5 @@
-"""e2e: level loading in steps and the perf overlay (phase 13)."""
+"""e2e: level loading in steps and the perf overlay (specs/performance.md,
+specs/dev/perf-tools.md)."""
 
 import pytest
 from e2e.menu_helpers import (
@@ -12,15 +13,18 @@ from e2e.menu_helpers import (
 )
 from playwright.sync_api import Page, expect
 
-# Tunable values of phase 13: level_load_max_s, scaled by e2e_slowdown (software WebGL).
+# Tunable values of specs/performance.md: level_load_max_s, scaled by e2e_slowdown (software
+# WebGL, PERF-01).
 LEVEL_LOAD_MAX_S = 2
 E2E_SLOWDOWN = 10
 
 
 @pytest.mark.parametrize("world", [1, 2, 3, 4])
-def test_p13_r03_a_world_s_first_level_loads_in_steps_its_loading_time_in_budget(
+def test_dev_perf_07_a_world_s_first_level_loads_in_steps_its_loading_time_in_budget(
     page: Page, world: int
 ) -> None:
+    """Also PERF-08 (the load time), PERF-09 (in steps), UI-LOAD-06 (behind its loading screen)
+    and DEV-API-06 (the perf numbers)."""
     level_id = f"{world}-1"
     open_game(page)
     send_action(page, "confirm")
@@ -30,8 +34,8 @@ def test_p13_r03_a_world_s_first_level_loads_in_steps_its_loading_time_in_budget
         send_action(page, "down")
     expect_state(page, {"selectedId": level_id})
     send_action(page, "confirm")
-    # P13-R02: the press shows the game screen at once; the level loads behind its loading
-    # screen, then plays.
+    # PERF-04, PERF-05: the press shows the game screen at once; the level loads behind its
+    # loading screen, then plays.
     expect_state(page, {"screen": "game", "chosenLevelId": level_id})
     wait_for_load(page)
     wait_for_level_time(page, 0.2)
@@ -43,7 +47,8 @@ def test_p13_r03_a_world_s_first_level_loads_in_steps_its_loading_time_in_budget
     assert perf["longestLoadStep"] is not None
 
 
-def test_p13_r01_f3_shows_the_perf_overlay(page: Page) -> None:
+def test_dev_perf_03_f3_shows_the_perf_overlay(page: Page) -> None:
+    """Also ENG-111 (hidden unless asked for) and ENG-101 (the long frames it counts)."""
     open_game(page)
     overlay = page.locator(".perf-overlay")
     expect(overlay).to_be_hidden()

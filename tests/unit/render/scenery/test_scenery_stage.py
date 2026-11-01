@@ -1,5 +1,6 @@
 """Unit tests of `src/render/scenery/scenery_stage.py`: its small pure helpers, then the dev
-viewer's parts (D-199) and the chunks' trees and street sources (D-212, D-217), on a stage made
+viewer's parts (D-199) and the chunks' trees and street sources (D-212, GFX-PROP-14; D-217), on a
+stage made
 without Babylon (its fields set by hand) and the game's stage settings. The stage itself builds
 Babylon meshes and runs in the browser."""
 
@@ -341,6 +342,7 @@ def test_d212_trees_are_seen_a_little_past_the_ground_in_view() -> None:
 def test_d217_a_new_seed_takes_its_street_surfaces_from_its_own_ground(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """GFX-ROAD-21."""
     s = stage(FakePlacer(tiles="tiles"), tile_look="tile look")
     frame(s, 0)
     old = s._road_source

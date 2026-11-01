@@ -6,7 +6,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -20,7 +20,8 @@ def opt(value: Any) -> Any:
 
 def keys_of(record: Any) -> list[str]:
     """The keys of a config record, in their order. A record is a plain JavaScript object, which
-    has no `keys()` method under Transcrypt.
+    has no `keys()` method under Transcrypt (ENG-159); a Python twin gives the same keys under
+    CPython (ENG-160).
     """
     result: list[str] = []
     # CPython only (the unit tests): a dict's keys, as `Object.keys` gives them in the browser.

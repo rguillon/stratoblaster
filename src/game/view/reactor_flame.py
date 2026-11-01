@@ -1,4 +1,4 @@
-"""Exhaust flame of a reactor (GD-61): the blue light behind each
+"""Exhaust flame of a reactor (GFX-SHIP-06, ENM-40): the blue light behind each
 reactor is a living flame: an outer exhaust cone and a hotter inner cone that flicker in length,
 width and brightness, and plasma puffs that flow from the nozzle down the exhaust.
 """
@@ -23,7 +23,7 @@ from render.model_animation import add_model_animation
 __pragma__("jsmod")
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 
@@ -72,7 +72,8 @@ def _polyhedron_options(kind: int, size: float) -> Any:
 
 
 def flicker(time_sec: float, phase: float, hz: list[float]) -> float:
-    """Irregular flicker in [-1, 1]: the mean of sines at the given frequencies, phase-shifted."""
+    """Irregular flicker in [-1, 1]: the mean of sines at the given frequencies, phase-shifted
+    (GFX-ART-11)."""
     total = 0.0
     for i, f in enumerate(hz):
         total += math.sin(TAU * f * time_sec + phase * (i + 1))
@@ -164,7 +165,7 @@ def _build_puffs(
 
 
 def _player_flame(parent: Any) -> dict[str, Any]:
-    """The player ships' blue flame materials (GD-61)."""
+    """The player ships' blue flame materials (GFX-ART-04)."""
     mats = get_ship_materials(parent.getScene())
     return {
         "exhaust": mats.reactorExhaust,
@@ -179,8 +180,8 @@ def build_reactor_flame(
     parent: Any,
     materials: dict[str, Any] | None = None,
 ) -> None:
-    """Builds an animated reactor flame (GD-61) under `parent`, named after `name`, blue like the
-    player ships' unless other `materials` are given (enemies, phase 5 review).
+    """Builds an animated reactor flame (GFX-SHIP-06) under `parent`, named after `name`, blue like
+    the player ships' unless other `materials` are given (enemies, ENM-40).
 
     `size` holds `nozzleZ`, `length`, `diameter` (exhaust cone at the nozzle), `puffDiameter`,
     `sides`, and optionally `light` (`{ "puffs": n }`): lighter flames (enemies) have no caps on

@@ -5,37 +5,47 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class GridNode(Protocol):
     """A point of the street network."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the crossing."""
+        ...
 
     @property
-    def z(self) -> float: ...
+    def z(self) -> float:
+        """Z of the crossing."""
+        ...
 
 
 class GridLink(Protocol):
     """A built stretch of street between two neighbouring crossings."""
 
     @property
-    def a(self) -> GridNode: ...
+    def a(self) -> GridNode:
+        """One end of the stretch."""
+        ...
 
     @property
-    def b(self) -> GridNode: ...
+    def b(self) -> GridNode:
+        """The other end of the stretch."""
+        ...
 
     @property
-    def across(self) -> bool: ...
+    def across(self) -> bool:
+        """Whether the stretch lies along X: its two ends share a Z."""
+        ...
 
 
 __pragma__("noskip")
 
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.street_links import to_fixed3  # noqa: E402
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import to_fixed3  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Point:

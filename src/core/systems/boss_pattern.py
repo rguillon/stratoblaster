@@ -1,4 +1,4 @@
-"""Boss volleys (P07-R04, GD-43, GD-44)
+"""Boss volleys (BOSS-23)
 
 What volleys fire, from which piece, on which timer. Angles in degrees in the data; a preset heading
 of 0 is straight down, positive towards the right of the screen. Pure and deterministic.
@@ -14,11 +14,11 @@ from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss_turret import BossTurret  # noqa: E402
-from core.entities.enemy import (  # noqa: E402
+from core.entities.boss_turret import BossTurret  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Enemy,
     EnemyBulletSpec,
     EnemyContext,
@@ -26,8 +26,8 @@ from core.entities.enemy import (  # noqa: E402
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import Muzzle  # noqa: E402
-from core.systems.gun_muzzles import MuzzleSource  # noqa: E402
+from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.gun_muzzles import MuzzleSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -94,7 +94,7 @@ class BossMissilesShape:
 
 
 class BossLaserShape:
-    """A laser straight down from the piece: warning line first (GD-43)."""
+    """A laser straight down from the piece: warning line first (BOSS-30)."""
 
     def __init__(self, laser: EnemyLaserSpec) -> None:
         self.kind = "laser"
@@ -110,7 +110,7 @@ class BossLaunchShape:
 
 
 class BossVolley:
-    """One weapon of a stage's pattern (P07-R04).
+    """One weapon of a stage's pattern (BOSS-21).
 
     `from_`: what fires it: the id of a part (it stops for good once that part is destroyed) or
     `core`. `muzzles`: the muzzles of that piece's gun its shots leave from (see
@@ -196,7 +196,7 @@ class _TurretGroup:
 
 
 def _live(volley: BossVolley, intact: Callable[[str], bool]) -> bool:
-    """Whether `volley` fires when only the pieces for which `intact` is true remain."""
+    """Whether `volley` fires when only the pieces for which `intact` is true remain (BOSS-24)."""
     return (
         intact(volley.from_)
         and (volley.needs is None or intact(volley.needs))
@@ -306,7 +306,7 @@ def _volley_key(volley: BossVolley) -> str:
 
 def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -> str:
     """A short text naming the volleys of `pattern` that still fire when only the pieces for which
-    `intact` is true remain: two stages fire the same pattern when these are equal (P07-R04).
+    `intact` is true remain: two stages fire the same pattern when these are equal (BOSS-21).
     """
     keys: list[str] = []
     for volley in pattern:
@@ -322,8 +322,8 @@ def pattern_signature(pattern: BossPatternSpec, intact: Callable[[str], bool]) -
 
 
 class BossPattern:
-    """Fires one stage's pattern (P07-R04): each volley on its own timer, from its piece, as long as
-    that piece is there. Timers run `ctx.fire_rate` times faster (a level's difficulty, P06-R08).
+    """Fires one stage's pattern (BOSS-21): each volley on its own timer, from its piece, as long as
+    that piece is there. Timers run `ctx.fire_rate` times faster (a level's difficulty, BOSS-26).
     Pure and deterministic.
     """
 
@@ -356,6 +356,8 @@ class BossPattern:
         return best
 
     def step(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
+        """Advances the volleys by `dt` seconds, scaled by the fire rate: fires those that are due
+        from their sources and steps their bursts. A volley without a live source waits."""
         time = dt * ctx.fire_rate
         for i in range(len(self.volleys)):
             volley = self.volleys[i]
@@ -370,11 +372,11 @@ class BossPattern:
             self._step_burst(ctx, volley, state, source, time)
 
     def turn_turrets(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
-        """Turns the turrets its volleys fire from for `dt` seconds (phase 7 review), the way their
+        """Turns the turrets its volleys fire from for `dt` seconds (BOSS-29), the way their
         next volley goes (a burst under way first): at the player for aimed shots and bursts, along
         a fan's heading, and with a ring's turn, so a turret firing a spiral spins. Pauses included.
         A laser's turret aims at the player until its beam fires (slowly while its warning line
-        shows, `laser_turn_rate_deg`), then holds still (phase 8 review).
+        shows, `laser_turn_rate_deg`), then holds still (BOSS-31).
         """
         for group in self._turrets:
             source = sources(group.from_)
@@ -399,7 +401,7 @@ class BossPattern:
             )
             rate = spec.turn_rate_deg if laser is None else laser_rate
             # Entities start `aim` at the int 0; it is a float from here on.
-            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]
+            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]  # the value assigned is wider than the field type
 
     def _laser_aim(
         self,
@@ -569,7 +571,7 @@ class _TurnedLaserOwner:
         self._turret = turret
 
     @property
-    def emitter(self):  # type: ignore[no-untyped-def]
+    def emitter(self):  # type: ignore[no-untyped-def]  # a Transcrypt-compiled method, left untyped
         return self._owner.emitter
 
     @property

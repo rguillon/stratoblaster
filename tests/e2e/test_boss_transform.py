@@ -13,11 +13,12 @@ LEVELS = ["1-1", "2-1", "3-1", "4-1"]
 def test_a_final_boss_transforms_and_its_hidden_weapons_come_out_and_fire(
     page: Page, level_id: str
 ) -> None:
+    """BOSS-35 (a final boss transforms) and BOSS-38 (its hidden weapons come out and fire)."""
     open_debug(page, f"?level={level_id}&boss=final&ship=heavy")
     step_until(page, lambda: (boss(page) or {}).get("state"), lambda s: s == "fighting")
     hidden = boss(page)["hiddenParts"]
     assert hidden > 0
-    # Break its parts one at a time (K, P07-R09) until it starts transforming.
+    # Break its parts one at a time (K, DEV-OPT-09) until it starts transforming.
     stage = boss_stage(page)
     while boss(page)["state"] != "transforming":
         page.keyboard.press("KeyK")

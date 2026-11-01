@@ -15,7 +15,7 @@ def test_no_tower_when_no_kind_fits() -> None:
     assert tower_in(Block(0.0, 40.0, 0.0, 40.0), [], 0.0, 0.5) is None
 
 
-def test_p04_r07_a_tower_stays_in_its_part_and_leaves_the_margin() -> None:
+def test_a_tower_stays_in_its_part_and_leaves_the_margin() -> None:
     kind = PropKindRule("tower", 1.0, 6.0, (0.5, 1.0), frontage=6.0)
     part = Block(100.0, 140.0, 200.0, 240.0)
     for r in (0.0, 0.2, 0.49, 0.5, 0.77, 0.99):

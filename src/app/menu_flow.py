@@ -1,6 +1,7 @@
-"""Screen state machine of the menus (P01-R01): Title → Ship
-select → Level select → Game, with Back on each screen; Game ⇄ Pause, and Settings from the title
-or the pause menu (P12-R02, P12-R04). Pure: no Babylon, no DOM, time comes from `update`.
+"""Screen state machine of the menus (UI-FLOW-02): Title → Ship
+select → Level select → Game, with Back on each screen (UI-FLOW-05); Game ⇄ Pause, and Settings
+from the title or the pause menu (UI-SET-01, UI-PAUSE-09). Pure: no Babylon, no DOM, time comes
+from `update`.
 """
 
 import math
@@ -19,15 +20,16 @@ from input.menu_action import MenuSelect, is_menu_direction
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.menu.menu_screen import MenuScreen  # noqa: E402
-from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402
-from input.menu_action import MenuCommand  # noqa: E402
+from core.menu.menu_screen import MenuScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# The title screen's entries (P01-R04, P12-R04); `dev` after them with the dev menu (D-199).
+# The title screen's entries (UI-TITLE-01, UI-TITLE-06); `dev` after them with the dev menu
+# (DEV-MENU-01, D-199).
 TITLE_ENTRIES = ["start", "settings"]
 
 # Volumes and slider size when the options give none.
@@ -63,7 +65,7 @@ def _is_integer(value: float) -> bool:
 
 
 class MenuFlow:
-    """Screen state machine of the menus (P01-R01). Pure: no Babylon, no DOM."""
+    """Screen state machine of the menus (UI-FLOW-01). Pure (UI-FLOW-04): no Babylon, no DOM."""
 
     def __init__(self, options: MenuFlowOptions) -> None:
         if len(options.ship_ids) == 0:
@@ -73,6 +75,7 @@ class MenuFlow:
         self._options = options
         self._screen: MenuScreen = "loading"
         self._title_index = 0
+        # The saved ship is highlighted first, else the first one (UI-SHIP-05).
         initial = options.initial_ship_id if options.initial_ship_id is not None else ""
         self._ship_index = max(0, _index_of(options.ship_ids, initial))
         self._level_index = first_unlocked_level(options.levels)
@@ -91,8 +94,8 @@ class MenuFlow:
         )
         # The screen the settings screen was opened from, which Back goes back to.
         self._settings_from: MenuScreen = "title"
-        # The dev menu (D-199): the viewer picked, the item each viewer shows, and each viewer's
-        # toggle (close-up for the models, play for the levels).
+        # The dev menu (DEV-MENU-03, D-199): the viewer picked, the item each viewer shows, and
+        # each viewer's toggle (close-up for the models, play for the levels).
         counts = options.dev_counts
         self._title_entries = list(TITLE_ENTRIES)
         if counts is not None:
@@ -140,18 +143,19 @@ class MenuFlow:
 
     @property
     def paused(self) -> bool:
-        """Whether the level being played is paused (P12-R01)."""
+        """Whether the level being played is paused (UI-PAUSE-03): on the pause menu, or on the
+        settings screen opened from it, over the paused level (UI-SET-07)."""
         return self._screen == "pause" or (
             self._screen == "settings" and self._settings_from == "pause"
         )
 
     def go_to(self, screen: MenuScreen) -> bool:
-        """Goes to `screen` if the flow allows it (P01-R01). Returns False and changes nothing
-        otherwise.
+        """Goes to `screen` if the flow allows it (UI-FLOW-02). Returns False and changes nothing
+        otherwise (UI-FLOW-03).
         """
         if not can_transition(self._screen, screen):
             return False
-        if screen == "level-select":
+        if screen == "level-select":  # The first level highlighted on arrival (UI-LEVEL-06).
             self._level_index = first_unlocked_level(self._options.levels)
         if screen == "game":
             self._start_level(None)
@@ -160,7 +164,7 @@ class MenuFlow:
         if screen == "pause" and self._screen == "game":
             self._pause.open()
         if screen == "title" and self._screen not in ["settings", "dev"]:
-            self._title_index = 0
+            self._title_index = 0  # Start selected (UI-TITLE-06).
         self._result = None
         self._screen = screen
         self._transition_left = self._options.transition_seconds
@@ -168,20 +172,21 @@ class MenuFlow:
         return True
 
     def pause(self) -> bool:
-        """Pauses the level being played (P12-R01, P12-R03): the pause menu shows. Ignored on
-        other screens, and on the "Level complete" or "Game over" panel.
+        """Pauses the level being played (UI-PAUSE-01, UI-PAUSE-11): the pause menu shows. Ignored
+        on other screens, and on the "Level complete" or "Game over" panel (UI-PAUSE-06).
         """
         if self._screen != "game" or self._result is not None:
             return False
         return self.go_to("pause")
 
     def finish_loading(self) -> None:
-        """Called when loading completes: shows the title screen."""
+        """Called when loading completes: shows the title screen (UI-LOAD-04)."""
         self.go_to("title")
 
     def complete_level(self, result: LevelResult) -> None:
-        """Shows the "Level complete" (or "Game over") overlay on the game screen (P06-R03); Confirm
-        then goes to the level select screen. Ignored on other screens.
+        """Shows the "Level complete" (or "Game over") overlay on the game screen (UI-OVER-01);
+        Confirm then goes to the level select screen. Ignored on other screens. Input waits
+        `result_delay_seconds` first (UI-OVER-04).
         """
         if self._screen != "game" or self._result is not None:
             return
@@ -192,7 +197,7 @@ class MenuFlow:
         self._changed()
 
     def play_direct(self, ship_id: str, level_id: str) -> bool:
-        """Starts a level straight away with the given ship, skipping the menus (P06-R09 debug
+        """Starts a level straight away with the given ship, skipping the menus (DEV-OPT-01 debug
         options). Returns False, and changes nothing, if the ship or the level is unknown or the
         level is locked.
         """
@@ -213,7 +218,7 @@ class MenuFlow:
         return True
 
     def update(self, dt_seconds: float) -> None:
-        """Advances the transition timer."""
+        """Advances the transition timer (UI-FLOW-08)."""
         if self._transition_left <= 0:
             return
         self._transition_left = max(0, self._transition_left - dt_seconds)
@@ -221,8 +226,8 @@ class MenuFlow:
             self._changed()
 
     def dispatch(self, command: MenuCommand) -> str:
-        """Applies a menu command to the current screen. Ignored while loading or in a
-        transition.
+        """Applies a menu command, from any device (UI-INPUT-01), to the current screen. Ignored
+        while loading or in a transition (UI-FLOW-08).
         """
         if self._screen == "loading" or self._transition_left > 0:
             return "none"
@@ -234,6 +239,7 @@ class MenuFlow:
         return self._adjusted(self._settings.set(command.set, command.value))
 
     def _action(self, command: str) -> str:
+        """What `command` means on the current screen (UI-INPUT-02)."""
         if self._screen == "pause":
             return self._on_pause(command)
         if self._screen == "settings":
@@ -247,15 +253,15 @@ class MenuFlow:
         return self._confirm() if command == "confirm" else "none"
 
     def _in_level(self, command: str) -> str:
-        """In a level (P12-R01): Escape, P, Start and Select pause it; Back and the other actions do
-        nothing.
+        """In a level (UI-PAUSE-01): Escape, P, Start and Select pause it; Back and the other
+        actions do nothing (UI-PAUSE-05, UI-FLOW-06).
         """
         if command not in ["pause", "cancel"]:
             return "none"
         return "paused" if self.pause() else "none"
 
     def _on_pause(self, command: str) -> str:
-        """The pause menu (P12-R02): Back, Escape, P and Start resume the level."""
+        """The pause menu: Back, Escape, P and Start resume the level (UI-PAUSE-08)."""
         if is_menu_direction(command):
             return self._pause_outcome(self._pause.move(command))
         if command == "confirm":
@@ -273,14 +279,14 @@ class MenuFlow:
         return "screen" if outcome == "ask" else outcome
 
     def _resume_level(self) -> str:
-        """Back to the level, as it was: not a new attempt (P12-R01)."""
+        """Back to the level, as it was: not a new attempt (UI-PAUSE-08)."""
         self._screen = "game"
         self._transition_left = self._options.transition_seconds
         self._changed()
         return "resumed"
 
     def _on_settings(self, command: str) -> str:
-        """The settings screen (P12-R04): Back returns to where it was opened from."""
+        """The settings screen: Back returns to where it was opened from (UI-SET-01, UI-FLOW-05)."""
         if is_menu_direction(command):
             return self._adjusted(self._settings.move(command))
         if command not in ["back", "cancel"]:
@@ -288,10 +294,10 @@ class MenuFlow:
         return "screen" if self.go_to(self._settings_from) else "none"
 
     def _on_dev_viewer(self, command: str) -> str:
-        """A dev viewer (D-199): the four directions show the item before or after (round the
-        list), Up and Down the first item of the group before or after when the viewer's items are
-        in groups (D-202), Confirm flips the viewer's toggle, Back and Escape return to the dev
-        menu.
+        """A dev viewer (DEV-MENU-06, D-199): the four directions show the item before or after
+        (round the list), Up and Down the first item of the group before or after when the viewer's
+        items are in groups (D-202), Confirm flips the viewer's toggle, Back and Escape return to
+        the dev menu.
         """
         if is_menu_direction(command):
             counts = self._dev_counts
@@ -316,7 +322,7 @@ class MenuFlow:
         return "none"
 
     def _select_dev_item(self, index: int) -> str:
-        """A dev viewer's button was tapped (D-204): it shows item `index`."""
+        """A dev viewer's menu item was tapped (DEV-MENU-07, D-204): it shows item `index`."""
         counts = self._dev_counts
         count = counts[self._dev_index] if self._dev_index < len(counts) else 0
         if not _is_integer(index) or index < 0 or index >= count:
@@ -333,6 +339,8 @@ class MenuFlow:
         return feedback
 
     def _open_settings(self) -> None:
+        """Opens the settings screen; Back returns to the screen it was opened from: the title or
+        the pause menu (UI-PAUSE-09)."""
         self._settings_from = self._screen
         self._settings.open()
 
@@ -345,7 +353,8 @@ class MenuFlow:
         self._resume = checkpoint
 
     def _choosing(self) -> bool:
-        """The "Game over" panel offers Continue or level select (P07-R08)."""
+        """The "Game over" panel offers Continue or level select (UI-OVER-06), only with a
+        checkpoint (UI-OVER-08)."""
         return (
             self._screen == "game"
             and self._result is not None
@@ -389,6 +398,8 @@ class MenuFlow:
         return None
 
     def _grid(self) -> GridShape | None:
+        """The grid the arrows move in: the title's entries (UI-TITLE-06), the ships, round
+        (UI-SHIP-04), the levels (UI-LEVEL-05)."""
         if self._screen == "title":
             return GridShape(len(self._title_entries), 1, False)
         if self._screen == "dev":
@@ -440,6 +451,7 @@ class MenuFlow:
         return self._set_selection(index)
 
     def _back(self) -> str:
+        """Back on the menu screens (UI-FLOW-05, UI-SHIP-06)."""
         previous: dict[str, MenuScreen] = {
             "ship-select": "title",
             "level-select": "ship-select",
@@ -450,6 +462,8 @@ class MenuFlow:
         return "screen" if self.go_to(previous[self._screen]) else "none"
 
     def _confirm(self) -> str:
+        """Confirm: the title's entry (UI-TITLE-06), the ship (UI-SHIP-06), the level, or the end
+        panel's choice."""
         screen = self._screen
         if screen == "title":
             targets: list[MenuScreen] = ["ship-select", "settings", "dev"]
@@ -467,8 +481,10 @@ class MenuFlow:
         return "none"
 
     def _leave_completed_level(self) -> str:
-        """From the "Level complete" overlay to the level select screen, on the next level; from
-        the "Game over" overlay, on the level played (GD-20).
+        """From the "Level complete" overlay to the level select screen, on the next level
+        (UI-OVER-03, UI-LEVEL-07; after a world's last level the next world's first: WLD-1-02,
+        WLD-2-02); from the "Game over" overlay, on the level played (UI-FLOW-07), unless Continue
+        is chosen (UI-OVER-07).
         """
         result = self._result
         if result is None:
@@ -494,7 +510,8 @@ class MenuFlow:
         return "moved"
 
     def _continue(self, checkpoint: LevelCheckpoint) -> str:
-        """The level starts again from its checkpoint, on the game screen (P07-R08)."""
+        """The level starts again from its checkpoint, on the game screen (UI-OVER-07,
+        GAME-LIFE-11)."""
         self._result = None
         self._start_level(checkpoint)
         self._transition_left = self._options.transition_seconds
@@ -502,6 +519,8 @@ class MenuFlow:
         return "screen"
 
     def _confirm_level(self) -> str:
+        """A locked level gives the locked feedback (UI-LEVEL-04); an open one starts
+        (UI-LEVEL-08)."""
         level = _at(self._options.levels.levels, self._level_index)
         if level is None or not level.unlocked:
             return "locked"

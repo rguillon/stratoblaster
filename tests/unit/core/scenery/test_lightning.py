@@ -32,7 +32,7 @@ def rules(**overrides: object) -> LightningRules:
     return LightningRules(**values)  # type: ignore[arg-type]
 
 
-def test_p09_r05_the_same_seed_flashes_at_the_same_times() -> None:
+def test_gfx_weather_10_the_same_seed_flashes_at_the_same_times() -> None:
     first = LightningSchedule(11).flashes_between(0, 200)
     second = LightningSchedule(11).flashes_between(0, 200)
     assert first == second
@@ -40,7 +40,7 @@ def test_p09_r05_the_same_seed_flashes_at_the_same_times() -> None:
     assert LightningSchedule(12).flashes_between(0, 200) != first
 
 
-def test_p09_r05_flashes_between_are_the_flashes_in_the_range() -> None:
+def test_gfx_weather_10_flashes_between_are_the_flashes_in_the_range() -> None:
     schedule = LightningSchedule(3)
     everything = schedule.flashes_between(0, 500)
     middle = schedule.flashes_between(100, 200)
@@ -48,7 +48,8 @@ def test_p09_r05_flashes_between_are_the_flashes_in_the_range() -> None:
     assert schedule.flashes_between(50, 50) == []
 
 
-def test_p09_r05_a_strike_can_flash_twice_and_draw_a_bolt() -> None:
+def test_gfx_weather_12_a_strike_can_flash_twice_and_draw_a_bolt() -> None:
+    """Also GFX-WEATHER-10 (two flashes 0.25 s apart)."""
     schedule = LightningSchedule(5, rules(double_chance=1, bolt_chance=1))
     strikes = schedule.strikes_before(60)
     assert strikes
@@ -60,7 +61,7 @@ def test_p09_r05_a_strike_can_flash_twice_and_draw_a_bolt() -> None:
         assert 0 <= strike.bolt.z < 1
 
 
-def test_p09_r05_strikes_without_bolts_or_doubles() -> None:
+def test_gfx_weather_10_strikes_without_bolts_or_doubles() -> None:
     strikes = LightningSchedule(5, rules()).strikes_before(60)
     assert strikes
     assert all(len(s.flashes) == 1 and s.bolt is None for s in strikes)

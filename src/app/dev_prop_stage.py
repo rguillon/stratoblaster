@@ -1,8 +1,9 @@
-"""The props viewer's stage (D-205): the prop picked alone on a plain floor ruled in blocks (one
-square per tile of the game's grid), under studio lights, with no level's ground loaded. The
-camera turns round the prop as dragged; it is either at the game's distance with the game's field
-of view (the prop as big as in game) or close enough for the prop to fill the close-up's share of
-the screen. The prop's materials are those of the first level that has it (its world's tone).
+"""The props viewer's stage (DEV-MENU-16, D-205): the prop picked alone on a plain floor ruled in
+blocks (one square per tile of the game's grid), under studio lights, with no level's ground
+loaded. The camera turns round the prop as dragged; it is either at the game's distance with the
+game's field of view (the prop as big as in game) or close enough for the prop to fill the
+close-up's share of the screen (DEV-MENU-17). The prop's materials are those of the first level
+that has it (its world's tone).
 """
 
 import math
@@ -44,9 +45,9 @@ from render.scenery.window_material_visual import add_window_material, glow_wind
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.dev_catalog import DevItem  # noqa: E402
+from app.dev_catalog import DevItem  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -80,7 +81,7 @@ def game_distance(game: Any) -> float:
 
 def close_up_distance(size: float, fov: float, fill: float) -> float:
     """How far something `size` across is when it fills `fill` of the screen's height, seen with
-    the vertical field of view `fov`."""
+    the vertical field of view `fov` (the close-up, DEV-MENU-09)."""
     return size / (2 * math.tan(fov / 2) * fill)
 
 
@@ -175,12 +176,12 @@ class DevPropStage:
         for part in parts:
             geo = part[0]
             # `== None`: a field left out is undefined in the browser.
-            if geo == None or part[1] == None or len(geo.indices) == 0:  # noqa: E711
+            if geo == None or part[1] == None or len(geo.indices) == 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 continue
             mesh = mesh_of("dev-prop-" + item.id, geo, part[1], self.scene)
             mesh.parent = root
             set_enabled(mesh, True)
-            if part[1] == materials.windows and self._glow != None:  # noqa: E711
+            if part[1] == materials.windows and self._glow != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 glow_windows(self._glow, mesh)
         self._prop = root
         self.size = max(b[3] - b[0], b[4] - b[1], b[5] - b[2])
@@ -191,7 +192,7 @@ class DevPropStage:
     def update(self, turn: list[float], close_up: bool, zoom: float) -> None:
         """Turns the camera round the prop as far as dragged (`turn`: radians across and up or
         down, as Babylon's own orbiting camera turns), at the close-up's distance or the game's,
-        divided by `zoom` (D-208)."""
+        divided by `zoom` (DEV-MENU-11, D-208)."""
         props = CFG.props
         camera = self.camera
         camera.alpha = -math.pi / 2 - turn[0]

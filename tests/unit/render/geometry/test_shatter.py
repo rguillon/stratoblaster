@@ -3,12 +3,12 @@ breaking it into chunks (docs/superpowers/specs/2026-10-31-boss-armour-shedding-
 
 from render.geometry.shatter import (
     Carve,
+    Vertex,
     carve,
     centroid,
     chunk_cells,
     geometry_of,
     inside,
-    Vertex,
     shatter,
     straddles,
     subdivide,

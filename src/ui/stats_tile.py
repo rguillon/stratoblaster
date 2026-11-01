@@ -1,9 +1,9 @@
-"""A small debug tile with the frame rate and polygon count"""
+"""A small debug tile with the frame rate and polygon count (DEV-PERF-04)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

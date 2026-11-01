@@ -1,4 +1,4 @@
-"""Weather kinds and lightning tunables (phase 8-10, P08-R05, P09-R05, P10-R06)
+"""Weather kinds and lightning tunables (phase 8-10, specs/graphics/weather.md)
 
 The classes are defined here (not im), so `config/` never imports `core/` at
 runtime: `core/scenery/lightning.py` imports this module.
@@ -7,7 +7,7 @@ runtime: `core/scenery/lightning.py` imports this module.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
@@ -64,8 +64,9 @@ class WeatherVolume:
 
 
 class WeatherKind:
-    """A kind of weather (P08-R05): particles falling through the air between the ground and the
-    flight altitude, drawn behind everything on the playfield. Kinds are data."""
+    """A kind of weather (GFX-WEATHER-01): particles falling through the air between the ground
+    and the flight altitude, drawn behind everything on the playfield. Kinds are data; each caps
+    its particles (`max_particles`, ENG-105)."""
 
     def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
         self,
@@ -151,8 +152,9 @@ class LightningRules:
 
 _VOLUME = WeatherVolume(420, 1100, 0, 300)
 
-# The weather kinds of the engine (P08-R05, P09-R05, P10-R06).
+# The weather kinds of the engine (GFX-WEATHER-01).
 WEATHER_KINDS = {
+    # GFX-WEATHER-07: soft white flakes falling slowly and swaying (`snow_flakes_max`).
     "snow": WeatherKind(
         1500,
         0.55,
@@ -165,7 +167,7 @@ WEATHER_KINDS = {
         0.5,
         _VOLUME,
     ),
-    # P09-R05: thin, light streaks falling fast at a slight slant (`rain_streaks_max`).
+    # GFX-WEATHER-08: thin, light streaks falling fast at a slight slant (`rain_streaks_max`).
     "rain": WeatherKind(
         2000,
         0.6,
@@ -184,7 +186,7 @@ WEATHER_KINDS = {
         None,
         None,
     ),
-    # P10-R06: grey flakes falling slowly and drifting, a dull snow (`ash_flakes_max`).
+    # GFX-WEATHER-13: grey flakes falling slowly and drifting, a dull snow (`ash_flakes_max`).
     "ash": WeatherKind(
         1500,
         0.5,
@@ -203,7 +205,7 @@ WEATHER_KINDS = {
         None,
         None,
     ),
-    # P10-R06: small glowing orange sparks rising from the ground (`embers_max`).
+    # GFX-WEATHER-14: small glowing orange sparks rising from the ground (`embers_max`).
     "embers": WeatherKind(
         800,
         0.92,
@@ -224,7 +226,7 @@ WEATHER_KINDS = {
     ),
 }
 
-# Lightning (P09-R05), a storm option on top of rain.
+# Lightning (GFX-WEATHER-10), a storm option on top of rain.
 LIGHTNING = LightningRules(
     [4, 10],
     0.15,
