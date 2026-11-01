@@ -135,8 +135,11 @@ format: $(UV_SYNC)
 check-fast: lint typecheck
 	@true
 
+# Unit test workers (pytest-xdist): one per core; the boss checks alone take minutes on one (D-232).
+UNIT_WORKERS ?= auto
+
 tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ at 90 %; HTML in coverage/
-	uv run pytest -v --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
+	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
 	uv run coverage report --include='src/core/*' --fail-under=90
 
 # The game: build, end-to-end tests, serving.
