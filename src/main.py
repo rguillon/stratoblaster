@@ -12,7 +12,8 @@ from org.transcrypt.stubs.browser import __pragma__, document, window
 
 from app.debug_options import dev_mode, parse_debug_options
 from app.page_audio import AudioOptions, PageVisibility
-from app.start_app import AppOptions, start_app
+from app.start_app import start_app
+from app.start_app_runtime import AppOptions
 from build_info import APP_COMMIT, APP_VERSION  # The version and commit on the title (ENG-83).
 from config.engine import ENGINE_CONFIG
 from config.menu import MENU_CONFIG

@@ -8,10 +8,9 @@ from unittest.mock import MagicMock
 
 from helpers.gamepads import FakeGamepad
 
-from app import start_app
+from app import start_app_runtime
 from app.start_app import (
     FrameControls,
-    _index_of,
     create_input,
     dispose_scenes,
     frame_ticker,
@@ -19,6 +18,7 @@ from app.start_app import (
     start_debug_level,
     sync_scenes,
 )
+from app.start_app_runtime import _index_of
 from config.engine import ENGINE_CONFIG
 from config.menu import MENU_CONFIG
 from input.menu_input import MenuInput
@@ -222,12 +222,12 @@ def test_p01_r13_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
     session = SimpleNamespace(play=None, load_step=MagicMock(), controls=MagicMock())
     scenes = SimpleNamespace(backdrop={"update": MagicMock()}, stage=MagicMock())
     drawn: list = []
-    original = start_app.render_menu_scenes
-    start_app.render_menu_scenes = lambda loaded, screen: drawn.append((loaded, screen))
+    original = start_app_runtime.render_menu_scenes
+    start_app_runtime.render_menu_scenes = lambda loaded, screen: drawn.append((loaded, screen))
     try:
         frame_ticker(clock, menu, lambda: scenes, session, MagicMock()).render()
     finally:
-        start_app.render_menu_scenes = original
+        start_app_runtime.render_menu_scenes = original
     assert drawn == [(scenes, "title")]
 
 
@@ -236,15 +236,15 @@ def test_p01_r13_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
 
 def test_d199_without_dev_there_are_no_dev_viewers() -> None:
     options = SimpleNamespace(dev=None)
-    assert start_app.create_dev("engine", None, options) is None
+    assert start_app_runtime.create_dev("engine", None, options) is None
 
 
 def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch) -> None:
-    monkeypatch.setattr(start_app, "dev_catalog", lambda game: {"ships": ["item"]})
-    monkeypatch.setattr(start_app, "dev_labels", lambda catalog: {"ships": ["Item"]})
-    monkeypatch.setattr(start_app, "dev_groups", lambda catalog: {"ships": [""]})
+    monkeypatch.setattr(start_app_runtime, "dev_catalog", lambda game: {"ships": ["item"]})
+    monkeypatch.setattr(start_app_runtime, "dev_labels", lambda catalog: {"ships": ["Item"]})
+    monkeypatch.setattr(start_app_runtime, "dev_groups", lambda catalog: {"ships": [""]})
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay", keyboard_target=None)
-    session, labels, groups = start_app.create_dev("engine", "game", options)
+    session, labels, groups = start_app_runtime.create_dev("engine", "game", options)
     assert session._catalog == {"ships": ["item"]}
     assert labels == {"ships": ["Item"]}
     assert groups == {"ships": [""]}
@@ -258,8 +258,8 @@ def test_d199_the_dev_viewer_moves_on_with_the_menus_and_is_drawn_instead_of_the
     dev = MagicMock(active=True)
     dev.render.return_value = True
     drawn: list = []
-    original = start_app.render_menu_scenes
-    start_app.render_menu_scenes = lambda loaded, screen: drawn.append(screen)
+    original = start_app_runtime.render_menu_scenes
+    start_app_runtime.render_menu_scenes = lambda loaded, screen: drawn.append(screen)
     try:
         ticker = frame_ticker(clock, menu, lambda: None, session, MagicMock(), dev)
         ticker.simulate(0.02)
@@ -268,7 +268,7 @@ def test_d199_the_dev_viewer_moves_on_with_the_menus_and_is_drawn_instead_of_the
         assert drawn == []
         # Until its scene is built, the menu backdrop is drawn.
         dev.render.return_value = False
-        start_app.draw_menus("scenes", "dev-viewer", dev)
+        start_app_runtime.draw_menus("scenes", "dev-viewer", dev)
         assert drawn == ["dev-viewer"]
     finally:
-        start_app.render_menu_scenes = original
+        start_app_runtime.render_menu_scenes = original
