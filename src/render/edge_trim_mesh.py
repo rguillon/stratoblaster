@@ -32,7 +32,7 @@ from render.geometry.edge_trim import TrimOptions, TrimShape, inverse, multiply,
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 __pragma__("noskip")
@@ -97,7 +97,7 @@ def request_trim(root: Any, color: Rgb) -> None:
 def _material(scene: Any, color: Rgb) -> Any:
     """The scene's unlit, two-sided material of `color`, made on first use (GFX-TRIM-07)."""
     by_color = weak_map_get(_MATERIALS, scene)
-    if by_color == None:  # noqa: E711
+    if by_color == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         by_color = {}
         weak_map_set(_MATERIALS, scene, by_color)
     key = str(color[0]) + "," + str(color[1]) + "," + str(color[2])

@@ -9,16 +9,16 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, decal  # noqa: E402
-from game.view.enemies.organic_parts import opt  # noqa: E402
-from render.geometry.organic import curve, tendril, vein  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import SIDES, decal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.organic_parts import opt  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import curve, tendril, vein  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -26,7 +26,7 @@ WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
 
 
-def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:  # noqa: PLR0917
+def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     """A small gun barrel grafted on (ENM-36: metal), from `at` along `yaw` (0: to the nose),
     `length` long, a charge light at its muzzle (phase 7 review), marked there."""
 
@@ -45,7 +45,7 @@ def mirror(outline: Any, s: float) -> list[list[float]]:
     return [[s * p[0], p[1]] for p in outline]
 
 
-def wing_draw(  # noqa: PLR0917
+def wing_draw(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     r: list[float], ts: list[list[float]], y: float, strut: float, lights: Any, glow: Rgb, s: int
 ) -> Any:
     """What a membrane wing draws in its model space (factory: no loop closure)."""
@@ -57,9 +57,9 @@ def wing_draw(  # noqa: PLR0917
             tendril(w.flesh, path, [strut, 0], 3, F.bone)
         tip = ts[0] if len(ts) > 0 else r
         mid = [(r[0] + tip[0]) / 2, y + 0.5, (r[1] + tip[1]) / 2]
-        for light in lights if lights != None else []:  # noqa: E711
+        for light in lights if lights != None else []:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             decal(w.neon, mirror(light, s), y + 0.3, glow)
-        if lights == None:  # noqa: E711
+        if lights == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             vein(w.vein, [[r[0], y + 0.5, r[1]], mid], 0.5, glow)
 
     return draw

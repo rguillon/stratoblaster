@@ -15,9 +15,9 @@ from render.scenery.tile_road_geometry import TileRoadLook
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.road_traffic import StreetLine  # noqa: E402
-from core.scenery.road_types import Road  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
@@ -47,7 +47,7 @@ class RoadOpacity:
 class RoadLook:
     """How roads are drawn on the ground."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         main: Rgb,
         cross: Rgb,
@@ -112,7 +112,7 @@ def _ribbon_points(road: Road, lines: list[StreetLine]) -> list[RoadPoint]:
     meets there (its own if none), under it, so two streets meeting at a corner leave no notch and
     an avenue does not stick out past a narrower street (phase 4 review)."""
     points = road.points
-    if road.kind != "street" or len(points) < 2:  # noqa: PLR2004
+    if road.kind != "street" or len(points) < 2:  # noqa: PLR2004 (a road needs two points)
         return list(points)
 
     def past(end: RoadPoint, nxt: RoadPoint) -> RoadPoint:
@@ -153,7 +153,7 @@ def _quad(to: ColoredGeometry, source: ColoredGeometry, corners: list[int]) -> N
     to.indices.extend([base, base + 1, base + 2, base + 1, base + 3, base + 2])
 
 
-def build_road_geometry(  # noqa: C901
+def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept whole)
     roads: list[Road],
     ground: HeightSource,
     z_min: float,

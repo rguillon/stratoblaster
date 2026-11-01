@@ -14,21 +14,25 @@ from core.systems.projectile_motion import heading_to
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyContext, LaserOwner  # noqa: E402
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
+from core.entities.enemy import EnemyContext, LaserOwner  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MuzzleSource(LaserOwner, Protocol):
     """What a gun fires from: an enemy or a boss's piece, and where its muzzles are now."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the source's centre."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of the source's centre."""
+        ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
         """Where `muzzle` is now (`Enemy.place`, `BossPiece.place`), turned with its turret when

@@ -33,7 +33,7 @@ from game.sim.veteran_kinds import VETERAN_KINDS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402
+from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

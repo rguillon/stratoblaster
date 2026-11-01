@@ -6,13 +6,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.scenery.road_types import RoadSlot  # noqa: E402
+from core.scenery.road_types import RoadSlot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -66,6 +66,8 @@ class SegmentIndex:
         """Farthest a segment reaches from its nearer end: half its length, plus half its width."""
 
     def add(self, road: Road) -> None:
+        """Adds the segments of `road` (between each pair of consecutive points) to the buckets of
+        their ends, and widens the reach."""
         points = road.points
         for i in range(len(points)):
             if i + 1 >= len(points):

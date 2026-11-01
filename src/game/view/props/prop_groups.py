@@ -5,15 +5,15 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.cars import CAR_IDS  # noqa: E402
-from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402
-from game.view.props.prop_models import PROP_MODELS  # noqa: E402
-from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402
-from render.game_view import PropGroup  # noqa: E402
+from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.prop_models import PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.game_view import PropGroup  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def tile_notes(models: list[Any]) -> dict[str, str]:

@@ -1,4 +1,4 @@
-"""A tiny scenery level for the placement tests, made by hand (ENG-145): the parts of the placers
+"""A tiny scenery level for the placement tests, made by hand (ENG-145): only the parts the placers
 read. Two flat sections of 10 s at 20 units/s, a sea, one straight main road along X = 0, straight
 paths every 100 units out to X = +-100 (off screen), and two prop kinds."""
 

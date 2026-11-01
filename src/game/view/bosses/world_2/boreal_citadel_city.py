@@ -17,9 +17,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -29,7 +29,7 @@ H = ENEMY_LOOK.hull
 
 _AURORA_NEON = BOSS_LOOK.neon["boreal-citadel"]
 # Aurora green: the boss's registered neon (FB-BOREAL-CITADEL-05, BOSS-50).
-AURORA = [1, 1, 1] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711
+AURORA = [1, 1, 1] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Violet: the boss's second neon colour.
 VIOLET = [0.62, 0.28, 1]
 
@@ -49,7 +49,7 @@ CITADEL_DECK = record({"top": 6, "avenue": 12})
 
 def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlinePoint]:
     """A rectangle `w` wide and `d` long around `centre` (x, z), the origin by default."""
-    if centre == None:  # noqa: E711
+    if centre == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         centre = [0, 0]
     x = centre[0]
     z = centre[1]
@@ -146,7 +146,7 @@ def _draw_tower(p: EnemyParts, t: Tower, s: float) -> None:
     # The left half's towers have the other colour, so the city is not a mirror image.
     lit = t.lit if s > 0 else (VIOLET if t.lit is AURORA else AURORA)
     windows(neon, [x, base, t.z + t.d / 2 + 0.1], [t.w, t.h], lit)
-    if t.tier == None:  # noqa: E711
+    if t.tier == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return
     w = t.tier[0]
     d = t.tier[1]

@@ -13,10 +13,10 @@ from input.gamepad_menu_input import axis_value
 from input.held_directions import HeldDirections
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.gamepad_menu_input import GamepadLike, GamepadSource  # noqa: E402
+from input.gamepad_menu_input import GamepadLike, GamepadSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Dpad(Protocol):

@@ -10,20 +10,20 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.textured import QuadBuilder  # noqa: E402
+from render.geometry.textured import QuadBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.window_look import (  # noqa: E402
+from game.config.window_look import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     WINDOW_ATLAS,
     WINDOW_CELL,
     WINDOW_OFFSET,
     WINDOW_TINT,
 )
-from render.scenery.window_atlas import atlas_cells, door_column, style_columns  # noqa: E402
+from render.scenery.window_atlas import atlas_cells, door_column, style_columns  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Walls narrower or lower than this get no windows.
 MIN_WALL = 1
@@ -36,7 +36,7 @@ def tint_of(color: Rgb) -> Rgb:
     return [1 - k + color[0] * k, 1 - k + color[1] * k, 1 - k + color[2] * k]
 
 
-def wall_uv(random: Any, style: int, length: float, height: float) -> list[float]:  # noqa: ANN401
+def wall_uv(random: Any, style: int, length: float, height: float) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The `[u0, v0, u1, v1]` of a wall `length` × `height` in the band of `style`: one atlas cell
     per `WINDOW_CELL`, the block at a random place in the band (no wider than the band: a longer
     wall gets wider windows)."""
@@ -56,7 +56,7 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
     lot: list[float],
     span: list[float],
     color: Rgb,
-    mixed: bool = False,  # noqa: FBT001, FBT002
+    mixed: bool = False,  # noqa: FBT001, FBT002 (positional: Transcrypt has no keyword arguments)
     style: int | None = None,
 ) -> None:
     """The windows of a `w` × `d` box at (x, z) (`lot`: `[x, z, w, d]`), from `y0` to `y1`

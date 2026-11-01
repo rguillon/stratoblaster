@@ -16,7 +16,7 @@ from audio.audio_types import xorshift
 from config.audio import AudioLimiter
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -156,7 +156,7 @@ class AudioOutput:
             if reverb is not None:
                 return AudioBuses(context, music, sfx, reverb)
             return AudioBuses(context, music, sfx)
-        except:  # noqa: E722
+        except:  # noqa: E722 (any failure of the Web Audio graph falls back to silence)
             self._failed = True
             return None
 

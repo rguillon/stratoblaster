@@ -11,7 +11,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Protocol  # noqa: E402
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A muzzle: its offset from the enemy's centre as seen when the enemy faces down the screen (X
 # right, Y up, logical pixels), and its height above the playfield (towards the camera).
@@ -22,26 +22,38 @@ class PlayfieldEye(Protocol):
     """Where the camera's eye is: the playfield point under it, and its height above it."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the playfield point under the eye."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of the playfield point under the eye."""
+        ...
 
     @property
-    def height(self) -> float: ...
+    def height(self) -> float:
+        """Height of the eye above the playfield."""
+        ...
 
 
 class MuzzleBody(Protocol):
     """How a body is placed: its centre and the way its nose points (`roll` is optional)."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the body's centre."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of the body's centre."""
+        ...
 
     @property
-    def heading(self) -> float: ...
+    def heading(self) -> float:
+        """Direction the body's nose points, in radians from +Y."""
+        ...
 
 
 __pragma__("noskip")

@@ -8,49 +8,49 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_2.glacier_colossus import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.glacier_colossus import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     COLOSSUS_CELLS,
     COLOSSUS_CUTTER_LASER,
     COLOSSUS_ORE_GUNS,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import GEAR, cog  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import vent  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_mechanism import GEAR, cog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     WHITE,
     H,
     neon_band,
     offset,
     scaled,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402
+from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     PACKED,
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     gland,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402
-from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The Glacier Colossus's red-orange neon (FB-GLACIER-COLOSSUS-04).
 _COLOSSUS_NEON = BOSS_LOOK.neon["glacier-colossus"]
-COLOSSUS_NEON = [1.0, 0.35, 0.08] if _COLOSSUS_NEON == None else _COLOSSUS_NEON  # noqa: E711
+COLOSSUS_NEON = [1.0, 0.35, 0.08] if _COLOSSUS_NEON == None else _COLOSSUS_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 # The side of a section that faces the nose or the tail, painted with the frost.
 POD_BACK = 2

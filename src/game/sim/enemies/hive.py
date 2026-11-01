@@ -13,7 +13,7 @@ from game.sim.enemies.wasp import Wasp
 from game.sim.joints import jointed_design
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

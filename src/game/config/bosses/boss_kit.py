@@ -31,7 +31,7 @@ from game.config.scoring import boss_part_points
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -41,7 +41,7 @@ L = ENEMY_UNIT
 
 def _unset(value: Any) -> bool:
     """Whether a field is missing or null: `=== undefined` or `=== null` in the TS."""
-    return bool(value == None)  # noqa: E711
+    return bool(value == None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 # Which of a piece's guns fire each kind of volley (`FIRED_BY` in the TS).

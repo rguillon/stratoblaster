@@ -6,11 +6,11 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.color import contrast_ratio, relative_luminance, srgb_byte_to_linear  # noqa: E402
+from core.math.color import contrast_ratio, relative_luminance, srgb_byte_to_linear  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Pixels:

@@ -8,17 +8,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
 
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.away_placement import Building  # noqa: E402
-from core.scenery.draws import between, weighted  # noqa: E402
-from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.draws import between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Draws per floating prop: position X, position Z, kind, scale, turn.
 FLOAT_DRAWS = 5

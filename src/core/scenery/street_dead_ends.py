@@ -4,14 +4,14 @@ review)."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.street_links import Link, LinksAt, Node  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import Link, LinksAt, Node  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.min_heap import MinHeap  # noqa: E402
+from core.math.min_heap import MinHeap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Most passes of the dead-end removal (each pass can extend or cut every dead end by a link).
 MAX_PASSES = 500

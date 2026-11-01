@@ -19,11 +19,11 @@ from game.sim.boss_build import (
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss_pieces import BossPart  # noqa: E402
-from core.entities.enemy import EnemyContext, EnemySpawnArea  # noqa: E402
-from core.systems.boss_pattern import BossPatternSpec, VolleySource, VolleySources  # noqa: E402
+from core.entities.boss_pieces import BossPart  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_pattern import BossPatternSpec, VolleySource, VolleySources  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

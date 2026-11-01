@@ -18,7 +18,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -29,7 +29,7 @@ def _height_at(tri: Any, x: float, z: float) -> Any:
     b = tri[1].position
     c = tri[2].position
     det = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2])
-    if abs(det) < 1e-9:  # noqa: PLR2004
+    if abs(det) < 1e-9:  # noqa: PLR2004 (a numerical zero for a determinant)
         return None
     l0 = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / det
     l1 = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / det
@@ -46,7 +46,7 @@ def surface_below(tris: list[Any], x: float, z: float, below: float) -> Any:
         if not up_facing(tri, 0.2):
             continue
         h = _height_at(tri, x, z)
-        if h != None and h <= below and (best == None or h > best):  # noqa: E711
+        if h != None and h <= below and (best == None or h > best):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             best = h
     return best
 
@@ -68,9 +68,9 @@ def stems_for(tris: list[Any], lasting: list[Any] | None = None) -> list[Any]:
         z = (b[2] + b[5]) / 2
         width = max(1.2, min(4, min(b[3] - b[0], b[5] - b[2]) * 0.5))
         low = surface_below(roots, x, z, b[1] + 0.01)
-        if low == None and len(roots) == 0:  # noqa: E711
+        if low == None and len(roots) == 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             low = surface_below(held, x, z, b[1] + 0.01)
-        if low != None:  # noqa: E711
+        if low != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             result.append(["stem", x, z, low, b[1] + (b[4] - b[1]) * 0.4, width])
             continue
         target = held if len(roots) == 0 else roots

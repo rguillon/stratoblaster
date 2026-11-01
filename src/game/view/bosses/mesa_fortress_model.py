@@ -34,7 +34,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -187,7 +187,7 @@ def _fan_point(yaw: float, r: float) -> Vec3:
 def _draw_fan_cannon(p: Any, at: Any = None) -> None:
     """The fan cannon on the brow (the core's gun, FB-MESA-FORTRESS-03): a grafted housing and five
     barrels fanned out forward, turning around the hub of its barrels (its pivot)."""
-    p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]
+    p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     for k in range(5):
         yaw = (k - 2) * 0.28
         p.hull.cylinder(

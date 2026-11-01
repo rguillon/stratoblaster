@@ -8,27 +8,27 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_2.aurora_station import AURORA_EMITTER  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_greebles import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.aurora_station import AURORA_EMITTER  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     lamps,
     plate,
     rect,
 )
-from game.view.bosses.mini_boss_mechanism import conduit  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.mini_boss_mechanism import conduit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     QUARTER,
     SHADE,
     WHITE,
@@ -36,18 +36,18 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     offset,
     turret,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402
-from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The Aurora Station's green neon, and the violet one it shares its lights with.
 _AURORA_NEON = BOSS_LOOK.neon["aurora-station"]
-AURORA_GREEN = [0.3, 1.0, 0.55] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711
+AURORA_GREEN = [0.3, 1.0, 0.55] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 AURORA_VIOLET = [0.62, 0.3, 1.0]
 # Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost).
 FROST = [0.75, 0.82, 0.9]

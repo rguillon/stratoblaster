@@ -23,7 +23,7 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -47,7 +47,7 @@ def hidden_weapon(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     its centre, and its turn (radians, about the vertical) folded flat; left out, the view hinges
     it on its inner side, folded back along the hull."""
     look: Any = {"kind": kind, "radius": radius, "height": pod_height(radius, height)}
-    if mount != None:  # noqa: E711
+    if mount != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         look["mount"] = mount
     return record(
         {
@@ -107,7 +107,7 @@ def armour_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
             "form": form,
             "outlines": outlines,
             "frame": frame,
-            "heights": heights if heights != None else [-1000, 1000],  # noqa: E711
+            "heights": heights if heights != None else [-1000, 1000],  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         }
     )
 
@@ -148,14 +148,14 @@ def with_weapons(design: Any, weapons: list[Any], armour: list[Any], more: Any =
     guns = merge(design.guns, {})
     looks: Any = record({})
     volleys: list[Any] = []
-    launches: list[Any] = list(design.launches) if design.launches != None else []  # noqa: E711
+    launches: list[Any] = list(design.launches) if design.launches != None else []  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     for weapon in weapons:
         parts.append(weapon.part)
         guns[weapon.part.id] = weapon.guns
         looks[weapon.part.id] = weapon.look
         volleys.extend(weapon.volleys)
         launches.extend(weapon.launches)
-    if more != None:  # noqa: E711
+    if more != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         volleys.extend(more)
     stages = [concat(stage, volleys) for stage in design.stages]
     return merge(

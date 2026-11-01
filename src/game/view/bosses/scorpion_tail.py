@@ -24,7 +24,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -151,7 +151,7 @@ def tail_triangles(unfold: float) -> list[Any]:
 def unfolding(boss: Any) -> float:
     """How far the tail has unfolded for `boss` (None: at rest): from the burst of its armour to
     its weapons swinging up (`BOSS_LOOK.reveal`), then out for good."""
-    if boss == None:  # noqa: E711
+    if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return 0
     if boss.form >= 1:
         return 1

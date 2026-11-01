@@ -19,3 +19,9 @@ def test_ui_look_10_every_menu_text_is_a_non_empty_string_or_a_text_builder() ->
             assert text(*(["x"] * text.__code__.co_argcount)), key
         else:
             assert isinstance(text, str) and text, key
+
+
+def test_ui_load_07_the_context_lost_message_asks_for_a_reload_and_has_a_reload_button() -> None:
+    """The message over the page (main.py `show_context_lost`) and the button's text."""
+    assert MENU_TEXTS["contextLost"] == "The graphics context was lost. Please reload the page."
+    assert MENU_TEXTS["reload"] == "Reload"

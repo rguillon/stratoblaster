@@ -6,15 +6,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import PropKindRule, PropRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_tiles import has_tile_key, tile_key  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 

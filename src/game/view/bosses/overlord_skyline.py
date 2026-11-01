@@ -19,7 +19,7 @@ from render.geometry.organic import organ  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -67,7 +67,7 @@ def _spire(p: Any, tower: Any) -> None:
     roof = opt(tower, "roof", None)
     base = OVERLORD_DECK["top"] - 1
     r = max(w, d) * 0.6
-    height = h + (tier[2] if tier != None else 0) + 1  # noqa: E711
+    height = h + (tier[2] if tier != None else 0) + 1  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     color = SHADES[abs(math.floor(x + z + 0.5)) % len(SHADES)]
     profile = [
         [r, 0],
@@ -81,7 +81,7 @@ def _spire(p: Any, tower: Any) -> None:
         k = 1 - (y / height) * 0.5
         p.vein.ring(r * 0.86 * k + 0.1, 0.7, 5, N, Placement([x, base + y, z], x * 0.1))
         y += 7
-    if roof != None:  # noqa: E711
+    if roof != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         graft(p, polygon(4, r * 0.6), [base + height - 1, base + height], [x, 0, z])
 
 

@@ -7,29 +7,39 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class ShotTarget(Protocol):
     """A target shots can hit (a circle with health). Enemies and boss pieces satisfy it."""
 
     @property
-    def id(self) -> int: ...
+    def id(self) -> int:
+        """Unique id among the world's targets."""
+        ...
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of its centre, in logical pixels."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of its centre, in logical pixels."""
+        ...
 
     @property
-    def radius(self) -> float: ...
+    def radius(self) -> float:
+        """Radius of its hit circle."""
+        ...
 
     health: float
 
     @property
-    def max_health(self) -> float: ...
+    def max_health(self) -> float:
+        """Health it starts with."""
+        ...
 
 
 __pragma__("noskip")

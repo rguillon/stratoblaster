@@ -5,8 +5,8 @@
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Lanes = int  # Lanes each way of a road: 1 to 4 (also `lanes.Lanes`).
 

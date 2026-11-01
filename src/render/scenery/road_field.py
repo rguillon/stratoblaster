@@ -23,12 +23,12 @@ from render.scenery.road_geometry import RoadLook, build_road_geometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

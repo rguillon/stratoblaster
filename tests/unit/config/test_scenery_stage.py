@@ -28,13 +28,11 @@ def test_d216_the_near_clip_stays_well_before_the_flight_plane() -> None:
     """GFX-CAM-06."""
     import math  # noqa: PLC0415
 
-    from core.content.game_definition import LogicalScreen  # noqa: PLC0415
-    from game.config.game import GAME_CONFIG  # noqa: PLC0415
-    from game.config.scenery_look import PLAYFIELD_CAMERA  # noqa: PLC0415
+    from fixtures.sample_game import PLAYFIELD_CAMERA, SAMPLE_GAME  # noqa: PLC0415
+
     from render.scenery.playfield_framing import frame_playfield  # noqa: PLC0415
 
-    screen = LogicalScreen(GAME_CONFIG.screen.width, GAME_CONFIG.screen.height)
-    framing = frame_playfield(screen, PLAYFIELD_CAMERA)
+    framing = frame_playfield(SAMPLE_GAME.screen, PLAYFIELD_CAMERA)
     # The nearest the camera sees the flight plane: along the top edge of its view.
     nearest = framing.height / math.cos(framing.tilt - framing.half_fov)
     stage = SCENERY_STAGE_CONFIG

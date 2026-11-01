@@ -10,21 +10,21 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.rng import create_rng, pick, random_in  # noqa: E402
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.config.window_look import DOOR_STYLES  # noqa: E402
-from game.view.props.window_facades import doorway, facade_windows, wall_windows  # noqa: E402
-from render.geometry.solids import Placement, SolidBuilder  # noqa: E402
-from render.geometry.textured import QuadBuilder  # noqa: E402
-from render.scenery.scenery_look import PropGeometry  # noqa: E402
+from core.math.rng import create_rng, pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.window_look import DOOR_STYLES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.window_facades import doorway, facade_windows, wall_windows  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement, SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.textured import QuadBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class TileKit:

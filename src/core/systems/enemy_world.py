@@ -14,16 +14,16 @@ from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.entities.enemy import (  # noqa: E402
+from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     DropSource,
     Enemy,
     EnemyLaserSpec,
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import PlayfieldEye, RaisedPoint  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.math.rng import Random  # noqa: E402
+from core.entities.muzzle import PlayfieldEye, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -207,7 +207,7 @@ class EnemyWorld:
         self._collect_destroyed()
         for enemy in self.enemies:
             # Entities start `age` at the int 0; it is a float from here on.
-            enemy.age += dt  # type: ignore[assignment]
+            enemy.age += dt  # type: ignore[assignment]  # the field type does not admit the sum
             enemy.update(self._context, dt)
             self._check_gone(enemy)
         self._collect_destroyed()

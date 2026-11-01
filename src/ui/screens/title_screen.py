@@ -4,14 +4,14 @@ Start, Settings (UI-SET-01), Dev (DEV-MENU-01, D-199, with `?dev`), controls hin
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import TitleView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import TitleView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import element, entry  # noqa: E402
+from ui.screens.elements import element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The index of the Dev entry (D-199), after Start and Settings.
 DEV_ENTRY = 2

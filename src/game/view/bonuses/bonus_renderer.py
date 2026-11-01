@@ -8,22 +8,22 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.bonus_world import Bonus  # noqa: E402
-from render.game_view import BonusRenderer  # noqa: E402
+from core.systems.bonus_world import Bonus  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.game_view import BonusRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.bonus_look import BONUS_LOOK as LOOK  # noqa: E402
-from game.view.bonuses.bonus_geometry import (  # noqa: E402
+from game.config.bonus_look import BONUS_LOOK as LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bonuses.bonus_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_bomb_badge,
     build_bonus_badge,
     build_life_badge,
 )
-from game.view.shot_geometry import build_glow_disc  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from render.babylon import (  # noqa: E402
+from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     color3,
     color3_black,
@@ -32,7 +32,7 @@ from render.babylon import (  # noqa: E402
     node_name,
     vertex_data_of,
 )
-from render.node_pool import NodePool  # noqa: E402
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 KINDS = ["weapon", "life", "bomb"]
 

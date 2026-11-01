@@ -11,12 +11,12 @@ from render.scenery.tile_road_geometry import add_piece
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_tiles import RoadPiece  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
-from render.scenery.road_atlas import RoadAtlas  # noqa: E402
-from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402
+from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.road_atlas import RoadAtlas  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Height = Callable[[float, float], float]
 __pragma__("noskip")
@@ -70,7 +70,7 @@ def _add_surface(
             geo.indices.extend([a, a + 1, c, a + 1, c + 1, c])
 
 
-def build_road_surfaces(  # noqa: PLR0917
+def build_road_surfaces(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     pieces: list[RoadPiece],
     tile: TileRules,
     look: TileRoadLook,

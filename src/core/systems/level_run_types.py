@@ -8,21 +8,21 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import LogicalScreen  # noqa: E402
-from core.content.game_level import GameLevel  # noqa: E402
-from core.entities.enemy import EnemyKindDefinition  # noqa: E402
-from core.entities.muzzle import PlanePoint, PlayfieldEye  # noqa: E402
-from core.entities.weapon import WeaponDefinition  # noqa: E402
-from core.systems.bonus_world import BonusRules  # noqa: E402
-from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402
-from core.systems.player_bombs import BombRules  # noqa: E402
-from core.systems.player_flight import FlightBounds, FlightInput  # noqa: E402
-from core.systems.player_hull import HullRules  # noqa: E402
-from core.systems.run_arsenal import WeaponLevels  # noqa: E402
-from core.systems.ship_journey import JourneyRules  # noqa: E402
+from core.content.game_definition import LogicalScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.game_level import GameLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import PlanePoint, PlayfieldEye  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.bonus_world import BonusRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_bombs import BombRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_flight import FlightBounds, FlightInput  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.run_arsenal import WeaponLevels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.ship_journey import JourneyRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Where a level stands (GAME-LEVEL-10); `over` once the player has lost every life (GAME-LIFE-09).
 LevelPhase = Literal["playing", "clearing", "complete", "over"]

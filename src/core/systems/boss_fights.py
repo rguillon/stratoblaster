@@ -9,12 +9,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss import Boss  # noqa: E402
-from core.entities.enemy import EnemySpawnArea  # noqa: E402
-from core.scenery.scroll_track import ScrollTrack  # noqa: E402
+from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scroll_track import ScrollTrack  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The two bosses of a level (GAME-LEVEL-04): one around its middle, one at its end.
 BossRank = Literal["mini", "final"]
@@ -49,7 +49,9 @@ class BossKindDefinition(Protocol):
         ...
 
     @property
-    def name(self) -> str: ...
+    def name(self) -> str:
+        """The kind's display name."""
+        ...
 
     def spawn(self, area: EnemySpawnArea) -> Boss:
         """Creates the boss just above the playfield."""
@@ -167,6 +169,7 @@ class BossFights:
 
     @property
     def rank(self) -> BossRank | None:
+        """The rank of the boss fight in progress, or None when no boss is being fought."""
         fight = self._fight
         return fight.level.rank if fight is not None else None
 
@@ -182,10 +185,12 @@ class BossFights:
 
     @property
     def has_final(self) -> bool:
+        """Whether one of the level's bosses is the final one."""
         return any(boss.rank == "final" for boss in self._bosses)
 
     @property
     def final_defeated(self) -> bool:
+        """Whether the final boss has been defeated."""
         return any(boss.rank == "final" for boss in self.defeated)
 
     @property

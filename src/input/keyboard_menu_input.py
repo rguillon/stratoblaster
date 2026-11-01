@@ -9,10 +9,10 @@ from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
 __pragma__("skip")
-from collections.abc import Callable, Mapping  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Mapping  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.menu_action import MenuAction  # noqa: E402
+from input.menu_action import MenuAction  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MenuKeyEvent(Protocol):
@@ -43,9 +43,9 @@ class _KeyUpEvent(Protocol):
 
 
 class _Target(Protocol):
-    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802
+    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
 
-    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802
+    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
 
 
 __pragma__("noskip")

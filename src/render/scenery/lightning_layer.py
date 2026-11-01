@@ -25,11 +25,11 @@ from render.scenery.cloud_layers import BELOW_CLOUDS_GROUP
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.atmosphere import Atmosphere  # noqa: E402
-from core.scenery.lightning import Bolt, Strike  # noqa: E402
-from render.scenery.playfield_framing import GroundWindow  # noqa: E402
+from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.lightning import Bolt, Strike  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.playfield_framing import GroundWindow  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Point = tuple[float, float]
 __pragma__("noskip")
@@ -108,7 +108,7 @@ def bolt_lines(seed: float, span: float) -> list[list[Point]]:
     forks: list[list[Point]] = []
     for _ in range(BOLT_LOOK.forks):
         origin = main[1 + math.floor(random() * (len(main) - 2))]
-        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)  # noqa: PLR2004
+        turn = angle + (-1 if random() < 0.5 else 1) * (0.4 + random() * 0.6)  # noqa: PLR2004 (a fair coin flip and the fork's turn range)
         forks.append(_zigzag(random, origin, span * BOLT_LOOK.fork, turn, BOLT_LOOK.pieces // 2))
     out = [main]
     out.extend(forks)

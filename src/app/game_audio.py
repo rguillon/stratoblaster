@@ -18,13 +18,13 @@ from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 from config.audio import AUDIO_CONFIG
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.menu_state import MenuFeedback, MenuState  # noqa: E402
-from app.settings_menu import Volumes  # noqa: E402
-from core.systems.level_run import LevelRun  # noqa: E402
-from core.systems.level_run_types import LevelResult  # noqa: E402
-from input.menu_action import MenuCommand  # noqa: E402
+from app.menu_state import MenuFeedback, MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run import LevelRun  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run_types import LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

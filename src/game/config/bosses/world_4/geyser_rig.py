@@ -18,7 +18,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -105,7 +105,7 @@ def sweep(every: float, first: float) -> Any:
 _GEYSER_RIG = record(
     {
         "id": "geyser-rig",
-        # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 9, as 3-5.
+        # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 11.
         "rage": rage.curtain(11, "orange", "red"),
         # Its core and parts, their health, and its points (FB-GEYSER-RIG-09).
         "stats": stats(

@@ -14,7 +14,7 @@ from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROA
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -47,7 +47,7 @@ def shore(x: float, amplitude: float, wavelength: float) -> Any:
 
 
 def water(name: str, seconds: float, base: float, amplitude: float) -> Any:
-    """Open water: deep sea bed, nothing stands on it but the islands, green with palms."""
+    """Open water: deep sea bed, nothing stands on it but the islands."""
     return record(
         {
             "name": name,

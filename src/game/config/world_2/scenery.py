@@ -17,7 +17,7 @@ from game.config.world_2.props import WORLD_2_GROUPS, WORLD_2_PROPS, WORLD_2_ROA
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

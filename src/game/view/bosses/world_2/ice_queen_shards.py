@@ -17,9 +17,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.entities.muzzle import Muzzle  # noqa: E402
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -27,7 +27,7 @@ __pragma__("noskip")
 
 _ICE_QUEEN_NEON = BOSS_LOOK.neon["ice-queen"]
 # Pale blue: the Ice Queen's registered neon (MB-ICE-QUEEN-04, BOSS-50).
-PALE_BLUE = WHITE if _ICE_QUEEN_NEON == None else _ICE_QUEEN_NEON  # noqa: E711
+PALE_BLUE = WHITE if _ICE_QUEEN_NEON == None else _ICE_QUEEN_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Violet: the Ice Queen's second neon colour, on its edges (MB-ICE-QUEEN-04).
 VIOLET = [0.62, 0.3, 1]
 

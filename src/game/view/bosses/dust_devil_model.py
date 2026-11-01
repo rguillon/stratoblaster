@@ -25,7 +25,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -122,7 +122,7 @@ def _draw_core(p: Any) -> None:
         x = math.sin(a)
         z = math.cos(a)
         tentacle(p, [x * 5, 8, z * 5], [x * 18, 1.6, z * 18], [0, 2.2, 0], [1.1, 0.6], F.bone, 3)
-        if abs(z) < 0.95:  # noqa: PLR2004
+        if abs(z) < 0.95:  # noqa: PLR2004 (a geometric threshold of the model)
             graft(
                 p,
                 polygon(4, 2.6, [0.8, 1.4]),

@@ -5,11 +5,11 @@ it from the bottom."""
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import element, replace_children  # noqa: E402
+from ui.screens.elements import element, replace_children  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class BossBarFrame:

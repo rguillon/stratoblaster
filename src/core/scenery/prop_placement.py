@@ -26,13 +26,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.ground_boxes import BuildingRecord, GroundBox  # noqa: E402
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.road_network import RoadNetwork  # noqa: E402
-from core.scenery.road_types import RoadSlot, RoadSnapshot  # noqa: E402
-from core.scenery.scenery_level import (  # noqa: E402
+from core.scenery.ground_boxes import BuildingRecord, GroundBox  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_network import RoadNetwork  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import RoadSlot, RoadSnapshot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BlockFill,
     PropGroupRule,
     PropKindRule,
@@ -40,24 +40,24 @@ from core.scenery.scenery_level import (  # noqa: E402
     TerrainSection,
     Woods,
 )
-from core.scenery.street_links import Block  # noqa: E402
+from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from config.scenery_stage import SCENERY_STAGE_CONFIG  # noqa: E402
-from core.math.noise import create_noise2d, hash_2d  # noqa: E402
-from core.scenery.away_placement import (  # noqa: E402
+from config.scenery_stage import SCENERY_STAGE_CONFIG  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import create_noise2d, hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.away_placement import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     AWAY_MARGIN,
     Building,
     ZSpan,
     place_hamlets,
     place_loners,
 )
-from core.scenery.block_towers import tower_in  # noqa: E402
-from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts  # noqa: E402
-from core.scenery.draws import allowed, between, weighted  # noqa: E402
-from core.scenery.float_placement import fixed_pieces, floating_in  # noqa: E402
-from core.scenery.ground_boxes import (  # noqa: E402
+from core.scenery.block_towers import tower_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.draws import allowed, between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.float_placement import fixed_pieces, floating_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BuildingIndex,
     GroundArea,
     PlacerSnapshot,
@@ -65,9 +65,9 @@ from core.scenery.ground_boxes import (  # noqa: E402
     inside,
     overlap,
 )
-from core.scenery.ground_fit import SampledGround, lowest_under, standing_height  # noqa: E402
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.street_grid import block_parts  # noqa: E402
+from core.scenery.ground_fit import SampledGround, lowest_under, standing_height  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_grid import block_parts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Draws of a slot (building, kind, scale) and of a cell (trees): each draw has its own stream.
 DRAW_BUILDING = 0
@@ -169,7 +169,7 @@ class _AwaySite:
         return True
 
 
-def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001
+def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001 (a flag of the prop's placement, positional)
     """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
     with them (D-214, GFX-PROP-08), some of a wood's trees (`keep`), a few of the others
     (`scatter`), by `draw` (the tree's own, apart from its edge draw)."""
@@ -435,6 +435,7 @@ class PropPlacer:
         return PlacerSnapshot(list(self._buildings), len(self._fixed), self._placed_to)
 
     def occupy(self, building: BuildingRecord) -> None:
+        """Records `building` as placed: it is kept for `snapshot` and takes its ground box."""
         self._buildings.append(building)
         self._occupied.add(building)
 

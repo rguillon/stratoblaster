@@ -11,9 +11,9 @@ from render.scenery.prop_field import MATRIX_FLOATS, mesh_of, same_placements
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -26,7 +26,7 @@ def _mesh_key(kind: str, frame: int) -> str:
     return kind + "#" + str(frame)
 
 
-def placement_matrix(buffer: Any, at: int, p: PropPlacement) -> None:  # noqa: ANN401
+def placement_matrix(buffer: Any, at: int, p: PropPlacement) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Writes the world matrix of `p`'s quad (scaled, moved, not turned) at float `at` of
     `buffer`."""
     s = p.scale
@@ -40,11 +40,11 @@ class ImposterField:
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
-        scene: Any,  # noqa: ANN401
+        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         kinds: list[str],
         look: Any,  # noqa: ANN401 (a config record)
         tilt: float,
-        material: Any,  # noqa: ANN401
+        material: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     ) -> None:
         self._look = look
         self._meshes: dict[str, Any] = {}

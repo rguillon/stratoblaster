@@ -14,11 +14,11 @@ from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss_turret import BossTurret  # noqa: E402
-from core.entities.enemy import (  # noqa: E402
+from core.entities.boss_turret import BossTurret  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Enemy,
     EnemyBulletSpec,
     EnemyContext,
@@ -26,8 +26,8 @@ from core.entities.enemy import (  # noqa: E402
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import Muzzle  # noqa: E402
-from core.systems.gun_muzzles import MuzzleSource  # noqa: E402
+from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.gun_muzzles import MuzzleSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -356,6 +356,8 @@ class BossPattern:
         return best
 
     def step(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
+        """Advances the volleys by `dt` seconds, scaled by the fire rate: fires those that are due
+        from their sources and steps their bursts. A volley without a live source waits."""
         time = dt * ctx.fire_rate
         for i in range(len(self.volleys)):
             volley = self.volleys[i]
@@ -399,7 +401,7 @@ class BossPattern:
             )
             rate = spec.turn_rate_deg if laser is None else laser_rate
             # Entities start `aim` at the int 0; it is a float from here on.
-            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]
+            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]  # the value assigned is wider than the field type
 
     def _laser_aim(
         self,
@@ -569,7 +571,7 @@ class _TurnedLaserOwner:
         self._turret = turret
 
     @property
-    def emitter(self):  # type: ignore[no-untyped-def]
+    def emitter(self):  # type: ignore[no-untyped-def]  # a Transcrypt-compiled method, left untyped
         return self._owner.emitter
 
     @property

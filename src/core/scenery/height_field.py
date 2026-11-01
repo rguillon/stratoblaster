@@ -9,9 +9,9 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import (  # noqa: E402
+from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Lakes,
     Meander,
     PlacedSection,
@@ -21,7 +21,7 @@ from core.scenery.scenery_level import (  # noqa: E402
 
 __pragma__("noskip")
 
-from core.math.noise import (  # noqa: E402
+from core.math.noise import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     NOISE_SLOPE,
     OctaveOptions,
     create_noise2d,
@@ -29,8 +29,8 @@ from core.math.noise import (  # noqa: E402
     ridged,
     smoothstep,
 )
-from core.scenery.ice_sculpt import LakeField, crevasse_depth  # noqa: E402
-from core.scenery.scenery_level import Surface, layout_sections  # noqa: E402
+from core.scenery.ice_sculpt import LakeField, crevasse_depth  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import Surface, layout_sections  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 

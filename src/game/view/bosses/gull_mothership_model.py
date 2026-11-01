@@ -35,7 +35,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -108,7 +108,7 @@ def _draw_emitter(p: Any) -> None:
     """The laser eye at the nose (FB-GULL-MOTHERSHIP-03): a socket of flesh, a grafted ring, the
     lens glowing as it charges."""
     at = [0, DECK_TOP + 3, 58]
-    p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]
+    p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.hull.ring(7.3, 1.4, 8, M.dark, Placement(shift(at, [0, 0, 5.4]), 0, QUARTER))
     for z in [1.5, 5]:
         p.neon.ring(7.6 - z * 0.15, 1, 8, N, Placement(shift(at, [0, 0, z]), 0, QUARTER))

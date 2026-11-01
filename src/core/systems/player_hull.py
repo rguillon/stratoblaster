@@ -4,7 +4,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 HullEvent = Literal["ignored", "hit", "lifeLost", "gameOver"]
 

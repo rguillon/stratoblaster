@@ -45,12 +45,12 @@ from game.sim.bosses.world_boss import WorldBoss
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss import Boss  # noqa: E402
-from core.entities.enemy import EnemySpawnArea  # noqa: E402
-from core.systems.boss_fights import BossKindDefinition  # noqa: E402
+from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A boss design is a config record (`game/config/record.py`), typed as Any there.
 __pragma__("skip")

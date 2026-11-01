@@ -1,5 +1,6 @@
 """Times the work of each frame and of each level start (DEV-PERF-01): how many frames are longer
-than `long_frame_ms`, the longest one, and the last loading time. `now` is the clock, in
+than `long_frame_ms`, the longest one, the last loading time and the draw calls of the last frame
+(ENG-106, recorded by the game). `now` is the clock, in
 milliseconds (`performance.now` in the browser). These numbers check the frame-rate target
 (ENG-101) and the freezes (PERF-19), and are taken before anything is optimised (PERF-02).
 
@@ -14,9 +15,9 @@ from config.engine import ENGINE_CONFIG
 from ui.perf_overlay import PerfNumbers, PerfOverlay
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.screens.elements import MenuDocument  # noqa: E402
+from ui.screens.elements import MenuDocument  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -32,6 +33,8 @@ class PerfMonitor:
         self._frames = 0
         self._last_load: float | None = None
         self._longest_load_step: float | None = None
+        # Draw calls of the last frame drawn (ENG-106), as the game recorded them.
+        self._draw_calls = 0.0
         self._loading_step = 0.0
         self._frame_start: float | None = None
         self._load_start: float | None = None
@@ -46,12 +49,17 @@ class PerfMonitor:
             self._frames,
             self._last_load,
             self._longest_load_step,
+            self._draw_calls,
         )
 
     @property
     def loading(self) -> bool:
         """Whether a level is loading (between `load_started` and `load_finished`)."""
         return self._load_start is not None
+
+    def record_draw_calls(self, count: float) -> None:
+        """Records the draw calls of the frame just drawn (ENG-106): the overlay shows the last."""
+        self._draw_calls = count
 
     def frame_started(self) -> None:
         """Starts timing a frame."""

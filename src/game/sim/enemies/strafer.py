@@ -11,7 +11,7 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

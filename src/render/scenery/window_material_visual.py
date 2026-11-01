@@ -22,14 +22,14 @@ from render.scenery.window_atlas import kept_window_atlas
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 ANISOTROPY = 8
 
 
-def _atlas_texture(scene: Any, atlas: Any) -> Any:  # noqa: ANN401
+def _atlas_texture(scene: Any, atlas: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The atlas of `atlas` (its look) as a tiling, mipmapped texture."""
     texture_class = babylon_class("Texture")
     texture = new_raw_texture(
@@ -49,7 +49,7 @@ def _atlas_texture(scene: Any, atlas: Any) -> Any:  # noqa: ANN401
     return texture
 
 
-def add_window_material(materials: Any, scene: Any, look: Any) -> None:  # noqa: ANN401
+def add_window_material(materials: Any, scene: Any, look: Any) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Sets `materials.windows` (the props' `PropMaterials`) for the scenery look `look`, if it
     has a windows' atlas (`look.props.windows`). The atlas' light is lit faintly by the sun
     (`atlas.glass`) and glows by the emissive colour, scaled as the other accents
@@ -74,7 +74,7 @@ def add_window_material(materials: Any, scene: Any, look: Any) -> None:  # noqa:
     materials.windows = material
 
 
-def glow_windows(layer: Any, mesh: Any) -> None:  # noqa: ANN401
+def glow_windows(layer: Any, mesh: Any) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Has the glow layer `layer` draw the windows' `mesh` with its own material: its own way, a
     glow layer would light the whole shape of every window, the dark ones too."""
     layer.referenceMeshToUseItsOwnMaterial(mesh)

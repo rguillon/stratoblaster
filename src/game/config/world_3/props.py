@@ -33,8 +33,6 @@ WORLD_3_GROUPS = record(
 
 G = WORLD_3_GROUPS
 
-# Plants are drawn small next to the ships, as in Worlds 1 and 2.
-
 
 # The props of World 3 (WLD-3-07, WLD-3-08; reworked at the reviewer's request, 2026-10-27): Level
 # Zero's industrial buildings and those made of parts, then the workers' flats, terraces and

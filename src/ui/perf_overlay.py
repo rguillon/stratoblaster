@@ -3,7 +3,7 @@
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -18,6 +18,7 @@ class PerfNumbers:
         frames: int,
         last_load: float | None,
         longest_load_step: float | None,
+        draw_calls: float,
     ) -> None:
         # Frames longer than the long-frame limit since the counts were last reset.
         self.long_frames = long_frames
@@ -29,6 +30,8 @@ class PerfNumbers:
         self.last_load = last_load
         # Longest frame of the last level loading (PERF-10: the longest frozen step), if any.
         self.longest_load_step = longest_load_step
+        # Draw calls of the last frame drawn (ENG-106, budget under 200 in play).
+        self.draw_calls = draw_calls
 
 
 def _ms(value: float | None) -> str:
@@ -70,6 +73,7 @@ class PerfOverlay:
             [
                 "Long frames: " + str(numbers.long_frames),
                 "Longest frame: " + _ms(numbers.longest_frame),
+                "Draw calls: " + str(window.Math.round(numbers.draw_calls)),
                 "Level load: " + _ms(numbers.last_load),
             ]
         )

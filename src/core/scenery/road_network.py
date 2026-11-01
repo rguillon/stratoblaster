@@ -13,26 +13,26 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.districts import District  # noqa: E402
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402
-from core.scenery.street_links import Block  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import District  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import create_noise2d  # noqa: E402
-from core.math.rng import create_rng, random_in  # noqa: E402
-from core.scenery.districts import ZRange, find_districts, laid_districts  # noqa: E402
-from core.scenery.lanes import lanes_of, main_road_width, with_width  # noqa: E402
-from core.scenery.road_paths import PathGround, lay_paths  # noqa: E402
-from core.scenery.road_segments import SegmentIndex, add_slots  # noqa: E402
-from core.scenery.road_types import Road, RoadPoint, RoadSlot, RoadSnapshot  # noqa: E402
-from core.scenery.street_grid import street_runs  # noqa: E402
-from core.scenery.street_runs import Point  # noqa: E402
+from core.math.noise import create_noise2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import ZRange, find_districts, laid_districts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.lanes import lanes_of, main_road_width, with_width  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_paths import PathGround, lay_paths  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_segments import SegmentIndex, add_slots  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road, RoadPoint, RoadSlot, RoadSnapshot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_grid import street_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_runs import Point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -160,8 +160,8 @@ class RoadNetwork:
             rules,
             span,
             lambda x, z: self._open(x, z),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
-            lambda x, z, which: self._segments.nearest(x, z, which),  # noqa: PLW0108
-            lambda points: self._add_road("cross", points),  # noqa: PLW0108
+            lambda x, z, which: self._segments.nearest(x, z, which),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
+            lambda points: self._add_road("cross", points),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
         )
         lay_paths(ground, random, [road for road in self._roads if road.kind == "main"])
         if rules.no_crossings is None:
@@ -413,7 +413,7 @@ class RoadNetwork:
                 district,
                 self.rules,
                 random,
-                lambda x, z: self.buildable(x, z),  # noqa: PLW0108
+                lambda x, z: self.buildable(x, z),  # noqa: PLW0108 (Transcrypt binds methods: keep the lambda)
                 out_of_view,
             )
             self.blocks.extend(blocks)

@@ -9,14 +9,14 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.rng import random_in  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.organic_parts import opt  # noqa: E402
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.organic_parts import opt  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = ENEMY_LOOK.blasts
 # Debris stops dropping embers and smoke after this share of its life.
@@ -53,7 +53,7 @@ class BlastSpot:
 class Particle:
     """One particle of a layer. `age` is negative until the particle appears."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         x: float,
         y: float,
@@ -165,7 +165,7 @@ class BlastParticles:
         )
         f = LOOK.fireball
         fireballs = self.count_of(radius * f.perRadius, f.count, scale)
-        for i in range(fireballs):  # noqa: B007
+        for i in range(fireballs):  # noqa: B007 (the first fireball is at the centre)
             # The first one at the centre, at once; the others around it, later.
             k = 0 if i == 0 else 1
             d = self.direction(self.random() * radius * f.spread * k)

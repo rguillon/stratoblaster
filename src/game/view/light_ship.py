@@ -10,13 +10,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
 
-from game.view.ship_materials import get_ship_materials  # noqa: E402
-from game.view.ship_parts import (  # noqa: E402
+from game.view.ship_materials import get_ship_materials  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.ship_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BODY_SECTION,
     PART_FACETS,
     build_reactor,
@@ -27,8 +27,8 @@ from game.view.ship_parts import (  # noqa: E402
     plate,
     tag_part,
 )
-from render.babylon import new_transform_node, vector3  # noqa: E402
-from render.geometry.lathe_z import create_faceted_lathe_along_z  # noqa: E402
+from render.babylon import new_transform_node, vector3  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.lathe_z import create_faceted_lathe_along_z  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Right front wing (X > 0): short, swept back.
 FRONT_WING = [

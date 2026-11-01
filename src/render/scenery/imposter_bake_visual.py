@@ -14,6 +14,7 @@ from render.babylon import (
     color4,
     new_free_camera,
     new_mesh,
+    new_render_target_texture,
     new_standard_material,
     new_vertex_data,
     vector3,
@@ -22,9 +23,9 @@ from render.scenery.imposters import atlas_size, bake_geometry, view_axes
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -40,24 +41,13 @@ BRIGHTER = 1.3
 READY_FRAMES = 2
 
 
-def _render_target(label: str, size: list[int], scene: Any) -> Any:  # noqa: ANN401
-    """`new RenderTargetTexture(label, {width, height}, scene, generateMipMaps)`."""
-    __pragma__(
-        "js",
-        "{}",
-        "return new BABYLON.RenderTargetTexture(label, {width: size[0], height: size[1]}, scene,"
-        " true);",
-    )
-    return None
-
-
-def _remove(array: Any, value: Any) -> None:  # noqa: ANN401
+def _remove(array: Any, value: Any) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Removes `value` from the JavaScript array `array` (not named `items`: Transcrypt renames
     that, and the JavaScript below would miss it)."""
     __pragma__("js", "{}", "const i = array.indexOf(value); if (i >= 0) array.splice(i, 1);")
 
 
-def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:  # noqa: ANN401
+def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The frames' mesh, drawn unlit in its baked colours, seen by the bake camera only."""
     mesh = new_mesh("imposter-bake", scene)
     data = new_vertex_data()
@@ -79,7 +69,7 @@ def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:  # noqa: ANN401
     return mesh
 
 
-def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:  # noqa: ANN401
+def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The orthographic camera that sees the frames as the playfield camera would, one frame per
     `look.frameSize` across."""
     axes = view_axes(tilt)
@@ -106,7 +96,7 @@ def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:  #
     return camera
 
 
-def _imposter_material(scene: Any, texture: Any, tone: float) -> Any:  # noqa: ANN401
+def _imposter_material(scene: Any, texture: Any, tone: float) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The material of the imposters' quads: the atlas, cut out by its alpha, lit by the scene."""
     material = new_standard_material("imposters", scene)
     material.diffuseTexture = texture
@@ -127,7 +117,7 @@ class ImposterAtlas:
 
     def __init__(
         self,
-        scene: Any,  # noqa: ANN401
+        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         look: Any,  # noqa: ANN401 (a config record)
         kinds: int,
         tone: float,
@@ -135,7 +125,7 @@ class ImposterAtlas:
         self.look = look
         self._scene = scene
         self._size = atlas_size(look, kinds)
-        texture = _render_target("imposter-atlas", self._size, scene)
+        texture = new_render_target_texture("imposter-atlas", self._size, scene)
         texture.clearColor = color4(0, 0, 0, 0)
         texture.hasAlpha = True
         texture.wrapU = babylon_class("Texture").CLAMP_ADDRESSMODE

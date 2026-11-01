@@ -12,10 +12,10 @@ from render.geometry.gradient_shapes import ColoredGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
+from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 Height = Callable[[float, float], float]
@@ -39,7 +39,7 @@ def _hypot(a: float, b: float) -> float:
 class TileRoadLook:
     """How the road pieces look."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         roadway: Rgb,
         sidewalk: Rgb,
@@ -205,7 +205,7 @@ def cuts(a: float, b: float, cell: float) -> list[float]:
     return out
 
 
-def _add_rect(  # noqa: PLR0917
+def _add_rect(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     geo: ColoredGeometry,
     rect: Rect,
     ox: float,

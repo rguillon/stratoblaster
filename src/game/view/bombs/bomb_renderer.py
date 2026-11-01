@@ -6,15 +6,15 @@ fades in a fraction of a second.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.game_view import BombRenderer  # noqa: E402
+from render.game_view import BombRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.bomb_look import BOMB_LOOK  # noqa: E402
-from game.view.shot_geometry import build_glow_disc  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
+from game.config.bomb_look import BOMB_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = BOMB_LOOK
 
@@ -48,8 +48,8 @@ def create_bomb_renderer(scene: Any) -> BombRenderer:
 
     def show(bomb: Any) -> None:
         # `!= None` also covers an undefined bomb (no bomb this frame).
-        ring.setEnabled(bomb != None)  # noqa: E711
-        glow.setEnabled(bomb != None and flash_strength(bomb.age) > 0)  # noqa: E711
+        ring.setEnabled(bomb != None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        glow.setEnabled(bomb != None and flash_strength(bomb.age) > 0)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         if not bomb:
             return
         t = bomb.age / bomb.seconds

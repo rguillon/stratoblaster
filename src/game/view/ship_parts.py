@@ -19,7 +19,7 @@ from render.geometry.lathe_z import LatheHalves, create_faceted_lathe_along_z
 from render.geometry.prism import create_prism
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 

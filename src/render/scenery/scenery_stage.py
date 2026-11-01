@@ -44,13 +44,13 @@ from render.scenery.traffic_layer import TrafficLayer
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.atmosphere import Atmosphere  # noqa: E402
-from render.scenery.cloud_layers import CloudLayerState  # noqa: E402
-from render.scenery.scenery_look import CloudLayerLook  # noqa: E402
-from render.scenery.scenery_stage_options import SceneryStageOptions  # noqa: E402
+from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.cloud_layers import CloudLayerState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import CloudLayerLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_stage_options import SceneryStageOptions  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

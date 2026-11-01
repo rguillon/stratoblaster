@@ -6,7 +6,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from input.menu_action import MenuSelect
 
 __pragma__("skip")
-from input.menu_action import MenuCommand  # noqa: E402
+from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

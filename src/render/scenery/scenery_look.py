@@ -9,13 +9,13 @@ from org.transcrypt.stubs.browser import __pragma__
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module). The
 # imports here are used in annotations only, so they stay out of the browser build.
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.sky_look import SkyScript  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
-from render.geometry.textured import TexturedGeometry  # noqa: E402
-from render.scenery.road_geometry import RoadLook  # noqa: E402
+from core.scenery.sky_look import SkyScript  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.textured import TexturedGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.road_geometry import RoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")

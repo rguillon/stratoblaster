@@ -3,10 +3,9 @@
 from typing import Any
 
 import pytest
+from fixtures.sample_game import WINDOW_ATLAS, record
 from helpers.render_fakes import FakeTypedArray
 
-from game.config.record import record
-from game.config.window_look import WINDOW_ATLAS
 from render.scenery import window_atlas
 from render.scenery.window_atlas import (
     atlas_cells,

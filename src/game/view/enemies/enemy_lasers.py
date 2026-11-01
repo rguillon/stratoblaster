@@ -6,34 +6,34 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.color import fold_into_family  # noqa: E402
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.enemy_look import (  # noqa: E402
+from core.math.color import fold_into_family  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ENEMY_LOOK,
     laser_palette,
 )
-from game.config.readability import READABILITY  # noqa: E402
-from game.view.reactor_flame import flicker  # noqa: E402
-from game.view.shot_geometry import (  # noqa: E402
+from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.reactor_flame import flicker  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_glow_bar,
     build_glow_disc,
 )
-from game.view.shots.shot_meshes import additive_template  # noqa: E402, E501
-from render.babylon import node_name  # noqa: E402
-from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from game.view.shots.shot_meshes import additive_template  # noqa: E402, E501 (after the Transcrypt skip block, ENG-153)
+from render.babylon import node_name  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = ENEMY_LOOK.laser
 
@@ -52,7 +52,7 @@ def color_of(style: str) -> Sequence[float]:
     """The colour of the lasers of `style` (GFX-SHOT-18): a boss's neon (BOSS-32), or the Lancer's
     (phase 8 review), moved into the enemy shots' colour family (GFX-READ-06)."""
     neon = BOSS_LOOK.neon[style]
-    color = neon if neon != None else LOOK.color  # noqa: E711
+    color = neon if neon != None else LOOK.color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return fold_into_family(color, READABILITY.families.enemyShot)
 
 

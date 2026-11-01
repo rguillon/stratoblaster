@@ -5,16 +5,18 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Heights(Protocol):
     """Anything that tells the ground's height (a `HeightField`, a `SampledGround`)."""
 
-    def height(self, x: float, z: float) -> float: ...
+    def height(self, x: float, z: float) -> float:
+        """Height of the ground at (x, z)."""
+        ...
 
 
 __pragma__("noskip")
@@ -45,6 +47,8 @@ class SampledGround:
         ]
 
     def height(self, x: float, z: float) -> float:
+        """Height of the ground at (x, z), interpolated between the samples as the mesh draws them;
+        points outside the sampled square are clamped to it."""
         columns = self._columns
         rows = self._rows
         u = _clamped((x - self._x0) / self._step, columns)
@@ -71,7 +75,7 @@ class SampledGround:
 def _min_of(values: Sequence[float]) -> float:
     low = values[0]
     for k in range(1, len(values)):
-        if values[k] < low:  # noqa: PLR1730
+        if values[k] < low:  # noqa: PLR1730 (running minimum over a list)
             low = values[k]
     return low
 
@@ -79,7 +83,7 @@ def _min_of(values: Sequence[float]) -> float:
 def _max_of(values: Sequence[float]) -> float:
     high = values[0]
     for k in range(1, len(values)):
-        if values[k] > high:  # noqa: PLR1730
+        if values[k] > high:  # noqa: PLR1730 (running maximum over a list)
             high = values[k]
     return high
 

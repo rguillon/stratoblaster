@@ -8,40 +8,40 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.world_2.harbour_kraken import CRANE_REST, CRANES  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_shapes import barrels  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.harbour_kraken import CRANE_REST, CRANES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.final_boss_shapes import barrels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     QUARTER,
     SHADE,
     WHITE,
     H,
     offset,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     icicles,
     spread,
 )
-from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402
-from render.geometry.organic import curve, organ, tendril  # noqa: E402
-from render.geometry.outline import hypot2  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import curve, organ, tendril  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import hypot2  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The Kraken's orange neon.
 _ORANGE = BOSS_LOOK.neon["harbour-kraken"]
-ORANGE_NEON = [1.0, 0.5, 0.08] if _ORANGE == None else _ORANGE  # noqa: E711
+ORANGE_NEON = [1.0, 0.5, 0.08] if _ORANGE == None else _ORANGE  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Height of the booms over the deck's level, and of the deck.
 BOOM_Y = 12
 DECK_Y = 4

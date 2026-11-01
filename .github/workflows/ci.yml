@@ -46,7 +46,7 @@ jobs:
         if: always()
         run: |
           if [ -f .coverage ]; then
-            { echo '## Coverage (src/core)'; echo '```'; uv run coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            { echo '## Coverage (src/)'; echo '```'; uv run coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
       # ENG-75: the coverage report (HTML) as an artefact.
       - uses: actions/upload-artifact@v7

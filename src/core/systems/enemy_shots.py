@@ -13,17 +13,17 @@ from core.systems.projectile_motion import heading_to, turn_towards
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol, TypeVar  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol, TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import (  # noqa: E402
+from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     EnemyBulletSpec,
     EnemyBurstSpec,
     EnemyLaserSpec,
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import PlayfieldEye  # noqa: E402
+from core.entities.muzzle import PlayfieldEye  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Pooled(Protocol):
@@ -118,6 +118,7 @@ class EnemyLaser:
 
     @length.setter
     def length(self, value: float) -> None:
+        """Sets the length to the edge of the playfield."""
         self._length = value
 
 
@@ -172,9 +173,12 @@ class EnemyShots:
 
     @property
     def lasers(self) -> list[EnemyLaser]:
+        """The lasers in the world."""
         return self._lasers
 
     def fire_bullet(self, x: float, y: float, heading: float, spec: EnemyBulletSpec) -> None:
+        """Fires a bullet of `spec` from (x, y) along `heading`, reusing a free one from the
+        pool."""
         bullet = _first_free(self.bullets)
         if bullet is None:
             bullet = EnemyBullet()
@@ -190,6 +194,8 @@ class EnemyShots:
         bullet.age = 0
 
     def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
+        """Launches a missile of `spec` from (x, y) along `heading`, reusing a free one from the
+        pool, with a fresh id."""
         missile = _first_free(self.missiles)
         if missile is None:
             missile = EnemyMissile()
@@ -210,6 +216,7 @@ class EnemyShots:
         missile.age = 0
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
+        """Starts a laser of `spec` from `owner`, aimed at once."""
         self._lasers.append(EnemyLaser(owner, spec))
         self._aim(self._lasers[len(self._lasers) - 1])
 

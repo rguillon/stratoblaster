@@ -4,10 +4,10 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
-from core.systems.boss_fights import LevelBoss  # noqa: E402
-from core.systems.enemy_world import EnemyDifficulty  # noqa: E402
-from core.systems.wave_runner import WaveScript  # noqa: E402
+from core.scenery.scenery_level import SceneryLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import LevelBoss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_world import EnemyDifficulty  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.wave_runner import WaveScript  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

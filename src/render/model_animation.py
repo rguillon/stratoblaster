@@ -10,8 +10,8 @@ from render.babylon import descendants, new_weak_map, weak_map_get, weak_map_set
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 ModelAnimation = Callable[[float], None]
 __pragma__("noskip")

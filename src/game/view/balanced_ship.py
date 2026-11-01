@@ -32,7 +32,7 @@ from render.babylon import (
 from render.geometry.lathe_z import create_faceted_lathe_along_z
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")

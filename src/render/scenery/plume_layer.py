@@ -9,16 +9,16 @@ from config.plumes import PLUME_KINDS
 
 # `%` keeps JavaScript's rounding.
 __pragma__("jsmod")
-from render.babylon import apply_vertex_data, new_mesh, set_enabled, vertex_data_of  # noqa: E402
+from render.babylon import apply_vertex_data, new_mesh, set_enabled, vertex_data_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from config.plumes import PlumeKind  # noqa: E402
-from core.scenery.atmosphere import Atmosphere  # noqa: E402
-from render.scenery.scenery_look import PropPlume  # noqa: E402
+from config.plumes import PlumeKind  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropPlume  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 

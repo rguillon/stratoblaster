@@ -10,11 +10,11 @@ from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
 __pragma__("skip")
-from collections.abc import Callable, Mapping, Sequence  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable, Mapping, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from input.keyboard_menu_input import RepeatTiming  # noqa: E402
-from input.menu_action import MenuAction, MenuDirection  # noqa: E402
+from input.keyboard_menu_input import RepeatTiming  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuAction, MenuDirection  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Button(Protocol):

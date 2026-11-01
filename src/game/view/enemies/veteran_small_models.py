@@ -28,7 +28,7 @@ from render.geometry.organic import (
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -173,12 +173,13 @@ def build_phantom(scene: Any) -> Any:
         nose_gun(p, [0, 0.6, 8], 5.8)
 
     model = build_enemy_model("phantom", scene, N.phantom, draw)
-    meshes = child_meshes(model.root, False)
 
     def sync(enemy: Any, dt: float) -> None:
         model.sync(enemy, dt)
         opacity = enemy.opacity if isinstance(enemy, Phantom) else 1
-        for mesh in meshes:
+        # Listed on each sync, not at build: the edge trim meshes (ENM-PHANTOM-06, GFX-TRIM-06) are
+        # added to the model after this builder returns, and they fade with it too.
+        for mesh in child_meshes(model.root, False):
             mesh.visibility = opacity
             mesh.isVisible = opacity > 0
 

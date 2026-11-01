@@ -33,7 +33,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -145,7 +145,7 @@ def _draw_wings(p: Any) -> None:
             p.flesh,
             SegmentedBody(-19, 19, 3, 5.5, -1, 9),
             F.slate,
-            Placement(nacelle),  # type: ignore[arg-type]
+            Placement(nacelle),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         )
         graft(p, polygon(5, 3.4), [9, 10], shift(nacelle, [0, 0, 12]))
         p.neon.ring(3.6, 0.8, 6, N, Placement(shift(nacelle, [0, 3.8, 19.2]), 0, math.pi / 2))
@@ -162,7 +162,7 @@ def _draw_wings(p: Any) -> None:
 def _draw_tail(p: Any) -> None:
     """The tailplanes: membrane on bone, their fins of bone, neon on their leading edges."""
     for s in SIDES:
-        plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]
+        plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         p.flesh.bevel_slab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, None, F.graphite)
         tentacle(p, [s * 4, 9, -50], [s * 30, 9, -57], [0, 1, 0], [1.4, 0.4], F.bone, 4)
         tentacle(p, [s * 28, 9, -55], [s * 28, 19, -63], [0, 0, 2], [1.4, 0.2], F.bone, 4)

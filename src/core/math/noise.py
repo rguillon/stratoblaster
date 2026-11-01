@@ -3,15 +3,15 @@
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Noise2D = Callable[[float, float], float]
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.bits import imul, ushr, xor  # noqa: E402
-from core.math.rng import create_rng  # noqa: E402
+from core.math.bits import imul, ushr, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 TABLE_SIZE = 256
 PI = 3.141592653589793

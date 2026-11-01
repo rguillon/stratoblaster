@@ -50,7 +50,7 @@ EY = WRAITH_EYE[1]
 _ASH_WRAITH = record(
     {
         "id": "ash-wraith",
-        # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 9, as 3-5.
+        # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 10.5.
         "rage": rage.vortex(10.5, "blue", "purple"),
         # Its core and parts, their health, and its points (MB-ASH-WRAITH-07, MB-ASH-WRAITH-14).
         "stats": stats(

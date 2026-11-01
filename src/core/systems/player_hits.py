@@ -6,12 +6,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.enemy_shots import EnemyLaser  # noqa: E402
-from core.systems.enemy_world import EnemyWorld  # noqa: E402
-from core.systems.player_hull import HullRules  # noqa: E402
+from core.systems.enemy_shots import EnemyLaser  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_world import EnemyWorld  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 PlayerHitKind = Literal["bullet", "missile", "laser", "collision"]
 
@@ -20,10 +20,14 @@ class PlayerHitPoint(Protocol):
     """A point of the playfield."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the point."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of the point."""
+        ...
 
 
 Touches = Callable[[PlayerHitPoint, float], bool]
@@ -58,14 +62,14 @@ def _beam_distance(x: float, y: float, laser: EnemyLaser) -> float:
 
 def _bullet_land(bullet: object) -> Callable[[], None]:
     def land() -> None:
-        bullet.alive = False  # type: ignore[attr-defined]
+        bullet.alive = False  # type: ignore[attr-defined]  # the field is set at run time, not declared on the class
 
     return land
 
 
 def _missile_land(missile: object) -> Callable[[], None]:
     def land() -> None:
-        missile.health = 0  # type: ignore[attr-defined]
+        missile.health = 0  # type: ignore[attr-defined]  # the field is set at run time, not declared on the class
 
     return land
 
@@ -80,8 +84,8 @@ def _laser_land(laser: EnemyLaser, lasers_hit: set[EnemyLaser]) -> Callable[[], 
 def _ram_land(enemy: object, damage: float) -> Callable[[], None]:
     def land() -> None:
         # A boss takes no ramming damage (BOSS-16).
-        if enemy.rammable:  # type: ignore[attr-defined]
-            enemy.health = max(0, enemy.health - damage)  # type: ignore[attr-defined]
+        if enemy.rammable:  # type: ignore[attr-defined]  # the field is set at run time, not declared on the class
+            enemy.health = max(0, enemy.health - damage)  # type: ignore[attr-defined]  # the field is set at run time, not declared on the class
 
     return land
 

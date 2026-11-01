@@ -10,15 +10,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import CarRules  # noqa: E402
+from core.scenery.scenery_level import CarRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402
-from core.scenery.road_types import Road  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")

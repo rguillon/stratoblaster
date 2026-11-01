@@ -4,4 +4,4 @@ Makefile bundles it to `dist/js/ground_worker.js`, the script that
 handler on the worker's global scope.
 """
 
-import render.scenery.ground_worker  # noqa: F401
+import render.scenery.ground_worker  # noqa: F401 (imported for its side effect: it installs the message handler)

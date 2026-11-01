@@ -43,7 +43,7 @@ from render.geometry.solids import SolidBuilder
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Vec3 = list[float]
 __pragma__("noskip")
@@ -219,7 +219,7 @@ def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
     frames = [concat(c["hull"], c["flesh"]) for c in cut]
     floors = [floor_height(f) for f in frames]
     bridges = _held_frames(kept, cut, frames, floors, regions)
-    framed = [r.frame != None for r in regions]  # noqa: E711
+    framed = [r.frame != None for r in regions]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges, framed, floating)
 
 
@@ -243,7 +243,7 @@ def _framed_state(
             tris.extend(posed(concat(cut[k]["hull"], cut[k]["flesh"]), regions[k], form))
     sources: list[list[int]] = []
     for k in range(len(regions)):
-        if regions[k].form > form or regions[k].frame == None:  # noqa: E711
+        if regions[k].form > form or regions[k].frame == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue
         for i in range(len(frames[k])):
             tri = frames[k][i]
@@ -432,7 +432,7 @@ def _regions_after(cut: list[dict[str, Any]], regions: list[Any], form: int) -> 
             for layer in LAYERS:
                 tris.extend(posed(cut[k][layer], regions[k], form))
         solid = concat(cut[k]["hull"], cut[k]["flesh"])
-        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711
+        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             tris.extend(floor_triangles(solid, floor_height(solid)))
     return tris
 
@@ -579,7 +579,7 @@ class ArmourView:
 
     def show(self, boss: Any, lit: Any, dt: float) -> None:
         """Shows the region for `boss` (None: at rest) as its transformation goes."""
-        if boss == None:  # noqa: E711
+        if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             self._rest(lit, dt, 1000)
             return
         phase = reveal_phase(self.region.form, boss.form, boss.transforming_into)
@@ -658,10 +658,10 @@ class MovingView:
         value = motion_value(motion, k)
         place(self.mover, node_pose(motion, value))
         place(self.carrier, node_pose(motion, relative_value(motion, value)))
-        since_hit = 1000 if boss == None else boss.core.since_hit  # noqa: E711
+        since_hit = 1000 if boss == None else boss.core.since_hit  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         look = BOSS_LOOK.reveal
         straining = (
-            boss != None  # noqa: E711
+            boss != None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             and boss.transforming_into == self.region.form
             and boss.transform < look.burst
         )
@@ -674,8 +674,8 @@ class MovingView:
             self.whole.root.position.set(0, 0, 0)
         self.whole.sync(lit, dt)
         self.flash.show(since_hit)
-        if self.frame != None:  # noqa: E711
-            out = boss != None and (k > 0 or boss.form >= self.region.form)  # noqa: E711
+        if self.frame != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+            out = boss != None and (k > 0 or boss.form >= self.region.form)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             set_enabled(self.frame.root, out)
             if out:
                 self.frame.sync(lit, dt)
@@ -728,7 +728,7 @@ def rooted(supports: list[Any], lasting: list[Any]) -> list[Any]:
     result: list[Any] = []
     for s in supports:
         base = surface_below(lasting, s[0], s[1], s[2])
-        result.append(s if base == None else [s[0], s[1], s[2], s[3], base])  # noqa: E711
+        result.append(s if base == None else [s[0], s[1], s[2], s[3], base])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return result
 
 
@@ -766,12 +766,12 @@ def _moving_view(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     mover = new_transform_node(name + "-mover", scene)
     mover.parent = root
     whole.root.parent = mover
-    carrier = carriers[region.id] if carriers != None and region.id in carriers else None  # noqa: E711
-    if carrier == None:  # noqa: E711
+    carrier = carriers[region.id] if carriers != None and region.id in carriers else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if carrier == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         carrier = new_transform_node(name + "-carrier", scene)
         carrier.parent = root
     frame = None
-    if region.frame != None:  # noqa: E711
+    if region.frame != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         held = supports_in(region, standing)
         drawings = frame_drawings(
             cut.frames[k], region.frame, neon, held, cut.floors[k], cut.bridges[k]

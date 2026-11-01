@@ -10,16 +10,16 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from render.scenery.tile_road_geometry import Arm, TileRoadLook, arm_lines, piece_roadway  # noqa: E402
+from render.scenery.tile_road_geometry import Arm, TileRoadLook, arm_lines, piece_roadway  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.road_tiles import RoadPiece  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
+from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 Rect = tuple[float, float, float, float]
@@ -191,8 +191,8 @@ def _crossing(
     x0, x1, z0, z1 = line
     p0 = x0 if along_x else z0
     p1 = x1 if along_x else z1
-    at_start = p1 >= size - 1e-6 and p0 > 1e-6  # noqa: PLR2004
-    at_end = p0 <= 1e-6 and p1 < size - 1e-6  # noqa: PLR2004
+    at_start = p1 >= size - 1e-6 and p0 > 1e-6  # noqa: PLR2004 (an epsilon for float comparisons)
+    at_end = p0 <= 1e-6 and p1 < size - 1e-6  # noqa: PLR2004 (an epsilon for float comparisons)
     if not at_start and not at_end:
         return None
     # As deep as the arm allows, short of the edge; none on an arm too short for one.
@@ -242,7 +242,7 @@ def _paint_lines(
 ) -> None:
     """The lane lines of the arms, and zebra crossings on those of a T or an X."""
     size = piece.size * tile.size
-    junction = piece.kind == "tee" or piece.kind == "cross"  # noqa: PLR1714
+    junction = piece.kind == "tee" or piece.kind == "cross"  # noqa: PLR1714 (two kinds of junction, as written)
     _roadway, arms = piece_roadway(piece, tile)
     for arm in arms:
         cut = _crossing(arm.line, arm.along_x, size) if junction else None

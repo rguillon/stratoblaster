@@ -13,8 +13,8 @@ from render.babylon import child_meshes, dispose_node, new_transform_node, node_
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 EnemyModelFactory = Callable[[Any], Any]
 __pragma__("noskip")
@@ -93,7 +93,7 @@ class EnemyLayer:
         """
         key = None
         # Transcrypt: iterate keys() explicitly.
-        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118
+        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118 (Transcrypt iterates keys() explicitly)
         for k in keys:
             if k in self._models and not _contains(self._built, k):
                 key = k

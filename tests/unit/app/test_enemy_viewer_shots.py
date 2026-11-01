@@ -1,5 +1,5 @@
 """Unit tests of `src/app/enemy_viewer_shots.py`."""
-# the shots and explosions of the enemies page, drawn through the renderers the game provides
+# the shots and explosions of the enemy viewer, drawn through the renderers the game provides
 # (the renderers are fakes here).
 
 from types import SimpleNamespace

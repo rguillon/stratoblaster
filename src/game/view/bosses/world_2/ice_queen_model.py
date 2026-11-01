@@ -40,9 +40,9 @@ from render.geometry.solids import LoftOptions, Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -299,7 +299,7 @@ def shard_part(part_id: str) -> Any:
         # Drawn in model space: the point the part sits at (handed to every part) is not used.
         gun = ICE_QUEEN.guns[part_id]
         muzzles = []
-        if gun != None and gun.gun != None:  # noqa: E711
+        if gun != None and gun.gun != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             muzzles = gun.gun
         ice_shard(parts, muzzles, ICE_QUEEN_SHARD.height)
 
@@ -311,7 +311,7 @@ def shard_parts() -> Any:
     names: list[str] = []
     drawings: list[Any] = []
     for part in ICE_QUEEN.stats.parts:
-        if part.reveal != None:  # noqa: E711
+        if part.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         names.append(part.id)
         drawings.append(shard_part(part.id))

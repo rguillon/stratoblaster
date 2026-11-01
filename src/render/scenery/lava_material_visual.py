@@ -7,7 +7,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from render.babylon import color3, new_glsl_material, vector2, vector3, vector4
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

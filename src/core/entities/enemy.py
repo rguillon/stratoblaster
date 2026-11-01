@@ -15,12 +15,12 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.math.rng import Random  # noqa: E402
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 EnemySide = Literal["top", "left", "right"]
 
@@ -31,16 +31,24 @@ class LaserOwner(Protocol):
     """
 
     @property
-    def emitter(self) -> PlanePoint | RaisedPoint: ...
+    def emitter(self) -> PlanePoint | RaisedPoint:
+        """Where the laser leaves from."""
+        ...
 
     @property
-    def heading(self) -> float: ...
+    def heading(self) -> float:
+        """Direction the laser fires along, in radians from +Y."""
+        ...
 
     @property
-    def gone(self) -> bool: ...
+    def gone(self) -> bool:
+        """Whether the owner is gone, so the laser stops."""
+        ...
 
     @property
-    def health(self) -> float: ...
+    def health(self) -> float:
+        """Health left: the laser stops once it is 0."""
+        ...
 
 
 class DropSource(ShotTarget, Protocol):
@@ -49,50 +57,76 @@ class DropSource(ShotTarget, Protocol):
     """
 
     @property
-    def drop_chance(self) -> float | None: ...
+    def drop_chance(self) -> float | None:
+        """Its own chance (0..1) of dropping a bonus when destroyed, or None for the game's rule."""
+        ...
 
     @property
-    def points(self) -> float | None: ...
+    def points(self) -> float | None:
+        """Points scored when it is destroyed, or None."""
+        ...
 
 
 class EnemyContext(Protocol):
     """What an enemy can see and do while it updates."""
 
     @property
-    def width(self) -> float: ...
+    def width(self) -> float:
+        """Width of the playfield, in logical pixels."""
+        ...
 
     @property
-    def height(self) -> float: ...
+    def height(self) -> float:
+        """Height of the playfield, in logical pixels."""
+        ...
 
     @property
-    def player_x(self) -> float: ...
+    def player_x(self) -> float:
+        """X of the player's ship."""
+        ...
 
     @property
-    def player_y(self) -> float: ...
+    def player_y(self) -> float:
+        """Y of the player's ship."""
+        ...
 
     @property
-    def random(self) -> Random: ...
+    def random(self) -> Random:
+        """The random numbers the enemy draws from."""
+        ...
 
     @property
-    def fire_rate(self) -> float: ...
+    def fire_rate(self) -> float:
+        """Factor the enemy's firing timers run at: they advance `dt` times this."""
+        ...
 
     def seen(self, point: RaisedPoint) -> PlanePoint:
         """Where shots must start to look as if they left from `point`, above the playfield."""
         ...
 
-    def fire_bullet(self, x: float, y: float, heading: float, spec: "EnemyBulletSpec") -> None: ...
+    def fire_bullet(self, x: float, y: float, heading: float, spec: "EnemyBulletSpec") -> None:
+        """Fires a bullet of `spec` from (x, y) along `heading`."""
+        ...
 
-    def fire_missile(
-        self, x: float, y: float, heading: float, spec: "EnemyMissileSpec"
-    ) -> None: ...
+    def fire_missile(self, x: float, y: float, heading: float, spec: "EnemyMissileSpec") -> None:
+        """Launches a missile of `spec` from (x, y) along `heading`."""
+        ...
 
-    def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None: ...
+    def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None:
+        """Starts a laser of `spec` from `owner`."""
+        ...
 
-    def spawn(self, enemy: "Enemy") -> None: ...
+    def spawn(self, enemy: "Enemy") -> None:
+        """Adds `enemy` to the world."""
+        ...
 
-    def explode(self, x: float, y: float, radius: float) -> None: ...
+    def explode(self, x: float, y: float, radius: float) -> None:
+        """Makes an explosion of `radius` at (x, y)."""
+        ...
 
-    def break_part(self, part: DropSource) -> None: ...
+    def break_part(self, part: DropSource) -> None:
+        """Breaks a destroyed part off its enemy: it blows up."""
+        ...
 
 
 EnemyKindSpawn = Callable[["EnemySpawnArea"], list["Enemy"]]

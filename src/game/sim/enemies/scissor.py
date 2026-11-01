@@ -10,10 +10,10 @@ from game.sim.enemies.enemy_helpers import DOWN
 from game.sim.joints import jointed_design
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyContext  # noqa: E402
-from core.entities.muzzle import Muzzle  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

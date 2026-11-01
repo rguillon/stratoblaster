@@ -10,11 +10,11 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import DropSource  # noqa: E402
-from core.math.rng import Random  # noqa: E402
+from core.entities.enemy import DropSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # What a bonus gives when picked up (GAME-BONUS-01, GAME-BONUS-09): a weapon level, a life or a
 # bomb.

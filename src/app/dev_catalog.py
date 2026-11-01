@@ -1,6 +1,6 @@
 """What each dev viewer lists (D-199): the player ships, the enemy kinds, the boss kinds, the props
 the levels stand on their ground and their cars (D-209), and the levels, in the game's order. The
-props are gathered by the game's prop groups (D-202), as the TypeScript `props/` page showed them.
+props are gathered by the game's prop groups (D-202), as the Dev menu's props viewer shows them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,7 +10,7 @@ from render.scenery.prop_field import level_prop_kinds
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

@@ -32,7 +32,12 @@ from core.math.rng import create_rng
 from core.systems.level_models import level_model_keys
 from core.systems.level_run import LevelRun
 from core.systems.level_run_types import LevelRunOptions, RunShip
-from render.babylon import js_set, set_enabled
+from render.babylon import (
+    draw_calls_last_frame,
+    js_set,
+    new_draw_call_counter,
+    set_enabled,
+)
 from render.enemy_layer import EnemyLayer
 from render.game_view import BombFrame, BonusFrame
 from render.scenery.playfield_framing import playfield_eye, visible_half_width
@@ -40,7 +45,7 @@ from ui.stats_tile import RenderStats
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -62,7 +67,8 @@ class GamePlayOptions:
     ship does not fly in and off; reviewer, 2026-10-28), `weapons` and `supplies` (kept from the
     levels before), `high_score` (GAME-SCORE-07), `atmosphere` (debug choices on the look,
     DEV-OPT-04, DEV-OPT-05), `doc`, `stats_parent` (the debug tile's), `hud_parent` (the HUD's),
-    `on_complete(result)` (GAME-LEVEL-13, GAME-LIFE-09) and `on_step(run)` (AUD-ENGINE-09).
+    `on_complete(result)` (GAME-LEVEL-13, GAME-LIFE-09), `on_step(run)` (AUD-ENGINE-09) and
+    `on_draw_calls(count)` (ENG-106: the draw calls of each frame drawn; None when not asked).
     """
 
     def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -82,6 +88,7 @@ class GamePlayOptions:
         hud_parent: Any,
         on_complete: Any,
         on_step: Any,
+        on_draw_calls: Any,
     ) -> None:
         self.environment = environment
         self.debug = debug
@@ -98,6 +105,7 @@ class GamePlayOptions:
         self.hud_parent = hud_parent
         self.on_complete = on_complete
         self.on_step = on_step
+        self.on_draw_calls = on_draw_calls
 
 
 class PlayfieldBounds:
@@ -163,6 +171,8 @@ class GamePlay:
                 outline,
             ),
         )
+        # Draw calls per frame, for the perf overlay (ENG-106); observers, not a change of drawing.
+        self._draw_calls = new_draw_call_counter(self.view.scene)
         self._speed = ship_max_speed_px_per_sec(game.player_ships, choice.ship_id)
         self._ship_def: Any = find_player_ship(game.player_ships, choice.ship_id)
         playfield = self.view.playfield
@@ -357,6 +367,9 @@ class GamePlay:
         polygons = self.view.scene.getActiveIndices() / 3
         if self._stats is not None:
             self._stats.update(dt, RenderStats(self._fps.rate, polygons))
+        # The draw calls of the last frame drawn (ENG-106): this frame's are counted after it.
+        if self._options.on_draw_calls is not None:
+            self._options.on_draw_calls(draw_calls_last_frame(self._draw_calls))
 
     def _ship_shown(self) -> bool:
         """Whether the ship shows: not once the game is over, blinking while invincible

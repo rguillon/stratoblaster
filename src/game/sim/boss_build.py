@@ -33,8 +33,8 @@ from game.sim.joints import joint_specs
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
@@ -43,7 +43,7 @@ __pragma__("noskip")
 
 def _maybe(value: Any, convert: Callable[[Any], Any]) -> Any:
     """`convert(value)`, or None when the config leaves the field out."""
-    if value == None:  # noqa: E711
+    if value == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     return convert(value)
 

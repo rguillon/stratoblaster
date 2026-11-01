@@ -9,46 +9,46 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 type Flat = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_2.avalanche import AVALANCHE_DRILL_GUN  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import glow_line  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.avalanche import AVALANCHE_DRILL_GUN  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_mechanism import glow_line  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     QUARTER,
     SHADE,
     H,
     offset,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402
+from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     glow_vein,
     sinew,
 )
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.outline import hypot2  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.organic import organ  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import hypot2  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The Avalanche's yellow neon (MB-AVALANCHE-04).
 _AVALANCHE_NEON = BOSS_LOOK.neon["avalanche"]
-AVALANCHE_YELLOW = [1.0, 0.85, 0.1] if _AVALANCHE_NEON == None else _AVALANCHE_NEON  # noqa: E711
+AVALANCHE_YELLOW = [1.0, 0.85, 0.1] if _AVALANCHE_NEON == None else _AVALANCHE_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 # The drill bit along +Z from its root (a lathe profile: radius, distance along).
 BIT = [

@@ -5,21 +5,21 @@ lower level, a glow at its base and where it touches a target, and particles flo
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.beam import BeamSegment  # noqa: E402
-from render.game_view import ShotRenderer  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from core.systems.beam import BeamSegment  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.reactor_flame import flicker  # noqa: E402
-from game.view.shot_geometry import build_glow_bar, build_glow_disc  # noqa: E402
-from game.view.shots.laser_particles import LaserParticles  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.reactor_flame import flicker  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_bar, build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.laser_particles import LaserParticles  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = SHOT_LOOK.laser
 # Length used to spread the particles along the beam before it first fires.

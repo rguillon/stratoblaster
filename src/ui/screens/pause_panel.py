@@ -5,14 +5,14 @@ the level."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import PauseQuestion, PauseView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import PauseQuestion, PauseView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import element, entry  # noqa: E402
+from ui.screens.elements import element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _question(doc: Any, asked: PauseQuestion, handlers: ScreenHandlers) -> Any:

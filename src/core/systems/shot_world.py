@@ -16,13 +16,13 @@ from core.systems.projectile_motion import Projectile, advance_projectile
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import TypeVar  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 T = TypeVar("T")
 
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.entities.weapon import WeaponDefinition  # noqa: E402
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -95,10 +95,12 @@ class ShotWorld:
 
     @property
     def weapon(self) -> WeaponDefinition:
+        """The weapon in use."""
         return self._weapon
 
     @property
     def level(self) -> int:
+        """The level of the weapon in use."""
         return self._level
 
     def select(self, weapon: WeaponDefinition, level: float) -> None:

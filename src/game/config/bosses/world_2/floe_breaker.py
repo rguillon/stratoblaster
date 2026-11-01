@@ -1,10 +1,10 @@
 """The Floe Breaker (2-1's mini boss, specs/bosses/mini/2-1-floe-breaker.md)
 
-The mini boss of the Ice floes level. Offsets in px from the boss's centre, X right and Y up (its
+The mini boss of 2-1 (Great erg). Offsets in px from the boss's centre, X right and Y up (its
 nose points down, at -Y). The stage patterns are the agent's design (MB-FLOE-BREAKER-10): the
 harpoon guns fire the same while they stand, the core fires something new at every stage, and its
 last stage (only the core left) a ring used by no earlier stage. Health values
-(MB-FLOE-BREAKER-13) are placeholders for the World 2 tuning (WLD-2-25, WLD-2-27).
+(MB-FLOE-BREAKER-13) are set for World 2 (WLD-2-25, WLD-2-27).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley

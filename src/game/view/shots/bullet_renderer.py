@@ -1,24 +1,24 @@
-"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to red along their tail,
+"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to cyan then deep blue along their tail,
 flickering, and a burst of sparkling metal sparks where they hit (GFX-FX-02).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.game_view import ShotRenderer  # noqa: E402
+from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from game.view.shots.spark_bursts import SparkBursts  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.spark_bursts import SparkBursts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _shot_renderer(sync: Any, dispose: Any) -> Any:

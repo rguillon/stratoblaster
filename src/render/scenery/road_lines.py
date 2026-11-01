@@ -12,12 +12,12 @@ from core.scenery.road_traffic import cached_street_lines, in_crossing, road_z_s
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_traffic import StreetLine  # noqa: E402
-from core.scenery.road_types import Road, RoadPoint  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road, RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 Point = tuple[float, float]

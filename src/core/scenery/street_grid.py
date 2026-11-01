@@ -17,18 +17,18 @@ each a list of points every `rules.step`.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.districts import District  # noqa: E402
-from core.scenery.scenery_level import RoadRules  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import District  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import random_in  # noqa: E402
-from core.scenery.lanes import is_boulevard, run_width, street_width  # noqa: E402
-from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends  # noqa: E402
-from core.scenery.street_links import (  # noqa: E402
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.lanes import is_boulevard, run_width, street_width  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Block,
     Link,
     Node,
@@ -37,8 +37,8 @@ from core.scenery.street_links import (  # noqa: E402
     links_by_node,
     pair,
 )
-from core.scenery.street_runs import straight_runs  # noqa: E402
-from core.scenery.tile_streets import StreetRun, tile_street_runs  # noqa: E402
+from core.scenery.street_runs import straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.tile_streets import StreetRun, tile_street_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Gap between a street's edge and the block beside it.
 BLOCK_KERB = 0.5

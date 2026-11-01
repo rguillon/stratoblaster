@@ -9,10 +9,10 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.weapon import WeaponDefinition  # noqa: E402
-from core.systems.shot_world import ShotWorld  # noqa: E402
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.shot_world import ShotWorld  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -71,6 +71,8 @@ class RunArsenal:
             self._shots.select(self._shots.weapon, self._shots.level + count)
 
     def snapshot(self) -> WeaponLevels:
+        """The weapons now: the weapon in use and the level of each, for `restore`. Records the
+        level of the weapon in use first."""
         self._set_level(self._shots.weapon, self._shots.level)
         levels: dict[str, float] = {}
         for entry in self._levels:

@@ -57,6 +57,9 @@ MENU_TEXTS = record(
         # The "not supported" message (UI-LOAD-02).
         "unsupported": "Sorry! This game cannot run in this browser or on this device. "
         + "Please try a recent version of Chrome, Edge, Firefox or Safari on a computer.",
+        # The message when the graphics context is lost while playing (UI-LOAD-07), and its button.
+        "contextLost": "The graphics context was lost. Please reload the page.",
+        "reload": "Reload",
         "settings": "Settings",
         "settingsHint": "▲ ▼ to pick · ◀ ▶ or tap to set",
         "musicVolume": "Music",

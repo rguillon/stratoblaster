@@ -11,9 +11,9 @@ from core.systems.player_flight import PlayerFlight
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal, Protocol  # noqa: E402
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.player_flight import FlightBounds  # noqa: E402
+from core.systems.player_flight import FlightBounds  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 JourneyStage = Literal["arriving", "flying", "free", "leaving", "gone"]
 
@@ -31,36 +31,52 @@ class ShipOptions(Protocol):
     """Where a run's ship starts and how it flies (`RunShip`)."""
 
     @property
-    def start(self) -> PlanePoint: ...
+    def start(self) -> PlanePoint:
+        """Where the ship starts its journey."""
+        ...
 
     @property
-    def max_speed(self) -> float: ...
+    def max_speed(self) -> float:
+        """Top speed of the ship."""
+        ...
 
     @property
-    def acceleration_seconds(self) -> float: ...
+    def acceleration_seconds(self) -> float:
+        """Seconds the ship takes to reach its top speed."""
+        ...
 
 
 class ScreenSize(Protocol):
     """How tall the screen is, in logical pixels."""
 
     @property
-    def height(self) -> float: ...
+    def height(self) -> float:
+        """Height of the screen, in logical pixels."""
+        ...
 
 
 class FlightOptions(Protocol):
     """What `flight_of` needs of a run's options (a `LevelRunOptions`)."""
 
     @property
-    def ship(self) -> ShipOptions: ...
+    def ship(self) -> ShipOptions:
+        """The ship's options."""
+        ...
 
     @property
-    def bounds(self) -> FlightBounds: ...
+    def bounds(self) -> FlightBounds:
+        """Where the ship may fly."""
+        ...
 
     @property
-    def screen(self) -> ScreenSize: ...
+    def screen(self) -> ScreenSize:
+        """The screen's size."""
+        ...
 
     @property
-    def journey(self) -> "JourneyRules | None": ...
+    def journey(self) -> "JourneyRules | None":
+        """The journey rules, when the run has a journey."""
+        ...
 
 
 __pragma__("noskip")
@@ -110,6 +126,7 @@ class ShipJourney:
 
     @property
     def stage(self) -> JourneyStage:
+        """The journey's stage: 'arriving', 'flying', 'free', 'leaving' or 'gone'."""
         return self._stage
 
     @property

@@ -8,30 +8,30 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_2.boreal_citadel import BOREAL_BATTERY, BOREAL_CANNON  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.boreal_citadel import BOREAL_BATTERY, BOREAL_CANNON  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     QUARTER,
     WHITE,
 )
-from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402
+from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     AURORA,
     CITADEL_DECK,
     VIOLET,
     icicles,
     rect,
 )
-from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402
-from game.view.enemies.enemy_shapes import POD_SECTION, around, decal, radial  # noqa: E402
-from render.geometry.organic import RibSpec, ribs  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import POD_SECTION, around, decal, radial  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import RibSpec, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 H = ENEMY_LOOK.hull
 

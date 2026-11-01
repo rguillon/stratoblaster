@@ -16,7 +16,7 @@ from render.babylon import set_enabled
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Vec3 = list[float]
 __pragma__("noskip")
@@ -86,7 +86,7 @@ def weapon_hinge(at: Vec3, radius: float, mount: Any) -> list[Any]:
     """`[hinge, fold]` of a hidden weapon drawn round `at` (model space): from its `mount`
     `[dx, dy, fold]` (px, X right, Y up) if it has one, else on its inner side (towards the centre
     line, or its tail for one on it), folded back along the hull."""
-    if mount != None:  # noqa: E711
+    if mount != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         offset = boss_point(mount[0], mount[1])
         return [[at[0] + offset[0], 0, at[2] + offset[2]], mount[2]]
     if abs(at[0]) < 1:
@@ -163,12 +163,12 @@ def build_reveal(design: Any, spec: Any, model_root: Any, slides: list[Slide]) -
     the pieces that slide out `slides`."""
     at = boss_point(spec.x, spec.y)
     weapons = design.weapons
-    look = weapons[spec.id] if weapons != None and spec.id in weapons else None  # noqa: E711
-    mount = look.mount if look != None and "mount" in look else None  # noqa: E711
+    look = weapons[spec.id] if weapons != None and spec.id in weapons else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    mount = look.mount if look != None and "mount" in look else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     base = [model_root.position.x, model_root.position.y, model_root.position.z]
     hinge = weapon_hinge(at, spec.radius, mount)
     sink = spec.radius * BOSS_LOOK.reveal.sink
-    if look != None and "rig" in look and look.rig:  # noqa: E711
+    if look != None and "rig" in look and look.rig:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         # At the end of a rig (D-228): it rises into place as the rig unfolds, no swing.
         hinge = [at, 0]
         sink = spec.radius * 0.5

@@ -6,14 +6,14 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import Note  # noqa: E402
-from core.math.rng import pick  # noqa: E402
-from game.view.audio.compose_parts import BarContext, note  # noqa: E402
-from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle  # noqa: E402
+from audio.audio_types import Note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import pick  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_parts import BarContext, note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MotifNote:

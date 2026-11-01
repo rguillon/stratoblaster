@@ -13,14 +13,14 @@ from render.scenery.scenery_look import PropGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
-def lights_only(factory: Any) -> Any:  # noqa: ANN401
+def lights_only(factory: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """A model factory making only the lights of what `factory` makes, and its shadow's stand-in
     (D-212)."""
 
@@ -40,10 +40,10 @@ class ImposterKinds:
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
-        scene: Any,  # noqa: ANN401
+        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         models: dict[str, Any],
         kinds: list[str],
-        atlas: Any,  # noqa: ANN401
+        atlas: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         tilt: float,
     ) -> None:
         self.kinds = kinds
@@ -75,10 +75,10 @@ class ImposterKinds:
 
 
 def imposter_kinds(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    scene: Any,  # noqa: ANN401
+    scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     models: dict[str, Any],
     kinds: list[str],
-    atlas_of: Any,  # noqa: ANN401
+    atlas_of: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     tilt: float,
 ) -> ImposterKinds | None:
     """The `ImposterKinds` of `kinds`, if `models` has any of them and `atlas_of(count)` gives an

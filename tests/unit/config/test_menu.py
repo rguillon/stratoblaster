@@ -35,3 +35,13 @@ def test_ui_title_03_the_cookies_last_a_year_and_frames_are_capped() -> None:
     assert MENU_CONFIG.cookie_max_age_days == 365
     assert 0 < MENU_CONFIG.max_frame_seconds < 1
     assert MENU_CONFIG.glow.intensity > 0
+
+
+def test_ui_ship_03_the_ring_is_neon_blue_green_not_acid_yellow() -> None:
+    """The ring under the highlighted ship is the menus' neon cyan (UI-LOOK-03, D-198): no red and
+    a blue-green hue, where the old acid yellow had no blue."""
+    red, green, blue = MENU_CONFIG.ship_select.ring.color
+    assert red == 0
+    assert blue > 0.5
+    assert green > 0.5
+    assert (red, green, blue) != (1, 0.92, 0.05)

@@ -9,11 +9,11 @@ from core.systems.enemy_motion import Path
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea  # noqa: E402
-from core.math.rng import Random  # noqa: E402
-from core.systems.enemy_motion import PathPoint  # noqa: E402
+from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_motion import PathPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

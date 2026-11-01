@@ -11,11 +11,11 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -250,8 +250,7 @@ def road_tiles(pieces: Sequence[RoadPiece]) -> dict[str, bool]:
 
 class PieceCache:
     """The road pieces of the last list of roads asked for, found once (they are asked for every
-    chunk). Keyed by the list's identity
-    of the key)."""
+    chunk). Keyed by the identity of that list: a different list is worked out again."""
 
     def __init__(self) -> None:
         self._roads: Sequence[Road] | None = None

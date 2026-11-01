@@ -41,15 +41,15 @@ from render.geometry.solids import LoftOptions, Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 H = ENEMY_LOOK.hull
 N = BOSS_LOOK.neon.narwhal
-if N == None:  # noqa: E711
+if N == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     N = [0.05, 0.95, 0.75]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2

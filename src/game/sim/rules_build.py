@@ -13,7 +13,7 @@ from core.systems.player_hull import HullDamage, HullRules
 from game.sim.config_build import opt
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any

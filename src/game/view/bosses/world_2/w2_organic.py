@@ -13,10 +13,10 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.organic import SegmentedBody  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import SegmentedBody  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -96,7 +96,7 @@ def sinew(
     bow: Vec3 | None = None,
 ) -> None:
     """A sinew from `from_` to `to`, bowed by `bow`, thinning from `r` to half of it."""
-    if bow == None:  # noqa: E711
+    if bow == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         bow = [0, r, 0]
     tendril(b, curve(from_, to, bow, 3), [r, r * 0.5], 4, color)
 

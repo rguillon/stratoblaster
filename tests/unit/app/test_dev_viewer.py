@@ -549,7 +549,6 @@ def test_the_enemies_and_bosses_are_shown_with_no_ground_and_none_waited_for(env
 
 def _probe_boss() -> Any:
 
-
     parts = [BossPartSpec("gun", 30, 0, 8, 10, False, 0.0)]
     stats = BossStats("warden", 40, 100, 1000, "Warden", 12, parts, 1, 1, BossDeath(1, 0.25))
     boss = ProbeBoss(240, 600, stats)

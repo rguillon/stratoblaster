@@ -7,17 +7,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from audio.audio_bindings import MusicRequest  # noqa: E402
+from audio.audio_bindings import MusicRequest  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_bindings import AudioBindings, AudioMix  # noqa: E402
-from audio.audio_types import MusicEffects, Track  # noqa: E402
-from game.view.audio.compose_track import TrackRequest, compose_track, seed_of  # noqa: E402
-from game.view.audio.instruments import INSTRUMENTS  # noqa: E402
-from game.view.audio.jingles import JINGLES  # noqa: E402
-from game.view.audio.music_styles import MENU_STYLE, WORLD_STYLES, MusicStyle  # noqa: E402
-from game.view.audio.sound_designs import SOUND_DESIGNS  # noqa: E402
+from audio.audio_bindings import AudioBindings, AudioMix  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from audio.audio_types import MusicEffects, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_track import TrackRequest, compose_track, seed_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.instruments import INSTRUMENTS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.jingles import JINGLES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.music_styles import MENU_STYLE, WORLD_STYLES, MusicStyle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.sound_designs import SOUND_DESIGNS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Explosions of enemies at least this big (hit radius, logical pixels) sound large.
 LARGE_BLAST_RADIUS = 18

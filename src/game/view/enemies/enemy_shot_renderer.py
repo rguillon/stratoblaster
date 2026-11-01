@@ -11,35 +11,35 @@ from org.transcrypt.stubs.browser import __pragma__
 __pragma__("skip")
 __pragma__("noskip")
 
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.readability import READABILITY  # noqa: E402
-from game.view.enemies.enemy_lasers import EnemyLasers  # noqa: E402
-from game.view.enemies.enemy_materials import enemy_materials, mesh_of  # noqa: E402
-from game.view.shot_geometry import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_lasers import EnemyLasers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_materials import enemy_materials, mesh_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_glow_disc,
     build_swirl,
 )
-from game.view.shots.shot_meshes import (  # noqa: E402
+from game.view.shots.shot_meshes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     additive_template,
     blended_template,
 )
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     babylon_constant,
     new_transform_node,
     node_name,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402
-from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
-from render.outline import set_outline  # noqa: E402
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.outline import set_outline  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = ENEMY_LOOK
 # Draw order of the bullets: after every other see-through mesh of the playfield, the missiles'
@@ -204,7 +204,7 @@ def swirl_placement(swirl: Any) -> Any:
 def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[Any]:
     """One swirl of plasma, spinning with its bullet."""
     color = colors.swirls[i]
-    if color == None:  # noqa: E711
+    if color == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         color = colors.halo
     mesh = additive_template(
         name + "-swirl-" + str(i),

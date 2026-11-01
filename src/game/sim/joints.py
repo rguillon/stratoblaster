@@ -11,7 +11,7 @@ from game.sim.config_access import keys_of, opt
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -23,7 +23,7 @@ def joint_specs(joints: Any) -> Any:
         joint = joints[joint_id]
         swing = joint.swing
         phase = swing.phase
-        if phase == None:  # noqa: E711
+        if phase == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             phase = 0
         result[joint_id] = BossJointSpec(
             joint.x,
@@ -39,7 +39,7 @@ def enemy_parts(parts: Any) -> list[EnemyPartSpec]:
     `orbits` or `shields` is off."""
     result: list[EnemyPartSpec] = []
     for part in parts:
-        aim = 0 if part.aim == None else part.aim  # noqa: E711
+        aim = 0 if part.aim == None else part.aim  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         result.append(
             EnemyPartSpec(
                 part.id,
@@ -59,5 +59,5 @@ def enemy_parts(parts: Any) -> list[EnemyPartSpec]:
 def jointed_design(design: Any) -> JointedDesign:
     """A jointed enemy's design from its config: its parts on joints or in orbit (ENM-27), and its
     joints as the core's specs."""
-    joints = None if design.joints == None else joint_specs(design.joints)  # noqa: E711
+    joints = None if design.joints == None else joint_specs(design.joints)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return JointedDesign(enemy_parts(design.parts), joints)

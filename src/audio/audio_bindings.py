@@ -8,19 +8,19 @@ moments (cues, see `level_cues.py`) and the music wanted; the game decides how t
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The jingles a game plays once (AUD-MUSIC-10).
 type Jingle = Literal["complete", "over", "checkpoint"]
 __pragma__("noskip")
 
-from audio.audio_types import Instrument, MusicEffects, SoundDesign, Track  # noqa: E402
+from audio.audio_types import Instrument, MusicEffects, SoundDesign, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MusicRequest:

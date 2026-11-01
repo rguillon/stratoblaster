@@ -13,7 +13,7 @@ from render.geometry.solids import Placement, place_at  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
@@ -40,13 +40,13 @@ def armour(
     y0 = heights[0]
     y1 = heights[1]
     waist = max(y0, y1 - chamfer * 0.8)
-    the_top = color if top is None else top  # noqa: E711
+    the_top = color if top is None else top  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     builder.bevel_slab(outline, [y0, waist, y1], [0, chamfer], color, None, the_top)
 
 
 def _with_at(place: Any, at: Vec3) -> Any:
     """`{...place, at}`: `place` moved to `at` (an empty placement when `place` is left out)."""
-    return place_at(Placement() if place == None else place, at)  # noqa: E711
+    return place_at(Placement() if place == None else place, at)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def cog(
@@ -64,7 +64,7 @@ def cog(
     outline: list[Any] = []
     for k in range(points):
         a = (2 * math.pi * k) / points
-        r = radius if k % 4 < 2 else radius * 0.8  # noqa: PLR2004
+        r = radius if k % 4 < 2 else radius * 0.8  # noqa: PLR2004 (the mechanism's four-part cycle, not a tunable)
         outline.append([math.sin(a) * r, math.cos(a) * r])
     builder.slab(outline, [0, thick], MECH["metal"], _with_at(place, at), MECH["bright"])
     builder.cylinder(radius * 0.35, thick + 0.4, 6, MECH["bright"], _with_at(place, at))

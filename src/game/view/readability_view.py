@@ -12,8 +12,8 @@ from render.edge_trim_mesh import add_edge_trim, request_trim
 from render.geometry.edge_trim import TrimOptions
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 

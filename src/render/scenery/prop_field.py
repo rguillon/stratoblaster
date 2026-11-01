@@ -30,13 +30,13 @@ from render.scenery.plume_layer import build_plume_meshes
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
-from render.scenery.plume_layer import PlumeFrame, PlumeMaterial, PlumeMaterialFactory  # noqa: E402
-from render.scenery.scenery_look import PropGeometry, PropModelFactory  # noqa: E402
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import SceneryLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.plume_layer import PlumeFrame, PlumeMaterial, PlumeMaterialFactory  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropGeometry, PropModelFactory  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 if TYPE_CHECKING:
     # It imports this module.
@@ -70,7 +70,7 @@ class PropMaterials:
     """Materials of the props: the lit structure, the self-lit accents and the windows (D-210;
     None: the props' windows are not drawn)."""
 
-    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:  # noqa: ANN401
+    def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         self.structure = structure
         self.lights = lights
         self.windows = windows
@@ -81,11 +81,11 @@ class PropMeshes:
 
     def __init__(
         self,
-        structure: Any,  # noqa: ANN401
-        lights: Any,  # noqa: ANN401
+        structure: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        lights: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         plumes: list[Any],
-        windows: Any = None,  # noqa: ANN401
-        shadow: Any = None,  # noqa: ANN401
+        windows: Any = None,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        shadow: Any = None,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     ) -> None:
         self.structure = structure
         self.lights = lights
@@ -176,18 +176,18 @@ def _draw_always(mesh: Any) -> None:
     mesh.doNotSyncBoundingInfo = True
 
 
-def _part_mesh(name: str, geo: Any, material: Any, scene: Any) -> Any:  # noqa: ANN401
+def _part_mesh(name: str, geo: Any, material: Any, scene: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The mesh of a part of a prop (its lights, its windows), drawn always; None if it has no
     such part or no material for it."""
     # `== None`: a materials object made without windows has the field undefined.
-    if geo == None or material == None or len(geo.indices) == 0:  # noqa: E711
+    if geo == None or material == None or len(geo.indices) == 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     mesh = mesh_of(name, geo, material, scene)
     _draw_always(mesh)
     return mesh
 
 
-def shadow_only_material(scene: Any) -> Any:  # noqa: ANN401
+def shadow_only_material(scene: Any) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """D-212: a material that draws nothing (no colour, no depth): a mesh with it only shows in
     the shadow maps, which draw it with their own shader."""
     material = new_standard_material("prop-shadow-only", scene)
@@ -247,7 +247,7 @@ def level_tree_kinds(level: SceneryLevel) -> list[str]:
     return _unique(ids)
 
 
-def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901
+def level_prop_kinds(level: SceneryLevel) -> list[str]:  # noqa: PLR0912, C901 (one branch per level kind, kept whole)
     """The kinds of prop `level` can stand on its ground (not its cars): the buildings and trees its
     sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in order
     (GFX-PROP-03)."""
@@ -373,7 +373,7 @@ class PropField:
                 _draw_always(plume)
             self._meshes[kind] = PropMeshes(structure, lights, plumes, windows, shadow)
 
-    def _shadow_mesh(self, scene: Any, kind: str, geometry: PropGeometry) -> Any:  # noqa: ANN401
+    def _shadow_mesh(self, scene: Any, kind: str, geometry: PropGeometry) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         """D-212: the mesh of the shadow's stand-in of `kind`, if it has one and there are shadows
         (`on_structure`)."""
         if geometry.shadow == None or self._on_structure is None:  # noqa: E711 (absent: undefined)
@@ -626,7 +626,7 @@ def same_placements(a: list[PropPlacement], b: list[PropPlacement]) -> bool:
     """Whether `a` and `b` hold the same placements in the same order."""
     if len(a) != len(b):
         return False
-    for i in range(len(a)):  # noqa: SIM110
+    for i in range(len(a)):  # noqa: SIM110 (index loop: the two lists are compared at each index)
         if a[i] is not b[i]:
             return False
     return True

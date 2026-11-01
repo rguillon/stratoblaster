@@ -5,7 +5,18 @@
 
 from types import SimpleNamespace
 
-from app.game_session import GameDebugOptions, atmosphere_of, highlighted_level, ship_of
+from app.game_session import (
+    GameDebugOptions,
+    GameSession,
+    atmosphere_of,
+    highlighted_level,
+    ship_of,
+)
+from app.saved_supplies import load_saved_supplies, save_supplies, saved_supplies_key
+from app.saved_weapons import load_saved_weapons, save_weapons
+from core.systems.level_run_types import Supplies
+from core.systems.run_arsenal import WeaponLevels
+from host.key_value_storage import MemoryStorage
 
 
 def state(**overrides: object) -> SimpleNamespace:
@@ -50,3 +61,78 @@ def test_dev_opt_06_the_tile_grid_is_left_to_the_level_when_not_asked() -> None:
     options = atmosphere_of(debug)
     assert options.weather is None
     assert options.tile_grid is None
+
+
+def _session(storage: MemoryStorage | None, completed: list[object]) -> GameSession:
+    """A game session with only what its carry-over reads: the storage and the game's id."""
+    session = GameSession.__new__(GameSession)
+    session.options = SimpleNamespace(storage=storage)
+    session.game = SimpleNamespace(id="game")
+    session._on_complete = completed.append
+    return session
+
+
+def _played(phase: str, weapons: WeaponLevels, supplies: Supplies) -> SimpleNamespace:
+    """A level as its run ends: its phase, its weapons (arsenal), lives and bombs."""
+    run = SimpleNamespace(
+        phase=phase,
+        arsenal=SimpleNamespace(snapshot=lambda: weapons),
+        supplies=supplies,
+    )
+    return SimpleNamespace(run=run)
+
+
+def test_game_level_14_a_completed_level_keeps_its_weapons_lives_and_bombs() -> None:
+    storage = MemoryStorage()
+    completed: list[object] = []
+    weapons = WeaponLevels("laser", {"guns": 2.0, "laser": 3.0})
+    play = _played("complete", weapons, Supplies(5, 7))
+    _session(storage, completed)._completed(play)
+    kept_weapons = load_saved_weapons(storage, "game")
+    kept_supplies = load_saved_supplies(storage, "game")
+    assert kept_weapons is not None and kept_weapons.weapon == "laser"
+    assert kept_weapons.levels == {"guns": 2.0, "laser": 3.0}
+    assert kept_supplies is not None and (kept_supplies.lives, kept_supplies.bombs) == (5, 7)
+    assert completed == [play]
+
+
+def test_game_level_14_a_game_over_keeps_nothing_new() -> None:
+    """What was kept before stays: the level lost keeps neither its weapons nor its supplies."""
+    storage = MemoryStorage()
+    save_weapons(storage, "game", WeaponLevels("guns", {"guns": 1.0}))
+    save_supplies(storage, "game", Supplies(3, 3))
+    completed: list[object] = []
+    play = _played("over", WeaponLevels("laser", {"guns": 4.0, "laser": 4.0}), Supplies(9, 9))
+    _session(storage, completed)._completed(play)
+    kept_weapons = load_saved_weapons(storage, "game")
+    kept_supplies = load_saved_supplies(storage, "game")
+    assert kept_weapons is not None and kept_weapons.weapon == "guns"
+    assert kept_weapons.levels == {"guns": 1.0}
+    assert kept_supplies is not None and (kept_supplies.lives, kept_supplies.bombs) == (3, 3)
+    assert completed == [play]
+
+
+def test_game_life_12_a_continue_keeps_the_weapons_but_not_the_supplies() -> None:
+    """A Continue starts again with the starting lives and bombs (GAME-LIFE-11): none are read."""
+    storage = MemoryStorage()
+    save_weapons(storage, "game", WeaponLevels("guns", {"guns": 2.0}))
+    save_supplies(storage, "game", Supplies(5, 7))
+    session = _session(storage, [])
+    weapons, supplies = session._kept(SimpleNamespace(resume=True))
+    assert weapons is not None and weapons.levels == {"guns": 2.0}
+    assert supplies is None
+    weapons, supplies = session._kept(SimpleNamespace(resume=None))
+    assert supplies is not None and (supplies.lives, supplies.bombs) == (5, 7)
+
+
+def test_game_life_12_an_unreadable_saved_supply_is_kept_as_none() -> None:
+    storage = MemoryStorage()
+    storage.set(saved_supplies_key("game"), "not json")
+    _weapons, supplies = _session(storage, [])._kept(SimpleNamespace(resume=None))
+    assert supplies is None
+
+
+def test_game_level_14_without_storage_nothing_is_kept_or_saved() -> None:
+    session = _session(None, [])
+    assert session._kept(SimpleNamespace(resume=None)) == (None, None)
+    session._completed(_played("complete", WeaponLevels("guns", {}), Supplies(5, 7)))

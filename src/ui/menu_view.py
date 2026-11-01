@@ -5,7 +5,7 @@ positional constructor arguments in the order listed."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from ui.caption_row import Caption  # noqa: E402
+from ui.caption_row import Caption  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

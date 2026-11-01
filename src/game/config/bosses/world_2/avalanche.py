@@ -1,6 +1,6 @@
 """The Avalanche (2-4's mini boss, specs/bosses/mini/2-4-avalanche.md)
 
-The Glacier level's mini boss. Offsets in px from the boss's centre, X right and Y up (its nose
+The mini boss of 2-4. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Its two drill arms swing on their joints (D-061) and shield the core; a rock
 hopper on its back drops lines of slow big rocks (MB-AVALANCHE-10).
 """
@@ -14,7 +14,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

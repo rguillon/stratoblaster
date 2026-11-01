@@ -17,7 +17,8 @@ def test_game_level_02_the_ground_scrolls_at_the_speed_until_the_level_ends() ->
         track.step(1.0)
     assert track.ended
     assert track.progress == pytest.approx(100.0)
-    assert track.distance == pytest.approx(100.0)
+    # The ground keeps moving past the level's end (GAME-LEVEL-07).
+    assert track.distance == pytest.approx(210.0)
 
 
 def test_game_screen_03_negative_time_does_not_move_the_track() -> None:
@@ -79,6 +80,27 @@ def test_game_level_07_speed_factor_eases_over_its_seconds() -> None:
     assert track.speed_factor == pytest.approx(0.0)
     track.step(1.0)
     assert track.speed_factor == pytest.approx(0.0)
+
+
+def test_game_level_07_the_ground_eases_back_after_the_final_boss_at_the_level_end() -> None:
+    """The final boss sits at the end: the progress is at the end and not held, yet the ground
+    still eases from the boss's speed back to the level's speed over 2 s, and keeps moving."""
+    track = ScrollTrack(60.0, 100.0)
+    track.step(10.0)  # the level reaches its end
+    assert track.ended
+    track.held = True
+    track.set_speed_factor(1.5, 0.0)
+    track.step(1.0)
+    track.held = False
+    track.set_speed_factor(1.0, 2.0)  # the boss is gone: ease back over 2 s
+    before = track.distance
+    track.step(1.0)  # half way: factor 1.25 (smooth ease)
+    assert track.distance - before == pytest.approx(60.0 * 1.25)
+    before = track.distance
+    track.step(1.0)  # eased: factor 1
+    assert track.speed_factor == pytest.approx(1.0)
+    assert track.distance - before == pytest.approx(60.0)
+    assert track.progress == pytest.approx(100.0)
 
 
 def test_speed_factor_and_speed_must_not_be_negative() -> None:

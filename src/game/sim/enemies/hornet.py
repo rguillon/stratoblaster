@@ -9,9 +9,9 @@ from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal, Protocol  # noqa: E402
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402
+from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class HornetConfig(Protocol):

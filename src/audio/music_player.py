@@ -3,8 +3,9 @@
 `update`, so the music keeps time when frames are slow (AUD-ENGINE-05). Pausing keeps each
 track's position; resuming goes on from there (AUD-ENGINE-10).
 
-`bus` is a function returning the `MusicBus` once the context exists (None before), as in the
-Seconds into each paused track are kept in parallel lists (a Map keyed by slot).
+`bus` is a function returning the `MusicBus` once the context exists (None before).
+
+Seconds into each paused track are kept in parallel lists, keyed by slot.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -15,7 +16,7 @@ from audio.synth import Voice, VoiceOptions, play_voice
 from audio.track_mixer import MusicBus, TrackMixer
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

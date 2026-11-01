@@ -6,11 +6,11 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import MenuView  # noqa: E402
-from ui.screens.elements import MenuDocument  # noqa: E402
+from ui.menu_view import MenuView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import MenuDocument  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class GameTouchHandlers(Protocol):
@@ -23,9 +23,9 @@ class GameTouchHandlers(Protocol):
 
 __pragma__("noskip")
 
-from input.menu_action import MenuSet  # noqa: E402
-from input.pointer_menu_input import pointer_command  # noqa: E402
-from ui.menu_view import (  # noqa: E402
+from input.menu_action import MenuSet  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.pointer_menu_input import pointer_command  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.menu_view import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -34,19 +34,19 @@ from ui.menu_view import (  # noqa: E402
     ShipSelectView,
     TitleView,
 )
-from ui.screens.dev_screen import (  # noqa: E402
+from ui.screens.dev_screen import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     centre_menu,
     render_dev_screen,
     render_dev_viewer_screen,
 )
-from ui.screens.game_screen import render_game_screen  # noqa: E402
-from ui.screens.level_select_screen import render_level_select_screen  # noqa: E402
-from ui.screens.loading_screen import render_loading_screen  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
-from ui.screens.settings_screen import render_settings_screen  # noqa: E402
-from ui.screens.ship_select_screen import render_ship_select_screen  # noqa: E402
-from ui.screens.title_screen import render_title_screen  # noqa: E402
-from ui.shrink_to_fit import shrink_to_fit  # noqa: E402
+from ui.screens.game_screen import render_game_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.level_select_screen import render_level_select_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.loading_screen import render_loading_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.settings_screen import render_settings_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.ship_select_screen import render_ship_select_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.title_screen import render_title_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.shrink_to_fit import shrink_to_fit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MenuOverlayOptions:

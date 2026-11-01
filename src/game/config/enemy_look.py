@@ -11,7 +11,7 @@ from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -217,8 +217,9 @@ ENEMY_LOOK = record(
                 "purple": bullet([1, 0.95, 0.88], [1, 0.42, 0.1]),
             },
         },
-        # Phase 10 (WLD-4-16, GFX-READ-11): the shot style World 4's looks name (`shotStyle`), for
-        # red, orange and dark grounds and skies. Each bullet keeps its colours and gets a white
+        # Phase 10 (WLD-4-16, GFX-READ-11): the contrast style, for red, orange and dark grounds and
+        # skies; applied in every level since D-124 (the renderer no longer reads `shotStyle`). Each
+        # bullet keeps its colours and gets a white
         # `spark` added at its heart (`size` times its radius); it has no dark rim any more
         # (reviewer, 2026-10-30, D-194). Laser warning lines get a white core and are
         # `warningWidth` times as wide.

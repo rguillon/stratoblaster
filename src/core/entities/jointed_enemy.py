@@ -15,10 +15,10 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.entities.boss_joint import BossJointSpec  # noqa: E402
-from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
+from core.entities.boss_joint import BossJointSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -102,10 +102,12 @@ class EnemyPart:
 
     @property
     def health(self) -> float:
+        """Health left, never below 0."""
         return self._health
 
     @health.setter
     def health(self, value: float) -> None:
+        """Sets the health left, never below 0; a hit (a lower value) restarts the hit flash."""
         next_health = max(0, value)
         if next_health < self._health:
             self.since_hit = 0
@@ -113,10 +115,12 @@ class EnemyPart:
 
     @property
     def destroyed(self) -> bool:
+        """Whether its health is used up."""
         return self._health <= 0
 
     @property
     def gone(self) -> bool:
+        """Whether its enemy is gone or it is destroyed."""
         return self._owner.gone or self.destroyed
 
     @property
@@ -184,6 +188,8 @@ class JointedEnemy(Enemy):
         return targets
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Steps the enemy for `dt` seconds: breaks off its destroyed parts, swings the joints
+        (unless `swinging` is off), runs `act`, then places the parts."""
         self._break_destroyed(ctx)
         if self.swinging:
             self.joints.step(dt)

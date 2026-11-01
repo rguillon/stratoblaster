@@ -7,13 +7,13 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from host.worker_data import to_plain  # noqa: E402
-from render.scenery.level_ground import generate_in_two  # noqa: E402
-from render.scenery.procedural_textures import texture_pixels  # noqa: E402
+from host.worker_data import to_plain  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.level_ground import generate_in_two  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.procedural_textures import texture_pixels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _install_handler(handler: Any) -> None:

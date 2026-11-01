@@ -40,7 +40,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
@@ -153,7 +153,7 @@ def _draw_fuselage(p: Any) -> None:
     def paint(side: int, band: int) -> Any:
         # Soot over its back behind the canopy, from the reactors' heat.
         painted: Any = canopy(side, band)
-        if painted == None:  # noqa: E711
+        if painted == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             if band < SOOT_BANDS and side in BACK:
                 return SKIN.dark
             return None
@@ -296,7 +296,7 @@ def _draw_ring(p: Any) -> None:
 def _gun_muzzles(part_id: str) -> list[Any]:
     """`EMBER_HERALD.guns[part.id]?.gun ?? []`."""
     entry: Any = EMBER_HERALD.guns[part_id]
-    if entry == None or entry.gun == None:  # noqa: E711
+    if entry == None or entry.gun == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return []
     guns: list[Any] = entry.gun
     return guns
@@ -317,7 +317,7 @@ def build_ember_herald(scene: Any) -> Any:
     and a ring turning over it carrying three ember lances."""
     lances = {}
     for part in EMBER_HERALD.stats.parts:
-        if part.reveal != None:  # noqa: E711
+        if part.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         lances[part.id] = _lance_part(_gun_muzzles(part.id))
     return build_boss_model(

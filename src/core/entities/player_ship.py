@@ -54,14 +54,14 @@ def validate_player_ship_roster(roster: PlayerShipRoster) -> None:
     if len(roster.ships) == 0:
         raise ValueError("A roster needs at least one player ship")
     # `not (x > 0)` (rather than `x <= 0`) also rejects NaN.
-    if not (roster.base_speed_px_per_sec > 0):  # noqa: SIM201
+    if not (roster.base_speed_px_per_sec > 0):  # noqa: SIM201 (NaN fails this check too)
         raise ValueError("The base speed must be positive")
     ids: list[str] = []
     for ship in roster.ships:
         if ship.id in ids:
             raise ValueError('Duplicate player ship id "' + ship.id + '"')
         ids.append(ship.id)
-        if not (ship.max_speed_factor > 0):  # noqa: SIM201
+        if not (ship.max_speed_factor > 0):  # noqa: SIM201 (NaN fails this check too)
             raise ValueError('Ship "' + ship.id + '": speed must be positive')
         if not _is_integer(ship.max_health) or ship.max_health <= 0:
             raise ValueError('Ship "' + ship.id + '": health must be a positive integer')

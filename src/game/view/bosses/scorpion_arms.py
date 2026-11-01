@@ -17,7 +17,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -180,7 +180,7 @@ def arm_limbs(side: str) -> Any:
     limbs["elbow-" + side] = {"draw": forearm(s)}
     limbs["jaw-" + side + "-" + plus_x] = {"draw": _jaw_drawing(at, JAW), "part": claw_id}
     limbs["jaw-" + side + "-" + minus_x] = {
-        "draw": _jaw_drawing(at, flip_x(JAW)),  # type: ignore[arg-type]
+        "draw": _jaw_drawing(at, flip_x(JAW)),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         "part": claw_id,
     }
     return limbs

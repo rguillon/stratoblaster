@@ -26,19 +26,19 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, plate, rect  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import lamps, plate, rect  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     WHITE,
     H,
@@ -46,19 +46,19 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     offset,
     socket,
 )
-from game.view.bosses.world_2.avalanche_arms import (  # noqa: E402
+from game.view.bosses.world_2.avalanche_arms import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     AVALANCHE_YELLOW,
     arm_limbs,
     drill,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402
+from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     FROST,
     PACKED,
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,

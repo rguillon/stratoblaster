@@ -7,21 +7,21 @@ from org.transcrypt.stubs.browser import __pragma__
 __pragma__("skip")
 __pragma__("noskip")
 
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     new_transform_node,
     set_enabled,
 )
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 # A limb drawn on a joint: its record of draw and part.
 type LimbDrawing = dict[str, Any]
 __pragma__("noskip")
 
-from game.view.enemies.organic_parts import opt  # noqa: E402
+from game.view.enemies.organic_parts import opt  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 ORIGIN = [0, 0, 0]
 
@@ -78,13 +78,13 @@ class JointFrames:
 
     def _make(self, joint_id: str, specs: Any) -> JointFrame:
         made = self._frames.get(joint_id)
-        if made != None:  # noqa: E711
+        if made != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             return made
         spec = specs[joint_id]
-        if spec == None:  # noqa: E711
+        if spec == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             raise ValueError('Boss "' + self._design.id + '" has no joint "' + joint_id + '"')
         parent_id = opt(spec, "parent", None)
-        if parent_id == None:  # noqa: E711
+        if parent_id == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             parent = JointFrame(self._root, ORIGIN)
         else:
             parent = self._make(parent_id, specs)
@@ -102,10 +102,10 @@ class JointFrames:
 
     def frame(self, joint: Any, holder: Any) -> JointFrame:
         """The frame of `joint`, or `holder` at the model's origin without one."""
-        found = None if joint == None else self._frames.get(joint)  # noqa: E711
-        if joint != None and found == None:  # noqa: E711
+        found = None if joint == None else self._frames.get(joint)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if joint != None and found == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             raise ValueError('No boss joint "' + joint + '"')
-        if found != None:  # noqa: E711
+        if found != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             return found
         return JointFrame(holder, ORIGIN)
 
@@ -113,7 +113,7 @@ class JointFrames:
         """Turns them as `boss`'s joints are now; at rest without one."""
         for joint_id in self._order:
             node = self._frames[joint_id].node
-            node.rotation.y = 0 if boss == None else boss.joints.angle(joint_id)  # noqa: E711
+            node.rotation.y = 0 if boss == None else boss.joints.angle(joint_id)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def hang(node: Any, at: list[Any], frame: JointFrame) -> None:
@@ -136,13 +136,13 @@ class BossLimbs:
     ) -> None:
         self._joints = joints
         self._limbs: list[Any] = []
-        for entry in _entries({} if limbs == None else limbs):  # noqa: E711
+        for entry in _entries({} if limbs == None else limbs):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             joint = entry[0]
             limb = entry[1]
             group = build(joint, limb.draw)
             hang(group.model.root, ORIGIN, joints.frame(joint, group.model.root))
             part = _index_of_part(design.stats.parts, opt(limb, "part", None))
-            if opt(limb, "part", None) != None and part < 0:  # noqa: E711
+            if opt(limb, "part", None) != None and part < 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 raise ValueError(
                     'Boss "'
                     + design.id
@@ -161,12 +161,12 @@ class BossLimbs:
             group = entry[0]
             part = entry[1]
             group.model.sync(lit, dt)
-            if boss == None:  # noqa: E711
+            if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 continue
             owner = boss.parts[part] if part >= 0 else None
-            owned_destroyed = owner != None and owner.destroyed  # noqa: E711
+            owned_destroyed = owner != None and owner.destroyed  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             set_enabled(group.model.root, not owned_destroyed)
-            group.show(owner.since_hit if owner != None else boss.core.since_hit)  # noqa: E711
+            group.show(owner.since_hit if owner != None else boss.core.since_hit)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def _index_of_part(parts: list[Any], part_id: Any) -> int:

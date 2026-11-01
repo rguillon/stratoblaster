@@ -5,15 +5,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import PropGroupRule, PropKindRule  # noqa: E402
-from core.scenery.street_links import Block  # noqa: E402
+from core.scenery.scenery_level import PropGroupRule, PropKindRule  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.scenery.away_placement import Building  # noqa: E402
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
+from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Gap between a tower and the edge of its part of the podium roof.
 TOWER_MARGIN = 1

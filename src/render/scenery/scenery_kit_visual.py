@@ -45,7 +45,7 @@ from render.scenery.weather_material_visual import create_weather_material
 from render.scenery.window_material_visual import add_window_material
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -176,11 +176,11 @@ class VisualSceneryKit:
     def aurora(self) -> Any:
         return create_aurora_material(self._scene)
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         """D-211: an atlas of `look` for `kinds` kinds of prop, if there is a look."""
         if look == None:  # noqa: E711 (absent: undefined)
             return None
-        tone = self._look.tone if self._look.tone != None else 1  # noqa: E711
+        tone = self._look.tone if self._look.tone != None else 1  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return ImposterAtlas(self._scene, look, kinds, tone)
 
     def add_shadow_caster(self, mesh: Any) -> None:

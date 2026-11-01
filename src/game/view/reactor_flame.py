@@ -23,7 +23,7 @@ from render.model_animation import add_model_animation
 __pragma__("jsmod")
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 

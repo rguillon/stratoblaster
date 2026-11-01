@@ -15,14 +15,14 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
     """A final boss's part: drops a bonus 60 % of the time (BOSS-57, `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711
+    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 

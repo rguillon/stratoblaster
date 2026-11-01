@@ -17,18 +17,18 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_shapes import barrels  # noqa: E402
-from game.view.bosses.mini_boss_greebles import dish, lamps, mast, plate, rect  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.final_boss_shapes import barrels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import dish, lamps, mast, plate, rect  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     WHITE,
     H,
@@ -38,9 +38,9 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     socket,
     turret,
 )
-from game.view.bosses.world_2.floe_breaker_details import floe_dressing  # noqa: E402
-from game.view.bosses.world_2.floe_breaker_frost import FROST  # noqa: E402
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.floe_breaker_details import floe_dressing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.floe_breaker_frost import FROST  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     fringe,
@@ -54,7 +54,7 @@ from game.view.bosses.world_2.w2_organic import (  # noqa: E402
 
 # The navigation lights (cyan neon of the boss, from its look).
 _CYAN_NEON = BOSS_LOOK.neon["floe-breaker"]
-CYAN = _CYAN_NEON if _CYAN_NEON != None else [0.1, 0.85, 1.0]  # noqa: E711
+CYAN = _CYAN_NEON if _CYAN_NEON != None else [0.1, 0.85, 1.0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Navigation lights: red to port (+X, the screen's left), green to starboard.
 PORT_RED = [1.0, 0.1, 0.12]
 STARBOARD_GREEN = [0.2, 1.0, 0.35]
@@ -227,7 +227,7 @@ def sponson(p: EnemyParts, at: Vec3) -> None:
     outboard."""
     part = FLOE_BREAKER.stats.parts[0]
     # `parts[0]?.radius ?? 13`.
-    r = 13.0 if part == None or part.radius == None else part.radius  # noqa: E711
+    r = 13.0 if part == None or part.radius == None else part.radius  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     s = sign_of(at[0])
     # MB-FLOE-BREAKER-03: a muscle bulging out of the flank, a metal mount on top, the reel a gland.
     organ(p.flesh, r * 0.85, 7, ICE_FLESH.graphite, Placement(offset(at, 0.0, -2.0, 0.0)), 0.3)

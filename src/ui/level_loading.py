@@ -4,13 +4,13 @@ screen over the game screen, with the level's real progress."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.menu_view import LoadingView  # noqa: E402
-from ui.screens.elements import array_from, replace_children  # noqa: E402
-from ui.screens.loading_screen import render_loading_screen  # noqa: E402
+from ui.menu_view import LoadingView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import array_from, replace_children  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.loading_screen import render_loading_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class LevelLoadingScreen:

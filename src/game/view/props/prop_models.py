@@ -6,17 +6,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.cars import CAR_IDS  # noqa: E402
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.car_props import build_car  # noqa: E402
-from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402
-from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402
-from game.view.props.tree_props import TREE_MODELS  # noqa: E402
+from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.car_props import build_car  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tree_props import TREE_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def merged(parts: list[Any]) -> dict[str, Any]:

@@ -25,17 +25,17 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402
-from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     AURORA,
     CITADEL_DECK,
     VIOLET,
@@ -43,15 +43,15 @@ from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402
     icicles,
     rect,
 )
-from game.view.bosses.world_2.boreal_citadel_details import draw_details  # noqa: E402
-from game.view.bosses.world_2.boreal_citadel_parts import (  # noqa: E402
+from game.view.bosses.world_2.boreal_citadel_details import draw_details  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.boreal_citadel_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     OUTRIGGER_TOP,
     draw_battery,
     draw_cannon,
     draw_cannon_mount,
     draw_dome,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     glow_vein,
     sinew,

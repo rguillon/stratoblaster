@@ -4,22 +4,22 @@ dirty marking is blocked while they are made (PERF-31)."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.readability import READABILITY  # noqa: E402
-from render.babylon import (  # noqa: E402
+from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     block_material_marks,
     color3,

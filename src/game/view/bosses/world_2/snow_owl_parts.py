@@ -17,8 +17,8 @@ from render.geometry.solids import Placement, place_at
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -26,7 +26,7 @@ __pragma__("noskip")
 
 _OWL_NEON = BOSS_LOOK.neon["snow-owl"]
 # The Snow Owl's white neon.
-OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON  # noqa: E711
+OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost).
 FROST = [0.75, 0.82, 0.9]
 ICE = ICE_FLESH.crystal

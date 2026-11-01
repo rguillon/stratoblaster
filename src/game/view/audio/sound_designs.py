@@ -12,12 +12,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import FilterSpec, SoundDesign  # noqa: E402
-from game.view.audio.sound_recipes import (  # noqa: E402
+from audio.audio_types import FilterSpec, SoundDesign  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.sound_recipes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     MINIGUN,
     ExplosionSize,
     chime,

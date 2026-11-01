@@ -13,7 +13,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from audio.audio_types import INFINITY, ToneLayer, is_finite, xorshift
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -69,7 +69,7 @@ class Voice:
             part.gain.gain.setTargetAtTime(SILENT, at, max(0.001, fade / 4))
             try:  # noqa: SIM105 (Transcrypt has no contextlib)
                 part.source.stop(at + fade + STOP_MARGIN)
-            except:  # noqa: E722
+            except:  # noqa: E722 (the browser throws when the node has already stopped)
                 # Already stopped earlier than that: nothing to do.
                 pass
 

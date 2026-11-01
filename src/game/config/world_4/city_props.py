@@ -2,7 +2,7 @@
 
 World 3's houses, terraces and flats, then Level Zero's city blocks and towers made of parts, then
 the skyscrapers; each section picks the groups that stand on it, so the buildings slowly grow from
-the houses to the skyscrapers. World 3's plants (Level Zero's trees).
+the houses to the skyscrapers. Level Zero's trees.
 """
 
 from game.config.cars import CAR_RULES
@@ -44,7 +44,7 @@ for group in WORLD_3_PROPS["groups"]:
 # The props of World 4 (WLD-4-06, WLD-4-07; reworked at the reviewer's request, 2026-10-27): World
 # 3's houses, terraces and flats, then Level Zero's city blocks and towers made of parts, then the
 # skyscrapers; each section picks the groups that stand on it, so the buildings slowly grow from the
-# houses to the skyscrapers. World 3's plants (Level Zero's trees).
+# houses to the skyscrapers. Level Zero's trees.
 WORLD_4_PROPS = merge(
     WORLD_3_PROPS,
     {

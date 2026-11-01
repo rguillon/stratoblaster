@@ -1,6 +1,6 @@
 """The Fjord Lynx (2-2's mini boss, specs/bosses/mini/2-2-fjord-lynx.md)
 
-The mini boss of the Fjords. Offsets in px from the boss's centre, X right and Y up (its nose
+The mini boss of 2-2. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Its radar mast aims its guns (MB-FJORD-LYNX-09): while the mast stands, the
 paws and the core fire at the player; once it is destroyed, they fire fans at preset headings
 instead (`only_while` / `only_after`).

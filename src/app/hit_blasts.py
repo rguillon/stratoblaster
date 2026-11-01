@@ -9,9 +9,9 @@ from core.systems.enemy_world import EnemyBlast
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.level_run_types import LandedHit  # noqa: E402
+from core.systems.level_run_types import LandedHit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

@@ -14,7 +14,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -206,8 +206,9 @@ VETERAN_NEON = record(
     {
         # ENM-WASP-03: yellow.
         "wasp": [1, 0.85, 0.05],
-        # ENM-MORTAR-03: olive green (drawn yellow, keeping its brightness).
-        "mortar": [0.55, 0.7, 0.12],
+        # ENM-MORTAR-03: bright yellow (drawn yellow, keeping its brightness: as bright as the other
+        # yellow kinds, whose largest channel is 1; was olive green, drawn dark).
+        "mortar": [1, 0.92, 0.1],
         # ENM-MANTIS-03: lime (drawn yellow).
         "mantis": [0.6, 1, 0.1],
         # ENM-PHANTOM-03: pale violet (drawn green).

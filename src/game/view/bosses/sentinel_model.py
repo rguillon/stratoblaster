@@ -45,7 +45,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -150,13 +150,13 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
     for side in SIDES:
         vein_line(p, [x + side * 9, 2.5, -24], [x + side * 9, 2.5, 30], [side, 0.5, 0], 1.1, color)
     p.neon.box([0.6, 0.3, 30], color, Placement([x, BACK + 0.2, -4]))
-    fin = FIN if x > 0 else flip_x(FIN)  # type: ignore[arg-type]
+    fin = FIN if x > 0 else flip_x(FIN)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     root = fin[0]
     tips = fin[1:]
     membrane_wing(
         p.flesh,
         p.flesh,
-        MembraneWing(root, tips, 2, 1, 1.2),  # type: ignore[arg-type]
+        MembraneWing(root, tips, 2, 1, 1.2),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         [F.membrane, F.bone],
     )
     lamps(p.neon, [[s * 56, 3.2, -32]], 1.4, color)
@@ -222,7 +222,7 @@ def _draw_body(p: Any) -> None:
 def _hull_gun(p: Any, at: Vec3) -> None:
     """A hull gun (MB-SENTINEL-03): an armoured growth on the body's outer flank under its
     turret."""
-    sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]
+    sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.slate, Placement(at), F.sinew)
     growth(
         p,

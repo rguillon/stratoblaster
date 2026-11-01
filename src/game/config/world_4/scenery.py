@@ -5,8 +5,8 @@ town centre, the mid-rise blocks and the offices of midtown, the towers of the b
 a downtown of skyscrapers. The changes are slow, as in Worlds 2 and 3 (WLD-4-05): the grass gives
 way to concrete in small steps, the sections blend over World 2's long stretch (`TRANSITION`), and
 each taller kind of building first comes in mixed with the one before it. Each level starts on the
-very section the previous one ended on (WLD-4-04). No sea and no lava: World 3's river runs on
-through the town and between the embankments of the city. Each level's `seconds` add up to 300
+very section the previous one ended on (WLD-4-04). No sea, no lava, no river and no pond:
+`city_only` strips every channel and lake (WLD-4-09). Each level's `seconds` add up to 300
 (WLD-4-02).
 """
 
@@ -31,7 +31,7 @@ from game.config.world_4.props import WORLD_4_ROADS
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -120,7 +120,8 @@ SKYLINE_EDGE = section(
 # 4-1, Garden town (LVL-4-1-02): from the garden villages 3-5 ended on, suburban lanes, suburbs,
 # terraced streets and flats, to the town centre.
 GARDEN_TOWN = [
-    # World 3 has no water (reviewer, 2026-10-28); World 4 keeps its river and ponds.
+    # World 3 has no water (reviewer, 2026-10-28); this river and these ponds are stripped by
+    # `city_only` (WLD-4-09).
     merge(GARDEN_VILLAGE_END, {"channel": river(26), "lakes": PONDS, "seconds": 40}),
     section(
         "suburban lanes",

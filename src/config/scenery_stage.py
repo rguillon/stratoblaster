@@ -1,4 +1,4 @@
-"""Tunables of the generated ground under the playfield camera (phase 4): the game"""
+"""Tunables of the generated ground under the playfield camera (phase 4)."""
 
 
 class SceneryStageConfig:

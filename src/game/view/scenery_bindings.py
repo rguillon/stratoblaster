@@ -67,7 +67,7 @@ from game.view.props.road_kit import ROAD_KIT_PIECES
 from game.view.readability_view import all_toned
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

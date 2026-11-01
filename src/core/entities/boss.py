@@ -18,14 +18,14 @@ from core.entities.enemy import Enemy, EnemyStats
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss_joint import BossJointSpec  # noqa: E402
-from core.entities.boss_roll import BossRoll  # noqa: E402
-from core.entities.boss_turret import BossTurretSpec  # noqa: E402
-from core.entities.enemy import EnemyContext  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
+from core.entities.boss_joint import BossJointSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss_roll import BossRoll  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss_turret import BossTurretSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 BossState = Literal["entering", "fighting", "transforming", "dying"]
 
@@ -231,6 +231,7 @@ class Boss(Enemy):
 
     @property
     def core_health(self) -> float:
+        """Health the core has left: 0 once the boss is dying."""
         return 0 if self.state == "dying" else self._core_health
 
     @property
@@ -293,6 +294,8 @@ class Boss(Enemy):
         self._start_dying()
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Steps the boss for `dt` seconds: its joints swing, a dying boss blows up, otherwise its
+        destroyed parts are broken off, it enters or moves, and its parts are placed."""
         self.core.since_hit += dt
         for part in self.parts:
             part.since_hit += dt

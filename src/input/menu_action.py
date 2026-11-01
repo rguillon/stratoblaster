@@ -11,7 +11,7 @@ An action is a plain string; `MENU_ACTIONS` lists them all.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import TypeGuard  # noqa: E402
+from typing import TypeGuard  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 MenuAction = str
 MenuDirection = str

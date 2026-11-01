@@ -4,15 +4,15 @@ effects sliders. Over a paused level, the playfield shows dimmed behind it (UI-S
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import SettingsView, SliderView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import SettingsView, SliderView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import back_button, element, entry  # noqa: E402
+from ui.screens.elements import back_button, element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _value_at(track: Any, client_x: float, max_value: int) -> float:

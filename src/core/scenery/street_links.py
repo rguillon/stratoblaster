@@ -3,7 +3,7 @@
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LinksAt = Sequence[Sequence["Link"]]
 __pragma__("noskip")

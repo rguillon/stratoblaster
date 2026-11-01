@@ -1,12 +1,12 @@
-"""The districts of a level: the runs of sections with street grids (phase 4 review), split out of
-and the parts of them laid apart (reviewer, 2026-10-28)."""
+"""The districts of a level: the runs of sections with street grids (phase 4 review), and how they
+are split and laid apart (reviewer, 2026-10-28)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import PlacedSection, StreetGrid  # noqa: E402
+from core.scenery.scenery_level import PlacedSection, StreetGrid  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

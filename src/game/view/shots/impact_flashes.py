@@ -5,15 +5,15 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.shot_world import ShotImpact  # noqa: E402
+from core.systems.shot_world import ShotImpact  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.view.shot_geometry import build_glow_disc  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Flash:

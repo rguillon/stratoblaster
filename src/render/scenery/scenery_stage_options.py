@@ -4,13 +4,13 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import LogicalScreen  # noqa: E402
-from core.scenery.scenery_level import SceneryLevel  # noqa: E402
-from render.scenery.atmosphere_of import AtmosphereOptions  # noqa: E402
-from render.scenery.scenery_kit import SceneryKitFactory  # noqa: E402
-from render.scenery.scenery_look import (  # noqa: E402
+from core.content.game_definition import LogicalScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import SceneryLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.atmosphere_of import AtmosphereOptions  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_kit import SceneryKitFactory  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     PlayfieldCameraLook,
     SceneryLook,
 )

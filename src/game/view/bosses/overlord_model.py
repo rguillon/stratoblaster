@@ -46,7 +46,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -129,7 +129,7 @@ def _draw_hull(p: Any) -> None:
     )
     segmented_body(p.flesh, SegmentedBody(-68, -50, 3, 36, -7, 6), F.sinew)
     for s in SIDES:
-        wing = WING if s > 0 else flip_x(WING)  # type: ignore[arg-type]
+        wing = WING if s > 0 else flip_x(WING)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         p.flesh.bevel_slab(wing, [-4, -1, WING_TOP], [1, 2], F.membrane, None, F.graphite)
         edge_lights(p.neon, wing, [0, 1, 2], [-1.5, -0.5], N)
         tentacle(p, [s * 56, 1, 20], [s * 102, 2, 2], [0, 2, 0], [2.6, 0.8], F.bone, 4)

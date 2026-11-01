@@ -15,7 +15,7 @@ from render.babylon import js_object, js_set, new_material_plugin
 from render.scenery.terrain_geometry import SURFACE_SCALE
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

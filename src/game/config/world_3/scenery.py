@@ -18,13 +18,14 @@ from game.config.world_3.props import WORLD_3_GROUPS, WORLD_3_PROPS, WORLD_3_ROA
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 G = WORLD_3_GROUPS
 
-# The river through World 4's suburbs and villages, between grassy banks.
+# The river of World 4's suburbs and villages, between grassy banks. World 3 has no water (WLD-3-10
+# is open), and World 4 strips it again (WLD-4-09).
 RIVER_PATH = record({"x": -40, "amplitude": 120, "wavelength": 2400})
 
 
@@ -33,7 +34,8 @@ def river(half_width: float) -> Any:
     return record({"path": RIVER_PATH, "halfWidth": half_width, "wall": 45, "floor": -8})
 
 
-# Ponds among the gardens where World 4 begins.
+# Ponds among the gardens where World 4 begins. World 3 has none (WLD-3-10 is open), and World 4
+# strips them again (WLD-4-09).
 PONDS = record({"spacing": 260, "chance": 0.4, "radius": [22, 45], "level": -5, "edge": 16})
 
 # Flat ground of the factories, the yards and the streets.

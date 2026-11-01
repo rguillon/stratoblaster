@@ -8,17 +8,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from core.entities.enemy import Enemy  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402
-from game.view.enemies.enemy_materials import (  # noqa: E402
+from core.entities.enemy import Enemy  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     body_color,
     enemy_color,
     enemy_materials,
@@ -29,19 +29,19 @@ from game.view.enemies.enemy_materials import (  # noqa: E402
     tinted_hull,
     unlit,
 )
-from game.view.enemies.living_motion import (  # noqa: E402
+from game.view.enemies.living_motion import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     flutter_angle,
     glow_level,
     is_living_motion,
     new_breath,
 )
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     new_transform_node,
     node_name,
 )
-from render.edge_trim_mesh import set_trim  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
-from render.model_animation import (  # noqa: E402
+from render.edge_trim_mesh import set_trim  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.model_animation import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     add_model_animation,
     step_model_animations,
 )
@@ -50,7 +50,7 @@ from render.model_animation import (  # noqa: E402
 class EnemyParts:
     """Builders for the three parts of an enemy model."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         hull: Any,
         flesh: Any,
@@ -196,7 +196,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
 
     def muzzle(at: Vec3, kind: Any = None) -> None:
         # `kind` is 'gun' when the caller leaves it out.
-        muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711
+        muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:
         wing = Wing(pivot, side, span, wing_parts_new())

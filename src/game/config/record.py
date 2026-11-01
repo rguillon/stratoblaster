@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -19,7 +19,7 @@ __pragma__("noskip")
 __pragma__("skip")
 
 
-class _Fields(dict):  # type: ignore[type-arg]
+class _Fields(dict):  # type: ignore[type-arg]  # a dict of fields keyed by name (config records, ENG-14)
     """A record whose fields read as attributes, as they do in the browser. A field the record lacks
     reads as None, as an absent field reads as undefined there."""
 

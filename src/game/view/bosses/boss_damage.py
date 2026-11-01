@@ -19,7 +19,7 @@ from render.geometry.solids import SolidBuilder  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -29,7 +29,7 @@ FLASH_CACHE = new_weak_map()
 def effect_materials(scene: Any) -> Any:
     """The flash and smoke materials of the scene, created on first use."""
     mats = weak_map_get(FLASH_CACHE, scene)
-    if mats == None:  # noqa: E711
+    if mats == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         flash = new_standard_material("boss-flash", scene)
         flash.emissiveColor = color3(
             BOSS_LOOK.flash.color[0], BOSS_LOOK.flash.color[1], BOSS_LOOK.flash.color[2]

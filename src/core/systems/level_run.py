@@ -37,12 +37,12 @@ from core.systems.wave_runner import WaveRunner, validate_wave_script
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import DropSource  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.math.rng import Random  # noqa: E402
-from core.systems.enemy_shots import EnemyLaser  # noqa: E402
+from core.entities.enemy import DropSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_shots import EnemyLaser  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -160,10 +160,13 @@ class LevelRun:
 
     @property
     def phase(self) -> str:
+        """The run's phase: 'playing', 'clearing', 'complete' or 'over'."""
         return self._phase
 
     @property
     def result(self) -> LevelResult:
+        """Summary of the run so far: kills, spawns and score, and whether it is over (with the
+        checkpoint to continue from, if any)."""
         over = self._phase == "over"
         checkpoint = self._checkpoint if over and self._checkpoint is not None else None
         return LevelResult(

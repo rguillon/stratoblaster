@@ -5,12 +5,12 @@ level's progress along its top edge, the ship's health, lives and bombs, the sco
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.boss_bar import BossBar, BossBarFrame  # noqa: E402
-from ui.screens.elements import element  # noqa: E402
+from ui.boss_bar import BossBar, BossBarFrame  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import element  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Under this share of its health the bar turns red (UI-HUD-04).
 LOW_HEALTH = 0.3

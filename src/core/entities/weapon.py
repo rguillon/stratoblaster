@@ -109,7 +109,7 @@ def _validate_projectile(weapon: ProjectileWeaponDefinition) -> None:
         ("damage", weapon.damage),
     ]
     for key, value in positive:
-        if not (value > 0):  # noqa: SIM201
+        if not (value > 0):  # noqa: SIM201 (NaN fails this check too)
             raise ValueError('Weapon "' + weapon.id + '": ' + key + " must be positive")
     non_negative = [
         ("acceleration", weapon.acceleration),

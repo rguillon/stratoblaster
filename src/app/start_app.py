@@ -36,11 +36,11 @@ from input.menu_input import MenuInput
 from ui.menu_overlay import MenuOverlay, MenuOverlayOptions
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.game_play import GamePlay  # noqa: E402
-from app.menu_state import MenuState  # noqa: E402
-from input.menu_action import MenuCommand  # noqa: E402
+from app.game_play import GamePlay  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.menu_state import MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -435,8 +435,11 @@ def start_debug_level(menu: MenuController, debug: Any | None, ship_ids: list[st
     menu.play_direct(ship, debug.level_id)
 
 
-def session_options(options: AppOptions, on_load_start: Any) -> GameSessionOptions:
-    """The game session's options: the app's, with `on_load_start` (DEV-PERF-01)."""
+def session_options(
+    options: AppOptions, on_load_start: Any, on_draw_calls: Any
+) -> GameSessionOptions:
+    """The game session's options: the app's, with `on_load_start` (DEV-PERF-01) and
+    `on_draw_calls` (ENG-106)."""
     # None passes through: the session applies its own default (typed Any here).
     stepped: Any = options.stepped_loading
     precompile: Any = options.precompile_shaders
@@ -456,6 +459,7 @@ def session_options(options: AppOptions, on_load_start: Any) -> GameSessionOptio
         precompile,
         background,
         prebuild,
+        on_draw_calls,
     )
 
 
@@ -472,6 +476,9 @@ def create_session(
 
     def on_load_start() -> None:
         perf.load_started()
+
+    def on_draw_calls(count: float) -> None:
+        perf.record_draw_calls(count)
 
     def on_complete(play: GamePlay) -> None:
         audio.level_ended(play.run.result)
@@ -493,7 +500,7 @@ def create_session(
     return GameSession(
         engine,
         game,
-        session_options(options, on_load_start),
+        session_options(options, on_load_start, on_draw_calls),
         on_complete,
         SessionScores(high_score, record),
         SessionAudio(started, step),

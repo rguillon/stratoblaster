@@ -10,9 +10,9 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -111,6 +111,7 @@ class StreetIndex:
                     self._bands[k] = [line]
 
     def near(self, z: float) -> Sequence[StreetLine]:
+        """The streets in the band of `z`: the only ones that can be near it."""
         return self._bands.get(str(math.floor(z / BUCKET)), [])
 
 

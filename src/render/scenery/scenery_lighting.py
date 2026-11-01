@@ -22,11 +22,11 @@ from render.babylon import (
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.atmosphere import Atmosphere  # noqa: E402
+from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

@@ -1,7 +1,7 @@
-"""The shots and explosions of the enemies page
+"""The shots and explosions of the enemy viewer (Dev menu)
 
-Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, as on
-`player_shots/`, hits included: GFX-FX-01), the enemies' shots and the explosions (GFX-FX-05).
+Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, hits
+included: GFX-FX-01), the enemies' shots and the explosions (GFX-FX-05).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -10,7 +10,7 @@ from render.game_view import EnemyShotFrame, ShotFrame
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -28,7 +28,7 @@ class ShotsToDraw:
 
 
 class EnemyViewerShots:
-    """The shots and explosions of the enemies page, all drawn on the playfield layer."""
+    """The shots and explosions of the enemy viewer, all drawn on the playfield layer."""
 
     def __init__(self, game: Any, playfield: Any, shot_style: str | None = None) -> None:
         """`shot_style`: the level's style for the enemy shots (GFX-READ-11), if any."""

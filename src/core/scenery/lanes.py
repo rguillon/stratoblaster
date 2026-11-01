@@ -7,28 +7,32 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import RoadRules  # noqa: E402
+from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class PointXZ(Protocol):
     """A point of a centre line, in the ground's X and Z."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the point."""
+        ...
 
     @property
-    def z(self) -> float: ...
+    def z(self) -> float:
+        """Z of the point."""
+        ...
 
 
 Lanes = int  # 1 to 4 lanes each way
 """Lanes each way of a road."""
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.road_types import RoadPoint  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def lanes_of(rules: RoadRules, width: float) -> Lanes:

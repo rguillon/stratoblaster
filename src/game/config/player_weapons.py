@@ -16,7 +16,7 @@ from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -43,7 +43,7 @@ def diagonals(angle_deg: float) -> list[Any]:
 # homing.
 MISSILE_ANGLES = record({"inner": 25, "outer": 45})
 
-# GAME-WPN-03, GAME-WPN-04: neon green bullets, 10 damage each, constant velocity.
+# GAME-WPN-03, GAME-WPN-04: cyan tracer bullets (GFX-SHOT-01), 10 damage each, constant velocity.
 BULLET = record(
     {
         "kind": "projectile",

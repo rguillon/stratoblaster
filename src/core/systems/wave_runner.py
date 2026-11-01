@@ -13,7 +13,7 @@ from core.entities.enemy import EnemyEntry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 WaveScript = Sequence["Wave"]
 WaveSpawner = Callable[[str, EnemyEntry], None]
@@ -82,7 +82,7 @@ def _group_entry(wave: Wave, index: int) -> EnemyEntry:
     """The entry of group `index` of `wave`."""
     # `!= None`: a config record leaves an absent spread undefined, which `is not None` takes for
     # a value (the strafers then entered at NaN, clamped to the bottom of the playfield).
-    spread = wave.spread if wave.spread != None else 0  # noqa: E711
+    spread = wave.spread if wave.spread != None else 0  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     shifted = wave.entry.position + spread * index
     return EnemyEntry(wave.entry.side, shifted - math.floor(shifted))
 

@@ -4,7 +4,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -18,9 +18,11 @@ class MinHeap:
 
     @property
     def size(self) -> int:
+        """How many numbers are in the heap."""
         return len(self._items)
 
     def push(self, value: float) -> None:
+        """Adds `value`, keeping the smallest number on top."""
         items = self._items
         i = len(items)
         items.append(value)

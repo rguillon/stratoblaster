@@ -8,25 +8,25 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 # The table of the blast layers: each disc, whether it is added on, and its depth.
 type LayerTable = dict[str, tuple[Callable[[], Any], bool, float]]
 __pragma__("noskip")
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles  # noqa: E402
-from game.view.shot_geometry import build_glow_disc  # noqa: E402
-from render.babylon import (  # noqa: E402
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     babylon_constant,
     color3,

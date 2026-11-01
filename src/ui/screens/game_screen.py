@@ -5,16 +5,16 @@ the touch fire and pause buttons, the drag area over the playfield, the pause me
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import GameScreenView, LevelChoices, LevelCompleteView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import GameScreenView, LevelChoices, LevelCompleteView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import element, tap_listener  # noqa: E402
-from ui.screens.pause_panel import pause_panel  # noqa: E402
+from ui.screens.elements import element, tap_listener  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.pause_panel import pause_panel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _choice_row(doc: Any, choices: LevelChoices, handlers: ScreenHandlers) -> Any:

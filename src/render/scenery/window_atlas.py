@@ -28,7 +28,7 @@ from core.math.rng import create_rng, pick, random_in
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -73,7 +73,7 @@ def door_column(look: Any, door: int) -> int:  # noqa: ANN401 (a config record)
     return len(look.styles) * style_columns(look) + door * columns
 
 
-def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401
+def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Sets pixel `i`, unless it already shows something more opaque (halos meet, windows win)."""
     a = _byte(alpha)
     if pixels[i * 4 + 3] > a:
@@ -89,12 +89,12 @@ def _scaled(rgb: list[float], k: float) -> list[float]:
 
 
 def _paint_window(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    pixels: Any,  # noqa: ANN401
-    look: Any,  # noqa: ANN401
+    pixels: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    look: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     at: list[int],
     window: list[int],
     light: list[float] | None,
-    blind: bool,  # noqa: FBT001
+    blind: bool,  # noqa: FBT001 (a flag of the window's look, positional)
 ) -> None:
     """One window whose cell's corner is pixel `at`: lit in `light` (None: dark), with its halo
     when lit."""
@@ -157,7 +157,7 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
 _kept: dict[str, Any] = {}
 
 
-def _json_of(value: Any) -> str:  # noqa: ANN401
+def _json_of(value: Any) -> str:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     __pragma__("js", "{}", "return JSON.stringify(value);")
     return repr(value)
 

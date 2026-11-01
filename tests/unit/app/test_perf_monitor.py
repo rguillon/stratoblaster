@@ -147,3 +147,22 @@ def test_eng111_the_overlay_is_toggled_by_its_key_and_refreshed_after_each_frame
     handle.dispose()
     target.removeEventListener.assert_called_once()
     assert parent.children == []
+
+
+def test_eng_106_the_monitor_samples_the_draw_calls_the_game_recorded() -> None:
+    clock = Clock()
+    monitor = PerfMonitor(50, clock)
+    assert monitor.numbers.draw_calls == 0
+    frame(monitor, clock, 16)
+    monitor.record_draw_calls(143)
+    assert monitor.numbers.draw_calls == 143
+    monitor.record_draw_calls(201)
+    assert monitor.numbers.draw_calls == 201
+
+
+def test_eng_106_a_reset_of_the_frame_counts_keeps_the_draw_calls() -> None:
+    clock = Clock()
+    monitor = PerfMonitor(50, clock)
+    monitor.record_draw_calls(120)
+    monitor.reset()
+    assert monitor.numbers.draw_calls == 120

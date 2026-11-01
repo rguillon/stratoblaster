@@ -1,6 +1,6 @@
 """The Glacier Colossus (2-4's final boss, specs/bosses/final/2-4-glacier-colossus.md)
 
-The Glacier level's final boss. Offsets in px from the boss's centre, X right and Y up (its nose
+The final boss of 2-4. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Six parts: two cutter lasers out on its beam, two ore cannons and a heat sink
 at its bow (these three shield the core), and a missile pod on its stern.
 """
@@ -23,7 +23,7 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -31,7 +31,7 @@ __pragma__("noskip")
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
     """A final boss's part: drops a bonus 60 % of the time (FB-GLACIER-COLOSSUS-17,
     `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711
+    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 

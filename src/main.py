@@ -26,12 +26,12 @@ from ui.stage_fit import apply_stage_fit, fit_stage
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module, ENG-153).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 __pragma__("ifdef", "e2e")
-from debug.test_api import install_test_api  # noqa: E402
+from debug.test_api import install_test_api  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("endif")
 
@@ -48,6 +48,29 @@ def show_fatal(message: str) -> None:
     if el:
         el.textContent = message
         el.hidden = False
+
+
+def reload_page() -> None:
+    """The reload button of the lost graphics context's message (UI-LOAD-07)."""
+    window.location.reload()
+
+
+def show_context_lost() -> None:
+    """UI-LOAD-07: the lost graphics context's message over the page, with a button that reloads
+    it (ENG-110)."""
+    el = document.getElementById("fatal")
+    if not el:
+        return
+    # `show_fatal` replaces the element's content, so a button is not added twice.
+    # The texts record is read by its camelCase keys, as in app/menu_view_builder.py.
+    texts: Any = GAME.texts
+    show_fatal(texts.contextLost)
+    el.style.flexDirection = "column"
+    el.style.gap = "16px"
+    button = document.createElement("button")
+    button.textContent = texts.reload
+    button.onclick = reload_page
+    el.appendChild(button)
 
 
 def element(element_id: str) -> Any:
@@ -200,10 +223,8 @@ def main() -> None:
     antialias = e2e.antialias if E2E else True
     engine = new_engine(canvas, antialias)
     engine.setHardwareScalingLevel(1 / (pixel_ratio() * (e2e.render_scale if E2E else 1)))
-    # UI-LOAD-07: a lost WebGL context asks the player to reload (ENG-110).
-    engine.onContextLostObservable.add(
-        lambda: show_fatal("The graphics context was lost. Please reload the page.")
-    )
+    # UI-LOAD-07: a lost WebGL context asks the player to reload, with a button (ENG-110).
+    engine.onContextLostObservable.add(show_context_lost)
     start_game(engine)
 
 

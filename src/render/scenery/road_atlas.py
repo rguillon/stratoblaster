@@ -8,17 +8,17 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from render.scenery.road_paint import paint_piece  # noqa: E402
+from render.scenery.road_paint import paint_piece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.road_tiles import RoadPiece  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
-from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402
+from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 AtlasRect = tuple[float, float, float, float]
 __pragma__("noskip")

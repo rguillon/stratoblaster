@@ -13,10 +13,10 @@ from app.game_audio import GameAudio, GameAudioOptions
 from config.audio import AUDIO_CONFIG
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.menu_controller import MenuController  # noqa: E402
-from input.gamepad_menu_input import GamepadSource  # noqa: E402
+from app.menu_controller import MenuController  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.gamepad_menu_input import GamepadSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

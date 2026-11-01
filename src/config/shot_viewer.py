@@ -1,5 +1,7 @@
-"""Tunables of the player shots on the playfield (the old shots page, removed by D-187)
+"""Tunables of the player shots on the playfield (the shots page was removed by D-187)
 
+Only `clear_color` and `lights` are read, by the playfield ship in `app/shot_viewer_scene.py`; the
+other fields have no reader in `src/` (`tests/unit/config/test_shot_viewer.py` reads a few of them).
 Positions in logical pixels, Y up, origin at the bottom left of the playfield.
 """
 
@@ -138,7 +140,7 @@ class ShotViewerStats:
 
 
 class ShotViewerConfig:
-    """The shots page's tunables, in the order of `SHOT_VIEWER_CONFIG`."""
+    """The tunables of the playfield shots, in the order of `SHOT_VIEWER_CONFIG`."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,

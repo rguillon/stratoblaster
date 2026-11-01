@@ -19,7 +19,7 @@ from org.transcrypt.stubs.browser import __pragma__, window
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -176,6 +176,40 @@ def scene_meshes(scene: Any) -> list[Any]:
 def scene_transform_nodes(scene: Any) -> list[Any]:
     __pragma__("js", "{}", "return scene.transformNodes;")
     return []
+
+
+# -- Draw calls (ENG-106) ------------------------------------------------------------------------
+
+
+def new_draw_call_counter(scene: Any) -> Any:
+    """Counts the draw calls of each frame of `scene`, the way Babylon's own `DrawCallsStrategy`
+    does: the engine's draw-call counter is restarted before the animations and read after the
+    render. Returns an object whose `count` is the last frame's draw calls (0 before the first
+    frame) and whose `dispose()` removes the two observers. The scene's dispose removes them too.
+    """
+    __pragma__(
+        "js",
+        "{}",
+        "var engine = scene.getEngine();"
+        "var counter = { count: 0 };"
+        "var before = scene.onBeforeAnimationsObservable.add(function () {"
+        "engine._drawCalls.fetchNewFrame();"
+        "});"
+        "var after = scene.onAfterRenderObservable.add(function () {"
+        "counter.count = engine._drawCalls.current;"
+        "});"
+        "counter.dispose = function () {"
+        "scene.onBeforeAnimationsObservable.remove(before);"
+        "scene.onAfterRenderObservable.remove(after);"
+        "};"
+        "return counter;",
+    )
+    return None
+
+
+def draw_calls_last_frame(counter: Any) -> float:
+    """The draw calls of the last frame rendered, as counted by `new_draw_call_counter`."""
+    return float(counter.count)
 
 
 # -- Typed arrays (for textures and buffers) -----------------------------------------------------
@@ -524,6 +558,18 @@ def new_raw_texture(  # noqa: PLR0917 (positional: Transcrypt has no keyword arg
         "{}",
         "return new BABYLON.RawTexture(pixels, width, height, format_, scene, generate_mipmaps, "
         "invert_y, sampling_mode);",
+    )
+    return None
+
+
+def new_render_target_texture(label: str, size: list[int], scene: Any) -> Any:
+    """`new RenderTargetTexture(label, {width, height}, scene, generateMipMaps)`, with mipmaps (the
+    imposter atlas, D-211)."""
+    __pragma__(
+        "js",
+        "{}",
+        "return new BABYLON.RenderTargetTexture(label, {width: size[0], height: size[1]}, scene,"
+        " true);",
     )
     return None
 

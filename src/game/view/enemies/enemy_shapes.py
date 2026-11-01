@@ -10,8 +10,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A point in model space: x, y, z.
 type Vec3 = list[float]
@@ -146,7 +146,7 @@ def decal(
             corners.append(outline[i])
     else:
         corners = list(outline)
-    builder.face([[p[0], y, p[1]] for p in corners], color)  # type: ignore[attr-defined]
+    builder.face([[p[0], y, p[1]] for p in corners], color)  # type: ignore[attr-defined]  # the attribute is not declared on the class
 
 
 def side_stripe(

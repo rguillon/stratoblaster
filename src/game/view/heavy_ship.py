@@ -87,7 +87,7 @@ REACTOR_OFFSET_X = 0.7
 REACTOR = {"radius": 0.2, "length": 1.1}
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")

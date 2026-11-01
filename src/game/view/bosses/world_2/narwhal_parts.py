@@ -7,23 +7,23 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.final_boss_shapes import barrels, shift  # noqa: E402
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.final_boss_shapes import barrels, shift  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     sinew,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import organ  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 H = ENEMY_LOOK.hull
 WHITE = [1.0, 1.0, 1.0]

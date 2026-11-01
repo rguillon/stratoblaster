@@ -9,16 +9,16 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from config.weather import LightningRules  # noqa: E402
+from config.weather import LightningRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
 
-from config.weather import LIGHTNING  # noqa: E402
-from core.math.rng import create_rng, random_in  # noqa: E402
-from core.scenery.atmosphere import Ambient, Atmosphere, Sky  # noqa: E402
+from config.weather import LIGHTNING  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import Ambient, Atmosphere, Sky  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 

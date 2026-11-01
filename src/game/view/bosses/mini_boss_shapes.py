@@ -15,7 +15,7 @@ from render.geometry.outline import reversed_copy  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
@@ -240,6 +240,6 @@ def sign_of(x: float) -> float:
 
 def radius_of(parts: Any, index: int, fallback: float) -> Any:
     """`parts[index]?.radius ?? fallback`: the radius of a config part, or `fallback`."""
-    if index < len(parts) and parts[index] != None and parts[index].radius != None:  # noqa: E711
+    if index < len(parts) and parts[index] != None and parts[index].radius != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return parts[index].radius
     return fallback

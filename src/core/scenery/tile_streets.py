@@ -9,19 +9,19 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.districts import District, DistrictPart  # noqa: E402
-from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import District, DistrictPart  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.math.rng import random_in  # noqa: E402
-from core.scenery.ordering import stable_sort_by  # noqa: E402
-from core.scenery.street_dead_ends import remove_dead_ends  # noqa: E402
-from core.scenery.street_links import (  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_dead_ends import remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Block,
     Link,
     Node,
@@ -31,7 +31,7 @@ from core.scenery.street_links import (  # noqa: E402
     pair,
     to_fixed3,
 )
-from core.scenery.street_runs import Point, straight_runs  # noqa: E402
+from core.scenery.street_runs import Point, straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")

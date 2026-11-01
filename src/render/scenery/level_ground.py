@@ -14,8 +14,8 @@ from render.scenery.road_sources import LocalRoadSource, WorkerRoadSource
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -272,7 +272,7 @@ def _is_pending(level: SceneryLevel, seed: int) -> bool:
     return any(p.level is level and p.seed == seed for p in _state.pending)
 
 
-def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901
+def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901 (the request's steps, kept whole)
     """Asks for the ground of `level` (seed `seed`, default the level's): true when it is ready.
     With a background generator it is generated there, if not already on its way (false until it
     comes back, its runout after it); without one, now."""

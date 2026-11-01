@@ -6,12 +6,12 @@ Colours are linear RGB, 0..1, unless noted.
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = Sequence[float]
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def relative_luminance(color: Rgb) -> float:
@@ -71,7 +71,7 @@ def hue_saturation(color: Rgb) -> tuple[float, float]:
 
 
 __pragma__("skip")
-from typing import TypedDict  # noqa: E402
+from typing import TypedDict  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A family of colours: those whose hue lies in `from`..`to` degrees (`from` > `to` wraps past 0),
 # saturated at least `minSaturation`. Greys and whites belong to no family. It is a plain record

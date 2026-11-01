@@ -18,9 +18,9 @@ from core.entities.weapon import (
 from game.sim.config_build import mapped
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.weapon import WeaponDefinition  # noqa: E402
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
@@ -50,7 +50,7 @@ def _projectile(weapon: ConfigRecord) -> ProjectileWeaponDefinition:
     for streams in weapon.levels:
         levels.append(mapped(streams, _stream))
     launch_back = weapon.launchBack
-    if launch_back == None:  # noqa: E711
+    if launch_back == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         launch_back = 0
     return ProjectileWeaponDefinition(
         weapon.id,

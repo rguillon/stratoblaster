@@ -24,7 +24,7 @@ from render.geometry.vec3 import plus
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -57,7 +57,7 @@ def frame_of(rotation: float, headings: int) -> int:
     return 0 if i >= headings else i
 
 
-def frame_uv(look: Any, kinds: int, kind: int, frame: int) -> list[float]:  # noqa: ANN401
+def frame_uv(look: Any, kinds: int, kind: int, frame: int) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The `[u0, v0, u1, v1]` of frame `frame` of kind `kind` (V up: row 0 at the top)."""
     headings: int = look.headings
     rows = atlas_rows(kinds)
@@ -74,7 +74,7 @@ def view_axes(tilt: float) -> list[list[float]]:
     ]
 
 
-def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[float]:  # noqa: ANN401
+def frame_centre(look: Any, kinds: int, at: list[int], tilt: float) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Where, round the origin of the bake, frame `at[1]` of kind `at[0]` is centred: the frames
     side by side in the camera's plane, as in the atlas."""
     axes = view_axes(tilt)
@@ -117,7 +117,7 @@ def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
     model: ColoredGeometry,
     yaw: float,
     centre: list[float],
-    look: Any,  # noqa: ANN401
+    look: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
 ) -> None:
     """Adds `model` to `out`, turned `yaw` round Y and moved so its point at height
     `look.centre` lies at `centre`, its colours shaded by the bake's light (each face has its own
@@ -156,7 +156,7 @@ def add_baked(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
         out.indices.append(base + i)
 
 
-def bake_geometry(models: list[ColoredGeometry], look: Any, tilt: float) -> ColoredGeometry:  # noqa: ANN401
+def bake_geometry(models: list[ColoredGeometry], look: Any, tilt: float) -> ColoredGeometry:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Every frame of every model (`models`, by kind) side by side round the origin, as the bake
     camera draws them into the atlas."""
     out = ColoredGeometry()
@@ -179,7 +179,7 @@ def quad_lift(look: Any, tilt: float) -> float:  # noqa: ANN401 (a config record
     return (QUAD_CLEARANCE - low) / math.cos(tilt)
 
 
-def imposter_quad(look: Any, tilt: float, uv: list[float]) -> TexturedGeometry:  # noqa: ANN401
+def imposter_quad(look: Any, tilt: float, uv: list[float]) -> TexturedGeometry:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """The quad that shows the frame at `uv`, in model units round a model standing at the
     origin: facing the camera, through the frame's centre point, moved towards the camera by
     `quad_lift`."""

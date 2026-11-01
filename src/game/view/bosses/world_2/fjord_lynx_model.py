@@ -24,29 +24,29 @@ from render.geometry.solids import LoftOptions, Placement, place_at  # noqa: E40
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import plate  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import plate  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     H,
     offset,
     scaled,
     socket,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     RIME,
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     CYAN,
     WHITE_NEON,
     chin_turret,
@@ -55,7 +55,7 @@ from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402
     paw_turret,
     radar_mast,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,
@@ -211,8 +211,8 @@ def draw_deck(p: EnemyParts) -> None:
     neon = p.neon
     mast = FJORD_LYNX.stats.parts[2]
     # `mast?.x ?? -25` and `mast?.y ?? 22`.
-    mast_x = -25.0 if mast == None or mast.x == None else mast.x  # noqa: E711
-    mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711
+    mast_x = -25.0 if mast == None or mast.x == None else mast.x  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     at: Vec3 = [-mast_x, 0.0, -mast_y]
     sponson = [[x + at[0], z + at[2]] for x, z in SPONSON]
     flesh.bevel_slab(

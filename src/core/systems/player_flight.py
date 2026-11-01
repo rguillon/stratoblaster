@@ -8,17 +8,21 @@ from core.entities.muzzle import PlanePoint
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Protocol  # noqa: E402
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class FlightBounds(Protocol):
     """Where the player ship may fly, in playfield logical pixels (X right, Y up)."""
 
     @property
-    def min_y(self) -> float: ...
+    def min_y(self) -> float:
+        """Lowest Y the ship may fly to."""
+        ...
 
     @property
-    def max_y(self) -> float: ...
+    def max_y(self) -> float:
+        """Highest Y the ship may fly to."""
+        ...
 
     @property
     def center_x(self) -> float:

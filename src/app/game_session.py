@@ -23,7 +23,7 @@ from ui.level_loading import LevelLoadingScreen
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -81,7 +81,8 @@ class GameSessionOptions:
     the in-game HUD and the loading screen go), `keyboard_target` (no keyboard when None),
     `gamepads`, `storage` (where the weapons and supplies are kept; not kept when None),
     `on_load_start` (DEV-PERF-01), `stepped_loading` (PERF-09), `precompile_shaders` (PERF-20;
-    None: on), `background_loading` (PERF-12: the worker), `prebuild_levels` (PERF-13).
+    None: on), `background_loading` (PERF-12: the worker), `prebuild_levels` (PERF-13),
+    `on_draw_calls` (ENG-106: the draw calls of each frame drawn).
     """
 
     def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -99,6 +100,7 @@ class GameSessionOptions:
         precompile_shaders: bool | None = None,
         background_loading: bool = False,
         prebuild_levels: bool = False,
+        on_draw_calls: Any = None,
     ) -> None:
         self.environment = environment
         self.doc = doc
@@ -113,6 +115,7 @@ class GameSessionOptions:
         self.precompile_shaders = precompile_shaders
         self.background_loading = background_loading
         self.prebuild_levels = prebuild_levels
+        self.on_draw_calls = on_draw_calls
 
 
 class SessionScores:
@@ -360,7 +363,7 @@ class GameSession:
             return True
         # `!= None` also catches the undefined of a missing WebGL capability.
         caps = scene.getEngine().getCaps()
-        parallel = caps.parallelShaderCompile != None  # noqa: E711
+        parallel = caps.parallelShaderCompile != None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         ready = scene.isReady(True) and outlines_ready(scene.meshes)
         if not ready and parallel and load.tries < COMPILE_FRAMES:
             return False
@@ -476,6 +479,7 @@ class GameSession:
             self.options.overlay,
             on_complete,
             on_step,
+            self.options.on_draw_calls,
         )
         choice = GameChoice(ship_id, level_id)
         play = GamePlay(self.engine, self.game, choice, self.controls, play_options)

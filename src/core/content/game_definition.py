@@ -9,16 +9,16 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.content.game_level import GameLevel  # noqa: E402
-from core.content.level_catalog import LevelCatalog  # noqa: E402
-from core.content.menu_texts import MenuTexts  # noqa: E402
-from core.entities.enemy import EnemyKindDefinition  # noqa: E402
-from core.entities.player_ship import PlayerShipRoster  # noqa: E402
-from core.entities.weapon import WeaponDefinition  # noqa: E402
-from core.systems.bonus_world import BonusRules  # noqa: E402
-from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402
-from core.systems.player_bombs import BombRules  # noqa: E402
-from core.systems.player_hull import HullRules  # noqa: E402
+from core.content.game_level import GameLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.level_catalog import LevelCatalog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.menu_texts import MenuTexts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.player_ship import PlayerShipRoster  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.bonus_world import BonusRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_bombs import BombRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

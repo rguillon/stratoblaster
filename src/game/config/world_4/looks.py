@@ -15,7 +15,7 @@ from game.config.world_3.looks import town
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -62,12 +62,12 @@ def embers(strength: float) -> Any:
     return record({"kind": "embers", "strength": strength})
 
 
-# Ash-tinted pink and grey clouds of the 4-1 dawn.
+# Ash-tinted pink and grey clouds of 4-1.
 ASH_PINK = [0.95, 0.84, 0.86]
 # The smoke haze and steam of 4-1: the haze close, a little paler.
 SMOKE_HAZE = record({"fog": 0.75, "white": 0.2})
 
-# 4-1 (LVL-4-1-03): a red dawn behind a smoke haze over the garden town.
+# 4-1 (LVL-4-1-03): a smoke haze over the garden town, at midday (D-126).
 LEVEL_4_1_LOOK = city(
     {
         "start": {
@@ -100,7 +100,7 @@ LEVEL_4_2_LOOK = city(
 # The orange glow of the town's lights under the clouds of 4-3.
 LAVA_GLOW = [1, 0.42, 0.12]
 
-# 4-3 (LVL-4-3-03): the sunset fades while the glow of midtown's lights takes over.
+# 4-3 (LVL-4-3-03): the glow of midtown's lights takes over, at midday (D-126).
 LEVEL_4_3_LOOK = city(
     {
         "start": {
@@ -129,7 +129,7 @@ LEVEL_4_3_LOOK = city(
 # The glow of the business district under the smoke of 4-4.
 FURNACE_GLOW = [1, 0.5, 0.15]
 
-# 4-4 (LVL-4-4-03): a night lit by the towers, ash and embers falling and rising.
+# 4-4 (LVL-4-4-03): the towers lit, ash and embers falling and rising, at midday (D-126).
 LEVEL_4_4_LOOK = city(
     {
         "start": {

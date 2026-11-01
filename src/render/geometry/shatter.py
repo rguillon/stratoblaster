@@ -14,7 +14,7 @@ from render.geometry.gradient_shapes import ColoredGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -90,7 +90,7 @@ def subdivide(tris: list[list[Vertex]], longest: float, needs: Any = None) -> li
     todo = list(tris)
     while len(todo) > 0:
         tri = todo.pop()
-        if needs != None and not needs(tri):  # noqa: E711
+        if needs != None and not needs(tri):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             result.append(tri)
             continue
         lengths = [_length(tri[0], tri[1]), _length(tri[1], tri[2]), _length(tri[2], tri[0])]

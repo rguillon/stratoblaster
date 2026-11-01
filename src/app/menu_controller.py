@@ -17,9 +17,9 @@ from core.systems.level_run_types import LevelResult
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import GameDefinition  # noqa: E402
+from core.content.game_definition import GameDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

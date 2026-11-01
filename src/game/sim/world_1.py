@@ -20,7 +20,7 @@ from game.sim.assemble_level import WorldTables, assemble_level
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A beat is a config record (`game/config/record.py`), typed as Any there.
 __pragma__("skip")

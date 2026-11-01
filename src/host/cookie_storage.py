@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Protocol  # noqa: E402
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class CookieDocument(Protocol):
@@ -50,7 +50,7 @@ class CookieStorage:
                 continue
             try:
                 return decode_uri_component(cookie[len(prefix) :])
-            except:  # noqa: E722
+            except:  # noqa: E722 (a malformed cookie value reads as absent)
                 return None
         return None
 

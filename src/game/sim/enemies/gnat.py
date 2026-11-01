@@ -7,7 +7,7 @@ from core.systems.enemy_motion import Path
 from game.config.enemies import ENEMY_CONFIG
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

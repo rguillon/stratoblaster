@@ -15,7 +15,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
@@ -31,8 +31,8 @@ OVERLORD_DECK = {"top": 6, "boulevard": 10}
 
 def box2d(w: float, d: float, at: Any = None) -> list[Any]:
     """A rectangle `w` wide and `d` long around (x, z)."""
-    x = 0 if at == None else at[0]  # noqa: E711
-    z = 0 if at == None else at[1]  # noqa: E711
+    x = 0 if at == None else at[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    z = 0 if at == None else at[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return [
         [x - w / 2, z - d / 2],
         [x + w / 2, z - d / 2],
@@ -45,7 +45,7 @@ def symmetric(half: list[Any], nose: Any = None) -> list[Any]:
     """A symmetric outline from its right half (x > 0, from the front to the tail), closed across
     the nose at `nose` on the axis."""
     result: list[Any] = []
-    if nose != None:  # noqa: E711
+    if nose != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         result.append([0, nose])
     result.extend(half)
     mirror = flip_x(half)
@@ -193,7 +193,7 @@ def draw_tower(parts: Any, tower: Any) -> None:
     )
     _front_windows(neon, [x, base, z + d / 2], w, h)
     top = base + h
-    if tier != None:  # noqa: E711
+    if tier != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         tw = tier[0]
         td = tier[1]
         th = tier[2]
@@ -214,5 +214,5 @@ def draw_tower(parts: Any, tower: Any) -> None:
             top + 0.05,
             OVERLORD_NEON,
         )
-    if roof != None:  # noqa: E711
+    if roof != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         _draw_roof(parts, roof, [x, top, z - 0.5])

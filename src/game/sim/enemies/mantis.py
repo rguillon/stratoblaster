@@ -11,8 +11,8 @@ from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, bullet_shot, on_playfield
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
-from core.entities.muzzle import Muzzle  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

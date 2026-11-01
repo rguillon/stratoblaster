@@ -95,6 +95,8 @@ babylon: | check-tools
 # without one.
 APP_VERSION := $(or $(patsubst v%,%,$(shell git tag --sort=-v:refname 2>/dev/null | head -n 1)),unknown)
 BUILD_INFO := src/build_info.py
+# The short commit, the cache-busting query of the script URLs (ENG-84).
+GIT_COMMIT := $(or $(shell git rev-parse --short HEAD 2>/dev/null),unknown)
 
 build-info:
 	@commit=$$(git rev-parse --short HEAD 2>/dev/null || echo unknown); \
@@ -149,11 +151,11 @@ check-fast: lint typecheck
 # ENG-48).
 UNIT_WORKERS ?= auto
 
-# ENG-29: the unit tests and the coverage gates of ENG-43, in one target (src/game/sim/ has no
-# gate of its own yet: ENG-146).
-tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ at 90 %; HTML in coverage/
+# ENG-29: the unit tests and the coverage gates of ENG-43 and ENG-146, in one target.
+tests: build-info $(UV_SYNC) ## Unit tests (pytest, CPython over src/) with coverage: src/ at 70 %, core/ and game/sim/ at 90 %; HTML in coverage/
 	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
 	uv run coverage report --include='src/core/*' --fail-under=90
+	uv run coverage report --include='src/game/sim/*' --fail-under=90
 
 # The game: build, end-to-end tests, serving.
 
@@ -167,8 +169,16 @@ build: build-info $(TRANSCRYPT_STAMP) $(NPM_CI) babylon
 	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
 	cp index.html $(DIST)/
 	cp -r public/. $(DIST)/
+	# ENG-84: the script URLs carry the short commit, so a new deploy is never served stale from a
+	# cache: index.html (the game and Babylon.js) and the ground worker's URL in the bundle.
+	sed -e 's|js/game\.js|js/game.js?v=$(GIT_COMMIT)|' -e 's|vendor/babylon\.js|vendor/babylon.js?v=$(GIT_COMMIT)|' $(DIST)/index.html > $(DIST)/index.html.tmp && mv $(DIST)/index.html.tmp $(DIST)/index.html
+	sed -e 's|\./ground_worker\.js|./ground_worker.js?v=$(GIT_COMMIT)|g' $(DIST)/js/game.js > $(DIST)/js/game.js.tmp && mv $(DIST)/js/game.js.tmp $(DIST)/js/game.js
 	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
+	# AUD-ENGINE-01: the game ships no audio file; they are synthesized (Web Audio).
+	@if find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) | grep -q .; then \
+		echo 'AUD-ENGINE-01: audio files in $(DIST)/:' >&2; \
+		find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) >&2; exit 1; fi
 	@if grep -q '__GAME_TEST__' $(DIST)/js/game.js; then \
 		echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
 

@@ -38,3 +38,49 @@ def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(p
     assert len(body["reactors"]) == 2
     assert len(body["muzzles"]) == 1
     assert len(body["parts"].flesh.geometry.positions) > 0
+
+
+class _Mesh:
+    """A stand-in mesh: it takes the visibility a sync gives it."""
+
+    def __init__(self) -> None:
+        self.visibility = 1
+        self.isVisible = True
+
+
+class _Enemy:
+    def __init__(self, opacity: float) -> None:
+        self.opacity = opacity
+
+
+def test_enm_phantom_06_the_edge_trim_fades_with_the_phantom(monkeypatch):
+    """The trim meshes are added after the builder returns, so they must be listed at sync."""
+    body = _Mesh()
+    trims: list[_Mesh] = []
+    root = object()
+
+    def children(node, direct_only):
+        assert node is root
+        return [body, *trims]
+
+    monkeypatch.setattr(module, "build_enemy_model", lambda *_args: _Built(root))
+    monkeypatch.setattr(module, "child_meshes", children)
+    monkeypatch.setattr(module, "Phantom", _Enemy)
+    built = module.build_phantom(object())
+    # The edge trim is added to the model after it is built, as `add_edge_trim` does.
+    trims.append(_Mesh())
+    built.sync(_Enemy(0.3), 0.0)
+    assert body.visibility == pytest.approx(0.3)
+    assert trims[0].visibility == pytest.approx(0.3)
+    assert trims[0].isVisible
+    built.sync(_Enemy(0), 0.0)
+    assert not body.isVisible
+    assert not trims[0].isVisible
+
+
+class _Built:
+    def __init__(self, root) -> None:
+        self.root = root
+
+    def sync(self, enemy, dt) -> None:
+        return None

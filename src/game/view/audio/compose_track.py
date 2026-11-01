@@ -10,23 +10,23 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.math.rng import Random  # noqa: E402
-from game.view.audio.compose_melody import Motif  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_melody import Motif  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import Note, Track  # noqa: E402
-from core.math.bits import imul, u32, xor  # noqa: E402
-from core.math.rng import create_rng, pick, random_in  # noqa: E402
-from game.view.audio.compose_boss import (  # noqa: E402
+from audio.audio_types import Note, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.bits import imul, u32, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng, pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_boss import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BOSS_PROGRESSIONS,
     boss_bass_bar,
     boss_drum_bar,
     riser_bar,
     stab_bar,
 )
-from game.view.audio.compose_melody import make_motif, motif_bars, scale_pitch  # noqa: E402
-from game.view.audio.compose_parts import (  # noqa: E402
+from game.view.audio.compose_melody import make_motif, motif_bars, scale_pitch  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BarContext,
     arp_bar,
     arp_shape,
@@ -37,7 +37,7 @@ from game.view.audio.compose_parts import (  # noqa: E402
     pad_bar,
     sort_by_beat,
 )
-from game.view.audio.music_styles import (  # noqa: E402
+from game.view.audio.music_styles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BEATS_PER_BAR,
     MUSIC_LOOP_MIN_SECONDS,
     SECTION_BARS,

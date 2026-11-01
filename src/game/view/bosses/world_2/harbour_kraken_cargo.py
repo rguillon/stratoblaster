@@ -19,9 +19,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -81,7 +81,7 @@ def container_bay(p: EnemyParts, at: Vec3) -> None:
         high = STACKS[i][2]
         for k in range(high):
             paint = PAINT[(i + k) % len(PAINT)]
-            if paint == None:  # noqa: E711
+            if paint == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
                 paint = H.base
             _container(p, offset(floor_at, x, k * BOX[1], z), paint)
     open_hatch(p, offset(floor_at, 0, 0.1, 0), [8, 24])

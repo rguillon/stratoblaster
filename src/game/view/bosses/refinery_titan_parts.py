@@ -15,7 +15,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -32,8 +32,8 @@ TITAN_DECK = {"beam": 3, "sponson": 8, "back": 13}
 
 def rect(w: float, d: float, at: Any = None) -> list[Any]:
     """A rectangle `w` wide and `d` long around (x, z)."""
-    x = 0 if at == None else at[0]  # noqa: E711
-    z = 0 if at == None else at[1]  # noqa: E711
+    x = 0 if at == None else at[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    z = 0 if at == None else at[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return [
         [x - w / 2, z - d / 2],
         [x + w / 2, z - d / 2],

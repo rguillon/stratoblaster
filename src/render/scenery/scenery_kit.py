@@ -12,8 +12,8 @@ from render.babylon import color3, color3_black, is_instance_of, new_standard_ma
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
@@ -140,7 +140,7 @@ class SceneryKit(Protocol):
 
     def aurora(self) -> Any: ...
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         """D-211: an `ImposterAtlas` of `look` (an imposter look, see `imposters.py`) for `kinds`
         kinds of prop, or None (no look, or no imposters: the props drawn as they are)."""
         ...
@@ -282,7 +282,7 @@ class PlainSceneryKit:
             _plain_material("cloud-" + str(look.altitude), look.color, self._scene)
         )
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         """No imposters (they need a render target): the props are drawn as they are."""
         return None
 

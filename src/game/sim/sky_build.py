@@ -11,7 +11,7 @@ from core.scenery.sky_look import SkyGlow, SkyLook, SkyMist, SkyScript
 from game.sim.config_build import mapped, maybe, opt
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any

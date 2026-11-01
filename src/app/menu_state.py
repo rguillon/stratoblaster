@@ -9,12 +9,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.settings_menu import Volumes  # noqa: E402
-from core.content.level_catalog import LevelCatalog  # noqa: E402
-from core.menu.menu_screen import MenuScreen  # noqa: E402
-from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402
+from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.level_catalog import LevelCatalog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.menu.menu_screen import MenuScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # What a command did, so the presentation can give feedback (and its sound, AUD-ENGINE-09): a
 # move, a new screen, a locked level, a level paused or resumed, a slider changed.

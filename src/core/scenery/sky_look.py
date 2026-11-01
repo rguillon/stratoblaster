@@ -7,17 +7,17 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.atmosphere import AtmosphereChange  # noqa: E402
+from core.scenery.atmosphere import AtmosphereChange  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
 
-from config.time_of_day import OVERCAST, SKY_STOPS, TIME_OF_DAY, UNDERGLOW  # noqa: E402
-from config.weather import WEATHER_KINDS  # noqa: E402
-from core.math.noise import smoothstep  # noqa: E402
-from core.scenery.atmosphere import (  # noqa: E402
+from config.time_of_day import OVERCAST, SKY_STOPS, TIME_OF_DAY, UNDERGLOW  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from config.weather import WEATHER_KINDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import smoothstep  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Ambient,
     Atmosphere,
     CloudCover,

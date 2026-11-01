@@ -13,7 +13,7 @@ from render.babylon import float32_array, uint32_array
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any, Protocol  # noqa: E402
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class HeightSource(Protocol):
