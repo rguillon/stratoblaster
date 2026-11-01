@@ -2,11 +2,15 @@
 name = "stratoblaster"
 version = "0.0.0"
 description = "Stratoblaster, a 3D shoot 'em up, compiled to JavaScript with Transcrypt."
+# The project license (ENG-125), as in LICENSE.
 license = { text = "MIT" }
-# Transcrypt 3.9.5 cannot compile its own runtime under Python 3.13 or later (ENG-04).
+# Python 3.12 only (ENG-01, ENG-154): Transcrypt 3.9.5 cannot compile its own runtime under
+# Python 3.13 or later (ENG-04).
 requires-python = ">=3.12,<3.13"
+# No runtime Python dependency: the browser runs Transcrypt's output (ENG-05).
 dependencies = []
 
+# uv installs the tools from uv.lock (P17-R01); Transcrypt is pinned (ENG-03).
 [dependency-groups]
 dev = [
     "transcrypt==3.9.5",
@@ -20,11 +24,13 @@ dev = [
     "pytest-cov>=7.0.0"  
 ]
 
+# Ruff lints (ENG-12) and formats (ENG-13); `make lint` checks the format without writing.
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 src = ["src"]
 
+# The rule sets of ENG-12: N checks the naming (ENG-15), C90 and PL the size of the code (ENG-16).
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
 ignore = ["PLR0913"]
@@ -38,12 +44,14 @@ ignore = ["PLR0913"]
 "time".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
 "datetime".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
 
+# ENG-16: cyclomatic complexity at most 10.
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
 [tool.ruff.lint.pylint]
 max-args = 6
 
+# ENG-14: mypy --strict over src/ (`make typecheck`); the browser globals' stubs are in typings/.
 [tool.mypy]
 strict = true
 python_version = "3.12"
@@ -82,6 +90,7 @@ fail_under = 70
 root_packages = ["core"]
 include_external_packages = true
 
+# The layering rule of ENG-11 for core/, checked by `make lint`, not just written down (P17-R04).
 [[tool.importlinter.contracts]]
 name = "core/ is pure: no browser or DOM"
 type = "forbidden"

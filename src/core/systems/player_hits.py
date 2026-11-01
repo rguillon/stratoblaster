@@ -170,6 +170,7 @@ def find_player_hits(
     it is a boss.
     """
 
+    # A circle test (ENG-09: simple shapes in core/, no physics engine).
     def touches(p: PlayerHitPoint, radius: float) -> bool:
         return math.hypot(p.x - ship.x, p.y - ship.y) <= rules.hit_radius + radius
 

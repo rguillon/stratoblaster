@@ -1,5 +1,7 @@
 name: Deploy
 
+# ENG-80, ENG-81: GitHub Pages, with the official upload and deploy actions, once CI has passed on a
+# push to main, or by hand.
 on:
   workflow_run:
     workflows: [CI]

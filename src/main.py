@@ -23,7 +23,7 @@ from input.gamepad_menu_input import browser_gamepads
 from render.babylon import new_engine
 from ui.stage_fit import apply_stage_fit, fit_stage
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module, ENG-153).
 __pragma__("skip")
 from typing import Any  # noqa: E402
 
@@ -184,6 +184,7 @@ def main() -> None:
     canvas: Any = document.getElementById("game-canvas")
     if not is_canvas(canvas):
         raise Exception("#game-canvas not found")
+    # P01-R03: without WebGL2, a friendly message shows instead of the menu, with no error.
     if not has_webgl2(lambda: document.createElement("canvas")):
         show_fatal(GAME.texts.unsupported)
         return

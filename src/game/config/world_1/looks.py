@@ -1,4 +1,5 @@
-"""How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request, 2026-10-26)
+"""How the World 1 levels look (P06-R05, P06-R06, P06-R10; reworked at the reviewer's request,
+2026-10-26)
 
 One ground for the whole world, from a turquoise sea over green grass and dry earth to the dried
 red land of an American desert (reviewer, 2026-10-30, D-200: not sand dunes), and

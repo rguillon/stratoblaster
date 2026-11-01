@@ -9,7 +9,7 @@ Rules that come from Transcrypt (see `01-engineering.md` §13):
 - Babylon names that are Python keywords or special to Transcrypt (`name`, `from`...) are read and
   written in raw JavaScript, through the helpers below.
 - Constructor calls and builder calls with option objects are raw JavaScript (`new BABYLON.X`),
-  because a Python dict is not a JavaScript object and keyword arguments are dropped.
+  because a Python dict is not a JavaScript object and keyword arguments are dropped (ENG-151).
 - Optional options are passed as `None` and left out of the JavaScript object.
 """
 

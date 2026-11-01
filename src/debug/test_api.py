@@ -10,7 +10,8 @@ JavaScript, and Playwright copies them out of the page.
 - `sendAction(action)`: a menu action as an input device would send it (P01-R12; `pause` and
   `resume`, P12-R12), or `bomb`, as the bomb key (P11-R08);
 - `step(frames, render)`: runs `frames` frames of 1/60 s at once, then renders once unless
-  `render` is false. The app has no render loop in e2e builds: nothing moves between two calls;
+  `render` is false. The app has no render loop in e2e builds: nothing moves between two calls
+  (ENG-46: no real timers);
 - `advance(seconds)`: steps by `seconds`, rounded up to whole frames;
 - `readability(share)`: how readable the level's frame is (P14-R08), a promise; null off the game
   screen.

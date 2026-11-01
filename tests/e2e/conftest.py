@@ -79,7 +79,7 @@ def base_url() -> Iterator[str]:
 
 @pytest.fixture(autouse=True)
 def console_errors(page: Page) -> Iterator[list[str]]:
-    """ENG-53: the console errors and uncaught exceptions of the test; it fails on any."""
+    """ENG-53, ENG-109: the console errors and uncaught exceptions of the test; it fails on any."""
     errors: list[str] = []
 
     def on_console(message: ConsoleMessage) -> None:

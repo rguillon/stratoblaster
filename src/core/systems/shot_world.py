@@ -142,8 +142,8 @@ class ShotWorld:
 
     def _fire(self, weapon: ProjectileWeaponDefinition, dt: float) -> None:
         """Fires the level's streams one after the other, in their listed order, evenly spaced over
-        the volley (reviewer, 2026-10-26): each stream still fires `shots_per_second` times a
-        second.
+        the volley (reviewer, 2026-10-26, P03-R11): each stream still fires `shots_per_second`
+        times a second.
         """
         self._cooldown -= dt
         streams_at = _at_or_none(weapon.levels, self._level - 1)

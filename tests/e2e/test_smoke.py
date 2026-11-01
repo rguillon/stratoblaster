@@ -32,6 +32,8 @@ def app_version() -> str:
 def test_eng_54_p12_r12_loading_title_ships_levels_game_pause_resume_back_to_title(
     page: Page,
 ) -> None:
+    """P18-R03: the Python build runs from the title to a level and back, without console
+    errors (checked by `console_errors` in conftest.py)."""
     page.goto("./")
     expect(page).to_have_title("Stratoblaster")
     expect(page.locator("#game-canvas")).to_be_visible()
@@ -129,6 +131,7 @@ def test_p01_r04_a_high_score_cookie_shows_its_value_or_0(
 
 
 def test_p01_r05_p01_r13_everything_comes_from_the_same_origin(page: Page, base_url: str) -> None:
+    """ENG-07: no backend, every request goes to the page's own origin."""
     foreign: list[str] = []
 
     def on_request(request: Request) -> None:

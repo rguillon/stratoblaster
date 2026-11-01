@@ -1,4 +1,4 @@
-"""Reusable nodes for things drawn in varying numbers ().
+"""Reusable nodes for things drawn in varying numbers (ENG-105).
 
 Nodes are created on demand, then shown or hidden instead of being created and disposed every
 frame (ENG-19): shots, particles, flashes.

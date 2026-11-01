@@ -421,8 +421,9 @@ class RoadNetwork:
                 self._add_road("street", with_width(run.points, run.width))
 
     def _open(self, x: float, z: float) -> bool:
-        """Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts,
-        and clear of the other roads while a main road is laid without crossings."""
+        """Whether winding roads and paths may go at (`x`, `z`): buildable, out of the districts
+        (so none reaches a district road, P15-R06), and clear of the other roads while a main road
+        is laid without crossings."""
         if self._in_district(z):
             return False
         if not self.buildable(x, z):

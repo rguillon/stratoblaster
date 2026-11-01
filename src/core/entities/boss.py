@@ -165,7 +165,7 @@ class Boss(Enemy):
 
     expires = False
     rammable = False
-    # Optional hooks; a subclass defines them as methods to enable them.
+    # Optional hooks (ENG-148); a subclass defines them as methods to enable them.
     update_rage: Callable[[EnemyContext, float], None] | None = None
     on_stage_change: Callable[[int, EnemyContext], None] | None = None
     # Called as transformation k (1 for the first) starts.
