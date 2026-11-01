@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/environment/gradient_cube.py`."""
+"""Unit tests of `src/render/environment/gradient_cube.py` (GFX-SKY-10, GFX-ART-02)."""
 
 import math
 

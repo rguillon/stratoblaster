@@ -1,6 +1,7 @@
-"""The browser around the game (P12-R03, P12-R05, P12-R11): the
-first gesture unlocks the audio, a hidden page pauses the level and silences the audio, and a
-timer schedules the music. `listen_to_page` returns a function that stops listening.
+"""The browser around the game: the first gesture unlocks the audio (AUD-ENGINE-03), a hidden
+page pauses the level (UI-PAUSE-11, GAME-CTRL-08) and silences the audio (AUD-ENGINE-11), and a
+timer schedules the music (AUD-ENGINE-05). `listen_to_page` returns a function that stops
+listening.
 
 `PageOptions` is a plain class; its fields are None when omitted.
 Targets are DOM-like objects with `addEventListener` and `removeEventListener`.
@@ -12,14 +13,14 @@ from app.game_audio import GameAudio, GameAudioOptions
 from config.audio import AUDIO_CONFIG
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.menu_controller import MenuController  # noqa: E402
-from input.gamepad_menu_input import GamepadSource  # noqa: E402
+from app.menu_controller import MenuController  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.gamepad_menu_input import GamepadSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# The page's gesture events: any of them unlocks the audio (P12-R05).
+# The page's gesture events: any of them unlocks the audio (AUD-ENGINE-03).
 GESTURE_EVENTS = ["keydown", "pointerdown", "pointerup", "touchend"]
 
 
@@ -36,7 +37,7 @@ class AudioOptions:
 
 class PageVisibility:
     """`PageOptions.visibility`: the target whose `visibilitychange` event is heard, and whether
-    the page is hidden now."""
+    the page is hidden now (ENG-110)."""
 
     def __init__(self, target: Any, hidden: Any) -> None:
         self.target = target
@@ -54,14 +55,15 @@ class PageOptions:
         visibility: PageVisibility | None,
         every: Any | None,
     ) -> None:
-        # Audio (P12-R05): how to create the Web Audio context. Silent when None.
+        # Audio: how to create the Web Audio context. Silent when None (AUD-ENGINE-04).
         self.audio = audio
         # Connected gamepads. No gamepad when None.
         self.gamepads = gamepads
-        # Where key presses, taps and clicks are heard to unlock the audio (P12-R05). The
+        # Where key presses, taps and clicks are heard to unlock the audio (AUD-ENGINE-03). The
         # gamepads' buttons unlock it too. None when omitted.
         self.gesture_target = gesture_target
-        # The page's visibility (P12-R03, P12-R11): the level pauses and the audio goes quiet.
+        # The page's visibility: the level pauses (UI-PAUSE-11) and the audio goes quiet
+        # (AUD-ENGINE-11).
         self.visibility = visibility
         # Runs `tick` every `seconds` until the returned function is called (the music scheduler).
         self.every = every
@@ -144,9 +146,10 @@ def _updater(audio: GameAudio) -> Any:
 
 
 def create_app_audio(game: Any, options: PageOptions) -> "AppAudio":
-    """The game's audio (P12-R05), on the app's own clock (the sound effect limits count in game
-    time, P12-R10), and the frame wrapper that unlocks it on a gamepad button and schedules the
-    music after each frame. Returns an object with `audio` and `with_audio(ticker)`.
+    """The game's audio (specs/audio/), on the app's own clock (the sound effect voices' limits
+    count in game time, AUD-ENGINE-07), and the frame wrapper that unlocks it on a gamepad button
+    and schedules the music after each frame. Returns an object with `audio` and
+    `with_audio(ticker)`.
     """
     # One-element list: the clock's state, read and written by the closures (no `nonlocal`).
     elapsed = [0.0]

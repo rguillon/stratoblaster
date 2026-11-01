@@ -5,18 +5,22 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class GroundBoxPlacement(Protocol):
     """The centre of a box of ground."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the centre of the box."""
+        ...
 
     @property
-    def z(self) -> float: ...
+    def z(self) -> float:
+        """Z of the centre of the box."""
+        ...
 
 
 class BuildingRecord(Protocol):
@@ -24,26 +28,38 @@ class BuildingRecord(Protocol):
     `away_placement.BuildingRecord`)."""
 
     @property
-    def placement(self) -> "PropPlacement": ...
+    def placement(self) -> "PropPlacement":
+        """The prop of the building, and where it stands."""
+        ...
 
     @property
-    def half_x(self) -> float: ...
+    def half_x(self) -> float:
+        """Half the width of the ground the building takes, along X."""
+        ...
 
     @property
-    def half_z(self) -> float: ...
+    def half_z(self) -> float:
+        """Half the width of the ground the building takes, along Z."""
+        ...
 
 
 class GroundBox(Protocol):
     """A box of ground a prop takes around its centre (`Pick<BuildingRecord, halfX | halfZ>`)."""
 
     @property
-    def half_x(self) -> float: ...
+    def half_x(self) -> float:
+        """Half the width of the box along X."""
+        ...
 
     @property
-    def half_z(self) -> float: ...
+    def half_z(self) -> float:
+        """Half the width of the box along Z."""
+        ...
 
     @property
-    def placement(self) -> "PropPlacement": ...
+    def placement(self) -> "PropPlacement":
+        """The placement the box is around."""
+        ...
 
 
 __pragma__("noskip")
@@ -99,7 +115,8 @@ def inside(area: GroundArea, x: float, z: float) -> bool:
 
 
 def overlap(a: GroundBox, b: GroundBox, gap: float) -> bool:
-    """Whether the ground boxes of `a` and `b` come closer than `gap`."""
+    """Whether the ground boxes of `a` and `b` come closer than `gap` (no two buildings overlap,
+    GFX-BLDG-01)."""
     apart_x = abs(a.placement.x - b.placement.x) >= a.half_x + b.half_x + gap
     apart_z = abs(a.placement.z - b.placement.z) >= a.half_z + b.half_z + gap
     return not apart_x and not apart_z
@@ -135,6 +152,8 @@ class BuildingIndex:
         self._max_half_z = 0.0
 
     def add(self, building: BuildingRecord) -> None:
+        """Adds `building` to the bucket of its centre, and widens the largest half-extents to take
+        it in."""
         x = building.placement.x
         z = building.placement.z
         self._max_half_x = max(self._max_half_x, building.half_x)
@@ -175,7 +194,7 @@ class BuildingIndex:
 
 class PlacerSnapshot:
     """What a `PropPlacer` placed, in order: enough to make it again without placing them
-    (P13-R03). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
+    (PERF-14). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
     chunk not placed yet (see `PropPlacer.ensure_placed`)."""
 
     def __init__(self, buildings: Sequence[BuildingRecord], fixed: int, placed_to: int) -> None:

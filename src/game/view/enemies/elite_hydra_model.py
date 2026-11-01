@@ -1,4 +1,4 @@
-"""P05-R19, P16-R04: the Hydra Logical pixels, nose
+"""The Hydra (specs/enemies/hydra.md) Logical pixels, nose
 +Z, Y up (towards the camera).
 """
 
@@ -28,7 +28,7 @@ from render.geometry.organic import (
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -41,7 +41,7 @@ def _shell_girth(t: float) -> float:
     return 0.5 + 0.5 * math.sin(math.pi * min(1, t * 1.15))
 
 
-# P16-R04: the broad, armoured shell (tail to front) and the bone ridge along its back.
+# ENM-HYDRA-02: the broad, armoured shell (tail to front) and the bone ridge along its back.
 SHELL = SegmentedBody(-21.5, 8, 4, 22, -4, 6, None, _shell_girth, [False, False])
 # The metal plates grafted on its shoulders (right side).
 PLATES = [  # type: list[list[list[float]]]
@@ -59,7 +59,8 @@ CAP = [[-2.6, -4], [2.6, -4], [2, 2], [-2, 2]]  # type: list[list[float]]
 
 
 def body(p: Any) -> None:
-    """The shell, its plates, ridge and veins, and the reactors in sacs at its tail."""
+    """The shell, its plates, ridge and veins (ENM-HYDRA-03), and the reactors in sacs at its tail
+    (ENM-HYDRA-04)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -81,7 +82,8 @@ def body(p: Any) -> None:
 
 
 def neck(head: Any) -> Any:
-    """A neck from its joint to its head: a flesh tendril ringed with teal and metal collars."""
+    """A neck from its joint to its head (ENM-HYDRA-05): a flesh tendril ringed with teal and
+    metal collars."""
     px = head.pivot[0]
     py = head.pivot[1]
     hx = head.head[0]
@@ -129,8 +131,8 @@ def head(spec: Any) -> Any:
 
 
 def build_hydra(scene: Any) -> Any:
-    """P05-R19, P16-R04: a broad, plated shell with three long flesh necks forward, each ending in
-    a teal-eyed head."""
+    """ENM-HYDRA-01: a broad, plated shell with three long flesh necks forward, each ending in a
+    teal-eyed head, within the elite triangle budget (ENM-HYDRA-06)."""
     limbs = {}
     parts = {}
     for h in CFG.heads:

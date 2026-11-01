@@ -1,4 +1,4 @@
-"""The Hornet (P05-R02)"""
+"""The Hornet (`specs/enemies/hornet.md`)"""
 
 import math
 
@@ -9,9 +9,9 @@ from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal, Protocol  # noqa: E402
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402
+from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class HornetConfig(Protocol):
@@ -74,7 +74,8 @@ class HornetOptions:
 
 def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
     """The options of a Hornet built from a config entry (its `stats`, `pause`, dive and entry
-    values), with `stop_y` (None: it starts with the pause).
+    values), with `stop_y` (None: it starts with the pause, as a launched Hornet does,
+    ENM-HORNET-08).
     """
     return HornetOptions(
         cfg.stats,
@@ -88,10 +89,11 @@ def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
 
 
 class Hornet(Enemy):
-    """A diver. It flies down to its stop height, braking into it, stops for `pause` seconds while
-    turning its nose to the player, then dives in a straight line towards where the player was at
-    the end of the pause, accelerating from rest, until it leaves the screen. It does not shoot.
-    Splitter pods (P05-R10) are small Hornets that start with the pause.
+    """A diver. It flies down to its stop height, braking into it (ENM-HORNET-04), stops for
+    `pause` seconds while turning its nose to the player (ENM-HORNET-05), then dives in a straight
+    line towards where the player was at the end of the pause, accelerating from rest, until it
+    leaves the screen (ENM-HORNET-06). It does not shoot (ENM-HORNET-07). Splitter pods
+    (ENM-SPLITTER-08) are small Hornets that start with the pause.
     """
 
     def __init__(self, x: float, y: float, options: HornetOptions) -> None:
@@ -136,6 +138,7 @@ class Hornet(Enemy):
     def _aim(self, ctx: EnemyContext, dt: float) -> None:
         target = self._turn_to_player(ctx, dt)
         self._pause_left -= dt
+        # A Wasp's charge light fills through the pause (ENM-WASP-04).
         self.charge = 1 - max(0, self._pause_left) / self._options.pause
         if self._pause_left > 0:
             return

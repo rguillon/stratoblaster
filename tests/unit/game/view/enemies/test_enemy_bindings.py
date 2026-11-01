@@ -25,7 +25,7 @@ def test_p05_the_bindings_draw_every_enemy_and_every_boss_by_its_key():
         assert key in models
 
 
-def test_p16_r10_the_idle_motion_switch_is_the_living_motion_switch():
+def test_the_idle_motion_switch_is_the_living_motion_switch():
     assert ENEMY_BINDINGS.setIdleMotion is set_living_motion
 
 
@@ -53,11 +53,11 @@ def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch):
     models = merged_models()
     assert models["shared"]("scene").root == "boss"
     assert models["only"]("scene").root == "enemy"
-    # Each model gets its glowing edge trim once built whole (P14-R04).
+    # Each model gets its glowing edge trim once built whole (GFX-TRIM-01).
     assert trimmed_roots == ["boss", "enemy"]
 
 
-def test_p14_r04_the_trim_options_are_the_enemy_trim_look(monkeypatch):
+def test_gfx_trim_06_the_trim_options_are_the_enemy_trim_look(monkeypatch):
     seen = []
     monkeypatch.setattr(enemy_bindings, "add_edge_trim", lambda root, options: seen.append(options))
     enemy_bindings.trimmed(lambda scene: SimpleNamespace(root="r"))("scene")
@@ -73,7 +73,7 @@ def _models_spawned(enemy):
     return {e.model for e in ctx.spawned}
 
 
-def test_p13_r03_the_child_models_cover_every_enemy_another_one_sends_out():
+def test_perf_21_the_child_models_cover_every_enemy_another_one_sends_out():
     # The children are built with the level's own models, so none is built in play.
     children = set(ENEMY_BINDINGS.child_models)
     assert _models_spawned(Carrier(200, 500)) <= children

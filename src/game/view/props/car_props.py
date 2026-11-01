@@ -4,10 +4,10 @@ imposters)
 Sizes in model units (drawn at `CAR_RULES.scale`), standing on Y = 0; the front faces +Z, the way
 they drive. The levels draw a picture of each car baked from these models (`imposter_bake_visual`),
 so their triangles cost nothing in play. D-213: each kind has its own body (a racer, a coupé, a
-pod, a limousine, a van, a bus, a hauler, a tanker). They hover on pads instead of wheels:
-chamfered wedge hulls, glass canopies, fins, thrusters, neon strips. Their light bars, neon
-strips, the glow under them and the beams on the road stay real geometry (the lights), so they
-glow at night.
+pod, a limousine, a van, a bus, a hauler, a tanker; GFX-CAR-01). They hover on pads instead of
+wheels (GFX-CAR-02): chamfered wedge hulls, glass canopies, fins, thrusters, neon strips. Their
+light bars, neon strips, the glow under them and the beams on the road stay real geometry (the
+lights), so they glow at night (GFX-CAR-09).
 """
 
 import math
@@ -22,7 +22,7 @@ BEAM = 6
 BEAM_LIGHT = [0.4, 0.33, 0.18]
 
 # Kinds of cars: body length, width and height (`cabin` and `back`: where the cabin is, from the
-# back).
+# back). Each keeps its own size (GFX-CAR-04).
 SHAPES = {
     "sedan": {"length": 7, "width": 3.2, "height": 1.3, "cabin": 3.4, "back": 1.6},
     "racer": {"length": 7.6, "width": 3.6, "height": 1.0, "cabin": 1.4, "back": 3.4},
@@ -402,8 +402,8 @@ def cruiser(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: l
 
 
 def bus(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover bus: a long chamfered body, a band of windows all round it split by pillars, a white
-    roof with two cooling units and a neon stripe."""
+    """A hover bus (GFX-CAR-03): a long chamfered body, a band of windows all round it split by
+    pillars, a white roof with two cooling units and a neon stripe."""
     dims = SHAPES["bus"]
     length = dims["length"]
     width = dims["width"]
@@ -446,8 +446,8 @@ def bus(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[
 
 
 def tanker(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover tanker: the hauler's cab pulling a long chrome tank on a dark frame, neon bands
-    round the tank and a walkway along its top."""
+    """A hover tanker (GFX-CAR-03): the hauler's cab pulling a long chrome tank on a dark frame,
+    neon bands round the tank and a walkway along its top."""
     dims = SHAPES["tanker"]
     length = dims["length"]
     width = dims["width"]

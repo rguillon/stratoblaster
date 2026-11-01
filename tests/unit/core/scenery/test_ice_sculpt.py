@@ -9,7 +9,7 @@ from core.scenery.scenery_level import Crevasses, Lakes
 LAKES = Lakes(spacing=100, chance=1, radius=(20, 20), level=-5, edge=10)
 
 
-def test_p08_r03_a_lake_flattens_the_ground_to_its_level_and_leaves_the_rest() -> None:
+def test_gfx_terrain_05_a_lake_flattens_the_ground_to_its_level_and_leaves_the_rest() -> None:
     field = LakeField(LAKES, 7)
     # Somewhere in the first square the lake's middle is at the level.
     lowest = min(field.apply(x, z, 10) for x in range(0, 100, 2) for z in range(0, 100, 2))
@@ -40,7 +40,7 @@ def test_lakes_are_kept_within_their_square_and_cached() -> None:
     assert field._lake(0, 0) is lake
 
 
-def test_p08_r07_crevasses_cut_deepest_on_their_line() -> None:
+def test_gfx_terrain_05_crevasses_cut_deepest_on_their_line() -> None:
     noise = create_noise2d(5)
     crevasses = Crevasses(spacing=100, width=20, depth=8, angle_deg=0, warp=0, share=1)
     # Along X at angle 0: the lines are at Z = 0, 100, ...

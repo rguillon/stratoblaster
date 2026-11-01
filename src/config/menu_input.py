@@ -1,13 +1,13 @@
-"""Menu input mapping and feel (P01-R09, P01-R10, P01-R12, P12-R01)
+"""Menu input mapping and feel (UI-INPUT-03, UI-INPUT-04, UI-INPUT-07; pause GAME-CTRL-08)
 
-Kept in config so it can be remapped later (ENG-112).
+Kept in config so it can be remapped later (GAME-CTRL-09, ENG-112).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The abstract menu actions; it is only
 # used to type the mappings here, so it is defined here rather than on its own.
@@ -35,15 +35,16 @@ class MenuInputConfig:
         repeat_delay_seconds: float,
         repeat_interval_seconds: float,
     ) -> None:
-        # `KeyboardEvent.code` -> action: physical key positions, so AZERTY works too.
+        # `KeyboardEvent.code` -> action: physical key positions, so AZERTY works too
+        # (UI-INPUT-04).
         self.keyboard = keyboard
         # Standard-mapping gamepad button index -> action (A = 0, B = 1, Select / View = 8,
         # Start = 9, D-pad = 12..15).
         self.gamepad_buttons = gamepad_buttons
         self.gamepad_stick = gamepad_stick
-        # `gamepad_dead_zone`: stick magnitude below which input is ignored.
+        # `gamepad_dead_zone`: stick magnitude below which input is ignored (UI-INPUT-08).
         self.gamepad_dead_zone = gamepad_dead_zone
-        # `menu_repeat_delay`: hold time before a held direction starts repeating.
+        # `menu_repeat_delay`: hold time before a held direction starts repeating (UI-INPUT-06).
         self.repeat_delay_seconds = repeat_delay_seconds
         # `menu_repeat_interval`: time between repeats while held.
         self.repeat_interval_seconds = repeat_interval_seconds
@@ -62,7 +63,7 @@ MENU_INPUT_CONFIG = MenuInputConfig(
         "Enter": "confirm",
         "NumpadEnter": "confirm",
         "Space": "confirm",
-        # Back on the menu screens, pause in a level (GD §2, P12-R01).
+        # Back on the menu screens, pause in a level (UI-INPUT-02, UI-PAUSE-01, GAME-CTRL-01).
         "Escape": "cancel",
         "Backspace": "back",
         "KeyP": "pause",

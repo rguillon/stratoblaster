@@ -1,4 +1,4 @@
-"""Turns held keys into repeated presses: a press is emitted
+"""Turns held keys into repeated presses (UI-INPUT-06): a press is emitted
 at once, then again after `delay_seconds`, then every `interval_seconds` while the key stays held.
 
 Keys are strings: a Transcrypt dict keeps insertion order for

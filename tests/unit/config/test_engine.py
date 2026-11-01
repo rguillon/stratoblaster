@@ -17,7 +17,8 @@ def test_eng52_the_e2e_build_renders_fewer_pixels_without_antialiasing() -> None
     assert ENGINE_CONFIG.e2e.antialias is False
 
 
-def test_p13_r01_the_perf_overlay_refreshes_and_toggles_with_a_key() -> None:
+def test_dev_perf_03_the_perf_overlay_refreshes_and_toggles_with_a_key() -> None:
+    """Also PERF-01: a long frame is longer than a simulation step."""
     assert ENGINE_CONFIG.perf_overlay.refresh > 0
     assert ENGINE_CONFIG.perf_overlay.key == "F3"
     assert ENGINE_CONFIG.long_frame_ms > 1000 / ENGINE_CONFIG.simulation_hz

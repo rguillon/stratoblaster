@@ -1,5 +1,7 @@
 # Stratoblaster
 
+<!-- ENG-130: the live game, the controls, the requirements and the make targets. -->
+
 An old-school vertical shoot 'em up with modern 3D graphics, running entirely in the browser.
 
 **Play:** <https://rguillon.github.io/stratoblaster/>
@@ -53,6 +55,8 @@ make serve     # builds the game and serves it on http://localhost:5173
 ```
 
 ## Make targets
+
+<!-- ENG-37: the public targets, the only ones `make help` lists. -->
 
 | Target        | What it does                                                          |
 | ------------- | --------------------------------------------------------------------- |

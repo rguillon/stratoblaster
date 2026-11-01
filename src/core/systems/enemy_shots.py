@@ -1,4 +1,4 @@
-"""The shots of all the enemies (GD-43, GD-44)
+"""The shots of all the enemies (ENM-16 to ENM-19)
 
 Bullets, homing missiles the player can shoot down, and lasers with a warning line. Pure and
 deterministic, stepped with a fixed `dt`.
@@ -13,17 +13,17 @@ from core.systems.projectile_motion import heading_to, turn_towards
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol, TypeVar  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol, TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import (  # noqa: E402
+from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     EnemyBulletSpec,
     EnemyBurstSpec,
     EnemyLaserSpec,
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import PlayfieldEye  # noqa: E402
+from core.entities.muzzle import PlayfieldEye  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class _Pooled(Protocol):
@@ -55,7 +55,7 @@ EPSILON = 1e-9
 
 
 class EnemyBullet:
-    """An enemy bullet in flight (GD-43): straight, at constant speed. `age` is the seconds since
+    """An enemy bullet in flight (ENM-16): straight, at constant speed. `age` is the seconds since
     it was fired; `burst` is what it bursts into (`EnemyBulletSpec.burst`).
     """
 
@@ -72,9 +72,9 @@ class EnemyBullet:
 
 
 class EnemyMissile:
-    """An enemy missile in flight: it homes on the player for a while, and can be shot down. It is
-    a shot target (the player's shots can hit it). `homing` is the seconds of homing left, `age`
-    the seconds since launch.
+    """An enemy missile in flight: it homes on the player for a while, and can be shot down
+    (ENM-18). It is a shot target (the player's shots can hit it). `homing` is the seconds of homing
+    left, `age` the seconds since launch.
     """
 
     def __init__(self) -> None:
@@ -94,9 +94,9 @@ class EnemyMissile:
 
 
 class EnemyLaser:
-    """A laser: a warning line first, then the beam, from its owner's emitter. The warning line
-    follows its owner's heading (a turret turning towards the player); the beam keeps the heading
-    its owner had when it started firing, straight (phase 8 review), unless its spec `sweeps`.
+    """A laser (ENM-19): a warning line first, then the beam, from its owner's emitter. The warning
+    line follows its owner's heading (a turret turning towards the player); the beam keeps the
+    heading its owner had when it started firing, straight (BOSS-30), unless its spec `sweeps`.
     `locked` is that heading, once the beam fires.
     """
 
@@ -118,14 +118,16 @@ class EnemyLaser:
 
     @length.setter
     def length(self, value: float) -> None:
+        """Sets the length to the edge of the playfield."""
         self._length = value
 
 
 class EnemyShotsOptions:
     """The playfield and what its shots are culled by.
 
-    `cull_margin`: shots this far outside the playfield are removed. `eye`: the camera's eye, from
-    which lasers are seen leaving their raised emitters; straight below them when None.
+    `cull_margin`: shots this far outside the playfield are removed (GAME-SCREEN-07). `eye`: the
+    camera's eye, from which lasers are seen leaving their raised emitters; straight below them when
+    None.
     """
 
     def __init__(
@@ -171,9 +173,12 @@ class EnemyShots:
 
     @property
     def lasers(self) -> list[EnemyLaser]:
+        """The lasers in the world."""
         return self._lasers
 
     def fire_bullet(self, x: float, y: float, heading: float, spec: EnemyBulletSpec) -> None:
+        """Fires a bullet of `spec` from (x, y) along `heading`, reusing a free one from the
+        pool."""
         bullet = _first_free(self.bullets)
         if bullet is None:
             bullet = EnemyBullet()
@@ -189,6 +194,8 @@ class EnemyShots:
         bullet.age = 0
 
     def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
+        """Launches a missile of `spec` from (x, y) along `heading`, reusing a free one from the
+        pool, with a fresh id."""
         missile = _first_free(self.missiles)
         if missile is None:
             missile = EnemyMissile()
@@ -209,6 +216,7 @@ class EnemyShots:
         missile.age = 0
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
+        """Starts a laser of `spec` from `owner`, aimed at once."""
         self._lasers.append(EnemyLaser(owner, spec))
         self._aim(self._lasers[len(self._lasers) - 1])
 
@@ -218,7 +226,7 @@ class EnemyShots:
         return _alive_count(self.bullets) + _alive_count(self.missiles) + len(self._lasers)
 
     def clear(self) -> None:
-        """Removes every shot."""
+        """Removes every shot (as a bomb does, GAME-BOMB-05)."""
         for bullet in self.bullets:
             bullet.alive = False
         for missile in self.missiles:

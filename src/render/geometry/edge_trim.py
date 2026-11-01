@@ -1,13 +1,13 @@
 """Self-lit edge trim along a model's top-view silhouette.
 
-The trim replaces the rim outline (P14-R03 / R04, read as a built-in rim light): thin ribbons, lying
+The trim replaces the rim outline (GFX-TRIM-01, read as a built-in rim light): thin ribbons, lying
 just outside the edges a model shows from above, so its silhouette stands out from the ground. Seen
 from straight above, those edges are the same whatever the model's heading (enemies and bosses only
 turn about the vertical axis), and the playfield camera is close enough to that.
 
 Y is up. Triangles are index triples whose Babylon front normal is `(p2 - p0) × (p1 - p0)`.
 Vertices are matched by position, so both flat-shaded solids (each face its own vertices) and
-meshes with shared vertices work.
+meshes with shared vertices work. Pure maths, unit-tested without Babylon (GFX-TRIM-10).
 """
 
 import math
@@ -166,7 +166,7 @@ def silhouette_edges(
 ) -> list[TrimEdge]:
     """The edges of the up-facing triangles (see `up_triangles`) that border no other up-facing
     triangle, and that no triangle of `cover` lies just outside of, seen from above (`cover`: the
-    up-facing triangles of the whole model, those of this geometry when None)."""
+    up-facing triangles of the whole model, those of this geometry when None; GFX-TRIM-02)."""
     ups = up_triangles(positions, indices, min_up)
     grid = _Grid(cover if cover is not None else ups)
     counts: dict[str, int] = {}
@@ -305,7 +305,8 @@ def merged_edges(edges: list[TrimEdge]) -> list[TrimEdge]:
 
 def trim_ribbons(edges: list[TrimEdge], options: TrimOptions) -> ColoredGeometry:
     """A flat ribbon out from each edge (from `offset` to `offset + width`), at the edge's heights,
-    and a wedge filling the gap at each corner where two edges turn, in white vertex colours."""
+    and a wedge filling the gap at each corner where two edges turn, in white vertex colours
+    (GFX-TRIM-03)."""
     geo = ColoredGeometry()
     edges = merged_edges(edges)
     near = options.offset

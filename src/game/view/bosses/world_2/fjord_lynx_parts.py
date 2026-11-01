@@ -1,5 +1,5 @@
-"""P08-R10, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical pixels,
-nose +Z, Y up (towards the camera)."""
+"""MB-FJORD-LYNX-03, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical
+pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
@@ -7,43 +7,43 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.mini_boss_greebles import hazard  # noqa: E402
-from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import hazard  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     WHITE,
     H,
     offset,
     turret,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     RIME,
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     gland,
     sinew,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The lynx's neon: cyan, and white for its secondary lights.
 CYAN = BOSS_LOOK.neon["fjord-lynx"]
-if CYAN == None:  # noqa: E711
+if CYAN == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     CYAN = [0.55, 0.95, 1.0]
 WHITE_NEON = [0.9, 0.95, 1.0]
 
@@ -103,13 +103,13 @@ def at2(outline: Sequence[OutlinePoint], at: Vec3) -> list[OutlinePoint]:
 
 
 def paw(p: EnemyParts, at: Vec3) -> None:
-    """A paw (P08-R10): an armoured pad with three toe claws, frosted on top, its cannon on a
-    turret (`paw_turret`); a ram from the foreleg works it."""
+    """A paw (MB-FJORD-LYNX-03): an armoured pad with three toe claws, frosted on top, its cannon on
+    a turret (`paw_turret`); a ram from the foreleg works it."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     s = _sign(at[0]) or 1
-    # P16-R05: a fleshy paw, bone claws, a metal armour plate where the cannon is grafted.
+    # MB-FJORD-LYNX-03: a fleshy paw, bone claws, a metal armour plate where the cannon is grafted.
     flesh.bevel_slab(
         at2(PAD, at),
         [-2.5, 0.0, PAD_TOP - 1],
@@ -169,12 +169,12 @@ def chin_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def radar_mast(p: EnemyParts, at: Vec3) -> None:
-    """The radar mast (P08-R10): a mount on the sponson, a tapered mast, a scanner bar with a
-    dish and white lights at its ends; while it stands, the guns aim at the player."""
+    """The radar mast (MB-FJORD-LYNX-03): a mount on the sponson, a tapered mast, a scanner bar with
+    a dish and white lights at its ends; while it stands, the guns aim at the player."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
-    # P16-R05: a metal mast grafted in a swollen mound of flesh, crystals around it.
+    # MB-FJORD-LYNX-03: a metal mast grafted in a swollen mound of flesh, crystals around it.
     p.flesh.bevel_slab(
         at2(MOUNT, at),
         [-1.0, 0.0, 2.5],
@@ -212,6 +212,6 @@ def radar_mast(p: EnemyParts, at: Vec3) -> None:
 def paw_centre(side: float) -> Vec3:
     """The left paw's centre in model space (for the forelegs drawn on the core)."""
     spec = FJORD_LYNX.stats.parts[0]
-    x = -30 if spec == None else spec.x  # noqa: E711
-    y = -26 if spec == None else spec.y  # noqa: E711
+    x = -30 if spec == None else spec.x  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    y = -26 if spec == None else spec.y  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return [side * -x, 0.0, -y]

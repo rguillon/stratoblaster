@@ -1,4 +1,4 @@
-"""P07-R05 (phase 7 review: more detail): small surface details shared by the World 1 final
+"""BOSS-49 (phase 7 review: more detail): small surface details shared by the World 1 final
 bosses: plates, vents, rivets, hazard stripes, masts
 and lights. Logical pixels, nose +Z, Y up.
 """
@@ -14,7 +14,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]

@@ -1,4 +1,4 @@
-"""How this game's enemies (and bosses, P07), their shots and their explosions look (P05)"""
+"""How this game's enemies (and bosses), their shots and their explosions look"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -14,7 +14,7 @@ from render.geometry.edge_trim import TrimOptions  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -40,9 +40,9 @@ class EnemyBindingsHandle:
 
 
 def trimmed(build: Any) -> Any:
-    """A model factory that gives the whole model `build` makes its glowing edge trim (P14-R04):
-    each hull asks for one in its rim colour, and the model's meshes hide each other's inner
-    edges."""
+    """A model factory that gives the whole model `build` makes its glowing edge trim (GFX-TRIM-06),
+    so it stands out from the ground (ENM-47, GFX-READ-09): each hull asks for one in its rim
+    colour, and the model's meshes hide each other's inner edges."""
     look = READABILITY.enemyTrim
     options = TrimOptions(look.width, look.offset)
 
@@ -55,8 +55,8 @@ def trimmed(build: Any) -> Any:
 
 
 def merged_models() -> dict[str, object]:
-    """`{ ...ENEMY_MODELS, ...BOSS_MODELS }`, each trimmed: a boss model wins over an enemy with the
-    same key."""
+    """`{ ...ENEMY_MODELS, ...BOSS_MODELS }`, each trimmed (GFX-TRIM-01): a boss model wins over
+    an enemy with the same key."""
     models: dict[str, object] = {}
     for key, model in ENEMY_MODELS.items():
         models[key] = trimmed(model)
@@ -65,11 +65,12 @@ def merged_models() -> dict[str, object]:
     return models
 
 
-# The models of the enemies other enemies send out (P13-R03: built with every level's own): the
+# The models of the enemies other enemies send out (PERF-21: built with every level's own): the
 # Carriers' and the bosses' Gnats, the bosses' Hornets, the Splitters' pods and the Hives' Wasps.
 CHILD_MODELS = ["gnat", "hornet", "splitter-pod", "wasp"]
 
-# How this game's enemies look (P05). P16-R10: the debug pages pause the living motion (P16-R07).
+# How this game's enemies look. `set_living_motion` holds the living motion (ENM-42) still, a
+# debug toggle.
 ENEMY_BINDINGS = EnemyBindingsHandle(
     merged_models(),
     create_enemy_shot_renderer,

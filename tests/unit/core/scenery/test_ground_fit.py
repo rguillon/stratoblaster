@@ -21,17 +21,18 @@ def test_lowest_under_takes_the_lowest_corner_and_centre() -> None:
     assert lowest_under(_Plane(0.0, 1.0), 5.0, 0.0, 2.0) == pytest.approx(3.0)
 
 
-def test_p04_r04_a_flat_spot_stands_at_its_lowest_ground() -> None:
+def test_gfx_prop_06_a_flat_spot_stands_at_its_lowest_ground() -> None:
+    """Also GFX-BLDG-04."""
     assert standing_height(_Plane(10.0), (0.0, 0.0, 2.0), (0.5, 0.0)) == pytest.approx(10.0)
 
 
-def test_p04_r04_a_spot_on_too_steep_ground_does_not_stand() -> None:
+def test_gfx_prop_06_a_spot_on_too_steep_ground_does_not_stand() -> None:
     steep = _Plane(10.0, 1.0)
     assert standing_height(steep, (0.0, 0.0, 2.0), (0.5, 0.0)) is None
     assert standing_height(steep, (0.0, 0.0, 2.0), (5.0, 0.0)) == pytest.approx(8.0)
 
 
-def test_p04_r04_a_spot_under_the_sea_limit_does_not_stand() -> None:
+def test_gfx_prop_06_a_spot_under_the_sea_limit_does_not_stand() -> None:
     assert standing_height(_Plane(-1.0), (0.0, 0.0, 2.0), (0.5, 5.0)) is None
 
 
@@ -46,6 +47,7 @@ class _Bumps:
 
 
 def test_d212_sampled_ground_matches_the_field_on_the_grid_and_clamps_outside() -> None:
+    """GFX-PROP-13."""
     field = _Bumps()
     ground = SampledGround(field, 3.0, 5.0, 20.0, 8.0)
     assert ground.height(16.0, 8.0) == pytest.approx(field.height(16.0, 8.0))

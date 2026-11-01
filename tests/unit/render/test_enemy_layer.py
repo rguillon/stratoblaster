@@ -50,6 +50,7 @@ def _layer(made: list[FakeModel]) -> tuple[EnemyLayer, FakeScene]:
 
 
 def test_an_enemy_is_drawn_at_its_position_with_its_nose_along_its_heading() -> None:
+    """ENM-26."""
     made: list[FakeModel] = []
     layer, _ = _layer(made)
     enemy = _enemy("drone", x=10, y=20, heading=math.pi / 2)
@@ -72,6 +73,7 @@ def test_the_model_stands_on_a_holder_that_turns_its_nose_up() -> None:
 
 
 def test_a_model_that_leaves_is_hidden_and_reused_by_its_kind() -> None:
+    """ENM-26 (ENG-19)."""
     made: list[FakeModel] = []
     layer, _ = _layer(made)
     first = _enemy("drone")
@@ -143,7 +145,7 @@ def test_dispose_disposes_every_model_and_forgets_them() -> None:
     assert layer.count == 0
 
 
-def test_p13_r03_prepare_next_builds_only_the_kinds_it_is_given_in_their_order() -> None:
+def test_perf_21_prepare_next_builds_only_the_kinds_it_is_given_in_their_order() -> None:
     # A level builds the models of its own enemies, not every model of the game.
     made: list[FakeModel] = []
     scene = FakeScene()

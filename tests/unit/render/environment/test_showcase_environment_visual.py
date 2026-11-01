@@ -70,7 +70,7 @@ def test_a_scene_without_a_cube_texture_is_left_alone(cube: list[Any]) -> None:
     assert cube == []
 
 
-def test_p13_r03_the_sky_lighting_is_set_from_the_new_faces_after_each_update(
+def test_perf_30_the_sky_lighting_is_set_from_the_new_faces_after_each_update(
     cube: list[Any], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # An update keeps the old polynomial, and reading the cube back from the GPU stalls.

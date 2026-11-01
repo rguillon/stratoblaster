@@ -1,5 +1,5 @@
-"""A small fake DOM for the UI tests: elements with a class list, attributes, listeners and
-children, enough to read what a screen renders and to fire the events its handlers listen to.
+"""A small fake DOM for the UI tests (ENG-47): elements with a class list, attributes, listeners
+and children, enough to read what a screen renders and to fire the events its handlers listen to.
 Only the calls the game makes are modelled (the browser is not run)."""
 
 import inspect

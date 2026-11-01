@@ -1,4 +1,8 @@
-"""Sky gradient as cube-map faces (no asset download)"""
+"""Sky gradient as cube-map faces (no asset download, ENG-126)
+
+The pure part of the sky reflections (GFX-SKY-10), unit-tested on its numbers; the Babylon
+wiring is in `showcase_environment_visual.py`.
+"""
 
 import math
 
@@ -8,7 +12,7 @@ from render.babylon import uint8_array
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

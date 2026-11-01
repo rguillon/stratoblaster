@@ -1,4 +1,4 @@
-"""In-game controls (GD §2, GD-10, P06-R02, P11-R06)
+"""In-game controls (GAME-CTRL-01, GAME-CTRL-09)
 
 Which keys and gamepad buttons shoot and set bombs off, and how the left stick and the touch drag
 move the ship. Kept in config so they can be remapped later (ENG-112). Moving uses the arrows /
@@ -17,7 +17,7 @@ class DpadButtons:
 
 
 class GameStick:
-    """Left stick axes (+X right, +Y down) and the tilt below which it is ignored."""
+    """Left stick axes (+X right, +Y down) and the tilt below which it is ignored (GAME-CTRL-03)."""
 
     def __init__(self, x_axis: float, y_axis: float, dead_zone: float) -> None:
         self.x_axis = x_axis
@@ -43,15 +43,16 @@ class GameControlsConfig:
         self.fire_keys = fire_keys
         # Keys that switch to the next weapon, once per press (phase 6 review: E, by position).
         self.switch_keys = switch_keys
-        # Keys that set a bomb off, once per press (P11-R06): R and the left Shift, by position.
+        # Keys that set a bomb off, once per press (GAME-CTRL-06): R and the left Shift, by
+        # position.
         self.bomb_keys = bomb_keys
         # Standard-mapping gamepad buttons that shoot while held: A, and the right trigger.
         self.fire_buttons = fire_buttons
-        # Gamepad buttons that set a bomb off, once per press (P11-R06): X / Square and LB.
+        # Gamepad buttons that set a bomb off, once per press (GAME-CTRL-06): X / Square and LB.
         self.bomb_buttons = bomb_buttons
         self.dpad = dpad
         self.stick = stick
-        # Seconds from rest to full speed (GD-10, phase 6 review, from 0.08 s).
+        # Seconds from rest to full speed (GAME-SHIP-04; phase 6 review, from 0.08 s).
         self.acceleration_seconds = acceleration_seconds
 
 

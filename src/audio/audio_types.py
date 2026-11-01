@@ -1,6 +1,6 @@
-"""Data the audio engine plays: synth voices, instruments, sound designs and tracks (P12-R05) A game
-describes its music and sounds with these; the engine
-turns them into Web Audio nodes.
+"""Data the audio engine plays: synth voices, instruments, sound designs and tracks
+(AUD-ENGINE-13). A game describes its music and sounds with these; the engine turns them into Web
+Audio nodes.
 
 Optional fields are `None` when absent. Attribute `from` is `from_`.
 """
@@ -116,7 +116,7 @@ class MusicEffects:
 
 
 class SoundDesign:
-    """A sound effect (P12-R09, P12-R10)."""
+    """A sound effect (AUD-SFX-01)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -128,12 +128,13 @@ class SoundDesign:
         positional: bool | None = None,
         loop: bool | None = None,
     ) -> None:
-        # Its name, as the e2e test API lists it (P12-R12).
+        # Its name, as the e2e test API lists it (DEV-API-02).
         self.name = name
         self.layers = layers
         # Level in the sound effect mix.
         self.gain = gain
-        # When the voices are all taken, a sound replaces one of lower or equal priority.
+        # When the voices are all taken, a sound replaces one of lower or equal priority
+        # (AUD-SFX-05).
         self.priority = priority
         # Seconds the layers hold before their release; a looping sound holds until stopped.
         self.hold = hold
@@ -158,7 +159,7 @@ class Note:
 
 
 class Track:
-    """A piece of generated music (P12-R06, P12-R07, P12-R08)."""
+    """A piece of generated music (AUD-MUSIC-01)."""
 
     def __init__(
         self, track_id: str, bpm: float, beats: float, notes: list[Note], loop: bool

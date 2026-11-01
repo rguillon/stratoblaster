@@ -1,14 +1,14 @@
-"""Lone buildings and hamlets away from the roads (phase 6 review)."""
+"""Lone buildings and hamlets away from the roads (phase 6 review, GFX-BLDG-02)."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.scenery_level import (  # noqa: E402
+from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     HamletRules,
     Loners,
     PropGroupRule,
@@ -19,9 +19,9 @@ from core.scenery.scenery_level import (  # noqa: E402
 Draw = Callable[[int], float]
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.draws import between, weighted  # noqa: E402
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.draws import between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Lone buildings and hamlets stand within this share of `offscreen_x` of the level's middle…
 AWAY_SPREAD = 0.5
@@ -62,7 +62,9 @@ class AwaySite(Protocol):
         ...
 
     @property
-    def seed(self) -> int: ...
+    def seed(self) -> int:
+        """The seed the placer's random draws derive from."""
+        ...
 
     def section_at(self, z: float) -> TerrainSection:
         """The section under `z`."""

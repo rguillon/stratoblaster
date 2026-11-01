@@ -15,7 +15,8 @@ def _path() -> Path:
     return Path([[200, 700], [200, 400], [200, 100]])
 
 
-def test_p05_r10_a_splitter_follows_its_path_and_fires_while_on_the_playfield() -> None:
+def test_enm_splitter_05_a_splitter_follows_its_path_and_fires_while_on_the_playfield() -> None:
+    """Also ENM-SPLITTER-06: it fires."""
     ctx = FakeContext()
     splitter = Splitter(_path())
     run(splitter, ctx, 2.0)
@@ -23,7 +24,8 @@ def test_p05_r10_a_splitter_follows_its_path_and_fires_while_on_the_playfield() 
     assert ctx.bullets
 
 
-def test_p05_r10_a_destroyed_splitter_releases_three_pods_round_its_core() -> None:
+def test_enm_splitter_07_a_destroyed_splitter_releases_three_pods_round_its_core() -> None:
+    """Also ENM-SPLITTER-08: the pods are small Hornets."""
     ctx = FakeContext()
     splitter = Splitter(_path())
     splitter.x, splitter.y = 200.0, 300.0

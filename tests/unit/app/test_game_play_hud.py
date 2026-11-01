@@ -1,5 +1,5 @@
 """Unit tests of `src/app/game_play_hud.py`."""
-# (P07-R02, P11-R02, R06).
+# (specs/ui/hud.md; the debug tile, DEV-PERF-05).
 
 from types import SimpleNamespace
 
@@ -33,11 +33,12 @@ def run(**overrides: object) -> SimpleNamespace:
     return SimpleNamespace(**values)
 
 
-def test_p07_r02_no_boss_fought_means_no_boss_bar() -> None:
+def test_ui_hud_14_no_boss_fought_means_no_boss_bar() -> None:
     assert boss_bar_frame(run(), texts()) is None
 
 
-def test_p07_r02_the_boss_bar_names_the_boss_and_its_rank() -> None:
+def test_ui_hud_16_the_boss_bar_names_the_boss_and_its_rank() -> None:
+    """Also UI-HUD-13 (its share and notches)."""
     bar = SimpleNamespace(name="Warden", rank="mini", share=0.5, notches=[0.25])
     frame = boss_bar_frame(run(fights=SimpleNamespace(bar=bar)), texts())
     assert frame is not None
@@ -51,7 +52,8 @@ def test_p07_r02_the_boss_bar_names_the_boss_and_its_rank() -> None:
     assert boss_bar_frame(run(fights=SimpleNamespace(bar=bar)), texts()).rank == "BOSS"
 
 
-def test_p11_r02_the_hud_frame_shows_health_lives_weapon_and_progress() -> None:
+def test_ui_hud_02_the_hud_frame_shows_health_lives_weapon_and_progress() -> None:
+    """Also UI-HUD-03, UI-HUD-04, UI-HUD-05, UI-HUD-06."""
     frame = hud_frame(run(), 10, texts())
     assert (frame.health, frame.max_health, frame.lives) == (4.0, 10, 2)
     assert (frame.weapon, frame.weapon_level, frame.weapon_levels) == ("Guns", 2, 3)
@@ -61,21 +63,22 @@ def test_p11_r02_the_hud_frame_shows_health_lives_weapon_and_progress() -> None:
     assert frame.boss is None
 
 
-def test_p11_r02_the_high_score_is_at_least_the_score_of_the_run() -> None:
+def test_ui_hud_05_the_high_score_is_at_least_the_score_of_the_run() -> None:
+    """Also GAME-SCORE-07."""
     assert hud_frame(run(), 10, texts(), high_score=100).high_score == 500
     assert hud_frame(run(), 10, texts(), high_score=900).high_score == 900
 
 
-def test_p11_r02_without_a_hull_the_max_health_stands_in() -> None:
+def test_ui_hud_04_without_a_hull_the_max_health_stands_in() -> None:
     frame = hud_frame(run(hull=None), 7, texts())
     assert (frame.health, frame.lives) == (7, 0)
 
 
-def test_p11_r06_without_bombs_no_bomb_count_is_shown() -> None:
+def test_ui_hud_03_without_bombs_no_bomb_count_is_shown() -> None:
     assert hud_frame(run(bombs=None), 10, texts()).bombs is None
 
 
-def test_p11_r02_a_level_without_a_length_is_complete_on_the_bar() -> None:
+def test_ui_hud_02_a_level_without_a_length_is_complete_on_the_bar() -> None:
     frame = hud_frame(run(track=SimpleNamespace(progress=0, length_=0)), 10, texts())
     assert frame.progress == 1
 
@@ -94,7 +97,7 @@ def hud_texts() -> SimpleNamespace:
     )
 
 
-def test_p11_r02_the_level_hud_is_built_into_its_parent_with_the_ship_and_texts() -> None:
+def test_ui_hud_01_the_level_hud_is_built_into_its_parent_with_the_ship_and_texts() -> None:
 
     doc = FakeDocument()
     parent = doc.createElement("div")
@@ -104,7 +107,7 @@ def test_p11_r02_the_level_hud_is_built_into_its_parent_with_the_ship_and_texts(
     assert hud.root.querySelector(".hud-ship").textContent == "Ship A"
 
 
-def test_p13_r01_the_overlays_build_the_hud_and_the_debug_tile_only_in_debug_mode() -> None:
+def test_dev_perf_05_the_overlays_build_the_hud_and_the_debug_tile_only_in_debug_mode() -> None:
 
     doc = FakeDocument()
     hud_parent = doc.createElement("div")

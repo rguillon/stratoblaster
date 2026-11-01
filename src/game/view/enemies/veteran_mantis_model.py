@@ -1,5 +1,5 @@
-"""P05-R16, P16-R04: the Mantis, its arms on their shoulders (P05-R13) Logical pixels, nose +Z, Y
-up. A point (x, y) of the design
+"""The Mantis (specs/enemies/mantis.md), its arms on their shoulders (ENM-28) Logical pixels,
+nose +Z, Y up. A point (x, y) of the design
 (X right, Y up, facing down) is at `boss_point(x, y)`.
 """
 
@@ -27,7 +27,7 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -38,7 +38,7 @@ CFG = VETERAN_CONFIG.mantis
 ARM = CFG.arm
 WHITE = [1, 1, 1]  # type: list[float]
 
-# P16-R04: its long, swollen abdomen and plated thorax, tail to neck.
+# ENM-MANTIS-02: its long, swollen abdomen and plated thorax, tail to neck.
 ABDOMEN = SegmentedBody(-20, -1.5, 3, 4.8, -1.4, 2.6)
 THORAX = SegmentedBody(-2, 8.5, 1, 3.6, -1, 2.4)
 # The blade (right arm, along its length from the shoulder `t`, and across it `w`, outwards): a
@@ -54,7 +54,7 @@ BLADE = [
     [13, -2.8],
     [11, -1.3],
 ]
-# The lime neon along the blade's cutting edge.
+# The lime neon along the blade's cutting edge (ENM-MANTIS-03).
 EDGE = [  # type: list[list[float]]
     [12, -1.5],
     [13, -2.6],
@@ -88,14 +88,15 @@ def outline(s: float, points: list[list[float]]) -> list[list[float]]:
 
 
 def draw_arm(s: float) -> Any:
-    """The arm on side `s`: a flesh forearm, a bone scythe, lime along its edge, its muzzles."""
+    """The arm on side `s`: a flesh forearm, a bone scythe, lime along its edge, its muzzles with
+    a charge light at each (ENM-MANTIS-04)."""
 
     def draw(p: Any) -> None:
         flesh = p.flesh
         neon = p.neon
         charge = p.charge
         muzzle = p.muzzle
-        # P16-R04: the forearm a sinew, the scythe grown out of it.
+        # ENM-MANTIS-05: the forearm a sinew, the scythe grown out of it.
         fore = [blade_point(s, [t, 0], 1.2) for t in [0, 6, 11.5]]
         tendril(flesh, fore, [1.5, 1.1], 3, F.sinew)
         flesh.slab(outline(s, BLADE), [0.6, 1.8], F.bone, None, F.sinew)
@@ -120,7 +121,8 @@ def draw_shoulder(s: float) -> Any:
 
 
 def draw_body(p: Any) -> None:
-    """The body: abdomen striped with lime, plated thorax, the head with its eyes and gun."""
+    """The body: abdomen striped with lime, plated thorax, the head with its eyes and gun, one
+    reactor at the tip of the abdomen (ENM-MANTIS-06)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -138,9 +140,9 @@ def draw_body(p: Any) -> None:
 
 
 def build_mantis(scene: Any) -> Any:
-    """P05-R16, P16-R04: an insect with a narrow head and two long bone scythes on flesh forearms,
+    """ENM-MANTIS-01: an insect with a narrow head and two long bone scythes on flesh forearms,
     folded forward, lime neon along the blades. The arms swing on their shoulders and go when shot
-    off."""
+    off (ENM-MANTIS-05). Within the veteran triangle budget (ENM-MANTIS-07)."""
     return build_jointed_model(
         "mantis",
         scene,

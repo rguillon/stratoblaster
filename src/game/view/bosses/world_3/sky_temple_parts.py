@@ -1,6 +1,5 @@
-"""P09-R09, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon). Logical pixels,
-nose +Z (its grand stair, down the
-screen), Y up (towards the camera)."""
+"""FB-SKY-TEMPLE-04, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon). Logical
+pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera)."""
 
 import math
 
@@ -19,18 +18,18 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The Sky Temple's gold neon, and the cyan it shares its lights with (P09-R09).
+# The Sky Temple's gold neon, and the cyan it shares its lights with (FB-SKY-TEMPLE-06).
 TEMPLE_GOLD = BOSS_LOOK.neon["sky-temple"]
 TEMPLE_CYAN = [0.2, 0.95, 1]
 # An eighth of a turn: four-sided solids turned square to the axes.
 SQUARE = math.pi / 4
-# The pyramid's tiers: half widths (the base first) and their common height.
+# The pyramid's tiers: half widths (the base first) and their common height (FB-SKY-TEMPLE-01).
 TIERS = record({"halves": [74, 54, 44, 34], "height": 9})
 # The height of the summit platform.
 SUMMIT = len(TIERS.halves) * TIERS.height
@@ -45,9 +44,9 @@ def corner(half: float) -> float:
 
 
 def obelisk(p: EnemyParts, at: Vec3) -> None:
-    """A corner obelisk around its centre `at` (P09-R09): a plinth on the lowest tier, a tapering
-    stone shaft carved with gold glyphs, a gilt pyramidion whose tip fires its spirals, a vine
-    climbing it."""
+    """A corner obelisk around its centre `at` (FB-SKY-TEMPLE-04): a plinth on the lowest tier, a
+    tapering stone shaft carved with gold glyphs, a gilt pyramidion whose tip fires its spirals, a
+    vine climbing it."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -118,8 +117,8 @@ LANTERN = record({"base": SUMMIT + 10, "roof": SUMMIT + 13})
 
 
 def beacon(p: EnemyParts, at: Vec3) -> None:
-    """The summit beacon around its centre `at` (P09-R09): a square tower at the front of the
-    summit, a lantern burning cyan under a gilt roof, four missile tubes on the roof."""
+    """The summit beacon around its centre `at` (FB-SKY-TEMPLE-04): a square tower at the front of
+    the summit, a lantern burning cyan under a gilt roof, four missile tubes on the roof."""
     hull = p.hull
     neon = p.neon
     hull.box(

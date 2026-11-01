@@ -3,7 +3,7 @@
 from core.content.game_level import GameLevel, find_game_level
 
 
-def test_a_game_level_keeps_its_parts_and_defaults_to_no_bosses() -> None:
+def test_game_level_16_a_game_level_keeps_its_parts_and_defaults_to_no_bosses() -> None:
     scenery, waves, difficulty = object(), object(), object()
     level = GameLevel("1-1", scenery, waves, difficulty)  # type: ignore[arg-type]
     assert level.id == "1-1"
@@ -14,7 +14,7 @@ def test_a_game_level_keeps_its_parts_and_defaults_to_no_bosses() -> None:
     assert level.runout is None
 
 
-def test_p06_r03_a_game_level_keeps_its_bosses_and_runout() -> None:
+def test_game_level_04_a_game_level_keeps_its_bosses_and_runout() -> None:
     bosses = [object()]
     level = GameLevel("1-2", object(), object(), object(), bosses, 4.0)  # type: ignore[arg-type]
     assert level.bosses is bosses

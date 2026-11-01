@@ -1,10 +1,10 @@
-"""P09-R09, 3-2: the Toucan, the mini boss of the Rainforest level ().
+"""3-2: the Toucan, the mini boss of the Rainforest level (specs/bosses/mini/3-2-toucan.md).
 
-Offsets in px from the boss's centre, X right and Y up (its nose, the beak, points down, at -Y).
-The stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the
-core fires something new at every stage, and its last stage (only the core left) a spiral used by
-no earlier stage. Health tuned with the D-055 bot for P09-R10 (fight 38.75-48.75 s, full health
-3 550-3 900).
+Offsets in px from the boss's centre, X right and Y up (its nose, the beak, points down, at -Y). The
+stage patterns are the agent's design (MB-TOUCAN-10): the parts fire the same while they stand, the
+core fires something new at every stage, and its last stage (only the core left) a spiral used by no
+earlier stage. Health (MB-TOUCAN-08) tuned with the D-055 bot for WLD-3-20 (fight 38.75-48.75 s,
+full health 3 550-3 900).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -31,19 +31,20 @@ PURPLE = bullet("purple", 200)
 TOUCAN_BEAK_TIP = [[0, -55.6, 5]]
 # The right wing pod's two fan barrels, under the front of its fan duct.
 TOUCAN_POD_GUNS = twin(38, -11.4, 2, 2.6)
-# The two cheek guns either side of the beak's root (the core's aimed bursts).
+# The two cheek guns either side of the beak's root (the core's aimed bursts, MB-TOUCAN-03).
 TOUCAN_CHEEK_GUNS = twin(11, -24.4, 3.5)
 # The crest emitter on its head (the core's last-stage spiral).
 TOUCAN_CREST = [[0, -6, 17]]
 
-# 3-2: a stubby gunship with a huge bright beak, yellow and orange neon (P09-R09). Its beak cannon
-# fires a laser after its warning line, two wing pods fire fans and shield the core. The beak
+# 3-2: a stubby gunship with a huge bright beak, yellow and orange neon. Its beak cannon fires a
+# laser after its warning line, two wing pods fire fans and shield the core (MB-TOUCAN-09). The beak
 # hangs in front of the core, so it can always be shot.
 _TOUCAN = record(
     {
         "id": "toucan",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, MB-TOUCAN-11).
         "rage": rage.curtain(5.5, "orange", "red"),
+        # Its core and parts, and its points (MB-TOUCAN-13).
         "stats": stats(
             record(
                 {
@@ -62,6 +63,7 @@ _TOUCAN = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-TOUCAN-07).
         "stopFraction": 0.73,
         "sway": {"amplitude": 60, "period": 7},
         "bob": {"amplitude": 8, "period": 3.6},
@@ -71,6 +73,7 @@ _TOUCAN = record(
             "pod-right": {"gun": TOUCAN_POD_GUNS},
             "beak": {"laser": TOUCAN_BEAK_TIP},
         },
+        # The parts' volleys, then the core's pattern per stage (MB-TOUCAN-10).
         "stages": stages(
             [
                 # The pods' fans cross under the gunship, each leaning towards the other side.
@@ -94,8 +97,8 @@ _TOUCAN = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of missile racks unfold.
+# Its hidden weapons (boss transformations, D-224, MB-TOUCAN-12): at transformation 1 its back
+# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
 TOUCAN = with_weapons(
     _TOUCAN,
     [

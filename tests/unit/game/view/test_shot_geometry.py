@@ -38,7 +38,7 @@ def test_mirrored_columns_go_down_then_back_up():
     assert shot_geometry._mirrored_columns(1) == [0]
 
 
-def test_p03_r01_glow_disc_colours_the_centre_then_one_ring_per_colour():
+def test_gfx_shot_04_glow_disc_colours_the_centre_then_one_ring_per_colour():
     segments = 6
     geo = build_glow_disc(segments, [WHITE, RED, BLUE])
     # Colours: the centre, then two rings of `segments` vertices.
@@ -48,7 +48,7 @@ def test_p03_r01_glow_disc_colours_the_centre_then_one_ring_per_colour():
     assert colour(geo, 1 + segments) == [0.0, 0.0, 1.0, 1]
 
 
-def test_p03_r01_glow_disc_rings_sit_at_the_radius_of_their_colour():
+def test_gfx_shot_04_glow_disc_rings_sit_at_the_radius_of_their_colour():
     geo = build_glow_disc(8, [WHITE, RED, BLUE])
     # Vertex 0 is the centre; the two rings follow it.
     points = [geo.positions[3 * i : 3 * i + 3] for i in range(len(geo.positions) // 3)]
@@ -60,13 +60,13 @@ def test_p03_r01_glow_disc_rings_sit_at_the_radius_of_their_colour():
         assert math.hypot(x, y) == pytest.approx(1.0)
 
 
-def test_p03_r01_glow_disc_has_a_position_for_every_vertex():
+def test_gfx_shot_04_glow_disc_has_a_position_for_every_vertex():
     geo = build_glow_disc(6, [WHITE, RED, BLUE])
     assert len(geo.positions) // 3 == len(geo.colors) // 4
     assert max(geo.indices) < len(geo.positions) // 3
 
 
-def test_p03_r01_glow_disc_indices_form_a_fan_then_quads():
+def test_gfx_shot_04_glow_disc_indices_form_a_fan_then_quads():
     segments = 4
     geo = build_glow_disc(segments, [WHITE, RED])
     assert len(geo.indices) == 3 * segments
@@ -74,20 +74,20 @@ def test_p03_r01_glow_disc_indices_form_a_fan_then_quads():
     assert geo.indices[-3:] == [0, segments, 1]
 
 
-def test_p03_r01_a_disc_with_three_rings_is_stitched_into_quads():
+def test_gfx_shot_04_a_disc_with_three_rings_is_stitched_into_quads():
     geo = build_glow_disc(3, [WHITE, RED, BLUE, RED])
     # Three fan triangles, then two strips of two triangles per side (six indices each).
     assert len(geo.indices) == 3 * 3 + 2 * 3 * 6
 
 
-def test_p03_r01_swirl_with_no_lobes_is_a_plain_disc():
+def test_gfx_shot_10_swirl_with_no_lobes_is_a_plain_disc():
     plain = build_swirl(5, [WHITE, RED], {"lobes": 0, "depth": 0, "twist": 0})
     disc = build_glow_disc(5, [WHITE, RED])
     assert plain.positions == pytest.approx(disc.positions)
     assert plain.indices == disc.indices
 
 
-def test_p03_r01_swirl_arms_make_the_rim_uneven():
+def test_gfx_shot_10_swirl_arms_make_the_rim_uneven():
     arms = build_swirl(12, [WHITE, RED], {"lobes": 3, "depth": 0.5, "twist": 0})
     # Vertex 0 is the centre; the 12 rim vertices follow it.
     points = [arms.positions[3 * i : 3 * i + 3] for i in range(1, 13)]
@@ -96,7 +96,7 @@ def test_p03_r01_swirl_arms_make_the_rim_uneven():
     assert min(radii) == pytest.approx(0.5)
 
 
-def test_p03_r01_swirl_twist_turns_the_rim_away_from_the_centre():
+def test_gfx_shot_10_swirl_twist_turns_the_rim_away_from_the_centre():
     straight = build_swirl(8, [WHITE, RED], {"lobes": 0, "depth": 0, "twist": 0})
     turned = build_swirl(8, [WHITE, RED], {"lobes": 0, "depth": 0, "twist": 0.5})
     # The first rim vertex is after the centre (index 3, 4 in the positions).
@@ -110,12 +110,12 @@ def test_p03_r01_swirl_twist_turns_the_rim_away_from_the_centre():
     ("segments", "colors"),
     [(2, [WHITE, RED]), (3, [WHITE])],
 )
-def test_p03_r01_a_swirl_needs_three_sides_and_two_colours(range_errors, segments, colors):
+def test_gfx_shot_10_a_swirl_needs_three_sides_and_two_colours(range_errors, segments, colors):
     with pytest.raises(ValueError, match="Need 3 segments and 2 colours"):
         build_swirl(segments, colors, {"lobes": 0, "depth": 0, "twist": 0})
 
 
-def test_p03_r01_tracer_is_a_streak_with_a_row_per_entry():
+def test_gfx_shot_01_tracer_is_a_streak_with_a_row_per_entry():
     colors = [RED, WHITE, RED]
     rows = [{"at": 0.0, "tint": [1, 1, 1]}, {"at": 1.0, "tint": [0.5, 0.5, 0.5]}]
     geo = build_tracer(colors, rows)
@@ -128,7 +128,7 @@ def test_p03_r01_tracer_is_a_streak_with_a_row_per_entry():
     assert vertex(geo, columns)[1] == 1.0
 
 
-def test_p03_r01_tracer_rows_tint_the_colours_along_the_streak():
+def test_gfx_shot_01_tracer_rows_tint_the_colours_along_the_streak():
     rows = [{"at": 0.0, "tint": [1, 1, 1]}, {"at": 1.0, "tint": [0, 0, 0]}]
     geo = build_tracer([WHITE, WHITE], rows)
     columns = len(shot_geometry._mirrored_columns(2))
@@ -136,21 +136,21 @@ def test_p03_r01_tracer_rows_tint_the_colours_along_the_streak():
     assert colour(geo, columns) == [0, 0, 0, 1]
 
 
-def test_p03_r01_tracer_fills_quads_between_rows_and_columns():
+def test_gfx_shot_01_tracer_fills_quads_between_rows_and_columns():
     rows = [{"at": 0.0, "tint": [1, 1, 1]}, {"at": 1.0, "tint": [1, 1, 1]}]
     geo = build_tracer([WHITE, WHITE], rows)
     # Columns: 1 across 2 colours (3 columns). Two quads of two triangles each.
     assert len(geo.indices) == 2 * 2 * 3
 
 
-def test_p03_r01_tracer_needs_two_colours_and_two_rows(range_errors):
+def test_gfx_shot_01_tracer_needs_two_colours_and_two_rows(range_errors):
     with pytest.raises(ValueError, match="Need 2 colours and 2 rows"):
         build_tracer([WHITE], [{"at": 0, "tint": [1, 1, 1]}, {"at": 1, "tint": [1, 1, 1]}])
     with pytest.raises(ValueError, match="Need 2 colours and 2 rows"):
         build_tracer([WHITE, RED], [{"at": 0, "tint": [1, 1, 1]}])
 
 
-def test_p03_r01_glow_bar_runs_from_y0_to_y1_across_its_width():
+def test_gfx_shot_03_glow_bar_runs_from_y0_to_y1_across_its_width():
     geo = build_glow_bar([RED, WHITE, RED])
     columns = len(shot_geometry._mirrored_columns(3))
     assert len(geo.positions) // 3 == 2 * columns
@@ -159,7 +159,7 @@ def test_p03_r01_glow_bar_runs_from_y0_to_y1_across_its_width():
     assert vertex(geo, 2 * (columns - 1))[0] == pytest.approx(0.5)
 
 
-def test_p03_r01_glow_bar_is_coloured_from_the_centre_line_out():
+def test_gfx_shot_03_glow_bar_is_coloured_from_the_centre_line_out():
     geo = build_glow_bar([RED, WHITE])
     # Columns are [edge, centre, edge]: the centre line takes colours[0].
     assert colour(geo, 0) == [1.0, 1.0, 1.0, 1]
@@ -167,6 +167,6 @@ def test_p03_r01_glow_bar_is_coloured_from_the_centre_line_out():
     assert colour(geo, 4) == [1.0, 1.0, 1.0, 1]
 
 
-def test_p03_r01_glow_bar_needs_two_colours(range_errors):
+def test_gfx_shot_03_glow_bar_needs_two_colours(range_errors):
     with pytest.raises(ValueError, match="Need 2 colours"):
         build_glow_bar([WHITE])

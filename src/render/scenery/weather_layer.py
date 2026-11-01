@@ -1,5 +1,5 @@
-"""The weather of a scenery stage (P08-R05): particles of its kind, falling through the air between
-the ground and the flight altitude.
+"""The weather of a scenery stage (GFX-WEATHER-02): particles of its kind, falling through the air
+between the ground and the flight altitude.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -13,8 +13,8 @@ from render.scenery.scenery_kit import FogState
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -40,7 +40,7 @@ class WeatherView:
 
 
 class WeatherFrame:
-    """What the particles of a weather show on one frame (P08-R05)."""
+    """What the particles of a weather show on one frame (GFX-WEATHER-03)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -87,8 +87,8 @@ def _draw_first(mesh: Any, count: int) -> None:
 
 
 def _build_particles(scene: Any, kind_id: str, kind: Any, material: Any) -> Any:
-    """The particles of a weather kind (P08-R05): one mesh of `max_particles` small quads, each
-    with its own random place in the box of air, depth, size and fall speed (the `flake`
+    """The particles of a weather kind (GFX-WEATHER-02): one mesh of `max_particles` small quads,
+    each with its own random place in the box of air, depth, size and fall speed (the `flake`
     attribute); the material moves them on the GPU, so nothing is uploaded per frame. Only the
     first `weather_particles` of them are drawn."""
     count = kind.max_particles
@@ -129,10 +129,10 @@ class _ParticleLayer:
 
 
 class WeatherLayer:
-    """The weather of a level (P08-R05): the particles of its kind (phase 10: of both its kinds),
-    as many as its strength asks, falling through the air between the ground and the flight
-    altitude, behind everything on the playfield. It is only a look: nothing in the simulation
-    reads it."""
+    """The weather of a level: the particles of its kind (phase 10: of both its kinds,
+    GFX-WEATHER-15), as many as its strength asks (GFX-WEATHER-03), falling through the air between
+    the ground and the flight altitude, behind everything on the playfield (GFX-WEATHER-04). It is
+    only a look: nothing in the simulation reads it."""
 
     def __init__(
         self, scene: Any, materials: WeatherMaterialFactory, kinds: Any = WEATHER_KINDS

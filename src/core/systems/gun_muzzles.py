@@ -1,4 +1,4 @@
-"""Where a gun's shots leave from (phase 7 review)
+"""Where a gun's shots leave from (ENM-21)
 
 A gun fires from its muzzles: the one furthest along each shot's way, the ones side by side in
 turn, as the camera sees them.
@@ -14,21 +14,25 @@ from core.systems.projectile_motion import heading_to
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyContext, LaserOwner  # noqa: E402
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
+from core.entities.enemy import EnemyContext, LaserOwner  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MuzzleSource(LaserOwner, Protocol):
     """What a gun fires from: an enemy or a boss's piece, and where its muzzles are now."""
 
     @property
-    def x(self) -> float: ...
+    def x(self) -> float:
+        """X of the source's centre."""
+        ...
 
     @property
-    def y(self) -> float: ...
+    def y(self) -> float:
+        """Y of the source's centre."""
+        ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
         """Where `muzzle` is now (`Enemy.place`, `BossPiece.place`), turned with its turret when
@@ -131,7 +135,7 @@ def fire_aimed(
     count_and_spacing: tuple[int, float],
     fire: Callable[[float, float, float], None],
 ) -> None:
-    """Fires a fan of `count` shots `spacing_deg` apart around the player's direction (GD-44),
+    """Fires a fan of `count` shots `spacing_deg` apart around the player's direction (ENM-20),
     each from the muzzle facing its way and aimed from where it leaves.
     """
     count, spacing_deg = count_and_spacing

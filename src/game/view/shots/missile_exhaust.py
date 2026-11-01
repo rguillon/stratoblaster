@@ -1,4 +1,4 @@
-"""The missile motor flares and exhaust trails (phase 5 review): a bright, flickering flare at each
+"""The missile motor flares and exhaust trails (GFX-SHOT-07): a bright, flickering flare at each
 missile's nozzle and a glowing
 exhaust trail behind it, added on, so the missiles show on any ground.
 """
@@ -8,17 +8,17 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.systems.projectile_motion import Projectile  # noqa: E402
+from core.systems.projectile_motion import Projectile  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.ship_look import PLAYER_SHIP_SCALE  # noqa: E402
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from game.config.ship_look import PLAYER_SHIP_SCALE  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 FLARE_LOOK = SHOT_LOOK.missile.flare
 TRAIL_LOOK = SHOT_LOOK.missile.trail

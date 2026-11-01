@@ -120,7 +120,7 @@ def _arsenal(weapons: list[ProjectileWeaponDefinition], start_level: float = 1) 
     return RunArsenal(shots, weapons, start_level)
 
 
-def test_p07_r08_a_run_can_start_with_the_weapons_kept_from_before() -> None:
+def test_game_wpn_15_a_run_can_start_with_the_weapons_kept_from_before() -> None:
     run = _run(weapons=[GUN, GUN2], start_weapons=WeaponLevels("gun2", {"gun": 2}))
     assert run.shots.weapon is GUN2
     _step(run, switch_weapon=True)
@@ -128,7 +128,7 @@ def test_p07_r08_a_run_can_start_with_the_weapons_kept_from_before() -> None:
     assert run.shots.level == 2
 
 
-def test_p07_r08_a_checkpoint_keeps_where_the_run_can_resume_from() -> None:
+def test_game_level_09_a_checkpoint_keeps_where_the_run_can_resume_from() -> None:
     weapons = WeaponLevels("gun", {"gun": 2})
     checkpoint = LevelCheckpoint(120, 1, weapons, 900)
     assert (checkpoint.progress, checkpoint.bosses_passed) == (120, 1)
@@ -136,14 +136,14 @@ def test_p07_r08_a_checkpoint_keeps_where_the_run_can_resume_from() -> None:
     assert checkpoint.score == 900
 
 
-def test_p06_r07_switching_moves_to_the_next_weapon_at_its_start_level() -> None:
+def test_game_wpn_13_switching_moves_to_the_next_weapon_at_its_start_level() -> None:
     arsenal = _arsenal([A, B], start_level=2)
     arsenal.switch_weapon()
     assert arsenal._shots.weapon is B
     assert arsenal._shots.level == 2
 
 
-def test_p06_r07_switching_wraps_around_and_keeps_each_weapons_level() -> None:
+def test_game_wpn_13_switching_wraps_around_and_keeps_each_weapons_level() -> None:
     arsenal = _arsenal([A, B])
     arsenal.level_up(1)
     arsenal.switch_weapon()
@@ -157,7 +157,7 @@ def test_p06_r07_switching_wraps_around_and_keeps_each_weapons_level() -> None:
     assert arsenal._shots.level == 2
 
 
-def test_p06_r07_a_single_weapon_switches_to_itself_with_its_level_kept() -> None:
+def test_game_wpn_13_a_single_weapon_switches_to_itself_with_its_level_kept() -> None:
     arsenal = _arsenal([A])
     arsenal.level_up(1)
     arsenal.switch_weapon()
@@ -165,20 +165,20 @@ def test_p06_r07_a_single_weapon_switches_to_itself_with_its_level_kept() -> Non
     assert arsenal._shots.level == 2
 
 
-def test_p06_r07_switching_with_no_weapons_list_keeps_the_weapon() -> None:
+def test_game_wpn_13_switching_with_no_weapons_list_keeps_the_weapon() -> None:
     arsenal = _arsenal([])
     arsenal.switch_weapon()
     assert arsenal._shots.weapon is A
 
 
-def test_p06_r07_a_weapon_not_in_the_list_switches_to_the_first_one() -> None:
+def test_game_wpn_13_a_weapon_not_in_the_list_switches_to_the_first_one() -> None:
     arsenal = _arsenal([B])
     arsenal._shots.select(A, 1)
     arsenal.switch_weapon()
     assert arsenal._shots.weapon is B
 
 
-def test_p06_r07_level_up_adds_levels_up_to_the_last_one() -> None:
+def test_game_wpn_14_level_up_adds_levels_up_to_the_last_one() -> None:
     arsenal = _arsenal([A])
     arsenal.level_up(0)
     assert arsenal._shots.level == 1
@@ -188,7 +188,7 @@ def test_p06_r07_level_up_adds_levels_up_to_the_last_one() -> None:
     assert arsenal._shots.level == 2
 
 
-def test_p07_r08_a_snapshot_keeps_the_weapon_and_the_level_of_each_weapon_used() -> None:
+def test_game_wpn_15_a_snapshot_keeps_the_weapon_and_the_level_of_each_weapon_used() -> None:
     arsenal = _arsenal([A, B])
     arsenal.level_up(1)
     arsenal.switch_weapon()
@@ -199,7 +199,7 @@ def test_p07_r08_a_snapshot_keeps_the_weapon_and_the_level_of_each_weapon_used()
     assert snap.levels == {"a": 2, "b": 2}
 
 
-def test_p07_r08_restore_brings_back_the_snapshot_weapons_and_levels() -> None:
+def test_game_wpn_15_restore_brings_back_the_snapshot_weapons_and_levels() -> None:
     saved = WeaponLevels("b", {"a": 2, "b": 1})
     arsenal = _arsenal([A, B])
     arsenal.restore(saved)
@@ -210,21 +210,21 @@ def test_p07_r08_restore_brings_back_the_snapshot_weapons_and_levels() -> None:
     assert arsenal._shots.level == 2
 
 
-def test_p07_r08_restore_with_an_unknown_weapon_keeps_the_current_one() -> None:
+def test_game_wpn_15_restore_with_an_unknown_weapon_keeps_the_current_one() -> None:
     arsenal = _arsenal([A, B])
     arsenal.restore(WeaponLevels("zzz", {"a": 2}))
     assert arsenal._shots.weapon is A
     assert arsenal._shots.level == 2
 
 
-def test_p07_r08_restore_without_a_saved_level_starts_the_weapon_at_its_start() -> None:
+def test_game_wpn_15_restore_without_a_saved_level_starts_the_weapon_at_its_start() -> None:
     arsenal = _arsenal([A, B], start_level=1)
     arsenal.restore(WeaponLevels("b", {}))
     assert arsenal._shots.weapon is B
     assert arsenal._shots.level == 1
 
 
-def test_p07_r08_restoring_forgets_the_levels_held_before() -> None:
+def test_game_wpn_15_restoring_forgets_the_levels_held_before() -> None:
     arsenal = _arsenal([A, B])
     arsenal.level_up(1)
     arsenal.restore(WeaponLevels("a", {}))

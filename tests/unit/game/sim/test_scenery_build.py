@@ -16,6 +16,7 @@ def test_a_level_keeps_its_sections_in_the_order_of_the_config() -> None:
 
 
 def test_the_level_length_is_its_sections_seconds_at_its_scroll_speed() -> None:
+    """GAME-LEVEL-03, here for 1-1 (LVL-1-1-02)."""
     level = scenery_level(LEVEL_1_1)
     seconds = sum(s["seconds"] for s in LEVEL_1_1.sections)
     assert level_length(level) == pytest.approx(seconds * LEVEL_1_1.scrollSpeed)

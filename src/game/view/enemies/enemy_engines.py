@@ -8,24 +8,24 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_materials import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     enemy_color,
     flame_materials,
     mesh_of,
 )
-from game.view.reactor_flame import build_reactor_flame  # noqa: E402, E501
-from render.babylon import (  # noqa: E402
+from game.view.reactor_flame import build_reactor_flame  # noqa: E402, E501 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     new_transform_node,
     node_name,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402
-from render.model_animation import add_model_animation  # noqa: E402
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.model_animation import add_model_animation  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Reactor:
@@ -46,7 +46,8 @@ def spin_animation(node: Any, spin_rad_per_sec: float) -> Any:
 
 
 def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> None:
-    """The rotors' blades and hubs, each on a node spun by a model animation."""
+    """The rotors' blades and hubs, each on a node spun by a model animation (rotors spin,
+    ENM-42)."""
     look = ENEMY_LOOK.rotor
     scene = root.getScene()
     blade = [(-0.12, 0.3), (0.12, 0.3), (0.22, 0.92), (-0.08, 0.95)]
@@ -81,11 +82,12 @@ def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> No
 def add_reactors(
     name: str, reactors: list[Reactor], parts: Any, root: Any, neon: Any = None
 ) -> None:
-    """Nozzles in the hull, cores in the neon, and an animated flame per reactor under `root`, in
-    the enemy's `neon` colour (D-231: a yellow enemy's flames yellow, a green one's green), or the
+    """Nozzles in the hull, cores in the neon, and an animated flame per reactor (ENM-40) under
+    `root`, outside the body, so the living motion never moves it (ENM-45), in the enemy's `neon`
+    colour (D-231, GFX-ART-05: a yellow enemy's flames yellow, a green one's green), or the
     reactors' own when left out."""
     look = ENEMY_LOOK.reactor
-    flame = neon if neon != None else look.color  # noqa: E711
+    flame = neon if neon != None else look.color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     color = enemy_color(flame)
     behind = -math.pi / 2
     for i, reactor in enumerate(reactors):

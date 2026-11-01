@@ -1,4 +1,4 @@
-"""Shapes shared by the elite models (P05-R19 to P05-R23)
+"""Shapes shared by the elite models (the five elite kinds, specs/enemies/*.md)
 
 Logical pixels, nose +Z, Y up; a design point (x, y) facing down the screen is model
 (-x, height, -y) (`boss_point`).
@@ -12,13 +12,13 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]  # type: Rgb
@@ -32,7 +32,8 @@ def ahead(at: Vec3, yaw: float, d: float) -> list[float]:
 
 def barrel(p: Any, tip: Vec3, yaw: float, size: Any, kind: str = "gun") -> None:
     """A gun barrel pointing `yaw`, ending at `tip`, `radius` thick and `length` long: dark steel,
-    a charge light at its mouth, the muzzle (`kind`) marked at the tip."""
+    a charge light at its mouth (the drones' and the cannons' charge lights, ENM-ORBITER-04,
+    ENM-JUGGERNAUT-04), the muzzle (`kind`) marked at the tip."""
     radius = size[0]
     length = size[1]
 

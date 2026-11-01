@@ -1,10 +1,10 @@
-"""The Aurora Station (P08-R10, 2-3)
+"""The Aurora Station (2-3's final boss, specs/bosses/final/2-3-aurora-station.md)
 
 The final boss of the Tundra level. Offsets in px from the boss's centre, X right and Y up (its
-nose points down, at -Y). The stage patterns are the agent's design (P07-R04): the parts fire the
-same while they stand, the core fires something new at every stage, and its last stage (only the
-core left) spirals used by no earlier stage. Health values are placeholders for the P08-R11
-tuning.
+nose points down, at -Y). The stage patterns are the agent's design (FB-AURORA-STATION-12): the
+parts fire the same while they stand, the core fires something new at every stage, and its last
+stage (only the core left) spirals used by no earlier stage. Health values (FB-AURORA-STATION-16)
+are placeholders for the World 2 tuning (WLD-2-25, WLD-2-27).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -25,14 +25,15 @@ from game.config.record import merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711
+    """A final boss's part: drops a bonus 60 % of the time (FB-AURORA-STATION-16,
+    `part_drop_chance`)."""
+    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 
@@ -40,11 +41,12 @@ RED = bullet("red", 190)
 MAGENTA = bullet("magenta", 185)
 GREEN = bullet("green", 180)
 PURPLE = bullet("purple", 175)
-# A cryo shell: slow and big, it bursts into a small ring of blue bullets (P08-R10).
+# A cryo shell: slow and big, it bursts into a small ring of blue bullets (FB-AURORA-STATION-10).
 CRYO_SHELL = bursting("purple", 95, 8, [1.3, 8, bullet("blue", 150)])
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
+# The guns' muzzles (phase 7 review, FB-AURORA-STATION-03): the tips of the barrels its model
+# draws, from the boss's centre, X right, Y up, and height above the playfield (see
+# `BossDesign.guns`).
 
 # The right dish emitter's projector, at the focus of its dish (its laser, on a turret).
 AURORA_EMITTER = [[36, -54, 7]]
@@ -56,13 +58,15 @@ AURORA_HUB_GUNS = twin(8, -27, 4)
 AURORA_COLLAR = [[0, 0, 14]]
 
 # 2-3: a flying research station with green and violet neon and a slowly turning dish on top;
-# two dish emitters aim lasers from turrets and two cryo cannons fire shells that burst into
-# rings, all four shielding the core; a drone hangar at its nose launches Hornets (P08-R10).
+# two dish emitters aim lasers from turrets (FB-AURORA-STATION-09) and two cryo cannons fire shells
+# that burst into rings, all four shielding the core; a drone hangar at its nose launches Hornets
+# (FB-AURORA-STATION-11).
 _AURORA_STATION = record(
     {
         "id": "aurora-station",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-AURORA-STATION-13).
         "rage": rage.spirals(5, "green", "purple"),
+        # Its core, emitters, cryo cannons, hangar and points (FB-AURORA-STATION-16).
         "stats": stats(
             {
                 "id": "aurora-station",
@@ -82,10 +86,12 @@ _AURORA_STATION = record(
                 ],
             }
         ),
+        # Where it stops and how it moves in place (FB-AURORA-STATION-08).
         "stopFraction": 0.74,
         "sway": {"amplitude": 35, "period": 10},
         "bob": {"amplitude": 6, "period": 5},
-        # Its dish turns slowly on top (drawn on the model's ring); no part orbits.
+        # Its dish turns slowly on top (drawn on the model's ring); no part orbits
+        # (FB-AURORA-STATION-06).
         "spinRate": 0.35,
         "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 6.5, "first": 3.5}],
         "guns": {
@@ -103,6 +109,7 @@ _AURORA_STATION = record(
             "cryo-left": {"gun": mirror(AURORA_CRYO), "turret": [-66, 4]},
             "cryo-right": {"gun": AURORA_CRYO, "turret": [66, 4]},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-AURORA-STATION-12).
         "stages": stages(
             [
                 # The two projectors turn to aim at the player, one after the other, and hold
@@ -131,8 +138,9 @@ _AURORA_STATION = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.
+# baring a dark metal frame, and a pair of laser lances unfold (FB-AURORA-STATION-14); at
+# transformation 2 its spine plating bursts off, baring a dark metal frame, and a pair of missile
+# racks unfold (FB-AURORA-STATION-15). The regions it sheds: FB-AURORA-STATION-07.
 AURORA_STATION = with_weapons(
     _AURORA_STATION,
     [

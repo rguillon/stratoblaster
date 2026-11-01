@@ -5,19 +5,19 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.cars import CAR_IDS  # noqa: E402
-from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402
-from game.view.props.prop_models import PROP_MODELS  # noqa: E402
-from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402
-from render.game_view import PropGroup  # noqa: E402
+from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.tile_buildings import LOT_MODELS, TILE_GROUPS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.prop_models import PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.road_kit import ROAD_KIT, ROAD_KIT_NOTES, ROAD_SAMPLE_ID  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.game_view import PropGroup  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def tile_notes(models: list[Any]) -> dict[str, str]:
-    """P15-R10: the tiles a model of the grid stands on, after its name."""
+    """The tiles a model of the grid stands on (its footprint, GFX-BLDG-03), after its name."""
     result: dict[str, str] = {}
     for m in models:
         result[m.id] = str(m.tiles[0]) + "×" + str(m.tiles[1]) + " tiles"
@@ -36,7 +36,7 @@ def make_road_kit_group() -> PropGroup:
 
 
 def make_tile_page() -> list[PropGroup]:
-    """P15-R10: the road kit and its sample, then the models of the grid, by building group."""
+    """The road kit and its sample, then the models of the grid, by building group (GFX-BLDG-08)."""
     page: list[PropGroup] = [make_road_kit_group()]
     for group_id in TILE_GROUPS.keys():  # noqa: SIM118 (Transcrypt: `for k in dict` is broken)
         group = TILE_GROUPS[group_id]
@@ -70,7 +70,7 @@ def unique(items: list[str]) -> list[str]:
 
 def make_prop_groups() -> list[PropGroup]:
     """The groups of the `props/` page: the tiles, the buildings, the cars (D-207: the shared and
-    World 1 props are gone)."""
+    World 1 props are gone). The props viewer lists its props in this order (DEV-MENU-15)."""
     models = list(PROP_MODELS.keys())
     cars = PropGroup(
         "Cars",

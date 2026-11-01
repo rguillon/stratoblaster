@@ -1,5 +1,5 @@
-"""P05-R14, P05-R17, P16-R04: the lighter veteran kinds Logical pixels, nose +Z, Y up (to the
-camera)."""
+"""The lighter veteran kinds, the Wasp and the Phantom (specs/enemies/wasp.md, phantom.md)
+Logical pixels, nose +Z, Y up (to the camera)."""
 
 import math
 
@@ -28,7 +28,7 @@ from render.geometry.organic import (
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -41,11 +41,11 @@ def _phantom_girth(t: float) -> float:
     return 0.5 + 0.5 * math.sin(math.pi * min(1, t * 1.3))
 
 
-# P05-R14, P16-R04: the Wasp's narrow, swollen abdomen (tail to waist), striped with neon.
+# ENM-WASP-01: the Wasp's narrow, swollen abdomen (tail to waist), striped with neon.
 WASP_ABDOMEN = SegmentedBody(-9, -0.8, 3, 2.4, -0.9, 1.8, 0.25)
 # Its plated thorax and head, waist to jaws.
 WASP_THORAX = SegmentedBody(-1.2, 7.4, 2, 2.3, -0.9, 1.8)
-# Its two pairs of thin swept wings (right side), the front pair the bigger.
+# Its two pairs of thin swept wings (right side), the front pair the bigger (ENM-WASP-05).
 WASP_WINGS = [
     {
         "root": [1.2, 3.4],
@@ -65,10 +65,10 @@ WASP_WINGS = [
 
 
 def build_wasp(scene: Any) -> Any:
-    """P05-R14, P16-R04: a small, wasp-like insect: a swollen abdomen striped with yellow neon
-    bands,
-    two pairs of fluttering membrane wings, a yellow neon sting, bone mandibles round a gun
-    grafted in its jaws, and reactors under its wings."""
+    """A small, wasp-like insect (ENM-WASP-01, ENM-WASP-02): a swollen abdomen striped with
+    yellow neon bands and a yellow neon sting (ENM-WASP-03), two pairs of fluttering membrane wings
+    with reactors under them (ENM-WASP-05), bone mandibles round a gun grafted in its jaws, within
+    the veteran triangle budget (ENM-WASP-06)."""
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -95,7 +95,7 @@ def build_wasp(scene: Any) -> Any:
     return build_enemy_model("wasp", scene, N.wasp, draw)
 
 
-# P05-R17: the Phantom's flying wing, seen from above (nose +Z).
+# ENM-PHANTOM-01: the Phantom's flying wing, seen from above (nose +Z).
 PHANTOM_WING = [
     [0, 14],
     [17, -6],
@@ -122,7 +122,8 @@ PHANTOM_STRUTS = [
 
 
 def phantom_edges() -> list[list[list[float]]]:
-    """The wing's edges lit in neon: from the nose to each tip, and across each tip."""
+    """The wing's edges lit in neon: from the nose to each tip, and across each tip
+    (ENM-PHANTOM-03)."""
     nose = PHANTOM_WING[0]
     tip = PHANTOM_WING[1]
     tail = PHANTOM_WING[2]
@@ -139,15 +140,18 @@ def mirror_point(s: float, q: list[float]) -> list[float]:
 
 
 def build_phantom(scene: Any) -> Any:
-    """P05-R17: a sleek flying wing with a faceted hull and pale violet neon edges. It fades out and
-    in with the Phantom: every mesh is as visible as the Phantom is (`Phantom.opacity`)."""
+    """ENM-PHANTOM-01: a sleek flying wing with a faceted hull and pale violet neon edges, two
+    reactors at the back of its body (ENM-PHANTOM-05), within the veteran triangle budget
+    (ENM-PHANTOM-07). It fades out and in with the Phantom (ENM-PHANTOM-06): every mesh is as
+    visible as the Phantom is (`Phantom.opacity`)."""
 
     def draw(p: Any) -> None:
         hull = p.hull
         flesh = p.flesh
         neon = p.neon
         vein = p.vein
-        # P16-R04: a membrane wing on bone struts, a shell of a body, a metal nose cap and gun.
+        # ENM-PHANTOM-02: a membrane wing on bone struts, a shell of a body, a metal nose cap
+        # and gun.
         flesh.bevel_slab(PHANTOM_WING, [-0.6, 0, 0.6], [0.5, 1.2], F.membrane, None, F.graphite)
         carapace(flesh, PHANTOM_BODY, [F.graphite, F.membrane])
         for strip in phantom_edges():
@@ -169,12 +173,13 @@ def build_phantom(scene: Any) -> Any:
         nose_gun(p, [0, 0.6, 8], 5.8)
 
     model = build_enemy_model("phantom", scene, N.phantom, draw)
-    meshes = child_meshes(model.root, False)
 
     def sync(enemy: Any, dt: float) -> None:
         model.sync(enemy, dt)
         opacity = enemy.opacity if isinstance(enemy, Phantom) else 1
-        for mesh in meshes:
+        # Listed on each sync, not at build: the edge trim meshes (ENM-PHANTOM-06, GFX-TRIM-06) are
+        # added to the model after this builder returns, and they fade with it too.
+        for mesh in child_meshes(model.root, False):
             mesh.visibility = opacity
             mesh.isVisible = opacity > 0
 

@@ -1,4 +1,5 @@
-"""How the World 1 levels look (P06-R05, R06, R10; reworked at the reviewer's request, 2026-10-26)
+"""How the World 1 levels look (WLD-1-12, WLD-1-16; reworked at the reviewer's request,
+2026-10-26)
 
 One ground for the whole world, from a turquoise sea over green grass and dry earth to the dried
 red land of an American desert (reviewer, 2026-10-30, D-200: not sand dunes), and
@@ -15,11 +16,12 @@ from game.config.scenery_look import BASE_SCENERY_LOOK, texture
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# Desert sand (P06-R06): warm, fine-grained, with dark grains. World 2 starts on it too.
+# Desert sand, the sandy cover of World 1's beaches (WLD-1-12): warm, fine-grained, with dark
+# grains. World 2 starts on it too.
 SAND = texture(
     [
         [0.76, 0.6, 0.4],
@@ -128,8 +130,9 @@ TERRAIN = merge(
     },
 )
 
-# The dry levels (D-200): dried earth, red dirt where the sections lay their "sandy" cover, cracked
-# hardpan on the low flats, red rock on the walls of the mesas, buttes and canyons, a warmer tint.
+# The dry levels (D-200; WLD-1-10, GFX-TERRAIN-11): dried earth, red dirt where the sections lay
+# their "sandy" cover, cracked hardpan on the low flats, red rock on the walls of the mesas, buttes
+# and canyons, a warmer tint.
 DRY_TERRAIN = merge(
     TERRAIN,
     {
@@ -195,7 +198,7 @@ def clouds(
     ]
 
 
-# 1-1: midday, the sun high, over a clear turquoise sea, scattered white clouds.
+# 1-1 (LVL-1-1-03): midday, the sun high, over a clear turquoise sea, scattered white clouds.
 LEVEL_1_1_LOOK = merge(
     BASE_SCENERY_LOOK,
     {
@@ -208,7 +211,7 @@ LEVEL_1_1_LOOK = merge(
     },
 )
 
-# 1-2: early afternoon on the green coast, a little warmer.
+# 1-2 (LVL-1-2-03): early afternoon on the green coast, a little warmer.
 LEVEL_1_2_LOOK = merge(
     LEVEL_1_1_LOOK,
     {
@@ -219,7 +222,7 @@ LEVEL_1_2_LOOK = merge(
     },
 )
 
-# 1-3: late afternoon in the green country, golden light and longer shadows.
+# 1-3 (LVL-1-3-03): late afternoon in the green country, golden light and longer shadows.
 LEVEL_1_3_LOOK = merge(
     LEVEL_1_1_LOOK,
     {
@@ -230,7 +233,7 @@ LEVEL_1_3_LOOK = merge(
     },
 )
 
-# 1-4: sunset over the dry lands: a low orange sun, a magenta haze, long shadows.
+# 1-4 (LVL-1-4-03): sunset over the dry lands: a low orange sun, a magenta haze, long shadows.
 LEVEL_1_4_LOOK = merge(
     BASE_SCENERY_LOOK,
     {
@@ -244,7 +247,8 @@ LEVEL_1_4_LOOK = merge(
     },
 )
 
-# 1-5: dusk over the deep desert: the sun on the horizon, a violet sky, the town lights on.
+# 1-5 (LVL-1-5-03): dusk over the deep desert: the sun on the horizon, a violet sky, the town
+# lights on.
 LEVEL_1_5_LOOK = merge(
     LEVEL_1_4_LOOK,
     {

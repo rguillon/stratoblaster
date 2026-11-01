@@ -1,6 +1,7 @@
-"""Road pieces of the districts on tiles (phase 15, P15-R02, P15-R03, P15-R04): a sidewalk over the
-whole piece, a kerb and the roadway of each open side, joined in the middle, and the lane markings
-up to the junction. Draped on the ground, so pieces meet with no step.
+"""Road pieces of the districts on tiles (phase 15; GFX-ROAD-09, GFX-ROAD-11, GFX-ROAD-12): a
+sidewalk over the whole piece, a kerb and the roadway of each open side, joined in the middle, and
+the lane markings up to the junction. Draped on the ground, so pieces meet with no step. These are
+the layers of the pieces the road atlas has no room for (GFX-ROAD-20).
 """
 
 import math
@@ -11,10 +12,10 @@ from render.geometry.gradient_shapes import ColoredGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
+from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 Height = Callable[[float, float], float]
@@ -38,7 +39,7 @@ def _hypot(a: float, b: float) -> float:
 class TileRoadLook:
     """How the road pieces look."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         roadway: Rgb,
         sidewalk: Rgb,
@@ -204,7 +205,7 @@ def cuts(a: float, b: float, cell: float) -> list[float]:
     return out
 
 
-def _add_rect(  # noqa: PLR0917
+def _add_rect(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     geo: ColoredGeometry,
     rect: Rect,
     ox: float,
@@ -284,8 +285,8 @@ def build_tile_grid(
     z_max: float,
     color: Rgb,
 ) -> ColoredGeometry:
-    """P15-R10 (`tiles=1`): thin lines along the tile edges over the districts whose pieces are in
-    [z_min, z_max), from one end of their pieces to the other."""
+    """DEV-OPT-06 (`tiles=1`): thin lines along the tile edges over the districts whose pieces are
+    in [z_min, z_max), from one end of their pieces to the other."""
     geo = ColoredGeometry()
     in_chunk: list[RoadPiece] = []
     for p in pieces:

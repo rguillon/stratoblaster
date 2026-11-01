@@ -52,18 +52,18 @@ class _Ctx:
         return PlanePoint(point.x, point.y)
 
 
-def test_p07_r09_a_gun_without_muzzles_fires_from_the_source() -> None:
+def test_enm_21_a_gun_without_muzzles_fires_from_the_source() -> None:
     point = GunMuzzles().along(_Ctx(), _Source(3, 4), 0)
     assert (point.x, point.y) == (3, 4)
 
 
-def test_p07_r09_a_source_that_cannot_place_muzzles_fires_from_its_centre() -> None:
+def test_enm_21_a_source_that_cannot_place_muzzles_fires_from_its_centre() -> None:
     guns = GunMuzzles([(5, 0, 0), (-5, 0, 0)])
     point = guns.along(_Ctx(), _PlainSource(3, 4), 0)
     assert (point.x, point.y) == (3, 4)
 
 
-def test_p07_r09_a_single_muzzle_is_used_and_placed_with_the_turret_flag() -> None:
+def test_enm_21_a_single_muzzle_is_used_and_placed_with_the_turret_flag() -> None:
     source = _Source(0, 0)
     guns = GunMuzzles([(5, 0, 1)], on_turret=True)
     point = guns.along(_Ctx(), source, 0)
@@ -71,7 +71,7 @@ def test_p07_r09_a_single_muzzle_is_used_and_placed_with_the_turret_flag() -> No
     assert source.placed == [((5, 0, 1), True)]
 
 
-def test_p07_r09_the_muzzle_furthest_along_the_heading_fires() -> None:
+def test_enm_21_the_muzzle_furthest_along_the_heading_fires() -> None:
     # Heading 90 degrees (+X): the right muzzle is further along.
     guns = GunMuzzles([(-10, 0, 0), (10, 0, 0)])
     for _ in range(3):
@@ -79,20 +79,20 @@ def test_p07_r09_the_muzzle_furthest_along_the_heading_fires() -> None:
         assert (point.x, point.y) == (10, 0)
 
 
-def test_p07_r09_side_by_side_muzzles_take_turns() -> None:
+def test_enm_21_side_by_side_muzzles_take_turns() -> None:
     # Heading straight down: both muzzles are level, so they fire in turn.
     guns = GunMuzzles([(-10, 0, 0), (10, 0, 0)])
     xs = [guns.along(_Ctx(), _Source(0, 0), math.pi).x for _ in range(4)]
     assert xs == [-10, 10, -10, 10]
 
 
-def test_p07_r09_muzzles_within_the_tie_margin_take_turns() -> None:
+def test_enm_21_muzzles_within_the_tie_margin_take_turns() -> None:
     guns = GunMuzzles([(0, -TIE / 2, 0), (0, 0, 0)])
     xs = [guns.along(_Ctx(), _Source(0, 0), math.pi).y for _ in range(2)]
     assert xs == pytest.approx([-TIE / 2, 0])
 
 
-def test_p07_r09_a_laser_from_a_muzzle_follows_the_source_through_its_muzzle() -> None:
+def test_enm_21_a_laser_from_a_muzzle_follows_the_source_through_its_muzzle() -> None:
     source = _Source(0, 0, heading=0.3)
     guns = GunMuzzles([(5, 0, 0), (-5, 0, 0)], on_turret=True)
     owner = guns.laser(source)
@@ -107,13 +107,13 @@ def test_p07_r09_a_laser_from_a_muzzle_follows_the_source_through_its_muzzle() -
     assert owner.health == 3
 
 
-def test_p07_r09_a_laser_without_muzzles_follows_the_source_itself() -> None:
+def test_enm_21_a_laser_without_muzzles_follows_the_source_itself() -> None:
     source = _Source()
     assert GunMuzzles().laser(source) is source
     assert GunMuzzles([(1, 1, 1), (2, 2, 2)]).laser(_PlainSource(0, 0)).__class__ is _PlainSource
 
 
-def test_p07_r09_fire_aimed_fans_shots_around_the_player() -> None:
+def test_enm_20_fire_aimed_fans_shots_around_the_player() -> None:
     source = _Source(0, 0)
     shots: list[tuple[float, float, float]] = []
     fire_aimed(
@@ -129,7 +129,7 @@ def test_p07_r09_fire_aimed_fans_shots_around_the_player() -> None:
     assert all((x, y) == (0, 0) for x, y, _ in shots)
 
 
-def test_p07_r09_fire_aimed_leaves_from_the_muzzle_and_aims_from_there() -> None:
+def test_enm_20_fire_aimed_leaves_from_the_muzzle_and_aims_from_there() -> None:
     source = _Source(0, 0)
     shots: list[tuple[float, float, float]] = []
     fire_aimed(

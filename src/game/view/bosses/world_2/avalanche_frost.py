@@ -1,5 +1,5 @@
-"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4), and the barrels drawn to
-their muzzles Logical pixels, nose +Z, Y up
+"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4; MB-AVALANCHE-05,
+FB-GLACIER-COLOSSUS-05), and the barrels drawn to their muzzles Logical pixels, nose +Z, Y up
 (towards the camera).
 """
 
@@ -13,11 +13,11 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]

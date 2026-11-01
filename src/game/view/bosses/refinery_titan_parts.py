@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Refinery Titan's destroyable parts (fuel bladders, rotary turrets, missile
-brood), each drawn around its centre `at` (model
+"""FB-REFINERY-TITAN-03: the Refinery Titan's destroyable parts (fuel bladders, rotary turrets,
+missile brood), each drawn around its centre `at` (model
 space: logical pixels, nose +Z, Y up).
 """
 
@@ -15,7 +15,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -23,7 +23,7 @@ __pragma__("noskip")
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
-# Orange: the boss's neon (GD-61).
+# Orange: the boss's neon (BOSS-50, FB-REFINERY-TITAN-04).
 TITAN_NEON = BOSS_LOOK.neon["refinery-titan"]
 
 # Heights the parts stand on: the tank beam, the turret sponson, the hull's back.
@@ -32,8 +32,8 @@ TITAN_DECK = {"beam": 3, "sponson": 8, "back": 13}
 
 def rect(w: float, d: float, at: Any = None) -> list[Any]:
     """A rectangle `w` wide and `d` long around (x, z)."""
-    x = 0 if at == None else at[0]  # noqa: E711
-    z = 0 if at == None else at[1]  # noqa: E711
+    x = 0 if at == None else at[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    z = 0 if at == None else at[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return [
         [x - w / 2, z - d / 2],
         [x + w / 2, z - d / 2],
@@ -61,8 +61,8 @@ TANK_WINDOWS = [-6, 6]
 
 
 def draw_tank(parts: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a big fuel bladder held in the limbs, a swollen sac of flesh, orange bands
-    of neon and glowing veins on it, grafted valves at its ends."""
+    """FB-REFINERY-TITAN-03: a big fuel bladder held in the limbs, a swollen sac of flesh, orange
+    bands of neon and glowing veins on it, grafted valves at its ends."""
     hull = parts.hull
     flesh = parts.flesh
     neon = parts.neon
@@ -111,8 +111,8 @@ BARREL_RADIUS = 1.3
 
 
 def draw_turret(p: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a rotary turret's base on the front apron, a swollen growth plated round
-    its crown, under its turret (`draw_rotary`)."""
+    """FB-REFINERY-TITAN-03: a rotary turret's base on the front apron, a swollen growth plated
+    round its crown, under its turret (`draw_rotary`)."""
     x = at_point[0]
     y = at_point[1]
     z = at_point[2]
@@ -165,8 +165,8 @@ BLOCK = [
 
 
 def draw_missile_battery(p: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a missile brood on the body's back, a swollen mound under a grafted plate
-    with six hatches lit as it loads."""
+    """FB-REFINERY-TITAN-03: a missile brood on the body's back, a swollen mound under a grafted
+    plate with six hatches lit as it loads."""
     hull = p.hull
     neon = p.neon
     charge = p.charge

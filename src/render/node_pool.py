@@ -1,4 +1,4 @@
-"""Reusable nodes for things drawn in varying numbers ().
+"""Reusable nodes for things drawn in varying numbers (ENG-105).
 
 Nodes are created on demand, then shown or hidden instead of being created and disposed every
 frame (ENG-19): shots, particles, flashes.
@@ -10,8 +10,8 @@ from render.babylon import dispose_node, set_enabled
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

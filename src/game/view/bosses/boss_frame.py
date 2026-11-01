@@ -1,6 +1,7 @@
 """The dark metal frame a boss's shed armour leaves (docs/superpowers/specs/2026-10-31-boss-armour-
 shedding-design.md): a dark floor in the armour's own top-view shape, metal ribs across it (wing,
-shell or ring), neon seams on every other rib and pipes along the longest.
+shell or ring), neon seams on every other rib and pipes along the longest (BOSS-44). Its pylons
+and bridges hold pieces up so the boss stays one object (BOSS-52).
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
@@ -16,7 +17,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -68,11 +69,11 @@ def longest_two(segments: list[list[Any]]) -> list[list[Any]]:
     """The two longest of `segments` (fewer if there are fewer), longest first."""
     result: list[list[Any]] = []
     for segment in segments:
-        if len(result) < 2 or _length(segment) > _length(result[1]):  # noqa: PLR2004
+        if len(result) < 2 or _length(segment) > _length(result[1]):  # noqa: PLR2004 (a count of points, not a tunable)
             result.append(segment)
-            if len(result) == 2 and _length(result[1]) > _length(result[0]):  # noqa: PLR2004
+            if len(result) == 2 and _length(result[1]) > _length(result[0]):  # noqa: PLR2004 (a count of points, not a tunable)
                 result = [result[1], result[0]]
-            elif len(result) == 3:  # noqa: PLR2004
+            elif len(result) == 3:  # noqa: PLR2004 (a count of points, not a tunable)
                 if _length(result[2]) > _length(result[0]):
                     result = [result[2], result[0]]
                 else:
@@ -87,7 +88,7 @@ def draw_pylon(p: Any, floor: float, support: list[float], neon: Any) -> None:
     look = BOSS_LOOK.frame
     x = support[0]
     z = support[1]
-    if len(support) > 4:  # noqa: PLR2004
+    if len(support) > 4:  # noqa: PLR2004 (a count of points, not a tunable)
         floor = support[4]
     height = support[2] - floor
     if height <= look.lift:
@@ -138,7 +139,7 @@ def frame_drawings(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
     held = supports if supports is not None else []
     beams = bridges if bridges is not None else []
     look = BOSS_LOOK.frame
-    y = floor if floor != None else floor_height(tris)  # noqa: E711
+    y = floor if floor != None else floor_height(tris)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     floor = floor_triangles(tris, y)
     segments = frame_segments(tris, style)
     longest = longest_two(segments)

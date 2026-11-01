@@ -1,7 +1,6 @@
-"""P10-R11, 4-4: the Foundry Ark's yard, the heavy industry on its deck around the furnace: casting
-sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between the plates. Model
-space: logical pixels, nose +Z, Y up; drawn for the
-right side (+X) and mirrored.
+"""FB-FOUNDRY-ARK-02, 4-4: the Foundry Ark's yard, the heavy industry on its deck around the
+furnace: casting sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between
+the plates. Model space: logical pixels, nose +Z, Y up; drawn for the right side (+X) and mirrored.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -21,7 +20,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
@@ -66,7 +65,7 @@ def _shed(p: Any, s: float, spec: list[float]) -> None:
     w = spec[2]
     d = spec[3]
     h = spec[4]
-    # P16-R06: a swollen flesh growth, metal ribs across its top.
+    # FB-FOUNDRY-ARK-02: a swollen flesh growth, metal ribs across its top.
     flesh.box([w, h, d], SKIN.base, Placement([s * x, DECK_TOP, z]), SKIN.panel)
     for dz in [-d / 3, 0, d / 3]:
         hull.box([w * 0.9, 2, 2], H.panel, Placement([s * x, DECK_TOP + h, z + dz], 0, 0, s * 0.35))

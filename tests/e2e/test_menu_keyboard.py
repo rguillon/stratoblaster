@@ -1,4 +1,4 @@
-"""e2e: the menus with the keyboard only (P01-R09, P12-R01, P12-R02)."""
+"""e2e: the menus with the keyboard only (UI-INPUT-04, UI-INPUT-06, UI-INPUT-12, UI-PAUSE-01)."""
 
 from e2e.menu_helpers import expect_state, game_state, open_game, step
 from playwright.sync_api import Page
@@ -15,7 +15,8 @@ def press_position(page: Page, code: str, key: str) -> None:
     )
 
 
-def test_p01_r09_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) -> None:
+def test_ui_input_12_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) -> None:
+    """Also UI-FLOW-05: Esc goes back from the level select."""
     open_game(page)
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})
@@ -29,7 +30,7 @@ def test_p01_r09_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) -> N
     expect_state(page, {"screen": "level-select"})
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "game", "chosenShipId": "heavy", "chosenLevelId": "1-1"})
-    # P12-R01: Backspace no longer leaves the level; Esc pauses and resumes, P too.
+    # UI-PAUSE-05: Backspace does not leave the level; UI-PAUSE-01: Esc pauses and resumes, P too.
     page.keyboard.press("Backspace")
     step(page, 3)
     assert game_state(page)["screen"] == "game"
@@ -39,7 +40,7 @@ def test_p01_r09_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) -> N
     expect_state(page, {"screen": "game", "paused": False})
     page.keyboard.press("KeyP")
     expect_state(page, {"screen": "pause", "paused": True})
-    # P12-R02: Main menu asks first; Yes leaves to the title.
+    # UI-PAUSE-10: Main menu asks first; Yes leaves to the title.
     page.keyboard.press("ArrowDown")
     page.keyboard.press("ArrowDown")
     expect_state(page, {"selectedId": "main-menu"})
@@ -50,7 +51,7 @@ def test_p01_r09_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) -> N
     expect_state(page, {"screen": "title"})
 
 
-def test_p01_r09_on_azerty_z_q_s_d_the_wasd_positions_move_the_selection(page: Page) -> None:
+def test_ui_input_04_on_azerty_z_q_s_d_the_wasd_positions_move_the_selection(page: Page) -> None:
     open_game(page)
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "ship-select"})
@@ -71,7 +72,9 @@ def test_p01_r09_on_azerty_z_q_s_d_the_wasd_positions_move_the_selection(page: P
     assert game_state(page)["selectedId"] == "1-1"
 
 
-def test_p01_r09_holding_right_moves_once_then_repeats_after_the_repeat_delay(page: Page) -> None:
+def test_ui_input_06_holding_right_moves_once_then_repeats_after_the_repeat_delay(
+    page: Page,
+) -> None:
     open_game(page)
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "ship-select"})

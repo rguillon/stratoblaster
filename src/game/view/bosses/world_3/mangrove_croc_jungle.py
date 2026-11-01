@@ -1,4 +1,5 @@
-"""P09-R09, 3-1: the river growth on the Mangrove Croc and the River Leviathan (GD-61, the World
+"""MB-MANGROVE-CROC-05, FB-RIVER-LEVIATHAN-06, 3-1: the river growth on the Mangrove Croc and the
+River Leviathan (BOSS-50, the World
 3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
 
 import math
@@ -12,10 +13,10 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]

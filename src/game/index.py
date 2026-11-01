@@ -76,7 +76,8 @@ GAME = GameDefinition(
     bomb_rules(BOMB_RULES),
     hull_rules(HULL_RULES),
     MENU_TEXTS,
-    # Phase 14: the ships with a glowing edge trim (P14-R03), the shots toned down (P14-R06).
+    # The ships with a glowing edge trim (GFX-READ-07), the shots toned down (GFX-READ-14), the
+    # ships drawn at their playfield scale (GFX-SHIP-07).
     GameBindings(
         trimmed_ships(PLAYER_SHIP_MODELS),
         PLAYER_SHIP_SCALE,

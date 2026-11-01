@@ -117,6 +117,7 @@ def test_hamlets_stand_in_their_span_only() -> None:
 
 
 def test_hamlets_have_their_buildings_of_one_group() -> None:
+    """GFX-BLDG-02."""
     site = FakeSite()
     place_hamlets(site, HAMLETS, ZSpan(-math.inf, math.inf))
     assert len(site.added) % 3 == 0

@@ -1,4 +1,4 @@
-"""The game screen of a level (P06-R02): the chosen ship flies over
+"""The game screen of a level (specs/gameplay/): the chosen ship flies over
 the chosen level's scrolling scenery, moved and fired by the game controls, while the level's waves
 come in. It runs the level (`LevelRun`) at a fixed step and draws it on the playfield layer.
 """
@@ -32,7 +32,12 @@ from core.math.rng import create_rng
 from core.systems.level_models import level_model_keys
 from core.systems.level_run import LevelRun
 from core.systems.level_run_types import LevelRunOptions, RunShip
-from render.babylon import js_set, set_enabled
+from render.babylon import (
+    draw_calls_last_frame,
+    js_set,
+    new_draw_call_counter,
+    set_enabled,
+)
 from render.enemy_layer import EnemyLayer
 from render.game_view import BombFrame, BonusFrame
 from render.scenery.playfield_framing import playfield_eye, visible_half_width
@@ -40,7 +45,7 @@ from ui.stats_tile import RenderStats
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -56,13 +61,14 @@ class GameChoice:
 class GamePlayOptions:
     """Options of a `GamePlay`, positional (Transcrypt drops keyword arguments). `None` stands for
     an omitted optional field: `environment` (generated textures, sky lighting, shadows and glow;
-    needs a real WebGL engine), `debug` (P06-R09: playback keys and the FPS / polygons tile),
-    `start_time` (seconds into the level, P06-R09), `start_boss` (the rank of the boss to start at,
-    P07-R09), `resume` (a checkpoint, P07-R08), `journey` (False: the ship does not fly in and
-    off; reviewer, 2026-10-28), `weapons` and `supplies` (kept from the levels before), `high_score`
-    (P11-R02), `atmosphere` (debug choices on the look, P08-R12), `doc`, `stats_parent` (the debug
-    tile's), `hud_parent` (the HUD's), `on_complete(result)` (P06-R03, GD-20) and `on_step(run)`
-    (P12-R09).
+    needs a real WebGL engine), `debug` (DEV-OPT-08: playback keys, and the FPS / polygons tile:
+    DEV-PERF-05), `start_time` (seconds into the level, DEV-OPT-02), `start_boss` (the rank of the
+    boss to start at, DEV-OPT-03), `resume` (a checkpoint, GAME-LIFE-11), `journey` (False: the
+    ship does not fly in and off; reviewer, 2026-10-28), `weapons` and `supplies` (kept from the
+    levels before), `high_score` (GAME-SCORE-07), `atmosphere` (debug choices on the look,
+    DEV-OPT-04, DEV-OPT-05), `doc`, `stats_parent` (the debug tile's), `hud_parent` (the HUD's),
+    `on_complete(result)` (GAME-LEVEL-13, GAME-LIFE-09), `on_step(run)` (AUD-ENGINE-09) and
+    `on_draw_calls(count)` (ENG-106: the draw calls of each frame drawn; None when not asked).
     """
 
     def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -82,6 +88,7 @@ class GamePlayOptions:
         hud_parent: Any,
         on_complete: Any,
         on_step: Any,
+        on_draw_calls: Any,
     ) -> None:
         self.environment = environment
         self.debug = debug
@@ -98,6 +105,7 @@ class GamePlayOptions:
         self.hud_parent = hud_parent
         self.on_complete = on_complete
         self.on_step = on_step
+        self.on_draw_calls = on_draw_calls
 
 
 class PlayfieldBounds:
@@ -112,9 +120,10 @@ class PlayfieldBounds:
 
 
 class GamePlay:
-    """The game screen (P06-R02): the chosen ship flies over the chosen level's scrolling scenery,
-    moved and fired by the game controls, while the level's waves come in. It runs the level
-    (`LevelRun`) at a fixed step and draws it on the playfield layer.
+    """The game screen: the chosen ship flies over the chosen level's scrolling scenery
+    (GAME-SCREEN-03), moved and fired by the game controls, while the level's waves come in
+    (GAME-LEVEL-01). It runs the level (`LevelRun`) at a fixed step and draws it on the playfield
+    layer.
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -138,7 +147,8 @@ class GamePlay:
         self._completed = False
         # Whether the shaders of the enemy models built ahead are compiled (see `prepare`).
         self._compile_shaders = False
-        # Seconds since the last life was lost (the "Game over" overlay waits a little).
+        # Seconds since the last life was lost (the "Game over" overlay waits a little: UI-OVER-05,
+        # GAME-LIFE-09).
         self._over_for = 0.0
         self._hud: Any = None
         self._stats: Any = None
@@ -151,7 +161,7 @@ class GamePlay:
             engine,
             game,
             LevelSceneOptions(
-                # Extra ground past the end, for the final boss fight (P07-R03).
+                # Extra ground past the end, for the final boss fight (GAME-LEVEL-08).
                 scenery_with_runout(level),
                 options.environment,
                 game.view.enemies.glow,
@@ -161,6 +171,8 @@ class GamePlay:
                 outline,
             ),
         )
+        # Draw calls per frame, for the perf overlay (ENG-106); observers, not a change of drawing.
+        self._draw_calls = new_draw_call_counter(self.view.scene)
         self._speed = ship_max_speed_px_per_sec(game.player_ships, choice.ship_id)
         self._ship_def: Any = find_player_ship(game.player_ships, choice.ship_id)
         playfield = self.view.playfield
@@ -169,7 +181,8 @@ class GamePlay:
 
         def build_ship() -> list[Any]:
             ship = PlayfieldShip(self.view.scene, scale, 0, 0)
-            # The nose is measured on the model before it joins the playfield.
+            # The nose is measured on the model before it joins the playfield: the muzzle is
+            # there (GAME-WPN-05, GFX-SHOT-05).
             nose = ship.show(model) if model is not None else 0
             return [ship, nose]
 
@@ -199,6 +212,7 @@ class GamePlay:
         if len(weapons) == 0:
             raise ValueError("The game has no player weapon")
         screen = self.game.screen
+        # The ship starts at the bottom, in the middle (GAME-SHIP-07).
         ship = RunShip(
             PlanePoint(screen.width / 2, CFG.ship_start_y),
             self._speed,
@@ -237,7 +251,7 @@ class GamePlay:
         )
 
     def _model_keys(self, level: Any) -> list[str]:
-        """The enemy models `level` needs (P13-R03), built while it loads: those of its waves and
+        """The enemy models `level` needs (PERF-21), built while it loads: those of its waves and
         bosses, and the enemies they send out. The kinds are spawned with their own random numbers,
         so the level's are untouched."""
         game = self.game
@@ -255,7 +269,8 @@ class GamePlay:
         )
 
     def _in_view(self) -> Any:
-        """Whether a playfield point is inside what the tilted camera shows."""
+        """Whether a playfield point is inside what the tilted camera shows (GAME-SCREEN-04): only
+        what is on screen can be hit (GAME-WPN-16, ENM-13)."""
         screen = self.game.screen
         width = screen.width
         height = screen.height
@@ -271,7 +286,7 @@ class GamePlay:
         return in_view
 
     def _bounds(self) -> PlayfieldBounds:
-        """Where the ship may fly: inside what the tilted camera shows (P06-R02)."""
+        """Where the ship may fly: inside what the tilted camera shows (GAME-SCREEN-05)."""
         screen = self.game.screen
         width = screen.width
         height = screen.height
@@ -288,7 +303,8 @@ class GamePlay:
         return self._time_scale
 
     def frame(self, dt: float) -> None:
-        """Advances and draws one frame of `dt` real seconds."""
+        """Advances and draws one frame of `dt` real seconds. The level runs at a fixed step, so a
+        run is the same whatever the frame rate (GAME-LEVEL-15)."""
         advance = self._clock.advance(dt * self._time_scale)
         blasts: list[Any] = []
         impacts: list[Any] = []
@@ -305,10 +321,11 @@ class GamePlay:
                 picked.extend(self.run.bonuses.picked)
             blasts.extend(hit_blasts(self.run.hits, self.run.ship))
         track = self.run.track
+        # The scroll, drawn between two steps (ENG-100).
         distance = self._previous + (track.distance - self._previous) * advance.alpha
         self.view.update(distance, dt)
         self._draw(dt, blasts, impacts, picked)
-        # One more enemy model built ahead of its first appearance, each frame (P13-R04).
+        # One more enemy model built ahead of its first appearance, each frame (PERF-23).
         enemies = self._enemies
         built = self.view.playfield.run(enemies.prepare_next)
         if self._compile_shaders:
@@ -325,6 +342,7 @@ class GamePlay:
         ship = run.ship
         enemies = run.enemies
         shots = run.shots
+        # The ship alone: nothing marks its hitbox (GFX-READ-08).
         self._ship.pivot.position.set(ship.x, ship.y, 0)
         set_enabled(self._ship.pivot, self._ship_shown())
         self._ship.pivot.rotation.y = self._bank(ship.vx, dt)
@@ -343,14 +361,19 @@ class GamePlay:
         high_score = self._options.high_score if self._options.high_score is not None else 0
         if self._hud is not None:
             self._hud.update(hud_frame(run, self._ship_def.max_health, self.game.texts, high_score))
+        # The FPS / polygons tile (DEV-PERF-04).
         self._frames += 1
         self._fps.add(dt, self._frames)
         polygons = self.view.scene.getActiveIndices() / 3
         if self._stats is not None:
             self._stats.update(dt, RenderStats(self._fps.rate, polygons))
+        # The draw calls of the last frame drawn (ENG-106): this frame's are counted after it.
+        if self._options.on_draw_calls is not None:
+            self._options.on_draw_calls(draw_calls_last_frame(self._draw_calls))
 
     def _ship_shown(self) -> bool:
-        """Whether the ship shows: not once the game is over, blinking while invincible (GD-22)."""
+        """Whether the ship shows: not once the game is over, blinking while invincible
+        (GAME-LIFE-07, GFX-READ-07)."""
         hull = self.run.hull
         if self.run.phase == "over":
             return False
@@ -359,9 +382,9 @@ class GamePlay:
         return math.floor(hull.invincible * CFG.damage.blink_hz * 2) % 2 == 0
 
     def _bank(self, vx: float, dt: float) -> float:
-        """The ship's bank for a sideways speed `vx` (phase 6 review): the wing on the side it flies
-        to dips, more the faster it goes, easing in and out. Around the nose (the playfield's Y),
-        negative turns +X away from the camera.
+        """The ship's bank for a sideways speed `vx` (GAME-SHIP-05, GFX-SHIP-08): the wing on the
+        side it flies to dips, more the faster it goes, easing in and out. Around the nose (the
+        playfield's Y), negative turns +X away from the camera.
         """
         max_deg = CFG.roll.max_deg
         ease = CFG.roll.ease_per_sec
@@ -375,9 +398,10 @@ class GamePlay:
         return self._roll
 
     def debug_key(self, code: str, down: bool) -> bool:
-        """A debug key (P06-R09): F toggles x4 fast forward, left / right jump 10 s back or on, K
-        destroys the next part of the boss fought (P07-R09). Returns whether the key was used;
-        without debug mode no key is, but the debug tile's (D-212: F2 shows or hides it).
+        """A debug key (DEV-OPT-08): F toggles x4 fast forward, left / right jump 10 s back or on,
+        K destroys the next part of the boss fought (DEV-OPT-09). Returns whether the key was used;
+        without debug mode no key is (DEV-OPT-10), but the debug tile's (DEV-PERF-05, D-212: F2
+        shows or hides it).
         """
         if code == CFG.stats.key:
             if down:
@@ -408,7 +432,8 @@ class GamePlay:
 
     @property
     def state(self) -> Any:
-        """The state of the level for the test API, with its look where the view is (P08)."""
+        """The state of the level for the test API (DEV-API-03), with its look where the view is
+        (DEV-API-05)."""
         middle = self.run.track.distance + self.game.screen.height / 2
         sea = level_of(self.game, self.run.result.level_id).scenery.sea
         state = level_state(self.run, self._time_scale, self._ship_def.max_health)
@@ -416,14 +441,15 @@ class GamePlay:
         return state
 
     def readability(self, bright_share: float) -> Any:
-        """How readable the frame is (P14-R08): `bright_share` is the share of brightest pixels."""
+        """How readable the frame is (DEV-API-09): `bright_share` is the share of brightest
+        pixels."""
         scene = self.view.scene
         playfield = self.view.playfield
         return probe_readability(scene, playfield.root, self.run, self._in_view(), bright_share)
 
     def attach(self) -> None:
         """Shows the level's HUD (and the debug tile) in the page: when it starts, not while it is
-        built ahead on the level select screen (P13-R03).
+        built ahead on the level select screen (PERF-13).
         """
         if self._attached:
             return
@@ -462,7 +488,7 @@ class GamePlay:
             self._stats = None
 
     def prepare(self, compile_now: bool) -> None:
-        """Gets the level ready to play smoothly (P13-R04): with `compile_now`, the shaders of
+        """Gets the level ready to play smoothly (PERF-20): with `compile_now`, the shaders of
         everything in the scene compiled before play starts, and those of each enemy model built
         ahead of its first appearance (one per frame, see `frame`).
         """
@@ -471,12 +497,12 @@ class GamePlay:
             compile_shaders(self.view.scene.meshes)
 
     def warm_shots(self, on: bool) -> None:
-        """Shows (or hides) one enemy bullet of each colour while the level loads (P13-R04)."""
+        """Shows (or hides) one enemy bullet of each colour while the level loads (PERF-20)."""
         self._shots.warm(on)
 
     def build_enemies(self, compile_now: bool) -> bool:
         """Builds one more enemy model (of the kinds not built yet), and compiles its shaders with
-        `compile_now` (P13-R04). Called while the level loads, one model a frame, so no model is
+        `compile_now` (PERF-21). Called while the level loads, one model a frame, so no model is
         built in play. True once every kind has one.
         """
         built = self.view.playfield.run(self._enemies.prepare_next)

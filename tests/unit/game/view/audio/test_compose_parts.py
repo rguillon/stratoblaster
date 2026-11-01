@@ -76,7 +76,7 @@ def test_sort_by_beat_sorts_any_size(size):
     assert [n.beat for n in ordered] == sorted(n.beat for n in notes)
 
 
-def test_p12_r06_drum_bar_at_zero_energy_plays_only_the_kick():
+def test_aud_music_04_drum_bar_at_zero_energy_plays_only_the_kick():
     style_ = style(1)
     notes = drum_bar(style_, bar(energy=0), const(0.5))
     assert notes
@@ -84,7 +84,7 @@ def test_p12_r06_drum_bar_at_zero_energy_plays_only_the_kick():
     assert len(notes) == len(PATTERNS[style_.drums].kick)
 
 
-def test_p12_r06_drum_bar_places_kick_and_snare_on_the_pattern_steps():
+def test_aud_music_05_drum_bar_places_kick_and_snare_on_the_pattern_steps():
     style_ = style(1)
     pattern = PATTERNS[style_.drums]
     step = BEATS_PER_BAR / DRUM_STEPS
@@ -96,7 +96,7 @@ def test_p12_r06_drum_bar_places_kick_and_snare_on_the_pattern_steps():
     assert all(n.pitch == DRUM_PITCH for n in notes)
 
 
-def test_p12_r06_full_energy_plays_a_hat_on_every_sixteenth():
+def test_aud_music_04_full_energy_plays_a_hat_on_every_sixteenth():
     style_ = style(1)
     notes = drum_bar(style_, bar(energy=2), const(0.5))
     hats = [n for n in notes if n.instrument == style_.instruments.hat]
@@ -104,7 +104,7 @@ def test_p12_r06_full_energy_plays_a_hat_on_every_sixteenth():
     assert len(hats) == DRUM_STEPS - len(PATTERNS[style_.drums].open)
 
 
-def test_p12_r06_hats_are_sparser_at_low_energy():
+def test_aud_music_04_hats_are_sparser_at_low_energy():
     style_ = style(1)
     low = drum_bar(style_, bar(energy=1), const(0.5))
     high = drum_bar(style_, bar(energy=2), const(0.5))
@@ -113,7 +113,7 @@ def test_p12_r06_hats_are_sparser_at_low_energy():
     assert len(hats_low) < len(hats_high)
 
 
-def test_p12_r06_a_section_end_adds_a_tom_fill():
+def test_aud_music_03_a_section_end_adds_a_tom_fill():
     style_ = style(1)
     plain = drum_bar(style_, bar(energy=1, fill=False), const(0.5))
     filled = drum_bar(style_, bar(energy=1, fill=True), const(0.5))
@@ -121,7 +121,7 @@ def test_p12_r06_a_section_end_adds_a_tom_fill():
     assert [n for n in filled if n.instrument == "tom"]
 
 
-def test_p12_r06_drum_fill_descends_over_the_last_beats():
+def test_aud_music_03_drum_fill_descends_over_the_last_beats():
     fill_bar = bar(energy=2, fill=True, beat=0)
     notes = drum_fill(fill_bar, const(0))
     assert len(notes) == 6
@@ -130,12 +130,12 @@ def test_p12_r06_drum_fill_descends_over_the_last_beats():
     assert [n.beat for n in notes] == sorted(n.beat for n in notes)
 
 
-def test_p12_r06_drum_fill_is_short_at_low_energy():
+def test_aud_music_03_drum_fill_is_short_at_low_energy():
     counts = {len(drum_fill(bar(energy=1, fill=True), const(r))) for r in (0.0, 0.99)}
     assert counts == {3, 4}
 
 
-def test_p12_r06_bass_bar_plays_root_then_the_passing_fifth():
+def test_aud_music_05_bass_bar_plays_root_then_the_passing_fifth():
     style_ = style(1)
     chord = [36, 39, 43]
     ctx = BarContext(0.0, chord, [36, 38, 39, 41, 43, 45, 46], 1, False)
@@ -152,7 +152,7 @@ def test_p12_r06_bass_bar_plays_root_then_the_passing_fifth():
             assert pitch in (36, 48)
 
 
-def test_p12_r06_bass_bar_pumps_an_octave_on_off_beat_eighths():
+def test_aud_music_03_bass_bar_pumps_an_octave_on_off_beat_eighths():
     style_ = style(1)  # "eighths" bass
     ctx = BarContext(0.0, [36, 39, 43], [36], 1, False)
     notes = bass_bar(style_, ctx, [2, 4])
@@ -161,7 +161,7 @@ def test_p12_r06_bass_bar_pumps_an_octave_on_off_beat_eighths():
     assert pitches[4] == 36
 
 
-def test_p12_r06_full_energy_bass_plays_rolling_sixteenths():
+def test_aud_music_03_full_energy_bass_plays_rolling_sixteenths():
     ctx = BarContext(0.0, [36, 39, 43], [36], 2, False)
     notes = bass_bar(style(1), ctx, [0])
     assert len(notes) == DRUM_STEPS
@@ -178,7 +178,7 @@ def test_bass_steps_picks_a_rhythm_of_the_style():
     assert bass_steps(style_, const(0.0)) in BASS_STEPS[style_.bass]
 
 
-def test_p12_r06_pad_bar_holds_each_chord_tone_for_the_bar():
+def test_aud_music_03_pad_bar_holds_each_chord_tone_for_the_bar():
     style_ = style(1)
     ctx = bar(beat=12.0)
     notes = pad_bar(style_, ctx)
@@ -186,13 +186,13 @@ def test_p12_r06_pad_bar_holds_each_chord_tone_for_the_bar():
     assert all(n.beat == 12.0 and n.beats == BEATS_PER_BAR for n in notes)
 
 
-def test_p12_r06_arp_bar_plays_rate_notes_per_beat():
+def test_aud_music_04_arp_bar_plays_rate_notes_per_beat():
     style_ = style(1)  # arp_rate 4
     notes = arp_bar(style_, bar(energy=1), [0, 1, 2, 3])
     assert len(notes) == BEATS_PER_BAR * style_.arp_rate
 
 
-def test_p12_r06_arp_bar_is_sixteenths_at_full_energy():
+def test_aud_music_04_arp_bar_is_sixteenths_at_full_energy():
     style_ = style(3)  # arp_rate 4 too
     notes = arp_bar(style_, bar(energy=2), [0])
     assert len(notes) == BEATS_PER_BAR * max(4, style_.arp_rate)

@@ -1,66 +1,72 @@
-"""Look of the bosses (P07)
+"""Look of the bosses (specs/bosses/)
 
-Their neon colours (GD-61), the white flash of a part when hit, the smoke of a part under half its
-health (P07-R01); a destroyed part leaves nothing (D-225). Linear RGB 0..1, sizes in logical pixels,
-times in seconds.
+Their neon colours (BOSS-50), the white flash of a part when hit, the smoke of a part under half
+its health (BOSS-17); a destroyed part leaves nothing (BOSS-18, D-225). Linear RGB 0..1, sizes in
+logical pixels, times in seconds.
 """
 
 from game.config.record import record
 
 BOSS_LOOK = record(
     {
-        # Neon colour of each boss (P07-R05), by boss kind id.
+        # Neon colour of each boss (BOSS-50; its file's lights requirement), by boss kind id.
         "neon": {
-            "reef-warden": [0.1, 0.9, 1],
-            "storm-petrel": [1, 0.1, 0.85],
-            "breakwater": [1, 0.5, 0.05],
-            "gull-mothership": [0.2, 1, 0.35],
-            "dust-devil": [1, 0.75, 0.15],
-            "mesa-fortress": [1, 0.1, 0.12],
-            "scorpion": [1, 0.9, 0.1],
-            "refinery-titan": [1, 0.45, 0.05],
-            "sentinel": [0.15, 0.4, 1],
-            "overlord": [0.65, 0.2, 1],
-            # World 2 (P08-R10).
-            "floe-breaker": [0.1, 0.85, 1],
-            "narwhal": [0.05, 0.95, 0.75],
-            "fjord-lynx": [0.55, 0.95, 1],
-            "harbour-kraken": [1, 0.5, 0.08],
-            "snow-owl": [0.85, 0.92, 1],
-            "aurora-station": [0.3, 1, 0.55],
-            "avalanche": [1, 0.85, 0.1],
-            "glacier-colossus": [1, 0.35, 0.08],
-            "ice-queen": [0.55, 0.65, 1],
-            "boreal-citadel": [0.35, 1, 0.6],
-            # World 3 (P09-R09).
-            "mangrove-croc": [0.25, 1, 0.3],
-            "river-leviathan": [0.05, 0.9, 0.8],
-            "toucan": [1, 0.7, 0.1],
-            "canopy-spider": [1, 0.12, 0.15],
-            "stone-idol": [0.95, 0.2, 1],
-            "sky-temple": [1, 0.8, 0.2],
-            "mosquito": [1, 0.3, 0.7],
+            "reef-warden": [0.1, 0.9, 1],  # MB-REEF-WARDEN-04
+            "storm-petrel": [1, 0.1, 0.85],  # FB-STORM-PETREL-04
+            "breakwater": [1, 0.5, 0.05],  # MB-BREAKWATER-04
+            "gull-mothership": [0.2, 1, 0.35],  # FB-GULL-MOTHERSHIP-04
+            "dust-devil": [1, 0.75, 0.15],  # MB-DUST-DEVIL-04
+            "mesa-fortress": [1, 0.1, 0.12],  # FB-MESA-FORTRESS-04
+            "scorpion": [1, 0.9, 0.1],  # MB-SCORPION-05
+            "refinery-titan": [1, 0.45, 0.05],  # FB-REFINERY-TITAN-04
+            "sentinel": [0.15, 0.4, 1],  # MB-SENTINEL-04
+            "overlord": [0.65, 0.2, 1],  # FB-OVERLORD-04
+            # World 2.
+            "floe-breaker": [0.1, 0.85, 1],  # MB-FLOE-BREAKER-04
+            "narwhal": [0.05, 0.95, 0.75],  # FB-NARWHAL-04
+            "fjord-lynx": [0.55, 0.95, 1],  # MB-FJORD-LYNX-04
+            "harbour-kraken": [1, 0.5, 0.08],  # FB-HARBOUR-KRAKEN-04
+            "snow-owl": [0.85, 0.92, 1],  # MB-SNOW-OWL-04
+            "aurora-station": [0.3, 1, 0.55],  # FB-AURORA-STATION-04
+            "avalanche": [1, 0.85, 0.1],  # MB-AVALANCHE-04
+            "glacier-colossus": [1, 0.35, 0.08],  # FB-GLACIER-COLOSSUS-04
+            "ice-queen": [0.55, 0.65, 1],  # MB-ICE-QUEEN-04
+            "boreal-citadel": [0.35, 1, 0.6],  # FB-BOREAL-CITADEL-05
+            # World 3.
+            "mangrove-croc": [0.25, 1, 0.3],  # MB-MANGROVE-CROC-06
+            "river-leviathan": [0.05, 0.9, 0.8],  # FB-RIVER-LEVIATHAN-07
+            "toucan": [1, 0.7, 0.1],  # MB-TOUCAN-06
+            "canopy-spider": [1, 0.12, 0.15],  # FB-CANOPY-SPIDER-06
+            "stone-idol": [0.95, 0.2, 1],  # MB-STONE-IDOL-05
+            "sky-temple": [1, 0.8, 0.2],  # FB-SKY-TEMPLE-06
+            "mosquito": [1, 0.3, 0.7],  # MB-MOSQUITO-06
             # D-231: on the green side (was lime, 0.6), as its hull is overgrown with moss.
-            "dam-breaker": [0.3, 1, 0.1],
-            "jaguar": [1, 0.6, 0.05],
-            "verdant-crown": [0.1, 1, 0.45],
-            # World 4 (P10-R11).
-            "cinder-crab": [1, 0.45, 0.05],
+            "dam-breaker": [0.3, 1, 0.1],  # FB-DAM-BREAKER-05
+            "jaguar": [1, 0.6, 0.05],  # MB-JAGUAR-05
+            "verdant-crown": [0.1, 1, 0.45],  # FB-VERDANT-CROWN-06
+            # World 4.
+            "cinder-crab": [1, 0.45, 0.05],  # MB-CINDER-CRAB-05
+            # FB-STEAM-DREADNOUGHT-06 (laser: FB-STEAM-DREADNOUGHT-13).
             "steam-dreadnought": [1, 0.08, 0.1],
-            "ash-wraith": [0.55, 0.95, 1],
-            "geyser-rig": [1, 0.88, 0.1],
+            "ash-wraith": [0.55, 0.95, 1],  # MB-ASH-WRAITH-05
+            "geyser-rig": [1, 0.88, 0.1],  # FB-GEYSER-RIG-06
+            # MB-MAGMA-SALAMANDER-05 (laser: MB-MAGMA-SALAMANDER-15).
             "magma-salamander": [1, 0.62, 0.08],
+            # FB-OBSIDIAN-GOLEM-06 (laser: FB-OBSIDIAN-GOLEM-14).
             "obsidian-golem": [1, 0.32, 0.04],
-            "furnace-drake": [1, 0.22, 0.05],
+            "furnace-drake": [1, 0.22, 0.05],  # MB-FURNACE-DRAKE-05
+            # FB-FOUNDRY-ARK-07 (laser: FB-FOUNDRY-ARK-14).
             "foundry-ark": [1, 0.55, 0.12],
-            "ember-herald": [1, 0.78, 0.22],
+            "ember-herald": [1, 0.78, 0.22],  # MB-EMBER-HERALD-04
+            # FB-CALDERA-THRONE-06 (laser: FB-CALDERA-THRONE-12).
             "caldera-throne": [0.95, 0.05, 0.22],
         },
-        # Its charge lights strobe this many times a second while it holds its fire (P07-R04).
+        # Its charge lights strobe this many times a second while it holds its fire (BOSS-22).
         "stageStrobeHz": 6,
-        # While it is angry, they flicker this many times a second, down to `dim` (phase 7 review).
+        # While it is angry, they flicker this many times a second, down to `dim` (BOSS-27; phase 7
+        # review).
         "rageFlicker": {"hz": 14, "dim": 0.35},
-        # A part flashes this colour for `seconds` after a hit (about one frame and a bit).
+        # A part flashes this colour for `seconds` after a hit (about one frame and a bit, BOSS-17).
         "flash": {"color": [1, 1, 1], "seconds": 0.05},
         # Under `below` of its health a part smokes: `puffs` grey discs `size` times its radius,
         # rising by `rise` and drifting back by `drift` over `seconds`, then starting again.
@@ -74,13 +80,14 @@ BOSS_LOOK = record(
             "color": [0.16, 0.15, 0.15],
             "alpha": 0.55,
         },
-        # A boss's transformation (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md,
-        # D-224), in shares of its length: its armour strains (shudders `shudder` px, strobing
-        # `strobeHz`) until `burst`, then bursts off in chunks that are gone by `burstEnd`, thrown
-        # `throw` px out, rising `lift` px and falling `fall` px, tumbling `spin` radians. Its
-        # hidden weapons swing up on their hinges from `swing[0]` to `swing[1]`, rising from `sink`
-        # of their radius down, then slide their barrels out from `slide[0]` to `slide[1]`,
-        # overshooting by `overshoot` (a back-out ease). A piece that moves rather than bursting
+        # A boss's transformation (BOSS-43; D-224,
+        # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md), in shares of its
+        # length: its armour strains (shudders `shudder` px, strobing `strobeHz`) until `burst`,
+        # then bursts off in chunks that are gone by `burstEnd`, thrown `throw` px out, rising
+        # `lift` px and falling `fall` px, tumbling `spin` radians. Its hidden weapons swing up on
+        # their hinges from `swing[0]` to `swing[1]`, rising from `sink` of their radius down, then
+        # slide their barrels out from `slide[0]` to `slide[1]`, overshooting by `overshoot` (a
+        # back-out ease). A piece that moves rather than bursting
         # (D-230) strains as armour does, then moves into its new pose from `move[0]` to `move[1]`.
         "reveal": {
             "burst": 0.15,
@@ -99,12 +106,12 @@ BOSS_LOOK = record(
         },
         # How armour is cut out of a boss's body: faces cut down to `cut` px first, at most
         # `chunks` chunks a region and `bossChunks` a boss; surfaces within about `hold` px hold
-        # together (D-227).
+        # together (BOSS-43, D-227).
         "armour": {"cut": 6, "chunks": 12, "bossChunks": 24, "hold": 1.2},
-        # The dark metal frame a shed region leaves (`boss_frame.py`): a `floor` where the armour
-        # was, `lift` px over its lowest point; `metal` ribs `ribWidth` wide and `ribHeight` high,
-        # `ribGap` px apart (sampled every `step` px against the floor, at least `least` px long),
-        # one in `seamEvery` with a neon seam on top; `pipe` pipes along the longest ribs.
+        # The dark metal frame a shed region leaves (BOSS-44, `boss_frame.py`): a `floor` where the
+        # armour was, `lift` px over its lowest point; `metal` ribs `ribWidth` wide and `ribHeight`
+        # high, `ribGap` px apart (sampled every `step` px against the floor, at least `least` px
+        # long), one in `seamEvery` with a neon seam on top; `pipe` pipes along the longest ribs.
         "frame": {
             "floor": [0.035, 0.037, 0.045],
             "metal": [0.1, 0.105, 0.12],

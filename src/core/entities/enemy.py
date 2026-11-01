@@ -1,10 +1,10 @@
-"""Enemies (P05)
+"""Enemies (ENM-04)
 
 Positions are playfield logical pixels, X to the right, Y up; headings are in radians from +Y,
 positive to the right (pi points straight down, towards the player's side).
 
-Subclasses override the hooks `_hit_targets` and `_shot_targets`, never the `hit_targets` and
-`shot_targets` properties: Transcrypt cannot redefine a property in a subclass.
+Subclasses override the hooks `_hit_targets` and `_shot_targets` (ENG-148), never the `hit_targets`
+and `shot_targets` properties: Transcrypt cannot redefine a property in a subclass.
 """
 
 import math
@@ -15,12 +15,12 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal, Protocol  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.math.rng import Random  # noqa: E402
+from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 EnemySide = Literal["top", "left", "right"]
 
@@ -31,68 +31,102 @@ class LaserOwner(Protocol):
     """
 
     @property
-    def emitter(self) -> PlanePoint | RaisedPoint: ...
+    def emitter(self) -> PlanePoint | RaisedPoint:
+        """Where the laser leaves from."""
+        ...
 
     @property
-    def heading(self) -> float: ...
+    def heading(self) -> float:
+        """Direction the laser fires along, in radians from +Y."""
+        ...
 
     @property
-    def gone(self) -> bool: ...
+    def gone(self) -> bool:
+        """Whether the owner is gone, so the laser stops."""
+        ...
 
     @property
-    def health(self) -> float: ...
+    def health(self) -> float:
+        """Health left: the laser stops once it is 0."""
+        ...
 
 
 class DropSource(ShotTarget, Protocol):
     """Something destroyed that may drop a bonus: a shot target with, optionally, its own chance
-    (0..1) of dropping one instead of the game's rule (P07-R07).
+    (0..1) of dropping one instead of the game's rule (BOSS-57).
     """
 
     @property
-    def drop_chance(self) -> float | None: ...
+    def drop_chance(self) -> float | None:
+        """Its own chance (0..1) of dropping a bonus when destroyed, or None for the game's rule."""
+        ...
 
     @property
-    def points(self) -> float | None: ...
+    def points(self) -> float | None:
+        """Points scored when it is destroyed, or None."""
+        ...
 
 
 class EnemyContext(Protocol):
     """What an enemy can see and do while it updates."""
 
     @property
-    def width(self) -> float: ...
+    def width(self) -> float:
+        """Width of the playfield, in logical pixels."""
+        ...
 
     @property
-    def height(self) -> float: ...
+    def height(self) -> float:
+        """Height of the playfield, in logical pixels."""
+        ...
 
     @property
-    def player_x(self) -> float: ...
+    def player_x(self) -> float:
+        """X of the player's ship."""
+        ...
 
     @property
-    def player_y(self) -> float: ...
+    def player_y(self) -> float:
+        """Y of the player's ship."""
+        ...
 
     @property
-    def random(self) -> Random: ...
+    def random(self) -> Random:
+        """The random numbers the enemy draws from."""
+        ...
 
     @property
-    def fire_rate(self) -> float: ...
+    def fire_rate(self) -> float:
+        """Factor the enemy's firing timers run at: they advance `dt` times this."""
+        ...
 
     def seen(self, point: RaisedPoint) -> PlanePoint:
         """Where shots must start to look as if they left from `point`, above the playfield."""
         ...
 
-    def fire_bullet(self, x: float, y: float, heading: float, spec: "EnemyBulletSpec") -> None: ...
+    def fire_bullet(self, x: float, y: float, heading: float, spec: "EnemyBulletSpec") -> None:
+        """Fires a bullet of `spec` from (x, y) along `heading`."""
+        ...
 
-    def fire_missile(
-        self, x: float, y: float, heading: float, spec: "EnemyMissileSpec"
-    ) -> None: ...
+    def fire_missile(self, x: float, y: float, heading: float, spec: "EnemyMissileSpec") -> None:
+        """Launches a missile of `spec` from (x, y) along `heading`."""
+        ...
 
-    def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None: ...
+    def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None:
+        """Starts a laser of `spec` from `owner`."""
+        ...
 
-    def spawn(self, enemy: "Enemy") -> None: ...
+    def spawn(self, enemy: "Enemy") -> None:
+        """Adds `enemy` to the world."""
+        ...
 
-    def explode(self, x: float, y: float, radius: float) -> None: ...
+    def explode(self, x: float, y: float, radius: float) -> None:
+        """Makes an explosion of `radius` at (x, y)."""
+        ...
 
-    def break_part(self, part: DropSource) -> None: ...
+    def break_part(self, part: DropSource) -> None:
+        """Breaks a destroyed part off its enemy: it blows up."""
+        ...
 
 
 EnemyKindSpawn = Callable[["EnemySpawnArea"], list["Enemy"]]
@@ -101,7 +135,7 @@ __pragma__("noskip")
 
 
 class EnemyBurstSpec:
-    """A burst (phase 8): `after` seconds from its firing the bullet is gone, and `count` bullets
+    """A burst (ENM-17): `after` seconds from its firing the bullet is gone, and `count` bullets
     of `bullet` leave from where it was, evenly all around, the first one on its way.
     """
 
@@ -112,7 +146,7 @@ class EnemyBurstSpec:
 
 
 class EnemyBulletSpec:
-    """A bullet an enemy fires: it flies straight at constant speed."""
+    """A bullet an enemy fires: it flies straight at constant speed (ENM-16)."""
 
     def __init__(
         self,
@@ -132,7 +166,7 @@ class EnemyBulletSpec:
 
 class EnemyMissileSpec:
     """A missile an enemy launches: it turns towards the player for a while and can be shot
-    down.
+    down (ENM-18).
     """
 
     def __init__(
@@ -156,7 +190,9 @@ class EnemyMissileSpec:
 
 
 class EnemyLaserSpec:
-    """A laser an enemy fires straight along its heading: a warning line first, then the beam."""
+    """A laser an enemy fires straight along its heading: a warning line first, then the beam
+    (ENM-19).
+    """
 
     def __init__(
         self,
@@ -167,7 +203,7 @@ class EnemyLaserSpec:
         sweeps: bool = False,
     ) -> None:
         """`width` is the width of the beam. `sweeps`: whether the beam keeps turning with its
-        owner while it fires (P05-R13: lasers on moving parts); otherwise it keeps the heading its
+        owner while it fires (ENM-32: lasers on moving parts); otherwise it keeps the heading its
         owner had when it started firing.
         """
         self.warning_seconds = warning_seconds
@@ -182,8 +218,8 @@ class EnemyStats:
 
     def __init__(self, model: str, radius: float, health: float, points: float) -> None:
         """`model` is the key of the enemy's model in the game view; `radius` the hit radius
-        (GD-21: about the size of the model); `points` the points scored when it is destroyed
-        (GD-50).
+        (ENM-11: about the size of the model); `points` the points scored when it is destroyed
+        (ENM-14).
         """
         self.model = model
         self.radius = radius
@@ -192,14 +228,14 @@ class EnemyStats:
 
 
 class Enemy:
-    """Base of every enemy (GD-45): a circle with health that the player's shots can hit, moved
-    and armed by `update`. Concrete enemies live in the game; the engine only steps them.
+    """Base of every enemy (ENM-04): a circle with health that the player's shots can hit, moved
+    and armed by `update` (ENM-24). Concrete enemies live in the game; the engine only steps them.
     """
 
     # Whether the world removes it once it has left the playfield or is too old (a boss stays
     # until it is destroyed).
     expires = True
-    # Whether ramming the player hurts it (not a boss, P07-R06).
+    # Whether ramming the player hurts it (not a boss, BOSS-16).
     rammable = True
     # Called once when the player destroys it, if defined (see JointedEnemy.on_destroyed).
     on_destroyed: Callable[[EnemyContext], None] | None = None
@@ -218,7 +254,7 @@ class Enemy:
         self.heading = math.pi
         # Seconds since the enemy was added.
         self.age = 0
-        # How ready the next attack is, 0..1, for the visuals (e.g. a charging light).
+        # How ready the next attack is, 0..1, for the visuals (e.g. a charging light, ENM-23).
         self.charge: float = 0
         # Set when the enemy is done (left for good); the world then removes it.
         self.gone = False
@@ -243,14 +279,14 @@ class Enemy:
     @property
     def hit_targets(self) -> list[ShotTarget]:
         """What the player's shots can hit and the player can bump into: the enemy itself, or
-        e.g. a boss's parts and core (P07-R01). Empty when nothing of it can be hit.
+        e.g. a boss's parts and core (BOSS-12). Empty when nothing of it can be hit.
         """
         return self._hit_targets()
 
     @property
     def shot_targets(self) -> list[ShotTarget]:
         """What the player's shots can hit: its `hit_targets`, unless some of them let shots
-        through (e.g. a boss's shielded core, phase 7 review).
+        through (e.g. a boss's shielded core, BOSS-15).
         """
         return self._shot_targets()
 
@@ -268,7 +304,7 @@ class Enemy:
 
 
 class EnemyEntry:
-    """Where a group comes in (P06-R07): an edge, and a position along it as a fraction (0..1)
+    """Where a group comes in (ENM-08): an edge, and a position along it as a fraction (0..1)
     of that edge, from the left for the top edge and from the bottom for the side edges.
     """
 
@@ -290,7 +326,7 @@ class EnemySpawnArea:
     ) -> None:
         """`entry` is where the group should come in (a wave script's choice); kinds follow it as
         far as their movement allows, and without it they pick at random. `top_range` is the X
-        range (logical pixels) that enemies coming in from the top keep to (phase 6 review); the
+        range (logical pixels) that enemies coming in from the top keep to (ENM-09); the
         whole width when None.
         """
         self.width = width
@@ -301,7 +337,7 @@ class EnemySpawnArea:
 
 
 class EnemyKindDefinition:
-    """A kind of enemy a game offers: a name, and how one group of it appears (P05)."""
+    """A kind of enemy a game offers: a name, and how one group of it appears (ENM-07)."""
 
     def __init__(self, id: str, name: str, spawn: EnemyKindSpawn) -> None:
         """`spawn` creates one group of this kind (one enemy, or e.g. a swarm), just outside the

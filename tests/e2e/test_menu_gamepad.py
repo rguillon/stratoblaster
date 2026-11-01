@@ -1,4 +1,4 @@
-"""e2e: the menus with a gamepad only (P01-R10, P12-R01, P12-R02)."""
+"""e2e: the menus with a gamepad only (UI-INPUT-07, UI-INPUT-12, UI-PAUSE-01)."""
 
 from typing import Any
 
@@ -70,7 +70,8 @@ def tilt_stick(page: Page, x: float, y: float, expected: dict[str, Any] | None =
     step(page)
 
 
-def test_p01_r10_the_whole_flow_with_the_gamepad_only(page: Page) -> None:
+def test_ui_input_12_the_whole_flow_with_the_gamepad_only(page: Page) -> None:
+    """Also UI-INPUT-07 (the buttons) and UI-INPUT-08 (the stick's dead zone)."""
     open_game(page)
     press_button(page, A, {"screen": "ship-select", "selectedId": "balanced"})
     tilt_stick(page, 0.2, 0)  # inside the dead zone
@@ -81,8 +82,8 @@ def test_p01_r10_the_whole_flow_with_the_gamepad_only(page: Page) -> None:
     press_button(page, B, {"screen": "ship-select", "selectedId": "light"})
     press_button(page, A, {"screen": "level-select"})
     press_button(page, A, {"screen": "game", "chosenLevelId": "1-1"})
-    # P12-R01, P12-R02: B does nothing in a level; Start and Select pause; B resumes; the level is
-    # left from the pause menu.
+    # UI-PAUSE-05: B does nothing in a level; UI-PAUSE-01: Start and Select pause; B resumes
+    # (UI-PAUSE-08); the level is left from the pause menu (UI-PAUSE-10).
     set_pad(page, {"button": [B, True]})
     step(page, 3)
     set_pad(page, {"button": [B, False]})

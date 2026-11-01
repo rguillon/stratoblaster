@@ -1,4 +1,4 @@
-"""The Spinner (P05-R06)"""
+"""The Spinner (`specs/enemies/spinner.md`)"""
 
 import math
 
@@ -10,7 +10,7 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, Cadence
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -27,9 +27,10 @@ class SpinnerPod:
 
 
 class Spinner(Enemy):
-    """P05-R06: descends to its stop height in the upper half, stops, then spins for 3 s firing a
-    spiral of bullets from its four pods (each bullet leaves outwards, so the directions turn with
-    the ring), then leaves upward. Its heading is the ring's rotation.
+    """ENM-SPINNER-04: descends to its stop height in the upper half, stops, then spins for 3 s
+    firing a spiral of bullets from its four pods (ENM-SPINNER-05; each bullet leaves outwards, so
+    the directions turn with the ring), then leaves upward (ENM-SPINNER-06). Its heading is the
+    ring's rotation.
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

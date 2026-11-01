@@ -1,22 +1,22 @@
-"""One model per prop kind of this game, keyed by its id (P04-R04): the cars, the buildings and lots
-of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts, masts,
-farms and plants are gone."""
+"""One model per prop kind of this game, keyed by its id (GFX-PROP-02): the cars, the buildings and
+lots of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts,
+masts, farms and plants are gone."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.cars import CAR_IDS  # noqa: E402
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.car_props import build_car  # noqa: E402
-from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402
-from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402
-from game.view.props.tree_props import TREE_MODELS  # noqa: E402
+from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.car_props import build_car  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tree_props import TREE_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def merged(parts: list[Any]) -> dict[str, Any]:
@@ -49,7 +49,8 @@ def make_car_models() -> dict[str, Any]:
 
 
 def make_prop_models() -> dict[str, Any]:
-    """One model per prop kind of this game, keyed by its id (P04-R04)."""
+    """One model per prop kind of this game, keyed by its id: only kinds some level places, the
+    road kit apart (GFX-PROP-03)."""
     return merged(
         [
             make_car_models(),

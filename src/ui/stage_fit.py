@@ -1,11 +1,11 @@
-"""Places the game stage in the window (GD-02, GD-03)."""
+"""Places the game stage in the window (GAME-SCREEN-02, UI-LOOK-02)."""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import LogicalScreen  # noqa: E402
+from core.content.game_definition import LogicalScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -24,7 +24,7 @@ class StageFit:
 
 def fit_stage(view_width: float, view_height: float, logical: LogicalScreen) -> StageFit:
     """Largest stage with the logical aspect ratio that fits a `view_width x view_height` window,
-    centred (GD-02, GD-03): never cropped, never stretched.
+    centred (GAME-SCREEN-02): never cropped, never stretched.
     """
     scale = float(
         window.Math.max(
@@ -48,7 +48,7 @@ def _px(n: float) -> str:
 
 def apply_stage_fit(stage: Any, overlay: Any, fit: StageFit, logical: LogicalScreen) -> None:
     """Places the stage (canvas container) in the window and scales the menu overlay, which is
-    laid out at the logical resolution, to the stage size.
+    laid out at the logical resolution (UI-LOOK-01), to the stage size.
     """
     stage.style.left = _px(fit.left)
     stage.style.top = _px(fit.top)

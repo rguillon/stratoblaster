@@ -1,4 +1,5 @@
-"""e2e: the menus with the mouse or taps only (P01-R07, P01-R11, P01-R14, P12-R01, P12-R02)."""
+"""e2e: the menus with the mouse or taps only (UI-INPUT-09, UI-INPUT-10, UI-INPUT-12, UI-LEVEL-01,
+UI-SHIP-07, UI-PAUSE-01, UI-PAUSE-10)."""
 
 from collections.abc import Callable
 
@@ -10,7 +11,8 @@ TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 
 
 def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
-    """Title → ship select → level select → game → pause → back to title with one kind of press."""
+    """Title → ship select → level select → game → pause → back to title with one kind of press: a
+    press selects, a second confirms (UI-INPUT-09); the Back button goes back (UI-INPUT-10)."""
     open_game(page)
     press(page.locator(".title-start"))
     expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})
@@ -25,8 +27,8 @@ def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
     press(page.locator(".level-cell").first)
     expect_state(page, {"screen": "game", "chosenShipId": "light", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")
-    # Phase 6 review: no Back button over the playfield; P12-R01, P12-R02: the pause button,
-    # then Main menu and Yes, leave.
+    # No Back button over the playfield (UI-HUD-09); the pause button (UI-PAUSE-02), then Main
+    # menu and Yes, leave (UI-PAUSE-10).
     expect(page.locator(".menu-back")).to_have_count(0)
     press(page.locator(".game-pause"))
     expect_state(page, {"screen": "pause", "paused": True, "selectedId": "resume"})
@@ -40,16 +42,17 @@ def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
     expect_state(page, {"screen": "title", "paused": False})
 
 
-def test_p01_r11_the_whole_flow_with_the_mouse_only(page: Page) -> None:
+def test_ui_input_12_the_whole_flow_with_the_mouse_only(page: Page) -> None:
     run_flow(page, lambda target: target.click())
 
 
 @pytest.mark.browser_context_args(**TOUCH_PHONE)
-def test_p01_r11_the_whole_flow_with_taps_only(page: Page) -> None:
+def test_ui_input_12_the_whole_flow_with_taps_only(page: Page) -> None:
     run_flow(page, lambda target: target.tap())
 
 
-def test_p01_r07_p06_r01_p08_r01_p09_r01_p10_r01_20_levels_all_unlocked(page: Page) -> None:
+def test_ui_level_01_20_levels_all_unlocked(page: Page) -> None:
+    """Also UI-LEVEL-03: no level is locked."""
     open_game(page)
     page.locator(".title-start").click()
     expect_state(page, {"screen": "ship-select"})
@@ -66,7 +69,7 @@ def test_p01_r07_p06_r01_p08_r01_p09_r01_p10_r01_20_levels_all_unlocked(page: Pa
     expect_state(page, {"selectedId": "4-2"})
 
 
-def test_p01_r14_the_last_chosen_ship_is_highlighted_after_a_reload(page: Page) -> None:
+def test_ui_ship_07_the_last_chosen_ship_is_highlighted_after_a_reload(page: Page) -> None:
     open_game(page)
     page.locator(".title-start").click()
     expect_state(page, {"screen": "ship-select"})

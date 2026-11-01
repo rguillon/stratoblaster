@@ -1,7 +1,7 @@
-"""The building windows painted once into one texture, an atlas (D-210): a grid of window cells in a
-few styles, some lit (each its own colour and brightness, a soft halo round it), some dark. Each
-wall of a building is one quad mapped on a block of cells, picked at random, so the buildings all
-look different. Pure: the atlas is RGBA pixels; the scenery kit uploads them.
+"""The building windows painted once into one texture, an atlas (D-210, GFX-BLDG-12): a grid of
+window cells in a few styles, some lit (each its own colour and brightness, a soft halo round it),
+some dark. Each wall of a building is one quad mapped on a block of cells, picked at random, so the
+buildings all look different. Pure: the atlas is RGBA pixels; the scenery kit uploads them.
 
 The RGB is the light (black where nothing is lit), the alpha the shape (the windows, their halos;
 0 on the wall between them, which shows through).
@@ -11,8 +11,8 @@ The look (`WindowAtlasLook`, a config record) has:
 - `styles`: the styles, each painted in its own band of columns, as many bands as styles. A style
   has `window`, the window's `[x0, y0, x1, y1]` pixels in its cell, and `lit`, the chance a window
   is lit on a floor of average activity;
-- `doors` (D-215): door styles as the window styles are, each in a band of `doorColumns` columns
-  after the windows' bands (the windows' bands share the columns left);
+- `doors` (D-215, GFX-BLDG-14): door styles as the window styles are, each in a band of
+  `doorColumns` columns after the windows' bands (the windows' bands share the columns left);
 - `colors`: the colours of the lit windows; `brightness`: their `[low, high]` brightness;
 - `blinds`: the chance a lit window has its blind half down (its top half dimmer);
 - `dark`: the colour of a dark window; `halo`: the opacity of the halo round a lit one;
@@ -28,7 +28,7 @@ from core.math.rng import create_rng, pick, random_in
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -73,7 +73,7 @@ def door_column(look: Any, door: int) -> int:  # noqa: ANN401 (a config record)
     return len(look.styles) * style_columns(look) + door * columns
 
 
-def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401
+def _put(pixels: Any, i: int, rgb: list[float], alpha: float) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     """Sets pixel `i`, unless it already shows something more opaque (halos meet, windows win)."""
     a = _byte(alpha)
     if pixels[i * 4 + 3] > a:
@@ -89,12 +89,12 @@ def _scaled(rgb: list[float], k: float) -> list[float]:
 
 
 def _paint_window(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    pixels: Any,  # noqa: ANN401
-    look: Any,  # noqa: ANN401
+    pixels: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    look: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     at: list[int],
     window: list[int],
     light: list[float] | None,
-    blind: bool,  # noqa: FBT001
+    blind: bool,  # noqa: FBT001 (a flag of the window's look, positional)
 ) -> None:
     """One window whose cell's corner is pixel `at`: lit in `light` (None: dark), with its halo
     when lit."""
@@ -157,7 +157,7 @@ def window_atlas_pixels(look: Any) -> Any:  # noqa: ANN401 (a config record)
 _kept: dict[str, Any] = {}
 
 
-def _json_of(value: Any) -> str:  # noqa: ANN401
+def _json_of(value: Any) -> str:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
     __pragma__("js", "{}", "return JSON.stringify(value);")
     return repr(value)
 

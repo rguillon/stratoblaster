@@ -1,4 +1,4 @@
-"""The Harbour Kraken (P08-R10, 2-2's final boss)
+"""The Harbour Kraken (2-2's final boss, specs/bosses/final/2-2-harbour-kraken.md)
 
 Its four crane arms swing at the shoulder and the elbow (D-061), each out of step with the others.
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y).
@@ -13,7 +13,7 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -23,8 +23,9 @@ ORANGE = bullet("orange", 175)
 
 
 def fpart(part_id: str, at: list[Any], radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
-    extra = {} if options == None else options  # noqa: E711
+    """A final boss's part: drops a bonus 60 % of the time (FB-HARBOUR-KRAKEN-15,
+    `part_drop_chance`)."""
+    extra = {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return part(part_id, at, radius, health, merge({"drop": 0.6}, extra))
 
 
@@ -46,8 +47,8 @@ CRANE_REST = {
     ],
 }
 
-# How each crane swings (phase 7 review, D-061): degrees and seconds at the shoulder and the
-# elbow, and its phase, so that the four arms never move together.
+# How each crane swings (phase 7 review, D-061, FB-HARBOUR-KRAKEN-06): degrees and seconds at the
+# shoulder and the elbow, and its phase, so that the four arms never move together.
 SWING = {
     "fore-left": [10, 18, 0],
     "fore-right": [10, 18, 0.31],
@@ -112,8 +113,9 @@ def grab(crane: str, health: float) -> Any:
     )
 
 
-# The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
-# centre, X right, Y up, and height above the playfield (see `BossDesign.guns`), at rest.
+# The guns' muzzles (phase 7 review, FB-HARBOUR-KRAKEN-03): the tips of the barrels its model
+# draws, from the boss's centre, X right, Y up, and height above the playfield (see
+# `BossDesign.guns`), at rest.
 
 # The grab cannons' barrels: the left fore one and the left aft one (mirrored on the right).
 GRAB_FORE = [-70, -59.82, 4]
@@ -128,14 +130,15 @@ def sided(m: list[Any], side: float) -> list[list[Any]]:
     return [[side * m[0], m[1], m[2]]]
 
 
-# 2-2: a cargo crane-ship with four crane arms swinging at the shoulder and the elbow, orange neon
-# (P08-R10). The four grab cannons shield the core; the container bay at the stern launches
-# Gnats. The ground stops: the fight is over the harbour.
+# 2-2: a cargo crane-ship with four crane arms swinging at the shoulder and the elbow, orange
+# neon. The four grab cannons shield the core (FB-HARBOUR-KRAKEN-09); the container bay at the
+# stern launches Gnats (FB-HARBOUR-KRAKEN-10). The ground stops: the fight is over the harbour.
 _HARBOUR_KRAKEN = record(
     {
         "id": "harbour-kraken",
-        # Angry after each destroyed part (phase 7 review).
+        # Angry after each destroyed part (phase 7 review, FB-HARBOUR-KRAKEN-12).
         "rage": rage.vortex(4, "orange", "magenta"),
+        # Its core, grab cannons, container bay and points (FB-HARBOUR-KRAKEN-15).
         "stats": stats(
             {
                 "id": "harbour-kraken",
@@ -153,6 +156,7 @@ _HARBOUR_KRAKEN = record(
                 "joints": crane_joint_table(),
             }
         ),
+        # Where it stops and how it moves in place; the ground stops (FB-HARBOUR-KRAKEN-08).
         "stopFraction": 0.75,
         "sway": {"amplitude": 35, "period": 10},
         "bob": {"amplitude": 6, "period": 5},
@@ -166,6 +170,8 @@ _HARBOUR_KRAKEN = record(
             "crane-aft-left": {"gun": sided(GRAB_AFT, 1)},
             "crane-aft-right": {"gun": sided(GRAB_AFT, -1)},
         },
+        # The grab cannons' bursts, then the core's laser and pattern per stage
+        # (FB-HARBOUR-KRAKEN-11).
         "stages": stages(
             [
                 volley.burst("crane-fore-left", 3, 3, 0.16, RED, 1),
@@ -186,8 +192,9 @@ _HARBOUR_KRAKEN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold; at transformation 2 its wing
-# armour bursts off, baring a dark metal frame, and a pair of gun batteries unfold.
+# baring a dark metal frame, and a pair of gatling turrets unfold (FB-HARBOUR-KRAKEN-13); at
+# transformation 2 its wing armour bursts off, baring a dark metal frame, and a pair of gun
+# batteries unfold (FB-HARBOUR-KRAKEN-14). The regions it sheds: FB-HARBOUR-KRAKEN-07.
 HARBOUR_KRAKEN = with_weapons(
     _HARBOUR_KRAKEN,
     [

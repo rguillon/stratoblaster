@@ -1,4 +1,4 @@
-"""P08-R10, 2-1: the Floe Breaker
+"""MB-FLOE-BREAKER-01 to MB-FLOE-BREAKER-06, 2-1: the Floe Breaker
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -17,18 +17,18 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_shapes import barrels  # noqa: E402
-from game.view.bosses.mini_boss_greebles import dish, lamps, mast, plate, rect  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.final_boss_shapes import barrels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_greebles import dish, lamps, mast, plate, rect  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     SHADE,
     WHITE,
     H,
@@ -38,9 +38,9 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     socket,
     turret,
 )
-from game.view.bosses.world_2.floe_breaker_details import floe_dressing  # noqa: E402
-from game.view.bosses.world_2.floe_breaker_frost import FROST  # noqa: E402
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.floe_breaker_details import floe_dressing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.floe_breaker_frost import FROST  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     ICE_FLESH,
     crystals,
     fringe,
@@ -54,7 +54,7 @@ from game.view.bosses.world_2.w2_organic import (  # noqa: E402
 
 # The navigation lights (cyan neon of the boss, from its look).
 _CYAN_NEON = BOSS_LOOK.neon["floe-breaker"]
-CYAN = _CYAN_NEON if _CYAN_NEON != None else [0.1, 0.85, 1.0]  # noqa: E711
+CYAN = _CYAN_NEON if _CYAN_NEON != None else [0.1, 0.85, 1.0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 # Navigation lights: red to port (+X, the screen's left), green to starboard.
 PORT_RED = [1.0, 0.1, 0.12]
 STARBOARD_GREEN = [0.2, 1.0, 0.35]
@@ -126,7 +126,8 @@ BOW_ICE_SIDES = [2, 3]
 
 
 def bow_paint(side: int, band: int) -> Any:
-    """The bow's top facets crusted with ice on its front bands (None: the bow's own colour)."""
+    """The bow's top facets crusted with ice on its front bands (None: the bow's own colour;
+    MB-FLOE-BREAKER-05)."""
     if side in BOW_ICE_SIDES and band >= 1:
         return FROST.snow
     return None
@@ -137,7 +138,8 @@ def draw_hull(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     hull = p.hull
-    # P16-R05: the old skirt is now the creature's belly, its cyan band a line of photophores.
+    # MB-FLOE-BREAKER-02: the old skirt is now the creature's belly, its cyan band a line of
+    # photophores.
     flesh.bevel_slab(FLOE_HULL, SKIRT, [3.0, 3.0], ICE_FLESH.teal, None, ICE_FLESH.rime)
     neon_band(neon, FLOE_HULL, [-3.4, -1.1], [0.985, 1.02], CYAN)
     shell(flesh, SegmentedBody(-44.0, 18.0, 5, 27.0, 2.0, 11.0))
@@ -158,7 +160,8 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_bridge(p: EnemyParts) -> None:
-    """The brain hump with its eyes and beacon gland, the spiracles and the hover fans aft."""
+    """The brain hump with its eyes and beacon gland, the spiracles and the hover fans aft, which
+    spin (MB-FLOE-BREAKER-06)."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -220,12 +223,13 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def sponson(p: EnemyParts, at: Vec3) -> None:
-    """A harpoon gun's sponson (P08-R10): a mounting plate on the beam and a cable reel outboard."""
+    """A harpoon gun's sponson (MB-FLOE-BREAKER-03): a mounting plate on the beam and a cable reel
+    outboard."""
     part = FLOE_BREAKER.stats.parts[0]
     # `parts[0]?.radius ?? 13`.
-    r = 13.0 if part == None or part.radius == None else part.radius  # noqa: E711
+    r = 13.0 if part == None or part.radius == None else part.radius  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     s = sign_of(at[0])
-    # P16-R05: a muscle bulging out of the flank, a metal mount on top, the reel a gland.
+    # MB-FLOE-BREAKER-03: a muscle bulging out of the flank, a metal mount on top, the reel a gland.
     organ(p.flesh, r * 0.85, 7, ICE_FLESH.graphite, Placement(offset(at, 0.0, -2.0, 0.0)), 0.3)
     p.hull.bevel_slab(
         scaled(MOUNT, r * 0.55),
@@ -243,7 +247,7 @@ def sponson(p: EnemyParts, at: Vec3) -> None:
 
 
 def harpoon_turret(p: EnemyParts, at: Vec3) -> None:
-    """A harpoon gun's turret: one long barrel, barbs near its tip."""
+    """A harpoon gun's turret (MB-FLOE-BREAKER-03): one long barrel, barbs near its tip."""
     top = offset(at, 0.0, 4.5, 0.0)
     turret(
         p,
@@ -272,10 +276,12 @@ def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> 
 
 
 def build_floe_breaker(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Floe Breaker, an icebreaker hovership with a sharp armoured bow, cyan neon
-    around its skirt and along its bow; its two harpoon guns sit on sponsons either side.
-    P16-R05: now a living ice-ram, a shelled sea beast with a bone ram, a brain hump and eyes,
-    frost crystals grown through its flesh; its harpoons sit on muscles bulging from its flanks."""
+    """MB-FLOE-BREAKER-01, MB-FLOE-BREAKER-04: the Floe Breaker, an icebreaker hovership with a
+    sharp armoured bow, cyan neon around its skirt and along its bow; its two harpoon guns sit on
+    sponsons either side.
+    MB-FLOE-BREAKER-02: now a living ice-ram, a shelled sea beast with a bone ram, a brain hump and
+    eyes, frost crystals grown through its flesh; its harpoons sit on muscles bulging from its
+    flanks."""
     model: BuiltEnemyModel = build_boss_model(
         FLOE_BREAKER,
         scene,

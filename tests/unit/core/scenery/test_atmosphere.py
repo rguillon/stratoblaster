@@ -51,13 +51,13 @@ def look(**overrides: object) -> SkyLook:
     return SkyLook(**values)  # type: ignore[arg-type]
 
 
-def test_p08_r04_the_six_times_of_day_are_names() -> None:
+def test_gfx_sky_03_the_six_times_of_day_are_names() -> None:
     assert is_time_of_day("dawn")
     assert is_time_of_day("night")
     assert not is_time_of_day("noon")
 
 
-def test_p08_r04_blending_at_the_ends_gives_the_looks_themselves() -> None:
+def test_gfx_sky_05_blending_at_the_ends_gives_the_looks_themselves() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere(lightning=1.0)
     assert blend_atmosphere(a, b, 0) is a
@@ -66,7 +66,7 @@ def test_p08_r04_blending_at_the_ends_gives_the_looks_themselves() -> None:
     assert blend_atmosphere(a, b, 2) is b
 
 
-def test_p08_r04_halfway_blends_every_number_halfway() -> None:
+def test_gfx_sky_05_halfway_blends_every_number_halfway() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere(lightning=1.0, haze=(1.0, 0.5, 0.0))
     b.fog = Fog(300, 2000)
@@ -81,7 +81,7 @@ def test_p08_r04_halfway_blends_every_number_halfway() -> None:
     assert half.lightning == pytest.approx(0.5)
 
 
-def test_p08_r04_the_sun_turns_the_short_way_round() -> None:
+def test_gfx_sky_05_the_sun_turns_the_short_way_round() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere()
     a.sun = Sun(0, 350, (1, 1, 1), 1, 1)
@@ -90,7 +90,7 @@ def test_p08_r04_the_sun_turns_the_short_way_round() -> None:
     assert _lerp_angle(10, 350, 0.5) == pytest.approx(0)
 
 
-def test_p08_r04_stops_and_clouds_of_unequal_lists_keep_the_extra_ones() -> None:
+def test_gfx_sky_05_stops_and_clouds_of_unequal_lists_keep_the_extra_ones() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere()
     a.sky = Sky(a.sky.haze, [SkyStop(-1, (0, 0, 0)), SkyStop(0, (1, 1, 1))], 1)
@@ -107,7 +107,7 @@ def test_p08_r04_stops_and_clouds_of_unequal_lists_keep_the_extra_ones() -> None
     assert len(blend_atmosphere(one, two, 0.5).clouds) == 1
 
 
-def test_p08_r05_weather_changes_kind_halfway() -> None:
+def test_gfx_weather_06_weather_changes_kind_halfway() -> None:
     snow = Weather("snow", 1)
     rain = Weather("rain", 0.5)
     assert _blend_weather(snow, rain, 0.25).kind == "snow"
@@ -115,7 +115,7 @@ def test_p08_r05_weather_changes_kind_halfway() -> None:
     assert _blend_weather(snow, rain, 0.5).strength == pytest.approx(0.75)
 
 
-def test_p08_r05_weather_with_no_strength_takes_the_other_kind() -> None:
+def test_gfx_weather_06_weather_with_no_strength_takes_the_other_kind() -> None:
     rain = Weather("rain", 0.5)
     assert _blend_weather(NO_WEATHER, rain, 0.2).kind == "rain"
     assert _blend_weather(rain, NO_WEATHER, 0.8).kind == "rain"
@@ -136,7 +136,7 @@ def test_second_weather_blends_only_when_either_look_has_one() -> None:
     assert both.kind == "ash"
 
 
-def test_p08_r04_the_track_blends_along_the_level() -> None:
+def test_gfx_sky_05_the_track_blends_along_the_level() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere(lightning=1.0)
     track = AtmosphereTrack(
@@ -152,7 +152,7 @@ def test_p08_r04_the_track_blends_along_the_level() -> None:
     assert 0 < middle < 1
 
 
-def test_p08_r04_an_instant_change_jumps_to_its_look() -> None:
+def test_gfx_sky_05_an_instant_change_jumps_to_its_look() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere(lightning=1.0)
     track = AtmosphereTrack(a, [AtmosphereChange(50, 50, b)], lambda look: look)
@@ -162,7 +162,7 @@ def test_p08_r04_an_instant_change_jumps_to_its_look() -> None:
     assert track.at(50.5).lightning == pytest.approx(1)
 
 
-def test_p08_r04_the_track_takes_the_changes_in_order_of_their_start() -> None:
+def test_gfx_sky_05_the_track_takes_the_changes_in_order_of_their_start() -> None:
     a = sample_atmosphere()
     b = sample_atmosphere(lightning=1.0)
     late = AtmosphereChange(200, 220, a)
@@ -171,7 +171,7 @@ def test_p08_r04_the_track_takes_the_changes_in_order_of_their_start() -> None:
     assert track.at(130).lightning == pytest.approx(1)
 
 
-def test_p08_r04_a_change_that_ends_before_it_starts_is_refused() -> None:
+def test_gfx_sky_05_a_change_that_ends_before_it_starts_is_refused() -> None:
     with pytest.raises(ValueError):
         AtmosphereTrack(
             sample_atmosphere(),

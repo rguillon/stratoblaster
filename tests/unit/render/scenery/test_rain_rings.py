@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/rain_rings.py`."""
+"""Unit tests of `src/render/scenery/rain_rings.py` (GFX-WEATHER-09)."""
 
 from types import SimpleNamespace
 from typing import Any

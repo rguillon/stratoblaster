@@ -1,4 +1,4 @@
-"""The data a level run takes and gives (P06-R03)
+"""The data a level run takes and gives (`specs/gameplay/level-flow.md`)
 
 The options are passed to `LevelRun` in the positional order of its constructor (see
 `LevelRunOptions`).
@@ -8,23 +8,23 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Literal  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.content.game_definition import LogicalScreen  # noqa: E402
-from core.content.game_level import GameLevel  # noqa: E402
-from core.entities.enemy import EnemyKindDefinition  # noqa: E402
-from core.entities.muzzle import PlanePoint, PlayfieldEye  # noqa: E402
-from core.entities.weapon import WeaponDefinition  # noqa: E402
-from core.systems.bonus_world import BonusRules  # noqa: E402
-from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402
-from core.systems.player_bombs import BombRules  # noqa: E402
-from core.systems.player_flight import FlightBounds, FlightInput  # noqa: E402
-from core.systems.player_hull import HullRules  # noqa: E402
-from core.systems.run_arsenal import WeaponLevels  # noqa: E402
-from core.systems.ship_journey import JourneyRules  # noqa: E402
+from core.content.game_definition import LogicalScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.game_level import GameLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import PlanePoint, PlayfieldEye  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.bonus_world import BonusRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_bombs import BombRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_flight import FlightBounds, FlightInput  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.run_arsenal import WeaponLevels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.ship_journey import JourneyRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-# Where a level stands (P06-R03); `over` once the player has lost every life (GD-20).
+# Where a level stands (GAME-LEVEL-10); `over` once the player has lost every life (GAME-LIFE-09).
 LevelPhase = Literal["playing", "clearing", "complete", "over"]
 # What a hit that landed on the player is: see `PlayerHitKind` (player_hits).
 PlayerHitKind = Literal["bullet", "missile", "laser", "collision"]
@@ -34,9 +34,9 @@ __pragma__("noskip")
 
 
 class LevelCheckpoint:
-    """Where a level can start again once its mini boss is destroyed (P07-R08, GD-42): the level's
+    """Where a level can start again once its mini boss is destroyed (GAME-LEVEL-09): the level's
     progress just after it, the bosses passed, and the player's weapons at that moment. `score` is
-    the score when the mini boss was destroyed: a Continue starts from it (P11-R04).
+    the score when the mini boss was destroyed: a Continue starts from it (GAME-SCORE-06).
     """
 
     def __init__(
@@ -49,10 +49,10 @@ class LevelCheckpoint:
 
 
 class LevelResult:
-    """What the "Level complete" (or "Game over") overlay shows (P06-R03). `outcome`: whether the
-    level was completed, or the game is over (phase 6 review). `new_high_score` is set by the app
-    when `score` beat the saved high score (P11-R03). `checkpoint`: when the game is over after the
-    mini boss, where it can go on from (P07-R08).
+    """What the "Level complete" (or "Game over") overlay shows (GAME-LEVEL-13). `outcome`: whether
+    the level was completed, or the game is over (phase 6 review). `new_high_score` is set by the
+    app when `score` beat the saved high score (GAME-SCORE-05). `checkpoint`: when the game is over
+    after the mini boss, where it can go on from (GAME-LIFE-11).
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -85,9 +85,9 @@ class LandedHit:
 
 
 class LevelControls:
-    """The player's controls for one step: `move` is the direction to fly in; `switch_weapon` (phase
-    6 review) switches to the next weapon of `LevelRunOptions.weapons`; `bomb` (P11-R05) sets a bomb
-    off, once per press.
+    """The player's controls for one step: `move` is the direction to fly in; `switch_weapon`
+    (GAME-WPN-13) switches to the next weapon of `LevelRunOptions.weapons`; `bomb` (GAME-BOMB-03)
+    sets a bomb off, once per press.
     """
 
     def __init__(
@@ -105,7 +105,7 @@ class LevelControls:
 
 class RunShip:
     """The player ship of a run. Shots leave `muzzle_offset` above the ship's centre (its nose).
-    `max_health` is its health (GD-20); 100 when None.
+    `max_health` is its health (GAME-SHIP-03); 100 when None.
     """
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -124,7 +124,7 @@ class RunShip:
 
 
 class Supplies:
-    """The player's lives and bombs, kept from one level to the next (reviewer, 2026-10-28)."""
+    """The player's lives and bombs, kept from one level to the next (GAME-LIFE-12)."""
 
     def __init__(self, lives: float, bombs: float) -> None:
         self.lives = lives
@@ -139,7 +139,7 @@ class LevelRunOptions:
     weapons kept from the levels completed before), `start_supplies`, `eye` (the camera's eye, from
     which enemy shots are seen leaving their raised muzzles), `in_view` (whether a point of the
     playfield is on screen; the playfield's rectangle when None), `bonuses`, `bombs`, `hull` (the
-    player cannot be hurt when None), `boss_kinds`, `boss_rules`, `checkpoint` (P07-R08) and
+    player cannot be hurt when None), `boss_kinds`, `boss_rules`, `checkpoint` (GAME-LIFE-11) and
     `journey` (the ship rises into the level and flies off it; it is at its start when None).
     """
 

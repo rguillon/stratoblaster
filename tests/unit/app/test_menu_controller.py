@@ -1,5 +1,5 @@
 """Unit tests of `src/app/menu_controller.py`."""
-# (P01-R14, P11-R03, P12-R03, P12-R04).
+# (UI-SHIP-07, GAME-SCORE-05, UI-PAUSE-11, UI-SET-06).
 
 import pytest
 from helpers.menu_game import make_game
@@ -80,7 +80,7 @@ def level_result(score: float, outcome: str = "complete") -> LevelResult:
     return LevelResult("1-1", 4, 5, outcome, score, False, None)
 
 
-def test_p01_r02_the_menu_starts_on_the_loading_screen_and_shows_its_progress() -> None:
+def test_ui_load_03_the_menu_starts_on_the_loading_screen_and_shows_its_progress() -> None:
     controller, display, _, _ = make()
     assert isinstance(display.last, LoadingView)
     controller.set_progress(0.6)
@@ -88,7 +88,8 @@ def test_p01_r02_the_menu_starts_on_the_loading_screen_and_shows_its_progress() 
     assert display.last.progress == pytest.approx(0.6)
 
 
-def test_p01_r04_finishing_the_loading_shows_the_title_with_the_saved_high_score() -> None:
+def test_ui_title_03_finishing_the_loading_shows_the_title_with_the_saved_high_score() -> None:
+    """Also UI-LOAD-04."""
     storage = MemoryStorage()
     storage.set(saved_choice_keys("stratoblaster").high_score, "700")
     controller, display, _, _ = make(storage)
@@ -98,7 +99,7 @@ def test_p01_r04_finishing_the_loading_shows_the_title_with_the_saved_high_score
     assert display.last.high_score == 700
 
 
-def test_p11_r03_a_score_above_the_high_score_is_saved_and_a_lower_one_is_not() -> None:
+def test_game_score_05_a_score_above_the_high_score_is_saved_and_a_lower_one_is_not() -> None:
     controller, _, _, storage = make()
     assert controller.record_score(300) is True
     assert controller.high_score == 300
@@ -108,7 +109,7 @@ def test_p11_r03_a_score_above_the_high_score_is_saved_and_a_lower_one_is_not() 
     assert controller.record_score(300) is False
 
 
-def test_p11_r03_a_completed_level_that_beats_the_score_says_so_on_its_panel() -> None:
+def test_ui_over_02_a_completed_level_that_beats_the_score_says_so_on_its_panel() -> None:
     controller, display, _, _ = make()
     finish(controller)
     go(controller, "confirm", "confirm", "confirm")
@@ -119,7 +120,7 @@ def test_p11_r03_a_completed_level_that_beats_the_score_says_so_on_its_panel() -
     assert game_view.complete.new_high_score == "New high score!"
 
 
-def test_p06_r09_a_direct_start_refreshes_the_display() -> None:
+def test_dev_opt_01_a_direct_start_refreshes_the_display() -> None:
     controller, display, _, _ = make()
     finish(controller)
     assert controller.play_direct("alpha", "1-1") is True
@@ -127,14 +128,14 @@ def test_p06_r09_a_direct_start_refreshes_the_display() -> None:
     assert controller.play_direct("nope", "1-1") is False
 
 
-def test_p01_r14_the_chosen_ship_is_remembered_for_next_time() -> None:
+def test_ui_ship_07_the_chosen_ship_is_remembered_for_next_time() -> None:
     controller, _, _, storage = make()
     finish(controller)
     go(controller, "confirm", "right", "confirm")
     assert storage.get(saved_choice_keys("stratoblaster").last_ship) == "beta"
 
 
-def test_p01_r14_the_saved_ship_is_highlighted_when_the_menu_starts() -> None:
+def test_ui_ship_07_the_saved_ship_is_highlighted_when_the_menu_starts() -> None:
     storage = MemoryStorage()
     storage.set(saved_choice_keys("stratoblaster").last_ship, "beta")
     controller, display, _, _ = make(storage)
@@ -144,7 +145,7 @@ def test_p01_r14_the_saved_ship_is_highlighted_when_the_menu_starts() -> None:
     assert display.last.selected == 1
 
 
-def test_p12_r04_the_volumes_are_saved_on_every_change() -> None:
+def test_ui_set_06_the_volumes_are_saved_on_every_change() -> None:
     controller, _, _, storage = make()
     finish(controller)
     go(controller, "confirm", "down", "down", "confirm")
@@ -154,7 +155,7 @@ def test_p12_r04_the_volumes_are_saved_on_every_change() -> None:
     assert storage.get(keys.sfx) == "8"
 
 
-def test_p12_r04_saved_volumes_are_restored_when_the_menu_starts() -> None:
+def test_ui_set_06_saved_volumes_are_restored_when_the_menu_starts() -> None:
     storage = MemoryStorage()
     keys = saved_setting_keys("stratoblaster")
     storage.set(keys.music, "3")
@@ -164,21 +165,22 @@ def test_p12_r04_saved_volumes_are_restored_when_the_menu_starts() -> None:
     assert controller._saved_volumes.sfx == 4
 
 
-def test_p12_r04_an_invalid_saved_volume_falls_back_to_the_default() -> None:
+def test_ui_set_06_an_invalid_saved_volume_falls_back_to_the_default() -> None:
+    """Also UI-SET-05."""
     storage = MemoryStorage()
     storage.set(saved_setting_keys("stratoblaster").music, "loud")
     controller, _, _, _ = make(storage)
     assert controller._saved_volumes.music == 6
 
 
-def test_p01_r07_a_locked_pick_shakes_the_entry_with_the_locked_text() -> None:
+def test_ui_level_04_a_locked_pick_shakes_the_entry_with_the_locked_text() -> None:
     controller, display, _, _ = make()
     finish(controller)
     go(controller, "confirm", "confirm", "down", "confirm")
     assert display.shaken == ["Locked"]
 
 
-def test_p12_r09_every_command_is_reported_with_its_feedback() -> None:
+def test_aud_engine_09_every_command_is_reported_with_its_feedback() -> None:
     feedback: list = []
     controller, _, _, _ = make(
         on_feedback=lambda command, result: feedback.append((command, result))
@@ -188,7 +190,7 @@ def test_p12_r09_every_command_is_reported_with_its_feedback() -> None:
     assert feedback == [("down", "moved")]
 
 
-def test_p12_r03_pausing_reports_the_pause_and_refreshes() -> None:
+def test_ui_pause_11_pausing_reports_the_pause_and_refreshes() -> None:
     feedback: list = []
     controller, display, _, _ = make(on_feedback=lambda c, r: feedback.append((c, r)))
     finish(controller)
@@ -199,7 +201,7 @@ def test_p12_r03_pausing_reports_the_pause_and_refreshes() -> None:
     assert controller.pause() is False
 
 
-def test_p01_r13_the_input_of_each_frame_is_applied_after_the_transition_timer() -> None:
+def test_ui_flow_08_the_input_of_each_frame_is_applied_after_the_transition_timer() -> None:
     controller, display, inputs, _ = make()
     finish(controller)
     inputs.frames.append(["down"])
@@ -209,7 +211,7 @@ def test_p01_r13_the_input_of_each_frame_is_applied_after_the_transition_timer()
     assert display.last.selected == 1
 
 
-def test_p01_r13_the_view_is_redrawn_only_when_something_changed() -> None:
+def test_ui_flow_01_the_view_is_redrawn_only_when_something_changed() -> None:
     controller, display, _, _ = make()
     finish(controller)
     count = len(display.views)
@@ -219,7 +221,7 @@ def test_p01_r13_the_view_is_redrawn_only_when_something_changed() -> None:
     assert len(display.views) == count
 
 
-def test_p01_r13_the_scene_callback_runs_after_each_redraw() -> None:
+def test_ui_title_09_the_scene_callback_runs_after_each_redraw() -> None:
     seen: list = []
     controller, _, _, _ = make(on_change=seen.append)
     finish(controller)
@@ -227,7 +229,7 @@ def test_p01_r13_the_scene_callback_runs_after_each_redraw() -> None:
     assert seen[-1].screen == "title"
 
 
-def test_p01_r13_the_settings_screen_is_shown_when_chosen() -> None:
+def test_ui_set_01_the_settings_screen_is_shown_when_chosen() -> None:
     controller, display, _, _ = make()
     finish(controller)
     go(controller, "down", "confirm")

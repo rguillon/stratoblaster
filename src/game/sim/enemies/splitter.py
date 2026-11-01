@@ -1,4 +1,4 @@
-"""The Splitter (P05-R10)"""
+"""The Splitter (`specs/enemies/splitter.md`)"""
 
 import math
 
@@ -12,7 +12,7 @@ from game.sim.enemies.enemy_helpers import Cadence, bullet_shot, on_playfield
 from game.sim.enemies.hornet import Hornet, hornet_options
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -21,8 +21,9 @@ POD = ENEMY_CONFIG.splitterPod
 
 
 class Splitter(Enemy):
-    """P05-R10: flies down a predefined curved path and fires one aimed bullet every 2.5 s. When it
-    is destroyed its three pods break off, and each dives at the player like a small Hornet.
+    """ENM-SPLITTER-05: flies down a predefined curved path and fires one aimed bullet every 2.5 s
+    (ENM-SPLITTER-06). When it is destroyed its three pods break off (ENM-SPLITTER-07), and each
+    dives at the player like a small Hornet (ENM-SPLITTER-08).
     """
 
     def __init__(self, path: Path) -> None:

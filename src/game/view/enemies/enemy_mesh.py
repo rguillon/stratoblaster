@@ -1,24 +1,24 @@
-"""Builds an enemy model from its parts (P05, P07, P14, P16)
+"""Builds an enemy model from its parts, generated in code (ENM-34)
 
 The model is a node tree: a root, a body (hull, flesh, lights and wings) and, outside
-the body, reactors, rotors and muzzles (so shots leave from the same points, P16-R08).
+the body, reactors, rotors and muzzles (so shots leave from the same points, GFX-ART-18).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-from core.entities.enemy import Enemy  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402
-from game.view.enemies.enemy_materials import (  # noqa: E402
+from core.entities.enemy import Enemy  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     body_color,
     enemy_color,
     enemy_materials,
@@ -29,19 +29,19 @@ from game.view.enemies.enemy_materials import (  # noqa: E402
     tinted_hull,
     unlit,
 )
-from game.view.enemies.living_motion import (  # noqa: E402
+from game.view.enemies.living_motion import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     flutter_angle,
     glow_level,
     is_living_motion,
     new_breath,
 )
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     new_transform_node,
     node_name,
 )
-from render.edge_trim_mesh import set_trim  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
-from render.model_animation import (  # noqa: E402
+from render.edge_trim_mesh import set_trim  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.model_animation import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     add_model_animation,
     step_model_animations,
 )
@@ -50,7 +50,7 @@ from render.model_animation import (  # noqa: E402
 class EnemyParts:
     """Builders for the three parts of an enemy model."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         hull: Any,
         flesh: Any,
@@ -62,26 +62,26 @@ class EnemyParts:
         rotor: Any,
         muzzle: Any,
     ) -> None:
-        # Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (P16-R01).
+        # Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (GFX-ART-12).
         self.hull = hull
-        # Dark flesh (use the `ENEMY_LOOK.flesh` shades): the living body (P16-R01).
+        # Dark flesh (use the `ENEMY_LOOK.flesh` shades): the living body (ENM-35).
         self.flesh = flesh
-        # Glowing veins, eyes and glands, pulsing slowly (P16-R07); in the enemies' colour family.
+        # Glowing veins, eyes and glands, pulsing slowly (ENM-42); in the enemies' colour family.
         self.vein = vein
-        # Adds a wing hinged along Z at `pivot`, fluttering (P16-R07) on its own node: `draw`
+        # Adds a wing hinged along Z at `pivot`, fluttering (ENM-42) on its own node: `draw`
         # draws it in model space, as at rest. `side` (-1 left, 1 right) sets which way it flaps;
         # `span` picks the slower beat of big wings.
         self.flap = flap
         # Neon lights, always lit.
         self.neon = neon
-        # Lights that brighten as the next attack charges (`Enemy.charge`); white, tinted.
+        # Lights that brighten as the next attack charges (`Enemy.charge`, ENM-23); white, tinted.
         self.charge = charge
         # Adds a reactor whose nozzle opens at `at`, thrusting towards -Z (phase 5 review).
         self.reactor = reactor
         # Adds a rotor turning around +Y at `at` (phase 5 review: the Gnat's ducted fans).
         self.rotor = rotor
-        # Marks the tip of a gun's barrel at `at` (phase 7 review: the game's muzzles must match):
-        # an empty node `<name>-muzzle-<kind>-<i>`.
+        # Marks the tip of a gun's barrel at `at` (phase 7 review: the game's muzzles must match,
+        # GFX-SHOT-09): an empty node `<name>-muzzle-<kind>-<i>`.
         self.muzzle = muzzle
 
 
@@ -132,8 +132,8 @@ def wing_parts_new() -> WingParts:
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
-    """The hull and flesh (in the body shades, D-231; asking for an edge trim, P14-R04), and the
-    neon lights (in the enemies' colour family, P14-R02) of an enemy model whose neon is
+    """The hull and flesh (in the body shades, D-231; asking for an edge trim, GFX-TRIM-06), and the
+    neon lights (in the enemies' colour family, ENM-38) of an enemy model whose neon is
     `neon_color`, under `root`."""
     scene = root.getScene()
     for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
@@ -149,7 +149,7 @@ def add_surfaces(
 
 
 def flutter_animation(node: Any, side: float, span: float, clock: list[float]) -> Any:
-    """The wing's animation: rolls the node as the clock says (P16-R07)."""
+    """The wing's animation: rolls the node as the clock says (ENM-42)."""
 
     def animate(dt: float) -> None:
         node.rotation.z = flutter_angle(side, span, clock[0])
@@ -165,7 +165,7 @@ def add_wings(
     body: Any,
     clock: list[float],
 ) -> None:
-    """The wings, each on a node at its pivot rolling as it flutters (P16-R07), under `body`."""
+    """The wings, each on a node at its pivot rolling as it flutters (ENM-42), under `body`."""
     scene = body.getScene()
     for i, wing in enumerate(wings):
         pivot = wing.pivot
@@ -181,7 +181,8 @@ def add_wings(
 
 
 def collect_parts(build: Any) -> dict[str, Any]:
-    """The parts `build` draws, and the reactors, rotors, wings and muzzles it adds."""
+    """The parts `build` draws, and the reactors, rotors, wings and muzzles it adds (the muzzles
+    the shots leave from, ENM-21)."""
     reactors: list[Reactor] = []
     rotors: list[Reactor] = []
     wings: list[Wing] = []
@@ -195,7 +196,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
 
     def muzzle(at: Vec3, kind: Any = None) -> None:
         # `kind` is 'gun' when the caller leaves it out.
-        muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711
+        muzzles.append([at, kind if kind != None else "gun"])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:
         wing = Wing(pivot, side, span, wing_parts_new())
@@ -230,11 +231,11 @@ def build_enemy_model(
     """Builds an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up). The
     charge lights get their own material, brightened to `chargeColor` by the enemy's charge; the
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
-    wings) is on a node of its own, `<name>-body`, its veins pulsing (P16-R07); its reactors and
-    muzzles are not, so shots leave from the same points (P16-R08)."""
+    wings) is on a node of its own, `<name>-body`, its veins pulsing (ENM-42; it never swells,
+    ENM-43); its reactors and muzzles are not, so shots leave from the same points (ENM-45)."""
     if breath is None:
         breath = new_breath()
-    # Phase 14 (P14-R02): every enemy's lights in the enemies' colour family.
+    # GFX-ART-05: every enemy's lights in the enemies' colour family.
     charge_color = enemy_color(neon_color)
     collected = collect_parts(build)
     parts = collected["parts"]
@@ -270,7 +271,7 @@ def build_enemy_model(
         mesh_of(name + "-charge", parts.charge.geometry, charge_mat, scene).parent = body
 
     def sync(enemy: Enemy, dt: float) -> None:
-        # P16-R07: driven by the frames' sim time, so a paused game holds still.
+        # ENM-42: driven by the frames' sim time, so a paused game holds still.
         if is_living_motion():
             clock[0] += dt
         else:

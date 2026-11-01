@@ -1,4 +1,4 @@
-"""Data-only description of player weapons
+"""Data-only description of player weapons (GAME-WPN-19)
 
 Positions and distances are in logical pixels, with X to the right and Y up (forward); angles are
 in degrees from forward, positive to the right.
@@ -50,13 +50,13 @@ class ProjectileWeaponDefinition:
         - `max_speed`: speed cap, px/s; ignored when `acceleration` is 0.
         - `homing_turn_rate_deg`: turn rate towards the closest target, degrees a second (0: flies
           straight).
-        - `homing_range`: a homing shot only sees targets within this distance of it, px (phase 5
-          review).
+        - `homing_range`: a homing shot only sees targets within this distance of it, px
+          (GAME-WPN-08).
         - `blast_radius`: 0 damages the target hit only; above 0, every target within this
           distance of the impact.
         - `levels[i]` lists the streams fired at level `i + 1`.
         - `launch_back`: shots start this far behind the launch point (px, towards the ship's
-          tail), so they leave from inside the ship; 0 when omitted.
+          tail), so they leave from inside the ship (GFX-SHOT-02); 0 when omitted.
         """
         self.id = id
         self.name = name
@@ -109,7 +109,7 @@ def _validate_projectile(weapon: ProjectileWeaponDefinition) -> None:
         ("damage", weapon.damage),
     ]
     for key, value in positive:
-        if not (value > 0):  # noqa: SIM201
+        if not (value > 0):  # noqa: SIM201 (NaN fails this check too)
             raise ValueError('Weapon "' + weapon.id + '": ' + key + " must be positive")
     non_negative = [
         ("acceleration", weapon.acceleration),

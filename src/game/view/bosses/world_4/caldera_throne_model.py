@@ -1,9 +1,9 @@
-"""P10-R11, 4-5: the Caldera Throne, World 4's last boss. Model space: logical pixels, nose +Z (down
-the screen), Y
-up towards the camera; +X is the screen's left. A war fortress: an armoured hull carrying a stepped
-keep over the core, a prow gun deck, side bastions out to the magma cannons, missile batteries and
-smokestacks aft. P16-R06: a living tyrant of the caldera, its vast flesh back ribbed in bone and
-veined with magma, a keep of flesh and armour rising over its heart, crowned in metal and gold.
+"""FB-CALDERA-THRONE-01 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne, World 4's last boss. Model
+space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
+A war fortress: an armoured hull carrying a stepped keep over the core, a prow gun deck, side
+bastions out to the magma cannons, missile batteries and smokestacks aft. FB-CALDERA-THRONE-02: a
+living tyrant of the caldera, its vast flesh back ribbed in bone and veined with magma, a keep of
+flesh and armour rising over its heart, crowned in metal and gold.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -45,7 +45,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
@@ -246,10 +246,10 @@ def _draw_hatches(p: Any) -> None:
 
 
 def build_caldera_throne(scene: Any) -> Any:
-    """P10-R11: the Caldera Throne, the enemy's war fortress rising from the magma lake (6.5 L),
-    crimson and gold neon over its whole hull: a stepped keep and throne tower over its core, a prow
-    carrying twin cannons and a laser, magma cannons on its bastions, missile batteries and
-    smokestacks aft, heat shield generators ahead of the keep."""
+    """FB-CALDERA-THRONE-01, FB-CALDERA-THRONE-06: the Caldera Throne, the enemy's war fortress
+    rising from the magma lake (6.5 L), crimson and gold neon over its whole hull: a stepped keep
+    and throne tower over its core, a prow carrying twin cannons and a laser, magma cannons on its
+    bastions, missile batteries and smokestacks aft, heat shield generators ahead of the keep."""
 
     def core(p: Any) -> None:
         _draw_hull(p)

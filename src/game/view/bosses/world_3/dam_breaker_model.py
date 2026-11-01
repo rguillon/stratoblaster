@@ -1,4 +1,4 @@
-"""P09-R09, 3-4: the Dam Breaker. Logical
+"""FB-DAM-BREAKER-01 to FB-DAM-BREAKER-05, 3-4: the Dam Breaker. Logical
 pixels, nose +Z, Y up (towards the camera). A giant armoured barge: a long, flat hull, the pump
 house amidships with its stack, two sluice gate houses either side of the bow, the armour plate
 and the drone hangar on the bow, the chemical tanks on outriggers at its sides, rust, moss and
@@ -50,9 +50,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")
@@ -87,12 +87,14 @@ STACK_FOOT = [0, 17, -8]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its green-lit rim, rusty patches, deck seams, and the swamp growing over it."""
+    """The hull, its green-lit rim, rusty patches, deck seams, and the swamp growing over it
+    (FB-DAM-BREAKER-04)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a giant, bloated swamp beast wallowing like a barge: a broad back of moss-skinned
-    # flesh, its rusty plates, sluices and tanks grafted on, veins of toxin pulsing through it.
+    # FB-DAM-BREAKER-02: a giant, bloated swamp beast wallowing like a barge: a broad back of
+    # moss-skinned flesh, its rusty plates, sluices and tanks grafted on, veins of toxin pulsing
+    # through it.
     flesh.bevel_slab(HULL, HULL_Y, [4, 2], F.sinew, None, JUNGLE_FLESH)
     for s in SIDES:
         vein_to(
@@ -142,7 +144,8 @@ def draw_pump_house(p: EnemyParts) -> None:
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
-    # P16-R06: the pump house a swollen hump of flesh over bone ribs, its stack grafted on.
+    # FB-DAM-BREAKER-02: the pump house a swollen hump of flesh over bone ribs, its stack grafted
+    # on.
     flesh.loft(ROUND_SECTION, PUMP_HOUSE, F.slate)
     ribs(flesh, [-14, -2, 8], RibSpec(19, DECK_Y, 13.4, 0.9), F.bone)
     hull.box([30, 2.4, 1], H.dark, Placement([0, 13.6, 16.8], 0, 0.5))
@@ -196,7 +199,8 @@ def draw_stern(p: EnemyParts) -> None:
 
 
 def draw_mounts(p: EnemyParts) -> None:
-    """A socket for each sluice and tank mount on the deck (left once the part is gone)."""
+    """A socket for each sluice and tank mount on the deck (left once the part is gone;
+    FB-DAM-BREAKER-03)."""
     hull = p.hull
     for s in SIDES:
         hull.cylinder(9, 0.8, 8, H.dark, Placement([s * 46, DECK_Y, 20], math.pi / 8))
@@ -215,9 +219,10 @@ def dam_breaker_core(p: EnemyParts) -> None:
 
 
 def build_dam_breaker(scene: Any) -> Any:
-    """P09-R09: the Dam Breaker, a giant armoured barge with toxic green neon: sluice gate houses
-    letting out sludge, glowing chemical tanks at its sides, an armour plate and a drone hangar
-    on its bow, a pump house and its stack amidships, swamp growth over its rusty decks."""
+    """FB-DAM-BREAKER-01, FB-DAM-BREAKER-05: the Dam Breaker, a giant armoured barge with toxic
+    green neon: sluice gate houses letting out sludge, glowing chemical tanks at its sides, an
+    armour plate and a drone hangar on its bow, a pump house and its stack amidships, swamp growth
+    over its rusty decks."""
     parts: dict[str, Any] = {
         "sluice-left": sluice,
         "sluice-right": sluice,

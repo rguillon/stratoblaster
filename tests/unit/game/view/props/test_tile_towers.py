@@ -19,7 +19,7 @@ def tower_of(seed=2):
 
 
 @pytest.mark.parametrize("shape", SILHOUETTES, ids=[s.__name__ for s in SILHOUETTES])
-def test_p15_r09_each_silhouette_is_a_well_formed_tower_up_to_its_top(shape):
+def test_gfx_bldg_10_each_silhouette_is_a_well_formed_tower_up_to_its_top(shape):
     k, tower = tower_of()
     shape(tower)
     prop = geometry_of(k)
@@ -28,7 +28,7 @@ def test_p15_r09_each_silhouette_is_a_well_formed_tower_up_to_its_top(shape):
 
 
 @pytest.mark.parametrize("seed", range(1, 9))
-def test_p15_r09_a_city_building_is_built_on_its_plot_by_its_seed(seed):
+def test_gfx_bldg_10_a_city_building_is_built_on_its_plot_by_its_seed(seed):
     k = tile_kit(20.0, 20.0, TILE.size, seed)
     city_building(k, lot_kit(k, FACADES, LIGHTS), [25.0, 40.0])
     prop = geometry_of(k)
@@ -36,7 +36,7 @@ def test_p15_r09_a_city_building_is_built_on_its_plot_by_its_seed(seed):
     assert height(prop.structure) > 0
 
 
-def test_p15_r09_an_asymmetric_tower_adds_an_annex_to_the_plain_one():
+def test_gfx_bldg_10_an_asymmetric_tower_adds_an_annex_to_the_plain_one():
     k, tower = tower_of(seed=5)
     asymmetry(tower)
     assert height(geometry_of(k).structure) > 0

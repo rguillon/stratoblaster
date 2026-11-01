@@ -5,7 +5,7 @@ from helpers.dom import FakeDocument
 from ui.level_loading import LevelLoadingScreen
 
 
-def test_p13_r03_the_loading_screen_is_added_to_the_page_with_its_text() -> None:
+def test_ui_load_06_the_loading_screen_is_added_to_the_page_with_its_text() -> None:
     doc = FakeDocument()
     parent = doc.createElement("div")
     screen = LevelLoadingScreen(doc, parent, "Loading level 2")
@@ -16,7 +16,7 @@ def test_p13_r03_the_loading_screen_is_added_to_the_page_with_its_text() -> None
     assert root.querySelector(".loading-text").textContent == "Loading level 2"
 
 
-def test_p13_r03_later_progress_updates_the_same_screen_in_place() -> None:
+def test_ui_load_06_later_progress_updates_the_same_screen_in_place() -> None:
     doc = FakeDocument()
     parent = doc.createElement("div")
     screen = LevelLoadingScreen(doc, parent, "Loading")
@@ -29,7 +29,7 @@ def test_p13_r03_later_progress_updates_the_same_screen_in_place() -> None:
     assert root.querySelector(".loading-percent").textContent == "100 %"
 
 
-def test_p13_r03_disposing_removes_the_screen_and_a_new_one_can_be_shown() -> None:
+def test_ui_load_06_disposing_removes_the_screen_and_a_new_one_can_be_shown() -> None:
     doc = FakeDocument()
     parent = doc.createElement("div")
     screen = LevelLoadingScreen(doc, parent, "Loading")

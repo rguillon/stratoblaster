@@ -1,5 +1,5 @@
-"""P16-R05, P16-R06: the Cyber-Organic pieces of the World 1 boss models (living bodies with metal
-grafts) Logical pixels, nose +Z, Y up.
+"""BOSS-47, GFX-ART-12: the Cyber-Organic pieces of the World 1 boss models (living bodies with
+metal grafts) Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -26,15 +26,15 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
 __pragma__("noskip")
 
-# Flesh shades (P16-R01).
+# Flesh shades (GFX-ART-15).
 F = ENEMY_LOOK.flesh
-# Hull shades of the grafts (P16-R01).
+# Hull shades of the grafts (GFX-ART-15).
 M = ENEMY_LOOK.hull
 # Rivets on the grafted plates: worn metal.
 RIVET = [0.24, 0.24, 0.27]
@@ -42,7 +42,7 @@ RIVET = [0.24, 0.24, 0.27]
 
 def _options(options: Any) -> Any:
     """An options object, or none: `{}` when the caller leaves it out."""
-    return {} if options == None else options  # noqa: E711
+    return {} if options == None else options  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def hide(parts: Any, h: Any) -> None:
@@ -84,8 +84,8 @@ def rib_cage(parts: Any, zs: list[Any], arch: Any, color: Any = None, place: Any
     """Bone ribs arching over a back at each Z of `zs`."""
     arch = record(arch)
     flesh = parts.flesh
-    the_color = F.bone if color == None else color  # noqa: E711
-    the_place = Placement() if place == None else place  # noqa: E711
+    the_color = F.bone if color == None else color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    the_place = Placement() if place == None else place  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     ribs(
         flesh,
         zs,
@@ -112,13 +112,13 @@ def tentacle(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 ) -> None:
     """A tentacle, sinew or limb of flesh from `start` to `end`, bowed by `bow`, `radii[0]` thick
     at its root."""
-    the_color = F.sinew if color == None else color  # noqa: E711
+    the_color = F.sinew if color == None else color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     tendril(parts.flesh, curve(start, end, bow, 4), [radii[0], radii[1]], sides, the_color)
 
 
 def gland(p: Any, at: Vec3, r: float, glow: Rgb, bed: Any = None) -> None:
     """A gland: a lit bulb on a flesh bed, `r` across, at `at`."""
-    the_bed = F.slate if bed == None else bed  # noqa: E711
+    the_bed = F.slate if bed == None else bed  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     organ(p.flesh, r * 1.5, 6, the_bed, Placement(at), 0.35)
     organ(p.vein, r, 5, glow, Placement([at[0], at[1] + r * 0.6, at[2]]), 0.6)
 
@@ -133,7 +133,7 @@ def sac(p: Any, at: Vec3, r: float, color: Rgb, options: Any = None) -> None:
 
 
 def graft(p: Any, outline: list[Any], heights: list[Any], at: Vec3, options: Any = None) -> None:
-    """A grafted armour plate of `outline` (around `at`), `heights` thick, riveted."""
+    """A grafted armour plate of `outline` (around `at`), `heights` thick, riveted (BOSS-49)."""
     opts = _options(options)
     color = opt(opts, "color", M.panel)
     yaw = opt(opts, "yaw", 0)
@@ -143,8 +143,8 @@ def graft(p: Any, outline: list[Any], heights: list[Any], at: Vec3, options: Any
 def polygon(n: int, r: float, scale: Any = None) -> list[Any]:
     """A regular polygon of `n` corners and radius `r` (a plate outline), stretched by `scale`
     (`[sx, sz]`)."""
-    sx = 1 if scale == None else scale[0]  # noqa: E711
-    sz = 1 if scale == None else scale[1]  # noqa: E711
+    sx = 1 if scale == None else scale[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    sz = 1 if scale == None else scale[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     result: list[Any] = []
     for k in range(n):
         a = (2 * math.pi * (k + 0.5)) / n
@@ -153,7 +153,7 @@ def polygon(n: int, r: float, scale: Any = None) -> list[Any]:
 
 
 def growth(p: Any, at: Vec3, r: float, glow: Rgb, options: Any = None) -> None:
-    """An armoured growth (P16-R05): a swollen flesh mound of `r` around `at`, a vein ring at its
+    """An armoured growth (BOSS-48): a swollen flesh mound of `r` around `at`, a vein ring at its
     foot and grafted armour on its crown, so it reads as one clear target."""
     opts = _options(options)
     flesh = opt(opts, "flesh", F.slate)
@@ -183,7 +183,7 @@ def mantle(p: Any, outline: list[Any], heights: list[Any], color: Rgb, rim: Any 
     y0 = heights[0]
     y1 = heights[1]
     p.flesh.bevel_slab(outline, [y0, (y0 + y1) / 2, y1], [1.5, 2.5], color)
-    if rim == None:  # noqa: E711
+    if rim == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return
     ring: list[Any] = []
     ring.extend(outline)
@@ -205,7 +205,7 @@ def scale_outline(outline: list[Any], k: float, dx: float = 0, dz: float = 0) ->
 
 def barbs(parts: Any, at: Vec3, options: Any, color: Any = None) -> None:
     """A row of `count` teeth or barbs of bone along X at `at`, `size` long, along `dir`."""
-    the_color = F.bone if color == None else color  # noqa: E711
+    the_color = F.bone if color == None else color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     count = options["count"]
     spacing = options["spacing"]
     size = options["size"]

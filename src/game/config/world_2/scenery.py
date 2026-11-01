@@ -1,10 +1,12 @@
-"""World 2, the Industrial Desert (P08-R03; reworked at the reviewer's request, 2026-10-27)
+"""World 2, the Industrial Desert (WLD-2-01, WLD-2-05; reworked at the reviewer's request,
+2026-10-27)
 
-The five levels are one journey from the deep desert, where World 1 ended, to dense factories. The
-changes are slow: the sand gives way to concrete in small steps, the sections blend over a long
-stretch (`TRANSITION`), and each new building group first comes in mixed with the one before it.
-Each level starts on the very section the previous one ended on. No sea (rivers would be fine,
-reviewer, 2026-10-27). Each level's `seconds` add up to 300 (P08-R02).
+The five levels are one journey from the deep desert, where World 1 ended, to dense factories, the
+industry in its order (WLD-2-09). The changes are slow (WLD-2-08): the sand gives way to concrete
+in small steps (WLD-2-07), the sections blend over a long stretch (`TRANSITION`), and each new
+building group first comes in mixed with the one before it. Each level starts on the very section
+the previous one ended on (WLD-2-10). No sea (WLD-2-06; rivers would be fine, reviewer,
+2026-10-27). Each level's `seconds` add up to 300 (WLD-2-03).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -15,13 +17,14 @@ from game.config.world_2.props import WORLD_2_GROUPS, WORLD_2_PROPS, WORLD_2_ROA
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 G = WORLD_2_GROUPS
 
-# Sections blend over this many units: about 15 s of scrolling, World 1's 420 doubled.
+# Sections blend over this many units (GFX-TERRAIN-10): about 15 s of scrolling, World 1's 420
+# doubled.
 TRANSITION = 900
 
 
@@ -109,8 +112,9 @@ FACTORY_DISTRICT = section(
     },
 )
 
-# 2-1, Great erg: from an oasis on the sand World 1 ended on, across great dunes and dune fields,
-# caravan posts and rocky desert, to the first mines in the last 30 s.
+# 2-1, Great erg (LVL-2-1-04): from an oasis on the sand World 1 ended on, across great dunes and
+# dune fields (LVL-2-1-05), caravan posts and rocky desert, to the first mines in the last 30 s.
+# Buildings and roads: LVL-2-1-06.
 GREAT_ERG = [
     section(
         "oasis edge",
@@ -163,8 +167,9 @@ GREAT_ERG = [
     PROSPECT_MINES,
 ]
 
-# 2-2, Mining mesas: the mines spread over mesas and along a canyon, a mining town with streets,
-# open pits, then the first oil wells among the mines.
+# 2-2, Mining mesas (LVL-2-2-04): the mines spread over mesas and along a canyon (LVL-2-2-05), a
+# mining town with streets, open pits, then the first oil wells among the mines. Buildings and
+# roads: LVL-2-2-06.
 MINING_MESAS = [
     merge(PROSPECT_MINES, {"seconds": 40}),
     section(
@@ -236,8 +241,9 @@ MINING_MESAS = [
     OIL_EDGE,
 ]
 
-# 2-3, Oil fields: pumpjacks and tanks, a company town, refineries and tank farms, the first
-# factories at the end.
+# 2-3, Oil fields (LVL-2-3-04): pumpjacks and tanks, a company town, refineries and tank farms,
+# the first factories at the end, on flat, half-paved ground (LVL-2-3-05). Buildings and roads:
+# LVL-2-3-06.
 OIL_FIELDS = [
     merge(OIL_EDGE, {"seconds": 40}),
     section(
@@ -289,8 +295,9 @@ OIL_FIELDS = [
     INDUSTRIAL_EDGE,
 ]
 
-# 2-4, Industrial belt: workers' suburbs, warehouses and yards, a power plant, factory yards, then
-# the factory district.
+# 2-4, Industrial belt (LVL-2-4-04): workers' suburbs, warehouses and yards, a power plant,
+# factory yards, then the factory district, paved with a little sand between the plots
+# (LVL-2-4-05). Buildings and roads: LVL-2-4-06.
 INDUSTRIAL_BELT = [
     merge(INDUSTRIAL_EDGE, {"seconds": 40}),
     section(
@@ -360,8 +367,8 @@ GREAT_WORKS = section(
     },
 )
 
-# 2-5, Factory district: foundries, rail yards, heavy industry, then great works filling every block
-# to the end.
+# 2-5, Factory district (LVL-2-5-04): foundries, rail yards, heavy industry, then great works
+# filling every block to the end (LVL-2-5-05). Buildings and roads: LVL-2-5-06.
 FACTORIES = [
     merge(FACTORY_DISTRICT, {"seconds": 40}),
     section(
@@ -405,7 +412,7 @@ FACTORIES = [
 
 
 def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
-    """A World 2 level: its `[id, name, seed]`, its scroll speed and its sections."""
+    """A World 2 level: its `[id, name, seed]`, its own scroll speed (WLD-2-04) and its sections."""
     return record(
         {
             "id": meta[0],
@@ -420,13 +427,14 @@ def level(meta: list[Any], scroll_speed: float, sections: list[Any]) -> Any:
     )
 
 
-# 2-1 (P08-R03): the great erg, from an oasis to the first mines.
+# 2-1 (LVL-2-1-01, LVL-2-1-02): the great erg, from an oasis to the first mines.
 LEVEL_2_1 = level(["world-2-1", "2-1 Great erg", 2101], 70, GREAT_ERG)
-# 2-2: the mining mesas, starting on the mines 2-1 ended on.
+# 2-2 (LVL-2-2-01, LVL-2-2-02): the mining mesas, starting on the mines 2-1 ended on.
 LEVEL_2_2 = level(["world-2-2", "2-2 Mining mesas", 2201], 65, MINING_MESAS)
-# 2-3: the oil fields, starting on the first wells 2-2 ended on.
+# 2-3 (LVL-2-3-01, LVL-2-3-02): the oil fields, starting on the first wells 2-2 ended on.
 LEVEL_2_3 = level(["world-2-3", "2-3 Oil fields", 2301], 60, OIL_FIELDS)
-# 2-4: the industrial belt, starting on the refineries' edge 2-3 ended on.
+# 2-4 (LVL-2-4-01, LVL-2-4-02): the industrial belt, starting on the refineries' edge 2-3 ended
+# on.
 LEVEL_2_4 = level(["world-2-4", "2-4 Industrial belt", 2401], 55, INDUSTRIAL_BELT)
-# 2-5: the factory district, starting on the factories 2-4 ended on.
+# 2-5 (LVL-2-5-01, LVL-2-5-02): the factory district, starting on the factories 2-4 ended on.
 LEVEL_2_5 = level(["world-2-5", "2-5 Factory district", 2501], 60, FACTORIES)

@@ -1,4 +1,4 @@
-"""Unit tests of `src/game/view/light_ship.py`."""
+"""Unit tests of `src/game/view/light_ship.py` (GFX-SHIP-03)."""
 
 from unittest.mock import MagicMock
 

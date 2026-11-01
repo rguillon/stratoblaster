@@ -1,6 +1,6 @@
-"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry) P16-R05: glands down its
-flanks, an egg sac to port, a
-coiled tow sinew to starboard. Logical pixels, nose +Z, Y up.
+"""The Floe Breaker's dressing (phase 7 review: detail and some asymmetry) MB-FLOE-BREAKER-02:
+glands down its flanks, an egg sac to port, a coiled tow sinew to starboard. Logical pixels, nose
++Z, Y up.
 """
 
 import math
@@ -14,7 +14,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")

@@ -49,14 +49,15 @@ def _runs(district, rules=None, buildable=lambda x, z: True, seed: int = 4):
     return tile_street_runs(district, rules, TILE, create_rng(seed), buildable, _in_view)
 
 
-def test_p15_r04_a_column_fits_where_its_junction_lands_on_the_row_lattice() -> None:
+def test_gfx_road_13_a_column_fits_where_its_junction_lands_on_the_row_lattice() -> None:
+    """Also GFX-ROAD-12 (the column in its adapter)."""
     assert column_fits(4, 3) is True  # 4 mod 3 == 1, the middle of a three-tile row
     assert column_fits(3, 3) is False
     assert column_fits(7, 1) is True
     assert all(column_fits(s, 2) for s in range(-4, 4))
 
 
-def test_p15_r01_helpers_round_and_order_as_the_grid_needs() -> None:
+def test_gfx_road_08_helpers_round_and_order_as_the_grid_needs() -> None:
     # The tile whose middle is nearest: the middles of tiles 0, 1 and 2 are 12, 36 and 60.
     assert _tile_at(12.0, 24.0) == 0
     assert _tile_at(35.0, 24.0) == 1
@@ -70,7 +71,8 @@ def test_p15_r01_helpers_round_and_order_as_the_grid_needs() -> None:
     assert _next_gap((0.0, 0.0), 24.0, create_rng(1)) == 2
 
 
-def test_p15_r05_a_row_is_one_or_two_tiles_wide_or_a_boulevard_size() -> None:
+def test_gfx_road_09_a_row_is_one_or_two_tiles_wide_or_a_boulevard_size() -> None:
+    """Also GFX-ROAD-13 (the rows carry the sizes)."""
     assert {_row_size(road_rules(), t) for t in range(-50, 50)} <= {1, 2}
     rules = road_rules(boulevards=[Boulevard(4, 96.0, 1.0)])
     assert {_row_size(rules, t) for t in range(-20, 20)} == {4}
@@ -96,6 +98,7 @@ def test_part_rows_of_a_part_shorter_than_a_tile_is_one_row() -> None:
 
 
 def test_part_columns_reach_past_both_screen_edges() -> None:
+    """GFX-ROAD-19: a district's streets end beyond ±`offscreen_x`."""
     rules = road_rules()
     part = _grid_district().parts[0]
     columns = _part_columns(rules, TILE, part, [1, 2], [], create_rng(3))
@@ -105,7 +108,8 @@ def test_part_columns_reach_past_both_screen_edges() -> None:
     assert columns == sorted(columns)
 
 
-def test_p15_r01_the_streets_cover_whole_tiles_and_are_straight() -> None:
+def test_gfx_road_08_the_streets_cover_whole_tiles_and_are_straight() -> None:
+    """Also GFX-ROAD-14."""
     runs, blocks = _runs(_grid_district())
     assert runs and blocks
     for run in runs:
@@ -117,7 +121,7 @@ def test_p15_r01_the_streets_cover_whole_tiles_and_are_straight() -> None:
     assert all(b.x_max > b.x_min and b.z_max > b.z_min for b in blocks)
 
 
-def test_p15_r01_the_streets_are_the_same_for_the_same_seed() -> None:
+def test_gfx_road_08_the_streets_are_the_same_for_the_same_seed() -> None:
     def shape(seed):
         runs, blocks = _runs(_grid_district(), seed=seed)
         return [len(r.points) for r in runs], [b.x_min for b in blocks]
@@ -125,7 +129,7 @@ def test_p15_r01_the_streets_are_the_same_for_the_same_seed() -> None:
     assert shape(4) == shape(4)
 
 
-def test_p15_r05_two_sections_of_tiles_share_their_row() -> None:
+def test_gfx_road_13_two_sections_of_tiles_share_their_row() -> None:
     grid = street_grid(0.6)
     district = _district(
         [section("a", 10, flat(), streets=grid), section("b", 10, flat(), streets=grid)]
@@ -135,7 +139,7 @@ def test_p15_r05_two_sections_of_tiles_share_their_row() -> None:
     assert all(b.x_max > b.x_min for b in blocks)
 
 
-def test_p15_r01_ground_that_is_not_buildable_gets_no_street_there() -> None:
+def test_gfx_road_14_ground_that_is_not_buildable_gets_no_street_there() -> None:
     # Streets join ground nodes only, and blocks keep to buildable ground: nothing crosses to
     # X >= 0.
     runs, blocks = _runs(_grid_district(), buildable=lambda x, z: x < 0.0)
@@ -144,7 +148,7 @@ def test_p15_r01_ground_that_is_not_buildable_gets_no_street_there() -> None:
     assert all((b.x_min + b.x_max) / 2 < 0.0 for b in blocks)
 
 
-def test_p15_r01_a_district_one_row_tall_has_no_blocks() -> None:
+def test_gfx_road_08_a_district_one_row_tall_has_no_blocks() -> None:
     # A middle section a centimetre long (1 unit): the district is one tile row, with no block.
     thin = _district(
         [

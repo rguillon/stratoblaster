@@ -10,25 +10,25 @@ each a list of points every `rules.step`.
 - without crossings (`rules.no_crossings`, phase 6 review), every crossing then becomes a
   T-junction: one of its two stretches along the level goes, and the dead ends that leaves are
   removed again, without making new crossings;
-- boulevards (`rules.boulevards`, reviewer 2026-10-28) are built along their whole line and run
-  straight: at a crossing, the street across them is cut instead.
+- boulevards (`rules.boulevards`, reviewer 2026-10-28, GFX-ROAD-17) are built along their whole line
+  and run straight: at a crossing, the street across them is cut instead.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import Random  # noqa: E402
-from core.scenery.districts import District  # noqa: E402
-from core.scenery.scenery_level import RoadRules  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.districts import District  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.rng import random_in  # noqa: E402
-from core.scenery.lanes import is_boulevard, run_width, street_width  # noqa: E402
-from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends  # noqa: E402
-from core.scenery.street_links import (  # noqa: E402
+from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.lanes import is_boulevard, run_width, street_width  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     Block,
     Link,
     Node,
@@ -37,8 +37,8 @@ from core.scenery.street_links import (  # noqa: E402
     links_by_node,
     pair,
 )
-from core.scenery.street_runs import straight_runs  # noqa: E402
-from core.scenery.tile_streets import StreetRun, tile_street_runs  # noqa: E402
+from core.scenery.street_runs import straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.tile_streets import StreetRun, tile_street_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Gap between a street's edge and the block beside it.
 BLOCK_KERB = 0.5

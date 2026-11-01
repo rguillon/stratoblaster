@@ -32,7 +32,7 @@ def test_noise_is_zero_on_the_lattice() -> None:
     assert noise(-2.0, 0.0) == pytest.approx(0.0)
 
 
-def test_p14_noise_tiles_with_its_period() -> None:
+def test_noise_tiles_with_its_period() -> None:
     noise = create_noise2d(5, period=8)
     for x, y in SAMPLES:
         assert noise(x + 8, y) == pytest.approx(noise(x, y))

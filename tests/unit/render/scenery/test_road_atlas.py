@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/road_atlas.py`."""
+"""Unit tests of `src/render/scenery/road_atlas.py` (GFX-ROAD-20)."""
 
 from types import SimpleNamespace
 from typing import Any

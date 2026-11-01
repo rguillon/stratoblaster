@@ -1,6 +1,6 @@
-"""The Scorpion's tail (P07-R05, P16-R05, D-228): a chain of shelled beads arched over its back,
-its stinger hanging from the tip in front of the head. As the Scorpion turns round (its
-transformation), the tail unfolds straight out behind it, now towards the player, a little longer,
+"""The Scorpion's tail (MB-SCORPION-04, D-228): a chain of shelled beads arched over its back, its
+stinger hanging from the tip in front of the head. As the Scorpion turns round (its transformation,
+MB-SCORPION-11), the tail unfolds straight out behind it, now towards the player, a little longer,
 its new cannon at the end.
 
 Model space: logical pixels, nose +Z, Y up. A tail point is `(z, y)`.
@@ -24,7 +24,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -151,7 +151,7 @@ def tail_triangles(unfold: float) -> list[Any]:
 def unfolding(boss: Any) -> float:
     """How far the tail has unfolded for `boss` (None: at rest): from the burst of its armour to
     its weapons swinging up (`BOSS_LOOK.reveal`), then out for good."""
-    if boss == None:  # noqa: E711
+    if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return 0
     if boss.form >= 1:
         return 1

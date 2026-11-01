@@ -1,4 +1,4 @@
-"""P05-R23, P16-R04: the Hive Logical pixels, nose +Z,
+"""The Hive (specs/enemies/hive.md) Logical pixels, nose +Z,
 Y up (towards the camera).
 """
 
@@ -17,7 +17,7 @@ from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
 from render.geometry.solids import Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -55,11 +55,12 @@ RING = [
 
 
 def body(p: Any) -> None:
-    """The swollen flesh dome, its glowing brood cells, the vents round its rim, reactor sacs."""
+    """The swollen flesh dome, its glowing brood cells (ENM-HIVE-03), the vents round its rim
+    (ENM-HIVE-04), reactor sacs (ENM-HIVE-06)."""
     hull = p.hull
     flesh = p.flesh
     vein = p.vein
-    # P16-R04: a living hive, metal only where grafted on (vents, ring, plates, nozzles).
+    # ENM-HIVE-02: a living hive, metal only where grafted on (vents, ring, plates, nozzles).
     flesh.lathe(DOME, 12, F.sinew)
     # The brood cells: hexagons on the shoulder, tilted with it, pulsing.
     for a in around(int(CELLS["count"])):
@@ -84,7 +85,8 @@ def body(p: Any) -> None:
 
 
 def ring(p: Any) -> None:
-    """The launch ring with its hatch, glowing as the next Wasp comes."""
+    """The launch ring with its hatch (ENM-HIVE-04), glowing as the next Wasp comes
+    (ENM-HIVE-05)."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -99,8 +101,9 @@ def ring(p: Any) -> None:
 
 
 def build_hive(scene: Any) -> Any:
-    """P05-R23, P16-R04: a huge swollen hive of flesh, a metal launch ring turning on its back,
-    glowing honey-amber brood cells, armour plates and vents grafted on."""
+    """ENM-HIVE-01: a huge swollen hive of flesh, a metal launch ring turning on its back, glowing
+    honey-amber brood cells, armour plates and vents grafted on, within the elite triangle budget
+    (ENM-HIVE-07)."""
     return build_jointed_model(
         "hive", scene, NEON, CFG.design, {"body": body, "ring": ring, "parts": {}}
     )

@@ -5,7 +5,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -28,13 +28,13 @@ class ScreenHandlers:
         self.on_tap = on_tap
         # The on-screen Back button was tapped or clicked.
         self.on_back = on_back
-        # Game screen: the touch fire button was pressed (`True`) or let go (P06-R02).
+        # Game screen: the touch fire button was pressed (`True`) or let go (GAME-CTRL-05).
         self.on_fire = on_fire
         # Game screen: a finger dragged over the playfield, by screen pixels (Y down).
         self.on_drag = on_drag
-        # Game screen: the on-screen pause button was tapped (P12-R01).
+        # Game screen: the on-screen pause button was tapped (UI-PAUSE-02).
         self.on_pause = on_pause
-        # Settings screen: slider `index` was tapped or dragged to `value` (P12-R04).
+        # Settings screen: slider `index` was tapped or dragged to `value` (UI-SET-03).
         self.on_set = on_set
         # Dev viewer (D-199): the mouse wheel turned by this many pixels (down positive).
         self.on_wheel = on_wheel

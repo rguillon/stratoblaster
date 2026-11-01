@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/model_showcase.py`."""
+"""Unit tests of `src/render/model_showcase.py` (UI-SHIP-01)."""
 
 import pytest
 from helpers.render_fakes import FakeNode, FakeScene, FakeWeakMap, patch_babylon

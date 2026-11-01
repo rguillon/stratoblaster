@@ -1,10 +1,11 @@
-"""P09-R09, 3-5's final boss: the Verdant Crown, World 3's last boss ().
+"""3-5's final boss: the Verdant Crown, World 3's last boss
+(specs/bosses/final/3-5-verdant-crown.md).
 
-Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage
-patterns as for the World 1 and 2 final bosses (P07-R04, D-055): its parts fire the same while they
-stand, its core fires every kind of attack, a new one at each stage (seed pods bursting into rings
-among them), and all of them at once with a spiral of its own, used by no earlier stage, once it
-stands alone. Its core always drops a bonus (P07-R07).
+Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Stage patterns
+as for the World 1 and 2 final bosses (FB-VERDANT-CROWN-10, D-055): its parts fire the same while
+they stand, its core fires every kind of attack, a new one at each stage (seed pods bursting into
+rings among them), and all of them at once with a spiral of its own, used by no earlier stage, once
+it stands alone. Its core always drops a bonus (FB-VERDANT-CROWN-14).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -26,13 +27,14 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-VERDANT-CROWN-14,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -42,8 +44,8 @@ PURPLE = bullet("purple", 200)
 # A slow, big seed pod that bursts into a ring of small bullets on its way down.
 SEED_POD = bursting("green", 115, 7, [1.1, 8, bullet("magenta", 190)])
 
-# Where its parts stand (P09-R09): thorn cannons on the outriggers, seed batteries aft, root
-# generators ahead of the dome.
+# Where its parts stand (FB-VERDANT-CROWN-08): thorn cannons on the outriggers, seed batteries
+# aft, root generators ahead of the dome.
 VERDANT_PARTS = record({"thorn": [82, -6], "seed": [52, 40], "root": [32, -48]})
 
 # The guns' muzzles (phase 7 review): the tips of the barrels its model draws, from the boss's
@@ -53,7 +55,7 @@ VERDANT_PARTS = record({"thorn": [82, -6], "seed": [52, 40], "root": [32, -48]})
 VERDANT_THORN = [[VERDANT_PARTS.thorn[0], -40, 9]]
 # The right seed battery's six cells, 2 columns by 3 rows.
 VERDANT_SEEDS = cells([47, 57], [32, 40, 48], 14.1)
-# The core's twin cannons on the bow.
+# The core's twin cannons on the bow (FB-VERDANT-CROWN-04).
 VERDANT_GUNS = twin(8, -82, 9)
 # The core's laser lens, on the bow between its twin cannons.
 VERDANT_LENS = [0, -86, 8]
@@ -70,12 +72,13 @@ RX = VERDANT_PARTS.root[0]
 RY = VERDANT_PARTS.root[1]
 
 # 3-5: the canopy city's flying crown, a city-ship carrying a glass garden dome under emerald and
-# magenta neon; two thorn cannons on turrets aim lasers, two seed batteries fire homing missiles,
-# two root generators shield the core, which fires every kind of attack.
+# magenta neon; two thorn cannons on turrets aim lasers, two seed batteries fire homing missiles
+# (FB-VERDANT-CROWN-09), two root generators shield the core, which fires every kind of attack.
 _VERDANT_CROWN = record(
     {
         "id": "verdant-crown",
-        # Angry after each destroyed part (phase 7 review): the hottest bullet hell so far.
+        # Angry after each destroyed part (phase 7 review, FB-VERDANT-CROWN-11): the hottest bullet
+        # hell so far.
         "rage": concat(
             rage.flower(9, "green", "magenta", 0.5), rage.spirals(9, "magenta", "purple", 0.5)
         ),
@@ -101,6 +104,7 @@ _VERDANT_CROWN = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-VERDANT-CROWN-07).
         "stopFraction": 0.75,
         "sway": {"amplitude": 25, "period": 11},
         "bob": {"amplitude": 6, "period": 5},
@@ -120,6 +124,7 @@ _VERDANT_CROWN = record(
             "seed-left": {"missile": mirror(VERDANT_SEEDS)},
             "seed-right": {"missile": VERDANT_SEEDS},
         },
+        # The parts' volleys, then the core's pattern per stage (FB-VERDANT-CROWN-10).
         "stages": stages(
             [
                 volley.laser("thorn-left", 6, 1.6, 2),
@@ -159,8 +164,9 @@ _VERDANT_CROWN = record(
 )
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of ring emitters unfold; at transformation 2 its spine
-# plating bursts off, baring a dark metal frame, and a pair of flak mortars unfold.
+# baring a dark metal frame, and a pair of ring emitters unfold (FB-VERDANT-CROWN-12); at
+# transformation 2 its spine plating bursts off, baring a dark metal frame, and a pair of flak
+# mortars unfold (FB-VERDANT-CROWN-13).
 VERDANT_CROWN = with_weapons(
     _VERDANT_CROWN,
     [

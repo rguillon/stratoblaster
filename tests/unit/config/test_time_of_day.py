@@ -16,7 +16,8 @@ def look(**overrides: object) -> SkyLook:
     return SkyLook(**values)  # type: ignore[arg-type]
 
 
-def test_p08_r04_a_clear_sky_keeps_the_time_of_days_light_and_fog() -> None:
+def test_gfx_sky_03_a_clear_sky_keeps_the_time_of_days_light_and_fog() -> None:
+    """Also GFX-SKY-07: the time of day sets the fog."""
     preset = TIME_OF_DAY["midday"]
     atmosphere = resolve_sky(look(), BASE)
     assert atmosphere.sun.elevation_deg == preset.sun.elevation_deg
@@ -33,7 +34,7 @@ def test_p08_r04_a_clear_sky_keeps_the_time_of_days_light_and_fog() -> None:
     assert atmosphere.weather.kind == CLEAR.kind
 
 
-def test_p08_r04_a_heavy_cover_dims_the_sun_and_adds_to_the_ambient_light() -> None:
+def test_gfx_sky_06_a_heavy_cover_dims_the_sun_and_adds_to_the_ambient_light() -> None:
     preset = TIME_OF_DAY["midday"]
     overcast = resolve_sky(look(clouds=[1.0, 1.0]), BASE)
     assert overcast.sun.intensity == pytest.approx(preset.sun.intensity * (1 - OVERCAST.sun_dim))
@@ -43,7 +44,7 @@ def test_p08_r04_a_heavy_cover_dims_the_sun_and_adds_to_the_ambient_light() -> N
     )
 
 
-def test_p08_r04_a_storm_greys_the_clouds_and_a_plain_sky_does_not() -> None:
+def test_gfx_sky_13_a_storm_greys_the_clouds_and_a_plain_sky_does_not() -> None:
     stormy = resolve_sky(look(storm=1), BASE).clouds[0]
     assert stormy.color == pytest.approx(OVERCAST.storm.color)
     assert stormy.shade == pytest.approx(OVERCAST.storm.shade)

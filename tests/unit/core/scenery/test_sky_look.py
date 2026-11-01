@@ -30,7 +30,7 @@ def look(**overrides: object) -> SkyLook:
     return SkyLook(**values)  # type: ignore[arg-type]
 
 
-def test_p08_r04_clouds_keep_their_coverage_and_thin_when_heavy() -> None:
+def test_gfx_sky_06_clouds_keep_their_coverage_and_thin_when_heavy() -> None:
     clear = resolve_sky(look(clouds=[0.2, 0.1]), BASE).clouds
     assert [c.coverage for c in clear] == [0.2, 0.1]
     assert clear[0].opacity == pytest.approx(0.8)
@@ -39,7 +39,7 @@ def test_p08_r04_clouds_keep_their_coverage_and_thin_when_heavy() -> None:
     assert heavy[0].opacity == pytest.approx(0.8 * (1 - OVERCAST.thinning))
 
 
-def test_p08_r04_a_layer_without_a_base_opacity_takes_the_last_one_or_is_opaque() -> None:
+def test_gfx_sky_04_a_layer_without_a_base_opacity_takes_the_last_one_or_is_opaque() -> None:
     short = SkyBase(Fog(100, 1000), [0.5])
     layers = resolve_sky(look(clouds=[0.0, 0.0, 0.0]), short).clouds
     assert [c.opacity for c in layers] == pytest.approx([0.5, 0.5, 0.5])
@@ -47,7 +47,8 @@ def test_p08_r04_a_layer_without_a_base_opacity_takes_the_last_one_or_is_opaque(
     assert [c.opacity for c in resolve_sky(look(clouds=[0.0]), none).clouds] == [1]
 
 
-def test_p08_r04_a_cloud_tint_and_a_glow_colour_the_clouds() -> None:
+def test_gfx_sky_13_a_cloud_tint_and_a_glow_colour_the_clouds() -> None:
+    """Also GFX-SKY-14 (the glow from below)."""
     tinted = resolve_sky(look(cloud_tint=(0.5, 0.5, 0.5)), BASE).clouds[0]
     base_color = TIME_OF_DAY["midday"].clouds.color
     assert tinted.color == pytest.approx(tuple(c * 0.5 for c in base_color))
@@ -60,14 +61,14 @@ def test_p08_r04_a_cloud_tint_and_a_glow_colour_the_clouds() -> None:
     assert plain.color == pytest.approx(base_color)
 
 
-def test_p09_r04_a_mist_ends_the_fog_nearer_and_turns_the_haze_pale() -> None:
+def test_gfx_sky_15_a_mist_ends_the_fog_nearer_and_turns_the_haze_pale() -> None:
     mist = SkyMist(0.5, 1)
     atmosphere = resolve_sky(look(mist=mist), BASE)
     assert atmosphere.sky.haze == pytest.approx(MIST_COLOR)
     assert atmosphere.fog.end == pytest.approx(1000 * TIME_OF_DAY["midday"].fog * 0.5)
 
 
-def test_p08_r05_rain_greys_the_haze_and_brings_the_fog_in() -> None:
+def test_gfx_weather_08_rain_greys_the_haze_and_brings_the_fog_in() -> None:
     rain = Weather("rain", 1)
     clear = resolve_sky(look(), BASE)
     rainy = resolve_sky(look(weather=rain), BASE)
@@ -79,20 +80,20 @@ def test_p08_r05_rain_greys_the_haze_and_brings_the_fog_in() -> None:
     assert rainy.weather.kind == "rain"
 
 
-def test_p08_r05_snow_does_not_grey_the_haze() -> None:
+def test_gfx_weather_03_snow_does_not_grey_the_haze() -> None:
     clear = resolve_sky(look(), BASE)
     snowy = resolve_sky(look(weather=Weather("snow", 1)), BASE)
     assert snowy.sky.haze == pytest.approx(clear.sky.haze)
 
 
-def test_p08_r05_weather_fog_is_one_in_clear_weather_and_its_kinds_otherwise() -> None:
+def test_gfx_sky_07_weather_fog_is_one_in_clear_weather_and_its_kinds_otherwise() -> None:
     assert weather_fog(Weather("rain", 0)) == 1
     assert weather_fog(Weather("rain", 1)) == pytest.approx(WEATHER_KINDS["rain"].fog_at_1)
     assert weather_fog(Weather("rain", 5)) == pytest.approx(WEATHER_KINDS["rain"].fog_at_1)
     assert weather_fog(Weather("nothing", 1)) == 1
 
 
-def test_p08_r05_weather_particles_grow_with_its_strength() -> None:
+def test_gfx_weather_03_weather_particles_grow_with_its_strength() -> None:
     snow_max = WEATHER_KINDS["snow"].max_particles
     assert weather_particles(Weather("snow", 0)) == 0
     assert weather_particles(Weather("snow", 1)) == snow_max

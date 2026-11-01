@@ -1,4 +1,4 @@
-"""P09-R09, 3-1: the Mangrove Croc, the River delta's mini boss ().
+"""3-1: the Mangrove Croc, the River delta's mini boss (specs/bosses/mini/3-1-mangrove-croc.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). Its two jaws
 open and close on their hinges (D-061) around the jaw cannon, opening wide as it fires; the two
@@ -17,7 +17,7 @@ from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -26,11 +26,13 @@ ORANGE = bullet("orange", 195)
 BLUE = bullet("blue", 192)
 PURPLE = bullet("purple", 200)
 
-# The jaws: where the left one (at -X) is hinged and how long it is (mirrored on the right).
+# The jaws (MB-MANGROVE-CROC-04): where the left one (at -X) is hinged and how long it is
+# (mirrored on the right).
 CROC_JAW = record({"hinge": [-7, -27], "tip": [-5, -53]})
 
-# How the jaws swing (D-061): drawn half open, they swing `amplitudeDeg` either way, from shut to
-# wide open, once every `period` seconds, the jaw cannon's burst coming when they are wide open.
+# How the jaws swing (D-061, MB-MANGROVE-CROC-10): drawn half open, they swing `amplitudeDeg`
+# either way, from shut to wide open, once every `period` seconds, the jaw cannon's burst coming
+# when they are wide open.
 # The entry of the boss takes `entrySeconds` (from its spawn above the top edge to its place, as
 # `BOSS_TIMING` brings it in), so the jaws' phase puts the first wide-open moment on the first
 # burst; later stages restart their volleys at a stage change, so the two drift apart after the
@@ -77,15 +79,16 @@ CROC_DOME = [[0, 12, 15.5]]
 # Where the parts sit: the jaw cannon in the throat, the pontoons either side.
 CROC_PARTS = record({"jaw": [0, -37], "pontoon": [27, 4]})
 
-# 3-1: a long, low hover-gunboat with jaws that open and close and green neon eyes (P09-R09).
-# The jaw cannon fires aimed bursts as the jaws open; the side pontoons fire fans and shield the
-# core; the core's ring dome fires rings, a spiral once alone. The fight is a chase up the delta
-# (ground x1.4).
+# 3-1: a long, low hover-gunboat with jaws that open and close and green neon eyes. The jaw
+# cannon fires aimed bursts as the jaws open; the side pontoons fire fans and shield the core
+# (MB-MANGROVE-CROC-09); the core's ring dome fires rings, a spiral once alone. The fight is a
+# chase up the delta (ground x1.4).
 _MANGROVE_CROC = record(
     {
         "id": "mangrove-croc",
-        # Angry after each destroyed part (D-063), heat 4.5 (P09-R10).
+        # Angry after each destroyed part (D-063), heat 4.5 (MB-MANGROVE-CROC-12).
         "rage": rage.vortex(4.5, "green", "orange"),
+        # Its core and parts (MB-MANGROVE-CROC-08), and its points (MB-MANGROVE-CROC-15).
         "stats": stats(
             record(
                 {
@@ -110,6 +113,7 @@ _MANGROVE_CROC = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (MB-MANGROVE-CROC-07).
         "stopFraction": 0.72,
         "sway": {"amplitude": 70, "period": 7},
         "bob": {"amplitude": 8, "period": 3.4},
@@ -119,6 +123,7 @@ _MANGROVE_CROC = record(
             "pontoon-left": {"gun": mirror(CROC_PONTOON_GUNS)},
             "pontoon-right": {"gun": CROC_PONTOON_GUNS},
         },
+        # The parts' volleys, then the core's pattern per stage (MB-MANGROVE-CROC-11).
         "stages": stages(
             [
                 volley.burst(
@@ -144,8 +149,9 @@ _MANGROVE_CROC = record(
     }
 )
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
-# baring a dark metal frame, and a pair of gatling turrets unfold.
+# Its hidden weapons (boss transformations, D-224, MB-MANGROVE-CROC-14): at transformation 1 its
+# back plating bursts off, baring a dark metal frame (MB-MANGROVE-CROC-13), and a pair of gatling
+# turrets unfold.
 MANGROVE_CROC = with_weapons(
     _MANGROVE_CROC,
     [

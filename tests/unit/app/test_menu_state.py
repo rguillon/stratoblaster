@@ -6,7 +6,7 @@ from app.settings_menu import Volumes
 from core.content.level_catalog import LevelCatalog
 
 
-def test_p01_r01_a_menu_state_keeps_the_fields_it_was_built_with() -> None:
+def test_ui_flow_04_a_menu_state_keeps_the_fields_it_was_built_with() -> None:
     state = MenuState(
         "level-select",
         2,
@@ -31,7 +31,7 @@ def test_p01_r01_a_menu_state_keeps_the_fields_it_was_built_with() -> None:
     assert state.volumes.sfx == 6
 
 
-def test_p01_r01_the_flow_options_keep_their_data() -> None:
+def test_ui_flow_04_the_flow_options_keep_their_data() -> None:
     levels = LevelCatalog(1, [])
     options = MenuFlowOptions(["alpha"], levels, None, 0.25, None, None, 10)
     assert options.ship_ids == ["alpha"]

@@ -1,10 +1,11 @@
-"""One play of a level (P06-R02, R03, R07)
+"""One play of a level (`specs/gameplay/level-flow.md`)
 
-The ground scrolls, the wave script brings the enemies in by distance, the player flies and shoots
-them. When the scroll reaches the end no more enemies come; once the last ones are gone (or after
-`end_wait`) the level is complete. With bosses (P07-R06), no wave comes while one is fought, and a
-level with a final boss ends once that boss is destroyed instead. Pure and deterministic: everything
-depends on the `dt` and controls given to `step`.
+The ground scrolls, the wave script brings the enemies in by distance (GAME-LEVEL-01), the player
+flies and shoots them. When the scroll reaches the end no more enemies come; once the last ones are
+gone (or after `end_wait`) the level is complete (GAME-LEVEL-10). With bosses, no wave comes while
+one is fought (GAME-LEVEL-06), and a level with a final boss ends once that boss is destroyed
+instead. Pure and deterministic (GAME-LEVEL-15): everything depends on the `dt` and controls given
+to `step`.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -36,12 +37,12 @@ from core.systems.wave_runner import WaveRunner, validate_wave_script
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import DropSource  # noqa: E402
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.math.rng import Random  # noqa: E402
-from core.systems.enemy_shots import EnemyLaser  # noqa: E402
+from core.entities.enemy import DropSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_shots import EnemyLaser  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -62,8 +63,9 @@ def _player_systems(
     options: LevelRunOptions,
     reach: tuple[float, float],
 ) -> tuple[BonusWorld | None, PlayerHull | None, PlayerBombs | None]:
-    """The bonuses, hull and bombs of a run, each only when its rules are given. The life and bomb
-    bonuses draw from a source of their own (P11-R07), so the weapon bonuses drop as before.
+    """The bonuses, hull and bombs of a run, each only when its rules are given. The bonuses draw
+    from the run's seed (GAME-BONUS-05); the life and bomb bonuses from a source of their own
+    (GAME-BONUS-03), so the weapon bonuses drop as before.
     """
     seed = options.seed
     supplies = options.start_supplies
@@ -104,7 +106,7 @@ class LevelRun:
         self._clearing_for = 0.0
         # What the player's shots can hit: the enemies and missiles on screen.
         self._targets: list[ShotTarget] = []
-        # Saved when the mini boss is destroyed (P07-R08).
+        # Saved when the mini boss is destroyed (GAME-LEVEL-09).
         self._checkpoint: LevelCheckpoint | None = None
         # Laser beams that already hit the player (a beam hits once).
         self._lasers_hit: set[EnemyLaser] = set()
@@ -129,6 +131,7 @@ class LevelRun:
         self.shots = ShotWorld(area, options.weapon)
         self.shots.select(options.weapon, options.weapon_level)
         self.shots.targets = self._targets
+        # The ship's reach at the bottom of the screen (GAME-SCREEN-06).
         bounds = options.bounds
         half = bounds.half_width_at(bounds.min_y)
         self._reach = (bounds.center_x - half, bounds.center_x + half)
@@ -143,6 +146,7 @@ class LevelRun:
         boss_kinds = options.boss_kinds if options.boss_kinds is not None else []
         boss_rules = options.boss_rules if options.boss_rules is not None else NO_BOSS_RULES
         reach = self._reach
+        # A boss comes in with the ship's reach, and moves within it (BOSS-10).
         hooks = BossFightHooks(
             lambda: EnemySpawnArea(screen.width, screen.height, random, None, reach),
             lambda boss: self.enemies.add(boss),  # noqa: PLW0108 (a method reference loses `self`)
@@ -156,10 +160,13 @@ class LevelRun:
 
     @property
     def phase(self) -> str:
+        """The run's phase: 'playing', 'clearing', 'complete' or 'over'."""
         return self._phase
 
     @property
     def result(self) -> LevelResult:
+        """Summary of the run so far: kills, spawns and score, and whether it is over (with the
+        checkpoint to continue from, if any)."""
         over = self._phase == "over"
         checkpoint = self._checkpoint if over and self._checkpoint is not None else None
         return LevelResult(
@@ -174,8 +181,8 @@ class LevelRun:
 
     @property
     def score(self) -> float:
-        """Points scored so far in this attempt (P11-R01), from the checkpoint's after a
-        Continue."""
+        """Points scored so far in this attempt (GAME-SCORE-01), from the checkpoint's after a
+        Continue (GAME-SCORE-06)."""
         return self.enemies.score
 
     @property
@@ -190,7 +197,7 @@ class LevelRun:
 
     @property
     def checkpoint(self) -> LevelCheckpoint | None:
-        """The checkpoint saved so far (P07-R08), if any."""
+        """The checkpoint saved so far (GAME-LEVEL-09), if any."""
         return self._checkpoint
 
     def step(self, dt: float, controls: LevelControls) -> None:
@@ -202,6 +209,7 @@ class LevelRun:
             return
         flying = self._fly(dt, controls)
         self._aim_shots()
+        # Fire is held (GAME-CTRL-05), and shots fire only while the player flies (GAME-WPN-18).
         self.shots.firing = flying and bool(controls.fire)
         self.track.step(dt)
         if self._phase == "playing":
@@ -220,8 +228,9 @@ class LevelRun:
             self._clear(dt)
 
     def seek(self, time: float) -> None:
-        """Starts again at `time` seconds into the level (P06-R09): the enemies and shots on screen
-        go, the waves before that point are skipped and the later ones come as usual.
+        """Starts again at `time` seconds into the level (DEV-OPT-02, DEV-OPT-08): the enemies and
+        shots on screen go, the waves before that point are skipped and the later ones come as
+        usual.
         """
         if self._phase == "over":
             return
@@ -231,7 +240,7 @@ class LevelRun:
         self._restart_at(None)
 
     def _resume(self, checkpoint: LevelCheckpoint) -> None:
-        """From the checkpoint (P07-R08): its progress, its bosses passed and its weapons."""
+        """From the checkpoint (GAME-LIFE-11): its progress, its bosses passed and its weapons."""
         self.track.seek(checkpoint.progress / self.track.speed)
         self._restart_at(checkpoint.bosses_passed)
         self.arsenal.restore(checkpoint.weapons)
@@ -252,8 +261,9 @@ class LevelRun:
         self._clearing_for = 0.0
 
     def _step_level(self, dt: float) -> None:
-        """The level goes on: bosses come and go, the waves come while no boss is fought (P07-R06),
-        and the level ends with its final boss, or at the end of its scroll without one.
+        """The level goes on: bosses come and go, the waves come while no boss is fought
+        (GAME-LEVEL-06), the mini boss's death saves the checkpoint (BOSS-06), and the level ends
+        with its final boss, or at the end of its scroll without one (GAME-LEVEL-10).
         """
         fights = self.fights
         track = self.track
@@ -277,14 +287,16 @@ class LevelRun:
                 self.journey.clear()
 
     def break_boss_part(self) -> None:
-        """A debug key (P07-R09): destroys the next intact part of the boss fought, or its core."""
+        """A debug key (DEV-OPT-09): destroys the next intact part of the boss fought, or its
+        core."""
         boss = self.fights.boss
         if boss is not None:
             boss.break_next()
 
     def _step_bomb(self, dt: float, pressed: bool) -> None:
-        """A bomb (P11-R05): when one goes off, every enemy and boss piece on screen takes its
-        damage once (a shielded core takes none); while it lasts, the enemy shots are cleared.
+        """A bomb (GAME-BOMB-03): when one goes off, every enemy and boss piece on screen takes its
+        damage once (a shielded core takes none, GAME-BOMB-04); while it lasts, the enemy shots are
+        cleared (GAME-BOMB-05).
         """
         bombs = self.bombs
         if bombs is None:
@@ -297,9 +309,10 @@ class LevelRun:
             self.enemies.shots.clear()
 
     def _step_hull(self, dt: float) -> None:
-        """The most damaging enemy shot or enemy touching the ship lands, unless the ship is
-        invincible (GD-21, GD-22) or a bomb is going off (P11-R05); with no life left the game is
-        over (GD-20). A lost life tops the bombs back up (P11-R05).
+        """The most damaging enemy shot or enemy touching the ship lands (GAME-LIFE-06), unless the
+        ship cannot be hurt (GAME-LIFE-10): invincible after a hit (GAME-LIFE-07), a bomb going off
+        (GAME-BOMB-06) or the journey flying it; with no life left the game is over (GAME-LIFE-09).
+        A lost life tops the bombs back up (GAME-BOMB-02).
         """
         hull = self.hull
         rules = self._options.hull
@@ -320,7 +333,8 @@ class LevelRun:
         self._landed(LandedHit(hit.kind, hit.x, hit.y, hull.hit(hit.damage)))
 
     def _landed(self, hit: LandedHit) -> None:
-        """A hit landed: a lost life tops the bombs up, the last one ends the game."""
+        """A hit landed: a lost life (GAME-LIFE-08) tops the bombs up, the last one ends the
+        game."""
         self.hits = [hit]
         if hit.event == "lifeLost" and self.bombs is not None:
             self.bombs.refill()
@@ -330,8 +344,8 @@ class LevelRun:
         self.waves.stop()
 
     def _step_bonuses(self, dt: float) -> None:
-        """Drops bonuses where enemies blew up (a life bonus where a mini boss did, P11-R07), moves
-        them, and gives what each one picked up gives.
+        """Drops bonuses where enemies blew up (a life bonus where a mini boss did, GAME-BONUS-04),
+        moves them, and gives what each one picked up gives.
         """
         bonuses = self.bonuses
         if bonuses is None:
@@ -355,7 +369,8 @@ class LevelRun:
 
     def _collect(self, kind: str) -> None:
         """A weapon bonus raises the weapon in use by a level, up to its last (the new level fires
-        at once); a life or a bomb bonus adds one, or scores its points at the most (P11-R07).
+        at once, GAME-WPN-14); a life or a bomb bonus adds one (GAME-BONUS-09), or scores its points
+        at the most (GAME-BONUS-10).
         """
         if kind == "weapon":
             self.arsenal.level_up(1)
@@ -374,7 +389,8 @@ class LevelRun:
             self.enemies.score += points
 
     def _aim_at_visible(self) -> None:
-        """Only what is on screen can be hit (see `LevelRunOptions.in_view`)."""
+        """Only what is on screen can be hit (GAME-WPN-16, ENM-13; see
+        `LevelRunOptions.in_view`)."""
         given = self._options.in_view
         if given is not None:
             in_view = given
@@ -387,7 +403,7 @@ class LevelRun:
 
     def _clear(self, dt: float) -> None:
         """Completes the level once the last enemies are gone, or after the longest wait, and with a
-        journey once the ship has flown off the top of the screen.
+        journey once the ship has flown off the top of the screen (GAME-LEVEL-12).
         """
         self._clearing_for += dt
         done = self.journey.stage == "gone" if self.journey is not None else self._cleared
@@ -399,8 +415,9 @@ class LevelRun:
         return len(self.enemies.enemies) == 0 or self._clearing_for >= self._options.end_wait
 
     def _fly(self, dt: float, controls: LevelControls) -> bool:
-        """The player flies the ship; whether they do: once the game is over the ship is gone (the
-        enemies go on until the overlay shows), and while it arrives or leaves the journey flies it.
+        """The player flies the ship (and switches weapon, GAME-WPN-13); whether they do: once the
+        game is over the ship is gone (the enemies go on until the overlay shows), and while it
+        arrives or leaves the journey flies it.
         """
         if self._phase == "over":
             return False
@@ -424,12 +441,12 @@ class LevelRun:
         if kind is None:
             return
         screen = self._options.screen
-        # Phase 6 review: from the top, only where the ship can reach at the bottom of the screen.
+        # From the top, only where the ship can reach at the bottom of the screen (ENM-09).
         area = EnemySpawnArea(screen.width, screen.height, random, entry, self._reach)
         self.enemies.add(*kind.spawn(area))
 
     def _aim_shots(self) -> None:
-        """Shots leave from the ship's nose (muzzle) and centre."""
+        """Shots leave from the ship's nose (muzzle, GAME-WPN-05) and centre."""
         x = self.ship.x
         y = self.ship.y
         self.shots.muzzle_x = x

@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""Lava (P10-R05): crust plates over a glowing melt, drawn by one self-lit material."""
+"""Lava (GFX-TERRAIN-16): crust plates over a glowing melt, drawn by one self-lit material."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from org.transcrypt.stubs.browser import __pragma__
@@ -7,7 +7,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from render.babylon import color3, new_glsl_material, vector2, vector3, vector4
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -151,10 +151,11 @@ class LavaMaterialImpl:
 
 
 def create_lava_material(scene: Any, look: Any, flow: tuple[float, float]) -> LavaMaterialImpl:
-    """Lava (P10-R05): dark crust plates over a glowing melt that shows in the cracks between them,
-    white-hot at their heart, the plates churning, parting and closing as they drift with the
+    """Lava (GFX-TERRAIN-16): dark crust plates over a glowing melt that shows in the cracks between
+    them, white-hot at their heart, the plates churning, parting and closing as they drift with the
     `flow` (world units a second). Self-lit, so it shows by night and blooms in the glow layer
-    (it is drawn there with this same material); it lights nothing (no real light, P10-R05)."""
+    (it is drawn there with this same material); it lights nothing (no real light,
+    GFX-TERRAIN-18)."""
     material = new_glsl_material(
         "lava",
         scene,

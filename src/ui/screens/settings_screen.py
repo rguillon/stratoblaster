@@ -1,18 +1,18 @@
-"""Settings screen (P12-R04): the Music and Sound
-effects sliders. Over a paused level, the playfield shows dimmed behind it."""
+"""Settings screen (UI-SET-02): the Music and Sound
+effects sliders. Over a paused level, the playfield shows dimmed behind it (UI-SET-07)."""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import SettingsView, SliderView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import SettingsView, SliderView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import back_button, element, entry  # noqa: E402
+from ui.screens.elements import back_button, element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _value_at(track: Any, client_x: float, max_value: int) -> float:
@@ -40,7 +40,7 @@ def _clear_flag(flag: list[bool]) -> Callable[[Any], None]:
 
 
 def _drag_to_set(bar: Any, index: int, max_value: int, handlers: ScreenHandlers) -> None:
-    """Tapping or dragging on the bar sets the slider (P12-R04)."""
+    """Tapping or dragging on the bar sets the slider (UI-SET-03)."""
     dragging = [False]
 
     def set_value(event: Any) -> None:
@@ -88,7 +88,7 @@ def _slider_row(
 
 
 def render_settings_screen(doc: Any, view: SettingsView, handlers: ScreenHandlers) -> Any:
-    """Renders the settings screen (P12-R04)."""
+    """Renders the settings screen (UI-SET-08)."""
     over = " over-level" if view.over_level else ""
     root = element(doc, "div", "menu-screen settings-screen" + over)
     sliders = element(doc, "div", "settings-list")

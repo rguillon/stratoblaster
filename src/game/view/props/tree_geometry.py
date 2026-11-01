@@ -1,4 +1,5 @@
-"""The geometry of a tree prop (D-212, D-214): its solid, and a stand-in for its shadow."""
+"""The geometry of a tree prop (D-212, D-214): its solid, and a stand-in for its shadow
+(GFX-PROP-12)."""
 
 from render.geometry.solids import SolidBuilder
 from render.scenery.scenery_look import PropGeometry

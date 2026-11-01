@@ -1,24 +1,25 @@
-"""The materials of the enemy models (P05, P14-R02, P16-R01)"""
+"""The materials of the enemy models: flesh and hull (ENM-36, GFX-ART-15), and neon. Babylon's
+dirty marking is blocked while they are made (PERF-31)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 __pragma__("noskip")
 
-from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.readability import READABILITY  # noqa: E402
-from render.babylon import (  # noqa: E402
+from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     block_material_marks,
     color3,
@@ -32,14 +33,14 @@ from render.babylon import (  # noqa: E402
 
 
 def enemy_color(color: Rgb) -> Sequence[float]:
-    """`color` moved into the enemies' colour family (P14-R02): to the nearest of its hues, bright
-    yellow or bright green (D-231)."""
+    """`color` moved into the enemies' colour family (ENM-38, GFX-READ-06; a boss's too, BOSS-50):
+    to the nearest of its hues, bright yellow or bright green (D-231)."""
     return snap_to_hues(color, READABILITY.enemyHues)
 
 
 def body_color(color: Sequence[float]) -> Sequence[float]:
     """A shade of an enemy's body (hull, flesh): kept in the window of `READABILITY.enemyBody`,
-    greyed out of it (D-231: no khaki, no pink)."""
+    greyed out of it (ENM-39, GFX-ART-06; D-231: no khaki, no pink)."""
     body = READABILITY.enemyBody
     hue, saturation = hue_saturation(color)
     if saturation <= body.maxSaturation:
@@ -59,7 +60,7 @@ def _with_colors(geo: Any, colors: list[float]) -> Any:
 
 
 def in_enemy_family(geo: Any) -> Any:
-    """`geo` with its vertex colours moved into the enemies' colour family (P14-R02)."""
+    """`geo` with its vertex colours moved into the enemies' colour family (ENM-38)."""
     colors = list(geo.colors)
     i = 0
     while i + 3 < len(colors):
@@ -90,7 +91,7 @@ class EnemyMaterials:
     def __init__(self, hull: Any, flesh: Any, neon: Any) -> None:
         # Dark metal, tinted by the vertex colours.
         self.hull = hull
-        # Dark, waxy flesh (P16-R01), tinted by the vertex colours.
+        # Dark, waxy flesh (ENM-36), tinted by the vertex colours.
         self.flesh = flesh
         # Unlit neon, coloured by the vertex colours.
         self.neon = neon
@@ -146,7 +147,8 @@ def enemy_materials(scene: Any) -> EnemyMaterials:
 
 
 def metal(name: str, albedo: Any, scene: Any) -> Any:
-    """Dark metal lit by the hull settings of the enemy look."""
+    """Dark metal lit by the hull settings of the enemy look, brighter than the scenery
+    (`hullLight`, GFX-ART-08)."""
     was = block_material_marks(scene, True)
     hull = new_pbr_material(name, scene)
     hull.albedoColor = albedo
@@ -159,7 +161,7 @@ def metal(name: str, albedo: Any, scene: Any) -> Any:
 
 
 def flesh_of(name: str, albedo: Any, scene: Any) -> Any:
-    """A waxy, barely metallic flesh (P16-R01), lit as the hulls are."""
+    """A waxy, barely metallic flesh (GFX-ART-15), lit as the hulls are."""
     was = block_material_marks(scene, True)
     mat = metal(name, albedo, scene)
     mat.metallic = ENEMY_LOOK.flesh.metallic
@@ -196,7 +198,8 @@ def tinted_hull(scene: Any, neon: Sequence[float], flesh: bool = False) -> Any:
 
 
 def rim_of(neon: Sequence[float]) -> Rgb:
-    """The rim colour of an enemy whose neon is `neon` (P14-R04)."""
+    """The rim colour of an enemy whose neon is `neon` (GFX-TRIM-06): lifted towards white, so it
+    stands out from the ground (ENM-47)."""
     outline = READABILITY.enemyTrim
     whiten = outline.whiten
     strength = outline.strength

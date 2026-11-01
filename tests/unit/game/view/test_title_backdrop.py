@@ -20,11 +20,13 @@ def scene(monkeypatch):
 
 
 def test_the_title_sky_and_skyline_are_built_without_glow(scene):
+    """UI-TITLE-10: the dark sky and skyline are kept out of the glow."""
     meshes = _build_sky(scene, create_rng(1))
     assert len(meshes) == 2
 
 
 def test_the_title_city_is_two_chunks_end_to_end(scene):
+    """UI-TITLE-07: the street loops forever."""
     city = _build_city(scene, create_rng(2))
     assert city is not None
 

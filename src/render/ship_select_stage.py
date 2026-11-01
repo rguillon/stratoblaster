@@ -1,7 +1,7 @@
-"""The 3D part of the ship select screen (P01-R06)
+"""The 3D part of the ship select screen (UI-SHIP-01)
 
 The ships stand side by side, rotating. The highlighted ship is scaled up, lit by its own key
-light and sits on a neon ring; the others are smaller and only get the ambient light.
+light and sits on a neon ring; the others are smaller and only get the ambient light (UI-SHIP-03).
 """
 
 import math
@@ -25,8 +25,8 @@ from render.model_showcase import ModelShowcase, ShowcaseOptions
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 ModelFactory = Callable[[Any], Any]
 __pragma__("noskip")
@@ -121,7 +121,7 @@ class ShipSelectStage:
         ambient.intensity = lights.ambient_intensity
         rim = new_directional_light("ship-select-rim", _vec(lights.rim_direction), scene)
         rim.intensity = lights.rim_intensity
-        # P13-R02: one light per ship, so highlighting another ship only turns lights on and off:
+        # PERF-07: one light per ship, so highlighting another ship only turns lights on and off:
         # no mesh's lights change, and no shader is compiled again.
         self._spots: list[Any] = []
         for i in range(len(self.showcase.pivots)):

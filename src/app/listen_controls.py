@@ -1,13 +1,14 @@
-"""Keyboard listeners of the level (): keys go to the level's
-debug keys first (when on), then to the in-game controls.
+"""Keyboard listeners of the level: keys go to the level's
+debug keys first (when on, DEV-OPT-08), then to the in-game controls. Losing the focus lets every
+key go (GAME-CTRL-07).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 

@@ -1,4 +1,5 @@
-"""Measures how fast a running total grows, over a sliding time window ()."""
+"""Measures how fast a running total grows, over a sliding time window (the FPS of the debug
+tile, DEV-PERF-04)."""
 
 
 class RateMeter:

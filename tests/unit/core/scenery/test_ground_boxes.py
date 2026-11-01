@@ -174,6 +174,7 @@ def test_index_finds_a_huge_building_whose_bucket_is_two_or_more_away() -> None:
 
 
 def test_p04_review_buildings_never_overlap_even_packed_on_a_dense_street_grid() -> None:
+    """GFX-BLDG-01: no two buildings overlap."""
     p = placer_for(dense_level())
     p.place(AREA)
     records = p.snapshot().buildings
@@ -183,7 +184,7 @@ def test_p04_review_buildings_never_overlap_even_packed_on_a_dense_street_grid()
             assert not overlap(a, b, 0)
 
 
-def test_p04_r04_trees_stand_on_the_grid_away_from_the_roads_and_buildings() -> None:
+def test_gfx_prop_07_trees_stand_on_the_grid_away_from_the_roads_and_buildings() -> None:
     p = placer_for()
     props = p.place(AREA)
     trees = [t for t in props if t.kind == "stick"]
@@ -198,7 +199,7 @@ def test_p04_r04_trees_stand_on_the_grid_away_from_the_roads_and_buildings() -> 
         assert all(not overlap(b, tree, 0) for b in buildings)
 
 
-def test_p04_r04_the_placement_of_an_area_does_not_depend_on_earlier_queries() -> None:
+def test_gfx_prop_06_the_placement_of_an_area_does_not_depend_on_earlier_queries() -> None:
     fresh = keys(placer_for().place(AREA))
     busy = placer_for()
     busy.place(GroundArea(-200, 200, 600, 1000))
@@ -212,7 +213,7 @@ def test_placing_an_area_past_the_runout_lays_it() -> None:
     assert p.runout_laid
 
 
-def test_p08_r03_set_pieces_are_placed_first_and_the_buildings_keep_clear() -> None:
+def test_gfx_prop_17_set_pieces_are_placed_first_and_the_buildings_keep_clear() -> None:
     level = sample_level(props=sample_props(landmarks=[Landmark("dam", 100, (5, 3), x=0)]))
     p = placer_for(level)
     dams = [q for q in p.place(AREA) if q.kind == "dam"]

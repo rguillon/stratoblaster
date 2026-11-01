@@ -1,5 +1,6 @@
-"""Tunables of the first enemies (P05)
+"""Tunables of the basic enemies (ENM-06; each kind's file in specs/enemies/)
 
+Points follow each kind's difficulty (GAME-SCORE-03); a new look changes none of these (ENM-46).
 Distances in logical pixels, speeds in px/s, times in seconds, angles in degrees. Heights given as
 `...Fraction` are fractions of the playfield height from its bottom (1 = top edge).
 """
@@ -10,14 +11,14 @@ from game.config.record import record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# `L`: length of the medium (balanced) player ship on the playfield, ~4.8 model units x 7.
+# `L` (ENM-05): length of the medium (balanced) player ship on the playfield, ~4.8 model units x 7.
 ENEMY_UNIT = 34
 
-# Hit radius relative to half the model size (GD-21: a hitbox about as big as the model).
+# Hit radius relative to half the model size (ENM-11: a hitbox about as big as the model).
 HITBOX = 0.85
 
 
@@ -26,12 +27,12 @@ def radius(size: float) -> float:
     return (size * ENEMY_UNIT * HITBOX) / 2
 
 
-# How far above the top edge (or beside the side edges) enemies appear.
+# How far above the top edge (or beside the side edges) enemies appear (ENM-07).
 ENEMY_SPAWN_MARGIN = 60
 
 
 def bullet(style: str, speed: float) -> Any:
-    """Enemy bullets: colourful glowing balls (GD-43). The style keys the look in `enemy_look`."""
+    """Enemy bullets: colourful glowing balls (ENM-16). The style keys the look in `enemy_look`."""
     return record({"speed": speed, "radius": 4, "style": style})
 
 
@@ -48,6 +49,7 @@ ROCKETEER_POD = 0.48 * ENEMY_UNIT
 
 ENEMY_CONFIG = record(
     {
+        # ENM-GNAT-04 (a group of five on one S path), ENM-GNAT-06 (health and points).
         "gnat": {
             "stats": {"model": "gnat", "radius": radius(0.5), "health": 10, "points": 50},
             "size": 0.5,
@@ -64,6 +66,7 @@ ENEMY_CONFIG = record(
                 [0.4, -0.15],
             ],
         },
+        # ENM-HORNET-04 (entry and braking), ENM-HORNET-09 (health and points).
         "hornet": {
             "stats": {"model": "hornet", "radius": radius(0.7), "health": 20, "points": 100},
             "size": 0.7,
@@ -78,6 +81,7 @@ ENEMY_CONFIG = record(
             # Range of X where it appears, as fractions of the width.
             "xRange": [0.15, 0.85],
         },
+        # ENM-SCOUT-07: health and points.
         "scout": {
             "stats": {"model": "scout", "radius": radius(0.8), "health": 30, "points": 100},
             "size": 0.8,
@@ -86,10 +90,11 @@ ENEMY_CONFIG = record(
             # Delay before the first shot once on the playfield.
             "firstShot": 0.6,
             "bullet": bullet("red", 210),
-            # The nose gun.
+            # The nose gun (ENM-SCOUT-03).
             "muzzles": [[0, -13.3, 1.3]],
             "xRange": [0.15, 0.85],
         },
+        # ENM-STRAFER-07: health and points.
         "strafer": {
             "stats": {
                 "model": "strafer",
@@ -105,12 +110,14 @@ ENEMY_CONFIG = record(
             "fanCount": 3,
             "fanSpacing": 15,
             "bullet": bullet("magenta", 200),
-            # A gun on each side of its body: it fires from the one facing down the screen.
+            # A gun on each side of its body (ENM-STRAFER-03): it fires from the one facing down the
+            # screen.
             "muzzles": [
                 [9, -1.5, 1.5],
                 [-9, -1.5, 1.5],
             ],
         },
+        # ENM-WEAVER-06: health and points.
         "weaver": {
             "stats": {"model": "weaver", "radius": radius(0.9), "health": 30, "points": 120},
             "size": 0.9,
@@ -119,7 +126,7 @@ ENEMY_CONFIG = record(
             # Distance travelled down for one full left-right sway.
             "wavelength": 280,
             "fireInterval": 2,
-            # A gun on the nose of each hull: a bullet from each.
+            # A gun on the nose of each hull: a bullet from each (ENM-WEAVER-02).
             "muzzles": [
                 [-10, -15.8, 1.9],
                 [10, -15.8, 1.9],
@@ -127,6 +134,7 @@ ENEMY_CONFIG = record(
             "bullet": bullet("green", 200),
             "xRange": [0.3, 0.7],
         },
+        # ENM-SPINNER-07: health and points.
         "spinner": {
             "stats": {"model": "spinner", "radius": radius(1), "health": 60, "points": 200},
             "size": 1,
@@ -152,6 +160,7 @@ ENEMY_CONFIG = record(
             ],
             "xRange": [0.25, 0.75],
         },
+        # ENM-LANCER-08: health and points.
         "lancer": {
             "stats": {"model": "lancer", "radius": radius(1.3) * 0.55, "health": 80, "points": 250},
             "size": 1.3,
@@ -167,6 +176,7 @@ ENEMY_CONFIG = record(
             "exitSpeed": 200,
             "xRange": [0.15, 0.85],
         },
+        # ENM-ROCKETEER-09: health and points.
         "rocketeer": {
             "stats": {
                 "model": "rocketeer",
@@ -180,11 +190,12 @@ ENEMY_CONFIG = record(
             "firstShot": 1,
             # Distance of each pod from the centre.
             "podOffset": ROCKETEER_POD,
-            # The pods' missile tips: a missile from each.
+            # The pods' missile tips: a missile from each (ENM-ROCKETEER-06).
             "muzzles": [
                 [-ROCKETEER_POD, -14.5, 0],
                 [ROCKETEER_POD, -14.5, 0],
             ],
+            # Homing missiles (ENM-ROCKETEER-07).
             "missile": {
                 "speed": 150,
                 "turnRateDeg": 90,
@@ -195,6 +206,7 @@ ENEMY_CONFIG = record(
             },
             "xRange": [0.2, 0.8],
         },
+        # ENM-BULWARK-08: health and points.
         "bulwark": {
             "stats": {
                 "model": "bulwark",
@@ -214,13 +226,14 @@ ENEMY_CONFIG = record(
             "spreadCount": 5,
             "spreadSpacing": 10,
             "bullet": bullet("blue", 190),
-            # The twin cannon on the front of its tower.
+            # The twin cannon on the front of its tower (ENM-BULWARK-03).
             "muzzles": [
                 [-3, -14, 4.2],
                 [3, -14, 4.2],
             ],
             "xRange": [0.3, 0.7],
         },
+        # ENM-SPLITTER-09: health and points.
         "splitter": {
             "stats": {"model": "splitter", "radius": radius(1), "health": 50, "points": 200},
             "size": 1,
@@ -228,7 +241,7 @@ ENEMY_CONFIG = record(
             "fireInterval": 2.5,
             "firstShot": 0.8,
             "bullet": bullet("purple", 200),
-            # The eye on top of its core.
+            # The eye on top of its core (ENM-SPLITTER-02).
             "muzzles": [[0, 0, 5.4]],
             # Curved path, fractions of the playfield; mirrored at random.
             "path": [
@@ -240,6 +253,7 @@ ENEMY_CONFIG = record(
             # Distance of the three pods from the centre.
             "podOffset": 0.38 * ENEMY_UNIT,
         },
+        # ENM-CARRIER-10: health and points.
         "carrier": {
             "stats": {
                 "model": "carrier",
@@ -253,15 +267,15 @@ ENEMY_CONFIG = record(
             "launchInterval": 3,
             "firstLaunch": 1.2,
             # The launch ports on its right side (mirrored on the left), from its centre: out to
-            # the side and up the screen, in px. The model puts its ports there.
+            # the side and up the screen, in px. The model puts its ports there (ENM-CARRIER-02).
             "ports": [
                 [21, 9],
                 [21, -1],
             ],
-            # It stops launching below this height, too close to the player.
+            # It stops launching below this height, too close to the player (ENM-CARRIER-09).
             "lastLaunchFraction": 0.3,
             # The launched Gnats' path from a port, in px, for the right side (mirrored for the
-            # left): out sideways, then down past the bottom of the screen.
+            # left): out sideways, then down past the bottom of the screen (ENM-CARRIER-08).
             "launchPath": [
                 [0, 0],
                 [28, -4],
@@ -272,7 +286,8 @@ ENEMY_CONFIG = record(
             ],
             "xRange": [0.3, 0.7],
         },
-        # The pods a destroyed Splitter breaks into: small Hornets (P05-R10).
+        # The pods a destroyed Splitter breaks into: small Hornets (ENM-SPLITTER-08; health and
+        # points: ENM-SPLITTER-09).
         "splitterPod": {
             "stats": {
                 "model": "splitter-pod",

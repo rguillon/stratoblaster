@@ -1,5 +1,5 @@
-"""The kinds of hidden weapon (D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
-shape-shifts-design.md, Part A): their muzzles, volleys and launches."""
+"""The kinds of hidden weapon (BOSS-40; D-229; docs/superpowers/specs/2026-11-01-boss-weapon-
+variety-and-shape-shifts-design.md, Part A): their muzzles, volleys and launches."""
 
 import pytest
 

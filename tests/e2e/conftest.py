@@ -1,12 +1,12 @@
-"""Shared set-up of the e2e tests (ENG-50 to ENG-53): Playwright (Python, Chromium) on the e2e
-build in `dist-e2e/` (`make e2e-build`), served on a free local port for the whole session.
+"""Shared set-up of the e2e tests (ENG-30, ENG-50 to ENG-53): Playwright (Python, Chromium) on
+the e2e build in `dist-e2e/` (`make e2e-build`), served on a free local port for the whole session.
 
-- `base_url`: the server's address; `page.goto("./")` opens the game;
+- `base_url`: the server's address, never a dev server (ENG-51); `page.goto("./")` opens the game;
 - the Transcrypt browser stubs are on the path, so a test can read the game's config (`src/`);
 - every test fails on a browser console error or an uncaught exception (ENG-53), and on any
-  warning from the audio (an autoplay warning, a context that could not start, P12-R05);
+  warning from the audio (an autoplay warning, a context that could not start, AUD-ENGINE-03);
 - `--shard K/N` runs only the K-th of N slices of the tests (K from 1), so CI can spread them
-  over N jobs (`make e2e E2E_SHARD=K/N`).
+  over N jobs (`make e2e E2E_SHARD=K/N`, ENG-59).
 """
 
 import sys
@@ -79,7 +79,7 @@ def base_url() -> Iterator[str]:
 
 @pytest.fixture(autouse=True)
 def console_errors(page: Page) -> Iterator[list[str]]:
-    """ENG-53: the console errors and uncaught exceptions of the test; it fails on any."""
+    """ENG-53, ENG-109: the console errors and uncaught exceptions of the test; it fails on any."""
     errors: list[str] = []
 
     def on_console(message: ConsoleMessage) -> None:

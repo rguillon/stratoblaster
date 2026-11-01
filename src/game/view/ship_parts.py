@@ -19,18 +19,19 @@ from render.geometry.lathe_z import LatheHalves, create_faceted_lathe_along_z
 from render.geometry.prism import create_prism
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 
 
 __pragma__("noskip")
 
-# Sides of polygonal parts (nacelles, canopies, intakes, pods): a hexagonal section.
+# Sides of polygonal parts (nacelles, canopies, intakes, pods): a hexagonal section (GFX-ART-09).
 PART_FACETS = 6
 
 
-# Section of fuselages: a smooth, finely faceted top over a low-poly 3-facet belly.
+# Section of fuselages: a smooth, finely faceted top over a low-poly 3-facet belly, keeping each
+# ship under its triangle budget (GFX-SHIP-05).
 BODY_SECTION = LatheHalves(20, 3)
 
 PLATE_THICKNESS = 0.012
@@ -112,7 +113,8 @@ def plate(
 
 
 def nav_light(name: str, position: Any, parent: Any) -> Any:
-    """Creates a small blue light (tagged `light`) at `position` in `parent`'s space."""
+    """Creates a small blue light (tagged `light`) at `position` in `parent`'s space: with the
+    trim and the flames, the only glow round the ship (GFX-SHIP-09)."""
     scene = parent.getScene()
     # An octahedron (8 triangles): at this size and glowing, it reads as a round light.
     mesh = tag_part(
@@ -181,7 +183,7 @@ def _add_reactor_rings(name: str, size: dict[str, float], root: Any) -> None:
 
 def build_reactor(name: str, size: dict[str, float], scene: Scene) -> Any:
     """Builds a reactor centred on its origin, thrusting towards -Z: a hexagonal metal nacelle, a
-    glowing blue core at the nozzle and an animated blue flame behind it."""
+    glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06)."""
     mats = get_ship_materials(scene)
     radius = size["radius"]
     length = size["length"]

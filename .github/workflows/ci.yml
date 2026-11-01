@@ -1,5 +1,6 @@
 name: CI
 
+# ENG-70: on every push to main and on every pull request.
 on:
   push:
     branches: [main]
@@ -20,8 +21,8 @@ jobs:
         with:
           fetch-tags: true
       - uses: astral-sh/setup-uv@v10.3.3
-      # Python 3.12 (pinned by pyproject.toml) is fetched by uv. Node is not used here, but the
-      # Makefile checks its version before any step (node/.nvmrc).
+      # ENG-74: Python 3.12 (pinned by pyproject.toml) is fetched by uv. Node is not used here, but
+      # the Makefile checks its version before any step (node/.nvmrc).
       - uses: actions/setup-node@v7
         with:
           node-version-file: node/.nvmrc
@@ -40,12 +41,14 @@ jobs:
         with:
           node-version-file: node/.nvmrc
       - run: make tests
+      # ENG-76: the coverage report in the job summary.
       - name: Coverage summary
         if: always()
         run: |
           if [ -f .coverage ]; then
-            { echo '## Coverage (src/core)'; echo '```'; uv run coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            { echo '## Coverage (src/)'; echo '```'; uv run coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
+      # ENG-75: the coverage report (HTML) as an artefact.
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -55,7 +58,7 @@ jobs:
 
   # Playwright (Python, Chromium) on the e2e build (ENG-72); traces, screenshots and videos of the
   # failed tests are kept (ENG-57). Software WebGL keeps a runner's CPU busy, so the tests are
-  # spread over 4 jobs, each building the game and running its slice (D-219).
+  # spread over 4 jobs, each building the game and running its slice (D-219, ENG-59).
   e2e:
     runs-on: ubuntu-latest
     strategy:
@@ -77,7 +80,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('uv.lock') }}
-      # -j3: the two Transcrypt builds (game, e2e game) run side by side.
+      # -j3: the two Transcrypt builds (game, e2e game) run side by side (ENG-39).
       - run: make -j3 e2e E2E_SHARD=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v7
         if: failure()

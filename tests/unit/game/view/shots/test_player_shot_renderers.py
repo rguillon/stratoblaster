@@ -7,7 +7,8 @@ from game.view.shots.missile_renderer import create_missile_renderer
 from game.view.shots.player_shot_renderers import PLAYER_SHOT_RENDERERS
 
 
-def test_p03_r01_each_player_weapon_has_its_own_shot_renderer():
+def test_gfx_shot_01_each_player_weapon_has_its_own_shot_renderer():
+    """Also GFX-SHOT-03 and GFX-SHOT-06: the tracer, the beam and the missile each have theirs."""
     assert {
         BULLET.id: create_bullet_renderer,
         LASER.id: create_laser_renderer,

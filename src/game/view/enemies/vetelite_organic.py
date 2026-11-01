@@ -1,24 +1,24 @@
-"""P16-R04: Cyber-Organic pieces shared by the veteran and elite models Logical pixels, nose +Z, Y
-up."""
+"""Cyber-Organic pieces shared by the veteran and elite models: the extra limbs and grafts that
+show their tier (ENM-02) Logical pixels, nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402
+from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from render.geometry.organic import curve, tendril  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import SIDES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import curve, tendril  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 F = ENEMY_LOOK.flesh
 
@@ -69,15 +69,15 @@ def membrane_draw(w: Any, span: float) -> Any:
 
 
 def membrane_pair(p: Any, wing: Any, span: float) -> None:
-    """P16-R04: a pair of membrane wings (`wing` is the right one), a `membrane` skin on a `bone`
-    strut, each fluttering on its root (P16-R07)."""
+    """A pair of membrane wings (`wing` is the right one), a `membrane` skin on a `bone` strut,
+    each fluttering on its root (ENM-42): the Wasp's wings (ENM-WASP-05)."""
     for s in SIDES:
         w = sided(wing, s)
         p.flap([w["root"][0], w["y"], w["root"][1]], s, span, membrane_draw(w, span))
 
 
 def mandibles(b: Any, at: Vec3, size: Any) -> None:
-    """A pair of mandibles hooking forward and in from `at`, in bone."""
+    """A pair of mandibles hooking forward and in from `at`, in bone (ENM-WASP-02)."""
     x = at[0]
     y = at[1]
     z = at[2]
@@ -96,6 +96,6 @@ def mandibles(b: Any, at: Vec3, size: Any) -> None:
 
 def sinew(b: Any, start: Vec3, end: Vec3, radii: Any, color: Any = None, bow: Any = None) -> None:
     """A sinew (a thin flesh tendril, 4 facets) from `start` to `end`, bowed by `bow`."""
-    tint = color if color != None else F.sinew  # noqa: E711
-    bend = bow if bow != None else [0, 0.6, 0]  # noqa: E711
+    tint = color if color != None else F.sinew  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    bend = bow if bow != None else [0, 0.6, 0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     tendril(b, curve(start, end, bend, 2), [radii[0], radii[1]], 4, tint)

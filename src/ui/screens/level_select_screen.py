@@ -1,21 +1,21 @@
-"""Level select screen (P01-R07): a grid of
-levels, locked ones greyed out with a padlock."""
+"""Level select screen (UI-LEVEL-01): a grid of
+levels, locked ones greyed out with a padlock (UI-LEVEL-04)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from ui.menu_view import LevelSelectView  # noqa: E402
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402
+from ui.menu_view import LevelSelectView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from ui.screens.elements import back_button, element, entry, padlock  # noqa: E402
+from ui.screens.elements import back_button, element, entry, padlock  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def render_level_select_screen(doc: Any, view: LevelSelectView, handlers: ScreenHandlers) -> Any:
-    """Renders the level select screen (P01-R07)."""
+    """Renders the level select screen (UI-LEVEL-09)."""
     root = element(doc, "div", "menu-screen level-select-screen")
     grid = element(doc, "div", "level-grid")
     grid.style.gridTemplateColumns = "repeat(" + str(view.columns) + ", 1fr)"

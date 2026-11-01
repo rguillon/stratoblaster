@@ -12,7 +12,8 @@ from game.config.readability import READABILITY
 from game.view.enemies import enemy_lasers as el
 
 
-def test_p14_r02_a_laser_colour_is_its_boss_neon_folded_into_the_shots_family():
+def test_gfx_shot_18_a_laser_colour_is_its_boss_neon_folded_into_the_shots_family():
+    """Also GFX-READ-06 and BOSS-32: each boss's lasers in its own colour."""
     color = el.color_of("scorpion")
     assert len(color) == 3
     # The folded colour keeps the neon's brightness, but moves its hue into the shots' family.
@@ -26,7 +27,7 @@ def test_a_style_without_a_boss_neon_takes_the_laser_look_colour(monkeypatch):
     assert el.color_of("bare-style") == pytest.approx(folded)
 
 
-def test_p10_r07_contrast_warning_is_a_white_core_then_the_colour_then_dark_edges():
+def test_gfx_shot_16_contrast_warning_is_a_white_core_then_the_colour_then_dark_edges():
     color = [0.5, 0.0, 1.0]
     t = ENEMY_LOOK.contrast.warningCore
     warning = el.contrast_warning(color)

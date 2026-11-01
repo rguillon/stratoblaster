@@ -1,4 +1,5 @@
-"""Shapes shared by the veteran models (P05-R14 to P05-R18) Logical pixels, nose +Z, Y up."""
+"""Shapes shared by the veteran models (the five veteran kinds, specs/enemies/*.md) Logical
+pixels, nose +Z, Y up."""
 
 import math
 
@@ -8,14 +9,14 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 type Rgb = list[float]
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from render.geometry.solids import LoftOptions  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import LoftOptions  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
@@ -23,8 +24,8 @@ QUARTER = math.pi / 2
 
 def nose_gun(parts: Any, at: Vec3, length: float, radius: float = 0.55) -> None:
     """A gun barrel from `at` towards the nose, `length` long and `radius` thick, a charge light at
-    its mouth, its muzzle marked just past it (phase 7 review: shots leave from the barrels the
-    player sees)."""
+    its mouth (ENM-WASP-04, ENM-PHANTOM-04), its muzzle marked just past it (phase 7 review: shots
+    leave from the barrels the player sees)."""
     x = at[0]
     y = at[1]
     z = at[2]
@@ -47,7 +48,7 @@ def station_at(stations: Any, z: float) -> list[float]:
         return [z, last[1], last[2], last[3]]
     b = stations[max(0, after)] if len(stations) > 0 else None
     a = stations[max(0, after - 1)] if len(stations) > 0 else b
-    if a == None or b == None:  # noqa: E711
+    if a == None or b == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         raise Exception("A loft needs stations")
     t = 0 if b[0] == a[0] else (z - a[0]) / (b[0] - a[0])
 

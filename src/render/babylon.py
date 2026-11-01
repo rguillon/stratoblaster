@@ -1,15 +1,17 @@
-"""The only place that touches the Babylon.js global (ENG-02, D-169).
+"""The only place that touches the Babylon.js global (ENG-02, ENG-113, D-169).
 
-Babylon is the UMD build vendored under `public/vendor/` (`make vendor`): it sets the global
-`BABYLON`. Every other module of `render/` builds its objects through the functions below, and
-the rest of the game reaches the engine only through `render/`. Objects are returned as plain
-JavaScript handles (typed `Any`); their methods and properties are used by attribute access.
+Babylon is the UMD build vendored under `public/vendor/` (`make vendor`), the game's only
+rendering library (ENG-103): it sets the global `BABYLON`. Every other module of `render/` builds
+its objects through the functions below, and the rest of the game reaches the engine only through
+`render/`. Objects are returned as plain JavaScript handles, typed with the stand-ins of
+`render/handles.py`; their methods and properties are used by attribute access.
 
 Rules that come from Transcrypt (see `01-engineering.md` §13):
 - Babylon names that are Python keywords or special to Transcrypt (`name`, `from`...) are read and
-  written in raw JavaScript, through the helpers below.
+  written in raw JavaScript, through the helpers below (ENG-156).
 - Constructor calls and builder calls with option objects are raw JavaScript (`new BABYLON.X`),
-  because a Python dict is not a JavaScript object and keyword arguments are dropped.
+  because a Python dict is not a JavaScript object and keyword arguments are dropped (ENG-151,
+  ENG-158).
 - Optional options are passed as `None` and left out of the JavaScript object.
 """
 
@@ -17,7 +19,50 @@ from org.transcrypt.stubs.browser import __pragma__, window
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any, cast  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
+from render.handles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+    ArcRotateCamera,
+    BoundingVectors,
+    Canvas,
+    Color3,
+    Color4,
+    DirectionalLight,
+    DrawCallCounter,
+    Engine,
+    Float32Array,
+    FreeCamera,
+    GlowLayer,
+    HemisphericLight,
+    JsObject,
+    Light,
+    Material,
+    MaterialOwner,
+    MaterialPluginBase,
+    Matrix,
+    Mesh,
+    Named,
+    Node,
+    PBRMaterial,
+    Quaternion,
+    RawCubeTexture,
+    RawTexture,
+    RenderTargetTexture,
+    Scene,
+    ShaderMaterial,
+    ShadowGenerator,
+    StandardMaterial,
+    Texture,
+    TransformNode,
+    Uint8Array,
+    Uint32Array,
+    V,  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+    Vector2,
+    Vector3,
+    Vector4,
+    VertexData,
+    WeakMap,
+)
 
 __pragma__("noskip")
 
@@ -30,10 +75,10 @@ def babylon_class(class_name: str) -> Any:
     return None
 
 
-def babylon_constant(key: str) -> Any:
+def babylon_constant(key: str) -> int:
     """A value of `BABYLON.Constants`, e.g. `ALPHA_ADD` or `TEXTUREFORMAT_RGBA`."""
     __pragma__("js", "{}", "return BABYLON.Constants[key];")
-    return None
+    return cast(int, None)
 
 
 def get_engine_global() -> Any:
@@ -44,144 +89,180 @@ def get_engine_global() -> Any:
 # -- Math ----------------------------------------------------------------------------------------
 
 
-def vector2(x: float, y: float) -> Any:
+def vector2(x: float, y: float) -> Vector2:
     __pragma__("js", "{}", "return new BABYLON.Vector2(x, y);")
-    return None
+    return cast(Vector2, None)
 
 
-def vector3(x: float, y: float, z: float) -> Any:
+def vector3(x: float, y: float, z: float) -> Vector3:
     __pragma__("js", "{}", "return new BABYLON.Vector3(x, y, z);")
-    return None
+    return cast(Vector3, None)
 
 
-def vector4(x: float, y: float, z: float, w: float) -> Any:
+def vector4(x: float, y: float, z: float, w: float) -> Vector4:
     __pragma__("js", "{}", "return new BABYLON.Vector4(x, y, z, w);")
-    return None
+    return cast(Vector4, None)
 
 
-def vector3_up() -> Any:
+def vector3_up() -> Vector3:
     """`Vector3.Up()`: (0, 1, 0)."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Up();")
-    return None
+    return cast(Vector3, None)
 
 
-def color3(r: float, g: float, b: float) -> Any:
+def color3(r: float, g: float, b: float) -> Color3:
     __pragma__("js", "{}", "return new BABYLON.Color3(r, g, b);")
-    return None
+    return cast(Color3, None)
 
 
-def color3_black() -> Any:
+def color3_black() -> Color3:
     __pragma__("js", "{}", "return BABYLON.Color3.Black();")
-    return None
+    return cast(Color3, None)
 
 
-def color4(r: float, g: float, b: float, a: float) -> Any:
+def color4(r: float, g: float, b: float, a: float) -> Color4:
     __pragma__("js", "{}", "return new BABYLON.Color4(r, g, b, a);")
-    return None
+    return cast(Color4, None)
 
 
-def quaternion(x: float, y: float, z: float, w: float) -> Any:
+def quaternion(x: float, y: float, z: float, w: float) -> Quaternion:
     __pragma__("js", "{}", "return new BABYLON.Quaternion(x, y, z, w);")
-    return None
+    return cast(Quaternion, None)
 
 
 # -- Nodes, names and scene ----------------------------------------------------------------------
 
 
-def node_name(node: Any) -> str:
+def node_name(node: Named) -> str:
     """`node.name` (a Python attribute of this name would be renamed by Transcrypt)."""
     __pragma__("js", "{}", "return node.name;")
     return ""
 
 
-def set_node_name(node: Any, label: str) -> None:
+def set_node_name(node: Named, label: str) -> None:
     __pragma__("js", "{}", "node.name = label;")
 
 
-def new_transform_node(label: str, scene: Any) -> Any:
+def new_transform_node(label: str, scene: Scene) -> TransformNode:
     __pragma__("js", "{}", "return new BABYLON.TransformNode(label, scene);")
-    return None
+    return cast(TransformNode, None)
 
 
-def get_hierarchy_bounding_vectors(node: Any) -> Any:
+def get_hierarchy_bounding_vectors(node: Node) -> BoundingVectors:
     """`node.getHierarchyBoundingVectors(true)`: the `{min, max}` Vector3 handles."""
     __pragma__("js", "{}", "return node.getHierarchyBoundingVectors(true);")
-    return None
+    return cast(BoundingVectors, None)
 
 
-def new_engine(canvas: Any, antialias: bool) -> Any:
-    """`new Engine(canvas, antialias, {adaptToDeviceRatio: false, stencil: true})`, as in the TS."""
+def new_engine(canvas: Canvas, antialias: bool) -> Engine:
+    """`new Engine(canvas, antialias, {adaptToDeviceRatio: false, stencil: true})`, as in the TS.
+    Always WebGL: no WebGPU backend (ENG-08, MAY, not implemented)."""
     __pragma__(
         "js",
         "{}",
         "return new BABYLON.Engine(canvas, antialias, {adaptToDeviceRatio: false, stencil: true});",
     )
-    return None
+    return cast(Engine, None)
 
 
-def new_scene(engine: Any) -> Any:
+def new_scene(engine: Engine) -> Scene:
     """`new Scene(engine)`."""
     __pragma__("js", "{}", "return new BABYLON.Scene(engine);")
-    return None
+    return cast(Scene, None)
 
 
-def new_mesh(label: str, scene: Any) -> Any:
+def new_mesh(label: str, scene: Scene) -> Mesh:
     __pragma__("js", "{}", "return new BABYLON.Mesh(label, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def set_enabled(node: Any, on: bool) -> None:
+def set_enabled(node: Node, on: bool) -> None:
     """`node.setEnabled(on)`."""
     node.setEnabled(on)
 
 
-def is_enabled(node: Any) -> bool:
+def is_enabled(node: Node) -> bool:
     return bool(node.isEnabled())
 
 
-def dispose_node(node: Any) -> None:
+def dispose_node(node: Node) -> None:
     node.dispose()
 
 
-def child_meshes(node: Any, direct_only: bool) -> list[Any]:
+def child_meshes(node: Node, direct_only: bool) -> list[Mesh]:
     """`node.getChildMeshes(directOnly)`: a fresh array (safe to push into)."""
     __pragma__("js", "{}", "return node.getChildMeshes(direct_only);")
     return []
 
 
-def descendants(node: Any, direct_only: bool) -> list[Any]:
+def descendants(node: Node, direct_only: bool) -> list[Node]:
     """`node.getDescendants(directOnly)`."""
     __pragma__("js", "{}", "return node.getDescendants(direct_only);")
     return []
 
 
-def unique_id(node: Any) -> float:
+def unique_id(node: Node) -> float:
     """`node.uniqueId`: Babylon numbers nodes from one counter, in creation order."""
     __pragma__("js", "{}", "return node.uniqueId;")
     return 0
 
 
-def scene_unique_id(scene: Any) -> float:
+def scene_unique_id(scene: Scene) -> float:
     return float(scene.getUniqueId())
 
 
-def scene_meshes(scene: Any) -> list[Any]:
+def scene_meshes(scene: Scene) -> list[Mesh]:
     __pragma__("js", "{}", "return scene.meshes;")
     return []
 
 
-def scene_transform_nodes(scene: Any) -> list[Any]:
+def scene_transform_nodes(scene: Scene) -> list[TransformNode]:
     __pragma__("js", "{}", "return scene.transformNodes;")
     return []
+
+
+# -- Draw calls (ENG-106) ------------------------------------------------------------------------
+
+
+def new_draw_call_counter(scene: Scene) -> DrawCallCounter:
+    """Counts the draw calls of each frame of `scene`, the way Babylon's own `DrawCallsStrategy`
+    does: the engine's draw-call counter is restarted before the animations and read after the
+    render. Returns an object whose `count` is the last frame's draw calls (0 before the first
+    frame) and whose `dispose()` removes the two observers. The scene's dispose removes them too.
+    """
+    __pragma__(
+        "js",
+        "{}",
+        "var engine = scene.getEngine();"
+        "var counter = { count: 0 };"
+        "var before = scene.onBeforeAnimationsObservable.add(function () {"
+        "engine._drawCalls.fetchNewFrame();"
+        "});"
+        "var after = scene.onAfterRenderObservable.add(function () {"
+        "counter.count = engine._drawCalls.current;"
+        "});"
+        "counter.dispose = function () {"
+        "scene.onBeforeAnimationsObservable.remove(before);"
+        "scene.onAfterRenderObservable.remove(after);"
+        "};"
+        "return counter;",
+    )
+    return cast(DrawCallCounter, None)
+
+
+def draw_calls_last_frame(counter: DrawCallCounter) -> float:
+    """The draw calls of the last frame rendered, as counted by `new_draw_call_counter`."""
+    return float(counter.count)
 
 
 # -- Typed arrays (for textures and buffers) -----------------------------------------------------
 
 
-def block_material_marks(scene: Any, block: bool) -> bool:
+def block_material_marks(scene: Scene, block: bool) -> bool:
     """Sets whether Babylon re-marks the meshes using a material each time one of its properties is
     set (a scan of the whole scene per set). Materials made and set before any mesh uses them need
-    no marks: block them while they are built. Returns the previous setting, to put back.
+    no marks: block them while they are built (PERF-31). Returns the previous setting, to put
+    back.
 
     The scene's setter, when it is set back to false, marks every material dirty (a scan of all
     of them), so the backing field is written instead: the vendored Babylon is pinned (D-173).
@@ -198,21 +279,21 @@ def block_material_marks(scene: Any, block: bool) -> bool:
     return False
 
 
-def uint8_array(length: int) -> Any:
+def uint8_array(length: int) -> Uint8Array:
     """A zero-filled `Uint8Array` of `length` bytes."""
     __pragma__("js", "{}", "return new Uint8Array(length);")
-    return None
+    return cast(Uint8Array, None)
 
 
 # -- Vertex data and meshes ----------------------------------------------------------------------
 
 
-def new_vertex_data() -> Any:
+def new_vertex_data() -> VertexData:
     __pragma__("js", "{}", "return new BABYLON.VertexData();")
-    return None
+    return cast(VertexData, None)
 
 
-def compute_normals(positions: list[float], indices: list[Any]) -> list[float]:
+def compute_normals(positions: list[float], indices: list[int]) -> list[float]:
     """`VertexData.ComputeNormals(positions, indices, normals)`: returns the normals array."""
     normals: list[float] = []
     __pragma__("js", "{}", "BABYLON.VertexData.ComputeNormals(positions, indices, normals);")
@@ -221,11 +302,11 @@ def compute_normals(positions: list[float], indices: list[Any]) -> list[float]:
 
 def vertex_data_of(
     positions: list[float],
-    indices: list[Any],
+    indices: list[int],
     normals: list[float] | None = None,
     colors: list[float] | None = None,
     uvs: list[float] | None = None,
-) -> Any:
+) -> VertexData:
     """A `VertexData` with the given arrays set (the ones left as None are not set)."""
     data = new_vertex_data()
     data.positions = positions
@@ -239,7 +320,7 @@ def vertex_data_of(
     return data
 
 
-def mesh_positions(mesh: Any) -> list[float]:
+def mesh_positions(mesh: Mesh) -> list[float]:
     """`mesh.getVerticesData("position")` as a plain array (empty when it has none)."""
     __pragma__(
         "js",
@@ -249,13 +330,13 @@ def mesh_positions(mesh: Any) -> list[float]:
     return []
 
 
-def mesh_indices(mesh: Any) -> list[int]:
+def mesh_indices(mesh: Mesh) -> list[int]:
     """`mesh.getIndices()` as a plain array (empty when it has none)."""
     __pragma__("js", "{}", "var i = mesh.getIndices(); return i ? Array.from(i) : [];")
     return []
 
 
-def world_matrix(node: Any) -> list[float]:
+def world_matrix(node: Node) -> list[float]:
     """The 16 numbers of `node`'s world matrix, computed afresh from its parents down."""
     __pragma__(
         "js",
@@ -270,98 +351,98 @@ def world_matrix(node: Any) -> list[float]:
     return []
 
 
-def apply_vertex_data(data: Any, mesh: Any) -> None:
+def apply_vertex_data(data: VertexData, mesh: Mesh) -> None:
     """`data.applyToMesh(mesh)`."""
     data.applyToMesh(mesh)
 
 
 def create_torus(
-    label: str, diameter: float, thickness: float, tessellation: int, scene: Any
-) -> Any:
+    label: str, diameter: float, thickness: float, tessellation: int, scene: Scene
+) -> Mesh:
     __pragma__(
         "js",
         "{}",
         "return BABYLON.CreateTorus(label, {diameter: diameter, thickness: thickness, "
         "tessellation: tessellation}, scene);",
     )
-    return None
+    return cast(Mesh, None)
 
 
-def create_plane(label: str, size: float, scene: Any) -> Any:
+def create_plane(label: str, size: float, scene: Scene) -> Mesh:
     __pragma__("js", "{}", "return BABYLON.CreatePlane(label, {size: size}, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def create_line_system(label: str, lines: list[list[Any]], scene: Any) -> Any:
+def create_line_system(label: str, lines: list[list[Vector3]], scene: Scene) -> Mesh:
     """A line system: `lines` is a list of polylines of Vector3 handles."""
     __pragma__("js", "{}", "return BABYLON.CreateLineSystem(label, {lines: lines}, scene);")
-    return None
+    return cast(Mesh, None)
 
 
 def create_colored_line_system(
-    label: str, lines: list[list[Any]], colors: list[list[Any]], scene: Any
-) -> Any:
+    label: str, lines: list[list[Vector3]], colors: list[list[Color4]], scene: Scene
+) -> Mesh:
     """A line system with a Color4 handle per vertex: `colors` mirrors `lines`."""
     __pragma__(
         "js",
         "{}",
         "return BABYLON.CreateLineSystem(label, {lines: lines, colors: colors}, scene);",
     )
-    return None
+    return cast(Mesh, None)
 
 
-def create_lines(label: str, points: list[Any], scene: Any) -> Any:
+def create_lines(label: str, points: list[Vector3], scene: Scene) -> Mesh:
     """`CreateLines(label, {points}, scene)`: one polyline of Vector3 handles."""
     __pragma__("js", "{}", "return BABYLON.CreateLines(label, {points: points}, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def create_lathe(label: str, shape: list[Any], tessellation: int, scene: Any) -> Any:
+def create_lathe(label: str, shape: list[Vector3], tessellation: int, scene: Scene) -> Mesh:
     """A lathe around Y of the Vector3 `shape` (x = radius, y = height)."""
     __pragma__(
         "js",
         "{}",
         "return BABYLON.CreateLathe(label, {shape: shape, tessellation: tessellation}, scene);",
     )
-    return None
+    return cast(Mesh, None)
 
 
-def create_ground(label: str, width: float, height: float, subdivisions: int, scene: Any) -> Any:
+def create_ground(label: str, width: float, height: float, subdivisions: int, scene: Scene) -> Mesh:
     __pragma__(
         "js",
         "{}",
         "return BABYLON.CreateGround(label, {width: width, height: height, "
         "subdivisions: subdivisions}, scene);",
     )
-    return None
+    return cast(Mesh, None)
 
 
-def create_box(label: str, options: Any, scene: Any) -> Any:
+def create_box(label: str, options: JsObject, scene: Scene) -> Mesh:
     """`CreateBox(label, options, scene)`: `options` is a JavaScript object (width, height,
     depth)."""
     __pragma__("js", "{}", "return BABYLON.CreateBox(label, options, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def create_cylinder(label: str, options: Any, scene: Any) -> Any:
+def create_cylinder(label: str, options: JsObject, scene: Scene) -> Mesh:
     """`CreateCylinder(label, options, scene)`: `options` is a JavaScript object."""
     __pragma__("js", "{}", "return BABYLON.CreateCylinder(label, options, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def create_polyhedron(label: str, options: Any, scene: Any) -> Any:
+def create_polyhedron(label: str, options: JsObject, scene: Scene) -> Mesh:
     """`CreatePolyhedron(label, options, scene)`: `options` is a JavaScript object."""
     __pragma__("js", "{}", "return BABYLON.CreatePolyhedron(label, options, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def create_disc(label: str, options: Any, scene: Any) -> Any:
+def create_disc(label: str, options: JsObject, scene: Scene) -> Mesh:
     """`CreateDisc(label, options, scene)`: `options` is a JavaScript object."""
     __pragma__("js", "{}", "return BABYLON.CreateDisc(label, options, scene);")
-    return None
+    return cast(Mesh, None)
 
 
-def bake_transform(mesh: Any) -> None:
+def bake_transform(mesh: Mesh) -> None:
     """`mesh.bakeCurrentTransformIntoVertices()`."""
     mesh.bakeCurrentTransformIntoVertices()
 
@@ -369,30 +450,32 @@ def bake_transform(mesh: Any) -> None:
 # -- Materials -----------------------------------------------------------------------------------
 
 
-def new_standard_material(label: str, scene: Any) -> Any:
+def new_standard_material(label: str, scene: Scene) -> StandardMaterial:
     __pragma__("js", "{}", "return new BABYLON.StandardMaterial(label, scene);")
-    return None
+    return cast(StandardMaterial, None)
 
 
-def new_shader_material(label: str, scene: Any, shaders: Any, options: Any) -> Any:
+def new_shader_material(
+    label: str, scene: Scene, shaders: JsObject, options: JsObject
+) -> ShaderMaterial:
     """`new ShaderMaterial(label, scene, shaders, options)`. `shaders` and `options` are JS
     objects built with `js_object` (a dict is not one)."""
     __pragma__("js", "{}", "return new BABYLON.ShaderMaterial(label, scene, shaders, options);")
-    return None
+    return cast(ShaderMaterial, None)
 
 
-def new_pbr_material(label: str, scene: Any) -> Any:
+def new_pbr_material(label: str, scene: Scene) -> PBRMaterial:
     __pragma__("js", "{}", "return new BABYLON.PBRMaterial(label, scene);")
-    return None
+    return cast(PBRMaterial, None)
 
 
-def js_object() -> Any:
+def js_object() -> JsObject:
     """An empty JavaScript object, to fill with the fields Babylon reads (`js_set`)."""
     __pragma__("js", "{}", "return {};")
-    return None
+    return cast(JsObject, None)
 
 
-def js_set(target: Any, key: str, value: Any) -> None:
+def js_set(target: JsObject, key: str, value: object) -> None:
     """`target[key] = value` for a key that is a Python keyword or a computed name."""
     __pragma__("js", "{}", "target[key] = value;")
 
@@ -400,53 +483,53 @@ def js_set(target: Any, key: str, value: Any) -> None:
 # -- Lights, cameras, textures, layers -----------------------------------------------------------
 
 
-def new_hemispheric_light(label: str, direction: Any, scene: Any) -> Any:
+def new_hemispheric_light(label: str, direction: Vector3, scene: Scene) -> HemisphericLight:
     __pragma__("js", "{}", "return new BABYLON.HemisphericLight(label, direction, scene);")
-    return None
+    return cast(HemisphericLight, None)
 
 
-def new_directional_light(label: str, direction: Any, scene: Any) -> Any:
+def new_directional_light(label: str, direction: Vector3, scene: Scene) -> DirectionalLight:
     __pragma__("js", "{}", "return new BABYLON.DirectionalLight(label, direction, scene);")
-    return None
+    return cast(DirectionalLight, None)
 
 
-def new_free_camera(label: str, position: Any, scene: Any) -> Any:
+def new_free_camera(label: str, position: Vector3, scene: Scene) -> FreeCamera:
     __pragma__("js", "{}", "return new BABYLON.FreeCamera(label, position, scene);")
-    return None
+    return cast(FreeCamera, None)
 
 
 def new_arc_rotate_camera(
-    label: str, alpha: float, beta: float, radius: float, target: Any, scene: Any
-) -> Any:
+    label: str, alpha: float, beta: float, radius: float, target: Vector3, scene: Scene
+) -> ArcRotateCamera:
     __pragma__(
         "js",
         "{}",
         "return new BABYLON.ArcRotateCamera(label, alpha, beta, radius, target, scene);",
     )
-    return None
+    return cast(ArcRotateCamera, None)
 
 
-def camera_fov_mode_horizontal_fixed() -> Any:
+def camera_fov_mode_horizontal_fixed() -> int:
     """`Camera.FOVMODE_HORIZONTAL_FIXED`."""
     __pragma__("js", "{}", "return BABYLON.Camera.FOVMODE_HORIZONTAL_FIXED;")
-    return None
+    return cast(int, None)
 
 
 def new_raw_cube_texture(
-    scene: Any, faces: list[Any], size: int, format_: Any, texture_type: Any, mipmaps: bool
-) -> Any:
+    scene: Scene, faces: list[Uint8Array], size: int, format_: int, texture_type: int, mipmaps: bool
+) -> RawCubeTexture:
     """`new RawCubeTexture(scene, faces, size, format, type, generateMipmaps)`."""
     __pragma__(
         "js",
         "{}",
         "return new BABYLON.RawCubeTexture(scene, faces, size, format_, texture_type, mipmaps);",
     )
-    return None
+    return cast(RawCubeTexture, None)
 
 
 def new_glow_layer(
-    label: str, scene: Any, blur_kernel_size: float, ratio: float | None, samples: int | None
-) -> Any:
+    label: str, scene: Scene, blur_kernel_size: float, ratio: float | None, samples: int | None
+) -> GlowLayer:
     """`new GlowLayer(label, scene, options)`: `ratio` and `samples` are left out when None
     (Babylon's defaults apply)."""
     __pragma__(
@@ -457,33 +540,33 @@ def new_glow_layer(
         "if (samples != null) options.mainTextureSamples = samples;"
         "return new BABYLON.GlowLayer(label, scene, options);",
     )
-    return None
+    return cast(GlowLayer, None)
 
 
-def image_processing_tone_mapping_aces() -> Any:
+def image_processing_tone_mapping_aces() -> int:
     """`ImageProcessingConfiguration.TONEMAPPING_ACES`."""
     __pragma__("js", "{}", "return BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;")
-    return None
+    return cast(int, None)
 
 
-def is_raw_cube_texture(value: Any) -> bool:
+def is_raw_cube_texture(value: object) -> bool:
     """`value instanceof RawCubeTexture`."""
     __pragma__("js", "{}", "return value instanceof BABYLON.RawCubeTexture;")
     return False
 
 
 def update_raw_cube_texture(
-    texture: Any, faces: list[Any], format_: Any, texture_type: Any, invert_y: bool
+    texture: Texture, faces: list[Uint8Array], format_: int, texture_type: int, invert_y: bool
 ) -> None:
     """`texture.update(faces, format, type, invertY)`. Transcrypt renames `update`, so the method
     is called from raw JavaScript."""
     __pragma__("js", "{}", "texture.update(faces, format_, texture_type, invert_y);")
 
 
-def set_cube_sphere_lighting(texture: Any, faces: list[Any], size: int) -> None:
+def set_cube_sphere_lighting(texture: Texture, faces: list[Uint8Array], size: int) -> None:
     """Gives the RGBA8 cube `texture` the spherical polynomial of its `faces` (in Babylon's order:
     +X, -X, +Y, -Y, +Z, -Z), as `CubeMapToSphericalPolynomialTools` would from the texture's pixels
-    read back from the GPU, which waits for all the GPU's work (P13-R03: about a second). An update
+    read back from the GPU, which waits for all the GPU's work (PERF-30: about a second). An update
     of the texture keeps the polynomial set, so it is set again after each one."""
     __pragma__(
         "js",
@@ -496,7 +579,7 @@ def set_cube_sphere_lighting(texture: Any, faces: list[Any], size: int) -> None:
     )
 
 
-def dispose_texture(texture: Any) -> None:
+def dispose_texture(texture: Texture) -> None:
     texture.dispose()
 
 
@@ -504,15 +587,15 @@ def dispose_texture(texture: Any) -> None:
 
 
 def new_raw_texture(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-    pixels: Any,
+    pixels: Uint8Array,
     width: int,
     height: int,
-    format_: Any,
-    scene: Any,
+    format_: int,
+    scene: Scene,
     generate_mipmaps: bool,
     invert_y: bool,
-    sampling_mode: Any,
-) -> Any:
+    sampling_mode: int,
+) -> RawTexture:
     """`new RawTexture(pixels, width, height, format, scene, generateMipMaps, invertY,
     samplingMode)`."""
     __pragma__(
@@ -521,31 +604,44 @@ def new_raw_texture(  # noqa: PLR0917 (positional: Transcrypt has no keyword arg
         "return new BABYLON.RawTexture(pixels, width, height, format_, scene, generate_mipmaps, "
         "invert_y, sampling_mode);",
     )
-    return None
+    return cast(RawTexture, None)
 
 
-def new_shadow_generator(map_size: int, light: Any) -> Any:
+def new_render_target_texture(label: str, size: list[int], scene: Scene) -> RenderTargetTexture:
+    """`new RenderTargetTexture(label, {width, height}, scene, generateMipMaps)`, with mipmaps (the
+    imposter atlas, D-211)."""
+    __pragma__(
+        "js",
+        "{}",
+        "return new BABYLON.RenderTargetTexture(label, {width: size[0], height: size[1]}, scene,"
+        " true);",
+    )
+    return cast(RenderTargetTexture, None)
+
+
+def new_shadow_generator(map_size: int, light: Light) -> ShadowGenerator:
     """`new ShadowGenerator(mapSize, light)`."""
     __pragma__("js", "{}", "return new BABYLON.ShadowGenerator(map_size, light);")
-    return None
+    return cast(ShadowGenerator, None)
 
 
-def is_instance_of(value: Any, class_name: str) -> bool:
+def is_instance_of(value: object, class_name: str) -> bool:
     """`value instanceof BABYLON[className]` (e.g. `Texture`, `StandardMaterial`)."""
     __pragma__("js", "{}", "return value instanceof BABYLON[class_name];")
     return False
 
 
 def new_material_plugin(
-    material: Any,
-    owner: Any,
+    material: Material,
+    owner: MaterialOwner,
     plugin_name: str,
     priority: float,
     define_name: str,
     class_name: str,
-) -> Any:
+) -> MaterialPluginBase:
     """A `BABYLON.MaterialPluginBase` subclass whose hooks call the methods of `owner`: Transcrypt
-    cannot subclass a JavaScript class, so the subclass is written here. `owner` provides
+    cannot subclass a JavaScript class, so the subclass is written here (ENG-158). `owner`
+    provides
     `prepare_defines(defines)`, `get_samplers(samplers)`,
     `get_uniforms()` (a JavaScript object), `bind_for_sub_mesh(ubo)` and
     `get_custom_code(shader_type)` (a JavaScript object or None). `define_name` is the define
@@ -570,30 +666,34 @@ def new_material_plugin(
         "return new OwnedMaterialPlugin(material, owner, plugin_name, priority, define_name,"
         " class_name);",
     )
-    return None
+    return cast(MaterialPluginBase, None)
 
 
 # -- Scenery: typed arrays, instancing and textures (roads, props, lightning) -------------------
 
 
-def float32_array(length: int) -> Any:
+def float32_array(length: int) -> Float32Array:
     """A zero-filled `Float32Array` of `length` numbers (thin-instance matrices)."""
     __pragma__("js", "{}", "return new Float32Array(length);")
-    return None
+    return cast(Float32Array, None)
 
 
-def new_matrix() -> Any:
+def new_matrix() -> Matrix:
     """`new Matrix()`: the identity matrix."""
     __pragma__("js", "{}", "return new BABYLON.Matrix();")
-    return None
+    return cast(Matrix, None)
 
 
-def matrix_compose_to_ref(scale: Any, rotation: Any, position: Any, target: Any) -> None:
+def matrix_compose_to_ref(
+    scale: Vector3, rotation: Quaternion, position: Vector3, target: Matrix
+) -> None:
     """`Matrix.ComposeToRef(scale, rotation, position, target)`."""
     __pragma__("js", "{}", "BABYLON.Matrix.ComposeToRef(scale, rotation, position, target);")
 
 
-def quaternion_yaw_pitch_roll_to_ref(yaw: float, pitch: float, roll: float, target: Any) -> None:
+def quaternion_yaw_pitch_roll_to_ref(
+    yaw: float, pitch: float, roll: float, target: Quaternion
+) -> None:
     """`Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, target)`."""
     __pragma__(
         "js",
@@ -602,15 +702,20 @@ def quaternion_yaw_pitch_roll_to_ref(yaw: float, pitch: float, roll: float, targ
     )
 
 
-def texture_trilinear_sampling_mode() -> Any:
+def texture_trilinear_sampling_mode() -> int:
     """`Texture.TRILINEAR_SAMPLINGMODE`."""
     __pragma__("js", "{}", "return BABYLON.Texture.TRILINEAR_SAMPLINGMODE;")
-    return None
+    return cast(int, None)
 
 
 def raw_rgba_texture(
-    data: Any, size: int, scene: Any, generate_mipmaps: bool, invert_y: bool, sampling_mode: Any
-) -> Any:
+    data: Uint8Array,
+    size: int,
+    scene: Scene,
+    generate_mipmaps: bool,
+    invert_y: bool,
+    sampling_mode: int,
+) -> RawTexture:
     """`RawTexture.CreateRGBATexture(data, size, size, scene, generateMipmaps, invertY,
     samplingMode)`: a square RGBA texture from a `Uint8Array`."""
     __pragma__(
@@ -619,24 +724,24 @@ def raw_rgba_texture(
         "return BABYLON.RawTexture.CreateRGBATexture(data, size, size, scene, generate_mipmaps, "
         "invert_y, sampling_mode);",
     )
-    return None
+    return cast(RawTexture, None)
 
 
-def update_raw_texture(texture: Any, data: Any) -> None:
+def update_raw_texture(texture: Texture, data: Uint8Array) -> None:
     """`texture.update(data)` (renamed by Transcrypt, so called from raw JavaScript)."""
     __pragma__("js", "{}", "texture.update(data);")
 
 
 def new_glsl_material(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     label: str,
-    scene: Any,
+    scene: Scene,
     vertex_source: str,
     fragment_source: str,
     attributes: list[str],
     uniforms: list[str],
     samplers: list[str] | None,
     need_alpha_blending: bool | None,
-) -> Any:
+) -> ShaderMaterial:
     """`new ShaderMaterial(label, scene, {vertexSource, fragmentSource}, {attributes, uniforms,
     samplers, needAlphaBlending})`: the GLSL sources and the declared names, built as JavaScript
     objects. `samplers` and `need_alpha_blending` are left out of the options when None."""
@@ -649,65 +754,65 @@ def new_glsl_material(  # noqa: PLR0917 (positional: Transcrypt has no keyword a
         "if (need_alpha_blending != null) options.needAlphaBlending = need_alpha_blending;"
         "return new BABYLON.ShaderMaterial(label, scene, shaders, options);",
     )
-    return None
+    return cast(ShaderMaterial, None)
 
 
 # -- Helpers for the scenery (render/scenery/) ----------------------------------------------
 
 
-def uint32_array(length: int) -> Any:
+def uint32_array(length: int) -> Uint32Array:
     """A zero-filled `Uint32Array` of `length` entries (mesh indices)."""
     __pragma__("js", "{}", "return new Uint32Array(length);")
-    return None
+    return cast(Uint32Array, None)
 
 
-def vector3_zero() -> Any:
+def vector3_zero() -> Vector3:
     """`Vector3.Zero()`: (0, 0, 0)."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Zero();")
-    return None
+    return cast(Vector3, None)
 
 
-def vector3_down() -> Any:
+def vector3_down() -> Vector3:
     """`Vector3.Down()`: (0, -1, 0)."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Down();")
-    return None
+    return cast(Vector3, None)
 
 
-def vector3_cross(a: Any, b: Any) -> Any:
+def vector3_cross(a: Vector3, b: Vector3) -> Vector3:
     """`Vector3.Cross(a, b)`: a new vector."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Cross(a, b);")
-    return None
+    return cast(Vector3, None)
 
 
-def vector3_dot(a: Any, b: Any) -> float:
+def vector3_dot(a: Vector3, b: Vector3) -> float:
     """`Vector3.Dot(a, b)`."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Dot(a, b);")
     return 0
 
 
-def fog_mode_linear() -> Any:
+def fog_mode_linear() -> int:
     """`Scene.FOGMODE_LINEAR`."""
     __pragma__("js", "{}", "return BABYLON.Scene.FOGMODE_LINEAR;")
-    return None
+    return cast(int, None)
 
 
-def vertex_buffer_kind(key: str) -> Any:
+def vertex_buffer_kind(key: str) -> str:
     """`VertexBuffer[key]` for a kind name such as `PositionKind`, `NormalKind` or `ColorKind`."""
     __pragma__("js", "{}", "return BABYLON.VertexBuffer[key];")
-    return None
+    return cast(str, None)
 
 
-def update_vertices_data(mesh: Any, kind: Any, data: Any) -> None:
+def update_vertices_data(mesh: Mesh, kind: str, data: Float32Array) -> None:
     """`mesh.updateVerticesData(kind, data)`."""
     mesh.updateVerticesData(kind, data)
 
 
-def apply_vertex_data_updatable(data: Any, mesh: Any) -> None:
+def apply_vertex_data_updatable(data: VertexData, mesh: Mesh) -> None:
     """`data.applyToMesh(mesh, true)`: the mesh's vertex data can be updated later."""
     __pragma__("js", "{}", "data.applyToMesh(mesh, true);")
 
 
-def render_painter_sort_compare(a: Any, b: Any) -> float:
+def render_painter_sort_compare(a: Node, b: Node) -> float:
     """`RenderingGroup.PainterSortCompare(a, b)`: Babylon's order of two sub-meshes."""
     __pragma__("js", "{}", "return BABYLON.RenderingGroup.PainterSortCompare(a, b);")
     return 0
@@ -716,23 +821,24 @@ def render_painter_sort_compare(a: Any, b: Any) -> float:
 # -- Maps and metadata (render state keyed by Babylon objects) ----------------------------------
 
 
-def new_weak_map() -> Any:
-    """`new WeakMap()`: state keyed by Babylon objects (a Python dict only takes string keys)."""
+def new_weak_map() -> WeakMap[V]:
+    """`new WeakMap()`: state keyed by Babylon objects (a Python dict only takes string keys,
+    ENG-159)."""
     __pragma__("js", "{}", "return new WeakMap();")
-    return None
+    return cast(WeakMap[V], None)
 
 
-def weak_map_get(weak_map: Any, key: Any) -> Any:
+def weak_map_get(weak_map: WeakMap[V], key: object) -> V | None:
     """The value stored for `key`, or None when there is none (never `undefined`)."""
     __pragma__("js", "{}", "return weak_map.has(key) ? weak_map.get(key) : null;")
-    return None
+    return cast(V | None, None)
 
 
-def weak_map_set(weak_map: Any, key: Any, value: Any) -> None:
+def weak_map_set(weak_map: WeakMap[V], key: object, value: V) -> None:
     weak_map.set(key, value)
 
 
-def object_with_field(old: Any, key: str, value: Any) -> Any:
+def object_with_field(old: object, key: str, value: object) -> JsObject:
     """`{ ...old, [key]: value }`: a copy of the own fields of `old` (an object or None), with
     `key` set to `value`."""
     __pragma__(
@@ -743,10 +849,10 @@ def object_with_field(old: Any, key: str, value: Any) -> Any:
         "copy[key] = value;"
         "return copy;",
     )
-    return None
+    return cast(JsObject, None)
 
 
-def metadata_field(metadata: Any, key: str) -> Any:
+def metadata_field(metadata: object, key: str) -> Any:
     """`metadata[key]` when `metadata` is an object that has `key` (`key in metadata`), else
     None."""
     __pragma__(
@@ -756,7 +862,7 @@ def metadata_field(metadata: Any, key: str) -> Any:
         "return metadata[key];}"
         "return null;",
     )
-    return None
+    return cast(object, None)
 
 
 def number_max_value() -> float:
@@ -765,19 +871,19 @@ def number_max_value() -> float:
     return 0
 
 
-def new_map() -> Any:
+def new_map() -> dict[object, object]:
     """`new Map()`, for maps keyed by objects that must be iterated in insertion order."""
     __pragma__("js", "{}", "return new Map();")
-    return None
+    return cast(dict[object, object], None)
 
 
-def vector3_right() -> Any:
+def vector3_right() -> Vector3:
     """`Vector3.Right()`: (1, 0, 0)."""
     __pragma__("js", "{}", "return BABYLON.Vector3.Right();")
-    return None
+    return cast(Vector3, None)
 
 
-def create_ground_sized(label: str, width: float, height: float, scene: Any) -> Any:
+def create_ground_sized(label: str, width: float, height: float, scene: Scene) -> Mesh:
     """`CreateGround(label, {width, height}, scene)`: a ground without subdivision option (Babylon's
     default is one)."""
     __pragma__(
@@ -785,4 +891,4 @@ def create_ground_sized(label: str, width: float, height: float, scene: Any) -> 
         "{}",
         "return BABYLON.CreateGround(label, {width: width, height: height}, scene);",
     )
-    return None
+    return cast(Mesh, None)

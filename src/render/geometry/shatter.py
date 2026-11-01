@@ -14,7 +14,7 @@ from render.geometry.gradient_shapes import ColoredGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -90,7 +90,7 @@ def subdivide(tris: list[list[Vertex]], longest: float, needs: Any = None) -> li
     todo = list(tris)
     while len(todo) > 0:
         tri = todo.pop()
-        if needs != None and not needs(tri):  # noqa: E711
+        if needs != None and not needs(tri):  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             result.append(tri)
             continue
         lengths = [_length(tri[0], tri[1]), _length(tri[1], tri[2]), _length(tri[2], tri[0])]
@@ -142,7 +142,7 @@ class Carve:
         self.heights = heights
 
     def holds(self, point: list[float]) -> bool:
-        """Whether the region holds `point` (x, y, z)."""
+        """Whether the region holds `point` (x, y, z), in a plain loop (ENG-157)."""
         if point[1] < self.heights[0] or point[1] > self.heights[1]:
             return False
         # The armour cut asks this of every corner: seconds of a level's load through `any`.

@@ -63,6 +63,7 @@ def session(root: Any = None) -> DevSession:
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
+    """DEV-MENU-02."""
     s = session()
     assert not s.active
     s.sync(state("ships", 1, False))
@@ -80,6 +81,7 @@ def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
 
 
 def test_d208_the_wheel_zooms_the_model_viewers() -> None:
+    """DEV-MENU-11."""
     s = session()
     s.wheel(100)
     s.sync(state("ships"))
@@ -97,6 +99,7 @@ def test_d199_the_wheel_scrubs_the_levels_viewer() -> None:
 
 
 def test_d199_each_frame_moves_the_viewer_and_writes_its_status_line() -> None:
+    """DEV-MENU-05."""
     doc = FakeDocument()
     root = doc.createElement("div")
     line = doc.createElement("div")
@@ -125,6 +128,7 @@ def test_d199_the_viewer_is_drawn_once_its_scene_is_built() -> None:
 
 
 def test_d199_a_drag_turns_the_viewer_s_model() -> None:
+    """DEV-MENU-10."""
     s = session()
     s.turn(3, 4)
     s.sync(state("ships"))
@@ -155,6 +159,7 @@ class FakeTarget:
 
 
 def test_k_breaks_a_part_in_the_bosses_viewer_only() -> None:
+    """DEV-MENU-14."""
     target = FakeTarget()
     s = session()
     s.listen(target)

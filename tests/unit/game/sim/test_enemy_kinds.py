@@ -23,26 +23,27 @@ FIRST_IDS = [
 ]
 
 
-def test_p05_r01_every_kind_of_the_game_is_listed_once_with_a_unique_id() -> None:
+def test_enm_01_every_kind_of_the_game_is_listed_once_with_a_unique_id() -> None:
     ids = [kind.id for kind in ENEMY_KINDS]
     assert len(ids) == len(set(ids)) == 21
     assert [kind.id for kind in FIRST_KINDS] == FIRST_IDS
 
 
-def test_p05_r01_each_kind_has_a_name_and_a_spawn_function() -> None:
+def test_enm_04_each_kind_has_a_name_and_a_spawn_function() -> None:
     for kind in ENEMY_KINDS:
         assert kind.name
         assert callable(kind.spawn)
 
 
-def test_p05_r01_a_gnat_group_comes_in_as_its_configured_number_of_gnats() -> None:
+def test_enm_gnat_04_a_gnat_group_comes_in_as_its_configured_number_of_gnats() -> None:
     kind = next(k for k in ENEMY_KINDS if k.id == "gnat")
     group = kind.spawn(area())
     assert len(group) == ENEMY_CONFIG.gnat.groupSize
     assert all(isinstance(g, Gnat) for g in group)
 
 
-def test_p05_r01_a_strafer_from_a_left_entry_starts_just_left_of_the_playfield() -> None:
+def test_enm_08_a_strafer_from_a_left_entry_starts_just_left_of_the_playfield() -> None:
+    """Also ENM-STRAFER-05: the Strafer's side pass."""
     kind = next(k for k in ENEMY_KINDS if k.id == "strafer")
     (strafer,) = kind.spawn(area(width=400, side="left", position=0.3))
     assert isinstance(strafer, Strafer)
@@ -50,13 +51,13 @@ def test_p05_r01_a_strafer_from_a_left_entry_starts_just_left_of_the_playfield()
     assert strafer.heading == pytest.approx(3.14159265 / 2, rel=1e-6)
 
 
-def test_p05_r01_a_strafer_from_a_right_entry_starts_just_right_of_the_playfield() -> None:
+def test_enm_08_a_strafer_from_a_right_entry_starts_just_right_of_the_playfield() -> None:
     kind = next(k for k in ENEMY_KINDS if k.id == "strafer")
     (strafer,) = kind.spawn(area(width=400, side="right", position=0.3))
     assert strafer.x == pytest.approx(400 + ENEMY_SPAWN_MARGIN)
 
 
-def test_p05_r01_a_side_pass_follows_the_entry_side_and_height() -> None:
+def test_enm_08_a_side_pass_follows_the_entry_side_and_height() -> None:
     from_left, y = side_pass(area(width=400, height=600, side="left", position=0.5), 0.2)
     assert from_left is True
     assert y == pytest.approx(300)
@@ -64,7 +65,7 @@ def test_p05_r01_a_side_pass_follows_the_entry_side_and_height() -> None:
     assert from_right is False
 
 
-def test_p05_r01_a_side_pass_without_an_entry_takes_its_own_height() -> None:
+def test_enm_08_a_side_pass_without_an_entry_takes_its_own_height() -> None:
     _, y = side_pass(area(width=400, height=600), 0.25)
     assert y == pytest.approx(150)
 
@@ -74,7 +75,8 @@ def test_p05_r01_a_side_pass_without_an_entry_takes_its_own_height() -> None:
     [pytest.param(k, id=k.id) for k in ENEMY_KINDS],
 )
 @pytest.mark.parametrize("side", [None, "top", "left", "right"])
-def test_p05_r01_every_kind_spawns_a_group_from_any_wave_entry(kind, side) -> None:
+def test_enm_07_every_kind_spawns_a_group_from_any_wave_entry(kind, side) -> None:
+    """Also ENM-08: from any wave entry."""
     group = kind.spawn(area(width=400, height=600, side=side, position=0.4))
     assert group
     for enemy in group:

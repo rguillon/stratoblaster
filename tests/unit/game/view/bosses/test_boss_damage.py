@@ -18,7 +18,7 @@ class _Puff:
         self.visibility = 1.0
 
 
-def test_p07_r01_a_puff_rises_and_drifts_back_as_it_fades_and_grows():
+def test_boss_17_a_puff_rises_and_drifts_back_as_it_fades_and_grows():
     puffs = [_Puff()]
     smoke = Smoke(node=None, puffs=puffs, radius=3.0)
     smoke.step(0.0)
@@ -28,7 +28,7 @@ def test_p07_r01_a_puff_rises_and_drifts_back_as_it_fades_and_grows():
     assert puffs[0].visibility == pytest.approx(1)
 
 
-def test_p07_r01_the_puffs_are_spread_evenly_through_the_cycle():
+def test_boss_17_the_puffs_are_spread_evenly_through_the_cycle():
     look = BOSS_LOOK.smoke
     puffs = [_Puff(), _Puff()]
     smoke = Smoke(node=None, puffs=puffs, radius=0.0)
@@ -38,7 +38,7 @@ def test_p07_r01_the_puffs_are_spread_evenly_through_the_cycle():
     assert puffs[1].position.set.call_args.args[1] == pytest.approx(look.rise * 0.5)
 
 
-def test_p07_r01_smoke_restarts_its_cycle_when_a_puff_is_spent():
+def test_boss_17_smoke_restarts_its_cycle_when_a_puff_is_spent():
     look = BOSS_LOOK.smoke
     puffs = [_Puff()]
     smoke = Smoke(node=None, puffs=puffs, radius=0.0)
@@ -47,7 +47,7 @@ def test_p07_r01_smoke_restarts_its_cycle_when_a_puff_is_spent():
     assert puffs[0].position.set.call_args.args[1] == pytest.approx(0, abs=1e-9)
 
 
-def test_p07_r01_a_puff_is_at_full_height_and_faded_just_before_it_restarts():
+def test_boss_17_a_puff_is_at_full_height_and_faded_just_before_it_restarts():
     look = BOSS_LOOK.smoke
     puffs = [_Puff()]
     smoke = Smoke(node=None, puffs=puffs, radius=0.0)
@@ -56,7 +56,7 @@ def test_p07_r01_a_puff_is_at_full_height_and_faded_just_before_it_restarts():
     assert puffs[0].position.set.call_args.args[1] == pytest.approx(look.rise, rel=0.01)
 
 
-def test_p07_r01_build_smoke_puts_its_puffs_on_a_node_under_the_parent(monkeypatch):
+def test_boss_17_build_smoke_puts_its_puffs_on_a_node_under_the_parent(monkeypatch):
     look = BOSS_LOOK.smoke
     node = MagicMock(name="smoke-node")
     monkeypatch.setattr(boss_damage, "new_transform_node", lambda label, scene: node)

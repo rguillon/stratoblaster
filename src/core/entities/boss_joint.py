@@ -1,4 +1,4 @@
-"""Moving limbs of a boss (phase 7 review).
+"""Moving limbs of a boss (BOSS-33).
 
 A joint turns what hangs on it (parts, their hit circles and muzzles, other joints) around its
 pivot, swinging to and fro. Joints hang on other joints, so an arm can bend at the shoulder, the
@@ -11,21 +11,28 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Protocol  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class JointedPart(Protocol):
     """What a part says about the joint it hangs on (see `BossPartSpec`)."""
 
     @property
-    def id(self) -> str: ...
+    def id(self) -> str:
+        """The id of the part, as its `BossPartSpec` names it."""
+        ...
 
     @property
-    def joint(self) -> str | None: ...
+    def joint(self) -> str | None:
+        """The id of the joint the part hangs on, or None."""
+        ...
 
     @property
-    def orbits(self) -> bool: ...
+    def orbits(self) -> bool:
+        """Whether the part turns around the boss's centre with its spin, instead of hanging on a
+        joint."""
+        ...
 
 
 __pragma__("noskip")
@@ -72,8 +79,8 @@ def _check_joints(specs: dict[str, BossJointSpec], parts: Sequence[JointedPart])
             raise ValueError('Part "' + part.id + '" hangs on no joint "' + joint + '"')
         if part.orbits:
             raise ValueError('Part "' + part.id + '" both orbits and hangs on a joint')
-    # Transcrypt cannot iterate a dict directly: the keys are listed.
-    for joint_id in specs.keys():  # noqa: SIM118
+    # Transcrypt cannot iterate a dict directly: the keys are listed (ENG-159).
+    for joint_id in specs.keys():  # noqa: SIM118 (Transcrypt cannot iterate a dict directly, ENG-159)
         seen: list[str] = []
         j: str | None = joint_id
         while j is not None:
@@ -103,7 +110,7 @@ class BossJoints:
     def step(self, dt: float) -> None:
         """Swings them on by `dt` seconds."""
         self._time += dt
-        for joint_id in self._specs.keys():  # noqa: SIM118
+        for joint_id in self._specs.keys():  # noqa: SIM118 (Transcrypt cannot iterate a dict directly, ENG-159)
             swing = self._specs[joint_id].swing
             turns = self._time / swing.period + swing.phase
             self._angles[joint_id] = ((swing.amplitude_deg * math.pi) / 180) * math.sin(

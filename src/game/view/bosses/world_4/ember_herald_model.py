@@ -1,7 +1,7 @@
-"""P10-R11, 4-5: the Ember Herald, the mini boss of the Caldera. Model space: logical pixels, nose
-+Z (down the screen), Y up
-towards the camera; +X is the screen's left. P16-R05: a living fire-wasp, its long flesh body ribbed
-in bone, scorched membrane wings veined molten, bone spines and a metal spire and halo grafted on.
+"""MB-EMBER-HERALD-01 to MB-EMBER-HERALD-04, 4-5: the Ember Herald, the mini boss of the Caldera.
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
+left. MB-EMBER-HERALD-02: a living fire-wasp, its long flesh body ribbed in bone, scorched membrane
+wings veined molten, bone spines and a metal spire and halo grafted on.
 """
 
 import math
@@ -40,7 +40,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
@@ -153,7 +153,7 @@ def _draw_fuselage(p: Any) -> None:
     def paint(side: int, band: int) -> Any:
         # Soot over its back behind the canopy, from the reactors' heat.
         painted: Any = canopy(side, band)
-        if painted == None:  # noqa: E711
+        if painted == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             if band < SOOT_BANDS and side in BACK:
                 return SKIN.dark
             return None
@@ -275,7 +275,8 @@ def _draw_core(p: Any) -> None:
 
 
 def _draw_ring(p: Any) -> None:
-    """The turning ring (P10-R11): a soot-black rim lit gold, held by three spokes from the hub."""
+    """The turning ring (MB-EMBER-HERALD-03, MB-EMBER-HERALD-06): a soot-black rim lit gold, held by
+    three spokes from the hub."""
     hull = p.hull
     neon = p.neon
     r = ORBIT
@@ -295,14 +296,14 @@ def _draw_ring(p: Any) -> None:
 def _gun_muzzles(part_id: str) -> list[Any]:
     """`EMBER_HERALD.guns[part.id]?.gun ?? []`."""
     entry: Any = EMBER_HERALD.guns[part_id]
-    if entry == None or entry.gun == None:  # noqa: E711
+    if entry == None or entry.gun == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return []
     guns: list[Any] = entry.gun
     return guns
 
 
 def _lance_part(muzzles: list[Any]) -> Any:
-    """A lance on the ring, drawn from its design's muzzles (`muzzles`)."""
+    """A lance on the ring (MB-EMBER-HERALD-03), drawn from its design's muzzles (`muzzles`)."""
 
     def draw(parts: Any, at: Vec3) -> None:
         ember_lance(parts, muzzles, at)
@@ -311,12 +312,12 @@ def _lance_part(muzzles: list[Any]) -> Any:
 
 
 def build_ember_herald(scene: Any) -> Any:
-    """P10-R11: the Ember Herald, a fast, spiky interceptor (3.5 L) wreathed in embers, gold neon:
-    spiked wings cracked with molten seams, a spire over the core, and a ring turning over it
-    carrying three ember lances."""
+    """MB-EMBER-HERALD-01, MB-EMBER-HERALD-04: the Ember Herald, a fast, spiky interceptor (3.5 L)
+    wreathed in embers, gold neon: spiked wings cracked with molten seams, a spire over the core,
+    and a ring turning over it carrying three ember lances."""
     lances = {}
     for part in EMBER_HERALD.stats.parts:
-        if part.reveal != None:  # noqa: E711
+        if part.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         lances[part.id] = _lance_part(_gun_muzzles(part.id))
     return build_boss_model(

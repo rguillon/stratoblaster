@@ -1,11 +1,11 @@
 """Look of the bonuses
 
-Weapon bonuses (phase 6 review): a hexagon badge with chevrons pointing up (a level up), swinging
-from side to side over a pulsing halo; a ring flashes out where the ship picks one up. P11-R07: life
-bonuses are a heart, bomb bonuses a ball marked B, so each kind reads by its shape. Phase 14
-(P14-R02): all in the pickups' family, violet since D-231 (reviewer, 2026-11-01: the enemies took
-the yellow and green; were an acid green badge, a mint heart and a green ball, and before phase 14
-yellow, pink and orange).
+Weapon bonuses (GFX-FX-11; phase 6 review): a hexagon badge with chevrons pointing up (a level
+up), swinging from side to side over a pulsing halo; a ring flashes out where the ship picks one up
+(GFX-FX-13). GFX-FX-12: life bonuses are a heart, bomb bonuses a ball marked B, so each kind reads
+by its shape. Phase 14 (GFX-ART-07): all in the pickups' family, violet since D-231 (reviewer,
+2026-11-01: the enemies took the yellow and green; were an acid green badge, a mint heart and a
+green ball, and before phase 14 yellow, pink and orange).
 
 Linear RGB, 0..1; sizes in logical pixels; times in seconds.
 """
@@ -19,8 +19,8 @@ BONUS_LOOK = record(
         # In front of the ships and the explosions (towards the camera, -Z).
         "depth": -4,
         # Below full strength: the playfield's glow would wash them out to white.
-        # Phase 14 (P14-R02, reviewer): every bonus in the pickups' family, the kinds told apart by
-        # their shapes (D-231: a blue violet, not pink; was acid green, and acid yellow with cyan
+        # Phase 14 (GFX-READ-06, reviewer): every bonus in the pickups' family, the kinds told apart
+        # by their shapes (D-231: a blue violet, not pink; was acid green, and acid yellow with cyan
         # chevrons before).
         "frame": [0.55, 0.3, 1],
         "face": [0.06, 0.04, 0.1],
@@ -45,7 +45,7 @@ BONUS_LOOK = record(
             "segments": 20,
         },
         "flash": {"size": 4, "life": 0.35, "color": [0.7, 0.5, 1], "segments": 32},
-        # A life bonus (P11-R07): the heart's rim, the heart, how far in the heart is, its halo.
+        # A life bonus (GFX-FX-12): the heart's rim, the heart, how far in the heart is, its halo.
         "life": {
             "rim": [0.4, 0.15, 0.85],
             "heart": [0.72, 0.5, 1],
@@ -57,7 +57,7 @@ BONUS_LOOK = record(
                 [0, 0, 0],
             ],
         },
-        # A bomb bonus (P11-R07): its shell, highlight, letter and halo.
+        # A bomb bonus (GFX-FX-12): its shell, highlight, letter and halo.
         "bomb": {
             "shell": [0.45, 0.2, 0.95],
             "highlight": [0.8, 0.65, 1],

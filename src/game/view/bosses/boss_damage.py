@@ -1,5 +1,5 @@
-"""The damage shown on a boss's parts (P07-R01): its hit flash and its smoke. A destroyed part
-leaves nothing behind (D-225)."""
+"""The damage shown on a boss's parts (BOSS-17): its hit flash and its smoke. A destroyed part
+leaves nothing behind (BOSS-18, D-225)."""
 
 import math
 
@@ -19,17 +19,19 @@ from render.geometry.solids import SolidBuilder  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+
+from render.handles import StandardMaterial, WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-FLASH_CACHE = new_weak_map()
+FLASH_CACHE: WeakMap[dict[str, StandardMaterial]] = new_weak_map()
 
 
 def effect_materials(scene: Any) -> Any:
     """The flash and smoke materials of the scene, created on first use."""
     mats = weak_map_get(FLASH_CACHE, scene)
-    if mats == None:  # noqa: E711
+    if mats == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         flash = new_standard_material("boss-flash", scene)
         flash.emissiveColor = color3(
             BOSS_LOOK.flash.color[0], BOSS_LOOK.flash.color[1], BOSS_LOOK.flash.color[2]
@@ -48,7 +50,7 @@ def effect_materials(scene: Any) -> Any:
 
 
 class Smoke:
-    """The smoke rising from a damaged part (P07-R01): its node, and `step` to drift its puffs."""
+    """The smoke rising from a damaged part (BOSS-17): its node, and `step` to drift its puffs."""
 
     def __init__(self, node: Any, puffs: list[Any], radius: float) -> None:
         self.node = node
@@ -70,7 +72,7 @@ class Smoke:
 
 
 def build_smoke(name: str, radius: float, scene: Any, parent: Any) -> Smoke:
-    """The smoke rising from a damaged part (P07-R01): a few puffs drifting back and fading."""
+    """The smoke rising from a damaged part (BOSS-17): a few puffs drifting back and fading."""
     look = BOSS_LOOK.smoke
     node = new_transform_node(name + "-smoke", scene)
     node.parent = parent

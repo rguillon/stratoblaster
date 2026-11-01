@@ -1,4 +1,4 @@
-"""P05-R21, P16-R04: the Scissor Logical pixels, nose
+"""The Scissor (specs/enemies/scissor.md) Logical pixels, nose
 +Z, Y up (towards the camera).
 """
 
@@ -33,7 +33,7 @@ from render.geometry.organic import (
 from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -41,7 +41,7 @@ CFG = ELITE_CONFIG.scissor
 NEON = ELITE_NEON.scissor
 F = ENEMY_LOOK.flesh
 
-# P16-R04: the long, narrow, segmented body under its ridged shell, tail to nose.
+# ENM-SCISSOR-02: the long, narrow, segmented body under its ridged shell, tail to nose.
 BODY = SegmentedBody(-31, 29, 5, 8.5, -2.5, 3.2)
 SHELL = SegmentedBody(-24, 18, 4, 6.5, 0.6, 4.6, None, None, [False, False])
 # The right tail fin (mirrored for the left).
@@ -57,7 +57,8 @@ BLADE = [[-2.8, -2.5], [2.8, -2.5], [2.2, 27], [-2.2, 27]]  # type: list[list[fl
 
 
 def body(p: Any) -> None:
-    """The body and its shell, crimson veins, metal tail fins, a nose cap, reactors in sacs."""
+    """The body and its shell, crimson veins (ENM-SCISSOR-03), metal tail fins, a nose cap,
+    reactors in sacs (ENM-SCISSOR-04)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -94,7 +95,8 @@ def shoulder(arm: Any) -> Any:
 
 
 def arm(spec: Any) -> Any:
-    """A laser arm: a flesh limb, a bone blade with a crimson edge, metal cuffs, the emitter."""
+    """A laser arm (ENM-SCISSOR-05): a flesh limb, a bone blade with a crimson edge, metal cuffs,
+    the emitter."""
     pivot = boss_point(spec.pivot[0], spec.pivot[1], ARM_Y)
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
     yaw = spec.aim
@@ -113,7 +115,7 @@ def arm(spec: Any) -> Any:
             pt = ahead(pivot, yaw, d)
             hull.box([6, 1, 2.4], H.panel, Placement([pt[0], ARM_Y + 1.6, pt[2]], yaw))
         strip(neon, [pivot[0], ARM_Y + 2.2, pivot[2]], yaw, [13, 18, 1.2], NEON)
-        # The emitter: a cone ending at the tip, brightening through the warning.
+        # The emitter: a cone ending at the tip, brightening through the warning (ENM-SCISSOR-06).
         lens = [[2, 0], [1.2, 2.2], [0, 3]]
         charge.lathe(lens, 6, WHITE, Placement(ahead(tip, yaw, -3), yaw, QUARTER))
         muzzle(tip, "laser")
@@ -122,8 +124,8 @@ def arm(spec: Any) -> Any:
 
 
 def build_scissor(scene: Any) -> Any:
-    """P05-R21, P16-R04: a long, narrow, shelled body with two crimson laser arms, bone blades on
-    flesh limbs, hinged at its shoulders."""
+    """ENM-SCISSOR-01: a long, narrow, shelled body with two crimson laser arms, bone blades on
+    flesh limbs, hinged at its shoulders, within the elite triangle budget (ENM-SCISSOR-07)."""
     limbs = {}
     parts = {}
     for a in CFG.arms:

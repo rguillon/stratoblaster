@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/plume_layer.py`."""
+"""Unit tests of `src/render/scenery/plume_layer.py` (GFX-PROP-18)."""
 
 from types import SimpleNamespace
 from typing import Any

@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/branches.py` (D-214)."""
+"""Unit tests of `src/render/geometry/branches.py` (D-214, GFX-PROP-09)."""
 
 import math
 

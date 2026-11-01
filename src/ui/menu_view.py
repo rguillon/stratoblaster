@@ -5,13 +5,13 @@ positional constructor arguments in the order listed."""
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from ui.caption_row import Caption  # noqa: E402
+from ui.caption_row import Caption  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 class LoadingView:
-    """Loading screen (P01-R02)."""
+    """Loading screen (UI-LOAD-03)."""
 
     kind = "loading"
 
@@ -22,7 +22,7 @@ class LoadingView:
 
 
 class TitleView:
-    """Title screen (P01-R04)."""
+    """Title screen (UI-TITLE-01)."""
 
     kind = "title"
 
@@ -43,7 +43,7 @@ class TitleView:
         self.high_score_label = high_score_label
         self.high_score = high_score
         self.start = start
-        # The Settings entry under Start (P12-R04).
+        # The Settings entry under Start (UI-SET-01).
         self.settings = settings
         # The entry selected: 0 Start, 1 Settings.
         self.selected = selected
@@ -66,7 +66,7 @@ class BackView:
 
 
 class ShipSelectView(BackView):
-    """Ship select screen (P01-R06): one card per ship, under its 3D model."""
+    """Ship select screen (UI-SHIP-02): one card per ship, under its 3D model."""
 
     kind = "ship-select"
 
@@ -94,7 +94,7 @@ class LevelOption:
 
 
 class LevelSelectView(BackView):
-    """Level select screen (P01-R07)."""
+    """Level select screen (UI-LEVEL-01)."""
 
     kind = "level-select"
 
@@ -115,7 +115,7 @@ class LevelSelectView(BackView):
 
 
 class LevelChoices:
-    """Choices of a "Game over" panel (P07-R08): their labels, and the one selected."""
+    """Choices of a "Game over" panel (UI-OVER-06): their labels, and the one selected."""
 
     def __init__(self, labels: list[str], selected: int) -> None:
         self.labels = labels
@@ -123,7 +123,8 @@ class LevelChoices:
 
 
 class LevelCompleteView:
-    """The "Level complete" overlay (P06-R03), or "Game over" when every life is lost (GD-20)."""
+    """The "Level complete" overlay (UI-OVER-01), or "Game over" when every life is lost
+    (UI-OVER-05)."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
@@ -143,17 +144,17 @@ class LevelCompleteView:
         self.level = level
         # How many enemies were destroyed out of how many came.
         self.enemies = enemies
-        # The attempt's score (P11-R03).
+        # The attempt's score (UI-OVER-01).
         self.score = score
-        # Shown when the score beat the saved high score (P11-R03); none otherwise.
+        # Shown when the score beat the saved high score (UI-OVER-02); none otherwise.
         self.new_high_score = new_high_score
         self.hint = hint
-        # "Game over" after the mini boss (P07-R08): Continue or level select; None otherwise.
+        # "Game over" after the mini boss (UI-OVER-06): Continue or level select; None otherwise.
         self.choices = choices
 
 
 class PauseQuestion:
-    """The `Leave the level?` question (P12-R02), with its choices."""
+    """The `Leave the level?` question (UI-PAUSE-10), with its choices."""
 
     def __init__(self, text: str, choices: list[str], selected: int) -> None:
         self.text = text
@@ -162,7 +163,7 @@ class PauseQuestion:
 
 
 class PauseView:
-    """The pause menu (P12-R02), over the dimmed playfield."""
+    """The pause menu (UI-PAUSE-07), over the dimmed playfield."""
 
     def __init__(
         self,
@@ -180,7 +181,7 @@ class PauseView:
 
 
 class GameScreenView:
-    """Game screen (P06-R02): what the overlay shows over the level being played."""
+    """Game screen (UI-FLOW-01): what the overlay shows over the level being played."""
 
     kind = "game"
 
@@ -196,17 +197,17 @@ class GameScreenView:
         self.level = level
         # Label of the on-screen fire button.
         self.fire = fire
-        # Label of the on-screen pause button (P12-R01).
+        # Label of the on-screen pause button (UI-PAUSE-02).
         self.pause = pause
         self.complete = complete
-        # The pause menu, while the level is paused (P12-R02).
+        # The pause menu, while the level is paused (UI-PAUSE-07).
         self.paused = paused
-        # The entry selected on the panel (its choices, P07-R08, or the pause menu), for taps.
+        # The entry selected on the panel (its choices, UI-OVER-06, or the pause menu), for taps.
         self.selected = selected
 
 
 class SliderView:
-    """One slider of the settings screen (P12-R04): value from 0 to `max`."""
+    """One slider of the settings screen (UI-SET-02): value from 0 to `max`."""
 
     def __init__(self, label: str, value: int, max_value: int) -> None:
         self.label = label
@@ -215,7 +216,7 @@ class SliderView:
 
 
 class SettingsView(BackView):
-    """Settings screen (P12-R04): the volume sliders."""
+    """Settings screen (UI-SET-02): the volume sliders."""
 
     kind = "settings"
 
@@ -230,7 +231,7 @@ class SettingsView(BackView):
     ) -> None:
         BackView.__init__(self, heading, hint, back, selected)
         self.sliders = sliders
-        # Opened from the pause menu: the paused level shows dimmed behind it.
+        # Opened from the pause menu: the paused level shows dimmed behind it (UI-SET-07).
         self.over_level = over_level
 
 

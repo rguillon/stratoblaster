@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/scenery/road_field.py`."""
+"""Unit tests of `src/render/scenery/road_field.py` (GFX-ROAD-06, GFX-ROAD-22)."""
 
 from types import SimpleNamespace
 from typing import Any
@@ -190,6 +190,7 @@ def _tile_chunk(atlas: Any, version: int) -> Any:
 def test_d217_each_version_of_the_road_atlas_is_uploaded_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """GFX-ROAD-21."""
     uploads: list[Any] = []
     monkeypatch.setattr(road_field, "update_raw_texture", lambda t, p: uploads.append(p))
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))

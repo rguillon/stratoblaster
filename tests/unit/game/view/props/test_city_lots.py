@@ -27,7 +27,7 @@ def kit_for(seed=2):
     return k, lot_kit(k, FACADES, LIGHTS)
 
 
-def test_p15_r08_a_volume_is_a_box_up_to_its_height():
+def test_gfx_bldg_10_a_volume_is_a_box_up_to_its_height():
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 12.0)
     prop = geometry_of(k)
@@ -45,6 +45,7 @@ def test_d210_a_volume_under_a_floor_high_gets_no_windows():
 
 
 def test_d210_a_volume_gets_one_window_quad_per_wall():
+    """GFX-BLDG-13."""
     k, kit = kit_for()
     volume(kit, LOT, 0.0, 20.0)
     windows = geometry_of(k).windows
@@ -53,7 +54,7 @@ def test_d210_a_volume_gets_one_window_quad_per_wall():
     assert len(geometry_of(k).lights.positions) == 0
 
 
-def test_p15_r08_the_plinth_covers_the_lot_and_returns_its_height():
+def test_gfx_bldg_10_the_plinth_covers_the_lot_and_returns_its_height():
     k, kit = kit_for()
     base = plinth(kit, LOT)
     assert 3 <= base <= 6
@@ -61,14 +62,14 @@ def test_p15_r08_the_plinth_covers_the_lot_and_returns_its_height():
 
 
 @pytest.mark.parametrize("shape", [stepped_tower, round_tower, slab, courtyard, l_block])
-def test_p15_r08_each_lot_shape_is_a_well_formed_volume(shape):
+def test_gfx_bldg_10_each_lot_shape_is_a_well_formed_volume(shape):
     k, kit = kit_for()
     shape(kit, LOT)
     check_colored(geometry_of(k).structure)
     assert height(geometry_of(k).structure) > 0
 
 
-def test_p15_r08_a_crown_sits_on_the_roof_at_the_given_point():
+def test_gfx_bldg_10_a_crown_sits_on_the_roof_at_the_given_point():
     k, kit = kit_for()
     # The point is (x, y, z): the crown stands at the top of its tower.
     crown(kit, [8.0, 12.0, 8.0], 2.0)

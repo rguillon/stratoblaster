@@ -1,4 +1,4 @@
-"""P09-R09, 3-2: the Toucan. Logical pixels,
+"""MB-TOUCAN-01 to MB-TOUCAN-06, 3-2: the Toucan. Logical pixels,
 nose +Z, Y up (towards the camera). A stubby gunship: a round black body, short wings carrying the
 fan pods, a fanned tail, and the huge bright beak (its cannon, a part) in front of its head."""
 
@@ -35,9 +35,9 @@ from render.geometry.solids import LoftOptions, Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -86,7 +86,7 @@ def draw_body(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: a round, living bird's body of dark flesh, a bone ribcage over its back.
+    # MB-TOUCAN-02: a round, living bird's body of dark flesh, a bone ribcage over its back.
     flesh.loft(
         ROUND_SECTION,
         BODY,
@@ -116,7 +116,7 @@ def draw_wings_and_tail(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R05: short, heavy membrane wings (still, P16-R01) on bone struts, a fan of bone quills.
+    # MB-TOUCAN-02: short, heavy membrane wings (still) on bone struts, a fan of bone quills.
     flesh.bevel_slab(WINGS, [-1.5, 0, 2], [0.8, 1], F.membrane, None, F.graphite)
     flesh.bevel_slab(TAIL, [0.5, 1.5, 3], [0.4, 0.8], F.membrane, None, F.slate)
     for s in SIDES:
@@ -145,7 +145,8 @@ def draw_wings_and_tail(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head: its round neon eyes either side, the cheek guns under them, the crest emitter."""
+    """The head (MB-TOUCAN-03): its round neon eyes either side, the cheek guns under them, the
+    crest emitter."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -199,8 +200,8 @@ def toucan_core(p: EnemyParts) -> None:
 
 
 def build_toucan(scene: Any) -> Any:
-    """P09-R09: the Toucan, a stubby gunship with a huge bright beak, yellow and orange neon, moss
-    on its back and vines hanging from its wings."""
+    """MB-TOUCAN-01, MB-TOUCAN-06: the Toucan, a stubby gunship with a huge bright beak, yellow and
+    orange neon, moss on its back and vines hanging from its wings."""
     parts: dict[str, Any] = {
         "pod-left": wing_pod,
         "pod-right": wing_pod,

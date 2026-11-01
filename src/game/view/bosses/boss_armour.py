@@ -1,10 +1,12 @@
 """A boss's armour regions (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md):
-cut out of its core body, they burst off in chunks as it transforms and leave a dark metal frame.
+cut out of its core body, they burst off in chunks as it transforms and leave a dark metal frame
+(BOSS-42, BOSS-43).
 
 The cut is made on the core's drawing (`cut_armour`): its faces inside a region's outlines (and
 heights) leave the core and make the region's armour. A region is then drawn three ways: whole
 (at rest, flashing with the core), as chunks (shown only while they fly) and as its frame (hidden
-until the burst).
+until the burst). Which regions each boss sheds, and when, is its own boss file's (its shedding
+and transformation requirements, specs/bosses/mini/*.md and specs/bosses/final/*.md).
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
@@ -41,7 +43,7 @@ from render.geometry.solids import SolidBuilder
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Vec3 = list[float]
 __pragma__("noskip")
@@ -180,7 +182,7 @@ def _straddler(carves: list[Carve]) -> Any:
     """Whether a triangle may cross the edge of any of `carves` (and so must be cut down)."""
 
     def needs(tri: list[Any]) -> bool:
-        for c in carves:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        for c in carves:  # noqa: SIM110 (ENG-157: any() over a generator is slow)
             if straddles(tri, c):
                 return True
         return False
@@ -217,7 +219,7 @@ def cut_armour(draw_core: Any, regions: list[Any]) -> ArmourCut:
     frames = [concat(c["hull"], c["flesh"]) for c in cut]
     floors = [floor_height(f) for f in frames]
     bridges = _held_frames(kept, cut, frames, floors, regions)
-    framed = [r.frame != None for r in regions]  # noqa: E711
+    framed = [r.frame != None for r in regions]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return ArmourCut(kept, recorder.calls, cut, frames, floors, bridges, framed, floating)
 
 
@@ -241,7 +243,7 @@ def _framed_state(
             tris.extend(posed(concat(cut[k]["hull"], cut[k]["flesh"]), regions[k], form))
     sources: list[list[int]] = []
     for k in range(len(regions)):
-        if regions[k].form > form or regions[k].frame == None:  # noqa: E711
+        if regions[k].form > form or regions[k].frame == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             continue
         for i in range(len(frames[k])):
             tri = frames[k][i]
@@ -430,7 +432,7 @@ def _regions_after(cut: list[dict[str, Any]], regions: list[Any], form: int) -> 
             for layer in LAYERS:
                 tris.extend(posed(cut[k][layer], regions[k], form))
         solid = concat(cut[k]["hull"], cut[k]["flesh"])
-        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711
+        if regions[k].form <= form and regions[k].frame != None and len(solid) > 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             tris.extend(floor_triangles(solid, floor_height(solid)))
     return tris
 
@@ -577,7 +579,7 @@ class ArmourView:
 
     def show(self, boss: Any, lit: Any, dt: float) -> None:
         """Shows the region for `boss` (None: at rest) as its transformation goes."""
-        if boss == None:  # noqa: E711
+        if boss == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             self._rest(lit, dt, 1000)
             return
         phase = reveal_phase(self.region.form, boss.form, boss.transforming_into)
@@ -633,9 +635,9 @@ def place(node: Any, pose: list[Any]) -> None:
 
 
 class MovingView:
-    """A moving region of a boss model (D-230): its piece, `whole` (a model on its `mover` node,
-    with its flash group `flash`), moved by its motion as the boss transforms; the `carrier` node
-    the weapons riding it hang from (drawn where they end up); and its `frame` (a model), if it
+    """A moving region of a boss model (BOSS-45, D-230): its piece, `whole` (a model on its `mover`
+    node, with its flash group `flash`), moved by its motion as the boss transforms; the `carrier`
+    node the weapons riding it hang from (drawn where they end up); and its `frame` (a model), if it
     leaves one where it was drawn."""
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
@@ -656,10 +658,10 @@ class MovingView:
         value = motion_value(motion, k)
         place(self.mover, node_pose(motion, value))
         place(self.carrier, node_pose(motion, relative_value(motion, value)))
-        since_hit = 1000 if boss == None else boss.core.since_hit  # noqa: E711
+        since_hit = 1000 if boss == None else boss.core.since_hit  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         look = BOSS_LOOK.reveal
         straining = (
-            boss != None  # noqa: E711
+            boss != None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             and boss.transforming_into == self.region.form
             and boss.transform < look.burst
         )
@@ -672,8 +674,8 @@ class MovingView:
             self.whole.root.position.set(0, 0, 0)
         self.whole.sync(lit, dt)
         self.flash.show(since_hit)
-        if self.frame != None:  # noqa: E711
-            out = boss != None and (k > 0 or boss.form >= self.region.form)  # noqa: E711
+        if self.frame != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+            out = boss != None and (k > 0 or boss.form >= self.region.form)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
             set_enabled(self.frame.root, out)
             if out:
                 self.frame.sync(lit, dt)
@@ -695,7 +697,7 @@ def _build_frame(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     name: str, scene: Any, neon: Any, breath: Any, drawings: list[Any]
 ) -> FrameView:
     """The frame of a region from its `[floor, ribs]` drawings: built under the armour, the floor
-    is trimmed along its own outline (P14-R04); the ribs are not, so it reads as dark metal."""
+    is trimmed along its own outline (GFX-TRIM-09); the ribs are not, so it reads as dark metal."""
     root = new_transform_node(name + "-frame", scene)
     floor = build_enemy_model(name + "-frame-floor", scene, neon, drawings[0], breath)
     floor.root.parent = root
@@ -726,7 +728,7 @@ def rooted(supports: list[Any], lasting: list[Any]) -> list[Any]:
     result: list[Any] = []
     for s in supports:
         base = surface_below(lasting, s[0], s[1], s[2])
-        result.append(s if base == None else [s[0], s[1], s[2], s[3], base])  # noqa: E711
+        result.append(s if base == None else [s[0], s[1], s[2], s[3], base])  # noqa: E711 (absent value is undefined in the browser, ENG-161)
     return result
 
 
@@ -764,12 +766,12 @@ def _moving_view(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     mover = new_transform_node(name + "-mover", scene)
     mover.parent = root
     whole.root.parent = mover
-    carrier = carriers[region.id] if carriers != None and region.id in carriers else None  # noqa: E711
-    if carrier == None:  # noqa: E711
+    carrier = carriers[region.id] if carriers != None and region.id in carriers else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if carrier == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         carrier = new_transform_node(name + "-carrier", scene)
         carrier.parent = root
     frame = None
-    if region.frame != None:  # noqa: E711
+    if region.frame != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         held = supports_in(region, standing)
         drawings = frame_drawings(
             cut.frames[k], region.frame, neon, held, cut.floors[k], cut.bridges[k]
@@ -825,7 +827,7 @@ def build_armour(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
                 breath,
             )
             model.root.parent = node
-            # Flying off, it must not trim the frame's edges (P14-R04).
+            # Flying off, it must not trim the frame's edges (GFX-TRIM-09).
             clear_trim(model.root)
             set_enabled(node, False)
             chunks.append(ArmourChunk(node, centre, i))

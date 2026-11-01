@@ -1,10 +1,11 @@
-"""Plays the generated music (P12-R05..R08, P12-R11): one
-track at a time, cross-fading into the next or fading out, plus one-shot jingles over it. Notes
-are scheduled ahead on the audio clock by `update`, so the music keeps time when frames are slow.
-Pausing keeps each track's position; resuming goes on from there.
+"""Plays the generated music: one track at a time, cross-fading into the next or fading out
+(AUD-MUSIC-08), plus one-shot jingles over it. Notes are scheduled ahead on the audio clock by
+`update`, so the music keeps time when frames are slow (AUD-ENGINE-05). Pausing keeps each
+track's position; resuming goes on from there (AUD-ENGINE-10).
 
-`bus` is a function returning the `MusicBus` once the context exists (None before), as in the
-Seconds into each paused track are kept in parallel lists (a Map keyed by slot).
+`bus` is a function returning the `MusicBus` once the context exists (None before).
+
+Seconds into each paused track are kept in parallel lists, keyed by slot.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -15,7 +16,7 @@ from audio.synth import Voice, VoiceOptions, play_voice
 from audio.track_mixer import MusicBus, TrackMixer
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -102,11 +103,11 @@ class MusicPlayer:
         self._current = self._slot(track, fade) if track is not None else None
 
     def jingle(self, track: Track) -> None:
-        """Plays `track` once over the music (a jingle)."""
+        """Plays `track` once over the music (a jingle, AUD-MUSIC-10)."""
         self._others.append(self._slot(track, 0))
 
     def pause(self) -> None:
-        """Pauses the music where it is (P12-R11): the notes sounding stop."""
+        """Pauses the music where it is (AUD-ENGINE-10): the notes sounding stop."""
         if self._paused:
             return
         self._paused = True
@@ -146,7 +147,8 @@ class MusicPlayer:
         self._paused_at = []
 
     def update(self) -> None:
-        """Schedules the notes due within the lookahead, and drops the tracks that are over."""
+        """Schedules the notes due within the lookahead, and drops the tracks that are over, so
+        the work per frame stays small (AUD-ENGINE-12)."""
         bus = self._bus()
         if bus is None or self._paused:
             return

@@ -1,4 +1,4 @@
-"""A level's generated ground (P13-R03): its height
+"""A level's generated ground (PERF-11, PERF-14): its height
 field and its props' placer (with the roads), generated here or in the background worker, kept for
 reuse (the level being played, Retry, and those prefetched).
 """
@@ -14,8 +14,8 @@ from render.scenery.road_sources import LocalRoadSource, WorkerRoadSource
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -35,7 +35,7 @@ class LevelGround:
 
 
 class GroundSnapshot:
-    """What generating a level's ground made, as plain data (sent back by a worker, P13-R03)."""
+    """What generating a level's ground made, as plain data (sent back by a worker, PERF-14)."""
 
     def __init__(self, roads: Any, placer: Any) -> None:
         self.roads = roads
@@ -115,14 +115,15 @@ class GeneratedInTwo:
         self.roads = roads
 
 
-# The chunks up to this Z are placed before the ground is sent: the level's first screens.
+# The chunks up to this Z are placed before the ground is sent: the level's first screens
+# (PERF-16).
 FIRST_Z = 1600
 
 
 def generate_in_two(level: SceneryLevel, seed: int) -> GeneratedInTwo:
     """Generates the ground of `level` from `seed` as plain data, its runout and its chunks of
-    buildings apart: what the worker runs. The roads first (before anything is laid), then the
-    first chunks, then `runout()` and `chunks(z)` as they are asked for."""
+    buildings apart (PERF-15): what the worker runs. The roads first (before anything is laid), then
+    the first chunks, then `runout()` and `chunks(z)` as they are asked for."""
     made = _without_runout(level, seed, None)
     placer = made.placer
     roads = placer.roads.snapshot()
@@ -178,7 +179,7 @@ def _generate(level: SceneryLevel, seed: int) -> LevelGround:
     return _without_runout(level, seed, None)
 
 
-# Grounds kept for reuse (P13-R03): the level being played, Retry, and those prefetched.
+# Grounds kept for reuse (PERF-11): the level being played, Retry, and those prefetched.
 KEPT = 3
 
 
@@ -197,7 +198,7 @@ _state = _GroundState()
 
 
 def _truncate(kept: list[Any], count: int) -> None:
-    """`kept.length = count` (Transcrypt renames the `length` attribute, so it is raw; the
+    """`kept.length = count` (Transcrypt renames the `length` attribute, so it is raw, ENG-156; the
     parameter keeps its name in the JavaScript: `values` would be renamed `py_values`)."""
     __pragma__("js", "{}", "kept.length = count;")
 
@@ -254,7 +255,7 @@ class _Slot:
 
 
 def generate_grounds_with(generator: Any) -> None:
-    """Generates the grounds in the background from now on, with `generator` (P13-R03); None to
+    """Generates the grounds in the background from now on, with `generator` (PERF-14); None to
     generate them here."""
     _state.background = generator
     _state.failed = False
@@ -271,7 +272,7 @@ def _is_pending(level: SceneryLevel, seed: int) -> bool:
     return any(p.level is level and p.seed == seed for p in _state.pending)
 
 
-def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901
+def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:  # noqa: C901 (the request's steps, kept whole)
     """Asks for the ground of `level` (seed `seed`, default the level's): true when it is ready.
     With a background generator it is generated there, if not already on its way (false until it
     comes back, its runout after it); without one, now."""
@@ -290,7 +291,7 @@ def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool: 
 
     def on_ground(made: GroundSnapshot | None, ask: Any, ask_roads: Any) -> None:
         _remove_job(job)
-        # After a failed background generation, the ground is generated here when it is needed.
+        # After a failed background generation, the ground is made here when needed (PERF-18).
         # (`made` comes from the worker: undefined when it failed, so the test is by truth.)
         if not made:
             _state.failed = True

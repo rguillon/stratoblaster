@@ -1,6 +1,5 @@
-"""The Cyber-Organic pieces of the World 2 bosses (ice world): pale, cold flesh with crystals of
-frost grown through it, bone,
-and metal grafts. Logical pixels, nose +Z, Y up.
+"""The Cyber-Organic pieces of the World 2 bosses (GFX-ART-12, BOSS-47; ice world): pale, cold flesh
+with crystals of frost grown through it, bone, and metal grafts. Logical pixels, nose +Z, Y up.
 """
 
 import math
@@ -14,10 +13,10 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
-from render.geometry.organic import SegmentedBody  # noqa: E402
-from render.geometry.outline import OutlinePoint  # noqa: E402
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.organic import SegmentedBody  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -49,7 +48,7 @@ GRAFT = record({"base": M.base, "panel": M.panel, "dark": M.dark})
 
 
 def shell(b: SolidBuilder, body: SegmentedBody, color: Rgb = ICE_FLESH.teal) -> None:
-    """A shell over a swollen body (P16-R01): teal plates with dark seams."""
+    """A shell over a swollen body (GFX-ART-12): teal plates with dark seams."""
     carapace(b, body, [color, ICE_FLESH.seam])
 
 
@@ -97,7 +96,7 @@ def sinew(
     bow: Vec3 | None = None,
 ) -> None:
     """A sinew from `from_` to `to`, bowed by `bow`, thinning from `r` to half of it."""
-    if bow == None:  # noqa: E711
+    if bow == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         bow = [0, r, 0]
     tendril(b, curve(from_, to, bow, 3), [r, r * 0.5], 4, color)
 
@@ -121,7 +120,7 @@ def armoured_organ(
     color: Rgb = ICE_FLESH.graphite,
     height: float = 0.5,
 ) -> None:
-    """A destroyable growth (P16-R05): a swollen organ of `radius` on `at`, a metal armour plate on
+    """A destroyable growth (BOSS-48): a swollen organ of `radius` on `at`, a metal armour plate on
     its top, crystals on its flank and a gland lit `glow`. Its outline stays clear: one bulb."""
     x = at[0]
     y = at[1]

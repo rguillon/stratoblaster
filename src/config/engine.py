@@ -5,7 +5,8 @@ Game-specific values go in `src/game/config/`.
 
 
 class E2eConfig:
-    """e2e builds only (ENG-52): pixels drawn per screen pixel, across, and whether to antialias.
+    """e2e builds only (ENG-52, ENG-58, DEV-API-10): pixels drawn per screen pixel, across, and
+    whether to antialias.
 
     The e2e tests check the game's state, not its pixels, and software WebGL (CI) pays per pixel:
     a quarter of the pixels, without multisampling, makes their frames several times cheaper.
@@ -17,7 +18,8 @@ class E2eConfig:
 
 
 class PerfOverlay:
-    """Debug perf overlay (P13-R01, ENG-111): refreshed every `refresh` s, toggled with `key`."""
+    """Debug perf overlay (DEV-PERF-03, ENG-111): refreshed every `refresh` s, toggled with
+    `key`."""
 
     def __init__(self, refresh: float, key: str) -> None:
         self.refresh = refresh
@@ -43,7 +45,7 @@ class EngineConfig:
         # Device pixel ratio cap (ENG-110).
         self.max_device_pixel_ratio = max_device_pixel_ratio
         self.e2e = e2e
-        # P13-R01 `long_frame_ms`: a frame whose work takes longer counts as a long frame.
+        # PERF-01 `long_frame_ms`: a frame whose work takes longer counts as a long frame.
         self.long_frame_ms = long_frame_ms
         self.perf_overlay = perf_overlay
 

@@ -37,20 +37,20 @@ def nodes(monkeypatch):
     return made
 
 
-def test_p03_r03_the_missile_has_a_tube_nose_and_two_crossed_fins():
+def test_gfx_shot_06_the_missile_has_a_tube_nose_and_two_crossed_fins():
     assert SIDES == 6
     assert 0 < NOSE_FRACTION < 1
     assert FIN_LENGTH_FRACTION < 1
     assert FIN_THICKNESS > 0
 
 
-def test_p03_r03_materials_are_a_body_and_a_glowing_tip(nodes):
+def test_gfx_shot_06_materials_are_a_body_and_a_glowing_tip(nodes):
     body, tip = materials(MagicMock())
     assert body is not tip
     assert tip.emissiveColor is not None
 
 
-def test_p03_r03_the_missile_pivot_points_up_the_playfield(nodes):
+def test_gfx_shot_06_the_missile_pivot_points_up_the_playfield(nodes):
     pivot = build_missile("missile-1", MagicMock())
     assert pivot is nodes["missile-1"]
     model = nodes["missile-1-model"]
@@ -58,7 +58,7 @@ def test_p03_r03_the_missile_pivot_points_up_the_playfield(nodes):
     assert model.rotation.x == pytest.approx(-math.pi / 2)
 
 
-def test_p03_r03_the_body_is_built_along_z_with_its_nose_at_the_front(nodes):
+def test_gfx_shot_06_the_body_is_built_along_z_with_its_nose_at_the_front(nodes):
     build_missile("missile-2", MagicMock())
     nose = nodes["missile-2-nose"]
     tube = nodes["missile-2-tube"]
@@ -68,7 +68,7 @@ def test_p03_r03_the_body_is_built_along_z_with_its_nose_at_the_front(nodes):
     assert nose.rotation.x == pytest.approx(math.pi / 2)
 
 
-def test_p03_r03_the_fins_are_two_boxes_crossing_at_the_tail(nodes):
+def test_gfx_shot_06_the_fins_are_two_boxes_crossing_at_the_tail(nodes):
     build_missile("missile-3", MagicMock())
     fins = [nodes["missile-3-fin-0"], nodes["missile-3-fin-1"]]
     assert fins[0].rotation.z == pytest.approx(0)

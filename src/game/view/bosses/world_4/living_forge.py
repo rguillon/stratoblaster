@@ -1,6 +1,6 @@
-"""P16-R05, P16-R06: the Cyber-Organic pieces of the World 4 bosses (the volcanic, ash and foundry
-world): scorched flesh swollen around metal grafts, molten veins and glands glowing ember. Logical
-pixels, nose +Z, Y up.
+"""BOSS-47, GFX-ART-12: the Cyber-Organic pieces of the World 4 bosses (the volcanic, ash and
+foundry world): scorched flesh swollen around metal grafts, molten veins and glands glowing ember.
+Logical pixels, nose +Z, Y up.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -14,13 +14,13 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
 __pragma__("noskip")
 
-# The flesh shades (P16-R01).
+# The flesh shades (GFX-ART-15).
 FL = ENEMY_LOOK.flesh
 # Scorched flesh: the World 4 bodies, by role (base body, sinews and muscles, folds).
 SKIN = record({"base": FL.slate, "panel": FL.sinew, "dark": FL.membrane, "bone": FL.bone})
@@ -43,7 +43,7 @@ def back_ribs(p: Any, zs: list[float], arch: Any, color: Rgb = SKIN.bone) -> Non
 
 
 def glands(p: Any, at: list[Vec3], radius: float, glow: Rgb) -> None:
-    """Glowing glands (pulsing, P16-R07) of `radius` at each point."""
+    """Glowing glands (pulsing, BOSS-51) of `radius` at each point."""
     for g in at:
         organ(p.vein, radius, 5, glow, Placement(g), 0.6)
 

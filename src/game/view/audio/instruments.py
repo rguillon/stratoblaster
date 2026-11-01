@@ -1,4 +1,4 @@
-"""The instruments of the generated music (P12-R06..R08, GD-70): darksynth (reviewer, 2026-10-26),
+"""The instruments of the generated music (AUD-MUSIC-03): darksynth (reviewer, 2026-10-26),
 all synthesised from oscillators and
 noise through filters and envelopes. An 80s drum machine (punchy kicks, big gated snares, synth
 toms), pumping and rolling saw basses, detuned saw pads, plucked arpeggios and leads sent to the
@@ -13,12 +13,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import Envelope, FilterSpec, Instrument, ToneLayer  # noqa: E402
-from game.view.audio.sound_recipes import flatten_layers  # noqa: E402
+from audio.audio_types import Envelope, FilterSpec, Instrument, ToneLayer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.sound_recipes import flatten_layers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The MIDI pitch drum notes are played at (their layers' pitches are ratios of it).
 DRUM_PITCH = 36

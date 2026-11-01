@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Mesa Fortress, the final boss of 1-3 Logical pixels, nose +Z, Y up (towards
-the camera). A colossal
+"""FB-MESA-FORTRESS-01 to FB-MESA-FORTRESS-04: the Mesa Fortress, the final boss of 1-3 Logical
+pixels, nose +Z, Y up (towards the camera). A colossal
 canyon tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with
 grafted armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore
 silos on its back, red veins along its shell.
@@ -34,7 +34,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -85,8 +85,8 @@ SHELL_PLATES = [
 
 
 def _draw_body(p: Any) -> None:
-    """The skirt, the stepped shell with its ribs, veins and grafted plates, the head at its
-    front."""
+    """The body (FB-MESA-FORTRESS-02): the skirt, the stepped shell with its ribs, veins and
+    grafted plates, the head at its front."""
     mantle(p, BASE, [-6, BASE_TOP], F.sinew, N)
     hide(
         p,
@@ -148,7 +148,8 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_arms(p: Any) -> None:
-    """The forelimbs: a scaly limb out to each lance's cradle, a bone claw at its front."""
+    """The forelimbs (FB-MESA-FORTRESS-02): a scaly limb out to each lance's cradle, a bone claw
+    at its front."""
     for s in SIDES:
         p.flesh.bevel_slab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, None, F.slate)
         tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.slate, 5)
@@ -184,9 +185,9 @@ def _fan_point(yaw: float, r: float) -> Vec3:
 
 
 def _draw_fan_cannon(p: Any, at: Any = None) -> None:
-    """The fan cannon on the brow (the core's gun): a grafted housing and five barrels fanned out
-    forward, turning around the hub of its barrels (its pivot)."""
-    p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]
+    """The fan cannon on the brow (the core's gun, FB-MESA-FORTRESS-03): a grafted housing and five
+    barrels fanned out forward, turning around the hub of its barrels (its pivot)."""
+    p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     for k in range(5):
         yaw = (k - 2) * 0.28
         p.hull.cylinder(
@@ -208,9 +209,9 @@ def _draw_fan_cannon(p: Any, at: Any = None) -> None:
 
 
 def build_mesa_fortress(scene: Any) -> Any:
-    """P07-R05, P16-R06: the Mesa Fortress, a colossal canyon tortoise 5 L across with red veins; a
-    laser lance in each forelimb, two spore silos on its back, and a fan cannon on its armoured brow
-    (the core)."""
+    """FB-MESA-FORTRESS-01, FB-MESA-FORTRESS-04: the Mesa Fortress, a colossal canyon tortoise
+    5 L across with red veins; a laser lance in each forelimb, two spore silos on its back, and a
+    fan cannon on its armoured brow (the core)."""
 
     def core(p: Any) -> None:
         _draw_body(p)

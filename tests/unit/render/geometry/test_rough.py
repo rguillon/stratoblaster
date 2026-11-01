@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/rough.py` (D-212)."""
+"""Unit tests of `src/render/geometry/rough.py` (D-212, GFX-PROP-09)."""
 
 import math
 

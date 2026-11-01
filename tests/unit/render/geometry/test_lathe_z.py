@@ -1,4 +1,4 @@
-"""Unit tests of `src/render/geometry/lathe_z.py`."""
+"""Unit tests of `src/render/geometry/lathe_z.py` (GFX-ART-02, GFX-ART-09)."""
 
 import math
 from types import SimpleNamespace

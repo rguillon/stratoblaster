@@ -1,4 +1,4 @@
-"""Road ribbons draped on the ground (phase 4 review, P04-R07): each road as one see-through
+"""Road ribbons draped on the ground (phase 4 review, GFX-ROAD-06): each road as one see-through
 surface, its soft shoulders fading into the ground, cut on the terrain chunks.
 """
 
@@ -15,9 +15,9 @@ from render.scenery.tile_road_geometry import TileRoadLook
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.scenery.road_traffic import StreetLine  # noqa: E402
-from core.scenery.road_types import Road  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_traffic import StreetLine  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
@@ -47,7 +47,7 @@ class RoadOpacity:
 class RoadLook:
     """How roads are drawn on the ground."""
 
-    def __init__(  # noqa: PLR0917
+    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
         main: Rgb,
         cross: Rgb,
@@ -112,7 +112,7 @@ def _ribbon_points(road: Road, lines: list[StreetLine]) -> list[RoadPoint]:
     meets there (its own if none), under it, so two streets meeting at a corner leave no notch and
     an avenue does not stick out past a narrower street (phase 4 review)."""
     points = road.points
-    if road.kind != "street" or len(points) < 2:  # noqa: PLR2004
+    if road.kind != "street" or len(points) < 2:  # noqa: PLR2004 (a road needs two points)
         return list(points)
 
     def past(end: RoadPoint, nxt: RoadPoint) -> RoadPoint:
@@ -153,7 +153,7 @@ def _quad(to: ColoredGeometry, source: ColoredGeometry, corners: list[int]) -> N
     to.indices.extend([base, base + 1, base + 2, base + 1, base + 3, base + 2])
 
 
-def build_road_geometry(  # noqa: C901
+def build_road_geometry(  # noqa: C901 (one pass over the road's pieces, kept whole)
     roads: list[Road],
     ground: HeightSource,
     z_min: float,
@@ -162,9 +162,9 @@ def build_road_geometry(  # noqa: C901
     middles: ColoredGeometry | None = None,
 ) -> ColoredGeometry:
     """Ribbons draped on the ground along the segments of `roads` that start in [z_min, z_max)
-    (P04-R07), so neighbouring terrain chunks draw each segment once. The ribbon follows the width
-    of each point (paths widen at their junction). Each ribbon has a slightly see-through, worn
-    surface and soft shoulders that fade to nothing on both sides, so the road blends into the
+    (GFX-ROAD-06), so neighbouring terrain chunks draw each segment once. The ribbon follows the
+    width of each point (paths widen at their junction). Each ribbon has a slightly see-through,
+    worn surface and soft shoulders that fade to nothing on both sides, so the road blends into the
     ground (phase 4 review). Streets and main roads get a yellow centre line. With `middles`, the
     even middles of the streets go there instead, to be drawn opaque (reviewer, 2026-10-28), their
     soft edges staying with the rest."""
@@ -177,7 +177,7 @@ def build_road_geometry(  # noqa: C901
         reach = max(reach, line.width)
     reach = reach / 2 + 1
     for road in roads:
-        # P13-R04: a road with no point near the chunk has no segment in it.
+        # PERF-24: a road with no point near the chunk has no segment in it.
         z_low, z_high = road_z_span(road)
         if z_high < z_min - reach or z_low >= z_max + reach:
             continue

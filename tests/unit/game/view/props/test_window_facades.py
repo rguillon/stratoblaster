@@ -157,6 +157,7 @@ def test_d215_a_wall_too_narrow_or_too_low_gets_no_quad():
 
 
 def test_d215_a_door_is_one_cell_of_its_band_standing_on_the_ground():
+    """GFX-BLDG-14."""
     random = create_rng(4)
     for door in [DOOR_STYLES.door, DOOR_STYLES.bay]:
         for _ in range(20):

@@ -1,5 +1,5 @@
-"""The silhouettes of the city buildings (Phase 15, reviewer 2026-10-28: "all the skyscrapers
-look the same") Each model takes the one its seed names, so
+"""The silhouettes of the city buildings (GFX-BLDG-10; Phase 15, reviewer 2026-10-28: "all the
+skyscrapers look the same") Each model takes the one its seed names, so
 the models of a building group (which have different seeds) all differ: stepped tiers, a slab
 with fins, a round tower, twin towers and a bridge, a needle set back off-centre, and blocks of
 two heights side by side."""
@@ -12,22 +12,22 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402
-from game.view.props.city_lots import crown, plinth, volume  # noqa: E402
-from game.view.props.tile_kit import NEON, any_of, js_remainder, r, windows  # noqa: E402
-from game.view.props.window_facades import round_windows  # noqa: E402
+from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.city_lots import crown, plinth, volume  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_kit import NEON, any_of, js_remainder, r, windows  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.window_facades import round_windows  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class Tower:
     """What a silhouette is built with: the plot, the lot colours and the top of the building.
     `base` is the height of the plinth, where the building starts."""
 
-    def __init__(self, k: Any, kit: Any, base: float, top: float) -> None:  # noqa: ANN401
+    def __init__(self, k: Any, kit: Any, base: float, top: float) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         self.k = k
         self.kit = kit
         self.base = base
@@ -178,7 +178,7 @@ def asymmetry(t: Tower) -> None:
     k.s.box([0.8, t.top * 1.08 - t.base, 0.8], C.metalDark, Placement([cx, t.base, cz], 0, 0, 0))
 
 
-def city_building(k: Any, kit: Any, height: list[float], asymmetric: bool = False) -> None:  # noqa: ANN401, FBT001, FBT002
+def city_building(k: Any, kit: Any, height: list[float], asymmetric: bool = False) -> None:  # noqa: ANN401, FBT001, FBT002 (a JavaScript handle or config record, ENG-14)
     """A city building up to a height in `height`, of the silhouette its seed names; with
     `asymmetric`, an annex and a fin make it differ from each side."""
     base = plinth(kit, [0, 0, k.w, k.d])

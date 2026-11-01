@@ -1,15 +1,16 @@
-"""The wave scripts of World 3 (P09-R07, R08)
+"""The wave scripts of World 3 (WLD-3-16, WLD-3-17)
 
 Composed as World 2's (`compose_beats`, D-067): a beat every `gap` seconds shrinking over the level,
 each the next phrase of the level's cycle, its groups growing over the level; the World 1 filler
 (D-051) fills the lulls. A phrase is `[kind, groups, seconds between groups, side, position (0..1),
 spread]`. A veteran kind comes in at each level, from the Wasp in 3-1 to the Phantom in 3-5
-(P05-R24, D-090).
+(WLD-3-15, D-090).
 """
 
 from game.config.record import record
 
-# 3-1: Gnats, Hornets, Scouts, Strafers, Weavers and Splitters skimming the canal works.
+# 3-1 (LVL-3-1-04): Gnats, Hornets, Scouts, Strafers, Weavers and Splitters skimming the canal
+# works.
 PLAN_3_1 = record(
     {
         "from": 4,
@@ -27,13 +28,13 @@ PLAN_3_1 = record(
             ["scout", 4, 1, "top", 0.6, -0.2],
             ["strafer", 3, 1.4, "right", 0.78],
             ["weaver", 4, 1.1, "top", 0.6, -0.2],
-            # P05-R24: a new kind.
+            # The first veteran kind (ENM-WASP-12).
             ["wasp", 2, 1.6, "top", 0.4, 0.3],
         ],
     }
 )
 
-# 3-2: every kind, Hornet swarms diving over the docks and Lancers along the canal.
+# 3-2 (LVL-3-2-04): every kind, Hornet swarms diving over the docks and Lancers along the canal.
 PLAN_3_2 = record(
     {
         "from": 4,
@@ -55,14 +56,14 @@ PLAN_3_2 = record(
             ["bulwark", 1, 0, "top", 0.5],
             ["strafer", 3, 1.4, "left", 0.8],
             ["gnat", 3, 1.6, "top", 0.3, 0.4],
-            # P05-R24: a new kind.
+            # The veteran kinds, the Mortar new (ENM-MORTAR-11).
             ["wasp", 2, 1.6, "top", 0.6, -0.3],
             ["mortar", 1, 0, "top", 0.35],
         ],
     }
 )
 
-# 3-3: every kind, Spinner and Rocketeer groups over the workers' quarter.
+# 3-3 (LVL-3-3-04): every kind, Spinner and Rocketeer groups over the workers' quarter.
 PLAN_3_3 = record(
     {
         "from": 4,
@@ -83,7 +84,7 @@ PLAN_3_3 = record(
             ["strafer", 3, 1.4, "right", 0.8],
             ["hornet", 5, 0.6, "top", 0.1, 0.2],
             ["gnat", 3, 1.6, "top", 0.3, 0.4],
-            # P05-R24: a new kind.
+            # The veteran kinds, the Minelayer new (ENM-MINELAYER-11).
             ["wasp", 2, 1.6, "top", 0.3, 0.3],
             ["mortar", 1, 0, "top", 0.65],
             ["minelayer", 1, 0, "right", 0.72],
@@ -91,7 +92,7 @@ PLAN_3_3 = record(
     }
 )
 
-# 3-4: every kind, Carriers over the suburbs.
+# 3-4 (LVL-3-4-04): every kind, Carriers over the suburbs.
 PLAN_3_4 = record(
     {
         "from": 4,
@@ -112,7 +113,7 @@ PLAN_3_4 = record(
             ["strafer", 3, 1.4, "left", 0.8],
             ["hornet", 6, 0.6, "top", 0.1, 0.2],
             ["gnat", 3, 1.5, "top", 0.2, 0.3],
-            # P05-R24: a new kind.
+            # The veteran kinds, the Mantis new (ENM-MANTIS-14).
             ["wasp", 2, 1.6, "top", 0.7, -0.3],
             ["mortar", 1, 0, "top", 0.4],
             ["minelayer", 1, 0, "left", 0.74],
@@ -121,7 +122,7 @@ PLAN_3_4 = record(
     }
 )
 
-# 3-5: every kind, the heaviest mixes: Bulwarks escorting Carriers.
+# 3-5 (LVL-3-5-04): every kind, the heaviest mixes: Bulwarks escorting Carriers.
 PLAN_3_5 = record(
     {
         "from": 4,
@@ -143,7 +144,7 @@ PLAN_3_5 = record(
             ["strafer", 3, 1.4, "right", 0.8],
             ["hornet", 6, 0.55, "top", 0.1, 0.2],
             ["gnat", 3, 1.4, "top", 0.2, 0.3],
-            # P05-R24: a new kind.
+            # The five veteran kinds, the Phantom new (ENM-PHANTOM-14).
             ["wasp", 2, 1.6, "top", 0.3, 0.3],
             ["mortar", 1, 0, "top", 0.6],
             ["minelayer", 1, 0, "right", 0.74],
@@ -153,7 +154,7 @@ PLAN_3_5 = record(
     }
 )
 
-# The filler of each level (D-051), from the kinds the level may use (P09-R07).
+# The filler of each level (D-051), from the light kinds the level may use (WLD-3-16).
 WORLD_3_FILLERS = record(
     {
         "3-1": {"kinds": ["hornet", "scout", "gnat", "weaver", "splitter"], "maxGap": [3, 2]},

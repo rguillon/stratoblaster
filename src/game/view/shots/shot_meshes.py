@@ -6,11 +6,11 @@ Clones of a template share its geometry; the renderers show or hide them through
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     apply_vertex_data,
     babylon_constant,
     color3,
@@ -31,7 +31,7 @@ def _vertex_colour(colour: float, index: int, alphas: list[float]) -> float:
         return colour
     alpha = alphas[index // RGBA]
     # `??`: an alpha that is missing (undefined) keeps the colour's own value.
-    return colour if alpha == None else alpha  # noqa: E711
+    return colour if alpha == None else alpha  # noqa: E711 (absent value is undefined in the browser, ENG-161)
 
 
 def additive_template(name: str, geo: Any, scene: Any, on_top: bool = False) -> Any:

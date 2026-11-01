@@ -1,15 +1,15 @@
-"""Debug perf overlay (P13-R01, ENG-111)"""
+"""Debug perf overlay (DEV-PERF-03, ENG-111)"""
 
 from org.transcrypt.stubs.browser import __pragma__, window
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 class PerfNumbers:
-    """What the perf monitor has measured (P13-R01). Times in milliseconds."""
+    """What the perf monitor has measured (DEV-PERF-01). Times in milliseconds."""
 
     def __init__(
         self,
@@ -18,6 +18,7 @@ class PerfNumbers:
         frames: int,
         last_load: float | None,
         longest_load_step: float | None,
+        draw_calls: float,
     ) -> None:
         # Frames longer than the long-frame limit since the counts were last reset.
         self.long_frames = long_frames
@@ -27,8 +28,10 @@ class PerfNumbers:
         self.frames = frames
         # How long the last level took from its confirmation to its first drawn frame, if any.
         self.last_load = last_load
-        # Longest frame of the last level loading (P13-R03: the longest frozen step), if any.
+        # Longest frame of the last level loading (PERF-10: the longest frozen step), if any.
         self.longest_load_step = longest_load_step
+        # Draw calls of the last frame drawn (ENG-106, budget under 200 in play).
+        self.draw_calls = draw_calls
 
 
 def _ms(value: float | None) -> str:
@@ -39,9 +42,9 @@ def _ms(value: float | None) -> str:
 
 
 class PerfOverlay:
-    """The debug perf overlay (P13-R01, ENG-111; dev and e2e builds only): long frames, the longest
-    frame and the last level loading time. Hidden until toggled (F3); the text changes at most
-    every `refresh_seconds`, so the numbers stay readable.
+    """The debug perf overlay (DEV-PERF-03, ENG-111; dev and e2e builds only): long frames, the
+    longest frame and the last level loading time. Hidden until toggled (F3); the text changes at
+    most every `refresh_seconds`, so the numbers stay readable.
     """
 
     def __init__(self, doc: Any, parent: Any, refresh_seconds: float) -> None:
@@ -70,6 +73,7 @@ class PerfOverlay:
             [
                 "Long frames: " + str(numbers.long_frames),
                 "Longest frame: " + _ms(numbers.longest_frame),
+                "Draw calls: " + str(window.Math.round(numbers.draw_calls)),
                 "Level load: " + _ms(numbers.last_load),
             ]
         )

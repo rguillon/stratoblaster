@@ -1,6 +1,6 @@
-"""The settings screen (P12-R04): up / down pick a slider,
+"""The settings screen (UI-SET-03): up / down pick a slider,
 left / right change it by one step, a tap or a drag sets it. Pure: the app saves and applies the
-volumes.
+volumes. Only the music and sound effects volumes exist (ENG-112 asks for more).
 """
 
 import math
@@ -10,14 +10,14 @@ INFINITY = float("Infinity")
 
 
 class Volumes:
-    """The two volume settings (P12-R04), each a step from 0 (silent) to the slider's maximum."""
+    """The two volume settings (UI-SET-02), each a step from 0 (silent) to the slider's maximum."""
 
     def __init__(self, music: int, sfx: int) -> None:
         self.music = music
         self.sfx = sfx
 
 
-# The sliders of the settings screen, in display order.
+# The sliders of the settings screen, in display order (two, nothing else: UI-SET-02).
 SETTINGS_SLIDERS = ["music", "sfx"]
 
 
@@ -51,7 +51,7 @@ def _slider_at(index: int) -> str | None:
 
 
 class SettingsMenu:
-    """The settings screen (P12-R04): up / down pick a slider, left / right change it by one step,
+    """The settings screen (UI-SET-03): up / down pick a slider, left / right change it by one step,
     a tap or a drag sets it.
     """
 

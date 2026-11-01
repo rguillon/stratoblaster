@@ -1,4 +1,4 @@
-"""The boss kinds of the game (P07-R05)"""
+"""The boss kinds of the game (BOSS-01)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -45,12 +45,12 @@ from game.sim.bosses.world_boss import WorldBoss
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.boss import Boss  # noqa: E402
-from core.entities.enemy import EnemySpawnArea  # noqa: E402
-from core.systems.boss_fights import BossKindDefinition  # noqa: E402
+from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.boss_fights import BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A boss design is a config record (`game/config/record.py`), typed as Any there.
 __pragma__("skip")
@@ -61,7 +61,7 @@ __pragma__("noskip")
 
 
 class BossKind:
-    """A kind of boss a game offers (P07-R05): a name, and how one boss of it comes in."""
+    """A kind of boss a game offers (BOSS-07): a name, and how one boss of it comes in."""
 
     def __init__(self, id: str, name: str, spawn: Callable[[EnemySpawnArea], Boss]) -> None:
         self.id = id
@@ -69,8 +69,8 @@ class BossKind:
         self.spawn = spawn
 
 
-# The boss designs, mini and final boss of 1-1, then of 1-2... (P07-R05), then the ten of World 2
-# (P08-R10), the ten of World 3 (P09-R09) and the ten of World 4 (P10-R11) in the same order.
+# The boss designs, mini and final boss of 1-1, then of 1-2... (BOSS-01), then the ten of World 2
+# (WLD-2-24), the ten of World 3 (WLD-3-19) and the ten of World 4 (WLD-4-21) in the same order.
 BOSS_DESIGNS: list[BossDesign] = [
     REEF_WARDEN,
     STORM_PETREL,
@@ -125,7 +125,7 @@ def _spawner(own: BossDesign) -> Callable[[EnemySpawnArea], Boss]:
 
 
 def _boss_kind(design: BossDesign) -> BossKind:
-    """The boss kind of a design, its lasers in its own colour."""
+    """The boss kind of a design, its lasers in its own colour (BOSS-32)."""
     own = with_own_lasers(design)
     return BossKind(design.id, design.stats["name"], _spawner(own))
 

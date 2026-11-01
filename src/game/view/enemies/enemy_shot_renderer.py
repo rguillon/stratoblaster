@@ -1,7 +1,7 @@
-"""GD-43: the enemies' shots in playfield space (bullets, missiles, lasers)
+"""The enemies' shots in playfield space: bullets (GFX-SHOT-10), missiles (GFX-SHOT-15), lasers
 
-Bullets are thin instances of a template per layer (as the blasts, D-034): one draw call however
-many bullets are flying.
+Bullets are thin instances of a template per layer (as the blasts, D-034, ENG-104): one draw call
+however many bullets are flying.
 """
 
 import math
@@ -11,39 +11,39 @@ from org.transcrypt.stubs.browser import __pragma__
 __pragma__("skip")
 __pragma__("noskip")
 
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.readability import READABILITY  # noqa: E402
-from game.view.enemies.enemy_lasers import EnemyLasers  # noqa: E402
-from game.view.enemies.enemy_materials import enemy_materials, mesh_of  # noqa: E402
-from game.view.shot_geometry import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_lasers import EnemyLasers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_materials import enemy_materials, mesh_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     build_glow_disc,
     build_swirl,
 )
-from game.view.shots.shot_meshes import (  # noqa: E402
+from game.view.shots.shot_meshes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     additive_template,
     blended_template,
 )
-from render.babylon import (  # noqa: E402
+from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     babylon_constant,
     new_transform_node,
     node_name,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402
-from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
-from render.outline import set_outline  # noqa: E402
+from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.outline import set_outline  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 LOOK = ENEMY_LOOK
 # Draw order of the bullets: after every other see-through mesh of the playfield, the missiles'
-# flames and the lasers (`ON_TOP_ALPHA_INDEX`) included (P14-R05).
+# flames and the lasers (`ON_TOP_ALPHA_INDEX`) included (GFX-READ-13).
 ON_TOP = ON_TOP_ALPHA_INDEX + 1
 
 
@@ -89,21 +89,21 @@ def disc_alphas(segments: int, fade: list[float]) -> list[float]:
 
 class BulletLayer:
     """One layer of the bullets of one colour, drawn as thin instances of a template: one draw call
-    however many bullets are flying."""
+    however many bullets are flying (GFX-SHOT-13)."""
 
     def __init__(self, mesh: Any, z: float, order: int) -> None:
         self.mesh = mesh
         self.z = z
         # A first buffer of 16 instances, one of them (a zero matrix, drawn nowhere) and the mesh
         # hidden: a thin-instanced mesh from the start, so its shader with thin instances is
-        # compiled before play (P13-R04), not on the frame of the first shot. (Babylon counts a
+        # compiled before play (PERF-20), not on the frame of the first shot. (Babylon counts a
         # mesh as thin-instanced only while it has instances.)
         self.matrices = _float32_array(16 * 16)
         mesh.thinInstanceSetBuffer("matrix", self.matrices, 16, False)
         mesh.thinInstanceCount = 1
         mesh.setEnabled(False)
-        # P14-R05: over everything else on the playfield (blasts, player shots, models), in layer
-        # order; never culled: instances spread anywhere.
+        # GFX-READ-10: over everything else on the playfield (blasts, player shots, models), in
+        # layer order; never culled: instances spread anywhere.
         mesh.alphaIndex = ON_TOP + order
         mesh.alwaysSelectAsActiveMesh = True
         if mesh.material:
@@ -140,8 +140,8 @@ class BulletLayer:
 
 
 def contrast_spark(name: str, scene: Any) -> Any:
-    """The white spark of a bullet in the contrast style (P10-R07). It has no dark rim any more
-    (reviewer, 2026-10-30, D-194)."""
+    """The white spark of a bullet in the contrast style (GFX-READ-11). It has no dark rim any more
+    (reviewer, 2026-10-30, D-194, GFX-SHOT-12)."""
     segments = LOOK.bullets.segments
     spark = LOOK.contrast.spark
     return additive_template(name + "-spark", build_glow_disc(segments, spark.colors), scene)
@@ -162,8 +162,8 @@ def core_scale(age: float) -> float:
 
 
 def drawn_radius(b: Any) -> float:
-    """A bullet's drawn radius: never under half `minEnemyBulletSize` (P14-R05); its hitbox is
-    kept."""
+    """A bullet's drawn radius, from its hit radius (so shells and mines are bigger, GFX-SHOT-14):
+    never under half `minEnemyBulletSize` (GFX-READ-10); its hitbox is kept."""
     radius: float = max(b.radius * LOOK.bullets.scale, READABILITY.minEnemyBulletSize / 2)
     return radius
 
@@ -204,7 +204,7 @@ def swirl_placement(swirl: Any) -> Any:
 def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[Any]:
     """One swirl of plasma, spinning with its bullet."""
     color = colors.swirls[i]
-    if color == None:  # noqa: E711
+    if color == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         color = colors.halo
     mesh = additive_template(
         name + "-swirl-" + str(i),
@@ -215,9 +215,9 @@ def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[
 
 
 def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
-    """A ball of plasma (GD-43), back to front: a faint flickering aura, a solid body, two curled
-    swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core. In the
-    contrast style (P10-R07), a white spark over the core."""
+    """A ball of plasma (GFX-SHOT-10), back to front: a faint flickering aura, a solid body, two
+    curled swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core. In the
+    contrast style (GFX-READ-11), a white spark over the core."""
     segments = LOOK.bullets.segments
     fade = LOOK.bullets.fade
     colors = LOOK.bullets.styles[style]
@@ -249,7 +249,7 @@ def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
 
 
 def bullet_pools(scene: Any, contrast: bool) -> dict[str, list[list[Any]]]:
-    """One set of plasma layers per bullet colour (GD-43)."""
+    """One set of plasma layers per bullet colour (GFX-SHOT-13)."""
     pools: dict[str, list[list[Any]]] = {}
     for style in STYLES:
         pools[style] = bullet_layers(style, scene, contrast)
@@ -259,7 +259,7 @@ def bullet_pools(scene: Any, contrast: bool) -> dict[str, list[list[Any]]]:
 def warm_bullets(pools: dict[str, list[list[Any]]], on: bool) -> None:
     """Shows one bullet in each layer of each colour (`on`), or hides them all: the loading draws
     them, so the shaders of the layers (some only drawn with their instances) compile before play
-    (P13-R04), not on the frame of the first shot of each colour."""
+    (PERF-20), not on the frame of the first shot of each colour."""
     spot = [[0, 0, 0, 0]] if on else []
     for style in STYLES:
         for entry in pools[style]:
@@ -282,8 +282,9 @@ def sync_bullets(pools: dict[str, list[list[Any]]], bullets: list[Any]) -> None:
 
 
 def build_missile(scene: Any, flame: Any, i: int) -> Any:
-    """A small dark missile pointing +Y with an orange tip and a flame behind it, and (P14-R05) a
-    rim glow in the enemy shots' colour, so it shows over blasts and bright ground."""
+    """A small dark missile pointing +Y with an orange tip and a flame behind it, and (GFX-SHOT-15,
+    GFX-READ-12) a rim glow in the enemy shots' colour, so it shows over blasts and bright
+    ground."""
     look = LOOK.missile
     root = new_transform_node("enemy-missile-" + str(i), scene)
     body = SolidBuilder().cylinder(
@@ -338,12 +339,12 @@ class ShotRendererHandle:
 
 
 def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
-    """The enemies' shots of one scene: bullets, missiles, and lasers (contrast look, P10-R07,
-    used in every level since P14-R05)."""
+    """The enemies' shots of one scene: bullets, missiles, and lasers (contrast look, GFX-READ-11,
+    used in every level)."""
     contrast = True
     bullets = bullet_pools(scene, contrast)
     flame = additive_template("enemy-missile-flame", build_glow_disc(8, LOOK.missile.flame), scene)
-    # P14-R05: over the player's shots and the blasts, under the bullets (its clones too).
+    # GFX-SHOT-15: over the player's shots and the blasts, under the bullets (its clones too).
     flame.alphaIndex = ON_TOP_ALPHA_INDEX
     missiles = NodePool(lambda i: build_missile(scene, flame, i))
     lasers = EnemyLasers(scene, contrast)

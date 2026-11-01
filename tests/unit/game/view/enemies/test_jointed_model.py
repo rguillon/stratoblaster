@@ -40,7 +40,7 @@ def test_sub_is_component_wise_difference():
     assert sub([3, 2, 1], [1, 1, 1]) == [2, 1, 0]
 
 
-def test_p05_r13_a_joint_hangs_on_its_parent_at_the_offset_of_its_pivots(monkeypatch):
+def test_enm_27_a_joint_hangs_on_its_parent_at_the_offset_of_its_pivots(monkeypatch):
     monkeypatch.setattr(jm, "field", lambda obj, key, default: obj.get(key, default))
     root = _Root("root")
     design = {"joints": {"hip": _spec(None, 0, 0), "knee": _spec("hip", 0, -3)}}

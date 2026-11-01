@@ -1,4 +1,4 @@
-"""Sculpt operations of the frozen lands (phase 8, P08-R03, P08-R07): frozen lakes and the
+"""Sculpt operations of the frozen lands (phase 8, GFX-TERRAIN-05): frozen lakes and the
 crevasses of a glacier. Pure and deterministic for a given seed."""
 
 import math
@@ -6,12 +6,12 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from core.math.noise import Noise2D  # noqa: E402
-from core.scenery.scenery_level import Crevasses, Lakes  # noqa: E402
+from core.math.noise import Noise2D  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import Crevasses, Lakes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d, smoothstep  # noqa: E402
+from core.math.noise import hash_2d, smoothstep  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Hash streams of a lake's square: whether it has one, where, how big.
 LAKE_HAS = 0

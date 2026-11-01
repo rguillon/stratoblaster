@@ -1,6 +1,7 @@
-"""Lightning (phase 9, P09-R05): when the flashes of a storm come, drawn from the level's seed,
-and how a flash lights the scene. Pure: the renderer asks for the flash at its own clock, so the
-same level always flashes at the same times, and nothing in the simulation reads it.
+"""Lightning (phase 9, GFX-WEATHER-10, GFX-WEATHER-11): when the flashes of a storm come, drawn
+from the level's seed, and how a flash lights the scene. Pure: the renderer asks for the flash at
+its own clock, so the same level always flashes at the same times, and nothing in the simulation
+reads it.
 """
 
 import math
@@ -8,22 +9,23 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from config.weather import LightningRules  # noqa: E402
+from config.weather import LightningRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Rgb = tuple[float, float, float]
 __pragma__("noskip")
 
-from config.weather import LIGHTNING  # noqa: E402
-from core.math.rng import create_rng, random_in  # noqa: E402
-from core.scenery.atmosphere import Ambient, Atmosphere, Sky  # noqa: E402
+from config.weather import LIGHTNING  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.atmosphere import Ambient, Atmosphere, Sky  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
 
 class Bolt:
-    """The bolt of a strike, drawn in the clouds: its place (0..1 across and along) and seed."""
+    """The bolt of a strike, drawn in the clouds (GFX-WEATHER-12): its place (0..1 across and
+    along) and seed."""
 
     def __init__(self, x: float, z: float, seed: float) -> None:
         self.x = x
@@ -48,9 +50,9 @@ def _max_of(values: Sequence[float]) -> float:
 
 
 class LightningSchedule:
-    """The strikes of a storm along a level's clock (P09-R05): every `gap` seconds, drawn from
-    `seed`, so the same level always flashes at the same times. Strikes are drawn as far as they
-    are asked for."""
+    """The strikes of a storm along a level's clock (GFX-WEATHER-10): every `gap` seconds, drawn
+    from `seed`, so the same level always flashes at the same times. Strikes are drawn as far as
+    they are asked for."""
 
     def __init__(self, seed: int, rules: LightningRules = LIGHTNING) -> None:
         self._random = create_rng(seed * 7 + 17)
@@ -132,9 +134,9 @@ def _brighter(c: Rgb, k: float, cap: float) -> Rgb:
 
 def flashed(atmosphere: Atmosphere, flash: float, rules: LightningRules = LIGHTNING) -> Atmosphere:
     """`atmosphere` lit by a flash of `flash` (0..1) of a storm's lightning of strength
-    `atmosphere.lightning` (P09-R05): the ambient light, the sky and the haze up to `brightness`
-    times as bright, never more, the haze never past `max_haze`, so the playfield never turns
-    white."""
+    `atmosphere.lightning` (GFX-WEATHER-11): the ambient light, the sky and the haze up to
+    `brightness` times as bright, never more, the haze never past `max_haze`, so the playfield never
+    turns white."""
     f = min(1, max(0, flash)) * min(1, max(0, atmosphere.lightning))
     if f <= 0:
         return atmosphere

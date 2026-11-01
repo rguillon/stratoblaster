@@ -10,7 +10,7 @@ from render.babylon import js_object, js_set
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -31,7 +31,7 @@ def game_play_sky(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     plumes: int,
     shot_style: str,
 ) -> Any:
-    """A `GamePlaySky` object (P08-R04, R05, P10-R05): how the level looks where the view is."""
+    """A `GamePlaySky` object (DEV-API-05): how the level looks where the view is."""
     sky = js_object()
     js_set(sky, "weather", weather)
     js_set(sky, "secondWeather", second_weather)
@@ -51,7 +51,7 @@ def game_play_sky(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 
 def _boss_state(run: Any) -> Any:
-    """The boss being fought, or null (P07)."""
+    """The boss being fought, or null (DEV-API-04)."""
     fights = run.fights
     boss = fights.boss
     rank = fights.rank
@@ -73,7 +73,8 @@ def _boss_state(run: Any) -> Any:
 
 
 def level_state(run: Any, time_scale: float, max_health: float) -> Any:
-    """The state of `run` for the test API; `max_health` stands for the health without a hull."""
+    """The state of `run` for the test API (DEV-API-03); `max_health` stands for the health
+    without a hull."""
     track = run.track
     enemies = run.enemies
     shots = run.shots
@@ -96,7 +97,7 @@ def level_state(run: Any, time_scale: float, max_health: float) -> Any:
     js_set(state, "firing", shots.firing)
     js_set(state, "shots", shots.active_count)
     js_set(state, "weaponLevel", shots.level)
-    # Bonuses falling (P11-R07): their number, the dropped ones and their kinds.
+    # Bonuses falling (DEV-API-03): their number, the dropped ones and their kinds.
     js_set(state, "bonuses", len(bonuses.bonuses) if bonuses is not None else 0)
     js_set(state, "bonusesDropped", bonuses.dropped if bonuses is not None else 0)
     js_set(state, "bonusKinds", [b.kind for b in bonuses.bonuses] if bonuses is not None else [])

@@ -1,4 +1,4 @@
-"""Movement helpers for enemies (GD-45)
+"""Movement helpers for enemies (ENM-24)
 
 Playfield logical pixels, Y up; headings in radians from +Y, positive to the right.
 """
@@ -9,7 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 PathPoint = Sequence[float]
 
@@ -39,13 +39,16 @@ def _catmull_rom(p0: float, p1: float, p2: float, p3: float, t: float) -> float:
 
 
 def _at_or(values: list[float], index: int, default: float) -> float:
-    """`values[index] ?? default`: Transcrypt returns undefined past the end, not an error."""
+    """`values[index] ?? default`: Transcrypt returns undefined past the end, not an error
+    (ENG-161).
+    """
     return values[index] if 0 <= index < len(values) else default
 
 
 class Path:
-    """A smooth predefined path through control points (a Catmull-Rom curve), followed by distance
-    travelled, so an enemy moving along it at a constant speed keeps that speed on the curves.
+    """A smooth predefined path (ENM-25) through control points (a Catmull-Rom curve), followed by
+    distance travelled, so an enemy moving along it at a constant speed keeps that speed on the
+    curves.
     """
 
     def __init__(self, controls: Sequence[PathPoint], samples_per_span: int = 16) -> None:
@@ -110,7 +113,7 @@ def _at_or_point(points: list[list[float]], index: int) -> list[float]:
 
 def fan_headings(center: float, count: int, spacing: float) -> list[float]:
     """`count` headings spread `spacing` radians apart, centred on `center` (e.g. a fan of 3
-    bullets at -15°, 0° and +15° from straight down).
+    bullets at -15°, 0° and +15° from straight down, ENM-20).
     """
     return [center + (i - (count - 1) / 2) * spacing for i in range(count)]
 

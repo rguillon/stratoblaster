@@ -108,7 +108,8 @@ def _column(start: int, at: float, from_: float, to: float, size: int = 1) -> _T
     return _TileLine(False, start, size, at, from_, to)
 
 
-def test_p15_r07_buildings_stand_on_whole_tiles_off_the_roads_and_apart() -> None:
+def test_gfx_road_08_buildings_stand_on_whole_tiles_off_the_roads_and_apart() -> None:
+    """Also GFX-BLDG-03."""
     site, roads, placed = _setup()
     road = _pack(site, roads)
     assert placed
@@ -121,7 +122,7 @@ def test_p15_r07_buildings_stand_on_whole_tiles_off_the_roads_and_apart() -> Non
         seen |= tiles
 
 
-def test_p15_r03_tile_keys_are_unique_and_found_as_numbers_or_text() -> None:
+def test_gfx_road_08_tile_keys_are_unique_and_found_as_numbers_or_text() -> None:
     keys = {tile_key(x, z) for x in range(-20, 20) for z in range(-20, 20)}
     assert len(keys) == 40 * 40
     assert has_tile_key({tile_key(3, 4): True}, tile_key(3, 4))
@@ -151,7 +152,7 @@ def test_meeting_and_the_open_ways_of_a_junction() -> None:
     assert _ways(row, through) == [True, False, True, True]
 
 
-def test_p15_r03_a_junction_is_the_wider_road_size_on_its_lattice() -> None:
+def test_gfx_road_12_a_junction_is_the_wider_road_size_on_its_lattice() -> None:
     row = _row(5, 120.0, -300.0, 300.0, size=2)
     column = _column(3, 72.0, -300.0, 300.0)
     piece = _junction(row, column)
@@ -166,7 +167,7 @@ def test_no_junction_where_the_streets_do_not_meet() -> None:
     assert _junction(_row(5, 120.0, -300.0, 10.0), _column(3, 72.0, 100.0, 300.0)) is None
 
 
-def test_p15_r03_two_streets_meeting_at_one_junction_share_its_piece() -> None:
+def test_gfx_road_14_two_streets_meeting_at_one_junction_share_its_piece() -> None:
     column = _column(3, 72.0, -300.0, 300.0)
     left = _row(5, 120.0, -300.0, 72.0)
     right = _row(5, 120.0, 72.0, 300.0)
@@ -175,7 +176,7 @@ def test_p15_r03_two_streets_meeting_at_one_junction_share_its_piece() -> None:
     assert pieces[0].kind == "cross"
 
 
-def test_p15_r03_a_street_turning_at_a_junction_is_a_turn_and_one_ending_is_a_tee() -> None:
+def test_gfx_road_11_a_street_turning_at_a_junction_is_a_turn_and_one_ending_is_a_tee() -> None:
     column = _column(3, 72.0, 120.0, 300.0)
     row = _row(5, 120.0, -300.0, 72.0)
     turn = _junction(row, column)
@@ -184,7 +185,7 @@ def test_p15_r03_a_street_turning_at_a_junction_is_a_turn_and_one_ending_is_a_te
     assert tee is not None and tee.kind == "tee"
 
 
-def test_p15_r03_road_pieces_cover_each_tile_once() -> None:
+def test_gfx_road_08_road_pieces_cover_each_tile_once() -> None:
     roads = [
         _street(0, (-300.0, 120.0), (300.0, 120.0)),
         _street(1, (72.0, -300.0), (72.0, 300.0)),
@@ -206,7 +207,7 @@ def test_straight_pieces_skip_tiles_already_taken() -> None:
     assert not any(p.x == -2 and p.z == 5 for p in pieces)
 
 
-def test_p15_r03_the_pieces_of_a_street_are_cached_per_list_of_roads() -> None:
+def test_perf_11_the_pieces_of_a_street_are_cached_per_list_of_roads() -> None:
     roads = [_street(0, (-300.0, 120.0), (300.0, 120.0))]
     assert cached_road_pieces(roads, TILE_ROADS) is cached_road_pieces(roads, TILE_ROADS)
     cache = PieceCache()

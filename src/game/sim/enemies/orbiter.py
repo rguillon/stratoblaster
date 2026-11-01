@@ -1,4 +1,4 @@
-"""The Orbiter (P05-R20)"""
+"""The Orbiter (`specs/enemies/orbiter.md`)"""
 
 import math
 
@@ -13,7 +13,7 @@ from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 from game.sim.joints import jointed_design
 
 __pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402
+from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -21,10 +21,12 @@ CFG = ELITE_CONFIG.orbiter
 
 
 class Orbiter(JointedEnemy):
-    """P05-R20: a spherical core with three armoured drones orbiting it (moving parts, P05-R13),
-    close enough to catch the shots aimed at the core. It comes down to the upper half, stays 8 s,
-    then leaves upward. Every 3 s the core fires a ring of 12 bullets from its equator; each drone
-    fires a bullet aimed at the player every 2 s, in turn.
+    """ENM-ORBITER-07: a spherical core with three armoured drones orbiting it (ENM-ORBITER-08;
+    moving parts, ENM-27), close enough to catch the shots aimed at the core. It comes down to the
+    upper half, stays 8 s, then leaves upward. Every 3 s the core fires a ring of 12 bullets from
+    its equator (ENM-ORBITER-09), its charge lights following it (ENM-ORBITER-04); each drone fires
+    a bullet aimed at the player every 2 s, in turn (ENM-ORBITER-10). Its drones come from its
+    config, as the engine's specs (ENM-ORBITER-13).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

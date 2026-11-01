@@ -3,16 +3,16 @@
 attributes and tests `is None` for an omitted optional field.
 
 Under Transcrypt an omitted field is `undefined`, not `None`, so every optional field goes through
-`opt` or `maybe`. Config keys that Transcrypt renames (`name`, `length`, `from`) are read by
-subscript (`raw["name"]`) in the mapping modules, not by attribute.
+`opt` or `maybe` (ENG-161). Config keys that Transcrypt renames (`name`, `length`, `from`) are read
+by subscript (`raw["name"]`) in the mapping modules, not by attribute (ENG-156).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
@@ -28,7 +28,7 @@ def opt(value: Any) -> Any:
 
 def maybe(value: Any, convert: Callable[[Any], Any]) -> Any:
     """`convert(value)`, or None when the config leaves the field out."""
-    if value == None:  # noqa: E711
+    if value == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return None
     return convert(value)
 
@@ -36,7 +36,7 @@ def maybe(value: Any, convert: Callable[[Any], Any]) -> Any:
 def mapped(items: Any, convert: Callable[[Any], Any]) -> list[Any]:
     """`convert` of each config item, in order (a config array, `[]` when there is none)."""
     result: list[Any] = []
-    if items == None:  # noqa: E711
+    if items == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return result
     for item in items:
         result.append(convert(item))

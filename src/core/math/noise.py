@@ -1,17 +1,17 @@
-"""Seeded 2D gradient noise and its fractal sums"""
+"""Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Noise2D = Callable[[float, float], float]
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.bits import imul, ushr, xor  # noqa: E402
-from core.math.rng import create_rng  # noqa: E402
+from core.math.bits import imul, ushr, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 TABLE_SIZE = 256
 PI = 3.141592653589793
@@ -69,7 +69,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         j = math.floor(random() * (i + 1))
         perm[i], perm[j] = perm[j], perm[i]
     angles = [random() * PI * 2 for _ in range(TABLE_SIZE)]
-    # Each angle's cosine and sine are worked out once (the same values, every call).
+    # Each angle's cosine and sine are worked out once (the same values, every call, PERF-11).
     cos_table = [math.cos(a) for a in angles]
     sin_table = [math.sin(a) for a in angles]
     p = max(1, math.floor(period))

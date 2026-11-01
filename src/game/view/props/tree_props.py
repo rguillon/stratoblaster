@@ -1,11 +1,11 @@
-"""Trees of the green land (D-212), drawn as imposters
+"""Trees of the green land (D-212, GFX-PROP-09), drawn as imposters
 
 Sizes in model units, standing on Y = 0. The levels draw a picture of each tree baked from these
 models (`imposter_bake_visual`), so their triangles cost nothing in play: crowns are clouds of
 hundreds of small leaf tufts, each turned its own way and shaded its own green, darker inside the
 crown and under it, round a dark core that fills the gaps; pines are tiers of drooping needle tufts.
-Each tree also has a stand-in of a few low-poly solids that only casts its shadow (its picture, a
-quad facing the camera, would cast a wrong one).
+Each tree also has a stand-in of a few low-poly solids that only casts its shadow (GFX-PROP-12; its
+picture, a quad facing the camera, would cast a wrong one).
 """
 
 import math
@@ -22,7 +22,7 @@ from render.scenery.scenery_look import PropGeometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Palette = list[list[float]]
 __pragma__("noskip")

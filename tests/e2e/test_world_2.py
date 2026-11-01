@@ -1,4 +1,4 @@
-"""e2e: World 2, its times of day and its final boss (phase 8)."""
+"""e2e: World 2, its times of day and its final boss (specs/worlds/world-2/)."""
 
 import re
 from typing import Any
@@ -30,7 +30,8 @@ def sky_at(page: Page, query: str, time: float) -> dict[str, Any]:
     return sky
 
 
-def test_p08_r01_the_world_2_row_shows_2_1_to_2_5_all_unlocked(page: Page) -> None:
+def test_wld_2_02_the_world_2_row_shows_2_1_to_2_5_all_unlocked(page: Page) -> None:
+    """Also UI-LEVEL-01: the grid's second row."""
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -42,9 +43,11 @@ def test_p08_r01_the_world_2_row_shows_2_1_to_2_5_all_unlocked(page: Page) -> No
 
 
 @pytest.mark.parametrize(("index", "level_id"), list(enumerate(WORLD_2)))
-def test_p08_r01_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
+def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
+    """Also UI-LEVEL-03 (none is locked), WLD-2-03 (about five minutes) and each level's duration
+    (LVL-2-1-02, LVL-2-2-02, LVL-2-3-02, LVL-2-4-02, LVL-2-5-02)."""
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -63,21 +66,24 @@ def test_p08_r01_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     expect(page.locator(".game-level")).to_have_text(f"Level {level_id}")
 
 
-def test_p08_r12_level_2_4_t_150_starts_2_4_at_2_30(page: Page) -> None:
+def test_dev_opt_02_level_2_4_t_150_starts_2_4_at_2_30(page: Page) -> None:
     open_debug(page, "?level=2-4&t=150")
-    # At 2:30, the middle of the level, its mini boss comes (and holds the level's progress).
+    # At 2:30, the middle of the level, its mini boss comes (LVL-2-4-11; it holds the level's
+    # progress).
     step_until(page, lambda: (game(page) or {}).get("time", 0), lambda t: t >= 150)
     played = game_state(page)["game"]
     assert played["levelId"] == "2-4"
     assert 150 <= played["time"] < 156
 
 
-def test_p08_r06_no_weather_or_aurora_in_world_2(page: Page) -> None:
+def test_wld_2_16_no_weather_or_aurora_in_world_2(page: Page) -> None:
+    """Also LVL-2-1-03 and LVL-2-5-03, read from the sky's state (DEV-API-05)."""
     for query, time in [("?level=2-1", 0.2), ("?level=2-5&t=120", 120.1)]:
         assert matches(sky_at(page, query, time), {"weatherParticles": 0, "aurora": 0}), query
 
 
-def test_p08_r06_the_lights_come_on_at_dusk_and_night(page: Page) -> None:
+def test_wld_2_15_the_lights_come_on_at_dusk_and_night(page: Page) -> None:
+    """Also LVL-2-1-03 (morning), LVL-2-4-03 (dusk) and LVL-2-5-03 (night)."""
     morning = sky_at(page, "?level=2-1", 0.2)
     dusk = sky_at(page, "?level=2-4&t=60", 60.1)
     night = sky_at(page, "?level=2-5&t=120", 120.1)
@@ -87,14 +93,16 @@ def test_p08_r06_the_lights_come_on_at_dusk_and_night(page: Page) -> None:
     assert night["sunIntensity"] < morning["sunIntensity"]
 
 
-def test_p08_r12_look_forces_a_time_of_day(page: Page) -> None:
+def test_dev_opt_05_look_forces_a_time_of_day(page: Page) -> None:
     night = sky_at(page, "?level=2-5&t=120", 120.1)
     midday = sky_at(page, "?level=2-5&t=120&look=midday", 120.1)
     assert midday["groundLights"] < 0.5
     assert midday["sunIntensity"] > night["sunIntensity"]
 
 
-def test_p08_r10_k_destroys_the_narwhal_and_the_level_is_complete(page: Page) -> None:
+def test_fb_narwhal_15_k_destroys_the_narwhal_and_the_level_is_complete(page: Page) -> None:
+    """Also LVL-2-1-12 (2-1's final boss), WLD-2-02 (2-2 next), DEV-OPT-03 (`boss=`) and DEV-OPT-09
+    (K)."""
     open_debug(page, "?level=2-1&boss=final")
     step_until(page, lambda: (boss(page) or {}).get("parts", 0), lambda parts: parts >= 4)
     destroy_boss(page, "Narwhal")
@@ -103,7 +111,8 @@ def test_p08_r10_k_destroys_the_narwhal_and_the_level_is_complete(page: Page) ->
     expect_state(page, {"screen": "level-select", "selectedId": "2-2", "game": None})
 
 
-def test_p08_r01_after_1_5_the_level_select_highlights_2_1(page: Page) -> None:
+def test_ui_level_07_after_1_5_the_level_select_highlights_2_1(page: Page) -> None:
+    """Also WLD-1-02 (2-1 after 1-5) and LVL-1-5-13 (the Overlord ends 1-5)."""
     open_debug(page, "?level=1-5&boss=final")
     destroy_boss(page, "Overlord")
     send_action(page, "confirm")

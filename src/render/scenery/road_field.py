@@ -1,6 +1,6 @@
-"""Road ribbons of the terrain chunks in view, one mesh per chunk (P04-R07). See-through meshes are
-drawn by increasing `alphaIndex`: a field of paths with a lower one than the field of roads keeps
-the roads on top where they meet. A chunk span is a `(z_min, z_max)` pair.
+"""Road ribbons of the terrain chunks in view, one mesh per chunk (GFX-ROAD-06). See-through meshes
+are drawn by increasing `alphaIndex`: a field of paths with a lower one than the field of roads
+keeps the roads on top where they meet. A chunk span is a `(z_min, z_max)` pair.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -23,17 +23,17 @@ from render.scenery.road_geometry import RoadLook, build_road_geometry
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.road_types import Road  # noqa: E402
-from core.scenery.scenery_level import TileRules  # noqa: E402
-from render.scenery.terrain_geometry import HeightSource  # noqa: E402
+from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.terrain_geometry import HeightSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-# Depth offset of the opaque middles of the streets: pulled towards the camera less than the
-# see-through ribbons and lane markings (-2), which stay on top of them.
+# Depth offset of the opaque middles of the streets (GFX-ROAD-22): pulled towards the camera less
+# than the see-through ribbons and lane markings (-2), which stay on top of them.
 STREET_Z_OFFSET = -1
 
 # Draw order of the see-through road ribbons: before the sea (0) and the clouds.
@@ -140,7 +140,7 @@ class SplitRoads:
 
 
 def _split_roads(roads: Sequence[Road]) -> SplitRoads:
-    """The roads split once per list (P13-R04)."""
+    """The roads split once per list (PERF-24)."""
     split = _slot_get(roads, _SPLIT_SLOT)
     if not split:
         paths = [r for r in roads if r.kind == "cross"]
@@ -172,8 +172,9 @@ class RoadLayers:
     roads' field, drawn over them. Elsewhere a street drawn before a road or a path would end up
     under it.
 
-    Phase 15 (experiment): the street pieces are textured surfaces, one atlas per road look, and
-    `show_tile_grid` draws the grid of tiles over the districts."""
+    Phase 15 (experiment): the street pieces are textured surfaces, one atlas per road look, each
+    version uploaded once (GFX-ROAD-21), and `show_tile_grid` draws the grid of tiles over the
+    districts."""
 
     def __init__(self, scene: Any, material: Any) -> None:
         self._scene = scene
@@ -272,7 +273,8 @@ class RoadLayers:
             self._grid.set_chunk(index, chunk.grid)
 
     def show_tile_grid(self) -> None:
-        """Phase 15 (P15-R10, `tiles=1`): draws the grid of tiles over the districts from now on."""
+        """Phase 15 (DEV-OPT-06, `tiles=1`): draws the grid of tiles over the districts from now
+        on."""
         if self._grid is None:
             self._grid = RoadField(self._scene, self._grid_material(), "tile-grid", 0, False)
 

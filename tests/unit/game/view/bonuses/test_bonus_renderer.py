@@ -47,11 +47,11 @@ def bonus(kind="weapon", x=10.0, y=20.0, age=0.0):
     return SimpleNamespace(kind=kind, x=x, y=y, age=age)
 
 
-def test_p11_r07_three_kinds_of_bonus_are_drawn():
+def test_game_bonus_01_three_kinds_of_bonus_are_drawn():
     assert KINDS == ["weapon", "life", "bomb"]
 
 
-def test_p11_r07_each_kind_has_a_badge_and_a_halo_template(scene, monkeypatch):
+def test_gfx_fx_12_each_kind_has_a_badge_and_a_halo_template(scene, monkeypatch):
     made = {}
 
     def record(name, geo, scene_):
@@ -65,7 +65,7 @@ def test_p11_r07_each_kind_has_a_badge_and_a_halo_template(scene, monkeypatch):
     assert set(made) == {"bonus-halo", "bonus-glow-life", "bonus-glow-bomb"}
 
 
-def test_p11_r07_a_ring_is_a_black_disc_with_a_coloured_rim():
+def test_gfx_fx_11_a_ring_is_a_black_disc_with_a_coloured_rim():
     geo = ring(8, [1.0, 0.5, 0.0])
     rgb = {tuple(geo.colors[4 * i : 4 * i + 3]) for i in range(len(geo.colors) // 4)}
     assert (1.0, 0.5, 0.0) in rgb
@@ -74,7 +74,7 @@ def test_p11_r07_a_ring_is_a_black_disc_with_a_coloured_rim():
     assert len(geo.colors) // 4 == 1 + 8 * 8
 
 
-def test_p11_r07_sync_kind_swings_each_badge_and_pulses_its_halo(scene):
+def test_gfx_fx_11_sync_kind_swings_each_badge_and_pulses_its_halo(scene):
     badges = MagicMock()
     halos = MagicMock()
     badge_meshes = [MagicMock(), MagicMock()]
@@ -96,7 +96,7 @@ def test_p11_r07_sync_kind_swings_each_badge_and_pulses_its_halo(scene):
     )
 
 
-def test_p11_r07_sync_kind_skips_a_pool_slot_without_a_bonus(scene):
+def test_gfx_fx_11_sync_kind_skips_a_pool_slot_without_a_bonus(scene):
     badges = MagicMock()
     halos = MagicMock()
     mesh = MagicMock()
@@ -108,7 +108,7 @@ def test_p11_r07_sync_kind_skips_a_pool_slot_without_a_bonus(scene):
     mesh.position.set.assert_not_called()
 
 
-def test_p11_r07_a_pickup_starts_a_flash_that_fades_and_grows(scene):
+def test_gfx_fx_13_a_pickup_starts_a_flash_that_fades_and_grows(scene):
     rings = MagicMock()
     mesh = MagicMock()
     rings.show.return_value = [mesh]
@@ -123,7 +123,7 @@ def test_p11_r07_a_pickup_starts_a_flash_that_fades_and_grows(scene):
     assert mesh.visibility == pytest.approx(1)
 
 
-def test_p11_r07_flashes_die_after_their_life(scene):
+def test_gfx_fx_13_flashes_die_after_their_life(scene):
     rings = MagicMock()
     rings.show.return_value = []
     flashes = [Flash(0, 0, 0.0)]
@@ -131,7 +131,7 @@ def test_p11_r07_flashes_die_after_their_life(scene):
     assert flashes == []
 
 
-def test_p11_r07_flashes_outlive_a_frame_before_their_life(scene):
+def test_gfx_fx_13_flashes_outlive_a_frame_before_their_life(scene):
     rings = MagicMock()
     rings.show.return_value = []
     flashes = [Flash(0, 0, 0.0)]
@@ -140,7 +140,7 @@ def test_p11_r07_flashes_outlive_a_frame_before_their_life(scene):
     assert flashes[0].age == pytest.approx(LOOK.flash.life / 2)
 
 
-def test_p11_r07_the_renderer_draws_the_bonuses_of_each_kind(scene):
+def test_gfx_fx_11_the_renderer_draws_the_bonuses_of_each_kind(scene):
     renderer = create_bonus_renderer(scene)
     frame = SimpleNamespace(
         bonuses=[bonus("weapon"), bonus("life"), bonus("bomb"), bonus("life")],
@@ -150,7 +150,7 @@ def test_p11_r07_the_renderer_draws_the_bonuses_of_each_kind(scene):
     renderer["sync"](frame)
 
 
-def test_p11_r07_the_renderer_disposes_every_template_it_made(scene, templates):
+def test_gfx_fx_11_the_renderer_disposes_every_template_it_made(scene, templates):
     renderer = create_bonus_renderer(scene)
     renderer["dispose"]()
     # Six kind templates (badge and halo of three kinds), the flash ring.

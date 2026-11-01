@@ -1,7 +1,7 @@
 """The small homes of the villages and the worker homes (Phase 15, reviewer 2026-10-28): small homes
 of the future on paved plots, no garden, no tile roof.
-Each model takes the silhouette its seed names: a capsule, a dome, stacked cubes, stacked
-containers, a lit grow tower and a home beside a solar shed."""
+Each model takes the silhouette its seed names (GFX-BLDG-09): a capsule, a dome, stacked cubes,
+stacked containers, a lit grow tower and a home beside a solar shed."""
 
 import math
 

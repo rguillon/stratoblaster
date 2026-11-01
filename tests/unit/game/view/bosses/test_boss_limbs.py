@@ -1,4 +1,4 @@
-"""Unit tests of `src/game/view/bosses/boss_limbs.py`."""
+"""Unit tests of `src/game/view/bosses/boss_limbs.py`: the moving limbs (BOSS-33)."""
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock

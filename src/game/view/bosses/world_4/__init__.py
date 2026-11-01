@@ -1,1 +1,1 @@
-"""World 4 boss models (P10-R11)."""
+"""World 4 boss models (specs/bosses/*/4-*.md)."""

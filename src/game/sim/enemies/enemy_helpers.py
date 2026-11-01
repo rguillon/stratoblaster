@@ -1,4 +1,4 @@
-"""Helpers shared by the concrete enemies (P05)"""
+"""Helpers shared by the concrete enemies, each kind with its preset movement (ENM-24)"""
 
 import math
 
@@ -9,11 +9,11 @@ from core.systems.enemy_motion import Path
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea  # noqa: E402
-from core.math.rng import Random  # noqa: E402
-from core.systems.enemy_motion import PathPoint  # noqa: E402
+from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_motion import PathPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -41,7 +41,7 @@ class Cadence:
 
     @property
     def progress(self) -> float:
-        """Fraction of the wait done before the next time, 0..1 (for charging lights)."""
+        """Fraction of the wait done before the next time, 0..1 (for charging lights, ENM-23)."""
         return min(1, max(0, 1 - self._left / self.interval))
 
     def tick(self, dt: float) -> int:
@@ -54,12 +54,12 @@ class Cadence:
 
 
 def on_playfield(enemy: Enemy, ctx: EnemyContext) -> bool:
-    """Whether the enemy's centre is over the playfield (enemies only shoot from there)."""
+    """Whether the enemy's centre is over the playfield (enemies only shoot from there, ENM-15)."""
     return enemy.x >= 0 and enemy.x <= ctx.width and enemy.y >= 0 and enemy.y <= ctx.height
 
 
 def clamp_entry(position: float) -> float:
-    """A wave's entry position, kept away from the corners of the playfield."""
+    """A wave's entry position (ENM-08), kept away from the corners of the playfield."""
     return min(1 - ENTRY_INSET, max(ENTRY_INSET, position))
 
 
@@ -69,7 +69,8 @@ def coin(random: Random) -> bool:
 
 
 def top_bounds(area: EnemySpawnArea) -> tuple[float, float]:
-    """The X range enemies coming in from the top keep to: `topRange`, or the whole width."""
+    """The X range enemies coming in from the top keep to (ENM-09): `topRange`, or the whole
+    width."""
     if area.top_range is None:
         return (0, area.width)
     return (area.top_range[0], area.top_range[1])
@@ -94,8 +95,8 @@ def pick_x(random: Random, range_: tuple[float, float], area: EnemySpawnArea) ->
 
 
 def playfield_path(points: list[list[float]], area: EnemySpawnArea, mirror: bool) -> Path:
-    """A path given in fractions of the playfield, mirrored left to right if `mirror`. It comes in
-    from the top, so its X fractions are taken across the area's `top_range`.
+    """A path given in fractions of the playfield, mirrored left to right if `mirror` (ENM-25). It
+    comes in from the top, so its X fractions are taken across the area's `top_range`.
     """
     controls: list[PathPoint] = []
     for point in points:

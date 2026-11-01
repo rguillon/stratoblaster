@@ -1,4 +1,4 @@
-"""The Glacier Colossus (P08-R10, 2-4)
+"""The Glacier Colossus (FB-GLACIER-COLOSSUS-01 to FB-GLACIER-COLOSSUS-06, 2-4)
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
@@ -47,9 +47,9 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -182,8 +182,8 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # P16-R06: a glacier titan, a vast body of cold flesh under a ridged shell, its brain hump
-    # where the bridge tower was, eyes round it.
+    # FB-GLACIER-COLOSSUS-02: a glacier titan, a vast body of cold flesh under a ridged shell, its
+    # brain hump where the bridge tower was, eyes round it.
     flesh.bevel_slab(HULL, HULL_Y, [3, 2.5], ICE_FLESH.sinew, None, ICE_FLESH.teal)
     neon_band(neon, HULL, [-3.6, -1.2], [0.985, 1.015], N)
     flesh.bevel_slab(UPPER, UPPER_Y, [0, 1.6], ICE_FLESH.teal, None, ICE_FLESH.graphite)
@@ -246,7 +246,8 @@ def draw_vents(p: EnemyParts) -> None:
 
 
 def draw_frost(p: EnemyParts) -> None:
-    """The frost: snow caps on the decks and the tower's roof, icicles under the hull's rim."""
+    """The frost (FB-GLACIER-COLOSSUS-05): snow caps on the decks and the tower's roof, icicles
+    under the hull's rim."""
     hull = p.flesh
     for item in snow_caps():
         snow_cap(hull, item[0], item[1], 1.2, item[2])
@@ -281,11 +282,13 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def build_glacier_colossus(scene: Any) -> BuiltEnemyModel:
-    """P08-R10: the Glacier Colossus, a giant mining ship 5.5 L across, red-orange neon, glowing
-    heat vents along its deck, crusted with snow and hung with icicles; its cutters out on its
-    beam, its ore cannons and heat sink at its bow, its missile pod on its stern.
-    P16-R06: now a living glacier titan, a vast shelled body of cold flesh with glacier ice grown
-    through it, gills glowing down its back; its parts armoured organs and fleshy gun limbs.
+    """FB-GLACIER-COLOSSUS-01, FB-GLACIER-COLOSSUS-04: the Glacier Colossus, a giant mining ship 5.5
+    L across, red-orange neon, glowing heat vents along its deck, crusted with snow and hung with
+    icicles; its cutters out on its beam, its ore cannons and heat sink at its bow, its missile pod
+    on its stern.
+    FB-GLACIER-COLOSSUS-02: now a living glacier titan, a vast shelled body of cold flesh with
+    glacier ice grown through it, gills glowing down its back; its parts armoured organs and fleshy
+    gun limbs.
     """
     parts = record(
         {

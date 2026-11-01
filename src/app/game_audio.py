@@ -1,4 +1,4 @@
-"""The game's audio (P12-R05..R11): which music plays on which
+"""The game's audio (specs/audio/): which music plays on which
 screen, the level and boss tracks following the boss bar, the jingles, the sound effects of the
 level's cues and of the menus, and pausing it all with the game. It only reads the menu and core
 state (ENG-11).
@@ -18,13 +18,13 @@ from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 from config.audio import AUDIO_CONFIG
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.menu_state import MenuFeedback, MenuState  # noqa: E402
-from app.settings_menu import Volumes  # noqa: E402
-from core.systems.level_run import LevelRun  # noqa: E402
-from core.systems.level_run_types import LevelResult  # noqa: E402
-from input.menu_action import MenuCommand  # noqa: E402
+from app.menu_state import MenuFeedback, MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run import LevelRun  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run_types import LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -43,14 +43,14 @@ class GameAudioOptions:
         self.create_context = create_context
         # Whether the page may start audio now (a user gesture is going on). Always when None.
         self.can_start = can_start
-        # Seconds, for the sound effect limits (P12-R10).
+        # Seconds, for the sound effect limits (AUD-ENGINE-07).
         self.clock = clock
-        # Width of the playfield, to pan sounds with their position (P12-R09).
+        # Width of the playfield, to pan sounds with their position (AUD-ENGINE-08).
         self.screen_width = screen_width
 
 
 class GameAudioState:
-    """What the e2e test API reports about the audio (P12-R12)."""
+    """What the e2e test API reports about the audio (DEV-API-02)."""
 
     def __init__(self, music: str | None, sounds: list[str], context: str) -> None:
         # Id of the music playing (`menu`, `level-2-3`, `boss-2`), or None.
@@ -61,7 +61,7 @@ class GameAudioState:
         self.context = context
 
 
-# The sound of a menu feedback (P12-R09); `screen` depends on the command, see `_menu_cue`.
+# The sound of a menu feedback (AUD-SFX-01); `screen` depends on the command, see `_menu_cue`.
 _MENU_CUES = {
     "moved": "menu-move",
     "locked": "menu-back",
@@ -72,7 +72,7 @@ _MENU_CUES = {
 
 
 def _menu_cue(command: MenuCommand, feedback: MenuFeedback) -> str | None:
-    """Menu sounds by what a command did (P12-R09)."""
+    """Menu sounds by what a command did (AUD-ENGINE-09)."""
     if feedback == "screen":
         return "menu-back" if command in ["back", "cancel"] else "menu-confirm"
     return _MENU_CUES.get(feedback)
@@ -135,17 +135,18 @@ class GameAudio:
         return self._music
 
     def unlock(self) -> None:
-        """A user gesture: the audio may start (P12-R05)."""
+        """A user gesture: the audio may start (AUD-ENGINE-03)."""
         can_start = self._options.can_start
         if can_start is not None and not can_start():
             return
         self._output.unlock()
 
     def set_hidden(self, hidden: bool) -> None:
-        """The page is hidden or shown again (P12-R11)."""
+        """The page is hidden or shown again (AUD-ENGINE-11)."""
         self._output.set_hidden(hidden)
 
     def set_volumes(self, volumes: Volumes) -> None:
+        """The volumes of the settings, heard at once (UI-SET-04)."""
         steps = AUDIO_CONFIG.volume_steps
         self._output.set_volumes(volume_gain(volumes.music, steps), volume_gain(volumes.sfx, steps))
 
@@ -154,8 +155,8 @@ class GameAudio:
         self._music.update()
 
     def menu_changed(self, state: MenuState) -> None:
-        """The menus changed (P12-R08, P12-R11): the music of their screen, pausing with the
-        game."""
+        """The menus changed: the music of their screen (the menu theme, AUD-MUSIC-11; the level's
+        fades on its end panel, AUD-MUSIC-08), pausing with the game."""
         self.set_volumes(state.volumes)
         if state.paused != self._paused:
             self._set_paused(state.paused)
@@ -171,7 +172,7 @@ class GameAudio:
         self._want(MusicRequest("menu", None, None), AUDIO_CONFIG.crossfade_seconds)
 
     def menu_feedback(self, command: MenuCommand, feedback: MenuFeedback, volumes: Volumes) -> None:
-        """What a menu command did: its sound, at the volumes it may have just set (P12-R04)."""
+        """What a menu command did: its sound, at the volumes it may have just set (UI-SET-04)."""
         self.set_volumes(volumes)
         cue = _menu_cue(command, feedback)
         if cue is not None:
@@ -179,7 +180,7 @@ class GameAudio:
 
     def level_started(self, level_id: str) -> None:
         """A level starts, or starts again from its checkpoint: its track from the start
-        (P12-R07)."""
+        (AUD-MUSIC-08)."""
         self._level_id = level_id
         bindings = self._bindings
         radius = bindings.large_blast_radius if bindings is not None else INFINITY
@@ -190,7 +191,8 @@ class GameAudio:
         self._play(MusicRequest("level", level_id, None), AUDIO_CONFIG.crossfade_seconds)
 
     def level_step(self, run: LevelRun) -> None:
-        """A level step was run: its sounds, and the music following the boss fights."""
+        """A level step was run: its sounds (AUD-ENGINE-09), and the music following the boss
+        fights."""
         cues = self._cues
         if cues is None or self._paused or self._ended:
             return
@@ -200,13 +202,15 @@ class GameAudio:
         self._boss_music(run)
 
     def level_ended(self, result: LevelResult) -> None:
-        """The level is complete or over (P12-R07): the music fades, its jingle plays once."""
+        """The level is complete or over (AUD-MUSIC-08): the music fades, its jingle plays once
+        (AUD-MUSIC-10)."""
         self._ended = True
         self._stop_beam()
         self._want(None, AUDIO_CONFIG.fade_seconds)
         self._jingle("complete" if result.outcome == "complete" else "over")
 
     def _set_paused(self, paused: bool) -> None:
+        """Pausing holds the music at its position and stops the sound effects (AUD-ENGINE-10)."""
         self._paused = paused
         if paused:
             self._music.pause()
@@ -215,7 +219,9 @@ class GameAudio:
             self._music.resume()
 
     def _boss_music(self, run: LevelRun) -> None:
-        """The boss track while a boss bar shows, the level track (from its start) after it."""
+        """The boss track while a boss bar shows, the level track (from its start) after it
+        (AUD-MUSIC-09, BOSS-05); a jingle when the mini boss's checkpoint is saved
+        (GAME-LEVEL-09)."""
         level_id = self._level_id
         if level_id is None:
             return
@@ -231,7 +237,7 @@ class GameAudio:
             self._want(MusicRequest("level", level_id, None), AUDIO_CONFIG.crossfade_seconds)
 
     def _beam(self, weapon: str | None) -> None:
-        """The laser's hum plays while it fires."""
+        """The laser's hum plays while it fires (AUD-SFX-03)."""
         hum = None
         if weapon is not None and self._bindings is not None:
             hum = self._bindings.sounds.get("beam:" + weapon)

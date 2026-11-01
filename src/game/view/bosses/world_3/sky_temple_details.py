@@ -1,5 +1,6 @@
-"""P09-R09, 3-3: the Sky Temple's dressing (phase 7 review: detail and some asymmetry; World 3
-theme: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
+"""FB-SKY-TEMPLE-02, FB-SKY-TEMPLE-05, 3-3: the Sky Temple's dressing (phase 7 review: detail and
+some asymmetry; World 3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels,
+nose +Z, Y up."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -15,7 +16,7 @@ from render.geometry.solids import Placement
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402
+from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[float]
 __pragma__("noskip")

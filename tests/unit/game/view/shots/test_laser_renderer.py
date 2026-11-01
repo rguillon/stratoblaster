@@ -38,7 +38,7 @@ def seg(y0, y1, x=0.0, width=8.0, hit=False):
     return SimpleNamespace(x=x, y0=y0, y1=y1, width=width, hit=hit)
 
 
-def test_p03_r02_one_bar_per_segment_of_the_beam_from_y0_to_y1():
+def test_gfx_shot_03_one_bar_per_segment_of_the_beam_from_y0_to_y1():
     pool = Pool()
     place_bars(pool, [seg(0, 10, x=3.0, width=8.0), seg(10, 30, x=4.0, width=4.0)], 1.0)
     assert pool.shown == [2]
@@ -49,13 +49,13 @@ def test_p03_r02_one_bar_per_segment_of_the_beam_from_y0_to_y1():
     second.scaling.set.assert_called_with(4.0 * LOOK.glowWidth, 20, 1)
 
 
-def test_p03_r02_the_bar_wobbles_with_the_flicker():
+def test_gfx_shot_03_the_bar_wobbles_with_the_flicker():
     pool = Pool()
     place_bars(pool, [seg(0, 10, width=8.0)], 1.5)
     pool.meshes[0].scaling.set.assert_called_with(8.0 * LOOK.glowWidth * 1.5, 10, 1)
 
 
-def test_p03_r02_a_contact_glows_only_where_the_beam_stops_on_a_target():
+def test_gfx_shot_03_a_contact_glows_only_where_the_beam_stops_on_a_target():
     pool = Pool()
     place_contacts(pool, [seg(0, 10), seg(10, 20, hit=True, width=16.0)], 1.0)
     assert pool.shown == [1]
@@ -65,13 +65,13 @@ def test_p03_r02_a_contact_glows_only_where_the_beam_stops_on_a_target():
     mesh.scaling.set.assert_called_with(radius, radius, 1)
 
 
-def test_p03_r02_no_target_no_contact_glow():
+def test_gfx_shot_03_no_target_no_contact_glow():
     pool = Pool()
     place_contacts(pool, [seg(0, 10)], 1.0)
     assert pool.shown == [0]
 
 
-def test_p03_r02_the_muzzle_glows_where_the_beam_leaves_the_ship(monkeypatch):
+def test_gfx_shot_04_the_muzzle_glows_where_the_beam_leaves_the_ship(monkeypatch):
     monkeypatch.setattr(laser_renderer, "flicker", lambda t, a, hz: 0.0)
     pool = Pool()
     place_muzzle(pool, [seg(5, 30, x=2.0, width=6.0)], 1.0)
@@ -81,13 +81,13 @@ def test_p03_r02_the_muzzle_glows_where_the_beam_leaves_the_ship(monkeypatch):
     mesh.scaling.set.assert_called_with(r, r * LOOK.muzzle.stretch, 1)
 
 
-def test_p03_r02_no_beam_no_muzzle_glow():
+def test_gfx_shot_04_no_beam_no_muzzle_glow():
     pool = Pool()
     place_muzzle(pool, [], 0.0)
     assert pool.shown == [0]
 
 
-def test_p03_r02_particles_are_small_discs_along_the_beam():
+def test_gfx_shot_03_particles_are_small_discs_along_the_beam():
     pool = Pool()
     place_sparks(pool, [SimpleNamespace(x=1.0, y=2.0, radius=0.5)])
     mesh = pool.meshes[0]
@@ -95,7 +95,7 @@ def test_p03_r02_particles_are_small_discs_along_the_beam():
     mesh.scaling.set.assert_called_with(0.5, 1.0, 1)
 
 
-def test_p03_r02_the_laser_renderer_draws_a_frame_and_disposes(monkeypatch):
+def test_gfx_shot_03_the_laser_renderer_draws_a_frame_and_disposes(monkeypatch):
     stub_babylon(monkeypatch, laser_renderer)
     templates = []
 

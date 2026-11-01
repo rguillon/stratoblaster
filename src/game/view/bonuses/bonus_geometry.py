@@ -1,4 +1,4 @@
-"""The badges of the bonuses (P11-R07)
+"""The badges of the bonuses: one shape per kind (GFX-FX-12), for the three kinds (GAME-BONUS-01)
 
 Each badge is radius 1 in the XY plane, facing -Z, built as coloured flat polygons.
 """
@@ -8,11 +8,11 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _new_geometry() -> ColoredGeometry:
@@ -109,7 +109,7 @@ def _heart(geo: Any, s: float, z: float, color: list[float]) -> None:
 
 
 def build_life_badge(colors: Any) -> ColoredGeometry:
-    """The badge of a life bonus (P11-R07): a heart in a coloured rim, a lighter heart in front of
+    """The badge of a life bonus (GFX-FX-12): a heart in a coloured rim, a lighter heart in front of
     it. A heart, so it reads without colour."""
     geo = _new_geometry()
     _heart(geo, 1, 0, colors.rim)
@@ -141,8 +141,8 @@ def _letter_b(h: float) -> list[list[list[float]]]:
 
 
 def build_bomb_badge(colors: Any) -> ColoredGeometry:
-    """The badge of a bomb bonus (P11-R07): a round shell with a highlight and a letter B in front.
-    Round and lettered, so it reads without colour."""
+    """The badge of a bomb bonus (GFX-FX-12): a round shell with a highlight and a letter B in
+    front. Round and lettered, so it reads without colour."""
     geo = _new_geometry()
     _polygon(geo, _circle(0, 0, 1, 18), 0, colors.shell)
     _polygon(geo, _circle(-0.38, 0.4, 0.26, 10), -0.01, colors.highlight)

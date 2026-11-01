@@ -14,7 +14,7 @@ from render.ship_select_stage import ShipSelectStage
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -89,6 +89,7 @@ def _build_backdrop(built: _Built, engine: Any, game: Any, environment: bool) ->
 
 
 def _build_ships(built: _Built, engine: Any, game: Any, environment: bool) -> None:
+    # UI-SHIP-01: the ships side by side, on their own scene.
     built.ship_scene = new_scene(engine)
     # Drawn over the backdrop: keep its colours, clear only depth.
     js_set(built.ship_scene, "autoClear", False)
@@ -98,7 +99,7 @@ def _build_ships(built: _Built, engine: Any, game: Any, environment: bool) -> No
 
 
 def _highlight_ships(built: _Built, environment: bool) -> None:
-    # P13-R02: each ship drawn once highlighted, hidden by the loading screen, so the GPU driver
+    # PERF-07: each ship drawn once highlighted, hidden by the loading screen, so the GPU driver
     # has every highlight state ready before the first press on the ship select screen.
     if not environment or built.ship_scene is None or built.stage is None:
         return
@@ -109,7 +110,7 @@ def _highlight_ships(built: _Built, environment: bool) -> None:
 
 
 def prepare_menu_scenes(engine: Any, game: Any, environment: bool) -> MenuSceneLoad:
-    """Splits the creation of the menu scenes into loading steps (P01-R02): build the backdrop,
+    """Splits the creation of the menu scenes into loading steps (UI-LOAD-03): build the backdrop,
     build the ships, then compile each scene's shaders and draw each ship highlighted once.
     `result()` is available once every task has run. `environment` (image-based lighting, glow)
     needs a real WebGL engine.
@@ -146,7 +147,8 @@ def _wait_ships(built: _Built) -> Any:
 
 
 def render_menu_scenes(scenes: MenuScenes, screen: str) -> None:
-    """Renders the scenes of `screen`: the backdrop, plus the ships on the ship select screen."""
+    """Renders the scenes of `screen`: the backdrop (behind every menu, UI-TITLE-09), plus the
+    ships on the ship select screen."""
     if screen == "loading":
         return
     scenes.backdrop_scene.render()

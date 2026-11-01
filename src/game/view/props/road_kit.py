@@ -1,7 +1,6 @@
-"""The road kit, for the `props/` page (Phase 15, P15-R03, R04, R10): a straight, a 90° turn, a T
-and an X for each size, the T and X adapters for
-each pair of sizes, and a sample layout where each piece is joined to the straights of its open
-sides."""
+"""The road kit, for the `props/` page (phase 15): a straight, a 90° turn, a T and an X for each
+size (GFX-ROAD-11), the T and X adapters for each pair of sizes (GFX-ROAD-12), and a sample layout
+where each piece is joined to the straights of its open sides."""
 
 import math
 
@@ -9,16 +8,16 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402
-from game.config.scenery_look import BASE_SCENERY_LOOK  # noqa: E402
-from game.config.tile_buildings import TILE  # noqa: E402
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402
-from render.scenery.scenery_look import PropGeometry  # noqa: E402
-from render.scenery.tile_road_geometry import add_piece  # noqa: E402
+from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.scenery_look import BASE_SCENERY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.tile_buildings import TILE  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.tile_road_geometry import add_piece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The render code reads the look's camelCase fields, so the config record is the look itself.
 LOOK = BASE_SCENERY_LOOK.roads.tiles
@@ -169,13 +168,13 @@ def centred(pieces: list[RoadPiece]) -> list[RoadPiece]:
     cz = (min(zs) + max(zs)) / 2
     # Half-tile offsets: the core types a piece's position as int, the page draws it centred.
     return [
-        RoadPiece(p.x - cx, p.z - cz, p.size, p.kind, p.adapter, p.sides)  # type: ignore[arg-type]
+        RoadPiece(p.x - cx, p.z - cz, p.size, p.kind, p.adapter, p.sides)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         for p in pieces
     ]
 
 
 def build_sample() -> PropGeometry:
-    """The sample layout (P15-R10): every piece of the kit with straights on its open sides."""
+    """The sample layout (GFX-ROAD-11): every piece of the kit with straights on its open sides."""
     return geometry_of(sample_pieces())
 
 

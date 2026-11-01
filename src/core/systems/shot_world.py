@@ -1,4 +1,4 @@
-"""Player shots of one ship (P03-R01..R03)
+"""Player shots of one ship (`specs/gameplay/weapons.md`)
 
 Fires the selected weapon at the selected level from the muzzle, moves the projectiles, applies
 damage to the targets and reports impacts. Pure and deterministic: everything depends on the `dt`
@@ -16,13 +16,13 @@ from core.systems.projectile_motion import Projectile, advance_projectile
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from collections.abc import Sequence  # noqa: E402
-from typing import TypeVar  # noqa: E402
+from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 T = TypeVar("T")
 
-from core.entities.shot_target import ShotTarget  # noqa: E402
-from core.entities.weapon import WeaponDefinition  # noqa: E402
+from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -31,7 +31,7 @@ DEG = math.pi / 180
 
 class ShotImpact:
     """Where a projectile hit, for effects. `blast_radius` is 0 for a direct hit. `blocked` is true
-    when the hit did no damage, e.g. on a shielded core (a sound of its own, P12-R09).
+    when the hit did no damage, e.g. on a shielded core (a sound of its own, AUD-SFX-01).
     """
 
     def __init__(
@@ -46,7 +46,7 @@ class ShotImpact:
 
 class ShotWorldOptions:
     """The playfield (X in [0, width], Y in [0, height]) and what shots are culled by: shots
-    `cull_margin` outside it are removed.
+    `cull_margin` outside it are removed (GAME-SCREEN-07).
     """
 
     def __init__(self, width: float, height: float, cull_margin: float) -> None:
@@ -61,8 +61,8 @@ def _at_or_none(values: Sequence[T], index: int) -> T | None:  # noqa: UP047 (no
 
 
 class ShotWorld:
-    """Player shots of one ship. Its `projectiles` are a pool: entries with `alive` false are free
-    for reuse.
+    """Player shots of one ship. Its `projectiles` are a pool (ENG-19): entries with `alive` false
+    are free for reuse.
     """
 
     def __init__(self, options: ShotWorldOptions, weapon: WeaponDefinition) -> None:
@@ -83,7 +83,8 @@ class ShotWorld:
         self.total_damage = 0.0
         # Whether the weapon fires; shots already in flight keep flying either way.
         self.firing = True
-        # Volleys started since the world was created (a volley: every stream of the level once).
+        # Volleys started since the world was created (a volley: every stream of the level once; one
+        # fire sound each, AUD-SFX-03).
         self.volleys = 0
         self._weapon = weapon
         self._level = 1
@@ -94,15 +95,17 @@ class ShotWorld:
 
     @property
     def weapon(self) -> WeaponDefinition:
+        """The weapon in use."""
         return self._weapon
 
     @property
     def level(self) -> int:
+        """The level of the weapon in use."""
         return self._level
 
     def select(self, weapon: WeaponDefinition, level: float) -> None:
-        """Selects the weapon and its level (clamped to the weapon's levels). Shots in flight
-        stay."""
+        """Selects the weapon and its level (clamped to the weapon's levels, GAME-WPN-02).
+        Shots in flight stay."""
         self._weapon = weapon
         self._level = min(max(1, math.floor(level + 0.5)), len(weapon.levels))
         self._cooldown = 0.0
@@ -142,8 +145,8 @@ class ShotWorld:
 
     def _fire(self, weapon: ProjectileWeaponDefinition, dt: float) -> None:
         """Fires the level's streams one after the other, in their listed order, evenly spaced over
-        the volley (reviewer, 2026-10-26): each stream still fires `shots_per_second` times a
-        second.
+        the volley (reviewer, 2026-10-26, GAME-WPN-11): each stream still fires `shots_per_second`
+        times a second.
         """
         self._cooldown -= dt
         streams_at = _at_or_none(weapon.levels, self._level - 1)
@@ -173,6 +176,7 @@ class ShotWorld:
             self.projectiles.append(shot)
         shot.alive = True
         shot.weapon = weapon
+        # From the nose (GAME-WPN-05), or the centre under the ship (GFX-SHOT-08).
         from_center = weapon.launch_point == "center"
         shot.x = (self.center_x if from_center else self.muzzle_x) + offset_x
         shot.y = (self.center_y if from_center else self.muzzle_y) - weapon.launch_back
@@ -215,8 +219,8 @@ class ShotWorld:
         self.impacts.append(ShotImpact(weapon.id, shot.x, shot.y, weapon.blast_radius, dealt <= 0))
 
     def _damage(self, shot: Projectile, hit: ShotTarget) -> float:
-        """Deals the shot's damage to `hit`, or to everything in its blast. Returns the damage
-        dealt.
+        """Deals the shot's damage to `hit`, or to everything in its blast (GAME-WPN-09).
+        Returns the damage dealt.
         """
         weapon = shot.weapon
         if weapon.blast_radius <= 0:

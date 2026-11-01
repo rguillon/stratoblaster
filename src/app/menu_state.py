@@ -9,15 +9,15 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Literal  # noqa: E402
+from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from app.settings_menu import Volumes  # noqa: E402
-from core.content.level_catalog import LevelCatalog  # noqa: E402
-from core.menu.menu_screen import MenuScreen  # noqa: E402
-from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402
+from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.content.level_catalog import LevelCatalog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.menu.menu_screen import MenuScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-# What a command did, so the presentation can give feedback (and its sound, P12-R09): a move, a
-# new screen, a locked level, a level paused or resumed, a slider changed.
+# What a command did, so the presentation can give feedback (and its sound, AUD-ENGINE-09): a
+# move, a new screen, a locked level, a level paused or resumed, a slider changed.
 MenuFeedback = Literal["none", "moved", "screen", "locked", "paused", "resumed", "adjusted"]
 
 __pragma__("noskip")
@@ -54,23 +54,24 @@ class MenuState:
         self.highlighted_ship_id = highlighted_ship_id
         self.chosen_ship_id = chosen_ship_id
         self.chosen_level_id = chosen_level_id
-        # True during a screen transition, while input is ignored (P01-R15).
+        # True during a screen transition, while input is ignored (UI-FLOW-08).
         self.transitioning = transitioning
-        # The result of the level just completed, while its overlay shows (P06-R03).
+        # The result of the level just completed, while its overlay shows (UI-OVER-01).
         self.level_result = level_result
-        # The choice selected on a "Game over" panel with a checkpoint (P07-R08): 0 Continue, 1
-        # level select.
+        # The choice selected on a "Game over" panel with a checkpoint (UI-OVER-06): 0 Continue,
+        # 1 level select.
         self.choice = choice
         # Goes up each time a level starts, or starts again from a checkpoint.
         self.attempt = attempt
-        # Where the level being played started again from (P07-R08), or None from its start.
+        # Where the level being played started again from (GAME-LIFE-11), or None from its start.
         self.resume = resume
-        # Whether the level being played is paused (P12-R01): on the pause menu, or on the
-        # settings screen opened from it.
+        # Whether the level being played is paused (UI-PAUSE-03): on the pause menu, or on the
+        # settings screen opened from it (UI-PAUSE-09).
         self.paused = paused
-        # Whether the pause menu asks `Leave the level?` (P12-R02); `choice` is then 0 No, 1 Yes.
+        # Whether the pause menu asks `Leave the level?` (UI-PAUSE-10); `choice` is then 0 No,
+        # 1 Yes.
         self.leaving = leaving
-        # The music and sound effect volumes, in slider steps (P12-R04).
+        # The music and sound effect volumes, in slider steps (UI-SET-02).
         self.volumes = volumes
         # The dev viewer shown (D-199): one of `DEV_VIEWERS`, on the `dev-viewer` screen; None
         # elsewhere. `selection` is then the item it shows.
@@ -97,13 +98,13 @@ class MenuFlowOptions:
         # Ship ids in display order; the first one is the default selection.
         self.ship_ids = ship_ids
         self.levels = levels
-        # Ship to highlight first instead of the default one (P01-R14). Ignored if unknown.
+        # Ship to highlight first instead of the default one (UI-SHIP-07). Ignored if unknown.
         self.initial_ship_id = initial_ship_id
-        # Input is ignored for this long after each screen change (P01-R15).
+        # Input is ignored for this long after each screen change (UI-FLOW-08).
         self.transition_seconds = transition_seconds
-        # ...and for this long after the "Level complete" overlay shows (P06-R03).
+        # ...and for this long after the "Level complete" overlay shows (UI-OVER-04).
         self.result_delay_seconds = result_delay_seconds
-        # The saved volumes (P12-R04); the highest step is `volume_steps`.
+        # The saved volumes (UI-SET-06); the highest step is `volume_steps`.
         self.volumes = volumes
         self.volume_steps = volume_steps
         # The dev menu (D-199): how many items each viewer of `DEV_VIEWERS` shows. None: no dev

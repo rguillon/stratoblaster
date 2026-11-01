@@ -1,4 +1,5 @@
-"""Materials shared by all the player ships of a scene"""
+"""Materials shared by all the player ships of a scene: shiny grey/blue metals and blue lights
+(GFX-SHIP-04, GFX-ART-04)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -7,7 +8,7 @@ from game.config.ship_look import SHIP_LOOK
 from render.babylon import color3, color3_black, new_pbr_material, new_standard_material
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 
@@ -28,12 +29,12 @@ class ShipMaterials:
         accent: Any,
         canopy: Any,
         trim: Any,
-        navLight: Any,  # noqa: N803
+        navLight: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
         nozzle: Any,
-        reactorCore: Any,  # noqa: N803
-        reactorExhaust: Any,  # noqa: N803
-        reactorFlame: Any,  # noqa: N803
-        reactorPlasma: Any,  # noqa: N803
+        reactorCore: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
+        reactorExhaust: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
+        reactorFlame: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
+        reactorPlasma: Any,  # noqa: N803 (the key of the same name in game/config/ship_look.py)
     ) -> None:
         self.hull = hull
         self.accent = accent
@@ -55,7 +56,8 @@ def _rgb_color(rgb: Any) -> Any:
 
 
 def _metal(name: str, look: Any, scene: Scene) -> Any:
-    """A physically based metal with the look's albedo, metallic and roughness."""
+    """A physically based metal with the look's albedo, metallic and roughness, taking the brighter
+    hull light (GFX-ART-08)."""
     mat = new_pbr_material(name, scene)
     mat.albedoColor = _rgb_color(look.albedo)
     mat.metallic = look.metallic

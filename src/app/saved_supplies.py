@@ -1,4 +1,4 @@
-"""The lives and bombs kept between levels Storage key
+"""The lives and bombs kept between levels (GAME-LIFE-12, GAME-LEVEL-14). Storage key
 prefixed with the game's id.
 """
 
@@ -6,11 +6,11 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from host.key_value_storage import KeyValueStorage  # noqa: E402
+from host.key_value_storage import KeyValueStorage  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.systems.level_run_types import Supplies  # noqa: E402
+from core.systems.level_run_types import Supplies  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def saved_supplies_key(game_id: str) -> str:

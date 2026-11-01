@@ -1,5 +1,5 @@
 """Unit tests of `src/app/perf_monitor.py`."""
-# (P13-R01, P13-R03, P13-R04, ENG-111).
+# (DEV-PERF-01, DEV-PERF-02, DEV-PERF-03, ENG-111).
 
 from unittest.mock import MagicMock
 
@@ -26,7 +26,7 @@ def frame(monitor: PerfMonitor, clock: Clock, ms: float) -> None:
     monitor.frame_ended()
 
 
-def test_p13_r01_frames_are_counted_and_the_long_ones_are_flagged() -> None:
+def test_dev_perf_01_frames_are_counted_and_the_long_ones_are_flagged() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     frame(monitor, clock, 16)
@@ -37,14 +37,14 @@ def test_p13_r01_frames_are_counted_and_the_long_ones_are_flagged() -> None:
     assert numbers.longest_frame == 80
 
 
-def test_p13_r01_a_frame_end_without_a_start_is_ignored() -> None:
+def test_dev_perf_01_a_frame_end_without_a_start_is_ignored() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     monitor.frame_ended()
     assert monitor.numbers.frames == 0
 
 
-def test_p13_r04_the_first_frames_of_a_level_are_skipped_once_it_has_loaded() -> None:
+def test_dev_perf_02_the_first_frames_of_a_level_are_skipped_once_it_has_loaded() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     monitor.load_started()
@@ -58,7 +58,7 @@ def test_p13_r04_the_first_frames_of_a_level_are_skipped_once_it_has_loaded() ->
     assert numbers.long_frames == 0
 
 
-def test_p13_r03_the_loading_time_and_its_longest_step_are_recorded() -> None:
+def test_dev_perf_01_the_loading_time_and_its_longest_step_are_recorded() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     monitor.load_started()
@@ -74,7 +74,7 @@ def test_p13_r03_the_loading_time_and_its_longest_step_are_recorded() -> None:
     assert numbers.frames == 0
 
 
-def test_p13_r03_a_load_started_inside_a_frame_counts_that_frame() -> None:
+def test_dev_perf_02_a_load_started_inside_a_frame_counts_that_frame() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     monitor.frame_started()
@@ -87,14 +87,14 @@ def test_p13_r03_a_load_started_inside_a_frame_counts_that_frame() -> None:
     monitor.frame_ended()
 
 
-def test_p13_r03_finishing_a_load_that_never_started_does_nothing() -> None:
+def test_dev_perf_02_finishing_a_load_that_never_started_does_nothing() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     monitor.load_finished()
     assert monitor.numbers.last_load is None
 
 
-def test_p13_r01_reset_clears_the_counts_but_keeps_the_last_load() -> None:
+def test_dev_perf_02_reset_clears_the_counts_but_keeps_the_last_load() -> None:
     clock = Clock()
     monitor = PerfMonitor(50, clock)
     frame(monitor, clock, 90)
@@ -118,6 +118,7 @@ def test_eng111_without_a_perf_parent_the_overlay_does_nothing() -> None:
 def test_eng111_the_overlay_is_toggled_by_its_key_and_refreshed_after_each_frame(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """DEV-PERF-03."""
     doc = FakeDocument()
     parent = doc.createElement("div")
     target = MagicMock()
@@ -146,3 +147,22 @@ def test_eng111_the_overlay_is_toggled_by_its_key_and_refreshed_after_each_frame
     handle.dispose()
     target.removeEventListener.assert_called_once()
     assert parent.children == []
+
+
+def test_eng_106_the_monitor_samples_the_draw_calls_the_game_recorded() -> None:
+    clock = Clock()
+    monitor = PerfMonitor(50, clock)
+    assert monitor.numbers.draw_calls == 0
+    frame(monitor, clock, 16)
+    monitor.record_draw_calls(143)
+    assert monitor.numbers.draw_calls == 143
+    monitor.record_draw_calls(201)
+    assert monitor.numbers.draw_calls == 201
+
+
+def test_eng_106_a_reset_of_the_frame_counts_keeps_the_draw_calls() -> None:
+    clock = Clock()
+    monitor = PerfMonitor(50, clock)
+    monitor.record_draw_calls(120)
+    monitor.reset()
+    assert monitor.numbers.draw_calls == 120

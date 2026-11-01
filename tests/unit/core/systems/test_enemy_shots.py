@@ -47,7 +47,7 @@ def _shots(eye: object = None) -> EnemyShots:
     return EnemyShots(EnemyShotsOptions(100, 100, 10, eye))  # type: ignore[arg-type]
 
 
-def test_gd43_a_ray_reaches_the_edge_in_its_direction() -> None:
+def test_enm_19_a_ray_reaches_the_edge_in_its_direction() -> None:
     assert ray_to_edge(50, 50, 0, BOX, 0) == pytest.approx(50)
     assert ray_to_edge(50, 50, math.pi / 2, BOX, 0) == pytest.approx(50)
     assert ray_to_edge(50, 50, math.pi, BOX, 0) == pytest.approx(50)
@@ -55,12 +55,12 @@ def test_gd43_a_ray_reaches_the_edge_in_its_direction() -> None:
     assert ray_to_edge(50, 50, math.pi / 4, BOX, 0) == pytest.approx(50 / math.sin(math.pi / 4))
 
 
-def test_gd43_the_margin_grows_the_edge_and_a_ray_outside_has_no_length() -> None:
+def test_enm_19_the_margin_grows_the_edge_and_a_ray_outside_has_no_length() -> None:
     assert ray_to_edge(50, 50, 0, BOX, 10) == pytest.approx(60)
     assert ray_to_edge(150, 50, math.pi / 2, BOX, 0) == 0
 
 
-def test_gd43_fire_bullet_sets_its_fields() -> None:
+def test_enm_16_fire_bullet_sets_its_fields() -> None:
     shots = _shots()
     shots.fire_bullet(1, 2, 0.5, _bullet(speed=7, burst=EnemyBurstSpec(1, 3, _bullet())))
     bullet = shots.bullets[0]
@@ -71,7 +71,7 @@ def test_gd43_fire_bullet_sets_its_fields() -> None:
     assert bullet.burst.count == 3
 
 
-def test_gd43_a_free_bullet_is_reused() -> None:
+def test_eng_19_a_free_bullet_is_reused() -> None:
     shots = _shots()
     shots.fire_bullet(0, 0, 0, _bullet())
     shots.bullets[0].alive = False
@@ -80,7 +80,7 @@ def test_gd43_a_free_bullet_is_reused() -> None:
     assert (shots.bullets[0].x, shots.bullets[0].alive) == (5, True)
 
 
-def test_gd43_bullets_fly_straight_and_leave_the_playfield_behind() -> None:
+def test_enm_16_bullets_fly_straight_and_leave_the_playfield_behind() -> None:
     shots = _shots()
     shots.fire_bullet(50, 50, 0, _bullet(speed=10))
     shots.step(0.5, 0, 0)
@@ -91,7 +91,7 @@ def test_gd43_bullets_fly_straight_and_leave_the_playfield_behind() -> None:
     assert shots.bullets[1].alive is False
 
 
-def test_gd44_a_missile_homes_on_the_player_for_its_homing_time() -> None:
+def test_enm_18_a_missile_homes_on_the_player_for_its_homing_time() -> None:
     shots = _shots()
     shots.fire_missile(0, 0, math.pi / 2, _missile())
     missile = shots.missiles[0]
@@ -109,7 +109,7 @@ def test_gd44_a_missile_homes_on_the_player_for_its_homing_time() -> None:
     assert missile.heading == pytest.approx(0)
 
 
-def test_gd44_a_missile_with_no_health_dies_without_moving() -> None:
+def test_enm_18_a_missile_with_no_health_dies_without_moving() -> None:
     shots = _shots()
     shots.fire_missile(0, 0, 0, _missile())
     shots.missiles[0].health = 0
@@ -118,7 +118,7 @@ def test_gd44_a_missile_with_no_health_dies_without_moving() -> None:
     assert shots.missiles[0].y == 0
 
 
-def test_gd44_free_missiles_are_reused_and_keep_counting_ids() -> None:
+def test_eng_19_free_missiles_are_reused_and_keep_counting_ids() -> None:
     shots = _shots()
     shots.fire_missile(0, 0, 0, _missile())
     shots.missiles[0].alive = False
@@ -128,7 +128,7 @@ def test_gd44_free_missiles_are_reused_and_keep_counting_ids() -> None:
     assert shots.missiles[0].max_health == 5
 
 
-def test_gd43_a_laser_warns_then_fires_along_its_locked_heading() -> None:
+def test_enm_19_a_laser_warns_then_fires_along_its_locked_heading() -> None:
     shots = _shots()
     owner = _Owner(PlanePoint(10, 10), heading=0)
     shots.fire_laser(owner, _laser(warning=1, firing=1))

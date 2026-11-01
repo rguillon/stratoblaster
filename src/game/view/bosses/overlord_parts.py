@@ -1,4 +1,4 @@
-"""P07-R05, P16-R06: the Overlord's destroyable parts: wing
+"""FB-OVERLORD-03: the Overlord's destroyable parts: wing
 laser cannons, missile batteries, shield generators, each drawn around its centre `at` (model
 space: logical pixels, nose +Z, Y up).
 """
@@ -16,7 +16,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -45,7 +45,7 @@ LASER_LENS = [
 
 
 def draw_laser(p: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a wing laser cannon: a swollen gland on the wing, a grafted collar, a long
+    """FB-OVERLORD-03: a wing laser cannon: a swollen gland on the wing, a grafted collar, a long
     barrel, coils and a lens charging."""
     hull = p.hull
     neon = p.neon
@@ -103,7 +103,7 @@ CELLS = [[cx, cz] for cx in [-5, 5] for cz in [-7.5, 0, 7.5]]
 
 
 def draw_battery(p: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a missile brood on the mantle: a swollen mound under a grafted plate, six
+    """FB-OVERLORD-03: a missile brood on the mantle: a swollen mound under a grafted plate, six
     hatches lit as it loads."""
     hull = p.hull
     neon = p.neon
@@ -157,7 +157,7 @@ DOME = [
 
 
 def draw_generator(p: Any, at_point: Vec3) -> None:
-    """P07-R05, P16-R06: a shield generator: a glowing neon gland in a ring of grafted coil,
+    """FB-OVERLORD-03: a shield generator: a glowing neon gland in a ring of grafted coil,
     swelling out of a flesh mound, three bone horns around it tipped with neon."""
     hull = p.hull
     neon = p.neon

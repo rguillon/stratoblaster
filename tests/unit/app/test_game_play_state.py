@@ -1,5 +1,5 @@
 """Unit tests of `src/app/game_play_state.py`."""
-# (the snapshots of the test API, P12-R12).
+# (the snapshots of the test API, DEV-API-03, DEV-API-04, DEV-API-05).
 
 from types import SimpleNamespace
 
@@ -31,7 +31,7 @@ def run(**overrides: object) -> SimpleNamespace:
     return SimpleNamespace(**values)
 
 
-def test_p12_r12_the_level_snapshot_names_the_level_and_its_phase() -> None:
+def test_dev_api_03_the_level_snapshot_names_the_level_and_its_phase() -> None:
     state = level_state(run(), 2.0, 10.0)
     assert state["levelId"] == "1-2"
     assert state["phase"] == "playing"
@@ -40,7 +40,7 @@ def test_p12_r12_the_level_snapshot_names_the_level_and_its_phase() -> None:
     assert state["timeScale"] == 2.0
 
 
-def test_p12_r12_the_snapshot_counts_the_enemies_shots_and_bonuses() -> None:
+def test_dev_api_03_the_snapshot_counts_the_enemies_shots_and_bonuses() -> None:
     state = level_state(run(), 1.0, 10.0)
     assert state["enemies"] == 3
     assert state["destroyed"] == 4
@@ -52,7 +52,7 @@ def test_p12_r12_the_snapshot_counts_the_enemies_shots_and_bonuses() -> None:
     assert state["wavesTriggered"] == 2
 
 
-def test_p12_r12_the_snapshot_gives_the_ship_the_weapons_and_the_score() -> None:
+def test_dev_api_03_the_snapshot_gives_the_ship_the_weapons_and_the_score() -> None:
     state = level_state(run(), 1.0, 10.0)
     assert state["player"] == {"x": 10.0, "y": 20.0}
     assert state["firing"] is True
@@ -68,7 +68,7 @@ def test_p12_r12_the_snapshot_gives_the_ship_the_weapons_and_the_score() -> None
     assert state["checkpoint"] is False
 
 
-def test_p12_r12_a_level_without_a_hull_or_bonuses_reads_as_none_of_them() -> None:
+def test_dev_api_03_a_level_without_a_hull_or_bonuses_reads_as_none_of_them() -> None:
     state = level_state(run(hull=None, bonuses=None, bombs=None), 1.0, 10.0)
     assert state["health"] == 10.0
     assert state["lives"] == 0
@@ -78,7 +78,7 @@ def test_p12_r12_a_level_without_a_hull_or_bonuses_reads_as_none_of_them() -> No
     assert state["bombs"] == 0
 
 
-def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
+def test_dev_api_04_the_snapshot_describes_the_boss_being_fought() -> None:
     boss = SimpleNamespace(
         name="Warden",
         state="fighting",
@@ -110,7 +110,7 @@ def test_p07_r02_the_snapshot_describes_the_boss_being_fought() -> None:
     }
 
 
-def test_p10_r05_the_sky_snapshot_keeps_the_weather_and_the_look() -> None:
+def test_dev_api_05_the_sky_snapshot_keeps_the_weather_and_the_look() -> None:
     sky = game_play_sky(
         "rain", "snow", 300, 0.5, 1.0, 0.2, 0.3, 0.4, 0.9, 800.0, False, 0.0, 2, "laser"
     )

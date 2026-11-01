@@ -1,4 +1,4 @@
-"""The weapons kept between levels Storage key prefixed with
+"""The weapons kept between levels (GAME-WPN-15, GAME-LEVEL-14). Storage key prefixed with
 the game's id.
 """
 
@@ -6,11 +6,11 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from host.key_value_storage import KeyValueStorage  # noqa: E402
+from host.key_value_storage import KeyValueStorage  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.systems.run_arsenal import WeaponLevels  # noqa: E402
+from core.systems.run_arsenal import WeaponLevels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def saved_weapons_key(game_id: str) -> str:

@@ -1,4 +1,4 @@
-"""The light player ship (P02-R03): a faceted tandem-wing interceptor,
+"""The light player ship (GFX-SHIP-03): a faceted tandem-wing interceptor,
 like a dragonfly. A small front wing pair sits low (anhedral) and a larger swept rear pair sits
 high (dihedral); each of the 4 wings carries a hexagonal reactor at its tip, so the front flames
 stream under the rear wings. Everything is polygonal: fuselage with a smooth top and a faceted
@@ -10,13 +10,13 @@ import math
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any
 __pragma__("noskip")
 
-from game.view.ship_materials import get_ship_materials  # noqa: E402
-from game.view.ship_parts import (  # noqa: E402
+from game.view.ship_materials import get_ship_materials  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.ship_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
     BODY_SECTION,
     PART_FACETS,
     build_reactor,
@@ -27,8 +27,8 @@ from game.view.ship_parts import (  # noqa: E402
     plate,
     tag_part,
 )
-from render.babylon import new_transform_node, vector3  # noqa: E402
-from render.geometry.lathe_z import create_faceted_lathe_along_z  # noqa: E402
+from render.babylon import new_transform_node, vector3  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.lathe_z import create_faceted_lathe_along_z  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Right front wing (X > 0): short, swept back.
 FRONT_WING = [
@@ -256,7 +256,7 @@ def _build_wing(wing_def: dict[str, Any], root: Any, scene: Any) -> None:
 
 
 def build_light_ship(scene: Any) -> Any:
-    """Builds the light player ship (P02-R03)."""
+    """Builds the light player ship (GFX-SHIP-03)."""
     root = new_transform_node("ship-light", scene)
     _build_body(root, scene)
     _build_fin_and_cannons(root, scene)

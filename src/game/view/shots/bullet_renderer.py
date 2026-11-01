@@ -1,24 +1,24 @@
-"""Minigun tracers (P03-R01, phase 5 review): white-hot streaks cooling to red along their tail,
-flickering, and a burst of sparkling metal sparks where they hit.
+"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to cyan then deep blue along their tail,
+flickering, and a burst of sparkling metal sparks where they hit (GFX-FX-02).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from render.game_view import ShotRenderer  # noqa: E402
+from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-import math  # noqa: E402
+import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.shot_look import SHOT_LOOK  # noqa: E402
-from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402
-from game.view.shots.shot_meshes import additive_template  # noqa: E402
-from game.view.shots.spark_bursts import SparkBursts  # noqa: E402
-from render.node_pool import NodePool  # noqa: E402
+from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.spark_bursts import SparkBursts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 def _shot_renderer(sync: Any, dispose: Any) -> Any:
@@ -28,7 +28,7 @@ def _shot_renderer(sync: Any, dispose: Any) -> Any:
 
 
 def create_bullet_renderer(scene: Any) -> ShotRenderer:
-    """The minigun's tracers and sparks, drawn in `scene`."""
+    """The minigun's tracers and the sparks of their hits (GFX-FX-01), drawn in `scene`."""
     look = SHOT_LOOK.bullet
     template = additive_template("bullet", build_tracer(look.colors, look.rows), scene)
     pool = NodePool(lambda i: template.clone("bullet-" + str(i)))
@@ -44,6 +44,8 @@ def create_bullet_renderer(scene: Any) -> ShotRenderer:
             shot = frame.projectiles[i]
             if not shot:
                 continue
+            # `depth` behind the playfield plane: the ship is drawn over a bullet leaving it
+            # (GFX-SHOT-02).
             mesh.position.set(shot.x, shot.y, look.depth)
             mesh.rotation.z = -shot.heading
             # Grows out of the muzzle, then keeps its length; its width flickers.

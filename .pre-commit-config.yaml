@@ -1,4 +1,5 @@
-# Git hooks (ENG-60, ENG-61, ENG-63). Installed by `make setup`.
+# Git hooks (ENG-60, ENG-61, ENG-63). Installed by `make setup`. Local hooks on the project's own
+# locked tools (ENG-67), kept fast by the tools' caches (ENG-65, ENG-66).
 repos:
   - repo: local
     hooks:

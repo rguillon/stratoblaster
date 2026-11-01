@@ -59,13 +59,13 @@ def keys(placements) -> list[tuple]:
     return [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in placements]
 
 
-def test_p04_r07_the_roads_are_the_same_for_the_same_seed() -> None:
+def test_gfx_road_01_the_roads_are_the_same_for_the_same_seed() -> None:
     level = _level()
     assert _shape(_network(level, 4)) == _shape(_network(level, 4))
     assert _shape(_network(level, 4)) != _shape(_network(level, 5))
 
 
-def test_p04_r07_there_are_the_main_roads_asked_for_and_they_wind() -> None:
+def test_gfx_road_01_there_are_the_main_roads_asked_for_and_they_wind() -> None:
     net = _network(_level(streets=False))
     mains = _mains(net)
     assert len(mains) == road_rules().main_roads
@@ -73,7 +73,7 @@ def test_p04_r07_there_are_the_main_roads_asked_for_and_they_wind() -> None:
     assert len({round(p.x, 3) for p in mains[0].points}) > 5
 
 
-def test_p04_r07_main_roads_start_and_end_off_the_screen() -> None:
+def test_gfx_road_04_main_roads_start_and_end_off_the_screen() -> None:
     rules = road_rules()
     net = _network(_level(streets=False))
     for road in _mains(net):
@@ -84,7 +84,7 @@ def test_p04_r07_main_roads_start_and_end_off_the_screen() -> None:
             assert off
 
 
-def test_p04_r07_paths_run_past_the_screen_edge() -> None:
+def test_gfx_road_04_paths_run_past_the_screen_edge() -> None:
     rules = road_rules()
     net = _network(_level(streets=False))
     paths = [r for r in net.roads if r.kind == "cross"]
@@ -92,7 +92,7 @@ def test_p04_r07_paths_run_past_the_screen_edge() -> None:
     assert all(abs(r.points[-1].x) >= rules.offscreen_x for r in paths)
 
 
-def test_p04_r07_every_point_of_a_winding_road_is_on_buildable_ground() -> None:
+def test_gfx_road_03_every_point_of_a_winding_road_is_on_buildable_ground() -> None:
     terrain = hills(50.0, 30.0)
     rules = dict(min_height=30.0, max_slope=0.6)
     net = _network(_level(terrain=terrain, streets=False, **rules))
@@ -102,13 +102,13 @@ def test_p04_r07_every_point_of_a_winding_road_is_on_buildable_ground() -> None:
         assert all(net.buildable(p.x, p.z) for p in road.points)
 
 
-def test_p04_r07_no_ground_that_cannot_hold_a_road_means_no_roads() -> None:
+def test_gfx_road_03_no_ground_that_cannot_hold_a_road_means_no_roads() -> None:
     net = _network(_level(streets=False, min_height=1e6))
     assert net.roads == []
     assert net.slots == []
 
 
-def test_p04_r07_roads_are_flagged_and_sized_by_their_lanes() -> None:
+def test_gfx_road_01_roads_are_flagged_and_sized_by_their_lanes() -> None:
     rules = road_rules()
     net = _network(_level())
     for road in net.roads:
@@ -116,7 +116,7 @@ def test_p04_r07_roads_are_flagged_and_sized_by_their_lanes() -> None:
             assert road.lanes == (2 if road.width >= rules.dual.width else 1)
 
 
-def test_p04_r07_slots_sit_on_their_road_at_unit_normals() -> None:
+def test_gfx_bldg_01_slots_sit_on_their_road_at_unit_normals() -> None:
     net = _network(_level(streets=False))
     assert net.slots
     for slot in net.slots:
@@ -125,7 +125,7 @@ def test_p04_r07_slots_sit_on_their_road_at_unit_normals() -> None:
         assert distance <= 0.0 + 1e-9
 
 
-def test_p04_r07_edge_distance_is_negative_on_a_road() -> None:
+def test_gfx_road_23_edge_distance_is_negative_on_a_road() -> None:
     net = _network(_level(streets=False))
     road = _mains(net)[0]
     p = road.points[len(road.points) // 2]
@@ -134,14 +134,16 @@ def test_p04_r07_edge_distance_is_negative_on_a_road() -> None:
     assert net.edge_distance(p.x, p.z, except_road=road) >= net.edge_distance(p.x, p.z)
 
 
-def test_p04_r07_clear_of_agrees_with_the_edge_distance() -> None:
+def test_gfx_road_23_clear_of_agrees_with_the_edge_distance() -> None:
+    """Also PERF-03: the faster answer is the edge distance's."""
     net = _network(_level(streets=False))
     for x, z in SAMPLE_POINTS:
         for clearance in (1.0, 20.0, 80.0):
             assert net.clear_of(x, z, clearance) == (net.edge_distance(x, z) >= clearance)
 
 
-def test_p15_r03_on_tiles_streets_have_lanes_by_their_tile_width_and_no_slots() -> None:
+def test_gfx_road_09_on_tiles_streets_have_lanes_by_their_tile_width_and_no_slots() -> None:
+    """Also GFX-BLDG-01: no building slots along the district streets."""
     level = make_level(
         [
             section("a", 10, flat()),
@@ -159,7 +161,8 @@ def test_p15_r03_on_tiles_streets_have_lanes_by_their_tile_width_and_no_slots() 
     assert net.tiles is not None
 
 
-def test_p04_r07_the_runout_is_laid_once_and_can_be_made_elsewhere() -> None:
+def test_perf_15_the_runout_is_laid_once_and_can_be_made_elsewhere() -> None:
+    """Also PERF-14: the runout's streets made elsewhere (the worker) are taken as they are."""
     # Streets in the last section too, so the runout has streets of its own to lay.
     level = with_runout(
         make_level(
@@ -188,13 +191,13 @@ def test_p04_r07_the_runout_is_laid_once_and_can_be_made_elsewhere() -> None:
     assert len(other.roads) == len(net.roads)
 
 
-def test_p04_r07_blocks_of_the_districts_have_room() -> None:
+def test_gfx_road_14_blocks_of_the_districts_have_room() -> None:
     net = _network(_level())
     assert net.blocks
     assert all(b.x_max > b.x_min and b.z_max > b.z_min for b in net.blocks)
 
 
-def test_p13_r03_a_snapshot_makes_the_same_placer_without_placing_again() -> None:
+def test_perf_14_a_snapshot_makes_the_same_placer_without_placing_again() -> None:
     level = sample_level()
     field = HeightField(level, level.seed)
     original = PropPlacer(

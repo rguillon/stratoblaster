@@ -1,9 +1,11 @@
-"""P10-R11, 4-1: the Steam Dreadnought, the Black sands' final boss ().
+"""4-1: the Steam Dreadnought, the Black sands' final boss
+(specs/bosses/final/4-1-steam-dreadnought.md).
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down the screen, at -Y). The
-stage patterns are the agent's design (P07-R04): the parts fire the same while they stand, the core
-fires its bow laser at every stage with something new beside it, and its last stage (only the core
-left) adds spirals used by no earlier stage. Health tuned with the D-055 bot for P10-R12.
+stage patterns are the agent's design (FB-STEAM-DREADNOUGHT-12): the parts fire the same while they
+stand, the core fires its bow laser at every stage with something new beside it, and its last stage
+(only the core left) adds spirals used by no earlier stage. Health (FB-STEAM-DREADNOUGHT-08) tuned
+with the D-055 bot for WLD-4-22.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -16,13 +18,14 @@ from game.config.record import concat, merge, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (P07-R07, `part_drop_chance`)."""
+    """A final boss's part: drops a bonus 60 % of the time (FB-STEAM-DREADNOUGHT-19,
+    `part_drop_chance`)."""
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -60,15 +63,16 @@ TURRET_X = DREAD_PARTS.turret[0]
 TURRET_Y = DREAD_PARTS.turret[1]
 
 # 4-1: a flying battleship 5 L long, soot-black armour with red neon and glowing seams, two
-# smokestacks puffing steam (P10-R11). The smokestacks fire rings of bullets and the two broadside
-# turrets aimed bursts; the four shield the core. The missile rack on the stern fires homing
-# missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
+# smokestacks puffing steam (FB-STEAM-DREADNOUGHT-01). The smokestacks fire rings of bullets and
+# the two broadside turrets aimed bursts; the four shield the core. The missile rack on the stern
+# fires homing missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
 _STEAM_DREADNOUGHT = record(
     {
         "id": "steam-dreadnought",
-        # Angry after each destroyed part (D-063), heat 10: World 4 goes on from World 3's 9, up to
-        # 14.
+        # Angry after each destroyed part (D-063, FB-STEAM-DREADNOUGHT-14), heat 10: World 4 goes
+        # on from World 3's 9, up to 14.
         "rage": rage.flower(10, "red", "orange"),
+        # Its core and parts, their health, and its points (FB-STEAM-DREADNOUGHT-08).
         "stats": stats(
             record(
                 {
@@ -90,6 +94,7 @@ _STEAM_DREADNOUGHT = record(
                 }
             )
         ),
+        # Where it stops and how it moves in place (FB-STEAM-DREADNOUGHT-07).
         "stopFraction": 0.74,
         "sway": {"amplitude": 40, "period": 10},
         "bob": {"amplitude": 5, "period": 5},
@@ -101,6 +106,9 @@ _STEAM_DREADNOUGHT = record(
             "turret-right": {"gun": mirror(DREAD_TURRET_GUNS), "turret": [-TURRET_X, TURRET_Y]},
             "rack": {"missile": DREAD_RACK},
         },
+        # In every stage the stacks' rings (FB-STEAM-DREADNOUGHT-09), the turrets' bursts
+        # (FB-STEAM-DREADNOUGHT-10) and the rack's missiles (FB-STEAM-DREADNOUGHT-11); then the
+        # core's laser and pattern per stage (FB-STEAM-DREADNOUGHT-12).
         "stages": stages(
             [
                 volley.ring("stack-left", 3.6, 10, 9, ORANGE, 1.2),
@@ -140,9 +148,10 @@ _STEAM_DREADNOUGHT = record(
 )
 
 # Its transformations (D-230): once both its turrets are gone its front side decks fan out forward
-# on hinges at their bows, a gun battery riding each, dark metal showing in the wedges they open;
-# once both its stacks are gone its stern and spine plating burst off for two mortars and a ring
-# emitter.
+# on hinges at their bows (FB-STEAM-DREADNOUGHT-15), a gun battery riding each
+# (FB-STEAM-DREADNOUGHT-16), dark metal showing in the wedges they open; once both its stacks are
+# gone its stern and spine plating burst off (FB-STEAM-DREADNOUGHT-17) for two mortars and a ring
+# emitter (FB-STEAM-DREADNOUGHT-18).
 STEAM_DREADNOUGHT = with_weapons(
     merge(
         _STEAM_DREADNOUGHT,

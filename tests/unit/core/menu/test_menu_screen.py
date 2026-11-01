@@ -16,7 +16,7 @@ from core.menu.menu_screen import MENU_TRANSITIONS, can_transition
         ("level-select", "game"),
         ("level-select", "ship-select"),
         ("game", "pause"),
-        ("game", "level-select"),  # A completed level returns to the level select (P06-R03).
+        ("game", "level-select"),  # A completed level returns to the level select (UI-FLOW-07).
         ("pause", "game"),
         ("pause", "settings"),
         ("pause", "title"),
@@ -28,7 +28,7 @@ from core.menu.menu_screen import MENU_TRANSITIONS, can_transition
         ("dev-viewer", "dev"),
     ],
 )
-def test_p01_r01_the_flow_allows_its_transitions(source: str, target: str) -> None:
+def test_ui_flow_02_the_flow_allows_its_transitions(source: str, target: str) -> None:
     assert can_transition(source, target)  # type: ignore[arg-type]
 
 
@@ -44,7 +44,7 @@ def test_p01_r01_the_flow_allows_its_transitions(source: str, target: str) -> No
         ("dev", "game"),
     ],
 )
-def test_p01_r01_the_flow_refuses_other_transitions(source: str, target: str) -> None:
+def test_ui_flow_03_the_flow_refuses_other_transitions(source: str, target: str) -> None:
     assert not can_transition(source, target)  # type: ignore[arg-type]
 
 

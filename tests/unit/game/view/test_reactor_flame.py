@@ -1,4 +1,4 @@
-"""Unit tests of `src/game/view/reactor_flame.py`."""
+"""Unit tests of `src/game/view/reactor_flame.py` (GFX-SHIP-06, GFX-ART-11)."""
 
 import math
 

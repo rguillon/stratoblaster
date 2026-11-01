@@ -5,7 +5,7 @@ from helpers.dom import FakeDocument
 from ui.stats_tile import RenderStats, StatsTile
 
 
-def test_p13_r01_the_tile_shows_the_frame_rate_and_the_polygons() -> None:
+def test_dev_perf_04_the_tile_shows_the_frame_rate_and_the_polygons() -> None:
     doc = FakeDocument()
     parent = doc.createElement("div")
     tile = StatsTile(doc, parent, 0.5)
@@ -15,7 +15,7 @@ def test_p13_r01_the_tile_shows_the_frame_rate_and_the_polygons() -> None:
     assert tile.root.querySelector(".stats-polygons").textContent == "Polygons: 1,234"
 
 
-def test_p13_r01_the_numbers_change_only_every_refresh_interval() -> None:
+def test_dev_perf_04_the_numbers_change_only_every_refresh_interval() -> None:
     doc = FakeDocument()
     tile = StatsTile(doc, doc.createElement("div"), 0.5)
     tile.update(0.0, RenderStats(60, 10))

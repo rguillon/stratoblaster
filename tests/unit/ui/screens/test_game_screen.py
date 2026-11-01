@@ -26,7 +26,8 @@ def render(view: GameScreenView, h: ScreenHandlers) -> object:
     return render_game_screen(FakeDocument(), view, h)
 
 
-def test_p06_r02_the_playfield_shows_the_level_fire_and_pause_buttons() -> None:
+def test_ui_hud_09_the_playfield_shows_the_level_fire_and_pause_buttons() -> None:
+    """No Back button over the playfield. Also UI-HUD-06 (the level played), UI-PAUSE-02."""
     root = render(GameScreenView("Level 2", "FIRE", "II", None, None, 0), handlers())
     assert root.className == "menu-screen game-screen"
     assert root.querySelector(".game-level").textContent == "Level 2"
@@ -35,7 +36,7 @@ def test_p06_r02_the_playfield_shows_the_level_fire_and_pause_buttons() -> None:
     assert root.querySelector(".menu-back") is None
 
 
-def test_p06_r02_the_fire_button_reports_press_and_release_and_stops_the_event() -> None:
+def test_game_ctrl_05_the_fire_button_reports_press_and_release_and_stops_the_event() -> None:
     fires: list[bool] = []
     root = render(GameScreenView("Level 2", "FIRE", "II", None, None, 0), handlers(fires=fires))
     fire = root.querySelector(".game-fire")
@@ -46,7 +47,7 @@ def test_p06_r02_the_fire_button_reports_press_and_release_and_stops_the_event()
     assert event.stopped is True
 
 
-def test_p12_r01_the_pause_button_pauses_without_starting_a_drag() -> None:
+def test_ui_pause_02_the_pause_button_pauses_without_starting_a_drag() -> None:
     pauses: list[bool] = []
     drags: list[tuple[float, float]] = []
     root = render(
@@ -61,7 +62,7 @@ def test_p12_r01_the_pause_button_pauses_without_starting_a_drag() -> None:
     assert event.stopped is True
 
 
-def test_p06_r02_dragging_the_playfield_reports_the_pointer_offsets() -> None:
+def test_game_ctrl_04_dragging_the_playfield_reports_the_pointer_offsets() -> None:
     drags: list[tuple[float, float]] = []
     root = render(GameScreenView("Level 2", "FIRE", "II", None, None, 0), handlers(drags=drags))
     root.fire("pointermove", FakeEvent(x=5, y=5))  # not down: nothing
@@ -72,7 +73,8 @@ def test_p06_r02_dragging_the_playfield_reports_the_pointer_offsets() -> None:
     assert drags == [(3, -3)]
 
 
-def test_p03_r06_the_level_complete_panel_replaces_the_controls_and_taps_go_on() -> None:
+def test_ui_over_01_the_level_complete_panel_replaces_the_controls_and_taps_go_on() -> None:
+    """Also UI-OVER-03 (a tap goes on)."""
     taps: list[int] = []
     complete = LevelCompleteView("Level complete", False, "Level 2", "5/5", "1200", "Tap to go on")
     root = render(GameScreenView("Level 2", "FIRE", "II", complete, None, 0), handlers(taps=taps))
@@ -87,7 +89,7 @@ def test_p03_r06_the_level_complete_panel_replaces_the_controls_and_taps_go_on()
     assert taps == [0]
 
 
-def test_p07_r08_a_game_over_with_choices_shows_the_choices_not_a_tap_to_go_on() -> None:
+def test_ui_over_06_a_game_over_with_choices_shows_the_choices_not_a_tap_to_go_on() -> None:
     taps: list[int] = []
     choices = LevelChoices(["Continue", "Level select"], 1)
     complete = LevelCompleteView(
@@ -104,7 +106,8 @@ def test_p07_r08_a_game_over_with_choices_shows_the_choices_not_a_tap_to_go_on()
     assert taps == [0]
 
 
-def test_p12_r02_a_paused_level_shows_the_pause_panel_only() -> None:
+def test_ui_pause_07_a_paused_level_shows_the_pause_panel_only() -> None:
+    """Also UI-PAUSE-02 (no pause button on the pause menu)."""
     paused = PauseView("Paused", ["Resume", "Leave"], "hint")
     root = render(GameScreenView("Level 2", "FIRE", "II", None, paused, 1), handlers())
     assert root.querySelector(".pause-panel") is not None

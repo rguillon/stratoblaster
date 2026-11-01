@@ -1,5 +1,5 @@
-"""P07-R05, P16-R06: the Storm Petrel, the final boss of 1-1 Logical pixels, nose +Z, Y up (towards
-the camera). A colossal
+"""FB-STORM-PETREL-01 to FB-STORM-PETREL-04: the Storm Petrel, the final boss of 1-1 Logical
+pixels, nose +Z, Y up (towards the camera). A colossal
 sea-bird creature: a long shelled body, broad membrane wings on bone struts with an engine sac on
 each, magenta veins along the wing edges; its parts are growths on its wings, tail and breast.
 """
@@ -33,7 +33,7 @@ from render.geometry.solids import Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Vec3 = list[Any]
 __pragma__("noskip")
@@ -87,9 +87,9 @@ WING_Y = [6, 7.5, 9.5]
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (P16-R06): a long shelled body from tail to beak, plated grafts on its back, ribs
-    across its shoulders, a magenta vein down its spine, eyes over its beak, and the barbette of the
-    cockpit turret growing out of its back."""
+    """The body (FB-STORM-PETREL-02): a long shelled body from tail to beak, plated grafts on its
+    back, ribs across its shoulders, a magenta vein down its spine, eyes over its beak, and the
+    barbette of the cockpit turret growing out of its back."""
     hide(
         p,
         {
@@ -115,14 +115,15 @@ def _draw_hull(p: Any) -> None:
 
 
 def _cockpit_turret(p: Any, at: Vec3) -> None:
-    """The cockpit turret on its barbette (the core's gun), turning around its pivot `at`."""
+    """The cockpit turret on its barbette (the core's gun, FB-STORM-PETREL-03), turning around
+    its pivot `at`."""
     turret(p, shift(at, [0, 14.5, 0]), 8.5, [2, N])
 
 
 def _draw_wings(p: Any) -> None:
-    """Both wings (P16-R06): a membrane on bone struts (big, heavy wings: they stay still), neon
-    along their leading edges, veins across them, an engine sac on each with its reactor, a float
-    of flesh under each root."""
+    """Both wings (FB-STORM-PETREL-02): a membrane on bone struts (big, heavy wings: they stay
+    still), neon along their leading edges, veins across them, an engine sac on each with its
+    reactor, a float of flesh under each root."""
     for s in SIDES:
         p.flesh.bevel_slab(sided(WING, s), WING_Y, [1.2, 1.8], F.membrane, None, F.graphite)
         edge_strips(p.neon, sided(WING_LEAD, s), 1.2, [6.9, 8.1], N)
@@ -144,7 +145,7 @@ def _draw_wings(p: Any) -> None:
             p.flesh,
             SegmentedBody(-19, 19, 3, 5.5, -1, 9),
             F.slate,
-            Placement(nacelle),  # type: ignore[arg-type]
+            Placement(nacelle),  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         )
         graft(p, polygon(5, 3.4), [9, 10], shift(nacelle, [0, 0, 12]))
         p.neon.ring(3.6, 0.8, 6, N, Placement(shift(nacelle, [0, 3.8, 19.2]), 0, math.pi / 2))
@@ -161,7 +162,7 @@ def _draw_wings(p: Any) -> None:
 def _draw_tail(p: Any) -> None:
     """The tailplanes: membrane on bone, their fins of bone, neon on their leading edges."""
     for s in SIDES:
-        plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]
+        plane = TAILPLANE if s > 0 else flip_x(TAILPLANE)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
         p.flesh.bevel_slab(plane, [7, 8, 9.5], [0.6, 1], F.membrane, None, F.graphite)
         tentacle(p, [s * 4, 9, -50], [s * 30, 9, -57], [0, 1, 0], [1.4, 0.4], F.bone, 4)
         tentacle(p, [s * 28, 9, -55], [s * 28, 19, -63], [0, 0, 2], [1.4, 0.2], F.bone, 4)
@@ -181,9 +182,9 @@ def _draw_tail(p: Any) -> None:
 
 
 def build_storm_petrel(scene: Any) -> Any:
-    """P07-R05, P16-R06: the Storm Petrel, a colossal sea-bird creature 4.5 L across its wings,
-    magenta veins along the wing edges; a gun growth on each wing, a missile brood on its tail, a
-    bony shell over its breast, and a cockpit turret on its back (the core)."""
+    """FB-STORM-PETREL-01, FB-STORM-PETREL-04: the Storm Petrel, a colossal sea-bird creature 4.5 L
+    across its wings, magenta veins along the wing edges; a gun growth on each wing, a missile brood
+    on its tail, a bony shell over its breast, and a cockpit turret on its back (the core)."""
 
     def core(p: Any) -> None:
         _draw_hull(p)

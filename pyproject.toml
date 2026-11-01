@@ -2,11 +2,15 @@
 name = "stratoblaster"
 version = "0.0.0"
 description = "Stratoblaster, a 3D shoot 'em up, compiled to JavaScript with Transcrypt."
+# The project license (ENG-125), as in LICENSE.
 license = { text = "MIT" }
-# Transcrypt 3.9.5 cannot compile its own runtime under Python 3.13 or later (ENG-04).
+# Python 3.12 only (ENG-01, ENG-154): Transcrypt 3.9.5 cannot compile its own runtime under
+# Python 3.13 or later (ENG-04).
 requires-python = ">=3.12,<3.13"
+# No runtime Python dependency: the browser runs Transcrypt's output (ENG-05).
 dependencies = []
 
+# uv installs the tools from uv.lock (ENG-04); Transcrypt is pinned (ENG-03).
 [dependency-groups]
 dev = [
     "transcrypt==3.9.5",
@@ -20,17 +24,20 @@ dev = [
     "pytest-cov>=7.0.0"  
 ]
 
+# Ruff lints (ENG-12) and formats (ENG-13); `make lint` checks the format without writing.
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 src = ["src"]
 
+# The rule sets of ENG-12: N checks the naming (ENG-15), C90 and PL the size of the code (ENG-16).
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "PL", "C90", "TID"]
 ignore = ["PLR0913"]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests assert on literal values: a magic number there is the expected value, not a constant.
+# Tests assert on literal values: a magic number there is the expected value, not a constant
+# (ENG-17).
 "tests/**" = ["PLR2004"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
@@ -38,12 +45,14 @@ ignore = ["PLR0913"]
 "time".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
 "datetime".msg = "ENG-18: core/ receives dt from the loop, never reads the clock."
 
+# ENG-16: cyclomatic complexity at most 10.
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
 [tool.ruff.lint.pylint]
 max-args = 6
 
+# ENG-14: mypy --strict over src/ (`make typecheck`); the browser globals' stubs are in typings/.
 [tool.mypy]
 strict = true
 python_version = "3.12"
@@ -56,7 +65,8 @@ mypy_path = ["src", "typings"]
 testpaths = ["tests/unit"]
 python_files = ["test_*.py"]
 pythonpath = ["src", "tests"]
-# importlib: source modules share basenames (game_play, outline, ...), so test modules must too.
+# importlib: source modules share basenames (game_play, outline, ...), so test modules must too
+# (ENG-49).
 addopts = "-q --import-mode=importlib"
 
 [tool.coverage.run]
@@ -74,21 +84,36 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-# ENG-43: the whole of src/ at 70 % lines (`make coverage`); `src/core/**` at 90 % (`make coverage`
+# ENG-43: the whole of src/ at 70 % lines (`make tests`); `src/core/**` at 90 % (`make tests`
 # checks it on its own).
 fail_under = 70
 
 [tool.importlinter]
-root_packages = ["core"]
+root_packages = [
+    "app",
+    "assets",
+    "audio",
+    "config",
+    "core",
+    "debug",
+    "game",
+    "host",
+    "input",
+    "render",
+    "ui",
+]
 include_external_packages = true
 
+# The layering rule of ENG-11 for core/, checked by `make lint`, not just written down (the game/
+# directions of ENG-142 have no contract yet).
 [[tool.importlinter.contracts]]
 name = "core/ is pure: no browser or DOM"
 type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = ["org", "browser"]
 # Each module below imports __pragma__ only as a compile-time marker for Transcrypt (it skips
-# the typing names and never touches the DOM). Any other import of org or browser fails `make lint`.
+# the typing names and never touches the DOM, ENG-153). Any other import of org or browser fails
+# `make lint`.
 ignore_imports = [
     "core.content.game_definition -> org",
     "core.content.game_level -> org",
@@ -159,4 +184,75 @@ ignore_imports = [
     "core.systems.ship_journey -> org",
     "core.systems.shot_world -> org",
     "core.systems.wave_runner -> org",
+    # config/ is now analysed (root package), and these two import __pragma__ as the same marker.
+    "config.time_of_day -> org",
+    "config.weather -> org",
 ]
+
+# ENG-11, ENG-142: the dependency direction of the game/ split, checked by `make lint`. main.py
+# and build_info.py are modules, not packages, so import-linter cannot check their imports.
+[[tool.importlinter.contracts]]
+name = "game/sim/ imports only core/, config/ and game/sim, game/config"
+type = "forbidden"
+source_modules = ["game.sim"]
+forbidden_modules = [
+    "app",
+    "assets",
+    "audio",
+    "debug",
+    "host",
+    "input",
+    "render",
+    "ui",
+    "game.index",
+    "game.view",
+]
+
+[[tool.importlinter.contracts]]
+name = "game/config/ imports only game/config/"
+type = "forbidden"
+source_modules = ["game.config"]
+forbidden_modules = [
+    "app",
+    "assets",
+    "audio",
+    "config",
+    "core",
+    "debug",
+    "host",
+    "input",
+    "render",
+    "ui",
+    "game.index",
+    "game.sim",
+    "game.view",
+]
+
+[[tool.importlinter.contracts]]
+name = "game/view/ imports only render, audio, ui, assets, config, core, game/sim, game/config"
+type = "forbidden"
+source_modules = ["game.view"]
+forbidden_modules = [
+    "app",
+    "debug",
+    "host",
+    "input",
+    "game.index",
+]
+
+[[tool.importlinter.contracts]]
+name = "no module outside game/ imports game/"
+type = "forbidden"
+source_modules = [
+    "app",
+    "assets",
+    "audio",
+    "config",
+    "core",
+    "debug",
+    "host",
+    "input",
+    "render",
+    "ui",
+]
+forbidden_modules = ["game"]

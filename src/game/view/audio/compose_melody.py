@@ -1,4 +1,4 @@
-"""The melody of generated music (P12-R06): a two-bar motif
+"""The melody of generated music (AUD-MUSIC-02): a two-bar motif
 (a rhythm, and a walk on the scale that lands on chord tones), repeated and varied over a section.
 """
 
@@ -6,14 +6,14 @@ from org.transcrypt.stubs.browser import __pragma__
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from core.math.rng import Random  # noqa: E402
+from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from audio.audio_types import Note  # noqa: E402
-from core.math.rng import pick  # noqa: E402
-from game.view.audio.compose_parts import BarContext, note  # noqa: E402
-from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle  # noqa: E402
+from audio.audio_types import Note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import pick  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_parts import BarContext, note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 
 class MotifNote:
@@ -46,8 +46,8 @@ CHORD_STEPS = [0, 2, 4, 7]
 
 
 def make_motif(random: Random) -> Motif:
-    """A motif for a section (P12-R06): one of the rhythms, its pitches a walk on the scale that
-    starts and ends on chord tones, so every level gets its own melody."""
+    """A motif for a section (AUD-MUSIC-02): one of the rhythms, its pitches a walk on the scale
+    that starts and ends on chord tones, so every level gets its own melody."""
     rhythm = pick(random, RHYTHMS)
     degree = pick(random, CHORD_STEPS)
     motif: Motif = []

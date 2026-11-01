@@ -1,5 +1,5 @@
-"""The material of a weather's particles (P08-R05, phases 9-10): soft discs, streaks or sparks moved
-on the GPU in a box of air that follows the view.
+"""The material of a weather's particles (GFX-WEATHER-02, phases 9-10): soft discs, streaks or
+sparks moved on the GPU in a box of air that follows the view.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -15,7 +15,7 @@ from render.babylon import (
 )
 
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -146,12 +146,14 @@ class WeatherMaterialImpl:
 
 
 def create_weather_material(scene: Any, kind: Any) -> WeatherMaterialImpl:
-    """The material of a weather's particles (P08-R05): soft, faint discs placed and moved on the
-    GPU in a box of air that follows the view, falling, swaying and blown sideways by a wind that
-    grows with the strength (streaking them at 1), fading into the haze. Phase 9: a kind aligned
-    with its fall (rain) is drawn as thin streaks along the way it falls, at every strength. Blended
-    (phase 10: or added, for self-lit sparks that flicker and cool as they rise: embers), without
-    writing depth, so they never hide what is drawn after them (the playfield)."""
+    """The material of a weather's particles (GFX-WEATHER-02): soft, faint discs (snow, ash:
+    GFX-WEATHER-07, GFX-WEATHER-13) placed and moved on the GPU in a box of air that follows the
+    view, falling, swaying and blown sideways by a wind that grows with the strength (streaking
+    them at 1), fading into the haze. Phase 9: a kind aligned with its fall (rain) is drawn as thin
+    streaks along the way it falls, at every strength (GFX-WEATHER-08). Blended (phase 10: or
+    added, for self-lit sparks that flicker and cool as they rise: embers, GFX-WEATHER-14),
+    without writing depth, so they never hide what is drawn after them (the playfield,
+    GFX-WEATHER-04)."""
     material = new_glsl_material(
         "weather",
         scene,

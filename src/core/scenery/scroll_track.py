@@ -1,12 +1,12 @@
-"""How far a scrolling level has gone (P04-R06)
+"""How far a scrolling level has gone (GAME-SCREEN-03, GAME-LEVEL-02)
 
-The ground scrolls at `speed` world units per second from distance 0 to `length`, then the level
-has ended and the track stops.
+The ground scrolls at `speed` world units per second from distance 0. The level's progress runs
+from 0 to `length`, then the level has ended and its progress stops (the ground keeps going).
 
-Two distances are kept (P07-R03): `distance`, the ground flown over (what the scenery shows), and
-`progress`, how far the level has got (what its waves and bosses are placed by). They move
-together, except while the track is `held` (a boss fight): the ground goes on, the level does not.
-The ground's speed is `speed` times a factor that eases from one value to another
+Two distances are kept (GAME-LEVEL-06, GAME-LEVEL-07): `distance`, the ground flown over (what the
+scenery shows), and `progress`, how far the level has got (what its waves and bosses are placed by).
+They move together, except while the track is `held` (a boss fight): the ground goes on, the level
+does not. The ground's speed is `speed` times a factor that eases from one value to another
 (`set_speed_factor`).
 """
 
@@ -72,6 +72,7 @@ class ScrollTrack:
 
     @property
     def ended(self) -> bool:
+        """Whether the level's progress has reached its end."""
         return self._progress >= self.length_
 
     def set_speed_factor(self, factor: float, seconds: float) -> None:
@@ -85,13 +86,14 @@ class ScrollTrack:
         self._ease = _Ease(self._factor, factor, seconds)
 
     def step(self, dt: float) -> None:
-        """Advances by `dt` real seconds (times `time_scale`), stopping at the end unless held."""
+        """Advances by `dt` real seconds (times `time_scale`). The level's progress stops at the end
+        of the level (unless held); the ground keeps moving past it, so it can ease back to the
+        level's speed after the final boss (GAME-LEVEL-07)."""
         seconds = max(0, dt) * self.time_scale
         self._step_ease(seconds)
         run = self.speed * self._factor * seconds
         if not self.held:
-            run = min(run, max(0, self.length_ - self._progress))
-            self._progress += run
+            self._progress += min(run, max(0, self.length_ - self._progress))
         self._distance += run
 
     def _step_ease(self, seconds: float) -> None:
@@ -112,6 +114,7 @@ class ScrollTrack:
         self._distance = self._progress + lead
 
     def restart(self) -> None:
+        """Back to the start: no progress or distance, normal speed, no ease, not held."""
         self._progress = 0.0
         self._distance = 0.0
         self._factor = 1.0

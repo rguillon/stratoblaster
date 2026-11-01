@@ -18,7 +18,8 @@ PLANS = [PLAN_2_1, PLAN_2_2, PLAN_2_3, PLAN_2_4, PLAN_2_5]
 
 
 @pytest.mark.parametrize("plan", PLANS)
-def test_p08_r08_a_plan_composes_beats_that_name_kinds_and_sides_in_order(plan) -> None:
+def test_wld_2_19_a_plan_composes_beats_that_name_kinds_and_sides_in_order(plan) -> None:
+    """Each level's wave plan (WLD-2-19), of known kinds (WLD-2-17)."""
     beats = compose_beats(plan)
     assert beats
     assert_beats_well_formed(beats, KINDS)
@@ -26,7 +27,8 @@ def test_p08_r08_a_plan_composes_beats_that_name_kinds_and_sides_in_order(plan) 
     assert beats[-1][0] <= plan["to"]
 
 
-def test_p08_r08_each_filler_names_known_kinds_and_its_gap_shrinks() -> None:
+def test_wld_2_19_each_filler_names_known_kinds_and_its_gap_shrinks() -> None:
+    """Each level's filler (LVL-2-1-09 … LVL-2-5-09)."""
     for level_id, filler in WORLD_2_FILLERS.items():
         assert filler["kinds"], level_id
         assert set(filler["kinds"]) <= KINDS, level_id

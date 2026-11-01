@@ -1,8 +1,8 @@
-"""The moving cars of a level (phase 4 review): the cars in view are placed again every frame, as
-thin instances of their own meshes, apart from the props that stay put.
+"""The moving cars of a level (phase 4 review, GFX-CAR-08): the cars in view are placed again every
+frame, as thin instances of their own meshes, apart from the props that stay put.
 
 D-211: where the kit has imposters, a car's body is a picture of it baked from its detailed model
-(`imposters.py`), one quad facing the camera; only its lights are real geometry.
+(`imposters.py`), one quad facing the camera; only its lights are real geometry (GFX-CAR-05).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -13,7 +13,7 @@ from render.scenery.prop_field import PropField, PropMaterials
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -32,7 +32,7 @@ def _goes_on(before: list[Any], roads: list[Any]) -> bool:
     """Whether `roads` starts with `before` (the same roads, more after them)."""
     if len(roads) < len(before):
         return False
-    for i in range(len(before)):  # noqa: SIM110
+    for i in range(len(before)):  # noqa: SIM110 (index loop: the two lists are compared at each index)
         if roads[i] is not before[i]:
             return False
     return True
@@ -43,11 +43,11 @@ class TrafficLayer:
 
     def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         self,
-        scene: Any,  # noqa: ANN401
-        models: Any,  # noqa: ANN401
+        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        models: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         materials: PropMaterials,
-        rules: Any,  # noqa: ANN401
-        imposter_atlas: Any = None,  # noqa: ANN401
+        rules: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        imposter_atlas: Any = None,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
         tilt: float = 0,
     ) -> None:
         """`models`: the prop models (only those of the cars' kinds are used). `rules`: the cars'

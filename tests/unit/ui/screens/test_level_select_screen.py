@@ -14,7 +14,7 @@ def render(selected: int, taps: list[int], backs: list[bool]) -> object:
     return render_level_select_screen(FakeDocument(), view, handlers)
 
 
-def test_p01_r07_the_levels_are_laid_out_in_the_columns_of_the_view() -> None:
+def test_ui_level_01_the_levels_are_laid_out_in_the_columns_of_the_view() -> None:
     root = render(0, [], [])
     grid = root.querySelector(".level-grid")
     assert grid.style.gridTemplateColumns == "repeat(2, 1fr)"
@@ -26,7 +26,7 @@ def test_p01_r07_the_levels_are_laid_out_in_the_columns_of_the_view() -> None:
     ]
 
 
-def test_p01_r07_a_locked_level_is_still_tappable_and_shows_a_padlock() -> None:
+def test_ui_level_04_a_locked_level_is_still_tappable_and_shows_a_padlock() -> None:
     taps: list[int] = []
     root = render(0, taps, [])
     locked = root.querySelector(".level-grid").children[1]
@@ -38,13 +38,14 @@ def test_p01_r07_a_locked_level_is_still_tappable_and_shows_a_padlock() -> None:
     assert unlocked.querySelector(".padlock") is None
 
 
-def test_p01_r07_the_selected_level_is_highlighted() -> None:
+def test_ui_level_09_the_selected_level_is_highlighted() -> None:
     root = render(2, [], [])
     selected = root.querySelector(".level-grid").children[2]
     assert selected.classList.contains("selected")
 
 
-def test_p01_r11_the_back_button_and_heading_and_hint_are_there() -> None:
+def test_ui_input_10_the_back_button_and_heading_and_hint_are_there() -> None:
+    """Also UI-LEVEL-09 (the heading and the hint)."""
     backs: list[bool] = []
     root = render(0, [], backs)
     assert root.querySelector(".menu-heading").textContent == "Pick a level"

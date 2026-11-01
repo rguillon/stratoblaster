@@ -1,6 +1,7 @@
-"""Fakes of the Web Audio context for the audio tests: nodes that record their connections, their
-scheduled parameter changes and their stops, so a test can read what the engine did. Parameters
-(`gain`, `frequency`, `threshold`...) are created on first use and hold a real `value`."""
+"""Fakes of the Web Audio context for the audio tests (ENG-47, AUD-ENGINE-13): nodes that record
+their connections, their scheduled parameter changes and their stops, so a test can read what the
+engine did. Parameters (`gain`, `frequency`, `threshold`...) are created on first use and hold a
+real `value`."""
 
 from typing import Any
 

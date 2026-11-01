@@ -1,4 +1,5 @@
-"""e2e: the ship, the enemies and the shots stand out from the background (phase 14)."""
+"""e2e: the ship, the enemies and the shots stand out from the background (GFX-READ-01, measured
+by the readability probe, DEV-API-09)."""
 
 import json
 from typing import Any
@@ -23,7 +24,8 @@ def full_frame(page: Page) -> dict[str, Any]:
     """Steps the level until the ship, an enemy, an enemy bullet and a player shot are all on
     screen. The frames are not drawn (`readability` draws the frames it measures), and the probe,
     three drawn frames and two read back, runs only once the state has enemies, enemy shots and
-    player shots: under software WebGL, a probe on every check made the test last minutes."""
+    player shots: under software WebGL, a probe on every check made the test last minutes
+    (DEV-API-11). The game only moves when stepped (ENG-58)."""
     last: dict[str, Any] | None = None
     for _ in range(120):
         step(page, 5, False)
@@ -43,7 +45,7 @@ LEVELS = [("1-2", 40), ("2-1", 40), ("3-1", 40), ("4-1", 90)]
 
 
 @pytest.mark.parametrize(("level_id", "time"), LEVELS)
-def test_p14_r08_the_ship_enemies_and_shots_stand_out_from_the_background(
+def test_dev_api_09_the_ship_enemies_and_shots_stand_out_from_the_background(
     page: Page, level_id: str, time: int
 ) -> None:
     open_debug(page, f"?level={level_id}&t={time}")
@@ -51,11 +53,13 @@ def test_p14_r08_the_ship_enemies_and_shots_stand_out_from_the_background(
     report = full_frame(page)
     page.keyboard.up("Space")
     print(f"readability {level_id}: {json.dumps(report)}")
-    # P14-R01: the background is dimmed, but for a few small lights.
+    # GFX-READ-01: the background is dimmed, but for a few small lights; GFX-READ-03: the
+    # gameplay objects are not.
     assert report["backgroundLuminance"] <= READABILITY.backgroundMaxLuminance
-    # P14-R03, R04: the ship and the enemies stand out.
+    # GFX-READ-07, GFX-READ-09: the ship and the enemies stand out (the enemy trim, ENM-47).
     assert report["player"] >= READABILITY.minObjectContrast
     assert report["enemy"] >= READABILITY.minObjectContrast
-    # P14-R05: the enemy bullets most of all; P14-R06: the player shots, toned down, still show.
+    # GFX-READ-10: the enemy bullets most of all; GFX-READ-14: the player shots, toned down,
+    # still show.
     assert report["enemyBullet"] >= READABILITY.minBulletContrast
     assert report["playerShot"] >= READABILITY.minPlayerShotContrast

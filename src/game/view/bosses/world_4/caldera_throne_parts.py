@@ -1,4 +1,5 @@
-"""P10-R11, 4-5: the Caldera Throne's colours and its destroyable parts (magma cannons, missile
+"""FB-CALDERA-THRONE-03 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne's colours and its
+destroyable parts (magma cannons, missile
 batteries, heat shield generators), each drawn around its centre `at`, each turret around its
 pivot. Model space: logical pixels, nose +Z,
 Y up.
@@ -21,7 +22,7 @@ from render.geometry.solids import LoftOptions, Placement  # noqa: E402
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 type Rgb = list[float]
 type Vec3 = list[float]
@@ -32,15 +33,17 @@ __pragma__("noskip")
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711
+    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
         return fallback
     return colour
 
 
-# Crimson, its registered neon (GD-61), and gold, its second neon colour (P10-R11).
+# Crimson, its registered neon (BOSS-50), and gold, its second neon colour
+# (FB-CALDERA-THRONE-06).
 CRIMSON = _neon_or("caldera-throne", [1, 1, 1])
 GOLD = [1.0, 0.72, 0.16]
-# World 4 heat over the dark metal (P10-R11): molten seams and glow, soot, heat-blued plates.
+# World 4 heat over the dark metal (FB-CALDERA-THRONE-02): molten seams and glow, soot, heat-blued
+# plates.
 HEAT = record(
     {
         "molten": [1, 0.36, 0.04],
@@ -54,8 +57,9 @@ HEAT = record(
 DECK_TOP = 8
 BASTION_TOP = 5
 
-# P16-R06: its parts are growths of its body: flesh drums under the magma cannons, shield
-# generators as glowing glands in crowns of bone, batteries cased in metal.
+# FB-CALDERA-THRONE-03 to FB-CALDERA-THRONE-05: its parts are growths of its body: flesh drums under
+# the magma cannons, shield generators as glowing glands in crowns of bone, batteries cased in
+# metal.
 
 # A magma cannon's housing (loft stations around its pivot), soot-black on its back.
 HOUSING = [
@@ -82,9 +86,9 @@ def _along_z(x: float, y: float, z: float) -> Any:
 
 
 def magma_cannon(p: Any, centre: Vec3) -> None:
-    """A magma cannon (P10-R11), turning on its bastion's turntable (D-073): a heavy housing with
-    gold neon flanks, a long barrel ringed with molten coils, its lens glowing as the laser
-    charges."""
+    """A magma cannon (FB-CALDERA-THRONE-03), turning on its bastion's turntable (D-073): a heavy
+    housing with gold neon flanks, a long barrel ringed with molten coils, its lens glowing as the
+    laser charges."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -140,8 +144,8 @@ HATCH = [7.6, 6.4]
 
 
 def missile_battery(p: Any, centre: Vec3) -> None:
-    """A missile battery (P10-R11): an armoured box on the aft deck, six hatches lit as its missiles
-    load, crimson strips down its sides, a heat-blued blast shield at its front."""
+    """A missile battery (FB-CALDERA-THRONE-04): an armoured box on the aft deck, six hatches lit as
+    its missiles load, crimson strips down its sides, a heat-blued blast shield at its front."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -179,8 +183,9 @@ CORE = [
 
 
 def shield_generator(p: Any, centre: Vec3) -> None:
-    """A heat shield generator (P10-R11; no weapon, it shields the core): a molten core glowing in a
-    crown of heat-sink fins edged with gold, on an armoured drum ringed with crimson."""
+    """A heat shield generator (FB-CALDERA-THRONE-05; no weapon, it shields the core): a molten core
+    glowing in a crown of heat-sink fins edged with gold, on an armoured drum ringed with
+    crimson."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh

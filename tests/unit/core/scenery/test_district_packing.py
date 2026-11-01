@@ -58,7 +58,7 @@ def _pack(site, roads, within=lambda z: True):
     return road
 
 
-def test_p15_r08_buildings_are_the_same_for_the_same_seed() -> None:
+def test_gfx_bldg_05_buildings_are_the_same_for_the_same_seed() -> None:
     def placements(seed: int):
         site, roads, placed = _setup(seed=seed)
         _pack(site, roads)
@@ -67,26 +67,26 @@ def test_p15_r08_buildings_are_the_same_for_the_same_seed() -> None:
     assert placements(4) == placements(4)
 
 
-def test_p15_r07_no_buildings_outside_the_places_asked_for() -> None:
+def test_perf_16_no_buildings_outside_the_places_asked_for() -> None:
     site, roads, placed = _setup()
     _pack(site, roads, within=lambda z: False)
     assert placed == []
 
 
-def test_p15_r08_where_no_building_fits_the_lots_are_used() -> None:
+def test_gfx_bldg_05_where_no_building_fits_the_lots_are_used() -> None:
     site, roads, placed = _setup(group_at=lambda x, z, section: None)
     _pack(site, roads)
     assert placed
     assert {b.placement.kind for b in placed} == {"lot"}
 
 
-def test_p15_r08_a_group_with_no_lots_leaves_the_ground_empty_where_nothing_fits() -> None:
+def test_gfx_bldg_05_a_group_with_no_lots_leaves_the_ground_empty_where_nothing_fits() -> None:
     site, roads, placed = _setup(group_at=lambda x, z, section: None, lots=())
     _pack(site, roads)
     assert placed == []
 
 
-def test_p15_r07_the_road_tiles_are_worked_out_once_per_list_of_roads() -> None:
+def test_perf_11_the_road_tiles_are_worked_out_once_per_list_of_roads() -> None:
     site, roads, _ = _setup()
     cache = RoadTilesCache()
     first = cache.of(roads.roads, TILE)

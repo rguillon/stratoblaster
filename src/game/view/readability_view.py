@@ -12,8 +12,8 @@ from render.edge_trim_mesh import add_edge_trim, request_trim
 from render.geometry.edge_trim import TrimOptions
 
 __pragma__("skip")
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 Scene = Any  # noqa: E402
 
@@ -80,7 +80,8 @@ def _range_scale(value: Any, k: float, skip: list[str]) -> Any:
 
 def _trimmed(build: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """A model factory that gives what `build` makes a glowing edge trim in the player colour
-    (P14-R03): widths are in logical pixels, the models drawn `PLAYER_SHIP_SCALE` times smaller."""
+    (GFX-TRIM-05): widths are in logical pixels, the models drawn `PLAYER_SHIP_SCALE` times
+    smaller."""
     look = LOOK.playerTrim
     options = TrimOptions(look.width / PLAYER_SHIP_SCALE, look.offset / PLAYER_SHIP_SCALE)
 
@@ -108,14 +109,16 @@ def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
 
 
 def trimmed_ships(models: dict[str, Any]) -> dict[str, Any]:
-    """The player ship models, each with a glowing edge trim in the player colour (P14-R03)."""
+    """The player ship models, each with a glowing edge trim in the player colour (GFX-TRIM-01,
+    GFX-READ-07); no hitbox marker is added (GFX-READ-08)."""
     return {ship_id: _trimmed(build) for ship_id, build in models.items()}
 
 
 def toned(look: Any, tone: float) -> Any:
-    """P14-R01: `look` with its ground, shores, water and roads darkened to `tone` (0..1) of their
-    colours, and its props, haze and clouds by the engine (`SceneryLook.tone`), so the ships and
-    shots stand out over them. The props' self-lit accents keep their brightness."""
+    """GFX-READ-02: `look` with its ground, shores, water and roads darkened to `tone` (0..1) of
+    their colours, and its props, haze and clouds by the engine (`SceneryLook.tone`), so the ships
+    and shots, never dimmed (GFX-READ-03), stand out over them. The props' self-lit accents keep
+    their brightness."""
     result = _copy_object(look)
     result.terrain = _range_scale(look.terrain, tone, KEEP)
     result.sea = _range_scale(look.sea, tone, KEEP)
@@ -130,6 +133,6 @@ def all_toned(looks: dict[str, Any], tone: float) -> dict[str, Any]:
 
 
 def toned_shots(renderers: dict[str, Any]) -> dict[str, Any]:
-    """P14-R06: the shot renderers, their glows (added on) toned down to `playerShotMaxOpacity`,
+    """GFX-READ-14: the shot renderers, their glows (added on) toned down to `playerShotMaxOpacity`,
     so they never hide the enemy bullets."""
     return {shot_id: _toned_shot(create) for shot_id, create in renderers.items()}

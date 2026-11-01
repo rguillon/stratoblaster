@@ -1,10 +1,10 @@
-"""Player weapons (GD-30, GD-31)
+"""Player weapons (GAME-WPN-01, GAME-WPN-02)
 
 Three weapons, five levels each. Logical pixels, Y up, angles in degrees from forward. Values
 marked "default" were not given by the phase 3 spec; they are the agent's proposal (D-015), to be
 tuned in review.
 
-Balance (GD-33, D-059): the bullet is the reference (the bosses were tuned with it, D-055); at
+Balance (GAME-WPN-12, D-059): the bullet is the reference (the bosses were tuned with it, D-055); at
 every level the laser and the missiles put out 70-100 % of the bullets' damage per second. The
 laser trades spread for focus (one column, never misses, pierces); the missiles trade damage for
 reach (they home, but take time to arrive and overkill small enemies).
@@ -16,7 +16,7 @@ from game.config.record import concat, record
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")
-from typing import Any  # noqa: E402
+from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
@@ -38,18 +38,20 @@ def diagonals(angle_deg: float) -> list[Any]:
     ]
 
 
-# Launch angles of the missile diagonal streams, inner and outer pair. Wider than the spec's
-# 10 / 20 degrees at the reviewer's request (phase 3 review), so the missiles fan out before homing.
+# Launch angles of the missile diagonal streams, inner and outer pair (GAME-WPN-10). Wider than the
+# spec's 10 / 20 degrees at the reviewer's request (phase 3 review), so the missiles fan out before
+# homing.
 MISSILE_ANGLES = record({"inner": 25, "outer": 45})
 
-# P03-R01: neon green bullets, 10 damage each, constant velocity.
+# GAME-WPN-03, GAME-WPN-04: cyan tracer bullets (GFX-SHOT-01), 10 damage each, constant velocity.
 BULLET = record(
     {
         "kind": "projectile",
         "id": "bullet",
         "name": "Bullet",
         "launchPoint": "muzzle",
-        # From inside the ship, under it (reviewer, 2026-10-26): 13 px behind the muzzle.
+        # From inside the ship, under it (GFX-SHOT-02; reviewer, 2026-10-26): 13 px behind the
+        # muzzle.
         "launchBack": 13,
         # Default.
         "shotsPerSecond": 8,
@@ -73,8 +75,9 @@ BULLET = record(
     }
 )
 
-# P03-R02: bright blue laser, more damage per second at each level; above level 1 it goes through
-# a ship and continues one level lower. Damage per second from GD-33 (D-059); widths are defaults.
+# GAME-WPN-06, GAME-WPN-07: bright blue laser, more damage per second at each level; above level 1
+# it goes through a ship and continues one level lower. Damage per second from GAME-WPN-12 (D-059);
+# widths are defaults.
 LASER = record(
     {
         "kind": "beam",
@@ -90,14 +93,15 @@ LASER = record(
     }
 )
 
-# P03-R03: missiles with constant acceleration that home on the closest enemy; 14 damage to
-# everything within 10 px of the impact (GD-33, D-059); 4 missiles per second per stream.
+# GAME-WPN-08: missiles with constant acceleration that home on the closest enemy; 14 damage to
+# everything within 10 px of the impact (GAME-WPN-09; GAME-WPN-12, D-059); 4 missiles per second
+# per stream.
 MISSILE = record(
     {
         "kind": "projectile",
         "id": "missile",
         "name": "Missile",
-        # From the centre of the ship, drawn under it (phase 3 review).
+        # From the centre of the ship, drawn under it (GFX-SHOT-08; phase 3 review).
         "launchPoint": "center",
         "shotsPerSecond": 4,
         # Default.
@@ -128,5 +132,5 @@ MISSILE = record(
     }
 )
 
-# Every player ship can fire every weapon (GD-30).
+# Every player ship can fire every weapon (GAME-SHIP-01).
 PLAYER_WEAPONS = [BULLET, LASER, MISSILE]

@@ -8,17 +8,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 __pragma__("skip")
 
-from collections.abc import Callable  # noqa: E402
+from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
-from core.scenery.height_field import HeightField  # noqa: E402
-from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules  # noqa: E402
+from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 __pragma__("noskip")
 
-from core.math.noise import hash_2d  # noqa: E402
-from core.scenery.away_placement import Building  # noqa: E402
-from core.scenery.draws import between, weighted  # noqa: E402
-from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402
+from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.draws import between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Draws per floating prop: position X, position Z, kind, scale, turn.
 FLOAT_DRAWS = 5
@@ -43,9 +43,9 @@ def floating_props(
     i: int,
     j: int,
 ) -> list[PropPlacement]:
-    """The floating props of cell (`i`, `j`) (P08-R07: ice floes, icebergs): up to `per_cell`, with
-    the chance of their section's `float_density`, each where the sea is at least `depth` deep under
-    its whole footprint. They float at `sea_level`."""
+    """The floating props of cell (`i`, `j`) (GFX-PROP-15: ice floes, icebergs): up to `per_cell`,
+    with the chance of their section's `float_density`, each where the sea is at least `depth` deep
+    under its whole footprint. They float at `sea_level`."""
     cell_size = rules.cell_size
     section_density = field.section_at((j + 0.5) * cell_size).section.float_density
     density = section_density if section_density is not None else 0
@@ -131,7 +131,7 @@ def _line_height(
 
 
 def line_pieces(line: PropLine, field: HeightField, sea_level: float | None) -> list[LinePiece]:
-    """The pieces of `line` over the whole level (P08-R03: a pipeline on stilts): one every
+    """The pieces of `line` over the whole level (GFX-PROP-16: a pipeline on stilts): one every
     `spacing` along its path, turned along it, where the ground is above `sea_level` and gentle
     enough, in the sections it runs through. A line `over_water` (phase 9) also crosses the water,
     its pieces at the sea level there."""
@@ -156,9 +156,9 @@ def line_pieces(line: PropLine, field: HeightField, sea_level: float | None) -> 
 
 
 def place_landmark(landmark: Landmark, field: HeightField, sea_level: float | None) -> Building:
-    """Where `landmark` stands (phase 9): at its `x`, or on its `path` turned across it; on the
-    ground, or at `sea_level` when it is `on_water` (on the ground where that is higher). Returns
-    the set piece with the box of ground it takes."""
+    """Where `landmark` stands (phase 9, GFX-PROP-17): at its `x`, or on its `path` turned across
+    it; on the ground, or at `sea_level` when it is `on_water` (on the ground where that is higher).
+    Returns the set piece with the box of ground it takes."""
     z = landmark.z
     path = landmark.path
     x = field.path_x(path, z) if path is not None else landmark.x if landmark.x is not None else 0
