@@ -114,10 +114,15 @@ def holding(boxes: list[list[float]], tolerance: float) -> list[int]:
             if _find(parent, i) != _find(parent, j) and touch(boxes[i], boxes[j], tolerance):
                 _join(parent, i, j)
             b += 1
-    number = [-1 for _ in boxes]
+    return _numbered(parent)
+
+
+def _numbered(parent: list[int]) -> list[int]:
+    """The group of each element joined in `parent`, numbered from 0 in order of first element."""
+    number = [-1 for _ in parent]
     count = 0
     result: list[int] = []
-    for i in range(len(boxes)):
+    for i in range(len(parent)):
         r = _find(parent, i)
         if number[r] < 0:
             number[r] = count
@@ -126,72 +131,93 @@ def holding(boxes: list[list[float]], tolerance: float) -> list[int]:
     return result
 
 
-def _samples(tri: Any, step: float) -> list[list[float]]:
-    """Points spread over a triangle, about `step` apart (its corners included)."""
+# A cube of the surface samples is one number: its three indices, each shifted by `CELL_SHIFT` and
+# packed `CELL_STRIDE` apart, exact in a JavaScript number (under 2 ** 53) for models within
+# +-65 535 cubes of their origin.
+CELL_SHIFT = 65536
+CELL_STRIDE = 131072
+CELL_PLANE = CELL_STRIDE * CELL_STRIDE
+# The cubes of each triangle's surface, by its corners and the cube size: a boss's checks sample
+# the same triangles again and again (its core, at each stage of the armour cut). Emptied once it
+# holds `CELL_MEMO_LIMIT` cubes, to keep its memory bounded.
+CELL_MEMO_LIMIT = 1000000
+_CELL_MEMO: list[Any] = [{}, 0]
+
+
+def _surface_cells(tri: Any, cell: float) -> list[int]:
+    """The cubes of `cell` px a triangle's surface falls in, from points spread over it about
+    `0.8 * cell` apart (its corners included)."""
     a = tri[0].position
     b = tri[1].position
     c = tri[2].position
+    key = (
+        str(cell)
+        + "|"
+        + ",".join([str(x) for x in [a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]]])
+    )
+    memo = _CELL_MEMO[0]
+    if key in memo:
+        found: list[int] = memo[key]
+        return found
     longest = max(
         math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]),
         math.hypot(c[0] - b[0], c[1] - b[1], c[2] - b[2]),
         math.hypot(a[0] - c[0], a[1] - c[1], a[2] - c[2]),
     )
-    n = max(1, math.ceil(longest / step))
-    result: list[list[float]] = []
+    n = max(1, math.ceil(longest / (cell * 0.8)))
+    result: list[int] = []
+    seen: dict[int, bool] = {}
     for i in range(n + 1):
         for j in range(n + 1 - i):
             u = i / n
             v = j / n
             w = 1 - u - v
-            result.append(
-                [
-                    a[0] * w + b[0] * u + c[0] * v,
-                    a[1] * w + b[1] * u + c[1] * v,
-                    a[2] * w + b[2] * u + c[2] * v,
-                ]
-            )
+            x = math.floor((a[0] * w + b[0] * u + c[0] * v) / cell) + CELL_SHIFT
+            y = math.floor((a[1] * w + b[1] * u + c[1] * v) / cell) + CELL_SHIFT
+            z = math.floor((a[2] * w + b[2] * u + c[2] * v) / cell) + CELL_SHIFT
+            packed = (x * CELL_STRIDE + y) * CELL_STRIDE + z
+            if packed not in seen:
+                seen[packed] = True
+                result.append(packed)
+    if _CELL_MEMO[1] + len(result) > CELL_MEMO_LIMIT:
+        _CELL_MEMO[0] = {}
+        _CELL_MEMO[1] = 0
+    _CELL_MEMO[0][key] = result
+    _CELL_MEMO[1] += len(result)
     return result
-
-
-def _cell_key(i: int, j: int, k: int) -> str:
-    return str(i) + ":" + str(j) + ":" + str(k)
 
 
 def holding_surfaces(tris: list[Any], groups: list[list[int]], cell: float) -> list[int]:
     """The object each piece (`groups`, indices of `tris`) belongs to: pieces whose surfaces fall
-    in the same or neighbouring cubes of `cell` hold together. Objects numbered from 0."""
+    in the same or neighbouring cubes of `cell` hold together (`_surface_cells`). Objects numbered
+    from 0. Two pieces are joined only where a cube is another piece's: a boss's surfaces fall in
+    hundreds of thousands of cubes (the unit tests went from minutes to seconds)."""
     parent = [g for g in range(len(groups))]
-    owner: dict[str, int] = {}
+    owner: dict[int, int] = {}
+    owned: list[int] = []
     for g in range(len(groups)):
         for t in groups[g]:
-            for p in _samples(tris[t], cell * 0.8):
-                key = _cell_key(
-                    math.floor(p[0] / cell), math.floor(p[1] / cell), math.floor(p[2] / cell)
-                )
+            for key in _surface_cells(tris[t], cell):
                 if key in owner:
-                    _join(parent, g, owner[key])
+                    other = owner[key]
+                    if other != g:
+                        _join(parent, g, other)
                 else:
                     owner[key] = g
-    # Neighbouring cubes: a surface just over another one.
-    for key in list(owner.keys()):
-        parts = key.split(":")
-        i = int(parts[0])
-        j = int(parts[1])
-        k = int(parts[2])
-        for d in [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
-            other = _cell_key(i + d[0], j + d[1], k + d[2])
-            if other in owner:
-                _join(parent, owner[key], owner[other])
-    number = [-1 for _ in groups]
-    count = 0
-    result: list[int] = []
-    for g in range(len(groups)):
-        r = _find(parent, g)
-        if number[r] < 0:
-            number[r] = count
-            count += 1
-        result.append(number[r])
-    return result
+                    owned.append(key)
+    _join_neighbours(parent, owner, owned)
+    return _numbered(parent)
+
+
+def _join_neighbours(parent: list[int], owner: dict[int, int], owned: list[int]) -> None:
+    """Joins the pieces owning neighbouring cubes: a surface just over another one."""
+    for key in owned:
+        mine = owner[key]
+        for near in [key + CELL_PLANE, key + CELL_STRIDE, key + 1]:
+            if near in owner:
+                other = owner[near]
+                if other != mine:
+                    _join(parent, mine, other)
 
 
 # How near the model's centre (px, seen from above) the main object must reach.
