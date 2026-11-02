@@ -570,6 +570,32 @@ class Forests:
         self.edge = edge
 
 
+class CliffRules:
+    """Blocks of stone on the steep ground (GFX-PROP-19): the cliff faces built of props."""
+
+    def __init__(
+        self,
+        kinds: Sequence[str],
+        min_slope: float,
+        spacing: float,
+        height: Range,
+        depth: Range,
+        embed: float,
+    ) -> None:
+        """`kinds`: ids of the block models, one picked per block.
+
+        `min_slope`: the ground's steepness (height change per unit) from which blocks stand.
+        `spacing`: the grid the blocks stand in, one per cell. `height` and `depth`: the blocks'
+        sizes (their width is about the spacing). `embed`: how deep a block sinks into the ground.
+        """
+        self.kinds = kinds
+        self.min_slope = min_slope
+        self.spacing = spacing
+        self.height = height
+        self.depth = depth
+        self.embed = embed
+
+
 class PropRules:
     """Where and which props stand on the ground (GFX-PROP-06).
 
@@ -595,6 +621,7 @@ class PropRules:
         landmarks: Sequence[Landmark] | None = None,
         lots: Sequence[PropKindRule] | None = None,
         forests: Forests | None = None,
+        cliffs: CliffRules | None = None,
     ) -> None:
         """`cell_size`: trees grow in the cells of a grid of this size.
 
@@ -608,7 +635,7 @@ class PropRules:
         level. `landmarks`: set pieces at given places. `lots` (phase 15, GFX-BLDG-11): props of
         whole tiles (car parks, yards, plazas, parks) for the tiles of a district's blocks that no
         building of their group fits. `forests` (D-212): trees gather in woods (default: they grow
-        evenly).
+        evenly). `cliffs` (GFX-PROP-19): blocks of stone on the steep ground.
         """
         self.cell_size = cell_size
         self.tree_clearance = tree_clearance
@@ -627,6 +654,7 @@ class PropRules:
         self.landmarks = landmarks
         self.lots = lots
         self.forests = forests
+        self.cliffs = cliffs
 
 
 class TileRules:

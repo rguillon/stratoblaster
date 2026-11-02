@@ -239,8 +239,8 @@
     adds `height`; a section with scarps has no known steepness (the roads measure the slope, as
     over the dunes).
   - World 1's open-land sections carry scarps of 24 to 40 over 320 to 360 of wavelength (a hill
-    about every screen), faces of 8 % of a cycle (a slope of 0.8 to 1.6 at a full crest: 40° to
-    58°, rock; a half crest is rock too), all looking 125° from +Z: towards +X, where World 1's
+    about every screen), faces of 6 % of a cycle since D-243 (a slope of 1.1 to 2.1 at a full
+    crest: 48° to 64°, rock; a half crest is rock too), all looking 125° from +Z: towards +X, where World 1's
     sun is (ahead of the camera and to the right), so the faces are lit, and a little towards the
     camera, which is tilted towards +Z and sees them as walls. The towns on street grids (their
     streets need ground under a slope of 0.12), the dry lake, the canyon, the mesas, the buttes and
@@ -311,4 +311,35 @@
   pause menu's own quieting already applies, UI-PAUSE-04 / AUD-ENGINE-11).
 - **Consequences:** one more listener on the window, removed with the others when the app stops;
   the e2e smoke test fakes a `blur`.
+- **Status:** Proposed
+
+### D-243 — Cliff faces built of blocks of stone
+- **Date:** 2026-11-02
+- **Requirements:** GFX-PROP-19 (new), GFX-PROP-06 (its exception), WLD-1-31, the terrain
+  tunables (the faces' share).
+- **Context:** owner feedback on D-241, with a picture of a model cliff: grass to the lip, then a
+  near-vertical wall of chunky, layered stone blocks, stepped. "It still looks too flat"; objects
+  are fine, not only a texture on the height map. A face 20 to 27 units wide on an 8-unit terrain
+  grid is two or three smooth triangles whatever its texture.
+- **Decision:**
+  - An engine feature, `cliffs` in the prop rules (`core/scenery/cliff_blocks.py`): one block of
+    stone per cell of a grid where the ground drawn is steeper than a threshold, sunk into the
+    ground and turned downhill, its kind and size from the cell's hash. The blocks are props
+    (thin instances, shadows, the matte vertex-coloured structure material), handed out with a
+    chunk's buildings. Reading the ground as the mesh draws it (`SampledGround`) keeps the cost to
+    a few thousand heights a chunk.
+  - Three block models each in grey crag and red mesa rock (`game/view/props/crag_props.py`): a
+    plain block, a chipped block, a block with a ledge, one unit in size and scaled per block, so a
+    face shows a few courses of blocks of different shapes and shades.
+  - World 1's hills' faces take 6 % of a cycle (48° to 64° at a full crest), so the blocks stand on
+    a wall rather than a ramp; the walls of the mesas, buttes and canyon get the mesa blocks too.
+- **Alternatives considered:** a finer terrain grid under the faces (the grid is one cell for the
+  whole level, and the faces are a small share of it); a displacement of the terrain vertices
+  (two or three vertices across a face cannot make steps); a normal map on the rock (the terrain
+  material has none, and it would still be flat at the silhouette, which the picture is all about).
+- **Consequences:** each chunk with faces adds a few hundred instances of six meshes; the props'
+  count and polygons go up on World 1 (the debug tile shows them). The blocks hide most of the
+  stone texture of D-241 on the faces, which stays on the ground between them and on steep ground
+  too gentle for blocks. The owner checks the look in the game; the slope threshold, spacing, sizes
+  and colours are tunables (`game/config/cliffs.py`, `crag_props.py`).
 - **Status:** Proposed

@@ -121,6 +121,15 @@ def test_a_section_s_flattened_band_lakes_and_crevasses_are_built_from_the_confi
     assert (scarps.warp, scarps.face, scarps.lowest) == (0.9, 0.1, 0.2)
 
 
+def test_the_cliff_rules_are_built_from_the_config() -> None:
+    """GFX-PROP-19."""
+    cliffs = scenery_level(LEVEL_1_1).props.cliffs
+    assert cliffs is not None
+    assert cliffs.kinds == ["crag-block-a", "crag-block-b", "crag-block-c"]
+    assert (cliffs.min_slope, cliffs.spacing, cliffs.embed) == (0.55, 7, 2.5)
+    assert (cliffs.height, cliffs.depth) == ([7, 12], [5, 9])
+
+
 def test_a_section_without_scarps_has_none() -> None:
     """GFX-TERRAIN-19: an omitted optional feature."""
     section = scenery_level(LEVEL_1_1).sections[0]

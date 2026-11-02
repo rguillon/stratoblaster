@@ -76,7 +76,8 @@ further), and they are uploaded again only when the view leaves the range drawn,
 A prop stands only where the ground under its footprint is flat enough (`maxSlope` for buildings,
 `treeMaxSlope` for trees, which stand on rougher ground), above `minHeight` (above the sea), at the
 lowest ground under it. Placement is decided by hashes of where a prop stands, so the props are the
-same whatever order the terrain chunks are built in.
+same whatever order the terrain chunks are built in. The cliff blocks (GFX-PROP-19) are the one
+exception: they stand on the steep ground alone.
 
 **Acceptance criteria**
 - Given a spot on too steep ground or under the sea limit, then no prop stands there (unit tests).
@@ -200,6 +201,28 @@ a chunk that is gone. So woods never blink out or come into sight bare.
   gets them with its buildings (unit tests).
 
 *Sources: D-212, D-218.*
+
+### GFX-PROP-19 — Cliff blocks · MUST
+
+A level's props may have `cliffs`: blocks of stone standing on the steep ground, so a cliff face is
+a stair of chunky blocks and not a smooth slope under a texture. In each cell of a grid of
+`spacing`, where the ground drawn (read as the terrain mesh draws it, GFX-PROP-13) is steeper than
+`minSlope` (height per unit of distance), one block of one of the `kinds` stands, sunk `embed`
+into the ground, its front turned downhill, about a spacing wide and of a `height` and `depth`
+drawn from their ranges. Hashes of the cell decide each block, so areas side by side get each
+block once. The blocks come with the buildings of a chunk, cast and receive shadows, and are drawn
+with thin instances like every prop (GFX-PROP-05). World 1 uses them on its hills' faces and on the
+walls of its mesas, buttes and canyon ([../worlds/world-1/world.md](../worlds/world-1/world.md),
+WLD-1-31).
+
+**Acceptance criteria**
+- Given flat ground, then no block stands; given a steep face, then blocks stand on it, sunk into
+  the ground, of the listed kinds and sizes, facing downhill, the same for the same seed and once
+  across neighbouring areas (unit tests).
+- Given a level with cliff rules, then its block kinds are among its prop kinds (unit test).
+- Manual: from the playfield camera, a face reads as a wall of stone blocks, grass to its lip.
+
+*Sources: D-243.*
 
 ### Engine tools no level uses now
 

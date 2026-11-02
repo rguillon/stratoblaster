@@ -34,6 +34,7 @@ from core.scenery.away_placement import (
     place_loners,
 )
 from core.scenery.block_towers import tower_in
+from core.scenery.cliff_blocks import cliff_blocks
 from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
 from core.scenery.draws import allowed, between, weighted, weighted_pick
 from core.scenery.float_placement import fixed_pieces, floating_in
@@ -405,7 +406,7 @@ class PropPlacer:
         return self._buildings_in(area)
 
     def _buildings_in(self, area: GroundArea) -> list[PropPlacement]:
-        """Return the buildings and floating props in `area`.
+        """Return the buildings, floating props and cliff blocks in `area`.
 
         The buildings around it are already placed.
         """
@@ -415,6 +416,10 @@ class PropPlacer:
         floating = self.rules.floating
         if floating is not None and self.sea_level is not None:
             placements.extend(floating_in(floating, self.field, self.sea_level, self.seed, area))
+        # GFX-PROP-19: the blocks of stone of the cliff faces, with the buildings.
+        cliffs = self.rules.cliffs
+        if cliffs is not None:
+            placements.extend(cliff_blocks(self.field, cliffs, self.seed, area))
         return placements
 
     def trees_in(self, area: GroundArea) -> list[PropPlacement]:

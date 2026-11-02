@@ -13,7 +13,7 @@ level's `seconds` add up to 240 (WLD-1-03).
 
 from game.config.record import merge, record
 from game.config.trees import DEAD_TREES, DESERT_WOODS, LONE_DEAD_TREES
-from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
+from game.config.world_1.props import DESERT_PROPS, WORLD_1_GROUPS, WORLD_1_ROADS
 from game.config.world_1.scenery_coast import scarps, smooth
 from game.config.world_1.scenery_country import DRY_GRASSLAND, TOWN_STREETS
 
@@ -244,7 +244,7 @@ DEEP_DESERT = [
 def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
     """Return a World 1 desert level, at 60 units/s (WLD-1-04).
 
-    Its sections are on the World 1 roads and props.
+    Its sections are on the World 1 roads and props, its cliffs of red mesa rock (WLD-1-31).
     """
     return record({
         "id": level_id,
@@ -254,7 +254,7 @@ def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
         "transition": 420,
         "sections": sections,
         "roads": WORLD_1_ROADS,
-        "props": WORLD_1_PROPS,
+        "props": DESERT_PROPS,
     })
 
 

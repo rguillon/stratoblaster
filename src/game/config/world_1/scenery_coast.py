@@ -28,7 +28,7 @@ G = WORLD_1_GROUPS
 # forward, sees them. They take `SCARP_FACE` of a crest-to-crest cycle (the back takes the rest),
 # and the crests fall to nothing between the hills.
 SCARP_ANGLE = 125
-SCARP_FACE = 0.08
+SCARP_FACE = 0.06
 
 
 def scarps(height: float, wavelength: float, warp: float = 0.8) -> Any:

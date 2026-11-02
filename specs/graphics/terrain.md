@@ -299,7 +299,7 @@ WLD-1-31).
 | mesa rock `strata` / `stones` | 0.5 / 0.7 | `MESA_ROCK`, same place; crag `CRAG` 0.25 / 0.85; base rock 0.3 / 0.7 |
 | stones | cells 0.85 per noise cycle, 1.6 wider than high, jitter 0.75, joint 0.07, bevel 0.25, fractures 2.3 × finer | `src/render/scenery/procedural_textures.py` `STONE_*` |
 | triplanar sharpness / rock side planes | 8 / 0.9 | `src/render/scenery/terrain_blend_plugin_visual.py` `TRIPLANAR_SHARPNESS`, `ROCK_SIDE_PLANES` |
-| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.08 / 0 / 125 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
+| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.06 / 0 / 125 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
 | `SCARP_BEND_SCALE` / `SCARP_CREST_SCALE` / `SCARP_CREST_SPREAD` | 3 / 1.2 wavelengths / 0.45 | `src/core/scenery/height_field.py` |
 | `transition` | 420 (World 1), 900 (Worlds 2–4) | per level, `src/game/config/world_*/scenery*.py` (`TRANSITION`) |
 | `glow` | intensity 0.3, blur 16 | base look; full resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`) |

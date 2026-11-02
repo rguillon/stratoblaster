@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_1/props.py`."""
 
+from game.config.cliffs import CRAG_BLOCK_IDS, MESA_BLOCK_IDS
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS
 from game.config.world_1.scenery_coast import LEVEL_1_1, LEVEL_1_2
 from game.config.world_1.scenery_country import LEVEL_1_3
@@ -38,3 +39,15 @@ def test_gfx_bldg_11_the_props_table_has_lots_and_positive_spacing() -> None:
     """Also WLD-1-15: the props table of World 1's lone buildings and hamlets."""
     assert WORLD_1_PROPS.lots
     assert WORLD_1_PROPS.cellSize > 0
+
+
+def test_wld_1_31_the_green_levels_cliffs_are_crag_and_the_dry_levels_mesa_rock() -> None:
+    """GFX-PROP-19: the blocks of stone of the faces."""
+    for level in (LEVEL_1_1, LEVEL_1_2, LEVEL_1_3):
+        assert level.props.cliffs.kinds == CRAG_BLOCK_IDS
+    for level in (LEVEL_1_4, LEVEL_1_5):
+        assert level.props.cliffs.kinds == MESA_BLOCK_IDS
+    cliffs = WORLD_1_PROPS.cliffs
+    assert cliffs.minSlope > 0.5
+    assert cliffs.height[0] < cliffs.height[1]
+    assert cliffs.depth[0] < cliffs.depth[1]

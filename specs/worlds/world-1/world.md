@@ -230,6 +230,10 @@ hills; the farmland's are lower. The towns on street grids, the dry lake, the ca
 buttes and the sea have none. The looks draw the steep ground as rock sooner than the base look
 (`steepSlope`): grey crags (`CRAG`) on the green levels from a slope of 0.12, the red mesa rock on
 the dry levels from 0.2, so the faces of the hills, and any other ground as steep, are bare rock.
+The faces are built of blocks of stone (`cliffs`, GFX-PROP-19): grey crag blocks on the green
+levels (`CRAG_CLIFFS`), red mesa blocks on the dry levels (`MESA_CLIFFS`, on the walls of the mesas,
+buttes and canyon too), standing where the ground is steeper than 0.55, one every 7 units, 7 to 12
+high, sunk 2.5 into the ground, so a face is a stair of chunky stone, not a smooth slope.
 
 **Acceptance criteria**
 - Given 1-2 and 1-3, then every section but the market town has scarps, with one angle, one face
@@ -238,10 +242,12 @@ the dry levels from 0.2, so the faces of the hills, and any other ground as stee
   rocky pass have scarps and no section with streets has any (unit test).
 - Given the World 1 looks, then their steep layer starts and completes at a lower slope than the
   base look's (unit test).
+- Given the World 1 levels, then the green ones place the crag blocks and the dry ones the mesa
+  blocks on their steep ground (unit test).
 - Manual visual validation: `?level=1-3&t=60`, each hill shows a rocky face and a grassy back;
   `?level=1-5&t=120`, the rocky pass the same in red rock.
 
-*Sources: D-240.*
+*Sources: D-240, D-243.*
 
 ### Light
 

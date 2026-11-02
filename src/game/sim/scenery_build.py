@@ -13,6 +13,7 @@ from core.scenery.scenery_level import (
     Boulevard,
     CarRules,
     Channel,
+    CliffRules,
     Crevasses,
     Drift,
     Dual,
@@ -258,6 +259,13 @@ def _props(props: ConfigRecord) -> PropRules:
         maybe(props.landmarks, _landmarks),
         maybe(props.lots, _lots),
         maybe(props.forests, _forests),
+        maybe(props.cliffs, _cliffs),
+    )
+
+
+def _cliffs(cliffs: ConfigRecord) -> CliffRules:
+    return CliffRules(
+        cliffs.kinds, cliffs.minSlope, cliffs.spacing, cliffs.height, cliffs.depth, cliffs.embed
     )
 
 
