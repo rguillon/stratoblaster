@@ -29,8 +29,24 @@ def _triangles(s: SolidBuilder) -> list[list[list[float]]]:
 def test_gfx_prop_19_a_chunk_has_two_bands_of_facets_and_a_top() -> None:
     s = _chunk(1)
     assert check_colored(s.geometry) > 0
-    # 6 sides: 2 bands of 6 facets of 2 triangles, a top of 6.
-    assert len(s.geometry.indices) // 3 == 2 * 6 * 2 + 6
+    # 6 sides: 2 bands of 6 facets of 2 triangles, a top of 6; each triangle 3 pieces of grain.
+    assert len(s.geometry.indices) // 3 == (2 * 6 * 2 + 6) * 3
+
+
+def test_gfx_prop_19_the_grain_bumps_each_facet_and_shades_its_pieces() -> None:
+    geo = _chunk(8).geometry
+    # The middle of a facet is pushed off its plane: the pieces of one facet are not coplanar,
+    # so more normals than facets.
+    normals = set()
+    for tri in _triangles(_chunk(8)):
+        a, b, c = tri
+        n = _cross([c[k] - a[k] for k in range(3)], [b[k] - a[k] for k in range(3)])
+        normals.add(tuple(round(x, 3) for x in n))
+    assert len(normals) > 2 * 6 * 2 + 6
+    # The three pieces of a facet differ in shade.
+    reds = geo.colors[0::4]
+    pieces = [reds[9 * f : 9 * f + 9 : 3] for f in range(len(reds) // 9)]
+    assert any(len(set(piece)) > 1 for piece in pieces)
 
 
 def test_gfx_prop_19_a_chunk_stands_on_the_ground_about_its_size() -> None:

@@ -403,3 +403,23 @@
   screen, under the 60 fps of the perf test); the hills' backs stay grass (their slopes stay
   under 17°); any other ground over 17° on the green levels is now rock, with a cleaner edge.
 - **Status:** Proposed
+
+### D-246 — The grain of the cliff blocks baked into their facets
+- **Date:** 2026-11-02
+- **Requirements:** GFX-PROP-19.
+- **Context:** owner feedback on D-245: do the stones have a texture? They did not (props are
+  vertex-coloured, flat-shaded solids); "they currently look like plastic". Two ways were put to
+  the owner: grain baked into the vertex colours and geometry, or a textured prop material with
+  the ground's stone pattern mapped on the chunks. The owner chose the baked grain.
+- **Decision:** in `rough_chunk`, each facet triangle (the sides' halves and the top's fan) is
+  split in three pieces round its middle, pushed in or out along its normal by up to
+  `GRAIN_BUMP` (0.05 of the chunk's smaller width), each piece shaded up to `GRAIN_SHADE` (0.09)
+  lighter or darker. Same material, same thin-instance path, no new shader.
+- **Alternatives considered:** a textured material (a second material and shader plugin for the
+  cliff kinds, triplanar sampling on hundreds of instances); splitting each triangle in four by
+  its midpoints (a smoother grain for a third more triangles).
+- **Consequences:** three times the triangles a chunk (90 instead of 30): the busy screen of
+  1-3 goes from 380 k to about 500 k polygons, still at 60 fps in the perf test. If a lower
+  machine needs it, `GRAIN_BUMP` and `GRAIN_SHADE` can be set to 0 without changing the count:
+  the split would need to be made optional.
+- **Status:** Proposed

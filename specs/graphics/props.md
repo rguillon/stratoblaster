@@ -221,7 +221,9 @@ out of grass.
 
 A block is a rough chunk of stone (`render/geometry/rocks.py`), not a box: a prism whose corners
 are pushed in and out and turned at random, its sides leaning in and bulging at a waist, its top
-smaller, tilted and faceted, every half facet its own shade and darker towards its base. Seeded,
+smaller, tilted and faceted, every half facet its own shade and darker towards its base. Its
+grain is baked in: each facet triangle is split in three pieces round a point pushed in or out of
+its plane, each piece its own shade, so a facet is knobbly stone and not one flat plane. Seeded,
 so a kind is the same chunk on every instance. Blocks are wider than tall: the sun lights their
 tops and the joints between them stay dark, so a face reads as courses of fractured stone from
 the playfield camera, whichever way it looks. World 1 uses them on its hills' faces and on the
@@ -236,12 +238,12 @@ WLD-1-31).
   given a face, then its biggest blocks reach the top of the size ranges and the median does not
   (unit tests).
 - Given a chunk, then it is well formed, its facets face outwards and its top up, its corners are
-  pushed off a regular polygon, its facets are shaded and darker at the base, and two seeds give
-  two chunks (unit tests).
+  pushed off a regular polygon, its facets are shaded and darker at the base, their grain bumps
+  them and shades their pieces, and two seeds give two chunks (unit tests).
 - Given a level with cliff rules, then its block kinds are among its prop kinds (unit test).
 - Manual: from the playfield camera, a face reads as courses of fractured stone, grass to its lip.
 
-*Sources: D-243, D-244, D-245.*
+*Sources: D-243, D-244, D-245, D-246.*
 
 ### Engine tools no level uses now
 
