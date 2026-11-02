@@ -13,6 +13,7 @@ from app.settings_menu import Volumes
 from core.systems.level_run_types import LevelCheckpoint, LevelResult
 from core.systems.run_arsenal import WeaponLevels
 from ui.menu_view import (
+    DevAudioView,
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -187,7 +188,15 @@ def test_d199_the_dev_menu_lists_the_viewers() -> None:
     """DEV-MENU-03."""
     view = build_menu_view(state("dev", selection=2), dev_ctx())
     assert isinstance(view, DevMenuView)
-    assert view.entries == ["Player ships", "Enemies", "Bosses", "Props", "Levels"]
+    assert view.entries == [
+        "Player ships",
+        "Enemies",
+        "Bosses",
+        "Props",
+        "Levels",
+        "Sounds",
+        "Music",
+    ]
     assert (view.selected, view.back) == (2, "Back")
 
 
@@ -252,3 +261,33 @@ def test_d199_the_levels_viewer_scrubs_with_the_wheel() -> None:
 def test_d199_a_viewer_with_no_item_shows_an_empty_one() -> None:
     view = build_menu_view(state("dev-viewer", dev_viewer="bosses"), dev_ctx())
     assert (view.item, view.position) == ("", "1 / 0")
+
+
+def test_dev_menu_19_the_sounds_viewer_is_a_grid_of_buttons_one_per_sound() -> None:
+    context = dev_ctx()
+    context.dev_labels["sounds"] = ["fire:guns", "hit"]
+    view = build_menu_view(state("dev-viewer", selection=1, dev_viewer="sounds"), context)
+    assert isinstance(view, DevAudioView)
+    assert (view.kind, view.heading, view.selected, view.back) == ("dev-audio", "Sounds", 1, "Back")
+    assert [(c.label, c.index, c.selected, c.heading) for c in view.entries] == [
+        ("fire:guns", 0, False, False),
+        ("hit", 1, True, False),
+    ]
+    assert "play" in view.hint
+
+
+def test_dev_menu_20_the_music_viewer_lists_the_tracks_under_their_groups() -> None:
+    context = dev_ctx()
+    context.dev_labels["music"] = ["menu", "level-1-1", "boss-1"]
+    context.dev_groups = {"music": ["Menu", "Levels", "Bosses"]}
+    view = build_menu_view(state("dev-viewer", selection=2, dev_viewer="music"), context)
+    assert isinstance(view, DevAudioView)
+    assert [(c.label, c.index, c.selected, c.heading) for c in view.entries] == [
+        ("Menu (1)", 0, False, True),
+        ("menu", 0, False, False),
+        ("Levels (1)", 1, False, True),
+        ("level-1-1", 1, False, False),
+        ("Bosses (1)", 2, True, True),
+        ("boss-1", 2, True, False),
+    ]
+    assert "group" in view.hint

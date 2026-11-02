@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The dev menu and the dev viewers' screens (D-199)."""
+"""The dev menu and the dev viewers' screens (D-199), and the dev audio viewers' (DEV-MENU-19)."""
 
 from ui.screens.elements import back_button, element, entry
 
@@ -7,7 +7,7 @@ from ui.screens.elements import back_button, element, entry
 # __pragma__ ("skip")
 from typing import Any
 
-from ui.menu_view import DevChoice, DevMenuView, DevViewerView
+from ui.menu_view import DevAudioView, DevChoice, DevMenuView, DevViewerView
 from ui.screens.screen_handlers import ScreenHandlers
 
 # __pragma__ ("noskip")
@@ -44,12 +44,14 @@ def _wheel_listener(handlers: ScreenHandlers) -> Any:
     return on_wheel
 
 
-def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers) -> Any:
+def _menu(
+    doc: Any, entries: list[DevChoice], handlers: ScreenHandlers, class_name: str = "dev-menu"
+) -> Any:
     """Return the scrolling menu of a dev viewer's items (DEV-MENU-07, D-206): each group's heading.
 
     Then its items; a tap on an entry shows its item.
     """
-    menu = element(doc, "div", "dev-menu")
+    menu = element(doc, "div", class_name)
     for choice in entries:
         kind = "dev-menu-group" if choice.heading else "dev-menu-item"
         line = entry(doc, kind, choice.index, choice.selected, handlers.on_tap)
@@ -124,4 +126,23 @@ def render_dev_viewer_screen(doc: Any, view: DevViewerView, handlers: ScreenHand
     root.append(element(doc, "div", "menu-hint dev-hint", view.hint))
     root.addEventListener("wheel", _wheel_listener(handlers))
     _drag_to_turn(root, handlers)
+    return root
+
+
+def render_dev_audio_screen(doc: Any, view: DevAudioView, handlers: ScreenHandlers) -> Any:
+    """Return a dev audio viewer (DEV-MENU-19, DEV-MENU-20): a button per sound or track.
+
+    In a scrolling grid (the dev viewers' menu, laid out over the whole screen), a status line (the
+    viewer writes it: what plays) and the hint. A tap on a button plays its item.
+    """
+    root = element(doc, "div", "menu-screen dev-audio-screen")
+    caption = element(doc, "div", "dev-caption")
+    caption.append(element(doc, "div", "dev-status"))
+    root.append(
+        back_button(doc, view.back, handlers.on_back),
+        element(doc, "h2", "menu-heading", view.heading),
+        caption,
+        _menu(doc, view.entries, handlers, "dev-menu dev-audio-menu"),
+        element(doc, "div", "menu-hint dev-hint", view.hint),
+    )
     return root

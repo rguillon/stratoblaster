@@ -5,8 +5,13 @@ from types import SimpleNamespace
 
 from helpers.dom import FakeDocument
 
-from ui.menu_view import DevChoice, DevMenuView, DevViewerView
-from ui.screens.dev_screen import centre_menu, render_dev_screen, render_dev_viewer_screen
+from ui.menu_view import DevAudioView, DevChoice, DevMenuView, DevViewerView
+from ui.screens.dev_screen import (
+    centre_menu,
+    render_dev_audio_screen,
+    render_dev_screen,
+    render_dev_viewer_screen,
+)
 from ui.screens.screen_handlers import ScreenHandlers
 
 
@@ -176,3 +181,31 @@ def test_d206_a_menu_with_no_item_shown_is_left_where_it_is() -> None:
     menu.scrollTop = 80.0
     centre_menu(SimpleNamespace(querySelector=lambda _selector: menu))
     assert menu.scrollTop == 80.0
+
+
+def test_dev_menu_19_an_audio_viewer_is_a_grid_of_tappable_buttons_with_a_status_line() -> None:
+    """DEV-MENU-19, DEV-MENU-20: a button per sound or track, in the dev viewers' menu."""
+    taps: list[int] = []
+    backs: list[bool] = []
+    entries = [
+        DevChoice("Levels (2)", 0, selected=True, heading=True),
+        DevChoice("level-1-1", 0, selected=True),
+        DevChoice("level-1-2", 1, selected=False),
+    ]
+    view = DevAudioView("Music", "Tap to play", "Back", 0, entries)
+    root = render_dev_audio_screen(
+        FakeDocument(), view, ScreenHandlers(taps.append, lambda: backs.append(True))
+    )
+    assert root.classList.contains("dev-audio-screen")
+    assert root.querySelector(".menu-heading").textContent == "Music"
+    assert root.querySelector(".dev-status").textContent == ""
+    assert root.querySelector(".menu-hint").textContent == "Tap to play"
+    menu = root.querySelector(".dev-audio-menu")
+    assert menu.classList.contains("dev-menu")
+    items = menu.querySelectorAll(".dev-menu-item")
+    assert [i.textContent for i in items] == ["level-1-1", "level-1-2"]
+    assert items[0].classList.contains("selected")
+    assert menu.querySelector(".dev-menu-group").textContent == "Levels (2)"
+    items[1].fire("click")
+    root.querySelector(".menu-back").fire("click")
+    assert (taps, backs) == ([1], [True])

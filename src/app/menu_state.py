@@ -18,8 +18,11 @@ from core.menu.menu_screen import MenuScreen
 from core.systems.level_run_types import LevelCheckpoint, LevelResult
 
 # What a command did, so the presentation can give feedback (and its sound, AUD-ENGINE-09): a
-# move, a new screen, a locked level, a level paused or resumed, a slider changed.
-MenuFeedback = Literal["none", "moved", "screen", "locked", "paused", "resumed", "adjusted"]
+# move, a new screen, a locked level, a level paused or resumed, a slider changed, a dev audio
+# viewer's item picked (it plays, with no menu sound: DEV-MENU-19).
+MenuFeedback = Literal[
+    "none", "moved", "screen", "locked", "paused", "resumed", "adjusted", "played"
+]
 # __pragma__ ("noskip")
 
 

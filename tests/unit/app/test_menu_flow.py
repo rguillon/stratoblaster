@@ -505,7 +505,7 @@ def test_ui_over_04_a_result_delay_replaces_the_transition_time() -> None:
 
 # D-199: the dev menu and its viewers (`?dev`).
 
-DEV_COUNTS = [3, 4, 2, 5, 6]
+DEV_COUNTS = [3, 4, 2, 5, 6, 3, 2]
 
 
 def dev_flow() -> MenuFlow:
@@ -734,3 +734,50 @@ def test_ui_set_01_confirm_on_the_settings_screen_does_nothing() -> None:
     assert flow.dispatch("confirm") == "none"
     assert flow.state.screen == "settings"
     assert flow.revision == revision
+
+
+def at_sounds_viewer() -> MenuFlow:
+    flow = at_dev_menu()
+    for _ in range(5):
+        flow.dispatch("down")
+    assert flow.state.selected_id == "sounds"
+    flow.dispatch("confirm")
+    settle(flow)
+    return flow
+
+
+def test_dev_menu_19_on_an_audio_viewer_the_item_picked_plays_with_no_menu_sound() -> None:
+    """The feedback is `played` for a move, a tap and Confirm (which flips the toggle)."""
+    flow = at_sounds_viewer()
+    assert flow.state.dev_viewer == "sounds"
+    assert flow.dispatch("right") == "played"
+    assert flow.state.selection == 1
+    assert flow.dispatch(MenuSelect(2)) == "played"
+    assert flow.dispatch(MenuSelect(2)) == "none"
+    toggle = flow.state.dev_close_up
+    assert flow.dispatch("confirm") == "played"
+    assert flow.state.dev_close_up is not toggle
+    assert flow.dispatch("back") == "screen"
+    assert flow.state.screen == "dev"
+
+
+def test_dev_menu_20_the_music_viewer_is_the_last_entry_and_up_down_jump_its_groups() -> None:
+    groups = [["", "", ""], [], [], [], [], ["", "", ""], ["Menu", "Levels"]]
+    flow = MenuFlow(
+        MenuFlowOptions(
+            list(SHIPS), catalog(), None, 0.25, None, None, 10, list(DEV_COUNTS), groups
+        )
+    )
+    flow.finish_loading()
+    settle(flow)
+    flow.dispatch("down")
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    for _ in range(len(DEV_COUNTS) - 1):
+        flow.dispatch("down")
+    assert flow.state.selected_id == "music"
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.dispatch("down") == "played"
+    assert flow.state.selection == 1

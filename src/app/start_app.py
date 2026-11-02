@@ -533,16 +533,16 @@ def create_session(
     )
 
 
-def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
+def create_dev(engine: Any, game: Any, options: AppOptions, audio: GameAudio) -> Any:
     """Return the dev viewers, in the game page, with `options.dev` (DEV-MENU-02, D-199).
 
     Their session, their items' labels and groups (D-202), as [session, labels, groups]; None
-    without `options.dev`.
+    without `options.dev`. The sounds and music viewers play through `audio`.
     """
     if not options.dev:
         return None
     catalog = dev_catalog(game)
-    session = DevSession(engine, game, catalog, options.environment, options.overlay)
+    session = DevSession(engine, game, catalog, options.environment, options.overlay, audio)
     session.listen(options.keyboard_target)
     return [session, dev_labels(catalog), dev_groups(catalog)]
 
@@ -568,7 +568,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
 
     session = create_session(engine, game, options, get_menu, audio, perf)
     controls = session.controls
-    dev = create_dev(engine, game, options)
+    dev = create_dev(engine, game, options, audio)
 
     def on_change(state: MenuState) -> None:
         sync_scenes(scenes_box[0], state, ship_ids)

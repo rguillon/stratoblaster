@@ -141,3 +141,41 @@
   stage cannot be re-seeded. The scan cannot tell methods apart when other classes share their name
   (`count`, `clear`, ...): those were checked by hand where flagged.
 - **Status:** Proposed
+
+### D-238 — Sounds and music viewers in the Dev menu, as audio viewers without a scene
+- **Date:** 2026-11-02
+- **Requirements:** DEV-MENU-19, DEV-MENU-20 (new); DEV-MENU-03 (entries list), the dev-menu
+  tunables (`DEV_VIEWERS`, `DEV_AUDIO_VIEWERS`).
+- **Context:** owner request: a sound menu in the dev view with a button for every sound, and a
+  music menu for the music, to check the game's generated audio by hand.
+- **Decision:**
+  - Two more viewers of the dev menu, `Sounds` and `Music`, on the flow's existing `dev-viewer`
+    screen (counts, items, toggle, Back), so the menu flow, the controller and the test API need no
+    new screen. Their view is a `DevAudioView` (`dev-audio`): the dev viewers' scrolling menu laid
+    out as a grid over the whole screen, one button per item, with the status line and the hint;
+    no 3D scene (`DevSession.active` stays false, the menu backdrop shows).
+  - The item picked plays: `DevAudioViewer` (`src/app/dev_audio_viewer.py`) follows the flow's
+    state and plays on a change of item or of the toggle (Confirm flips it, so "play again" costs no
+    new command); opening the viewer plays nothing. The flow answers `played` (a new
+    `MenuFeedback`) instead of `moved` / `adjusted` on an audio viewer, so no menu sound covers the
+    sound picked.
+  - `GameAudio` gets `play_cue` (a cue's sound alone, unpanned; a looping one kept until the next
+    cue or `stop_cue`) and `play_music` (a track from its start, a jingle over the music), and
+    leaves the music alone on the music viewer's screen (`menu_changed`); the dev menu's screen
+    brings the menu theme back.
+  - The catalog lists the sounds by cue (the engine's `AudioBindings.sounds`) and the music by
+    composing every request the engine can make (menu, each level's level and boss track, the
+    jingles) and keeping each track id once: about 0.1 s in CPython for the whole game, only with
+    `?dev`, and the tracks are the ones the game then plays (they are cached). A music item's id
+    names its request (`menu`, `level:1-1`, `boss:1-1`, `jingle:complete`), read back by
+    `music_request`; its label is the track's id, as the test API reports it.
+- **Alternatives considered:** a separate screen kind in the flow (more state machine for the same
+  behaviour); listing the boss tracks per level without composing (20 buttons for 4 tracks);
+  playing on every selection change including the first (a sound on opening the viewer, over the
+  dev menu's confirm sound); a `Stop` button in the music viewer (Back does it).
+- **Consequences:** the dev viewers' texts gain the two hints and the `Playing: ` prefix;
+  `DevSession` takes the game's audio. The music viewer's `Playing` line shows whatever plays, the
+  menu theme included, with its time. The requirement text of DEV-MENU-03 and the viewers list
+  were amended (agent, per D-234's rule that a decision is written into the requirement it
+  concerns); the owner may veto.
+- **Status:** Proposed

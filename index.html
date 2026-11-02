@@ -1073,6 +1073,43 @@
         background: var(--glass);
         font-size: 11px;
       }
+      /* The dev audio viewers (DEV-MENU-19, DEV-MENU-20): the status under the heading, then the
+         buttons in a grid that fills the screen and scrolls, three a row. */
+      .dev-audio-screen .menu-heading {
+        margin-top: 48px;
+      }
+      .dev-audio-screen .dev-caption {
+        min-height: 20px;
+        font-size: 14px;
+      }
+      .dev-audio-screen .dev-status {
+        font-size: 14px;
+      }
+      .dev-audio-menu {
+        position: static;
+        flex: 1 1 0;
+        min-height: 0;
+        width: 100%;
+        height: auto;
+        margin: 12px 0 10px;
+        gap: 6px;
+        padding: 8px;
+      }
+      .dev-audio-menu .menu-entry {
+        min-height: 36px;
+        padding: 4px 10px;
+        font-size: 13px;
+        line-height: 26px;
+      }
+      .dev-audio-menu .dev-menu-group {
+        margin-top: 8px;
+      }
+      .dev-audio-menu .dev-menu-group:first-child {
+        margin-top: 0;
+      }
+      .dev-audio-screen .dev-hint {
+        margin-top: 0;
+      }
 
       /* Debug tile (DEV-PERF-04): frame rate and polygons drawn, top right of the window. */
       .stats-tile {

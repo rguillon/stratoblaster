@@ -250,7 +250,7 @@ def test_ui_title_09_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
 
 def test_d199_without_dev_there_are_no_dev_viewers() -> None:
     options = SimpleNamespace(dev=None)
-    assert start_app.create_dev("engine", None, options) is None
+    assert start_app.create_dev("engine", None, options, "audio") is None
 
 
 def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch: Any) -> None:
@@ -259,8 +259,9 @@ def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkey
     monkeypatch.setattr(start_app, "dev_labels", lambda _catalog: {"ships": ["Item"]})
     monkeypatch.setattr(start_app, "dev_groups", lambda _catalog: {"ships": [""]})
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay", keyboard_target=None)
-    session, labels, groups = start_app.create_dev("engine", "game", options)
+    session, labels, groups = start_app.create_dev("engine", "game", options, "audio")
     assert session._catalog == {"ships": ["item"]}
+    assert session._audio == "audio"
     assert labels == {"ships": ["Item"]}
     assert groups == {"ships": [""]}
 
@@ -642,7 +643,7 @@ class AppParts:
         assert args[4] is self.audio
         return self.session
 
-    def create_dev(self, _engine: Any, _game: Any, _options: Any) -> Any:
+    def create_dev(self, _engine: Any, _game: Any, _options: Any, _audio: Any) -> Any:
         return None if self.dev is None else [self.dev, "labels", "groups"]
 
     def create_menu(self, *args: Any) -> MenuHandle:

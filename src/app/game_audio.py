@@ -3,6 +3,8 @@
 
 The level and boss tracks following the boss bar, the jingles, the sound effects of the level's cues
 and of the menus, and pausing it all with the game. It only reads the menu and core state (ENG-11).
+The dev audio viewers play any cue or track on demand (`play_cue`, `play_music`; DEV-MENU-19,
+DEV-MENU-20).
 
 Options are a plain class (`GameAudioOptions`), passed by position (Transcrypt has no keyword
 arguments). `create_context` and `can_start` are None when omitted.
@@ -15,6 +17,7 @@ from audio.level_cues import LevelCues
 from audio.music_player import MusicPlayer, MusicTimings
 from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 from config.audio import AUDIO_CONFIG
+from config.dev_viewer import DEV_MUSIC_VIEWER
 
 # isort: split
 # __pragma__ ("skip")
@@ -92,6 +95,8 @@ class GameAudio:
         self._defeated = 0
         # Name of the beam hum playing, if any.
         self._hum: str | None = None
+        # Name of the looping sound the dev sounds viewer plays, if any (DEV-MENU-19).
+        self._dev_loop: str | None = None
         mix = bindings.mix if bindings is not None else AudioMix(1, 1)
         effects = bindings.effects if bindings is not None else None
         reverb_seconds = effects.reverb_seconds if effects is not None else None
@@ -172,6 +177,9 @@ class GameAudio:
                 self._want(None, AUDIO_CONFIG.fade_seconds)
             return
         self._level_id = None
+        # The dev music viewer picks the music itself (DEV-MENU-20).
+        if state.dev_viewer == DEV_MUSIC_VIEWER:
+            return
         self._want(MusicRequest("menu", None, None), AUDIO_CONFIG.crossfade_seconds)
 
     def menu_feedback(self, command: MenuCommand, feedback: MenuFeedback, volumes: Volumes) -> None:
@@ -180,6 +188,46 @@ class GameAudio:
         cue = _menu_cue(command, feedback)
         if cue is not None:
             self._cue(cue, None)
+
+    def play_cue(self, cue: str) -> str | None:
+        """Play the sound of `cue` alone, unpanned (the dev sounds viewer, DEV-MENU-19).
+
+        A looping sound plays until the next cue or `stop_cue`. Returns the name of the sound
+        played; None when the cue has no sound or the pool dropped it.
+        """
+        self.stop_cue()
+        sound = self._bindings.sounds.get(cue) if self._bindings is not None else None
+        if sound is None:
+            return None
+        played = self._sfx.play(sound, 0)
+        self._played(sound.name, played)
+        if not played:
+            return None
+        if sound.loop:
+            self._dev_loop = sound.name
+        return sound.name
+
+    def stop_cue(self) -> None:
+        """Stop the looping sound `play_cue` started, if any."""
+        if self._dev_loop is not None:
+            self._sfx.stop_loop(self._dev_loop)
+        self._dev_loop = None
+
+    def play_music(self, request: MusicRequest) -> str | None:
+        """Play the track of `request` from its start (the dev music viewer, DEV-MENU-20).
+
+        A jingle plays once over the music, as in game; any other track replaces the music
+        (cross-faded). Returns the track's id; None when the game has no track for the request.
+        """
+        track = self._track_of(request)
+        if track is None:
+            return None
+        if request.kind == "jingle":
+            self._music.jingle(track)
+        else:
+            self._music.play(track, AUDIO_CONFIG.crossfade_seconds)
+        track_id: str = track.id
+        return track_id
 
     def level_started(self, level_id: str) -> None:
         """Play the level's track from the start (AUD-MUSIC-08).

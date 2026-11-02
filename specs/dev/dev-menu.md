@@ -4,11 +4,12 @@
 
 With `?dev` in the URL, the title screen gets a Dev entry. It opens a menu of viewers, which show the
 game's models and levels drawn as in game, one at a time: the player ships, the enemies, the bosses,
-the props (with the cars) and the levels. They are for checking the look by hand. The viewers are
-screens of the game page, reached through the menus; they replace the separate debug pages of the
-earlier phases (`player_ship/`, `player_shots/`, `enemies/`, `bosses/`, `props/`, `level_zero/`).
-There is no viewer of the player shots. The URL options that start a level straight away are in
-[debug-options.md](debug-options.md).
+the props (with the cars) and the levels, and two audio viewers that play the game's sounds and
+music on demand (DEV-MENU-19, DEV-MENU-20). They are for checking the look and the sound by hand.
+The viewers are screens of the game page, reached through the menus; they replace the separate
+debug pages of the earlier phases (`player_ship/`, `player_shots/`, `enemies/`, `bosses/`, `props/`,
+`level_zero/`). There is no viewer of the player shots. The URL options that start a level straight
+away are in [debug-options.md](debug-options.md).
 
 ## Requirements
 
@@ -40,10 +41,10 @@ left.
 ### DEV-MENU-03 — The dev menu · MUST
 
 The dev menu has the heading `Dev tools`, one entry per viewer in this order: `Player ships`,
-`Enemies`, `Bosses`, `Props`, `Levels`, the hint `▲ ▼ to pick · Enter or tap to open`, and the Back
-button. ▲ ▼ move the selection, Confirm or a tap opens the viewer selected, and Back returns to the
-title screen with the Dev entry selected. It takes the menus' usual input (keyboard, gamepad, mouse
-and touch, [../ui/menu-input.md](../ui/menu-input.md)).
+`Enemies`, `Bosses`, `Props`, `Levels`, `Sounds`, `Music`, the hint `▲ ▼ to pick · Enter or tap to
+open`, and the Back button. ▲ ▼ move the selection, Confirm or a tap opens the viewer selected, and
+Back returns to the title screen with the Dev entry selected. It takes the menus' usual input
+(keyboard, gamepad, mouse and touch, [../ui/menu-input.md](../ui/menu-input.md)).
 
 **Acceptance criteria**
 - Given the dev menu, when Enemies is confirmed, then the enemies viewer opens on its first item.
@@ -285,13 +286,60 @@ m:ss`). The viewer waits for the level's ground before it builds its scene.
 
 *Sources: D-199.*
 
+### DEV-MENU-19 — The sounds viewer · MUST
+
+The sounds viewer lists every sound effect of the game, one button per cue (`fire:bullet`,
+`enemy-bullet`, `menu-move`...; [../audio/sfx.md](../audio/sfx.md)), in the game's order, in a grid
+of three a row that fills the screen and scrolls, under the heading `Sounds`. It draws no scene:
+the menu backdrop shows behind it, and the menu theme goes on. The sound picked plays as in game,
+unpanned, at the settings' volume: the arrows pick the sound before or after (round the list) and
+play it, a tap on a button picks and plays it, Confirm (or a tap on the button picked) plays it
+again. Opening the viewer plays nothing. The item picked gives no menu sound (its feedback is
+`played`, not `moved`), so nothing covers the sound. A looping sound (the laser hum) plays until
+another sound is picked or the viewer is left. The status line under the heading says
+`Playing: <name>` with the name of the sound played. The hint reads `Arrows or tap: play a sound ·
+Enter: play it again · Esc: back`.
+
+**Acceptance criteria**
+- Given the sounds viewer, then it has one button per sound cue, the first `fire:bullet`.
+- Given ▶ pressed on `fire:bullet`, then `missile-launch` is the last sound played and the status
+  says `Playing: missile-launch`; no `menu-move` plays.
+- Given a tap on a button, then its sound plays; given Enter, then it plays again.
+
+*Sources: D-238.*
+
+### DEV-MENU-20 — The music viewer · MUST
+
+The music viewer lists every track the game plays, each once, labelled by its id, under the
+heading `Music`, in the groups `Menu` (the menu theme), `Levels` (one track per level, in the level
+select's order), `Bosses` (each boss track once: several levels share one) and `Jingles`
+(`complete`, `over`, `checkpoint`; [../audio/music.md](../audio/music.md)), in the sounds viewer's
+grid. The tracks are composed when the dev menu is set up (so each boss track is listed once), and
+kept, as in game. The track picked plays from its start as in game: ◀ ▶ pick the track before or
+after and play it, ▲ ▼ jump to the group before or after, a tap on a button picks and plays it,
+Confirm plays it again. A level or boss track replaces the music playing (cross-faded); a jingle
+plays once over it. Opening the viewer plays nothing: the menu theme goes on until a track is
+picked, and the menus leave the music to the viewer while it is open. Back to the dev menu, the
+menu theme returns. The status line says `Playing: <track id> · m:ss` with the track playing and
+the time into it. The hint reads `◀ ▶ or tap: play a track · ▲ ▼: group · Enter: play it again ·
+Esc: back`.
+
+**Acceptance criteria**
+- Given the music viewer, then its buttons start with `menu`, `level-1-1`, each boss track is
+  listed once under `Bosses`, and `jingle-complete` is under `Jingles`.
+- Given ▶ pressed on `menu`, then the music playing is `level-1-1`; given `jingle-complete`
+  tapped, then the music playing is still `level-1-1`.
+- Given Back, then the music playing is `menu` again.
+
+*Sources: D-238.*
+
 ## Tunable values
 
 All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| viewers | ships, enemies, bosses, props, levels | `DEV_VIEWERS`, in menu order |
+| viewers | ships, enemies, bosses, props, levels, sounds, music | `DEV_VIEWERS`, in menu order; `DEV_AUDIO_VIEWERS`: sounds, music |
 | `close_up_fill` | 0.35 | Share of the screen height the model fills in close-up |
 | `turn_per_pixel` | 0.01 rad | Per pixel dragged |
 | `zoom_per_pixel` | 0.0015 | The wheel zooms by e^(this) per pixel |

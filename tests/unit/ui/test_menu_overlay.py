@@ -8,6 +8,8 @@ from helpers.dom import FakeDocument, FakeEvent
 from input.menu_action import MenuSelect, MenuSet
 from ui.menu_overlay import MenuOverlay, MenuOverlayOptions
 from ui.menu_view import (
+    DevAudioView,
+    DevChoice,
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -186,6 +188,10 @@ def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None
     screen = root.querySelector(".dev-viewer-screen")
     screen.fire("wheel", SimpleNamespace(deltaY=-100, target=None, preventDefault=lambda: None))
     assert wheels == [-100]
+    overlay.show(DevAudioView("Sounds", "hint", "Back", 0, [DevChoice("hit", 0, selected=False)]))
+    assert root.querySelector(".dev-audio-screen") is not None
+    assert overlay.view is not None
+    assert overlay.view.kind == "dev-audio"
 
 
 def test_game_ctrl_04_without_touch_handlers_the_fire_button_and_drags_do_nothing() -> None:

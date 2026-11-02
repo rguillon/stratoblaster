@@ -11,7 +11,7 @@ from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
-from config.dev_viewer import DEV_VIEWERS
+from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWERS
 from core.content.level_catalog import first_unlocked_level
 from core.menu.grid_cursor import GridShape, move_cursor
 from core.menu.menu_screen import can_transition
@@ -317,7 +317,8 @@ class MenuFlow:
 
         The four directions show the item before or after (round the list), Up and Down the first
         item of the group before or after when the viewer's items are in groups (D-202), Confirm
-        flips the viewer's toggle, Back and Escape return to the dev menu.
+        flips the viewer's toggle, Back and Escape return to the dev menu. On an audio viewer the
+        item picked plays (DEV-MENU-19): the feedback is `played`, so no menu sound covers it.
         """
         if is_menu_direction(command):
             counts = self._dev_counts
@@ -332,11 +333,11 @@ class MenuFlow:
             else:
                 self._dev_items[self._dev_index] = (index + step + count) % count
             self._changed()
-            return "moved"
+            return self._dev_feedback("moved")
         if command == "confirm":
             self._dev_toggles[self._dev_index] = not self._dev_toggles[self._dev_index]
             self._changed()
-            return "adjusted"
+            return self._dev_feedback("adjusted")
         if command in ["back", "cancel"]:
             return "screen" if self.go_to("dev") else "none"
         return "none"
@@ -351,7 +352,11 @@ class MenuFlow:
             return "none"
         self._dev_items[self._dev_index] = index
         self._changed()
-        return "moved"
+        return self._dev_feedback("moved")
+
+    def _dev_feedback(self, feedback: str) -> str:
+        """Return `feedback`, or `played` on an audio viewer, whose item picked plays."""
+        return "played" if DEV_VIEWERS[self._dev_index] in DEV_AUDIO_VIEWERS else feedback
 
     def _adjusted(self, feedback: str) -> str:
         if feedback != "none":

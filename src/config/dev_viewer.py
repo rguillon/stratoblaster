@@ -2,7 +2,8 @@
 """Tunables and texts of the dev viewers (reviewer, 2026-10-30, D-199).
 
 A Dev entry on the title screen (with `?dev` in the URL) opens a menu of viewers of the player
-ships, the enemies, the bosses, the props and the levels, drawn as in game.
+ships, the enemies, the bosses, the props and the levels, drawn as in game, and of the sounds and
+the music, played as in game (DEV-MENU-19, DEV-MENU-20).
 """
 
 
@@ -21,6 +22,9 @@ class DevViewerTexts:
         groups_hint: str,
         grid_note: str,
         bosses_hint: str = "",
+        sounds_hint: str = "",
+        music_hint: str = "",
+        playing: str = "",
     ) -> None:
         # The title screen's entry.
         self.entry = entry
@@ -40,6 +44,11 @@ class DevViewerTexts:
         self.grid_note = grid_note
         # The hint of the bosses viewer (its K key breaks the boss's next part).
         self.bosses_hint = bosses_hint
+        # The hints of the sounds and music viewers (DEV-MENU-19, DEV-MENU-20).
+        self.sounds_hint = sounds_hint
+        self.music_hint = music_hint
+        # The audio viewers' status line, before what plays.
+        self.playing = playing
 
 
 class DevPropStageConfig:
@@ -139,7 +148,12 @@ class DevViewerConfig:
 
 
 # The viewers of the dev menu, in order (their ids, DEV-MENU-03).
-DEV_VIEWERS = ["ships", "enemies", "bosses", "props", "levels"]
+DEV_VIEWERS = ["ships", "enemies", "bosses", "props", "levels", "sounds", "music"]
+# The viewers that play audio instead of drawing a scene (DEV-MENU-19, DEV-MENU-20): a button per
+# sound or track, the one picked plays.
+DEV_AUDIO_VIEWERS = ["sounds", "music"]
+# The music viewer: while it is open, the menus' music is left to it.
+DEV_MUSIC_VIEWER = "music"
 
 DEV_VIEWER_CONFIG = DevViewerConfig(
     0.35,
@@ -158,6 +172,8 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
             "bosses": "Bosses",
             "props": "Props",
             "levels": "Levels",
+            "sounds": "Sounds",
+            "music": "Music",
         },
         "Wheel: zoom · ◀ ▶ or menu: next · Drag: turn · Enter: close-up / game size · Esc: back",
         "Wheel: scrub · Arrows: level · Enter: play / stop · Esc: back",
@@ -167,6 +183,9 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "1 square = 1 block",
         "Wheel: zoom · ◀ ▶ or menu: next · Drag: turn · Enter: close-up / game size"
         " · K: break a part · Esc: back",
+        "Arrows or tap: play a sound · Enter: play it again · Esc: back",
+        "◀ ▶ or tap: play a track · ▲ ▼: group · Enter: play it again · Esc: back",
+        "Playing: ",
     ),
     0.01,
     DevPropStageConfig(

@@ -7,6 +7,7 @@ Clicks into menu commands (UI-INPUT-09); it never reads raw keys or gamepad butt
 from input.menu_action import MenuSet
 from input.pointer_menu_input import pointer_command
 from ui.menu_view import (
+    DevAudioView,
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -17,6 +18,7 @@ from ui.menu_view import (
 )
 from ui.screens.dev_screen import (
     centre_menu,
+    render_dev_audio_screen,
     render_dev_screen,
     render_dev_viewer_screen,
 )
@@ -73,6 +75,7 @@ _RENDERERS: list[Any] = [
     [GameScreenView, render_game_screen],
     [DevMenuView, render_dev_screen],
     [DevViewerView, render_dev_viewer_screen],
+    [DevAudioView, render_dev_audio_screen],
 ]
 
 
