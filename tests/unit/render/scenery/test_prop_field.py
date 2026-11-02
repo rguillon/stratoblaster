@@ -21,6 +21,7 @@ from core.scenery.ground_boxes import PropPlacement
 from core.scenery.scenery_level import (
     BlockFill,
     CarRules,
+    CliffRules,
     Drift,
     FloatRules,
     Landmark,
@@ -703,11 +704,12 @@ def _rich_level() -> SceneryLevel:
         landmarks=[Landmark("dam", 100, (10, 10))],
         lots=[_kind("park")],
         cars=CarRules(["sedan"], 0.1, 0.2, 1, 4, (5, 10)),
+        cliffs=CliffRules(["crag"], 0.5, 7, (6, 10), (4, 8), 2),
     )
     return sample_level(sections=[city, woods], props=props)
 
 
-RICH_KINDS = ["block", "stick", "floe", "berg", "pipe", "wagon", "podium", "dam", "park"]
+RICH_KINDS = ["block", "stick", "floe", "berg", "pipe", "wagon", "podium", "dam", "park", "crag"]
 
 
 def test_gfx_prop_03_a_level_stands_every_kind_of_its_sections_and_set_pieces_once() -> None:

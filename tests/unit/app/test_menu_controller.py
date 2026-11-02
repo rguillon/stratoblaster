@@ -9,6 +9,7 @@ from helpers.menu_game import make_game
 from app.menu_controller import MenuController, MenuControllerDeps
 from app.saved_choices import saved_choice_keys
 from app.saved_settings import saved_setting_keys
+from config.dev_viewer import DEV_VIEWERS
 from core.systems.level_run_types import LevelResult
 from input.menu_action import MenuSet
 from ui.menu_view import GameScreenView, LoadingView, SettingsView, ShipSelectView, TitleView
@@ -62,6 +63,73 @@ def make(
         on_feedback,
     )
     return MenuController(make_game(), deps), display, inputs, store
+
+
+class FakeFullscreen:
+    """The page's full screen (UI-TITLE-11), toggled by the controller."""
+
+    def __init__(self, supported: bool = True) -> None:
+        self.is_supported = supported
+        self.is_active = False
+        self.toggles = 0
+        self.on_change: object = None
+
+    def supported(self) -> bool:
+        return self.is_supported
+
+    def active(self) -> bool:
+        return self.is_active
+
+    def toggle(self) -> None:
+        self.toggles += 1
+
+    def listen(self, on_change: object) -> None:
+        self.on_change = on_change
+
+
+def with_fullscreen(fullscreen: FakeFullscreen) -> tuple[MenuController, FakeDisplay]:
+    display = FakeDisplay()
+    deps = MenuControllerDeps(
+        display,
+        FakeInput(),
+        MemoryStorage(),
+        0.25,
+        None,
+        80,
+        "1.0",
+        "abc",
+        None,
+        None,
+        None,
+        None,
+        fullscreen,
+    )
+    controller = MenuController(make_game(), deps)
+    finish(controller)
+    return controller, display
+
+
+def test_ui_title_11_confirming_full_screen_toggles_the_page_and_the_entry_follows() -> None:
+    fullscreen = FakeFullscreen()
+    controller, display = with_fullscreen(fullscreen)
+    assert display.last.fullscreen == "Full screen"
+    for command in ["down", "down", "confirm"]:
+        controller.command(command)
+    assert fullscreen.toggles == 1
+    assert display.last.kind == "title"
+    # The page went full screen (the browser says so): the entry now offers to leave it.
+    fullscreen.is_active = True
+    assert callable(fullscreen.on_change)
+    fullscreen.on_change()
+    assert display.last.fullscreen == "Exit full screen"
+
+
+def test_ui_title_11_without_full_screen_support_the_title_has_no_entry() -> None:
+    controller, display = with_fullscreen(FakeFullscreen(supported=False))
+    assert display.last.fullscreen is None
+    controller.command("down")
+    controller.command("down")
+    assert controller.flow.state.selected_id == "settings"
 
 
 def finish(controller: MenuController) -> None:
@@ -238,7 +306,8 @@ def test_ui_set_01_the_settings_screen_is_shown_when_chosen() -> None:
 
 
 def test_d199_the_dev_labels_give_the_flow_its_counts_and_the_views_their_items() -> None:
-    labels = {"ships": ["A", "B"], "enemies": [], "bosses": [], "props": [], "levels": ["1-1"]}
+    labels = {viewer: [] for viewer in DEV_VIEWERS}
+    labels.update({"ships": ["A", "B"], "levels": ["1-1"]})
     display = FakeDisplay()
     deps = MenuControllerDeps(
         display, FakeInput(), MemoryStorage(), 0.25, None, 80, "1.0", "abc", None, None, labels
@@ -257,20 +326,10 @@ def test_d199_the_dev_labels_give_the_flow_its_counts_and_the_views_their_items(
 
 def test_d202_the_dev_groups_let_up_and_down_jump_between_the_groups() -> None:
     """A viewer whose items are in no group: Down shows its next item."""
-    labels = {
-        "ships": ["A", "B", "C"],
-        "enemies": ["x", "y"],
-        "bosses": [],
-        "props": [],
-        "levels": [],
-    }
-    groups = {
-        "ships": ["fast", "fast", "heavy"],
-        "enemies": ["", ""],
-        "bosses": [],
-        "props": [],
-        "levels": [],
-    }
+    labels = {viewer: [] for viewer in DEV_VIEWERS}
+    labels.update({"ships": ["A", "B", "C"], "enemies": ["x", "y"]})
+    groups = {viewer: [] for viewer in DEV_VIEWERS}
+    groups.update({"ships": ["fast", "fast", "heavy"], "enemies": ["", ""]})
     display = FakeDisplay()
     deps = MenuControllerDeps(
         display,

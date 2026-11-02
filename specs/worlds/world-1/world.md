@@ -219,6 +219,43 @@ The towns are street grids on tiles.
 
 *Sources: D-046.*
 
+#### WLD-1-31 — Hills with one rocky face · MUST
+
+World 1's land is hills with one rocky side and a slow slope on the other, as the mountains of
+Ireland: the sections of open land (the green coast, the meadows, groves, farmland, woods and green
+hills, the drying grass, the scrubland, the desert outskirts and the rocky pass) carry `scarps`
+(GFX-TERRAIN-19), their faces all looking the same way (`SCARP_ANGLE`, 125° from +Z: towards +X, where the sun
+is, and a little towards the camera), short (`SCARP_FACE`, 8 % of a cycle) and their crests falling to nothing between the
+hills; the farmland's are lower. The towns on street grids, the dry lake, the canyon, the mesas, the
+buttes and the sea have none. The looks draw the steep ground as rock sooner than the base look
+(`steepSlope`): grey crags (`CRAG`) on the green levels from a slope of 0.045 (17°, full rock from
+26°), the red mesa rock on the dry levels from 0.06 (20°, full from 30°), with less noise on the
+slope than the base look (`SLOPE_JITTER` 0.06 instead of 0.2, which would put rock on the flat and
+grass on the faces), so the faces of the hills, and any other ground as steep, are bare rock under
+the blocks of stone and the fringe of stones along them, not grass.
+The faces are built of blocks of stone (`cliffs`, GFX-PROP-19): grey crag chunks on the green
+levels (`CRAG_CLIFFS`), red mesa chunks on the dry levels (`MESA_CLIFFS`, on the walls of the
+mesas, buttes and canyon too), standing where the ground is steeper than 0.55 and above the sea,
+one every 7 units, 7 to 14 wide and 6 to 14 high, most modest and a few big, sunk 1.5 into the
+ground and further into the slope, with a fringe of smaller stones in some of the cells from a
+slope of 0.39, so a face is courses of fractured stone growing out of the rock, not a smooth
+slope nor a heap on the grass. Three shapes each (`crag_props.py`): a chunk with a stone at its
+foot, two chunks stacked, two side by side.
+
+**Acceptance criteria**
+- Given 1-2 and 1-3, then every section but the market town has scarps, with one angle, one face
+  share and crests falling to 0 (unit tests).
+- Given 1-4 and 1-5, then the dry grassland, the scrubland villages, the desert outskirts and the
+  rocky pass have scarps and no section with streets has any (unit test).
+- Given the World 1 looks, then their steep layer starts and completes at a lower slope than the
+  base look's, and the noise on the slope is smaller than the onset (unit test).
+- Given the World 1 levels, then the green ones place the crag blocks and the dry ones the mesa
+  blocks on their steep ground (unit test).
+- Manual visual validation: `?level=1-3&t=60`, each hill shows a rocky face and a grassy back;
+  `?level=1-5&t=120`, the rocky pass the same in red rock.
+
+*Sources: D-240, D-243, D-244, D-245.*
+
 ### Light
 
 #### WLD-1-16 — Later and later in the day · MUST

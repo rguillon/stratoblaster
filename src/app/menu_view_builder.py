@@ -7,8 +7,9 @@ every text from the game (UI-LOOK-10).
 
 from app.dev_groups import group_of, group_starts
 from app.settings_menu import SETTINGS_SLIDERS
-from config.dev_viewer import DEV_VIEWER_CONFIG, DEV_VIEWERS
+from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWER_CONFIG, DEV_VIEWERS
 from ui.menu_view import (
+    DevAudioView,
     DevChoice,
     DevMenuView,
     DevViewerView,
@@ -53,6 +54,7 @@ class MenuViewContext:
         volume_steps: int,
         dev_labels: dict[str, list[str]] | None = None,
         dev_groups: dict[str, list[str]] | None = None,
+        fullscreen: bool | None = None,
     ) -> None:
         self.game = game
         # The best score so far.
@@ -70,6 +72,9 @@ class MenuViewContext:
         self.dev_labels = dev_labels
         # The group of each dev viewer's items (D-202); None: not in groups.
         self.dev_groups = dev_groups
+        # Whether the page is full screen now (UI-TITLE-11); None: the browser allows none, and
+        # the title has no Full screen entry.
+        self.fullscreen = fullscreen
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
@@ -171,10 +176,46 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
     )
 
 
+def _dev_menu(
+    labels: list[str], groups: list[str], starts: list[int], index: int
+) -> list[DevChoice]:
+    """Return the menu of a dev viewer's items (DEV-MENU-07, D-206, D-208).
+
+    Each group's heading (with its count) before its items when they are in groups; the item
+    `index` is the one shown.
+    """
+    grouped = len(starts) > 1
+    menu: list[DevChoice] = []
+    for i in range(len(labels)):
+        if grouped and i in starts:
+            k = group_of(starts, i)
+            last = starts[k + 1] if k + 1 < len(starts) else len(groups)
+            label = groups[i] + " (" + str(last - i) + ")"
+            menu.append(DevChoice(label, i, k == group_of(starts, index), True))
+        menu.append(DevChoice(labels[i], i, i == index))
+    return menu
+
+
+def _dev_hint(viewer: str, grouped: bool) -> str:
+    """Return the hint of the dev viewer `viewer`: its controls."""
+    texts = DEV_VIEWER_CONFIG.texts
+    hints = {
+        "levels": texts.levels_hint,
+        "bosses": texts.bosses_hint,
+        "sounds": texts.sounds_hint,
+        "music": texts.music_hint,
+    }
+    if viewer in hints:
+        hint: str = hints[viewer]
+        return hint
+    return texts.groups_hint if grouped else texts.models_hint
+
+
 def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """Return the dev menu (DEV-MENU-03), or the screen of the dev viewer shown.
 
-    The dev viewers' screens: DEV-MENU-05, D-199.
+    The dev viewers' screens: DEV-MENU-05, D-199; the audio viewers' (a button per sound or
+    track): DEV-MENU-19, DEV-MENU-20.
     """
     texts = DEV_VIEWER_CONFIG.texts
     back: str = ctx.game.texts.back
@@ -185,13 +226,14 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     labels = ctx.dev_labels[viewer] if ctx.dev_labels is not None else []
     groups = ctx.dev_groups[viewer] if ctx.dev_groups is not None else []
     index = state.selection
-    item = labels[index] if index < len(labels) else ""
-    scrub = viewer == "levels"
     starts = group_starts(groups)
     grouped = len(starts) > 1
-    hint = texts.levels_hint if scrub else texts.models_hint
-    if viewer == "bosses":
-        hint = texts.bosses_hint
+    hint = _dev_hint(viewer, grouped)
+    menu = _dev_menu(labels, groups, starts, index)
+    if viewer in DEV_AUDIO_VIEWERS:
+        return DevAudioView(texts.labels[viewer], hint, back, index, menu)
+    item = labels[index] if index < len(labels) else ""
+    scrub = viewer == "levels"
     position = str(index + 1) + " / " + str(len(labels))
     if grouped:
         # D-202: the item's group, and its place in it.
@@ -199,18 +241,15 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         end = starts[g + 1] if g + 1 < len(starts) else len(groups)
         place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
         position = groups[index] + " · " + place
-        hint = texts.groups_hint
-    # DEV-MENU-07 (D-206, D-208): the menu of every viewer: its items, each group's heading before
-    # its items when they are in groups.
-    menu: list[DevChoice] = []
-    for i in range(len(labels)):
-        if grouped and i in starts:
-            k = group_of(starts, i)
-            last = starts[k + 1] if k + 1 < len(starts) else len(groups)
-            label = groups[i] + " (" + str(last - i) + ")"
-            menu.append(DevChoice(label, i, k == group_of(starts, index), True))
-        menu.append(DevChoice(labels[i], i, i == index))
     return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub, menu)
+
+
+def _fullscreen_label(texts: Any, fullscreen: bool | None) -> str | None:
+    """Return the title's Full screen entry (UI-TITLE-11): none, or what confirming it does."""
+    if fullscreen is None:
+        return None
+    label: str = texts.exitFullscreen if fullscreen else texts.fullscreen
+    return label
 
 
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
@@ -236,6 +275,7 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
             ctx.version,
             ctx.commit,
             DEV_VIEWER_CONFIG.texts.entry if ctx.dev_labels is not None else None,
+            _fullscreen_label(texts, ctx.fullscreen),
         )
     if screen == "ship-select":
         ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]

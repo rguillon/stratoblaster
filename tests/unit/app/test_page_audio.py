@@ -78,6 +78,31 @@ def test_aud_engine_11_showing_the_page_again_brings_the_sound_back_but_does_not
     audio.set_hidden.assert_called_with(False)
 
 
+def test_ui_pause_11_a_window_that_loses_its_focus_pauses_the_level_but_not_the_audio() -> None:
+    page_target = MagicMock()
+    window = MagicMock()
+    menu = MagicMock()
+    audio = MagicMock()
+    stop = listen_to_page(
+        page(visibility=PageVisibility(page_target, lambda: False, window)), menu, audio
+    )
+    (event_type, on_blur) = window.addEventListener.call_args.args
+    assert event_type == "blur"
+    on_blur()
+    menu.pause.assert_called_once()
+    audio.set_hidden.assert_not_called()
+    stop()
+    window.removeEventListener.assert_called_once_with("blur", on_blur)
+
+
+def test_ui_pause_11_without_a_focus_target_no_blur_is_heard() -> None:
+    page_target = MagicMock()
+    listen_to_page(
+        page(visibility=PageVisibility(page_target, lambda: False)), MagicMock(), MagicMock()
+    )
+    assert [c.args[0] for c in page_target.addEventListener.call_args_list] == ["visibilitychange"]
+
+
 def test_aud_engine_05_the_music_scheduler_runs_on_the_timer_until_stopped() -> None:
     timer = MagicMock(return_value=lambda: None)
     audio = MagicMock()

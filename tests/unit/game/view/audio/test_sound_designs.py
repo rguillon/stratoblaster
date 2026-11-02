@@ -85,3 +85,32 @@ def test_aud_sfx_04_the_blast_cues_name_their_explosions() -> None:
     assert DESTRUCTION["blast-small"].name == "explosion-small"
     assert DESTRUCTION["blast-large"].layers
     assert DESTRUCTION["blast-small"].layers
+
+
+def test_d239_no_sound_is_a_bare_square_or_sawtooth_sweep() -> None:
+    """The sounds are made of filtered noise, sines and soft low-passed triangles."""
+    for cue, design in SOUND_DESIGNS.items():
+        for layer_ in design.layers:
+            assert layer_.wave != "square", cue
+            assert layer_.wave != "sawtooth", cue
+            if layer_.wave == "triangle":
+                assert layer_.filter is not None, cue
+                assert layer_.filter.type == "lowpass", cue
+
+
+def test_aud_sfx_06_the_guns_and_the_hum_are_mixed_under_the_hits_and_explosions() -> None:
+    quiet = [PLAYER_WEAPONS["fire:bullet"].gain, PLAYER_WEAPONS["beam:laser"].gain]
+    loud = [HITS["hit"].gain, DESTRUCTION["blast-small"].gain, DESTRUCTION["blast-large"].gain]
+    assert max(quiet) < min(loud)
+
+
+def test_aud_sfx_01_the_menu_sounds_are_clicks_each_its_own() -> None:
+    """D-239: a click of filtered noise in each, the confirm and back with a bell tap."""
+    for cue, design in MENUS.items():
+        assert design.layers[0].wave == "noise", cue
+        assert design.layers[0].filter.type == "bandpass", cue
+    confirm = MENUS["menu-confirm"].layers[1]
+    back = MENUS["menu-back"].layers[1]
+    assert confirm.pitch > back.pitch
+    assert MENUS["pause"].layers[1].glide_to < MENUS["pause"].layers[1].pitch
+    assert MENUS["resume"].layers[1].glide_to > MENUS["resume"].layers[1].pitch

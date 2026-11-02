@@ -16,9 +16,10 @@ From top to bottom, the title screen shows:
 2. the **logo**: the game's name ([look-and-layout.md](look-and-layout.md), UI-TITLE-02);
 3. **Start**, selected by default;
 4. **Settings** ([settings.md](settings.md));
-5. **Dev**, only with `?dev` in the URL ([dev/dev-menu.md](../dev/dev-menu.md));
-6. a short controls hint (UI-TITLE-05);
-7. the version and short commit hash, small, in the bottom right corner (UI-TITLE-04).
+5. **Full screen**, only where the browser allows full screen (UI-TITLE-11);
+6. **Dev**, only with `?dev` in the URL ([dev/dev-menu.md](../dev/dev-menu.md));
+7. a short controls hint (UI-TITLE-05);
+8. the version and short commit hash, small, in the bottom right corner (UI-TITLE-04).
 
 It has no Back button.
 
@@ -78,8 +79,9 @@ A short hint near the bottom tells how to start: "Press Space / Enter or tap to 
 
 ### UI-TITLE-06 — Moving on the title · MUST
 
-Up and down move between Start, Settings (and Dev); the selection does not wrap. Confirming Start
-opens the ship select screen; Settings opens the settings screen; Dev opens the dev menu. Back
+Up and down move between Start, Settings (and Full screen, and Dev); the selection does not wrap.
+Confirming Start opens the ship select screen; Settings opens the settings screen; Full screen
+toggles the page's full screen and stays on the title (UI-TITLE-11); Dev opens the dev menu. Back
 does nothing. Coming back from the settings screen or the dev menu, the entry that opened it is
 still selected; coming back from anywhere else (the ship select screen, or leaving a level), Start
 is selected.
@@ -141,6 +143,28 @@ and the tone mapping do not wash the signs into white blobs.
 - Manual check with the FPS tile or the browser performance tools: 60 FPS on the title.
 
 *Sources: P01-R05, D-014.*
+
+### UI-TITLE-11 — Full screen · MUST
+
+Where the browser allows the page to go full screen (`document.fullscreenEnabled`), the title has
+a **Full screen** entry between Settings and Dev. Confirming it asks the browser for full screen
+(the whole page, `documentElement`); in full screen it reads **Exit full screen** and confirming
+it leaves. The entry follows the page: when the browser leaves full screen by itself (Escape), the
+entry reads Full screen again. A refused request (no user gesture, a browser's policy) changes
+nothing and throws nothing. The flow reports the confirmation as `fullscreen` feedback and stays
+on the title; the app toggles the page (`app/page_fullscreen.py`). Where the browser allows no
+full screen (an iPhone's Safari), there is no entry.
+
+**Acceptance criteria**
+- Given a browser that allows full screen, then the title shows the Full screen entry after
+  Settings and before Dev; given one that does not, then it shows none (unit tests).
+- Given the Full screen entry confirmed, then the page's full screen is toggled and the title
+  stays, with the entry selected; once the page is full screen, the entry reads "Exit full screen"
+  (unit tests).
+- e2e: on the title, Down, Down selects `fullscreen`; Enter keeps the title and raises no console
+  error.
+
+*Sources: owner request, D-248.*
 
 ## Tunable values
 

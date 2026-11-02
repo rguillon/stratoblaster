@@ -4,8 +4,8 @@
 Reworked at the reviewer's request, 2026-10-26.
 
 Open sea with small green islands and reefs, then a green coast that gives way to meadows, groves
-and farmland. Heights in world units above the sea level (0). Each section's `seconds` add up to 240
-(WLD-1-03).
+and farmland, its hills each with a rocky face (WLD-1-31). Heights in world units above the sea
+level (0). Each section's `seconds` add up to 240 (WLD-1-03).
 """
 
 from game.config.record import merge, record
@@ -21,6 +21,29 @@ from typing import Any
 
 
 G = WORLD_1_GROUPS
+
+# The hills of World 1's land (WLD-1-31, GFX-TERRAIN-19): each with one steep rocky face and a slow
+# slope on the other side. The faces look towards +X and a little towards the camera
+# (`SCARP_ANGLE`, from +Z): the sun, ahead and to the right, lights them, and the camera, tilted
+# forward, sees them. They take `SCARP_FACE` of a crest-to-crest cycle (the back takes the rest),
+# and the crests fall to nothing between the hills.
+SCARP_ANGLE = 125
+SCARP_FACE = 0.06
+
+
+def scarps(height: float, wavelength: float, warp: float = 0.8) -> Any:
+    """Return World 1's hills: `height` at the highest crests, about `wavelength` apart.
+
+    Their lines wander by `warp` wavelengths.
+    """
+    return record({
+        "height": height,
+        "wavelength": wavelength,
+        "angleDeg": SCARP_ANGLE,
+        "warp": warp,
+        "face": SCARP_FACE,
+        "lowest": 0,
+    })
 
 
 def smooth(base: float, amplitude: float, wavelength: float, octaves: float = 4) -> Any:
@@ -68,6 +91,7 @@ GREEN_COAST = record({
     "name": "green coast",
     "seconds": 30,
     "relief": smooth(16, 10, 480),
+    "scarps": scarps(28, 340),
     "shore": shore(-40, 90, 1800),
     "buildingDensity": 0.5,
     "treeDensity": 1,
@@ -78,12 +102,13 @@ GREEN_COAST = record({
 
 
 def green(name: str, seconds: float, extra: Any) -> Any:
-    """Return the green land: grass all over, its trees and buildings."""
+    """Return the green land: grass all over, its hills, trees and buildings."""
     return merge(
         record({
             "name": name,
             "seconds": seconds,
             "relief": smooth(24, 10, 600),
+            "scarps": scarps(36, 340),
             "buildingDensity": 0.5,
             # D-212: woods on the grass (WLD-1-14; its share sets how much: see `FORESTS`).
             "treeDensity": 1,
@@ -95,12 +120,13 @@ def green(name: str, seconds: float, extra: Any) -> Any:
     )
 
 
-# Farmland, where 1-2 ends and 1-3 begins.
+# Farmland, where 1-2 ends and 1-3 begins: lower hills, room for the farms.
 FARMLAND = green(
     "farmland",
     45,
     {
         "relief": smooth(26, 8, 620),
+        "scarps": scarps(24, 360),
         "buildingDensity": 0.6,
         "groups": [G.farms, G.villages],
     },
@@ -151,6 +177,7 @@ GREEN_COAST_LEVEL = [
         40,
         {
             "relief": smooth(30, 16, 480),
+            "scarps": scarps(40, 340),
             "buildingDensity": 0.45,
             "treeDensity": 1,
             "groups": [G.farms],

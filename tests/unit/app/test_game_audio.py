@@ -454,3 +454,72 @@ def test_dev_api_02_only_the_last_sounds_played_are_reported(
     monkeypatch.setattr(audio._sfx, "play", lambda _sound, _pan=0: False)
     audio.menu_feedback("x", "resumed", Volumes(5, 5))
     assert audio.state.sounds == sounds
+
+
+# DEV-MENU-19, DEV-MENU-20: the dev audio viewers play any cue or track.
+
+
+@pytest.mark.usefixtures("voices")
+def test_dev_menu_19_a_cue_plays_its_sound_alone_and_names_it() -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    assert audio.play_cue("fire:guns") == "fire:guns"
+    assert audio.play_cue("no-such-cue") is None
+    assert audio.state.sounds == ["fire:guns"]
+    audio.menu_feedback("right", "played", Volumes(5, 5))
+    assert audio.state.sounds == ["fire:guns"]
+
+
+@pytest.mark.usefixtures("voices")
+def test_dev_menu_19_a_looping_cue_plays_until_the_next_cue_or_stopped() -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    assert audio.play_cue("beam:guns") == "beam:guns"
+    assert audio._sfx.looping("beam:guns")
+    audio.play_cue("hit")
+    assert not audio._sfx.looping("beam:guns")
+    audio.play_cue("beam:guns")
+    audio.stop_cue()
+    audio.stop_cue()
+    assert not audio._sfx.looping("beam:guns")
+
+
+def test_dev_menu_19_a_cue_the_voices_refuse_names_no_sound(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    audio, _, _ = make()
+    monkeypatch.setattr(audio._sfx, "play", lambda _sound, _pan=0: False)
+    assert audio.play_cue("hit") is None
+    assert audio.state.sounds == []
+
+
+def test_dev_menu_19_without_bindings_a_cue_plays_nothing() -> None:
+    audio, _, _ = make(with_bindings=False)
+    assert audio.play_cue("hit") is None
+    assert audio.play_music(MusicRequest("menu", None, None)) is None
+
+
+@pytest.mark.usefixtures("voices")
+def test_dev_menu_20_a_track_replaces_the_music_and_a_jingle_plays_over_it() -> None:
+    audio, music, _ = make()
+    audio.unlock()
+    audio.menu_changed(menu_state("dev-viewer", dev_viewer="music"))
+    assert audio.state.music is None
+    assert audio.play_music(MusicRequest("level", "2-3", None)) == "level-2-3"
+    assert audio.state.music == "level-2-3"
+    assert audio.play_music(MusicRequest("jingle", None, "complete")) == "jingle-complete"
+    assert audio.state.music == "level-2-3"
+    assert music.requests[-1].jingle == "complete"
+    # The menus leave the music to the viewer; back on the dev menu, their theme returns.
+    audio.menu_changed(menu_state("dev-viewer", dev_viewer="music", selection=1))
+    assert audio.state.music == "level-2-3"
+    audio.menu_changed(menu_state("dev"))
+    assert audio.state.music == "menu"
+
+
+@pytest.mark.usefixtures("voices")
+def test_dev_menu_19_the_sounds_viewer_keeps_the_menu_music() -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    audio.menu_changed(menu_state("dev-viewer", dev_viewer="sounds"))
+    assert audio.state.music == "menu"

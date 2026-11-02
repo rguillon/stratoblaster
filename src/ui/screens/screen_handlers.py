@@ -25,6 +25,7 @@ class ScreenHandlers:
         on_set: Callable[[int, float], None] | None = None,
         on_wheel: Callable[[float], None] | None = None,
         on_turn: Callable[[float, float], None] | None = None,
+        on_hold: Callable[[bool], None] | None = None,
     ) -> None:
         # An entry of the screen was tapped or clicked.
         self.on_tap = on_tap
@@ -42,3 +43,5 @@ class ScreenHandlers:
         self.on_wheel = on_wheel
         # Dev viewer (D-199): a mouse or finger drag by screen pixels (Y down), to turn the model.
         self.on_turn = on_turn
+        # Dev audio viewer (DEV-MENU-19): a button is pressed and held (True), or let go (False).
+        self.on_hold = on_hold

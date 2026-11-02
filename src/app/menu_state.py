@@ -18,8 +18,12 @@ from core.menu.menu_screen import MenuScreen
 from core.systems.level_run_types import LevelCheckpoint, LevelResult
 
 # What a command did, so the presentation can give feedback (and its sound, AUD-ENGINE-09): a
-# move, a new screen, a locked level, a level paused or resumed, a slider changed.
-MenuFeedback = Literal["none", "moved", "screen", "locked", "paused", "resumed", "adjusted"]
+# move, a new screen, a locked level, a level paused or resumed, a slider changed, a dev audio
+# viewer's item picked (it plays, with no menu sound: DEV-MENU-19), the full screen toggled
+# (UI-TITLE-11: the app does it).
+MenuFeedback = Literal[
+    "none", "moved", "screen", "locked", "paused", "resumed", "adjusted", "played", "fullscreen"
+]
 # __pragma__ ("noskip")
 
 
@@ -94,6 +98,7 @@ class MenuFlowOptions:
         volume_steps: int | None,
         dev_counts: list[int] | None = None,
         dev_groups: list[list[str]] | None = None,
+        fullscreen: bool | None = None,
     ) -> None:
         # Ship ids in display order; the first one is the default selection.
         self.ship_ids = ship_ids
@@ -113,3 +118,6 @@ class MenuFlowOptions:
         # The group of each item of each viewer, in the same order (D-202): Up and Down jump from
         # group to group. None, or one group only: they move through the items as Left and Right.
         self.dev_groups = dev_groups
+        # Whether the title offers its Full screen entry (UI-TITLE-11): only where the browser
+        # allows full screen.
+        self.fullscreen = fullscreen

@@ -15,7 +15,7 @@ from helpers.render_looks import BLACK, GREY, WHITE, make_look
 
 from render.scenery import terrain_blend_plugin_visual as plugin
 from render.scenery.scenery_kit import GroundTransform
-from render.scenery.scenery_look import LavaEdge
+from render.scenery.scenery_look import LavaEdge, LushDetail
 from render.scenery.terrain_blend_plugin_visual import (
     BEFORE_FOG,
     FRAGMENT_DEFINITIONS,
@@ -136,6 +136,25 @@ def test_gfx_terrain_08_the_blend_heights_slopes_and_scales_are_bound() -> None:
     assert values["terrainScale"] == (1 / 32, 1 / 16, 1 / 8, 0)
     assert values["terrainTintA"] == WHITE
     assert values["terrainTintB"] == GREY
+
+
+def test_gfx_terrain_09_without_lush_detail_the_grass_is_bound_flat() -> None:
+    values = _bound(TerrainBlendState(3, True, 7)).values
+    assert values["terrainLushTintA"] == (1, 1, 1)
+    assert values["terrainLushTintB"] == (1, 1, 1)
+    assert values["terrainLushDetail"][2] == 0
+
+
+def test_gfx_terrain_09_the_lush_detail_is_bound_from_the_look() -> None:
+    terrain = make_look().terrain
+    terrain.lushDetail = LushDetail((WHITE, GREY), 400, 25, 0.3)
+    ubo = FakeUbo()
+    TerrainBlendOwner(terrain, TEXTURES, TerrainBlendState(3, True, 7)).bind_for_sub_mesh(ubo)
+    values = ubo.values
+    assert values["terrainLushTintA"] == WHITE
+    assert values["terrainLushTintB"] == GREY
+    assert values["terrainLushDetail"] == (1 / 400, 1 / 25, 0.3, 0)
+    assert "terrainLushDetail" in FRAGMENT_DEFINITIONS
 
 
 def test_gfx_water_04_the_shore_is_bound_from_the_look() -> None:

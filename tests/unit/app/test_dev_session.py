@@ -11,6 +11,35 @@ from app import dev_session
 from app.dev_session import DevSession
 
 
+class FakePlayer:
+    """A fake `DevAudioViewer`: what it was shown and whether it was dropped."""
+
+    made: ClassVar[list["FakePlayer"]] = []
+
+    def __init__(self, audio: Any, viewer: str, items: Any) -> None:
+        self.audio = audio
+        self.viewer = viewer
+        self.items = items
+        self.shown: list[tuple[int, bool]] = []
+        self.holds: list[bool] = []
+        self.frames: list[float] = []
+        self.disposed = False
+        self.status = "Playing: hit"
+        FakePlayer.made.append(self)
+
+    def show(self, index: int, toggle: bool) -> None:
+        self.shown.append((index, toggle))
+
+    def hold(self, held: bool) -> None:
+        self.holds.append(held)
+
+    def frame(self, dt: float) -> None:
+        self.frames.append(dt)
+
+    def dispose(self) -> None:
+        self.disposed = True
+
+
 class FakeViewer:
     made: ClassVar[list["FakeViewer"]] = []
 
@@ -53,7 +82,9 @@ class FakeViewer:
 @pytest.fixture(autouse=True)
 def fake_viewer(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeViewer.made = []
+    FakePlayer.made = []
     monkeypatch.setattr(dev_session, "DevViewer", FakeViewer)
+    monkeypatch.setattr(dev_session, "DevAudioViewer", FakePlayer)
 
 
 def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> SimpleNamespace:
@@ -61,8 +92,14 @@ def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> Simple
 
 
 def session(root: Any = None) -> DevSession:
-    catalog = {"ships": ["a", "b"], "levels": ["1-1"], "bosses": ["warden"]}
-    return DevSession("engine", "game", catalog, environment=True, status_root=root)
+    catalog = {
+        "ships": ["a", "b"],
+        "levels": ["1-1"],
+        "bosses": ["warden"],
+        "sounds": ["hit"],
+        "music": ["menu"],
+    }
+    return DevSession("engine", "game", catalog, True, root, "audio")
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
@@ -232,3 +269,66 @@ def test_d199_the_status_line_is_written_only_when_it_changes() -> None:
     lineless.sync(state("levels"))
     lineless.frame(0.1)
     assert FakeViewer.made[1].frames == [0.1]
+
+
+# DEV-MENU-19, DEV-MENU-20: the sounds and music viewers play, they draw nothing.
+
+
+def test_dev_menu_19_an_audio_viewer_opens_follows_the_menu_and_closes() -> None:
+    s = session()
+    s.sync(state("sounds", 0, toggle=True))
+    player = FakePlayer.made[0]
+    assert (player.audio, player.viewer, player.items) == ("audio", "sounds", ["hit"])
+    assert not s.active
+    assert not s.render()
+    s.sync(state("sounds", 0, toggle=False))
+    assert player.shown == [(0, True), (0, False)]
+    assert len(FakePlayer.made) == 1
+    s.sync(state("music"))
+    assert player.disposed
+    assert FakePlayer.made[1].viewer == "music"
+    s.sync(state(None))
+    assert FakePlayer.made[1].disposed
+    assert s.player is None
+
+
+def test_dev_menu_19_an_audio_viewer_replaces_a_scene_viewer_and_the_other_way_round() -> None:
+    s = session()
+    s.sync(state("ships"))
+    s.sync(state("sounds"))
+    assert FakeViewer.made[0].disposed
+    assert s.viewer is None
+    s.sync(state("ships"))
+    assert FakePlayer.made[0].disposed
+    assert s.player is None
+    assert FakeViewer.made[1].viewer == "ships"
+    s.sync(state("sounds"))
+    s.dispose()
+    assert FakePlayer.made[1].disposed
+
+
+def test_dev_menu_19_an_audio_viewer_writes_its_status_each_frame() -> None:
+    doc = FakeDocument()
+    root = doc.createElement("div")
+    line = doc.createElement("div")
+    line.className = "dev-status"
+    root.append(line)
+    s = session(root)
+    s.hold(True)
+    s.sync(state("sounds"))
+    s.frame(0.1)
+    assert line.textContent == "Playing: hit"
+    assert FakePlayer.made[0].frames == [0.1]
+    s.hold(True)
+    s.hold(False)
+    assert FakePlayer.made[0].holds == [True, False]
+    s.wheel(10)
+    s.turn(1, 1)
+    assert not s.key("KeyK", True)
+
+
+def test_dev_menu_19_without_a_status_root_the_status_is_not_written() -> None:
+    s = session()
+    s.sync(state("sounds"))
+    s.frame(0.1)
+    assert FakePlayer.made[0].shown == [(0, True)]

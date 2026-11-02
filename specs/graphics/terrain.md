@@ -3,9 +3,10 @@
 > **Area:** Graphics · **Prefix:** `GFX-TERRAIN` · **Related:** [camera.md](camera.md), [water.md](water.md), [sky-and-light.md](sky-and-light.md), [roads.md](roads.md), [props.md](props.md), [readability.md](readability.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
 
 Every level's ground is a height field generated from the level's data and seed: a row of sections
-along the level, each a fractal relief with optional sculpt operations, blending into the next. The
-ground is coloured by textures generated in code, mixed by altitude, slope and each section's ground
-cover (grass, concrete, sand), and drawn in chunks around the camera. This file also covers the
+along the level, each a fractal relief with optional sculpt operations, dunes or scarps (hills with
+one steep face), blending into the next. The ground is coloured by textures generated in code,
+mixed by altitude, slope and each section's ground cover (grass, concrete, sand), and drawn in
+chunks around the camera. This file also covers the
 ground's glow layer and lava, a liquid the engine keeps but no level uses now. Which sections, covers
 and colours each level has is in the world and level files.
 
@@ -86,28 +87,33 @@ uses either now.
 ### GFX-TERRAIN-06 — Terrain ceiling · MUST
 
 The engine gives, for each level, a height its ground never exceeds whatever the seed: for each
-section the highest of the top of its relief (or its peak cap), its dunes, its flattened band and its
-sea bed. Carving only lowers the ground and blending stays between neighbouring heights, so nothing
-else can raise it. The cloud layers are kept above it ([sky-and-light.md](sky-and-light.md)).
+section the highest of the top of its relief (or its peak cap), its dunes and scarps, its flattened
+band and its sea bed. Carving only lowers the ground and blending stays between neighbouring
+heights, so nothing else can raise it. The cloud layers are kept above it ([sky-and-light.md](sky-and-light.md)).
 
 **Acceptance criteria**
 - Given any level and seed, then no height of its ground is above its ceiling (unit test).
 
-*Sources: D-022, D-037.*
+*Sources: D-022, D-037, D-240.*
 
 ### GFX-TERRAIN-07 — Ground textures generated in code · MUST
 
 Every ground texture is generated in code when the level loads (or in the background worker), from
 three colours, a noise frequency and a number of octaves, plus optional extras: `speckle` (scattered
-pebbles or tufts of another colour), `strata` (horizontal layers, for rock walls) and `cracks` (the
-cell edges of a jittered grid, for dried or frozen lake beds cracked into plates). A noise texture
-for the borders and patches and a normal map for the water are generated the same way. No texture
-is downloaded. Each texture is sampled from the three axis planes, weighted by the ground's normal,
-so steep slopes are not stretched.
+pebbles or tufts of another colour), `strata` (horizontal layers, for rock walls), `cracks` (the
+cell edges of a jittered grid, for dried or frozen lake beds cracked into plates) and `stones` (a
+rock face of stones: the cells of a jittered grid, wider than high like slabs along the strata,
+each a shade of its own under the noise's grain, its edges lit on the side facing the light and
+shadowed on the other, dark joints between them and thinner fractures splitting some). A noise
+texture for the borders and patches and a normal map for the water are generated the same way. No
+texture is downloaded. Each texture is sampled from the three axis planes, weighted sharply by the
+ground's normal, so steep slopes are not stretched; where the ground is rock, the top-down plane
+gives way to the side ones, so a steep face is one projection and its stones stay crisp.
 
 **Acceptance criteria**
 - Given the same look and seed, then the generated pixels are the same; a texture with `cracks` has
-  darker crack lines than one without (unit test).
+  darker crack lines than one without, and one with `stones` has joints darker than its dark colour
+  (unit tests).
 
 *Sources: P04-R01, D-020, D-066, D-200.*
 
@@ -134,12 +140,23 @@ in patches rather than as a flat gradient: sand over the ground, grass over the 
 all. Steep slopes stay rock and peaks stay snow under any cover. The covers reach the shader in the
 terrain's vertex colours (red, green and blue channels).
 
+The grass is not one flat green: a look's `lushDetail` tints it in patches, two `tints` mixed by
+the coarse noise over `tileSize`, and grains it, lightened and darkened by up to `fine` by the
+fine noise over `fineTileSize`, a grain finer than the texture's texels (which cover about two
+screen pixels each), so meadows read as sharp as the trees on them. The grain is read twice, the
+second time over a tile 1.6 times bigger and turned by 37°, and the two are summed, so the
+noise tile's copies never line up and the grain does not visibly repeat. A look without `lushDetail`
+draws its grass flat.
+
 **Acceptance criteria**
 - Given two sections with different covers, then the cover is blended over the transition like the
   height (unit test).
-- Manual: grass, concrete and sand read from the playfield camera and fade into each other.
+- Given a look with `lushDetail`, then its tints and tile sizes are bound for the shader; without,
+  the grass is bound flat (unit tests).
+- Manual: grass, concrete and sand read from the playfield camera and fade into each other; the
+  meadows of 1-3 show patches of drier grass and a fine grain.
 
-*Sources: P04-R01, P06-R05, P06-R06, P08-R07, D-023, D-037.*
+*Sources: P04-R01, P06-R05, P06-R06, P08-R07, D-023, D-037, D-247.*
 
 ### GFX-TERRAIN-10 — Slow changes between sections · MUST
 
@@ -161,7 +178,7 @@ The engine's tools make an American desert, not sand dunes: dried red land (a `s
 red-orange dirt with dark pebbles over dried brown earth), cracked dry lakes (low flats under
 `lowHeight`, drawn with a pale cracked hardpan), mesas and buttes (smooth relief squashed under a low
 `max_height`, so it has flat tops, a flat floor and steep walls between, drawn as strongly layered red
-rock from a slope of 0.55), canyons (channels) and no snow (the `high` layer out of reach). Which
+rock from a slope of 0.06, D-240, D-245), canyons (channels) and no snow (the `high` layer out of reach). Which
 levels use them is in the World 1 files.
 
 **Acceptance criteria**
@@ -255,6 +272,28 @@ the ships, and flying over it does nothing: it is not an input of the simulation
 
 *Sources: P10-R05, D-084.*
 
+### GFX-TERRAIN-19 — Scarps: hills with one steep face · MUST
+
+A section may have `scarps` on top of its relief: hills each with a short steep face on one side
+and a long slow slope on the other, as the dunes are made (GFX-TERRAIN-04), but with the face's
+share of a cycle set by the section (`face`, 0..1; the dunes' is fixed at 22 %) and their crests
+falling from `height` to `lowest` (a share of `height`; 0 lets the ridges break into separate
+hills) with a noise of their own over 1.2 wavelengths, often at either end. Their lines wander
+with noise (`warp`, in wavelengths) and their faces look towards `angle_deg` from +Z. Where the
+face is steep enough, the look's `steep` layer draws it as bare rock (GFX-TERRAIN-08): a rocky side
+and a grassy or dusty one. World 1's land uses them ([../worlds/world-1/world.md](../worlds/world-1/world.md),
+WLD-1-31).
+
+**Acceptance criteria**
+- Given a section with scarps, then they add between 0 and their height to the relief (unit test).
+- Given straight scarps of a constant height, then along their direction the ground drops much
+  more steeply at the face than it rises on the back (unit test).
+- Given scarps whose `lowest` is 0, then some crests fall near the relief (unit test).
+- Manual: from the playfield camera, the hills read as a rocky face on one side and a slow slope on
+  the other.
+
+*Sources: D-240.*
+
 ## Tunable values
 
 | Name | Value | Notes |
@@ -263,12 +302,17 @@ the ships, and flying over it does nothing: it is not an input of the simulation
 | `cell` | 8 | terrain grid, same place |
 | `textureSize` / `tileSize` | 256 px / 150 units | `src/game/config/scenery_look.py` `BASE_SCENERY_LOOK.terrain` |
 | `lowHeight` / `highHeight` / `heightBlend` | 7 / 205 / 12 | base look; World 1's dry levels: `highHeight` 1000 (`src/game/config/world_1/looks.py` `DRY_TERRAIN`) |
-| `steepSlope` | 0.22–0.45 | base look; dry levels 0.55–0.95 |
+| `steepSlope` | 0.22–0.45 | base look; World 1's green levels 0.045–0.1 (`TERRAIN`), its dry levels 0.06–0.14 (`DRY_TERRAIN`), with a slope jitter of 0.06 instead of 0.2, `src/game/config/world_1/looks.py` (D-240, D-245) |
 | `jitter` | height 30, slope 0.2 | base look |
 | `noiseTileSize` / `tintTileSize` | 300 / 1600 | base look |
+| `lushDetail` | tints 1.04/1.02/0.94 and 0.92/0.94/0.86 over 500, fine 0.12 over 30 | base look; World 1's green levels: tints 1.16/1.1/0.72 and 0.84/0.95/0.8 over 420, fine 0.28 over 28 (`TERRAIN`, D-247) |
 | `specular` | 0 | base look |
 | hardpan `cracks` | 0.75 | `HARDPAN`, `src/game/config/world_1/looks.py` |
-| mesa rock `strata` | 0.6 | `MESA_ROCK`, same place |
+| mesa rock `strata` / `stones` | 0.5 / 0.7 | `MESA_ROCK`, same place; crag `CRAG` 0.25 / 0.85; base rock 0.3 / 0.7 |
+| stones | cells 0.85 per noise cycle, 1.6 wider than high, jitter 0.75, joint 0.07, bevel 0.25, fractures 2.3 × finer | `src/render/scenery/procedural_textures.py` `STONE_*` |
+| triplanar sharpness / rock side planes | 8 / 0.9 | `src/render/scenery/terrain_blend_plugin_visual.py` `TRIPLANAR_SHARPNESS`, `ROCK_SIDE_PLANES` |
+| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.06 / 0 / 125 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
+| `SCARP_BEND_SCALE` / `SCARP_CREST_SCALE` / `SCARP_CREST_SPREAD` | 3 / 1.2 wavelengths / 0.45 | `src/core/scenery/height_field.py` |
 | `transition` | 420 (World 1), 900 (Worlds 2–4) | per level, `src/game/config/world_*/scenery*.py` (`TRANSITION`) |
 | `glow` | intensity 0.3, blur 16 | base look; full resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`) |
 | `castsShadows` | False in World 4 | `src/game/config/world_4/looks.py` `city` |

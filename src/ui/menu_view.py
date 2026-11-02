@@ -42,6 +42,7 @@ class TitleView:
         version: str,
         commit: str,
         dev: str | None = None,
+        fullscreen: str | None = None,
     ) -> None:
         self.title = title
         self.high_score_label = high_score_label
@@ -57,6 +58,9 @@ class TitleView:
         self.commit = commit
         # The Dev entry under Settings (D-199, with `?dev`); None: no such entry.
         self.dev = dev
+        # The Full screen entry between Settings and Dev (UI-TITLE-11), reading "Full screen" or
+        # "Exit full screen"; None where the browser allows no full screen.
+        self.fullscreen = fullscreen
 
 
 class BackView:
@@ -304,6 +308,28 @@ class DevViewerView(BackView):
         self.menu = menu
 
 
+class DevAudioView(BackView):
+    """A dev audio viewer (DEV-MENU-19, DEV-MENU-20): a button per sound or track.
+
+    The one picked plays; `selected` is its index. The status line (what plays) is written by the
+    viewer itself, each frame.
+    """
+
+    kind = "dev-audio"
+
+    def __init__(
+        self,
+        heading: str,
+        hint: str,
+        back: str,
+        selected: int,
+        entries: list[DevChoice],
+    ) -> None:
+        BackView.__init__(self, heading, hint, back, selected)
+        # The items, each group's heading before its items when they are in groups.
+        self.entries = entries
+
+
 __pragma__("skip")
 # Everything the menu overlay can show.
 type MenuView = (
@@ -315,5 +341,6 @@ type MenuView = (
     | SettingsView
     | DevMenuView
     | DevViewerView
+    | DevAudioView
 )
 __pragma__("noskip")

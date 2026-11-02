@@ -84,10 +84,11 @@ def tone(
 
 
 def minigun(burst: MinigunBurst) -> list[ToneLayer]:
-    """Return a minigun burst (AUD-SFX-02, reviewer 2026-10-26): rounds `gap` apart.
+    """Return a minigun burst (AUD-SFX-02, reviewer 2026-10-26, D-239): rounds `gap` apart.
 
-    Each a gritty crack over a short thump. A volley's burst lasts until the next volley (the gun
-    fires 8 a second), so holding fire rattles on without a break: BRRRT.
+    Each a wide-band noise crack over a short soft thump (a low-passed triangle falling by two
+    thirds: no square wave, so it does not buzz). A volley's burst lasts until the next volley (the
+    gun fires 8 a second), so holding fire rattles on without a break: BRRRT.
     """
     layers: list[ToneLayer] = []
     for i in range(burst.rounds):
@@ -99,24 +100,87 @@ def minigun(burst: MinigunBurst) -> list[ToneLayer]:
                 1,
                 accent,
                 env(0.001, 0.014, 0, 0.004),
-                {"delay": delay, "filter": FilterSpec("bandpass", 1700, 0.9, None, None)},
+                {"delay": delay, "filter": FilterSpec("bandpass", 1900, 0.6, None, None)},
             )
         )
         layers.append(
             tone(
-                "square",
+                "triangle",
                 150,
-                0.5 * accent,
+                0.6 * accent,
                 env(0.001, 0.016, 0, 0.004),
                 {
                     "delay": delay,
-                    "glide_to": 65,
+                    "glide_to": 55,
                     "glide_seconds": 0.018,
-                    "filter": FilterSpec("lowpass", 1200, None, None, None),
+                    "filter": FilterSpec("lowpass", 700, None, None, None),
                 },
             )
         )
     return layers
+
+
+def click(pitch: float, gain: float, seconds: float, delay: float = 0) -> ToneLayer:
+    """Return a mechanical click (D-239): a few ms of noise through a band-pass at `pitch`."""
+    return tone(
+        "noise",
+        1,
+        gain,
+        env(0.001, seconds, 0, 0.01),
+        {"delay": delay, "filter": FilterSpec("bandpass", pitch, 4, None, None)},
+    )
+
+
+def thump(pitch: float, gain: float, seconds: float, delay: float = 0) -> ToneLayer:
+    """Return a soft low thump (D-239): a sine at `pitch` falling by half over `seconds`."""
+    return tone(
+        "sine",
+        pitch,
+        gain,
+        env(0.002, seconds, 0, 0.04),
+        {"delay": delay, "glide_to": pitch * 0.5, "glide_seconds": seconds},
+    )
+
+
+def whoosh(
+    from_hz: float, to_hz: float, gain: float, seconds: float, delay: float = 0, q: float = 1
+) -> ToneLayer:
+    """Return a whoosh (D-239): noise through a band-pass sweeping from `from_hz` to `to_hz`.
+
+    Over `seconds`; it swells in and fades over the sweep.
+    """
+    return tone(
+        "noise",
+        1,
+        gain,
+        env(seconds * 0.15, seconds * 0.6, 0, seconds * 0.4),
+        {"delay": delay, "filter": FilterSpec("bandpass", to_hz, q, from_hz, seconds)},
+    )
+
+
+def rumble(cutoff: float, gain: float, seconds: float, delay: float = 0) -> ToneLayer:
+    """Return a low rumble (D-239): noise low-passed at `cutoff`, fading over `seconds`."""
+    return tone(
+        "noise",
+        1,
+        gain,
+        env(0.01, seconds, 0, seconds * 0.3),
+        {"delay": delay, "filter": FilterSpec("lowpass", cutoff, 0.7, None, None)},
+    )
+
+
+def ring(pitch: float, gain: float, seconds: float, delay: float = 0) -> ToneLayer:
+    """Return a metallic ring (D-239): noise through a very narrow band-pass at `pitch`.
+
+    It rings like a struck plate, decaying over `seconds`.
+    """
+    return tone(
+        "noise",
+        1,
+        gain,
+        env(0.001, seconds, 0, seconds * 0.5),
+        {"delay": delay, "filter": FilterSpec("bandpass", pitch, 30, None, None)},
+    )
 
 
 # Spacing and pitches of the debris crackles: fixed, so a sound is the same each time.
@@ -193,9 +257,26 @@ def explosion(size: ExplosionSize, delay: float = 0) -> list[ToneLayer]:
     return layers
 
 
-def chime(wave: str, pitches: list[float], gap: float, gain: float) -> list[ToneLayer]:
-    """Note of a little arpeggio, one after the other."""
-    return [
-        tone(wave, pitch, gain, env(0.003, 0.12, 0.2, 0.12), {"delay": i * gap})
-        for i, pitch in enumerate(pitches)
-    ]
+# A bell's bright partial, above its fundamental (inharmonic, as a struck bell's is).
+BELL_PARTIAL = 2.76
+
+
+def bell(pitches: list[float], gap: float, gain: float) -> list[ToneLayer]:
+    """Return struck bells, one per pitch, `gap` seconds apart (D-239).
+
+    Each a sine fundamental ringing for a third of a second under a quieter, shorter inharmonic
+    partial: a glockenspiel rather than a chip chime.
+    """
+    layers: list[ToneLayer] = []
+    for i, pitch in enumerate(pitches):
+        layers.append(tone("sine", pitch, gain, env(0.002, 0.35, 0, 0.2), {"delay": i * gap}))
+        layers.append(
+            tone(
+                "sine",
+                pitch * BELL_PARTIAL,
+                gain * 0.3,
+                env(0.001, 0.12, 0, 0.08),
+                {"delay": i * gap},
+            )
+        )
+    return layers

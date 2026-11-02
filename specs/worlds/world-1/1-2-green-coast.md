@@ -48,16 +48,17 @@ generated from the seed `seed`.
 #### LVL-1-2-04 — Sections · MUST
 
 1-2's ground is these sections, in this order (relief: height above the sea level 0, ± its
-amplitude, features about that wide across):
+amplitude, features about that wide across; scarps: the hills with one rocky face of WLD-1-31,
+their height / wavelength):
 
 | # | Section | Seconds | Relief | Cover | Buildings (density) | What it shows |
 |---|---------|---------|--------|-------|---------------------|---------------|
-| 1 | coast road | 40 | 16 ± 10, 480 | grass 0.8, sand 0.2 | fishing, coast homes (0.5) | 1-1's green coast: the shore, beaches, a fishing village along the coast road. |
-| 2 | bays | 40 | 22 ± 14, 460 | grass 0.8, sand 0.2 | coast homes, villages (0.55) | Deeper bays along a more winding shore. |
-| 3 | coast farms | 30 | 24 ± 14, 460 | grass 0.9, sand 0.1 | coast homes, farms (0.5) | The last of the sea, the shore moving away to the left. |
-| 4 | meadows | 45 | 24 ± 10, 600 | grass 1 | villages, farms (0.5) | Green meadows, wooded. |
-| 5 | groves | 40 | 30 ± 16, 480 | grass 1 | farms (0.45) | Rolling land with groves and farms. |
-| 6 | farmland | 45 | 26 ± 8, 620 | grass 1 | farms, villages (0.6) | Flat farmland, where 1-3 begins. |
+| 1 | coast road | 40 | 16 ± 10, 480, scarps 28 / 340 | grass 0.8, sand 0.2 | fishing, coast homes (0.5) | 1-1's green coast: the shore, beaches, a fishing village along the coast road. |
+| 2 | bays | 40 | 22 ± 14, 460, scarps 28 / 340 | grass 0.8, sand 0.2 | coast homes, villages (0.55) | Deeper bays along a more winding shore. |
+| 3 | coast farms | 30 | 24 ± 14, 460, scarps 36 / 340 | grass 0.9, sand 0.1 | coast homes, farms (0.5) | The last of the sea, the shore moving away to the left. |
+| 4 | meadows | 45 | 24 ± 10, 600, scarps 36 / 340 | grass 1 | villages, farms (0.5) | Green meadows, wooded. |
+| 5 | groves | 40 | 30 ± 16, 480, scarps 40 / 340 | grass 1 | farms (0.45) | Rolling land with groves and farms. |
+| 6 | farmland | 45 | 26 ± 8, 620, scarps 24 / 360 | grass 1 | farms, villages (0.6) | Flat farmland, where 1-3 begins. |
 
 **Acceptance criteria**
 - Given 1-2, then its sections are these, in this order, with these seconds (unit test on the data).

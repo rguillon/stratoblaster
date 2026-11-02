@@ -35,12 +35,14 @@ class TextureLook:
         speckle_color: Rgb,
         strata: float,
         cracks: float | None = None,
+        stones: float | None = None,
     ) -> None:
         """`colors`: dark, base and light, at the low, middle and high noise values.
 
         `frequency`: noise cycles across the texture (first octave). `speckle`: share (0..1) of
         pixels turned into speckles of `speckleColor`. `strata`: horizontal bands, like rock strata.
-        `cracks`: thin dark crack lines, as in lake ice (phase 8).
+        `cracks`: thin dark crack lines, as in lake ice (phase 8). `stones`: how much (0..1) the
+        texture is stones, each a shade of its own with lit edges and dark joints, as a rock face.
         """
         self.colors = colors
         self.frequency = frequency
@@ -49,6 +51,24 @@ class TextureLook:
         self.speckleColor = speckle_color
         self.strata = strata
         self.cracks = cracks
+        self.stones = stones
+
+
+class LushDetail:
+    """What keeps the grass from being one flat green (GFX-TERRAIN-09).
+
+    `tints`: two tints mixed over the grass in patches by the coarse noise over `tileSize`. `fine`:
+    the grass lightened and darkened by up to this much by the fine noise over `fineTileSize`, a
+    grain finer than the texture's texels.
+    """
+
+    def __init__(
+        self, tints: tuple[Rgb, Rgb], tile_size: float, fine_tile_size: float, fine: float
+    ) -> None:
+        self.tints = tints
+        self.tileSize = tile_size
+        self.fineTileSize = fine_tile_size
+        self.fine = fine
 
 
 class Jitter:
@@ -89,10 +109,12 @@ class TerrainLook:
         shore: "ShoreLook",
         specular: float,
         casts_shadows: bool | None = None,
+        lush_detail: LushDetail | None = None,
     ) -> None:
         """`castsShadows`: whether the terrain casts the sun's shadows.
 
-        Default: yes (GFX-TERRAIN-13, PERF-28).
+        Default: yes (GFX-TERRAIN-13, PERF-28). `lushDetail`: the grass's patches and grain; none
+        by default (one flat green).
         """
         self.textureSize = texture_size
         self.tileSize = tile_size
@@ -114,6 +136,7 @@ class TerrainLook:
         self.shore = shore
         self.specular = specular
         self.castsShadows = casts_shadows
+        self.lushDetail = lush_detail
 
 
 class ShoreFoam:

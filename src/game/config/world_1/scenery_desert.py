@@ -5,15 +5,16 @@ Reworked at the reviewer's request, 2026-10-26.
 
 From the dry grassland 1-3 ended on into an American desert (reviewer, 2026-10-30, D-200: dried
 land, not sand dunes): red dirt and scrub, rock, a cracked dry lake bed, an oasis, a canyon, mesas
-and buttes, then deeper into the desert, its towns bigger and denser. No factory and no city
-(WLD-1-11): they are for other worlds (reviewer, 2026-10-27). No sea. Each level's `seconds` add up
-to 240 (WLD-1-03).
+and buttes, then deeper into the desert, its towns bigger and denser. The open desert is hills with
+one rocky face (WLD-1-31); the towns, the dry lake, the canyon, the mesas and the buttes have none.
+No factory and no city (WLD-1-11): they are for other worlds (reviewer, 2026-10-27). No sea. Each
+level's `seconds` add up to 240 (WLD-1-03).
 """
 
 from game.config.record import merge, record
 from game.config.trees import DEAD_TREES, DESERT_WOODS, LONE_DEAD_TREES
-from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
-from game.config.world_1.scenery_coast import smooth
+from game.config.world_1.props import DESERT_PROPS, WORLD_1_GROUPS, WORLD_1_ROADS
+from game.config.world_1.scenery_coast import scarps, smooth
 from game.config.world_1.scenery_country import DRY_GRASSLAND, TOWN_STREETS
 
 # isort: split
@@ -61,12 +62,13 @@ def mesas(top: float) -> Any:
 
 
 def desert(name: str, seconds: float, extra: Any) -> Any:
-    """Return a desert section: red dirt and scrub, with `extra` set over the defaults."""
+    """Return a desert section: red dirt and scrub over hills, `extra` set over the defaults."""
     return merge(
         record({
             "name": name,
             "seconds": seconds,
             "relief": smooth(28, 12, 520),
+            "scarps": scarps(32, 360),
             "buildingDensity": 0,
             # D-214 (WLD-1-14): sparse woods of dead trees, and dead trees alone between them.
             "treeDensity": 1,
@@ -85,6 +87,7 @@ DESERT_OUTSKIRTS = desert(
     30,
     {
         "relief": smooth(30, 8, 560, 3),
+        "scarps": scarps(24, 360),
         "buildingDensity": 1,
         "surface": {"sandy": 0.85},
         "groups": [G.desertHomes, G.outposts],
@@ -102,6 +105,7 @@ DRY_LANDS = [
         40,
         {
             "relief": smooth(30, 14, 520),
+            "scarps": scarps(28, 360),
             "buildingDensity": 1,
             "surface": {"sandy": 0.35},
             "groups": [G.desertHomes, G.outposts],
@@ -119,18 +123,20 @@ DRY_LANDS = [
                 "style": "ridged",
                 "maxHeight": 120,
             },
+            "scarps": None,
             "buildingDensity": 0.6,
         },
     ),
     desert(
         "dry lake",
         20,
-        {"relief": dry_lake(), "buildingDensity": 0.4, "woods": LONE_DEAD_TREES},
+        {"relief": dry_lake(), "scarps": None, "buildingDensity": 0.4, "woods": LONE_DEAD_TREES},
     ),
     desert(
         "oasis town",
         45,
         {
+            "scarps": None,
             "buildingDensity": 1,
             "surface": {"sandy": 0.75, "lush": 0.25},
             "streets": TOWN_STREETS,
@@ -148,6 +154,7 @@ DRY_LANDS = [
                 "wall": 110,
                 "floor": 10,
             },
+            "scarps": None,
             "buildingDensity": 0.5,
         },
     ),
@@ -156,6 +163,7 @@ DRY_LANDS = [
         20,
         {
             "relief": mesas(100),
+            "scarps": None,
             "buildingDensity": 0.9,
         },
     ),
@@ -164,6 +172,7 @@ DRY_LANDS = [
         25,
         {
             "relief": smooth(30, 4, 600, 3),
+            "scarps": None,
             "buildingDensity": 1,
             "surface": {"sandy": 0.8, "paved": 0.15},
             "streets": TOWN_STREETS,
@@ -182,12 +191,13 @@ DEEP_DESERT = [
     desert(
         "buttes",
         25,
-        {"relief": buttes(70), "buildingDensity": 0.45},
+        {"relief": buttes(70), "scarps": None, "buildingDensity": 0.45},
     ),
     desert(
         "oasis villages",
         40,
         {
+            "scarps": None,
             "buildingDensity": 1,
             "surface": {"sandy": 0.7, "lush": 0.3},
             "streets": TOWN_STREETS,
@@ -199,6 +209,7 @@ DEEP_DESERT = [
         20,
         {
             "relief": smooth(60, 30, 420, 5),
+            "scarps": scarps(40, 320),
             "buildingDensity": 0.7,
             "groups": [G.outposts],
         },
@@ -208,6 +219,7 @@ DEEP_DESERT = [
         55,
         {
             "relief": smooth(28, 6, 560, 3),
+            "scarps": None,
             "buildingDensity": 1,
             "surface": {"sandy": 0.85, "paved": 0.1},
             "streets": TOWN_STREETS,
@@ -219,6 +231,7 @@ DEEP_DESERT = [
         70,
         {
             "relief": smooth(30, 4, 600, 3),
+            "scarps": None,
             "buildingDensity": 1,
             "surface": {"sandy": 0.8, "lush": 0.1, "paved": 0.1},
             "streets": record({"rows": [45, 90], "columns": [50, 110], "links": 0.6}),
@@ -231,7 +244,7 @@ DEEP_DESERT = [
 def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
     """Return a World 1 desert level, at 60 units/s (WLD-1-04).
 
-    Its sections are on the World 1 roads and props.
+    Its sections are on the World 1 roads and props, its cliffs of red mesa rock (WLD-1-31).
     """
     return record({
         "id": level_id,
@@ -241,7 +254,7 @@ def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
         "transition": 420,
         "sections": sections,
         "roads": WORLD_1_ROADS,
-        "props": WORLD_1_PROPS,
+        "props": DESERT_PROPS,
     })
 
 

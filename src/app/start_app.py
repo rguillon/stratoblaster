@@ -76,6 +76,7 @@ class AppOptions(PageOptions):
         visibility: PageVisibility | None = None,
         every: Any | None = None,
         dev: bool | None = None,
+        fullscreen: Any | None = None,
     ) -> None:
         PageOptions.__init__(self, audio, gamepads, gesture_target, visibility, every)
         # Image-based lighting and glow. Needs a real WebGL engine.
@@ -114,6 +115,9 @@ class AppOptions(PageOptions):
         self.prebuild_levels = prebuild_levels
         # The Dev entry of the title screen and its viewers (DEV-MENU-01, D-199, `?dev`).
         self.dev = dev
+        # The page's full screen, behind the title's Full screen entry (UI-TITLE-11,
+        # `app/page_fullscreen.py`); None: no such entry.
+        self.fullscreen = fullscreen
 
 
 class RunningApp:
@@ -326,8 +330,9 @@ def create_menu(
     """Return the menu controller and its overlay (UI-FLOW-01).
 
     The overlay's commands go to the controller, and the controller's changes and feedback to the
-    scenes and the audio. `dev`: the dev viewers' item labels, wheel, drag and item groups (D-199,
-    D-202), as (labels, on_wheel, on_turn, groups); None: no dev menu.
+    scenes and the audio. `dev`: the dev viewers' item labels, wheel, drag, item groups and hold
+    (D-199, D-202, DEV-MENU-19), as (labels, on_wheel, on_turn, groups, on_hold); None: no dev
+    menu.
     """
 
     def on_command(command: Any) -> None:
@@ -341,6 +346,7 @@ def create_menu(
         TouchHandlers(controls),
         dev[1] if dev is not None else None,
         dev[2] if dev is not None else None,
+        dev[4] if dev is not None else None,
     )
 
     def on_feedback(command: MenuCommand, feedback: Any) -> None:
@@ -359,6 +365,7 @@ def create_menu(
         on_feedback,
         dev[0] if dev is not None else None,
         dev[3] if dev is not None else None,
+        options.fullscreen,
     )
     menu = MenuController(game, deps)
     return MenuHandle(menu, overlay)
@@ -533,16 +540,16 @@ def create_session(
     )
 
 
-def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
+def create_dev(engine: Any, game: Any, options: AppOptions, audio: GameAudio) -> Any:
     """Return the dev viewers, in the game page, with `options.dev` (DEV-MENU-02, D-199).
 
     Their session, their items' labels and groups (D-202), as [session, labels, groups]; None
-    without `options.dev`.
+    without `options.dev`. The sounds and music viewers play through `audio`.
     """
     if not options.dev:
         return None
     catalog = dev_catalog(game)
-    session = DevSession(engine, game, catalog, options.environment, options.overlay)
+    session = DevSession(engine, game, catalog, options.environment, options.overlay, audio)
     session.listen(options.keyboard_target)
     return [session, dev_labels(catalog), dev_groups(catalog)]
 
@@ -568,7 +575,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
 
     session = create_session(engine, game, options, get_menu, audio, perf)
     controls = session.controls
-    dev = create_dev(engine, game, options)
+    dev = create_dev(engine, game, options, audio)
 
     def on_change(state: MenuState) -> None:
         sync_scenes(scenes_box[0], state, ship_ids)
@@ -577,7 +584,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
             dev[0].sync(state)
         audio.menu_changed(state)
 
-    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2]] if dev is not None else None
+    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2], dev[0].hold] if dev is not None else None
     menu_handle = create_menu(game, options, input_handle, controls, audio, on_change, dev_menu)
     menu = menu_handle.menu
     overlay = menu_handle.overlay

@@ -19,7 +19,7 @@ check: src/build_info.py
 	@uv run deptry src
 
 
-# Unit tests (pytest, CPython over src/) with the coverage gate: 100 % of src/, lines and branches
+# Unit tests (pytest, CPython over src/ ) with the coverage gate: 100 % of src/, lines and branches
 # (ENG-43). XML report in coverage/coverage.xml.
 UNIT_WORKERS ?= auto
 tests: src/build_info.py

@@ -13,6 +13,7 @@ from core.scenery.scenery_level import (
     Boulevard,
     CarRules,
     Channel,
+    CliffRules,
     Crevasses,
     Drift,
     Dual,
@@ -34,6 +35,7 @@ from core.scenery.scenery_level import (
     PropRules,
     Relief,
     RoadRules,
+    Scarps,
     SceneryLevel,
     Sea,
     Shore,
@@ -91,6 +93,17 @@ def _dunes(dunes: ConfigRecord) -> Dunes:
     return Dunes(dunes.height, dunes.wavelength, dunes.angleDeg, dunes.warp)
 
 
+def _scarps(scarps: ConfigRecord) -> Scarps:
+    return Scarps(
+        scarps.height,
+        scarps.wavelength,
+        scarps.angleDeg,
+        scarps.warp,
+        scarps.face,
+        scarps.lowest,
+    )
+
+
 def _lakes(lakes: ConfigRecord) -> Lakes:
     return Lakes(lakes.spacing, lakes.chance, lakes.radius, lakes.level, lakes.edge)
 
@@ -142,6 +155,7 @@ def _section(section: ConfigRecord) -> TerrainSection:
         maybe(section.streets, _street_grid),
         maybe(section.blocks, _block_fill),
         maybe(section.woods, _woods),
+        maybe(section.scarps, _scarps),
     )
 
 
@@ -245,6 +259,13 @@ def _props(props: ConfigRecord) -> PropRules:
         maybe(props.landmarks, _landmarks),
         maybe(props.lots, _lots),
         maybe(props.forests, _forests),
+        maybe(props.cliffs, _cliffs),
+    )
+
+
+def _cliffs(cliffs: ConfigRecord) -> CliffRules:
+    return CliffRules(
+        cliffs.kinds, cliffs.minSlope, cliffs.spacing, cliffs.height, cliffs.depth, cliffs.embed
     )
 
 
