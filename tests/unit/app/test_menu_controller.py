@@ -65,6 +65,73 @@ def make(
     return MenuController(make_game(), deps), display, inputs, store
 
 
+class FakeFullscreen:
+    """The page's full screen (UI-TITLE-11), toggled by the controller."""
+
+    def __init__(self, supported: bool = True) -> None:
+        self.is_supported = supported
+        self.is_active = False
+        self.toggles = 0
+        self.on_change: object = None
+
+    def supported(self) -> bool:
+        return self.is_supported
+
+    def active(self) -> bool:
+        return self.is_active
+
+    def toggle(self) -> None:
+        self.toggles += 1
+
+    def listen(self, on_change: object) -> None:
+        self.on_change = on_change
+
+
+def with_fullscreen(fullscreen: FakeFullscreen) -> tuple[MenuController, FakeDisplay]:
+    display = FakeDisplay()
+    deps = MenuControllerDeps(
+        display,
+        FakeInput(),
+        MemoryStorage(),
+        0.25,
+        None,
+        80,
+        "1.0",
+        "abc",
+        None,
+        None,
+        None,
+        None,
+        fullscreen,
+    )
+    controller = MenuController(make_game(), deps)
+    finish(controller)
+    return controller, display
+
+
+def test_ui_title_11_confirming_full_screen_toggles_the_page_and_the_entry_follows() -> None:
+    fullscreen = FakeFullscreen()
+    controller, display = with_fullscreen(fullscreen)
+    assert display.last.fullscreen == "Full screen"
+    for command in ["down", "down", "confirm"]:
+        controller.command(command)
+    assert fullscreen.toggles == 1
+    assert display.last.kind == "title"
+    # The page went full screen (the browser says so): the entry now offers to leave it.
+    fullscreen.is_active = True
+    assert callable(fullscreen.on_change)
+    fullscreen.on_change()
+    assert display.last.fullscreen == "Exit full screen"
+
+
+def test_ui_title_11_without_full_screen_support_the_title_has_no_entry() -> None:
+    controller, display = with_fullscreen(FakeFullscreen(supported=False))
+    assert display.last.fullscreen is None
+    controller.command("down")
+    controller.command("down")
+    assert controller.flow.state.selected_id == "settings"
+
+
 def finish(controller: MenuController) -> None:
     """Finishes loading and lets the transition end, so commands are heard."""
     controller.finish_loading()

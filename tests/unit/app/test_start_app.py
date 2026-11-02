@@ -320,13 +320,14 @@ def test_eng_83_the_app_options_keep_the_browser_pieces_and_default_to_none() ->
         options.visibility,
         options.every,
         options.dev,
+        options.fullscreen,
     ]
     assert optional == [None for _ in optional]
 
 
 def test_eng_83_every_optional_piece_is_given_by_position() -> None:
     """ENG-151: no keyword arguments, so each option has its place."""
-    given = [f"option-{i}" for i in range(15)]
+    given = [f"option-{i}" for i in range(16)]
     options = AppOptions(False, "doc", "overlay", "storage", "yield", True, "1", "c", *given)
     assert [
         options.keyboard_target,
@@ -344,6 +345,7 @@ def test_eng_83_every_optional_piece_is_given_by_position() -> None:
         options.visibility,
         options.every,
         options.dev,
+        options.fullscreen,
     ] == given
 
 

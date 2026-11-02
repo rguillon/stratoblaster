@@ -453,3 +453,24 @@
   of one more read of the bound noise where grass shows. A bigger tile alone would still repeat
   a few times a screen, and a bigger noise texture would cost load time.
 - **Status:** Proposed
+
+### D-248 — A Full screen entry on the title
+- **Date:** 2026-11-02
+- **Requirements:** UI-TITLE-11 (new), UI-TITLE-01, UI-TITLE-06, UI-FLOW-02 (the table).
+- **Context:** owner: "Add a full screen button in the main menu".
+- **Decision:** an entry of the title's list, between Settings and Dev, so the keyboard and the
+  gamepad reach it like the others (UI-INPUT-04), not a corner icon. The flow knows it only as an
+  entry whose confirmation is the `fullscreen` feedback and leaves the screen as it is; the app
+  (`MenuController`, with `app/page_fullscreen.py`, a thin wrapper of the Fullscreen API) toggles
+  the page's full screen on that feedback, and refreshes the title on the browser's
+  `fullscreenchange`, so the entry reads "Exit full screen" in full screen, also after Escape.
+  The entry exists only where `document.fullscreenEnabled` is true: an iPhone's Safari allows no
+  full screen for a page. A refused request (the Fullscreen API's promise rejects without a user
+  gesture) is swallowed.
+- **Alternatives considered:** a setting on the settings screen (UI-SET-02 says sliders and
+  nothing else, and full screen is not a saved value: browsers forget it on reload); a button
+  in the pause menu too (not asked; easy to add later as a pause entry on the same feedback).
+- **Consequences:** `AppOptions`, `MenuControllerDeps`, `MenuFlowOptions`, `MenuViewContext`
+  and `TitleView` each take one more optional, positional piece (ENG-151). The menu sounds
+  ignore the new feedback (no cue for `fullscreen`).
+- **Status:** Proposed

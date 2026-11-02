@@ -42,6 +42,7 @@ class TitleView:
         version: str,
         commit: str,
         dev: str | None = None,
+        fullscreen: str | None = None,
     ) -> None:
         self.title = title
         self.high_score_label = high_score_label
@@ -57,6 +58,9 @@ class TitleView:
         self.commit = commit
         # The Dev entry under Settings (D-199, with `?dev`); None: no such entry.
         self.dev = dev
+        # The Full screen entry between Settings and Dev (UI-TITLE-11), reading "Full screen" or
+        # "Exit full screen"; None where the browser allows no full screen.
+        self.fullscreen = fullscreen
 
 
 class BackView:

@@ -76,6 +76,7 @@ class AppOptions(PageOptions):
         visibility: PageVisibility | None = None,
         every: Any | None = None,
         dev: bool | None = None,
+        fullscreen: Any | None = None,
     ) -> None:
         PageOptions.__init__(self, audio, gamepads, gesture_target, visibility, every)
         # Image-based lighting and glow. Needs a real WebGL engine.
@@ -114,6 +115,9 @@ class AppOptions(PageOptions):
         self.prebuild_levels = prebuild_levels
         # The Dev entry of the title screen and its viewers (DEV-MENU-01, D-199, `?dev`).
         self.dev = dev
+        # The page's full screen, behind the title's Full screen entry (UI-TITLE-11,
+        # `app/page_fullscreen.py`); None: no such entry.
+        self.fullscreen = fullscreen
 
 
 class RunningApp:
@@ -361,6 +365,7 @@ def create_menu(
         on_feedback,
         dev[0] if dev is not None else None,
         dev[3] if dev is not None else None,
+        options.fullscreen,
     )
     menu = MenuController(game, deps)
     return MenuHandle(menu, overlay)

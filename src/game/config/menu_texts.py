@@ -59,6 +59,9 @@ MENU_TEXTS = record({
     "contextLost": "The graphics context was lost. Please reload the page.",
     "reload": "Reload",
     "settings": "Settings",
+    # The title's Full screen entry (UI-TITLE-11), by what confirming it does.
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
     "settingsHint": "▲ ▼ to pick · ◀ ▶ or tap to set",
     "musicVolume": "Music",
     "sfxVolume": "Sound effects",

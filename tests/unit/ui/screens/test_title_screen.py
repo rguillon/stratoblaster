@@ -50,6 +50,24 @@ def test_ui_title_01_start_and_settings_are_entries_that_report_their_index() ->
     assert taps == [0, 1]
 
 
+def test_ui_title_11_the_full_screen_entry_sits_between_settings_and_dev() -> None:
+    taps: list[int] = []
+    full = TitleView("S", "H", 0, "Start", "Settings", 2, "hint", "1", "c", "Dev", "Full screen")
+    root = render_title_screen(FakeDocument(), full, ScreenHandlers(taps.append, lambda: None))
+    fullscreen = root.querySelector(".title-fullscreen")
+    assert fullscreen.textContent == "Full screen"
+    assert fullscreen.classList.contains("selected")
+    fullscreen.fire("click")
+    root.querySelector(".title-dev").fire("click")
+    assert taps == [2, 3]
+    assert (
+        render_title_screen(
+            FakeDocument(), view(), ScreenHandlers(lambda _i: None, lambda: None)
+        ).querySelector(".title-fullscreen")
+        is None
+    )
+
+
 def test_d199_the_dev_entry_follows_settings_only_when_given() -> None:
     """DEV-MENU-01: the Dev entry, only with `?dev`."""
     assert (

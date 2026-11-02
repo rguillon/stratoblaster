@@ -178,6 +178,14 @@ def dev_ctx() -> MenuViewContext:
     return MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, labels)
 
 
+def test_ui_title_11_the_full_screen_entry_reads_what_confirming_it_does() -> None:
+    assert build_menu_view(state("title"), ctx()).fullscreen is None
+    windowed = MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, None, None, False)
+    assert build_menu_view(state("title"), windowed).fullscreen == "Full screen"
+    full = MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, None, None, True)
+    assert build_menu_view(state("title"), full).fullscreen == "Exit full screen"
+
+
 def test_d199_the_title_shows_the_dev_entry_only_with_the_dev_labels() -> None:
     """DEV-MENU-01."""
     assert build_menu_view(state("title"), ctx()).dev is None

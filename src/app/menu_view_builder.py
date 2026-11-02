@@ -54,6 +54,7 @@ class MenuViewContext:
         volume_steps: int,
         dev_labels: dict[str, list[str]] | None = None,
         dev_groups: dict[str, list[str]] | None = None,
+        fullscreen: bool | None = None,
     ) -> None:
         self.game = game
         # The best score so far.
@@ -71,6 +72,9 @@ class MenuViewContext:
         self.dev_labels = dev_labels
         # The group of each dev viewer's items (D-202); None: not in groups.
         self.dev_groups = dev_groups
+        # Whether the page is full screen now (UI-TITLE-11); None: the browser allows none, and
+        # the title has no Full screen entry.
+        self.fullscreen = fullscreen
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
@@ -240,6 +244,14 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub, menu)
 
 
+def _fullscreen_label(texts: Any, fullscreen: bool | None) -> str | None:
+    """Return the title's Full screen entry (UI-TITLE-11): none, or what confirming it does."""
+    if fullscreen is None:
+        return None
+    label: str = texts.exitFullscreen if fullscreen else texts.fullscreen
+    return label
+
+
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """Return the view of the current screen: one of the classes of `ui/menu_view`.
 
@@ -263,6 +275,7 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
             ctx.version,
             ctx.commit,
             DEV_VIEWER_CONFIG.texts.entry if ctx.dev_labels is not None else None,
+            _fullscreen_label(texts, ctx.fullscreen),
         )
     if screen == "ship-select":
         ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]

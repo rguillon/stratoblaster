@@ -526,6 +526,36 @@ def at_dev_menu() -> MenuFlow:
     return flow
 
 
+def fullscreen_flow(dev: bool = False) -> MenuFlow:
+    counts = list(DEV_COUNTS) if dev else None
+    flow = MenuFlow(
+        MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, counts, None, True)
+    )
+    flow.finish_loading()
+    settle(flow)
+    return flow
+
+
+def test_ui_title_11_the_full_screen_entry_follows_settings_and_toggles_without_leaving() -> None:
+    flow = fullscreen_flow()
+    flow.dispatch("down")
+    flow.dispatch("down")
+    assert flow.state.selected_id == "fullscreen"
+    assert flow.dispatch("down") == "none"
+    assert flow.dispatch("confirm") == "fullscreen"
+    assert flow.state.screen == "title"
+    assert flow.state.selected_id == "fullscreen"
+
+
+def test_ui_title_11_the_full_screen_entry_comes_before_dev() -> None:
+    flow = fullscreen_flow(dev=True)
+    for _ in range(3):
+        flow.dispatch("down")
+    assert flow.state.selected_id == "dev"
+    flow.dispatch("up")
+    assert flow.state.selected_id == "fullscreen"
+
+
 def test_d199_without_dev_counts_the_title_has_no_dev_entry() -> None:
     """DEV-MENU-01."""
     flow = at_title()

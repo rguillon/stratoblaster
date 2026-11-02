@@ -46,6 +46,7 @@ class MenuControllerDeps:
         on_feedback: Any,
         dev_labels: dict[str, list[str]] | None = None,
         dev_groups: dict[str, list[str]] | None = None,
+        fullscreen: Any | None = None,
     ) -> None:
         self.display = display
         self.input = input_source
@@ -64,6 +65,9 @@ class MenuControllerDeps:
         self.dev_labels = dev_labels
         # The group of each dev viewer's items (D-202); None: not in groups.
         self.dev_groups = dev_groups
+        # The page's full screen (UI-TITLE-11, `app/page_fullscreen.py`: `supported()`,
+        # `active()`, `toggle()`, `listen(on_change)`); None: no Full screen entry.
+        self.fullscreen = fullscreen
 
 
 def _with_new_high_score(result: LevelResult) -> LevelResult:
@@ -111,6 +115,7 @@ class MenuController:
         self._progress = 0.0
         self._shown_revision = -1
         self._shown_progress = -1.0
+        self._shown_fullscreen: bool | None = None
         self.flow = MenuFlow(
             MenuFlowOptions(
                 [ship.id for ship in game.player_ships.ships],
@@ -122,8 +127,13 @@ class MenuController:
                 volume_steps,
                 _dev_counts(deps.dev_labels),
                 _dev_groups(deps.dev_groups),
+                self._fullscreen() is not None,
             )
         )
+        # The title's Full screen entry follows the page (UI-TITLE-11): Escape leaves full
+        # screen without the menu.
+        if deps.fullscreen is not None:
+            deps.fullscreen.listen(self.refresh)
         self.refresh()
 
     def set_progress(self, progress: float) -> None:
@@ -176,6 +186,8 @@ class MenuController:
         feedback = self.flow.dispatch(command)
         if feedback == "locked":  # The locked level's shake (UI-LEVEL-04).
             self.deps.display.shake_selected(self.game.texts.locked)
+        if feedback == "fullscreen" and self.deps.fullscreen is not None:  # UI-TITLE-11.
+            self.deps.fullscreen.toggle()
         if self.deps.on_feedback is not None:
             self.deps.on_feedback(command, feedback)
         self.refresh()
@@ -201,10 +213,16 @@ class MenuController:
     def refresh(self) -> None:
         """Show the current view if anything changed since the last call."""
         revision = self.flow.revision
-        if revision == self._shown_revision and self._progress == self._shown_progress:
+        fullscreen = self._fullscreen()
+        if (
+            revision == self._shown_revision
+            and self._progress == self._shown_progress
+            and fullscreen == self._shown_fullscreen
+        ):
             return
         self._shown_revision = revision
         self._shown_progress = self._progress
+        self._shown_fullscreen = fullscreen
         state: MenuState = self.flow.state
         self._remember_ship(state.chosen_ship_id)
         self._remember_volumes(state.volumes)
@@ -221,11 +239,20 @@ class MenuController:
                     int(AUDIO_CONFIG.volume_steps),
                     self.deps.dev_labels,
                     self.deps.dev_groups,
+                    fullscreen,
                 ),
             )
         )
         if self.deps.on_change is not None:
             self.deps.on_change(state)
+
+    def _fullscreen(self) -> bool | None:
+        """Whether the page is full screen (UI-TITLE-11); None where the browser allows none."""
+        fullscreen = self.deps.fullscreen
+        if fullscreen is None or not fullscreen.supported():
+            return None
+        active: bool = fullscreen.active()
+        return active
 
     def _remember_volumes(self, volumes: Volumes) -> None:
         """Save the volumes on every change (UI-SET-06)."""

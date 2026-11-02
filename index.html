@@ -327,8 +327,10 @@
       .title-start.selected::after {
         content: ' ◀';
       }
-      /* Settings entry under Start (UI-TITLE-01). */
-      .title-settings {
+      /* Settings entry under Start (UI-TITLE-01), and the Full screen entry under it
+         (UI-TITLE-11). */
+      .title-settings,
+      .title-fullscreen {
         margin-top: 18px;
         padding: 8px 22px;
         clip-path: var(--chamfer);
@@ -340,10 +342,12 @@
       .title-start:not(.selected) {
         font-size: 28px;
       }
-      .title-settings.selected::before {
+      .title-settings.selected::before,
+      .title-fullscreen.selected::before {
         content: '▶ ';
       }
-      .title-settings.selected::after {
+      .title-settings.selected::after,
+      .title-fullscreen.selected::after {
         content: ' ◀';
       }
       .title-hint {
