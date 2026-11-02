@@ -446,4 +446,10 @@
 - **Consequences:** the grass's tunables are in the looks (`lushDetail`); the trees' imposters
   and the roads are untouched. The grain also runs under the fringe of the cliff blocks, which
   helps the stones sit in the ground.
+- **Amendment (owner feedback, the same day):** the grain's single read over a 28-unit tile
+  repeated visibly ("patterns that are too repetitive"). It is now two reads summed, the second
+  over a tile 1.618 times bigger and turned by 37° (`GRAIN_SECOND_SCALE`, `GRAIN_TURN` in the
+  shader), so the copies never line up: the usual de-tiling of a repeating texture, at the cost
+  of one more read of the bound noise where grass shows. A bigger tile alone would still repeat
+  a few times a screen, and a bigger noise texture would cost load time.
 - **Status:** Proposed

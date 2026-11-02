@@ -130,6 +130,11 @@ const float TERRAIN_SKIP = 1.0 / 512.0;
 // other, so its stones stay crisp (GFX-TERRAIN-07).
 const float TRIPLANAR_SHARPNESS = 8.0;
 const float ROCK_SIDE_PLANES = 0.9;
+// The grass's grain is read twice from the noise, the second time over a tile this much bigger
+// and turned by this (cos, sin), so the tile's copies never line up and the grain does not
+// visibly repeat (GFX-TERRAIN-09).
+const float GRAIN_SECOND_SCALE = 0.618;
+const vec2 GRAIN_TURN = vec2(0.8, 0.6);
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
 // slopes are not stretched (GFX-TERRAIN-07).
@@ -250,7 +255,10 @@ vec3 terrainColor(vec3 p, vec3 n) {
     // tile, finer than its texels (GFX-TERRAIN-09).
     vec3 grass = terrainTriplanar(terrainLush, p, w);
     float patches = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainLushDetail.x).g);
-    float grain = texture2D(terrainNoise, p.xz * terrainLushDetail.y).r - 0.5;
+    vec2 turned =
+      vec2(p.x * GRAIN_TURN.x - p.z * GRAIN_TURN.y, p.x * GRAIN_TURN.y + p.z * GRAIN_TURN.x);
+    float grain = texture2D(terrainNoise, p.xz * terrainLushDetail.y).r
+      + texture2D(terrainNoise, turned * terrainLushDetail.y * GRAIN_SECOND_SCALE).r - 1.0;
     grass *= mix(terrainLushTintA, terrainLushTintB, patches);
     grass *= 1.0 + grain * 2.0 * terrainLushDetail.z;
     sum += vec4(grass * lushShare, lushShare);

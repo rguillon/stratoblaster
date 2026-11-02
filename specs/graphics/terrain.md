@@ -143,7 +143,9 @@ terrain's vertex colours (red, green and blue channels).
 The grass is not one flat green: a look's `lushDetail` tints it in patches, two `tints` mixed by
 the coarse noise over `tileSize`, and grains it, lightened and darkened by up to `fine` by the
 fine noise over `fineTileSize`, a grain finer than the texture's texels (which cover about two
-screen pixels each), so meadows read as sharp as the trees on them. A look without `lushDetail`
+screen pixels each), so meadows read as sharp as the trees on them. The grain is read twice, the
+second time over a tile 1.6 times bigger and turned by 37°, and the two are summed, so the
+noise tile's copies never line up and the grain does not visibly repeat. A look without `lushDetail`
 draws its grass flat.
 
 **Acceptance criteria**
