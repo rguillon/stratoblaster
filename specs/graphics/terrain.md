@@ -3,9 +3,10 @@
 > **Area:** Graphics · **Prefix:** `GFX-TERRAIN` · **Related:** [camera.md](camera.md), [water.md](water.md), [sky-and-light.md](sky-and-light.md), [roads.md](roads.md), [props.md](props.md), [readability.md](readability.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
 
 Every level's ground is a height field generated from the level's data and seed: a row of sections
-along the level, each a fractal relief with optional sculpt operations, blending into the next. The
-ground is coloured by textures generated in code, mixed by altitude, slope and each section's ground
-cover (grass, concrete, sand), and drawn in chunks around the camera. This file also covers the
+along the level, each a fractal relief with optional sculpt operations, dunes or scarps (hills with
+one steep face), blending into the next. The ground is coloured by textures generated in code,
+mixed by altitude, slope and each section's ground cover (grass, concrete, sand), and drawn in
+chunks around the camera. This file also covers the
 ground's glow layer and lava, a liquid the engine keeps but no level uses now. Which sections, covers
 and colours each level has is in the world and level files.
 
@@ -86,14 +87,14 @@ uses either now.
 ### GFX-TERRAIN-06 — Terrain ceiling · MUST
 
 The engine gives, for each level, a height its ground never exceeds whatever the seed: for each
-section the highest of the top of its relief (or its peak cap), its dunes, its flattened band and its
-sea bed. Carving only lowers the ground and blending stays between neighbouring heights, so nothing
-else can raise it. The cloud layers are kept above it ([sky-and-light.md](sky-and-light.md)).
+section the highest of the top of its relief (or its peak cap), its dunes and scarps, its flattened
+band and its sea bed. Carving only lowers the ground and blending stays between neighbouring
+heights, so nothing else can raise it. The cloud layers are kept above it ([sky-and-light.md](sky-and-light.md)).
 
 **Acceptance criteria**
 - Given any level and seed, then no height of its ground is above its ceiling (unit test).
 
-*Sources: D-022, D-037.*
+*Sources: D-022, D-037, D-240.*
 
 ### GFX-TERRAIN-07 — Ground textures generated in code · MUST
 
@@ -161,7 +162,7 @@ The engine's tools make an American desert, not sand dunes: dried red land (a `s
 red-orange dirt with dark pebbles over dried brown earth), cracked dry lakes (low flats under
 `lowHeight`, drawn with a pale cracked hardpan), mesas and buttes (smooth relief squashed under a low
 `max_height`, so it has flat tops, a flat floor and steep walls between, drawn as strongly layered red
-rock from a slope of 0.55), canyons (channels) and no snow (the `high` layer out of reach). Which
+rock from a slope of 0.2, D-240), canyons (channels) and no snow (the `high` layer out of reach). Which
 levels use them is in the World 1 files.
 
 **Acceptance criteria**
@@ -255,6 +256,28 @@ the ships, and flying over it does nothing: it is not an input of the simulation
 
 *Sources: P10-R05, D-084.*
 
+### GFX-TERRAIN-19 — Scarps: hills with one steep face · MUST
+
+A section may have `scarps` on top of its relief: hills each with a short steep face on one side
+and a long slow slope on the other, as the dunes are made (GFX-TERRAIN-04), but with the face's
+share of a cycle set by the section (`face`, 0..1; the dunes' is fixed at 22 %) and their crests
+falling from `height` to `lowest` (a share of `height`; 0 lets the ridges break into separate
+hills) with a noise of their own over 1.2 wavelengths, often at either end. Their lines wander
+with noise (`warp`, in wavelengths) and their faces look towards `angle_deg` from +Z. Where the
+face is steep enough, the look's `steep` layer draws it as bare rock (GFX-TERRAIN-08): a rocky side
+and a grassy or dusty one. World 1's land uses them ([../worlds/world-1/world.md](../worlds/world-1/world.md),
+WLD-1-31).
+
+**Acceptance criteria**
+- Given a section with scarps, then they add between 0 and their height to the relief (unit test).
+- Given straight scarps of a constant height, then along their direction the ground drops much
+  more steeply at the face than it rises on the back (unit test).
+- Given scarps whose `lowest` is 0, then some crests fall near the relief (unit test).
+- Manual: from the playfield camera, the hills read as a rocky face on one side and a slow slope on
+  the other.
+
+*Sources: D-240.*
+
 ## Tunable values
 
 | Name | Value | Notes |
@@ -263,12 +286,14 @@ the ships, and flying over it does nothing: it is not an input of the simulation
 | `cell` | 8 | terrain grid, same place |
 | `textureSize` / `tileSize` | 256 px / 150 units | `src/game/config/scenery_look.py` `BASE_SCENERY_LOOK.terrain` |
 | `lowHeight` / `highHeight` / `heightBlend` | 7 / 205 / 12 | base look; World 1's dry levels: `highHeight` 1000 (`src/game/config/world_1/looks.py` `DRY_TERRAIN`) |
-| `steepSlope` | 0.22–0.45 | base look; dry levels 0.55–0.95 |
+| `steepSlope` | 0.22–0.45 | base look; World 1's green levels 0.12–0.3 (`TERRAIN`), its dry levels 0.2–0.42 (`DRY_TERRAIN`), `src/game/config/world_1/looks.py` (D-240) |
 | `jitter` | height 30, slope 0.2 | base look |
 | `noiseTileSize` / `tintTileSize` | 300 / 1600 | base look |
 | `specular` | 0 | base look |
 | hardpan `cracks` | 0.75 | `HARDPAN`, `src/game/config/world_1/looks.py` |
 | mesa rock `strata` | 0.6 | `MESA_ROCK`, same place |
+| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.08 / 0 / 150 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
+| `SCARP_BEND_SCALE` / `SCARP_CREST_SCALE` / `SCARP_CREST_SPREAD` | 3 / 1.2 wavelengths / 0.45 | `src/core/scenery/height_field.py` |
 | `transition` | 420 (World 1), 900 (Worlds 2–4) | per level, `src/game/config/world_*/scenery*.py` (`TRANSITION`) |
 | `glow` | intensity 0.3, blur 16 | base look; full resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`) |
 | `castsShadows` | False in World 4 | `src/game/config/world_4/looks.py` `city` |

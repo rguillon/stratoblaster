@@ -50,17 +50,18 @@ generated from the seed `seed`.
 #### LVL-1-3-04 — Sections · MUST
 
 1-3's ground is these sections, in this order (relief: height ± its amplitude, features about that
-wide across); there is no sea:
+wide across; scarps: the hills with one rocky face of WLD-1-31, their height / wavelength); there is
+no sea:
 
 | # | Section | Seconds | Relief | Cover | Buildings (density) | What it shows |
 |---|---------|---------|--------|-------|---------------------|---------------|
-| 1 | farmland | 30 | 26 ± 8, 620 | grass 1 | farms, villages (0.6) | 1-2's farmland. |
-| 2 | woods | 35 | 34 ± 18, 460 | grass 1 | farms (0.4) | Rolling wooded land, a few farms. |
-| 3 | green hills | 35 | 46 ± 36, 420 | grass 1 | villages (0.5) | Green hills, the highest relief of the level. |
-| 4 | farmland | 50 | 26 ± 8, 620 | grass 1 | farms, villages (0.75) | Farmland again, more built. |
-| 5 | market town | 30 | 28 ± 4, 600 | grass 0.65, paved 0.3 | villages (1), streets | A market town on a street grid. |
-| 6 | yellowing grass | 30 | 28 ± 10, 560 | grass 0.5 | villages, farms (0.7) | The grass turns yellow; dying woods. |
-| 7 | dry grassland | 30 | 28 ± 10, 560 | grass 0.2 | villages, outposts (0.75) | A little grass left on the dry earth, where 1-4 begins. |
+| 1 | farmland | 30 | 26 ± 8, 620, scarps 24 / 360 | grass 1 | farms, villages (0.6) | 1-2's farmland. |
+| 2 | woods | 35 | 34 ± 18, 460, scarps 38 / 330 | grass 1 | farms (0.4) | Rolling wooded land, a few farms. |
+| 3 | green hills | 35 | 46 ± 36, 420, scarps 40 / 320 | grass 1 | villages (0.5) | Green hills, the highest relief of the level. |
+| 4 | farmland | 50 | 26 ± 8, 620, scarps 24 / 360 | grass 1 | farms, villages (0.75) | Farmland again, more built. |
+| 5 | market town | 30 | 28 ± 4, 600, no scarps | grass 0.65, paved 0.3 | villages (1), streets | A market town on a street grid. |
+| 6 | yellowing grass | 30 | 28 ± 10, 560, scarps 32 / 360 | grass 0.5 | villages, farms (0.7) | The grass turns yellow; dying woods. |
+| 7 | dry grassland | 30 | 28 ± 10, 560, scarps 32 / 360 | grass 0.2 | villages, outposts (0.75) | A little grass left on the dry earth, where 1-4 begins. |
 
 **Acceptance criteria**
 - Given 1-3, then its sections are these, in this order, with these seconds (unit test on the data).

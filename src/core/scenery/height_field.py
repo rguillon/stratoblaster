@@ -2,9 +2,10 @@
 """The sculpted ground of a level (GFX-TERRAIN-01).
 
 Every section is a fractal relief (GFX-TERRAIN-02), optionally flattened (plateau), carved (canyon)
-or dropped under the sea (coast) (GFX-TERRAIN-03), and neighbouring sections blend smoothly over
-`level.transition`. Before Z = 0 and after the end, the ground continues as the first and last
-sections. Pure and deterministic for a given seed.
+or dropped under the sea (coast) (GFX-TERRAIN-03), with dunes (GFX-TERRAIN-04) or scarps
+(GFX-TERRAIN-19) on top, and neighbouring sections blend smoothly over `level.transition`. Before
+Z = 0 and after the end, the ground continues as the first and last sections. Pure and
+deterministic for a given seed.
 """
 
 import math
@@ -52,6 +53,14 @@ MEANDER_WOBBLE = 0.35
 DUNE_WINDWARD = 0.78
 DUNE_NOISE_SCALE = 3
 DUNE_LOWEST_CREST = 0.45
+# Scarps (GFX-TERRAIN-19): the scale (in wavelengths) of the noise bending their lines (the dunes',
+# so the lines wander without flattening the faces), the scale of the noise varying their heights,
+# smaller so the ridges break into hills often, and how much of that noise's range the crest
+# heights spread over (the crests reach their lowest and their highest often, so the ridges pinch
+# out between the hills).
+SCARP_BEND_SCALE = 3
+SCARP_CREST_SCALE = 1.2
+SCARP_CREST_SPREAD = 0.45
 # Rounding left out when telling whether a channel can reach somewhere.
 SLACK = 1e-9
 
@@ -104,6 +113,7 @@ def _smooth_only(section: TerrainSection) -> bool:
     return (
         section.relief.style == "smooth"
         and section.dunes is None
+        and section.scarps is None
         and section.crevasses is None
         and section.lakes is None
         and section.flatten is None
@@ -157,7 +167,13 @@ def terrain_ceiling(level: SceneryLevel) -> float:
     for section in level.sections:
         relief = section.relief
         dunes = section.dunes
-        top = relief.base + abs(relief.amplitude) + (abs(dunes.height) if dunes is not None else 0)
+        scarps = section.scarps
+        top = (
+            relief.base
+            + abs(relief.amplitude)
+            + (abs(dunes.height) if dunes is not None else 0)
+            + (abs(scarps.height) if scarps is not None else 0)
+        )
         candidates: list[float] = [
             top if relief.max_height is None else min(top, relief.max_height)
         ]
@@ -317,6 +333,7 @@ def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -
 def _height_of_section(field: HeightField, index: int, x: float, z: float) -> float:
     section = field.sections[index].section
     h = _relief_of(field, index, x, z) + _dune_of(field, section, x, z)
+    h += _scarp_of(field, section, x, z)
     if section.crevasses is not None:
         h -= crevasse_depth(section.crevasses, field.ice_noise, x, z)
     if section.lakes is not None:
@@ -345,31 +362,70 @@ def _relief_of(field: HeightField, index: int, x: float, z: float) -> float:
     return h if relief.max_height is None else soft_cap(h, relief.max_height)
 
 
+def _ridge_shape(
+    field: HeightField,
+    wavelength: float,
+    angle_deg: float,
+    warp: float,
+    rise: float,
+    scale: float,
+    x: float,
+    z: float,
+) -> float:
+    """Profile (0..1) of ridges at (`x`, `z`): crests every `wavelength`, facing `angle_deg`.
+
+    Each crest-to-crest cycle is a long rise over `rise` of it, then a short drop, both eased at
+    the crest; the lines wander with noise over `scale` units (`warp` wavelengths at most).
+    """
+    angle = (angle_deg * math.pi) / 180
+    bend = field.dune_noise(x / scale, z / scale)
+    across = (x * math.sin(angle) + z * math.cos(angle)) / wavelength
+    phase = across + warp * bend
+    t = phase - math.floor(phase)
+    if t < rise:
+        return smoothstep(0, rise, t)
+    return 1 - smoothstep(rise, 1, t)
+
+
+def _crest_noise(field: HeightField, scale: float, x: float, z: float) -> float:
+    """Noise (-1..1) varying the crest heights of ridges over `scale` units."""
+    return field.dune_noise(z / scale + 17, x / scale + 31)
+
+
 def _dune_of(field: HeightField, section: TerrainSection, x: float, z: float) -> float:
     """Height of the dunes over the relief at (`x`, `z`) (GFX-TERRAIN-04).
 
-    0 in the troughs, up to `height`.
+    0 in the troughs, up to `height`: a long windward rise, then a short steep lee side.
     """
     dunes = section.dunes
     if dunes is None:
         return 0
-    angle = (dunes.angle_deg * math.pi) / 180
     scale = dunes.wavelength * DUNE_NOISE_SCALE
-    bend = field.dune_noise(x / scale, z / scale)
-    across = (x * math.sin(angle) + z * math.cos(angle)) / dunes.wavelength
-    phase = across + dunes.warp * bend
-    t = phase - math.floor(phase)
-    # Long windward rise, then a short steep drop on the lee side, both eased at the crest.
-    if t < DUNE_WINDWARD:
-        shape = smoothstep(0, DUNE_WINDWARD, t)
-    else:
-        shape = 1 - smoothstep(DUNE_WINDWARD, 1, t)
-    crest = _lerp(
-        DUNE_LOWEST_CREST,
-        1,
-        field.dune_noise(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
+    shape = _ridge_shape(
+        field, dunes.wavelength, dunes.angle_deg, dunes.warp, DUNE_WINDWARD, scale, x, z
     )
+    crest = _lerp(DUNE_LOWEST_CREST, 1, _crest_noise(field, scale, x, z) * 0.5 + 0.5)
     return dunes.height * shape * crest
+
+
+def _scarp_of(field: HeightField, section: TerrainSection, x: float, z: float) -> float:
+    """Height of the scarps over the relief at (`x`, `z`) (GFX-TERRAIN-19).
+
+    0 at their feet, up to `height`: a long gentle back rising towards `angle_deg`, then the steep
+    face dropping over `face` of the cycle. The crests go from `lowest` to the full height with
+    a noise of its own, often at either end, so the ridges break into separate hills.
+    """
+    scarps = section.scarps
+    if scarps is None:
+        return 0
+    bend_scale = scarps.wavelength * SCARP_BEND_SCALE
+    shape = _ridge_shape(
+        field, scarps.wavelength, scarps.angle_deg, scarps.warp, 1 - scarps.face, bend_scale, x, z
+    )
+    spread = SCARP_CREST_SPREAD
+    noise = _crest_noise(field, scarps.wavelength * SCARP_CREST_SCALE, x, z)
+    crest = _lerp(scarps.lowest, 1, smoothstep(-spread, spread, noise))
+    return scarps.height * shape * crest
 
 
 def _detail_at(field: HeightField, x: float, z: float) -> float:

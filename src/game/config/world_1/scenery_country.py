@@ -2,13 +2,14 @@
 """1-3, the green country of World 1 (WLD-1-07; reviewer, 2026-10-26).
 
 From the farmland 1-2 ended on, through woods, green hills and a market town, to where the grass
-turns dry and yellow. No sea. Its `seconds` add up to 240 (LVL-1-3-02).
+turns dry and yellow, the hills each with a rocky face (WLD-1-31) but the town's flat ground. No
+sea. Its `seconds` add up to 240 (LVL-1-3-02).
 """
 
 from game.config.record import concat, merge, record
 from game.config.trees import DEAD_TREES, LIVE_TREES
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
-from game.config.world_1.scenery_coast import FARMLAND, smooth
+from game.config.world_1.scenery_coast import FARMLAND, scarps, smooth
 
 G = WORLD_1_GROUPS
 
@@ -20,6 +21,7 @@ DRY_GRASSLAND = record({
     "name": "dry grassland",
     "seconds": 30,
     "relief": smooth(28, 10, 560),
+    "scarps": scarps(32, 360),
     "buildingDensity": 0.75,
     # D-212: trees on the little grass left, few.
     "treeDensity": 1,
@@ -39,6 +41,7 @@ COUNTRY = [
             "name": "woods",
             "seconds": 35,
             "relief": smooth(34, 18, 460, 5),
+            "scarps": scarps(38, 330),
             "buildingDensity": 0.4,
             "treeDensity": 1,
             "groups": [G.farms],
@@ -50,6 +53,7 @@ COUNTRY = [
             "name": "green hills",
             "seconds": 35,
             "relief": smooth(46, 36, 420, 5),
+            "scarps": scarps(40, 320),
             "buildingDensity": 0.5,
             "treeDensity": 1,
             "groups": [G.villages],
@@ -62,6 +66,7 @@ COUNTRY = [
             "name": "market town",
             "seconds": 30,
             "relief": smooth(28, 4, 600, 3),
+            "scarps": None,
             "buildingDensity": 1,
             "treeDensity": 1,
             "surface": {"lush": 0.65, "paved": 0.3},

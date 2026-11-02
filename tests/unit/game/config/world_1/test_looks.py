@@ -5,7 +5,9 @@ from typing import Any
 
 import pytest
 
+from game.config.scenery_look import BASE_SCENERY_LOOK
 from game.config.world_1.looks import (
+    CRAG,
     DESERT_DIRT,
     DRIED_EARTH,
     HARDPAN,
@@ -59,3 +61,22 @@ def test_d200_the_dry_levels_lie_on_dried_land_cracked_in_the_flats_without_snow
     assert HARDPAN["cracks"] > 0
     # The green levels keep the beach sand.
     assert LEVEL_1_1_LOOK.terrain.sand == SAND
+
+
+def test_wld_1_31_steep_ground_turns_to_rock_sooner_than_in_the_base_look() -> None:
+    """The rocky faces of the hills show as rock: crags on the green levels, mesa rock on the dry.
+
+    WLD-1-31.
+    """
+    base = BASE_SCENERY_LOOK.terrain.steepSlope
+    for look in (LEVEL_1_1_LOOK, LEVEL_1_2_LOOK, LEVEL_1_3_LOOK):
+        assert look.terrain.steep == CRAG
+        assert look.terrain.steepSlope[0] < base[0]
+        assert look.terrain.steepSlope[1] < base[1]
+    for look in (LEVEL_1_4_LOOK, LEVEL_1_5_LOOK):
+        assert look.terrain.steep == MESA_ROCK
+        assert look.terrain.steepSlope[0] <= base[0]
+        assert look.terrain.steepSlope[1] <= base[1]
+    for look in LOOKS:
+        start, full = look.terrain.steepSlope
+        assert 0 < start < full <= 1

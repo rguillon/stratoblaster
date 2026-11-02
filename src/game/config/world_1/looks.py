@@ -56,6 +56,18 @@ GRASS = texture(
     {"speckle": 0.035, "speckleColor": [0.6, 0.56, 0.28]},
 )
 
+# Grey crag rock (WLD-1-31): the rocky faces of the green hills, lightly layered, a little warm,
+# as the stone of Irish mountains.
+CRAG = texture(
+    [
+        [0.3, 0.3, 0.27],
+        [0.42, 0.41, 0.37],
+        [0.54, 0.52, 0.47],
+    ],
+    8,
+    {"strata": 0.35, "speckle": 0.02, "speckleColor": [0.36, 0.4, 0.3]},
+)
+
 # Red-brown desert rock, layered (World 2's slopes).
 DESERT_ROCK = texture(
     [
@@ -114,13 +126,17 @@ HARDPAN = texture(
 )
 
 # The ground of the whole world: dry earth by default, covered with grass, sand or pavement by
-# section (`surface`), so the land fades from green to sand along the levels.
+# section (`surface`), so the land fades from green to sand along the levels; grey crags on the
+# steep ground, from a slope of 0.12 (about 28 degrees; full rock from 46), so the rocky faces of
+# the hills show as rock (WLD-1-31).
 TERRAIN = merge(
     BASE_SCENERY_LOOK.terrain,
     {
         "ground": DRY_EARTH,
         "lush": GRASS,
         "sand": SAND,
+        "steep": CRAG,
+        "steepSlope": [0.12, 0.3],
         "shore": merge(
             BASE_SCENERY_LOOK.terrain.shore,
             {
@@ -145,8 +161,9 @@ DRY_TERRAIN = merge(
         # No snow on the flat tops of the mesas and buttes (the heights the shader compares are the
         # world's, twice the ground's).
         "highHeight": 1000,
-        # Steep ground is bare rock (no dunes whose lee sides must stay covered).
-        "steepSlope": [0.55, 0.95],
+        # Steep ground is bare rock from a slope of 0.2 (about 37 degrees; full rock from 55): the
+        # faces of the hills (WLD-1-31) and the walls of the mesas, buttes and canyon.
+        "steepSlope": [0.2, 0.42],
         "tints": [
             [1.05, 0.98, 0.9],
             [0.9, 0.84, 0.78],

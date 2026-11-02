@@ -145,6 +145,39 @@ class Dunes:
         self.warp = warp
 
 
+class Scarps:
+    """Hills with one steep face (GFX-TERRAIN-19).
+
+    Ridges every `wavelength` on top of the section's relief, like dunes: their lines wander with
+    noise and their heights vary. But each has a long gentle back and a short steep face, and their
+    crests fall to nothing here and there, so they break into separate hills: a rocky face on one
+    side, a slow slope on the other.
+    """
+
+    def __init__(
+        self,
+        height: float,
+        wavelength: float,
+        angle_deg: float,
+        warp: float,
+        face: float,
+        lowest: float,
+    ) -> None:
+        """`height`: height of the highest crests above the relief.
+
+        `wavelength`: distance between two crests. `angle_deg`: direction the steep faces look
+        towards, in degrees from +Z. `warp`: how far the crest lines wander, in wavelengths. `face`:
+        share (0..1) of each crest-to-crest cycle taken by the steep face (the rest is the back).
+        `lowest`: the lowest crest, as a share (0..1) of `height`; 0 lets the ridges break.
+        """
+        self.height = height
+        self.wavelength = wavelength
+        self.angle_deg = angle_deg
+        self.warp = warp
+        self.face = face
+        self.lowest = lowest
+
+
 class Lakes:
     """Frozen lakes (phase 8, GFX-TERRAIN-05).
 
@@ -271,6 +304,7 @@ class TerrainSection:
         streets: StreetGrid | None = None,
         blocks: BlockFill | None = None,
         woods: Woods | None = None,
+        scarps: Scarps | None = None,
     ) -> None:
         """`name`: shown by debug tools, e.g. `canyon`.
 
@@ -282,7 +316,8 @@ class TerrainSection:
         ground). `trees`: ids of the tree kinds that grow here (default: all of them). `groups`: ids
         of the building groups that stand here (default: all of them). `streets`: a network of
         straight streets over this section, instead of roads and paths. `blocks`: fill each block of
-        the street grid with buildings (on a podium), instead of street fronts.
+        the street grid with buildings (on a podium), instead of street fronts. `scarps`: hills
+        with one steep face on top of the relief.
         """
         self.name = name
         self.seconds = seconds
@@ -302,6 +337,7 @@ class TerrainSection:
         self.streets = streets
         self.blocks = blocks
         self.woods = woods
+        self.scarps = scarps
 
 
 class Drift:
@@ -857,6 +893,7 @@ def _with_seconds(section: TerrainSection, seconds: float) -> TerrainSection:
         section.streets,
         section.blocks,
         section.woods,
+        section.scarps,
     )
 
 

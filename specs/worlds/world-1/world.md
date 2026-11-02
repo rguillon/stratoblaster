@@ -219,6 +219,30 @@ The towns are street grids on tiles.
 
 *Sources: D-046.*
 
+#### WLD-1-31 — Hills with one rocky face · MUST
+
+World 1's land is hills with one rocky side and a slow slope on the other, as the mountains of
+Ireland: the sections of open land (the green coast, the meadows, groves, farmland, woods and green
+hills, the drying grass, the scrubland, the desert outskirts and the rocky pass) carry `scarps`
+(GFX-TERRAIN-19), their faces all looking the same way (`SCARP_ANGLE`, 150° from +Z: towards +X and
+the camera), short (`SCARP_FACE`, 8 % of a cycle) and their crests falling to nothing between the
+hills; the farmland's are lower. The towns on street grids, the dry lake, the canyon, the mesas, the
+buttes and the sea have none. The looks draw the steep ground as rock sooner than the base look
+(`steepSlope`): grey crags (`CRAG`) on the green levels from a slope of 0.12, the red mesa rock on
+the dry levels from 0.2, so the faces of the hills, and any other ground as steep, are bare rock.
+
+**Acceptance criteria**
+- Given 1-2 and 1-3, then every section but the market town has scarps, with one angle, one face
+  share and crests falling to 0 (unit tests).
+- Given 1-4 and 1-5, then the dry grassland, the scrubland villages, the desert outskirts and the
+  rocky pass have scarps and no section with streets has any (unit test).
+- Given the World 1 looks, then their steep layer starts and completes at a lower slope than the
+  base look's (unit test).
+- Manual visual validation: `?level=1-3&t=60`, each hill shows a rocky face and a grassy back;
+  `?level=1-5&t=120`, the rocky pass the same in red rock.
+
+*Sources: D-240.*
+
 ### Light
 
 #### WLD-1-16 — Later and later in the day · MUST

@@ -52,20 +52,21 @@ generated from the seed `seed`.
 #### LVL-1-4-04 — Sections · MUST
 
 1-4's ground is these sections, in this order (relief: height ± its amplitude, features about that
-wide across); there is no sea. The cover is the sections' `sandy` cover, drawn as the red desert dirt
+wide across; scarps: the hills with one rocky face of WLD-1-31, their height / wavelength, on the
+open land only); there is no sea. The cover is the sections' `sandy` cover, drawn as the red desert dirt
 (WLD-1-10); where a section's covers add up to less than 1, the dried earth shows.
 
 | # | Section | Seconds | Relief | Cover | Buildings (density) | What it shows |
 |---|---------|---------|--------|-------|---------------------|---------------|
-| 1 | dry grassland | 30 | 28 ± 10, 560 | grass 0.2 | villages, outposts (0.75) | 1-3's dry grassland. |
-| 2 | scrubland villages | 40 | 30 ± 14, 520 | sandy 0.35 | desert homes, outposts (1) | Dried earth and red dirt, villages of desert homes. |
+| 1 | dry grassland | 30 | 28 ± 10, 560, scarps 32 / 360 | grass 0.2 | villages, outposts (0.75) | 1-3's dry grassland. |
+| 2 | scrubland villages | 40 | 30 ± 14, 520, scarps 28 / 360 | sandy 0.35 | desert homes, outposts (1) | Dried earth and red dirt, villages of desert homes. |
 | 3 | rock and scrub | 20 | 20 ± 90 ridged, 520, cut at 120 | sandy 1 | outposts (0.6) | Rocky ridges. |
 | 4 | dry lake | 20 | 3 ± 2, 700 | sandy 1 | outposts (0.4) | A flat, low dry lake bed: cracked hardpan. |
 | 5 | oasis town | 45 | 28 ± 12, 520 | sandy 0.75, grass 0.25 | desert homes (1), streets | An oasis town on a street grid, a little grass. |
 | 6 | canyon | 20 | 95 ± 22, 380, a canyon cut in it | sandy 1 | outposts (0.5) | A high plateau cut by a winding canyon. |
 | 7 | mesas | 20 | 30 ± 150, 560, cut at 100 | sandy 1 | outposts (0.9) | Flat-topped mesas with red walls. |
 | 8 | desert town | 25 | 30 ± 4, 600 | sandy 0.8, paved 0.15 | desert homes (1), streets | A desert town on a street grid. |
-| 9 | desert outskirts | 20 | 30 ± 8, 560 | sandy 0.85 | desert homes, outposts (1) | The outskirts of the desert towns, where 1-5 begins. |
+| 9 | desert outskirts | 20 | 30 ± 8, 560, scarps 24 / 360 | sandy 0.85 | desert homes, outposts (1) | The outskirts of the desert towns, where 1-5 begins. |
 
 **Acceptance criteria**
 - Given 1-4, then its sections are these, in this order, with these seconds (unit test on the data).
@@ -237,7 +238,7 @@ end, for the ground that gets ahead of the level during the fights.
 | fog | 1 100 → 2 800 | same |
 | clouds | low 0.14, high 0.1, colour (1, 0.72, 0.56), shade (0.62, 0.4, 0.5) | same |
 | ground_lights | prop light intensity 1.15 | same (`props.lightIntensity`) |
-| ground | `DRY_TERRAIN`: dried earth, desert dirt, hardpan under the low height 7, mesa rock from slope 0.55 | `looks.py` (D-200) |
+| ground | `DRY_TERRAIN`: dried earth, desert dirt, hardpan under the low height 7, mesa rock from slope 0.2 | `looks.py` (D-200, D-240) |
 | canyon | channel x 0 ± 140 every 1 900 units, half width 40, walls 110, floor 10 | `DRY_LANDS` |
 | desert_woods / lone_dead_trees | cover 0.55, keep 0.15, scatter 0.01 / cover 0, keep 0, scatter 0.004 | `src/game/config/trees.py` |
 | max_gap | 3.2 s → 2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-4"]` |

@@ -218,3 +218,48 @@
   untouched. The tests of the recipes and designs follow the new data. The reviewer checks the
   sounds by ear in the Dev menu's sounds viewer (DEV-MENU-19).
 - **Status:** Proposed
+
+### D-240 — Scarps: World 1's hills have one rocky face and a slow slope on the other side
+- **Date:** 2026-11-02
+- **Requirements:** GFX-TERRAIN-19 (new), GFX-TERRAIN-06 (the ceiling counts the scarps),
+  WLD-1-31 (new), LVL-1-2-04, LVL-1-3-04, LVL-1-4-04, LVL-1-5-04 (the section tables), the terrain
+  tunables.
+- **Context:** owner request: rocky sides where the slope is high enough, as in the mountains of
+  Ireland, and most of the time hills with one rocky side and a slow grass or desert slope on the
+  other. The ground of World 1 was fractal relief only, so gentle (a median slope of 3° to 5°, under
+  13° almost everywhere) that the look's steep layer never showed on the land, and every hill was
+  symmetrical.
+- **Decision:**
+  - A new section feature in the engine, `scarps`, made by the dunes' ridge generator
+    (`_ridge_shape`, shared): wandering ridges whose cycle is a long rise and a short drop, but
+    with the drop's share set by the section (`face`) and the crest heights spread from `lowest` to
+    the full height by a sharper curve over a shorter noise of their own (1.2 wavelengths), so the
+    ridges pinch out into separate hills; the lines bend over 3 wavelengths, as the dunes'. The
+    faces look towards `angle_deg`. Bounded between 0 and `height`, so the terrain ceiling just
+    adds `height`; a section with scarps has no known steepness (the roads measure the slope, as
+    over the dunes).
+  - World 1's open-land sections carry scarps of 24 to 40 over 320 to 360 of wavelength (a hill
+    about every screen), faces of 8 % of a cycle (a slope of 0.8 to 1.6 at a full crest: 40° to
+    58°, rock; a half crest is rock too), all looking 150° from +Z (towards +X and the camera,
+    which is tilted towards +Z and sees them as walls). The towns on street grids (their streets
+    need ground under a slope of 0.12), the dry lake, the canyon, the mesas, the buttes and the sea
+    keep their ground. The farmland's and the desert outskirts' hills are lower (24).
+  - The World 1 looks turn steep ground to rock sooner: the green levels from a slope of 0.12 to
+    0.3 (28° to 46°; a grey crag texture, `CRAG`, lightly layered), the dry levels from 0.2 to 0.42
+    (37° to 55°; the mesa rock, which now also covers the canyon walls and more of the mesa walls).
+- **Alternatives considered:**
+  - Shearing the relief sideways by its own height (a domain warp), so one side of every hill
+    steepens: measured on the real reliefs, it steepens the steepest 1 % of the ground from 13° to
+    18° at most before it folds over, because the fractal relief is too gentle to drive it.
+    Rejected.
+  - Steeper fractal relief (more amplitude, shorter wavelengths) and a lower rock threshold alone:
+    rock on both sides, no slow slope.
+  - Reusing `dunes` with new optional fields: the World 1 specs and tests say the desert has no
+    dunes (WLD-1-10, D-200), and a windward share is not a face; a feature of its own is clearer.
+- **Consequences:** `TerrainSection` has a last optional field `scarps`; the config mapping, the
+  ceiling and the steepness bound know it; World 2 to 4 are unchanged. The ceilings of 1-2 and 1-3
+  rise by the scarps' height (the green hills to 122, the rocky pass to 130), still under the
+  clouds and the flight. Buildings and roads keep off the faces (slope limits), so the sections
+  with scarps have somewhat fewer buildings. The owner checks the look in the game; the heights,
+  face share and angle are tunables.
+- **Status:** Proposed

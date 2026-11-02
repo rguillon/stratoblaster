@@ -60,6 +60,14 @@ def _with_extras() -> SceneryLevel:
                 "warp": 0.2,
                 "share": 0.4,
             },
+            "scarps": {
+                "height": 30,
+                "wavelength": 400,
+                "angleDeg": 150,
+                "warp": 0.9,
+                "face": 0.1,
+                "lowest": 0.2,
+            },
         },
     )
     floe = {"id": "floe", "weight": 1, "footprint": 6, "scale": [1, 2], "drift": DRIFT}
@@ -108,6 +116,15 @@ def test_a_section_s_flattened_band_lakes_and_crevasses_are_built_from_the_confi
     crevasses = section.crevasses
     assert (crevasses.angle_deg, crevasses.warp, crevasses.share) == (30, 0.2, 0.4)
     assert (crevasses.spacing, crevasses.width, crevasses.depth) == (300, 8, 20)
+    scarps = section.scarps
+    assert (scarps.height, scarps.wavelength, scarps.angle_deg) == (30, 400, 150)
+    assert (scarps.warp, scarps.face, scarps.lowest) == (0.9, 0.1, 0.2)
+
+
+def test_a_section_without_scarps_has_none() -> None:
+    """GFX-TERRAIN-19: an omitted optional feature."""
+    section = scenery_level(LEVEL_1_1).sections[0]
+    assert section.scarps is None
 
 
 def test_floating_props_lines_and_landmarks_are_built_from_the_config() -> None:

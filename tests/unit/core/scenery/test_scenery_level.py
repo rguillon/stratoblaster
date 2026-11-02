@@ -56,6 +56,7 @@ from core.scenery.scenery_level import (
     PropLine,
     PropRules,
     Relief,
+    Scarps,
     Sea,
     Shore,
     StreetGrid,
@@ -344,6 +345,8 @@ def test_terrain_ceiling_takes_the_highest_of_the_sections_parts() -> None:
     assert terrain_ceiling(make_level([section("a", 10, flat(10), flatten=flatten)])) == 45
     dunes = Dunes(7.0, 100.0, 0.0, 0.0)
     assert terrain_ceiling(make_level([section("a", 10, flat(10), dunes=dunes)])) == 17
+    scarps = Scarps(9.0, 100.0, 0.0, 0.0, 0.1, 0.0)
+    assert terrain_ceiling(make_level([section("a", 10, flat(10), scarps=scarps)])) == 19
     lakes = Lakes(200.0, 1.0, (40.0, 60.0), 3.0, 20.0)
     assert terrain_ceiling(make_level([section("a", 10, flat(0), lakes=lakes)])) == 3
     shore = Shore(STRAIGHT, 1.0, 20.0, -20.0)
@@ -378,6 +381,44 @@ def test_gfx_terrain_04_dunes_add_between_zero_and_their_height() -> None:
     assert max(added) > 0.0
 
 
+def test_gfx_terrain_19_scarps_add_between_zero_and_their_height() -> None:
+    scarps = Scarps(30.0, 300.0, 150.0, 0.9, 0.1, 0.0)
+    field = HeightField(make_level([section("a", 10, flat(10), scarps=scarps)]))
+    added = [h - 10.0 for h in _heights(field)]
+    assert all(-1e-9 <= d <= 30.0 + 1e-9 for d in added)
+    assert max(added) > 0.0
+
+
+def test_gfx_terrain_19_scarps_drop_steeply_towards_their_angle_and_rise_slowly() -> None:
+    """Straight ridges of a constant height, their faces looking towards +Z."""
+    scarps = Scarps(40.0, 400.0, 0.0, 0.0, 0.1, 1.0)
+    field = HeightField(make_level([section("a", 10, flat(10), scarps=scarps)]))
+    steps = [(field.height(0.0, z + 2.0) - field.height(0.0, z - 2.0)) / 4.0 for z in range(800)]
+    drop = -min(steps)
+    rise = max(steps)
+    # The face takes a tenth of the cycle (40 units for 40 of height), the back the rest.
+    assert drop > 1.0
+    assert rise < 0.2
+    assert drop > 5 * rise
+    # Across the ridges (along X) the ground does not change.
+    assert field.height(100.0, 123.0) == pytest.approx(field.height(-100.0, 123.0))
+
+
+def test_gfx_terrain_19_scarps_crests_fall_to_their_lowest_share() -> None:
+    low = Scarps(40.0, 300.0, 0.0, 0.5, 0.1, 0.0)
+    kept = Scarps(40.0, 300.0, 0.0, 0.5, 0.1, 0.5)
+    field_low = HeightField(make_level([section("a", 10, flat(0), scarps=low)]))
+    field_kept = HeightField(make_level([section("a", 10, flat(0), scarps=kept)]))
+    crests_low = [
+        max(field_low.height(x, z) for z in range(0, 300, 3)) for x in range(-600, 600, 40)
+    ]
+    crests_kept = [
+        max(field_kept.height(x, z) for z in range(0, 300, 3)) for x in range(-600, 600, 40)
+    ]
+    assert min(crests_low) < 0.25 * 40.0
+    assert min(crests_kept) >= 0.5 * 40.0 - 0.5  # sampled every 3 units
+
+
 def test_crevasses_only_cut_into_the_ground() -> None:
     crevasses = Crevasses(120.0, 10.0, 30.0, 0.0, 0.5, 0.8)
     field = HeightField(make_level([section("a", 10, flat(10), crevasses=crevasses)]))
@@ -407,6 +448,9 @@ def test_steepness_is_unknown_near_a_channel() -> None:
 def test_steepness_is_unknown_for_rough_sections() -> None:
     dunes = Dunes(12.0, 80.0, 30.0, 0.5)
     field = HeightField(make_level([section("a", 10, flat(10), dunes=dunes)]))
+    assert field.steepness(0.0, 300.0, 5.0) == math.inf
+    scarps = Scarps(12.0, 80.0, 30.0, 0.5, 0.1, 0.0)
+    field = HeightField(make_level([section("a", 10, flat(10), scarps=scarps)]))
     assert field.steepness(0.0, 300.0, 5.0) == math.inf
 
 
