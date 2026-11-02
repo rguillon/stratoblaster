@@ -26,7 +26,9 @@ def open_dev_menu(page: Page) -> None:
         "() => window.__GAME_TEST__?.getState().screen === 'title'", timeout=LOAD_TIMEOUT
     )
     wait_idle(page)
-    for _ in range(2):
+    # Dev is the last entry: after Settings, and after Full screen where the browser allows it
+    # (UI-TITLE-11).
+    for _ in range(3):
         page.keyboard.press("ArrowDown")
     expect_state(page, {"screen": "title", "selectedId": "dev"})
     page.keyboard.press("Enter")
