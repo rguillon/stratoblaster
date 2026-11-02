@@ -9,6 +9,7 @@ from game.config.cars import CAR_IDS
 from game.config.prop_look import PROP_COLORS as C
 from game.config.prop_look import PROP_LIGHTS as L
 from game.view.props.car_props import build_car
+from game.view.props.crag_props import CRAG_MODELS, MESA_MODELS
 from game.view.props.road_kit import ROAD_KIT_MODELS
 from game.view.props.tile_models import TILE_PROP_MODELS
 from game.view.props.tree_props import TREE_MODELS
@@ -62,6 +63,9 @@ def make_prop_models() -> dict[str, Any]:
         TILE_PROP_MODELS,
         # D-212: the trees of the green land.
         TREE_MODELS,
+        # GFX-PROP-19: the blocks of stone of the cliff faces.
+        CRAG_MODELS,
+        MESA_MODELS,
         # The road kit, for the `props/` page (no level places it: its streets are drawn).
         ROAD_KIT_MODELS,
     ])

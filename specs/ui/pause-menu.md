@@ -135,6 +135,7 @@ shows. No, or `back`, returns to the pause menu, with the level still paused.
 
 The level pauses by itself, with the pause menu showing, when:
 - the page becomes hidden (`visibilitychange` to `hidden`: tab switched, window minimised, phone locked) (ENG-110);
+- the window loses its focus (`blur` on the window: another window or app clicked, the browser's own UI opened) while the page stays visible; the audio plays on (D-242);
 - the gamepad last used to play is disconnected.
 
 It never resumes by itself: the player resumes from the pause menu. In the menus, a hidden page
@@ -142,10 +143,11 @@ changes no screen (only the audio goes quiet, [audio/engine.md](../audio/engine.
 
 **Acceptance criteria**
 - Given a level, when the page becomes hidden, then the level is paused and, when the page is visible again, the pause menu shows (e2e with a faked `visibilitychange`).
+- Given a level, when the window loses its focus, then the level is paused with the pause menu showing (e2e with a faked `blur`; unit test: the audio is not silenced).
 - Given a level played with a gamepad, when the gamepad is disconnected, then the level is paused (unit test with a fake gamepad); a gamepad never used to play does not pause it.
 - Given a paused level, when the page is hidden and shown again, then it is still paused.
 
-*Sources: P12-R03, ENG-110, D-095, D-096.*
+*Sources: P12-R03, ENG-110, D-095, D-096, D-242.*
 
 ## Tunable values
 

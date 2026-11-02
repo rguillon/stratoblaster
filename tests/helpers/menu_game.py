@@ -17,6 +17,8 @@ def make_texts() -> SimpleNamespace:
         highScore="High score",
         start="Start",
         settings="Settings",
+        fullscreen="Full screen",
+        exitFullscreen="Exit full screen",
         startHint="Arrows",
         chooseShip="Choose a ship",
         chooseShipHint="Pick",

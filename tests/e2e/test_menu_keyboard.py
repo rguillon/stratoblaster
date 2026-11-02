@@ -52,6 +52,27 @@ def test_ui_input_12_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) 
     expect_state(page, {"screen": "title"})
 
 
+def test_ui_title_11_the_full_screen_entry_toggles_the_page_and_stays_on_the_title(
+    page: Page,
+) -> None:
+    """Where the browser allows full screen, the entry is there and confirming it is harmless."""
+    open_game(page)
+    allowed: bool = page.evaluate("() => document.fullscreenEnabled === true")
+    entry = page.locator(".title-fullscreen")
+    assert entry.count() == (1 if allowed else 0)
+    if not allowed:
+        return
+    assert entry.text_content() == "Full screen"
+    page.keyboard.press("ArrowDown")
+    page.keyboard.press("ArrowDown")
+    expect_state(page, {"screen": "title", "selectedId": "fullscreen"})
+    # Without a user gesture the browser may refuse: the page stays as it is, with no error
+    # (the console is checked by the fixture, ENG-53).
+    page.keyboard.press("Enter")
+    expect_state(page, {"screen": "title", "selectedId": "fullscreen"})
+    assert page.locator(".title-fullscreen").text_content() in ["Full screen", "Exit full screen"]
+
+
 def test_ui_input_04_on_azerty_z_q_s_d_the_wasd_positions_move_the_selection(page: Page) -> None:
     open_game(page)
     page.keyboard.press("Enter")

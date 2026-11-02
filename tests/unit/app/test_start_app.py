@@ -250,7 +250,7 @@ def test_ui_title_09_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
 
 def test_d199_without_dev_there_are_no_dev_viewers() -> None:
     options = SimpleNamespace(dev=None)
-    assert start_app.create_dev("engine", None, options) is None
+    assert start_app.create_dev("engine", None, options, "audio") is None
 
 
 def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkeypatch: Any) -> None:
@@ -259,8 +259,9 @@ def test_d199_with_dev_there_is_a_session_and_its_items_labels_and_groups(monkey
     monkeypatch.setattr(start_app, "dev_labels", lambda _catalog: {"ships": ["Item"]})
     monkeypatch.setattr(start_app, "dev_groups", lambda _catalog: {"ships": [""]})
     options = SimpleNamespace(dev=True, environment=False, overlay="overlay", keyboard_target=None)
-    session, labels, groups = start_app.create_dev("engine", "game", options)
+    session, labels, groups = start_app.create_dev("engine", "game", options, "audio")
     assert session._catalog == {"ships": ["item"]}
+    assert session._audio == "audio"
     assert labels == {"ships": ["Item"]}
     assert groups == {"ships": [""]}
 
@@ -319,13 +320,14 @@ def test_eng_83_the_app_options_keep_the_browser_pieces_and_default_to_none() ->
         options.visibility,
         options.every,
         options.dev,
+        options.fullscreen,
     ]
     assert optional == [None for _ in optional]
 
 
 def test_eng_83_every_optional_piece_is_given_by_position() -> None:
     """ENG-151: no keyword arguments, so each option has its place."""
-    given = [f"option-{i}" for i in range(15)]
+    given = [f"option-{i}" for i in range(16)]
     options = AppOptions(False, "doc", "overlay", "storage", "yield", True, "1", "c", *given)
     assert [
         options.keyboard_target,
@@ -343,6 +345,7 @@ def test_eng_83_every_optional_piece_is_given_by_position() -> None:
         options.visibility,
         options.every,
         options.dev,
+        options.fullscreen,
     ] == given
 
 
@@ -475,8 +478,10 @@ def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
     )
     assert isinstance(handle, MenuHandle)
     assert (handle.menu, handle.overlay) == (menu_parts.menu, "overlay")
-    doc, root, on_command, overlay_options, touch, on_wheel, on_turn = menu_parts.overlay_args
-    assert (doc, root, on_wheel, on_turn) == ("doc", "overlay-root", None, None)
+    doc, root, on_command, overlay_options, touch, on_wheel, on_turn, on_hold = (
+        menu_parts.overlay_args
+    )
+    assert (doc, root, on_wheel, on_turn, on_hold) == ("doc", "overlay-root", None, None, None)
     assert overlay_options.transition_seconds == MENU_CONFIG.transition_seconds
     touch.fire(True)
     controls.set_touch_fire.assert_called_once_with(True)
@@ -498,11 +503,11 @@ def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
 def test_d199_the_dev_menu_gets_its_labels_groups_wheel_and_drag(menu_parts: MenuParts) -> None:
     """Also D-202 (the groups)."""
     input_handle = start_app.InputHandle("menu-input", lambda: None)
-    dev = [{"ships": ["Alpha"]}, "on-wheel", "on-turn", {"ships": [""]}]
+    dev = [{"ships": ["Alpha"]}, "on-wheel", "on-turn", {"ships": [""]}, "on-hold"]
     start_app.create_menu(
         "game", _menu_options(), input_handle, MagicMock(), MagicMock(), None, dev
     )
-    assert menu_parts.overlay_args[5:] == ("on-wheel", "on-turn")
+    assert menu_parts.overlay_args[5:] == ("on-wheel", "on-turn", "on-hold")
     deps = menu_parts.controller_args[1]
     assert (deps.dev_labels, deps.dev_groups) == ({"ships": ["Alpha"]}, {"ships": [""]})
 
@@ -642,7 +647,7 @@ class AppParts:
         assert args[4] is self.audio
         return self.session
 
-    def create_dev(self, _engine: Any, _game: Any, _options: Any) -> Any:
+    def create_dev(self, _engine: Any, _game: Any, _options: Any, _audio: Any) -> Any:
         return None if self.dev is None else [self.dev, "labels", "groups"]
 
     def create_menu(self, *args: Any) -> MenuHandle:
@@ -781,7 +786,7 @@ def test_d199_the_dev_viewers_follow_the_menus_and_are_released_with_the_app(
     app, parts, _ = start(monkeypatch, True, False, None, lambda: 0.0)
     dev = parts.dev
     assert dev is not None
-    assert parts.dev_menu == ["labels", dev.wheel, dev.turn, "groups"]
+    assert parts.dev_menu == ["labels", dev.wheel, dev.turn, "groups", dev.hold]
     state = SimpleNamespace(screen="dev-viewer", highlighted_ship_id=None)
     parts.on_change(state)
     dev.sync.assert_called_once_with(state)

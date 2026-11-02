@@ -14,6 +14,7 @@ from org.transcrypt.stubs.browser import __pragma__, document, window
 
 from app.debug_options import dev_mode, parse_debug_options
 from app.page_audio import AudioOptions, PageVisibility
+from app.page_fullscreen import PageFullscreen
 from app.start_app import AppOptions, start_app
 from build_info import APP_COMMIT, APP_VERSION  # The version and commit on the title (ENG-83).
 from config.engine import ENGINE_CONFIG
@@ -142,7 +143,7 @@ def next_frame() -> Any:
 
 
 def document_hidden() -> bool:
-    """Whether the page is hidden now (UI-PAUSE-11)."""
+    """Whether the page is hidden now (UI-PAUSE-11; the window's `blur` is heard too)."""
     hidden: bool = document.visibilityState == "hidden"
     return hidden
 
@@ -210,10 +211,12 @@ def start_game(engine: Any) -> None:
         browser_audio(),
         browser_gamepads(window.navigator),
         window,
-        PageVisibility(document, document_hidden),
+        PageVisibility(document, document_hidden, window),
         start_interval,
         # DEV-MENU-01 (D-199): the Dev entry of the title screen, with `?dev` in the URL.
         dev_mode(window.location.search),
+        # UI-TITLE-11: the title's Full screen entry.
+        PageFullscreen(document),
     )
     app = start_app(engine, GAME, options)
     __pragma__("ifdef", "e2e")

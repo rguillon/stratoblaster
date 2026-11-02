@@ -52,15 +52,16 @@ Level `1-5` is the fifth and last level of World 1. It is named "Deep desert"; i
 #### LVL-1-5-04 — Sections · MUST
 
 1-5's ground is these sections, in this order (relief: height ± its amplitude, features about that
-wide across); there is no sea. The cover is the sections' `sandy` cover, drawn as the red desert dirt
+wide across; scarps: the hills with one rocky face of WLD-1-31, their height / wavelength, on the
+open land only); there is no sea. The cover is the sections' `sandy` cover, drawn as the red desert dirt
 (WLD-1-10); where a section's covers add up to less than 1, the dried earth shows.
 
 | # | Section | Seconds | Relief | Cover | Buildings (density) | What it shows |
 |---|---------|---------|--------|-------|---------------------|---------------|
-| 1 | desert outskirts | 30 | 30 ± 8, 560 | sandy 0.85 | desert homes, outposts (1) | 1-4's desert outskirts. |
+| 1 | desert outskirts | 30 | 30 ± 8, 560, scarps 24 / 360 | sandy 0.85 | desert homes, outposts (1) | 1-4's desert outskirts. |
 | 2 | buttes | 25 | 35 ± 160, 450, cut at 70 | sandy 1 | outposts (0.45) | Buttes and mesas standing out of a cracked dry floor. |
 | 3 | oasis villages | 40 | 28 ± 12, 520 | sandy 0.7, grass 0.3 | desert homes, outposts (1), streets | Oasis villages on street grids, a little grass. |
-| 4 | rocky pass | 20 | 60 ± 30, 420 | sandy 1 | outposts (0.7) | A rocky pass through higher ground. |
+| 4 | rocky pass | 20 | 60 ± 30, 420, scarps 40 / 320 | sandy 1 | outposts (0.7) | A rocky pass through higher ground. |
 | 5 | desert towns | 55 | 28 ± 6, 560 | sandy 0.85, paved 0.1 | desert homes, outposts (1), streets | Desert towns on street grids. |
 | 6 | great oasis town | 70 | 30 ± 4, 600 | sandy 0.8, grass 0.1, paved 0.1 | desert homes (1), dense streets | A great oasis town on dense streets to the end. |
 

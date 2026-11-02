@@ -94,6 +94,9 @@ UNIFORMS = [
     ("terrainSurf", 4, "vec4"),
     ("terrainLava", 4, "vec4"),
     ("terrainGroundFrame", 4, "vec4"),
+    ("terrainLushTintA", 3, "vec3"),
+    ("terrainLushTintB", 3, "vec3"),
+    ("terrainLushDetail", 4, "vec4"),
 ]
 
 
@@ -122,6 +125,16 @@ uniform sampler2D terrainNoise;
 // would change the colour by less than half a step. On flat paved ground, one texture read
 // instead of 21.
 const float TERRAIN_SKIP = 1.0 / 512.0;
+// How sharply the three axis planes are chosen by the normal, and how much of the top-down plane
+// the rock gives up to the side ones: a steep face is then one projection, not two laid over each
+// other, so its stones stay crisp (GFX-TERRAIN-07).
+const float TRIPLANAR_SHARPNESS = 8.0;
+const float ROCK_SIDE_PLANES = 0.9;
+// The grass's grain is read twice from the noise, the second time over a tile this much bigger
+// and turned by this (cos, sin), so the tile's copies never line up and the grain does not
+// visibly repeat (GFX-TERRAIN-09).
+const float GRAIN_SECOND_SCALE = 0.618;
+const vec2 GRAIN_TURN = vec2(0.8, 0.6);
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
 // slopes are not stretched (GFX-TERRAIN-07).
@@ -197,10 +210,6 @@ vec3 terrainHeat(vec3 p) {
 }
 
 vec3 terrainColor(vec3 p, vec3 n) {
-  vec3 w = pow(abs(n), vec3(4.0));
-  w /= (w.x + w.y + w.z);
-  w *= step(vec3(TERRAIN_SKIP), w);
-  w /= (w.x + w.y + w.z);
   vec4 noise = texture2D(terrainNoise, p.xz * terrainScale.y);
   float jitter = noise.r - 0.5;
   float h = p.y + jitter * terrainSlope.z;
@@ -210,6 +219,11 @@ vec3 terrainColor(vec3 p, vec3 n) {
   float above = smoothstep(terrainHeights.x - blend, terrainHeights.x + blend, h);
   float high = smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h);
   float steep = smoothstep(terrainSlope.x, terrainSlope.y, slope);
+  vec3 w = pow(abs(n), vec3(TRIPLANAR_SHARPNESS));
+  w.y *= 1.0 - ROCK_SIDE_PLANES * steep;
+  w /= (w.x + w.y + w.z);
+  w *= step(vec3(TERRAIN_SKIP), w);
+  w /= (w.x + w.y + w.z);
   float sandy = 0.0;
   float lush = 0.0;
   float paved = 0.0;
@@ -235,7 +249,20 @@ vec3 terrainColor(vec3 p, vec3 n) {
       * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
   }
   sum += terrainLayer(terrainSandy, p, w, ground * sandy * (1.0 - lush) * (1.0 - paved));
-  sum += terrainLayer(terrainLush, p, w, ground * lush * (1.0 - paved));
+  float lushShare = ground * lush * (1.0 - paved);
+  if (lushShare > TERRAIN_SKIP) {
+    // Grass tinted in patches by the coarse noise, and grained by the fine noise over a small
+    // tile, finer than its texels (GFX-TERRAIN-09).
+    vec3 grass = terrainTriplanar(terrainLush, p, w);
+    float patches = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainLushDetail.x).g);
+    vec2 turned =
+      vec2(p.x * GRAIN_TURN.x - p.z * GRAIN_TURN.y, p.x * GRAIN_TURN.y + p.z * GRAIN_TURN.x);
+    float grain = texture2D(terrainNoise, p.xz * terrainLushDetail.y).r
+      + texture2D(terrainNoise, turned * terrainLushDetail.y * GRAIN_SECOND_SCALE).r - 1.0;
+    grass *= mix(terrainLushTintA, terrainLushTintB, patches);
+    grass *= 1.0 + grain * 2.0 * terrainLushDetail.z;
+    sum += vec4(grass * lushShare, lushShare);
+  }
   sum += terrainLayer(terrainPaved, p, w, ground * paved);
   sum += terrainLayer(terrainHigh, p, w, high * (1.0 - steep));
   sum += terrainLayer(terrainSteep, p, w, steep);
@@ -347,6 +374,19 @@ class TerrainBlendOwner:
         ground_scale = ground.scale if ground else 1
         ground_offset = ground.offset_z if ground else 0
         ubo.updateFloat4("terrainGroundFrame", ground_scale, ground_offset, 0, 0)
+        detail = look.lushDetail
+        if detail != None:
+            a = detail.tints[0]
+            b = detail.tints[1]
+            ubo.updateFloat3("terrainLushTintA", a[0], a[1], a[2])
+            ubo.updateFloat3("terrainLushTintB", b[0], b[1], b[2])
+            ubo.updateFloat4(
+                "terrainLushDetail", 1 / detail.tileSize, 1 / detail.fineTileSize, detail.fine, 0
+            )
+        else:
+            ubo.updateFloat3("terrainLushTintA", 1, 1, 1)
+            ubo.updateFloat3("terrainLushTintB", 1, 1, 1)
+            ubo.updateFloat4("terrainLushDetail", 1, 1, 0, 0)
         shore = look.shore
         ubo.updateFloat4("terrainSand", shore.sand[0], shore.sand[1], shore.sand[2], shore.beach)
         ubo.updateFloat4(

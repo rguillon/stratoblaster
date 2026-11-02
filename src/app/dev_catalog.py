@@ -3,9 +3,12 @@
 
 The props the levels stand on their ground and their cars (D-209), and the levels, in the game's
 order. The props are gathered by the game's prop groups (D-202), as the Dev menu's props viewer
-shows them.
+shows them. The sounds (one per cue, DEV-MENU-19) and the music (every track the game plays, each
+once, DEV-MENU-20): a music item's id names its request (`menu`, `level:1-1`, `boss:1-1`,
+`jingle:complete`), and `music_request` reads it back.
 """
 
+from audio.audio_bindings import MusicRequest
 from config.dev_viewer import DEV_VIEWERS
 from render.scenery.prop_field import level_prop_kinds
 
@@ -19,6 +22,11 @@ from typing import Any
 
 # The group of the props in none of the game's prop groups (D-202).
 OTHER_GROUP = "Other"
+
+# The music viewer's groups, by the kind of request (DEV-MENU-20).
+MUSIC_GROUPS = {"menu": "Menu", "level": "Levels", "boss": "Bosses", "jingle": "Jingles"}
+# The jingles a game may play (`audio_bindings.Jingle`), in the viewer's order.
+JINGLES = ["complete", "over", "checkpoint"]
 
 
 class DevItem:
@@ -110,12 +118,69 @@ def _props(game: Any) -> list[DevItem]:
     return items
 
 
-def dev_items(game: Any, viewer: str) -> list[DevItem]:
-    """Return the items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows.
+def _sounds(game: Any) -> list[DevItem]:
+    """Return the game's sound effects (DEV-MENU-19): one item per cue, in the game's order."""
+    bindings = game.view.audio
+    if bindings is None:
+        return []
+    host = _first_level(game)
+    return [DevItem(cue, cue, host) for cue in bindings.sounds.keys()]
 
-    The ships (DEV-MENU-12), the enemy kinds (DEV-MENU-13), the boss kinds (DEV-MENU-14), the props
-    of the levels' ground (DEV-MENU-15) and the levels (DEV-MENU-18).
+
+def music_item_id(request: MusicRequest) -> str:
+    """Return the id of the music item of `request`: its kind, then its level or jingle."""
+    if request.kind == "menu":
+        return "menu"
+    if request.kind == "jingle":
+        return "jingle:" + (request.jingle or "")
+    return request.kind + ":" + (request.level_id or "")
+
+
+def music_request(item_id: str) -> MusicRequest:
+    """Return the music request a music item's id names (see `music_item_id`)."""
+    parts = item_id.split(":")
+    kind = parts[0]
+    argument = parts[1] if len(parts) > 1 else None
+    if kind == "jingle":
+        return MusicRequest(kind, None, argument)
+    return MusicRequest(kind, argument, None)
+
+
+def _music_requests(game: Any) -> list[MusicRequest]:
+    """Every music the engine may ask the game for: the menu's, each level's and its boss's.
+
+    Then the jingles.
     """
+    requests = [MusicRequest("menu", None, None)]
+    requests.extend([MusicRequest("level", level.id, None) for level in game.game_levels])
+    requests.extend([MusicRequest("boss", level.id, None) for level in game.game_levels])
+    requests.extend([MusicRequest("jingle", None, jingle) for jingle in JINGLES])
+    return requests
+
+
+def _music(game: Any) -> list[DevItem]:
+    """Return the tracks the game plays (DEV-MENU-20), each once, labelled by its id.
+
+    Several levels share a boss track: the first level's request lists it. A request the game has
+    no track for is left out.
+    """
+    bindings = game.view.audio
+    if bindings is None:
+        return []
+    host = _first_level(game)
+    items: list[DevItem] = []
+    listed: list[str] = []
+    for request in _music_requests(game):
+        track = bindings.music(request)
+        if track is None or track.id in listed:
+            continue
+        listed.append(track.id)
+        items.append(DevItem(music_item_id(request), track.id, host, MUSIC_GROUPS[request.kind]))
+    return items
+
+
+def _simple_items(game: Any, viewer: str) -> list[DevItem] | None:
+    """Return the items of a viewer listed straight from the game's data, or None for the others."""
     host = _first_level(game)
     if viewer == "ships":
         return [DevItem(ship.id, ship.name, host) for ship in game.player_ships.ships]
@@ -124,12 +189,29 @@ def dev_items(game: Any, viewer: str) -> list[DevItem]:
     if viewer == "bosses":
         kinds = game.boss_kinds if game.boss_kinds is not None else []
         return [DevItem(kind.id, kind.name, host) for kind in kinds]
-    if viewer == "props":
-        return _props(game)
     if viewer == "levels":
         return [
             DevItem(level.id, _level_label(game, level.id), level.id) for level in game.game_levels
         ]
+    return None
+
+
+def dev_items(game: Any, viewer: str) -> list[DevItem]:
+    """Return the items the dev viewer `viewer` (one of `DEV_VIEWERS`) shows.
+
+    The ships (DEV-MENU-12), the enemy kinds (DEV-MENU-13), the boss kinds (DEV-MENU-14), the props
+    of the levels' ground (DEV-MENU-15), the levels (DEV-MENU-18), the sounds (DEV-MENU-19) and the
+    music (DEV-MENU-20).
+    """
+    items = _simple_items(game, viewer)
+    if items is not None:
+        return items
+    if viewer == "props":
+        return _props(game)
+    if viewer == "sounds":
+        return _sounds(game)
+    if viewer == "music":
+        return _music(game)
     raise ValueError('No dev viewer "' + viewer + '"')
 
 

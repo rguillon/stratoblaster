@@ -115,6 +115,32 @@ def test_strata_and_cracks_change_the_texture() -> None:
     assert list(cracked) != list(plain)
 
 
+def test_stones_change_the_texture_and_cut_dark_joints_into_it() -> None:
+    """GFX-TERRAIN-07: a rock face of stones, each a shade of its own, dark joints between."""
+    size = 32
+    colors = ((0.4, 0.4, 0.4), GREY, WHITE)
+    plain = build_ground_texture(size, texture(colors=colors, frequency=4), 5)
+    stony = build_ground_texture(size, texture(colors=colors, frequency=4, stones=1), 5)
+    assert list(stony) != list(plain)
+    # The joints: the darkest pixels of the stony texture are darker than the dark colour, which
+    # is as dark as the plain one gets.
+    darkest = min(sum(_rgba(stony, i)[:3]) for i in range(size * size))
+    assert darkest < min(sum(_rgba(plain, i)[:3]) for i in range(size * size))
+    assert darkest < 3 * 0.4 * 255
+    # The same look and seed give the same stones.
+    again = build_ground_texture(size, texture(colors=colors, frequency=4, stones=1), 5)
+    assert list(again) == list(stony)
+
+
+def test_jittered_cells_give_a_number_a_gap_and_a_lit_side_per_pixel() -> None:
+    cells = procedural_textures.jittered_cells(16, 4, 3, 0.75, 1.5)
+    assert len(cells) == 16 * 16 * 3
+    for i in range(16 * 16):
+        assert 0 <= cells[i * 3] < 1
+        assert cells[i * 3 + 1] >= 0
+        assert -1 - 1e-6 <= cells[i * 3 + 2] <= 1 + 1e-6
+
+
 def test_a_noise_texture_holds_fine_and_coarse_noise_in_red_and_green() -> None:
     pixels = build_noise_texture(SIZE, 4, 9)
     reds = [pixels[i] for i in range(0, len(pixels), 4)]

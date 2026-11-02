@@ -52,3 +52,14 @@ def test_d200_the_buttes_stand_flat_topped_under_the_flight() -> None:
     relief = section["relief"]
     assert relief["style"] == "smooth"
     assert relief["maxHeight"] < relief["base"] + relief["amplitude"]
+
+
+def test_wld_1_31_the_open_desert_is_hills_with_a_rocky_face_the_rest_has_none() -> None:
+    hills_1_4 = [s["name"] for s in LEVEL_1_4.sections if s.get("scarps") is not None]
+    hills_1_5 = [s["name"] for s in LEVEL_1_5.sections if s.get("scarps") is not None]
+    assert hills_1_4 == ["dry grassland", "scrubland villages", "desert outskirts"]
+    assert hills_1_5 == ["desert outskirts", "rocky pass"]
+    for level in LEVELS:
+        for section in level.sections:
+            if section.get("streets") is not None:
+                assert section.get("scarps") is None, section["name"]

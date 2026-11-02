@@ -53,6 +53,7 @@ pause ──Main menu, Yes──▶ title
 | `title` | `ship-select` | Start is confirmed |
 | `title` | `settings` | Settings is confirmed |
 | `title` | `dev` | Dev is confirmed (only with `?dev`) |
+| `title` | `title` | Full screen is confirmed: the page's full screen is toggled ([title-screen.md](title-screen.md), UI-TITLE-11) |
 | `ship-select` | `level-select` | A ship is confirmed |
 | `ship-select` | `title` | Back |
 | `level-select` | `game` | An unlocked level is confirmed |

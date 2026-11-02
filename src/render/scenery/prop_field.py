@@ -266,8 +266,8 @@ def level_tree_kinds(level: SceneryLevel) -> list[str]:
 def level_prop_kinds(level: SceneryLevel) -> list[str]:
     """Return the kinds of prop `level` can stand on its ground (not its cars): the buildings.
 
-    Trees its sections allow, its floating props, lines, podiums, set pieces and lots. Unique, in
-    order (GFX-PROP-03).
+    Trees its sections allow, its floating props, lines, podiums, set pieces, lots and cliff
+    blocks. Unique, in order (GFX-PROP-03).
     """
     props = level.props
     sections = level.sections
@@ -288,6 +288,9 @@ def level_prop_kinds(level: SceneryLevel) -> list[str]:
     # Phase 15: the lots of the districts on tiles.
     if props.lots is not None:
         ids.extend([k.id for k in props.lots])
+    # GFX-PROP-19: the blocks of stone of the cliff faces.
+    if props.cliffs is not None:
+        ids.extend(props.cliffs.kinds)
     return _unique(ids)
 
 

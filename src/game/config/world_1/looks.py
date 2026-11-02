@@ -56,6 +56,18 @@ GRASS = texture(
     {"speckle": 0.035, "speckleColor": [0.6, 0.56, 0.28]},
 )
 
+# Grey crag rock (WLD-1-31): the rocky faces of the green hills, blocks of stone with dark joints
+# and lit edges, lightly layered, a little warm, as the stone of Irish mountains.
+CRAG = texture(
+    [
+        [0.34, 0.34, 0.31],
+        [0.5, 0.49, 0.45],
+        [0.66, 0.64, 0.58],
+    ],
+    8,
+    {"strata": 0.25, "stones": 0.85, "speckle": 0.015, "speckleColor": [0.36, 0.4, 0.3]},
+)
+
 # Red-brown desert rock, layered (World 2's slopes).
 DESERT_ROCK = texture(
     [
@@ -75,7 +87,7 @@ MESA_ROCK = texture(
         [0.74, 0.44, 0.28],
     ],
     8,
-    {"strata": 0.6},
+    {"strata": 0.5, "stones": 0.7},
 )
 
 # The dried land of an American desert (D-200): red-orange dirt, scattered with dark pebbles and
@@ -114,13 +126,31 @@ HARDPAN = texture(
 )
 
 # The ground of the whole world: dry earth by default, covered with grass, sand or pavement by
-# section (`surface`), so the land fades from green to sand along the levels.
+# section (`surface`), so the land fades from green to sand along the levels; grey crags on the
+# steep ground, from a slope of 0.045 (about 17 degrees; full rock from 26), with less noise on
+# the slope than the base look (its 0.2 would put rock on the flat and grass on the faces), so
+# the rocky faces of the hills show as rock under their blocks of stone and the fringe of stones
+# along them (WLD-1-31, GFX-PROP-19).
+# The noise on the slope the rock starts at, as a share of `1 - n.y` (the base look's is 0.2).
+SLOPE_JITTER = 0.06
+
 TERRAIN = merge(
     BASE_SCENERY_LOOK.terrain,
     {
         "ground": DRY_EARTH,
         "lush": GRASS,
         "sand": SAND,
+        "steep": CRAG,
+        "steepSlope": [0.045, 0.1],
+        "jitter": merge(BASE_SCENERY_LOOK.terrain.jitter, {"slope": SLOPE_JITTER}),
+        # Meadows in patches of drier, yellower and deeper green grass, with a fine grain, so the
+        # grass is not one flat, blurred green next to the trees (D-247).
+        "lushDetail": {
+            "tints": [[1.16, 1.1, 0.72], [0.84, 0.95, 0.8]],
+            "tileSize": 420,
+            "fineTileSize": 28,
+            "fine": 0.28,
+        },
         "shore": merge(
             BASE_SCENERY_LOOK.terrain.shore,
             {
@@ -145,8 +175,11 @@ DRY_TERRAIN = merge(
         # No snow on the flat tops of the mesas and buttes (the heights the shader compares are the
         # world's, twice the ground's).
         "highHeight": 1000,
-        # Steep ground is bare rock (no dunes whose lee sides must stay covered).
-        "steepSlope": [0.55, 0.95],
+        # Steep ground is bare rock from a slope of 0.06 (about 20 degrees; full rock from 30): the
+        # faces of the hills (WLD-1-31) and the walls of the mesas, buttes and canyon, under their
+        # blocks of stone.
+        "steepSlope": [0.06, 0.14],
+        "jitter": merge(BASE_SCENERY_LOOK.terrain.jitter, {"slope": SLOPE_JITTER}),
         "tints": [
             [1.05, 0.98, 0.9],
             [0.9, 0.84, 0.78],

@@ -77,6 +77,11 @@ def test_eng_54_loading_title_ships_levels_game_pause_resume_back_to_title(
     expect_state(page, {"screen": "pause", "paused": True})
     send_action(page, "resume")
     expect_state(page, {"screen": "game", "paused": False})
+    # UI-PAUSE-11: a window that loses its focus pauses the level by itself too.
+    page.evaluate("() => { window.dispatchEvent(new Event('blur')); }")
+    expect_state(page, {"screen": "pause", "paused": True})
+    send_action(page, "resume")
+    expect_state(page, {"screen": "game", "paused": False})
     leave_level(page)
     assert game(page) is None
 

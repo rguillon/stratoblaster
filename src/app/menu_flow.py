@@ -11,7 +11,7 @@ from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
-from config.dev_viewer import DEV_VIEWERS
+from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWERS
 from core.content.level_catalog import first_unlocked_level
 from core.menu.grid_cursor import GridShape, move_cursor
 from core.menu.menu_screen import can_transition
@@ -29,8 +29,8 @@ from input.menu_action import MenuCommand
 # __pragma__ ("noskip")
 
 
-# The title screen's entries (UI-TITLE-01, UI-TITLE-06); `dev` after them with the dev menu
-# (DEV-MENU-01, D-199).
+# The title screen's entries (UI-TITLE-01, UI-TITLE-06); `fullscreen` after them where the
+# browser allows it (UI-TITLE-11), then `dev` with the dev menu (DEV-MENU-01, D-199).
 TITLE_ENTRIES = ["start", "settings"]
 
 # Volumes and slider size when the options give none.
@@ -59,6 +59,15 @@ def _level_index(levels: list[Any], level_id: str | None) -> int:
         if levels[i].id == level_id:
             return i
     return -1
+
+
+def _title_target(entry: str) -> MenuScreen:
+    """Return the screen a title entry opens (UI-TITLE-06, DEV-MENU-01)."""
+    if entry == "settings":
+        return "settings"
+    if entry == "dev":
+        return "dev"
+    return "ship-select"
 
 
 def _is_integer(value: float) -> bool:
@@ -101,6 +110,8 @@ class MenuFlow:
         # each viewer's toggle (close-up for the models, play for the levels).
         counts = options.dev_counts
         self._title_entries = list(TITLE_ENTRIES)
+        if options.fullscreen:
+            self._title_entries.append("fullscreen")
         if counts is not None:
             self._title_entries.append("dev")
         self._dev_counts: list[int] = list(counts) if counts is not None else []
@@ -317,7 +328,8 @@ class MenuFlow:
 
         The four directions show the item before or after (round the list), Up and Down the first
         item of the group before or after when the viewer's items are in groups (D-202), Confirm
-        flips the viewer's toggle, Back and Escape return to the dev menu.
+        flips the viewer's toggle, Back and Escape return to the dev menu. On an audio viewer the
+        item picked plays (DEV-MENU-19): the feedback is `played`, so no menu sound covers it.
         """
         if is_menu_direction(command):
             counts = self._dev_counts
@@ -332,11 +344,11 @@ class MenuFlow:
             else:
                 self._dev_items[self._dev_index] = (index + step + count) % count
             self._changed()
-            return "moved"
+            return self._dev_feedback("moved")
         if command == "confirm":
             self._dev_toggles[self._dev_index] = not self._dev_toggles[self._dev_index]
             self._changed()
-            return "adjusted"
+            return self._dev_feedback("adjusted")
         if command in ["back", "cancel"]:
             return "screen" if self.go_to("dev") else "none"
         return "none"
@@ -351,7 +363,11 @@ class MenuFlow:
             return "none"
         self._dev_items[self._dev_index] = index
         self._changed()
-        return "moved"
+        return self._dev_feedback("moved")
+
+    def _dev_feedback(self, feedback: str) -> str:
+        """Return `feedback`, or `played` on an audio viewer, whose item picked plays."""
+        return "played" if DEV_VIEWERS[self._dev_index] in DEV_AUDIO_VIEWERS else feedback
 
     def _adjusted(self, feedback: str) -> str:
         if feedback != "none":
@@ -504,10 +520,13 @@ class MenuFlow:
             return self._confirm_level()
         if screen == "game" and result is not None:
             return self._leave_completed_level(result)
-        # The title screen: `_action` sends the other screens' commands elsewhere.
-        targets: list[MenuScreen] = ["ship-select", "settings", "dev"]
-        target: MenuScreen = targets[self._title_index]
-        return "screen" if self.go_to(target) else "none"
+        # The title screen: `_action` sends the other screens' commands elsewhere. The Full
+        # screen entry goes nowhere: the app toggles the page's full screen on its feedback
+        # (UI-TITLE-11).
+        entry = self._title_entries[self._title_index]
+        if entry == "fullscreen":
+            return "fullscreen"
+        return "screen" if self.go_to(_title_target(entry)) else "none"
 
     def _leave_completed_level(self, result: LevelResult) -> str:
         """Leave the "Level complete" or "Game over" overlay (`result`) for the level select screen.

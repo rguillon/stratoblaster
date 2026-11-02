@@ -6,7 +6,8 @@ grows any more).
 """
 
 from game.config.cars import CAR_RULES
-from game.config.record import record
+from game.config.cliffs import CRAG_CLIFFS, MESA_CLIFFS
+from game.config.record import merge, record
 from game.config.tile_buildings import LOT_KINDS, TILE, tile_kinds
 from game.config.trees import FORESTS, TREE_KINDS, TREES_PER_CELL
 
@@ -36,6 +37,8 @@ G = WORLD_1_GROUPS
 # the hand-made huts, homes, masts and farms are gone, their groups drawing from the grid's
 # buildings, and so are the plants.
 WORLD_1_PROPS = record({
+    # WLD-1-31, GFX-PROP-19: the faces of the hills built of blocks of grey crag.
+    "cliffs": CRAG_CLIFFS,
     # Phase 15 (GFX-BLDG-05): lots for the tiles of the districts no building fits.
     "lots": LOT_KINDS,
     "cellSize": 50,
@@ -131,3 +134,7 @@ WORLD_1_ROADS = record({
     # Phase 15: the districts on a grid of tiles.
     "tiles": TILE,
 })
+
+
+# The dry levels (WLD-1-31): the same props, their cliff faces built of red mesa rock.
+DESERT_PROPS = merge(WORLD_1_PROPS, {"cliffs": MESA_CLIFFS})

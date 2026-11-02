@@ -24,3 +24,10 @@ def test_wld_1_03_level_sections_have_positive_lengths(level: Any) -> None:
     assert level.sections
     for section in level.sections:
         assert section["seconds"] > 0
+
+
+def test_wld_1_31_the_land_is_hills_with_a_rocky_face_but_the_town_is_flat() -> None:
+    hills = [s for s in LEVEL_1_3.sections if s.get("scarps") is not None]
+    flat = [s["name"] for s in LEVEL_1_3.sections if s.get("scarps") is None]
+    assert flat == ["market town"]
+    assert sum(s["seconds"] for s in hills) >= 0.8 * sum(s["seconds"] for s in LEVEL_1_3.sections)

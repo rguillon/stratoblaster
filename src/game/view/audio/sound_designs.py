@@ -1,9 +1,12 @@
 # Copyright (c) 2026 Renaud Guillon
 """The game's sound effects (AUD-SFX-01), all synthesised, keyed by the engine's cue (`SoundCue`).
 
-Made to fit the darksynth music and to suit a child (AUD-SFX-07). Priorities (AUD-SFX-05): the
-player's and the bombs' sounds highest, the enemy shots lowest. The player's gun shots and the laser
-hum are mixed quieter than hits and explosions (AUD-SFX-06).
+Made to sound real rather than like a chip (D-239): cracks, thumps, whooshes and rumbles of
+filtered noise and sines, metallic rings of noise through narrow filters, struck bells for the
+rewards and clicks for the menus; no bare square or sawtooth sweep. Made to fit the darksynth
+music and to suit a child (AUD-SFX-07). Priorities (AUD-SFX-05): the player's and the bombs' sounds
+highest, the enemy shots lowest. The player's gun shots and the laser hum are mixed quieter than
+hits and explosions (AUD-SFX-06).
 
 `sound(...)` takes its optional fields (`positional`, `loop`, `hold`) as a dict, as the
 The layers take a partial object.
@@ -13,12 +16,17 @@ from audio.audio_types import FilterSpec, SoundDesign
 from game.view.audio.sound_recipes import (
     MINIGUN,
     ExplosionSize,
-    chime,
+    bell,
+    click,
     env,
     explosion,
     flatten_layers,
     minigun,
+    ring,
+    rumble,
+    thump,
     tone,
+    whoosh,
 )
 
 # isort: split
@@ -65,145 +73,145 @@ PLAYER_WEAPONS = {
     "fire:bullet": sound(
         "gun-shot", PRIORITY["weapon"], 0.14, minigun(MINIGUN), {"positional": True}
     ),
+    # A rocket leaving its tube: an ignition pop, the exhaust whoosh rising then thinning, a low
+    # rumble under it.
     "fire:missile": sound(
         "missile-launch",
         PRIORITY["weapon"],
         0.3,
         [
+            click(900, 0.5, 0.02),
+            whoosh(400, 2600, 0.8, 0.35, 0, 0.8),
+            rumble(260, 0.6, 0.3),
             tone(
                 "noise",
                 1,
-                0.8,
-                env(0.01, 0.3, 0, 0.08),
-                {"filter": FilterSpec("bandpass", 2600, 2, 500, 0.3)},
+                0.08,
+                env(0.05, 0.15, 0, 0.1),
+                {"delay": 0.1, "filter": FilterSpec("highpass", 3500, None, None, None)},
             ),
-            tone("sawtooth", 220, 0.3, env(0.005, 0.2), {"glide_to": 90, "glide_seconds": 0.2}),
         ],
         {"positional": True},
     ),
+    # The beam powering up: a swelling air sweep and a low surge, with a relay click.
     "beam-start:laser": sound(
         "laser-start",
         PRIORITY["weapon"],
         0.3,
         [
+            click(1800, 0.4, 0.012),
+            whoosh(350, 3000, 0.7, 0.2, 0, 3),
             tone(
-                "sawtooth",
-                300,
-                0.6,
-                env(0.005, 0.18, 0, 0.05),
-                {
-                    "glide_to": 1300,
-                    "glide_seconds": 0.15,
-                    "filter": FilterSpec("lowpass", 3000, None, None, None),
-                },
+                "sine",
+                70,
+                0.5,
+                env(0.02, 0.18, 0, 0.08),
+                {"glide_to": 150, "glide_seconds": 0.15},
             ),
         ],
         {"positional": True},
     ),
+    # The beam: an electric hum of two low partials beating slowly, under a hiss of air.
     "beam:laser": sound(
         "laser-hum",
         PRIORITY["weapon"],
         0.1,
         [
+            tone("sine", 55, 0.6, env(0.05, 0.1, 0.8, 0.12), {}),
             tone(
-                "sawtooth",
+                "triangle",
                 110,
-                0.6,
+                0.4,
                 env(0.05, 0.1, 0.8, 0.12),
-                {"filter": FilterSpec("lowpass", 900, 3, None, None)},
+                {"detune_cents": 7, "filter": FilterSpec("lowpass", 700, None, None, None)},
             ),
             tone(
-                "square",
-                220,
-                0.3,
-                env(0.05, 0.1, 0.8, 0.12),
-                {
-                    "detune_cents": 9,
-                    "filter": FilterSpec("lowpass", 1400, None, None, None),
-                },
+                "noise",
+                1,
+                0.12,
+                env(0.08, 0.1, 0.8, 0.12),
+                {"filter": FilterSpec("bandpass", 1600, 1.5, None, None)},
             ),
         ],
         {"loop": True},
     ),
+    # A weapon racked: two mechanical clacks and a low thud, "ch-chk".
     "weapon-switch": sound(
         "weapon-switch",
         PRIORITY["player"],
         0.3,
-        chime("square", [660, 990], 0.06, 0.5),
+        [
+            click(2200, 0.9, 0.015),
+            thump(180, 0.4, 0.05),
+            click(1500, 1.2, 0.02, 0.09),
+            thump(160, 0.5, 0.06, 0.09),
+        ],
         {},
     ),
+    # A part locking in, then two bells rising.
     "weapon-up": sound(
         "weapon-level-up",
         PRIORITY["player"],
         0.35,
-        chime("triangle", [523, 659, 784, 1047], 0.07, 0.6),
+        [
+            click(1600, 0.9, 0.02),
+            whoosh(500, 2800, 0.3, 0.2, 0, 2),
+            bell([880, 1320], 0.09, 0.4),
+        ],
         {},
     ),
 }
 
 ENEMY_WEAPONS = {
+    # An enemy gun: a dull crack with a low body, duller than the player's minigun.
     "enemy-bullet": sound(
         "enemy-shot",
         PRIORITY["enemyShot"],
-        0.14,
+        0.16,
         [
-            tone(
-                "triangle",
-                760,
-                0.7,
-                env(0.001, 0.08),
-                {"glide_to": 340, "glide_seconds": 0.08},
-            )
+            click(1100, 0.6, 0.015),
+            rumble(600, 0.5, 0.05),
+            thump(220, 0.5, 0.06),
         ],
         {"positional": True},
     ),
+    # A rocket passing: its exhaust whoosh and a rumble.
     "enemy-missile": sound(
         "enemy-missile",
         PRIORITY["enemyShot"],
         0.22,
         [
-            tone(
-                "noise",
-                1,
-                0.7,
-                env(0.02, 0.35, 0, 0.06),
-                {"filter": FilterSpec("bandpass", 900, 3, 300, 0.35)},
-            ),
+            whoosh(350, 1800, 0.7, 0.35, 0, 1.2),
+            rumble(220, 0.5, 0.3),
         ],
         {"positional": True},
     ),
+    # The laser charging: two relay clicks over a rising, narrowing air sweep (no siren).
     "laser-warning": sound(
         "laser-warning",
         PRIORITY["enemy"],
         0.2,
         [
-            tone("square", 880, 0.5, env(0.002, 0.07, 0, 0.02), {}),
-            tone("square", 880, 0.5, env(0.002, 0.07, 0, 0.02), {"delay": 0.16}),
+            click(1800, 1.5, 0.015),
+            click(1800, 1.5, 0.015, 0.16),
+            whoosh(300, 2400, 1.2, 0.35, 0, 3),
         ],
         {"positional": True},
     ),
+    # The enemy beam: a blast of air falling in pitch, a sub thump, a rumble held while it fires.
     "laser-fire": sound(
         "enemy-laser",
         PRIORITY["enemy"],
         0.3,
         [
-            tone(
-                "sawtooth",
-                170,
-                0.6,
-                env(0.01, 0.4, 0.3, 0.15),
-                {
-                    "glide_to": 90,
-                    "glide_seconds": 0.5,
-                    "filter": FilterSpec("lowpass", 1800, None, None, None),
-                },
-            ),
+            whoosh(2500, 500, 0.6, 0.5, 0, 1.5),
+            thump(90, 0.6, 0.3),
             tone(
                 "noise",
                 1,
-                0.3,
-                env(0.01, 0.4, 0.2, 0.15),
-                {"filter": FilterSpec("bandpass", 1200, None, None, None)},
+                0.4,
+                env(0.01, 0.4, 0.3, 0.15),
+                {"filter": FilterSpec("lowpass", 300, 0.7, None, None)},
             ),
         ],
         {"positional": True, "hold": 0.3},
@@ -211,6 +219,7 @@ ENEMY_WEAPONS = {
 }
 
 HITS = {
+    # A shot striking metal: a crack, a short clank and a thud.
     "hit": sound(
         "hit",
         PRIORITY["hit"],
@@ -223,45 +232,45 @@ HITS = {
                 env(0.001, 0.05),
                 {"filter": FilterSpec("highpass", 1800, None, None, None)},
             ),
-            tone("square", 320, 0.4, env(0.001, 0.06), {"glide_to": 140, "glide_seconds": 0.06}),
+            ring(3200, 1.0, 0.06),
+            thump(260, 0.5, 0.06),
         ],
         {"positional": True},
     ),
+    # A shot glancing off a shield: a click and two inharmonic metallic rings.
     "hit-blocked": sound(
         "hit-shield",
         PRIORITY["hit"],
         0.28,
         [
-            tone(
-                "square",
-                1480,
-                0.4,
-                env(0.001, 0.12, 0, 0.06),
-                {"filter": FilterSpec("bandpass", 2400, 6, None, None)},
-            ),
-            tone("triangle", 2210, 0.3, env(0.001, 0.15, 0, 0.08), {}),
+            click(2500, 0.8, 0.01),
+            ring(2900, 1.6, 0.25),
+            ring(4300, 1.1, 0.18),
         ],
         {"positional": True},
     ),
+    # The ship struck: a crack, a body of noise closing down, a sub thump and a rattle of metal.
     "player-hit": sound(
         "player-hit",
         PRIORITY["player"],
-        0.5,
+        0.36,
         [
-            tone(
-                "sawtooth",
-                240,
-                0.6,
-                env(0.002, 0.25, 0, 0.06),
-                {"glide_to": 70, "glide_seconds": 0.25},
-            ),
             tone(
                 "noise",
                 1,
                 0.5,
-                env(0.001, 0.15),
-                {"filter": FilterSpec("lowpass", 2500, None, None, None)},
+                env(0.001, 0.02, 0, 0.01),
+                {"filter": FilterSpec("highpass", 1000, None, None, None)},
             ),
+            tone(
+                "noise",
+                1,
+                0.6,
+                env(0.002, 0.2, 0, 0.08),
+                {"filter": FilterSpec("lowpass", 250, 0.7, 900, 0.2)},
+            ),
+            thump(120, 0.7, 0.25),
+            ring(2400, 0.7, 0.12, 0.02),
         ],
         {"positional": True},
     ),
@@ -288,63 +297,56 @@ DESTRUCTION = {
         explosion(BLAST_LARGE, 0),
         {"positional": True},
     ),
+    # A large blast, then metal tearing away and falling.
     "part-destroyed": sound(
         "boss-part-destroyed",
         PRIORITY["part"],
         0.55,
         [
             explosion(BLAST_LARGE, 0),
-            tone(
-                "square",
-                1200,
-                0.25,
-                env(0.001, 0.4, 0, 0.1),
-                {"glide_to": 300, "glide_seconds": 0.4},
-            ),
+            whoosh(2600, 500, 0.5, 0.45, 0.05, 8),
+            ring(1800, 0.6, 0.3, 0.1),
         ],
         {"positional": True},
     ),
-    # A chain: the core goes, then two more blasts inside the hull.
+    # A chain: the core goes, then two more blasts inside the hull, over the hull's groan and a
+    # deep rumble.
     "boss-destroyed": sound(
         "boss-destroyed",
         PRIORITY["top"],
-        0.55,
+        0.5,
         [
             explosion(BLAST_HUGE, 0),
             explosion(BLAST_LARGE, 0.35),
             explosion(BLAST_LARGE, 0.8),
             tone(
-                "sawtooth",
-                400,
+                "sine",
+                90,
                 0.3,
                 env(0.01, 1.4, 0, 0.2),
-                {
-                    "glide_to": 40,
-                    "glide_seconds": 1.4,
-                    "filter": FilterSpec("lowpass", 900, None, None, None),
-                },
+                {"glide_to": 30, "glide_seconds": 1.4},
             ),
+            rumble(120, 0.3, 1.6, 0.3),
         ],
         {},
     ),
 }
 
 PLAYER = {
+    # The ship going down: its engine winding down (a falling air sweep and a falling low tone)
+    # over a large blast.
     "life-lost": sound(
         "life-lost",
         PRIORITY["top"],
         0.45,
         [
+            whoosh(2200, 300, 0.4, 0.6, 0, 2),
             tone(
-                "square",
-                660,
-                0.5,
+                "sine",
+                180,
+                0.4,
                 env(0.005, 0.6, 0, 0.1),
-                {
-                    "glide_to": 110,
-                    "glide_seconds": 0.6,
-                    "filter": FilterSpec("lowpass", 2000, None, None, None),
-                },
+                {"glide_to": 50, "glide_seconds": 0.6},
             ),
             explosion(BLAST_LARGE, 0),
         ],
@@ -354,25 +356,23 @@ PLAYER = {
         "extra-life",
         PRIORITY["top"],
         0.4,
-        chime("triangle", [784, 988, 1175, 1568], 0.08, 0.7),
+        bell([784, 988, 1175, 1568], 0.08, 0.42),
         {},
     ),
+    # A huge blast, then the pressure wave washing over and a sub-bass pressure drop.
     "bomb": sound(
         "bomb",
         PRIORITY["top"],
         0.5,
         [
             explosion(BLAST_HUGE, 0),
+            whoosh(1500, 200, 0.25, 0.8, 0.05, 1.5),
             tone(
-                "sawtooth",
-                800,
-                0.25,
-                env(0.005, 0.8, 0, 0.1),
-                {
-                    "glide_to": 60,
-                    "glide_seconds": 0.8,
-                    "filter": FilterSpec("lowpass", 1500, None, None, None),
-                },
+                "sine",
+                50,
+                0.3,
+                env(0.005, 1.2, 0, 0.2),
+                {"glide_to": 25, "glide_seconds": 1.2},
             ),
         ],
         {},
@@ -381,22 +381,17 @@ PLAYER = {
         "bomb-bonus",
         PRIORITY["player"],
         0.35,
-        chime("square", [523, 784], 0.07, 0.45),
+        [thump(140, 0.5, 0.08), bell([523, 784], 0.07, 0.3)],
         {},
     ),
+    # A whoosh up into a bell dyad.
     "bonus:weapon": sound(
         "weapon-bonus",
         PRIORITY["player"],
         0.35,
         [
-            tone(
-                "triangle",
-                440,
-                0.7,
-                env(0.003, 0.16, 0.2, 0.1),
-                {"glide_to": 1320, "glide_seconds": 0.14},
-            ),
-            tone("sine", 1760, 0.3, env(0.003, 0.1, 0, 0.1), {"delay": 0.1}),
+            whoosh(500, 2500, 0.4, 0.18, 0, 2),
+            bell([1047, 1568], 0.08, 0.35),
         ],
         {},
     ),
@@ -404,59 +399,70 @@ PLAYER = {
         "life-bonus",
         PRIORITY["player"],
         0.35,
-        chime("sine", [784, 1175, 1568], 0.06, 0.7),
+        bell([784, 1175, 1568], 0.06, 0.45),
         {},
     ),
 }
 
+# The menus: clicks of a switch and a soft tap of a bell, not beeps.
 MENUS = {
     "menu-move": sound(
         "menu-move",
         PRIORITY["top"],
         0.18,
-        [tone("square", 1200, 0.5, env(0.001, 0.03), {})],
+        [click(3000, 1.5, 0.012)],
         {},
     ),
     "menu-confirm": sound(
         "menu-confirm",
         PRIORITY["top"],
         0.25,
-        chime("square", [660, 990], 0.05, 0.5),
+        [
+            click(2200, 1.0, 0.015),
+            tone("sine", 1046, 0.5, env(0.002, 0.15, 0, 0.1), {}),
+        ],
         {},
     ),
     "menu-back": sound(
         "menu-back",
         PRIORITY["top"],
         0.25,
-        chime("square", [660, 440], 0.05, 0.5),
+        [
+            click(1400, 1.0, 0.015),
+            tone("sine", 523, 0.5, env(0.002, 0.15, 0, 0.1), {}),
+        ],
         {},
     ),
+    # A switch thrown: a clunk, its low tone falling.
     "pause": sound(
         "pause",
         PRIORITY["top"],
         0.3,
         [
+            click(900, 0.6, 0.02),
             tone(
                 "sine",
-                880,
-                0.7,
+                220,
+                0.6,
                 env(0.003, 0.15, 0, 0.05),
-                {"glide_to": 440, "glide_seconds": 0.15},
+                {"glide_to": 150, "glide_seconds": 0.15},
             ),
         ],
         {},
     ),
+    # The switch thrown back: the clunk, its tone rising.
     "resume": sound(
         "resume",
         PRIORITY["top"],
         0.3,
         [
+            click(900, 0.6, 0.02),
             tone(
                 "sine",
-                440,
-                0.7,
+                150,
+                0.6,
                 env(0.003, 0.15, 0, 0.05),
-                {"glide_to": 880, "glide_seconds": 0.15},
+                {"glide_to": 220, "glide_seconds": 0.15},
             ),
         ],
         {},
@@ -465,7 +471,7 @@ MENUS = {
         "slider-step",
         PRIORITY["top"],
         0.4,
-        [tone("triangle", 1000, 0.6, env(0.002, 0.07), {})],
+        [click(2400, 2.0, 0.012)],
         {},
     ),
 }
