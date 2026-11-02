@@ -12,9 +12,15 @@ def test_gfx_terrain_07_texture_is_its_colours_and_frequency() -> None:
 
 
 def test_gfx_terrain_07_texture_takes_the_optional_fields_it_is_given() -> None:
-    t = texture(["a"], 1, {"speckle": 0.2, "cracks": 0.1})
+    t = texture(["a"], 1, {"speckle": 0.2, "cracks": 0.1, "stones": 0.7})
     assert t.speckle == 0.2
     assert t.cracks == 0.1
+    assert t.stones == 0.7
+    assert "stones" not in texture(["a"], 1)
+
+
+def test_gfx_terrain_07_the_base_rock_is_stones() -> None:
+    assert BASE_SCENERY_LOOK.terrain.steep.stones > 0
 
 
 def test_gfx_sky_04_the_base_scenery_look_has_every_section_the_scenery_reads() -> None:

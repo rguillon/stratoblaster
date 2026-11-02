@@ -122,6 +122,11 @@ uniform sampler2D terrainNoise;
 // would change the colour by less than half a step. On flat paved ground, one texture read
 // instead of 21.
 const float TERRAIN_SKIP = 1.0 / 512.0;
+// How sharply the three axis planes are chosen by the normal, and how much of the top-down plane
+// the rock gives up to the side ones: a steep face is then one projection, not two laid over each
+// other, so its stones stay crisp (GFX-TERRAIN-07).
+const float TRIPLANAR_SHARPNESS = 8.0;
+const float ROCK_SIDE_PLANES = 0.9;
 
 // Samples a ground texture from the three axis planes, weighted by the normal, so steep
 // slopes are not stretched (GFX-TERRAIN-07).
@@ -197,10 +202,6 @@ vec3 terrainHeat(vec3 p) {
 }
 
 vec3 terrainColor(vec3 p, vec3 n) {
-  vec3 w = pow(abs(n), vec3(4.0));
-  w /= (w.x + w.y + w.z);
-  w *= step(vec3(TERRAIN_SKIP), w);
-  w /= (w.x + w.y + w.z);
   vec4 noise = texture2D(terrainNoise, p.xz * terrainScale.y);
   float jitter = noise.r - 0.5;
   float h = p.y + jitter * terrainSlope.z;
@@ -210,6 +211,11 @@ vec3 terrainColor(vec3 p, vec3 n) {
   float above = smoothstep(terrainHeights.x - blend, terrainHeights.x + blend, h);
   float high = smoothstep(terrainHeights.y - blend, terrainHeights.y + blend, h);
   float steep = smoothstep(terrainSlope.x, terrainSlope.y, slope);
+  vec3 w = pow(abs(n), vec3(TRIPLANAR_SHARPNESS));
+  w.y *= 1.0 - ROCK_SIDE_PLANES * steep;
+  w /= (w.x + w.y + w.z);
+  w *= step(vec3(TERRAIN_SKIP), w);
+  w /= (w.x + w.y + w.z);
   float sandy = 0.0;
   float lush = 0.0;
   float paved = 0.0;

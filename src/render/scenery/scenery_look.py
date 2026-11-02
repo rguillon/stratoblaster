@@ -35,12 +35,14 @@ class TextureLook:
         speckle_color: Rgb,
         strata: float,
         cracks: float | None = None,
+        stones: float | None = None,
     ) -> None:
         """`colors`: dark, base and light, at the low, middle and high noise values.
 
         `frequency`: noise cycles across the texture (first octave). `speckle`: share (0..1) of
         pixels turned into speckles of `speckleColor`. `strata`: horizontal bands, like rock strata.
-        `cracks`: thin dark crack lines, as in lake ice (phase 8).
+        `cracks`: thin dark crack lines, as in lake ice (phase 8). `stones`: how much (0..1) the
+        texture is stones, each a shade of its own with lit edges and dark joints, as a rock face.
         """
         self.colors = colors
         self.frequency = frequency
@@ -49,6 +51,7 @@ class TextureLook:
         self.speckleColor = speckle_color
         self.strata = strata
         self.cracks = cracks
+        self.stones = stones
 
 
 class Jitter:

@@ -240,10 +240,11 @@
     over the dunes).
   - World 1's open-land sections carry scarps of 24 to 40 over 320 to 360 of wavelength (a hill
     about every screen), faces of 8 % of a cycle (a slope of 0.8 to 1.6 at a full crest: 40° to
-    58°, rock; a half crest is rock too), all looking 150° from +Z (towards +X and the camera,
-    which is tilted towards +Z and sees them as walls). The towns on street grids (their streets
-    need ground under a slope of 0.12), the dry lake, the canyon, the mesas, the buttes and the sea
-    keep their ground. The farmland's and the desert outskirts' hills are lower (24).
+    58°, rock; a half crest is rock too), all looking 125° from +Z: towards +X, where World 1's
+    sun is (ahead of the camera and to the right), so the faces are lit, and a little towards the
+    camera, which is tilted towards +Z and sees them as walls. The towns on street grids (their
+    streets need ground under a slope of 0.12), the dry lake, the canyon, the mesas, the buttes and
+    the sea keep their ground. The farmland's and the desert outskirts' hills are lower (24).
   - The World 1 looks turn steep ground to rock sooner: the green levels from a slope of 0.12 to
     0.3 (28° to 46°; a grey crag texture, `CRAG`, lightly layered), the dry levels from 0.2 to 0.42
     (37° to 55°; the mesa rock, which now also covers the canyon walls and more of the mesa walls).
@@ -262,4 +263,35 @@
   clouds and the flight. Buildings and roads keep off the faces (slope limits), so the sections
   with scarps have somewhat fewer buildings. The owner checks the look in the game; the heights,
   face share and angle are tunables.
+- **Status:** Proposed
+
+### D-241 — Rock faces of stones, sampled from one plane
+- **Date:** 2026-11-02
+- **Requirements:** GFX-TERRAIN-07 (the `stones` extra, the sharper projection), the terrain
+  tunables; WLD-1-31 (the faces turned towards the sun).
+- **Context:** owner feedback on D-240: "the rocky parts are too blurry, make better looking
+  stones". The rock textures were the same fractal noise between three colours as the grass, with
+  soft strata: no edge anywhere. On a 40° to 60° face the triplanar sampling weighed the top-down
+  and the side planes almost alike, laying two copies of the texture over each other. And the
+  faces looked 150° from +Z, away from World 1's sun (ahead of the camera, to the right), so they
+  were dark bands with no visible detail.
+- **Decision:**
+  - A `stones` extra for the generated textures: the cells of a jittered grid (the cracks' grid,
+    generalised: less jitter so no sliver cells, cells 1.6 times wider than high as slabs along the
+    strata), each stone a flat shade of its own with the noise's grain over it, its edges lit on
+    the side facing a fixed light in texture space and shadowed on the other, dark joints that
+    wobble with the noise, and thinner fractures of a finer grid splitting some stones. The crag,
+    the mesa rock and the base rock use it (the other worlds' rock textures are unchanged).
+  - The triplanar weights are sharper (the normal to the 8th power instead of the 4th), and where
+    the ground is rock the top-down plane gives up 90 % of its weight to the side planes, so a face
+    is one projection.
+  - World 1's faces look 125° from +Z (towards +X, where the sun is, and towards the camera):
+    lit and seen, their lines crossing the screen. The crag is paler.
+- **Alternatives considered:** a larger texture (512 px) for the rock alone: the layers share one
+  size and one tile size, and the blur came from the content and the double projection, not the
+  texel density; a normal map for the rock: the terrain material has none, and the lit bevel baked
+  into the colour reads well enough from the playfield camera.
+- **Consequences:** the texture generator does one more cell pass per stone texture (in the worker,
+  PERF-14); the shader change applies to every world's terrain (sharper plane choice everywhere,
+  only visible on steep ground). The owner checks the stones in the game.
 - **Status:** Proposed

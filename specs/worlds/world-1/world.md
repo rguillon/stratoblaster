@@ -224,8 +224,8 @@ The towns are street grids on tiles.
 World 1's land is hills with one rocky side and a slow slope on the other, as the mountains of
 Ireland: the sections of open land (the green coast, the meadows, groves, farmland, woods and green
 hills, the drying grass, the scrubland, the desert outskirts and the rocky pass) carry `scarps`
-(GFX-TERRAIN-19), their faces all looking the same way (`SCARP_ANGLE`, 150° from +Z: towards +X and
-the camera), short (`SCARP_FACE`, 8 % of a cycle) and their crests falling to nothing between the
+(GFX-TERRAIN-19), their faces all looking the same way (`SCARP_ANGLE`, 125° from +Z: towards +X, where the sun
+is, and a little towards the camera), short (`SCARP_FACE`, 8 % of a cycle) and their crests falling to nothing between the
 hills; the farmland's are lower. The towns on street grids, the dry lake, the canyon, the mesas, the
 buttes and the sea have none. The looks draw the steep ground as rock sooner than the base look
 (`steepSlope`): grey crags (`CRAG`) on the green levels from a slope of 0.12, the red mesa rock on

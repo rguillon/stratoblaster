@@ -23,10 +23,11 @@ from typing import Any
 G = WORLD_1_GROUPS
 
 # The hills of World 1's land (WLD-1-31, GFX-TERRAIN-19): each with one steep rocky face and a slow
-# slope on the other side. The faces look towards +X and the camera (`SCARP_ANGLE`, from +Z), take
-# `SCARP_FACE` of a crest-to-crest cycle (the back takes the rest), and the crests fall to nothing
-# between the hills.
-SCARP_ANGLE = 150
+# slope on the other side. The faces look towards +X and a little towards the camera
+# (`SCARP_ANGLE`, from +Z): the sun, ahead and to the right, lights them, and the camera, tilted
+# forward, sees them. They take `SCARP_FACE` of a crest-to-crest cycle (the back takes the rest),
+# and the crests fall to nothing between the hills.
+SCARP_ANGLE = 125
 SCARP_FACE = 0.08
 
 

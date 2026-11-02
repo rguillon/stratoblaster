@@ -31,8 +31,8 @@ PLAYFIELD_CAMERA = record({
 def texture(colors: Any, frequency: float, extra: Any = None) -> Any:
     """Return a generated ground texture: three colours and a noise frequency, plus extras.
 
-    GFX-TERRAIN-07: `extra` may hold `speckle`, `speckleColor`, `strata`, `octaves` and `cracks`;
-    `cracks` is only set on the texture when given.
+    GFX-TERRAIN-07: `extra` may hold `speckle`, `speckleColor`, `strata`, `octaves`, `cracks` and
+    `stones`; `cracks` and `stones` are only set on the texture when given.
     """
     e: Any = {} if extra is None else extra
     result = record({
@@ -46,6 +46,9 @@ def texture(colors: Any, frequency: float, extra: Any = None) -> Any:
     cracks = e.get("cracks")
     if cracks is not None:
         result["cracks"] = cracks
+    stones = e.get("stones")
+    if stones is not None:
+        result["stones"] = stones
     return result
 
 
@@ -111,7 +114,7 @@ BASE_SCENERY_LOOK = record({
                 [0.5, 0.49, 0.47],
             ],
             8,
-            {"strata": 0.3},
+            {"strata": 0.3, "stones": 0.7},
         ),
         "high": texture(
             [

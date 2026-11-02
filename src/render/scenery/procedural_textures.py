@@ -33,6 +33,31 @@ NOISE_FREQUENCY = 8
 # Crack cells across the texture per noise cycle, and the cracks' width (in cells).
 CRACK_CELLS = 0.5
 CRACK_WIDTH = 0.08
+# Stones (GFX-TERRAIN-07): cells of a jittered grid across the texture per noise cycle, the width
+# of the joints between them and of the bevel lit at their edges (in cells, as a share of the gap
+# between the two nearest cells), how far the stones' own shades spread over the colour range, how
+# much the bevel lights or shadows an edge, how dark the joints are, and where the light comes from
+# (in texture space).
+STONE_CELLS = 0.85
+STONE_JOINT = 0.07
+STONE_BEVEL = 0.25
+STONE_SHADE = 0.6
+STONE_BEVEL_LIGHT = 0.3
+STONE_JOINT_DARK = 0.55
+STONE_LIGHT_X = -0.6
+STONE_LIGHT_Y = -0.8
+# How far the stones' points move from their grid (0..1; less than the cracks' full jitter, so no
+# two points lie almost together and cut a sliver), how much wider than high the stones are (slabs
+# along the strata), how much the noise wobbles the joints, how strong the grain inside a stone is,
+# and the fractures: thinner cracks of a finer grid (`STONE_FRACTURES` times the cells) that split
+# some stones, their width (in cells) and how dark they are.
+STONE_JITTER = 0.75
+STONE_ASPECT = 1.6
+STONE_WOBBLE = 0.08
+STONE_GRAIN = 0.7
+STONE_FRACTURES = 2.3
+STONE_FRACTURE_WIDTH = 0.04
+STONE_FRACTURE_DARK = 0.3
 
 # How far the ground noise spreads from the base colour towards the dark and light ones.
 GROUND_CONTRAST = 1.2
@@ -262,32 +287,64 @@ def _ground_color(look: Any, n: float) -> list[float]:
     return _mix_rgb(base, light, (n - 0.5) * 2)
 
 
+def jittered_cells(size: int, cells: float, seed: int, jitter: float = 1, aspect: float = 1) -> Any:
+    """Return the cells of a jittered grid of `cells` x `cells` points over a tiling texture.
+
+    `size` x `size` pixels, three values each in a row: the nearest point's own number (0..1, a
+    hash), the gap between the distances to the nearest and the second nearest points (0 on the
+    edge between their cells, in cells), and how much the pixel faces the light from its nearest
+    point (-1..1). The points move up to `jitter` (0..1) of a cell from their grid; the cells are
+    `aspect` times wider than high.
+    """
+    n = max(2, math.floor(cells + 0.5))
+    m = max(2, math.floor(cells * aspect + 0.5))
+
+    def point(i: int, j: int) -> list[float]:
+        wi = ((i % n) + n) % n
+        wj = ((j % m) + m) % m
+        return [
+            i + 0.5 + (hash_2d(wi, wj, seed) - 0.5) * jitter,
+            j + 0.5 + (hash_2d(wi, wj, seed + 1) - 0.5) * jitter,
+            hash_2d(wi, wj, seed + 2),
+        ]
+
+    out = float32_array(size * size * 3)
+    for y in range(size):
+        for x in range(size):
+            u = (x / size) * n
+            v = (y / size) * m
+            nearest = 1e9
+            second = 1e9
+            own = 0.0
+            lit = 0.0
+            for j in range(math.floor(v) - 1, math.floor(v) + 2):
+                for i in range(math.floor(u) - 1, math.floor(u) + 2):
+                    p = point(i, j)
+                    d = _hypot2(u - p[0], v - p[1])
+                    if d < nearest:
+                        second = nearest
+                        nearest = d
+                        own = p[2]
+                        lit = ((u - p[0]) * STONE_LIGHT_X + (v - p[1]) * STONE_LIGHT_Y) / (d or 1)
+                    elif d < second:
+                        second = d
+            k = (y * size + x) * 3
+            out[k] = own
+            out[k + 1] = second - nearest
+            out[k + 2] = lit
+    return out
+
+
 def crack_lines(size: int, cells: float, seed: int) -> Any:
     """Crack lines over a `size` x `size` texture that tiles (phase 8: lake ice).
 
     The edges between the cells of a jittered grid of `cells` x `cells` points, 1 on a crack and 0
     elsewhere.
     """
-    n = max(2, math.floor(cells + 0.5))
-
-    def point(i: int, j: int) -> list[float]:
-        wi = ((i % n) + n) % n
-        wj = ((j % n) + n) % n
-        return [i + hash_2d(wi, wj, seed), j + hash_2d(wi, wj, seed + 1)]
-
+    grid = jittered_cells(size, cells, seed)
     lines = float32_array(size * size)
-    for y in range(size):
-        for x in range(size):
-            u = (x / size) * n
-            v = (y / size) * n
-            distances: list[float] = []
-            for j in range(math.floor(v) - 1, math.floor(v) + 2):
-                for i in range(math.floor(u) - 1, math.floor(u) + 2):
-                    p = point(i, j)
-                    distances.append(_hypot2(u - p[0], v - p[1]))
-            distances = _stable_sort(distances, lambda a, b: a - b)
-            gap = distances[1] - distances[0]
-            lines[y * size + x] = 1 if gap < CRACK_WIDTH else 0
+    for i in range(size * size):
+        lines[i] = 1 if grid[i * 3 + 1] < CRACK_WIDTH else 0
     return lines
 
 
@@ -304,6 +361,13 @@ def _ground_pixels(size: int, look: Any, seed: int) -> Any:
     bands = tileable_fbm(size, look.frequency / 2, 2, seed + 50)
     cracks = crack_lines(size, look.frequency * CRACK_CELLS, seed + 70) if look.cracks else None
     crack_strength = look.cracks if look.cracks != None else 0
+    stones = look.stones if look.stones != None else 0
+    grid = None
+    fractures = None
+    if stones:
+        cells = look.frequency * STONE_CELLS
+        grid = jittered_cells(size, cells, seed + 90, STONE_JITTER, STONE_ASPECT)
+        fractures = jittered_cells(size, cells * STONE_FRACTURES, seed + 110, STONE_JITTER)
     pixels = uint8_array(size * size * 4)
     for y in range(size):
         for x in range(size):
@@ -313,9 +377,25 @@ def _ground_pixels(size: int, look: Any, seed: int) -> Any:
             band = math.sin(((y / size) * look.frequency * 2 + bands[i]) * math.pi * 2)
             crack = (cracks[i] if cracks is not None else 0) * crack_strength
             n = (noise[i] * (1 - look.strata) + look.strata * (band * 0.5 + 0.5)) * (1 - crack)
+            dark = 1.0
+            if grid is not None and fractures is not None:
+                # Stones: each cell a flat shade of its own with the noise's grain over it, its
+                # edges lit on the side facing the light and shadowed on the other, a dark joint
+                # between the cells (its line wobbling with the noise) and thin fractures splitting
+                # some stones.
+                stone = 0.5 + (grid[i * 3] - 0.5) * STONE_SHADE + (n - 0.5) * STONE_GRAIN
+                gap = grid[i * 3 + 1] + (noise[i] - 0.5) * STONE_WOBBLE
+                edge = 1 - min(1, max(0, gap) / STONE_BEVEL)
+                stone += grid[i * 3 + 2] * edge * STONE_BEVEL_LIGHT
+                n = n + (stone - n) * stones
+                joint = max(0, 1 - max(0, gap) / STONE_JOINT)
+                split = max(0, 1 - fractures[i * 3 + 1] / STONE_FRACTURE_WIDTH)
+                dark = 1 - stones * max(STONE_JOINT_DARK * joint, STONE_FRACTURE_DARK * split)
             speck = hash_2d(x, y, seed) < look.speckle
             rgb = look.speckleColor if speck else _ground_color(look, n)
-            pixels.set([_byte(rgb[0]), _byte(rgb[1]), _byte(rgb[2]), 255], i * 4)
+            pixels.set(
+                [_byte(rgb[0] * dark), _byte(rgb[1] * dark), _byte(rgb[2] * dark), 255], i * 4
+            )
     return pixels
 
 

@@ -100,15 +100,20 @@ heights, so nothing else can raise it. The cloud layers are kept above it ([sky-
 
 Every ground texture is generated in code when the level loads (or in the background worker), from
 three colours, a noise frequency and a number of octaves, plus optional extras: `speckle` (scattered
-pebbles or tufts of another colour), `strata` (horizontal layers, for rock walls) and `cracks` (the
-cell edges of a jittered grid, for dried or frozen lake beds cracked into plates). A noise texture
-for the borders and patches and a normal map for the water are generated the same way. No texture
-is downloaded. Each texture is sampled from the three axis planes, weighted by the ground's normal,
-so steep slopes are not stretched.
+pebbles or tufts of another colour), `strata` (horizontal layers, for rock walls), `cracks` (the
+cell edges of a jittered grid, for dried or frozen lake beds cracked into plates) and `stones` (a
+rock face of stones: the cells of a jittered grid, wider than high like slabs along the strata,
+each a shade of its own under the noise's grain, its edges lit on the side facing the light and
+shadowed on the other, dark joints between them and thinner fractures splitting some). A noise
+texture for the borders and patches and a normal map for the water are generated the same way. No
+texture is downloaded. Each texture is sampled from the three axis planes, weighted sharply by the
+ground's normal, so steep slopes are not stretched; where the ground is rock, the top-down plane
+gives way to the side ones, so a steep face is one projection and its stones stay crisp.
 
 **Acceptance criteria**
 - Given the same look and seed, then the generated pixels are the same; a texture with `cracks` has
-  darker crack lines than one without (unit test).
+  darker crack lines than one without, and one with `stones` has joints darker than its dark colour
+  (unit tests).
 
 *Sources: P04-R01, D-020, D-066, D-200.*
 
@@ -291,8 +296,10 @@ WLD-1-31).
 | `noiseTileSize` / `tintTileSize` | 300 / 1600 | base look |
 | `specular` | 0 | base look |
 | hardpan `cracks` | 0.75 | `HARDPAN`, `src/game/config/world_1/looks.py` |
-| mesa rock `strata` | 0.6 | `MESA_ROCK`, same place |
-| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.08 / 0 / 150 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
+| mesa rock `strata` / `stones` | 0.5 / 0.7 | `MESA_ROCK`, same place; crag `CRAG` 0.25 / 0.85; base rock 0.3 / 0.7 |
+| stones | cells 0.85 per noise cycle, 1.6 wider than high, jitter 0.75, joint 0.07, bevel 0.25, fractures 2.3 × finer | `src/render/scenery/procedural_textures.py` `STONE_*` |
+| triplanar sharpness / rock side planes | 8 / 0.9 | `src/render/scenery/terrain_blend_plugin_visual.py` `TRIPLANAR_SHARPNESS`, `ROCK_SIDE_PLANES` |
+| scarps `face` / `lowest` / `angle_deg` / `warp` | 0.08 / 0 / 125 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
 | `SCARP_BEND_SCALE` / `SCARP_CREST_SCALE` / `SCARP_CREST_SPREAD` | 3 / 1.2 wavelengths / 0.45 | `src/core/scenery/height_field.py` |
 | `transition` | 420 (World 1), 900 (Worlds 2–4) | per level, `src/game/config/world_*/scenery*.py` (`TRANSITION`) |
 | `glow` | intensity 0.3, blur 16 | base look; full resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`) |

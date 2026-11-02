@@ -56,16 +56,16 @@ GRASS = texture(
     {"speckle": 0.035, "speckleColor": [0.6, 0.56, 0.28]},
 )
 
-# Grey crag rock (WLD-1-31): the rocky faces of the green hills, lightly layered, a little warm,
-# as the stone of Irish mountains.
+# Grey crag rock (WLD-1-31): the rocky faces of the green hills, blocks of stone with dark joints
+# and lit edges, lightly layered, a little warm, as the stone of Irish mountains.
 CRAG = texture(
     [
-        [0.3, 0.3, 0.27],
-        [0.42, 0.41, 0.37],
-        [0.54, 0.52, 0.47],
+        [0.34, 0.34, 0.31],
+        [0.5, 0.49, 0.45],
+        [0.66, 0.64, 0.58],
     ],
     8,
-    {"strata": 0.35, "speckle": 0.02, "speckleColor": [0.36, 0.4, 0.3]},
+    {"strata": 0.25, "stones": 0.85, "speckle": 0.015, "speckleColor": [0.36, 0.4, 0.3]},
 )
 
 # Red-brown desert rock, layered (World 2's slopes).
@@ -87,7 +87,7 @@ MESA_ROCK = texture(
         [0.74, 0.44, 0.28],
     ],
     8,
-    {"strata": 0.6},
+    {"strata": 0.5, "stones": 0.7},
 )
 
 # The dried land of an American desert (D-200): red-orange dirt, scattered with dark pebbles and
