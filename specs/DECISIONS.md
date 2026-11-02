@@ -295,3 +295,20 @@
   PERF-14); the shader change applies to every world's terrain (sharper plane choice everywhere,
   only visible on steep ground). The owner checks the stones in the game.
 - **Status:** Proposed
+
+### D-242 — The level pauses when the window loses its focus
+- **Date:** 2026-11-02
+- **Requirements:** UI-PAUSE-11 (a third cause of the automatic pause), ENG-110.
+- **Context:** owner request: "make the game pause when it loses focus". The level paused by itself
+  only when the page was hidden (a tab switched, the window minimised) or the gamepad in use was
+  disconnected; clicking another window or app on a visible page left it running.
+- **Decision:** `PageVisibility` takes a third, optional piece, `focus_target` (the window), whose
+  `blur` event pauses the level through the menu's `pause` (ignored outside a level, as the hidden
+  page's is). The audio is not silenced: the page is still visible, and the sound comes back
+  anyway when it is shown again (AUD-ENGINE-11). The game never resumes by itself.
+- **Alternatives considered:** pausing on the document's `focusout` (fires on every focus move
+  inside the page, so it would pause on a click on the canvas); silencing the audio too (the
+  pause menu's own quieting already applies, UI-PAUSE-04 / AUD-ENGINE-11).
+- **Consequences:** one more listener on the window, removed with the others when the app stops;
+  the e2e smoke test fakes a `blur`.
+- **Status:** Proposed

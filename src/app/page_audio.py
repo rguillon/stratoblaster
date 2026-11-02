@@ -2,7 +2,8 @@
 """The browser around the game: the first gesture unlocks the audio (AUD-ENGINE-03).
 
 A hidden page pauses the level (UI-PAUSE-11, GAME-CTRL-08) and silences the audio (AUD-ENGINE-11),
-and a timer schedules the music (AUD-ENGINE-05). `listen_to_page` returns a function that stops
+a window that loses its focus pauses it too (UI-PAUSE-11), and a timer schedules the music
+(AUD-ENGINE-05). `listen_to_page` returns a function that stops
 listening.
 
 `PageOptions` is a plain class; its fields are None when omitted.
@@ -42,12 +43,14 @@ class AudioOptions:
 class PageVisibility:
     """`PageOptions.visibility`: the target whose `visibilitychange` event is heard.
 
-    And whether the page is hidden now (ENG-110).
+    And whether the page is hidden now (ENG-110). `focus_target`: the window whose `blur` event
+    says the game lost its focus (another window or app clicked, UI-PAUSE-11); None when omitted.
     """
 
-    def __init__(self, target: Any, hidden: Any) -> None:
+    def __init__(self, target: Any, hidden: Any, focus_target: Any | None = None) -> None:
         self.target = target
         self.hidden = hidden
+        self.focus_target = focus_target
 
 
 class PageOptions:
@@ -113,6 +116,11 @@ def listen_to_page(options: PageOptions, menu: MenuController, audio: GameAudio)
         on_visibility = _visibility_listener(visibility, menu, audio)
         visibility.target.addEventListener("visibilitychange", on_visibility)
         stops.append(_remover(visibility.target, "visibilitychange", on_visibility))
+        focus_target = visibility.focus_target
+        if focus_target is not None:
+            on_blur = _blur_listener(menu)
+            focus_target.addEventListener("blur", on_blur)
+            stops.append(_remover(focus_target, "blur", on_blur))
     every = options.every
     if every is not None:
         stops.append(every(_updater(audio), AUDIO_CONFIG.schedule_interval_seconds))
@@ -142,6 +150,18 @@ def _visibility_listener(visibility: PageVisibility, menu: MenuController, audio
         audio.set_hidden(hidden)
 
     return on_visibility
+
+
+def _blur_listener(menu: MenuController) -> Any:
+    """Return the listener of the window's `blur`: the level pauses (UI-PAUSE-11).
+
+    The audio plays on.
+    """
+
+    def on_blur() -> None:
+        menu.pause()
+
+    return on_blur
 
 
 def _updater(audio: GameAudio) -> Any:

@@ -142,7 +142,7 @@ def next_frame() -> Any:
 
 
 def document_hidden() -> bool:
-    """Whether the page is hidden now (UI-PAUSE-11)."""
+    """Whether the page is hidden now (UI-PAUSE-11; the window's `blur` is heard too)."""
     hidden: bool = document.visibilityState == "hidden"
     return hidden
 
@@ -210,7 +210,7 @@ def start_game(engine: Any) -> None:
         browser_audio(),
         browser_gamepads(window.navigator),
         window,
-        PageVisibility(document, document_hidden),
+        PageVisibility(document, document_hidden, window),
         start_interval,
         # DEV-MENU-01 (D-199): the Dev entry of the title screen, with `?dev` in the URL.
         dev_mode(window.location.search),
